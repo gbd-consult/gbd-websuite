@@ -4,9 +4,8 @@ import gws.base.web.error
 import gws.gis.crs
 import gws.gis.bounds
 import gws.lib.image
-import gws.gis.legend
 import gws.lib.mime
-import gws.gis.shape
+import gws.base.shape
 
 from .. import core
 
@@ -158,7 +157,7 @@ class Object(core.Service):
         x = bbox[0] + (x * xres)
         y = bbox[3] - (y * yres)
 
-        point = gws.gis.shape.from_geometry({
+        point = gws.base.shape.from_geometry({
             'type': 'Point',
             'coordinates': [x, y]
         }, bounds.crs)

@@ -32,7 +32,7 @@ class Object(method.Object):
         raise error.LoginNotFound()
 
 
-def _parse_header(req: gws.IWebRequest):
+def _parse_header(req: gws.IWebRequester):
     h = req.header('Authorization')
     if not h:
         return

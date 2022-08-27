@@ -2,8 +2,8 @@ import gws
 import gws.base.db
 import gws.base.model
 import gws.gis.crs
-import gws.gis.feature
-import gws.gis.shape
+import gws.base.feature
+import gws.base.shape
 import gws.lib.sql.postgres
 import gws.types as t
 
@@ -22,7 +22,7 @@ class Config(gws.Config):
 
 
 @gws.ext.object.db('postgres')
-class Object(gws.Node, gws.ISqlDbProvider):
+class Object(gws.Node, gws.IDatabase):
     def configure(self):
 
         def ping():
@@ -221,7 +221,7 @@ class Object(gws.Node, gws.ISqlDbProvider):
             if g:
                 # assuming geometries are returned in hex
                 crs = gws.gis.crs.get(table.geometry_column.srid)
-                shape = gws.gis.shape.from_wkb_hex(g, crs)
+                shape = gws.base.shape.from_wkb_hex(g, crs)
 
         uid = None
         if table.key_column:
@@ -229,7 +229,7 @@ class Object(gws.Node, gws.ISqlDbProvider):
         if not uid:
             uid = gws.sha256(rec)
 
-        return gws.gis.feature.Feature(uid=uid, attributes=rec, shape=shape)
+        return gws.base.feature.Feature(uid=uid, attributes=rec, shape=shape)
 
 
 ##
@@ -237,7 +237,7 @@ class Object(gws.Node, gws.ISqlDbProvider):
 
 def create(root: gws.IRoot, cfg, parent: gws.Node = None, shared: bool = False) -> Object:
     key = gws.pick(cfg, 'host', 'port', 'user', 'database')
-    return root.create_object(Object, cfg, parent, shared, key)
+    return root.create(Object, cfg, parent, shared, key)
 
 
 def require_for(obj: gws.INode) -> Object:

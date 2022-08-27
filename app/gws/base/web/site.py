@@ -8,35 +8,35 @@ from . import core
 
 
 class Object(gws.Node, gws.IWebSite):
-    assets_root: t.Optional[gws.DocumentRoot]
-    canonical_host: str
-    cors_options: core.CorsOptions
-    error_page: t.Optional[gws.ITemplate]
+    assetsRoot: t.Optional[gws.DocumentRoot]
+    canonicalHost: str
+    corsOptions: core.CorsOptions
+
     host: str
-    rewrite_rules: t.List[core.RewriteRule]
+    rewriteRules: t.List[core.RewriteRule]
     ssl: bool
-    static_root: gws.DocumentRoot
+    staticRoot: gws.DocumentRoot
 
     def configure(self):
 
         self.host = self.var('host', default='*')
-        self.canonical_host = self.var('canonicalHost')
+        self.canonicalHost = self.var('canonicalHost')
 
-        self.static_root = core.create_document_root(self.var('root'))
-        self.assets_root = core.create_document_root(self.var('assets'))
+        self.staticRoot = core.create_document_root(self.var('root'))
+        self.assetsRoot = core.create_document_root(self.var('assets'))
 
         # config.ssl is populated in the application init
         self.ssl = self.var('ssl')
 
-        self.rewrite_rules = self.var('rewrite', default=[])
-        for r in self.rewrite_rules:
+        self.rewriteRules = self.var('rewrite', default=[])
+        for r in self.rewriteRules:
             if not gws.lib.net.is_abs_url(r.target):
                 # ensure rewriting from root
                 r.target = '/' + r.target.lstrip('/')
 
-        self.error_page = self.create_child_if_config('gws.ext.template', self.var('errorPage'))
+        self.errorPage = self.create_child(gws.ext.object.template, self.var('errorPage'), optional=True)
 
-        self.cors_options = core.CorsOptions(
+        self.corsOptions = core.CorsOptions(
             allow_origin=self.var('cors.allowOrigin'),
             allow_credentials=self.var('cors.allowCredentials'),
             allow_headers=self.var('cors.allowHeaders'),
@@ -47,10 +47,10 @@ class Object(gws.Node, gws.IWebSite):
             return gws.lib.net.add_params(path, params)
 
         proto = 'https' if self.ssl else 'http'
-        host = self.canonical_host or (req.env('HTTP_HOST') if self.host == '*' else self.host)
+        host = self.canonicalHost or (req.env('HTTP_HOST') if self.host == '*' else self.host)
         base = proto + '://' + host
 
-        for rule in self.rewrite_rules:
+        for rule in self.rewriteRules:
             if rule.reversed:
                 m = re.match(rule.pattern, path)
                 if m:

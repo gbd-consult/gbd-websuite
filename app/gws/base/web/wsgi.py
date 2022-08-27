@@ -5,8 +5,6 @@ import werkzeug.utils
 import werkzeug.wrappers
 import werkzeug.wsgi
 
-from werkzeug.utils import cached_property
-
 import gws
 import gws.lib.date
 import gws.lib.json2
@@ -16,26 +14,20 @@ import gws.types as t
 
 from . import error
 
-_JSON = 1
-_MSGPACK = 2
-
-_struct_mime = {
-    _JSON: 'application/json',
-    _MSGPACK: 'application/msgpack',
-}
+_wrappers = []
 
 
-class WebResponse(gws.Object, gws.IWebResponse):
+def register_wrapper(obj):
+    _wrappers.append(obj)
+
+
+class Responder(gws.IWebResponder):
     def __init__(self, **kwargs):
-        super().__init__()
         if 'wz' in kwargs:
             self._wz = kwargs['wz']
         else:
             self._wz = werkzeug.wrappers.Response(**kwargs)
-
-    @property
-    def status_code(self):
-        return self._wz.status_code
+        self.status_code = self._wz.status_code
 
     def __call__(self, environ, start_response):
         return self._wz(environ, start_response)
@@ -50,19 +42,57 @@ class WebResponse(gws.Object, gws.IWebResponse):
         self._wz.headers.add(key, value)
 
 
-class WebRequest(gws.Object, gws.IWebRequest):
-    @property
-    def environ(self):
-        return self._wz.environ
+class Requester(gws.IWebRequester):
+    _struct_mime = {
+        'json': 'application/json',
+        'msgpack': 'application/msgpack',
+    }
 
-    @property
+    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite):
+        self._wz = werkzeug.wrappers.Request(environ)
+        # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
+        self._wz.max_content_length = int(root.app.var('server.web.maxRequestLength', default=1)) * 1024 * 1024
+
+        self.environ = self._wz.environ
+        self.method = self._wz.method.upper()
+        self.isSecure = self._wz.is_secure
+        
+        self.isPost = self.method == 'POST' 
+        self.isGet = self.method == 'GET' 
+
+        self.inputType = None
+        if self.isPost:
+            self.inputType = self._struct_type(self.header('content-type'))
+
+        self.outputType = None
+        if self.inputType:
+            self.outputType = self._struct_type(self.header('accept')) or self.inputType
+
+        self.isApi = self.inputType is not None
+
+        self.params: t.Dict[str, t.Any] = {}
+        self.lowerParams: t.Dict[str, t.Any] = {}
+
+        self.root: gws.IRoot = root
+        self.site: gws.IWebSite = site
+
+    def enter_request(self):
+        # @TODO queue wrappers to resolve dependencies
+        for w in _wrappers:
+            w.enter_request(self)
+
+    def exit_request(self, res: gws.IWebResponder):
+        # @TODO queue wrappers to resolve dependencies
+        for w in reversed(_wrappers):
+            w.exit_request(self, res)
+
     def data(self):
-        if self.method != 'POST':
+        if not self.isPost:
             return None
 
         data = self._wz.get_data(as_text=False, parse_form_data=False)
 
-        if self.root.application.developer_option('request.log_all'):
+        if self.root.app.developer_option('request.log_all'):
             gws.write_file_b(f'{gws.VAR_DIR}/debug_request_{gws.lib.date.timestamp_msec()}', data)
 
         if self.header('content-encoding') == 'gzip':
@@ -71,47 +101,26 @@ class WebRequest(gws.Object, gws.IWebRequest):
 
         return data
 
-    @property
     def text(self):
-        if self.method != 'POST' or not self.data:
+        data = self.data()
+        if data is None:
             return None
 
         charset = self.header('charset', 'utf-8')
         try:
-            return self.data.decode(encoding=charset, errors='strict')
-        except UnicodeDecodeError as e:
+            return data.decode(encoding=charset, errors='strict')
+        except UnicodeDecodeError as exc:
             gws.log.error('post data decoding error')
-            raise error.BadRequest() from e
-
-    @property
-    def is_secure(self):
-        return self._wz.is_secure
-
-    @property
-    def method(self):
-        return self._wz.method.upper()
-
-    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite):
-        super().__init__()
-
-        self._wz = werkzeug.wrappers.Request(environ)
-        # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
-        self._wz.max_content_length = int(root.application.var('server.web.maxRequestLength', default=1)) * 1024 * 1024
-
-        self.params: t.Dict[str, t.Any] = {}
-        self._lower_params: t.Dict[str, t.Any] = {}
-
-        self.root: gws.IRoot = root
-        self.site: gws.IWebSite = site
+            raise error.BadRequest() from exc
 
     def env(self, key, default=''):
         return self._wz.environ.get(key, default)
 
     def param(self, key, default=''):
-        return self._lower_params.get(key.lower(), default)
+        return self.lowerParams.get(key.lower(), default)
 
     def has_param(self, key):
-        return key.lower() in self._lower_params
+        return key.lower() in self.lowerParams
 
     def header(self, key, default=''):
         return self._wz.headers.get(key, default)
@@ -119,84 +128,87 @@ class WebRequest(gws.Object, gws.IWebRequest):
     def cookie(self, key, default=''):
         return self._wz.cookies.get(key, default)
 
-    def url_for(self, path, **params):
-        return self.site.url_for(self, path, **params)
-
-    @cached_property
-    def input_struct_type(self) -> int:
-        if self.method == 'POST':
-            ct = self.header('content-type', '').lower()
-            if ct.startswith(_struct_mime[_JSON]):
-                return _JSON
-            if ct.startswith(_struct_mime[_MSGPACK]):
-                return _MSGPACK
-        return 0
-
-    @cached_property
-    def output_struct_type(self) -> int:
-        h = self.header('accept', '').lower()
-        if _struct_mime[_MSGPACK] in h:
-            return _MSGPACK
-        if _struct_mime[_JSON] in h:
-            return _JSON
-        return self.input_struct_type
-
     def parse_input(self):
         self.params = self._parse_params() or {}
-        self._lower_params = {k.lower(): v for k, v in self.params.items()}
+        self.lowerParams = {k.lower(): v for k, v in self.params.items()}
 
-    def response_object(self, **kwargs):
-        return WebResponse(**kwargs)
+    def responder(self, **kwargs):
+        return Responder(**kwargs)
 
-    def content_response(self, res: gws.ContentResponse) -> WebResponse:
-        if res.location:
-            return WebResponse(wz=werkzeug.utils.redirect(res.location, res.status or 302))
+    def content_responder(self, response: gws.ContentResponse) -> Responder:
+        if response.location:
+            return Responder(wz=werkzeug.utils.redirect(response.location, response.status or 302))
 
         args: t.Dict = {
-            'response': res.content,
-            'mimetype': res.mime,
-            'status': res.status or 200,
+            'response': response.content,
+            'mimetype': response.mime,
+            'status': response.status or 200,
             'headers': {},
             'direct_passthrough': False,
         }
 
         def _attachment_name():
-            if res.attachment_name:
-                return res.attachment_name
-            if res.path:
-                return os.path.basename(res.path)
-            if res.mime:
-                ext = gws.lib.mime.extension_for(res.mime)
+            if response.attachment_name:
+                return response.attachment_name
+            if response.path:
+                return os.path.basename(response.path)
+            if response.mime:
+                ext = gws.lib.mime.extension_for(response.mime)
                 if ext:
                     return 'download.' + ext
             raise gws.Error('missing attachment_name or mime type')
 
-        if res.attachment_name or res.as_attachment:
+        if response.attachment_name or response.as_attachment:
             name = _attachment_name()
             args['headers']['Content-Disposition'] = f'attachment; filename="{name}"'
             args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(name)
 
-        if res.path:
-            args['response'] = werkzeug.wsgi.wrap_file(self.environ, open(res.path, 'rb'))
-            args['headers']['Content-Length'] = str(os.path.getsize(res.path))
-            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(res.path)
+        if response.path:
+            args['response'] = werkzeug.wsgi.wrap_file(self.environ, open(response.path, 'rb'))
+            args['headers']['Content-Length'] = str(os.path.getsize(response.path))
+            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(response.path)
             args['direct_passthrough'] = True
 
-        return self.response_object(**args)
+        return self.responder(**args)
 
-    def struct_response(self, res: gws.Response) -> WebResponse:
-        typ = self.output_struct_type or _JSON
+    def struct_responder(self, response: gws.Response) -> Responder:
+        typ = self.outputType or 'json'
         status = 200
-        if res.error:
-            status = res.error.status or 400
-        return self.response_object(
-            response=self._encode_struct(res, typ),
-            mimetype=_struct_mime[typ],
+        if response.error:
+            status = response.error.status or 400
+        return self.responder(
+            response=self._encode_struct(response, typ),
+            mimetype=self._struct_mime[typ],
             status=status,
         )
 
-    def error_response(self, err: error.HTTPException) -> WebResponse:
-        return self.response_object(wz=err.get_response(self._wz.environ))
+    def error_responder(self, err: error.HTTPException) -> Responder:
+        return self.responder(wz=err.get_response(self._wz.environ))
+
+    ##
+
+    def require(self, classref, uid):
+        obj = self.root.find(classref, uid)
+        if obj and self.user and self.user.can_use(obj):
+            return obj
+        if not obj:
+            gws.log.error('require: not found', classref, uid)
+            raise gws.base.web.error.NotFound()
+        gws.log.error('require: denied', classref, uid)
+        raise gws.base.web.error.Forbidden()
+
+    def require_project(self, uid):
+        return t.cast(gws.IProject, self.require(gws.ext.object.project, uid))
+
+    def require_layer(self, uid):
+        return t.cast(gws.ILayer, self.require(gws.ext.object.layer, uid))
+
+    def acquire(self, classref, uid):
+        obj = self.root.find(classref, uid)
+        if obj and self.user and self.user.can_use(obj):
+            return obj
+
+    ##
 
     def _parse_params(self):
         # the server only understands requests to /_ or /_/commandName
@@ -221,8 +233,8 @@ class WebRequest(gws.Object, gws.IWebRequest):
             gws.log.error(f'invalid request path: {path!r}')
             raise error.NotFound()
 
-        if self.input_struct_type:
-            args = self._decode_struct(self.input_struct_type)
+        if self.inputType:
+            args = self._decode_struct(self.inputType)
         else:
             args = dict(self._wz.args)
             if path_parts:
@@ -238,23 +250,31 @@ class WebRequest(gws.Object, gws.IWebRequest):
 
         return args
 
+    def _struct_type(self, header):
+        if header:
+            header = header.lower()
+            if header.startswith(self._struct_mime['json']):
+                return 'json'
+            if header.startswith(self._struct_mime['msgpack']):
+                return 'msgpack'
+
     def _encode_struct(self, data, typ):
-        if typ == _JSON:
+        if typ == 'json':
             return gws.lib.json2.to_string(data, pretty=True)
-        if typ == _MSGPACK:
+        if typ == 'msgpack':
             return umsgpack.dumps(data, default=gws.to_dict)
         raise ValueError('invalid struct type')
 
     def _decode_struct(self, typ):
-        if typ == _JSON:
+        if typ == 'json':
             try:
-                s = self.data.decode(encoding='utf-8', errors='strict')
+                s = self.data().decode(encoding='utf-8', errors='strict')
                 return gws.lib.json2.from_string(s)
             except (UnicodeDecodeError, gws.lib.json2.Error):
                 gws.log.error('malformed json request')
                 raise error.BadRequest()
 
-        if typ == _MSGPACK:
+        if typ == 'msgpack':
             try:
                 return umsgpack.loads(self.data)
             except (TypeError, umsgpack.UnpackException):

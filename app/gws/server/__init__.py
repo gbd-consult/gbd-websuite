@@ -1,1 +1,1 @@
-from .types import Config
+from .core import Config

@@ -17,15 +17,13 @@ c4326 = 4326
 
 # https://epsg.io/3857
 
-c3857 = 3857
+CRS_3857_RADIUS = 6378137
 
-c3857_radius = 6378137
-
-c3857_extent = [
-    -(math.pi * c3857_radius),
-    -(math.pi * c3857_radius),
-    +(math.pi * c3857_radius),
-    +(math.pi * c3857_radius),
+CRS_3857_EXTENT = [
+    -(math.pi * CRS_3857_RADIUS),
+    -(math.pi * CRS_3857_RADIUS),
+    +(math.pi * CRS_3857_RADIUS),
+    +(math.pi * CRS_3857_RADIUS),
 ]
 
 ##
@@ -33,7 +31,7 @@ c3857_extent = [
 _cache: dict = {}
 
 
-def get(crsid: t.Optional[gws.CrsId]) -> t.Optional['Crs']:
+def get(crsid: t.Optional[gws.CRS]) -> t.Optional['Crs']:
     if not crsid:
         return None
     crs = _get(crsid)
@@ -76,10 +74,10 @@ def get4326():
     return get(4326)
 
 
-def require(crsid: gws.CrsId) -> 'Crs':
+def require(crsid: gws.CRS) -> 'Crs':
     crs = get(crsid)
     if not crs:
-        raise gws.Error('invalid CRS {crsid!r}')
+        raise gws.Error(f'invalid CRS {crsid!r}')
     return crs
 
 
@@ -111,7 +109,7 @@ def _best_match(crs, supported_crs):
     if crs.is_projected:
         # for a projected crs, find webmercator
         for sup in supported_crs:
-            if sup.srid == c3857:
+            if sup.srid == 3857:
                 return sup
 
         # not found, return the first projected crs
@@ -123,7 +121,7 @@ def _best_match(crs, supported_crs):
 
         # for a geographic crs, try wgs first
         for sup in supported_crs:
-            if sup.srid == c4326:
+            if sup.srid == 4326:
                 return sup
 
         # not found, return the first geographic crs

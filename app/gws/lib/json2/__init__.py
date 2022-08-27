@@ -42,11 +42,15 @@ def to_string(x, pretty=False, ascii=True, default=None):
                 default=default or _json_default,
                 indent=4,
                 sort_keys=True,
-                ensure_ascii=ascii)
+                check_circular=False,
+                ensure_ascii=ascii,
+            )
         return json.dumps(
             x,
             default=default or _json_default,
-            ensure_ascii=ascii)
+            check_circular=False,
+            ensure_ascii=ascii,
+        )
     except Exception as e:
         raise Error() from e
 

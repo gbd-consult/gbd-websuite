@@ -11,11 +11,11 @@ from . import manager
 class Object(gws.Node):
 
     @gws.ext.command.cli('authSessions')
-    def sessions(self, p: gws.NoParams):
+    def sessions(self, p: gws.EmptyRequest):
         """Print currently active sessions"""
 
         root = gws.config.load()
-        auth = t.cast(manager.Object, root.application.auth)
+        auth = t.cast(manager.Object, root.app.auth)
 
         rs = [{
             'user': r['user_uid'],
@@ -70,7 +70,7 @@ class Object(gws.Node):
 #         return
 #
 #     print('logged in!')
-#     print(f'User display name: {user.display_name}')
+#     print(f'User display name: {user.displayName}')
 #     print(f'Roles: {user.roles}')
 #
 #

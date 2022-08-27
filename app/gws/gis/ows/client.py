@@ -12,7 +12,7 @@ def configure_layers(obj: gws.IOwsClient, provider_class, **filter_args):
         obj.provider = obj.var('_provider')
         obj.source_layers = obj.var('_source_layers')
     else:
-        obj.provider = obj.root.create_object(provider_class, obj.config, shared=True)
+        obj.provider = obj.root.create_shared(provider_class, obj.config)
         slf = gws.merge(
             gws.gis.source.LayerFilter(level=1),
             filter_args,
@@ -37,7 +37,7 @@ def configure_search(obj: gws.IOwsClient, search_class):
     queryable_layers = gws.gis.source.filter_layers(obj.source_layers, slf)
     if queryable_layers:
         t.cast(gws.ILayer, obj).search_providers.append(
-            obj.require_child(search_class, gws.Config(
+            obj.create_required(search_class, gws.Config(
                 _provider=obj.provider,
                 _source_layers=queryable_layers
             )))

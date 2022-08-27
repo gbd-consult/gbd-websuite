@@ -149,8 +149,8 @@ class _Config:
 def create(root: gws.IRoot):
     mc = _Config()
 
-    for layer in root.find_all('gws.ext.layer'):
-        m = getattr(layer, 'mapproxy_config')
+    for layer in root.find_all(gws.ext.object.layer):
+        m = getattr(layer, 'mapproxy_config', None)
         if m:
             m(mc)
 
@@ -172,7 +172,7 @@ def create_and_save(root: gws.IRoot):
     cfg = create(root)
 
     if not cfg:
-        force = root.application.var('server.mapproxy.forceStart')
+        force = root.app.var('server.mapproxy.forceStart')
         if force:
             gws.log.warn('mapproxy: no configuration, using default')
             cfg = DEFAULT_CONFIG

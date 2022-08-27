@@ -51,8 +51,8 @@ def run(cmd, input=None, echo=False, strict=True, timeout=None, **kwargs):
         rc = p.returncode
     except subprocess.TimeoutExpired:
         raise TimeoutError()
-    except Exception as e:
-        raise Error from e
+    except Exception as exc:
+        raise Error('command failed', cmd) from exc
 
     if rc and strict:
         raise Error('command failed', cmd, rc, out)
@@ -182,6 +182,9 @@ def abs_path(path: _Path, base: str) -> str:
 
     if os.path.isabs(str_path):
         return str_path
+
+    if not base:
+        raise ValueError('cannot compute abspath without a base')
 
     if os.path.isfile(base):
         base = os.path.dirname(base)

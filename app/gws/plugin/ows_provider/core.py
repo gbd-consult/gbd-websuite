@@ -16,16 +16,16 @@ class OperationConfig(gws.Config):
 
 class ProviderConfig(gws.Config):
     capsCacheMaxAge: gws.Duration = '1d'  #: max cache age for capabilities documents
-    invertAxis: t.Optional[t.List[gws.CrsId]]  #: projections that are known to have an inverted axis (yx)
+    invertAxis: t.Optional[t.List[gws.CRS]]  #: projections that are known to have an inverted axis (yx)
     maxRequests: int = 0  #: max concurrent requests to this source
     operations: t.Optional[t.List[OperationConfig]]
-    forceCrs: t.Optional[gws.CrsId]  #: use this CRS for requests
+    forceCrs: t.Optional[gws.CRS]  #: use this CRS for requests
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
     url: gws.Url  #: service url
 
 
 class Caps(gws.Data):
-    metadata: gws.lib.metadata.Metadata
+    metadata: gws.MetadataValues
     operations: t.List[gws.OwsOperation]
     source_layers: t.List[gws.SourceLayer]
     version: str

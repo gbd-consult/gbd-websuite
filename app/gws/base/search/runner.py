@@ -9,7 +9,7 @@ class _LimitExceeded(Exception):
 _DEFAULT_LIMIT = 10 * 1000
 
 
-def run(req: gws.IWebRequest, args: gws.SearchArgs) -> t.List[gws.IFeature]:
+def run(req: gws.IWebRequester, args: gws.SearchArgs) -> t.List[gws.IFeature]:
     total_limit = args.limit or _DEFAULT_LIMIT
     used_layer_ids = set()
     features: t.List[gws.IFeature] = []
@@ -40,9 +40,9 @@ def run(req: gws.IWebRequest, args: gws.SearchArgs) -> t.List[gws.IFeature]:
 
 
 def _run(
-        req: gws.IWebRequest,
+        req: gws.IWebRequester,
         args: gws.SearchArgs,
-        provider: gws.ISearchProvider,
+        provider: gws.IFinder,
         total_limit,
         features,
         layer: t.Optional[gws.ILayer] = None,

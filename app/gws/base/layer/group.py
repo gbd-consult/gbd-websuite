@@ -5,11 +5,11 @@ import gws.config
 import gws.gis.source
 import gws.types as t
 
-from . import core, types
+from . import lib, main
 
 
 @gws.ext.config.layer('group')
-class Config(types.Config):
+class Config(main.Config):
     """Group layer"""
 
     layers: t.List[gws.ext.config.layer]  #: layers in this group
@@ -22,27 +22,29 @@ class FlattenOption(gws.Config):
     useGroups: bool = False  #: use group names (true) or image layer names (false)
 
 
-class TreeConfig(types.Config):
+class TreeConfig(main.Config):
     rootLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use as roots
     excludeLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to exclude
     flattenLayers: t.Optional[FlattenOption]  #: flatten the layer hierarchy
-    layerConfig: t.Optional[t.List[types.CustomConfig]]  #: custom configurations for specific layers
+    layerConfig: t.Optional[t.List[main.CustomConfig]]  #: custom configurations for specific layers
 
 
 @gws.ext.object.layer('group')
-class Object(core.Object):
-    is_group = True
+class Object(main.Object):
+    def props(self, user):
+        return gws.merge(super().props(user), type='group')
 
-    def props_for(self, user):
-        return gws.merge(super().props_for(user), type='group', layers=self.layers)
+    def configure(self):
+        super().configure()
 
-    def configure_source(self):
-        self.configure_layers(self.var('layers'))
+        self.layers = []
+        for cfg in self.var('layers', default=[]):
+            cfg.defaultCrs = self.crs
+            cfg.defaultResolutions = self.var('defaultResolutions')
+            self.layers.append(self.create_child(gws.ext.object.layer, cfg))
 
-    def configure_layers(self, cfgs: t.List[gws.Config]):
-        self.layers = self.create_children('gws.ext.layer', cfgs)
-        self.supports_raster_ows = any(la.supports_raster_ows for la in self.layers)
-        self.supports_vector_ows = any(la.supports_vector_ows for la in self.layers)
+        # self.supports_raster_ows = any(la.supports_raster_ows for la in self.layers)
+        # self.supports_vector_ows = any(la.supports_vector_ows for la in self.layers)
 
     def configure_layer_tree(self, source_layers: t.List[gws.SourceLayer], leaf_layer_config_fn: t.Callable):
         cfgs = _layer_tree_configuration(
@@ -90,7 +92,7 @@ def _layer_tree_configuration(
         roots_slf: gws.gis.source.LayerFilter,
         exclude_slf: gws.gis.source.LayerFilter,
         flatten: FlattenOption,
-        custom_configs: t.List[types.CustomConfig],
+        custom_configs: t.List[main.CustomConfig],
         leaf_layer_config_fn: t.Callable,
 ) -> t.List[gws.Config]:
     ##

@@ -4,6 +4,7 @@ import gws
 import gws.config
 import gws.lib.date
 import gws.lib.json2
+import gws.base.web.wsgi
 import gws.types as t
 
 from . import session
@@ -26,12 +27,12 @@ class Config(gws.Config):
 class Object(gws.Node, gws.IAuthManager):
     """Authorization manager."""
 
-    session_life_time: int
+    sessionLifeTime: int
     store: sqlite.SessionStore
 
     def configure(self):
 
-        self.session_life_time = self.var('sessionLifeTime')
+        self.sessionLifeTime = self.var('sessionLifeTime')
 
         if self.var('sessionStore') == 'sqlite':
             self.store = sqlite.SessionStore(self.var('sessionStorePath', default=SQLITE_STORE_PATH))
@@ -39,39 +40,58 @@ class Object(gws.Node, gws.IAuthManager):
             # @TODO other store types
             raise gws.ConfigurationError('invalid session store type')
 
+        self.providers = self.create_children(gws.ext.object.authProvider, self.var('providers'))
         # always create the System provider
-        p = self.var('providers', default=[]) + [
-            gws.config.parse(self.root.specs, {'type': 'system'}, gws.ext.config.authProvider)
-        ]
-        self.providers = self.create_children('gws.ext.auth.provider', p)
+        self.providers.append(self.create_child(gws.ext.object.authProvider, {'type': 'system'}))
 
-        self.guest_user = self.providers[-1].get_user('guest')
-        self.system_user = self.providers[-1].get_user('system')
+        self.guestUser = self.providers[-1].get_user('guest')
+        self.systemUser = self.providers[-1].get_user('system')
 
+        self.methods = self.create_children(gws.ext.object.authMethod, self.var('methods'))
         # if no methods configured, enable the Web method
-        web_method = gws.config.parse(self.root.specs, {'type': 'web'}, gws.ext.config.authMethod)
-        p = self.var('methods', default=[web_method])
-        self.methods = self.create_children('gws.ext.auth.method', p)
+        if not self.methods:
+            self.methods.append(self.create_child(gws.ext.object.authMethod, {'type': 'web'}))
 
-    @property
+
+    def activate(self):
+        gws.base.web.wsgi.register_wrapper(self)
+
+
+    def enter_request(self, req: gws.base.web.wsgi.Requester):
+        req.session = self.open_session(req)
+        req.user = req.session.user
+        gws.log.debug(f'auth_open: typ={req.session.typ!r} user={req.user.uid!r}')
+
+
+    def exit_request(self, req: gws.base.web.wsgi.Requester, res: gws.base.web.wsgi.Responder):
+        sess = getattr(req, 'session')
+        gws.log.debug(f'auth_close: typ={sess.typ!r} user={sess.user.uid!r}')
+        req.session = self.close_session(sess, req, res)
+
+
+
+
+
+
+
     def guest_session(self):
-        return self.new_session('guest_session', method=None, user=self.guest_user)
+        return self.new_session('guest_session', method=None, user=self.guestUser)
 
     def open_session(self, req):
         for m in self.methods:
             sess = m.open_session(self, req)
             if sess:
                 return sess
-        return self.guest_session
+        return self.guest_session()
 
     def close_session(self, sess, req, res):
         if sess and sess.method:
             return sess.method.close_session(self, sess, req, res)
-        return self.guest_session
+        return self.guest_session()
 
     def authenticate(self, method, credentials):
         for prov in self.providers:
-            if prov.allowed_methods and method.ext_type not in prov.allowed_methods:
+            if prov.allowedMethods and method.ext_type not in prov.allowedMethods:
                 continue
             gws.log.debug(f'trying provider {prov.uid!r}')
             user = prov.authenticate(method, credentials)
@@ -113,7 +133,7 @@ class Object(gws.Node, gws.IAuthManager):
             return None
 
         age = gws.lib.date.timestamp() - rec['updated']
-        if age > self.session_life_time:
+        if age > self.sessionLifeTime:
             gws.log.debug(f'sess uid={uid!r} EXPIRED age={age!r}')
             self.store.delete(uid)
             return None
@@ -133,7 +153,7 @@ class Object(gws.Node, gws.IAuthManager):
         )
 
     def new_stored_session(self, typ: str, method: gws.IAuthMethod, user: gws.IUser) -> gws.IAuthSession:
-        self.store.cleanup(self.session_life_time)
+        self.store.cleanup(self.sessionLifeTime)
 
         uid = self.store.create(
             typ=typ,

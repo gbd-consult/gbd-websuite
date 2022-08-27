@@ -15,7 +15,7 @@ _lockfile = '/tmp/monitor.lock'
 
 
 def _m() -> gws.IMonitor:
-    return gws.config.root().application.monitor
+    return gws.config.root().app.monitor
 
 
 class Object(gws.Node, gws.IMonitor):

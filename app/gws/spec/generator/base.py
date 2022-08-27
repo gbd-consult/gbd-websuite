@@ -4,11 +4,7 @@ from typing import Any, Dict, List
 
 from . import util
 
-import gws.spec.core
-
-C = gws.spec.core.C
-Meta = gws.spec.core.Meta
-Type = gws.spec.core.Type
+from gws.spec.core import *
 
 ATOMS = ['any', 'bool', 'bytes', 'float', 'int', 'str']
 
@@ -30,30 +26,22 @@ BUILTIN_TYPES = [
 
 # those star-imported in gws/__init__.py
 GLOBAL_MODULES = [
-    'gws.core.const',
-    'gws.core.data',
-    'gws.core.tree',
-    'gws.core.types',
-    'gws.core.util',
-    'gws.core.error',
-    'gws.core'
+    APP_NAME + '.core.const',
+    APP_NAME + '.core.data',
+    APP_NAME + '.core.tree',
+    APP_NAME + '.core.types',
+    APP_NAME + '.core.util',
+    APP_NAME + '.core.error',
+    APP_NAME + '.core'
 ]
 
 DEFAULT_EXT_SUPERS = {
-    'config': 'gws.core.types.ConfigWithAccess',
-    'props': 'gws.core.types.Props',
+    'config': APP_NAME + '.core.types.ConfigWithAccess',
+    'props': APP_NAME + '.core.types.Props',
 }
 
-# prefix for our decorators and ext classes
-EXT_PREFIX = 'gws.ext'
-EXT_CONFIG_PREFIX = EXT_PREFIX + '.config.'
-EXT_PROPS_PREFIX = EXT_PREFIX + '.props.'
-EXT_OBJECT_PREFIX = EXT_PREFIX + '.object.'
-EXT_COMMAND_PREFIX = EXT_PREFIX + '.command.'
-EXT_COMMAND_API_PREFIX = EXT_COMMAND_PREFIX + 'api.'
-
 # prefix for gws.plugin class names
-PLUGIN_PREFIX = 'gws.plugin'
+PLUGIN_PREFIX = APP_NAME + '.plugin'
 
 # tag property name for Variant types
 TAG_PROPERTY = 'type'
@@ -67,8 +55,11 @@ VARIANT_COMMENT_PREFIX = 'variant:'
 # inline comment symbol
 INLINE_COMMENT_SYMBOL = '#:'
 
+# where we are
+SELF_DIR = os.path.dirname(__file__)
+
 # path to `/repository-root/app`
-APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../../..')
+APP_DIR = os.path.abspath(SELF_DIR + '/../../..')
 
 EXCLUDE_PATHS = ['___', '/vendor/', 'test', 'core/ext']
 
@@ -84,16 +75,14 @@ FILE_KINDS = [
 PLUGIN_DIR = '/gws/plugin'
 
 SYSTEM_CHUNKS = [
-    ['gws', '/js/src/gws'],
-    ['gws.core', '/gws/core'],
-    ['gws.base', '/gws/base'],
-    ['gws.gis', '/gws/gis'],
-    ['gws.lib', '/gws/lib'],
-    ['gws.server', '/gws/server'],
+    [APP_NAME + '', '/js/src/gws'],
+    [APP_NAME + '.core', '/gws/core'],
+    [APP_NAME + '.base', '/gws/base'],
+    [APP_NAME + '.gis', '/gws/gis'],
+    [APP_NAME + '.lib', '/gws/lib'],
+    [APP_NAME + '.server', '/gws/server'],
 
 ]
-
-OUT_DIR = '/build'
 
 
 class Data:  # type: ignore
@@ -133,26 +122,21 @@ class _Logger:
 log = _Logger()
 
 
-class Chunk(Data):
-    name: str
-    sourceDir: str
-    bundleDir: str
-
-
 class Generator(Data):
-    meta: Meta
+    meta: dict
     types: Dict[str, Type] = {}
     specs = {}
     typescript = ''
     strings = {}
 
     rootDir = ''
+    selfDir = ''
     outDir = ''
     manifestPath = ''
 
     debug = False
 
-    chunks: List[Chunk]
+    chunks: List[dict]
 
     def __init__(self):
         super().__init__()
@@ -189,7 +173,7 @@ def _auto_uid(c, d):
     if c == C.SET:
         return d['tItem']
     if c == C.LITERAL:
-        return comma.join(repr(v) for v in d['values'])
+        return comma.join(repr(v) for v in d['literalValues'])
     if c == C.OPTIONAL:
         return d['tTarget']
     if c == C.TUPLE:
@@ -202,7 +186,3 @@ def _auto_uid(c, d):
         return comma.join(sorted(d['tItems']))
 
     return ''
-
-
-class Error(Exception):
-    pass

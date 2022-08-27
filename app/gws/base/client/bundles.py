@@ -20,16 +20,7 @@ def javascript(root: gws.IRoot, category: str, locale_uid: str = '') -> str:
         return gws.read_file(root.specs.bundle_paths('util')[0])
 
     if category == 'app':
-        bundles = _load_app_bundles(root)
-        lang = locale_uid.split('_')[0]
-        modules = bundles[BUNDLE_KEY_MODULES]
-        strings = bundles.get(BUNDLE_KEY_STRINGS + '_' + lang) or bundles.get(BUNDLE_KEY_STRINGS + '_' + DEFAULT_LANG)
-
-        js = bundles[BUNDLE_KEY_TEMPLATE]
-        js = js.replace('__MODULES__', modules)
-        js = js.replace('__STRINGS__', strings)
-
-        return js
+        return _make_app_js(root, locale_uid)
 
 
 def css(root: gws.IRoot, category: str, theme: str):
@@ -41,7 +32,7 @@ def css(root: gws.IRoot, category: str, theme: str):
 
 ##
 
-def _load_app_bundles(root: gws.IRoot):
+def _load_app_bundles(root):
     def _load():
         bundles = {}
 
@@ -55,7 +46,20 @@ def _load_app_bundles(root: gws.IRoot):
 
         return bundles
 
-    if root.application.developer_option('web.reload_bundles'):
+    if root.app.developer_option('web.reload_bundles'):
         return _load()
 
     return gws.get_server_global('APP_BUNDLES', _load)
+
+
+def _make_app_js(root, locale_uid):
+    bundles = _load_app_bundles(root)
+    lang = locale_uid.split('_')[0]
+    modules = bundles[BUNDLE_KEY_MODULES]
+    strings = bundles.get(BUNDLE_KEY_STRINGS + '_' + lang) or bundles.get(BUNDLE_KEY_STRINGS + '_' + DEFAULT_LANG)
+
+    js = bundles[BUNDLE_KEY_TEMPLATE]
+    js = js.replace('__MODULES__', modules)
+    js = js.replace('__STRINGS__', strings)
+
+    return js

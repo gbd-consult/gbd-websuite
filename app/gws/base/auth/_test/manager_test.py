@@ -55,7 +55,7 @@ def auth():
 
 def test_authenticate(auth):
     user = auth.authenticate(auth.methods[0], gws.Data(login='OK'))
-    assert user.display_name == 'USER_1'
+    assert user.displayName == 'USER_1'
 
 
 def test_authenticate_with_bad_login_fails(auth):

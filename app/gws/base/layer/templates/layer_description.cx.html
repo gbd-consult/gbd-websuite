@@ -7,7 +7,7 @@
         <p class="text2">{la.meta.abstract | html | nl2br}</p>
     @end
 
-    @if la.has_legend
+    @if la.hasLegend
         <p class="legend"><img src="{gws.endpoint}/mapGetLegend/layerUid/{la.uid}" /></p>
     @end
 

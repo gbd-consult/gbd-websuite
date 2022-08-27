@@ -12,7 +12,7 @@ class Config(gws.Config):
     path: gws.FilePath  #: path to a Qgis project file
     directRender: t.Optional[t.List[str]]  #: QGIS data providers that should be rendered directly
     directSearch: t.Optional[t.List[str]]  #: QGIS data providers that should be searched directly
-    forceCrs: t.Optional[gws.CrsId]  #: use this CRS for requests
+    forceCrs: t.Optional[gws.CRS]  #: use this CRS for requests
 
 
 # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
@@ -55,11 +55,11 @@ class Object(gws.Node, gws.IOwsProvider):
 
     def configure(self):
         self.path = self.var('path')
-        self.root.application.monitor.add_path(self.path)
+        self.root.app.monitor.add_path(self.path)
 
         self.url = 'http://%s:%s' % (
-            self.root.application.var('server.qgis.host'),
-            self.root.application.var('server.qgis.port'))
+            self.root.app.var('server.qgis.host'),
+            self.root.app.var('server.qgis.port'))
 
         self.source_text = self._read(self.path)
         cc = caps.parse(self.source_text)

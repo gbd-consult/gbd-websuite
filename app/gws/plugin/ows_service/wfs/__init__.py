@@ -4,7 +4,7 @@ import gws.base.web.error
 import gws.gis.crs
 import gws.gis.bounds
 import gws.gis.ows.filter
-import gws.gis.shape
+import gws.base.shape
 import gws.types as t
 
 from .. import core
@@ -109,10 +109,10 @@ class Object(core.Service):
             bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
             if not bounds:
                 raise gws.base.web.error.BadRequest('Invalid BBOX')
-            shape = gws.gis.shape.from_bounds(bounds)
+            shape = gws.base.shape.from_bounds(bounds)
             request_crs = shape.crs
         else:
-            shape = gws.gis.shape.from_extent(extent=rd.project.map.extent, crs=rd.project.map.crs)
+            shape = gws.base.shape.from_extent(extent=rd.project.map.extent, crs=rd.project.map.crs)
 
         flt: t.Optional[gws.SearchFilter] = None
         if rd.req.has_param('filter'):

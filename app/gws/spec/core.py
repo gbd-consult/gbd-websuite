@@ -1,8 +1,19 @@
 from typing import Any, List, Dict
 
 
+class Error(Exception):
+    pass
+
+
+class GeneratorError(Error):
+    pass
+
+
+class ReadError(Error):
+    pass
+
+
 class C:
-    ALIAS = 'ALIAS'
     ATOM = 'ATOM'
     CLASS = 'CLASS'
     CONSTANT = 'CONSTANT'
@@ -29,25 +40,37 @@ class C:
     PROPS = 'PROPS'
 
 
-class Meta:
-    manifest = None
-    manifestPath = ''
-    version = ''
+# prefix for our decorators and ext classes
+APP_NAME = 'gws'
+EXT_PREFIX = APP_NAME + '.ext'
+EXT_CONFIG_PREFIX = EXT_PREFIX + '.config.'
+EXT_PROPS_PREFIX = EXT_PREFIX + '.props.'
+EXT_OBJECT_PREFIX = EXT_PREFIX + '.object.'
+EXT_COMMAND_PREFIX = EXT_PREFIX + '.command.'
 
+EXT_COMMAND_API_PREFIX = EXT_COMMAND_PREFIX + 'api.'
+EXT_COMMAND_GET_PREFIX = EXT_COMMAND_PREFIX + 'get.'
+EXT_COMMAND_CLI_PREFIX = EXT_COMMAND_PREFIX + 'cli.'
 
 TypeId = str
+
+DEFAULT_TYPE = 'default'
 
 
 class Type:
     c: C
     uid: TypeId
+    extName: str = ''
 
     doc: str = ''
     ident: str = ''
-    extName: str = ''
     name: str = ''
     pos = ''
 
+    modName: str = ''
+    modPath: str = ''
+
+    tArg: TypeId = ''
     tItem: TypeId = ''
     tKey: TypeId = ''
     tModule: TypeId = ''
@@ -70,7 +93,7 @@ class Type:
     enumDocs: dict = {}
     enumValues: dict = {}
 
-    values: List[Any] = []
+    literalValues: List[Any] = []
 
     vars: Dict[str, TypeId] = {}
 

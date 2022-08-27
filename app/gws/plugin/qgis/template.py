@@ -33,7 +33,7 @@ class Object(gws.base.template.Object):
         if self.var('_provider'):
             self.provider = self.var('_provider')
         else:
-            self.provider = self.root.create_object(provider.Object, self.config, shared=True)
+            self.provider = self.create_child(provider.Object, self.config, shared=True)
 
         s = self.var('title') or self.var('index')
         self.template = self.provider.print_template(s)
@@ -160,7 +160,7 @@ class Object(gws.base.template.Object):
             if el.type != 'html':
                 continue
             text = el.attributes.get('html', '')
-            tpl = self.root.create_object('gws.ext.template.html', gws.Config(text=text))
+            tpl = self.create_child('gws.ext.template.html', gws.Config(text=text))
             res = tpl.render(tri_for_boxes)
             if res.content != text:
                 boxes[el.uuid] = res.content

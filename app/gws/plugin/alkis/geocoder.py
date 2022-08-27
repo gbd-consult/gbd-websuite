@@ -1,7 +1,7 @@
 """ALKIS Geocoder action."""
 
 import gws
-import gws.base.api
+import gws.base.action
 import gws.types as t
 
 from . import provider as provider_module, types
@@ -25,7 +25,7 @@ _GEOCODER_ADDR_KEYS = 'gemeinde', 'gemarkung', 'strasse', 'hausnummer'
 
 class GeocoderParams(gws.Data):
     adressen: t.List[GeocoderAddress]
-    crs: gws.CrsId
+    crs: gws.CRS
 
 
 class GeocoderResponse(gws.Response):
@@ -33,14 +33,14 @@ class GeocoderResponse(gws.Response):
 
 
 @gws.ext.object.action('alkisgeocoder')
-class Object(gws.base.api.action.Object):
+class Object(gws.base.action.Object):
     provider: provider_module.Object
 
     def configure(self):
         self.provider = provider_module.create(self.root, self.config, shared=True)
 
     @gws.ext.command.api('alkisgeocoderDecode')
-    def api_decode(self, req: gws.IWebRequest, p: GeocoderParams) -> GeocoderResponse:
+    def api_decode(self, req: gws.IWebRequester, p: GeocoderParams) -> GeocoderResponse:
         return GeocoderResponse(
             coordinates=[
                 self.coords(adresse)

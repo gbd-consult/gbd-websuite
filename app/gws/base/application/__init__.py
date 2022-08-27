@@ -1,20 +1,22 @@
 """Core application object"""
 
 import gws
-import gws.base.api
+import gws.base.action
 import gws.base.auth
 import gws.base.auth.manager
 import gws.base.client
 import gws.base.db
+import gws.base.metadata
 import gws.base.project
 import gws.base.web
 import gws.config
 import gws.gis.cache
-import gws.lib.font
-import gws.lib.metadata
 import gws.gis.mpx.config
+import gws.lib.font
 import gws.server
 import gws.server.monitor
+import gws.spec
+import gws.base.web.error
 import gws.types as t
 
 
@@ -27,19 +29,19 @@ class FontConfig(gws.Config):
 class Config(gws.ConfigWithAccess):
     """Main application configuration"""
 
-    api: t.Optional[gws.base.api.Config]  #: system-wide server actions
+    api: t.Optional[gws.base.action.collection.Config]  #: system-wide server actions
     auth: t.Optional[gws.base.auth.Config] = {}  # type: ignore #: authorization methods and options
     cache: t.Optional[gws.gis.cache.Config] = {}  # type: ignore #: global cache configuration
     client: t.Optional[gws.base.client.Config]  #: gws client configuration
-    db: t.Optional[gws.base.db.Config]  #: database configuration
-    developer: t.Optional[dict]  #: developer options
+    db: t.Optional[gws.base.db.collection.Config]  #: database configuration
+    developer: t.Optional[t.Dict]  #: developer options
     fonts: t.Optional[FontConfig]  #: fonts configuration
     helpers: t.Optional[t.List[gws.ext.config.helper]]  #: helpers configurations
     locales: t.Optional[t.List[str]]  #: default locales for all projects
-    metadata: t.Optional[gws.lib.metadata.Config]  # application metadata
+    metadata: t.Optional[gws.base.metadata.Config]  # application metadata
     projectDirs: t.Optional[t.List[gws.DirPath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[gws.FilePath]]  #: additional project paths
-    projects: t.Optional[t.List[gws.base.project.Config]]  #: project configurations
+    projects: t.Optional[t.List[gws.ext.config.project]]  #: project configurations
     server: t.Optional[gws.server.Config] = {}  # type: ignore #: server engine options
     web: t.Optional[gws.base.web.Config]  #: web server options
 
@@ -47,36 +49,36 @@ class Config(gws.ConfigWithAccess):
 class Object(gws.Node, gws.IApplication):
     """Main Appilication object"""
 
-    dbs: t.List[gws.ISqlDbProvider]
+    cActions: gws.base.action.collection.Object
+    cDatabases: gws.base.db.collection.Object
     helpers: t.List[gws.Node]
-    projects: t.List[gws.base.project.Object]
+    qgisVersion = ''
+    projects: t.Dict[str, gws.IProject]
 
     _devopts: dict
 
     def configure(self):
-        self.version = gws.VERSION
-        self.qgis_version = ''
+        self.version = self.root.specs.version
 
         self._devopts = self.var('developer') or {}
         if self._devopts:
             gws.log.warn('developer mode enabled')
 
-        self.set_uid('APP')
-
         if self.var('server.qgis.enabled'):
             qgis_server = gws.import_from_path('gws/plugin/qgis/server.py')
-            self.qgis_version = qgis_server.version()
+            self.qgisVersion = qgis_server.version()
 
         s = f'GWS version {self.version}'
-        if self.qgis_version:
-            s += f', QGis {self.qgis_version}'
-        gws.log.info('*' * 40)
-        gws.log.info(s)
-        gws.log.info('*' * 40)
+        if self.qgisVersion:
+            s += f', QGis {self.qgisVersion}'
 
-        self.locale_uids = self.var('locales') or ['en_CA']
-        self.monitor = self.require_child(gws.server.monitor.Object, self.var('server.monitor'))
-        self.metadata = gws.lib.metadata.from_config(self.var('metadata'))
+        gws.log.info('*' * 60)
+        gws.log.info(s)
+        gws.log.info('*' * 60)
+
+        self.localeUids = self.var('locales') or ['en_CA']
+        self.monitor = self.create_child(gws.server.monitor.Object, self.var('server.monitor'))
+        self.metadata = gws.base.metadata.from_config(self.var('metadata'))
 
         p = self.var('fonts.dir')
         if p:
@@ -89,34 +91,34 @@ class Object(gws.Node, gws.IApplication):
         # - actions, client, web
         # - finally, projects
 
-        self.dbs = self.create_children('gws.ext.db.provider', self.var('db.providers'))
+        self.cDatabases = self.create_child(gws.base.db.collection.Object, self.var('db'))
 
-        # helpers are always created, no matter configured or not
-        cnf = {c.get('type'): c for c in self.var('helpers', default=[])}
-        for class_name in self.root.specs.real_class_names('gws.ext.helper'):
-            desc = self.root.specs.object_descriptor(class_name)
-            if desc.ext_type not in cnf:
-                gws.log.debug(f'ad-hoc helper {desc.ext_type!r} will be created')
-                cfg = gws.Config(type=desc.ext_type)
-                cnf[desc.ext_type] = gws.config.parse(self.root.specs, cfg, 'gws.ext.config.helper')
-        self.helpers = self.create_children('gws.ext.helper', list(cnf.values()))
+        # # helpers are always created, no matter configured or not
+        # cnf = {c.get('type'): c for c in self.var('helpers', default=[])}
+        # for class_name in self.root.specs.real_class_names('gws.ext.helper'):
+        #     desc = self.root.specs.object_descriptor(class_name)
+        #     if desc.ext_type not in cnf:
+        #         gws.log.debug(f'ad-hoc helper {desc.ext_type!r} will be created')
+        #         cfg = gws.Config(type=desc.ext_type)
+        #         cnf[desc.ext_type] = gws.config.parse(self.root.specs, cfg, 'gws.ext.config.helper')
+        # self.helpers = self.root.create_many('gws.ext.helper', list(cnf.values()))
 
-        self.auth = self.require_child(gws.base.auth.manager.Object, self.var('auth'))
+        self.auth = self.create_child(gws.base.auth.manager.Object, self.var('auth'), required=True)
 
         # @TODO default API
-        self.api = self.require_child(gws.base.api.Object, self.var('api'))
+        self.cActions = self.create_child(gws.base.action.collection.Object, self.var('api'), required=True)
 
-        p = self.var('web.sites') or [gws.base.web.DEFAULT_SITE]
-        ssl = bool(self.var('web.ssl'))
-        cfgs = [gws.merge(c, ssl=ssl) for c in p]
-        self.web_sites = self.create_children(gws.base.web.site.Object, cfgs)
+        cfg = self.var('web.sites')
+        if not cfg:
+            cfg = [gws.Config(host='*', root=gws.base.web.DocumentRootConfig(dir='/data/web'))]
+        if self.var('web.ssl'):
+            cfg = [gws.merge(c, ssl=True) for c in cfg]
+        self.webSites = self.create_children(gws.base.web.site.Object, cfg)
 
-        self.client = self.create_child_if_config(gws.base.client.Object, self.var('client'))
+        self.client = self.create_child(gws.base.client.Object, self.var('client'))
 
-        self.projects = []
-        for cfg in self.var('projects', default=[]):
-            # @TODO: parallel config?
-            self.projects.append(self.create_child(gws.base.project.Object, cfg))
+        projects = self.create_children(gws.ext.object.project, self.var('projects'))
+        self.projects = {p.uid: p for p in projects}
 
     def post_configure(self):
         self.mpx_url = ''
@@ -125,84 +127,75 @@ class Object(gws.Node, gws.IApplication):
             self.mpx_url = f"http://{self.var('server.mapproxy.host')}:{self.var('server.mapproxy.port')}"
 
         # for p in set(cfg.configPaths):
-        #     root.application.monitor.add_path(p)
+        #     root.app.monitor.add_path(p)
         # for p in set(cfg.projectPaths):
-        #     root.application.monitor.add_path(p)
+        #     root.app.monitor.add_path(p)
         # for d in set(cfg.projectDirs):
-        #     root.application.monitor.add_directory(d, parser.config_path_pattern)
+        #     root.app.monitor.add_directory(d, parser.config_path_pattern)
         #
-        # if root.application.developer_option('server.auto_reload'):
-        #     root.application.monitor.add_directory(gws.APP_DIR, '\.py$')
+        # if root.app.developer_option('server.auto_reload'):
+        #     root.app.monitor.add_directory(gws.APP_DIR, '\.py$')
 
+    def find_project(self, uid):
+        return self.projects.get(uid)
 
-    def populate_action_object(self, desc, user, project):
+    def command_descriptor(self, command_category, command_name, params, user, strict_mode):
+        """Obtain and populate a command descriptor for a request."""
 
-        if project:
-            for action in project.api.find_actions(ext_name=desc.actionSpec.extName):
-                desc.actionObject = action
-                acc = user.access(action, project.api, project)
-                if acc == gws.ACCESS_ALLOWED:
-                    return desc
-                if acc == gws.ACCESS_DENIED:
-                    return desc.with_error(DispatchError.actionForbidden)
-
-        for action in self.api.find_actions(ext_name=desc.actionSpec.extName):
-            acc = user.access(action, self.api, self)
-            if acc == gws.ACCESS_ALLOWED:
-                if not desc.actionObject:
-                    desc.actionObject = action
-                return desc
-            if acc == gws.ACCESS_DENIED:
-                return desc.with_error(DispatchError.actionForbidden)
-
-        return desc.with_error(DispatchError.actionNotFound)
-
-
-
-
-    def command_descriptor(self, command_name, request_method, params, user, strict_mode):
-        desc = self.root.specs.command_descriptor(command_name, request_method)
-
+        desc = self.root.specs.command_descriptor(command_category, command_name)
         if not desc:
-            gws.log.error(f'command not found cmd={command_name!r} m={request_method!r}')
-            return gws.ExtCommandDescriptor().with_error(DispatchError.commandNotFound)
+            gws.log.error(f'command not found {command_category!r}:{command_name!r}')
+            raise gws.base.web.error.NotFound()
 
         try:
-            desc.request = self.root.specs.read(params, desc.requestSpec, strict_mode)
+            desc.request = self.root.specs.read(params, desc.tArg, strict_mode=strict_mode)
         except gws.spec.ReadError as exc:
-            gws.log.exception(exc)
-            return desc.with_attr(error=DispatchError.badRequest)
+            gws.log.exception()
+            raise gws.base.web.error.BadRequest()
 
         project = None
         project_uid = desc.request.get('projectUid')
 
         if project_uid:
-            project = self.find_project(uid=project_uid)
+            project = self.find_project(project_uid)
             if not project:
-                return desc.with_error(DispatchError.projectNotFound)
-            if not user.can_use(project):
-                return desc.with_error(DispatchError.projectForbidden)
+                gws.log.error(f'project not found {command_category!r}:{command_name!r} {project_uid!r}')
+                raise gws.base.web.error.NotFound()
 
-        desc = self.populate_action_object(desc, user, project)
-        if desc.error:
+        if project:
+            cas = t.cast(gws.base.action.collection.Object, getattr(project, 'cActions', None))
+            if cas:
+                action = cas.find(desc.tOwner)
+                if action:
+                    if not user.can_use(action):
+                        gws.log.error(f'action forbidden {command_category!r}:{command_name!r} project={project_uid!r}')
+                        raise gws.base.web.error.Forbidden()
+                    desc.methodPtr = getattr(action, desc.methodName)
+                    return desc
+
+        action = self.cActions.find(desc.tOwner)
+        if action:
+            if not user.can_use(action):
+                gws.log.error(f'action forbidden {command_category!r}:{command_name!r}')
+                raise gws.base.web.error.Forbidden()
+            desc.methodPtr = getattr(action, desc.methodName)
             return desc
 
-        desc.methodPtr = desc.actionObject.getattr(desc.methodName)
-        return desc
+        gws.log.error(f'action not found {command_category!r}:{command_name!r}')
+        raise gws.base.web.error.NotFound()
 
-
-    def find_action(self, user, ext_type, project_uid=None):
-        actions = {}
-
-        if project_uid:
-            project: gws.base.project.Object = self.root.find('gws.base.project', project_uid)
-            if project and project.api:
-                actions = project.api.actions_for(user, parent=self.api)
-
-        if not actions:
-            actions = self.api.actions_for(user)
-
-        return actions.get(ext_type)
+    def actions_for(self, user, project=None):
+        d = {}
+        for a in self.cActions.actions:
+            if user.can_use(a):
+                d[a.extType] = a
+        if project:
+            cas = t.cast(gws.base.action.collection.Object, getattr(project, 'cActions', None))
+            if cas:
+                for a in cas.actions:
+                    if user.can_use(a):
+                        d[a.extType] = a
+        return list(d.values())
 
     def require_helper(self, ext_type):
         for obj in self.helpers:

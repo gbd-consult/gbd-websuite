@@ -13,7 +13,7 @@ class Config(gws.Config):
 
 class Object(gws.Node, gws.IAuthProvider):
     def configure(self):
-        self.allowed_methods = self.var('allowedMethods', default=[])
+        self.allowedMethods = self.var('allowedMethods', default=[])
 
     def authenticate(self, method, credentials):
         return None

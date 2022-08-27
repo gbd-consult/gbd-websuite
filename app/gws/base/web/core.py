@@ -55,11 +55,6 @@ class Config(gws.Config):
     ssl: t.Optional[SSLConfig]  #: ssl configuration
 
 
-DEFAULT_SITE = SiteConfig(
-    host='*',
-    root=DocumentRootConfig(dir='/data/web')
-)
-
 
 def create_document_root(cfg: t.Optional[DocumentRootConfig]) -> t.Optional[gws.DocumentRoot]:
     if not cfg:

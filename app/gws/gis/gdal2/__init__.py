@@ -6,8 +6,8 @@ import osgeo.gdal
 import osgeo.ogr
 
 import gws
-import gws.gis.feature
-import gws.gis.shape
+import gws.base.feature
+import gws.base.shape
 import gws.types as t
 
 @contextlib.contextmanager
@@ -48,7 +48,7 @@ def features(ds, crs=None, encoding=None):
             if not uid and 'fid' in atts:
                 uid = atts.pop('fid').value
 
-            fs.append(gws.gis.feature.Feature(
+            fs.append(gws.base.feature.Feature(
                 uid=uid,
                 category=layer_name,
                 shape=_shape(feature.GetGeomFieldRef(0), crs),
@@ -108,7 +108,7 @@ def _shape(geom, crs):
         crs = _crs(sr)
     if not crs:
         return
-    return gws.gis.shape.from_wkt(geom.ExportToWkt(), crs)
+    return gws.base.shape.from_wkt(geom.ExportToWkt(), crs)
 
 
 def _crs(sr):

@@ -173,7 +173,7 @@ class Cli(gws.Node):
         self.do_start(p)
 
     @gws.ext.command.cli('serverStop')
-    def do_stop(self, p: gws.NoParams):
+    def do_stop(self, p: gws.EmptyRequest):
         """Stop the server"""
         stop()
 

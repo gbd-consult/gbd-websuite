@@ -1,7 +1,7 @@
 """Check user logins and logouts."""
 
 import gws
-import gws.base.api
+import gws.base.action
 import gws.base.web.error
 import gws.types as t
 
@@ -12,25 +12,25 @@ class Response(gws.Response):
     user: user.Props
 
 
-class LoginParams(gws.Params):
+class LoginParams(gws.Request):
     username: str
     password: str
 
 
 @gws.ext.object.action('auth')
-class Object(gws.base.api.action.Object):
+class Object(gws.base.action.Object):
 
     @gws.ext.command.api('authCheck')
-    def check(self, req: gws.IWebRequest, p: gws.Params) -> Response:
+    def check(self, req: gws.IWebRequester, p: gws.Request) -> Response:
         """Check the authorization status"""
 
         return self._resp(req)
 
     @gws.ext.command.api('authLogin')
-    def login(self, req: gws.IWebRequest, p: LoginParams) -> Response:
+    def login(self, req: gws.IWebRequester, p: LoginParams) -> Response:
         """Perform a login"""
 
-        if not req.user.is_guest:
+        if not req.user.isGuest:
             gws.log.error('login while logged-in')
             raise gws.base.web.error.Forbidden()
 
@@ -48,10 +48,10 @@ class Object(gws.base.api.action.Object):
         return self._resp(req)
 
     @gws.ext.command.api('authLogout')
-    def logout(self, req: gws.IWebRequest, p: gws.Params) -> Response:
+    def logout(self, req: gws.IWebRequester, p: gws.Request) -> Response:
         """Perform a logout"""
 
-        if req.user.is_guest:
+        if req.user.isGuest:
             return self._resp(req)
 
         wr = t.cast(wsgi.WebRequest, req)

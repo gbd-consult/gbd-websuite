@@ -40,7 +40,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
         if not super().configure_search():
             cfg = self.provider.search_config(self.source_layers)
             if cfg:
-                self.search_providers.append(self.require_child('gws.ext.search.provider', cfg))
+                self.search_providers.append(self.root.create_required('gws.ext.search.provider', cfg))
                 return True
 
     def configure_legend(self):
@@ -69,7 +69,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
             'type': 'wms',
             'supported_srs': [self.source_crs.epsg],
             'forward_req_params': ['DPI__gws'],
-            'concurrent_requests': self.root.application.var('server.qgis.maxRequests', default=0),
+            'concurrent_requests': self.root.app.var('server.qgis.maxRequests', default=0),
             'req': {
                 'url': self.provider.url,
                 'map': self.provider.path,

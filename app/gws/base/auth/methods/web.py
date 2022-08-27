@@ -39,7 +39,7 @@ class Object(method.Object):
             return sess
 
         gws.log.debug(f'sid={sid} not found or invalid')
-        return t.cast(manager.Object, auth).new_session(_DELETED, user=auth.guest_user, method=self)
+        return t.cast(manager.Object, auth).new_session(_DELETED, user=auth.guestUser, method=self)
 
     def close_session(self, auth, sess, req, res):
         if sess.typ == _DELETED:
@@ -67,4 +67,4 @@ class Object(method.Object):
     def logout(self, auth, sess, req):
         if sess.typ == _ACTIVE:
             t.cast(manager.Object, auth).destroy_stored_session(sess)
-        return t.cast(manager.Object, auth).new_session(_DELETED, auth.guest_user, method=self)
+        return t.cast(manager.Object, auth).new_session(_DELETED, auth.guestUser, method=self)

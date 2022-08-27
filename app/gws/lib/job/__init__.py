@@ -27,7 +27,7 @@ class PrematureTermination(Exception):
 def create(root: gws.IRoot, uid, user: gws.IUser, worker: str, payload=None) -> 'Job':
     if user:
         user_uid = user.uid
-        str_user = root.application.auth.serialize_user(user)
+        str_user = root.app.auth.serialize_user(user)
     else:
         user_uid = str_user = ''
     gws.log.debug('creating job', worker, user_uid)
@@ -92,12 +92,12 @@ class Job:
         self.error = rec['error']
 
     def _get_user(self, rec) -> gws.IUser:
-        auth = self.root.application.auth
+        auth = self.root.app.auth
         if rec.get('str_user'):
             user = auth.unserialize_user(rec.get('str_user'))
             if user:
                 return user
-        return auth.guest_user
+        return auth.guestUser
 
     def run(self):
         if self.state != State.open:

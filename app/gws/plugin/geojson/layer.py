@@ -4,8 +4,8 @@ import gws
 import gws.base.layer
 import gws.gis.crs
 import gws.lib.json2
-import gws.gis.feature
-import gws.gis.shape
+import gws.base.feature
+import gws.base.shape
 import gws.gis.ows
 import gws.types as t
 
@@ -29,11 +29,11 @@ class Object(gws.base.layer.vector.Object, gws.IOwsClient):
         js = gws.lib.json2.from_path(self.path)
         self.source_crs = self._get_crs(js) or self.map.crs
         self.features = [
-            gws.gis.feature.from_geojson(f, self.crs, self.var('keyName'))
+            gws.base.feature.from_geojson(f, self.crs, self.var('keyName'))
             for f in js['features']]
 
     def get_features(self, bounds, limit=0):
-        shape = gws.gis.shape.from_bounds(bounds).transformed_to(self.source_crs)
+        shape = gws.base.shape.from_bounds(bounds).transformed_to(self.source_crs)
         fs = [f for f in self.features if f.shape.intersects(shape)]
         if limit:
             fs = fs[:limit]

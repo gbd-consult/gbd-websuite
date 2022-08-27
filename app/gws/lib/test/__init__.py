@@ -18,7 +18,7 @@ import gws
 import gws.base.web.web_app
 import gws.config
 import gws.core.tree
-import gws.gis.feature
+import gws.base.feature
 import gws.lib.json2
 import gws.lib.net
 import gws.lib.os2
@@ -331,7 +331,7 @@ def make_features(name, geom_type, columns, crs, xy, rows, cols, gap):
                     ]]
                 }
 
-            features.append(gws.gis.feature.from_props(gws.Data(
+            features.append(gws.base.feature.from_props(gws.Data(
                 uid=uid,
                 attributes=atts,
                 shape={'crs': crs, 'geometry': geom} if geom else None

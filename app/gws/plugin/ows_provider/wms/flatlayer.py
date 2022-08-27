@@ -4,54 +4,70 @@ import gws.gis.source
 import gws.gis.ows
 import gws.types as t
 
-from . import provider as provider_module
+from . import provider
 from . import search
 
 
 @gws.ext.config.layer('wmsflat')
-class Config(gws.base.layer.image.Config, provider_module.Config):
+class Config(gws.base.layer.Config, provider.Config):
     pass
 
 
 @gws.ext.object.layer('wmsflat')
-class Object(gws.base.layer.image.Object, gws.IOwsClient):
-    provider: provider_module.Object
-    source_crs: gws.ICrs
+class Object(gws.base.layer.Object, gws.IOwsClient):
+    provider: provider.Object
+    sourceCrs: gws.ICrs
 
-    def configure_source(self):
-        gws.gis.ows.client.configure_layers(self, provider_module.Object, is_image=True)
-        self.source_crs = gws.gis.crs.best_match(
+    def configure(self):
+        super().configure()
+
+        self.provider = self.var('_provider') or self.root.create_shared(provider.Object, self.config)
+
+        self.sourceLayers = self.var('_sourceLayers')
+        if not self.sourceLayers:
+            slf = gws.merge(
+                gws.gis.source.LayerFilter(level=1, is_image=True),
+                self.var('sourceLayers'))
+            self.sourceLayers = gws.gis.source.filter_layers(self.provider.source_layers, slf)
+        if not self.sourceLayers:
+            raise gws.ConfigurationError(f'no source layers found for {self.uid!r}')
+
+        self.sourceCrs = gws.gis.crs.best_match(
             self.provider.force_crs or self.crs,
-            gws.gis.source.supported_crs_list(self.source_layers))
-        return True
+            gws.gis.source.supported_crs_list(self.sourceLayers))
 
-    def configure_metadata(self):
-        if not super().configure_metadata():
-            self.set_metadata(self.var('metadata'), self.provider.metadata)
-            return True
+        if not self.configure_metadata():
+            self.set_metadata(self.provider.metadata)
 
-    def configure_zoom(self):
-        if not super().configure_zoom():
-            return gws.gis.ows.client.configure_zoom(self)
+        if not self.configure_zoom():
+            gws.gis.ows.client.configure_zoom(self)
 
-    def configure_search(self):
-        if not super().configure_search():
-            return gws.gis.ows.client.configure_search(self, search.Object)
+        if not self.configure_search():
+            slf = gws.gis.source.LayerFilter(is_queryable=True)
+            queryable_layers = gws.gis.source.filter_layers(self.sourceLayers, slf)
+            if queryable_layers:
+                self.cFinders.add_finder(gws.Config(
+                    type='wms',
+                    _provider=self.provider,
+                    _sourceLayers=queryable_layers
+                ))
+                return True
 
-    def configure_legend(self):
-        if not super().configure_legend():
-            urls = [sl.legend_url for sl in self.source_layers if sl.legend_url]
+        if not self.configure_legend():
+            urls = [sl.legend_url for sl in self.sourceLayers if sl.legend_url]
             if urls:
                 self.legend = gws.Legend(
                     enabled=True,
                     urls=urls,
                     cache_max_age=self.var('legend.cacheMaxAge', default=0),
                     options=self.var('legend.options', default={}))
-                return True
 
     @property
     def own_bounds(self):
-        return gws.gis.source.combined_bounds(self.source_layers, self.source_crs)
+        return gws.gis.source.combined_bounds(self.sourceLayers, self.sourceCrs)
+
+    def render(self, lri):
+        return gws.base.layer.lib.generic_raster_render(self, lri)
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.source_layers if sl.name]
@@ -68,9 +84,9 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
 
         source_uid = mc.source(gws.compact({
             'type': 'wms',
-            'supported_srs': [self.source_crs.epsg],
+            'supported_srs': [self.sourceCrs.epsg],
             'concurrent_requests': self.var('maxRequests'),
             'req': req
         }))
 
-        self.mapproxy_layer_config(mc, source_uid)
+        gws.base.layer.lib.mapproxy_layer_config(self, mc, source_uid)

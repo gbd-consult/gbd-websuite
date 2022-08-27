@@ -93,7 +93,7 @@ class Object(core.Service):
 
     ##
 
-    def handle_request(self, req: gws.IWebRequest) -> gws.ContentResponse:
+    def handle_request(self, req: gws.IWebRequester) -> gws.ContentResponse:
         rd = core.Request(req=req, project=None, service=self)
 
         if req.method == 'GET':

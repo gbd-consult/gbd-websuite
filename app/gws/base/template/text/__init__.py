@@ -1,8 +1,8 @@
-"""CX templates for Text-Only."""
+"""Default text-only template."""
 
 import gws
 import gws.base.template
-import gws.lib.vendor.chartreux as chartreux
+import gws.lib.vendor.jump
 import gws.types as t
 
 
@@ -19,7 +19,7 @@ class Object(gws.base.template.Object):
         context = tri.context or {}
 
         context['gws'] = {
-            'version': gws.VERSION,
+            'version': self.root.app.version,
             'endpoint': gws.SERVER_ENDPOINT,
         }
 
@@ -31,7 +31,7 @@ class Object(gws.base.template.Object):
             with open(self.path, 'rt') as fp:
                 text = fp.read()
 
-        content = chartreux.render(
+        content = gws.lib.vendor.jump.render(
             text,
             context,
             path=self.path or '<string>',

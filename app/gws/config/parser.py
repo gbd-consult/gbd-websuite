@@ -6,7 +6,7 @@ import yaml
 import gws
 import gws.lib.json2
 import gws.lib.os2
-import gws.lib.vendor.chartreux as chartreux
+import gws.lib.vendor.jump as jump
 import gws.lib.vendor.slon as slon
 import gws.spec.runtime
 
@@ -21,13 +21,13 @@ DEFAULT_CONFIG_PATHS = [
 ]
 
 
-def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', with_internal_objects=False):
+def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', accept_extra_props=False):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
-        return specs.read_value(value, type_name, source_path, with_strict_mode=True, with_error_details=True, with_internal_objects=with_internal_objects)
-    except gws.spec.runtime.Error as e:
-        code, msg, _, details = e.args
+        return specs.read(value, type_name, source_path, strict_mode=True, verbose_errors=True, accept_extra_props=accept_extra_props)
+    except gws.spec.runtime.ReadError as exc:
+        code, msg, _, details = exc.args
         raise gws.ConfigurationError(
             code + ': ' + msg,
             details.get('path'),
@@ -83,9 +83,9 @@ def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_paths) -> gws.Conf
     app_cfg.projects = []
 
     for prj_dict, prj_path in prj_dicts:
-        uid = prj_dict.get('uid') or prj_dict.get('title') or '???'
+        uid = prj_dict.get('uid') or prj_dict.get('title') or '?'
         gws.log.info(f'parsing project {uid!r}...')
-        app_cfg.projects.append(parse(specs, prj_dict, 'gws.base.project.core.Config', prj_path))
+        app_cfg.projects.append(parse(specs, prj_dict, 'gws.base.project.main.Config', prj_path))
 
     return app_cfg
 
@@ -127,35 +127,27 @@ def _read2(path):
 
 def _parse_cx_config(path):
     paths = {path}
-    runtime_exc = []
+    runtime_errors = []
 
-    def _err(exc, path, line):
-        if not runtime_exc:
-            runtime_exc.append(_syntax_error(path, gws.read_file(path), repr(exc), line))
+    def _err(exc, path, line, env):
+        runtime_errors.append(_syntax_error(path, gws.read_file(path), repr(exc), line))
 
-    def _finder(cur_path, p):
+    def _loader(cur_path, p):
         if not os.path.isabs(p):
             d = os.path.dirname(cur_path)
             p = os.path.abspath(os.path.join(d, p))
         paths.add(p)
-        return p
+        return gws.read_file(p), p
 
     try:
-        tpl = chartreux.compile_path(
-            path,
-            syntax={'start': '{{', 'end': '}}'},
-            finder=_finder
-        )
-    except chartreux.compiler.Error as e:
+        tpl = jump.compile_path(path, loader=_loader)
+    except jump.CompileError as e:
         raise _syntax_error(path, gws.read_file(e.path), e.message, e.line)
 
-    src = chartreux.call(
-        tpl,
-        context={'true': True, 'false': False},
-        error=_err)
+    src = jump.call(tpl, args={'true': True, 'false': False}, error=_err)
 
-    if runtime_exc:
-        raise runtime_exc[0]
+    if runtime_errors:
+        raise runtime_errors[0]
 
     _save_intermediate(path, src, 'slon')
 

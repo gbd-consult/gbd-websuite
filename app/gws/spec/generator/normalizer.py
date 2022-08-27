@@ -50,7 +50,8 @@ def _expand_aliases(gen):
             raise base.Error(f'circular alias {stack!r} => {target!r}')
         if target in gen.aliases:
             return _exp(gen.aliases[target], stack + [target])
-        base.log.warn(f'unbound alias {target!r}')
+        if target.startswith(base.APP_NAME):
+            base.log.warn(f'unbound alias {target!r}')
         return target
 
     new_aliases = {}
@@ -180,8 +181,8 @@ def _check_variants(gen):
                     item_type = gen.types.get(tItem)
                     tag_property_type = gen.types.get(item_type.name + '.' + base.TAG_PROPERTY)
                     tag_value_type = gen.types.get(tag_property_type.tValue)
-                    if tag_value_type.c == base.C.LITERAL and len(tag_value_type.values) == 1:
-                        members[tag_value_type.values[0]] = item_type.name
+                    if tag_value_type.c == base.C.LITERAL and len(tag_value_type.literalValues) == 1:
+                        members[tag_value_type.literalValues[0]] = item_type.name
                     else:
                         raise ValueError()
                 except Exception:
@@ -204,7 +205,15 @@ def _synthesize_ext_configs_and_props(gen):
                 ps[2] = kind
                 name = DOT.join(ps)
                 if name not in existing_names:
-                    nt = gen.new_type(base.C.CLASS, doc=t.doc, ident=kind, name=name, pos=t.pos, tSupers=[base.DEFAULT_EXT_SUPERS[kind]], extName=name)
+                    nt = gen.new_type(
+                        base.C.CLASS,
+                        doc=t.doc,
+                        ident=kind,
+                        name=name,
+                        pos=t.pos,
+                        tSupers=[base.DEFAULT_EXT_SUPERS[kind]],
+                        extName=name,
+                    )
                     upd[nt.uid] = nt
 
     gen.types.update(upd)
@@ -218,7 +227,7 @@ def _synthesize_ext_type_properties(gen):
     for t in gen.types.values():
         if t.extName.startswith((base.EXT_CONFIG_PREFIX, base.EXT_PROPS_PREFIX)):
             name = t.extName.rpartition(DOT)[-1]
-            literal = gen.new_type(base.C.LITERAL, values=[name], pos=t.pos)
+            literal = gen.new_type(base.C.LITERAL, literalValues=[name], pos=t.pos)
             upd[literal.uid] = literal
 
             nt = gen.new_type(
@@ -227,7 +236,8 @@ def _synthesize_ext_type_properties(gen):
                 ident=base.TAG_PROPERTY,
                 name=t.name + DOT + base.TAG_PROPERTY,
                 pos=t.pos,
-                default=[None, None],
+                default='default',
+                hasDefault=True,
                 tValue=literal.uid,
                 tOwner=t.uid,
             )
@@ -252,17 +262,19 @@ def _synthesize_ext_variant_types(gen):
 
     variants = {}
 
-    for t in gen.types.values():
-        if t.extName and not t.extName.startswith(base.EXT_COMMAND_PREFIX):
+    for typ in gen.types.values():
+        if typ.extName and not typ.extName.startswith(base.EXT_COMMAND_PREFIX):
             # "gws.ext.object.owsService.wms" belongs to "gws.ext.object.owsService"
-            var_name, _, name = t.extName.rpartition(DOT)
-            variants.setdefault(var_name, {})[name] = t.name
+            var_name, _, name = typ.extName.rpartition(DOT)
+            variants.setdefault(var_name, {})[name] = typ.name
 
     upd = {}
 
     for name, members in variants.items():
-        variant_typ = gen.new_type(base.C.VARIANT, tMembers=members, name=name, extName=name)
+        variant_typ = gen.new_type(base.C.VARIANT, tMembers=members)
         upd[variant_typ.uid] = variant_typ
+        alias_typ = gen.new_type(base.C.TYPE, name=name, extName=name, tTarget=variant_typ.uid)
+        upd[alias_typ.uid] = alias_typ
         base.log.debug(f'created variant {variant_typ.uid!r} for {list(members.values())}')
 
     gen.types.update(upd)
@@ -277,27 +289,38 @@ def _make_props(gen):
             obj_name, _, prop_name = typ.name.rpartition('.')
             own_props_by_name.setdefault(obj_name, {})[prop_name] = typ
 
+    def _merge(typ, props, own_props):
+        for name, p in own_props.items():
+            if name in props:
+                # cannot weaken a required prop to optional
+                if p.hasDefault and not props[name].hasDefault:
+                    p.default = None
+                    p.hasDefault = False
+
+            props[name] = p
+
     def _make(typ, stack):
         if typ.name in done:
             return done[typ.name]
         if typ.name in stack:
             raise base.Error(f'circular inheritance {stack!r}->{typ.name!r}')
 
-        ps = {}
+        props = {}
 
         for sup in typ.tSupers:
             super_typ = gen.types.get(sup)
             if super_typ:
-                ps.update(_make(super_typ, stack + [typ.name]))
-            elif 'vendor' not in sup:
+                props.update(_make(super_typ, stack + [typ.name]))
+            elif sup.startswith(base.APP_NAME) and 'vendor' not in sup:
                 base.log.warn(f'unknown supertype {sup!r}')
 
         if typ.name in own_props_by_name:
-            ps.update(own_props_by_name[typ.name])
-        typ.tProperties = {k: v.name for k, v in ps.items()}
+            _merge(typ, props, own_props_by_name[typ.name])
 
-        done[typ.name] = ps
-        return ps
+        typ.tProperties = {k: v.name for k, v in props.items()}
+
+        done[typ.name] = props
+        return props
 
     for typ in gen.types.values():
         if typ.c == base.C.CLASS:
@@ -308,19 +331,6 @@ def _check_undefined(gen):
     for typ in gen.types.values():
         if typ.c == base.C.UNDEFINED:
             base.log.warn(f'undefined type {typ.uid!r} in {typ.pos}')
-
-
-def _check_property_overrides(gen, t, super_props, own_props):
-    for k in own_props:
-        if k in super_props:
-            old = super_props[k]
-            new = own_props[k]
-            if old.tValue != new.tValue:
-                # @TODO check extended types and literals vs strings
-                pass
-            elif not old.has_default and not new.has_default:
-                pass
-                # base.log.warn(f'unnecessary property override: {k!r} in {t.name!r}', t)
 
 
 DOT = '.'

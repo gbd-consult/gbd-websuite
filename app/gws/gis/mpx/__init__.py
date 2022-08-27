@@ -15,7 +15,7 @@ def _call(service, params):
     global _base_url
 
     if not _base_url:
-        _base_url = gws.config.root().application.mpx_url
+        _base_url = gws.config.root().app.mpx_url
 
     try:
         resp = gws.lib.net.http_request(_base_url + '/' + service, params=params)

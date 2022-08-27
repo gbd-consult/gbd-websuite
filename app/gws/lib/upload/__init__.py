@@ -20,7 +20,7 @@ import gws.types as t
 #     path: str
 #
 #
-# class UploadChunkParams(gws.Params):
+# class UploadChunkParams(gws.Request):
 #     uid: str
 #     name: str
 #     totalSize: int

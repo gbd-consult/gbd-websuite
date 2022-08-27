@@ -5,8 +5,8 @@ import shapely.geometry
 import gws
 import gws.gis.crs
 import gws.gis.extent
-import gws.gis.feature
-import gws.gis.shape
+import gws.base.feature
+import gws.base.shape
 import gws.lib.xml2 as xml2
 import gws.types as t
 

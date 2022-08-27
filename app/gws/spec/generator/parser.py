@@ -11,8 +11,8 @@ from . import base, util
 def parse(gen: base.Generator, parse_all=False):
     init_parser(gen)
     for chunk in gen.chunks:
-        for path in chunk.paths['python']:
-            parse_path(gen, path, chunk.name, chunk.sourceDir, parse_all)
+        for path in chunk['paths']['python']:
+            parse_path(gen, path, chunk['name'], chunk['sourceDir'], parse_all)
 
 
 def init_parser(gen: base.Generator):
@@ -192,7 +192,7 @@ class _PythonParser:
 
     def parse_enum(self, node):
         docs = {}
-        values = {}
+        vals = {}
 
         for nn in self.nodes(node.body):
             if _cls(nn) == 'Assign':
@@ -201,7 +201,7 @@ class _PythonParser:
                 if c != base.C.LITERAL:
                     raise ValueError(f'invalid Enum item {ident!r}')
                 docs[ident] = self.inline_doc(nn) or self.outer_doc(nn, node.body)
-                values[ident] = value
+                vals[ident] = value
 
         self.add(
             base.C.ENUM,
@@ -209,7 +209,7 @@ class _PythonParser:
             ident=node.name,
             name=self.qname(node),
             enumDocs=docs,
-            enumValues=values,
+            enumValues=vals,
         )
 
     def parse_property(self, owner_typ: base.Type, node, doc: str, annotated: bool):
@@ -359,8 +359,8 @@ class _PythonParser:
             if not param:
                 raise ValueError('invalid literal')
             elts = param.elts if _cls(param) == 'Tuple' else [param]
-            values = [self.parse_literal_value(e) for e in elts]
-            return self.add(base.C.LITERAL, values=values)
+            vals = [self.parse_literal_value(e) for e in elts]
+            return self.add(base.C.LITERAL, literalValues=vals)
 
         # in other cases, 'param' is a type or a tuple of types
 

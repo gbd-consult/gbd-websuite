@@ -5,12 +5,11 @@ import re
 import gws
 import gws.base.template
 import gws.lib.html2
-import gws.gis.legend
 import gws.lib.mime
 import gws.lib.pdf
 import gws.gis.render
 import gws.lib.units as units
-import gws.lib.vendor.chartreux as chartreux
+import gws.lib.vendor.jump as jump
 import gws.types as t
 
 
@@ -26,6 +25,7 @@ _dummy_fn = lambda *args: None
 class Object(gws.base.template.Object):
 
     def configure(self):
+        super().configure()
         if self.path:
             self.text = gws.read_file(self.path)
         self.load()
@@ -34,7 +34,7 @@ class Object(gws.base.template.Object):
         text = gws.read_file(self.path) if self.path else self.text
 
         parser = _Parser()
-        chartreux.compile(
+        jump.compile(
             text,
             path=self.path or '<string>',
             commands=parser,
@@ -48,14 +48,14 @@ class Object(gws.base.template.Object):
 
         notify('begin_print')
 
-        if self.root.application.developer_option('template.always_reload'):
+        if self.root.app.developer_option('template.always_reload'):
             if self.path:
                 self.text = gws.read_file(self.path)
 
         parser = _Parser()
-        rt = _Runtime(self, tri, notify)
+        rt = _Engine(self, tri, notify)
 
-        html = self._do_render(self.text, self.prepare_context(tri.context), parser, rt)
+        html = self._do_render(self.text, self.prepare_args(tri.args), parser, rt)
 
         notify('finalize_print')
 
@@ -81,24 +81,24 @@ class Object(gws.base.template.Object):
 
         raise gws.Error(f'invalid output mime: {tri.out_mime!r}')
 
-    def _do_render(self, text, context, parser, runtime):
-        def err(e, path, line):
+    def _do_render(self, text, args, parser, runtime):
+        def err(e, path, line, env):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
-        if self.root.application.developer_option('template.raise_errors'):
+        if self.root.app.developer_option('template.raise_errors'):
             err = None
 
-        if self.root.application.developer_option('template.save_compiled'):
+        if self.root.app.developer_option('template.save_compiled'):
             gws.write_file(
                 gws.VAR_DIR + '/debug_template_' + gws.to_uid(self.path) + '_' + gws.sha256(text),
-                chartreux.translate(
+                jump.translate(
                     text,
                     commands=parser,
                     path=self.path or '<string>'))
 
-        return chartreux.render(
+        return jump.render(
             text,
-            context,
+            args,
             path=self.path or '<string>',
             error=err,
             runtime=runtime,
@@ -119,9 +119,9 @@ class Object(gws.base.template.Object):
         if not has_frame:
             return content_path
 
-        context = gws.merge(tri.context, page_count=gws.lib.pdf.page_count(content_path))
+        args = gws.merge(tri.args, page_count=gws.lib.pdf.page_count(content_path))
         frame_text = self._page_frame_template(parser.header or '', parser.footer or '', parser.page_size)
-        frame_html = self._do_render(frame_text, context, None, None)
+        frame_html = self._do_render(frame_text, args, None, None)
         frame_path = gws.tempname('frame.pdf')
         gws.lib.html2.render_to_pdf(
             frame_html,
@@ -248,7 +248,7 @@ class _Parser:
                 return kw.value
 
 
-class _Runtime(chartreux.Runtime):
+class _Engine(jump.Engine):
     def __init__(self, tpl: Object, tri: gws.TemplateRenderInput, notify: t.Callable):
         super().__init__()
         self.tpl = tpl
@@ -328,7 +328,7 @@ class _Runtime(chartreux.Runtime):
 
     def _legend_layers(self, kwargs):
         if 'layers' in kwargs:
-            user = self.tri.user or self.tpl.root.application.auth.guest_user
+            user = self.tri.user or self.tpl.root.app.auth.guestUser
             return gws.compact(user.acquire('gws.ext.layer', uid) for uid in kwargs['layers'].split())
 
         if not self.tri.maps:

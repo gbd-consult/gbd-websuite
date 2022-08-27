@@ -5,7 +5,6 @@ import gws.base.web.error
 import gws.gis.crs
 import gws.gis.extent
 import gws.lib.image
-import gws.gis.legend
 import gws.gis.render
 import gws.lib.units as units
 import gws.types as t
@@ -65,7 +64,7 @@ class Object(core.Service):
             gws.TileMatrixSet(
                 uid='EPSG_3857',
                 crs=gws.gis.crs.get3857(),
-                matrices=self._tile_matrices(gws.gis.crs.c3857_extent, 0, 16),
+                matrices=self._tile_matrices(gws.gis.crs.CRS_3857_EXTENT, 0, 16),
             )
         ]
 
@@ -117,7 +116,7 @@ class Object(core.Service):
         else:
             content = gws.lib.image.PIXEL_PNG8
 
-        if self.root.application.developer_option('ows.annotate_wmts'):
+        if self.root.app.developer_option('ows.annotate_wmts'):
             img = gws.lib.image.from_bytes(content)
             e = bounds.extent
             text = f"{matrix_uid} {row} {col}\n{e[0]}\n{e[1]}\n{e[2]}\n{e[3]}"

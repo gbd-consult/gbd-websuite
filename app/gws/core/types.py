@@ -5,52 +5,52 @@ from gws.types import Any, Callable, Dict, Enum, List, Literal, Optional, Protoc
 # custom types, used everywhere
 
 
-"""type: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]. """
+"""type: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]."""
 Extent = Tuple[float, float, float, float]
 
-"""type: Point coordinates [x, y]. """
+"""type: Point coordinates [x, y]."""
 Point = Tuple[float, float]
 
-"""type: Size [width, height]. """
+"""type: Size [width, height]."""
 Size = Tuple[float, float]
 
-"""type: A value with a unit. """
+"""type: A value with a unit."""
 Measurement = Tuple[float, str]
 
-"""type: A Point with a unit. """
+"""type: A Point with a unit."""
 MPoint = Tuple[float, float, str]
 
-"""type: A Size with a unit. """
+"""type: A Size with a unit."""
 MSize = Tuple[float, float, str]
 
-"""type: An XML generator tag. """
+"""type: An XML generator tag."""
 Tag = tuple
 
-"""type: Valid readable file path on the server. """
+"""type: Valid readable file path on the server."""
 FilePath = str
 
-"""type: Valid readable directory path on the server. """
+"""type: Valid readable directory path on the server."""
 DirPath = str
 
-"""type: String like "1w 2d 3h 4m 5s" or a number of seconds. """
+"""type: String like "1w 2d 3h 4m 5s" or a number of seconds."""
 Duration = str
 
-"""type: CSS color name. """
+"""type: CSS color name."""
 Color = str
 
-"""type: Regular expression, as used in Python. """
+"""type: Regular expression, as used in Python."""
 Regex = str
 
-"""type: String with {attribute} placeholders. """
+"""type: String with {attribute} placeholders."""
 FormatStr = str
 
-"""type: ISO date like "2019-01-30". """
+"""type: ISO date like "2019-01-30"."""
 Date = str
 
-"""type: ISO date/time like "2019-01-30 01:02:03". """
+"""type: ISO date/time like "2019-01-30 01:02:03"."""
 DateTime = str
 
-"""type: Http or https URL. """
+"""type: Http or https URL."""
 Url = str
 
 
@@ -58,14 +58,14 @@ Url = str
 # application manifest
 
 
-class ManifestPlugin(Data):
+class ApplicationManifestPlugin(Data):
     path: FilePath
     name: str = ''
 
 
-class Manifest(Data):
+class ApplicationManifest(Data):
     excludePlugins: Optional[List[str]]
-    plugins: Optional[List[ManifestPlugin]]
+    plugins: Optional[List[ApplicationManifestPlugin]]
     locales: List[str]
 
     withFallbackConfig: bool = False
@@ -75,7 +75,7 @@ class Manifest(Data):
 # ----------------------------------------------------------------------------------------------------------------------
 # basic objects
 
-Klass = Union[type, str]
+ClassRef = Union[type, str]
 
 
 class Config(Data):
@@ -84,15 +84,15 @@ class Config(Data):
     uid: str = ''  #: unique ID
 
 
-class Access(Data):
-    """Access rights definition for authorization roles"""
+"""type: Access Control List."""
+Access = List[Tuple[int, str]]
 
-    type: Literal['allow', 'deny']  #: access type (deny or allow)
-    role: str  #: a role to which this rule applies
+"""type: A string of comma-separated pairs 'allow <role>' or 'deny <role>'."""
+ACL = str
 
 
 class ConfigWithAccess(Config):
-    access: Optional[List[Access]]  #: access rights
+    access: Optional[ACL]  #: access rights
 
 
 class Props(Data):
@@ -104,66 +104,64 @@ class Props(Data):
 # foundation interfaces
 
 class IObject(Protocol):
-    class_name: str
-    access: List[Access]
-    is_shared: bool
+    extName: str
+    extType: str
+    access: Access
+    uid: str
 
-    def props_for(self, user: 'IGrantee') -> Props: ...
-
-    def is_a(self, klass: Klass) -> bool: ...
+    def props(self, user: 'IGrantee') -> Props: ...
 
 
 class IGrantee(Protocol):
     roles: Set[str]
 
-    def can_use(self, obj: 'IObject', context: 'IObject' = None) -> bool: ...
+    def can_use(self, obj: Any, context=None) -> bool: ...
 
-    def require(self, klass: Optional[Klass], uid: Optional[str]): ...
-
-    def acquire(self, klass: Optional[Klass], uid: Optional[str]): ...
+    def access_to(self, obj: Any) -> Optional[int]: ...
 
 
 class INode(IObject, Protocol):
-    children: List['INode']
     config: Config
-    ext_category: str
-    ext_type: str
-    parent: Optional['INode']
     root: 'IRoot'
+    parent: 'INode'
     title: str
     uid: str
 
+    def activate(self): ...
+
     def configure(self): ...
+
+    def create_child(self, classref: ClassRef, config=None, optional=False, required=False): ...
+
+    def create_children(self, classref: ClassRef, configs: Any, required=False): ...
 
     def post_configure(self): ...
 
-    def var(self, key: str, default=None, with_parent: bool = False): ...
+    def pre_configure(self): ...
 
-    def create_child(self, klass: Klass, cfg: Optional[Any]): ...
-
-    def create_children(self, klass: Klass, cfg: Optional[Any]) -> List: ...
-
-    def create_child_if_config(self, klass: Klass, cfg: Optional[Any]): ...
-
-    def require_child(self, klass: Klass, cfg: Optional[Any]): ...
-
-    def get_closest(self, klass: Klass): ...
+    def var(self, key: str, default=None): ...
 
 
 class IRoot(Protocol):
-    application: 'IApplication'
+    app: 'IApplication'
     specs: 'ISpecRuntime'
-    configuration_errors: List[str]
+    configErrors: List[str]
 
-    def set_object_uid(self, obj: 'INode', uid=None): ...
-
-    def find_all(self, klass: Klass = None, uid: str = None) -> List: ...
-
-    def find(self, klass: Klass = None, uid: str = None): ...
-
-    def create_object(self, klass, cfg=None, parent: 'INode' = None, shared: bool = False, key=None): ...
+    def post_initialize(self): ...
 
     def activate(self): ...
+
+    def find_all(self, classref: ClassRef) -> List: ...
+
+    def find(self, classref: ClassRef, uid: str): ...
+
+    def create(self, classref: ClassRef, config=None, optional=False, required=False): ...
+
+    def create_child(self, parent: 'INode', classref: ClassRef, config=None, optional=False, required=False): ...
+
+    def create_shared(self, classref: ClassRef, config=None): ...
+
+    def create_application(self, config=None) -> 'IApplication': ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -180,49 +178,42 @@ class ExtObjectDescriptor(Data):
 
 class ExtCommandDescriptor(Data):
     extName: str
-    classPtr: type
     methodName: str
+    methodPtr: Callable
     request: 'Request'
+    tArg: str
+    tOwner: str
 
 
 class ISpecRuntime(Protocol):
-    manifest: Manifest
+    version: str
+    manifest: ApplicationManifest
 
-    def parse_command(self, cmd: str, method: str, params, with_strict_mode=True) -> Optional[ExtCommandDescriptor]: ...
+    def read(self, value: Any, type_name: str, path: str = '', strict_mode=True, verbose_errors=True, accept_extra_props=False) -> Any: ...
 
-    def read_value(self, value, type_name: str, path='', with_strict_mode=True, with_error_details=True,
-                   with_internal_objects=False): ...
+    def object_descriptor(self, type_name: str) -> Optional[ExtObjectDescriptor]: ...
 
-    def real_class_names(self, class_name: str) -> List[str]: ...
+    def command_descriptor(self, command_category: str, command_name: str) -> Optional[ExtCommandDescriptor]: ...
 
-    def object_descriptor(self, class_name: str) -> Optional[ExtObjectDescriptor]: ...
+    def cli_docs(self, lang: str = 'en') -> dict: ...
 
     def bundle_paths(self, category: str) -> List[str]: ...
 
-    def cli_docs(self, lang) -> Dict: ...
-
-    def is_a(self, class_name: str, partial_name: str) -> bool: ...
+    def parse_classref(self, classref: ClassRef) -> Tuple[Optional[type], str, str]: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # requests and responses
 
-class Params(Data):
-    """Web request params"""
-
-    projectUid: Optional[str]  #: project uid
-    localeUid: Optional[str]  #: locale for this request
-
-
 class Request(Data):
-    """Web request params"""
+    """Web request"""
 
     projectUid: Optional[str]  #: project uid
     localeUid: Optional[str]  #: locale for this request
 
 
-class NoParams(Data):
-    """Empty web request params"""
+class EmptyRequest(Data):
+    """Empty web request"""
     pass
 
 
@@ -233,7 +224,7 @@ class ResponseError(Data):
 
 
 class Response(Data):
-    """Web response base type"""
+    """Web response"""
     error: Optional[ResponseError]
 
 
@@ -254,31 +245,19 @@ class BytesResponse(Response):
     mime: str
 
 
-# noinspection PyPropertyDefinition
-class IWebRequest(IObject, Protocol):
+class IWebRequester(Protocol):
     site: 'IWebSite'
-
-    @property
-    def environ(self) -> dict: ...
-
-    @property
-    def data(self) -> Optional[bytes]: ...
-
-    @property
-    def text(self) -> Optional[str]: ...
-
-    @property
-    def is_secure(self) -> bool: ...
-
-    @property
-    def method(self) -> str: ...
-
-    @property
-    def user(self) -> 'IUser': ...
-
-    def acquire(self, klass: str, uid: Optional[str]): ...
+    environ: dict
+    isSecure: bool
+    isApi: bool
+    isGet: bool
+    isPost: bool
+    method: str
+    user: 'IUser'
 
     def cookie(self, key: str, default: str = '') -> str: ...
+
+    def data(self) -> Optional[bytes]: ...
 
     def env(self, key: str, default: str = '') -> str: ...
 
@@ -288,19 +267,23 @@ class IWebRequest(IObject, Protocol):
 
     def param(self, key: str, default: str = '') -> str: ...
 
-    def require(self, klass: Optional[Klass], uid: Optional[str]): ...
-
-    def require_layer(self, uid: Optional[str]) -> 'ILayer': ...
-
-    def require_project(self, uid: Optional[str]) -> 'IProject': ...
+    def text(self) -> Optional[str]: ...
 
     def url_for(self, path: str, **params) -> Url: ...
 
+    def find(self, klass, uid: str): ...
 
-# noinspection PyPropertyDefinition
-class IWebResponse(IObject, Protocol):
-    @property
-    def status_code(self) -> int: ...
+    def require(self, classref: ClassRef, uid: str): ...
+
+    def require_project(self, uid: str) -> 'IProject': ...
+
+    def require_layer(self, uid: str) -> 'ILayer': ...
+
+    def acquire(self, classref: ClassRef, uid: str): ...
+
+
+class IWebResponder(Protocol):
+    status_code: int
 
     def set_cookie(self, key: str, **kwargs): ...
 
@@ -320,17 +303,18 @@ class DocumentRoot(Data):
 
 
 class IWebSite(INode, Protocol):
-    assets_root: Optional['DocumentRoot']
+    assetsRoot: Optional['DocumentRoot']
+    errorPage: Optional['ITemplate']
 
-    def url_for(self, req: 'IWebRequest', path: str, **params) -> Url: ...
+    def url_for(self, req: 'IWebRequester', path: str, **params) -> Url: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # authorization
 
 class IAuthManager(INode, Protocol):
-    guest_user: 'IUser'
-    system_user: 'IUser'
+    guestUser: 'IUser'
+    systemUser: 'IUser'
     providers: List['IAuthProvider']
     methods: List['IAuthMethod']
 
@@ -346,25 +330,25 @@ class IAuthManager(INode, Protocol):
 
     def unserialize_user(self, ser: str) -> Optional['IUser']: ...
 
-    def open_session(self, req: 'IWebRequest') -> 'IAuthSession': ...
+    def open_session(self, req: 'IWebRequester') -> 'IAuthSession': ...
 
-    def close_session(self, sess: 'IAuthSession', req: 'IWebRequest', res: 'IWebResponse') -> 'IAuthSession': ...
+    def close_session(self, sess: 'IAuthSession', req: 'IWebRequester', res: 'IWebResponder') -> 'IAuthSession': ...
 
 
 class IAuthMethod(INode, Protocol):
     secure: bool
 
-    def open_session(self, auth: 'IAuthManager', req: 'IWebRequest') -> Optional['IAuthSession']: ...
+    def open_session(self, auth: 'IAuthManager', req: 'IWebRequester') -> Optional['IAuthSession']: ...
 
-    def close_session(self, auth: IAuthManager, sess: 'IAuthSession', req: IWebRequest, res: IWebResponse): ...
+    def close_session(self, auth: IAuthManager, sess: 'IAuthSession', req: IWebRequester, res: IWebResponder): ...
 
-    def login(self, auth: IAuthManager, credentials: Data, req: IWebRequest) -> Optional['IAuthSession']: ...
+    def login(self, auth: IAuthManager, credentials: Data, req: IWebRequester) -> Optional['IAuthSession']: ...
 
-    def logout(self, auth: IAuthManager, sess: 'IAuthSession', req: IWebRequest) -> 'IAuthSession': ...
+    def logout(self, auth: IAuthManager, sess: 'IAuthSession', req: IWebRequester) -> 'IAuthSession': ...
 
 
 class IAuthProvider(INode, Protocol):
-    allowed_methods: List[str]
+    allowedMethods: List[str]
 
     def get_user(self, local_uid: str) -> Optional['IUser']: ...
 
@@ -390,8 +374,8 @@ class IAuthSession(IObject, Protocol):
 
 class IUser(IObject, IGrantee, Protocol):
     attributes: Dict[str, Any]
-    display_name: str
-    is_guest: bool
+    displayName: str
+    isGuest: bool
     local_uid: str
     name: str
     provider: 'IAuthProvider'
@@ -451,7 +435,7 @@ class AttributeEditor(Data):
     pattern: Optional[Regex]
 
 
-class IDataModel(INode, Protocol):
+class IModel(INode, Protocol):
     def apply(self, attributes: List['Attribute']) -> List['Attribute']: ...
 
     def apply_to_dict(self, attr_values: dict) -> List['Attribute']: ...
@@ -462,14 +446,14 @@ class IDataModel(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # CRS
 
-"""type: Axis orientation. """
+"""type: Axis orientation."""
 Axis = int
 
 AXIS_XY = 1
 AXIS_YX = 2
 
-"""type: CRS code like "EPSG:3857" or a srid like 3857. """
-CrsId = Union[str, int]
+"""type: CRS code like "EPSG:3857" or a srid like 3857."""
+CRS = Union[str, int]
 
 
 class CrsFormat(Enum):
@@ -645,20 +629,20 @@ class IShape(IObject, Protocol):
 class IFeature(IObject, Protocol):
     attributes: List['Attribute']
     category: str
-    data_model: Optional['IDataModel']
+    data_model: Optional['IModel']
     elements: dict
     layer: Optional['ILayer']
     shape: Optional['IShape']
     style: Optional['IStyle']
-    templates: Optional['ITemplateBundle']
+    templates: Optional['ITemplateCollection']
     uid: str
 
     @property
     def template_context(self) -> dict: ...
 
-    def apply_data_model(self, model: 'IDataModel' = None) -> 'IFeature': ...
+    def apply_data_model(self, model: 'IModel' = None) -> 'IFeature': ...
 
-    def apply_templates(self, templates: 'ITemplateBundle' = None, extra_context: dict = None, subjects: List[str] = None) -> 'IFeature': ...
+    def apply_templates(self, templates: 'ITemplateCollection' = None, extra_context: dict = None, subjects: List[str] = None) -> 'IFeature': ...
 
     def attr(self, name: str): ...
 
@@ -720,7 +704,7 @@ class IDbProvider(INode, Protocol):
     pass
 
 
-class ISqlDbProvider(IDbProvider, Protocol):
+class IDatabase(IDbProvider, Protocol):
     def select_features(self, args: 'SqlSelectArgs') -> List['IFeature']: ...
 
     def insert(self, table: 'SqlTable', features: List['IFeature']) -> List['IFeature']: ...
@@ -806,6 +790,20 @@ class MapRenderOutput(Data):
     view: MapView
 
 
+class LayerRenderInput(Data):
+    type: Literal['box', 'xyz', 'svg']
+    view: MapView
+    extraParams: dict
+    x: int
+    y: int
+    z: int
+
+
+class LayerRenderOutput(Data):
+    content: bytes
+    tags: List[XmlElement]
+
+
 class TemplateRenderInputMap(Data):
     background_color: int
     bbox: Extent
@@ -817,7 +815,7 @@ class TemplateRenderInputMap(Data):
 
 
 class TemplateRenderInput(Data):
-    context: Optional[dict]
+    args: Optional[dict]
     crs: 'ICrs'
     dpi: Optional[int]
     locale_uid: Optional[str]
@@ -831,26 +829,9 @@ class TemplateQualityLevel(Data):
     dpi: int
 
 
-class Legend(Data):
-    cache_max_age: int
-    enabled: bool
-    options: dict
-    path: str
-    template: Optional['ITemplate']
-    urls: List[Url]
-    layers: List['ILayer']
-
-
-class LegendRenderOutput(Data):
-    html: str
-    image: 'IImage'
-    image_path: str
-    size: Size
-
-
 class ITemplate(INode, Protocol):
     category: str
-    data_model: Optional['IDataModel']
+    data_model: Optional['IModel']
     mimes: List[str]
     name: str
     path: str
@@ -864,11 +845,10 @@ class ITemplate(INode, Protocol):
     def render(self, tri: TemplateRenderInput, notify: Callable = None) -> ContentResponse: ...
 
 
-class ITemplateBundle(INode, Protocol):
+class ITemplateCollection(INode, Protocol):
     items: List['ITemplate']
 
-    def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional[
-        'ITemplate']: ...
+    def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional['ITemplate']: ...
 
 
 class IPrinter(INode, Protocol):
@@ -1090,18 +1070,18 @@ class SearchArgs(Data):
     tolerance: 'Measurement'
 
 
-class ISearchProvider(INode, Protocol):
-    data_model: Optional['IDataModel']
+class IFinder(INode, Protocol):
+    data_model: Optional['IModel']
 
-    supports_filter: bool = False
-    supports_geometry: bool = False
-    supports_keyword: bool = False
+    supportsFilter: bool = False
+    supportsGeometry: bool = False
+    supportsKeyword: bool = False
 
     with_filter: bool
     with_geometry: bool
     with_keyword: bool
 
-    templates: Optional['ITemplateBundle']
+    cTemplates: Optional['ITemplateCollection']
     tolerance: 'Measurement'
 
     def run(self, args: SearchArgs, layer: 'ILayer' = None) -> List['IFeature']: ...
@@ -1115,94 +1095,109 @@ class ISearchProvider(INode, Protocol):
 
 # noinspection PyPropertyDefinition
 class IMap(INode, Protocol):
-    layers: List['ILayer']
+    rootLayer: 'ILayer'
 
     center: Point
-    coordinate_precision: int
+    coordinatePrecision: int
     crs: 'ICrs'
     extent: Extent
-    init_resolution: float
+    initResolution: float
     resolutions: List[float]
 
-    @property
-    def bounds(self) -> 'Bounds': ...
+
+class LegendRenderOutput(Data):
+    html: str
+    image: 'IImage'
+    image_path: str
+    size: Size
+    mime: str
+
+
+class ILegend(INode, Protocol):
+    def render(self, args: dict = None) -> Optional[LegendRenderOutput]: ...
 
 
 # noinspection PyPropertyDefinition
 class ILayer(INode, Protocol):
-    map: 'IMap'
+    canRenderBox: bool
+    canRenderXyz: bool
+    canRenderSvg: bool
+
     metadata: 'IMetadata'
 
-    can_render_box: bool
-    can_render_xyz: bool
-    can_render_svg: bool
-
-    is_group: bool
-    is_editable: bool
-
-    supports_raster_ows: bool
-    supports_vector_ows: bool
-
-    legend: 'Legend'
-
-    image_format: str
-    display: str
-
-    layers: List['ILayer'] = []
-
-    templates: 'ITemplateBundle'
-    data_model: Optional['IDataModel']
-    style: Optional['IStyle']
-    search_providers: List['ISearchProvider']
-
-    resolutions: List[float]
-    extent: Extent
-    opacity: float
-    geometry_type: Optional[GeometryType]
     crs: 'ICrs'
+    extent: Extent
+    imageFormat: str
+    opacity: float
+    resolutions: List[float]
 
-    client_options: Data
+    hasCache: bool
+    hasSearch: bool
+    hasLegend: bool
 
-    ows_enabled: bool
+    layers: List['ILayer']
 
-    edit_data_model: Optional['IDataModel']
-    edit_options: Optional[Data]
-    edit_style: Optional['IStyle']
+    def own_bounds(self) -> Optional['Bounds']: ...
 
-    @property
-    def description(self) -> str: ...
+    def render(self, lri: LayerRenderInput) -> 'LayerRenderOutput': ...
 
-    @property
-    def has_search(self) -> bool: ...
+    def render_legend(self, args: dict = None) -> Optional['LegendRenderOutput']: ...
 
-    @property
-    def has_legend(self) -> bool: ...
+    def render_description(self, args: dict = None) -> Optional[ContentResponse]: ...
 
-    @property
-    def has_cache(self) -> bool: ...
 
-    @property
-    def own_bounds(self) -> Optional[Bounds]: ...
+#
+# def render_xyz(self, x: int, y: int, z: int) -> bytes: ...
+#
+# def render_svg_element(self, view: 'MapView', style: Optional['IStyle']) -> Optional[XmlElement]: ...
+#
+# def render_svg_fragment(self, view: 'MapView', style: Optional['IStyle']) -> List[XmlElement]: ...
 
-    @property
-    def legend_url(self) -> Url: ...
-
-    @property
-    def ancestors(self) -> List['ILayer']: ...
-
-    def render_box(self, view: MapView, extra_params=None) -> bytes: ...
-
-    def render_xyz(self, x: int, y: int, z: int) -> bytes: ...
-
-    def render_svg_element(self, view: 'MapView', style: Optional['IStyle']) -> Optional[XmlElement]: ...
-
-    def render_svg_fragment(self, view: 'MapView', style: Optional['IStyle']) -> List[XmlElement]: ...
-
-    def render_legend_with_cache(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
-
-    def render_legend(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
-
-    def get_features(self, bounds: Bounds, limit: int = 0) -> List['IFeature']: ...
+#
+#
+#
+# is_group: bool
+# is_editable: bool
+#
+# supports_raster_ows: bool
+# supports_vector_ows: bool
+#
+# legend: 'Legend'
+#
+# display: str
+#
+# layers: List['ILayer'] = []
+#
+# templates: List['ITemplate']
+# models: List['IModel']
+# finders: List['IFinder']
+#
+#
+# client_options: Data
+#
+# geometry_type: Optional[GeometryType]
+# ows_enabled: bool
+#
+# def description(self) -> str: ...
+#
+# def has_search(self) -> bool: ...
+#
+# def has_legend(self) -> bool: ...
+#
+# def has_cache(self) -> bool: ...
+#
+# def own_bounds(self) -> Optional[Bounds]: ...
+#
+# def legend_url(self) -> Url: ...
+#
+# def ancestors(self) -> List['ILayer']: ...
+#
+#
+# def render_legend_with_cache(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
+#
+# def render_legend(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
+#
+# def get_features(self, bounds: Bounds, limit: int = 0) -> List['IFeature']: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1254,12 +1249,12 @@ class IOwsService(INode, Protocol):
     protocol: OwsProtocol
     supported_bounds: List[Bounds]
     supported_versions: List[str]
-    templates: 'ITemplateBundle'
+    cTemplates: 'ITemplateCollection'
     version: str
     with_inspire_meta: bool
     with_strict_params: bool
 
-    def handle_request(self, req: 'IWebRequest') -> ContentResponse: ...
+    def handle_request(self, req: 'IWebRequester') -> ContentResponse: ...
 
 
 class IOwsProvider(INode, Protocol):
@@ -1274,7 +1269,7 @@ class IOwsProvider(INode, Protocol):
 
 class IOwsClient(INode, Protocol):
     provider: 'IOwsProvider'
-    source_layers: List['SourceLayer']
+    sourceLayers: List['SourceLayer']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1295,27 +1290,23 @@ class IAction(INode, Protocol):
     pass
 
 
-class IApi(INode, Protocol):
-    def actions_for(self, user: 'IGrantee', parent: 'IApi' = None) -> Dict[str, INode]: ...
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # projects
 
 
 class IClient(INode, Protocol):
-    pass
+    options: Dict
+    elements: List
 
 
 class IProject(INode, Protocol):
-    api: 'IApi'
-    assets_root: Optional['DocumentRoot']
+    assetsRoot: Optional['DocumentRoot']
     client: 'IClient'
-    locale_uids: List[str]
+    localeUids: List[str]
     map: 'IMap'
     metadata: 'IMetadata'
-    search_providers: List['ISearchProvider']
-    templates: 'ITemplateBundle'
+
+    def render_description(self, args: dict = None) -> Optional[ContentResponse]: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1330,19 +1321,29 @@ class IMonitor(INode, Protocol):
 
 
 class IApplication(INode, Protocol):
-    api: 'IApi'
     auth: 'IAuthManager'
     client: 'IClient'
-    locale_uids: List[str]
+    localeUids: List[str]
     metadata: 'IMetadata'
     monitor: 'IMonitor'
     mpx_url: str
-    web_sites: List['IWebSite']
-    qgis_version: str
+    webSites: List['IWebSite']
+    qgisVersion: str
     version: str
 
     def developer_option(self, name: str): ...
 
-    def find_action(self, user: 'IGrantee', ext_type: str, project_uid: str = None) -> Optional[INode]: ...
+    def find_project(self, uid: str) -> Optional['IProject']: ...
+
+    def command_descriptor(
+            self,
+            command_category: str,
+            command_name: str,
+            params: dict,
+            user: 'IUser',
+            strict_mode: bool
+    ) -> ExtCommandDescriptor: ...
+
+    def actions_for(self, user: IGrantee, project: IProject = None) -> List['IAction']: ...
 
     def require_helper(self, ext_type: str): ...

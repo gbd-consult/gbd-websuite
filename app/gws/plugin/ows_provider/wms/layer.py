@@ -17,7 +17,7 @@ class Object(gws.base.layer.group.Object):
     provider: provider_module.Object
 
     def configure_source(self):
-        self.provider = self.root.create_object(provider_module.Object, self.config, shared=True)
+        self.provider = self.create_child(provider_module.Object, self.config, shared=True)
 
         def leaf(source_layers):
             return {

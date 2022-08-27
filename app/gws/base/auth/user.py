@@ -4,7 +4,7 @@ import gws.types as t
 
 from . import error
 
-_DELIM = '___'
+_DELIM = '::'
 
 
 def make_uid(user):
@@ -51,41 +51,38 @@ class User(gws.IUser):
         self.roles.add(gws.ROLE_ALL)
         self.local_uid = local_uid
         self.uid = make_uid(self)
-        self.is_guest = gws.ROLE_GUEST in self.roles
-        self.display_name = str(self.attributes.get('displayName', ''))
+        self.isGuest = gws.ROLE_GUEST in self.roles
+        self.displayName = str(self.attributes.get('displayName', ''))
         gws.log.debug(f'inited user: prov={provider.uid!r} local_uid={local_uid!r} roles={roles!r}')
 
-    def props_for(self, user):
-        return gws.Data(displayName=self.display_name)
+    def props(self, user):
+        return gws.Data(displayName=self.displayName)
 
     def can_use(self, obj, context=None):
-        return gws.core.tree.user_can_use(self, obj, context)
+        acc = self.access_to(obj)
+        if acc is not None:
+            return acc == gws.ACCESS_ALLOWED
+        obj = context or getattr(obj, 'parent', None)
+        while obj:
+            acc = self.access_to(obj)
+            if acc is not None:
+                return acc == gws.ACCESS_ALLOWED
+            obj = getattr(obj, 'parent', None)
+        return False
 
-    def require(self, klass=None, uid=None):
-        obj = self.provider.root.find(klass, uid)
-        if not obj:
-            raise error.ObjectNotFound(klass, uid)
-        if not self.can_use(obj):
-            raise error.AccessDenied(klass, uid)
-        return obj
-
-    def require_project(self, uid):
-        return t.cast(gws.IProject, self.require('gws.base.project', uid))
-
-    def require_layer(self, uid):
-        return t.cast(gws.ILayer, self.require('gws.ext.layer', uid))
-
-    def acquire(self, klass=None, uid=None):
-        obj = self.provider.root.find(klass, uid)
-        if obj and self.can_use(obj):
-            return obj
+    def access_to(self, obj):
+        access = getattr(obj, 'access', None)
+        if access:
+            for a, r in access:
+                if r in self.roles:
+                    return a
 
 
 class Guest(User):
     def __init__(self, provider, local_uid, roles, attributes):
         super().__init__(provider, local_uid, roles, attributes)
         self.roles.add(gws.ROLE_GUEST)
-        self.is_guest = True
+        self.isGuest = True
 
 
 class System(User):
@@ -100,6 +97,7 @@ class Nobody(User):
 
 class AuthorizedUser(User):
     pass
+
 
 class Admin(AuthorizedUser):
     def can_use(self, obj, context=None):

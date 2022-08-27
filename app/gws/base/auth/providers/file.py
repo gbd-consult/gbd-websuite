@@ -68,7 +68,7 @@ class Object(provider.Object):
         )
 
     @gws.ext.command.cli('authPassword')
-    def passwd(self, p: gws.NoParams):
+    def passwd(self, p: gws.EmptyRequest):
         """Encode a password for the authorization file"""
 
         while True:

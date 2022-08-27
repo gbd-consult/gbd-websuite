@@ -1,9 +1,9 @@
 """Search API."""
 
 import gws
-import gws.base.api
-import gws.gis.feature
-import gws.gis.shape
+import gws.base.action
+import gws.base.feature
+import gws.base.shape
 import gws.lib.units
 import gws.types as t
 
@@ -13,36 +13,36 @@ MAX_LIMIT = 1000
 
 
 @gws.ext.config.action('search')
-class Config(gws.base.api.action.Config):
+class Config(gws.base.action.Config):
     """Search action"""
 
     limit: int = 1000  #: search results limit
 
 
 class Response(gws.Response):
-    features: t.List[gws.gis.feature.Props]
+    features: t.List[gws.base.feature.Props]
 
 
-class Params(gws.Params):
+class Params(gws.Request):
     bbox: t.Optional[gws.Extent]
-    crs: t.Optional[gws.CrsId]
+    crs: t.Optional[gws.CRS]
     keyword: str = ''
     layerUids: t.List[str]
     limit: t.Optional[int]
     tolerance: t.Optional[str]
     resolution: float
-    shapes: t.Optional[t.List[gws.gis.shape.Props]]
+    shapes: t.Optional[t.List[gws.base.shape.Props]]
 
 
 @gws.ext.object.action('search')
-class Object(gws.base.api.action.Object):
+class Object(gws.base.action.Object):
     limit = 0
 
     def configure(self):
         self.limit = self.var('limit')
 
     @gws.ext.command.api('searchFind')
-    def find_features(self, req: gws.IWebRequest, p: Params) -> Response:
+    def find_features(self, req: gws.IWebRequester, p: Params) -> Response:
         """Perform a search"""
 
         project = req.require_project(p.projectUid)
@@ -58,7 +58,7 @@ class Object(gws.base.api.action.Object):
 
         shapes = []
         if p.shapes:
-            shapes = [gws.gis.shape.from_props(s) for s in p.shapes]
+            shapes = [gws.base.shape.from_props(s) for s in p.shapes]
 
         tolerance = None
         if p.tolerance:

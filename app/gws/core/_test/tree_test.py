@@ -44,7 +44,7 @@ def _objects(*classes):
 
 def _nodes(*classes):
     root = gws.create_root_object(MockSpecs(classes))
-    return [root.create_object(cls) for cls in classes]
+    return [root.create(cls) for cls in classes]
 
 
 def _user(role):
@@ -137,15 +137,15 @@ def test_access_with_explicit_parent():
 
 def test_basic_props():
     class A(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'b': b, 'c': c}
 
     class B(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'me': 'B'}
 
     class C(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'me': 'C'}
 
     a, b, c = _objects(A, B, C)
@@ -160,15 +160,15 @@ def test_basic_props():
 
 def test_props_with_access():
     class A(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'b': b, 'c': c}
 
     class B(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'me': 'B'}
 
     class C(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'me': 'C'}
 
     a, b, c = _objects(A, B, C)
@@ -184,19 +184,19 @@ def test_props_with_access():
 
 def test_props_with_implicit_access():
     class A(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'b': b, 'c': c}
 
     class B(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'me': 'B'}
 
     class C(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'d': d}
 
     class D(gws.Object):
-        def props_for(self, user):
+        def props(self, user):
             return {'me': 'D'}
 
     a, b, c, d = _objects(A, B, C, D)

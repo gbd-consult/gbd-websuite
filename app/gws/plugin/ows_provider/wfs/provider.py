@@ -2,7 +2,7 @@
 
 import gws
 import gws.gis.ows
-import gws.gis.shape
+import gws.base.shape
 import gws.types as t
 
 from . import caps
@@ -50,7 +50,7 @@ class Object(core.Provider):
                 n, u = args.tolerance
                 geometry_tolerance = n * (args.resolution or 1) if u == 'px' else n
 
-            search_shape = gws.gis.shape.union(args.shapes).tolerance_polygon(geometry_tolerance)
+            search_shape = gws.base.shape.union(args.shapes).tolerance_polygon(geometry_tolerance)
             bounds = search_shape.bounds
 
         ps = gws.gis.ows.client.prepared_search(

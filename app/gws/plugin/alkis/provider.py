@@ -1,8 +1,8 @@
 import gws
 import gws.plugin.postgres.provider
 import gws.gis.crs
-import gws.gis.feature
-import gws.gis.shape
+import gws.base.feature
+import gws.base.shape
 import gws.types as t
 
 from . import types
@@ -14,7 +14,7 @@ class Config(gws.Config):
     """Basic ALKIS configuration"""
 
     db: str = ''  #: database provider ID
-    crs: gws.CrsId  #: CRS for the ALKIS data
+    crs: gws.CRS  #: CRS for the ALKIS data
     dataSchema: str = 'public'  #: schema where ALKIS tables are stored
     indexSchema: str = 'gws'  #: schema to store GWS internal indexes
     excludeGemarkung: t.Optional[t.List[str]]  #: Gemarkung (Administrative Unit) IDs to exclude from search
@@ -97,10 +97,10 @@ class Object(gws.Node):
             total, rs = flurstueck.find(conn, qdict)
             for rec in rs:
                 rec = self._remove_restricted_data(qdict, rec)
-                features.append(gws.gis.feature.Feature(
+                features.append(gws.base.feature.Feature(
                     uid=rec['gml_id'],
                     attributes=rec,
-                    shape=gws.gis.shape.from_wkb_hex(rec['geom'], self.crs)
+                    shape=gws.base.shape.from_wkb_hex(rec['geom'], self.crs)
                 ))
 
         return types.FindFlurstueckResult(features=features, total=total)
@@ -115,10 +115,10 @@ class Object(gws.Node):
         with self.connection() as conn:
             total, rs = adresse.find(conn, gws.merge({}, query, kwargs))
             for rec in rs:
-                features.append(gws.gis.feature.Feature(
+                features.append(gws.base.feature.Feature(
                     uid=rec['gml_id'],
                     attributes=rec,
-                    shape=gws.gis.shape.from_xy(rec['x'], rec['y'], self.crs)
+                    shape=gws.base.shape.from_xy(rec['x'], rec['y'], self.crs)
                 ))
 
         return types.FindAdresseResult(features=features, total=total)
@@ -178,4 +178,4 @@ class Object(gws.Node):
 
 def create(root: gws.IRoot, cfg: gws.Config, parent: gws.Node = None, shared: bool = False) -> Object:
     key = gws.pick(cfg, 'db', 'crs', 'dataSchema', 'indexSchema', 'excludeGemarkung')
-    return root.create_object(Object, cfg, parent, shared, key)
+    return root.create(Object, cfg, parent, shared, key)

@@ -1,7 +1,7 @@
 """Parse WMS/WFS FeatureInfo responses."""
 
 import gws
-import gws.gis.shape
+import gws.base.shape
 import gws.gis.gml
 import gws.lib.xml2 as xml2
 import gws.types as t
@@ -78,7 +78,7 @@ def _f_FeatureCollection(el: gws.XmlElement, fallback_crs, **kwargs):
 
         shape = shapes[-1] if shapes else None
 
-        features.append(gws.gis.feature.from_args(
+        features.append(gws.base.feature.from_args(
             uid=uid,
             category=content_el.name,
             shape=shape,
@@ -141,7 +141,7 @@ def _f_GetFeatureInfoResponse(el: gws.XmlElement, fallback_crs, **kwargs):
 
                 if name.lower() == 'geometry':
                     try:
-                        shape = gws.gis.shape.from_wkt(value, fallback_crs)
+                        shape = gws.base.shape.from_wkt(value, fallback_crs)
                     except Exception:
                         gws.log.exception()
                         continue
@@ -152,7 +152,7 @@ def _f_GetFeatureInfoResponse(el: gws.XmlElement, fallback_crs, **kwargs):
 
                 atts.append(gws.Attribute(name=name, value=value))
 
-            features.append(gws.gis.feature.from_args(
+            features.append(gws.base.feature.from_args(
                 uid=uid,
                 category=layer_name or '',
                 shape=shape,
@@ -186,7 +186,7 @@ def _f_FeatureInfoResponse(el: gws.XmlElement, fallback_crs, **kwargs):
             else:
                 atts.append(gws.Attribute(name=k, value=v))
 
-        features.append(gws.gis.feature.from_args(
+        features.append(gws.base.feature.from_args(
             uid=uid,
             attributes=atts
         ))
@@ -224,7 +224,7 @@ def _f_GeoBAK(el: gws.XmlElement, fallback_crs, **kwargs):
                 xml2.text(a, 'Name').strip(): xml2.text(a, 'Wert').strip()
                 for a in xml2.all(feature_el, 'Attribut')
             }
-            features.append(gws.gis.feature.from_args(
+            features.append(gws.base.feature.from_args(
                 category=layer_name,
                 attributes=atts
             ))

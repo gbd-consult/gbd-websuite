@@ -17,7 +17,7 @@ const MAX_SNAPSHOT_DPI = 600;
 
 interface ViewProps extends gws.types.ViewProps {
     controller: Controller;
-    printerJob?: gws.api.printer.StatusResponse;
+    printerJob?: gws.api.base.printer.StatusResponse;
     printerQuality: string;
     printerState?: 'preview' | 'running' | 'error' | 'complete';
     printerTemplateIndex: string;
@@ -141,15 +141,15 @@ class PreviewBox extends gws.View<ViewProps> {
         let pd = this.props.printerData || {};
         let tpl = this.props.controller.selectedTemplate;
 
-        if (tpl && tpl.dataModel) {
-            tpl.dataModel.rules.forEach(r => data.push({
-                name: r.name,
-                title: r.title || r.name,
-                value: pd[r.name] || '',
-                editable: true,
-                type: r.type,
-            }));
-        }
+        // if (tpl && tpl.dataModel) {
+        //     tpl.dataModel.rules.forEach(r => data.push({
+        //         name: r.name,
+        //         title: r.title || r.name,
+        //         value: pd[r.name] || '',
+        //         editable: true,
+        //         type: r.type,
+        //     }));
+        // }
 
         let changed = (k, v) => {
             let up;
@@ -442,7 +442,7 @@ class Controller extends gws.Controller {
         let vs = this.map.viewState;
         mapParams.center = [vs.centerX, vs.centerY] as gws.api.core.Point;
 
-        let params: gws.api.printer.ParamsWithTemplate = {
+        let params: gws.api.base.printer.ParamsWithTemplate = {
             context: this.getValue('printerData'),
             maps: [mapParams],
             qualityLevel,
@@ -450,7 +450,7 @@ class Controller extends gws.Controller {
             type: 'template',
         };
 
-        await this.startJob(this.app.server.printerStartPrint(params, {binary: true}));
+        await this.startJob(this.app.server.printerStart(params, {binary: true}));
     }
 
     async startSnapshot() {
@@ -474,7 +474,7 @@ class Controller extends gws.Controller {
             vs.centerY + (h / 2) * res,
         ];
 
-        let params: gws.api.printer.ParamsWithMap = {
+        let params: gws.api.base.printer.ParamsWithMap = {
             context: this.getValue('printerData'),
             dpi,
             maps: [mapParams],
@@ -483,13 +483,13 @@ class Controller extends gws.Controller {
             type: 'map',
         };
 
-        await this.startJob(this.app.server.printerStartPrint(params, {binary: true}));
+        await this.startJob(this.app.server.printerStart(params, {binary: true}));
 
     }
 
     async startJob(res) {
         this.update({
-            printerJob: {state: gws.api.job.State}
+            printerJob: {state: gws.api.lib.job.State}
         });
 
         let job = await res;
@@ -529,21 +529,21 @@ class Controller extends gws.Controller {
 
         switch (job.state) {
 
-            case gws.api.job.State.init:
+            case gws.api.lib.job.State.init:
                 this.update({printerState: 'running'});
                 break;
 
-            case gws.api.job.State.open:
-            case gws.api.job.State.running:
+            case gws.api.lib.job.State.open:
+            case gws.api.lib.job.State.running:
                 this.update({printerState: 'running'});
                 this.jobTimer = setTimeout(() => this.poll(), JOB_POLL_INTERVAL);
                 break;
 
-            case gws.api.job.State.cancel:
+            case gws.api.lib.job.State.cancel:
                 this.stop();
                 break;
 
-            case gws.api.job.State.complete:
+            case gws.api.lib.job.State.complete:
                 if (this.getValue('printerSnapshotMode')) {
                     let a = document.createElement('a');
                     a.href = job.url;
@@ -556,7 +556,7 @@ class Controller extends gws.Controller {
                     this.update({printerState: job.state});
                 }
                 break;
-            case gws.api.job.State.error:
+            case gws.api.lib.job.State.error:
                 this.update({printerState: job.state});
         }
     }
@@ -566,7 +566,7 @@ class Controller extends gws.Controller {
 
         if (job) {
             this.update({
-                printerJob: await this.app.server.printerGetStatus({jobUid: job.jobUid}),
+                printerJob: await this.app.server.printerStatus({jobUid: job.jobUid}),
             });
         }
     }
@@ -574,7 +574,7 @@ class Controller extends gws.Controller {
     protected async sendCancel(jobUid) {
         if (jobUid) {
             console.log('SEND CANCEL');
-            await this.app.server.printerCancelPrinting({jobUid});
+            await this.app.server.printerCancel({jobUid});
         }
     }
 

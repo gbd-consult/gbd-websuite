@@ -4,7 +4,7 @@ import re
 
 import gws
 import gws.gis.bounds
-import gws.gis.shape
+import gws.base.shape
 import gws.lib.xml2 as xml2
 import gws.types as t
 
@@ -83,7 +83,7 @@ def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
         v = xml2.first(el, 'Envelope')
         if v:
             bounds = gws.gis.bounds.from_gml_envelope_element()
-            f.shape = gws.gis.shape.from_bounds(bounds)
+            f.shape = gws.base.shape.from_bounds(bounds)
             return f
 
     v = xml2.first(el, 'Literal')

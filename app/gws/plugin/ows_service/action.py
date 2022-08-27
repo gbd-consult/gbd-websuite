@@ -1,33 +1,33 @@
 """OWS server."""
 
 import gws
-import gws.base.api
+import gws.base.action
 import gws.base.web.error
 import gws.lib.mime
 import gws.lib.xml2 as xml2
 import gws.types as t
 
 
-class ServiceParams(gws.Params):
+class ServiceParams(gws.Request):
     serviceUid: str
 
 
 @gws.ext.config.action('ows')
-class Config(gws.base.api.action.Config):
+class Config(gws.base.action.Config):
     """OWS server action"""
 
     services: t.List[gws.ext.config.owsService]  #: services configuration
 
 
 @gws.ext.object.action('ows')
-class Object(gws.base.api.action.Object):
+class Object(gws.base.action.Object):
     services: t.List[gws.IOwsService]
 
     def configure(self):
-        self.services = self.create_children('gws.ext.ows.service', self.var('services'))
+        self.services = self.create_children(gws.ext.object.owsService, self.var('services'))
 
     @gws.ext.command.get('owsService')
-    def service(self, req: gws.IWebRequest, p: ServiceParams) -> gws.ContentResponse:
+    def service(self, req: gws.IWebRequester, p: ServiceParams) -> gws.ContentResponse:
         srv = self._find_service(p.serviceUid)
         if not srv:
             gws.log.debug(f'service not found uid={p.serviceUid!r}')

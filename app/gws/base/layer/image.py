@@ -3,39 +3,29 @@ import gws.gis.extent
 import gws.lib.image
 import gws.gis.mpx as mpx
 
-from . import core, types
+from . import lib, main
 
 
-class Config(types.Config):
-    cache: types.CacheConfig = {}  # type:ignore #: cache configuration
-    grid: types.GridConfig = {}  # type:ignore #: grid configuration
-    imageFormat: types.ImageFormat = types.ImageFormat.png8  #: image format
 
 
-class Object(core.Object):
+class Object(main.Object):
     """Base image layer"""
 
-    can_render_box = True
-    can_render_xyz = True
-    supports_raster_ows = True
+    canRenderBox = True
+    canRenderXyz = True
+    canRenderSvg = False
+    canRasterOws = True
 
-    def props_for(self, user):
-        p = super().props_for(user)
 
-        if self.display == 'tile':
-            return gws.merge(
-                p,
-                type='tile',
-                url=core.layer_url_path(self.uid, kind='tile'),
-                tileSize=self.grid.tileSize,
-            )
+    def configure(self):
+        self.configure_base()
 
-        if self.display == 'box':
-            return gws.merge(
-                p,
-                type='box',
-                url=core.layer_url_path(self.uid, kind='box'),
-            )
+
+
+
+    def props(self, user):
+        p = super().props(user)
+
 
         return p
 
@@ -83,78 +73,3 @@ class Object(core.Object):
             tile_matrix=self.grid_uid,
             tile_size=self.grid.tileSize)
 
-    """
-        Mapproxy config is done in two steps
-
-        1. first, configure the source. For box layers, this is a normal WMS source.
-        For tiled layers, we use the 'double cache' technique, see
-
-        https://mapproxy.org/docs/nightly/configuration_examples.html#create-wms-from-existing-tile-server
-        https://mapproxy.org/docs/1.11.0/configuration_examples.html#reprojecting-tiles
-
-        Basically, the source is wrapped in a no-store BACK cache, which is then given to the front mpx layer
-
-        2. then, configure the layer. Create the FRONT cache, which is store or no-store, depending on the cache setting.
-        Also, configure the _NOCACHE variant for the layer, which skips the DST cache
-    """
-
-    def mapproxy_layer_config(self, mc, source_uid):
-
-        mc.layer({
-            'name': self.uid + '_NOCACHE',
-            'sources': [source_uid]
-        })
-
-        res = [r for r in self.resolutions if r]
-        if len(res) < 2:
-            res = [res[0], res[0]]
-
-        self.grid_uid = mc.grid(gws.compact({
-            'origin': self.grid.origin,
-            'tile_size': [self.grid.tileSize, self.grid.tileSize],
-            'res': res,
-            'srs': self.map.crs.epsg,
-            'bbox': self.extent,
-        }))
-
-        meta_size = self.grid.reqSize or 4
-
-        front_cache_config = {
-            'sources': [source_uid],
-            'grids': [self.grid_uid],
-            'cache': {
-                'type': 'file',
-                'directory_layout': 'mp'
-            },
-            'meta_size': [meta_size, meta_size],
-            'meta_buffer': self.grid.reqBuffer,
-            'disable_storage': not self.has_cache,
-            'minimize_meta_requests': True,
-            'format': self.image_format,
-        }
-
-        self.cache_uid = mc.cache(front_cache_config)
-
-        mc.layer({
-            'name': self.uid,
-            'sources': [self.cache_uid]
-        })
-
-    def mapproxy_back_cache_config(self, mc, url, grid_uid):
-        source_uid = mc.source({
-            'type': 'tile',
-            'url': url,
-            'grid': grid_uid,
-            'concurrent_requests': self.var('maxRequests', default=0)
-        })
-
-        return mc.cache(gws.compact({
-            'sources': [source_uid],
-            'grids': [grid_uid],
-            'cache': {
-                'type': 'file',
-                'directory_layout': 'mp'
-            },
-            'disable_storage': True,
-            'format': self.image_format,
-        }))

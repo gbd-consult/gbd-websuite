@@ -29,6 +29,10 @@ class Data:
         d.update(kwargs)
         vars(self).update(d)
 
+    def with_attrs(self, **kwargs):
+        self.update(**kwargs)
+        return self
+
 
 # getattr needs to be defined out of class, otherwise IDEA accepts all attributes
 

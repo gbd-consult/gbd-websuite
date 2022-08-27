@@ -5,20 +5,20 @@ import gws.lib.style
 import gws.lib.svg
 import gws.types as t
 
-from . import core, types
+from . import main, lib
 
 _FEATURE_FULL_FORMAT_THRESHOLD = 500
 
 
-class Config(types.Config):
-    display: types.DisplayMode = types.DisplayMode.client  #: layer display mode
+class Config(main.Config):
+    display: lib.DisplayMode = lib.DisplayMode.client  #: layer display mode
     editDataModel: t.Optional[gws.base.model.Config]  #: data model for input data
     editStyle: t.Optional[gws.lib.style.Config]  #: style for features being edited
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
     style: t.Optional[gws.lib.style.Config]  #: style for features
 
 
-class Object(core.Object):
+class Object(main.Object):
     """Base vector layer"""
 
     can_render_box = True
@@ -26,22 +26,14 @@ class Object(core.Object):
     supports_raster_ows = True
     supports_vector_ows = True
 
-    def props_for(self, user):
-        p = super().props_for(user)
-
-        if self.display == 'box':
-            return gws.merge(
-                p,
-                type='box',
-                url=core.layer_url_path(self.uid, kind='box'))
+    def props(self, user):
+        p = super().props(user)
 
         return gws.merge(
             p,
             type='vector',
             loadingStrategy=self.var('loadingStrategy'),
-            style=self.style,
-            editStyle=self.edit_style,
-            url=core.layer_url_path(self.uid, kind='features'))
+            url=lib.layer_url_path(self.uid, kind='features'))
 
     def render_box(self, view, extra_params=None):
         fr = self.render_svg_fragment(view)

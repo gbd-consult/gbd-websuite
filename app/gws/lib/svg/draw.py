@@ -6,7 +6,7 @@ import shapely.ops
 import gws
 import gws.lib.font
 import gws.gis.render
-import gws.gis.shape
+import gws.base.shape
 import gws.lib.units as units
 import gws.lib.xml2 as xml2
 import gws.types as t
@@ -20,7 +20,7 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, style: gws.IStyle = 
     if not shape:
         return []
 
-    geom = t.cast(gws.gis.shape.Shape, shape).geom
+    geom = t.cast(gws.base.shape.Shape, shape).geom
     if geom.is_empty:
         return []
 

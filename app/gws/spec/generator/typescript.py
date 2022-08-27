@@ -65,7 +65,7 @@ class _Creator:
 
     def make2(self, typ):
         if typ.c == base.C.LITERAL:
-            return _pipe(_val(v) for v in typ.values)
+            return _pipe(_val(v) for v in typ.literalValues)
 
         if typ.c in {base.C.LIST, base.C.SET}:
             return 'Array<%s>' % self.make(typ.tItem)
@@ -90,26 +90,29 @@ class _Creator:
             return '{[key: %s]: %s}' % (k, v)
 
         if typ.c == base.C.CLASS:
-            tpl = "/// $doc \n  export interface $name$extends { \n $props \n }"
-            extends = ''
-            if typ.tSupers:
-                extends = ' extends ' + self.make(typ.tSupers[0])
-            return self.make_type(typ, tpl, extends=extends, props=self.make_props(typ))
+            return self.namespace_entry(
+                typ,
+                template="/// $doc \n  export interface $name$extends { \n $props \n }",
+                props=self.make_props(typ),
+                extends=' extends ' + self.make(typ.tSupers[0]) if typ.tSupers else '')
 
         if typ.c == base.C.ENUM:
-            tpl = "/// $doc \n export enum $name { \n $items \n }"
-            items = _nl('%s = %s,' % (k, _val(v)) for k, v in sorted(typ.enumValues.items()))
-            return self.make_type(typ, tpl, items=items)
+            return self.namespace_entry(
+                typ,
+                template="/// $doc \n export enum $name { \n $items \n }",
+                items=_nl('%s = %s,' % (k, _val(v)) for k, v in sorted(typ.enumValues.items())))
 
         if typ.c == base.C.TYPE:
-            tpl = "/// $doc \n export type $name = $target;"
-            return self.make_type(typ, tpl, target=self.make(typ.tTarget))
+            return self.namespace_entry(
+                typ,
+                template="/// $doc \n export type $name = $target;",
+                target=self.make(typ.tTarget))
 
         raise base.Error(f'unhandled type {typ.name!r} in {self.stack!r}')
 
     CORE_NAME = 'core'
 
-    def make_type(self, typ, template, **kwargs):
+    def namespace_entry(self, typ, template, **kwargs):
         ps = typ.name.split(DOT)
         ps.pop(0)
         if ps[0] == self.CORE_NAME:
@@ -201,7 +204,7 @@ class _Creator:
         return self.format(stub_tpl, commands=_nl(commands))
 
     def format(self, template, **kwargs):
-        kwargs['VERSION'] = self.gen.meta.version
+        kwargs['VERSION'] = self.gen.meta['version']
         return re.sub(
             r'\$(\w+)',
             lambda m: kwargs[m.group(1)],

@@ -15,7 +15,7 @@ def configure(
         config=None,
         before_init=None,
         fallback_config=None
-) -> gws.Root:
+) -> gws.IRoot:
     """Configure the server"""
 
     def _print(a):
@@ -42,7 +42,7 @@ def configure(
         gws.log.info(f'using manifest {manifest_path!r}...')
 
     try:
-        specs = gws.spec.runtime.load(manifest_path)
+        specs = gws.spec.runtime.create(manifest_path, read_cache=True, write_cache=True)
     except Exception as exc:
         # no fallback here
         _report(exc.args)
@@ -68,29 +68,29 @@ def configure(
         _report(exc.args)
         return _fallback(exc, 'init error')
 
-    if not root_object.configuration_errors:
+    if not root_object.configErrors:
         gws.log.info('configuration ok')
         return root_object
 
-    for err in root_object.configuration_errors:
+    for err in root_object.configErrors:
         _report(err)
 
     if specs.manifest.withStrictConfig:
         return _fallback(gws.ConfigurationError(), 'configuration failed')
 
-    gws.log.warn(f'CONFIGURATION ERRORS: {len(root_object.configuration_errors)}')
+    gws.log.warn(f'CONFIGURATION ERRORS: {len(root_object.configErrors)}')
     return root_object
 
 
-def initialize(specs, parsed_config) -> gws.Root:
+def initialize(specs, parsed_config) -> gws.IRoot:
     r = gws.create_root_object(specs)
 
     try:
         ts = gws.time_start('configuring application')
         r.create_application(parsed_config)
         gws.time_end(ts)
-    except Exception as e:
-        raise gws.ConfigurationError(*e.args)
+    except Exception as exc:
+        raise gws.ConfigurationError(*exc.args)
 
     r.post_initialize()
 
@@ -111,8 +111,8 @@ def store(r: gws.IRoot, path=None):
     gws.log.debug(f'writing config to {path!r}')
     try:
         gws.serialize_to_path(r, path)
-    except Exception as e:
-        raise gws.ConfigurationError('unable to store configuration') from e
+    except Exception as exc:
+        raise gws.ConfigurationError('unable to store configuration') from exc
 
 
 def load(path=None) -> gws.Root:
@@ -123,8 +123,8 @@ def load(path=None) -> gws.Root:
         r = gws.unserialize_from_path(path)
         gws.time_end(ts)
         return activate(r)
-    except Exception as e:
-        raise gws.ConfigurationError('unable to load configuration') from e
+    except Exception as exc:
+        raise gws.ConfigurationError('unable to load configuration') from exc
 
 
 def root() -> gws.Root:

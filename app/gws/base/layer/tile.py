@@ -4,13 +4,13 @@ import gws
 import gws.gis.crs
 import gws.types as t
 
-from . import image, types
+from . import main, lib
 
 
 class ServiceConfig:
     """Tile service configuration"""
     extent: t.Optional[gws.Extent]  #: service extent
-    crs: gws.CrsId = 'EPSG:3857'  #: service CRS
+    crs: gws.CRS = 'EPSG:3857'  #: service CRS
     origin: str = 'nw'  #: position of the first tile (nw or sw)
     tileSize: int = 256  #: tile size
 
@@ -19,37 +19,24 @@ class Service(gws.Data):
     extent: gws.Extent
     crs: gws.ICrs
     origin: str
-    tile_size: int
+    tileSize: int
 
 
 @gws.ext.config.layer('tile')
-class Config(image.Config):
+class Config(main.Config):
     """Tile layer"""
-    display: types.DisplayMode = types.DisplayMode.tile  #: layer display mode
+    display: lib.DisplayMode = lib.DisplayMode.tile  #: layer display mode
     maxRequests: int = 0  #: max concurrent requests to this source
     service: t.Optional[ServiceConfig] = {}  # type:ignore #: service configuration
     url: gws.Url  #: rest url with placeholders {x}, {y} and {z}
 
 
 @gws.ext.object.layer('tile')
-class Object(image.Object):
+class Object(main.Object):
     url: gws.Url
     service: Service
 
-    def props_for(self, user):
-        p = super().props_for(user)
-        if self.display == 'client':
-            return gws.merge(p, type='xyz', url=self.url)
-        return p
-
-    @property
-    def own_bounds(self):
-        # in the "native" projection, use the service extent
-        # otherwise, the map extent
-        if self.service.crs == self.crs:
-            return gws.Bounds(crs=self.service.crs, extent=self.service.extent)
-
-    def configure(self):
+    def configure_source(self):
         # with reqSize=1 MP will request the same tile multiple times
         # reqSize=4 is more efficient, however, reqSize=1 yields the first tile faster
         # which is crucial when browsing non-cached low resoltions
@@ -64,14 +51,32 @@ class Object(image.Object):
         self.service = Service(
             crs=gws.gis.crs.get(p.crs) or gws.gis.crs.get3857(),
             origin=p.origin,
-            tile_size=p.tileSize,
+            tileSize=p.tileSize,
             extent=p.extent)
 
         if not self.service.extent:
-            if self.service.crs.srid == gws.gis.crs.c3857:
-                self.service.extent = gws.gis.crs.c3857_extent
+            if self.service.crs.srid == 3857:
+                self.service.extent = gws.gis.crs.CRS_3857_EXTENT
             else:
-                raise gws.Error(f'service extent required for crs {self.service.crs.srid!r}')
+                raise gws.ConfigurationError(f'service extent required for crs {self.service.crs.srid!r}')
+
+    def props(self, user):
+        p = super().props(user)
+
+        if self.displayMode == lib.DisplayMode.client:
+            p.type = 'xyz'
+            p.url = self.url
+
+        return p
+
+    def own_bounds(self):
+        # in the "native" projection, use the service extent
+        # otherwise, the map extent
+        if self.service.crs == self.crs:
+            return gws.Bounds(crs=self.service.crs, extent=self.service.extent)
+
+    def render(self, lri):
+        return gws.base.layer.lib.generic_raster_render(self, lri)
 
     def mapproxy_config(self, mc, options=None):
         # we use {x} like in Ol, mapproxy wants %(x)s
@@ -85,8 +90,8 @@ class Object(image.Object):
             'bbox': self.service.extent,
             # 'res': res,
             'srs': self.service.crs.epsg,
-            'tile_size': [self.service.tile_size, self.service.tile_size],
+            'tile_size': [self.service.tileSize, self.service.tileSize],
         }))
 
-        src = self.mapproxy_back_cache_config(mc, url, grid_uid)
-        self.mapproxy_layer_config(mc, src)
+        src_uid = lib.mapproxy_back_cache_config(self, mc, url, grid_uid)
+        lib.mapproxy_layer_config(self, mc, src_uid)

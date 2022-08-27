@@ -1,13 +1,14 @@
 """web application root"""
 
 import gws
+import gws.base.action
 import gws.base.web.error
 import gws.base.web.site
 import gws.config
 import gws.spec.runtime
 import gws.types as t
 
-from gws.base.auth.wsgi import WebRequest, WebResponse
+from gws.base.web.wsgi import Requester, Responder
 
 _inited = False
 
@@ -19,8 +20,8 @@ def application(environ, start_response):
         _init()
         _inited = True
 
-    response = handle_request(environ)
-    return response(environ, start_response)
+    responder = handle_request(environ)
+    return responder(environ, start_response)
 
 
 def reload():
@@ -28,9 +29,9 @@ def reload():
     _inited = False
 
 
-def handle_request(environ) -> WebResponse:
+def handle_request(environ) -> Responder:
     root = gws.config.root()
-    req = WebRequest.__init__(self, 1, 2, s)
+    req = gws.base.web.wsgi.Requester(root, environ, _find_site(root, environ))
     return _handle_request2(req)
 
 
@@ -41,7 +42,7 @@ def _init():
     try:
         gws.log.info('initializing WEB application')
         root = gws.config.load()
-        gws.log.set_level(root.application.var('server.log.level'))
+        gws.log.set_level(root.app.var('server.log.level'))
     except:
         gws.log.exception('UNABLE TO LOAD CONFIGURATION')
         gws.exit(255)
@@ -53,118 +54,99 @@ class _DispatchError(gws.Error):
     pass
 
 
-def _handle_request2(req: WebRequest) -> WebResponse:
+def _handle_request2(req: Requester) -> Responder:
     site = t.cast(gws.base.web.site.Object, req.site)
 
-    cors = site.cors_options
+    cors = site.corsOptions
     if cors and req.method == 'OPTIONS':
-        return _with_cors_headers(cors, req.content_response(gws.ContentResponse(content='', mime='text/plain')))
+        return _with_cors_headers(cors, req.content_responder(gws.ContentResponse(content='', mime='text/plain')))
 
-    req.auth_open()
-    res = _handle_request3(req)
-    req.auth_close(res)
+    try:
+        res = _handle_request3(req)
+    except:
+        gws.log.exception()
+        res = _handle_error(req, gws.base.web.error.InternalServerError())
 
-    if cors and req.method == 'POST':
+    if cors:
         res = _with_cors_headers(cors, res)
 
     return res
 
 
-def _handle_request3(req: WebRequest):
+def _handle_request3(req: Requester) -> Responder:
+    req.parse_input()
+
+    req.enter_request()
     try:
-        req.parse_input()
-        return _handle_action(req)
+        res = _handle_request4(req)
     except gws.base.web.error.HTTPException as err:
-        return _handle_error(req, err)
-    except:
-        gws.log.exception()
-        return _handle_error(req, gws.base.web.error.InternalServerError())
+        res = _handle_error(req, err)
+    req.exit_request(res)
+
+    return res
 
 
-def _handle_error(req: WebRequest, err: gws.base.web.error.HTTPException) -> WebResponse:
-    # @TODO: image errors
-
-    site = t.cast(gws.base.web.site.Object, req.site)
-
-    if req.output_struct_type:
-        return req.struct_response(gws.Response(
-            error=gws.ResponseError(
-                status=err.code,
-                info=gws.get(err, 'description', ''))))
-
-    if not site.error_page:
-        return req.error_response(err)
-
-    try:
-        context = {
-            'request': req,
-            'error': err.code
-        }
-        res = site.error_page.render(gws.TemplateRenderInput(context=context))
-        return req.content_response(gws.ContentResponse(
-            content=res.content,
-            mime=res.mime,
-            status=err.code))
-    except:
-        gws.log.exception()
-        return req.error_response(gws.base.web.error.InternalServerError())
-
-
-def _handle_action(req: WebRequest) -> WebResponse:
-    cmd = req.param('cmd')
-    if not cmd:
+def _handle_request4(req: Requester) -> Responder:
+    command_name = req.param('cmd')
+    if not command_name:
         raise gws.base.web.error.NotFound()
 
-    if req.input_struct_type:
-        method = 'api'
-        params = req.params.get('params')
-        strict = True
-    elif req.method == 'GET':
-        method = 'get'
+    if req.isApi:
+        command_category = 'api'
+        params = req.param('params')
+        strict_mode = True
+    elif req.isGet:
+        command_category = 'get'
         params = req.params
-        strict = False
-    elif req.method == 'POST':
-        method = 'post'
+        strict_mode = False
+    elif req.isPost:
+        command_category = 'post'
         params = req.params
-        strict = False
+        strict_mode = False
     else:
         # @TODO: add HEAD
         raise gws.base.web.error.MethodNotAllowed()
 
+    command_desc = req.root.app.command_descriptor(
+        command_category,
+        command_name,
+        params,
+        req.user,
+        strict_mode
+    )
+
+    response = command_desc.methodPtr(req, command_desc.request)
+
+    if response is None:
+        gws.log.error(f'action not handled {command_category!r}:{command_name!r}')
+        raise gws.base.web.error.NotFound()
+
+    if isinstance(response, gws.ContentResponse):
+        return req.content_responder(response)
+
+    return req.struct_responder(response)
+
+
+def _handle_error(req: Requester, err: gws.base.web.error.HTTPException) -> Responder:
+    # @TODO: image errors
+
+    if req.isApi:
+        return req.struct_responder(gws.Response(
+            status=err.code,
+            error=gws.ResponseError(
+                status=err.code,
+                info=gws.get(err, 'description', ''))))
+
+    if not req.site.errorPage:
+        return req.error_responder(err)
+
     try:
-        command_desc = req.root.specs.parse_command(cmd, method, params, with_strict_mode=strict)
-    except gws.spec.runtime.Error as e:
-        gws.log.error('ACTION ERROR', e)
-        raise gws.base.web.error.BadRequest()
-
-    if not command_desc:
-        gws.log.error(f'command not found cmd={cmd!r} method={method!r}')
-        raise gws.base.web.error.NotFound()
-
-    project_uid = command_desc.params.get('projectUid')
-
-    gws.log.debug(f'DISPATCH c={command_desc.cmd_name!r} c={command_desc.cmd_action!r} f={command_desc.function_name!r} projectUid={project_uid!r}')
-
-    action = req.root.application.find_action(req.user, command_desc.cmd_action, project_uid)
-
-    if not action:
-        gws.log.error(f'action not found c={command_desc.cmd_action!r} method={method!r}')
-        raise gws.base.web.error.NotFound()
-
-    if not req.user.can_use(action):
-        gws.log.error(f'permission denied c={command_desc.cmd_action!r} method={method!r}')
-        raise gws.base.web.error.Forbidden()
-
-    res = getattr(action, command_desc.function_name)(req, command_desc.params)
-
-    if res is None:
-        gws.log.error(f'action not handled cmd={cmd!r} method={method!r}')
-        raise gws.base.web.error.NotFound()
-
-    if isinstance(res, gws.ContentResponse):
-        return req.content_response(res)
-
-    return req.struct_response(res)
+        args = {'request': req, 'error': err.code}
+        response = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
+        return req.content_responder(response.with_attrs(status=err.code))
+    except:
+        gws.log.exception()
+        return req.error_responder(gws.base.web.error.InternalServerError())
 
 
 def _with_cors_headers(cors, res):
@@ -179,13 +161,13 @@ def _with_cors_headers(cors, res):
     return res
 
 
-def _find_site(environ, root):
+def _find_site(root, environ):
     host = environ.get('HTTP_HOST', '').lower().split(':')[0].strip()
 
-    for s in root.application.web_sites:
+    for s in root.app.webSites:
         if s.host.lower() == host:
             return s
-    for s in root.application.web_sites:
+    for s in root.app.webSites:
         if s.host == '*':
             return s
 

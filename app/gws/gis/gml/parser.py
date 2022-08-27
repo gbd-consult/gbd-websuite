@@ -3,8 +3,8 @@
 import gws
 import gws.gis.crs
 import gws.gis.extent
-import gws.gis.feature
-import gws.gis.shape
+import gws.base.feature
+import gws.base.shape
 import gws.lib.xml2 as xml2
 import gws.types as t
 
@@ -80,7 +80,7 @@ def parse_to_shape(el: gws.XmlElement, fallback_crs: gws.ICrs = None) -> gws.ISh
     except Exception as exc:
         raise Error('shape: parse error') from exc
 
-    return gws.gis.shape.from_geometry(geometry, crs)
+    return gws.base.shape.from_geometry(geometry, crs)
 
 
 def parse_to_geometry(el: gws.XmlElement) -> dict:

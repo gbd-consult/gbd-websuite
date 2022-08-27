@@ -30,8 +30,8 @@ def init():
         gws.exit(255)
 
     try:
-        gws.log.set_level(root.application.var('server.log.level'))
-        root.application.monitor.start()
+        gws.log.set_level(root.app.var('server.log.level'))
+        root.app.monitor.start()
     except:
         gws.log.exception('SPOOL INIT ERROR')
         gws.exit(255)

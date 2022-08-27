@@ -71,7 +71,7 @@ class Style(gws.Object, gws.IStyle):
         self.text = text
         self.values = values
 
-    def props_for(self, user):
+    def props(self, user):
         ico = self.values.icon
         if ico and isinstance(ico, icon.ParsedIcon):
             ico = icon.to_data_url(ico)

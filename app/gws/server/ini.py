@@ -46,7 +46,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
 
     # Check the marker file created by our docker build (see install/build.py)
     try:
-        in_container = os.path.isfile('/.GWS_IN_CONTAINER')
+        in_container = os.path.isfile('/.dockerenv')
     except:
         in_container = False
 
@@ -54,38 +54,38 @@ def create(root: gws.IRoot, base_dir, pid_dir):
 
     # NB it should be possible to have QGIS running somewhere else
     # so, if 'host' is not localhost, don't start QGIS here
-    qgis_enabled = root.application.var('server.qgis.enabled') and root.application.var('server.qgis.host') == 'localhost'
-    qgis_port = root.application.var('server.qgis.port')
-    qgis_workers = root.application.var('server.qgis.workers')
-    qgis_threads = root.application.var('server.qgis.threads')
+    qgis_enabled = root.app.var('server.qgis.enabled') and root.app.var('server.qgis.host') == 'localhost'
+    qgis_port = root.app.var('server.qgis.port')
+    qgis_workers = root.app.var('server.qgis.workers')
+    qgis_threads = root.app.var('server.qgis.threads')
     qgis_socket = gws.TMP_DIR + '/uwsgi.qgis.sock'
 
-    web_enabled = root.application.var('server.web.enabled')
-    web_workers = root.application.var('server.web.workers')
-    web_threads = root.application.var('server.web.threads')
+    web_enabled = root.app.var('server.web.enabled')
+    web_workers = root.app.var('server.web.workers')
+    web_threads = root.app.var('server.web.threads')
     web_socket = gws.TMP_DIR + '/uwsgi.web.sock'
 
-    spool_enabled = root.application.var('server.spool.enabled')
-    spool_workers = root.application.var('server.spool.workers')
-    spool_threads = root.application.var('server.spool.threads')
+    spool_enabled = root.app.var('server.spool.enabled')
+    spool_workers = root.app.var('server.spool.workers')
+    spool_threads = root.app.var('server.spool.threads')
     spool_socket = gws.TMP_DIR + '/uwsgi.spooler.sock'
     spool_dir = gws.SPOOL_DIR
-    spool_freq = root.application.var('server.spool.jobFrequency')
+    spool_freq = root.app.var('server.spool.jobFrequency')
 
-    mapproxy_enabled = root.application.var('server.mapproxy.enabled') and os.path.exists(gws.gis.mpx.config.CONFIG_PATH)
-    mapproxy_port = root.application.var('server.mapproxy.port')
-    mapproxy_workers = root.application.var('server.mapproxy.workers')
-    mapproxy_threads = root.application.var('server.mapproxy.threads')
+    mapproxy_enabled = root.app.var('server.mapproxy.enabled') and os.path.exists(gws.gis.mpx.config.CONFIG_PATH)
+    mapproxy_port = root.app.var('server.mapproxy.port')
+    mapproxy_workers = root.app.var('server.mapproxy.workers')
+    mapproxy_threads = root.app.var('server.mapproxy.threads')
     mapproxy_socket = gws.TMP_DIR + '/uwsgi.mapproxy.sock'
 
-    log = root.application.var('server.log.path') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
+    log = root.app.var('server.log.path') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
 
     nginx_log_level = 'info'
-    if root.application.developer_option('nginx.log_level_debug'):
+    if root.app.developer_option('nginx.log_level_debug'):
         nginx_log_level = 'debug'
 
     nginx_rewrite_log = 'off'
-    if root.application.developer_option('nginx.rewrite_log_on'):
+    if root.app.developer_option('nginx.rewrite_log_on'):
         nginx_rewrite_log = 'on'
 
     if log == 'syslog':
@@ -112,24 +112,20 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     DEFAULT_BASE_TIMEOUT = 60
     DEFAULT_SPOOL_TIMEOUT = 300
 
-    base_timeout = int(root.application.var('server.timeout', default=DEFAULT_BASE_TIMEOUT))
+    base_timeout = int(root.app.var('server.timeout', default=DEFAULT_BASE_TIMEOUT))
     qgis_timeout = base_timeout + 10
     qgis_front_timeout = qgis_timeout + 10
     mapproxy_timeout = qgis_front_timeout + 10
     web_timeout = mapproxy_timeout + 10
     web_front_timeout = web_timeout + 10
-    spool_timeout = int(root.application.var('server.spool.timeout', default=DEFAULT_SPOOL_TIMEOUT))
+    spool_timeout = int(root.app.var('server.spool.timeout', default=DEFAULT_SPOOL_TIMEOUT))
 
     gws.log.debug(f'TIMEOUTS: {[qgis_timeout, qgis_front_timeout, mapproxy_timeout, web_timeout, web_front_timeout, spool_timeout]}')
 
-    stdenv = '\n'.join(
-        f'env = {k}={v}'
-            for k, v in os.environ.items()
-            if k.startswith('GWS_')
-    )
+    stdenv = '\n'.join(f'env = {k}={v}' for k, v in os.environ.items() if k.startswith('GWS_'))
 
-    stdenv += f'\nTMP={gws.TMP_DIR}'
-    stdenv += f'\nTEMP={gws.TMP_DIR}'
+    stdenv += f'\nenv = TMP={gws.TMP_DIR}'
+    stdenv += f'\nenv = TEMP={gws.TMP_DIR}'
 
     # rsyslogd
     # ---------------------------------------------------------
@@ -137,18 +133,11 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     if rsyslogd_enabled:
         #  based on /etc/rsyslog.conf
         syslog_conf = f"""
-            ##
-
             module(
                 load="imuxsock"
                 SysSock.UsePIDFromSystem="on"
             )
-
-            module(
-                load="imklog"
-                PermitNonKernelFacility="on"
-            )
-
+    
             template(name="gws" type="list") {{
                 property(name="timestamp" dateFormat="mysql")
                 constant(value=" ")
@@ -163,11 +152,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
                 load="builtin:omfile"
                 Template="gws"
             )
-
-
-            # *.*;kern.none /dev/stdout
-            # kern.*	      -/var/log/kern.log
-
+    
             *.* /dev/stdout
         """
 
@@ -232,11 +217,14 @@ def create(root: gws.IRoot, base_dir, pid_dir):
 
                     # replace mapproxy forward params (e.g. LAYERS__gws) with their real names
 
-                    if ($args ~* (.*?)(layers=-)(.*)) {{
-                        set $args $1$3;
+                    if ($args ~* (.*?)(?:\blayers=-?)(?:&|$)(.*) ) {{
+                        set $args $1$2;
                     }}
-                    if ($args ~ (.*?)(__gws)(.*)) {{
-                        set $args $1$3;
+                    if ($args ~* (.*?)(?:\bdpi=-?)(?:&|$)(.*) ) {{
+                        set $args $1$2;
+                    }}
+                    if ($args ~* (.*?)(?:__gws)(.*)) {{
+                        set $args $1$2;
                     }}
 
                     include /etc/nginx/fastcgi_params;
@@ -257,6 +245,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             die-on-term = true
             harakiri = {web_timeout}
             harakiri-verbose = true
+            http-timeout = {web_timeout}
             {uwsgi_web_log}
             pidfile = {pid_dir}/web.uwsgi.pid
             post-buffering = 65535
@@ -278,13 +267,12 @@ def create(root: gws.IRoot, base_dir, pid_dir):
         roots = ''
         rewr = ''
 
-        app = gws.config.root().application
-        for s in app.web_sites:
+        for s in root.app.webSites:
             site = t.cast(gws.base.web.site.Object, s)
-            for r in site.rewrite_rules:
+            for r in site.rewriteRules:
                 rewr += f'rewrite {r.pattern} {r.target} last;\n'
 
-            d = site.static_root.dir
+            d = site.staticRoot.dir
             roots += f"""
                 location =/ {{
                     root {d};
@@ -299,7 +287,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             break
 
         # this is in MB
-        max_body_size = int(root.application.var('server.web.maxRequestLength', default=1))
+        max_body_size = int(root.app.var('server.web.maxRequestLength', default=1))
 
         client_buffer_size = 4  # MB
         client_tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/nginx')
@@ -330,11 +318,11 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             }}
         """
 
-        ssl_crt = root.application.var('web.ssl.crt')
-        ssl_key = root.application.var('web.ssl.key')
+        ssl_crt = root.app.var('web.ssl.crt')
+        ssl_key = root.app.var('web.ssl.key')
 
         ssl_hsts = ''
-        s = root.application.var('web.ssl.hsts')
+        s = root.app.var('web.ssl.hsts')
         if s:
             ssl_hsts = f'add_header Strict-Transport-Security "max-age={s}; includeSubdomains";'
 
@@ -398,6 +386,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             die-on-term = true
             harakiri = {mapproxy_timeout}
             harakiri-verbose = true
+            http-timeout = {mapproxy_timeout}
             http = :{mapproxy_port}
             http-to = {mapproxy_socket}
             {uwsgi_mapproxy_log}

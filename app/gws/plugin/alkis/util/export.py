@@ -17,7 +17,7 @@ We flatten it first, creating a list 'some.nested.key, list positions, value'
 
 
 def to_csv(action: gws.INode, fs_features: t.List[gws.IFeature], model: gws.base.model.Object):
-    helper: gws.base.csv.Object = action.root.application.require_helper('csv')
+    helper: gws.base.csv.Object = action.root.app.require_helper('csv')
 
     writer = helper.writer()
     writer.write_headers([r.title for r in model.rules])

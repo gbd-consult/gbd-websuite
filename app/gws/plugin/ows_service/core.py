@@ -45,10 +45,10 @@ class LayerConfig(gws.Config):
 
 class ServiceConfig(gws.ConfigWithAccess):
     layerConfig: t.Optional[t.List[LayerConfig]]  #: custom configurations for specific layers
-    metadata: t.Optional[gws.lib.metadata.Config]  #: service metadata
+    metadata: t.Optional[gws.base.metadata.Config]  #: service metadata
     rootLayer: str = ''  #: root layer uid
     strictParams: bool = False  #: strict parameter parsing
-    supportedCrs: t.Optional[t.List[gws.CrsId]]  #: supported CRS for this service
+    supportedCrs: t.Optional[t.List[gws.CRS]]  #: supported CRS for this service
     templates: t.Optional[t.List[gws.ext.config.template]]  #: service XML templates
     updateSequence: t.Optional[str]  #: service update sequence
     withInspireMeta: bool = False  #: use INSPIRE Metadata
@@ -58,7 +58,7 @@ class ServiceConfig(gws.ConfigWithAccess):
 
 
 class Request(gws.Data):
-    req: gws.IWebRequest
+    req: gws.IWebRequester
     project: gws.IProject
     service: gws.IOwsService
     xml_element: t.Optional[gws.XmlElement] = None
@@ -165,7 +165,7 @@ class Service(gws.Node, gws.IOwsService):
         self.with_inspire_meta = self.var('withInspireMeta')
         self.with_strict_params = self.var('withStrictParams')
 
-        self.templates = gws.base.template.bundle.create(
+        self.templates = gws.base.template.collection.create(
             self.root,
             items=self.var('templates'),
             defaults=self.default_templates,
@@ -187,7 +187,7 @@ class Service(gws.Node, gws.IOwsService):
     def configure_metadata(self) -> gws.lib.metadata.Metadata:
         m = gws.lib.metadata.from_config(self.var('metadata'))
         m.extend(
-            self.project.metadata if self.project else self.root.application.metadata,
+            self.project.metadata if self.project else self.root.app.metadata,
             self.default_metadata,
             {'name': self.protocol})
 
@@ -201,7 +201,7 @@ class Service(gws.Node, gws.IOwsService):
 
     # Request handling
 
-    def handle_request(self, req: gws.IWebRequest) -> gws.ContentResponse:
+    def handle_request(self, req: gws.IWebRequester) -> gws.ContentResponse:
         # services can be configured globally (in which case, self.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (self.project != None)

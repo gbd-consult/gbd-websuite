@@ -4,7 +4,7 @@ import os
 import re
 
 import gws
-import gws.base.api
+import gws.base.action
 import gws.base.client.bundles
 import gws.base.template
 import gws.base.web.error
@@ -12,41 +12,36 @@ import gws.lib.mime
 import gws.types as t
 
 
-class GetAssetParams(gws.Params):
+class AssetRequest(gws.Request):
     path: str
 
 
-class GetAssetResponse(gws.Params):
+class AssetResponse(gws.Request):
     content: str
     mime: str
 
 
-class SysAssetParams(gws.Params):
-    path: str
-    version: str = ''
-
-
 @gws.ext.object.action('web')
-class Object(gws.base.api.action.Object):
+class Object(gws.base.action.Object):
     """Web action"""
 
     @gws.ext.command.api('webAsset')
-    def api_asset(self, req: gws.IWebRequest, p: GetAssetParams) -> GetAssetResponse:
+    def api_asset(self, req: gws.IWebRequester, p: AssetRequest) -> AssetResponse:
         """Return an asset under the given path and project"""
         r = _serve_path(self.root, req, p)
-        return GetAssetResponse(content=r.content, mime=r.mime)
+        return AssetResponse(content=r.content, mime=r.mime)
 
     @gws.ext.command.get('webAsset')
-    def http_asset(self, req: gws.IWebRequest, p: GetAssetParams) -> gws.ContentResponse:
+    def http_asset(self, req: gws.IWebRequester, p: AssetRequest) -> gws.ContentResponse:
         return _serve_path(self.root, req, p)
 
     @gws.ext.command.get('webDownload')
-    def download(self, req: gws.IWebRequest, p) -> gws.ContentResponse:
+    def download(self, req: gws.IWebRequester, p) -> gws.ContentResponse:
         return _serve_path(self.root, req, p, True)
 
     @gws.ext.command.get('webSystemAsset')
-    def sys_asset(self, req: gws.IWebRequest, p: SysAssetParams) -> gws.ContentResponse:
-        locale_uid = p.localeUid or self.root.application.locale_uids[0]
+    def sys_asset(self, req: gws.IWebRequester, p: AssetRequest) -> gws.ContentResponse:
+        locale_uid = p.localeUid or self.root.app.localeUids[0]
 
         # eg. '8.0.0.light.css, 8.0.0.vendor.js etc
 
@@ -72,12 +67,12 @@ class Object(gws.base.api.action.Object):
                 mime=gws.lib.mime.CSS)
 
 
-def _serve_path(root: gws.IRoot, req: gws.IWebRequest, p: GetAssetParams, as_attachment=False):
+def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_attachment=False):
     spath = str(p.get('path') or '')
     if not spath:
         raise gws.base.web.error.NotFound()
 
-    site_assets = req.site.assets_root
+    site_assets = req.site.assetsRoot
 
     project = None
     project_assets = None
@@ -85,7 +80,7 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequest, p: GetAssetParams, as_att
     project_uid = p.get('projectUid')
     if project_uid:
         project = req.require_project(project_uid)
-        project_assets = project.assets_root
+        project_assets = project.assetsRoot
 
     rpath = None
 
@@ -97,15 +92,15 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequest, p: GetAssetParams, as_att
         raise gws.base.web.error.NotFound()
 
     locale_uid = p.localeUid
-    if project and locale_uid not in project.locale_uids:
-        locale_uid = project.locale_uids[0]
+    if project and locale_uid not in project.localeUids:
+        locale_uid = project.localeUids[0]
 
     tpl = gws.base.template.create_from_path(root, rpath)
 
     if tpl:
         # give the template an empty response to manipulate (e.g. add 'location')
         res = gws.ContentResponse()
-        context = {
+        args = {
             'project': project,
             'projects': _projects_for_user(root, req.user),
             'request': req,
@@ -115,7 +110,7 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequest, p: GetAssetParams, as_att
             'localeUid': locale_uid,
         }
 
-        render_res = tpl.render(gws.TemplateRenderInput(context=context))
+        render_res = tpl.render(gws.TemplateRenderInput(args=args))
 
         if gws.is_empty(res):
             res = render_res
@@ -137,35 +132,40 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequest, p: GetAssetParams, as_att
 def _projects_for_user(root, user):
     ps = [
         p
-        for p in root.find_all('gws.base.project')
+        for p in root.app.projects.values()
         if user.can_use(p)
     ]
     return sorted(ps, key=lambda p: p.title)
 
 
 _dir_re = r'^[A-Za-z0-9_]+$'
-_file_re = r'^[A-Za-z0-9_]+(\.[a-z0-9]+)*$'
+_fil_re = r'^[A-Za-z0-9_]+(\.[a-z0-9]+)*$'
 
 
 def _abs_path(path, basedir):
     gws.log.debug(f'trying {path!r} in {basedir!r}')
 
-    parts = []
+    dirs = []
     for s in path.split('/'):
         s = s.strip()
         if s:
-            parts.append(s)
+            dirs.append(s)
 
-    if not all(re.match(_dir_re, p) for p in parts[:-1]):
+    fname = dirs.pop()
+
+    if not all(re.match(_dir_re, p) for p in dirs):
         gws.log.error(f'invalid dirname in path={path!r}')
-    if not re.match(_file_re, parts[-1]):
-        gws.log.error(f'invalid filename in path={path!r}')
+        return
 
-    p = basedir + '/' + '/'.join(parts)
+    if not re.match(_fil_re, fname):
+        gws.log.error(f'invalid filename in path={path!r}')
+        return
+
+    p = basedir + '/' + '/'.join(dirs) + '/' + fname
 
     if not os.path.isfile(p):
         gws.log.error(f'not a file path={path!r}')
-        return None
+        return
 
     return p
 

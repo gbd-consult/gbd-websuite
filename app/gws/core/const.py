@@ -37,8 +37,9 @@ ROLE_GUEST = 'guest'
 ROLE_ALL = 'all'
 
 ACCESS_ALLOWED = 1
-ACCESS_DENIED = 2
-ACCESS_UNKNOWN = 3
+ACCESS_DENIED = 0
+
+PUBLIC = 'allow all'
 
 JS_BUNDLE = "app.bundle.json"
 JS_VENDOR_BUNDLE = 'vendor.bundle.js'

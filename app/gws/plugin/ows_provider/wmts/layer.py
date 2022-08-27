@@ -10,14 +10,14 @@ from . import provider as provider_module
 
 
 @gws.ext.config.layer('wmts')
-class Config(gws.base.layer.image.Config, provider_module.Config):
+class Config(gws.base.layer.Config, provider_module.Config):
     """WMTS layer"""
-    display: gws.base.layer.types.DisplayMode = gws.base.layer.types.DisplayMode.tile  #: layer display mode
+    display: gws.base.layer.lib.DisplayMode = gws.base.layer.lib.DisplayMode.tile  #: layer display mode
     sourceLayer: t.Optional[str]  #: WMTS layer name
 
 
 @gws.ext.object.layer('wmts')
-class Object(gws.base.layer.image.Object, gws.IOwsClient):
+class Object(gws.base.layer.Object, gws.IOwsClient):
     provider: provider_module.Object
     tile_matrix_set: gws.TileMatrixSet
     source_layer: gws.SourceLayer

@@ -2,9 +2,9 @@ import gws
 import gws.base.db
 import gws.base.layer.vector
 import gws.gis.extent
-import gws.gis.feature
+import gws.base.feature
 import gws.gis.crs
-import gws.gis.shape
+import gws.base.shape
 import gws.types as t
 
 from . import provider
@@ -38,8 +38,8 @@ class Object(gws.base.layer.vector.Object):
             crs=gws.gis.crs.get(self.table.geometry_column.srid),
             extent=gws.gis.extent.from_box(r))
 
-    def props_for(self, user):
-        p = super().props_for(user)
+    def props(self, user):
+        p = super().props(user)
         if self.table.geometry_column:
             p = gws.merge(p, geometryType=self.table.geometry_column.gtype)
         return p
@@ -57,12 +57,12 @@ class Object(gws.base.layer.vector.Object):
         if not self.data_model:
             p = self.provider.table_data_model_config(self.table)
             if p:
-                self.data_model = self.require_child('gws.base.model', p)
+                self.data_model = self.root.create_required('gws.base.model', p)
 
     def configure_search(self):
         if not super().configure_search():
             self.search_providers.append(
-                self.root.create_object(
+                self.create_child(
                     'gws.ext.search.provider.postgres',
                     gws.Config(_provider=self.provider, _table=self.table),
                     shared=True,
@@ -73,20 +73,20 @@ class Object(gws.base.layer.vector.Object):
     def get_features(self, bounds, limit=0) -> t.List[gws.IFeature]:
         features = self.provider.select_features(gws.SqlSelectArgs(
             table=self.table,
-            shape=gws.gis.shape.from_bounds(bounds),
+            shape=gws.base.shape.from_bounds(bounds),
             geometry_tolerance=0,
             limit=limit,
         ))
 
         return [f.connect_to(self) for f in features]
 
-    def edit_operation(self, operation: str, feature_props: t.List[gws.gis.feature.Props]) -> t.List[gws.IFeature]:
+    def edit_operation(self, operation: str, feature_props: t.List[gws.base.feature.Props]) -> t.List[gws.IFeature]:
         src_features = []
 
         for p in feature_props:
             if p.attributes and self.edit_data_model:
                 p.attributes = self.edit_data_model.apply(p.attributes)
-            src_features.append(gws.gis.feature.from_props(p))
+            src_features.append(gws.base.feature.from_props(p))
 
         features = self.provider.edit_operation(operation, self.table, src_features)
         return [f.connect_to(self) for f in features]
