@@ -40,10 +40,19 @@ and uses the generated stuff from 'app/gws/spec/__build'
 
 //
 
+
+// must match gws/core/const.py
+const JS_BUNDLE = "app.bundle.json"
+const JS_VENDOR_BUNDLE = 'vendor.bundle.js'
+const JS_UTIL_BUNDLE = 'util.bundle.js'
+
+const BUILD_DIRNAME = '__build';
 const APP_DIR = path.resolve(__dirname, '../..');
-const SPEC_DIR = path.join(APP_DIR, '/gws/spec/__build/');
+const SPEC_DIR = path.join(APP_DIR, BUILD_DIRNAME);
 const JS_DIR = path.resolve(__dirname, '..');
-const BUILD_ROOT = path.join(JS_DIR, '__build');
+
+// must match tsconfig.json
+const BUILD_ROOT = path.join(APP_DIR, BUILD_DIRNAME, 'js');
 
 const SOURCE_MAP_REGEX = /\/\/#\s*sourceMappingURL.*/g;
 
@@ -57,11 +66,88 @@ const STRINGS_RECORD_DELIM = ';;'
 
 const DEFAULT_DEV_LOCALE = 'de_DE';
 
+const COLOR = {
+    INFO: chalk.cyan,
+    ERROR: chalk.red,
+    ERROR_HEAD: chalk.bold.red,
+    ERROR_FILE: chalk.bold.yellow,
+}
+
+const DEV_INDEX_HTML_TEMPLATE = String.raw`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <title>gws client</title>
+    <link rel="stylesheet" href="/DEV-CSS/style.css?r=__RANDOM__">
+    
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+        }
+
+        .gws {
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            position: fixed !important;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+process = {env: {NODE_ENV: "development"}}
+__ENV__
+</script>
+
+__VENDORS__
+
+<script src="/DEV-JS/script.js?r=__RANDOM__"></script>
+
+</body>
+</html>
+`;
+
+const JS_BUNDLE_FUNCTION = String.raw`
+function (modules, strings) {
+    let M = {}, S = {}, require = name => M[name];
+
+    for (let [name, fn] of modules) {
+        let exports = {}, module = {exports};
+        fn(require, exports, module);
+        M[name] = module.exports;
+    }
+
+    for (let rec of strings.split("${STRINGS_RECORD_DELIM}")) {
+        let s = rec.split("${STRINGS_KEY_DELIM}");
+        S[s[0] || ""] = s[1] || "";
+    }
+
+    require("gws/main").main(window, S);
+}
+`;
+
+const JS_BUNDLE_FUNCTION_MIN = JS_BUNDLE_FUNCTION.trim().replace(/\n/g, '').replace(/\s+/g, ' ');
+
+const JS_BUNDLE_TEMPLATE = `(${JS_BUNDLE_FUNCTION_MIN})([__MODULES__],"__STRINGS__")`
+
+
+//
+
+
 module.exports.Builder = class {
 
     init() {
         this.options = require(path.join(JS_DIR, 'options.js'));
-        this.meta = require(path.join(SPEC_DIR, 'meta.spec.json')); // see spec/generator/main
+        this.specs = require(path.join(SPEC_DIR, 'specs.json')); // see spec/generator/main
 
         // @TODO support plugin vendors
         this.vendors = this.options.vendors;
@@ -86,6 +172,7 @@ module.exports.Builder = class {
             case 'dev':
                 this.init();
                 this.options.minify = false;
+                this.options.devVendors = true;
                 if (!args.incremental)
                     clearBuild(this);
                 this.bundle();
@@ -147,7 +234,7 @@ function initBuild(bb) {
     bb.chunks = [];
     bb.sources = [];
 
-    for (let chunk of bb.meta.chunks) {
+    for (let chunk of bb.specs.chunks) {
         let numSources = 0;
 
         for (let kind of Object.keys(chunk.paths)) {
@@ -156,7 +243,7 @@ function initBuild(bb) {
             for (let p of chunk.paths[kind]) {
                 numSources++;
                 bb.sources.push({
-                    chunk: chunk.name,
+                    chunkName: chunk.name,
                     kind,
                     path: p,
                     buildRoot: path.join(BUILD_ROOT, chunk.sourceDir),
@@ -172,52 +259,25 @@ function initBuild(bb) {
             })
         }
     }
+
+    bb.chunks.push({
+        name: '@build',
+        sourceDir: SPEC_DIR,
+        bundleDir: bb.chunks[0].bundleDir,
+    })
+
+    bb.sources.push({
+        chunkName: '@build',
+        kind: 'ts',
+        path: path.join(SPEC_DIR, 'specs.ts'),
+        buildRoot: path.join(BUILD_ROOT, SPEC_DIR),
+    })
+
+
 }
 
 // dev server
 
-const DEV_INDEX_HTML_TEMPLATE = String.raw`
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-    <title>gws client</title>
-    <link rel="stylesheet" href="/DEV-CSS/style.css?r=__RANDOM__">
-    
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            position: fixed;
-        }
-
-        .gws {
-            left: 0;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            position: fixed !important;
-        }
-    </style>
-</head>
-<body>
-
-<script>
-process = {env: {NODE_ENV: "development"}}
-__ENV__
-</script>
-
-__VENDORS__
-
-<script src="/DEV-JS/script.js?r=__RANDOM__"></script>
-
-</body>
-</html>
-`;
 
 function startBrowserSync(bb) {
     let bs = browserSync.create();
@@ -436,29 +496,6 @@ function startBrowserSync(bb) {
 
 // JS bundler
 
-const JS_BUNDLE_FUNCTION = String.raw`
-function (modules, strings) {
-    let M = {}, S = {}, require = name => M[name];
-
-    for (let [name, fn] of modules) {
-        let exports = {}, module = {exports};
-        fn(require, exports, module);
-        M[name] = module.exports;
-    }
-
-    for (let rec of strings.split("${STRINGS_RECORD_DELIM}")) {
-        let s = rec.split("${STRINGS_KEY_DELIM}");
-        S[s[0] || ""] = s[1] || "";
-    }
-
-    require("gws/main").main(window, S);
-}
-`;
-
-const JS_BUNDLE_FUNCTION_MIN = JS_BUNDLE_FUNCTION.trim().replace(/\n/g, '').replace(/\s+/g, ' ');
-
-const JS_BUNDLE_TEMPLATE = `(${JS_BUNDLE_FUNCTION_MIN})([__MODULES__],"__STRINGS__")`
-
 async function jsModules(bb) {
 
     function moduleName(compiledPath) {
@@ -469,8 +506,8 @@ async function jsModules(bb) {
                 rel = rel.replace(/\/?index\.js$/, '')
                 rel = rel.replace(/\.js$/, '')
                 if (!rel)
-                    return src.chunk;
-                return src.chunk + '/' + rel
+                    return src.chunkName;
+                return src.chunkName + '/' + rel
             }
         }
     }
@@ -535,7 +572,7 @@ async function jsModules(bb) {
                 src = (await terser.minify(src, bb.options.terserOptions)).code;
 
             modules.push({
-                chunk: modName.split('/')[0],
+                chunkName: modName.split('/')[0],
                 name: modName,
                 sourceMap: sourceMaps[modName],
                 text: `['${modName}',(require,exports)=>{${src}\n}]`,
@@ -569,7 +606,7 @@ function vendorStubs(bb) {
 
     for (let vendor of bb.vendors) {
         modules.push({
-            chunk: '__vendor',
+            chunkName: '__vendor',
             name: vendor.module,
             text: `['${vendor.module}',(require,exports,module)=>{module.exports=${vendor.name}}]`,
         })
@@ -582,12 +619,13 @@ function writeVendors(bb) {
     try {
         let sources = [];
         for (let vendor of bb.vendors) {
-            let src = readFile(vendor.path);
+            let src = readFile(bb.options.devVendors ? vendor.path : vendor.path);
             src = src.replace(SOURCE_MAP_REGEX, '\n');
-            sources.push(src);
+            sources.push(`(function() {\n${src}\n}).apply(window)`);
         }
-        writeFile(bb.meta.VENDOR_BUNDLE_PATH, sources.join('\n;;\n'));
-        logInfo(`created ${bb.meta.VENDOR_BUNDLE_PATH}`);
+        let p = APP_DIR + '/' + JS_VENDOR_BUNDLE;
+        writeFile(p, sources.join('\n;;\n'));
+        logInfo(`created ${p}`);
         return true;
     } catch (e) {
         logError(`Bundler error:`);
@@ -600,9 +638,10 @@ function writeVendors(bb) {
 function writeUtil(bb) {
     try {
         let source = readFile(JS_DIR + '/src/util.js');
-        source = source.replace('__VERSION__', bb.meta.version);
-        writeFile(bb.meta.UTIL_BUNDLE_PATH, source);
-        logInfo(`created ${bb.meta.UTIL_BUNDLE_PATH}`);
+        source = source.replace('__VERSION__', bb.specs.meta.version);
+        let p = APP_DIR + '/' + JS_UTIL_BUNDLE;
+        writeFile(p, source);
+        logInfo(`created ${p}`);
         return true;
     } catch (e) {
         logError(`Bundler error:`);
@@ -645,7 +684,7 @@ function stringsModules(bb) {
 
             for (let [lang, val] of Object.entries(parsed)) {
                 langs.push(lang);
-                let key = src.chunk + '/' + lang;
+                let key = src.chunkName + '/' + lang;
                 coll[key] = Object.assign(coll[key] || {}, val);
             }
         }
@@ -663,7 +702,7 @@ function stringsModules(bb) {
                 let text = encode(coll[key]);
                 if (text) {
                     modules.push({
-                        chunk: chunk.name,
+                        chunkName: chunk.name,
                         lang,
                         text,
                     })
@@ -725,7 +764,7 @@ function cssModules(bb) {
             let rules = [];
 
             for (let src of bb.sources) {
-                if (src.chunk === chunk.name && src.kind === 'css') {
+                if (src.chunkName === chunk.name && src.kind === 'css') {
                     rules.push(require(src.path));
                 }
             }
@@ -737,7 +776,7 @@ function cssModules(bb) {
                 let css = jadzia.css(src, opts).trim();
                 if (css) {
                     modules.push({
-                        chunk: chunk.name,
+                        chunkName: chunk.name,
                         theme: theme.name,
                         text: css
                     })
@@ -799,18 +838,18 @@ async function createBundles(bb) {
         }
 
         for (let mod of js.modules) {
-            let b = bundleFor(mod.chunk);
+            let b = bundleFor(mod.chunkName);
             b[BUNDLE_KEY_MODULES] = (b[BUNDLE_KEY_MODULES] || '') + mod.text + ','
         }
 
         for (let mod of strings.modules) {
-            let b = bundleFor(mod.chunk);
+            let b = bundleFor(mod.chunkName);
             let key = BUNDLE_KEY_STRINGS + '_' + mod.lang;
             b[key] = (b[key] || '') + mod.text + STRINGS_RECORD_DELIM
         }
 
         for (let mod of css.modules) {
-            let b = bundleFor(mod.chunk);
+            let b = bundleFor(mod.chunkName);
             let key = BUNDLE_KEY_CSS + '_' + mod.theme;
             b[key] = (b[key] || '') + mod.text + '\n'
         }
@@ -828,9 +867,9 @@ async function createBundles(bb) {
 
 function writeBundles(bb, bundles) {
     try {
-        for (let dir of Object.keys(bundles)) {
-            let p = path.join(dir, bb.meta.BUNDLE_FILENAME);
-            writeFile(p, JSON.stringify(bundles[dir], null, 4));
+        for (let [dir, bundle] of Object.entries(bundles)) {
+            let p = path.join(dir, JS_BUNDLE);
+            writeFile(p, JSON.stringify(bundle, null, 4));
             logInfo(`created bundle "${p}"`);
         }
         return true;
@@ -915,19 +954,12 @@ function runTypescript(bb) {
 
 // tools
 
-const COLOR = {
-    INFO: chalk.cyan,
-    ERROR: chalk.red,
-    ERROR_HEAD: chalk.bold.red,
-    ERROR_FILE: chalk.bold.yellow,
-}
-
 function logInfo(...args) {
-    console.log(COLOR.INFO('[GWS]', ...args))
+    console.log(COLOR.INFO('[builder]', ...args))
 }
 
 function logError(...args) {
-    console.log(COLOR.ERROR_HEAD('\n[GWS]', ...args, '\n'))
+    console.log(COLOR.ERROR_HEAD('\n[builder]', ...args, '\n'))
 }
 
 function logException(exc) {

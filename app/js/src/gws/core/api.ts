@@ -1,1 +1,1 @@
-export * from './__build.gwsapi';
+export * from '@build/specs';

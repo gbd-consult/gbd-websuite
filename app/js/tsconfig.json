@@ -12,8 +12,9 @@
         "module": "CommonJS",
         "noEmitOnError": true,
         "noImplicitAny": false,
-        "outDir": "./__build",
+        "outDir": "../__build/js",
         "paths": {
+            "@build/*": [ "../__build/*"],
             "*": [
                 "./src/*",
                 "./node_modules/*"

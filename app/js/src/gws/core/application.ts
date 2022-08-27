@@ -24,7 +24,7 @@ export class Application implements types.IApplication {
     overviewMap: MapManager;
     options: types.Dict;
     actions: types.Dict;
-    project: api.project.Props;
+    project: api.base.project.main.Props;
     server: Server;
     store: StoreWrapper;
     tags: types.Dict;

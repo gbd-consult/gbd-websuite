@@ -20,7 +20,7 @@ type DialogMode = 'read' | 'write';
 
 interface ViewProps extends gws.types.ViewProps {
     controller: Controller;
-    storageDirectories: { [category: string]: gws.api.storage.Directory };
+    storageDirectories: { [category: string]: gws.api.base.storage.Directory };
     storageRecentNames: { [category: string]: string };
     storageDialogMode: DialogMode;
     storageDialogParams: Params;
@@ -221,8 +221,8 @@ class Controller extends gws.Controller {
         return dirs && dirs[params.actionName];
     }
 
-    async doRequest(params: Params, args: object): Promise<gws.api.storage.Response> {
-        let res: gws.api.storage.Response = await this.app.server[params.actionName](args);
+    async doRequest(params: Params, args: object): Promise<gws.api.base.storage.Response> {
+        let res: gws.api.base.storage.Response = await this.app.server[params.actionName](args);
 
         if (res.error) {
             this.update({
@@ -241,14 +241,14 @@ class Controller extends gws.Controller {
 
     async doUpdate(params: Params) {
         let res = await this.doRequest(params, {
-            verb: gws.api.storage.Verb.list
+            verb: gws.api.base.storage.Verb.list
         });
         return !res.error;
     }
 
     async doRead(params: Params, name: string) {
         let res = await this.doRequest(params, {
-            verb: gws.api.storage.Verb.read,
+            verb: gws.api.base.storage.Verb.read,
             entryName: name
         });
         if (!res.error)
@@ -262,7 +262,7 @@ class Controller extends gws.Controller {
             return true;
 
         let res = await this.doRequest(params, {
-            verb: gws.api.storage.Verb.write,
+            verb: gws.api.base.storage.Verb.write,
             entryName: name,
             entryData: data
         });
@@ -271,7 +271,7 @@ class Controller extends gws.Controller {
 
     async doDelete(params: Params, name: string) {
         let res = await this.doRequest(params, {
-            verb: gws.api.storage.Verb.delete,
+            verb: gws.api.base.storage.Verb.delete,
             entryName: name
         });
         return !res.error;

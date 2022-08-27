@@ -4,7 +4,6 @@ let path = require('path');
 let absPath = p => path.resolve(__dirname, p);
 
 module.exports = {
-    version: fs.readFileSync(absPath('../../VERSION'), 'utf8').trim(),
 
     appName: "gws-client",
 

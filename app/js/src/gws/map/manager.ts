@@ -51,7 +51,7 @@ export class MapManager implements types.IMapManager {
     protected updateCount = 0;
     protected intrStack = [];
     protected standardInteractions = {};
-    protected props: api.map.Props;
+    protected props: api.base.map.main.Props;
 
     // @TODO this should be 'viewExtent' actually
     get bbox() {
@@ -512,26 +512,22 @@ export class MapManager implements types.IMapManager {
     }
 
     protected initLayers() {
-        this.root = this.initLayer({
-            type: 'root',
-            uid: '_root',
-            title: this.props.title,
-            metadata: null,
+        let props = this.props.rootLayer;
 
-            layers: this.props.layers,
+        props.clientOptions = {
+            expanded: true,
+            visible: true,
+            selected: false,
+            listed: true,
 
-            clientOptions: {
-                expanded: true,
-                visible: true,
-                selected: false,
-                listed: true,
-            },
-        });
+        }
+
+        this.root = this.initLayer(props);
 
         this.computeOpacities();
     }
 
-    protected initLayer(props: api.layer.Props, parent = null): types.IMapLayer {
+    protected initLayer(props: api.base.layer.main.Props, parent = null): types.IMapLayer {
         let cls = layerTypes[props.type];
         if (!cls)
             throw new Error('unknown layer type: ' + props.type);
@@ -765,7 +761,7 @@ export class MapManager implements types.IMapManager {
     async searchForFeatures(args) {
 
         let ls = this.searchLayers();
-        let params: api.search.action.Params = {
+        let params: api.base.search.action.Params = {
             bbox: this.bbox,
             keyword: args.keyword || '',
             layerUids: lib.compact(ls.map(la => la.uid)),
@@ -777,7 +773,7 @@ export class MapManager implements types.IMapManager {
             params.shapes = [this.geom2shape(args.geometry)]
         }
 
-        let res = await this.app.server.searchFindFeatures(params);
+        let res = await this.app.server.searchFind(params);
 
         if (res.error) {
             console.log('SEARCH_ERROR', res);
@@ -807,11 +803,11 @@ export class MapManager implements types.IMapManager {
         return lib.uniq(layers);
     }
 
-    protected async printPlanes(boxRect, dpi): Promise<Array<api.printer.Plane>> {
+    protected async printPlanes(boxRect, dpi): Promise<Array<api.base.printer.Plane>> {
         let _this = this;
-        let planes: Array<api.printer.Plane> = [];
+        let planes: Array<api.base.printer.Plane> = [];
 
-        function makeBitmap2(): api.printer.Plane {
+        function makeBitmap2(): api.base.printer.Plane {
             let canvas = _this.oMap.getViewport().firstChild as HTMLCanvasElement;
 
             let rc = canvas.getBoundingClientRect(),
@@ -845,7 +841,7 @@ export class MapManager implements types.IMapManager {
             };
         }
 
-        async function makeBitmap(layers): Promise<api.printer.Plane> {
+        async function makeBitmap(layers): Promise<api.base.printer.Plane> {
             let hidden = [];
 
             _this.walk(_this.root, la => {
@@ -855,7 +851,7 @@ export class MapManager implements types.IMapManager {
                 }
             });
 
-            let bmp: api.printer.Plane;
+            let bmp: api.base.printer.Plane;
 
             await lib.delay(200, () => {
                 console.time('creating_bitmap');
