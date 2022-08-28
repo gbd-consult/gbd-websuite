@@ -1,19 +1,21 @@
+# essentials
+
+python3
+python3-pip
+xvfb
+nginx
+rsyslog
+
 # generic
 
-libgdal20
 libgeos-c1v5
-libproj12
-libssl-dev
-nginx
-python3-all-dev
-python3-pip
+libproj15
+libgdal26
 python3-gdal
-rsyslog
-tzdata
-xvfb
-ghostscript
-libmagickwand-dev
 gdal-bin
+
+tzdata
+ghostscript
 
 # ldap
 
@@ -22,37 +24,10 @@ libsasl2-dev
 
 # fonts
 
-libfreetype6-dev
+libfreetype-dev
 fonts-dejavu-core
 
-# qgis
+# for ms sql
 
-libexiv2-dev
-libfcgi-dev
-libpq-dev
-libqca-qt5-2-dev
-libqca-qt5-2-plugins
-libqt5quickwidgets5
-libqt5serialport5
-libqt5sql5-mysql
-libqt5sql5-sqlite
-libqt5webkit5
-libqwt-qt5-6
-libspatialindex4v5
-libzip4
-ocl-icd-opencl-dev
-python3-pyqt5
-python3-pyqt5.qsci
-python3-pyqt5.qtsql
-python3-pyqt5.qtsvg
-python3-sip
-python3-sip-dev
-qt5keychain-dev
-
-# ms sql
-
-libqt5sql5-odbc
 freetds-dev
 tdsodbc
-
-

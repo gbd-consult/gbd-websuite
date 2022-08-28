@@ -1,8 +1,7 @@
 CWD     = $(shell pwd)
-ROOT    = $(realpath $(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
-DOC     = $(ROOT)/doc
-APP     = $(ROOT)/app
-INSTALL = $(ROOT)/install
+BASE    = $(realpath $(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
+DOC     = $(BASE)/doc
+APP     = $(BASE)/app
 
 SPEC_BUILD = $(APP)/__build
 
@@ -41,8 +40,14 @@ GWS Makefile
 	make test [MANIFEST=<manifest>]
 		- run Server tests
 
-	make image [NAME=<name>] [DEBUG=<1/0>]
-		- build the Docker Image
+	make image [ARGS=<builder args>]
+		- build docker Images
+
+	make image-help
+		- image builder help
+
+	make package DIR=<target dir> [MANIFEST=manifest-path]
+		- build an Application tarball
 
 	make clean
 		- remove all build artifacts
@@ -55,7 +60,7 @@ help:
 	@echo "$$HELP"
 
 mypy:
-	cd $(ROOT)/app
+	cd $(BASE)/app
 	mypy .
 	cd $(CWD)
 
@@ -86,7 +91,13 @@ test:
 	$(PYTHON) $(APP)/test.py go --manifest "$(MANIFEST)"
 
 image:
-	cd $(INSTALL) && $(PYTHON) build.py docker --name "$(NAME)" --debug "$(DEBUG)" && cd $(CWD)
+	$(PYTHON) $(BASE)/install/docker.py $(ARGS)
+
+image-help:
+	$(PYTHON) $(BASE)/install/docker.py -h
+
+package:
+	$(PYTHON) $(BASE)/install/package.py $(DIR) --manifest $(MANIFEST)
 
 clean:
-	find $(ROOT) -name '__build*' -prune -exec rm -rfv {} \;
+	find $(BASE) -name '__build*' -prune -exec rm -rfv {} \;

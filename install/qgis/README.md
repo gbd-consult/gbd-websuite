@@ -1,70 +1,72 @@
 ### compiling your custom qgis
 
-Prerequisites: git, docker, python.
+Prerequisites: git, docker (19+), python.
+
+Assume following directories:
+
+```
+/var/gws-build/gbd-websuite      - WebSuite source directory
+/var/gws-build/qgis              - QGIS sources directory
+```
 
 Clone the specific QGIS version:
 
 ```
-git clone -b final-3_10_7 --single-branch https://github.com/qgis/QGIS
+mkdir /var/gws-build/qgis/3.22
+cd /var/gws-build/qgis/3.22
+git clone -b final-3_22_8 --single-branch https://github.com/qgis/QGIS
+```
+
+Create a docker image based on QGIS dockerfile with build dependencies and tag it as e.g. `qgis-build-3.22`:
+
+```
+cd /var/gws-build/qgis/3.22/QGIS/.docker
+sudo docker build -f qgis3-qt5-build-deps.dockerfile -t qgis-build-3.22 .
 ```
 
 Create a directory for your build in the qgis source tree:
 
 ```
-cd QGIS
+cd /var/gws-build/qgis/3.22/QGIS
 mkdir _BUILD
 ```
 
-Copy `gws-configure.sh` and `gws-package.sh` from the gws `build` directory. 
-Assuming the gws-server is cloned into `/var/work/gws-server`:
+Run the docker image, mounting the `QGIS` directory as `/root/QGIS` and `install/qgis` from WebSuite as `/root/gws`:
 
 ```
-cp /var/work/gws-server/build/qgis/gws-configure.sh _BUILD
-cp /var/work/gws-server/build/qgis/gws-package.sh _BUILD
+sudo docker run \
+--mount type=bind,src=/var/gws-build/qgis/3.22/QGIS,dst=/root/QGIS \
+--mount type=bind,src=/var/gws-build/gbd-websuite/install/qgis,dst=/root/gws \
+-it qgis-build-3.22 bash
 ```
 
-Review `gws-configure.sh` and edit cmake variables therein if necessary. 
-
-Create a docker image based on QGIS dockerfile with build dependencies and tag it as e.g. `qgis-build-3.10.7`:
+Once in the container, run `/root/gws/gws.sh configure Release` (or `Debug`):
 
 ```
-cd .docker
-docker build -f qgis3-build-deps.dockerfile -t qgis-build-3.10.7 .
+git config --global --add safe.directory /root/QGIS
+bash /root/gws/gws.sh configure Release
 ```
 
-Run the docker image and bind your `QGIS` directory:
-
-```
-cd ..
-docker run --mount type=bind,src=`pwd`,dst=/QGIS -it qgis-build-3.10.7 bash
-```
-
-Once in the container, chdir to the build dir and run `gws-configure.sh Debug` or `gws-configure.sh Release` to build a debug or a release version respectively:
-
-```
-cd /QGIS/_BUILD
-bash gws-configure.sh Debug
-```
-
-If dependency packages are missing in the build container, you can check here:
+If any dependency packages are missing in the container, check here:
 https://github.com/qgis/QGIS/blob/master/INSTALL
-
 
 Run `make -j<cores>` and have some coffee:
 
 ```
+cd /root/QGIS/_BUILD
 make -j8
 ```
 
-When it's done, still in the build dir, run `gws-package.sh`
+Finally, run `gws.sh package`
 
 ```
-bash gws-package.sh
+bash /root/gws/gws.sh package
 ```
 
-This will create the directory `_BUILD/qgis-for-gws`, which you can copy to the GWS build context.
-You can also archive the directory for later reuse, for example:
+This will create directory `_BUILD/qgis-for-gws`, which contains QGIS libs and resources.
+Archive the directory for later reuse:
 
 ```
-tar czvf qgis-for-gws-3.10.7-bionic-debug.tar.gz qgis-for-gws
+cd /root/QGIS/_BUILD
+tar czvf qgis-for-gws-3.22-focal-release.tar.gz qgis-for-gws
 ```
