@@ -18,13 +18,12 @@ class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
     # dataModel: t.Optional[gws.base.model.Config]  #: layer data model
-    cacheEnabled: bool = True
-    cache: lib.Cache = {}  # type:ignore #: cache configuration
+    cache: t.Optional[lib.CacheConfig]  # cache configuration
     clientOptions: lib.ClientOptions = {}  # type:ignore #: options for the layer display in the client
-    display: lib.DisplayMode = lib.DisplayMode.box  #: layer display mode
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.box  #: layer display mode
     extent: t.Optional[gws.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    grid: lib.Grid = {}  # type:ignore #: grid configuration
+    grid: lib.GridConfig = {}  # type:ignore #: grid configuration
     imageFormat: lib.ImageFormat = lib.ImageFormat.png8  #: image format
     legendEnabled: bool = True
     legend: t.Optional[gws.ext.config.legend]  #: legend configuration
@@ -44,7 +43,7 @@ class CustomConfig(gws.ConfigWithAccess):
     applyTo: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers this configuration applies to
     clientOptions: t.Optional[lib.ClientOptions]  # options for the layer display in the client
     dataModel: t.Optional[gws.base.model.Config]  #: layer data model
-    display: t.Optional[lib.DisplayMode]  #: layer display mode
+    display: t.Optional[gws.LayerDisplayMode]  #: layer display mode
     extent: t.Optional[gws.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
     legend: gws.base.legend.Config = {}  # type:ignore #: legend configuration
@@ -111,7 +110,6 @@ class Object(gws.Node, gws.ILayer):
     cache: t.Optional[lib.Cache]
     grid: lib.Grid
     clientOptions: lib.ClientOptions
-    displayMode: lib.DisplayMode
     cTemplates: gws.base.template.collection.Object
     cFinders: gws.base.search.finder.collection.Object
     legend: t.Optional[gws.base.legend.Object]
@@ -150,7 +148,7 @@ class Object(gws.Node, gws.ILayer):
         self.resolutions = []
 
         self.cache = None
-        if self.var('cacheEnabled'):
+        if self.var('cache.enabled'):
             self.cache = self.var('cache')
         self.grid = self.var('grid', default=lib.Grid())
 
@@ -224,12 +222,12 @@ class Object(gws.Node, gws.ILayer):
             layers=self.layers,
         )
 
-        if self.displayMode == lib.DisplayMode.tile:
+        if self.displayMode == gws.LayerDisplayMode.tile:
             p.type = 'tile'
             p.url = lib.layer_url_path(self.uid, kind='tile')
             p.tileSize = self.grid.tileSize
 
-        if self.displayMode == lib.DisplayMode.box:
+        if self.displayMode == gws.LayerDisplayMode.box:
             p.type = 'box'
             p.url = lib.layer_url_path(self.uid, kind='box')
 

@@ -74,13 +74,16 @@ def _handle_request2(req: Requester) -> Responder:
 
 
 def _handle_request3(req: Requester) -> Responder:
-    req.parse_input()
+    try:
+        req.parse_input()
+    except gws.base.web.error.HTTPException as exc:
+        return _handle_error(req, exc)
 
     req.enter_request()
     try:
         res = _handle_request4(req)
-    except gws.base.web.error.HTTPException as err:
-        res = _handle_error(req, err)
+    except gws.base.web.error.HTTPException as exc:
+        res = _handle_error(req, exc)
     req.exit_request(res)
 
     return res
@@ -127,23 +130,23 @@ def _handle_request4(req: Requester) -> Responder:
     return req.struct_responder(response)
 
 
-def _handle_error(req: Requester, err: gws.base.web.error.HTTPException) -> Responder:
+def _handle_error(req: Requester, exc: gws.base.web.error.HTTPException) -> Responder:
     # @TODO: image errors
 
     if req.isApi:
         return req.struct_responder(gws.Response(
-            status=err.code,
+            status=exc.code,
             error=gws.ResponseError(
-                status=err.code,
-                info=gws.get(err, 'description', ''))))
+                status=exc.code,
+                info=gws.get(exc, 'description', ''))))
 
     if not req.site.errorPage:
-        return req.error_responder(err)
+        return req.error_responder(exc)
 
     try:
-        args = {'request': req, 'error': err.code}
+        args = {'request': req, 'error': exc.code}
         response = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
-        return req.content_responder(response.with_attrs(status=err.code))
+        return req.content_responder(response.with_attrs(status=exc.code))
     except:
         gws.log.exception()
         return req.error_responder(gws.base.web.error.InternalServerError())

@@ -1,4 +1,4 @@
-from .engine import Engine
+from .engine import Engine, RuntimeError
 from .compiler import Compiler, CompileError
 
 _DefaultEngine = Engine()

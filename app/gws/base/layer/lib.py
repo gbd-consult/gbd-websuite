@@ -18,14 +18,6 @@ class ImageFormat(t.Enum):
     png24 = 'png24'  #: png 24-bit
 
 
-class DisplayMode(t.Enum):
-    """Layer display mode"""
-
-    box = 'box'  #: display a layer as one big image (WMS-alike)
-    tile = 'tile'  #: display a layer in a tile grid
-    client = 'client'  #: draw a layer in the client
-
-
 class ClientOptions(gws.Data):
     """Client options for a layer"""
 
@@ -37,20 +29,33 @@ class ClientOptions(gws.Data):
     exclusive: t.Optional[bool] = False  #: only one of this layer's children is visible at a time
 
 
-class Cache(gws.Data):
+class CacheConfig(gws.Config):
     """Cache configuration"""
 
+    enabled: bool = True
     maxAge: gws.Duration = '7d'  #: cache max. age
     maxLevel: int = 1  #: max. zoom level to cache
 
 
-class Grid(gws.Data):
+class Cache(gws.Data):
+    maxAge: int
+    maxLevel: int
+
+
+class GridConfig(gws.Config):
     """Grid configuration for caches and tiled data"""
 
     origin: str = 'nw'  #: position of the first tile (nw or sw)
     tileSize: int = 256  #: tile size
     reqSize: int = 0  #: number of metatiles to fetch
     reqBuffer: int = 0  #: pixel buffer
+
+
+class Grid(gws.Data):
+    origin: str
+    tileSize: int
+    reqSize: int
+    reqBuffer: int
 
 
 class EditConfig(gws.ConfigWithAccess):

@@ -12,6 +12,15 @@ from . import compiler
 builtins_dct = {k: getattr(builtins, k) for k in dir(builtins)}
 
 
+class RuntimeError(ValueError):
+    def __init__(self, message, path: str, line: int):
+        self.path = path
+        self.line = line
+        message += ' in ' + path + ':' + str(line)
+        super().__init__(message)
+        self.message = message
+
+
 class Environment:
     def __init__(self, engine, paths, args, errorhandler):
         self.engine = engine
@@ -38,7 +47,9 @@ class Environment:
         else:
             def err(exc, pos):
                 self.haserr = True
-                raise exc
+                if isinstance(exc, RuntimeError):
+                    raise exc
+                raise RuntimeError(str(exc), self.paths[pos[0]], pos[1]) from exc
         self.error = err
 
     def pushbuf(self):

@@ -54,7 +54,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
 
     # NB it should be possible to have QGIS running somewhere else
     # so, if 'host' is not localhost, don't start QGIS here
-    qgis_enabled = root.app.var('server.qgis.enabled') and root.app.var('server.qgis.host') == 'localhost'
+    qgis_enabled = root.app.qgisVersion and root.app.var('server.qgis.host') == 'localhost'
     qgis_port = root.app.var('server.qgis.port')
     qgis_workers = root.app.var('server.qgis.workers')
     qgis_threads = root.app.var('server.qgis.threads')

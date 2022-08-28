@@ -11,7 +11,7 @@ _FEATURE_FULL_FORMAT_THRESHOLD = 500
 
 
 class Config(main.Config):
-    display: lib.DisplayMode = lib.DisplayMode.client  #: layer display mode
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.client  #: layer display mode
     editDataModel: t.Optional[gws.base.model.Config]  #: data model for input data
     editStyle: t.Optional[gws.lib.style.Config]  #: style for features being edited
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')

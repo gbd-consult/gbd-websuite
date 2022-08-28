@@ -16,14 +16,14 @@ class Object(gws.base.template.Object):
     """Text-only template"""
 
     def render(self, tri, notify=None):
-        context = tri.context or {}
+        args = tri.args or {}
 
-        context['gws'] = {
+        args['gws'] = {
             'version': self.root.app.version,
             'endpoint': gws.SERVER_ENDPOINT,
         }
 
-        def err(e, path, line):
+        def err(e, path, line, env):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
         text = self.text
@@ -33,7 +33,7 @@ class Object(gws.base.template.Object):
 
         content = gws.lib.vendor.jump.render(
             text,
-            context,
+            args,
             path=self.path or '<string>',
             error=err,
         )
