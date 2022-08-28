@@ -326,13 +326,23 @@ class IAuthManager(INode, Protocol):
 
     def get_method(self, uid: str = None, ext_type: str = None) -> Optional['IAuthMethod']: ...
 
+    def login(self, credentials: Data, req: IWebRequester): ...
+
+    def logout(self, req: IWebRequester): ...
+
     def serialize_user(self, user: 'IUser') -> str: ...
 
     def unserialize_user(self, ser: str) -> Optional['IUser']: ...
 
-    def open_session(self, req: 'IWebRequester') -> 'IAuthSession': ...
+    def session_find(self, uid: str) -> Optional['IAuthSession']: ...
 
-    def close_session(self, sess: 'IAuthSession', req: 'IWebRequester', res: 'IWebResponder') -> 'IAuthSession': ...
+    def session_create(self, typ: str, method: 'IAuthMethod', user: 'IUser') -> 'IAuthSession': ...
+
+    def session_save(self, sess: 'IAuthSession'): ...
+
+    def session_delete(self, sess: 'IAuthSession'): ...
+
+    def session_delete_all(self): ...
 
 
 class IAuthMethod(INode, Protocol):
@@ -361,6 +371,7 @@ class IAuthProvider(INode, Protocol):
 
 class IAuthSession(IObject, Protocol):
     changed: bool
+    saved: bool
     data: dict
     method: Optional['IAuthMethod']
     typ: str
@@ -1117,6 +1128,14 @@ class ILegend(INode, Protocol):
     def render(self, args: dict = None) -> Optional[LegendRenderOutput]: ...
 
 
+class LayerDisplayMode(Enum):
+    """Layer display mode"""
+
+    box = 'box'  #: display a layer as one big image (WMS-alike)
+    tile = 'tile'  #: display a layer in a tile grid
+    client = 'client'  #: draw a layer in the client
+
+
 # noinspection PyPropertyDefinition
 class ILayer(INode, Protocol):
     canRenderBox: bool
@@ -1134,6 +1153,8 @@ class ILayer(INode, Protocol):
     hasCache: bool
     hasSearch: bool
     hasLegend: bool
+
+    displayMode: LayerDisplayMode
 
     layers: List['ILayer']
 

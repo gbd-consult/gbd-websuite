@@ -3,7 +3,7 @@ import base64
 import gws
 import gws.types as t
 
-from .. import error, manager, method
+from .. import error, method
 
 # @TODO support WWW-Authenticate at some point
 
@@ -17,7 +17,7 @@ class Config(method.Config):
 class Object(method.Object):
 
     def open_session(self, auth, req):
-        if self.secure and not req.is_secure:
+        if self.secure and not req.isSecure:
             return
 
         login_pass = _parse_header(req)
@@ -26,7 +26,7 @@ class Object(method.Object):
 
         user = auth.authenticate(self, gws.Data(username=login_pass[0], password=login_pass[1]))
         if user:
-            return t.cast(manager.Object, auth).new_session('http-basic', method=self, user=user)
+            return auth.session_create('http-basic', method=self, user=user)
 
         # if the header is provided, it has to be correct
         raise error.LoginNotFound()

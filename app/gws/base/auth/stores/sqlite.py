@@ -41,8 +41,7 @@ class SessionStore:
             for r in conn.execute('SELECT * FROM sess WHERE uid=?', [uid]):
                 return dict(r)
 
-    def create(self, method_uid, typ, provider_uid, user_uid, str_user, str_data=''):
-        uid = gws.random_string(64)
+    def create(self, uid, method_uid, typ, provider_uid, user_uid, str_user, str_data=''):
 
         with self.connect() as conn:
             conn.execute('''INSERT
@@ -70,8 +69,6 @@ class SessionStore:
                 gws.lib.date.timestamp()
             ])
 
-        gws.log.debug('session: created:', uid)
-        return uid
 
     def update(self, uid, str_data):
         with self.connect() as conn:
