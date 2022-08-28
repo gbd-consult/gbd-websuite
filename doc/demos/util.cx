@@ -1,0 +1,125 @@
+@let DEMO_DUESSELDORF_3857 = [753753, 6661615]
+@let DEMO_DUESSELDORF_25832 = [344371, 5677471]
+
+@let DEMO_OSM_ZOOM_SCALES = [2000000 1000000 500000 250000 150000 70000 35000 15000 8000 4000 2000 1000 500]
+
+@def demo_map(**kw)
+
+    @with kw.crs
+        map.crs {kw.crs}
+    @end
+
+    @with kw.zoomScales
+        map.zoom.scales {kw.zoomScales}
+    @end
+
+    @with kw.initScale
+        map.zoom.initScale {kw.initScale}
+    @end
+
+    @with kw.centerAround
+        @let pt, km = kw.centerAround
+        map.extent [
+            {pt[0] - km * 1000}
+            {pt[1] - km * 1000}
+            {pt[0] + km * 1000}
+            {pt[1] + km * 1000}
+        ]
+    @end
+
+@end
+
+@def demo_databases
+    db.providers+ {
+        type "postgres"
+        database "YOUR-DATABASE"
+        host "YOUR-DATABASE-HOST"
+        password "YOUR-DATABASE-PASSWORD"
+        port YOUR-DATABASE-PORT
+        user "YOUR-DATABASE-USER"
+    }
+@end
+
+@def demo_web_site
+    web.sites+ {
+        assets.dir "assets"
+        root.dir "web"
+        host "*"
+        rewrite [
+            {
+                pattern "^/$"
+                target "/_/webAsset/path/index.cx.html"
+            }
+            {
+                pattern "^/project/([a-z0-9_.-]+)(/@.*)?$"
+                target "/_/webAsset/projectUid/$1/path/project.cx.html"
+            }
+            {
+                pattern "^/(wms|wmts|wfs|wcs)"
+                target "/_/owsService/serviceUid/$1_service/projectUid/$1_service_project"
+            }
+            {
+                pattern "^/csw"
+                target "/_/owsService/serviceUid/csw_service"
+            }
+        ]
+        errorPage {
+            type "text"
+            text "Error {{error}}"
+        }
+    }
+@end
+
+@def demo_api
+    api.actions+ { type "web" }
+    api.actions+ { type "map" }
+    api.actions+ { type "project" }
+@end
+
+@def demo_client
+    client.elements+ { tag "Decoration.ScaleRuler" }
+    client.elements+ { tag "Decoration.Attribution" }
+
+    client.elements+ { tag "Infobar.ZoomOut" }
+    client.elements+ { tag "Infobar.ZoomIn" }
+    client.elements+ { tag "Infobar.ZoomReset" }
+    client.elements+ { tag "Infobar.Position" }
+    client.elements+ { tag "Infobar.Scale" }
+    client.elements+ { tag "Infobar.Loader" }
+    client.elements+ { tag "Infobar.Spacer" }
+    client.elements+ { tag "Infobar.HomeLink" }
+    client.elements+ { tag "Infobar.Help" }
+    client.elements+ { tag "Infobar.About" }
+
+    client.elements+ { tag "Sidebar.Overview" }
+    client.elements+ { tag "Sidebar.Layers" }
+
+    client.elements+ { tag "Task.Zoom" }
+
+    client.options.sidebarActiveTab "Sidebar.Layers"
+    client.options.sidebarVisible true
+@end
+
+@def demo_locales
+    locales+ "de_DE"
+@end
+
+
+@def demo_osm_layer
+    title "Open Street Map"
+    type "tile"
+    url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+@end
+
+@def demo_init
+    access "allow all"
+
+    @demo_locales
+    @demo_databases
+    @demo_web_site
+    @demo_api
+    @demo_client
+@end
+
+

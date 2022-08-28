@@ -1,0 +1,25 @@
+projects+ {
+    uid "gws.plugin.tile_layer.demos.reprojected"
+    title "Tile Layer: Reprojected"
+
+    templates+ {
+        subject "project.description"
+        type "html"
+        text """
+            OSM layer, cached on the server and reprojected to another CRS
+        """
+    }
+
+    @demo_map(
+        crs=25830
+        centerAround=[[1181583, 5720282], 500]
+        zoomScales=DEMO_OSM_ZOOM_SCALES
+        initScale=500000
+    )
+
+    map.layers+ {
+        @demo_osm_layer
+        display "tile"
+        cache.enabled true
+    }
+}

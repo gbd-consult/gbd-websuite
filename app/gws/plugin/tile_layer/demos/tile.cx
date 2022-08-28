@@ -1,0 +1,25 @@
+projects+ {
+    uid "gws.plugin.tile_layer.demos.tile"
+    title "Tile Layer: Server Display"
+
+    templates+ {
+        subject "project.description"
+        type "html"
+        text """
+            OSM layer, cached on the server.
+        """
+    }
+
+    @demo_map(
+        crs=3857
+        centerAround=[DEMO_DUESSELDORF_3857, 500]
+        zoomScales=DEMO_OSM_ZOOM_SCALES
+        initScale=150000
+    )
+
+    map.layers+ {
+        @demo_osm_layer
+        display "tile"
+        cache.enabled true
+    }
+}
