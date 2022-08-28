@@ -112,6 +112,10 @@
     metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
 @end
 
+@def demo_local_config
+    @# insert your local config here
+@end
+
 @def demo_init
     access "allow all"
 
@@ -120,6 +124,7 @@
     @demo_web_site
     @demo_api
     @demo_client
+    @demo_local_config
 @end
 
 
