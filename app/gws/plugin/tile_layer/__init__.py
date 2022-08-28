@@ -2,9 +2,8 @@ import re
 
 import gws
 import gws.gis.crs
+import gws.base.layer
 import gws.types as t
-
-from . import main, lib
 
 
 class ServiceConfig:
@@ -23,16 +22,16 @@ class Service(gws.Data):
 
 
 @gws.ext.config.layer('tile')
-class Config(main.Config):
+class Config(gws.base.layer.Config):
     """Tile layer"""
-    display: lib.DisplayMode = lib.DisplayMode.tile  #: layer display mode
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile  #: layer display mode
     maxRequests: int = 0  #: max concurrent requests to this source
     service: t.Optional[ServiceConfig] = {}  # type:ignore #: service configuration
     url: gws.Url  #: rest url with placeholders {x}, {y} and {z}
 
 
 @gws.ext.object.layer('tile')
-class Object(main.Object):
+class Object(gws.base.layer.Object):
     url: gws.Url
     service: Service
 
@@ -63,7 +62,7 @@ class Object(main.Object):
     def props(self, user):
         p = super().props(user)
 
-        if self.displayMode == lib.DisplayMode.client:
+        if self.displayMode == gws.LayerDisplayMode.client:
             p.type = 'xyz'
             p.url = self.url
 
@@ -93,5 +92,5 @@ class Object(main.Object):
             'tile_size': [self.service.tileSize, self.service.tileSize],
         }))
 
-        src_uid = lib.mapproxy_back_cache_config(self, mc, url, grid_uid)
-        lib.mapproxy_layer_config(self, mc, src_uid)
+        src_uid = gws.base.layer.lib.mapproxy_back_cache_config(self, mc, url, grid_uid)
+        gws.base.layer.lib.mapproxy_layer_config(self, mc, src_uid)
