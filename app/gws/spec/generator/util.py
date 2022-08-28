@@ -30,28 +30,6 @@ def find_files(dirname, pattern=None, deep=True):
             yield de.path
 
 
-def parse_args(argv):
-    args = {}
-    opt = None
-    n = 0
-
-    for a in argv:
-        if a.startswith('--'):
-            opt = a[2:]
-            args[opt] = True
-        elif a.startswith('-'):
-            opt = a[1:]
-            args[opt] = True
-        elif opt:
-            args[opt] = a
-            opt = None
-        else:
-            args[n] = a
-            n += 1
-
-    return args
-
-
 def read_file(path):
     with open(path, 'rt', encoding='utf8') as fp:
         return fp.read().strip()

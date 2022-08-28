@@ -7,7 +7,8 @@ import gws
 import gws.lib.json2
 import gws.types as t
 
-from . import core, generator, reader
+from . import core, reader
+from .generator import generator
 
 Error = core.Error
 ReadError = core.ReadError

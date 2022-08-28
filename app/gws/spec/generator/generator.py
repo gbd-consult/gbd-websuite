@@ -2,6 +2,8 @@ import os
 
 from . import base, manifest, normalizer, parser, specs, strings, typescript, util
 
+Error = base.Error
+
 
 def generate_and_store(root_dir=None, out_dir=None, manifest_path=None, debug=False):
     gen = generate_all(root_dir, out_dir, manifest_path, debug)
