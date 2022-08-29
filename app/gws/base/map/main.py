@@ -72,7 +72,7 @@ class Object(gws.Node, gws.IMap):
 
         p = self.var('zoom')
         if p:
-            self.resolutions = gws.gis.zoom.resolutions_from_config(p)
+            self.resolutions = gws.gis.zoom.resolutions_from_config(p, _DEFAULT_RESOLUTIONS)
             self.initResolution = gws.gis.zoom.init_resolution(p, self.resolutions)
 
         self.rootLayer = self.create_child(gws.ext.object.layer, gws.Config(

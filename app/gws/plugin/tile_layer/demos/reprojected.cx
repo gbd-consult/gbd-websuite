@@ -1,24 +1,19 @@
 projects+ {
     uid "gws.plugin.tile_layer.demos.reprojected"
     title "Tile Layer: Reprojected"
+    metadata.abstract "OSM layer, cached on the server and reprojected to another CRS."
 
-    templates+ {
-        subject "project.description"
-        type "html"
-        text """
-            OSM layer, cached on the server and reprojected to another CRS
-        """
+    map {
+        crs 25830
+        extent {demo_make_extent(1181583, 5720282, 1000)}
+        zoom.initScale 500000
     }
 
-    @demo_map(
-        crs=25830
-        centerAround=[[1181583, 5720282], 500]
-        zoomScales=DEMO_OSM_ZOOM_SCALES
-        initScale=500000
-    )
-
     map.layers+ {
-        @demo_osm_layer
+        title "Open Street Map"
+        type "tile"
+        url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+
         display "tile"
         cache.enabled true
     }

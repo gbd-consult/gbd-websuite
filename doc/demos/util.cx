@@ -29,6 +29,17 @@
 
 @end
 
+
+@def demo_make_extent(x, y, km)
+    [
+        {x - km * 1000}
+        {y - km * 1000}
+        {x + km * 1000}
+        {y + km * 1000}
+    ]
+@end
+
+
 @def demo_databases
     db.providers+ {
         type "postgres"
@@ -103,7 +114,6 @@
 @def demo_locales
     locales+ "de_DE"
 @end
-
 
 @def demo_osm_layer
     title "Open Street Map"
