@@ -1,7 +1,7 @@
 import gws
 import gws.types as t
 
-from .. import manager, method
+from .. import method
 
 
 @gws.ext.config.authMethod('web')
@@ -20,6 +20,7 @@ _DELETED = 'web:deleted'
 class Object(method.Object):
     cookieName: str
     cookiePath: str
+    deletedSession: gws.IAuthSession
 
     def configure(self):
         super().configure()
@@ -27,7 +28,10 @@ class Object(method.Object):
         self.cookieName = self.var('cookieName')
         self.cookiePath = self.var('cookiePath')
 
-    def open_session(self, auth, req):
+    def activate(self):
+        self.deletedSession = self.auth.session_create(_DELETED, user=self.auth.guestUser, method=self)
+
+    def open_session(self, req):
         sid = req.cookie(self.cookieName)
         if not sid:
             return
@@ -36,21 +40,21 @@ class Object(method.Object):
             gws.log.debug(f'insecure context, session {sid!r} ignored')
             return
 
-        sess = auth.session_find(sid)
+        sess = self.auth.session_find(sid)
         if sess and sess.typ == _ACTIVE:
             return sess
 
         gws.log.debug(f'sid={sid} not found or invalid')
-        return auth.session_create(_DELETED, user=auth.guestUser, method=self)
+        return self.deletedSession
 
-    def close_session(self, auth, sess, req, res):
+    def close_session(self, sess, req, res):
         if sess.typ == _DELETED:
             gws.log.debug('session cookie=deleted')
             res.delete_cookie(
                 self.cookieName,
                 path=self.cookiePath)
 
-        if sess.typ == _ACTIVE and res.status_code < 400:
+        if sess.typ == _ACTIVE and res.status < 400:
             gws.log.debug('session cookie=', sess.uid)
             res.set_cookie(
                 self.cookieName,
@@ -59,14 +63,14 @@ class Object(method.Object):
                 secure=self.secure,
                 httponly=True,
             )
-            auth.session_save(sess)
+            self.auth.session_save(sess)
 
-    def login(self, auth, credentials, req):
-        user = auth.authenticate(self, credentials)
+    def login(self, req, credentials):
+        user = self.auth.authenticate(self, credentials)
         if user:
-            return auth.session_create(_ACTIVE, self, user)
+            return self.auth.session_create(_ACTIVE, self, user)
 
-    def logout(self, auth, sess, req):
+    def logout(self, req, sess):
         if sess.typ == _ACTIVE:
-            auth.session_delete(sess)
-        return auth.session_create(_DELETED, user=auth.guestUser, method=self)
+            self.auth.session_delete(sess)
+        return self.deletedSession

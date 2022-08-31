@@ -116,12 +116,12 @@ class Props(gws.Data):
 
 
 class Object(gws.Node):
-    cTemplates: gws.base.template.collection.Object
+    templateCollection: gws.base.template.collection.Object
 
     def configure(self):
-        self.cTemplates = self.create_child(gws.base.template.collection.Object, gws.Config(
+        self.templateCollection = self.create_child(gws.base.template.collection.Object, gws.Config(
             items=self.var('templates')
         ))
 
     def props(self, user):
-        return gws.Data(templates=self.cTemplates)
+        return gws.Data(templates=self.templateCollection)

@@ -1,7 +1,7 @@
 """Direct QGIS/Postgres search."""
 
 import gws
-import gws.base.db.postgres.provider
+import gws.base.database.postgres.provider
 import gws.base.search
 import gws.types as t
 

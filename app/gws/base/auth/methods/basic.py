@@ -5,6 +5,7 @@ import gws.types as t
 
 from .. import error, method
 
+
 # @TODO support WWW-Authenticate at some point
 
 @gws.ext.config.authMethod('basic')
@@ -16,7 +17,7 @@ class Config(method.Config):
 @gws.ext.object.authMethod('basic')
 class Object(method.Object):
 
-    def open_session(self, auth, req):
+    def open_session(self, req):
         if self.secure and not req.isSecure:
             return
 
@@ -24,9 +25,9 @@ class Object(method.Object):
         if not login_pass:
             return
 
-        user = auth.authenticate(self, gws.Data(username=login_pass[0], password=login_pass[1]))
+        user = self.auth.authenticate(self, gws.Data(username=login_pass[0], password=login_pass[1]))
         if user:
-            return auth.session_create('http-basic', method=self, user=user)
+            return self.auth.session_create('http-basic', method=self, user=user)
 
         # if the header is provided, it has to be correct
         raise error.LoginNotFound()

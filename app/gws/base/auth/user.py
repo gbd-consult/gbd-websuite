@@ -59,6 +59,8 @@ class User(gws.IUser):
         return gws.Data(displayName=self.displayName)
 
     def can_use(self, obj, context=None):
+        if obj is self:
+            return True
         acc = self.access_to(obj)
         if acc is not None:
             return acc == gws.ACCESS_ALLOWED

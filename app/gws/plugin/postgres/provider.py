@@ -1,5 +1,5 @@
 import gws
-import gws.base.db
+import gws.base.database
 import gws.base.model
 import gws.gis.crs
 import gws.base.feature
@@ -48,7 +48,7 @@ class Object(gws.Node, gws.IDatabase):
         key = self.class_name + '_describe_' + table.name
         return gws.get_server_global(key, _get)
 
-    def configure_table(self, cfg: gws.base.db.SqlTableConfig) -> gws.SqlTable:
+    def configure_table(self, cfg: gws.base.database.SqlTableConfig) -> gws.SqlTable:
         table = gws.SqlTable(name=cfg.get('name'))
         cols = self.describe(table)
 

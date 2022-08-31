@@ -192,15 +192,15 @@ _DEFAULT_ALLOWED_MIME_TYPES = {
 }
 
 
-def _valid_mime_type(mt, project_assets: t.Optional[gws.DocumentRoot], site_assets: t.Optional[gws.DocumentRoot]):
-    if project_assets and project_assets.allow_mime:
-        return mt in project_assets.allow_mime
-    if site_assets and site_assets.allow_mime:
-        return mt in site_assets.allow_mime
+def _valid_mime_type(mt, project_assets: t.Optional[gws.WebDocumentRoot], site_assets: t.Optional[gws.WebDocumentRoot]):
+    if project_assets and project_assets.allowMime:
+        return mt in project_assets.allowMime
+    if site_assets and site_assets.allowMime:
+        return mt in site_assets.allowMime
     if mt not in _DEFAULT_ALLOWED_MIME_TYPES:
         return False
-    if project_assets and project_assets.deny_mime:
-        return mt not in project_assets.deny_mime
-    if site_assets and site_assets.deny_mime:
-        return mt not in site_assets.deny_mime
+    if project_assets and project_assets.denyMime:
+        return mt not in project_assets.denyMime
+    if site_assets and site_assets.denyMime:
+        return mt not in site_assets.denyMime
     return True

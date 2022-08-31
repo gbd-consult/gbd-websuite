@@ -3,6 +3,7 @@ import gws.lib.mime
 import gws.types as t
 from . import main
 
+
 class Props(gws.Props):
     items: t.List[main.Props]
 

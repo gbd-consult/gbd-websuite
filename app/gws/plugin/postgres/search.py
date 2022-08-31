@@ -1,5 +1,5 @@
 import gws
-import gws.base.db
+import gws.base.database
 import gws.base.search
 import gws.types as t
 
@@ -11,7 +11,7 @@ class Config(gws.base.search.provider.Config):
     """Database-based search"""
 
     db: t.Optional[str]  #: database provider uid
-    table: gws.base.db.SqlTableConfig  #: sql table configuration
+    table: gws.base.database.SqlTableConfig  #: sql table configuration
     sort: t.Optional[str]  #: sort expression
 
 

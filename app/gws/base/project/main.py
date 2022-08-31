@@ -24,7 +24,7 @@ class Config(gws.ConfigWithAccess):
     """Project configuration"""
 
     api: t.Optional[gws.base.action.collection.Config]  #: project-specific actions
-    assets: t.Optional[gws.base.web.DocumentRootConfig]  #: project-specific assets options
+    assets: t.Optional[gws.base.web.site.DocumentRootConfig]  #: project-specific assets options
     client: t.Optional[gws.base.client.Config]  #: project-specific gws client configuration
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.base.map.Config]  #: Map configuration
@@ -53,8 +53,6 @@ class Props(gws.Props):
 class Object(gws.Node, gws.IProject):
     overview_map: gws.base.map.Object
     printer: gws.base.printer.Object
-    cTemplates: gws.base.template.collection.Object
-    cActions: gws.base.action.collection.Object
 
     def configure(self):
         self.uid = self.var('uid')
@@ -67,8 +65,11 @@ class Object(gws.Node, gws.IProject):
 
         gws.log.info(f'configuring project {self.uid!r}')
 
-        self.cActions = self.create_child(gws.base.action.collection.Object, self.var('api'), optional=True)
-        self.assetsRoot = gws.base.web.create_document_root(self.var('assets'))
+        self.actionCollection = self.create_child(gws.base.action.collection.Object, self.var('api'), optional=True)
+
+        p = self.var('assets')
+        self.assetsRoot = gws.WebDocumentRoot(p) if p else None
+
         self.localeUids = self.var('locales') or self.root.app.localeUids
 
         self.map = self.create_child(gws.ext.object.map, self.var('map'), optional=True)
@@ -76,7 +77,7 @@ class Object(gws.Node, gws.IProject):
         #
         # self.overview_map = self.root.create_optional(gws.base.map.Object, self.var('overviewMap'))
         #
-        self.cTemplates = self.create_child(gws.base.template.collection.Object, gws.Config(
+        self.templateCollection = self.create_child(gws.base.template.collection.Object, gws.Config(
             templates=self.var('templates'),
             defaults=_DEFAULT_TEMPLATES))
 
@@ -88,7 +89,7 @@ class Object(gws.Node, gws.IProject):
         desc = self.render_description()
         p.description = desc.content if desc else ''
 
-        p.actions = self.root.app.actions_for(user, self)
+        p.actions = self.root.app.actionCollection.actions_for(user, self.actionCollection)
         p.client = self.client or self.root.app.client
         p.map = self.map
         p.metadata = self.metadata
@@ -100,7 +101,7 @@ class Object(gws.Node, gws.IProject):
         return p
 
     def render_description(self, args=None):
-        tpl = self.cTemplates.find(subject='project.description')
+        tpl = self.templateCollection.find(subject='project.description')
         if not tpl:
             return
         args = gws.merge({

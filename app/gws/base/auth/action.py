@@ -30,16 +30,15 @@ class Object(gws.base.action.Object):
     def login(self, req: gws.IWebRequester, p: LoginParams) -> Response:
         """Perform a login"""
 
-        self.root.app.auth.login(p, req)
+        self.root.app.auth.web_login(req, p)
         return self._response(req)
 
     @gws.ext.command.api('authLogout')
     def logout(self, req: gws.IWebRequester, p: gws.Request) -> Response:
         """Perform a logout"""
 
-        self.root.app.auth.logout(req)
+        self.root.app.auth.web_logout(req)
         return self._response(req)
-
 
     def _response(self, req):
         return Response(user=gws.props(req.user, req.user))

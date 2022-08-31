@@ -6,9 +6,7 @@ class Config(gws.Config):
     finders: t.Optional[t.List[gws.ext.config.finder]]
 
 
-class Object(gws.Node):
-    items: t.List[gws.ext.object.finder]
-
+class Object(gws.Node, gws.IFinderCollection):
     def configure(self):
         self.items = [self.create_child(gws.ext.object.finder, p) for p in self.var('finders', default=[])]
 

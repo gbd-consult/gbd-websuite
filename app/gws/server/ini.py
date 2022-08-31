@@ -267,8 +267,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
         roots = ''
         rewr = ''
 
-        for s in root.app.webSites:
-            site = t.cast(gws.base.web.site.Object, s)
+        for site in root.app.webSiteCollection.items:
             for r in site.rewriteRules:
                 rewr += f'rewrite {r.pattern} {r.target} last;\n'
 

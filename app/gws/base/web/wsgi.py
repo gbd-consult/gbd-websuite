@@ -14,12 +14,6 @@ import gws.types as t
 
 from . import error
 
-_wrappers = []
-
-
-def register_wrapper(obj):
-    _wrappers.append(obj)
-
 
 class Responder(gws.IWebResponder):
     def __init__(self, **kwargs):
@@ -27,9 +21,9 @@ class Responder(gws.IWebResponder):
             self._wz = kwargs['wz']
         else:
             self._wz = werkzeug.wrappers.Response(**kwargs)
-        self.status_code = self._wz.status_code
+        self.status = self._wz.status_code
 
-    def __call__(self, environ, start_response):
+    def send(self, environ, start_response):
         return self._wz(environ, start_response)
 
     def set_cookie(self, key, **kwargs):
@@ -53,12 +47,15 @@ class Requester(gws.IWebRequester):
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
         self._wz.max_content_length = int(root.app.var('server.web.maxRequestLength', default=1)) * 1024 * 1024
 
+        self.root = root
+        self.site = site
+
         self.environ = self._wz.environ
         self.method = self._wz.method.upper()
         self.isSecure = self._wz.is_secure
-        
-        self.isPost = self.method == 'POST' 
-        self.isGet = self.method == 'GET' 
+
+        self.isPost = self.method == 'POST'
+        self.isGet = self.method == 'GET'
 
         self.inputType = None
         if self.isPost:
@@ -72,19 +69,6 @@ class Requester(gws.IWebRequester):
 
         self.params: t.Dict[str, t.Any] = {}
         self.lowerParams: t.Dict[str, t.Any] = {}
-
-        self.root: gws.IRoot = root
-        self.site: gws.IWebSite = site
-
-    def enter_request(self):
-        # @TODO queue wrappers to resolve dependencies
-        for w in _wrappers:
-            w.enter_request(self)
-
-    def exit_request(self, res: gws.IWebResponder):
-        # @TODO queue wrappers to resolve dependencies
-        for w in reversed(_wrappers):
-            w.exit_request(self, res)
 
     def data(self):
         if not self.isPost:

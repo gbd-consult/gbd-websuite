@@ -1,4 +1,4 @@
-import gws.base.db.postgres.driver
+import gws.base.database.postgres.driver
 import gws.lib.test as test
 
 
@@ -27,7 +27,7 @@ def configuration():
 
 @test.fixture
 def conn():
-    yield gws.base.db.postgres.driver.Connection(test.postgres_connect_params())
+    yield gws.base.database.postgres.driver.Connection(test.postgres_connect_params())
 
 
 def test_select(conn):

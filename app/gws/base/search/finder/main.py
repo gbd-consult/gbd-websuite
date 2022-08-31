@@ -33,10 +33,10 @@ class Object(gws.Node, gws.IFinder):
     def configure(self):
         # self.data_model = self.root.create_optional(gws.base.model.Object, self.var('dataModel'))
 
-        self.cTemplates = None
+        self.templateCollection = None
         p = self.var('templates')
         if p:
-            self.cTemplates = self.create_child(gws.base.template.collection.Object, gws.Config(items=p))
+            self.templateCollection = self.create_child(gws.base.template.collection.Object, gws.Config(items=p))
 
         p = self.var('tolerance')
         self.tolerance = (

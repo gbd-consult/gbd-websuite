@@ -47,6 +47,9 @@ class Object(gws.Node, gws.IAuthManager):
         sys_provider = self.create_child(gws.ext.object.authProvider, {'type': 'system'})
         self.providers.append(sys_provider)
 
+        for p in self.providers:
+            p.auth = self
+
         self.guestUser = sys_provider.get_user('guest')
         self.systemUser = sys_provider.get_user('system')
 
@@ -57,36 +60,39 @@ class Object(gws.Node, gws.IAuthManager):
         if not self.methods:
             self.methods.append(self.create_child(gws.ext.object.authMethod, {'type': 'web'}))
 
-        self.webMethod = self.get_method(ext_type='web')
+        for p in self.methods:
+            p.auth = self
 
-    def activate(self):
-        gws.base.web.wsgi.register_wrapper(self)
+        self.webMethod = self.get_method(ext_type='web')
 
     ##
 
-    def enter_request(self, req: gws.base.web.wsgi.Requester):
+    def activate(self):
+        self.root.app.register_web_middleware('auth', self.auth_middleware)
+
+    def auth_middleware(self, req: gws.IWebRequester, nxt) -> gws.IWebResponder:
         req.session = self._open_session(req)
         req.user = req.session.user
         gws.log.debug(f'auth_open: typ={req.session.typ!r} user={req.user.uid!r}')
-
-    def exit_request(self, req: gws.base.web.wsgi.Requester, res: gws.base.web.wsgi.Responder):
+        res = nxt()
         sess = getattr(req, 'session')
         gws.log.debug(f'auth_close: typ={sess.typ!r} user={sess.user.uid!r}')
         req.session = self._close_session(sess, req, res)
+        return res
 
     def _open_session(self, req):
         for m in self.methods:
-            sess = m.open_session(self, req)
+            sess = m.open_session(req)
             if sess:
                 return sess
         return self.guestSession
 
-    def _close_session(self, sess, req, res):
+    def _close_session(self, sess: gws.IAuthSession, req, res):
         if sess and sess.method:
-            return sess.method.close_session(self, sess, req, res)
+            return sess.method.close_session(sess, req, res)
         return self.guestSession
 
-    def login(self, credentials, req):
+    def web_login(self, req, credentials):
         if not req.user.isGuest:
             gws.log.error('login while logged-in')
             raise gws.base.web.error.Forbidden()
@@ -94,7 +100,7 @@ class Object(gws.Node, gws.IAuthManager):
         if not self.webMethod:
             raise gws.base.web.error.Forbidden()
 
-        sess = self.webMethod.login(self, credentials, req)
+        sess = self.webMethod.login(req, credentials)
         if not sess:
             raise gws.base.web.error.Forbidden()
 
@@ -102,7 +108,7 @@ class Object(gws.Node, gws.IAuthManager):
         req.user = req.session.user
         gws.log.debug(f'auth_login: typ={req.session.typ!r} user={req.user.uid!r}')
 
-    def logout(self, req):
+    def web_logout(self, req):
         if req.user.isGuest:
             return
 
@@ -114,7 +120,7 @@ class Object(gws.Node, gws.IAuthManager):
             gws.log.error(f'wrong method for logout: {sess.method!r}')
             raise gws.base.web.error.Forbidden()
 
-        req.session = self.webMethod.logout(self, sess, req)
+        req.session = self.webMethod.logout(req, sess)
         req.user = req.session.user
 
         gws.log.debug(f'auth_logout: typ={sess.typ!r}')

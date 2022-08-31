@@ -3,29 +3,30 @@
 import getpass
 
 import gws
+import gws.base.auth.error
+import gws.base.auth.provider
+import gws.base.auth.user
 import gws.lib.json2
 import gws.lib.password
 import gws.types as t
 
-from .. import error, provider, user
-
 
 @gws.ext.config.authProvider('file')
-class Config(provider.Config):
+class Config(gws.base.auth.provider.Config):
     """File-based authorization provider"""
 
     path: gws.FilePath  #: path to the users json file
 
 
 @gws.ext.object.authProvider('file')
-class Object(provider.Object):
+class Object(gws.base.auth.provider.Object):
     path: str
     db: t.List[dict]
 
     def configure(self):
         super().configure()
 
-        self.uid = 'gws.base.auth.providers.file'
+        self.uid = self.var('uid', 'gws.base.auth.providers.file')
         self.path = self.var('path')
         self.db = gws.lib.json2.from_path(self.path)
 
@@ -62,8 +63,8 @@ class Object(provider.Object):
                 return self._make_user(rec)
 
     def _make_user(self, rec):
-        return user.create(
-            user.AuthorizedUser,
+        return gws.base.auth.user.create(
+            gws.base.auth.user.AuthorizedUser,
             provider=self,
             local_uid=rec['login'],
             roles=rec.get('roles', []),
