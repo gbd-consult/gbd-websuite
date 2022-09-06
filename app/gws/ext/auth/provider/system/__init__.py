@@ -25,3 +25,12 @@ class Object(gws.common.auth.provider.Object):
                 self.system_user = self.root.create(gws.common.auth.user.System)
                 self.system_user.init_from_source(self, uid='system')
             return self.system_user
+
+    def user_from_dict(self, d: dict) -> t.IUser:
+        return self.get_user(d.get('user_uid'))
+
+    def user_to_dict(self, u: t.IUser) -> dict:
+        return {
+            'provider_uid': self.uid,
+            'user_uid': u.uid,
+        }

@@ -18,6 +18,7 @@ class Config(t.Config):
 
     methods: t.Optional[t.List[t.ext.auth.method.Config]]  #: authorization methods
     providers: t.List[t.ext.auth.provider.Config]  #: authorization providers
+    mfa: t.Optional[t.List[t.ext.auth.mfa.Config]]  #: authorization providers
     sessionLifeTime: t.Duration = 1200  #: session life time
     sessionStorage: str = 'sqlite'  #: session storage engine
 
@@ -51,6 +52,14 @@ class Object(gws.Object, t.IAuthManager):
             t.cast(t.IAuthMethod, self.create_child('gws.ext.auth.method', c))
             for c in p]
 
+        p = self.var('mfa', default=[])
+        self.mfas: t.List[t.IAuthMfa] = [
+            t.cast(t.IAuthMfa, self.create_child('gws.ext.auth.mfa', c))
+            for c in p]
+
+        for c in self.children:
+            c.auth = self
+
     @property
     def guest_session(self):
         return self.new_session(type='guest', user=self.guest_user)
@@ -70,17 +79,6 @@ class Object(gws.Object, t.IAuthManager):
     def close_session(self, sess: t.ISession, req: t.IRequest, res: t.IResponse) -> t.ISession:
         if sess and sess.method:
             return sess.method.close_session(self, sess, req, res)
-        return self.guest_session
-
-    def login(self, method: t.IAuthMethod, login: str, password: str, req: t.IRequest) -> t.ISession:
-        sess = method.login(self, login, password, req)
-        if sess:
-            return sess
-        raise error.LoginNotFound()
-
-    def logout(self, sess: t.ISession, req: t.IRequest) -> t.ISession:
-        if sess and sess.method:
-            return sess.method.logout(self, sess, req)
         return self.guest_session
 
     # stored sessions
@@ -123,6 +121,7 @@ class Object(gws.Object, t.IAuthManager):
             self.store.touch(sess.uid)
 
     def destroy_stored_session(self, sess: t.ISession):
+        gws.log.debug(f'destroy_stored_session uid={sess.uid!r}')
         self.store.delete(sess.uid)
 
     def delete_stored_sessions(self):
@@ -159,6 +158,11 @@ class Object(gws.Object, t.IAuthManager):
     def get_method(self, type: str) -> t.Optional[t.IAuthMethod]:
         for m in self.methods:
             if m.type == type:
+                return m
+
+    def get_mfa(self, uid: str) -> t.Optional[t.IAuthMfa]:
+        for m in self.mfas:
+            if m.uid == uid:
                 return m
 
     def serialize_user(self, user: t.IUser) -> str:

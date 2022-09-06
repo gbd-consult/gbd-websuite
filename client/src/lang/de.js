@@ -158,6 +158,14 @@ module.exports = {
     modUserLoginTitle: 'Anmeldung',
     modUserLoginUsername: 'Benutzername',
     modUserLogoutButton: 'Ausloggen',
+    modUserMfaVerifyButton: 'Weiter',
+    modUserMfaRestartButton: 'PIN erneut senden',
+
+    modUserErrorBadLogin: 'Anmeldung fehlgeschlagen',
+    modUserErrorBadMfa: 'Falscher PIN-Code',
+    modUserErrorFailedMfa: 'PIN Eingabe fehlgeschlagen, bitte erneut anmelden',
+
+
     modUserSidebarTitle: 'Anmeldung',
     modZoomInfobarInButton: 'Hineinzoomen',
     modZoomInfobarOutButton: 'Hinauszoomen',
