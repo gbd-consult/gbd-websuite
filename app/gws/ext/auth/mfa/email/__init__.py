@@ -3,6 +3,7 @@
 import gws
 import gws.common.auth.mfa
 import gws.common.template
+import gws.tools.otp
 import gws.web.error
 
 import gws.types as t
@@ -42,7 +43,7 @@ class Object(gws.common.auth.mfa.Object):
     def generate_and_send(self, user, mf):
 
         # NB regenerate secret on each attempt
-        mf.secret = self.get_random_secret()
+        mf.secret = gws.tools.otp.random_base32_string()
 
         args = {
             'user': user,

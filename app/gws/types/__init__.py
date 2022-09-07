@@ -1205,8 +1205,7 @@ class IAuthMfa(IObject):
     type: str
     def check_totp(self, mf: 'AuthMfaData', token: str) -> bool: pass
     def generate_totp(self, mf: 'AuthMfaData') -> str: pass
-    def get_random_secret(self, length: int = 32) -> str: pass
-    def get_totp(self, mf, clock): pass
+    def get_totp(self, mf, ts): pass
     def is_valid(self, user: 'IUser', mf: 'AuthMfaData') -> bool: pass
     def restart(self, user: 'IUser', mf: 'AuthMfaData'): pass
     def start(self, user: 'IUser') -> 'AuthMfaData': pass
