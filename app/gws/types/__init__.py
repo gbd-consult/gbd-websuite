@@ -294,7 +294,6 @@ class AttributeValidationFailure(Data):
 
 
 class AuthMfaData(Data):
-    clientOptions: dict
     restartCount: int
     secret: str
     startTime: int
@@ -458,6 +457,7 @@ class IUser:
     displayName: str
     display_name: str
     fid: str
+    isGuest: bool
     is_guest: bool
     props: 'UserProps'
     provider: 'IAuthProvider'

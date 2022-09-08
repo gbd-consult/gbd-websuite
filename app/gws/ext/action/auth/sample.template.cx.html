@@ -1,0 +1,188 @@
+@comment docs
+
+    # Template for the client module 'Sidebar.Auth'
+
+
+    ## Configuration
+
+    This template should be configured in the action "auth" in the app or project api:
+
+        api.actions+ {
+            type "auth"
+            templates+ {
+                subject "client"
+                type "html"
+                path "path/to/template.cx.html"
+            }
+        }
+
+    ## Syntax
+
+    This template is translated dynamically in React, therefore there are some rules to follow:
+
+    - the result should be valid XML, that is, one single root tag, no shorthand attributes and proper quoting everywhere
+
+    - HTML tags must be lowercase, component tags captialized
+
+    - attributes that are special in JSX (like "style") and event handlers won't work
+
+    Otherwise you can use any HTML.
+
+    ## Components
+
+    There are some client components available.
+
+    Generic components `<Box>`, `<Row>` and `<Cell [flex=n]>` provide a framework for flexbox layouts.
+    Generic component `<Error text="...">` displays an error message.
+    The use of generic components is optional, you can use your own HTML instead.
+
+    The following Auth-specific components are mandatory:
+
+        <Auth.UsernameInput label="..."/>    - username input box
+        <Auth.PasswordInput label="..."/>    - password input box
+
+        <Auth.MfaInput label="..."/>         - MFA token input box
+
+        <Auth.LoginButton label="..."/>      - button "Login"
+        <Auth.LogoutButton label="..."/>     - button "Logout"
+        <Auth.MfaVerifyButton label="..."/>  - button "Check the MFA token"
+        <Auth.MfaRestartButton label="..."/> - button "Re-send the MFA token"
+
+
+    ## Arguments
+
+    This template accepts the following arguments:
+
+
+        user: object {
+            displayName: string
+            isGuest: boolean
+        }
+
+        mfa: optional object {
+            uid: string        // MFA method uid from the configuration
+            verifyCount: int   // how many times this MFA has been verified in this session
+            restartCount: int  // how many times this MFA has been restarted (resent) in this session
+        }
+
+        actionResult: str  // result of the last action
+            null             // no action
+            "loginFailed"    // invalid username or password
+            "loginFatal"     // fatal error during login (e.g. database error)
+            "mfaPending"     // login ok, the MFA challenge has to be completed
+            "mfaFailed"      // invalid MFA token entered
+            "mfaFatal"       // fatal MFA error (e.g. verify limit exceeded, timed-out etc)
+
+    The "Debug" section below shows the current arguments.
+
+@end docs
+
+@def login_form
+    <Row>
+        <Cell flex="1">
+            <Auth.UsernameInput label="Username"/>
+        </Cell>
+    </Row>
+    <Row>
+        <Cell flex="1">
+            <Auth.PasswordInput label="Password"/>
+        </Cell>
+    </Row>
+    <Row>
+        <Cell flex="1"/>
+        <Cell>
+            <Auth.LoginButton label="Login"/>
+        </Cell>
+    </Row>
+@end
+
+@def mfa_form
+    <Row>
+        <Cell flex="1">
+            @if mfa.uid == 'mfa_app'
+                Enter the security code from your authenticator app
+            @end
+            @if mfa.uid == 'mfa_email'
+                Enter the security code from the email we sent you
+            @end
+        </Cell>
+    </Row>
+    <Row>
+        <Cell flex="1">
+            <Auth.MfaInput label="Code"/>
+        </Cell>
+    </Row>
+    <Row>
+        <Cell flex="1"/>
+        <Cell>
+            <Auth.MfaVerifyButton label="Ok"/>
+        </Cell>
+        @if mfa.uid == 'mfa_email'
+            <Cell>
+                <Auth.MfaRestartButton label="send again"/>
+            </Cell>
+        @end
+    </Row>
+@end
+
+@def error_message
+    <Row>
+        <Cell flex="1">
+            @if actionResult == 'loginFailed'
+                <Error text="Invalid user name or password" />
+            @end
+            @if actionResult == 'mfaFailed'
+                <Error text="Invalid security code" />
+            @end
+            @if actionResult == 'mfaFatal'
+                <Error text="Verification error, please log in again" />
+            @end
+        </Cell>
+    </Row>
+@end
+
+@def login
+    @error_message
+
+    @if actionResult == 'mfaPending' or actionResult == 'mfaFailed'
+        @mfa_form
+    @else
+        @login_form
+    @end
+@end
+
+@def userinfo
+    <Row>
+        <Cell flex="1">
+            {user.displayName}
+        </Cell>
+    </Row>
+    <Row>
+        <Cell flex="1"/>
+        <Cell>
+            <Auth.LogoutButton label="Logout"/>
+        </Cell>
+    </Row>
+@end
+
+<Box>
+    @if user.isGuest
+        @login
+    @else
+        @userinfo
+    @end
+
+    <pre>
+        Debug:
+        actionResult = {actionResult}
+        user.displayName = {user.displayName}
+        user.isGuest = {user.isGuest}
+        mfa.uid = {mfa.uid}
+        mfa.verifyCount = {mfa.verifyCount}
+        mfa.restartCount = {mfa.restartCount}
+    </pre>
+
+</Box>
+
+
+

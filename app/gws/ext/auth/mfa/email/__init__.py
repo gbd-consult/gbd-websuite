@@ -21,7 +21,6 @@ class Object(gws.common.auth.mfa.Object):
             raise Error(f'email required, user={user.uid!r}')
 
         mf = super().start(user)
-        mf.clientOptions['allowRestart'] = mf.restartCount < self.maxRestarts
         self.generate_and_send(user, mf)
 
         return mf
@@ -34,7 +33,6 @@ class Object(gws.common.auth.mfa.Object):
             raise Error('too many restarts')
 
         mf.restartCount += 1
-        mf.clientOptions['allowRestart'] = mf.restartCount < self.maxRestarts
         self.generate_and_send(user, mf)
 
     def verify_attempt(self, user, mf, data):

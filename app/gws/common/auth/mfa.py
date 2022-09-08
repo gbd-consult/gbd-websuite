@@ -24,7 +24,6 @@ class AuthMfaData(t.Data):
     startTime: int
     totpStart: int
     totpStep: int
-    clientOptions: dict
 
 
 class Config(t.WithType):
@@ -70,11 +69,7 @@ class Object(gws.Object, t.IAuthMfa):
             verifyCount=0,
             startTime=gws.tools.date.timestamp(),
             generatedTime=gws.tools.date.timestamp(),
-            clientOptions={}
         )
-
-        tpl = gws.common.template.find(self.templates, subject='client.message')
-        mf.clientOptions['message'] = tpl.render({'user': user}).content
 
         # NB do not store the secret
         user.attributes.pop('mfasecret', None)

@@ -18,6 +18,17 @@ _ST_STORED = 'web:stored'
 _ST_DELETED = 'web:deleted'
 
 
+class ActionResult(t.Enum):
+    none = 'none'
+    loginOk = 'loginOk'
+    loginFailed = 'loginFailed'
+    loginFatal = 'loginFatal'
+    logoutOk = 'logoutOk'
+    mfaPending = 'mfaPending'
+    mfaFailed = 'mfaFailed'
+    mfaFatal = 'mfaFatal'
+
+
 class Object(gws.common.auth.method.Object):
 
     def configure(self):
@@ -67,74 +78,97 @@ class Object(gws.common.auth.method.Object):
 
     ##
 
-    def action_login(self, req: t.IRequest, username: str, password: str):
+    def action_check(self, req: t.IRequest):
+        return self.return_to_action(req, None)
+
+    def action_login(self, req: t.IRequest, data):
+        return self.return_to_action(req, self.do_login(req, data))
+
+    def do_login(self, req: t.IRequest, data):
         if not req.user.is_guest:
             gws.log.error('login while logged-in')
-            raise gws.web.error.Forbidden()
+            return ActionResult.loginFailed
 
         try:
-            user = self.auth.authenticate(self, username, password)
+            user = self.auth.authenticate(self, data.username, data.password)
             if not user:
                 raise gws.common.auth.error.LoginNotFound()
         except gws.common.auth.error.Error as exc:
-            raise gws.web.error.Forbidden() from exc
+            return ActionResult.loginFailed
 
         if user.attribute('mfauid'):
-            req.session = self._create_mfa_session(user)
-        else:
-            req.session = self.auth.create_stored_session(_ST_STORED, self, user)
+            sess = self._create_mfa_session(user)
+            if not sess:
+                return ActionResult.loginFailed
+            req.session = sess
+            return ActionResult.mfaPending
 
-        return self.action_response(req)
+        req.session = self.auth.create_stored_session(_ST_STORED, self, user)
+        return ActionResult.loginOk
 
     def action_logout(self, req: t.IRequest):
         self._destroy_and_logout(req)
-        return self.action_response(req)
+        return self.return_to_action(req, ActionResult.logoutOk)
 
     def action_mfa_verify(self, req: t.IRequest, data: t.Data):
-        mfa_obj, user, mf = self._require_pending_mfa(req)
+        return self.return_to_action(req, self.do_mfa_verify(req, data))
+
+    def do_mfa_verify(self, req: t.IRequest, data: t.Data):
+        pm = self._get_pending_mfa(req)
+        if not pm:
+            return ActionResult.mfaFatal
+
+        mfa_obj, user, mf = pm
 
         try:
             ok = mfa_obj.verify(user, mf, data)
         except gws.common.auth.mfa.Error:
             gws.log.exception()
             self._destroy_and_logout(req)
-            raise gws.web.error.Forbidden()
+            return ActionResult.mfaFatal
 
         gws.log.debug(f'MFA: verify, result={ok} user={user.uid!r}')
 
         if ok:
             self.auth.destroy_stored_session(req.session)
             req.session = self.auth.create_stored_session(_ST_STORED, self, user)
-            return self.action_response(req)
+            return ActionResult.loginOk
 
         req.session.set('pendingMfa', gws.as_dict(mf))
         self.auth.save_stored_session(req.session)
 
-        raise gws.web.error.Conflict()
+        return ActionResult.mfaFailed
 
     def action_mfa_restart(self, req: t.IRequest):
-        mfa_obj, user, mf = self._require_pending_mfa(req)
+        return self.return_to_action(req, self.do_mfa_restart(req))
+
+    def do_mfa_restart(self, req: t.IRequest):
+        pm = self._get_pending_mfa(req)
+        if not pm:
+            return ActionResult.mfaFatal
+
+        mfa_obj, user, mf = pm
 
         try:
             mfa_obj.restart(user, mf)
         except gws.common.auth.mfa.Error:
             gws.log.exception()
             self._destroy_and_logout(req)
-            raise gws.web.error.Forbidden()
+            return ActionResult.mfaFatal
 
         gws.log.debug(f'MFA: restart, user={user.uid!r}')
 
         req.session.set('pendingMfa', gws.as_dict(mf))
         self.auth.save_stored_session(req.session)
 
-        return self.action_response(req)
+        return ActionResult.mfaPending
 
-    def action_response(self, req: t.IRequest):
-        res = t.Data(user=req.user.props)
+    def return_to_action(self, req: t.IRequest, result):
         pm = self._get_pending_mfa(req)
-        if pm:
-            res.mfaOptions = pm[2].clientOptions
-        return res
+        return t.Data(
+            result=result,
+            user=req.user,
+            mf=pm[2] if pm else None)
 
     ##
 
@@ -143,24 +177,19 @@ class Object(gws.common.auth.method.Object):
         mfa_obj = self.auth.get_mfa(mfa_uid)
         if not mfa_obj:
             gws.log.error(f'MFA: not found, uid={mfa_uid!r}')
-            raise gws.web.error.Forbidden()
+            return
 
         try:
             mf = mfa_obj.start(user)
         except gws.common.auth.mfa.Error:
             gws.log.exception()
-            raise gws.web.error.Forbidden()
+            return
 
         sess = self.auth.create_stored_session(_ST_STORED, self, self.auth.guest_user)
         sess.set('pendingMfa', gws.as_dict(mf))
         sess.set('pendingMfaUser', self.auth.serialize_user(user))
-        return sess
 
-    def _require_pending_mfa(self, req: t.IRequest):
-        pm = self._get_pending_mfa(req)
-        if not pm:
-            raise gws.web.error.Forbidden()
-        return pm
+        return sess
 
     def _get_pending_mfa(self, req: t.IRequest):
         d = req.session.get('pendingMfa')

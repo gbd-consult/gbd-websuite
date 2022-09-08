@@ -54,6 +54,10 @@ class User(t.IUser):
         return False
 
     @property
+    def isGuest(self) -> bool:
+        return False
+
+    @property
     def fid(self) -> str:
         return make_fid(self)
 
@@ -111,9 +115,14 @@ class Guest(User):
         return True
 
     @property
+    def isGuest(self):
+        return True
+
+    @property
     def props(self):
         return UserProps({
             'is_guest': True,
+            'isGuest': True,
         })
 
 

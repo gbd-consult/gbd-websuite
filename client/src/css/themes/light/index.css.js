@@ -316,6 +316,7 @@ let rules = [
     require('./mod/toolbar.css'),
     require('./mod/toolbox.css'),
     require('./mod/user.css'),
+    require('./mod/auth.css'),
     require('./mod/zoom.css'),
     require('./mod/fsinfo.css'),
 

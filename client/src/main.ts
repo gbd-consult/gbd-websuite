@@ -34,6 +34,7 @@ let mods = [
     require('./mod/toolbar'),
     require('./mod/toolbox'),
     require('./mod/user'),
+    require('./mod/auth'),
     require('./mod/zoom'),
     require('./mod/fsinfo'),
     // require('./mod/uidemo'),

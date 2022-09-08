@@ -167,6 +167,9 @@ module.exports = {
 
 
     modUserSidebarTitle: 'Anmeldung',
+
+    modAuthSidebarTitle: 'Anmeldung',
+
     modZoomInfobarInButton: 'Hineinzoomen',
     modZoomInfobarOutButton: 'Hinauszoomen',
     modZoomInfobarResetButton: 'Ganzes Projekt anzeigen',
