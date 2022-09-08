@@ -46,10 +46,6 @@ class User(t.IUser):
         return self.attributes.get('displayName')
 
     @property
-    def displayName(self) -> str:
-        return self.attributes.get('displayName')
-
-    @property
     def is_guest(self) -> bool:
         return False
 
@@ -69,13 +65,8 @@ class User(t.IUser):
             elif b in attributes:
                 attributes[a] = attributes[b]
 
-        attributes['displayName'] = (
-                attributes.get('displayName')
-                or attributes.get('displayname')
-                or attributes.get('name')
-                or attributes.get('login')
-                or ''
-        )
+        if 'displayName' not in attributes:
+            attributes['displayName'] = attributes.get('login', '')
 
         attributes['uid'] = uid
         attributes['provider_uid'] = provider.uid
@@ -96,7 +87,7 @@ class User(t.IUser):
         gws.log.info(f'inited user: prov={provider.uid!r} uid={uid!r} roles={roles!r}')
         return self
 
-    def attribute(self, key: str, default: t.Any = '') -> t.Any:
+    def attribute(self, key: str, default: str = '') -> str:
         return self.attributes.get(key, default)
 
     def can_use(self, obj, parent=None) -> bool:
@@ -109,12 +100,6 @@ class Guest(User):
     @property
     def is_guest(self):
         return True
-
-    @property
-    def props(self):
-        return UserProps({
-            'is_guest': True,
-        })
 
 
 class System(User):

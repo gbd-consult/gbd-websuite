@@ -45,14 +45,11 @@ class Object(gws.common.auth.provider.Object):
                 return self._make_user(rec)
 
     def _make_user(self, rec):
-        atts = dict(rec)
-        atts.pop('password', None)
-        roles = atts.pop('roles', [])
         return gws.common.auth.user.ValidUser().init_from_source(
             provider=self,
             uid=rec['login'],
-            roles=roles,
-            attributes=atts,
+            roles=rec.get('roles', []),
+            attributes={'displayName': rec.get('name', rec['login'])}
         )
 
     def _db(self):

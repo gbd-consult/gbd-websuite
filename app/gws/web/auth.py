@@ -29,6 +29,24 @@ class Request(wrappers.BaseRequest, t.IRequest):
     def auth_close(self, res: t.IResponse):
         self.session = self.auth.close_session(self.session, self, res)
 
+    def login(self, login: str, password: str):
+        if not self.user.is_guest:
+            gws.log.error('login while logged-in')
+            raise gws.web.error.Forbidden()
+
+        method = self.auth.get_method('web')
+        if not method:
+            gws.log.error('web auth method not found')
+            raise gws.web.error.Forbidden()
+
+        try:
+            self.session = self.auth.login(method, login, password, self)
+        except gws.common.auth.Error as e:
+            raise error.Forbidden() from e
+
+    def logout(self):
+        self.session = self.auth.logout(self.session, self)
+
     def require(self, klass: str, uid: str) -> t.IObject:
         node = self.root.find(klass, uid)
         if not node:

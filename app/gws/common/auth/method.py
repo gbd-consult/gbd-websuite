@@ -6,7 +6,6 @@ from . import error
 
 #:export IAuthMethod
 class Object(gws.Object, t.IAuthMethod):
-    auth: t.IAuthManager
     def configure(self):
         super().configure()
         self.type: str = self.var('type')

@@ -84,10 +84,6 @@ class ext:
             class Config:
                 pass
 
-        class mfa:
-            class Config:
-                pass
-
     class template:
         class Config:
             pass
@@ -293,17 +289,6 @@ class AttributeValidationFailure(Data):
     name: str
 
 
-class AuthMfaData(Data):
-    clientOptions: dict
-    restartCount: int
-    secret: str
-    startTime: int
-    totpStart: int
-    totpStep: int
-    uid: str
-    verifyCount: int
-
-
 class Bounds(Data):
     crs: 'Crs'
     extent: 'Extent'
@@ -455,7 +440,6 @@ class IStyle:
 
 class IUser:
     attributes: dict
-    displayName: str
     display_name: str
     fid: str
     is_guest: bool
@@ -463,7 +447,7 @@ class IUser:
     provider: 'IAuthProvider'
     roles: List[str]
     uid: str
-    def attribute(self, key: str, default: Any = '') -> Any: pass
+    def attribute(self, key: str, default: str = '') -> str: pass
     def can_use(self, obj, parent=None) -> bool: pass
     def has_role(self, role: str) -> bool: pass
     def init_from_data(self, provider, uid, roles, attributes) -> 'IUser': pass
@@ -1168,7 +1152,6 @@ class IApplication(IObject):
 class IAuthManager(IObject):
     guest_user: 'IUser'
     methods: List['IAuthMethod']
-    mfas: List['IAuthMfa']
     providers: List['IAuthProvider']
     sys: 'IAuthProvider'
     def authenticate(self, method: 'IAuthMethod', login, password, **kw) -> Optional['IUser']: pass
@@ -1178,10 +1161,11 @@ class IAuthManager(IObject):
     def destroy_stored_session(self, sess: 'ISession'): pass
     def find_stored_session(self, uid): pass
     def get_method(self, type: str) -> Optional['IAuthMethod']: pass
-    def get_mfa(self, uid: str) -> Optional['IAuthMfa']: pass
     def get_provider(self, uid: str) -> Optional['IAuthProvider']: pass
     def get_role(self, name: str) -> 'IRole': pass
     def get_user(self, user_fid: str) -> Optional['IUser']: pass
+    def login(self, method: 'IAuthMethod', login: str, password: str, req: 'IRequest') -> 'ISession': pass
+    def logout(self, sess: 'ISession', req: 'IRequest') -> 'ISession': pass
     def new_session(self, **kwargs): pass
     def open_session(self, req: 'IRequest') -> 'ISession': pass
     def save_stored_session(self, sess: 'ISession'): pass
@@ -1191,27 +1175,11 @@ class IAuthManager(IObject):
 
 
 class IAuthMethod(IObject):
-    auth: 'IAuthManager'
     type: str
     def close_session(self, auth: 'IAuthManager', sess: 'ISession', req: 'IRequest', res: 'IResponse'): pass
     def login(self, auth: 'IAuthManager', login: str, password: str, req: 'IRequest') -> Optional['ISession']: pass
     def logout(self, auth: 'IAuthManager', sess: 'ISession', req: 'IRequest') -> 'ISession': pass
     def open_session(self, auth: 'IAuthManager', req: 'IRequest') -> Optional['ISession']: pass
-
-
-class IAuthMfa(IObject):
-    auth: 'IAuthManager'
-    templates: List['ITemplate']
-    type: str
-    def check_totp(self, mf: 'AuthMfaData', token: str) -> bool: pass
-    def generate_totp(self, mf: 'AuthMfaData') -> str: pass
-    def get_random_secret(self, length: int = 32) -> str: pass
-    def get_totp(self, mf, clock): pass
-    def is_valid(self, user: 'IUser', mf: 'AuthMfaData') -> bool: pass
-    def restart(self, user: 'IUser', mf: 'AuthMfaData'): pass
-    def start(self, user: 'IUser') -> 'AuthMfaData': pass
-    def verify(self, user: 'IUser', mf: 'AuthMfaData', data: Data) -> bool: pass
-    def verify_attempt(self, user: 'IUser', mf: 'AuthMfaData', data: Data) -> bool: pass
 
 
 class IAuthProvider(IObject):
@@ -1361,6 +1329,8 @@ class IRequest(IBaseRequest):
     def acquire(self, klass: str, uid: str) -> Optional['IObject']: pass
     def auth_close(self, res: 'IResponse'): pass
     def auth_open(self): pass
+    def login(self, login: str, password: str): pass
+    def logout(self): pass
     def require(self, klass: str, uid: str) -> 'IObject': pass
     def require_layer(self, uid: str) -> 'ILayer': pass
     def require_project(self, uid: str) -> 'IProject': pass

@@ -84,10 +84,6 @@ class ext:
             class Config:
                 pass
 
-        class mfa:
-            class Config:
-                pass
-
     class template:
         class Config:
             pass

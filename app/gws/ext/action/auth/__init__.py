@@ -12,7 +12,6 @@ class Config(t.WithTypeAndAccess):
 
 class Response(t.Response):
     user: t.UserProps
-    mfaOptions: t.Optional[dict]
 
 
 class LoginParams(t.Params):
@@ -20,38 +19,25 @@ class LoginParams(t.Params):
     password: str
 
 
-class MfaVerifyParams(t.Params):
-    token: str
-
-
 class Object(gws.common.action.Object):
 
     def api_check(self, req: t.IRequest, p: t.Params) -> Response:
         """Check the authorization status"""
 
-        web = self.root.application.auth.get_method('web')
-        return web.action_response(req)
+        return _feedback(req)
 
     def api_login(self, req: t.IRequest, p: LoginParams) -> Response:
         """Perform a login"""
 
-        web = self.root.application.auth.get_method('web')
-        return web.action_login(req, p.username, p.password)
+        req.login(p.username, p.password)
+        return _feedback(req)
 
     def api_logout(self, req: t.IRequest, p: t.Params) -> Response:
         """Perform a logout"""
 
-        web = self.root.application.auth.get_method('web')
-        return web.action_logout(req)
+        req.logout()
+        return _feedback(req)
 
-    def api_mfa_verify(self, req: t.IRequest, p: MfaVerifyParams) -> Response:
-        """Verify an MFA token"""
 
-        web = self.root.application.auth.get_method('web')
-        return web.action_mfa_verify(req, p)
-
-    def api_mfa_restart(self, req: t.IRequest, p: t.Params) -> Response:
-        """Regenerate an MFA token"""
-
-        web = self.root.application.auth.get_method('web')
-        return web.action_mfa_restart(req)
+def _feedback(req: t.IRequest):
+    return Response({'user': req.user.props})
