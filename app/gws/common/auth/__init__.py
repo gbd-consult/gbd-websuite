@@ -18,7 +18,7 @@ class Config(t.Config):
 
     methods: t.Optional[t.List[t.ext.auth.method.Config]]  #: authorization methods
     providers: t.List[t.ext.auth.provider.Config]  #: authorization providers
-    mfa: t.Optional[t.List[t.ext.auth.mfa.Config]]  #: multifactor authorization plugins
+    mfa: t.Optional[t.List[t.ext.auth.mfa.Config]]  #: authorization providers
     sessionLifeTime: t.Duration = 1200  #: session life time
     sessionStorage: str = 'sqlite'  #: session storage engine
 
