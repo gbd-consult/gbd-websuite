@@ -593,14 +593,22 @@ class AnnotateController extends gws.Controller {
         }));
 
         // fill unconfigured annotateLabelTemplates from defaults. config ex.:
-        // client.options.annotateLabelTemplates {
-        //     Point '{xy}'
-        //     Line '{len | m | 2}'
-        //     Polygon '{area | m | 2}'
-        //     Circle '{radius | m | 2}'
-        //     Box '{width | m | 2} x {height | m | 2}'
+        // client.options.annotateLabelDefaultTemplates {
+        //     point '{xy}'
+        //     line '{len | m | 2}'
+        //     polygon '{area | m | 2}'
+        //     circle '{radius | m | 2}'
+        //     box '{width | m | 2} x {height | m | 2}'
         // }
-        let configuredDefaultLabelTemplates = this.getValue('annotateLabelTemplates') || {};
+
+        // capitalize keys
+        let cdlt = this.getValue('annotateLabelDefaultTemplates') || {};
+        let configuredDefaultLabelTemplates = {};
+        for (let key in cdlt) {
+            let ck = key.charAt(0).toUpperCase()+key.slice(1)
+            configuredDefaultLabelTemplates[ck] = cdlt[key]
+        }
+
         for (let key in defaultLabelTemplates) {
             if (!(key in configuredDefaultLabelTemplates) || configuredDefaultLabelTemplates[key] === undefined) {
                 configuredDefaultLabelTemplates[key] = defaultLabelTemplates[key]
