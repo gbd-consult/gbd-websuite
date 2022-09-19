@@ -13,6 +13,7 @@ import * as draw from './draw';
 import * as storage from './storage';
 
 import {StyleController} from './style';
+import { K } from 'handlebars';
 
 const MASTER = 'Shared.Annotate';
 const STORAGE_CATEGORY = 'Annotate';
@@ -591,9 +592,32 @@ class AnnotateController extends gws.Controller {
             uid: '_annotate',
         }));
 
+        // fill unconfigured annotateLabelTemplates from defaults. config ex.:
+        // client.options.annotateLabelDefaultTemplates {
+        //     point '{xy}'
+        //     line '{len | m | 2}'
+        //     polygon '{area | m | 2}'
+        //     circle '{radius | m | 2}'
+        //     box '{width | m | 2} x {height | m | 2}'
+        // }
+
+        // capitalize keys
+        let cdlt = this.getValue('annotateLabelDefaultTemplates') || {};
+        let configuredDefaultLabelTemplates = {};
+        for (let key in cdlt) {
+            let ck = key.charAt(0).toUpperCase()+key.slice(1)
+            configuredDefaultLabelTemplates[ck] = cdlt[key]
+        }
+
+        for (let key in defaultLabelTemplates) {
+            if (!(key in configuredDefaultLabelTemplates) || configuredDefaultLabelTemplates[key] === undefined) {
+                configuredDefaultLabelTemplates[key] = defaultLabelTemplates[key]
+            }
+        }
+
         this.update({
             annotateLastStyleName: '.modAnnotateFeature',
-            annotateLabelTemplates: defaultLabelTemplates,
+            annotateLabelTemplates: configuredDefaultLabelTemplates
         });
 
         this.app.whenChanged('annotateFormData', data => {
