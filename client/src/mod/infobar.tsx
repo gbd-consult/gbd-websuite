@@ -347,6 +347,9 @@ class InfobarController extends gws.Controller {
 export const tags = {
     'Infobar': InfobarController,
     'Infobar.Link': LinkWidget,
+    'Infobar.Link2': LinkWidget,
+    'Infobar.Link3': LinkWidget,
+    'Infobar.Link4': LinkWidget,
     'Infobar.Help': HelpWidget,
     'Infobar.About': AboutWidget,
     'Infobar.Position': PositionWidget,
