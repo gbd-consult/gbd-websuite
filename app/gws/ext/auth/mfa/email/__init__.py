@@ -4,6 +4,7 @@ import gws
 import gws.common.auth.mfa
 import gws.common.template
 import gws.tools.otp
+import gws.ext.helper.email
 import gws.web.error
 
 import gws.types as t
@@ -56,7 +57,12 @@ class Object(gws.common.auth.mfa.Object):
         )
 
         email_helper = self.root.application.require_helper('email')
-        email_helper.send_mail(message)
+
+        try:
+            email_helper.send_mail(message)
+        except gws.ext.helper.email.Error as exc:
+            gws.log.exception()
+            raise Error from exc
 
     def render_template(self, subject, args, mime=None):
         tpl = gws.common.template.find(self.templates, subject=subject, mime=mime)
@@ -64,4 +70,3 @@ class Object(gws.common.auth.mfa.Object):
             res = tpl.render(args)
             return res.content
         return ''
-

@@ -99,7 +99,7 @@ class Object(gws.common.auth.method.Object):
         if user.attribute('mfauid'):
             sess = self._create_mfa_session(user)
             if not sess:
-                return ActionResult.loginFailed
+                return ActionResult.loginFatal
             req.session = sess
             return ActionResult.mfaPending
 

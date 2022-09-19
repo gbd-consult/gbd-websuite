@@ -41,34 +41,34 @@ class Object(gws.common.action.Object):
     def api_check(self, req: t.IRequest, p: t.Params) -> Response:
         """Check the authorization status"""
 
-        return self.response(self.web().action_check(req))
+        return self.response(req, p, self.web().action_check(req))
 
     def api_login(self, req: t.IRequest, p: LoginParams) -> Response:
         """Perform a login"""
 
-        return self.response(self.web().action_login(req, p))
+        return self.response(req, p, self.web().action_login(req, p))
 
     def api_logout(self, req: t.IRequest, p: t.Params) -> Response:
         """Perform a logout"""
 
-        return self.response(self.web().action_logout(req))
+        return self.response(req, p, self.web().action_logout(req))
 
     def api_mfa_verify(self, req: t.IRequest, p: MfaVerifyParams) -> Response:
         """Verify an MFA token"""
 
-        return self.response(self.web().action_mfa_verify(req, p))
+        return self.response(req, p, self.web().action_mfa_verify(req, p))
 
     def api_mfa_restart(self, req: t.IRequest, p: t.Params) -> Response:
         """Regenerate an MFA token"""
 
-        return self.response(self.web().action_mfa_restart(req))
+        return self.response(req, p, self.web().action_mfa_restart(req))
 
     def web(self) -> gws.ext.auth.method.web.Object:
         return t.cast(
             gws.ext.auth.method.web.Object,
             self.root.application.auth.get_method('web'))
 
-    def response(self, r):
+    def response(self, req: t.IRequest, p: t.Params, r: t.Data):
         res = Response(actionResult=r.result, user=r.user.props, status=200)
 
         if r.result in {ActionResult.loginFailed, ActionResult.loginFatal, ActionResult.mfaFatal}:
@@ -81,6 +81,10 @@ class Object(gws.common.action.Object):
             'user': r.user,
             'actionResult': r.result,
         }
+
+        project = req.acquire('gws.common.project', p.projectUid)
+        if project:
+            args['project'] = project
 
         if r.mf:
             args['mfa'] = t.Data(

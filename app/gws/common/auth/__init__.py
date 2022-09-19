@@ -133,6 +133,8 @@ class Object(gws.Object, t.IAuthManager):
     #
 
     def authenticate(self, method: t.IAuthMethod, login, password, **kw) -> t.Optional[t.IUser]:
+        login = '' if login is None else gws.as_str(login)
+        password = '' if password is None else gws.as_str(password)
         for prov in self.providers:
             if prov.allowed_methods and method.type not in prov.allowed_methods:
                 continue

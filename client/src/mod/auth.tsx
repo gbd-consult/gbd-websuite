@@ -198,8 +198,6 @@ class Controller extends gws.Controller implements gws.types.ISidebarItem {
 
         let tagName = el['tagName'];
 
-        console.log('>>>>', el['tagName'], tagName, props, children)
-
         if (this.tags[tagName] && tagName.includes('.')) {
             return this.createElement(
                 this.connect(this.tags[tagName], ComponentStoreKeys),
