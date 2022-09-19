@@ -151,7 +151,7 @@ def make_cli_ref(lang):
 def make_help(lang):
     release = '.'.join(VERSION.split('.')[:-1])
     base = HELP_BASE_URL.format(lang=lang, release=release)
-    html = _read(DOC_ROOT + f'/../_build/books/client-user/{lang}/overview/help.html')
+    html = _read(DOC_ROOT + f'/../_build/books/client-user/{lang}/overview/how_to_use.html')
 
     bs = bs4.BeautifulSoup(html, 'html.parser')
 
