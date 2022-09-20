@@ -406,6 +406,13 @@ class _PythonParser:
                 raise ValueError('invalid Tuple')
             return self.add(base.C.TUPLE, tItems=list(param_items))
 
+        if g == 'Callable':
+            if not param_typ:
+                return self.add(base.C.CALLABLE, tItems=[])
+            if not param_items:
+                raise ValueError('invalid Callable')
+            return self.add(base.C.CALLABLE, tItems=list(param_items))
+
         if param:
             raise ValueError('invalid generic type')
 

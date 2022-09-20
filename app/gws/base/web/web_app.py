@@ -1,43 +1,79 @@
 """web application root"""
 
 import gws
-import gws.base.action
+import gws.base.action.dispatcher
 import gws.base.web.error
 import gws.base.web.site
+import gws.base.web.wsgi
 import gws.config
 import gws.spec.runtime
-import gws.types as t
-
-from gws.base.web.wsgi import Requester, Responder
 
 _STATE = {
     'inited': False,
-    'middlewares': []
+    'middleware': []
 }
 
 
 def application(environ, start_response):
     if not _STATE['inited']:
-        _init()
+        init()
     responder = handle_request(environ)
-    return responder.send(environ, start_response)
+    return responder.send_response(environ, start_response)
+
+
+def init():
+    try:
+        gws.log.info('initializing WEB application')
+        root = gws.config.load()
+        gws.log.set_level(root.app.var('server.log.level'))
+
+        _STATE['middleware'] = root.app.web_middleware_list() + [final_middleware]
+        _STATE['inited'] = True
+    except:
+        gws.log.exception('UNABLE TO LOAD CONFIGURATION')
+        gws.exit(255)
 
 
 def reload():
     _STATE['inited'] = False
 
 
-def handle_request(environ) -> Responder:
+def handle_request(environ) -> gws.IWebResponder:
     root = gws.config.root()
-    req = gws.base.web.wsgi.Requester(root, environ, root.app.webSiteCollection.site_from_environ(environ))
-    res = _handle_request(req)
-    return res
+    site = root.app.webMgr.site_from_environ(environ)
+    req = gws.base.web.wsgi.Requester(root, environ, site, _STATE['middleware'])
+
+    try:
+        try:
+            req.parse_input()
+            return req.apply_middleware()
+        except gws.base.web.error.HTTPException as exc:
+            return handle_error(req, exc)
+    except:
+        gws.log.exception()
+        return req.error_responder(gws.base.web.error.InternalServerError())
 
 
-##
+def handle_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPException) -> gws.IWebResponder:
+    # @TODO: image errors
+
+    if req.isApi:
+        return req.struct_responder(gws.Response(
+            status=exc.code,
+            error=gws.ResponseError(
+                code=exc.code,
+                info=gws.get(exc, 'description', ''))))
+
+    if not req.site.errorPage:
+        return req.error_responder(exc)
+
+    args = {'request': req, 'error': exc.code}
+    response = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
+    response.status = exc.code
+    return req.content_responder(response)
 
 
-def _final_middleware(req: Requester, nxt) -> Responder:
+def final_middleware(req: gws.IWebRequester, nxt) -> gws.IWebResponder:
     command_name = req.param('cmd')
     if not command_name:
         raise gws.base.web.error.NotFound()
@@ -58,15 +94,15 @@ def _final_middleware(req: Requester, nxt) -> Responder:
         # @TODO: add HEAD
         raise gws.base.web.error.MethodNotAllowed()
 
-    command_desc = req.root.app.command_descriptor(
+    fn, request = gws.base.action.dispatcher.dispatch(
+        req.root,
         command_category,
         command_name,
         params,
         req.user,
-        strict_mode
-    )
+        strict_mode)
 
-    response = command_desc.methodPtr(req, command_desc.request)
+    response = fn(req, request)
 
     if response is None:
         gws.log.error(f'action not handled {command_category!r}:{command_name!r}')
@@ -76,51 +112,3 @@ def _final_middleware(req: Requester, nxt) -> Responder:
         return req.content_responder(response)
 
     return req.struct_responder(response)
-
-
-##
-
-def _apply_middleware(req, n):
-    return _STATE['middlewares'][n](req, lambda: _apply_middleware(req, n + 1))
-
-
-def _handle_request(req: Requester) -> Responder:
-    try:
-        try:
-            req.parse_input()
-            return _apply_middleware(req, 0)
-        except gws.base.web.error.HTTPException as exc:
-            return _handle_error(req, exc)
-    except:
-        gws.log.exception()
-        return req.error_responder(gws.base.web.error.InternalServerError())
-
-
-def _handle_error(req: Requester, exc: gws.base.web.error.HTTPException) -> Responder:
-    # @TODO: image errors
-
-    if req.isApi:
-        return req.struct_responder(gws.Response(
-            status=exc.code,
-            error=gws.ResponseError(
-                status=exc.code,
-                info=gws.get(exc, 'description', ''))))
-
-    if not req.site.errorPage:
-        return req.error_responder(exc)
-
-    args = {'request': req, 'error': exc.code}
-    response = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
-    return req.content_responder(response.with_attrs(status=exc.code))
-
-
-def _init():
-    try:
-        gws.log.info('initializing WEB application')
-        root = gws.config.load()
-        gws.log.set_level(root.app.var('server.log.level'))
-        _STATE['middlewares'] = root.app.web_middleware_list() + [_final_middleware]
-        _STATE['inited'] = True
-    except:
-        gws.log.exception('UNABLE TO LOAD CONFIGURATION')
-        gws.exit(255)

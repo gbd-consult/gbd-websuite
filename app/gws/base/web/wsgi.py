@@ -23,7 +23,7 @@ class Responder(gws.IWebResponder):
             self._wz = werkzeug.wrappers.Response(**kwargs)
         self.status = self._wz.status_code
 
-    def send(self, environ, start_response):
+    def send_response(self, environ, start_response):
         return self._wz(environ, start_response)
 
     def set_cookie(self, key, **kwargs):
@@ -42,10 +42,16 @@ class Requester(gws.IWebRequester):
         'msgpack': 'application/msgpack',
     }
 
-    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite):
+    _middlewareList: t.List[gws.WebMiddlewareHandler]
+    _middlewareIndex: int
+
+    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite, middleware: t.List[gws.WebMiddlewareHandler]):
         self._wz = werkzeug.wrappers.Request(environ)
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
         self._wz.max_content_length = int(root.app.var('server.web.maxRequestLength', default=1)) * 1024 * 1024
+
+        self._middlewareList = middleware
+        self._middlewareIndex = 0
 
         self.root = root
         self.site = site
@@ -69,6 +75,11 @@ class Requester(gws.IWebRequester):
 
         self.params: t.Dict[str, t.Any] = {}
         self.lowerParams: t.Dict[str, t.Any] = {}
+
+    def apply_middleware(self):
+        fn = self._middlewareList[self._middlewareIndex]
+        self._middlewareIndex += 1
+        return fn(self, self.apply_middleware)
 
     def data(self):
         if not self.isPost:
@@ -116,10 +127,7 @@ class Requester(gws.IWebRequester):
         self.params = self._parse_params() or {}
         self.lowerParams = {k.lower(): v for k, v in self.params.items()}
 
-    def responder(self, **kwargs):
-        return Responder(**kwargs)
-
-    def content_responder(self, response: gws.ContentResponse) -> Responder:
+    def content_responder(self, response):
         if response.location:
             return Responder(wz=werkzeug.utils.redirect(response.location, response.status or 302))
 
@@ -153,21 +161,19 @@ class Requester(gws.IWebRequester):
             args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(response.path)
             args['direct_passthrough'] = True
 
-        return self.responder(**args)
+        return Responder(**args)
 
-    def struct_responder(self, response: gws.Response) -> Responder:
+    def struct_responder(self, response):
         typ = self.outputType or 'json'
-        status = 200
-        if response.error:
-            status = response.error.status or 400
-        return self.responder(
+        return Responder(
             response=self._encode_struct(response, typ),
             mimetype=self._struct_mime[typ],
-            status=status,
+            status=response.status or 200,
         )
 
-    def error_responder(self, err: error.HTTPException) -> Responder:
-        return self.responder(wz=err.get_response(self._wz.environ))
+    def error_responder(self, exc):
+        err = exc if isinstance(exc, error.HTTPException) else error.InternalServerError()
+        return Responder(wz=err.get_response(self._wz.environ))
 
     ##
 

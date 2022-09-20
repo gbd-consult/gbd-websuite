@@ -124,8 +124,7 @@ class INode(IObject, Protocol):
     config: Config
     root: 'IRoot'
     parent: 'INode'
-    title: str
-    uid: str
+    children: List['INode']
 
     def activate(self): ...
 
@@ -155,11 +154,11 @@ class IRoot(Protocol):
 
     def find(self, classref: ClassRef, uid: str): ...
 
-    def create(self, classref: ClassRef, config=None, optional=False, required=False): ...
+    def get(self, uid: str): ...
 
-    def create_child(self, parent: 'INode', classref: ClassRef, config=None, optional=False, required=False): ...
+    def create(self, classref: ClassRef, parent: 'INode' = None, config=None, optional=False, required=False): ...
 
-    def create_shared(self, classref: ClassRef, config=None): ...
+    def create_shared(self, classref: ClassRef, config=None, optional=False, required=False): ...
 
     def create_application(self, config=None) -> 'IApplication': ...
 
@@ -195,6 +194,8 @@ class ISpecRuntime(Protocol):
 
     def command_descriptor(self, command_category: str, command_name: str) -> Optional[ExtCommandDescriptor]: ...
 
+    def get_class(self, classref: ClassRef, ext_type: str = None) -> Optional[type]: ...
+
     def cli_docs(self, lang: str = 'en') -> dict: ...
 
     def bundle_paths(self, category: str) -> List[str]: ...
@@ -219,13 +220,15 @@ class EmptyRequest(Data):
 
 class ResponseError(Data):
     """Web response error"""
-    status: int
-    info: str
+    code: Optional[int]
+    info: Optional[str]
 
 
 class Response(Data):
     """Web response"""
+
     error: Optional[ResponseError]
+    status: int
 
 
 class ContentResponse(Response):
@@ -237,24 +240,23 @@ class ContentResponse(Response):
     location: str
     mime: str
     path: str
-    status: int
-
-
-class BytesResponse(Response):
-    content: bytes
-    mime: str
 
 
 class IWebRequester(Protocol):
     environ: dict
+    method: str
+    root: 'IRoot'
+    site: 'IWebSite'
+    session: 'IAuthSession'
+    user: 'IUser'
+    params: dict
+
     isApi: bool
     isGet: bool
     isPost: bool
     isSecure: bool
-    method: str
-    root: 'IRoot'
-    site: 'IWebSite'
-    user: 'IUser'
+
+    def apply_middleware(self) -> 'IWebResponder': ...
 
     def cookie(self, key: str, default: str = '') -> str: ...
 
@@ -292,7 +294,7 @@ class IWebRequester(Protocol):
 class IWebResponder(Protocol):
     status: int
 
-    def send(self, environ, start_response): ...
+    def send_response(self, environ, start_response): ...
 
     def set_cookie(self, key: str, **kwargs): ...
 
@@ -318,8 +320,8 @@ class WebRewriteRule(Data):
     reversed: bool
 
 
-class IWebSiteCollection(INode, Protocol):
-    items: List['IWebSite']
+class IWebManager(INode, Protocol):
+    sites: List['IWebSite']
 
     def site_from_environ(self, environ: dict) -> 'IWebSite': ...
 
@@ -338,27 +340,45 @@ class IWebSite(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # authorization
 
+
+class AuthPendingMfa(Data):
+    status: str
+    attemptCount: int
+    restartCount: int
+    timeStarted: int
+    methodUid: str
+    roles: Set[str]
+    form: dict
+    secret: Optional[str]
+
+
 class IAuthManager(INode, Protocol):
     guestUser: 'IUser'
     systemUser: 'IUser'
+
     providers: List['IAuthProvider']
     methods: List['IAuthMethod']
+    mfa: List['IAuthMfa']
 
     def authenticate(self, method: 'IAuthMethod', credentials: Data) -> Optional['IUser']: ...
 
     def get_user(self, user_uid: str) -> Optional['IUser']: ...
 
-    def get_provider(self, uid: str = None, ext_type: str = None) -> Optional['IAuthProvider']: ...
+    def get_provider(self, uid: str) -> Optional['IAuthProvider']: ...
 
-    def get_method(self, uid: str = None, ext_type: str = None) -> Optional['IAuthMethod']: ...
+    def get_method(self, uid: str) -> Optional['IAuthMethod']: ...
+
+    def get_mfa(self, uid: str) -> Optional['IAuthMfa']: ...
 
     def web_login(self, req: IWebRequester, credentials: Data): ...
 
-    def web_logout(self, req: IWebRequester): ...
+    def web_logout(self, ): ...
 
     def serialize_user(self, user: 'IUser') -> str: ...
 
     def unserialize_user(self, ser: str) -> Optional['IUser']: ...
+
+    def session_activate(self, req: IWebRequester, sess: Optional['IAuthSession']): ...
 
     def session_find(self, uid: str) -> Optional['IAuthSession']: ...
 
@@ -373,20 +393,16 @@ class IAuthManager(INode, Protocol):
 
 class IAuthMethod(INode, Protocol):
     secure: bool
-    auth: 'IAuthManager'
+    authMgr: 'IAuthManager'
 
-    def open_session(self, req: 'IWebRequester') -> Optional['IAuthSession']: ...
+    def open_session(self, req: 'IWebRequester') -> bool: ...
 
-    def close_session(self, sess: 'IAuthSession', req: IWebRequester, res: IWebResponder): ...
-
-    def login(self, req: IWebRequester, credentials: Data) -> Optional['IAuthSession']: ...
-
-    def logout(self, req: IWebRequester, sess: 'IAuthSession') -> 'IAuthSession': ...
+    def close_session(self, req: IWebRequester, res: IWebResponder) -> bool: ...
 
 
 class IAuthProvider(INode, Protocol):
     allowedMethods: List[str]
-    auth: 'IAuthManager'
+    authMgr: 'IAuthManager'
 
     def get_user(self, local_uid: str) -> Optional['IUser']: ...
 
@@ -395,6 +411,23 @@ class IAuthProvider(INode, Protocol):
     def serialize_user(self, user: 'IUser') -> str: ...
 
     def unserialize_user(self, data: str) -> Optional['IUser']: ...
+
+
+class IAuthMfa(INode, Protocol):
+    autoStart: bool
+    lifeTime: int
+    maxAttempts: int
+    maxRestarts: int
+
+    def start(self, user: 'IUser'): ...
+
+    def is_valid(self, user: 'IUser') -> bool: ...
+
+    def cancel(self, user: 'IUser'): ...
+
+    def verify(self, user: 'IUser', request: Data) -> bool: ...
+
+    def restart(self, user: 'IUser') -> bool: ...
 
 
 class IAuthSession(IObject, Protocol):
@@ -415,8 +448,9 @@ class IUser(IObject, IGrantee, Protocol):
     attributes: Dict[str, Any]
     displayName: str
     isGuest: bool
-    local_uid: str
-    name: str
+    localUid: str
+    loginName: str
+    pendingMfa: Optional[AuthPendingMfa]
     provider: 'IAuthProvider'
     uid: str
 
@@ -673,7 +707,7 @@ class IFeature(IObject, Protocol):
     layer: Optional['ILayer']
     shape: Optional['IShape']
     style: Optional['IStyle']
-    templateCollection: Optional['ITemplateCollection']
+    templateMgr: Optional['ITemplateManager']
     uid: str
 
     @property
@@ -681,7 +715,7 @@ class IFeature(IObject, Protocol):
 
     def apply_data_model(self, model: 'IModel' = None) -> 'IFeature': ...
 
-    def apply_templates(self, templates: 'ITemplateCollection' = None, extra_context: dict = None, subjects: List[str] = None) -> 'IFeature': ...
+    def apply_templates(self, templates: 'ITemplateManager' = None, extra_context: dict = None, subjects: List[str] = None) -> 'IFeature': ...
 
     def attr(self, name: str): ...
 
@@ -739,8 +773,8 @@ class SqlSelectArgs(Data):
     uids: Optional[List[str]]
 
 
-class IDatabaseCollection(INode, Protocol):
-    items: List['IDatabase']
+class IDatabaseManager(INode, Protocol):
+    databases: List['IDatabase']
 
 
 class IDatabase(INode, Protocol):
@@ -884,7 +918,7 @@ class ITemplate(INode, Protocol):
     def render(self, tri: TemplateRenderInput, notify: Callable = None) -> ContentResponse: ...
 
 
-class ITemplateCollection(INode, Protocol):
+class ITemplateManager(INode, Protocol):
     items: List['ITemplate']
 
     def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional['ITemplate']: ...
@@ -1124,7 +1158,7 @@ class IFinder(INode, Protocol):
     with_geometry: bool
     with_keyword: bool
 
-    templateCollection: Optional['ITemplateCollection']
+    templateMgr: Optional['ITemplateManager']
     tolerance: 'Measurement'
 
     def run(self, args: SearchArgs, layer: 'ILayer' = None) -> List['IFeature']: ...
@@ -1302,7 +1336,7 @@ class IOwsService(INode, Protocol):
     protocol: OwsProtocol
     supported_bounds: List[Bounds]
     supported_versions: List[str]
-    templateCollection: 'ITemplateCollection'
+    templateMgr: 'ITemplateManager'
     version: str
     with_inspire_meta: bool
     with_strict_params: bool
@@ -1339,12 +1373,12 @@ class CliParams(Data):
 # actions and apis
 
 
-class IActionCollection(INode, Protocol):
+class IActionManager(INode, Protocol):
     items: List['IAction']
 
-    def find(self, class_name: str) -> Optional['IAction']: ...
+    def find_action(self, class_name: str) -> Optional['IAction']: ...
 
-    def actions_for(self, user: IGrantee, other: 'IActionCollection' = None) -> List['IAction']: ...
+    def actions_for(self, user: IGrantee, other: 'IActionManager' = None) -> List['IAction']: ...
 
 
 class IAction(INode, Protocol):
@@ -1367,8 +1401,8 @@ class IProject(INode, Protocol):
     map: 'IMap'
     metadata: 'IMetadata'
 
-    actionCollection: 'IActionCollection'
-    templateCollection: Optional['ITemplateCollection']
+    actionMgr: 'IActionManager'
+    templateMgr: Optional['ITemplateManager']
 
     def render_description(self, args: dict = None) -> Optional[ContentResponse]: ...
 
@@ -1384,8 +1418,10 @@ class IMonitor(INode, Protocol):
     def start(self): ...
 
 
+WebMiddlewareHandler = Callable[['IWebRequester', Callable], 'IWebResponder']
+
+
 class IApplication(INode, Protocol):
-    auth: 'IAuthManager'
     client: 'IClient'
     localeUids: List[str]
     metadata: 'IMetadata'
@@ -1394,13 +1430,14 @@ class IApplication(INode, Protocol):
     qgisVersion: str
     version: str
 
-    actionCollection: 'IActionCollection'
-    databaseCollection: 'IDatabaseCollection'
-    webSiteCollection: 'IWebSiteCollection'
+    actionMgr: 'IActionManager'
+    authMgr: 'IAuthManager'
+    databaseMgr: 'IDatabaseManager'
+    webMgr: 'IWebManager'
 
-    def register_web_middleware(self, name: str, fn: Callable): ...
+    def register_web_middleware(self, name: str, fn: WebMiddlewareHandler): ...
 
-    def web_middleware_list(self) -> List[Callable]: ...
+    def web_middleware_list(self) -> List[WebMiddlewareHandler]: ...
 
     def developer_option(self, name: str): ...
 

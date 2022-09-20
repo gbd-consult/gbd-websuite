@@ -1,1 +1,1 @@
-from . import site
+from . import site, manager

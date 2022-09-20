@@ -366,7 +366,7 @@ class Object(gws.base.action.Object):
 
         self.limit = self.var('limit')
 
-        self.templates = gws.base.template.collection.create(
+        self.templates = gws.base.template.manager.create(
             self.root,
             items=self.var('templates'),
             defaults=_DEFAULT_TEMPLATES,

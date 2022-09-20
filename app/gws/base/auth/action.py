@@ -5,40 +5,71 @@ import gws.base.action
 import gws.base.web.error
 import gws.types as t
 
-from . import wsgi, user
+from . import user
+from .methods import web
 
 
 class Response(gws.Response):
     user: user.Props
+    mfaFrom: t.Optional[dict]
 
 
-class LoginParams(gws.Request):
+class LoginRequest(gws.Request):
     username: str
     password: str
 
 
+class MfaVerifyRequest(gws.Request):
+    otp: str
+
+
 @gws.ext.object.action('auth')
 class Object(gws.base.action.Object):
+    webMethod: t.Optional[web.Object]
+
+    def configure(self):
+        for m in self.root.app.authMgr.methods:
+            if m.extType == 'web':
+                self.webMethod = t.cast(web.Object, m)
+                break
+        if not self.webMethod:
+            raise gws.ConfigurationError('web authorization method required')
 
     @gws.ext.command.api('authCheck')
     def check(self, req: gws.IWebRequester, p: gws.Request) -> Response:
-        """Check the authorization status"""
-
         return self._response(req)
 
     @gws.ext.command.api('authLogin')
-    def login(self, req: gws.IWebRequester, p: LoginParams) -> Response:
-        """Perform a login"""
-
-        self.root.app.auth.web_login(req, p)
+    def login(self, req: gws.IWebRequester, p: LoginRequest) -> Response:
+        self.webMethod.action_login(req, p)
         return self._response(req)
 
     @gws.ext.command.api('authLogout')
     def logout(self, req: gws.IWebRequester, p: gws.Request) -> Response:
-        """Perform a logout"""
+        self.webMethod.action_logout(req)
+        return self._response(req)
 
-        self.root.app.auth.web_logout(req)
+    @gws.ext.command.api('authMfaStart')
+    def mfa_start(self, req: gws.IWebRequester, p: gws.Request) -> Response:
+        self.webMethod.action_mfa_start(req)
+        return self._response(req)
+
+    @gws.ext.command.api('authMfaVerify')
+    def mfa_verify(self, req: gws.IWebRequester, p: MfaVerifyRequest) -> Response:
+        self.webMethod.action_mfa_verify(req, p)
+        return self._response(req)
+
+    @gws.ext.command.api('authMfaRestart')
+    def mfa_restart(self, req: gws.IWebRequester, p: MfaVerifyRequest) -> Response:
+        self.webMethod.action_mfa_restart(req, p)
         return self._response(req)
 
     def _response(self, req):
-        return Response(user=gws.props(req.user, req.user))
+        usr = req.user
+        if usr.isGuest:
+            return Response(user=None)
+        res = Response(usr=gws.props(usr, usr))
+        if usr.pendingMfa:
+            res.mfaFrom = usr.pendingMfa.form
+            res.mfaError = usr.pendingMfa.error or None
+        return res

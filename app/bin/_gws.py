@@ -2,18 +2,26 @@ import sys
 
 import gws
 import gws.spec.runtime
+import gws.base.action.dispatcher
+import gws.base.web.error
 
 
 def main(argv):
     gws.ensure_system_dirs()
 
+    # all cli command lines are "gws command subcommand --opt1 val1 --opt2 val2 ...."
+    # cmd1 + cmd2 are translated to a camelized method name:  'gws auth password' => 'authPassword'
+
     args, params = parse_args(argv[1:])
+
+    cmd1 = args.pop(0) if args else None
+    cmd2 = args.pop(0) if args else None
 
     verbose = params.get('v') or params.get('verbose')
     if verbose:
-        params.set('logLevel', 'DEBUG')
+        params['logLevel'] = 'DEBUG'
     elif not params.get('logLevel'):
-        params.set('logLevel', 'INFO')
+        params['logLevel'] = 'INFO'
 
     gws.log.set_level(params.get('logLevel'))
 
@@ -24,73 +32,99 @@ def main(argv):
         gws.log.exception()
         return 255
 
-    # all cli command lines are "gws command subcommand --opt1 val --opt2 ...."
+    if params.get('h') or params.get('help'):
+        return usage(specs, cmd1, cmd2)
 
-    if not args:
+    if not cmd1:
         return usage(specs, None, None)
 
-    if len(args) == 1:
-        return usage(specs, args[0], None)
+    if len(args) > 0:
+        return error('invalid command')
 
-    if len(args) > 2:
-        return usage(specs, args[0], args[1])
-
-    if params.get('h') or params.get('help'):
-        return usage(specs, args[0], args[1])
-
-    # 'gws auth password' => 'authPassword'
-    cmd_name = camelize(args[0] + '-' + args[1])
-    cmd_desc = command_descriptor(specs, cmd_name, params)
-    if not cmd_desc:
-        return usage(specs, args[0], args[1])
+    root = gws.create_root_object(specs)
 
     try:
-        prn('')
-        cmd_desc.methodPtr(cmd_desc.request)
-        prn('')
+        fn, request = gws.base.action.dispatcher.dispatch(
+            root,
+            command_category='cli',
+            command_name=camelize(cmd1 + '-' + cmd2),
+            params=params,
+            strict_mode=False
+        )
+    except gws.base.web.error.NotFound:
+        return error('command not found')
+    except gws.base.web.error.BadRequest:
+        return error('invalid arguments')
     except:
-        sys.stdout.flush()
+        error('fatal error')
+        gws.log.exception()
+        return 255
+
+    try:
+        writeln()
+        fn(request)
+        writeln()
+    except:
         gws.log.exception()
         return 255
 
 
 def usage(specs, cmd1, cmd2):
-    docs = specs.cli_docs('en')
-
     s = f'GWS version {specs.version}'
-    prn('')
-    prn(s)
-    prn('~' * len(s))
-    prn('')
+    writeln('\n' + s + '\n' + ('~' * len(s)) + '\n')
 
-    show = [d for d in docs if d[0] == cmd1 and d[1] == cmd2]
-    if not show:
-        show = [d for d in docs if d[0] == cmd1]
-    if not show:
-        show = docs
+    def columns(lines, align='<'):
+        col1, col2 = zip(*lines)
+        maxlen = max(len(a) for a in col1)
+        return '\n'.join(
+            f'{a:{align}{maxlen}s}{b}'
+            for a, b in zip(col1, col2))
 
-    for d in sorted(show):
-        prn(d[2])
+    def commands():
+        clist = specs.cli_commands('en')
+        if not cmd1:
+            return clist
+        clist1 = [c for c in clist if c.cmd1 == cmd1]
+        if not clist1:
+            return clist
+        if not cmd2:
+            return clist1
+        clist2 = [c for c in clist1 if c.cmd2 == cmd2]
+        if len(clist2) != 1:
+            return clist1
+        return clist2
 
+    cs = commands()
+    tab = ' ' * 4
+
+    if len(cs) == 1:
+        one = cs[0]
+        writeln(f'gws {one.cmd1} {one.cmd2}\n\n{one.doc}')
+        opts = []
+        for a in one.args:
+            if not a.hasDefault:
+                opts.append([f'{tab}--{a.name}', f' <{a.doc}> (required)'])
+        for a in one.args:
+            if a.hasDefault:
+                opts.append([f'{tab}--{a.name}', f' <{a.doc}>'])
+        if opts:
+            writeln('\nOptions:\n\n' + columns(opts, align='>'))
+    else:
+        writeln(columns(
+            [f'{tab}gws {c.cmd1} {c.cmd2}', '  -  ' + c.doc]
+            for c in cs
+        ))
+
+    writeln()
     return 1
 
 
-def command_descriptor(specs, cmd_name, params):
-    cmd_desc = specs.command_descriptor('cli', cmd_name)
-    if not cmd_desc:
-        return None
-
-    try:
-        cmd_desc.request = specs.read(params, cmd_desc.tArg, strict_mode=False)
-    except gws.spec.ReadError:
-        return None
-
-    root = gws.create_root_object(specs)
-    obj_desc = specs.object_descriptor(cmd_desc.tOwner)
-    gws.load_class(obj_desc)
-    cmd_desc.methodPtr = getattr(obj_desc.classPtr(), cmd_desc.methodName)
-
-    return cmd_desc
+def error(msg):
+    writeln()
+    writeln(f'ERROR: {msg}')
+    writeln(f'Try gws -h for help')
+    writeln()
+    return 255
 
 
 def parse_args(argv):
@@ -111,7 +145,7 @@ def parse_args(argv):
         else:
             args.append(a)
 
-    return args, gws.Data(kwargs)
+    return args, kwargs
 
 
 def camelize(p):
@@ -126,7 +160,7 @@ def camelize(p):
     return s[0].lower() + s[1:]
 
 
-def prn(msg):
+def writeln(msg=''):
     sys.stdout.write(msg + '\n')
     sys.stdout.flush()
 

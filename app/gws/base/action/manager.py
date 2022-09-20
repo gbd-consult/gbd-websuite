@@ -14,7 +14,7 @@ class Config(gws.ConfigWithAccess):
     actions: t.Optional[t.List[gws.ext.config.action]]  #: available actions
 
 
-class Object(gws.Node, gws.IActionCollection):
+class Object(gws.Node, gws.IActionManager):
     index: t.Dict[str, gws.IAction]
 
     def configure(self):
@@ -36,5 +36,5 @@ class Object(gws.Node, gws.IActionCollection):
                     d[a.extType] = a
         return list(d.values())
 
-    def find(self, class_name):
+    def find_action(self, class_name):
         return self.index.get(class_name)

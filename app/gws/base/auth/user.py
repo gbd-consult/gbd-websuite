@@ -1,5 +1,5 @@
 import gws
-import gws.core.tree
+import gws.lib.json2
 import gws.types as t
 
 from . import error
@@ -8,7 +8,7 @@ _DELIM = '::'
 
 
 def make_uid(user):
-    return f'{user.provider.uid}{_DELIM}{user.local_uid}'
+    return f'{user.provider.uid}{_DELIM}{user.localUid}'
 
 
 def parse_uid(user_uid):
@@ -41,50 +41,48 @@ _aliases = [
     ('login', 'userPrincipalName'),
 ]
 
+_GUEST_ROLES = set([gws.ROLE_GUEST, gws.ROLE_ALL])
+
 
 class User(gws.IUser):
-    def __init__(self, provider, local_uid, roles, attributes):
-        super().__init__()
-        self.attributes = dict(attributes or {})
+    isGuest = False
+
+    def __init__(self, provider):
         self.provider = provider
-        self.roles = set(roles)
-        self.roles.add(gws.ROLE_ALL)
-        self.local_uid = local_uid
-        self.uid = make_uid(self)
-        self.isGuest = gws.ROLE_GUEST in self.roles
-        self.displayName = str(self.attributes.get('displayName', ''))
-        gws.log.debug(f'inited user: prov={provider.uid!r} local_uid={local_uid!r} roles={roles!r}')
 
     def props(self, user):
-        return gws.Data(displayName=self.displayName)
+        return gws.Data(displayName=self.displayName, attributes=self.attributes)
 
     def can_use(self, obj, context=None):
         if obj is self:
             return True
+
         acc = self.access_to(obj)
         if acc is not None:
             return acc == gws.ACCESS_ALLOWED
+
         obj = context or getattr(obj, 'parent', None)
         while obj:
             acc = self.access_to(obj)
             if acc is not None:
                 return acc == gws.ACCESS_ALLOWED
             obj = getattr(obj, 'parent', None)
+
         return False
 
     def access_to(self, obj):
+        roles = _GUEST_ROLES if self.pendingMfa else self.roles
+        if gws.ROLE_ADMIN in roles:
+            return gws.ACCESS_ALLOWED
         access = getattr(obj, 'access', None)
         if access:
-            for a, r in access:
-                if r in self.roles:
-                    return a
+            for bit, role in access:
+                if role in roles:
+                    return bit
 
 
 class Guest(User):
-    def __init__(self, provider, local_uid, roles, attributes):
-        super().__init__(provider, local_uid, roles, attributes)
-        self.roles.add(gws.ROLE_GUEST)
-        self.isGuest = True
+    isGuest = True
 
 
 class System(User):
@@ -101,16 +99,50 @@ class AuthorizedUser(User):
     pass
 
 
-class Admin(AuthorizedUser):
-    def can_use(self, obj, context=None):
-        return True
-
-
 ##
 
+def to_dict(usr) -> dict:
+    return dict(
+        attributes=usr.attributes,
+        displayName=usr.displayName,
+        localUid=usr.localUid,
+        loginName=usr.loginName,
+        pendingMfa=gws.to_dict(usr.pendingMfa),
+        providerUid=usr.provider.uid,
+        roles=list(usr.roles),
+        uid=usr.uid,
+    )
 
-def create(cls, provider: gws.IAuthProvider, local_uid: str, roles=None, attributes=None) -> User:
-    atts = dict(attributes or {})
+
+def from_dict(cls, provider: gws.IAuthProvider, d: dict) -> User:
+    usr = cls(provider)
+    usr.attributes = d.get('attributes')
+    usr.displayName = d.get('displayName')
+    usr.localUid = d.get('localUid')
+    usr.loginName = d.get('loginName')
+    usr.pendingMfa = gws.Data(d.get('pendingMfa')) if d.get('pendingMfa') else None
+    usr.roles = set(d.get('roles'))
+    usr.uid = d.get('uid')
+    return usr
+
+
+def from_args(cls, provider: gws.IAuthProvider, **kwargs) -> User:
+    usr = cls(provider)
+
+    roles = set(kwargs.get('roles', []))
+    roles.add(gws.ROLE_ALL)
+    usr.roles = roles
+
+    usr.localUid = kwargs.get('localUid') or kwargs.get('loginName')
+    usr.loginName = kwargs.get('loginName') or kwargs.get('localUid')
+    usr.displayName = kwargs.get('displayName') or usr.loginName
+
+    usr.uid = make_uid(usr)
+
+    p = kwargs.get('pendingMfa')
+    usr.pendingMfa = gws.AuthPendingMfa(p) if p else None
+
+    atts = dict(kwargs.get('attributes', {}))
 
     for a, b in _aliases:
         if a in atts:
@@ -118,12 +150,8 @@ def create(cls, provider: gws.IAuthProvider, local_uid: str, roles=None, attribu
         elif b in atts:
             atts[a] = atts[b]
 
-    if 'displayName' not in atts:
-        atts['displayName'] = atts.get('login', '')
+    usr.attributes = atts
 
-    atts['local_uid'] = local_uid
-    atts['provider_uid'] = provider.uid
+    gws.log.debug(f'inited user: prov={provider.uid!r} localUid={usr.localUid!r} roles={roles!r}')
 
-    roles = set(roles) if roles else set()
-
-    return cls(provider, local_uid, roles, atts)
+    return usr

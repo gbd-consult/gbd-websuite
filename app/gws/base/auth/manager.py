@@ -15,55 +15,58 @@ from .stores import sqlite
 SQLITE_STORE_PATH = gws.MISC_DIR + '/sessions8.sqlite'
 
 
+class SessionOptions(gws.Data):
+    lifeTime: int
+    store: sqlite.SessionStore
+    storePath: str
+
+
+class SessionConfig(gws.Config):
+    lifeTime: gws.Duration = '1200'  #: session life time
+    store: str = 'sqlite'  #: session storage engine
+    storePath: t.Optional[str]  #: session storage path
+
+
 class Config(gws.Config):
     """Authentication and authorization options"""
 
     methods: t.Optional[t.List[gws.ext.config.authMethod]]  #: authorization methods
     providers: t.Optional[t.List[gws.ext.config.authProvider]]  #: authorization providers
-    sessionLifeTime: gws.Duration = '1200'  #: session life time
-    sessionStore: str = 'sqlite'  #: session storage engine
-    sessionStorePath: t.Optional[str]  #: session storage path
+    mfa: t.Optional[t.List[gws.ext.config.authMfa]]  #: authorization providers
+    session: t.Optional[SessionConfig]  #: session options
 
 
 class Object(gws.Node, gws.IAuthManager):
     """Authorization manager."""
 
-    sessionLifeTime: int
-    store: sqlite.SessionStore
+    sessionOptions: SessionOptions
     guestSession: session.Session
     webMethod: gws.IAuthMethod
 
     def configure(self):
 
-        self.sessionLifeTime = self.var('sessionLifeTime')
-
-        if self.var('sessionStore') == 'sqlite':
-            self.store = sqlite.SessionStore(self.var('sessionStorePath', default=SQLITE_STORE_PATH))
-        else:
-            # @TODO other store types
-            raise gws.ConfigurationError('invalid session store type')
+        so = self.var('session') or SessionOptions()
+        so.store = sqlite.SessionStore(so.storePath or SQLITE_STORE_PATH)
+        so.lifeTime = so.lifeTime or 1200
+        self.sessionOptions = so
 
         self.providers = self.create_children(gws.ext.object.authProvider, self.var('providers'))
-        sys_provider = self.create_child(gws.ext.object.authProvider, {'type': 'system'})
-        self.providers.append(sys_provider)
+        self.providers.append(self.create_child(gws.ext.object.authProvider, {'type': 'system'}))
 
-        for p in self.providers:
-            p.auth = self
-
-        self.guestUser = sys_provider.get_user('guest')
-        self.systemUser = sys_provider.get_user('system')
+        self.guestUser = self.providers[-1].get_user('guest')
+        self.systemUser = self.providers[-1].get_user('system')
 
         self.guestSession = session.Session('guest_session', method=None, user=self.guestUser)
 
         self.methods = self.create_children(gws.ext.object.authMethod, self.var('methods'))
-        # if no methods configured, enable the Web method
         if not self.methods:
+            # if no methods configured, enable the Web method
             self.methods.append(self.create_child(gws.ext.object.authMethod, {'type': 'web'}))
 
-        for p in self.methods:
-            p.auth = self
+        self.mfa = self.create_children(gws.ext.object.authMfa, self.var('mfa'))
 
-        self.webMethod = self.get_method(ext_type='web')
+        for p in self.children:
+            p.authMgr = self
 
     ##
 
@@ -71,59 +74,22 @@ class Object(gws.Node, gws.IAuthManager):
         self.root.app.register_web_middleware('auth', self.auth_middleware)
 
     def auth_middleware(self, req: gws.IWebRequester, nxt) -> gws.IWebResponder:
-        req.session = self._open_session(req)
-        req.user = req.session.user
-        gws.log.debug(f'auth_open: typ={req.session.typ!r} user={req.user.uid!r}')
+        self._open_session(req)
         res = nxt()
-        sess = getattr(req, 'session')
-        gws.log.debug(f'auth_close: typ={sess.typ!r} user={sess.user.uid!r}')
-        req.session = self._close_session(sess, req, res)
+        self._close_session(req, res)
         return res
 
     def _open_session(self, req):
         for m in self.methods:
-            sess = m.open_session(req)
-            if sess:
-                return sess
-        return self.guestSession
+            if m.open_session(req):
+                return
+        self.session_activate(req, None)
 
-    def _close_session(self, sess: gws.IAuthSession, req, res):
-        if sess and sess.method:
-            return sess.method.close_session(sess, req, res)
-        return self.guestSession
-
-    def web_login(self, req, credentials):
-        if not req.user.isGuest:
-            gws.log.error('login while logged-in')
-            raise gws.base.web.error.Forbidden()
-
-        if not self.webMethod:
-            raise gws.base.web.error.Forbidden()
-
-        sess = self.webMethod.login(req, credentials)
-        if not sess:
-            raise gws.base.web.error.Forbidden()
-
-        req.session = sess
-        req.user = req.session.user
-        gws.log.debug(f'auth_login: typ={req.session.typ!r} user={req.user.uid!r}')
-
-    def web_logout(self, req):
-        if req.user.isGuest:
+    def _close_session(self, req, res):
+        sess = req.session
+        if sess and sess.method and sess.method.close_session(req, res):
             return
-
-        if not self.webMethod:
-            return
-
-        sess = getattr(req, 'session')
-        if sess.method != self.webMethod:
-            gws.log.error(f'wrong method for logout: {sess.method!r}')
-            raise gws.base.web.error.Forbidden()
-
-        req.session = self.webMethod.logout(req, sess)
-        req.user = req.session.user
-
-        gws.log.debug(f'auth_logout: typ={sess.typ!r}')
+        self.session_activate(req, None)
 
     ##
 
@@ -144,25 +110,30 @@ class Object(gws.Node, gws.IAuthManager):
         if prov:
             return prov.get_user(local_uid)
 
-    def get_provider(self, uid=None, ext_type=None):
-        for obj in self.providers:
-            if (uid and obj.uid == uid) or (ext_type and obj.extType == ext_type):
-                return obj
+    def get_provider(self, uid=None):
+        return t.cast(gws.IAuthProvider, self.root.get(uid))
 
     def get_method(self, uid=None, ext_type=None):
-        for obj in self.methods:
-            if (uid and obj.uid == uid) or (ext_type and obj.extType == ext_type):
-                return obj
+        return t.cast(gws.IAuthMethod, self.root.get(uid))
+
+    def get_mfa(self, uid=None, ext_type=None):
+        return t.cast(gws.IAuthMfa, self.root.get(uid))
 
     def serialize_user(self, user):
         return gws.lib.json2.to_string([user.provider.uid, user.provider.serialize_user(user)])
 
-    def unserialize_user(self, ser):
-        provider_uid, str_user = gws.lib.json2.from_string(ser)
+    def unserialize_user(self, data):
+        provider_uid, ds = gws.lib.json2.from_string(data)
         prov = self.get_provider(provider_uid)
-        return prov.unserialize_user(str_user) if prov else None
+        return prov.unserialize_user(ds) if prov else None
 
     ##
+
+    def session_activate(self, req, sess):
+        if not sess:
+            sess = self.guestSession
+        setattr(req, 'session', sess)
+        setattr(req, 'user', sess.user)
 
     def session_find(self, uid):
         self.store.cleanup(self.sessionLifeTime)

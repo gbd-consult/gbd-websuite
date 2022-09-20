@@ -1,25 +1,28 @@
 import gws
 import gws.types as t
 
-from . import main
+from . import site
+
+_FALLBACK_SITE = gws.Config(
+    host='*',
+    root=site.DocumentRootConfig(dir='/data/web'))
 
 
 class Config(gws.Config):
     """Web server configuration"""
 
-    sites: t.Optional[t.List[main.Config]]  #: configured sites
-    ssl: t.Optional[main.SSLConfig]  #: ssl configuration
+    sites: t.Optional[t.List[site.Config]]  #: configured sites
+    ssl: t.Optional[site.SSLConfig]  #: ssl configuration
 
 
-class Object(gws.Node, gws.IWebSiteCollection):
-
+class Object(gws.Node, gws.IWebManager):
     def configure(self):
         cfgs = self.var('sites', default=[])
         if all(c.host != '*' for c in cfgs):
-            cfgs.append(gws.Config(host='*', root=main.DocumentRootConfig(dir='/data/web')))
+            cfgs.append(_FALLBACK_SITE)
         if self.var('ssl'):
             cfgs = [gws.merge(c, ssl=True) for c in cfgs]
-        self.items = self.create_children(main.Object, cfgs)
+        self.sites = self.create_children(site.Object, cfgs)
 
     def activate(self):
         self.root.app.register_web_middleware('cors', self.cors_middleware)
@@ -30,9 +33,9 @@ class Object(gws.Node, gws.IWebSiteCollection):
             return nxt()
 
         if req.method == 'OPTIONS':
-            res = req.content_responder(gws.ContentResponse(content='', mime='text/plain'))
-        else:
-            res = nxt()
+            return gws.ContentResponse(content='', mime='text/plain')
+
+        res = nxt()
 
         if res.status < 400:
 
@@ -59,10 +62,10 @@ class Object(gws.Node, gws.IWebSiteCollection):
     def site_from_environ(self, environ):
         host = environ.get('HTTP_HOST', '').lower().split(':')[0].strip()
 
-        for s in self.items:
+        for s in self.sites:
             if s.host.lower() == host:
                 return s
-        for s in self.items:
+        for s in self.sites:
             if s.host == '*':
                 return s
 

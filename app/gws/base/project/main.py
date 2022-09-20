@@ -23,7 +23,7 @@ _DEFAULT_TEMPLATES = [
 class Config(gws.ConfigWithAccess):
     """Project configuration"""
 
-    api: t.Optional[gws.base.action.collection.Config]  #: project-specific actions
+    api: t.Optional[gws.base.action.manager.Config]  #: project-specific actions
     assets: t.Optional[gws.base.web.site.DocumentRootConfig]  #: project-specific assets options
     client: t.Optional[gws.base.client.Config]  #: project-specific gws client configuration
     locales: t.Optional[t.List[str]]  #: project locales
@@ -53,6 +53,7 @@ class Props(gws.Props):
 class Object(gws.Node, gws.IProject):
     overview_map: gws.base.map.Object
     printer: gws.base.printer.Object
+    title: str
 
     def configure(self):
         self.uid = self.var('uid')
@@ -65,7 +66,7 @@ class Object(gws.Node, gws.IProject):
 
         gws.log.info(f'configuring project {self.uid!r}')
 
-        self.actionCollection = self.create_child(gws.base.action.collection.Object, self.var('api'), optional=True)
+        self.actionMgr = self.create_child(gws.base.action.manager.Object, self.var('api'), optional=True)
 
         p = self.var('assets')
         self.assetsRoot = gws.WebDocumentRoot(p) if p else None
@@ -77,7 +78,7 @@ class Object(gws.Node, gws.IProject):
         #
         # self.overview_map = self.root.create_optional(gws.base.map.Object, self.var('overviewMap'))
         #
-        self.templateCollection = self.create_child(gws.base.template.collection.Object, gws.Config(
+        self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(
             templates=self.var('templates'),
             defaults=_DEFAULT_TEMPLATES))
 
@@ -89,7 +90,7 @@ class Object(gws.Node, gws.IProject):
         desc = self.render_description()
         p.description = desc.content if desc else ''
 
-        p.actions = self.root.app.actionCollection.actions_for(user, self.actionCollection)
+        p.actions = self.root.app.actionMgr.actions_for(user, self.actionMgr)
         p.client = self.client or self.root.app.client
         p.map = self.map
         p.metadata = self.metadata
@@ -101,7 +102,7 @@ class Object(gws.Node, gws.IProject):
         return p
 
     def render_description(self, args=None):
-        tpl = self.templateCollection.find(subject='project.description')
+        tpl = self.templateMgr.find(subject='project.description')
         if not tpl:
             return
         args = gws.merge({

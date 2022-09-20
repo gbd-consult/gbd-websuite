@@ -16,6 +16,7 @@ class ReadError(Error):
 class C:
     ATOM = 'ATOM'
     CLASS = 'CLASS'
+    CALLABLE = 'CALLABLE'
     CONSTANT = 'CONSTANT'
     DICT = 'DICT'
     ENUM = 'ENUM'

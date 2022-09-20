@@ -19,12 +19,8 @@ class Object(gws.Node, gws.IAuthProvider):
         return None
 
     def serialize_user(self, user):
-        return gws.lib.json2.to_string({
-            'local_uid': user.local_uid,
-            'roles': list(user.roles),
-            'attributes': user.attributes
-        })
+        return gws.lib.json2.to_string(user_api.to_dict(user))
 
-    def unserialize_user(self, ser):
-        d = gws.lib.json2.from_string(ser)
-        return user_api.create(user_api.AuthorizedUser, self, d['local_uid'], set(d['roles']), d['attributes'])
+    def unserialize_user(self, data):
+        d = gws.lib.json2.from_string(data)
+        return user_api.from_dict(user_api.AuthorizedUser, self, d) if d else None

@@ -110,7 +110,7 @@ class Object(gws.Node, gws.ILayer):
     cache: t.Optional[lib.Cache]
     grid: lib.Grid
     clientOptions: lib.ClientOptions
-    templateCollection: gws.base.template.collection.Object
+    templateMgr: gws.base.template.manager.Object
     cFinders: gws.base.search.finder.collection.Object
     legend: t.Optional[gws.base.legend.Object]
 
@@ -156,7 +156,7 @@ class Object(gws.Node, gws.ILayer):
         self.displayMode = self.var('display')
         self.layers = []
 
-        self.templateCollection = self.create_child(gws.base.template.collection.Object, gws.Config(
+        self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(
             templates=self.var('templates'),
             defaults=_DEFAULT_TEMPLATES))
 
@@ -249,7 +249,7 @@ class Object(gws.Node, gws.ILayer):
         return self.legend.render(args)
 
     def render_description(self, args=None):
-        tpl = self.templateCollection.find(subject='layer.description')
+        tpl = self.templateMgr.find(subject='layer.description')
         if not tpl:
             return
         args = gws.merge({

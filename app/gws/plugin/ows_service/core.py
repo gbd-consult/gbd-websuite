@@ -165,7 +165,7 @@ class Service(gws.Node, gws.IOwsService):
         self.with_inspire_meta = self.var('withInspireMeta')
         self.with_strict_params = self.var('withStrictParams')
 
-        self.templates = gws.base.template.collection.create(
+        self.templates = gws.base.template.manager.create(
             self.root,
             items=self.var('templates'),
             defaults=self.default_templates,

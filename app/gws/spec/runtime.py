@@ -5,6 +5,7 @@ import sys
 
 import gws
 import gws.lib.json2
+import gws.lib.importer
 import gws.types as t
 
 from . import core, reader
@@ -13,8 +14,6 @@ from .generator import generator
 Error = core.Error
 ReadError = core.ReadError
 GeneratorError = core.GeneratorError
-
-DEFAULT_TYPE = core.DEFAULT_TYPE
 
 
 def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'Object':
@@ -63,6 +62,8 @@ class Object(gws.ISpecRuntime):
         self.strings = gs['strings']
         self.chunks = gs['chunks']
 
+        self.cachedDescriptors = {}
+
     def get(self, key):
         return self.index.get(key)
 
@@ -71,10 +72,14 @@ class Object(gws.ISpecRuntime):
         return r.read(value, type_name)
 
     def object_descriptor(self, name):
+        if name in self.cachedDescriptors:
+            return self.cachedDescriptors[name]
+
         typ = self.get(name)
         if not typ:
             return
-        return gws.ExtObjectDescriptor(
+
+        self.cachedDescriptors[name] = gws.ExtObjectDescriptor(
             extName=typ.extName,
             ident=typ.ident,
             modName=typ.modName,
@@ -82,8 +87,36 @@ class Object(gws.ISpecRuntime):
             classPtr=None
         )
 
+        return self.cachedDescriptors[name]
+
+    def get_class(self, classref, ext_type=None):
+        cls, name, ext_name = self.parse_classref(classref)
+
+        if cls:
+            return cls
+
+        if ext_name:
+            name = ext_name + '.' + (ext_type or core.DEFAULT_TYPE)
+
+        desc = self.object_descriptor(name)
+        if not desc:
+            return
+
+        if not desc.classPtr:
+            if desc.modName in sys.modules:
+                mod = sys.modules[desc.modName]
+            else:
+                mod = gws.lib.importer.import_from_path(desc.modPath, gws.APP_DIR)
+            desc.classPtr = getattr(mod, desc.ident)
+
+        return desc.classPtr
+
     def command_descriptor(self, command_category, command_name):
         name = core.EXT_COMMAND_PREFIX + command_category + '.' + command_name
+
+        if name in self.cachedDescriptors:
+            return self.cachedDescriptors[name]
+
         typ = self.get(name)
 
         if not typ:
@@ -96,9 +129,9 @@ class Object(gws.ISpecRuntime):
             methodName=typ.ident,
         )
 
-    def cli_docs(self, lang='en'):
+    def cli_commands(self, lang='en'):
         strings = self.strings.get(lang) or self.strings['en']
-        docs = []
+        cmds = []
 
         for typ in self.specs:
             if not typ.extName.startswith(core.EXT_COMMAND_CLI_PREFIX):
@@ -109,30 +142,27 @@ class Object(gws.ISpecRuntime):
             cmd1 = m.group(1)
             cmd2 = m.group(2).lower()
 
-            tab = ' ' * 4
-            text = [f'gws {cmd1} {cmd2}']
+            entry = gws.Data(
+                cmd1=cmd1,
+                cmd2=cmd2,
+                doc=strings.get(typ.uid) or self.strings['en'].get(typ.uid) or '',
+            )
+            cmds.append(entry)
 
-            doc = strings.get(typ.uid) or self.strings['en'].get(typ.uid) or ''
-            if doc:
-                text.append(f'{tab} {doc}')
-
+            args = []
             arg_typ = self.get(typ.tArg)
             if arg_typ:
-                for name, prop_type_uid in sorted(arg_typ.tProperties.items()):
+                for name, prop_type_uid in arg_typ.tProperties.items():
                     prop_typ = self.get(prop_type_uid)
-                    doc = strings.get(prop_type_uid) or self.strings['en'].get(prop_type_uid) or ''
-                    line = f'{tab}{tab}--{name:15} {doc}'
-                    if not prop_typ.hasDefault:
-                        line += ' (*)'
-                    elif prop_typ.default:
-                        line += f' (default {prop_typ.default!r})'
-                    text.append(line)
+                    args.append(gws.Data(
+                        name=name,
+                        doc=strings.get(prop_type_uid) or self.strings['en'].get(prop_type_uid) or '',
+                        default=prop_typ.default,
+                        hasDefault=prop_typ.hasDefault,
+                    ))
+            entry.args = sorted(args, key=lambda a: a.name)
 
-            text.append('')
-
-            docs.append([cmd1, cmd2, '\n'.join(text)])
-
-        return sorted(docs)
+        return sorted(cmds, key=lambda c: (c.cmd1, c.cmd2))
 
     def bundle_paths(self, category):
         if category == 'vendor':

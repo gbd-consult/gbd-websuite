@@ -226,7 +226,7 @@ class Controller extends gws.Controller {
 
         if (res.error) {
             this.update({
-                storageError: res.error.status === 403
+                storageError: res.status === 403
                     ? this.__('modStorageErrorAccess')
                     : this.__('modStorageErrorGeneric')
             })

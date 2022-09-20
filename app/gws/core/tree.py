@@ -22,8 +22,6 @@ class Object(types.IObject):
 
 
 class Node(Object, types.INode):
-    children: t.List[types.INode]
-
     def initialize(self, config):
         self.config = config
         self.access = self.var('access') or []
@@ -48,9 +46,8 @@ class Node(Object, types.INode):
             #     cls.configure(self)  # type: ignore
             return True
         except Exception as exc:
-            info = _error_info(exc)
-            log.exception(info)
-            self.root.configErrors.append(info)
+            log.exception()
+            self.root.configErrors.append(repr(exc))
             return False
 
     def var(self, key: str, default=None):
@@ -58,7 +55,7 @@ class Node(Object, types.INode):
         return val if val is not None else default
 
     def create_child(self, classref, config=None, optional=False, required=False):
-        return self.root.create_child(self, classref, config, optional, required)
+        return self.root.create(classref, parent=self, config=config, optional=optional, required=required)
 
     def create_children(self, classref, configs, required=False):
         if not configs:
@@ -68,11 +65,12 @@ class Node(Object, types.INode):
 
 class Root(types.IRoot):
     def __init__(self):
+        self.app = t.cast(types.IApplication, None)
         self.configErrors = []
-        self._cached_object_descriptors: t.Dict[str, types.ExtObjectDescriptor] = {}
+        self._cachedDescriptors: t.Dict[str, types.ExtObjectDescriptor] = {}
         self._objects: t.List['Node'] = []
-        self._uid_map: t.Dict[str, 'Node'] = {}
-        self._uid_cnt = 0
+        self._uidMap: t.Dict[str, 'Node'] = {}
+        self._uidCount = 0
 
     def activate(self):
         for obj in self._objects:
@@ -88,7 +86,7 @@ class Root(types.IRoot):
                 self.configErrors.append(info)
 
     def find(self, classref, uid: str):
-        obj = self._uid_map.get(uid)
+        obj = self._uidMap.get(uid)
         if not obj:
             return None
         cls, name, ext_name = self.specs.parse_classref(classref)
@@ -111,7 +109,7 @@ class Root(types.IRoot):
     def create_application(self, config=None):
         config = _to_config(config)
 
-        cls = self._find_class('gws.base.application.Object', config)
+        cls = self.specs.get_class('gws.base.application.Object')
 
         obj = cls()
         obj.uid = '0'
@@ -120,83 +118,55 @@ class Root(types.IRoot):
         obj.children = []
 
         self._objects.append(obj)
-        self._uid_map[obj.uid] = obj
+        self._uidMap[obj.uid] = obj
         self.app = obj
         obj.initialize(config)
 
-    def create_shared(self, classref, config=None):
+    def create_shared(self, classref, config=None, optional=False, required=False):
         config = _to_config(config)
-        if config.uid and config.uid in self._uid_map:
-            return self._uid_map[config.uid]
-        return self.create(classref, config)
+        if config.uid and config.uid in self._uidMap:
+            return self._uidMap[config.uid]
+        return self.create(classref, config=config, optional=optional, required=required)
 
-    def create_child(self, parent, classref, config=None, optional=False, required=False):
-        return self._create(parent, classref, config, optional, required)
-
-    def create(self, classref, config=None, optional=False, required=False):
-        return self._create(None, classref, config, optional, required)
-
-    def _create(self, parent, classref, config, optional, required):
+    def create(self, classref, parent=None, config=None, optional=False, required=False):
         if not config and optional:
             return
 
         config = _to_config(config)
 
         config.uid = self._get_uid(config)
-        cls = self._find_class(classref, config)
+        cls = self.specs.get_class(classref, config.type)
+
+        if not cls:
+            raise error.ConfigurationError(f'class {classref!r}:{config.type!r} not found')
 
         obj = cls()
         obj.root = self
         obj.parent = parent
         obj.children = []
 
-        log.debug(f'BEGIN config {_object_name(obj)}')
+        log.debug(f'configuring {_object_name(obj)}')
         ok = obj.initialize(config)
         if not ok:
-            log.debug(f'FAILED config {_object_name(obj)}')
-            if required:
-                raise error.ConfigurationError(f'cannot create {classref!r}')
+            log.debug(f'FAILED {_object_name(obj)}')
             return
 
         if not obj.uid:
             obj.uid = config.uid
         self._objects.append(obj)
-        self._uid_map[obj.uid] = obj
+        self._uidMap[obj.uid] = obj
 
         if parent:
             parent.children.append(obj)
 
-        log.debug(f'END config {_object_name(obj)}')
         return obj
 
-    def _find_class(self, classref, config):
-        cls, name, ext_name = self.specs.parse_classref(classref)
-
-        if cls:
-            return cls
-
-        if ext_name:
-            name = ext_name + '.' + (config.type or gws.spec.DEFAULT_TYPE)
-
-        desc = self._load_object_descriptor(name)
-        if not desc:
-            raise error.Error(f'class not found: {name!r}')
-
-        return desc.classPtr
-
-    def _load_object_descriptor(self, name):
-        if name in self._cached_object_descriptors:
-            return self._cached_object_descriptors[name]
-        desc = self.specs.object_descriptor(name)
-        self._cached_object_descriptors[name] = desc
-        load_class(desc)
-        return desc
 
     def _get_uid(self, config):
         if config.uid:
             return config.uid
-        self._uid_cnt += 1
-        return str(self._uid_cnt)
+        self._uidCount += 1
+        return str(self._uidCount)
 
 
 ##
@@ -206,17 +176,6 @@ def create_root_object(specs: types.ISpecRuntime) -> types.IRoot:
     r = Root()
     r.specs = specs
     return r
-
-
-def load_class(desc: types.ExtObjectDescriptor):
-    if desc and not desc.classPtr:
-        if desc.modName in sys.modules:
-            log.debug(f'load_class: {desc.modName!r}: already loaded')
-            mod = sys.modules[desc.modName]
-        else:
-            log.debug(f'load_class: {desc.modName!r}: loading from spec: {desc!r}')
-            mod = util.import_from_path(desc.modPath)
-        desc.classPtr = getattr(mod, desc.ident)
 
 
 ##
@@ -240,13 +199,6 @@ def _object_name(obj):
     return name
 
 
-def _error_info(exc):
-    info = exc.__class__.__name__
-    try:
-        info += ': ' + exc.args[0]
-    except:
-        pass
-    return info
 
 
 ##

@@ -12,6 +12,3 @@ class Config(gws.Config):
 class Object(gws.Node, gws.IAuthMethod):
     def configure(self):
         self.secure = self.var('secure')
-
-    def login(self, req, credentials):
-        raise error.AccessDenied()

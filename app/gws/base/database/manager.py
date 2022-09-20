@@ -8,6 +8,6 @@ class Config(gws.Config):
     providers: t.List[gws.ext.config.db]  #: database providers
 
 
-class Object(gws.Node, gws.IDatabaseCollection):
+class Object(gws.Node, gws.IDatabaseManager):
     def configure(self):
-        self.items = [self.root.create_shared(gws.ext.object.db, p) for p in self.var('providers', default=[])]
+        self.databases = [self.root.create_shared(gws.ext.object.db, p) for p in self.var('providers', default=[])]

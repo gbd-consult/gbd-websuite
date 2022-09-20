@@ -12,8 +12,8 @@ class Object(provider.Object):
         super().configure()
         self.uid = 'gws.base.auth.providers.system'
         self.users = {
-            'guest': user.create(user.Guest, self, 'guest', [gws.ROLE_GUEST]),
-            'system': user.create(user.System, self, 'system', []),
+            'guest': user.from_args(user.Guest, provider=self, localUid='guest', roles=[gws.ROLE_GUEST]),
+            'system': user.from_args(user.System, provider=self, localUid='system'),
         }
 
     def authenticate(self, method, credentials):
