@@ -25,8 +25,6 @@ class Object(method.Object):
     deletedSession: gws.IAuthSession
 
     def configure(self):
-        super().configure()
-
         self.cookieName = self.var('cookieName')
         self.cookiePath = self.var('cookiePath')
 

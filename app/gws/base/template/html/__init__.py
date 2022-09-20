@@ -25,7 +25,6 @@ _dummy_fn = lambda *args: None
 class Object(gws.base.template.Object):
 
     def configure(self):
-        super().configure()
         if self.path:
             self.text = gws.read_file(self.path)
         self.load()

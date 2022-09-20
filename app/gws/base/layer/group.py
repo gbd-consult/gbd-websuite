@@ -35,8 +35,6 @@ class Object(main.Object):
         return gws.merge(super().props(user), type='group')
 
     def configure(self):
-        super().configure()
-
         self.layers = []
         for cfg in self.var('layers', default=[]):
             cfg.defaultCrs = self.crs

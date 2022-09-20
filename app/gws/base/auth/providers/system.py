@@ -9,7 +9,6 @@ class Object(provider.Object):
     users: t.Dict[str, user.User]
 
     def configure(self):
-        super().configure()
         self.uid = 'gws.base.auth.providers.system'
         self.users = {
             'guest': user.from_args(user.Guest, provider=self, localUid='guest', roles=[gws.ROLE_GUEST]),

@@ -17,7 +17,6 @@ class Config(main.Config):
 class Object(main.Object):
 
     def configure(self):
-        super().configure()
         self.urls = self.var('urls')
 
     def render(self, args=None):

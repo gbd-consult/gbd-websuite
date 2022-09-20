@@ -18,7 +18,6 @@ class Object(main.Object):
     layerUids: t.List[str]
 
     def configure(self):
-        super().configure()
         self.layerUids = self.var('layerUids')
 
     def render(self, args=None):

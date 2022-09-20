@@ -24,8 +24,6 @@ class Object(gws.base.auth.provider.Object):
     db: t.List[dict]
 
     def configure(self):
-        super().configure()
-
         self.uid = 'gws.base.auth.providers.file'
         self.path = self.var('path')
         self.db = gws.lib.json2.from_path(self.path)

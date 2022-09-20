@@ -29,21 +29,20 @@ class Node(Object, types.INode):
         # # since `super().configure` is mandatory in `configure` methods,
         # # let's automate this by collecting all super 'configure' methods upto 'Node'
         #
-        # mro = []
-        # for cls in type(self).mro():
-        #     if cls == Node:
-        #         break
-        #     try:
-        #         if 'configure' in vars(cls):
-        #             mro.append(cls)
-        #     except TypeError:
-        #         pass
-        #
+        mro = []
+        for cls in type(self).mro():
+            if cls == Node:
+                break
+            try:
+                if 'configure' in vars(cls):
+                    mro.append(cls)
+            except TypeError:
+                pass
+
         try:
             self.pre_configure()
-            self.configure()
-            # for cls in reversed(mro):
-            #     cls.configure(self)  # type: ignore
+            for cls in reversed(mro):
+                cls.configure(self)  # type: ignore
             return True
         except Exception as exc:
             log.exception()

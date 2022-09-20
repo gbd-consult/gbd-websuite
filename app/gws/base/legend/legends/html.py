@@ -17,7 +17,6 @@ class Config(main.Config):
 class Object(main.Object):
 
     def configure(self):
-        super().configure()
         self.template = self.create_child(gws.ext.object.template, self.var('template'))
 
     def render(self, args=None):

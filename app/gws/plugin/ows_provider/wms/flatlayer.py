@@ -19,8 +19,6 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
     sourceCrs: gws.ICrs
 
     def configure(self):
-        super().configure()
-
         self.provider = self.var('_provider') or self.root.create_shared(provider.Object, self.config)
 
         self.sourceLayers = self.var('_sourceLayers')
