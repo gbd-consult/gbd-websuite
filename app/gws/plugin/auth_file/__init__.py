@@ -26,7 +26,7 @@ class Object(gws.base.auth.provider.Object):
     def configure(self):
         super().configure()
 
-        self.uid = self.var('uid', 'gws.base.auth.providers.file')
+        self.uid = 'gws.base.auth.providers.file'
         self.path = self.var('path')
         self.db = gws.lib.json2.from_path(self.path)
 
@@ -35,12 +35,13 @@ class Object(gws.base.auth.provider.Object):
         found = []
 
         username = credentials.get('username')
-        if not username:
+        password = credentials.get('password')
+        if not username or not password:
             return
 
         for rec in self.db:
-            login_ok = gws.lib.password.cmp(username, rec['login'])
-            password_ok = gws.lib.password.check(credentials.get('password'), rec['password'])
+            login_ok = gws.lib.password.compare(username, rec['login'])
+            password_ok = gws.lib.password.check(password, rec['password'])
             if login_ok and password_ok:
                 found.append(rec)
             if login_ok and not password_ok:
@@ -63,12 +64,19 @@ class Object(gws.base.auth.provider.Object):
                 return self._make_user(rec)
 
     def _make_user(self, rec):
-        return gws.base.auth.user.create(
+        atts = dict(rec)
+        login = atts.pop('login')
+        atts.pop('password', '')
+
+        return gws.base.auth.user.from_args(
             gws.base.auth.user.AuthorizedUser,
             provider=self,
-            local_uid=rec['login'],
-            roles=rec.get('roles', []),
-            attributes={'displayName': rec.get('name', rec['login'])}
+            displayName=atts.pop('name', login),
+            localUid=login,
+            loginName=login,
+            roles=atts.pop('roles', []),
+            pendingMfa=atts.pop('mfa', None),
+            attributes=atts,
         )
 
     @gws.ext.command.cli('authPassword')

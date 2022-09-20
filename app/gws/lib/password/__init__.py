@@ -4,7 +4,7 @@ import hmac
 import random
 
 
-def cmp(a, b):
+def compare(a, b):
     return hmac.compare_digest(a, b)
 
 
@@ -14,15 +14,15 @@ def encode(password, algo='sha512'):
     return '$'.join(['', algo, salt, base64.urlsafe_b64encode(h).decode('utf8')])
 
 
-def check(password, enc):
+def check(password, encoded):
     try:
-        _, algo, salt, hs = str(enc).split('$')
+        _, algo, salt, hs = str(encoded).split('$')
         h1 = base64.urlsafe_b64decode(hs)
         h2 = _pbkdf2(password, salt, algo)
     except (TypeError, ValueError):
         return False
 
-    return cmp(h1, h2)
+    return compare(h1, h2)
 
 
 def to_hash(s, algo='sha512'):
