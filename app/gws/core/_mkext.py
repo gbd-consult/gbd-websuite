@@ -3,6 +3,7 @@ types = [
     'application',
     'authMethod',
     'authProvider',
+    'authMfa',
     'cli',
     'db',
     'finder',
