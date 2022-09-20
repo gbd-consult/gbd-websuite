@@ -6,8 +6,9 @@ import yaml
 import gws
 import gws.lib.json2
 import gws.lib.os2
-import gws.lib.vendor.jump as jump
-import gws.lib.vendor.slon as slon
+import gws.lib.importer
+import gws.lib.vendor.jump
+import gws.lib.vendor.slon
 import gws.spec.runtime
 
 CONFIG_PATH_PATTERN = r'\bconfig\.(py|json|yaml|cx)$'
@@ -98,7 +99,7 @@ def _read(path):
     except gws.ConfigurationError:
         raise
     except Exception as exc:
-        raise gws.ConfigurationError(f'read error: {exc!r}', path, '', None) from exc
+        raise gws.ConfigurationError(f'read error', path, '', None) from exc
 
     _save_intermediate(path, gws.lib.json2.to_pretty_string(dct), 'json')
     return dct, paths
@@ -106,7 +107,7 @@ def _read(path):
 
 def _read2(path):
     if path.endswith('.py'):
-        mod = gws.import_from_path(path)
+        mod = gws.lib.importer.import_from_path(path)
         fn = getattr(mod, CONFIG_FUNCTION_NAME)
         dct = fn()
         if not isinstance(dct, dict):
@@ -118,7 +119,7 @@ def _read2(path):
 
     if path.endswith('.yaml'):
         with open(path, encoding='utf8') as fp:
-            dct = yaml.load(fp)
+            dct = yaml.safe_load(fp)
         return dct, [path]
 
     if path.endswith('.cx'):
@@ -129,7 +130,7 @@ def _parse_cx_config(path):
     paths = {path}
     runtime_errors = []
 
-    def _err(exc, path, line, env):
+    def _error_handler(exc, path, line, env):
         runtime_errors.append(_syntax_error(path, gws.read_file(path), repr(exc), line))
 
     def _loader(cur_path, p):
@@ -140,11 +141,11 @@ def _parse_cx_config(path):
         return gws.read_file(p), p
 
     try:
-        tpl = jump.compile_path(path, loader=_loader)
-    except jump.CompileError as e:
-        raise _syntax_error(path, gws.read_file(e.path), e.message, e.line)
+        tpl = gws.lib.vendor.jump.compile_path(path, loader=_loader)
+    except gws.lib.vendor.jump.CompileError as exc:
+        raise _syntax_error(path, gws.read_file(exc.path), exc.message, exc.line) from exc
 
-    src = jump.call(tpl, args={'true': True, 'false': False}, error=_err)
+    src = gws.lib.vendor.jump.call(tpl, args={'true': True, 'false': False}, error=_error_handler)
 
     if runtime_errors:
         raise runtime_errors[0]
@@ -152,9 +153,9 @@ def _parse_cx_config(path):
     _save_intermediate(path, src, 'slon')
 
     try:
-        dct = slon.loads(src, as_object=True)
-    except slon.SlonError as e:
-        raise _syntax_error(path, src, e.args[0], e.args[2])
+        dct = gws.lib.vendor.slon.loads(src, as_object=True)
+    except gws.lib.vendor.slon.SlonError as exc:
+        raise _syntax_error(path, src, exc.args[0], exc.args[2]) from exc
 
     return dct, list(paths)
 

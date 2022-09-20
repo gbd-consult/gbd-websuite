@@ -62,12 +62,11 @@ class _Logger(logging.Logger):
     def exception(self, msg='', *args, **kwargs):
         _, exc, _ = sys.exc_info()
         pfx = 'EXCEPTION:: '
-
-        self.fatal(pfx + (msg or repr(exc)))
-
+        lines = err.to_string_list(exc)
+        self.fatal(pfx + (msg or lines.pop(0)))
         if self.isEnabledFor(Level.DEBUG):
-            for k in err.string().split('\n'):
-                self.debug(pfx + k)
+            for ln in lines:
+                self.debug(pfx + ln)
 
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
         if _logger.disabled:
