@@ -33,7 +33,7 @@ class Object(gws.Node, gws.IWebManager):
             return nxt()
 
         if req.method == 'OPTIONS':
-            return gws.ContentResponse(content='', mime='text/plain')
+            return gws.ContentResponse(mime='text/plain', text='')
 
         res = nxt()
 

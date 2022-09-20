@@ -47,7 +47,7 @@ class Object(gws.base.template.Object):
 
         if not tri.out_mime or tri.out_mime == gws.lib.mime.HTML:
             notify('end_print')
-            return gws.ContentResponse(mime=gws.lib.mime.HTML, content=html)
+            return gws.ContentResponse(mime=gws.lib.mime.HTML, text=html)
 
         if tri.out_mime == gws.lib.mime.PDF:
             res_path = gws.tempname('map.pdf')

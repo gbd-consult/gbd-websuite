@@ -201,4 +201,4 @@ def to_xml(ARGS, tag):
         tag = 'soap:Envelope', ('soap:Header', ''), ('soap:Body', tag)
     el = xml2.tag(*tag)
     xml = xml2.to_string(el, with_xml=True, with_xmlns=True, with_schemas=True)
-    return gws.ContentResponse(content=xml, mime=gws.lib.mime.XML)
+    return gws.ContentResponse(mime=gws.lib.mime.XML, text=xml)

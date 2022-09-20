@@ -67,7 +67,7 @@ class Object(gws.base.template.Object):
 
         if mime == gws.lib.mime.HTML:
             notify('end_print')
-            return gws.ContentResponse(mime=mime, content=html)
+            return gws.ContentResponse(mime=mime, text=html)
 
         if mime == gws.lib.mime.PDF:
             res_path = self._finalize_pdf(tri, html, parser)

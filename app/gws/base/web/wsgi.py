@@ -132,7 +132,6 @@ class Requester(gws.IWebRequester):
             return Responder(wz=werkzeug.utils.redirect(response.location, response.status or 302))
 
         args: t.Dict = {
-            'response': response.content,
             'mimetype': response.mime,
             'status': response.status or 200,
             'headers': {},
@@ -140,17 +139,17 @@ class Requester(gws.IWebRequester):
         }
 
         def _attachment_name():
-            if response.attachment_name:
-                return response.attachment_name
+            if isinstance(response.attachment, str):
+                return response.attachment
             if response.path:
                 return os.path.basename(response.path)
             if response.mime:
                 ext = gws.lib.mime.extension_for(response.mime)
                 if ext:
                     return 'download.' + ext
-            raise gws.Error('missing attachment_name or mime type')
+            raise gws.Error('missing attachment name or mime type')
 
-        if response.attachment_name or response.as_attachment:
+        if response.attachment:
             name = _attachment_name()
             args['headers']['Content-Disposition'] = f'attachment; filename="{name}"'
             args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(name)
@@ -160,6 +159,10 @@ class Requester(gws.IWebRequester):
             args['headers']['Content-Length'] = str(os.path.getsize(response.path))
             args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(response.path)
             args['direct_passthrough'] = True
+        elif response.text is not None:
+            args['response'] = response.text
+        else:
+            args['response'] = response.content
 
         return Responder(**args)
 

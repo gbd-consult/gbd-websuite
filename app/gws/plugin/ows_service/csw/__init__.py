@@ -123,7 +123,7 @@ class Object(core.Service):
 
     def handle_describerecord(self, rd: core.Request):
         xml = gws.read_file(gws.dirname(__file__) + '/templates/describeRecord.xml')
-        return gws.ContentResponse(content=xml, mime=gws.lib.mime.XML)
+        return gws.ContentResponse(mime=gws.lib.mime.XML, text=xml)
 
     def handle_getrecords(self, rd: core.Request):
         records = self._find_records(rd)

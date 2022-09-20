@@ -3,6 +3,7 @@
 import gws
 import gws.base.template
 import gws.lib.vendor.jump
+import gws.lib.mime
 import gws.types as t
 
 
@@ -31,12 +32,13 @@ class Object(gws.base.template.Object):
             with open(self.path, 'rt') as fp:
                 text = fp.read()
 
-        content = gws.lib.vendor.jump.render(
+        out = gws.lib.vendor.jump.render(
             text,
             args,
             path=self.path or '<string>',
             error=err,
         )
 
-        mime = self.mimes[0] if self.mimes else 'text/plain'
-        return gws.ContentResponse(content=content, mime=mime)
+        return gws.ContentResponse(
+            mime=self.mimes[0] if self.mimes else gws.lib.mime.TXT,
+            text=out)

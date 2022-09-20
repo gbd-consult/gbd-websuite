@@ -234,12 +234,12 @@ class Response(Data):
 class ContentResponse(Response):
     """Web response with literal content"""
 
-    as_attachment: bool
-    attachment_name: str
-    content: Union[bytes, str]
+    attachment: Union[bool, str]
+    content: bytes
     location: str
     mime: str
     path: str
+    text: str
 
 
 class IWebRequester(Protocol):

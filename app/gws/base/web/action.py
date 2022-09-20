@@ -37,7 +37,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('webDownload')
     def download(self, req: gws.IWebRequester, p) -> gws.ContentResponse:
-        return _serve_path(self.root, req, p, True)
+        return _serve_path(self.root, req, p, attachment=True)
 
     @gws.ext.command.get('webSystemAsset')
     def sys_asset(self, req: gws.IWebRequester, p: AssetRequest) -> gws.ContentResponse:
@@ -47,27 +47,27 @@ class Object(gws.base.action.Object):
 
         if p.path.endswith('.vendor.js'):
             return gws.ContentResponse(
-                content=gws.base.client.bundles.javascript(self.root, 'vendor', locale_uid),
-                mime=gws.lib.mime.JS)
+                mime=gws.lib.mime.JS,
+                text=gws.base.client.bundles.javascript(self.root, 'vendor', locale_uid))
 
         if p.path.endswith('.util.js'):
             return gws.ContentResponse(
-                content=gws.base.client.bundles.javascript(self.root, 'util', locale_uid),
-                mime=gws.lib.mime.JS)
+                mime=gws.lib.mime.JS,
+                text=gws.base.client.bundles.javascript(self.root, 'util', locale_uid))
 
         if p.path.endswith('.app.js'):
             return gws.ContentResponse(
-                content=gws.base.client.bundles.javascript(self.root, 'app', locale_uid),
-                mime=gws.lib.mime.JS)
+                mime=gws.lib.mime.JS,
+                text=gws.base.client.bundles.javascript(self.root, 'app', locale_uid))
 
         if p.path.endswith('.css'):
             theme = p.path.split('.')[-2]
             return gws.ContentResponse(
-                content=gws.base.client.bundles.css(self.root, 'app', theme),
-                mime=gws.lib.mime.CSS)
+                mime=gws.lib.mime.CSS,
+                text=gws.base.client.bundles.css(self.root, 'app', theme))
 
 
-def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_attachment=False):
+def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, attachment=False):
     spath = str(p.get('path') or '')
     if not spath:
         raise gws.base.web.error.NotFound()
@@ -126,7 +126,7 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
 
     gws.log.debug(f'serving {rpath!r} for {spath!r}')
 
-    return gws.ContentResponse(mime=mime, path=rpath, as_attachment=as_attachment)
+    return gws.ContentResponse(mime=mime, path=rpath, attachment=attachment)
 
 
 def _projects_for_user(root, user):

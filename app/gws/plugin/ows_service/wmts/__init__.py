@@ -5,6 +5,7 @@ import gws.base.web.error
 import gws.gis.crs
 import gws.gis.extent
 import gws.lib.image
+import gws.lib.mime
 import gws.gis.render
 import gws.lib.units as units
 import gws.types as t
@@ -122,14 +123,14 @@ class Object(core.Service):
             text = f"{matrix_uid} {row} {col}\n{e[0]}\n{e[1]}\n{e[2]}\n{e[3]}"
             content = img.add_text(text, x=10, y=10).add_box().to_bytes()
 
-        return gws.ContentResponse(mime='image/png', content=content)
+        return gws.ContentResponse(mime=gws.lib.mime.PNG, content=content)
 
     def handle_getlegendgraphic(self, rd: core.Request):
         lcs = self.layer_caps_list_from_request(rd, ['layer', 'layers'], self.SCOPE_LEAF)
         if not lcs:
             raise gws.base.web.error.NotFound('No layers found')
         out = gws.gis.legend.render(gws.Legend(layers=[lc.layer for lc in lcs if lc.has_legend]))
-        return gws.ContentResponse(mime='image/png', content=gws.gis.legend.to_bytes(out) or gws.lib.image.PIXEL_PNG8)
+        return gws.ContentResponse(mime=gws.lib.mime.PNG, content=gws.gis.legend.to_bytes(out) or gws.lib.image.PIXEL_PNG8)
 
     ##
 

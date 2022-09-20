@@ -68,4 +68,4 @@ class Object(gws.base.action.Object):
 
         # @TODO status, check OGC 17-007r1
 
-        return gws.ContentResponse(mime=gws.lib.mime.XML, content=xml, status=200)
+        return gws.ContentResponse(mime=gws.lib.mime.XML, text=xml, status=200)

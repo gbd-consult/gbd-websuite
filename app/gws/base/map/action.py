@@ -121,7 +121,7 @@ class Object(gws.base.action.Object):
             'features': [gws.props(f, req.user, context=self) for f in found]
         })
 
-        return gws.ContentResponse(mime=gws.lib.mime.JSON, content=js)
+        return gws.ContentResponse(mime=gws.lib.mime.JSON, text=js)
 
     ##
 
