@@ -65,7 +65,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         return gws.gis.source.combined_bounds(self.sourceLayers, self.sourceCrs)
 
     def render(self, lri):
-        return gws.base.layer.lib.generic_raster_render(self, lri)
+        return gws.base.layer.util.generic_raster_render(self, lri)
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.source_layers if sl.name]
@@ -87,4 +87,4 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             'req': req
         }))
 
-        gws.base.layer.lib.mapproxy_layer_config(self, mc, source_uid)
+        gws.base.layer.util.mapproxy_layer_config(self, mc, source_uid)

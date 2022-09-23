@@ -7,7 +7,7 @@ import gws.gis.extent
 import gws.lib.image
 import gws.lib.svg
 import gws.lib.units as units
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.types as t
 
 MAX_DPI = 1200
@@ -231,30 +231,30 @@ def _add_svg_elements(rd: _Renderer, elements, opacity):
 # Output
 
 
-def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.XmlElement:
+def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.IXmlElement:
     w, h = mro.view.size_mm
 
     css_size = f'left:0;top:0;width:{int(w)}mm;height:{int(h)}mm'
     css_abs = f'position:absolute;{css_size}'
 
-    tags: t.List[gws.XmlElement] = []
+    tags: t.List[gws.IXmlElement] = []
 
     for plane in mro.planes:
         if plane.type == 'image':
             img_path = gws.tempname('mro.png')
             plane.image.to_path(img_path)
-            tags.append(xml2.tag('img', {'style': css_abs, 'src': img_path}))
+            tags.append(xmlx.tag('img', {'style': css_abs, 'src': img_path}))
         if plane.type == 'path':
-            tags.append(xml2.tag('img', {'style': css_abs, 'src': plane.path}))
+            tags.append(xmlx.tag('img', {'style': css_abs, 'src': plane.path}))
         if plane.type == 'svg':
             tags.append(gws.lib.svg.fragment_to_element(plane.elements, {'style': css_abs}))
 
     css_div = None
     if wrap and wrap in {'relative', 'absolute', 'fixed'}:
         css_div = f'position:{wrap};overflow:hidden;{css_size}'
-    return xml2.tag('div', {'style': css_div}, *tags)
+    return xmlx.tag('div', {'style': css_div}, *tags)
 
 
 def output_to_html_string(mro: gws.MapRenderOutput, wrap='relative') -> str:
     div = output_to_html_element(mro, wrap)
-    return xml2.to_string(div)
+    return xmlx.to_string(div)

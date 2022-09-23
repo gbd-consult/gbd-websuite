@@ -12,7 +12,7 @@ import gws.lib.metadata
 import gws.lib.mime
 import gws.gis.render
 import gws.lib.units as units
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.types as t
 
 _DEFAULT_NAMESPACE_PREFIX = 'gwsns'
@@ -61,7 +61,7 @@ class Request(gws.Data):
     req: gws.IWebRequester
     project: gws.IProject
     service: gws.IOwsService
-    xml_element: t.Optional[gws.XmlElement] = None
+    xml_element: t.Optional[gws.IXmlElement] = None
     xml_is_soap: bool = False
 
 
@@ -110,7 +110,7 @@ class LayerCapsTree(gws.Data):
 
 class FeatureCaps(gws.Data):
     feature: gws.IFeature
-    shape_element: gws.XmlElement
+    shape_element: gws.IXmlElement
     qname: str
 
 
@@ -197,7 +197,7 @@ class Service(gws.Node, gws.IOwsService):
         return m
 
     def activate(self):
-        xml2.namespaces.add(_DEFAULT_NAMESPACE_PREFIX, _DEFAULT_NAMESPACE_URI)
+        xmlx.namespaces.add(_DEFAULT_NAMESPACE_PREFIX, _DEFAULT_NAMESPACE_URI)
 
     # Request handling
 
@@ -414,11 +414,11 @@ class Service(gws.Node, gws.IOwsService):
         lc.layer = layer
         lc.title = layer.title
 
-        lc.layer_qname = xml2.qualify_name(lo.layer_name, _DEFAULT_NAMESPACE_PREFIX)
-        lc.layer_pname = xml2.unqualify_name(lc.layer_qname)
+        lc.layer_qname = xmlx.qualify_name(lo.layer_name, _DEFAULT_NAMESPACE_PREFIX)
+        lc.layer_pname = xmlx.unqualify_name(lc.layer_qname)
 
-        lc.feature_qname = xml2.qualify_name(lo.feature_name, _DEFAULT_NAMESPACE_PREFIX)
-        lc.feature_pname = xml2.unqualify_name(lc.feature_qname)
+        lc.feature_qname = xmlx.qualify_name(lo.feature_name, _DEFAULT_NAMESPACE_PREFIX)
+        lc.feature_pname = xmlx.unqualify_name(lc.feature_qname)
 
         lc.meta = layer.metadata.values
         lc.children = children
@@ -440,9 +440,9 @@ class Service(gws.Node, gws.IOwsService):
             for crs in self.supported_crs or [layer.crs]
         ]
 
-        pfx, n = xml2.split_name(lc.feature_qname)
+        pfx, n = xmlx.split_name(lc.feature_qname)
 
-        if not xml2.namespaces.schema(pfx) and layer.data_model:
+        if not xmlx.namespaces.schema(pfx) and layer.data_model:
             lc.adhoc_feature_schema = layer.data_model.xml_schema_dict(name_for_geometry=_DEFAULT_GEOMETRY_NAME)
 
         return lc
@@ -473,7 +473,7 @@ class Service(gws.Node, gws.IOwsService):
 
         layer_to_caps: t.Dict[str, LayerCaps] = {lc.layer.uid: lc for lc in lcs}
 
-        default_qname = xml2.qualify_name(_DEFAULT_FEATURE_NAME, _DEFAULT_NAMESPACE_PREFIX)
+        default_qname = xmlx.qualify_name(_DEFAULT_FEATURE_NAME, _DEFAULT_NAMESPACE_PREFIX)
 
         axis = gws.AXIS_XY
         if target_crs.is_geographic and invert_axis_if_geographic:

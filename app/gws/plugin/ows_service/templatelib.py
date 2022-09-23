@@ -2,7 +2,7 @@
 
 import gws
 import gws.lib.mime
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 
 # OGC 06-121r9 Table 34
 # Ordered sequence of two double values in decimal degrees, with longitude before latitude
@@ -91,7 +91,7 @@ def dcp_service_url(ARGS):
 
 
 def legend_url(ARGS, layer_caps):
-    _, name = xml2.split_name(layer_caps.layer_qname)
+    _, name = xmlx.split_name(layer_caps.layer_qname)
     return (
         'LegendURL',
         ('Format', 'image/png'),
@@ -193,12 +193,12 @@ def inspire_extended_capabilities(ARGS):
 
 
 def split_name(qname):
-    return xml2.split_name(qname)
+    return xmlx.split_name(qname)
 
 
 def to_xml(ARGS, tag):
     if ARGS.with_soap:
         tag = 'soap:Envelope', ('soap:Header', ''), ('soap:Body', tag)
-    el = xml2.tag(*tag)
-    xml = xml2.to_string(el, with_xml=True, with_xmlns=True, with_schemas=True)
+    el = xmlx.tag(*tag)
+    xml = xmlx.to_string(el, with_xml=True, with_xmlns=True, with_schemas=True)
     return gws.ContentResponse(mime=gws.lib.mime.XML, text=xml)

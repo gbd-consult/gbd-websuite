@@ -5,49 +5,64 @@ import re
 import gws
 import gws.gis.crs
 import gws.gis.extent
-import gws.lib.metadata
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
-def service_operations(root_el: gws.XmlElement) -> t.List[gws.OwsOperation]:
+def service_operations(caps_el: gws.IXmlElement) -> t.List[gws.OwsOperation]:
     # <ows:OperationsMetadata>
-    #     <ows:Operation name="GetCapabilities">
-    #         <ows:DCP><ows:HTTP><ows:Get xlink:href="...."/></ows:HTTP></ows:DCP>
-    #         <ows:Parameter name="AcceptVersions">
-    #             <ows:AllowedValues><ows:Value>2.0.0</ows:Value></ows:AllowedValues>
+    #     <ows:Operation name="GetCapabilities">...
 
-    els = xml2.all(root_el, 'OperationsMetadata Operation')
+    els = caps_el.findall('OperationsMetadata/Operation')
     if els:
         return [_parse_operation(e) for e in els]
 
     # <Capability>
     #   <Request>
-    #     <GetMap>
-    #       <Format>image/png</Format>
-    #       <Format>application/atom xml</Format>
-    #       <DCPType><HTTP><Get><OnlineResource ....
+    #     <GetCapabilities>...
 
-    el = xml2.first(root_el, 'Capability Request')
+    el = caps_el.find('Capability/Request')
     if el:
-        return [_parse_operation(e) for e in el.children]
+        return [_parse_operation(e) for e in el]
 
     return []
 
 
-def _parse_operation(el: gws.XmlElement) -> gws.OwsOperation:
+def _parse_operation(el: gws.IXmlElement) -> gws.OwsOperation:
     params = {}
 
-    for param_el in xml2.all(el, 'Parameter'):
-        values = xml2.text_list(param_el, 'Value', 'AllowedValues Value')
+    # <Parameter name="Format">
+    #   <AllowedValues>
+    #       <Value>image/gif</Value>
+    #       <Value>image/png</Value>
+    #       <Value>image/jpeg</Value>
+    #   </AllowedValues>
+    # </Parameter>
+
+    for param_el in el.findall('Parameter'):
+        values = param_el.text_list('Value') + param_el.text_list('AllowedValues/Value')
         if values:
-            params[xml2.attr(param_el, 'name')] = values
+            params[param_el.get('name')] = values
+
+    # <Operation name="GetMap">
+    #     <DCP> <HTTP>
+    #         <Get xlink:href="...."/>
+    #         <Post xlink:href="..."/>
+    #     </HTTP> </DCP>
+    #
+    #
+    # <GetMap>
+    #     <Format>image/png</Format>
+    #     <DCPType> <HTTP> <Get>
+    #         <OnlineResource xlink:type="simple" xlink:href="..."/>
+    #     </Get> </HTTP> </DCPType>
+    # </GetMap>
 
     op = gws.OwsOperation(
-        verb=xml2.attr(el, 'name') or el.name,
-        formats=xml2.text_list(el, 'Format'),
-        get_url=_parse_url(xml2.first(el, 'DCP HTTP Get', 'DCPType HTTP Get')),
-        post_url=_parse_url(xml2.first(el, 'DCP HTTP Post', 'DCPType HTTP Post')),
+        verb=el.get('name') or el.tag,
+        formats=el.text_list('Format'),
+        get_url=_parse_url(el.first_of('DCP/HTTP/Get', 'DCPType/HTTP/Get')),
+        post_url=_parse_url(el.first_of('DCP/HTTP/Post', 'DCPType/HTTP/Post')),
         params=params,
     )
 
@@ -60,7 +75,7 @@ def _parse_operation(el: gws.XmlElement) -> gws.OwsOperation:
 ##
 
 
-def service_metadata(root_el: gws.XmlElement) -> gws.lib.metadata.Metadata:
+def service_metadata(caps_el: gws.IXmlElement) -> dict:
     # wms
     #
     #   <Capabilities
@@ -78,27 +93,54 @@ def service_metadata(root_el: gws.XmlElement) -> gws.lib.metadata.Metadata:
     #           <ows:ProviderName>...
     #           <ows:ServiceContact>...
 
-    d = _metadata_dict(xml2.first(root_el, 'Service', 'ServiceIdentification'))
-    d.update(_contact_dict(root_el))
-    d['contactProviderName'] = xml2.text(root_el, 'ServiceProvider ProviderName')
-    d['contactProviderSite'] = xml2.text(root_el, 'ServiceProvider ProviderSite')
+    d = _metadata_dict(caps_el.first_of('Service', 'ServiceIdentification'))
+    d.update(_contact_dict(caps_el))
+    d['contactProviderName'] = caps_el.text_of('ServiceProvider/ProviderName')
+    d['contactProviderSite'] = caps_el.text_of('ServiceProvider/ProviderSite')
 
     #   <Capabilities
     #       <ServiceMetadataURL
 
-    link = _parse_link(xml2.first(root_el, 'ServiceMetadataURL'))
+    link = _parse_link(caps_el.find('ServiceMetadataURL'))
     if link:
         d['metaLinks'] = [link]
 
-    return gws.lib.metadata.from_dict(gws.strip(d))
+    return gws.strip(d)
 
 
-def element_metadata(el: gws.XmlElement) -> gws.lib.metadata.Metadata:
+def element_metadata(el: gws.IXmlElement) -> dict:
     #   <whatever, e.g. Layer or FeatureType
     #       <Name...
     #       <Title...
 
-    return gws.lib.metadata.from_dict(_metadata_dict(el))
+    return _metadata_dict(el)
+
+
+def _metadata_dict(el: gws.IXmlElement) -> dict:
+    if not el:
+        return {}
+
+    d = {
+        'abstract': el.text_of('Abstract'),
+        'accessConstraints': el.text_of('AccessConstraints'),
+        'attribution': el.text_of('Attribution Title'),
+        'fees': el.text_of('Fees'),
+        'keywords': el.text_list('Keywords', 'KeywordList', deep=True),
+        'name': el.text_of('Name') or el.text_of('Identifier'),
+        'title': el.text_of('Title'),
+        'metaLinks': gws.compact(_parse_link(e) for e in el.findall('MetadataURL')),
+    }
+
+    e = el.find('AuthorityURL')
+    if e:
+        d['authorityUrl'] = _parse_url(e)
+        d['authorityName'] = e.get('name')
+
+    e = el.find('Identifier')
+    if e:
+        d['authorityIdentifier'] = e.text
+
+    return gws.strip(d)
 
 
 _contact_mapping = [
@@ -130,12 +172,12 @@ _contact_mapping = [
 ]
 
 
-def _contact_dict(el: gws.XmlElement) -> dict:
-    contact_el = xml2.first(el, 'Service ContactInformation', 'ServiceProvider ServiceContact')
+def _contact_dict(caps_el: gws.IXmlElement) -> dict:
+    contact_el = caps_el.first_of('Service/ContactInformation', 'ServiceProvider/ServiceContact')
     if not contact_el:
         return {}
 
-    texts = xml2.text_dict(contact_el, deep=True)
+    texts = contact_el.text_dict(deep=True)
     d = {}
 
     for dst, src in _contact_mapping:
@@ -146,36 +188,9 @@ def _contact_dict(el: gws.XmlElement) -> dict:
     return d
 
 
-def _metadata_dict(el: gws.XmlElement) -> dict:
-    if not el:
-        return {}
-
-    d = {
-        'abstract': xml2.text(el, 'Abstract'),
-        'accessConstraints': xml2.text(el, 'AccessConstraints'),
-        'attribution': xml2.text(el, 'Attribution Title'),
-        'fees': xml2.text(el, 'Fees'),
-        'keywords': xml2.text_list(el, 'Keywords', 'KeywordList', deep=True),
-        'name': xml2.text(el, 'Name') or xml2.text(el, 'Identifier'),
-        'title': xml2.text(el, 'Title'),
-        'metaLinks': gws.compact(_parse_link(e) for e in xml2.all(el, 'MetadataURL')),
-    }
-
-    e = xml2.first(el, 'AuthorityURL')
-    if e:
-        d['authorityUrl'] = _parse_url(e)
-        d['authorityName'] = xml2.attr(e, 'name')
-
-    e = xml2.first(el, 'Identifier')
-    if e:
-        d['authorityIdentifier'] = e.text
-
-    return gws.strip(d)
-
-
 ##
 
-def supported_bounds(layer_el: gws.XmlElement, extra_crsids: t.Optional[t.List[str]] = None) -> t.List[gws.Bounds]:
+def supported_bounds(layer_el: gws.IXmlElement, extra_crsids: t.Optional[t.List[str]] = None) -> t.List[gws.Bounds]:
     # <Layer...
     #     <CRS>EPSG....
     #     <EX_GeographicBoundingBox...
@@ -195,20 +210,20 @@ def supported_bounds(layer_el: gws.XmlElement, extra_crsids: t.Optional[t.List[s
 
     # enumerate explicitly listed bounds (WMS)
 
-    for e in xml2.all(layer_el, 'BoundingBox'):
-        crs = gws.gis.crs.get(xml2.attr(e, 'srs') or xml2.attr(e, 'crs'))
-        bbox = _parse_bbox(e)
+    for el in layer_el.findall('BoundingBox'):
+        crs = gws.gis.crs.get(el.get('srs') or el.get('crs'))
+        bbox = _parse_bbox(el)
         if crs and bbox:
             crs_to_bounds[crs] = gws.Bounds(crs=crs, extent=bbox)
 
     # NB prefer these for 4326 to avoid axis issues
 
-    e = xml2.first(layer_el, 'EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
-    if e:
-        bbox = _parse_bbox(e)
+    el = layer_el.first_of('EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
+    if el:
+        bbox = _parse_bbox(el)
         if bbox:
-            wgs = gws.gis.crs.get4326()
-            crs_to_bounds[wgs] = gws.Bounds(crs=wgs, extent=bbox)
+            crs = gws.gis.crs.get4326()
+            crs_to_bounds[crs] = gws.Bounds(crs=crs, extent=bbox)
 
     # no bounds
 
@@ -220,9 +235,9 @@ def supported_bounds(layer_el: gws.XmlElement, extra_crsids: t.Optional[t.List[s
     crsids = set()
 
     for tag in 'DefaultSRS', 'DefaultCRS', 'OtherSRS', 'OtherCRS', 'SRS', 'CRS':
-        for e in xml2.all(layer_el, tag):
-            if e.text:
-                crsids.add(e.text)
+        for el in layer_el.findall(tag):
+            if el.text:
+                crsids.add(el.text)
 
     if extra_crsids:
         crsids.update(extra_crsids)
@@ -251,7 +266,7 @@ def supported_bounds(layer_el: gws.XmlElement, extra_crsids: t.Optional[t.List[s
 ##
 
 
-def parse_style(el: gws.XmlElement) -> gws.SourceStyle:
+def parse_style(el: gws.IXmlElement) -> gws.SourceStyle:
     # <Style>
     #     <Name>default...
     #     <Title>...
@@ -263,9 +278,9 @@ def parse_style(el: gws.XmlElement) -> gws.SourceStyle:
 
     st.metadata = element_metadata(el)
     st.name = st.metadata.get('name', '').lower()
-    st.legend_url = _parse_url(xml2.first(el, 'LegendURL'))
+    st.legend_url = _parse_url(el.first_of('LegendURL'))
     st.is_default = (
-            xml2.attr(el, 'IsDefault') == 'true'
+            el.get('IsDefault') == 'true'
             or st.name == 'default'
             or st.name.endswith(':default'))
     return st
@@ -298,26 +313,26 @@ def to_float_pair(s):
 ##
 
 
-def _parse_bbox(el: gws.XmlElement):
+def _parse_bbox(el: gws.IXmlElement):
     # note: bboxes are always converted to (x1, y1, x2, y2) with x1 < x2, y1 < y2
 
     # <BoundingBox/LatLonBoundingBox CRS="..." minx="0" miny="1" maxx="2" maxy="3"/>
 
-    if xml2.attr(el, 'minx'):
+    if el.get('minx'):
         return [
-            to_float(xml2.attr(el, 'minx')),
-            to_float(xml2.attr(el, 'miny')),
-            to_float(xml2.attr(el, 'maxx')),
-            to_float(xml2.attr(el, 'maxy')),
+            to_float(el.get('minx')),
+            to_float(el.get('miny')),
+            to_float(el.get('maxx')),
+            to_float(el.get('maxy')),
         ]
 
     # <ows:BoundingBox/WGS84BoundingBox
     #       <ows:LowerCorner> 0 1
     #       <ows:UpperCorner> 2 3
 
-    if xml2.first(el, 'LowerCorner'):
-        x1, y1 = to_float_pair(xml2.text(el, 'LowerCorner'))
-        x2, y2 = to_float_pair(xml2.text(el, 'UpperCorner'))
+    if el.first_of('LowerCorner'):
+        x1, y1 = to_float_pair(el.text_of('LowerCorner'))
+        x2, y2 = to_float_pair(el.text_of('UpperCorner'))
         return [
             min(x1, x2),
             min(y1, y2),
@@ -331,11 +346,11 @@ def _parse_bbox(el: gws.XmlElement):
     #       <southBoundLatitude> 1
     #       <northBoundLatitude> 3
 
-    if xml2.first(el, 'westBoundLongitude'):
-        x1 = to_float(xml2.text(el, 'eastBoundLongitude'))
-        y1 = to_float(xml2.text(el, 'southBoundLatitude'))
-        x2 = to_float(xml2.text(el, 'westBoundLongitude'))
-        y2 = to_float(xml2.text(el, 'northBoundLatitude'))
+    if el.first_of('westBoundLongitude'):
+        x1 = to_float(el.text_of('eastBoundLongitude'))
+        y1 = to_float(el.text_of('southBoundLatitude'))
+        x2 = to_float(el.text_of('westBoundLongitude'))
+        y2 = to_float(el.text_of('northBoundLatitude'))
         return [
             min(x1, x2),
             min(y1, y2),
@@ -344,29 +359,32 @@ def _parse_bbox(el: gws.XmlElement):
         ]
 
 
-def _parse_url(el: gws.XmlElement) -> str:
+def _parse_url(el: gws.IXmlElement) -> str:
     def cleanup(s):
         return (s or '').strip(' ?&')
+
+    if not el:
+        return ''
 
     # <ows:DCP>
     #       <ows:HTTP>
     #           <ows:Get xlink:href=... <-- we are here
 
-    s = xml2.attr(el, 'href') or xml2.attr(el, 'onlineResource')
+    s = el.get('href') or el.get('onlineResource')
     if s:
         return cleanup(s)
 
     # <whatever <--
     #       <OnlineResource xlink:href=...
 
-    e = xml2.first(el, 'OnlineResource')
+    e = el.first_of('OnlineResource')
     if e:
-        return cleanup(xml2.attr(e, 'href', default=e.text))
+        return cleanup(e.get('href', default=e.text))
 
     return ''
 
 
-def _parse_link(el: gws.XmlElement) -> t.Optional[gws.MetadataLink]:
+def _parse_link(el: gws.IXmlElement) -> t.Optional[gws.MetadataLink]:
     # <MetadataURL type="...
     #       <Format...
     # 	    <OnlineResource...
@@ -376,8 +394,8 @@ def _parse_link(el: gws.XmlElement) -> t.Optional[gws.MetadataLink]:
 
     d = gws.strip({
         'url': _parse_url(el),
-        'type': xml2.attr(el, 'type'),
-        'formatName': xml2.text(el, 'Format'),
+        'type': el.get('type'),
+        'formatName': el.text_of('Format'),
     })
 
     if d:

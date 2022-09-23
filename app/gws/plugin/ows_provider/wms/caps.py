@@ -1,7 +1,7 @@
 """WMS Capabilities parser."""
 
 import gws
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.gis.source
 import gws.types as t
 
@@ -10,25 +10,25 @@ from .. import parseutil as u
 
 
 def parse(xml) -> core.Caps:
-    root_el = xml2.from_string(xml, strip_ns=True)
+    caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
     source_layers = gws.gis.source.check_layers(
-        _layer(e) for e in xml2.all(root_el, 'Capability Layer'))
+        _layer(el) for el in caps_el.findall('Capability/Layer'))
     return core.Caps(
-        metadata=u.service_metadata(root_el),
-        operations=u.service_operations(root_el),
+        metadata=u.service_metadata(caps_el),
+        operations=u.service_operations(caps_el),
         source_layers=source_layers,
-        version=xml2.attr(root_el, 'version'))
+        version=caps_el.get('version'))
 
 
-def _layer(el: gws.XmlElement, parent: t.Optional[gws.SourceLayer] = None) -> gws.SourceLayer:
+def _layer(layer_el: gws.IXmlElement, parent: t.Optional[gws.SourceLayer] = None) -> gws.SourceLayer:
     sl = gws.SourceLayer()
 
-    sl.is_queryable = xml2.attr(el, 'queryable') == '1'
+    sl.is_queryable = layer_el.get('queryable') == '1'
     sl.is_visible = True
-    sl.metadata = u.element_metadata(el)
+    sl.metadata = u.element_metadata(layer_el)
     sl.name = sl.metadata.get('name', '')
-    sl.styles = [u.parse_style(e) for e in xml2.all(el, 'Style')]
-    sl.supported_bounds = u.supported_bounds(el)
+    sl.styles = [u.parse_style(e) for e in layer_el.findall('Style')]
+    sl.supported_bounds = u.supported_bounds(layer_el)
     sl.title = sl.metadata.get('title', '')
 
     if not sl.name:
@@ -39,8 +39,8 @@ def _layer(el: gws.XmlElement, parent: t.Optional[gws.SourceLayer] = None) -> gw
 
     # @TODO: support ScaleHint (WMS 1.1)
 
-    smin = xml2.text(el, 'MinScaleDenominator')
-    smax = xml2.text(el, 'MaxScaleDenominator')
+    smin = layer_el.text_of('MinScaleDenominator')
+    smax = layer_el.text_of('MaxScaleDenominator')
     if smax:
         sl.scale_range = [u.to_int(smin), u.to_int(smax)]
 
@@ -57,9 +57,9 @@ def _layer(el: gws.XmlElement, parent: t.Optional[gws.SourceLayer] = None) -> gw
             if s.name not in names:
                 sl.styles.append(s)
 
-        sl.metadata.extend(parent.metadata)
+        # sl.metadata.extend(parent.metadata)
 
-    sl.layers = [_layer(e, sl) for e in xml2.all(el, 'Layer')]
+    sl.layers = [_layer(e, sl) for e in layer_el.findall('Layer')]
     sl.is_group = len(sl.layers) > 0
     sl.is_image = len(sl.layers) == 0
 

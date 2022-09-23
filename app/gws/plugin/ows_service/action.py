@@ -4,7 +4,7 @@ import gws
 import gws.base.action
 import gws.base.web.error
 import gws.lib.mime
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
@@ -58,7 +58,7 @@ class Object(gws.base.action.Object):
         except Exception:
             status = 500
 
-        description = xml2.encode(gws.get(err, 'description') or f'Error {status}')
+        description = xmlx.encode(gws.get(err, 'description') or f'Error {status}')
 
         xml = (
                 f'<?xml version="1.0" encoding="UTF-8"?>'

@@ -75,7 +75,7 @@ class Object(gws.base.layer.Object):
             return gws.Bounds(crs=self.service.crs, extent=self.service.extent)
 
     def render(self, lri):
-        return gws.base.layer.lib.generic_raster_render(self, lri)
+        return gws.base.layer.util.generic_raster_render(self, lri)
 
     def mapproxy_config(self, mc, options=None):
         # we use {x} like in Ol, mapproxy wants %(x)s
@@ -92,5 +92,5 @@ class Object(gws.base.layer.Object):
             'tile_size': [self.service.tileSize, self.service.tileSize],
         }))
 
-        src_uid = gws.base.layer.lib.mapproxy_back_cache_config(self, mc, url, grid_uid)
-        gws.base.layer.lib.mapproxy_layer_config(self, mc, src_uid)
+        src_uid = gws.base.layer.util.mapproxy_back_cache_config(self, mc, url, grid_uid)
+        gws.base.layer.util.mapproxy_layer_config(self, mc, src_uid)

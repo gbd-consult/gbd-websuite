@@ -1,5 +1,22 @@
 from .data import Data
-from gws.types import Any, Callable, Dict, Enum, List, Literal, Optional, Protocol, Set, Tuple, Union
+
+from gws.types import (
+    cast,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    Set,
+    Tuple,
+    Union,
+)
+
+from gws.types import Enum
 
 # ----------------------------------------------------------------------------------------------------------------------
 # custom types, used everywhere
@@ -631,12 +648,74 @@ class SourceLayer(Data):
 # ----------------------------------------------------------------------------------------------------------------------
 # XML
 
-class XmlElement:
-    name: str
-    children: List['XmlElement']
-    attributes: Dict[str, Any]
-    text: str
-    tail: str
+class IXmlElement(Iterable):
+    # ElementTree API
+
+    tag: str
+    text: Optional[str]
+    tail: Optional[str]
+    attrib: dict
+
+    def __len__(self) -> int: ...
+
+    def __iter__(self) -> Iterator['IXmlElement']: ...
+
+    def __getitem__(self, item: int) -> 'IXmlElement': ...
+
+    def clear(self): ...
+
+    def get(self, key: str, default=None) -> Any: ...
+
+    def items(self) -> Iterable[Any]: ...
+
+    def keys(self) -> Iterable[str]: ...
+
+    def set(self, key: str, value: Any): ...
+
+    def append(self, subelement: 'IXmlElement'): ...
+
+    def extend(self, subelements: Iterable['IXmlElement']): ...
+
+    def insert(self, index: int, subelement: 'IXmlElement'): ...
+
+    def find(self, path: str) -> Optional['IXmlElement']: ...
+
+    def findall(self, path: str) -> List['IXmlElement']: ...
+
+    def findtext(self, path: str, default: str = None) -> str: ...
+
+    def iter(self, tag: str = None) -> Iterable['IXmlElement']: ...
+
+    def iterfind(self, path: str = None) -> Iterable['IXmlElement']: ...
+
+    def itertext(self) -> Iterable[str]: ...
+
+    # extensions
+
+    caseInsensitive: bool
+
+    def children(self) -> List['IXmlElement']: ...
+
+    def first_of(self, *paths) -> Optional['IXmlElement']: ...
+
+    def text_of(self, *paths) -> str: ...
+
+    def text_list(self, *paths, deep=False) -> List[str]: ...
+
+    def text_dict(self, *paths, deep=False) -> Dict[str, str]: ...
+
+    #
+
+    def to_string(
+            self,
+            compact_whitespace=False,
+            remove_namespaces=False,
+            with_namespace_declarations=False,
+            with_schema_locations=False,
+            with_xml_declaration=False,
+    ) -> str: ...
+
+    def to_dict(self) -> dict: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -721,9 +800,9 @@ class IFeature(IObject, Protocol):
 
     def to_geojson(self) -> dict: ...
 
-    def to_svg_element(self, view: 'MapView', style: 'IStyle' = None) -> Optional[XmlElement]: ...
+    def to_svg_element(self, view: 'MapView', style: 'IStyle' = None) -> Optional[IXmlElement]: ...
 
-    def to_svg_fragment(self, view: 'MapView', style: 'IStyle' = None) -> List[XmlElement]: ...
+    def to_svg_fragment(self, view: 'MapView', style: 'IStyle' = None) -> List[IXmlElement]: ...
 
     def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
 
@@ -854,7 +933,7 @@ class MapRenderInput(Data):
 class MapRenderOutputPlane(Data):
     type: Literal['image', 'path', 'svg']
     path: str
-    elements: List[XmlElement]
+    elements: List[IXmlElement]
     image: 'IImage'
 
 
@@ -874,7 +953,7 @@ class LayerRenderInput(Data):
 
 class LayerRenderOutput(Data):
     content: bytes
-    tags: List[XmlElement]
+    tags: List[IXmlElement]
 
 
 class TemplateRenderInputMap(Data):
@@ -1104,7 +1183,7 @@ class MetadataValues(Data):
 
     crs: 'ICrs'
     extent4326: Extent
-    boundingPolygonElement: XmlElement
+    boundingPolygonElement: IXmlElement
 
 
 class IMetadata(IObject, Protocol):
@@ -1143,20 +1222,18 @@ class SearchArgs(Data):
     tolerance: 'Measurement'
 
 
-class IFinderCollection(INode, Protocol):
-    items: List['IFinder']
+class ISearchManager(INode, Protocol):
+    finders: List['IFinder']
 
 
 class IFinder(INode, Protocol):
-    data_model: Optional['IModel']
+    supportsFilter: bool
+    supportsGeometry: bool
+    supportsKeyword: bool
 
-    supportsFilter: bool = False
-    supportsGeometry: bool = False
-    supportsKeyword: bool = False
-
-    with_filter: bool
-    with_geometry: bool
-    with_keyword: bool
+    withFilter: bool
+    withGeometry: bool
+    withKeyword: bool
 
     templateMgr: Optional['ITemplateManager']
     tolerance: 'Measurement'
@@ -1180,6 +1257,7 @@ class IMap(INode, Protocol):
     extent: Extent
     initResolution: float
     resolutions: List[float]
+    title: str
 
 
 class LegendRenderOutput(Data):
@@ -1208,18 +1286,21 @@ class ILayer(INode, Protocol):
     canRenderXyz: bool
     canRenderSvg: bool
 
+    supportsRasterServices: bool
+    supportsVectorServices: bool
+
+    hasCache: bool
+    hasSearch: bool
+    hasLegend: bool
+
     metadata: 'IMetadata'
+    title: str
 
     crs: 'ICrs'
     extent: Extent
     imageFormat: str
     opacity: float
     resolutions: List[float]
-
-    hasCache: bool
-    hasSearch: bool
-    hasLegend: bool
-
     displayMode: LayerDisplayMode
 
     layers: List['ILayer']
@@ -1236,9 +1317,9 @@ class ILayer(INode, Protocol):
 #
 # def render_xyz(self, x: int, y: int, z: int) -> bytes: ...
 #
-# def render_svg_element(self, view: 'MapView', style: Optional['IStyle']) -> Optional[XmlElement]: ...
+# def render_svg_element(self, view: 'MapView', style: Optional['IStyle']) -> Optional[IXmlElement]: ...
 #
-# def render_svg_fragment(self, view: 'MapView', style: Optional['IStyle']) -> List[XmlElement]: ...
+# def render_svg_fragment(self, view: 'MapView', style: Optional['IStyle']) -> List[IXmlElement]: ...
 
 #
 #

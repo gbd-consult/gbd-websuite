@@ -4,7 +4,7 @@ import re
 import gws
 import gws.lib.net
 import gws.lib.svg
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
@@ -13,12 +13,12 @@ class Error(gws.Error):
 
 
 class ParsedIcon(gws.Data):
-    svg: gws.XmlElement
+    svg: gws.IXmlElement
 
 
 def to_data_url(icon: ParsedIcon) -> str:
     if icon.svg:
-        xml = gws.lib.xml2.to_string(icon.svg)
+        xml = icon.svg.to_string()
         return 'data:image/svg+xml;base64,' + base64.standard_b64encode(xml.encode('utf8')).decode('utf8')
     return ''
 
@@ -91,14 +91,14 @@ def _decode_data_url(val, trusted) -> t.Optional[bytes]:
 
 def _parse_svg(val):
     try:
-        el = xml2.from_string(val)
+        el = xmlx.from_string(val)
     except Exception as exc:
         raise Error('parse error', val) from exc
 
     el_clean = gws.lib.svg.sanitize_element(el)
 
-    w = xml2.attr(el_clean, 'width')
-    h = xml2.attr(el_clean, 'height')
+    w = el_clean.get('width')
+    h = el_clean.get('height')
 
     if not w or not h:
         raise Error('missing width or height', val)

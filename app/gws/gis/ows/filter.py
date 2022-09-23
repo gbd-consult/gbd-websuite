@@ -5,7 +5,7 @@ import re
 import gws
 import gws.gis.bounds
 import gws.base.shape
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
@@ -42,18 +42,18 @@ _SUPPORTED_OPS = {
 
 def from_fes_string(src: str) -> gws.SearchFilter:
     try:
-        el = xml2.from_string(src)
+        el = xmlx.from_string(src)
     except Exception as exc:
         raise Error('invalid XML') from exc
     return from_fes_element(el)
 
 
-def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
-    op = el.name.lower()
+def from_fes_element(el: gws.IXmlElement) -> gws.SearchFilter:
+    op = el.tag.lower()
 
     if op == 'filter':
         # root element, only allow a single child predicate
-        if len(el.children) != 1:
+        if len(el) != 1:
             raise Error(f'invalid root predicate')
         return from_fes_element(el.children[0])
 
@@ -69,7 +69,7 @@ def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
 
     # @TODO support "prop = prop"
 
-    v = xml2.first(el, 'ValueReference', 'PropertyName')
+    v = el.first('ValueReference', 'PropertyName')
     if not v or not v.text:
         raise Error(f'invalid property name')
 
@@ -80,13 +80,13 @@ def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
     f.name = m.group(2)
 
     if op == 'bbox':
-        v = xml2.first(el, 'Envelope')
+        v = el.first('Envelope')
         if v:
             bounds = gws.gis.bounds.from_gml_envelope_element()
             f.shape = gws.base.shape.from_bounds(bounds)
             return f
 
-    v = xml2.first(el, 'Literal')
+    v = el.first('Literal')
     if v:
         f.value = v.text.strip()
         return f

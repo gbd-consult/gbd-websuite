@@ -1,4 +1,4 @@
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.plugin.ows_service.templatelib as tpl
 
 

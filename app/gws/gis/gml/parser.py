@@ -5,7 +5,7 @@ import gws.gis.crs
 import gws.gis.extent
 import gws.base.feature
 import gws.base.shape
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
@@ -13,13 +13,13 @@ class Error(gws.Error):
     pass
 
 
-def parse_envelope(el: gws.XmlElement, fallback_crs: gws.ICrs = None) -> gws.Bounds:
+def parse_envelope(el: gws.IXmlElement, fallback_crs: gws.ICrs = None) -> gws.Bounds:
     """Parse a gml:Box/gml:Envelope element"""
 
     # GML2: <gml:Box><gml:coordinates>1,2 3,4
     # GML3: <gml:Envelope srsDimension="2"><gml:lowerCorner>1 2  <gml:upperCorner>3 4
 
-    crs = gws.gis.crs.get(xml2.attr(el, 'srsName')) or fallback_crs
+    crs = gws.gis.crs.get(el.get('srsName')) or fallback_crs
     if not crs:
         raise Error('envelope: no CRS')
 
@@ -62,16 +62,16 @@ _GEOMETRY_TAGS = {
 }
 
 
-def element_is_gml(el: t.Optional[gws.XmlElement]) -> bool:
+def element_is_gml(el: t.Optional[gws.IXmlElement]) -> bool:
     if not el:
         return False
     return _pname(el) in _GEOMETRY_TAGS
 
 
-def parse_to_shape(el: gws.XmlElement, fallback_crs: gws.ICrs = None) -> gws.IShape:
+def parse_to_shape(el: gws.IXmlElement, fallback_crs: gws.ICrs = None) -> gws.IShape:
     """Convert a GML geometry element to a Shape."""
 
-    crs = gws.gis.crs.get(xml2.attr(el, 'srsName')) or fallback_crs
+    crs = gws.gis.crs.get(el.get('srsName')) or fallback_crs
     if not crs:
         raise Error('shape: no CRS')
 
@@ -83,7 +83,7 @@ def parse_to_shape(el: gws.XmlElement, fallback_crs: gws.ICrs = None) -> gws.ISh
     return gws.base.shape.from_geometry(geometry, crs)
 
 
-def parse_to_geometry(el: gws.XmlElement) -> dict:
+def parse_to_geometry(el: gws.IXmlElement) -> dict:
     """Convert a GML geometry element to a geometry dict."""
 
     try:
@@ -94,7 +94,7 @@ def parse_to_geometry(el: gws.XmlElement) -> dict:
 
 ##
 
-def _to_geom(el: gws.XmlElement):
+def _to_geom(el: gws.IXmlElement):
     name = _pname(el)
 
     if name == 'point':
@@ -132,7 +132,7 @@ def _to_geom(el: gws.XmlElement):
     raise ValueError(f'unknown GML geometry tag {el.name!r}')
 
 
-def _members(multi_el: gws.XmlElement):
+def _members(multi_el: gws.IXmlElement):
     ms = []
 
     for c in multi_el.children:
@@ -176,8 +176,8 @@ def _coords(el):
 def _coords_coordinates(el):
     # <gml:coordinates>1,2 3,4...
 
-    ts = xml2.attr(el, 'ts', default=' ')
-    cs = xml2.attr(el, 'cs', default=',')
+    ts = el.get('ts', default=' ')
+    cs = el.get('cs', default=',')
 
     clist = []
 
@@ -202,7 +202,7 @@ def _coords_poslist(el):
     # <gml:posList srsDimension="2">1 2 3...
 
     clist = []
-    dim = int(xml2.attr(el, 'srsDimension', default='2'))
+    dim = int(el.get('srsDimension', default='2'))
     s = el.text.split()
 
     for n in range(0, len(s), dim):
@@ -214,4 +214,4 @@ def _coords_poslist(el):
 
 
 def _pname(el):
-    return xml2.unqualify_name(el.name).lower()
+    return xmlx.unqualify_name(el.name).lower()

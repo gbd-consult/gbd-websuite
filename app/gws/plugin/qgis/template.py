@@ -7,7 +7,7 @@ import gws.lib.mime
 import gws.gis.ows
 import gws.lib.pdf
 import gws.gis.render
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.types as t
 
 from . import provider, caps
@@ -171,14 +171,14 @@ class Object(gws.base.template.Object):
         # iterate the template XML tree and inject our boxes
         # see `caps.py` for the print layout structure
 
-        root_el = xml2.from_path(self.provider.path)
-        for layout_el in xml2.all(root_el, 'Layouts Layout'):
+        root_el = xmlx.from_path(self.provider.path)
+        for layout_el in xmlx.all(root_el, 'Layouts Layout'):
             for item_el in layout_el.children:
                 uuid = item_el.attributes.get('uuid')
                 if uuid in boxes:
                     item_el.attributes['html'] = boxes[uuid]
 
-        gws.write_file(project_path, xml2.to_string(root_el))
+        gws.write_file(project_path, xmlx.to_string(root_el))
 
     def _render_qgis_to_pdf(self, tri, mro, project_path, out_path):
         # invoke the qgis server and make them render a pdf from the template (without a map)

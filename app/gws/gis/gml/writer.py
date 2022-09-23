@@ -7,7 +7,7 @@ import gws.gis.crs
 import gws.gis.extent
 import gws.base.feature
 import gws.base.shape
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
@@ -20,7 +20,7 @@ def shape_to_element(
     axis: gws.Axis = gws.AXIS_XY,
     crs_format: gws.CrsFormat = gws.CrsFormat.URN,
     with_ns='gml'
-) -> gws.XmlElement:
+) -> gws.IXmlElement:
     """Convert a Shape to a GML3 geometry element."""
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
@@ -33,7 +33,7 @@ def shape_to_element(
         ns=ns
     )
 
-    return xml2.tag(*_tag(geom, opts), srsName=srs)
+    return xmlx.tag(*_tag(geom, opts), srsName=srs)
 
 
 ##

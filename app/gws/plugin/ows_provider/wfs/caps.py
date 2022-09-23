@@ -1,5 +1,5 @@
 import gws
-import gws.lib.xml2 as xml2
+import gws.lib.xmlx as xmlx
 import gws.gis.source
 import gws.types as t
 
@@ -10,23 +10,23 @@ from .. import parseutil as u
 # @TODO check support caps (we need at least BBOX)
 
 def parse(xml) -> core.Caps:
-    root_el = xml2.from_string(xml, strip_ns=True)
+    caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
     source_layers = gws.gis.source.check_layers(
-        _feature_type(e) for e in xml2.all(root_el, 'FeatureTypeList FeatureType'))
+        _feature_type(el) for el in caps_el.findall('FeatureTypeList/FeatureType'))
     return core.Caps(
-        metadata=u.service_metadata(root_el),
-        operations=u.service_operations(root_el),
+        metadata=u.service_metadata(caps_el),
+        operations=u.service_operations(caps_el),
         source_layers=source_layers,
-        version=xml2.attr(root_el, 'version'))
+        version=caps_el.get('version'))
 
 
-def _feature_type(el):
+def _feature_type(type_el):
     sl = gws.SourceLayer()
 
-    sl.name = xml2.text(el, 'Name')
-    sl.title = xml2.unqualify_name(sl.name)
-    sl.metadata = u.element_metadata(el)
+    sl.name = type_el.text_of('Name')
+    sl.title = xmlx.namespace.unqualify(sl.name)
+    sl.metadata = u.element_metadata(type_el)
     sl.is_queryable = True
-    sl.supported_bounds = u.supported_bounds(el)
+    sl.supported_bounds = u.supported_bounds(type_el)
 
     return sl

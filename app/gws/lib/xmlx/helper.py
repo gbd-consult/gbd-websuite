@@ -1,6 +1,7 @@
 import gws
 import gws.types as t
-from . import namespaces
+
+from . import namespace
 
 
 class NamespaceConfig(gws.Config):
@@ -22,4 +23,4 @@ class Config(gws.Config):
 class Object(gws.Node):
     def activate(self):
         for ns in self.var('namespaces', default=[]):
-            namespaces.add(ns.name, ns.uri, ns.schemaLocation)
+            namespace.register(ns.name, ns.uri, ns.schemaLocation)
