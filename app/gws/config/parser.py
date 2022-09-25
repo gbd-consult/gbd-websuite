@@ -26,14 +26,27 @@ def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', accept
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
-        return specs.read(value, type_name, source_path, strict_mode=True, verbose_errors=True, accept_extra_props=accept_extra_props)
+        return specs.read(
+            value,
+            type_name,
+            source_path,
+            strict_mode=True,
+            verbose_errors=True,
+            accept_extra_props=accept_extra_props
+        )
     except gws.spec.runtime.ReadError as exc:
-        code, msg, _, details = exc.args
-        raise gws.ConfigurationError(
-            code + ': ' + msg,
-            details.get('path'),
-            details.get('formatted_value'),
-            details.get('formatted_stack'))
+        message, _, details = exc.args
+        lines = []
+        p = details.get('path')
+        if p:
+            lines.append(f'PATH: {p!r}')
+        p = details.get('formatted_value')
+        if p:
+            lines.append(f'VALUE: {p}')
+        p = details.get('formatted_stack')
+        if p:
+            lines.extend(p)
+        raise gws.ConfigurationError(f'parse error: {message}', lines) from exc
 
 
 def real_config_path(config_path=None):
@@ -93,13 +106,13 @@ def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_paths) -> gws.Conf
 
 def _read(path):
     if not os.path.isfile(path):
-        raise gws.ConfigurationError('file not found', path, '', None)
+        raise gws.ConfigurationError(f'file not found: {path!r}')
     try:
         dct, paths = _read2(path)
     except gws.ConfigurationError:
         raise
     except Exception as exc:
-        raise gws.ConfigurationError(f'read error', path, '', None) from exc
+        raise gws.ConfigurationError(f'read error: {path!r}') from exc
 
     _save_intermediate(path, gws.lib.json2.to_pretty_string(dct), 'json')
     return dct, paths
@@ -161,7 +174,7 @@ def _parse_cx_config(path):
 
 
 def _syntax_error(path, src, message, line, context=10):
-    lines = []
+    lines = [f'PATH: {path!r}']
 
     for n, t in enumerate(src.splitlines(), 1):
         if n < line - context:
@@ -173,7 +186,7 @@ def _syntax_error(path, src, message, line, context=10):
             t = '>>>' + t
         lines.append(t)
 
-    return gws.ConfigurationError(message, path, '\n'.join(lines), None)
+    return gws.ConfigurationError(f'syntax error: {message}', lines)
 
 
 def _save_intermediate(path, txt, ext):

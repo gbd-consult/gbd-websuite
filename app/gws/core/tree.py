@@ -39,15 +39,9 @@ class Node(Object, types.INode):
             except TypeError:
                 pass
 
-        try:
-            self.pre_configure()
-            for cls in reversed(mro):
-                cls.configure(self)  # type: ignore
-            return True
-        except Exception as exc:
-            log.exception()
-            self.root.configErrors.append(repr(exc))
-            return False
+        self.pre_configure()
+        for cls in reversed(mro):
+            cls.configure(self)  # type: ignore
 
     def var(self, key: str, default=None):
         val = util.get(self.config, key)
@@ -66,6 +60,7 @@ class Root(types.IRoot):
     def __init__(self):
         self.app = t.cast(types.IApplication, None)
         self.configErrors = []
+        self._configStack = []
         self._cachedDescriptors: t.Dict[str, types.ExtObjectDescriptor] = {}
         self._objects: t.List['Node'] = []
         self._uidMap: t.Dict[str, 'Node'] = {}
@@ -75,14 +70,28 @@ class Root(types.IRoot):
         for obj in self._objects:
             obj.activate()
 
+    def initialize(self, obj, config):
+        self._configStack.append(obj)
+
+        try:
+            t.cast(Node, obj).initialize(config)
+            ok = True
+        except Exception as exc:
+            log.exception()
+            self._config_error(exc)
+            ok = False
+
+        self._configStack.pop()
+        return ok
+
     def post_initialize(self):
         for obj in reversed(self._objects):
+            self._configStack = [obj]
             try:
                 obj.post_configure()
             except Exception as exc:
-                info = _error_info(exc)
-                log.exception(info)
-                self.configErrors.append(info)
+                log.exception()
+                self._config_error(exc)
 
     def find(self, classref, uid: str):
         obj = self._uidMap.get(uid)
@@ -119,7 +128,7 @@ class Root(types.IRoot):
         self._objects.append(obj)
         self._uidMap[obj.uid] = obj
         self.app = obj
-        obj.initialize(config)
+        self.initialize(obj, config)
 
     def create_shared(self, classref, config=None, optional=False, required=False):
         config = _to_config(config)
@@ -133,25 +142,22 @@ class Root(types.IRoot):
 
         config = _to_config(config)
 
-        config.uid = self._get_uid(config)
         cls = self.specs.get_class(classref, config.type)
-
         if not cls:
-            raise error.ConfigurationError(f'class {classref!r}:{config.type!r} not found')
+            raise error.Error(f'class {classref!r}:{config.type!r} not found')
 
         obj = cls()
+        obj.uid = self._get_uid(config)
         obj.root = self
         obj.parent = parent
         obj.children = []
 
         log.debug(f'configuring {_object_name(obj)}')
-        ok = obj.initialize(config)
+        ok = self.initialize(obj, config)
         if not ok:
             log.debug(f'FAILED {_object_name(obj)}')
             return
 
-        if not obj.uid:
-            obj.uid = config.uid
         self._objects.append(obj)
         self._uidMap[obj.uid] = obj
 
@@ -160,12 +166,25 @@ class Root(types.IRoot):
 
         return obj
 
-
     def _get_uid(self, config):
         if config.uid:
             return config.uid
         self._uidCount += 1
         return str(self._uidCount)
+
+    def _config_error(self, exc):
+        lines = ['init error: ' + exc.args[0]]
+
+        for val in reversed(self._configStack):
+            line = class_name(val)
+            for p in 'title', 'type', 'uid':
+                s = getattr(val, p, None)
+                if s:
+                    line += f' ({p}={s!r})'
+                    break
+            lines.append('in ' + line)
+
+        self.configErrors.append(lines)
 
 
 ##
@@ -196,8 +215,6 @@ def _object_name(obj):
     if uid:
         name += ' (uid=' + str(uid) + ')'
     return name
-
-
 
 
 ##

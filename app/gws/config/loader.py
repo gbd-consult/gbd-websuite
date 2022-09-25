@@ -23,20 +23,13 @@ def configure(
             for item in a:
                 _print(item)
         elif a is not None:
-            for s in gws.to_lines(str(a)):
-                gws.log.error(s)
+            for s in str(a).split('\n'):
+                gws.log.error('CONFIGURATION ERROR: ' + s)
 
     def _report(_args):
-        _print('-' * 20)
-        _print('CONFIGURATION ERROR:')
-        _print('-' * 20)
+        _print('-' * 60)
         _print(_args)
-
-    def _fallback(_exc, msg):
-        if fallback_config and specs.manifest.withFallbackConfig:
-            gws.log.warn(f'configuration error: using fallback config')
-            return configure(config=fallback_config)
-        raise gws.ConfigurationError(msg) from _exc
+        _print('-' * 60)
 
     if manifest_path:
         gws.log.info(f'using manifest {manifest_path!r}...')
@@ -44,42 +37,39 @@ def configure(
     try:
         specs = gws.spec.runtime.create(manifest_path, read_cache=True, write_cache=True)
     except Exception as exc:
-        # no fallback here
         _report(exc.args)
         raise gws.ConfigurationError('spec failed') from exc
 
-    if not config:
-        try:
-            config = parser.parse_main(specs, config_path)
-        except Exception as exc:
-            _report(exc.args)
-            return _fallback(exc, 'parse error')
-
-    if before_init:
-        try:
-            before_init(config)
-        except Exception as exc:
-            _report(exc.args)
-            return _fallback(exc, 'pre-init error')
-
     try:
+        if not config:
+            config = parser.parse_main(specs, config_path)
+
+        if before_init:
+            before_init(config)
+
         root_object = initialize(specs, config)
+
+        if not root_object.configErrors:
+            gws.log.info('configuration ok')
+            return root_object
+
+        for err in root_object.configErrors:
+            _report(err)
+
+        gws.log.warn(f'CONFIGURATION ERRORS: {len(root_object.configErrors)}')
+
+        if not specs.manifest.withStrictConfig:
+            return root_object
+
     except Exception as exc:
+        gws.log.exception()
         _report(exc.args)
-        return _fallback(exc, 'init error')
 
-    if not root_object.configErrors:
-        gws.log.info('configuration ok')
-        return root_object
+    if specs.manifest.withFallbackConfig and fallback_config:
+        gws.log.warn(f'using fallback config')
+        return configure(config=fallback_config)
 
-    for err in root_object.configErrors:
-        _report(err)
-
-    if specs.manifest.withStrictConfig:
-        return _fallback(gws.ConfigurationError(), 'configuration failed')
-
-    gws.log.warn(f'CONFIGURATION ERRORS: {len(root_object.configErrors)}')
-    return root_object
+    raise gws.ConfigurationError('configuration failed')
 
 
 def initialize(specs, parsed_config) -> gws.IRoot:
