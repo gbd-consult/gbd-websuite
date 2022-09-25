@@ -44,17 +44,17 @@ class Reader:
             return _READERS[type_uid](self, value, typ or self.atom)
 
         if not typ:
-            raise core.ReadError('ERR_UNKNOWN', f'unknown type {type_uid!r}', value)
+            raise core.ReadError(f'unknown type {type_uid!r}', value)
 
         if typ.c not in _READERS:
-            raise core.ReadError('ERR_UNKNOWN', f'unknown type category {typ.c!r}', value)
+            raise core.ReadError(f'unknown type category {typ.c!r}', value)
 
         return _READERS[typ.c](self, value, typ)
 
     def add_error_details(self, exc: Exception):
         details = {
             'formatted_value': _format_error_value(exc),
-            'path': 'PATH: ' + self.path,
+            'path': self.path,
             'formatted_stack': _format_error_stack(self.stack or [])
         }
         exc.args = exc.args + tuple([details])
@@ -73,7 +73,7 @@ def _read_bool(r: Reader, val, typ: core.Type):
     try:
         return bool(val)
     except:
-        raise core.ReadError('ERR_MUST_BE_BOOL', 'must be true or false', val)
+        raise core.ReadError('must be true or false', val)
 
 
 def _read_bytes(r: Reader, val, typ: core.Type):
@@ -82,7 +82,7 @@ def _read_bytes(r: Reader, val, typ: core.Type):
             return val.encode('utf8', errors='strict')
         return bytes(val)
     except:
-        raise core.ReadError('ERR_MUST_BE_BYTES', 'must be a byte buffer', val)
+        raise core.ReadError('must be a byte buffer', val)
 
 
 def _read_float(r: Reader, val, typ: core.Type):
@@ -93,7 +93,7 @@ def _read_float(r: Reader, val, typ: core.Type):
     try:
         return float(val)
     except:
-        raise core.ReadError('ERR_MUST_BE_FLOAT', 'must be a float', val)
+        raise core.ReadError('must be a float', val)
 
 
 def _read_int(r: Reader, val, typ: core.Type):
@@ -102,7 +102,7 @@ def _read_int(r: Reader, val, typ: core.Type):
     try:
         return int(val)
     except:
-        raise core.ReadError('ERR_MUST_BE_INT', 'must be an integer', val)
+        raise core.ReadError('must be an integer', val)
 
 
 def _read_str(r: Reader, val, typ: core.Type):
@@ -111,16 +111,24 @@ def _read_str(r: Reader, val, typ: core.Type):
     try:
         return _to_string(val)
     except:
-        raise core.ReadError('ERR_MUST_BE_STRING', 'must be a string', val)
+        raise core.ReadError('must be a string', val)
 
 
 # built-ins
+
+def _read_raw_dict(r: Reader, val, typ: core.Type):
+    return _ensure(val, dict)
+
 
 def _read_dict(r: Reader, val, typ: core.Type):
     dct = {}
     for k, v in _ensure(val, dict).items():
         dct[k] = r.read2(v, typ.tValue)
     return dct
+
+
+def _read_raw_list(r: Reader, val, typ: core.Type):
+    return _ensure(val, list)
 
 
 def _read_list(r: Reader, val, typ: core.Type):
@@ -142,7 +150,7 @@ def _read_tuple(r: Reader, val, typ: core.Type):
     lst = _read_any_list(r, val)
 
     if len(lst) != len(typ.tItems):
-        raise core.ReadError('ERR_BAD_TYPE', f"expected: {_comma(typ.tItems)}", val)
+        raise core.ReadError(f"expected: {_comma(typ.tItems)}", val)
 
     res = []
     for n, v in enumerate(lst):
@@ -162,7 +170,7 @@ def _read_any_list(r, val):
 def _read_literal(r: Reader, val, typ: core.Type):
     s = _read_any(r, val, typ)
     if s not in typ.literalValues:
-        raise core.ReadError('ERR_INVALID_CONST', f"invalid value: {s!r}, expected: {_comma(typ.literalValues)}", val)
+        raise core.ReadError(f"invalid value: {s!r}, expected: {_comma(typ.literalValues)}", val)
     return s
 
 
@@ -174,7 +182,7 @@ def _read_optional(r: Reader, val, typ: core.Type):
 
 def _read_union(r: Reader, val, typ: core.Type):
     # @TODO no untyped unions yet
-    raise core.ReadError('ERR_BAD_TYPE', 'not supported', val)
+    raise core.ReadError('unions are not supported yet', val)
 
 
 # our types
@@ -192,7 +200,7 @@ def _read_enum(r: Reader, val, typ: core.Type):
     for k, v in typ.enumValues.items():
         if val == k or val == v:
             return v
-    raise core.ReadError('ERR_BAD_ENUM', f"invalid value: {val!r}, expected: {_comma(typ.enumValues)}", val)
+    raise core.ReadError(f"invalid value: {val!r}, expected: {_comma(typ.enumValues)}", val)
 
 
 def _read_object(r: Reader, val, typ: core.Type):
@@ -218,7 +226,7 @@ def _read_object(r: Reader, val, typ: core.Type):
                 unknown.append(k)
 
     if unknown:
-        raise core.ReadError('ERR_UNKNOWN_PROP', f"unknown keys: {_comma(unknown)}, expected: {_comma(typ.tProperties)}", val)
+        raise core.ReadError(f"unknown keys: {_comma(unknown)}, expected: {_comma(typ.tProperties)}", val)
 
     return gws.Data(res)
 
@@ -228,7 +236,7 @@ def _read_property(r: Reader, val, typ: core.Type):
         return r.read2(val, typ.tValue)
 
     if not typ.hasDefault:
-        raise core.ReadError('ERR_MISSING_PROP', f"required property missing: {typ.ident!r}", None)
+        raise core.ReadError(f"required property missing: {typ.ident!r}", None)
 
     if typ.default is None:
         return None
@@ -246,7 +254,7 @@ def _read_variant(r: Reader, val, typ: core.Type):
     type_name = val.get('type', core.DEFAULT_TYPE)
     target_type_uid = typ.tMembers.get(type_name)
     if not target_type_uid:
-        raise core.ReadError('ERR_BAD_TYPE', f"illegal type: {type_name!r}, expected: {_comma(typ.tMembers)}", val)
+        raise core.ReadError(f"illegal type: {type_name!r}, expected: {_comma(typ.tMembers)}", val)
     return r.read2(val, target_type_uid)
 
 
@@ -255,7 +263,7 @@ def _read_variant(r: Reader, val, typ: core.Type):
 def _read_acl(r: Reader, val, typ: core.Type):
     v = _read_acl2(val)
     if v is None:
-        raise core.ReadError('ERR_INVALID_ACL', f'invalid ACL: {val!r}', val)
+        raise core.ReadError(f'invalid ACL: {val!r}', val)
     return v
 
 
@@ -298,7 +306,7 @@ def _read_color(r: Reader, val, typ: core.Type):
 def _read_crs(r: Reader, val, typ: core.Type):
     crs = gws.gis.crs.get(val)
     if not crs:
-        raise core.ReadError('ERR_INVALID_CRS', f'invalid crs: {val!r}', val)
+        raise core.ReadError(f'invalid crs: {val!r}', val)
     return crs.srid
 
 
@@ -306,7 +314,7 @@ def _read_date(r: Reader, val, typ: core.Type):
     try:
         d = gws.lib.date.from_iso(str(val))
     except ValueError:
-        raise core.ReadError('ERR_INVALID_DATE', f'invalid date: {val!r}', val)
+        raise core.ReadError(f'invalid date: {val!r}', val)
     return gws.lib.date.to_iso_date(d)
 
 
@@ -314,14 +322,14 @@ def _read_datetime(r: Reader, val, typ: core.Type):
     try:
         d = gws.lib.date.from_iso(str(val))
     except ValueError:
-        raise core.ReadError('ERR_INVALID_DATE', f'invalid date: {val!r}', val)
+        raise core.ReadError(f'invalid date: {val!r}', val)
     return gws.lib.date.to_iso(d)
 
 
 def _read_dirpath(r: Reader, val, typ: core.Type):
     path = gws.lib.os2.abs_path(val, r.path)
     if not gws.is_dir(path):
-        raise core.ReadError('ERR_DIR_NOT_FOUND', f'directory not found: {path!r}', path)
+        raise core.ReadError(f'directory not found: {path!r}', path)
     return path
 
 
@@ -329,13 +337,13 @@ def _read_duration(r: Reader, val, typ: core.Type):
     try:
         return gws.lib.units.parse_duration(val)
     except ValueError:
-        raise core.ReadError('ERR_BAD_DURATION', f'invalid duration: {val!r}', val)
+        raise core.ReadError(f'invalid duration: {val!r}', val)
 
 
 def _read_filepath(r: Reader, val, typ: core.Type):
     path = gws.lib.os2.abs_path(val, r.path)
     if not gws.is_file(path):
-        raise core.ReadError('ERR_FILE_NOT_FOUND', f'file not found: {path!r}', path)
+        raise core.ReadError(f'file not found: {path!r}', path)
     return path
 
 
@@ -349,14 +357,14 @@ def _read_regex(r: Reader, val, typ: core.Type):
         re.compile(val)
         return val
     except re.error as e:
-        raise core.ReadError('ERR_BAD_REGEX', f'invalid regular expression: {val!r}: {e!r}', val)
+        raise core.ReadError(f'invalid regular expression: {val!r}: {e!r}', val)
 
 
 def _read_url(r: Reader, val, typ: core.Type):
     u = _read_str(r, val, typ)
     if u.startswith(('http://', 'https://')):
         return u
-    raise core.ReadError('ERR_INVALID_URL', f'invalid url: {val!r}', val)
+    raise core.ReadError(f'invalid url: {val!r}', val)
 
 
 # utils
@@ -369,7 +377,7 @@ def _ensure(val, cls):
         return list(val)
     if cls == dict and gws.is_data_object(val):
         return vars(val)
-    raise core.ReadError('ERR_WRONG_TYPE', f"wrong type: {_classname(type(val))!r}, expected: {_classname(cls)!r}", val)
+    raise core.ReadError(f"wrong type: {_classname(type(val))!r}, expected: {_classname(cls)!r}", val)
 
 
 def _to_string(x):
@@ -396,20 +404,20 @@ def _comma(ls):
 
 def _format_error_value(exc):
     try:
-        val = exc.args[2]
+        val = exc.args[1]
     except (AttributeError, IndexError):
         return ''
 
     s = repr(val)
     if len(s) > 600:
         s = s[:600] + '...'
-    return 'VALUE: ' + s
+    return s
 
 
 def _format_error_stack(stack):
     f = []
 
-    for val, name in stack:
+    for val, name in reversed(stack):
         name = repr(name)
         line = 'item ' + name if name.isdigit() else name
         for p in 'uid', 'title', 'type':
@@ -422,7 +430,7 @@ def _format_error_stack(stack):
                 pass
         f.append('in ' + line)
 
-    return '\n'.join(f)
+    return f
 
 
 # 
@@ -434,6 +442,9 @@ _READERS = {
     'float': _read_float,
     'int': _read_int,
     'str': _read_str,
+
+    'list': _read_raw_list,
+    'dict': _read_raw_dict,
 
     core.C.CLASS: _read_object,
     core.C.DICT: _read_dict,
@@ -452,7 +463,7 @@ _READERS = {
 
     'gws.core.types.ACL': _read_acl,
     'gws.core.types.Color': _read_color,
-    'gws.core.types.CRS': _read_crs,
+    'gws.core.types.CrsName': _read_crs,
     'gws.core.types.Date': _read_date,
     'gws.core.types.DateTime': _read_datetime,
     'gws.core.types.DirPath': _read_dirpath,
