@@ -13,17 +13,17 @@ from .. import parseutil as u
 
 
 class Caps(core.Caps):
-    tile_matrix_sets: t.List[gws.TileMatrixSet]
+    tileMatrixSets: t.List[gws.TileMatrixSet]
 
 
 def parse(xml):
     caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
-    tile_matrix_sets = [_tile_matrix_set(el) for el in caps_el.findall('Contents/TileMatrixSet')]
-    tms_map = {tms.uid: tms for tms in tile_matrix_sets}
+    tileMatrixSets = [_tile_matrix_set(el) for el in caps_el.findall('Contents/TileMatrixSet')]
+    tms_map = {tms.uid: tms for tms in tileMatrixSets}
     source_layers = gws.gis.source.check_layers(
         _layer(el, tms_map) for el in caps_el.findall('Contents/Layer'))
     return Caps(
-        tile_matrix_sets=tile_matrix_sets,
+        tileMatrixSets=tileMatrixSets,
         metadata=u.service_metadata(caps_el),
         operations=u.service_operations(caps_el),
         source_layers=source_layers,
@@ -45,22 +45,22 @@ def _layer(layer_el: gws.IXmlElement, tms_map):
     sl.title = sl.metadata.get('title', '')
 
     sl.styles = [u.parse_style(e) for e in layer_el.findall('Style')]
-    sl.default_style = u.default_style(sl.styles)
-    if sl.default_style:
-        sl.legend_url = sl.default_style.legend_url
+    sl.defaultStyle = u.defaultStyle(sl.styles)
+    if sl.defaultStyle:
+        sl.legendUrl = sl.defaultStyle.legendUrl
 
-    sl.tile_matrix_ids = [el.text_of('TileMatrixSet') for el in layer_el.findall('TileMatrixSetLink')]
-    sl.tile_matrix_sets = [tms_map[tid] for tid in sl.tile_matrix_ids]
+    sl.tileMatrixIds = [el.text_of('TileMatrixSet') for el in layer_el.findall('TileMatrixSetLink')]
+    sl.tileMatrixSets = [tms_map[tid] for tid in sl.tileMatrixIds]
 
-    extra_crsids = [tms.crs.srid for tms in sl.tile_matrix_sets]
+    extra_crsids = [tms.crs.srid for tms in sl.tileMatrixSets]
     sl.supported_bounds = u.supported_bounds(layer_el, extra_crsids)
 
-    sl.is_image = True
-    sl.is_visible = True
+    sl.isImage = True
+    sl.isVisible = True
 
-    sl.image_format = layer_el.text_of('Format')
+    sl.imageFormat = layer_el.text_of('Format')
 
-    sl.resource_urls = {
+    sl.resourceUrls = {
         e.get('resourceType'): e.get('template')
         for e in layer_el.findall('ResourceURL')
     }

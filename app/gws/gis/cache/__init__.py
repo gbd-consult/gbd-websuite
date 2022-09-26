@@ -220,7 +220,7 @@ def _remove_dir(dirname):
 #             print('no cached layers found')
 #             return
 #
-#         for la_uid, info in sorted(st.items()):
+#         for laUid, info in sorted(st.items()):
 #             print()
 #             print(f"CACHE  : {info['cache_uid']}")
 #             print(f"CONFIG : {repr(info['config'])}")

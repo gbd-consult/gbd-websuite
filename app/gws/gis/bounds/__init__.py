@@ -30,7 +30,7 @@ def from_request_bbox(bbox: str, target_crs: gws.ICrs = None, invert_axis_if_geo
     if source_crs.is_geographic and invert_axis_if_geographic:
         ext = gws.gis.extent.from_inverted_str_list(ls)
     else:
-        ext = gws.gis.extent.from_str_list(ls)
+        ext = gws.gis.extent.from_list(ls)
     if not ext:
         return None
 
@@ -48,10 +48,27 @@ def from_gml_envelope_element(el: gws.IXmlElement, fallback_crs: gws.ICrs = None
     return gws.gis.gml.parse_envelope(el, fallback_crs)
 
 
-def transformed_to(b: gws.Bounds, target_crs: gws.ICrs) -> gws.Bounds:
-    if b.crs == target_crs:
+def copy(b: gws.Bounds) -> gws.Bounds:
+    return gws.Bounds(crs=b.crs, extent=b.extent)
+
+
+def union(bs: t.List[gws.Bounds]) -> gws.Bounds:
+    crs = bs[0].crs
+    exts = [gws.gis.extent.transform(b.extent, b.crs, crs) for b in bs]
+    return gws.Bounds(
+        crs=crs,
+        extent=gws.gis.extent.union(exts))
+
+
+def transform(b: gws.Bounds, crs_to: gws.ICrs) -> gws.Bounds:
+    if b.crs == crs_to:
         return b
 
     return gws.Bounds(
-        crs=target_crs,
-        extent=b.crs.transform_extent(b.extent, target_crs))
+        crs=crs_to,
+        extent=b.crs.transform_extent(b.extent, crs_to))
+
+
+def wgs_extent(b: gws.Bounds) -> gws.Extent:
+    return b.crs.transform_extent(b.extent, gws.gis.crs.WGS84)
+

@@ -17,7 +17,7 @@ import gws.types as t
 def shape_to_element(
     shape: gws.IShape,
     precision=0,
-    axis: gws.Axis = gws.AXIS_XY,
+    axis: gws.Axis = gws.Axis.XY,
     crs_format: gws.CrsFormat = gws.CrsFormat.URN,
     with_ns='gml'
 ) -> gws.IXmlElement:
@@ -72,7 +72,7 @@ def _tag(geom, opts):
 def _pos(geom, opts, as_list=True):
     cs = []
 
-    if opts.axis == gws.AXIS_XY:
+    if opts.axis == gws.Axis.XY:
         for x, y in geom.coords:
             cs.append(x)
             cs.append(y)

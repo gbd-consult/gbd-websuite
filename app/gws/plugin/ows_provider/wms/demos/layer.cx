@@ -1,0 +1,18 @@
+projects+ {
+    title "WMS layer"
+    metadata.abstract "`wms` layers display WMS layers as WebSuite layers."
+
+    map {
+        center {DEMO_DRESDEN_3857}
+        zoom.initScale 70000
+        zoom.maxScale 1000000
+    }
+
+    map.layers+ {
+        title "Sachsenforst: Waldfunktionen"
+        type "wms"
+        url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
+    }
+
+    @demo_osm_background
+}

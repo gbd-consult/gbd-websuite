@@ -14,12 +14,12 @@ class Config(core.ProviderConfig):
 class Object(core.Provider):
     protocol = gws.OwsProtocol.WMTS
 
-    tile_matrix_sets: t.List[gws.TileMatrixSet]
+    tileMatrixSets: t.List[gws.TileMatrixSet]
 
     def configure(self):
         cc = caps.parse(self.get_capabilities())
 
-        self.tile_matrix_sets = cc.tile_matrix_sets
+        self.tileMatrixSets = cc.tileMatrixSets
         self.metadata = cc.metadata
         self.operations = cc.operations
         self.version = cc.version

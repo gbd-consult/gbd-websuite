@@ -1,0 +1,22 @@
+projects+ {
+    title "WMS flat layer, tiled display"
+    metadata.abstract "Tiled display of a WMS."
+
+    map {
+        center {DEMO_DUESSELDORF_3857}
+        zoom.initScale 8000
+        zoom.maxScale 15000
+    }
+
+    map.layers+ {
+        title "NRW Straßenflächen"
+        type "wmsflat"
+        url "https://www.wms.nrw.de/geobasis/wms_nw_inspire-verkehrsnetze_alkis"
+
+        sourceLayers.names [ "TN.RoadTransportNetwork.RoadArea" ]
+
+        display "tile"
+    }
+
+    @demo_osm_background
+}

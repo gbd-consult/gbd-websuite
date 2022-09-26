@@ -80,15 +80,12 @@ def from_xy(x, y, crs: gws.ICrs) -> gws.IShape:
     return Shape(shapely.geometry.Point(x, y), crs)
 
 
-def union(shapes: t.List[gws.IShape]) -> gws.IShape:
-    if not shapes:
-        raise gws.Error('empty shape union')
+def union(shape: gws.IShape, *others: gws.IShape) -> gws.IShape:
+    if not others:
+        return shape
 
-    if len(shapes) == 1:
-        return shapes[0]
-
-    crs = shapes[0].crs
-    shapes = [s.transformed_to(crs) for s in shapes]
+    crs = shape.crs
+    shapes = [shape] + [s.transformed_to(crs) for s in others]
     geom = shapely.ops.unary_union([getattr(s, 'geom') for s in shapes])
 
     return Shape(geom, crs)
@@ -102,20 +99,19 @@ class Props(gws.Props):
     geometry: dict
 
 
-class Shape(gws.Object, gws.IShape):
+class Shape(gws.IShape):
     def __init__(self, geom, crs):
-        super().__init__()
         self.geom: shapely.geometry.base.BaseGeometry = geom  # type: ignore
         self.crs = crs
-
-    @property
-    def geometry_type(self) -> gws.GeometryType:
-        return self.geom.type.upper()
 
     def props(self, user):
         return gws.Data(
             crs=self.crs.epsg,
             geometry=shapely.geometry.mapping(self.geom))
+
+    @property
+    def type(self) -> gws.GeometryType:
+        return self.geom.type.upper()
 
     @property
     def wkb(self) -> bytes:
@@ -218,7 +214,9 @@ class Shape(gws.Object, gws.IShape):
     def to_geojson(self):
         return shapely.geometry.mapping(self.geom)
 
-    def transformed_to(self, target):
-        sg = shapely.geometry.mapping(self.geom)
-        dg = self.crs.transform_geometry(sg, target)
-        return Shape(shapely.geometry.shape(dg), target)
+    def transformed_to(self, target_crs):
+        if target_crs == self.crs:
+            return self
+        tr = self.crs.transformer(target_crs)
+        dg = shapely.ops.transform(tr, self.geom)
+        return Shape(dg, target_crs)

@@ -4,32 +4,39 @@ import gws
 import gws.base.layer
 import gws.types as t
 
-from . import provider as provider_module
+from . import provider
 
 
 @gws.ext.config.layer('wms')
-class Config(gws.base.layer.image.Config, provider_module.Config, gws.base.layer.group.TreeConfig):
+class Config(gws.base.layer.Config, gws.base.layer.tree.Config, provider.Config):
     pass
 
 
 @gws.ext.object.layer('wms')
-class Object(gws.base.layer.group.Object):
-    provider: provider_module.Object
+class Object(gws.base.layer.Object):
+    provider: provider.Object
 
-    def configure_source(self):
-        self.provider = self.create_child(provider_module.Object, self.config, shared=True)
+    def configure(self):
+        self.provider = self.root.create_shared(provider.Object, self.config)
 
-        def leaf(source_layers):
+        def leaf_layer_maker(source_layers):
             return {
                 'type': 'wmsflat',
+                'url': self.provider.url,
                 '_provider': self.provider,
-                '_source_layers': source_layers,
+                '_sourceLayers': source_layers,
             }
-        self.configure_layer_tree(self.provider.source_layers, leaf)
 
-        return True
+        configs = gws.base.layer.tree.layer_configs_from_layer(
+            self,
+            self.provider.sourceLayers,
+            leaf_layer_maker,
+        )
 
-    def configure_metadata(self):
-        if not super().configure_metadata():
+        gws.base.layer.configure.group(self, configs)
+
+        if not gws.base.layer.configure.metadata(self):
             self.set_metadata(self.provider.metadata)
-            return True
+
+    def props(self, user):
+        return gws.merge(super().props(user), type='group')

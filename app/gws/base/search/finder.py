@@ -5,9 +5,6 @@ import gws.base.shape
 import gws.lib.units
 import gws.types as t
 
-from . import collection
-
-
 _DEFAULT_PIXEL_TOLERANCE = 10
 
 
@@ -28,7 +25,12 @@ class Config(gws.ConfigWithAccess):
 
 
 class Object(gws.Node, gws.IFinder):
-    spatial_context: SpatialContext
+    spatialContext: SpatialContext
+    title: str
+
+    supportsFilter = False
+    supportsGeometry = False
+    supportsKeyword = False
 
     def configure(self):
         # self.data_model = self.root.create_optional(gws.base.model.Object, self.var('dataModel'))
@@ -38,33 +40,33 @@ class Object(gws.Node, gws.IFinder):
         if p:
             self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(items=p))
 
+        self.tolerance = _DEFAULT_PIXEL_TOLERANCE, gws.lib.units.PX
         p = self.var('tolerance')
-        self.tolerance = (
-            gws.lib.units.parse(p, default=gws.lib.units.PX) if p
-            else (_DEFAULT_PIXEL_TOLERANCE, gws.lib.units.PX))
+        if p:
+            self.tolerance = gws.lib.units.parse(p, default=gws.lib.units.PX)
 
-        self.with_keyword = self.var('withKeyword', default=True)
-        self.with_geometry = self.var('withGeometry', default=True)
-        self.with_filter = self.var('withFilter', default=True)
+        self.withKeyword = self.supportsKeyword and self.var('withKeyword', default=True)
+        self.withGeometry = self.supportsGeometry and self.var('withGeometry', default=True)
+        self.withFilter = self.supportsFilter and self.var('withFilter', default=True)
 
-        self.spatial_context = self.var('defaultContext', default=SpatialContext.map)
+        self.spatialContext = self.var('defaultContext', default=SpatialContext.map)
         self.title = self.var('title', default='')
 
     def can_run(self, args: gws.SearchArgs):
         has_param = False
 
         if args.keyword:
-            if not self.supports_keyword or not self.with_keyword:
+            if not self.withKeyword:
                 return False
             has_param = True
 
         if args.shapes:
-            if not self.supports_geometry or not self.with_geometry:
+            if not self.withGeometry:
                 return False
             has_param = True
 
         if args.filter:
-            if not self.supports_filter or not self.with_filter:
+            if not self.withFilter:
                 return False
             has_param = True
 
@@ -73,7 +75,7 @@ class Object(gws.Node, gws.IFinder):
     def context_shape(self, args: gws.SearchArgs) -> gws.IShape:
         if args.shapes:
             return gws.base.shape.union(args.shapes)
-        if self.spatial_context == SpatialContext.view and args.bounds:
+        if self.spatialContext == SpatialContext.view and args.bounds:
             return gws.base.shape.from_bounds(args.bounds)
         if args.project:
-            return gws.base.shape.from_bounds(args.project.map.bounds)
+            return gws.base.shape.from_bounds(args.project.map.bounds())

@@ -26,11 +26,11 @@ _number = t.Union[int, float]
 
 
 def scale_to_res(x: _number) -> float:
-    return x * OGC_M_PER_PX
+    return round(x * OGC_M_PER_PX, 4)
 
 
-def res_to_scale(x: _number) -> float:
-    return x / OGC_M_PER_PX
+def res_to_scale(x: _number) -> int:
+    return int(x / OGC_M_PER_PX)
 
 
 # @TODO imperial units not used yet

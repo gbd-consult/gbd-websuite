@@ -18,11 +18,11 @@ def main(ARGS):
                 'Style',
                 ('ows:Identifier', 'default'),
                 ('ows:Title', 'default'),
-                tpl.legend_url(ARGS, lc))
+                tpl.legendUrl(ARGS, lc))
 
         yield 'Format', 'image/png'
 
-        for tms in ARGS.tile_matrix_sets:
+        for tms in ARGS.tileMatrixSets:
             yield 'TileMatrixSetLink TileMatrixSet', tms.uid
 
     def matrix_set(tms):
@@ -44,7 +44,7 @@ def main(ARGS):
     def contents():
         for lc in ARGS.layer_caps_list:
             yield 'Layer', layer(lc)
-        for tms in ARGS.tile_matrix_sets:
+        for tms in ARGS.tileMatrixSets:
             yield 'TileMatrixSet', matrix_set(tms)
 
     def doc():

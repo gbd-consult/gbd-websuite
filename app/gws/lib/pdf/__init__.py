@@ -6,10 +6,10 @@ import gws.lib.os2
 import gws.types as t
 
 
-def overlay(a_path, b_path, out_path):
+def overlay(aPath, b_path, out_path):
     """Overlay two pdfs page-wise."""
 
-    fa = open(a_path, 'rb')
+    fa = open(aPath, 'rb')
     fb = open(b_path, 'rb')
 
     ra = PyPDF2.PdfFileReader(fa)

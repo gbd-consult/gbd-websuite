@@ -1,6 +1,9 @@
+import time
+
 import gws
 import gws.config
 import gws.lib.net
+
 import gws.types as t
 
 
@@ -8,27 +11,43 @@ class ServiceException(Exception):
     pass
 
 
-_base_url = None
-
-
 def _call(service, params):
-    global _base_url
+    url = getattr(gws.config.root().app, 'mpx_url') + '/' + service
+    resp = gws.lib.net.http_request(url, params=params)
+    if resp.content_type.startswith('image'):
+        return resp.content
+    raise ServiceException(resp.text)
 
-    if not _base_url:
-        _base_url = gws.config.root().app.mpx_url
 
-    try:
-        resp = gws.lib.net.http_request(_base_url + '/' + service, params=params)
-        if resp.content_type.startswith('image'):
-            return resp.content
-        raise ServiceException(resp.text)
-    except Exception:
-        gws.log.exception()
-        return
+_retry_count = 3
+_retry_pause = 5
+_request_number = 0
+
+
+def _call_with_retry(service, params):
+    global _request_number
+
+    _request_number += 1
+    rc = 0
+
+    while True:
+        try:
+            return _call(service, params)
+        except Exception as exc:
+            gws.log.exception()
+            err = repr(exc)
+
+        if rc >= _retry_count:
+            gws.log.error(f'MAPPROXY_ERROR: {_request_number}/{rc} FAILED error={err} {params!r}')
+            return
+
+        gws.log.error(f'MAPPROXY_ERROR: {_request_number}/{rc} retry error={err}')
+        time.sleep(_retry_pause)
+        rc += 1
 
 
 def wms_request(layer_uid, bounds: gws.Bounds, width, height, forward=None):
-    args = {
+    params = {
         'bbox': bounds.extent,
         'width': width,
         'height': height,
@@ -42,12 +61,12 @@ def wms_request(layer_uid, bounds: gws.Bounds, width, height, forward=None):
         'layers': layer_uid
     }
     if forward:
-        args.update(forward)
-    return _call('wms', args)
+        params.update(forward)
+    return _call_with_retry('wms', params)
 
 
 def wmts_request(source_uid, x, y, z, tile_matrix, tile_size):
-    args = {
+    params = {
         'tilecol': x,
         'tilerow': y,
         'tilematrix': z,
@@ -59,4 +78,4 @@ def wmts_request(source_uid, x, y, z, tile_matrix, tile_size):
         'style': 'default',
         'layer': source_uid
     }
-    return _call('ows', args)
+    return _call_with_retry('ows', params)

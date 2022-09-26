@@ -19,19 +19,19 @@ class Config(gws.base.action.Config):
     limit: int = 1000  #: search results limit
 
 
-class Response(gws.Response):
-    features: t.List[gws.base.feature.Props]
-
-
-class Params(gws.Request):
+class Request(gws.Request):
     bbox: t.Optional[gws.Extent]
-    crs: t.Optional[gws.CRS]
+    crs: t.Optional[gws.CrsName]
     keyword: str = ''
     layerUids: t.List[str]
     limit: t.Optional[int]
-    tolerance: t.Optional[str]
     resolution: float
     shapes: t.Optional[t.List[gws.base.shape.Props]]
+    tolerance: t.Optional[str]
+
+
+class Response(gws.Response):
+    features: t.List[gws.base.feature.Props]
 
 
 @gws.ext.object.action('search')
@@ -42,7 +42,7 @@ class Object(gws.base.action.Object):
         self.limit = self.var('limit')
 
     @gws.ext.command.api('searchFind')
-    def find_features(self, req: gws.IWebRequester, p: Params) -> Response:
+    def find(self, req: gws.IWebRequester, p: Request) -> Response:
         """Perform a search"""
 
         project = req.require_project(p.projectUid)
@@ -62,12 +62,16 @@ class Object(gws.base.action.Object):
 
         tolerance = None
         if p.tolerance:
-            tolerance = gws.lib.units.parse(p.tolerance, default=gws.lib.units.PX)
+            tolerance = gws.lib.units.parse(p.tolerance, default=gws.UOM.PX)
+
+        layers = []
+        if p.layerUids:
+            layers = gws.compact(req.acquire(gws.ext.object.layer, uid) for uid in p.layerUids)
 
         args = gws.SearchArgs(
             bounds=bounds,
             keyword=(p.keyword or '').strip(),
-            layers=gws.compact(req.acquire('gws.ext.layer', uid) for uid in p.layerUids),
+            layers=layers,
             limit=limit,
             project=project,
             resolution=p.resolution,
@@ -81,6 +85,6 @@ class Object(gws.base.action.Object):
             # @TODO only pull specified props from a feature
             f.transform_to(args.bounds.crs)
             f.apply_templates()
-            f.apply_data_model()
+            # f.apply_data_model()
 
         return Response(features=[gws.props(f, req.user, context=self) for f in found])

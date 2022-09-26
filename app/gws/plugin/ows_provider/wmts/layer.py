@@ -40,8 +40,8 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             raise gws.Error(f'no suitable tile matrix set found for layer={self.uid!r}')
 
         self.style_name = ''
-        if self.source_layer.default_style:
-            self.style_name = self.source_layer.default_style.name
+        if self.source_layer.defaultStyle:
+            self.style_name = self.source_layer.defaultStyle.name
 
         self.grid.reqSize = self.grid.reqSize or 1
 
@@ -58,10 +58,10 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
 
     def configure_legend(self):
         if not super().configure_legend():
-            if self.source_layer.legend_url:
+            if self.source_layer.legendUrl:
                 self.legend = gws.Legend(
                     enabled=True,
-                    urls=[self.source_layer.legend_url],
+                    urls=[self.source_layer.legendUrl],
                     cache_max_age=self.var('legend.cacheMaxAge', default=0),
                     options=self.var('legend.options', default={}))
                 return True
@@ -89,12 +89,12 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         self.mapproxy_layer_config(mc, src)
 
     def get_tile_matrix_set_for_crs(self, crs):
-        for tms in self.source_layer.tile_matrix_sets:
+        for tms in self.source_layer.tileMatrixSets:
             if tms.crs == crs:
                 return tms
 
     def get_tile_url(self):
-        resource_url = gws.get(self.source_layer, 'resource_urls.tile')
+        resource_url = gws.get(self.source_layer, 'resourceUrls.tile')
 
         if resource_url:
             return (resource_url
@@ -111,7 +111,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             'REQUEST': 'GetTile',
             'VERSION': self.provider.version,
             'LAYER': self.source_layer.name,
-            'FORMAT': self.source_layer.image_format or 'image/jpeg',
+            'FORMAT': self.source_layer.imageFormat or 'image/jpeg',
             'TILEMATRIXSET': self.tile_matrix_set.uid,
             'TILEMATRIX': '%(z)02d',
             'TILECOL': '%(x)d',

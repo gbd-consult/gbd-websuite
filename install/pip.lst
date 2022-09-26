@@ -1,12 +1,10 @@
 argh
 Babel
 beautifulsoup4
-Fiona
 GeoAlchemy2
 lxml
 Mako
 MapProxy
-OWSLib
 Pillow
 psutil
 psycopg2-binary

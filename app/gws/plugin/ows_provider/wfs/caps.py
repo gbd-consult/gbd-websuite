@@ -26,7 +26,7 @@ def _feature_type(type_el):
     sl.name = type_el.text_of('Name')
     sl.title = xmlx.namespace.unqualify(sl.name)
     sl.metadata = u.element_metadata(type_el)
-    sl.is_queryable = True
+    sl.isQueryable = True
     sl.supported_bounds = u.supported_bounds(type_el)
 
     return sl

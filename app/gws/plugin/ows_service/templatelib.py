@@ -9,8 +9,8 @@ import gws.lib.xmlx as xmlx
 def ows_wgs84_bounding_box(lc):
     return (
         'ows:WGS84BoundingBox',
-        ('ows:LowerCorner', lc.extent4326[0], ' ', lc.extent4326[1]),
-        ('ows:UpperCorner', lc.extent4326[2], ' ', lc.extent4326[3]))
+        ('ows:LowerCorner', lc.wgsExtent[0], ' ', lc.wgsExtent[1]),
+        ('ows:UpperCorner', lc.wgsExtent[2], ' ', lc.wgsExtent[3]))
 
 
 # OGC 06-121r3 sec 7.4.4
@@ -90,7 +90,7 @@ def dcp_service_url(ARGS):
     return 'DCPType HTTP Get', online_resource(ARGS.service_url + '?')
 
 
-def legend_url(ARGS, layer_caps):
+def legendUrl(ARGS, layer_caps):
     _, name = xmlx.split_name(layer_caps.layer_qname)
     return (
         'LegendURL',
@@ -127,8 +127,8 @@ def lon_lat_envelope(lc):
     return (
         'lonLatEnvelope',
         {'srsName': 'urn:ogc:def:crs:OGC:1.3:CRS84'},
-        ('gml:pos', lc.extent4326[0], ' ', lc.extent4326[1]),
-        ('gml:pos', lc.extent4326[2], ' ', lc.extent4326[3]))
+        ('gml:pos', lc.wgsExtent[0], ' ', lc.wgsExtent[1]),
+        ('gml:pos', lc.wgsExtent[2], ' ', lc.wgsExtent[3]))
 
 
 # http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd

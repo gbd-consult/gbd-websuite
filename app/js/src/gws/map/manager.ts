@@ -527,7 +527,7 @@ export class MapManager implements types.IMapManager {
         this.computeOpacities();
     }
 
-    protected initLayer(props: api.base.layer.main.Props, parent = null): types.IMapLayer {
+    protected initLayer(props: api.base.layer.Props, parent = null): types.IMapLayer {
         let cls = layerTypes[props.type];
         if (!cls)
             throw new Error('unknown layer type: ' + props.type);
@@ -761,7 +761,7 @@ export class MapManager implements types.IMapManager {
     async searchForFeatures(args) {
 
         let ls = this.searchLayers();
-        let params: api.base.search.action.Params = {
+        let params: api.base.search.action.Request = {
             bbox: this.bbox,
             keyword: args.keyword || '',
             layerUids: lib.compact(ls.map(la => la.uid)),

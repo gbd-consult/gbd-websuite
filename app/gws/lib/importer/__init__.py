@@ -7,11 +7,18 @@ import importlib
 import gws
 
 
+class Error(gws.Error):
+    pass
+
+
 def import_from_path(path, base_dir=gws.APP_DIR):
     in_path, root, mod = _find_import_root_and_module_name(path, base_dir)
     if not in_path:
         sys.path.insert(0, root)
-    return importlib.import_module(mod)
+    try:
+        return importlib.import_module(mod)
+    except Exception as exc:
+        raise Error(f'import of {mod!r} failed') from exc
 
 
 def _find_import_root_and_module_name(path, base_dir):
@@ -24,7 +31,7 @@ def _find_import_root_and_module_name(path, base_dir):
     if os.path.isdir(path):
         path += '/' + init
     if not os.path.isfile(path):
-        raise ValueError(f'import_from_path: {path!r}: not found')
+        raise Error(f'import_from_path: {path!r}: not found')
 
     dirname, filename = os.path.split(path)
     lastmod = [] if filename == init else [filename.split('.')[0]]
@@ -45,4 +52,4 @@ def _find_import_root_and_module_name(path, base_dir):
         if not os.path.isfile(root + '/' + init):
             return False, root, '.'.join(dirs[n:] + lastmod)
 
-    raise ValueError(f'import_from_path: {path!r}: cannot be imported')
+    raise Error(f'import_from_path: {path!r}: cannot be imported')

@@ -181,20 +181,20 @@ def _map_layer(layer_el: gws.IXmlElement):
         a = _parse_float(layer_el.attributes.get('maxScale'))
         z = _parse_float(layer_el.attributes.get('minScale'))
         if z > a:
-            sl.scale_range = [a, z]
+            sl.scaleRange = [a, z]
 
     prov = xmlx.text(layer_el, 'provider').lower()
     ds = _parse_datasource(prov, xmlx.text(layer_el, 'datasource'))
     if ds and 'provider' not in ds:
         ds['provider'] = prov
-    sl.data_source = ds
+    sl.dataSource = ds
 
     s = xmlx.text(layer_el, 'layerOpacity')
     if s:
         sl.opacity = _parse_float(s)
 
     s = xmlx.text(layer_el, 'flags Identifiable')
-    sl.is_queryable = s == '1'
+    sl.isQueryable = s == '1'
 
     return sl
 
@@ -241,11 +241,11 @@ def _map_layer_tree(el: gws.IXmlElement, map_layers):
         sl = gws.SourceLayer(title=title, name=name)
         sl.metadata = gws.lib.metadata.from_args(title=title, name=name)
 
-        sl.is_visible = visible
-        sl.is_expanded = expanded
-        sl.is_group = True
-        sl.is_queryable = False
-        sl.is_image = False
+        sl.isVisible = visible
+        sl.isExpanded = expanded
+        sl.isGroup = True
+        sl.isQueryable = False
+        sl.isImage = False
 
         sl.layers = gws.compact(_map_layer_tree(c, map_layers) for c in el.children)
         return sl
@@ -253,10 +253,10 @@ def _map_layer_tree(el: gws.IXmlElement, map_layers):
     if el.name == 'layer-tree-layer':
         sl = map_layers.get(el.attributes.get('id'))
         if sl:
-            sl.is_visible = visible
-            sl.is_expanded = expanded
-            sl.is_group = False
-            sl.is_image = True
+            sl.isVisible = visible
+            sl.isExpanded = expanded
+            sl.isGroup = False
+            sl.isImage = True
             return sl
 
 

@@ -3,12 +3,12 @@ import gws.gis.extent
 import gws.lib.image
 import gws.gis.mpx as mpx
 
-from . import lib, main
+from . import lib, base
 
 
 
 
-class Object(main.Object):
+class Object(core.Object):
     """Base image layer"""
 
     canRenderBox = True

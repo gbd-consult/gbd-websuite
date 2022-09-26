@@ -5,7 +5,7 @@ import gws.types as t
 class Config(gws.Config):
     """Data model"""
 
-    crs: t.Optional[gws.CRS]  #: CRS for this model
+    crs: t.Optional[gws.CrsName]  #: CRS for this model
     geometryType: t.Optional[gws.GeometryType]  #: specific geometry type
 
 

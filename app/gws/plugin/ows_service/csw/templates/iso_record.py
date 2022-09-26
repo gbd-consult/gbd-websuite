@@ -128,8 +128,8 @@ def record(ARGS, md):
         if md.isoTopicCategory:
             yield 'gmd:topicCategory gmd:MD_TopicCategoryCode', md.isoTopicCategory
 
-        if md.extent4326:
-            yield 'gmd:extent gmd:EX_Extent gmd:geographicElement', BOUNDING_BOX(md.extent4326)
+        if md.wgsExtent:
+            yield 'gmd:extent gmd:EX_Extent gmd:geographicElement', BOUNDING_BOX(md.wgsExtent)
 
         if md.bounding_polygon_element:
             yield (

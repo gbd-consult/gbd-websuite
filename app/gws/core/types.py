@@ -31,14 +31,42 @@ Point = Tuple[float, float]
 """type: Size [width, height]."""
 Size = Tuple[float, float]
 
+
+class UOM(Enum):
+    MI = 'mi'  # Statute mile 9093
+    US_CH = 'us-ch'  # US survey chain 9033
+    US_FT = 'us-ft'  # US survey foot 9003
+    US_IN = 'us-in'  # US survey inch US_IN
+    US_MI = 'us-mi'  # US survey mile 9035
+    US_YD = 'us-yd'  # US survey yard US_YD
+    CM = 'cm'  # centimetre 1033
+    CH = 'ch'  # chain 9097
+    DM = 'dm'  # decimeter DM
+    DEG = 'deg'  # degree 9102
+    FATH = 'fath'  # fathom 9014
+    FT = 'ft'  # foot 9002
+    GRAD = 'grad'  # grad 9105
+    IN = 'in'  # inch IN
+    KM = 'km'  # kilometre 9036
+    LINK = 'link'  # link 9098
+    M = 'm'  # metre 9001
+    MM = 'mm'  # millimetre 1025
+    KMI = 'kmi'  # nautical mile 9030
+    RAD = 'rad'  # radian 9101
+    YD = 'yd'  # yard 9096
+
+    PX = 'px'  # pixel
+    PT = 'pt'  # point
+
+
 """type: A value with a unit."""
-Measurement = Tuple[float, str]
+Measurement = Tuple[float, UOM]
 
 """type: A Point with a unit."""
-MPoint = Tuple[float, float, str]
+MPoint = Tuple[float, float, UOM]
 
 """type: A Size with a unit."""
-MSize = Tuple[float, float, str]
+MSize = Tuple[float, float, UOM]
 
 """type: An XML generator tag."""
 Tag = tuple
@@ -161,7 +189,7 @@ class INode(IObject, Protocol):
 class IRoot(Protocol):
     app: 'IApplication'
     specs: 'ISpecRuntime'
-    configErrors: List[str]
+    configErrors: List[Any]
 
     def post_initialize(self): ...
 
@@ -259,9 +287,21 @@ class ContentResponse(Response):
     text: str
 
 
+class RequestMethod(Enum):
+    GET = 'GET'
+    HEAD = 'HEAD'
+    POST = 'POST'
+    PUT = 'PUT'
+    DELETE = 'DELETE'
+    CONNECT = 'CONNECT'
+    OPTIONS = 'OPTIONS'
+    TRACE = 'TRACE'
+    PATCH = 'PATCH'
+
+
 class IWebRequester(Protocol):
     environ: dict
-    method: str
+    method: RequestMethod
     root: 'IRoot'
     site: 'IWebSite'
     session: 'IAuthSession'
@@ -536,17 +576,13 @@ class IModel(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # CRS
 
-"""type: Axis orientation."""
-Axis = int
-
-AXIS_XY = 1
-AXIS_YX = 2
-
 """type: CRS code like "EPSG:3857" or a srid like 3857."""
-CRS = Union[str, int]
+CrsName = Union[str, int]
 
 
 class CrsFormat(Enum):
+    NONE = ''
+    CRS = 'CRS'
     SRID = 'SRID'
     EPSG = 'EPSG'
     URL = 'URL'
@@ -555,18 +591,24 @@ class CrsFormat(Enum):
     URN = 'URN'
 
 
+class Axis(Enum):
+    XY = 'XY'
+    YX = 'YX'
+
+
 class Bounds(Data):
     crs: 'ICrs'
     extent: Extent
 
 
-# noinspection PyPropertyDefinition
-class ICrs(IObject, Protocol):
+class ICrs(Protocol):
     srid: str
-    proj4text: int
-    units: str
-    is_geographic: bool
-    is_projected: bool
+    axis: Axis
+    uom: UOM
+    isGeographic: bool
+    isProjected: bool
+    proj4text: str
+    wkt: str
 
     epsg: str
     urn: str
@@ -574,11 +616,16 @@ class ICrs(IObject, Protocol):
     url: str
     uri: str
 
-    def transform_extent(self, extent: Extent, target: 'ICrs') -> Extent: ...
+    name: str
+    base: int
+    datum: str
 
-    def transform_geometry(self, geom: dict, target: 'ICrs') -> dict: ...
+    wgsExtent: Extent
+    extent: Extent
 
-    def to_string(self, fmt: CrsFormat) -> str: ...
+    def transform_extent(self, extent: Extent, crs_to: 'ICrs') -> Extent: ...
+
+    def transformer(self, crs_to: 'ICrs') -> Callable: ...
 
     def to_geojson(self) -> dict: ...
 
@@ -605,44 +652,52 @@ class TileMatrixSet(Data):
 
 
 class SourceStyle(Data):
-    is_default: bool
-    legend_url: Url
+    isDefault: bool
+    legendUrl: Url
     metadata: 'IMetadata'
     name: str
+
+
+class SourceBounds(Data):
+    crs: 'ICrs'
+    format: ICrs
+    extent: Extent
 
 
 class SourceLayer(Data):
-    a_level: int
-    a_path: str
-    a_uid: str
+    aLevel: int
+    aPath: str
+    aUid: str
 
-    data_source: dict
+    dataSource: dict
 
-    supported_bounds: List[Bounds]
+    supportedBounds: List[SourceBounds]
+    supportedCrs: List['ICrs']
+    wgsExtent: Extent
 
-    is_expanded: bool
-    is_group: bool
-    is_image: bool
-    is_queryable: bool
-    is_visible: bool
+    isExpanded: bool
+    isGroup: bool
+    isImage: bool
+    isQueryable: bool
+    isVisible: bool
 
     layers: List['SourceLayer']
 
-    metadata: 'IMetadata'
+    metadata: dict
     name: str
     title: str
 
-    legend_url: Url
+    legendUrl: Url
     opacity: int
-    scale_range: List[float]
+    scaleRange: List[float]
 
     styles: List[SourceStyle]
-    default_style: Optional[SourceStyle]
+    defaultStyle: Optional[SourceStyle]
 
-    tile_matrix_ids: List[str]
-    tile_matrix_sets: List[TileMatrixSet]
-    image_format: str
-    resource_urls: dict
+    tileMatrixIds: List[str]
+    tileMatrixSets: List[TileMatrixSet]
+    imageFormat: str
+    resourceUrls: dict
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -747,7 +802,7 @@ class IShape(IObject, Protocol):
     def extent(self) -> Extent: ...
 
     @property
-    def geometry_type(self) -> 'GeometryType': ...
+    def type(self) -> 'GeometryType': ...
 
     @property
     def wkb(self) -> bytes: ...
@@ -1181,8 +1236,8 @@ class MetadataValues(Data):
     metaLinks: List[MetadataLink]
     extraLinks: List[MetadataLink]
 
-    crs: 'ICrs'
-    extent4326: Extent
+    bounds: Bounds
+    wgsExtent: Extent
     boundingPolygonElement: IXmlElement
 
 
@@ -1225,6 +1280,8 @@ class SearchArgs(Data):
 class ISearchManager(INode, Protocol):
     finders: List['IFinder']
 
+    def add_finder(self, config: Config): ...
+
 
 class IFinder(INode, Protocol):
     supportsFilter: bool
@@ -1251,13 +1308,13 @@ class IFinder(INode, Protocol):
 class IMap(INode, Protocol):
     rootLayer: 'ILayer'
 
+    bounds: Bounds
     center: Point
     coordinatePrecision: int
-    crs: 'ICrs'
-    extent: Extent
     initResolution: float
     resolutions: List[float]
     title: str
+    wgsExtent: Extent
 
 
 class LegendRenderOutput(Data):
@@ -1291,21 +1348,20 @@ class ILayer(INode, Protocol):
 
     hasCache: bool
     hasSearch: bool
-    hasLegend: bool
 
-    metadata: 'IMetadata'
-    title: str
-
-    crs: 'ICrs'
-    extent: Extent
+    bounds: Bounds
+    displayMode: LayerDisplayMode
     imageFormat: str
     opacity: float
     resolutions: List[float]
-    displayMode: LayerDisplayMode
+    title: str
+
+    metadata: 'IMetadata'
+    legend: Optional['ILegend']
+    searchMgr: 'ISearchManager'
+    templateMgr: 'ITemplateManager'
 
     layers: List['ILayer']
-
-    def own_bounds(self) -> Optional['Bounds']: ...
 
     def render(self, lri: LayerRenderInput) -> 'LayerRenderOutput': ...
 
@@ -1324,7 +1380,7 @@ class ILayer(INode, Protocol):
 #
 #
 #
-# is_group: bool
+# isGroup: bool
 # is_editable: bool
 #
 # supports_raster_ows: bool
@@ -1356,7 +1412,7 @@ class ILayer(INode, Protocol):
 #
 # def own_bounds(self) -> Optional[Bounds]: ...
 #
-# def legend_url(self) -> Url: ...
+# def legendUrl(self) -> Url: ...
 #
 # def ancestors(self) -> List['ILayer']: ...
 #
@@ -1404,10 +1460,13 @@ class OwsVerb(Enum):
 
 
 class OwsOperation(Data):
+    constraints: Dict[str, List[str]]
     formats: List[str]
-    get_url: Url
-    params: Dict[str, List[str]]
-    post_url: Url
+    parameters: Dict[str, List[str]]
+    params: Dict[str, str]
+    postUrl: Url
+    preferredFormat: str
+    url: Url
     verb: OwsVerb
 
 
@@ -1426,13 +1485,15 @@ class IOwsService(INode, Protocol):
 
 
 class IOwsProvider(INode, Protocol):
+    forceCrs: 'ICrs'
     metadata: 'IMetadata'
-    operations: List['OwsOperation']
+    operations: List[OwsOperation]
     protocol: OwsProtocol
-    source_layers: List['SourceLayer']
+    sourceLayers: List['SourceLayer']
     url: Url
     version: str
-    force_crs: 'ICrs'
+
+    def operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
 
 
 class IOwsClient(INode, Protocol):
@@ -1507,7 +1568,6 @@ class IApplication(INode, Protocol):
     localeUids: List[str]
     metadata: 'IMetadata'
     monitor: 'IMonitor'
-    mpx_url: str
     qgisVersion: str
     version: str
 

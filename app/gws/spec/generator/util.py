@@ -50,7 +50,7 @@ def _json(x):
 
 
 def write_json(path, obj):
-    write_file(path, json.dumps(obj, default=_json, indent=4))
+    write_file(path, json.dumps(obj, default=_json, indent=4, sort_keys=True))
 
 
 def parse_ini(dct, text):

@@ -7,6 +7,7 @@ import gws.base.web
 import gws.config
 import gws.gis.mpx.config
 import gws.lib.os2
+import gws.lib.importer
 import gws.types as t
 
 # https://uwsgi-docs.readthedocs.io/en/latest/Nginx.html
@@ -164,7 +165,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
 
     if qgis_enabled:
 
-        qgis_server = gws.import_from_path('gws/plugin/qgis/server.py')
+        qgis_server = gws.lib.importer.import_from_path('gws/plugin/qgis/server.py')
 
         # partially inspired by
         # https://github.com/elpaso/qgis2-server-vagrant/blob/master/docs/index.rst

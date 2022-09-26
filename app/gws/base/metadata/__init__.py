@@ -113,6 +113,8 @@ class Config(gws.Config):
     metaLinks: t.Optional[t.List[MetadataLinkConfig]]  #: metadata links
     extraLinks: t.Optional[t.List[MetadataLinkConfig]]  #: additional links
 
+    url: t.Optional[gws.Url]
+
 
 ##
 

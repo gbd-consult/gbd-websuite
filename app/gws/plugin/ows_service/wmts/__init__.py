@@ -25,7 +25,7 @@ class Object(core.Service):
     supported_versions = ['1.0.0']
     is_raster_ows = True
 
-    tile_matrix_sets: t.List[gws.TileMatrixSet]
+    tileMatrixSets: t.List[gws.TileMatrixSet]
 
     @property
     def service_link(self):
@@ -60,7 +60,7 @@ class Object(core.Service):
     def configure(self):
         # @TODO more crs
         # @TODO different matrix sets per layer
-        self.tile_matrix_sets = [
+        self.tileMatrixSets = [
             # see https://docs.opengeospatial.org/is/13-082r2/13-082r2.html#29
             gws.TileMatrixSet(
                 uid='EPSG_3857',
@@ -76,7 +76,7 @@ class Object(core.Service):
         return self.template_response(rd, gws.OwsVerb.GetCapabilities, context={
             'layer_caps_list': tree.leaves,
             'version': self.request_version(rd),
-            'tile_matrix_sets': self.tile_matrix_sets
+            'tileMatrixSets': self.tileMatrixSets
         })
 
     def handle_gettile(self, rd: core.Request):
@@ -138,7 +138,7 @@ class Object(core.Service):
         tms = None
         tm = None
 
-        for m in self.tile_matrix_sets:
+        for m in self.tileMatrixSets:
             if m.uid == matrix_set_uid:
                 tms = m
 

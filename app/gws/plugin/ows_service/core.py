@@ -48,7 +48,7 @@ class ServiceConfig(gws.ConfigWithAccess):
     metadata: t.Optional[gws.base.metadata.Config]  #: service metadata
     rootLayer: str = ''  #: root layer uid
     strictParams: bool = False  #: strict parameter parsing
-    supportedCrs: t.Optional[t.List[gws.CRS]]  #: supported CRS for this service
+    supportedCrs: t.Optional[t.List[gws.CrsName]]  #: supported CRS for this service
     templates: t.Optional[t.List[gws.ext.config.template]]  #: service XML templates
     updateSequence: t.Optional[str]  #: service update sequence
     withInspireMeta: bool = False  #: use INSPIRE Metadata
@@ -92,7 +92,7 @@ class LayerCaps(gws.Data):
     feature_qname: str
 
     extent: gws.Extent
-    extent4326: gws.Extent
+    wgsExtent: gws.Extent
     max_scale: int
     min_scale: int
     bounds: t.List[gws.Bounds]
@@ -424,7 +424,7 @@ class Service(gws.Node, gws.IOwsService):
         lc.children = children
 
         lc.extent = layer.extent
-        lc.extent4326 = gws.gis.extent.transform_to_4326(layer.extent, layer.crs)
+        lc.wgsExtent = gws.gis.extent.transform_to_4326(layer.extent, layer.crs)
         lc.has_legend = layer.has_legend or any(s.has_legend for s in lc.children)
         lc.has_search = layer.has_search or any(s.has_search for s in lc.children)
 

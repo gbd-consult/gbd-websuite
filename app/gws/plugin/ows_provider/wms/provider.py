@@ -1,7 +1,9 @@
 """WMS provder."""
 
 import gws
+import gws.base.metadata
 import gws.gis.ows
+import gws.gis.crs
 import gws.types as t
 
 from . import caps
@@ -40,41 +42,39 @@ class Object(core.Provider):
     def configure(self):
         cc = caps.parse(self.get_capabilities())
 
-        self.metadata = cc.metadata
-        self.source_layers = cc.source_layers
+        self.metadata = gws.base.metadata.from_dict(cc.metadata)
+        self.sourceLayers = cc.sourceLayers
         self.version = cc.version
-        self.operations.extend(cc.operations)
+
+        self.configure_operations(cc.operations)
 
     def find_features(self, args, source_layers):
         if not args.shapes:
             return []
 
         shape = args.shapes[0]
-        if shape.geometry_type != gws.GeometryType.point:
+        if shape.type != gws.GeometryType.point:
             return []
 
         ps = gws.gis.ows.client.prepared_search(
-            inverted_crs=self.inverted_crs,
             limit=args.limit,
             point=shape,
             protocol=self.protocol,
             protocol_version=self.version,
-            request_crs=self.force_crs,
+            request_crs=self.forceCrs,
             request_crs_format=gws.CrsFormat.EPSG,
             source_layers=source_layers,
         )
 
         params = gws.merge(ps.params, args.params)
 
-        fmt = self.preferred_formats.get(gws.OwsVerb.GetFeatureInfo)
-        if fmt:
-            params.setdefault('INFO_FORMAT', fmt)
+        op = self.operation(gws.OwsVerb.GetFeatureInfo)
+        if op.preferredFormat:
+            params.setdefault('INFO_FORMAT', op.preferredFormat)
 
-        op_args = self.operation_args(gws.OwsVerb.GetFeatureInfo, params=params)
-        text = gws.gis.ows.request.get_text(**op_args)
-        gws.write_file('/gws-var/res.xml', text)
+        text = gws.gis.ows.request.get_text(
+            self.operation_args(gws.OwsVerb.GetFeatureInfo, params=params))
         features = featureinfo.parse(text, crs=ps.request_crs, axis=ps.axis)
-
 
         if features is None:
             gws.log.debug(f'WMS NOT_PARSED params={params!r}')

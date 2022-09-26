@@ -375,7 +375,7 @@ def postgres_make_features(name, geom_type, columns, crs, xy, rows, cols, gap):
     shape = features[0].shape
     if shape:
         colnames.append('p_geom')
-        coldefs.append(f'p_geom GEOMETRY({shape.geometry_type},{shape.srid})')
+        coldefs.append(f'p_geom GEOMETRY({shape.type},{shape.srid})')
 
     data = []
     for f in features:

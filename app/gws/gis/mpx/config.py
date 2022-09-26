@@ -159,9 +159,9 @@ def create(root: gws.IRoot):
         return
 
     crs: t.List[gws.ICrs] = []
-    for p in root.find_all('gws.base.map'):
-        crs.append(gws.get(p, 'crs'))
-    for p in root.find_all('gws.ext.ows.service'):
+    for p in root.find_all(gws.ext.object.map):
+        crs.append(p.bounds.crs)
+    for p in root.find_all(gws.ext.object.owsService):
         crs.extend(gws.get(p, 'supported_crs', default=[]))
     cfg['services']['wms']['srs'] = sorted(set(c.epsg for c in crs))
 
@@ -190,9 +190,11 @@ def create_and_save(root: gws.IRoot):
     try:
         make_wsgi_app(test_path)
     except Exception as e:
-        raise gws.ConfigurationError(f'MAPPROXY ERROR: {e!r}') from e
+        raise gws.Error(f'MAPPROXY ERROR: {e!r}') from e
 
     gws.lib.os2.unlink(test_path)
 
     # write into the real config path
     gws.write_file(CONFIG_PATH, cfg_str)
+
+    return cfg

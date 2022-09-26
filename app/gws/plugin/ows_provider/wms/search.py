@@ -18,7 +18,7 @@ class Object(gws.base.search.provider.Object, gws.IOwsClient):
     provider: provider_module.Object
 
     def configure(self):
-        gws.gis.ows.client.configure_layers(self, provider_module.Object, is_queryable=True)
+        gws.gis.ows.client.configure_layers(self, provider_module.Object, isQueryable=True)
 
     def can_run(self, args):
         return (

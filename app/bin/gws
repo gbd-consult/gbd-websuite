@@ -35,12 +35,13 @@ ensure_xvfb() {
 
     mkdir -p $XDG_RUNTIME_DIR
     chown $GWS_UID:$GWS_GID $XDG_RUNTIME_DIR
+    start-stop-daemon --start --background --exec $XVFB -- $DISPLAY $XVFBARGS
 
-    until start-stop-daemon --status --exec $XVFB; do
-        echo 'starting xvfb...'
-        start-stop-daemon --start --background --exec $XVFB -- $DISPLAY $XVFBARGS
-        sleep 0.5
-    done
+#    until start-stop-daemon --status --exec $XVFB; do
+#        echo 'starting xvfb...'
+#        start-stop-daemon --start --background --exec $XVFB -- $DISPLAY $XVFBARGS
+#        sleep 0.5
+#    done
 }
 
 mkdir -p $GWS_TMP_DIR

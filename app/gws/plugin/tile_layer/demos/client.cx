@@ -1,6 +1,6 @@
 projects+ {
-    title "Tile Layer: Client Display"
-    metadata.abstract "OSM layer, displayed directly on the client."
+    title "Tile layer: client display"
+    metadata.abstract "Title layer, displayed directly on the client."
 
     map {
         crs 3857

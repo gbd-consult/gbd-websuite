@@ -21,7 +21,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
     source_crs: gws.ICrs
 
     def configure_source(self):
-        gws.gis.ows.client.configure_layers(self, provider_module.Object, is_image=True)
+        gws.gis.ows.client.configure_layers(self, provider_module.Object, isImage=True)
         self.source_crs = gws.gis.crs.best_match(
             self.provider.crs or self.crs,
             gws.gis.source.supported_crs_list(self.source_layers))
@@ -47,7 +47,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
         if not super().configure_legend():
             self.legend = gws.Legend(
                 enabled=True,
-                urls=[self.provider.legend_url(self.source_layers, self.var('legend.options'))]
+                urls=[self.provider.legendUrl(self.source_layers, self.var('legend.options'))]
             )
             return True
 

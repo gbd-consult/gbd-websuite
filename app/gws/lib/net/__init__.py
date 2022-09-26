@@ -3,13 +3,12 @@ import re
 import requests
 import requests.structures
 import urllib.parse
+import certifi
 
 import gws
 import gws.lib.os2
 import gws.types as t
 
-# https://urllib3.readthedocs.org/en/latest/security.html#using-your-system-s-root-certificates
-CA_CERTS_PATH = '/etc/ssl/certs/ca-certificates.crt'
 
 
 ##
@@ -298,7 +297,7 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
     kwargs['stream'] = False
 
     if 'verify' not in kwargs:
-        kwargs['verify'] = CA_CERTS_PATH
+        kwargs['verify'] = certifi.where()
 
     timeout = kwargs.get('timeout', (_DEFAULT_CONNECT_TIMEOUT, _DEFAULT_READ_TIMEOUT))
     if isinstance(timeout, (int, float)):

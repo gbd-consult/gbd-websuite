@@ -22,7 +22,7 @@ def extract(gen: base.Generator):
 
     typ = gen.types['gws.base.application.Object']
     mod = gen.types.get(typ.tModule)
-    out[typ.uid] = dict(c=base.C.OBJECT, modName=mod.name, modPath=mod.path)
+    out[typ.uid] = dict(c=base.C.OBJECT, modName=mod.name, modPath=mod.path)  # type: ignore
 
     queue.extend(set(typ.uid for typ in gen.types.values() if typ.extName))
 
@@ -66,6 +66,12 @@ def _extract(gen, queue, out):
 
         if typ.c == base.C.CLASS and typ.extName.startswith(base.EXT_PROPS_PREFIX):
             out[typ.uid] = dict(c=base.C.PROPS, tProperties=typ.tProperties)
+            queue.extend(typ.tProperties.values())
+            continue
+
+        if typ.c == base.C.CLASS:
+            mod = gen.types.get(typ.tModule)
+            out[typ.uid] = dict(c=base.C.CLASS, modName=mod.name, modPath=mod.path, tProperties=typ.tProperties)
             queue.extend(typ.tProperties.values())
             continue
 

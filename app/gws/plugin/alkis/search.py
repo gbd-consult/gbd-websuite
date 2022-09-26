@@ -241,7 +241,7 @@ class GetToponymsResponse(gws.Response):
 class FindFlurstueckParams(BaseFindParams):
     wantEigentuemer: t.Optional[bool]
     controlInput: t.Optional[str]
-    crs: t.Optional[gws.CRS]
+    crs: t.Optional[gws.CrsName]
     shapes: t.Optional[t.List[gws.base.shape.Props]]
 
     bblatt: str = ''
@@ -264,7 +264,7 @@ class FindFlurstueckResponse(gws.Response):
 
 
 class FindAdresseParams(BaseFindParams):
-    crs: t.Optional[gws.CRS]
+    crs: t.Optional[gws.CrsName]
 
     bisHausnummer: str = ''
     hausnummer: str = ''

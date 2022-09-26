@@ -3,6 +3,7 @@
 import gws
 import gws.gis.extent
 import gws.gis.source
+import gws.gis.crs
 import gws.gis.zoom
 import gws.types as t
 
@@ -18,23 +19,23 @@ def configure_layers(obj: gws.IOwsClient, provider_class, **filter_args):
             filter_args,
             obj.var('sourceLayers')
         )
-        obj.source_layers = gws.gis.source.filter_layers(obj.provider.source_layers, slf)
+        obj.source_layers = gws.gis.source.filter_layers(obj.provider.sourceLayers, slf)
 
     if not obj.source_layers:
         raise gws.Error(f'no source layers found for {obj.uid!r}')
 
 
-def configure_zoom(obj: gws.IOwsClient):
-    zoom = gws.gis.zoom.config_from_source_layers(obj.source_layers)
+def configure_resolutions(obj: gws.IOwsClient, parent_resolultions: t.List[float] = None):
+    zoom = gws.gis.zoom.config_from_source_layers(obj.sourceLayers)
     if zoom:
         la = t.cast(gws.ILayer, obj)
-        la.resolutions = gws.gis.zoom.resolutions_from_config(zoom, la.resolutions)
+        la.resolutions = gws.gis.zoom.resolutions_from_config(zoom, parent_resolultions)
         return True
 
 
 def configure_search(obj: gws.IOwsClient, search_class):
-    slf = gws.gis.source.LayerFilter(is_queryable=True)
-    queryable_layers = gws.gis.source.filter_layers(obj.source_layers, slf)
+    slf = gws.gis.source.LayerFilter(isQueryable=True)
+    queryable_layers = gws.gis.source.filter_layers(obj.sourceLayers, slf)
     if queryable_layers:
         t.cast(gws.ILayer, obj).search_providers.append(
             obj.create_required(search_class, gws.Config(

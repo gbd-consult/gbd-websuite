@@ -1,0 +1,23 @@
+projects+ {
+    title "WMS flat layer, partial"
+    metadata.abstract "Select specific source layers from a WMS service."
+
+    map {
+        center {DEMO_DUESSELDORF_3857}
+        zoom.initScale 15000
+    }
+
+    map.layers+ {
+        title "Verkehrsnetze (nur Eisenbahn)"
+        type "wmsflat"
+        url "https://www.wms.nrw.de/geobasis/wms_nw_inspire-verkehrsnetze_alkis"
+
+        sourceLayers.names [
+            "TN.RailTransportNetwork.RailwayArea"
+            "TN.RailTransportNetwork.RailwayLink"
+            "TN.RailTransportNetwork.RailwayStationArea"
+        ]
+    }
+
+    @demo_osm_background
+}

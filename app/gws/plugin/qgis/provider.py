@@ -12,7 +12,7 @@ class Config(gws.Config):
     path: gws.FilePath  #: path to a Qgis project file
     directRender: t.Optional[t.List[str]]  #: QGIS data providers that should be rendered directly
     directSearch: t.Optional[t.List[str]]  #: QGIS data providers that should be searched directly
-    forceCrs: t.Optional[gws.CRS]  #: use this CRS for requests
+    forceCrs: t.Optional[gws.CrsName]  #: use this CRS for requests
 
 
 # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
@@ -84,7 +84,7 @@ class Object(gws.Node, gws.IOwsProvider):
             return []
 
         shape = args.shapes[0]
-        if shape.geometry_type != gws.GeometryType.point:
+        if shape.type != gws.GeometryType.point:
             return []
 
         ps = gws.gis.ows.client.prepared_search(
@@ -123,7 +123,7 @@ class Object(gws.Node, gws.IOwsProvider):
         gws.log.debug(f'QGIS/WMS FOUND={len(features)} params={params!r}')
         return [f.transform_to(shape.crs) for f in features]
 
-    def legend_url(self, source_layers, params=None):
+    def legendUrl(self, source_layers, params=None):
         # qgis legends are rendered bottom-up (rightmost first)
         # we need the straight order (leftmost first), like in the config
 
@@ -148,11 +148,11 @@ class Object(gws.Node, gws.IOwsProvider):
             '_source_layers': source_layers
         }
 
-        if len(source_layers) > 1 or source_layers[0].is_group:
+        if len(source_layers) > 1 or source_layers[0].isGroup:
             return default
 
         sl = source_layers[0]
-        ds = sl.data_source
+        ds = sl.dataSource
         prov = ds.get('provider')
 
         if prov not in self.direct_render:
@@ -191,11 +191,11 @@ class Object(gws.Node, gws.IOwsProvider):
             '_source_layers': source_layers,
         }
 
-        if len(self.source_layers) > 1 or self.source_layers[0].is_group:
+        if len(self.source_layers) > 1 or self.source_layers[0].isGroup:
             return default
 
         sl = source_layers[0]
-        ds = sl.data_source
+        ds = sl.dataSource
         prov = ds.get('provider')
 
         if prov not in self.direct_search:
@@ -213,7 +213,7 @@ class Object(gws.Node, gws.IOwsProvider):
                 }
 
         if prov == 'postgres':
-            tab = sl.data_source.get('table')
+            tab = sl.dataSource.get('table')
 
             # 'table' can also be a select statement, in which case it might be enclosed in parens
             if not tab or tab.startswith('(') or tab.upper().startswith('SELECT '):

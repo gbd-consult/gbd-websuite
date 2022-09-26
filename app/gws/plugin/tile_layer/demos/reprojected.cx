@@ -1,6 +1,6 @@
 projects+ {
-    title "Tile Layer: Reprojected"
-    metadata.abstract "OSM layer, cached on the server and reprojected to another CRS."
+    title "Tile layer, reprojected"
+    metadata.abstract "Tile layer, cached on the server and reprojected to another CRS."
 
     map {
         crs 25830

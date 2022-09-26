@@ -5,33 +5,34 @@ import gws.base.model
 import gws.base.legend
 import gws.base.search
 import gws.gis.crs
+import gws.gis.bounds
+import gws.gis.extent
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.style
 import gws.lib.svg
 import gws.types as t
 
-from . import lib
+from . import util
 
 
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
     # dataModel: t.Optional[gws.base.model.Config]  #: layer data model
-    cache: t.Optional[lib.CacheConfig]  # cache configuration
-    clientOptions: lib.ClientOptions = {}  # type:ignore #: options for the layer display in the client
+    cache: t.Optional[util.CacheConfig]  # cache configuration
+    clientOptions: util.ClientOptions = {}  # type:ignore #: options for the layer display in the client
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.box  #: layer display mode
     extent: t.Optional[gws.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    grid: lib.GridConfig = {}  # type:ignore #: grid configuration
-    imageFormat: lib.ImageFormat = lib.ImageFormat.png8  #: image format
+    grid: util.GridConfig = {}  # type:ignore #: grid configuration
+    imageFormat: util.ImageFormat = util.ImageFormat.png8  #: image format
     legendEnabled: bool = True
     legend: t.Optional[gws.ext.config.legend]  #: legend configuration
     metadata: t.Optional[gws.base.metadata.Config]  #: layer metadata
     opacity: float = 1  #: layer opacity
     ows: bool = True  # layer is enabled for OWS services
-    searchEnabled: bool = True
-    search: gws.base.search.finder.collection.Config = {}  # type:ignore #: layer search configuration
+    search: t.Optional[util.SearchConfig] = {}  # type:ignore #: layer search configuration
     templates: t.Optional[t.List[gws.ext.config.template]]  #: client templates
     title: str = ''  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
@@ -41,7 +42,7 @@ class CustomConfig(gws.ConfigWithAccess):
     """Custom layer configuration"""
 
     applyTo: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers this configuration applies to
-    clientOptions: t.Optional[lib.ClientOptions]  # options for the layer display in the client
+    clientOptions: t.Optional[util.ClientOptions]  # options for the layer display in the client
     dataModel: t.Optional[gws.base.model.Config]  #: layer data model
     display: t.Optional[gws.LayerDisplayMode]  #: layer display mode
     extent: t.Optional[gws.Extent]  #: layer extent
@@ -50,7 +51,7 @@ class CustomConfig(gws.ConfigWithAccess):
     metadata: t.Optional[gws.base.metadata.Config]  #: layer metadata
     opacity: t.Optional[float]  #: layer opacity
     ows: bool = True  # layer is enabled for OWS services
-    search: gws.base.search.finder.collection.Config = {}  # type:ignore #: layer search configuration
+    # search: gws.base.search.finder.collection.Config = {}  # type:ignore #: layer search configuration
     templates: t.Optional[t.List[gws.ext.config.template]]  #: client templates
     title: t.Optional[str]  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
@@ -66,7 +67,7 @@ class Props(gws.Props):
     loadingStrategy: t.Optional[str]
     metadata: gws.base.metadata.Props
     opacity: t.Optional[float]
-    clientOptions: lib.ClientOptions
+    clientOptions: util.ClientOptions
     resolutions: t.Optional[t.List[float]]
     # style: t.Optional[gws.lib.style.Props]
     tileSize: int = 0
@@ -107,112 +108,58 @@ _DEFAULT_TEMPLATES = [
 
 
 class Object(gws.Node, gws.ILayer):
-    cache: t.Optional[lib.Cache]
-    grid: lib.Grid
-    clientOptions: lib.ClientOptions
-    templateMgr: gws.base.template.manager.Object
-    cFinders: gws.base.search.finder.collection.Object
-    legend: t.Optional[gws.base.legend.Object]
+    cache: t.Optional[util.Cache]
+    grid: util.Grid
+    clientOptions: util.ClientOptions
+
+    canRenderBox = False
+    canRenderXyz = False
+    canRenderSvg = False
+
+    supportsRasterServices = False
+    supportsVectorServices = False
+
+    parentBounds: gws.Bounds
+    parentResolutions: t.List[float]
 
     def configure(self):
-        self.configure_base()
-        self.configure_source()
+        self.parentBounds = self.var('_parentBounds')
+        self.parentResolutions = self.var('_parentResolutions')
 
-        if not self.configure_metadata():
-            self.metadata = gws.base.metadata.from_args(title=self.title)
-
-        if not self.configure_resolutions():
-            self.resolutions = self.var('defaultResolutions')
-
-        if not self.configure_extent():
-            pass
-
-        if not self.configure_search():
-            pass
-
-        if not self.configure_legend():
-            pass
-
-    def set_metadata(self, *args):
-        self.metadata = gws.base.metadata.from_dict(gws.to_dict(args[0]))
-        self.metadata.extend(*args[1:])
-
-    def configure_base(self):
-        self.metadata = t.cast(gws.IMetadata, None)
-        self.title = self.var('title')
-
-        self.crs = self.var('defaultCrs')
-        self.extent = t.cast(gws.Extent, None)
-        self.imageFormat = self.var('imageFormat')
-        self.opacity = self.var('opacity')
-        self.resolutions = []
-
-        self.cache = None
-        if self.var('cache.enabled'):
-            self.cache = self.var('cache')
-        self.grid = self.var('grid', default=lib.Grid())
-
+        self.bounds = self.parentBounds
         self.clientOptions = self.var('clientOptions')
         self.displayMode = self.var('display')
-        self.layers = []
+        self.imageFormat = self.var('imageFormat')
+        self.opacity = self.var('opacity')
+        self.resolutions = self.parentResolutions
+        self.title = self.var('title')
+
+        self.metadata = t.cast(gws.IMetadata, None)
+        self.legend = t.cast(gws.ILegend, None)
 
         self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(
             templates=self.var('templates'),
             defaults=_DEFAULT_TEMPLATES))
 
-        self.cFinders = self.create_child(gws.base.search.finder.collection.Object)
-        self.legend = None
+        self.searchMgr = self.create_child(gws.base.search.manager.Object)
 
-    def configure_source(self):
-        pass
+        self.layers = []
 
-    def configure_metadata(self):
-        p = self.var('metadata')
-        if p:
-            self.metadata = gws.base.metadata.from_config(p)
-            return True
-
-    def configure_search(self):
-        if not self.var('searchEnabled'):
-            return True
-        p = self.var('search.providers')
-        if p:
-            for cfg in p:
-                self.cFinders.add_finder(cfg)
-            return True
-
-    def configure_extent(self):
-        p = self.var('extent')
-        if p:
-            self.extent = gws.gis.extent.from_list(p)
-            if not self.extent:
-                raise gws.ConfigurationError(f'invalid extent {p!r} in layer={self.uid!r}')
-            return True
-
-    def configure_resolutions(self):
-        p = self.var('zoom')
-        if p:
-            self.resolutions = gws.gis.zoom.resolutions_from_config(p)
-            if not self.resolutions:
-                raise gws.ConfigurationError(f'invalid zoom configuration in layer={self.uid!r}')
-            return True
-
-    def configure_legend(self):
-        if not self.var('legendEnabled'):
-            return True
-        p = self.var('legend')
-        if p:
-            self.legend = self.create_child(gws.ext.object.legend, p)
-            return True
-
-    def post_configure(self):
+        self.cache = None
+        if self.var('cache.enabled'):
+            self.cache = self.var('cache')
+        self.grid = self.var('grid', default=util.Grid())
         self.hasCache = self.cache is not None
-        self.hasSearch = len(self.cFinders.items) > 0
-        self.hasLegend = self.legend is not None
+
+    ##
+
+    def set_metadata(self, *args):
+        self.metadata = gws.base.metadata.from_dict(gws.to_dict(args[0]))
+        self.metadata.extend(*args[1:])
 
     def props(self, user):
         p = gws.Data(
-            extent=self.extent,
+            extent=self.bounds.extent,
             metadata=self.metadata,
             opacity=self.opacity,
             clientOptions=self.clientOptions,
@@ -224,12 +171,12 @@ class Object(gws.Node, gws.ILayer):
 
         if self.displayMode == gws.LayerDisplayMode.tile:
             p.type = 'tile'
-            p.url = lib.layer_url_path(self.uid, kind='tile')
+            p.url = util.layer_url_path(self.uid, kind='tile')
             p.tileSize = self.grid.tileSize
 
         if self.displayMode == gws.LayerDisplayMode.box:
             p.type = 'box'
-            p.url = lib.layer_url_path(self.uid, kind='box')
+            p.url = util.layer_url_path(self.uid, kind='box')
 
         return p
 
@@ -261,4 +208,3 @@ class Object(gws.Node, gws.ILayer):
 
     def mapproxy_config(self, mc):
         pass
-

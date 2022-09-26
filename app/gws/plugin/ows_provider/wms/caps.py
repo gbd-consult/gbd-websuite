@@ -16,55 +16,81 @@ def parse(xml) -> core.Caps:
     return core.Caps(
         metadata=u.service_metadata(caps_el),
         operations=u.service_operations(caps_el),
-        source_layers=source_layers,
+        sourceLayers=source_layers,
         version=caps_el.get('version'))
 
 
 def _layer(layer_el: gws.IXmlElement, parent: t.Optional[gws.SourceLayer] = None) -> gws.SourceLayer:
     sl = gws.SourceLayer()
 
-    sl.is_queryable = layer_el.get('queryable') == '1'
-    sl.is_visible = True
+    sl.isQueryable = layer_el.get('queryable') == '1'
+    sl.isVisible = True
+    sl.isExpanded = False
     sl.metadata = u.element_metadata(layer_el)
     sl.name = sl.metadata.get('name', '')
     sl.styles = [u.parse_style(e) for e in layer_el.findall('Style')]
-    sl.supported_bounds = u.supported_bounds(layer_el)
     sl.title = sl.metadata.get('title', '')
-
-    if not sl.name:
-        # some folks have unnamed layers in their caps
-        # we can't render or query them
-        sl.is_queryable = False
-        sl.is_image = False
 
     # @TODO: support ScaleHint (WMS 1.1)
 
     smin = layer_el.text_of('MinScaleDenominator')
     smax = layer_el.text_of('MaxScaleDenominator')
     if smax:
-        sl.scale_range = [u.to_int(smin), u.to_int(smax)]
+        sl.scaleRange = [u.to_int(smin), u.to_int(smax)]
 
-    # OGC 06-042, 7.2.4.8 Inheritance of layer properties
+    # NB don't process axis orders here, this is up to the provider
+    bounds, crs_list, wgs_ext = u.bounds_and_crs(layer_el)
 
-    if parent:
-        crs = set(b.crs for b in sl.supported_bounds)
-        for b in parent.supported_bounds:
-            if b.crs not in crs:
-                sl.supported_bounds.append(b)
+    if not parent:
+        sl.supportedBounds = bounds
+        sl.supportedCrs = crs_list or [gws.gis.crs.WGS84]
+        sl.wgsExtent = wgs_ext or gws.gis.crs.WGS84.wgsExtent
 
-        names = set(s.name for s in sl.styles)
+    else:
+        # OGC 06-042, 7.2.4.8 Inheritance of layer properties
+
+        # Style -> add
+        m = {s.name: s for s in sl.styles}
         for s in parent.styles:
-            if s.name not in names:
-                sl.styles.append(s)
+            m[s.name] = s
+        sl.styles = list(m.values())
 
-        # sl.metadata.extend(parent.metadata)
+        # CRS -> add
+        sl.supportedCrs = list(parent.supportedCrs)
+        for crs in crs_list:
+            if crs not in sl.supportedCrs:
+                sl.supportedCrs.append(crs)
+
+        # EX_GeographicBoundingBox -> replace
+        sl.wgsExtent = wgs_ext or parent.wgsExtent
+
+        # BoundingBox -> replace
+        sl.supportedBounds = bounds or parent.supportedBounds
+
+        # Dimension -> replace
+        # @TODO
+
+        # Attribution -> replace
+        sl.metadata['attribution'] = sl.metadata.get('attribution') or parent.metadata.get('attribution')
+
+        # AuthorityURL -> add
+        # @TODO
+
+        # MinScaleDenominator -> replace
+        sl.scaleRange = sl.scaleRange or parent.scaleRange
+
+    sl.defaultStyle = u.default_style(sl.styles)
+    if sl.defaultStyle:
+        sl.legendUrl = sl.defaultStyle.legendUrl
 
     sl.layers = [_layer(e, sl) for e in layer_el.findall('Layer')]
-    sl.is_group = len(sl.layers) > 0
-    sl.is_image = len(sl.layers) == 0
+    sl.isGroup = len(sl.layers) > 0
+    sl.isImage = len(sl.layers) == 0
 
-    sl.default_style = u.default_style(sl.styles)
-    if sl.default_style:
-        sl.legend_url = sl.default_style.legend_url
+    if not sl.name:
+        # some folks have unnamed layers in their caps
+        # we can't render or query them
+        sl.isQueryable = False
+        sl.isImage = False
 
     return sl

@@ -1,6 +1,6 @@
 projects+ {
-    title "Tile Layer: Server Display"
-    metadata.abstract "OSM layer, cached on the server."
+    title "Tile layer, server-side"
+    metadata.abstract "Tile layer, cached on the server."
 
     map {
         crs 3857

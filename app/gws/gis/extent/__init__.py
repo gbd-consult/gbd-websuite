@@ -9,11 +9,11 @@ import gws.types as t
 def from_string(s: str) -> t.Optional[gws.Extent]:
     """Create an extent from a comma-separated string "1000,2000,20000 40000" """
 
-    return from_str_list(s.split(','))
+    return from_list(s.split(','))
 
 
-def from_str_list(ls: t.List[str]) -> t.Optional[gws.Extent]:
-    """Create an extent from a list of numeric strings"""
+def from_list(ls: t.List[t.Any]) -> t.Optional[gws.Extent]:
+    """Create an extent from a list of values"""
 
     try:
         ns = [float(n) for n in ls]
@@ -21,16 +21,6 @@ def from_str_list(ls: t.List[str]) -> t.Optional[gws.Extent]:
         return None
 
     return _valid(ns)
-
-
-def from_inverted_str_list(ls: t.List[str]) -> t.Optional[gws.Extent]:
-    return from_str_list([ls[1], ls[0], ls[3], ls[2]])
-
-
-def from_list(ls: t.List[t.Any]) -> t.Optional[gws.Extent]:
-    """Create an extent from a list of float values"""
-
-    return _valid(ls)
 
 
 def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
@@ -81,23 +71,6 @@ def _valid(ls: t.List[t.Any]) -> t.Optional[gws.Extent]:
         return None
 
 
-def merge(exts: t.List[gws.Extent]) -> t.Optional[gws.Extent]:
-    c = False
-    res = (1e20, 1e20, -1e20, -1e20)
-
-    for e in exts:
-        e = _sort(e)
-        res = (
-            min(res[0], e[0]),
-            min(res[1], e[1]),
-            max(res[2], e[2]),
-            max(res[3], e[3])
-        )
-        c = True
-
-    return res if c else None
-
-
 def constrain(a: gws.Extent, b: gws.Extent) -> gws.Extent:
     a = _sort(a)
     b = _sort(b)
@@ -144,18 +117,31 @@ def buffer(e: gws.Extent, buf: int) -> gws.Extent:
     )
 
 
+def union(exts: t.List[gws.Extent]) -> gws.Extent:
+    ext = exts[0]
+    for e in exts:
+        e = _sort(e)
+        ext = (
+            min(ext[0], e[0]),
+            min(ext[1], e[1]),
+            max(ext[2], e[2]),
+            max(ext[3], e[3])
+        )
+    return ext
+
+
 def intersect(a: gws.Extent, b: gws.Extent) -> bool:
     a = _sort(a)
     b = _sort(b)
     return a[0] <= b[2] and a[2] >= b[0] and a[1] <= b[3] and a[3] >= b[1]
 
 
-def transform(e: gws.Extent, source: gws.ICrs, target: gws.ICrs) -> gws.Extent:
-    return source.transform_extent(e, target)
+def transform(e: gws.Extent, crs_from: gws.ICrs, crs_to: gws.ICrs) -> gws.Extent:
+    return crs_from.transform_extent(e, crs_to)
 
 
-def transform_to_4326(e: gws.Extent, source: gws.ICrs) -> gws.Extent:
-    return source.transform_extent(e, gws.gis.crs.get4326())
+def wgs_extent(e: gws.Extent, crs_from: gws.ICrs) -> gws.Extent:
+    return crs_from.transform_extent(e, gws.gis.crs.WGS84)
 
 
 def swap_xy(e: gws.Extent) -> gws.Extent:

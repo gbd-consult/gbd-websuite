@@ -1,7 +1,7 @@
 @let DEMO_DUESSELDORF_3857 = [753753, 6661615]
 @let DEMO_DUESSELDORF_25832 = [344371, 5677471]
 
-@let DEMO_OSM_ZOOM_SCALES = [2000000 1000000 500000 250000 150000 70000 35000 15000 8000 4000 2000 1000 500]
+@let DEMO_DRESDEN_3857 = [1529461, 6631043]
 
 @def demo_map(**kw)
 
@@ -109,6 +109,7 @@
 
     client.options.sidebarActiveTab "Sidebar.Layers"
     client.options.sidebarVisible true
+    client.options.layersShowInactive true
 @end
 
 @def demo_locales

@@ -14,7 +14,7 @@ class Config(gws.Config):
     """Basic ALKIS configuration"""
 
     db: str = ''  #: database provider ID
-    crs: gws.CRS  #: CRS for the ALKIS data
+    crs: gws.CrsName  #: CRS for the ALKIS data
     dataSchema: str = 'public'  #: schema where ALKIS tables are stored
     indexSchema: str = 'gws'  #: schema to store GWS internal indexes
     excludeGemarkung: t.Optional[t.List[str]]  #: Gemarkung (Administrative Unit) IDs to exclude from search

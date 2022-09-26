@@ -2,7 +2,10 @@
 
 import gws
 import gws.lib.json2
+import gws.lib.importer
 import gws.gis.ows
+import gws.gis.crs
+import gws.base.shape
 import gws.types as t
 
 
@@ -33,14 +36,14 @@ class Object(gws.Node):
             raise gws.Error('unknown service')
 
         if p.src.startswith(('http:', 'https:')):
-            xml = gws.gis.ows.request.get_text(
-                p.src,
+            xml = gws.gis.ows.request.get_text(gws.gis.ows.request.Args(
+                url=p.src,
                 protocol=t.cast(gws.OwsProtocol, protocol.upper()),
-                verb=gws.OwsVerb.GetCapabilities)
+                verb=gws.OwsVerb.GetCapabilities))
         else:
             xml = gws.read_file(p.src)
 
-        mod = gws.import_from_path(f'gws/plugin/ows_provider/{protocol}/caps.py')
+        mod = gws.lib.importer.import_from_path(f'gws/plugin/ows_provider/{protocol}/caps.py')
         res = mod.parse(xml)
 
         js = gws.lib.json2.to_pretty_string(res, default=_caps_json)
@@ -53,11 +56,9 @@ class Object(gws.Node):
 
 
 def _caps_json(x):
-    if isinstance(x, gws.IMetadata):
-        return vars(x.values)
-    if isinstance(x, gws.ICrs):
+    if isinstance(x, gws.gis.crs.Crs):
         return x.epsg
-    if isinstance(x, gws.IShape):
+    if isinstance(x, gws.base.shape.Shape):
         return x.to_geojson()
     try:
         return vars(x)

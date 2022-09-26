@@ -83,7 +83,7 @@ class MapParams(gws.Data):
 
 class ParamsBase(gws.Request):
     context: t.Optional[dict]
-    crs: t.Optional[gws.CRS]
+    crs: t.Optional[gws.CrsName]
     outputFormat: t.Optional[str]
     maps: t.Optional[t.List[MapParams]]
 

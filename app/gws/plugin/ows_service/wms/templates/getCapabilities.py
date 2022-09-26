@@ -90,10 +90,10 @@ def main(ARGS):
 
         yield (
             'EX_GeographicBoundingBox',
-            ('westBoundLongitude', lc.extent4326[0]),
-            ('eastBoundLongitude', lc.extent4326[2]),
-            ('southBoundLatitude', lc.extent4326[1]),
-            ('northBoundLatitude', lc.extent4326[3]))
+            ('westBoundLongitude', lc.wgsExtent[0]),
+            ('eastBoundLongitude', lc.wgsExtent[2]),
+            ('southBoundLatitude', lc.wgsExtent[1]),
+            ('northBoundLatitude', lc.wgsExtent[3]))
 
         for b in lc.bounds:
             yield ('BoundingBox', {
@@ -105,7 +105,7 @@ def main(ARGS):
             })
 
         if lc.has_legend:
-            yield 'Style', ('Name', 'default'), ('Title', 'default'), tpl.legend_url(ARGS, lc)
+            yield 'Style', ('Name', 'default'), ('Title', 'default'), tpl.legendUrl(ARGS, lc)
 
         if not lc.children:
             yield 'MinScaleDenominator', lc.min_scale

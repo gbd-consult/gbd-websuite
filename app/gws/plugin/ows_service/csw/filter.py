@@ -33,7 +33,7 @@ class Filter:
         b = gws.gis.bounds.transformed_to(b, gws.gis.crs.get4326())
         return [
             r for r in recs
-            if not r.get('extent4326') or gws.gis.extent.intersect(r.extent4326, b.extent)
+            if not r.get('wgsExtent') or gws.gis.extent.intersect(r.wgsExtent, b.extent)
         ]
 
     def _propertyislike(self, flt, recs):

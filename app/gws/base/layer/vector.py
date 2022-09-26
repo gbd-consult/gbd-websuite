@@ -5,12 +5,10 @@ import gws.lib.style
 import gws.lib.svg
 import gws.types as t
 
-from . import main, lib
-
-_FEATURE_FULL_FORMAT_THRESHOLD = 500
+from . import layer, lib
 
 
-class Config(main.Config):
+class Config(layer.Config):
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.client  #: layer display mode
     editDataModel: t.Optional[gws.base.model.Config]  #: data model for input data
     editStyle: t.Optional[gws.lib.style.Config]  #: style for features being edited
@@ -18,7 +16,7 @@ class Config(main.Config):
     style: t.Optional[gws.lib.style.Config]  #: style for features
 
 
-class Object(main.Object):
+class Object(layer.Object):
     """Base vector layer"""
 
     can_render_box = True

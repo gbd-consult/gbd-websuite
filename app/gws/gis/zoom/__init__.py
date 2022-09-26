@@ -2,6 +2,32 @@ import gws
 import gws.lib.units as units
 import gws.types as t
 
+# https://wiki.openstreetmap.org/wiki/Zoom_levels
+
+OSM_SCALES = [
+    150000000,
+    70000000,
+    35000000,
+    15000000,
+    10000000,
+    4000000,
+    2000000,
+    1000000,
+    500000,
+    250000,
+    150000,
+    70000,
+    35000,
+    15000,
+    8000,
+    4000,
+    2000,
+    1000,
+    500,
+]
+
+OSM_RESOLUTIONS = [units.scale_to_res(s) for s in OSM_SCALES]
+
 
 class Config(gws.Config):
     """Zoom levels and resolutions"""
@@ -19,8 +45,10 @@ class Config(gws.Config):
     maxScale: t.Optional[float]  #: maximal scale
 
 
-def resolutions_from_config(cfg, parent_resolultions=None):
+def resolutions_from_config(cfg, parent_resolultions: t.List[float] = None) -> t.List[float]:
     # see also https://mapproxy.org/docs/1.11.0/configuration.html#res and below
+
+    # @TODO deal with scales separately
 
     res = _explicit_resolutions(cfg) or parent_resolultions
     if not res:
@@ -37,31 +65,38 @@ def resolutions_from_config(cfg, parent_resolultions=None):
     return sorted(res, reverse=True)
 
 
-def config_from_source_layers(source_layers: t.List[gws.SourceLayer]):
-    min_scale = max_scale = None
+def resolutions_from_source_layers(source_layers: t.List[gws.SourceLayer], parent_resolultions: t.List[float]) -> t.List[float]:
+    smin = []
+    smax = []
 
     for sl in source_layers:
-        # if one of the layers has no scale range, the whole group has no range
-        if not sl.scale_range:
-            return None
-        min_scale = min(sl.scale_range[0], min_scale or 1e20)
-        max_scale = max(sl.scale_range[1], max_scale or 0)
+        sr = sl.scaleRange
+        if sr:
+            smin.append(sr[0])
+            smax.append(sr[1])
 
-    zoom = {}
+    if not smin:
+        return parent_resolultions
 
-    if min_scale is not None:
-        zoom['minScale'] = min_scale
+    rmin = units.scale_to_res(min(smin))
+    rmax = units.scale_to_res(max(smax))
 
-    if max_scale is not None:
-        zoom['maxScale'] = max_scale
+    mmax = [r for r in parent_resolultions if r >= rmax]
+    mmin = [r for r in parent_resolultions if r <= rmin]
 
-    return gws.Data(zoom) if zoom else None
+    if not mmax or not mmin:
+        return []
+
+    a = max(mmin)
+    z = min(mmax)
+
+    return [r for r in parent_resolultions if a <= r <= z]
 
 
 def init_resolution(cfg, resolutions):
     init = _res_or_scale(cfg, 'initResolution', 'initScale')
     if not init:
-        return resolutions[0]
+        return resolutions[len(resolutions) >> 1]
     return min(resolutions, key=lambda r: abs(init - r))
 
 

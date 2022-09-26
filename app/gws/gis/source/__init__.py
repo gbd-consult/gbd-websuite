@@ -12,6 +12,7 @@ class LayerFilterConfig(gws.Config):
 
     level: int = 0  #: match only layers at this level
     names: t.Optional[t.List[str]]  #: match these layer names (top-to-bottom order)
+    titles: t.Optional[t.List[str]]  #: match these layer titles
     pattern: gws.Regex = ''  #: match layers whose full path matches a pattern
     onlyGroups: bool = False  #: if true, match only group layers
     onlyLeaves: bool = False  #: if true, match only leaf layers
@@ -20,10 +21,11 @@ class LayerFilterConfig(gws.Config):
 class LayerFilter(gws.Data):
     level: int
     names: t.List[str]
+    titles: t.List[str]
     pattern: gws.Regex
-    is_group: bool
-    is_image: bool
-    is_queryable: bool
+    isGroup: bool
+    isImage: bool
+    isQueryable: bool
 
 
 def layer_filter_from_config(cfg, **kwargs) -> t.Optional[LayerFilter]:
@@ -33,13 +35,14 @@ def layer_filter_from_config(cfg, **kwargs) -> t.Optional[LayerFilter]:
     slf = LayerFilter(
         level=cfg.level or 0,
         names=cfg.names or [],
+        titles=cfg.titles or [],
         pattern=cfg.pattern,
         **kwargs
     )
     if cfg.onlyGroups:
-        slf.is_group = True
+        slf.isGroup = True
     if cfg.onlyLeaves:
-        slf.is_group = False
+        slf.isGroup = False
     return slf
 
 
@@ -49,22 +52,25 @@ def layer_matches(sl: gws.SourceLayer, slf: t.Optional[LayerFilter]) -> bool:
     if not slf:
         return True
 
-    if slf.level and sl.a_level != slf.level:
+    if slf.level and sl.aLevel != slf.level:
         return False
 
     if slf.names and sl.name not in slf.names:
         return False
 
-    if slf.pattern and not re.search(slf.pattern, sl.a_path):
+    if slf.titles and sl.title not in slf.titles:
         return False
 
-    if slf.is_group is not None and sl.is_group != slf.is_group:
+    if slf.pattern and not re.search(slf.pattern, sl.aPath):
         return False
 
-    if slf.is_image is not None and sl.is_image != slf.is_image:
+    if slf.isGroup is not None and sl.isGroup != slf.isGroup:
         return False
 
-    if slf.is_queryable is not None and sl.is_queryable != slf.is_queryable:
+    if slf.isImage is not None and sl.isImage != slf.isImage:
+        return False
+
+    if slf.isQueryable is not None and sl.isQueryable != slf.isQueryable:
         return False
 
     return True
@@ -74,10 +80,10 @@ def check_layers(layers) -> t.List[gws.SourceLayer]:
     def walk(sl, parent_path, level):
         if not sl:
             return
-        sl.a_uid = gws.to_uid(sl.name or sl.metadata.get('title'))
-        sl.a_path = parent_path + '/' + sl.a_uid
-        sl.a_level = level
-        sl.layers = gws.compact(walk(c, sl.a_path, level + 1) for c in (sl.layers or []))
+        sl.aUid = gws.to_uid(sl.name or sl.metadata.get('title'))
+        sl.aPath = parent_path + '/' + sl.aUid
+        sl.aLevel = level
+        sl.layers = gws.compact(walk(c, sl.aPath, level + 1) for c in (sl.layers or []))
         return sl
 
     return gws.compact(walk(sl, '', 1) for sl in layers)
@@ -112,6 +118,8 @@ def filter_layers(layers: t.List[gws.SourceLayer], slf: LayerFilter) -> t.List[g
     return found
 
 
+
+
 def combined_bounds(layers: t.List[gws.SourceLayer], target_crs: gws.ICrs) -> gws.Bounds:
     """Return merged bounds from a list of source layers in the target_crs."""
 
@@ -128,17 +136,17 @@ def combined_bounds(layers: t.List[gws.SourceLayer], target_crs: gws.ICrs) -> gw
         return gws.Bounds(crs=target_crs, extent=gws.gis.extent.merge(exts))
 
 
-def supported_crs_list(layers: t.List[gws.SourceLayer]) -> t.List[gws.ICrs]:
+def combined_crs_list(layers: t.List[gws.SourceLayer]) -> t.List[gws.ICrs]:
     """Return an intersection of crs supported by each source layer."""
 
     cs: set = set()
 
     for sl in layers:
-        if not sl.supported_bounds:
+        if not sl.supportedCrs:
             continue
         if not cs:
-            cs.update([b.crs for b in sl.supported_bounds])
+            cs.update(sl.supportedCrs)
         else:
-            cs = cs.intersection([b.crs for b in sl.supported_bounds])
+            cs = cs.intersection(sl.supportedCrs)
 
     return list(cs)

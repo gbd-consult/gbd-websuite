@@ -9,41 +9,47 @@ import gws.types as t
 
 class OperationConfig(gws.Config):
     formats: t.Optional[t.List[str]]
-    url: gws.Url
     postUrl: t.Optional[gws.Url]
+    url: gws.Url
     verb: gws.OwsVerb
 
 
 class ProviderConfig(gws.Config):
     capsCacheMaxAge: gws.Duration = '1d'  #: max cache age for capabilities documents
-    invertAxis: t.Optional[t.List[gws.CRS]]  #: projections that are known to have an inverted axis (yx)
+    forceCrs: t.Optional[gws.CrsName]  #: use this CRS for requests
     maxRequests: int = 0  #: max concurrent requests to this source
     operations: t.Optional[t.List[OperationConfig]]
-    forceCrs: t.Optional[gws.CRS]  #: use this CRS for requests
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
     url: gws.Url  #: service url
 
 
 class Caps(gws.Data):
-    metadata: gws.MetadataValues
+    metadata: dict
     operations: t.List[gws.OwsOperation]
-    source_layers: t.List[gws.SourceLayer]
+    sourceLayers: t.List[gws.SourceLayer]
     version: str
 
 
 class Provider(gws.Node, gws.IOwsProvider):
-    inverted_crs: t.List[gws.ICrs]
-    preferred_formats: t.Dict[gws.OwsVerb, t.Optional[str]]
-
     def configure(self):
-        self.force_crs = gws.gis.crs.get(self.var('forceCrs'))
-        self.inverted_crs = gws.compact(gws.gis.crs.get(c) for c in self.var('invertAxis', default=[]))
-        self.source_layers = []
+        self.forceCrs = gws.gis.crs.get(self.var('forceCrs'))
+        self.sourceLayers = []
         self.url = self.var('url')
         self.version = ''
 
-        # operations from config, if any + a mandatory Caps operation.
-        # operations from the caps document will be added to this list,
+        # we need the Caps operation before we can go any further
+        self.operations = [
+            gws.OwsOperation(
+                formats=[gws.lib.mime.XML],
+                parameters={},
+                url=self.var('url'),
+                verb=gws.OwsVerb.GetCapabilities,
+            )
+        ]
+
+    def configure_operations(self, operations_from_caps):
+        # add operations from the config, if any,
+        # then add operations from the caps
         # so that configured ops take precedence
 
         self.operations = []
@@ -51,32 +57,21 @@ class Provider(gws.Node, gws.IOwsProvider):
         for cfg in self.var('operations', default=[]):
             self.operations.append(gws.OwsOperation(
                 formats=cfg.get('formats', []),
-                get_url=cfg.get('url'),
-                post_url=cfg.get('postUrl'),
+                params={},
+                postUrl=cfg.get('postUrl'),
+                url=cfg.get('url'),
                 verb=cfg.get('verb'),
-                params={},
             ))
 
-        if all(op.verb != gws.OwsVerb.GetCapabilities for op in self.operations):
-            self.operations.insert(0, gws.OwsOperation(
-                formats=['text/xml'],
-                get_url=self.var('url'),
-                post_url=None,
-                verb=gws.OwsVerb.GetCapabilities,
-                params={},
-            ))
+        verbs = set(op.verb for op in self.operations)
 
-        self.preferred_formats = {}
+        for op in operations_from_caps:
+            if op.verb not in verbs:
+                self.operations.append(op)
 
-        image_ops = {
-            gws.OwsVerb.GetLegendGraphic,
-            gws.OwsVerb.GetMap,
-            gws.OwsVerb.GetTile,
-        }
+        # check preferred formats
 
-        def _best_format(op):
-            best = gws.lib.mime.PNG if op.verb in image_ops else gws.lib.mime.XML
-
+        def _best_format(op, best):
             # they support exactly what we want...
             for fmt in op.formats:
                 if gws.lib.mime.get(fmt) == best:
@@ -87,56 +82,52 @@ class Provider(gws.Node, gws.IOwsProvider):
             # ...otherwise, no preferred format
             return None
 
-        for op in self.operations:
-            self.preferred_formats[op.verb] = _best_format(op)
+        image_ops = {
+            gws.OwsVerb.GetLegendGraphic,
+            gws.OwsVerb.GetMap,
+            gws.OwsVerb.GetTile,
+        }
 
-    def operation(self, verb: gws.OwsVerb, method='GET'):
         for op in self.operations:
-            if op.verb == verb and op.get(method.lower() + '_url'):
-                return op
+            best = gws.lib.mime.PNG if op.verb in image_ops else gws.lib.mime.XML
+            op.preferredFormat = _best_format(op, best)
 
-    def operation_args(self, verb: gws.OwsVerb, method='GET', params=None):
+    def operation(self, verb, method=None):
+        for op in self.operations:
+            if op.verb == verb:
+                url = op.postUrl if method == gws.RequestMethod.POST else op.url
+                if url:
+                    return op
+
+    def operation_args(self, verb: gws.OwsVerb, method: gws.RequestMethod = None, params=None) -> gws.gis.ows.request.Args:
         op = self.operation(verb, method)
         if not op:
             raise gws.Error(f'operation not found: {verb!r}')
 
-        return {
-            'url': op.get(method.lower() + '_url'),
-            'protocol': self.protocol,
-            'verb': verb,
-            'params': self.operation_params(op, params or {}),
-        }
+        rparams = {}
 
-    def operation_params(self, op: gws.OwsOperation, params: dict) -> dict:
-        """Merge Operation.params and request params."""
+        if params:
+            for name, val in params.items():
+                name = name.upper()
+                if name in op.parameters and val not in op.parameters[name]:
+                    raise gws.Error(f'invalid parameter value {val!r} for {name!r}')
+                rparams[name] = val
 
-        pmap = {
-            name.upper(): [name, allowed, None]
-            for name, allowed in op.params.items()
-        }
+        for name, vals in op.parameters.items():
+            if name not in rparams:
+                rparams[name] = vals[0]
 
-        for name, val in params.items():
-            name = name.upper()
-            if name in pmap:
-                pmap[name][2] = val
-            else:
-                pmap[name] = [name, None, val]
-
-        res = {}
-
-        for name, allowed, val in pmap.values():
-            if not allowed or val in allowed:
-                res[name] = val
-            elif val is None:
-                res[name] = allowed[0]
-            else:
-                raise gws.Error(f'invalid param {name!r}, value={val!r}, allowed={allowed!r}')
-
-        return res
+        return gws.gis.ows.request.Args(
+            params=rparams,
+            protocol=self.protocol,
+            url=(op.postUrl if method == gws.RequestMethod.POST else op.url),
+            verb=verb,
+        )
 
     def get_capabilities(self):
+        args = self.operation_args(gws.OwsVerb.GetCapabilities)
         return gws.gis.ows.request.get_text(
-            **self.operation_args(gws.OwsVerb.GetCapabilities),
+            args,
             max_age=self.var('capsCacheMaxAge'))
 
     def find_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.IFeature]:

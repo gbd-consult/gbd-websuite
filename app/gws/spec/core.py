@@ -13,6 +13,10 @@ class ReadError(Error):
     pass
 
 
+class LoadError(Error):
+    pass
+
+
 class C:
     ATOM = 'ATOM'
     CLASS = 'CLASS'

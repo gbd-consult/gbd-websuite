@@ -96,4 +96,4 @@ _types = {
 def create_from_path(root: gws.IRoot, path) -> t.Optional['Object']:
     for ext, typ in _types.items():
         if path.endswith(ext):
-            return root.create(gws.ext.object.template, gws.Config(type=typ, path=path))
+            return root.create(gws.ext.object.template, config=gws.Config(type=typ, path=path))

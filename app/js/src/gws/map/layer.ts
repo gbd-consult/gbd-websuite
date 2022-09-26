@@ -12,7 +12,7 @@ export class Layer implements types.IMapLayer {
     title = '';
     attributes = {};
 
-    props: api.base.layer.main.Props;
+    props: api.base.layer.Props;
 
     parent: types.IMapLayer = null;
     children = [];
@@ -80,7 +80,7 @@ export class Layer implements types.IMapLayer {
         return String(this.uid)[0] === '_';
     }
 
-    constructor(map: types.IMapManager, props: api.base.layer.main.Props) {
+    constructor(map: types.IMapManager, props: api.base.layer.Props) {
         this.map = map;
         this.props = props;
 

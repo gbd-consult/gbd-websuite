@@ -14,6 +14,7 @@ from .generator import generator
 Error = core.Error
 ReadError = core.ReadError
 GeneratorError = core.GeneratorError
+LoadError = core.LoadError
 
 
 def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'Object':
@@ -106,7 +107,10 @@ class Object(gws.ISpecRuntime):
             if desc.modName in sys.modules:
                 mod = sys.modules[desc.modName]
             else:
-                mod = gws.lib.importer.import_from_path(desc.modPath, gws.APP_DIR)
+                try:
+                    mod = gws.lib.importer.import_from_path(desc.modPath, gws.APP_DIR)
+                except gws.lib.importer.Error as exc:
+                    raise LoadError(f'cannot load class {classref!r}') from exc
             desc.classPtr = getattr(mod, desc.ident)
 
         return desc.classPtr

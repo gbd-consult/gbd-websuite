@@ -1,0 +1,22 @@
+projects+ {
+    title "WMS layer, custom roots"
+    metadata.abstract "Use `rootLayers` for configure WMS root layers."
+
+    map {
+        center {DEMO_DRESDEN_3857}
+        zoom.initScale 70000
+        zoom.maxScale 1000000
+    }
+
+    map.layers+ {
+        title "Sachsenforst: Natur und Erholung"
+        type "wms"
+        url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
+        rootLayers.titles [
+            '7_Bereich_Erholung'
+            '4_Bereich_Natur'
+        ]
+    }
+
+    @demo_osm_background
+}

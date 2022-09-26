@@ -57,7 +57,7 @@ def dispatch(
     try:
         request = root.specs.read(params, desc.tArg, strict_mode=strict_mode)
     except gws.spec.ReadError as exc:
-        gws.log.debug(f'{command_category!r}:{command_name!r} read error')
+        gws.log.debug(f'{command_category!r}:{command_name!r} read error: {exc!r}')
         raise gws.base.web.error.BadRequest()
 
     obj = get_object()

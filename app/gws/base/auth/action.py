@@ -33,7 +33,7 @@ class Object(gws.base.action.Object):
                 self.webMethod = t.cast(web.Object, m)
                 break
         if not self.webMethod:
-            raise gws.ConfigurationError('web authorization method required')
+            raise gws.Error('web authorization method required')
 
     @gws.ext.command.api('authCheck')
     def check(self, req: gws.IWebRequester, p: gws.Request) -> Response:

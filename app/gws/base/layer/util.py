@@ -101,8 +101,8 @@ def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):
         'origin': grid.origin,
         'tile_size': [grid.tileSize, grid.tileSize],
         'res': res,
-        'srs': layer.crs.epsg,
-        'bbox': layer.extent,
+        'srs': layer.bounds.crs.epsg,
+        'bbox': layer.bounds.extent,
     }))
 
     meta_size = grid.reqSize or 4

@@ -5,7 +5,14 @@ from . import error
 _ows_error_strings = '<ServiceException', '<ServerException', '<ows:ExceptionReport'
 
 
-def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
+class Args(gws.Data):
+    params: dict
+    protocol: gws.OwsProtocol
+    url: str
+    verb: gws.OwsVerb
+
+
+def _get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
     res = gws.lib.net.http_request(url, **kwargs)
 
     # some folks serve OWS error documents with the status 200
@@ -25,20 +32,16 @@ def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
     return res
 
 
-def get(url: str, protocol: gws.OwsProtocol, verb: gws.OwsVerb, **kwargs) -> gws.lib.net.HTTPResponse:
+def get(args: Args, **kwargs) -> gws.lib.net.HTTPResponse:
     """Get a raw service response"""
 
-    params = kwargs.pop('params', None) or {}
+    params = args.params or {}
+    params.setdefault('SERVICE', str(args.protocol).upper())
+    params.setdefault('REQUEST', args.verb)
 
-    # some folks only accept uppercase params
-    params = gws.to_upper_dict(params)
-
-    params.setdefault('SERVICE', str(protocol).upper())
-    params.setdefault('REQUEST', verb)
-
-    return get_url(url, params=params, **kwargs)
+    return _get_url(args.url, params=params, **kwargs)
 
 
-def get_text(url: str, protocol: gws.OwsProtocol, verb: gws.OwsVerb, **kwargs) -> str:
-    res = get(url, protocol, verb, **kwargs)
+def get_text(args: Args, **kwargs) -> str:
+    res = get(args, **kwargs)
     return res.text

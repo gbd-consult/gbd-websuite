@@ -145,7 +145,7 @@ class CliRefGenerator:
                 c.get('doc', '')
             ]
             if c.get('args'):
-                gws.extend([
+                gws.merge([
                     '',
                     _i(self.w('options') + ':'),
                     '',

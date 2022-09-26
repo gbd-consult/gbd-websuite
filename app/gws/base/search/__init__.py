@@ -1,1 +1,2 @@
-from . import finder
+from . import finder, manager
+

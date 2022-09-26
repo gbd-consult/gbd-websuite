@@ -2,6 +2,7 @@ import re
 
 import gws
 import gws.gis.crs
+import gws.gis.bounds
 import gws.base.layer
 import gws.types as t
 
@@ -9,7 +10,7 @@ import gws.types as t
 class ServiceConfig:
     """Tile service configuration"""
     extent: t.Optional[gws.Extent]  #: service extent
-    crs: gws.CRS = 'EPSG:3857'  #: service CRS
+    crs: gws.CrsName = 'EPSG:3857'  #: service CRS
     origin: str = 'nw'  #: position of the first tile (nw or sw)
     tileSize: int = 256  #: tile size
 
@@ -35,7 +36,7 @@ class Object(gws.base.layer.Object):
     url: gws.Url
     service: Service
 
-    def configure_source(self):
+    def configure(self):
         # with reqSize=1 MP will request the same tile multiple times
         # reqSize=4 is more efficient, however, reqSize=1 yields the first tile faster
         # which is crucial when browsing non-cached low resoltions
@@ -48,31 +49,27 @@ class Object(gws.base.layer.Object):
 
         p = self.var('service', default=gws.Data())
         self.service = Service(
-            crs=gws.gis.crs.get(p.crs) or gws.gis.crs.get3857(),
+            crs=gws.gis.crs.get(p.crs) or gws.gis.crs.WEBMERCATOR,
             origin=p.origin,
             tileSize=p.tileSize,
             extent=p.extent)
 
         if not self.service.extent:
-            if self.service.crs.srid == 3857:
-                self.service.extent = gws.gis.crs.CRS_3857_EXTENT
-            else:
-                raise gws.ConfigurationError(f'service extent required for crs {self.service.crs.srid!r}')
+            self.service.extent = self.service.crs.extent
+
+        if not gws.base.layer.configure.bounds(self):
+            bs = gws.Bounds(crs=self.service.crs, extent=self.service.extent)
+            self.bounds = gws.gis.bounds.transform(bs, self.parentBounds.crs)
 
     def props(self, user):
         p = super().props(user)
 
-        if self.displayMode == gws.LayerDisplayMode.client:
-            p.type = 'xyz'
-            p.url = self.url
+        if p:
+            if self.displayMode == gws.LayerDisplayMode.client:
+                p.type = 'xyz'
+                p.url = self.url
 
         return p
-
-    def own_bounds(self):
-        # in the "native" projection, use the service extent
-        # otherwise, the map extent
-        if self.service.crs == self.crs:
-            return gws.Bounds(crs=self.service.crs, extent=self.service.extent)
 
     def render(self, lri):
         return gws.base.layer.util.generic_raster_render(self, lri)

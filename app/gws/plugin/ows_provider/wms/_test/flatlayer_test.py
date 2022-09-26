@@ -89,7 +89,7 @@ def render_view(layer):
 
 def test_default_source_layer_is_root(layer_from_root: flatlayer.Object):
     assert len(layer_from_root.source_layers) == 1
-    assert layer_from_root.source_layers[0].a_uid == 'root'
+    assert layer_from_root.source_layers[0].aUid == 'root'
 
 
 def test_default_bounds_are_from_root(layer_from_root: flatlayer.Object):

@@ -5,7 +5,7 @@ import re
 import gws
 import gws.gis.crs
 import gws.gis.extent
-import gws.lib.xmlx as xmlx
+
 import gws.types as t
 
 
@@ -29,20 +29,23 @@ def service_operations(caps_el: gws.IXmlElement) -> t.List[gws.OwsOperation]:
 
 
 def _parse_operation(el: gws.IXmlElement) -> gws.OwsOperation:
-    params = {}
+    parameters = {}
+
+    # @TODO Range
+    # @TODO Constraint
 
     # <Parameter name="Format">
     #   <AllowedValues>
     #       <Value>image/gif</Value>
-    #       <Value>image/png</Value>
-    #       <Value>image/jpeg</Value>
-    #   </AllowedValues>
-    # </Parameter>
+    # ...
+
+    # <Parameter name="AcceptVersions">
+    #    <Value>1.0.0</Value>
 
     for param_el in el.findall('Parameter'):
         values = param_el.text_list('Value') + param_el.text_list('AllowedValues/Value')
         if values:
-            params[param_el.get('name')] = values
+            parameters[param_el.get('name').upper()] = values
 
     # <Operation name="GetMap">
     #     <DCP> <HTTP>
@@ -59,15 +62,15 @@ def _parse_operation(el: gws.IXmlElement) -> gws.OwsOperation:
     # </GetMap>
 
     op = gws.OwsOperation(
-        verb=el.get('name') or el.tag,
         formats=el.text_list('Format'),
-        get_url=_parse_url(el.first_of('DCP/HTTP/Get', 'DCPType/HTTP/Get')),
-        post_url=_parse_url(el.first_of('DCP/HTTP/Post', 'DCPType/HTTP/Post')),
-        params=params,
+        parameters=parameters,
+        postUrl=_parse_url(el.first_of('DCP/HTTP/Post', 'DCPType/HTTP/Post')),
+        url=_parse_url(el.first_of('DCP/HTTP/Get', 'DCPType/HTTP/Get')),
+        verb=el.get('name') or el.tag,
     )
 
-    if 'outputFormat' in params:
-        op.formats.extend(params['outputFormat'])
+    if 'outputFormat' in parameters:
+        op.formats.extend(parameters['outputFormat'])
 
     return op
 
@@ -190,7 +193,10 @@ def _contact_dict(caps_el: gws.IXmlElement) -> dict:
 
 ##
 
-def supported_bounds(layer_el: gws.IXmlElement, extra_crsids: t.Optional[t.List[str]] = None) -> t.List[gws.Bounds]:
+def bounds_and_crs(
+        layer_el: gws.IXmlElement,
+        extra_crsids: t.Optional[t.List[str]] = None
+):
     # <Layer...
     #     <CRS>EPSG....
     #     <EX_GeographicBoundingBox...
@@ -203,36 +209,22 @@ def supported_bounds(layer_el: gws.IXmlElement, extra_crsids: t.Optional[t.List[
     #         <ows:LowerCorner...
     #         <ows:UpperCorner...
 
-    if not layer_el:
-        return []
-
-    crs_to_bounds = {}
-
-    # enumerate explicitly listed bounds (WMS)
-
-    for el in layer_el.findall('BoundingBox'):
-        crs = gws.gis.crs.get(el.get('srs') or el.get('crs'))
-        bbox = _parse_bbox(el)
-        if crs and bbox:
-            crs_to_bounds[crs] = gws.Bounds(crs=crs, extent=bbox)
-
-    # NB prefer these for 4326 to avoid axis issues
+    wgs_ext = None
 
     el = layer_el.first_of('EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
     if el:
-        bbox = _parse_bbox(el)
-        if bbox:
-            crs = gws.gis.crs.get4326()
-            crs_to_bounds[crs] = gws.Bounds(crs=crs, extent=bbox)
+        wgs_ext = _parse_bbox(el)
 
-    # no bounds
+    bounds = []
 
-    if not crs_to_bounds:
-        return []
+    for el in layer_el.findall('BoundingBox'):
+        crsid = el.get('SRS') or el.get('CRS')
+        fmt, crs = gws.gis.crs.parse(crsid)
+        ext = _parse_bbox(el)
+        if crs and ext:
+            bounds.append(gws.SourceBounds(crs=crs, format=fmt, extent=ext))
 
-    # collect other supported crs and add extras (e.g. wmts matrix sets)
-
-    crsids = set()
+    crsids = set(b.crs.srid for b in bounds)
 
     for tag in 'DefaultSRS', 'DefaultCRS', 'OtherSRS', 'OtherCRS', 'SRS', 'CRS':
         for el in layer_el.findall(tag):
@@ -242,25 +234,9 @@ def supported_bounds(layer_el: gws.IXmlElement, extra_crsids: t.Optional[t.List[
     if extra_crsids:
         crsids.update(extra_crsids)
 
-    # freeze the bounds list to prevent double reprojection
+    crs_list = gws.compact(gws.gis.crs.get(s) for s in crsids)
 
-    bs = list(crs_to_bounds.values())
-
-    # compute bounds for those without bounds
-
-    for crsid in crsids:
-        new_crs = gws.gis.crs.get(crsid)
-        if not new_crs or new_crs in crs_to_bounds:
-            continue
-        bb = gws.gis.crs.best_bounds(new_crs, bs)
-        try:
-            new_ext = gws.gis.extent.transform(bb.extent, bb.crs, new_crs)
-        except Exception as exc:
-            gws.log.error(f'failed transform {bb.crs.srid}=>{new_crs.srid}')
-            continue
-        crs_to_bounds[new_crs] = gws.Bounds(crs=new_crs, extent=new_ext)
-
-    return list(crs_to_bounds.values())
+    return bounds, crs_list, wgs_ext
 
 
 ##
@@ -278,8 +254,8 @@ def parse_style(el: gws.IXmlElement) -> gws.SourceStyle:
 
     st.metadata = element_metadata(el)
     st.name = st.metadata.get('name', '').lower()
-    st.legend_url = _parse_url(el.first_of('LegendURL'))
-    st.is_default = (
+    st.legendUrl = _parse_url(el.first_of('LegendURL'))
+    st.isDefault = (
             el.get('IsDefault') == 'true'
             or st.name == 'default'
             or st.name.endswith(':default'))
@@ -288,7 +264,7 @@ def parse_style(el: gws.IXmlElement) -> gws.SourceStyle:
 
 def default_style(styles: t.List[gws.SourceStyle]) -> t.Optional[gws.SourceStyle]:
     for s in styles:
-        if s.is_default:
+        if s.isDefault:
             return s
     return styles[0] if styles else None
 

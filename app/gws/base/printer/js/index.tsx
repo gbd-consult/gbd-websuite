@@ -366,7 +366,8 @@ class Controller extends gws.Controller {
     get templates() {
         if (!this.app.project.printer)
             return [];
-        return this.app.project.printer.templates.items || [];
+        // return this.app.project.printer.templates.items || [];
+        return [];
     }
 
     get selectedTemplate() {
