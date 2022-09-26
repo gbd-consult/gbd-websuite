@@ -1,5 +1,4 @@
 projects+ {
-    uid "gws.plugin.tile_layer.demos.reprojected"
     title "Tile Layer: Reprojected"
     metadata.abstract "OSM layer, cached on the server and reprojected to another CRS."
 

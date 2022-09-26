@@ -115,11 +115,15 @@
     locales+ "de_DE"
 @end
 
-@def demo_osm_layer
-    title "Open Street Map"
-    type "tile"
-    url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+@def demo_osm_background
+    map.layers+ {
+        title "Open Street Map"
+        type "tile"
+        display "client"
+        opacity 0.3
+        url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    }
 @end
 
 @def demo_local_config

@@ -1,5 +1,4 @@
 projects+ {
-    uid "gws.plugin.tile_layer.demos.tile"
     title "Tile Layer: Server Display"
     metadata.abstract "OSM layer, cached on the server."
 

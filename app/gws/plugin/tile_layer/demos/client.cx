@@ -1,5 +1,4 @@
 projects+ {
-    uid "gws.plugin.tile_layer.demos.client"
     title "Tile Layer: Client Display"
     metadata.abstract "OSM layer, displayed directly on the client."
 
