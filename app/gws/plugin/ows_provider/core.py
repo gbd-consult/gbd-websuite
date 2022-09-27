@@ -24,7 +24,7 @@ class ProviderConfig(gws.Config):
 
 
 class Caps(gws.Data):
-    metadata: dict
+    metadata: gws.Metadata
     operations: t.List[gws.OwsOperation]
     sourceLayers: t.List[gws.SourceLayer]
     version: str

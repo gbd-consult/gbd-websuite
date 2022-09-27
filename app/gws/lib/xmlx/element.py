@@ -155,8 +155,9 @@ class XElement(xml.etree.ElementTree.Element):
 
     def _collect_text(self, paths, deep):
         def walk(el):
-            if el.text:
-                buf.append((el.tag, el.text))
+            s = (el.text or '').strip()
+            if s:
+                buf.append((el.tag, s))
             if deep:
                 for c in el:
                     walk(c)
@@ -164,7 +165,8 @@ class XElement(xml.etree.ElementTree.Element):
         buf = []
 
         if not paths:
-            walk(self)
+            for el in self:
+                walk(el)
         else:
             for path in paths:
                 for el in self.findall(path):

@@ -78,7 +78,7 @@ def _parse_operation(el: gws.IXmlElement) -> gws.OwsOperation:
 ##
 
 
-def service_metadata(caps_el: gws.IXmlElement) -> dict:
+def service_metadata(caps_el: gws.IXmlElement) -> gws.Metadata:
     # wms
     #
     #   <Capabilities
@@ -96,54 +96,55 @@ def service_metadata(caps_el: gws.IXmlElement) -> dict:
     #           <ows:ProviderName>...
     #           <ows:ServiceContact>...
 
-    d = _metadata_dict(caps_el.first_of('Service', 'ServiceIdentification'))
-    d.update(_contact_dict(caps_el))
-    d['contactProviderName'] = caps_el.text_of('ServiceProvider/ProviderName')
-    d['contactProviderSite'] = caps_el.text_of('ServiceProvider/ProviderSite')
+    md = gws.Metadata()
+
+    _element_metadata(caps_el.first_of('Service', 'ServiceIdentification'), md)
+    _contact_metadata(caps_el.first_of('Service/ContactInformation', 'ServiceProvider/ServiceContact'), md)
+
+    md.contactProviderName = caps_el.text_of('ServiceProvider/ProviderName')
+    md.contactProviderSite = caps_el.text_of('ServiceProvider/ProviderSite')
 
     #   <Capabilities
     #       <ServiceMetadataURL
 
     link = _parse_link(caps_el.find('ServiceMetadataURL'))
     if link:
-        d['metaLinks'] = [link]
+        md.serviceMetaLink = link
 
-    return gws.strip(d)
+    return gws.strip(md)
 
 
-def element_metadata(el: gws.IXmlElement) -> dict:
+def element_metadata(el: gws.IXmlElement) -> gws.Metadata:
     #   <whatever, e.g. Layer or FeatureType
     #       <Name...
     #       <Title...
 
-    return _metadata_dict(el)
+    md = gws.Metadata()
+    _element_metadata(el, md)
+    return gws.strip(md)
 
 
-def _metadata_dict(el: gws.IXmlElement) -> dict:
+def _element_metadata(el: gws.IXmlElement, md: gws.Metadata):
     if not el:
-        return {}
+        return
 
-    d = {
-        'abstract': el.text_of('Abstract'),
-        'accessConstraints': el.text_of('AccessConstraints'),
-        'attribution': el.text_of('Attribution Title'),
-        'fees': el.text_of('Fees'),
-        'keywords': el.text_list('Keywords', 'KeywordList', deep=True),
-        'name': el.text_of('Name') or el.text_of('Identifier'),
-        'title': el.text_of('Title'),
-        'metaLinks': gws.compact(_parse_link(e) for e in el.findall('MetadataURL')),
-    }
+    md.abstract = el.text_of('Abstract')
+    md.accessConstraints = el.text_of('AccessConstraints')
+    md.attribution = el.text_of('Attribution/Title')
+    md.fees = el.text_of('Fees')
+    md.keywords = el.text_list('Keywords', 'KeywordList', deep=True)
+    md.name = el.text_of('Name', 'Identifier')
+    md.title = el.text_of('Title')
+    md.metaLinks = gws.compact(_parse_link(e) for e in el.findall('MetadataURL'))
 
     e = el.find('AuthorityURL')
     if e:
-        d['authorityUrl'] = _parse_url(e)
-        d['authorityName'] = e.get('name')
+        md.authorityUrl = _parse_url(e)
+        md.authorityName = e.get('name')
 
     e = el.find('Identifier')
     if e:
-        d['authorityIdentifier'] = e.text
-
-    return gws.strip(d)
+        md.authorityIdentifier = e.text
 
 
 _contact_mapping = [
@@ -175,20 +176,15 @@ _contact_mapping = [
 ]
 
 
-def _contact_dict(caps_el: gws.IXmlElement) -> dict:
-    contact_el = caps_el.first_of('Service/ContactInformation', 'ServiceProvider/ServiceContact')
-    if not contact_el:
-        return {}
+def _contact_metadata(el: gws.IXmlElement, md: gws.Metadata):
+    if not el:
+        return
 
-    texts = contact_el.text_dict(deep=True)
-    d = {}
+    src = el.text_dict(deep=True)
 
-    for dst, src in _contact_mapping:
-        val = texts.get(src, '').strip()
-        if val:
-            d[dst] = val
-
-    return d
+    for dkey, skey in _contact_mapping:
+        if skey in src:
+            setattr(md, dkey, src[skey])
 
 
 ##

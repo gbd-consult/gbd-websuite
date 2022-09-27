@@ -83,7 +83,7 @@ class LayerCaps(gws.Data):
 
     has_legend: bool
     has_search: bool
-    meta: gws.MetadataValues
+    meta: gws.Metadata
     title: str
 
     layer_pname: str

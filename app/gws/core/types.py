@@ -654,13 +654,13 @@ class TileMatrixSet(Data):
 class SourceStyle(Data):
     isDefault: bool
     legendUrl: Url
-    metadata: 'IMetadata'
+    metadata: 'Metadata'
     name: str
 
 
 class SourceBounds(Data):
     crs: 'ICrs'
-    format: ICrs
+    format: CrsFormat
     extent: Extent
 
 
@@ -670,6 +670,7 @@ class SourceLayer(Data):
     aUid: str
 
     dataSource: dict
+    metadata: 'Metadata'
 
     supportedBounds: List[SourceBounds]
     supportedCrs: List['ICrs']
@@ -683,7 +684,6 @@ class SourceLayer(Data):
 
     layers: List['SourceLayer']
 
-    metadata: dict
     name: str
     title: str
 
@@ -1155,27 +1155,54 @@ class Locale(Data):
 class MetadataLink(Data):
     """Link metadata"""
 
-    scheme: str
-    url: Url
+    description: str
     formatName: str
     formatVersion: str
     function: str
+    mimeType: str
+    scheme: str
+    title: str
+    type: str
+    url: Url
+
+
+class MetadataAccessConstraint(Data):
+    text: str
     type: str
 
 
-class MetadataValues(Data):
-    abstract: str
-    accessConstraints: str
-    attribution: str
+class MetadataLicense(Data):
+    name: str
+    url: Url
 
+
+class MetadataAttribution(Data):
+    text: str
+    url: Url
+
+
+class Metadata(Data):
+    abstract: str
+    accessConstraints: List[MetadataAccessConstraint]
+    attribution: MetadataAttribution
     authorityIdentifier: str
     authorityName: str
     authorityUrl: str
-
     catalogCitationUid: str
     catalogUid: str
+    fees: str
+    image: str
+    keywords: List[str]
+    language3: str
+    language: str
+    languageName: str
+    license: MetadataLicense
+    name: str
+    parentIdentifier: str
+    title: str
 
     contactAddress: str
+    contactAddressType: str
     contactArea: str
     contactCity: str
     contactCountry: str
@@ -1195,9 +1222,6 @@ class MetadataValues(Data):
     dateCreated: str
     dateEnd: str
     dateUpdated: str
-
-    fees: str
-    image: str
 
     inspireKeywords: List[str]
     inspireMandatoryKeyword: str
@@ -1222,18 +1246,11 @@ class MetadataValues(Data):
     isoScope: str
     isoScopeName: str
     isoSpatialRepresentationType: str
-    isoTopicCategory: str
+    isoTopicCategories: List[str]
     isoSpatialResolution: str
 
-    keywords: List[str]
-    language3: str
-    language: str
-    languageName: str
-    license: str
-    name: str
-    title: str
-
     metaLinks: List[MetadataLink]
+    serviceMetaLink: MetadataLink
     extraLinks: List[MetadataLink]
 
     bounds: Bounds
@@ -1242,7 +1259,7 @@ class MetadataValues(Data):
 
 
 class IMetadata(IObject, Protocol):
-    values: MetadataValues
+    values: Metadata
 
     def extend(self, *others) -> 'IMetadata': ...
 

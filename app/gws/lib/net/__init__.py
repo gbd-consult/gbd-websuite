@@ -36,7 +36,7 @@ class Url(gws.Data):
     path: str
     pathparts: dict
     port: str
-    qs: dict
+    qsl: list
     query: str
     scheme: str
     url: str
@@ -59,7 +59,7 @@ def parse_url(url: str, **kwargs) -> Url:
         path=us.path or '',
         pathparts={},
         port=str(us.port or ''),
-        qs={},
+        qsl=[],
         query=us.query or '',
         scheme=us.scheme or '',
         url=url,
@@ -70,8 +70,9 @@ def parse_url(url: str, **kwargs) -> Url:
         u.pathparts = gws.lib.os2.parse_path(u.path)
 
     if u.query:
-        u.qs = urllib.parse.parse_qs(u.query)
-        u.params = {k.lower(): v[0] for k, v in u.qs.items()}
+        u.qsl = urllib.parse.parse_qsl(u.query)
+        for k, v in u.qsl:
+            u.params.setdefault(k.lower(), v)
 
     if u.username:
         u.username = unquote(u.username)

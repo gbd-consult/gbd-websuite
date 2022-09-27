@@ -23,7 +23,7 @@ class ExtendOption(t.Enum):
     source = 'source'  #: substutute missing metadata from the source
 
 
-# NB this must be kept in sync with gws.MetadataValues
+# NB this must be kept in sync with gws.Metadata
 
 class MetadataLinkConfig(gws.Data):
     """Link metadata"""
@@ -144,7 +144,7 @@ _NON_EXTENDABLE_PROPS = {'authorityIdentifier', 'catalogUid'}
 
 class Object(gws.Object, gws.IMetadata):
     def __init__(self, d):
-        self.values = gws.MetadataValues(d)
+        self.values = gws.Metadata(d)
         self._ensure_consistency()
 
     def props(self, user):

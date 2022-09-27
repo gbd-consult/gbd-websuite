@@ -1,9 +1,10 @@
-"""CLI utilty for OWS services"""
+"""CLI utilty for qgis"""
 
 import gws
+import gws.base.shape
+import gws.gis.crs
+import gws.lib.importer
 import gws.lib.json2
-import gws.gis.ows
-import gws.types as t
 
 
 class CapsParams(gws.CliParams):
@@ -18,10 +19,11 @@ class Object(gws.Node):
         """Print the capabilities of a document in JSON format"""
 
         xml = gws.read_file(p.path)
-        mod = gws.import_from_path(f'gws/plugin/qgis/caps.py')
+
+        mod = gws.lib.importer.import_from_path(f'gws/plugin/qgis/caps.py')
         res = mod.parse(xml)
 
-        js = gws.lib.json2.to_pretty_string(res, default=_caps_json, ascii=False)
+        js = gws.lib.json2.to_pretty_string(res, default=_caps_json)
 
         if p.out:
             gws.write_file(p.out, js)
@@ -31,11 +33,9 @@ class Object(gws.Node):
 
 
 def _caps_json(x):
-    if isinstance(x, gws.IMetadata):
-        return vars(x.values)
-    if isinstance(x, gws.ICrs):
+    if isinstance(x, gws.gis.crs.Crs):
         return x.epsg
-    if isinstance(x, gws.IShape):
+    if isinstance(x, gws.base.shape.Shape):
         return x.to_geojson()
     try:
         return vars(x)

@@ -9,7 +9,7 @@ from .. import core
 from .. import parseutil as u
 
 
-def parse(xml) -> core.Caps:
+def parse(xml: str) -> core.Caps:
     caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
     source_layers = gws.gis.source.check_layers(
         _layer(el) for el in caps_el.findall('Capability/Layer'))
@@ -71,7 +71,7 @@ def _layer(layer_el: gws.IXmlElement, parent: t.Optional[gws.SourceLayer] = None
         # @TODO
 
         # Attribution -> replace
-        sl.metadata['attribution'] = sl.metadata.get('attribution') or parent.metadata.get('attribution')
+        sl.metadata.attribution = sl.metadata.attribution or parent.metadata.attribution
 
         # AuthorityURL -> add
         # @TODO
