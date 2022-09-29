@@ -233,7 +233,7 @@ class ISpecRuntime(Protocol):
     version: str
     manifest: ApplicationManifest
 
-    def read(self, value: Any, type_name: str, path: str = '', strict_mode=True, verbose_errors=True, accept_extra_props=False) -> Any: ...
+    def read(self, value: Any, type_name: str, path: str = '', options=None) -> Any: ...
 
     def object_descriptor(self, type_name: str) -> Optional[ExtObjectDescriptor]: ...
 
@@ -1167,17 +1167,17 @@ class MetadataLink(Data):
 
 
 class MetadataAccessConstraint(Data):
-    text: str
+    title: str
     type: str
 
 
 class MetadataLicense(Data):
-    name: str
+    title: str
     url: Url
 
 
 class MetadataAttribution(Data):
-    text: str
+    title: str
     url: Url
 
 
@@ -1600,14 +1600,5 @@ class IApplication(INode, Protocol):
     def developer_option(self, name: str): ...
 
     def get_project(self, uid: str) -> Optional['IProject']: ...
-
-    def command_descriptor(
-            self,
-            command_category: str,
-            command_name: str,
-            params: dict,
-            user: 'IUser',
-            strict_mode: bool
-    ) -> ExtCommandDescriptor: ...
 
     def require_helper(self, ext_type: str): ...

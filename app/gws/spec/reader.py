@@ -12,19 +12,27 @@ from . import core
 
 
 class Reader:
-    stack = None
-    push = lambda _: ...
-    pop = lambda: ...
     atom = core.Type(c=core.C.ATOM)
 
-    def __init__(self, runtime, path, strict_mode, verbose_errors, accept_extra_props):
+    def __init__(self, runtime, path, options):
         self.runtime = runtime
         self.path = path
-        self.strict_mode = strict_mode
-        self.verbose_errors = verbose_errors
-        self.accept_extra_props = accept_extra_props
+
+        options = options or ''
+
+        self.accept_extra_props = 'accept_extra_props' in options
+        self.case_insensitive = 'case_insensitive' in options
+        self.convert_values = 'convert_values' in options
+        self.ignore_extra_props = 'ignore_extra_props' in options
+        self.relax_required = 'relax_required' in options
+        self.verbose_errors = 'verbose_errors' in options
+
+        self.stack = None
+        self.push = lambda _: ...
+        self.pop = lambda: ...
 
     def read(self, value, type_uid):
+
         if not self.verbose_errors:
             return self.read2(value, type_uid)
 
@@ -57,7 +65,7 @@ class Reader:
             'path': self.path,
             'formatted_stack': _format_error_stack(self.stack or [])
         }
-        exc.args = exc.args + tuple([details])
+        exc.args = (exc.args[0], exc.args[1], details)
         return exc
 
 
@@ -68,7 +76,7 @@ def _read_any(r: Reader, val, typ: core.Type):
 
 
 def _read_bool(r: Reader, val, typ: core.Type):
-    if r.strict_mode:
+    if not r.convert_values:
         return _ensure(val, bool)
     try:
         return bool(val)
@@ -86,7 +94,7 @@ def _read_bytes(r: Reader, val, typ: core.Type):
 
 
 def _read_float(r: Reader, val, typ: core.Type):
-    if r.strict_mode:
+    if not r.convert_values:
         if isinstance(val, int):
             return float(val)
         return _ensure(val, float)
@@ -97,7 +105,7 @@ def _read_float(r: Reader, val, typ: core.Type):
 
 
 def _read_int(r: Reader, val, typ: core.Type):
-    if r.strict_mode:
+    if not r.convert_values:
         return _ensure(val, int)
     try:
         return int(val)
@@ -106,7 +114,7 @@ def _read_int(r: Reader, val, typ: core.Type):
 
 
 def _read_str(r: Reader, val, typ: core.Type):
-    if r.strict_mode:
+    if not r.convert_values:
         return _ensure(val, str)
     try:
         return _to_string(val)
@@ -161,7 +169,7 @@ def _read_tuple(r: Reader, val, typ: core.Type):
 
 
 def _read_any_list(r, val):
-    if not r.strict_mode and isinstance(val, str):
+    if r.convert_values and isinstance(val, str):
         val = val.strip()
         val = [v.strip() for v in val.split(',')] if val else []
     return _ensure(val, list)
@@ -205,13 +213,13 @@ def _read_enum(r: Reader, val, typ: core.Type):
 
 def _read_object(r: Reader, val, typ: core.Type):
     val = _ensure(val, dict)
-    if not r.strict_mode:
+    if r.case_insensitive:
         val = {k.lower(): v for k, v in val.items()}
 
     res = {}
 
     for prop_name, prop_type_uid in typ.tProperties.items():
-        prop_val = val.get(prop_name if r.strict_mode else prop_name.lower())
+        prop_val = val.get(prop_name.lower() if r.case_insensitive else prop_name)
         r.push([prop_val, prop_name])
         res[prop_name] = r.read2(prop_val, prop_type_uid)
         r.pop()
@@ -222,7 +230,9 @@ def _read_object(r: Reader, val, typ: core.Type):
         if k not in typ.tProperties:
             if r.accept_extra_props:
                 res[k] = val[k]
-            elif r.strict_mode:
+            elif r.ignore_extra_props:
+                continue
+            else:
                 unknown.append(k)
 
     if unknown:
@@ -236,6 +246,8 @@ def _read_property(r: Reader, val, typ: core.Type):
         return r.read2(val, typ.tValue)
 
     if not typ.hasDefault:
+        if r.relax_required:
+            return None
         raise core.ReadError(f"required property missing: {typ.ident!r}", None)
 
     if typ.default is None:
@@ -248,10 +260,10 @@ def _read_property(r: Reader, val, typ: core.Type):
 
 def _read_variant(r: Reader, val, typ: core.Type):
     val = _ensure(val, dict)
-    if not r.strict_mode:
+    if r.case_insensitive:
         val = {k.lower(): v for k, v in val.items()}
 
-    type_name = val.get('type', core.DEFAULT_TYPE)
+    type_name = val.get(core.VARIANT_TAG, core.DEFAULT_VARIANT_TAG)
     target_type_uid = typ.tMembers.get(type_name)
     if not target_type_uid:
         raise core.ReadError(f"illegal type: {type_name!r}, expected: {_comma(typ.tMembers)}", val)
@@ -329,7 +341,7 @@ def _read_datetime(r: Reader, val, typ: core.Type):
 def _read_dirpath(r: Reader, val, typ: core.Type):
     path = gws.lib.os2.abs_path(val, r.path)
     if not gws.is_dir(path):
-        raise core.ReadError(f'directory not found: {path!r}', path)
+        raise core.ReadError(f'directory not found: {path!r}', val)
     return path
 
 
@@ -343,7 +355,7 @@ def _read_duration(r: Reader, val, typ: core.Type):
 def _read_filepath(r: Reader, val, typ: core.Type):
     path = gws.lib.os2.abs_path(val, r.path)
     if not gws.is_file(path):
-        raise core.ReadError(f'file not found: {path!r}', path)
+        raise core.ReadError(f'file not found: {path!r}', val)
     return path
 
 
@@ -365,6 +377,14 @@ def _read_url(r: Reader, val, typ: core.Type):
     if u.startswith(('http://', 'https://')):
         return u
     raise core.ReadError(f'invalid url: {val!r}', val)
+
+
+def _read_metadata(r: Reader, val, typ: core.Type):
+    rr = r.relax_required
+    r.relax_required = True
+    res = gws.compact(_read_object(r, val, typ))
+    r.relax_required = rr
+    return res
 
 
 # utils
@@ -472,4 +492,5 @@ _READERS = {
     'gws.core.types.FormatStr': _read_formatstr,
     'gws.core.types.Regex': _read_regex,
     'gws.core.types.Url': _read_url,
+    'gws.core.types.Metadata': _read_metadata,
 }

@@ -68,8 +68,8 @@ class Object(gws.ISpecRuntime):
     def get(self, key):
         return self.index.get(key)
 
-    def read(self, value, type_name, path='', strict_mode=True, verbose_errors=True, accept_extra_props=False):
-        r = reader.Reader(self, path, strict_mode, verbose_errors, accept_extra_props)
+    def read(self, value, type_name, path='', options=None):
+        r = reader.Reader(self, path, options)
         return r.read(value, type_name)
 
     def object_descriptor(self, name):
@@ -97,7 +97,7 @@ class Object(gws.ISpecRuntime):
             return cls
 
         if ext_name:
-            name = ext_name + '.' + (ext_type or core.DEFAULT_TYPE)
+            name = ext_name + '.' + (ext_type or core.DEFAULT_VARIANT_TAG)
 
         desc = self.object_descriptor(name)
         if not desc:

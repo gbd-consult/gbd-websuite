@@ -59,7 +59,11 @@ EXT_COMMAND_CLI_PREFIX = EXT_COMMAND_PREFIX + 'cli.'
 
 TypeId = str
 
-DEFAULT_TYPE = 'default'
+# tag property name for Variant types
+VARIANT_TAG = 'type'
+
+# default variant tag
+DEFAULT_VARIANT_TAG = 'default'
 
 
 class Type:

@@ -179,7 +179,7 @@ def _check_variants(gen):
             for tItem in typ.tItems:
                 try:
                     item_type = gen.types.get(tItem)
-                    tag_property_type = gen.types.get(item_type.name + '.' + base.TAG_PROPERTY)
+                    tag_property_type = gen.types.get(item_type.name + '.' + base.VARIANT_TAG)
                     tag_value_type = gen.types.get(tag_property_type.tValue)
                     if tag_value_type.c == base.C.LITERAL and len(tag_value_type.literalValues) == 1:
                         members[tag_value_type.literalValues[0]] = item_type.name
@@ -233,8 +233,8 @@ def _synthesize_ext_type_properties(gen):
             nt = gen.new_type(
                 base.C.PROPERTY,
                 doc='object type',
-                ident=base.TAG_PROPERTY,
-                name=t.name + DOT + base.TAG_PROPERTY,
+                ident=base.VARIANT_TAG,
+                name=t.name + DOT + base.VARIANT_TAG,
                 pos=t.pos,
                 default='default',
                 hasDefault=True,

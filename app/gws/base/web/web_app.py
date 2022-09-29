@@ -73,23 +73,27 @@ def handle_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPException) 
     return req.content_responder(response)
 
 
+_relaxed_read_options = {'case_insensitive', 'convert_values', 'ignore_extra_props'}
+
+
 def final_middleware(req: gws.IWebRequester, nxt) -> gws.IWebResponder:
     command_name = req.param('cmd')
     if not command_name:
         raise gws.base.web.error.NotFound()
 
+    read_options = None
+
     if req.isApi:
         command_category = 'api'
         params = req.param('params')
-        strict_mode = True
     elif req.isGet:
         command_category = 'get'
         params = req.params
-        strict_mode = False
+        read_options = _relaxed_read_options
     elif req.isPost:
         command_category = 'post'
         params = req.params
-        strict_mode = False
+        read_options = _relaxed_read_options
     else:
         # @TODO: add HEAD
         raise gws.base.web.error.MethodNotAllowed()
@@ -100,7 +104,8 @@ def final_middleware(req: gws.IWebRequester, nxt) -> gws.IWebResponder:
         command_name,
         params,
         req.user,
-        strict_mode)
+        read_options
+    )
 
     response = fn(req, request)
 

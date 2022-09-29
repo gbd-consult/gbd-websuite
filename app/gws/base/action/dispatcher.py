@@ -9,7 +9,7 @@ def dispatch(
         command_name: str,
         params: dict,
         user: gws.IUser = None,
-        strict_mode=True
+        read_options=None,
 ):
     def get_object():
         if not root.app:
@@ -55,7 +55,7 @@ def dispatch(
         raise gws.base.web.error.NotFound()
 
     try:
-        request = root.specs.read(params, desc.tArg, strict_mode=strict_mode)
+        request = root.specs.read(params, desc.tArg, read_options)
     except gws.spec.ReadError as exc:
         gws.log.debug(f'{command_category!r}:{command_name!r} read error: {exc!r}')
         raise gws.base.web.error.BadRequest()

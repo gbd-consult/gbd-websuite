@@ -49,7 +49,7 @@ def main(argv):
             command_category='cli',
             command_name=camelize(cmd1 + '-' + cmd2),
             params=params,
-            strict_mode=False
+            read_options={'case_insensitive', 'convert_values', 'ignore_extra_props'}
         )
     except gws.base.web.error.NotFound:
         return error('command not found')

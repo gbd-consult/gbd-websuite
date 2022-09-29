@@ -41,9 +41,6 @@ DEFAULT_EXT_SUPERS = {
 # prefix for gws.plugin class names
 PLUGIN_PREFIX = APP_NAME + '.plugin'
 
-# tag property name for Variant types
-TAG_PROPERTY = 'type'
-
 # comment prefix for Type aliases
 TYPE_COMMENT_PREFIX = 'type:'
 
