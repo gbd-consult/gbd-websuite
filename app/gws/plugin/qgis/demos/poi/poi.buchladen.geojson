@@ -1,0 +1,656 @@
+{
+    "type": "FeatureCollection",
+    "crs": {
+        "type": "name",
+        "properties": {
+            "name": "urn:ogc:def:crs:EPSG::3857"
+        }
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753955.790325712,
+                    6657470.30918604
+                ]
+            },
+            "properties": {
+                "id": 208,
+                "fclass": "Buchladen",
+                "name": "Buch in Bilk"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754733.14546187,
+                    6661260.69586298
+                ]
+            },
+            "properties": {
+                "id": 340,
+                "fclass": "Buchladen",
+                "name": "Mayersche"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756822.334005333,
+                    6663364.94351472
+                ]
+            },
+            "properties": {
+                "id": 445,
+                "fclass": "Buchladen",
+                "name": "Bolland & Böttcher"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    765224.439739732,
+                    6650602.26355617
+                ]
+            },
+            "properties": {
+                "id": 600,
+                "fclass": "Buchladen",
+                "name": "Buchhandlung Dietsch"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    761609.495123508,
+                    6656829.79481312
+                ]
+            },
+            "properties": {
+                "id": 615,
+                "fclass": "Buchladen",
+                "name": "Bücherstube Eller"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755018.357129232,
+                    6663880.23913889
+                ]
+            },
+            "properties": {
+                "id": 719,
+                "fclass": "Buchladen",
+                "name": "Antiquariat Querido"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758794.013694313,
+                    6655103.70075334
+                ]
+            },
+            "properties": {
+                "id": 855,
+                "fclass": "Buchladen",
+                "name": "Werstenbuch"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753683.525115129,
+                    6660902.22861745
+                ]
+            },
+            "properties": {
+                "id": 1012,
+                "fclass": "Buchladen",
+                "name": "Heinrich Heine Antiquariat"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753901.14358768,
+                    6660862.28929635
+                ]
+            },
+            "properties": {
+                "id": 1060,
+                "fclass": "Buchladen",
+                "name": "Frank Petzchen Kochbücher"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754364.266065228,
+                    6658115.88441036
+                ]
+            },
+            "properties": {
+                "id": 1074,
+                "fclass": "Buchladen",
+                "name": "BiBaBuZe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754176.826306631,
+                    6661400.03786881
+                ]
+            },
+            "properties": {
+                "id": 1123,
+                "fclass": "Buchladen",
+                "name": "Müller & Böhm Literaturhandlung"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754302.149789366,
+                    6661624.35166552
+                ]
+            },
+            "properties": {
+                "id": 1157,
+                "fclass": "Buchladen",
+                "name": "Buchhandlung Walther König in der Kunsthalle"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755268.592212584,
+                    6670340.50240053
+                ]
+            },
+            "properties": {
+                "id": 1338,
+                "fclass": "Buchladen",
+                "name": "Bücher Müchler"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751314.601823253,
+                    6662317.72087518
+                ]
+            },
+            "properties": {
+                "id": 1469,
+                "fclass": "Buchladen",
+                "name": "Buchhandlung Gossens"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756851.054433958,
+                    6660397.41136296
+                ]
+            },
+            "properties": {
+                "id": 1517,
+                "fclass": "Buchladen",
+                "name": "BOOXYCLE"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    767757.091738669,
+                    6646602.07285306
+                ]
+            },
+            "properties": {
+                "id": 1582,
+                "fclass": "Buchladen",
+                "name": "Garather Buchhandlung"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754898.621884933,
+                    6663892.57917884
+                ]
+            },
+            "properties": {
+                "id": 1608,
+                "fclass": "Buchladen",
+                "name": "HörbuchHandlung Romeike"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753130.389697328,
+                    6670504.73481446
+                ]
+            },
+            "properties": {
+                "id": 1631,
+                "fclass": "Buchladen",
+                "name": "WHSmith"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    765193.4038657,
+                    6650538.39139718
+                ]
+            },
+            "properties": {
+                "id": 1633,
+                "fclass": "Buchladen",
+                "name": "Bücherarche in Benrath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    752908.797118953,
+                    6670919.66369141
+                ]
+            },
+            "properties": {
+                "id": 1708,
+                "fclass": "Buchladen",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757991.956763148,
+                    6661923.79590544
+                ]
+            },
+            "properties": {
+                "id": 1733,
+                "fclass": "Buchladen",
+                "name": "Regenbogen Buchhandlung"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755459.705514378,
+                    6660828.87336975
+                ]
+            },
+            "properties": {
+                "id": 1764,
+                "fclass": "Buchladen",
+                "name": "Der Bücher Ober - bookstore"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755890.344964514,
+                    6660710.17683605
+                ]
+            },
+            "properties": {
+                "id": 1799,
+                "fclass": "Buchladen",
+                "name": "Bookstore Nippon"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750631.300524864,
+                    6674438.22291398
+                ]
+            },
+            "properties": {
+                "id": 1859,
+                "fclass": "Buchladen",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754772.018228056,
+                    6663655.91681647
+                ]
+            },
+            "properties": {
+                "id": 1892,
+                "fclass": "Buchladen",
+                "name": "Mayersche M"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751353.853075707,
+                    6662317.20532399
+                ]
+            },
+            "properties": {
+                "id": 1966,
+                "fclass": "Buchladen",
+                "name": "Buchhandlung Gossens junior"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759627.117631461,
+                    6663911.30264675
+                ]
+            },
+            "properties": {
+                "id": 1974,
+                "fclass": "Buchladen",
+                "name": "Schulz & Schulz Bücher"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754379.594759112,
+                    6659862.32343839
+                ]
+            },
+            "properties": {
+                "id": 1998,
+                "fclass": "Buchladen",
+                "name": "Mayersche"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755446.88150904,
+                    6660699.9922631
+                ]
+            },
+            "properties": {
+                "id": 2033,
+                "fclass": "Buchladen",
+                "name": "Antique"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754760.429869064,
+                    6663618.32884902
+                ]
+            },
+            "properties": {
+                "id": 2057,
+                "fclass": "Buchladen",
+                "name": "Jokers"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757227.670535208,
+                    6661697.37629686
+                ]
+            },
+            "properties": {
+                "id": 2068,
+                "fclass": "Buchladen",
+                "name": "Christliche Bücherstube"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755617.478628682,
+                    6660923.59365699
+                ]
+            },
+            "properties": {
+                "id": 2120,
+                "fclass": "Buchladen",
+                "name": "Takagi - Books & More"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754395.79174502,
+                    6658857.85954587
+                ]
+            },
+            "properties": {
+                "id": 2151,
+                "fclass": "Buchladen",
+                "name": "INFINIBU"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754396.704564845,
+                    6658882.11578402
+                ]
+            },
+            "properties": {
+                "id": 2152,
+                "fclass": "Buchladen",
+                "name": "Antiquariat"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749682.769407714,
+                    6674781.79392381
+                ]
+            },
+            "properties": {
+                "id": 2153,
+                "fclass": "Buchladen",
+                "name": "Max Apel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749783.825241454,
+                    6674773.74618146
+                ]
+            },
+            "properties": {
+                "id": 2155,
+                "fclass": "Buchladen",
+                "name": "Buchhandlung Lesezeit"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763554.992468256,
+                    6663387.16842473
+                ]
+            },
+            "properties": {
+                "id": 2190,
+                "fclass": "Buchladen",
+                "name": "Mayersche Buchhandlung"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756225.116069177,
+                    6655233.13319211
+                ]
+            },
+            "properties": {
+                "id": 2286,
+                "fclass": "Buchladen",
+                "name": "Lehmanns"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758497.692341771,
+                    6661760.50010982
+                ]
+            },
+            "properties": {
+                "id": 2334,
+                "fclass": "Buchladen",
+                "name": "Die BücherFee"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754924.781965271,
+                    6664430.72260295
+                ]
+            },
+            "properties": {
+                "id": 2438,
+                "fclass": "Buchladen",
+                "name": "Antiquariat Querido – Kunst"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754668.45770577,
+                    6663615.46619632
+                ]
+            },
+            "properties": {
+                "id": 2515,
+                "fclass": "Buchladen",
+                "name": "Varia Vardar"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754570.285046839,
+                    6662800.91329135
+                ]
+            },
+            "properties": {
+                "id": 2550,
+                "fclass": "Buchladen",
+                "name": "Musik Fratz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753953.86449852,
+                    6658231.84246483
+                ]
+            },
+            "properties": {
+                "id": 2613,
+                "fclass": "Buchladen",
+                "name": "Thalia"
+            }
+        }
+    ]
+}

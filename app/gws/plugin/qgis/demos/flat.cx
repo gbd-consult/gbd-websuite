@@ -1,0 +1,22 @@
+projects+ {
+    title "QGIS flat layer"
+    metadata.abstract "`qgisflat` layers display multiple layers from a QGIS project as a single WebSuite layer."
+
+    map {
+        center {DEMO_DUESSELDORF_3857}
+        zoom.initScale 15000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Banks and hotels in Düsseldorf"
+        type "qgisflat"
+        path "poi.qgs"
+        sourceLayers.names [
+            "Bank"
+            "Hotel"
+        ]
+    }
+
+    @demo_osm_background
+}

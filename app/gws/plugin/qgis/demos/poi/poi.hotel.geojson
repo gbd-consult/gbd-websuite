@@ -1,0 +1,3086 @@
+{
+    "type": "FeatureCollection",
+    "crs": {
+        "type": "name",
+        "properties": {
+            "name": "urn:ogc:def:crs:EPSG::3857"
+        }
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755354.931609646,
+                    6660501.97326934
+                ]
+            },
+            "properties": {
+                "id": 5,
+                "fclass": "Hotel",
+                "name": "Hotel Lindenhof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755282.70752402,
+                    6660209.31704639
+                ]
+            },
+            "properties": {
+                "id": 9,
+                "fclass": "Hotel",
+                "name": "Hotel Batavia"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756245.554327686,
+                    6661133.97651015
+                ]
+            },
+            "properties": {
+                "id": 12,
+                "fclass": "Hotel",
+                "name": "Sir Astor"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756205.523838796,
+                    6661152.92474138
+                ]
+            },
+            "properties": {
+                "id": 21,
+                "fclass": "Hotel",
+                "name": "Lady Astor"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755604.476512157,
+                    6660548.59377153
+                ]
+            },
+            "properties": {
+                "id": 24,
+                "fclass": "Hotel",
+                "name": "City Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755321.99217232,
+                    6660223.73100006
+                ]
+            },
+            "properties": {
+                "id": 25,
+                "fclass": "Hotel",
+                "name": "Hotel Ko"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755583.192225515,
+                    6660233.84388777
+                ]
+            },
+            "properties": {
+                "id": 26,
+                "fclass": "Hotel",
+                "name": "Hotel Mercure"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755295.620584952,
+                    6660490.70476235
+                ]
+            },
+            "properties": {
+                "id": 27,
+                "fclass": "Hotel",
+                "name": "Hotel Monopol"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755253.19672701,
+                    6660465.35956518
+                ]
+            },
+            "properties": {
+                "id": 29,
+                "fclass": "Hotel",
+                "name": "Pars"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756156.565526746,
+                    6661264.12650257
+                ]
+            },
+            "properties": {
+                "id": 31,
+                "fclass": "Hotel",
+                "name": "Prinz Anton"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756226.707937895,
+                    6660942.00816179
+                ]
+            },
+            "properties": {
+                "id": 34,
+                "fclass": "Hotel",
+                "name": "Hotel Asahi"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755281.393954028,
+                    6660260.68131294
+                ]
+            },
+            "properties": {
+                "id": 38,
+                "fclass": "Hotel",
+                "name": "Hotel Burns"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755495.472466772,
+                    6660915.13295247
+                ]
+            },
+            "properties": {
+                "id": 40,
+                "fclass": "Hotel",
+                "name": "Weidenhof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755360.55324393,
+                    6661019.59482689
+                ]
+            },
+            "properties": {
+                "id": 41,
+                "fclass": "Hotel",
+                "name": "Max Brown Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755257.315548169,
+                    6660126.51284028
+                ]
+            },
+            "properties": {
+                "id": 42,
+                "fclass": "Hotel",
+                "name": "Hotel Düsseldorf Mitte"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755404.769345674,
+                    6660027.44747964
+                ]
+            },
+            "properties": {
+                "id": 43,
+                "fclass": "Hotel",
+                "name": "Stadt München"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755397.032641063,
+                    6659915.42722246
+                ]
+            },
+            "properties": {
+                "id": 45,
+                "fclass": "Hotel",
+                "name": "Max"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756813.584293358,
+                    6660396.8070655
+                ]
+            },
+            "properties": {
+                "id": 48,
+                "fclass": "Hotel",
+                "name": "ibis Düsseldorf City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756856.920971121,
+                    6661857.7554649
+                ]
+            },
+            "properties": {
+                "id": 53,
+                "fclass": "Hotel",
+                "name": "Kempe Comfort"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757560.682791917,
+                    6661647.28289386
+                ]
+            },
+            "properties": {
+                "id": 66,
+                "fclass": "Hotel",
+                "name": "zum Tönnchen"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756549.167106874,
+                    6661073.06162136
+                ]
+            },
+            "properties": {
+                "id": 73,
+                "fclass": "Hotel",
+                "name": "Hotel Friends"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756587.917421619,
+                    6661267.87709983
+                ]
+            },
+            "properties": {
+                "id": 79,
+                "fclass": "Hotel",
+                "name": "Residenz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756559.497555621,
+                    6661464.70587976
+                ]
+            },
+            "properties": {
+                "id": 83,
+                "fclass": "Hotel",
+                "name": "Schumacher"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756768.945177549,
+                    6659540.61571359
+                ]
+            },
+            "properties": {
+                "id": 109,
+                "fclass": "Hotel",
+                "name": "Berliner Hof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755141.420826305,
+                    6662377.18725631
+                ]
+            },
+            "properties": {
+                "id": 116,
+                "fclass": "Hotel",
+                "name": "Berial"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755326.712118728,
+                    6659268.85700624
+                ]
+            },
+            "properties": {
+                "id": 118,
+                "fclass": "Hotel",
+                "name": "Novum Hotel Maxim Düsseldorf City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755286.06937264,
+                    6659126.38810679
+                ]
+            },
+            "properties": {
+                "id": 120,
+                "fclass": "Hotel",
+                "name": "Günnewig Hotel Esplanade"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757925.67713833,
+                    6660670.3628708
+                ]
+            },
+            "properties": {
+                "id": 122,
+                "fclass": "Hotel",
+                "name": "Engelbert"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764317.742487222,
+                    6653756.53129536
+                ]
+            },
+            "properties": {
+                "id": 151,
+                "fclass": "Hotel",
+                "name": "Acora"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749894.153988782,
+                    6664080.54482659
+                ]
+            },
+            "properties": {
+                "id": 160,
+                "fclass": "Hotel",
+                "name": "Novotel Düsseldorf City West"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750006.386299398,
+                    6663965.16175024
+                ]
+            },
+            "properties": {
+                "id": 161,
+                "fclass": "Hotel",
+                "name": "Mercure"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764126.395414496,
+                    6650289.13852433
+                ]
+            },
+            "properties": {
+                "id": 167,
+                "fclass": "Hotel",
+                "name": "Zum neuen Rathaus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756181.512224632,
+                    6660368.83169657
+                ]
+            },
+            "properties": {
+                "id": 174,
+                "fclass": "Hotel",
+                "name": "ibis Hotel Düsseldorf Hbf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757025.135853661,
+                    6666044.65392776
+                ]
+            },
+            "properties": {
+                "id": 189,
+                "fclass": "Hotel",
+                "name": "Renaissance Düsseldorf Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764064.802340241,
+                    6654849.28236705
+                ]
+            },
+            "properties": {
+                "id": 193,
+                "fclass": "Hotel",
+                "name": "Mercure Hotel Düsseldorf Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753596.306294092,
+                    6665793.22092577
+                ]
+            },
+            "properties": {
+                "id": 198,
+                "fclass": "Hotel",
+                "name": "Hilton Dusseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755865.186759594,
+                    6660114.37398115
+                ]
+            },
+            "properties": {
+                "id": 212,
+                "fclass": "Hotel",
+                "name": "Best Western Ambassador"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763342.806386854,
+                    6650038.24239776
+                ]
+            },
+            "properties": {
+                "id": 242,
+                "fclass": "Hotel",
+                "name": "Hotel Restaurant Pigage"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753973.367673307,
+                    6660828.25126603
+                ]
+            },
+            "properties": {
+                "id": 283,
+                "fclass": "Hotel",
+                "name": "Carat Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    752142.785438906,
+                    6653924.58680421
+                ]
+            },
+            "properties": {
+                "id": 334,
+                "fclass": "Hotel",
+                "name": "Hotel Fährhaus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    765242.061615125,
+                    6666603.32279386
+                ]
+            },
+            "properties": {
+                "id": 409,
+                "fclass": "Hotel",
+                "name": "Gut Moschenhof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    752664.606683951,
+                    6658375.96608211
+                ]
+            },
+            "properties": {
+                "id": 415,
+                "fclass": "Hotel",
+                "name": "Holiday Inn"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751793.765439422,
+                    6667396.5345112
+                ]
+            },
+            "properties": {
+                "id": 424,
+                "fclass": "Hotel",
+                "name": "Hotel Carlton"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754534.651677837,
+                    6660371.67543999
+                ]
+            },
+            "properties": {
+                "id": 463,
+                "fclass": "Hotel",
+                "name": "InterContinental Hotel Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755777.389077206,
+                    6660178.9074198
+                ]
+            },
+            "properties": {
+                "id": 504,
+                "fclass": "Hotel",
+                "name": "Intercity Hotel Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755235.830886446,
+                    6660062.45967852
+                ]
+            },
+            "properties": {
+                "id": 561,
+                "fclass": "Hotel",
+                "name": "Stage 47"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756763.423730805,
+                    6660455.99288174
+                ]
+            },
+            "properties": {
+                "id": 625,
+                "fclass": "Hotel",
+                "name": "Leonardo Hotel : Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754868.721469706,
+                    6659941.67711182
+                ]
+            },
+            "properties": {
+                "id": 679,
+                "fclass": "Hotel",
+                "name": "NH Düsseldorf Königsallee"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756949.80595424,
+                    6666304.41864212
+                ]
+            },
+            "properties": {
+                "id": 694,
+                "fclass": "Hotel",
+                "name": "Mercure"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756286.608955889,
+                    6658909.51742306
+                ]
+            },
+            "properties": {
+                "id": 697,
+                "fclass": "Hotel",
+                "name": "Hotel Lessing"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750607.467021887,
+                    6666507.14934659
+                ]
+            },
+            "properties": {
+                "id": 727,
+                "fclass": "Hotel",
+                "name": "Schnellenburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763355.630392193,
+                    6653545.25473771
+                ]
+            },
+            "properties": {
+                "id": 729,
+                "fclass": "Hotel",
+                "name": "Am Hoxbach Garni"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754594.174209565,
+                    6659744.86719646
+                ]
+            },
+            "properties": {
+                "id": 734,
+                "fclass": "Hotel",
+                "name": "Hotel an der Kö"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754927.954570758,
+                    6659838.70409498
+                ]
+            },
+            "properties": {
+                "id": 743,
+                "fclass": "Hotel",
+                "name": "Four Points"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755521.465567872,
+                    6659791.85659976
+                ]
+            },
+            "properties": {
+                "id": 746,
+                "fclass": "Hotel",
+                "name": "Bellevue"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756115.533162438,
+                    6661890.34008939
+                ]
+            },
+            "properties": {
+                "id": 787,
+                "fclass": "Hotel",
+                "name": "Wieland"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756342.246437387,
+                    6661905.89471586
+                ]
+            },
+            "properties": {
+                "id": 794,
+                "fclass": "Hotel",
+                "name": "Terminus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750510.329634221,
+                    6675513.97578518
+                ]
+            },
+            "properties": {
+                "id": 795,
+                "fclass": "Hotel",
+                "name": "Am Schwan"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759331.408536119,
+                    6655035.8325788
+                ]
+            },
+            "properties": {
+                "id": 821,
+                "fclass": "Hotel",
+                "name": "Lindentor"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749881.107344461,
+                    6669534.06929228
+                ]
+            },
+            "properties": {
+                "id": 823,
+                "fclass": "Hotel",
+                "name": "Messe-Hotel Lohauser Hof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760725.596102712,
+                    6652483.69787296
+                ]
+            },
+            "properties": {
+                "id": 829,
+                "fclass": "Hotel",
+                "name": "Holthausen-Center"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760844.218152102,
+                    6652351.00628451
+                ]
+            },
+            "properties": {
+                "id": 831,
+                "fclass": "Hotel",
+                "name": "centro Hotel Schuhmann"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753351.592657483,
+                    6670678.17095731
+                ]
+            },
+            "properties": {
+                "id": 891,
+                "fclass": "Hotel",
+                "name": "Sheraton Düsseldorf Airport Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    766268.560903628,
+                    6657981.69779637
+                ]
+            },
+            "properties": {
+                "id": 899,
+                "fclass": "Hotel",
+                "name": "Waldhotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755184.067323226,
+                    6657327.21422488
+                ]
+            },
+            "properties": {
+                "id": 914,
+                "fclass": "Hotel",
+                "name": "Hotel Flora"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    752007.576785388,
+                    6666313.169504
+                ]
+            },
+            "properties": {
+                "id": 941,
+                "fclass": "Hotel",
+                "name": "Ashley's Garden"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756047.928835679,
+                    6661386.22621309
+                ]
+            },
+            "properties": {
+                "id": 965,
+                "fclass": "Hotel",
+                "name": "Burns"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756002.73312242,
+                    6661542.13751861
+                ]
+            },
+            "properties": {
+                "id": 966,
+                "fclass": "Hotel",
+                "name": "Minerva"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755610.398709067,
+                    6658833.81662034
+                ]
+            },
+            "properties": {
+                "id": 979,
+                "fclass": "Hotel",
+                "name": "Hotel Niku"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757037.970990948,
+                    6659278.06239153
+                ]
+            },
+            "properties": {
+                "id": 994,
+                "fclass": "Hotel",
+                "name": "Motel One"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754809.933646621,
+                    6659571.21845624
+                ]
+            },
+            "properties": {
+                "id": 1002,
+                "fclass": "Hotel",
+                "name": "Hotel Diana"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753989.408811931,
+                    6661586.57749542
+                ]
+            },
+            "properties": {
+                "id": 1100,
+                "fclass": "Hotel",
+                "name": "Haus Rheinblick"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754116.724913551,
+                    6661539.06228114
+                ]
+            },
+            "properties": {
+                "id": 1106,
+                "fclass": "Hotel",
+                "name": "Hotel St. Andreas"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754352.933741065,
+                    6661579.75149929
+                ]
+            },
+            "properties": {
+                "id": 1107,
+                "fclass": "Hotel",
+                "name": "Neues Hotel an der Oper"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753899.139836847,
+                    6661397.9403443
+                ]
+            },
+            "properties": {
+                "id": 1130,
+                "fclass": "Hotel",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755970.517261782,
+                    6661700.86044843
+                ]
+            },
+            "properties": {
+                "id": 1208,
+                "fclass": "Hotel",
+                "name": "Duesseldorf City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755816.373162883,
+                    6661387.29274938
+                ]
+            },
+            "properties": {
+                "id": 1212,
+                "fclass": "Hotel",
+                "name": "Uebachs"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756606.385325144,
+                    6665366.60107519
+                ]
+            },
+            "properties": {
+                "id": 1227,
+                "fclass": "Hotel",
+                "name": "NH Düsseldorf City Nord"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757418.416482685,
+                    6664858.48510817
+                ]
+            },
+            "properties": {
+                "id": 1266,
+                "fclass": "Hotel",
+                "name": "Hotel Haus am Zoo"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755341.662326343,
+                    6662443.33855769
+                ]
+            },
+            "properties": {
+                "id": 1326,
+                "fclass": "Hotel",
+                "name": "Hotel Ufer"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755789.834596276,
+                    6661552.73198716
+                ]
+            },
+            "properties": {
+                "id": 1332,
+                "fclass": "Hotel",
+                "name": "Am Wehrhahn"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754566.41112856,
+                    6661513.60718073
+                ]
+            },
+            "properties": {
+                "id": 1336,
+                "fclass": "Hotel",
+                "name": "Steigenberger Parkhotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751484.430838406,
+                    6659453.1799367
+                ]
+            },
+            "properties": {
+                "id": 1343,
+                "fclass": "Hotel",
+                "name": "Courtyard Düsseldorf Hafen"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756881.021640878,
+                    6660302.62607427
+                ]
+            },
+            "properties": {
+                "id": 1367,
+                "fclass": "Hotel",
+                "name": "Berna"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757129.330897042,
+                    6666728.40154919
+                ]
+            },
+            "properties": {
+                "id": 1370,
+                "fclass": "Hotel",
+                "name": "Hotel Am Vogelsanger Weg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754698.725475317,
+                    6669857.32695706
+                ]
+            },
+            "properties": {
+                "id": 1376,
+                "fclass": "Hotel",
+                "name": "Lindner Airport"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754288.023345985,
+                    6658931.83685444
+                ]
+            },
+            "properties": {
+                "id": 1379,
+                "fclass": "Hotel",
+                "name": "Derag Livinghotel Duesseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    762127.186415443,
+                    6670176.16651746
+                ]
+            },
+            "properties": {
+                "id": 1455,
+                "fclass": "Hotel",
+                "name": "Am Bauenhaus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754423.833124752,
+                    6663267.43910316
+                ]
+            },
+            "properties": {
+                "id": 1463,
+                "fclass": "Hotel",
+                "name": "Hotel Am Ehrenhof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754359.846681445,
+                    6658859.6187871
+                ]
+            },
+            "properties": {
+                "id": 1466,
+                "fclass": "Hotel",
+                "name": "Hotel Moon"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754561.513070966,
+                    6662611.19921923
+                ]
+            },
+            "properties": {
+                "id": 1468,
+                "fclass": "Hotel",
+                "name": "Hotel Meliã"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754625.8000769,
+                    6662846.39127588
+                ]
+            },
+            "properties": {
+                "id": 1472,
+                "fclass": "Hotel",
+                "name": "Hotel Excelsior Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754811.224952712,
+                    6659673.70826591
+                ]
+            },
+            "properties": {
+                "id": 1483,
+                "fclass": "Hotel",
+                "name": "Hotel Haus Hillesheim"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754461.459112641,
+                    6657753.93029592
+                ]
+            },
+            "properties": {
+                "id": 1497,
+                "fclass": "Hotel",
+                "name": "Hotel Karolinger"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757038.304949422,
+                    6659281.9897888
+                ]
+            },
+            "properties": {
+                "id": 1550,
+                "fclass": "Hotel",
+                "name": "Motel One"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754485.726761634,
+                    6663368.37503689
+                ]
+            },
+            "properties": {
+                "id": 1573,
+                "fclass": "Hotel",
+                "name": "Hotel Imperial"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754675.559889283,
+                    6663319.96048168
+                ]
+            },
+            "properties": {
+                "id": 1580,
+                "fclass": "Hotel",
+                "name": "Hotel Doria"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754787.090887108,
+                    6659544.36552086
+                ]
+            },
+            "properties": {
+                "id": 1592,
+                "fclass": "Hotel",
+                "name": "Helvetia Suites"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756049.98824626,
+                    6660703.5293123
+                ]
+            },
+            "properties": {
+                "id": 1601,
+                "fclass": "Hotel",
+                "name": "Motel One"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755624.63647194,
+                    6660069.58654547
+                ]
+            },
+            "properties": {
+                "id": 1605,
+                "fclass": "Hotel",
+                "name": "Hotel Domo"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754932.318294797,
+                    6671040.57290311
+                ]
+            },
+            "properties": {
+                "id": 1636,
+                "fclass": "Hotel",
+                "name": "Hotel Kleine Oase Im Treibhaus GmbH"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754696.699460583,
+                    6659251.24596014
+                ]
+            },
+            "properties": {
+                "id": 1654,
+                "fclass": "Hotel",
+                "name": "Backpackers Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755072.291422521,
+                    6658524.41019781
+                ]
+            },
+            "properties": {
+                "id": 1655,
+                "fclass": "Hotel",
+                "name": "Hotel Rubin"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755688.567255502,
+                    6659173.10739645
+                ]
+            },
+            "properties": {
+                "id": 1664,
+                "fclass": "Hotel",
+                "name": "Hütte 91"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755076.131944953,
+                    6659026.51741224
+                ]
+            },
+            "properties": {
+                "id": 1665,
+                "fclass": "Hotel",
+                "name": "Hotel Antares"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    752841.582410412,
+                    6665924.36991933
+                ]
+            },
+            "properties": {
+                "id": 1675,
+                "fclass": "Hotel",
+                "name": "Hotel Alexsandra"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751653.224582296,
+                    6668104.91005842
+                ]
+            },
+            "properties": {
+                "id": 1683,
+                "fclass": "Hotel",
+                "name": "FFFZ Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756459.799819665,
+                    6665856.92770064
+                ]
+            },
+            "properties": {
+                "id": 1697,
+                "fclass": "Hotel",
+                "name": "Express Holiday Inn"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754889.337839402,
+                    6665426.42752989
+                ]
+            },
+            "properties": {
+                "id": 1701,
+                "fclass": "Hotel",
+                "name": "Villa Viktoria"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757304.948525719,
+                    6659818.30158684
+                ]
+            },
+            "properties": {
+                "id": 1705,
+                "fclass": "Hotel",
+                "name": "nH Hotels Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757960.586930643,
+                    6660521.7909494
+                ]
+            },
+            "properties": {
+                "id": 1714,
+                "fclass": "Hotel",
+                "name": "B&B Hotel Düsseldorf-Hbf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755142.968167225,
+                    6656471.04196691
+                ]
+            },
+            "properties": {
+                "id": 1721,
+                "fclass": "Hotel",
+                "name": "Hotel an der Uni"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755629.033591825,
+                    6656846.2636411
+                ]
+            },
+            "properties": {
+                "id": 1722,
+                "fclass": "Hotel",
+                "name": "Haus Mooren"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754574.737826471,
+                    6657961.53090409
+                ]
+            },
+            "properties": {
+                "id": 1723,
+                "fclass": "Hotel",
+                "name": "Hotel Metropol"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    769489.712821172,
+                    6667494.81750711
+                ]
+            },
+            "properties": {
+                "id": 1727,
+                "fclass": "Hotel",
+                "name": "Hotel Decker"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755695.034917917,
+                    6660815.9158477
+                ]
+            },
+            "properties": {
+                "id": 1730,
+                "fclass": "Hotel",
+                "name": "Hotel Nikko"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754501.578657122,
+                    6662854.62285367
+                ]
+            },
+            "properties": {
+                "id": 1740,
+                "fclass": "Hotel",
+                "name": "Hotel am Hofgarten"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755844.603785747,
+                    6660275.73519194
+                ]
+            },
+            "properties": {
+                "id": 1753,
+                "fclass": "Hotel",
+                "name": "CVJM Düsseldorf Hotel & Tagung"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755688.622915246,
+                    6657713.24233112
+                ]
+            },
+            "properties": {
+                "id": 1756,
+                "fclass": "Hotel",
+                "name": "Auszeit Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754387.787873634,
+                    6656987.92890868
+                ]
+            },
+            "properties": {
+                "id": 1757,
+                "fclass": "Hotel",
+                "name": "Residenz Hotel Eurostar"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749952.028992045,
+                    6656808.10291228
+                ]
+            },
+            "properties": {
+                "id": 1759,
+                "fclass": "Hotel",
+                "name": "Hotel Chrisma"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753476.070112086,
+                    6659582.0591765
+                ]
+            },
+            "properties": {
+                "id": 1763,
+                "fclass": "Hotel",
+                "name": "Kastens Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750240.958730399,
+                    6658167.53760372
+                ]
+            },
+            "properties": {
+                "id": 1770,
+                "fclass": "Hotel",
+                "name": "Hotel Garni Landhaus Hamm"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750380.519976007,
+                    6658231.70031481
+                ]
+            },
+            "properties": {
+                "id": 1771,
+                "fclass": "Hotel",
+                "name": "Hotel Knell"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754364.310593026,
+                    6657616.80022522
+                ]
+            },
+            "properties": {
+                "id": 1776,
+                "fclass": "Hotel",
+                "name": "Hotel Adler"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753682.768142593,
+                    6660721.69448355
+                ]
+            },
+            "properties": {
+                "id": 1785,
+                "fclass": "Hotel",
+                "name": "Hotel Orangerie"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755522.255936256,
+                    6659451.86485288
+                ]
+            },
+            "properties": {
+                "id": 1789,
+                "fclass": "Hotel",
+                "name": "Hotel Beyer"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754496.391168852,
+                    6661248.87527645
+                ]
+            },
+            "properties": {
+                "id": 1790,
+                "fclass": "Hotel",
+                "name": "Breidenbacher Hof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755097.293780154,
+                    6656561.83902449
+                ]
+            },
+            "properties": {
+                "id": 1812,
+                "fclass": "Hotel",
+                "name": "HK-Hotel Düsseldorf City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754586.025622839,
+                    6663048.28955635
+                ]
+            },
+            "properties": {
+                "id": 1817,
+                "fclass": "Hotel",
+                "name": "Hansa Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754243.862903988,
+                    6659289.88013107
+                ]
+            },
+            "properties": {
+                "id": 1830,
+                "fclass": "Hotel",
+                "name": "Hotel Westfälischer Hof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754225.762354783,
+                    6661527.34794786
+                ]
+            },
+            "properties": {
+                "id": 1844,
+                "fclass": "Hotel",
+                "name": "Altstadt Hotel Barcelona"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754126.632348232,
+                    6661606.18448994
+                ]
+            },
+            "properties": {
+                "id": 1846,
+                "fclass": "Hotel",
+                "name": "Derag Livinghotel De Medici"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750041.652314083,
+                    6672312.57712597
+                ]
+            },
+            "properties": {
+                "id": 1860,
+                "fclass": "Hotel",
+                "name": "City Partner Hotel - Villa Fiore"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755955.233095696,
+                    6660591.33983334
+                ]
+            },
+            "properties": {
+                "id": 1871,
+                "fclass": "Hotel",
+                "name": "Bahn-Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    748031.778907808,
+                    6661794.22204222
+                ]
+            },
+            "properties": {
+                "id": 1908,
+                "fclass": "Hotel",
+                "name": "Hotel Alt-Heerdt garni"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750460.52529404,
+                    6675269.8722642
+                ]
+            },
+            "properties": {
+                "id": 1920,
+                "fclass": "Hotel",
+                "name": "Hotel Kaiserswerth"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764863.441763038,
+                    6650312.39304733
+                ]
+            },
+            "properties": {
+                "id": 1928,
+                "fclass": "Hotel",
+                "name": "Schloß Hotel Benrath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754461.559300181,
+                    6660074.43850584
+                ]
+            },
+            "properties": {
+                "id": 1942,
+                "fclass": "Hotel",
+                "name": "Leonardo Royal Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755748.601856885,
+                    6659959.9294542
+                ]
+            },
+            "properties": {
+                "id": 1956,
+                "fclass": "Hotel",
+                "name": "Hotel Acon"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756390.325325462,
+                    6661991.93455537
+                ]
+            },
+            "properties": {
+                "id": 1969,
+                "fclass": "Hotel",
+                "name": "Holiday Inn Express Düsseldorf City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751431.776719262,
+                    6659431.7654224
+                ]
+            },
+            "properties": {
+                "id": 1988,
+                "fclass": "Hotel",
+                "name": "Innside Düsseldorf Hafen"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755532.452801612,
+                    6660177.84104102
+                ]
+            },
+            "properties": {
+                "id": 2006,
+                "fclass": "Hotel",
+                "name": "Hotel Mondial"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757774.727908815,
+                    6662567.58924996
+                ]
+            },
+            "properties": {
+                "id": 2038,
+                "fclass": "Hotel",
+                "name": "Villa Achenbach"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753318.052094905,
+                    6657840.03309282
+                ]
+            },
+            "properties": {
+                "id": 2042,
+                "fclass": "Hotel",
+                "name": "Garden Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754042.285570057,
+                    6661507.01233174
+                ]
+            },
+            "properties": {
+                "id": 2045,
+                "fclass": "Hotel",
+                "name": "Centro Hotel Design Apart Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755597.107161866,
+                    6660227.21452412
+                ]
+            },
+            "properties": {
+                "id": 2070,
+                "fclass": "Hotel",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750912.682801742,
+                    6669643.94379172
+                ]
+            },
+            "properties": {
+                "id": 2071,
+                "fclass": "Hotel",
+                "name": "Airhotel Wartburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750179.053961568,
+                    6669951.54686332
+                ]
+            },
+            "properties": {
+                "id": 2072,
+                "fclass": "Hotel",
+                "name": "Hotel Messeschlaf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755405.737825243,
+                    6659914.32533321
+                ]
+            },
+            "properties": {
+                "id": 2076,
+                "fclass": "Hotel",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755171.855575085,
+                    6665125.59239425
+                ]
+            },
+            "properties": {
+                "id": 2110,
+                "fclass": "Hotel",
+                "name": "Hotel am Spichernplatz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751727.007140795,
+                    6659702.39213599
+                ]
+            },
+            "properties": {
+                "id": 2163,
+                "fclass": "Hotel",
+                "name": "Hyatt Regency"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    768709.018100291,
+                    6656839.10404946
+                ]
+            },
+            "properties": {
+                "id": 2200,
+                "fclass": "Hotel",
+                "name": "Landhotel Am Zault"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    768670.434764781,
+                    6656868.5774458
+                ]
+            },
+            "properties": {
+                "id": 2202,
+                "fclass": "Hotel",
+                "name": "Am Zault Residenz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754775.112909898,
+                    6661411.2365257
+                ]
+            },
+            "properties": {
+                "id": 2224,
+                "fclass": "Hotel",
+                "name": "Favor"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    766488.283314555,
+                    6650609.18691629
+                ]
+            },
+            "properties": {
+                "id": 2262,
+                "fclass": "Hotel",
+                "name": "Hotel Waldesruh"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    767706.79759273,
+                    6646612.48831105
+                ]
+            },
+            "properties": {
+                "id": 2266,
+                "fclass": "Hotel",
+                "name": "Octagon"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    748676.396683146,
+                    6665666.16456293
+                ]
+            },
+            "properties": {
+                "id": 2324,
+                "fclass": "Hotel",
+                "name": "Hotel Fischerhaus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756551.76085101,
+                    6662530.93074386
+                ]
+            },
+            "properties": {
+                "id": 2361,
+                "fclass": "Hotel",
+                "name": "Holiday Inn Dusseldorf City Toulouser Allee"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755042.368743396,
+                    6663928.67479161
+                ]
+            },
+            "properties": {
+                "id": 2368,
+                "fclass": "Hotel",
+                "name": "Stadthotel Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760722.801983494,
+                    6652416.68595491
+                ]
+            },
+            "properties": {
+                "id": 2373,
+                "fclass": "Hotel",
+                "name": "Hotel Elbroich"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756160.628688161,
+                    6661894.74871195
+                ]
+            },
+            "properties": {
+                "id": 2386,
+                "fclass": "Hotel",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754118.762060232,
+                    6661702.06923606
+                ]
+            },
+            "properties": {
+                "id": 2425,
+                "fclass": "Hotel",
+                "name": "HYATT House"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755340.560263382,
+                    6660465.55507481
+                ]
+            },
+            "properties": {
+                "id": 2431,
+                "fclass": "Hotel",
+                "name": "Savoy Hotel Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754334.27659441,
+                    6663861.99582863
+                ]
+            },
+            "properties": {
+                "id": 2464,
+                "fclass": "Hotel",
+                "name": "Hotel Cascade"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754622.360304632,
+                    6663698.53687311
+                ]
+            },
+            "properties": {
+                "id": 2465,
+                "fclass": "Hotel",
+                "name": "Hotel National Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755613.059244897,
+                    6661162.36332321
+                ]
+            },
+            "properties": {
+                "id": 2466,
+                "fclass": "Hotel",
+                "name": "City Apart Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755524.192895397,
+                    6660993.03930818
+                ]
+            },
+            "properties": {
+                "id": 2467,
+                "fclass": "Hotel",
+                "name": "me and all hotel düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753572.673166197,
+                    6665124.8099101
+                ]
+            },
+            "properties": {
+                "id": 2468,
+                "fclass": "Hotel",
+                "name": "Radisson Blu Scandinavia Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754513.523238485,
+                    6663521.87045139
+                ]
+            },
+            "properties": {
+                "id": 2469,
+                "fclass": "Hotel",
+                "name": "Hotel Indigo DÜSSELDORF - VICTORIAPLATZ"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754491.982917015,
+                    6663557.03985152
+                ]
+            },
+            "properties": {
+                "id": 2470,
+                "fclass": "Hotel",
+                "name": "Hotel Mingarden"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756552.985365408,
+                    6662166.50577072
+                ]
+            },
+            "properties": {
+                "id": 2471,
+                "fclass": "Hotel",
+                "name": "B&B Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758399.441759198,
+                    6669405.35341675
+                ]
+            },
+            "properties": {
+                "id": 2479,
+                "fclass": "Hotel",
+                "name": "B&B Hotel Düsseldorf-Airport"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759376.659909126,
+                    6657983.63453137
+                ]
+            },
+            "properties": {
+                "id": 2484,
+                "fclass": "Hotel",
+                "name": "McDreams Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754723.905944135,
+                    6664826.13762091
+                ]
+            },
+            "properties": {
+                "id": 2506,
+                "fclass": "Hotel",
+                "name": "Mercure Hotel Duesseldorf Zentrum"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753958.807083913,
+                    6660433.34936875
+                ]
+            },
+            "properties": {
+                "id": 2507,
+                "fclass": "Hotel",
+                "name": "Townhouse Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755215.003009718,
+                    6660172.95347341
+                ]
+            },
+            "properties": {
+                "id": 2509,
+                "fclass": "Hotel",
+                "name": "Rheingoldhotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760972.870087611,
+                    6652020.09458693
+                ]
+            },
+            "properties": {
+                "id": 2556,
+                "fclass": "Hotel",
+                "name": "MOXY Düsseldorf Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756464.007696418,
+                    6665838.2353487
+                ]
+            },
+            "properties": {
+                "id": 2577,
+                "fclass": "Hotel",
+                "name": "Holiday Inn Express Düsseldorf Nord"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755062.996245041,
+                    6666169.1727725
+                ]
+            },
+            "properties": {
+                "id": 2580,
+                "fclass": "Hotel",
+                "name": "Innside"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754274.097277686,
+                    6661352.89702409
+                ]
+            },
+            "properties": {
+                "id": 2582,
+                "fclass": "Hotel",
+                "name": "Kleine Luise"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757536.426274874,
+                    6662240.6907766
+                ]
+            },
+            "properties": {
+                "id": 2583,
+                "fclass": "Hotel",
+                "name": "Hotel Heidelberger Hof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756835.681212278,
+                    6662131.6445613
+                ]
+            },
+            "properties": {
+                "id": 2584,
+                "fclass": "Hotel",
+                "name": "Hotel Windsor"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751821.083242465,
+                    6659221.4263338
+                ]
+            },
+            "properties": {
+                "id": 2586,
+                "fclass": "Hotel",
+                "name": "Radisson Blu Media Harbour Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753895.688932632,
+                    6656561.14618459
+                ]
+            },
+            "properties": {
+                "id": 2587,
+                "fclass": "Hotel",
+                "name": "Hotel Astra"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750188.783285064,
+                    6664725.37930784
+                ]
+            },
+            "properties": {
+                "id": 2589,
+                "fclass": "Hotel",
+                "name": "Lindner Congress Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750126.566821659,
+                    6664277.31682344
+                ]
+            },
+            "properties": {
+                "id": 2590,
+                "fclass": "Hotel",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749705.534243582,
+                    6664236.18742175
+                ]
+            },
+            "properties": {
+                "id": 2591,
+                "fclass": "Hotel",
+                "name": "Innside"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751017.145011904,
+                    6662255.42830454
+                ]
+            },
+            "properties": {
+                "id": 2592,
+                "fclass": "Hotel",
+                "name": "Hotel Hanseat"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751197.927864953,
+                    6662249.88172879
+                ]
+            },
+            "properties": {
+                "id": 2593,
+                "fclass": "Hotel",
+                "name": "Hotel Arosa"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750786.914041045,
+                    6674452.37710625
+                ]
+            },
+            "properties": {
+                "id": 2594,
+                "fclass": "Hotel",
+                "name": "Hotel MutterHaus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749870.72123597,
+                    6673572.70948068
+                ]
+            },
+            "properties": {
+                "id": 2595,
+                "fclass": "Hotel",
+                "name": "Hotel Barbarossa"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749642.382696453,
+                    6667568.85517936
+                ]
+            },
+            "properties": {
+                "id": 2596,
+                "fclass": "Hotel",
+                "name": "Tulip Inn Düsseldorf Arena - Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750940.267771563,
+                    6669336.04981377
+                ]
+            },
+            "properties": {
+                "id": 2597,
+                "fclass": "Hotel",
+                "name": "Hotel Garni Hein"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750725.176251452,
+                    6669799.49657974
+                ]
+            },
+            "properties": {
+                "id": 2598,
+                "fclass": "Hotel",
+                "name": "Messehotel Medici"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753454.129040452,
+                    6670276.29801534
+                ]
+            },
+            "properties": {
+                "id": 2599,
+                "fclass": "Hotel",
+                "name": "Hotel Maritim"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755468.833712625,
+                    6670141.09320125
+                ]
+            },
+            "properties": {
+                "id": 2600,
+                "fclass": "Hotel",
+                "name": "AVIDON Design Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757779.292007938,
+                    6670639.69650256
+                ]
+            },
+            "properties": {
+                "id": 2601,
+                "fclass": "Hotel",
+                "name": "Airporthotel Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763641.476580652,
+                    6662871.92163915
+                ]
+            },
+            "properties": {
+                "id": 2602,
+                "fclass": "Hotel",
+                "name": "Concorde Hotel Ascot"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758143.707492999,
+                    6654364.49904575
+                ]
+            },
+            "properties": {
+                "id": 2603,
+                "fclass": "Hotel",
+                "name": "Pension Melcher"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763744.536165229,
+                    6648897.8571574
+                ]
+            },
+            "properties": {
+                "id": 2604,
+                "fclass": "Hotel",
+                "name": "Rheinterrasse Benrath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756463.829585233,
+                    6662016.25341784
+                ]
+            },
+            "properties": {
+                "id": 2619,
+                "fclass": "Hotel",
+                "name": "Henri"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755173.948381512,
+                    6660223.71322699
+                ]
+            },
+            "properties": {
+                "id": 2624,
+                "fclass": "Hotel",
+                "name": "Carathotel Düsseldorf City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756511.218292462,
+                    6662278.11241633
+                ]
+            },
+            "properties": {
+                "id": 2633,
+                "fclass": "Hotel",
+                "name": "25hours Hotel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754900.391864838,
+                    6659841.77869338
+                ]
+            },
+            "properties": {
+                "id": 2634,
+                "fclass": "Hotel",
+                "name": "Wyndham Garden Düsseldorf City Centre Königsallee"
+            }
+        }
+    ]
+}
