@@ -4,7 +4,6 @@ import zipfile
 
 import gws
 import gws.lib.xmlx
-import gws.types as t
 
 from . import caps
 
@@ -13,7 +12,7 @@ class Error(gws.Error):
     pass
 
 
-def from_path(path: str) -> 'Project':
+def from_path(path: str) -> 'Object':
     if not path.endswith('.qgz'):
         return from_string(gws.read_file(path), path)
 
@@ -26,11 +25,11 @@ def from_path(path: str) -> 'Project':
     raise Error(f'cannot open qgis project {path!r}')
 
 
-def from_string(xml: str, path: str = None) -> 'Project':
-    return Project(xml, path or '')
+def from_string(xml: str, path: str = None) -> 'Object':
+    return Object(xml, path or '')
 
 
-class Project:
+class Object:
     rootElement: gws.IXmlElement
     path: str
     version: str

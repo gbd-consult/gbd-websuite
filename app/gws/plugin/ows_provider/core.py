@@ -1,7 +1,7 @@
 import gws
 import gws.gis.crs
 import gws.gis.source
-import gws.lib.metadata
+import gws.lib.net
 import gws.lib.mime
 import gws.gis.ows
 import gws.types as t
@@ -19,7 +19,6 @@ class ProviderConfig(gws.Config):
     forceCrs: t.Optional[gws.CrsName]  #: use this CRS for requests
     maxRequests: int = 0  #: max concurrent requests to this source
     operations: t.Optional[t.List[OperationConfig]]
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
     url: gws.Url  #: service url
 
 
@@ -36,16 +35,6 @@ class Provider(gws.Node, gws.IOwsProvider):
         self.sourceLayers = []
         self.url = self.var('url')
         self.version = ''
-
-        # we need the Caps operation before we can go any further
-        self.operations = [
-            gws.OwsOperation(
-                formats=[gws.lib.mime.XML],
-                parameters={},
-                url=self.var('url'),
-                verb=gws.OwsVerb.GetCapabilities,
-            )
-        ]
 
     def configure_operations(self, operations_from_caps):
         # add operations from the config, if any,
@@ -99,36 +88,47 @@ class Provider(gws.Node, gws.IOwsProvider):
                 if url:
                     return op
 
-    def operation_args(self, verb: gws.OwsVerb, method: gws.RequestMethod = None, params=None) -> gws.gis.ows.request.Args:
-        op = self.operation(verb, method)
-        if not op:
-            raise gws.Error(f'operation not found: {verb!r}')
+    def request_args_for_operation(self, op: gws.OwsOperation, method: gws.RequestMethod = None, params=None) -> gws.gis.ows.request.Args:
+        args = gws.gis.ows.request.Args(
+            method=method or gws.RequestMethod.GET,
+            params={},
+            protocol=self.protocol,
+            verb=op.verb,
+            version=self.version,
+        )
 
-        rparams = {}
+        if args.method == gws.RequestMethod.GET:
+            args.params.update(op.params)
+
+        args.url = op.url
+        if args.method == gws.RequestMethod.POST:
+            args.url = op.postUrl
+
+        allowed = op.allowedParameters or {}
 
         if params:
             for name, val in params.items():
                 name = name.upper()
-                if name in op.parameters and val not in op.parameters[name]:
+                if name in allowed and val not in allowed[name]:
                     raise gws.Error(f'invalid parameter value {val!r} for {name!r}')
-                rparams[name] = val
+                args.params[name] = val
 
-        for name, vals in op.parameters.items():
-            if name not in rparams:
-                rparams[name] = vals[0]
+        for name, vals in allowed.items():
+            if name not in args.params:
+                args.params[name] = vals[0]
 
-        return gws.gis.ows.request.Args(
-            params=rparams,
-            protocol=self.protocol,
-            url=(op.postUrl if method == gws.RequestMethod.POST else op.url),
-            verb=verb,
-        )
+        return args
 
     def get_capabilities(self):
-        args = self.operation_args(gws.OwsVerb.GetCapabilities)
-        return gws.gis.ows.request.get_text(
-            args,
-            max_age=self.var('capsCacheMaxAge'))
+        url, params = gws.lib.net.extract_params(self.var('url'))
+        op = gws.OwsOperation(
+            formats=[gws.lib.mime.XML],
+            url=url,
+            params=params,
+            verb=gws.OwsVerb.GetCapabilities,
+        )
+        args = self.request_args_for_operation(op)
+        return gws.gis.ows.request.get_text(args, max_age=self.var('capsCacheMaxAge'))
 
     def find_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.IFeature]:
         return []

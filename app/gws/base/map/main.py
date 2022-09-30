@@ -86,7 +86,7 @@ class Object(gws.Node, gws.IMap):
             center=self.center,
             initResolution=self.initResolution,
             rootLayer=self.rootLayer,
-            resolutions=self.resolutions,
+            resolutions=sorted(self.resolutions, reverse=True),
             title=self.title,
         )
 

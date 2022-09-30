@@ -1156,7 +1156,7 @@ class MetadataLink(Data):
     """Link metadata"""
 
     description: str
-    formatName: str
+    format: str
     formatVersion: str
     function: str
     mimeType: str
@@ -1256,16 +1256,6 @@ class Metadata(Data):
     bounds: Bounds
     wgsExtent: Extent
     boundingPolygonElement: IXmlElement
-
-
-class IMetadata(IObject, Protocol):
-    values: Metadata
-
-    def extend(self, *others) -> 'IMetadata': ...
-
-    def set(self, key: str, value) -> 'IMetadata': ...
-
-    def get(self, key: str, default=None): ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1373,7 +1363,7 @@ class ILayer(INode, Protocol):
     resolutions: List[float]
     title: str
 
-    metadata: 'IMetadata'
+    metadata: 'Metadata'
     legend: Optional['ILegend']
     searchMgr: 'ISearchManager'
     templateMgr: 'ITemplateManager'
@@ -1477,9 +1467,9 @@ class OwsVerb(Enum):
 
 
 class OwsOperation(Data):
+    allowedParameters: Dict[str, List[str]]
     constraints: Dict[str, List[str]]
     formats: List[str]
-    parameters: Dict[str, List[str]]
     params: Dict[str, str]
     postUrl: Url
     preferredFormat: str
@@ -1503,7 +1493,7 @@ class IOwsService(INode, Protocol):
 
 class IOwsProvider(INode, Protocol):
     forceCrs: 'ICrs'
-    metadata: 'IMetadata'
+    metadata: 'Metadata'
     operations: List[OwsOperation]
     protocol: OwsProtocol
     sourceLayers: List['SourceLayer']
@@ -1558,7 +1548,7 @@ class IProject(INode, Protocol):
     client: 'IClient'
     localeUids: List[str]
     map: 'IMap'
-    metadata: 'IMetadata'
+    metadata: 'Metadata'
 
     actionMgr: 'IActionManager'
     templateMgr: Optional['ITemplateManager']
@@ -1583,7 +1573,7 @@ WebMiddlewareHandler = Callable[['IWebRequester', Callable], 'IWebResponder']
 class IApplication(INode, Protocol):
     client: 'IClient'
     localeUids: List[str]
-    metadata: 'IMetadata'
+    metadata: 'Metadata'
     monitor: 'IMonitor'
     qgisVersion: str
     version: str

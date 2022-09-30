@@ -12,7 +12,7 @@ def main(ARGS):
         for ml in md.metaLinks:
             yield (
                 'MetadataURL', {'type': ml.type},
-                ('Format', ml.formatName),
+                ('Format', ml.format),
                 tpl.online_resource(ARGS.url_for(ml.url)))
 
     def service_meta():

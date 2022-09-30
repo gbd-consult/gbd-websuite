@@ -5,9 +5,11 @@ import re
 
 import gws
 import gws.gis.crs
+import gws.gis.source
 import gws.lib.metadata
 import gws.lib.net
-import gws.lib.xmlx as xmlx
+import gws.lib.xmlx
+
 import gws.types as t
 
 
@@ -46,10 +48,11 @@ def parse_element(root_el: gws.IXmlElement) -> Caps:
     caps.version = root_el.get('version')
     caps.properties = _properties(root_el)
     caps.metadata = _project_metadata(root_el)
-    caps.print_templates = _print_templates(root_el)
+    caps.printTemplates = _print_templates(root_el)
 
-    caps.projectCrs = gws.gis.crs.get(
-        root_el.text_of('projectCrs/spatialrefsys/authid') or '4326')
+    caps.projectCrs = (
+            gws.gis.crs.get(root_el.text_of('projectCrs/spatialrefsys/authid'))
+            or gws.gis.crs.WGS84)
 
     layers_dct = _map_layers(root_el, caps.properties)
     root_group = _layer_tree(root_el.find('layer-tree-group'), layers_dct)
@@ -112,7 +115,28 @@ def _layer_metadata(layer_el) -> gws.Metadata:
     if el:
         _metadata(el, md)
 
-    # @TODO supplementary metadata
+    # fill in missing props from direct metadata
+
+    d = layer_el.text_dict()
+
+    md.title = md.title or d.get('title') or d.get('shortname') or d.get('layername')
+    md.abstract = md.abstract or d.get('abstract')
+
+    if not md.attribution and d.get('attribution'):
+        md.attribution = gws.MetadataAttribution(title=d.get('attribution'))
+
+    if not md.keywords:
+        md.keywords = layer_el.text_list('keywordList/value')
+
+    if not md.metaLinks:
+        md.metaLinks = []
+        for e in layer_el.findall('metadataUrls/metadataUrl'):
+            md.metaLinks.append(gws.MetadataLink(
+                type=e.get('type'),
+                format=e.get('format'),
+                title=e.text,
+            ))
+
     return md
 
 
@@ -152,6 +176,7 @@ def _add_dict(dst, src, mapping):
 
 def _metadata(el: gws.IXmlElement, md: gws.Metadata):
     # extract metadata from projectMetadata/resourceMetadata
+
     _add_dict(md, el.text_dict(), _meta_mapping)
 
     md.keywords = []
@@ -165,10 +190,9 @@ def _metadata(el: gws.IXmlElement, md: gws.Metadata):
     contact_el = el.find('contact')
     if contact_el:
         _add_dict(md, contact_el.text_dict(), _contact_mapping)
-        addr_el = contact_el.find('contactAddress')
-        if addr_el:
-            # NB we only support one contact address
-            _add_dict(md, addr_el.text_dict(), _contact_mapping)
+        for e in contact_el.findall('contactAddress'):
+            _add_dict(md, e.text_dict(), _contact_mapping)
+            break  # NB we only support one contact address
 
     md.metaLinks = []
     for e in el.findall('links/link'):
@@ -178,7 +202,7 @@ def _metadata(el: gws.IXmlElement, md: gws.Metadata):
             description=e.get('description'),
             mimeType=e.get('mimeType'),
             format=e.get('format'),
-            name=e.get('name'),
+            title=e.get('name'),
             scheme=e.get('type'),
         ))
 
@@ -333,9 +357,8 @@ def _map_layer(layer_el: gws.IXmlElement):
 
     crs = gws.gis.crs.get(layer_el.text_of('srs/spatialrefsys/authid'))
     ext = layer_el.find('extent')
-
     if crs and ext:
-        sl.supportedBounds.append(gws.SourceBounds(crs=crs, extent=_parse_extent(ext)))
+        sl.supportedBounds.append(gws.SourceBounds(crs=crs, extent=_parse_extent(ext), format=gws.CrsFormat.EPSG))
 
     ext = layer_el.find('wgs84extent')
     if ext:
@@ -349,26 +372,12 @@ def _map_layer(layer_el: gws.IXmlElement):
             sl.scaleRange = [a, z]
 
     prov = layer_el.text_of('provider').lower()
-    ds = _parse_datasource(prov, layer_el.text_of('datasource'))
+    sl.dataSource = _parse_datasource(prov, layer_el.text_of('datasource'))
+    if sl.dataSource and 'provider' not in sl.dataSource:
+        sl.dataSource['provider'] = _parse_datasource_provider(prov, sl.dataSource)
 
-    gws.p(layer_el.text_of('datasource'), ds)
-
-    if ds and 'provider' not in ds:
-        # wmts and xyz are both 'wms' in qgis
-        if prov == 'wms' and 'tileMatrixSet' in ds:
-            prov = 'wmts'
-        if prov == 'wms' and ds.get('type') == 'xyz':
-            prov = 'xyz'
-        ds['provider'] = prov
-
-    sl.dataSource = ds
-
-    s = layer_el.text_of('layerOpacity')
-    if s:
-        sl.opacity = _parse_float(s)
-
-    s = layer_el.text_of('flags/Identifiable')
-    sl.isQueryable = s == '1'
+    sl.opacity = _parse_float(layer_el.text_of('layerOpacity') or '1')
+    sl.isQueryable = layer_el.text_of('flags/Identifiable') == '1'
 
     return sl
 
@@ -390,17 +399,17 @@ def _layer_tree(el: gws.IXmlElement, layers_dct):
         # qgis doesn't write 'id' for groups but our generators might
         name = el.get('id') or title
 
-        sl = gws.SourceLayer(title=title, name=name)
-        sl.metadata = {}  # gws.lib.metadata.from_args(title=title, name=name)
-
-        sl.isVisible = visible
-        sl.isExpanded = expanded
-        sl.isGroup = True
-        sl.isQueryable = False
-        sl.isImage = False
-
-        sl.layers = gws.compact(_layer_tree(c, layers_dct) for c in el)
-        return sl
+        return gws.SourceLayer(
+            title=title,
+            name=name,
+            metadata=gws.Metadata(title=title, name=name),
+            isVisible=visible,
+            isExpanded=expanded,
+            isGroup=True,
+            isQueryable=False,
+            isImage=False,
+            layers=gws.compact(_layer_tree(c, layers_dct) for c in el)
+        )
 
     if el.tag == 'layer-tree-layer':
         sl = layers_dct.get(el.get('id'))
@@ -413,10 +422,6 @@ def _layer_tree(el: gws.IXmlElement, layers_dct):
 
 
 ##
-
-
-##
-
 
 def _parse_datasource(provider, text):
     # Datasources are very versatile and the format depends on the provider.
@@ -458,9 +463,6 @@ def _parse_datasource(provider, text):
     return {'text': text}
 
 
-_array_opts = {'layers', 'styles'}
-
-
 def _datasource_amp_delimited(text):
     ds = {}
 
@@ -481,23 +483,19 @@ def _datasource_amp_delimited(text):
 
     # extract params from the url
 
-    u = gws.lib.net.parse_url(ds['url'])
-    params = u.params
+    url, params = gws.lib.net.extract_params(ds['url'])
 
     if 'typename' in params:
         ds['typename'] = params.pop('typename')
     if 'layers' in params:
-        ds.setdefault('layers', []).extend = params.pop('layers').split(',')
+        ds.setdefault('layers', []).extend(params.pop('layers').split(','))
     if 'styles' in params:
-        ds.setdefault('styles', []).extend = params.pop('styles').split(',')
+        ds.setdefault('styles', []).extend(params.pop('styles').split(','))
 
     params.pop('service', None)
     params.pop('request', None)
 
     ds['params'] = params
-
-    u.params = {}
-    url = gws.lib.net.make_url(u)
 
     # {x} placeholders shouldn't be encoded
     url = url.replace('%7B', '{')
@@ -550,23 +548,17 @@ def _datasource_space_delimited(text):
             break
 
         elif key == 'table':
-            # 'table=' is special, is can be table="foo" or table="foo"."bar" or table="foo"."bar" (geom)
-            v1, text = _cut(text, value_re)
-            v1 = _value(v1)
-
-            v2 = v3 = ''
+            # 'table=' is special, it can be `table="foo"` or `table="foo"."bar"` or table=`"foo"."bar" (geom)`
+            v, text = _cut(text, value_re)
+            ds['table'] = _value(v)
 
             if text.startswith('.'):
-                v2, text = _cut(text[1:], value_re)
-                v2 = _value(v2)
+                v, text = _cut(text[1:], value_re)
+                ds['table'] += '.' + _value(v)
 
             if text.startswith('('):
-                v3, text = _cut(text, parens_re)
-                v3 = _mid(v3)
-
-            ds['table'] = (v1 + '.' + v2) if v2 else v1
-            if v3:
-                ds['geometryColumn'] = v3
+                v, text = _cut(text, parens_re)
+                ds['geometryColumn'] = _mid(v)
 
         else:
             # just param=val
@@ -574,6 +566,18 @@ def _datasource_space_delimited(text):
             ds[key] = _value(v)
 
     return ds
+
+
+def _parse_datasource_provider(prov, ds):
+    if prov == 'wms' and 'tileMatrixSet' in ds:
+        return 'wmts'
+    if prov == 'wms' and ds.get('type') == 'xyz':
+        return 'xyz'
+    # @TODO classify ogr's based on a file extension
+    return prov
+
+
+##
 
 
 def _parse_extent(extent_el):
@@ -609,7 +613,3 @@ def _parse_float(s):
     if math.isnan(x) or math.isinf(x):
         return 0
     return x
-
-
-def _pval(props, key):
-    return gws.get(props, key.lower())

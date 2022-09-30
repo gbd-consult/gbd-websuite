@@ -6,10 +6,12 @@ _ows_error_strings = '<ServiceException', '<ServerException', '<ows:ExceptionRep
 
 
 class Args(gws.Data):
+    method: gws.RequestMethod
     params: dict
     protocol: gws.OwsProtocol
     url: str
     verb: gws.OwsVerb
+    version: str
 
 
 def _get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
@@ -35,11 +37,15 @@ def _get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
 def get(args: Args, **kwargs) -> gws.lib.net.HTTPResponse:
     """Get a raw service response"""
 
-    params = args.params or {}
-    params.setdefault('SERVICE', str(args.protocol).upper())
-    params.setdefault('REQUEST', args.verb)
+    params = {
+        'SERVICE': str(args.protocol).upper(),
+        'REQUEST': args.verb,
+        'VERSION': args.version,
+    }
+    if args.params:
+        params.update(args.params)
 
-    return _get_url(args.url, params=params, **kwargs)
+    return _get_url(args.url, method=args.method, params=params, **kwargs)
 
 
 def get_text(args: Args, **kwargs) -> str:

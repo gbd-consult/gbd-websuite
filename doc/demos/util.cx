@@ -123,7 +123,7 @@
         display "client"
         opacity 0.3
         url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-        metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
     }
 @end
 

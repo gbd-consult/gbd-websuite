@@ -1,7 +1,7 @@
 """Layer configuration tools."""
 
 import gws
-import gws.base.metadata
+import gws.lib.metadata
 import gws.gis.extent
 
 from . import core
@@ -10,7 +10,7 @@ from . import core
 def metadata(layer: core.Object):
     p = layer.var('metadata')
     if p:
-        layer.metadata = gws.base.metadata.from_config(p)
+        layer.metadata = gws.lib.metadata.from_config(p)
         return True
 
 

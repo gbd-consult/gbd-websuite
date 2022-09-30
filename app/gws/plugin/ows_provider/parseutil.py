@@ -5,6 +5,7 @@ import re
 import gws
 import gws.gis.crs
 import gws.gis.extent
+import gws.lib.net
 
 import gws.types as t
 
@@ -29,7 +30,7 @@ def service_operations(caps_el: gws.IXmlElement) -> t.List[gws.OwsOperation]:
 
 
 def _parse_operation(el: gws.IXmlElement) -> gws.OwsOperation:
-    parameters = {}
+    op = gws.OwsOperation(verb=el.get('name') or el.tag)
 
     # @TODO Range
     # @TODO Constraint
@@ -42,10 +43,11 @@ def _parse_operation(el: gws.IXmlElement) -> gws.OwsOperation:
     # <Parameter name="AcceptVersions">
     #    <Value>1.0.0</Value>
 
+    op.allowedParameters = {}
     for param_el in el.findall('Parameter'):
         values = param_el.text_list('Value') + param_el.text_list('AllowedValues/Value')
         if values:
-            parameters[param_el.get('name').upper()] = values
+            op.allowedParameters[param_el.get('name').upper()] = values
 
     # <Operation name="GetMap">
     #     <DCP> <HTTP>
@@ -61,16 +63,14 @@ def _parse_operation(el: gws.IXmlElement) -> gws.OwsOperation:
     #     </Get> </HTTP> </DCPType>
     # </GetMap>
 
-    op = gws.OwsOperation(
-        formats=el.text_list('Format'),
-        parameters=parameters,
-        postUrl=_parse_url(el.first_of('DCP/HTTP/Post', 'DCPType/HTTP/Post')),
-        url=_parse_url(el.first_of('DCP/HTTP/Get', 'DCPType/HTTP/Get')),
-        verb=el.get('name') or el.tag,
-    )
+    op.postUrl = _parse_url(el.first_of('DCP/HTTP/Post', 'DCPType/HTTP/Post'))
 
-    if 'outputFormat' in parameters:
-        op.formats.extend(parameters['outputFormat'])
+    u = _parse_url(el.first_of('DCP/HTTP/Get', 'DCPType/HTTP/Get'))
+    op.url, op.params = gws.lib.net.extract_params(u)
+
+    op.formats = el.text_list('Format')
+    if 'outputFormat' in op.allowedParameters:
+        op.formats.extend(op.allowedParameters['outputFormat'])
 
     return op
 
@@ -367,7 +367,7 @@ def _parse_link(el: gws.IXmlElement) -> t.Optional[gws.MetadataLink]:
     d = gws.strip({
         'url': _parse_url(el),
         'type': el.get('type'),
-        'formatName': el.text_of('Format'),
+        'format': el.text_of('Format'),
     })
 
     if d:

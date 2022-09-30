@@ -1,5 +1,5 @@
 import gws
-import gws.base.metadata
+import gws.lib.metadata
 import gws.base.template
 import gws.base.model
 import gws.base.legend
@@ -29,7 +29,7 @@ class Config(gws.ConfigWithAccess):
     imageFormat: util.ImageFormat = util.ImageFormat.png8  #: image format
     legendEnabled: bool = True
     legend: t.Optional[gws.ext.config.legend]  #: legend configuration
-    metadata: t.Optional[gws.base.metadata.Config]  #: layer metadata
+    metadata: t.Optional[gws.Metadata]  #: layer metadata
     opacity: float = 1  #: layer opacity
     ows: bool = True  # layer is enabled for OWS services
     search: t.Optional[util.SearchConfig] = {}  # type:ignore #: layer search configuration
@@ -48,7 +48,7 @@ class CustomConfig(gws.ConfigWithAccess):
     extent: t.Optional[gws.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
     legend: gws.base.legend.Config = {}  # type:ignore #: legend configuration
-    metadata: t.Optional[gws.base.metadata.Config]  #: layer metadata
+    metadata: t.Optional[gws.Metadata]  #: layer metadata
     opacity: t.Optional[float]  #: layer opacity
     ows: bool = True  # layer is enabled for OWS services
     # search: gws.base.search.finder.collection.Config = {}  # type:ignore #: layer search configuration
@@ -65,7 +65,7 @@ class Props(gws.Props):
     geometryType: t.Optional[gws.GeometryType]
     layers: t.Optional[t.List['Props']]
     loadingStrategy: t.Optional[str]
-    metadata: gws.base.metadata.Props
+    metadata: gws.lib.metadata.Props
     opacity: t.Optional[float]
     clientOptions: util.ClientOptions
     resolutions: t.Optional[t.List[float]]
@@ -134,7 +134,7 @@ class Object(gws.Node, gws.ILayer):
         self.resolutions = self.parentResolutions
         self.title = self.var('title')
 
-        self.metadata = t.cast(gws.IMetadata, None)
+        self.metadata = gws.Metadata()
         self.legend = t.cast(gws.ILegend, None)
 
         self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(
@@ -153,17 +153,13 @@ class Object(gws.Node, gws.ILayer):
 
     ##
 
-    def set_metadata(self, *args):
-        self.metadata = gws.base.metadata.from_dict(gws.to_dict(args[0]))
-        self.metadata.extend(*args[1:])
-
     def props(self, user):
         p = gws.Data(
             extent=self.bounds.extent,
             metadata=self.metadata,
             opacity=self.opacity,
             clientOptions=self.clientOptions,
-            resolutions=self.resolutions,
+            resolutions=sorted(self.resolutions, reverse=True),
             title=self.title,
             uid=self.uid,
             layers=self.layers,

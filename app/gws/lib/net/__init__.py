@@ -10,7 +10,6 @@ import gws.lib.os2
 import gws.types as t
 
 
-
 ##
 
 class Error(gws.Error):
@@ -83,8 +82,7 @@ def parse_url(url: str, **kwargs) -> Url:
 
 
 def make_url(u: t.Union[Url, dict], **kwargs) -> str:
-    p = gws.to_dict(u)
-    p.update(kwargs)
+    p = gws.merge({}, u, kwargs)
 
     s = ''
 
@@ -172,6 +170,13 @@ def add_params(url: str, params: dict) -> str:
     u = parse_url(url)
     u.params.update(params)
     return make_url(u)
+
+
+def extract_params(url: str) -> t.Tuple[str, dict]:
+    u = parse_url(url)
+    params = u.params
+    u.params = None
+    return make_url(u), params
 
 
 def is_abs_url(url):

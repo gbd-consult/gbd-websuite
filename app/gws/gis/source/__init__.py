@@ -118,8 +118,6 @@ def filter_layers(layers: t.List[gws.SourceLayer], slf: LayerFilter) -> t.List[g
     return found
 
 
-
-
 def combined_bounds(layers: t.List[gws.SourceLayer], target_crs: gws.ICrs) -> gws.Bounds:
     """Return merged bounds from a list of source layers in the target_crs."""
 

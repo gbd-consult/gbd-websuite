@@ -1,11 +1,13 @@
 import zipfile
 
 import gws
+import gws.lib.metadata
 import gws.gis.crs
+import gws.gis.extent
 import gws.lib.net
 import gws.types as t
 
-from . import caps
+from . import caps, project
 
 
 class Config(gws.Config):
@@ -15,7 +17,7 @@ class Config(gws.Config):
     forceCrs: t.Optional[gws.CrsName]  #: use this CRS for requests
 
 
-# see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
+# see https://docs.qgis.org/3.22/de/docs/server_manual/services/wms.html#getlegendgraphics
 
 _DEFAULT_LEGEND_PARAMS = {
     'BOXSPACE': 2,
@@ -42,16 +44,17 @@ _DEFAULT_LEGEND_PARAMS = {
 
 class Object(gws.Node, gws.IOwsProvider):
     path: str
-    print_templates: t.List[caps.PrintTemplate]
-    properties: dict
-    source_text: str
+    printTemplates: t.List[caps.PrintTemplate]
     url: str
+    project: project.Object
 
-    direct_render: t.Set[str]
-    direct_search: t.Set[str]
+    directRender: t.Set[str]
+    directSearch: t.Set[str]
 
-    project_crs: gws.ICrs
     crs: gws.ICrs
+    extent: t.Optional[gws.Extent]
+
+    caps: caps.Caps
 
     def configure(self):
         self.path = self.var('path')
@@ -61,23 +64,23 @@ class Object(gws.Node, gws.IOwsProvider):
             self.root.app.var('server.qgis.host'),
             self.root.app.var('server.qgis.port'))
 
-        self.source_text = self._read(self.path)
-        cc = caps.parse(self.source_text)
+        self.project = project.from_path(self.path)
+        self.caps = self.project.caps()
 
-        self.metadata = cc.metadata
-        self.print_templates = cc.print_templates
-        self.properties = cc.properties
-        self.source_layers = cc.source_layers
-        self.version = cc.version
+        self.metadata = self.caps.metadata
+        self.printTemplates = self.caps.printTemplates
+        self.sourceLayers = self.caps.sourceLayers
+        self.version = self.caps.version
 
-        self.force_crs = gws.gis.crs.get(self.var('forceCrs'))
-        self.project_crs = cc.project_crs
-        self.crs = self.force_crs or self.project_crs
-        if not self.crs:
-            raise gws.Error(f'unknown CRS for in {self.path!r}')
+        self.crs = gws.gis.crs.get(self.var('forceCrs')) or self.caps.projectCrs
 
-        self.direct_render = set(self.var('directRender', default=[]))
-        self.direct_search = set(self.var('directSearch', default=[]))
+        self.directRender = set(self.var('directRender', default=[]))
+        self.directSearch = set(self.var('directSearch', default=[]))
+
+        self.extent = None
+        wms_extent = self.caps.properties.get('WMSExtent')
+        if wms_extent:
+            self.extent = gws.gis.extent.from_list([float(v) for v in wms_extent])
 
     def find_features(self, args, source_layers):
         if not args.shapes:
@@ -114,7 +117,7 @@ class Object(gws.Node, gws.IOwsProvider):
         params = gws.merge(qgis_defaults, ps.params, args.params)
 
         text = gws.gis.ows.request.get_text(self.url, gws.OwsProtocol.WMS, gws.OwsVerb.GetFeatureInfo, params=params)
-        features = [] # gws.gis.ows.formats.read(text, crs=ps.request_crs)
+        features = []  # gws.gis.ows.formats.read(text, crs=ps.request_crs)
 
         if features is None:
             gws.log.debug(f'QGIS/WMS NOT_PARSED params={params!r}')
@@ -145,7 +148,7 @@ class Object(gws.Node, gws.IOwsProvider):
         default = {
             'type': 'qgisflat',
             '_provider': self,
-            '_source_layers': source_layers
+            '_sourceLayers': source_layers
         }
 
         if len(source_layers) > 1 or source_layers[0].isGroup:
@@ -155,7 +158,7 @@ class Object(gws.Node, gws.IOwsProvider):
         ds = sl.dataSource
         prov = ds.get('provider')
 
-        if prov not in self.direct_render:
+        if prov not in self.directRender:
             return default
 
         if prov == 'wms':
@@ -164,10 +167,8 @@ class Object(gws.Node, gws.IOwsProvider):
                 return
             return {
                 'type': 'wmsflat',
-                'sourceLayers': {
-                    'names': ds['layers']
-                },
-                'url': self.make_wms_url(ds['url'], ds['params']),
+                'sourceLayers': {'names': ds['layers']},
+                'url': self.make_ows_url(ds['url'], ds['params']),
             }
 
         if prov == 'wmts':
@@ -176,10 +177,12 @@ class Object(gws.Node, gws.IOwsProvider):
                 return
             return gws.compact({
                 'type': 'wmts',
-                'url': ds['url'].split('?')[0],
                 'sourceLayer': ds['layers'][0],
                 'sourceStyle': (ds['options'] or {}).get('styles'),
+                'url': self.make_ows_url(ds['url'], ds['params']),
             })
+
+        # @TODO xyz
 
         gws.log.warn(f'directRender not supported for {prov!r}')
         return default
@@ -243,30 +246,31 @@ class Object(gws.Node, gws.IOwsProvider):
         gws.log.warn(f'directSearch not supported for {prov!r}')
         return default
 
-    def make_wms_url(self, url, params):
+    _std_ows_params = {
+        'service',
+        'version',
+        'request',
+        'layers',
+        'styles',
+        'srs',
+        'crs',
+        'bbox',
+        'width',
+        'height',
+        'format',
+        'transparent',
+        'bgcolor',
+        'exceptions',
+        'time',
+        'sld',
+        'sld_body',
+    }
+
+    def make_ows_url(self, url, params):
         # a wms url can be like "server?service=WMS....&bbox=.... &some-non-std-param=...
         # we need to keep non-std params for caps requests
 
-        _std_params = {
-            'service',
-            'version',
-            'request',
-            'layers',
-            'styles',
-            'srs',
-            'crs',
-            'bbox',
-            'width',
-            'height',
-            'format',
-            'transparent',
-            'bgcolor',
-            'exceptions',
-            'time',
-            'sld',
-            'sld_body',
-        }
-        p = {k: v for k, v in params.items() if k.lower() not in _std_params}
+        p = {k: v for k, v in params.items() if k.lower() not in self._std_ows_params}
         return gws.lib.net.add_params(url, p)
 
     def print_template(self, ref: str) -> t.Optional[caps.PrintTemplate]:
@@ -284,13 +288,3 @@ class Object(gws.Node, gws.IOwsProvider):
         for tpl in pts:
             if tpl.title == ref:
                 return tpl
-
-    def _read(self, path):
-        if not path.endswith('.qgz'):
-            return gws.read_file(path)
-
-        with zipfile.ZipFile(path) as zf:
-            for info in zf.infolist():
-                if info.filename.endswith('.qgs'):
-                    with zf.open(info, 'rt') as fp:
-                        return fp.read()

@@ -146,10 +146,10 @@ def record(ARGS, md):
 
     def distributionInfo():
         for link in md.extraLinks:
-            if link.formatName:
+            if link.format:
                 yield (
                     'gmd:distributionFormat gmd:MD_Format',
-                    ('gmd:name gco:CharacterString', link.formatName),
+                    ('gmd:name gco:CharacterString', link.format),
                     ('gmd:version gco:CharacterString', link.formatVersion)
                 )
 

@@ -26,7 +26,7 @@ OSM_SCALES = [
     500,
 ]
 
-OSM_RESOLUTIONS = [units.scale_to_res(s) for s in OSM_SCALES]
+OSM_RESOLUTIONS = list(reversed([units.scale_to_res(s) for s in OSM_SCALES]))
 
 
 class Config(gws.Config):
@@ -62,7 +62,7 @@ def resolutions_from_config(cfg, parent_resolultions: t.List[float] = None) -> t
     if z:
         res = [x for x in res if x <= z]
 
-    return sorted(res, reverse=True)
+    return sorted(res)
 
 
 def resolutions_from_source_layers(source_layers: t.List[gws.SourceLayer], parent_resolultions: t.List[float]) -> t.List[float]:
@@ -81,16 +81,19 @@ def resolutions_from_source_layers(source_layers: t.List[gws.SourceLayer], paren
     rmin = units.scale_to_res(min(smin))
     rmax = units.scale_to_res(max(smax))
 
-    mmax = [r for r in parent_resolultions if r >= rmax]
-    mmin = [r for r in parent_resolultions if r <= rmin]
+    pmin = min(parent_resolultions)
+    pmax = max(parent_resolultions)
 
-    if not mmax or not mmin:
+    if rmin > pmax or rmax < pmin:
         return []
 
-    a = max(mmin)
-    z = min(mmax)
+    lt = [r for r in parent_resolultions if r <= rmin]
+    gt = [r for r in parent_resolultions if r >= rmax]
 
-    return [r for r in parent_resolultions if a <= r <= z]
+    rmin = max(lt) if lt else pmin
+    rmax = min(gt) if gt else pmax
+
+    return [r for r in parent_resolultions if rmin <= r <= rmax]
 
 
 def init_resolution(cfg, resolutions):

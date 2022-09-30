@@ -5,7 +5,7 @@ import gws.base.action
 import gws.base.auth
 import gws.base.client
 import gws.base.database
-import gws.base.metadata
+import gws.lib.metadata
 import gws.base.project
 import gws.base.web
 import gws.config
@@ -41,7 +41,7 @@ class Config(gws.ConfigWithAccess):
     fonts: t.Optional[FontConfig]  #: fonts configuration
     helpers: t.Optional[t.List[gws.ext.config.helper]]  #: helpers configurations
     locales: t.Optional[t.List[str]]  #: default locales for all projects
-    metadata: t.Optional[gws.base.metadata.Config]  #: application metadata
+    metadata: t.Optional[gws.Metadata]  #: application metadata
     middleware: t.Optional[t.List[str]]  #: middleware function names
     projectDirs: t.Optional[t.List[gws.DirPath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[gws.FilePath]]  #: additional project paths
@@ -89,7 +89,7 @@ class Object(gws.Node, gws.IApplication):
 
         self.localeUids = self.var('locales') or _DEFAULT_LOCALE
         self.monitor = self.create_child(gws.server.monitor.Object, self.var('server.monitor'))
-        self.metadata = gws.base.metadata.from_config(self.var('metadata'))
+        self.metadata = gws.lib.metadata.from_config(self.var('metadata'))
 
         p = self.var('fonts.dir')
         if p:

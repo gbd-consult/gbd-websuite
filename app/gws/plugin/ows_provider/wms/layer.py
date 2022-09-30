@@ -36,7 +36,7 @@ class Object(gws.base.layer.Object):
         gws.base.layer.configure.group(self, configs)
 
         if not gws.base.layer.configure.metadata(self):
-            self.set_metadata(self.provider.metadata)
+            self.metadata = self.provider.metadata
 
     def props(self, user):
         return gws.merge(super().props(user), type='group')

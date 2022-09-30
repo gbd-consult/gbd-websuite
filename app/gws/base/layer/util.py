@@ -1,5 +1,5 @@
 import gws
-import gws.base.metadata
+import gws.lib.metadata
 import gws.base.model
 import gws.base.search
 import gws.gis.crs

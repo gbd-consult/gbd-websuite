@@ -45,7 +45,7 @@ class LayerConfig(gws.Config):
 
 class ServiceConfig(gws.ConfigWithAccess):
     layerConfig: t.Optional[t.List[LayerConfig]]  #: custom configurations for specific layers
-    metadata: t.Optional[gws.base.metadata.Config]  #: service metadata
+    metadata: t.Optional[gws.Metadata]  #: service metadata
     rootLayer: str = ''  #: root layer uid
     strictParams: bool = False  #: strict parameter parsing
     supportedCrs: t.Optional[t.List[gws.CrsName]]  #: supported CRS for this service

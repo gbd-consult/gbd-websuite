@@ -5,7 +5,7 @@ import gws.base.map
 import gws.base.printer
 import gws.base.template
 import gws.base.web
-import gws.base.metadata
+import gws.lib.metadata
 import gws.types as t
 
 _DEFAULT_TEMPLATES = [
@@ -28,7 +28,7 @@ class Config(gws.ConfigWithAccess):
     client: t.Optional[gws.base.client.Config]  #: project-specific gws client configuration
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.base.map.Config]  #: Map configuration
-    metadata: t.Optional[gws.base.metadata.Config]  #: project metadata
+    metadata: t.Optional[gws.Metadata]  #: project metadata
     overviewMap: t.Optional[gws.base.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.base.printer.Config]  #: print configuration
     templates: t.Optional[t.List[gws.ext.config.template]]  #: project info templates
@@ -42,7 +42,7 @@ class Props(gws.Props):
     description: str
     locales: t.List[str]
     map: gws.ext.props.map
-    metadata: gws.base.metadata.Props
+    metadata: gws.lib.metadata.Props
     overviewMap: gws.ext.props.map
     printer: gws.base.printer.Props
     title: str
@@ -57,11 +57,13 @@ class Object(gws.Node, gws.IProject):
 
     def configure(self):
         self.uid = self.var('uid')
-        self.metadata = gws.base.metadata.from_config(self.var('metadata')).extend(self.root.app.metadata)
+
+        self.metadata = gws.lib.metadata.from_config(self.var('metadata'))
+        gws.lib.metadata.extend(self.metadata, self.root.app.metadata)
 
         # title at the top level config preferred
         title = self.var('title') or self.metadata.get('title') or self.var('uid')
-        self.metadata.set('title', title)
+        self.metadata.title = title
         self.title = title
 
         gws.log.info(f'configuring project {self.uid!r}')

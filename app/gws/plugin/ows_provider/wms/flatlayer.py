@@ -1,6 +1,7 @@
 import gws
 import gws.base.layer
 import gws.base.legend
+import gws.lib.metadata
 import gws.gis.source
 import gws.gis.bounds
 import gws.gis.extent
@@ -12,7 +13,9 @@ from . import provider
 
 @gws.ext.config.layer('wmsflat')
 class Config(gws.base.layer.Config, provider.Config):
-    pass
+    """Flat WMS layer."""
+
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
 
 
 @gws.ext.object.layer('wmsflat')
@@ -33,11 +36,12 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             raise gws.Error(f'no source layers found in {self.provider.url!r}')
 
         self.sourceCrs = gws.gis.crs.best_match(
-            self.provider.forceCrs or self.bounds.crs,
+            self.provider.forceCrs or self.parentBounds.crs,
             gws.gis.source.combined_crs_list(self.sourceLayers))
 
         if not gws.base.layer.configure.metadata(self):
-            self.set_metadata(self.provider.metadata)
+            if len(self.sourceLayers) == 1:
+                self.metadata = self.sourceLayers[0].metadata
 
         if not gws.base.layer.configure.bounds(self):
             wgs_extent = gws.gis.extent.union(
@@ -55,8 +59,9 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         if not gws.base.layer.configure.legend(self):
             urls = gws.compact(sl.legendUrl for sl in self.sourceLayers)
             if urls:
-                cfg = gws.merge(self.var('legend'), type='external', urls=urls)
-                self.legend = self.create_child(gws.ext.object.legend, cfg)
+                self.legend = self.create_child(
+                    gws.ext.object.legend,
+                    gws.merge(self.var('legend'), type='external', urls=urls))
                 return True
 
     # def configure_search(self):
@@ -81,7 +86,8 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         if not self.var('capsLayersBottomUp'):
             layers = reversed(layers)
 
-        args = self.provider.operation_args(gws.OwsVerb.GetMap)
+        op = self.provider.operation(gws.OwsVerb.GetMap)
+        args = self.provider.request_args_for_operation(op)
 
         req = gws.merge({}, args.params, {
             'transparent': True,

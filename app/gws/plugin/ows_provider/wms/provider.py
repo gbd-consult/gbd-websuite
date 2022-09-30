@@ -1,7 +1,7 @@
 """WMS provder."""
 
 import gws
-import gws.base.metadata
+import gws.lib.metadata
 import gws.gis.ows
 import gws.gis.crs
 import gws.types as t
@@ -42,7 +42,7 @@ class Object(core.Provider):
     def configure(self):
         cc = caps.parse(self.get_capabilities())
 
-        self.metadata = gws.base.metadata.from_dict(cc.metadata)
+        self.metadata = cc.metadata
         self.sourceLayers = cc.sourceLayers
         self.version = cc.version
 
@@ -73,7 +73,7 @@ class Object(core.Provider):
             params.setdefault('INFO_FORMAT', op.preferredFormat)
 
         text = gws.gis.ows.request.get_text(
-            self.operation_args(gws.OwsVerb.GetFeatureInfo, params=params))
+            self.request_args_for_operation(op, params=params))
         features = featureinfo.parse(text, crs=ps.request_crs, axis=ps.axis)
 
         if features is None:

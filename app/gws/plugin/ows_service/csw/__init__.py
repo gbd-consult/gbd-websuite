@@ -29,7 +29,7 @@ class Object(core.Service):
     protocol = gws.OwsProtocol.CSW
     supported_versions = ['2.0.2']
 
-    records: t.Dict[str, gws.IMetadata]
+    records: t.Dict[str, gws.Metadata]
     index: t.List
     profile: Profile
 
@@ -216,7 +216,7 @@ class Object(core.Service):
     def _make_link(self, cid):
         return gws.MetadataLink(
             url=gws.action_url_path('owsService', serviceUid=self.uid, request='record', id=cid),
-            formatName=gws.lib.mime.XML,
+            format=gws.lib.mime.XML,
             type='TC211' if self.profile == 'ISO' else 'DCMI'
         )
 
