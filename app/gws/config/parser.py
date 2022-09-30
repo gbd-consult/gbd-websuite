@@ -28,9 +28,8 @@ def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', read_o
     try:
         read_options = read_options or set()
         read_options.add('verbose_errors')
-        return specs.read(value, type_name, source_path, read_options)
+        return specs.read(value, type_name, path=source_path, options=read_options)
     except gws.spec.runtime.ReadError as exc:
-        print(exc.args)
         message, _, details = exc.args
         lines = []
         p = details.get('path')
