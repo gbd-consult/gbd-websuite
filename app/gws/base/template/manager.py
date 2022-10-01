@@ -16,12 +16,12 @@ class Object(gws.Node, gws.ITemplateManager):
             self.templates.append(self.create_child(gws.ext.object.template, p))
 
         for p in self.var('defaults', default=[]):
-            self.templates.append(self.create_child(gws.ext.object.template, p))
+            self.templates.append(self.root.create_shared(gws.ext.object.template, p))
 
     def props(self, user):
         return gws.Data(templates=self.templates)
 
-    def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> t.Optional[gws.ITemplate]:
+    def find(self, subject=None, category=None, name=None, mime=None):
         templates = self.templates
 
         if mime:
@@ -38,3 +38,8 @@ class Object(gws.Node, gws.ITemplateManager):
             templates = [tpl for tpl in templates if s == tpl.name]
 
         return templates[0] if templates else None
+
+    def render(self, tri, subject=None, category=None, name=None, mime=None, notify=None):
+        tpl = self.find(subject, category, name, mime)
+        if tpl:
+            return tpl.render(tri, notify)

@@ -208,6 +208,10 @@ class Engine(BaseEngine):
     def def_nl2br(self, val):
         return _str(val).replace('\n', '<br/>')
 
+    def def_nl2p(self, val):
+        s = re.sub(r'\n[ \t]*\n\s*', '\0', _str(val))
+        return '\n'.join(f'<p>' + p.strip() + '</p>' for p in s.split('\0'))
+
     def def_url(self, val):
         # @TODO
         return _str(val)

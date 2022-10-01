@@ -87,28 +87,18 @@ class Object(gws.Node, gws.IProject):
         self.client = self.create_child(gws.base.client.Object, self.var('client'), optional=True)
 
     def props(self, user):
-        p = gws.Data()
+        desc = self.templateMgr.render(
+            gws.TemplateRenderInput(args={'project': self, 'user': user}),
+            subject='project.description'
+        )
 
-        desc = self.render_description()
-        p.description = desc.content if desc else ''
-
-        p.actions = self.root.app.actionMgr.actions_for(user, self.actionMgr)
-        p.client = self.client or self.root.app.client
-        p.map = self.map
-        p.metadata = self.metadata
-        # p.overviewMap=self.overview_map
-        p.printer = self.printer
-        p.title = self.title
-        p.uid = self.uid
-
-        return p
-
-    def render_description(self, args=None):
-        tpl = self.templateMgr.find(subject='project.description')
-        if not tpl:
-            return
-        args = gws.merge({
-            'project': self,
-            'meta': self.metadata.values
-        }, args)
-        return tpl.render(gws.TemplateRenderInput(args=args))
+        return gws.Props(
+            actions=self.root.app.actionMgr.actions_for(user, self.actionMgr),
+            client=self.client or self.root.app.client,
+            description=desc.content if desc else '',
+            map=self.map,
+            metadata=gws.lib.metadata.props(self.metadata),
+            printer=self.printer,
+            title=self.title,
+            uid=self.uid,
+        )

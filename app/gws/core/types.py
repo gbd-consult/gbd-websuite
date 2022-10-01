@@ -280,11 +280,10 @@ class ContentResponse(Response):
     """Web response with literal content"""
 
     attachment: Union[bool, str]
-    content: bytes
+    content: Union[bytes, str]
     location: str
     mime: str
     path: str
-    text: str
 
 
 class RequestMethod(Enum):
@@ -1025,9 +1024,9 @@ class TemplateRenderInput(Data):
     args: Optional[dict]
     crs: 'ICrs'
     dpi: Optional[int]
-    locale_uid: Optional[str]
+    localeUid: Optional[str]
     maps: Optional[List[TemplateRenderInputMap]]
-    out_mime: Optional[str]
+    mimeOut: Optional[str]
     user: Optional['IUser']
 
 
@@ -1053,9 +1052,11 @@ class ITemplate(INode, Protocol):
 
 
 class ITemplateManager(INode, Protocol):
-    items: List['ITemplate']
+    templates: List['ITemplate']
 
     def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional['ITemplate']: ...
+
+    def render(self, tri: TemplateRenderInput, subject: str = None, category: str = None, name: str = None, mime: str = None, notify: Callable = None) -> ContentResponse: ...
 
 
 class IPrinter(INode, Protocol):
@@ -1374,7 +1375,7 @@ class ILayer(INode, Protocol):
 
     def render_legend(self, args: dict = None) -> Optional['LegendRenderOutput']: ...
 
-    def render_description(self, args: dict = None) -> Optional[ContentResponse]: ...
+    def url_path(self, kind: Literal['box', 'tile', 'legend', 'features']) -> str: ...
 
 
 #
@@ -1478,7 +1479,7 @@ class OwsOperation(Data):
 
 
 class IOwsService(INode, Protocol):
-    metadata: 'IMetadata'
+    metadata: 'Metadata'
     name: str
     protocol: OwsProtocol
     supported_bounds: List[Bounds]
@@ -1544,16 +1545,13 @@ class IClient(INode, Protocol):
 
 
 class IProject(INode, Protocol):
+    actionMgr: 'IActionManager'
     assetsRoot: Optional['WebDocumentRoot']
     client: 'IClient'
     localeUids: List[str]
     map: 'IMap'
     metadata: 'Metadata'
-
-    actionMgr: 'IActionManager'
-    templateMgr: Optional['ITemplateManager']
-
-    def render_description(self, args: dict = None) -> Optional[ContentResponse]: ...
+    templateMgr: 'ITemplateManager'
 
 
 # ----------------------------------------------------------------------------------------------------------------------

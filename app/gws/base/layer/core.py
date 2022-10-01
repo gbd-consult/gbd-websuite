@@ -27,7 +27,6 @@ class Config(gws.ConfigWithAccess):
     extentBuffer: t.Optional[int]  #: extent buffer
     grid: util.GridConfig = {}  # type:ignore #: grid configuration
     imageFormat: util.ImageFormat = util.ImageFormat.png8  #: image format
-    legendEnabled: bool = True
     legend: t.Optional[gws.ext.config.legend]  #: legend configuration
     metadata: t.Optional[gws.Metadata]  #: layer metadata
     opacity: float = 1  #: layer opacity
@@ -135,7 +134,7 @@ class Object(gws.Node, gws.ILayer):
         self.title = self.var('title')
 
         self.metadata = gws.Metadata()
-        self.legend = t.cast(gws.ILegend, None)
+        self.legend = None
 
         self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(
             templates=self.var('templates'),
@@ -153,10 +152,23 @@ class Object(gws.Node, gws.ILayer):
 
     ##
 
+    _url_path_suffix = '/gws.png'
+
+    def url_path(self, kind):
+        # layer urls, handled by the map action (base/map/action.py)
+        if kind == 'box':
+            return gws.action_url_path('mapGetBox', layerUid=self.uid) + self._url_path_suffix
+        if kind == 'tile':
+            return gws.action_url_path('mapGetXYZ', layerUid=self.uid) + '/z/{z}/x/{x}/y/{y}' + self._url_path_suffix
+        if kind == 'legend':
+            return gws.action_url_path('mapGetLegend', layerUid=self.uid) + self._url_path_suffix
+        if kind == 'features':
+            return gws.action_url_path('mapGetFeatures', layerUid=self.uid)
+
     def props(self, user):
         p = gws.Data(
             extent=self.bounds.extent,
-            metadata=self.metadata,
+            metadata=gws.lib.metadata.props(self.metadata),
             opacity=self.opacity,
             clientOptions=self.clientOptions,
             resolutions=sorted(self.resolutions, reverse=True),
@@ -167,17 +179,16 @@ class Object(gws.Node, gws.ILayer):
 
         if self.displayMode == gws.LayerDisplayMode.tile:
             p.type = 'tile'
-            p.url = util.layer_url_path(self.uid, kind='tile')
+            p.url = self.url_path('tile')
             p.tileSize = self.grid.tileSize
 
         if self.displayMode == gws.LayerDisplayMode.box:
             p.type = 'box'
-            p.url = util.layer_url_path(self.uid, kind='box')
+            p.url = self.url_path('box')
 
         return p
 
     def render_legend(self, args=None) -> t.Optional[gws.LegendRenderOutput]:
-        """Render a legend and return the path to the legend image."""
 
         if not self.legend:
             return None
@@ -190,17 +201,6 @@ class Object(gws.Node, gws.ILayer):
             return gws.get_server_global('legend_' + self.uid, _get)
 
         return self.legend.render(args)
-
-    def render_description(self, args=None):
-        tpl = self.templateMgr.find(subject='layer.description')
-        if not tpl:
-            return
-        args = gws.merge({
-            'layer': self,
-            'service_metadata': gws.get(self, 'provider.metadata.values'),
-            'source_layers': gws.get(self, 'source_layers'),
-        }, args)
-        return tpl.render(gws.TemplateRenderInput(args=args))
 
     def mapproxy_config(self, mc):
         pass
