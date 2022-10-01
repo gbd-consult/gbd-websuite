@@ -16,7 +16,7 @@ class Object(gws.base.search.provider.Object):
 
     def configure(self):
         self.provider = self.var('_provider')
-        self.source_layers = self.var('_source_layers')
+        self.source_layers = self.var('_sourceLayers')
 
     def can_run(self, args):
         return (

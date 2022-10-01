@@ -11,12 +11,12 @@ from .. import parseutil as u
 
 def parse(xml: str) -> core.Caps:
     caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
-    source_layers = gws.gis.source.check_layers(
+    sls = gws.gis.source.check_layers(
         _layer(el) for el in caps_el.findall('Capability/Layer'))
     return core.Caps(
         metadata=u.service_metadata(caps_el),
         operations=u.service_operations(caps_el),
-        sourceLayers=source_layers,
+        sourceLayers=sls,
         version=caps_el.get('version'))
 
 

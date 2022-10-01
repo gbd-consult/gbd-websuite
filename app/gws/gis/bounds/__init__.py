@@ -69,6 +69,4 @@ def transform(b: gws.Bounds, crs_to: gws.ICrs) -> gws.Bounds:
         extent=b.crs.transform_extent(b.extent, crs_to))
 
 
-def wgs_extent(b: gws.Bounds) -> gws.Extent:
-    return b.crs.transform_extent(b.extent, gws.gis.crs.WGS84)
 

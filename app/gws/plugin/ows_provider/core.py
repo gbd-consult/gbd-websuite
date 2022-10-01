@@ -26,6 +26,7 @@ class Caps(gws.Data):
     metadata: gws.Metadata
     operations: t.List[gws.OwsOperation]
     sourceLayers: t.List[gws.SourceLayer]
+    tileMatrixSets: t.List[gws.TileMatrixSet]
     version: str
 
 

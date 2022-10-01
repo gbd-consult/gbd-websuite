@@ -54,7 +54,7 @@ class Object(gws.Node, gws.IMap):
             self.bounds = gws.Bounds(crs=crs, extent=crs.extent)
 
         self.center = self.var('center') or gws.gis.extent.center(self.bounds.extent)
-        self.wgsExtent = gws.gis.bounds.wgs_extent(self.bounds)
+        self.wgsExtent = gws.gis.extent.transform_to_wgs(self.bounds.extent, self.bounds.crs)
 
         p = self.var('zoom')
         if p:

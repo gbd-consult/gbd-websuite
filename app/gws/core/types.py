@@ -639,8 +639,8 @@ class TileMatrix(Data):
     y: float
     width: float
     height: float
-    tile_width: float
-    tile_height: float
+    tileWidth: float
+    tileHeight: float
     extent: Extent
 
 

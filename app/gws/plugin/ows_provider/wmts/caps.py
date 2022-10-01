@@ -12,25 +12,21 @@ from .. import parseutil as u
 # http://portal.opengeospatial.org/files/?artifact_id=35326
 
 
-class Caps(core.Caps):
-    tileMatrixSets: t.List[gws.TileMatrixSet]
-
-
-def parse(xml):
+def parse(xml: str) -> core.Caps:
     caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
-    tileMatrixSets = [_tile_matrix_set(el) for el in caps_el.findall('Contents/TileMatrixSet')]
-    tms_map = {tms.uid: tms for tms in tileMatrixSets}
-    source_layers = gws.gis.source.check_layers(
-        _layer(el, tms_map) for el in caps_el.findall('Contents/Layer'))
-    return Caps(
-        tileMatrixSets=tileMatrixSets,
+    tms_lst = [_tile_matrix_set(el) for el in caps_el.findall('Contents/TileMatrixSet')]
+    tms_dct = {tms.uid: tms for tms in tms_lst}
+    sls = gws.gis.source.check_layers(
+        _layer(el, tms_dct) for el in caps_el.findall('Contents/Layer'))
+    return core.Caps(
+        tileMatrixSets=tms_lst,
         metadata=u.service_metadata(caps_el),
         operations=u.service_operations(caps_el),
-        source_layers=source_layers,
+        sourceLayers=sls,
         version=caps_el.get('version'))
 
 
-def _layer(layer_el: gws.IXmlElement, tms_map):
+def _layer(layer_el: gws.IXmlElement, tms_dct):
     # <Layer>
     #   <ows:Title>...
     #   <Style>...
@@ -45,15 +41,19 @@ def _layer(layer_el: gws.IXmlElement, tms_map):
     sl.title = sl.metadata.get('title', '')
 
     sl.styles = [u.parse_style(e) for e in layer_el.findall('Style')]
-    sl.defaultStyle = u.defaultStyle(sl.styles)
+    sl.defaultStyle = u.default_style(sl.styles)
     if sl.defaultStyle:
         sl.legendUrl = sl.defaultStyle.legendUrl
 
     sl.tileMatrixIds = [el.text_of('TileMatrixSet') for el in layer_el.findall('TileMatrixSetLink')]
-    sl.tileMatrixSets = [tms_map[tid] for tid in sl.tileMatrixIds]
+    sl.tileMatrixSets = [tms_dct[tid] for tid in sl.tileMatrixIds]
 
     extra_crsids = [tms.crs.srid for tms in sl.tileMatrixSets]
-    sl.supported_bounds = u.supported_bounds(layer_el, extra_crsids)
+    bounds, crs_list, wgs_ext = u.bounds_and_crs(layer_el, extra_crsids)
+
+    sl.supportedBounds = bounds
+    sl.supportedCrs = crs_list or [gws.gis.crs.WGS84]
+    sl.wgsExtent = wgs_ext or gws.gis.crs.WGS84.wgsExtent
 
     sl.isImage = True
     sl.isVisible = True
@@ -81,7 +81,7 @@ def _tile_matrix_set(tms_el: gws.IXmlElement):
     tms.crs = gws.gis.crs.require(tms_el.text_of('SupportedCRS'))
     tms.matrices = sorted(
         [_tile_matrix(e) for e in tms_el.findall('TileMatrix')],
-        key=lambda m: int('1' + m.uid))
+        key=lambda m: -m.scale)
 
     return tms
 
@@ -103,8 +103,8 @@ def _tile_matrix(tm_el: gws.IXmlElement):
     tm.width = u.to_int(tm_el.text_of('MatrixWidth'))
     tm.height = u.to_int(tm_el.text_of('MatrixHeight'))
 
-    tm.tile_width = u.to_int(tm_el.text_of('TileWidth'))
-    tm.tile_height = u.to_int(tm_el.text_of('TileHeight'))
+    tm.tileWidth = u.to_int(tm_el.text_of('TileWidth'))
+    tm.tileHeight = u.to_int(tm_el.text_of('TileHeight'))
 
     tm.extent = _extent_for_matrix(tm)
 
@@ -119,7 +119,7 @@ def _extent_for_matrix(m: gws.TileMatrix):
 
     return [
         m.x,
-        m.y - res * m.height * m.tile_height,
-        m.x + res * m.width * m.tile_width,
+        m.y - res * m.height * m.tileHeight,
+        m.x + res * m.width * m.tileWidth,
         m.y,
     ]

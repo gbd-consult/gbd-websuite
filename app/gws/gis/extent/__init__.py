@@ -140,7 +140,11 @@ def transform(e: gws.Extent, crs_from: gws.ICrs, crs_to: gws.ICrs) -> gws.Extent
     return crs_from.transform_extent(e, crs_to)
 
 
-def wgs_extent(e: gws.Extent, crs_from: gws.ICrs) -> gws.Extent:
+def transform_from_wgs(e: gws.Extent, crs_to: gws.ICrs) -> gws.Extent:
+    return gws.gis.crs.WGS84.transform_extent(e, crs_to)
+
+
+def transform_to_wgs(e: gws.Extent, crs_from: gws.ICrs) -> gws.Extent:
     return crs_from.transform_extent(e, gws.gis.crs.WGS84)
 
 

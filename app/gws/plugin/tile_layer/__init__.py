@@ -3,6 +3,7 @@ import re
 import gws
 import gws.gis.crs
 import gws.gis.bounds
+import gws.gis.zoom
 import gws.base.layer
 import gws.types as t
 
@@ -44,7 +45,6 @@ class Object(gws.base.layer.Object):
         #
         # @TODO make MP cache network requests
 
-        self.grid.reqSize = self.grid.reqSize or 1
         self.url = self.var('url')
 
         p = self.var('service', default=gws.Data())

@@ -35,8 +35,8 @@ def main(ARGS):
                 ('ows:Identifier', tm.uid),
                 ('ScaleDenominator', tm.scale),
                 ('TopLeftCorner', tm.x, ' ', tm.y),
-                ('TileWidth', tm.tile_width),
-                ('TileHeight', tm.tile_height),
+                ('TileWidth', tm.tileWidth),
+                ('TileHeight', tm.tileHeight),
                 ('MatrixWidth', tm.width),
                 ('MatrixHeight', tm.height),
             )

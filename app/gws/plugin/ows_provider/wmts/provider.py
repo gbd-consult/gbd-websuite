@@ -19,8 +19,9 @@ class Object(core.Provider):
     def configure(self):
         cc = caps.parse(self.get_capabilities())
 
-        self.tileMatrixSets = cc.tileMatrixSets
         self.metadata = cc.metadata
-        self.operations = cc.operations
+        self.sourceLayers = cc.sourceLayers
         self.version = cc.version
-        self.source_layers = cc.source_layers
+        self.tileMatrixSets = cc.tileMatrixSets
+
+        self.configure_operations(cc.operations)

@@ -1,0 +1,20 @@
+projects+ {
+    title "WMTS layer, reprojected"
+    metadata.abstract "Cached and reprojected `wmts` layer."
+
+    map {
+        crs 25830
+        extent {demo_make_extent(1181583, 5720282, 1000)}
+        zoom.initScale 70000
+    }
+
+    map.layers+ {
+        title "Amtliche Basiskarte NRW"
+        type "wmts"
+        url "https://www.wmts.nrw.de/geobasis/wmts_nw_abk"
+        metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+        cache.enabled true
+    }
+
+    @demo_osm_background
+}

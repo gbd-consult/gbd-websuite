@@ -26,7 +26,8 @@ _number = t.Union[int, float]
 
 
 def scale_to_res(x: _number) -> float:
-    return round(x * OGC_M_PER_PX, 4)
+    # return round(x * OGC_M_PER_PX, 4)
+    return x * OGC_M_PER_PX
 
 
 def res_to_scale(x: _number) -> int:
