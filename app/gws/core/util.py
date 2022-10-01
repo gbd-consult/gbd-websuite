@@ -693,7 +693,7 @@ class _FileLock:
                 os.write(fp, bytes(os.getpid()))
                 os.close(fp)
                 return
-            except:
+            except FileExistsError:
                 pass
 
             t = time.time() - ts

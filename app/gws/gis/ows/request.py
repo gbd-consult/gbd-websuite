@@ -14,7 +14,7 @@ class Args(gws.Data):
     version: str
 
 
-def _get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
+def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
     res = gws.lib.net.http_request(url, **kwargs)
 
     # some folks serve OWS error documents with the status 200
@@ -40,12 +40,13 @@ def get(args: Args, **kwargs) -> gws.lib.net.HTTPResponse:
     params = {
         'SERVICE': str(args.protocol).upper(),
         'REQUEST': args.verb,
-        'VERSION': args.version,
     }
+    if args.version:
+        params['VERSION'] = args.version
     if args.params:
         params.update(args.params)
 
-    return _get_url(args.url, method=args.method, params=params, **kwargs)
+    return get_url(args.url, method=args.method or gws.RequestMethod.GET, params=params, **kwargs)
 
 
 def get_text(args: Args, **kwargs) -> str:

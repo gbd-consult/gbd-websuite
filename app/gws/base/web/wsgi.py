@@ -159,8 +159,6 @@ class Requester(gws.IWebRequester):
             args['headers']['Content-Length'] = str(os.path.getsize(response.path))
             args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(response.path)
             args['direct_passthrough'] = True
-        elif response.text is not None:
-            args['response'] = response.text
         else:
             args['response'] = response.content
 

@@ -14,6 +14,8 @@ class Config(main.Config):
 
 @gws.ext.object.legend('static')
 class Object(main.Object):
+    path: str
+
     def configure(self):
         self.path = self.var('path')
 

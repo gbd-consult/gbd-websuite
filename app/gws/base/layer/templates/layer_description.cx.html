@@ -1,38 +1,11 @@
-@def info la
-    @with la.title
-        <p class="head">{la.title | html}</p>
-    @end
-
-    @with la.meta.abstract
-        <p class="text2">{la.meta.abstract | html | nl2br}</p>
-    @end
-
-    @if la.legend
-        <p class="legend"><img src="{gws.endpoint}/mapGetLegend/layerUid/{la.uid}" /></p>
-    @end
-
-    @with la.meta.url
-        <p class="metaurl"><a href="{la.meta.url | url}" target="_blank" rel="noopener"></a></p>
-    @end
+@with layer.title as s
+    <p class="head">{s | html}</p>
 @end
 
-
-@def subsection text
-    @with text
-        <div class="subsection">{text}</div>
-    @end
+@with layer.metadata.abstract as s
+    <div class="text2">{s | html | nl2p}</div>
 @end
 
-@info layer
-
-@each sub_layers as sub
-    @subsection(info(sub))
+@if layer.legend
+    <p class="legend"><img src="{layer.url_path('legend')}"/></p>
 @end
-
-@let service_info
-    @with service.abstract
-        <p>{service.abstract | html | nl2br}</p>
-    @end
-@end
-
-@subsection(service_info)

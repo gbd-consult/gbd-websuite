@@ -22,7 +22,7 @@ class Object(main.Object):
 
     def render(self, args=None):
         lros = []
-        for uid in self.layersUids:
+        for uid in self.layerUids:
             layer = self.root.find(gws.ext.object.layer, uid)
             if layer:
                 lro = layer.render_legend(args)

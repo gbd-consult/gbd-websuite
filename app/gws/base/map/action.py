@@ -103,7 +103,9 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('mapDescribeLayer')
     def describe_layer(self, req: gws.IWebRequester, p: DescribeLayerRequest) -> DescribeLayerResponse:
         layer = req.require_layer(p.layerUid)
-        desc = layer.render_description()
+        desc = layer.templateMgr.render(
+            gws.TemplateRenderInput(args=dict(layer=layer, user=req.user)),
+            subject='layer.description')
         return DescribeLayerResponse(description=desc.content if desc else '')
 
     @gws.ext.command.api('mapGetFeatures')
@@ -121,7 +123,7 @@ class Object(gws.base.action.Object):
             'features': [gws.props(f, req.user, context=self) for f in found]
         })
 
-        return gws.ContentResponse(mime=gws.lib.mime.JSON, text=js)
+        return gws.ContentResponse(mime=gws.lib.mime.JSON, content=js)
 
     ##
 
@@ -168,7 +170,7 @@ class Object(gws.base.action.Object):
         # so they will be subsequently served directly by nginx
 
         # if content and gws.is_public_object(layer) and layer.has_cache:
-        #     path = gws.base.layer.layer_url_path(layer.uid, kind='tile')
+        #     path = layer.url_path('tile')
         #     path = path.replace('{x}', str(p.x))
         #     path = path.replace('{y}', str(p.y))
         #     path = path.replace('{z}', str(p.z))

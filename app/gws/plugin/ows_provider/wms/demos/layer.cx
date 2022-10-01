@@ -12,6 +12,7 @@ projects+ {
         title "Sachsenforst: Waldfunktionen"
         type "wms"
         url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
+        metadata.attribution.title "Staatsbetrieb Sachsenforst"
     }
 
     @demo_osm_background

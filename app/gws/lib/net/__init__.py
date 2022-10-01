@@ -187,8 +187,9 @@ def is_abs_url(url):
 
 
 class HTTPResponse:
-    def __init__(self, ok: bool, res: requests.Response = None, text: str = None, status_code=0):
+    def __init__(self, ok: bool, url: str, res: requests.Response = None, text: str = None, status_code=0):
         self.ok = ok
+        self.url = url
         if res is not None:
             self.content_type, self.content_encoding = _parse_content_type(res.headers)
             self.content = res.content
@@ -314,16 +315,16 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
         res = requests.request(method, url, **kwargs)
         if 200 <= res.status_code < 300:
             gws.log.debug(f'HTTP_OK_{method}: url={url!r} status={res.status_code!r}')
-            return HTTPResponse(ok=True, res=res)
+            return HTTPResponse(ok=True, url=url, res=res)
         gws.log.error(f'HTTP_FAILED_{method}: ({res.status_code!r}) url={url!r}')
-        return HTTPResponse(ok=False, res=res)
+        return HTTPResponse(ok=False, url=url, res=res)
     except requests.Timeout as exc:
         gws.log.exception(f'HTTP_FAILED_{method}: (timeout) url={url!r}')
-        return HTTPResponse(ok=False, text=repr(exc))
+        return HTTPResponse(ok=False, url=url, text=repr(exc))
     except requests.RequestException as exc:
         gws.log.exception(f'HTTP_FAILED_{method}: ({exc!r}) url={url!r}')
-        return HTTPResponse(ok=False, text=repr(exc))
+        return HTTPResponse(ok=False, url=url, text=repr(exc))
 
 
 def _cache_path(url):
-    return gws.NET_CACHE_DIR + '/' + gws.to_uid(url)
+    return gws.NET_CACHE_DIR + '/' + gws.sha256(url)

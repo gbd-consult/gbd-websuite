@@ -1,24 +1,22 @@
 import gws
 import gws.base.layer
-import gws.base.legend
 import gws.lib.metadata
 import gws.gis.source
-import gws.gis.bounds
-import gws.gis.extent
+import gws.lib.os2
 import gws.gis.ows
 import gws.types as t
 
 from . import provider
 
 
-@gws.ext.config.layer('wmsflat')
+@gws.ext.config.layer('qgisflat')
 class Config(gws.base.layer.Config, provider.Config):
-    """Flat WMS layer."""
+    """Flat Qgis layer"""
 
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
 
 
-@gws.ext.object.layer('wmsflat')
+@gws.ext.object.layer('qgisflat')
 class Object(gws.base.layer.Object, gws.IOwsClient):
     provider: provider.Object
     sourceCrs: gws.ICrs
@@ -35,21 +33,32 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         if not self.sourceLayers:
             raise gws.Error(f'no source layers found in {self.provider.url!r}')
 
-        self.sourceCrs = gws.gis.crs.best_match(
-            self.provider.forceCrs or self.parentBounds.crs,
-            gws.gis.source.combined_crs_list(self.sourceLayers))
+        self.sourceCrs = self.provider.crs
 
         if not gws.base.layer.configure.metadata(self):
             if len(self.sourceLayers) == 1:
                 self.metadata = self.sourceLayers[0].metadata
 
         if not gws.base.layer.configure.bounds(self):
-            wgs_extent = gws.gis.extent.union(
-                gws.compact(sl.wgsExtent for sl in self.sourceLayers))
-            crs = self.parentBounds.crs
-            self.bounds = gws.Bounds(
-                crs=crs,
-                extent=gws.gis.extent.transform(wgs_extent, gws.gis.crs.WGS84, crs))
+            our_crs = self.parentBounds.crs
+            if self.provider.extent:
+                self.bounds = gws.Bounds(
+                    crs=our_crs,
+                    extent=gws.gis.extent.transform(
+                        self.provider.extent,
+                        self.provider.crs,
+                        our_crs
+                    ))
+            else:
+                wgs_extent = gws.gis.extent.union(
+                    gws.compact(sl.wgsExtent for sl in self.sourceLayers))
+                self.bounds = gws.Bounds(
+                    crs=our_crs,
+                    extent=gws.gis.extent.transform(
+                        wgs_extent,
+                        gws.gis.crs.WGS84,
+                        our_crs
+                    ))
 
         if not gws.base.layer.configure.resolutions(self):
             self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.parentResolutions)
@@ -61,48 +70,34 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             if urls:
                 self.legend = self.create_child(
                     gws.ext.object.legend,
-                    gws.merge(self.var('legend'), type='external', urls=urls))
+                    gws.merge(self.var('legend'), type='remote', urls=urls))
                 return True
-
-    # def configure_search(self):
-    #     if not super().configure_search():
-    #         queryable_layers = gws.gis.source.filter_layers(
-    #             self.sourceLayers,
-    #             gws.gis.source.LayerFilter(isQueryable=True)
-    #         )
-    #         if queryable_layers:
-    #             self.searchMgr.add_finder(gws.Config(
-    #                 type='wms',
-    #                 _provider=self.provider,
-    #                 _sourceLayers=queryable_layers
-    #             ))
-    #             return True
 
     def render(self, lri):
         return gws.base.layer.util.generic_raster_render(self, lri)
 
     def mapproxy_config(self, mc, options=None):
-        layers = [sl.name for sl in self.sourceLayers if sl.name]
-        if not self.var('capsLayersBottomUp'):
-            layers = reversed(layers)
+        # NB: qgis caps layers are always top-down
+        layers = reversed([sl.name for sl in self.sourceLayers])
 
-        op = self.provider.operation(gws.OwsVerb.GetMap)
-        args = self.provider.request_args_for_operation(op)
-
-        req = gws.merge({}, args.params, {
-            'transparent': True,
-            'layers': ','.join(layers),
-            'url': args.url,
-        })
-
-        source_uid = mc.source(gws.compact({
+        source_uid = mc.source({
             'type': 'wms',
             'supported_srs': [self.sourceCrs.epsg],
-            'concurrent_requests': self.var('maxRequests'),
-            'req': req,
+            'forward_req_params': ['DPI__gws'],
+            'concurrent_requests': self.root.app.var('server.qgis.maxRequests', default=0),
+            'req': {
+                'url': self.provider.url,
+                'map': self.provider.path,
+                'layers': ','.join(layers),
+                'transparent': True,
+            },
             'wms_opts': {
-                'version': self.provider.version,
-            }
-        }))
+                'version': '1.3.0',
+            },
+
+            # add the file checksum to the config, so that the source and cache ids
+            # in the mpx config are recalculated when the file changes
+            '$hash': self.provider.project.sourceHash,
+        })
 
         gws.base.layer.util.mapproxy_layer_config(self, mc, source_uid)

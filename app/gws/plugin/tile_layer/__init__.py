@@ -61,14 +61,13 @@ class Object(gws.base.layer.Object):
             bs = gws.Bounds(crs=self.service.crs, extent=self.service.extent)
             self.bounds = gws.gis.bounds.transform(bs, self.parentBounds.crs)
 
+        gws.base.layer.configure.metadata(self)
+        gws.base.layer.configure.legend(self)
+
     def props(self, user):
         p = super().props(user)
-
-        if p:
-            if self.displayMode == gws.LayerDisplayMode.client:
-                p.type = 'xyz'
-                p.url = self.url
-
+        if self.displayMode == gws.LayerDisplayMode.client:
+            return gws.merge(p, type='xyz', url=self.url)
         return p
 
     def render(self, lri):

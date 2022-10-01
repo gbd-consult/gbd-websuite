@@ -12,6 +12,8 @@ projects+ {
         title "Sachsenforst"
         type "wms"
         url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
+        metadata.attribution.title "Staatsbetrieb Sachsenforst"
+
         flattenLayers.level 2
     }
 

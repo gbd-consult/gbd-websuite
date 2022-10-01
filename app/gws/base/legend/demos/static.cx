@@ -1,0 +1,23 @@
+projects+ {
+    title "Legend: static"
+    metadata.abstract "`static` legends are generated from local image files."
+
+    map {
+        crs 3857
+        center {DEMO_DUESSELDORF_3857}
+        zoom.initScale 150000
+    }
+
+    map.layers+ {
+        title "Open Street Map"
+        type "tile"
+        url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        display "client"
+
+        legend {
+            type "static"
+            path "osm_legend.png"
+        }
+
+    }
+}

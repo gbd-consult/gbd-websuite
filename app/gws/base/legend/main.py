@@ -11,7 +11,7 @@ class Props(gws.Props):
 class Config(gws.ConfigWithAccess):
     """Layer legend confuguration."""
 
-    cacheMaxAge: gws.Duration = '1d'  #: max cache age for external legends
+    cacheMaxAge: gws.Duration = '1d'  #: max cache age for remote legends
     enabled: bool = True  #: the legend is enabled
     options: t.Optional[dict]  #: provider-dependent legend options
 
@@ -24,7 +24,7 @@ class Object(gws.Node, gws.ILegend):
 
     def configure(self):
         self.options = self.var('options', default={})
-        self.cacheMaxAge = self.var('cacheMaxAge', default=0)
+        self.cacheMaxAge = self.var('cacheMaxAge', default=3600*24)
 
 
 def output_to_bytes(lro: gws.LegendRenderOutput) -> t.Optional[bytes]:

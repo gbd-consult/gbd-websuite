@@ -45,11 +45,10 @@ def resolutions(layer: core.Object):
 
 
 def legend(layer: core.Object):
-    if not layer.var('legend.enabled'):
-        return True
     p = layer.var('legend')
     if p:
-        layer.legend = layer.create_child(gws.ext.object.legend, p)
+        if p.enabled:
+            layer.legend = layer.create_child(gws.ext.object.legend, p)
         return True
 
 
@@ -83,8 +82,9 @@ def group(layer: core.Object, layer_configs):
     if not legend(layer):
         layers_uids = [la.uid for la in layer.layers if la.legend]
         if layers_uids:
-            cfg = gws.merge(layer.var('legend'), type='combined', layerUids=layers_uids)
-            layer.legend = layer.create_child(gws.ext.object.legend, cfg)
+            layer.legend = layer.create_child(
+                gws.ext.object.legend,
+                gws.Config(type='combined', layerUids=layers_uids))
 
     layer.canRenderBox = any(la.canRenderBox for la in layer.layers)
     layer.canRenderXyz = any(la.canRenderXyz for la in layer.layers)

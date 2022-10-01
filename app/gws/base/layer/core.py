@@ -16,6 +16,8 @@ import gws.types as t
 from . import util
 
 
+# @TODO allow options for automatic legends
+
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 

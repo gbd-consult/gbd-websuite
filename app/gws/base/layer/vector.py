@@ -31,7 +31,7 @@ class Object(layer.Object):
             p,
             type='vector',
             loadingStrategy=self.var('loadingStrategy'),
-            url=lib.layer_url_path(self.uid, kind='features'))
+            url=self.url_path('features'))
 
     def render_box(self, view, extra_params=None):
         fr = self.render_svg_fragment(view)

@@ -12,6 +12,8 @@ projects+ {
         title "Sachsenforst: Natur und Erholung"
         type "wms"
         url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
+        metadata.attribution.title "Staatsbetrieb Sachsenforst"
+
         rootLayers.titles [
             '7_Bereich_Erholung'
             '4_Bereich_Natur'

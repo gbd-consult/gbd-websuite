@@ -12,6 +12,9 @@ class Error(gws.Error):
     pass
 
 
+# @TODO read from db
+# @TODO read additional files (qlr, qml etc)
+
 def from_path(path: str) -> 'Object':
     if not path.endswith('.qgz'):
         return from_string(gws.read_file(path), path)
@@ -33,16 +36,17 @@ class Object:
     rootElement: gws.IXmlElement
     path: str
     version: str
+    sourceHash: str
 
     def __init__(self, xml: str, path: str):
         self.rootElement = gws.lib.xmlx.from_string(xml)
         self.path = path
+        self.sourceHash = gws.sha256(xml)
 
         ver = self.rootElement.get('version', '').split('-')[0]
         if not ver.startswith('3'):
             raise Error(f'unsupported qgis version {ver!r}')
         self.version = ver
-        self._caps = None
 
     def save(self, path=None):
         path = path or self.path
@@ -54,6 +58,6 @@ class Object:
         return self.rootElement.to_string()
 
     def caps(self) -> caps.Caps:
-        if not self._caps:
-            self._caps = caps.parse_element(self.rootElement)
-        return self._caps
+        if not hasattr(self, '_caps'):
+            setattr(self, '_caps', caps.parse_element(self.rootElement))
+        return getattr(self, '_caps')

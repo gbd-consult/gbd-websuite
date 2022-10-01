@@ -69,22 +69,6 @@ class SearchConfig(gws.Config):
     providers: t.Optional[t.List[gws.ext.config.finder]]  #: search prodivers
 
 
-# layer urls, handled by the map action (base/map/action.py)
-
-_suffix = '/gws.png'
-
-
-def layer_url_path(layer_uid, kind: t.Literal['box', 'tile', 'legend', 'features']) -> str:
-    if kind == 'box':
-        return gws.action_url_path('mapGetBox', layerUid=layer_uid) + _suffix
-    if kind == 'tile':
-        return gws.action_url_path('mapGetXYZ', layerUid=layer_uid) + '/z/{z}/x/{x}/y/{y}' + _suffix
-    if kind == 'legend':
-        return gws.action_url_path('mapGetLegend', layerUid=layer_uid) + _suffix
-    if kind == 'features':
-        return gws.action_url_path('mapGetFeatures', layerUid=layer_uid)
-
-
 def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):
     mc.layer({
         'name': layer.uid + '_NOCACHE',

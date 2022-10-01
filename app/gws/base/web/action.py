@@ -48,23 +48,23 @@ class Object(gws.base.action.Object):
         if p.path.endswith('.vendor.js'):
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
-                text=gws.base.client.bundles.javascript(self.root, 'vendor', locale_uid))
+                content=gws.base.client.bundles.javascript(self.root, 'vendor', locale_uid))
 
         if p.path.endswith('.util.js'):
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
-                text=gws.base.client.bundles.javascript(self.root, 'util', locale_uid))
+                content=gws.base.client.bundles.javascript(self.root, 'util', locale_uid))
 
         if p.path.endswith('.app.js'):
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
-                text=gws.base.client.bundles.javascript(self.root, 'app', locale_uid))
+                content=gws.base.client.bundles.javascript(self.root, 'app', locale_uid))
 
         if p.path.endswith('.css'):
             theme = p.path.split('.')[-2]
             return gws.ContentResponse(
                 mime=gws.lib.mime.CSS,
-                text=gws.base.client.bundles.css(self.root, 'app', theme))
+                content=gws.base.client.bundles.css(self.root, 'app', theme))
 
 
 def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, attachment=False):

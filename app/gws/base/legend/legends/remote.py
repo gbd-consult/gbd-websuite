@@ -6,15 +6,16 @@ import gws.types as t
 from .. import main
 
 
-@gws.ext.config.legend('external')
+@gws.ext.config.legend('remote')
 class Config(main.Config):
     """External legend."""
 
     urls: t.List[gws.Url]  #: urls of externals legend images
 
 
-@gws.ext.object.legend('external')
+@gws.ext.object.legend('remote')
 class Object(main.Object):
+    urls: t.List[str]
 
     def configure(self):
         self.urls = self.var('urls')

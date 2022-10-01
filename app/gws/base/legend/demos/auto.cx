@@ -1,6 +1,6 @@
 projects+ {
-    title "WMS flat layer, partial"
-    metadata.abstract "Select specific source layers from a WMS service."
+    title "Legend: automatic"
+    metadata.abstract "For OWS and QGIS layers, legends are confgured automatically, unless specified otherwise."
 
     map {
         center {DEMO_DUESSELDORF_3857}
@@ -11,7 +11,6 @@ projects+ {
         title "Verkehrsnetze (Eisenbahn)"
         type "wmsflat"
         url "https://www.wms.nrw.de/geobasis/wms_nw_inspire-verkehrsnetze_alkis"
-
         sourceLayers.names [
             "TN.RailTransportNetwork.RailwayArea"
             "TN.RailTransportNetwork.RailwayLink"

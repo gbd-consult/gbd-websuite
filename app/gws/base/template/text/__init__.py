@@ -41,4 +41,4 @@ class Object(gws.base.template.Object):
 
         return gws.ContentResponse(
             mime=self.mimes[0] if self.mimes else gws.lib.mime.TXT,
-            text=out)
+            content=out)

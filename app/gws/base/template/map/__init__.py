@@ -45,11 +45,11 @@ class Object(gws.base.template.Object):
         notify('end_page')
         notify('finalize_print')
 
-        if not tri.out_mime or tri.out_mime == gws.lib.mime.HTML:
+        if not tri.mimeOut or tri.mimeOut == gws.lib.mime.HTML:
             notify('end_print')
-            return gws.ContentResponse(mime=gws.lib.mime.HTML, text=html)
+            return gws.ContentResponse(mime=gws.lib.mime.HTML, content=html)
 
-        if tri.out_mime == gws.lib.mime.PDF:
+        if tri.mimeOut == gws.lib.mime.PDF:
             res_path = gws.tempname('map.pdf')
             gws.lib.html2.render_to_pdf(
                 html,
@@ -59,7 +59,7 @@ class Object(gws.base.template.Object):
             notify('end_print')
             return gws.ContentResponse(path=res_path)
 
-        if tri.out_mime == gws.lib.mime.PNG:
+        if tri.mimeOut == gws.lib.mime.PNG:
             res_path = gws.tempname('map.png')
             gws.lib.html2.render_to_png(
                 html,
@@ -69,4 +69,4 @@ class Object(gws.base.template.Object):
             notify('end_print')
             return gws.ContentResponse(path=res_path)
 
-        raise gws.Error(f'invalid output mime: {tri.out_mime!r}')
+        raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')

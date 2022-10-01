@@ -58,7 +58,7 @@ class Object(gws.base.template.Object):
 
         notify('finalize_print')
 
-        mime = tri.out_mime
+        mime = tri.mimeOut
         if not mime and self.mimes:
             mime = self.mimes[0]
         if not mime:
@@ -66,7 +66,7 @@ class Object(gws.base.template.Object):
 
         if mime == gws.lib.mime.HTML:
             notify('end_print')
-            return gws.ContentResponse(mime=mime, text=html)
+            return gws.ContentResponse(mime=mime, content=html)
 
         if mime == gws.lib.mime.PDF:
             res_path = self._finalize_pdf(tri, html, parser)
@@ -78,7 +78,7 @@ class Object(gws.base.template.Object):
             notify('end_print')
             return gws.ContentResponse(path=res_path)
 
-        raise gws.Error(f'invalid output mime: {tri.out_mime!r}')
+        raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')
 
     def _do_render(self, text, args, parser, runtime):
         def err(e, path, line, env):
