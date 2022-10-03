@@ -35,27 +35,25 @@ class CacheConfig(gws.Config):
     enabled: bool = True
     maxAge: gws.Duration = '7d'  #: cache max. age
     maxLevel: int = 1  #: max. zoom level to cache
+    requestBuffer: t.Optional[int]
+    requestTiles: t.Optional[int]
 
 
 class Cache(gws.Data):
     maxAge: int
     maxLevel: int
+    requestBuffer: int
+    requestTiles: int
 
 
 class GridConfig(gws.Config):
     """Grid configuration for caches and tiled data"""
 
-    origin: str = 'nw'  #: position of the first tile (nw or sw)
-    tileSize: int = 256  #: tile size
-    reqSize: int = 0  #: number of metatiles to fetch
-    reqBuffer: int = 0  #: pixel buffer
-
-
-class Grid(gws.Data):
-    origin: str
-    tileSize: int
-    reqSize: int
-    reqBuffer: int
+    crs: t.Optional[gws.CrsName]
+    extent: t.Optional[gws.Extent]
+    corner: t.Optional[gws.Corner]
+    resolutions: t.Optional[t.List[float]]
+    tileSize: t.Optional[int]
 
 
 class EditConfig(gws.ConfigWithAccess):
@@ -75,35 +73,44 @@ def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):
         'sources': [source_uid]
     })
 
-    res = [r for r in layer.resolutions if r]
-    if len(res) < 2:
-        res = [res[0], res[0]]
+    tg = layer.targetGrid
 
-    grid = getattr(layer, 'grid')
+    if tg.corner == 'lt':
+        origin = 'nw'
+    elif tg.corner == 'lb':
+        origin = 'sw'
+    else:
+        raise gws.Error(f'invalid grid corner {tg.corner!r}')
 
-    grid.mpxUid = mc.grid(gws.compact({
-        'origin': grid.origin,
-        'tile_size': [grid.tileSize, grid.tileSize],
-        'res': res,
-        'srs': layer.bounds.crs.epsg,
-        'bbox': layer.bounds.extent,
+    tg.uid = mc.grid(gws.compact({
+        'origin': origin,
+        'tile_size': [tg.tileSize, tg.tileSize],
+        'res': tg.resolutions,
+        'srs': tg.bounds.crs.epsg,
+        'bbox': tg.bounds.extent,
     }))
-
-    meta_size = grid.reqSize or 4
 
     front_cache_config = {
         'sources': [source_uid],
-        'grids': [grid.mpxUid],
+        'grids': [tg.uid],
         'cache': {
             'type': 'file',
             'directory_layout': 'mp'
         },
-        'meta_size': [meta_size, meta_size],
-        'meta_buffer': grid.reqBuffer,
-        'disable_storage': not layer.hasCache,
+        'meta_size': [1, 1],
+        'meta_buffer': 0,
+        'disable_storage': True,
         'minimize_meta_requests': True,
         'format': layer.imageFormat,
     }
+
+    cache = getattr(layer, 'cache', None)
+    if cache:
+        front_cache_config['disable_storage'] = False
+        if cache.requestTiles:
+            front_cache_config['meta_size'] = [cache.requestTiles, cache.requestTiles]
+        if cache.requestBuffer:
+            front_cache_config['meta_buffer'] = cache.requestBuffer
 
     layer.mpxCacheUid = mc.cache(front_cache_config)
 
@@ -142,7 +149,7 @@ def generic_raster_render(layer: gws.ILayer, lri: gws.LayerRenderInput):
 
 def generic_render_box_to_bytes(layer: gws.ILayer, lri: gws.LayerRenderInput):
     uid = layer.uid
-    if not layer.hasCache:
+    if not layer.cache:
         uid += '_NOCACHE'
 
     if not lri.view.rotation:
@@ -179,11 +186,10 @@ def generic_render_box_to_bytes(layer: gws.ILayer, lri: gws.LayerRenderInput):
 
 
 def generic_render_xyz_to_bytes(layer: gws.ILayer, lri: gws.LayerRenderInput):
-    grid = getattr(layer, 'grid')
     return gws.gis.mpx.wmts_request(
         layer.uid,
         lri.x,
         lri.y,
         lri.z,
-        tile_matrix=grid.mpxUid,
-        tile_size=grid.tileSize)
+        tile_matrix=layer.targetGrid.uid,
+        tile_size=layer.targetGrid.tileSize)

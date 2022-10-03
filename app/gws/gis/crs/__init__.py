@@ -97,6 +97,14 @@ WEBMERCATOR = Crs(
     )
 )
 
+WEBMERCATOR_RADIUS = 6378137
+WEBMERCATOR_SQUARE = (
+    -math.pi * WEBMERCATOR_RADIUS,
+    -math.pi * WEBMERCATOR_RADIUS,
+    +math.pi * WEBMERCATOR_RADIUS,
+    +math.pi * WEBMERCATOR_RADIUS,
+)
+
 
 class Error(gws.Error):
     pass

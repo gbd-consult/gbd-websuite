@@ -31,6 +31,9 @@ Point = Tuple[float, float]
 """type: Size [width, height]."""
 Size = Tuple[float, float]
 
+"""type: Corner."""
+Corner = Literal['nw', 'sw', 'ne', 'se', 'lt', 'lb', 'rt', 'rb']
+
 
 class UOM(Enum):
     MI = 'mi'  # Statute mile 9093
@@ -1345,6 +1348,14 @@ class LayerDisplayMode(Enum):
     client = 'client'  #: draw a layer in the client
 
 
+class TileGrid(Data):
+    uid: str
+    bounds: Bounds
+    corner: Corner
+    resolutions: List[float]
+    tileSize: int
+
+
 # noinspection PyPropertyDefinition
 class ILayer(INode, Protocol):
     canRenderBox: bool
@@ -1354,7 +1365,6 @@ class ILayer(INode, Protocol):
     supportsRasterServices: bool
     supportsVectorServices: bool
 
-    hasCache: bool
     hasSearch: bool
 
     bounds: Bounds
@@ -1363,6 +1373,9 @@ class ILayer(INode, Protocol):
     opacity: float
     resolutions: List[float]
     title: str
+
+    sourceGrid: Optional[TileGrid]
+    targetGrid: Optional[TileGrid]
 
     metadata: 'Metadata'
     legend: Optional['ILegend']

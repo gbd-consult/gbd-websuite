@@ -117,7 +117,7 @@ class Image(gws.Object, gws.IImage):
         return path
 
     def add_text(self, text, x=0, y=0, color=None):
-        self.img.convert('RGBA')
+        self.img = self.img.convert('RGBA')
         draw = PIL.ImageDraw.Draw(self.img)
         font = PIL.ImageFont.load_default()
         color = color or (0, 0, 0, 255)
@@ -125,7 +125,7 @@ class Image(gws.Object, gws.IImage):
         return self
 
     def add_box(self, color=None):
-        self.img.convert('RGBA')
+        self.img = self.img.convert('RGBA')
         draw = PIL.ImageDraw.Draw(self.img)
         color = color or (0, 0, 0, 255)
         draw.rectangle((0, 0) + self.img.size, outline=color)

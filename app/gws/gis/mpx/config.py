@@ -86,6 +86,9 @@ class _Config:
                     }
 
                 }
+            },
+            'http': {
+                'hide_error_details': False,
             }
         }
 

@@ -65,6 +65,16 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             if not self.resolutions:
                 raise gws.Error(f'layer {self.uid!r}: no matching resolutions')
 
+        p = self.var('targetGrid', default=gws.Config())
+        self.targetGrid = gws.TileGrid(
+            corner=p.corner or 'lt',
+            tileSize=p.tileSize or 256,
+        )
+        crs = self.parentBounds.crs
+        extent = (p.extent or self.parentBounds.extent)
+        self.targetGrid.bounds = gws.Bounds(crs=crs, extent=extent)
+        self.targetGrid.resolutions = p.resolutions or self.resolutions
+
         if not gws.base.layer.configure.legend(self):
             urls = gws.compact(sl.legendUrl for sl in self.sourceLayers)
             if urls:

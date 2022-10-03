@@ -1,4 +1,5 @@
 import gws
+import gws.gis.extent
 import gws.lib.units as units
 import gws.types as t
 
@@ -94,6 +95,14 @@ def resolutions_from_source_layers(source_layers: t.List[gws.SourceLayer], paren
     rmax = min(gt) if gt else pmax
 
     return [r for r in parent_resolultions if rmin <= r <= rmax]
+
+
+def resolutions_from_bounds(b: gws.Bounds, tile_size: int) -> t.List[float]:
+    siz = gws.gis.extent.size(b.extent)
+    res = []
+    for z in range(20):
+        res.append(siz[0] / (tile_size * (1 << z)))
+    return res
 
 
 def init_resolution(cfg, resolutions):

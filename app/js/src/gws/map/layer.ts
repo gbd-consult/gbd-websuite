@@ -223,9 +223,9 @@ export class TileLayer extends OlBackedLayer<ol.layer.Image> {
                 projection: this.map.projection,
                 //transition: DEFAULT_TILE_TRANSITION,
                 tileGrid: new ol.tilegrid.TileGrid({
-                    extent: this.extent,
-                    tileSize: this.props.tileSize,
-                    resolutions: this.resolutions,
+                    extent: this.props.grid.extent,
+                    tileSize: this.props.grid.tileSize,
+                    resolutions: this.props.grid.resolutions,
                 })
             })
         });

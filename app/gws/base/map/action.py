@@ -157,14 +157,19 @@ class Object(gws.base.action.Object):
     def _get_xyz(self, req: gws.IWebRequester, p: GetXyzRequest):
         layer = req.require_layer(p.layerUid)
         lri = gws.LayerRenderInput(type='xyz', x=p.x, y=p.y, z=p.z)
+        lro = None
 
         ts = gws.time_start(f'RENDER_XYZ layer={p.layerUid} lri={lri!r}')
         try:
             lro = layer.render(lri)
-            return gws.lib.mime.PNG, lro.content
         except:
             gws.log.exception()
         gws.time_end(ts)
+
+        if not lro:
+            return self._error_pixel
+
+        content = lro.content
 
         # for public tiled layers, write tiles to the web cache
         # so they will be subsequently served directly by nginx
@@ -176,7 +181,12 @@ class Object(gws.base.action.Object):
         #     path = path.replace('{z}', str(p.z))
         #     gws.gis.cache.store_in_web_cache(path, content)
 
-        return self._error_pixel
+        if self.root.app.developer_option('map.annotate_xyz'):
+            text = f"{p.z} {p.x} {p.y}"
+            img = gws.lib.image.from_bytes(content)
+            content = img.add_text(text, x=5, y=5).add_box().to_bytes()
+
+        return gws.lib.mime.PNG, content
 
     def _get_legend(self, req: gws.IWebRequester, p: GetLegendRequest):
         layer = req.require_layer(p.layerUid)

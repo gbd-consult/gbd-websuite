@@ -27,7 +27,8 @@ class Config(gws.ConfigWithAccess):
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.box  #: layer display mode
     extent: t.Optional[gws.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    grid: util.GridConfig = {}  # type:ignore #: grid configuration
+    sourceGrid: t.Optional[util.GridConfig]  # source grid
+    targetGrid: t.Optional[util.GridConfig]  # target (client) grid
     imageFormat: util.ImageFormat = util.ImageFormat.png8  #: image format
     legend: t.Optional[gws.ext.config.legend]  #: legend configuration
     metadata: t.Optional[gws.Metadata]  #: layer metadata
@@ -58,6 +59,13 @@ class CustomConfig(gws.ConfigWithAccess):
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 
+class GridProps(gws.Props):
+    corner: str
+    extent: gws.Extent
+    resolutions: t.List[float]
+    tileSize: int
+
+
 class Props(gws.Props):
     model: t.Optional[gws.ext.props.model]
     editAccess: t.Optional[t.List[str]]
@@ -71,7 +79,7 @@ class Props(gws.Props):
     clientOptions: util.ClientOptions
     resolutions: t.Optional[t.List[float]]
     # style: t.Optional[gws.lib.style.Props]
-    tileSize: int = 0
+    grid: GridProps
     title: str = ''
     type: str
     uid: str
@@ -110,7 +118,6 @@ _DEFAULT_TEMPLATES = [
 
 class Object(gws.Node, gws.ILayer):
     cache: t.Optional[util.Cache]
-    grid: util.Grid
     clientOptions: util.ClientOptions
 
     canRenderBox = False
@@ -146,11 +153,16 @@ class Object(gws.Node, gws.ILayer):
 
         self.layers = []
 
+        self.sourceGrid = None
+        self.targetGrid = None
+
+        p = self.var('targetGrid')
+        if p and p.crs and p.crs != self.parentBounds.crs:
+            raise gws.Error(f'invalid target grid crs')
+
         self.cache = None
         if self.var('cache.enabled'):
-            self.cache = self.var('cache')
-        self.grid = self.var('grid', default=util.Grid())
-        self.hasCache = self.cache is not None
+            self.cache = util.Cache(self.var('cache'))
 
     ##
 
@@ -179,10 +191,17 @@ class Object(gws.Node, gws.ILayer):
             layers=self.layers,
         )
 
+        if self.targetGrid:
+            p.grid = GridProps(
+                corner=self.targetGrid.corner,
+                extent=self.targetGrid.bounds.extent,
+                resolutions=sorted(self.targetGrid.resolutions, reverse=True),
+                tileSize=self.targetGrid.tileSize,
+            )
+
         if self.displayMode == gws.LayerDisplayMode.tile:
             p.type = 'tile'
             p.url = self.url_path('tile')
-            p.tileSize = self.grid.tileSize
 
         if self.displayMode == gws.LayerDisplayMode.box:
             p.type = 'box'
