@@ -75,6 +75,7 @@ class Object(gws.common.action.Object):
         if not layer.edit_access(req.user):
             raise gws.web.error.Forbidden()
 
+        src_features = []
         failures = []
 
         for f in p.features:
@@ -88,11 +89,15 @@ class Object(gws.common.action.Object):
 
                 f.attributes.append(t.Attribute(name='gws:user_login', value=req.user.attribute('login')))
                 f.attributes.append(t.Attribute(name='gws:current_datetime', value=gws.tools.date.now()))
+            src_features.append(f)
 
-        features = layer.edit_operation(op, p.features)
-        for f in features:
-            f.transform_to(layer.map.crs)
-            f.apply_templates()
-            f.apply_data_model()
+        dst_features = []
 
-        return EditResponse(features=[f.props for f in features], failures=failures)
+        if src_features:
+            dst_features = layer.edit_operation(op, src_features)
+            for f in dst_features:
+                f.transform_to(layer.map.crs)
+                f.apply_templates()
+                f.apply_data_model()
+
+        return EditResponse(features=[f.props for f in dst_features], failures=failures)
