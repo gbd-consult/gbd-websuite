@@ -465,7 +465,7 @@ class Base(Object):
             if target_proj and target_proj.is_geographic:
                 prec = 6
 
-        for f in features:
+        for n, f in enumerate(features):
             if target_proj:
                 f.transform_to(target_proj.epsg)
 
@@ -480,7 +480,7 @@ class Base(Object):
             if self.force_feature_name:
                 name = self._parse_name(self.force_feature_name)
 
-            gml_id = gws.as_uid(f.uid)
+            gml_id = gws.as_uid(f.uid) or 'f' + str(n)
             if not gml_id[0].isalpha() and not gml_id.startswith('_'):
                 gml_id = '_' + gml_id
 
