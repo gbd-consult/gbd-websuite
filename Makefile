@@ -9,6 +9,8 @@ PYTHON = python3
 
 SPHINXOPTS = -v -n -b html -j auto -c $(DOC)/sphinx
 
+CLIENT_BUILDER = $(APP)/js/helpers/index.js
+
 .PHONY: help spec client client-help client-dev client-dev-server doc doc-dev-server test image clean
 
 define HELP
@@ -16,41 +18,44 @@ define HELP
 GWS Makefile
 ~~~~~~~~~~~~
 
-	make spec [MANIFEST=<manifest>]
-		- build the Specs
+make clean
+    - remove all build artifacts
 
-	make client [MANIFEST=<manifest>] [ARGS=<builder args>]
-		- build the Client for production
+make client [MANIFEST=<manifest>] [ARGS=<builder args>]
+    - build the Client for production
 
-	make client-dev [MANIFEST=<manifest>] [ARGS=<builder args>]
-		- build the Client for development
+make client-dev [MANIFEST=<manifest>] [ARGS=<builder args>]
+    - build the Client for development
 
-	make client-dev-server [MANIFEST=<manifest>] [ARGS=<builder args>]
-		- start the Client dev server
+make client-dev-server [MANIFEST=<manifest>] [ARGS=<builder args>]
+    - start the Client dev server
 
-	make client-help
-		- Client Builder help
+make client-help
+    - Client Builder help
 
-	make doc [MANIFEST=<manifest>]
-		- build the Docs
+make doc [MANIFEST=<manifest>]
+    - build the Docs
 
-	make doc-dev-server [MANIFEST=<manifest>]
-		- start the Docs dev server
+make doc-dev-server [MANIFEST=<manifest>]
+    - start the Docs dev server
 
-	make test [MANIFEST=<manifest>]
-		- run Server tests
+make image [ARGS=<builder args>]
+    - build docker Images
 
-	make image [ARGS=<builder args>]
-		- build docker Images
+make image-help
+    - image builder help
 
-	make image-help
-		- image builder help
+make package DIR=<target dir> [MANIFEST=<manifest>]
+    - build an Application tarball
 
-	make package DIR=<target dir> [MANIFEST=manifest-path]
-		- build an Application tarball
+make spec [MANIFEST=<manifest>]
+    - build the Specs
 
-	make clean
-		- remove all build artifacts
+make test [MANIFEST=<manifest>] [ARGS=<test args>]
+    - run tests
+
+make test-help
+    - test runner help
 
 endef
 
@@ -68,16 +73,16 @@ spec:
 	mkdir -p $(SPEC_BUILD) && $(PYTHON) $(APP)/gws/spec/make.py --out $(SPEC_BUILD) --manifest "$(MANIFEST)" $(ARGS)
 
 client-help:
-	cd $(APP)/js && npm run help && cd $(CWD)
+	node $(CLIENT_BUILDER) -h
 
 client: spec
-	cd $(APP)/js && npm run production -- $(ARGS) && cd $(CWD)
+	cd $(APP)/js && node $(CLIENT_BUILDER) production $(ARGS) && cd $(CWD)
 
 client-dev: spec
-	cd $(APP)/js && npm run dev && cd $(CWD)
+	cd $(APP)/js && node $(CLIENT_BUILDER) dev $(ARGS) && cd $(CWD)
 
 client-dev-server: spec
-	cd $(APP)/js && npm run dev-server -- $(ARGS) && cd $(CWD)
+	cd $(APP)/js && node $(CLIENT_BUILDER) dev-server $(ARGS) && cd $(CWD)
 
 doc: spec
 	$(PYTHON) $(DOC)/sphinx/conf.py pre && \
@@ -88,7 +93,10 @@ doc-dev-server: doc
 	sphinx-autobuild -B $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
 
 test:
-	$(PYTHON) $(APP)/test.py go --manifest "$(MANIFEST)"
+	$(PYTHON) $(APP)/test.py $(ARGS) --manifest "$(MANIFEST)"
+
+test-help:
+	$(PYTHON) $(APP)/test.py -h
 
 image:
 	$(PYTHON) $(BASE)/install/docker.py $(ARGS)

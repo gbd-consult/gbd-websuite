@@ -358,7 +358,7 @@ def exit_help(err=None):
     print(USAGE)
     if err:
         print('ERROR:', err, '\n')
-    sys.exit(255)
+    sys.exit(255 if err else 0)
 
 
 if __name__ == '__main__':
