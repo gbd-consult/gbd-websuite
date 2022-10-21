@@ -3,7 +3,6 @@
     "description": "GBD WebSuite Client",
     "main": "index.js",
     "scripts": {
-        "help": "node helpers/index.js help",
         "dev-server": "node helpers/index.js dev-server",
         "dev": "node helpers/index.js dev",
         "production": "node helpers/index.js production"

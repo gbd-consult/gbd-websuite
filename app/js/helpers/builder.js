@@ -13,21 +13,17 @@ let jadzia = require('./jadzia');
 //
 
 const DOC = `
-
 GWS Client Builder
 ~~~~~~~~~~~~~~~~~~
 
-npm run dev-server
-    start the dev server on port 8080
-    
-npm run dev
-    compile development bundles for plugins in the manifest 
-    
-npm run production
-    compile production bundles for plugins in the manifest 
-    
-npm run clean
-    remove all compiled bundles and builds 
+    node builder.js <command> <options>
+
+Commands:
+
+    clean       - remove all compiled bundles and builds 
+    dev         - compile development bundles for plugins in the manifest 
+    dev-server  - start the dev server on port 8080
+    production  - compile production bundles for plugins in the manifest 
     
 Options:
 

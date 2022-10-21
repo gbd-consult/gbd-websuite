@@ -8,8 +8,8 @@ GWS_GID=${GWS_GID:-1000}
 
 PYTHON=python3
 
-MAIN=$GWS_APP_DIR/bin/_gws.py
-TEST=$GWS_APP_DIR/bin/_test.py
+MAIN_PY=$GWS_APP_DIR/bin/_gws.py
+TEST_PY=$GWS_APP_DIR/bin/_test.py
 
 XVFB=/usr/bin/Xvfb
 XVFBARGS='-dpi 96 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nolisten tcp'
@@ -56,7 +56,7 @@ chmod 750 $GWS_VAR_DIR
 if [ "$1" == "server" ]; then
 
     if [ "$2" == "stop" ]; then
-      $PYTHON $MAIN "$@"
+      $PYTHON $MAIN_PY "$@"
       exit $?
     fi
 
@@ -64,7 +64,7 @@ if [ "$1" == "server" ]; then
 
     rm -f $SERVER_CMD
 
-    $PYTHON $MAIN "$@"
+    $PYTHON $MAIN_PY "$@"
     [ $? -eq 0 ] || exit $?
 
     [ -f $SERVER_CMD ] && source $SERVER_CMD
@@ -73,7 +73,7 @@ fi
 
 if [ "$1" == "test" ]; then
     shift
-    $PYTHON $TEST "$@"
+    $PYTHON $TEST_PY "$@"
     exit $?
 fi
 
@@ -85,4 +85,4 @@ if [ "$1" == "-p" ]; then
     exit $?
 fi
 
-$PYTHON $MAIN "$@"
+$PYTHON $MAIN_PY "$@"
