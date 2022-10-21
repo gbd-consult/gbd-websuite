@@ -1,6 +1,6 @@
 import gws
-import gws.lib.os2
-import gws.lib.units as units
+import gws.lib.osx
+import gws.lib.uom as units
 import gws.types as t
 
 
@@ -23,7 +23,7 @@ def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin:
         'wkhtmltopdf',
         '--disable-javascript',
         '--disable-smart-shrinking',
-        '--dpi', f(gws.lib.units.PDF_DPI),
+        '--dpi', f(gws.lib.uom.PDF_DPI),
         '--margin-top', f(mar[0]),
         '--margin-right', f(mar[1]),
         '--margin-bottom', f(mar[2]),
@@ -36,7 +36,7 @@ def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin:
     ]
 
     gws.log.debug(cmd)
-    gws.lib.os2.run(cmd, echo=False)
+    gws.lib.osx.run(cmd, echo=False)
 
     return out_path
 
@@ -79,6 +79,6 @@ def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin:
     ])
 
     gws.log.debug(cmd)
-    gws.lib.os2.run(cmd, echo=False)
+    gws.lib.osx.run(cmd, echo=False)
 
     return out_path

@@ -4,8 +4,8 @@ import os
 import yaml
 
 import gws
-import gws.lib.json2
-import gws.lib.os2
+import gws.lib.jsonx
+import gws.lib.osx
 import gws.lib.importer
 import gws.lib.vendor.jump
 import gws.lib.vendor.slon
@@ -81,7 +81,7 @@ def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_paths) -> gws.Conf
 
     prj_paths = list(app_cfg.projectPaths)
     for dirname in app_cfg.projectDirs:
-        prj_paths.extend(gws.lib.os2.find_files(dirname, CONFIG_PATH_PATTERN))
+        prj_paths.extend(gws.lib.osx.find_files(dirname, CONFIG_PATH_PATTERN))
 
     for prj_path in sorted(set(prj_paths)):
         prj_cfg, paths = _read(prj_path)
@@ -109,7 +109,7 @@ def _read(path):
     except Exception as exc:
         raise gws.ConfigurationError(f'read error: {path!r}') from exc
 
-    _save_intermediate(path, gws.lib.json2.to_pretty_string(dct), 'json')
+    _save_intermediate(path, gws.lib.jsonx.to_pretty_string(dct), 'json')
     return dct, paths
 
 
@@ -123,7 +123,7 @@ def _read2(path):
         return dct, [path]
 
     if path.endswith('.json'):
-        return gws.lib.json2.from_path(path), [path]
+        return gws.lib.jsonx.from_path(path), [path]
 
     if path.endswith('.yaml'):
         with open(path, encoding='utf8') as fp:
@@ -185,7 +185,7 @@ def _syntax_error(path, src, message, line, context=10):
 
 
 def _save_intermediate(path, txt, ext):
-    p = gws.lib.os2.parse_path(path)
+    p = gws.lib.osx.parse_path(path)
     gws.write_file(f"{gws.CONFIG_DIR}/{p['name']}.parsed.{ext}", txt)
 
 

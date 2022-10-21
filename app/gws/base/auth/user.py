@@ -1,5 +1,5 @@
 import gws
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.types as t
 
 from . import error

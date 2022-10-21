@@ -10,10 +10,10 @@ import gws.gis.cache
 import gws.gis.crs
 import gws.base.feature
 import gws.lib.image
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.lib.mime
 import gws.gis.render
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.types as t
 
 
@@ -119,7 +119,7 @@ class Object(gws.base.action.Object):
         # @TODO the response should be geojson FeatureCollection
 
         found = self._get_features(req, p)
-        js = gws.lib.json2.to_string({
+        js = gws.lib.jsonx.to_string({
             'features': [gws.props(f, req.user, context=self) for f in found]
         })
 

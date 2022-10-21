@@ -5,8 +5,8 @@
 #
 # import gws
 import gws.types as t
-# import gws.lib.json2
-# import gws.lib.os2
+# import gws.lib.jsonx
+# import gws.lib.osx
 # import gws.base.web.error
 #
 #
@@ -62,13 +62,13 @@ import gws.types as t
 #             total_size=total_size,
 #             chunk_count=chunk_count,
 #         )
-#         gws.lib.json2.to_path(f'{dir}/{uid}.json', status)
+#         gws.lib.jsonx.to_path(f'{dir}/{uid}.json', status)
 #     elif not uid.isalnum():
 #         raise Error(f'upload {uid!r}: invalid uid')
 #     else:
 #         try:
-#             status = gws.Data(gws.lib.json2.from_path(f'{dir}/{uid}.json'))
-#         except gws.lib.json2.Error:
+#             status = gws.Data(gws.lib.jsonx.from_path(f'{dir}/{uid}.json'))
+#         except gws.lib.jsonx.Error:
 #             status = None
 #
 #     if not status:
@@ -85,8 +85,8 @@ import gws.types as t
 #     dir = gws.ensure_dir(_UPLOAD_DIR)
 #
 #     try:
-#         status = gws.Data(gws.lib.json2.from_path(f'{dir}/{uid}.json'))
-#     except gws.lib.json2.Error:
+#         status = gws.Data(gws.lib.jsonx.from_path(f'{dir}/{uid}.json'))
+#     except gws.lib.jsonx.Error:
 #         status = None
 #
 #     if not status:
@@ -114,7 +114,7 @@ import gws.types as t
 #             except (OSError, IOError) as e:
 #                 raise Error(f'upload {uid!r}: read error') from e
 #
-#     if gws.lib.os2.file_size(tmp_path) != status.total_size:
+#     if gws.lib.osx.file_size(tmp_path) != status.total_size:
 #         raise Error(f'upload {uid!r}: invalid file size')
 #
 #     try:
@@ -123,7 +123,7 @@ import gws.types as t
 #         raise Error(f'upload {uid!r}: move error') from e
 #
 #     for c in chunks:
-#         gws.lib.os2.unlink(c)
+#         gws.lib.osx.unlink(c)
 #
 #     return UploadRecord(uid=uid, path=path, name=status.name)
 #
@@ -131,6 +131,6 @@ import gws.types as t
 # def delete(uid: str):
 #     dir = gws.ensure_dir(_UPLOAD_DIR)
 #
-#     for p in gws.lib.os2.find_files(dir):
+#     for p in gws.lib.osx.find_files(dir):
 #         if p.startswith(uid + '.'):
-#             gws.lib.os2.unlink(p)
+#             gws.lib.osx.unlink(p)

@@ -6,7 +6,7 @@ import urllib.parse
 import certifi
 
 import gws
-import gws.lib.os2
+import gws.lib.osx
 import gws.types as t
 
 
@@ -66,7 +66,7 @@ def parse_url(url: str, **kwargs) -> Url:
     )
 
     if u.path:
-        u.pathparts = gws.lib.os2.parse_path(u.path)
+        u.pathparts = gws.lib.osx.parse_path(u.path)
 
     if u.query:
         u.qsl = urllib.parse.parse_qsl(u.query)
@@ -281,7 +281,7 @@ def http_request(url, **kwargs) -> HTTPResponse:
     cache_path = _cache_path(url)
 
     if method == 'GET' and max_age:
-        age = gws.lib.os2.file_age(cache_path)
+        age = gws.lib.osx.file_age(cache_path)
         if 0 <= age < max_age:
             gws.log.debug(f'HTTP_CACHED_{method}: url={url!r} path={cache_path!r} age={age}')
             return gws.unserialize_from_path(cache_path)

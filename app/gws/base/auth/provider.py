@@ -1,5 +1,5 @@
 import gws
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.types as t
 
 from . import user as user_api
@@ -19,8 +19,8 @@ class Object(gws.Node, gws.IAuthProvider):
         return None
 
     def serialize_user(self, user):
-        return gws.lib.json2.to_string(user_api.to_dict(user))
+        return gws.lib.jsonx.to_string(user_api.to_dict(user))
 
     def unserialize_user(self, data):
-        d = gws.lib.json2.from_string(data)
+        d = gws.lib.jsonx.from_string(data)
         return user_api.from_dict(user_api.AuthorizedUser, self, d) if d else None

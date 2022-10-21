@@ -4,7 +4,7 @@ import re
 import sys
 
 import gws
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.lib.importer
 import gws.types as t
 
@@ -22,10 +22,10 @@ def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'O
 
     if read_cache and gws.is_file(cache_path):
         try:
-            gs = gws.lib.json2.from_path(cache_path)
+            gs = gws.lib.jsonx.from_path(cache_path)
             gws.log.debug(f'spec.create: loaded from {cache_path!r}')
             return Object(gs)
-        except gws.lib.json2.Error:
+        except gws.lib.jsonx.Error:
             gws.log.exception(f'spec.create: load failed')
 
     ts = gws.time_start('SPEC GENERATOR')
@@ -34,9 +34,9 @@ def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'O
 
     if write_cache:
         try:
-            gws.lib.json2.to_path(cache_path, gs, pretty=True)
+            gws.lib.jsonx.to_path(cache_path, gs, pretty=True)
             gws.log.debug(f'spec.create: stored to {cache_path!r}')
-        except gws.lib.json2.Error:
+        except gws.lib.jsonx.Error:
             gws.log.exception(f'spec.create: store failed')
 
     return Object(gs)

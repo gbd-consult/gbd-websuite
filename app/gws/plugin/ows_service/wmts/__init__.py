@@ -7,7 +7,7 @@ import gws.gis.extent
 import gws.lib.image
 import gws.lib.mime
 import gws.gis.render
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.types as t
 
 from .. import core
@@ -174,7 +174,7 @@ class Object(core.Service):
             res = w / (tile_size * size)
             ms.append(gws.TileMatrix(
                 uid='%02d' % z,
-                scale=gws.lib.units.res_to_scale(res),
+                scale=gws.lib.uom.res_to_scale(res),
                 x=extent[0],
                 y=extent[1],
                 tileWidth=tile_size,

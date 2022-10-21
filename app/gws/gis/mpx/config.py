@@ -3,7 +3,7 @@ import yaml
 from mapproxy.wsgiapp import make_wsgi_app
 
 import gws
-import gws.lib.os2
+import gws.lib.osx
 import gws.types as t
 
 CONFIG_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
@@ -181,7 +181,7 @@ def create_and_save(root: gws.IRoot):
             cfg = DEFAULT_CONFIG
         else:
             gws.log.warn('mapproxy: no configuration, not starting')
-            gws.lib.os2.unlink(CONFIG_PATH)
+            gws.lib.osx.unlink(CONFIG_PATH)
             return
 
     cfg_str = yaml.dump(cfg)
@@ -195,7 +195,7 @@ def create_and_save(root: gws.IRoot):
     except Exception as e:
         raise gws.Error(f'MAPPROXY ERROR: {e!r}') from e
 
-    gws.lib.os2.unlink(test_path)
+    gws.lib.osx.unlink(test_path)
 
     # write into the real config path
     gws.write_file(CONFIG_PATH, cfg_str)

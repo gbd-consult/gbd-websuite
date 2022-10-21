@@ -6,7 +6,7 @@ import re
 import gws
 import gws.config
 import gws.gis.mpx.config
-import gws.lib.os2
+import gws.lib.osx
 import gws.types as t
 
 
@@ -36,7 +36,7 @@ def status(root: gws.IRoot, layer_uids=None, with_counts=True):
     if with_counts:
         _update_file_counts(entries)
 
-    dirs = list(gws.lib.os2.find_files(gws.MAPPROXY_CACHE_DIR, pattern=r'^\w+$', deep=False))
+    dirs = list(gws.lib.osx.find_files(gws.MAPPROXY_CACHE_DIR, pattern=r'^\w+$', deep=False))
     dangling_dirs = [d for d in dirs if not any(d.startswith(e.uid) for e in entries)]
 
     return {
@@ -87,8 +87,8 @@ def seed(root: gws.IRoot, layer_uids=None, max_time=None, concurrency=1, levels=
 #         path
 #     ]
 #     try:
-#         gws.lib.os2.run(cmd, echo=True, timeout=max_time)
-#     except gws.lib.os2.TimeoutError:
+#         gws.lib.osx.run(cmd, echo=True, timeout=max_time)
+#     except gws.lib.osx.TimeoutError:
 #         return False
 #     except KeyboardInterrupt:
 #         return False
@@ -109,7 +109,7 @@ def store_in_web_cache(url: str, img: bytes):
 
 
 def _update_file_counts(entries):
-    files = list(gws.lib.os2.find_files(gws.MAPPROXY_CACHE_DIR))
+    files = list(gws.lib.osx.find_files(gws.MAPPROXY_CACHE_DIR))
 
     # file_counts = {}
     #
@@ -190,7 +190,7 @@ def _calc_grids(grid):
 
 def _remove_dir(dirname):
     cmd = ['rm', '-fr', dirname]
-    gws.lib.os2.run(cmd, echo=True)
+    gws.lib.osx.run(cmd, echo=True)
     gws.log.info(f'removed {dirname}')
 
 

@@ -1,7 +1,7 @@
 import gws
 import gws.gis.crs
 import gws.gis.source
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.lib.xmlx as xmlx
 import gws.types as t
 

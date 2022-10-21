@@ -4,7 +4,7 @@ import gws
 import gws.base.shape
 import gws.gis.crs
 import gws.lib.importer
-import gws.lib.json2
+import gws.lib.jsonx
 
 
 class CapsParams(gws.CliParams):
@@ -23,7 +23,7 @@ class Object(gws.Node):
         mod = gws.lib.importer.import_from_path(f'gws/plugin/qgis/caps.py')
         res = mod.parse(xml)
 
-        js = gws.lib.json2.to_pretty_string(res, default=_caps_json)
+        js = gws.lib.jsonx.to_pretty_string(res, default=_caps_json)
 
         if p.out:
             gws.write_file(p.out, js)

@@ -3,7 +3,7 @@ import datetime
 import re
 import time
 
-import gws.lib.os2
+import gws.lib.osx
 import gws.types as t
 
 
@@ -12,7 +12,7 @@ def set_system_time_zone(tz):
         return
     if tz != 'UTC' and not re.match(r'^(\w+)/(\w+)$', tz):
         raise ValueError('invald timezone', tz)
-    gws.lib.os2.run(['ln', '-fs', f'/usr/share/zoneinfo/{tz}', '/etc/localtime'])
+    gws.lib.osx.run(['ln', '-fs', f'/usr/share/zoneinfo/{tz}', '/etc/localtime'])
 
 
 def to_iso(d: datetime.datetime, with_tz='+', sep='T') -> str:

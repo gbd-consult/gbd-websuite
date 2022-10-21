@@ -4,7 +4,7 @@ import gws
 import gws.base.action
 import gws.base.feature
 import gws.base.shape
-import gws.lib.units
+import gws.lib.uom
 import gws.types as t
 
 from . import runner
@@ -62,7 +62,7 @@ class Object(gws.base.action.Object):
 
         tolerance = None
         if p.tolerance:
-            tolerance = gws.lib.units.parse(p.tolerance, default=gws.UOM.PX)
+            tolerance = gws.lib.uom.parse(p.tolerance, default=gws.Uom.PX)
 
         layers = []
         if p.layerUids:

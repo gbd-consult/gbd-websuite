@@ -1,6 +1,6 @@
 import gws
 import gws.gis.extent
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.types as t
 
 # https://wiki.openstreetmap.org/wiki/Zoom_levels

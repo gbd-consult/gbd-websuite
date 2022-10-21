@@ -7,7 +7,7 @@ import gws
 import gws.lib.font
 import gws.gis.render
 import gws.base.shape
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.lib.xmlx as xmlx
 import gws.types as t
 

@@ -2,7 +2,7 @@ import gws
 import gws.base.layer
 import gws.lib.metadata
 import gws.gis.source
-import gws.lib.os2
+import gws.lib.osx
 import gws.gis.ows
 import gws.types as t
 

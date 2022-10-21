@@ -8,7 +8,7 @@ import gws.lib.html2
 import gws.lib.mime
 import gws.lib.pdf
 import gws.gis.render
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.lib.vendor.jump as jump
 import gws.types as t
 

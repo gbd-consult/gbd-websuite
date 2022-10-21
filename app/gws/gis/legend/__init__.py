@@ -2,7 +2,7 @@ import gws
 import gws.lib.image
 import gws.lib.mime
 import gws.gis.ows.request
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.types as t
 
 

@@ -1,7 +1,7 @@
 import os
 
 import gws
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.types as t
 
 from ..util import indexer
@@ -240,7 +240,7 @@ PLACE_INDEX = 'idx_resolver_place'
 
 
 def _create_props_index(conn):
-    props = gws.lib.json2.from_path(os.path.dirname(__file__) + '/nasprops.json')
+    props = gws.lib.jsonx.from_path(os.path.dirname(__file__) + '/nasprops.json')
     data = []
 
     for ident, value in props.items():

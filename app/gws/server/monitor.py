@@ -5,7 +5,7 @@ import re
 import gws
 import gws.config
 import gws.lib.misc
-import gws.lib.os2
+import gws.lib.osx
 import gws.server.uwsgi_module
 import gws.types as t
 
@@ -136,7 +136,7 @@ class Object(gws.Node, gws.IMonitor):
 
         for dirname, pattern in self.watch_dirs.items():
             if not self._ignored(dirname):
-                for filename in gws.lib.os2.find_files(dirname, pattern):
+                for filename in gws.lib.osx.find_files(dirname, pattern):
                     if not self._ignored(filename):
                         new_stats[filename] = self._stats(filename)
 
@@ -172,9 +172,9 @@ class Object(gws.Node, gws.IMonitor):
 # def cleanup():
 #     for p in os.listdir(gws.PRINT_DIR):
 #         d = gws.PRINT_DIR + '/' + p
-#         age = gws.lib.os2.file_age(d)
+#         age = gws.lib.osx.file_age(d)
 #         if age > _MAX_LIFETIME:
-#             gws.lib.os2.run(['rm', '-fr', d])
+#             gws.lib.osx.run(['rm', '-fr', d])
 #             gws.lib.job.remove(p)
 #             gws.log.debug(f'cleaned up job {p} age={age}')
 #

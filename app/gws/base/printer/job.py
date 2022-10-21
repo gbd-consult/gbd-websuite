@@ -7,10 +7,10 @@ import gws.base.feature
 import gws.lib.image
 import gws.lib.job
 import gws.lib.mime
-import gws.lib.os2
+import gws.lib.osx
 import gws.gis.render
 import gws.lib.style
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.server.spool
 
 import gws.types as t
@@ -134,9 +134,9 @@ class _Worker:
                 ql = self.template.quality_levels[0]
             self.tri.dpi = ql.dpi
         else:
-            self.tri.dpi = min(gws.gis.render.MAX_DPI, max(params.dpi, gws.lib.units.OGC_SCREEN_PPI))
-            mm = gws.lib.units.size_px_to_mm(params.outputSize, gws.lib.units.OGC_SCREEN_PPI)
-            px = gws.lib.units.size_mm_to_px(mm, self.tri.dpi)
+            self.tri.dpi = min(gws.gis.render.MAX_DPI, max(params.dpi, gws.lib.uom.OGC_SCREEN_PPI))
+            mm = gws.lib.uom.size_px_to_mm(params.outputSize, gws.lib.uom.OGC_SCREEN_PPI)
+            px = gws.lib.uom.size_mm_to_px(mm, self.tri.dpi)
             w, h = px
             self.template: gws.ITemplate = self.create_child(
                 'gws.ext.template.map',

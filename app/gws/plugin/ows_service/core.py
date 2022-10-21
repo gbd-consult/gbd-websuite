@@ -11,7 +11,7 @@ import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
 import gws.gis.render
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.lib.xmlx as xmlx
 import gws.types as t
 
@@ -428,7 +428,7 @@ class Service(gws.Node, gws.IOwsService):
         lc.has_legend = layer.has_legend or any(s.has_legend for s in lc.children)
         lc.has_search = layer.has_search or any(s.has_search for s in lc.children)
 
-        scales = [gws.lib.units.res_to_scale(r) for r in layer.resolutions]
+        scales = [gws.lib.uom.res_to_scale(r) for r in layer.resolutions]
         lc.min_scale = int(min(scales))
         lc.max_scale = int(max(scales))
 

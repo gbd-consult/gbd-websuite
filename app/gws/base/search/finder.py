@@ -2,7 +2,7 @@ import gws
 import gws.base.model
 import gws.base.template
 import gws.base.shape
-import gws.lib.units
+import gws.lib.uom
 import gws.types as t
 
 _DEFAULT_PIXEL_TOLERANCE = 10
@@ -40,10 +40,10 @@ class Object(gws.Node, gws.IFinder):
         if p:
             self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(items=p))
 
-        self.tolerance = _DEFAULT_PIXEL_TOLERANCE, gws.lib.units.PX
+        self.tolerance = _DEFAULT_PIXEL_TOLERANCE, gws.lib.uom.PX
         p = self.var('tolerance')
         if p:
-            self.tolerance = gws.lib.units.parse(p, default=gws.lib.units.PX)
+            self.tolerance = gws.lib.uom.parse(p, default=gws.lib.uom.PX)
 
         self.withKeyword = self.supportsKeyword and self.var('withKeyword', default=True)
         self.withGeometry = self.supportsGeometry and self.var('withGeometry', default=True)

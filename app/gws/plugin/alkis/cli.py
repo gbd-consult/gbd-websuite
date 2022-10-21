@@ -4,7 +4,7 @@ import time
 
 import gws
 import gws.config
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.types as t
 
 from . import provider, search
@@ -31,7 +31,7 @@ class Object(gws.Node):
         # under "Das externe Modell, Datenaustausch"
 
         props = nas.parse_properties(p.path)
-        print(gws.lib.json2.to_string(props, pretty=True))
+        print(gws.lib.jsonx.to_string(props, pretty=True))
 
     @gws.ext.command.cli('alkisSetup')
     def setup(self, p: IndexParams):

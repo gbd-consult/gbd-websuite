@@ -2,7 +2,7 @@ import PyPDF2
 
 import gws
 import gws.lib.mime
-import gws.lib.os2
+import gws.lib.osx
 import gws.types as t
 
 
@@ -93,6 +93,6 @@ def to_image(in_path, out_path, size, mime):
     ]
 
     gws.log.debug(cmd)
-    gws.lib.os2.run(cmd, echo=False)
+    gws.lib.osx.run(cmd, echo=False)
 
     return out_path

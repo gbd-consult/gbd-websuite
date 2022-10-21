@@ -3,7 +3,7 @@
 import gws
 import gws.config
 import gws.lib.date
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.base.web.wsgi
 import gws.base.web.error
 import gws.types as t
@@ -120,10 +120,10 @@ class Object(gws.Node, gws.IAuthManager):
         return t.cast(gws.IAuthMfa, self.root.get(uid))
 
     def serialize_user(self, user):
-        return gws.lib.json2.to_string([user.provider.uid, user.provider.serialize_user(user)])
+        return gws.lib.jsonx.to_string([user.provider.uid, user.provider.serialize_user(user)])
 
     def unserialize_user(self, data):
-        provider_uid, ds = gws.lib.json2.from_string(data)
+        provider_uid, ds = gws.lib.jsonx.from_string(data)
         prov = self.get_provider(provider_uid)
         return prov.unserialize_user(ds) if prov else None
 
@@ -159,7 +159,7 @@ class Object(gws.Node, gws.IAuthManager):
             uid=rec['uid'],
             method=self.get_method(rec['method_uid']),
             user=user,
-            data=gws.lib.json2.from_string(rec['str_data']),
+            data=gws.lib.jsonx.from_string(rec['str_data']),
             saved=True
         )
 
@@ -178,7 +178,7 @@ class Object(gws.Node, gws.IAuthManager):
                 str_user=self.serialize_user(sess.user))
             sess.saved = True
         elif sess.changed:
-            self.store.update(sess.uid, str_data=gws.lib.json2.to_string(sess.data))
+            self.store.update(sess.uid, str_data=gws.lib.jsonx.to_string(sess.data))
         else:
             self.store.touch(sess.uid)
 

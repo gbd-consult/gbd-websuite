@@ -7,7 +7,7 @@ import werkzeug.wsgi
 
 import gws
 import gws.lib.date
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.lib.mime
 import gws.lib.vendor.umsgpack as umsgpack
 import gws.types as t
@@ -251,7 +251,7 @@ class Requester(gws.IWebRequester):
 
     def _encode_struct(self, data, typ):
         if typ == 'json':
-            return gws.lib.json2.to_string(data, pretty=True)
+            return gws.lib.jsonx.to_string(data, pretty=True)
         if typ == 'msgpack':
             return umsgpack.dumps(data, default=gws.to_dict)
         raise ValueError('invalid struct type')
@@ -260,8 +260,8 @@ class Requester(gws.IWebRequester):
         if typ == 'json':
             try:
                 s = self.data().decode(encoding='utf-8', errors='strict')
-                return gws.lib.json2.from_string(s)
-            except (UnicodeDecodeError, gws.lib.json2.Error):
+                return gws.lib.jsonx.from_string(s)
+            except (UnicodeDecodeError, gws.lib.jsonx.Error):
                 gws.log.error('malformed json request')
                 raise error.BadRequest()
 

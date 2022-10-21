@@ -1,7 +1,7 @@
 """Deal with client bundles created by the js bundler (app/js/helpers/builder.js)"""
 
 import gws
-import gws.lib.json2
+import gws.lib.jsonx
 
 BUNDLE_KEY_TEMPLATE = 'TEMPLATE'
 BUNDLE_KEY_MODULES = 'MODULES'
@@ -38,7 +38,7 @@ def _load_app_bundles(root):
 
         for path in root.specs.bundle_paths('app'):
             gws.log.info(f'loading bundle {path!r}')
-            bundle = gws.lib.json2.from_path(path)
+            bundle = gws.lib.jsonx.from_path(path)
             for key, val in bundle.items():
                 if key not in bundles:
                     bundles[key] = ''

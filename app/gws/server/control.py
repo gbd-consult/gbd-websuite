@@ -4,7 +4,7 @@ import time
 import gws
 import gws.config
 import gws.lib.date
-import gws.lib.os2
+import gws.lib.osx
 import gws.types as t
 
 from . import ini
@@ -21,8 +21,8 @@ def start(manifest_path=None, config_path=None):
 
 
 def start_configured():
-    for p in gws.lib.os2.find_files(gws.SERVER_DIR, '.*'):
-        gws.lib.os2.unlink(p)
+    for p in gws.lib.osx.find_files(gws.SERVER_DIR, '.*'):
+        gws.lib.osx.unlink(p)
 
     pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
     commands = ini.create(gws.config.root(), gws.SERVER_DIR, pid_dir)
@@ -72,13 +72,13 @@ def _reload_uwsgi(module):
     pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
     pattern = f'({module}).uwsgi.pid'
 
-    for p in gws.lib.os2.find_files(pid_dir, pattern):
+    for p in gws.lib.osx.find_files(pid_dir, pattern):
         gws.log.info(f'reloading {p}...')
-        gws.lib.os2.run(['/usr/local/bin/uwsgi', '--reload', p])
+        gws.lib.osx.run(['/usr/local/bin/uwsgi', '--reload', p])
 
 
 def _uwsgi_is_running():
-    return bool(gws.lib.os2.pids_of('uwsgi'))
+    return bool(gws.lib.osx.pids_of('uwsgi'))
 
 
 _FALLBACK_CONFIG = {
@@ -102,7 +102,7 @@ def _configure(manifest_path, config_path, is_starting=False):
         if autorun:
             gws.log.info(f'AUTORUN: {autorun!r}')
             cmds = shlex.split(autorun)
-            gws.lib.os2.run(cmds, echo=True)
+            gws.lib.osx.run(cmds, echo=True)
 
         timezone = gws.get(cfg, 'server.timeZone')
         if timezone:
@@ -130,7 +130,7 @@ def _stop(names, signals):
     err = ''
 
     for name in names:
-        pids = gws.lib.os2.pids_of(name)
+        pids = gws.lib.osx.pids_of(name)
         if pids:
             err += f' {name}={pids!r}'
 
@@ -139,12 +139,12 @@ def _stop(names, signals):
 
 
 def _stop_name(proc_name, sig):
-    pids = gws.lib.os2.pids_of(proc_name)
+    pids = gws.lib.osx.pids_of(proc_name)
     if not pids:
         return True
     for pid in pids:
         gws.log.debug(f'stopping {proc_name} pid={pid}')
-        gws.lib.os2.kill_pid(pid, sig)
+        gws.lib.osx.kill_pid(pid, sig)
     return False
 
 

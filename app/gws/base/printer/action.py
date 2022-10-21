@@ -5,7 +5,7 @@ import gws.base.action
 import gws.base.web.error
 import gws.config
 import gws.lib.job
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.lib.mime
 import gws.types as t
 
@@ -68,7 +68,7 @@ class Object(gws.base.action.Object):
 
         root = gws.config.load()
         params = root.specs.read(
-            gws.lib.json2.from_path(p.params),
+            gws.lib.jsonx.from_path(p.params),
             core.Params,
             p.params
         )

@@ -3,7 +3,7 @@ import gws.base.layer
 import gws.gis.source
 import gws.lib.net
 import gws.gis.ows
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.types as t
 
 from . import provider

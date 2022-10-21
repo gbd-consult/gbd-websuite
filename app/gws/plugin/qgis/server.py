@@ -3,7 +3,7 @@ import re
 
 import gws
 import gws.lib.net
-import gws.lib.os2
+import gws.lib.osx
 import gws.types as t
 
 EXEC_PATH = '/usr/bin/qgis_mapserv.fcgi'
@@ -73,7 +73,7 @@ def environ(root: gws.IRoot):
 
 def version():
     try:
-        _, txt = gws.lib.os2.run([EXEC_PATH])
+        _, txt = gws.lib.osx.run([EXEC_PATH])
         m = re.search(r'qgis\s+version\s+([\d.]+)', gws.to_str(txt).lower())
         if m:
             return m.group(1).strip()

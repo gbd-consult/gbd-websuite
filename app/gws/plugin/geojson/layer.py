@@ -3,7 +3,7 @@
 import gws
 import gws.base.layer
 import gws.gis.crs
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.base.feature
 import gws.base.shape
 import gws.gis.ows
@@ -26,7 +26,7 @@ class Object(gws.base.layer.vector.Object, gws.IOwsClient):
 
     def configure_source(self):
         self.path = self.var('path')
-        js = gws.lib.json2.from_path(self.path)
+        js = gws.lib.jsonx.from_path(self.path)
         self.source_crs = self._get_crs(js) or self.map.crs
         self.features = [
             gws.base.feature.from_geojson(f, self.crs, self.var('keyName'))

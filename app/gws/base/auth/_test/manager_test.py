@@ -1,6 +1,6 @@
 import time
 import gws
-import gws.lib.os2
+import gws.lib.osx
 import gws.lib.test as test
 from gws.base.auth import method, provider, user
 

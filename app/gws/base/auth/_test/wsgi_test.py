@@ -1,7 +1,7 @@
 import time
 
 import gws
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.lib.test as test
 
 COOKIE_NAME = 'TESTAUTH'

@@ -6,7 +6,7 @@ import gws
 import gws.gis.extent
 import gws.lib.image
 import gws.lib.svg
-import gws.lib.units as units
+import gws.lib.uom as units
 import gws.lib.xmlx as xmlx
 import gws.types as t
 

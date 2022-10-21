@@ -1,12 +1,12 @@
 """Wrapper for PIL objects"""
 
-import PIL.Image
-import PIL.ImageDraw
-import PIL.ImageFont
 import base64
 import io
 import re
-# import wand.image
+
+import PIL.Image
+import PIL.ImageDraw
+import PIL.ImageFont
 
 import gws
 import gws.lib.mime
@@ -17,8 +17,8 @@ class Error(gws.Error):
     pass
 
 
-def from_size(size: gws.Size, color=None):
-    img = PIL.Image.new('RGBA', _int_size(size) , color or (0, 0, 0, 0))
+def from_size(size: gws.Size, color=None) -> 'Image':
+    img = PIL.Image.new('RGBA', _int_size(size), color or (0, 0, 0, 0))
     return _new(img)
 
 
@@ -26,7 +26,22 @@ def from_bytes(r: bytes) -> 'Image':
     return _new(PIL.Image.open(io.BytesIO(r)))
 
 
-def from_raw_data(r: bytes, mode: str, size: gws.Size) -> 'Image':
+ImageMode = t.Literal[
+    '1',
+    'L',
+    'P',
+    'RGB',
+    'RGBA',
+    'CMYK',
+    'YCbCr',
+    'LAB',
+    'HSV',
+    'I',
+    'F',
+]
+
+
+def from_raw_data(r: bytes, mode: ImageMode, size: gws.Size) -> 'Image':
     return _new(PIL.Image.frombytes(mode, _int_size(size), r))
 
 
@@ -47,15 +62,8 @@ def from_data_url(url: str) -> t.Optional['Image']:
 
 
 def from_svg(xmlstr: str, size: gws.Size, mime=None) -> 'Image':
-    sz = _int_size(size)
-    with wand.image.Image(
-            blob=xmlstr.encode('utf8'),
-            format='svg',
-            background=t.cast(wand.image.Color, None),
-            width=sz[0],
-            height=sz[1]
-    ) as wi:
-        return from_bytes(wi.make_blob(_mime_to_format(mime).lower()))
+    # @TODO rasterize svg
+    raise NotImplemented
 
 
 def _new(img: PIL.Image.Image):
@@ -66,12 +74,10 @@ def _new(img: PIL.Image.Image):
     return Image(img)
 
 
-class Image(gws.Object, gws.IImage):
+class Image(gws.IImage):
     def __init__(self, img: PIL.Image.Image):
-        super().__init__()
         self.img: PIL.Image.Image = img
 
-    @property
     def size(self) -> gws.Size:
         return self.img.size
 

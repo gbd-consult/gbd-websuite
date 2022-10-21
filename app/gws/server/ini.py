@@ -6,7 +6,7 @@ import gws
 import gws.base.web
 import gws.config
 import gws.gis.mpx.config
-import gws.lib.os2
+import gws.lib.osx
 import gws.lib.importer
 import gws.types as t
 
@@ -39,8 +39,8 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             fp.write(s + '\n')
         return p
 
-    for p in gws.lib.os2.find_files(base_dir, '(conf|ini)$'):
-        gws.lib.os2.unlink(p)
+    for p in gws.lib.osx.find_files(base_dir, '(conf|ini)$'):
+        gws.lib.osx.unlink(p)
 
     commands = []
     frontends = []

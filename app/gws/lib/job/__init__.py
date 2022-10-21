@@ -1,7 +1,7 @@
 import importlib
 
 import gws
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.types as t
 
 from . import storage
@@ -37,7 +37,7 @@ def create(root: gws.IRoot, uid, user: gws.IUser, worker: str, payload=None) -> 
         user_uid=user_uid,
         str_user=str_user,
         worker=worker,
-        payload=gws.lib.json2.to_string(payload),
+        payload=gws.lib.jsonx.to_string(payload),
         state=State.open,
         error='',
     )
@@ -87,7 +87,7 @@ class Job:
         self.uid = rec['uid']
         self.user = self._get_user(rec)
         self.worker = rec['worker']
-        self.payload = gws.Data(gws.lib.json2.from_string(rec.get('payload', '')))
+        self.payload = gws.Data(gws.lib.jsonx.from_string(rec.get('payload', '')))
         self.state = rec['state']
         self.error = rec['error']
 
@@ -119,7 +119,7 @@ class Job:
         rec = {}
 
         if payload is not None:
-            rec['payload'] = gws.lib.json2.to_string(payload)
+            rec['payload'] = gws.lib.jsonx.to_string(payload)
         if state:
             rec['state'] = state
         if error:

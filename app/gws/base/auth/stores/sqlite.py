@@ -1,6 +1,6 @@
 import gws
 import gws.lib.date
-import gws.lib.os2
+import gws.lib.osx
 import gws.lib.sqlite
 
 
@@ -87,7 +87,7 @@ class SessionStore:
             conn.execute('DELETE FROM sess WHERE uid = ?', [uid])
 
     def delete_all(self):
-        gws.lib.os2.unlink(self.db_path)
+        gws.lib.osx.unlink(self.db_path)
         self.init()
 
     def get_all(self):

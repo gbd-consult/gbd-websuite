@@ -5,8 +5,8 @@ import re
 import gws
 import gws.gis.crs
 import gws.lib.date
-import gws.lib.os2
-import gws.lib.units
+import gws.lib.osx
+import gws.lib.uom
 
 from . import core
 
@@ -339,7 +339,7 @@ def _read_datetime(r: Reader, val, typ: core.Type):
 
 
 def _read_dirpath(r: Reader, val, typ: core.Type):
-    path = gws.lib.os2.abs_path(val, r.path)
+    path = gws.lib.osx.abs_path(val, r.path)
     if not gws.is_dir(path):
         raise core.ReadError(f'directory not found: {path!r}', val)
     return path
@@ -347,13 +347,13 @@ def _read_dirpath(r: Reader, val, typ: core.Type):
 
 def _read_duration(r: Reader, val, typ: core.Type):
     try:
-        return gws.lib.units.parse_duration(val)
+        return gws.lib.uom.parse_duration(val)
     except ValueError:
         raise core.ReadError(f'invalid duration: {val!r}', val)
 
 
 def _read_filepath(r: Reader, val, typ: core.Type):
-    path = gws.lib.os2.abs_path(val, r.path)
+    path = gws.lib.osx.abs_path(val, r.path)
     if not gws.is_file(path):
         raise core.ReadError(f'file not found: {path!r}', val)
     return path

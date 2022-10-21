@@ -1,7 +1,7 @@
 """CLI utilty for OWS services"""
 
 import gws
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.lib.importer
 import gws.gis.ows
 import gws.gis.crs
@@ -46,7 +46,7 @@ class Object(gws.Node):
         mod = gws.lib.importer.import_from_path(f'gws/plugin/ows_provider/{protocol}/caps.py')
         res = mod.parse(xml)
 
-        js = gws.lib.json2.to_pretty_string(res, default=_caps_json)
+        js = gws.lib.jsonx.to_pretty_string(res, default=_caps_json)
 
         if p.out:
             gws.write_file(p.out, js)

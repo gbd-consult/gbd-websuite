@@ -35,41 +35,43 @@ Size = Tuple[float, float]
 Corner = Literal['nw', 'sw', 'ne', 'se', 'lt', 'lb', 'rt', 'rb']
 
 
-class UOM(Enum):
-    MI = 'mi'  # Statute mile 9093
-    US_CH = 'us-ch'  # US survey chain 9033
-    US_FT = 'us-ft'  # US survey foot 9003
+class Uom(Enum):
+    """Unit of measure"""
+
+    MI = 'mi'  # Statute mile EPSG:9093
+    US_CH = 'us-ch'  # US survey chain EPSG:9033
+    US_FT = 'us-ft'  # US survey foot EPSG:9003
     US_IN = 'us-in'  # US survey inch US_IN
-    US_MI = 'us-mi'  # US survey mile 9035
+    US_MI = 'us-mi'  # US survey mile EPSG:9035
     US_YD = 'us-yd'  # US survey yard US_YD
-    CM = 'cm'  # centimetre 1033
-    CH = 'ch'  # chain 9097
+    CM = 'cm'  # centimetre EPSG:1033
+    CH = 'ch'  # chain EPSG:9097
     DM = 'dm'  # decimeter DM
-    DEG = 'deg'  # degree 9102
-    FATH = 'fath'  # fathom 9014
-    FT = 'ft'  # foot 9002
-    GRAD = 'grad'  # grad 9105
+    DEG = 'deg'  # degree EPSG:9102
+    FATH = 'fath'  # fathom EPSG:9014
+    FT = 'ft'  # foot EPSG:9002
+    GRAD = 'grad'  # grad EPSG:9105
     IN = 'in'  # inch IN
-    KM = 'km'  # kilometre 9036
-    LINK = 'link'  # link 9098
-    M = 'm'  # metre 9001
-    MM = 'mm'  # millimetre 1025
-    KMI = 'kmi'  # nautical mile 9030
-    RAD = 'rad'  # radian 9101
-    YD = 'yd'  # yard 9096
+    KM = 'km'  # kilometre EPSG:9036
+    LINK = 'link'  # link EPSG:9098
+    M = 'm'  # metre EPSG:9001
+    MM = 'mm'  # millimetre EPSG:1025
+    KMI = 'kmi'  # nautical mile EPSG:9030
+    RAD = 'rad'  # radian EPSG:9101
+    YD = 'yd'  # yard EPSG:9096
 
     PX = 'px'  # pixel
     PT = 'pt'  # point
 
 
 """type: A value with a unit."""
-Measurement = Tuple[float, UOM]
+Measurement = Tuple[float, Uom]
 
 """type: A Point with a unit."""
-MPoint = Tuple[float, float, UOM]
+MPoint = Tuple[float, float, Uom]
 
 """type: A Size with a unit."""
-MSize = Tuple[float, float, UOM]
+MSize = Tuple[float, float, Uom]
 
 """type: An XML generator tag."""
 Tag = tuple
@@ -606,7 +608,7 @@ class Bounds(Data):
 class ICrs(Protocol):
     srid: str
     axis: Axis
-    uom: UOM
+    Uom: Uom
     isGeographic: bool
     isProjected: bool
     proj4text: str
@@ -928,9 +930,7 @@ class IDatabase(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # templates and rendering
 
-# noinspection PyPropertyDefinition
 class IImage(IObject, Protocol):
-    @property
     def size(self) -> Size: ...
 
     def add_box(self, color=None) -> 'IImage': ...

@@ -6,7 +6,7 @@ import gws
 import gws.base.auth.error
 import gws.base.auth.provider
 import gws.base.auth.user
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.lib.password
 import gws.types as t
 
@@ -26,7 +26,7 @@ class Object(gws.base.auth.provider.Object):
     def configure(self):
         self.uid = 'gws.base.auth.providers.file'
         self.path = self.var('path')
-        self.db = gws.lib.json2.from_path(self.path)
+        self.db = gws.lib.jsonx.from_path(self.path)
 
     def authenticate(self, method, credentials):
         wrong_password = 0

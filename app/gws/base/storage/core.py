@@ -1,6 +1,6 @@
 import gws
 import gws.base.web.error
-import gws.lib.json2
+import gws.lib.jsonx
 import gws.types as t
 
 from . import types
@@ -105,12 +105,12 @@ class Object(gws.Node):
                 raise gws.base.web.error.Forbidden()
             rec = self.provider.read(category, p.entryName)
             if rec:
-                data = gws.lib.json2.from_string(rec.data)
+                data = gws.lib.jsonx.from_string(rec.data)
 
         if p.verb == Verb.write:
             if not writable or not p.entryName or not p.entryData:
                 raise gws.base.web.error.Forbidden()
-            d = gws.lib.json2.to_string(p.entryData)
+            d = gws.lib.jsonx.to_string(p.entryData)
             self.provider.write(category, p.entryName, d, req.user.uid)
 
         if p.verb == Verb.delete:

@@ -57,7 +57,7 @@ WGS84 = Crs(
     proj4text='+proj=longlat +datum=WGS84 +no_defs +type=crs',
     wkt='GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]',
     axis=gws.Axis.YX,
-    uom=gws.UOM.DEG,
+    uom=gws.Uom.DEG,
     isGeographic=True,
     isProjected=False,
     epsg='EPSG:4326',
@@ -77,7 +77,7 @@ WEBMERCATOR = Crs(
     proj4text='+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
     wkt='PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]',
     axis=gws.Axis.XY,
-    uom=gws.UOM.M,
+    uom=gws.Uom.M,
     isGeographic=False,
     isProjected=True,
     epsg='EPSG:3857',
@@ -368,12 +368,12 @@ def _make_crs(srid, pp, au):
 
 
 _AXES_AND_UNITS = {
-    'Easting/metre,Northing/metre': (gws.Axis.XY, gws.UOM.M),
-    'Northing/metre,Easting/metre': (gws.Axis.YX, gws.UOM.M),
-    'Geodetic latitude/degree,Geodetic longitude/degree': (gws.Axis.YX, gws.UOM.DEG),
-    'Geodetic longitude/degree,Geodetic latitude/degree': (gws.Axis.XY, gws.UOM.DEG),
-    'Easting/US survey foot,Northing/US survey foot': (gws.Axis.XY, gws.UOM.US_FT),
-    'Easting/foot,Northing/foot': (gws.Axis.XY, gws.UOM.FT),
+    'Easting/metre,Northing/metre': (gws.Axis.XY, gws.Uom.M),
+    'Northing/metre,Easting/metre': (gws.Axis.YX, gws.Uom.M),
+    'Geodetic latitude/degree,Geodetic longitude/degree': (gws.Axis.YX, gws.Uom.DEG),
+    'Geodetic longitude/degree,Geodetic latitude/degree': (gws.Axis.XY, gws.Uom.DEG),
+    'Easting/US survey foot,Northing/US survey foot': (gws.Axis.XY, gws.Uom.US_FT),
+    'Easting/foot,Northing/foot': (gws.Axis.XY, gws.Uom.FT),
 }
 
 
