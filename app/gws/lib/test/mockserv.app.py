@@ -2,6 +2,23 @@
 
 This servers runs in a dedicated docker container during testing
 and acts as a mock for our http-related functonality.
+
+This server can process the following requests:
+
+GET requests:
+
+/<service-name>?params  - route the request to a preconfigured service
+/<path-name>            - serve a file from the server directory
+/<any string>           - serve a prededined response (see `poke` below)
+
+POST requests (all in JSON format):
+
+{ cmd: "poke", pattern: regex, response: PokeResponse }  - configure a predefined response for all GET requests matching `pattern`
+{ cmd: "reset" } - reset the internal state:
+{ cmd: "begin_capture" } - begin recording all incoming GET urls
+{ cmd: "end_capture" } - end recording incoming urls, returns `{urls: [list of captured urls]}`:
+{ cmd: "create_wms", config: WmsServiceConfig } - create a WMS service
+
 """
 
 import http.server
@@ -14,11 +31,24 @@ import urllib.parse
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
+from typing import List, Tuple
 
 # ows services
 
+Point = Tuple[float, float]
+Extent = Tuple[float, float, float, float]
 
-class Layer:
+
+class WmsLayerConfig:
+    name: str
+    extent: Extent
+    color: str
+    queryable: bool
+    parent: str
+    points: List[Point]
+
+
+class WmsLayer:
     def __init__(self, config):
         self.name = config['name']
 
@@ -72,13 +102,20 @@ class Layer:
         )
 
 
-class WmsServer:
+class WmsServiceConfig:
+    version: str
+    url: str
+    crs: str
+    layers: List[WmsLayerConfig]
+
+
+class WmsService:
     def __init__(self, name, config):
         self.name = name
         self.version = config.get('version', '1.3.0')
         self.url = config['url']
         self.crs = config.get('crs', 'EPSG:3857')
-        self.layers = [Layer(c) for c in config.get('layers', [])]
+        self.layers = [WmsLayer(c) for c in config.get('layers', [])]
 
     def __repr__(self):
         return repr(vars(self))
@@ -273,11 +310,19 @@ STATE = {
     'host': '0.0.0.0',
     'port': 8080,
     'cdir': os.path.dirname(__file__),
-    'responses': {},
+    'poke_responses': {},
     'services': {},
     'capture': [],
     'capturing': False,
 }
+
+
+class PokeResponse:
+    delay_time: int = 0
+    status_code: int = 200
+    content_type: str = 'text/plain'
+    text: str = ''
+    headers: List[Tuple] = []
 
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -304,21 +349,21 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             mime, res = srv.handle(params)
             return self.serve(200, mime, res)
 
-        for pattern, res in STATE['responses'].items():
+        for pattern, res in STATE['poke_responses'].items():
             if res and re.search(pattern, base):
                 log(f'found response: {base!r} => {pattern!r}')
-                if res.get('time'):
-                    time.sleep(int(res['time']))
+                if res.get('delay_time'):
+                    time.sleep(int(res['delay_time']))
                 return self.serve(
                     res.get('status_code', 200),
                     res.get('content_type', 'text/plain'),
                     res.get('text', ''),
                     res.get('headers'))
 
-        file = STATE['cdir'] + '/' + base
-        if os.path.isfile(file):
-            log(f'found file: {base} => {file!r}')
-            with open(file, 'rb') as fp:
+        fname = STATE['cdir'] + '/' + base
+        if os.path.isfile(fname) and '..' not in fname:
+            log(f'found file: {base} => {fname!r}')
+            with open(fname, 'rb') as fp:
                 return self.serve(200, 'application/octet-stream', fp.read())
 
         self.serve(404, 'text/plain', 'not found\n')
@@ -332,11 +377,11 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.serve(200, 'application/json', json.dumps(res))
 
     def cmd_poke(self, post):
-        STATE['responses'][post['pattern']] = post['response']
+        STATE['poke_responses'][post['pattern']] = post['response']
 
     def cmd_reset(self, post):
-        STATE['responses'] = {}
-        STATE['services'] = {}
+        STATE['poke_responses'] = dict()
+        STATE['services'] = dict()
         STATE['capture'] = []
         STATE['capturing'] = False
 
@@ -353,7 +398,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def cmd_create_wms(self, post):
         config = post['config']
         name = urllib.parse.urlsplit(config['url']).path.strip('/')
-        STATE['services'][name] = WmsServer(name, config)
+        STATE['services'][name] = WmsService(name, config)
 
     def serve(self, status, mime, text, headers=None):
         if isinstance(text, str):

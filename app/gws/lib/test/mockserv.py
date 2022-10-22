@@ -8,11 +8,10 @@ from .glob import CONFIG
 
 
 def command(cmd, params=None):
-    base_url = f"http://{CONFIG['runner.host_name']}:{CONFIG['service.mockserv.port']}"
     params = params or {}
     params['cmd'] = cmd
     res = gws.lib.net.http_request(
-        base_url,
+        url(''),
         data=gws.lib.jsonx.to_string(params),
         method='post'
     )

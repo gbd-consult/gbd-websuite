@@ -19,7 +19,7 @@ HELP = """
 GWS test runner
 ~~~~~~~~~~~~~~~
 
-    python3 test.py <command> [<pattern>] [--manifest <manifest>] [pytest options]
+    python3 test.py <command> <options>
 
 Commands:
 
@@ -32,25 +32,23 @@ Commands:
         
 Options:
 
-    <pattern>  - only run test files whose name contains the pattern
-    <manifest> - path to MANIFEST.json
+    --only <patterns>     - run only these tests, should be a comma-separated list of re patterns
+    --manifest <manifest> - path to MANIFEST.json
     
     Additionaly, you can pass any pytest option:
-    https://docs.pytest.org/en/6.2.x/reference.html#command-line-flags
+    https://docs.pytest.org/latest/reference.html#command-line-flags
 
 """
 
 APP_DIR = os.path.realpath(os.path.dirname(__file__) + '/../../../')
 
-TEST_CONFIG_PATH_IN_CONTAINER = '/gws-var/TEST_CONFIG.json'
-
 CONFIG = {}
 
 
-def main():
-    args = sys.argv[1:]
+def main(argv):
+    argv = argv[1:]
 
-    if '-h' in args or '--help' in args:
+    if '-h' in argv or '--help' in argv:
         print(HELP)
         return 0
 
@@ -59,49 +57,54 @@ def main():
         APP_DIR + '/___local.test.ini'
     ))
 
-    CONFIG.setdefault('compose_yaml_path', CONFIG['runner.work_dir'] + '/docker-compose.yml')
+    wd = CONFIG['runner.work_dir']
 
-    CONFIG.setdefault('manifest', None)
-    if '--manifest' in args:
-        n = args.index('--manifest')
-        p = args[n + 1]
-        if p:
-            CONFIG['manifest'] = read_file(p)
-        args = args[:n] + args[n + 2:]
+    CONFIG.setdefault('runner.compose_yaml_path', f'{wd}/docker-compose.yml')
+    CONFIG.setdefault('runner.config_path', f'{wd}/gws-var/test_config.json')
+
+    manifest_path = poparg(argv, '--manifest')
+    if manifest_path:
+        local_manifest_path = f'{wd}/MANIFEST.json'
+        write_file(local_manifest_path, read_file(manifest_path))
+        argv.extend(['--manifest', local_manifest_path])
 
     cmd = None
-    if args:
-        cmd = args.pop(0)
+    if argv:
+        cmd = argv.pop(0)
 
     if cmd == 'configure':
         configure_all()
-        sys.exit(0)
+        return 0
 
     if cmd == 'go':
         compose_stop()
         configure_all()
         compose_start()
-        runner_run(args)
-        sys.exit(0)
+        runner_run(argv)
+        compose_stop()
+        return 0
 
     if cmd == 'run':
-        runner_configure()
-        runner_run(args)
-        sys.exit(0)
+        runner_run(argv)
+        return 0
 
     if cmd == 'restart':
         compose_stop()
         configure_all()
         compose_start()
-        sys.exit(0)
+        return 0
 
     if cmd == 'start':
         configure_all()
         compose_start()
-        sys.exit(0)
+        return 0
+
+    if cmd == 'stop':
+        compose_stop()
+        return 0
 
     print(HELP)
-    sys.exit(255)
+    return 255
 
 
 #
@@ -109,7 +112,7 @@ def main():
 def configure_all():
     reset_work_dir()
     compose_configure()
-    runner_configure()
+    write_file(CONFIG['runner.config_path'], json.dumps(CONFIG, indent=4, sort_keys=True))
 
 
 def reset_work_dir():
@@ -122,36 +125,23 @@ def reset_work_dir():
             os.unlink(de.path)
 
 
-def runner_configure():
-    wd = CONFIG['runner.work_dir']
-
-    ensure_dir(f'{wd}/gws-var')
-    ensure_dir(f'{wd}/gws-tmp')
-    ensure_dir(f'{wd}/web')
-
-    CONFIG['pytest_ini_path'] = '/gws-var/pytest.ini'
-    create_pytest_ini(wd + CONFIG['pytest_ini_path'])
-
-    write_file(f"{wd}/{TEST_CONFIG_PATH_IN_CONTAINER}", json.dumps(CONFIG, indent=4))
-
-
-def runner_run(args):
-    run_cmd(f'''docker exec {CONFIG['service.gws.container_name']} gws test ''' + ' '.join(args))
+def runner_run(argv):
+    run_cmd(f'''docker exec {CONFIG['service.gws.container_name']} gws test ''' + ' '.join(argv))
 
 
 def compose_configure():
     write_file(
-        CONFIG['compose_yaml_path'],
+        CONFIG['runner.compose_yaml_path'],
         yaml.dump(compose_config()))
 
 
 def compose_start():
-    run_cmd(f'''docker-compose --file {CONFIG['compose_yaml_path']} up --detach''')
+    run_cmd(f'''{CONFIG['runner.docker_compose']} --file {CONFIG['runner.compose_yaml_path']} up --detach''')
 
 
 def compose_stop():
     try:
-        run_cmd(f'''docker-compose --file {CONFIG['compose_yaml_path']} down''')
+        run_cmd(f'''{CONFIG['runner.docker_compose']} --file {CONFIG['runner.compose_yaml_path']} down''')
     except:
         pass
 
@@ -175,6 +165,8 @@ def compose_config():
         cfg.setdefault('container_name', cname)
         cfg.setdefault('volumes', []).append(f"{wd}:{wd}")
 
+        cfg.setdefault('stop_grace_period', '1s')
+
         services[cname] = cfg
 
     return {
@@ -189,22 +181,7 @@ def compose_config_for_service_gws():
     wd = CONFIG['runner.work_dir']
 
     ensure_dir(f'{wd}/gws-var')
-
-    bootstrap_cfg = {
-        'server': {
-            'mapproxy': {'enabled': True, 'workers': 1, 'forceStart': True},
-            'monitor': {'enabled': False},
-            'log': {'level': 'DEBUG'},
-            'qgis': {'enabled': True, 'workers': 1},
-            'spool': {'enabled': True, 'workers': 1},
-            'web': {'enabled': True, 'workers': 1},
-            'timeout': 60,
-        },
-    }
-
-    bootstrap_cfg_path = '/gws-var/bootstrap_config.json'
-
-    write_file(f'{wd}/{bootstrap_cfg_path}', json.dumps(bootstrap_cfg, indent=4))
+    ensure_dir(f'{wd}/gws-tmp')
 
     return {
         'ports': [
@@ -214,7 +191,7 @@ def compose_config_for_service_gws():
         ],
         'command': 'sleep infinity',
         'environment': {
-            'GWS_CONFIG': bootstrap_cfg_path,
+            'GWS_TEST_CONFIG': CONFIG['runner.config_path'],
         },
         'volumes': [
             f"{APP_DIR}:{APP_DIR}",
@@ -281,6 +258,18 @@ def compose_config_for_service_qgis():
 
 # utils
 
+def poparg(argv, key):
+    try:
+        n = argv.index(key)
+    except ValueError:
+        return
+    argv.pop(n)
+    try:
+        return argv.pop(n)
+    except IndexError:
+        return
+
+
 def parse_ini(*paths):
     cfg = {}
     cc = configparser.ConfigParser()
@@ -296,24 +285,6 @@ def parse_ini(*paths):
     return cfg
 
 
-def create_pytest_ini(path):
-    wd = CONFIG['runner.work_dir']
-
-    cc = configparser.ConfigParser()
-    cc.add_section('pytest')
-
-    for k, v in CONFIG.items():
-        k = k.split('.')
-        if k[0] == 'pytest':
-            cc.set('pytest', k[1], v)
-
-    cc.set('pytest', 'python_files', '*_test.py')
-    cc.set('pytest', 'cache_dir', f'{wd}/pytest_cache')
-
-    with open(path, 'wt') as fp:
-        cc.write(fp)
-
-
 def run_cmd(cmd, **kwargs):
     args = {
         'stderr': subprocess.STDOUT,
@@ -323,7 +294,7 @@ def run_cmd(cmd, **kwargs):
 
     wait = args.pop('wait', True)
 
-    print('>', cmd)
+    print('[test]', cmd)
     p = subprocess.Popen(cmd, **args)
     if not wait:
         return 0

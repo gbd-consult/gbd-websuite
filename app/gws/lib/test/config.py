@@ -40,7 +40,7 @@ def configure(config, parse=True):
             },
             'qgis': {
                 'host': glob.CONFIG['runner.host_name'],
-                'port': glob.CONFIG['service.qgis.port'],
+                'port': int(glob.CONFIG['service.qgis.port']),
             },
             'web': {
                 'enabled': True,
@@ -53,8 +53,10 @@ def configure(config, parse=True):
             'timeout': 60
         },
         'auth': {
-            'sessionStore': 'sqlite',
-            'sessionStorePath': glob.SESSION_STORE_PATH,
+            'session': {
+                'store': 'sqlite',
+                'storePath': glob.SESSION_STORE_PATH,
+            },
         },
     }
 
@@ -66,9 +68,9 @@ def configure(config, parse=True):
     gws.lib.jsonx.to_path(glob.GWS_CONFIG_PATH, config, pretty=True)
 
     if parse:
-        r = gws.config.configure(manifest_path=glob.MANIFEST_PATH, config_path=glob.GWS_CONFIG_PATH)
+        r = gws.config.configure(manifest_path=glob.CONFIG['manifest_path'], config_path=glob.GWS_CONFIG_PATH)
     else:
-        r = gws.config.configure(manifest_path=glob.MANIFEST_PATH, config=config)
+        r = gws.config.configure(manifest_path=glob.CONFIG['manifest_path'], config=config)
 
     gws.config.activate(r)
     gws.config.store(r)
@@ -78,7 +80,10 @@ def configure(config, parse=True):
 
 def configure_and_reload(config, parse=True):
     r = configure(config, parse)
-    gws.server.control.reload(['mapproxy', 'web'])
+
+    if not gws.server.control.reload(['mapproxy', 'web']):
+        start_script = gws.server.control.start_configured()
+        gws.lib.osx.run_nowait(['/bin/sh', start_script])
 
     for service in 'http', 'mpx':
         _wait_for_port(service)
@@ -87,11 +92,16 @@ def configure_and_reload(config, parse=True):
 
 
 def _wait_for_port(service):
-    while 1:
+    for _ in range(5):
         port = glob.CONFIG[f'service.gws.{service}_port']
         url = 'http://' + glob.CONFIG['runner.host_name'] + ':' + str(port)
-        res = gws.lib.net.http_request(url)
-        if res.ok:
-            return
+        try:
+            res = gws.lib.net.http_request(url, timeout=1)
+            if res.status_code in {200, 404}:
+                return
+        except gws.lib.net.Error:
+            pass
         gws.log.debug(f'TEST:waiting for {service}:{port}')
         time.sleep(2)
+
+    raise ValueError(f'TEST:max retries exceeded waiting for {service!r}')

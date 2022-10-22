@@ -1,6 +1,6 @@
 import gws.lib.test as test
 
-SERVICE_URL = test.web_server_url('XYZ')
+SERVICE_URL = test.mockserv.url('XYZ')
 
 WMS_CONFIG = {
     'url': SERVICE_URL,

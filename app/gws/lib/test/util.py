@@ -18,13 +18,10 @@ from . import glob, mockserv
 
 
 def setup():
-    gws.log.debug(f'TEST:setup')
     pass
 
 
 def teardown():
-    gws.log.debug(f'TEST:teardown')
-
     gws.lib.osx.unlink(glob.SESSION_STORE_PATH)
     gws.base.web.web_app.reload()
     gws.config.deactivate()
@@ -45,7 +42,7 @@ def make_users_json(lst):
 
 def write_file(path, text):
     pp = gws.lib.osx.parse_path(path)
-    if pp['dirname'].startswith(glob.TEMP_DIR):
+    if pp['dirname'].startswith(gws.TMP_DIR):
         gws.ensure_dir(pp['dirname'])
     with open(path, 'wt', encoding='utf8') as fp:
         fp.write(text)
@@ -73,10 +70,6 @@ def rel_path(path):
 
 def sleep(n):
     time.sleep(n)
-
-
-def raises(exc):
-    return pytest.raises(exc)
 
 
 def dict_of(x):

@@ -228,7 +228,11 @@ def load_pickle(path):
                         state = {'?': state}
                     self.STATE = state
 
+                def __getattr__(self, item):
+                    return '?' + item
+
             return T
+
 
     hash_map = {}
     obj_list = []
@@ -258,7 +262,10 @@ def load_pickle(path):
             hash_map[h] = name
 
             state = getattr(obj, 'STATE', {})
-            d = {k: transform(v) for k, v in state.items()}
+            if isinstance(state, dict):
+                d = {k: transform(v) for k, v in state.items()}
+            else:
+                d = {'state': state}
             d['$'] = name
             obj_list[idx] = d
 

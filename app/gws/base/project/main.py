@@ -68,15 +68,15 @@ class Object(gws.Node, gws.IProject):
 
         gws.log.info(f'configuring project {self.uid!r}')
 
-        self.actionMgr = self.create_child(gws.base.action.manager.Object, self.var('api'), optional=True)
+        self.actionMgr = self.create_child_if_configured(gws.base.action.manager.Object, self.var('api'))
 
         p = self.var('assets')
         self.assetsRoot = gws.WebDocumentRoot(p) if p else None
 
         self.localeUids = self.var('locales') or self.root.app.localeUids
 
-        self.map = self.create_child(gws.ext.object.map, self.var('map'), optional=True)
-        self.printer = self.create_child(gws.base.printer.Object, self.var('printer'), optional=True)
+        self.map = self.create_child_if_configured(gws.ext.object.map, self.var('map'))
+        self.printer = self.create_child_if_configured(gws.base.printer.Object, self.var('printer'))
         #
         # self.overview_map = self.root.create_optional(gws.base.map.Object, self.var('overviewMap'))
         #
@@ -84,7 +84,7 @@ class Object(gws.Node, gws.IProject):
             templates=self.var('templates'),
             defaults=_DEFAULT_TEMPLATES))
 
-        self.client = self.create_child(gws.base.client.Object, self.var('client'), optional=True)
+        self.client = self.create_child_if_configured(gws.base.client.Object, self.var('client'))
 
     def props(self, user):
         desc = self.templateMgr.render(

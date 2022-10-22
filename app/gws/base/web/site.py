@@ -68,7 +68,7 @@ class Object(gws.Node, gws.IWebSite):
                 # ensure rewriting from root
                 r.target = '/' + r.target.lstrip('/')
 
-        self.errorPage = self.create_child(gws.ext.object.template, self.var('errorPage'), optional=True)
+        self.errorPage = self.create_child_if_configured(gws.ext.object.template, self.var('errorPage'))
         self.corsOptions = self.var('cors')
 
     def url_for(self, req, path, **params):

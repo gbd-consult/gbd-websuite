@@ -2,40 +2,34 @@ import gws
 import gws.spec.runtime
 import gws.lib.test as test
 from gws.base.auth.user import User
-from types import MethodType
+import gws.types as t
 
 
-@test.fixture(scope='module', autouse=True)
-def configuration():
-    test.setup()
-    yield
-    test.teardown()
+class MockSpecs(gws.ISpecRuntime):
+    def __init__(self, *classes):
+        self.classes = classes
+
+    def parse_classref(self, classref):
+        return gws.spec.runtime.Object.parse_classref(t.cast(gws.spec.runtime.Object, self), classref)
+
+    def get_class(self, classref, ext_type=None):
+        cls, name, ext_name = self.parse_classref(classref)
+
+        if cls:
+            return cls
+
+        if ext_name:
+            ext_name += '.' + (ext_type or gws.spec.core.DEFAULT_VARIANT_TAG)
+
+        for c in self.classes:
+            if name and c.__name__ == name:
+                return c
+            if ext_name and c.extName == ext_name:
+                return c
 
 
-class MockSpecs:
-    def __init__(self, classes):
-        self.classes = {
-            cls.__name__.rpartition('.')[-1]: cls
-            for cls in classes
-        }
-
-    def real_class_names(self, class_name):
-        return [class_name]
-
-    def object_descriptor(self, class_name):
-        c = class_name.rpartition('.')[-1]
-        return gws.ExtObjectDescriptor(
-            class_ptr=self.classes[c],
-            ext_category='',
-            ext_type='',
-            ident='',
-            module_name='',
-            module_path='',
-            name='',
-        )
-
-    def is_a(self, class_name, pattern):
-        return pattern == 'YES'
+def _root(*classes):
+    return gws.create_root_object(MockSpecs(*classes))
 
 
 def _objects(*classes):
@@ -62,152 +56,54 @@ def _access(words):
 
 ##
 
-def test_is_a():
-    class A(gws.Object):
+def test_create():
+    @gws.ext.object.helper('A')
+    class A(gws.Node):
         pass
 
-    class B(A):
+    @gws.ext.object.helper('B')
+    class B(gws.Node):
         pass
 
-    a, b = _objects(A, B)
+    root = _root(A, B)
+    a = root.create(gws.ext.object.helper, config={'type': 'A', 'uid': 'a'})
+    b = root.create(gws.ext.object.helper, config={'type': 'B', 'uid': 'b'})
 
-    assert a.is_a(A) is True
-    assert b.is_a(A) is True
+    assert root.configErrors == []
+    assert root.find_all(gws.ext.object.helper) == [a, b]
 
-    class B1(gws.Node):
+
+def test_create_shared():
+    @gws.ext.object.helper('A')
+    class A(gws.Node):
         pass
 
-    class B2(B1):
+    root = _root(A)
+    a1 = root.create_shared(gws.ext.object.helper, config={'type': 'A', 'uid': 'a'})
+    a2 = root.create_shared(gws.ext.object.helper, config={'type': 'A', 'uid': 'a'})
+
+    assert root.configErrors == []
+    assert a1 == a2
+
+
+def test_create_child():
+    class A(gws.Node):
         pass
 
-    b1, b2 = _nodes(B1, B2)
-
-    assert b1.is_a(B1) is True
-    assert b2.is_a(B1) is True
-
-    assert b1.is_a('YES') is True
-
-
-def test_basic_access():
-    class A(gws.Object):
+    class B(gws.Node):
         pass
 
-    a, = _objects(A)
+    root = _root(A, B)
 
-    a.access = _access('X allow Y deny')
+    a = root.create(A)
+    b1 = a.create_child(B)
+    b2 = a.create_child(B)
 
-    assert _user('X').can_use(a) is True
-    assert _user('Y').can_use(a) is False
-    assert _user('Z').can_use(a) is False
-
-
-def test_access_with_parent():
-    class A(gws.Object):
-        pass
-
-    class B(gws.Object):
-        pass
-
-    a, b = _objects(A, B)
-
-    a.access = _access('X allow Y deny')
-    b.access = _access('Z allow')
-
-    b.parent = a
-
-    assert _user('X').can_use(b) is True
-    assert _user('Y').can_use(b) is False
-    assert _user('Z').can_use(b) is True
+    assert root.configErrors == []
+    assert a.children == [b1, b2]
 
 
-def test_access_with_explicit_parent():
-    class A(gws.Object):
-        pass
-
-    class B(gws.Object):
-        pass
-
-    a, b = _objects(A, B)
-
-    a.access = _access('X allow')
-
-    assert _user('X').can_use(b) is False
-    assert _user('X').can_use(b, context=a) is True
-
-
-def test_basic_props():
-    class A(gws.Object):
-        def props(self, user):
-            return {'b': b, 'c': c}
-
-    class B(gws.Object):
-        def props(self, user):
-            return {'me': 'B'}
-
-    class C(gws.Object):
-        def props(self, user):
-            return {'me': 'C'}
-
-    a, b, c = _objects(A, B, C)
-
-    a.access = _access('X allow')
-
-    b.parent = a
-    c.parent = a
-
-    assert test.dict_of(gws.props(a, _user('X'))) == {'b': {'me': 'B'}, 'c': {'me': 'C'}}
-
-
-def test_props_with_access():
-    class A(gws.Object):
-        def props(self, user):
-            return {'b': b, 'c': c}
-
-    class B(gws.Object):
-        def props(self, user):
-            return {'me': 'B'}
-
-    class C(gws.Object):
-        def props(self, user):
-            return {'me': 'C'}
-
-    a, b, c = _objects(A, B, C)
-
-    a.access = _access('X allow')
-    b.access = _access('X deny')
-
-    b.parent = a
-    c.parent = a
-
-    assert test.dict_of(gws.props(a, _user('X'))) == {'c': {'me': 'C'}}
-
-
-def test_props_with_implicit_access():
-    class A(gws.Object):
-        def props(self, user):
-            return {'b': b, 'c': c}
-
-    class B(gws.Object):
-        def props(self, user):
-            return {'me': 'B'}
-
-    class C(gws.Object):
-        def props(self, user):
-            return {'d': d}
-
-    class D(gws.Object):
-        def props(self, user):
-            return {'me': 'D'}
-
-    a, b, c, d = _objects(A, B, C, D)
-
-    a.access = _access('X allow')
-    b.access = _access('X deny')
-
-    assert test.dict_of(gws.props(a, _user('X'))) == {'c': {'d': {'me': 'D'}}}
-
-
-def test_configure_auto_inheritance():
+def test_auto_super_configure():
     log = []
 
     class A(gws.Node):
@@ -222,24 +118,173 @@ def test_configure_auto_inheritance():
         def configure(self):
             log.append('C')
 
-    _nodes(C)
+    root = _root(C)
+    root.create('C')
 
     assert log == ['A', 'B', 'C']
+
 #
 #
-# def test_create_child():
-#     class B(Object):
-#         def configure(self):
-#             self.foo = 'B'
+# def test_is_a():
+#     class A(gws.Object):
+#         pass
 #
-#     class C(Object):
-#         def configure(self):
-#             self.foo = 'C'
+#     class B(A):
+#         pass
 #
-#     class A(Object):
-#         def configure(self):
-#             self.create_child(B, {})
-#             self.create_child(C, {})
+#     a, b = _objects(A, B)
 #
-#     a = gws.Root().create_object(A, {})
-#     assert [c.foo for c in a.children] == ['B', 'C']
+#     assert a.is_a(A) is True
+#     assert b.is_a(A) is True
+#
+#     class B1(gws.Node):
+#         pass
+#
+#     class B2(B1):
+#         pass
+#
+#     b1, b2 = _nodes(B1, B2)
+#
+#     assert b1.is_a(B1) is True
+#     assert b2.is_a(B1) is True
+#
+#     assert b1.is_a('YES') is True
+#
+#
+# def test_basic_access():
+#     class A(gws.Object):
+#         pass
+#
+#     a, = _objects(A)
+#
+#     a.access = _access('X allow Y deny')
+#
+#     assert _user('X').can_use(a) is True
+#     assert _user('Y').can_use(a) is False
+#     assert _user('Z').can_use(a) is False
+#
+#
+# def test_access_with_parent():
+#     class A(gws.Object):
+#         pass
+#
+#     class B(gws.Object):
+#         pass
+#
+#     a, b = _objects(A, B)
+#
+#     a.access = _access('X allow Y deny')
+#     b.access = _access('Z allow')
+#
+#     b.parent = a
+#
+#     assert _user('X').can_use(b) is True
+#     assert _user('Y').can_use(b) is False
+#     assert _user('Z').can_use(b) is True
+#
+#
+# def test_access_with_explicit_parent():
+#     class A(gws.Object):
+#         pass
+#
+#     class B(gws.Object):
+#         pass
+#
+#     a, b = _objects(A, B)
+#
+#     a.access = _access('X allow')
+#
+#     assert _user('X').can_use(b) is False
+#     assert _user('X').can_use(b, context=a) is True
+#
+#
+# def test_basic_props():
+#     class A(gws.Object):
+#         def props(self, user):
+#             return {'b': b, 'c': c}
+#
+#     class B(gws.Object):
+#         def props(self, user):
+#             return {'me': 'B'}
+#
+#     class C(gws.Object):
+#         def props(self, user):
+#             return {'me': 'C'}
+#
+#     a, b, c = _objects(A, B, C)
+#
+#     a.access = _access('X allow')
+#
+#     b.parent = a
+#     c.parent = a
+#
+#     assert test.dict_of(gws.props(a, _user('X'))) == {'b': {'me': 'B'}, 'c': {'me': 'C'}}
+#
+#
+# def test_props_with_access():
+#     class A(gws.Object):
+#         def props(self, user):
+#             return {'b': b, 'c': c}
+#
+#     class B(gws.Object):
+#         def props(self, user):
+#             return {'me': 'B'}
+#
+#     class C(gws.Object):
+#         def props(self, user):
+#             return {'me': 'C'}
+#
+#     a, b, c = _objects(A, B, C)
+#
+#     a.access = _access('X allow')
+#     b.access = _access('X deny')
+#
+#     b.parent = a
+#     c.parent = a
+#
+#     assert test.dict_of(gws.props(a, _user('X'))) == {'c': {'me': 'C'}}
+#
+#
+# def test_props_with_implicit_access():
+#     class A(gws.Object):
+#         def props(self, user):
+#             return {'b': b, 'c': c}
+#
+#     class B(gws.Object):
+#         def props(self, user):
+#             return {'me': 'B'}
+#
+#     class C(gws.Object):
+#         def props(self, user):
+#             return {'d': d}
+#
+#     class D(gws.Object):
+#         def props(self, user):
+#             return {'me': 'D'}
+#
+#     a, b, c, d = _objects(A, B, C, D)
+#
+#     a.access = _access('X allow')
+#     b.access = _access('X deny')
+#
+#     assert test.dict_of(gws.props(a, _user('X'))) == {'c': {'d': {'me': 'D'}}}
+#
+#
+# #
+# #
+# # def test_create_child():
+# #     class B(Object):
+# #         def configure(self):
+# #             self.foo = 'B'
+# #
+# #     class C(Object):
+# #         def configure(self):
+# #             self.foo = 'C'
+# #
+# #     class A(Object):
+# #         def configure(self):
+# #             self.create_child(B, {})
+# #             self.create_child(C, {})
+# #
+# #     a = gws.Root().create_object(A, {})
+# #     assert [c.foo for c in a.children] == ['B', 'C']

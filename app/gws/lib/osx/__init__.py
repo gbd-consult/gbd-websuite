@@ -2,11 +2,12 @@
 
 import hashlib
 import os
-import psutil
 import re
 import signal
 import subprocess
 import time
+
+import psutil
 
 import gws
 import gws.types as t
@@ -18,6 +19,10 @@ class Error(gws.Error):
 
 class TimeoutError(Error):
     pass
+
+
+def getenv(key: str, default: str = None) -> t.Optional[str]:
+    return os.getenv(key, default)
 
 
 def run_nowait(cmd, **kwargs):

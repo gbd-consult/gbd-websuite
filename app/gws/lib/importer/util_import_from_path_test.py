@@ -8,13 +8,6 @@ import gws.core.util as util
 import gws.lib.test as test
 
 
-@test.fixture(scope='module', autouse=True)
-def configuration():
-    test.setup()
-    yield
-    test.teardown()
-
-
 def _mkfiles(path, d):
     for k, v in d.items():
         if isinstance(v, dict):

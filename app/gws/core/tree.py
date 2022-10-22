@@ -47,13 +47,18 @@ class Node(Object, types.INode):
         val = util.get(self.config, key)
         return val if val is not None else default
 
-    def create_child(self, classref, config=None, optional=False, required=False):
-        return self.root.create(classref, parent=self, config=config, optional=optional, required=required)
+    def create_child(self, classref, config=None):
+        return self.root.create(classref, parent=self, config=config)
 
-    def create_children(self, classref, configs, required=False):
+    def create_child_if_configured(self, classref, config=None):
+        if not config:
+            return None
+        return self.root.create(classref, parent=self, config=config)
+
+    def create_children(self, classref, configs):
         if not configs:
             return []
-        return gws.compact(self.create_child(classref, cfg, required=required) for cfg in configs)
+        return gws.compact(self.create_child(classref, cfg) for cfg in configs)
 
 
 class Root(types.IRoot):
@@ -130,16 +135,13 @@ class Root(types.IRoot):
         self.app = obj
         self.initialize(obj, config)
 
-    def create_shared(self, classref, config=None, optional=False, required=False):
+    def create_shared(self, classref, config=None):
         config = _to_config(config)
         if config.uid and config.uid in self._uidMap:
             return self._uidMap[config.uid]
-        return self.create(classref, config=config, optional=optional, required=required)
+        return self.create(classref, config=config)
 
-    def create(self, classref, parent=None, config=None, optional=False, required=False):
-        if not config and optional:
-            return
-
+    def create(self, classref, parent=None, config=None):
         config = _to_config(config)
 
         cls = self.specs.get_class(classref, config.type)

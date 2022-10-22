@@ -1,20 +1,15 @@
 """Global vars for the in-container test runner."""
 
-# this is where `host_runner.py` writes the test configuration
-TEST_CONFIG_PATH_IN_CONTAINER = '/gws-var/TEST_CONFIG.json'
-
-TEMP_DIR = '/tmp'
-
-MANIFEST_PATH = TEMP_DIR + '/gws_test_manifest.json'
+import gws
 
 DEFAULT_MANIFEST = {
     'withStrictConfig': True,
     'withFallbackConfig': False,
 }
 
-SESSION_STORE_PATH = '/tmp/gws_test_session_store.sqlite'
+SESSION_STORE_PATH = gws.VAR_DIR + '/test_session_store.sqlite'
 
-GWS_CONFIG_PATH = '/gws-var/gws_test_gws_config.json'
+GWS_CONFIG_PATH = gws.VAR_DIR + '/test_gws_config.json'
 
 # global config
 

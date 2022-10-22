@@ -2,13 +2,6 @@ import gws.lib.net
 import gws.lib.test as test
 
 
-@test.fixture(scope='module', autouse=True)
-def configuration():
-    test.setup()
-    yield
-    test.teardown()
-
-
 def test_parse_url():
     url = 'http://foo.bar:1234/path/to/file.ext?lower=AA%2FBB%3ACC&UPPER=DDD#hash'
     p = gws.lib.net.parse_url(url)
@@ -68,7 +61,7 @@ def test_request_404():
 
 
 def test_request_timeout():
-    test.mockserv.poke('timeout', {'time': 2})
+    test.mockserv.poke('timeout', {'delay_time': 2})
     res = gws.lib.net.http_request(test.mockserv.url('timeout'), timeout=1)
     assert (res.ok, res.status_code) == (False, 0)
     res = gws.lib.net.http_request(test.mockserv.url('timeout'), timeout=5)

@@ -3,13 +3,6 @@ import gws.gis.ows.error
 import gws.lib.test as test
 
 
-@test.fixture(scope='module', autouse=True)
-def configuration():
-    test.setup()
-    yield
-    test.teardown()
-
-
 def test_request_ok():
     test.web_server_poke('ok', {'text': 'hello'})
     test.web_server_begin_capture()

@@ -1,5 +1,5 @@
-import pytest
 from gws.core.data import Data
+import gws.lib.test as test
 
 
 def test_init_accepts_dicts_and_kwargs():
@@ -8,7 +8,7 @@ def test_init_accepts_dicts_and_kwargs():
 
 
 def test_init_accepts_data_objects():
-    e = Data(c='A', b='B')
+    e = Data(a='A', b='B')
     d = Data(e, c='C')
     assert vars(d) == {'a': 'A', 'b': 'B', 'c': 'C'}
 
@@ -21,7 +21,7 @@ def test_unknown_props_return_none():
 
 def test_unknown_private_props_throw():
     d = Data({'a': 'A', 'b': 'B'})
-    with pytest.raises(AttributeError):
+    with test.raises(AttributeError):
         # noinspection PyUnresolvedReferences
         assert d._xxx is None
 
