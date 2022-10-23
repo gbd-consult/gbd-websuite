@@ -32,8 +32,9 @@ Commands:
         
 Options:
 
-    --only <patterns>     - run only these tests, should be a comma-separated list of re patterns
+    --only <regex>        - only run filenames matching the pattern 
     --manifest <manifest> - path to MANIFEST.json
+    --verbose             - enable debug logging
     
     Additionaly, you can pass any pytest option:
     https://docs.pytest.org/latest/reference.html#command-line-flags
@@ -60,9 +61,9 @@ def main(argv):
     wd = CONFIG['runner.work_dir']
 
     CONFIG.setdefault('runner.compose_yaml_path', f'{wd}/docker-compose.yml')
-    CONFIG.setdefault('runner.config_path', f'{wd}/gws-var/test_config.json')
+    CONFIG.setdefault('runner.config_path', f'{wd}/test_config.json')
 
-    manifest_path = poparg(argv, '--manifest')
+    manifest_path = poparg2(argv, '--manifest')
     if manifest_path:
         local_manifest_path = f'{wd}/MANIFEST.json'
         write_file(local_manifest_path, read_file(manifest_path))
@@ -126,7 +127,7 @@ def reset_work_dir():
 
 
 def runner_run(argv):
-    run_cmd(f'''docker exec {CONFIG['service.gws.container_name']} gws test ''' + ' '.join(argv))
+    run_cmd(f'''docker exec {CONFIG['service.gws.container_name']} gws test ''' + ' '.join(repr(a) for a in argv))
 
 
 def compose_configure():
@@ -259,7 +260,7 @@ def compose_config_for_service_qgis():
 
 # utils
 
-def poparg(argv, key):
+def poparg2(argv, key):
     try:
         n = argv.index(key)
     except ValueError:

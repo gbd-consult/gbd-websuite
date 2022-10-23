@@ -334,6 +334,9 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
 
     def do_GET(self):
+        if self.path == '/':
+            return self.serve(200, 'text/plain', 'ok')
+
         if self.path == '/_state':
             return self.serve(200, 'text/plain', repr(STATE))
 

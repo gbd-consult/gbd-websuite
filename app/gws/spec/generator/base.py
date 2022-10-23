@@ -1,4 +1,5 @@
 import os
+import sys
 
 from . import util
 
@@ -96,14 +97,16 @@ class Data:  # type: ignore
 
 class _Logger:
     level = 'INFO'
+    levels = 'ERROR', 'WARNING', 'INFO', 'DEBUG'
 
     def set_level(self, level):
         self.level = level
 
     def log(self, level, *args):
-        levels = 'ERROR', 'WARNING', 'INFO', 'DEBUG'
-        if levels.index(level) <= levels.index(self.level):
-            print(f'[spec] {level}:', *args)
+        if self.levels.index(level) <= self.levels.index(self.level):
+            msg = f'[spec] {level}: ' + ' '.join(str(a) for a in args)
+            sys.stdout.write(msg + '\n')
+            sys.stdout.flush()
 
     def error(self, *args): self.log('ERROR', *args)
 
