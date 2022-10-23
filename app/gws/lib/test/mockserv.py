@@ -11,11 +11,14 @@ def command(cmd, params=None):
     params = params or {}
     params['cmd'] = cmd
     res = gws.lib.net.http_request(
-        url(''),
+        url(),
         data=gws.lib.jsonx.to_string(params),
         method='post'
     )
-    return gws.lib.jsonx.from_string(res.text)
+    try:
+        return gws.lib.jsonx.from_string(res.text)
+    except gws.lib.jsonx.Error:
+        pass
 
 
 def poke(pattern, response):
@@ -35,6 +38,8 @@ def create_wms(config):
     command('create_wms', {'config': config})
 
 
-def url(u):
-    base_url = f"http://{CONFIG['runner.host_name']}:{CONFIG['service.mockserv.port']}"
-    return base_url + '/' + u
+def url(u=None):
+    s = f"http://{CONFIG['runner.host_name']}:{CONFIG['service.mockserv.port']}"
+    if u:
+        s += '/' + u
+    return s

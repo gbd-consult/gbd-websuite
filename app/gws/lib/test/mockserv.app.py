@@ -26,6 +26,7 @@ import io
 import json
 import os
 import re
+import sys
 import time
 import urllib.parse
 
@@ -301,7 +302,11 @@ def intf(s):
 
 
 def log(*args):
-    print('TWS>', *[repr(a) for a in args])
+    msg = ['[mockserv]']
+    for a in args:
+        msg.append(repr(a))
+    sys.stdout.write(' '.join(msg) + '\n')
+    sys.stdout.flush()
 
 
 # server main
@@ -418,6 +423,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def main():
+    log('starting', STATE['host'], STATE['port'])
     httpd = http.server.ThreadingHTTPServer((STATE['host'], STATE['port']), HTTPRequestHandler)
     httpd.serve_forever()
 

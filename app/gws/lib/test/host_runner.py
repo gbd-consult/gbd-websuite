@@ -167,7 +167,7 @@ def compose_config():
 
         cfg.setdefault('stop_grace_period', '1s')
 
-        services[cname] = cfg
+        services[s] = cfg
 
     return {
         'version': '3',
@@ -184,6 +184,7 @@ def compose_config_for_service_gws():
     ensure_dir(f'{wd}/gws-tmp')
 
     return {
+        'depends_on': [s for s in CONFIG['runner.services'].split() if s != 'gws'],
         'ports': [
             f"{CONFIG['runner.host_ip']}:{CONFIG['service.gws.http_port']}:80",
             f"{CONFIG['runner.host_ip']}:{CONFIG['service.gws.mpx_port']}:5000",
@@ -314,3 +315,7 @@ def write_file(path, text):
 def read_file(path):
     with open(path, 'rt', encoding='utf8') as fp:
         return fp.read()
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

@@ -11,7 +11,7 @@ SPHINXOPTS = -v -n -b html -j auto -c $(DOC)/sphinx
 
 CLIENT_BUILDER = $(APP)/js/helpers/index.js
 
-.PHONY: help spec client client-help client-dev client-dev-server doc doc-dev-server test image clean
+.PHONY: help clean client client-dev client-dev-server client-help doc doc-dev-server image image-help package spec test test-help
 
 define HELP
 
@@ -93,10 +93,10 @@ doc-dev-server: doc
 	sphinx-autobuild -B $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
 
 test:
-	$(PYTHON) $(APP)/test.py $(ARGS) --manifest "$(MANIFEST)"
+	$(PYTHON) $(APP)/gws/lib/test/host_runner.py $(ARGS) --manifest "$(MANIFEST)"
 
 test-help:
-	$(PYTHON) $(APP)/test.py -h
+	$(PYTHON) $(APP)/gws/lib/test/host_runner.py -h
 
 image:
 	$(PYTHON) $(BASE)/install/docker.py $(ARGS)
