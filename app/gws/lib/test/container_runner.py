@@ -23,7 +23,6 @@ from . import glob
 TEST_FILE_RE = r'_test\.py$'
 TEST_FILE_GLOB = '*_test.py'
 
-HEALTH_CHECK_ATTEMPTS = 5
 HEALTH_CHECK_PAUSE = 5
 
 
@@ -114,7 +113,7 @@ def main(argv):
 def health_check():
     ok = {s: False for s in glob.CONFIG['runner.services'].split()}
 
-    for _ in range(HEALTH_CHECK_ATTEMPTS):
+    for _ in range(int(glob.CONFIG['runner.health_check_attempts'])):
         for s in ok:
             if not ok[s]:
                 fn = globals()[f'health_check_for_service_{s}']
