@@ -54,6 +54,7 @@ module.exports = {
     modEditCloseAuxButton: 'Beenden',
     modEditDrawAuxButton: 'Zeichnen',
     modEditAddAuxButton: 'Hinzufügen',
+    modEditPrintAuxButton: 'Ausdrucken',
     modEditDrawButton: 'Neues Objekt',
     modEditEndButton: 'Beenden',
     modEditModifyAuxButton: 'Bearbeiten',

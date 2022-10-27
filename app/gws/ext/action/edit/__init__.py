@@ -7,13 +7,16 @@ import gws.tools.json2
 import gws.web.error
 import gws.tools.date
 import gws.common.model
+import gws.common.printer.types
+import gws.common.printer.job
+import gws.common.template
 
 import gws.types as t
 
 
 class Config(t.WithTypeAndAccess):
     """Feature edit action"""
-    pass
+    printTemplate: t.Optional[t.ext.template.Config]  #: template for printed features
 
 
 class GetFeaturesParams(t.Params):
@@ -34,7 +37,34 @@ class EditResponse(t.Response):
     failures: t.Optional[t.List[gws.common.model.AttributeValidationFailure]]
 
 
+class PrintParams(t.Params):
+    layerUid: str
+    featureUids: t.List[str]
+    printParams: gws.common.printer.types.PrintParamsWithTemplate
+
+
+class Props(t.Props):
+    type: t.Literal = 'edit'
+    printTemplate: gws.common.template.TemplateProps
+
+
 class Object(gws.common.action.Object):
+    def configure(self):
+        super().configure()
+        self.print_template = None
+        p = self.var('printTemplate')
+        if p:
+            self.print_template = self.create_child('gws.ext.template', p)
+
+    def props_for(self, user):
+        if not user.can_use(self):
+            return None
+
+        return {
+            'type': self.type,
+            'printTemplate': self.print_template.props if self.print_template else None,
+        }
+
     def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         """Get editable features"""
 
@@ -101,3 +131,49 @@ class Object(gws.common.action.Object):
                 f.apply_data_model()
 
         return EditResponse(features=[f.props for f in dst_features], failures=failures)
+
+    def api_print(self, req: t.IRequest, p: PrintParams) -> gws.common.printer.job.StatusResponse:
+        """Print features"""
+
+        if not self.print_template:
+            raise gws.web.error.NotFound()
+
+        layer: t.ILayer = req.require_layer(p.layerUid)
+
+        features = layer.get_editable_features()
+        uids = set(p.featureUids)
+        print_features = []
+
+        for f in features:
+            if f.full_uid in uids:
+                f.transform_to(layer.map.crs)
+                f.apply_templates()
+                f.apply_data_model()
+                print_features.append(f)
+
+        if not print_features:
+            gws.log.debug(f'no print features uids={uids!r}')
+            raise gws.web.error.NotFound()
+
+        pp = p.printParams
+        pp.projectUid = p.projectUid
+        pp.locale = p.locale
+        pp.templateUid = self.print_template.uid
+        pp.sections = []
+
+        for feature in print_features:
+            center = feature.shape.centroid
+            pp.sections.append(gws.common.printer.types.PrintSection(
+                center=[center.x, center.y],
+                context=feature.template_context,
+                items=[
+                    gws.common.printer.types.PrintItemFeatures(
+                        type='features',
+                        features=[feature.props],
+                        style=layer.style,
+                    )
+                ]
+            ))
+
+        job = gws.common.printer.job.start(req, pp)
+        return gws.common.printer.job.status(job)

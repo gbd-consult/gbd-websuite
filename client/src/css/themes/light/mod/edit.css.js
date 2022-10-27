@@ -30,6 +30,10 @@ module.exports = v => ({
         ...v.SIDEBAR_AUX_BUTTON('google:action/delete')
     },
 
+    '.modEditPrintAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:action/print')
+    },
+
     '.modEditEndButton': {
         ...v.SVG('google:action/done')
     },

@@ -276,6 +276,11 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
 
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
+                    {cc.setup.printTemplate && <sidebar.AuxButton
+                        {...gws.tools.cls('modEditPrintAuxButton')}
+                        tooltip={this.__('modEditPrintAuxButton')}
+                        whenTouched={() => cc.startPrint()}
+                    />}
                     <Cell flex/>
                     <Cell>
                         <gws.components.feature.TaskButton controller={this.props.controller} feature={feature}/>
@@ -377,9 +382,12 @@ class OverlayView extends gws.View<EditViewProps> {
 class EditController extends gws.Controller {
     uid = MASTER;
     selectedStyle: gws.types.IStyle;
+    setup: gws.api.EditProps;
 
     async init() {
         await super.init();
+
+        this.setup = this.app.actionSetup('edit') || {};
 
         this.app.whenCalled('editLayer', args => {
             this.selectLayer(args.layer);
@@ -649,6 +657,43 @@ class EditController extends gws.Controller {
             editAttributes: null,
         });
     }
+
+    async startPrint() {
+        this.update({
+            printJob: {state: gws.api.JobState.init},
+            marker: null,
+        });
+
+        let quality = 0;
+        let level = this.setup.printTemplate.qualityLevels[quality];
+        let dpi = level ? level.dpi : 0;
+
+        let editLayer = this.getValue('editLayer');
+        let editFeature = this.getValue('editFeature');
+
+        let basicParams = await this.map.basicPrintParams(null, dpi);
+
+        basicParams.items = basicParams.items.filter(it => it['layerUid'] !== editLayer.uid);
+
+        let printParams: gws.api.PrintParamsWithTemplate = {
+            type: 'template',
+            templateUid: this.setup.printTemplate.uid,
+            quality,
+            ...basicParams,
+        };
+
+        let q = {
+            printParams,
+            layerUid: editLayer.uid,
+            featureUids: [editFeature.uid],
+        };
+
+        this.update({
+            printJob: await this.app.server.editPrint(q),
+            printSnapshotMode: false,
+        });
+    }
+
 
 }
 
