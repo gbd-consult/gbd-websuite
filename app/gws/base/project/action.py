@@ -4,11 +4,11 @@ import gws.base.auth.user
 import gws.lib.intl
 import gws.types as t
 
-from . import main
+from . import core
 
 
 class InfoResponse(gws.Response):
-    project: main.Props
+    project: core.Props
     locale: gws.Locale
     user: t.Optional[gws.base.auth.user.Props]
 

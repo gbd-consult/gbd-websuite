@@ -3,18 +3,18 @@ import gws.lib.image
 import gws.lib.mime
 import gws.types as t
 
-from .. import main
+from ... import core
 
 
 @gws.ext.config.legend('combined')
-class Config(main.Config):
+class Config(core.Config):
     """Combined legend."""
 
     layerUids: t.List[str]  #: layers
 
 
 @gws.ext.object.legend('combined')
-class Object(main.Object):
+class Object(core.Object):
     layerUids: t.List[str]
 
     def configure(self):
@@ -29,4 +29,4 @@ class Object(main.Object):
                 if lro:
                     lros.append(lro)
 
-        return main.combine_outputs(lros, self.options)
+        return core.combine_outputs(lros, self.options)

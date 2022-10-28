@@ -3,18 +3,18 @@ import gws.lib.image
 import gws.gis.ows
 import gws.types as t
 
-from .. import main
+from ... import core
 
 
 @gws.ext.config.legend('remote')
-class Config(main.Config):
+class Config(core.Config):
     """External legend."""
 
     urls: t.List[gws.Url]  #: urls of externals legend images
 
 
 @gws.ext.object.legend('remote')
-class Object(main.Object):
+class Object(core.Object):
     urls: t.List[str]
 
     def configure(self):
@@ -29,10 +29,10 @@ class Object(main.Object):
                 if not res.content_type.startswith('image/'):
                     raise gws.gis.ows.error.Error(f'wrong content type {res.content_type!r}')
                 img = gws.lib.image.from_bytes(res.content)
-                lro = gws.LegendRenderOutput(image=img, size=img.size)
+                lro = gws.LegendRenderOutput(image=img, size=img.size())
                 lros.append(lro)
             except gws.gis.ows.error.Error:
                 gws.log.exception(f'render_legend: download failed url={url!r}')
 
         # NB even if there's only one image, it's not a bad idea to run it through the image converter
-        return main.combine_outputs(gws.compact(lros), self.options)
+        return core.combine_outputs(gws.compact(lros), self.options)

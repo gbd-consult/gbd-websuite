@@ -1,2 +1,2 @@
 from . import manager
-from .main import Config, Object, Props, create_from_path
+from .core import Config, Object, Props, create_from_path

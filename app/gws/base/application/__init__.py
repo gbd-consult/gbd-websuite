@@ -114,10 +114,10 @@ class Object(gws.Node, gws.IApplication):
         #         cnf[desc.ext_type] = gws.config.parse(self.root.specs, cfg, 'gws.ext.config.helper')
         # self.helpers = self.root.create_many('gws.ext.helper', list(cnf.values()))
 
-        self.authMgr = self.create_child(gws.base.auth.manager.Object, self.var('auth'), required=True)
+        self.authMgr = self.create_child(gws.base.auth.manager.Object, self.var('auth'))
 
         # @TODO default API
-        self.actionMgr = self.create_child(gws.base.action.manager.Object, self.var('api'), required=True)
+        self.actionMgr = self.create_child(gws.base.action.manager.Object, self.var('api'))
 
         self.webMgr = self.create_child(gws.base.web.manager.Object, self.var('web'))
 
