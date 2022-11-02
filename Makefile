@@ -85,12 +85,13 @@ client-dev-server: spec
 	cd $(APP)/js && node $(CLIENT_BUILDER) dev-server $(ARGS) && cd $(CWD)
 
 doc: spec
-	$(PYTHON) $(DOC)/sphinx/conf.py pre && \
-	sphinx-build -E -a $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build && \
-	$(PYTHON) $(DOC)/sphinx/conf.py post
+	$(PYTHON) $(DOC)/make.py html --manifest "$(MANIFEST)"
 
-doc-dev-server: doc
-	sphinx-autobuild -B $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
+doc-dev-server: spec
+	$(PYTHON) $(DOC)/make.py server --manifest "$(MANIFEST)"
+
+doc-help:
+	$(PYTHON) $(DOC)/make.py --help
 
 test:
 	$(PYTHON) $(APP)/gws/lib/test/host_runner.py $(ARGS) --manifest "$(MANIFEST)"
