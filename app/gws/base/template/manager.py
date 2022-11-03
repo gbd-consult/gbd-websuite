@@ -1,11 +1,11 @@
 import gws
 import gws.lib.mime
 import gws.types as t
-from . import main
+from . import core
 
 
 class Props(gws.Props):
-    templates: t.List[main.Props]
+    templates: t.List[core.Props]
 
 
 class Object(gws.Node, gws.ITemplateManager):

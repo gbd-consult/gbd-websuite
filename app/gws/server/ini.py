@@ -282,6 +282,10 @@ def create(root: gws.IRoot, base_dir, pid_dir):
                     root {d};
                     try_files $uri @cache;
                 }}
+                location = /favicon.ico {{
+                    root /;
+                    try_files {d}$uri {gws.APP_DIR}/gws/base/web/favicon.ico =404;
+                }}
             """
             # @TODO multisites
             break

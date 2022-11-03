@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title><% options.title %> - <% options.subTitle %></title>
+    <link rel="stylesheet" href="<% options.htmlWebRoot %>/_static/theme.css" type="text/css" />
+    <script src="<% options.htmlWebRoot %>/_static/theme.js"></script>
+</head>
+
+<body>
+    <aside>
+        <div id="sidebar">
+            <div id="sidebar-header">
+                <div id="sidebar-title">
+                    <% title %>
+                </div>
+                <div id="sidebar-subtitle">
+                    <% subTitle %>
+                </div>
+            </div>
+            <div id="sidebar-toc">
+                <% toc %>
+            </div>
+            <div id="sidebar-footer">
+                &copy;
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <% main %>
+    </main>
+
+</body>
+</html>

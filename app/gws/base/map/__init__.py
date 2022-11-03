@@ -1,1 +1,1 @@
-from .main import Config, Object, Props
+from .core import Config, Object, Props

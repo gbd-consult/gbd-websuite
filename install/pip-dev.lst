@@ -1,0 +1,12 @@
+# pip modules for local development
+
+# tests
+
+PyYAML
+requests
+
+# docs
+
+livereload
+mistune
+
