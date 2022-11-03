@@ -104,7 +104,8 @@ def from_dmy(s: str) -> t.Optional[datetime.datetime]:
         int(g['Y']),
         int(g['m']),
         int(g['d']),
-        0, 0, 0
+        0, 0, 0,
+        tzinfo=datetime.timezone.utc
     )
 
 
