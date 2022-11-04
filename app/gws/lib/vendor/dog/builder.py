@@ -22,7 +22,7 @@ class JumpEngine(jump.Engine):
 
     @staticmethod
     def error(exc, source_path, source_lineno, env):
-        util.log.error(f'template error {exc.args[0]} in {source_path!r}')
+        util.log.error(f'template error: {exc.args[0]} in {source_path!r}')
 
     def emit_code_block(self, command, args):
         args['command'] = command
@@ -219,14 +219,14 @@ class Builder:
             self.html_render_toc_entry(sid, 999)
             for sid in root.subSids
         ]
-        return '<ul>' + '\n'.join(entries) + '</ul>'
+        return '\n'.join(entries)
 
     def html_write(self, sec: t.Section, html):
         self.htmlBuffers.setdefault(sec.htmlPath, []).append(html)
 
     def html_flush(self, write: bool):
         tpl = self.jumpEngine.compile_path(self.options.htmlPageTemplate, **JumpEngine.options)
-        toc = self.html_render_main_toc()
+        maintoc = self.html_render_main_toc()
 
         self.htmlContent = {}
 
@@ -234,7 +234,7 @@ class Builder:
             self.htmlContent[path] = self.jumpEngine.call(tpl, {
                 'title': self.options.title,
                 'subTitle': self.options.subTitle,
-                'toc': toc,
+                'maintoc': maintoc,
                 'main': ''.join(fragments),
                 'builder': self,
                 'options': self.options,

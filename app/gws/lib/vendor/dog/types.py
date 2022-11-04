@@ -28,10 +28,6 @@ class Options(Data):
     assetPatterns: List[str]
     excludeRegex: str
 
-    docDir: str
-    themeDir: str
-
-    outputFormat: str
     outputDir: str
 
     htmlSplitLevel: int
@@ -45,7 +41,6 @@ class Options(Data):
 
     title: str
     subTitle: str
-
 
 
 class ParseNode(Data):
@@ -91,7 +86,6 @@ class Section(Data):
     htmlId: str
 
     walkColor: int
-
 
 
 class Error(Exception):

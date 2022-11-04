@@ -36,6 +36,9 @@ make client-help
 make doc [MANIFEST=<manifest>]
     - build the Docs
 
+make doc-api [MANIFEST=<manifest>]
+    - build the API Docs
+
 make doc-dev-server [MANIFEST=<manifest>]
     - start the Docs dev server
 
@@ -85,10 +88,13 @@ client-dev-server: spec
 	cd $(APP)/js && node $(CLIENT_BUILDER) dev-server $(ARGS) && cd $(CWD)
 
 doc: spec
-	$(PYTHON) $(DOC)/make.py html --manifest "$(MANIFEST)"
+	$(PYTHON) $(DOC)/doc.py html --manifest "$(MANIFEST)"
+
+doc-api:
+	$(PYTHON) $(DOC)/doc.py api --manifest "$(MANIFEST)"
 
 doc-dev-server: spec
-	$(PYTHON) $(DOC)/make.py server --manifest "$(MANIFEST)"
+	$(PYTHON) $(DOC)/doc.py server --manifest "$(MANIFEST)"
 
 doc-help:
 	$(PYTHON) $(DOC)/make.py --help

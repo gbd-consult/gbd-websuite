@@ -9,4 +9,4 @@ requests
 
 livereload
 mistune
-
+pydoctor
