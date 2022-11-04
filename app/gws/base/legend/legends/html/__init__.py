@@ -10,7 +10,8 @@ from ... import core
 class Config(core.Config):
     """HTML-based legend."""
 
-    template: gws.ext.config.template  #: template for an HTML legend
+    template: gws.ext.config.template 
+    """template for an HTML legend"""
 
 
 @gws.ext.object.legend('html')

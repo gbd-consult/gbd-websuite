@@ -11,10 +11,14 @@ from . import caps, project
 
 
 class Config(gws.Config):
-    path: gws.FilePath  #: path to a Qgis project file
-    directRender: t.Optional[t.List[str]]  #: QGIS data providers that should be rendered directly
-    directSearch: t.Optional[t.List[str]]  #: QGIS data providers that should be searched directly
-    forceCrs: t.Optional[gws.CrsName]  #: use this CRS for requests
+    path: gws.FilePath 
+    """path to a Qgis project file"""
+    directRender: t.Optional[t.List[str]] 
+    """QGIS data providers that should be rendered directly"""
+    directSearch: t.Optional[t.List[str]] 
+    """QGIS data providers that should be searched directly"""
+    forceCrs: t.Optional[gws.CrsName] 
+    """use this CRS for requests"""
 
 
 # see https://docs.qgis.org/3.22/de/docs/server_manual/services/wms.html#getlegendgraphics

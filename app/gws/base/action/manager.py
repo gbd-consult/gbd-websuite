@@ -11,7 +11,8 @@ class Props(gws.Props):
 class Config(gws.ConfigWithAccess):
     """Server actions"""
 
-    actions: t.Optional[t.List[gws.ext.config.action]]  #: available actions
+    actions: t.Optional[t.List[gws.ext.config.action]] 
+    """available actions"""
 
 
 class Object(gws.Node, gws.IActionManager):

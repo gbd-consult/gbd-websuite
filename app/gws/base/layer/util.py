@@ -14,27 +14,37 @@ import gws.types as t
 class ImageFormat(t.Enum):
     """Image format"""
 
-    png8 = 'png8'  #: png 8-bit
-    png24 = 'png24'  #: png 24-bit
+    png8 = 'png8' 
+    """png 8-bit"""
+    png24 = 'png24' 
+    """png 24-bit"""
 
 
 class ClientOptions(gws.Data):
     """Client options for a layer"""
 
-    expanded: t.Optional[bool] = False  #: the layer is expanded in the list view
-    listed: t.Optional[bool] = True  #: the layer is displayed in this list view
-    selected: t.Optional[bool] = False  #: the layer is intially selected
-    visible: t.Optional[bool] = True  #: the layer is intially visible
-    unfolded: t.Optional[bool] = False  #: the layer is not listed, but its children are
-    exclusive: t.Optional[bool] = False  #: only one of this layer's children is visible at a time
+    expanded: t.Optional[bool] = False 
+    """the layer is expanded in the list view"""
+    listed: t.Optional[bool] = True 
+    """the layer is displayed in this list view"""
+    selected: t.Optional[bool] = False 
+    """the layer is intially selected"""
+    visible: t.Optional[bool] = True 
+    """the layer is intially visible"""
+    unfolded: t.Optional[bool] = False 
+    """the layer is not listed, but its children are"""
+    exclusive: t.Optional[bool] = False 
+    """only one of this layer's children is visible at a time"""
 
 
 class CacheConfig(gws.Config):
     """Cache configuration"""
 
     enabled: bool = True
-    maxAge: gws.Duration = '7d'  #: cache max. age
-    maxLevel: int = 1  #: max. zoom level to cache
+    maxAge: gws.Duration = '7d' 
+    """cache max. age"""
+    maxLevel: int = 1 
+    """max. zoom level to cache"""
     requestBuffer: t.Optional[int]
     requestTiles: t.Optional[int]
 
@@ -63,8 +73,10 @@ class EditConfig(gws.ConfigWithAccess):
 
 
 class SearchConfig(gws.Config):
-    enabled: bool = True  #: search is enabled
-    providers: t.Optional[t.List[gws.ext.config.finder]]  #: search prodivers
+    enabled: bool = True 
+    """search is enabled"""
+    providers: t.Optional[t.List[gws.ext.config.finder]] 
+    """search prodivers"""
 
 
 def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):

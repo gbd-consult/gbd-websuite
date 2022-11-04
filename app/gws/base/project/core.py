@@ -23,16 +23,26 @@ _DEFAULT_TEMPLATES = [
 class Config(gws.ConfigWithAccess):
     """Project configuration"""
 
-    api: t.Optional[gws.base.action.manager.Config]  #: project-specific actions
-    assets: t.Optional[gws.base.web.site.DocumentRootConfig]  #: project-specific assets options
-    client: t.Optional[gws.base.client.Config]  #: project-specific gws client configuration
-    locales: t.Optional[t.List[str]]  #: project locales
-    map: t.Optional[gws.base.map.Config]  #: Map configuration
-    metadata: t.Optional[gws.Metadata]  #: project metadata
-    overviewMap: t.Optional[gws.base.map.Config]  #: Overview map configuration
-    printer: t.Optional[gws.base.printer.Config]  #: print configuration
-    templates: t.Optional[t.List[gws.ext.config.template]]  #: project info templates
-    title: str = ''  #: project title
+    api: t.Optional[gws.base.action.manager.Config] 
+    """project-specific actions"""
+    assets: t.Optional[gws.base.web.site.DocumentRootConfig] 
+    """project-specific assets options"""
+    client: t.Optional[gws.base.client.Config] 
+    """project-specific gws client configuration"""
+    locales: t.Optional[t.List[str]] 
+    """project locales"""
+    map: t.Optional[gws.base.map.Config] 
+    """Map configuration"""
+    metadata: t.Optional[gws.Metadata] 
+    """project metadata"""
+    overviewMap: t.Optional[gws.base.map.Config] 
+    """Overview map configuration"""
+    printer: t.Optional[gws.base.printer.Config] 
+    """print configuration"""
+    templates: t.Optional[t.List[gws.ext.config.template]] 
+    """project info templates"""
+    title: str = '' 
+    """project title"""
 
 
 @gws.ext.props.project('default')

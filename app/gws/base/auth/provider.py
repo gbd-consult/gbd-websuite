@@ -8,7 +8,8 @@ from . import user as user_api
 class Config(gws.Config):
     """Auth provider config."""
 
-    allowedMethods: t.Optional[t.List[str]]  #: allowed authorization methods
+    allowedMethods: t.Optional[t.List[str]] 
+    """allowed authorization methods"""
 
 
 class Object(gws.Node, gws.IAuthProvider):

@@ -13,11 +13,16 @@ from .util.connection import AlkisConnection
 class Config(gws.Config):
     """Basic ALKIS configuration"""
 
-    db: str = ''  #: database provider ID
-    crs: gws.CrsName  #: CRS for the ALKIS data
-    dataSchema: str = 'public'  #: schema where ALKIS tables are stored
-    indexSchema: str = 'gws'  #: schema to store GWS internal indexes
-    excludeGemarkung: t.Optional[t.List[str]]  #: Gemarkung (Administrative Unit) IDs to exclude from search
+    db: str = '' 
+    """database provider ID"""
+    crs: gws.CrsName 
+    """CRS for the ALKIS data"""
+    dataSchema: str = 'public' 
+    """schema where ALKIS tables are stored"""
+    indexSchema: str = 'gws' 
+    """schema to store GWS internal indexes"""
+    excludeGemarkung: t.Optional[t.List[str]] 
+    """Gemarkung (Administrative Unit) IDs to exclude from search"""
 
 
 _COMBINED_FS_PARAMS = ['landUid', 'gemarkungUid', 'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge']

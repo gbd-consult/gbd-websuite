@@ -10,8 +10,10 @@ from .. import method
 class Config(method.Config):
     """Web-based authorization options"""
 
-    cookieName: str = 'auth'  #: name for the cookie
-    cookiePath: str = '/'  #: cookie path
+    cookieName: str = 'auth' 
+    """name for the cookie"""
+    cookiePath: str = '/' 
+    """cookie path"""
 
 
 _ACTIVE = 'web:active'

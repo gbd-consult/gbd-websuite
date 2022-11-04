@@ -11,8 +11,10 @@ _FALLBACK_SITE = gws.Config(
 class Config(gws.Config):
     """Web server configuration"""
 
-    sites: t.Optional[t.List[site.Config]]  #: configured sites
-    ssl: t.Optional[site.SSLConfig]  #: ssl configuration
+    sites: t.Optional[t.List[site.Config]] 
+    """configured sites"""
+    ssl: t.Optional[site.SSLConfig] 
+    """ssl configuration"""
 
 
 class Object(gws.Node, gws.IWebManager):

@@ -12,9 +12,12 @@ import gws.types as t
 from . import core, job
 
 class CliPrintParams(gws.CliParams):
-    project: t.Optional[str]  #: project uid
-    params: str  #: path to params.json
-    output: str  #: output path
+    project: t.Optional[str] 
+    """project uid"""
+    params: str 
+    """path to params.json"""
+    output: str 
+    """output path"""
 
 
 @gws.ext.object.action('printer')

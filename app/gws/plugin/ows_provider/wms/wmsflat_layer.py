@@ -15,7 +15,8 @@ from . import provider
 class Config(gws.base.layer.Config, provider.Config):
     """Flat WMS layer."""
 
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig] 
+    """source layers to use"""
 
 
 @gws.ext.object.layer('wmsflat')

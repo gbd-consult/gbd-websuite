@@ -12,8 +12,10 @@ from . import provider
 @gws.ext.config.layer('wmts')
 class Config(gws.base.layer.Config, provider.Config):
     """WMTS layer"""
-    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile  #: layer display mode
-    sourceLayer: t.Optional[str]  #: WMTS layer name
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile 
+    """layer display mode"""
+    sourceLayer: t.Optional[str] 
+    """WMTS layer name"""
 
 
 @gws.ext.object.layer('wmts')

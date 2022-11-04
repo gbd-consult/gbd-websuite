@@ -28,30 +28,46 @@ class Error(gws.Error):
 class LayerFilter(gws.Data):
     """Layer filter"""
 
-    level: int = 0  #: match only layers at this level
-    uids: t.Optional[t.List[str]]  #: match these layer uids
-    pattern: gws.Regex = ''  #: match layers whose uid matches a pattern
+    level: int = 0 
+    """match only layers at this level"""
+    uids: t.Optional[t.List[str]] 
+    """match these layer uids"""
+    pattern: gws.Regex = '' 
+    """match layers whose uid matches a pattern"""
 
 
 class LayerConfig(gws.Config):
     """Layer-specific OWS configuration"""
 
-    applyTo: t.Optional[LayerFilter]  #: project layers this configuration applies to
-    enabled: bool = True  #: layer is enabled for this service
-    layerName: t.Optional[str]  #: layer name for this service
-    layerTitle: t.Optional[str]  #: layer title for this service
-    featureName: t.Optional[str]  #: feature name for this service
+    applyTo: t.Optional[LayerFilter] 
+    """project layers this configuration applies to"""
+    enabled: bool = True 
+    """layer is enabled for this service"""
+    layerName: t.Optional[str] 
+    """layer name for this service"""
+    layerTitle: t.Optional[str] 
+    """layer title for this service"""
+    featureName: t.Optional[str] 
+    """feature name for this service"""
 
 
 class ServiceConfig(gws.ConfigWithAccess):
-    layerConfig: t.Optional[t.List[LayerConfig]]  #: custom configurations for specific layers
-    metadata: t.Optional[gws.Metadata]  #: service metadata
-    rootLayer: str = ''  #: root layer uid
-    strictParams: bool = False  #: strict parameter parsing
-    supportedCrs: t.Optional[t.List[gws.CrsName]]  #: supported CRS for this service
-    templates: t.Optional[t.List[gws.ext.config.template]]  #: service XML templates
-    updateSequence: t.Optional[str]  #: service update sequence
-    withInspireMeta: bool = False  #: use INSPIRE Metadata
+    layerConfig: t.Optional[t.List[LayerConfig]] 
+    """custom configurations for specific layers"""
+    metadata: t.Optional[gws.Metadata] 
+    """service metadata"""
+    rootLayer: str = '' 
+    """root layer uid"""
+    strictParams: bool = False 
+    """strict parameter parsing"""
+    supportedCrs: t.Optional[t.List[gws.CrsName]] 
+    """supported CRS for this service"""
+    templates: t.Optional[t.List[gws.ext.config.template]] 
+    """service XML templates"""
+    updateSequence: t.Optional[str] 
+    """service update sequence"""
+    withInspireMeta: bool = False 
+    """use INSPIRE Metadata"""
 
 
 ##

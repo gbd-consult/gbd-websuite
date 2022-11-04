@@ -20,7 +20,8 @@ class Profile(t.Enum):
 class Config(core.ServiceConfig):
     """CSW Service configuration"""
     # @TODO no support for DCMI yet
-    # profile: Profile = Profile.ISO  #: metadata profile
+    # profile: Profile = Profile.ISO 
+    """metadata profile"""
     pass
 
 

@@ -10,7 +10,8 @@ from ... import core
 class Config(core.Config):
     """Combined legend."""
 
-    layerUids: t.List[str]  #: layers
+    layerUids: t.List[str] 
+    """layers"""
 
 
 @gws.ext.object.legend('combined')

@@ -151,12 +151,15 @@ def _stop_name(proc_name, sig):
 ##
 
 class StartParams(gws.CliParams):
-    config: t.Optional[str]  #: configuration file
-    manifest: t.Optional[str]  #: manifest file
+    config: t.Optional[str] 
+    """configuration file"""
+    manifest: t.Optional[str] 
+    """manifest file"""
 
 
 class ReloadParams(StartParams):
-    modules: t.Optional[t.List[str]]  #: list of modules to reload ('qgis', 'mapproxy', 'web', 'spool')
+    modules: t.Optional[t.List[str]] 
+    """list of modules to reload ('qgis', 'mapproxy', 'web', 'spool')"""
 
 
 @gws.ext.object.cli('server')

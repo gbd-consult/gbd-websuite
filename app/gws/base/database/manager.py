@@ -5,7 +5,8 @@ import gws.types as t
 class Config(gws.Config):
     """Database configuration"""
 
-    providers: t.List[gws.ext.config.db]  #: database providers
+    providers: t.List[gws.ext.config.db] 
+    """database providers"""
 
 
 class Object(gws.Node, gws.IDatabaseManager):

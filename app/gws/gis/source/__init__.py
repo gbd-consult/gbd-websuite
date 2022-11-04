@@ -10,12 +10,18 @@ import gws.types as t
 class LayerFilterConfig(gws.Config):
     """Source layer filter"""
 
-    level: int = 0  #: match only layers at this level
-    names: t.Optional[t.List[str]]  #: match these layer names (top-to-bottom order)
-    titles: t.Optional[t.List[str]]  #: match these layer titles
-    pattern: gws.Regex = ''  #: match layers whose full path matches a pattern
-    onlyGroups: bool = False  #: if true, match only group layers
-    onlyLeaves: bool = False  #: if true, match only leaf layers
+    level: int = 0 
+    """match only layers at this level"""
+    names: t.Optional[t.List[str]] 
+    """match these layer names (top-to-bottom order)"""
+    titles: t.Optional[t.List[str]] 
+    """match these layer titles"""
+    pattern: gws.Regex = '' 
+    """match layers whose full path matches a pattern"""
+    onlyGroups: bool = False 
+    """if true, match only group layers"""
+    onlyLeaves: bool = False 
+    """if true, match only leaf layers"""
 
 
 class LayerFilter(gws.Data):

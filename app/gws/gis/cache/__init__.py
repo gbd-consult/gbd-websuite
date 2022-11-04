@@ -13,8 +13,10 @@ import gws.types as t
 class Config(gws.Config):
     """Global cache options"""
 
-    seedingMaxTime: gws.Duration = '600'  #: max. time for a seeding job
-    seedingConcurrency: int = 1  #: number of concurrent seeding jobs
+    seedingMaxTime: gws.Duration = '600' 
+    """max. time for a seeding job"""
+    seedingConcurrency: int = 1 
+    """number of concurrent seeding jobs"""
 
 
 # cache API
@@ -197,12 +199,15 @@ def _remove_dir(dirname):
 # CLI tool
 
 # class SeedParams(gws.CliParams):
-#     layers: t.List[str]  #: list of layer IDs
-#     levels: t.List[int]  #: zoom levels to build the cache for
+#     layers: t.List[str] 
+#     """list of layer IDs"""
+#     levels: t.List[int] 
+#     """zoom levels to build the cache for"""
 #
 #
 # class StatusParams(gws.CliParams):
-#     layers: t.Optional[t.List[str]]  #: list of layer IDs
+#     layers: t.Optional[t.List[str]] 
+#     """list of layer IDs"""
 #
 #
 # @gws.ext.object.cli('cache')

@@ -13,7 +13,8 @@ from . import core, configure
 class Config(core.Config):
     """Group layer"""
 
-    layers: t.List[gws.ext.config.layer]  #: layers in this group
+    layers: t.List[gws.ext.config.layer] 
+    """layers in this group"""
 
 
 @gws.ext.object.layer('group')

@@ -5,18 +5,25 @@ import gws.types as t
 class ElementConfig(gws.ConfigWithAccess):
     """GWS client UI element configuration"""
 
-    tag: str  #: element tag
-    before: str = ''  #: insert before this tag
-    after: str = ''  #: insert after this tag
+    tag: str 
+    """element tag"""
+    before: str = '' 
+    """insert before this tag"""
+    after: str = '' 
+    """insert after this tag"""
 
 
 class Config(gws.ConfigWithAccess):
     """GWS client configuration"""
 
-    options: t.Optional[t.Dict]  #: client options
-    elements: t.Optional[t.List[ElementConfig]]  #: client UI elements
-    addElements: t.Optional[t.List[ElementConfig]]  #: add elements to the parent element list
-    removeElements: t.Optional[t.List[ElementConfig]]  #: remove elements from the parent element list
+    options: t.Optional[t.Dict] 
+    """client options"""
+    elements: t.Optional[t.List[ElementConfig]] 
+    """client UI elements"""
+    addElements: t.Optional[t.List[ElementConfig]] 
+    """add elements to the parent element list"""
+    removeElements: t.Optional[t.List[ElementConfig]] 
+    """remove elements from the parent element list"""
 
 
 class ElementProps(gws.Data):

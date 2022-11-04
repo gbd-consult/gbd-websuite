@@ -15,11 +15,15 @@ class OperationConfig(gws.Config):
 
 
 class ProviderConfig(gws.Config):
-    capsCacheMaxAge: gws.Duration = '1d'  #: max cache age for capabilities documents
-    forceCrs: t.Optional[gws.CrsName]  #: use this CRS for requests
-    maxRequests: int = 0  #: max concurrent requests to this source
+    capsCacheMaxAge: gws.Duration = '1d' 
+    """max cache age for capabilities documents"""
+    forceCrs: t.Optional[gws.CrsName] 
+    """use this CRS for requests"""
+    maxRequests: int = 0 
+    """max concurrent requests to this source"""
     operations: t.Optional[t.List[OperationConfig]]
-    url: gws.Url  #: service url
+    url: gws.Url 
+    """service url"""
 
 
 class Caps(gws.Data):

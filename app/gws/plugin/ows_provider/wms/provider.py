@@ -33,7 +33,8 @@ OGC 06-042, 7.3.3.3
 
 
 class Config(core.ProviderConfig):
-    capsLayersBottomUp: bool = False  #: layers are listed from bottom to top in the GetCapabilities document
+    capsLayersBottomUp: bool = False 
+    """layers are listed from bottom to top in the GetCapabilities document"""
 
 
 class Object(core.Provider):

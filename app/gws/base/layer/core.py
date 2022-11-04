@@ -21,42 +21,67 @@ from . import util
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
-    # dataModel: t.Optional[gws.base.model.Config]  #: layer data model
+    # dataModel: t.Optional[gws.base.model.Config] 
+    """layer data model"""
     cache: t.Optional[util.CacheConfig]  # cache configuration
-    clientOptions: util.ClientOptions = {}  # type:ignore #: options for the layer display in the client
-    display: gws.LayerDisplayMode = gws.LayerDisplayMode.box  #: layer display mode
-    extent: t.Optional[gws.Extent]  #: layer extent
-    extentBuffer: t.Optional[int]  #: extent buffer
+    clientOptions: util.ClientOptions = {}  # type:ignore
+    """options for the layer display in the client"""
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.box 
+    """layer display mode"""
+    extent: t.Optional[gws.Extent] 
+    """layer extent"""
+    extentBuffer: t.Optional[int] 
+    """extent buffer"""
     sourceGrid: t.Optional[util.GridConfig]  # source grid
     targetGrid: t.Optional[util.GridConfig]  # target (client) grid
-    imageFormat: util.ImageFormat = util.ImageFormat.png8  #: image format
-    legend: t.Optional[gws.ext.config.legend]  #: legend configuration
-    metadata: t.Optional[gws.Metadata]  #: layer metadata
-    opacity: float = 1  #: layer opacity
+    imageFormat: util.ImageFormat = util.ImageFormat.png8 
+    """image format"""
+    legend: t.Optional[gws.ext.config.legend] 
+    """legend configuration"""
+    metadata: t.Optional[gws.Metadata] 
+    """layer metadata"""
+    opacity: float = 1 
+    """layer opacity"""
     ows: bool = True  # layer is enabled for OWS services
-    search: t.Optional[util.SearchConfig] = {}  # type:ignore #: layer search configuration
-    templates: t.Optional[t.List[gws.ext.config.template]]  #: client templates
-    title: str = ''  #: layer title
-    zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
+    search: t.Optional[util.SearchConfig] = {}  # type:ignore
+    """layer search configuration"""
+    templates: t.Optional[t.List[gws.ext.config.template]] 
+    """client templates"""
+    title: str = '' 
+    """layer title"""
+    zoom: t.Optional[gws.gis.zoom.Config] 
+    """layer resolutions and scales"""
 
 
 class CustomConfig(gws.ConfigWithAccess):
     """Custom layer configuration"""
 
-    applyTo: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers this configuration applies to
+    applyTo: t.Optional[gws.gis.source.LayerFilterConfig] 
+    """source layers this configuration applies to"""
     clientOptions: t.Optional[util.ClientOptions]  # options for the layer display in the client
-    dataModel: t.Optional[gws.base.model.Config]  #: layer data model
-    display: t.Optional[gws.LayerDisplayMode]  #: layer display mode
-    extent: t.Optional[gws.Extent]  #: layer extent
-    extentBuffer: t.Optional[int]  #: extent buffer
-    legend: gws.base.legend.Config = {}  # type:ignore #: legend configuration
-    metadata: t.Optional[gws.Metadata]  #: layer metadata
-    opacity: t.Optional[float]  #: layer opacity
+    dataModel: t.Optional[gws.base.model.Config] 
+    """layer data model"""
+    display: t.Optional[gws.LayerDisplayMode] 
+    """layer display mode"""
+    extent: t.Optional[gws.Extent] 
+    """layer extent"""
+    extentBuffer: t.Optional[int] 
+    """extent buffer"""
+    legend: gws.base.legend.Config = {}  # type:ignore
+    """legend configuration"""
+    metadata: t.Optional[gws.Metadata] 
+    """layer metadata"""
+    opacity: t.Optional[float] 
+    """layer opacity"""
     ows: bool = True  # layer is enabled for OWS services
-    # search: gws.base.search.finder.collection.Config = {}  # type:ignore #: layer search configuration
-    templates: t.Optional[t.List[gws.ext.config.template]]  #: client templates
-    title: t.Optional[str]  #: layer title
-    zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
+    # search: gws.base.search.finder.collection.Config = {}  # type:ignore
+    """layer search configuration"""
+    templates: t.Optional[t.List[gws.ext.config.template]] 
+    """client templates"""
+    title: t.Optional[str] 
+    """layer title"""
+    zoom: t.Optional[gws.gis.zoom.Config] 
+    """layer resolutions and scales"""
 
 
 class GridProps(gws.Props):

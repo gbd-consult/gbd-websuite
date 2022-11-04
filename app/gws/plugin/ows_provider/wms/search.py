@@ -9,7 +9,8 @@ from . import provider as provider_module
 
 @gws.ext.config.finder('wms')
 class Config(gws.base.search.Config, provider_module.Config):
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig] 
+    """source layers to use"""
 
 
 @gws.ext.object.finder('wms')

@@ -8,8 +8,10 @@ import gws.lib.jsonx
 
 
 class CapsParams(gws.CliParams):
-    path: str  #: path to a qgis file
-    out: str = ''  #: output filename
+    path: str 
+    """path to a qgis file"""
+    out: str = '' 
+    """output filename"""
 
 
 class Object(gws.Node):

@@ -13,7 +13,8 @@ from . import provider
 class Config(gws.base.layer.Config, provider.Config):
     """Flat Qgis layer"""
 
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig] 
+    """source layers to use"""
 
 
 @gws.ext.object.layer('qgisflat')

@@ -12,16 +12,21 @@ from .providers import sqlite
 
 
 class PermissionMode(t.Enum):
-    read = 'read'  #: an object can be read
-    write = 'write'  #: an object can be written and deleted
-    all = 'all'  #: an object can be read and written
+    read = 'read' 
+    """an object can be read"""
+    write = 'write' 
+    """an object can be written and deleted"""
+    all = 'all' 
+    """an object can be read and written"""
 
 
 class PermissionRule(gws.ConfigWithAccess):
     """Permission rule for a storage category"""
 
-    category: str  #: storage category name
-    mode: PermissionMode  #: allowed mode (read/write)
+    category: str 
+    """storage category name"""
+    mode: PermissionMode 
+    """allowed mode (read/write)"""
 
 
 # @TODO more props, like author, time etc
@@ -67,8 +72,10 @@ class Response(gws.Response):
 class Config(gws.Config):
     """Storage helper"""
 
-    path: t.Optional[str]  #: path to the storage file
-    permissions: t.Optional[t.List[PermissionRule]]  #: permission rules
+    path: t.Optional[str] 
+    """path to the storage file"""
+    permissions: t.Optional[t.List[PermissionRule]] 
+    """permission rules"""
 
 
 class Permission(gws.Node):

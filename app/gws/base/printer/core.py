@@ -60,7 +60,6 @@ class PlaneSoup(PlaneBase):
     styles: t.Optional[t.List[gws.lib.style.Props]]
 
 
-"""variant: Print plane"""
 Plane = t.Union[
     PlaneBitmap,
     PlaneUrl,
@@ -69,6 +68,7 @@ Plane = t.Union[
     PlaneVector,
     PlaneSoup,
 ]
+"""variant: Print plane"""
 
 
 class MapParams(gws.Data):
@@ -100,15 +100,16 @@ class ParamsWithMap(ParamsBase):
     outputSize: gws.Size
 
 
-"""variant: Print params"""
 Params = t.Union[ParamsWithTemplate, ParamsWithMap]
+"""variant: Print params"""
 
 
 
 class Config(gws.Config):
     """Printer configuration"""
 
-    templates: t.List[gws.ext.config.template]  #: print templates
+    templates: t.List[gws.ext.config.template] 
+    """print templates"""
 
 
 class Props(gws.Data):

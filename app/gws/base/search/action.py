@@ -16,7 +16,8 @@ MAX_LIMIT = 1000
 class Config(gws.base.action.Config):
     """Search action"""
 
-    limit: int = 1000  #: search results limit
+    limit: int = 1000 
+    """search results limit"""
 
 
 class Request(gws.Request):

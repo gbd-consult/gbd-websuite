@@ -26,28 +26,45 @@ _DEFAULT_LOCALE = ['en_CA']
 class FontConfig(gws.Config):
     """Fonts configuration."""
 
-    dir: gws.DirPath  #: directory with custom fonts
+    dir: gws.DirPath 
+    """directory with custom fonts"""
 
 
 class Config(gws.ConfigWithAccess):
     """Main application configuration"""
 
-    api: t.Optional[gws.base.action.manager.Config]  #: system-wide server actions
-    auth: t.Optional[gws.base.auth.Config] = {}  # type: ignore #: authorization methods and options
-    cache: t.Optional[gws.gis.cache.Config] = {}  # type: ignore #: global cache configuration
-    client: t.Optional[gws.base.client.Config]  #: gws client configuration
-    db: t.Optional[gws.base.database.manager.Config]  #: database configuration
-    developer: t.Optional[t.Dict]  #: developer options
-    fonts: t.Optional[FontConfig]  #: fonts configuration
-    helpers: t.Optional[t.List[gws.ext.config.helper]]  #: helpers configurations
-    locales: t.Optional[t.List[str]]  #: default locales for all projects
-    metadata: t.Optional[gws.Metadata]  #: application metadata
-    middleware: t.Optional[t.List[str]]  #: middleware function names
-    projectDirs: t.Optional[t.List[gws.DirPath]]  #: directories with additional projects
-    projectPaths: t.Optional[t.List[gws.FilePath]]  #: additional project paths
-    projects: t.Optional[t.List[gws.ext.config.project]]  #: project configurations
-    server: t.Optional[gws.server.Config] = {}  # type: ignore #: server engine options
-    web: t.Optional[gws.base.web.manager.Config]  #: web server options
+    api: t.Optional[gws.base.action.manager.Config] 
+    """system-wide server actions"""
+    auth: t.Optional[gws.base.auth.Config] = {}  # type: ignore
+    """authorization methods and options"""
+    cache: t.Optional[gws.gis.cache.Config] = {}  # type: ignore
+    """global cache configuration"""
+    client: t.Optional[gws.base.client.Config] 
+    """gws client configuration"""
+    db: t.Optional[gws.base.database.manager.Config] 
+    """database configuration"""
+    developer: t.Optional[t.Dict] 
+    """developer options"""
+    fonts: t.Optional[FontConfig] 
+    """fonts configuration"""
+    helpers: t.Optional[t.List[gws.ext.config.helper]] 
+    """helpers configurations"""
+    locales: t.Optional[t.List[str]] 
+    """default locales for all projects"""
+    metadata: t.Optional[gws.Metadata] 
+    """application metadata"""
+    middleware: t.Optional[t.List[str]] 
+    """middleware function names"""
+    projectDirs: t.Optional[t.List[gws.DirPath]] 
+    """directories with additional projects"""
+    projectPaths: t.Optional[t.List[gws.FilePath]] 
+    """additional project paths"""
+    projects: t.Optional[t.List[gws.ext.config.project]] 
+    """project configurations"""
+    server: t.Optional[gws.server.Config] = {}  # type: ignore
+    """server engine options"""
+    web: t.Optional[gws.base.web.manager.Config] 
+    """web server options"""
 
 
 class Object(gws.Node, gws.IApplication):

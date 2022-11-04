@@ -12,14 +12,22 @@ import gws.types as t
 class Config(gws.Config):
     """Map configuration"""
 
-    center: t.Optional[gws.Point]  #: map center
-    coordinatePrecision: t.Optional[int]  #: precision for coordinates
-    crs: t.Optional[gws.CrsName] = 'EPSG:3857'  #: crs for this map
-    extent: t.Optional[gws.Extent]  #: map extent
-    extentBuffer: t.Optional[int]  #: extent buffer
-    layers: t.List[gws.ext.config.layer]  #: collection of layers for this map
-    title: str = ''  #: map title
-    zoom: t.Optional[gws.gis.zoom.Config]  #: map scales and resolutions
+    center: t.Optional[gws.Point] 
+    """map center"""
+    coordinatePrecision: t.Optional[int] 
+    """precision for coordinates"""
+    crs: t.Optional[gws.CrsName] = 'EPSG:3857' 
+    """crs for this map"""
+    extent: t.Optional[gws.Extent] 
+    """map extent"""
+    extentBuffer: t.Optional[int] 
+    """extent buffer"""
+    layers: t.List[gws.ext.config.layer] 
+    """collection of layers for this map"""
+    title: str = '' 
+    """map title"""
+    zoom: t.Optional[gws.gis.zoom.Config] 
+    """map scales and resolutions"""
 
 
 @gws.ext.props.map('default')

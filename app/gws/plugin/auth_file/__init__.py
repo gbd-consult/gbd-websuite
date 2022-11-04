@@ -15,7 +15,8 @@ import gws.types as t
 class Config(gws.base.auth.provider.Config):
     """File-based authorization provider"""
 
-    path: gws.FilePath  #: path to the users json file
+    path: gws.FilePath 
+    """path to the users json file"""
 
 
 @gws.ext.object.authProvider('file')

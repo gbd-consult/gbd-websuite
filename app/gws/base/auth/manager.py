@@ -22,18 +22,25 @@ class SessionOptions(gws.Data):
 
 
 class SessionConfig(gws.Config):
-    lifeTime: gws.Duration = '1200'  #: session life time
-    store: str = 'sqlite'  #: session storage engine
-    storePath: t.Optional[str]  #: session storage path
+    lifeTime: gws.Duration = '1200' 
+    """session life time"""
+    store: str = 'sqlite' 
+    """session storage engine"""
+    storePath: t.Optional[str] 
+    """session storage path"""
 
 
 class Config(gws.Config):
     """Authentication and authorization options"""
 
-    methods: t.Optional[t.List[gws.ext.config.authMethod]]  #: authorization methods
-    providers: t.Optional[t.List[gws.ext.config.authProvider]]  #: authorization providers
-    mfa: t.Optional[t.List[gws.ext.config.authMfa]]  #: authorization providers
-    session: t.Optional[SessionConfig]  #: session options
+    methods: t.Optional[t.List[gws.ext.config.authMethod]] 
+    """authorization methods"""
+    providers: t.Optional[t.List[gws.ext.config.authProvider]] 
+    """authorization providers"""
+    mfa: t.Optional[t.List[gws.ext.config.authMfa]] 
+    """authorization providers"""
+    session: t.Optional[SessionConfig] 
+    """session options"""
 
 
 class Object(gws.Node, gws.IAuthManager):

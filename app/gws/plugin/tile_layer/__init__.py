@@ -11,9 +11,12 @@ import gws.types as t
 @gws.ext.config.layer('tile')
 class Config(gws.base.layer.Config):
     """Tile layer"""
-    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile  #: layer display mode
-    maxRequests: int = 0  #: max concurrent requests to this source
-    url: gws.Url  #: rest url with placeholders {x}, {y} and {z}
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile 
+    """layer display mode"""
+    maxRequests: int = 0 
+    """max concurrent requests to this source"""
+    url: gws.Url 
+    """rest url with placeholders {x}, {y} and {z}"""
 
 
 _GRID_DEFAULTS = gws.TileGrid(

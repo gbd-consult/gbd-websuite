@@ -12,11 +12,13 @@ from .util import nas
 
 
 class ParseParams(gws.CliParams):
-    path: str  #: path to the NAS zip archive
+    path: str 
+    """path to the NAS zip archive"""
 
 
 class IndexParams(gws.CliParams):
-    uid: t.Optional[str]  #: alkis action uid
+    uid: t.Optional[str] 
+    """alkis action uid"""
 
 
 @gws.ext.object.cli('alkis')

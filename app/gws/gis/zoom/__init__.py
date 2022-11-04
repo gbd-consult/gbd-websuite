@@ -33,17 +33,25 @@ OSM_RESOLUTIONS = list(reversed([units.scale_to_res(s) for s in OSM_SCALES]))
 class Config(gws.Config):
     """Zoom levels and resolutions"""
 
-    resolutions: t.Optional[t.List[float]]  #: allowed resolutions
-    initResolution: t.Optional[float]  #: initial resolution
+    resolutions: t.Optional[t.List[float]] 
+    """allowed resolutions"""
+    initResolution: t.Optional[float] 
+    """initial resolution"""
 
-    scales: t.Optional[t.List[float]]  #: allowed scales
-    initScale: t.Optional[float]  #: initial scale
+    scales: t.Optional[t.List[float]] 
+    """allowed scales"""
+    initScale: t.Optional[float] 
+    """initial scale"""
 
-    minResolution: t.Optional[float]  #: minimal resolution
-    maxResolution: t.Optional[float]  #: maximal resolution
+    minResolution: t.Optional[float] 
+    """minimal resolution"""
+    maxResolution: t.Optional[float] 
+    """maximal resolution"""
 
-    minScale: t.Optional[float]  #: minimal scale
-    maxScale: t.Optional[float]  #: maximal scale
+    minScale: t.Optional[float] 
+    """minimal scale"""
+    maxScale: t.Optional[float] 
+    """maximal scale"""
 
 
 def resolutions_from_config(cfg, parent_resolultions: t.List[float] = None) -> t.List[float]:

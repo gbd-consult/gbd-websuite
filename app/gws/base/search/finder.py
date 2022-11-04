@@ -9,19 +9,29 @@ _DEFAULT_PIXEL_TOLERANCE = 10
 
 
 class SpatialContext(t.Enum):
-    map = 'map'  #: search in the map extent
-    view = 'view'  #: search in the client view extent
+    map = 'map' 
+    """search in the map extent"""
+    view = 'view' 
+    """search in the client view extent"""
 
 
 class Config(gws.ConfigWithAccess):
-    dataModel: t.Optional[gws.base.model.Config]  #: feature data model
-    defaultContext: t.Optional[SpatialContext] = SpatialContext.map  #: default spatial context
-    templates: t.Optional[t.List[gws.ext.config.template]]  #: feature formatting templates
-    title: t.Optional[str]  #: provider title
-    tolerance: str = '10px'  #: tolerance, in pixels or map units
-    withGeometry: bool = True  #: enable geometry search
-    withKeyword: bool = True  #: enable keyword search
-    withFilter: bool = True  #: enable filter search
+    dataModel: t.Optional[gws.base.model.Config] 
+    """feature data model"""
+    defaultContext: t.Optional[SpatialContext] = SpatialContext.map 
+    """default spatial context"""
+    templates: t.Optional[t.List[gws.ext.config.template]] 
+    """feature formatting templates"""
+    title: t.Optional[str] 
+    """provider title"""
+    tolerance: str = '10px' 
+    """tolerance, in pixels or map units"""
+    withGeometry: bool = True 
+    """enable geometry search"""
+    withKeyword: bool = True 
+    """enable keyword search"""
+    withFilter: bool = True 
+    """enable filter search"""
 
 
 class Object(gws.Node, gws.IFinder):

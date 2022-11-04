@@ -5,26 +5,38 @@ import gws.types as t
 class Gemarkung(gws.Data):
     """Gemarkung (Administrative Unit) object"""
 
-    gemarkung: str  #: Gemarkung name
-    gemarkungUid: str  #: Gemarkung uid
-    gemeinde: str  #: Gemeinde name
-    gemeindeUid: str  #: Gemeinde uid
+    gemarkung: str 
+    """Gemarkung name"""
+    gemarkungUid: str 
+    """Gemarkung uid"""
+    gemeinde: str 
+    """Gemeinde name"""
+    gemeindeUid: str 
+    """Gemeinde uid"""
 
 
 class Strasse(gws.Data):
     """Strasse (street) object"""
 
-    strasse: str  #: name
-    gemarkung: str  #: Gemarkung name
-    gemarkungUid: str  #: Gemarkung uid
-    gemeinde: str  #: Gemeinde name
-    gemeindeUid: str  #: Gemeinde uid
+    strasse: str 
+    """name"""
+    gemarkung: str 
+    """Gemarkung name"""
+    gemarkungUid: str 
+    """Gemarkung uid"""
+    gemeinde: str 
+    """Gemeinde name"""
+    gemeindeUid: str 
+    """Gemeinde uid"""
 
 
 class StrasseQueryMode(t.Enum):
-    exact = 'exact'  #: exact match (up to denormalization)
-    substring = 'substring'  #: substring match
-    start = 'start'  #: string start match
+    exact = 'exact' 
+    """exact match (up to denormalization)"""
+    substring = 'substring' 
+    """substring match"""
+    start = 'start' 
+    """string start match"""
 
 
 class BaseQuery(gws.Data):
@@ -93,42 +105,66 @@ class FindStrasseResult(gws.Data):
 
 
 class UiGemarkungListMode(t.Enum):
-    none = 'none'  #: do not show the list
-    plain = 'plain'  #: only "gemarkung"
-    combined = 'combined'  #: "gemarkung (gemeinde)"
+    none = 'none' 
+    """do not show the list"""
+    plain = 'plain' 
+    """only "gemarkung" """
+    combined = 'combined' 
+    """ "gemarkung (gemeinde)" """
     tree = 'tree'  # a tree with level 1 = "gemeinde" and level 2 = "gemarkung"
 
 
 class UiStrasseListMode(t.Enum):
-    plain = 'plain'  #: just "strasse"
-    withGemeinde = 'withGemeinde'  #: "strasse" ("gemeinde")
-    withGemarkung = 'withGemarkung'  #: "strasse" ("gemarkung")
-    withGemeindeIfRepeated = 'withGemeindeIfRepeated'  #: "strasse" ("gemeinde"), when needed for disambiguation
-    withGemarkungIfRepeated = 'withGemarkungIfRepeated'  #: "strasse" ("gemarkung"), when needed for disambiguation
+    plain = 'plain' 
+    """just "strasse" """
+    withGemeinde = 'withGemeinde' 
+    """"strasse" ("gemeinde")"""
+    withGemarkung = 'withGemarkung' 
+    """"strasse" ("gemarkung")"""
+    withGemeindeIfRepeated = 'withGemeindeIfRepeated' 
+    """"strasse" ("gemeinde"), when needed for disambiguation"""
+    withGemarkungIfRepeated = 'withGemarkungIfRepeated' 
+    """"strasse" ("gemarkung"), when needed for disambiguation"""
 
 
 class UiBblattSearchMode(t.Enum):
-    start = 'start'  #: search from the beginning
-    end = 'end'  #: search from the end
-    any = 'any'  #: search anywhere
-    exact = 'exact'  #: exact search
+    start = 'start' 
+    """search from the beginning"""
+    end = 'end' 
+    """search from the end"""
+    any = 'any' 
+    """search anywhere"""
+    exact = 'exact' 
+    """exact search"""
 
 
 class UiStrasseSearchMode(t.Enum):
-    start = 'start'  #: search from the beginning
-    any = 'any'  #: search anywhere
+    start = 'start' 
+    """search from the beginning"""
+    any = 'any' 
+    """search anywhere"""
 
 
 class UiOptions(gws.Data):
     """UI options for Flurstücksuche"""
 
-    useExport: bool = False  #: export function enabled
-    useSelect: bool = False  #: select mode enabled
-    usePick: bool = False  #: pick mode enabled
-    searchSelection: bool = False  #: search in selection enabled
-    searchSpatial: bool = False  #: spatial search enabled
-    gemarkungListMode: UiGemarkungListMode = UiGemarkungListMode.combined  #: gemarkung list mode
-    strasseListMode: UiStrasseListMode = UiStrasseListMode.plain  #: strasse list entry format
-    strasseSearchMode: UiStrasseSearchMode = UiStrasseSearchMode.start  #: strasse search mode
-    autoSpatialSearch: bool = False  #: activate spatial search after submit
-    bblattSearchMode: UiBblattSearchMode = UiBblattSearchMode.any  #: buchungsblatt search mode
+    useExport: bool = False 
+    """export function enabled"""
+    useSelect: bool = False 
+    """select mode enabled"""
+    usePick: bool = False 
+    """pick mode enabled"""
+    searchSelection: bool = False 
+    """search in selection enabled"""
+    searchSpatial: bool = False 
+    """spatial search enabled"""
+    gemarkungListMode: UiGemarkungListMode = UiGemarkungListMode.combined 
+    """gemarkung list mode"""
+    strasseListMode: UiStrasseListMode = UiStrasseListMode.plain 
+    """strasse list entry format"""
+    strasseSearchMode: UiStrasseSearchMode = UiStrasseSearchMode.start 
+    """strasse search mode"""
+    autoSpatialSearch: bool = False 
+    """activate spatial search after submit"""
+    bblattSearchMode: UiBblattSearchMode = UiBblattSearchMode.any 
+    """buchungsblatt search mode"""

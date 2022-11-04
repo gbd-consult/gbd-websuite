@@ -14,8 +14,10 @@ import gws.types as t
 class Config(gws.base.layer.vector.Config):
     """GeoJson layer"""
 
-    path: gws.FilePath  #: geojson file
-    keyName: str = 'id'  #: property name for unique ids
+    path: gws.FilePath 
+    """geojson file"""
+    keyName: str = 'id' 
+    """property name for unique ids"""
 
 
 @gws.ext.object.layer('geojson')

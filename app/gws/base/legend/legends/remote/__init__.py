@@ -10,7 +10,8 @@ from ... import core
 class Config(core.Config):
     """External legend."""
 
-    urls: t.List[gws.Url]  #: urls of externals legend images
+    urls: t.List[gws.Url] 
+    """urls of externals legend images"""
 
 
 @gws.ext.object.legend('remote')

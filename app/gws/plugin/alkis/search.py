@@ -46,9 +46,12 @@ grant usage on <name>_id_seq to <user>
 class EigentuemerConfig(gws.ConfigWithAccess):
     """Access to the Eigentümer (owner) information"""
 
-    controlMode: bool = False  #: restricted mode enabled
-    controlRules: t.Optional[t.List[str]]  #: regular expression for the restricted input control
-    logTable: str = ''  #: data access protocol table name
+    controlMode: bool = False 
+    """restricted mode enabled"""
+    controlRules: t.Optional[t.List[str]] 
+    """regular expression for the restricted input control"""
+    logTable: str = '' 
+    """data access protocol table name"""
 
 
 class EigentuemerOptions(gws.Node):
@@ -78,16 +81,21 @@ class BuchungOptions(gws.Node):
 class ExportGroupConfig(gws.Config):
     """Export group configuration"""
 
-    dataModel: t.Optional[gws.base.model.Config]  #: data model for this group
-    title: str  #: title for this group
-    withBuchung: bool = False  #: include Grundbuch (register) data
-    withEigentuemer: bool = False  #: include Eigentuemer (owner) data
+    dataModel: t.Optional[gws.base.model.Config] 
+    """data model for this group"""
+    title: str 
+    """title for this group"""
+    withBuchung: bool = False 
+    """include Grundbuch (register) data"""
+    withEigentuemer: bool = False 
+    """include Eigentuemer (owner) data"""
 
 
 class ExportConfig(gws.Config):
     """CSV Export configuration"""
 
-    groups: t.Optional[t.List[ExportGroupConfig]]  #: export groups
+    groups: t.Optional[t.List[ExportGroupConfig]] 
+    """export groups"""
 
 
 class ExportGroup(gws.Node):
@@ -177,12 +185,18 @@ _DEFAULT_EXPORT_GROUPS = [
 class Config(provider.Config):
     """Flurstücksuche (cadaster parlcels search) action"""
 
-    eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
-    buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
-    limit: int = 100  #: search results limit
-    templates: t.Optional[t.List[gws.ext.config.template]]  #: templates for Flurstueck details
-    ui: t.Optional[core.UiOptions]  #: ui options
-    export: t.Optional[ExportConfig]  #: csv export configuration
+    eigentuemer: t.Optional[EigentuemerConfig] 
+    """access to the Eigentümer (owner) information"""
+    buchung: t.Optional[BuchungConfig] 
+    """access to the Grundbuch (register) information"""
+    limit: int = 100 
+    """search results limit"""
+    templates: t.Optional[t.List[gws.ext.config.template]] 
+    """templates for Flurstueck details"""
+    ui: t.Optional[core.UiOptions] 
+    """ui options"""
+    export: t.Optional[ExportConfig] 
+    """csv export configuration"""
 
 
 ##

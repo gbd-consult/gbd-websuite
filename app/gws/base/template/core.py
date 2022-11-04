@@ -9,15 +9,22 @@ import gws.types as t
 
 
 class Config(gws.Config):
-    dataModel: t.Optional[gws.base.model.Config]  #: user-editable template attributes
+    dataModel: t.Optional[gws.base.model.Config] 
+    """user-editable template attributes"""
     mapSize: t.Optional[gws.MSize]
-    mimeTypes: t.Optional[t.List[str]]  #: mime types this template can generate
+    mimeTypes: t.Optional[t.List[str]] 
+    """mime types this template can generate"""
     pageSize: t.Optional[gws.MSize]
-    path: t.Optional[gws.FilePath]  #: path to a template file
-    qualityLevels: t.Optional[t.List[gws.TemplateQualityLevel]]  #: quality levels supported by the template
-    subject: str = ''  #: template purpose
-    text: str = ''  #: template content
-    title: str = ''  #: template title
+    path: t.Optional[gws.FilePath] 
+    """path to a template file"""
+    qualityLevels: t.Optional[t.List[gws.TemplateQualityLevel]] 
+    """quality levels supported by the template"""
+    subject: str = '' 
+    """template purpose"""
+    text: str = '' 
+    """template content"""
+    title: str = '' 
+    """template title"""
 
 
 class Props(gws.Props):

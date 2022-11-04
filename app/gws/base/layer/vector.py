@@ -9,11 +9,16 @@ from . import layer, lib
 
 
 class Config(layer.Config):
-    display: gws.LayerDisplayMode = gws.LayerDisplayMode.client  #: layer display mode
-    editDataModel: t.Optional[gws.base.model.Config]  #: data model for input data
-    editStyle: t.Optional[gws.lib.style.Config]  #: style for features being edited
-    loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
-    style: t.Optional[gws.lib.style.Config]  #: style for features
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.client 
+    """layer display mode"""
+    editDataModel: t.Optional[gws.base.model.Config] 
+    """data model for input data"""
+    editStyle: t.Optional[gws.lib.style.Config] 
+    """style for features being edited"""
+    loadingStrategy: str = 'all' 
+    """loading strategy for features ('all', 'bbox')"""
+    style: t.Optional[gws.lib.style.Config] 
+    """style for features"""
 
 
 class Object(layer.Object):

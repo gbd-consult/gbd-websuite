@@ -8,12 +8,18 @@ from . import storage
 
 
 class State(t.Enum):
-    init = 'init'  #: the job is being created
-    open = 'open'  #: the job is just created and waiting for start
-    running = 'running'  #: the job is running
-    complete = 'complete'  #: the job has been completed successfully
-    error = 'error'  #: there was an error
-    cancel = 'cancel'  #: the job was cancelled
+    init = 'init' 
+    """the job is being created"""
+    open = 'open' 
+    """the job is just created and waiting for start"""
+    running = 'running' 
+    """the job is running"""
+    complete = 'complete' 
+    """the job has been completed successfully"""
+    error = 'error' 
+    """there was an error"""
+    cancel = 'cancel' 
+    """the job was cancelled"""
 
 
 class Error(gws.Error):

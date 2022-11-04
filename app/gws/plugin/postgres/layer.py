@@ -14,8 +14,10 @@ from . import provider
 class Config(gws.base.layer.vector.Config):
     """SQL-based layer"""
 
-    db: t.Optional[str]  #: database provider uid
-    table: gws.base.database.SqlTableConfig  #: sql table configuration
+    db: t.Optional[str] 
+    """database provider uid"""
+    table: gws.base.database.SqlTableConfig 
+    """sql table configuration"""
 
 
 @gws.ext.object.layer('postgres')

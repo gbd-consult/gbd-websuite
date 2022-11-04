@@ -16,7 +16,8 @@ class ServiceParams(gws.Request):
 class Config(gws.base.action.Config):
     """OWS server action"""
 
-    services: t.List[gws.ext.config.owsService]  #: services configuration
+    services: t.List[gws.ext.config.owsService] 
+    """services configuration"""
 
 
 @gws.ext.object.action('ows')

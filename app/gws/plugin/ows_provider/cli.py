@@ -10,9 +10,12 @@ import gws.types as t
 
 
 class CapsParams(gws.CliParams):
-    src: str  #: service URL or an XML file name
-    type: str = ''  #: service type, e.g. WMS
-    out: str = ''  #: output filename
+    src: str 
+    """service URL or an XML file name"""
+    type: str = '' 
+    """service type, e.g. WMS"""
+    out: str = '' 
+    """output filename"""
 
 
 class Object(gws.Node):

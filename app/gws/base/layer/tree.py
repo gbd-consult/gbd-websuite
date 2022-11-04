@@ -11,15 +11,21 @@ from . import core
 class FlattenConfig(gws.Config):
     """Layer hierarchy flattening"""
 
-    level: int  #: flatten level
-    useGroups: bool = False  #: use group names (true) or image layer names (false)
+    level: int 
+    """flatten level"""
+    useGroups: bool = False 
+    """use group names (true) or image layer names (false)"""
 
 
 class Config(gws.Config):
-    rootLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use as roots
-    excludeLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to exclude
-    flattenLayers: t.Optional[FlattenConfig]  #: flatten the layer hierarchy
-    layerConfig: t.Optional[t.List[core.CustomConfig]]  #: custom configurations for specific layers
+    rootLayers: t.Optional[gws.gis.source.LayerFilterConfig] 
+    """source layers to use as roots"""
+    excludeLayers: t.Optional[gws.gis.source.LayerFilterConfig] 
+    """source layers to exclude"""
+    flattenLayers: t.Optional[FlattenConfig] 
+    """flatten the layer hierarchy"""
+    layerConfig: t.Optional[t.List[core.CustomConfig]] 
+    """custom configurations for specific layers"""
 
 
 def layer_configs_from_layer(

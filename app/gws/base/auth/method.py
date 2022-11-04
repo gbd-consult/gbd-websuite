@@ -6,7 +6,8 @@ from . import error
 class Config(gws.Config):
     """Auth method config."""
 
-    secure: bool = True  #: use only with SSL
+    secure: bool = True 
+    """use only with SSL"""
 
 
 class Object(gws.Node, gws.IAuthMethod):

@@ -11,8 +11,10 @@ import gws.base.auth.mfa
 class Config(gws.base.auth.mfa.Config):
     """Web-based authorization options"""
 
-    cookieName: str = 'auth'  #: name for the cookie
-    cookiePath: str = '/'  #: cookie path
+    cookieName: str = 'auth' 
+    """name for the cookie"""
+    cookiePath: str = '/' 
+    """cookie path"""
 
 
 @gws.ext.object.authMfa('email')

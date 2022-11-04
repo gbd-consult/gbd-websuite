@@ -185,7 +185,7 @@ class _PythonParser:
         for nn in self.nodes(node.body):
             mc = _cls(nn)
             if mc in {'Assign', 'AnnAssign'}:
-                doc = self.inline_doc(nn) or self.outer_doc(nn, node.body)
+                doc = self.outer_doc(nn, node.body)
                 self.parse_property(typ, nn, doc, annotated=(mc == 'AnnAssign'))
             elif mc == 'FunctionDef':
                 self.parse_method(typ, nn)
@@ -200,7 +200,7 @@ class _PythonParser:
                 c, value = self.parse_const_value(nn.value)
                 if c != base.C.LITERAL:
                     raise ValueError(f'invalid Enum item {ident!r}')
-                docs[ident] = self.inline_doc(nn) or self.outer_doc(nn, node.body)
+                docs[ident] = self.outer_doc(nn, node.body)
                 vals[ident] = value
 
         self.add(
@@ -431,24 +431,19 @@ class _PythonParser:
         self.gen.types[typ.uid] = typ
         return typ
 
-    def inline_doc(self, node):
-        """Returns documentation placed on the same line as the node after the #: symbol"""
-
-        ln = self.source_lines[node.lineno]
-        if base.INLINE_COMMENT_SYMBOL in ln:
-            return ln.rpartition(base.INLINE_COMMENT_SYMBOL)[-1].strip()
-        return ''
-
     def inner_doc(self, node):
         """Returns a normal docstring (first child of the node)."""
 
         return self.docstring_from(node.body[0]) if node.body else ''
 
     def outer_doc(self, node, nodes):
-        """Returns a docstring which immediately precedes this node in a list of nodes."""
+        """Returns a docstring which immediately follows this node in a list of nodes."""
 
-        idx = nodes.index(node)
-        return self.docstring_from(nodes[idx - 1]) if idx > 0 else ''
+        try:
+            nxt = nodes[nodes.index(node) + 1]
+        except IndexError:
+            return ''
+        return self.docstring_from(nxt)
 
     def docstring_from(self, node):
         """If node is a docstring, return its content."""

@@ -10,14 +10,22 @@ import gws.types as t
 class Config(gws.Config):
     """CSV format settings"""
 
-    decimal: str = '.'  #: decimal sign
-    delimiter: str = ','  #: field delimiter
-    encoding: str = 'utf8'  #: encoding for CSV files
-    formulaHack: bool = True  #: prepend numeric strings with an equal sign
-    precision: int = 2  #: precision for floats
-    quote: str = '"'  #: quote sign
-    quoteAll: bool = False  #: quote all fields
-    rowDelimiter: str = '\n'  #: row delimiter
+    decimal: str = '.' 
+    """decimal sign"""
+    delimiter: str = ',' 
+    """field delimiter"""
+    encoding: str = 'utf8' 
+    """encoding for CSV files"""
+    formulaHack: bool = True 
+    """prepend numeric strings with an equal sign"""
+    precision: int = 2 
+    """precision for floats"""
+    quote: str = '"' 
+    """quote sign"""
+    quoteAll: bool = False 
+    """quote all fields"""
+    rowDelimiter: str = '\n' 
+    """row delimiter"""
 
 
 @gws.ext.object.helper('csv')

@@ -57,10 +57,14 @@ class Props(gws.Props):
 class Config(gws.Config):
     """Feature style"""
 
-    name: t.Optional[str]  #: style name
-    selector: t.Optional[str]  #: CSS selector
-    text: t.Optional[str]  #: raw style content
-    values: t.Optional[dict]  #: style values
+    name: t.Optional[str] 
+    """style name"""
+    selector: t.Optional[str] 
+    """CSS selector"""
+    text: t.Optional[str] 
+    """raw style content"""
+    values: t.Optional[dict] 
+    """style values"""
 
 
 class Style(gws.Object, gws.IStyle):

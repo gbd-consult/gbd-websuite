@@ -7,16 +7,20 @@ from . import namespace
 class NamespaceConfig(gws.Config):
     """XML namespace configuration"""
 
-    name: str  #: namespace name
-    uri: gws.Url  #: namespace uri
-    schemaLocation: t.Optional[gws.Url]  #: namespace schema location
+    name: str 
+    """namespace name"""
+    uri: gws.Url 
+    """namespace uri"""
+    schemaLocation: t.Optional[gws.Url] 
+    """namespace schema location"""
 
 
 @gws.ext.config.helper('xml')
 class Config(gws.Config):
     """XML settings"""
 
-    namespaces: t.Optional[t.List[NamespaceConfig]]  #: custom namespaces
+    namespaces: t.Optional[t.List[NamespaceConfig]] 
+    """custom namespaces"""
 
 
 @gws.ext.object.helper('xml')

@@ -10,9 +10,12 @@ from . import provider
 class Config(gws.base.search.provider.Config):
     """Database-based search"""
 
-    db: t.Optional[str]  #: database provider uid
-    table: gws.base.database.SqlTableConfig  #: sql table configuration
-    sort: t.Optional[str]  #: sort expression
+    db: t.Optional[str] 
+    """database provider uid"""
+    table: gws.base.database.SqlTableConfig 
+    """sql table configuration"""
+    sort: t.Optional[str] 
+    """sort expression"""
 
 
 @gws.ext.object.finder('postgres')

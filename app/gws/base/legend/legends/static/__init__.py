@@ -9,7 +9,8 @@ from ... import core
 class Config(core.Config):
     """Static legend."""
 
-    path: gws.FilePath  #: path to the image file
+    path: gws.FilePath 
+    """path to the image file"""
 
 
 @gws.ext.object.legend('static')

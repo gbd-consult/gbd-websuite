@@ -18,8 +18,10 @@ class Props(gws.base.action.Props):
 class Config(gws.ConfigWithAccess):
     """Dimension action"""
 
-    layers: t.Optional[t.List[str]]  #: target layer uids
-    pixelTolerance: int = 10  #: pixel tolerance
+    layers: t.Optional[t.List[str]] 
+    """target layer uids"""
+    pixelTolerance: int = 10 
+    """pixel tolerance"""
 
 
 @gws.ext.object.action('dimension')

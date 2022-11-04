@@ -22,17 +22,17 @@ from gws.types import Enum
 # custom types, used everywhere
 
 
-"""type: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]."""
 Extent = Tuple[float, float, float, float]
+"""type: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]."""
 
-"""type: Point coordinates [x, y]."""
 Point = Tuple[float, float]
+"""type: Point coordinates [x, y]."""
 
-"""type: Size [width, height]."""
 Size = Tuple[float, float]
+"""type: Size [width, height]."""
 
-"""type: Corner."""
 Corner = Literal['nw', 'sw', 'ne', 'se', 'lt', 'lb', 'rt', 'rb']
+"""type: Corner."""
 
 
 class Uom(Enum):
@@ -64,44 +64,44 @@ class Uom(Enum):
     PT = 'pt'  # point
 
 
-"""type: A value with a unit."""
 Measurement = Tuple[float, Uom]
+"""type: A value with a unit."""
 
-"""type: A Point with a unit."""
 MPoint = Tuple[float, float, Uom]
+"""type: A Point with a unit."""
 
-"""type: A Size with a unit."""
 MSize = Tuple[float, float, Uom]
+"""type: A Size with a unit."""
 
-"""type: An XML generator tag."""
 Tag = tuple
+"""type: An XML generator tag."""
 
-"""type: Valid readable file path on the server."""
 FilePath = str
+"""type: Valid readable file path on the server."""
 
-"""type: Valid readable directory path on the server."""
 DirPath = str
+"""type: Valid readable directory path on the server."""
 
-"""type: String like "1w 2d 3h 4m 5s" or a number of seconds."""
 Duration = str
+"""type: String like "1w 2d 3h 4m 5s" or a number of seconds."""
 
-"""type: CSS color name."""
 Color = str
+"""type: CSS color name."""
 
-"""type: Regular expression, as used in Python."""
 Regex = str
+"""type: Regular expression, as used in Python."""
 
-"""type: String with {attribute} placeholders."""
 FormatStr = str
+"""type: String with {attribute} placeholders."""
 
-"""type: ISO date like "2019-01-30"."""
 Date = str
+"""type: ISO date like "2019-01-30"."""
 
-"""type: ISO date/time like "2019-01-30 01:02:03"."""
 DateTime = str
+"""type: ISO date/time like "2019-01-30 01:02:03"."""
 
-"""type: Http or https URL."""
 Url = str
+"""type: Http or https URL."""
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -131,18 +131,20 @@ ClassRef = Union[type, str]
 class Config(Data):
     """Configuration base type"""
 
-    uid: str = ''  #: unique ID
+    uid: str = '' 
+    """unique ID"""
 
 
-"""type: Access Control List."""
 Access = List[Tuple[int, str]]
+"""type: Access Control List."""
 
-"""type: A string of comma-separated pairs 'allow <role>' or 'deny <role>'."""
 ACL = str
+"""type: A string of comma-separated pairs 'allow <role>' or 'deny <role>'."""
 
 
 class ConfigWithAccess(Config):
-    access: Optional[ACL]  #: access rights
+    access: Optional[ACL] 
+    """access rights"""
 
 
 class Props(Data):
@@ -261,8 +263,10 @@ class ISpecRuntime(Protocol):
 class Request(Data):
     """Web request"""
 
-    projectUid: Optional[str]  #: project uid
-    localeUid: Optional[str]  #: locale for this request
+    projectUid: Optional[str] 
+    """project uid"""
+    localeUid: Optional[str] 
+    """locale for this request"""
 
 
 class EmptyRequest(Data):
@@ -582,8 +586,8 @@ class IModel(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # CRS
 
-"""type: CRS code like "EPSG:3857" or a srid like 3857."""
 CrsName = Union[str, int]
+"""type: CRS code like "EPSG:3857" or a srid like 3857."""
 
 
 class CrsFormat(Enum):
@@ -1140,7 +1144,8 @@ class Locale(Data):
     dateFormatLong: str
     dateFormatMedium: str
     dateFormatShort: str
-    dateUnits: str  #: date unit names, e.g. 'YMD' for 'en', 'JMT' for 'de'
+    dateUnits: str 
+    """date unit names, e.g. 'YMD' for 'en', 'JMT' for 'de'"""
     dayNamesLong: List[str]
     dayNamesShort: List[str]
     dayNamesNarrow: List[str]
@@ -1345,9 +1350,12 @@ class ILegend(INode, Protocol):
 class LayerDisplayMode(Enum):
     """Layer display mode"""
 
-    box = 'box'  #: display a layer as one big image (WMS-alike)
-    tile = 'tile'  #: display a layer in a tile grid
-    client = 'client'  #: draw a layer in the client
+    box = 'box' 
+    """display a layer as one big image (WMS-alike)"""
+    tile = 'tile' 
+    """display a layer in a tile grid"""
+    client = 'client' 
+    """draw a layer in the client"""
 
 
 class TileGrid(Data):
