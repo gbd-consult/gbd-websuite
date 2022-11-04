@@ -91,16 +91,15 @@ class Object(gws.common.action.Object):
 
             return r
 
-        mime = gws.tools.mime.for_path(rpath)
-
-        if not _valid_mime_type(mime, project_assets, site_assets):
-            gws.log.error(f'invalid mime path={rpath!r} mime={mime!r}')
+        if not _valid_mime_type(rpath, project_assets, site_assets):
+            gws.log.error(f'invalid mime path={rpath!r}')
             # NB: pretend the file doesn't exist
             raise gws.web.error.NotFound()
 
         gws.log.debug(f'serving {rpath!r} for {spath!r}')
 
         attachment_name = None
+        mime = gws.tools.mime.for_path(rpath)
 
         if as_attachment:
             p = gws.tools.os2.parse_path(spath)
@@ -138,11 +137,13 @@ def _abs_path(path, basedir):
     return p
 
 
-def _valid_mime_type(mt, project_assets: t.DocumentRoot, site_assets: t.DocumentRoot):
+def _valid_mime_type(path, project_assets: t.DocumentRoot, site_assets: t.DocumentRoot):
+    mt = gws.tools.mime.for_path(path)
+    ext = gws.tools.os2.parse_path(path)['extension']
     if project_assets and project_assets.allow_mime:
-        return mt in project_assets.allow_mime
+        return mt in project_assets.allow_mime or ext in project_assets.allow_mime
     if site_assets and site_assets.allow_mime:
-        return mt in site_assets.allow_mime
+        return mt in site_assets.allow_mime or ext in site_assets.allow_mime
     if mt not in gws.tools.mime.DEFAULT_ALLOWED:
         return False
     if project_assets and project_assets.deny_mime:
