@@ -3,6 +3,7 @@
 import os
 import sys
 import subprocess
+import json
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../app/gws/lib/vendor'))
 
@@ -42,18 +43,19 @@ def main():
 
     opts = dog.types.Options(**options.OPTIONS)
 
+    mkdir(opts.outputDir)
+    make_config_ref()
+
     if cmd == 'html':
-        mkdir(opts.outputDir)
         dog.build_all('html', opts)
         return 0
 
     if cmd == 'pdf':
-        mkdir(opts.outputDir)
         dog.build_all('pdf', opts)
         return 0
 
     if cmd == 'server':
-        mkdir(opts.outputDir)
+        opts.debug = True
         dog.start_server(opts)
         return 0
 
@@ -66,7 +68,7 @@ def main():
 
 
 def make_api(opts):
-    mkdir(options.BUILD_DIR + '/app-copy')
+    mkdir(options.DOC_BUILD_DIR + '/app-copy')
 
     rsync = ['rsync', '--archive', '--no-links']
     for e in opts.pydoctorExclude:
@@ -74,19 +76,126 @@ def make_api(opts):
         rsync.append(e)
 
     rsync.append(options.APP_DIR + '/gws')
-    rsync.append(options.BUILD_DIR + '/app-copy')
+    rsync.append(options.DOC_BUILD_DIR + '/app-copy')
 
     run(rsync)
 
     args = list(opts.pydoctorArgs)
     args.extend([
         '--project-base-dir',
-        options.BUILD_DIR + '/app-copy/gws',
-        options.BUILD_DIR + '/app-copy/gws',
+        options.DOC_BUILD_DIR + '/app-copy/gws',
+        options.DOC_BUILD_DIR + '/app-copy/gws',
     ])
 
     ps = pydoctor.driver.get_system(pydoctor.options.Options.from_args(args))
     pydoctor.driver.make(ps)
+
+
+def make_config_ref():
+    def literal(s):
+        return f'<i>"{s}"</i>'
+
+    def code(s):
+        return f'<code>{s}</code>'
+
+    def typestring(tid):
+        typ = specs[tid]
+        c = typ['c']
+        if c in {'CLASS', 'TYPE', 'ENUM'}:
+            queue.append(tid)
+            return f"<a href='#{tid}'>{code(tid)}</a>"
+        if c == 'DICT':
+            return code('dict')
+        if c == 'LIST':
+            queue.append(typ['tItem'])
+            s = typestring(typ['tItem'])
+            return f'<b>[</b>{s}<b>]</b>'
+        if c == 'ATOM':
+            return code(tid)
+        if c == 'LITERAL':
+            return ' | '.join(literal(s) for s in typ['literalValues'])
+        return ''
+
+    def docstring(tid, enum_value=None):
+        # @TODO translations
+        typ = specs[tid]
+        if enum_value:
+            return typ['enumDocs'][enum_value]
+        return typ.get('doc')
+
+    def head(tid, info):
+        return f'<h2 id="{tid}">{code(info)} {tid} <a class="header-link" href="#{tid}">&para;</a></h2>'
+
+    def table(heads, rows):
+        s = '<table><thead><tr>'
+        for h in heads:
+            s += '<th>' + h + '</th>'
+        s += '</tr></thead><tbody>'
+        for row in rows:
+            s += '<tr>' + ''.join('<td>' + c + '</td>' for c in row) + '</tr>'
+        s += '</tbody></table>'
+        return s
+
+    def process(tid):
+        typ = specs[tid]
+        c = typ['c']
+
+        if c == 'CLASS':
+            html[tid] = head(tid, 'struct')
+            html[tid] += f'<p>{docstring(tid)}</p>'
+            html[tid] += table(
+                ['property', 'type', ''],
+                [
+                    [code(pname), typestring(specs[ptid]['tValue']), docstring(ptid)]
+                    for pname, ptid in typ['tProperties'].items()
+                ]
+            )
+
+        if c == 'TYPE':
+            target = specs[typ['tTarget']]
+            if target['c'] == 'VARIANT':
+                html[tid] = head(tid, 'variant type')
+                html[tid] += table(
+                    ['type', 'target'],
+                    [
+                        [literal(mname), typestring(mtid)]
+                        for mname, mtid in target['tMembers'].items()
+                    ]
+                )
+            else:
+                html[tid] = head(tid, "type")
+                html[tid] += f'<p>{docstring(tid)}</p>'
+
+        if c == 'ENUM':
+            html[tid] = head(tid, 'enumeration')
+            html[tid] += table(
+                ['value', ''],
+                [
+                    [literal(key), docstring(tid, key)]
+                    for key in typ['enumValues']
+                ]
+            )
+
+    with open(options.BUILD_DIR + '/types.json') as fp:
+        specs = json.load(fp)['types']
+
+    start = 'gws.base.application.Config'
+    queue = [start]
+    done = set()
+    html = {}
+
+    while queue:
+        tid = queue.pop(0)
+        if tid in done:
+            continue
+        done.add(tid)
+        process(tid)
+
+    res = html.pop(start)
+    res += ''.join(v for _, v in sorted(html.items()))
+
+    with open(options.DOC_DIR + '/books/admin-de/__build.configref.de.html', 'w') as fp:
+        fp.write(res)
 
 
 def mkdir(d):

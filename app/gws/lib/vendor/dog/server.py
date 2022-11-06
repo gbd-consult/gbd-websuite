@@ -38,7 +38,7 @@ class Server:
         return [content]
 
     def build(self):
-        self.builder = builder.Builder(self.options, debug=True)
+        self.builder = builder.Builder(self.options)
         self.builder.build_all('html', write=False)
 
     def watch_docs(self, args=None):

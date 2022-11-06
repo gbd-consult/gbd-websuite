@@ -5,7 +5,8 @@ SELF_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.realpath(SELF_DIR + '/../')
 DOC_DIR = SELF_DIR
 APP_DIR = ROOT_DIR + '/app'
-BUILD_DIR = APP_DIR + '/__build/docbuild'
+BUILD_DIR = APP_DIR + '/__build'
+DOC_BUILD_DIR = BUILD_DIR + '/docbuild'
 
 VERSION, _, _ = open(APP_DIR + '/VERSION').read().strip().rpartition('.')
 
@@ -16,9 +17,9 @@ OPTIONS = {
     'rootDirs': [ROOT_DIR],
     'docPatterns': ['*.doc.md'],
     'assetPatterns': ['*.svg', '*.png'],
-    'excludeRegex': 'node_modules|___',
+    'excludeRegex': 'node_modules|___|__build',
 
-    'logLevel': 'INFO',
+    'debug': False,
 
     'htmlSplitLevel': 3,
     'htmlPageTemplate': f'{DOC_DIR}/theme/page.cx.html',
@@ -27,9 +28,10 @@ OPTIONS = {
     'htmlAssets': [
         f'{DOC_DIR}/theme/theme.css',
         f'{DOC_DIR}/theme/theme.js',
+        f'{DOC_DIR}/theme/home.svg',
     ],
 
-    'outputDir': f'{BUILD_DIR}/doc/{VERSION}',
+    'outputDir': f'{DOC_BUILD_DIR}/doc/{VERSION}',
 
     'serverPort': 5500,
     'serverHost': '0.0.0.0',
@@ -55,7 +57,7 @@ OPTIONS = {
 
     'pydoctorArgs': [
         '--make-html',
-        '--html-output', f'{BUILD_DIR}/apidoc/{VERSION}',
+        '--html-output', f'{DOC_BUILD_DIR}/apidoc/{VERSION}',
         '--project-name', 'GBD WebSuite',
         '--project-version', VERSION,
         '--no-sidebar',

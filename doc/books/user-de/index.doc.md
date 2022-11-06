@@ -1,1 +1,1 @@
-# GBD WebSuite Benutzerhandbuch :/user-de
+# Benutzerhandbuch :/user-de

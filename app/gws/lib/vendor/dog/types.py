@@ -64,29 +64,5 @@ class MarkdownNode(ParseNode):
     type: str
 
 
-class Section(Data):
-    sid: str
-    level: int
-
-    subSids: List[str]
-    parentSid: str
-
-    sourcePath: str
-
-    headText: str
-    headHtml: str
-    headNode: MarkdownNode
-    headLevel: int
-
-    nodes: List[ParseNode]
-
-    htmlPath: str
-    htmlUrl: str
-    htmlBaseUrl: str
-    htmlId: str
-
-    walkColor: int
-
-
 class Error(Exception):
     pass

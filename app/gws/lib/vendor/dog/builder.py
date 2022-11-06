@@ -13,6 +13,10 @@ from . import util, markdown
 
 class JumpEngine(jump.Engine):
     options = dict(
+        comment_symbol='#%',
+        command_symbol='%',
+        inline_open_symbol='{%',
+        inline_close_symbol='%}',
         echo_open_symbol='<%',
         echo_close_symbol='%>',
         echo_start_whitespace=True,
@@ -34,11 +38,36 @@ class JumpEngine(jump.Engine):
         return self.emit_code_block('TocNode', {'items': items, 'depth': depth})
 
 
+class Section(t.Data):
+    sid: str
+    level: int
+
+    subSids: t.List[str]
+    parentSid: str
+
+    sourcePath: str
+
+    headText: str
+    headHtml: str
+    headHtmlLink: str
+    headNode: t.MarkdownNode
+    headLevel: int
+
+    nodes: t.List[t.ParseNode]
+
+    htmlPath: str
+    htmlUrl: str
+    htmlBaseUrl: str
+    htmlId: str
+
+    walkColor: int
+
+
 class SectionNode(t.ParseNode):
     sid: str
 
 
-class InsertSectionNode(t.ParseNode):
+class EmbedNode(t.ParseNode):
     items: t.List[str]
     sid: str
 
@@ -52,7 +81,7 @@ class TocNode(t.ParseNode):
 class Builder:
     options: t.Options
 
-    def __init__(self, options, debug=False):
+    def __init__(self, options):
         self.options = options
 
         self.docPaths = []
@@ -62,12 +91,14 @@ class Builder:
         self.markdownParser = markdown.parser()
         self.jumpEngine = JumpEngine()
 
-        self.sectionMap: dict = {}
+        self.sectionMap = {}
+        self.sidList = []
 
-        self.htmlBuffers: dict = {}
-        self.htmlContent: dict = {}
+        self.htmlBuffers = {}
+        self.htmlContent = {}
 
-        self.debug = debug
+        self.debug = options.debug
+        util.log.set_level('DEBUG' if self.debug else 'INFO')
 
     def build_all(self, mode: str, write=False):
         util.log.debug(f'START build_all {mode}')
@@ -88,8 +119,12 @@ class Builder:
 
         if mode == 'html':
             for sec in self.sectionMap.values():
+                self.html_render_section_head(sec.sid)
+
+            for sec in self.sectionMap.values():
                 if not sec.parentSid:
                     self.html_render_section(sec.sid)
+
             self.html_flush(write)
 
         util.log.debug(f'END build_all {mode}')
@@ -132,17 +167,37 @@ class Builder:
 
     ##
 
-    def get_section(self, sid) -> t.Section:
+    _dummy_sec = Section(
+        sid='',
+        level=0,
+        subSids=[],
+        parentSid='',
+        sourcePath='',
+        headText='',
+        headHtml='',
+        headHtmlLink='',
+        headNode=t.MarkdownNode(),
+        headLevel=0,
+        nodes=[],
+        htmlPath='',
+        htmlUrl='',
+        htmlBaseUrl='',
+        htmlId='',
+    )
+
+    def get_section(self, sid) -> Section:
         if sid not in self.sectionMap:
-            util.log.debug(f'section {sid!r} not found')
+            util.log.error(f'section {sid!r} not found')
+            return self._dummy_sec
         return self.sectionMap.get(sid)
 
-    def section_from_url(self, url):
+    def section_from_url(self, url) -> Section:
         for sec in self.sectionMap.values():
             if sec.htmlBaseUrl == url:
                 return sec
+        return self._dummy_sec
 
-    def sections_from_wildcard_sid(self, sid, parent_sec):
+    def sections_from_wildcard_sid(self, sid, parent_sec) -> t.List[Section]:
         abs_sid = self.make_sid(sid, parent_sec.sid, '', '')
 
         if not abs_sid:
@@ -173,43 +228,39 @@ class Builder:
                 return 'text/html', self.htmlContent[sec.htmlPath]
             return
 
-        m = re.search(self.options.htmlStaticDir + '/(.+)$', url)
+        m = re.search(self.options.htmlStaticDir + '(/.+)$', url)
         if m:
-            fname = m.group(1)
+            tail = m.group(1)
             for path in self.assetPaths:
-                if os.path.basename(path) == fname:
+                if path.endswith(tail):
                     mt = mimetypes.guess_type(path)
                     mime = mt[0] if mt else 'text/plain'
                     return mime, util.read_file_b(path)
 
     ##
 
+    def html_render_section_head(self, sid):
+        sec = self.get_section(sid)
+        r = HTMLRenderer(self, sec)
+        sec.headHtml = r.render_content(sec.headNode)
+        sec.headHtmlLink = f'<a href="{sec.htmlUrl}">{sec.headHtml}</a>'
+
     def html_render_section(self, sid):
         util.log.debug(f'render {sid!r}')
         sec = self.get_section(sid)
-        if not sec:
-            util.log.error(f'section {sid!r} not found')
-            return
         r = HTMLRenderer(self, sec)
         r.render_section()
 
     def html_render_toc_entry(self, sid, depth: int):
         sec = self.get_section(sid)
-        if not sec:
-            util.log.error(f'section {sid!r} not found')
-            return ''
 
-        r = HTMLRenderer(self, sec)
-        c = r.render_content(sec.headNode)
-        a = f'<a href="{sec.htmlUrl}">{c}</a>'
         s = ''
-
         if depth > 1:
             sub = [self.html_render_toc_entry(s, depth - 1) for s in sec.subSids]
             if sub:
                 s = '<ul>' + ''.join(sub) + '</ul>'
 
-        return f'<li data-sid="{sid}">{a}{s}</li>'
+        return f'<li data-sid="{sid}">{sec.headHtmlLink}{s}</li>'
 
     def html_render_main_toc(self):
         root = self.get_section('/')
@@ -221,8 +272,11 @@ class Builder:
         ]
         return '\n'.join(entries)
 
-    def html_write(self, sec: t.Section, html):
-        self.htmlBuffers.setdefault(sec.htmlPath, []).append(html)
+    def html_write(self, sec: Section, html):
+        if sec.htmlPath not in self.htmlBuffers:
+            self.htmlBuffers[sec.htmlPath] = t.Data(sids=[], html=[])
+        self.htmlBuffers[sec.htmlPath].sids.append(sec.sid)
+        self.htmlBuffers[sec.htmlPath].html.append(html)
 
     def html_flush(self, write: bool):
         tpl = self.jumpEngine.compile_path(self.options.htmlPageTemplate, **JumpEngine.options)
@@ -230,12 +284,22 @@ class Builder:
 
         self.htmlContent = {}
 
-        for path, fragments in self.htmlBuffers.items():
+        for path, chunk in self.htmlBuffers.items():
+            sec = self.get_section(chunk.sids[0])
+            breadcrumbs = []
+            while True:
+                breadcrumbs.insert(0, (sec.htmlUrl, sec.headHtml))
+                if not sec.parentSid:
+                    break
+                sec = self.get_section(sec.parentSid)
+
             self.htmlContent[path] = self.jumpEngine.call(tpl, {
+                'path': path,
                 'title': self.options.title,
                 'subTitle': self.options.subTitle,
-                'maintoc': maintoc,
-                'main': ''.join(fragments),
+                'mainToc': maintoc,
+                'main': ''.join(chunk.html),
+                'breadcrumbs': breadcrumbs,
                 'builder': self,
                 'options': self.options,
             })
@@ -261,7 +325,7 @@ class Builder:
 
     ##
 
-    def make_tree(self, sec: t.Section, parent_sec=None):
+    def make_tree(self, sec: Section, parent_sec=None):
         if parent_sec:
             if sec.parentSid:
                 util.log.error(f'attempt to relink section {sec.sid!r} for {sec.parentSid!r} to {parent_sec.sid!r}')
@@ -284,14 +348,12 @@ class Builder:
 
             if isinstance(node, SectionNode):
                 sub = self.get_section(node.sid)
-                if not sub:
-                    continue
                 self.make_tree(sub, sec)
                 sec.subSids.append(sub.sid)
                 sec.nodes.append(node)
                 continue
 
-            if isinstance(node, InsertSectionNode):
+            if isinstance(node, EmbedNode):
                 secs = self.sections_from_wildcard_sid(node.sid, sec)
                 for sub in secs:
                     self.make_tree(sub, sec)
@@ -311,7 +373,7 @@ class Builder:
 
         sec.walkColor = 2
 
-    def add_url_and_path(self, sec: t.Section):
+    def add_url_and_path(self, sec: Section):
         sl = self.options.htmlSplitLevel or 0
         parts = sec.sid.split('/')[1:]
 
@@ -334,23 +396,6 @@ class Builder:
     ##
 
     def make_sid(self, explicit_sid, parent_sid, prev_sid=None, text=None):
-
-        """
-            ex.sid      parent_sid   prev_sid   result
-            ---------------------------------------------
-            /           -            -          /
-            /abs        -            -          /abs   
-            /abs/       -            -          /abs/text   
-           
-            rel         y            -          parent_sec-sid/rel
-            rel/        y            -          parent_sec-sid/rel/text
-            none        y            -          parent_sec-sid/text
-           
-            rel         n            y          parent_sec-sid-without-last-comp/rel
-            rel/        n            y          parent_sec-sid-without-last-comp/rel/text
-            none        n            y          parent_sec-sid-without-last-comp/text
-
-        """
 
         explicit_sid = explicit_sid or ''
         text_sid = util.to_uid(text) if text else ''
@@ -391,9 +436,9 @@ class FileParser:
     def __init__(self, b: Builder, path):
         self.b = b
         self.path = path
-        self.dummyRoot = t.Section(sid='', nodes=[], level=-1, headNode=t.MarkdownNode(level=-1))
+        self.dummyRoot = Section(sid='', nodes=[], level=-1, headNode=t.MarkdownNode(level=-1))
 
-    def parse(self) -> t.List[t.Section]:
+    def parse(self) -> t.List[Section]:
         util.log.debug(f'parse {self.path!r}')
 
         src = self.pre_parse()
@@ -431,10 +476,14 @@ class FileParser:
         return sections
 
     def pre_parse(self):
-
+        args = {
+            'options': self.b.options,
+            'builder': self.b,
+        }
         try:
             return self.b.jumpEngine.render_path(
                 self.path,
+                args,
                 error=JumpEngine.error,
                 **JumpEngine.options,
             )
@@ -457,13 +506,13 @@ class FileParser:
             return
 
         if not text:
-            parent_sec.nodes.append(InsertSectionNode(sid=sid))
+            parent_sec.nodes.append(EmbedNode(sid=sid))
             return
 
         parent_sec.nodes.append(SectionNode(sid=sid))
         node.sid = sid
 
-        return t.Section(
+        return Section(
             sid=sid,
             level=0 if sid == '/' else sid.count('/'),
             sourcePath=self.path,
@@ -490,7 +539,7 @@ class FileParser:
 
 class HTMLRenderer(markdown.HTMLRenderer):
 
-    def __init__(self, b: Builder, sec: t.Section):
+    def __init__(self, b: Builder, sec: Section):
         self.b = b
         self.sec = sec
 
@@ -541,4 +590,5 @@ class HTMLRenderer(markdown.HTMLRenderer):
         s = ''
         if self.b.debug:
             s = f' title="{markdown.escape(sec.sourcePath)}"'
-        return f'<{tag}{s}>{c}</{tag}>\n'
+        a = f'<a class="header-link" href="{sec.htmlUrl}">&para;</a>'
+        return f'<{tag}{s}>{c}{a}</{tag}>\n'

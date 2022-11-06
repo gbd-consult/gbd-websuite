@@ -21,8 +21,8 @@
             </div>
             <div id="sidebar-toc">
                 <ul>
-                    <% maintoc %>
-                    <li><a href="<% options.apidocWebRoot %>">API documentation</a></li>
+                    <% mainToc %>
+                    <li><a href="<% options.apidocWebRoot %>/index.html">API documentation</a></li>
                 </ul>
             </div>
             <div id="sidebar-footer">
@@ -32,6 +32,19 @@
     </aside>
 
     <main>
+        <nav>
+            <div id="nav-breadcrumbs">
+                %for url, head in breadcrumbs index i length total
+                    %if i == 1
+                        <a href="<% url %>" id="nav-breadcrumbs-home"><img src="<% options.htmlWebRoot %>/_static/home.svg"></a>
+                    %elif i == total
+                        &raquo; <% head %>
+                    %else
+                        &raquo; <a href="<% url %>"><% head %></a>
+                    %end
+                %end
+            </div>
+        </nav>
         <% main %>
     </main>
 

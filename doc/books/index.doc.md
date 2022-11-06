@@ -1,10 +1,10 @@
 # GBD WebSuite Documentation :/
 
-@toc
+%toc
 /user-de
 /admin-de
 /dev-en
-@end
+%end
 
 ## :/user-de
 ## :/admin-de

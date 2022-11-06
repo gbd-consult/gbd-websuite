@@ -1,4 +1,4 @@
-# GBD WebSuite Administrator Handbuch :/admin-de
+# Administrator Handbuch :/admin-de
 
 Dokumentation für GBD WebSuite Server Administratoren (Deutsch).
 
@@ -130,44 +130,44 @@ GWS Server enthält ein *Monitor* Modul, der das Dateisystem überwacht, die Än
 
 Application und System Konfiguration:
 
-@toc
+%toc
 /admin-de/config/app
 /admin-de/config/auth
 /admin-de/config/client
 /admin-de/config/db
 /admin-de/config/intl
-/admin-de/config/meta
+/admin-de/config/metadata
 /admin-de/config/server
 /admin-de/config/web
-@end
+%end
 
 Konfiguration der Karten, Layer und Suchoptionen.
 
-@toc
+%toc
 /admin-de/config/map
 /admin-de/config/layer
 /admin-de/config/feature
-/admin-de/config/qgis
+/admin-de/plugin/qgis
 /admin-de/config/cache
 /admin-de/config/search
 /admin-de/config/metadata
-@end
+%end
 
 Options für die visuelle Präsentation von Karten und Sachdaten.
 
-@toc
+%toc
 /admin-de/config/template
 /admin-de/config/style
 /admin-de/config/print
 /admin-de/config/csv
-@end
+%end
 
-Optionen im Bezug auf Editieren von geographischen Objekten und Sachdaten.
+Optionen in Bezug auf Editieren von geografischen Objekten und Sachdaten.
 
-@toc
+%toc
 /admin-de/plugin/edit
 /admin-de/plugin/tabedit
-@end
+%end
 
 ### :/admin-de/config/*
 
@@ -175,9 +175,10 @@ Optionen im Bezug auf Editieren von geographischen Objekten und Sachdaten.
 
 Die GBD WebSuite unterstützt viele Plugins.
 
-@toc
-    /admin-de/plugin/*
-@end
+%toc
+/admin-de/plugin/*
+%end
 
 ### :/admin-de/plugin/*
 
+## :/admin-de/reference

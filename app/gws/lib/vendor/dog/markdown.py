@@ -208,8 +208,7 @@ class HTMLRenderer:
         return f'<blockquote>\n{c}</blockquote>\n'
 
     def tag_block_html(self, node):
-        c = self.render_content(node)
-        return '<p>' + escape(c) + '</p>\n'
+        return node.text
 
     def tag_block_error(self, node):
         c = self.render_content(node)

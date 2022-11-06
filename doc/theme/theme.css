@@ -19,7 +19,7 @@ img {
 
 body {
     font-size: 16px;
-    font-family: Helvetica Neue,Arial,sans-serif;
+    font-family: "Helvetica Neue", Arial, sans-serif;
     background: #fcfcfc;
     color: #263238;
     line-height: 1.5;
@@ -35,7 +35,7 @@ aside {
 }
 
 main {
-    padding: 20px 60px 20px 360px;
+    padding: 20px 60px 20px 340px;
 }
 
 
@@ -59,9 +59,10 @@ main code {
 
 pre code {
     display: inline;
-    padding: 0;
     background: none;
     border: none;
+    padding: 0;
+    margin: 0;
 }
 
 pre {
@@ -79,6 +80,26 @@ main {
 main a {
     color: #0277bd;
     text-decoration: none;
+}
+
+main a.header-link {
+    display: none;
+    font-size: 16px;
+    padding: 0 5px;
+}
+
+main h1:hover a.header-link,
+main h2:hover a.header-link,
+main h3:hover a.header-link,
+main h4:hover a.header-link,
+main h5:hover a.header-link,
+main h6:hover a.header-link {
+    display: inline-block;
+}
+
+
+main a code {
+    color: #0277bd;
 }
 
 main a:hover {
@@ -105,6 +126,12 @@ main h3 {
     margin: 24px 0;
 }
 
+main h4 {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 24px 0;
+}
+
 main p {
     margin: 12px 0;
 }
@@ -119,22 +146,38 @@ main table {
     font-size: 14px;
     border-collapse: collapse;
     margin: 24px 0;
-    background: #f7f7fd;
 }
 
 main table th, main table td {
     margin: 0;
     padding: 12px;
-    border: 1px solid #b0bec5;
+    border: 1px solid #cfd8dc;
 }
 
 main table tr:nth-child(even) {
+    background: #f7f7fd;
 }
 
 main table th {
     font-weight: 900;
     text-align: left;
     background: #eceff1;
+}
+
+nav {
+    padding: 15px 0 20px 0;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #ccc;
+}
+
+#nav-breadcrumbs {
+    font-size: 14px;
+}
+
+#nav-breadcrumbs-home img {
+    width: 16px;
+    height: 16px;
+    vertical-align: text-top;
 }
 
 #sidebar {
