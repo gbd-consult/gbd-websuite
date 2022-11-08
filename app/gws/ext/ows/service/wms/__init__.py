@@ -153,6 +153,10 @@ class Object(ows.Base):
             raise gws.web.error.BadRequest('Invalid parameter')
 
         bbox = bounds.extent
+        proj = gws.gis.proj.as_proj(bounds.crs)
+        if proj.axis == 'yx':
+            bbox = gws.gis.extent.swap_xy(bbox)
+
         xres = (bbox[2] - bbox[0]) / px_width
         yres = (bbox[3] - bbox[1]) / px_height
         x = bbox[0] + (x * xres)
@@ -167,6 +171,7 @@ class Object(ows.Base):
         pixel_tolerance = 10
 
         args = t.SearchArgs(
+            axis=proj.axis,
             project=rd.project,
             layers=[lc.layer for lc in lcs],
             limit=min(limit, self.search_max_limit),
@@ -197,5 +202,4 @@ class Object(ows.Base):
         ver = self.request_version(rd)
         return gws.gis.bounds.from_request_bbox(
             rd.req.param('bbox'),
-            rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
-            invert_axis_if_geographic=ver >= '1.3.0')
+            rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs)

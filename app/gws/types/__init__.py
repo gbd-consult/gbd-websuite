@@ -852,6 +852,7 @@ class OwsOperation:
 
 
 class Projection(Data):
+    axis: str
     epsg: str
     is_geographic: bool
     proj4text: str

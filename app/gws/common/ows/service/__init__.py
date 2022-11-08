@@ -471,7 +471,8 @@ class Base(Object):
 
             gs = None
             if f.shape:
-                inv = target_proj and target_proj.is_geographic and invert_axis_if_geographic
+                # inv = target_proj and target_proj.is_geographic and invert_axis_if_geographic
+                inv = target_proj and target_proj.axis == 'yx'
                 gs = gws.gis.gml.shape_to_tag(f.shape, precision=prec, invert_axis=inv, crs_format=crs_format)
 
             f.apply_data_model()

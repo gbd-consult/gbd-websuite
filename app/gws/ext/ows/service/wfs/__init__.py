@@ -120,7 +120,7 @@ class Object(ows.Base):
             crs_format = fmt
 
         if rd.req.has_param('bbox'):
-            bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
+            bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs)
             if not bounds:
                 raise gws.web.error.BadRequest('Invalid BBOX')
             shape = gws.gis.shape.from_bounds(bounds)

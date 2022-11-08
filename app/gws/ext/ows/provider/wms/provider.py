@@ -71,7 +71,10 @@ class Object(gws.common.ows.provider.Object):
 
         our_crs = gws.gis.util.best_crs(shape.crs, self.supported_crs)
         shape = shape.transformed_to(our_crs)
-        axis = gws.gis.util.best_axis(our_crs, self.invert_axis_crs, 'WMS', self.version)
+
+        axis = args.axis
+        if not axis:
+            axis = gws.gis.util.best_axis(our_crs, self.invert_axis_crs, 'WMS', self.version)
 
         #  draw a 1000x1000 bbox around a point
         width = 1000
