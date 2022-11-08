@@ -26,13 +26,13 @@ Deeper headings (with more dashes) create the section hierarchy.
         ## Subsection
             ### Sub-sub-section
 
-Heading levels are only used to create hierarchies, the final output rendering (`h1`, `h2` etc.) is determined by the section depth (number of slashes) and the html split-level.
+Heading levels are only used to create hierarchies, the final output rendering (`h1`, `h2` etc.) is determined by the section depth (the number of slashes) and the html split-level.
 
 ### Section embedding
 
 A heading with no title and only a sid means "find a section with this sid and paste its content right here".
 
-For example, assume we have three files like this:
+For example, assume we have files like this:
 
 `index.doc.md`:
 
@@ -58,7 +58,7 @@ For example, assume we have three files like this:
     ## Second Thing :/docs/second
         Discussion of the second thing
 
-the final compiled tree will look like this:
+Then, the compiled tree will look like this:
 
     # Our docs :/docs
     
@@ -74,8 +74,7 @@ the final compiled tree will look like this:
     ## Second Thing :/docs/second
         Discussion of the second thing
 
-An embedded section sid can contain a wildcard component `*`, in which case all matching sections are included and sorted alphabetically by
-their titles. For example, if we have these files:
+An embedded section sid can contain a wildcard component `*`, in which case all matching sections are included and sorted alphabetically by their titles. For example, if we have these files:
 
 `one.doc.md`:
 
@@ -100,9 +99,9 @@ their titles. For example, if we have these files:
         
     Some details:
 
-    ### :/docs/details/*
+    ## :/docs/details/*
 
-the result will be like this:
+The result will be like this:
 
     # Our docs :/docs
 
@@ -119,14 +118,13 @@ the result will be like this:
     ## Values :/docs/details/values        
         Something about values
 
-When Dog compiles your documentation, it starts with the section named `/` (root section) and recursively collects all embedded sections. Sections that are not embedded anywhere are prepared and generated, but won't become the part of the main documentation
-tree.
+When Dog compiles your documentation, it starts with the section named `/` (root section) and recursively collects all embedded sections. Sections that are not embedded anywhere are formatted and generated, but won't become a part of the main documentation tree. 
 
 ### More on Sids
 
-A section sid denotes the section position in the final doc tree and is used to refer to the section from elsewhere.
+A section sid denotes the section position in the tree and is used to refer to the section from elsewhere.
 
-A sid consists of components, separated by a slash. A component name can contain lowercase letters, digits, dots and
+A sid consists of _components_, separated by a slash. A component name can contain lowercase letters, digits, dots and
 dashes.
 
 A section can have an absolute sid (which starts with a slash), a relative one, or no sid at all. The final sid for a section is determined using the following algorithm:
@@ -135,8 +133,8 @@ A section can have an absolute sid (which starts with a slash), a relative one, 
 - if no sid is given, the section title is converted to a component name and used as a sid
 - if a sid is given and ends with a slash, the title is converted to a component name and appended to the sid
 - if the sid is absolute, it is taken as is, and its heading level is ignored
-- if the sid is relative, the compiler uses its heading level to locate parent and sibling sections
-- if there is a parent section, the sid is appended to the parent sid
+- if the sid is relative, the compiler uses its heading level to locate parent and sibling sections in the current file
+- if there is a parent section, the sid is added to the parent sid
 - if there is a sibling section, the sid replaces the last component of the sibling sid
 - if none of the above applies, error
 
@@ -144,28 +142,35 @@ The first section in a file must provide a sid and this sid has to be absolute.
 
 Example:
 
-    # First Section :/docs/first
+    # First Section :/docs
         This section has a complete absolute sid.
 
-        ## Alpha Stuff :/docs/important
-            This sub-section has an absolute sid.
-            The parser ignores the hierarchy and makes this section a top-level.
+        ## Alpha Stuff :alpha
+            This sub-section has a relative sid, which is added to the parent.
+            The final sid of this section will be `/docs/alpha`
 
-        ## Beta Stuff :beta
-            This sub-section has a relative sid, which is appended to the parent.
-            The final sid will be `/docs/first/beta`
+        ## Beta Stuff
+            This sub-section has no sid, so it will be generated and added to the parent.
+            The final sid will be `/docs/beta-stuff`
 
-        ## Gamma Stuff
-            This sub-section has no sid, so it will be generated.
-            The final sid will be `/docs/first/gamma-stuff`
+        ## Gamma Stuff :gamma
 
+            ### Some Details :details
+                This section is deeper than "gamma", so "gamma" will be the parent.  
+                The final sid will be `/docs/gamma/details`
+        
+            ### Fine Print :more/
+                This section is deeper than "gamma" and its sid ends with a slash, so a generated sid will be added.
+                The final sid will be `/docs/gamma/more/fine-print`.
+                Note that this section becomes a 4th level section, despite the 3rd level heading.
+        
     # Second Section :second
-        This section has a relative sid, which replaces that last component of the sibling.
-        The final sid of this section will be `/docs/second`
+        This section has a relative sid, which replaces the last component of the sibling (`docs`).
+        The final sid will be `/second`
 
     # Third Section
         This section has no sid, so it will be generated and merged with the sibling.
-        The final sid of this section will be `/docs/third-section`
+        The final sid will be `/third-section`
 
 ### Section linking
 
@@ -196,7 +201,7 @@ If you have multiple different assets with the same filename, provide just enoug
 
 ## Commands
 
-Dog supports all Jump commands (like `%if` or `%include`) and provides a set of its own commands. To avoid excessive escaping, Jump syntax is redefined as
+Dog supports all Jump commands (like `if` or `include`) and provides a set of its own commands. To avoid excessive escaping, Jump syntax is redefined as
 follows:
 
     %quote xmp
@@ -220,6 +225,84 @@ resolved relative to the container. You can also use `*` just like in the sectio
         /docs/misc/*
     %end
     %end xmp
+
+### graph
+
+Draws a graph with [GraphViz](https://graphviz.org). The `dot` command must be installed and be in your `PATH`.
+
+A diagram can have an optional caption.
+
+
+    %quote xmp
+    %graph 'Simple graph'
+        digraph {
+            one -> two
+        }
+    %end
+    %end xmp
+
+    %graph 'Simple graph'
+        digraph {
+            one -> two
+        }
+    %end
+
+### dbgraph
+
+Draws a database diagram. 
+
+A DB diagram consists of tables and arrows. A table is a name, followed by a list of columns in `(...)`. Each column has a name, an optional type and an optional key indicator (`pk` for a primary key, `fk` for a foreign key). An arrow is like `table.column -> table.column`, where `->` indicates an m:1 relation and `->>` an 1:m one.
+
+    %quote xmp    
+    %dbgraph 'Our database layout'
+        house (
+            id integer pk
+            name text
+            ...more
+            street_id fk
+        )
+
+        street (
+            id integer pk
+            name text
+            images integer[]
+        )
+        
+        image (
+            id
+            name
+        )
+
+        house.street_id -> street.id
+        street.images ->> image.id
+    %end
+    %end xmp
+
+    %dbgraph 'Our database layout'
+        house (
+            id integer pk
+            name text
+            ...more
+            street_id fk
+        )
+
+        street (
+            id integer pk
+            name text
+            images integer[]
+        )
+        
+        image (
+            id
+            name
+        )
+
+        house.street_id -> street.id
+        street.images ->> image.id
+    %end
+
+
+
 
 ## API and options
 
@@ -259,17 +342,17 @@ This option indicates how Dog should write html files.
 
 `0` means all documentation will be stored in a single file (`index.html`)
 
-`1` means one file per level one section:
+`1` means one file per level-one section:
 
-    /foo -> /foo/index.html
-    /bar -> /bar/index.html
+    /foo  ->  /foo/index.html
+    /bar  ->  /bar/index.html
 
-`2` creates files for level one and level two sections
+`2` creates separate files for level-one and level-two sections
 
-    /foo     -> /foo/index.html
-    /foo/bob -> /foo/bob/index.html
-    /foo/fob -> /foo/fob/index.html
-    /bar     -> /bar/index.html
+    /foo      ->  /foo/index.html
+    /foo/bob  ->  /foo/bob/index.html
+    /foo/fob  ->  /foo/fob/index.html
+    /bar      ->  /bar/index.html
 
 and so on.
 

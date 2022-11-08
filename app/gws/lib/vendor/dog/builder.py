@@ -5,37 +5,8 @@ import fnmatch
 import shutil
 import mimetypes
 
-import jump
-
 from . import types as t
-from . import util, markdown
-
-
-class JumpEngine(jump.Engine):
-    options = dict(
-        comment_symbol='#%',
-        command_symbol='%',
-        inline_open_symbol='{%',
-        inline_close_symbol='%}',
-        echo_open_symbol='<%',
-        echo_close_symbol='%>',
-        echo_start_whitespace=True,
-    )
-
-    COMMAND = '__DG__'
-
-    @staticmethod
-    def error(exc, source_path, source_lineno, env):
-        util.log.error(f'template error: {exc.args[0]} in {source_path!r}')
-
-    def emit_code_block(self, command, args):
-        args['command'] = command
-        js = json.dumps(args)
-        return f'```\n{self.COMMAND}{js}\n```\n'
-
-    def box_toc(self, text, depth=1):
-        items = [ln.strip() for ln in text.strip().splitlines() if ln.strip()]
-        return self.emit_code_block('TocNode', {'items': items, 'depth': depth})
+from . import util, template, markdown
 
 
 class Section(t.Data):
@@ -89,7 +60,6 @@ class Builder:
         self.assetsUsed = []
 
         self.markdownParser = markdown.parser()
-        self.jumpEngine = JumpEngine()
 
         self.sectionMap = {}
         self.sidList = []
@@ -279,27 +249,19 @@ class Builder:
         self.htmlBuffers[sec.htmlPath].html.append(html)
 
     def html_flush(self, write: bool):
-        tpl = self.jumpEngine.compile_path(self.options.htmlPageTemplate, **JumpEngine.options)
+        tpl = template.compile(self.options.htmlPageTemplate)
         maintoc = self.html_render_main_toc()
 
         self.htmlContent = {}
 
         for path, chunk in self.htmlBuffers.items():
-            sec = self.get_section(chunk.sids[0])
-            breadcrumbs = []
-            while True:
-                breadcrumbs.insert(0, (sec.htmlUrl, sec.headHtml))
-                if not sec.parentSid:
-                    break
-                sec = self.get_section(sec.parentSid)
-
-            self.htmlContent[path] = self.jumpEngine.call(tpl, {
+            self.htmlContent[path] = template.call(tpl, {
                 'path': path,
                 'title': self.options.title,
                 'subTitle': self.options.subTitle,
                 'mainToc': maintoc,
                 'main': ''.join(chunk.html),
-                'breadcrumbs': breadcrumbs,
+                'breadcrumbs': self.get_breadcrumbs(chunk.sids[0]),
                 'builder': self,
                 'options': self.options,
             })
@@ -322,6 +284,18 @@ class Builder:
             dst = dirs + '/' + src.split('/').pop()
             util.log.debug(f'copy {src!r} => {dst!r}')
             shutil.copy(src, dst)
+
+    def get_breadcrumbs(self, sid):
+        sec = self.get_section(sid)
+        bs = []
+
+        while True:
+            bs.insert(0, (sec.htmlUrl, sec.headHtml))
+            if not sec.parentSid:
+                break
+            sec = self.get_section(sec.parentSid)
+
+        return bs
 
     ##
 
@@ -465,8 +439,8 @@ class FileParser:
 
                 continue
 
-            if node.type == 'block_code' and node.text.startswith(JumpEngine.COMMAND):
-                args = json.loads(node.text[len(JumpEngine.COMMAND):])
+            if node.type == 'block_code' and node.text.startswith(template.COMMAND):
+                args = json.loads(node.text[len(template.COMMAND):])
                 cls = globals()[args['command']]
                 stack[-1].nodes.append(cls(**args))
                 continue
@@ -476,19 +450,10 @@ class FileParser:
         return sections
 
     def pre_parse(self):
-        args = {
+        return template.render(self.path, {
             'options': self.b.options,
             'builder': self.b,
-        }
-        try:
-            return self.b.jumpEngine.render_path(
-                self.path,
-                args,
-                error=JumpEngine.error,
-                **JumpEngine.options,
-            )
-        except jump.CompileError as exc:
-            util.log.error(f'compile error {exc.args[0]}')
+        })
 
     def parse_heading(self, node, parent_sec, prev_sec):
         explicit_sid = self.extract_explicit_sid(node)

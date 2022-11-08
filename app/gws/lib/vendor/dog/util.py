@@ -1,6 +1,8 @@
 import os
 import re
 import sys
+import random
+import subprocess
 
 
 def parse_args(argv):
@@ -73,6 +75,12 @@ def normpath(path):
     return '/'.join(res)
 
 
+def random_string(length):
+    a = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    r = random.SystemRandom()
+    return ''.join(r.choice(a) for _ in range(length))
+
+
 _UID_DE_TRANS = {
     ord('ä'): 'ae',
     ord('ö'): 'oe',
@@ -99,6 +107,35 @@ def flatten(ls):
         else:
             res.append(x)
     return res
+
+
+def run(cmd, pipe=False):
+    """Run a command, return a tuple (ok, output)"""
+
+    log.debug('run ' + repr(' '.join(cmd)))
+
+    args = {
+        'stdout': subprocess.PIPE if pipe else None,
+        'stderr': subprocess.STDOUT if pipe else None,
+        'stdin': None,
+        'shell': False,
+    }
+
+    try:
+        p = subprocess.Popen(cmd, **args)
+        out, _ = p.communicate(None)
+        rc = p.returncode
+        if isinstance(out, bytes):
+            out = out.decode('utf8')
+    except Exception as exc:
+        log.error(f'run failed: {exc!r}')
+        return False, repr(exc)
+
+    if rc > 0:
+        log.error(f'run failed: {out!r}')
+        return False, out
+
+    return True, out
 
 
 color = {

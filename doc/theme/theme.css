@@ -107,8 +107,8 @@ main a:hover {
 }
 
 main h1 {
-    font-size: 32px;
-    margin: 24px 0;
+    font-size: 2.5rem;
+    margin: 1.5rem 0;
 }
 
 main h1:first-child {
@@ -116,20 +116,20 @@ main h1:first-child {
 }
 
 main h2 {
-    font-size: 24px;
-    margin: 24px 0;
+    font-size: 1.7rem;
+    margin: 1.5rem 0;
 }
 
 main h3 {
-    font-size: 18px;
-    font-weight: 500;
-    margin: 24px 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin: 1.5rem 0;
 }
 
 main h4 {
-    font-size: 16px;
+    font-size: 0.8rem;
     font-weight: 800;
-    margin: 24px 0;
+    margin: 1.5rem 0;
 }
 
 main p {
@@ -145,23 +145,38 @@ main li {
 main table {
     font-size: 14px;
     border-collapse: collapse;
-    margin: 24px 0;
+    margin: 24px;
 }
 
 main table th, main table td {
     margin: 0;
     padding: 12px;
-    border: 1px solid #cfd8dc;
+    border: 1px solid #eaeaea;
 }
 
 main table tr:nth-child(even) {
-    background: #f7f7fd;
+    background: #f8f8f8;
 }
 
 main table th {
-    font-weight: 900;
+    font-weight: 700;
     text-align: left;
-    background: #eceff1;
+    background: #f8f8f8;
+}
+
+figure {
+    display: table;
+    padding: 20px;
+    margin: 30px auto;
+}
+
+figcaption {
+    display: table-caption;
+    caption-side: bottom;
+    font-size: 12px;
+    font-weight: bold;
+    font-style: italic;
+    text-align: center;
 }
 
 nav {

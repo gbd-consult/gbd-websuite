@@ -39,12 +39,13 @@ def main():
         print(USAGE)
         return 0
 
-    cmd = args.get(1)
-
     opts = dog.types.Options(**options.OPTIONS)
+    dog.util.log.set_level('DEBUG' if opts.debug else 'INFO')
 
     mkdir(opts.outputDir)
     make_config_ref()
+
+    cmd = args.get(1)
 
     if cmd == 'html':
         dog.build_all('html', opts)
@@ -78,7 +79,7 @@ def make_api(opts):
     rsync.append(options.APP_DIR + '/gws')
     rsync.append(options.DOC_BUILD_DIR + '/app-copy')
 
-    run(rsync)
+    dog.util.run(rsync)
 
     args = list(opts.pydoctorArgs)
     args.extend([
@@ -199,30 +200,8 @@ def make_config_ref():
 
 
 def mkdir(d):
-    run(['rm', '-fr', d])
-    run(['makedir', '-p', d])
-
-
-def run(cmd):
-    """Run a process, return a tuple (rc, output)"""
-
-    print('[doc] ', ' '.join(cmd))
-
-    args = {
-        'stdin': None,
-        'stdout': None,
-        'stderr': None,
-        'shell': False,
-    }
-
-    try:
-        p = subprocess.Popen(cmd, **args)
-        out, _ = p.communicate(None)
-        rc = p.returncode
-    except Exception as exc:
-        return False
-
-    return rc == 0
+    dog.util.run(['rm', '-fr', d])
+    dog.util.run(['mkdir', '-p', d])
 
 
 if __name__ == '__main__':
