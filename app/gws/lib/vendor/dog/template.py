@@ -81,16 +81,16 @@ class Engine(jump.Engine):
     def box_dbgraph(self, text, caption=''):
         def span(s, color_name):
             c = self.DBGRAPH_COLORS[color_name]
-            return f'<FONT COLOR="{c}">{s}</FONT>'
+            return f'<FONT COLOR="{c}">{s or " "}</FONT>'
 
         def bold(s, color_name):
             c = self.DBGRAPH_COLORS[color_name]
-            return f'<FONT COLOR="{c}"><B>{s}</B></FONT>'
+            return f'<FONT COLOR="{c}"><B>{s or " "}</B></FONT>'
 
-        def parse_row(row):
-            c2 = row.pop() if row[-1].lower() in {'pk', 'fk'} else ' '
-            c1 = row[1] if len(row) > 1 else ' '
-            return [row[0], c1, c2]
+        def parse_row(r):
+            row = r.strip().split()
+            k = row.pop().lower() if row[-1].lower() in {'pk', 'fk'} else ''
+            return [row[0], ' '.join(row[1:]), k]
 
         def format_row(row, w0, w1):
             s = ''
@@ -103,9 +103,9 @@ class Engine(jump.Engine):
             return f'<TR><TD ALIGN="left" PORT="{row[0]}">{s}</TD></TR>'
 
         def make_table(name, body):
-            rows = [parse_row(s.strip().split()) for s in body.strip().split('\n')]
-            w0 = 3 + max(len(row[0]) for row in rows)
-            w1 = 3 + max(len(row[1]) for row in rows)
+            rows = [parse_row(r) for r in body.strip().split(',')]
+            w0 = 2 + max(len(row[0]) for row in rows)
+            w1 = 2 + max(len(row[1]) for row in rows)
             tbody = ''.join(format_row(row, w0, w1) for row in rows)
             thead = bold(name, 'head')
             c = self.DBGRAPH_COLORS['border']

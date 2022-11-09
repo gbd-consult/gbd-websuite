@@ -228,9 +228,7 @@ resolved relative to the container. You can also use `*` just like in the sectio
 
 ### graph
 
-Draws a graph with [GraphViz](https://graphviz.org). The `dot` command must be installed and be in your `PATH`.
-
-A diagram can have an optional caption.
+Draws a graph with [GraphViz](https://graphviz.org). The `dot` command must be installed and be in your `PATH`. A diagram can have an optional caption.
 
 
     %quote xmp
@@ -256,22 +254,19 @@ A DB diagram consists of tables and arrows. A table is a name, followed by a lis
     %quote xmp    
     %dbgraph 'Our database layout'
         house (
-            id integer pk
-            name text
-            ...more
+            id integer pk,
+            name character varying,
+            ...more,
             street_id fk
         )
 
         street (
-            id integer pk
-            name text
+            id integer pk,
+            name text,
             images integer[]
         )
         
-        image (
-            id
-            name
-        )
+        image (id integer, name text)
 
         house.street_id -> street.id
         street.images ->> image.id
@@ -280,29 +275,23 @@ A DB diagram consists of tables and arrows. A table is a name, followed by a lis
 
     %dbgraph 'Our database layout'
         house (
-            id integer pk
-            name text
-            ...more
+            id integer pk,
+            name character varying,
+            ...more,
             street_id fk
         )
 
         street (
-            id integer pk
-            name text
+            id integer pk,
+            name text,
             images integer[]
         )
         
-        image (
-            id
-            name
-        )
+        image (id integer, name text)
 
         house.street_id -> street.id
         street.images ->> image.id
     %end
-
-
-
 
 ## API and options
 
@@ -310,7 +299,7 @@ Dog provides two API functions:
 
     dog.build_all(mode: str, options: dict) 
 
-builds the documentation. `mode` is `html` or `pdf`
+builds the documentation. `mode` is `"html"` or `"pdf"`.
 
     dog.start_server(options: dict)
 
