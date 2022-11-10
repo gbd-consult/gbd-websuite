@@ -319,8 +319,8 @@ Dog recognizes the following options:
 | `htmlStaticDir`    | `str`       | where to store assets                            |
 | `htmlPageTemplate` | `str`       | Jump page template, see below                    |
 | `htmlAssets`       | `List[str]` | extra asset paths (e.g css, js)                  |
-| `serverPort`       | `int`       | host name for the live server                    |
-| `serverHost`       | `str`       | port for the live server                         |
+| `serverHost`       | `str`       | host name for the live server                    |
+| `serverPort`       | `int`       | port for the live server                         |
 | `title`            | `str`       | documentation title                              |
 | `subTitle`         | `str`       | documentation subtitle                           |
 | `debug`            | `bool`      | debug logging                                    |

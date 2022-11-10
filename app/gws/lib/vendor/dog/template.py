@@ -103,7 +103,7 @@ class Engine(jump.Engine):
             return f'<TR><TD ALIGN="left" PORT="{row[0]}">{s}</TD></TR>'
 
         def make_table(name, body):
-            rows = [parse_row(r) for r in body.strip().split(',')]
+            rows = [parse_row(r) for r in body.strip().strip(',').split(',')]
             w0 = 2 + max(len(row[0]) for row in rows)
             w1 = 2 + max(len(row[1]) for row in rows)
             tbody = ''.join(format_row(row, w0, w1) for row in rows)

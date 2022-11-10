@@ -123,7 +123,7 @@ class AstRenderer:
 
 ##
 
-class HTMLRenderer:
+class Renderer:
 
     def render_content(self, node):
         if node.children:

@@ -63,6 +63,9 @@ class Server:
         for path in self.builder.assetPaths:
             self.liveServer.watch(path, self.watch_assets, delay=0.1)
 
+        for path in self.builder.options.htmlAssets:
+            self.liveServer.watch(path, self.watch_assets, delay=0.1)
+
         self.liveServer.setHeader('Access-Control-Allow-Origin', '*')
         self.liveServer.setHeader('Access-Control-Allow-Methods', '*')
 

@@ -300,7 +300,15 @@ nav {
     display: block;
 }
 
+#sidebar-toc > ul {
+    opacity: 0;
+    transition: all 0.5s ease;
+}
 
+#sidebar-toc > ul.on {
+    opacity: 1;
+    transition: all 0.5s ease;
+}
 
 
 

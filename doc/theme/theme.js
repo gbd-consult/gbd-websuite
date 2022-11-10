@@ -21,11 +21,6 @@ function syncNavigation() {
         curr.classList.add('on')
         curr = curr.parentNode;
     }
-
-
-    console.log(location)
-
-
 }
 
 function main() {
