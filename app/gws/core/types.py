@@ -1598,6 +1598,7 @@ class IApplication(INode, Protocol):
     monitor: 'IMonitor'
     qgisVersion: str
     version: str
+    versionString: str
 
     actionMgr: 'IActionManager'
     authMgr: 'IAuthManager'

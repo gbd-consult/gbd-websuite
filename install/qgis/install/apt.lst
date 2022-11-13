@@ -9,30 +9,43 @@ rsyslog
 # for qgis server
 
 libexiv2-27
+libexpat1
 libfcgi0ldbl
-libgdal26
+libgdal30
 libgeos-c1v5
-libproj15
-libprotobuf-lite17
+libpq5
+libproj22
+libprotobuf-lite23
 libqca-qt5-2
 libqscintilla2-qt5-15
 libqt5concurrent5
 libqt5core5a
+libqt5dbus5
+libqt5gui5
 libqt5keychain1
-libqt5sql5
-libqt5webkit5
-libqt5xml5
-libspatialindex6
-libzip5
-ocl-icd-libopencl1
-
-libpq5
-libqt5sql5-mysql
-libqt5sql5-sqlite
-libqt5sql5-odbc
-
-libqwt-qt5-6
+libqt5network5
+libqt5positioning5
+libqt5printsupport5
+libqt5qml5
 libqt5quickwidgets5
+libqt5sql5
+libqt5sql5-mysql
+libqt5sql5-odbc
+libqt5sql5-sqlite
+libqt5svg5
+libqt5test5
+libqt5webkit5
+libqt5widgets5
+libqt5xml5
+libqwt-qt5-6
+libqwt-qt5-6
+libspatialindex6
+libspatialite7
+libsqlite0
+libxml2
+libzip4
+libzstd1
+ocl-icd-libopencl1
 
 # for qgis python bindings
 

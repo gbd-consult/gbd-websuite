@@ -13,6 +13,7 @@ import gws.gis.cache
 import gws.gis.mpx.config
 import gws.lib.font
 import gws.lib.importer
+import gws.lib.osx
 import gws.server
 import gws.server.monitor
 import gws.spec
@@ -26,44 +27,44 @@ _DEFAULT_LOCALE = ['en_CA']
 class FontConfig(gws.Config):
     """Fonts configuration."""
 
-    dir: gws.DirPath 
+    dir: gws.DirPath
     """directory with custom fonts"""
 
 
 class Config(gws.ConfigWithAccess):
     """Main application configuration"""
 
-    api: t.Optional[gws.base.action.manager.Config] 
+    api: t.Optional[gws.base.action.manager.Config]
     """system-wide server actions"""
     auth: t.Optional[gws.base.auth.Config] = {}  # type: ignore
     """authorization methods and options"""
     cache: t.Optional[gws.gis.cache.Config] = {}  # type: ignore
     """global cache configuration"""
-    client: t.Optional[gws.base.client.Config] 
+    client: t.Optional[gws.base.client.Config]
     """gws client configuration"""
-    db: t.Optional[gws.base.database.manager.Config] 
+    db: t.Optional[gws.base.database.manager.Config]
     """database configuration"""
-    developer: t.Optional[t.Dict] 
+    developer: t.Optional[t.Dict]
     """developer options"""
-    fonts: t.Optional[FontConfig] 
+    fonts: t.Optional[FontConfig]
     """fonts configuration"""
-    helpers: t.Optional[t.List[gws.ext.config.helper]] 
+    helpers: t.Optional[t.List[gws.ext.config.helper]]
     """helpers configurations"""
-    locales: t.Optional[t.List[str]] 
+    locales: t.Optional[t.List[str]]
     """default locales for all projects"""
-    metadata: t.Optional[gws.Metadata] 
+    metadata: t.Optional[gws.Metadata]
     """application metadata"""
-    middleware: t.Optional[t.List[str]] 
+    middleware: t.Optional[t.List[str]]
     """middleware function names"""
-    projectDirs: t.Optional[t.List[gws.DirPath]] 
+    projectDirs: t.Optional[t.List[gws.DirPath]]
     """directories with additional projects"""
-    projectPaths: t.Optional[t.List[gws.FilePath]] 
+    projectPaths: t.Optional[t.List[gws.FilePath]]
     """additional project paths"""
-    projects: t.Optional[t.List[gws.ext.config.project]] 
+    projects: t.Optional[t.List[gws.ext.config.project]]
     """project configurations"""
     server: t.Optional[gws.server.Config] = {}  # type: ignore
     """server engine options"""
-    web: t.Optional[gws.base.web.manager.Config] 
+    web: t.Optional[gws.base.web.manager.Config]
     """web server options"""
 
 
@@ -85,21 +86,22 @@ class Object(gws.Node, gws.IApplication):
     def configure(self):
         self.version = self.root.specs.version
 
-        self._devopts = self.var('developer') or {}
-        if self._devopts:
-            gws.log.warn('developer mode enabled')
-
+        self.versionString = f'GWS version {self.version}'
+        _, s = gws.lib.osx.run(['lsb_release', '-ds'])
+        self.versionString += ', ' + s.decode('ascii').strip()
         if self.var('server.qgis.enabled'):
             qgis_server = gws.lib.importer.import_from_path('gws/plugin/qgis/server.py')
             self.qgisVersion = qgis_server.version()
-
-        s = f'GWS version {self.version}'
-        if self.qgisVersion:
-            s += f', QGis {self.qgisVersion}'
+            if self.qgisVersion:
+                self.versionString += f', QGis {self.qgisVersion}'
 
         gws.log.info('*' * 60)
-        gws.log.info(s)
+        gws.log.info(self.versionString)
         gws.log.info('*' * 60)
+
+        self._devopts = self.var('developer') or {}
+        if self._devopts:
+            gws.log.warn('developer mode enabled')
 
         self.webMiddlewareFuncs = {}
         self.webMiddlewareNames = self.var('middleware', default=_DEFAULT_MIDDLEWARE)

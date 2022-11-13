@@ -64,8 +64,8 @@ class Builder:
         'qgis-server-debug': ['qgis', 'debug', True]
     }
 
-    ubuntu_name = 'focal'
-    ubuntu = '20.04'
+    ubuntu_name = 'jammy'
+    ubuntu = '22.04'
 
     files_url = 'http://gws-files.gbd-consult.de'
 
@@ -75,8 +75,8 @@ class Builder:
 
     vendor = 'gbdconsult'
 
-    # wkhtmltopdf_url = 'https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb'
-    wkhtmltopdf_path = 'wkhtmltox_0.12.6-1.focal_amd64.deb'
+    # see https://github.com/wkhtmltopdf/packaging/releases
+    wkhtmltopdf_path = 'wkhtmltox_0.12.6.1-2.jammy_amd64.deb'
     wkhtmltopdf_url = files_url + '/' + wkhtmltopdf_path
 
     alkisplugin_url = files_url + '/alkisplugin.tar.gz'
