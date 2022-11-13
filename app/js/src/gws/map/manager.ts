@@ -51,7 +51,7 @@ export class MapManager implements types.IMapManager {
     protected updateCount = 0;
     protected intrStack = [];
     protected standardInteractions = {};
-    protected props: api.base.map.main.Props;
+    protected props: api.base.map.Props;
 
     // @TODO this should be 'viewExtent' actually
     get bbox() {

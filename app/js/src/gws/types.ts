@@ -33,7 +33,7 @@ export interface IApplication {
     style: IStyleManager;
     overviewMap: IMapManager;
     options: Dict;
-    project: api.base.project.main.Props;
+    project: api.base.project.Props;
     server: IServer;
     store: IStoreWrapper;
     tags: Dict;
@@ -274,7 +274,7 @@ export interface IMapManager {
     size: ol.Size;
     viewState: MapViewState;
 
-    init(props: api.base.map.main.Props, appLoc: object);
+    init(props: api.base.map.Props, appLoc: object);
     update(args: any);
     changed();
     forceUpdate();
