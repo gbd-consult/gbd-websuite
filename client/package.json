@@ -23,7 +23,6 @@
         "axios": "^0.19.2",
         "geographiclib": "1.51.0",
         "lodash": "^4.17.15",
-        "material-design-icons": "^3.0.1",
         "mime-types": "^2.1.27",
         "moment": "^2.25.3",
         "openlayers": "^4.6.5",
