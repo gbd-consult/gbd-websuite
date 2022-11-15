@@ -27,9 +27,9 @@ def compile(path):
         util.log.error(f'template compilation error: {exc.args[0]}')
 
 
-def render(path, args):
+def render(text, path, args):
     try:
-        return _ENGINE.render_path(path, args, error=_error, **OPTIONS)
+        return _ENGINE.render(text, args, error=_error, path=path, **OPTIONS)
     except jump.CompileError as exc:
         util.log.error(f'template compilation error: {exc.args[0]}')
 
@@ -42,10 +42,10 @@ def call(tpl, args):
 
 
 class Engine(jump.Engine):
-    def emit_code_block(self, command, args):
+    def command_block(self, command, args):
         args['command'] = command
         js = json.dumps(args)
-        return f'```\n{COMMAND}{js}\n```\n'
+        return f'\n```\n{COMMAND}{js}\n```\n'
 
     def render_dot(self, text):
         tmp = os.path.join(tempfile.gettempdir(), util.random_string(8) + '.dot')
@@ -56,9 +56,22 @@ class Engine(jump.Engine):
         os.unlink(tmp)
         return '<svg' + out.split('<svg')[1]
 
+    def wrap_html(self, before, text, after):
+        return (
+                self.command_block('RawHtmlNode', {'html': before})
+                + _dedent(text)
+                + self.command_block('RawHtmlNode', {'html': after})
+        )
+
+    def box_info(self, text):
+        return self.wrap_html('<div class="admonition_info">', text, '</div>')
+
+    def box_warn(self, text):
+        return self.wrap_html('<div class="admonition_warn">', text, '</div>')
+
     def box_toc(self, text, depth=1):
         items = [ln.strip() for ln in text.strip().splitlines() if ln.strip()]
-        return self.emit_code_block('TocNode', {'items': items, 'depth': depth})
+        return self.command_block('TocNode', {'items': items, 'depth': depth})
 
     def box_graph(self, text, caption=''):
         svg = self.render_dot(text)
@@ -81,16 +94,16 @@ class Engine(jump.Engine):
     def box_dbgraph(self, text, caption=''):
         def span(s, color_name):
             c = self.DBGRAPH_COLORS[color_name]
-            return f'<FONT COLOR="{c}">{s or " "}</FONT>'
+            return f'<FONT COLOR="{c}">{s}</FONT>'
 
         def bold(s, color_name):
             c = self.DBGRAPH_COLORS[color_name]
-            return f'<FONT COLOR="{c}"><B>{s or " "}</B></FONT>'
+            return f'<FONT COLOR="{c}"><B>{s}</B></FONT>'
 
         def parse_row(r):
             row = r.strip().split()
-            k = row.pop().lower() if row[-1].lower() in {'pk', 'fk'} else ''
-            return [row[0], ' '.join(row[1:]), k]
+            k = row.pop() if row[-1].lower() in {'pk', 'fk'} else ''
+            return [row[0], ' '.join(row[1:]) or ' ', k.lower()]
 
         def format_row(row, w0, w1):
             s = ''
@@ -157,3 +170,13 @@ _ENGINE = Engine()
 
 def _error(exc, source_path, source_lineno, env):
     util.log.error(f'template error: {exc.args[0]} in {source_path!r}:{source_lineno}')
+
+
+def _dedent(text):
+    lines = text.split('\n')
+    ind = 1e20
+    for ln in lines:
+        n = len(ln.lstrip())
+        if n > 0:
+            ind = min(ind, len(ln) - n)
+    return '\n'.join(ln[ind:] for ln in lines)

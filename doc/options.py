@@ -22,14 +22,19 @@ OPTIONS = {
     'debug': False,
 
     'htmlSplitLevel': 3,
-    'htmlPageTemplate': f'{DOC_DIR}/theme/page.cx.html',
-    'htmlWebRoot': f'/doc/{VERSION}',
-    'htmlStaticDir': '_static',
-    'htmlAssets': [
+    'pageTemplate': f'{DOC_DIR}/theme/page.cx.html',
+    'webRoot': f'/doc/{VERSION}',
+    'staticDir': '_static',
+    'extraAssets': [
         f'{DOC_DIR}/theme/theme.css',
         f'{DOC_DIR}/theme/theme.js',
-        f'{DOC_DIR}/theme/home.svg',
+        f'{DOC_DIR}/theme/theme_home.svg',
+        f'{DOC_DIR}/theme/theme_info.svg',
+        f'{DOC_DIR}/theme/theme_lightbulb.svg',
+        f'{DOC_DIR}/theme/theme_warning.svg',
     ],
+
+    'includeTemplate': f'{DOC_DIR}/extra_commands.cx.html',
 
     'outputDir': f'{DOC_BUILD_DIR}/doc/{VERSION}',
 

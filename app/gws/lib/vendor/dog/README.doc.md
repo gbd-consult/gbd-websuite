@@ -58,7 +58,7 @@ For example, assume we have files like this:
     ## Second Thing :/docs/second
         Discussion of the second thing
 
-Then, the compiled tree will look like this:
+Then, the compiled documentation will be like:
 
     # Our docs :/docs
     
@@ -174,7 +174,7 @@ Example:
 
 ### Section linking
 
-A section can be linked to using the standard Markdown notation:
+A section can be linked to with its sid in the standard Markdown link notation:
 
     See [](/docs/first/second) for more details
 
@@ -226,6 +226,34 @@ resolved relative to the container. You can also use `*` just like in the sectio
     %end
     %end xmp
 
+### info
+
+Creates an "info" admonition:
+
+    %quote xmp
+    %info
+        To whom it may concern.
+    %end
+    %end xmp
+
+    %info
+        To whom it may concern.
+    %end
+
+### warn
+
+Creates a "warning" admonition:
+
+    %quote xmp
+    %warn
+        Here be dragons.
+    %end
+    %end xmp
+
+    %warn
+        Here be dragons.
+    %end
+
 ### graph
 
 Draws a graph with [GraphViz](https://graphviz.org). The `dot` command must be installed and be in your `PATH`. A diagram can have an optional caption.
@@ -234,6 +262,7 @@ Draws a graph with [GraphViz](https://graphviz.org). The `dot` command must be i
     %quote xmp
     %graph 'Simple graph'
         digraph {
+            rankdir="LR"
             one -> two
         }
     %end
@@ -241,6 +270,7 @@ Draws a graph with [GraphViz](https://graphviz.org). The `dot` command must be i
 
     %graph 'Simple graph'
         digraph {
+            rankdir="LR"
             one -> two
         }
     %end
@@ -265,7 +295,7 @@ A DB diagram consists of tables and arrows. A table is a name, followed by a lis
             name text,
             images integer[]
         )
-        
+
         image (id integer, name text)
 
         house.street_id -> street.id
@@ -286,7 +316,7 @@ A DB diagram consists of tables and arrows. A table is a name, followed by a lis
             name text,
             images integer[]
         )
-        
+
         image (id integer, name text)
 
         house.street_id -> street.id
@@ -307,23 +337,25 @@ starts a development server with live reload.
 
 Dog recognizes the following options:
 
-| option             | type        | meaning                                          |
-|--------------------|-------------|--------------------------------------------------|
-| `rootDirs`         | `List[str]` | source directories                               |
-| `docPatterns`      | `List[str]` | shell patterns for doc files, e.g `*doc.md`      |
-| `assetPatterns`    | `List[str]` | shell patterns for asset files, e.g. `*jpg`      |
-| `excludeRegex`     | `str`       | regex to match file paths that should be ignored |
-| `outputDir`        | `str`       | output directory                                 |
-| `htmlSplitLevel`   | `int`       | html split-level, see below                      |
-| `htmlWebRoot`      | `str`       | prefix all urls with this path                   |
-| `htmlStaticDir`    | `str`       | where to store assets                            |
-| `htmlPageTemplate` | `str`       | Jump page template, see below                    |
-| `htmlAssets`       | `List[str]` | extra asset paths (e.g css, js)                  |
-| `serverHost`       | `str`       | host name for the live server                    |
-| `serverPort`       | `int`       | port for the live server                         |
-| `title`            | `str`       | documentation title                              |
-| `subTitle`         | `str`       | documentation subtitle                           |
-| `debug`            | `bool`      | debug logging                                    |
+| option            | type        | meaning                                          |
+|-------------------|-------------|--------------------------------------------------|
+| `rootDirs`        | `List[str]` | source directories                               |
+| `docPatterns`     | `List[str]` | shell patterns for doc files, e.g `*doc.md`      |
+| `assetPatterns`   | `List[str]` | shell patterns for asset files, e.g. `*jpg`      |
+| `extraAssets`     | `List[str]` | extra asset paths (e.g css, js)                  |
+| `excludeRegex`    | `str`       | regex to match file paths that should be ignored |
+| `outputDir`       | `str`       | output directory                                 |
+| `staticDir`       | `str`       | where to store assets                            |
+| `htmlSplitLevel`  | `int`       | html split-level, see below                      |
+| `includeTemplate` | `str`       | path to a Jump included template, see below      |
+| `pageTemplate`    | `str`       | path to a Jump page template, see below          |
+| `webRoot`         | `str`       | prefix all urls with this path                   |
+| `serverHost`      | `str`       | host name for the live server                    |
+| `serverPort`      | `int`       | port for the live server                         |
+| `title`           | `str`       | documentation title                              |
+| `subTitle`        | `str`       | documentation subtitle                           |
+| `debug`           | `bool`      | embed debug information in the output            |
+| `verbose`         | `bool`      | enable debug logging                             |
 
 ### html split-level
 
@@ -345,6 +377,10 @@ This option indicates how Dog should write html files.
 
 and so on.
 
+### include template
+
+This template, if provided, is included in every source file. Can be used to define custom Jump commands.
+
 ### page template
 
 A page template is a Jump template which is rendered for each html page. This template gets the following arguments:
@@ -358,4 +394,3 @@ A page template is a Jump template which is rendered for each html page. This te
 | `mainToc`     | main table of contents as html `LI` elements |
 | `main`        | main html content for this page              |
 | `options`     | options object as defined above              |
-| `builder`     | the builder object                           |

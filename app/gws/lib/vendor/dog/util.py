@@ -5,6 +5,23 @@ import random
 import subprocess
 
 
+class Data:
+    def __init__(self, **kwargs):
+        vars(self).update(kwargs)
+
+    def get(self, k, default=None):
+        return vars(self).get(k, default)
+
+    def __getattr__(self, item):
+        return None
+
+
+def to_data(arg):
+    if isinstance(arg, Data):
+        return arg
+    return Data(**arg)
+
+
 def parse_args(argv):
     args = {}
     opt = None
@@ -160,7 +177,7 @@ log_colors = {
 
 
 class _Logger:
-    level = 'DEBUG'
+    level = 'INFO'
 
     def set_level(self, level):
         self.level = level

@@ -1,4 +1,3 @@
-import fnmatch
 import livereload
 
 from . import builder, util
@@ -6,7 +5,7 @@ from . import builder, util
 
 class Server:
     def __init__(self, options):
-        self.options = options
+        self.options = util.to_data(options)
         self.liveServer = None
         self.liveScript = f'<script src="//{self.options.serverHost}:{self.options.serverPort}/livereload.js?port={self.options.serverPort}"></script>'
         self.builder = None
@@ -63,7 +62,7 @@ class Server:
         for path in self.builder.assetPaths:
             self.liveServer.watch(path, self.watch_assets, delay=0.1)
 
-        for path in self.builder.options.htmlAssets:
+        for path in self.builder.options.extraAssets:
             self.liveServer.watch(path, self.watch_assets, delay=0.1)
 
         self.liveServer.setHeader('Access-Control-Allow-Origin', '*')
@@ -77,7 +76,7 @@ class Server:
 
         tornado.autoreload._reload_hooks = ListNoAppend()
 
-        util.log.info(f'http://{self.options.serverHost}:{self.options.serverPort}{self.options.htmlWebRoot}/')
+        util.log.info(f'http://{self.options.serverHost}:{self.options.serverPort}{self.options.webRoot}/')
 
         self.liveServer.serve(
             host=self.options.serverHost,

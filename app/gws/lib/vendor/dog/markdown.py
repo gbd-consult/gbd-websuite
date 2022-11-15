@@ -1,8 +1,24 @@
 from typing import List
 import mistune
 
-from . import types as t
 from . import util
+
+
+class Element(util.Data):
+    align: str
+    alt: str
+    children: List['Element']
+    info: str
+    is_head: bool
+    level: int
+    link: str
+    ordered: bool
+    sid: str
+    src: str
+    start: str
+    text: str
+    title: str
+    type: str
 
 
 def parser():
@@ -12,21 +28,21 @@ def parser():
     )
 
 
-def strip_node(node: t.MarkdownNode):
-    while node.children:
-        if not node.children[-1].text:
+def strip_text_content(el: Element):
+    while el.children:
+        if not el.children[-1].text:
             return
-        node.children[-1].text = node.children[-1].text.rstrip()
-        if len(node.children[-1].text) > 0:
+        el.children[-1].text = el.children[-1].text.rstrip()
+        if len(el.children[-1].text) > 0:
             return
-        node.children.pop()
+        el.children.pop()
 
 
-def text_from_node(node: t.MarkdownNode):
-    if node.text:
-        return node.text.strip()
-    if node.children:
-        return ' '.join(text_from_node(c) for c in node.children).strip()
+def text_from_element(el: Element):
+    if el.text:
+        return el.text.strip()
+    if el.children:
+        return ' '.join(text_from_element(c) for c in el.children).strip()
     return ''
 
 
@@ -40,12 +56,12 @@ class AstRenderer:
         # setattr(self, name, method)
 
     def text(self, text):
-        return t.MarkdownNode(type='text', text=text)
+        return Element(type='text', text=text)
 
     def link(self, link, children=None, title=None):
         if isinstance(children, str):
-            children = [t.MarkdownNode(type='text', text=children)]
-        return t.MarkdownNode(
+            children = [Element(type='text', text=children)]
+        return Element(
             type='link',
             link=link,
             children=children,
@@ -53,35 +69,35 @@ class AstRenderer:
         )
 
     def image(self, src, alt="", title=None):
-        return t.MarkdownNode(type='image', src=src, alt=alt, title=title)
+        return Element(type='image', src=src, alt=alt, title=title)
 
     def codespan(self, text):
-        return t.MarkdownNode(type='codespan', text=text)
+        return Element(type='codespan', text=text)
 
     def linebreak(self):
-        return t.MarkdownNode(type='linebreak')
+        return Element(type='linebreak')
 
     def inline_html(self, html):
-        return t.MarkdownNode(type='inline_html', text=html)
+        return Element(type='inline_html', text=html)
 
     def heading(self, children, level):
-        return t.MarkdownNode(type='heading', children=children, level=level)
+        return Element(type='heading', children=children, level=level)
 
     def newline(self):
-        return t.MarkdownNode(type='newline')
+        return Element(type='newline')
 
     def thematic_break(self):
-        return t.MarkdownNode(type='thematic_break')
+        return Element(type='thematic_break')
 
     def block_code(self, children, info=None):
-        return t.MarkdownNode(
+        return Element(
             type='block_code',
             text=children,
             info=info
         )
 
     def block_html(self, children):
-        return t.MarkdownNode(type='block_html', text=children)
+        return Element(type='block_html', text=children)
 
     def list(self, children, ordered, level, start=None):
         token = {
@@ -92,13 +108,13 @@ class AstRenderer:
         }
         if start is not None:
             token['start'] = start
-        return t.MarkdownNode(**token)
+        return Element(**token)
 
     def list_item(self, children, level):
-        return t.MarkdownNode(type='list_item', children=children, level=level)
+        return Element(type='list_item', children=children, level=level)
 
     def table_cell(self, children, align=None, is_head=False):
-        return t.MarkdownNode(
+        return Element(
             type='table_cell',
             children=children,
             align=align,
@@ -107,7 +123,7 @@ class AstRenderer:
 
     def _create_default_method(self, name):
         def __ast(children=None):
-            return t.MarkdownNode(type=name, children=children)
+            return Element(type=name, children=children)
 
         return __ast
 
@@ -125,14 +141,14 @@ class AstRenderer:
 
 class Renderer:
 
-    def render_content(self, node):
-        if node.children:
-            return ''.join(self.render_node(c) for c in node.children)
+    def render_content(self, el: Element):
+        if el.children:
+            return ''.join(self.render_element(c) for c in el.children)
         return ''
 
-    def render_node(self, node):
-        fn = getattr(self, 'tag_' + node.type)
-        return fn(node)
+    def render_element(self, el: Element):
+        fn = getattr(self, 'tag_' + el.type)
+        return fn(el)
 
     def render_a(self, href, title, content):
         s = f' href="{href}"'
@@ -142,112 +158,112 @@ class Renderer:
 
     ##
 
-    def tag_text(self, node):
-        return escape(node.text)
+    def tag_text(self, el: Element):
+        return escape(el.text)
 
-    def tag_link(self, node):
-        c = self.render_content(node)
-        link = node.link
-        return self.render_a(link, node.title, c)
+    def tag_link(self, el: Element):
+        c = self.render_content(el)
+        link = el.link
+        return self.render_a(link, el.title, c)
 
-    def tag_image(self, node):
+    def tag_image(self, el: Element):
         s = ''
-        if node.src:
-            s += f' src="{node.src}"'
-        if node.alt:
-            s += f' alt="{escape(node.alt)}"'
-        if node.title:
-            s += f' title="{escape(node.title)}"'
+        if el.src:
+            s += f' src="{el.src}"'
+        if el.alt:
+            s += f' alt="{escape(el.alt)}"'
+        if el.title:
+            s += f' title="{escape(el.title)}"'
         return f'<img{s} />'
 
-    def tag_emphasis(self, node):
-        c = self.render_content(node)
+    def tag_emphasis(self, el: Element):
+        c = self.render_content(el)
         return f'<em>{c}</em>'
 
-    def tag_strong(self, node):
-        c = self.render_content(node)
+    def tag_strong(self, el: Element):
+        c = self.render_content(el)
         return f'<strong>{c}</strong>'
 
-    def tag_codespan(self, node):
-        return '<code>' + escape(node.text) + '</code>'
+    def tag_codespan(self, el: Element):
+        return '<code>' + escape(el.text) + '</code>'
 
-    def tag_linebreak(self, node):
+    def tag_linebreak(self, el: Element):
         return '<br />\n'
 
-    def tag_inline_html(self, node):
-        return self.render_content(node)
+    def tag_inline_html(self, el: Element):
+        return self.render_content(el)
 
-    def tag_paragraph(self, node):
-        c = self.render_content(node)
+    def tag_paragraph(self, el: Element):
+        c = self.render_content(el)
         return f'<p>{c}</p>\n'
 
-    def tag_heading(self, node):
-        c = self.render_content(node)
-        tag = 'h' + str(node.level)
+    def tag_heading(self, el: Element):
+        c = self.render_content(el)
+        tag = 'h' + str(el.level)
         s = ''
-        if node.id:
-            s += f' id="{node.id}"'
+        if el.id:
+            s += f' id="{el.id}"'
         return f'<{tag}{s}>{c}</{tag}>\n'
 
-    def tag_newline(self, node):
+    def tag_newline(self, el: Element):
         return ''
 
-    def tag_thematic_break(self, node):
+    def tag_thematic_break(self, el: Element):
         return '<hr/>\n'
 
-    def tag_block_text(self, node):
-        return self.render_content(node)
+    def tag_block_text(self, el: Element):
+        return self.render_content(el)
 
-    def tag_block_code(self, node):
+    def tag_block_code(self, el: Element):
         # @TODO syntax higlighting
-        c = escape(node.text.strip())
+        c = escape(el.text.strip())
         return f'<pre><code>{c}</code></pre>'
 
-    def tag_block_quote(self, node):
-        c = self.render_content(node)
+    def tag_block_quote(self, el: Element):
+        c = self.render_content(el)
         return f'<blockquote>\n{c}</blockquote>\n'
 
-    def tag_block_html(self, node):
-        return node.text
+    def tag_block_html(self, el: Element):
+        return el.text
 
-    def tag_block_error(self, node):
-        c = self.render_content(node)
+    def tag_block_error(self, el: Element):
+        c = self.render_content(el)
         return f'<div class="error">{c}</div>\n'
 
-    def tag_list(self, node):
-        c = self.render_content(node)
-        tag = 'ol' if node.ordered else 'ul'
+    def tag_list(self, el: Element):
+        c = self.render_content(el)
+        tag = 'ol' if el.ordered else 'ul'
         s = ''
-        if node.start:
-            s = f' start="{node.start}"'
+        if el.start:
+            s = f' start="{el.start}"'
         return f'<{tag}{s}>\n{c}</{tag}>\n'
 
-    def tag_list_item(self, node):
-        c = self.render_content(node)
+    def tag_list_item(self, el: Element):
+        c = self.render_content(el)
         return f'<li>{c}</li>\n'
 
-    def tag_table(self, node):
-        c = self.render_content(node)
+    def tag_table(self, el: Element):
+        c = self.render_content(el)
         return f'<table>{c}</table>\n'
 
-    def tag_table_head(self, node):
-        c = self.render_content(node)
+    def tag_table_head(self, el: Element):
+        c = self.render_content(el)
         return f'<thead>\n<tr>{c}</tr>\n</thead>\n'
 
-    def tag_table_body(self, node):
-        c = self.render_content(node)
+    def tag_table_body(self, el: Element):
+        c = self.render_content(el)
         return f'<tbody>\n{c}</tbody>\n'
 
-    def tag_table_row(self, node):
-        c = self.render_content(node)
+    def tag_table_row(self, el: Element):
+        c = self.render_content(el)
         return f'<tr>{c}</tr>\n'
 
-    def tag_table_cell(self, node):
-        c = self.render_content(node)
-        tag = 'th' if node.is_head else 'td'
+    def tag_table_cell(self, el: Element):
+        c = self.render_content(el)
+        tag = 'th' if el.is_head else 'td'
         s = ''
-        if node.align:
-            s = f' style="text-align:{node.align}"'
+        if el.align:
+            s = f' style="text-align:{el.align}"'
         return f'<{tag}{s}>{c}</{tag}>'
 
 

@@ -83,9 +83,10 @@ main a {
 }
 
 main a.header-link {
-    display: none;
+    opacity: 0;
     font-size: 16px;
-    padding: 0 5px;
+    padding: 0 0 0 10px;
+    transition: all 0.5s ease;
 }
 
 main h1:hover a.header-link,
@@ -94,7 +95,7 @@ main h3:hover a.header-link,
 main h4:hover a.header-link,
 main h5:hover a.header-link,
 main h6:hover a.header-link {
-    display: inline-block;
+    opacity: 1;
 }
 
 
@@ -310,89 +311,34 @@ nav {
     transition: all 0.5s ease;
 }
 
+.reference {
+    background: #ffe0b2;
+    padding: 10px;
+    font-weight: 500;
+}
 
+.admonition_info {
+    background-color: #e3f2fd;
+    background-image: url('theme_lightbulb.svg') ;
+    background-position: 20px center;
+    background-size: 30px 30px;
+    background-repeat: no-repeat;
+    border-radius: 4px;
+    border: 1px solid #bbdefb;
+    color: #0d47a1;
+    margin: 12px 0;
+    padding: 20px 20px 20px 70px;
+}
 
-
-
-/*.main pre {*/
-/*    background: #f3f5f6;*/
-/*    padding: 1em;*/
-/*    font-size: 14px;*/
-/*}*/
-
-
-
-/*.db_diagram {*/
-/*    display: inline-block;*/
-/*    padding: 0.5em;*/
-/*    margin: 0.5em;*/
-/*    border: 1px dotted #ccc;*/
-
-/*}*/
-
-/*.db_diagram h6 {*/
-/*    margin: 2em 0 0 0;*/
-/*    padding: 0;*/
-/*    max-width: 30em;*/
-
-/*}*/
-
-/*.dotgraph {*/
-/*}*/
-
-
-/*.nav {*/
-/*}*/
-
-/*.nav p[data-level="1"] {*/
-/*    font-size: 24px;*/
-/*}*/
-/*.nav p[data-level="2"] {*/
-/*}*/
-/*.nav p[data-level="3"] {*/
-/*    margin-left: 1.5em;*/
-/*    font-size: 14px;*/
-/*}*/
-/*.nav p[data-level="4"] {*/
-/*    margin-left: 3em;*/
-/*    font-size: 12px;*/
-/*}*/
-/*.nav p[data-level="5"] {*/
-/*    display: none;*/
-/*}*/
-
-/*.nav a {*/
-/*    text-decoration: none;*/
-/*    color: white;*/
-/*}*/
-/*.nav a:hover {*/
-/*    text-decoration: underline;*/
-/*}*/
-
-/*.main {*/
-/*}*/
-
-/*.main h2 {*/
-/*    margin:2em 0 1em 0;*/
-/*    font-size: 26px;*/
-/*    font-weight: 300;*/
-/*    padding: 0;*/
-
-/*}*/
-
-/*.main table {*/
-/*    min-width: 20em;*/
-/*    border-collapse: collapse;*/
-/*    margin: 2em 0;*/
-/*}*/
-
-/*.main table th, .main table td {*/
-/*    padding: 6px 12px;*/
-/*    border: 1px solid #eceff1;*/
-/*    text-align: left;*/
-/*}*/
-/*.main table th {*/
-/*    font-weight: 600;*/
-/*    font-size: 14px;*/
-/*}*/
-
+.admonition_warn {
+    background-color: #ffebee;
+    background-image: url('theme_warning.svg') ;
+    background-position: 20px center;
+    background-size: 30px 30px;
+    background-repeat: no-repeat;
+    border-radius: 4px;
+    border: 1px solid #ffcdd2;
+    color: #b71c1c;
+    margin: 12px 0;
+    padding: 20px 20px 20px 70px;
+}

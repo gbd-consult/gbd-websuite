@@ -39,8 +39,7 @@ def main():
         print(USAGE)
         return 0
 
-    opts = dog.types.Options(**options.OPTIONS)
-    dog.util.log.set_level('DEBUG' if opts.debug else 'INFO')
+    opts = dog.util.to_data(options.OPTIONS)
 
     mkdir(opts.outputDir)
     make_config_ref()
