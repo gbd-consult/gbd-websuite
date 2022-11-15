@@ -145,11 +145,11 @@ def run(cmd, pipe=False):
         if isinstance(out, bytes):
             out = out.decode('utf8')
     except Exception as exc:
-        log.error(f'run failed: {exc!r}')
+        log.error(f'run failed: {cmd!r} {exc!r}')
         return False, repr(exc)
 
     if rc > 0:
-        log.error(f'run failed: {out!r}')
+        log.error(f'run failed: {cmd!r} {out!r}')
         return False, out
 
     return True, out

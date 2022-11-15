@@ -65,8 +65,11 @@ class Server:
         for path in self.builder.options.extraAssets:
             self.liveServer.watch(path, self.watch_assets, delay=0.1)
 
-        self.liveServer.setHeader('Access-Control-Allow-Origin', '*')
-        self.liveServer.setHeader('Access-Control-Allow-Methods', '*')
+        try:
+            self.liveServer.setHeader('Access-Control-Allow-Origin', '*')
+            self.liveServer.setHeader('Access-Control-Allow-Methods', '*')
+        except AttributeError:
+            pass
 
         # hack around https://github.com/lepture/python-livereload/issues/176
         import tornado.autoreload
