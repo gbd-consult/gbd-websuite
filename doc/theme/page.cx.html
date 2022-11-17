@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <title><% options.title %> - <% options.subTitle %></title>
-    <link rel="stylesheet" href="<% options.htmlWebRoot %>/_static/theme.css" type="text/css" />
-    <script src="<% options.htmlWebRoot %>/_static/theme.js"></script>
+    <link rel="stylesheet" href="<% options.webRoot %>/_static/theme.css" type="text/css" />
+    <script src="<% options.webRoot %>/_static/theme.js"></script>
 </head>
 
 <body>
@@ -36,7 +36,7 @@
             <div id="nav-breadcrumbs">
                 %for url, head in breadcrumbs index i length total
                     %if i == 1
-                        <a href="<% url %>" id="nav-breadcrumbs-home"><img src="<% options.htmlWebRoot %>/_static/theme_home.svg"></a>
+                        <a href="<% url %>" id="nav-breadcrumbs-home"><img src="<% options.webRoot %>/_static/theme_home.svg"></a>
                     %elif i == total
                         &raquo; <% head %>
                     %else

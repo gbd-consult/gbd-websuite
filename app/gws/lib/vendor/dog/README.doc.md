@@ -339,23 +339,23 @@ Dog recognizes the following options:
 
 | option            | type        | meaning                                          |
 |-------------------|-------------|--------------------------------------------------|
-| `rootDirs`        | `List[str]` | source directories                               |
-| `docPatterns`     | `List[str]` | shell patterns for doc files, e.g `*doc.md`      |
 | `assetPatterns`   | `List[str]` | shell patterns for asset files, e.g. `*jpg`      |
-| `extraAssets`     | `List[str]` | extra asset paths (e.g css, js)                  |
+| `debug`           | `bool`      | embed debug information in the output            |
+| `docPatterns`     | `List[str]` | shell patterns for doc files, e.g `*doc.md`      |
 | `excludeRegex`    | `str`       | regex to match file paths that should be ignored |
-| `outputDir`       | `str`       | output directory                                 |
-| `staticDir`       | `str`       | where to store assets                            |
+| `extraAssets`     | `List[str]` | extra asset paths (e.g css, js)                  |
 | `htmlSplitLevel`  | `int`       | html split-level, see below                      |
 | `includeTemplate` | `str`       | path to a Jump included template, see below      |
+| `outputDir`       | `str`       | output directory                                 |
 | `pageTemplate`    | `str`       | path to a Jump page template, see below          |
-| `webRoot`         | `str`       | prefix all urls with this path                   |
+| `rootDirs`        | `List[str]` | source directories                               |
 | `serverHost`      | `str`       | host name for the live server                    |
 | `serverPort`      | `int`       | port for the live server                         |
-| `title`           | `str`       | documentation title                              |
+| `staticDir`       | `str`       | where to store assets                            |
 | `subTitle`        | `str`       | documentation subtitle                           |
-| `debug`           | `bool`      | embed debug information in the output            |
+| `title`           | `str`       | documentation title                              |
 | `verbose`         | `bool`      | enable debug logging                             |
+| `webRoot`         | `str`       | prefix all urls with this path                   |
 
 ### html split-level
 
@@ -387,10 +387,10 @@ A page template is a Jump template which is rendered for each html page. This te
 
 | argument      | meaning                                      |
 |---------------|----------------------------------------------|
-| `path`        | html path for this page                      |
-| `title`       | documentation title                          |
-| `subTitle`    | documentation subtitle                       |
 | `breadcrumbs` | array of tuples `(section-url,section-head)` |
-| `mainToc`     | main table of contents as html `LI` elements |
 | `main`        | main html content for this page              |
+| `mainToc`     | main table of contents as html `LI` elements |
 | `options`     | options object as defined above              |
+| `path`        | html path for this page                      |
+| `subTitle`    | documentation subtitle                       |
+| `title`       | documentation title                          |
