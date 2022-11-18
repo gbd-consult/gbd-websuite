@@ -1,5 +1,9 @@
 """QGIS Project layer, retains QGIS options and hierarchy."""
 
+import PIL.Image
+import io
+import math
+
 import gws
 import gws.common.layer
 import gws.common.layer.types
@@ -84,13 +88,7 @@ class Object(gws.common.layer.Image):
         return gws.gis.legend.combine_legend_paths(paths)
 
     def render_box(self, rv, extra_params=None):
-        if extra_params and 'layers' in extra_params:
-            source_names = []
-            for uid in extra_params.pop('layers'):
-                leaf = self.root.find_by_uid(uid)
-                source_names.extend(sl.name for sl in leaf.source_layers)
-            extra_params['LAYERS__gws'] = source_names
-        return super().render_box(rv, extra_params=extra_params)
+        return _render_box(self, rv, extra_params)
 
     def mapproxy_config(self, mc, options=None):
         # NB: qgis caps layers are always top-down
@@ -309,3 +307,120 @@ class Object(gws.common.layer.Image):
         }
         p = {k: v for k, v in params.items() if k.lower() not in _std_params}
         return gws.tools.net.add_params(url, p)
+
+
+# see also gws/common/layer/image.py
+# need to copy this here to use qgis directly
+
+def _render_box(layer: Object, rv: t.MapRenderView, extra_params: dict = None):
+    extra_params = extra_params or {}
+
+    if 'layers' in extra_params:
+        source_names = []
+        filters = []
+        for uid in extra_params.pop('layers'):
+            leaf = layer.root.find_by_uid(uid)
+            for sl in leaf.source_layers:
+                source_names.append(sl.name)
+                if leaf.qgisfilter and sl.data_source and 'sql' in sl.data_source:
+                    filters.append(sl.name + ': ' + leaf.qgisfilter)
+
+        extra_params['layers'] = source_names
+        if filters:
+            extra_params['filter'] = ';'.join(filters)
+
+
+    # boxes larger than that will be tiled in _box_request
+    size_threshold = 2500
+
+    if not rv.rotation:
+        return _box_request(layer, rv.bounds, rv.size_px[0], rv.size_px[1], extra_params, tile_size=size_threshold)
+
+    # rotation: render a circumsquare around the wanted extent
+
+    circ = gws.gis.extent.circumsquare(rv.bounds.extent)
+    w, h = rv.size_px
+    d = gws.gis.extent.diagonal((0, 0, w, h))
+
+    r = _box_request(layer, t.Bounds(crs=rv.bounds.crs, extent=circ), d, d, extra_params, tile_size=size_threshold)
+    if not r:
+        return
+
+    img: PIL.Image.Image = PIL.Image.open(io.BytesIO(r))
+
+    # rotate the square (NB: PIL rotations are counter-clockwise)
+    # and crop the square back to the wanted extent
+
+    img = img.rotate(-rv.rotation, resample=PIL.Image.BICUBIC)
+    img = img.crop((
+        d / 2 - w / 2,
+        d / 2 - h / 2,
+        d / 2 + w / 2,
+        d / 2 + h / 2,
+    ))
+
+    with io.BytesIO() as out:
+        img.save(out, format='png')
+        return out.getvalue()
+
+
+def _box_request(layer: Object, bounds, width, height, params, tile_size):
+    if width < tile_size and height < tile_size:
+        return _get_map_request(layer, bounds, width, height, params)
+
+    xcount = math.ceil(width / tile_size)
+    ycount = math.ceil(height / tile_size)
+
+    ext = bounds.extent
+
+    bw = (ext[2] - ext[0]) * tile_size / width
+    bh = (ext[3] - ext[1]) * tile_size / height
+
+    grid = []
+
+    for ny in range(ycount):
+        for nx in range(xcount):
+            e = [
+                ext[0] + bw * nx,
+                ext[3] - bh * (ny + 1),
+                ext[0] + bw * (nx + 1),
+                ext[3] - bh * ny,
+            ]
+            bounds = t.Bounds(crs=bounds.crs, extent=e)
+            content = _get_map_request(layer, bounds, tile_size, tile_size, params)
+            grid.append([nx, ny, content])
+
+    out = PIL.Image.new('RGBA', (tile_size * xcount, tile_size * ycount), (0, 0, 0, 0))
+    for nx, ny, content in grid:
+        img = PIL.Image.open(io.BytesIO(content))
+        out.paste(img, (nx * tile_size, ny * tile_size))
+
+    out = out.crop((0, 0, width, height))
+
+    buf = io.BytesIO()
+    out.save(buf, 'PNG')
+    return buf.getvalue()
+
+
+def _get_map_request(layer: Object, bounds: t.Bounds, width, height, params: dict):
+    ps = {
+        'map': layer.provider.path,
+        'bbox': bounds.extent,
+        'width': width,
+        'height': height,
+        'crs': bounds.crs,
+        'service': 'WMS',
+        'request': 'GetMap',
+        'version': '1.3.0',
+        'format': 'image/png',
+        'transparent': 'true',
+        'styles': '',
+    }
+    ps.update(params)
+
+    gws.log.debug(f'calling qgis: {ps!r}')
+
+    resp = gws.tools.net.http_request(layer.provider.url, params=ps, timeout=0)
+    if resp.content_type.startswith('image'):
+        return resp.content
+    raise ValueError(resp.text)

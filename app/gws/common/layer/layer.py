@@ -75,6 +75,7 @@ class CustomConfig(t.WithAccess):
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
     order: t.Optional[int]  #: layer order
     cache: t.Optional[types.CacheConfig]  #: cache configuration
+    qgisfilter: t.Optional[str]  #: dynamic qgis filter
 
 
 #:export

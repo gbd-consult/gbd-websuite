@@ -95,13 +95,13 @@ http {{
             
             # replace mapproxy forward params (e.g. LAYERS__gws) with their real names
             
-            if ($args ~* (.*?)(?:\blayers=-?)(?:&|$)(.*) ) {{
+            if ($args ~* (.*?)__gws(.*)) {{
                 set $args $1$2;
             }}
-            if ($args ~* (.*?)(?:\bdpi=-?)(?:&|$)(.*) ) {{
+            if ($args ~* (.*?)__gws(.*)) {{
                 set $args $1$2;
             }}
-            if ($args ~* (.*?)(?:__gws)(.*)) {{
+            if ($args ~* (.*?)__gws(.*)) {{
                 set $args $1$2;
             }}
         }}
