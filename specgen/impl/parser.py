@@ -276,7 +276,7 @@ class _Parser:
 
             if node.decorator_list:
                 line = self.lines[node.lineno]  # @TODO assuming a single decorator
-                if node.decorator_list[0].id in ('property', 'cached_property'):
+                if getattr(node.decorator_list[0], 'id', None) in ('property', 'cached_property'):
                     if node.returns:
                         stub.members[node.name] = {
                             'kind': 'prop',

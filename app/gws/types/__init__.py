@@ -350,7 +350,6 @@ class IFeature:
     shape: 'IShape'
     style: Optional['IStyle']
     template_context: dict
-    uid: Any
     view_props: 'FeatureProps'
     def apply_template(self, key, templates: List['ITemplate'] = None, extra_context: dict = None) -> 'IFeature': pass
     def attr(self, name: str): pass
@@ -358,6 +357,7 @@ class IFeature:
     def to_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
     def to_svg_tags(self, rv: 'MapRenderView', style: 'IStyle' = None) -> List['Tag']: pass
     def transform_to(self, crs) -> 'IFeature': pass
+    def uid(self, val): pass
 
 
 class IObject:

@@ -63,11 +63,11 @@ class Feature(t.IFeature):
     @property
     def view_props(self) -> t.FeatureProps:
         fp = self.props
-        atts = {}
-        if self.key_name:
-            atts[self.key_name] = self.uid
-        if self.geometry_name:
-            atts[self.geometry_name] = self.shape
+        fp.attributes = {
+            k: v
+            for k, v in fp.attributes.items()
+            if k in {self.key_name, self.geometry_name}
+        }
         # del fp.modelUid
         return fp
 
@@ -83,6 +83,10 @@ class Feature(t.IFeature):
     @property
     def uid(self) -> t.Any:
         return self.attributes.get(self.key_name)
+
+    @uid.setter
+    def uid(self, val):
+        self.attributes[self.key_name] = val
 
     @property
     def shape(self) -> t.IShape:
@@ -112,7 +116,7 @@ class Feature(t.IFeature):
         return gws.tools.svg.as_xml(self.to_svg_tags(rv, style))
 
     def to_geojson(self) -> dict:
-        props = {a.name: a.value for a in self.attributes}
+        props = dict(self.attributes)
         props['id'] = self.uid
         return {
             'type': 'Feature',

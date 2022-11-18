@@ -7,6 +7,7 @@ import gws.gis.feature
 import gws.gis.proj
 import gws.gis.shape
 import gws.gis.proj
+import gws.common.model
 import gws.common.db.provider
 import gws.tools.json2
 
@@ -140,10 +141,37 @@ class Object(gws.common.db.provider.Sql):
             sql = f'SELECT {cols} FROM {conn.quote_table(args.table.name)} WHERE {where} {sort} {limit}'
 
             gws.log.debug(f'SELECT_FEATURES_START {sql} p={values}')
-            recs = list(r for r in conn.select(sql, values))
+            try:
+                recs = list(r for r in conn.select(sql, values))
+            except driver.Error:
+                gws.log.exception()
+                recs = []
             gws.log.debug(f'SELECT_FEATURES_END len={len(recs)}')
 
-            return [self._record_to_feature(args.table, r) for r in recs]
+            features = []
+
+            for rec in recs:
+
+                shape = None
+                if args.table.geometry_column:
+                    g = rec.pop(args.table.geometry_column, None)
+                    if g:
+                        # assuming geometries are returned in hex
+                        shape = gws.gis.shape.from_wkb_hex(g, args.table.geometry_crs)
+
+                uid = None
+                if args.table.key_column:
+                    uid = str(rec.get(args.table.key_column, None))
+                if not uid:
+                    uid = '_' + gws.sha256(' '.join(f'{k}={v}' for k, v in sorted(rec.items())))
+
+                features.append(gws.common.model.generic_feature(
+                    uid=uid,
+                    attributes=rec,
+                    shape=shape,
+                ))
+
+            return features
 
     def insert_features(self, table: t.SqlTable, features: t.List[t.IFeature]) -> t.List[str]:
         recs = [self.feature_to_record2(table, f) for f in features]
