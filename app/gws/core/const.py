@@ -1,6 +1,6 @@
 import os
 
-VERSION='7.1.11'
+VERSION='7.1.13'
 
 APP_DIR = '/gws-app'
 VAR_DIR = '/gws-var'
@@ -27,7 +27,7 @@ MISC_DIR = VAR_DIR + '/misc'
 CONFIG_DIR = VAR_DIR + '/config'
 SERVER_DIR = VAR_DIR + '/server'
 
-PRINT_DIR = TMP_DIR + '/print'
+PRINT_DIR = os.getenv('GWS_PRINT_DIR', TMP_DIR + '/print')
 SPOOL_DIR = TMP_DIR + '/spool'
 
 SERVER_ENDPOINT = '/_'

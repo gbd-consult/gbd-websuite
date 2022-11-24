@@ -78,6 +78,8 @@ def load(path=None) -> t.IRootObject:
         gws.log.debug(f'loading config from "{path}"')
         sys.path = json.loads(gws.read_file(path + '.syspath.json'))
         r = pickle.loads(gws.read_file_b(path))
-        return gws.set_global('_tree_root', r)
+        gws.set_global('_tree_root', r)
+        r.activate()
+        return r
     except Exception as e:
         raise error.LoadError('unable to load configuration') from e

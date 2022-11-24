@@ -79,6 +79,10 @@ class Object(gws.common.action.Object):
         if p.layers:
             extra_params['layers'] = p.layers
 
+        project = req.require_project(p.layerUid.split('.')[0])
+        if hasattr(project, 'qgisfilter'):
+            extra_params['filter'] = getattr(project, 'qgisfilter')
+
         rv = gws.gis.renderview.from_bbox(
             crs=p.crs or layer.map.crs,
             bbox=p.bbox,

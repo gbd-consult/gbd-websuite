@@ -84,7 +84,7 @@ class User(t.IUser):
         self.roles = sorted(set(roles))
         self.uid = uid
 
-        gws.log.info(f'inited user: prov={provider.uid!r} uid={uid!r} roles={roles!r}')
+        # gws.log.info(f'inited user: prov={provider.uid!r} uid={uid!r} roles={roles!r}')
         return self
 
     def attribute(self, key: str, default: str = '') -> str:

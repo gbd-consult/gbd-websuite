@@ -17,4 +17,4 @@ class Object(gws.common.layer.Group):
     def configure(self):
         super().configure()
 
-        self.layers = gws.common.layer.util.add_layers_to_object(self, self.var('layers'))
+        self.layers = gws.common.layer.util.add_layers_to_object(self, self.var('layers', default=[]))

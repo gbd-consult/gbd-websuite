@@ -12,6 +12,7 @@ psutil
 psycopg2-binary
 pycountry
 PyPDF2
+pyproj
 pytest
 pytest-clarity
 python-ldap

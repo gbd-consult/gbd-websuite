@@ -16,6 +16,7 @@ def render_html(html, page_size, margin, out_path):
     cmd = [
         'wkhtmltopdf',
         '--disable-javascript',
+        '--enable-local-file-access',
         '--disable-smart-shrinking',
         '--dpi', str(gws.tools.units.PDF_DPI),
         '--margin-top', str(margin[0]),

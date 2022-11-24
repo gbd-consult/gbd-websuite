@@ -35,6 +35,7 @@ class Config(t.WithAccess):
     templates: t.Optional[t.List[t.ext.template.Config]]  #: project info templates
     title: str = ''  #: project title
     uid: t.Optional[str]  #: unique id
+    qgisfilter: t.Optional[str]  #: dynamic qgis filter
 
 
 class Props(t.Data):
@@ -94,6 +95,9 @@ class Object(gws.Object, t.IProject):
         if p:
             p.parentClient = self.parent.var('client')
         self.client: t.Optional[t.IClient] = self.create_child(gws.common.client.Object, p) if p else None
+
+        self.qgisfilter = self.var('qgisfilter')
+
 
     @property
     def description(self):

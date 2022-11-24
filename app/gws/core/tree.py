@@ -76,6 +76,10 @@ class Object(t.IObject):
         # this is intended to be overridden
         pass
 
+    def activate(self):
+        # this is intended to be overridden
+        pass
+
     def post_initialize(self):
         try:
             for obj in reversed(self.root.all_objects):
@@ -131,6 +135,13 @@ class RootObject(Object, t.IRootObject):
         self.root = self
         for a in 'application', 'validator':
             setattr(self, a, None)
+
+    def activate(self):
+        try:
+            for obj in reversed(self.all_objects):
+                obj.activate()
+        except Exception as e:
+            raise _error(self, e)
 
     def create(self, klass, cfg=None):
         cfg = _to_config(cfg)

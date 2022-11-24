@@ -322,8 +322,10 @@ def _render_box(layer: Object, rv: t.MapRenderView, extra_params: dict = None):
             leaf = layer.root.find_by_uid(uid)
             for sl in leaf.source_layers:
                 source_names.append(sl.name)
-                if leaf.qgisfilter and sl.data_source and 'sql' in sl.data_source:
-                    filters.append(sl.name + ': ' + leaf.qgisfilter)
+                if 'filter' in extra_params:
+                    filters.append(sl.name + ': ' + extra_params['filter'])
+                # if leaf.qgisfilter and sl.data_source and 'sql' in sl.data_source:
+                #     filters.append(sl.name + ': ' + leaf.qgisfilter)
 
         extra_params['layers'] = source_names
         if filters:

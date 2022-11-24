@@ -368,6 +368,7 @@ class IObject:
     props: Props
     root: 'IRootObject'
     uid: str
+    def activate(self): pass
     def append_child(self, obj: 'IObject') -> 'IObject': pass
     def create_child(self, klass, cfg) -> 'IObject': pass
     def get_children(self, klass) -> List['IObject']: pass

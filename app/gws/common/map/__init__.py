@@ -177,5 +177,7 @@ def _configure_extent(obj, target_crs, default_ext):
 def _set_default_extent(obj, extent):
     if not gws.get(obj, 'extent'):
         obj.extent = extent
-    for la in gws.get(obj, 'layers', []):
-        _set_default_extent(la, extent)
+    layers = gws.get(obj, 'layers')
+    if layers:
+        for la in layers:
+            _set_default_extent(la, extent)
