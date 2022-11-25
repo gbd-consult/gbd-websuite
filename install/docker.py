@@ -21,7 +21,7 @@ Options:
             qgis-server            - QGIS Release server
             qgis-server-debug      - QGIS Debug server
             
-    -qgis <qgis-version>
+    [-qgis <qgis-version>]
         QGIS version to include, eg. -qgis 3.25
         The builder looks for QGIS server tarballs on 'gws-files.gbd-consult.de', 
         see the subdirectory './qgis' on how to create a QGIS tarball.      
@@ -30,7 +30,7 @@ Options:
         if given, do not install any packages, only the Gws App and data (use with -base) 
 
     [-base <image-name>]
-        base image
+        base image, defaults to 'ubuntu'
         
     [-appdir <dir>]
         app directory to copy to "/gws-app" in the image.
@@ -47,6 +47,9 @@ Options:
         
     [-vendor <vendor-name>]
         vendor name for the Dockerfile
+
+    [-version <version>]
+        override image version
 
 Example:
 
@@ -66,6 +69,8 @@ class Builder:
 
     ubuntu_name = 'jammy'
     ubuntu = '22.04'
+
+    qgis_version = '3.28'
 
     files_url = 'http://gws-files.gbd-consult.de'
 
@@ -112,12 +117,17 @@ class Builder:
         if self.apponly:
             self.with_qgis = False
 
-        self.qgis_version = args.get('qgis')
-        if self.with_qgis and not self.qgis_version:
-            exit_help('qgis version is required')
-        if self.qgis_version:
+        self.qgis_version = args.get('qgis') or self.qgis_version
+        if self.with_qgis:
             self.qgis_url = self.f('{files_url}/qgis-for-gws-{qgis_version}-{ubuntu_name}-{image_mode}.tar.gz')
             self.qgis_dir = self.f('qgis-for-gws-{image_mode}')
+
+        self.version = args.get('version')
+        if not self.version:
+            if self.image_kind == 'gws':
+                self.version = self.gws_version
+            if self.image_kind == 'qgis':
+                self.version = '0'
 
         self.image_name = args.get('name') or self.default_image_name()
         self.image_description = self.default_image_description()
@@ -146,13 +156,15 @@ class Builder:
 
     def default_image_name(self):
         # the default name is like "gdbconsult/gws-server-qgis-3.22:8.0.1"
-        s = self.image_name = self.vendor + '/' + self.image_id
+        # or "gdbconsult/qgis-server-3.22:3"
+
         if self.image_kind == 'gws':
             if self.with_qgis:
-                s += '-' + self.qgis_version
-            return s + ':' + self.gws_version
+                return self.f('{vendor}/{image_id}-{qgis_version}:{version}')
+            return self.f('{vendor}/{image_id}:{version}')
+
         if self.image_kind == 'qgis':
-            return s + ':' + self.qgis_version
+            return self.f('{vendor}/{image_id}-{qgis_version}:{version}')
 
     def default_image_description(self):
         if self.image_kind == 'gws':
@@ -163,14 +175,17 @@ class Builder:
                 s += '-debug'
             return s
         if self.image_kind == 'qgis':
-            return 'QGIS Server'
+            s = 'QGIS ' + self.qgis_version
+            if self.image_mode == 'debug':
+                s += '-debug'
+            return s
 
     def dockerfile(self):
         label = ''
         if self.image_kind == 'gws':
-            label = 'LABEL Description="{image_description}" Vendor="{vendor}" Version="{gws_version}"'
+            label = 'LABEL Description="{image_description}" Vendor="{vendor}" Version="{version}"'
         if self.image_kind == 'qgis':
-            label = 'LABEL Description="{image_description}" Vendor="{vendor}" Version="{qgis_version}"'
+            label = 'LABEL Description="{image_description}" Vendor="{vendor}" Version="{version}"'
 
         df = [
             '#',
@@ -253,7 +268,7 @@ class Builder:
         run(self.f('rm -fr {build_dir} && mkdir -p {build_dir}'))
         os.chdir(self.build_dir)
 
-        if self.qgis_version:
+        if self.with_qgis:
             run(self.f("curl -sL '{qgis_url}' -o {qgis_dir}.tar.gz"))
             run(self.f("tar -xzf {qgis_dir}.tar.gz"))
             run(self.f("mv qgis-for-gws {qgis_dir}"))
