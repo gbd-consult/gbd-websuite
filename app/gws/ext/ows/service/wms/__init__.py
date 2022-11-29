@@ -117,6 +117,11 @@ class Object(ows.Base):
         if not bounds:
             raise gws.web.error.BadRequest('Invalid BBOX')
 
+        bbox = bounds.extent
+        proj = gws.gis.proj.as_proj(bounds.crs)
+        if proj.axis == 'yx' and rd.req.param('version') < '1.3':
+            bounds.extent = gws.gis.extent.swap_xy(bbox)
+
         lcs = self.layer_caps_list_from_request(rd, ['layer', 'layers'])
         if not lcs:
             raise gws.web.error.NotFound('No layers found')
@@ -154,7 +159,7 @@ class Object(ows.Base):
 
         bbox = bounds.extent
         proj = gws.gis.proj.as_proj(bounds.crs)
-        if proj.axis == 'yx':
+        if proj.axis == 'yx' and rd.req.param('version') >= '1.3':
             bbox = gws.gis.extent.swap_xy(bbox)
 
         xres = (bbox[2] - bbox[0]) / px_width
