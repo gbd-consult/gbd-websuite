@@ -1533,7 +1533,7 @@ def generic():
 
 def generic_feature(**args):
     m = generic()
-    fe = m.new_feature()
+    fe = m.init_feature()
 
     for k, v in args.items():
         if k == 'uid':

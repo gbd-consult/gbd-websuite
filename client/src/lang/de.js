@@ -149,6 +149,7 @@ module.exports = {
     modSelectSaveDialogTitle: 'Auswahl speichern',
     modSelectSidebarTitle: 'Auswahl',
     modSelectToolbarButton: 'Auswählen',
+    modSelectFormatDialogTitle: 'Exportieren',
     modSidebarCloseButton: 'Schließen',
     modSidebarOpenButton: 'Menü',
     modSidebarOverflowButton: 'Weiteres',

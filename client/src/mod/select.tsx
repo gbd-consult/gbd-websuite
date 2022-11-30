@@ -16,15 +16,19 @@ const MASTER = 'Shared.Select';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as SelectController;
 
-interface SelectViewProps extends gws.types.ViewProps {
+interface ViewProps extends gws.types.ViewProps {
     controller: SelectController;
     selectFeatures: Array<gws.types.IFeature>;
     selectShapeType: string;
+    selectSelectedFormat: string;
+    selectFormatDialogParams: object;
 }
 
-const SelectStoreKeys = [
+const StoreKeys = [
     'selectFeatures',
     'selectShapeType',
+    'selectSelectedFormat',
+    'selectFormatDialogParams',
 ];
 
 
@@ -115,7 +119,7 @@ export class SelectDrawTool extends gws.Tool {
     }
 }
 
-class SelectSidebarView extends gws.View<SelectViewProps> {
+class SelectSidebarView extends gws.View<ViewProps> {
     render() {
 
         let master = _master(this.props.controller);
@@ -158,7 +162,7 @@ class SelectSidebarView extends gws.View<SelectViewProps> {
                         className="modSelectExportAuxButton"
                         tooltip={this.__('modSelectExportAuxButton')}
                         disabled={!hasSelection}
-                        whenTouched={() => master.doExport()}
+                        whenTouched={() => master.whenExportButtonTouched()}
                     />}
 
                     <Cell flex/>
@@ -189,7 +193,7 @@ class SelectSidebar extends gws.Controller implements gws.types.ISidebarItem {
 
     get tabView() {
         return this.createElement(
-            this.connect(SelectSidebarView, SelectStoreKeys)
+            this.connect(SelectSidebarView, StoreKeys)
         );
     }
 
@@ -215,6 +219,52 @@ class SelectDrawToolbarButton extends toolbar.Button {
 
 }
 
+class Dialog extends gws.View<ViewProps> {
+    render() {
+        let cc = _master(this.props.controller),
+            params = this.props.selectFormatDialogParams;
+
+        if (!params)
+            return null;
+
+        let listItems = cc.setup.exportFormats.map(e => ({
+            text: e.title,
+            value: e.uid
+        }));
+
+
+        let close = () => cc.update({selectFormatDialogParams: null});
+
+        let submit = async () => cc.whenExportFormatSelected();
+
+        let update = val => cc.update({selectSelectedFormat: val})
+
+        let buttons = [
+            <gws.ui.Button
+                className="cmpButtonFormOk"
+                whenTouched={submit}
+                disabled={gws.tools.empty(this.props.selectSelectedFormat)}
+            />,
+            <gws.ui.Button className="cmpButtonFormCancel" whenTouched={close}/>
+        ];
+
+        let cls = 'modSelectFormatDialog';
+        let title = this.__('modSelectFormatDialogTitle');
+
+        return <gws.ui.Dialog className={cls} title={title} buttons={buttons} whenClosed={close}>
+            <Form>
+                <Row>
+                    <Cell flex>
+                        <gws.ui.List
+                            value={this.props.selectSelectedFormat}
+                            items={listItems}
+                            whenChanged={update}/>
+                    </Cell>
+                </Row>
+            </Form>
+        </gws.ui.Dialog>;
+    }
+}
 
 class SelectController extends gws.Controller {
     uid = MASTER;
@@ -223,7 +273,6 @@ class SelectController extends gws.Controller {
 
     async init() {
         this.setup = this.app.actionSetup('select');
-        console.log('SELECT', this.setup);
         this.update({
             selectFeatures: []
         });
@@ -231,6 +280,12 @@ class SelectController extends gws.Controller {
             this.addFeature(args.feature);
         });
     }
+
+    get appOverlayView() {
+        return this.createElement(
+            this.connect(Dialog, StoreKeys));
+    }
+
 
     async doSelect(geometry: ol.geom.Geometry, toggle: boolean) {
         let features = await this.map.searchForFeatures({geometry});
@@ -241,23 +296,43 @@ class SelectController extends gws.Controller {
         features.forEach(f => this.addFeature(f, toggle));
     }
 
-    async doExport() {
+    whenExportButtonTouched() {
         let features = this.getValue('selectFeatures');
 
-        if (!gws.tools.empty(features)) {
-            let res = await this.app.server.selectExport({
-                exportFormatUid: this.setup.exportFormats[0].uid,
-                featureUids: features.map(f => f.uid),
-            }, {binary: true});
+        if (gws.tools.empty(features))
+            return;
 
-            let a = document.createElement('a');
-            a.href = window.URL.createObjectURL(new Blob([res.content], {type: res.mime}));
-            a.download = 'export.zip';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(a.href);
-            document.body.removeChild(a);
+        if (!this.setup.exportFormats)
+            return;
+
+        if (this.setup.exportFormats.length === 1) {
+            this.doExportWithFormat(features, this.setup.exportFormats[0].uid);
+            return;
         }
+
+        this.update({selectFormatDialogParams: {}})
+    }
+
+    whenExportFormatSelected() {
+        this.update({selectFormatDialogParams: null})
+        let features = this.getValue('selectFeatures');
+        let formatUid = this.getValue('selectSelectedFormat')
+        this.doExportWithFormat(features, formatUid)
+    }
+
+    async doExportWithFormat(features, formatUid) {
+        let res = await this.app.server.selectExport({
+            exportFormatUid: formatUid,
+            featureUids: features.map(f => f.uid),
+        }, {binary: true} );
+
+        let a = document.createElement('a');
+        a.href = window.URL.createObjectURL(new Blob([res.content], {type: res.mime}));
+        a.download = 'export.zip';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(a.href);
+        document.body.removeChild(a);
     }
 
     addFeature(feature, toggle = false) {

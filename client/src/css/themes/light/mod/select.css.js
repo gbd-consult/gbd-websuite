@@ -39,5 +39,9 @@ module.exports = v => ({
         ...v.SIDEBAR_AUX_BUTTON('google:action/get_app')
     },
 
-
+    '.uiDialog.modSelectFormatDialog': {
+        [v.MEDIA('large+')]: {
+            ...v.CENTER_BOX(400, 490),
+        },
+    },
 });
