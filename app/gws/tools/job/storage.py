@@ -36,6 +36,7 @@ def timestamp():
 
 def find(uid):
     with _db() as db:
+        _ensure_table(db)
         for rec in db.execute('SELECT * FROM jobs WHERE uid=?', [uid]):
             return dict(rec)
 
@@ -49,6 +50,7 @@ def create(uid):
 
 def update(uid, **kwargs):
     with _db() as db:
+        _ensure_table(db)
         sql = ['updated=?']
         params = [timestamp()]
         for k, v in kwargs.items():
@@ -61,5 +63,6 @@ def update(uid, **kwargs):
 
 def remove(uid):
     with _db() as db:
+        _ensure_table(db)
         sql = 'DELETE FROM jobs WHERE uid=?'
         db.execute(sql, [uid])

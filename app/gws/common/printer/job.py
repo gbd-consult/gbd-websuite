@@ -295,9 +295,6 @@ class _Worker:
 
     def prepare_section(self, sec: pt.PrintSection):
         context = sec.get('context', {})
-        if self.template and self.template.data_model and context:
-            atts = self.template.data_model.apply_to_dict(context)
-            context = {a.name: a.value for a in atts}
         return PreparedSection(
             center=sec.center,
             context=context,

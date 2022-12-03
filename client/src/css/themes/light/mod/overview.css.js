@@ -14,15 +14,22 @@ module.exports = v => ({
     },
 
     '.modOverviewBox': {
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: v.COLOR.blueGrey200,
-        boxShadow: '0 0 0 4000px ' + v.COLOR.opacity(v.COLOR.blueGrey50, 0.7),
-        minWidth: 20,
-        minHeight: 20,
-
+        position: 'absolute',
+        border: [2, 'solid', v.COLOR.blueGrey200],
+        boxShadow: '0 0 0 4000px ' + v.COLOR.opacity(v.COLOR.blueGrey50, 0.5),
     },
 
+    '.modOverviewBoxCenter': {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 6,
+        height: 6,
+        backgroundColor: v.COLOR.blueGrey600,
+        borderRadius: 3,
+
+    },
 
     '.modOverviewTabFooter': {
         borderTop: [1, 'solid', v.BORDER_COLOR],

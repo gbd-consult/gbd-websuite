@@ -16,7 +16,7 @@ class TemplateQualityLevel(t.Data):
 
 
 class Config(t.WithType):
-    dataModel: t.Optional[gws.common.model.Config]  #: user-editable template attributes
+    model: t.Optional[gws.common.model.Config]  #: user-editable template attributes
     mimeTypes: t.Optional[t.List[str]]  #: mime types this template can generate
     path: t.Optional[t.FilePath]  #: path to a template file
     subject: str = ''  #: template purpose
@@ -31,7 +31,7 @@ class TemplateProps(t.Props):
     qualityLevels: t.List[t.TemplateQualityLevel]
     mapHeight: int
     mapWidth: int
-    dataModel: gws.common.model.Props
+    model: gws.common.model.Props
 
 
 #:export
@@ -69,6 +69,13 @@ class Object(gws.Object, t.ITemplate):
     page_size: t.Size
     legend_mode: t.Optional[t.TemplateLegendMode]
     legend_layer_uids: t.List[str]
+    model: t.Optional[t.IModel]
+
+    def props_for(self, user):
+        p = super().props_for(user)
+        if self.model:
+            p['model'] = self.model.props_for(user)
+        return p
 
     @property
     def props(self):
@@ -76,7 +83,6 @@ class Object(gws.Object, t.ITemplate):
             uid=self.uid,
             title=self.title,
             qualityLevels=self.var('qualityLevels', default=[]),
-            dataModel=self.data_model,
             mapWidth=self.map_size[0],
             mapHeight=self.map_size[1],
             pageWidth=self.page_size[0],
@@ -96,8 +102,10 @@ class Object(gws.Object, t.ITemplate):
         uid = self.var('uid') or (gws.sha256(self.path) if self.path else self.klass.replace('.', '_'))
         self.set_uid(uid)
 
-        p = self.var('dataModel')
-        self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
+        self.model = None
+        p = self.var('model')
+        if p:
+            self.model = t.cast(t.IModel, self.create_child(gws.common.model.GenericModel, p))
 
         self.subject: str = self.var('subject', default='').lower()
         p = self.subject.split('.')

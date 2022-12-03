@@ -1602,7 +1602,7 @@ class ModelRegistry:
 
         self.initing = True
 
-        for mod in self.root.find_all(Object):
+        for mod in self.root.find_all(DbModel):
             m = t.Data(
                 model=mod,
                 cls=None,

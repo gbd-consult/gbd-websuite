@@ -1420,12 +1420,12 @@ class ISearchProvider(IObject):
 
 class ITemplate(IObject):
     category: str
-    data_model: Optional['IModel']
     key: str
     legend_layer_uids: List[str]
     legend_mode: Optional['TemplateLegendMode']
     map_size: 'Size'
     mime_types: List[str]
+    model: Optional['IModel']
     page_size: 'Size'
     path: str
     subject: str

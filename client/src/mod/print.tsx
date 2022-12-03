@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import * as gws from 'gws';
 import * as toolbar from './toolbar';
+import * as overview from './overview';
+import {FormField} from "gws/components/form";
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
@@ -17,10 +19,8 @@ const MAX_SNAPSHOT_DPI = 600;
 interface PrintViewProps extends gws.types.ViewProps {
     controller: PrintController;
     printJob?: gws.api.JobStatusResponse;
-    printQuality: string;
     printState?: 'preview' | 'printing' | 'error' | 'complete';
-    printTemplateIndex: string;
-    printData: object;
+    printFormData: object;
     printSnapshotMode: boolean;
     printSnapshotDpi: number;
     printSnapshotWidth: number;
@@ -30,10 +30,8 @@ interface PrintViewProps extends gws.types.ViewProps {
 
 const PrintStoreKeys = [
     'printJob',
-    'printQuality',
     'printState',
-    'printTemplateIndex',
-    'printData',
+    'printFormData',
     'printSnapshotMode',
     'printSnapshotDpi',
     'printSnapshotWidth',
@@ -111,63 +109,57 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
     }
 
     printOptionsForm() {
-        let data = [], items;
+        let cc = this.props.controller;
+        let fields = [];
 
-        items = this.templateItems();
-        if (items.length > 1) {
-            data.push({
-                name: 'printTemplateIndex',
+        let templateItems = this.templateItems();
+        if (templateItems.length > 1) {
+            fields.push({
+                type: "integer",
+                name: "_templateIndex",
                 title: this.__('modPrintTemplate'),
-                value: String(this.props.printTemplateIndex || 0),
-                editable: true,
-                type: 'select',
-                items
+                widget: {
+                    type: "select",
+                    options: {
+                        items: templateItems,
+                    },
+                    readOnly: false,
+                }
             })
         }
 
-        items = this.qualityItems();
-        if (items.length > 1) {
-            data.push({
-                name: 'printQuality',
+        let qualityItems = this.qualityItems();
+        if (qualityItems.length > 1) {
+            fields.push({
+                type: "integer",
+                name: "_quality",
                 title: this.__('modPrintQuality'),
-                value: this.props.printQuality || '0',
-                editable: true,
-                type: 'select',
-                items
+                widget: {
+                    type: "select",
+                    options: {
+                        items: qualityItems,
+                    },
+                    readOnly: false,
+                }
             })
         }
 
-        let pd = this.props.printData || {};
-        let tpl = this.props.controller.selectedTemplate;
+        let tpl = cc.selectedTemplate;
+        if (tpl && tpl.model)
+            fields = fields.concat(tpl.model.fields)
 
-        if (tpl && tpl.dataModel) {
-            // tpl.dataModel.rules.forEach(r => data.push({
-            //     name: r.name,
-            //     title: r.title || r.name,
-            //     value: pd[r.name] || '',
-            //     editable: true,
-            //     type: r.type,
-            // }));
-        }
-
-        let changed = (k, v) => {
-            let up;
-            if (k == 'printTemplateIndex' || k == 'printQuality')
-                up = {[k]: v}
-            else
-                up = {
-                    printData: {...pd, [k]: v}
-                };
-
-            this.props.controller.update(up)
-        };
-
-        return <Row><Cell>
-            <gws.components.sheet.Editor
-                data={data}
-                whenChanged={changed}
-            />
-        </Cell></Row>;
+        return <table className="cmpForm">
+            <tbody>
+            {fields.map((f, i) => <FormField
+                key={i}
+                field={f}
+                controller={this.props.controller}
+                feature={null}
+                values={this.props.printFormData}
+                makeWidget={cc.makeWidget.bind(cc)}
+            />)}
+            </tbody>
+        </table>
     }
 
     snapshotOptionsForm() {
@@ -195,6 +187,18 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
         </React.Fragment>
     }
 
+    overviewMap() {
+        let tpl = this.props.controller.selectedTemplate;
+
+        if (!tpl)
+            return null;
+
+        let w = gws.tools.mm2px(tpl.mapWidth);
+        let h = gws.tools.mm2px(tpl.mapHeight);
+
+        return <overview.SmallMap controller={this.props.controller} boxSize={[w, h]}/>;
+    }
+
     optionsDialog() {
         let form = this.props.printSnapshotMode
             ? this.snapshotOptionsForm()
@@ -215,6 +219,11 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
         return <div className="modPrintPreviewDialog">
             <Form>
                 {form}
+                <Row>
+                    <Cell flex>
+                        {this.overviewMap()}
+                    </Cell>
+                </Row>
                 <Row>
                     <Cell flex/>
                     <Cell>
@@ -366,7 +375,8 @@ class PrintController extends gws.Controller {
     }
 
     get selectedTemplate() {
-        let idx = Number(this.getValue('printTemplateIndex') || 0);
+        let fd = this.getValue('printFormData') || {},
+            idx = Number(fd['_templateIndex']) || 0;
         return this.templates[idx] || this.templates[0];
     }
 
@@ -390,7 +400,11 @@ class PrintController extends gws.Controller {
         this.update({
             printSnapshotDpi: MIN_SNAPSHOT_DPI,
             printSnapshotWidth: DEFAULT_SNAPSHOT_SIZE,
-            printSnapshotHeight: DEFAULT_SNAPSHOT_SIZE
+            printSnapshotHeight: DEFAULT_SNAPSHOT_SIZE,
+            printFormData: {
+                _templateIndex: 0,
+                _quality: 0,
+            }
         })
     }
 
@@ -425,9 +439,48 @@ class PrintController extends gws.Controller {
         });
     }
 
+    makeWidget(field: gws.types.IModelField, feature: gws.types.IFeature, values: gws.types.Dict): React.ReactElement | null {
+        let cfg = field.widget;
+
+        if (!cfg)
+            return null;
+
+        let type = cfg['type'];
+        let options = cfg['options'] || {};
+        let cls = gws.components.widget.WIDGETS[type];
+
+        if (!cls)
+            return null;
+
+        let props = {
+            controller: this,
+            feature,
+            field,
+            values,
+            options,
+            readOnly: cfg.readOnly,
+            whenChanged: this.whenFormChanged.bind(this),
+        }
+
+        return React.createElement(cls, props);
+    }
+
+
+    async whenFormChanged(field: gws.types.IModelField, value) {
+        let fd = this.getValue('printFormData') || {};
+        this.update({
+            printFormData: {
+                ...fd,
+                [field.name]: value,
+            }
+        })
+    }
+
     async startPrinting() {
-        let quality = Number(this.getValue('printQuality')) || 0,
-            level = this.selectedTemplate.qualityLevels[quality],
+        let fd = this.getValue('printFormData') || {},
+            quality = Number(fd['_quality']) || 0,
+            template = this.selectedTemplate,
+            level = template.qualityLevels[quality],
             dpi = level ? level.dpi : 0;
 
         let basicParams = await this.map.basicPrintParams(
@@ -437,15 +490,19 @@ class PrintController extends gws.Controller {
 
         let vs = this.map.viewState;
 
+        let context = {...fd};
+        delete context['_quality'];
+        delete context['_templateIndex'];
+
         let params: gws.api.PrintParamsWithTemplate = {
             type: 'template',
-            templateUid: this.selectedTemplate.uid,
+            templateUid: template.uid,
             quality,
             ...basicParams,
             sections: [
                 {
                     center: [vs.centerX, vs.centerY] as gws.api.Point,
-                    context: this.getValue('printData')
+                    context,
                 }
             ]
         };
