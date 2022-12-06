@@ -59,9 +59,12 @@ OPTIONS = {
         '*_test.py',
     ],
 
+    'pydoctorExtraCss': f'{DOC_DIR}/theme/pydoctor_extra.css',
+
+    'pydoctorOutputDir': f'{DOC_BUILD_DIR}/apidoc/{VERSION}',
+
     'pydoctorArgs': [
         '--make-html',
-        '--html-output', f'{DOC_BUILD_DIR}/apidoc/{VERSION}',
         '--project-name', 'GBD WebSuite',
         '--project-version', VERSION,
         '--no-sidebar',

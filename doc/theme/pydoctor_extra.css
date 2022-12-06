@@ -1,0 +1,15 @@
+code, .literal, .pre, #childList > div .functionHeader, #splitTables > table tr td:nth-child(2), .fieldArg {
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-size: 13px;
+}
+
+code, .literal {
+    padding: 2px 4px;
+    border-radius:4px
+}
+
+.rst-literal-block {
+    padding: 10px;
+    border-radius:6px;
+
+}

@@ -42,19 +42,21 @@ def main():
     opts = dog.util.to_data(options.OPTIONS)
 
     mkdir(opts.outputDir)
-    make_config_ref()
 
     cmd = args.get(1)
 
     if cmd == 'html':
+        make_config_ref()
         dog.build_all('html', opts)
         return 0
 
     if cmd == 'pdf':
+        make_config_ref()
         dog.build_all('pdf', opts)
         return 0
 
     if cmd == 'server':
+        make_config_ref()
         opts.debug = True
         dog.start_server(opts)
         return 0
@@ -68,7 +70,8 @@ def main():
 
 
 def make_api(opts):
-    mkdir(options.DOC_BUILD_DIR + '/app-copy')
+    copy_dir = options.DOC_BUILD_DIR + '/app-copy'
+    mkdir(copy_dir)
 
     rsync = ['rsync', '--archive', '--no-links']
     for e in opts.pydoctorExclude:
@@ -76,19 +79,22 @@ def make_api(opts):
         rsync.append(e)
 
     rsync.append(options.APP_DIR + '/gws')
-    rsync.append(options.DOC_BUILD_DIR + '/app-copy')
+    rsync.append(copy_dir)
 
     dog.util.run(rsync)
 
     args = list(opts.pydoctorArgs)
     args.extend([
+        '--html-output', opts.pydoctorOutputDir,
         '--project-base-dir',
-        options.DOC_BUILD_DIR + '/app-copy/gws',
-        options.DOC_BUILD_DIR + '/app-copy/gws',
+        copy_dir + '/gws',
+        copy_dir + '/gws',
     ])
 
     ps = pydoctor.driver.get_system(pydoctor.options.Options.from_args(args))
     pydoctor.driver.make(ps)
+
+    dog.util.run(['cp', opts.pydoctorExtraCss, opts.pydoctorOutputDir + '/extra.css'])
 
 
 def make_config_ref():
