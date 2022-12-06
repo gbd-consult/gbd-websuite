@@ -1,3 +1,9 @@
+"""XML Element.
+
+The Element class extends ``xml.etree.Element``
+and implements the `gws.core.types.IXmlElement` protocol.
+"""
+
 import xml.etree.ElementTree
 
 import gws
@@ -8,9 +14,20 @@ from . import namespace
 
 class XElement(xml.etree.ElementTree.Element):
     caseInsensitive: bool
+    name: str
+    lname: str
 
     def __init__(self, tag, attrib=None, **extra):
         super().__init__(tag, attrib or {}, **extra)
+
+        self.text = self.text or ''
+        self.tail = self.tail or ''
+
+        p = namespace.parse_name(tag)
+        self.name = p[-1]
+        self.lname = self.name.lower()
+
+        self.caseInsensitive = False
 
     def __bool__(self):
         return True
@@ -33,7 +50,14 @@ class XElement(xml.etree.ElementTree.Element):
         return super().iterfind(self._convert_path(path), namespaces)
 
     def get(self, key, default=None):
-        return super().get(self._convert_key(key), default)
+        if self.caseInsensitive:
+            key = key.lower()
+        if key in self.attrib:
+            return self.attrib[key]
+        for k, v in self.attrib.items():
+            if namespace.unqualify(k) == key:
+                return v
+        return default
 
     def iter(self, tag=None):
         return super().iter(self._convert_path(tag))
@@ -58,7 +82,7 @@ class XElement(xml.etree.ElementTree.Element):
             with_schema_locations=False,
             with_xml_declaration=False,
     ):
-        def text(s):
+        def make_text(s):
             if s is None:
                 return ''
             if isinstance(s, (int, float, bool)):
@@ -69,38 +93,38 @@ class XElement(xml.etree.ElementTree.Element):
                 s = ' '.join(s.strip().split())
             return _encode(s)
 
-        def convert_name(name):
+        def make_name(name):
             if remove_namespaces:
                 return namespace.unqualify(name)
-            return namespace.qualify(name)
+            return namespace.qualify(name, default_prefix)
 
         def to_str(el, with_xmlns):
 
             atts = {}
 
-            for key, val in el.items():
+            for key, val in el.attrib.items():
                 if val is None:
                     continue
-                atts[convert_name(key)] = text(val)
+                atts[make_name(key)] = make_text(val)
 
             if with_xmlns:
                 atts.update(
                     namespace.declarations(
                         for_element=el,
-                        default_prefix=el.get('xmlns'),
+                        default_prefix=default_prefix,
                         with_schema_locations=with_schema_locations))
 
             head_pos = len(buf)
             buf.append('')
 
-            s = text(el.text)
+            s = make_text(el.text)
             if s:
                 buf.append(s)
 
             for ch in el:
                 to_str(ch, False)
 
-            tag = convert_name(el.tag)
+            tag = make_name(el.tag)
             head = tag
             if atts:
                 head += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
@@ -111,13 +135,14 @@ class XElement(xml.etree.ElementTree.Element):
             else:
                 buf[head_pos] += '<' + head + '/>'
 
-            s = text(el.tail)
+            s = make_text(el.tail)
             if s:
                 buf.append(s)
 
         ##
 
         buf = ['']
+        default_prefix = self.get('xmlns')
         to_str(self, with_namespace_declarations)
         if with_xml_declaration:
             buf[0] = _XML_DECL
@@ -125,11 +150,13 @@ class XElement(xml.etree.ElementTree.Element):
 
     ##
 
-    def children(self):
-        for c in self:
-            yield c
+    def attr(self, key, default=None):
+        return self.get(key, default)
 
-    def first_of(self, *paths):
+    def children(self):
+        return [c for c in self]
+
+    def findfirst(self, *paths):
         if not paths:
             return self[0] if len(self) > 0 else None
         for path in paths:
@@ -137,17 +164,17 @@ class XElement(xml.etree.ElementTree.Element):
             if el is not None:
                 return el
 
-    def text_of(self, *paths):
+    def textof(self, *paths):
         for path in paths:
             el = self.find(path)
             if el is not None and el.text:
                 return el.text
 
-    def text_list(self, *paths, deep=False):
+    def textlist(self, *paths, deep=False):
         buf = self._collect_text(paths, deep)
         return [text for _, text in buf]
 
-    def text_dict(self, *paths, deep=False):
+    def textdict(self, *paths, deep=False):
         buf = self._collect_text(paths, deep)
         return dict(buf)
 

@@ -1,3 +1,5 @@
+"""XML-related exceptions."""
+
 import gws
 
 
@@ -10,6 +12,10 @@ class ParseError(Error):
 
 
 class WriteError(Error):
+    pass
+
+
+class NamespaceError(Error):
     pass
 
 

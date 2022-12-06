@@ -1,3 +1,8 @@
+"""XML helper object.
+
+Used in the configuration to configure XML options and additional namespaces.
+"""
+
 import gws
 import gws.types as t
 
@@ -26,5 +31,7 @@ class Config(gws.Config):
 @gws.ext.object.helper('xml')
 class Object(gws.Node):
     def activate(self):
-        for ns in self.var('namespaces', default=[]):
-            namespace.register(ns.name, ns.uri, ns.schemaLocation)
+        p = self.var('namespaces')
+        if p:
+            for ns in p:
+                namespace.register(ns.name, ns.uri, schema=ns.schemaLocation)

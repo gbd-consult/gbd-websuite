@@ -1,3 +1,39 @@
+"""XML builder.
+
+This module provides a single function ``tag``, which creates an Xml Element from a list of arguments.
+
+The first argument to this function is interpreted as a tag name
+or a space separated list of tag names, in which case nested elements are created.
+
+The remaining ``*args`` are interpreted as follows:
+
+- a simple value (string, number) - appended to the text content of the Element
+- an Xml Element - appended as a child to the Element
+- a dict - attributes of the Element are updated from this dict
+- a list, tuple or a generator - used as arguments to ``tag`` to create a child tag
+
+If keyword arguments are given, they are added to the Element's attributes.
+
+**Example:** ::
+
+
+    tag(
+        'geometry gml:Point',
+        {'gml:id': 'xy'},
+        ['gml:coordinates', '12.345,56.789'],
+        srsName=3857,
+    )
+
+creates the following element: ::
+
+    <geometry>
+        <gml:Point gml:id="xy" srsName="3857">
+            <gml:coordinates>12.345,56.789</gml:coordinates>
+        </gml:Point>
+    </geometry>
+
+"""
+
 import gws
 import gws.types as t
 
@@ -5,6 +41,16 @@ from . import element, error
 
 
 def tag(names: str, *args, **kwargs) -> gws.IXmlElement:
+    """Build an XML element from arguments.
+
+    Args:
+        names: A tag name or names.
+        *args: A collection of args.
+        **kwargs: Additional attributes.
+
+    Returns:
+        An XML element.
+    """
 
     first = last = None
 
@@ -17,7 +63,7 @@ def tag(names: str, *args, **kwargs) -> gws.IXmlElement:
             last = el
 
     if not first:
-        raise error.BuildError('invalid name for tag', names)
+        raise error.BuildError(f'invalid tag name: {names!r}')
 
     for arg in args:
         _add(last, arg)
@@ -80,4 +126,3 @@ def _add_list(el, ls):
         return
     for arg in ls:
         _add(el, arg)
-

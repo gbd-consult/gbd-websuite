@@ -1,67 +1,82 @@
-import re
-import xml.etree.ElementTree as ET
+"""XML parser."""
 
+import re
+import xml.etree.ElementTree
+
+import gws
 import gws.types as t
 
-from . import error, element
+from . import error, element, namespace
 
 
 def from_path(
         path: str,
         case_insensitive=False,
         compact_whitespace=False,
-        remove_namespaces=False
-) -> element.XElement:
+        normalize_namespaces=False,
+        remove_namespaces=False,
+) -> gws.IXmlElement:
     with open(path, 'rb') as fp:
         inp = fp.read()
-    return _parse(inp, case_insensitive, compact_whitespace, remove_namespaces)
+    return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
 
 
 def from_string(
         inp: t.Union[str, bytes],
         case_insensitive=False,
         compact_whitespace=False,
-        remove_namespaces=False
-) -> element.XElement:
-    return _parse(inp, case_insensitive, compact_whitespace, remove_namespaces)
+        remove_namespaces=False,
+        normalize_namespaces=False,
+) -> gws.IXmlElement:
+    return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
 
 
-def _parse(text, case_insensitive, compact_whitespace, remove_namespaces) -> element.XElement:
-    inp = _decode_input(text)
-    parser = ET.XMLParser(target=_ParserTarget(case_insensitive, compact_whitespace, remove_namespaces))
+##
+
+
+def _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces):
+    inp2 = _decode_input(inp)
+    parser = xml.etree.ElementTree.XMLParser(
+        target=_ParserTarget(case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces))
     try:
-        parser.feed(inp)
+        parser.feed(inp2)
         return parser.close()
-    except ET.ParseError as exc:
+    except xml.etree.ElementTree.ParseError as exc:
         raise error.ParseError(exc.args[0]) from exc
 
 
 class _ParserTarget:
-    def __init__(self, case_insensitive, compact_whitespace, remove_namespaces):
+    def __init__(self, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces):
         self.stack = []
         self.root = None
         self.buf = []
-        self.remove_namespaces = remove_namespaces
         self.case_insensitive = case_insensitive
         self.compact_whitespace = compact_whitespace
+        self.remove_namespaces = remove_namespaces
+        self.normalize_namespaces = normalize_namespaces
+
+    def convert_name(self, s):
+        if s[0] != '{':
+            return s.lower() if self.case_insensitive else s
+        uri, name = s[1:].split('}')
+        if self.case_insensitive:
+            name = name.lower()
+        if self.remove_namespaces:
+            return name
+        if self.normalize_namespaces:
+            pfx = namespace.prefix_for_uri(uri)
+            if pfx:
+                uri = namespace.uri_for_prefix(pfx)
+        return '{' + uri + '}' + name
 
     def make(self, tag, attrib):
         attrib2 = {}
 
         if attrib:
             for name, val in attrib.items():
-                if self.remove_namespaces:
-                    _, name = _split_ns(name)
-                if self.case_insensitive:
-                    name = name.lower()
-                attrib2[name] = val
+                attrib2[self.convert_name(name)] = val
 
-        if self.remove_namespaces:
-            _, tag = _split_ns(tag)
-        if self.case_insensitive:
-            tag = tag.lower()
-
-        el = element.XElement(tag, attrib2)
+        el = element.XElement(self.convert_name(tag), attrib2)
         el.caseInsensitive = self.case_insensitive
 
         return el
@@ -103,12 +118,6 @@ class _ParserTarget:
 
     def close(self):
         return self.root
-
-
-def _split_ns(tag):
-    if tag[0] != '{':
-        return None, tag
-    return tag[1:].split('}')
 
 
 def _decode_input(inp) -> str:
