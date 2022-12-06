@@ -37,8 +37,8 @@ class Crs(gws.ICrs):
         tr = _pyproj_transformer(self, crs_to)
         return tr.transform
 
-    def to_string(self, fmt=gws.CrsFormat.EPSG):
-        return getattr(self, str(fmt).lower())
+    def to_string(self, fmt=None):
+        return getattr(self, str(fmt or gws.CrsFormat.EPSG).lower())
 
     def to_geojson(self):
         # https://geojson.org/geojson-spec#named-crs
@@ -60,6 +60,7 @@ WGS84 = Crs(
     uom=gws.Uom.DEG,
     isGeographic=True,
     isProjected=False,
+    isYX=True,
     epsg='EPSG:4326',
     urn='urn:ogc:def:crs:EPSG::4326',
     urnx='urn:x-ogc:def:crs:EPSG:4326',
@@ -72,6 +73,8 @@ WGS84 = Crs(
     extent=(-180, -90, 180, 90),
 )
 
+WGS84_BOUNDS = gws.Bounds(crs=WGS84, extent=WGS84.extent)
+
 WEBMERCATOR = Crs(
     srid=3857,
     proj4text='+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
@@ -80,6 +83,7 @@ WEBMERCATOR = Crs(
     uom=gws.Uom.M,
     isGeographic=False,
     isProjected=True,
+    isYX=False,
     epsg='EPSG:3857',
     urn='urn:ogc:def:crs:EPSG::3857',
     urnx='urn:x-ogc:def:crs:EPSG:3857',
@@ -96,6 +100,8 @@ WEBMERCATOR = Crs(
         20048966.104014598,
     )
 )
+
+WEBMERCATOR_BOUNDS = gws.Bounds(crs=WEBMERCATOR, extent=WEBMERCATOR.extent)
 
 WEBMERCATOR_RADIUS = 6378137
 WEBMERCATOR_SQUARE = (
@@ -322,6 +328,7 @@ def _make_crs(srid, pp, au):
 
     crs.isGeographic = pp.is_geographic
     crs.isProjected = pp.is_projected
+    crs.isYX = crs.axis == gws.Axis.YX
 
     crs.epsg = _unparse(crs.srid, gws.CrsFormat.EPSG)
     crs.urn = _unparse(crs.srid, gws.CrsFormat.URN)

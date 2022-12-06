@@ -680,6 +680,8 @@ class AnnotateController extends gws.Controller {
             oFeature,
             props: {
                 uid: gws.lib.uniqId('annotate'),
+                attributes: {},
+                modelUid: '',
                 elements: {
                     shapeType,
                     labelTemplate,

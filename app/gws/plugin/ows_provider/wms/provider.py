@@ -3,12 +3,13 @@
 import gws
 import gws.lib.metadata
 import gws.gis.ows
+import gws.gis.source
 import gws.gis.crs
+import gws.gis.extent
 import gws.types as t
 
 from . import caps
 from .. import core
-from .. import featureinfo
 
 """
 OGC documents:
@@ -33,7 +34,7 @@ OGC 06-042, 7.3.3.3
 
 
 class Config(core.ProviderConfig):
-    capsLayersBottomUp: bool = False 
+    capsLayersBottomUp: bool = False
     """layers are listed from bottom to top in the GetCapabilities document"""
 
 
@@ -49,37 +50,38 @@ class Object(core.Provider):
 
         self.configure_operations(cc.operations)
 
-    def find_features(self, args, source_layers):
-        if not args.shapes:
-            return []
-
-        shape = args.shapes[0]
-        if shape.type != gws.GeometryType.point:
-            return []
-
-        ps = gws.gis.ows.client.prepared_search(
-            limit=args.limit,
-            point=shape,
-            protocol=self.protocol,
-            protocol_version=self.version,
-            request_crs=self.forceCrs,
-            request_crs_format=gws.CrsFormat.EPSG,
-            source_layers=source_layers,
+    def find_source_features(self, args, source_layers):
+        ps = gws.gis.ows.client.prepare_wms_search(
+            args,
+            source_layers,
+            version=self.version,
+            force_crs=self.forceCrs,
+            always_xy=self.alwaysXY,
         )
+        if not ps:
+            return []
 
-        params = gws.merge(ps.params, args.params)
+        op = self.get_operation(gws.OwsVerb.GetFeatureInfo)
+        if not op:
+            return []
 
-        op = self.operation(gws.OwsVerb.GetFeatureInfo)
         if op.preferredFormat:
-            params.setdefault('INFO_FORMAT', op.preferredFormat)
+            ps.params.setdefault('INFO_FORMAT', op.preferredFormat)
 
         text = gws.gis.ows.request.get_text(
-            self.request_args_for_operation(op, params=params))
-        features = featureinfo.parse(text, crs=ps.request_crs, axis=ps.axis)
+            self.request_args_for_operation(op, params=ps.params))
+
+        print(text)
+
+        features = gws.gis.ows.featureinfo.parse(text, default_crs=ps.bounds.crs, always_xy=self.alwaysXY)
 
         if features is None:
-            gws.log.debug(f'WMS NOT_PARSED params={params!r}')
+            gws.log.debug(f'WMS NOT_PARSED params={ps.params!r}')
             return []
-        gws.log.debug(f'WMS FOUND={len(features)} params={params!r}')
+        gws.log.debug(f'WMS FOUND={len(features)} params={ps.params!r}')
 
-        return [f.transform_to(shape.crs) for f in features]
+        for f in features:
+            if f.shape:
+                f.shape = f.shape.transformed_to(args.shapes[0].crs)
+
+        return features

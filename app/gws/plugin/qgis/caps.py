@@ -51,7 +51,7 @@ def parse_element(root_el: gws.IXmlElement) -> Caps:
     caps.printTemplates = _print_templates(root_el)
 
     caps.projectCrs = (
-            gws.gis.crs.get(root_el.text_of('projectCrs/spatialrefsys/authid'))
+            gws.gis.crs.get(root_el.textof('projectCrs/spatialrefsys/authid'))
             or gws.gis.crs.WGS84)
 
     layers_dct = _map_layers(root_el, caps.properties)
@@ -80,7 +80,7 @@ def _props(el):
         return gws.strip({c.tag: _props(c) for c in el})
 
     if typ == 'QStringList':
-        return el.text_list('value')
+        return el.textlist('value')
     if typ == 'QString':
         return el.text
     if typ == 'bool':
@@ -117,7 +117,7 @@ def _layer_metadata(layer_el) -> gws.Metadata:
 
     # fill in missing props from direct metadata
 
-    d = layer_el.text_dict()
+    d = layer_el.textdict()
 
     md.title = md.title or d.get('title') or d.get('shortname') or d.get('layername')
     md.abstract = md.abstract or d.get('abstract')
@@ -126,7 +126,7 @@ def _layer_metadata(layer_el) -> gws.Metadata:
         md.attribution = gws.MetadataAttribution(title=d.get('attribution'))
 
     if not md.keywords:
-        md.keywords = layer_el.text_list('keywordList/value')
+        md.keywords = layer_el.textlist('keywordList/value')
 
     if not md.metaLinks:
         md.metaLinks = []
@@ -177,11 +177,11 @@ def _add_dict(dst, src, mapping):
 def _metadata(el: gws.IXmlElement, md: gws.Metadata):
     # extract metadata from projectMetadata/resourceMetadata
 
-    _add_dict(md, el.text_dict(), _meta_mapping)
+    _add_dict(md, el.textdict(), _meta_mapping)
 
     md.keywords = []
     for kw in el.findall('keywords'):
-        keywords = kw.text_list('keyword')
+        keywords = kw.textlist('keyword')
         if kw.get('vocabulary') == 'gmd:topicCategory':
             md.isoTopicCategories = keywords
         else:
@@ -189,9 +189,9 @@ def _metadata(el: gws.IXmlElement, md: gws.Metadata):
 
     contact_el = el.find('contact')
     if contact_el:
-        _add_dict(md, contact_el.text_dict(), _contact_mapping)
+        _add_dict(md, contact_el.textdict(), _contact_mapping)
         for e in contact_el.findall('contactAddress'):
-            _add_dict(md, e.text_dict(), _contact_mapping)
+            _add_dict(md, e.textdict(), _contact_mapping)
             break  # NB we only support one contact address
 
     md.metaLinks = []
@@ -231,8 +231,8 @@ def _metadata(el: gws.IXmlElement, md: gws.Metadata):
 
     e = el.find('extent/temporal')
     if e:
-        md.dateBegin = e.text_of('period/start')
-        md.dateEnd = e.text_of('period/end')
+        md.dateBegin = e.textof('period/start')
+        md.dateEnd = e.textof('period/end')
 
 
 # see QGIS/src/core/layout/qgslayoutitemregistry.h
@@ -332,11 +332,11 @@ def _map_layers(root_el: gws.IXmlElement, properties) -> t.Dict[str, gws.SourceL
         if title in no_wms_layers:
             continue
 
-        uid = el.text_of('id')
+        uid = el.textof('id')
         if use_layer_ids:
             name = uid
         else:
-            name = el.text_of('shortname') or el.text_of('layername')
+            name = el.textof('shortname') or el.textof('layername')
 
         sl.title = title
         sl.name = name
@@ -355,7 +355,7 @@ def _map_layer(layer_el: gws.IXmlElement):
 
     sl.metadata = _layer_metadata(layer_el)
 
-    crs = gws.gis.crs.get(layer_el.text_of('srs/spatialrefsys/authid'))
+    crs = gws.gis.crs.get(layer_el.textof('srs/spatialrefsys/authid'))
     ext = layer_el.find('extent')
     if crs and ext:
         sl.supportedBounds.append(gws.SourceBounds(crs=crs, extent=_parse_extent(ext), format=gws.CrsFormat.EPSG))
@@ -371,13 +371,13 @@ def _map_layer(layer_el: gws.IXmlElement):
         if z > a:
             sl.scaleRange = [a, z]
 
-    prov = layer_el.text_of('provider').lower()
-    sl.dataSource = _parse_datasource(prov, layer_el.text_of('datasource'))
+    prov = layer_el.textof('provider').lower()
+    sl.dataSource = _parse_datasource(prov, layer_el.textof('datasource'))
     if sl.dataSource and 'provider' not in sl.dataSource:
         sl.dataSource['provider'] = _parse_datasource_provider(prov, sl.dataSource)
 
-    sl.opacity = _parse_float(layer_el.text_of('layerOpacity') or '1')
-    sl.isQueryable = layer_el.text_of('flags/Identifiable') == '1'
+    sl.opacity = _parse_float(layer_el.textof('layerOpacity') or '1')
+    sl.isQueryable = layer_el.textof('flags/Identifiable') == '1'
 
     return sl
 
@@ -582,10 +582,10 @@ def _parse_datasource_provider(prov, ds):
 
 def _parse_extent(extent_el):
     return (
-        _parse_float(extent_el.text_of('xmin')),
-        _parse_float(extent_el.text_of('ymin')),
-        _parse_float(extent_el.text_of('xmax')),
-        _parse_float(extent_el.text_of('ymax')),
+        _parse_float(extent_el.textof('xmin')),
+        _parse_float(extent_el.textof('ymin')),
+        _parse_float(extent_el.textof('xmax')),
+        _parse_float(extent_el.textof('ymax')),
     )
 
 

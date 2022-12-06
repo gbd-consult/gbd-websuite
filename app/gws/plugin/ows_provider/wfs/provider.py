@@ -34,7 +34,7 @@ class Object(core.Provider):
         self.version = cc.version
         self.operations.extend(cc.operations)
 
-    def find_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.IFeature]:
+    def find_source_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.IFeature]:
         # first, find features within the bounds of given shapes,
         # then, filter features precisely
         # this is more performant than WFS spatial ops (at least for qgis)

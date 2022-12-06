@@ -45,7 +45,7 @@ def _layer(layer_el: gws.IXmlElement, tms_dct):
     if sl.defaultStyle:
         sl.legendUrl = sl.defaultStyle.legendUrl
 
-    sl.tileMatrixIds = [el.text_of('TileMatrixSet') for el in layer_el.findall('TileMatrixSetLink')]
+    sl.tileMatrixIds = [el.textof('TileMatrixSet') for el in layer_el.findall('TileMatrixSetLink')]
     sl.tileMatrixSets = [tms_dct[tid] for tid in sl.tileMatrixIds]
 
     extra_crsids = [tms.crs.srid for tms in sl.tileMatrixSets]
@@ -58,7 +58,7 @@ def _layer(layer_el: gws.IXmlElement, tms_dct):
     sl.isImage = True
     sl.isVisible = True
 
-    sl.imageFormat = layer_el.text_of('Format')
+    sl.imageFormat = layer_el.textof('Format')
 
     sl.resourceUrls = {
         e.get('resourceType'): e.get('template')
@@ -77,8 +77,8 @@ def _tile_matrix_set(tms_el: gws.IXmlElement):
 
     tms = gws.TileMatrixSet()
 
-    tms.uid = tms_el.text_of('Identifier')
-    tms.crs = gws.gis.crs.require(tms_el.text_of('SupportedCRS'))
+    tms.uid = tms_el.textof('Identifier')
+    tms.crs = gws.gis.crs.require(tms_el.textof('SupportedCRS'))
     tms.matrices = sorted(
         [_tile_matrix(e) for e in tms_el.findall('TileMatrix')],
         key=lambda m: -m.scale)
@@ -93,18 +93,18 @@ def _tile_matrix(tm_el: gws.IXmlElement):
     #   ...
 
     tm = gws.TileMatrix()
-    tm.uid = tm_el.text_of('Identifier')
-    tm.scale = u.to_float(tm_el.text_of('ScaleDenominator'))
+    tm.uid = tm_el.textof('Identifier')
+    tm.scale = u.to_float(tm_el.textof('ScaleDenominator'))
 
-    p = u.to_float_pair(tm_el.text_of('TopLeftCorner'))
+    p = u.to_float_pair(tm_el.textof('TopLeftCorner'))
     tm.x = p[0]
     tm.y = p[1]
 
-    tm.width = u.to_int(tm_el.text_of('MatrixWidth'))
-    tm.height = u.to_int(tm_el.text_of('MatrixHeight'))
+    tm.width = u.to_int(tm_el.textof('MatrixWidth'))
+    tm.height = u.to_int(tm_el.textof('MatrixHeight'))
 
-    tm.tileWidth = u.to_int(tm_el.text_of('TileWidth'))
-    tm.tileHeight = u.to_int(tm_el.text_of('TileHeight'))
+    tm.tileWidth = u.to_int(tm_el.textof('TileWidth'))
+    tm.tileHeight = u.to_int(tm_el.textof('TileHeight'))
 
     tm.extent = _extent_for_matrix(tm)
 

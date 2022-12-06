@@ -53,27 +53,26 @@ class User(gws.IUser):
     def props(self, user):
         return gws.Data(displayName=self.displayName, attributes=self.attributes)
 
-    def can_use(self, obj, context=None):
+    def can_use(self, obj, *context):
         if obj is self:
             return True
 
-        acc = self.access_to(obj)
-        if acc is not None:
-            return acc == gws.ACCESS_ALLOWED
+        ci = 0
+        clen = len(context)
 
-        obj = context or getattr(obj, 'parent', None)
         while obj:
             acc = self.access_to(obj)
             if acc is not None:
-                return acc == gws.ACCESS_ALLOWED
-            obj = getattr(obj, 'parent', None)
+                return acc == gws.ALLOW
+            obj = context[ci] if ci < clen else getattr(obj, 'parent', None)
+            ci += 1
 
         return False
 
     def access_to(self, obj):
         roles = _GUEST_ROLES if self.pendingMfa else self.roles
         if gws.ROLE_ADMIN in roles:
-            return gws.ACCESS_ALLOWED
+            return gws.ALLOW
         access = getattr(obj, 'access', None)
         if access:
             for bit, role in access:
@@ -86,12 +85,12 @@ class Guest(User):
 
 
 class System(User):
-    def can_use(self, obj, context=None):
+    def can_use(self, obj, *context):
         return True
 
 
 class Nobody(User):
-    def can_use(self, obj, context=None):
+    def can_use(self, obj, *context):
         return False
 
 
@@ -152,6 +151,6 @@ def from_args(cls, provider: gws.IAuthProvider, **kwargs) -> User:
 
     usr.attributes = atts
 
-    gws.log.debug(f'inited user: prov={provider.uid!r} localUid={usr.localUid!r} roles={roles!r}')
+    gws.log.debug(f'inited user: prov={provider.uid!r} localUid={usr.localUid!r}')
 
     return usr

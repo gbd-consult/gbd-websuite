@@ -26,11 +26,9 @@ def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
         text_lower = text.lower()
         for err_string in _ows_error_strings:
             if err_string.lower() in text_lower:
-                raise error.Error(text)
+                raise error.ServiceError(text)
 
-    if not res.ok:
-        raise error.Error(f'HTTP error: {res.status_code!r} {res.text!r}')
-
+    res.raise_if_failed()
     return res
 
 
@@ -44,7 +42,7 @@ def get(args: Args, **kwargs) -> gws.lib.net.HTTPResponse:
     if args.version:
         params['VERSION'] = args.version
     if args.params:
-        params.update(args.params)
+        params.update(gws.to_upper_dict(args.params))
 
     return get_url(args.url, method=args.method or gws.RequestMethod.GET, params=params, **kwargs)
 

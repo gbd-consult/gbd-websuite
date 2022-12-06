@@ -97,8 +97,9 @@ class Object(gws.Node, gws.IProject):
         self.client = self.create_child_if_configured(gws.base.client.Object, self.var('client'))
 
     def props(self, user):
-        desc = self.templateMgr.render(
+        desc = self.templateMgr.render_template(
             gws.TemplateRenderInput(args={'project': self, 'user': user}),
+            user=user,
             subject='project.description'
         )
 

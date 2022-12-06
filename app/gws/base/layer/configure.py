@@ -3,6 +3,7 @@
 import gws
 import gws.lib.metadata
 import gws.gis.extent
+import gws.gis.zoom
 
 from . import core
 
@@ -16,13 +17,11 @@ def metadata(layer: core.Object):
 
 def search(layer: core.Object):
     if not layer.var('search.enabled'):
-        layer.hasSearch = False
         return True
-    p = layer.var('search.providers')
+    p = layer.var('search.finders')
     if p:
         for cfg in p:
-            layer.searchMgr.add_finder(cfg)
-        layer.hasSearch = True
+            layer.searchMgr.add_finder(layer.searchMgr.create_child(gws.ext.object.finder, cfg))
         return True
 
 

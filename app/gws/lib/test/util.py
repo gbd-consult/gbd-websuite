@@ -4,6 +4,7 @@ import inspect
 import os
 import shutil
 import time
+import re
 
 import pytest
 
@@ -77,3 +78,12 @@ def dict_of(x):
         # noinspection PyTypeChecker
         return dict(sorted(vars(x).items()))
     return x
+
+
+def fxml(s):
+    s = s.strip()
+    s = re.sub(r'>\s+<', '><', s)
+    s = re.sub(r'\s*>\s*', '>', s)
+    s = re.sub(r'\s*<\s*', '<', s)
+    s = re.sub(r'\s+', ' ', s)
+    return s

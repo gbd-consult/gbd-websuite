@@ -13,74 +13,141 @@ import gws.lib.style
 import gws.lib.svg
 import gws.types as t
 
-from . import util
+
+class ImageFormat(t.Enum):
+    """Image format"""
+
+    png8 = 'png8'
+    """png 8-bit"""
+    png24 = 'png24'
+    """png 24-bit"""
 
 
-# @TODO allow options for automatic legends
+class ClientOptions(gws.Data):
+    """Client options for a layer"""
+
+    expanded: t.Optional[bool] = False
+    """the layer is expanded in the list view"""
+    listed: t.Optional[bool] = True
+    """the layer is displayed in this list view"""
+    selected: t.Optional[bool] = False
+    """the layer is intially selected"""
+    visible: t.Optional[bool] = True
+    """the layer is intially visible"""
+    unfolded: t.Optional[bool] = False
+    """the layer is not listed, but its children are"""
+    exclusive: t.Optional[bool] = False
+    """only one of this layer's children is visible at a time"""
+
+
+class CacheConfig(gws.Config):
+    """Cache configuration"""
+
+    enabled: bool = True
+    maxAge: gws.Duration = '7d'
+    """cache max. age"""
+    maxLevel: int = 1
+    """max. zoom level to cache"""
+    requestBuffer: t.Optional[int]
+    requestTiles: t.Optional[int]
+
+
+class Cache(gws.Data):
+    maxAge: int
+    maxLevel: int
+    requestBuffer: int
+    requestTiles: int
+
+
+class GridConfig(gws.Config):
+    """Grid configuration for caches and tiled data"""
+
+    crs: t.Optional[gws.CrsName]
+    extent: t.Optional[gws.Extent]
+    corner: t.Optional[gws.Corner]
+    resolutions: t.Optional[t.List[float]]
+    tileSize: t.Optional[int]
+
+
+class EditConfig(gws.ConfigWithAccess):
+    """Edit access for a layer"""
+
+    pass
+
+
+class SearchConfig(gws.Config):
+    enabled: bool = True
+    """search is enabled"""
+    finders: t.Optional[t.List[gws.ext.config.finder]]
+    """search prodivers"""
+
 
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
-    # dataModel: t.Optional[gws.base.model.Config] 
-    """layer data model"""
-    cache: t.Optional[util.CacheConfig]  # cache configuration
-    clientOptions: util.ClientOptions = {}  # type:ignore
+    models: t.Optional[t.List[gws.ext.config.model]]
+    """data models"""
+    cache: t.Optional[CacheConfig]
+    """cache configuration"""
+    clientOptions: ClientOptions = {}
     """options for the layer display in the client"""
-    display: gws.LayerDisplayMode = gws.LayerDisplayMode.box 
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.box
     """layer display mode"""
-    extent: t.Optional[gws.Extent] 
+    extent: t.Optional[gws.Extent]
     """layer extent"""
-    extentBuffer: t.Optional[int] 
+    extentBuffer: t.Optional[int]
     """extent buffer"""
-    sourceGrid: t.Optional[util.GridConfig]  # source grid
-    targetGrid: t.Optional[util.GridConfig]  # target (client) grid
-    imageFormat: util.ImageFormat = util.ImageFormat.png8 
+    sourceGrid: t.Optional[GridConfig]
+    """source grid"""
+    targetGrid: t.Optional[GridConfig]
+    """target (client) grid"""
+    imageFormat: ImageFormat = ImageFormat.png8
     """image format"""
-    legend: t.Optional[gws.ext.config.legend] 
+    legend: t.Optional[gws.ext.config.legend]
     """legend configuration"""
-    metadata: t.Optional[gws.Metadata] 
+    metadata: t.Optional[gws.Metadata]
     """layer metadata"""
-    opacity: float = 1 
+    opacity: float = 1
     """layer opacity"""
     ows: bool = True  # layer is enabled for OWS services
-    search: t.Optional[util.SearchConfig] = {}  # type:ignore
+    search: t.Optional[SearchConfig] = {}  # type:ignore
     """layer search configuration"""
-    templates: t.Optional[t.List[gws.ext.config.template]] 
+    templates: t.Optional[t.List[gws.ext.config.template]]
     """client templates"""
-    title: str = '' 
+    title: str = ''
     """layer title"""
-    zoom: t.Optional[gws.gis.zoom.Config] 
+    zoom: t.Optional[gws.gis.zoom.Config]
     """layer resolutions and scales"""
 
 
 class CustomConfig(gws.ConfigWithAccess):
     """Custom layer configuration"""
 
-    applyTo: t.Optional[gws.gis.source.LayerFilterConfig] 
+    applyTo: t.Optional[gws.gis.source.LayerFilterConfig]
     """source layers this configuration applies to"""
-    clientOptions: t.Optional[util.ClientOptions]  # options for the layer display in the client
-    dataModel: t.Optional[gws.base.model.Config] 
+    clientOptions: t.Optional[ClientOptions]  # options for the layer display in the client
+    dataModel: t.Optional[gws.base.model.Config]
     """layer data model"""
-    display: t.Optional[gws.LayerDisplayMode] 
+    display: t.Optional[gws.LayerDisplayMode]
     """layer display mode"""
-    extent: t.Optional[gws.Extent] 
+    extent: t.Optional[gws.Extent]
     """layer extent"""
-    extentBuffer: t.Optional[int] 
+    extentBuffer: t.Optional[int]
     """extent buffer"""
     legend: gws.base.legend.Config = {}  # type:ignore
     """legend configuration"""
-    metadata: t.Optional[gws.Metadata] 
+    metadata: t.Optional[gws.Metadata]
     """layer metadata"""
-    opacity: t.Optional[float] 
+    opacity: t.Optional[float]
     """layer opacity"""
     ows: bool = True  # layer is enabled for OWS services
     # search: gws.base.search.finder.collection.Config = {}  # type:ignore
     """layer search configuration"""
-    templates: t.Optional[t.List[gws.ext.config.template]] 
+    templates: t.Optional[t.List[gws.ext.config.template]]
     """client templates"""
-    title: t.Optional[str] 
+    title: t.Optional[str]
     """layer title"""
-    zoom: t.Optional[gws.gis.zoom.Config] 
+    zoom: t.Optional[gws.gis.zoom.Config]
     """layer resolutions and scales"""
 
 
@@ -92,7 +159,7 @@ class GridProps(gws.Props):
 
 
 class Props(gws.Props):
-    model: t.Optional[gws.ext.props.model]
+    model: t.Optional[gws.base.model.Props]
     editAccess: t.Optional[t.List[str]]
     # editStyle: t.Optional[gws.lib.style.Props]
     extent: t.Optional[gws.Extent]
@@ -101,7 +168,7 @@ class Props(gws.Props):
     loadingStrategy: t.Optional[str]
     metadata: gws.lib.metadata.Props
     opacity: t.Optional[float]
-    clientOptions: util.ClientOptions
+    clientOptions: ClientOptions
     resolutions: t.Optional[t.List[float]]
     # style: t.Optional[gws.lib.style.Props]
     grid: GridProps
@@ -142,8 +209,8 @@ _DEFAULT_TEMPLATES = [
 
 
 class Object(gws.Node, gws.ILayer):
-    cache: t.Optional[util.Cache]
-    clientOptions: util.ClientOptions
+    cache: t.Optional[Cache]
+    clientOptions: ClientOptions
 
     canRenderBox = False
     canRenderXyz = False
@@ -176,6 +243,10 @@ class Object(gws.Node, gws.ILayer):
 
         self.searchMgr = self.create_child(gws.base.search.manager.Object)
 
+        p = self.var('models')
+        self.modelMgr = self.create_child(gws.base.model.manager.Object, gws.Config(
+            models=p or [gws.Config(type='default')]))
+
         self.layers = []
 
         self.sourceGrid = None
@@ -187,9 +258,17 @@ class Object(gws.Node, gws.ILayer):
 
         self.cache = None
         if self.var('cache.enabled'):
-            self.cache = util.Cache(self.var('cache'))
+            self.cache = Cache(self.var('cache'))
 
     ##
+
+    def ancestors(self):
+        ls = []
+        p = self.parent
+        while isinstance(p, Object):
+            ls.append(p)
+            p = p.parent
+        return ls
 
     _url_path_suffix = '/gws.png'
 

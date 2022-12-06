@@ -15,14 +15,17 @@ class OperationConfig(gws.Config):
 
 
 class ProviderConfig(gws.Config):
-    capsCacheMaxAge: gws.Duration = '1d' 
+    capsCacheMaxAge: gws.Duration = '1d'
     """max cache age for capabilities documents"""
-    forceCrs: t.Optional[gws.CrsName] 
+    forceCrs: t.Optional[gws.CrsName]
     """use this CRS for requests"""
-    maxRequests: int = 0 
+    alwaysXY: bool = False
+    """force XY orientation for lat/lon projections"""
+    maxRequests: int = 0
     """max concurrent requests to this source"""
     operations: t.Optional[t.List[OperationConfig]]
-    url: gws.Url 
+    """override operations reported in capabilities"""
+    url: gws.Url
     """service url"""
 
 
@@ -34,9 +37,21 @@ class Caps(gws.Data):
     version: str
 
 
+_IMAGE_VERBS = {
+    gws.OwsVerb.GetLegendGraphic,
+    gws.OwsVerb.GetMap,
+    gws.OwsVerb.GetTile,
+}
+
+_PREFER_IMAGE_MIME = {gws.lib.mime.PNG}
+
+_PREFER_XML_MIME = {gws.lib.mime.GML3, gws.lib.mime.GML, gws.lib.mime.XML}
+
+
 class Provider(gws.Node, gws.IOwsProvider):
     def configure(self):
         self.forceCrs = gws.gis.crs.get(self.var('forceCrs'))
+        self.alwaysXY = self.var('alwaysXY', default=False)
         self.sourceLayers = []
         self.url = self.var('url')
         self.version = ''
@@ -63,30 +78,18 @@ class Provider(gws.Node, gws.IOwsProvider):
             if op.verb not in verbs:
                 self.operations.append(op)
 
-        # check preferred formats
-
-        def _best_format(op, best):
-            # they support exactly what we want...
-            for fmt in op.formats:
-                if gws.lib.mime.get(fmt) == best:
-                    return fmt
-            # ...or they support anything at all...
-            for fmt in op.formats:
-                return fmt
-            # ...otherwise, no preferred format
-            return None
-
-        image_ops = {
-            gws.OwsVerb.GetLegendGraphic,
-            gws.OwsVerb.GetMap,
-            gws.OwsVerb.GetTile,
-        }
-
         for op in self.operations:
-            best = gws.lib.mime.PNG if op.verb in image_ops else gws.lib.mime.XML
-            op.preferredFormat = _best_format(op, best)
+            op.preferredFormat = self._preferred_format(op)
 
-    def operation(self, verb, method=None):
+    def _preferred_format(self, op: gws.OwsOperation) -> t.Optional[str]:
+        mime = _PREFER_IMAGE_MIME if op.verb in _IMAGE_VERBS else _PREFER_XML_MIME
+        for fmt in op.formats:
+            if gws.lib.mime.get(fmt) in mime:
+                return fmt
+        for fmt in op.formats:
+            return fmt
+
+    def get_operation(self, verb, method=None):
         for op in self.operations:
             if op.verb == verb:
                 url = op.postUrl if method == gws.RequestMethod.POST else op.url
@@ -135,5 +138,5 @@ class Provider(gws.Node, gws.IOwsProvider):
         args = self.request_args_for_operation(op)
         return gws.gis.ows.request.get_text(args, max_age=self.var('capsCacheMaxAge'))
 
-    def find_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.IFeature]:
+    def find_source_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.SourceFeature]:
         return []

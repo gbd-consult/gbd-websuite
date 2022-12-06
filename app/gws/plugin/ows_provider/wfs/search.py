@@ -31,4 +31,4 @@ class Object(gws.base.search.provider.Object):
 
     def run(self, args, layer=None):
         args.tolerance = args.tolerance or self.tolerance
-        return self.provider.find_features(args, self.source_layers)
+        return self.provider.find_source_features(args, self.source_layers)

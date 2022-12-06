@@ -16,12 +16,12 @@ MAX_LIMIT = 1000
 class Config(gws.base.action.Config):
     """Search action"""
 
-    limit: int = 1000 
+    limit: int = 1000
     """search results limit"""
 
 
 class Request(gws.Request):
-    bbox: t.Optional[gws.Extent]
+    extent: t.Optional[gws.Extent]
     crs: t.Optional[gws.CrsName]
     keyword: str = ''
     layerUids: t.List[str]
@@ -46,46 +46,42 @@ class Object(gws.base.action.Object):
     def find(self, req: gws.IWebRequester, p: Request) -> Response:
         """Perform a search"""
 
+        features = self._find(req, p)
+        return Response(features=[gws.props(f, req.user, self) for f in features])
+
+    def _find(self, req, p):
+
         project = req.require_project(p.projectUid)
 
-        bounds = gws.Bounds(
-            crs=p.crs or project.map.crs,
-            extent=p.bbox or project.map.extent,
-        )
-
-        limit = self.limit
-        if p.limit:
-            limit = min(int(p.limit), self.limit)
-
-        shapes = []
-        if p.shapes:
-            shapes = [gws.base.shape.from_props(s) for s in p.shapes]
-
-        tolerance = None
-        if p.tolerance:
-            tolerance = gws.lib.uom.parse(p.tolerance, default=gws.Uom.PX)
-
-        layers = []
-        if p.layerUids:
-            layers = gws.compact(req.acquire(gws.ext.object.layer, uid) for uid in p.layerUids)
-
         args = gws.SearchArgs(
-            bounds=bounds,
-            keyword=(p.keyword or '').strip(),
-            layers=layers,
-            limit=limit,
             project=project,
-            resolution=p.resolution,
-            shapes=shapes,
-            tolerance=tolerance,
-        )
+            user=req.user,
+            featureElements=['title', 'teaser', 'description'])
 
-        found = runner.run(req, args)
+        if p.layerUids:
+            args.layers = gws.compact(req.acquire(gws.ext.object.layer, uid) for uid in p.layerUids)
 
-        for f in found:
-            # @TODO only pull specified props from a feature
-            f.transform_to(args.bounds.crs)
-            f.apply_templates()
-            # f.apply_data_model()
+        if not args.layers:
+            gws.log.debug(f'no layers found for {p!r}')
+            return []
 
-        return Response(features=[gws.props(f, req.user, context=self) for f in found])
+        if p.extent:
+            args.bounds = gws.Bounds(crs=p.crs, extent=p.extent)
+
+        args.limit = self.limit
+        if p.limit:
+            args.limit = min(int(p.limit), self.limit)
+
+        if p.shapes:
+            args.shapes = [gws.base.shape.from_props(s) for s in p.shapes]
+
+        if p.tolerance:
+            args.tolerance = gws.lib.uom.parse(p.tolerance, default=gws.Uom.PX)
+
+        if p.resolution:
+            args.resolution = p.resolution
+
+        if p.keyword.strip():
+            args.keyword = p.keyword.strip()
+
+        return runner.run(req, args)

@@ -15,23 +15,19 @@ def run(req: gws.IWebRequester, args: gws.SearchArgs) -> t.List[gws.IFeature]:
     features: t.List[gws.IFeature] = []
 
     try:
-        if args.layers:
-            for layer in args.layers:
-                used_layer_ids.add(layer.uid)
-                for prov in layer.search_providers:
-                    _run(req, args, prov, total_limit, features, layer=layer)
+        for layer in args.layers:
+            used_layer_ids.add(layer.uid)
+            for finder in layer.searchMgr.finders:
+                _run(req, args, finder, total_limit, features, layer=layer)
 
-            for layer in args.layers:
-                for anc_layer in layer.ancestors:
-                    if anc_layer.uid not in used_layer_ids:
-                        used_layer_ids.add(anc_layer.uid)
-                        gws.log.debug(f'search ancestor={anc_layer.uid} for={layer.uid}')
-                        for prov in anc_layer.search_providers:
-                            _run(req, args, prov, total_limit, features, layer=anc_layer)
-
-        if args.project:
-            for prov in args.project.search_providers:
-                _run(req, args, prov, total_limit, features, project=args.project)
+        for layer in args.layers:
+            for ancestor in layer.ancestors():
+                if ancestor.uid in used_layer_ids:
+                    continue
+                used_layer_ids.add(ancestor.uid)
+                gws.log.debug(f'search ancestor={ancestor.uid} for={layer.uid}')
+                for finder in ancestor.searchMgr.finders:
+                    _run(req, args, finder, total_limit, features, layer=ancestor)
 
     except _LimitExceeded:
         pass
@@ -42,42 +38,39 @@ def run(req: gws.IWebRequester, args: gws.SearchArgs) -> t.List[gws.IFeature]:
 def _run(
         req: gws.IWebRequester,
         args: gws.SearchArgs,
-        provider: gws.IFinder,
+        finder: gws.IFinder,
         total_limit,
         features,
         layer: t.Optional[gws.ILayer] = None,
-        project: t.Optional[gws.IProject] = None,
 ):
     args.limit = total_limit - len(features)
     if args.limit <= 0:
         raise _LimitExceeded()
 
-    gws.log.debug(
-        'SEARCH_BEGIN: prov=%r layer=%r limit=%d' % (gws.get(provider, 'uid'), gws.get(layer, 'uid'), args.limit))
+    gws.log.debug(f'SEARCH_BEGIN: finder={finder.uid!r} layer={layer.uid!r} limit={args.limit}')
 
-    if not req.user.can_use(provider, context=layer or project):
-        gws.log.debug('SEARCH_END: NO_ACCESS')
+    if not req.user.can_use(finder, layer):
+        gws.log.debug('SEARCH_END: no access')
         return
 
-    if not provider.can_run(args):
-        gws.log.debug(f'SEARCH_END: N_A')
+    if not finder.can_run(args):
+        gws.log.debug(f'SEARCH_END: cannot run')
         return
 
     try:
-        fs: t.List[gws.IFeature] = provider.run(args, layer) or []
+        fs: t.List[gws.IFeature] = finder.run(args, layer) or []
     except:
         gws.log.exception('SEARCH_FAILED')
         return
 
-    tt = provider.templates or (layer.templates if layer else None)
-    dm = provider.data_model or (layer.data_model if layer else None)
+    template_mgr = finder.templateMgr or layer.templateMgr
 
-    for f in fs:
-        f.layer = layer
-        f.category = provider.title or (layer.title if layer else '')
-        f.templates = tt
-        f.data_model = dm
+    for elem in args.featureElements:
+        tpl = template_mgr.get_template_for(args.user, subject='feature.' + elem)
+        if tpl:
+            for f in fs:
+                f.apply_template(tpl)
 
-    gws.log.debug('SEARCH_END, found=%r', len(fs))
+    gws.log.debug(f'SEARCH_END, found={len(fs)}')
 
     features.extend(fs)

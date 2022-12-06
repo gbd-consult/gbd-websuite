@@ -87,8 +87,13 @@ class Object(gws.Node, gws.IApplication):
         self.version = self.root.specs.version
 
         self.versionString = f'GWS version {self.version}'
-        _, s = gws.lib.osx.run(['lsb_release', '-ds'])
-        self.versionString += ', ' + s.decode('ascii').strip()
+
+        try:
+            _, s = gws.lib.osx.run(['lsb_release', '-ds'])
+            self.versionString += ', ' + s.decode('ascii').strip()
+        except gws.lib.osx.Error:
+            pass
+
         if self.var('server.qgis.enabled'):
             qgis_server = gws.lib.importer.import_from_path('gws/plugin/qgis/server.py')
             self.qgisVersion = qgis_server.version()

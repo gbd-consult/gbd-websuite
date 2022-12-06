@@ -21,25 +21,19 @@ class Object(gws.Node, gws.ITemplateManager):
     def props(self, user):
         return gws.Data(templates=self.templates)
 
-    def find(self, subject=None, category=None, name=None, mime=None):
-        templates = self.templates
+    def get_template_for(self, user=None, **kwargs):
+        for tpl in self.templates:
+            if user and not user.can_use(tpl):
+                continue
+            p = kwargs.get('mime')
+            if p and tpl.mimes and gws.lib.mime.get(p) not in tpl.mimes:
+                continue
+            p = kwargs.get('subject')
+            if p and tpl.subject != p:
+                continue
+            return tpl
 
-        if mime:
-            mime = gws.lib.mime.get(mime)
-            templates = [tpl for tpl in templates if mime in tpl.mimes]
-        if subject:
-            s = subject.lower()
-            templates = [tpl for tpl in templates if s == tpl.subject]
-        if category:
-            s = category.lower()
-            templates = [tpl for tpl in templates if s == tpl.category]
-        if name:
-            s = name.lower()
-            templates = [tpl for tpl in templates if s == tpl.name]
-
-        return templates[0] if templates else None
-
-    def render(self, tri, subject=None, category=None, name=None, mime=None, notify=None):
-        tpl = self.find(subject, category, name, mime)
+    def render_template(self, tri, user=None, **kwargs):
+        tpl = self.get_template_for(user, **kwargs)
         if tpl:
-            return tpl.render(tri, notify)
+            return tpl.render(tri, notify=kwargs.get('notify'))

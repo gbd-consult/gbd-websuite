@@ -566,7 +566,7 @@ class Object(gws.base.action.Object):
 
         for feature in res.features:
             feature.apply_templates(self.templates, subjects=template_subjects)
-            f = gws.props(feature, req.user, context=self)
+            f = gws.props(feature, req.user, self)
             if f:
                 gws.pop(f, 'attributes')
                 feature_props_list.append(f)

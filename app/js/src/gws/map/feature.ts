@@ -6,9 +6,9 @@ import * as lib from '../lib';
 
 export class Feature implements types.IMapFeature {
     uid: string = '';
-    attributes: Array<api.core.Attribute> = [];
+    attributes: types.Dict = {};
     elements: types.Dict = {};
-    layerUid: string = '';
+    modelUid: string = '';
     mode: types.FeatureMode;
 
     styleNames = {
@@ -29,10 +29,8 @@ export class Feature implements types.IMapFeature {
             this.uid = args.props.uid;
             this.attributes = args.props.attributes || [];
             this.elements = args.props.elements || {};
-            this.layerUid = args.props.layerUid || '';
+            this.modelUid = args.props.modelUid || '';
         }
-
-        this.uid = this.uid || lib.uniqId(this.layerUid || '_feature_');
 
         let oFeature = this.oFeatureFromArgs(args);
         if (oFeature) {
@@ -42,7 +40,7 @@ export class Feature implements types.IMapFeature {
         this.oFeature = oFeature;
 
         this.setStyles({
-            normal: args.style || (args.props && args.props.style),
+            normal: args.style,
             selected: args.selectedStyle,
             edit: args.editStyle,
         });
@@ -72,7 +70,7 @@ export class Feature implements types.IMapFeature {
         return {
             attributes: this.attributes,
             elements: this.elements,
-            layerUid: this.layerUid,
+            modelUid: this.modelUid,
             shape: this.shape,
             style: style ? style.props : null,
             uid: this.uid
@@ -80,10 +78,7 @@ export class Feature implements types.IMapFeature {
     }
 
     getAttribute(name: string): any {
-        for (let a of this.attributes) {
-            if (a.name === name)
-                return a.value;
-        }
+        return this.attributes[name]
     }
 
     setMode(mode) {

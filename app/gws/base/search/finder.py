@@ -5,32 +5,32 @@ import gws.base.shape
 import gws.lib.uom
 import gws.types as t
 
-_DEFAULT_PIXEL_TOLERANCE = 10
+_DEFAULT_TOLERANCE = 10, gws.Uom.PX
 
 
 class SpatialContext(t.Enum):
-    map = 'map' 
+    MAP = 'map'
     """search in the map extent"""
-    view = 'view' 
+    VIEW = 'view'
     """search in the client view extent"""
 
 
 class Config(gws.ConfigWithAccess):
-    dataModel: t.Optional[gws.base.model.Config] 
-    """feature data model"""
-    defaultContext: t.Optional[SpatialContext] = SpatialContext.map 
+    models: t.Optional[t.List[gws.ext.config.model]]
+    """data models for features"""
+    defaultContext: t.Optional[SpatialContext] = SpatialContext.MAP
     """default spatial context"""
-    templates: t.Optional[t.List[gws.ext.config.template]] 
+    templates: t.Optional[t.List[gws.ext.config.template]]
     """feature formatting templates"""
-    title: t.Optional[str] 
+    title: t.Optional[str]
     """provider title"""
-    tolerance: str = '10px' 
+    tolerance: str = '10px'
     """tolerance, in pixels or map units"""
-    withGeometry: bool = True 
+    withGeometry: bool = True
     """enable geometry search"""
-    withKeyword: bool = True 
+    withKeyword: bool = True
     """enable keyword search"""
-    withFilter: bool = True 
+    withFilter: bool = True
     """enable filter search"""
 
 
@@ -43,23 +43,22 @@ class Object(gws.Node, gws.IFinder):
     supportsKeyword = False
 
     def configure(self):
-        # self.data_model = self.root.create_optional(gws.base.model.Object, self.var('dataModel'))
-
-        self.templateMgr = None
         p = self.var('templates')
-        if p:
-            self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(items=p))
+        self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(
+            templates=p)) if p else None
 
-        self.tolerance = _DEFAULT_PIXEL_TOLERANCE, gws.lib.uom.PX
+        p = self.var('models')
+        self.modelMgr = self.create_child(gws.base.model.manager.Object, gws.Config(
+            models=p)) if p else None
+
         p = self.var('tolerance')
-        if p:
-            self.tolerance = gws.lib.uom.parse(p, default=gws.lib.uom.PX)
+        self.tolerance = gws.lib.uom.parse(p, default=gws.lib.uom.PX) if p else _DEFAULT_TOLERANCE
 
         self.withKeyword = self.supportsKeyword and self.var('withKeyword', default=True)
         self.withGeometry = self.supportsGeometry and self.var('withGeometry', default=True)
         self.withFilter = self.supportsFilter and self.var('withFilter', default=True)
 
-        self.spatialContext = self.var('defaultContext', default=SpatialContext.map)
+        self.spatialContext = self.var('defaultContext', default=SpatialContext.MAP)
         self.title = self.var('title', default='')
 
     def can_run(self, args: gws.SearchArgs):
@@ -84,8 +83,11 @@ class Object(gws.Node, gws.IFinder):
 
     def context_shape(self, args: gws.SearchArgs) -> gws.IShape:
         if args.shapes:
-            return gws.base.shape.union(args.shapes)
-        if self.spatialContext == SpatialContext.view and args.bounds:
+            return args.shapes[0].union(args.shapes[1:])
+        if self.spatialContext == SpatialContext.VIEW and args.bounds:
             return gws.base.shape.from_bounds(args.bounds)
         if args.project:
-            return gws.base.shape.from_bounds(args.project.map.bounds())
+            return gws.base.shape.from_bounds(args.project.map.bounds)
+
+    def run(self, args, layer):
+        return []

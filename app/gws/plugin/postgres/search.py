@@ -7,7 +7,7 @@ from . import provider
 
 
 @gws.ext.config.finder('postgres')
-class Config(gws.base.search.provider.Config):
+class Config(gws.base.search.finder.Config, provider.Config):
     """Database-based search"""
 
     db: t.Optional[str] 
@@ -19,7 +19,7 @@ class Config(gws.base.search.provider.Config):
 
 
 @gws.ext.object.finder('postgres')
-class Object(gws.base.search.provider.Object):
+class Object(gws.base.search.finder.Object):
     provider: provider.Object
     table: gws.SqlTable
 
@@ -32,9 +32,14 @@ class Object(gws.base.search.provider.Object):
             self.table = self.provider.configure_table(self.var('table'))
 
         if self.table.search_column:
-            self.supports_keyword = True
+            self.supportsKeyword = True
         if self.table.geometry_column:
-            self.supports_geometry = True
+            self.supportsGeometry = True
+
+        self.withKeyword = self.supportsKeyword and self.var('withKeyword', default=True)
+        self.withGeometry = self.supportsGeometry and self.var('withGeometry', default=True)
+
+
 
     def run(self, args, layer=None):
         n, u = args.tolerance or self.tolerance

@@ -762,7 +762,7 @@ export class MapManager implements types.IMapManager {
 
         let ls = this.searchLayers();
         let params: api.base.search.action.Request = {
-            bbox: this.bbox,
+            extent: this.bbox,
             keyword: args.keyword || '',
             layerUids: lib.compact(ls.map(la => la.uid)),
             resolution: this.viewState.resolution,

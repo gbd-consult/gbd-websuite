@@ -273,41 +273,10 @@ def _read_variant(r: Reader, val, typ: core.Type):
 # custom types
 
 def _read_acl(r: Reader, val, typ: core.Type):
-    v = _read_acl2(val)
-    if v is None:
-        raise core.ReadError(f'invalid ACL: {val!r}', val)
-    return v
-
-
-def _read_acl2(val):
-    # for ACLs we accept a string like "allow foo, deny bar"
-    # or a list of dicts [ {type:allow, role:foo}, {type:deny, role:bar}]
-
-    ps = []
-
-    if isinstance(val, str):
-        for elem in val.split(','):
-            elem = elem.split()
-            if len(elem) != 2:
-                return
-            ps.append([elem[0].lower(), elem[1]])
-    elif isinstance(val, list):
-        for elem in val:
-            if not isinstance(elem, dict) or len(elem) != 2 or 'type' not in elem or 'role' not in elem:
-                return
-            ps.append([elem['type'].lower(), elem['role']])
-    else:
-        return
-
-    res = []
-    for a, r in ps:
-        if a == 'allow' and r.isalnum():
-            res.append([gws.ACCESS_ALLOWED, r])
-        elif a == 'deny' and r.isalnum():
-            res.append([gws.ACCESS_DENIED, r])
-        else:
-            return
-    return res
+    try:
+        return gws.parse_acl(val)
+    except ValueError:
+        raise core.ReadError(f'invalid ACL', val)
 
 
 def _read_color(r: Reader, val, typ: core.Type):

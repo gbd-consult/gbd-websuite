@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<geobak_20:Sachdatenabfrage xmlns:esri_wms="http://www.esri.com/wms" xmlns:geobak_20="https://www.geoportal.sachsen.de"
+                            xmlns="http://www.esri.com/wms">
+    <!--GeoBAK20-Sachdatenabfrage-Version: 2018-02-01-->
+    <geobak_20:Kartenebene>abbeplgr</geobak_20:Kartenebene>
+    <geobak_20:Inhalt>
+        <geobak_20:Datensatz>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Shape</geobak_20:Name>
+                <geobak_20:Wert>Polygon</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Betriebsnummer</geobak_20:Name>
+                <geobak_20:Wert>123</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Betriebsname</geobak_20:Name>
+                <geobak_20:Wert>Betriebsname1</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Datum der Zulassung</geobak_20:Name>
+                <geobak_20:Wert>Null</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Datum der Befristung</geobak_20:Name>
+                <geobak_20:Wert>Null</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Unternehmer des Betriebes</geobak_20:Name>
+                <geobak_20:Wert>Unternehmer des Betriebes1</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Fläche in qm</geobak_20:Name>
+                <geobak_20:Wert>123</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Bereich</geobak_20:Name>
+                <geobak_20:Wert>Bereich1</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Gegenstand Hinweise</geobak_20:Name>
+                <geobak_20:Wert>>Gegenstand Hinweise1</geobak_20:Wert>
+            </geobak_20:Attribut>
+        </geobak_20:Datensatz>
+    </geobak_20:Inhalt>
+    <geobak_20:Inhalt>
+        <geobak_20:Datensatz>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Shape</geobak_20:Name>
+                <geobak_20:Wert>Polygon</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Betriebsnummer</geobak_20:Name>
+                <geobak_20:Wert>234</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Betriebsname</geobak_20:Name>
+                <geobak_20:Wert>Betriebsname2</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Datum der Zulassung</geobak_20:Name>
+                <geobak_20:Wert>Null</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Datum der Befristung</geobak_20:Name>
+                <geobak_20:Wert>Null</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Unternehmer des Betriebes</geobak_20:Name>
+                <geobak_20:Wert>Unternehmer des Betriebes2</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Fläche in qm</geobak_20:Name>
+                <geobak_20:Wert>123</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Bereich</geobak_20:Name>
+                <geobak_20:Wert>Bereich2</geobak_20:Wert>
+            </geobak_20:Attribut>
+            <geobak_20:Attribut>
+                <geobak_20:Name>Gegenstand Hinweise</geobak_20:Name>
+                <geobak_20:Wert>>Gegenstand Hinweise2</geobak_20:Wert>
+            </geobak_20:Attribut>
+        </geobak_20:Datensatz>
+    </geobak_20:Inhalt>
+</geobak_20:Sachdatenabfrage>

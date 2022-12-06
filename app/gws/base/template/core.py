@@ -28,7 +28,7 @@ class Config(gws.Config):
 
 
 class Props(gws.Props):
-    model: gws.ext.props.model
+    model: t.Optional[gws.base.model.Props]
     mapSize: t.Optional[gws.MSize]
     pageSize: t.Optional[gws.MSize]
     qualityLevels: t.List[gws.TemplateQualityLevel]

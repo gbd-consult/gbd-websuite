@@ -5,7 +5,7 @@ import * as gws from 'gws';
 const EDITOR_HEIGHT = 90;
 
 interface FormProps {
-    attributes: Array<gws.api.core.Attribute>;
+    attributes: gws.types.Dict;
     errors?: gws.types.StrDict;
     whenChanged: (key: string, value: any) => void;
     whenEntered?: (key: string, value: any) => void;

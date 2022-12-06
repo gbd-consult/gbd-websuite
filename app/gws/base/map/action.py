@@ -103,8 +103,9 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('mapDescribeLayer')
     def describe_layer(self, req: gws.IWebRequester, p: DescribeLayerRequest) -> DescribeLayerResponse:
         layer = req.require_layer(p.layerUid)
-        desc = layer.templateMgr.render(
+        desc = layer.templateMgr.render_template(
             gws.TemplateRenderInput(args=dict(layer=layer, user=req.user)),
+            user=req.user,
             subject='layer.description')
         return DescribeLayerResponse(description=desc.content if desc else '')
 
@@ -112,7 +113,7 @@ class Object(gws.base.action.Object):
     def api_get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
         found = self._get_features(req, p)
-        return GetFeaturesResponse(features=[gws.props(f, req.user, context=self) for f in found])
+        return GetFeaturesResponse(features=[gws.props(f, req.user, self) for f in found])
 
     @gws.ext.command.get('mapGetFeatures')
     def http_get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> gws.ContentResponse:
@@ -120,7 +121,7 @@ class Object(gws.base.action.Object):
 
         found = self._get_features(req, p)
         js = gws.lib.jsonx.to_string({
-            'features': [gws.props(f, req.user, context=self) for f in found]
+            'features': [gws.props(f, req.user, self) for f in found]
         })
 
         return gws.ContentResponse(mime=gws.lib.mime.JSON, content=js)

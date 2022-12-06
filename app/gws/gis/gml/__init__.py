@@ -1,2 +1,8 @@
-from .parser import element_is_gml, parse_envelope, parse_to_shape, parse_to_geometry
+"""GML support.
+
+
+GML documentation: https://www.ogc.org/standards/gml
+"""
+
+from .parser import parse_envelope, parse_shape, parse_geometry
 from .writer import shape_to_element

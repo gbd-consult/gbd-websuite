@@ -1,8 +1,10 @@
 """WMS Capabilities parser."""
 
 import gws
-import gws.lib.xmlx as xmlx
+import gws.gis.crs
 import gws.gis.source
+import gws.lib.xmlx as xmlx
+
 import gws.types as t
 
 from .. import core
@@ -10,13 +12,22 @@ from .. import parseutil as u
 
 
 def parse(xml: str) -> core.Caps:
+    """Read WMS capabilities from the GetCapabilities XML.
+
+    Args:
+        xml: GetCapabilities XML
+
+    Returns:
+        The Caps object.
+    """
+
     caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
-    sls = gws.gis.source.check_layers(
+    source_layers = gws.gis.source.check_layers(
         _layer(el) for el in caps_el.findall('Capability/Layer'))
     return core.Caps(
         metadata=u.service_metadata(caps_el),
         operations=u.service_operations(caps_el),
-        sourceLayers=sls,
+        sourceLayers=source_layers,
         version=caps_el.get('version'))
 
 
@@ -33,18 +44,17 @@ def _layer(layer_el: gws.IXmlElement, parent: t.Optional[gws.SourceLayer] = None
 
     # @TODO: support ScaleHint (WMS 1.1)
 
-    smin = layer_el.text_of('MinScaleDenominator')
-    smax = layer_el.text_of('MaxScaleDenominator')
+    smin = layer_el.textof('MinScaleDenominator')
+    smax = layer_el.textof('MaxScaleDenominator')
     if smax:
         sl.scaleRange = [u.to_int(smin), u.to_int(smax)]
 
-    # NB don't process axis orders here, this is up to the provider
-    bounds, crs_list, wgs_ext = u.bounds_and_crs(layer_el)
+    wgs_bounds = u.wgs_bounds(layer_el)
+    crs_list = u.supported_crs(layer_el)
 
     if not parent:
-        sl.supportedBounds = bounds
         sl.supportedCrs = crs_list or [gws.gis.crs.WGS84]
-        sl.wgsExtent = wgs_ext or gws.gis.crs.WGS84.wgsExtent
+        sl.wgsBounds = wgs_bounds or gws.gis.crs.WGS84_BOUNDS
 
     else:
         # OGC 06-042, 7.2.4.8 Inheritance of layer properties
@@ -62,10 +72,7 @@ def _layer(layer_el: gws.IXmlElement, parent: t.Optional[gws.SourceLayer] = None
                 sl.supportedCrs.append(crs)
 
         # EX_GeographicBoundingBox -> replace
-        sl.wgsExtent = wgs_ext or parent.wgsExtent
-
-        # BoundingBox -> replace
-        sl.supportedBounds = bounds or parent.supportedBounds
+        sl.wgsBounds = wgs_bounds or parent.wgsBounds
 
         # Dimension -> replace
         # @TODO

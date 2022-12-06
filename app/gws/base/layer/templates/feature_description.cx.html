@@ -1,18 +1,14 @@
-@with category as s
+@with feature.layerName as s
     <p class="head">{s | html}</p>
-@end
-
-@with title as s
-    <p class="head2">{s | html}</p>
 @end
 
 <table><tbody>
 
-@each feature.attributes as a
-    @with a.value
+@for name, value in feature.attributes
+    @with value
         <tr>
-            <th>{a.name | html}</th>
-            <td>{a.value | html | nl2br | linkify(target="_blank", cut=30)}</td>
+            <th>{name | html}</th>
+            <td>{value | html | nl2br | linkify(target="_blank", cut=30)}</td>
         </tr>
     @end
 @end

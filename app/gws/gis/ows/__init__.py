@@ -1,1 +1,1 @@
-from . import error, request, client
+from . import error, request, client, featureinfo

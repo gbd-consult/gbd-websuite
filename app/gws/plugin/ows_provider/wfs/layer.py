@@ -31,7 +31,5 @@ class Object(gws.base.layer.vector.Object, gws.IOwsClient):
             return gws.gis.ows.client.configure_search(self, search.Object)
 
     def get_features(self, bounds, limit=0):
-        features = self.provider.find_features(
-            gws.SearchArgs(bounds=bounds, limit=limit),
-            self.source_layers)
+        features = self.provider.find_source_features(gws.SearchArgs(bounds=bounds, limit=limit), self.source_layers)
         return [f.connect_to(self) for f in features]

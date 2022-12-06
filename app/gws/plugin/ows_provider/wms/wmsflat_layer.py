@@ -2,7 +2,9 @@ import gws
 import gws.base.layer
 import gws.base.legend
 import gws.lib.metadata
+import gws.gis.crs
 import gws.gis.source
+import gws.gis.zoom
 import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.ows
@@ -15,7 +17,7 @@ from . import provider
 class Config(gws.base.layer.Config, provider.Config):
     """Flat WMS layer."""
 
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig] 
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]
     """source layers to use"""
 
 
@@ -25,19 +27,21 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
     sourceCrs: gws.ICrs
 
     def configure(self):
-        self.provider = self.var('_provider') or self.root.create_shared(provider.Object, self.config)
-
-        self.sourceLayers = self.var('_sourceLayers')
-        if not self.sourceLayers:
+        if self.var('_provider'):
+            self.provider = self.var('_provider')
+            self.sourceLayers = self.var('_sourceLayers')
+        else:
+            self.provider = self.root.create_shared(provider.Object, self.config)
             slf = gws.merge(
                 gws.gis.source.LayerFilter(isImage=True),
                 self.var('sourceLayers'))
             self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, slf)
+
         if not self.sourceLayers:
             raise gws.Error(f'no source layers found in {self.provider.url!r}')
 
-        self.sourceCrs = gws.gis.crs.best_match(
-            self.provider.forceCrs or self.parentBounds.crs,
+        self.sourceCrs = self.provider.forceCrs or gws.gis.crs.best_match(
+            self.parentBounds.crs,
             gws.gis.source.combined_crs_list(self.sourceLayers))
 
         if not gws.base.layer.configure.metadata(self):
@@ -46,14 +50,15 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
 
         if not gws.base.layer.configure.bounds(self):
             wgs_extent = gws.gis.extent.union(
-                gws.compact(sl.wgsExtent for sl in self.sourceLayers))
+                gws.compact(sl.wgsBounds.extent for sl in self.sourceLayers))
             crs = self.parentBounds.crs
             self.bounds = gws.Bounds(
                 crs=crs,
                 extent=gws.gis.extent.transform(wgs_extent, gws.gis.crs.WGS84, crs))
 
         if not gws.base.layer.configure.resolutions(self):
-            self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.parentResolutions)
+            self.resolutions = gws.gis.zoom.resolutions_from_source_layers(
+                self.sourceLayers, self.parentResolutions)
             if not self.resolutions:
                 raise gws.Error(f'layer {self.uid!r}: no matching resolutions')
 
@@ -73,21 +78,20 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
                 self.legend = self.create_child(
                     gws.ext.object.legend,
                     gws.Config(type='remote', urls=urls))
-                return True
 
-    # def configure_search(self):
-    #     if not super().configure_search():
-    #         queryable_layers = gws.gis.source.filter_layers(
-    #             self.sourceLayers,
-    #             gws.gis.source.LayerFilter(isQueryable=True)
-    #         )
-    #         if queryable_layers:
-    #             self.searchMgr.add_finder(gws.Config(
-    #                 type='wms',
-    #                 _provider=self.provider,
-    #                 _sourceLayers=queryable_layers
-    #             ))
-    #             return True
+        if not gws.base.layer.configure.search(self):
+            queryable_layers = gws.gis.source.filter_layers(
+                self.sourceLayers,
+                gws.gis.source.LayerFilter(isQueryable=True)
+            )
+            if queryable_layers:
+                # @TODO use shared finders
+                self.searchMgr.add_finder(self.searchMgr.create_child(gws.ext.object.finder, gws.Config(
+                    type='wms',
+                    _provider=self.provider,
+                    _sourceLayers=queryable_layers,
+                    _modelMgr=self.modelMgr,
+                )))
 
     def render(self, lri):
         return gws.base.layer.util.generic_raster_render(self, lri)
@@ -97,7 +101,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         if not self.var('capsLayersBottomUp'):
             layers = reversed(layers)
 
-        op = self.provider.operation(gws.OwsVerb.GetMap)
+        op = self.provider.get_operation(gws.OwsVerb.GetMap)
         args = self.provider.request_args_for_operation(op)
 
         req = gws.merge({}, args.params, {

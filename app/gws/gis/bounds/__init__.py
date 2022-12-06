@@ -7,52 +7,63 @@ import gws.gis.gml
 import gws.types as t
 
 
-def from_request_bbox(bbox: str, target_crs: gws.ICrs = None, invert_axis_if_geographic: bool = False) -> t.Optional[gws.Bounds]:
+def from_request_bbox(bbox: str, default_crs: gws.ICrs = None, always_xy=False) -> t.Optional[gws.Bounds]:
     """Create Bounds from a KVP BBOX param.
 
-    See:
-        OGC 06-121r9, 10.2.3 Bounding box KVP encoding
+    See OGC 06-121r9, 10.2.3 Bounding box KVP encoding.
+    
+    Args:
+        bbox: A string with four coodinates, optionally followed by a CRS spec.
+        default_crs: Default Crs.
+        always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order
+
+    Returns:
+          A Bounds object.
     """
 
     if not bbox:
         return None
 
-    source_crs = target_crs
+    crs = default_crs
 
     # x,y,x,y,crs
     ls = bbox.split(',')
     if len(ls) == 5:
-        source_crs = gws.gis.crs.get(ls.pop())
+        crs = gws.gis.crs.get(ls.pop())
 
-    if not source_crs:
+    if not crs:
         return None
 
-    if source_crs.is_geographic and invert_axis_if_geographic:
-        ext = gws.gis.extent.from_inverted_str_list(ls)
-    else:
-        ext = gws.gis.extent.from_list(ls)
-    if not ext:
+    extent = gws.gis.extent.from_list(ls)
+    if not extent:
         return None
 
-    if target_crs:
-        return gws.Bounds(
-            crs=target_crs,
-            extent=source_crs.transform_extent(ext, target_crs))
-
-    return gws.Bounds(crs=source_crs, extent=ext)
+    return from_extent(extent, crs, always_xy)
 
 
-def from_gml_envelope_element(el: gws.IXmlElement, fallback_crs: gws.ICrs = None):
-    """Create Bounds from a gml:Envelope"""
+def from_extent(extent: gws.Extent, crs: gws.ICrs, always_xy=False) -> gws.Bounds:
+    """Create Bounds from an Extent.
 
-    return gws.gis.gml.parse_envelope(el, fallback_crs)
+    Args:
+        extent: An Extent.
+        crs: A Crs object.
+        always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order
+
+    Returns:
+          A Bounds object.
+    """
+
+    if crs.isYX and not always_xy:
+        extent = gws.gis.extent.swap_xy(extent)
+
+    return gws.Bounds(crs=crs, extent=extent)
 
 
 def copy(b: gws.Bounds) -> gws.Bounds:
     return gws.Bounds(crs=b.crs, extent=b.extent)
 
 
-def union(bs: t.List[gws.Bounds]) -> gws.Bounds:
+def union(*bs: gws.Bounds) -> gws.Bounds:
     crs = bs[0].crs
     exts = [gws.gis.extent.transform(b.extent, b.crs, crs) for b in bs]
     return gws.Bounds(
@@ -63,10 +74,6 @@ def union(bs: t.List[gws.Bounds]) -> gws.Bounds:
 def transform(b: gws.Bounds, crs_to: gws.ICrs) -> gws.Bounds:
     if b.crs == crs_to:
         return b
-
     return gws.Bounds(
         crs=crs_to,
         extent=b.crs.transform_extent(b.extent, crs_to))
-
-
-

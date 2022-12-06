@@ -131,7 +131,7 @@ ClassRef = Union[type, str]
 class Config(Data):
     """Configuration base type"""
 
-    uid: str = '' 
+    uid: str = ''
     """unique ID"""
 
 
@@ -143,7 +143,7 @@ ACL = str
 
 
 class ConfigWithAccess(Config):
-    access: Optional[ACL] 
+    access: Optional[ACL]
     """access rights"""
 
 
@@ -167,7 +167,7 @@ class IObject(Protocol):
 class IGrantee(Protocol):
     roles: Set[str]
 
-    def can_use(self, obj: Any, context=None) -> bool: ...
+    def can_use(self, obj: Any, *context) -> bool: ...
 
     def access_to(self, obj: Any) -> Optional[int]: ...
 
@@ -263,9 +263,9 @@ class ISpecRuntime(Protocol):
 class Request(Data):
     """Web request"""
 
-    projectUid: Optional[str] 
+    projectUid: Optional[str]
     """project uid"""
-    localeUid: Optional[str] 
+    localeUid: Optional[str]
     """locale for this request"""
 
 
@@ -526,61 +526,67 @@ class IUser(IObject, IGrantee, Protocol):
 # attributes and models
 
 class AttributeType(Enum):
-    bool = 'bool'
-    bytes = 'bytes'
-    date = 'date'
-    datetime = 'datetime'
-    float = 'float'
-    floatlist = 'floatlist'
-    geometry = 'geometry'
-    int = 'int'
-    intlist = 'intlist'
-    str = 'str'
-    strlist = 'strlist'
-    text = 'text'
-    time = 'time'
+    BOOL = 'BOOL'
+    BYTES = 'BYTES'
+    DATE = 'DATE'
+    DATETIME = 'DATETIME'
+    FLOAT = 'FLOAT'
+    FLOATLIST = 'FLOATLIST'
+    GEOMETRY = 'GEOMETRY'
+    INT = 'INT'
+    INTLIST = 'INTLIST'
+    STR = 'STR'
+    STRLIST = 'STRLIST'
+    TEXT = 'TEXT'
+    TIME = 'TIME'
 
 
 class GeometryType(Enum):
-    curve = 'CURVE'
-    geomcollection = 'GEOMCOLLECTION'
-    geometry = 'GEOMETRY'
-    linestring = 'LINESTRING'
-    multicurve = 'MULTICURVE'
-    multilinestring = 'MULTILINESTRING'
-    multipoint = 'MULTIPOINT'
-    multipolygon = 'MULTIPOLYGON'
-    multisurface = 'MULTISURFACE'
-    point = 'POINT'
-    polygon = 'POLYGON'
-    polyhedralsurface = 'POLYHEDRALSURFACE'
-    surface = 'SURFACE'
+    """Geometry types: OGC and SQL/MM."""
 
+    # sources:
+    # OGC 06-103r4 (https://www.ogc.org/standards/sfa)
+    # https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.htm
 
-class Attribute(Data):
-    name: str
-    title: str = ''
-    type: AttributeType = AttributeType.str
-    value: Optional[Any]
-    editable: bool = True
+    GEOMETRY = 'GEOMETRY'
 
+    POINT = 'POINT'
+    CURVE = 'CURVE'
+    SURFACE = 'SURFACE'
 
-class AttributeEditor(Data):
-    type: str
-    accept: Optional[str]
-    items: Optional[Any]
-    max: Optional[float]
-    min: Optional[float]
-    multiple: Optional[bool]
-    pattern: Optional[Regex]
+    GEOMETRYCOLLECTION = 'GEOMETRYCOLLECTION'
+
+    LINESTRING = 'LINESTRING'
+    LINE = 'LINE'
+    LINEARRING = 'LINEARRING'
+
+    POLYGON = 'POLYGON'
+    TRIANGLE = 'TRIANGLE'
+
+    POLYHEDRALSURFACE = 'POLYHEDRALSURFACE'
+    TIN = 'TIN'
+
+    MULTIPOINT = 'MULTIPOINT'
+    MULTICURVE = 'MULTICURVE'
+    MULTILINESTRING = 'MULTILINESTRING'
+    MULTIPOLYGON = 'MULTIPOLYGON'
+    MULTISURFACE = 'MULTISURFACE'
+
+    CIRCULARSTRING = 'CIRCULARSTRING'
+    COMPOUNDCURVE = 'COMPOUNDCURVE'
+    CURVEPOLYGON = 'CURVEPOLYGON'
 
 
 class IModel(INode, Protocol):
-    def apply(self, attributes: List['Attribute']) -> List['Attribute']: ...
+    def feature_from_source(self, sf: 'SourceFeature') -> 'IFeature': ...
 
-    def apply_to_dict(self, attr_values: dict) -> List['Attribute']: ...
 
-    def xml_schema_dict(self, name_for_geometry) -> dict: ...
+class IModelManager(INode, Protocol):
+    models: List['IModel']
+
+    def add_model(self, m: IModel): ...
+
+    def get_model_for(self, user: IGrantee = None, **kwargs) -> Optional[IModel]: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -614,9 +620,10 @@ class Bounds(Data):
 class ICrs(Protocol):
     srid: str
     axis: Axis
-    Uom: Uom
+    uom: Uom
     isGeographic: bool
     isProjected: bool
+    isYX: bool
     proj4text: str
     wkt: str
 
@@ -636,6 +643,8 @@ class ICrs(Protocol):
     def transform_extent(self, extent: Extent, crs_to: 'ICrs') -> Extent: ...
 
     def transformer(self, crs_to: 'ICrs') -> Callable: ...
+
+    def to_string(self, fmt: 'CrsFormat' = None) -> str: ...
 
     def to_geojson(self) -> dict: ...
 
@@ -668,12 +677,6 @@ class SourceStyle(Data):
     name: str
 
 
-class SourceBounds(Data):
-    crs: 'ICrs'
-    format: CrsFormat
-    extent: Extent
-
-
 class SourceLayer(Data):
     aLevel: int
     aPath: str
@@ -682,9 +685,8 @@ class SourceLayer(Data):
     dataSource: dict
     metadata: 'Metadata'
 
-    supportedBounds: List[SourceBounds]
     supportedCrs: List['ICrs']
-    wgsExtent: Extent
+    wgsBounds: Bounds
 
     isExpanded: bool
     isGroup: bool
@@ -710,6 +712,13 @@ class SourceLayer(Data):
     resourceUrls: dict
 
 
+class SourceFeature(Data):
+    attributes: dict
+    shape: Optional['IShape']
+    layerName: Optional[str]
+    uid: str
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # XML
 
@@ -717,9 +726,25 @@ class IXmlElement(Iterable):
     # ElementTree API
 
     tag: str
+    """Tag name, with an optional namespace in Clark notation."""
+
     text: Optional[str]
+    """Text before first subelement."""
+
     tail: Optional[str]
+    """Text after this element's end tag."""
+
     attrib: dict
+    """Dictionary of element attributes."""
+
+    name: str
+    """Element name (tag without a namespace)."""
+
+    lname: str
+    """Element name (tag without a namespace) in lower case."""
+
+    caseInsensitive: bool
+    """Elemet is case-insensitive."""
 
     def __len__(self) -> int: ...
 
@@ -730,6 +755,8 @@ class IXmlElement(Iterable):
     def clear(self): ...
 
     def get(self, key: str, default=None) -> Any: ...
+
+    def attr(self, key: str, default=None) -> Any: ...
 
     def items(self) -> Iterable[Any]: ...
 
@@ -757,17 +784,15 @@ class IXmlElement(Iterable):
 
     # extensions
 
-    caseInsensitive: bool
-
     def children(self) -> List['IXmlElement']: ...
 
-    def first_of(self, *paths) -> Optional['IXmlElement']: ...
+    def findfirst(self, *paths) -> Optional['IXmlElement']: ...
 
-    def text_of(self, *paths) -> str: ...
+    def textof(self, *paths) -> str: ...
 
-    def text_list(self, *paths, deep=False) -> List[str]: ...
+    def textlist(self, *paths, deep=False) -> List[str]: ...
 
-    def text_dict(self, *paths, deep=False) -> Dict[str, str]: ...
+    def textdict(self, *paths, deep=False) -> Dict[str, str]: ...
 
     #
 
@@ -784,94 +809,150 @@ class IXmlElement(Iterable):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# shapes and features
+# shapes
 
-# noinspection PyPropertyDefinition
 class IShape(IObject, Protocol):
+    """Georeferenced geometry."""
+
+    type: GeometryType
+    """Geometry type."""
+
     crs: 'ICrs'
+    """CRS of this shape."""
 
-    @property
-    def area(self) -> float: ...
+    x: Optional[float]
+    """X-coordinate for Point geometries, None otherwise."""
 
-    @property
-    def bounds(self) -> Bounds: ...
+    y: Optional[float]
+    """Y-coordinate for Point geometries, None otherwise."""
 
-    @property
-    def centroid(self) -> 'IShape': ...
+    # common props
 
-    @property
-    def ewkb(self) -> bytes: ...
+    def area(self) -> float:
+        """Computes the area of the geometry."""
 
-    @property
-    def ewkb_hex(self) -> str: ...
+    def bounds(self) -> Bounds:
+        """Retuns a Bounds object that bounds this shape."""
 
-    @property
-    def ewkt(self) -> str: ...
+    def centroid(self) -> 'IShape':
+        """Returns a centroid as a Point shape."""
 
-    @property
-    def extent(self) -> Extent: ...
+    # formats
 
-    @property
-    def type(self) -> 'GeometryType': ...
+    def to_wkb(self) -> bytes:
+        """Returns a WKB representation of this shape as a binary string."""
 
-    @property
-    def wkb(self) -> bytes: ...
+    def to_wkb_hex(self) -> str:
+        """Returns a WKB representation of this shape as a hex string."""
 
-    @property
-    def wkb_hex(self) -> str: ...
+    def to_ewkb(self) -> bytes:
+        """Returns an EWKB representation of this shape as a binary string."""
 
-    @property
-    def wkt(self) -> str: ...
+    def to_ewkb_hex(self) -> str:
+        """Returns an EWKB representation of this shape as a hex string."""
 
-    @property
-    def x(self) -> float: ...
+    def to_wkt(self) -> str:
+        """Returns a WKT representation of this shape."""
 
-    @property
-    def y(self) -> float: ...
+    def to_ewkt(self) -> str:
+        """Returns an EWKT representation of this shape."""
 
-    def intersects(self, shape: 'IShape') -> bool: ...
+    def to_geojson(self, always_xy=False) -> dict:
+        """Returns a GeoJSON representation of this shape."""
 
-    def to_multi(self) -> 'IShape': ...
+    # predicates (https://shapely.readthedocs.io/en/stable/manual.html#predicates-and-relationships)
 
-    def to_type(self, new_type: 'GeometryType') -> 'IShape': ...
+    def is_empty(self) -> bool:
+        """Returns True if this shape is empty."""
 
-    def to_geojson(self) -> dict: ...
+    def is_ring(self) -> bool:
+        """Returns True if this shape is a ring."""
 
-    def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': ...
+    def is_simple(self) -> bool:
+        """Returns True if this shape is 'simple'."""
 
-    def transformed_to(self, crs: 'ICrs') -> 'IShape': ...
+    def is_valid(self) -> bool:
+        """Returns True if this shape is valid."""
 
+    def equals(self, other: 'IShape') -> bool:
+        """Returns True if this shape is equal to the other."""
+
+    def contains(self, other: 'IShape') -> bool:
+        """Returns True if this shape contains the other."""
+
+    def covers(self, other: 'IShape') -> bool:
+        """Returns True if this shape covers the other."""
+
+    def covered_by(self, other: 'IShape') -> bool:
+        """Returns True if this shape is covered by the other."""
+
+    def crosses(self, other: 'IShape') -> bool:
+        """Returns True if this shape crosses the other."""
+
+    def disjoint(self, other: 'IShape') -> bool:
+        """Returns True if this shape does not intersect with the other."""
+
+    def intersects(self, other: 'IShape') -> bool:
+        """Returns True if this shape intersects with the other."""
+
+    def overlaps(self, other: 'IShape') -> bool:
+        """Returns True if this shape overlaps the other."""
+
+    def touches(self, other: 'IShape') -> bool:
+        """Returns True if this shape touches the other."""
+
+    def within(self, other: 'IShape') -> bool:
+        """Returns True if this shape is within the other."""
+
+    # set operations
+
+    def union(self, *others: 'IShape') -> 'IShape':
+        """Computes a union of this shape and other shapes."""
+
+    def intersection(self, *others: 'IShape') -> 'IShape':
+        """Computes an intersection of this shape and other shapes."""
+
+    # convertors
+
+    def to_multi(self) -> 'IShape':
+        """Converts a singly-geometry shape to a multi-geometry one."""
+
+    def to_type(self, new_type: 'GeometryType') -> 'IShape':
+        """Converts a geometry to another type."""
+
+    # misc
+
+    def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape':
+        """Builds a buffer polygon around the shape."""
+
+    def transformed_to(self, crs: 'ICrs') -> 'IShape':
+        """Returns this shape transormed to another CRS."""
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# features
 
 # noinspection PyPropertyDefinition
 class IFeature(IObject, Protocol):
-    attributes: List['Attribute']
-    category: str
-    data_model: Optional['IModel']
+    attributes: dict
     elements: dict
-    layer: Optional['ILayer']
+
     shape: Optional['IShape']
-    style: Optional['IStyle']
-    templateMgr: Optional['ITemplateManager']
+    layerName: Optional[str]
     uid: str
 
-    @property
-    def template_context(self) -> dict: ...
+    model: 'IModel'
+    isNew: bool
 
-    def apply_data_model(self, model: 'IModel' = None) -> 'IFeature': ...
+    def apply_template(self, template: 'ITemplate', extra_args: dict = None) -> 'IFeature': ...
 
-    def apply_templates(self, templates: 'ITemplateManager' = None, extra_context: dict = None, subjects: List[str] = None) -> 'IFeature': ...
-
-    def attr(self, name: str): ...
+    def attr(self, name: str, default=None) -> Any: ...
 
     def to_geojson(self) -> dict: ...
-
-    def to_svg_element(self, view: 'MapView', style: 'IStyle' = None) -> Optional[IXmlElement]: ...
 
     def to_svg_fragment(self, view: 'MapView', style: 'IStyle' = None) -> List[IXmlElement]: ...
 
     def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
-
-    def connect_to(self, layer: 'ILayer') -> 'IFeature': ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1063,9 +1144,9 @@ class ITemplate(INode, Protocol):
 class ITemplateManager(INode, Protocol):
     templates: List['ITemplate']
 
-    def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional['ITemplate']: ...
+    def get_template_for(self, user: IGrantee = None, **kwargs) -> Optional['ITemplate']: ...
 
-    def render(self, tri: TemplateRenderInput, subject: str = None, category: str = None, name: str = None, mime: str = None, notify: Callable = None) -> ContentResponse: ...
+    def render_template(self, tri: TemplateRenderInput, user: IGrantee = None, **kwargs) -> Optional[ContentResponse]: ...
 
 
 class IPrinter(INode, Protocol):
@@ -1144,7 +1225,7 @@ class Locale(Data):
     dateFormatLong: str
     dateFormatMedium: str
     dateFormatShort: str
-    dateUnits: str 
+    dateUnits: str
     """date unit names, e.g. 'YMD' for 'en', 'JMT' for 'de'"""
     dayNamesLong: List[str]
     dayNamesShort: List[str]
@@ -1264,10 +1345,6 @@ class Metadata(Data):
     serviceMetaLink: MetadataLink
     extraLinks: List[MetadataLink]
 
-    bounds: Bounds
-    wgsExtent: Extent
-    boundingPolygonElement: IXmlElement
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # search
@@ -1281,7 +1358,6 @@ class SearchFilter(Data):
 
 
 class SearchArgs(Data):
-    axis: str
     bounds: Bounds
     keyword: Optional[str]
     filter: Optional['SearchFilter']
@@ -1291,14 +1367,9 @@ class SearchArgs(Data):
     project: 'IProject'
     resolution: float
     shapes: List['IShape']
-    source_layer_names: List[str]
     tolerance: 'Measurement'
-
-
-class ISearchManager(INode, Protocol):
-    finders: List['IFinder']
-
-    def add_finder(self, config: Config): ...
+    user: IGrantee
+    featureElements: Optional[List[str]]
 
 
 class IFinder(INode, Protocol):
@@ -1311,11 +1382,21 @@ class IFinder(INode, Protocol):
     withKeyword: bool
 
     templateMgr: Optional['ITemplateManager']
+    modelMgr: Optional['IModelManager']
+
     tolerance: 'Measurement'
 
-    def run(self, args: SearchArgs, layer: 'ILayer' = None) -> List['IFeature']: ...
+    def run(self, args: SearchArgs, layer: 'ILayer') -> List['IFeature']: ...
 
     def can_run(self, args: SearchArgs) -> bool: ...
+
+
+class ISearchManager(INode, Protocol):
+    finders: List['IFinder']
+
+    def add_finder(self, f: IFinder): ...
+
+    def get_finder_for(self, user: IGrantee = None, **kwargs) -> Optional[IFinder]: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1350,11 +1431,11 @@ class ILegend(INode, Protocol):
 class LayerDisplayMode(Enum):
     """Layer display mode"""
 
-    box = 'box' 
+    box = 'box'
     """display a layer as one big image (WMS-alike)"""
-    tile = 'tile' 
+    tile = 'tile'
     """display a layer in a tile grid"""
-    client = 'client' 
+    client = 'client'
     """draw a layer in the client"""
 
 
@@ -1375,8 +1456,6 @@ class ILayer(INode, Protocol):
     supportsRasterServices: bool
     supportsVectorServices: bool
 
-    hasSearch: bool
-
     bounds: Bounds
     displayMode: LayerDisplayMode
     imageFormat: str
@@ -1391,8 +1470,11 @@ class ILayer(INode, Protocol):
     legend: Optional['ILegend']
     searchMgr: 'ISearchManager'
     templateMgr: 'ITemplateManager'
+    modelMgr: 'IModelManager'
 
     layers: List['ILayer']
+
+    def ancestors(self) -> List['ILayer']: ...
 
     def render(self, lri: LayerRenderInput) -> 'LayerRenderOutput': ...
 
@@ -1517,6 +1599,7 @@ class IOwsService(INode, Protocol):
 
 class IOwsProvider(INode, Protocol):
     forceCrs: 'ICrs'
+    alwaysXY: bool
     metadata: 'Metadata'
     operations: List[OwsOperation]
     protocol: OwsProtocol
@@ -1524,7 +1607,7 @@ class IOwsProvider(INode, Protocol):
     url: Url
     version: str
 
-    def operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
+    def get_operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
 
 
 class IOwsClient(INode, Protocol):

@@ -157,7 +157,6 @@ export interface IMapFeatureLayer extends IMapLayer {
     geometryType: string;
     source: ol.source.Vector;
     styleNames?: StyleNameMap;
-    dataModel: Array<api.core.Attribute>;
 
     addFeature(feature: IMapFeature): boolean;
     addFeatures(features: Array<IMapFeature>): number;
@@ -348,9 +347,9 @@ export interface IMapManager {
 
 export interface IMapFeature {
     uid: string;
-    attributes: Array<api.core.Attribute>;
+    attributes: Dict;
     elements: Dict;
-    layerUid: string;
+    modelUid: string;
     shape?: api.base.shape.Props;
     styleNames?: StyleNameMap;
     geometry?: ol.geom.Geometry;

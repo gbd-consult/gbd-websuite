@@ -23,7 +23,7 @@ def parse(xml) -> core.Caps:
 def _feature_type(type_el):
     sl = gws.SourceLayer()
 
-    sl.name = type_el.text_of('Name')
+    sl.name = type_el.textof('Name')
     sl.title = xmlx.namespace.unqualify(sl.name)
     sl.metadata = u.element_metadata(type_el)
     sl.isQueryable = True

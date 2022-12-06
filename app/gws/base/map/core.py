@@ -50,10 +50,7 @@ class Object(gws.Node, gws.IMap):
         self.title = self.var('title') or ''
 
         p = self.var('crs')
-        if p:
-            crs = gws.gis.crs.require(p)
-        else:
-            crs = gws.gis.crs.WEBMERCATOR
+        crs = gws.gis.crs.require(p) if p else gws.gis.crs.WEBMERCATOR
 
         p = self.var('extent')
         if p:
