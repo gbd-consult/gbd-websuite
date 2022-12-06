@@ -36,8 +36,8 @@ ROLE_USER = 'user'
 ROLE_GUEST = 'guest'
 ROLE_ALL = 'all'
 
-ACCESS_ALLOWED = 1
-ACCESS_DENIED = 0
+ALLOW = 1
+DENY = 0
 
 PUBLIC = 'allow all'
 

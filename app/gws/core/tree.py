@@ -24,7 +24,7 @@ class Object(types.IObject):
 class Node(Object, types.INode):
     def initialize(self, config):
         self.config = config
-        self.access = self.var('access') or []
+        self.access = util.parse_acl(self.var('access'))
 
         # # since `super().configure` is mandatory in `configure` methods,
         # # let's automate this by collecting all super 'configure' methods upto 'Node'
@@ -222,8 +222,8 @@ def _object_name(obj):
 ##
 
 
-def props(obj: types.IObject, user: types.IGrantee, context: t.Optional[types.INode] = None) -> t.Optional[types.Props]:
-    if not user.can_use(obj, context):
+def props(obj: types.IObject, user: types.IGrantee, *context) -> t.Optional[types.Props]:
+    if not user.can_use(obj, *context):
         return None
     p = _make_props(obj.props(user), user)
     if p is None or util.is_data_object(p):
@@ -237,7 +237,7 @@ def _make_props(obj: t.Any, user):
     if util.is_atom(obj):
         return obj
 
-    if user.access_to(obj) == gws.ACCESS_DENIED:
+    if user.access_to(obj) == gws.DENY:
         return None
 
     if isinstance(obj, Object):

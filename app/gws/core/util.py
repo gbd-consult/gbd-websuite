@@ -4,7 +4,6 @@ Most common function which are needed everywhere. These function are exported in
 """
 
 import hashlib
-import importlib
 import json
 import os
 import pickle
@@ -15,9 +14,7 @@ import threading
 import time
 import urllib.parse
 
-import gws
-
-from . import const, log
+from . import const, log, types
 from .data import Data, is_data_object
 from gws.types import List, cast
 
@@ -387,8 +384,8 @@ def to_data(x) -> Data:
     if is_data_object(x):
         return x
     if is_dict(x):
-        return gws.Data(x)
-    return gws.Data()
+        return Data(x)
+    return Data()
 
 
 ##
@@ -427,6 +424,72 @@ def to_lines(txt: str, comment: str = None) -> List[str]:
             ls.append(s)
 
     return ls
+
+
+##
+
+def parse_acl(acl) -> types.Access:
+    """Parse an ACL into an Access List.
+
+
+    Args:
+        acl: an ACL specification. Can be given as a string ``allow X, allow Y, deny Z``,
+            or as a list of dicts ``{ role X type allow }, { role Y type deny }``,
+            or it can already be an Access list ``[1 X], [0 Y]``,
+            or it can be None.
+
+    Returns:
+        Access list.
+    """
+
+    if not acl:
+        return []
+
+    a = 'allow'
+    d = 'deny'
+    bits = {const.ALLOW, const.DENY}
+    err = 'invalid ACL'
+
+    access = []
+
+    if isinstance(acl, str):
+        for p in acl.strip().split(','):
+            s = p.strip().split()
+            if len(s) != 2 or not s[1].isalnum():
+                raise ValueError(err)
+            if s[0] == a:
+                access.append((const.ALLOW, s[1]))
+            elif s[0] == d:
+                access.append((const.DENY, s[1]))
+            else:
+                raise ValueError(err)
+        return access
+
+    if not isinstance(acl, list):
+        raise ValueError(err)
+
+    if isinstance(acl[0], (list, tuple)):
+        try:
+            if all(len(s) == 2 and s[0] in bits for s in acl):
+                return acl
+        except (TypeError, IndexError):
+            pass
+        raise ValueError(err)
+
+    if isinstance(acl[0], dict):
+        for s in acl:
+            tk = s.get('type', '')
+            rk = s.get('role', '')
+            if not isinstance(rk, str) or not rk.isalnum():
+                raise ValueError(err)
+            if tk == a:
+                access.append((const.ALLOW, rk))
+            elif tk == d:
+                access.append((const.DENY, rk))
+            else:
+                raise ValueError(err)
+
+    raise ValueError(err)
 
 
 ##
@@ -502,22 +565,22 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
 
 
 def ensure_system_dirs():
-    ensure_dir(gws.CONFIG_DIR)
-    ensure_dir(gws.LEGEND_CACHE_DIR)
-    ensure_dir(gws.LOG_DIR)
-    ensure_dir(gws.MAPPROXY_CACHE_DIR)
-    ensure_dir(gws.MISC_DIR)
-    ensure_dir(gws.NET_CACHE_DIR)
-    ensure_dir(gws.OBJECT_CACHE_DIR)
-    ensure_dir(gws.SERVER_DIR)
-    ensure_dir(gws.SPOOL_DIR)
-    ensure_dir(gws.WEB_CACHE_DIR)
+    ensure_dir(const.CONFIG_DIR)
+    ensure_dir(const.LEGEND_CACHE_DIR)
+    ensure_dir(const.LOG_DIR)
+    ensure_dir(const.MAPPROXY_CACHE_DIR)
+    ensure_dir(const.MISC_DIR)
+    ensure_dir(const.NET_CACHE_DIR)
+    ensure_dir(const.OBJECT_CACHE_DIR)
+    ensure_dir(const.SERVER_DIR)
+    ensure_dir(const.SPOOL_DIR)
+    ensure_dir(const.WEB_CACHE_DIR)
 
-    ensure_dir(gws.TMP_DIR)
-    ensure_dir(gws.LOCKS_DIR)
-    ensure_dir(gws.GLOBALS_DIR)
-    ensure_dir(gws.SPOOL_DIR)
-    ensure_dir(gws.EPH_DIR)
+    ensure_dir(const.TMP_DIR)
+    ensure_dir(const.LOCKS_DIR)
+    ensure_dir(const.GLOBALS_DIR)
+    ensure_dir(const.SPOOL_DIR)
+    ensure_dir(const.EPH_DIR)
 
 
 def _chown(path, user, group):
@@ -530,7 +593,7 @@ def _chown(path, user, group):
 def tempname(name: str) -> str:
     """Creates a cleanable path name based on the given name"""
 
-    dir = ensure_dir(gws.EPH_DIR)
+    dir = ensure_dir(const.EPH_DIR)
     n, _, e = name.rpartition('.')
     name = str(os.getpid()) + '_' + n + '_' + random_string(10) + '.' + e
     return dir + '/' + name
@@ -554,7 +617,7 @@ def sha256(x):
             return x.encode('utf8')
 
     def _default(x):
-        if gws.is_data_object(x):
+        if is_data_object(x):
             return vars(x)
         return str(x)
 
@@ -635,7 +698,7 @@ _server_globals = {}
 
 def get_server_global(name, init_fn):
     uid = to_uid(name)
-    path = gws.GLOBALS_DIR + '/' + uid
+    path = const.GLOBALS_DIR + '/' + uid
 
     def _get():
         if uid in _server_globals:
@@ -675,7 +738,7 @@ class _FileLock:
 
     def __init__(self, uid):
         self.uid = to_uid(uid)
-        self.path = gws.LOCKS_DIR + '/' + self.uid
+        self.path = const.LOCKS_DIR + '/' + self.uid
 
     def __enter__(self):
         self.acquire()
@@ -726,7 +789,7 @@ def action_url_path(name: str, **kwargs) -> str:
             ls.append(urllib.parse.quote(k))
             ls.append(urllib.parse.quote(to_str(v)))
 
-    path = gws.SERVER_ENDPOINT + '/' + name
+    path = const.SERVER_ENDPOINT + '/' + name
     if ls:
         path += '/' + '/'.join(ls)
     return path
