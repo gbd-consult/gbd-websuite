@@ -31,6 +31,28 @@ interface SmallMapState {
     inited: boolean;
 }
 
+const OSM_SCALES = [
+    150000000,
+    70000000,
+    35000000,
+    15000000,
+    10000000,
+    4000000,
+    2000000,
+    1000000,
+    500000,
+    250000,
+    150000,
+    70000,
+    35000,
+    15000,
+    8000,
+    4000,
+    2000,
+    1000,
+    500,
+]
+
 
 export class SmallMap extends React.Component<SmallMapProps, SmallMapState> {
 
@@ -80,6 +102,11 @@ export class SmallMap extends React.Component<SmallMapProps, SmallMapState> {
         if (!this.app.project.overviewMap)
             return;
 
+        if (this.props.boxSize) {
+            this.app.project.overviewMap.resolutions = OSM_SCALES.map(s => gws.tools.scale2res(s))
+            this.app.project.overviewMap.layers[0].resolutions = OSM_SCALES.map(s => gws.tools.scale2res(s))
+        }
+
         this.mainMap = this.props.controller.map;
 
         this.smallMap = new gws.MapManager(this.app, false);
@@ -118,18 +145,16 @@ export class SmallMap extends React.Component<SmallMapProps, SmallMapState> {
 
     setMapTarget(div) {
 
-        let e = this.app.project.overviewMap.extent;
-        let f = ol.extent.getWidth(e) / ol.extent.getHeight(e);
-        let h = gws.tools.clamp(div.offsetWidth / f, MIN_MAP_HEIGHT, MAX_MAP_HEIGHT);
-
-        div.style.height = (h | 0) + 'px';
+        if (this.props.boxSize) {
+            div.style.height = div.offsetWidth + 'px';
+        } else {
+            let e = this.app.project.overviewMap.extent;
+            let f = ol.extent.getWidth(e) / ol.extent.getHeight(e);
+            let h = gws.tools.clamp(div.offsetWidth / f, MIN_MAP_HEIGHT, MAX_MAP_HEIGHT);
+            div.style.height = (h | 0) + 'px';
+        }
 
         this.smallMap.oMap.setTarget(div);
-
-        // overview map always fits the extent
-        // @TODO: if we don't specify the resolution in the backend, we can't cache it!
-        // so stick with a backend resolution for now (which is easy to compute as extentWidth/pixelWidth)
-        // this.oMap.getView().fit(e, {constrainResolution: false})
     }
 
 
@@ -167,20 +192,41 @@ export class SmallMap extends React.Component<SmallMapProps, SmallMapState> {
 
         this.smallMap.setRotation(vs.rotation);
 
-        let size = this.props.boxSize || vs.size;
+        let w, h;
 
-        if (size) {
-            let el = this.oOverlay.getElement() as HTMLDivElement;
+        if (this.props.boxSize) {
+            let div = this.mapRef.current;
+
+            if (!div)
+                return;
+
+            let [mw, mh] = this.props.boxSize;
+
+            if (mw > mh) {
+                w = div.offsetWidth * 0.9
+                h = w * (mh / mw)
+            } else {
+                h = div.offsetWidth * 0.9
+                w = h * (mw / mh)
+            }
+
+            this.smallMap.setResolution(vs.resolution * (mw / w))
+            this.smallMap.setCenter([vs.centerX, vs.centerY])
+
+        } else {
+
+            let size = vs.size
             let res = vs.resolution / this.smallMap.oMap.getView().getResolution();
+            w = Math.max(MIN_BOX_SIZE, (size[0] * res) | 0);
+            h = Math.max(MIN_BOX_SIZE, (size[1] * res) | 0);
 
-            let w = Math.max(MIN_BOX_SIZE, (size[0] * res) | 0);
-            let h = Math.max(MIN_BOX_SIZE, (size[1] * res) | 0);
-
-            el.style.width = w + 'px';
-            el.style.height = h + 'px';
-            el.style.left = (-w / 2) + 'px';
-            el.style.top = (-h / 2) + 'px';
         }
+
+        let el = this.oOverlay.getElement() as HTMLDivElement;
+        el.style.width = w + 'px';
+        el.style.height = h + 'px';
+        el.style.left = (-w / 2) + 'px';
+        el.style.top = (-h / 2) + 'px';
 
         let cc = ol.proj.transform(
             [vs.centerX, vs.centerY],
@@ -282,7 +328,7 @@ class SidebarBody extends gws.View<ViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <SmallMap controller={this.props.controller} />
+                <SmallMap controller={this.props.controller}/>
                 {this.mapInfoBlock()}
             </sidebar.TabBody>
 

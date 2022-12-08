@@ -211,10 +211,14 @@ class AnnotateDrawTool extends draw.Tool {
     }
 
     whenStarted(shapeType, oFeature) {
-        this.drawFeature = _master(this).newFeatureFromDraw(shapeType, oFeature);
+        let cc = _master(this);
+        this.drawFeature = cc.newFeatureFromDraw(shapeType, oFeature);
+        cc.map.focusFeature(null);
     }
 
     whenEnded(shapeType, oFeature) {
+        this.map.focusFeature(this.drawFeature);
+
     }
 
     whenCancelled() {
@@ -425,13 +429,13 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
                             whenTouched={submit}
                         />
                     </Cell>
-                    <Cell>
+                    {false && <Cell>
                         <gws.ui.Button
                             className="modAnnotateStyleButton"
                             tooltip={cc.__('modAnnotateStyleButton')}
                             whenTouched={() => cc.update({annotateTab: 'style'})}
                         />
-                    </Cell>
+                    </Cell>}
                     <Cell>
                         <gws.ui.Button
                             className="modAnnotateRemoveButton"
@@ -690,13 +694,11 @@ class Controller extends gws.Controller {
                     annotateFormData: this.selectedFeature.formData
                 })
             } else {
-                this.layer.features.forEach(f => f.redraw());
                 this.update({
                     annotateFormData: null
                 })
             }
-
-
+            this.layer.features.forEach(f => f.redraw());
         })
     }
 
@@ -842,7 +844,7 @@ class Controller extends gws.Controller {
 
         if (lastFeature) {
             this.update({
-                annotateLastCssClass: lastFeature.styleNames.normal,
+                // annotateLastCssClass: lastFeature.styleNames.normal,
             });
         }
 
