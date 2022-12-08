@@ -19,7 +19,6 @@ class Object(gws.common.layer.Layer):
         super().configure()
         self.layer = self.var('_layer')
         self.source_layers = self.var('_source_layers')
-        self.qgisfilter = self.var('qgisfilter')
 
     def configure_legend(self):
         return super().configure_legend() or t.LayerLegend(enabled=True)

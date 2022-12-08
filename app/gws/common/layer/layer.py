@@ -53,6 +53,7 @@ class Config(t.WithTypeAndAccess):
     title: str = ''  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
     order: t.Optional[int]  #: layer order
+    useqgisfilter: bool = False  #: dynamic qgis filter
 
 
 class CustomConfig(t.WithAccess):
@@ -75,7 +76,7 @@ class CustomConfig(t.WithAccess):
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
     order: t.Optional[int]  #: layer order
     cache: t.Optional[types.CacheConfig]  #: cache configuration
-    qgisfilter: t.Optional[str]  #: dynamic qgis filter
+    useqgisfilter: bool = False  #: dynamic qgis filter
 
 
 #:export
@@ -168,6 +169,8 @@ class Layer(gws.Object, t.ILayer):
 
         #:noexport
         self.grid: types.GridConfig = self.var('grid')
+
+        self.useqgisfilter = self.var('useqgisfilter')
 
         self.cache_uid: str = ''
         self.grid_uid: str = ''

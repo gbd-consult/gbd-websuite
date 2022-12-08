@@ -322,7 +322,7 @@ def _render_box(layer: Object, rv: t.MapRenderView, extra_params: dict = None):
             leaf = layer.root.find_by_uid(uid)
             for sl in leaf.source_layers:
                 source_names.append(sl.name)
-                if 'filter' in extra_params:
+                if 'filter' in extra_params and layer.useqgisfilter:
                     filters.append(sl.name + ': ' + extra_params['filter'])
                 # if leaf.qgisfilter and sl.data_source and 'sql' in sl.data_source:
                 #     filters.append(sl.name + ': ' + leaf.qgisfilter)
@@ -330,7 +330,7 @@ def _render_box(layer: Object, rv: t.MapRenderView, extra_params: dict = None):
         extra_params['layers'] = source_names
         if filters:
             extra_params['filter'] = ';'.join(filters)
-
+        gws.p(extra_params)
 
     # boxes larger than that will be tiled in _box_request
     size_threshold = 2500
@@ -420,7 +420,7 @@ def _get_map_request(layer: Object, bounds: t.Bounds, width, height, params: dic
     }
     ps.update(params)
 
-    gws.log.debug(f'calling qgis: {ps!r}')
+    gws.p('CALL QGIS', ps)
 
     resp = gws.tools.net.http_request(layer.provider.url, params=ps, timeout=0)
     if resp.content_type.startswith('image'):
