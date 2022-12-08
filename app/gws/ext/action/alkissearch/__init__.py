@@ -296,10 +296,6 @@ class Object(gws.common.action.Object):
 
         self.feature_templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_FEATURE_TEMPLATES)
 
-        self.feature_short_templates: t.List[t.ITemplate] = [
-            tpl for tpl in self.feature_templates
-            if 'description' not in tpl.subject]
-
         self.print_template = self.create_child(
             'gws.ext.template',
             self.var('printTemplate', default=_DEFAULT_PRINT_TEMPLATE))
@@ -403,13 +399,13 @@ class Object(gws.common.action.Object):
         """Perform a Flurstueck search"""
 
         self._validate_request(req, p)
-        return self._fetch_and_format(req, p, self.feature_short_templates, self.limit, self.limit)
+        return self._fetch_and_format(req, p, ['title', 'teaser'], self.limit, self.limit)
 
     def api_get_details(self, req: t.IRequest, p: GetDetailsParams) -> GetDetailsResponse:
         """Return a Flurstueck feature with details"""
 
         self._validate_request(req, p)
-        res = self._fetch_and_format(req, p, self.feature_templates, 1, self.limit)
+        res = self._fetch_and_format(req, p, ['title', 'teaser', 'description'], 1, self.limit)
 
         if not res.features:
             raise gws.web.error.NotFound()
@@ -487,14 +483,18 @@ class Object(gws.common.action.Object):
             raise gws.web.error.NotFound()
         req.require_project(p.projectUid)
 
-    def _fetch_and_format(self, req, p: FindFlurstueckParams, templates: t.List[t.ITemplate], soft_limit, hard_limit) -> FindFlurstueckResponse:
+    def _fetch_and_format(self, req, p: FindFlurstueckParams, templates: t.List[str], soft_limit, hard_limit) -> FindFlurstueckResponse:
         fprops = []
         res = self._fetch(req, p, soft_limit, hard_limit)
 
         for f in res.features:
-            f.apply_templates(templates)
+            for tpl in templates:
+                f.apply_template(tpl, self.feature_templates)
             props = f.props
-            del props.attributes
+            props.attributes = {
+                'uid': props.attributes['uid'],
+                'geometry': props.attributes['geometry'],
+            }
             fprops.append(props)
 
         return FindFlurstueckResponse(
@@ -537,7 +537,7 @@ class Object(gws.common.action.Object):
 
         for f in res.features:
             f.transform_to(crs)
-            f.attributes.append(t.Attribute(name='is_guest_user', value=req.user.is_guest))
+            f.attributes['is_guest_user'] = req.user.is_guest
 
         if fq.withEigentuemer:
             self._log_eigentuemer_access(req, p, is_ok=True, total=res.total, features=res.features)

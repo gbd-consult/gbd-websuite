@@ -16,7 +16,7 @@
 
 @def area(v)
     @if v:
-        @return v | '{:.1f}m²'
+        @return '{:.1f}m²'.format(v)
     @end
     @return '-'
 @end
