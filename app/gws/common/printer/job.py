@@ -8,6 +8,7 @@ from PIL import Image
 import gws
 import gws.common.printer.types as pt
 import gws.common.style
+import gws.common.model
 import gws.config
 import gws.gis.feature
 import gws.gis.render
@@ -368,7 +369,8 @@ class _Worker:
             return ii
 
         if item.type == 'features':
-            features = [gws.gis.feature.from_props(p) for p in item.features]
+            mod = gws.common.model.generic()
+            features = [mod.feature_from_props(p) for p in item.features]
             features = [f for f in features if f and f.shape]
             if not features:
                 return

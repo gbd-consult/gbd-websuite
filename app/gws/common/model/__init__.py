@@ -1512,6 +1512,11 @@ class GenericModel(Object):
     def feature_from_props(self, props: t.FeatureProps, depth=0):
         fe = super().feature_from_props(props, depth)
         fe.attributes = gws.get(props, 'attributes', default={})
+        if props.geometryName:
+            fe.geometry_name = props.geometryName
+        gn = fe.geometry_name
+        if gn and fe.attributes.get(gn):
+            fe.attributes[gn] = gws.gis.shape.from_props(fe.attributes.get(gn))
         return fe
 
     def feature_props(self, fe, depth=0):

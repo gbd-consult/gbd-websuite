@@ -14,38 +14,14 @@ interface IMarkerContent {
     highlight?: boolean;
     pan?: boolean;
     zoom?: boolean;
+    mode?: string;
 }
 
 class MarkerLayer extends gws.map.layer.FeatureLayer {
-    controller: MarkerController;
-
-    // super_printItem(): gws.api.PrintItem {
-    //     let fs = gws.tools.compact(this.features.map(f => f.getProps()));
-    //
-    //     if (fs.length === 0)
-    //         return null;
-    //
-    //     let style = this.styles['normal'];
-    //
-    //     return {
-    //         type: 'features',
-    //         opacity: this.computedOpacity,
-    //         features: fs,
-    //         style: style ? style.props : null,
-    //     };
-    // }
-    //
-    // get printItem() {
-    //     // @TODO target es6 and use super.printItem here
-    //     if (this.controller.getValue('markerPrint'))
-    //         return this.super_printItem();
-    //     return null;
-    // }
 }
 
 class MarkerController extends gws.Controller {
     layer: MarkerLayer;
-    styleName: string = '.modMarkerFeature';
 
     async init() {
         this.app.whenChanged('marker', content => this.show(content));
@@ -137,7 +113,7 @@ class MarkerController extends gws.Controller {
         })
     }
 
-    show(content) {
+    show(content: IMarkerContent) {
         console.log('MARKER_SHOW', content);
 
         this.reset();
@@ -195,7 +171,6 @@ class MarkerController extends gws.Controller {
         this.layer = this.map.addServiceLayer(new MarkerLayer(this.map, {
             uid: '_marker',
         }));
-        this.layer.controller = this;
         this.layer.cssSelector = '.modMarkerFeature'
         this.layer.addFeatures(geoms.map(g => this.map.featureFromGeometry(g)));
     }
