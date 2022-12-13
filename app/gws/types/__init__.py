@@ -1370,6 +1370,7 @@ class IProject(IObject):
     search_providers: list
     templates: List['ITemplate']
     title: str
+    def variable(self, key, default=None): pass
 
 
 class IRequest(IBaseRequest):
