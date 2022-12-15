@@ -26,7 +26,7 @@ def main():
 
     tpl.append('@demo_init')
 
-    for path in find_files(APP_DIR, r'demos/.+?\.cx$'):
+    for path in find_files(APP_DIR, r'_demo/.+?\.cx$'):
         if not include_only or include_only in path:
             tpl.append(f'@include {path}')
 
