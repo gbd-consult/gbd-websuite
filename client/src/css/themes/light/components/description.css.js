@@ -65,6 +65,11 @@ module.exports = v => ({
 
         },
 
+        'table tr.tline td': {
+            padding: 2,
+            backgroundColor: v.BORDER_COLOR,
+        },
+
         'td, th': {
             verticalAlign: 'top',
             fontSize: v.SMALL_FONT_SIZE,

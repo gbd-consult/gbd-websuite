@@ -193,7 +193,7 @@ module.exports = {
     modDimensionElementText: 'Beschriftung',
 
     modAlkisFormTitle: 'Flurstücksuche',
-    modAlkisInfoTitle: "Informationen",
+    modAlkisInfoTitle: "Flurstücksnachweis",
     modAlkisSelectionTitle: "Ablage",
     modAlkisExportTitle: "Als CSV exportieren",
     modAlkisGotoForm: 'Flurstücksuche starten',
