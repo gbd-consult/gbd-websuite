@@ -37,7 +37,9 @@ class Config(t.Config):
     capsCacheMaxAge: t.Duration = '1d'  #: max cache age for capabilities documents
     capsLayersBottomUp: bool = False  #: layers are listed from bottom to top in the GetCapabilities document
     getCapabilitiesParams: t.Optional[dict]  #: additional parameters for GetCapabilities requests
+    getCapabilitiesHeaders: t.Optional[dict]  #: additional headers for GetCapabilities requests
     getMapParams: t.Optional[dict]  #: additional parameters for GetMap requests
+    getMapHeaders: t.Optional[dict]  #: additional headers for GetMap requests
     invertAxis: t.Optional[t.List[t.Crs]]  #: projections that have an inverted axis (yx)
     maxRequests: int = 0  #: max concurrent requests to this source
     url: t.Url  #: service url
@@ -56,7 +58,8 @@ class Object(gws.common.ows.provider.Object):
             service='WMS',
             request='GetCapabilities',
             params=self.var('getCapabilitiesParams'),
-            max_age=self.var('capsCacheMaxAge'))
+            max_age=self.var('capsCacheMaxAge'),
+            headers=self.var('getCapabilitiesHeaders'))
 
         caps.parse(self, xml)
 

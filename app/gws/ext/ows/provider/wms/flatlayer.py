@@ -80,11 +80,16 @@ class Object(gws.common.layer.Image):
             'layers': ','.join(layers)
         }, self.var('getMapParams'))
 
+        headers = self.var('getMapHeaders', parent=True)
+
         source_uid = mc.source(gws.compact({
             'type': 'wms',
             'supported_srs': [our_crs],
             'concurrent_requests': self.var('maxRequests'),
-            'req': req
+            'req': req,
+            'http': {
+                'headers': headers
+            }
         }))
 
         self.mapproxy_layer_config(mc, source_uid)
