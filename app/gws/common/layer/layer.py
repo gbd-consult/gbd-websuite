@@ -75,6 +75,10 @@ class CustomConfig(t.WithAccess):
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
     order: t.Optional[int]  #: layer order
     cache: t.Optional[types.CacheConfig]  #: cache configuration
+    getCapabilitiesParams: t.Optional[dict]  #: additional parameters for GetCapabilities requests
+    getCapabilitiesHeaders: t.Optional[dict]  #: additional headers for GetCapabilities requests
+    getMapParams: t.Optional[dict]  #: additional parameters for GetMap requests
+    getMapHeaders: t.Optional[dict]  #: additional headers for GetMap requests
 
 
 #:export
