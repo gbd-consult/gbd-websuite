@@ -8,7 +8,7 @@ const FADE_DURATION = 1500;
 const ZOOM_BUFFER = 150;
 
 interface IMarkerContent {
-    features: Array<gws.types.IMapFeature>;
+    features: Array<gws.types.IFeature>;
     animate?: boolean;
     fade?: boolean;
     highlight?: boolean;
@@ -25,13 +25,13 @@ class MarkerLayer extends gws.map.layer.FeatureLayer {
         if (fs.length === 0)
             return null;
 
-        let style = this.map.style.at(this.styleNames.normal);
+        let style = null //this.map.style.at(this.styleNames.normal);
 
         return {
             type: 'features',
             opacity: this.computedOpacity,
             features: fs,
-            style: style ? style.props : null,
+            style: null // style ? style.props : null,
         };
     }
 
@@ -98,7 +98,7 @@ class MarkerController extends gws.Controller {
 
     showXYZ(x, y, z) {
         let geometry = new ol.geom.Point([x, y]),
-            f = new gws.map.Feature(this.map, {geometry}),
+            f = this.makeFeature(geometry),
             mode = '';
 
         if (z) {
@@ -118,7 +118,7 @@ class MarkerController extends gws.Controller {
 
     showBbox(extent, z) {
         let geometry = ol.geom.Polygon.fromExtent(extent),
-            f = new gws.map.Feature(this.map, {geometry}),
+            f = this.makeFeature(geometry),
             mode = '';
 
         if (z) {
@@ -206,9 +206,8 @@ class MarkerController extends gws.Controller {
             args.geometry = g;
             args.style = this.styleName;
         }
-        ;
 
-        return new gws.map.Feature(this.map, args);
+        return this.map.featureFromGeometry(g);
     }
 
 }

@@ -37,7 +37,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         if not self.sourceLayers:
             raise gws.Error(f'no source layers found in {self.provider.url!r}')
 
-        if not gws.base.layer.configure.metadata(self):
+        if not self.configure_metadata():
             self.metadata = self.provider.metadata
 
         p = self.var('sourceGrid', default=gws.Config())
@@ -59,8 +59,8 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
                 p.resolutions or
                 sorted([units.scale_to_res(m.scale) for m in self.tileMatrixSet.matrices], reverse=True))
 
-        p = self.var('targetGrid', default=gws.Config())
-        self.targetGrid = gws.TileGrid(
+        p = self.var('grid', default=gws.Config())
+        self.grid = gws.TileGrid(
             corner=p.corner or 'lt',
             tileSize=p.tileSize or 256,
         )
@@ -68,19 +68,19 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         extent = (
             p.extent or
             self.sourceGrid.bounds.extent if crs == self.sourceGrid.bounds.crs else self.parentBounds.extent)
-        self.targetGrid.bounds = gws.Bounds(crs=crs, extent=extent)
-        self.targetGrid.resolutions = (
+        self.grid.bounds = gws.Bounds(crs=crs, extent=extent)
+        self.grid.resolutions = (
                 p.resolutions or
-                gws.gis.zoom.resolutions_from_bounds(self.targetGrid.bounds, self.targetGrid.tileSize))
+                gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize))
 
-        if not gws.base.layer.configure.bounds(self):
+        if not self.configure_bounds():
             self.bounds = self.parentBounds
 
-        if not gws.base.layer.configure.resolutions(self):
+        if not self.configure_resolutions():
             res = [units.scale_to_res(m.scale) for m in self.tileMatrixSet.matrices]
             self.resolutions = sorted(res, reverse=True)
 
-        if not gws.base.layer.configure.legend(self):
+        if not self.configure_legend():
             url = self.sourceLayers[0].legendUrl
             if url:
                 self.legend = self.create_child(
@@ -181,7 +181,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             params['STYLE'] = self.styleName
 
         op = self.provider.operation(gws.OwsVerb.GetTile)
-        args = self.provider.request_args_for_operation(op, params=params)
+        args = self.provider.prepare_operation(op, params=params)
         url = gws.lib.net.add_params(args.url, args.params)
 
         # {} should not be encoded

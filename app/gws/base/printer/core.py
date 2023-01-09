@@ -104,25 +104,24 @@ Params = t.Union[ParamsWithTemplate, ParamsWithMap]
 """variant: Print params"""
 
 
-
 class Config(gws.Config):
     """Printer configuration"""
 
-    templates: t.List[gws.ext.config.template] 
+    templates: t.List[gws.ext.config.template]
     """print templates"""
 
 
 class Props(gws.Data):
-    templates: gws.base.template.manager.Props
+    templates: t.List[gws.base.template.Props]
 
 
 class Object(gws.Node):
-    templateMgr: gws.base.template.manager.Object
+    templates: t.List[gws.ITemplate]
 
     def configure(self):
-        self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(
-            items=self.var('templates')
-        ))
+        self.create_children(gws.ext.object.template, self.var('templates'))
 
     def props(self, user):
-        return gws.Data(templates=self.templateMgr)
+        return gws.Props(
+            templates=[tpl for tpl in self.templates if user.can_use(tpl)]
+        )

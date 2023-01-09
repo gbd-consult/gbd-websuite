@@ -7,7 +7,7 @@ import gws.types as t
 
 ##
 
-class LayerFilterConfig(gws.Config):
+class LayerFilter(gws.Data):
     """Source layer filter"""
 
     level: int = 0 
@@ -18,41 +18,15 @@ class LayerFilterConfig(gws.Config):
     """match these layer titles"""
     pattern: gws.Regex = '' 
     """match layers whose full path matches a pattern"""
-    onlyGroups: bool = False 
+    isGroup: t.Optional[bool] 
     """if true, match only group layers"""
-    onlyLeaves: bool = False 
-    """if true, match only leaf layers"""
+    isImage: t.Optional[bool] 
+    """if true, match only images layers"""
+    isQueryable: t.Optional[bool] 
+    """if true, match only queryable layers"""
 
 
-class LayerFilter(gws.Data):
-    level: int
-    names: t.List[str]
-    titles: t.List[str]
-    pattern: gws.Regex
-    isGroup: bool
-    isImage: bool
-    isQueryable: bool
-
-
-def layer_filter_from_config(cfg, **kwargs) -> t.Optional[LayerFilter]:
-    if not cfg:
-        return None
-
-    slf = LayerFilter(
-        level=cfg.level or 0,
-        names=cfg.names or [],
-        titles=cfg.titles or [],
-        pattern=cfg.pattern,
-        **kwargs
-    )
-    if cfg.onlyGroups:
-        slf.isGroup = True
-    if cfg.onlyLeaves:
-        slf.isGroup = False
-    return slf
-
-
-def layer_matches(sl: gws.SourceLayer, slf: t.Optional[LayerFilter]) -> bool:
+def layer_matches(sl: gws.SourceLayer, slf: LayerFilter) -> bool:
     """Check if a source layer matches the filter"""
 
     if not slf:
@@ -122,22 +96,6 @@ def filter_layers(layers: t.List[gws.SourceLayer], slf: LayerFilter) -> t.List[g
         found.sort(key=lambda sl: slf.names.index(sl.name) if sl.name in slf.names else -1)
 
     return found
-
-
-def combined_bounds(layers: t.List[gws.SourceLayer], target_crs: gws.ICrs) -> gws.Bounds:
-    """Return merged bounds from a list of source layers in the target_crs."""
-
-    exts = []
-
-    for sl in layers:
-        if not sl.supported_bounds:
-            continue
-        bb = gws.gis.crs.best_bounds(target_crs, sl.supported_bounds)
-        ext = gws.gis.extent.transform(bb.extent, bb.crs, target_crs)
-        exts.append(ext)
-
-    if exts:
-        return gws.Bounds(crs=target_crs, extent=gws.gis.extent.merge(exts))
 
 
 def combined_crs_list(layers: t.List[gws.SourceLayer]) -> t.List[gws.ICrs]:

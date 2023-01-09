@@ -677,12 +677,12 @@ class Object(gws.base.action.Object):
 
         return False
 
-    def _can_read_eigentuemer(self, user: gws.IGrantee):
+    def _can_read_eigentuemer(self, user: gws.IUser):
         b = user.can_use(self.eigentuemer)
         gws.log.debug(f'_can_read_eigentuemer res={b}')
         return b
 
-    def _can_read_buchung(self, user: gws.IGrantee):
+    def _can_read_buchung(self, user: gws.IUser):
         b = user.can_use(self.buchung)
         gws.log.debug(f'_can_read_buchung res={b}')
         return b

@@ -127,7 +127,7 @@ const SELECTED_STYLE = {
 
 class CollectorCollection extends gws.map.Feature {
     items: Array<CollectorItem>;
-    documents: Array<gws.types.IMapFeature>;
+    documents: Array<gws.types.IFeature>;
     proto: gws.api.CollectorCollectionPrototypeProps;
 
     constructor(map, props: gws.api.CollectorCollectionProps, proto: gws.api.CollectorCollectionPrototypeProps) {

@@ -1,2 +1,2 @@
-from . import manager
-from .core import Config, Object, Props
+from . import manager, field
+from .core import Config, Object, Props, locate

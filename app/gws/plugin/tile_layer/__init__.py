@@ -55,8 +55,8 @@ class Object(gws.base.layer.Object):
                 p.resolutions or
                 gws.gis.zoom.resolutions_from_bounds(self.sourceGrid.bounds, self.sourceGrid.tileSize))
 
-        p = self.var('targetGrid', default=gws.Config())
-        self.targetGrid = gws.TileGrid(
+        p = self.var('grid', default=gws.Config())
+        self.grid = gws.TileGrid(
             corner=p.corner or 'lt',
             tileSize=p.tileSize or 256,
         )
@@ -64,16 +64,16 @@ class Object(gws.base.layer.Object):
         extent = (
             p.extent or
             self.sourceGrid.bounds.extent if crs == self.sourceGrid.bounds.crs else self.parentBounds.extent)
-        self.targetGrid.bounds = gws.Bounds(crs=crs, extent=extent)
-        self.targetGrid.resolutions = (
+        self.grid.bounds = gws.Bounds(crs=crs, extent=extent)
+        self.grid.resolutions = (
                 p.resolutions or
-                gws.gis.zoom.resolutions_from_bounds(self.targetGrid.bounds, self.targetGrid.tileSize))
+                gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize))
 
-        if not gws.base.layer.configure.bounds(self):
+        if not self.configure_bounds():
             self.bounds = self.parentBounds
 
-        gws.base.layer.configure.metadata(self)
-        gws.base.layer.configure.legend(self)
+        self.configure_metadata()
+        self.configure_legend()
 
     def props(self, user):
         p = super().props(user)

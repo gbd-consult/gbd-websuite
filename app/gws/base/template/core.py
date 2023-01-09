@@ -9,21 +9,21 @@ import gws.types as t
 
 
 class Config(gws.Config):
-    dataModel: t.Optional[gws.base.model.Config] 
+    dataModel: t.Optional[gws.base.model.Config]
     """user-editable template attributes"""
     mapSize: t.Optional[gws.MSize]
-    mimeTypes: t.Optional[t.List[str]] 
+    mimeTypes: t.Optional[t.List[str]]
     """mime types this template can generate"""
     pageSize: t.Optional[gws.MSize]
-    path: t.Optional[gws.FilePath] 
+    path: t.Optional[gws.FilePath]
     """path to a template file"""
-    qualityLevels: t.Optional[t.List[gws.TemplateQualityLevel]] 
+    qualityLevels: t.Optional[t.List[gws.TemplateQualityLevel]]
     """quality levels supported by the template"""
-    subject: str = '' 
+    subject: str = ''
     """template purpose"""
-    text: str = '' 
+    text: str = ''
     """template content"""
-    title: str = '' 
+    title: str = ''
     """template title"""
 
 
@@ -42,7 +42,7 @@ class Object(gws.Node, gws.ITemplate):
         self.text = self.var('text', default='')
         self.title = self.var('title', default='')
 
-        self.quality_levels = self.var('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
+        self.qualityLevels = self.var('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
         # self.data_model = self.root.create_optional('gws.base.model', self.var('dataModel'))
 
         self.subject = self.var('subject', default='').lower()
@@ -60,14 +60,13 @@ class Object(gws.Node, gws.ITemplate):
 
     def props(self, user):
         return gws.Data(
-            dataModel=self.data_model,
+            # dataModel=self.data_model,
             mapSize=self.map_size,
             pageSize=self.page_size,
-            qualityLevels=self.quality_levels,
+            qualityLevels=self.qualityLevels,
             title=self.title,
             uid=self.uid,
         )
-
 
     def prepare_args(self, args: dict) -> dict:
         args = args or {}
@@ -90,6 +89,40 @@ class Object(gws.Node, gws.ITemplate):
 ##
 
 
+def locate(
+        templates: t.List[gws.ITemplate],
+        user: gws.IUser = None,
+        subject: str = None,
+        mime: str = None
+) -> t.Optional[gws.ITemplate]:
+    mt = gws.lib.mime.get(mime) if mime else None
+
+    for tpl in templates:
+        if user and not user.can_use(tpl):
+            continue
+        if mt and tpl.mimes and mt not in tpl.mimes:
+            continue
+        if subject and tpl.subject != subject:
+            continue
+        return tpl
+
+
+def render(
+        templates: t.List[gws.ITemplate],
+        tri: gws.TemplateRenderInput,
+        user: gws.IUser = None,
+        subject: str = None,
+        mime: str = None
+) -> t.Optional[gws.ContentResponse]:
+    tpl = locate(templates, user, subject, mime)
+    if not tpl:
+        return
+    return tpl.render(tri)
+
+
+##
+
+
 # @TODO template types should be configurable
 
 _types = {
@@ -100,7 +133,7 @@ _types = {
 }
 
 
-def create_from_path(root: gws.IRoot, path) -> t.Optional['Object']:
+def from_path(root: gws.IRoot, path) -> t.Optional['Object']:
     for ext, typ in _types.items():
         if path.endswith(ext):
-            return root.create(gws.ext.object.template, config=gws.Config(type=typ, path=path))
+            return root.create_shared(gws.ext.object.template, gws.Config(uid=gws.sha256(path), type=typ, path=path))

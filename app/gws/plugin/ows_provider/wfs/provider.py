@@ -70,7 +70,7 @@ class Object(core.Provider):
 
         params = gws.merge(ps.params, args.params)
 
-        text = gws.gis.ows.request.get_text(**self.request_args_for_operation(gws.OwsVerb.GetFeature, params=params))
+        text = gws.gis.ows.request.get_text(**self.prepare_operation(gws.OwsVerb.GetFeature, params=params))
         features = featureinfo.parse(text, crs=ps.request_crs, axis=ps.axis)
 
         if features is None:

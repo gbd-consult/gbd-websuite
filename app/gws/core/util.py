@@ -16,7 +16,7 @@ import urllib.parse
 
 from . import const, log, types
 from .data import Data, is_data_object
-from gws.types import List, cast
+from gws.types import List, Tuple, cast
 
 
 def exit(code: int = 255):
@@ -359,13 +359,16 @@ def to_list(x, delimiter: str = ',') -> list:
 
 
 def to_dict(x) -> dict:
-    """Convert a value to a dict. If the argument is a Data object, return its `dict`."""
+    """Convert a value to a dict. If the argument is an object, return its `dict`."""
 
     if is_dict(x):
         return x
-    if is_data_object(x):
+    if x is None:
+        return {}
+    try:
         return vars(x)
-    return {}
+    except TypeError:
+        raise ValueError(f'cannot convert {x!r} to dict')
 
 
 def to_upper_dict(x) -> dict:
@@ -385,7 +388,9 @@ def to_data(x) -> Data:
         return x
     if is_dict(x):
         return Data(x)
-    return Data()
+    if x is None:
+        return Data()
+    raise ValueError(f'cannot convert {x!r} to Data')
 
 
 ##
@@ -428,14 +433,13 @@ def to_lines(txt: str, comment: str = None) -> List[str]:
 
 ##
 
-def parse_acl(acl) -> types.Access:
-    """Parse an ACL into an Access List.
-
+def parse_acl(acl) -> types.Acl:
+    """Parse an ACL config into an ACL.
 
     Args:
-        acl: an ACL specification. Can be given as a string ``allow X, allow Y, deny Z``,
+        acl: an ACL config. Can be given as a string ``allow X, allow Y, deny Z``,
             or as a list of dicts ``{ role X type allow }, { role Y type deny }``,
-            or it can already be an Access list ``[1 X], [0 Y]``,
+            or it can already be an ACL ``[1 X], [0 Y]``,
             or it can be None.
 
     Returns:
@@ -494,6 +498,21 @@ def parse_acl(acl) -> types.Access:
 
 ##
 
+UID_DELIMITER = '::'
+
+
+def join_uid(parent_uid, object_uid):
+    p = parent_uid.split(UID_DELIMITER)
+    u = object_uid.split(UID_DELIMITER)
+    return p[-1] + UID_DELIMITER + u[-1]
+
+
+def split_uid(joined_uid: str) -> Tuple[str, str]:
+    p, _, u = joined_uid.partition(UID_DELIMITER)
+    return p, u
+
+
+##
 
 def is_file(path):
     return os.path.isfile(path)

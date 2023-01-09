@@ -2,122 +2,81 @@ import * as React from 'react';
 
 import * as gws from 'gws';
 
-const EDITOR_HEIGHT = 90;
+import * as featureComp from '../feature';
+import * as listComp from '../list';
+// import * as widget from '../widget';
+
+let {Row, Cell} = gws.ui.Layout;
+
 
 interface FormProps {
-    attributes: gws.types.Dict;
-    errors?: gws.types.StrDict;
-    whenChanged: (key: string, value: any) => void;
-    whenEntered?: (key: string, value: any) => void;
-    locale?: gws.ui.Locale;
+    controller: gws.types.IController;
+    model: gws.types.IModel;
+    feature: gws.types.IFeature;
+    values: gws.types.Dict;
+    errors?: gws.types.Dict;
+    makeWidget: (field: gws.types.IModelField, feature: gws.types.IFeature, values: gws.types.Dict) => React.ReactElement | null;
+}
+
+interface FormFieldProps {
+    controller: gws.types.IController;
+    field: gws.types.IModelField;
+    feature: gws.types.IFeature;
+    values: gws.types.Dict;
+    errors?: gws.types.Dict;
+    makeWidget: (field: gws.types.IModelField, feature: gws.types.IFeature, values: gws.types.Dict) => React.ReactElement | null;
+}
+
+
+//
+
+//
+
+
+export class FormField extends React.PureComponent<FormFieldProps> {
+    render() {
+        let field = this.props.field;
+
+        let widget = this.props.makeWidget(field, this.props.feature, this.props.values);
+        if (!widget)
+            return null;
+
+        let err = this.props.errors ? this.props.errors[field.name] : null;
+
+        return <React.Fragment key={field.name}>
+            <tr className={err ? 'isError' : ''}>
+                <th>
+                    {field.title}
+                </th>
+                <td>
+                    {widget}
+                </td>
+            </tr>
+            <tr {...gws.lib.cls('cmpFormError', err && 'isActive')}>
+                <th>&nbsp;</th>
+                <td>{err}</td>
+            </tr>
+        </React.Fragment>
+
+    }
+
 }
 
 export class Form extends React.PureComponent<FormProps> {
+
+
+    render() {
+        return <table className="cmpForm">
+            <tbody>
+            {this.props.model.fields.map(f => <FormField
+                field={f}
+                controller={this.props.controller}
+                feature={this.props.feature}
+                values={this.props.values}
+                makeWidget={this.props.makeWidget}
+                errors={this.props.errors}
+            />)}
+            </tbody>
+        </table>
+    }
 }
-//
-//     control(r: gws.api.model.RuleProps, value) {
-//         let entered = this.props.whenEntered || (() => null);
-//         let changed = v => this.props.whenChanged(r.name, v);
-//
-//         let editor: gws.api.model.AttributeEditor = r.editor || {type: 'str'};
-//
-//         let items = () => editor.items.map(e => ({
-//             value: e[0],
-//             text: e[1],
-//         }));
-//
-//         switch (editor.type) {
-//
-//             case 'combo':
-//                 return <gws.ui.Select
-//                     items={items()}
-//                     value={value}
-//                     withCombo={true}
-//                     whenChanged={changed}
-//                 />
-//
-//             case 'select':
-//                 return <gws.ui.Select
-//                     items={items()}
-//                     value={value}
-//                     withCombo={false}
-//                     whenChanged={changed}
-//                 />
-//
-//             case 'text':
-//                 return <gws.ui.TextArea
-//                     height={EDITOR_HEIGHT}
-//                     value={value}
-//                     whenChanged={changed}
-//                 />
-//
-//             case 'file':
-//                 return <gws.ui.FileInput
-//                     accept={editor.accept}
-//                     multiple={editor.multiple}
-//                     value={value}
-//                     whenChanged={changed}
-//                 />
-//
-//             case 'color':
-//                 return <gws.ui.ColorPicker
-//                     value={value}
-//                     whenChanged={changed}
-//                 />
-//
-//             case 'checkbox':
-//                 return <gws.ui.Toggle
-//                     value={value}
-//                     type="checkbox"
-//                     whenChanged={changed}
-//                 />
-//
-//             case 'date':
-//                 return <gws.ui.DateInput
-//                     value={value}
-//                     locale={this.props.locale}
-//                     whenChanged={changed}
-//                 />;
-//
-//             case 'string':
-//             case 'str':
-//             default:
-//                 return <gws.ui.TextInput
-//                     value={value}
-//                     whenChanged={changed}
-//                     whenEntered={v => entered(r.name, v)}
-//                 />
-//         }
-//     }
-//
-//     render() {
-//         let atts = {}, errors = this.props.errors || {};
-//
-//         for (let a of this.props.attributes) {
-//             atts[a.name] = a.value;
-//         }
-//
-//         return <table className="cmpForm">
-//             <tbody>
-//             {this.props.dataModel.rules.map(r => {
-//                 let hasErr = r.name in errors;
-//
-//                 return <React.Fragment key={r.name}>
-//                     <tr className={hasErr ? 'isError': ''}>
-//                         <th>
-//                             {r.title}
-//                         </th>
-//                         <td>
-//                             {r.editable ? this.control(r, atts[r.name]) : atts[r.name]}
-//                         </td>
-//                     </tr>
-//                     <tr {...gws.lib.cls('cmpFormError', hasErr && 'isActive')}>
-//                         <th></th>
-//                         <td >{errors[r.name] || ''}</td>
-//                     </tr>
-//                 </React.Fragment>
-//             })}
-//             </tbody>
-//         </table>
-//     }
-// }

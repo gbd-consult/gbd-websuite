@@ -33,9 +33,9 @@ class Object(gws.base.layer.Object):
             leaf_layer_maker,
         )
 
-        gws.base.layer.configure.group(self, configs)
+        self.configure_group(configs)
 
-        if not gws.base.layer.configure.metadata(self):
+        if not self.configure_metadata():
             self.metadata = self.provider.metadata
 
     def props(self, user):

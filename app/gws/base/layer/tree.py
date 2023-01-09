@@ -18,9 +18,9 @@ class FlattenConfig(gws.Config):
 
 
 class Config(gws.Config):
-    rootLayers: t.Optional[gws.gis.source.LayerFilterConfig] 
+    rootLayers: t.Optional[gws.gis.source.LayerFilter] 
     """source layers to use as roots"""
-    excludeLayers: t.Optional[gws.gis.source.LayerFilterConfig] 
+    excludeLayers: t.Optional[gws.gis.source.LayerFilter] 
     """source layers to exclude"""
     flattenLayers: t.Optional[FlattenConfig] 
     """flatten the layer hierarchy"""
@@ -113,7 +113,7 @@ def layer_configs_from_args(
     ##
 
     custom_filters = [
-        gws.gis.source.layer_filter_from_config(cc.applyTo)
+        cc.applyTo
         for cc in custom_configs
     ]
 

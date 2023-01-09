@@ -205,6 +205,8 @@ class _Creator:
 
     def format(self, template, **kwargs):
         kwargs['VERSION'] = self.gen.meta['version']
+        if 'doc' in kwargs:
+            kwargs['doc'] = kwargs['doc'].split('\n')[0]
         return re.sub(
             r'\$(\w+)',
             lambda m: kwargs[m.group(1)],

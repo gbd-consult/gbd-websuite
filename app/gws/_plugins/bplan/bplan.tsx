@@ -23,12 +23,12 @@ interface BplanViewProps extends gws.types.ViewProps {
     bplanImportReplace: boolean;
     bplanImportStats: gws.api.ImporterStats;
 
-    bplanFeatureToDelete: gws.types.IMapFeature,
+    bplanFeatureToDelete: gws.types.IFeature,
 
     bplanAuList: Array<gws.ui.ListItem>;
     bplanAuUid: string;
     bplanProgress: number;
-    bplanFeatures: Array<gws.types.IMapFeature>,
+    bplanFeatures: Array<gws.types.IFeature>,
 
     bplanSearch: string;
 

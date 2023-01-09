@@ -1,8 +1,7 @@
 import * as ol from 'openlayers';
-
 import * as types from '../types';
-import * as api from '../core/api';
 import * as lib from '../lib';
+import * as api from '../core/api';
 
 export const DEFAULT_VALUES: types.Dict = {
     with_label: 'none',
@@ -21,7 +20,31 @@ export const DEFAULT_VALUES: types.Dict = {
 
 
 export class StyleManager implements types.IStyleManager {
-    styles: { [name: string]: Style } = {};
+    styles: { [name: string]: types.IStyle } = {};
+    notFound: { [name: string]: boolean } = {};
+
+
+    getFromSelector(selector: string): types.IStyle | null {
+        if (this.styles[selector]) {
+            return this.styles[selector];
+        }
+
+        if (this.notFound[selector]) {
+            return null;
+        }
+
+        let [values, source] = parseCssSelector(selector);
+        if (values) {
+            let s = this.create(values, selector);
+            s.source = source;
+            return s;
+        }
+
+        console.warn('STYLE:not found', selector);
+        this.notFound[selector] = true;
+        return null;
+    }
+
 
     get names() {
         return Object.keys(this.styles)
@@ -56,14 +79,21 @@ export class StyleManager implements types.IStyleManager {
                 return this.getFromNameOrSelector(props.selector);
             }
 
-            if (props.text) {
-                return this.create(valuesFromCssText(props.text));
-            }
-
             if (props.values) {
                 return this.create(props.values);
             }
+            
+            if (props.text) {
 
+                let values = valuesFromCssText(props.text || '');
+
+                if (values) {
+                    return this.create(values);
+                }
+
+                console.warn('STYLE:invalid css', style);
+                return null;
+            }
         }
 
         console.warn('STYLE:invalid style', style);
@@ -87,17 +117,17 @@ export class StyleManager implements types.IStyleManager {
     }
 
     notifyChanged(map, name = null) {
-        map.walk(map.root, layer => {
-            if (layer['styleNames'] && (!name || name === layer['styleNames']['normal'])) {
-                layer.changed()
-                return;
-            }
-            layer.oFeatures.forEach(f => {
-                if (f['_gwsFeature'] && (!name || name === f['_gwsFeature']['styleNames']['normal'])) {
-                    f.changed();
-                }
-            });
-        });
+        // map.walk(map.root, layer => {
+        //     if (layer['styleNames'] && (!name || name === layer['styleNames']['normal'])) {
+        //         layer.changed()
+        //         return;
+        //     }
+        //     layer.oFeatures.forEach(f => {
+        //         if (f['_gwsFeature'] && (!name || name === f['_gwsFeature']['styleNames']['normal'])) {
+        //             f.changed();
+        //         }
+        //     });
+        // });
     }
 
     unserialize(data: object) {
@@ -136,7 +166,6 @@ export class StyleManager implements types.IStyleManager {
         name = name || lib.uniqId('style');
         let s = new Style(name, values);
         this.styles[name] = s;
-        console.log('STYLE:created', name, values);
         return s;
     }
 
@@ -164,7 +193,7 @@ abstract class BaseStyle implements types.IStyle {
 }
 
 
-export class Style extends BaseStyle implements types.IStyle {
+export class Style extends BaseStyle {
 
     protected cache: {
         markerImage?: ol.style.Image;
@@ -245,7 +274,7 @@ export class Style extends BaseStyle implements types.IStyle {
                     opts['offsetY'] = 20;
                 }
                 if (!lp) {
-                    lp = 'end';
+                    lp = 'end'
                 }
             }
 
@@ -476,7 +505,7 @@ function compact(obj): any {
 }
 
 
-// 
+//
 
 export function parseCssSelector(selector: string): [types.Dict, string] {
 
@@ -513,8 +542,6 @@ export function parseCssSelector(selector: string): [types.Dict, string] {
 
     let text = res.length ? res.pop() : null;
 
-    console.log('STYLE:valuesFromCssText', selector, text, valuesFromCssText(text))
-
     if (text) {
         let values = valuesFromCssText(text);
         return [values, text];
@@ -523,7 +550,7 @@ export function parseCssSelector(selector: string): [types.Dict, string] {
     return [null, ''];
 }
 
-// below is what we have in lib/style.py
+// below is what we have in lib/style/parser.py
 
 
 let _color_patterns = [
@@ -568,6 +595,13 @@ let _padding = (val) => {
             return [val[0], val[1], val[0], val[1]];
         if (val.length === 1)
             return [val[0], val[0], val[0], val[0]];
+    }
+};
+
+let _enum = (cls) => {
+    return (val) => {
+        if (val in cls)
+            return val
     }
 };
 
@@ -617,7 +651,7 @@ _Parser.label_fill = _color;
 _Parser.label_font_family = _str;
 _Parser.label_font_size = _px;
 _Parser.label_font_style = _str;
-_Parser.label_font_weight = _str;
+_Parser.label_font_weight =_str;
 _Parser.label_line_height = _int;
 _Parser.label_max_scale = _int;
 _Parser.label_min_scale = _int;

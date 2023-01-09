@@ -8,7 +8,7 @@ export class Tool extends gws.Tool {
     snap: boolean = true;
 
 
-    get layer(): gws.types.IMapFeatureLayer {
+    get layer(): gws.types.IFeatureLayer {
         return null;
     }
 
@@ -17,20 +17,20 @@ export class Tool extends gws.Tool {
         //return this.layer ? this.layer.editStyle : null;
     }
 
-    whenSelected(f: gws.types.IMapFeature) {
+    whenSelected(f: gws.types.IFeature) {
     }
 
     whenUnselected() {
 
     }
 
-    whenEnded(f: gws.types.IMapFeature) {
+    whenEnded(f: gws.types.IFeature) {
     }
 
     whenCancelled() {
     }
 
-    selectFeature(f: gws.types.IMapFeature) {
+    selectFeature(f: gws.types.IFeature) {
         if (this.oFeatureCollection) {
             this.oFeatureCollection.clear();
             this.oFeatureCollection.push(f.oFeature);

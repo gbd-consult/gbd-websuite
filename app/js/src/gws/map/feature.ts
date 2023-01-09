@@ -4,57 +4,68 @@ import * as types from '../types';
 import * as api from '../core/api';
 import * as lib from '../lib';
 
-export class Feature implements types.IMapFeature {
+
+
+export class Feature implements types.IFeature {
     uid: string = '';
+
     attributes: types.Dict = {};
+    editedAttributes: types.Dict = {};
+    category: string = '';
     elements: types.Dict = {};
-    modelUid: string = '';
-    mode: types.FeatureMode;
-
-    styleNames = {
-        normal: '',
-        selected: '',
-        edit: '',
-    };
-
-    label: string = '';
+    layer?: types.IFeatureLayer = null;
+    model?: types.IModel = null;
     oFeature?: ol.Feature = null;
+    cssSelector: string;
+
+    isNew: boolean = false;
+    isSelected: boolean = false;
+
+    keyName: string = 'id';
+    geometryName: string = 'geometry';
+
 
     map: types.IMapManager;
 
-    constructor(map, args: types.IMapFeatureArgs) {
+    constructor(map) {
         this.map = map;
-
-        if (args.props) {
-            this.uid = args.props.uid;
-            this.attributes = args.props.attributes || [];
-            this.elements = args.props.elements || {};
-            this.modelUid = args.props.modelUid || '';
-        }
-
-        let oFeature = this.oFeatureFromArgs(args);
-        if (oFeature) {
-            oFeature['_gwsFeature'] = this;
-        }
-
-        this.oFeature = oFeature;
-
-        this.setStyles({
-            normal: args.style,
-            selected: args.selectedStyle,
-            edit: args.editStyle,
-        });
-
-        if (args.label) {
-            this.setLabel(args.label);
-        } else if (this.elements.label) {
-            this.setLabel(this.elements.label);
-        } else if (oFeature) {
-            this.setLabel(oFeature.get('label'));
-        }
-
-        this.setMode('normal');
+        this.uid = lib.uniqId('_feature_');
     }
+
+    setProps(props) {
+        this.attributes = props.attributes || {};
+        this.editedAttributes = {};
+
+        let uid = this.attributes[props.keyName];
+        if (uid)
+            this.uid = String(uid);
+
+        this.category = props.category || '';
+        this.elements = props.elements || {};
+
+        let layerUid = props.layerUid;
+        if (layerUid)
+            this.layer = this.map.getLayer(layerUid) as types.IFeatureLayer;
+
+        let modelUid = props.modelUid;
+        if (modelUid && this.map.models)
+            this.model = this.map.models.getModel(modelUid);
+
+        this.keyName = props.keyName;
+        this.geometryName = props.geometryName;
+
+        this.isNew = Boolean(props.isNew);
+        this.isSelected = Boolean(props.isSelected);
+
+        let shape = this.attributes[this.geometryName];
+        if (shape) {
+            this.createOrupdateOlFeature(this.map.shape2geom(shape));
+        }
+
+        return this;
+    }
+
+    //
 
     get geometry() {
         return this.oFeature ? this.oFeature.getGeometry() : null;
@@ -65,80 +76,171 @@ export class Feature implements types.IMapFeature {
         return geom ? this.map.geom2shape(geom) : null;
     }
 
-    getProps() {
-        let style = this.map.style.at(this.styleNames.normal);
-        return {
-            attributes: this.attributes,
-            elements: this.elements,
-            modelUid: this.modelUid,
-            shape: this.shape,
-            style: style ? style.props : null,
-            uid: this.uid
-        }
+    get isFocused() {
+        return this === this.map.focusedFeature;
+    }
+
+    get isDirty() {
+        return !lib.isEmpty(this.editedAttributes);
+    }
+
+    getProps(depth) {
+        return this.map.featureProps(this, depth);
     }
 
     getAttribute(name: string): any {
-        return this.attributes[name]
+        return this.attributes[name];
     }
 
-    setMode(mode) {
-        this.mode = mode;
-        this.updateOlStyle();
+    getEditedAttribute(name: string): any {
+        if (this.editedAttributes && (name in this.editedAttributes))
+            return this.editedAttributes[name];
+        return this.attributes[name];
     }
 
-    setStyles(src) {
-        this.styleNames = this.map.style.getMap(src);
-        this.updateOlStyle()
+    //
+
+    setGeometry(geom: ol.geom.Geometry) {
+        this.createOrupdateOlFeature(geom);
+        this.attributes[this.geometryName] = this.map.geom2shape(geom);
+        return this.redraw();
     }
 
-    setLabel(label: string) {
-        this.label = label;
+    setNew(f: boolean) {
+        this.isNew = f;
+        return this.redraw();
+    }
+
+    setSelected(f: boolean) {
+        this.isSelected = f;
+        return this.redraw();
+    }
+
+    resetEdits() {
+        this.editedAttributes = {};
+    }
+
+    commitEdits() {
+        // this.originalAttributes = {...this.attributes};
+    }
+
+    redraw() {
         if (this.oFeature)
-            this.oFeature.set('label', label);
+            this.oFeature.changed();
+        return this;
     }
 
-    setGeometry(geom) {
+    //
+
+    isSame(feature: types.IFeature) {
+        return feature.layer === this.layer && feature.uid === this.uid;
+    }
+
+    updateFrom(feature: types.IFeature) {
+        this.attributes = feature.attributes ? {...feature.attributes} : {};
+        this.category = feature.category;
+        this.elements = feature.elements ? {...feature.elements} : {};
+        this.layer = feature.layer;
+        this.model = feature.model;
+        this.keyName = feature.keyName;
+        this.geometryName = feature.geometryName;
+        this.isNew = feature.isNew;
+        this.isSelected = feature.isSelected;
+
+        let shape = this.attributes[this.geometryName];
+        if (shape) {
+            this.createOrupdateOlFeature(this.map.shape2geom(shape));
+        }
+
+        let uid = this.attributes[this.keyName];
+        if (uid)
+            this.uid = String(uid);
+
+        this.redraw();
+    }
+
+    whenGeometryChanged() {
+
+    }
+
+
+    //
+
+    protected createOrupdateOlFeature(geom) {
         if (this.oFeature)
             this.oFeature.setGeometry(geom);
         else
             this.oFeature = new ol.Feature(geom);
-    }
 
-    setChanged() {
-        if (this.oFeature)
-            this.oFeature.changed();
-    }
-
-    protected updateOlStyle() {
-        if (!this.oFeature) {
-            return;
+        if (this.oFeature) {
+            this.oFeature['_gwsFeature'] = this;
+            this.oFeature.setStyle((f, r) => this.oStyleFunc(f, r))
         }
 
-        let currentStyleName = this.styleNames[this.mode];
-
-        if (!currentStyleName) {
-            this.oFeature.setStyle(null);
-            return;
-        }
-
-        this.oFeature.setStyle((oFeature: ol.Feature, resolution: number) => {
-            let sty = this.map.style.at(currentStyleName);
-            return sty ? sty.apply(oFeature.getGeometry(), oFeature.get('label'), resolution) : [];
+        this.oFeature.getGeometry().on('change', () => {
+            let geom = this.oFeature.getGeometry();
+            if (this.geometryName)
+                this.attributes[this.geometryName] = this.map.geom2shape(geom);
+            this.whenGeometryChanged()
         });
+
     }
 
-    protected oFeatureFromArgs(args) {
-        if (args.oFeature) {
-            return args.oFeature;
+
+    protected currentStyle() {
+        let spec = '';
+
+        if (this.isSelected) spec = 'isSelected';
+        if (this.isNew) spec = 'isNew';
+        if (this.isDirty) spec = 'isDirty';
+        if (this.isFocused) spec = 'isFocused';
+
+        if (this.cssSelector) {
+            let c = this.cssSelector;
+            if (spec)
+                c += '.' + spec;
+            let s = this.map.style.getFromSelector(c);
+            if (s)
+                return s;
         }
 
-        if (args.geometry) {
-            return new ol.Feature(args.geometry)
+        if (this.layer && this.layer.cssSelector) {
+            let c = this.layer.cssSelector;
+            if (spec)
+                c += '.' + spec;
+            let s = this.map.style.getFromSelector(c);
+            if (s)
+                return s;
         }
 
-        if (args.props && args.props.shape) {
-            let geom = this.map.shape2geom(args.props.shape);
-            return new ol.Feature(geom);
+        if (spec) {
+            if (this.cssSelector) {
+                let s = this.map.style.getFromSelector(this.cssSelector);
+                if (s)
+                    return s;
+            }
+            if (this.layer && this.layer.cssSelector) {
+                let s = this.map.style.getFromSelector(this.cssSelector);
+                if (s)
+                    return s;
+            }
         }
+
+        let gt = this.oFeature.getGeometry().getType();
+        let c = '.defaultGeometry_' + gt.toUpperCase();
+        if (spec)
+            c += '.' + spec;
+
+        return this.map.style.getFromSelector(c);
     }
+
+    protected oStyleFunc(oFeature, resolution) {
+        let s = this.currentStyle();
+        if (!s) {
+            return [];
+        }
+        return s.apply(oFeature.getGeometry(), this.elements['label'], resolution);
+
+    }
+
 }

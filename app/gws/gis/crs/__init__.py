@@ -38,7 +38,7 @@ class Crs(gws.ICrs):
         return tr.transform
 
     def to_string(self, fmt=None):
-        return getattr(self, str(fmt or gws.CrsFormat.EPSG).lower())
+        return getattr(self, str(fmt or gws.CrsFormat.epsg).lower())
 
     def to_geojson(self):
         # https://geojson.org/geojson-spec#named-crs
@@ -56,7 +56,7 @@ WGS84 = Crs(
     srid=4326,
     proj4text='+proj=longlat +datum=WGS84 +no_defs +type=crs',
     wkt='GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]',
-    axis=gws.Axis.YX,
+    axis=gws.Axis.yx,
     uom=gws.Uom.DEG,
     isGeographic=True,
     isProjected=False,
@@ -79,7 +79,7 @@ WEBMERCATOR = Crs(
     srid=3857,
     proj4text='+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
     wkt='PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]',
-    axis=gws.Axis.XY,
+    axis=gws.Axis.xy,
     uom=gws.Uom.M,
     isGeographic=False,
     isProjected=True,
@@ -125,7 +125,7 @@ def get(crs_name: gws.CrsName) -> t.Optional[gws.ICrs]:
 def parse(crs_name: gws.CrsName) -> t.Tuple[gws.CrsFormat, t.Optional[gws.ICrs]]:
     fmt, srid = _parse(crs_name)
     if not fmt:
-        return gws.CrsFormat.NONE, None
+        return gws.CrsFormat.none, None
     return fmt, _get_crs(srid)
 
 
@@ -232,9 +232,9 @@ def best_axis(
     # see https://docs.geoserver.org/latest/en/user/services/wfs/basics.html#wfs-basics-axis
 
     if inverted_crs and crs in inverted_crs:
-        return gws.Axis.YX
+        return gws.Axis.yx
 
-    return gws.Axis.XY
+    return gws.Axis.xy
 
 
 ##
@@ -328,13 +328,13 @@ def _make_crs(srid, pp, au):
 
     crs.isGeographic = pp.is_geographic
     crs.isProjected = pp.is_projected
-    crs.isYX = crs.axis == gws.Axis.YX
+    crs.isYX = crs.axis == gws.Axis.yx
 
-    crs.epsg = _unparse(crs.srid, gws.CrsFormat.EPSG)
-    crs.urn = _unparse(crs.srid, gws.CrsFormat.URN)
-    crs.urnx = _unparse(crs.srid, gws.CrsFormat.URNX)
-    crs.url = _unparse(crs.srid, gws.CrsFormat.URL)
-    crs.uri = _unparse(crs.srid, gws.CrsFormat.URI)
+    crs.epsg = _unparse(crs.srid, gws.CrsFormat.epsg)
+    crs.urn = _unparse(crs.srid, gws.CrsFormat.urn)
+    crs.urnx = _unparse(crs.srid, gws.CrsFormat.urnx)
+    crs.url = _unparse(crs.srid, gws.CrsFormat.url)
+    crs.uri = _unparse(crs.srid, gws.CrsFormat.uri)
 
     # see https://proj.org/schemas/v0.5/projjson.schema.json
     d = pp.to_json_dict()
@@ -375,12 +375,12 @@ def _make_crs(srid, pp, au):
 
 
 _AXES_AND_UNITS = {
-    'Easting/metre,Northing/metre': (gws.Axis.XY, gws.Uom.M),
-    'Northing/metre,Easting/metre': (gws.Axis.YX, gws.Uom.M),
-    'Geodetic latitude/degree,Geodetic longitude/degree': (gws.Axis.YX, gws.Uom.DEG),
-    'Geodetic longitude/degree,Geodetic latitude/degree': (gws.Axis.XY, gws.Uom.DEG),
-    'Easting/US survey foot,Northing/US survey foot': (gws.Axis.XY, gws.Uom.US_FT),
-    'Easting/foot,Northing/foot': (gws.Axis.XY, gws.Uom.FT),
+    'Easting/metre,Northing/metre': (gws.Axis.xy, gws.Uom.M),
+    'Northing/metre,Easting/metre': (gws.Axis.yx, gws.Uom.M),
+    'Geodetic latitude/degree,Geodetic longitude/degree': (gws.Axis.yx, gws.Uom.DEG),
+    'Geodetic longitude/degree,Geodetic latitude/degree': (gws.Axis.xy, gws.Uom.DEG),
+    'Easting/US survey foot,Northing/US survey foot': (gws.Axis.xy, gws.Uom.US_FT),
+    'Easting/foot,Northing/foot': (gws.Axis.xy, gws.Uom.FT),
 }
 
 
@@ -407,21 +407,21 @@ Projections can be referenced by:
 """
 
 _formats = {
-    gws.CrsFormat.SRID: '%d',
-    gws.CrsFormat.EPSG: 'EPSG:%d',
-    gws.CrsFormat.URL: 'http://www.opengis.net/gml/srs/epsg.xml#%d',
-    gws.CrsFormat.URI: 'http://www.opengis.net/def/crs/epsg/0/%d',
-    gws.CrsFormat.URNX: 'urn:x-ogc:def:crs:EPSG:%d',
-    gws.CrsFormat.URN: 'urn:ogc:def:crs:EPSG::%d',
+    gws.CrsFormat.srid: '%d',
+    gws.CrsFormat.epsg: 'EPSG:%d',
+    gws.CrsFormat.url: 'http://www.opengis.net/gml/srs/epsg.xml#%d',
+    gws.CrsFormat.uri: 'http://www.opengis.net/def/crs/epsg/0/%d',
+    gws.CrsFormat.urnx: 'urn:x-ogc:def:crs:EPSG:%d',
+    gws.CrsFormat.urn: 'urn:ogc:def:crs:EPSG::%d',
 }
 
 _parse_formats = {
-    gws.CrsFormat.SRID: r'^(\d+)$',
-    gws.CrsFormat.EPSG: r'^epsg:(\d+)$',
-    gws.CrsFormat.URL: r'^http://www.opengis.net/gml/srs/epsg.xml#(\d+)$',
-    gws.CrsFormat.URI: r'http://www.opengis.net/def/crs/epsg/0/(\d+)$',
-    gws.CrsFormat.URNX: r'^urn:x-ogc:def:crs:epsg:(\d+)$',
-    gws.CrsFormat.URN: r'^urn:ogc:def:crs:epsg:[0-9.]*:(\d+)$',
+    gws.CrsFormat.srid: r'^(\d+)$',
+    gws.CrsFormat.epsg: r'^epsg:(\d+)$',
+    gws.CrsFormat.url: r'^http://www.opengis.net/gml/srs/epsg.xml#(\d+)$',
+    gws.CrsFormat.uri: r'http://www.opengis.net/def/crs/epsg/0/(\d+)$',
+    gws.CrsFormat.urnx: r'^urn:x-ogc:def:crs:epsg:(\d+)$',
+    gws.CrsFormat.urn: r'^urn:ogc:def:crs:epsg:[0-9.]*:(\d+)$',
 }
 
 # @TODO
@@ -439,7 +439,7 @@ _aliases = {
 
 def _parse(crs_name):
     if isinstance(crs_name, int):
-        return gws.CrsFormat.EPSG, crs_name
+        return gws.CrsFormat.epsg, crs_name
 
     if isinstance(crs_name, bytes):
         crs_name = crs_name.decode('ascii').lower()
@@ -448,12 +448,12 @@ def _parse(crs_name):
         crs_name = crs_name.lower()
 
         if crs_name in {'crs84', 'crs:84'}:
-            return gws.CrsFormat.CRS, 4326
+            return gws.CrsFormat.crs, 4326
 
         if crs_name in _aliases:
             crs_name = _aliases[crs_name]
             if isinstance(crs_name, int):
-                return gws.CrsFormat.EPSG, int(crs_name)
+                return gws.CrsFormat.epsg, int(crs_name)
 
         for fmt, r in _parse_formats.items():
             m = re.match(r, crs_name)

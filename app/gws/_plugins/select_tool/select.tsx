@@ -17,7 +17,7 @@ let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as Select
 
 interface SelectViewProps extends gws.types.ViewProps {
     controller: SelectController;
-    selectFeatures: Array<gws.types.IMapFeature>;
+    selectFeatures: Array<gws.types.IFeature>;
 }
 
 const SelectStoreKeys = [
@@ -131,7 +131,7 @@ class SelectToolbarButton extends toolbar.Button {
 
 class SelectController extends gws.Controller {
     uid = MASTER;
-    layer: gws.types.IMapFeatureLayer;
+    layer: gws.types.IFeatureLayer;
 
     async init() {
         this.update({
@@ -183,7 +183,7 @@ class SelectController extends gws.Controller {
 
     }
 
-    featureTitle(feature: gws.types.IMapFeature) {
+    featureTitle(feature: gws.types.IFeature) {
         if (feature.elements.title)
             return feature.elements.title;
         if (feature.elements.category)

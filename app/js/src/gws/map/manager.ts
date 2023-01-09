@@ -6,6 +6,7 @@ import * as api from '../core/api';
 import * as lib from '../lib';
 
 import * as layer from './layer';
+import * as model from './model';
 
 let layerTypes = {
     'box': layer.BoxLayer,
@@ -14,7 +15,7 @@ let layerTypes = {
     'root': layer.RootLayer,
     'tile': layer.TileLayer,
     'tree': layer.TreeLayer,
-    'vector': layer.VectorLayer,
+    'vector': layer.FeatureLayer,
     'xyz': layer.XYZLayer,
 };
 
@@ -44,6 +45,8 @@ export class MapManager implements types.IMapManager {
     root = null;
     resolutions = null;
     extent = null;
+
+    models: types.IModelRegistry = null;
 
     protected connectedToStore = false;
     protected coordinatePrecision = 0;
@@ -80,6 +83,7 @@ export class MapManager implements types.IMapManager {
                 scale: lib.res2scale(res),
                 rotation: rot,
                 angle: lib.rad2deg(rot),
+                size: this.oMap.getSize(),
             }
         }
     }
@@ -167,7 +171,7 @@ export class MapManager implements types.IMapManager {
         this.addLayer(layer, 0, this.root);
     }
 
-    addServiceLayer(layer: types.IMapFeatureLayer) {
+    addServiceLayer(layer: types.IFeatureLayer) {
         layer.visible = true;
         layer.listed = false;
         this.addTopLayer(layer);
@@ -198,7 +202,7 @@ export class MapManager implements types.IMapManager {
     }
 
     setLayerChecked(layer, on) {
-        function exclusiveCheck(la: types.IMapLayer, parents) {
+        function exclusiveCheck(la: types.ILayer, parents) {
             if (la.exclusive) {
                 // in an exclusive group, if a layer belongs to the currenty checked path
                 // it should be checked and others should be unchecked
@@ -327,7 +331,7 @@ export class MapManager implements types.IMapManager {
         let p = this.prepareViewState(vs);
         this.oView.cancelAnimations();
 
-        console.log('setViewState, p', p);
+        // console.log('setViewState, p', p);
 
         if (animate) {
             return this.oView.animate({
@@ -375,25 +379,30 @@ export class MapManager implements types.IMapManager {
         this.setViewState({center: c}, animate);
     }
 
-    setViewExtent(extent, animate, padding) {
+    setViewExtent(extent, animate, padding = 0, minScale = 0) {
         if (!extent)
             return;
 
         // view.fit doesn't have maxResolution, so compute the stuff here
         // @TODO: rotation
 
-        padding = padding || 0;
-
         let size = this.oMap.getSize();
         let res = this.oView.getResolutionForExtent(extent, [
-            size[0] - padding * 2, size[1] - padding * 2
+            size[0] - (padding || 0) * 2, size[1] - (padding || 0) * 2
         ]);
+
+        let minRes = Math.min(...this.resolutions);
+        let maxRes = Math.max(...this.resolutions);
+
+        if (minScale) {
+            minRes = Math.min(
+                this.viewState.resolution,
+                lib.scale2res(minScale));
+        }
 
         this.setViewState({
             center: ol.extent.getCenter(extent),
-            resolution: lib.clamp(res,
-                Math.min(...this.resolutions),
-                Math.max(...this.resolutions))
+            resolution: lib.clamp(res, minRes, maxRes)
         }, animate);
     }
 
@@ -512,22 +521,13 @@ export class MapManager implements types.IMapManager {
     }
 
     protected initLayers() {
-        let props = this.props.rootLayer;
 
-        props.clientOptions = {
-            expanded: true,
-            visible: true,
-            selected: false,
-            listed: true,
-
-        }
-
-        this.root = this.initLayer(props);
+        this.root = this.initLayer(this.props.rootLayer);
 
         this.computeOpacities();
     }
 
-    protected initLayer(props: api.base.layer.Props, parent = null): types.IMapLayer {
+    protected initLayer(props: api.base.layer.Props, parent = null): types.ILayer {
         let cls = layerTypes[props.type];
         if (!cls)
             throw new Error('unknown layer type: ' + props.type);
@@ -615,11 +615,30 @@ export class MapManager implements types.IMapManager {
         };
     }
 
-    updatePointerPosition(cc) {
+    elevationTimer = null;
+
+    async updatePointerPosition(cc) {
+        let x = cc[0] | 0;
+        let y = cc[1] | 0;
+
         this.update({
-            mapPointerX: cc[0] | 0,
-            mapPointerY: cc[1] | 0,
+            mapPointerX: x,
+            mapPointerY: y,
         });
+
+        // clearTimeout(this.elevationTimer);
+        //
+        // this.elevationTimer = setTimeout(async () => {
+        //     let pt = new ol.geom.Point([x, y]);
+        //     let res = await this.app.server['elevationGetData']({
+        //         shape: this.geom2shape(pt),
+        //     });
+        //     let z;
+        //     if (res && res['values']) {
+        //         z = Number(res['values'][0])
+        //     }
+        //     this.update({mapPointerZ: z});
+        // }, 500);
     }
 
     protected externalInteracting = false;
@@ -693,21 +712,117 @@ export class MapManager implements types.IMapManager {
 
     //
 
-    newFeature(args: types.IMapFeatureArgs) {
-        return new Feature(this, args);
+
+    readFeature(props: api.base.feature.Props): types.IFeature {
+        return this.featureFromProps(props);
+
     }
 
-    readFeature(props) {
-        return new Feature(this, {props});
+    readFeatures(propsList: Array<api.base.feature.Props>): Array<types.IFeature> {
+        return this.featureListFromProps(propsList);
     }
 
-    readFeatures(fs) {
-        return fs.map(props => new Feature(this, {props}));
+    featureListFromProps(propsList: Array<api.base.feature.Props>): Array<types.IFeature> {
+        return propsList.map(props => this.featureFromProps(props));
     }
 
-    writeFeatures(fs) {
-        return fs.map(f => f.props);
+    featureFromGeometry(geom: ol.geom.Geometry): types.IFeature {
+        return new Feature(this).setGeometry(geom);
     }
+
+    featureFromProps(props: api.base.feature.Props): types.IFeature {
+        let atts = props.attributes || {};
+        let model: types.IModel;
+
+        if (props.modelUid && this.models)
+            model = this.models.getModel(props.modelUid);
+
+        if (model) {
+            for (let f of model.fields) {
+                let val = atts[f.name];
+
+                if (val && f.attributeType === 'feature') {
+                    atts[f.name] = this.featureFromProps(val);
+                }
+
+                if (val && f.attributeType === 'featurelist') {
+                    atts[f.name] = val.map(p => this.featureFromProps(p));
+                }
+            }
+        }
+
+        props.attributes = atts;
+        return new Feature(this).setProps(props);
+    }
+
+
+    featureProps(feature: types.IFeature, depth?: number): api.base.feature.Props {
+
+        let atts = {};
+        depth = depth || 0;
+
+        if (feature.model) {
+
+            for (let f of feature.model.fields) {
+                let val = feature.attributes[f.name];
+
+                switch (f.attributeType) {
+                    case 'feature':
+                        if (val && depth > 0) {
+                            atts[f.name] = this.featureProps(val, depth - 1);
+                        }
+                        break;
+                    case 'featurelist':
+                        if (val && depth > 0) {
+                            atts[f.name] = val.map(f => this.featureProps(f, depth - 1));
+                        }
+                        break;
+                    default:
+                        if (val !== null && val !== undefined) {
+                            atts[f.name] = val;
+                        }
+                }
+            }
+        } else {
+            atts = feature.attributes || {};
+        }
+
+        // let style = self.style.at(f.styleNames.normal);
+
+        return {
+            attributes: atts,
+            views: {},
+            // layerUid: feature.layer ? feature.layer.uid : null,
+            modelUid: feature.model ? feature.model.uid : null,
+            uid: feature.uid,
+            isNew: feature.isNew,
+            keyName: feature.keyName,
+            geometryName: feature.geometryName,
+            // style: style ? style.props : null,
+        }
+    }
+
+    loadModels(models: Array<api.base.model.Props>) {
+        this.models = new model.ModelRegistry(this).setProps(models);
+    }
+
+    //
+
+    focusedFeature: types.IFeature;
+
+    focusFeature(feature?: types.IFeature) {
+        let prev = this.focusedFeature;
+        this.focusedFeature = feature;
+
+        if (prev)
+            prev.redraw();
+        if (feature)
+            feature.redraw();
+
+        this.changed();
+        this.update({mapFocusedFeature: this.focusedFeature});
+    }
+
 
     //
 
@@ -780,8 +895,7 @@ export class MapManager implements types.IMapManager {
             return [];
         }
 
-        let features = this.readFeatures(res.features);
-        return features;
+        return this.readFeatures(res.features);
     }
 
     protected searchLayers() {
@@ -805,7 +919,6 @@ export class MapManager implements types.IMapManager {
 
     protected async printPlanes(boxRect, dpi): Promise<Array<api.base.printer.Plane>> {
         let _this = this;
-        let planes: Array<api.base.printer.Plane> = [];
 
         function makeBitmap2(): api.base.printer.Plane {
             let canvas = _this.oMap.getViewport().firstChild as HTMLCanvasElement;
@@ -864,72 +977,71 @@ export class MapManager implements types.IMapManager {
             return bmp;
         }
 
-        if (boxRect && dpi === 0) {
-            // draft printing, print everything as a bitmap
+        let mode = 0;
 
-            let bmpLayers = [];
-
-            this.walk(this.root, la => {
-                let pi = la.shouldDraw && la.printPlane;
-                if (pi) {
-                    bmpLayers.push(la);
-                }
-            });
-
-            planes.push(await makeBitmap(bmpLayers));
-            return planes;
+        if (boxRect) {
+            if (dpi === 0)
+                // draft printing, print everything as a bitmap
+                mode = 1;
+            else if (dpi <= BITMAP_PRINT_DPI_THRESHOLD)
+                // low-res printing, print rasters as bitmaps
+                mode = 2;
+            else
+                // normal printing, print only `isClient` layers as bitmaps
+                mode = 3;
         }
 
-        if (boxRect && dpi <= BITMAP_PRINT_DPI_THRESHOLD) {
-            // low-res printing, print rasters as bitmaps
+        // collect printItems or bitmaps for layers, group sequential bitmaps together
 
-            let bmpLayers = [];
-
-            this.walk(this.root, la => {
-                let pi = la.shouldDraw && la.printPlane;
-                if (pi) {
-                    if (pi.type === 'raster') {
-                        planes.push(null);
-                        bmpLayers.push(la);
-                    } else {
-                        planes.push(pi);
-                    }
-                }
-            });
-
-            if (planes.every(it => it === null)) {
-                planes = [await makeBitmap(bmpLayers)];
-            } else {
-                for (let i = 0; i < planes.length; i++) {
-                    if (!planes[i]) {
-                        planes[i] = await makeBitmap([bmpLayers.shift()]);
-                    }
-                }
-            }
-
-            return planes;
+        interface PrintItemOrBitmap {
+            pi?: api.base.printer.Plane
+            bmpLayers?: Array<types.ILayer>
         }
 
-        // normal printing, pass each layer's printPlane as is
+        let items: Array<PrintItemOrBitmap> = [];
 
         this.walk(this.root, la => {
             let pi = la.shouldDraw && la.printPlane;
+
+            if (mode === 0 && la.displayMode === 'client') {
+                // cannot print `isClient` layers without a boxRect
+                return;
+            }
+
             if (pi) {
-                planes.push(pi);
+                let useBitmap = (mode === 1) || (mode === 2 && pi.type === 'raster') || (mode > 0 && la.displayMode === 'client');
+                if (useBitmap) {
+                    if (items.length > 0 && items[items.length - 1].bmpLayers)
+                        items[items.length - 1].bmpLayers.push(la)
+                    else
+                        items.push({pi: null, bmpLayers: [la]})
+                } else {
+                    items.push({pi, bmpLayers: null});
+                }
             }
         });
 
-        return planes;
+        let res: Array<api.base.printer.Plane> = [];
+
+        for (let item of items) {
+            if (item.pi) {
+                res.push(item.pi)
+            } else {
+                res.push(await makeBitmap(item.bmpLayers))
+            }
+        }
+
+        return res;
     }
 
-    async printParams(boxRect, dpi) {
+    async basicPrintParams(boxRect, dpi) {
         let vs = this.viewState,
-            visibleLayers = [];
+            legendLayers = [];
 
         this.walk(this.root, la => {
             let pi = la.shouldDraw && la.printPlane;
             if (pi) {
-                visibleLayers.push(la.uid);
+                legendLayers.push(la.uid);
             }
         });
 
@@ -937,7 +1049,7 @@ export class MapManager implements types.IMapManager {
             planes: await this.printPlanes(boxRect, dpi),
             rotation: Math.round(lib.rad2deg(vs.rotation)),
             scale: lib.res2scale(vs.resolution),
-            visibleLayers,
+            legendLayers,
         }
     }
 
@@ -946,7 +1058,7 @@ export class MapManager implements types.IMapManager {
     protected visibleAttributions() {
         let a = [this.app.project.metadata.attribution];
 
-        this.walk(this.root, (layer: types.IMapLayer) => {
+        this.walk(this.root, (layer: types.ILayer) => {
             if (layer.shouldDraw)
                 a.push(layer.attribution);
         });
@@ -988,7 +1100,7 @@ export class MapManager implements types.IMapManager {
         });
     }
 
-    walk(layer, fn: (la: types.IMapLayer) => any) {
+    walk(layer, fn: (la: types.ILayer) => any) {
         if (fn(layer) === MapManager.STOP_WALK)
             return;
         layer.children.forEach(la => this.walk(la, fn));
@@ -1016,6 +1128,7 @@ export class MapManager implements types.IMapManager {
             layer.setComputedOpacity(val);
             layer.children.forEach(la => compute(la, val));
         }
+
         compute(this.root, 1);
         this.changed();
     }

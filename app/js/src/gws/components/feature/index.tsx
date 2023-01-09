@@ -7,14 +7,14 @@ let {Row, Cell} = gws.ui.Layout;
 
 interface BaseListProps extends gws.types.ViewProps {
     controller: gws.types.IController;
-    features: Array<gws.types.IMapFeature>;
-    content?: (f: gws.types.IMapFeature) => React.ReactNode;
-    isSelected?: (f: gws.types.IMapFeature) => boolean;
+    features: Array<gws.types.IFeature>;
+    content?: (f: gws.types.IFeature) => React.ReactNode;
+    isSelected?: (f: gws.types.IFeature) => boolean;
 }
 
 interface ListProps extends BaseListProps {
-    leftButton?: (f: gws.types.IMapFeature) => React.ReactNode;
-    rightButton?: (f: gws.types.IMapFeature) => React.ReactNode;
+    leftButton?: (f: gws.types.IFeature) => React.ReactNode;
+    rightButton?: (f: gws.types.IFeature) => React.ReactNode;
     withZoom?: boolean;
 }
 
@@ -26,11 +26,11 @@ interface InfoListState {
 }
 
 interface TaskButtonProps extends gws.types.ViewProps {
-    feature: gws.types.IMapFeature;
+    feature: gws.types.IFeature;
     source?: string;
 }
 
-class FeatureList extends list.List<gws.types.IMapFeature> {
+class FeatureList extends list.List<gws.types.IFeature> {
 }
 
 export class List extends React.PureComponent<ListProps> {
@@ -45,7 +45,7 @@ export class List extends React.PureComponent<ListProps> {
         return <FeatureList
             controller={this.props.controller}
             items={this.props.features}
-            content={(f: gws.types.IMapFeature) => this.props.content ? this.props.content(f) : <gws.ui.Text content={f.elements.title}/>}
+            content={(f: gws.types.IFeature) => this.props.content ? this.props.content(f) : <gws.ui.Text content={f.elements.title}/>}
             uid={f => f.uid}
             isSelected={this.props.isSelected}
             leftButton={this.props.withZoom

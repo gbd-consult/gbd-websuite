@@ -178,8 +178,8 @@ class Requester(gws.IWebRequester):
 
     ##
 
-    def require(self, classref, uid):
-        obj = self.root.find(classref, uid)
+    def require(self, uid, classref):
+        obj = self.root.get(uid, classref)
         if obj and self.user and self.user.can_use(obj):
             return obj
         if not obj:
@@ -189,13 +189,16 @@ class Requester(gws.IWebRequester):
         raise gws.base.web.error.Forbidden()
 
     def require_project(self, uid):
-        return t.cast(gws.IProject, self.require(gws.ext.object.project, uid))
+        return t.cast(gws.IProject, self.require(uid, gws.ext.object.project))
 
     def require_layer(self, uid):
-        return t.cast(gws.ILayer, self.require(gws.ext.object.layer, uid))
+        return t.cast(gws.ILayer, self.require(uid, gws.ext.object.layer))
 
-    def acquire(self, classref, uid):
-        obj = self.root.find(classref, uid)
+    def require_model(self, uid):
+        return t.cast(gws.IModel, self.require(uid, gws.ext.object.model))
+
+    def acquire(self, uid, classref):
+        obj = self.root.get(uid, classref)
         if obj and self.user and self.user.can_use(obj):
             return obj
 

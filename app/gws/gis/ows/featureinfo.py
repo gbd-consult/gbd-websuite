@@ -91,8 +91,6 @@ def _parse_featurecollection(xml_el: gws.IXmlElement, default_crs, always_xy):
 
     for member_el in xml_el:
         if member_el.name in {'member', 'featuremember'}:
-            gws.p(el)
-
             if len(member_el) == 1 and len(member_el[0]) > 0:
                 # <wfs:member><my:feature><attr...
                 features.append(_feature_from_gml(member_el[0], default_crs, always_xy))
@@ -221,11 +219,11 @@ def _feature_from_gml(feature_el, default_crs, always_xy) -> gws.SourceFeature:
             # <gml:boundedBy directly under feature
             bbox = gws.gis.gml.parse_envelope(el[0], default_crs, always_xy)
         elif _is_gml(el):
-            # <gml:Geom directly under feature
+            # <gml:GeometryType directly under feature
             gws.p(el)
             feature.shape = gws.gis.gml.parse_shape(el, default_crs, always_xy)
         elif len(el) == 1 and _is_gml(el[0]):
-            # <gml:Geom in a wrapper tag
+            # <gml:GeometryType in a wrapper tag
             feature.shape = gws.gis.gml.parse_shape(el[0], default_crs, always_xy)
         elif len(el) > 0:
             # sub-feature

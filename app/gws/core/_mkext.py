@@ -14,6 +14,7 @@ types = [
     'model',
     'modelField',
     'modelValidator',
+    'modelValue',
     'modelWidget',
     'owsProvider',
     'owsService',

@@ -6,13 +6,17 @@ class Object(gws.Node, gws.IModelManager):
     def configure(self):
         self.models = []
 
-        for p in self.var('models', default=[]):
-            self.models.append(self.create_child(gws.ext.object.model, p))
+    def model(self, user=None, access=None, uid=None):
+        for model in self.models:
+            if user and access and not user.can(access, model, self.parent):
+                continue
+            if uid and model.uid != uid:
+                continue
+            return model
 
-    def add_model(self, m):
-        self.models.append(m)
+    def create_model(self, cfg):
+        return self.add_model(self.create_child(gws.ext.object.model, cfg))
 
-    def get_model_for(self, user=None, **kwargs):
-        for m in self.models:
-            if not user or user.can_use(m):
-                return m
+    def add_model(self, model):
+        self.models.append(model)
+        return self

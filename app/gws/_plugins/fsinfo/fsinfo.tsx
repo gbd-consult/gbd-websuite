@@ -52,7 +52,7 @@ type FsinfoTabName = 'search' | 'details' | 'documents';
 type FsinfoDialogMode = null | 'uploadDoc' | 'deleteDoc' | 'confirmOverwrite';
 
 interface Details {
-    feature: gws.types.IMapFeature;
+    feature: gws.types.IFeature;
     persons: Array<gws.api.FsinfoPersonProps>;
 }
 
@@ -72,7 +72,7 @@ interface FsinfoViewProps extends gws.types.ViewProps {
 
     fsinfoGemarkungListItems: Array<gws.ui.ListItem>;
 
-    fsinfoFoundFeatures: Array<gws.types.IMapFeature>;
+    fsinfoFoundFeatures: Array<gws.types.IFeature>;
     fsinfoFoundFeatureCount: number;
 
     fsinfoDetails: Details;
@@ -275,7 +275,7 @@ class FsinfoFeatureList extends gws.View<FsinfoViewProps> {
 
         let cc = _master(this);
 
-        let content = (f: gws.types.IMapFeature) => <gws.ui.Link
+        let content = (f: gws.types.IFeature) => <gws.ui.Link
             whenTouched={() => cc.showDetails(f)}
             content={f.uid}
         />;
@@ -791,7 +791,7 @@ class FsinfoController extends gws.Controller {
         this.update({fsinfoLoading: false});
     }
 
-    async showDetails(f: gws.types.IMapFeature, highlight = true) {
+    async showDetails(f: gws.types.IFeature, highlight = true) {
         let res = await this.app.server.fsinfoGetDetails({fsUid: f.uid});
 
         if (f) {
@@ -816,7 +816,7 @@ class FsinfoController extends gws.Controller {
         });
     }
 
-    highlight(f: gws.types.IMapFeature) {
+    highlight(f: gws.types.IFeature) {
         this.update({
             marker: {
                 features: [f],

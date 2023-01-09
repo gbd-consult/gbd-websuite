@@ -9,9 +9,9 @@ let {Form, Row, Cell} = gws.ui.Layout;
 interface ViewProps extends gws.types.ViewProps {
     controller: LayersSidebar;
     mapUpdateCount: number;
-    mapSelectedLayer?: gws.types.IMapLayer;
+    mapSelectedLayer?: gws.types.ILayer;
     modLayersOpacityVisible: boolean;
-    layer?: gws.types.IMapLayer;
+    layer?: gws.types.ILayer;
 }
 
 const StoreKeys = [
@@ -89,7 +89,7 @@ class LayersLeafButton extends gws.View<ViewProps> {
     }
 }
 
-let _layerTree = (layer: gws.types.IMapLayer, props) => {
+let _layerTree = (layer: gws.types.ILayer, props) => {
     let cc = [];
 
     layer.children.forEach(la => {

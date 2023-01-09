@@ -50,38 +50,3 @@ class Object(core.Provider):
 
         self.configure_operations(cc.operations)
 
-    def find_source_features(self, args, source_layers):
-        ps = gws.gis.ows.client.prepare_wms_search(
-            args,
-            source_layers,
-            version=self.version,
-            force_crs=self.forceCrs,
-            always_xy=self.alwaysXY,
-        )
-        if not ps:
-            return []
-
-        op = self.get_operation(gws.OwsVerb.GetFeatureInfo)
-        if not op:
-            return []
-
-        if op.preferredFormat:
-            ps.params.setdefault('INFO_FORMAT', op.preferredFormat)
-
-        text = gws.gis.ows.request.get_text(
-            self.request_args_for_operation(op, params=ps.params))
-
-        print(text)
-
-        features = gws.gis.ows.featureinfo.parse(text, default_crs=ps.bounds.crs, always_xy=self.alwaysXY)
-
-        if features is None:
-            gws.log.debug(f'WMS NOT_PARSED params={ps.params!r}')
-            return []
-        gws.log.debug(f'WMS FOUND={len(features)} params={ps.params!r}')
-
-        for f in features:
-            if f.shape:
-                f.shape = f.shape.transformed_to(args.shapes[0].crs)
-
-        return features

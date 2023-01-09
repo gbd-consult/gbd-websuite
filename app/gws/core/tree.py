@@ -1,8 +1,6 @@
-import sys
-
 import gws
 import gws.spec
-from . import const, error, log, types, util, data
+from . import error, log, types, util
 
 import gws.types as t
 
@@ -17,14 +15,26 @@ def class_name(obj):
 class Object(types.IObject):
     extName = ''
     extType = ''
-    access = []
+    permissions = {}
     uid = ''
 
 
 class Node(Object, types.INode):
     def initialize(self, config):
         self.config = config
-        self.access = util.parse_acl(self.var('access'))
+
+        self.permissions = {}
+
+        p = util.parse_acl(self.var('access'))
+        if p:
+            self.permissions[types.Access.use] = p
+        p = self.var('permissions')
+        if p:
+            for k, v in vars(p).items():
+                self.permissions[k] = util.parse_acl(v)
+        p = self.permissions.get(gws.Access.use)
+        if p:
+            self.permissions.setdefault(gws.Access.read, p)
 
         # # since `super().configure` is mandatory in `configure` methods,
         # # let's automate this by collecting all super 'configure' methods upto 'Node'
@@ -59,6 +69,12 @@ class Node(Object, types.INode):
         if not configs:
             return []
         return gws.compact(self.create_child(classref, cfg) for cfg in configs)
+
+    def find_first(self, classref):
+        return _find_first_in(self.root, self.children, classref)
+
+    def find_all(self, classref):
+        return _find_all_in(self.root, self.children, classref)
 
 
 class Root(types.IRoot):
@@ -98,29 +114,19 @@ class Root(types.IRoot):
                 log.exception()
                 self._config_error(exc)
 
-    def find(self, classref, uid: str):
+    def get(self, uid, classref=None):
         obj = self._uidMap.get(uid)
-        if not obj:
-            return None
-        cls, name, ext_name = self.specs.parse_classref(classref)
-        if cls:
-            return obj if isinstance(obj, cls) else None
-        if name:
-            return obj if class_name(obj) == name else None
-        if ext_name:
-            return obj if obj.extName.startswith(ext_name) else None
+        if obj and (not classref or _is_a(self, obj, classref)):
+            return obj
+
+    def find_first(self, classref):
+        return _find_first_in(self, self._objects, classref)
 
     def find_all(self, classref):
-        cls, name, ext_name = self.specs.parse_classref(classref)
-        if cls:
-            return [obj for obj in self._objects if isinstance(obj, cls)]
-        if name:
-            return [obj for obj in self._objects if class_name(obj) == name]
-        if ext_name:
-            return [obj for obj in self._objects if obj.extName.startswith(ext_name)]
+        return _find_all_in(self, self._objects, classref)
 
     def create_application(self, config=None):
-        config = _to_config(config)
+        config = util.to_data(config)
 
         cls = self.specs.get_class('gws.base.application.Object')
 
@@ -135,18 +141,30 @@ class Root(types.IRoot):
         self.app = obj
         self.initialize(obj, config)
 
+        return obj
+
     def create_shared(self, classref, config=None):
-        config = _to_config(config)
-        if config.uid and config.uid in self._uidMap:
-            return self._uidMap[config.uid]
+        if not config:
+            cls = self.specs.get_class(classref)
+            if not cls:
+                raise error.Error(f'class {classref!r} not found')
+            config = dict(uid=f'{cls.__module__}.{cls.__name__}.SHARED.VOID')
+
+        config = util.to_data(config)
+
+        uid = config.get('uid')
+        if uid and uid in self._uidMap:
+            return self._uidMap[uid]
+
         return self.create(classref, config=config)
 
     def create(self, classref, parent=None, config=None):
-        config = _to_config(config)
+        config = util.to_data(config)
 
-        cls = self.specs.get_class(classref, config.type)
+        typ = config.get('type')
+        cls = self.specs.get_class(classref, typ)
         if not cls:
-            raise error.Error(f'class {classref!r}:{config.type!r} not found')
+            raise error.Error(f'class {classref!r}:{typ!r} not found')
 
         obj = cls()
         obj.uid = self._get_uid(config)
@@ -154,7 +172,7 @@ class Root(types.IRoot):
         obj.parent = parent
         obj.children = []
 
-        log.debug(f'configuring {_object_name(obj)}')
+        log.debug(f'configuring {_object_name(obj)} in {_object_name(parent)}')
         ok = self.initialize(obj, config)
         if not ok:
             log.debug(f'FAILED {_object_name(obj)}')
@@ -169,8 +187,8 @@ class Root(types.IRoot):
         return obj
 
     def _get_uid(self, config):
-        if config.uid:
-            return config.uid
+        if config.get('uid'):
+            return config.get('uid')
         self._uidCount += 1
         return str(self._uidCount)
 
@@ -191,6 +209,34 @@ class Root(types.IRoot):
 
 ##
 
+def _find_first_in(root, where, classref):
+    ls = _find_all_in(root, where, classref)
+    return ls[0] if ls else None
+
+
+def _find_all_in(root, where, classref):
+    cls, name, ext_name = root.specs.parse_classref(classref)
+    if cls:
+        return [obj for obj in where if isinstance(obj, cls)]
+    if name:
+        return [obj for obj in where if class_name(obj) == name]
+    if ext_name:
+        return [obj for obj in where if obj.extName.startswith(ext_name)]
+
+
+def _is_a(root, obj, classref):
+    cls, name, ext_name = root.specs.parse_classref(classref)
+    if cls:
+        return isinstance(obj, cls)
+    if name:
+        return class_name(obj) == name
+    if ext_name:
+        return obj.extName.startswith(ext_name)
+    return False
+
+
+##
+
 
 def create_root_object(specs: types.ISpecRuntime) -> types.IRoot:
     r = Root()
@@ -201,31 +247,23 @@ def create_root_object(specs: types.ISpecRuntime) -> types.IRoot:
 ##
 
 
-def _to_config(config):
-    if util.is_data_object(config):
-        return config
-    if isinstance(config, dict):
-        return types.Config(config)
-    if not config:
-        return types.Config()
-    return config
-
-
 def _object_name(obj):
+    if not obj:
+        return '?'
     name = util.get(obj, 'extName', '') or class_name(obj)
     uid = util.get(obj, 'uid', '')
     if uid:
-        name += ' (uid=' + str(uid) + ')'
+        name += '(' + str(uid) + ')'
     return name
 
 
 ##
 
 
-def props(obj: types.IObject, user: types.IGrantee, *context) -> t.Optional[types.Props]:
+def props(obj: object, user: types.IUser, *context) -> t.Optional[types.Props]:
     if not user.can_use(obj, *context):
         return None
-    p = _make_props(obj.props(user), user)
+    p = _make_props(obj, user)
     if p is None or util.is_data_object(p):
         return p
     if isinstance(p, dict):
@@ -233,11 +271,11 @@ def props(obj: types.IObject, user: types.IGrantee, *context) -> t.Optional[type
     raise error.Error('invalid props type')
 
 
-def _make_props(obj: t.Any, user):
+def _make_props(obj: t.Any, user: types.IUser):
     if util.is_atom(obj):
         return obj
 
-    if user.access_to(obj) == gws.DENY:
+    if user.acl_bit(obj, gws.Access.use) == gws.DENY:
         return None
 
     if isinstance(obj, Object):

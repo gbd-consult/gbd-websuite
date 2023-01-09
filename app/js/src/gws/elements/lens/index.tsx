@@ -134,7 +134,7 @@ export class Tool extends gws.Tool {
 
     }
 
-    get feature(): gws.types.IMapFeature {
+    get feature(): gws.types.IFeature {
         if (!this.layerPtr)
             return null;
         let fs = this.layer.features;
@@ -192,7 +192,7 @@ export class Tool extends gws.Tool {
 
     createFeature(geom: ol.geom.Geometry) {
         this.layer.clear();
-        let f = new gws.map.Feature(this.map, {geometry: geom});
+        let f = this.map.featureFromGeometry(geom);
         this.layer.addFeature(f);
         this.layer.show();
         this.ixModify = this.map.modifyInteraction({

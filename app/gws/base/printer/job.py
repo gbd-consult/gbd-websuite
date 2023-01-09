@@ -129,9 +129,9 @@ class _Worker:
         if params.type == 'template':
             self.template: gws.ITemplate = self.user.require('gws.ext.template', params.templateUid)
             try:
-                ql = self.template.quality_levels[params.qualityLevel or 0]
+                ql = self.template.qualityLevels[params.qualityLevel or 0]
             except IndexError:
-                ql = self.template.quality_levels[0]
+                ql = self.template.qualityLevels[0]
             self.tri.dpi = ql.dpi
         else:
             self.tri.dpi = min(gws.gis.render.MAX_DPI, max(params.dpi, gws.lib.uom.OGC_SCREEN_PPI))

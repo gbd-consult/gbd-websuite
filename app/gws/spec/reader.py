@@ -272,7 +272,7 @@ def _read_variant(r: Reader, val, typ: core.Type):
 
 # custom types
 
-def _read_acl(r: Reader, val, typ: core.Type):
+def _read_acl_spec(r: Reader, val, typ: core.Type):
     try:
         return gws.parse_acl(val)
     except ValueError:
@@ -450,7 +450,7 @@ _READERS = {
     core.C.CONFIG: _read_object,
     core.C.PROPS: _read_object,
 
-    'gws.core.types.ACL': _read_acl,
+    'gws.core.types.AclSpec': _read_acl_spec,
     'gws.core.types.Color': _read_color,
     'gws.core.types.CrsName': _read_crs,
     'gws.core.types.Date': _read_date,

@@ -103,7 +103,7 @@ export interface IUser {
     displayName: string;
 }
 
-export interface IMapLayer {
+export interface ILayer {
     type: string;
     uid: string;
     title: string;
@@ -114,14 +114,16 @@ export interface IMapLayer {
     computedOpacity: number;
     setComputedOpacity(n: number);
 
+    displayMode: string;
+
     map: IMapManager;
     oFeatures: Array<ol.Feature>;
 
     attribution: string;
     description: string;
 
-    parent?: IMapLayer;
-    children: Array<IMapLayer>;
+    parent?: ILayer;
+    children: Array<ILayer>;
     hasChildren: boolean;
 
     expanded: boolean;
@@ -151,23 +153,20 @@ export interface IMapLayer {
     reset();
 }
 
-export interface IMapFeatureLayer extends IMapLayer {
-    editStyleName?: string;
-    features: Array<IMapFeature>;
+export interface IFeatureLayer extends ILayer {
+    features: Array<IFeature>;
     geometryType: string;
     source: ol.source.Vector;
-    styleNames?: StyleNameMap;
+    cssSelector: string;
+    loadingStrategy: string;
 
-    addFeature(feature: IMapFeature): boolean;
-    addFeatures(features: Array<IMapFeature>): number;
-    replaceFeatures(features: Array<IMapFeature>);
-    removeFeature(feature: IMapFeature);
-    loadFeatures(extent: ol.Extent, resolution: number): Promise<Array<IMapFeature>>;
-
+    addFeatures(features: Array<IFeature>);
+    addFeature(feature: IFeature);
+    removeFeatures(features: Array<IFeature>);
+    removeFeature(feature: IFeature);
     clear();
-    setStyles(src: StyleMapArgs);
-
 }
+
 
 export interface MapViewState {
     centerX: number;
@@ -176,6 +175,7 @@ export interface MapViewState {
     scale: number;
     rotation: number;
     angle: number;
+    size: [number, number];
 }
 
 export type FeatureMode = 'normal' | 'selected' | 'edit';
@@ -189,6 +189,8 @@ export type StyleMapArgs = {[m in FeatureMode]: StyleArg};
 
 export interface IStyleManager {
     names: Array<string>;
+
+    getFromSelector(selector: string): IStyle | null;
 
     at(name: string): IStyle | null;
     get(style: StyleArg): IStyle | null;
@@ -217,13 +219,13 @@ export interface IMapDrawInteractionOptions {
 }
 
 export interface IMapSelectInteractionOptions {
-    layer: IMapFeatureLayer;
+    layer: IFeatureLayer;
     style?: StyleArg;
     whenSelected?: (oFeatures: Array<ol.Feature>) => void;
 }
 
 export interface IMapModifyInteractionOptions {
-    layer?: IMapFeatureLayer;
+    layer?: IFeatureLayer;
     features?: ol.Collection<ol.Feature>,
     style?: StyleArg;
     allowDelete?: () => boolean;
@@ -234,7 +236,7 @@ export interface IMapModifyInteractionOptions {
 }
 
 export interface IMapSnapInteractionOptions {
-    layer?: IMapFeatureLayer;
+    layer?: IFeatureLayer;
     features?: ol.Collection<ol.Feature>;
     tolerance?: number;
 }
@@ -269,37 +271,42 @@ export interface IMapManager {
     oView: ol.View;
     projection: ol.proj.Projection;
     resolutions: Array<number>;
-    root: IMapLayer;
+    root: ILayer;
     size: ol.Size;
     viewState: MapViewState;
+
+    models: IModelRegistry;
 
     init(props: api.base.map.Props, appLoc: object);
     update(args: any);
     changed();
     forceUpdate();
 
-    addLayer(layer: IMapLayer, where: number, parent: IMapLayer);
-    addTopLayer(layer: IMapLayer);
-    addServiceLayer(layer: IMapFeatureLayer);
+    addLayer(layer: ILayer, where: number, parent: ILayer);
+    addTopLayer(layer: ILayer);
+    addServiceLayer(layer: IFeatureLayer);
 
-    removeLayer(layer: IMapLayer);
-    getLayer(uid: string): IMapLayer;
-    editableLayers(): Array<IMapFeatureLayer>;
+    removeLayer(layer: ILayer);
+    getLayer(uid: string): ILayer;
+    editableLayers(): Array<IFeatureLayer>;
 
-    setLayerChecked(layer: IMapLayer, on: boolean);
-    setLayerExpanded(layer: IMapLayer, on: boolean);
+    setLayerChecked(layer: ILayer, on: boolean);
+    setLayerExpanded(layer: ILayer, on: boolean);
     hideAllLayers();
     deselectAllLayers();
 
-    selectLayer(layer: IMapLayer);
-    //queryLayerDescription(layer: IMapLayer);
+    selectLayer(layer: ILayer);
+    //queryLayerDescription(layer: ILayer);
+
+    focusedFeature?: IFeature;
+    focusFeature(f?: IFeature);
 
     setResolution(n: number, animate?: boolean);
     setNextResolution(delta: number, animate?: boolean);
     setScale(n: number, animate?: boolean);
     setRotation(n: number, animate?: boolean);
     setAngle(n: number, animate?: boolean);
-    setViewExtent(extent: ol.Extent, animate?: boolean, padding?: number);
+    setViewExtent(extent: ol.Extent, animate?: boolean, padding?: number, minScale?: number);
     setCenter(c: ol.Coordinate, animate?: boolean);
     setViewState(vs: any, animate?: boolean);
     resetViewState(animate?: boolean);
@@ -326,44 +333,75 @@ export interface IMapManager {
     snapInteraction(opts: IMapSnapInteractionOptions): ol.interaction.Snap;
     pointerInteraction(opts: IMapPointerInteractionOptions): ol.interaction.Pointer;
 
-    newFeature(args: IMapFeatureArgs);
-    readFeature(fs: api.base.feature.Props): IMapFeature;
-    readFeatures(fs: Array<api.base.feature.Props>): Array<IMapFeature>;
-    writeFeatures(fs: Array<IMapFeature>): Array<api.base.feature.Props>;
+
+    readFeature(props: api.base.feature.Props): IFeature;
+    readFeatures(propsList: Array<api.base.feature.Props>): Array<IFeature>;
+
+    featureFromGeometry(geom: ol.geom.Geometry): IFeature;
+    featureFromProps(props: api.base.feature.Props): IFeature;
+    featureListFromProps(propsList: Array<api.base.feature.Props>): Array<IFeature>;
+
+    featureProps(feature: IFeature, depth?: number): api.base.feature.Props;
+
+    loadModels(models: Array<api.base.model.Props>);
 
     geom2shape(geom: ol.geom.Geometry): api.base.shape.Props;
     shape2geom(shape: api.base.shape.Props): ol.geom.Geometry;
 
-    printParams(boxRect: ClientRect | null, dpi: number): Promise<api.base.printer.MapParams>;
+    basicPrintParams(boxRect: ClientRect | null, dpi: number): Promise<IBasicPrintParams>;
 
-    searchForFeatures(args: IFeatureSearchArgs): Promise<Array<IMapFeature>>;
+    searchForFeatures(args: IFeatureSearchArgs): Promise<Array<IFeature>>;
 
     formatCoordinate(n: number): string;
-    walk(layer, fn: (layer: IMapLayer) => any);
-    collect(layer: IMapLayer, fn: (layer: IMapLayer) => any);
+    walk(layer, fn: (layer: ILayer) => any);
+    collect(layer: ILayer, fn: (layer: ILayer) => any);
 
     computeOpacities();
 }
 
-export interface IMapFeature {
+
+export interface IFeature {
     uid: string;
+
     attributes: Dict;
+    editedAttributes: Dict;
+    category: string;
     elements: Dict;
-    modelUid: string;
-    shape?: api.base.shape.Props;
-    styleNames?: StyleNameMap;
-    geometry?: ol.geom.Geometry;
-    label: string;
+    layer?: IFeatureLayer;
+    model?: IModel;
     oFeature?: ol.Feature;
+    cssSelector: string;
 
+    isNew: boolean;
+    isDirty: boolean;
+    isSelected: boolean;
+    isFocused: boolean;
+
+    keyName: string;
+    geometryName: string;
+
+    geometry?: ol.geom.Geometry;
+    shape?: api.base.shape.Props;
+
+    getProps(depth?: number): api.base.feature.Props;
     getAttribute(name: string): any;
-    getProps(): api.base.feature.Props
+    getEditedAttribute(name: string): any;
 
-    setMode(mode: FeatureMode);
-    setStyles(src: StyleMapArgs);
-    setGeometry(geom: ol.geom.Geometry);
-    setLabel(label: string);
-    setChanged();
+    setProps(props: api.base.feature.Props): IFeature;
+    setGeometry(geom: ol.geom.Geometry): IFeature;
+    setNew(f: boolean): IFeature;
+    setSelected(f: boolean): IFeature;
+
+    redraw(): IFeature;
+
+    isSame(feature: IFeature): Boolean;
+    updateFrom(feature: IFeature);
+
+    resetEdits();
+    commitEdits();
+
+    whenGeometryChanged();
+
 }
 
 export interface IMapFeatureArgs {
@@ -394,3 +432,42 @@ export interface ISidebarItem extends IController {
     tooltip: string;
 }
 
+export interface IModelRegistry {
+    getModel(uid: string): IModel|null;
+    getModelForLayer(layer: ILayer): IModel|null;
+
+
+
+
+}
+
+export interface IModel {
+    fields: Array<IModelField>;
+    geometryName: string;
+    keyName: string;
+    layerUid: string;
+    uid: string;
+
+    getLayer(): IFeatureLayer|null;
+    getField(name: string): IModelField | null;
+}
+
+export interface IModelRelation {
+    type: string;
+    model: IModel;
+    fieldName?: string;
+    title?: string;
+}
+
+export interface IModelField {
+    name: string;
+    type: string;
+    attributeType: api.core.AttributeType;
+    geometryType: api.core.GeometryType;
+    title: string;
+
+    model: IModel;
+
+    relations: Array<IModelRelation>;
+    // widget?: api.base.model;
+}

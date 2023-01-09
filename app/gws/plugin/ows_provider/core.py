@@ -96,7 +96,7 @@ class Provider(gws.Node, gws.IOwsProvider):
                 if url:
                     return op
 
-    def request_args_for_operation(self, op: gws.OwsOperation, method: gws.RequestMethod = None, params=None) -> gws.gis.ows.request.Args:
+    def prepare_operation(self, op: gws.OwsOperation, method: gws.RequestMethod = None, params=None) -> gws.gis.ows.request.Args:
         args = gws.gis.ows.request.Args(
             method=method or gws.RequestMethod.GET,
             params={},
@@ -135,7 +135,7 @@ class Provider(gws.Node, gws.IOwsProvider):
             params=params,
             verb=gws.OwsVerb.GetCapabilities,
         )
-        args = self.request_args_for_operation(op)
+        args = self.prepare_operation(op)
         return gws.gis.ows.request.get_text(args, max_age=self.var('capsCacheMaxAge'))
 
     def find_source_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.SourceFeature]:

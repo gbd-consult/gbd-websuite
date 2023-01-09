@@ -13,7 +13,7 @@ from . import provider
 class Config(gws.base.layer.Config, provider.Config):
     """Flat Qgis layer"""
 
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig] 
+    sourceLayers: t.Optional[gws.gis.source.LayerFilter] 
     """source layers to use"""
 
 
@@ -36,11 +36,11 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
 
         self.sourceCrs = self.provider.crs
 
-        if not gws.base.layer.configure.metadata(self):
+        if not self.configure_metadata():
             if len(self.sourceLayers) == 1:
                 self.metadata = self.sourceLayers[0].metadata
 
-        if not gws.base.layer.configure.bounds(self):
+        if not self.configure_bounds():
             our_crs = self.parentBounds.crs
             if self.provider.extent:
                 self.bounds = gws.Bounds(
@@ -61,22 +61,22 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
                         our_crs
                     ))
 
-        if not gws.base.layer.configure.resolutions(self):
+        if not self.configure_resolutions():
             self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.parentResolutions)
             if not self.resolutions:
                 raise gws.Error(f'layer {self.uid!r}: no matching resolutions')
 
-        p = self.var('targetGrid', default=gws.Config())
-        self.targetGrid = gws.TileGrid(
+        p = self.var('grid', default=gws.Config())
+        self.grid = gws.TileGrid(
             corner=p.corner or 'lt',
             tileSize=p.tileSize or 256,
         )
         crs = self.parentBounds.crs
         extent = (p.extent or self.parentBounds.extent)
-        self.targetGrid.bounds = gws.Bounds(crs=crs, extent=extent)
-        self.targetGrid.resolutions = p.resolutions or self.resolutions
+        self.grid.bounds = gws.Bounds(crs=crs, extent=extent)
+        self.grid.resolutions = p.resolutions or self.resolutions
 
-        if not gws.base.layer.configure.legend(self):
+        if not self.configure_legend():
             urls = gws.compact(sl.legendUrl for sl in self.sourceLayers)
             if urls:
                 self.legend = self.create_child(

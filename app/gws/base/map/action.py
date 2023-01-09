@@ -4,10 +4,14 @@ import time
 
 import gws
 import gws.base.action
+import gws.base.model
 import gws.base.layer
+import gws.base.template
 import gws.base.legend
+import gws.base.web.error
 import gws.gis.cache
 import gws.gis.crs
+import gws.gis.bounds
 import gws.base.feature
 import gws.lib.image
 import gws.lib.jsonx
@@ -54,9 +58,11 @@ class DescribeLayerResponse(gws.Request):
 class GetFeaturesRequest(gws.Request):
     bbox: t.Optional[gws.Extent]
     layerUid: str
+    modelUid: t.Optional[str]
     crs: t.Optional[gws.CrsName]
     resolution: t.Optional[float]
     limit: int = 0
+    views: t.Optional[t.List[str]]
 
 
 class GetFeaturesResponse(gws.Response):
@@ -103,7 +109,8 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('mapDescribeLayer')
     def describe_layer(self, req: gws.IWebRequester, p: DescribeLayerRequest) -> DescribeLayerResponse:
         layer = req.require_layer(p.layerUid)
-        desc = layer.templateMgr.render_template(
+        desc = gws.base.template.render(
+            self.templates,
             gws.TemplateRenderInput(args=dict(layer=layer, user=req.user)),
             user=req.user,
             subject='layer.description')
@@ -112,16 +119,16 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('mapGetFeatures')
     def api_get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
-        found = self._get_features(req, p)
-        return GetFeaturesResponse(features=[gws.props(f, req.user, self) for f in found])
+        fprops = self._get_features(req, p)
+        return GetFeaturesResponse(features=fprops)
 
     @gws.ext.command.get('mapGetFeatures')
     def http_get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> gws.ContentResponse:
         # @TODO the response should be geojson FeatureCollection
 
-        found = self._get_features(req, p)
+        fprops = self._get_features(req, p)
         js = gws.lib.jsonx.to_string({
-            'features': [gws.props(f, req.user, self) for f in found]
+            'features': fprops
         })
 
         return gws.ContentResponse(mime=gws.lib.mime.JSON, content=js)
@@ -204,18 +211,42 @@ class Object(gws.base.action.Object):
             return ImageResponse(mime='image/png', content=lro.content)
         return ImageResponse(mime='image/png', content=gws.lib.image.PIXEL_PNG8)
 
-    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> t.List[gws.IFeature]:
+    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> t.List[gws.base.feature.Props]:
         layer = req.require_layer(p.layerUid)
-        bounds = gws.Bounds(
-            crs=gws.gis.crs.get(p.crs) or layer.map.crs,
-            extent=p.get('bbox') or layer.map.extent
+
+        model = gws.base.model.locate(layer.models, user=req.user, access=gws.Access.read, uid=p.modelUid)
+        if not model:
+            raise gws.base.web.error.Forbidden()
+
+        bounds = layer.bounds
+        if p.crs:
+            bounds = gws.gis.bounds.from_extent(
+                p.bbox,
+                gws.gis.crs.get(p.crs)
+            )
+
+        search = gws.SearchArgs(
+            bounds=bounds,
+            limit=1000,
         )
 
-        found = layer.get_features(bounds, p.get('limit'))
+        features = model.find_features(search, req.user)
 
-        for f in found:
-            f.transform_to(bounds.crs)
-            f.apply_templates(subjects=['label', 'title'])
-            f.apply_data_model()
+        templates = []
+        for v in p.views or ['label']:
+            tpl = gws.base.template.locate(layer.templates, user=req.user, subject=f'feature.{v}')
+            if tpl:
+                templates.append(tpl)
 
-        return found
+        ls = []
+
+        for feature in features:
+            feature.compute_values(gws.Access.read, req.user)
+            feature.transform_to(bounds.crs)
+            feature.render_views(templates, user=req.user, layer=layer)
+
+            props = feature.props(req.user)
+
+            ls.append(gws.props(feature, req.user))
+
+        return ls

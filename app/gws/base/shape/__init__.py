@@ -196,15 +196,15 @@ class Props(gws.Props):
 ##
 
 
-class Shape(gws.IShape):
+class Shape(gws.Object, gws.IShape):
     geom: shapely.geometry.base.BaseGeometry
 
     def __init__(self, geom, crs):
         self.geom = geom
         self.crs = crs
-        self.type = self.geom.type.upper()
-        self.x = getattr(self.geom, 'x')
-        self.y = getattr(self.geom, 'y')
+        self.type = self.geom.type.lower()
+        self.x = getattr(self.geom, 'x', None)
+        self.y = getattr(self.geom, 'y', None)
 
     def props(self, user):
         return Props(
@@ -293,7 +293,7 @@ class Shape(gws.IShape):
         s = other.transformed_to(self.crs)
         return getattr(self.geom, op)(getattr(s, 'geom'))
 
-    def union(self, *others):
+    def union(self, others):
         if not others:
             return self
 
@@ -317,39 +317,39 @@ class Shape(gws.IShape):
         return Shape(geom, self.crs)
 
     def to_multi(self):
-        if self.type == gws.GeometryType.POINT:
+        if self.type == gws.GeometryType.point:
             return Shape(shapely.geometry.MultiPoint([self.geom]), self.crs)
-        if self.type == gws.GeometryType.LINESTRING:
+        if self.type == gws.GeometryType.linestring:
             return Shape(shapely.geometry.MultiLineString([self.geom]), self.crs)
-        if self.type == gws.GeometryType.POLYGON:
+        if self.type == gws.GeometryType.polygon:
             return Shape(shapely.geometry.MultiPolygon([self.geom]), self.crs)
         return self
 
     def to_type(self, new_type: gws.GeometryType):
         if new_type == self.type:
             return self
-        if new_type == gws.GeometryType.GEOMETRY:
+        if new_type == gws.GeometryType.geometry:
             return self
-        if self.type == gws.GeometryType.POINT and new_type == gws.GeometryType.MULTIPOINT:
+        if self.type == gws.GeometryType.point and new_type == gws.GeometryType.multipoint:
             return self.to_multi()
-        if self.type == gws.GeometryType.LINESTRING and new_type == gws.GeometryType.MULTILINESTRING:
+        if self.type == gws.GeometryType.linestring and new_type == gws.GeometryType.multilinestring:
             return self.to_multi()
-        if self.type == gws.GeometryType.POLYGON and new_type == gws.GeometryType.MULTIPOLYGON:
+        if self.type == gws.GeometryType.polygon and new_type == gws.GeometryType.multipolygon:
             return self.to_multi()
         raise ValueError(f'cannot convert {self.type!r} to {new_type!r}')
 
-    _TOLERANCE_RESOLUTION = 6
+    _TOLERANCE_QUAD_SEGS = 6
     _MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections
 
-    def tolerance_polygon(self, tolerance, resolution=None):
-        is_poly = self.type in (gws.GeometryType.POLYGON, gws.GeometryType.MULTIPOLYGON)
+    def tolerance_polygon(self, tolerance, quad_segs=None):
+        is_poly = self.type in (gws.GeometryType.polygon, gws.GeometryType.multipolygon)
 
         if not tolerance and is_poly:
             return self
 
         # we need a polygon even if tolerance = 0
         tolerance = tolerance or self._MIN_TOLERANCE_POLYGON
-        resolution = resolution or self._TOLERANCE_RESOLUTION
+        quad_segs = quad_segs or self._TOLERANCE_QUAD_SEGS
 
         if is_poly:
             cs = shapely.geometry.CAP_STYLE.flat
@@ -358,7 +358,7 @@ class Shape(gws.IShape):
             cs = shapely.geometry.CAP_STYLE.round
             js = shapely.geometry.JOIN_STYLE.round
 
-        geom = self.geom.buffer(tolerance, resolution, cap_style=cs, join_style=js)
+        geom = self.geom.buffer(tolerance, quad_segs, cap_style=cs, join_style=js)
         return Shape(geom, self.crs)
 
     def transformed_to(self, crs):

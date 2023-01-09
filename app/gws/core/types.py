@@ -31,8 +31,16 @@ Point = Tuple[float, float]
 Size = Tuple[float, float]
 """type: Size [width, height]."""
 
-Corner = Literal['nw', 'sw', 'ne', 'se', 'lt', 'lb', 'rt', 'rb']
-"""type: Corner."""
+
+class Corner(Enum):
+    nw = 'nw'
+    sw = 'sw'
+    ne = 'ne'
+    se = 'se'
+    lt = 'nw'
+    lb = 'sw'
+    rt = 'ne'
+    rb = 'se'
 
 
 class Uom(Enum):
@@ -135,21 +143,46 @@ class Config(Data):
     """unique ID"""
 
 
-Access = List[Tuple[int, str]]
+class Props(Data):
+    """Properties base type"""
+    uid: str = ''
+    """unique ID"""
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# permissions
+
+
+Acl = List[Tuple[int, str]]
 """type: Access Control List."""
 
-ACL = str
+AclSpec = str
 """type: A string of comma-separated pairs 'allow <role>' or 'deny <role>'."""
 
 
+class Access(Enum):
+    """Access mode."""
+    use = 'use'
+    read = 'read'
+    write = 'write'
+    create = 'create'
+    delete = 'delete'
+
+
+class AccessConfig:
+    """Additional access permissions."""
+    use: Optional[AclSpec]
+    read: Optional[AclSpec]
+    write: Optional[AclSpec]
+    create: Optional[AclSpec]
+    delete: Optional[AclSpec]
+
+
 class ConfigWithAccess(Config):
-    access: Optional[ACL]
-    """access rights"""
-
-
-class Props(Data):
-    """Properties base type"""
-    pass
+    access: Optional[AclSpec]
+    """permission to use the object"""
+    permissions: Optional[AccessConfig]
+    """Additional access permissions"""
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -158,18 +191,9 @@ class Props(Data):
 class IObject(Protocol):
     extName: str
     extType: str
-    access: Access
-    uid: str
+    permissions: Dict[Access, Acl]
 
-    def props(self, user: 'IGrantee') -> Props: ...
-
-
-class IGrantee(Protocol):
-    roles: Set[str]
-
-    def can_use(self, obj: Any, *context) -> bool: ...
-
-    def access_to(self, obj: Any) -> Optional[int]: ...
+    def props(self, user: 'IUser') -> Props: ...
 
 
 class INode(IObject, Protocol):
@@ -177,6 +201,7 @@ class INode(IObject, Protocol):
     root: 'IRoot'
     parent: 'INode'
     children: List['INode']
+    uid: str
 
     def activate(self): ...
 
@@ -194,6 +219,10 @@ class INode(IObject, Protocol):
 
     def var(self, key: str, default=None): ...
 
+    def find_all(self, classref: ClassRef) -> List['INode']: ...
+
+    def find_first(self, classref: ClassRef) -> Optional['INode']: ...
+
 
 class IRoot(Protocol):
     app: 'IApplication'
@@ -204,11 +233,11 @@ class IRoot(Protocol):
 
     def activate(self): ...
 
-    def find_all(self, classref: ClassRef) -> List: ...
+    def find_all(self, classref: ClassRef) -> List[INode]: ...
 
-    def find(self, classref: ClassRef, uid: str): ...
+    def find_first(self, classref: ClassRef) -> Optional[INode]: ...
 
-    def get(self, uid: str): ...
+    def get(self, uid: str, classref: ClassRef = None) -> Optional[INode]: ...
 
     def create(self, classref: ClassRef, parent: 'INode' = None, config=None): ...
 
@@ -349,13 +378,15 @@ class IWebRequester(Protocol):
 
     def find(self, klass, uid: str): ...
 
-    def require(self, classref: ClassRef, uid: str): ...
+    def require(self, uid: str, classref: ClassRef): ...
 
     def require_project(self, uid: str) -> 'IProject': ...
 
     def require_layer(self, uid: str) -> 'ILayer': ...
 
-    def acquire(self, classref: ClassRef, uid: str): ...
+    def require_model(self, uid: str) -> 'IModel': ...
+
+    def acquire(self, uid: str, classref: ClassRef): ...
 
 
 class IWebResponder(Protocol):
@@ -511,7 +542,7 @@ class IAuthSession(IObject, Protocol):
     def set(self, key: str, val: Any): ...
 
 
-class IUser(IObject, IGrantee, Protocol):
+class IUser(IObject, Protocol):
     attributes: Dict[str, Any]
     displayName: str
     isGuest: bool
@@ -520,73 +551,82 @@ class IUser(IObject, IGrantee, Protocol):
     pendingMfa: Optional[AuthPendingMfa]
     provider: 'IAuthProvider'
     uid: str
+    roles: Set[str]
+
+    def acl_bit(self, access: Access, obj) -> Optional[int]: ...
+
+    def can(self, access: Access, obj: Any, *context) -> bool: ...
+
+    def can_use(self, obj: Any, *context) -> bool: ...
+
+    def can_read(self, obj: Any, *context) -> bool: ...
+
+    def can_write(self, obj: Any, *context) -> bool: ...
+
+    def can_create(self, obj: Any, *context) -> bool: ...
+
+    def can_delete(self, obj: Any, *context) -> bool: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# attributes and models
+# attributes
 
 class AttributeType(Enum):
-    BOOL = 'BOOL'
-    BYTES = 'BYTES'
-    DATE = 'DATE'
-    DATETIME = 'DATETIME'
-    FLOAT = 'FLOAT'
-    FLOATLIST = 'FLOATLIST'
-    GEOMETRY = 'GEOMETRY'
-    INT = 'INT'
-    INTLIST = 'INTLIST'
-    STR = 'STR'
-    STRLIST = 'STRLIST'
-    TEXT = 'TEXT'
-    TIME = 'TIME'
+    """Feature attribute type."""
+
+    bool = 'bool'
+    bytes = 'bytes'
+    date = 'date'
+    datetime = 'datetime'
+    feature = 'feature'
+    featurelist = 'featurelist'
+    float = 'float'
+    floatlist = 'floatlist'
+    geometry = 'geometry'
+    int = 'int'
+    intlist = 'intlist'
+    str = 'str'
+    strlist = 'strlist'
+    time = 'time'
 
 
 class GeometryType(Enum):
-    """Geometry types: OGC and SQL/MM."""
+    """Feature geometry type.
 
-    # sources:
-    # OGC 06-103r4 (https://www.ogc.org/standards/sfa)
-    # https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.htm
+    OGC and SQL/MM types.
 
-    GEOMETRY = 'GEOMETRY'
+    Sources:
+    - OGC 06-103r4 (https://www.ogc.org/standards/sfa)
+    - https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.htm
+    """
 
-    POINT = 'POINT'
-    CURVE = 'CURVE'
-    SURFACE = 'SURFACE'
+    geometry = 'geometry'
 
-    GEOMETRYCOLLECTION = 'GEOMETRYCOLLECTION'
+    point = 'point'
+    curve = 'curve'
+    surface = 'surface'
 
-    LINESTRING = 'LINESTRING'
-    LINE = 'LINE'
-    LINEARRING = 'LINEARRING'
+    geometrycollection = 'geometrycollection'
 
-    POLYGON = 'POLYGON'
-    TRIANGLE = 'TRIANGLE'
+    linestring = 'linestring'
+    line = 'line'
+    linearring = 'linearring'
 
-    POLYHEDRALSURFACE = 'POLYHEDRALSURFACE'
-    TIN = 'TIN'
+    polygon = 'polygon'
+    triangle = 'triangle'
 
-    MULTIPOINT = 'MULTIPOINT'
-    MULTICURVE = 'MULTICURVE'
-    MULTILINESTRING = 'MULTILINESTRING'
-    MULTIPOLYGON = 'MULTIPOLYGON'
-    MULTISURFACE = 'MULTISURFACE'
+    polyhedralsurface = 'polyhedralsurface'
+    tin = 'tin'
 
-    CIRCULARSTRING = 'CIRCULARSTRING'
-    COMPOUNDCURVE = 'COMPOUNDCURVE'
-    CURVEPOLYGON = 'CURVEPOLYGON'
+    multipoint = 'multipoint'
+    multicurve = 'multicurve'
+    multilinestring = 'multilinestring'
+    multipolygon = 'multipolygon'
+    multisurface = 'multisurface'
 
-
-class IModel(INode, Protocol):
-    def feature_from_source(self, sf: 'SourceFeature') -> 'IFeature': ...
-
-
-class IModelManager(INode, Protocol):
-    models: List['IModel']
-
-    def add_model(self, m: IModel): ...
-
-    def get_model_for(self, user: IGrantee = None, **kwargs) -> Optional[IModel]: ...
+    circularstring = 'circularstring'
+    compoundcurve = 'compoundcurve'
+    curvepolygon = 'curvepolygon'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -597,19 +637,19 @@ CrsName = Union[str, int]
 
 
 class CrsFormat(Enum):
-    NONE = ''
-    CRS = 'CRS'
-    SRID = 'SRID'
-    EPSG = 'EPSG'
-    URL = 'URL'
-    URI = 'URI'
-    URNX = 'URNX'
-    URN = 'URN'
+    none = ''
+    crs = 'crs'
+    srid = 'srid'
+    epsg = 'epsg'
+    url = 'url'
+    uri = 'uri'
+    urnx = 'urnx'
+    urn = 'urn'
 
 
 class Axis(Enum):
-    XY = 'XY'
-    YX = 'YX'
+    xy = 'xy'
+    yx = 'yx'
 
 
 class Bounds(Data):
@@ -906,7 +946,7 @@ class IShape(IObject, Protocol):
 
     # set operations
 
-    def union(self, *others: 'IShape') -> 'IShape':
+    def union(self, others: List['IShape']) -> 'IShape':
         """Computes a union of this shape and other shapes."""
 
     def intersection(self, *others: 'IShape') -> 'IShape':
@@ -922,7 +962,7 @@ class IShape(IObject, Protocol):
 
     # misc
 
-    def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape':
+    def tolerance_polygon(self, tolerance, quad_segs=None) -> 'IShape':
         """Builds a buffer polygon around the shape."""
 
     def transformed_to(self, crs: 'ICrs') -> 'IShape':
@@ -930,88 +970,187 @@ class IShape(IObject, Protocol):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# features
+# database
 
-# noinspection PyPropertyDefinition
-class IFeature(IObject, Protocol):
-    attributes: dict
-    elements: dict
+class IDatabaseManager(INode, Protocol):
+    def provider(self, uid: str, ext_type: str): ...
 
-    shape: Optional['IShape']
-    layerName: Optional[str]
-    uid: str
+    def first_provider(self, ext_type: str): ...
 
-    model: 'IModel'
-    isNew: bool
+    def provider_for(self, obj: INode, ext_type: str = None): ...
 
-    def apply_template(self, template: 'ITemplate', extra_args: dict = None) -> 'IFeature': ...
+    def register_model(self, model: 'IModel'): ...
 
-    def attr(self, name: str, default=None) -> Any: ...
+    def model(self, model_uid) -> 'IModel': ...
 
-    def to_geojson(self) -> dict: ...
 
-    def to_svg_fragment(self, view: 'MapView', style: 'IStyle' = None) -> List[IXmlElement]: ...
+class IDatabaseProvider(INode, Protocol):
+    mgr: 'IDatabaseManager'
 
-    def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
+    def session(self) -> 'IDatabaseSession': ...
+
+    def sa_engine(self, **kwargs): ...
+
+    def describe_table(self, table_name: str): ...
+
+    def qualified_table_name(self, table_name: str) -> str: ...
+
+
+class IDatabaseSession(Protocol):
+    def begin(self): ...
+
+    def commit(self): ...
+
+    def rollback(self): ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# database
-
-class Sql:
-    def __init__(self, text, *args, **kwargs):
-        self.text = text
-        self.args = args
-        self.kwargs = kwargs
-
-    def __repr__(self):
-        return repr(vars(self))
+# features
 
 
-class SqlColumn(Data):
+class IFeature(IObject, Protocol):
+    attributes: dict
+    views: dict
+    errors: List['ModelValidationError']
+    model: 'IModel'
+    isNew: bool
+
+    def props(self, user: 'IUser') -> Props: ...
+
+    def shape(self) -> Optional['IShape']: ...
+
+    def uid(self) -> Optional[str]: ...
+
+    def attr(self, name: str, default=None) -> Any: ...
+
+    def to_geojson(self, user: 'IUser') -> dict: ...
+
+    def to_svg(self, view: 'MapView', label: str = None, style: 'IStyle' = None) -> List[IXmlElement]: ...
+
+    def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
+
+    def compute_values(self, access: Access, user: IUser, **kwargs) -> 'IFeature': ...
+
+    def render_views(self, templates: List['ITemplate'], **kwargs) -> 'IFeature': ...
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# models
+
+class ModelValidationError(Data):
+    fieldName: str
+    message: str
+
+
+class TextSearchType(Enum):
+    exact = 'exact'
+    begin = 'begin'
+    end = 'end'
+    any = 'any'
+    like = 'like'
+
+
+class TextSearch(Data):
+    type: TextSearchType
+    minLength: int
+    caseSensitive: bool
+
+
+class IModelWidget(INode, Protocol):
+    pass
+
+
+class IModelValidator(INode, Protocol):
+    message: str
+    forWrite: bool
+    forCreate: bool
+
+    def validate(self, feature: 'IFeature', field: 'IModelField', user: 'IUser', **kwargs) -> bool: ...
+
+
+class IModelValue(INode, Protocol):
+    isDefault: bool
+    forRead: bool
+    forWrite: bool
+    forCreate: bool
+
+    def compute(self, feature: 'IFeature', field: 'IModelField', user: 'IUser', **kwargs) -> Any: ...
+
+
+class IModelField(INode, Protocol):
     name: str
-    type: AttributeType
-    gtype: GeometryType
-    native_type: str
-    crs: 'ICrs'
-    srid: int
-    is_key: bool
-    is_geometry: bool
+    type: str
+    title: str
+
+    attributeType: AttributeType
+    geometryType: Optional[GeometryType]
+    geometryCrs: Optional['ICrs']
+
+    model: 'IModel'
+    widget: Optional['IModelWidget']
+
+    fixedValues: Dict[Access, IModelValue]
+    defaultValues: Dict[Access, IModelValue]
+
+    validators: Dict[Access, List['IModelValidator']]
+
+    isPrimaryKey: bool
+    isRequired: bool
+    isUnique: bool
+
+    def compute_value(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
+
+    def convert_value(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> Any: ...
+
+    def validate_value(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
+
+    def load_from_dict(self, feature: IFeature, attributes: dict, user: 'IUser'): ...
+
+    def load_from_record(self, feature: IFeature, record: object, user: 'IUser'): ...
+
+    def store_to_dict(self, feature: IFeature, attributes: dict, user: 'IUser'): ...
+
+    def store_to_record(self, feature: IFeature, record: object, user: 'IUser'): ...
+
+    def sa_columns(self, column_dict: dict): ...
+
+    def sa_properties(self, prop_dict: dict): ...
+
+    def sa_select(self, sel: object, user: IUser): ...
 
 
-class SqlTable(Data):
-    name: str
-    key_column: Optional[SqlColumn]
-    search_column: Optional[SqlColumn]
-    geometry_column: Optional[SqlColumn]
+class IModel(INode, Protocol):
+    fields: List['IModelField']
+    keyName: str
+    geometryName: str
+    geometryType: Optional[GeometryType]
+    geometryCrs: Optional['ICrs']
+
+    def compute_values(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
+
+    def find_features(self, search: 'SearchArgs', user: IUser) -> List['IFeature']: ...
+
+    def write_features(self, features: List['IFeature'], user: IUser, **kwargs) -> bool: ...
+
+    def feature_props(self, feature: 'IFeature', user: 'IUser') -> Props: ...
+
+    def feature_from_source(self, sf: SourceFeature, user: 'IUser') -> IFeature: ...
+
+    def feature_from_props(self, props: Props, user: 'IUser') -> IFeature: ...
+
+    def feature_from_dict(self, attributes: dict, user: 'IUser') -> IFeature: ...
+
+    def feature_from_record(self, record: object, user: 'IUser') -> IFeature: ...
 
 
-class SqlSelectArgs(Data):
-    columns: Optional[List[str]]
-    extra_where: Optional[Sql]
-    geometry_tolerance: Optional[float]
-    keyword: Optional[str]
-    limit: Optional[int]
-    shape: Optional['IShape']
-    sort: Optional[str]
-    table: SqlTable
-    uids: Optional[List[str]]
+class IModelManager(INode, Protocol):
+    models: List['IModel']
 
+    def add_model(self, m: IModel): ...
 
-class IDatabaseManager(INode, Protocol):
-    databases: List['IDatabase']
+    def create_model(self, cfg: Any): ...
 
-
-class IDatabase(INode, Protocol):
-    def select_features(self, args: 'SqlSelectArgs') -> List['IFeature']: ...
-
-    def insert(self, table: 'SqlTable', features: List['IFeature']) -> List['IFeature']: ...
-
-    def update(self, table: 'SqlTable', features: List['IFeature']) -> List['IFeature']: ...
-
-    def delete(self, table: 'SqlTable', features: List['IFeature']) -> List['IFeature']: ...
-
-    def describe(self, table: 'SqlTable') -> Dict[str, 'SqlColumn']: ...
+    def model(self, user: IUser = None, access: Access = None, uid: str = None) -> Optional[IModel]: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1111,13 +1250,14 @@ class TemplateRenderInputMap(Data):
 
 
 class TemplateRenderInput(Data):
-    args: Optional[dict]
-    crs: 'ICrs'
-    dpi: Optional[int]
-    localeUid: Optional[str]
-    maps: Optional[List[TemplateRenderInputMap]]
-    mimeOut: Optional[str]
-    user: Optional['IUser']
+    args: dict
+    crs: ICrs
+    dpi: int
+    localeUid: str
+    maps: List[TemplateRenderInputMap]
+    mimeOut: str
+    notify: Callable
+    user: IUser
 
 
 class TemplateQualityLevel(Data):
@@ -1127,26 +1267,31 @@ class TemplateQualityLevel(Data):
 
 class ITemplate(INode, Protocol):
     category: str
-    data_model: Optional['IModel']
+    model: Optional['IModel']
     mimes: List[str]
     name: str
     path: str
     subject: str
     text: str
-    quality_levels: List[TemplateQualityLevel]
+    title: str
+    qualityLevels: List[TemplateQualityLevel]
 
     map_size: Optional[MSize]
     page_size: Optional[MSize]
 
-    def render(self, tri: TemplateRenderInput, notify: Callable = None) -> ContentResponse: ...
+    def render(self, tri: TemplateRenderInput) -> ContentResponse: ...
 
 
 class ITemplateManager(INode, Protocol):
     templates: List['ITemplate']
 
-    def get_template_for(self, user: IGrantee = None, **kwargs) -> Optional['ITemplate']: ...
+    def add_template(self, tpl: 'ITemplate') -> 'ITemplate': ...
 
-    def render_template(self, tri: TemplateRenderInput, user: IGrantee = None, **kwargs) -> Optional[ContentResponse]: ...
+    def create_template(self, cfg: Any) -> 'ITemplate': ...
+
+    def template(self, user: IUser = None, subject: str = None, mime: str = None) -> Optional['ITemplate']: ...
+
+    def render_template(self, tri: TemplateRenderInput, user: IUser = None, subject: str = None, mime: str = None) -> Optional[ContentResponse]: ...
 
 
 class IPrinter(INode, Protocol):
@@ -1349,27 +1494,42 @@ class Metadata(Data):
 # ----------------------------------------------------------------------------------------------------------------------
 # search
 
-class SearchFilter(Data):
+
+class SearchSort(Data):
+    fieldName: str
+    reverse: bool
+
+
+class SearchWhere(Data):
+    text: str
+    args: List[Any]
+
+
+class SearchOgcFilter(Data):
     name: str
     operator: str
     shape: 'IShape'
-    sub: List['SearchFilter']
+    subFilters: List['SearchOgcFilter']
     value: str
 
 
 class SearchArgs(Data):
     bounds: Bounds
-    keyword: Optional[str]
-    filter: Optional['SearchFilter']
+    extraParams: dict
+    extraWhere: List[SearchWhere]
+    keyword: str
     layers: List['ILayer']
     limit: int
+    ogcFilter: SearchOgcFilter
     params: dict
     project: 'IProject'
+    relationDepth: int
     resolution: float
-    shapes: List['IShape']
+    shape: 'IShape'
+    sort: SearchSort
     tolerance: 'Measurement'
-    user: IGrantee
-    featureElements: Optional[List[str]]
+    uids: List[str]
+    views: List[str]
 
 
 class IFinder(INode, Protocol):
@@ -1381,14 +1541,14 @@ class IFinder(INode, Protocol):
     withGeometry: bool
     withKeyword: bool
 
-    templateMgr: Optional['ITemplateManager']
-    modelMgr: Optional['IModelManager']
+    templates: List['ITemplate']
+    models: List['IModel']
 
     tolerance: 'Measurement'
 
-    def run(self, args: SearchArgs, layer: 'ILayer') -> List['IFeature']: ...
+    def run(self, search: SearchArgs, user: IUser, layer: 'ILayer' = None) -> List['IFeature']: ...
 
-    def can_run(self, args: SearchArgs) -> bool: ...
+    def can_run(self, search: SearchArgs, user: IUser) -> bool: ...
 
 
 class ISearchManager(INode, Protocol):
@@ -1396,14 +1556,15 @@ class ISearchManager(INode, Protocol):
 
     def add_finder(self, f: IFinder): ...
 
-    def get_finder_for(self, user: IGrantee = None, **kwargs) -> Optional[IFinder]: ...
+    def create_finder(self, cfg: Any): ...
+
+    def finder_for(self, user: IUser = None, **kwargs) -> Optional[IFinder]: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # maps and layers
 
 
-# noinspection PyPropertyDefinition
 class IMap(INode, Protocol):
     rootLayer: 'ILayer'
 
@@ -1447,7 +1608,19 @@ class TileGrid(Data):
     tileSize: int
 
 
-# noinspection PyPropertyDefinition
+class LayerCache(Data):
+    maxAge: int
+    maxLevel: int
+    requestBuffer: int
+    requestTiles: int
+
+
+class LayerLoadingStrategy(Enum):
+    all = 'all'
+    lazy = 'lazy'
+    bbox = 'bbox'
+
+
 class ILayer(INode, Protocol):
     canRenderBox: bool
     canRenderXyz: bool
@@ -1456,21 +1629,26 @@ class ILayer(INode, Protocol):
     supportsRasterServices: bool
     supportsVectorServices: bool
 
+    isSearchable: bool
+
     bounds: Bounds
     displayMode: LayerDisplayMode
+    loadingStrategy: LayerLoadingStrategy
     imageFormat: str
     opacity: float
     resolutions: List[float]
     title: str
 
     sourceGrid: Optional[TileGrid]
-    targetGrid: Optional[TileGrid]
+    grid: Optional[TileGrid]
+    cache: Optional[LayerCache]
 
     metadata: 'Metadata'
     legend: Optional['ILegend']
-    searchMgr: 'ISearchManager'
-    templateMgr: 'ITemplateManager'
-    modelMgr: 'IModelManager'
+
+    finders: List['IFinder']
+    templates: List['ITemplate']
+    models: List['IModel']
 
     layers: List['ILayer']
 
@@ -1589,7 +1767,7 @@ class IOwsService(INode, Protocol):
     protocol: OwsProtocol
     supported_bounds: List[Bounds]
     supported_versions: List[str]
-    templateMgr: 'ITemplateManager'
+    templates: List['ITemplate']
     version: str
     with_inspire_meta: bool
     with_strict_params: bool
@@ -1634,7 +1812,7 @@ class IActionManager(INode, Protocol):
 
     def find_action(self, class_name: str) -> Optional['IAction']: ...
 
-    def actions_for(self, user: IGrantee, other: 'IActionManager' = None) -> List['IAction']: ...
+    def actions_for(self, user: IUser, other: 'IActionManager' = None) -> List['IAction']: ...
 
 
 class IAction(INode, Protocol):
@@ -1657,7 +1835,7 @@ class IProject(INode, Protocol):
     localeUids: List[str]
     map: 'IMap'
     metadata: 'Metadata'
-    templateMgr: 'ITemplateManager'
+    templates: List['ITemplate']
 
 
 # ----------------------------------------------------------------------------------------------------------------------

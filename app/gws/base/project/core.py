@@ -23,6 +23,8 @@ _DEFAULT_TEMPLATES = [
 class Config(gws.ConfigWithAccess):
     """Project configuration"""
 
+    type: str = 'default'
+
     api: t.Optional[gws.base.action.manager.Config] 
     """project-specific actions"""
     assets: t.Optional[gws.base.web.site.DocumentRootConfig] 
@@ -90,18 +92,19 @@ class Object(gws.Node, gws.IProject):
         #
         # self.overview_map = self.root.create_optional(gws.base.map.Object, self.var('overviewMap'))
         #
-        self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(
-            templates=self.var('templates'),
-            defaults=_DEFAULT_TEMPLATES))
+
+        self.templates = self.create_children(gws.ext.object.template, self.var('templates'))
+        for cfg in _DEFAULT_TEMPLATES:
+            self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
 
         self.client = self.create_child_if_configured(gws.base.client.Object, self.var('client'))
 
     def props(self, user):
-        desc = self.templateMgr.render_template(
+        desc = gws.base.template.render(
+            self.templates,
             gws.TemplateRenderInput(args={'project': self, 'user': user}),
             user=user,
-            subject='project.description'
-        )
+            subject='project.description')
 
         return gws.Props(
             actions=self.root.app.actionMgr.actions_for(user, self.actionMgr),

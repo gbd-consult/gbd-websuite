@@ -12,28 +12,30 @@ class Object(gws.Node, gws.ITemplateManager):
     def configure(self):
         self.templates = []
 
-        for p in self.var('templates', default=[]):
-            self.templates.append(self.create_child(gws.ext.object.template, p))
-
-        for p in self.var('defaults', default=[]):
-            self.templates.append(self.root.create_shared(gws.ext.object.template, p))
-
     def props(self, user):
         return gws.Data(templates=self.templates)
 
-    def get_template_for(self, user=None, **kwargs):
+    def template(self, user=None, subject=None, mime=None):
+        mt = gws.lib.mime.get(mime) if mime else None
+
         for tpl in self.templates:
             if user and not user.can_use(tpl):
                 continue
-            p = kwargs.get('mime')
-            if p and tpl.mimes and gws.lib.mime.get(p) not in tpl.mimes:
+            if mt and tpl.mimes and mt not in tpl.mimes:
                 continue
-            p = kwargs.get('subject')
-            if p and tpl.subject != p:
+            if subject and tpl.subject != subject:
                 continue
             return tpl
 
-    def render_template(self, tri, user=None, **kwargs):
-        tpl = self.get_template_for(user, **kwargs)
-        if tpl:
-            return tpl.render(tri, notify=kwargs.get('notify'))
+    def create_template(self, cfg):
+        return self.add_template(self.create_child(gws.ext.object.template, cfg))
+
+    def add_template(self, tpl):
+        self.templates.append(tpl)
+        return tpl
+
+    def render_template(self, tri,     user=None, subject=None, mime=None):
+        tpl = self.template(user, subject, mime)
+        if not tpl:
+            return
+        return tpl.render(tri)

@@ -6,7 +6,7 @@ import * as api from '../core/api';
 
 const DEFAULT_TILE_TRANSITION = 700;
 
-export class Layer implements types.IMapLayer {
+export class Layer implements types.ILayer {
     type = '';
     uid = '';
     title = '';
@@ -14,7 +14,7 @@ export class Layer implements types.IMapLayer {
 
     props: api.base.layer.Props;
 
-    parent: types.IMapLayer = null;
+    parent: types.ILayer = null;
     children = [];
 
     expanded = false;
@@ -38,6 +38,8 @@ export class Layer implements types.IMapLayer {
 
     attribution = null;
     description = null;
+
+    displayMode = '';
 
     map: types.IMapManager = null;
 
@@ -88,7 +90,9 @@ export class Layer implements types.IMapLayer {
         this.title = this.props.title;
         this.uid = this.props.uid;
         this.attribution = this.props.metadata ? this.props.metadata.attribution : '';
-        this.editAccess = this.props.editAccess;
+        // this.editAccess = this.props.editAccess;
+
+        this.displayMode = this.props.displayMode;
 
         this.resolutions = props.resolutions || this.map.resolutions;
         this.extent = props.extent || this.map.extent;
@@ -247,11 +251,19 @@ export class XYZLayer extends OlBackedLayer<ol.layer.Image> {
 export class TreeLayer extends OlBackedLayer<ol.layer.Image> {
     leaves: Array<string> = [];
 
+    async loadImage(oImage: ol.Image, url: string) {
+        let blob = await this.map.app.server.queueLoad(this.uid, url, 'blob');
+        if (blob) {
+            let img: any = oImage.getImage();
+            img.src = window.URL.createObjectURL(blob);
+        }
+    }
+
     get shouldDraw() {
         return this.visibleLeavesUids().length > 0;
     }
 
-    get printPlane() {
+    get printItem() {
         let ls = this.visibleLeavesUids();
 
         if (!ls.length)
@@ -270,25 +282,23 @@ export class TreeLayer extends OlBackedLayer<ol.layer.Image> {
 
         if (ls.join() !== this.leaves.join()) {
             this.leaves = ls;
-            this._oLayer = this.createOLayerWithLeaves(this.leaves);
+            (this._oLayer.getSource() as ol.source.ImageWMS).updateParams({
+                layers: ls
+            })
         }
     }
 
     createOLayer() {
-        return this.createOLayerWithLeaves([]);
-    }
-
-    protected createOLayerWithLeaves(leaves) {
         return new ol.layer.Image({
             extent: this.extent,
-            opacity: this.opacity,
             source: new ol.source.ImageWMS({
                 url: this.props.url,
                 ratio: 1,
+                imageLoadFunction: (img, url) => this.loadImage(img, url),
                 projection: this.map.projection,
                 params: {
-                    layers: leaves
-                }
+                    layers: ''
+                },
             })
         });
     }
@@ -312,14 +322,19 @@ export class RootLayer extends Layer {
 export class GroupLayer extends Layer {
 }
 
-abstract class BaseVectorLayer extends OlBackedLayer<ol.layer.Vector> implements types.IMapFeatureLayer {
 
-    styleName = null;
-    styleNames = null;
-    editStyleName = null;
-    features = [];
-    geometryType = '';
-    dataModel = null;
+interface FeatureMap {
+    [uid: string]: types.IFeature
+}
+
+export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements types.IFeatureLayer {
+    geometryType: string = '';
+    cssSelector: string = '';
+    fMap: FeatureMap = {};
+    loadingStrategy: string;
+
+    lastBbox: string;
+    loadState: string;
 
     get oFeatures() {
         let src = this.source;
@@ -333,73 +348,15 @@ abstract class BaseVectorLayer extends OlBackedLayer<ol.layer.Vector> implements
     constructor(map, props) {
         super(map, props);
 
-        this.setStyles({
-            normal: props.style,
-            selected: props.selectedStyle,
-            edit: props.editStyle,
-        });
+        this.cssSelector = props.cssSelector;
 
         if (props.geometryType)
             this.geometryType = props.geometryType;
 
-        if (props.dataModel)
-            this.dataModel = props.dataModel;
+        this.loadingStrategy = this.props.loadingStrategy;
+        this.loadState = '';
+        this.lastBbox = '';
     }
-
-    abstract createSource();
-
-    abstract addFeatures(features);
-
-    abstract removeFeature(feature);
-
-    replaceFeatures(features) {
-        let ids = {};
-
-        this.features.forEach(f => ids[f.uid] = f);
-        features.forEach(f => {
-            if (ids[f.uid])
-                this.removeFeature(ids[f.uid])
-        });
-
-        this.addFeatures(features);
-    }
-
-    createOLayer() {
-        return new ol.layer.Vector({
-            source: this.createSource(),
-            style: (oFeature: ol.Feature, resolution: number) => {
-                let mode = oFeature['_gwsFeature'] ? oFeature['_gwsFeature']['mode'] : 'normal';
-                let style = this.map.style.at(this.styleNames[mode]);
-                if (style) {
-                    return style.apply(oFeature.getGeometry(), oFeature.get('label'), resolution);
-                }
-                return [];
-            },
-        });
-    }
-
-    setStyles(src) {
-        this.styleNames = this.map.style.getMap(src);
-        // unlike Feature, we need defaults here
-        this.styleNames.selected = this.styleNames.selected || this.styleNames.normal;
-        this.styleNames.edit = this.styleNames.edit || this.styleNames.selected;
-    }
-
-    clear() {
-        this.features = [];
-        this.source.clear();
-    }
-
-    addFeature(f: types.IMapFeature) {
-        return this.addFeatures([f]) === 1;
-    }
-
-    async loadFeatures(extent, resolution) {
-        return [];
-    }
-}
-
-export class FeatureLayer extends BaseVectorLayer implements types.IMapFeatureLayer {
 
     get printPlane(): api.base.printer.Plane {
         let fs = lib.compact(this.features.map(f => f.getProps()));
@@ -407,7 +364,8 @@ export class FeatureLayer extends BaseVectorLayer implements types.IMapFeatureLa
         if (fs.length === 0)
             return null;
 
-        let style = this.map.style.at(this.styleNames.normal);
+        let style = this.map.style.getFromSelector(this.cssSelector);
+
 
         return {
             type: 'features',
@@ -417,115 +375,172 @@ export class FeatureLayer extends BaseVectorLayer implements types.IMapFeatureLa
         };
     }
 
-    createSource() {
-        return new ol.source.Vector();
+    get features() {
+        return Object.values(this.fMap);
     }
 
-    addFeatures(fs) {
-        let res = [...this.features];
 
-        let cnt = 0;
-        fs.forEach(f => {
-            if (f && f.oFeature) {
-                res.push(f);
-                this.source.addFeature(f.oFeature);
-                cnt++;
-            }
+    createOLayer() {
+        return new ol.layer.Vector({
+            source: this.createSource(),
         });
-        this.features = res;
-        this.map.changed();
-        return cnt;
     }
 
-    removeFeature(feature) {
-        this.features = this.features.filter(f => f !== feature);
-        this.reset();
+    protected createSource() {
+        return new ol.source.Vector({});
     }
 
-    reset() {
-        this.source.clear();
-        this.features.forEach(f => f.oFeature && this.source.addFeature(f.oFeature));
-    }
 
-}
+    beforeDraw() {
 
-export class VectorLayer extends BaseVectorLayer implements types.IMapFeatureLayer {
-    updateCount = 0;
-
-    get printPlane(): api.base.printer.Plane {
-        let style = this.map.style.at(this.styleNames.normal);
-
-        return {
-            type: 'vector',
-            layerUid: this.uid,
-            opacity: this.computedOpacity,
-            style: style ? style.props : null,
-        }
-    }
-
-    get loadingStrategy() {
-        if (this.props.loadingStrategy === 'bbox')
-            return 'bbox';
-        return 'all';
-    }
-
-    addFeatures(fs) {
-        let currUids = this.features.map(f => f.uid);
-        let toAdd = [];
-
-        fs.forEach(f => {
-            if (currUids.indexOf(f.uid) < 0)
-                toAdd.push(f);
-        });
-
-        this.source.addFeatures(toAdd.map(f => f.oFeature).filter(Boolean));
-        this.features = this.features.concat(toAdd);
-        this.map.changed();
-        return 1;
-    }
-
-    async loadFeatures(extent, resolution) {
-        let url = this.props.url;
-
-        url += '?resolution=' + encodeURIComponent(String(resolution));
+        if (!this.props.url)
+            return;
 
         if (this.loadingStrategy === 'bbox') {
-            url += ' &bbox=' + encodeURIComponent(extent.join(','))
+            let bbox = String(this.map.bbox);
+            if (this.lastBbox === bbox) {
+                return;
+            }
+            this.lastBbox = bbox;
+
+            console.log('Vector:load', this.uid, this.loadingStrategy, 'reload', bbox);
+
+            this.loadState = 'bbox_loading';
+            this.loader();
         }
 
-        let res = await this.map.app.server.queueLoad(this.uid, url, '');
-        if (res) {
-            return this.map.readFeatures(res.features)
+        if (this.loadingStrategy === 'all') {
+            if (this.loadState === 'all_loading' || this.loadState === 'all_loaded')
+                return;
+            console.log('Vector:load', this.uid, this.loadingStrategy, 'first load');
+            this.loadState = 'all_loading';
+            this.loader();
+
         }
-        return []
+    }
+
+
+    protected loader() {
+
+        let url = this.props.url;
+
+        url += '?resolution=' + encodeURIComponent(String(this.map.viewState.resolution));
+        let bbox = this.map.bbox;
+
+        if (this.loadingStrategy === 'bbox') {
+            url += '&bbox=' + encodeURIComponent(bbox.join(','));
+        }
+
+        this.map.app.server.dequeueLoad(this.uid);
+        let req = this.map.app.server.queueLoad(this.uid, url, '');
+        req.then(res => this.olLoaderDone(res));
+    }
+
+    protected olLoaderDone(res) {
+        this.loadState = '';
+
+        if (!res) {
+            console.log('Vector:load', this.uid, this.loadingStrategy, 'EMPTY', res);
+            return;
+        }
+        if (!res.features) {
+            console.log('Vector:load', this.uid, this.loadingStrategy, 'ERROR', res);
+            return;
+        }
+
+        if (this.loadingStrategy === 'all')
+            this.loadState = 'all_loaded';
+
+
+        console.log('Vector:load', this.uid, this.loadingStrategy, 'loaded', res.features.length);
+
+        let oldMap = this.fMap;
+        let newMap: FeatureMap = {};
+
+        for (let feature of Object.values(oldMap)) {
+            if (feature.isDirty || feature.isNew || feature.isFocused) {
+                console.log('Vector:load', this.uid, this.loadingStrategy, 'keep', feature.uid);
+                newMap[feature.uid] = feature;
+            }
+        }
+
+        for (let feature of this.map.featureListFromProps(res.features)) {
+            if (!newMap[feature.uid]) {
+                newMap[feature.uid] = feature;
+            }
+        }
+
+        this.setFeatures(newMap);
+        this.map.changed();
 
     }
 
-    reset() {
-        this.features = [];
-        this.source.clear();
+    //
+
+    addFeature(feature) {
+        this.addFeatures([feature]);
     }
 
-    createSource() {
-        let strategy = this.loadingStrategy === 'bbox' ? ol.loadingstrategy.bbox : ol.loadingstrategy.all;
-        let src = new ol.source.Vector({
-            loader: this.loader.bind(this),
-            strategy
-        });
-        src.on('change', () => this.map.update({
-            ['mapLayerUpdateCount_' + this.uid]: ++this.updateCount
-        }));
-        return src;
+    addFeatures(features) {
+
+        for (let fe of features) {
+            if (this.fMap[fe.uid]) {
+                this.olRemoveFeature(this.fMap[fe.uid]);
+            }
+            this.fMap[fe.uid] = fe;
+            fe.layer = this;
+            this.olAddFeature(fe);
+        }
+        this.source.changed();
     }
 
     removeFeature(feature) {
-        // if (this.oLayer && feature.oFeature)
-        //     this.oLayer.getSource().removeFeature(feature.oFeature);
-        this.reset();
+        this.removeFeatures([feature]);
     }
 
-    protected async loader(extent, resolution, proj) {
-        let fs = await this.loadFeatures(extent, resolution);
-        this.addFeatures(fs);
+    removeFeatures(features) {
+        for (let f of features) {
+            this.olRemoveFeature(f);
+            delete this.fMap[f.uid];
+        }
+        this.source.changed();
     }
+
+    clear() {
+        this._oLayer.setSource(this.createSource());
+        this.fMap = {};
+    }
+
+
+    protected setFeatures(newMap: FeatureMap) {
+        let oFeatures = [];
+        for (let fe of Object.values(newMap)) {
+            if (fe.oFeature)
+                oFeatures.push(fe.oFeature);
+        }
+
+        this.source.clear();
+        this.source.addFeatures(oFeatures);
+
+        this.fMap = newMap;
+    }
+
+
+    protected olAddFeature(f) {
+        if (this.source && f.oFeature) {
+            this.source.addFeature(f.oFeature);
+            f.oFeature.changed();
+        }
+    }
+
+    protected olRemoveFeature(f) {
+        if (this.source && f.oFeature)
+            try {
+                this.source.removeFeature(f.oFeature);
+            } catch (e) {
+            }
+
+    }
+
+
 }

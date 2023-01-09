@@ -42,8 +42,8 @@ class Object(gws.base.template.Object):
         self.page_size = parser.page_size
         self.map_size = parser.map_size
 
-    def render(self, tri, notify=None):
-        notify = notify or _dummy_fn
+    def render(self, tri):
+        notify = tri.notify or _dummy_fn
 
         notify('begin_print')
 

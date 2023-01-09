@@ -43,13 +43,8 @@ class Object(gws.Node, gws.IFinder):
     supportsKeyword = False
 
     def configure(self):
-        p = self.var('templates')
-        self.templateMgr = self.create_child(gws.base.template.manager.Object, gws.Config(
-            templates=p)) if p else None
-
-        p = self.var('models')
-        self.modelMgr = self.create_child(gws.base.model.manager.Object, gws.Config(
-            models=p)) if p else None
+        self.templates = []
+        self.models = []
 
         p = self.var('tolerance')
         self.tolerance = gws.lib.uom.parse(p, default=gws.lib.uom.PX) if p else _DEFAULT_TOLERANCE
@@ -61,33 +56,64 @@ class Object(gws.Node, gws.IFinder):
         self.spatialContext = self.var('defaultContext', default=SpatialContext.MAP)
         self.title = self.var('title', default='')
 
-    def can_run(self, args: gws.SearchArgs):
+    def configure_models(self):
+        p = self.var('models')
+        if p:
+            self.models = self.create_children(gws.ext.object.model, p)
+            return True
+
+    def configure_templates(self):
+        self.create_children(gws.ext.object.template, self.var('templates'))
+        return True
+
+    def can_run(self, search, user):
         has_param = False
 
-        if args.keyword:
+        if search.keyword:
             if not self.withKeyword:
                 return False
             has_param = True
 
-        if args.shapes:
+        if search.shape:
             if not self.withGeometry:
                 return False
             has_param = True
 
-        if args.filter:
+        if search.ogcFilter:
             if not self.withFilter:
                 return False
             has_param = True
 
         return has_param
 
-    def context_shape(self, args: gws.SearchArgs) -> gws.IShape:
-        if args.shapes:
-            return args.shapes[0].union(args.shapes[1:])
-        if self.spatialContext == SpatialContext.VIEW and args.bounds:
-            return gws.base.shape.from_bounds(args.bounds)
-        if args.project:
-            return gws.base.shape.from_bounds(args.project.map.bounds)
+    def context_shape(self, search: gws.SearchArgs) -> gws.IShape:
+        if search.shape:
+            return search.shape
+        if self.spatialContext == SpatialContext.VIEW and search.bounds:
+            return gws.base.shape.from_bounds(search.bounds)
+        if search.project:
+            return gws.base.shape.from_bounds(search.project.map.bounds)
 
-    def run(self, args, layer):
-        return []
+    def run(self, search, user, layer=None):
+        model = gws.base.model.locate(self.models, user, gws.Access.read)
+        if not model and layer:
+            model = gws.base.model.locate(layer.models, user, gws.Access.read)
+        if not model:
+            gws.log.debug(f'no model for {user.uid!r} in finder {self.uid!r}')
+            return []
+        return model.find_features(search, user)
+
+
+##
+
+def locate(
+        finders: t.List[gws.IFinder],
+        user: gws.IUser = None,
+        uid: str = None
+) -> t.Optional[gws.IFinder]:
+    for finder in finders:
+        if user and user.can_use(finder):
+            continue
+        if uid and finder.uid != uid:
+            continue
+        return finder

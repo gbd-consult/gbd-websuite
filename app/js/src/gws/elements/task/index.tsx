@@ -4,7 +4,7 @@ import * as gws from 'gws';
 import * as components from 'gws/components';
 
 interface TaskContext {
-    feature?: gws.types.IMapFeature;
+    feature?: gws.types.IFeature;
     source?: string;
     element: HTMLDivElement;
 }

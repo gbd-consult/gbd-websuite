@@ -200,21 +200,23 @@ def _synthesize_ext_configs_and_props(gen):
 
     for t in gen.types.values():
         if t.extName.startswith(base.EXT_OBJECT_PREFIX):
-            ps = t.extName.split('.')
             for kind in ['config', 'props']:
-                ps[2] = kind
-                name = DOT.join(ps)
-                if name not in existing_names:
-                    nt = gen.new_type(
+                parts = t.extName.split('.')
+                parts[2] = kind
+                ext_name = DOT.join(parts)
+                if ext_name not in existing_names:
+                    new_type = gen.new_type(
                         base.C.CLASS,
                         doc=t.doc,
-                        ident=kind,
-                        name=name,
+                        ident='_' + parts[-1],
+                        # e.g. gws.ext.object.modelField.integer becomes gws.ext.props.modelField._integer
+                        name=DOT.join(parts[:-1]) + '._' + parts[-1],
                         pos=t.pos,
                         tSupers=[base.DEFAULT_EXT_SUPERS[kind]],
-                        extName=name,
+                        extName=ext_name,
+                        _SYNTHESIZED=True,
                     )
-                    upd[nt.uid] = nt
+                    upd[new_type.uid] = new_type
 
     gen.types.update(upd)
 

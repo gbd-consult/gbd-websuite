@@ -48,6 +48,7 @@ def handle_request(environ) -> gws.IWebResponder:
             req.parse_input()
             return req.apply_middleware()
         except gws.base.web.error.HTTPException as exc:
+            gws.log.exception()
             return handle_error(req, exc)
     except:
         gws.log.exception()

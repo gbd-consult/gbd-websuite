@@ -620,7 +620,7 @@ function writeVendors(bb) {
             sources.push(`(function() {\n${src}\n}).apply(window)`);
         }
         let p = APP_DIR + '/' + JS_VENDOR_BUNDLE;
-        writeFile(p, sources.join('\n;;\n'));
+        writeFileIfChanged(p, sources.join('\n;;\n'));
         logInfo(`created ${p}`);
         return true;
     } catch (e) {
@@ -636,7 +636,7 @@ function writeUtil(bb) {
         let source = readFile(JS_DIR + '/src/util.js');
         source = source.replace('__VERSION__', bb.specs.meta.version);
         let p = APP_DIR + '/' + JS_UTIL_BUNDLE;
-        writeFile(p, source);
+        writeFileIfChanged(p, source);
         logInfo(`created ${p}`);
         return true;
     } catch (e) {
@@ -865,7 +865,7 @@ function writeBundles(bb, bundles) {
     try {
         for (let [dir, bundle] of Object.entries(bundles)) {
             let p = path.join(dir, JS_BUNDLE);
-            writeFile(p, JSON.stringify(bundle, null, 4));
+            writeFileIfChanged(p, JSON.stringify(bundle, null, 4));
             logInfo(`created bundle "${p}"`);
         }
         return true;
@@ -885,7 +885,7 @@ function runTypescript(bb) {
 
     logInfo('running TypeScript...');
 
-    let tsConfig = require(bb.tsConfigPath);
+    let tsConfig = JSON.parse(readFile(bb.tsConfigPath));
     let tsConfigBuildPath = path.join(JS_DIR, '__build.tsconfig.json');
 
     tsConfig.files = [];
@@ -895,8 +895,16 @@ function runTypescript(bb) {
             tsConfig.files.push(src.path)
     }
 
+    tsConfig.compilerOptions.baseUrl = path.join(JS_DIR, tsConfig.compilerOptions.baseUrl)
     tsConfig.compilerOptions.outDir = BUILD_ROOT;
-    writeFile(tsConfigBuildPath, JSON.stringify(tsConfig, null, 4))
+
+    for (let ps of Object.values(tsConfig.compilerOptions.paths)) {
+        for (let [n, p] of ps.entries()) {
+            ps[n] = path.join(JS_DIR, p)
+        }
+    }
+
+    writeFileIfChanged(tsConfigBuildPath, JSON.stringify(tsConfig, null, 4))
 
     let args = [
         path.join(JS_DIR, 'node_modules/.bin/tsc'),
@@ -1016,6 +1024,18 @@ function readFile(p) {
 }
 
 function writeFile(p, s) {
+    logInfo(`writing ${p}`);
     return fs.writeFileSync(p, s, {encoding: 'utf8'})
+}
+
+function writeFileIfChanged(p, s) {
+    let r = {}
+
+    try {
+        r = readFile(p)
+    } catch (e) {}
+
+    if (r !== s)
+        writeFile(p, s)
 }
 

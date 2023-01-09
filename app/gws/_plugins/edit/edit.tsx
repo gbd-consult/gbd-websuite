@@ -19,9 +19,9 @@ function _master(obj: any) {
 }
 
 interface EditViewProps extends gws.types.ViewProps {
-    editLayer: gws.types.IMapFeatureLayer;
+    editLayer: gws.types.IFeatureLayer;
     editUpdateCount: number;
-    editFeature: gws.types.IMapFeature;
+    editFeature: gws.types.IFeature;
     editAttributes: Array<gws.api.Attribute>;
     editError: boolean;
     mapUpdateCount: number;
@@ -246,7 +246,7 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
     }
 }
 
-class EditLayerList extends gws.components.list.List<gws.types.IMapLayer> {
+class EditLayerList extends gws.components.list.List<gws.types.ILayer> {
 
 }
 
@@ -346,7 +346,7 @@ class EditController extends gws.Controller {
             this.connect(OverlayView, EditStoreKeys));
     }
 
-    get layer(): gws.types.IMapFeatureLayer {
+    get layer(): gws.types.IFeatureLayer {
         return this.app.store.getValue('editLayer');
     }
 
@@ -357,12 +357,12 @@ class EditController extends gws.Controller {
 
     geomTimer: any = 0;
 
-    saveGeometry(f: gws.types.IMapFeature) {
+    saveGeometry(f: gws.types.IFeature) {
         clearTimeout(this.geomTimer);
         this.geomTimer = setTimeout(() => this.saveGeometry2(f), 500);
     }
 
-    async saveGeometry2(f: gws.types.IMapFeature) {
+    async saveGeometry2(f: gws.types.IFeature) {
         let props = {
             uid: f.uid,
             shape: f.shape
@@ -379,7 +379,7 @@ class EditController extends gws.Controller {
         }
     }
 
-    async saveForm(f: gws.types.IMapFeature, data: Array<gws.api.Attribute>) {
+    async saveForm(f: gws.types.IFeature, data: Array<gws.api.Attribute>) {
         let attributes = data.map(a => ({name: a.name, value: a.value}));
 
         let props = {
@@ -430,7 +430,7 @@ class EditController extends gws.Controller {
         this.selectFeature(fs[0], false);
     }
 
-    async deleteFeature(f: gws.types.IMapFeature) {
+    async deleteFeature(f: gws.types.IFeature) {
         let props = {
             uid: f.uid,
         };
@@ -457,13 +457,13 @@ class EditController extends gws.Controller {
 
     tool = '';
 
-    selectFeature(f: gws.types.IMapFeature, highlight) {
+    selectFeature(f: gws.types.IFeature, highlight) {
         this.selectFeature2(f, highlight)
         this.app.startTool('Tool.Edit.Modify')
 
     }
 
-    selectFeature2(f: gws.types.IMapFeature, highlight) {
+    selectFeature2(f: gws.types.IFeature, highlight) {
         if (highlight) {
             this.update({
                 marker: {
@@ -516,7 +516,7 @@ class EditController extends gws.Controller {
     }
 
 
-    featureTitle(f: gws.types.IMapFeature) {
+    featureTitle(f: gws.types.IFeature) {
         return f.elements.title || (this.__('modEditNewObjectName'));
     }
 

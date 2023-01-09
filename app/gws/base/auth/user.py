@@ -2,23 +2,6 @@ import gws
 import gws.lib.jsonx
 import gws.types as t
 
-from . import error
-
-_DELIM = '::'
-
-
-def make_uid(user):
-    return f'{user.provider.uid}{_DELIM}{user.localUid}'
-
-
-def parse_uid(user_uid):
-    s = user_uid.split(_DELIM, 1)
-    if len(s) == 2:
-        return s
-    raise gws.Error(f'invalid user uid: {user_uid!r}')
-
-
-##
 
 class Props(gws.Props):
     displayName: str
@@ -56,27 +39,39 @@ class User(gws.IUser):
     def can_use(self, obj, *context):
         if obj is self:
             return True
+        return self.can(gws.Access.use, obj, *context)
 
+    def can_read(self, obj, *context):
+        return self.can(gws.Access.read, obj, *context)
+
+    def can_write(self, obj, *context):
+        return self.can(gws.Access.write, obj, *context)
+
+    def can_create(self, obj, *context):
+        return self.can(gws.Access.create, obj, *context)
+
+    def can_delete(self, obj, *context):
+        return self.can(gws.Access.delete, obj, *context)
+
+    def can(self, access, obj, *context):
         ci = 0
         clen = len(context)
 
         while obj:
-            acc = self.access_to(obj)
-            if acc is not None:
-                return acc == gws.ALLOW
+            bit = self.acl_bit(access, obj)
+            if bit is not None:
+                return bit == gws.ALLOW
             obj = context[ci] if ci < clen else getattr(obj, 'parent', None)
             ci += 1
 
         return False
 
-    def access_to(self, obj):
-        roles = _GUEST_ROLES if self.pendingMfa else self.roles
-        if gws.ROLE_ADMIN in roles:
-            return gws.ALLOW
-        access = getattr(obj, 'access', None)
-        if access:
-            for bit, role in access:
-                if role in roles:
+    def acl_bit(self, access, obj):
+        perms = getattr(obj, 'permissions', None)
+        acl = perms.get(access) if perms else None
+        if acl:
+            for bit, role in acl:
+                if role in self.roles:
                     return bit
 
 
@@ -85,13 +80,13 @@ class Guest(User):
 
 
 class System(User):
-    def can_use(self, obj, *context):
-        return True
+    def acl_bit(self, access, obj):
+        return gws.ALLOW
 
 
 class Nobody(User):
-    def can_use(self, obj, *context):
-        return False
+    def acl_bit(self, access, obj):
+        return gws.DENY
 
 
 class AuthorizedUser(User):
@@ -106,7 +101,6 @@ def to_dict(usr) -> dict:
         displayName=usr.displayName,
         localUid=usr.localUid,
         loginName=usr.loginName,
-        pendingMfa=gws.to_dict(usr.pendingMfa),
         providerUid=usr.provider.uid,
         roles=list(usr.roles),
         uid=usr.uid,
@@ -119,9 +113,8 @@ def from_dict(cls, provider: gws.IAuthProvider, d: dict) -> User:
     usr.displayName = d.get('displayName')
     usr.localUid = d.get('localUid')
     usr.loginName = d.get('loginName')
-    usr.pendingMfa = gws.Data(d.get('pendingMfa')) if d.get('pendingMfa') else None
     usr.roles = set(d.get('roles'))
-    usr.uid = d.get('uid')
+    usr.uid = gws.join_uid(provider.uid, usr.localUid)
     return usr
 
 
@@ -136,7 +129,7 @@ def from_args(cls, provider: gws.IAuthProvider, **kwargs) -> User:
     usr.loginName = kwargs.get('loginName') or kwargs.get('localUid')
     usr.displayName = kwargs.get('displayName') or usr.loginName
 
-    usr.uid = make_uid(usr)
+    usr.uid = gws.join_uid(provider.uid, usr.localUid)
 
     p = kwargs.get('pendingMfa')
     usr.pendingMfa = gws.AuthPendingMfa(p) if p else None
@@ -150,7 +143,5 @@ def from_args(cls, provider: gws.IAuthProvider, **kwargs) -> User:
             atts[a] = atts[b]
 
     usr.attributes = atts
-
-    gws.log.debug(f'inited user: prov={provider.uid!r} localUid={usr.localUid!r}')
 
     return usr

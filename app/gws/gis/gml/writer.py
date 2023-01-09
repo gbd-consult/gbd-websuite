@@ -17,8 +17,8 @@ import gws.types as t
 def shape_to_element(
     shape: gws.IShape,
     precision=0,
-    axis: gws.Axis = gws.Axis.XY,
-    crs_format: gws.CrsFormat = gws.CrsFormat.URN,
+    axis: gws.Axis = gws.Axis.xy,
+    crs_format: gws.CrsFormat = gws.CrsFormat.urn,
     with_ns='gml'
 ) -> gws.IXmlElement:
     """Convert a Shape to a GML3 geometry element."""
@@ -72,7 +72,7 @@ def _tag(geom, opts):
 def _pos(geom, opts, as_list=True):
     cs = []
 
-    if opts.axis == gws.Axis.XY:
+    if opts.axis == gws.Axis.xy:
         for x, y in geom.coords:
             cs.append(x)
             cs.append(y)

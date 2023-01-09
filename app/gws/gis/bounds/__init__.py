@@ -63,7 +63,7 @@ def copy(b: gws.Bounds) -> gws.Bounds:
     return gws.Bounds(crs=b.crs, extent=b.extent)
 
 
-def union(*bs: gws.Bounds) -> gws.Bounds:
+def union(bs: t.List[gws.Bounds]) -> gws.Bounds:
     crs = bs[0].crs
     exts = [gws.gis.extent.transform(b.extent, b.crs, crs) for b in bs]
     return gws.Bounds(

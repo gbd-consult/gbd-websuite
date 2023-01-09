@@ -7,59 +7,77 @@ import gws.types as t
 
 class Props(gws.Props):
     attributes: dict
-    elements: dict
-    shape: t.Optional[gws.base.shape.Props]
+    views: dict
     uid: str
+    keyName: str
+    geometryName: str
+    isNew: bool
     modelUid: str
 
 
-class Feature(gws.IFeature):
-    def __init__(self, model, uid):
-        self.uid = uid
+def with_model(model: gws.IModel):
+    return Feature(model)
+
+
+class Feature(gws.Object, gws.IFeature):
+    def __init__(self, model):
         self.model = model
-
         self.attributes = {}
-        self.elements = {}
-
-        self.shape = None
-        self.layerName = ''
+        self.views = {}
+        self.errors = []
 
         self.isNew = False
 
     def props(self, user):
-        return Props(
-            uid=self.uid,
-            attributes={},
-            modelUid=self.model.uid,
-            shape=self.shape,
-            elements=self.elements,
-        )
+        return self.model.feature_props(self, user)
 
-    def apply_template(self, template, extra_args=None):
-        tri = gws.TemplateRenderInput(args=gws.merge(self.attributes, extra_args, feature=self))
-        key = template.subject.split('.')[-1]
-        self.elements[key] = template.render(tri).content
-        return self
+    def uid(self):
+        if self.model.keyName:
+            return self.attributes.get(self.model.keyName)
+
+    def shape(self):
+        if self.model.geometryName:
+            return self.attributes.get(self.model.geometryName)
 
     def attr(self, name, default=None):
         return self.attributes.get(name, default)
 
-    def transform_to(self, crs) -> gws.IFeature:
-        if self.shape:
-            self.shape = self.shape.transformed_to(crs)
+    def compute_values(self, access, user, **kwargs):
+        self.model.compute_values(self, access, user, **kwargs)
         return self
 
-    def to_svg_fragment(self, view, style=None):
-        if not self.shape:
-            return []
-        shape = self.shape.transformed_to(view.bounds.crs)
-        return gws.lib.svg.shape_to_fragment(shape, view, style, self.elements.get('label'))
+    def render_views(self, templates, **kwargs):
+        tri = gws.TemplateRenderInput(
+            args=gws.merge(
+                self.attributes,
+                kwargs,
+                feature=self
+            ))
+        for tpl in templates:
+            v = tpl.subject.split('.')[-1]
+            self.views[v] = tpl.render(tri).content
+        return self
 
-    def to_geojson(self):
-        ps = dict(self.attributes)
-        ps['id'] = self.uid
-        d = {'type': 'Feature', 'properties': ps}
-        if self.shape:
-            d['geometry'] = self.shape.to_geojson()
-            d['crs'] = self.shape.crs.to_geojson()
+    def transform_to(self, crs) -> gws.IFeature:
+        if self.shape():
+            self.attributes[self.model.geometryName] = self.shape().transformed_to(crs)
+        return self
+
+    def to_svg(self, view, label=None, style=None):
+        if not self.shape():
+            return []
+        shape = self.shape().transformed_to(view.bounds.crs)
+        return gws.lib.svg.shape_to_fragment(shape, view, style, label)
+
+    def to_geojson(self, user):
+        p = self.props(user)
+        d = {'type': 'Feature', 'properties': getattr(p, 'attributes', {})}
+        d['properties']['id'] = self.uid()
+
+        if self.model.geometryName:
+            shape = d['properties'].pop(self.model.geometryName, None)
+            if shape:
+                d['geometry'] = shape.to_geojson()
+                d['crs'] = shape.crs.to_geojson()
+
         return d

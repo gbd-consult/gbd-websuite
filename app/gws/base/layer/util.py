@@ -1,15 +1,15 @@
 import gws
-import gws.lib.metadata
 import gws.base.model
 import gws.base.search
 import gws.gis.crs
+import gws.gis.extent
+import gws.gis.mpx
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.image
+import gws.lib.metadata
 import gws.lib.style
 import gws.lib.svg
-import gws.types as t
-
 
 
 def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):
@@ -18,17 +18,10 @@ def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):
         'sources': [source_uid]
     })
 
-    tg = layer.targetGrid
-
-    if tg.corner == 'lt':
-        origin = 'nw'
-    elif tg.corner == 'lb':
-        origin = 'sw'
-    else:
-        raise gws.Error(f'invalid grid corner {tg.corner!r}')
+    tg = layer.grid
 
     tg.uid = mc.grid(gws.compact({
-        'origin': origin,
+        'origin': tg.corner,
         'tile_size': [tg.tileSize, tg.tileSize],
         'res': tg.resolutions,
         'srs': tg.bounds.crs.epsg,
@@ -136,5 +129,5 @@ def generic_render_xyz_to_bytes(layer: gws.ILayer, lri: gws.LayerRenderInput):
         lri.x,
         lri.y,
         lri.z,
-        tile_matrix=layer.targetGrid.uid,
-        tile_size=layer.targetGrid.tileSize)
+        tile_matrix=layer.grid.uid,
+        tile_size=layer.grid.tileSize)
