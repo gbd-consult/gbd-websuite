@@ -1,6 +1,7 @@
 import gws
+import gws.types as t
 
-from . import manager
+from . import sql, manager
 
 
 class Config(gws.Config):
@@ -29,10 +30,13 @@ class Object(gws.Node, gws.IDatabaseProvider):
         self.mgr = self.var('_manager')
 
     def describe_table(self, table_name: str):
-        return self.mgr.describe_table(self, table_name)
+        return self.mgr.describe_table(self, self.qualified_table_name(table_name))
 
     def session(self):
         return self.mgr.session(self)
+
+    def sa_make_table(self, name: str, columns: t.List[sql.sa.Column], **kwargs):
+        return self.mgr.sa_make_table(self, name, columns, **kwargs)
 
 
 def configure_for(obj: gws.INode, ext_type: str = None):

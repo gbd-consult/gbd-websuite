@@ -193,7 +193,7 @@ class Root(types.IRoot):
         return str(self._uidCount)
 
     def _config_error(self, exc):
-        lines = ['init error: ' + exc.args[0]]
+        lines = [repr(exc)]
 
         for val in reversed(self._configStack):
             line = class_name(val)

@@ -318,14 +318,14 @@ def to_str(x, encodings: List[str] = None) -> str:
     return x.decode(encoding='utf-8', errors='ignore')
 
 
-def to_bytes(x) -> bytes:
-    """Convert a value to bytes by converting it to string and encoding in utf8."""
+def to_bytes(x, encoding='utf8') -> bytes:
+    """Convert a value to bytes by converting it to string and encoding."""
 
     if is_bytes(x):
         return bytes(x)
     if not isinstance(x, str):
         x = str(x)
-    return x.encode('utf8')
+    return x.encode(encoding or 'utf8')
 
 
 def to_list(x, delimiter: str = ',') -> list:

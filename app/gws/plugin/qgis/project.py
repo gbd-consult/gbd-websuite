@@ -28,25 +28,34 @@ def from_path(path: str) -> 'Object':
     raise Error(f'cannot open qgis project {path!r}')
 
 
-def from_string(xml: str, path: str = None) -> 'Object':
-    return Object(xml, path or '')
+def from_string(text: str, path: str = None) -> 'Object':
+    return Object(text, path or '')
 
 
 class Object:
-    rootElement: gws.IXmlElement
     path: str
     version: str
     sourceHash: str
 
-    def __init__(self, xml: str, path: str):
-        self.rootElement = gws.lib.xmlx.from_string(xml)
+    def __init__(self, text: str, path: str):
+        self.text = text
         self.path = path
-        self.sourceHash = gws.sha256(xml)
+        self.sourceHash = gws.sha256(self.text)
 
-        ver = self.rootElement.get('version', '').split('-')[0]
+        ver = self.xml_root().get('version', '').split('-')[0]
         if not ver.startswith('3'):
             raise Error(f'unsupported qgis version {ver!r}')
         self.version = ver
+
+    def __getstate__(self):
+        d = dict(vars(self))
+        d.pop('_xml_root', None)
+        return d
+
+    def xml_root(self) -> gws.IXmlElement:
+        if not hasattr(self, '_xml_root'):
+            setattr(self, '_xml_root', gws.lib.xmlx.from_string(self.text))
+        return getattr(self, '_xml_root')
 
     def save(self, path=None):
         path = path or self.path
@@ -55,9 +64,9 @@ class Object:
         gws.write_file(path, self.to_xml())
 
     def to_xml(self):
-        return self.rootElement.to_string()
+        return self.xml_root().to_string()
 
     def caps(self) -> caps.Caps:
         if not hasattr(self, '_caps'):
-            setattr(self, '_caps', caps.parse_element(self.rootElement))
+            setattr(self, '_caps', caps.parse_element(self.xml_root()))
         return getattr(self, '_caps')

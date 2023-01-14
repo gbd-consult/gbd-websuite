@@ -22,7 +22,7 @@ class _SaRuntime:
     tables: t.Dict[str, sql.sa.Table]
     classes: t.Dict[str, type]
     pkColumns: t.Dict[str, t.List[sql.sa.Column]]
-    descCache: t.Dict[str, sql.TableDescription]
+    descCache: t.Dict[str, gws.DataSetDescription]
 
     def __init__(self):
         self.registries = {}
@@ -133,7 +133,8 @@ class Object(gws.Node, gws.IDatabaseManager):
 
         for tkey, cols in tkey_to_cols.items():
             provider_uid, table_name = tkey
-            tab = self.sa_make_table(provider_uid, table_name, cols.values())
+            provider = self.providers[provider_uid]
+            tab = self.sa_make_table(provider, table_name, cols.values())
             cls = type('_SA_' + provider_uid + '_' + gws.to_uid(table_name), (_SaOrmBase,), {})
             self.rt.registries[provider_uid].map_imperatively(cls, tab)
             tkey_to_table[tkey] = tab
@@ -164,14 +165,14 @@ class Object(gws.Node, gws.IDatabaseManager):
     def sa_pk_columns(self, model) -> t.List[sql.sa.Column]:
         return self.rt.pkColumns.get(model.uid, [])
 
-    def sa_make_table(self, provider_uid, name, cols, **kwargs):
-        metadata = self.rt.registries[provider_uid].metadata
+    def sa_make_table(self, provider: gws.IDatabaseProvider, name: str, columns: t.List[sql.sa.Column], **kwargs):
+        metadata = self.rt.registries[provider.uid].metadata
 
         if '.' in name:
             schema, name = name.split('.')
             kwargs.setdefault('schema', schema)
 
-        return sql.sa.Table(name, metadata, *cols, **kwargs)
+        return sql.sa.Table(name, metadata, *columns, **kwargs)
 
     def sa_make_engine(self, drivername: str, options, **kwargs):
         url = sql.sa.engine.URL.create(
@@ -202,58 +203,74 @@ class Object(gws.Node, gws.IDatabaseManager):
             sess.saSession.close()
         self.rt.sessions = {}
 
-    def describe_table(self, provider, table_name) -> sql.TableDescription:
+    def describe_table(self, provider: gws.IDatabaseProvider, table_name: str) -> t.Optional[gws.DataSetDescription]:
         cache_key = gws.join_uid(provider.uid, table_name)
         if cache_key not in self.rt.descCache:
             self.rt.descCache[cache_key] = self._describe_table_impl(provider, table_name)
         return self.rt.descCache[cache_key]
 
     def _describe_table_impl(self, provider, table_name):
-        with self.session(provider) as sess:
+        ins = sql.sa.inspect(provider.sa_engine())
 
-            ins = sql.sa.inspect(sess.saSession.bind)
+        desc = gws.DataSetDescription(
+            columns={},
+            keyNames=[],
+        )
 
-            schema, tab = None, table_name
-            if '.' in table_name:
-                schema, _, tab = table_name.partition('.')
+        if '.' in table_name:
+            s, _, n = table_name.partition('.')
+            desc.name = n
+            desc.schema = s
+            desc.fullName = s + '.' + n
+        else:
+            desc.name = table_name
+            desc.schema = ''
+            desc.fullName = table_name
 
-            columns: t.Dict[str, sql.ColumnDescription] = {}
+        try:
+            ins_columns = ins.get_columns(desc.name, desc.schema)
+        except sql.exc.NoSuchTableError:
+            return None
 
-            for c in ins.get_columns(tab, schema):
-                col = sql.ColumnDescription(
-                    tableName=tab,
-                    name=c.get('name'),
-                    isPrimaryKey=False,
-                    isNullable=c.get('nullable', False),
-                    isGeometry=False,
-                    isAutoincrement=c.get('autoincrement', False),
-                    default=c.get('default'),
-                    comment=c.get('comment', ''),
-                    options=c.get('dialect_options', {}),
-                    relation='',
-                )
+        for c in ins_columns:
+            col = gws.ColumnDescription(
+                comment=c.get('comment', ''),
+                default=c.get('default'),
+                isAutoincrement=c.get('autoincrement', False),
+                isNullable=c.get('nullable', False),
+                isPrimaryKey=False,
+                name=c.get('name'),
+                options=c.get('dialect_options', {}),
+            )
 
-                typ = c.get('type')
-                col.nativeType = str(typ).upper()
+            typ = c.get('type')
+            col.nativeType = str(typ).upper()
 
-                gt = getattr(typ, 'geometry_type', None)
-                if gt:
-                    col.typ = gws.AttributeType.geometry
-                    col.isGeometry = True
-                    col.geometryType = gt.lower()
-                    col.geometrySrid = getattr(typ, 'srid')
-                else:
-                    col.typ = sql.SA_TO_ATTR.get(col.nativeType, gws.AttributeType.str)
+            gt = getattr(typ, 'geometry_type', None)
+            if gt:
+                col.type = gws.AttributeType.geometry
+                col.geometryType = gt.lower()
+                col.geometrySrid = getattr(typ, 'srid')
+            else:
+                col.type = sql.SA_TO_ATTR.get(col.nativeType, gws.AttributeType.str)
 
-                columns[col.name] = col
+            desc.columns[col.name] = col
 
-            c = ins.get_pk_constraint(tab, schema)
+        c = ins.get_pk_constraint(desc.name, desc.schema)
+        for name in c['constrained_columns']:
+            desc.columns[name].isPrimaryKey = True
+            desc.keyNames.append(name)
+
+        for c in ins.get_foreign_keys(desc.name, desc.schema):
+            rel = c['referred_schema'] + '.' + c['referred_table']
             for name in c['constrained_columns']:
-                columns[name].isPrimaryKey = True
+                desc.columns[name].relation = rel
 
-            for c in ins.get_foreign_keys(tab, schema):
-                rel = c['referred_schema'] + '.' + c['referred_table']
-                for name in c['constrained_columns']:
-                    columns[name].relation = rel
+        for col in desc.columns.values():
+            if col.geometryType:
+                desc.geometryName = col.name
+                desc.geometryType = col.geometryType
+                desc.geometrySrid = col.geometrySrid
+                break
 
-            return sql.TableDescription(name=table_name, columns=columns)
+        return desc

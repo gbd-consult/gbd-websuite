@@ -5,31 +5,10 @@ import gws.types as t
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+import sqlalchemy.exc as exc
 import geoalchemy2 as geosa
 
-__all__ = ['sa', 'orm', 'geosa']
-
-
-
-class ColumnDescription(gws.Data):
-    tableName: str
-    name: str
-    type: str
-    nativeType: str
-    geometryType: str
-    geometrySrid: int
-    isPrimaryKey: bool
-    isNullable: bool
-    relation: str
-    default: str
-    isAutoincrement: bool
-    comment: str
-    options: dict
-
-
-class TableDescription(gws.Data):
-    name: str
-    columns: t.Dict[str, ColumnDescription]
+__all__ = ['sa', 'orm', 'exc', 'geosa']
 
 
 class Session(gws.IDatabaseSession):

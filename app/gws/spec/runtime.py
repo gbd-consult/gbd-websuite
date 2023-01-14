@@ -63,9 +63,9 @@ class Object(gws.ISpecRuntime):
         self.strings = gs['strings']
         self.chunks = gs['chunks']
 
-        self.cachedDescriptors = {}
+        self._descCache = {}
 
-    def get(self, key):
+    def get_type(self, key):
         return self.index.get(key)
 
     def read(self, value, type_name, path='', options=None):
@@ -73,14 +73,14 @@ class Object(gws.ISpecRuntime):
         return r.read(value, type_name)
 
     def object_descriptor(self, name):
-        if name in self.cachedDescriptors:
-            return self.cachedDescriptors[name]
+        if name in self._descCache:
+            return self._descCache[name]
 
-        typ = self.get(name)
+        typ = self.get_type(name)
         if not typ:
             return
 
-        self.cachedDescriptors[name] = gws.ExtObjectDescriptor(
+        self._descCache[name] = gws.ExtObjectDescriptor(
             extName=typ.extName,
             ident=typ.ident,
             modName=typ.modName,
@@ -88,7 +88,7 @@ class Object(gws.ISpecRuntime):
             classPtr=None
         )
 
-        return self.cachedDescriptors[name]
+        return self._descCache[name]
 
     def get_class(self, classref, ext_type=None):
         cls, name, ext_name = self.parse_classref(classref)
@@ -110,7 +110,7 @@ class Object(gws.ISpecRuntime):
                 try:
                     mod = gws.lib.importer.import_from_path(desc.modPath, gws.APP_DIR)
                 except gws.lib.importer.Error as exc:
-                    raise LoadError(f'cannot load class {classref!r}') from exc
+                    raise LoadError(f'cannot load class {classref!r} from {desc.modPath!r}') from exc
             desc.classPtr = getattr(mod, desc.ident)
 
         return desc.classPtr
@@ -118,10 +118,10 @@ class Object(gws.ISpecRuntime):
     def command_descriptor(self, command_category, command_name):
         name = core.EXT_COMMAND_PREFIX + command_category + '.' + command_name
 
-        if name in self.cachedDescriptors:
-            return self.cachedDescriptors[name]
+        if name in self._descCache:
+            return self._descCache[name]
 
-        typ = self.get(name)
+        typ = self.get_type(name)
 
         if not typ:
             return
@@ -130,6 +130,7 @@ class Object(gws.ISpecRuntime):
             extName=typ.extName,
             tArg=typ.tArg,
             tOwner=typ.tOwner,
+            owner=self.object_descriptor(typ.tOwner),
             methodName=typ.ident,
         )
 
@@ -154,10 +155,10 @@ class Object(gws.ISpecRuntime):
             cmds.append(entry)
 
             args = []
-            arg_typ = self.get(typ.tArg)
+            arg_typ = self.get_type(typ.tArg)
             if arg_typ:
                 for name, prop_type_uid in arg_typ.tProperties.items():
-                    prop_typ = self.get(prop_type_uid)
+                    prop_typ = self.get_type(prop_type_uid)
                     args.append(gws.Data(
                         name=name,
                         doc=strings.get(prop_type_uid) or self.strings['en'].get(prop_type_uid) or '',

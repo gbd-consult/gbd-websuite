@@ -60,12 +60,11 @@ def parse_main(specs: gws.ISpecRuntime, config_path=None) -> gws.Config:
     if not config_path:
         raise gws.ConfigurationError('no configuration file found')
     gws.log.info(f'using config {config_path!r}...')
-    dct, paths = _read(config_path)
-    return parse_main_from_dict(specs, dct, paths)
+    dct, related_paths = _read(config_path)
+    return parse_main_from_dict(specs, dct, config_path, related_paths)
 
 
-def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_paths) -> gws.Config:
-    config_path = config_paths[0]
+def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_path, related_paths) -> gws.Config:
     prj_dicts = []
 
     for prj_cfg in dct.pop('projects', []):
@@ -75,7 +74,7 @@ def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_paths) -> gws.Conf
     gws.log.info('parsing main configuration...')
     app_cfg = parse(specs, dct, 'gws.base.application.Config', config_path)
 
-    app_cfg.configPaths = config_paths
+    app_cfg.configPaths = related_paths
     app_cfg.projectPaths = app_cfg.projectPaths or []
     app_cfg.projectDirs = app_cfg.projectDirs or []
 
@@ -85,7 +84,7 @@ def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_paths) -> gws.Conf
 
     for prj_path in sorted(set(prj_paths)):
         prj_cfg, paths = _read(prj_path)
-        config_paths.extend(paths)
+        app_cfg.configPaths.extend(paths)
         for prj_dict in _as_flat_list(prj_cfg):
             prj_dicts.append([prj_dict, prj_path])
 
@@ -94,7 +93,7 @@ def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_paths) -> gws.Conf
     for prj_dict, prj_path in prj_dicts:
         uid = prj_dict.get('uid') or prj_dict.get('title') or '?'
         gws.log.info(f'parsing project {uid!r}...')
-        app_cfg.projects.append(parse(specs, prj_dict, 'gws.base.project.core.Config', prj_path))
+        app_cfg.projects.append(parse(specs, prj_dict, 'gws.ext.config.project', prj_path))
 
     return app_cfg
 

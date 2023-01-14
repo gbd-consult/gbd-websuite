@@ -68,7 +68,7 @@ class _Logger(logging.Logger):
             for ln in lines:
                 self.debug(pfx + ln)
 
-    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
+    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, **kwargs):
         if _logger.disabled:
             return
 

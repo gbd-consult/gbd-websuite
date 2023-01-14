@@ -265,6 +265,7 @@ class ExtCommandDescriptor(Data):
     request: 'Request'
     tArg: str
     tOwner: str
+    owner: ExtObjectDescriptor
 
 
 class ISpecRuntime(Protocol):
@@ -319,7 +320,8 @@ class Response(Data):
 class ContentResponse(Response):
     """Web response with literal content"""
 
-    attachment: Union[bool, str]
+    asAttachment: bool
+    attachmentName: str
     content: Union[bytes, str]
     location: str
     mime: str
@@ -755,6 +757,7 @@ class SourceLayer(Data):
 class SourceFeature(Data):
     attributes: dict
     shape: Optional['IShape']
+    wkt: Optional[str]
     layerName: Optional[str]
     uid: str
 
@@ -822,7 +825,11 @@ class IXmlElement(Iterable):
 
     def itertext(self) -> Iterable[str]: ...
 
+    def remove(self, other: 'IXmlElement'): ...
+
     # extensions
+
+    def add(self, tag: str, attrib: dict = None, **extra) -> 'IXmlElement': ...
 
     def children(self) -> List['IXmlElement']: ...
 
@@ -972,6 +979,33 @@ class IShape(IObject, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # database
 
+class ColumnDescription(Data):
+    columnIndex: int
+    comment: str
+    default: str
+    geometrySrid: int
+    geometryType: GeometryType
+    isAutoincrement: bool
+    isNullable: bool
+    isPrimaryKey: bool
+    name: str
+    nativeType: str
+    options: dict
+    relation: str
+    type: AttributeType
+
+
+class DataSetDescription(Data):
+    name: str
+    schema: str
+    fullName: str
+    columns: Dict[str, ColumnDescription]
+    keyNames: List[str]
+    geometryName: str
+    geometryType: GeometryType
+    geometrySrid: int
+
+
 class IDatabaseManager(INode, Protocol):
     def provider(self, uid: str, ext_type: str): ...
 
@@ -991,7 +1025,7 @@ class IDatabaseProvider(INode, Protocol):
 
     def sa_engine(self, **kwargs): ...
 
-    def describe_table(self, table_name: str): ...
+    def describe_table(self, table_name: str) -> DataSetDescription: ...
 
     def qualified_table_name(self, table_name: str) -> str: ...
 
@@ -1810,7 +1844,7 @@ class CliParams(Data):
 class IActionManager(INode, Protocol):
     items: List['IAction']
 
-    def find_action(self, class_name: str) -> Optional['IAction']: ...
+    def get_action(self, desc: ExtCommandDescriptor) -> Optional['IAction']: ...
 
     def actions_for(self, user: IUser, other: 'IActionManager' = None) -> List['IAction']: ...
 

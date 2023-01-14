@@ -163,7 +163,7 @@ def create(root: gws.IRoot):
 
     crs: t.List[gws.ICrs] = []
     for p in root.find_all(gws.ext.object.map):
-        crs.append(p.bounds.crs)
+        crs.append(t.cast(gws.IMap, p).bounds.crs)
     for p in root.find_all(gws.ext.object.owsService):
         crs.extend(gws.get(p, 'supported_crs', default=[]))
     cfg['services']['wms']['srs'] = sorted(set(c.epsg for c in crs))

@@ -11,7 +11,7 @@ def dispatch(
         user: gws.IUser = None,
         read_options=None,
 ):
-    def get_object():
+    def action_object():
         if not root.app:
             cls = root.specs.get_class(desc.tOwner)
             return cls()
@@ -30,14 +30,14 @@ def dispatch(
                 raise gws.base.web.error.NotFound()
 
         if project and project.actionMgr:
-            obj = project.actionMgr.find_action(desc.tOwner)
+            obj = project.actionMgr.get_action(desc)
             if obj and not user.can_use(obj):
                 gws.log.debug(f'{command_category!r}:{command_name!r} forbidden in project {project_uid!r}')
                 raise gws.base.web.error.Forbidden()
             if obj:
                 return obj
 
-        obj = root.app.actionMgr.find_action(desc.tOwner)
+        obj = root.app.actionMgr.get_action(desc)
         if obj and not user.can_use(obj):
             gws.log.debug(f'{command_category!r}:{command_name!r} forbidden')
             raise gws.base.web.error.Forbidden()
@@ -60,6 +60,6 @@ def dispatch(
         gws.log.debug(f'{command_category!r}:{command_name!r} read error: {exc!r}')
         raise gws.base.web.error.BadRequest()
 
-    obj = get_object()
-    fn = getattr(obj, desc.methodName)
+    action = action_object()
+    fn = getattr(action, desc.methodName)
     return fn, request

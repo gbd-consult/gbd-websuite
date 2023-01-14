@@ -6,7 +6,7 @@ import gws.gis.bounds
 import gws.gis.source
 import gws.types as t
 
-from . import core, configure
+from . import core
 
 
 @gws.ext.config.layer('group')

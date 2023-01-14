@@ -349,16 +349,14 @@ def _map_layers(root_el: gws.IXmlElement, properties) -> t.Dict[str, gws.SourceL
 
 def _map_layer(layer_el: gws.IXmlElement):
     sl = gws.SourceLayer(
-        supportedBounds=[],
         supportedCrs=[],
     )
 
     sl.metadata = _layer_metadata(layer_el)
 
     crs = gws.gis.crs.get(layer_el.textof('srs/spatialrefsys/authid'))
-    ext = layer_el.find('extent')
-    if crs and ext:
-        sl.supportedBounds.append(gws.SourceBounds(crs=crs, extent=_parse_extent(ext), format=gws.CrsFormat.EPSG))
+    if crs:
+        sl.supportedCrs.append(crs)
 
     ext = layer_el.find('wgs84extent')
     if ext:
@@ -372,7 +370,7 @@ def _map_layer(layer_el: gws.IXmlElement):
             sl.scaleRange = [a, z]
 
     prov = layer_el.textof('provider').lower()
-    sl.dataSource = _parse_datasource(prov, layer_el.textof('datasource'))
+    sl.dataSource = parse_datasource(prov, layer_el.textof('datasource'))
     if sl.dataSource and 'provider' not in sl.dataSource:
         sl.dataSource['provider'] = _parse_datasource_provider(prov, sl.dataSource)
 
@@ -423,7 +421,7 @@ def _layer_tree(el: gws.IXmlElement, layers_dct):
 
 ##
 
-def _parse_datasource(provider, text):
+def parse_datasource(provider, text):
     # Datasources are very versatile and the format depends on the provider.
     # For some hints see `decodedSource` in qgsvectorlayer.cpp/qgsrasterlayer.cpp.
     # We don't have ambition to parse them all, just do some ad-hoc parsing

@@ -37,7 +37,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('webDownload')
     def download(self, req: gws.IWebRequester, p) -> gws.ContentResponse:
-        return _serve_path(self.root, req, p, attachment=True)
+        return _serve_path(self.root, req, p, as_attachment=True)
 
     @gws.ext.command.get('webSystemAsset')
     def sys_asset(self, req: gws.IWebRequester, p: AssetRequest) -> gws.ContentResponse:
@@ -67,7 +67,7 @@ class Object(gws.base.action.Object):
                 content=gws.base.client.bundles.css(self.root, 'app', theme))
 
 
-def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, attachment=False):
+def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_attachment=False):
     spath = str(p.get('path') or '')
     if not spath:
         raise gws.base.web.error.NotFound()
@@ -95,7 +95,7 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, attach
     if project and locale_uid not in project.localeUids:
         locale_uid = project.localeUids[0]
 
-    tpl = gws.base.template.create_from_path(root, rpath)
+    tpl = gws.base.template.from_path(root, rpath)
 
     if tpl:
         # give the template an empty response to manipulate (e.g. add 'location')
@@ -126,7 +126,7 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, attach
 
     gws.log.debug(f'serving {rpath!r} for {spath!r}')
 
-    return gws.ContentResponse(mime=mime, path=rpath, attachment=attachment)
+    return gws.ContentResponse(mime=mime, path=rpath, asAttachment=as_attachment)
 
 
 def _projects_for_user(root, user):

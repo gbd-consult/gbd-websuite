@@ -150,6 +150,12 @@ class XElement(xml.etree.ElementTree.Element):
 
     ##
 
+    def add(self, tag, attrib=None, **extra):
+        el = self.__class__(tag, attrib, **extra)
+        el.caseInsensitive = self.caseInsensitive
+        self.append(el)
+        return el
+
     def attr(self, key, default=None):
         return self.get(key, default)
 

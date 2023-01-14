@@ -138,21 +138,22 @@ class Requester(gws.IWebRequester):
             'direct_passthrough': False,
         }
 
-        def _attachment_name():
-            if isinstance(response.attachment, str):
-                return response.attachment
-            if response.path:
-                return os.path.basename(response.path)
-            if response.mime:
-                ext = gws.lib.mime.extension_for(response.mime)
-                if ext:
-                    return 'download.' + ext
-            raise gws.Error('missing attachment name or mime type')
+        aname = None
 
-        if response.attachment:
-            name = _attachment_name()
-            args['headers']['Content-Disposition'] = f'attachment; filename="{name}"'
-            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(name)
+        if response.attachmentName:
+            aname = response.attachmentName
+        elif response.asAttachment:
+            if response.path:
+                aname = os.path.basename(response.path)
+            elif response.mime:
+                ext = gws.lib.mime.extension_for(response.mime)
+                aname = 'download.' + ext
+            else:
+                aname = 'download'
+
+        if aname:
+            args['headers']['Content-Disposition'] = f'attachment; filename="{aname}"'
+            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(aname)
 
         if response.path:
             args['response'] = werkzeug.wsgi.wrap_file(self.environ, open(response.path, 'rb'))
@@ -270,7 +271,7 @@ class Requester(gws.IWebRequester):
 
         if typ == 'msgpack':
             try:
-                return umsgpack.loads(self.data)
+                return umsgpack.loads(self.data())
             except (TypeError, umsgpack.UnpackException):
                 gws.log.error('malformed msgpack request')
                 raise error.BadRequest()

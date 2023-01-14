@@ -46,7 +46,7 @@ class Reader:
             raise self.add_error_details(exc)
 
     def read2(self, value, type_uid):
-        typ = self.runtime.get(type_uid)
+        typ = self.runtime.get_type(type_uid)
 
         if type_uid in _READERS:
             return _READERS[type_uid](self, value, typ or self.atom)
@@ -310,7 +310,7 @@ def _read_datetime(r: Reader, val, typ: core.Type):
 def _read_dirpath(r: Reader, val, typ: core.Type):
     path = gws.lib.osx.abs_path(val, r.path)
     if not gws.is_dir(path):
-        raise core.ReadError(f'directory not found: {path!r}', val)
+        raise core.ReadError(f'directory not found: {path!r}, base {r.path!r}', val)
     return path
 
 
@@ -324,13 +324,21 @@ def _read_duration(r: Reader, val, typ: core.Type):
 def _read_filepath(r: Reader, val, typ: core.Type):
     path = gws.lib.osx.abs_path(val, r.path)
     if not gws.is_file(path):
-        raise core.ReadError(f'file not found: {path!r}', val)
+        raise core.ReadError(f'file not found: {path!r}, base {r.path!r}', val)
     return path
 
 
 def _read_formatstr(r: Reader, val, typ: core.Type):
     # @TODO validate
     return _read_str(r, val, typ)
+
+
+def _read_metadata(r: Reader, val, typ: core.Type):
+    rr = r.relax_required
+    r.relax_required = True
+    res = gws.compact(_read_object(r, val, typ))
+    r.relax_required = rr
+    return res
 
 
 def _read_regex(r: Reader, val, typ: core.Type):
@@ -346,14 +354,6 @@ def _read_url(r: Reader, val, typ: core.Type):
     if u.startswith(('http://', 'https://')):
         return u
     raise core.ReadError(f'invalid url: {val!r}', val)
-
-
-def _read_metadata(r: Reader, val, typ: core.Type):
-    rr = r.relax_required
-    r.relax_required = True
-    res = gws.compact(_read_object(r, val, typ))
-    r.relax_required = rr
-    return res
 
 
 # utils

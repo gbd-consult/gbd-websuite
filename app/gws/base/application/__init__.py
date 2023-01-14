@@ -56,6 +56,8 @@ class Config(gws.ConfigWithAccess):
     """application metadata"""
     middleware: t.Optional[t.List[str]]
     """middleware function names"""
+    plugins: t.Optional[t.List[dict]]
+    """configuration for plugins"""
     projectDirs: t.Optional[t.List[gws.DirPath]]
     """directories with additional projects"""
     projectPaths: t.Optional[t.List[gws.FilePath]]
