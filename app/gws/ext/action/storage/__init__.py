@@ -45,15 +45,18 @@ class DeleteResponse(t.Params):
 
 class Config(t.WithTypeAndAccess):
     """Storage action"""
-    pass
+    storage: t.Optional[gws.ext.helper.storage.Config]  #: storage configuration
 
 
 class Object(gws.common.action.Object):
+    storage: gws.ext.helper.storage.Object
 
-    @gws.cached_property
-    def storage(self) -> gws.ext.helper.storage.Object:
-        obj: gws.ext.helper.storage.Object = self.root.find_first('gws.ext.helper.storage')
-        return obj
+    def configure(self):
+        p = self.var('storage')
+        if p:
+            self.storage = self.create_child('gws.ext.helper.storage', p)
+        else:
+            self.storage = self.root.find_first('gws.ext.helper.storage')
 
     def api_write(self, req: t.IRequest, p: WriteParams) -> WriteResponse:
         try:
