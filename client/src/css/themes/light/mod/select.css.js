@@ -8,6 +8,10 @@ module.exports = v => ({
         ...v.TOOLBAR_BUTTON('select')
     },
 
+    '.modSelectDrawToolbarButton': {
+        ...v.TOOLBAR_BUTTON('select_polygon')
+    },
+
     '.modSelectUnselectListButton': {
         ...v.LIST_BUTTON('google:content/remove_circle_outline')
     },

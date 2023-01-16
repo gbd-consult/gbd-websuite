@@ -15,21 +15,27 @@ const MASTER = 'Shared.Select';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as SelectController;
 
-interface SelectViewProps extends gws.types.ViewProps {
+interface ViewProps extends gws.types.ViewProps {
     controller: SelectController;
     selectFeatures: Array<gws.types.IMapFeature>;
+    selectShapeType: string;
+    selectSelectedFormat: string;
+    selectFormatDialogParams: object;
 }
 
-const SelectStoreKeys = [
+const StoreKeys = [
     'selectFeatures',
+    'selectShapeType',
+    'selectSelectedFormat',
+    'selectFormatDialogParams',
 ];
 
 
 class SelectTool extends gws.Tool {
 
     async run(evt: ol.MapBrowserPointerEvent) {
-        let extend = !evt.originalEvent['altKey'];
-        await _master(this).select(evt.coordinate, extend);
+        let toggle = !evt.originalEvent['altKey'];
+        await _master(this).doSelect(new ol.geom.Point(evt.coordinate), toggle);
     }
 
     start() {
@@ -46,7 +52,73 @@ class SelectTool extends gws.Tool {
 
 }
 
-class SelectSidebarView extends gws.View<SelectViewProps> {
+export class SelectDrawTool extends gws.Tool {
+
+    // layerPtr: LensLayer;
+    ixDraw: ol.interaction.Draw;
+    drawState: string = '';
+    styleName: string;
+
+    title = this.__('modLens');
+
+    async init() {
+        this.styleName = this.app.style.get('.modLensFeature').name;
+        this.update({selectShapeType: 'Polygon'});
+    }
+
+    start() {
+        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Select'});
+
+        this.reset();
+
+        let drawFeature;
+
+        this.ixDraw = this.map.drawInteraction({
+            shapeType: this.getValue('selectShapeType'),
+            style: this.styleName,
+            whenStarted: (oFeatures) => {
+                drawFeature = oFeatures[0];
+                this.drawState = 'drawing';
+            },
+            whenEnded: () => {
+                if (this.drawState === 'drawing') {
+                    this.run(drawFeature.getGeometry());
+                }
+                this.drawState = '';
+            },
+        });
+
+        this.map.appendInteractions([this.ixDraw]);
+    }
+
+    stop() {
+        this.reset();
+    }
+
+    async run(geom) {
+        await _master(this).doSelect(geom, false);
+    }
+
+    setShapeType(st) {
+        this.drawCancel();
+        this.update({selectShapeType: st});
+        this.start();
+    }
+
+    drawCancel() {
+        if (this.drawState === 'drawing') {
+            this.drawState = 'cancel';
+            this.ixDraw.finishDrawing();
+        }
+    }
+
+    reset() {
+        this.map.resetInteractions();
+        this.ixDraw = null;
+    }
+}
+
+class SelectSidebarView extends gws.View<ViewProps> {
     render() {
 
         let master = _master(this.props.controller);
@@ -113,7 +185,7 @@ class SelectSidebar extends gws.Controller implements gws.types.ISidebarItem {
 
     get tabView() {
         return this.createElement(
-            this.connect(SelectSidebarView, SelectStoreKeys)
+            this.connect(SelectSidebarView, StoreKeys)
         );
     }
 
@@ -125,6 +197,16 @@ class SelectToolbarButton extends toolbar.Button {
 
     get tooltip() {
         return this.__('modSelectToolbarButton');
+    }
+
+}
+
+class SelectDrawToolbarButton extends toolbar.Button {
+    iconClass = 'modSelectDrawToolbarButton';
+    tool = 'Tool.Select.Draw';
+
+    get tooltip() {
+        return this.__('modSelectDrawToolbarButton');
     }
 
 }
@@ -142,16 +224,16 @@ class SelectController extends gws.Controller {
         });
     }
 
-    async select(center: ol.Coordinate, extend: boolean) {
-        let features = await this.map.searchForFeatures({geometry: new ol.geom.Point(center)});
+    async doSelect(geometry: ol.geom.Geometry, toggle: boolean) {
+        let features = await this.map.searchForFeatures({geometry});
 
         if (gws.tools.empty(features))
             return;
 
-        this.addFeature(features[0], extend);
+        features.forEach(f => this.addFeature(f, toggle));
     }
 
-    addFeature(feature, extend = true) {
+    addFeature(feature, toggle = false) {
 
         if (!this.layer) {
             this.layer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
@@ -160,21 +242,19 @@ class SelectController extends gws.Controller {
             }));
         }
 
-        if (!extend)
-            this.layer.clear();
-
         if (!feature.oFeature) {
             let geometry = feature.geometry;
             feature.oFeature = new ol.Feature({geometry});
         }
 
-        console.log(feature);
 
         let f = this.findFeatureByUid(feature.uid);
+        console.log(feature, f);
 
-        if (f)
-            this.layer.removeFeature(f);
-        else
+        if (f) {
+            if (toggle)
+                this.layer.removeFeature(f);
+        } else
             this.layer.addFeatures([feature]);
 
         this.update({
@@ -235,6 +315,8 @@ class SelectController extends gws.Controller {
 export const tags = {
     [MASTER]: SelectController,
     'Toolbar.Select': SelectToolbarButton,
+    'Toolbar.Select.Draw': SelectDrawToolbarButton,
     'Sidebar.Select': SelectSidebar,
     'Tool.Select': SelectTool,
+    'Tool.Select.Draw': SelectDrawTool,
 };

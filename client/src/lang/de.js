@@ -128,6 +128,7 @@ module.exports = {
     modSearchPlaceholder: 'Suchen',
     modSearchSidebarTitle: 'Suche',
     modSelectAreaButton: 'Auswahl mithilfe selbstgezeichneter Fläche',
+    modSelectDrawToolbarButton: 'Auswahl mithilfe selbstgezeichneter Fläche',
     modSelectClearAuxButton: 'Alle löschen',
     modSelectDropButton: 'Auswahl verwerfen',
     modSelectLoadAuxButton: 'Auswahl laden',
