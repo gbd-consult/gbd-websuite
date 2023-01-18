@@ -11,7 +11,7 @@ import gws.types as t
 from . import runner
 
 MAX_LIMIT = 1000
-DEFAULT_TOLERANCE = 10, gws.Uom.PX
+DEFAULT_TOLERANCE = 10, gws.Uom.px
 DEFAULT_VIEWS = ['title', 'teaser', 'description']
 
 
@@ -88,7 +88,7 @@ class Object(gws.base.action.Object):
 
         search.tolerance = self.tolerance
         if p.tolerance:
-            search.tolerance = gws.lib.uom.parse(p.tolerance, default=gws.Uom.PX)
+            search.tolerance = gws.lib.uom.parse(p.tolerance, default=gws.Uom.px)
 
         if p.resolution:
             search.resolution = p.resolution

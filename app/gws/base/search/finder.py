@@ -5,7 +5,7 @@ import gws.base.shape
 import gws.lib.uom
 import gws.types as t
 
-_DEFAULT_TOLERANCE = 10, gws.Uom.PX
+_DEFAULT_TOLERANCE = 10, gws.Uom.px
 
 
 class SpatialContext(t.Enum):
@@ -47,7 +47,7 @@ class Object(gws.Node, gws.IFinder):
         self.models = []
 
         p = self.var('tolerance')
-        self.tolerance = gws.lib.uom.parse(p, default=gws.lib.uom.PX) if p else _DEFAULT_TOLERANCE
+        self.tolerance = gws.lib.uom.parse(p, default=gws.lib.uom.px) if p else _DEFAULT_TOLERANCE
 
         self.withKeyword = self.supportsKeyword and self.var('withKeyword', default=True)
         self.withGeometry = self.supportsGeometry and self.var('withGeometry', default=True)

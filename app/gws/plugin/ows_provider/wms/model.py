@@ -91,9 +91,9 @@ class Object(gws.base.model.Object):
 
         size = None
 
-        if shape.crs.uom == gws.Uom.M:
+        if shape.crs.uom == gws.Uom.m:
             size = box_size_m
-        if shape.crs.uom == gws.Uom.DEG:
+        if shape.crs.uom == gws.Uom.deg:
             size = box_size_deg
         if not size:
             gws.log.debug('cannot request crs {crs!r}, unsupported unit')

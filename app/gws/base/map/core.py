@@ -73,7 +73,7 @@ class Object(gws.Node, gws.IMap):
         if p:
             self.coordinatePrecision = p
         else:
-            self.coordinatePrecision = (2 if self.bounds.crs.uom == gws.Uom.M else 7)
+            self.coordinatePrecision = (2 if self.bounds.crs.uom == gws.Uom.m else 7)
 
         self.rootLayer = self.create_child(gws.ext.object.layer, gws.Config(
             type='group',

@@ -39,7 +39,7 @@ class Object(scalar.Object):
             shape = sel.search.shape
             if sel.search.tolerance:
                 tol_value, tol_unit = sel.search.tolerance
-                if tol_unit == gws.Uom.PX:
+                if tol_unit == gws.Uom.px:
                     tol_value *= sel.search.resolution
                 shape = shape.tolerance_polygon(tol_value)
         elif sel.search.bounds:

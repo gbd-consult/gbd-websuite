@@ -46,30 +46,52 @@ class Corner(Enum):
 class Uom(Enum):
     """Unit of measure"""
 
-    MI = 'mi'  # Statute mile EPSG:9093
-    US_CH = 'us-ch'  # US survey chain EPSG:9033
-    US_FT = 'us-ft'  # US survey foot EPSG:9003
-    US_IN = 'us-in'  # US survey inch US_IN
-    US_MI = 'us-mi'  # US survey mile EPSG:9035
-    US_YD = 'us-yd'  # US survey yard US_YD
-    CM = 'cm'  # centimetre EPSG:1033
-    CH = 'ch'  # chain EPSG:9097
-    DM = 'dm'  # decimeter DM
-    DEG = 'deg'  # degree EPSG:9102
-    FATH = 'fath'  # fathom EPSG:9014
-    FT = 'ft'  # foot EPSG:9002
-    GRAD = 'grad'  # grad EPSG:9105
-    IN = 'in'  # inch IN
-    KM = 'km'  # kilometre EPSG:9036
-    LINK = 'link'  # link EPSG:9098
-    M = 'm'  # metre EPSG:9001
-    MM = 'mm'  # millimetre EPSG:1025
-    KMI = 'kmi'  # nautical mile EPSG:9030
-    RAD = 'rad'  # radian EPSG:9101
-    YD = 'yd'  # yard EPSG:9096
-
-    PX = 'px'  # pixel
-    PT = 'pt'  # point
+    mi = 'mi'
+    """statute mile epsg:9093"""
+    us_ch = 'us-ch'
+    """us survey chain epsg:9033"""
+    us_ft = 'us-ft'
+    """us survey foot epsg:9003"""
+    us_in = 'us-in'
+    """us survey inch us_in"""
+    us_mi = 'us-mi'
+    """us survey mile epsg:9035"""
+    us_yd = 'us-yd'
+    """us survey yard us_yd"""
+    cm = 'cm'
+    """centimetre epsg:1033"""
+    ch = 'ch'
+    """chain epsg:9097"""
+    dm = 'dm'
+    """decimeter dm"""
+    deg = 'deg'
+    """degree epsg:9102"""
+    fath = 'fath'
+    """fathom epsg:9014"""
+    ft = 'ft'
+    """foot epsg:9002"""
+    grad = 'grad'
+    """grad epsg:9105"""
+    inch = 'in'
+    """inch in"""
+    km = 'km'
+    """kilometre epsg:9036"""
+    link = 'link'
+    """link epsg:9098"""
+    m = 'm'
+    """metre epsg:9001"""
+    mm = 'mm'
+    """millimetre epsg:1025"""
+    kmi = 'kmi'
+    """nautical mile epsg:9030"""
+    rad = 'rad'
+    """radian epsg:9101"""
+    yd = 'yd'
+    """yard epsg:9096"""
+    px = 'px'
+    """pixel"""
+    pt = 'pt'
+    """point"""
 
 
 Measurement = Tuple[float, Uom]
