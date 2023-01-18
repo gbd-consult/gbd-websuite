@@ -21,12 +21,17 @@ class Config(gws.ConfigWithAccess):
 
 
 class Props(gws.Props):
-    geometryType: gws.GeometryType
+    canCreate: bool
+    canDelete: bool
+    canRead: bool
+    canWrite: bool
+    fields: t.List[gws.ext.props.modelField]
+    geometryCrs: str
     geometryName: str
+    geometryType: gws.GeometryType
     keyName: str
     layerUid: str
-    crs: str
-    fields: t.List[gws.ext.props.modelField]
+    uid: str
 
 
 class Object(gws.Node, gws.IModel):
@@ -41,6 +46,23 @@ class Object(gws.Node, gws.IModel):
             for cfg in p:
                 self.fields.append(self.create_child(gws.ext.object.modelField, config=gws.merge(cfg, _model=self)))
             return True
+
+    def props(self, user):
+        z = [gws.props(f, user, self) for f in self.fields]
+        gws.p(z)
+        return gws.Props(
+            canCreate=user.can_create(self),
+            canDelete=user.can_delete(self),
+            canRead=user.can_read(self),
+            canWrite=user.can_write(self),
+            fields=[gws.props(f, user, self) for f in self.fields],
+            geometryCrs=self.geometryCrs.epsg if self.geometryCrs else None,
+            geometryName=self.geometryName,
+            geometryType=self.geometryType,
+            keyName=self.keyName,
+            layerUid=self.parent.uid if self.parent else None,
+            uid=self.uid,
+        )
 
     def feature_from_source(self, sf, user):
         atts = dict(sf.attributes)
@@ -80,8 +102,6 @@ class Object(gws.Node, gws.IModel):
             for f in self.fields:
                 if user.can_read(f, self):
                     f.store_to_dict(feature, atts, user)
-
-        uid = feature.uid()
 
         return gws.Props(
             attributes=atts,

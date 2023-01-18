@@ -26,7 +26,11 @@ def main(argv):
     gws.log.set_level(params.get('logLevel'))
 
     try:
-        specs = gws.spec.runtime.create(params.get('manifest'), read_cache=True, write_cache=True)
+        specs = gws.spec.runtime.create(
+            params.get('manifest'),
+            read_cache=not params.get('noSpecCache'),
+            write_cache=True
+        )
     except:
         sys.stdout.flush()
         gws.log.exception()

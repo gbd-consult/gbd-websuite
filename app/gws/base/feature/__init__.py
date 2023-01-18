@@ -54,8 +54,8 @@ class Feature(gws.Object, gws.IFeature):
                 feature=self
             ))
         for tpl in templates:
-            v = tpl.subject.split('.')[-1]
-            self.views[v] = tpl.render(tri).content
+            view_name = tpl.subject.split('.')[-1]
+            self.views[view_name] = tpl.render(tri).content
         return self
 
     def transform_to(self, crs) -> gws.IFeature:

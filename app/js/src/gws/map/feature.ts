@@ -21,10 +21,6 @@ export class Feature implements types.IFeature {
     isNew: boolean = false;
     isSelected: boolean = false;
 
-    keyName: string = 'id';
-    geometryName: string = 'geometry';
-
-
     map: types.IMapManager;
 
     constructor(map) {
@@ -33,10 +29,12 @@ export class Feature implements types.IFeature {
     }
 
     setProps(props) {
+        this.model = this.map.app.models.getModel(props.modelUid);
+
         this.attributes = props.attributes || {};
         this.editedAttributes = {};
 
-        let uid = this.attributes[props.keyName];
+        let uid = this.attributes[this.keyName];
         if (uid)
             this.uid = String(uid);
 
@@ -47,25 +45,27 @@ export class Feature implements types.IFeature {
         if (layerUid)
             this.layer = this.map.getLayer(layerUid) as types.IFeatureLayer;
 
-        let modelUid = props.modelUid;
-        if (modelUid && this.map.models)
-            this.model = this.map.models.getModel(modelUid);
-
-        this.keyName = props.keyName;
-        this.geometryName = props.geometryName;
 
         this.isNew = Boolean(props.isNew);
         this.isSelected = Boolean(props.isSelected);
 
         let shape = this.attributes[this.geometryName];
         if (shape) {
-            this.createOrupdateOlFeature(this.map.shape2geom(shape));
+            this.createOrUpdateOlFeature(this.map.shape2geom(shape));
         }
 
         return this;
     }
 
     //
+
+    get keyName() {
+        return this.model.keyName
+    }
+
+    get geometryName() {
+        return this.model.geometryName
+    }
 
     get geometry() {
         return this.oFeature ? this.oFeature.getGeometry() : null;
@@ -101,7 +101,7 @@ export class Feature implements types.IFeature {
     //
 
     setGeometry(geom: ol.geom.Geometry) {
-        this.createOrupdateOlFeature(geom);
+        this.createOrUpdateOlFeature(geom);
         this.attributes[this.geometryName] = this.map.geom2shape(geom);
         return this.redraw();
     }
@@ -142,14 +142,12 @@ export class Feature implements types.IFeature {
         this.elements = feature.elements ? {...feature.elements} : {};
         this.layer = feature.layer;
         this.model = feature.model;
-        this.keyName = feature.keyName;
-        this.geometryName = feature.geometryName;
         this.isNew = feature.isNew;
         this.isSelected = feature.isSelected;
 
         let shape = this.attributes[this.geometryName];
         if (shape) {
-            this.createOrupdateOlFeature(this.map.shape2geom(shape));
+            this.createOrUpdateOlFeature(this.map.shape2geom(shape));
         }
 
         let uid = this.attributes[this.keyName];
@@ -166,7 +164,7 @@ export class Feature implements types.IFeature {
 
     //
 
-    protected createOrupdateOlFeature(geom) {
+    protected createOrUpdateOlFeature(geom) {
         if (this.oFeature)
             this.oFeature.setGeometry(geom);
         else
@@ -236,6 +234,7 @@ export class Feature implements types.IFeature {
 
     protected oStyleFunc(oFeature, resolution) {
         let s = this.currentStyle();
+        console.log('XXX', s)
         if (!s) {
             return [];
         }

@@ -1,10 +1,16 @@
 """Postgres models."""
 
+import gws
 import gws.base.database.model
 import gws.base.feature
 import gws.types as t
 
 from . import provider
+
+
+@gws.ext.props.model('postgres')
+class Props(gws.base.database.model.Props):
+    pass
 
 
 @gws.ext.config.model('postgres')

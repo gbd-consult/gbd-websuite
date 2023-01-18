@@ -9,6 +9,10 @@ import gws.types as t
 from . import provider, sql
 
 
+class Props(gws.base.model.Props):
+    pass
+
+
 class Config(gws.base.model.Config):
     db: t.Optional[str]
     tableName: str

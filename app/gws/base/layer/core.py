@@ -391,6 +391,13 @@ class Object(gws.Node, gws.ILayer):
             p = p.parent
         return ls
 
+    def descendants(self):
+        ls = []
+        for la in self.layers:
+            ls.append(la)
+            ls.extend(la.descendants())
+        return ls
+
     _url_path_suffix = '/gws.png'
 
     def url_path(self, kind):

@@ -5,24 +5,16 @@ import * as api from '../core/api';
 
 export class ModelRegistry implements types.IModelRegistry {
     models: { [uid: string]: Model };
-    map: types.IMapManager;
+    app: types.IApplication;
 
-    constructor(map: types.IMapManager) {
-        this.map = map;
+    constructor(app: types.IApplication) {
+        this.app = app;
+        this.models = {};
     }
 
 
-    setProps(props: Array<api.base.model.Props>): ModelRegistry {
-        this.models = {};
-
-        for (let p of props) {
-            this.models[p.uid] = new Model(this);
-        }
-
-        for (let p of props) {
-            this.models[p.uid].setProps(p);
-        }
-        return this;
+    addModel(props: api.base.model.Props) {
+        this.models[props.uid] = new Model(this, props);
     }
 
     getModel(uid) {
@@ -45,11 +37,9 @@ export class Model implements types.IModel {
     uid: string;
     registry: ModelRegistry;
 
-    constructor(registry) {
+    constructor(registry, props) {
         this.registry = registry;
-    }
 
-    setProps(props: api.base.model.Props): Model {
         this.geometryName = props.geometryName;
         this.keyName = props.keyName;
         this.layerUid = props.layerUid;
@@ -65,7 +55,7 @@ export class Model implements types.IModel {
     }
 
     getLayer() {
-        return this.registry.map.getLayer(this.layerUid) as types.IFeatureLayer;
+        return this.registry.app.map.getLayer(this.layerUid) as types.IFeatureLayer;
     }
 
     getField(name) {

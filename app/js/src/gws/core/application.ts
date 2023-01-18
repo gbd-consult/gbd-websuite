@@ -9,6 +9,7 @@ import {RootController} from './root';
 
 import * as api from './api';
 import * as lib from '../lib';
+import * as model from "gws/map/model";
 
 class DefaultTool extends Tool {
     start() {
@@ -32,6 +33,7 @@ export class Application implements types.IApplication {
     localeUid = '';
     languageUid = '';
     locale: api.core.Locale;
+    models: types.IModelRegistry = null;
 
 
     protected controllers: { [key: string]: types.IController } = {};
@@ -146,6 +148,10 @@ export class Application implements types.IApplication {
         this.project = res.project;
         this.locale = res.locale;
         this.localeUid = res.locale.id;
+
+        this.models = new model.ModelRegistry(this);
+        for (let props of res.project.models)
+            this.models.addModel(props);
 
         let loc = _url2loc(location.href);
         this.urlParams = _qsparse(loc.qs);

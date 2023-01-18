@@ -22,6 +22,7 @@ let layerTypes = {
 import {Feature} from './feature';
 
 import * as interactions from './interactions';
+import {IModelRegistry} from "../types";
 
 const POINTER_UPDATE_INTERVAL = 10;
 const VIEW_UPDATE_INTERVAL = 1000;
@@ -45,8 +46,6 @@ export class MapManager implements types.IMapManager {
     root = null;
     resolutions = null;
     extent = null;
-
-    models: types.IModelRegistry = null;
 
     protected connectedToStore = false;
     protected coordinatePrecision = 0;
@@ -734,8 +733,8 @@ export class MapManager implements types.IMapManager {
         let atts = props.attributes || {};
         let model: types.IModel;
 
-        if (props.modelUid && this.models)
-            model = this.models.getModel(props.modelUid);
+        if (props.modelUid)
+            model = this.app.models.getModel(props.modelUid);
 
         if (model) {
             for (let f of model.fields) {
@@ -800,10 +799,6 @@ export class MapManager implements types.IMapManager {
             geometryName: feature.geometryName,
             // style: style ? style.props : null,
         }
-    }
-
-    loadModels(models: Array<api.base.model.Props>) {
-        this.models = new model.ModelRegistry(this).setProps(models);
     }
 
     //

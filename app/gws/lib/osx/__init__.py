@@ -57,10 +57,10 @@ def run(cmd, input=None, echo=False, strict=True, timeout=None, **kwargs):
     except subprocess.TimeoutExpired:
         raise TimeoutError()
     except Exception as exc:
-        raise Error('command failed', cmd) from exc
+        raise Error(f'failed {cmd=}', cmd) from exc
 
     if rc and strict:
-        raise Error('command failed', cmd, rc, out)
+        raise Error(f'failed {cmd=} {rc=}', cmd, rc, out)
 
     return rc, out
 

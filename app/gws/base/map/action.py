@@ -69,6 +69,9 @@ class GetFeaturesResponse(gws.Response):
     features: t.List[gws.base.feature.Props]
 
 
+_GET_FEATURES_LIMIT = 10000
+
+
 @gws.ext.object.action('map')
 class Object(gws.base.action.Object):
     _error_pixel = gws.lib.mime.PNG, gws.lib.image.PIXEL_PNG8
@@ -110,7 +113,7 @@ class Object(gws.base.action.Object):
     def describe_layer(self, req: gws.IWebRequester, p: DescribeLayerRequest) -> DescribeLayerResponse:
         layer = req.require_layer(p.layerUid)
         desc = gws.base.template.render(
-            self.templates,
+            layer.templates,
             gws.TemplateRenderInput(args=dict(layer=layer, user=req.user)),
             user=req.user,
             subject='layer.description')
@@ -219,17 +222,13 @@ class Object(gws.base.action.Object):
             raise gws.base.web.error.Forbidden()
 
         bounds = layer.bounds
-        if p.crs:
+        if p.bbox:
             bounds = gws.gis.bounds.from_extent(
                 p.bbox,
                 gws.gis.crs.get(p.crs)
             )
 
-        search = gws.SearchArgs(
-            bounds=bounds,
-            limit=1000,
-        )
-
+        search = gws.SearchArgs(bounds=bounds, limit=_GET_FEATURES_LIMIT)
         features = model.find_features(search, req.user)
 
         templates = []
@@ -244,9 +243,6 @@ class Object(gws.base.action.Object):
             feature.compute_values(gws.Access.read, req.user)
             feature.transform_to(bounds.crs)
             feature.render_views(templates, user=req.user, layer=layer)
-
-            props = feature.props(req.user)
-
-            ls.append(gws.props(feature, req.user))
+            ls.append(gws.props(feature, req.user, layer))
 
         return ls

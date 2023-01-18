@@ -54,6 +54,7 @@ class Props(gws.Props):
     description: str
     locales: t.List[str]
     map: gws.ext.props.map
+    models: t.List[gws.ext.props.model]
     metadata: gws.lib.metadata.Props
     overviewMap: gws.ext.props.map
     printer: gws.base.printer.Props
@@ -106,11 +107,16 @@ class Object(gws.Node, gws.IProject):
             user=user,
             subject='project.description')
 
+        models = []
+        for la in self.map.rootLayer.descendants():
+            models.extend(m for m in la.models if user.can_use(la) and user.can_use(m))
+
         return gws.Props(
             actions=self.root.app.actionMgr.actions_for(user, self.actionMgr),
             client=self.client or self.root.app.client,
             description=desc.content if desc else '',
             map=self.map,
+            models=models,
             metadata=gws.lib.metadata.props(self.metadata),
             printer=self.printer,
             title=self.title,

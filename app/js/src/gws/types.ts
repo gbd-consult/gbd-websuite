@@ -40,6 +40,8 @@ export interface IApplication {
     urlParams: Dict;
     localeUid: string;
     locale: api.core.Locale;
+    models: IModelRegistry;
+
 
     __(key);
 
@@ -275,8 +277,6 @@ export interface IMapManager {
     size: ol.Size;
     viewState: MapViewState;
 
-    models: IModelRegistry;
-
     init(props: api.base.map.Props, appLoc: object);
     update(args: any);
     changed();
@@ -342,8 +342,6 @@ export interface IMapManager {
     featureListFromProps(propsList: Array<api.base.feature.Props>): Array<IFeature>;
 
     featureProps(feature: IFeature, depth?: number): api.base.feature.Props;
-
-    loadModels(models: Array<api.base.model.Props>);
 
     geom2shape(geom: ol.geom.Geometry): api.base.shape.Props;
     shape2geom(shape: api.base.shape.Props): ol.geom.Geometry;
@@ -433,12 +431,9 @@ export interface ISidebarItem extends IController {
 }
 
 export interface IModelRegistry {
+    addModel(props: api.base.model.Props);
     getModel(uid: string): IModel|null;
     getModelForLayer(layer: ILayer): IModel|null;
-
-
-
-
 }
 
 export interface IModel {
