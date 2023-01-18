@@ -54,10 +54,10 @@ class Object(gws.base.model.Object):
         if not self.sourceLayers:
             raise gws.Error(f'no queryable layers found in {self.provider.url!r}')
 
-    def find_features(self, fs, user):
+    def find_features(self, search, user, **kwargs):
         features = []
 
-        for sf in self.wms_search(fs):
+        for sf in self.wms_search(search):
             atts = sf.attributes
             if sf.uid:
                 atts[self.keyName] = sf.uid

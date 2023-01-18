@@ -48,8 +48,6 @@ class Object(gws.Node, gws.IModel):
             return True
 
     def props(self, user):
-        z = [gws.props(f, user, self) for f in self.fields]
-        gws.p(z)
         return gws.Props(
             canCreate=user.can_create(self),
             canDelete=user.can_delete(self),

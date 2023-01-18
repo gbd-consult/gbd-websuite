@@ -1338,18 +1338,6 @@ class ITemplate(INode, Protocol):
     def render(self, tri: TemplateRenderInput) -> ContentResponse: ...
 
 
-class ITemplateManager(INode, Protocol):
-    templates: List['ITemplate']
-
-    def add_template(self, tpl: 'ITemplate') -> 'ITemplate': ...
-
-    def create_template(self, cfg: Any) -> 'ITemplate': ...
-
-    def template(self, user: IUser = None, subject: str = None, mime: str = None) -> Optional['ITemplate']: ...
-
-    def render_template(self, tri: TemplateRenderInput, user: IUser = None, subject: str = None, mime: str = None) -> Optional[ContentResponse]: ...
-
-
 class IPrinter(INode, Protocol):
     pass
 
@@ -1605,16 +1593,6 @@ class IFinder(INode, Protocol):
     def run(self, search: SearchArgs, user: IUser, layer: 'ILayer' = None) -> List['IFeature']: ...
 
     def can_run(self, search: SearchArgs, user: IUser) -> bool: ...
-
-
-class ISearchManager(INode, Protocol):
-    finders: List['IFinder']
-
-    def add_finder(self, f: IFinder): ...
-
-    def create_finder(self, cfg: Any): ...
-
-    def finder_for(self, user: IUser = None, **kwargs) -> Optional[IFinder]: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
