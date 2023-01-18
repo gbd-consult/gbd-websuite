@@ -107,7 +107,7 @@ class Object(gws.Node, gws.IMonitor):
     def _reload(self, reconf):
         if reconf:
             try:
-                control.configure()
+                control.configure_and_store()
             except:
                 gws.log.exception('MONITOR: configuration error')
                 return False
