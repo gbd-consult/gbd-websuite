@@ -28,10 +28,16 @@ def validate_geoms(conn, table):
         gws.log.warn('geometry error in %r: %s' % (table, w))
 
 
-def check_version(conn, table):
-    ver = conn.index_table_version(table)
-    if ver == version.INDEX:
-        gws.log.debug('index %r version %s, ok' % (table, ver))
+def check_version(conn, table_name):
+    if table_name in conn.table_names(conn.index_schema):
+        gws.log.debug(f'index {table_name} ok')
         return True
-    gws.log.warn('index %r version %s, needs update' % (table, ver))
+    gws.log.warn(f'index {table_name} missing')
     return False
+    #
+    # ver = conn.index_table_version(table)
+    # if ver == version.INDEX:
+    #     gws.log.debug('index %r version %s, ok' % (table, ver))
+    #     return True
+    # gws.log.warn('index %r version %s, needs update' % (table, ver))
+    # return False

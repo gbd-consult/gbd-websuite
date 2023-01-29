@@ -29,8 +29,9 @@ class AlkisConnection(gws.ext.db.provider.postgres.driver.Connection):
         self.exec(f'CREATE TABLE {self.index_schema}.{table} ({sql})')
 
     def mark_index_table(self, table):
-        comment = 'Version:' + str(version.INDEX)
-        self.exec(f'COMMENT ON TABLE {self.index_schema}.{table} IS %s', [comment])
+        pass
+        # comment = 'Version:' + str(version.INDEX)
+        # self.exec(f'COMMENT ON TABLE {self.index_schema}.{table} IS %s', [comment])
 
     def create_index_index(self, table, columns, kind):
         name = (table + '_' + re.sub(r'\W+', '_', columns) + '_' + kind).lower()

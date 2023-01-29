@@ -6,7 +6,7 @@ from . import resolver
 from ..util import indexer
 from ..util.connection import AlkisConnection
 
-stelle_index = 'idx_grundbuch_stelle'
+stelle_index = f'alkis_grundbuch_stelle_{resolver.VERSION}'
 
 """
 ALKIS relations:

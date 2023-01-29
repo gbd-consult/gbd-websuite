@@ -8,8 +8,8 @@ from . import resolver
 from ..util import indexer
 from ..util.connection import AlkisConnection
 
-addr_index = 'idx_adresse'
-gebs_index = 'idx_gebaeude'
+addr_index = f'alkis_adresse_{resolver.VERSION}'
+gebs_index = f'alkis_gebaeude_{resolver.VERSION}'
 
 MIN_GEBAEUDE_AREA = 0.5
 

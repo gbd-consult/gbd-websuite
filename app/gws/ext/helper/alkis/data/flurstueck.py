@@ -6,12 +6,12 @@ import re
 import gws
 from gws.tools.console import ProgressIndicator
 
-from . import resolver, adresse, nutzung, grundbuch
+from . import resolver, adresse, nutzung, festlegung, grundbuch
 from ..util import indexer
 from ..util.connection import AlkisConnection
 
-main_index = 'idx_flurstueck'
-name_index = 'idx_name'
+main_index = f'alkis_flurstueck_{resolver.VERSION}'
+name_index = f'alkis_name_{resolver.VERSION}'
 
 
 class _Cache:
@@ -21,6 +21,7 @@ class _Cache:
     name = {}
     nutzung = {}
     buchungsstelle = {}
+    festlegung = {}
 
 
 # vollnummer = flur-zaeher/nenner (folge)
@@ -102,47 +103,41 @@ def _parse_vnum(s, where, parms):
     return True
 
 
+def _cache_nuztung_festlegung(conn: AlkisConnection, parts_index):
+    parts = {}
+
+    rs = conn.select(f'SELECT * FROM {conn.index_schema}.{parts_index}')
+
+    for r in rs:
+        el = {
+            'type': r['type'],
+            'type_id': r['type_id'],
+            'area': r['area'],
+            'a_area': r['a_area'],
+            'gml_id': r['nu_id'],
+            'attributes': indexer.from_json(r['attributes']),
+        }
+
+        fs_id = r['fs_id']
+        parts.setdefault(fs_id, [])
+        parts[fs_id].append(el)
+
+    for fs_id in parts:
+        parts[fs_id] = sorted(parts[fs_id], key=lambda x: (x['type'], -x['area']))
+
+    return parts
+
+
 def _cache(conn: AlkisConnection):
     idx = conn.index_schema
 
     cache = _Cache()
 
     gws.log.info('fs index: nutzung cache')
+    cache.nutzung = _cache_nuztung_festlegung(conn, nutzung.parts_index)
 
-    nu_parts = {}
-    rs = conn.select(f'SELECT * FROM {idx}.{nutzung.parts_index}')
-
-    for r in rs:
-        fs_id = r['fs_id']
-
-        if fs_id not in nu_parts:
-            nu_parts[fs_id] = {}
-
-        nu = {
-            'type': r['type'],
-            'type_id': r['type_id'],
-            'area': r['area'],
-            'a_area': r['a_area'],
-            'gml_id': r['nu_id'],
-            'count': 1
-        }
-
-        if r['attributes']:
-            nu.update(indexer.from_json(r['attributes']))
-
-        k = (nu['type_id'], nu['key_id'])
-
-        if k not in nu_parts[fs_id]:
-            nu_parts[fs_id][k] = nu
-        else:
-            nu_parts[fs_id][k]['area'] += nu['area']
-            nu_parts[fs_id][k]['a_area'] += nu['a_area']
-            nu_parts[fs_id][k]['count'] += 1
-
-    for fs_id in nu_parts:
-        nu_parts[fs_id] = sorted(nu_parts[fs_id].values(), key=lambda x: -x['area'])
-
-    cache.nutzung = nu_parts
+    gws.log.info('fs index: festlegung cache')
+    cache.festlegung = _cache_nuztung_festlegung(conn, festlegung.parts_index)
 
     gws.log.info('fs index: grundbuch cache')
 
@@ -255,6 +250,10 @@ def _fs_data(conn, fs, cache):
     d['nutzung'] = indexer.as_json(p)
     d['c_nutzung'] = len(p)
 
+    p = cache.festlegung.get(fs_id, [])
+    d['festlegung'] = indexer.as_json(p)
+    d['c_festlegung'] = len(p)
+
     return d
 
 
@@ -350,6 +349,9 @@ def _create_main_index(conn: AlkisConnection):
 
         nutzung CHARACTER VARYING,
         c_nutzung INTEGER,
+
+        festlegung CHARACTER VARYING,
+        c_festlegung INTEGER,
 
         geom geometry(GEOMETRY, {conn.srid}),
         x FLOAT,
@@ -599,7 +601,7 @@ def find(conn: AlkisConnection, query: dict):
     data = conn.select(data_sql, parms)
 
     def _unpack(fs):
-        for k in 'lage', 'buchung', 'nutzung', 'gebaeude':
+        for k in 'lage', 'buchung', 'nutzung', 'festlegung', 'gebaeude':
             fs[k] = indexer.from_json(fs.get(k))
         return gws.compact(fs)
 
