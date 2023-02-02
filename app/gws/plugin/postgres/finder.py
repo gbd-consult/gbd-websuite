@@ -40,7 +40,7 @@ class Object(gws.base.search.finder.Object):
         # self.withGeometry = self.supportsGeometry and self.var('withGeometry', default=True)
 
     def configure_provider(self):
-        self.provider = gws.base.database.provider.configure_for(self, ext_type='postgres')
+        self.provider = gws.base.database.provider.get_for(self, ext_type='postgres')
         return True
 
 

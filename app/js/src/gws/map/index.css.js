@@ -18,7 +18,7 @@ module.exports = v => {
 
         // default geometry styles
 
-        '.defaultGeometry_POINT, .defaultGeometry_MULTIPOINT': {
+        '.default_style_point, .default_style_multipoint': {
             fill: v.COLOR.opacity(DARK, 0.7),
             stroke: LIGHT,
             strokeWidth: STROKE,
@@ -29,7 +29,7 @@ module.exports = v => {
             }
         },
 
-        '.defaultGeometry_LINESTRING, .defaultGeometry_MULTILINESTRING': {
+        '.default_style_linestring, .default_style_multilinestring': {
             stroke: DARK,
             strokeWidth: STROKE,
 
@@ -40,7 +40,7 @@ module.exports = v => {
             }
         },
 
-        '.defaultGeometry_POLYGON, .defaultGeometry_MULTIPOLYGON': {
+        '.default_style_polygon, .default_style_multipolygon': {
             fill: v.COLOR.opacity(DARK, 0.3),
             stroke: LIGHT,
             strokeWidth: STROKE,

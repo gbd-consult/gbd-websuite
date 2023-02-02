@@ -5,27 +5,23 @@ import gws.base.shape
 import gws.lib.uom
 import gws.types as t
 
-_DEFAULT_TOLERANCE = 10, gws.Uom.px
-
 
 class SpatialContext(t.Enum):
-    MAP = 'map'
+    map = 'map'
     """search in the map extent"""
-    VIEW = 'view'
+    view = 'view'
     """search in the client view extent"""
 
 
 class Config(gws.ConfigWithAccess):
     models: t.Optional[t.List[gws.ext.config.model]]
     """data models for features"""
-    defaultContext: t.Optional[SpatialContext] = SpatialContext.MAP
-    """default spatial context"""
+    spatialContext: t.Optional[SpatialContext] = SpatialContext.map
+    """spatial context for keyword searches"""
     templates: t.Optional[t.List[gws.ext.config.template]]
     """feature formatting templates"""
     title: t.Optional[str]
     """provider title"""
-    tolerance: str = '10px'
-    """tolerance, in pixels or map units"""
     withGeometry: bool = True
     """enable geometry search"""
     withKeyword: bool = True
@@ -46,14 +42,11 @@ class Object(gws.Node, gws.IFinder):
         self.templates = []
         self.models = []
 
-        p = self.var('tolerance')
-        self.tolerance = gws.lib.uom.parse(p, default=gws.lib.uom.px) if p else _DEFAULT_TOLERANCE
+        self.withKeyword = self.var('withKeyword', default=True)
+        self.withGeometry = self.var('withGeometry', default=True)
+        self.withFilter = self.var('withFilter', default=True)
 
-        self.withKeyword = self.supportsKeyword and self.var('withKeyword', default=True)
-        self.withGeometry = self.supportsGeometry and self.var('withGeometry', default=True)
-        self.withFilter = self.supportsFilter and self.var('withFilter', default=True)
-
-        self.spatialContext = self.var('defaultContext', default=SpatialContext.MAP)
+        self.spatialContext = self.var('spatialContext', default=SpatialContext.map)
         self.title = self.var('title', default='')
 
     def configure_models(self):
@@ -70,17 +63,17 @@ class Object(gws.Node, gws.IFinder):
         has_param = False
 
         if search.keyword:
-            if not self.withKeyword:
+            if not self.supportsKeyword or not self.withKeyword:
                 return False
             has_param = True
 
         if search.shape:
-            if not self.withGeometry:
+            if not self.supportsGeometry or not self.withGeometry:
                 return False
             has_param = True
 
         if search.ogcFilter:
-            if not self.withFilter:
+            if not self.supportsFilter or not self.withFilter:
                 return False
             has_param = True
 
@@ -89,7 +82,7 @@ class Object(gws.Node, gws.IFinder):
     def context_shape(self, search: gws.SearchArgs) -> gws.IShape:
         if search.shape:
             return search.shape
-        if self.spatialContext == SpatialContext.VIEW and search.bounds:
+        if self.spatialContext == SpatialContext.view and search.bounds:
             return gws.base.shape.from_bounds(search.bounds)
         if search.project:
             return gws.base.shape.from_bounds(search.project.map.bounds)
@@ -99,7 +92,7 @@ class Object(gws.Node, gws.IFinder):
         if not model and layer:
             model = gws.base.model.locate(layer.models, user, gws.Access.read)
         if not model:
-            gws.log.debug(f'no model for {user.uid!r} in finder {self.uid!r}')
+            gws.log.debug(f'no model for {user.uid=} in finder {self.uid!r}')
             return []
         return model.find_features(search, user)
 

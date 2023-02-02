@@ -96,13 +96,13 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
         ;
 
         let content = f => <gws.ui.Link
-            content={f.elements.title}
+            content={f.views.title}
             whenTouched={() => show(f)}
         />;
 
         let search = (this.props.bplanSearch || '').toLowerCase(),
             fs = this.props.bplanFeatures.filter(f =>
-                !search || f.elements.title.toLowerCase().indexOf(search) >= 0);
+                !search || f.views.title.toLowerCase().indexOf(search) >= 0);
 
         return <gws.components.feature.List
             controller={cc}
@@ -346,7 +346,7 @@ class BplanDialog extends gws.View<BplanViewProps> {
                 buttons={[ok, cancel]}
                 whenClosed={close}
             >
-                {feature.elements.title}
+                {feature.views.title}
             </gws.ui.Dialog>
         }
 

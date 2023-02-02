@@ -397,7 +397,7 @@ class FsinfoDetailsTab extends gws.View<FsinfoViewProps> {
 
             <sidebar.TabBody>
                 <div className="modFsinfoInfoHead">
-                    {feature.elements.title}
+                    {feature.views.title}
                 </div>
                 {details.persons.map(p => <FsinfoInfoBox
                     {...this.props}

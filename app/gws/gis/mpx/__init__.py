@@ -12,7 +12,7 @@ class ServiceException(Exception):
 
 
 def _call(service, params):
-    url = getattr(gws.config.root().app, 'mpx_url') + '/' + service
+    url = getattr(gws.config.root().app, 'mpxUrl') + '/' + service
     resp = gws.lib.net.http_request(url, params=params)
     if resp.content_type.startswith('image'):
         return resp.content

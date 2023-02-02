@@ -39,7 +39,7 @@ class PlaneUrl(PlaneBase):
 
 class PlaneFeatures(PlaneBase):
     type: t.Literal['features']
-    features: t.List[gws.base.feature.Props]
+    features: t.List[gws.FeatureProps]
 
 
 class PlaneRaster(PlaneBase):

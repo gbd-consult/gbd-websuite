@@ -15,6 +15,9 @@ import shapely.wkt
 import gws
 import gws.gis.crs
 
+_TOLERANCE_QUAD_SEGS = 6
+_MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections
+
 
 def from_wkt(wkt: str, default_crs: gws.ICrs = None) -> gws.IShape:
     """Creates a shape object from a WKT string.
@@ -128,7 +131,8 @@ def from_props(props: gws.Props) -> gws.IShape:
     crs = gws.gis.crs.get(props.get('crs'))
     if not crs:
         raise gws.Error('missing or invalid crs')
-    return from_geojson(props.get('geometry'), crs)
+    geom = shapely.geometry.shape(props.get('geometry'))
+    return Shape(geom, crs)
 
 
 def from_extent(extent: gws.Extent, crs: gws.ICrs, always_xy=False) -> gws.IShape:
@@ -338,9 +342,6 @@ class Shape(gws.Object, gws.IShape):
             return self.to_multi()
         raise ValueError(f'cannot convert {self.type!r} to {new_type!r}')
 
-    _TOLERANCE_QUAD_SEGS = 6
-    _MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections
-
     def tolerance_polygon(self, tolerance, quad_segs=None):
         is_poly = self.type in (gws.GeometryType.polygon, gws.GeometryType.multipolygon)
 
@@ -348,8 +349,8 @@ class Shape(gws.Object, gws.IShape):
             return self
 
         # we need a polygon even if tolerance = 0
-        tolerance = tolerance or self._MIN_TOLERANCE_POLYGON
-        quad_segs = quad_segs or self._TOLERANCE_QUAD_SEGS
+        tolerance = tolerance or _MIN_TOLERANCE_POLYGON
+        quad_segs = quad_segs or _TOLERANCE_QUAD_SEGS
 
         if is_poly:
             cs = shapely.geometry.CAP_STYLE.flat

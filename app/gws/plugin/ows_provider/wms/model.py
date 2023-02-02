@@ -55,24 +55,12 @@ class Object(gws.base.model.Object):
             raise gws.Error(f'no queryable layers found in {self.provider.url!r}')
 
     def find_features(self, search, user, **kwargs):
-        features = []
+        return [
+            self.feature_from_data(fd, user, **kwargs)
+            for fd in self.wms_search(search)
+        ]
 
-        for sf in self.wms_search(search):
-            atts = sf.attributes
-            if sf.uid:
-                atts[self.keyName] = sf.uid
-            if sf.shape:
-                atts[self.geometryName] = sf.shape
-            if sf.layerName:
-                atts['_layerName'] = sf.layerName
-
-            feature = gws.base.feature.with_model(self)
-            self.read_from_dict(feature, atts, user)
-            features.append(feature)
-
-        return features
-
-    def wms_search(self, search: gws.SearchArgs) -> t.List[gws.SourceFeature]:
+    def wms_search(self, search: gws.SearchArgs) -> t.List[gws.FeatureData]:
         v3 = self.provider.version >= '1.3'
 
         shape = search.shape
@@ -106,11 +94,11 @@ class Object(gws.base.model.Object):
             shape.y + (size / 2),
         )
 
-        always_xy = self.provider.alwaysXY or not v3
-        if request_crs.axis == gws.Axis.yx and not always_xy:
-            bbox = gws.gis.extent.swap_xy(bbox)
-
         bbox = gws.gis.extent.transform(bbox, shape.crs, request_crs)
+
+        always_xy = self.provider.alwaysXY or not v3
+        if request_crs.isYX and not always_xy:
+            bbox = gws.gis.extent.swap_xy(bbox)
 
         layer_names = [sl.name for sl in self.sourceLayers]
 

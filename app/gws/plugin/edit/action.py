@@ -56,7 +56,7 @@ class GetFeaturesRequest(gws.Request):
 
 
 class GetFeaturesResponse(gws.Response):
-    features: t.List[gws.base.feature.Props]
+    features: t.List[gws.FeatureProps]
 
 
 @gws.ext.object.action('edit')

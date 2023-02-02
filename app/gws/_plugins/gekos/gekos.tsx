@@ -133,7 +133,7 @@ class GekosController extends gws.Controller {
                 mode: 'draw zoom',
             },
             infoboxContent: <gws.components.Infobox
-                controller={this}>{feature.elements.teaser}</gws.components.Infobox>,
+                controller={this}>{feature.views.teaser}</gws.components.Infobox>,
         });
 
     }

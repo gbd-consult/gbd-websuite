@@ -76,9 +76,9 @@ def initialize(specs, parsed_config) -> gws.IRoot:
     r = gws.create_root_object(specs)
 
     try:
-        ts = gws.time_start('configuring application')
+        gws.time_start('configuring application')
         r.create_application(parsed_config)
-        gws.time_end(ts)
+        gws.time_end()
     except Exception as exc:
         raise gws.ConfigurationError(*exc.args)
 
@@ -109,9 +109,9 @@ def load(path=None) -> gws.Root:
     path = path or STORE_PATH
     gws.log.debug(f'loading config from {path!r}')
     try:
-        ts = gws.time_start('loading config')
+        gws.time_start('loading config')
         r = gws.unserialize_from_path(path)
-        gws.time_end(ts)
+        gws.time_end()
         return activate(r)
     except Exception as exc:
         raise gws.ConfigurationError('unable to load configuration') from exc

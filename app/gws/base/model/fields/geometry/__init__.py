@@ -7,12 +7,14 @@ import gws.base.shape
 import gws.gis.crs
 import gws.types as t
 
-from .. import scalar
+import gws.base.model.field
+import gws.base.model.fields.scalar as scalar
 
 
 @gws.ext.config.modelField('geometry')
 class Config(scalar.Config):
-    pass
+    geometryType: t.Optional[gws.GeometryType]
+    crs: t.Optional[gws.CrsName]
 
 
 @gws.ext.props.modelField('geometry')
@@ -23,15 +25,13 @@ class Props(scalar.Props):
 @gws.ext.object.modelField('geometry')
 class Object(scalar.Object):
     attributeType = gws.AttributeType.geometry
-    geometryType: gws.GeometryType
-    geometryCrs: gws.ICrs
 
     def configure(self):
-        if hasattr(self.model, 'tableName'):
-            desc = self.model.provider.describe_table(self.model.tableName)
-            if self.name in desc.columns:
-                self.geometryType = desc.columns[self.name].geometryType
-                self.geometryCrs = gws.gis.crs.get(desc.columns[self.name].geometrySrid)
+        self.geometryType = self.var('geometryType')
+
+        self.geometryCrs = None  # type:ignore
+        if self.var('crs'):
+            self.geometryCrs = gws.gis.crs.get(self.var('crs'))
 
     def sa_select(self, sel: sql.SelectStatement, user):
         shape = None
@@ -55,24 +55,28 @@ class Object(scalar.Object):
                 fld,
                 sql.sa.cast(shape.to_ewkb_hex(), sql.geosa.Geometry())))
 
-    def load_from_dict(self, feature, attributes, user, **kwargs):
-        val = attributes.get(self.name)
-        if isinstance(val, gws.base.shape.Shape):
-            feature.attributes[self.name] = val
-        elif gws.is_data_object(val):
-            feature.attributes[self.name] = gws.base.shape.from_props(val)
-
-    def load_from_record(self, feature, record, user, **kwargs):
-        val = getattr(record, self.name, None)
-        if val:
+    def load_from_record(self, feature, rec, user):
+        if not hasattr(rec, self.name):
+            return
+        val = getattr(rec, self.name)
+        if val is not None:
             feature.attributes[self.name] = gws.base.shape.from_wkb_hex(str(val))
 
-    def store_to_dict(self, feature, attributes, user, **kwargs):
-        val = feature.attributes.get(self.name)
-        if val:
-            attributes[self.name] = gws.props(val, user, self)
+    def load_from_props(self, feature, props, user, **kwargs):
+        if self.name not in props.attributes:
+            return
+        val = props.attributes.get(self.name)
+        if isinstance(val, gws.base.shape.Shape):
+            feature.attributes[self.name] = val
+            return
+        if gws.is_data_object(val):
+            try:
+                feature.attributes[self.name] = gws.base.shape.from_props(val)
+            except gws.Error:
+                pass
+        feature.attributes[self.name] = gws.ErrorValue
 
-    def store_to_record(self, feature, record, user, **kwargs):
-        val = feature.attributes.get(self.name)
-        if val:
-            setattr(record, self.name, t.cast(gws.base.shape.Shape, val).to_ewkb_hex())
+    def store_to_record(self, feature, rec, user):
+        ok, val = self.value_to_store(feature)
+        if ok:
+            setattr(rec.ormObject, self.name, t.cast(gws.base.shape.Shape, val).to_ewkb_hex())

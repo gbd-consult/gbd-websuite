@@ -1,9 +1,14 @@
 """Qgis Project API."""
 
 import zipfile
+import sqlalchemy as sa
 
 import gws
+import gws.base.database
+import gws.base.database.sql
 import gws.lib.xmlx
+import gws.lib.zipx
+import gws.types as t
 
 from . import caps
 
@@ -12,34 +17,57 @@ class Error(gws.Error):
     pass
 
 
-# @TODO read from db
-# @TODO read additional files (qlr, qml etc)
+class Source(gws.Data):
+    path: t.Optional[gws.FilePath]
+    db: t.Optional[str]
+    schema: t.Optional[str]
+    name: t.Optional[str]
+
+
+def from_source(source: Source, obj: gws.INode):
+    if source.path:
+        return from_path(source.path)
+
+    if source.name:
+        prov = gws.base.database.provider.get_for(obj, source.db, 'postgres')
+        schema = source.get('schema', 'public')
+        table_name = f'{schema}.qgis_projects'
+        with prov.session() as sess:
+            tab = sess.autoload(table_name)
+            if tab is None:
+                raise Error(f'table {table_name!r} does not exist')
+            rs = sess.execute(tab.select().where(tab.c.name == source.name))
+            for r in rs.mappings().all():
+                return from_bytes(r['content'])
+            raise Error(f'{source.name!r} not found')
+
+    raise Error(f'cannot load qgis project')
+
+
+def from_bytes(b: bytes) -> 'Object':
+    d = gws.lib.zipx.unzip_bytes_to_dict(b)
+    for k, v in d.items():
+        if k.endswith('.qgs'):
+            return from_string(v.decode('utf8'))
+    raise Error(f'no qgis project')
+
 
 def from_path(path: str) -> 'Object':
-    if not path.endswith('.qgz'):
-        return from_string(gws.read_file(path), path)
-
-    with zipfile.ZipFile(path) as zf:
-        for info in zf.infolist():
-            if info.filename.endswith('.qgs'):
-                with zf.open(info, 'r') as fp:
-                    return from_string(fp.read().decode('utf8'), path)
-
-    raise Error(f'cannot open qgis project {path!r}')
+    if path.endswith('.qgz'):
+        return from_bytes(gws.read_file_b(path))
+    return from_string(gws.read_file(path))
 
 
-def from_string(text: str, path: str = None) -> 'Object':
-    return Object(text, path or '')
+def from_string(text: str) -> 'Object':
+    return Object(text)
 
 
 class Object:
-    path: str
     version: str
     sourceHash: str
 
-    def __init__(self, text: str, path: str):
+    def __init__(self, text: str):
         self.text = text
-        self.path = path
         self.sourceHash = gws.sha256(self.text)
 
         ver = self.xml_root().get('version', '').split('-')[0]
@@ -57,8 +85,7 @@ class Object:
             setattr(self, '_xml_root', gws.lib.xmlx.from_string(self.text))
         return getattr(self, '_xml_root')
 
-    def save(self, path=None):
-        path = path or self.path
+    def to_path(self, path):
         if path.endswith('.qgz'):
             raise Error('writing qgz is not supported yet')
         gws.write_file(path, self.to_xml())

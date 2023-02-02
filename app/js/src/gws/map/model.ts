@@ -10,6 +10,11 @@ export class ModelRegistry implements types.IModelRegistry {
     constructor(app: types.IApplication) {
         this.app = app;
         this.models = {};
+        this.models[''] = new Model(this, {
+            geometryName: 'geometry',
+            keyName: 'uid',
+            uid: '',
+        })
     }
 
 
@@ -18,7 +23,7 @@ export class ModelRegistry implements types.IModelRegistry {
     }
 
     getModel(uid) {
-        return this.models[uid];
+        return this.models[uid || ''];
     }
 
     getModelForLayer(layer) {

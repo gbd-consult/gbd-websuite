@@ -13,13 +13,15 @@ def class_name(obj):
 
 
 class Object(types.IObject):
+    pass
+
+
+class Node(Object, types.INode):
     extName = ''
     extType = ''
     permissions = {}
     uid = ''
 
-
-class Node(Object, types.INode):
     def initialize(self, config):
         self.config = config
 

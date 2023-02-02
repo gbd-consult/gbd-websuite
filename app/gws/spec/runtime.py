@@ -28,9 +28,9 @@ def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'O
         except gws.lib.jsonx.Error:
             gws.log.exception(f'spec.create: load failed')
 
-    ts = gws.time_start('SPEC GENERATOR')
+    gws.time_start('SPEC GENERATOR')
     gs = generator.generate_specs(manifest_path=manifest_path)
-    gws.time_end(ts)
+    gws.time_end()
 
     if write_cache:
         try:

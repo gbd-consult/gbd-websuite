@@ -6,14 +6,6 @@ import gws.types as t
 MM_PER_IN = 25.4
 PT_PER_IN = 72
 
-MM = 'mm'
-PX = 'px'
-FT = 'ft'
-IN = 'in'
-PT = 'pt'
-M = 'm'
-KM = 'km'
-
 # OGC's 1px = 0.28mm
 # OGC 06-042, 7.2.4.6.9
 
@@ -72,10 +64,10 @@ def mm_to_px(x: _number, ppi: int) -> float:
 
 def to_px(xu: gws.Measurement, ppi: int) -> gws.Measurement:
     x, u = xu
-    if u == PX:
+    if u == gws.Uom.px:
         return xu
-    if u == MM:
-        return mm_to_px(x, ppi), PX
+    if u == gws.Uom.mm:
+        return mm_to_px(x, ppi), gws.Uom.px
     raise ValueError(f'invalid unit {u!r}')
 
 
@@ -86,10 +78,10 @@ def size_mm_to_px(xy: gws.Size, ppi: int) -> gws.Size:
 
 def msize_to_px(xyu: gws.MSize, ppi: int) -> gws.MSize:
     x, y, u = xyu
-    if u == PX:
+    if u == gws.Uom.px:
         return xyu
-    if u == MM:
-        return mm_to_px(x, ppi), mm_to_px(y, ppi), PX
+    if u == gws.Uom.mm:
+        return mm_to_px(x, ppi), mm_to_px(y, ppi), gws.Uom.px
     raise ValueError(f'invalid unit {u!r}')
 
 
@@ -101,10 +93,10 @@ def px_to_mm(x: _number, ppi: int) -> float:
 
 def to_mm(xu: gws.Measurement, ppi: int) -> gws.Measurement:
     x, u = xu
-    if u == MM:
+    if u == gws.Uom.mm:
         return xu
-    if u == PX:
-        return px_to_mm(x, ppi), MM
+    if u == gws.Uom.px:
+        return px_to_mm(x, ppi), gws.Uom.mm
     raise ValueError(f'invalid unit {u!r}')
 
 
@@ -115,10 +107,10 @@ def size_px_to_mm(xy: gws.Size, ppi: int) -> gws.Size:
 
 def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
     x, y, u = xyu
-    if u == MM:
+    if u == gws.Uom.mm:
         return xyu
-    if u == PX:
-        return px_to_mm(x, ppi), px_to_mm(y, ppi), MM
+    if u == gws.Uom.px:
+        return px_to_mm(x, ppi), px_to_mm(y, ppi), gws.Uom.mm
     raise ValueError(f'invalid unit {u!r}')
 
 
@@ -157,7 +149,7 @@ def parse(s: str, default=None) -> gws.Measurement:
         raise ValueError(f'invalid unit {s!r}')
 
     n = float(m.group('number'))
-    u = m.group('unit').strip().lower()
+    u = getattr(gws.Uom, m.group('unit').strip().lower())
 
     if not u:
         if not default:

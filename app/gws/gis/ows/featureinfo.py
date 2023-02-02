@@ -7,10 +7,10 @@ import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
-def parse(text: str, default_crs: gws.ICrs = None, always_xy=False) -> t.List[gws.SourceFeature]:
-    ts = gws.time_start('featureinfo:parse')
+def parse(text: str, default_crs: gws.ICrs = None, always_xy=False) -> t.List[gws.FeatureData]:
+    gws.time_start('featureinfo:parse')
     res = _parse(text, default_crs, always_xy)
-    gws.time_end(ts)
+    gws.time_end()
     return res
 
 
@@ -23,10 +23,10 @@ def _parse(text, default_crs, always_xy):
     if xml_el:
         fn = _XML_FORMATS.get(xml_el.name)
         if fn:
-            features = fn(xml_el, default_crs, always_xy)
-            if features is not None:
-                gws.log.debug(f'parsed with {fn.__name__} count={len(features)}')
-                return features
+            fds = fn(xml_el, default_crs, always_xy)
+            if fds is not None:
+                gws.log.debug(f'parsed with {fn.__name__} count={len(fds)}')
+                return fds
         gws.log.error(f'XML parse error for {xml_el.name!r}')
         return
 
@@ -34,10 +34,10 @@ def _parse(text, default_crs, always_xy):
     # @TODO: json etc
 
     for fn in _TEXT_FORMATS:
-        features = fn(text, default_crs, always_xy)
-        if features is not None:
-            gws.log.debug(f'parsed with {fn.__name__} count={len(features)}')
-            return features
+        fds = fn(text, default_crs, always_xy)
+        if fds is not None:
+            gws.log.debug(f'parsed with {fn.__name__} count={len(fds)}')
+            return fds
 
 
 ##
@@ -59,7 +59,7 @@ def _parse_msgmloutput(xml_el: gws.IXmlElement, default_crs, always_xy):
     #             <attr>....</attr>
     #
 
-    features = []
+    fds = []
 
     for layer_el in xml_el:
         layer_name = layer_el.name
@@ -68,11 +68,11 @@ def _parse_msgmloutput(xml_el: gws.IXmlElement, default_crs, always_xy):
             if _is_gml(feature_el) and feature_el.name == 'name':
                 layer_name = feature_el.text
             else:
-                feature = _feature_from_gml(feature_el, default_crs, always_xy)
-                feature.layerName = layer_name
-                features.append(feature)
+                fd = _fdata_from_gml(feature_el, default_crs, always_xy)
+                fd.layerName = layer_name
+                fds.append(fd)
 
-    return features
+    return fds
 
 
 def _parse_featurecollection(xml_el: gws.IXmlElement, default_crs, always_xy):
@@ -87,18 +87,18 @@ def _parse_featurecollection(xml_el: gws.IXmlElement, default_crs, always_xy):
     #                 <gml:Point...
     #
 
-    features = []
+    fds = []
 
     for member_el in xml_el:
         if member_el.name in {'member', 'featuremember'}:
             if len(member_el) == 1 and len(member_el[0]) > 0:
                 # <wfs:member><my:feature><attr...
-                features.append(_feature_from_gml(member_el[0], default_crs, always_xy))
+                fds.append(_fdata_from_gml(member_el[0], default_crs, always_xy))
             elif len(member_el) > 1:
                 # <wfs:member><attr...
-                features.append(_feature_from_gml(member_el, default_crs, always_xy))
+                fds.append(_fdata_from_gml(member_el, default_crs, always_xy))
 
-    return features
+    return fds
 
 
 def _parse_getfeatureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
@@ -110,13 +110,13 @@ def _parse_getfeatureinforesponse(xml_el: gws.IXmlElement, default_crs, always_x
     #              <Attribute name="..." value="..."/>
     #              <Attribute name="geometry" value="<wkt>"/>
 
-    features = []
+    fds = []
 
     for layer_el in xml_el:
         layer_name = layer_el.get('name')
         for feature_el in layer_el:
 
-            feature = gws.SourceFeature(
+            fd = gws.FeatureData(
                 attributes={},
                 layerName=layer_name,
                 uid=feature_el.get('id'))
@@ -127,13 +127,13 @@ def _parse_getfeatureinforesponse(xml_el: gws.IXmlElement, default_crs, always_x
                 key = el.get('name')
                 val = el.get('value')
                 if key == 'geometry':
-                    feature.shape = gws.base.shape.from_wkt(val, default_crs)
+                    fd.shape = gws.base.shape.from_wkt(val, default_crs)
                 elif val.strip():
-                    feature.attributes[key] = val.strip()
+                    fd.attributes[key] = val.strip()
 
-            features.append(feature)
+            fds.append(fd)
 
-    return features
+    return fds
 
 
 def _parse_featureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
@@ -145,19 +145,19 @@ def _parse_featureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
     #     <fields objectid="15111" shape="polygon"...
     #     <fields objectid="15111" shape="polygon"...
 
-    features = []
+    fds = []
 
     for fields_el in xml_el:
         if fields_el.name == 'fields':
-            feature = gws.SourceFeature(attributes={})
+            fd = gws.FeatureData(attributes={})
             for key, val in fields_el.attrib.items():
                 if key.lower() in {'id', 'fid'}:
-                    feature.uid = val
+                    fd.uid = val
                 elif key.lower() != 'shape':
-                    feature.attributes[key] = val
-            features.append(feature)
+                    fd.attributes[key] = val
+            fds.append(fd)
 
-    return features
+    return fds
 
 
 def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
@@ -174,13 +174,13 @@ def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
     #         <geobak_20:Datensatz>
     #           ...
 
-    features = []
+    fds = []
 
     for el in xml_el:
-        feature = gws.SourceFeature(attributes={})
+        fd = gws.FeatureData(attributes={})
 
         if el.name == 'kartenebene':
-            feature.layerName = el.text
+            fd.layerName = el.text
             continue
 
         if el.name == 'inhalt':
@@ -189,11 +189,11 @@ def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
                 key = attr_el[0].text.strip()
                 val = attr_el[1].text.strip()
                 if key != 'shape' and val.lower() != 'null':
-                    feature.attributes[key] = val
+                    fd.attributes[key] = val
 
-        features.append(feature)
+        fds.append(fd)
 
-    return features
+    return fds
 
 
 ##
@@ -201,12 +201,12 @@ def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
 _DEEP_ATTRIBUTE_DELIMITER = '/'
 
 
-def _feature_from_gml(feature_el, default_crs, always_xy) -> gws.SourceFeature:
+def _fdata_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureData:
     # like GDAL does:
     # "When reading a feature, the driver will by default only take into account
     # the last recognized GML geometry found..." (https://gdal.org/drivers/vector/gml.html)
 
-    feature = gws.SourceFeature(
+    fd = gws.FeatureData(
         attributes={},
         uid=feature_el.get('id') or feature_el.get('fid'),
         layerName=feature_el.name
@@ -220,26 +220,25 @@ def _feature_from_gml(feature_el, default_crs, always_xy) -> gws.SourceFeature:
             bbox = gws.gis.gml.parse_envelope(el[0], default_crs, always_xy)
         elif _is_gml(el):
             # <gml:GeometryType directly under feature
-            gws.p(el)
-            feature.shape = gws.gis.gml.parse_shape(el, default_crs, always_xy)
+            fd.shape = gws.gis.gml.parse_shape(el, default_crs, always_xy)
         elif len(el) == 1 and _is_gml(el[0]):
             # <gml:GeometryType in a wrapper tag
-            feature.shape = gws.gis.gml.parse_shape(el[0], default_crs, always_xy)
+            fd.shape = gws.gis.gml.parse_shape(el[0], default_crs, always_xy)
         elif len(el) > 0:
             # sub-feature
-            sub = _feature_from_gml(el, default_crs, always_xy)
+            sub = _fdata_from_gml(el, default_crs, always_xy)
             for k, v in sub.attributes.items():
-                feature.attributes[el.name + _DEEP_ATTRIBUTE_DELIMITER + k] = v
+                fd.attributes[el.name + _DEEP_ATTRIBUTE_DELIMITER + k] = v
         else:
-            # attrbiute <attr>text</attr>
+            # attribute <attr>text</attr>
             s = el.text.strip()
             if s:
-                feature.attributes[el.name] = s
+                fd.attributes[el.name] = s
 
-    if not feature.shape and bbox:
-        feature.shape = gws.base.shape.from_bounds(bbox)
+    if not fd.shape and bbox:
+        fd.shape = gws.base.shape.from_bounds(bbox)
 
-    return feature
+    return fd
 
 
 def _is_gml(el):

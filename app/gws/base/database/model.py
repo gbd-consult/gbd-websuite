@@ -2,6 +2,7 @@
 
 import gws.base.feature
 import gws.base.model
+import gws.base.model.field
 import gws.gis.crs
 
 import gws.types as t
@@ -30,31 +31,55 @@ class Object(gws.base.model.Object):
         self.configure_properties()
 
     def configure_provider(self):
-        self.provider = provider.configure_for(self, ext_type=self.extType)
+        self.provider = provider.get_for(self, ext_type=self.extType)
         self.provider.mgr.register_model(self)
 
     def configure_fields(self):
         if super().configure_fields():
             return True
-        desc = self.provider.describe_table(self.tableName)
+        with self.provider.session() as sess:
+            desc = sess.describe(self.tableName)
+        for column in desc.columns.values():
+            cfg = gws.base.model.field.config_from_column(column)
+            self.fields.append(
+                self.create_child(gws.ext.object.modelField, config=gws.merge(cfg, _model=self)))
+        return True
 
     def configure_properties(self):
         self.geometryType = None
         self.geometryCrs = None
 
+        if not self.keyName:
+            for f in self.fields:
+                if f.isPrimaryKey:
+                    self.keyName = f.name
+                    break
+
+        geom = None
+
         for f in self.fields:
-            if f.isPrimaryKey and not self.keyName:
-                self.keyName = f.name
-            if f.attributeType == gws.AttributeType.geometry and not self.geometryName:
-                self.geometryName = f.name
-                self.geometryType = f.geometryType
-                self.geometryCrs = f.geometryCrs
+            if self.geometryName and f.name == self.geometryName:
+                geom = f
+                break
+            if not self.geometryName and f.attributeType == gws.AttributeType.geometry:
+                geom = f
+                break
+
+        if geom:
+            self.geometryName = geom.name
+            if not geom.geometryType:
+                with self.provider.session() as sess:
+                    desc = sess.describe(self.tableName)
+                geom.geometryType = desc.columns[geom.name].geometryType
+                geom.geometryCrs = gws.gis.crs.get(desc.columns[geom.name].geometrySrid)
+            self.geometryType = geom.geometryType
+            self.geometryCrs = geom.geometryCrs
 
     def sa_table(self):
-        return self.provider.mgr.sa_table(self)
+        return self.provider.mgr.table_for_model(self)
 
     def sa_class(self):
-        return self.provider.mgr.sa_class(self)
+        return self.provider.mgr.class_for_model(self)
 
     saTable: sql.sa.Table
     saPrimaryKeyColumns: t.List[sql.sa.Column]
@@ -71,11 +96,8 @@ class Object(gws.base.model.Object):
 
         cursor = session.saSession.execute(sel.saSelect)
         for row in cursor.unique().all():
-            feature = gws.base.feature.with_model(self)
             record = getattr(row, self.sa_class().__name__)
-            for f in self.fields:
-                f.load_from_record(feature, record, user)
-            features.append(feature)
+            features.append(self.feature_from_record(record, user, **kwargs))
 
         return features
 
@@ -92,10 +114,10 @@ class Object(gws.base.model.Object):
             feature.errors = []
 
             for f in self.fields:
-                if f.compute_value(feature, access, user, **kwargs):
+                if f.compute(feature, access, user, **kwargs):
                     continue
                 if user.can(access, f):
-                    f.validate_value(feature, access, user, **kwargs)
+                    f.validate(feature, access, user, **kwargs)
 
             error_cnt += len(feature.errors)
 
@@ -107,7 +129,7 @@ class Object(gws.base.model.Object):
 
         for feature in features:
             cls = self.sa_class()
-            record = cls() if feature.isNew else session.saSession.get(cls, self.keyof(feature))
+            record = cls() if feature.isNew else session.saSession.get(cls, feature.uid())
             access = gws.Access.create if feature.isNew else gws.Access.write
             for f in self.fields:
                 if user.can(access, f, self):
@@ -130,9 +152,6 @@ class Object(gws.base.model.Object):
 
     def session(self) -> sql.Session:
         return t.cast(sql.Session, self.provider.session())
-
-    def keyof(self, feature):
-        return feature.attributes.get(self.keyName)
 
     def build_select(self, search: gws.SearchArgs, user: gws.IUser):
         sel = sql.SelectStatement(
@@ -169,9 +188,11 @@ class Object(gws.base.model.Object):
         #
         # if self.filter:
         #     select.saSelect = select.saSelect.where(sa.text(self.filter))
-        # for s in self.sort:
-        #     fn = sa.desc if s.order == 'desc' else sa.asc
-        #     state.sel = state.sel.order_by(fn(getattr(cls, s.fieldName)))
+
+        if search.sort:
+            for s in search.sort:
+                fn = sql.sa.desc if s.reverse else sql.sa.asc
+                sel.saSelect = sel.saSelect.order_by(fn(getattr(self.sa_class(), s.fieldName)))
 
         gws.log.debug(f'make_select: {str(sel.saSelect)}')
 

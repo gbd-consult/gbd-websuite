@@ -10,9 +10,8 @@ import gws.types as t
 
 from . import runner
 
-MAX_LIMIT = 1000
-DEFAULT_TOLERANCE = 10, gws.Uom.px
-DEFAULT_VIEWS = ['title', 'teaser', 'description']
+_DEFAULT_VIEWS = ['title', 'teaser', 'description']
+_DEFAULT_TOLERANCE = 10, gws.Uom.px
 
 
 @gws.ext.config.action('search')
@@ -38,7 +37,7 @@ class Request(gws.Request):
 
 
 class Response(gws.Response):
-    features: t.List[gws.base.feature.Props]
+    features: t.List[gws.FeatureProps]
 
 
 @gws.ext.object.action('search')
@@ -48,7 +47,7 @@ class Object(gws.base.action.Object):
 
     def configure(self):
         self.limit = self.var('limit')
-        self.tolerance = self.var('tolerance') or DEFAULT_TOLERANCE
+        self.tolerance = self.var('tolerance') or _DEFAULT_TOLERANCE
 
     @gws.ext.command.api('searchFind')
     def find(self, req: gws.IWebRequester, p: Request) -> Response:
@@ -60,11 +59,7 @@ class Object(gws.base.action.Object):
     def _find(self, req, p):
 
         project = req.require_project(p.projectUid)
-
-        search = gws.SearchArgs(
-            project=project,
-            user=req.user,
-        )
+        search = gws.SearchArgs(project=project)
 
         if p.layerUids:
             search.layers = gws.compact(req.acquire(uid, gws.ext.object.layer) for uid in p.layerUids)
@@ -73,10 +68,9 @@ class Object(gws.base.action.Object):
             gws.log.debug(f'no layers found for {p!r}')
             return []
 
+        search.bounds = project.map.bounds
         if p.extent:
             search.bounds = gws.Bounds(crs=p.crs or project.map.bounds.crs, extent=p.extent)
-        else:
-            search.bounds = project.map.bounds
 
         search.limit = self.limit
         if p.limit:
@@ -97,7 +91,7 @@ class Object(gws.base.action.Object):
             search.keyword = p.keyword.strip()
 
         results = runner.run(search, req.user)
-        views = p.views or DEFAULT_VIEWS
+        views = p.views or _DEFAULT_VIEWS
         features = []
 
         for res in results:

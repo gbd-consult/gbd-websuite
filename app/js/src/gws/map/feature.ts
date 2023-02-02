@@ -12,9 +12,9 @@ export class Feature implements types.IFeature {
     attributes: types.Dict = {};
     editedAttributes: types.Dict = {};
     category: string = '';
-    elements: types.Dict = {};
+    views: types.Dict = {};
     layer?: types.IFeatureLayer = null;
-    model?: types.IModel = null;
+    modelUid: string;
     oFeature?: ol.Feature = null;
     cssSelector: string;
 
@@ -26,12 +26,13 @@ export class Feature implements types.IFeature {
     constructor(map) {
         this.map = map;
         this.uid = lib.uniqId('_feature_');
+        this.modelUid = '';
     }
 
     setProps(props) {
-        this.model = this.map.app.models.getModel(props.modelUid);
-
         this.attributes = props.attributes || {};
+        this.modelUid = props.modelUid;
+
         this.editedAttributes = {};
 
         let uid = this.attributes[this.keyName];
@@ -39,7 +40,7 @@ export class Feature implements types.IFeature {
             this.uid = String(uid);
 
         this.category = props.category || '';
-        this.elements = props.elements || {};
+        this.views = props.views || {};
 
         let layerUid = props.layerUid;
         if (layerUid)
@@ -58,6 +59,10 @@ export class Feature implements types.IFeature {
     }
 
     //
+
+    get model() {
+        return this.map.app.models.getModel(this.modelUid);
+    }
 
     get keyName() {
         return this.model.keyName
@@ -133,15 +138,15 @@ export class Feature implements types.IFeature {
     //
 
     isSame(feature: types.IFeature) {
-        return feature.layer === this.layer && feature.uid === this.uid;
+        return feature.uid === this.uid;
     }
 
     updateFrom(feature: types.IFeature) {
         this.attributes = feature.attributes ? {...feature.attributes} : {};
         this.category = feature.category;
-        this.elements = feature.elements ? {...feature.elements} : {};
+        this.views = feature.views ? {...feature.views} : {};
         this.layer = feature.layer;
-        this.model = feature.model;
+        this.modelUid = feature.modelUid;
         this.isNew = feature.isNew;
         this.isSelected = feature.isSelected;
 
@@ -211,21 +216,8 @@ export class Feature implements types.IFeature {
                 return s;
         }
 
-        if (spec) {
-            if (this.cssSelector) {
-                let s = this.map.style.getFromSelector(this.cssSelector);
-                if (s)
-                    return s;
-            }
-            if (this.layer && this.layer.cssSelector) {
-                let s = this.map.style.getFromSelector(this.cssSelector);
-                if (s)
-                    return s;
-            }
-        }
-
         let gt = this.oFeature.getGeometry().getType();
-        let c = '.defaultGeometry_' + gt.toUpperCase();
+        let c = '.default_style_' + gt.toLowerCase();
         if (spec)
             c += '.' + spec;
 
@@ -234,11 +226,10 @@ export class Feature implements types.IFeature {
 
     protected oStyleFunc(oFeature, resolution) {
         let s = this.currentStyle();
-        console.log('XXX', s)
         if (!s) {
             return [];
         }
-        return s.apply(oFeature.getGeometry(), this.elements['label'], resolution);
+        return s.apply(oFeature.getGeometry(), this.views['label'], resolution);
 
     }
 

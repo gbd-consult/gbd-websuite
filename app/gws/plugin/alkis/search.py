@@ -273,7 +273,7 @@ class FindFlurstueckParams(BaseFindParams):
 
 
 class FindFlurstueckResponse(gws.Response):
-    features: t.List[gws.base.feature.Props]
+    features: t.List[gws.FeatureProps]
     total: int
 
 
@@ -291,7 +291,7 @@ class FindAdresseParams(BaseFindParams):
 
 
 class FindAdresseResponse(gws.Response):
-    features: t.List[gws.base.feature.Props]
+    features: t.List[gws.FeatureProps]
     total: int
 
 
@@ -300,7 +300,7 @@ class GetDetailsParams(FindFlurstueckParams):
 
 
 class GetDetailsResponse(gws.Response):
-    feature: gws.base.feature.Props
+    feature: gws.FeatureProps
 
 
 class PrintParams(gws.Request):

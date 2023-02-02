@@ -138,5 +138,5 @@ class Provider(gws.Node, gws.IOwsProvider):
         args = self.prepare_operation(op)
         return gws.gis.ows.request.get_text(args, max_age=self.var('capsCacheMaxAge'))
 
-    def find_source_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.SourceFeature]:
+    def find_source_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.FeatureData]:
         return []

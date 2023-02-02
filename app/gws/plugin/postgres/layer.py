@@ -42,7 +42,7 @@ class Object(gws.base.layer.vector.Object):
         self.configure_search()
 
     def configure_provider(self):
-        self.provider = gws.base.database.provider.configure_for(self)
+        self.provider = gws.base.database.provider.get_for(self)
         return True
 
     def configure_models(self):

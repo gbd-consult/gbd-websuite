@@ -5,16 +5,6 @@ import gws.lib.svg
 import gws.types as t
 
 
-class Props(gws.Props):
-    attributes: dict
-    views: dict
-    uid: str
-    keyName: str
-    geometryName: str
-    isNew: bool
-    modelUid: str
-
-
 def with_model(model: gws.IModel):
     return Feature(model)
 
@@ -25,7 +15,7 @@ class Feature(gws.Object, gws.IFeature):
         self.attributes = {}
         self.views = {}
         self.errors = []
-
+        self.layerName = ''
         self.isNew = False
 
     def props(self, user):

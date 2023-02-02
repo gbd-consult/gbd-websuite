@@ -334,14 +334,14 @@ export interface IMapManager {
     pointerInteraction(opts: IMapPointerInteractionOptions): ol.interaction.Pointer;
 
 
-    readFeature(props: api.base.feature.Props): IFeature;
-    readFeatures(propsList: Array<api.base.feature.Props>): Array<IFeature>;
+    readFeature(props: api.core.FeatureProps): IFeature;
+    readFeatures(propsList: Array<api.core.FeatureProps>): Array<IFeature>;
 
     featureFromGeometry(geom: ol.geom.Geometry): IFeature;
-    featureFromProps(props: api.base.feature.Props): IFeature;
-    featureListFromProps(propsList: Array<api.base.feature.Props>): Array<IFeature>;
+    featureFromProps(props: api.core.FeatureProps): IFeature;
+    featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<IFeature>;
 
-    featureProps(feature: IFeature, depth?: number): api.base.feature.Props;
+    featureProps(feature: IFeature, depth?: number): api.core.FeatureProps;
 
     geom2shape(geom: ol.geom.Geometry): api.base.shape.Props;
     shape2geom(shape: api.base.shape.Props): ol.geom.Geometry;
@@ -364,9 +364,12 @@ export interface IFeature {
     attributes: Dict;
     editedAttributes: Dict;
     category: string;
-    elements: Dict;
+    views: Dict;
     layer?: IFeatureLayer;
-    model?: IModel;
+
+    modelUid: string;
+    model: IModel;
+
     oFeature?: ol.Feature;
     cssSelector: string;
 
@@ -381,11 +384,11 @@ export interface IFeature {
     geometry?: ol.geom.Geometry;
     shape?: api.base.shape.Props;
 
-    getProps(depth?: number): api.base.feature.Props;
+    getProps(depth?: number): api.core.FeatureProps;
     getAttribute(name: string): any;
     getEditedAttribute(name: string): any;
 
-    setProps(props: api.base.feature.Props): IFeature;
+    setProps(props: api.core.FeatureProps): IFeature;
     setGeometry(geom: ol.geom.Geometry): IFeature;
     setNew(f: boolean): IFeature;
     setSelected(f: boolean): IFeature;
@@ -403,7 +406,7 @@ export interface IFeature {
 }
 
 export interface IMapFeatureArgs {
-    props?: api.base.feature.Props;
+    props?: api.core.FeatureProps;
     geometry?: ol.geom.Geometry;
     oFeature?: ol.Feature;
     style?: StyleArg;

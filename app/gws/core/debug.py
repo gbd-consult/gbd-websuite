@@ -5,7 +5,6 @@ import socket
 import sys
 import time
 import traceback
-import uuid
 
 from . import log
 
@@ -39,14 +38,18 @@ def p(*args, lines=False, stack=False, d=3, all=False):
         log.debug(sep, extra={'skip_frames': 1})
 
 
-def time_start(label):
-    return [time.time(), label]
+_TIME_STACK = []
 
 
-def time_end(ts):
-    t, label = ts
-    t = time.time() - t
-    log.info(f'@PROFILE {label} :: {t:.2f}', extra={'skip_frames': 1})
+def time_start(label=None):
+    _TIME_STACK.append((time.time(), label or 'default'))
+
+
+def time_end():
+    if _TIME_STACK:
+        t2 = time.time()
+        t1, label = _TIME_STACK.pop()
+        log.debug(f'@PROFILE {label} :: {t2 - t1:.2f}', skip_frames=1)
 
 
 def pycharm_debugger_check(path_to_pycharm_debug_egg, host, port, suspend=False):
@@ -144,7 +147,6 @@ def _dump(x, name, depth, max_depth, all_props, seen):
         seen.append(x)
     except:
         pass
-
 
     if depth >= max_depth:
         yield pfx + '...'

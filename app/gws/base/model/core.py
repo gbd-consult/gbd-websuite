@@ -39,12 +39,15 @@ class Object(gws.Node, gws.IModel):
         self.fields = []
         self.keyName = ''
         self.geometryName = ''
+        self.geometryType = None
+        self.geometryCrs = None
 
     def configure_fields(self):
         p = self.var('fields')
         if p:
             for cfg in p:
-                self.fields.append(self.create_child(gws.ext.object.modelField, config=gws.merge(cfg, _model=self)))
+                self.fields.append(
+                    self.create_child(gws.ext.object.modelField, config=gws.merge(cfg, _model=self)))
             return True
 
     def props(self, user):
@@ -53,7 +56,7 @@ class Object(gws.Node, gws.IModel):
             canDelete=user.can_delete(self),
             canRead=user.can_read(self),
             canWrite=user.can_write(self),
-            fields=[gws.props(f, user, self) for f in self.fields],
+            fields=self.fields,
             geometryCrs=self.geometryCrs.epsg if self.geometryCrs else None,
             geometryName=self.geometryName,
             geometryType=self.geometryType,
@@ -62,56 +65,66 @@ class Object(gws.Node, gws.IModel):
             uid=self.uid,
         )
 
-    def feature_from_source(self, sf, user):
-        atts = dict(sf.attributes)
-
-        if sf.uid:
-            atts[self.keyName] = sf.uid
-        if sf.shape:
-            atts[self.geometryName] = sf.shape
-        if sf.layerName:
-            atts['layerName'] = sf.layerName
-
-        return self.feature_from_dict(atts, user)
-
-    def feature_from_props(self, props, user):
-        return self.feature_from_dict(t.cast(gws.base.feature.Props, props).attributes, user)
-
-    def feature_from_dict(self, atts, user):
+    def feature_from_data(self, data, user, **kwargs):
         feature = gws.base.feature.with_model(self)
-        if not self.fields:
-            feature.attributes = dict(atts)
-            return feature
-        for f in self.fields:
-            f.load_from_dict(feature, atts, user)
-        return feature
 
-    def feature_from_record(self, record, user):
-        feature = gws.base.feature.with_model(self)
-        for f in self.fields:
-            f.load_from_record(feature, record, user)
-        return feature
-
-    def feature_props(self, feature, user):
-        if not self.fields:
-            atts = feature.attributes
-        else:
-            atts = {}
+        if self.fields:
             for f in self.fields:
-                if user.can_read(f, self):
-                    f.store_to_dict(feature, atts, user)
+                f.load_from_data(feature, data, user, **kwargs)
+        else:
+            feature.attributes = dict(data.attributes)
+            if data.uid:
+                feature.attributes[self.keyName] = data.uid
+            if data.layerName:
+                feature.layerName = data.layerName
+            if data.shape:
+                feature.attributes[self.geometryName] = data.shape
 
-        return gws.Props(
-            attributes=atts,
+        return feature
+
+    def feature_from_props(self, props, user, **kwargs):
+        feature = gws.base.feature.with_model(self)
+
+        if self.fields:
+            for f in self.fields:
+                f.load_from_props(feature, props, user, **kwargs)
+        else:
+            feature.attributes = dict(props.attributes)
+
+        feature.isNew = bool(props.isNew)
+        return feature
+
+    def feature_from_record(self, record, user, **kwargs):
+        feature = gws.base.feature.with_model(self)
+
+        for f in self.fields:
+            f.load_from_record(feature, record, user, **kwargs)
+
+        return feature
+
+    def feature_props(self, feature, user, **kwargs):
+        props = gws.FeatureProps(
+            attributes={},
             views=feature.views,
             uid=feature.uid(),
             isNew=feature.isNew,
             modelUid=self.uid,
         )
 
+        if self.fields:
+            for f in self.fields:
+                if user.can_read(f, self):
+                    f.store_to_props(feature, props, user, **kwargs)
+        else:
+            props.attributes.update(feature.attributes)
+            if feature.shape():
+                props.attributes[self.geometryName] = gws.props(feature.shape(), user, self)
+
+        return props
+
     def compute_values(self, feature, access, user, **kwargs):
         for f in self.fields:
-            f.compute_value(feature, access, user, **kwargs)
+            f.compute(feature, access, user, **kwargs)
 
 
 ##

@@ -11,28 +11,6 @@ import geoalchemy2 as geosa
 __all__ = ['sa', 'orm', 'exc', 'geosa']
 
 
-class Session(gws.IDatabaseSession):
-    saSession: orm.Session
-
-    def __init__(self, sess):
-        self.saSession = sess
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type_, value, traceback):
-        self.saSession.close()
-
-    def begin(self):
-        return self.saSession.begin()
-
-    def commit(self):
-        return self.saSession.commit()
-
-    def rollback(self):
-        return self.saSession.rollback()
-
-
 class SelectStatement(gws.Data):
     saSelect: sa.select
     search: gws.SearchArgs

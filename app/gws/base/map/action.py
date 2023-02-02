@@ -66,7 +66,7 @@ class GetFeaturesRequest(gws.Request):
 
 
 class GetFeaturesResponse(gws.Response):
-    features: t.List[gws.base.feature.Props]
+    features: t.List[gws.FeatureProps]
 
 
 _GET_FEATURES_LIMIT = 10000
@@ -154,14 +154,14 @@ class Object(gws.base.action.Object):
             rotation=0
         )
 
-        ts = gws.time_start(f'RENDER_BOX layer={p.layerUid} lri={lri!r}')
+        gws.time_start(f'RENDER_BOX layer={p.layerUid} lri={lri!r}')
         try:
             lro = layer.render(lri)
             if lro and lro.content:
                 return gws.lib.mime.PNG, lro.content
         except:
             gws.log.exception()
-        gws.time_end(ts)
+        gws.time_end()
 
         return self._error_pixel
 
@@ -170,12 +170,12 @@ class Object(gws.base.action.Object):
         lri = gws.LayerRenderInput(type='xyz', x=p.x, y=p.y, z=p.z)
         lro = None
 
-        ts = gws.time_start(f'RENDER_XYZ layer={p.layerUid} lri={lri!r}')
+        gws.time_start(f'RENDER_XYZ layer={p.layerUid} lri={lri!r}')
         try:
             lro = layer.render(lri)
         except:
             gws.log.exception()
-        gws.time_end(ts)
+        gws.time_end()
 
         if not lro:
             return self._error_pixel
@@ -214,7 +214,7 @@ class Object(gws.base.action.Object):
             return ImageResponse(mime='image/png', content=lro.content)
         return ImageResponse(mime='image/png', content=gws.lib.image.PIXEL_PNG8)
 
-    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> t.List[gws.base.feature.Props]:
+    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> t.List[gws.FeatureProps]:
         layer = req.require_layer(p.layerUid)
 
         model = gws.base.model.locate(layer.models, user=req.user, access=gws.Access.read, uid=p.modelUid)

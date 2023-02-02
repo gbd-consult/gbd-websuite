@@ -517,7 +517,7 @@ class EditController extends gws.Controller {
 
 
     featureTitle(f: gws.types.IFeature) {
-        return f.elements.title || (this.__('modEditNewObjectName'));
+        return f.views.title || (this.__('modEditNewObjectName'));
     }
 
     startTool(name) {

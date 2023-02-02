@@ -184,10 +184,10 @@ class SelectController extends gws.Controller {
     }
 
     featureTitle(feature: gws.types.IFeature) {
-        if (feature.elements.title)
-            return feature.elements.title;
-        if (feature.elements.category)
-            return feature.elements.category;
+        if (feature.views.title)
+            return feature.views.title;
+        if (feature.views.category)
+            return feature.views.category;
         return "...";
     }
 

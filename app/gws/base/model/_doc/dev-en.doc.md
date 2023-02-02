@@ -4,7 +4,7 @@
 ## reading flow (non-db models)
 
 
-    source_feature_list = query the source, return a list of `SourceFeature` objects
+    source_feature_list = query the source, return a list of `FeatureData` objects
     
     for each source_feature in source_feature_list
         feature = new feature

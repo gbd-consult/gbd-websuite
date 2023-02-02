@@ -34,7 +34,7 @@ class Crs(gws.ICrs):
         return _transform_extent(ext, self.srid, crs_to.srid)
 
     def transformer(self, crs_to):
-        tr = _pyproj_transformer(self, crs_to)
+        tr = _pyproj_transformer(self.srid, crs_to.srid)
         return tr.transform
 
     def to_string(self, fmt=None):

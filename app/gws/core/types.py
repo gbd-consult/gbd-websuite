@@ -18,6 +18,11 @@ from gws.types import (
 
 from gws.types import Enum
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import sqlalchemy as sa
+
 # ----------------------------------------------------------------------------------------------------------------------
 # custom types, used everywhere
 
@@ -211,14 +216,14 @@ class ConfigWithAccess(Config):
 # foundation interfaces
 
 class IObject(Protocol):
-    extName: str
-    extType: str
-    permissions: Dict[Access, Acl]
-
     def props(self, user: 'IUser') -> Props: ...
 
 
 class INode(IObject, Protocol):
+    extName: str
+    extType: str
+    permissions: Dict[Access, Acl]
+
     config: Config
     root: 'IRoot'
     parent: 'INode'
@@ -776,14 +781,6 @@ class SourceLayer(Data):
     resourceUrls: dict
 
 
-class SourceFeature(Data):
-    attributes: dict
-    shape: Optional['IShape']
-    wkt: Optional[str]
-    layerName: Optional[str]
-    uid: str
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # XML
 
@@ -1033,11 +1030,13 @@ class IDatabaseManager(INode, Protocol):
 
     def first_provider(self, ext_type: str): ...
 
-    def provider_for(self, obj: INode, ext_type: str = None): ...
-
     def register_model(self, model: 'IModel'): ...
 
     def model(self, model_uid) -> 'IModel': ...
+
+    def describe(self, session: 'IDatabaseSession', table_name: str) -> Optional[DataSetDescription]: ...
+
+    def autoload(self, session: 'IDatabaseSession', table_name: str) -> Optional['sa.Table']: ...
 
 
 class IDatabaseProvider(INode, Protocol):
@@ -1045,19 +1044,29 @@ class IDatabaseProvider(INode, Protocol):
 
     def session(self) -> 'IDatabaseSession': ...
 
-    def sa_engine(self, **kwargs): ...
-
-    def describe_table(self, table_name: str) -> DataSetDescription: ...
+    def engine(self, **kwargs) -> 'sa.engine.Engine': ...
 
     def qualified_table_name(self, table_name: str) -> str: ...
 
+    def parse_table_name(self, table_name: str) -> Tuple[str, str]: ...
+
+    def table(self, table_name, columns: List['sa.Column'] = None, **kwargs) -> 'sa.Table': ...
+
 
 class IDatabaseSession(Protocol):
+    provider: 'IDatabaseProvider'
+
     def begin(self): ...
 
     def commit(self): ...
 
     def rollback(self): ...
+
+    def execute(self, stmt, params=None, **kwargs): ...
+
+    def describe(self, table_name: str) -> Optional[DataSetDescription]: ...
+
+    def autoload(self, table_name: str) -> Optional['sa.Table']: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1069,6 +1078,7 @@ class IFeature(IObject, Protocol):
     views: dict
     errors: List['ModelValidationError']
     model: 'IModel'
+    layerName: str
     isNew: bool
 
     def props(self, user: 'IUser') -> Props: ...
@@ -1090,6 +1100,29 @@ class IFeature(IObject, Protocol):
     def render_views(self, templates: List['ITemplate'], **kwargs) -> 'IFeature': ...
 
 
+class FeatureData(Data):
+    uid: Union[int, str]
+    attributes: dict
+    shape: IShape
+    wkt: Optional[str]
+    wkb: Optional[str]
+    layerName: Optional[str]
+
+
+class FeatureRecord:
+    pass
+
+
+class FeatureProps(Props):
+    attributes: dict
+    views: dict
+    uid: str
+    keyName: str
+    geometryName: str
+    isNew: bool
+    modelUid: str
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # models
 
@@ -1098,18 +1131,8 @@ class ModelValidationError(Data):
     message: str
 
 
-class TextSearchType(Enum):
-    exact = 'exact'
-    begin = 'begin'
-    end = 'end'
-    any = 'any'
-    like = 'like'
-
-
-class TextSearch(Data):
-    type: TextSearchType
-    minLength: int
-    caseSensitive: bool
+EmptyValue = object()
+ErrorValue = object()
 
 
 class IModelWidget(INode, Protocol):
@@ -1142,31 +1165,25 @@ class IModelField(INode, Protocol):
     geometryType: Optional[GeometryType]
     geometryCrs: Optional['ICrs']
 
-    model: 'IModel'
-    widget: Optional['IModelWidget']
-
-    fixedValues: Dict[Access, IModelValue]
-    defaultValues: Dict[Access, IModelValue]
-
-    validators: Dict[Access, List['IModelValidator']]
-
     isPrimaryKey: bool
-    isRequired: bool
-    isUnique: bool
 
-    def compute_value(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
+    model: 'IModel'
 
-    def convert_value(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> Any: ...
+    def load_from_record(self, feature: IFeature, record: FeatureRecord, user: 'IUser', **kwargs): ...
 
-    def validate_value(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
+    def load_from_data(self, feature: IFeature, data: FeatureData, user: 'IUser', **kwargs): ...
 
-    def load_from_dict(self, feature: IFeature, attributes: dict, user: 'IUser'): ...
+    def load_from_props(self, feature: IFeature, props: FeatureProps, user: 'IUser', **kwargs): ...
 
-    def load_from_record(self, feature: IFeature, record: object, user: 'IUser'): ...
+    def store_to_record(self, feature: IFeature, record: FeatureRecord, user: 'IUser', **kwargs): ...
 
-    def store_to_dict(self, feature: IFeature, attributes: dict, user: 'IUser'): ...
+    def store_to_data(self, feature: IFeature, data: FeatureData, user: 'IUser', **kwargs): ...
 
-    def store_to_record(self, feature: IFeature, record: object, user: 'IUser'): ...
+    def store_to_props(self, feature: IFeature, props: FeatureProps, user: 'IUser', **kwargs): ...
+
+    def compute(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
+
+    def validate(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
 
     def sa_columns(self, column_dict: dict): ...
 
@@ -1188,25 +1205,13 @@ class IModel(INode, Protocol):
 
     def write_features(self, features: List['IFeature'], user: IUser, **kwargs) -> bool: ...
 
-    def feature_props(self, feature: 'IFeature', user: 'IUser') -> Props: ...
+    def feature_props(self, feature: 'IFeature', user: 'IUser') -> FeatureProps: ...
 
-    def feature_from_source(self, sf: SourceFeature, user: 'IUser') -> IFeature: ...
+    def feature_from_data(self, data: FeatureData, user: 'IUser', **kwargs) -> IFeature: ...
 
-    def feature_from_props(self, props: Props, user: 'IUser') -> IFeature: ...
+    def feature_from_props(self, props: FeatureProps, user: 'IUser', **kwargs) -> IFeature: ...
 
-    def feature_from_dict(self, attributes: dict, user: 'IUser') -> IFeature: ...
-
-    def feature_from_record(self, record: object, user: 'IUser') -> IFeature: ...
-
-
-class IModelManager(INode, Protocol):
-    models: List['IModel']
-
-    def add_model(self, m: IModel): ...
-
-    def create_model(self, cfg: Any): ...
-
-    def model(self, user: IUser = None, access: Access = None, uid: str = None) -> Optional[IModel]: ...
+    def feature_from_record(self, record: FeatureRecord, user: 'IUser', **kwargs) -> IFeature: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1570,7 +1575,7 @@ class SearchArgs(Data):
     relationDepth: int
     resolution: float
     shape: 'IShape'
-    sort: SearchSort
+    sort: List[SearchSort]
     tolerance: 'Measurement'
     uids: List[str]
     views: List[str]

@@ -1,7 +1,11 @@
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
+import sqlalchemy.pool
+
 import gws
 import gws.types as t
 
-from . import core, sql
+from . import sql, session as session_module
 
 
 class Config(gws.Config):
@@ -16,20 +20,13 @@ class _SaOrmBase:
 
 
 class _SaRuntime:
-    registries: t.Dict[str, sql.orm.registry]
-    engines: t.Dict[str, sql.sa.engine.Engine]
-    sessions: t.Dict[str, sql.Session]
-    tables: t.Dict[str, sql.sa.Table]
-    classes: t.Dict[str, type]
-    pkColumns: t.Dict[str, t.List[sql.sa.Column]]
-    descCache: t.Dict[str, gws.DataSetDescription]
-
     def __init__(self):
         self.registries = {}
         self.engines = {}
         self.sessions = {}
         self.tables = {}
-        self.classes = {}
+        self.modelTables = {}
+        self.modelClasses = {}
         self.pkColumns = {}
         self.descCache = {}
 
@@ -54,6 +51,9 @@ class Object(gws.Node, gws.IDatabaseManager):
             prov = self.root.create_shared(gws.ext.object.db, cfg)
             self.providers[prov.uid] = prov
 
+    def post_configure(self):
+        self.close_sessions()
+
     def provider(self, uid, ext_type):
         prov = self.providers.get(uid)
         if prov and prov.extType == ext_type:
@@ -63,24 +63,6 @@ class Object(gws.Node, gws.IDatabaseManager):
         for prov in self.providers.values():
             if prov.extType == ext_type:
                 return prov
-
-    def provider_for(self, obj: gws.INode, ext_type: str = None):
-        db = obj.var('db')
-        if not db and obj.var('_provider'):
-            return obj.var('_provider')
-
-        ext_type = ext_type or obj.extType
-
-        if db:
-            p = self.provider(db, ext_type)
-            if not p:
-                raise gws.Error(f'database provider {ext_type!r} {db!r} not found')
-            return p
-
-        p = self.first_provider(ext_type)
-        if not p:
-            raise gws.Error(f'database provider {ext_type!r} not found')
-        return p
 
     def register_model(self, model):
         self.models[model.uid] = model
@@ -94,88 +76,104 @@ class Object(gws.Node, gws.IDatabaseManager):
     def activate_runtime(self):
         self.rt = _SaRuntime()
 
-        for prov_uid in self.providers:
-            self.rt.registries[prov_uid] = sql.orm.registry()
+        for provider in self.providers.values():
+            eng = provider.engine()
+            self.rt.engines[provider.uid] = eng
+            self.rt.registries[provider.uid] = orm.registry(sa.MetaData(eng))
 
-        model_to_tkey = {}
+        model_to_tuid = {}
 
         for model_uid, mod in self.models.items():
             table_name = getattr(mod, 'tableName', None)
             if not table_name:
                 continue
             provider = t.cast(gws.IDatabaseProvider, getattr(mod, 'provider'))
-            model_to_tkey[model_uid] = provider.uid, provider.qualified_table_name(table_name)
+            model_to_tuid[model_uid] = self.table_uid(provider, table_name)
 
-        tkey_to_cols = {}
-        tkey_to_prim = {}
+        tuid_to_cols = {}
+        tuid_to_prim = {}
 
-        for model_uid, tkey in model_to_tkey.items():
+        for model_uid, tuid in model_to_tuid.items():
             d = {}
             for f in self.models[model_uid].fields:
                 if f.isPrimaryKey:
                     f.sa_columns(d)
-            tkey_to_prim.setdefault(tkey, {}).update(d)
-            tkey_to_cols.setdefault(tkey, {}).update(d)
+            tuid_to_prim.setdefault(tuid, {}).update(d)
+            tuid_to_cols.setdefault(tuid, {}).update(d)
 
-        for model_uid, tkey in model_to_tkey.items():
-            if tkey in tkey_to_prim:
-                self.rt.pkColumns[model_uid] = list(tkey_to_prim[tkey].values())
+        for model_uid, tuid in model_to_tuid.items():
+            if tuid in tuid_to_prim:
+                self.rt.pkColumns[model_uid] = list(tuid_to_prim[tuid].values())
 
-        for model_uid, tkey in model_to_tkey.items():
+        for model_uid, tuid in model_to_tuid.items():
             d = {}
             for f in self.models[model_uid].fields:
                 if not f.isPrimaryKey:
                     f.sa_columns(d)
-            tkey_to_cols.setdefault(tkey, {}).update(d)
+            tuid_to_cols.setdefault(tuid, {}).update(d)
 
-        tkey_to_table = {}
-        tkey_to_class = {}
+        tuid_to_table = {}
+        tuid_to_class = {}
 
-        for tkey, cols in tkey_to_cols.items():
-            provider_uid, table_name = tkey
+        for tuid, cols in tuid_to_cols.items():
+            provider_uid, table_name = tuid
             provider = self.providers[provider_uid]
-            tab = self.sa_make_table(provider, table_name, cols.values())
+            tab = self.table(provider, table_name, cols.values())
             cls = type('_SA_' + provider_uid + '_' + gws.to_uid(table_name), (_SaOrmBase,), {})
             self.rt.registries[provider_uid].map_imperatively(cls, tab)
-            tkey_to_table[tkey] = tab
-            tkey_to_class[tkey] = cls
+            tuid_to_table[tuid] = tab
+            tuid_to_class[tuid] = cls
 
-        for model_uid, tkey in model_to_tkey.items():
-            self.rt.tables[model_uid] = tkey_to_table[tkey]
-            self.rt.classes[model_uid] = tkey_to_class[tkey]
+        for model_uid, tuid in model_to_tuid.items():
+            self.rt.modelTables[model_uid] = tuid_to_table[tuid]
+            self.rt.modelClasses[model_uid] = tuid_to_class[tuid]
 
-        tkey_to_props = {}
+        tuid_to_props = {}
 
-        for model_uid, tkey in model_to_tkey.items():
+        for model_uid, tuid in model_to_tuid.items():
             d = {}
             for f in self.models[model_uid].fields:
                 f.sa_properties(d)
-            tkey_to_props.setdefault(tkey, {}).update(d)
+            tuid_to_props.setdefault(tuid, {}).update(d)
 
-        for tkey, props in tkey_to_props.items():
+        for tuid, props in tuid_to_props.items():
             for k, v in props.items():
-                getattr(tkey_to_class[tkey], '__mapper__').add_property(k, v)
+                getattr(tuid_to_class[tuid], '__mapper__').add_property(k, v)
 
-    def sa_table(self, model) -> sql.sa.Table:
-        return self.rt.tables[model.uid]
+    def table_uid(self, provider: gws.IDatabaseProvider, table_name: str):
+        return provider.uid, provider.qualified_table_name(table_name)
 
-    def sa_class(self, model) -> type:
-        return self.rt.classes[model.uid]
+    def engine_for_provider(self, provider):
+        if not self.rt.engines.get(provider.uid):
+            self.rt.engines[provider.uid] = provider.engine()
+        return self.rt.engines[provider.uid]
 
-    def sa_pk_columns(self, model) -> t.List[sql.sa.Column]:
+    def table_for_model(self, model) -> sa.Table:
+        return self.rt.modelTables[model.uid]
+
+    def class_for_model(self, model) -> type:
+        return self.rt.modelClasses[model.uid]
+
+    def sa_pk_columns(self, model) -> t.List[sa.Column]:
         return self.rt.pkColumns.get(model.uid, [])
 
-    def sa_make_table(self, provider: gws.IDatabaseProvider, name: str, columns: t.List[sql.sa.Column], **kwargs):
+    def table(self, provider: gws.IDatabaseProvider, table_name: str, columns: t.List[sa.Column] = None, **kwargs):
+        tuid = self.table_uid(provider, table_name)
+        if tuid in self.rt.tables and not columns:
+            return self.rt.tables[tuid]
         metadata = self.rt.registries[provider.uid].metadata
+        schema, name = provider.parse_table_name(table_name)
+        kwargs.setdefault('schema', schema)
+        if columns:
+            kwargs.setdefault('extend_existing', True)
+            tab = sa.Table(name, metadata, *columns, **kwargs)
+        else:
+            tab = sa.Table(name, metadata, **kwargs)
+        self.rt.tables[tuid] = tab
+        return tab
 
-        if '.' in name:
-            schema, name = name.split('.')
-            kwargs.setdefault('schema', schema)
-
-        return sql.sa.Table(name, metadata, *columns, **kwargs)
-
-    def sa_make_engine(self, drivername: str, options, **kwargs):
-        url = sql.sa.engine.URL.create(
+    def make_engine(self, drivername: str, options, **kwargs):
+        url = sa.engine.URL.create(
             drivername,
             username=options.get('username'),
             password=options.get('password'),
@@ -183,17 +181,15 @@ class Object(gws.Node, gws.IDatabaseManager):
             port=options.get('port'),
             database=options.get('database'),
         )
-        return sql.sa.create_engine(url, **kwargs)
+        kwargs.setdefault('poolclass', sqlalchemy.pool.NullPool)
+        return sa.create_engine(url, **kwargs)
 
     def session(self, provider, **kwargs):
-        if not self.rt.engines.get(provider.uid):
-            gws.log.debug(f'db: create engine for {provider.uid!r}')
-            self.rt.engines[provider.uid] = provider.sa_engine()
-
         if not self.rt.sessions.get(provider.uid):
             gws.log.debug(f'db: create session for {provider.uid!r}')
-            self.rt.sessions[provider.uid] = sql.Session(
-                sql.orm.Session(self.rt.engines[provider.uid], future=True, **kwargs))
+            self.rt.sessions[provider.uid] = session_module.Object(
+                provider,
+                orm.Session(self.engine_for_provider(provider), future=True, **kwargs))
 
         return self.rt.sessions[provider.uid]
 
@@ -203,47 +199,50 @@ class Object(gws.Node, gws.IDatabaseManager):
             sess.saSession.close()
         self.rt.sessions = {}
 
-    def describe_table(self, provider: gws.IDatabaseProvider, table_name: str) -> t.Optional[gws.DataSetDescription]:
-        cache_key = gws.join_uid(provider.uid, table_name)
-        if cache_key not in self.rt.descCache:
-            self.rt.descCache[cache_key] = self._describe_table_impl(provider, table_name)
-        return self.rt.descCache[cache_key]
+    def autoload(self, sess, table_name):
+        return self._load_and_describe(sess, table_name, True)
 
-    def _describe_table_impl(self, provider, table_name):
-        ins = sql.sa.inspect(provider.sa_engine())
+    def describe(self, sess, table_name):
+        tuid = self.table_uid(sess.provider, table_name)
+        if tuid not in self.rt.descCache:
+            self.rt.descCache[tuid] = self._load_and_describe(sess, table_name, False)
+        return self.rt.descCache[tuid]
+
+    def _load_and_describe(self, sess, table_name, load_only):
+        ins = sa.inspect(getattr(sess, 'saSession').connection())
+
+        schema, name = sess.provider.parse_table_name(table_name)
+        if not ins.has_table(name, schema):
+            return None
+
+        tab = self.table(sess.provider, table_name)
+        ins.reflect_table(tab, include_columns=None)
+
+        if load_only:
+            return tab
+
+        ins = sa.inspect(getattr(sess, 'saSession').connection())
 
         desc = gws.DataSetDescription(
             columns={},
             keyNames=[],
+            schema=tab.schema,
+            name=tab.name,
+            qname=tab.schema + '.' + tab.name,
         )
 
-        if '.' in table_name:
-            s, _, n = table_name.partition('.')
-            desc.name = n
-            desc.schema = s
-            desc.fullName = s + '.' + n
-        else:
-            desc.name = table_name
-            desc.schema = ''
-            desc.fullName = table_name
-
-        try:
-            ins_columns = ins.get_columns(desc.name, desc.schema)
-        except sql.exc.NoSuchTableError:
-            return None
-
-        for c in ins_columns:
+        for c in tab.c:
             col = gws.ColumnDescription(
-                comment=c.get('comment', ''),
-                default=c.get('default'),
-                isAutoincrement=c.get('autoincrement', False),
-                isNullable=c.get('nullable', False),
+                comment=c.comment,
+                default=c.default,
+                isAutoincrement=c.autoincrement,
+                isNullable=c.nullable,
                 isPrimaryKey=False,
-                name=c.get('name'),
-                options=c.get('dialect_options', {}),
+                name=c.name,
+                options=c.dialect_options
             )
 
-            typ = c.get('type')
+            typ = c.type
             col.nativeType = str(typ).upper()
 
             gt = getattr(typ, 'geometry_type', None)

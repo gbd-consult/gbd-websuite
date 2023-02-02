@@ -18,14 +18,13 @@ interface IMarkerContent {
 
 class MarkerLayer extends gws.map.layer.FeatureLayer {
     controller: MarkerController;
+    cssSelector = '.modMarkerFeature'
 
     super_printItem(): gws.api.base.printer.Plane {
         let fs = gws.lib.compact(this.features.map(f => f.getProps()));
 
         if (fs.length === 0)
             return null;
-
-        let style = null //this.map.style.at(this.styleNames.normal);
 
         return {
             type: 'features',
@@ -45,7 +44,6 @@ class MarkerLayer extends gws.map.layer.FeatureLayer {
 
 class MarkerController extends gws.Controller {
     layer: MarkerLayer;
-    styleName: string = '.modMarkerFeature';
 
     async init() {
         this.app.whenChanged('marker', content => this.show(content));
@@ -82,8 +80,8 @@ class MarkerController extends gws.Controller {
         let desc = [];
 
         for (let f of features) {
-            if (f.elements['description'])
-                desc.push(f.elements['description']);
+            if (f.views.description)
+                desc.push(f.views.description);
         }
 
 
@@ -200,13 +198,6 @@ class MarkerController extends gws.Controller {
     }
 
     makeFeature(g: ol.geom.Geometry) {
-        let args: gws.types.IMapFeatureArgs = {};
-
-        if (g) {
-            args.geometry = g;
-            args.style = this.styleName;
-        }
-
         return this.map.featureFromGeometry(g);
     }
 

@@ -2,13 +2,6 @@ import gws
 import gws.types as t
 
 
-class _LimitExceeded(Exception):
-    pass
-
-
-_DEFAULT_LIMIT = 10 * 1000
-
-
 class Result(gws.Data):
     feature: gws.IFeature
     layer: gws.ILayer
@@ -16,7 +9,6 @@ class Result(gws.Data):
 
 
 def run(search: gws.SearchArgs, user: gws.IUser) -> t.List[Result]:
-    limit = search.limit or _DEFAULT_LIMIT
     used_layer_ids = set()
     results: t.List[Result] = []
     layers = search.layers or []
@@ -25,19 +17,19 @@ def run(search: gws.SearchArgs, user: gws.IUser) -> t.List[Result]:
         used_layer_ids.add(layer.uid)
         for finder in layer.finders:
             _run(search, user, finder, layer, results)
-            if len(results) > limit:
-                return results[:limit]
+            if len(results) > search.limit:
+                return results[:search.limit]
 
     for layer in search.layers:
         for ancestor in layer.ancestors():
             if ancestor.uid in used_layer_ids:
                 continue
             used_layer_ids.add(ancestor.uid)
-            gws.log.debug(f'search ancestor={ancestor.uid} for={layer.uid}')
+            gws.log.debug(f'SEARCH_ANCESTOR {ancestor.uid=} {layer.uid=}')
             for finder in ancestor.finders:
                 _run(search, user, finder, ancestor, results)
-                if len(results) > limit:
-                    return results[:limit]
+                if len(results) > search.limit:
+                    return results[:search.limit]
 
     return results
 
@@ -49,7 +41,7 @@ def _run(
         layer: gws.ILayer,
         results,
 ):
-    gws.log.debug(f'SEARCH_BEGIN: finder={finder.uid!r} layer={layer.uid!r}')
+    gws.log.debug(f'SEARCH_BEGIN: {finder.uid=} {layer.uid=}')
 
     if not user.can_use(finder, layer):
         gws.log.debug('SEARCH_END: no access')
@@ -66,10 +58,10 @@ def _run(
         return
 
     for feature in features:
-        results.append(Result(
-            feature=feature,
-            layer=layer,
-            finder=finder,
-        ))
+        if not feature.layerName:
+            feature.layerName = layer.title
+        results.append(Result(feature=feature, layer=layer, finder=finder))
+        if len(results) > search.limit:
+            break
 
     gws.log.debug(f'SEARCH_END, found={len(features)}')

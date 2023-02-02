@@ -18,13 +18,19 @@ class Config(gws.base.database.provider.Config):
 @gws.ext.object.db('postgres')
 class Object(gws.base.database.provider.Object):
 
-    def sa_engine(self, **kwargs):
-        return self.mgr.sa_make_engine('postgresql', self.config, **kwargs)
+    def engine(self, **kwargs):
+        return self.mgr.make_engine('postgresql', self.config, **kwargs)
 
     def qualified_table_name(self, table_name):
         if '.' in table_name:
             return table_name
         return 'public.' + table_name
+
+    def parse_table_name(self, table_name):
+        if '.' in table_name:
+            schema, name = table_name.split('.')
+            return schema, name
+        return 'public', table_name
 
     # def configure(self):
     #

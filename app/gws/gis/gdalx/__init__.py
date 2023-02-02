@@ -124,7 +124,7 @@ class DataSet:
 
         return Layer(gd_layer)
 
-    def layer(self, name):
+    def layer(self, name) -> t.Optional['Layer']:
         gd_layer = self.gdDataset.GetLayer(name)
         return Layer(gd_layer) if gd_layer else None
 
@@ -210,32 +210,32 @@ class Layer:
 
         return desc
 
-    def feature_count(self):
+    def count(self):
         return self.gdLayer.GetFeatureCount()
 
-    def insert_features(self, sfs: t.List[gws.SourceFeature], encoding: str = None) -> t.List[int]:
+    def insert(self, fds: t.List[gws.FeatureData], encoding: str = None) -> t.List[int]:
         desc = self.describe()
         fids = []
 
-        for sf in sfs:
+        for fd in fds:
             gd_feature = ogr.Feature(self.gdLayerDefn)
             if desc.geometryType:
-                if sf.shape:
+                if fd.shape:
                     gd_feature.SetGeometry(
                         ogr.CreateGeometryFromWkt(
-                            sf.shape.to_wkt(),
-                            _srs(sf.shape.crs.srid)))
-                elif sf.wkt:
+                            fd.shape.to_wkt(),
+                            _srs(fd.shape.crs.srid)))
+                elif fd.wkt:
                     # NB using default CRS
-                    gd_feature.SetGeometry(ogr.CreateGeometryFromWkt(sf.wkt))
+                    gd_feature.SetGeometry(ogr.CreateGeometryFromWkt(fd.wkt))
 
-            if sf.uid and isinstance(sf.uid, int):
-                gd_feature.SetFID(sf.uid)
+            if fd.uid and isinstance(fd.uid, int):
+                gd_feature.SetFID(fd.uid)
 
             for col in desc.columns.values():
                 if col.geometryType or col.isPrimaryKey:
                     continue
-                val = sf.attributes.get(col.name)
+                val = fd.attributes.get(col.name)
                 if val is None:
                     continue
                 try:
@@ -248,48 +248,46 @@ class Layer:
 
         return fids
 
-    def find_features(self, query: str = None, default_srid: int = 0, encoding: str = None) -> t.List[gws.SourceFeature]:
-        if query:
-            self.gdLayer.SetAttributeFilter(query)
-
-        res = []
-
+    def get_all(self, default_srid: int = 0, encoding: str = None) -> t.List[gws.FeatureData]:
+        fds = []
         while True:
-            gd_feature: ogr.Feature = self.gdLayer.GetNextFeature()
+            gd_feature = self.gdLayer.GetNextFeature()
             if not gd_feature:
                 break
+            fds.append(self._feature_data(gd_feature, default_srid, encoding))
+        return fds
 
-            sf = gws.SourceFeature(
-                attributes={},
-                shape=None,
-                layerName=self.name,
-                uid=str(gd_feature.GetFID()),
-            )
+    def get_one(self, fid: int, default_srid: int = 0, encoding: str = None) -> t.Optional[gws.FeatureData]:
+        gd_feature = self.gdLayer.GetFeature(fid)
+        if gd_feature:
+            return self._feature_data(gd_feature, default_srid, encoding)
 
-            for i in range(gd_feature.GetFieldCount()):
-                gd_field_defn: ogr.FieldDefn = gd_feature.GetFieldDefnRef(i)
-                name = gd_field_defn.GetName()
-                val = _attr_from_ogr(gd_feature, gd_field_defn.type, i, encoding)
-                sf.attributes[name] = val
+    def _feature_data(self, gd_feature, default_srid, encoding):
+        fd = gws.FeatureData(
+            attributes={},
+            shape=None,
+            layerName=self.name,
+            uid=str(gd_feature.GetFID()),
+        )
 
-            cnt = gd_feature.GetGeomFieldCount()
-            if cnt > 0:
-                # NB take the last geom
-                # @TODO multigeometry support
-                gd_geom_defn = gd_feature.GetGeomFieldRef(cnt - 1)
-                if not gd_geom_defn:
-                    continue
+        for i in range(gd_feature.GetFieldCount()):
+            gd_field_defn: ogr.FieldDefn = gd_feature.GetFieldDefnRef(i)
+            name = gd_field_defn.GetName()
+            val = _attr_from_ogr(gd_feature, gd_field_defn.type, i, encoding)
+            fd.attributes[name] = val
+
+        cnt = gd_feature.GetGeomFieldCount()
+        if cnt > 0:
+            # NB take the last geom
+            # @TODO multigeometry support
+            gd_geom_defn = gd_feature.GetGeomFieldRef(cnt - 1)
+            if gd_geom_defn:
                 srs = gd_geom_defn.GetSpatialReference()
                 srid = srs.GetAuthorityCode(None) if srs else default_srid
                 wkt = gd_geom_defn.ExportToWkt()
-                sf.shape = gws.base.shape.from_wkt(wkt, gws.gis.crs.get(srid))
+                fd.shape = gws.base.shape.from_wkt(wkt, gws.gis.crs.get(srid))
 
-            res.append(sf)
-
-        if query:
-            self.gdLayer.SetAttributeFilter('')
-
-        return res
+        return fd
 
 
 ##

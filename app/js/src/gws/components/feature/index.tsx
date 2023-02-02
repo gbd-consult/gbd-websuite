@@ -45,7 +45,7 @@ export class List extends React.PureComponent<ListProps> {
         return <FeatureList
             controller={this.props.controller}
             items={this.props.features}
-            content={(f: gws.types.IFeature) => this.props.content ? this.props.content(f) : <gws.ui.Text content={f.elements.title}/>}
+            content={(f: gws.types.IFeature) => this.props.content ? this.props.content(f) : <gws.ui.Text content={f.views.title}/>}
             uid={f => f.uid}
             isSelected={this.props.isSelected}
             leftButton={this.props.withZoom
@@ -133,7 +133,7 @@ export class InfoList extends React.Component<InfoListProps, InfoListState> {
 
         let item = this.props.content;
         if (!item)
-            item = f => <gws.ui.TextBlock className="cmpDescription" withHTML content={f.elements.description}/>;
+            item = f => <gws.ui.TextBlock className="cmpDescription" withHTML content={f.views.description}/>;
 
         return <div className="cmpInfoboxContent">
             <div className="cmpInfoboxBody">

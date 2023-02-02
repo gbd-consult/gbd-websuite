@@ -8,15 +8,29 @@ import gws.types as t
 from .. import scalar
 
 
-class TextSearchConfig(gws.Config):
-    type: gws.TextSearchType
+class SearchType(t.Enum):
+    exact = 'exact'
+    begin = 'begin'
+    end = 'end'
+    any = 'any'
+    like = 'like'
+
+
+class Search(gws.Data):
+    type: SearchType
+    minLength: int
+    caseSensitive: bool
+
+
+class SearchConfig(gws.Config):
+    type: SearchType
     minLength: int = 0
     caseSensitive: bool = False
 
 
 @gws.ext.config.modelField('text')
 class Config(scalar.Config):
-    textSearch: t.Optional[TextSearchConfig]
+    textSearch: t.Optional[SearchConfig]
 
 
 @gws.ext.props.modelField('text')
@@ -27,14 +41,14 @@ class Props(scalar.Props):
 @gws.ext.object.modelField('text')
 class Object(scalar.Object):
     attributeType = gws.AttributeType.str
-    textSearch: t.Optional[gws.TextSearch]
+    textSearch: t.Optional[Search]
 
     def configure(self):
         self.textSearch = None
         p = self.var('textSearch')
         if p:
-            self.textSearch = gws.TextSearch(
-                type=p.get('type', gws.TextSearchType.exact),
+            self.textSearch = Search(
+                type=p.get('type', SearchType.exact),
                 minLength=p.get('minLength', 0),
                 caseSensitive=p.get('caseSensitive', False),
             )
@@ -55,7 +69,7 @@ class Object(scalar.Object):
             getattr(mod.sa_class(), self.name),
             sql.sa.String)
 
-        if so.type == gws.TextSearchType.exact:
+        if so.type == SearchType.exact:
             sel.keywordWhere.append(fld == kw)
         else:
             kw = sql.escape_like(kw)

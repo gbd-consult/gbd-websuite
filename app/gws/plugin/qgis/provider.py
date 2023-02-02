@@ -1,4 +1,4 @@
-import zipfile
+import sqlalchemy as sa
 
 import gws
 import gws.lib.metadata
@@ -11,13 +11,13 @@ from . import caps, project
 
 
 class Config(gws.Config):
-    path: gws.FilePath 
-    """path to a Qgis project file"""
-    directRender: t.Optional[t.List[str]] 
+    source: project.Source
+    """Qgis project file"""
+    directRender: t.Optional[t.List[str]]
     """QGIS data providers that should be rendered directly"""
-    directSearch: t.Optional[t.List[str]] 
+    directSearch: t.Optional[t.List[str]]
     """QGIS data providers that should be searched directly"""
-    forceCrs: t.Optional[gws.CrsName] 
+    forceCrs: t.Optional[gws.CrsName]
     """use this CRS for requests"""
 
 
@@ -47,7 +47,7 @@ _DEFAULT_LEGEND_PARAMS = {
 
 
 class Object(gws.Node, gws.IOwsProvider):
-    path: str
+    source: project.Source
     printTemplates: t.List[caps.PrintTemplate]
     url: str
     project: project.Object
@@ -61,14 +61,14 @@ class Object(gws.Node, gws.IOwsProvider):
     caps: caps.Caps
 
     def configure(self):
-        self.path = self.var('path')
-        self.root.app.monitor.add_path(self.path)
+        self.source = self.var('source')
+        # self.root.app.monitor.add_path(self.path)
 
         self.url = 'http://%s:%s' % (
             self.root.app.var('server.qgis.host'),
             self.root.app.var('server.qgis.port'))
 
-        self.project = project.from_path(self.path)
+        self.project = project.from_source(self.source, self)
         self.caps = self.project.caps()
 
         self.metadata = self.caps.metadata
@@ -85,6 +85,7 @@ class Object(gws.Node, gws.IOwsProvider):
         wms_extent = self.caps.properties.get('WMSExtent')
         if wms_extent:
             self.extent = gws.gis.extent.from_list([float(v) for v in wms_extent])
+
 
     def find_features(self, args, source_layers):
         if not args.shapes:

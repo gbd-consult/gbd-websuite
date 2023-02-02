@@ -82,8 +82,8 @@ class Object(gws.Node, gws.IApplication):
 
     _devopts: dict
 
-    mpx_url = ''
-    mpx_config = ''
+    mpxUrl = ''
+    mpxConfig = ''
 
     def configure(self):
         self.version = self.root.specs.version
@@ -154,8 +154,8 @@ class Object(gws.Node, gws.IApplication):
 
     def post_configure(self):
         if self.var('server.mapproxy.enabled'):
-            self.mpx_url = f"http://{self.var('server.mapproxy.host')}:{self.var('server.mapproxy.port')}"
-            self.mpx_config = gws.gis.mpx.config.create_and_save(self.root)
+            self.mpxUrl = f"http://{self.var('server.mapproxy.host')}:{self.var('server.mapproxy.port')}"
+            self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
         # for p in set(cfg.configPaths):
         #     root.app.monitor.add_path(p)

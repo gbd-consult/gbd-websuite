@@ -712,16 +712,16 @@ export class MapManager implements types.IMapManager {
     //
 
 
-    readFeature(props: api.base.feature.Props): types.IFeature {
+    readFeature(props: api.core.FeatureProps): types.IFeature {
         return this.featureFromProps(props);
 
     }
 
-    readFeatures(propsList: Array<api.base.feature.Props>): Array<types.IFeature> {
+    readFeatures(propsList: Array<api.core.FeatureProps>): Array<types.IFeature> {
         return this.featureListFromProps(propsList);
     }
 
-    featureListFromProps(propsList: Array<api.base.feature.Props>): Array<types.IFeature> {
+    featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<types.IFeature> {
         return propsList.map(props => this.featureFromProps(props));
     }
 
@@ -729,8 +729,8 @@ export class MapManager implements types.IMapManager {
         return new Feature(this).setGeometry(geom);
     }
 
-    featureFromProps(props: api.base.feature.Props): types.IFeature {
-        let atts = props.attributes || {};
+    featureFromProps(props: api.core.FeatureProps): types.IFeature {
+        let attributes = props.attributes || {};
         let model: types.IModel;
 
         if (props.modelUid)
@@ -738,24 +738,23 @@ export class MapManager implements types.IMapManager {
 
         if (model) {
             for (let f of model.fields) {
-                let val = atts[f.name];
+                let val = attributes[f.name];
 
                 if (val && f.attributeType === 'feature') {
-                    atts[f.name] = this.featureFromProps(val);
+                    attributes[f.name] = this.featureFromProps(val);
                 }
 
                 if (val && f.attributeType === 'featurelist') {
-                    atts[f.name] = val.map(p => this.featureFromProps(p));
+                    attributes[f.name] = val.map(p => this.featureFromProps(p));
                 }
             }
         }
 
-        props.attributes = atts;
-        return new Feature(this).setProps(props);
+        return new Feature(this).setProps({...props, attributes});
     }
 
 
-    featureProps(feature: types.IFeature, depth?: number): api.base.feature.Props {
+    featureProps(feature: types.IFeature, depth?: number): api.core.FeatureProps {
 
         let atts = {};
         depth = depth || 0;
