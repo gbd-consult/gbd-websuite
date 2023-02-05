@@ -6,7 +6,8 @@ import gws.base.search
 import gws.types as t
 
 
-@gws.ext.object.finder('qgispostgres')
+gws.ext.new.finder('qgispostgres')
+
 class Object(gws.base.search.provider.Object):
     supports_geometry = True
     supports_keyword = True

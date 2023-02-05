@@ -4,7 +4,8 @@ import gws.types as t
 from .. import provider, user
 
 
-@gws.ext.object.authProvider('system')
+gws.ext.new.authProvider('system')
+
 class Object(provider.Object):
     users: t.Dict[str, user.User]
 

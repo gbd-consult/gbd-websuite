@@ -5,16 +5,16 @@ import gws.types as t
 
 from .. import error, method
 
+gws.ext.new.authMethod('basic')
+
 
 # @TODO support WWW-Authenticate at some point
 
-@gws.ext.config.authMethod('basic')
 class Config(method.Config):
     """HTTP-basic authorization options"""
     pass
 
 
-@gws.ext.object.authMethod('basic')
 class Object(method.Object):
 
     def open_session(self, req):

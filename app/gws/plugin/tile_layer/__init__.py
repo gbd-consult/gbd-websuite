@@ -7,15 +7,16 @@ import gws.gis.zoom
 import gws.base.layer
 import gws.types as t
 
+gws.ext.new.layer('tile')
 
-@gws.ext.config.layer('tile')
+
 class Config(gws.base.layer.Config):
     """Tile layer"""
-    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile 
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
     """layer display mode"""
-    maxRequests: int = 0 
+    maxRequests: int = 0
     """max concurrent requests to this source"""
-    url: gws.Url 
+    url: gws.Url
     """rest url with placeholders {x}, {y} and {z}"""
 
 
@@ -29,7 +30,6 @@ _GRID_DEFAULTS = gws.TileGrid(
 )
 
 
-@gws.ext.object.layer('tile')
 class Object(gws.base.layer.Object):
     url: gws.Url
 

@@ -18,7 +18,8 @@ class ReloadParams(StartParams):
     """list of modules to reload ('qgis', 'mapproxy', 'web', 'spool')"""
 
 
-@gws.ext.object.cli('server')
+gws.ext.new.cli('server')
+
 class Object(gws.Node):
 
     @gws.ext.command.cli('serverStart')

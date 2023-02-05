@@ -10,19 +10,18 @@ import gws.types as t
 import gws.base.model.field
 import gws.base.model.fields.scalar as scalar
 
+gws.ext.new.modelField('geometry')
 
-@gws.ext.config.modelField('geometry')
+
 class Config(scalar.Config):
     geometryType: t.Optional[gws.GeometryType]
     crs: t.Optional[gws.CrsName]
 
 
-@gws.ext.props.modelField('geometry')
 class Props(scalar.Props):
     pass
 
 
-@gws.ext.object.modelField('geometry')
 class Object(scalar.Object):
     attributeType = gws.AttributeType.geometry
 

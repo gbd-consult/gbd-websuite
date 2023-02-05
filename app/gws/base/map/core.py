@@ -7,8 +7,9 @@ import gws.gis.zoom
 import gws.lib.uom as units
 import gws.types as t
 
+gws.ext.new.map('default')
 
-@gws.ext.config.map('default')
+
 class Config(gws.Config):
     """Map configuration"""
 
@@ -30,7 +31,6 @@ class Config(gws.Config):
     """map scales and resolutions"""
 
 
-@gws.ext.props.map('default')
 class Props(gws.Data):
     crs: str
     crsDef: t.Optional[str]
@@ -43,7 +43,6 @@ class Props(gws.Data):
     title: str = ''
 
 
-@gws.ext.object.map('default')
 class Object(gws.Node, gws.IMap):
 
     def configure(self):

@@ -210,7 +210,8 @@ def _remove_dir(dirname):
 #     """list of layer IDs"""
 #
 #
-# @gws.ext.object.cli('cache')
+# gws.ext.new.cli('cache')
+
 # class Cli(gws.Node):
 #
 #     @gws.ext.command()

@@ -12,17 +12,17 @@ import gws.types as t
 
 from . import provider, caps
 
+gws.ext.new.template('qgis')
+
 _dummy_fn = lambda *args: None
 
 
-@gws.ext.config.template('qgis')
 class Config(gws.base.template.Config):
     path: gws.FilePath
     index: t.Optional[int]
     mapPosition: t.Optional[gws.MSize]
 
 
-@gws.ext.object.template('qgis')
 class Object(gws.base.template.Object):
     provider: provider.Object
     template: caps.PrintTemplate

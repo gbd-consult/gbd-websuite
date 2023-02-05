@@ -18,36 +18,36 @@ _DEFAULT_TEMPLATES = [
     ),
 ]
 
+gws.ext.new.project('default')
 
-@gws.ext.config.project('default')
+
 class Config(gws.ConfigWithAccess):
     """Project configuration"""
 
     type: str = 'default'
 
-    api: t.Optional[gws.base.action.manager.Config] 
+    api: t.Optional[gws.base.action.manager.Config]
     """project-specific actions"""
-    assets: t.Optional[gws.base.web.site.DocumentRootConfig] 
+    assets: t.Optional[gws.base.web.site.DocumentRootConfig]
     """project-specific assets options"""
-    client: t.Optional[gws.base.client.Config] 
+    client: t.Optional[gws.base.client.Config]
     """project-specific gws client configuration"""
-    locales: t.Optional[t.List[str]] 
+    locales: t.Optional[t.List[str]]
     """project locales"""
-    map: t.Optional[gws.base.map.Config] 
+    map: t.Optional[gws.base.map.Config]
     """Map configuration"""
-    metadata: t.Optional[gws.Metadata] 
+    metadata: t.Optional[gws.Metadata]
     """project metadata"""
-    overviewMap: t.Optional[gws.base.map.Config] 
+    overviewMap: t.Optional[gws.base.map.Config]
     """Overview map configuration"""
-    printer: t.Optional[gws.base.printer.Config] 
+    printer: t.Optional[gws.base.printer.Config]
     """print configuration"""
-    templates: t.Optional[t.List[gws.ext.config.template]] 
+    templates: t.Optional[t.List[gws.ext.config.template]]
     """project info templates"""
-    title: str = '' 
+    title: str = ''
     """project title"""
 
 
-@gws.ext.props.project('default')
 class Props(gws.Props):
     actions: t.List[gws.ext.props.action]
     client: t.Optional[gws.base.client.Props]
@@ -62,7 +62,6 @@ class Props(gws.Props):
     uid: str
 
 
-@gws.ext.object.project('default')
 class Object(gws.Node, gws.IProject):
     overview_map: gws.base.map.Object
     printer: gws.base.printer.Object

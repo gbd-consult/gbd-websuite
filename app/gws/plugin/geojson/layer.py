@@ -9,18 +9,18 @@ import gws.base.shape
 import gws.gis.ows
 import gws.types as t
 
+gws.ext.new.layer('geojson')
 
-@gws.ext.config.layer('geojson')
+
 class Config(gws.base.layer.vector.Config):
     """GeoJson layer"""
 
-    path: gws.FilePath 
+    path: gws.FilePath
     """geojson file"""
-    keyName: str = 'id' 
+    keyName: str = 'id'
     """property name for unique ids"""
 
 
-@gws.ext.object.layer('geojson')
 class Object(gws.base.layer.vector.Object, gws.IOwsClient):
     path: str
     source_crs: gws.ICrs

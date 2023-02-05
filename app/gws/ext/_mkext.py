@@ -22,6 +22,13 @@ types = [
     'template',
 ]
 
+commands = [
+    'api',
+    'get',
+    'post',
+    'cli',
+]
+
 import os
 
 path = os.path.dirname(__file__) + '/ext.py'
@@ -30,12 +37,18 @@ with open(path) as fp:
 
 text = text[0].strip() + '\n\n##'
 
+text += f"\n\nclass command:\n"
+for t in sorted(commands):
+    text += f"    class {t}(_methodTag): pass\n"
+
+text += f"\n\nclass new:\n"
+for t in sorted(types):
+    text += f"    def {t}(*a): pass\n"
 
 for k in 'object', 'config', 'props':
     text += f"\n\nclass {k}:\n"
-    text += f"    extName = 'gws.ext.{k}'\n"
     for t in sorted(types):
-        text += f"    class {t}(_tag): extName = 'gws.ext.{k}.{t}'\n"
+        text += f"    class {t} (_classTag): extName = 'gws.ext.{k}.{t}'\n"
 
 with open(path, 'w') as fp:
     fp.write(text)

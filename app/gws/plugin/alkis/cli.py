@@ -21,7 +21,8 @@ class IndexParams(gws.CliParams):
     """alkis action uid"""
 
 
-@gws.ext.object.cli('alkis')
+gws.ext.new.cli('alkis')
+
 class Object(gws.Node):
 
     @gws.ext.command.cli('alkisParse')

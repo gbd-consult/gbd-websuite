@@ -5,14 +5,14 @@ import gws.types as t
 
 from .. import method
 
+gws.ext.new.authMethod('web')
 
-@gws.ext.config.authMethod('web')
 class Config(method.Config):
     """Web-based authorization options"""
 
-    cookieName: str = 'auth' 
+    cookieName: str = 'auth'
     """name for the cookie"""
-    cookiePath: str = '/' 
+    cookiePath: str = '/'
     """cookie path"""
 
 
@@ -20,7 +20,7 @@ _ACTIVE = 'web:active'
 _DELETED = 'web:deleted'
 
 
-@gws.ext.object.authMethod('web')
+
 class Object(method.Object):
     cookieName: str
     cookiePath: str

@@ -6,14 +6,14 @@ import gws.types as t
 
 from . import provider
 
+gws.ext.new.finder('wms')
 
-@gws.ext.config.finder('wms')
+
 class Config(gws.base.search.finder.Config, provider.Config):
     sourceLayers: t.Optional[gws.gis.source.LayerFilter]
     """Source layers to search for."""
 
 
-@gws.ext.object.finder('wms')
 class Object(gws.base.search.finder.Object):
     supportsGeometry = True
 
@@ -49,4 +49,3 @@ class Object(gws.base.search.finder.Object):
                 super().can_run(search, user)
                 and bool(search.shape)
                 and search.shape.type == gws.GeometryType.point)
-

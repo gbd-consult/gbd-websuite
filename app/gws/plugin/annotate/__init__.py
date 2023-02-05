@@ -7,19 +7,17 @@ import gws.types as t
 
 STORAGE_CATEGORY = 'Annotate'
 
+gws.ext.new.action('annotate')
 
-@gws.ext.props.action('annotate')
+
+class Config(gws.base.action.Config):
+    pass
+
+
 class Props(gws.base.action.Props):
     pass
 
-@gws.ext.config.action('annotate')
-class Config(gws.ConfigWithAccess):
-    """Annotate action"""
 
-    pass
-
-
-@gws.ext.object.action('annotate')
 class Object(gws.base.action.Object):
 
     @gws.ext.command.api('annotateStorage')

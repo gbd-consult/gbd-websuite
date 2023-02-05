@@ -10,22 +10,22 @@ import gws.types as t
 from . import filter
 from .. import core
 
+gws.ext.new.owsService('csw')
+
 
 class Profile(t.Enum):
     ISO = 'ISO'
     DCMI = 'DCMI'
 
 
-@gws.ext.config.owsService('csw')
 class Config(core.ServiceConfig):
     """CSW Service configuration"""
     # @TODO no support for DCMI yet
-    # profile: Profile = Profile.ISO 
+    # profile: Profile = Profile.ISO
     """metadata profile"""
     pass
 
 
-@gws.ext.object.owsService('csw')
 class Object(core.Service):
     protocol = gws.OwsProtocol.CSW
     supported_versions = ['2.0.2']

@@ -11,6 +11,16 @@ import gws.base.web.error
 import gws.lib.mime
 import gws.types as t
 
+gws.ext.new.action('web')
+
+
+class Config(gws.base.action.Config):
+    pass
+
+
+class Props(gws.base.action.Props):
+    pass
+
 
 class AssetRequest(gws.Request):
     path: str
@@ -21,7 +31,6 @@ class AssetResponse(gws.Request):
     mime: str
 
 
-@gws.ext.object.action('web')
 class Object(gws.base.action.Object):
     """Web action"""
 

@@ -4,16 +4,16 @@ import gws.types as t
 
 from ... import core
 
+gws.ext.new.legend('static')
 
-@gws.ext.config.legend('static')
+
 class Config(core.Config):
     """Static legend."""
 
-    path: gws.FilePath 
+    path: gws.FilePath
     """path to the image file"""
 
 
-@gws.ext.object.legend('static')
 class Object(core.Object):
     path: str
 

@@ -11,6 +11,17 @@ import gws.types as t
 
 from . import core, job
 
+gws.ext.new.action('printer')
+
+
+class Config(gws.base.action.Config):
+    pass
+
+
+class Props(gws.base.action.Props):
+    pass
+
+
 class CliPrintParams(gws.CliParams):
     project: t.Optional[str]
     """project uid"""
@@ -20,7 +31,6 @@ class CliPrintParams(gws.CliParams):
     """output path"""
 
 
-@gws.ext.object.action('printer')
 class Object(gws.base.action.Object):
 
     @gws.ext.command.api('printerStart')

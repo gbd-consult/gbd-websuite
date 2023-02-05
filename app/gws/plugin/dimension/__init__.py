@@ -5,26 +5,25 @@ import gws.base.action
 import gws.base.storage
 import gws.types as t
 
+gws.ext.new.action('dimension')
+
 STORAGE_CATEGORY = 'Dimension'
 
 
-@gws.ext.props.action('dimension')
+class Config(gws.ConfigWithAccess):
+    """Dimension action"""
+
+    layers: t.Optional[t.List[str]]
+    """target layer uids"""
+    pixelTolerance: int = 10
+    """pixel tolerance"""
+
+
 class Props(gws.base.action.Props):
     layerUids: t.Optional[t.List[str]]
     pixelTolerance: int
 
 
-@gws.ext.config.action('dimension')
-class Config(gws.ConfigWithAccess):
-    """Dimension action"""
-
-    layers: t.Optional[t.List[str]] 
-    """target layer uids"""
-    pixelTolerance: int = 10 
-    """pixel tolerance"""
-
-
-@gws.ext.object.action('dimension')
 class Object(gws.base.action.Object):
 
     def props(self, user):

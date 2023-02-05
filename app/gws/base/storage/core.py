@@ -6,26 +6,29 @@ import gws.types as t
 from . import types
 from .providers import sqlite
 
+gws.ext.new.helper('storage')
+
+
 # @TODO: more provider types
 # @TODO: granular role-based permissions
 # @TODO: direct API (.read, .write etc)
 
 
 class PermissionMode(t.Enum):
-    read = 'read' 
+    read = 'read'
     """an object can be read"""
-    write = 'write' 
+    write = 'write'
     """an object can be written and deleted"""
-    all = 'all' 
+    all = 'all'
     """an object can be read and written"""
 
 
 class PermissionRule(gws.ConfigWithAccess):
     """Permission rule for a storage category"""
 
-    category: str 
+    category: str
     """storage category name"""
-    mode: PermissionMode 
+    mode: PermissionMode
     """allowed mode (read/write)"""
 
 
@@ -68,13 +71,13 @@ class Response(gws.Response):
     directory: Directory
     data: dict
 
-@gws.ext.config.helper('storage')
+
 class Config(gws.Config):
     """Storage helper"""
 
-    path: t.Optional[str] 
+    path: t.Optional[str]
     """path to the storage file"""
-    permissions: t.Optional[t.List[PermissionRule]] 
+    permissions: t.Optional[t.List[PermissionRule]]
     """permission rules"""
 
 
@@ -87,9 +90,6 @@ class Permission(gws.Node):
         self.mode = self.var('mode')
 
 
-
-
-@gws.ext.object.helper('storage')
 class Object(gws.Node):
     provider: sqlite.Object
     permissions: t.List[Permission]

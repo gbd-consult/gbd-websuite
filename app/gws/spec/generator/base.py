@@ -122,7 +122,8 @@ log = _Logger()
 
 class Generator(Data):
     meta: dict
-    types: Dict[str, Type] = {}
+    types: Dict[str, Type]
+    extRefs: Dict[str, List]
     specs = {}
     typescript = ''
     strings = {}
@@ -140,6 +141,7 @@ class Generator(Data):
         super().__init__()
         self.aliases = {}
         self.types = {}
+        self.extRefs = {}
 
     def new_type(self, c, **kwargs):
         if kwargs.get('name'):
@@ -178,6 +180,8 @@ def _auto_uid(c, d):
         return comma.join(d['tItems'])
     if c == C.UNION:
         return comma.join(sorted(d['tItems']))
+    if c == C.EXT:
+        return d['extName']
     if c == C.VARIANT:
         if 'tMembers' in d:
             return comma.join(sorted(d['tMembers'].values()))

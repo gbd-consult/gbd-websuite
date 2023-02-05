@@ -6,13 +6,17 @@ import gws.lib.vendor.jump
 import gws.lib.mime
 import gws.types as t
 
+gws.ext.new.template('text')
 
-@gws.ext.config.template('text')
+
 class Config(gws.base.template.Config):
     pass
 
 
-@gws.ext.object.template('text')
+class Props(gws.base.template.Props):
+    pass
+
+
 class Object(gws.base.template.Object):
     """Text-only template"""
 

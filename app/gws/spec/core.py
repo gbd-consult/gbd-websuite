@@ -39,6 +39,7 @@ class C:
     UNDEFINED = 'UNDEFINED'
     VARIANT = 'VARIANT'
 
+    EXT = 'EXT'
     COMMAND = 'COMMAND'
     OBJECT = 'OBJECT'
     CONFIG = 'CONFIG'
@@ -48,6 +49,7 @@ class C:
 # prefix for our decorators and ext classes
 APP_NAME = 'gws'
 EXT_PREFIX = APP_NAME + '.ext'
+EXT_DECL_PREFIX = EXT_PREFIX + '.new.'
 EXT_CONFIG_PREFIX = EXT_PREFIX + '.config.'
 EXT_PROPS_PREFIX = EXT_PREFIX + '.props.'
 EXT_OBJECT_PREFIX = EXT_PREFIX + '.object.'
@@ -56,6 +58,10 @@ EXT_COMMAND_PREFIX = EXT_PREFIX + '.command.'
 EXT_COMMAND_API_PREFIX = EXT_COMMAND_PREFIX + 'api.'
 EXT_COMMAND_GET_PREFIX = EXT_COMMAND_PREFIX + 'get.'
 EXT_COMMAND_CLI_PREFIX = EXT_COMMAND_PREFIX + 'cli.'
+
+EXT_OBJECT_CLASS = 'Object'
+EXT_CONFIG_CLASS = 'Config'
+EXT_PROPS_CLASS = 'Props'
 
 TypeId = str
 

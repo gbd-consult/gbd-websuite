@@ -10,16 +10,16 @@ import gws.lib.jsonx
 import gws.lib.password
 import gws.types as t
 
+gws.ext.new.authProvider('file')
 
-@gws.ext.config.authProvider('file')
+
 class Config(gws.base.auth.provider.Config):
     """File-based authorization provider"""
 
-    path: gws.FilePath 
+    path: gws.FilePath
     """path to the users json file"""
 
 
-@gws.ext.object.authProvider('file')
 class Object(gws.base.auth.provider.Object):
     path: str
     db: t.List[dict]

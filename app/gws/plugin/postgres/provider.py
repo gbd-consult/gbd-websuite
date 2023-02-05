@@ -9,13 +9,13 @@ import gws.base.database.sql as sql
 # import gws.lib.sql.postgres
 import gws.types as t
 
+gws.ext.new.db('postgres')
 
-@gws.ext.config.db('postgres')
+
 class Config(gws.base.database.provider.Config):
     """Postgres/Postgis database provider"""
 
 
-@gws.ext.object.db('postgres')
 class Object(gws.base.database.provider.Object):
 
     def engine(self, **kwargs):

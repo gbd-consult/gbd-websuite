@@ -8,17 +8,17 @@ import gws.types as t
 
 from . import provider
 
+gws.ext.new.layer('wmts')
 
-@gws.ext.config.layer('wmts')
+
 class Config(gws.base.layer.Config, provider.Config):
     """WMTS layer"""
-    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile 
+    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
     """layer display mode"""
-    sourceLayer: t.Optional[str] 
+    sourceLayer: t.Optional[str]
     """WMTS layer name"""
 
 
-@gws.ext.object.layer('wmts')
 class Object(gws.base.layer.Object, gws.IOwsClient):
     provider: provider.Object
     tileMatrixSet: gws.TileMatrixSet
@@ -103,7 +103,6 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         url = url.replace('{TileCol}', '%(x)d')
         url = url.replace('{TileRow}', '%(y)d')
 
-
         sg = self.sourceGrid
 
         if sg.corner == 'lt':
@@ -124,7 +123,6 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         src_uid = gws.base.layer.util.mapproxy_back_cache_config(self, mc, url, back_grid_uid)
         gws.base.layer.util.mapproxy_layer_config(self, mc, src_uid)
         return
-
 
         res = [units.scale_to_res(m.scale) for m in self.tileMatrixSet.matrices]
         m0 = self.tileMatrixSet.matrices[0]

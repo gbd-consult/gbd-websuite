@@ -9,18 +9,18 @@ import gws.base.shape
 
 from .. import core
 
+gws.ext.new.owsService('wms')
+
 _WMS_130 = '1.3.0'
 _WMS_111 = '1.1.1'
 _WMS_110 = '1.1.0'
 
 
-@gws.ext.config.owsService('wms')
 class Config(core.ServiceConfig):
     """WMS Service configuration"""
     pass
 
 
-@gws.ext.object.owsService('wms')
 class Object(core.Service):
     protocol = gws.OwsProtocol.WMS
     supported_versions = [_WMS_130, _WMS_111, _WMS_110]

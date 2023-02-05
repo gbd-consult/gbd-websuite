@@ -12,16 +12,19 @@ import gws.lib.uom as units
 import gws.lib.vendor.jump as jump
 import gws.types as t
 
+gws.ext.new.template('html')
 
-@gws.ext.config.template('html')
+
 class Config(gws.base.template.Config):
+    pass
+
+class Props(gws.base.template.Props):
     pass
 
 
 _dummy_fn = lambda *args: None
 
 
-@gws.ext.object.template('html')
 class Object(gws.base.template.Object):
 
     def configure(self):

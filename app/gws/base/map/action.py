@@ -20,6 +20,16 @@ import gws.gis.render
 import gws.lib.uom as units
 import gws.types as t
 
+gws.ext.new.action('map')
+
+
+class Config(gws.base.action.Config):
+    pass
+
+
+class Props(gws.base.action.Props):
+    pass
+
 
 class GetBoxRequest(gws.Request):
     bbox: gws.Extent
@@ -72,7 +82,6 @@ class GetFeaturesResponse(gws.Response):
 _GET_FEATURES_LIMIT = 10000
 
 
-@gws.ext.object.action('map')
 class Object(gws.base.action.Object):
     _error_pixel = gws.lib.mime.PNG, gws.lib.image.PIXEL_PNG8
 

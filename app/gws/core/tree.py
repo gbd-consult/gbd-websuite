@@ -17,11 +17,6 @@ class Object(types.IObject):
 
 
 class Node(Object, types.INode):
-    extName = ''
-    extType = ''
-    permissions = {}
-    uid = ''
-
     def initialize(self, config):
         self.config = config
 
@@ -128,20 +123,17 @@ class Root(types.IRoot):
         return _find_all_in(self, self._objects, classref)
 
     def create_application(self, config=None):
-        config = util.to_data(config)
 
-        cls = self.specs.get_class('gws.base.application.Object')
-
-        obj = cls()
+        obj = self.create('gws.base.application.Object')
         obj.uid = '0'
-        obj.root = self
         obj.parent = self
         obj.children = []
 
         self._objects.append(obj)
         self._uidMap[obj.uid] = obj
         self.app = obj
-        self.initialize(obj, config)
+
+        self.initialize(obj, util.to_data(config))
 
         return obj
 
@@ -163,14 +155,8 @@ class Root(types.IRoot):
     def create(self, classref, parent=None, config=None):
         config = util.to_data(config)
 
-        typ = config.get('type')
-        cls = self.specs.get_class(classref, typ)
-        if not cls:
-            raise error.Error(f'class {classref!r}:{typ!r} not found')
-
-        obj = cls()
+        obj = self._create(classref, config.get('type'))
         obj.uid = self._get_uid(config)
-        obj.root = self
         obj.parent = parent
         obj.children = []
 
@@ -185,6 +171,18 @@ class Root(types.IRoot):
 
         if parent:
             parent.children.append(obj)
+
+        return obj
+
+    def _create(self, classref, typ=None):
+        cls = self.specs.get_class(classref, typ)
+        if not cls:
+            raise error.Error(f'class {classref}:{typ} not found')
+
+        obj = cls()
+        obj.root = self
+        obj.extName = getattr(cls, 'extName', '')
+        obj.extType = getattr(cls, 'extType', '')
 
         return obj
 

@@ -10,19 +10,18 @@ import gws.types as t
 
 from . import provider
 
-
-@gws.ext.props.model('wms')
-class Props(gws.base.model.Props):
-    pass
+gws.ext.new.model('wms')
 
 
-@gws.ext.config.model('wms')
 class Config(gws.base.model.Config, provider.Config):
     sourceLayers: t.Optional[gws.gis.source.LayerFilter]
     """Source layers to search for."""
 
 
-@gws.ext.object.model('wms')
+class Props(gws.base.model.Props):
+    pass
+
+
 class Object(gws.base.model.Object):
     provider: provider.Object
     sourceLayers: t.List[gws.SourceLayer]

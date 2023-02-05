@@ -1,6 +1,6 @@
 """Core gws module"""
 
-from .core import ext
+from . import ext
 from .core import log
 from .core.const import *
 from .core.data import Data, is_data_object

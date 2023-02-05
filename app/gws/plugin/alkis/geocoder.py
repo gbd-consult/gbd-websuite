@@ -6,10 +6,15 @@ import gws.types as t
 
 from . import provider as provider_module, types
 
+gws.ext.new.action('alkisgeocoder')
 
-@gws.ext.config.action('alkisgeocoder')
+
 class Config(provider_module.Config):
     """ALKIS Geocoder action."""
+    pass
+
+
+class Props(gws.base.action.Props):
     pass
 
 
@@ -32,7 +37,6 @@ class GeocoderResponse(gws.Response):
     coordinates: t.List[gws.Point]
 
 
-@gws.ext.object.action('alkisgeocoder')
 class Object(gws.base.action.Object):
     provider: provider_module.Object
 

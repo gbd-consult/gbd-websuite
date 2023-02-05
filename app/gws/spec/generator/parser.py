@@ -86,6 +86,8 @@ class _PythonParser:
         self.imports = self.prepare_imports()
 
         for node in self.nodes(self.module_node.body):
+            if _cls(node) == 'Expr':
+                self.parse_ext_declaration(node)
             if _cls(node) == 'ClassDef':
                 self.parse_class(node)
             elif _cls(node) == 'Assign':
@@ -128,6 +130,37 @@ class _PythonParser:
                 self.gen.aliases[self.module_name + DOT + alias] = target
 
         return imp
+
+    def parse_ext_declaration(self, node):
+        if _cls(node.value) != 'Call':
+            return
+        call = cast(ast.Call, node.value)
+        try:
+            decl = _name(call.func)
+        except ValueError:
+            return
+        if not decl.startswith(base.EXT_DECL_PREFIX):
+            return
+        if not call.args:
+            raise ValueError('invalid gws.ext declaration')
+
+        args = list(call.args)
+        tail = decl.split(DOT).pop() + DOT + _name(args.pop(0))
+        self.add(
+            base.C.EXT,
+            extName=base.EXT_OBJECT_PREFIX + tail,
+            tTarget=self.qname(args.pop(0) if args else base.EXT_OBJECT_CLASS)
+        )
+        self.add(
+            base.C.EXT,
+            extName=base.EXT_CONFIG_PREFIX + tail,
+            tTarget=self.qname(args.pop(0) if args else base.EXT_CONFIG_CLASS)
+        )
+        self.add(
+            base.C.EXT,
+            extName=base.EXT_PROPS_PREFIX + tail,
+            tTarget=self.qname(args.pop(0) if args else base.EXT_PROPS_CLASS)
+        )
 
     def parse_assign(self, node, doc):
         """Parse a module level assignment.
@@ -179,7 +212,6 @@ class _PythonParser:
             ident=node.name,
             name=self.qname(node),
             tSupers=[self.type_from_name(s).uid for s in supers if not _builtin_name(s)],
-            extName=self.gws_decorator(node, 'class'),
         )
 
         for nn in self.nodes(node.body):
@@ -295,21 +327,12 @@ class _PythonParser:
             if _cls(d) != 'Call' or len(d.args) != 1:
                 continue
 
-            name = self.node_name(d.func)
+            name = _name(d.func)
             if not name.startswith(base.EXT_PREFIX):
                 continue
 
-            name = name + DOT + self.node_name(d.args[0])
+            name = name + DOT + _name(d.args[0])
             ns = name.split(DOT)
-
-            if kind == 'class':
-                if len(ns) == 4:
-                    # gws.ext.config.project
-                    return name + '.default'
-                if len(ns) == 5:
-                    # gws.ext.config.layer.wms
-                    return name
-                raise ValueError(f'invalid class decorator {name!r}')
 
             if kind == 'method':
                 if len(ns) == 5:
@@ -458,7 +481,7 @@ class _PythonParser:
         return ''
 
     def qname(self, node):
-        name = self.node_name(node)
+        name = _name(node)
         b = _builtin_name(name)
         if b:
             return b
@@ -474,25 +497,6 @@ class _PythonParser:
             if name.startswith(alias + DOT):
                 return mod + DOT + name[(len(alias) + 1):]
         return self.module_name + DOT + name
-
-    def node_name(self, node):
-        cc = _cls(node)
-
-        if cc == 'Name':
-            return node.id
-        if cc == 'Attribute':
-            return self.node_name(node.value) + DOT + node.attr
-        if cc == 'Str':
-            return node.s
-        if cc == 'Constant':
-            v = node.value
-            return v if isinstance(v, str) else repr(v)
-        if cc == 'ClassDef':
-            return node.name
-        if cc == 'FunctionDef':
-            return node.name
-
-        raise ValueError(f'node name missing in {cc!r}')
 
     def nodes(self, where, *cls):
         for node in where:
@@ -592,6 +596,29 @@ def _is_a(full_name: str, name: str) -> bool:
 
 def _cls(node):
     return node.__class__.__name__
+
+
+def _name(node):
+    if isinstance(node, str):
+        return node
+
+    cc = _cls(node)
+
+    if cc == 'Name':
+        return node.id
+    if cc == 'Attribute':
+        return _name(node.value) + DOT + node.attr
+    if cc == 'Str':
+        return node.s
+    if cc == 'Constant':
+        v = node.value
+        return v if isinstance(v, str) else repr(v)
+    if cc == 'ClassDef':
+        return node.name
+    if cc == 'FunctionDef':
+        return node.name
+
+    raise ValueError(f'node name missing in {cc!r}')
 
 
 def _camelize(name):

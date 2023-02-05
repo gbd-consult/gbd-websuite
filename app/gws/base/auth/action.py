@@ -8,6 +8,16 @@ import gws.types as t
 from . import user
 from .methods import web
 
+gws.ext.new.action('auth')
+
+
+class Config(gws.Config):
+    pass
+
+
+class Props(gws.Props):
+    pass
+
 
 class Response(gws.Response):
     user: user.Props
@@ -23,7 +33,6 @@ class MfaVerifyRequest(gws.Request):
     otp: str
 
 
-@gws.ext.object.action('auth')
 class Object(gws.base.action.Object):
     webMethod: t.Optional[web.Object]
 

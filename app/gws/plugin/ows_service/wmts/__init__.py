@@ -12,14 +12,14 @@ import gws.types as t
 
 from .. import core
 
+gws.ext.new.owsService('wmts')
 
-@gws.ext.config.owsService('wmts')
+
 class Config(core.ServiceConfig):
     """WMTS Service configuration"""
     pass
 
 
-@gws.ext.object.owsService('wmts')
 class Object(core.Service):
     protocol = gws.OwsProtocol.WMTS
     supported_versions = ['1.0.0']

@@ -6,6 +6,16 @@ import gws.types as t
 
 from . import core
 
+gws.ext.new.action('project')
+
+
+class Config(gws.base.action.Config):
+    pass
+
+
+class Props(gws.base.action.Props):
+    pass
+
 
 class InfoResponse(gws.Response):
     project: gws.ext.props.project
@@ -13,7 +23,6 @@ class InfoResponse(gws.Response):
     user: t.Optional[gws.base.auth.user.Props]
 
 
-@gws.ext.object.action('project')
 class Object(gws.base.action.Object):
     """Project information action"""
 

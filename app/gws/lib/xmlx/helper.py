@@ -8,27 +8,27 @@ import gws.types as t
 
 from . import namespace
 
+gws.ext.new.helper('xml')
+
 
 class NamespaceConfig(gws.Config):
     """XML namespace configuration"""
 
-    name: str 
+    name: str
     """namespace name"""
-    uri: gws.Url 
+    uri: gws.Url
     """namespace uri"""
-    schemaLocation: t.Optional[gws.Url] 
+    schemaLocation: t.Optional[gws.Url]
     """namespace schema location"""
 
 
-@gws.ext.config.helper('xml')
 class Config(gws.Config):
     """XML settings"""
 
-    namespaces: t.Optional[t.List[NamespaceConfig]] 
+    namespaces: t.Optional[t.List[NamespaceConfig]]
     """custom namespaces"""
 
 
-@gws.ext.object.helper('xml')
 class Object(gws.Node):
     def activate(self):
         p = self.var('namespaces')

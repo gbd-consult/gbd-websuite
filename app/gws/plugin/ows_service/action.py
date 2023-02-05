@@ -7,20 +7,20 @@ import gws.lib.mime
 import gws.lib.xmlx as xmlx
 import gws.types as t
 
+gws.ext.new.action('ows')
+
 
 class ServiceParams(gws.Request):
     serviceUid: str
 
 
-@gws.ext.config.action('ows')
 class Config(gws.base.action.Config):
     """OWS server action"""
 
-    services: t.List[gws.ext.config.owsService] 
+    services: t.List[gws.ext.config.owsService]
     """services configuration"""
 
 
-@gws.ext.object.action('ows')
 class Object(gws.base.action.Object):
     services: t.List[gws.IOwsService]
 

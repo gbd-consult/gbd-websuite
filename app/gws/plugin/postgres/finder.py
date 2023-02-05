@@ -6,8 +6,9 @@ import gws.types as t
 
 from . import provider
 
+gws.ext.new.finder('postgres')
 
-@gws.ext.config.finder('postgres')
+
 class Config(gws.base.search.finder.Config):
     """Database-based search"""
 
@@ -17,7 +18,6 @@ class Config(gws.base.search.finder.Config):
     """sql table name"""
 
 
-@gws.ext.object.finder('postgres')
 class Object(gws.base.search.finder.Object):
     provider: provider.Object
     tableName: str
@@ -42,8 +42,6 @@ class Object(gws.base.search.finder.Object):
     def configure_provider(self):
         self.provider = gws.base.database.provider.get_for(self, ext_type='postgres')
         return True
-
-
 
     # def _filter_to_sql(self, f: gws.SearchFilter):
     #     if not f:

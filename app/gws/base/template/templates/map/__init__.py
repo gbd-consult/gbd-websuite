@@ -8,13 +8,17 @@ import gws.lib.html2
 import gws.lib.mime
 import gws.gis.render
 
+gws.ext.new.template('map')
 
-@gws.ext.config.template('map')
+
 class Config(gws.base.template.Config):
     pass
 
 
-@gws.ext.object.template('map')
+class Props(gws.base.template.Props):
+    pass
+
+
 class Object(gws.base.template.Object):
 
     def render(self, tri, notify=None):

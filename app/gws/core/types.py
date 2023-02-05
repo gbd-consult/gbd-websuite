@@ -279,6 +279,7 @@ class IRoot(Protocol):
 
 class ExtObjectDescriptor(Data):
     extName: str
+    extType: str
     classPtr: type
     ident: str
     modName: str
@@ -287,6 +288,7 @@ class ExtObjectDescriptor(Data):
 
 class ExtCommandDescriptor(Data):
     extName: str
+    extType: str
     methodName: str
     methodPtr: Callable
     request: 'Request'

@@ -6,13 +6,13 @@ import gws.types as t
 
 from . import provider
 
+gws.ext.new.layer('wms')
 
-@gws.ext.config.layer('wms')
+
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config, provider.Config):
     pass
 
 
-@gws.ext.object.layer('wms')
 class Object(gws.base.layer.Object):
     provider: provider.Object
 

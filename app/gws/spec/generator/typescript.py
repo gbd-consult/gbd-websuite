@@ -108,7 +108,7 @@ class _Creator:
                 template="/// $doc \n export type $name = $target;",
                 target=self.make(typ.tTarget))
 
-        raise base.Error(f'unhandled type {typ.name!r} in {self.stack!r}')
+        raise base.Error(f'unhandled type {typ.name!r}, stack: {self.stack!r}')
 
     CORE_NAME = 'core'
 

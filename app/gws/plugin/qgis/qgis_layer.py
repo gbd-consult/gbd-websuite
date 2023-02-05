@@ -6,13 +6,13 @@ import gws.types as t
 
 from . import provider
 
+gws.ext.new.layer('qgis')
 
-@gws.ext.config.layer('qgis')
+
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config, provider.Config):
     pass
 
 
-@gws.ext.object.layer('qgis')
 class Object(gws.base.layer.Object):
     provider: provider.Object
 

@@ -7,6 +7,8 @@ import gws.types as t
 
 from .. import scalar
 
+gws.ext.new.modelField('text')
+
 
 class SearchType(t.Enum):
     exact = 'exact'
@@ -28,17 +30,14 @@ class SearchConfig(gws.Config):
     caseSensitive: bool = False
 
 
-@gws.ext.config.modelField('text')
 class Config(scalar.Config):
     textSearch: t.Optional[SearchConfig]
 
 
-@gws.ext.props.modelField('text')
 class Props(scalar.Props):
     pass
 
 
-@gws.ext.object.modelField('text')
 class Object(scalar.Object):
     attributeType = gws.AttributeType.str
     textSearch: t.Optional[Search]

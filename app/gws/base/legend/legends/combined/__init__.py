@@ -5,16 +5,16 @@ import gws.types as t
 
 from ... import core
 
+gws.ext.new.legend('combined')
 
-@gws.ext.config.legend('combined')
+
 class Config(core.Config):
     """Combined legend."""
 
-    layerUids: t.List[str] 
+    layerUids: t.List[str]
     """layers"""
 
 
-@gws.ext.object.legend('combined')
 class Object(core.Object):
     layerUids: t.List[str]
 

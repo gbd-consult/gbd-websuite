@@ -6,14 +6,14 @@ import gws.types as t
 from . import provider as provider_module
 from . import search
 
+gws.ext.new.layer('wfs')
 
-@gws.ext.config.layer('wfs')
+
 class Config(gws.base.layer.vector.Config, provider_module.Config):
     """WFS layer"""
     pass
 
 
-@gws.ext.object.layer('wfs')
 class Object(gws.base.layer.vector.Object, gws.IOwsClient):
     provider: provider_module.Object
 

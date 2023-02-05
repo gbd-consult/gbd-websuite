@@ -10,11 +10,12 @@ import gws.types as t
 
 from . import runner
 
+gws.ext.new.action('search')
+
 _DEFAULT_VIEWS = ['title', 'teaser', 'description']
 _DEFAULT_TOLERANCE = 10, gws.Uom.px
 
 
-@gws.ext.config.action('search')
 class Config(gws.base.action.Config):
     """Search action"""
 
@@ -22,6 +23,10 @@ class Config(gws.base.action.Config):
     """search results limit"""
     tolerance: t.Optional[gws.Measurement]
     """default tolerance"""
+
+
+class Props(gws.base.action.Props):
+    pass
 
 
 class Request(gws.Request):
@@ -40,7 +45,6 @@ class Response(gws.Response):
     features: t.List[gws.FeatureProps]
 
 
-@gws.ext.object.action('search')
 class Object(gws.base.action.Object):
     limit = 0
     tolerance: gws.Measurement

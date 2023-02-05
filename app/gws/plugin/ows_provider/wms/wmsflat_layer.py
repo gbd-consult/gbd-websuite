@@ -15,8 +15,9 @@ import gws.types as t
 
 from . import provider
 
+gws.ext.new.layer('wmsflat')
 
-@gws.ext.config.layer('wmsflat')
+
 class Config(gws.base.layer.Config, provider.Config):
     """Flat WMS layer."""
 
@@ -24,7 +25,6 @@ class Config(gws.base.layer.Config, provider.Config):
     """source layers to use"""
 
 
-@gws.ext.object.layer('wmsflat')
 class Object(gws.base.layer.Object):
     provider: provider.Object
     sourceLayers: t.List[gws.SourceLayer]

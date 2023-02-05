@@ -6,18 +6,18 @@ import gws
 import gws.lib.date
 import gws.base.auth.mfa
 
+gws.ext.new.authMfa('email')
 
-@gws.ext.config.authMfa('email')
+
 class Config(gws.base.auth.mfa.Config):
     """Web-based authorization options"""
 
-    cookieName: str = 'auth' 
+    cookieName: str = 'auth'
     """name for the cookie"""
-    cookiePath: str = '/' 
+    cookiePath: str = '/'
     """cookie path"""
 
 
-@gws.ext.object.authMfa('email')
 class Object(gws.base.auth.mfa.Object):
 
     def start(self, user):

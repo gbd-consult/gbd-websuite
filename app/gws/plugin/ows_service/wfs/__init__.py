@@ -9,15 +9,15 @@ import gws.types as t
 
 from .. import core
 
+gws.ext.new.owsService('wfs')
 
-@gws.ext.config.owsService('wfs')
+
 class Config(core.ServiceConfig):
     """WFS Service configuration"""
 
     pass
 
 
-@gws.ext.object.owsService('wfs')
 class Object(core.Service):
     protocol = gws.OwsProtocol.WFS
     supported_versions = ['2.0.2', '2.0.1', '2.0.0']

@@ -82,6 +82,7 @@ class Object(gws.ISpecRuntime):
 
         self._descCache[name] = gws.ExtObjectDescriptor(
             extName=typ.extName,
+            extType=typ.extName.split('.').pop(),
             ident=typ.ident,
             modName=typ.modName,
             modPath=typ.modPath,
@@ -91,15 +92,18 @@ class Object(gws.ISpecRuntime):
         return self._descCache[name]
 
     def get_class(self, classref, ext_type=None):
-        cls, name, ext_name = self.parse_classref(classref)
+        cls, real_name, ext_name = self.parse_classref(classref)
 
         if cls:
             return cls
 
-        if ext_name:
-            name = ext_name + '.' + (ext_type or core.DEFAULT_VARIANT_TAG)
+        if real_name:
+            desc = self.object_descriptor(real_name)
+        elif ext_name:
+            desc = self.object_descriptor(ext_name + '.' + (ext_type or core.DEFAULT_VARIANT_TAG))
+        else:
+            desc = None
 
-        desc = self.object_descriptor(name)
         if not desc:
             return
 
@@ -112,6 +116,8 @@ class Object(gws.ISpecRuntime):
                 except gws.lib.importer.Error as exc:
                     raise LoadError(f'cannot load class {classref!r} from {desc.modPath!r}') from exc
             desc.classPtr = getattr(mod, desc.ident)
+            setattr(desc.classPtr, 'extName', desc.extName)
+            setattr(desc.classPtr, 'extType', desc.extType)
 
         return desc.classPtr
 
@@ -128,6 +134,7 @@ class Object(gws.ISpecRuntime):
 
         return gws.ExtCommandDescriptor(
             extName=typ.extName,
+            extType=typ.extName.split('.').pop(),
             tArg=typ.tArg,
             tOwner=typ.tOwner,
             owner=self.object_descriptor(typ.tOwner),
@@ -183,15 +190,16 @@ class Object(gws.ISpecRuntime):
             return paths
 
     def parse_classref(self, classref: gws.ClassRef) -> t.Tuple[t.Optional[type], str, str]:
+        ext_name = gws.ext.name(classref)
+        if ext_name:
+            return None, '', ext_name
+
         if isinstance(classref, str):
-            if gws.ext.is_name(classref):
-                return None, '', classref
             return None, classref, ''
-        name = gws.ext.name(classref)
-        if name:
-            return None, '', name
+
         if isinstance(classref, type):
             return classref, '', ''
+
         raise Error(f'invalid class reference {classref!r}')
     ##
 

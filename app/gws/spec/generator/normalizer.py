@@ -1,8 +1,6 @@
 import re
 
-from typing import cast
-
-from . import base, util
+from . import base
 
 
 def normalize(gen: base.Generator):
@@ -11,9 +9,9 @@ def normalize(gen: base.Generator):
     _resolve_aliases(gen)
     _check_variants(gen)
     _evaluate_defaults(gen)
-    _synthesize_ext_configs_and_props(gen)
-    _synthesize_ext_type_properties(gen)
+    # _synthesize_ext_configs_and_props(gen)
     _synthesize_ext_variant_types(gen)
+    _synthesize_ext_type_properties(gen)
     _check_undefined(gen)
     _make_props(gen)
 
@@ -265,10 +263,14 @@ def _synthesize_ext_variant_types(gen):
     variants = {}
 
     for typ in gen.types.values():
-        if typ.extName and not typ.extName.startswith(base.EXT_COMMAND_PREFIX):
-            # "gws.ext.object.owsService.wms" belongs to "gws.ext.object.owsService"
-            var_name, _, name = typ.extName.rpartition(DOT)
-            variants.setdefault(var_name, {})[name] = typ.name
+        if typ.c == base.C.EXT:
+            target = gen.types.get(typ.tTarget)
+            if not target:
+                base.log.debug(f'not found {typ.tTarget!r} for {typ.extName!r}')
+                continue
+            target.extName = typ.extName
+            category, _, name = typ.extName.rpartition(DOT)
+            variants.setdefault(category, {})[name] = target.name
 
     upd = {}
 

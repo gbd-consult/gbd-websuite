@@ -6,8 +6,9 @@ import gws.types as t
 
 from . import manager
 
+gws.ext.new.cli('auth')
 
-@gws.ext.object.cli('auth')
+
 class Object(gws.Node):
 
     @gws.ext.command.cli('authSessions')
@@ -28,7 +29,6 @@ class Object(gws.Node):
         print(gws.lib.console.text_table(rs, header=('user', 'login', 'activity', 'duration')))
         print('\n')
 
-# @gws.ext.object.cli('auth')
 # class Object(gws.Node):
 #
 #     @gws.ext.command()

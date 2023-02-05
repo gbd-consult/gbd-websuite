@@ -18,6 +18,9 @@ import gws.types as t
 
 from . import provider, util, core
 
+gws.ext.new.action('alkissearch')
+
+
 STORAGE_CATEGORY = 'Alkis'
 
 """
@@ -181,7 +184,6 @@ _DEFAULT_EXPORT_GROUPS = [
 
 ##
 
-@gws.ext.config.action('alkissearch')
 class Config(provider.Config):
     """Flurstücksuche (cadaster parlcels search) action"""
 
@@ -201,7 +203,6 @@ class Config(provider.Config):
 
 ##
 
-@gws.ext.props.action('alkissearch')
 class Props(gws.base.action.Props):
     exportGroups: t.List[ExportGroupProps]
     gemarkungen: t.List[core.Gemarkung]
@@ -364,7 +365,6 @@ _EF_FAIL = -1  # access to Eigentümer granted, control check failed
 ##
 
 
-@gws.ext.object.action('alkissearch')
 class Object(gws.base.action.Object):
     buchung: BuchungOptions
     eigentuemer: EigentuemerOptions

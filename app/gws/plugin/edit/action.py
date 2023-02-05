@@ -12,6 +12,16 @@ import gws.gis.render
 import gws.lib.uom as units
 import gws.types as t
 
+gws.ext.new.action('edit')
+
+
+class Config(gws.base.action.Config):
+    pass
+
+
+class Props(gws.base.action.Props):
+    pass
+
 
 class GetBoxRequest(gws.Request):
     bbox: gws.Extent
@@ -59,7 +69,6 @@ class GetFeaturesResponse(gws.Response):
     features: t.List[gws.FeatureProps]
 
 
-@gws.ext.object.action('edit')
 class Object(gws.base.action.Object):
     @gws.ext.command.api('editGetLayers')
     def api_get_layers(self, req: gws.IWebRequester, p: GetXyzRequest) -> ImageResponse:
@@ -76,20 +85,3 @@ class Object(gws.base.action.Object):
                         layerUid=la.uid,
                         modelUid=model.uid
                     ))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -120,4 +120,7 @@ def _extract(gen, queue, out):
             out[typ.uid] = dict(literalValues=typ.literalValues)
             continue
 
+        if typ.c == base.C.EXT:
+            continue
+
         raise base.Error(f'unbound object {typ.c}: {typ.uid!r} in {typ.pos}')

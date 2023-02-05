@@ -57,11 +57,13 @@ def _access(words):
 ##
 
 def test_create():
-    @gws.ext.object.helper('A')
+    gws.ext.new.helper('A')
+
     class A(gws.Node):
         pass
 
-    @gws.ext.object.helper('B')
+    gws.ext.new.helper('B')
+
     class B(gws.Node):
         pass
 
@@ -74,7 +76,8 @@ def test_create():
 
 
 def test_create_shared():
-    @gws.ext.object.helper('A')
+    gws.ext.new.helper('A')
+
     class A(gws.Node):
         pass
 

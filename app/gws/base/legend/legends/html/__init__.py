@@ -5,16 +5,16 @@ import gws.types as t
 
 from ... import core
 
+gws.ext.new.legend('html')
 
-@gws.ext.config.legend('html')
+
 class Config(core.Config):
     """HTML-based legend."""
 
-    template: gws.ext.config.template 
+    template: gws.ext.config.template
     """template for an HTML legend"""
 
 
-@gws.ext.object.legend('html')
 class Object(core.Object):
     template: gws.ITemplate
 
