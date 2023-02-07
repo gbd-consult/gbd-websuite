@@ -128,7 +128,7 @@ class Object(gws.common.layer.Image):
             return
 
         la = gws.merge(la, {
-            'uid': gws.as_uid(sl.name),
+            'uid': 'q', #gws.as_uid(sl.name),
             'title': sl.title,
             'clientOptions': {
                 'visible': sl.is_visible,
@@ -224,7 +224,7 @@ class Object(gws.common.layer.Image):
 
         return {
             'type': 'qgiswms',
-            'uid': gws.as_uid(sl.name) + '_qgiswms_search',
+            # 'uid': gws.as_uid(sl.name) + '_qgiswms_search',
             'path': self.path,
             'sourceLayers': {
                 'names': [sl.name]
@@ -234,7 +234,7 @@ class Object(gws.common.layer.Image):
     def _wms_search_provider(self, sl, ds):
         return {
             'type': 'wms',
-            'uid': gws.as_uid(sl.name) + '_wms_search',
+            # 'uid': gws.as_uid(sl.name) + '_wms_search',
             'url': self._make_wms_url(ds['url'], ds['params']),
             'sourceLayers': {
                 'names': ds['layers'],
@@ -250,7 +250,7 @@ class Object(gws.common.layer.Image):
 
         return {
             'type': 'qgispostgres',
-            'uid': gws.as_uid(sl.name) + '_qgispostgres_search',
+            # 'uid': gws.as_uid(sl.name) + '_qgispostgres_search',
             'dataSource': ds
         }
 
@@ -258,7 +258,7 @@ class Object(gws.common.layer.Image):
         cfg = {
             'type': 'wfs',
             'url': ds['url'],
-            'uid': gws.as_uid(sl.name) + '_wfs_search',
+            # 'uid': gws.as_uid(sl.name) + '_wfs_search',
         }
         if gws.get(ds, 'typeName'):
             cfg['sourceLayers'] = {
@@ -278,7 +278,7 @@ class Object(gws.common.layer.Image):
         return {
             'type': 'group',
             'title': sl.title,
-            'uid': gws.as_uid(sl.name),
+            'uid': 'q', #gws.as_uid(sl.name),
             'layers': layers
         }
 
@@ -320,6 +320,8 @@ def _render_box(layer: Object, rv: t.MapRenderView, extra_params: dict = None):
         filters = []
         for uid in extra_params.pop('layers'):
             leaf = layer.root.find_by_uid(uid)
+            if not leaf:
+                continue
             for sl in leaf.source_layers:
                 source_names.append(sl.name)
                 if 'filter' in extra_params and layer.useqgisfilter:
@@ -422,7 +424,7 @@ def _get_map_request(layer: Object, bounds: t.Bounds, width, height, params: dic
 
     gws.p('CALL QGIS', ps)
 
-    resp = gws.tools.net.http_request(layer.provider.url, params=ps, timeout=0)
+    resp = gws.tools.net.http_request(layer.provider.url, params=ps, timeout=1000)
     if resp.content_type.startswith('image'):
         return resp.content
     raise ValueError(resp.text)
