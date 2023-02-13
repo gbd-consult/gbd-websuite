@@ -92,7 +92,8 @@ def environ(root: t.IRootObject):
         'QGIS_PREFIX_PATH': '/usr',
         'QGIS_DEBUG': root.var('server.qgis.debug'),
         # 'QGIS_GLOBAL_SETTINGS_FILE': '/global_settings.ini',
-        'QGIS_CUSTOM_CONFIG_PATH': base_dir
+        'QGIS_CUSTOM_CONFIG_PATH': base_dir,
+        'PGSERVICEFILE': gws.SERVER_DIR + '/.pg_service.conf'
     }
 
     # finally, there are lots of GDAL settings, some of those seem relevant

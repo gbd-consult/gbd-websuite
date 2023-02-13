@@ -206,6 +206,18 @@ def create(root: t.IRootObject, base_dir, pid_dir):
         path = _write('uwsgi_qgis.ini', ini)
         commands.append(f'uwsgi --ini {path}')
 
+        pgservicefile = ""
+        for p in root.var('db.providers', default=[]):
+            pgservicefile += f"""
+                [{p.uid}]
+                host={p.host}
+                port={p.port}
+                dbname={p.database}
+                user={p.user}
+                password={p.password}
+            """
+        path = _write('.pg_service.conf', pgservicefile)
+
         frontends.append(f"""
             server {{
                 listen {qgis_port};
