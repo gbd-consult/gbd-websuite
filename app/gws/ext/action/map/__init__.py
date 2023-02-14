@@ -168,6 +168,13 @@ class Object(gws.common.action.Object):
         if model.geometry_name:
             args.shape = gws.gis.shape.from_bounds(bounds)
 
+        if layer.table:
+            project = req.require_project(p.projectUid)
+            flt = project.variable('table_filters', {}).get(layer.table.name)
+            if flt:
+                gws.log.debug(f'using {flt=} for {layer.uid=}')
+                args.extra_where = [flt]
+
         gws.debug.time_start('api_get_features_SELECT')
 
         flist = layer.get_features_ex(req.user, model, args)

@@ -1483,8 +1483,6 @@ class DbModel(Object, t.IDbModel):
                 s = s.bindparams(**args.extra_where[1])
             state.sel = state.sel.where(s)
 
-        if self.filter:
-            state.sel = state.sel.where(sa.text(self.filter))
         for s in self.sort:
             fn = sa.desc if s.order == 'desc' else sa.asc
             state.sel = state.sel.order_by(fn(getattr(cls, s.fieldName)))

@@ -107,6 +107,13 @@ class Object(gws.common.action.Object):
         out_features = []
 
         for layer in layers:
+            args.extra_where = []
+            if layer.table:
+                flt = project.variable('table_filters', {}).get(layer.table.name)
+                if flt:
+                    gws.log.debug(f'using {flt=} for {layer.uid=}')
+                    args.extra_where = [flt]
+
             out_features.extend(layer.editor.model.select(args))
 
         for fe in out_features:
