@@ -194,7 +194,7 @@ class Object(gws.common.action.Object):
                 continue
             if not req.user.can_use(f.permissions.get(mode)):
                 gws.log.debug(f'remove field={f.name!r} mode={mode!r}')
-                del fe.attributes[f.name]
+                fe.attributes.pop(f.name, None)
             f.apply_value(fe, mode, 'default', env)
         return fe
 
