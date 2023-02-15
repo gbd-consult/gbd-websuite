@@ -313,11 +313,14 @@ def _read_acl(rd, val, spec):
     if isinstance(val, list):
         return [t.Data(v) for v in val]
     # a string like "allow foo, deny bar"
-    ls = []
-    for p in val.split(','):
-        typ, role = p.split()
-        ls.append(t.Data(type=typ.strip(), role=role.strip()))
-    return ls
+    try:
+        ls = []
+        for p in val.split(','):
+            typ, role = p.split()
+            ls.append(t.Data(type=typ.strip(), role=role.strip()))
+        return ls
+    except:
+        raise ValueError(f'invalid acl: {val!r}')
 
 
 ## utils
