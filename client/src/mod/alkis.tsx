@@ -1345,7 +1345,7 @@ class AlkisController extends gws.Controller {
     reset() {
         this.update({
             alkisFsFormValues: {},
-            alkisFsStrasseListItems: [],
+            alkisFsStrasseListItems: this.strasseListItems(this.toponyms.strassen),
         });
         this.clearResults();
         this.stopTools();
