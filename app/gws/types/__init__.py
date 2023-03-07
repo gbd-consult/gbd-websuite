@@ -406,6 +406,7 @@ class IShape:
     x: float
     y: float
     def intersects(self, shape: 'IShape') -> bool: pass
+    def to_2d(self) -> 'IShape': pass
     def to_multi(self) -> 'IShape': pass
     def to_type(self, new_type: 'GeometryType') -> 'IShape': pass
     def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': pass

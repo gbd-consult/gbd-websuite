@@ -215,6 +215,10 @@ class Shape(t.IShape):
             return Shape(shapely.geometry.MultiPolygon([self.geom]), self.crs)
         return self
 
+    def to_2d(self) -> t.IShape:
+        g2 = shapely.ops.transform(lambda x, y, z=None: (x, y), self.geom)
+        return Shape(g2, self.crs)
+
     def transformed_to(self, to_crs, **kwargs) -> t.IShape:
         if gws.gis.proj.equal(self.crs, to_crs):
             return self
