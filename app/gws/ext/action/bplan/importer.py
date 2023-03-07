@@ -100,6 +100,13 @@ _DATE_FIELDS = [
     'SATZBESCHL',
 ]
 
+# string fields incorrectly encoded as float (should be padded with 0's to the given length)
+
+_INVALID_FLOAT_FIELDS = {
+    'AGS': 8,
+    'GEM_NR': 4,
+    'INSP_ID': 0,
+}
 
 def _to_date_str(val):
     if not val:
@@ -176,6 +183,14 @@ def _run2(action, src_dir, replace, au_uid, job):
                             val = a.value.decode('utf8')
                         except UnicodeError:
                             val = a.value.decode('ISO-8859-1')
+                    elif isinstance(a.value, (int, float)) and a.name in _INVALID_FLOAT_FIELDS:
+                        ln = _INVALID_FLOAT_FIELDS[a.name]
+                        if ln == 0:
+                            val = ''
+                        else:
+                            val = str(int(a.value))
+                            while len(val) < ln:
+                                val = '0' + val
                     else:
                         val = str(a.value)
 
@@ -207,7 +222,7 @@ def _run2(action, src_dir, replace, au_uid, job):
                         pass
 
                 if f.shape:
-                    s = f.shape.to_multi()
+                    s = f.shape.to_multi().to_2d()
                     recs[uid][_geom_name(s)] = s.ewkt
 
     _update_job(job, step=1)
