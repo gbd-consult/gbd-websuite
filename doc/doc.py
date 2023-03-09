@@ -21,8 +21,7 @@ Documentation generator
 
 Commands:
 
-    html   - generate HTML docs
-    pdf    - generate PDF docs
+    build  - generate docs
     server - start the dev server  
     api    - generate api docs
 
@@ -45,13 +44,9 @@ def main():
 
     cmd = args.get(1)
 
-    if cmd == 'html':
+    if cmd == 'build':
         make_config_ref()
         dog.build_all('html', opts)
-        return 0
-
-    if cmd == 'pdf':
-        make_config_ref()
         dog.build_all('pdf', opts)
         return 0
 
@@ -130,7 +125,7 @@ def make_config_ref():
         return typ.get('doc')
 
     def head(tid, info):
-        return f'<h2 id="{tid}">{code(info)} {tid} <a class="header-link" href="#{tid}">&para;</a></h2>'
+        return f'<h6 data-url="#{tid}" id="{tid}">{code(info)} {tid}</h6>'
 
     def table(heads, rows):
         s = '<table><thead><tr>'

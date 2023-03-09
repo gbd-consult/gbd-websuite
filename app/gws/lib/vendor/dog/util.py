@@ -18,7 +18,7 @@ class Data:
 
 def to_data(arg):
     if isinstance(arg, Data):
-        return arg
+        return Data(**vars(arg))
     return Data(**arg)
 
 
@@ -54,12 +54,14 @@ def read_file_b(path: str) -> bytes:
         return fp.read()
 
 
-def write_file(path: str, s: str, user: int = None, group: int = None):
+def write_file(path: str, s: str):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'wt', encoding='utf8') as fp:
         fp.write(s)
 
 
-def write_file_b(path: str, s: bytes, user: int = None, group: int = None):
+def write_file_b(path: str, s: bytes):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'wb') as fp:
         fp.write(s)
 

@@ -43,6 +43,20 @@ OPTIONS = {
     'title': 'GBD WebSuite',
     'subTitle': VERSION,
 
+    # wkhtmltopdf options
+
+    'pdfOptions': {
+        'margin-bottom': 20,
+        'margin-left': 20,
+        'margin-right': 20,
+        'margin-top': 20,
+        'footer-font-size': 7,
+        'footer-left': 'GBD WebSuite :: ' + VERSION,
+        'footer-right': '[page]',
+        'footer-spacing': 5,
+        'footer-line': True,
+    },
+
     # apidoc options (see make_api)
 
     'docDir': DOC_DIR,

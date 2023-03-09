@@ -8,7 +8,7 @@ class Server:
         self.options = util.to_data(options)
         self.liveServer = None
         self.liveScript = f'<script src="//{self.options.serverHost}:{self.options.serverPort}/livereload.js?port={self.options.serverPort}"></script>'
-        self.builder = None
+        self.builder = builder.Builder(self.options)
 
     def app(self, env, start_response):
 
@@ -29,27 +29,26 @@ class Server:
             content = content.encode('utf8')
         headers = [
             ('Content-type', mime),
-            ('Cache-Control', ' must-revalidat, max-age=0, no-cache, no-store'),
+            ('Cache-Control', 'must-revalidate, max-age=0, no-cache, no-store'),
             ('Expires', 'Tue, 01 Jan 1980 12:34:56 GMT'),
             ('Content-Length', len(content))
         ]
         start_response('200 OK', headers)
         return [content]
 
-    def build(self):
-        self.builder = builder.Builder(self.options)
+    def rebuild(self):
         self.builder.build_all('html', write=False)
 
     def watch_docs(self, args=None):
         util.log.debug(f'watch_docs: {args!r}')
         if args:
-            self.build()
+            self.rebuild()
 
     def watch_assets(self, args=None):
         util.log.debug(f'watch_assets: {args!r}')
 
     def start(self):
-        self.build()
+        self.rebuild()
 
         self.liveServer = livereload.Server(self.app)
 

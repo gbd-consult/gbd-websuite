@@ -88,7 +88,7 @@ client-dev-server: spec
 	cd $(APP)/js && node $(CLIENT_BUILDER) dev-server $(ARGS) && cd $(CWD)
 
 doc: spec
-	$(PYTHON) $(DOC)/doc.py html --manifest "$(MANIFEST)"
+	$(PYTHON) $(DOC)/doc.py build --manifest "$(MANIFEST)"
 
 doc-api:
 	$(PYTHON) $(DOC)/doc.py api --manifest "$(MANIFEST)"

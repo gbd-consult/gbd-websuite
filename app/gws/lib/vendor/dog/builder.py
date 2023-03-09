@@ -77,7 +77,6 @@ class Builder:
         self.sectionMap = {}
         self.assetMap = {}
 
-        self.debug = options.debug
         util.log.set_level('DEBUG' if options.verbose else 'INFO')
 
         self.includeTemplate = ''
@@ -87,6 +86,36 @@ class Builder:
     def build_all(self, mode: str, write=False):
         util.log.debug(f'START build_all {mode}')
 
+        if mode == 'pdf':
+            old_opts = util.to_data(self.options)
+            pdf_dir = '/tmp/dogpdf'
+            shutil.rmtree(pdf_dir, ignore_errors=True)
+
+            self.options.htmlSplitLevel = 0
+            self.options.outputDir = pdf_dir
+            self.options.webRoot = '.'
+
+            self.make_section_map()
+            self.generate_html(write=True)
+
+            self.options = old_opts
+
+            self.generate_pdf(
+                pdf_dir + '/index.html',
+                self.options.outputDir + '/index.pdf')
+
+            # shutil.rmtree(pdf_dir, ignore_errors=True)
+
+
+        if mode == 'html':
+            self.make_section_map()
+            if write:
+                util.write_file(self.options.outputDir + '/parser.json', self.dump_sections())
+            self.generate_html(write=write)
+
+        util.log.debug(f'END build_all {mode}')
+
+    def make_section_map(self):
         self.sectionMap = {sec.sid: sec for sec in self.parse_all()}
 
         for sec in self.sectionMap.values():
@@ -94,17 +123,6 @@ class Builder:
 
         for sec in self.sectionMap.values():
             self.add_url_and_path(sec)
-
-        if write:
-            os.makedirs(self.options.outputDir, exist_ok=True)
-
-        if write:
-            self.dump({'sec': list(self.sectionMap.values())})
-
-        if mode == 'html':
-            self.generate_html(write)
-
-        util.log.debug(f'END build_all {mode}')
 
     def parse_all(self):
         self.collect_sources()
@@ -189,6 +207,26 @@ class Builder:
             self.htmlGenerator.write()
             self.write_assets()
 
+    def generate_pdf(self, source: str, target: str):
+        cmd = [
+            'wkhtmltopdf',
+            '--outline',
+            '--enable-local-file-access',
+            '--print-media-type',
+            '--disable-javascript',
+        ]
+
+        if self.options.pdfOptions:
+            for k, v in self.options.pdfOptions.items():
+                cmd.append(f'--{k}')
+                if v is not True:
+                    cmd.append(str(v))
+
+        cmd.append(source)
+        cmd.append(target)
+
+        util.run(cmd, pipe=True)
+
     ##
 
     def content_for_url(self, url):
@@ -226,12 +264,10 @@ class Builder:
             n += 1
 
     def write_assets(self):
-        dirname = self.options.outputDir + '/' + self.options.staticDir
-        os.makedirs(dirname, exist_ok=True)
         for src, fname in self.assetMap.items():
-            dst = dirname + '/' + fname
+            dst = os.path.join(self.options.outputDir, self.options.staticDir, fname)
             util.log.debug(f'copy {src!r} => {dst!r}')
-            shutil.copy(src, dst)
+            util.write_file_b(dst, util.read_file_b(src))
 
     ##
 
@@ -332,15 +368,16 @@ class Builder:
 
     ##
 
-    def dump(self, obj):
+    def dump_sections(self):
         def dflt(x):
             d = dict(vars(x))
             d['$'] = x.__class__.__name__
             return d
 
-        r = json.dumps(obj, indent=4, default=dflt)
-        with open(self.options.outputDir + '/parser.json', 'w') as fp:
-            fp.write(r)
+        return json.dumps(
+            {'sec': list(self.sectionMap.values())},
+            indent=4,
+            default=dflt)
 
 
 class FileParser:
@@ -537,8 +574,6 @@ class HTMLGenerator:
     def write(self):
         for path, html in self.content.items():
             util.log.debug(f'write {path!r}')
-            dirs = os.path.dirname(path)
-            os.makedirs(dirs, exist_ok=True)
             util.write_file(path, html)
 
     def get_breadcrumbs(self, sid):
@@ -601,8 +636,7 @@ class MarkdownRenderer(markdown.Renderer):
 
         c = self.render_content(el)
         tag = 'h' + str(sec.headLevel)
-        s = ''
-        if self.b.debug:
-            s = f' title="{markdown.escape(sec.sourcePath)}"'
-        a = f'<a class="header-link" href="{sec.htmlUrl}">&para;</a>'
-        return f'<{tag}{s}>{c}{a}</{tag}>\n'
+        atts = f' data-url="{sec.htmlUrl}"'
+        if self.b.options.debug:
+            atts += f' title="{markdown.escape(sec.sourcePath)}"'
+        return f'<{tag}{atts}>{c}</{tag}>\n'

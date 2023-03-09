@@ -342,3 +342,21 @@ nav {
     margin: 12px 0;
     padding: 20px 20px 20px 70px;
 }
+
+@media print {
+    body {
+        background: white;
+    }
+    nav {
+        display: none
+    }
+    aside {
+        display: none
+    }
+    main {
+        padding: 20px 60px 20px 60px;
+    }
+    h1, h2, h3 {
+        page-break-before: always;
+    }
+}

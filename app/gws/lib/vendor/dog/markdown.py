@@ -20,6 +20,9 @@ class Element(util.Data):
     title: str
     type: str
 
+    def __repr__(self):
+        return repr(vars(self))
+
 
 def parser():
     return mistune.create_markdown(
@@ -191,7 +194,7 @@ class Renderer:
         return '<br />\n'
 
     def tag_inline_html(self, el: Element):
-        return self.render_content(el)
+        return el.text
 
     def tag_paragraph(self, el: Element):
         c = self.render_content(el)
@@ -215,7 +218,7 @@ class Renderer:
         return self.render_content(el)
 
     def tag_block_code(self, el: Element):
-        # @TODO syntax higlighting
+        # @TODO syntax highlighting
         c = escape(el.text.strip())
         return f'<pre><code>{c}</code></pre>'
 

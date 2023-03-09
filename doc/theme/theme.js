@@ -10,23 +10,34 @@ function syncNavigation() {
         }
     })
 
-    if (!curr)
-        return;
-
     $$('#sidebar-toc *').forEach(li =>
         li.classList.remove('on')
     )
 
-    while (curr.id !== 'sidebar-toc') {
-        curr.classList.add('on')
-        curr = curr.parentNode;
+    if (curr) {
+
+        while (curr.id !== 'sidebar-toc') {
+            curr.classList.add('on')
+            curr = curr.parentNode
+        }
+    } else {
+        $('#sidebar-toc ul').classList.add('on')
     }
 }
 
 function main() {
-
     syncNavigation()
     window.addEventListener('popstate', syncNavigation)
+
+    for (let h of '123456') {
+        document.querySelectorAll('h' + h).forEach(el => {
+            let a = document.createElement('a')
+            a.className = 'header-link'
+            a.href = el.getAttribute('data-url')
+            a.innerHTML = '&para;'
+            el.appendChild(a)
+        })
+    }
 }
 
 window.addEventListener('load', main);
