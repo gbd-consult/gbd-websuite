@@ -1,8 +1,9 @@
 import os
-import re
-import sys
 import random
+import re
 import subprocess
+import sys
+import time
 
 
 class Data:
@@ -217,3 +218,17 @@ def bold(c):
 
 def cprint(clr, msg):
     print(color[clr] + msg + color['reset'])
+
+
+_TIME_STACK = []
+
+
+def time_start(label):
+    _TIME_STACK.append((time.time(), label))
+
+
+def time_end():
+    if _TIME_STACK:
+        t2 = time.time()
+        t1, label = _TIME_STACK.pop()
+        log.debug(f'{label} in {t2 - t1:.2f}s')

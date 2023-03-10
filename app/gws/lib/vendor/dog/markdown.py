@@ -1,5 +1,7 @@
 from typing import List
+
 import mistune
+from mistune import Markdown
 
 from . import util
 
@@ -24,7 +26,7 @@ class Element(util.Data):
         return repr(vars(self))
 
 
-def parser():
+def parser() -> Markdown:
     return mistune.create_markdown(
         renderer=AstRenderer(),
         plugins=['table', 'url']
@@ -41,7 +43,7 @@ def strip_text_content(el: Element):
         el.children.pop()
 
 
-def text_from_element(el: Element):
+def text_from_element(el: Element) -> str:
     if el.text:
         return el.text.strip()
     if el.children:

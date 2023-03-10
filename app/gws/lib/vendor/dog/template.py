@@ -2,6 +2,7 @@ import os
 import json
 import tempfile
 import re
+import hashlib
 
 import jump
 
@@ -17,35 +18,38 @@ OPTIONS = dict(
     echo_start_whitespace=True,
 )
 
-COMMAND = '__DG__'
+GENERATED_NODE = '__DG__'
 
 
-def compile(path):
+def compile(builder, path):
     try:
-        return _ENGINE.compile_path(path, **OPTIONS)
+        return Engine(builder).compile_path(path, **OPTIONS)
     except jump.CompileError as exc:
         util.log.error(f'template compilation error: {exc.args[0]}')
 
 
-def render(text, path, args):
+def render(builder, text, path, args):
     try:
-        return _ENGINE.render(text, args, error=_error, path=path, **OPTIONS)
+        return Engine(builder).render(text, args, error=_error, path=path, **OPTIONS)
     except jump.CompileError as exc:
         util.log.error(f'template compilation error: {exc.args[0]}')
 
 
-def call(tpl, args):
-    return _ENGINE.call(tpl, args)
+def call(builder, tpl, args):
+    return Engine(builder).call(tpl, args)
 
 
 ##
 
 
 class Engine(jump.Engine):
-    def command_block(self, command, args):
-        args['command'] = command
+    def __init__(self, builder):
+        self.b = builder
+
+    def generated_node(self, cls, args):
+        args['class'] = cls
         js = json.dumps(args)
-        return f'\n```\n{COMMAND}{js}\n```\n'
+        return f'\n```\n{GENERATED_NODE}{js}\n```\n'
 
     def render_dot(self, text):
         tmp = os.path.join(tempfile.gettempdir(), util.random_string(8) + '.dot')
@@ -58,9 +62,9 @@ class Engine(jump.Engine):
 
     def wrap_html(self, before, text, after):
         return (
-                self.command_block('RawHtmlNode', {'html': before})
+                self.generated_node('RawHtmlNode', {'html': before})
                 + _dedent(text)
-                + self.command_block('RawHtmlNode', {'html': after})
+                + self.generated_node('RawHtmlNode', {'html': after})
         )
 
     def box_info(self, text):
@@ -71,16 +75,17 @@ class Engine(jump.Engine):
 
     def box_toc(self, text, depth=1):
         items = [ln.strip() for ln in text.strip().splitlines() if ln.strip()]
-        return self.command_block('TocNode', {'items': items, 'depth': depth})
+        return self.generated_node('TocNode', {'items': items, 'depth': depth})
 
     def box_graph(self, text, caption=''):
-        svg = self.render_dot(text)
+        def go():
+            svg = self.render_dot(text)
+            cap = ''
+            if caption:
+                cap = '<figcaption>' + markdown.escape(caption) + '</figcaption>'
+            return f'<figure>{svg}{cap}</figure>\n'
 
-        cap = ''
-        if caption:
-            cap = '<figcaption>' + markdown.escape(caption) + '</figcaption>'
-
-        return f'<figure>{svg}{cap}</figure>\n'
+        return self.b.cached(_hash(text + caption), go)
 
     DBGRAPH_COLORS = {
         'text': '#455a64',
@@ -141,31 +146,32 @@ class Engine(jump.Engine):
                 {mid} -> {dst} [color="{c}", arrowhead="none"]    
             """
 
-        tables = ''.join(
-            make_table(name, body)
-            for name, body in re.findall(r'(?sx) (\w+) \s* \( (.+?) \)', text))
+        def go():
+            tables = ''.join(
+                make_table(name, body)
+                for name, body in re.findall(r'(?sx) (\w+) \s* \( (.+?) \)', text))
 
-        arrows = ''.join(
-            make_arrow(src, arr, dst)
-            for src, arr, dst in re.findall(r'(?sx) ([\w.]+) \s* (->>|->) \s* ([\w.]+)', text))
+            arrows = ''.join(
+                make_arrow(src, arr, dst)
+                for src, arr, dst in re.findall(r'(?sx) ([\w.]+) \s* (->>|->) \s* ([\w.]+)', text))
 
-        dot = f"""
-            digraph {{
-                rankdir="LR"
-                bgcolor="transparent"
-                splines="spline"
-                node [fontname="Menlo, monospace", fontsize=9, shape="plaintext"]
-                {tables}
-                {arrows}
-            }}
-        """
+            dot = f"""
+                digraph {{
+                    rankdir="LR"
+                    bgcolor="transparent"
+                    splines="spline"
+                    node [fontname="Menlo, monospace", fontsize=9, shape="plaintext"]
+                    {tables}
+                    {arrows}
+                }}
+            """
 
-        return self.box_graph(dot, caption)
+            return self.box_graph(dot, caption)
+
+        return self.b.cached(_hash(text + caption), go)
 
 
 ##
-
-_ENGINE = Engine()
 
 
 def _error(exc, source_path, source_lineno, env):
@@ -180,3 +186,7 @@ def _dedent(text):
         if n > 0:
             ind = min(ind, len(ln) - n)
     return '\n'.join(ln[ind:] for ln in lines)
+
+
+def _hash(s):
+    return hashlib.sha256(s.encode('utf8')).hexdigest()

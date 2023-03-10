@@ -11,7 +11,7 @@ The docs are written in Markdown + [Jump](https://github.com/gebrkn/jump) comman
 
 ## Structure
 
-The Dog documentation is a nested hierarchy of "sections". A _section_ is a chunk of text with a _header_ and a _sid_ (section id).
+The Dog documentation is a nested hierarchy of "sections". A _section_ is a chunk of text with a _header_ and a _sid_ (section id). A sid is like a path in a virtual documentation filesystem.
 
 Each section starts with a Markdown header, optionally followed by a colon and a sid.
 
@@ -26,7 +26,7 @@ Deeper headings (with more dashes) create the section hierarchy.
         ## Subsection
             ### Sub-sub-section
 
-Heading levels are only used to create hierarchies, the final output rendering (`h1`, `h2` etc.) is determined by the section depth (the number of slashes) and the html split-level.
+Heading levels are only used to create hierarchies, the final output rendering (`h1`, `h2` etc.) is determined by the section depth (the number of slashes in the sid) and the html split-level (see "options" below).
 
 ### Section embedding
 
@@ -325,11 +325,15 @@ A DB diagram consists of tables and arrows. A table is a name, followed by a lis
 
 ## API and options
 
-Dog provides two API functions:
+Dog provides the following API functions:
 
-    dog.build_all(mode: str, options: dict) 
+    dog.build_html(options: dict) 
 
-builds the documentation. `mode` is `"html"` or `"pdf"`.
+builds the HTML documentation.
+
+    dog.build_pdf(options: dict) 
+
+builds the PDF documentation (requires [wkhtmltopdf](https://wkhtmltopdf.org/)).
 
     dog.start_server(options: dict)
 
@@ -339,22 +343,23 @@ Dog recognizes the following options:
 
 | option            | type        | meaning                                          |
 |-------------------|-------------|--------------------------------------------------|
-| `assetPatterns`   | `List[str]` | shell patterns for asset files, e.g. `*jpg`      |
+| `assetPatterns`   | `list[str]` | shell patterns for asset files, e.g. `*jpg`      |
 | `debug`           | `bool`      | embed debug information in the output            |
 | `docPatterns`     | `List[str]` | shell patterns for doc files, e.g `*doc.md`      |
 | `excludeRegex`    | `str`       | regex to match file paths that should be ignored |
-| `extraAssets`     | `List[str]` | extra asset paths (e.g css, js)                  |
+| `extraAssets`     | `list[str]` | extra asset paths (e.g css, js)                  |
 | `htmlSplitLevel`  | `int`       | html split-level, see below                      |
 | `includeTemplate` | `str`       | path to a Jump included template, see below      |
 | `outputDir`       | `str`       | output directory                                 |
 | `pageTemplate`    | `str`       | path to a Jump page template, see below          |
-| `rootDirs`        | `List[str]` | source directories                               |
+| `pdfOptions`      | `dict`      | arguments for the `wkhtmltopdf` tool             |
+| `rootDirs`        | `list[str]` | source directories                               |
 | `serverHost`      | `str`       | host name for the live server                    |
 | `serverPort`      | `int`       | port for the live server                         |
 | `staticDir`       | `str`       | where to store assets                            |
 | `subTitle`        | `str`       | documentation subtitle                           |
 | `title`           | `str`       | documentation title                              |
-| `verbose`         | `bool`      | enable debug logging                             |
+| `verbose`         | `bool`      | verbose logging                                  |
 | `webRoot`         | `str`       | prefix all urls with this path                   |
 
 ### html split-level

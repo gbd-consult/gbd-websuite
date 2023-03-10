@@ -64,18 +64,15 @@ class Section(util.Data):
 
 class Builder:
     options: util.Data
+    markdownParser: markdown.Markdown
+    htmlGenerator: 'HTMLGenerator'
+    docPaths: set[str]
+    assetPaths: set[str]
+    sectionMap: dict[str, Section]
+    assetMap: dict[str, str]
 
     def __init__(self, options):
         self.options = util.to_data(options)
-
-        self.docPaths = []
-        self.assetPaths = []
-
-        self.markdownParser = markdown.parser()
-        self.htmlGenerator = HTMLGenerator(self)
-
-        self.sectionMap = {}
-        self.assetMap = {}
 
         util.log.set_level('DEBUG' if options.verbose else 'INFO')
 
@@ -83,58 +80,58 @@ class Builder:
         if self.options.includeTemplate:
             self.includeTemplate = util.read_file(self.options.includeTemplate)
 
-    def build_all(self, mode: str, write=False):
-        util.log.debug(f'START build_all {mode}')
+        self.cache = {}
 
-        if mode == 'pdf':
-            old_opts = util.to_data(self.options)
-            pdf_dir = '/tmp/dogpdf'
-            shutil.rmtree(pdf_dir, ignore_errors=True)
+    def collect_and_parse(self):
+        self.markdownParser = markdown.parser()
 
-            self.options.htmlSplitLevel = 0
-            self.options.outputDir = pdf_dir
-            self.options.webRoot = '.'
+        self.docPaths = set()
+        self.assetPaths = set()
+        self.sectionMap = {}
+        self.assetMap = {}
 
-            self.make_section_map()
-            self.generate_html(write=True)
-
-            self.options = old_opts
-
-            self.generate_pdf(
-                pdf_dir + '/index.html',
-                self.options.outputDir + '/index.pdf')
-
-            # shutil.rmtree(pdf_dir, ignore_errors=True)
-
-
-        if mode == 'html':
-            self.make_section_map()
-            if write:
-                util.write_file(self.options.outputDir + '/parser.json', self.dump_sections())
-            self.generate_html(write=write)
-
-        util.log.debug(f'END build_all {mode}')
-
-    def make_section_map(self):
-        self.sectionMap = {sec.sid: sec for sec in self.parse_all()}
-
-        for sec in self.sectionMap.values():
-            self.make_tree(sec)
-
-        for sec in self.sectionMap.values():
-            self.add_url_and_path(sec)
-
-    def parse_all(self):
         self.collect_sources()
+        self.parse_all()
 
-        return [
-            sec
-            for path in self.docPaths
-            for sec in self.parse_file(path)
-        ]
+    def build_html(self, write=False):
+        self.collect_and_parse()
+        self.generate_html(write=write)
 
-    def parse_file(self, path):
-        return FileParser(self, path).parse()
+    def build_pdf(self):
+        pdf_dir = '/tmp/dogpdf'
+        shutil.rmtree(pdf_dir, ignore_errors=True)
+
+        old_opts = util.to_data(self.options)
+
+        self.options.htmlSplitLevel = 0
+        self.options.outputDir = pdf_dir
+        self.options.webRoot = '.'
+
+        self.collect_and_parse()
+        self.generate_html(write=True)
+
+        self.options = old_opts
+
+        self.generate_pdf(
+            pdf_dir + '/index.html',
+            self.options.outputDir + '/index.pdf')
+
+        shutil.rmtree(pdf_dir, ignore_errors=True)
+
+    def dump(self):
+        def dflt(x):
+            d = dict(vars(x))
+            d['$'] = x.__class__.__name__
+            return d
+
+        self.collect_and_parse()
+
+        return json.dumps(
+            {'sec': list(self.sectionMap.values())},
+            indent=4,
+            default=dflt)
+
+    ##
 
     def collect_sources(self):
         for dirname in self.options.rootDirs:
@@ -152,21 +149,26 @@ class Builder:
             elif de.is_dir():
                 self.collect_sources_from_dir(de.path)
             elif de.is_file() and any(fnmatch.fnmatch(de.name, p) for p in self.options.docPatterns):
-                self.docPaths.append(de.path)
+                self.docPaths.add(de.path)
             elif de.is_file() and any(fnmatch.fnmatch(de.name, p) for p in self.options.assetPatterns):
-                self.assetPaths.append(de.path)
+                self.assetPaths.add(de.path)
 
     ##
 
     def get_section(self, sid) -> Optional[Section]:
         if sid not in self.sectionMap:
-            util.log.error(f'section {sid!r} not found')
+            util.log.error(f'section not found: {sid!r}')
             return
         return self.sectionMap.get(sid)
 
     def section_from_url(self, url) -> Optional[Section]:
         for sec in self.sectionMap.values():
             if sec.htmlBaseUrl == url:
+                return sec
+
+    def section_from_element(self, el: markdown.Element) -> Optional[Section]:
+        for sec in self.sectionMap.values():
+            if sec.headNode.el == el:
                 return sec
 
     def sections_from_wildcard_sid(self, sid, parent_sec) -> List[Section]:
@@ -271,6 +273,22 @@ class Builder:
 
     ##
 
+    def parse_all(self):
+        self.sectionMap = {}
+
+        for path in self.docPaths:
+            for sec in self.parse_file(path):
+                self.sectionMap[sec.sid] = sec
+
+        for sec in self.sectionMap.values():
+            self.make_tree(sec)
+
+        for sec in self.sectionMap.values():
+            self.add_url_and_path(sec)
+
+    def parse_file(self, path):
+        return FileParser(self, path).sections()
+
     def make_tree(self, sec: Section, parent_sec=None):
         if parent_sec:
             if sec.parentSid:
@@ -368,36 +386,31 @@ class Builder:
 
     ##
 
-    def dump_sections(self):
-        def dflt(x):
-            d = dict(vars(x))
-            d['$'] = x.__class__.__name__
-            return d
-
-        return json.dumps(
-            {'sec': list(self.sectionMap.values())},
-            indent=4,
-            default=dflt)
+    def cached(self, key, fn):
+        if key not in self.cache:
+            self.cache[key] = fn()
+        return self.cache[key]
 
 
 class FileParser:
     def __init__(self, b: Builder, path):
         self.b = b
         self.path = path
-        self.dummyRoot = Section(sid='', nodes=[], level=-1, headNode=MarkdownNode(el=markdown.Element(level=-1)))
 
-    def parse(self) -> List[Section]:
+    def sections(self) -> List[Section]:
         util.log.debug(f'parse {self.path!r}')
 
-        src = self.pre_parse()
-        if not src:
-            return []
-
         sections = []
-        stack = [self.dummyRoot]
+
+        dummy_root = Section(
+            sid='',
+            nodes=[],
+            level=-1,
+            headNode=MarkdownNode(el=markdown.Element(level=-1)))
+        stack = [dummy_root]
 
         el: markdown.Element
-        for el in self.b.markdownParser(src):
+        for el in self.parse():
 
             if el.type == 'heading':
                 prev_sec = None
@@ -413,9 +426,9 @@ class FileParser:
 
                 continue
 
-            if el.type == 'block_code' and el.text.startswith(template.COMMAND):
-                args = json.loads(el.text[len(template.COMMAND):])
-                cls = globals()[args['command']]
+            if el.type == 'block_code' and el.text.startswith(template.GENERATED_NODE):
+                args = json.loads(el.text[len(template.GENERATED_NODE):])
+                cls = globals()[args.pop('class')]
                 stack[-1].nodes.append(cls(**args))
                 continue
 
@@ -423,12 +436,17 @@ class FileParser:
 
         return sections
 
-    def pre_parse(self):
+    def parse(self) -> list[markdown.Element]:
+        util.log.debug(f'pre_parse {self.path!r}')
+
         text = self.b.includeTemplate + util.read_file(self.path)
-        return template.render(text, self.path, {
+        text = template.render(self.b, text, self.path, {
             'options': self.b.options,
             'builder': self.b,
         })
+        if not text:
+            return []
+        return self.b.markdownParser(text)
 
     def parse_heading(self, el: markdown.Element, parent_sec, prev_sec):
         explicit_sid = self.extract_explicit_sid(el)
@@ -441,8 +459,12 @@ class FileParser:
             text
         )
 
+        if not sid and (el.level == 1 and text and not explicit_sid):
+            util.log.debug(f'creating implicit root section {text!r} in {self.path!r}')
+            sid = '/'
+
         if not sid:
-            util.log.error(f'invalid section id for {text!r} in {self.path!r}')
+            util.log.error(f'invalid section id for {text!r}:{explicit_sid!r} in {self.path!r}')
             return
 
         if not text:
@@ -554,20 +576,20 @@ class HTMLGenerator:
         self.buffers[sec.htmlPath].html.append(html)
 
     def flush(self):
-        tpl = template.compile(self.b.options.pageTemplate)
+        tpl = template.compile(self.b, self.b.options.pageTemplate)
         maintoc = self.render_main_toc()
 
         self.content = {}
 
         for path, buf in self.buffers.items():
-            self.content[path] = template.call(tpl, {
+            self.content[path] = template.call(self.b, tpl, {
                 'path': path,
                 'title': self.b.options.title,
                 'subTitle': self.b.options.subTitle,
                 'mainToc': maintoc,
                 'main': ''.join(buf.html),
                 'breadcrumbs': self.get_breadcrumbs(buf.sids[0]),
-                'builder': self,
+                'builder': self.b,
                 'options': self.b.options,
             })
 
@@ -623,14 +645,13 @@ class MarkdownRenderer(markdown.Renderer):
             return super().tag_image(el)
         paths = [path for path in self.b.assetPaths if path.endswith(el.src)]
         if not paths:
-            util.log.error(f'image {el.src!r} not found')
+            util.log.error(f'asset not found: {el.src!r} ')
             return super().tag_image(el)
         el.src = self.b.add_asset(paths[0])
         return super().tag_image(el)
 
     def tag_heading(self, el: markdown.Element):
-        # NB heading sid must set in `parse_heading` 
-        sec = self.b.get_section(el.sid)
+        sec = self.b.section_from_element(el)
         if not sec:
             return
 

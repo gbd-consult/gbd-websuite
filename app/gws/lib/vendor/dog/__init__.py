@@ -1,4 +1,4 @@
 """DOG - the documentation generator.
 """
 
-from .runner import build_all, start_server
+from .runner import build_html, build_pdf, start_server

@@ -39,6 +39,7 @@ def main():
         return 0
 
     opts = dog.util.to_data(options.OPTIONS)
+    opts.verbose = args.get('v')
 
     mkdir(opts.outputDir)
 

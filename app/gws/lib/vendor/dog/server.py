@@ -1,4 +1,5 @@
 import livereload
+import time
 
 from . import builder, util
 
@@ -37,7 +38,9 @@ class Server:
         return [content]
 
     def rebuild(self):
-        self.builder.build_all('html', write=False)
+        util.time_start('rebuilt')
+        self.builder.build_html(write=False)
+        util.time_end()
 
     def watch_docs(self, args=None):
         util.log.debug(f'watch_docs: {args!r}')
