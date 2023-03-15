@@ -218,12 +218,6 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
 
         return <div className="modPrintPreviewDialog">
             <Form>
-                {form}
-                <Row>
-                    <Cell flex>
-                        {this.overviewMap()}
-                    </Cell>
-                </Row>
                 <Row>
                     <Cell flex/>
                     <Cell>
@@ -235,6 +229,12 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
                             whenTouched={() => this.props.controller.app.startTool('Tool.Default')}
                             tooltip={this.__('modPrintCancel')}
                         />
+                    </Cell>
+                </Row>
+                {form}
+                <Row>
+                    <Cell flex>
+                        {this.overviewMap()}
                     </Cell>
                 </Row>
             </Form>
