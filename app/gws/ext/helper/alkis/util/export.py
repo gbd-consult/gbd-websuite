@@ -20,101 +20,164 @@ class GroupConfig(t.Config):
     """Export group configuration"""
 
     title: str  #: title for this group
-    eigentuemer: bool = False #: include Eigentuemer (owner) data
+    eigentuemer: bool = False  #: include Eigentuemer (owner) data
     buchung: bool = False  #: include Grundbuch (register) data
-    dataModel: t.Optional[gws.common.model.Config] #: data model for this group
+    model: t.Optional[gws.common.model.Config]  #: data model for this group
 
 
 class Config(t.WithAccess):
     """CSV Export configuration"""
 
-    groups: t.Optional[t.List[GroupConfig]] #: export groups
+    groups: t.Optional[t.List[GroupConfig]]  #: export groups
 
 
 # default export groups configuration
 
 
+_Model = gws.common.model.Config
+_Field = gws.common.model.FieldConfig
+
 DEFAULT_GROUPS = [
     t.Config(
         title='Basisdaten', eigentuemer=False, buchung=False,
-        dataModel=t.Config(rules=[
-            t.Config(source='gemeinde', title='Gemeinde'),
-            t.Config(source='gemarkung_id', title='Gemarkung ID'),
-            t.Config(source='gemarkung', title='Gemarkung'),
-            t.Config(source='flurnummer', title='Flurnummer', type=t.AttributeType.int),
-            t.Config(source='zaehler', title='Zähler', type=t.AttributeType.int),
-            t.Config(source='nenner', title='Nenner'),
-            t.Config(source='flurstuecksfolge', title='Folge'),
-            t.Config(source='amtlicheflaeche', title='Fläche', type=t.AttributeType.float),
-            t.Config(source='x', title='X', type=t.AttributeType.float),
-            t.Config(source='y', title='Y', type=t.AttributeType.float),
+        model=_Model(fields=[
+            _Field(name='gemeinde', title='Gemeinde', type='string'),
+            _Field(name='gemarkung_id', title='Gemarkung ID', type='string'),
+            _Field(name='gemarkung', title='Gemarkung', type='string'),
+            _Field(name='flurnummer', title='Flurnummer', type='integer'),
+            _Field(name='zaehler', title='Zähler', type='integer'),
+            _Field(name='nenner', title='Nenner', type='string'),
+            _Field(name='flurstuecksfolge', title='Folge', type='string'),
+            _Field(name='amtlicheflaeche', title='Fläche', type='float'),
+            _Field(name='x', title='X', type='float'),
+            _Field(name='y', title='Y', type='float'),
         ])
     ),
     t.Config(
         title='Lage', eigentuemer=False, buchung=False,
-        dataModel=t.Config(rules=[
-            t.Config(source='lage_strasse', title='FS Strasse'),
-            t.Config(source='lage_hausnummer', title='FS Hnr'),
+        model=_Model(fields=[
+            _Field(name='lage_strasse', title='FS Strasse', type='string'),
+            _Field(name='lage_hausnummer', title='FS Hnr', type='string'),
         ])
     ),
     t.Config(
         title='Gebäude', eigentuemer=False, buchung=False,
-        dataModel=t.Config(rules=[
-            t.Config(source='gebaeude_area', title='Gebäude Fläche', type=t.AttributeType.float),
-            t.Config(source='gebaeude_gebaeudefunktion', title='Gebäude Funktion'),
+        model=_Model(fields=[
+            _Field(name='gebaeude_area', title='Gebäude Fläche', type='float'),
+            _Field(name='gebaeude_gebaeudefunktion', title='Gebäude Funktion', type='string'),
         ])
     ),
     t.Config(
         title='Buchungsblatt', eigentuemer=False, buchung=True,
-        dataModel=t.Config(rules=[
-            t.Config(source='buchung_buchungsart', title='Buchungsart'),
-            t.Config(source='buchung_buchungsblatt_blattart', title='Blattart'),
-            t.Config(source='buchung_buchungsblatt_buchungsblattkennzeichen', title='Blattkennzeichen'),
-            t.Config(source='buchung_buchungsblatt_buchungsblattnummermitbuchstabenerweiterung', title='Blattnummer'),
-            t.Config(source='buchung_laufendenummer', title='Laufende Nummer'),
+        model=_Model(fields=[
+            _Field(name='buchung_buchungsart', title='Buchungsart', type='string'),
+            _Field(name='buchung_buchungsblatt_blattart', title='Blattart', type='string'),
+            _Field(name='buchung_buchungsblatt_buchungsblattkennzeichen', title='Blattkennzeichen', type='string'),
+            _Field(name='buchung_buchungsblatt_buchungsblattnummermitbuchstabenerweiterung', title='Blattnummer', type='string'),
+            _Field(name='buchung_laufendenummer', title='Laufende Nummer', type='string'),
         ])
     ),
     t.Config(
         title='Eigentümer', eigentuemer=True, buchung=True,
-        dataModel=t.Config(rules=[
-            t.Config(source='buchung_eigentuemer_person_vorname', title='Vorname'),
-            t.Config(source='buchung_eigentuemer_person_nachnameoderfirma', title='Name'),
-            t.Config(source='buchung_eigentuemer_person_geburtsdatum', title='Geburtsdatum'),
-            t.Config(source='buchung_eigentuemer_person_anschrift_strasse', title='Strasse'),
-            t.Config(source='buchung_eigentuemer_person_anschrift_hausnummer', title='Hnr'),
-            t.Config(source='buchung_eigentuemer_person_anschrift_postleitzahlpostzustellung', title='PLZ'),
-            t.Config(source='buchung_eigentuemer_person_anschrift_ort_post', title='Ort'),
+        model=_Model(fields=[
+            _Field(name='buchung_eigentuemer_person_vorname', title='Vorname', type='string'),
+            _Field(name='buchung_eigentuemer_person_nachnameoderfirma', title='Name', type='string'),
+            _Field(name='buchung_eigentuemer_person_geburtsdatum', title='Geburtsdatum', type='string'),
+            _Field(name='buchung_eigentuemer_person_anschrift_strasse', title='Strasse', type='string'),
+            _Field(name='buchung_eigentuemer_person_anschrift_hausnummer', title='Hnr', type='string'),
+            _Field(name='buchung_eigentuemer_person_anschrift_postleitzahlpostzustellung', title='PLZ', type='string'),
+            _Field(name='buchung_eigentuemer_person_anschrift_ort_post', title='Ort', type='string'),
         ])
     ),
     t.Config(
         title='Nutzung', eigentuemer=False, buchung=False,
-        dataModel=t.Config(rules=[
-            t.Config(source='nutzung_a_area', title='Nutzung Fläche', type=t.AttributeType.float),
-            t.Config(source='nutzung_type', title='Nutzung Typ'),
+        model=_Model(fields=[
+            _Field(name='nutzung_a_area', title='Nutzung Fläche', type='float'),
+            _Field(name='nutzung_type', title='Nutzung Typ', type='string'),
         ])
     ),
 ]
 
 
-def as_csv(target_object: t.IObject, fs_features: t.List[t.IFeature], model: gws.common.model.Object):
-    helper: gws.ext.helper.csv.Object = t.cast(
-        gws.ext.helper.csv.Object,
-        target_object.root.find_first('gws.ext.helper.csv'))
-    writer = helper.writer()
+class Group(t.Data):
+    index: int
+    title: str
+    withEigentuemer: bool
+    withBuchung: bool
+    fieldNames: set
 
-    writer.write_headers([r.title for r in model.rules])
 
-    for fs in fs_features:
-        for rec in _recs_from_feature(fs, model.attribute_names):
-            writer.write_attributes(model.apply_to_dict(rec))
+class Object(gws.Object):
+    model: gws.common.model.Object
+    groups: t.List[Group]
 
-    return writer.as_bytes()
+    def configure(self):
+        ls = self.var('groups') or DEFAULT_GROUPS
+        all_fields = {}
+
+        self.groups = []
+
+        for n, cfg in enumerate(ls, 1):
+            group = Group(
+                index=n,
+                title=cfg.title,
+                withEigentuemer=cfg.eigentuemer is True,
+                withBuchung=cfg.buchung is True,
+                fieldNames=set()
+            )
+            for f in cfg.model.fields:
+                if f.name not in all_fields:
+                    all_fields[f.name] = f
+                group.fieldNames.add(f.name)
+
+            self.groups.append(group)
+
+        self.model = t.cast(
+            gws.common.model.Object,
+            self.root.create_child(gws.common.model.Object, t.Config(fields=list(all_fields.values()))))
+
+    def group_dict(self, with_eigentuemer: bool, with_buchung: bool):
+        d = {}
+
+        for group in self.groups:
+            if group.withEigentuemer and not with_eigentuemer:
+                continue
+            if group.withBuchung and not with_buchung:
+                continue
+            d[group.index] = group.title
+
+        return d
+
+    def export_as_csv(self, fs_features: t.List[t.IFeature], group_indexes: t.List[int]):
+
+        fset = set()
+
+        for group in self.groups:
+            if group.index in group_indexes:
+                fset.update(group.fieldNames)
+
+        fields = [f for f in self.model.fields if f.name in fset]
+        field_names = [f.name for f in fields]
+
+        helper: gws.ext.helper.csv.Object = t.cast(
+            gws.ext.helper.csv.Object,
+            self.root.find_first('gws.ext.helper.csv'))
+        writer = helper.writer()
+
+        writer.write_headers([f.title for f in fields])
+
+        for fs in fs_features:
+            for rec in _recs_from_feature(fs, field_names):
+                f = self.model.feature_from_props(t.FeatureProps(attributes=rec))
+                writer.write_dict(field_names, f.attributes)
+
+        return writer.as_bytes()
 
 
 def _recs_from_feature(fs: t.IFeature, att_names: t.List[str]):
     # create a flat list from the attributes of the FS feature
 
-    flat = list(_flat_walk({a.name: a.value for a in fs.attributes}))
+    flat = list(_flat_walk(fs.attributes))
 
     # keep keys we need
 

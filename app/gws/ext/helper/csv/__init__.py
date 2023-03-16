@@ -52,6 +52,10 @@ class _Writer:
         self.rows.append(self.h.delimiter.join(self._format(a.value) for a in attributes))
         return self
 
+    def write_dict(self, keys: t.List[str], d):
+        self.rows.append(self.h.delimiter.join(self._format(d.get(k)) for k in keys))
+        return self
+
     def as_str(self):
         rows = []
         if self.headers:

@@ -99,7 +99,7 @@ class UiConfig(t.Config):
 class Config(t.WithTypeAndAccess):
     """Flurstücksuche (cadaster parlcels search) action"""
 
-    helper: t.Optional[str] #: ALKIS helper uid
+    helper: t.Optional[str]  #: ALKIS helper uid
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
     buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
     limit: int = 100  #: search results limit
@@ -279,7 +279,7 @@ class Object(gws.common.action.Object):
 
         p = self.var('helper')
         if p:
-             self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find('gws.ext.helper.alkis', p))
+            self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find('gws.ext.helper.alkis', p))
         else:
             self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
 
@@ -302,13 +302,12 @@ class Object(gws.common.action.Object):
 
         self.ui: UiConfig = self.var('ui')
 
-        p = self.var('export')
-        g = gws.ext.helper.alkis.util.export.DEFAULT_GROUPS
-        if not p and self.ui.useExport:
-            p = t.Config(groups=g)
-        elif p:
-            p.groups = p.groups or g
-        self.export: gws.ext.helper.alkis.util.export.Config = p
+        self.exporter: t.Optional[gws.ext.helper.alkis.util.export.Object] = None
+        if self.ui.useExport:
+            self.exporter = t.cast(
+                gws.ext.helper.alkis.util.export.Object,
+                self.root.create_child(
+                    gws.ext.helper.alkis.util.export.Object, self.var('export')))
 
         self.buchung: BuchungConfig = self.var('buchung')
 
@@ -339,16 +338,7 @@ class Object(gws.common.action.Object):
 
         with_eigentuemer = self._can_read_eigentuemer(user)
         with_buchung = self._can_read_buchung(user)
-
-        eg = {}
-
-        if self.export and self._can_use_export(user):
-            for n, g in enumerate(self.export.groups):
-                if g.get('eigentuemer') and not with_eigentuemer:
-                    continue
-                if g.get('buchung') and not with_buchung:
-                    continue
-                eg[n] = g.get('title')
+        export_groups = self.exporter.group_dict(with_eigentuemer, with_buchung) if self._can_use_export(user) else {}
 
         gemarkungen = []
         for g in self.alkis.gemarkung_list():
@@ -358,7 +348,7 @@ class Object(gws.common.action.Object):
 
         return {
             'type': self.type,
-            'exportGroups': eg,
+            'exportGroups': export_groups,
             'gemarkungen': gemarkungen,
             'limit': self.limit,
             'printTemplate': self.print_template.props,
@@ -415,6 +405,9 @@ class Object(gws.common.action.Object):
     def api_export(self, req: t.IRequest, p: ExportParams) -> ExportResponse:
         """Export Flurstueck features"""
 
+        if not self.exporter:
+            raise gws.web.error.NotFound()
+
         self._validate_request(req, p)
 
         fp = p.findParams
@@ -426,16 +419,7 @@ class Object(gws.common.action.Object):
         if not res.features:
             raise gws.web.error.NotFound()
 
-        combined_rules = []
-
-        for g in sorted(int(g) for g in p.groups):
-            combined_rules.extend(self.export.groups[g].dataModel.rules)
-
-        combined_model = self.root.create_unbound_object('gws.common.model', t.Config(
-            rules=combined_rules
-        ))
-
-        csv_bytes = gws.ext.helper.alkis.export.as_csv(self, res.features, combined_model)
+        csv_bytes = self.exporter.export_as_csv(res.features, sorted(int(g) for g in p.groups))
 
         return ExportResponse(content=csv_bytes, mime='text/csv')
 
@@ -616,4 +600,4 @@ class Object(gws.common.action.Object):
         return b
 
     def _can_use_export(self, user: t.IUser):
-        return user.can_use(self.export, parent=self)
+        return self.exporter and user.can_use(self.exporter, parent=self)

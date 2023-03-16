@@ -35,8 +35,9 @@ def _all_person(conn: AlkisConnection):
         'ortsteil',
         'postleitzahlpostzustellung',
         'strasse',
+        'bestimmungsland',
         'hausnummer',
-        'telefon'
+        'telefon',
     ])
 
     anschrift = {r['gml_id']: gws.compact(r) for r in rs}
@@ -95,7 +96,8 @@ def _all_buchungsblatt(conn: AlkisConnection):
                 'anteil': _anteil(r),
                 'gml_id': r['gml_id'],
                 'laufendenummernachdin1421': r['laufendenummernachdin1421'],
-                'person': persons.get(r['benennt'])
+                'person': persons.get(r['benennt']),
+                'beschriebderrechtsgemeinschaft': r.get('beschriebderrechtsgemeinschaft', ''),
             }
             eigentuemer.update(resolver.attributes(conn, 'ax_namensnummer', r))
             blatts[r['istbestandteilvon']]['eigentuemer'].append(gws.compact(eigentuemer))

@@ -1298,6 +1298,7 @@ class IModelField(IObject):
     model: 'IModel'
     name: str
     permissions: 'FieldPermissions'
+    title: str
     type: str
     validators: list
     widget: Optional['IModelWidget']

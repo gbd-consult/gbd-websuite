@@ -260,6 +260,7 @@ class Field(gws.Object, t.IModelField):
     type: str
     name: str
     model: t.IModel
+    title: str
     widget: t.Optional[t.IModelWidget]
     validators: t.List[t.IModelValidator]
     data_type: str
