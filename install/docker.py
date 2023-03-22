@@ -15,26 +15,25 @@ Options:
     
     -image <image-type>
         Image type is one of:
-            gws-server             - GWS server without QGIS    
-            gws-server-qgis        - GWS server with Release QGIS
-            gws-server-qgis-debug  - GWS server with Debug QGIS
-            qgis-server            - QGIS Release server
-            qgis-server-debug      - QGIS Debug server
+            gws             - GWS server without QGIS    
+            gws-qgis        - GWS server with Release QGIS
+            gws-qgis-debug  - GWS server with Debug QGIS
+            qgis            - QGIS Release server
+            qgis-debug      - QGIS Debug server
             
     [-qgis <qgis-version>]
         QGIS version to include, eg. -qgis 3.25
         The builder looks for QGIS server tarballs on 'gws-files.gbd-consult.de', 
-        see the subdirectory './qgis' on how to create a QGIS tarball.      
+        see the subdirectory './qgis/compile' on how to create a QGIS tarball.      
     
-    [-apponly]
-        if given, do not install any packages, only the Gws App and data (use with -base) 
+    [-arch <architecture>]
+        image architecture (amd64 or arm64) 
 
     [-base <image-name>]
         base image, defaults to 'ubuntu'
         
     [-appdir <dir>]
-        app directory to copy to "/gws-app" in the image.
-        By default, the current source directory is used.
+        app directory to copy to "/gws-app" in the image, defaults to the current source directory
 
     [-datadir <dir>]
         data directory (default projects) to copy to "/data" in the image
@@ -42,8 +41,11 @@ Options:
     [-name <name>]
         custom image name 
         
-    [-printonly]
+    [-print]
         just print the Dockerfile, do not build
+        
+    [-prep]
+        prepare the build, but don't run it
         
     [-vendor <vendor-name>]
         vendor name for the Dockerfile
@@ -53,26 +55,32 @@ Options:
 
 Example:
 
-    python3 docker.py -image gws-server-qgis-debug -qgis 3.25 -name my-test-image -datadir my_projects/data
+    python3 docker.py -image gws-qgis-debug -qgis 3.28 -arch amd64 -name my-test-image -datadir my_projects/data
 
 """
 
 
 class Builder:
     image_types = {
-        'gws-server': ['gws', 'release', False],
-        'gws-server-qgis': ['gws', 'release', True],
-        'gws-server-qgis-debug': ['gws', 'debug', True],
-        'qgis-server': ['qgis', 'release', True],
-        'qgis-server-debug': ['qgis', 'debug', True]
+        'gws': ['gws', 'release', False],
+        'gws-qgis': ['gws', 'release', True],
+        'gws-qgis-debug': ['gws', 'debug', True],
+        'qgis': ['qgis', 'release', True],
+        'qgis-debug': ['qgis', 'debug', True]
     }
 
     ubuntu_name = 'jammy'
-    ubuntu = '22.04'
+    ubuntu_version = '22.04'
+
+    arch = 'amd64'
 
     qgis_version = '3.28'
 
-    files_url = 'http://gws-files.gbd-consult.de'
+    qgis_fcgi_port = 9993
+    qgis_start_sh = 'qgis-start.sh'
+    qgis_nginx_conf = 'nginx.conf'
+
+    packages_url = 'http://gws-files.gbd-consult.de'
 
     gws_user_uid = 1000
     gws_user_gid = 1000
@@ -80,121 +88,152 @@ class Builder:
 
     vendor = 'gbdconsult'
 
-    # see https://github.com/wkhtmltopdf/packaging/releases
-    wkhtmltopdf_path = 'wkhtmltox_0.12.6.1-2.jammy_amd64.deb'
-    wkhtmltopdf_url = files_url + '/' + wkhtmltopdf_path
-
-    alkisplugin_url = files_url + '/alkisplugin.tar.gz'
-    alkisplugin_dir = 'alkisplugin'
+    this_dir = os.path.abspath(os.path.dirname(__file__))
+    gws_dir = os.path.abspath(f'{this_dir}/..')
+    build_dir = os.path.abspath(f'{gws_dir}/../docker')
 
     def __init__(self, args):
         if not args or 'h' in args or 'help' in args:
             exit_help()
 
-        self.args = args
-
-        self.script_dir = os.path.abspath(os.path.dirname(__file__))
-        self.build_dir = os.path.abspath(self.script_dir + '/___build')
-
-        self.gws_dir = os.path.abspath(self.script_dir + '/..')
         try:
-            self.gws_version = ''.join(lines_from(self.gws_dir + '/VERSION'))
+            self.gws_version = read_file(f'{self.gws_dir}/VERSION')
         except FileNotFoundError:
-            self.gws_version = ''.join(lines_from(self.gws_dir + '/app/VERSION'))
+            self.gws_version = read_file(f'{self.gws_dir}/app/VERSION')
         self.gws_short_version = self.gws_version.rpartition('.')[0]
 
+        self.args = args
+
         self.appdir = args.get('appdir')
-        self.apponly = args.get('apponly')
-        self.base = args.get('base') or self.f('ubuntu:{ubuntu}')
+        self.arch = args.get('arch') or self.arch
+        self.base = args.get('base') or f'ubuntu:{self.ubuntu_version}'
         self.datadir = args.get('data')
         self.vendor = args.get('vendor') or self.vendor
 
-        self.image_id = args.get('image')
-        if not self.image_id or self.image_id not in self.image_types:
+        self.image_name = args.get('image')
+        if not self.image_name or self.image_name not in self.image_types:
             exit_help('image type missing')
 
-        self.image_kind, self.image_mode, self.with_qgis = self.image_types[self.image_id]
-        if self.apponly:
-            self.with_qgis = False
+        self.image_kind, self.debug_mode, self.with_qgis = self.image_types[self.image_name]
 
-        self.qgis_version = args.get('qgis') or self.qgis_version
-        if self.with_qgis:
-            self.qgis_url = self.f('{files_url}/qgis-for-gws-{qgis_version}-{ubuntu_name}-{image_mode}.tar.gz')
-            self.qgis_dir = self.f('qgis-for-gws-{image_mode}')
-
-        self.version = args.get('version')
-        if not self.version:
+        self.image_version = args.get('version')
+        if not self.image_version:
             if self.image_kind == 'gws':
-                self.version = self.gws_version
+                self.image_version = self.gws_version
             if self.image_kind == 'qgis':
-                self.version = '0'
+                self.image_version = '0'
 
-        self.image_name = args.get('name') or self.default_image_name()
+        self.image_full_name = args.get('name') or self.default_image_full_name()
         self.image_description = self.default_image_description()
 
-        self.qgis_apts = lines_from(self.script_dir + '/qgis/install/apt.lst')
-        self.gws_apts = lines_from(self.script_dir + '/apt.lst')
+        self.qgis_apts = lines(read_file(f'{self.this_dir}/qgis/docker/apt.lst'))
+        self.gws_apts = lines(read_file(f'{self.this_dir}/apt.lst'))
 
-        self.qgis_pips = lines_from(self.script_dir + '/qgis/install/pip.lst')
-        self.gws_pips = lines_from(self.script_dir + '/pip.lst')
+        self.qgis_pips = lines(read_file(f'{self.this_dir}/qgis/docker/pip.lst'))
+        self.gws_pips = lines(read_file(f'{self.this_dir}/pip.lst'))
 
-        self.exclude_file = self.gws_dir + '/.package_exclude'
+        self.exclude_file = f'{self.gws_dir}/.package_exclude'
 
-        self.apts = ''
-        self.pips = ''
-        self.commands = ''
+        # see https://github.com/wkhtmltopdf/packaging/releases
+        self.wkhtmltopdf_package = f'wkhtmltox_0.12.6.1-2.{self.ubuntu_name}_{self.arch}.deb'
+        self.wkhtmltopdf_url = f'https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/{self.wkhtmltopdf_package}'
+
+        # resources from the NorBit alkis plugin
+        self.alkisplugin_package = 'alkisplugin'
+        self.alkisplugin_url = f'{self.packages_url}/{self.alkisplugin_package}.tar.gz'
+
+        # our qgis tarball
+        self.qgis_version = args.get('qgis') or self.qgis_version
+        self.qgis_package = f'qgis_for_gws-{self.qgis_version}-{self.ubuntu_name}-{self.debug_mode}-{self.arch}'
+        self.qgis_url = f'{self.packages_url}/{self.qgis_package}.tar.gz'
 
     def main(self):
-        df = self.dockerfile()
-        if self.args.get('printonly'):
-            print(df)
-            return
-        self.prepare()
-        with open(self.f('{build_dir}/Dockerfile'), 'wt') as fp:
-            fp.write(df)
-        run(self.f('cd {build_dir} && docker build -f Dockerfile -t {image_name} .'))
+        cmd = f'cd {self.build_dir} && docker build -f Dockerfile -t {self.image_full_name} .'
 
-    def default_image_name(self):
+        if self.args.get('print'):
+            print(self.dockerfile())
+            return
+
+        self.prepare()
+        if self.args.get('prep'):
+            print('[docker.py] prepared, now run:')
+            print(cmd)
+            return
+
+        run(cmd)
+
+    def prepare(self):
+        os.chdir(self.this_dir)
+        if not os.path.isdir(self.build_dir):
+            run(f'mkdir -p {self.build_dir}')
+        os.chdir(self.build_dir)
+
+        if self.with_qgis:
+            if not os.path.isfile(f'{self.qgis_package}.tar.gz'):
+                run(f"curl -sL '{self.qgis_url}' -o {self.qgis_package}.tar.gz")
+            if not os.path.isdir(self.qgis_package):
+                run(f"tar -xzf {self.qgis_package}.tar.gz")
+            if not os.path.isdir(f'{self.qgis_package}/usr/share/{self.alkisplugin_package}'):
+                run(f"curl -sL '{self.alkisplugin_url}' -o {self.alkisplugin_package}.tar.gz")
+                run(f"tar -xzf {self.alkisplugin_package}.tar.gz")
+                run(f"mv {self.alkisplugin_package} {self.qgis_package}/usr/share")
+
+            run(f'cp {self.this_dir}/qgis/docker/qgis-start* {self.build_dir}')
+
+        if not os.path.isfile(self.wkhtmltopdf_package):
+            run(f"curl -sL '{self.wkhtmltopdf_url}' -o {self.wkhtmltopdf_package}")
+
+        if self.appdir:
+            run(f"mkdir app && rsync -a --exclude-from {self.exclude_file} {self.appdir}/* app")
+        else:
+            run(f"make -C {self.gws_dir} package DIR={self.build_dir}")
+
+        if self.datadir:
+            run(f"mkdir data && rsync -a --exclude-from {self.exclude_file} {self.datadir}/* data")
+
+        write_file(f'{self.build_dir}/Dockerfile', self.dockerfile())
+
+    def default_image_full_name(self):
         # the default name is like "gdbconsult/gws-server-qgis-3.22:8.0.1"
         # or "gdbconsult/qgis-server-3.22:3"
 
         if self.image_kind == 'gws':
             if self.with_qgis:
-                return self.f('{vendor}/{image_id}-{qgis_version}:{version}')
-            return self.f('{vendor}/{image_id}:{version}')
+                return f'{self.vendor}/{self.image_name}-{self.qgis_version}-{self.arch}:{self.image_version}'
+            return f'{self.vendor}/{self.image_name}-{self.arch}:{self.image_version}'
 
         if self.image_kind == 'qgis':
-            return self.f('{vendor}/{image_id}-{qgis_version}:{version}')
+            return f'{self.vendor}/{self.image_name}-{self.qgis_version}-{self.arch}:{self.image_version}'
 
     def default_image_description(self):
         if self.image_kind == 'gws':
             s = 'GWS Server'
             if self.with_qgis:
                 s += ' QGIS ' + self.qgis_version
-            if self.image_mode == 'debug':
+            if self.debug_mode == 'debug':
                 s += '-debug'
             return s
         if self.image_kind == 'qgis':
             s = 'QGIS ' + self.qgis_version
-            if self.image_mode == 'debug':
+            if self.debug_mode == 'debug':
                 s += '-debug'
             return s
 
     def dockerfile(self):
-        label = ''
-        if self.image_kind == 'gws':
-            label = 'LABEL Description="{image_description}" Vendor="{vendor}" Version="{version}"'
-        if self.image_kind == 'qgis':
-            label = 'LABEL Description="{image_description}" Vendor="{vendor}" Version="{version}"'
+        df = []
+        __ = df.append
 
-        df = [
-            '#',
-            '# {image_name}',
-            '# generated by gbd-websuite/install/docker.py',
-            '#',
-            'FROM --platform=linux/amd64 {base}',
-            label,
-        ]
+        __(f'#')
+        __(f'# {self.image_full_name}')
+        __(f'# generated by gbd-websuite/install/docker.py')
+        __(f'#')
+        __(f'FROM --platform=linux/{self.arch} {self.base}')
+        __(f'LABEL Description="{self.image_description}" Vendor="{self.vendor}" Version="{self.image_version}"')
+
+        __('RUN ' + commands(f'''
+            groupadd -g {self.gws_user_gid} {self.gws_user_name}
+            useradd -M -u {self.gws_user_uid} -g {self.gws_user_gid} {self.gws_user_name}
+        '''))
 
         if self.image_kind == 'qgis':
             apts = self.qgis_apts
@@ -206,93 +245,54 @@ class Builder:
             apts = self.gws_apts
             pips = self.gws_pips
 
-        self.apts = ' '.join(apts)
-        self.pips = ' '.join(pips)
+        apts = ' '.join(f"'{s}'" for s in apts)
+        pips = ' '.join(f"'{s}'" for s in pips)
 
-        commands = [
-            'apt-get update',
-            'apt-get install -y software-properties-common',
-            'apt-get update',
-            'DEBIAN_FRONTEND=noninteractive apt install -y {apts}',
-            'pip3 install --no-cache-dir {pips}',
-            'apt-get clean',
-        ]
+        __('RUN ' + commands(f'''
+            set -x
+            apt update
+            apt install -y software-properties-common
+            apt update
+            DEBIAN_FRONTEND=noninteractive apt install -y {apts}
+            apt-get -y clean
+            apt-get -y purge --auto-remove
+        '''))
 
-        copy_app = ['COPY app /gws-app']
-        if self.datadir:
-            copy_app.append('COPY --chown={gws_user_name}:{gws_user_name} data /data')
-
-        if self.apponly:
-            df += [
-                *copy_app
-            ]
-        elif self.image_kind == 'gws':
-            commands += [
-                'rm -f /usr/bin/python',
-                'ln -s /usr/bin/python3 /usr/bin/python',
-                'groupadd -g {gws_user_gid} gws',
-                'useradd -M -u {gws_user_uid} -g {gws_user_gid} gws',
-                'mkdir -p /gws-var',
-                'chown -R gws:gws /gws-var',
-            ]
-            df += [
-                'RUN {commands}',
-                'COPY {qgis_dir}/usr /usr' if self.with_qgis else '',
-                'COPY {wkhtmltopdf_path} /',
-                'RUN apt install -y /{wkhtmltopdf_path} && rm -f /{wkhtmltopdf_path}',
-                *copy_app,
-                'ENV QT_SELECT=5',
-                'ENV LANG=C.UTF-8',
-                'ENV PATH="/gws-app/bin:/usr/local/bin:${PATH}"',
-                'EXPOSE 80',
-                'EXPOSE 443',
-                'CMD /gws-app/bin/gws server start',
-            ]
-        elif self.image_kind == 'qgis':
-            df += [
-                'RUN {commands}',
-                'COPY {qgis_dir}/usr /usr',
-                'COPY qgis-start* /',
-                'env QT_SELECT=5',
-                'env LANG=C.UTF-8',
-                'EXPOSE 80',
-                'CMD /bin/sh /qgis-start.sh',
-            ]
-
-        self.commands = ' \\\n     && '.join(self.f(s) for s in commands)
-        res = '\n'.join(self.f(s) for s in df)
-        return res
-
-    def prepare(self):
-        os.chdir(self.script_dir)
-        run(self.f('rm -fr {build_dir} && mkdir -p {build_dir}'))
-        os.chdir(self.build_dir)
+        if pips:
+            __(f'RUN pip3 install --no-cache-dir {pips}')
 
         if self.with_qgis:
-            run(self.f("curl -sL '{qgis_url}' -o {qgis_dir}.tar.gz"))
-            run(self.f("tar -xzf {qgis_dir}.tar.gz"))
-            run(self.f("mv qgis-for-gws {qgis_dir}"))
-            run(self.f("curl -sL '{alkisplugin_url}' -o {alkisplugin_dir}.tar.gz"))
-            run(self.f("tar -xzf {alkisplugin_dir}.tar.gz"))
-            run(self.f("mv {alkisplugin_dir} {qgis_dir}/usr/share"))
+            __(f'COPY {self.qgis_package}/usr /usr')
 
-        run(self.f("curl -sL '{wkhtmltopdf_url}' -o {wkhtmltopdf_path}"))
+        if self.image_kind == 'gws':
+            __(f'COPY {self.wkhtmltopdf_package} /{self.wkhtmltopdf_package}')
+            __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /')
 
-        if self.appdir:
-            run(self.f("mkdir app && rsync -a --exclude-from {exclude_file} {appdir}/* app"))
-        else:
-            run(self.f("make -C {gws_dir} package DIR={build_dir}"))
+            __('RUN ' + commands(f'''
+                rm -f /usr/bin/python
+                ln -s /usr/bin/python3 /usr/bin/python
+                mkdir -p /gws-var
+                chown -R {self.gws_user_name}:{self.gws_user_name} /gws-var
+            '''))
 
-        if self.datadir:
-            run(self.f("mkdir data && rsync -a --exclude-from {exclude_file} {datadir}/* data"))
+            __('COPY app /gws-app')
+            if self.datadir:
+                __(f'COPY --chown={self.gws_user_name}:{self.gws_user_name} data /data')
 
-        run(self.f('cp {script_dir}/qgis/install/qgis-start* .'))
+            __('ENV QT_SELECT=5')
+            __('ENV LANG=C.UTF-8')
+            __('ENV PATH="/gws-app/bin:/usr/local/bin:${PATH}"')
+            __('CMD ["/gws-app/bin/gws", "server", "start"]')
 
-    def f(self, template):
-        return re.sub(
-            r'{([a-z_]+)}',
-            lambda m: str(getattr(self, m.group(1), m.group(0))),
-            template)
+        if self.image_kind == 'qgis':
+            __(f'COPY qgis-start.sh /')
+            __(f'COPY qgis-start.py /')
+            __(f'RUN chmod 777 /qgis-start.sh')
+            __(f'ENV QT_SELECT=5')
+            __(f'ENV LANG=C.UTF-8')
+            __(f'CMD ["/qgis-start.sh"]')
+
+        return '\n'.join(df) + '\n'
 
 
 ###
@@ -303,27 +303,16 @@ def main():
 
 
 def run(cmd):
+    cmd = re.sub(r'\s+', ' ', cmd.strip())
     print('[docker.py] ' + cmd)
-    args = {
-        'stdin': None,
-        'stdout': None,
-        'stderr': subprocess.STDOUT,
-        'shell': True,
-    }
-
-    p = subprocess.Popen(cmd, **args)
-    out, _ = p.communicate()
-    rc = p.returncode
-
-    if rc:
-        print(f'FAILED {cmd!r} (code {rc})')
+    res = subprocess.run(cmd, shell=True, capture_output=False)
+    if res.returncode:
+        print(f'FAILED {cmd!r} (code {res.returncode})')
         sys.exit(1)
 
-    return out
 
-
-def dedent(txt):
-    return '\n'.join(s.strip() for s in txt.strip().splitlines())
+def commands(txt):
+    return ' \\\n&& '.join(lines(txt))
 
 
 def lines(txt):
@@ -335,9 +324,14 @@ def lines(txt):
     return ls
 
 
-def lines_from(path):
-    with open(path) as fp:
-        return lines(fp.read())
+def read_file(path):
+    with open(path, 'rt', encoding='utf8') as fp:
+        return fp.read()
+
+
+def write_file(path, text):
+    with open(path, 'wt', encoding='utf8') as fp:
+        fp.write(text)
 
 
 def parse_args(argv):

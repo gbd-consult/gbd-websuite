@@ -5,6 +5,7 @@ python3-pip
 xvfb
 nginx
 rsyslog
+spawn-fcgi
 
 # for qgis server
 
