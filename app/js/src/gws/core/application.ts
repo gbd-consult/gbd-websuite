@@ -326,6 +326,14 @@ export class Application implements types.IApplication {
         return this.createController(klass, parent, cfg);
     }
 
+    getClass(tag) {
+        let klass = this.tags[tag];
+        if (!klass) {
+            console.warn('unknown tag: ' + tag);
+        }
+        return klass;
+    }
+
     controller(uid) {
         return this.controllers[uid];
     }

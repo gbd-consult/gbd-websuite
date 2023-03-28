@@ -713,91 +713,18 @@ export class MapManager implements types.IMapManager {
 
 
     readFeature(props: api.core.FeatureProps): types.IFeature {
-        return this.featureFromProps(props);
+        return this._readFeature(props);
 
     }
 
     readFeatures(propsList: Array<api.core.FeatureProps>): Array<types.IFeature> {
-        return this.featureListFromProps(propsList);
+        return propsList.map(props => this._readFeature(props));
     }
 
-    featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<types.IFeature> {
-        return propsList.map(props => this.featureFromProps(props));
-    }
+    _readFeature(props) {
+        let model = this.app.models.model(props.modelUid);
+        return model.featureFromProps(this, props)
 
-    featureFromGeometry(geom: ol.geom.Geometry): types.IFeature {
-        return new Feature(this).setGeometry(geom);
-    }
-
-    featureFromProps(props: api.core.FeatureProps): types.IFeature {
-        let attributes = props.attributes || {};
-        let model: types.IModel;
-
-        if (props.modelUid)
-            model = this.app.models.getModel(props.modelUid);
-
-        if (model) {
-            for (let f of model.fields) {
-                let val = attributes[f.name];
-
-                if (val && f.attributeType === 'feature') {
-                    attributes[f.name] = this.featureFromProps(val);
-                }
-
-                if (val && f.attributeType === 'featurelist') {
-                    attributes[f.name] = val.map(p => this.featureFromProps(p));
-                }
-            }
-        }
-
-        return new Feature(this).setProps({...props, attributes});
-    }
-
-
-    featureProps(feature: types.IFeature, depth?: number): api.core.FeatureProps {
-
-        let atts = {};
-        depth = depth || 0;
-
-        if (feature.model) {
-
-            for (let f of feature.model.fields) {
-                let val = feature.attributes[f.name];
-
-                switch (f.attributeType) {
-                    case 'feature':
-                        if (val && depth > 0) {
-                            atts[f.name] = this.featureProps(val, depth - 1);
-                        }
-                        break;
-                    case 'featurelist':
-                        if (val && depth > 0) {
-                            atts[f.name] = val.map(f => this.featureProps(f, depth - 1));
-                        }
-                        break;
-                    default:
-                        if (val !== null && val !== undefined) {
-                            atts[f.name] = val;
-                        }
-                }
-            }
-        } else {
-            atts = feature.attributes || {};
-        }
-
-        // let style = self.style.at(f.styleNames.normal);
-
-        return {
-            attributes: atts,
-            views: {},
-            // layerUid: feature.layer ? feature.layer.uid : null,
-            modelUid: feature.model ? feature.model.uid : null,
-            uid: feature.uid,
-            isNew: feature.isNew,
-            keyName: feature.keyName,
-            geometryName: feature.geometryName,
-            // style: style ? style.props : null,
-        }
     }
 
     //

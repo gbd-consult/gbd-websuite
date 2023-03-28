@@ -1,6 +1,8 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 import * as api from './core/api';
+import {core} from "./core/api";
+import {ModelRegistry} from "gws/map/model";
 
 export interface Dict {
     [key: string]: any;
@@ -45,6 +47,7 @@ export interface IApplication {
 
     __(key);
 
+    getClass(tag: string): any;
     createController(klass: any, parent: IController, cfg?: Dict) : IController;
     createControllerFromConfig(parent: IController, cfg: Dict) : IController | null;
     controller(uid: string): IController;
@@ -337,12 +340,6 @@ export interface IMapManager {
     readFeature(props: api.core.FeatureProps): IFeature;
     readFeatures(propsList: Array<api.core.FeatureProps>): Array<IFeature>;
 
-    featureFromGeometry(geom: ol.geom.Geometry): IFeature;
-    featureFromProps(props: api.core.FeatureProps): IFeature;
-    featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<IFeature>;
-
-    featureProps(feature: IFeature, depth?: number): api.core.FeatureProps;
-
     geom2shape(geom: ol.geom.Geometry): api.base.shape.Props;
     shape2geom(shape: api.base.shape.Props): ol.geom.Geometry;
 
@@ -367,7 +364,7 @@ export interface IFeature {
     views: Dict;
     layer?: IFeatureLayer;
 
-    modelUid: string;
+    map: IMapManager;
     model: IModel;
 
     oFeature?: ol.Feature;
@@ -389,6 +386,7 @@ export interface IFeature {
     getEditedAttribute(name: string): any;
 
     setProps(props: api.core.FeatureProps): IFeature;
+    setAttributes(attributes: Dict): IFeature;
     setGeometry(geom: ol.geom.Geometry): IFeature;
     setNew(f: boolean): IFeature;
     setSelected(f: boolean): IFeature;
@@ -396,7 +394,7 @@ export interface IFeature {
     redraw(): IFeature;
 
     isSame(feature: IFeature): Boolean;
-    updateFrom(feature: IFeature);
+    clone(): IFeature;
 
     resetEdits();
     commitEdits();
@@ -435,19 +433,40 @@ export interface ISidebarItem extends IController {
 
 export interface IModelRegistry {
     addModel(props: api.base.model.Props);
-    getModel(uid: string): IModel|null;
-    getModelForLayer(layer: ILayer): IModel|null;
+    model(uid: string): IModel|null;
+    modelForLayer(layer: ILayer): IModel|null;
+    editableModels(): Array<IModel>;
+    defaultModel(): IModel;
+    featureFromProps(map: IMapManager, props: api.core.FeatureProps): IFeature;
+    featureListFromProps(map: IMapManager, propsList: Array<api.core.FeatureProps>): Array<IFeature>;
+
 }
 
 export interface IModel {
+    canCreate: boolean;
+    canDelete: boolean;
+    canRead: boolean;
+    canWrite: boolean;
     fields: Array<IModelField>;
+    geometryCrs: string
     geometryName: string;
+    geometryType: core.GeometryType
     keyName: string;
     layerUid: string;
+    registry: ModelRegistry;
     uid: string;
+    title: string;
+    loadingStrategy: api.core.FeatureLoadingStrategy;
 
-    getLayer(): IFeatureLayer|null;
+    layer?: IFeatureLayer;
     getField(name: string): IModelField | null;
+
+    featureWithAttributes(map: IMapManager, attributes: Dict): IFeature;
+    featureFromGeometry(map: IMapManager, geom: ol.geom.Geometry): IFeature;
+    featureFromProps(map: IMapManager, props: api.core.FeatureProps): IFeature;
+    featureListFromProps(map: IMapManager, propsList: Array<api.core.FeatureProps>): Array<IFeature>;
+
+    featureProps(feature: IFeature, depth?: number): api.core.FeatureProps;
 }
 
 export interface IModelRelation {
@@ -463,9 +482,25 @@ export interface IModelField {
     attributeType: api.core.AttributeType;
     geometryType: api.core.GeometryType;
     title: string;
+    widgetProps: api.ext.props.modelWidget;
 
     model: IModel;
 
     relations: Array<IModelRelation>;
-    // widget?: api.base.model;
 }
+
+export interface IModelWidget extends IController {
+    type: string;
+    createView(props: ModelWidgetProps): React.ReactElement;
+}
+
+export interface ModelWidgetProps {
+    controller: IModelWidget;
+    feature: IFeature;
+    field: IModelField;
+    options: Dict;
+    values: Dict;
+    readOnly: boolean;
+    when: (event: string, widget: IModelWidget, field: IModelField, value: any) => void;
+}
+

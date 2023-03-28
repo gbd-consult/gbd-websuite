@@ -5,7 +5,6 @@ import * as api from '../core/api';
 import * as lib from '../lib';
 
 
-
 export class Feature implements types.IFeature {
     uid: string = '';
 
@@ -14,30 +13,23 @@ export class Feature implements types.IFeature {
     category: string = '';
     views: types.Dict = {};
     layer?: types.IFeatureLayer = null;
-    modelUid: string;
     oFeature?: ol.Feature = null;
     cssSelector: string;
 
     isNew: boolean = false;
     isSelected: boolean = false;
 
+    model: types.IModel;
     map: types.IMapManager;
 
-    constructor(map) {
+    constructor(model: types.IModel, map: types.IMapManager) {
         this.map = map;
+        this.model = model;
         this.uid = lib.uniqId('_feature_');
-        this.modelUid = '';
     }
 
     setProps(props) {
-        this.attributes = props.attributes || {};
-        this.modelUid = props.modelUid;
-
-        this.editedAttributes = {};
-
-        let uid = this.attributes[this.keyName];
-        if (uid)
-            this.uid = String(uid);
+        this.setAttributes(props.attributes);
 
         this.category = props.category || '';
         this.views = props.views || {};
@@ -46,23 +38,28 @@ export class Feature implements types.IFeature {
         if (layerUid)
             this.layer = this.map.getLayer(layerUid) as types.IFeatureLayer;
 
-
         this.isNew = Boolean(props.isNew);
         this.isSelected = Boolean(props.isSelected);
 
+        return this;
+    }
+
+    setAttributes(attributes) {
+        this.attributes = attributes || {};
+        this.editedAttributes = {};
+
+        let uid = this.attributes[this.keyName];
+        if (uid)
+            this.uid = String(uid);
+
         let shape = this.attributes[this.geometryName];
-        if (shape) {
+        if (shape)
             this.createOrUpdateOlFeature(this.map.shape2geom(shape));
-        }
 
         return this;
     }
 
     //
-
-    get model() {
-        return this.map.app.models.getModel(this.modelUid);
-    }
 
     get keyName() {
         return this.model.keyName
@@ -90,7 +87,7 @@ export class Feature implements types.IFeature {
     }
 
     getProps(depth) {
-        return this.map.featureProps(this, depth);
+        return this.model.featureProps(this, depth);
     }
 
     getAttribute(name: string): any {
@@ -141,25 +138,15 @@ export class Feature implements types.IFeature {
         return feature.uid === this.uid;
     }
 
-    updateFrom(feature: types.IFeature) {
-        this.attributes = feature.attributes ? {...feature.attributes} : {};
-        this.category = feature.category;
-        this.views = feature.views ? {...feature.views} : {};
-        this.layer = feature.layer;
-        this.modelUid = feature.modelUid;
-        this.isNew = feature.isNew;
-        this.isSelected = feature.isSelected;
-
-        let shape = this.attributes[this.geometryName];
-        if (shape) {
-            this.createOrUpdateOlFeature(this.map.shape2geom(shape));
-        }
-
-        let uid = this.attributes[this.keyName];
-        if (uid)
-            this.uid = String(uid);
-
-        this.redraw();
+    clone() {
+        let f = new Feature(this.model, this.map)
+        f.attributes = {...this.attributes}
+        f.category = this.category;
+        f.views = {...this.views};
+        f.layer = this.layer;
+        f.cssSelector = this.cssSelector
+        f.isNew = this.isNew
+        return f;
     }
 
     whenGeometryChanged() {
@@ -191,37 +178,31 @@ export class Feature implements types.IFeature {
 
 
     protected currentStyle() {
-        let spec = '';
+        let spec = '',
+            style,
+            c,
+            geom = '.' + this.oFeature.getGeometry().getType().toLowerCase();
 
-        if (this.isSelected) spec = 'isSelected';
-        if (this.isNew) spec = 'isNew';
-        if (this.isDirty) spec = 'isDirty';
-        if (this.isFocused) spec = 'isFocused';
+        if (this.isSelected) spec = '.isSelected';
+        if (this.isNew) spec = '.isNew';
+        if (this.isDirty) spec = '.isDirty';
+        if (this.isFocused) spec = '.isFocused';
 
-        if (this.cssSelector) {
-            let c = this.cssSelector;
-            if (spec)
-                c += '.' + spec;
-            let s = this.map.style.getFromSelector(c);
-            if (s)
-                return s;
-        }
+        c = this.cssSelector;
+        if (c && (style = this.map.style.getFromSelector(c + geom + spec)))
+            return style;
+        if (c && (style = this.map.style.getFromSelector(c + spec)))
+            return style;
 
-        if (this.layer && this.layer.cssSelector) {
-            let c = this.layer.cssSelector;
-            if (spec)
-                c += '.' + spec;
-            let s = this.map.style.getFromSelector(c);
-            if (s)
-                return s;
-        }
 
-        let gt = this.oFeature.getGeometry().getType();
-        let c = '.default_style_' + gt.toLowerCase();
-        if (spec)
-            c += '.' + spec;
+        c = this.layer?.cssSelector;
+        if (c && (style = this.map.style.getFromSelector(c + geom + spec)))
+            return style;
+        if (c && (style = this.map.style.getFromSelector(c + spec)))
+            return style;
 
-        return this.map.style.getFromSelector(c);
+        c = '.defaultFeatureStyle'
+        return this.map.style.getFromSelector(c + geom + spec)
     }
 
     protected oStyleFunc(oFeature, resolution) {

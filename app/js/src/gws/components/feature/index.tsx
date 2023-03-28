@@ -1,12 +1,19 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
+import * as sidebar from 'gws/elements/sidebar';
+import * as toolbar from 'gws/elements/toolbar';
 import * as list from '../list';
 
 let {Row, Cell} = gws.ui.Layout;
 
+interface ElementProps extends gws.types.ViewProps {
+    feature: gws.types.IFeature;
+    element: string;
+    className?: string;
+}
+
 interface BaseListProps extends gws.types.ViewProps {
-    controller: gws.types.IController;
     features: Array<gws.types.IFeature>;
     content?: (f: gws.types.IFeature) => React.ReactNode;
     isSelected?: (f: gws.types.IFeature) => boolean;
@@ -30,7 +37,30 @@ interface TaskButtonProps extends gws.types.ViewProps {
     source?: string;
 }
 
-class FeatureList extends list.List<gws.types.IFeature> {
+export class Element extends React.PureComponent<ElementProps> {
+    render() {
+        let val = this.props.feature.views[this.props.element];
+
+        if (!val)
+            return null;
+
+        let m = val.trim().match(/^javascript:([\s\S]+)/);
+        if (m) {
+            let js = JSON.parse(m[1]);
+            let fn = js['function'].split('.');
+            let args = js['arguments'] || [];
+            args.unshift(this.props.feature);
+            let controller = this.props.controller.app.controller('Shared.' + fn[0]);
+            return controller[fn[1]](...args);
+        }
+
+        return <gws.ui.TextBlock
+            className={this.props.className}
+            withHTML
+            content={val}
+        />;
+    }
+
 }
 
 export class List extends React.PureComponent<ListProps> {
@@ -42,10 +72,14 @@ export class List extends React.PureComponent<ListProps> {
             }
         });
 
-        return <FeatureList
+        let contentFn = this.props.content;
+        if (!contentFn)
+            contentFn = f => <Element feature={f} element="title" controller={this.props.controller}/>;
+
+        return <list.List
             controller={this.props.controller}
             items={this.props.features}
-            content={(f: gws.types.IFeature) => this.props.content ? this.props.content(f) : <gws.ui.Text content={f.views.title}/>}
+            content={contentFn}
             uid={f => f.uid}
             isSelected={this.props.isSelected}
             leftButton={this.props.withZoom
@@ -131,13 +165,18 @@ export class InfoList extends React.Component<InfoListProps, InfoListState> {
             infoboxContent: null
         });
 
-        let item = this.props.content;
-        if (!item)
-            item = f => <gws.ui.TextBlock className="cmpDescription" withHTML content={f.views.description}/>;
+        let contentFn = this.props.content;
+        if (!contentFn)
+            contentFn = f => <Element
+                feature={f}
+                className="cmpDescription"
+                element="description"
+                controller={this.props.controller}
+            />;
 
         return <div className="cmpInfoboxContent">
             <div className="cmpInfoboxBody">
-                {item(f)}
+                {contentFn(f)}
             </div>
             <div className="cmpInfoboxFooter">
                 <Row>
@@ -160,7 +199,7 @@ export class InfoList extends React.Component<InfoListProps, InfoListState> {
                             whenTouched={inc}/>
                     </Cell>}
                     <Cell>
-                        <TaskButton controller={this.props.controller} feature={f} source="infobox" />
+                        <TaskButton controller={this.props.controller} feature={f} source="infobox"/>
                     </Cell>
 
                     <Cell>

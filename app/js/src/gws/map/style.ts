@@ -444,7 +444,7 @@ function olMakeStroke(sv: types.Dict, prefix = '') {
 }
 
 function olMakeMarker(sv: types.Dict) {
-    let marker = sv.marker,
+    let marker = sv.marker || sv.marker_type,
         size = sv.marker_size;
 
     if (marker === 'circle' && size) {
@@ -634,6 +634,7 @@ _Parser.stroke_linejoin = _str;
 _Parser.stroke_miterLimit = _px;
 _Parser.stroke_width = _px;
 _Parser.marker = _str;
+_Parser.marker_type = _str;
 _Parser.marker_fill = _color;
 _Parser.marker_size = _px;
 _Parser.marker_stroke = _color;

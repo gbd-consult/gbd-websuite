@@ -331,7 +331,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
     geometryType: string = '';
     cssSelector: string = '';
     fMap: FeatureMap = {};
-    loadingStrategy: string;
+    loadingStrategy: api.core.FeatureLoadingStrategy;
 
     lastBbox: string;
     loadState: string;
@@ -396,7 +396,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         if (!this.props.url)
             return;
 
-        if (this.loadingStrategy === 'bbox') {
+        if (this.loadingStrategy === api.core.FeatureLoadingStrategy.bbox) {
             let bbox = String(this.map.bbox);
             if (this.lastBbox === bbox) {
                 return;
@@ -409,7 +409,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
             this.loader();
         }
 
-        if (this.loadingStrategy === 'all') {
+        if (this.loadingStrategy === api.core.FeatureLoadingStrategy.all) {
             if (this.loadState === 'all_loading' || this.loadState === 'all_loaded')
                 return;
             console.log('Vector:load', this.uid, this.loadingStrategy, 'first load');
@@ -427,7 +427,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         url += '?resolution=' + encodeURIComponent(String(this.map.viewState.resolution));
         let bbox = this.map.bbox;
 
-        if (this.loadingStrategy === 'bbox') {
+        if (this.loadingStrategy === api.core.FeatureLoadingStrategy.bbox) {
             url += '&bbox=' + encodeURIComponent(bbox.join(','));
         }
 
@@ -448,7 +448,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
             return;
         }
 
-        if (this.loadingStrategy === 'all')
+        if (this.loadingStrategy === api.core.FeatureLoadingStrategy.all)
             this.loadState = 'all_loaded';
 
 
@@ -464,7 +464,9 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
             }
         }
 
-        for (let feature of this.map.featureListFromProps(res.features)) {
+        for (let props of res.features) {
+            let model = this.map.app.models.model(props.modelUid);
+            let feature = model.featureFromProps(this.map, props);
             if (!newMap[feature.uid]) {
                 newMap[feature.uid] = feature;
             }
@@ -477,11 +479,11 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
 
     //
 
-    addFeature(feature) {
+    addFeature(feature: types.IFeature) {
         this.addFeatures([feature]);
     }
 
-    addFeatures(features) {
+    addFeatures(features: Array<types.IFeature>) {
 
         for (let fe of features) {
             if (this.fMap[fe.uid]) {
