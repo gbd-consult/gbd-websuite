@@ -16,6 +16,8 @@ _STATE = {
 
 def application(environ, start_response):
     if not _STATE['inited']:
+        import os
+        print("XXXX", os.getpid())
         init()
     responder = handle_request(environ)
     return responder.send_response(environ, start_response)

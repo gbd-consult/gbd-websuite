@@ -163,6 +163,9 @@ class Requester(gws.IWebRequester):
         else:
             args['response'] = response.content
 
+        if response.headers:
+            args['headers'].update(response.headers)
+
         return Responder(**args)
 
     def struct_responder(self, response):
