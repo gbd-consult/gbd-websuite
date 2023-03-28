@@ -1,7 +1,8 @@
 import gws
 import gws.config
-import gws.server.spool
 import gws.server.uwsgi_module
+
+from . import runner
 
 
 def application(environ, start_response):
@@ -10,13 +11,13 @@ def application(environ, start_response):
 
 def spooler(env):
     try:
-        gws.server.spool.run(gws.config.root(), env)
+        runner.run(gws.config.root(), env)
     except:
         gws.log.exception()
 
     # even if it's failed, return OK so the spooler can clean up
     # if we ever provide retry, this will on the app level, no automatic spooler retries
-    return gws.server.spool.OK
+    return runner.OK
 
 
 def init():
@@ -37,7 +38,3 @@ def init():
         gws.exit(255)
 
     gws.server.uwsgi_module.load().spooler = spooler
-
-# NB: spooler must be inited right away
-
-init()

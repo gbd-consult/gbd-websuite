@@ -1,10 +1,10 @@
 #!/bin/bash
 
-GWS_APP_DIR=${GWS_APP_DIR:-/gws-app}
-GWS_VAR_DIR=${GWS_VAR_DIR:-/gws-var}
-GWS_TMP_DIR=${GWS_TMP_DIR:-/tmp/gws}
-GWS_UID=${GWS_UID:-1000}
-GWS_GID=${GWS_GID:-1000}
+export GWS_APP_DIR=${GWS_APP_DIR:-/gws-app}
+export GWS_VAR_DIR=${GWS_VAR_DIR:-/gws-var}
+export GWS_TMP_DIR=${GWS_TMP_DIR:-/tmp/gws}
+export GWS_UID=${GWS_UID:-1000}
+export GWS_GID=${GWS_GID:-1000}
 
 PYTHON=python3
 
@@ -16,32 +16,21 @@ XVFBARGS='-dpi 96 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nol
 
 SERVER_CMD=$GWS_VAR_DIR/server.sh
 
-export DISPLAY=:99
+QGIS_EXE=/usr/bin/qgis_mapserv.fcgi
+
 export LC_ALL=C.UTF-8
 export PYTHONPATH=$GWS_APP_DIR
 export PYTHONDONTWRITEBYTECODE=1
-export XDG_RUNTIME_DIR=$GWS_TMP_DIR/xdg
-
-export GWS_APP_DIR
-export GWS_VAR_DIR
-export GWS_TMP_DIR
-export GWS_UID
-export GWS_GID
-
 
 ###########################################################################
 
 ensure_xvfb() {
+    export DISPLAY=:99
+    export XDG_RUNTIME_DIR=$GWS_TMP_DIR/xdg
 
     mkdir -p $XDG_RUNTIME_DIR
     chown $GWS_UID:$GWS_GID $XDG_RUNTIME_DIR
     start-stop-daemon --start --background --exec $XVFB -- $DISPLAY $XVFBARGS
-
-#    until start-stop-daemon --status --exec $XVFB; do
-#        echo 'starting xvfb...'
-#        start-stop-daemon --start --background --exec $XVFB -- $DISPLAY $XVFBARGS
-#        sleep 0.5
-#    done
 }
 
 mkdir -p $GWS_TMP_DIR
@@ -60,7 +49,7 @@ if [ "$1" == "server" ]; then
       exit $?
     fi
 
-    ensure_xvfb
+    [ -f $QGIS_EXE ] && ensure_xvfb
 
     rm -f $SERVER_CMD
 
