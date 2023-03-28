@@ -79,8 +79,9 @@ class Object(gws.base.model.Object):
         size = None
 
         if shape.crs.uom == gws.Uom.m:
-            size = box_size_m
+            size = box_size_px * search.resolution
         if shape.crs.uom == gws.Uom.deg:
+            # @TODO use search.resolution here as well
             size = box_size_deg
         if not size:
             gws.log.debug('cannot request crs {crs!r}, unsupported unit')
