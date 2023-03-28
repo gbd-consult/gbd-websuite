@@ -1,3 +1,5 @@
+import sqlalchemy.orm
+
 from .data import Data
 
 from gws.types import (
@@ -22,6 +24,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import sqlalchemy as sa
+    import sqlalchemy.orm as saorm
 
 # ----------------------------------------------------------------------------------------------------------------------
 # custom types, used everywhere
@@ -355,6 +358,7 @@ class ContentResponse(Response):
     location: str
     mime: str
     path: str
+    headers: dict
 
 
 class RequestMethod(Enum):
@@ -689,7 +693,7 @@ class Bounds(Data):
 
 
 class ICrs(Protocol):
-    srid: str
+    srid: int
     axis: Axis
     uom: Uom
     isGeographic: bool
@@ -997,6 +1001,12 @@ class IShape(IObject, Protocol):
         """Returns this shape transormed to another CRS."""
 
 
+class ShapeProps(Props):
+    """Shape properties object."""
+    crs: str
+    geometry: dict
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # database
 
@@ -1057,6 +1067,7 @@ class IDatabaseProvider(INode, Protocol):
 
 class IDatabaseSession(Protocol):
     provider: 'IDatabaseProvider'
+    sa: 'saorm.Session'
 
     def begin(self): ...
 
@@ -1123,6 +1134,7 @@ class FeatureProps(Props):
     geometryName: str
     isNew: bool
     modelUid: str
+    errors: List['ModelValidationError']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1187,9 +1199,9 @@ class IModelField(INode, Protocol):
 
     def validate(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
 
-    def sa_columns(self, column_dict: dict): ...
+    def columns(self) -> List['sa.Column']: ...
 
-    def sa_properties(self, prop_dict: dict): ...
+    def orm_properties(self) -> dict: ...
 
     def sa_select(self, sel: object, user: IUser): ...
 
@@ -1200,12 +1212,15 @@ class IModel(INode, Protocol):
     geometryName: str
     geometryType: Optional[GeometryType]
     geometryCrs: Optional['ICrs']
+    loadingStrategy: 'FeatureLoadingStrategy'
 
     def compute_values(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
 
     def find_features(self, search: 'SearchArgs', user: IUser) -> List['IFeature']: ...
 
     def write_features(self, features: List['IFeature'], user: IUser, **kwargs) -> bool: ...
+
+    def delete_features(self, features: List['IFeature'], user: IUser, **kwargs) -> bool: ...
 
     def feature_props(self, feature: 'IFeature', user: 'IUser') -> FeatureProps: ...
 
@@ -1270,6 +1285,7 @@ class MapRenderInput(Data):
     center: Point
     crs: 'ICrs'
     dpi: int
+    notify: Callable
     out_size: MSize
     planes: List['MapRenderInputPlane']
     rotation: int
@@ -1565,6 +1581,7 @@ class SearchOgcFilter(Data):
 
 
 class SearchArgs(Data):
+    access: Access
     bounds: Bounds
     extraParams: dict
     extraWhere: List[SearchWhere]
@@ -1656,7 +1673,7 @@ class LayerCache(Data):
     requestTiles: int
 
 
-class LayerLoadingStrategy(Enum):
+class FeatureLoadingStrategy(Enum):
     all = 'all'
     lazy = 'lazy'
     bbox = 'bbox'
@@ -1674,7 +1691,7 @@ class ILayer(INode, Protocol):
 
     bounds: Bounds
     displayMode: LayerDisplayMode
-    loadingStrategy: LayerLoadingStrategy
+    loadingStrategy: FeatureLoadingStrategy
     imageFormat: str
     opacity: float
     resolutions: List[float]

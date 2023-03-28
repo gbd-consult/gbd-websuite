@@ -124,7 +124,7 @@ class Root(types.IRoot):
 
     def create_application(self, config=None):
 
-        obj = self.create('gws.base.application.Object')
+        obj = self._create('gws.base.application.Object')
         obj.uid = '0'
         obj.parent = self
         obj.children = []

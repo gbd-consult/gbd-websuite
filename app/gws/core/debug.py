@@ -49,7 +49,7 @@ def time_end():
     if _TIME_STACK:
         t2 = time.time()
         t1, label = _TIME_STACK.pop()
-        log.debug(f'@PROFILE {label} :: {t2 - t1:.2f}', skip_frames=1)
+        log.debug(f'@PROFILE {label} :: {t2 - t1:.2f}', extra={'skip_frames': 1})
 
 
 def pycharm_debugger_check(path_to_pycharm_debug_egg, host, port, suspend=False):
