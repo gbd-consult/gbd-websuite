@@ -1,7 +1,8 @@
-import os
+import sys
 
 import gws
 import gws.spec.runtime
+import gws.lib.jsonx
 
 from . import parser
 
@@ -30,9 +31,6 @@ def configure(
         _print('-' * 60)
         _print(_args)
         _print('-' * 60)
-
-    if manifest_path:
-        gws.log.info(f'using manifest {manifest_path!r}...')
 
     try:
         specs = gws.spec.runtime.create(manifest_path, read_cache=True, write_cache=True)
@@ -100,6 +98,7 @@ def store(r: gws.IRoot, path=None):
     path = path or STORE_PATH
     gws.log.debug(f'writing config to {path!r}')
     try:
+        gws.lib.jsonx.to_path(f'{path}.syspath.json', sys.path)
         gws.serialize_to_path(r, path)
     except Exception as exc:
         raise gws.ConfigurationError('unable to store configuration') from exc
@@ -109,6 +108,12 @@ def load(path=None) -> gws.Root:
     path = path or STORE_PATH
     gws.log.debug(f'loading config from {path!r}')
     try:
+        sys_path = gws.lib.jsonx.from_path(f'{path}.syspath.json')
+        for p in sys_path:
+            if p not in sys.path:
+                sys.path.insert(0, p)
+                gws.log.debug(f'path {p!r} added to sys.path')
+
         gws.time_start('loading config')
         r = gws.unserialize_from_path(path)
         gws.time_end()
