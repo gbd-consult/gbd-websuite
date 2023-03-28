@@ -9,7 +9,7 @@ import gws.base.database.sql as sql
 # import gws.lib.sql.postgres
 import gws.types as t
 
-gws.ext.new.db('postgres')
+gws.ext.new.databaseProvider('postgres')
 
 
 class Config(gws.base.database.provider.Config):

@@ -4,7 +4,9 @@ import gws
 
 
 class Props(gws.Props):
-    pass
+    type: str
+    options: dict
+    readOnly: bool
 
 
 class Config(gws.Config):
@@ -12,4 +14,10 @@ class Config(gws.Config):
 
 
 class Object(gws.Node, gws.IModelWidget):
-    pass
+
+    def props(self, user):
+        return Props(
+            type=self.extType,
+            options={},
+            readOnly=False,
+        )

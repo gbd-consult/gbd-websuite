@@ -23,7 +23,7 @@ class Config(gws.ConfigWithAccess):
     values: t.Optional[t.List[gws.ext.config.modelValue]]
     validators: t.Optional[t.List[gws.ext.config.modelValidator]]
 
-    # widget: t.Optional[WidgetConfig]
+    widget: t.Optional[gws.ext.config.modelWidget]
     #
     # relation: t.Optional[FieldRelationConfig]
     # relations: t.Optional[t.List[FieldRelationConfig]]
@@ -68,6 +68,7 @@ class Object(gws.Node, gws.IModelField):
 
         self.configure_values()
         self.configure_validators()
+        self.configure_widget()
 
     def configure_values(self):
 
@@ -98,6 +99,12 @@ class Object(gws.Node, gws.IModelField):
             if v.forCreate:
                 self.validators[gws.Access.create].append(v)
 
+    def configure_widget(self):
+        p = self.var('widget')
+        if p:
+            self.widget = self.create_child(gws.ext.object.modelWidget, p)
+            return True
+
     ##
 
     def props(self, user):
@@ -110,45 +117,54 @@ class Object(gws.Node, gws.IModelField):
             widget=self.widget
         )
 
+    def convert_load(self, value):
+        return value
+
+    def convert_store(self, value):
+        return value
+
     def load_from_record(self, feature, record, user, **kwargs):
         if hasattr(record, self.name):
             val = getattr(record, self.name)
-            feature.attributes[self.name] = val
+            if val is not None:
+                feature.attributes[self.name] = self.convert_load(val)
 
     def load_from_data(self, feature, data, user, **kwargs):
         if self.name in data.attributes:
             val = data.attributes[self.name]
-            feature.attributes[self.name] = val
+            if val is not None:
+                feature.attributes[self.name] = self.convert_load(val)
 
     def load_from_props(self, feature, props, user, **kwargs):
         if self.name in props.attributes:
             val = props.attributes[self.name]
-            feature.attributes[self.name] = val
+            if val is not None:
+                feature.attributes[self.name] = self.convert_load(val)
 
-    def value_to_store(self, feature: gws.IFeature):
-        if self.name not in feature.attributes:
+    def value_from_feature(self, feature: gws.IFeature):
+        val = feature.attributes.get(self.name)
+        if val is None:
             return False, None
-        val = feature.attributes[self.name]
         if val == gws.ErrorValue:
-            raise gws.Error(f'attempt to store an error value for {self.name!r}')
+            raise gws.Error(f'attempt to store an error value, field {self.name!r} model {feature.model.uid!r}, feature {feature.uid()!r}')
         return True, val
 
     def store_to_record(self, feature, record, user, **kwargs):
-        ok, val = self.value_to_store(feature)
+        ok, val = self.value_from_feature(feature)
         if ok:
-            setattr(record, self.name, val)
+            setattr(record, self.name, self.convert_store(val))
 
     def store_to_data(self, feature, data, user, **kwargs):
-        ok, val = self.value_to_store(feature)
+        ok, val = self.value_from_feature(feature)
         if ok:
-            data.attributes[self.name] = val
+            data.attributes[self.name] = self.convert_store(val)
 
     def store_to_props(self, feature, props, user, **kwargs):
-        ok, val = self.value_to_store(feature)
+        ok, val = self.value_from_feature(feature)
         if ok:
             if isinstance(val, gws.Object):
                 val = gws.props(val, user, self)
-            props.attributes[self.name] = val
+            props.attributes[self.name] = self.convert_store(val)
 
     def compute(self, feature, access, user, **kwargs):
         val = self.fixedValues.get(access)
@@ -173,22 +189,32 @@ class Object(gws.Node, gws.IModelField):
                 return False
         return True
 
+    ##
+
+    def columns(self):
+        return []
+
+    def orm_properties(self):
+        return {}
+
 
 ##
+
+# @TODO this should be populated dynamically from available gws.ext.object.modelField types
 
 _DEFAULT_FIELD_TYPES = {
     gws.AttributeType.str: 'text',
     gws.AttributeType.int: 'integer',
+    gws.AttributeType.date: 'date',
 
     # gws.AttributeType.bool: 'bool',
     # gws.AttributeType.bytes: 'bytes',
-    # gws.AttributeType.date: 'date',
     # gws.AttributeType.datetime: 'datetime',
     # gws.AttributeType.feature: 'feature',
     # gws.AttributeType.featurelist: 'featurelist',
-    # gws.AttributeType.float: 'float',
+    gws.AttributeType.float: 'float',
     # gws.AttributeType.floatlist: 'floatlist',
-    # gws.AttributeType.geometry: 'geometry',
+    gws.AttributeType.geometry: 'geometry',
     # gws.AttributeType.intlist: 'intlist',
     # gws.AttributeType.strlist: 'strlist',
     # gws.AttributeType.time: 'time',
@@ -196,6 +222,11 @@ _DEFAULT_FIELD_TYPES = {
 
 
 def config_from_column(column: gws.ColumnDescription) -> gws.Config:
+    typ = _DEFAULT_FIELD_TYPES.get(column.type)
+    if not typ:
+        raise gws.Error(f'cannot find suitable field type for column {column.name!r}:{column.type!r}')
     return gws.Config(
-        type=_DEFAULT_FIELD_TYPES[column.type]
+        type=typ,
+        name=column.name,
+        isPrimaryKey=column.isPrimaryKey,
     )

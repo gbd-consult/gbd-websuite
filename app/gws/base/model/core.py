@@ -18,6 +18,8 @@ class Config(gws.ConfigWithAccess):
     fields: t.List[gws.ext.config.modelField]
     filter: t.Optional[str]
     sort: t.Optional[t.List[SortConfig]]
+    loadingStrategy: t.Optional[gws.FeatureLoadingStrategy]
+    """loading strategy for features"""
 
 
 class Props(gws.Props):
@@ -26,11 +28,12 @@ class Props(gws.Props):
     canRead: bool
     canWrite: bool
     fields: t.List[gws.ext.props.modelField]
-    geometryCrs: str
-    geometryName: str
-    geometryType: gws.GeometryType
-    keyName: str
-    layerUid: str
+    geometryCrs: t.Optional[str]
+    geometryName: t.Optional[str]
+    geometryType: t.Optional[gws.GeometryType]
+    keyName: t.Optional[str]
+    layerUid: t.Optional[str]
+    loadingStrategy: gws.FeatureLoadingStrategy
     uid: str
 
 
@@ -41,6 +44,7 @@ class Object(gws.Node, gws.IModel):
         self.geometryName = ''
         self.geometryType = None
         self.geometryCrs = None
+        self.loadingStrategy = self.var('loadingStrategy')
 
     def configure_fields(self):
         p = self.var('fields')
@@ -51,6 +55,7 @@ class Object(gws.Node, gws.IModel):
             return True
 
     def props(self, user):
+        layer = t.cast(gws.ILayer, self.parent)
         return gws.Props(
             canCreate=user.can_create(self),
             canDelete=user.can_delete(self),
@@ -61,7 +66,8 @@ class Object(gws.Node, gws.IModel):
             geometryName=self.geometryName,
             geometryType=self.geometryType,
             keyName=self.keyName,
-            layerUid=self.parent.uid if self.parent else None,
+            layerUid=layer.uid if layer else None,
+            loadingStrategy=self.loadingStrategy or (layer.loadingStrategy if layer else gws.FeatureLoadingStrategy.all),
             uid=self.uid,
         )
 
@@ -109,6 +115,7 @@ class Object(gws.Node, gws.IModel):
             uid=feature.uid(),
             isNew=feature.isNew,
             modelUid=self.uid,
+            errors=feature.errors,
         )
 
         if self.fields:

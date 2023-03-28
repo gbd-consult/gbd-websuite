@@ -1,5 +1,8 @@
 """Database-based models."""
 
+import sqlalchemy as sa
+import sqlalchemy.orm as saorm
+
 import gws.base.feature
 import gws.base.model
 import gws.base.model.field
@@ -31,7 +34,7 @@ class Object(gws.base.model.Object):
         self.configure_properties()
 
     def configure_provider(self):
-        self.provider = provider.get_for(self, ext_type=self.extType)
+        self.provider = t.cast(provider.Object, provider.get_for(self, ext_type=self.extType))
         self.provider.mgr.register_model(self)
 
     def configure_fields(self):
@@ -75,14 +78,14 @@ class Object(gws.base.model.Object):
             self.geometryType = geom.geometryType
             self.geometryCrs = geom.geometryCrs
 
-    def sa_table(self):
+    def table(self) -> sa.Table:
         return self.provider.mgr.table_for_model(self)
 
-    def sa_class(self):
+    def orm_class(self):
         return self.provider.mgr.class_for_model(self)
 
-    saTable: sql.sa.Table
-    saPrimaryKeyColumns: t.List[sql.sa.Column]
+    def primary_keys(self):
+        return self.provider.mgr.pkeys_for_model(self)
 
     def find_features(self, search, user, **kwargs):
 
@@ -92,24 +95,21 @@ class Object(gws.base.model.Object):
             return []
 
         features = []
-        session = self.session()
 
-        cursor = session.saSession.execute(sel.saSelect)
-        for row in cursor.unique().all():
-            record = getattr(row, self.sa_class().__name__)
-            features.append(self.feature_from_record(record, user, **kwargs))
+        with self.session() as sess:
+            cursor = sess.execute(sel.saSelect)
+            for row in cursor.unique().all():
+                record = getattr(row, self.orm_class().__name__)
+                features.append(self.feature_from_record(record, user, **kwargs))
 
         return features
 
     def write_features(self, features, user, **kwargs):
-        error_cnt = 0
-
         for feature in features:
             access = gws.Access.create if feature.isNew else gws.Access.write
 
             if not user.can(access, self):
-                error_cnt += 1
-                continue
+                raise ValueError('Forbidden')
 
             feature.errors = []
 
@@ -119,43 +119,57 @@ class Object(gws.base.model.Object):
                 if user.can(access, f):
                     f.validate(feature, access, user, **kwargs)
 
-            error_cnt += len(feature.errors)
-
-        if error_cnt:
+        if any(len(f.errors) > 0 for f in features):
             return False
 
-        records = {}
-        session = self.session()
+        rmap = {}
+        cls = self.orm_class()
 
-        for feature in features:
-            cls = self.sa_class()
-            record = cls() if feature.isNew else session.saSession.get(cls, feature.uid())
-            access = gws.Access.create if feature.isNew else gws.Access.write
-            for f in self.fields:
-                if user.can(access, f, self):
-                    f.store_to_record(feature, record, user)
-            if feature.isNew:
-                session.saSession.add(record)
-            records[id(feature)] = record
+        with self.session() as sess:
+            with sess.begin():
+                for feature in features:
+                    record = cls() if feature.isNew else sess.sa.get(cls, feature.uid())
+                    access = gws.Access.create if feature.isNew else gws.Access.write
+                    for f in self.fields:
+                        if user.can(access, f, self):
+                            f.store_to_record(feature, record, user)
+                    if feature.isNew:
+                        sess.sa.add(record)
+                    rmap[id(feature)] = record
 
-        session.commit()
+                sess.commit()
 
-        for feature in features:
-            record = records[id(feature)]
-            feature.attributes = {}
-            for f in self.fields:
-                f.load_from_record(feature, record, user)
+            for feature in features:
+                record = rmap[id(feature)]
+                feature.attributes = {}
+                for f in self.fields:
+                    f.load_from_record(feature, record, user)
+
+        return True
+
+    def delete_features(self, features, user, **kwargs):
+        if not user.can_delete(self):
+            raise ValueError('Forbidden')
+
+        cls = self.orm_class()
+
+        with self.session() as sess:
+            with sess.begin():
+                for feature in features:
+                    record = sess.sa.get(cls, feature.uid())
+                    sess.sa.delete(record)
+                sess.commit()
 
         return True
 
     ##
 
-    def session(self) -> sql.Session:
-        return t.cast(sql.Session, self.provider.session())
+    def session(self) -> gws.IDatabaseSession:
+        return self.provider.session()
 
     def build_select(self, search: gws.SearchArgs, user: gws.IUser):
         sel = sql.SelectStatement(
-            saSelect=sql.sa.select(self.sa_class()),
+            saSelect=sa.select(self.orm_class()),
             search=search,
             keywordWhere=[],
             geometryWhere=[],
@@ -167,15 +181,18 @@ class Object(gws.base.model.Object):
         if search.keyword and not sel.keywordWhere:
             return
         if sel.keywordWhere:
-            sel.saSelect = sel.saSelect.where(sql.sa.or_(*sel.keywordWhere))
+            sel.saSelect = sel.saSelect.where(sa.or_(*sel.keywordWhere))
 
         if search.shape and not sel.geometryWhere:
             return
         if sel.geometryWhere:
-            sel.saSelect = sel.saSelect.where(sql.sa.or_(*sel.geometryWhere))
+            sel.saSelect = sel.saSelect.where(sa.or_(*sel.geometryWhere))
 
         if search.uids:
-            pk = getattr(self.sa_class(), self.saPrimaryKeyColumns[0].name)
+            pks = self.primary_keys()
+            if not pks:
+                return
+            pk = getattr(self.orm_class(), pks[0].name)
             sel.saSelect = sel.saSelect.where(pk.in_(search.uids))
 
         # extra = (self.extraWhere or [])
@@ -191,8 +208,8 @@ class Object(gws.base.model.Object):
 
         if search.sort:
             for s in search.sort:
-                fn = sql.sa.desc if s.reverse else sql.sa.asc
-                sel.saSelect = sel.saSelect.order_by(fn(getattr(self.sa_class(), s.fieldName)))
+                fn = sa.desc if s.reverse else sa.asc
+                sel.saSelect = sel.saSelect.order_by(fn(getattr(self.orm_class(), s.fieldName)))
 
         gws.log.debug(f'make_select: {str(sel.saSelect)}')
 

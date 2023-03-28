@@ -11,7 +11,7 @@ from . import sql, session as session_module
 class Config(gws.Config):
     """Database configuration"""
 
-    providers: t.List[gws.ext.config.db]
+    providers: t.List[gws.ext.config.databaseProvider]
     """database providers"""
 
 
@@ -48,7 +48,7 @@ class Object(gws.Node, gws.IDatabaseManager):
 
         for cfg in self.var('providers', default=[]):
             cfg = gws.merge(cfg, _manager=self)
-            prov = self.root.create_shared(gws.ext.object.db, cfg)
+            prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg)
             self.providers[prov.uid] = prov
 
     def post_configure(self):
@@ -76,11 +76,6 @@ class Object(gws.Node, gws.IDatabaseManager):
     def activate_runtime(self):
         self.rt = _SaRuntime()
 
-        for provider in self.providers.values():
-            eng = provider.engine()
-            self.rt.engines[provider.uid] = eng
-            self.rt.registries[provider.uid] = orm.registry(sa.MetaData(eng))
-
         model_to_tuid = {}
 
         for model_uid, mod in self.models.items():
@@ -97,7 +92,8 @@ class Object(gws.Node, gws.IDatabaseManager):
             d = {}
             for f in self.models[model_uid].fields:
                 if f.isPrimaryKey:
-                    f.sa_columns(d)
+                    for col in f.columns():
+                        d[col.name] = col
             tuid_to_prim.setdefault(tuid, {}).update(d)
             tuid_to_cols.setdefault(tuid, {}).update(d)
 
@@ -109,7 +105,8 @@ class Object(gws.Node, gws.IDatabaseManager):
             d = {}
             for f in self.models[model_uid].fields:
                 if not f.isPrimaryKey:
-                    f.sa_columns(d)
+                    for col in f.columns():
+                        d[col.name] = col
             tuid_to_cols.setdefault(tuid, {}).update(d)
 
         tuid_to_table = {}
@@ -120,7 +117,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             provider = self.providers[provider_uid]
             tab = self.table(provider, table_name, cols.values())
             cls = type('_SA_' + provider_uid + '_' + gws.to_uid(table_name), (_SaOrmBase,), {})
-            self.rt.registries[provider_uid].map_imperatively(cls, tab)
+            self.registry_for_provider(provider).map_imperatively(cls, tab)
             tuid_to_table[tuid] = tab
             tuid_to_class[tuid] = cls
 
@@ -133,7 +130,7 @@ class Object(gws.Node, gws.IDatabaseManager):
         for model_uid, tuid in model_to_tuid.items():
             d = {}
             for f in self.models[model_uid].fields:
-                f.sa_properties(d)
+                d.update(f.orm_properties())
             tuid_to_props.setdefault(tuid, {}).update(d)
 
         for tuid, props in tuid_to_props.items():
@@ -142,6 +139,11 @@ class Object(gws.Node, gws.IDatabaseManager):
 
     def table_uid(self, provider: gws.IDatabaseProvider, table_name: str):
         return provider.uid, provider.qualified_table_name(table_name)
+
+    def registry_for_provider(self, provider):
+        if not self.rt.registries.get(provider.uid):
+            self.rt.registries[provider.uid] = orm.registry()
+        return self.rt.registries[provider.uid]
 
     def engine_for_provider(self, provider):
         if not self.rt.engines.get(provider.uid):
@@ -154,14 +156,14 @@ class Object(gws.Node, gws.IDatabaseManager):
     def class_for_model(self, model) -> type:
         return self.rt.modelClasses[model.uid]
 
-    def sa_pk_columns(self, model) -> t.List[sa.Column]:
+    def pkeys_for_model(self, model) -> t.List[sa.Column]:
         return self.rt.pkColumns.get(model.uid, [])
 
     def table(self, provider: gws.IDatabaseProvider, table_name: str, columns: t.List[sa.Column] = None, **kwargs):
         tuid = self.table_uid(provider, table_name)
         if tuid in self.rt.tables and not columns:
             return self.rt.tables[tuid]
-        metadata = self.rt.registries[provider.uid].metadata
+        metadata = self.registry_for_provider(provider).metadata
         schema, name = provider.parse_table_name(table_name)
         kwargs.setdefault('schema', schema)
         if columns:
@@ -182,6 +184,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             database=options.get('database'),
         )
         kwargs.setdefault('poolclass', sqlalchemy.pool.NullPool)
+        kwargs.setdefault('pool_pre_ping', True)
         return sa.create_engine(url, **kwargs)
 
     def session(self, provider, **kwargs):
@@ -196,7 +199,7 @@ class Object(gws.Node, gws.IDatabaseManager):
     def close_sessions(self):
         for provider_uid, sess in self.rt.sessions.items():
             gws.log.debug(f'db: close session for {provider_uid!r}')
-            sess.saSession.close()
+            sess.sa.close()
         self.rt.sessions = {}
 
     def autoload(self, sess, table_name):
@@ -209,7 +212,7 @@ class Object(gws.Node, gws.IDatabaseManager):
         return self.rt.descCache[tuid]
 
     def _load_and_describe(self, sess, table_name, load_only):
-        ins = sa.inspect(getattr(sess, 'saSession').connection())
+        ins = sa.inspect(getattr(sess, 'sa').connection())
 
         schema, name = sess.provider.parse_table_name(table_name)
         if not ins.has_table(name, schema):
@@ -221,7 +224,7 @@ class Object(gws.Node, gws.IDatabaseManager):
         if load_only:
             return tab
 
-        ins = sa.inspect(getattr(sess, 'saSession').connection())
+        ins = sa.inspect(getattr(sess, 'sa').connection())
 
         desc = gws.DataSetDescription(
             columns={},

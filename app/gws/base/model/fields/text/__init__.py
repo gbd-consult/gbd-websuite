@@ -52,6 +52,12 @@ class Object(scalar.Object):
                 caseSensitive=p.get('caseSensitive', False),
             )
 
+    def configure_widget(self):
+        if not super().configure_widget():
+            self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'input'})
+            return True
+
+
     def sa_select(self, sel, user):
         sel = t.cast(sql.SelectStatement, sel)
 
@@ -65,7 +71,7 @@ class Object(scalar.Object):
 
         mod = t.cast(gws.base.database.model.Object, self.model)
         fld = sql.sa.sql.cast(
-            getattr(mod.sa_class(), self.name),
+            getattr(mod.orm_class(), self.name),
             sql.sa.String)
 
         if so.type == SearchType.exact:

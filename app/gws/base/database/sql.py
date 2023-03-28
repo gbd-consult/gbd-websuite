@@ -4,11 +4,8 @@ import gws
 import gws.types as t
 
 import sqlalchemy as sa
-import sqlalchemy.orm as orm
-import sqlalchemy.exc as exc
 import geoalchemy2 as geosa
 
-__all__ = ['sa', 'orm', 'exc', 'geosa']
 
 
 class SelectStatement(gws.Data):

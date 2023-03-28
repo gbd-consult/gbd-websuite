@@ -5,7 +5,7 @@ types = [
     'authProvider',
     'authMfa',
     'cli',
-    'db',
+    'databaseProvider',
     'finder',
     'helper',
     'layer',
@@ -31,7 +31,7 @@ commands = [
 
 import os
 
-path = os.path.dirname(__file__) + '/ext.py'
+path = os.path.dirname(__file__) + '/__init__.py'
 with open(path) as fp:
     text = fp.read().split('##')
 

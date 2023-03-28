@@ -1,5 +1,8 @@
 """Geometry field."""
 
+import sqlalchemy as sa
+import geoalchemy2 as geosa
+
 import gws
 import gws.base.database.sql as sql
 import gws.base.database.model
@@ -24,6 +27,8 @@ class Props(scalar.Props):
 
 class Object(scalar.Object):
     attributeType = gws.AttributeType.geometry
+    geometryType = ''
+    geometryCrs: gws.ICrs
 
     def configure(self):
         self.geometryType = self.var('geometryType')
@@ -47,12 +52,12 @@ class Object(scalar.Object):
         if shape:
             shape = shape.transformed_to(self.geometryCrs)
             mod = t.cast(gws.base.database.model.Object, self.model)
-            fld = sql.sa.sql.cast(
-                getattr(mod.sa_class(), self.name),
-                sql.geosa.Geometry)
-            sel.geometryWhere.append(sql.sa.func.st_intersects(
+            fld = sa.sql.cast(
+                getattr(mod.orm_class(), self.name),
+                geosa.Geometry)
+            sel.geometryWhere.append(sa.func.st_intersects(
                 fld,
-                sql.sa.cast(shape.to_ewkb_hex(), sql.geosa.Geometry())))
+                sa.cast(shape.to_ewkb_hex(), geosa.Geometry())))
 
     def load_from_record(self, feature, rec, user):
         if not hasattr(rec, self.name):
@@ -71,11 +76,18 @@ class Object(scalar.Object):
         if gws.is_data_object(val):
             try:
                 feature.attributes[self.name] = gws.base.shape.from_props(val)
+                return
+            except gws.Error:
+                pass
+        if gws.is_dict(val):
+            try:
+                feature.attributes[self.name] = gws.base.shape.from_dict(val)
+                return
             except gws.Error:
                 pass
         feature.attributes[self.name] = gws.ErrorValue
 
     def store_to_record(self, feature, rec, user):
-        ok, val = self.value_to_store(feature)
+        ok, val = self.value_from_feature(feature)
         if ok:
-            setattr(rec.ormObject, self.name, t.cast(gws.base.shape.Shape, val).to_ewkb_hex())
+            setattr(rec, self.name, t.cast(gws.base.shape.Shape, val).to_ewkb_hex())

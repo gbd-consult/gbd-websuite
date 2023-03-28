@@ -57,7 +57,7 @@ class new:
     def authMfa(*a): pass
     def authProvider(*a): pass
     def cli(*a): pass
-    def db(*a): pass
+    def databaseProvider(*a): pass
     def finder(*a): pass
     def helper(*a): pass
     def layer(*a): pass
@@ -81,7 +81,7 @@ class object:
     class authMfa (_classTag): extName = 'gws.ext.object.authMfa'
     class authProvider (_classTag): extName = 'gws.ext.object.authProvider'
     class cli (_classTag): extName = 'gws.ext.object.cli'
-    class db (_classTag): extName = 'gws.ext.object.db'
+    class databaseProvider (_classTag): extName = 'gws.ext.object.databaseProvider'
     class finder (_classTag): extName = 'gws.ext.object.finder'
     class helper (_classTag): extName = 'gws.ext.object.helper'
     class layer (_classTag): extName = 'gws.ext.object.layer'
@@ -105,7 +105,7 @@ class config:
     class authMfa (_classTag): extName = 'gws.ext.config.authMfa'
     class authProvider (_classTag): extName = 'gws.ext.config.authProvider'
     class cli (_classTag): extName = 'gws.ext.config.cli'
-    class db (_classTag): extName = 'gws.ext.config.db'
+    class databaseProvider (_classTag): extName = 'gws.ext.config.databaseProvider'
     class finder (_classTag): extName = 'gws.ext.config.finder'
     class helper (_classTag): extName = 'gws.ext.config.helper'
     class layer (_classTag): extName = 'gws.ext.config.layer'
@@ -129,7 +129,7 @@ class props:
     class authMfa (_classTag): extName = 'gws.ext.props.authMfa'
     class authProvider (_classTag): extName = 'gws.ext.props.authProvider'
     class cli (_classTag): extName = 'gws.ext.props.cli'
-    class db (_classTag): extName = 'gws.ext.props.db'
+    class databaseProvider (_classTag): extName = 'gws.ext.props.databaseProvider'
     class finder (_classTag): extName = 'gws.ext.props.finder'
     class helper (_classTag): extName = 'gws.ext.props.helper'
     class layer (_classTag): extName = 'gws.ext.props.layer'
