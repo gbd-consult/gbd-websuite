@@ -266,7 +266,7 @@ class Builder:
 
         if self.image_kind == 'gws':
             __(f'COPY {self.wkhtmltopdf_package} /{self.wkhtmltopdf_package}')
-            __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /')
+            __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /{self.wkhtmltopdf_package}')
 
             __('RUN ' + commands(f'''
                 rm -f /usr/bin/python
