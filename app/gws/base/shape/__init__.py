@@ -6,8 +6,8 @@ Internally, it holds a pointer to a Shapely geometry object and a Crs object.
 
 # @TODO support for SQL/MM extensions
 
+import struct
 import shapely.geometry
-import shapely.geos as geos
 import shapely.ops
 import shapely.wkb
 import shapely.wkt
@@ -17,6 +17,10 @@ import gws.gis.crs
 
 _TOLERANCE_QUAD_SEGS = 6
 _MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections
+
+
+class Error(gws.Error):
+    pass
 
 
 def from_wkt(wkt: str, default_crs: gws.ICrs = None) -> gws.IShape:
@@ -30,20 +34,18 @@ def from_wkt(wkt: str, default_crs: gws.ICrs = None) -> gws.IShape:
         A Shape object.
     """
 
-    crs = default_crs
-
     if wkt.startswith('SRID='):
         # EWKT
         c = wkt.index(';')
-        crsid = wkt[len('SRID='):c]
+        srid = wkt[len('SRID='):c]
+        crs = gws.gis.crs.get(int(srid))
         wkt = wkt[c + 1:]
-        crs = gws.gis.crs.get(crsid)
+    elif default_crs:
+        crs = default_crs
+    else:
+        raise Error('missing or invalid crs for WKT')
 
-    if not crs:
-        raise gws.Error('missing or invalid crs for WKT')
-
-    geom = geos.WKTReader(geos.lgeos).read(wkt)
-    return Shape(geom, crs)
+    return Shape(shapely.wkt.loads(wkt), crs)
 
 
 def from_wkb(wkb: bytes, default_crs: gws.ICrs = None) -> gws.IShape:
@@ -57,11 +59,11 @@ def from_wkb(wkb: bytes, default_crs: gws.ICrs = None) -> gws.IShape:
         A Shape object.
     """
 
-    return _from_wkb(geos.WKBReader(geos.lgeos).read(wkb), default_crs)
+    return _from_wkb(wkb, default_crs)
 
 
 def from_wkb_hex(wkb: str, default_crs: gws.ICrs = None) -> gws.IShape:
-    """Creates a shape object from a hex-encoded WKB byte string.
+    """Creates a shape object from a hex-encoded WKB string.
 
     Args:
         wkb: A hex-encoded WKB or EWKB byte string.
@@ -71,21 +73,24 @@ def from_wkb_hex(wkb: str, default_crs: gws.ICrs = None) -> gws.IShape:
         A Shape object.
     """
 
-    return _from_wkb(geos.WKBReader(geos.lgeos).read_hex(wkb), default_crs)
+    return _from_wkb(bytes.fromhex(wkb), default_crs)
 
 
-def _from_wkb(g, default_crs):
-    crs = default_crs
+def _from_wkb(wkb: bytes, default_crs):
+    # http://libgeos.org/specifications/wkb/#extended-wkb
 
-    crsid = geos.lgeos.GEOSGetSRID(g._geom)
-    if crsid:
-        crs = gws.gis.crs.get(crsid)
-        geos.lgeos.GEOSSetSRID(g._geom, 0)
+    byte_order = wkb[0]
+    header = struct.unpack('<cLL' if byte_order == 1 else '>cLL', wkb[:9])
 
-    if not crs:
-        raise gws.Error('missing or invalid crs for WKT')
+    if header[1] & 0x20000000:
+        crs = gws.gis.crs.get(header[2])
+    elif default_crs:
+        crs = default_crs
+    else:
+        raise Error('missing or invalid crs for WKB')
 
-    return Shape(g, crs)
+    geom = shapely.wkb.loads(wkb)
+    return Shape(geom, crs)
 
 
 def from_geojson(geojson: dict, crs: gws.ICrs, always_xy=False) -> gws.IShape:
@@ -130,8 +135,24 @@ def from_props(props: gws.Props) -> gws.IShape:
 
     crs = gws.gis.crs.get(props.get('crs'))
     if not crs:
-        raise gws.Error('missing or invalid crs')
+        raise Error('missing or invalid crs')
     geom = shapely.geometry.shape(props.get('geometry'))
+    return Shape(geom, crs)
+
+
+def from_dict(d: dict) -> gws.IShape:
+    """Creates a Shape from a dictionary.
+
+    Args:
+        d: A dictionary with the keys 'crs' and 'geometry'.
+    Returns:
+        A Shape object.
+    """
+
+    crs = gws.gis.crs.get(d.get('crs'))
+    if not crs:
+        raise Error('missing or invalid crs')
+    geom = shapely.geometry.shape(d.get('geometry'))
     return Shape(geom, crs)
 
 
@@ -203,10 +224,10 @@ class Props(gws.Props):
 class Shape(gws.Object, gws.IShape):
     geom: shapely.geometry.base.BaseGeometry
 
-    def __init__(self, geom, crs):
+    def __init__(self, geom, crs: gws.ICrs):
         self.geom = geom
         self.crs = crs
-        self.type = self.geom.type.lower()
+        self.type = self.geom.geom_type.lower()
         self.x = getattr(self.geom, 'x', None)
         self.y = getattr(self.geom, 'y', None)
 
@@ -225,22 +246,19 @@ class Shape(gws.Object, gws.IShape):
         return Shape(self.geom.centroid, self.crs)
 
     def to_wkb(self):
-        return geos.WKBWriter(geos.lgeos).write(self.geom)
+        return shapely.wkb.dumps(self.geom)
 
     def to_wkb_hex(self):
-        return self.to_wkb().hex()
+        return shapely.wkb.dumps(self.geom, hex=True)
 
     def to_ewkb(self):
-        geos.lgeos.GEOSSetSRID(self.geom._geom, self.crs.srid)
-        s = geos.WKBWriter(geos.lgeos, include_srid=True).write(self.geom)
-        geos.lgeos.GEOSSetSRID(self.geom._geom, 0)
-        return s
+        return shapely.wkb.dumps(self.geom, srid=self.crs.srid)
 
     def to_ewkb_hex(self):
-        return self.to_ewkb().hex()
+        return shapely.wkb.dumps(self.geom, srid=self.crs.srid, hex=True)
 
     def to_wkt(self):
-        return geos.WKTWriter(geos.lgeos).write(self.geom)
+        return shapely.wkt.dumps(self.geom)
 
     def to_ewkt(self):
         return f'SRID={self.crs.srid};' + self.to_wkt()
@@ -340,7 +358,7 @@ class Shape(gws.Object, gws.IShape):
             return self.to_multi()
         if self.type == gws.GeometryType.polygon and new_type == gws.GeometryType.multipolygon:
             return self.to_multi()
-        raise ValueError(f'cannot convert {self.type!r} to {new_type!r}')
+        raise Error(f'cannot convert {self.type!r} to {new_type!r}')
 
     def tolerance_polygon(self, tolerance, quad_segs=None):
         is_poly = self.type in (gws.GeometryType.polygon, gws.GeometryType.multipolygon)

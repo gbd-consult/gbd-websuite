@@ -404,8 +404,8 @@ def _parse_icon(icon, dpi):
         return
 
     try:
-        w, wu = units.parse(w, default=units.PX)
-        h, hu = units.parse(h, default=units.PX)
+        w, wu = units.parse(w, default=gws.Uom.px)
+        h, hu = units.parse(h, default=gws.Uom.px)
     except ValueError:
         gws.log.error(f'xml_icon: invalid units: {w!r} {h!r}')
         return

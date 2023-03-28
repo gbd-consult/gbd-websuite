@@ -90,21 +90,24 @@ class Object(gws.Node, gws.ITemplate):
 
 
 def locate(
-        templates: t.List[gws.ITemplate],
+        *objects,
         user: gws.IUser = None,
         subject: str = None,
         mime: str = None
 ) -> t.Optional[gws.ITemplate]:
     mt = gws.lib.mime.get(mime) if mime else None
 
-    for tpl in templates:
-        if user and not user.can_use(tpl):
+    for obj in objects:
+        if not obj:
             continue
-        if mt and tpl.mimes and mt not in tpl.mimes:
-            continue
-        if subject and tpl.subject != subject:
-            continue
-        return tpl
+        for tpl in getattr(obj, 'templates', []):
+            if user and not user.can_use(tpl):
+                continue
+            if mt and tpl.mimes and mt not in tpl.mimes:
+                continue
+            if subject and tpl.subject != subject:
+                continue
+            return tpl
 
 
 def render(

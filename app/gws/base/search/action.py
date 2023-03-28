@@ -30,8 +30,8 @@ class Props(gws.base.action.Props):
 
 
 class Request(gws.Request):
-    extent: t.Optional[gws.Extent]
     crs: t.Optional[gws.CrsName]
+    extent: t.Optional[gws.Extent]
     keyword: str = ''
     layerUids: t.List[str]
     limit: t.Optional[int]
@@ -101,9 +101,7 @@ class Object(gws.base.action.Object):
         for res in results:
             templates = []
             for v in views:
-                tpl = gws.base.template.locate(res.finder.templates, user=req.user, subject=f'feature.{v}')
-                if not tpl:
-                    tpl = gws.base.template.locate(res.layer.templates, user=req.user, subject=f'feature.{v}')
+                tpl = gws.base.template.locate(res.finder, res.layer, user=req.user, subject=f'feature.{v}')
                 if tpl:
                     templates.append(tpl)
 

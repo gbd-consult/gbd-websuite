@@ -9,7 +9,7 @@ import re
 import pytest
 
 import gws
-import gws.base.web.web_app
+import gws.base.web.wsgi_app
 import gws.config
 import gws.lib.jsonx
 import gws.lib.osx
@@ -24,7 +24,7 @@ def setup():
 
 def teardown():
     gws.lib.osx.unlink(glob.SESSION_STORE_PATH)
-    gws.base.web.web_app.reload()
+    gws.base.web.wsgi_app.reload()
     gws.config.deactivate()
     mockserv.command('reset')
 

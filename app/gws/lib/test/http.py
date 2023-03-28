@@ -4,7 +4,7 @@ import werkzeug.test
 import werkzeug.wrappers
 
 import gws
-import gws.base.web.web_app
+import gws.base.web.wsgi_app
 import gws.lib.jsonx
 import gws.lib.net
 

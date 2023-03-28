@@ -17,7 +17,7 @@ import gws.lib.image
 import gws.lib.jsonx
 import gws.lib.mime
 import gws.gis.render
-import gws.lib.uom as units
+import gws.lib.uom
 import gws.types as t
 
 gws.ext.new.action('map')
@@ -158,8 +158,8 @@ class Object(gws.base.action.Object):
         lri.view = gws.gis.render.map_view_from_bbox(
             crs=gws.gis.crs.get(p.crs) or layer.bounds.crs,
             bbox=p.bbox,
-            size=(p.width, p.height, units.PX),
-            dpi=units.OGC_SCREEN_PPI,
+            size=(p.width, p.height, gws.Uom.px),
+            dpi=gws.lib.uom.OGC_SCREEN_PPI,
             rotation=0
         )
 
@@ -223,7 +223,7 @@ class Object(gws.base.action.Object):
             return ImageResponse(mime='image/png', content=lro.content)
         return ImageResponse(mime='image/png', content=gws.lib.image.PIXEL_PNG8)
 
-    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> t.List[gws.FeatureProps]:
+    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> t.List[gws.Props]:
         layer = req.require_layer(p.layerUid)
 
         model = gws.base.model.locate(layer.models, user=req.user, access=gws.Access.read, uid=p.modelUid)
@@ -234,7 +234,7 @@ class Object(gws.base.action.Object):
         if p.bbox:
             bounds = gws.gis.bounds.from_extent(
                 p.bbox,
-                gws.gis.crs.get(p.crs)
+                gws.gis.crs.get(p.crs) or layer.bounds.crs
             )
 
         search = gws.SearchArgs(bounds=bounds, limit=_GET_FEATURES_LIMIT)
@@ -242,7 +242,7 @@ class Object(gws.base.action.Object):
 
         templates = []
         for v in p.views or ['label']:
-            tpl = gws.base.template.locate(layer.templates, user=req.user, subject=f'feature.{v}')
+            tpl = gws.base.template.locate(layer, user=req.user, subject=f'feature.{v}')
             if tpl:
                 templates.append(tpl)
 

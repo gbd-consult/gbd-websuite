@@ -1,5 +1,6 @@
 import babel.dates
 import datetime
+import calendar
 import re
 import time
 
@@ -32,6 +33,14 @@ def to_iso_date(d: datetime.datetime) -> str:
 
 def to_iso_local(d: datetime.datetime, with_tz='+', sep='T') -> str:
     return to_iso(d.astimezone())
+
+
+def to_timestamp(d: datetime.datetime) -> int:
+    return int(calendar.timegm(d.timetuple()))
+
+
+def to_int_string(d: datetime.datetime) -> str:
+    return d.strftime("%Y%m%d%H%M%S")
 
 
 def now() -> datetime.datetime:
@@ -82,6 +91,7 @@ def parse(s):
         return from_iso(s)
     if re.match(r'^\d{1,2}', s):
         return from_dmy(s)
+    raise ValueError(f'invalid date {s!r}')
 
 
 _dmy_re = r'''(?x)
@@ -98,7 +108,7 @@ _dmy_re = r'''(?x)
 def from_dmy(s: str) -> t.Optional[datetime.datetime]:
     m = re.match(_dmy_re, s)
     if not m:
-        return None
+        raise ValueError(f'invalid date {s!r}')
     g = m.groupdict()
     return datetime.datetime(
         int(g['Y']),
@@ -146,7 +156,7 @@ _iso_re = r'''(?x)
 def from_iso(s: str) -> t.Optional[datetime.datetime]:
     m = re.match(_iso_re, s)
     if not m:
-        return None
+        raise ValueError(f'invalid date {s!r}')
 
     g = m.groupdict()
     tz = datetime.timezone.utc

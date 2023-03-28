@@ -12,7 +12,7 @@ def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin:
     mar = page_margin or [0, 0, 0, 0]
 
     # page sizes need to be in mm!
-    psz = (210, 297, units.MM)
+    psz = (210, 297, gws.Uom.mm)
     if page_size:
         psz = units.msize_to_mm(page_size, units.PDF_DPI)
 

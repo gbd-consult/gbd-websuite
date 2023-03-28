@@ -218,7 +218,7 @@ class _Parser:
     def _parse_size(self, cc, ast):
         w = self._parse_int(cc, ast, 'width')
         h = self._parse_int(cc, ast, 'height')
-        return w, h, units.MM
+        return w, h, gws.Uom.mm
 
     def _parse_int(self, cc, ast, name):
         val = self._get_arg(ast, name)
@@ -298,7 +298,7 @@ class _Engine(jump.Engine):
             center=opts.get('center', rim.center),
             crs=self.tri.crs,
             dpi=self.tri.dpi,
-            out_size=(width, height, units.MM),
+            out_size=(width, height, gws.Uom.mm),
             planes=rim.planes,
             rotation=opts.get('scale', rim.rotation),
             scale=opts.get('scale', rim.scale),

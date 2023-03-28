@@ -6,12 +6,12 @@ import gws
 import gws.gis.extent
 import gws.lib.image
 import gws.lib.svg
-import gws.lib.uom as units
+import gws.lib.uom
 import gws.lib.xmlx as xmlx
 import gws.types as t
 
 MAX_DPI = 1200
-MIN_DPI = units.PDF_DPI
+MIN_DPI = gws.lib.uom.PDF_DPI
 
 
 # Map Views
@@ -45,18 +45,18 @@ def _map_view(bbox, center, crs, dpi, rotation, scale, size):
     )
 
     w, h, u = size
-    if u == units.MM:
+    if u == gws.Uom.mm:
         view.size_mm = w, h
-        view.size_px = units.size_mm_to_px(view.size_mm, view.dpi)
-    if u == units.PX:
+        view.size_px = gws.lib.uom.size_mm_to_px(view.size_mm, view.dpi)
+    if u == gws.Uom.px:
         view.size_px = w, h
-        view.size_mm = units.size_px_to_mm(view.size_px, view.dpi)
+        view.size_mm = gws.lib.uom.size_px_to_mm(view.size_px, view.dpi)
 
     if bbox:
         view.bounds = gws.Bounds(crs=crs, extent=bbox)
         view.center = gws.gis.extent.center(bbox)
         bw, bh = gws.gis.extent.size(bbox)
-        view.scale = units.res_to_scale(bw / view.size_px[0])
+        view.scale = gws.lib.uom.res_to_scale(bw / view.size_px[0])
 
     elif center:
         view.center = center
@@ -96,7 +96,7 @@ def map_view_transformer(view: gws.MapView):
         return int(x), int(y)
 
     # (x_map*1000)/scale MM * (dpi/MM_PER_IN) PX/MM => PX
-    m2px = (1000.0 / view.scale) * (view.dpi / units.MM_PER_IN)
+    m2px = (1000.0 / view.scale) * (view.dpi / gws.lib.uom.MM_PER_IN)
 
     ext = view.bounds.extent
 
@@ -122,7 +122,7 @@ class _Renderer(gws.Data):
     svg_count: int
 
 
-def render_map(mri: gws.MapRenderInput, notify: t.Callable = None) -> gws.MapRenderOutput:
+def render_map(mri: gws.MapRenderInput) -> gws.MapRenderOutput:
     rd = _Renderer(
         mri=mri,
         mro=gws.MapRenderOutput(planes=[]),
@@ -131,14 +131,14 @@ def render_map(mri: gws.MapRenderInput, notify: t.Callable = None) -> gws.MapRen
     )
 
     # vectors always use PDF_DPI
-    rd.vector_view = _map_view(mri.bbox, mri.center, mri.crs, units.PDF_DPI, mri.rotation, mri.scale, mri.out_size)
+    rd.vector_view = _map_view(mri.bbox, mri.center, mri.crs, gws.lib.uom.PDF_DPI, mri.rotation, mri.scale, mri.out_size)
     rd.mro.view = rd.vector_view
 
-    if mri.out_size[2] == units.PX:
+    if mri.out_size[2] == gws.Uom.px:
         # if they want pixels, use PDF_PDI for rasters as well
         rd.raster_view = rd.vector_view
 
-    elif mri.out_size[2] == units.MM:
+    elif mri.out_size[2] == gws.Uom.mm:
         # if they want mm, rasters should use they own dpi
         raster_dpi = min(MAX_DPI, max(MIN_DPI, rd.mri.dpi))
         rd.raster_view = _map_view(mri.bbox, mri.center, mri.crs, raster_dpi, mri.rotation, mri.scale, mri.out_size)
@@ -149,15 +149,15 @@ def render_map(mri: gws.MapRenderInput, notify: t.Callable = None) -> gws.MapRen
     # NB: planes are top-to-bottom
 
     for p in reversed(mri.planes):
-        if notify:
-            notify('begin_plane', p)
+        if mri.notify:
+            mri.notify('begin_plane', p)
         try:
             _render_plane(rd, p)
         except Exception:
             # swallow exceptions so that we still can render if some layer fails
             gws.log.exception('render: input plane failed')
-        if notify:
-            notify('end_plane', p)
+        if mri.notify:
+            mri.notify('end_plane', p)
 
     return rd.mro
 
@@ -175,7 +175,7 @@ def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
         extra_params = {}
         if plane.sub_layers:
             extra_params = {'layers': plane.sub_layers}
-        r = plane.layer.render_box(rd.raster_view, extra_params)
+        r = plane.layer.r(rd.raster_view, extra_params)
         if r:
             _add_image(rd, gws.lib.image.from_bytes(r), opacity)
 

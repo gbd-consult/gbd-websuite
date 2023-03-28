@@ -132,7 +132,7 @@ class Config(gws.ConfigWithAccess):
     """layer title"""
     zoom: t.Optional[gws.gis.zoom.Config]
     """layer resolutions and scales"""
-    loadingStrategy: gws.LayerLoadingStrategy = gws.LayerLoadingStrategy.all
+    loadingStrategy: gws.FeatureLoadingStrategy = gws.FeatureLoadingStrategy.all
     """loading strategy for features"""
     cssSelector: t.Optional[str]
     """css selector for features"""
@@ -181,7 +181,7 @@ class Props(gws.Props):
     extent: t.Optional[gws.Extent]
     geometryType: t.Optional[gws.GeometryType]
     layers: t.Optional[t.List['Props']]
-    loadingStrategy: t.Optional[str]
+    loadingStrategy: gws.FeatureLoadingStrategy
     metadata: gws.lib.metadata.Props
     opacity: t.Optional[float]
     clientOptions: ClientOptions

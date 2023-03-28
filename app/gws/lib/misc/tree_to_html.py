@@ -27,8 +27,11 @@ html, body {
     white-space: pre;
     padding: 5px;
     flex: 1;
-    min-width: 450px;
     line-height: 1.5;
+}
+
+#main div:last-child {
+    min-width: 600px;
 }
 
 #main div b {
@@ -222,6 +225,9 @@ def load_pickle(path):
 
             class T:
                 KLASS = module + '.' + name
+
+                def __init__(self, *args):
+                    pass
 
                 def __setstate__(self, state):
                     if not isinstance(state, dict):

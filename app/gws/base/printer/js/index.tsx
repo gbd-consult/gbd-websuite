@@ -157,7 +157,8 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
                 controller={this.props.controller}
                 feature={null}
                 values={this.props.printFormData}
-                makeWidget={cc.makeWidget.bind(cc)}
+                // makeWidget={cc.makeWidget.bind(cc)}
+                widget={cc.makeWidget(f, null, this.props.printFormData)}
             />)}
             </tbody>
         </table>

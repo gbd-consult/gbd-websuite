@@ -5,6 +5,7 @@ import gws.base.auth.user
 class Provider(gws.base.auth.provider.Object):
     def __init__(self, users):
         super().__init__()
+        self.uid = ''
         self.users = users
 
     def authenticate(self, method, credentials):

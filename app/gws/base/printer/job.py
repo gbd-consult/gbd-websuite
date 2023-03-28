@@ -140,7 +140,7 @@ class _Worker:
             w, h = px
             self.template: gws.ITemplate = self.create_child(
                 'gws.ext.template.map',
-                gws.Config(pageSize=(w, h, units.PX)))
+                gws.Config(pageSize=(w, h, gws.Uom.px)))
 
         ctx = params.context or {}
         if self.template.data_model:

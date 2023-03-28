@@ -28,6 +28,10 @@ def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, 
 mapproxy_app = make_wsgi_app(gws.CONFIG_DIR + '/mapproxy.yaml')
 
 
+def init():
+    pass
+
+
 def application(environ, start_response):
     try:
         return mapproxy_app(environ, start_response)
