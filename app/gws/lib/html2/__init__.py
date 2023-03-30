@@ -4,7 +4,7 @@ import gws.lib.uom as units
 import gws.types as t
 
 
-def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin: t.List[int] = None) -> str:
+def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin: list[int] = None) -> str:
     if 'charset' not in html:
         html = '<meta charset="utf8"/>' + html
     gws.write_file_b(out_path + '.html', gws.to_bytes(html))
@@ -41,7 +41,7 @@ def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin:
     return out_path
 
 
-def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin: t.List[int] = None) -> str:
+def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin: list[int] = None) -> str:
     if page_margin:
         mar = page_margin
         html = f"""

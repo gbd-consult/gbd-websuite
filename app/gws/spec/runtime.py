@@ -192,7 +192,7 @@ class Object(gws.ISpecRuntime):
                     paths.append(path)
             return paths
 
-    def parse_classref(self, classref: gws.ClassRef) -> t.Tuple[t.Optional[type], str, str]:
+    def parse_classref(self, classref: gws.ClassRef) -> tuple[t.Optional[type], str, str]:
         ext_name = gws.ext.name(classref)
         if ext_name:
             return None, '', ext_name

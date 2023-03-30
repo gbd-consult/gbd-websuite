@@ -25,7 +25,7 @@ class NamespaceConfig(gws.Config):
 class Config(gws.Config):
     """XML settings"""
 
-    namespaces: t.Optional[t.List[NamespaceConfig]]
+    namespaces: t.Optional[list[NamespaceConfig]]
     """custom namespaces"""
 
 

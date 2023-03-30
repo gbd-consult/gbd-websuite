@@ -161,7 +161,7 @@ def create(root: gws.IRoot):
     if not cfg.get('layers'):
         return
 
-    crs: t.List[gws.ICrs] = []
+    crs: list[gws.ICrs] = []
     for p in root.find_all(gws.ext.object.map):
         crs.append(t.cast(gws.IMap, p).bounds.crs)
     for p in root.find_all(gws.ext.object.owsService):

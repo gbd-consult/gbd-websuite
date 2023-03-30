@@ -45,7 +45,7 @@ class ListEntry(gws.Data):
 
 
 class ListResponse(gws.Response):
-    entries: t.List[ListEntry]
+    entries: list[ListEntry]
 
 
 class DeleteParams(gws.Params):
@@ -185,7 +185,7 @@ class Object(gws.base.api.Action):
         return UndeleteResponse()
 
     def api_list_trash(self, req: gws.IWebRequest, p: ListParams) -> ListResponse:
-        """t.List paths currently in the trash."""
+        """list paths currently in the trash."""
 
         entries = []
 

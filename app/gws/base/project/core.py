@@ -32,7 +32,7 @@ class Config(gws.ConfigWithAccess):
     """project-specific assets options"""
     client: t.Optional[gws.base.client.Config]
     """project-specific gws client configuration"""
-    locales: t.Optional[t.List[str]]
+    locales: t.Optional[list[str]]
     """project locales"""
     map: t.Optional[gws.base.map.Config]
     """Map configuration"""
@@ -42,19 +42,19 @@ class Config(gws.ConfigWithAccess):
     """Overview map configuration"""
     printer: t.Optional[gws.base.printer.Config]
     """print configuration"""
-    templates: t.Optional[t.List[gws.ext.config.template]]
+    templates: t.Optional[list[gws.ext.config.template]]
     """project info templates"""
     title: str = ''
     """project title"""
 
 
 class Props(gws.Props):
-    actions: t.List[gws.ext.props.action]
+    actions: list[gws.ext.props.action]
     client: t.Optional[gws.base.client.Props]
     description: str
-    locales: t.List[str]
+    locales: list[str]
     map: gws.ext.props.map
-    models: t.List[gws.ext.props.model]
+    models: list[gws.ext.props.model]
     metadata: gws.lib.metadata.Props
     overviewMap: gws.ext.props.map
     printer: gws.base.printer.Props

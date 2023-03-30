@@ -50,7 +50,7 @@ class Object(gws.Node):
                 int(time.time()),
             ])
 
-    def list(self, category: str) -> t.List[types.Record]:
+    def list(self, category: str) -> list[types.Record]:
         with self._connect() as conn:
             rs = conn.execute(
                 '''

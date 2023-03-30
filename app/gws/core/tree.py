@@ -79,9 +79,9 @@ class Root(types.IRoot):
         self.app = t.cast(types.IApplication, None)
         self.configErrors = []
         self._configStack = []
-        self._cachedDescriptors: t.Dict[str, types.ExtObjectDescriptor] = {}
-        self._objects: t.List['Node'] = []
-        self._uidMap: t.Dict[str, 'Node'] = {}
+        self._cachedDescriptors: dict[str, types.ExtObjectDescriptor] = {}
+        self._objects: list['Node'] = []
+        self._uidMap: dict[str, 'Node'] = {}
         self._uidCount = 0
 
     def activate(self):

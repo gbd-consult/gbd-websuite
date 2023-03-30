@@ -33,16 +33,16 @@ class Request(gws.Request):
     crs: t.Optional[gws.CrsName]
     extent: t.Optional[gws.Extent]
     keyword: str = ''
-    layerUids: t.List[str]
+    layerUids: list[str]
     limit: t.Optional[int]
     resolution: float
-    shapes: t.Optional[t.List[gws.base.shape.Props]]
+    shapes: t.Optional[list[gws.base.shape.Props]]
     tolerance: t.Optional[str]
-    views: t.Optional[t.List[str]]
+    views: t.Optional[list[str]]
 
 
 class Response(gws.Response):
-    features: t.List[gws.FeatureProps]
+    features: list[gws.FeatureProps]
 
 
 class Object(gws.base.action.Object):

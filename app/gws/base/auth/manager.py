@@ -33,11 +33,11 @@ class SessionConfig(gws.Config):
 class Config(gws.Config):
     """Authentication and authorization options"""
 
-    methods: t.Optional[t.List[gws.ext.config.authMethod]] 
+    methods: t.Optional[list[gws.ext.config.authMethod]] 
     """authorization methods"""
-    providers: t.Optional[t.List[gws.ext.config.authProvider]] 
+    providers: t.Optional[list[gws.ext.config.authProvider]] 
     """authorization providers"""
-    mfa: t.Optional[t.List[gws.ext.config.authMfa]] 
+    mfa: t.Optional[list[gws.ext.config.authMfa]] 
     """authorization providers"""
     session: t.Optional[SessionConfig] 
     """session options"""
@@ -195,5 +195,5 @@ class Object(gws.Node, gws.IAuthManager):
     def session_delete_all(self):
         self.store.delete_all()
 
-    def stored_session_records(self) -> t.List[dict]:
+    def stored_session_records(self) -> list[dict]:
         return self.store.get_all()

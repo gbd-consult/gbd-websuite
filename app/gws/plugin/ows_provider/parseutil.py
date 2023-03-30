@@ -10,7 +10,7 @@ import gws.lib.net
 import gws.types as t
 
 
-def service_operations(caps_el: gws.IXmlElement) -> t.List[gws.OwsOperation]:
+def service_operations(caps_el: gws.IXmlElement) -> list[gws.OwsOperation]:
     # <ows:OperationsMetadata>
     #     <ows:Operation name="GetCapabilities">...
 
@@ -210,7 +210,7 @@ def wgs_bounds(layer_el: gws.IXmlElement) -> t.Optional[gws.Bounds]:
             extent=gws.gis.extent.from_list(_parse_bbox(el)))
 
 
-def supported_crs(layer_el: gws.IXmlElement) -> t.List[gws.ICrs]:
+def supported_crs(layer_el: gws.IXmlElement) -> list[gws.ICrs]:
     """Enumerate supported CRS for a Layer/FeatureType element.
 
     For WMS, enumerates CRS/SRS and BoundingBox tags,
@@ -267,7 +267,7 @@ def parse_style(el: gws.IXmlElement) -> gws.SourceStyle:
     return st
 
 
-def default_style(styles: t.List[gws.SourceStyle]) -> t.Optional[gws.SourceStyle]:
+def default_style(styles: list[gws.SourceStyle]) -> t.Optional[gws.SourceStyle]:
     for s in styles:
         if s.isDefault:
             return s

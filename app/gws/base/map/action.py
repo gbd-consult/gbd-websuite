@@ -38,7 +38,7 @@ class GetBoxRequest(gws.Request):
     layerUid: str
     crs: t.Optional[gws.CrsName]
     dpi: t.Optional[int]
-    layers: t.Optional[t.List[str]]
+    layers: t.Optional[list[str]]
 
 
 class GetXyzRequest(gws.Request):
@@ -72,11 +72,11 @@ class GetFeaturesRequest(gws.Request):
     crs: t.Optional[gws.CrsName]
     resolution: t.Optional[float]
     limit: int = 0
-    views: t.Optional[t.List[str]]
+    views: t.Optional[list[str]]
 
 
 class GetFeaturesResponse(gws.Response):
-    features: t.List[gws.FeatureProps]
+    features: list[gws.FeatureProps]
 
 
 _GET_FEATURES_LIMIT = 10000
@@ -223,7 +223,7 @@ class Object(gws.base.action.Object):
             return ImageResponse(mime='image/png', content=lro.content)
         return ImageResponse(mime='image/png', content=gws.lib.image.PIXEL_PNG8)
 
-    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> t.List[gws.Props]:
+    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> list[gws.Props]:
         layer = req.require_layer(p.layerUid)
 
         model = gws.base.model.locate(layer.models, user=req.user, access=gws.Access.read, uid=p.modelUid)

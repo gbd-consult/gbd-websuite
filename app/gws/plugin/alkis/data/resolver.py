@@ -307,7 +307,7 @@ def index_ok(conn: AlkisConnection):
 
 def _load_props_for_table(conn: AlkisConnection, tab):
     idx = conn.index_schema
-    d: t.Dict[str, dict] = {}
+    d: dict[str, dict] = {}
     rs = conn.select(f"SELECT * FROM {idx}.{PROPS_INDEX} WHERE table_name='{tab}'")
     for r in rs:
         d.setdefault(r['column_name'], {})[r['property_key']] = r['property_value']

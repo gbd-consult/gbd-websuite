@@ -25,7 +25,7 @@ def configure_layers(obj: gws.IOwsClient, provider_class, **filter_args):
         raise gws.Error(f'no source layers found for {obj.uid!r}')
 
 
-def configure_resolutions(obj: gws.IOwsClient, parent_resolultions: t.List[float] = None):
+def configure_resolutions(obj: gws.IOwsClient, parent_resolultions: list[float] = None):
     zoom = gws.gis.zoom.config_from_source_layers(obj.sourceLayers)
     if zoom:
         la = t.cast(gws.ILayer, obj)

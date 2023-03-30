@@ -51,11 +51,11 @@ class _Writer:
         self.rows = []
         self.headers = ''
 
-    def write_headers(self, headers: t.List[str]):
+    def write_headers(self, headers: list[str]):
         self.headers = self.h.delimiter.join(self._quote(s) for s in headers)
         return self
 
-    def write_attributes(self, attributes: t.List[gws.Attribute]):
+    def write_attributes(self, attributes: list[gws.Attribute]):
         self.rows.append(self.h.delimiter.join(self._format(a.value, a.type) for a in attributes))
         return self
 

@@ -48,7 +48,7 @@ class Object(gws.base.database.provider.Object):
 #     def connection(self) -> gws.lib.sql.postgres.Connection:
 #         return gws.lib.sql.postgres.Connection(vars(self.config))
 #
-#     def describe(self, table: gws.SqlTable) -> t.List[gws.SqlColumn]:
+#     def describe(self, table: gws.SqlTable) -> list[gws.SqlColumn]:
 #
 #         def _get():
 #             with self.connection() as conn:
@@ -104,7 +104,7 @@ class Object(gws.base.database.provider.Object):
 #
 #         return table
 #
-#     def find_features(self, args: gws.SqlSelectArgs) -> t.List[gws.IFeature]:
+#     def find_features(self, args: gws.SqlSelectArgs) -> list[gws.IFeature]:
 #
 #         where = []
 #
@@ -161,10 +161,10 @@ class Object(gws.base.database.provider.Object):
 #
 #         return [self.feature_from_record(args.table, r) for r in recs]
 #
-#     def insert_features(self, table: gws.SqlTable, features: t.List[gws.IFeature], on_conflict: gws.Sql = None) -> t.List[gws.IFeature]:
+#     def insert_features(self, table: gws.SqlTable, features: list[gws.IFeature], on_conflict: gws.Sql = None) -> list[gws.IFeature]:
 #         return self._insert_or_update(table, features, on_conflict, is_insert=True)
 #
-#     def update_features(self, table: gws.SqlTable, features: t.List[gws.IFeature]) -> t.List[gws.IFeature]:
+#     def update_features(self, table: gws.SqlTable, features: list[gws.IFeature]) -> list[gws.IFeature]:
 #         return self._insert_or_update(table, features, None, is_insert=False)
 #
 #     def _insert_or_update(self, table, features, on_conflict, is_insert):
@@ -184,7 +184,7 @@ class Object(gws.base.database.provider.Object):
 #             recs = conn.select('SELECT * FROM {:qname} WHERE {:name} IN {{:values})', table.name, table.key_column.name, uids)
 #             return [self.feature_from_record(table, rec) for rec in recs]
 #
-#     def delete_features(self, table: gws.SqlTable, features: t.List[gws.IFeature]):
+#     def delete_features(self, table: gws.SqlTable, features: list[gws.IFeature]):
 #         uids = [f.uid for f in features]
 #         with self.connection() as conn:
 #             with conn.transaction():

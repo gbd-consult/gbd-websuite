@@ -41,7 +41,7 @@ class MonitorConfig(gws.Config):
     """the module is enabled"""
     frequency: gws.Duration = '30' 
     """filesystem changes check frequency"""
-    ignore: t.Optional[t.List[gws.Regex]] 
+    ignore: t.Optional[list[gws.Regex]] 
     """ignore paths that match these regexes"""
 
 
@@ -63,7 +63,7 @@ class QgisConfig(ModuleConfig):
     """QGIS_SERVER_CACHE_SIZE (env. variable)"""
     maxCacheLayers: int = 4000 
     """MAX_CACHE_LAYERS (env. variable)"""
-    searchPathsForSVG: t.Optional[t.List[gws.DirPath]] 
+    searchPathsForSVG: t.Optional[list[gws.DirPath]] 
     """searchPathsForSVG (ini setting)"""
     legend: t.Optional[dict] 
     """default legend settings"""

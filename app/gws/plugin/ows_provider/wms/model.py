@@ -24,7 +24,7 @@ class Props(gws.base.model.Props):
 
 class Object(gws.base.model.Object):
     provider: provider.Object
-    sourceLayers: t.List[gws.SourceLayer]
+    sourceLayers: list[gws.SourceLayer]
 
     def configure(self):
         self.keyName = 'uid'
@@ -59,7 +59,7 @@ class Object(gws.base.model.Object):
             for fd in self.wms_search(search)
         ]
 
-    def wms_search(self, search: gws.SearchArgs) -> t.List[gws.FeatureData]:
+    def wms_search(self, search: gws.SearchArgs) -> list[gws.FeatureData]:
         v3 = self.provider.version >= '1.3'
 
         shape = search.shape

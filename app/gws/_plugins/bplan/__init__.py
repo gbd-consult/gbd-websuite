@@ -40,9 +40,9 @@ class Config(gws.WithAccess):
     planTable: gws.base.db.SqlTableConfig  #: plan table configuration
     metaTable: gws.base.db.SqlTableConfig  #: meta table configuration
     dataDir: gws.DirPath  #: data directory
-    templates: t.List[gws.ext.template.Config]  #: templates
-    administrativeUnits: t.List[AdministrativeUnitConfig]  #: Administrative Units
-    planTypes: t.List[PlanTypeConfig]  #: Plan Types
+    templates: list[gws.ext.template.Config]  #: templates
+    administrativeUnits: list[AdministrativeUnitConfig]  #: Administrative Units
+    planTypes: list[PlanTypeConfig]  #: Plan Types
     imageQuality: int = 24  #: palette size for optimized images
     uploadChunkSize: int  #: upload chunk size in mb
     exportDataModel: t.Optional[gws.base.model.Config]  #: data model for csv export
@@ -55,7 +55,7 @@ class AdministrativeUnit(gws.Data):
 
 class Props(gws.Props):
     type: t.Literal = 'bplan'
-    auList: t.List[AdministrativeUnit]
+    auList: list[AdministrativeUnit]
     uploadChunkSize: int
 
 
@@ -81,7 +81,7 @@ class GetFeaturesParams(gws.Params):
 
 
 class GetFeaturesResponse(gws.Response):
-    features: t.List[gws.lib.feature.Props]
+    features: list[gws.lib.feature.Props]
 
 
 class DeleteFeatureParams(gws.Params):
@@ -140,7 +140,7 @@ class Object(gws.base.api.Action):
             gws.ext.db.provider.postgres.Object,
             gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
-        self.templates: t.List[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'))
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'))
         self.qgis_template: gws.ITemplate = gws.base.template.find(self.templates, subject='bplan.qgis')
         self.info_template: gws.ITemplate = gws.base.template.find(self.templates, subject='bplan.info')
 

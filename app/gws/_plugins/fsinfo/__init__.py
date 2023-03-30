@@ -24,7 +24,7 @@ class Config(gws.WithAccess):
     db: t.Optional[str]  #: database provider uid
     dataTable: gws.base.db.SqlTableConfig
     documentTable: gws.base.db.SqlTableConfig
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
+    templates: t.Optional[list[gws.ext.template.Config]]  #: client templates
 
 
 class FindFlurstueckParams(gws.Params):
@@ -37,12 +37,12 @@ class FindFlurstueckParams(gws.Params):
 
 
 class FindFlurstueckResponse(gws.Response):
-    features: t.List[gws.lib.feature.Props]
+    features: list[gws.lib.feature.Props]
     total: int
 
 
 class GetGemarkungenResponse(gws.Response):
-    names: t.List[str]
+    names: list[str]
 
 
 class DocumentProps(gws.Props):
@@ -58,7 +58,7 @@ class PersonProps(gws.Props):
     uid: str
     title: str
     description: str
-    documents: t.List[DocumentProps]
+    documents: list[DocumentProps]
 
 
 class GetDetailsParams(gws.Params):
@@ -67,7 +67,7 @@ class GetDetailsParams(gws.Params):
 
 class GetDetailsResponse(gws.Response):
     feature: gws.lib.feature.Props
-    persons: t.List[PersonProps]
+    persons: list[PersonProps]
 
 
 class UploadFile(gws.Data):
@@ -79,20 +79,20 @@ class UploadFile(gws.Data):
 
 class CheckUploadParams(gws.Params):
     personUid: str
-    names: t.List[str]
+    names: list[str]
 
 
 class CheckUploadResponse(gws.Params):
-    existingNames: t.List[str]
+    existingNames: list[str]
 
 
 class UploadParams(gws.Params):
     personUid: str
-    files: t.List[UploadFile]
+    files: list[UploadFile]
 
 
 class UploadResponse(gws.Response):
-    documentUids: t.List[str]
+    documentUids: list[str]
 
 
 class GetDocumentParams(gws.Params):
@@ -108,7 +108,7 @@ class DeleteDocumentResponse(gws.Params):
 
 
 class GetDocumentsResponse(gws.Response):
-    persons: t.List[PersonProps]
+    persons: list[PersonProps]
 
 
 class DownloadParams(gws.Params):
@@ -126,7 +126,7 @@ class Object(gws.base.api.Action):
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
         self.data_table = self.db.configure_table(self.var('dataTable'))
         self.document_table = self.db.configure_table(self.var('documentTable'))
-        self.templates: t.List[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'))
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'))
         self.details_template: gws.ITemplate = gws.base.template.find(self.templates, subject='fsinfo.details')
         self.title_template: gws.ITemplate = gws.base.template.find(self.templates, subject='fsinfo.title')
 

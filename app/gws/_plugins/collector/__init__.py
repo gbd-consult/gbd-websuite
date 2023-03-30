@@ -29,8 +29,8 @@ class DocumentProps(gws.lib.feature.Props):
 
 class CollectionProps(gws.lib.feature.Props):
     type: str
-    items: t.List[ItemProps]
-    documents: t.List[DocumentProps]
+    items: list[ItemProps]
+    documents: list[DocumentProps]
 
 
 ##
@@ -82,7 +82,7 @@ class ItemPrototype(gws.Node):
             icon=self.icon
         )
 
-    def validate(self, fprops: gws.lib.feature.Props) -> t.List[gws.AttributeValidationFailure]:
+    def validate(self, fprops: gws.lib.feature.Props) -> list[gws.AttributeValidationFailure]:
         f = gws.lib.feature.from_props(fprops)
         return self.data_model.validate(f.attributes)
 
@@ -123,7 +123,7 @@ class CollectionPrototypeConfig(gws.Config):
     itemTable: gws.base.db.SqlTableConfig  #: sql table configuration
     documentTable: gws.base.db.SqlTableConfig  #: sql table configuration
     dataModel: t.Optional[gws.base.model.Config]
-    items: t.List[ItemPrototypeConfig]
+    items: list[ItemPrototypeConfig]
     linkColumn: str = 'collection_id'
     style: t.Optional[gws.base.style.Config]  #: style for collection center point
 
@@ -132,7 +132,7 @@ class CollectionPrototypeProps(gws.Props):
     type: str
     name: str
     dataModel: gws.base.model.ModelProps
-    itemPrototypes: t.List[ItemPrototypeProps]
+    itemPrototypes: list[ItemPrototypeProps]
     style: gws.base.style.StyleProps
 
 
@@ -184,7 +184,7 @@ class CollectionPrototype(gws.Node):
             style=self.style.props,
         )
 
-    def validate(self, fprops: gws.lib.feature.Props) -> t.List[gws.AttributeValidationFailure]:
+    def validate(self, fprops: gws.lib.feature.Props) -> list[gws.AttributeValidationFailure]:
         f = gws.lib.feature.from_props(fprops)
         return self.data_model.validate(f.attributes)
 
@@ -302,7 +302,7 @@ class CollectionPrototype(gws.Node):
             if ip.type == type:
                 return ip
 
-    def upload_documents(self, collection_uid, files: t.List[UploadFile]):
+    def upload_documents(self, collection_uid, files: list[UploadFile]):
         with self.db.connect() as conn:
             with conn.transaction():
                 for f in files:
@@ -336,14 +336,14 @@ class CollectionPrototype(gws.Node):
 class Config(gws.WithAccess):
     """Collection editor action"""
 
-    collections: t.List[CollectionPrototypeConfig]
+    collections: list[CollectionPrototypeConfig]
 
 
 ##
 
 
 class GetPrototypesResponse(gws.Response):
-    collectionPrototypes: t.List[CollectionPrototypeProps]
+    collectionPrototypes: list[CollectionPrototypeProps]
 
 
 class GetCollectionsParams(gws.Params):
@@ -351,7 +351,7 @@ class GetCollectionsParams(gws.Params):
 
 
 class GetCollectionsResponse(gws.Response):
-    collections: t.List[CollectionProps]
+    collections: list[CollectionProps]
 
 
 class SaveCollectionParams(gws.Params):
@@ -364,7 +364,7 @@ class SaveCollectionResponse(gws.Response):
 
 
 class ValidationResponse(gws.Response):
-    failures: t.List[gws.AttributeValidationFailure]
+    failures: list[gws.AttributeValidationFailure]
 
 
 class SaveItemParams(gws.Params):
@@ -399,7 +399,7 @@ class GetDocumentParams(gws.Params):
 
 class UploadDocumentsParams(gws.Params):
     collectionUid: str
-    files: t.List[UploadFile]
+    files: list[UploadFile]
 
 
 class UploadDocumentsResponse(gws.Response):
@@ -428,7 +428,7 @@ class Object(gws.base.api.Action):
 
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
-        self.collection_prototypes: t.List[CollectionPrototype] = []
+        self.collection_prototypes: list[CollectionPrototype] = []
         for p in self.var('collections'):
             self.collection_prototypes.append(t.cast(CollectionPrototype, self.create_child(CollectionPrototype, p)))
 

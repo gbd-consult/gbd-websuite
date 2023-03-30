@@ -11,7 +11,7 @@ from . import sql, session as session_module
 class Config(gws.Config):
     """Database configuration"""
 
-    providers: t.List[gws.ext.config.databaseProvider]
+    providers: list[gws.ext.config.databaseProvider]
     """database providers"""
 
 
@@ -32,8 +32,8 @@ class _SaRuntime:
 
 
 class Object(gws.Node, gws.IDatabaseManager):
-    models: t.Dict[str, gws.IModel]
-    providers: t.Dict[str, gws.IDatabaseProvider]
+    models: dict[str, gws.IModel]
+    providers: dict[str, gws.IDatabaseProvider]
     rt: _SaRuntime
 
     def __getstate__(self):
@@ -156,10 +156,10 @@ class Object(gws.Node, gws.IDatabaseManager):
     def class_for_model(self, model) -> type:
         return self.rt.modelClasses[model.uid]
 
-    def pkeys_for_model(self, model) -> t.List[sa.Column]:
+    def pkeys_for_model(self, model) -> list[sa.Column]:
         return self.rt.pkColumns.get(model.uid, [])
 
-    def table(self, provider: gws.IDatabaseProvider, table_name: str, columns: t.List[sa.Column] = None, **kwargs):
+    def table(self, provider: gws.IDatabaseProvider, table_name: str, columns: list[sa.Column] = None, **kwargs):
         tuid = self.table_uid(provider, table_name)
         if tuid in self.rt.tables and not columns:
             return self.rt.tables[tuid]

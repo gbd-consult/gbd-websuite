@@ -25,15 +25,15 @@ class PrintTemplate(gws.Data):
     title: str
     index: int
     attributes: dict
-    elements: t.List[PrintTemplateElement]
+    elements: list[PrintTemplateElement]
 
 
 class Caps(gws.Data):
     metadata: gws.Metadata
-    printTemplates: t.List[PrintTemplate]
+    printTemplates: list[PrintTemplate]
     projectCrs: gws.ICrs
     properties: dict
-    sourceLayers: t.List[gws.SourceLayer]
+    sourceLayers: list[gws.SourceLayer]
     version: str
 
 
@@ -315,7 +315,7 @@ def _layout_element(item_el: gws.IXmlElement):
 ##
 
 
-def _map_layers(root_el: gws.IXmlElement, properties) -> t.Dict[str, gws.SourceLayer]:
+def _map_layers(root_el: gws.IXmlElement, properties) -> dict[str, gws.SourceLayer]:
     no_wms_layers = set(properties.get('WMSRestrictedLayers', []))
     use_layer_ids = properties.get('WMSUseLayerIDs', False)
 

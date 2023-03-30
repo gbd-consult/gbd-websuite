@@ -8,7 +8,7 @@ import gws.types as t
 
 
 class OperationConfig(gws.Config):
-    formats: t.Optional[t.List[str]]
+    formats: t.Optional[list[str]]
     postUrl: t.Optional[gws.Url]
     url: gws.Url
     verb: gws.OwsVerb
@@ -23,7 +23,7 @@ class ProviderConfig(gws.Config):
     """force XY orientation for lat/lon projections"""
     maxRequests: int = 0
     """max concurrent requests to this source"""
-    operations: t.Optional[t.List[OperationConfig]]
+    operations: t.Optional[list[OperationConfig]]
     """override operations reported in capabilities"""
     url: gws.Url
     """service url"""
@@ -31,9 +31,9 @@ class ProviderConfig(gws.Config):
 
 class Caps(gws.Data):
     metadata: gws.Metadata
-    operations: t.List[gws.OwsOperation]
-    sourceLayers: t.List[gws.SourceLayer]
-    tileMatrixSets: t.List[gws.TileMatrixSet]
+    operations: list[gws.OwsOperation]
+    sourceLayers: list[gws.SourceLayer]
+    tileMatrixSets: list[gws.TileMatrixSet]
     version: str
 
 
@@ -138,5 +138,5 @@ class Provider(gws.Node, gws.IOwsProvider):
         args = self.prepare_operation(op)
         return gws.gis.ows.request.get_text(args, max_age=self.var('capsCacheMaxAge'))
 
-    def find_source_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.FeatureData]:
+    def find_source_features(self, args: gws.SearchArgs, source_layers: list[gws.SourceLayer]) -> list[gws.FeatureData]:
         return []

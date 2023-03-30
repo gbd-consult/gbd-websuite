@@ -30,7 +30,7 @@ class LayerFilter(gws.Data):
 
     level: int = 0 
     """match only layers at this level"""
-    uids: t.Optional[t.List[str]] 
+    uids: t.Optional[list[str]] 
     """match these layer uids"""
     pattern: gws.Regex = '' 
     """match layers whose uid matches a pattern"""
@@ -52,7 +52,7 @@ class LayerConfig(gws.Config):
 
 
 class ServiceConfig(gws.ConfigWithAccess):
-    layerConfig: t.Optional[t.List[LayerConfig]] 
+    layerConfig: t.Optional[list[LayerConfig]] 
     """custom configurations for specific layers"""
     metadata: t.Optional[gws.Metadata] 
     """service metadata"""
@@ -60,9 +60,9 @@ class ServiceConfig(gws.ConfigWithAccess):
     """root layer uid"""
     strictParams: bool = False 
     """strict parameter parsing"""
-    supportedCrs: t.Optional[t.List[gws.CrsName]] 
+    supportedCrs: t.Optional[list[gws.CrsName]] 
     """supported CRS for this service"""
-    templates: t.Optional[t.List[gws.ext.config.template]] 
+    templates: t.Optional[list[gws.ext.config.template]] 
     """service XML templates"""
     updateSequence: t.Optional[str] 
     """service update sequence"""
@@ -81,12 +81,12 @@ class Request(gws.Data):
     xml_is_soap: bool = False
 
 
-FeatureSchemaAttribute = t.Tuple[str, str]  # type, name
+FeatureSchemaAttribute = tuple[str, str]  # type, name
 
 
 class LayerOptions(gws.Data):
     level: int
-    uids: t.Set[str]
+    uids: set[str]
     pattern: str
     enabled: bool
     layer_name: str
@@ -111,17 +111,17 @@ class LayerCaps(gws.Data):
     wgsExtent: gws.Extent
     max_scale: int
     min_scale: int
-    bounds: t.List[gws.Bounds]
+    bounds: list[gws.Bounds]
 
-    children: t.List['LayerCaps']
-    ancestors: t.List['LayerCaps']
+    children: list['LayerCaps']
+    ancestors: list['LayerCaps']
 
     adhoc_feature_schema: t.Optional[dict]
 
 
 class LayerCapsTree(gws.Data):
-    roots: t.List[LayerCaps]
-    leaves: t.List['LayerCaps']
+    roots: list[LayerCaps]
+    leaves: list['LayerCaps']
 
 
 class FeatureCaps(gws.Data):
@@ -131,8 +131,8 @@ class FeatureCaps(gws.Data):
 
 
 class FeatureCollection(gws.Data):
-    caps: t.List[FeatureCaps]
-    features: t.List[gws.IFeature]
+    caps: list[FeatureCaps]
+    features: list[gws.IFeature]
     time_stamp: str
     num_matched: int
     num_returned: int
@@ -148,12 +148,12 @@ class Service(gws.Node, gws.IOwsService):
 
     root_layer_uid: str
     update_sequence: str
-    layer_options: t.List[LayerOptions]
+    layer_options: list[LayerOptions]
 
     is_raster_ows: bool = False
     is_vector_ows: bool = False
 
-    supported_crs: t.List[gws.ICrs]
+    supported_crs: list[gws.ICrs]
 
     @property
     def service_link(self):
@@ -347,7 +347,7 @@ class Service(gws.Node, gws.IOwsService):
     SCOPE_FEATURE = 2
     SCOPE_LEAF = 3
 
-    def layer_caps_list(self, rd: Request, names: t.List[str] = None, scope: int = 0) -> t.List[LayerCaps]:
+    def layer_caps_list(self, rd: Request, names: list[str] = None, scope: int = 0) -> list[LayerCaps]:
         """Return a list of leaf layer caps, optionally matching names."""
 
         tree = self.layer_caps_tree(rd)
@@ -387,7 +387,7 @@ class Service(gws.Node, gws.IOwsService):
         pfx, n = qname.split(':')
         return n == s and pfx == _DEFAULT_NAMESPACE_PREFIX
 
-    def layer_caps_list_from_request(self, rd: Request, param_names: t.List[str], scope: int, fallback_to_all=True) -> t.List[LayerCaps]:
+    def layer_caps_list_from_request(self, rd: Request, param_names: list[str], scope: int, fallback_to_all=True) -> list[LayerCaps]:
         """Return a list of leaf layer caps matching request parameters."""
 
         names = None
@@ -426,7 +426,7 @@ class Service(gws.Node, gws.IOwsService):
 
         return defaults
 
-    def _populate_layer_caps(self, lc: LayerCaps, layer: gws.ILayer, lo: LayerOptions, children: t.List[LayerCaps]):
+    def _populate_layer_caps(self, lc: LayerCaps, layer: gws.ILayer, lo: LayerOptions, children: list[LayerCaps]):
         lc.layer = layer
         lc.title = layer.title
 
@@ -468,8 +468,8 @@ class Service(gws.Node, gws.IOwsService):
     def feature_collection(
         self,
         rd: Request,
-        features: t.List[gws.IFeature],
-        lcs: t.List[LayerCaps],
+        features: list[gws.IFeature],
+        lcs: list[LayerCaps],
         target_crs: gws.ICrs,
         populate=True,
         invert_axis_if_geographic=False,
@@ -487,7 +487,7 @@ class Service(gws.Node, gws.IOwsService):
         if not populate:
             return coll
 
-        layer_to_caps: t.Dict[str, LayerCaps] = {lc.layer.uid: lc for lc in lcs}
+        layer_to_caps: dict[str, LayerCaps] = {lc.layer.uid: lc for lc in lcs}
 
         default_qname = xmlx.qualify_name(_DEFAULT_FEATURE_NAME, _DEFAULT_NAMESPACE_PREFIX)
 
@@ -526,7 +526,7 @@ class Service(gws.Node, gws.IOwsService):
     def service_url_path(self, project: t.Optional[gws.IProject] = None) -> str:
         return gws.action_url_path('owsService', serviceUid=self.uid, projectUid=project.uid if project else None)
 
-    def render_map_bbox_from_layer_caps_list(self, rd: Request, lcs: t.List[LayerCaps], bounds: gws.Bounds) -> gws.ContentResponse:
+    def render_map_bbox_from_layer_caps_list(self, rd: Request, lcs: list[LayerCaps], bounds: gws.Bounds) -> gws.ContentResponse:
         try:
             px_width = int(rd.req.param('width'))
             px_height = int(rd.req.param('height'))

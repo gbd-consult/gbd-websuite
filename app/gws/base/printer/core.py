@@ -39,13 +39,13 @@ class PlaneUrl(PlaneBase):
 
 class PlaneFeatures(PlaneBase):
     type: t.Literal['features']
-    features: t.List[gws.FeatureProps]
+    features: list[gws.FeatureProps]
 
 
 class PlaneRaster(PlaneBase):
     type: t.Literal['raster']
     layerUid: str
-    subLayers: t.Optional[t.List[str]]
+    subLayers: t.Optional[list[str]]
 
 
 class PlaneVector(PlaneBase):
@@ -55,19 +55,12 @@ class PlaneVector(PlaneBase):
 
 class PlaneSoup(PlaneBase):
     type: t.Literal['soup']
-    points: t.List[gws.Point]
-    tags: t.List[t.Any]
-    styles: t.Optional[t.List[gws.lib.style.Props]]
+    points: list[gws.Point]
+    tags: list[t.Any]
+    styles: t.Optional[list[gws.lib.style.Props]]
 
 
-Plane = t.Union[
-    PlaneBitmap,
-    PlaneUrl,
-    PlaneFeatures,
-    PlaneRaster,
-    PlaneVector,
-    PlaneSoup,
-]
+Plane = PlaneBitmap | PlaneUrl | PlaneFeatures | PlaneRaster | PlaneVector | PlaneSoup
 """variant: Print plane"""
 
 
@@ -75,17 +68,17 @@ class MapParams(gws.Data):
     background_color: t.Optional[int]
     bbox: t.Optional[gws.Extent]
     center: t.Optional[gws.Point]
-    planes: t.List[Plane]
+    planes: list[Plane]
     rotation: t.Optional[int]
     scale: int
-    visibleLayers: t.Optional[t.List[str]]
+    visibleLayers: t.Optional[list[str]]
 
 
 class ParamsBase(gws.Request):
     context: t.Optional[dict]
     crs: t.Optional[gws.CrsName]
     outputFormat: t.Optional[str]
-    maps: t.Optional[t.List[MapParams]]
+    maps: t.Optional[list[MapParams]]
 
 
 class ParamsWithTemplate(ParamsBase):
@@ -100,23 +93,23 @@ class ParamsWithMap(ParamsBase):
     outputSize: gws.Size
 
 
-Params = t.Union[ParamsWithTemplate, ParamsWithMap]
+Params = ParamsWithTemplate | ParamsWithMap
 """variant: Print params"""
 
 
 class Config(gws.Config):
     """Printer configuration"""
 
-    templates: t.List[gws.ext.config.template]
+    templates: list[gws.ext.config.template]
     """print templates"""
 
 
 class Props(gws.Data):
-    templates: t.List[gws.base.template.Props]
+    templates: list[gws.base.template.Props]
 
 
 class Object(gws.Node):
-    templates: t.List[gws.ITemplate]
+    templates: list[gws.ITemplate]
 
     def configure(self):
         self.create_children(gws.ext.object.template, self.var('templates'))

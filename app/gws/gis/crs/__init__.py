@@ -122,7 +122,7 @@ def get(crs_name: gws.CrsName) -> t.Optional[gws.ICrs]:
     return _get_crs(crs_name)
 
 
-def parse(crs_name: gws.CrsName) -> t.Tuple[gws.CrsFormat, t.Optional[gws.ICrs]]:
+def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, t.Optional[gws.ICrs]]:
     fmt, srid = _parse(crs_name)
     if not fmt:
         return gws.CrsFormat.none, None
@@ -139,7 +139,7 @@ def require(crs_name: gws.CrsName) -> gws.ICrs:
 ##
 
 
-def best_match(crs: gws.ICrs, supported_crs: t.List[gws.ICrs]) -> gws.ICrs:
+def best_match(crs: gws.ICrs, supported_crs: list[gws.ICrs]) -> gws.ICrs:
     """Return a crs from the list that most closely matches the given crs.
 
     Args:
@@ -191,7 +191,7 @@ def _best_match(crs, supported_crs):
         return sup
 
 
-def best_bounds(crs: gws.ICrs, supported_bounds: t.List[gws.Bounds]) -> gws.Bounds:
+def best_bounds(crs: gws.ICrs, supported_bounds: list[gws.Bounds]) -> gws.Bounds:
     """Return the best one from the list of supported bounds.
 
     Args:
@@ -213,7 +213,7 @@ def best_axis(
         protocol: gws.OwsProtocol = None,
         protocol_version: str = None,
         crs_format: gws.CrsFormat = None,
-        inverted_crs: t.Optional[t.List[gws.ICrs]] = None
+        inverted_crs: t.Optional[list[gws.ICrs]] = None
 ) -> gws.Axis:
     """Return the 'best guess' axis under given circumstances.
 

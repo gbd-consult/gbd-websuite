@@ -17,12 +17,12 @@ class ServiceParams(gws.Request):
 class Config(gws.base.action.Config):
     """OWS server action"""
 
-    services: t.List[gws.ext.config.owsService]
+    services: list[gws.ext.config.owsService]
     """services configuration"""
 
 
 class Object(gws.base.action.Object):
-    services: t.List[gws.IOwsService]
+    services: list[gws.IOwsService]
 
     def configure(self):
         self.services = self.create_children(gws.ext.object.owsService, self.var('services'))

@@ -237,7 +237,7 @@ def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.IXm
     css_size = f'left:0;top:0;width:{int(w)}mm;height:{int(h)}mm'
     css_abs = f'position:absolute;{css_size}'
 
-    tags: t.List[gws.IXmlElement] = []
+    tags: list[gws.IXmlElement] = []
 
     for plane in mro.planes:
         if plane.type == 'image':

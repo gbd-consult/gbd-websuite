@@ -148,7 +148,7 @@ class NamespaceManager:
             self,
             default_prefix: str = None,
             for_element: gws.IXmlElement = None,
-            extra_prefixes: t.List[str] = None,
+            extra_prefixes: list[str] = None,
             with_schema_locations: bool = False,
     ) -> dict:
         """Returns an xmlns declaration block as dictionary of attributes.

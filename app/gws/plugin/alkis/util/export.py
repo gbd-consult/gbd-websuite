@@ -16,7 +16,7 @@ We flatten it first, creating a list 'some.nested.key, list positions, value'
 """
 
 
-def to_csv(action: gws.INode, fs_features: t.List[gws.IFeature], model: gws.base.model.Object):
+def to_csv(action: gws.INode, fs_features: list[gws.IFeature], model: gws.base.model.Object):
     helper: gws.base.csv.Object = action.root.app.require_helper('csv')
 
     writer = helper.writer()
@@ -29,7 +29,7 @@ def to_csv(action: gws.INode, fs_features: t.List[gws.IFeature], model: gws.base
     return writer.to_bytes()
 
 
-def _recs_from_feature(fs: gws.IFeature, att_names: t.List[str]):
+def _recs_from_feature(fs: gws.IFeature, att_names: list[str]):
     # create a flat list from the attributes of the FS feature
 
     flat = list(_flat_walk({a.name: a.value for a in fs.attributes}))
@@ -40,7 +40,7 @@ def _recs_from_feature(fs: gws.IFeature, att_names: t.List[str]):
 
     # compute max index for each list from 'pos' elements
 
-    max_index: t.Dict[str, int] = {}
+    max_index: dict[str, int] = {}
 
     for e in flat:
         for k, v in e['pos'].items():

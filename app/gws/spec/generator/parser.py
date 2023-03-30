@@ -366,6 +366,15 @@ class _PythonParser:
             item_types = [self.type_from_node(e) for e in node.elts]
             return self.add(base.C.TUPLE, tItems=[typ.uid for typ in item_types])
 
+        # foo: SomeType | SomeType | ...
+        if cc == 'BinOp' and _cls(node.op) == 'BitOr':
+            item_types = []
+            while _cls(node) == 'BinOp' and _cls(node.op) == 'BitOr':
+                item_types.insert(0, self.type_from_node(node.right))
+                node = node.left
+            item_types.insert(0, self.type_from_node(node))
+            return self.add(base.C.UNION, tItems=[typ.uid for typ in item_types])
+
         raise ValueError(f'unsupported type: {cc!r}')
 
     def type_from_name(self, name: str, param=None) -> base.Type:
@@ -398,16 +407,16 @@ class _PythonParser:
                 raise ValueError('invalid optional type')
             return self.add(base.C.OPTIONAL, tTarget=param_typ.uid)
 
-        if g == 'List':
+        if g.lower() == 'list':
             return self.add(base.C.LIST, tItem=param_typ.uid if param_typ else 'any')
 
-        if g == 'Set':
+        if g.lower() == 'set':
             return self.add(base.C.SET, tItem=param_typ.uid if param_typ else 'any')
 
-        if g == 'Dict':
+        if g.lower() == 'dict':
             if param_items:
                 if len(param_items) != 2:
-                    raise ValueError('invalid Dict arguments')
+                    raise ValueError('invalid dict arguments')
                 key, val = param_items
             elif param_typ:
                 key = 'str'
@@ -422,7 +431,7 @@ class _PythonParser:
                 raise ValueError('invalid Union')
             return self.add(base.C.UNION, tItems=sorted(param_items))
 
-        if g == 'Tuple':
+        if g.lower() == 'tuple':
             if not param_typ:
                 return self.add(base.C.TUPLE, tItems=[])
             if not param_items:

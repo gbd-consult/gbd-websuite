@@ -51,7 +51,7 @@ class EigentuemerConfig(gws.ConfigWithAccess):
 
     controlMode: bool = False 
     """restricted mode enabled"""
-    controlRules: t.Optional[t.List[str]] 
+    controlRules: t.Optional[list[str]] 
     """regular expression for the restricted input control"""
     logTable: str = '' 
     """data access protocol table name"""
@@ -59,7 +59,7 @@ class EigentuemerConfig(gws.ConfigWithAccess):
 
 class EigentuemerOptions(gws.Node):
     control_mode: bool
-    control_rules: t.List[str]
+    control_rules: list[str]
     log_table: str
 
     def configure(self):
@@ -97,7 +97,7 @@ class ExportGroupConfig(gws.Config):
 class ExportConfig(gws.Config):
     """CSV Export configuration"""
 
-    groups: t.Optional[t.List[ExportGroupConfig]] 
+    groups: t.Optional[list[ExportGroupConfig]] 
     """export groups"""
 
 
@@ -193,7 +193,7 @@ class Config(provider.Config):
     """access to the Grundbuch (register) information"""
     limit: int = 100 
     """search results limit"""
-    templates: t.Optional[t.List[gws.ext.config.template]] 
+    templates: t.Optional[list[gws.ext.config.template]] 
     """templates for Flurstueck details"""
     ui: t.Optional[core.UiOptions] 
     """ui options"""
@@ -204,8 +204,8 @@ class Config(provider.Config):
 ##
 
 class Props(gws.base.action.Props):
-    exportGroups: t.List[ExportGroupProps]
-    gemarkungen: t.List[core.Gemarkung]
+    exportGroups: list[ExportGroupProps]
+    gemarkungen: list[core.Gemarkung]
     limit: int
     printTemplate: gws.base.template.Props
     ui: core.UiOptions
@@ -247,24 +247,24 @@ class ToponymStrasse(gws.Data):
 
 
 class GetToponymsResponse(gws.Response):
-    gemeinden: t.List[ToponymGemeinde]
-    gemarkungen: t.List[ToponymGemarkung]
-    strasseNames: t.List[str]
-    strasseGemarkungUids: t.List[str]
+    gemeinden: list[ToponymGemeinde]
+    gemarkungen: list[ToponymGemarkung]
+    strasseNames: list[str]
+    strasseGemarkungUids: list[str]
 
 
 class FindFlurstueckParams(BaseFindParams):
     wantEigentuemer: t.Optional[bool]
     controlInput: t.Optional[str]
     crs: t.Optional[gws.CrsName]
-    shapes: t.Optional[t.List[gws.base.shape.Props]]
+    shapes: t.Optional[list[gws.base.shape.Props]]
 
     bblatt: str = ''
     flaecheBis: str = ''
     flaecheVon: str = ''
     flurnummer: str = ''
     flurstuecksfolge: str = ''
-    fsUids: t.List[str] = []
+    fsUids: list[str] = []
     hausnummer: str = ''
     name: str = ''
     nenner: str = ''
@@ -274,7 +274,7 @@ class FindFlurstueckParams(BaseFindParams):
 
 
 class FindFlurstueckResponse(gws.Response):
-    features: t.List[gws.FeatureProps]
+    features: list[gws.FeatureProps]
     total: int
 
 
@@ -292,7 +292,7 @@ class FindAdresseParams(BaseFindParams):
 
 
 class FindAdresseResponse(gws.Response):
-    features: t.List[gws.FeatureProps]
+    features: list[gws.FeatureProps]
     total: int
 
 
@@ -312,7 +312,7 @@ class PrintParams(gws.Request):
 
 class ExportParams(gws.Request):
     findParams: FindFlurstueckParams
-    groupIndexes: t.List[int]
+    groupIndexes: list[int]
 
 
 class ExportResponse(gws.Response):
@@ -368,7 +368,7 @@ _EF_FAIL = -1  # access to Eigentümer granted, control check failed
 class Object(gws.base.action.Object):
     buchung: BuchungOptions
     eigentuemer: EigentuemerOptions
-    export_groups: t.List[ExportGroup]
+    export_groups: list[ExportGroup]
     limit: int
     print_template: gws.ITemplate
     provider: provider.Object
@@ -492,7 +492,7 @@ class Object(gws.base.action.Object):
         if not res.features:
             raise gws.base.web.error.NotFound()
 
-        combined_rules: t.List[gws.base.model.Rule] = []
+        combined_rules: list[gws.base.model.Rule] = []
         group_indexes = sorted(int(i) for i in p.groupIndexes)
 
         for i in group_indexes:
@@ -560,7 +560,7 @@ class Object(gws.base.action.Object):
         if not self.provider.has_index:
             raise gws.Error('alkissearch cannot run, no alkis index')
 
-    def _find_and_format(self, req, p: FindFlurstueckParams, template_subjects: t.List[str], soft_limit, hard_limit) -> FindFlurstueckResponse:
+    def _find_and_format(self, req, p: FindFlurstueckParams, template_subjects: list[str], soft_limit, hard_limit) -> FindFlurstueckResponse:
         feature_props_list = []
         res = self._find(req, p, soft_limit, hard_limit)
 

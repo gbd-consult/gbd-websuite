@@ -54,7 +54,7 @@ def output_to_image_path(lro: gws.LegendRenderOutput) -> t.Optional[str]:
         return None
 
 
-def combine_outputs(lros: t.List[gws.LegendRenderOutput], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
+def combine_outputs(lros: list[gws.LegendRenderOutput], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
     imgs = gws.compact(output_to_image(lro) for lro in lros)
     img = _combine_images(imgs, options)
     if not img:
@@ -62,14 +62,14 @@ def combine_outputs(lros: t.List[gws.LegendRenderOutput], options: dict = None) 
     return gws.LegendRenderOutput(image=img, size=img.size())
 
 
-def _combine_images(images: t.List[gws.IImage], options: dict = None) -> t.Optional[gws.IImage]:
+def _combine_images(images: list[gws.IImage], options: dict = None) -> t.Optional[gws.IImage]:
     if not images:
         return None
     # @TODO other combination options
     return _combine_vertically(images)
 
 
-def _combine_vertically(images: t.List[gws.IImage]):
+def _combine_vertically(images: list[gws.IImage]):
     ws = [img.size()[0] for img in images]
     hs = [img.size()[1] for img in images]
 

@@ -7,7 +7,7 @@ from .. import provider, user
 gws.ext.new.authProvider('system')
 
 class Object(provider.Object):
-    users: t.Dict[str, user.User]
+    users: dict[str, user.User]
 
     def configure(self):
         self.uid = 'gws.base.auth.providers.system'

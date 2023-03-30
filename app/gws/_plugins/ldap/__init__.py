@@ -39,7 +39,7 @@ _MS_PARTIAL_SECRETS_ACCOUNT = 0x04000000
 class UserSpec(gws.Data):
     """Map LDAP filters to authorization roles"""
 
-    roles: t.List[str]  #: role names
+    roles: list[str]  #: role names
     matches: t.Optional[str]  #: LDAP filter the account has to match
     memberOf: t.Optional[str]  #: LDAP group the account has to be a member of
 
@@ -51,7 +51,7 @@ class Config(gws.base.auth.provider.Config):
     bindDN: str  #: bind DN
     bindPassword: str  #: bind password
     displayNameFormat: gws.FormatStr = '{dn}'  #: format for user's display name
-    users: t.List[UserSpec]  #: map LDAP filters to gws roles
+    users: list[UserSpec]  #: map LDAP filters to gws roles
     timeout: gws.Duration = 30  #: LDAP server timeout
     url: str  #: LDAP server url "ldap://host:port/baseDN?searchAttribute"
 

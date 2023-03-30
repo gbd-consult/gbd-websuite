@@ -14,11 +14,11 @@ class SpatialContext(t.Enum):
 
 
 class Config(gws.ConfigWithAccess):
-    models: t.Optional[t.List[gws.ext.config.model]]
+    models: t.Optional[list[gws.ext.config.model]]
     """data models for features"""
     spatialContext: t.Optional[SpatialContext] = SpatialContext.map
     """spatial context for keyword searches"""
-    templates: t.Optional[t.List[gws.ext.config.template]]
+    templates: t.Optional[list[gws.ext.config.template]]
     """feature formatting templates"""
     title: t.Optional[str]
     """provider title"""
@@ -100,7 +100,7 @@ class Object(gws.Node, gws.IFinder):
 ##
 
 def locate(
-        finders: t.List[gws.IFinder],
+        finders: list[gws.IFinder],
         user: gws.IUser = None,
         uid: str = None
 ) -> t.Optional[gws.IFinder]:

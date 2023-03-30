@@ -13,14 +13,14 @@ STORAGE_CATEGORY = 'Dimension'
 class Config(gws.ConfigWithAccess):
     """Dimension action"""
 
-    layers: t.Optional[t.List[str]]
+    layers: t.Optional[list[str]]
     """target layer uids"""
     pixelTolerance: int = 10
     """pixel tolerance"""
 
 
 class Props(gws.base.action.Props):
-    layerUids: t.Optional[t.List[str]]
+    layerUids: t.Optional[list[str]]
     pixelTolerance: int
 
 

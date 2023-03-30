@@ -50,15 +50,15 @@ class Config(gws.WithAccess):
     cacheTime: gws.Duration = '24h'  #: request cache life time
     dataTableName: str  #: table to store consolidated results
     dataTablePattern: str  #: pattern for result tables to consolidate
-    gemeindeFilter: t.Optional[t.List[str]]  #: gemeinde (AU) ids to keep in the index
+    gemeindeFilter: t.Optional[list[str]]  #: gemeinde (AU) ids to keep in the index
     infoTitle: str = '' #: information box title
     requestTableName: str  #: table to store outgoing requests
     requestUrl: gws.Url #: main program url, with the placholder {REQUEST_ID}
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: feature formatting templates
+    templates: t.Optional[list[gws.ext.template.Config]]  #: feature formatting templates
 
 
 class ConnectParams(gws.Params):
-    shapes: t.List[gws.ShapeProps]
+    shapes: list[gws.ShapeProps]
 
 
 class ConnectResponse(gws.Response):
@@ -77,11 +77,11 @@ class Object(gws.base.api.Action):
     def configure(self):
         
 
-        self.au_filter: t.List[str] = self.var('gemeindeFilter', default=[])
+        self.au_filter: list[str] = self.var('gemeindeFilter', default=[])
         self.data_table_name: str = self.var('dataTableName')
         self.request_table_name: str = self.var('requestTableName')
         self.request_url: str = self.var('requestUrl')
-        self.templates: t.List[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
         self.alkis: gws.ext.helper.alkis.Object = t.cast(
             gws.ext.helper.alkis.Object,

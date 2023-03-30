@@ -44,25 +44,25 @@ class Config(gws.ConfigWithAccess):
     """gws client configuration"""
     db: t.Optional[gws.base.database.manager.Config]
     """database configuration"""
-    developer: t.Optional[t.Dict]
+    developer: t.Optional[dict]
     """developer options"""
     fonts: t.Optional[FontConfig]
     """fonts configuration"""
-    helpers: t.Optional[t.List[gws.ext.config.helper]]
+    helpers: t.Optional[list[gws.ext.config.helper]]
     """helpers configurations"""
-    locales: t.Optional[t.List[str]]
+    locales: t.Optional[list[str]]
     """default locales for all projects"""
     metadata: t.Optional[gws.Metadata]
     """application metadata"""
-    middleware: t.Optional[t.List[str]]
+    middleware: t.Optional[list[str]]
     """middleware function names"""
-    plugins: t.Optional[t.List[dict]]
+    plugins: t.Optional[list[dict]]
     """configuration for plugins"""
-    projectDirs: t.Optional[t.List[gws.DirPath]]
+    projectDirs: t.Optional[list[gws.DirPath]]
     """directories with additional projects"""
-    projectPaths: t.Optional[t.List[gws.FilePath]]
+    projectPaths: t.Optional[list[gws.FilePath]]
     """additional project paths"""
-    projects: t.Optional[t.List[gws.ext.config.project]]
+    projects: t.Optional[list[gws.ext.config.project]]
     """project configurations"""
     server: t.Optional[gws.server.Config] = {}  # type: ignore
     """server engine options"""
@@ -73,12 +73,12 @@ class Config(gws.ConfigWithAccess):
 class Object(gws.Node, gws.IApplication):
     """Main Appilication object"""
 
-    helpers: t.List[gws.Node]
+    helpers: list[gws.Node]
     qgisVersion = ''
-    projects: t.Dict[str, gws.IProject]
+    projects: dict[str, gws.IProject]
 
-    webMiddlewareFuncs: t.Dict[str, t.Callable]
-    webMiddlewareNames: t.List[str]
+    webMiddlewareFuncs: dict[str, t.Callable]
+    webMiddlewareNames: list[str]
 
     _devopts: dict
 

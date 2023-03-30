@@ -6,13 +6,13 @@ import gws.types as t
 
 
 class CorsConfig(gws.Config):
-    allowMethods: t.Optional[t.List[str]] 
+    allowMethods: t.Optional[list[str]] 
     """Access-Control-Allow-Methods header"""
     allowOrigin: str = '*' 
     """Access-Control-Allow-Origin header"""
     allowCredentials: bool = False 
     """Access-Control-Allow-Credentials header"""
-    allowHeaders: t.Optional[t.List[str]] 
+    allowHeaders: t.Optional[list[str]] 
     """Access-Control-Allow-Headers header"""
 
 
@@ -41,9 +41,9 @@ class DocumentRootConfig(gws.Config):
 
     dir: gws.DirPath 
     """directory path"""
-    allowMime: t.Optional[t.List[str]] 
+    allowMime: t.Optional[list[str]] 
     """allowed mime types"""
-    denyMime: t.Optional[t.List[str]] 
+    denyMime: t.Optional[list[str]] 
     """disallowed mime types (from the standard list)"""
 
 
@@ -58,7 +58,7 @@ class Config(gws.Config):
     """error page template"""
     host: str = '*' 
     """host name"""
-    rewrite: t.Optional[t.List[RewriteRuleConfig]] 
+    rewrite: t.Optional[list[RewriteRuleConfig]] 
     """rewrite rules"""
     canonicalHost: str = '' 
     """hostname for reversed rewriting"""

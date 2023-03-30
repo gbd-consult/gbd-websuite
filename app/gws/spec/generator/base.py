@@ -7,7 +7,7 @@ from gws.spec.core import *
 
 ATOMS = ['any', 'bool', 'bytes', 'float', 'int', 'str']
 
-BUILTINS = ATOMS + ['type', 'object', 'Exception', 'dict', 'list', 'tuple']
+BUILTINS = ATOMS + ['type', 'object', 'Exception', 'dict', 'list', 'set', 'tuple']
 
 BUILTIN_TYPES = [
     'Any',

@@ -13,7 +13,7 @@ class Object(gws.base.search.provider.Object):
     supports_geometry = True
 
     provider: provider.Object
-    source_layers: t.List[gws.SourceLayer]
+    source_layers: list[gws.SourceLayer]
 
     def configure(self):
         self.provider = self.var('_provider')
@@ -26,5 +26,5 @@ class Object(gws.base.search.provider.Object):
                 and len(args.shapes) == 1
                 and args.shapes[0].geometry_type == gws.GeometryType.point)
 
-    def run(self, args: gws.SearchArgs, layer: gws.ILayer = None) -> t.List[gws.IFeature]:
+    def run(self, args: gws.SearchArgs, layer: gws.ILayer = None) -> list[gws.IFeature]:
         return self.provider.find_features(args, self.source_layers)

@@ -22,7 +22,7 @@ def from_path(
 
 
 def from_string(
-        inp: t.Union[str, bytes],
+        inp: str | bytes,
         case_insensitive=False,
         compact_whitespace=False,
         remove_namespaces=False,

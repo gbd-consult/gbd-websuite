@@ -24,7 +24,7 @@ class Config(gws.base.layer.vector.Config):
 class Object(gws.base.layer.vector.Object, gws.IOwsClient):
     path: str
     source_crs: gws.ICrs
-    features: t.List[gws.IFeature]
+    features: list[gws.IFeature]
 
     def configure_source(self):
         self.path = self.var('path')

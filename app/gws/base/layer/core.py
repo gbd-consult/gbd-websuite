@@ -79,7 +79,7 @@ class GridConfig(gws.Config):
     crs: t.Optional[gws.CrsName]
     extent: t.Optional[gws.Extent]
     corner: t.Optional[gws.Corner]
-    resolutions: t.Optional[t.List[float]]
+    resolutions: t.Optional[list[float]]
     tileSize: t.Optional[int]
 
 
@@ -97,7 +97,7 @@ class SearchConfig(gws.Config):
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
-    models: t.Optional[t.List[gws.ext.config.model]]
+    models: t.Optional[list[gws.ext.config.model]]
     """data models"""
     cache: t.Optional[CacheConfig]
     """cache configuration"""
@@ -124,9 +124,9 @@ class Config(gws.ConfigWithAccess):
     ows: bool = True  # layer is enabled for OWS services
     search: t.Optional[SearchConfig]
     """layer search configuration"""
-    finders: t.Optional[t.List[gws.ext.config.finder]]
+    finders: t.Optional[list[gws.ext.config.finder]]
     """search prodivers"""
-    templates: t.Optional[t.List[gws.ext.config.template]]
+    templates: t.Optional[list[gws.ext.config.template]]
     """client templates"""
     title: str = ''
     """layer title"""
@@ -161,7 +161,7 @@ class CustomConfig(gws.ConfigWithAccess):
     ows: bool = True  # layer is enabled for OWS services
     # search: gws.base.search.finder.collection.Config = {}  # type:ignore
     """layer search configuration"""
-    templates: t.Optional[t.List[gws.ext.config.template]]
+    templates: t.Optional[list[gws.ext.config.template]]
     """client templates"""
     title: t.Optional[str]
     """layer title"""
@@ -172,7 +172,7 @@ class CustomConfig(gws.ConfigWithAccess):
 class GridProps(gws.Props):
     corner: str
     extent: gws.Extent
-    resolutions: t.List[float]
+    resolutions: list[float]
     tileSize: int
 
 
@@ -180,12 +180,12 @@ class Props(gws.Props):
     model: t.Optional[gws.base.model.Props]
     extent: t.Optional[gws.Extent]
     geometryType: t.Optional[gws.GeometryType]
-    layers: t.Optional[t.List['Props']]
+    layers: t.Optional[list['Props']]
     loadingStrategy: gws.FeatureLoadingStrategy
     metadata: gws.lib.metadata.Props
     opacity: t.Optional[float]
     clientOptions: ClientOptions
-    resolutions: t.Optional[t.List[float]]
+    resolutions: t.Optional[list[float]]
     displayMode: str
     # style: t.Optional[gws.lib.style.Props]
     grid: GridProps
@@ -241,7 +241,7 @@ class Object(gws.Node, gws.ILayer):
     supportsVectorServices = False
 
     parentBounds: gws.Bounds
-    parentResolutions: t.List[float]
+    parentResolutions: list[float]
 
     def configure(self):
         self.parentBounds = self.var('_parentBounds')

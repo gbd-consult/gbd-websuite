@@ -58,7 +58,7 @@ class FindFlurstueckQuery(BaseQuery):
     flaecheVon: str = ''
     flurnummer: str = ''
     flurstuecksfolge: str = ''
-    fsUids: t.List[str] = []
+    fsUids: list[str] = []
     hausnummer: str = ''
     name: str = ''
     nenner: str = ''
@@ -72,7 +72,7 @@ class FindFlurstueckQuery(BaseQuery):
 
 
 class FindFlurstueckResult(gws.Data):
-    features: t.List[gws.IFeature] = []
+    features: list[gws.IFeature] = []
     total: int = 0
 
 
@@ -92,7 +92,7 @@ class FindAdresseQuery(BaseQuery):
 
 
 class FindAdresseResult(gws.Data):
-    features: t.List[gws.IFeature] = []
+    features: list[gws.IFeature] = []
     total: int = 0
 
 
@@ -101,7 +101,7 @@ class FindStrasseQuery(BaseQuery):
 
 
 class FindStrasseResult(gws.Data):
-    strassen: t.List[Strasse]
+    strassen: list[Strasse]
 
 
 class UiGemarkungListMode(t.Enum):

@@ -16,12 +16,12 @@ name_index = 'idx_name'
 
 
 class _Cache:
-    addr: t.Dict[str, t.List[dict]] = {}
-    gebaeude: t.Dict[str, t.List[dict]] = {}
-    gemarkung: t.Dict[str, str] = {}
-    name: t.List[dict] = []
-    nutzung: t.Dict[str, t.List[dict]] = {}
-    buchungsstelle: t.Dict[str, dict] = {}
+    addr: dict[str, list[dict]] = {}
+    gebaeude: dict[str, list[dict]] = {}
+    gemarkung: dict[str, str] = {}
+    name: list[dict] = []
+    nutzung: dict[str, list[dict]] = {}
+    buchungsstelle: dict[str, dict] = {}
 
 
 # vollnummer = flur-zaeher/nenner (folge)
@@ -146,7 +146,7 @@ def _cache(conn: AlkisConnection):
 
     gws.log.info('fs index: nutzung cache')
 
-    nu_parts: t.Dict[str, dict] = {}
+    nu_parts: dict[str, dict] = {}
     rs = conn.select(f'SELECT * FROM {idx}.{nutzung.parts_index}')
 
     for r in rs:

@@ -42,10 +42,10 @@ class Requester(gws.IWebRequester):
         'msgpack': 'application/msgpack',
     }
 
-    _middlewareList: t.List[gws.WebMiddlewareHandler]
+    _middlewareList: list[gws.WebMiddlewareHandler]
     _middlewareIndex: int
 
-    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite, middleware: t.List[gws.WebMiddlewareHandler]):
+    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite, middleware: list[gws.WebMiddlewareHandler]):
         self._wz = werkzeug.wrappers.Request(environ)
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
         self._wz.max_content_length = int(root.app.var('server.web.maxRequestLength', default=1)) * 1024 * 1024
@@ -73,8 +73,8 @@ class Requester(gws.IWebRequester):
 
         self.isApi = self.inputType is not None
 
-        self.params: t.Dict[str, t.Any] = {}
-        self.lowerParams: t.Dict[str, t.Any] = {}
+        self.params: dict[str, t.Any] = {}
+        self.lowerParams: dict[str, t.Any] = {}
 
     def apply_middleware(self):
         fn = self._middlewareList[self._middlewareIndex]
@@ -131,7 +131,7 @@ class Requester(gws.IWebRequester):
         if response.location:
             return Responder(wz=werkzeug.utils.redirect(response.location, response.status or 302))
 
-        args: t.Dict = {
+        args: dict = {
             'mimetype': response.mime,
             'status': response.status or 200,
             'headers': {},

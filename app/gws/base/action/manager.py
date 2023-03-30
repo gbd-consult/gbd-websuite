@@ -11,12 +11,12 @@ class Props(gws.Props):
 class Config(gws.ConfigWithAccess):
     """Server actions"""
 
-    actions: t.Optional[t.List[gws.ext.config.action]] 
+    actions: t.Optional[list[gws.ext.config.action]] 
     """available actions"""
 
 
 class Object(gws.Node, gws.IActionManager):
-    index: t.Dict[str, gws.IAction]
+    index: dict[str, gws.IAction]
 
     def configure(self):
         self.items = self.create_children(gws.ext.object.action, self.var('actions'))

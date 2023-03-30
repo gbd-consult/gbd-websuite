@@ -154,10 +154,10 @@ def find_files(dirname, pattern=None, ext=None, deep=True):
             yield de.path
 
 
-_Path = t.Union[str, bytes]
+_Path = str | bytes
 
 
-def parse_path(path: _Path) -> t.Dict[str, str]:
+def parse_path(path: _Path) -> dict[str, str]:
     """Parse a path into a dict(path,dirname,filename,name,extension)"""
 
     str_path = path if isinstance(path, str) else path.decode('utf8')

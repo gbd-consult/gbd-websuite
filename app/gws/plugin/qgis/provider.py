@@ -13,9 +13,9 @@ from . import caps, project
 class Config(gws.Config):
     source: project.Source
     """Qgis project file"""
-    directRender: t.Optional[t.List[str]]
+    directRender: t.Optional[list[str]]
     """QGIS data providers that should be rendered directly"""
-    directSearch: t.Optional[t.List[str]]
+    directSearch: t.Optional[list[str]]
     """QGIS data providers that should be searched directly"""
     forceCrs: t.Optional[gws.CrsName]
     """use this CRS for requests"""
@@ -48,12 +48,12 @@ _DEFAULT_LEGEND_PARAMS = {
 
 class Object(gws.Node, gws.IOwsProvider):
     source: project.Source
-    printTemplates: t.List[caps.PrintTemplate]
+    printTemplates: list[caps.PrintTemplate]
     url: str
     project: project.Object
 
-    directRender: t.Set[str]
-    directSearch: t.Set[str]
+    directRender: set[str]
+    directSearch: set[str]
 
     crs: gws.ICrs
     extent: t.Optional[gws.Extent]

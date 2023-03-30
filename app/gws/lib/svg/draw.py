@@ -16,7 +16,7 @@ DEFAULT_MARKER_SIZE = 10
 DEFAULT_POINT_SIZE = 10
 
 
-def shape_to_fragment(shape: gws.IShape, view: gws.MapView, style: gws.IStyle = None, label: str = None) -> t.List[gws.IXmlElement]:
+def shape_to_fragment(shape: gws.IShape, view: gws.MapView, style: gws.IStyle = None, label: str = None) -> list[gws.IXmlElement]:
     if not shape:
         return []
 
@@ -86,7 +86,7 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, style: gws.IStyle = 
 # ----------------------------------------------------------------------------------------------------------------------
 # soup
 
-def soup_to_fragment(view: gws.MapView, points: t.List[gws.Point], tags: t.List[t.Any]) -> t.List[gws.IXmlElement]:
+def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list[t.Any]) -> list[gws.IXmlElement]:
     """Convert an svg "soup" to a list of XmlElements.
 
     A soup has two components:

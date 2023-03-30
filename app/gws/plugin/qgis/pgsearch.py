@@ -12,7 +12,7 @@ class Object(gws.base.search.provider.Object):
     supports_geometry = True
     supports_keyword = True
 
-    extra_where: t.List[str]
+    extra_where: list[str]
     db: gws.base.db.postgres.provider.Object
     table: gws.SqlTable
 

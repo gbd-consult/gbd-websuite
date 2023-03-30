@@ -44,9 +44,9 @@ class Object(gws.base.search.provider.Object):
         
 
         self.capabilties = gws.base.search.provider.CAPS_KEYWORD
-        self.templates: t.List[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
-    def run(self, layer: gws.ILayer, args: gws.SearchArgs) -> t.List[gws.IFeature]:
+    def run(self, layer: gws.ILayer, args: gws.SearchArgs) -> list[gws.IFeature]:
         params = {
             'q': args.keyword,
             'addressdetails': 1,

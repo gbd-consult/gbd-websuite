@@ -151,7 +151,7 @@ def _mime_to_format(mime):
     return _mime_to_format_tr.get(mime, None) or mime.upper()
 
 
-def _int_size(size: gws.Size) -> t.Tuple[int, int]:
+def _int_size(size: gws.Size) -> tuple[int, int]:
     w, h = size
     return int(w), int(h)
 

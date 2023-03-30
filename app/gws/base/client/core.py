@@ -16,13 +16,13 @@ class ElementConfig(gws.ConfigWithAccess):
 class Config(gws.ConfigWithAccess):
     """GWS client configuration"""
 
-    options: t.Optional[t.Dict] 
+    options: t.Optional[dict] 
     """client options"""
-    elements: t.Optional[t.List[ElementConfig]] 
+    elements: t.Optional[list[ElementConfig]] 
     """client UI elements"""
-    addElements: t.Optional[t.List[ElementConfig]] 
+    addElements: t.Optional[list[ElementConfig]] 
     """add elements to the parent element list"""
-    removeElements: t.Optional[t.List[ElementConfig]] 
+    removeElements: t.Optional[list[ElementConfig]] 
     """remove elements from the parent element list"""
 
 
@@ -32,7 +32,7 @@ class ElementProps(gws.Data):
 
 class Props(gws.Data):
     options: t.Optional[dict]
-    elements: t.Optional[t.List[ElementProps]]
+    elements: t.Optional[list[ElementProps]]
 
 
 class Element(gws.Node):
@@ -42,7 +42,7 @@ class Element(gws.Node):
 
 class Object(gws.Node, gws.IClient):
     options: dict
-    elements: t.List[Element]
+    elements: list[Element]
 
     def configure(self):
         app_client = gws.get(self.root.app, 'client')

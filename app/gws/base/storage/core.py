@@ -42,7 +42,7 @@ class Directory(gws.Data):
     category: str
     writable: bool
     readable: bool
-    entries: t.List[Entry]
+    entries: list[Entry]
 
 
 class Record(gws.Data):
@@ -77,7 +77,7 @@ class Config(gws.Config):
 
     path: t.Optional[str]
     """path to the storage file"""
-    permissions: t.Optional[t.List[PermissionRule]]
+    permissions: t.Optional[list[PermissionRule]]
     """permission rules"""
 
 
@@ -92,7 +92,7 @@ class Permission(gws.Node):
 
 class Object(gws.Node):
     provider: sqlite.Object
-    permissions: t.List[Permission]
+    permissions: list[Permission]
 
     def configure(self):
         self.permissions = self.root.create_many(Permission, self.var('permissions'))

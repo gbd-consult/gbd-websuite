@@ -24,15 +24,15 @@ class Config(gws.Config):
     """source layers to exclude"""
     flattenLayers: t.Optional[FlattenConfig] 
     """flatten the layer hierarchy"""
-    layerConfig: t.Optional[t.List[core.CustomConfig]] 
+    layerConfig: t.Optional[list[core.CustomConfig]] 
     """custom configurations for specific layers"""
 
 
 def layer_configs_from_layer(
         layer: core.Object,
-        source_layers: t.List[gws.SourceLayer],
+        source_layers: list[gws.SourceLayer],
         leaf_layer_maker: t.Callable
-) -> t.List[gws.Config]:
+) -> list[gws.Config]:
     ##
     return layer_configs_from_args(
         layer.root,
@@ -47,13 +47,13 @@ def layer_configs_from_layer(
 
 def layer_configs_from_args(
         root: gws.IRoot,
-        source_layers: t.List[gws.SourceLayer],
+        source_layers: list[gws.SourceLayer],
         roots_slf: gws.gis.source.LayerFilter,
         exclude_slf: gws.gis.source.LayerFilter,
         flatten_config: FlattenConfig,
-        custom_configs: t.List[core.CustomConfig],
+        custom_configs: list[core.CustomConfig],
         leaf_layer_maker: t.Callable,
-) -> t.List[gws.Config]:
+) -> list[gws.Config]:
     ##
 
     def base_config(sl: gws.SourceLayer, depth: int):

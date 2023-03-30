@@ -12,12 +12,12 @@ class Config(gws.Config):
     dataModel: t.Optional[gws.base.model.Config]
     """user-editable template attributes"""
     mapSize: t.Optional[gws.MSize]
-    mimeTypes: t.Optional[t.List[str]]
+    mimeTypes: t.Optional[list[str]]
     """mime types this template can generate"""
     pageSize: t.Optional[gws.MSize]
     path: t.Optional[gws.FilePath]
     """path to a template file"""
-    qualityLevels: t.Optional[t.List[gws.TemplateQualityLevel]]
+    qualityLevels: t.Optional[list[gws.TemplateQualityLevel]]
     """quality levels supported by the template"""
     subject: str = ''
     """template purpose"""
@@ -31,7 +31,7 @@ class Props(gws.Props):
     model: t.Optional[gws.base.model.Props]
     mapSize: t.Optional[gws.MSize]
     pageSize: t.Optional[gws.MSize]
-    qualityLevels: t.List[gws.TemplateQualityLevel]
+    qualityLevels: list[gws.TemplateQualityLevel]
     title: str
     uid: str
 
@@ -111,7 +111,7 @@ def locate(
 
 
 def render(
-        templates: t.List[gws.ITemplate],
+        templates: list[gws.ITemplate],
         tri: gws.TemplateRenderInput,
         user: gws.IUser = None,
         subject: str = None,

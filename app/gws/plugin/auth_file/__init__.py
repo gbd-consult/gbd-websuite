@@ -22,7 +22,7 @@ class Config(gws.base.auth.provider.Config):
 
 class Object(gws.base.auth.provider.Object):
     path: str
-    db: t.List[dict]
+    db: list[dict]
 
     def configure(self):
         self.uid = 'gws.base.auth.providers.file'

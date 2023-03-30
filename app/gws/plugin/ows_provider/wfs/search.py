@@ -18,7 +18,7 @@ class Object(gws.base.search.provider.Object):
     # @TODO support filters
     supports_geometry = True
 
-    source_layers: t.List[gws.SourceLayer]
+    source_layers: list[gws.SourceLayer]
     provider: provider_module.Object
 
     def configure(self):

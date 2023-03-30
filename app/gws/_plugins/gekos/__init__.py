@@ -71,10 +71,10 @@ class Config(gws.WithAccess):
 
     crs: gws.Crs = ''  #: CRS for gekos data
     db: t.Optional[str]  #: database provider uid
-    sources: t.Optional[t.List[SourceConfig]]  #: gek-online instances
+    sources: t.Optional[list[SourceConfig]]  #: gek-online instances
     position: t.Optional[PositionConfig]  #: position correction for points
     table: gws.base.db.SqlTableConfig  #: sql table configuration
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: feature formatting templates
+    templates: t.Optional[list[gws.ext.template.Config]]  #: feature formatting templates
 
 
 _DEFAULT_TEMPLATES = [
@@ -98,7 +98,7 @@ class Object(gws.base.api.Action):
         self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         self.crs: gws.Crs = self.var('crs')
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.templates: t.List[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
     def api_find_fs(self, req: gws.IWebRequest, p: GetFsParams) -> GetFsResponse:
         if not self.alkis:

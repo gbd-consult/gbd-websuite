@@ -27,8 +27,8 @@ class Config(gws.base.layer.Config, provider.Config):
 
 class Object(gws.base.layer.Object):
     provider: provider.Object
-    sourceLayers: t.List[gws.SourceLayer]
-    queryableLayers: t.List[gws.SourceLayer]
+    sourceLayers: list[gws.SourceLayer]
+    queryableLayers: list[gws.SourceLayer]
     sourceCrs: gws.ICrs
 
     def configure(self):

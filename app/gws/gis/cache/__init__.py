@@ -23,11 +23,11 @@ class Config(gws.Config):
 
 class Entry(gws.Data):
     uid: str
-    layers: t.List[gws.INode]
-    mpx_cache: t.Dict
-    mpx_grids: t.List[t.Dict]
-    config: t.Dict
-    counts: t.Dict
+    layers: list[gws.INode]
+    mpx_cache: dict
+    mpx_grids: list[dict]
+    config: dict
+    counts: dict
     dirname: str
 
 
@@ -199,14 +199,14 @@ def _remove_dir(dirname):
 # CLI tool
 
 # class SeedParams(gws.CliParams):
-#     layers: t.List[str] 
+#     layers: list[str] 
 #     """list of layer IDs"""
-#     levels: t.List[int] 
+#     levels: list[int] 
 #     """zoom levels to build the cache for"""
 #
 #
 # class StatusParams(gws.CliParams):
-#     layers: t.Optional[t.List[str]] 
+#     layers: t.Optional[list[str]] 
 #     """list of layer IDs"""
 #
 #

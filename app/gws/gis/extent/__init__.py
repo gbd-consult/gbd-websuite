@@ -12,7 +12,7 @@ def from_string(s: str) -> t.Optional[gws.Extent]:
     return from_list(s.split(','))
 
 
-def from_list(ls: t.List[t.Any]) -> t.Optional[gws.Extent]:
+def from_list(ls: list[t.Any]) -> t.Optional[gws.Extent]:
     """Create an extent from a list of values"""
 
     try:
@@ -63,7 +63,7 @@ def from_box(box: str) -> t.Optional[gws.Extent]:
 
 #
 
-def _valid(ls: t.List[t.Any]) -> t.Optional[gws.Extent]:
+def _valid(ls: list[t.Any]) -> t.Optional[gws.Extent]:
     try:
         if len(ls) == 4 and all(math.isfinite(p) for p in ls):
             return _sort(ls)
@@ -117,7 +117,7 @@ def buffer(e: gws.Extent, buf: int) -> gws.Extent:
     )
 
 
-def union(exts: t.List[gws.Extent]) -> gws.Extent:
+def union(exts: list[gws.Extent]) -> gws.Extent:
     ext = exts[0]
     for e in exts:
         e = _sort(e)

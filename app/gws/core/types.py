@@ -1,21 +1,14 @@
-import sqlalchemy.orm
-
 from .data import Data
 
 from gws.types import (
     cast,
     Any,
     Callable,
-    Dict,
     Iterable,
     Iterator,
-    List,
     Literal,
     Optional,
     Protocol,
-    Set,
-    Tuple,
-    Union,
 )
 
 from gws.types import Enum
@@ -30,13 +23,13 @@ if TYPE_CHECKING:
 # custom types, used everywhere
 
 
-Extent = Tuple[float, float, float, float]
+Extent = tuple[float, float, float, float]
 """type: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]."""
 
-Point = Tuple[float, float]
+Point = tuple[float, float]
 """type: Point coordinates [x, y]."""
 
-Size = Tuple[float, float]
+Size = tuple[float, float]
 """type: Size [width, height]."""
 
 
@@ -102,13 +95,13 @@ class Uom(Enum):
     """point"""
 
 
-Measurement = Tuple[float, Uom]
+Measurement = tuple[float, Uom]
 """type: A value with a unit."""
 
-MPoint = Tuple[float, float, Uom]
+MPoint = tuple[float, float, Uom]
 """type: A Point with a unit."""
 
-MSize = Tuple[float, float, Uom]
+MSize = tuple[float, float, Uom]
 """type: A Size with a unit."""
 
 Tag = tuple
@@ -152,9 +145,9 @@ class ApplicationManifestPlugin(Data):
 
 
 class ApplicationManifest(Data):
-    excludePlugins: Optional[List[str]]
-    plugins: Optional[List[ApplicationManifestPlugin]]
-    locales: List[str]
+    excludePlugins: Optional[list[str]]
+    plugins: Optional[list[ApplicationManifestPlugin]]
+    locales: list[str]
 
     withFallbackConfig: bool = False
     withStrictConfig: bool = False
@@ -163,7 +156,7 @@ class ApplicationManifest(Data):
 # ----------------------------------------------------------------------------------------------------------------------
 # basic objects
 
-ClassRef = Union[type, str]
+ClassRef = type | str
 
 
 class Config(Data):
@@ -183,8 +176,8 @@ class Props(Data):
 # permissions
 
 
-Acl = List[Tuple[int, str]]
-"""type: Access Control List."""
+Acl = list[tuple[int, str]]
+"""type: Access Control list."""
 
 AclSpec = str
 """type: A string of comma-separated pairs 'allow <role>' or 'deny <role>'."""
@@ -225,12 +218,12 @@ class IObject(Protocol):
 class INode(IObject, Protocol):
     extName: str
     extType: str
-    permissions: Dict[Access, Acl]
+    permissions: dict[Access, Acl]
 
     config: Config
     root: 'IRoot'
     parent: 'INode'
-    children: List['INode']
+    children: list['INode']
     uid: str
 
     def activate(self): ...
@@ -249,7 +242,7 @@ class INode(IObject, Protocol):
 
     def var(self, key: str, default=None): ...
 
-    def find_all(self, classref: ClassRef) -> List['INode']: ...
+    def find_all(self, classref: ClassRef) -> list['INode']: ...
 
     def find_first(self, classref: ClassRef) -> Optional['INode']: ...
 
@@ -257,13 +250,13 @@ class INode(IObject, Protocol):
 class IRoot(Protocol):
     app: 'IApplication'
     specs: 'ISpecRuntime'
-    configErrors: List[Any]
+    configErrors: list[Any]
 
     def post_initialize(self): ...
 
     def activate(self): ...
 
-    def find_all(self, classref: ClassRef) -> List[INode]: ...
+    def find_all(self, classref: ClassRef) -> list[INode]: ...
 
     def find_first(self, classref: ClassRef) -> Optional[INode]: ...
 
@@ -314,9 +307,9 @@ class ISpecRuntime(Protocol):
 
     def cli_docs(self, lang: str = 'en') -> dict: ...
 
-    def bundle_paths(self, category: str) -> List[str]: ...
+    def bundle_paths(self, category: str) -> list[str]: ...
 
-    def parse_classref(self, classref: ClassRef) -> Tuple[Optional[type], str, str]: ...
+    def parse_classref(self, classref: ClassRef) -> tuple[Optional[type], str, str]: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -354,7 +347,7 @@ class ContentResponse(Response):
 
     asAttachment: bool
     attachmentName: str
-    content: Union[bytes, str]
+    content: bytes | str
     location: str
     mime: str
     path: str
@@ -442,8 +435,8 @@ class IWebResponder(Protocol):
 
 class WebDocumentRoot(Data):
     dir: DirPath
-    allowMime: Optional[List[str]]
-    denyMime: Optional[List[str]]
+    allowMime: Optional[list[str]]
+    denyMime: Optional[list[str]]
 
 
 class WebRewriteRule(Data):
@@ -454,7 +447,7 @@ class WebRewriteRule(Data):
 
 
 class IWebManager(INode, Protocol):
-    sites: List['IWebSite']
+    sites: list['IWebSite']
 
     def site_from_environ(self, environ: dict) -> 'IWebSite': ...
 
@@ -464,7 +457,7 @@ class IWebSite(INode, Protocol):
     corsOptions: Data
     errorPage: Optional['ITemplate']
     host: str
-    rewriteRules: List[WebRewriteRule]
+    rewriteRules: list[WebRewriteRule]
     staticRoot: WebDocumentRoot
 
     def url_for(self, req: 'IWebRequester', path: str, **params) -> Url: ...
@@ -480,7 +473,7 @@ class AuthPendingMfa(Data):
     restartCount: int
     timeStarted: int
     methodUid: str
-    roles: Set[str]
+    roles: set[str]
     form: dict
     secret: Optional[str]
 
@@ -489,9 +482,9 @@ class IAuthManager(INode, Protocol):
     guestUser: 'IUser'
     systemUser: 'IUser'
 
-    providers: List['IAuthProvider']
-    methods: List['IAuthMethod']
-    mfa: List['IAuthMfa']
+    providers: list['IAuthProvider']
+    methods: list['IAuthMethod']
+    mfa: list['IAuthMfa']
 
     def authenticate(self, method: 'IAuthMethod', credentials: Data) -> Optional['IUser']: ...
 
@@ -534,7 +527,7 @@ class IAuthMethod(INode, Protocol):
 
 
 class IAuthProvider(INode, Protocol):
-    allowedMethods: List[str]
+    allowedMethods: list[str]
     authMgr: 'IAuthManager'
 
     def get_user(self, local_uid: str) -> Optional['IUser']: ...
@@ -578,7 +571,7 @@ class IAuthSession(IObject, Protocol):
 
 
 class IUser(IObject, Protocol):
-    attributes: Dict[str, Any]
+    attributes: dict[str, Any]
     displayName: str
     isGuest: bool
     localUid: str
@@ -586,7 +579,7 @@ class IUser(IObject, Protocol):
     pendingMfa: Optional[AuthPendingMfa]
     provider: 'IAuthProvider'
     uid: str
-    roles: Set[str]
+    roles: set[str]
 
     def acl_bit(self, access: Access, obj) -> Optional[int]: ...
 
@@ -667,7 +660,7 @@ class GeometryType(Enum):
 # ----------------------------------------------------------------------------------------------------------------------
 # CRS
 
-CrsName = Union[str, int]
+CrsName = int | str
 """type: CRS code like "EPSG:3857" or a srid like 3857."""
 
 
@@ -742,7 +735,7 @@ class TileMatrix(Data):
 class TileMatrixSet(Data):
     uid: str
     crs: 'ICrs'
-    matrices: List[TileMatrix]
+    matrices: list[TileMatrix]
 
 
 class SourceStyle(Data):
@@ -760,7 +753,7 @@ class SourceLayer(Data):
     dataSource: dict
     metadata: 'Metadata'
 
-    supportedCrs: List['ICrs']
+    supportedCrs: list['ICrs']
     wgsBounds: Bounds
 
     isExpanded: bool
@@ -769,20 +762,20 @@ class SourceLayer(Data):
     isQueryable: bool
     isVisible: bool
 
-    layers: List['SourceLayer']
+    layers: list['SourceLayer']
 
     name: str
     title: str
 
     legendUrl: Url
     opacity: int
-    scaleRange: List[float]
+    scaleRange: list[float]
 
-    styles: List[SourceStyle]
+    styles: list[SourceStyle]
     defaultStyle: Optional[SourceStyle]
 
-    tileMatrixIds: List[str]
-    tileMatrixSets: List[TileMatrixSet]
+    tileMatrixIds: list[str]
+    tileMatrixSets: list[TileMatrixSet]
     imageFormat: str
     resourceUrls: dict
 
@@ -840,7 +833,7 @@ class IXmlElement(Iterable):
 
     def find(self, path: str) -> Optional['IXmlElement']: ...
 
-    def findall(self, path: str) -> List['IXmlElement']: ...
+    def findall(self, path: str) -> list['IXmlElement']: ...
 
     def findtext(self, path: str, default: str = None) -> str: ...
 
@@ -856,15 +849,15 @@ class IXmlElement(Iterable):
 
     def add(self, tag: str, attrib: dict = None, **extra) -> 'IXmlElement': ...
 
-    def children(self) -> List['IXmlElement']: ...
+    def children(self) -> list['IXmlElement']: ...
 
     def findfirst(self, *paths) -> Optional['IXmlElement']: ...
 
     def textof(self, *paths) -> str: ...
 
-    def textlist(self, *paths, deep=False) -> List[str]: ...
+    def textlist(self, *paths, deep=False) -> list[str]: ...
 
-    def textdict(self, *paths, deep=False) -> Dict[str, str]: ...
+    def textdict(self, *paths, deep=False) -> dict[str, str]: ...
 
     #
 
@@ -978,7 +971,7 @@ class IShape(IObject, Protocol):
 
     # set operations
 
-    def union(self, others: List['IShape']) -> 'IShape':
+    def union(self, others: list['IShape']) -> 'IShape':
         """Computes a union of this shape and other shapes."""
 
     def intersection(self, *others: 'IShape') -> 'IShape':
@@ -1030,8 +1023,8 @@ class DataSetDescription(Data):
     name: str
     schema: str
     fullName: str
-    columns: Dict[str, ColumnDescription]
-    keyNames: List[str]
+    columns: dict[str, ColumnDescription]
+    keyNames: list[str]
     geometryName: str
     geometryType: GeometryType
     geometrySrid: int
@@ -1067,9 +1060,9 @@ class IDatabaseProvider(INode, Protocol):
 
     def qualified_table_name(self, table_name: str) -> str: ...
 
-    def parse_table_name(self, table_name: str) -> Tuple[str, str]: ...
+    def parse_table_name(self, table_name: str) -> tuple[str, str]: ...
 
-    def table(self, table_name, columns: List['sa.Column'] = None, **kwargs) -> 'sa.Table': ...
+    def table(self, table_name, columns: list['sa.Column'] = None, **kwargs) -> 'sa.Table': ...
 
 
 class IDatabaseSession(Protocol):
@@ -1096,7 +1089,7 @@ class IDatabaseSession(Protocol):
 class IFeature(IObject, Protocol):
     attributes: dict
     views: dict
-    errors: List['ModelValidationError']
+    errors: list['ModelValidationError']
     model: 'IModel'
     layerName: str
     isNew: bool
@@ -1111,17 +1104,17 @@ class IFeature(IObject, Protocol):
 
     def to_geojson(self, user: 'IUser') -> dict: ...
 
-    def to_svg(self, view: 'MapView', label: str = None, style: 'IStyle' = None) -> List[IXmlElement]: ...
+    def to_svg(self, view: 'MapView', label: str = None, style: 'IStyle' = None) -> list[IXmlElement]: ...
 
     def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
 
     def compute_values(self, access: Access, user: IUser, **kwargs) -> 'IFeature': ...
 
-    def render_views(self, templates: List['ITemplate'], **kwargs) -> 'IFeature': ...
+    def render_views(self, templates: list['ITemplate'], **kwargs) -> 'IFeature': ...
 
 
 class FeatureData(Data):
-    uid: Union[int, str]
+    uid: int | str
     attributes: dict
     shape: IShape
     wkt: Optional[str]
@@ -1141,7 +1134,7 @@ class FeatureProps(Props):
     geometryName: str
     isNew: bool
     modelUid: str
-    errors: List['ModelValidationError']
+    errors: list['ModelValidationError']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1188,10 +1181,10 @@ class IModelField(INode, Protocol):
 
     widget: Optional['IModelWidget'] = None
 
-    fixedValues: Dict[Access, 'IModelValue']
-    defaultValues: Dict[Access, 'IModelValue']
+    fixedValues: dict[Access, 'IModelValue']
+    defaultValues: dict[Access, 'IModelValue']
 
-    validators: Dict[Access, List['IModelValidator']]
+    validators: dict[Access, list['IModelValidator']]
 
     isPrimaryKey: bool
 
@@ -1213,7 +1206,7 @@ class IModelField(INode, Protocol):
 
     def validate(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
 
-    def columns(self) -> List['sa.Column']: ...
+    def columns(self) -> list['sa.Column']: ...
 
     def orm_properties(self) -> dict: ...
 
@@ -1221,7 +1214,7 @@ class IModelField(INode, Protocol):
 
 
 class IModel(INode, Protocol):
-    fields: List['IModelField']
+    fields: list['IModelField']
     keyName: str
     geometryName: str
     geometryType: Optional[GeometryType]
@@ -1230,11 +1223,11 @@ class IModel(INode, Protocol):
 
     def compute_values(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
 
-    def find_features(self, search: 'SearchArgs', user: IUser) -> List['IFeature']: ...
+    def find_features(self, search: 'SearchArgs', user: IUser) -> list['IFeature']: ...
 
-    def write_features(self, features: List['IFeature'], user: IUser, **kwargs) -> bool: ...
+    def write_features(self, features: list['IFeature'], user: IUser, **kwargs) -> bool: ...
 
-    def delete_features(self, features: List['IFeature'], user: IUser, **kwargs) -> bool: ...
+    def delete_features(self, features: list['IFeature'], user: IUser, **kwargs) -> bool: ...
 
     def feature_props(self, feature: 'IFeature', user: 'IUser') -> FeatureProps: ...
 
@@ -1282,15 +1275,15 @@ class MapView(Data):
 
 class MapRenderInputPlane(Data):
     type: Literal['features', 'image', 'image_layer', 'svg_layer', 'svg_soup']
-    features: List['IFeature']
+    features: list['IFeature']
     image: 'IImage'
     layer: 'ILayer'
     opacity: float
     print_as_vector: bool
-    soup_points: List[Point]
-    soup_tags: List[Any]
+    soup_points: list[Point]
+    soup_tags: list[Any]
     style: 'IStyle'
-    sub_layers: List[str]
+    sub_layers: list[str]
 
 
 class MapRenderInput(Data):
@@ -1301,7 +1294,7 @@ class MapRenderInput(Data):
     dpi: int
     notify: Callable
     out_size: MSize
-    planes: List['MapRenderInputPlane']
+    planes: list['MapRenderInputPlane']
     rotation: int
     scale: int
 
@@ -1309,12 +1302,12 @@ class MapRenderInput(Data):
 class MapRenderOutputPlane(Data):
     type: Literal['image', 'path', 'svg']
     path: str
-    elements: List[IXmlElement]
+    elements: list[IXmlElement]
     image: 'IImage'
 
 
 class MapRenderOutput(Data):
-    planes: List['MapRenderOutputPlane']
+    planes: list['MapRenderOutputPlane']
     view: MapView
 
 
@@ -1329,17 +1322,17 @@ class LayerRenderInput(Data):
 
 class LayerRenderOutput(Data):
     content: bytes
-    tags: List[IXmlElement]
+    tags: list[IXmlElement]
 
 
 class TemplateRenderInputMap(Data):
     background_color: int
     bbox: Extent
     center: Point
-    planes: List['MapRenderInputPlane']
+    planes: list['MapRenderInputPlane']
     rotation: int
     scale: int
-    visible_layers: Optional[List['ILayer']]
+    visible_layers: Optional[list['ILayer']]
 
 
 class TemplateRenderInput(Data):
@@ -1347,7 +1340,7 @@ class TemplateRenderInput(Data):
     crs: ICrs
     dpi: int
     localeUid: str
-    maps: List[TemplateRenderInputMap]
+    maps: list[TemplateRenderInputMap]
     mimeOut: str
     notify: Callable
     user: IUser
@@ -1361,13 +1354,13 @@ class TemplateQualityLevel(Data):
 class ITemplate(INode, Protocol):
     category: str
     model: Optional['IModel']
-    mimes: List[str]
+    mimes: list[str]
     name: str
     path: str
     subject: str
     text: str
     title: str
-    qualityLevels: List[TemplateQualityLevel]
+    qualityLevels: list[TemplateQualityLevel]
 
     map_size: Optional[MSize]
     page_size: Optional[MSize]
@@ -1386,7 +1379,7 @@ class StyleValues(Data):
     fill: Color
 
     stroke: Color
-    stroke_dasharray: List[int]
+    stroke_dasharray: list[int]
     stroke_dashoffset: int
     stroke_linecap: Literal['butt', 'round', 'square']
     stroke_linejoin: Literal['bevel', 'round', 'miter']
@@ -1397,7 +1390,7 @@ class StyleValues(Data):
     marker_fill: Color
     marker_size: int
     marker_stroke: Color
-    marker_stroke_dasharray: List[int]
+    marker_stroke_dasharray: list[int]
     marker_stroke_dashoffset: int
     marker_stroke_linecap: Literal['butt', 'round', 'square']
     marker_stroke_linejoin: Literal['bevel', 'round', 'miter']
@@ -1419,10 +1412,10 @@ class StyleValues(Data):
     label_min_scale: int
     label_offset_x: int
     label_offset_y: int
-    label_padding: List[int]
+    label_padding: list[int]
     label_placement: Literal['start', 'end', 'middle']
     label_stroke: Color
-    label_stroke_dasharray: List[int]
+    label_stroke_dasharray: list[int]
     label_stroke_dashoffset: int
     label_stroke_linecap: Literal['butt', 'round', 'square']
     label_stroke_linejoin: Literal['bevel', 'round', 'miter']
@@ -1453,15 +1446,15 @@ class Locale(Data):
     dateFormatShort: str
     dateUnits: str
     """date unit names, e.g. 'YMD' for 'en', 'JMT' for 'de'"""
-    dayNamesLong: List[str]
-    dayNamesShort: List[str]
-    dayNamesNarrow: List[str]
+    dayNamesLong: list[str]
+    dayNamesShort: list[str]
+    dayNamesNarrow: list[str]
     firstWeekDay: int
     language: str
     languageName: str
-    monthNamesLong: List[str]
-    monthNamesShort: List[str]
-    monthNamesNarrow: List[str]
+    monthNamesLong: list[str]
+    monthNamesShort: list[str]
+    monthNamesNarrow: list[str]
     numberDecimal: str
     numberGroup: str
 
@@ -1501,7 +1494,7 @@ class MetadataAttribution(Data):
 
 class Metadata(Data):
     abstract: str
-    accessConstraints: List[MetadataAccessConstraint]
+    accessConstraints: list[MetadataAccessConstraint]
     attribution: MetadataAttribution
     authorityIdentifier: str
     authorityName: str
@@ -1510,7 +1503,7 @@ class Metadata(Data):
     catalogUid: str
     fees: str
     image: str
-    keywords: List[str]
+    keywords: list[str]
     language3: str
     language: str
     languageName: str
@@ -1541,7 +1534,7 @@ class Metadata(Data):
     dateEnd: str
     dateUpdated: str
 
-    inspireKeywords: List[str]
+    inspireKeywords: list[str]
     inspireMandatoryKeyword: str
     inspireDegreeOfConformity: str
     inspireResourceType: str
@@ -1564,12 +1557,12 @@ class Metadata(Data):
     isoScope: str
     isoScopeName: str
     isoSpatialRepresentationType: str
-    isoTopicCategories: List[str]
+    isoTopicCategories: list[str]
     isoSpatialResolution: str
 
-    metaLinks: List[MetadataLink]
+    metaLinks: list[MetadataLink]
     serviceMetaLink: MetadataLink
-    extraLinks: List[MetadataLink]
+    extraLinks: list[MetadataLink]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1583,14 +1576,14 @@ class SearchSort(Data):
 
 class SearchWhere(Data):
     text: str
-    args: List[Any]
+    args: list[Any]
 
 
 class SearchOgcFilter(Data):
     name: str
     operator: str
     shape: 'IShape'
-    subFilters: List['SearchOgcFilter']
+    subFilters: list['SearchOgcFilter']
     value: str
 
 
@@ -1598,9 +1591,9 @@ class SearchArgs(Data):
     access: Access
     bounds: Bounds
     extraParams: dict
-    extraWhere: List[SearchWhere]
+    extraWhere: list[SearchWhere]
     keyword: str
-    layers: List['ILayer']
+    layers: list['ILayer']
     limit: int
     ogcFilter: SearchOgcFilter
     params: dict
@@ -1608,10 +1601,10 @@ class SearchArgs(Data):
     relationDepth: int
     resolution: float
     shape: 'IShape'
-    sort: List[SearchSort]
+    sort: list[SearchSort]
     tolerance: 'Measurement'
-    uids: List[str]
-    views: List[str]
+    uids: list[str]
+    views: list[str]
 
 
 class IFinder(INode, Protocol):
@@ -1623,12 +1616,12 @@ class IFinder(INode, Protocol):
     withGeometry: bool
     withKeyword: bool
 
-    templates: List['ITemplate']
-    models: List['IModel']
+    templates: list['ITemplate']
+    models: list['IModel']
 
     tolerance: 'Measurement'
 
-    def run(self, search: SearchArgs, user: IUser, layer: 'ILayer' = None) -> List['IFeature']: ...
+    def run(self, search: SearchArgs, user: IUser, layer: 'ILayer' = None) -> list['IFeature']: ...
 
     def can_run(self, search: SearchArgs, user: IUser) -> bool: ...
 
@@ -1644,7 +1637,7 @@ class IMap(INode, Protocol):
     center: Point
     coordinatePrecision: int
     initResolution: float
-    resolutions: List[float]
+    resolutions: list[float]
     title: str
     wgsExtent: Extent
 
@@ -1676,7 +1669,7 @@ class TileGrid(Data):
     uid: str
     bounds: Bounds
     corner: Corner
-    resolutions: List[float]
+    resolutions: list[float]
     tileSize: int
 
 
@@ -1708,7 +1701,7 @@ class ILayer(INode, Protocol):
     loadingStrategy: FeatureLoadingStrategy
     imageFormat: str
     opacity: float
-    resolutions: List[float]
+    resolutions: list[float]
     title: str
 
     sourceGrid: Optional[TileGrid]
@@ -1718,15 +1711,15 @@ class ILayer(INode, Protocol):
     metadata: 'Metadata'
     legend: Optional['ILegend']
 
-    finders: List['IFinder']
-    templates: List['ITemplate']
-    models: List['IModel']
+    finders: list['IFinder']
+    templates: list['ITemplate']
+    models: list['IModel']
 
-    layers: List['ILayer']
+    layers: list['ILayer']
 
-    def ancestors(self) -> List['ILayer']: ...
+    def ancestors(self) -> list['ILayer']: ...
 
-    def descendants(self) -> List['ILayer']: ...
+    def descendants(self) -> list['ILayer']: ...
 
     def render(self, lri: LayerRenderInput) -> 'LayerRenderOutput': ...
 
@@ -1740,7 +1733,7 @@ class ILayer(INode, Protocol):
 #
 # def render_svg_element(self, view: 'MapView', style: Optional['IStyle']) -> Optional[IXmlElement]: ...
 #
-# def render_svg_fragment(self, view: 'MapView', style: Optional['IStyle']) -> List[IXmlElement]: ...
+# def render_svg_fragment(self, view: 'MapView', style: Optional['IStyle']) -> list[IXmlElement]: ...
 
 #
 #
@@ -1755,11 +1748,11 @@ class ILayer(INode, Protocol):
 #
 # display: str
 #
-# layers: List['ILayer'] = []
+# layers: list['ILayer'] = []
 #
-# templates: List['ITemplate']
-# models: List['IModel']
-# finders: List['IFinder']
+# templates: list['ITemplate']
+# models: list['IModel']
+# finders: list['IFinder']
 #
 #
 # client_options: Data
@@ -1779,14 +1772,14 @@ class ILayer(INode, Protocol):
 #
 # def legendUrl(self) -> Url: ...
 #
-# def ancestors(self) -> List['ILayer']: ...
+# def ancestors(self) -> list['ILayer']: ...
 #
 #
 # def render_legend_with_cache(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
 #
 # def render_legend(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
 #
-# def get_features(self, bounds: Bounds, limit: int = 0) -> List['IFeature']: ...
+# def get_features(self, bounds: Bounds, limit: int = 0) -> list['IFeature']: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1825,10 +1818,10 @@ class OwsVerb(Enum):
 
 
 class OwsOperation(Data):
-    allowedParameters: Dict[str, List[str]]
-    constraints: Dict[str, List[str]]
-    formats: List[str]
-    params: Dict[str, str]
+    allowedParameters: dict[str, list[str]]
+    constraints: dict[str, list[str]]
+    formats: list[str]
+    params: dict[str, str]
     postUrl: Url
     preferredFormat: str
     url: Url
@@ -1839,9 +1832,9 @@ class IOwsService(INode, Protocol):
     metadata: 'Metadata'
     name: str
     protocol: OwsProtocol
-    supported_bounds: List[Bounds]
-    supported_versions: List[str]
-    templates: List['ITemplate']
+    supported_bounds: list[Bounds]
+    supported_versions: list[str]
+    templates: list['ITemplate']
     version: str
     with_inspire_meta: bool
     with_strict_params: bool
@@ -1853,9 +1846,9 @@ class IOwsProvider(INode, Protocol):
     forceCrs: 'ICrs'
     alwaysXY: bool
     metadata: 'Metadata'
-    operations: List[OwsOperation]
+    operations: list[OwsOperation]
     protocol: OwsProtocol
-    sourceLayers: List['SourceLayer']
+    sourceLayers: list['SourceLayer']
     url: Url
     version: str
 
@@ -1864,7 +1857,7 @@ class IOwsProvider(INode, Protocol):
 
 class IOwsClient(INode, Protocol):
     provider: 'IOwsProvider'
-    sourceLayers: List['SourceLayer']
+    sourceLayers: list['SourceLayer']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1882,11 +1875,11 @@ class CliParams(Data):
 
 
 class IActionManager(INode, Protocol):
-    items: List['IAction']
+    items: list['IAction']
 
     def get_action(self, desc: ExtCommandDescriptor) -> Optional['IAction']: ...
 
-    def actions_for(self, user: IUser, other: 'IActionManager' = None) -> List['IAction']: ...
+    def actions_for(self, user: IUser, other: 'IActionManager' = None) -> list['IAction']: ...
 
 
 class IAction(INode, Protocol):
@@ -1898,18 +1891,18 @@ class IAction(INode, Protocol):
 
 
 class IClient(INode, Protocol):
-    options: Dict
-    elements: List
+    options: dict
+    elements: list
 
 
 class IProject(INode, Protocol):
     actionMgr: 'IActionManager'
     assetsRoot: Optional['WebDocumentRoot']
     client: 'IClient'
-    localeUids: List[str]
+    localeUids: list[str]
     map: 'IMap'
     metadata: 'Metadata'
-    templates: List['ITemplate']
+    templates: list['ITemplate']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1928,7 +1921,7 @@ WebMiddlewareHandler = Callable[['IWebRequester', Callable], 'IWebResponder']
 
 class IApplication(INode, Protocol):
     client: 'IClient'
-    localeUids: List[str]
+    localeUids: list[str]
     metadata: 'Metadata'
     monitor: 'IMonitor'
     qgisVersion: str
@@ -1942,7 +1935,7 @@ class IApplication(INode, Protocol):
 
     def register_web_middleware(self, name: str, fn: WebMiddlewareHandler): ...
 
-    def web_middleware_list(self) -> List[WebMiddlewareHandler]: ...
+    def web_middleware_list(self) -> list[WebMiddlewareHandler]: ...
 
     def developer_option(self, name: str): ...
 

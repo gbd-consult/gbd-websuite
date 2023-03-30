@@ -8,9 +8,9 @@ class Result(gws.Data):
     finder: gws.IFinder
 
 
-def run(search: gws.SearchArgs, user: gws.IUser) -> t.List[Result]:
+def run(search: gws.SearchArgs, user: gws.IUser) -> list[Result]:
     used_layer_ids = set()
-    results: t.List[Result] = []
+    results: list[Result] = []
     layers = search.layers or []
 
     for layer in layers:
@@ -52,7 +52,7 @@ def _run(
         return
 
     try:
-        features: t.List[gws.IFeature] = finder.run(search, user, layer) or []
+        features: list[gws.IFeature] = finder.run(search, user, layer) or []
     except:
         gws.log.exception('SEARCH_FAILED')
         return

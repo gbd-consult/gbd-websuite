@@ -81,7 +81,7 @@ def parse_url(url: str, **kwargs) -> Url:
     return u
 
 
-def make_url(u: t.Union[Url, dict], **kwargs) -> str:
+def make_url(u: Url | dict, **kwargs) -> str:
     p = gws.merge({}, u, kwargs)
 
     s = ''
@@ -172,7 +172,7 @@ def add_params(url: str, params: dict) -> str:
     return make_url(u)
 
 
-def extract_params(url: str) -> t.Tuple[str, dict]:
+def extract_params(url: str) -> tuple[str, dict]:
     u = parse_url(url)
     params = u.params
     u.params = None

@@ -14,7 +14,7 @@ class StartParams(gws.CliParams):
 
 
 class ReloadParams(StartParams):
-    modules: t.Optional[t.List[str]]
+    modules: t.Optional[list[str]]
     """list of modules to reload ('qgis', 'mapproxy', 'web', 'spool')"""
 
 

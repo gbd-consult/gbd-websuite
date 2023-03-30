@@ -30,8 +30,8 @@ class Object(core.Service):
     protocol = gws.OwsProtocol.CSW
     supported_versions = ['2.0.2']
 
-    records: t.Dict[str, gws.Metadata]
-    index: t.List
+    records: dict[str, gws.Metadata]
+    index: list
     profile: Profile
 
     @property

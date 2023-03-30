@@ -10,7 +10,7 @@ class Props(gws.Props):
     attribution: str
     dateCreated: str
     dateUpdated: str
-    keywords: t.List[str]
+    keywords: list[str]
     language: str
     title: str
 

@@ -21,7 +21,7 @@ class Config(gws.Config):
     """schema where ALKIS tables are stored"""
     indexSchema: str = 'gws' 
     """schema to store GWS internal indexes"""
-    excludeGemarkung: t.Optional[t.List[str]] 
+    excludeGemarkung: t.Optional[list[str]] 
     """Gemarkung (Administrative Unit) IDs to exclude from search"""
 
 
@@ -36,7 +36,7 @@ class Object(gws.Node):
     has_source = False
     has_flurnummer = False
     crs: gws.ICrs
-    connect_params: t.Dict = {}
+    connect_params: dict = {}
     data_schema = ''
     index_schema = ''
 
@@ -89,7 +89,7 @@ class Object(gws.Node):
 
     # public search tools
 
-    def gemarkung_list(self) -> t.List[types.Gemarkung]:
+    def gemarkung_list(self) -> list[types.Gemarkung]:
         with self.connection() as conn:
             return [types.Gemarkung(r) for r in flurstueck.gemarkung_list(conn)]
 

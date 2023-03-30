@@ -25,7 +25,7 @@ class Object(core.Service):
     supported_versions = ['1.0.0']
     is_raster_ows = True
 
-    tileMatrixSets: t.List[gws.TileMatrixSet]
+    tileMatrixSets: list[gws.TileMatrixSet]
 
     @property
     def service_link(self):

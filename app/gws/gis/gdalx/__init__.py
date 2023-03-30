@@ -103,7 +103,7 @@ class DataSet:
     def create_layer(
             self,
             name: str,
-            columns: t.Dict[str, gws.AttributeType],
+            columns: dict[str, gws.AttributeType],
             geometry_type: gws.GeometryType = None,
             crs: gws.ICrs = None,
             overwrite=False,
@@ -213,7 +213,7 @@ class Layer:
     def count(self):
         return self.gdLayer.GetFeatureCount()
 
-    def insert(self, fds: t.List[gws.FeatureData], encoding: str = None) -> t.List[int]:
+    def insert(self, fds: list[gws.FeatureData], encoding: str = None) -> list[int]:
         desc = self.describe()
         fids = []
 
@@ -248,7 +248,7 @@ class Layer:
 
         return fids
 
-    def get_all(self, default_srid: int = 0, encoding: str = None) -> t.List[gws.FeatureData]:
+    def get_all(self, default_srid: int = 0, encoding: str = None) -> list[gws.FeatureData]:
         fds = []
         while True:
             gd_feature = self.gdLayer.GetNextFeature()

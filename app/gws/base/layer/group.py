@@ -14,12 +14,12 @@ gws.ext.new.layer('group')
 class Config(core.Config):
     """Group layer"""
 
-    layers: t.List[gws.ext.config.layer]
+    layers: list[gws.ext.config.layer]
     """layers in this group"""
 
 
 class Props(core.Props):
-    layers: t.List[gws.ext.props.layer]
+    layers: list[gws.ext.props.layer]
 
 
 class Object(core.Object):

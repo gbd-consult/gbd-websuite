@@ -19,7 +19,7 @@ class TableConfig(gws.Config):
     table: gws.base.db.SqlTableConfig  #: sql table configuration
     sort: t.Optional[str]  #: sort expression
     dataModel: t.Optional[gws.base.model.Config]  #: table data model
-    widths: t.Optional[t.List[int]]  #: column widths, 0 to exclude
+    widths: t.Optional[list[int]]  #: column widths, 0 to exclude
     withFilter: t.Optional[bool]  #: use filter boxes
     withAdd: t.Optional[bool]  #: use the 'add' button
     # @TODO
@@ -30,7 +30,7 @@ class Config(gws.WithAccess):
     """Table Editor action"""
 
     db: t.Optional[str]  #: database provider uid
-    tables: t.List[TableConfig]
+    tables: list[TableConfig]
 
 
 class TableProps(gws.Props):
@@ -39,7 +39,7 @@ class TableProps(gws.Props):
 
 
 class GetTablesResponse(gws.Response):
-    tables: t.List[TableProps]
+    tables: list[TableProps]
 
 
 class LoadDataParams(gws.Params):
@@ -49,9 +49,9 @@ class LoadDataParams(gws.Params):
 class LoadDataResponse(gws.Response):
     tableUid: str
     key: str
-    attributes: t.List[gws.Attribute]
-    records: t.List[t.Any]
-    widths: t.Optional[t.List[int]]
+    attributes: list[gws.Attribute]
+    records: list[t.Any]
+    widths: t.Optional[list[int]]
     withFilter: bool
     withAdd: bool
     withDelete: bool
@@ -59,8 +59,8 @@ class LoadDataResponse(gws.Response):
 
 class SaveDataParams(gws.Params):
     tableUid: str
-    attributes: t.List[gws.Attribute]
-    records: t.List[t.Any]
+    attributes: list[gws.Attribute]
+    records: list[t.Any]
 
 
 class SaveDataResponse(gws.Response):
@@ -72,7 +72,7 @@ class Table(gws.Data):
     title: str
     table: gws.SqlTable
     data_model: gws.IDataModel
-    widths: t.List[int]
+    widths: list[int]
     with_filter: bool
 
 
@@ -88,7 +88,7 @@ class Object(gws.base.api.Action):
             gws.ext.db.provider.postgres.Object,
             gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
-        self.tables: t.List[Table] = []
+        self.tables: list[Table] = []
 
         for p in self.var('tables'):
             table = self.db.configure_table(p.table)

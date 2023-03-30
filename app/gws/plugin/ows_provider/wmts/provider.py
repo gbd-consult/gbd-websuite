@@ -14,7 +14,7 @@ class Config(core.ProviderConfig):
 class Object(core.Provider):
     protocol = gws.OwsProtocol.WMTS
 
-    tileMatrixSets: t.List[gws.TileMatrixSet]
+    tileMatrixSets: list[gws.TileMatrixSet]
 
     def configure(self):
         cc = caps.parse(self.get_capabilities())

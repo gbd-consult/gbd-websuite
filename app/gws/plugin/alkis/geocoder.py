@@ -29,12 +29,12 @@ _GEOCODER_ADDR_KEYS = 'gemeinde', 'gemarkung', 'strasse', 'hausnummer'
 
 
 class GeocoderParams(gws.Data):
-    adressen: t.List[GeocoderAddress]
+    adressen: list[GeocoderAddress]
     crs: gws.CrsName
 
 
 class GeocoderResponse(gws.Response):
-    coordinates: t.List[gws.Point]
+    coordinates: list[gws.Point]
 
 
 class Object(gws.base.action.Object):

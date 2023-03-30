@@ -11,12 +11,12 @@ gws.ext.new.legend('combined')
 class Config(core.Config):
     """Combined legend."""
 
-    layerUids: t.List[str]
+    layerUids: list[str]
     """layers"""
 
 
 class Object(core.Object):
-    layerUids: t.List[str]
+    layerUids: list[str]
 
     def configure(self):
         self.layerUids = self.var('layerUids')

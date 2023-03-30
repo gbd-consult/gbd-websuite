@@ -18,7 +18,7 @@ class Object(gws.base.search.finder.Object):
     supportsGeometry = True
 
     provider: provider.Object
-    sourceLayers: t.List[gws.SourceLayer]
+    sourceLayers: list[gws.SourceLayer]
 
     def configure(self):
         self.configure_provider()

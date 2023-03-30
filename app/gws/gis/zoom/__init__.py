@@ -33,12 +33,12 @@ OSM_RESOLUTIONS = list(reversed([units.scale_to_res(s) for s in OSM_SCALES]))
 class Config(gws.Config):
     """Zoom levels and resolutions"""
 
-    resolutions: t.Optional[t.List[float]] 
+    resolutions: t.Optional[list[float]] 
     """allowed resolutions"""
     initResolution: t.Optional[float] 
     """initial resolution"""
 
-    scales: t.Optional[t.List[float]] 
+    scales: t.Optional[list[float]] 
     """allowed scales"""
     initScale: t.Optional[float] 
     """initial scale"""
@@ -54,7 +54,7 @@ class Config(gws.Config):
     """maximal scale"""
 
 
-def resolutions_from_config(cfg, parent_resolultions: t.List[float] = None) -> t.List[float]:
+def resolutions_from_config(cfg, parent_resolultions: list[float] = None) -> list[float]:
     # see also https://mapproxy.org/docs/1.11.0/configuration.html#res and below
 
     # @TODO deal with scales separately
@@ -74,7 +74,7 @@ def resolutions_from_config(cfg, parent_resolultions: t.List[float] = None) -> t
     return sorted(res)
 
 
-def resolutions_from_source_layers(source_layers: t.List[gws.SourceLayer], parent_resolultions: t.List[float]) -> t.List[float]:
+def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolultions: list[float]) -> list[float]:
     smin = []
     smax = []
 
@@ -105,7 +105,7 @@ def resolutions_from_source_layers(source_layers: t.List[gws.SourceLayer], paren
     return [r for r in parent_resolultions if rmin <= r <= rmax]
 
 
-def resolutions_from_bounds(b: gws.Bounds, tile_size: int) -> t.List[float]:
+def resolutions_from_bounds(b: gws.Bounds, tile_size: int) -> list[float]:
     siz = gws.gis.extent.size(b.extent)
     res = []
     for z in range(20):

@@ -15,9 +15,9 @@ class ValueConfig(gws.Config):
 class Config(gws.ConfigWithAccess):
     """Model configuration"""
 
-    fields: t.List[gws.ext.config.modelField]
+    fields: list[gws.ext.config.modelField]
     filter: t.Optional[str]
-    sort: t.Optional[t.List[SortConfig]]
+    sort: t.Optional[list[SortConfig]]
     loadingStrategy: t.Optional[gws.FeatureLoadingStrategy]
     """loading strategy for features"""
 
@@ -27,7 +27,7 @@ class Props(gws.Props):
     canDelete: bool
     canRead: bool
     canWrite: bool
-    fields: t.List[gws.ext.props.modelField]
+    fields: list[gws.ext.props.modelField]
     geometryCrs: t.Optional[str]
     geometryName: t.Optional[str]
     geometryType: t.Optional[gws.GeometryType]
@@ -137,7 +137,7 @@ class Object(gws.Node, gws.IModel):
 ##
 
 def locate(
-        models: t.List[gws.IModel],
+        models: list[gws.IModel],
         user: gws.IUser = None,
         access: gws.Access = None,
         uid: str = None

@@ -23,7 +23,7 @@ class Config(gws.Config):
     """map extent"""
     extentBuffer: t.Optional[int]
     """extent buffer"""
-    layers: t.List[gws.ext.config.layer]
+    layers: list[gws.ext.config.layer]
     """collection of layers for this map"""
     title: str = ''
     """map title"""
@@ -39,7 +39,7 @@ class Props(gws.Data):
     center: gws.Point
     initResolution: float
     rootLayer: gws.base.layer.Props
-    resolutions: t.List[float]
+    resolutions: list[float]
     title: str = ''
 
 

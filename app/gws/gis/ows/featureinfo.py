@@ -7,7 +7,7 @@ import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
-def parse(text: str, default_crs: gws.ICrs = None, always_xy=False) -> t.List[gws.FeatureData]:
+def parse(text: str, default_crs: gws.ICrs = None, always_xy=False) -> list[gws.FeatureData]:
     gws.time_start('featureinfo:parse')
     res = _parse(text, default_crs, always_xy)
     gws.time_end()

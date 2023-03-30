@@ -11,12 +11,12 @@ gws.ext.new.legend('remote')
 class Config(core.Config):
     """External legend."""
 
-    urls: t.List[gws.Url]
+    urls: list[gws.Url]
     """urls of externals legend images"""
 
 
 class Object(core.Object):
-    urls: t.List[str]
+    urls: list[str]
 
     def configure(self):
         self.urls = self.var('urls')

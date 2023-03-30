@@ -37,17 +37,17 @@ class Props(gws.base.action.Props):
 
 class BaseRequest(gws.Request):
     layerUid: t.Optional[str]
-    views: t.Optional[t.List[str]]
+    views: t.Optional[list[str]]
 
 
 class QueryRequest(BaseRequest):
-    modelUids: t.List[str]
+    modelUids: list[str]
     crs: t.Optional[gws.CrsName]
     extent: t.Optional[gws.Extent]
-    featureUids: t.Optional[t.List[str]]
+    featureUids: t.Optional[list[str]]
     keyword: t.Optional[str]
     resolution: float
-    shapes: t.Optional[t.List[gws.ShapeProps]]
+    shapes: t.Optional[list[gws.ShapeProps]]
     tolerance: t.Optional[str]
 
 
@@ -61,7 +61,7 @@ class FeatureResponse(gws.Response):
 
 
 class FeatureListResponse(gws.Response):
-    features: t.List[gws.FeatureProps]
+    features: list[gws.FeatureProps]
 
 
 class Object(gws.base.action.Object):
@@ -128,7 +128,7 @@ class Object(gws.base.action.Object):
 
     ##
 
-    def _feature_props(self, req: gws.IWebRequester, p: BaseRequest, features: t.List[gws.IFeature]) -> t.List[t.Optional[gws.Props]]:
+    def _feature_props(self, req: gws.IWebRequester, p: BaseRequest, features: list[gws.IFeature]) -> list[t.Optional[gws.Props]]:
         if not features:
             return []
 

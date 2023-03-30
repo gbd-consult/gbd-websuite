@@ -16,7 +16,7 @@ import urllib.parse
 
 from . import const, log, types
 from .data import Data, is_data_object
-from gws.types import List, Tuple, cast
+from gws.types import cast
 
 
 def exit(code: int = 255):
@@ -293,7 +293,7 @@ def to_float(x) -> float:
         return 0.0
 
 
-def to_str(x, encodings: List[str] = None) -> str:
+def to_str(x, encodings: list[str] = None) -> str:
     """Convert a value to a string.
 
     Args:
@@ -413,7 +413,7 @@ def to_uid(x) -> str:
     return x.strip('_')
 
 
-def to_lines(txt: str, comment: str = None) -> List[str]:
+def to_lines(txt: str, comment: str = None) -> list[str]:
     """Convert a multiline string into a list of strings.
 
     Strip each line, skip empty lines, if `comment` is given, also remove lines starting with it.
@@ -507,7 +507,7 @@ def join_uid(parent_uid, object_uid):
     return p[-1] + UID_DELIMITER + u[-1]
 
 
-def split_uid(joined_uid: str) -> Tuple[str, str]:
+def split_uid(joined_uid: str) -> tuple[str, str]:
     p, _, u = joined_uid.partition(UID_DELIMITER)
     return p, u
 

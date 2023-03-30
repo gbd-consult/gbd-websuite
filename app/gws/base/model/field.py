@@ -20,13 +20,13 @@ class Config(gws.ConfigWithAccess):
     title: t.Optional[str]
     isPrimaryKey: bool = False
 
-    values: t.Optional[t.List[gws.ext.config.modelValue]]
-    validators: t.Optional[t.List[gws.ext.config.modelValidator]]
+    values: t.Optional[list[gws.ext.config.modelValue]]
+    validators: t.Optional[list[gws.ext.config.modelValidator]]
 
     widget: t.Optional[gws.ext.config.modelWidget]
     #
     # relation: t.Optional[FieldRelationConfig]
-    # relations: t.Optional[t.List[FieldRelationConfig]]
+    # relations: t.Optional[list[FieldRelationConfig]]
     #
     # foreignKey: t.Optional[FieldNameTypeConfig]
     # discriminatorKey: t.Optional[FieldNameTypeConfig]
@@ -35,7 +35,7 @@ class Config(gws.ConfigWithAccess):
     # filePath: t.Optional[str]
     #
     # value: t.Optional[FieldValueConfig]
-    # validators: t.Optional[t.List[ValidatorConfig]]
+    # validators: t.Optional[list[ValidatorConfig]]
     #
     # geometryType: t.Optional[str]
     #

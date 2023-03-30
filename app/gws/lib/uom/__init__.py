@@ -14,7 +14,7 @@ OGC_SCREEN_PPI = MM_PER_IN / (OGC_M_PER_PX * 1000)  # 90.71
 
 PDF_DPI = 96
 
-_number = t.Union[int, float]
+_number = int | float
 
 
 def scale_to_res(x: _number) -> float:

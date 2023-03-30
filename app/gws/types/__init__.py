@@ -5,17 +5,18 @@ import enum
 from typing import (
     cast,
     Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
     Literal,
     Optional,
     Protocol,
-    Set,
-    Tuple,
     Union,
+)
+
+from collections.abc import (
+    Callable,
+    Iterable,
+    Iterator,
+    Mapping,
+    Sequence,
 )
 
 
@@ -42,15 +43,12 @@ __all__ = [
     'cast',
     'Any',
     'Callable',
-    'Dict',
     'Iterable',
     'Iterator',
-    'List',
     'Literal',
+    'Mapping',
     'Optional',
     'Protocol',
-    'Set',
-    'Tuple',
+    'Sequence',
     'Union',
-    'Enum',
 ]

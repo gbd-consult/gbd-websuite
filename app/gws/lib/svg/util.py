@@ -9,12 +9,12 @@ _SVG_TAG_ATTS = {
 }
 
 
-def fragment_to_element(fragment: t.List[gws.IXmlElement], atts: dict = None) -> gws.IXmlElement:
+def fragment_to_element(fragment: list[gws.IXmlElement], atts: dict = None) -> gws.IXmlElement:
     fr = sorted(fragment, key=lambda el: el.attributes.get('z-index', 0))
     return xmlx.tag('svg', _SVG_TAG_ATTS, atts, *fr)
 
 
-def fragment_to_image(fragment: t.List[gws.IXmlElement], size: gws.Size, format='png') -> gws.lib.image.Image:
+def fragment_to_image(fragment: list[gws.IXmlElement], size: gws.Size, format='png') -> gws.lib.image.Image:
     el = fragment_to_element(fragment)
     return gws.lib.image.from_svg(xmlx.to_string(el), size, format)
 

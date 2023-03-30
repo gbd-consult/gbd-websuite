@@ -12,9 +12,9 @@ class LayerFilter(gws.Data):
 
     level: int = 0 
     """match only layers at this level"""
-    names: t.Optional[t.List[str]] 
+    names: t.Optional[list[str]] 
     """match these layer names (top-to-bottom order)"""
-    titles: t.Optional[t.List[str]] 
+    titles: t.Optional[list[str]] 
     """match these layer titles"""
     pattern: gws.Regex = '' 
     """match layers whose full path matches a pattern"""
@@ -56,7 +56,7 @@ def layer_matches(sl: gws.SourceLayer, slf: LayerFilter) -> bool:
     return True
 
 
-def check_layers(layers) -> t.List[gws.SourceLayer]:
+def check_layers(layers) -> list[gws.SourceLayer]:
     def walk(sl, parent_path, level):
         if not sl:
             return
@@ -69,7 +69,7 @@ def check_layers(layers) -> t.List[gws.SourceLayer]:
     return gws.compact(walk(sl, '', 1) for sl in layers)
 
 
-def filter_layers(layers: t.List[gws.SourceLayer], slf: LayerFilter) -> t.List[gws.SourceLayer]:
+def filter_layers(layers: list[gws.SourceLayer], slf: LayerFilter) -> list[gws.SourceLayer]:
     """Filter source layers by the given layer filter."""
 
     if not slf:
@@ -98,7 +98,7 @@ def filter_layers(layers: t.List[gws.SourceLayer], slf: LayerFilter) -> t.List[g
     return found
 
 
-def combined_crs_list(layers: t.List[gws.SourceLayer]) -> t.List[gws.ICrs]:
+def combined_crs_list(layers: list[gws.SourceLayer]) -> list[gws.ICrs]:
     """Return an intersection of crs supported by each source layer."""
 
     cs: set = set()
