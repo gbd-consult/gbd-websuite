@@ -128,7 +128,7 @@ class Object(gws.common.layer.Image):
             return
 
         la = gws.merge(la, {
-            'uid': 'q', #gws.as_uid(sl.name),
+            'uid': gws.as_uid(sl.a_path),
             'title': sl.title,
             'clientOptions': {
                 'visible': sl.is_visible,
@@ -278,7 +278,7 @@ class Object(gws.common.layer.Image):
         return {
             'type': 'group',
             'title': sl.title,
-            'uid': 'q', #gws.as_uid(sl.name),
+            'uid': gws.as_uid(sl.a_path),
             'layers': layers
         }
 
