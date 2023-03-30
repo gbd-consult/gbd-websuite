@@ -26,11 +26,14 @@ class Object(scalar.Object):
 
     attributeType = gws.AttributeType.int
 
+    def configure_widget(self):
+        if not super().configure_widget():
+            self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'date'})
+            return True
+
     def convert_load(self, value):
-        try:
-            return gws.lib.date.parse(value).date()
-        except Exception:
-            return gws.ErrorValue
+        d = gws.lib.date.parse(value)
+        return d.date() if d else gws.ErrorValue
 
     def convert_store(self, value):
         return gws.lib.date.to_iso_date(value)

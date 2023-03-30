@@ -1037,6 +1037,13 @@ class DataSetDescription(Data):
     geometrySrid: int
 
 
+class SelectStatement(Data):
+    saSelect: 'sa.select'
+    search: 'SearchArgs'
+    keywordWhere: list
+    geometryWhere: list
+
+
 class IDatabaseManager(INode, Protocol):
     def provider(self, uid: str, ext_type: str): ...
 
@@ -1176,8 +1183,15 @@ class IModelField(INode, Protocol):
     title: str
 
     attributeType: AttributeType
-    geometryType: Optional[GeometryType]
-    geometryCrs: Optional['ICrs']
+    geometryType: Optional[GeometryType] = None
+    geometryCrs: Optional['ICrs'] = None
+
+    widget: Optional['IModelWidget'] = None
+
+    fixedValues: Dict[Access, 'IModelValue']
+    defaultValues: Dict[Access, 'IModelValue']
+
+    validators: Dict[Access, List['IModelValidator']]
 
     isPrimaryKey: bool
 
@@ -1203,7 +1217,7 @@ class IModelField(INode, Protocol):
 
     def orm_properties(self) -> dict: ...
 
-    def sa_select(self, sel: object, user: IUser): ...
+    def select(self, sel: 'SelectStatement', user: IUser): ...
 
 
 class IModel(INode, Protocol):

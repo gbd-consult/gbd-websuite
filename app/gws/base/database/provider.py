@@ -36,7 +36,7 @@ class Object(gws.Node, gws.IDatabaseProvider):
         return self.mgr.table(self, name, columns, **kwargs)
 
 
-def get_for(obj: gws.INode, uid: str = None, ext_type: str = None) -> gws.IDatabaseProvider:
+def get_for(obj: gws.INode, uid: str = None, ext_type: str = None):
     uid = uid or obj.var('db')
     if not uid and obj.var('_provider'):
         return obj.var('_provider')

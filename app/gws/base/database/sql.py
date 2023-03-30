@@ -8,13 +8,6 @@ import geoalchemy2 as geosa
 
 
 
-class SelectStatement(gws.Data):
-    saSelect: sa.select
-    search: gws.SearchArgs
-    keywordWhere: list
-    geometryWhere: list
-
-
 ATTR_TO_SA = {
     gws.AttributeType.bool: sa.Boolean,
     gws.AttributeType.date: sa.Date,

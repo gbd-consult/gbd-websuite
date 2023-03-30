@@ -228,7 +228,7 @@ class FeatureList extends gws.View<FeatureListProps> {
                         </Cell>
                         <Cell flex>
                             <gws.ui.TextInput
-                                placeholder={this.__('modEditSearchPlaceholder')}
+                                placeholder={this.__('editSearchPlaceholder')}
                                 withClear={true}
                                 value={searchText}
                                 whenChanged={val => this.props.whenSearchChanged(/*layers, val*/)}
@@ -271,7 +271,7 @@ class FeatureDetailsTab extends gws.View<ViewProps> {
         let widgets = model.fields.map(f =>
             cc.makeWidget(f, es.selectedFeature, formValues))
 
-        return <sidebar.Tab className="modEditSidebar modEditSidebarFormTab">
+        return <sidebar.Tab className="editSidebar editSidebarFormTab">
             <sidebar.TabHeader>
                 <Row>
                     <Cell flex>
@@ -301,29 +301,29 @@ class FeatureDetailsTab extends gws.View<ViewProps> {
                             <Cell flex/>
                             <Cell spaced>
                                 <gws.ui.Button
-                                    {...gws.lib.cls('modEditSaveButton', isDirty && 'isActive')}
-                                    tooltip={this.__('modEditSave')}
+                                    {...gws.lib.cls('editSaveButton', isDirty && 'isActive')}
+                                    tooltip={this.__('editSave')}
                                     whenTouched={() => cc.whenFormSaveButtonTouched()}
                                 />
                             </Cell>
                             <Cell spaced>
                                 <gws.ui.Button
-                                    {...gws.lib.cls('modEditResetButton', isDirty && 'isActive')}
-                                    tooltip={this.__('modEditReset')}
+                                    {...gws.lib.cls('editResetButton', isDirty && 'isActive')}
+                                    tooltip={this.__('editReset')}
                                     whenTouched={() => cc.whenFormResetButtonTouched()}
                                 />
                             </Cell>
                             <Cell spaced>
                                 <gws.ui.Button
-                                    {...gws.lib.cls('modEditCancelButton')}
-                                    tooltip={this.__('modEditCancel')}
+                                    {...gws.lib.cls('editCancelButton')}
+                                    tooltip={this.__('editCancel')}
                                     whenTouched={() => cc.whenFormCancelButtonTouched()}
                                 />
                             </Cell>
                             <Cell spaced>
                                 <gws.ui.Button
-                                    className="modEditDeleteButton"
-                                    tooltip={this.__('modEditDelete')}
+                                    className="editDeleteButton"
+                                    tooltip={this.__('editDelete')}
                                     whenTouched={() => cc.whenFormDeleteButtonTouched()}
                                 />
                             </Cell>
@@ -345,7 +345,7 @@ class FeatureListTab extends gws.View<ViewProps> {
         let hasGeom = !gws.lib.isEmpty(es.selectedModel.geometryName);
         let features = Object.values(es.featureMap[es.selectedModel.uid])
 
-        return <sidebar.Tab className="modEditSidebar">
+        return <sidebar.Tab className="editSidebar">
 
             <sidebar.TabHeader>
                 <Row>
@@ -367,19 +367,19 @@ class FeatureListTab extends gws.View<ViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <sidebar.AuxButton
-                        {...gws.lib.cls('modEditGotoModelListAuxButton')}
-                        tooltip={this.__('modEditGotoModelListAuxButton')}
+                        {...gws.lib.cls('editGotoModelListAuxButton')}
+                        tooltip={this.__('editGotoModelListAuxButton')}
                         whenTouched={() => cc.whenGotoModelListButtonTouched()}
                     />
                     <Cell flex/>
                     {es.selectedModel.canCreate && hasGeom && <sidebar.AuxButton
-                        {...gws.lib.cls('modEditDrawAuxButton', this.props.appActiveTool === 'Tool.Edit.Draw' && 'isActive')}
-                        tooltip={this.__('modEditDrawAuxButton')}
+                        {...gws.lib.cls('editDrawAuxButton', this.props.appActiveTool === 'Tool.Edit.Draw' && 'isActive')}
+                        tooltip={this.__('editDrawAuxButton')}
                         whenTouched={() => cc.whenDrawButtonTouched()}
                     />}
                     {es.selectedModel.canCreate && <sidebar.AuxButton
-                        {...gws.lib.cls('modEditAddAuxButton')}
-                        tooltip={this.__('modEditAddAuxButton')}
+                        {...gws.lib.cls('editAddAuxButton')}
+                        tooltip={this.__('editAddAuxButton')}
                         whenTouched={() => cc.whenAddButtonTouched()}
                     />}
                 </sidebar.AuxToolbar>
@@ -397,15 +397,15 @@ class ModelListTab extends gws.View<ViewProps> {
 
         if (gws.lib.isEmpty(cc.editableModels)) {
             return <sidebar.EmptyTab>
-                {this.__('modEditNoLayer')}
+                {this.__('editNoLayer')}
             </sidebar.EmptyTab>;
         }
 
-        return <sidebar.Tab className="modEditSidebar">
+        return <sidebar.Tab className="editSidebar">
             <sidebar.TabHeader>
                 <Row>
                     <Cell>
-                        <gws.ui.Title content={this.__('modEditTitle')}/>
+                        <gws.ui.Title content={this.__('editTitle')}/>
                     </Cell>
                 </Row>
             </sidebar.TabHeader>
@@ -422,7 +422,7 @@ class ModelListTab extends gws.View<ViewProps> {
                             />}
                             uid={model => model.uid}
                             leftButton={model => <components.list.Button
-                                className="modEditorModelListButton"
+                                className="editorModelListButton"
                                 whenTouched={() => cc.whenModelListItemTouched(model)}
                             />}
                         />
@@ -459,8 +459,8 @@ class Dialog extends gws.View<ViewProps> {
             let fn = dd.whenRelationSelected;
 
             return <gws.ui.Dialog
-                className="modEditSelectRelationDialog"
-                title={this.__('modEditSelectRelationTitle')}
+                className="editSelectRelationDialog"
+                title={this.__('editSelectRelationTitle')}
                 whenClosed={() => cc.closeDialog()}
                 buttons={[cancelButton]}
             >
@@ -483,8 +483,8 @@ class Dialog extends gws.View<ViewProps> {
             let fn = dd.whenFeatureSelected;
 
             return <gws.ui.Dialog
-                className="modEditSelectFeatureDialog"
-                title={this.__('modEditSelectFeatureTitle')}
+                className="editSelectFeatureDialog"
+                title={this.__('editSelectFeatureTitle')}
                 whenClosed={() => cc.closeDialog()}
                 buttons={[cancelButton]}
             >
@@ -504,8 +504,8 @@ class Dialog extends gws.View<ViewProps> {
             let fn = dd.whenConfirmed;
 
             return <gws.ui.Confirm
-                title={this.__('modEditDeleteFeatureTitle')}
-                text={this.__('modEditDeleteFeatureText').replace(/%s/, dd.feature.views.title)}
+                title={this.__('editDeleteFeatureTitle')}
+                text={this.__('editDeleteFeatureText').replace(/%s/, dd.feature.views.title)}
                 whenConfirmed={() => fn()}
                 whenRejected={() => cc.closeDialog()}
             />
@@ -542,10 +542,10 @@ class SidebarView extends gws.View<ViewProps> {
 }
 
 class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
-    iconClass = 'modEditSidebarIcon';
+    iconClass = 'editSidebarIcon';
 
     get tooltip() {
-        return this.__('modEditSidebarTitle');
+        return this.__('editSidebarTitle');
     }
 
     get tabView() {
@@ -557,11 +557,11 @@ class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
 
 
 class EditToolbarButton extends toolbar.Button {
-    iconClass = 'modEditToolbarButton';
+    iconClass = 'editToolbarButton';
     tool = 'Tool.Edit.Pointer';
 
     get tooltip() {
-        return this.__('modEditToolbarButton');
+        return this.__('editToolbarButton');
     }
 
 }
@@ -569,7 +569,7 @@ class EditToolbarButton extends toolbar.Button {
 
 class EditLayer extends gws.map.layer.FeatureLayer {
     controller: Controller;
-    cssSelector = '.modEditFeature'
+    cssSelector = '.editFeature'
 
     get printPlane() {
         return null;
@@ -906,7 +906,7 @@ class Controller extends gws.Controller {
         if (res.error) {
             this.showDialog({
                 type: 'Error',
-                errorText: this.__('modEditSaveErrorText'),
+                errorText: this.__('editSaveErrorText'),
                 errorDetails: res.error.info,
             })
             return;
@@ -969,7 +969,7 @@ class Controller extends gws.Controller {
         if (res.error) {
             this.showDialog({
                 type: 'Error',
-                errorText: this.__('modEditDeleteErrorText'),
+                errorText: this.__('editDeleteErrorText'),
                 errorDetails: res.error.info,
             })
             return;

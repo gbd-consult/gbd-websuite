@@ -23,70 +23,95 @@ module.exports = v => {
 
     return {
 
-        '.modEditSidebarIcon': {
+        '.editSidebar': {
+            '.modSidebarTabHeader': {
+                padding: v.UNIT4,
+            },
+            '.modSidebarTabBody': {
+                padding: 0,
+                '.uiVRow': {
+                    padding: [v.UNIT2, 0, 0, v.UNIT2],
+                    marginBottom: 0,
+                }
+
+            },
+            '&.editSidebarFormTab .modSidebarTabBody .uiVRow': {
+                padding: [v.UNIT4],
+            },
+            '.modSearchBox': {
+                padding: 0,
+                '.uiControlBox': {
+                    border: 0
+                },
+                // backgroundColor:v.SIDEBAR_AUX_TOOLBAR_BACKGROUND,
+            },
+        },
+
+
+        '.editSidebarIcon': {
             ...v.SIDEBAR_ICON('google:image/edit')
         },
 
-        '.modEditToolbarButton': {
+        '.editToolbarButton': {
             ...v.TOOLBAR_BUTTON('google:image/edit')
         },
 
 
-        '.modEditorModelListButton': {
+        '.editorModelListButton': {
             ...v.LIST_BUTTON('google:image/edit')
         },
 
-        '.modEditModifyAuxButton': {
+        '.editModifyAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON(__dirname + '/cursor')
         },
 
-        '.modEditEndButton': {
+        '.editEndButton': {
             ...v.SVG('google:action/done')
         },
-        '.modEditSaveButton': {
+        '.editSaveButton': {
             ...v.ROUND_OK_BUTTON(),
         },
-        '.modEditCancelButton': {
+        '.editCancelButton': {
             ...v.ROUND_CLOSE_BUTTON(),
         },
-        '.modEditResetButton': {
+        '.editResetButton': {
             ...v.ROUND_FORM_BUTTON('google:content/undo'),
             opacity: 0.3,
             '&.isActive': {
                 opacity: 1,
             }
         },
-        '.modEditDeleteButton': {
+        '.editDeleteButton': {
             ...v.ROUND_FORM_BUTTON('google:action/delete')
         },
 
-        '.modEditStyleButton': {
+        '.editStyleButton': {
             ...v.ROUND_FORM_BUTTON('google:image/brush')
         },
 
 
-        '.modEditGotoModelListAuxButton': {
+        '.editGotoModelListAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:maps/layers')
         },
 
-        '.modEditCloseFeatureAuxButton': {
+        '.editCloseFeatureAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/reorder')
         },
 
-        '.modEditDrawAuxButton': {
+        '.editDrawAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON(__dirname + '/draw_black_24dp')
         },
-        '.modEditAddAuxButton': {
+        '.editAddAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline')
         },
-        '.modEditRemoveAuxButton': {
+        '.editRemoveAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/delete')
         },
 
 
         // geometry styles
 
-        '.modEditFeature.point, .modEditFeature.multipoint': {
+        '.editFeature.point, .editFeature.multipoint': {
             fill: v.COLOR.opacity(DARK, 0.7),
             stroke: LIGHT,
             strokeWidth: STROKE,
@@ -102,7 +127,7 @@ module.exports = v => {
             }
         },
 
-        '.modEditFeature.linestring, .modEditFeature.multilinestring': {
+        '.editFeature.linestring, .editFeature.multilinestring': {
             stroke: DARK,
             strokeWidth: STROKE,
             ...LABEL,
@@ -115,7 +140,7 @@ module.exports = v => {
             }
         },
 
-        '.modEditFeature.polygon, .modEditFeature.multipolygon': {
+        '.editFeature.polygon, .editFeature.multipolygon': {
             fill: v.COLOR.opacity(DARK, 0.3),
             stroke: LIGHT,
             strokeWidth: STROKE,

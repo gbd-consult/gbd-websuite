@@ -1,9 +1,9 @@
-"""Simple input widget."""
+"""Date widget."""
 
 import gws
-import gws.base.model.widget
+import gws.base.model.widget as w
 
-gws.ext.new.modelWidget('input')
+gws.ext.new.modelWidget('date')
 
 
 class Config(gws.base.model.widget.Config):

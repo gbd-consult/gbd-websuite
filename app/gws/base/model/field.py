@@ -46,15 +46,6 @@ class Config(gws.ConfigWithAccess):
 
 
 class Object(gws.Node, gws.IModelField):
-    widget: t.Optional[gws.IModelWidget] = None
-
-    fixedValues: t.Dict[gws.Access, gws.IModelValue]
-    defaultValues: t.Dict[gws.Access, gws.IModelValue]
-
-    validators: t.Dict[gws.Access, t.List[gws.IModelValidator]]
-
-    geometryType = None
-    geometryCrs = None
 
     def configure(self):
         p = self.permissions.get(gws.Access.use)

@@ -123,6 +123,12 @@ module.exports = v => ({
         padding: v.UNIT4,
     },
 
+    '.modSidebarTabBodyNoPadding': {
+        flex: 1,
+        overflow: 'auto',
+        padding: 0,
+    },
+
     '.modSidebarOverflowButton.uiIconButton': {
         ...v.SVG('google:navigation/more_horiz', v.TOOLBAR_BUTTON_COLOR),
         ...v.TRANSITION(),

@@ -1,11 +1,13 @@
 """Text field."""
 
+import sqlalchemy as sa
+
 import gws
 import gws.base.database.sql as sql
 import gws.base.database.model
 import gws.types as t
 
-from .. import scalar
+import gws.base.model.fields.scalar as scalar
 
 gws.ext.new.modelField('text')
 
@@ -57,10 +59,7 @@ class Object(scalar.Object):
             self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'input'})
             return True
 
-
-    def sa_select(self, sel, user):
-        sel = t.cast(sql.SelectStatement, sel)
-
+    def select(self, sel, user):
         if not self.textSearch or not sel.search or not sel.search.keyword:
             return
 
@@ -70,9 +69,9 @@ class Object(scalar.Object):
             return
 
         mod = t.cast(gws.base.database.model.Object, self.model)
-        fld = sql.sa.sql.cast(
+        fld = sa.sql.cast(
             getattr(mod.orm_class(), self.name),
-            sql.sa.String)
+            sa.String)
 
         if so.type == SearchType.exact:
             sel.keywordWhere.append(fld == kw)

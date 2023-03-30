@@ -81,7 +81,7 @@ def is_datetime(x) -> bool:
 
 # @TODO
 
-def parse(s):
+def parse(s) -> t.Optional[datetime.datetime]:
     if not s:
         return None
     if isinstance(s, datetime.datetime):
@@ -91,7 +91,7 @@ def parse(s):
         return from_iso(s)
     if re.match(r'^\d{1,2}', s):
         return from_dmy(s)
-    raise ValueError(f'invalid date {s!r}')
+    return None
 
 
 _dmy_re = r'''(?x)

@@ -168,7 +168,7 @@ class Object(gws.base.model.Object):
         return self.provider.session()
 
     def build_select(self, search: gws.SearchArgs, user: gws.IUser):
-        sel = sql.SelectStatement(
+        sel = gws.SelectStatement(
             saSelect=sa.select(self.orm_class()),
             search=search,
             keywordWhere=[],
@@ -176,7 +176,7 @@ class Object(gws.base.model.Object):
         )
 
         for f in self.fields:
-            f.sa_select(sel, user)
+            f.select(sel, user)
 
         if search.keyword and not sel.keywordWhere:
             return

@@ -37,7 +37,7 @@ class Object(scalar.Object):
         if self.var('crs'):
             self.geometryCrs = gws.gis.crs.get(self.var('crs'))
 
-    def sa_select(self, sel: sql.SelectStatement, user):
+    def select(self, sel, user):
         shape = None
         if sel.search.shape:
             shape = sel.search.shape
