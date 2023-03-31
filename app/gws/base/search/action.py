@@ -50,8 +50,8 @@ class Object(gws.base.action.Object):
     tolerance: gws.Measurement
 
     def configure(self):
-        self.limit = self.var('limit')
-        self.tolerance = self.var('tolerance') or _DEFAULT_TOLERANCE
+        self.limit = self.cfg('limit')
+        self.tolerance = self.cfg('tolerance') or _DEFAULT_TOLERANCE
 
     @gws.ext.command.api('searchFind')
     def find(self, req: gws.IWebRequester, p: Request) -> Response:

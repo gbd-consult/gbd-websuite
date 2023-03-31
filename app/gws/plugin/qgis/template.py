@@ -30,20 +30,20 @@ class Object(gws.base.template.Object):
     map_position: gws.MSize
 
     def configure(self):
-        if self.var('_provider'):
-            self.provider = self.var('_provider')
+        if self.cfg('_provider'):
+            self.provider = self.cfg('_provider')
         else:
             self.provider = self.create_child(provider.Object, self.config, shared=True)
 
-        s = self.var('title') or self.var('index')
+        s = self.cfg('title') or self.cfg('index')
         self.template = self.provider.print_template(s)
         if not self.template:
             raise gws.Error(f'print template {s!r} not found')
 
-        uid = self.var('uid') or (gws.sha256(self.provider.path) + '_' + str(self.template.index))
+        uid = self.cfg('uid') or (gws.sha256(self.provider.path) + '_' + str(self.template.index))
         self.set_uid(uid)
 
-        self.map_position = self.var('mapPosition')
+        self.map_position = self.cfg('mapPosition')
 
         for el in self.template.elements:
             if el.type == 'page' and el.size:

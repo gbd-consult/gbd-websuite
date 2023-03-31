@@ -38,25 +38,25 @@ class Props(gws.Props):
 
 class Object(gws.Node, gws.ITemplate):
     def configure(self):
-        self.path = self.var('path')
-        self.text = self.var('text', default='')
-        self.title = self.var('title', default='')
+        self.path = self.cfg('path')
+        self.text = self.cfg('text', default='')
+        self.title = self.cfg('title', default='')
 
-        self.qualityLevels = self.var('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
-        # self.data_model = self.root.create_optional('gws.base.model', self.var('dataModel'))
+        self.qualityLevels = self.cfg('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
+        # self.data_model = self.root.create_optional('gws.base.model', self.cfg('dataModel'))
 
-        self.subject = self.var('subject', default='').lower()
+        self.subject = self.cfg('subject', default='').lower()
         if '.' in self.subject:
             self.category, _, self.name = self.subject.partition('.')
         else:
             self.category, self.name = '', self.subject
 
         self.mimes = []
-        for p in self.var('mimeTypes', default=[]):
+        for p in self.cfg('mimeTypes', default=[]):
             self.mimes.append(gws.lib.mime.get(p))
 
-        self.map_size = self.var('mapSize')
-        self.page_size = self.var('pageSize')
+        self.map_size = self.cfg('mapSize')
+        self.page_size = self.cfg('pageSize')
 
     def props(self, user):
         return gws.Data(

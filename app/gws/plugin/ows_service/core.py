@@ -175,21 +175,21 @@ class Service(gws.Node, gws.IOwsService):
         self.project = self.get_closest('gws.base.project')
         self.metadata = self.configure_metadata()
 
-        self.root_layer_uid = self.var('rootLayer')
-        self.supported_crs = [gws.gis.crs.require(s) for s in self.var('supportedCrs', default=[])]
-        self.update_sequence = self.var('updateSequence')
-        self.with_inspire_meta = self.var('withInspireMeta')
-        self.with_strict_params = self.var('withStrictParams')
+        self.root_layer_uid = self.cfg('rootLayer')
+        self.supported_crs = [gws.gis.crs.require(s) for s in self.cfg('supportedCrs', default=[])]
+        self.update_sequence = self.cfg('updateSequence')
+        self.with_inspire_meta = self.cfg('withInspireMeta')
+        self.with_strict_params = self.cfg('withStrictParams')
 
         self.templates = gws.base.template.manager.create(
             self.root,
-            items=self.var('templates'),
+            items=self.cfg('templates'),
             defaults=self.default_templates,
             parent=self)
 
         self.layer_options = []
 
-        for cfg in self.var('layerConfig', default=[]):
+        for cfg in self.cfg('layerConfig', default=[]):
             lo = LayerOptions()
             apply = cfg.applyTo or gws.Data()
             lo.uids = set(apply.uids or [])
@@ -201,7 +201,7 @@ class Service(gws.Node, gws.IOwsService):
             self.layer_options.append(lo)
 
     def configure_metadata(self) -> gws.lib.metadata.Metadata:
-        m = gws.lib.metadata.from_config(self.var('metadata'))
+        m = gws.lib.metadata.from_config(self.cfg('metadata'))
         m.extend(
             self.project.metadata if self.project else self.root.app.metadata,
             self.default_metadata,

@@ -19,10 +19,10 @@ class Config(gws.Config):
 
 class Object(gws.Node, gws.IWebManager):
     def configure(self):
-        cfgs = self.var('sites', default=[])
+        cfgs = self.cfg('sites', default=[])
         if all(c.host != '*' for c in cfgs):
             cfgs.append(_FALLBACK_SITE)
-        if self.var('ssl'):
+        if self.cfg('ssl'):
             cfgs = [gws.merge(c, ssl=True) for c in cfgs]
         self.sites = self.create_children(site.Object, cfgs)
 

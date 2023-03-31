@@ -52,10 +52,10 @@ class Object(gws.Node, gws.IModelField):
         if p:
             self.permissions.setdefault(gws.Access.read, p)
 
-        self.model = self.var('_model')
-        self.name = self.var('name')
-        self.title = self.var('title', default=self.name)
-        self.isPrimaryKey = self.var('isPrimaryKey')
+        self.model = self.cfg('_model')
+        self.name = self.cfg('name')
+        self.title = self.cfg('title', default=self.name)
+        self.isPrimaryKey = self.cfg('isPrimaryKey')
 
         self.configure_values()
         self.configure_validators()
@@ -66,7 +66,7 @@ class Object(gws.Node, gws.IModelField):
         self.fixedValues = {}
         self.defaultValues = {}
 
-        for cfg in self.var('values', default=[]):
+        for cfg in self.cfg('values', default=[]):
             v = self.root.create(gws.ext.object.modelValue, config=cfg)
             d = self.defaultValues if v.isDefault else self.fixedValues
             if v.forRead:
@@ -83,7 +83,7 @@ class Object(gws.Node, gws.IModelField):
             gws.Access.create: [],
         }
 
-        for cfg in self.var('validators', default=[]):
+        for cfg in self.cfg('validators', default=[]):
             v = self.root.create(gws.ext.object.modelValidator, config=cfg)
             if v.forWrite:
                 self.validators[gws.Access.write].append(v)
@@ -91,7 +91,7 @@ class Object(gws.Node, gws.IModelField):
                 self.validators[gws.Access.create].append(v)
 
     def configure_widget(self):
-        p = self.var('widget')
+        p = self.cfg('widget')
         if p:
             self.widget = self.create_child(gws.ext.object.modelWidget, p)
             return True

@@ -27,7 +27,7 @@ def init():
     try:
         gws.log.info('initializing WEB application')
         root = gws.config.load()
-        gws.log.set_level(root.app.var('server.log.level'))
+        gws.log.set_level(root.app.cfg('server.log.level'))
 
         _STATE['middleware'] = root.app.web_middleware_list() + [final_middleware]
         _STATE['inited'] = True

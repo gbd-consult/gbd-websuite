@@ -61,12 +61,12 @@ class Object(gws.Node, gws.IOwsProvider):
     caps: caps.Caps
 
     def configure(self):
-        self.source = self.var('source')
+        self.source = self.cfg('source')
         # self.root.app.monitor.add_path(self.path)
 
         self.url = 'http://%s:%s' % (
-            self.root.app.var('server.qgis.host'),
-            self.root.app.var('server.qgis.port'))
+            self.root.app.cfg('server.qgis.host'),
+            self.root.app.cfg('server.qgis.port'))
 
         self.project = project.from_source(self.source, self)
         self.caps = self.project.caps()
@@ -76,10 +76,10 @@ class Object(gws.Node, gws.IOwsProvider):
         self.sourceLayers = self.caps.sourceLayers
         self.version = self.caps.version
 
-        self.crs = gws.gis.crs.get(self.var('forceCrs')) or self.caps.projectCrs
+        self.crs = gws.gis.crs.get(self.cfg('forceCrs')) or self.caps.projectCrs
 
-        self.directRender = set(self.var('directRender', default=[]))
-        self.directSearch = set(self.var('directSearch', default=[]))
+        self.directRender = set(self.cfg('directRender', default=[]))
+        self.directSearch = set(self.cfg('directSearch', default=[]))
 
         self.extent = None
         wms_extent = self.caps.properties.get('WMSExtent')

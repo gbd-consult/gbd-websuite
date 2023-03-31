@@ -44,7 +44,7 @@ class Object(gws.base.search.provider.Object):
         
 
         self.capabilties = gws.base.search.provider.CAPS_KEYWORD
-        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.cfg('templates'), _DEFAULT_TEMPLATES)
 
     def run(self, layer: gws.ILayer, args: gws.SearchArgs) -> list[gws.IFeature]:
         params = {
@@ -56,11 +56,11 @@ class Object(gws.base.search.provider.Object):
             'limit': args.limit,
         }
 
-        if self.var('language'):
-            params['accept-language'] = self.var('language')
+        if self.cfg('language'):
+            params['accept-language'] = self.cfg('language')
 
-        if self.var('country'):
-            params['countrycodes'] = self.var('country')
+        if self.cfg('country'):
+            params['countrycodes'] = self.cfg('country')
 
         shape = self.context_shape(args)
         if not shape:

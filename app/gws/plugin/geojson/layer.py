@@ -27,11 +27,11 @@ class Object(gws.base.layer.vector.Object, gws.IOwsClient):
     features: list[gws.IFeature]
 
     def configure_source(self):
-        self.path = self.var('path')
+        self.path = self.cfg('path')
         js = gws.lib.jsonx.from_path(self.path)
         self.source_crs = self._get_crs(js) or self.map.crs
         self.features = [
-            gws.base.feature.from_geojson(f, self.crs, self.var('keyName'))
+            gws.base.feature.from_geojson(f, self.crs, self.cfg('keyName'))
             for f in js['features']]
 
     def get_features(self, bounds, limit=0):

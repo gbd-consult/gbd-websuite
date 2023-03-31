@@ -23,7 +23,7 @@ class Object(gws.base.layer.vector.Object, gws.IOwsClient):
 
     def configure_metadata(self):
         if not super().configure_metadata():
-            self.set_metadata(self.var('metadata'), self.provider.metadata)
+            self.set_metadata(self.cfg('metadata'), self.provider.metadata)
             return True
 
     def configure_search(self):

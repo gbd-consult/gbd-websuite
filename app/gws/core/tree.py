@@ -22,10 +22,10 @@ class Node(Object, types.INode):
 
         self.permissions = {}
 
-        p = util.parse_acl(self.var('access'))
+        p = util.parse_acl(self.cfg('access'))
         if p:
             self.permissions[types.Access.use] = p
-        p = self.var('permissions')
+        p = self.cfg('permissions')
         if p:
             for k, v in vars(p).items():
                 self.permissions[k] = util.parse_acl(v)
@@ -50,7 +50,7 @@ class Node(Object, types.INode):
         for cls in reversed(mro):
             cls.configure(self)  # type: ignore
 
-    def var(self, key: str, default=None):
+    def cfg(self, key: str, default=None):
         val = util.get(self.config, key)
         return val if val is not None else default
 

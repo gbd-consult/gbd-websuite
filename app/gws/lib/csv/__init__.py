@@ -32,14 +32,14 @@ class Config(gws.Config):
 
 class Object(gws.Node):
     def configure(self):
-        self.decimal = self.var('decimal')
-        self.delimiter = self.var('delimiter')
-        self.encoding = self.var('encoding')
-        self.formula_hack = self.var('formulaHack')
-        self.precision = self.var('precision')
-        self.quote = self.var('quote')
-        self.quote_all = self.var('quoteAll')
-        self.row_delimiter = self.var('rowDelimiter', default='\n').replace('CR', '\r').replace('LF', '\n')
+        self.decimal = self.cfg('decimal')
+        self.delimiter = self.cfg('delimiter')
+        self.encoding = self.cfg('encoding')
+        self.formula_hack = self.cfg('formulaHack')
+        self.precision = self.cfg('precision')
+        self.quote = self.cfg('quote')
+        self.quote_all = self.cfg('quoteAll')
+        self.row_delimiter = self.cfg('rowDelimiter', default='\n').replace('CR', '\r').replace('LF', '\n')
 
     def writer(self):
         return _Writer(self)

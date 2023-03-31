@@ -68,36 +68,36 @@ class Object(gws.Node, gws.IProject):
     title: str
 
     def configure(self):
-        self.uid = self.var('uid')
+        self.uid = self.cfg('uid')
 
-        self.metadata = gws.lib.metadata.from_config(self.var('metadata'))
+        self.metadata = gws.lib.metadata.from_config(self.cfg('metadata'))
         gws.lib.metadata.extend(self.metadata, self.root.app.metadata)
 
         # title at the top level config preferred
-        title = self.var('title') or self.metadata.get('title') or self.var('uid')
+        title = self.cfg('title') or self.metadata.get('title') or self.cfg('uid')
         self.metadata.title = title
         self.title = title
 
         gws.log.info(f'configuring project {self.uid!r}')
 
-        self.actionMgr = self.create_child_if_configured(gws.base.action.manager.Object, self.var('api'))
+        self.actionMgr = self.create_child_if_configured(gws.base.action.manager.Object, self.cfg('api'))
 
-        p = self.var('assets')
+        p = self.cfg('assets')
         self.assetsRoot = gws.WebDocumentRoot(p) if p else None
 
-        self.localeUids = self.var('locales') or self.root.app.localeUids
+        self.localeUids = self.cfg('locales') or self.root.app.localeUids
 
-        self.map = self.create_child_if_configured(gws.ext.object.map, self.var('map'))
-        self.printer = self.create_child_if_configured(gws.base.printer.Object, self.var('printer'))
+        self.map = self.create_child_if_configured(gws.ext.object.map, self.cfg('map'))
+        self.printer = self.create_child_if_configured(gws.base.printer.Object, self.cfg('printer'))
         #
-        # self.overview_map = self.root.create_optional(gws.base.map.Object, self.var('overviewMap'))
+        # self.overview_map = self.root.create_optional(gws.base.map.Object, self.cfg('overviewMap'))
         #
 
-        self.templates = self.create_children(gws.ext.object.template, self.var('templates'))
+        self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
         for cfg in _DEFAULT_TEMPLATES:
             self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
 
-        self.client = self.create_child_if_configured(gws.base.client.Object, self.var('client'))
+        self.client = self.create_child_if_configured(gws.base.client.Object, self.cfg('client'))
 
     def props(self, user):
         desc = gws.base.template.render(

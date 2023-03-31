@@ -19,7 +19,7 @@ class Object(core.Object):
     layerUids: list[str]
 
     def configure(self):
-        self.layerUids = self.var('layerUids')
+        self.layerUids = self.cfg('layerUids')
 
     def render(self, args=None):
         lros = []

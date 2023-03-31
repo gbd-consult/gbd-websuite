@@ -12,4 +12,4 @@ class Config(gws.Config):
 
 class Object(gws.Node, gws.IAuthMethod):
     def configure(self):
-        self.secure = self.var('secure')
+        self.secure = self.cfg('secure')

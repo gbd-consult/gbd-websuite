@@ -96,9 +96,9 @@ class Object(gws.base.api.Action):
         
 
         self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
-        self.crs: gws.Crs = self.var('crs')
+        self.crs: gws.Crs = self.cfg('crs')
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.cfg('templates'), _DEFAULT_TEMPLATES)
 
     def api_find_fs(self, req: gws.IWebRequest, p: GetFsParams) -> GetFsResponse:
         if not self.alkis:
@@ -154,12 +154,12 @@ class Object(gws.base.api.Action):
     def _load_gekos_data(self):
         recs = []
 
-        for source in self.var('sources'):
+        for source in self.cfg('sources'):
             options = gws.Data(
                 crs=self.crs,
                 url=source.url,
                 params=source.params,
-                position=self.var('position')
+                position=self.cfg('position')
             )
             gr = request.GekosRequest(options, source.instance, cache_lifetime=0)
             rs = gr.run()
@@ -187,7 +187,7 @@ class Object(gws.base.api.Action):
             rec['wkb_geometry'] = shape.ewkb_hex
             buf.append(rec)
 
-        table_name = self.var('table').name
+        table_name = self.cfg('table').name
         srid = gws.lib.proj.as_srid(self.crs)
 
         with self.db.connect() as conn:

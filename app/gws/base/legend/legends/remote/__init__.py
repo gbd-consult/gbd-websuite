@@ -19,7 +19,7 @@ class Object(core.Object):
     urls: list[str]
 
     def configure(self):
-        self.urls = self.var('urls')
+        self.urls = self.cfg('urls')
 
     def render(self, args=None):
         lros = []

@@ -175,7 +175,7 @@ def create_and_save(root: gws.IRoot):
     cfg = create(root)
 
     if not cfg:
-        force = root.app.var('server.mapproxy.forceStart')
+        force = root.app.cfg('server.mapproxy.forceStart')
         if force:
             gws.log.warn('mapproxy: no configuration, using default')
             cfg = DEFAULT_CONFIG

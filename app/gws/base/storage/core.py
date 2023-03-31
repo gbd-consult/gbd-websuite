@@ -86,8 +86,8 @@ class Permission(gws.Node):
     mode: PermissionMode
 
     def configure(self):
-        self.category = self.var('category')
-        self.mode = self.var('mode')
+        self.category = self.cfg('category')
+        self.mode = self.cfg('mode')
 
 
 class Object(gws.Node):
@@ -95,7 +95,7 @@ class Object(gws.Node):
     permissions: list[Permission]
 
     def configure(self):
-        self.permissions = self.root.create_many(Permission, self.var('permissions'))
+        self.permissions = self.root.create_many(Permission, self.cfg('permissions'))
         self.provider = self.root.create_required(sqlite.Object, self.config)
 
     def handle_action(self, req: gws.IWebRequester, p: Params, category: str) -> Response:

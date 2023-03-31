@@ -55,31 +55,31 @@ def create(root: gws.IRoot, base_dir, pid_dir):
 
     # NB it should be possible to have QGIS running somewhere else
     # so, if 'host' is not localhost, don't start QGIS here
-    qgis_enabled = root.app.qgisVersion and root.app.var('server.qgis.host') == 'localhost'
-    qgis_port = root.app.var('server.qgis.port')
-    qgis_workers = root.app.var('server.qgis.workers')
-    qgis_threads = root.app.var('server.qgis.threads')
+    qgis_enabled = root.app.qgisVersion and root.app.cfg('server.qgis.host') == 'localhost'
+    qgis_port = root.app.cfg('server.qgis.port')
+    qgis_workers = root.app.cfg('server.qgis.workers')
+    qgis_threads = root.app.cfg('server.qgis.threads')
     qgis_socket = gws.TMP_DIR + '/uwsgi.qgis.sock'
 
-    web_enabled = root.app.var('server.web.enabled')
-    web_workers = root.app.var('server.web.workers')
-    web_threads = root.app.var('server.web.threads')
+    web_enabled = root.app.cfg('server.web.enabled')
+    web_workers = root.app.cfg('server.web.workers')
+    web_threads = root.app.cfg('server.web.threads')
     web_socket = gws.TMP_DIR + '/uwsgi.web.sock'
 
-    spool_enabled = root.app.var('server.spool.enabled')
-    spool_workers = root.app.var('server.spool.workers')
-    spool_threads = root.app.var('server.spool.threads')
+    spool_enabled = root.app.cfg('server.spool.enabled')
+    spool_workers = root.app.cfg('server.spool.workers')
+    spool_threads = root.app.cfg('server.spool.threads')
     spool_socket = gws.TMP_DIR + '/uwsgi.spooler.sock'
     spool_dir = gws.SPOOL_DIR
-    spool_freq = root.app.var('server.spool.jobFrequency')
+    spool_freq = root.app.cfg('server.spool.jobFrequency')
 
-    mapproxy_enabled = root.app.var('server.mapproxy.enabled') and os.path.exists(gws.gis.mpx.config.CONFIG_PATH)
-    mapproxy_port = root.app.var('server.mapproxy.port')
-    mapproxy_workers = root.app.var('server.mapproxy.workers')
-    mapproxy_threads = root.app.var('server.mapproxy.threads')
+    mapproxy_enabled = root.app.cfg('server.mapproxy.enabled') and os.path.exists(gws.gis.mpx.config.CONFIG_PATH)
+    mapproxy_port = root.app.cfg('server.mapproxy.port')
+    mapproxy_workers = root.app.cfg('server.mapproxy.workers')
+    mapproxy_threads = root.app.cfg('server.mapproxy.threads')
     mapproxy_socket = gws.TMP_DIR + '/uwsgi.mapproxy.sock'
 
-    log = root.app.var('server.log.path') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
+    log = root.app.cfg('server.log.path') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
 
     nginx_log_level = 'info'
     if root.app.developer_option('nginx.log_level_debug'):
@@ -113,13 +113,13 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     DEFAULT_BASE_TIMEOUT = 60
     DEFAULT_SPOOL_TIMEOUT = 300
 
-    base_timeout = int(root.app.var('server.timeout', default=DEFAULT_BASE_TIMEOUT))
+    base_timeout = int(root.app.cfg('server.timeout', default=DEFAULT_BASE_TIMEOUT))
     qgis_timeout = base_timeout + 10
     qgis_front_timeout = qgis_timeout + 10
     mapproxy_timeout = qgis_front_timeout + 10
     web_timeout = mapproxy_timeout + 10
     web_front_timeout = web_timeout + 10
-    spool_timeout = int(root.app.var('server.spool.timeout', default=DEFAULT_SPOOL_TIMEOUT))
+    spool_timeout = int(root.app.cfg('server.spool.timeout', default=DEFAULT_SPOOL_TIMEOUT))
 
     gws.log.debug(f'TIMEOUTS: {[qgis_timeout, qgis_front_timeout, mapproxy_timeout, web_timeout, web_front_timeout, spool_timeout]}')
 
@@ -291,7 +291,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             break
 
         # this is in MB
-        max_body_size = int(root.app.var('server.web.maxRequestLength', default=1))
+        max_body_size = int(root.app.cfg('server.web.maxRequestLength', default=1))
 
         client_buffer_size = 4  # MB
         client_tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/nginx')
@@ -322,11 +322,11 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             }}
         """
 
-        ssl_crt = root.app.var('web.ssl.crt')
-        ssl_key = root.app.var('web.ssl.key')
+        ssl_crt = root.app.cfg('web.ssl.crt')
+        ssl_key = root.app.cfg('web.ssl.key')
 
         ssl_hsts = ''
-        s = root.app.var('web.ssl.hsts')
+        s = root.app.cfg('web.ssl.hsts')
         if s:
             ssl_hsts = f'add_header Strict-Transport-Security "max-age={s}; includeSubdomains";'
 

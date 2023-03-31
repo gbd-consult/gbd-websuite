@@ -47,16 +47,16 @@ class Object(gws.base.layer.Object):
         self.configure_templates()
 
     def configure_provider(self):
-        if self.var('_provider'):
-            self.provider = self.var('_provider')
+        if self.cfg('_provider'):
+            self.provider = self.cfg('_provider')
             return True
         self.provider = self.root.create_shared(provider.Object, self.config)
         return True
 
     def configure_sources(self):
-        p = self.var('sourceLayers')
-        if not p and self.var('_sourceLayers'):
-            self.sourceLayers = self.var('_sourceLayers')
+        p = self.cfg('sourceLayers')
+        if not p and self.cfg('_sourceLayers'):
+            self.sourceLayers = self.cfg('_sourceLayers')
             self.queryableLayers = gws.gis.source.filter_layers(
                 self.sourceLayers,
                 gws.gis.source.LayerFilter(isQueryable=True))
@@ -150,7 +150,7 @@ class Object(gws.base.layer.Object):
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.sourceLayers if sl.name]
-        if not self.var('capsLayersBottomUp'):
+        if not self.cfg('capsLayersBottomUp'):
             layers = reversed(layers)
 
         op = self.provider.get_operation(gws.OwsVerb.GetMap)
@@ -165,7 +165,7 @@ class Object(gws.base.layer.Object):
         source_uid = mc.source(gws.compact({
             'type': 'wms',
             'supported_srs': [self.sourceCrs.epsg],
-            'concurrent_requests': self.var('maxRequests'),
+            'concurrent_requests': self.cfg('maxRequests'),
             'req': req,
             'wms_opts': {
                 'version': self.provider.version,

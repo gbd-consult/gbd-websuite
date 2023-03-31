@@ -25,7 +25,7 @@ class Props(core.Props):
 class Object(core.Object):
 
     def configure(self):
-        self.configure_group(self.var('layers'))
+        self.configure_group(self.cfg('layers'))
 
     def props(self, user):
         return gws.merge(super().props(user), layers=self.layers, type='group')

@@ -24,9 +24,9 @@ class Object(gws.Node, gws.IMonitor):
         self.watch_dirs = {}
         self.watch_files = {}
         self.path_stats = {}
-        self.enabled = self.var('enabled', default=True)
-        self.frequency = self.var('frequency', default=30)
-        self.ignore = self.var('ignore', default=[])
+        self.enabled = self.cfg('enabled', default=True)
+        self.frequency = self.cfg('frequency', default=30)
+        self.ignore = self.cfg('ignore', default=[])
 
     def add_directory(self, path, pattern):
         if os.path.isfile(path):

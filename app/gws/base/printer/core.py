@@ -112,7 +112,7 @@ class Object(gws.Node):
     templates: list[gws.ITemplate]
 
     def configure(self):
-        self.create_children(gws.ext.object.template, self.var('templates'))
+        self.create_children(gws.ext.object.template, self.cfg('templates'))
 
     def props(self, user):
         return gws.Props(

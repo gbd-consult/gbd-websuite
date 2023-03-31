@@ -23,13 +23,13 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
     sourceCrs: gws.ICrs
 
     def configure(self):
-        self.provider = self.var('_provider') or self.root.create_shared(provider.Object, self.config)
+        self.provider = self.cfg('_provider') or self.root.create_shared(provider.Object, self.config)
 
-        self.sourceLayers = self.var('_sourceLayers')
+        self.sourceLayers = self.cfg('_sourceLayers')
         if not self.sourceLayers:
             slf = gws.merge(
                 gws.gis.source.LayerFilter(isImage=True),
-                self.var('sourceLayers'))
+                self.cfg('sourceLayers'))
             self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, slf)
         if not self.sourceLayers:
             raise gws.Error(f'no source layers found in {self.provider.url!r}')
@@ -66,7 +66,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             if not self.resolutions:
                 raise gws.Error(f'layer {self.uid!r}: no matching resolutions')
 
-        p = self.var('grid', default=gws.Config())
+        p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
             corner=p.corner or 'lt',
             tileSize=p.tileSize or 256,
@@ -81,7 +81,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             if urls:
                 self.legend = self.create_child(
                     gws.ext.object.legend,
-                    gws.merge(self.var('legend'), type='remote', urls=urls))
+                    gws.merge(self.cfg('legend'), type='remote', urls=urls))
                 return True
 
     def render(self, lri):
@@ -95,7 +95,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             'type': 'wms',
             'supported_srs': [self.sourceCrs.epsg],
             'forward_req_params': ['DPI__gws'],
-            'concurrent_requests': self.root.app.var('server.qgis.maxRequests', default=0),
+            'concurrent_requests': self.root.app.cfg('server.qgis.maxRequests', default=0),
             'req': {
                 'url': self.provider.url,
                 'map': self.provider.path,

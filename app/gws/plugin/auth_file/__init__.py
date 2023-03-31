@@ -26,7 +26,7 @@ class Object(gws.base.auth.provider.Object):
 
     def configure(self):
         self.uid = 'gws.base.auth.providers.file'
-        self.path = self.var('path')
+        self.path = self.cfg('path')
         self.db = gws.lib.jsonx.from_path(self.path)
 
     def authenticate(self, method, credentials):

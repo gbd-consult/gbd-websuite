@@ -37,7 +37,7 @@ class Props(gws.Data):
 
 class Element(gws.Node):
     def props(self, user):
-        return gws.Data(tag=self.var('tag'))
+        return gws.Data(tag=self.cfg('tag'))
 
 
 class Object(gws.Node, gws.IClient):
@@ -51,7 +51,7 @@ class Object(gws.Node, gws.IClient):
 
         self.options = gws.merge(
             app_client.options if app_client else {},
-            self.var('options'))
+            self.cfg('options'))
 
     def props(self, user):
         return gws.Data(
@@ -60,15 +60,15 @@ class Object(gws.Node, gws.IClient):
         )
 
     def _get_elements(self, app_client):
-        elements = self.var('elements')
+        elements = self.cfg('elements')
         if elements:
             return elements
 
         if not app_client:
             return []
 
-        add = self.var('addElements', default=[])
-        remove = self.var('removeElements', default=[])
+        add = self.cfg('addElements', default=[])
+        remove = self.cfg('removeElements', default=[])
         elements = list(app_client.elements)
 
         for c in add:

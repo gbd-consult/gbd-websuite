@@ -48,7 +48,7 @@ class Requester(gws.IWebRequester):
     def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite, middleware: list[gws.WebMiddlewareHandler]):
         self._wz = werkzeug.wrappers.Request(environ)
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
-        self._wz.max_content_length = int(root.app.var('server.web.maxRequestLength', default=1)) * 1024 * 1024
+        self._wz.max_content_length = int(root.app.cfg('server.web.maxRequestLength', default=1)) * 1024 * 1024
 
         self._middlewareList = middleware
         self._middlewareIndex = 0

@@ -79,7 +79,7 @@ DB_NAME = '__fs_meta6.sqlite'
 class Object(gws.base.api.Action):
     def configure(self):
         
-        self.root_dir = gws.ensure_dir(self.var('root'))
+        self.root_dir = gws.ensure_dir(self.cfg('root'))
         self.trash_dir = gws.ensure_dir(self.root_dir + '/' + TRASH_NAME)
         self.db_path = self.root_dir + '/' + DB_NAME
 

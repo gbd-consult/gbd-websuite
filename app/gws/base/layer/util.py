@@ -63,7 +63,7 @@ def mapproxy_back_cache_config(layer: gws.ILayer, mc, url, grid_uid):
         'type': 'tile',
         'url': url,
         'grid': grid_uid,
-        'concurrent_requests': layer.var('maxRequests', default=0)
+        'concurrent_requests': layer.cfg('maxRequests', default=0)
     })
 
     return mc.cache(gws.compact({

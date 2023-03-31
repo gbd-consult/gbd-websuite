@@ -37,19 +37,19 @@ class Object(gws.base.model.Object):
         self.configure_sources()
 
     def configure_provider(self):
-        if self.var('_provider'):
-            self.provider = self.var('_provider')
+        if self.cfg('_provider'):
+            self.provider = self.cfg('_provider')
             return True
         self.provider = self.root.create_shared(provider.Object, self.config)
         return True
 
     def configure_sources(self):
-        if self.var('_sourceLayers'):
-            self.sourceLayers = self.var('_sourceLayers')
+        if self.cfg('_sourceLayers'):
+            self.sourceLayers = self.cfg('_sourceLayers')
             return True
         self.sourceLayers = gws.gis.source.filter_layers(
             self.provider.sourceLayers,
-            gws.gis.source.LayerFilter(self.var('sourceLayers'), isQueryable=True))
+            gws.gis.source.LayerFilter(self.cfg('sourceLayers'), isQueryable=True))
         if not self.sourceLayers:
             raise gws.Error(f'no queryable layers found in {self.provider.url!r}')
 

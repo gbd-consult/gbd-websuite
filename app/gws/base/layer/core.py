@@ -244,19 +244,19 @@ class Object(gws.Node, gws.ILayer):
     parentResolutions: list[float]
 
     def configure(self):
-        self.parentBounds = self.var('_parentBounds')
-        self.parentResolutions = self.var('_parentResolutions')
+        self.parentBounds = self.cfg('_parentBounds')
+        self.parentResolutions = self.cfg('_parentResolutions')
 
         self.bounds = self.parentBounds
-        self.clientOptions = self.var('clientOptions')
-        self.displayMode = self.var('display')
-        self.loadingStrategy = self.var('loadingStrategy')
-        self.imageFormat = self.var('imageFormat')
-        self.opacity = self.var('opacity')
+        self.clientOptions = self.cfg('clientOptions')
+        self.displayMode = self.cfg('display')
+        self.loadingStrategy = self.cfg('loadingStrategy')
+        self.imageFormat = self.cfg('imageFormat')
+        self.opacity = self.cfg('opacity')
         self.resolutions = self.parentResolutions
-        self.title = self.var('title')
+        self.title = self.cfg('title')
 
-        self.isSearchable = self.var('search.enabled')
+        self.isSearchable = self.cfg('search.enabled')
 
         self.templates = []
         self.models = []
@@ -270,16 +270,16 @@ class Object(gws.Node, gws.ILayer):
         self.sourceGrid = None
         self.grid = None
 
-        p = self.var('grid')
+        p = self.cfg('grid')
         if p and p.crs and p.crs != self.parentBounds.crs:
             raise gws.Error(f'invalid target grid crs')
 
         self.cache = None
-        if self.var('cache.enabled'):
-            self.cache = gws.LayerCache(self.var('cache'))
+        if self.cfg('cache.enabled'):
+            self.cache = gws.LayerCache(self.cfg('cache'))
 
     def configure_bounds(self):
-        p = self.var('extent')
+        p = self.cfg('extent')
         if p:
             self.bounds = gws.Bounds(
                 crs=self.parentBounds.crs,
@@ -287,7 +287,7 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_grid(self):
-        p = self.var('grid')
+        p = self.cfg('grid')
         if p:
             self.grid = gws.TileGrid(
                 corner=p.corner or gws.Corner.nw,
@@ -297,7 +297,7 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_legend(self):
-        p = self.var('legend')
+        p = self.cfg('legend')
         if p and not p.enabled:
             return True
         if p and p.enabled and p.type:
@@ -305,13 +305,13 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_metadata(self):
-        p = self.var('metadata')
+        p = self.cfg('metadata')
         if p:
             self.metadata = gws.lib.metadata.from_config(p)
             return True
 
     def configure_resolutions(self):
-        p = self.var('zoom')
+        p = self.cfg('zoom')
         if p:
             self.resolutions = gws.gis.zoom.resolutions_from_config(p, self.parentResolutions)
             if not self.resolutions:
@@ -319,7 +319,7 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_models(self):
-        p = self.var('models')
+        p = self.cfg('models')
         if p:
             self.models = self.create_children(gws.ext.object.model, p)
             return True
@@ -327,13 +327,13 @@ class Object(gws.Node, gws.ILayer):
     def configure_search(self):
         if not self.isSearchable:
             return True
-        p = self.var('finders')
+        p = self.cfg('finders')
         if p:
             self.finders = self.create_children(gws.ext.object.finder, p)
             return True
 
     def configure_templates(self):
-        self.templates = self.create_children(gws.ext.object.template, self.var('templates'))
+        self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
         for cfg in _DEFAULT_TEMPLATES:
             self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
         return True

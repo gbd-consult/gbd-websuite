@@ -27,7 +27,7 @@ class Object(gws.Node, gws.IDatabaseProvider):
     mgr: manager.Object
 
     def configure(self):
-        self.mgr = self.var('_manager')
+        self.mgr = self.cfg('_manager')
 
     def session(self):
         return self.mgr.session(self)
@@ -37,9 +37,9 @@ class Object(gws.Node, gws.IDatabaseProvider):
 
 
 def get_for(obj: gws.INode, uid: str = None, ext_type: str = None):
-    uid = uid or obj.var('db')
-    if not uid and obj.var('_provider'):
-        return obj.var('_provider')
+    uid = uid or obj.cfg('db')
+    if not uid and obj.cfg('_provider'):
+        return obj.cfg('_provider')
 
     mgr = obj.root.app.databaseMgr
     ext_type = ext_type or obj.extType

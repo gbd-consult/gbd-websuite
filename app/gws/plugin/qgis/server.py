@@ -38,11 +38,11 @@ def environ(root: gws.IRoot):
         # see https://github.com/qgis/QGIS/pull/35738
         'QGIS_SERVER_IGNORE_BAD_LAYERS': 'true',
 
-        'MAX_CACHE_LAYERS': root.app.var('server.qgis.maxCacheLayers'),
+        'MAX_CACHE_LAYERS': root.app.cfg('server.qgis.maxCacheLayers'),
         'QGIS_OPTIONS_PATH': base_dir + '/profiles/profiles/default',
         'QGIS_SERVER_CACHE_DIRECTORY': gws.ensure_dir('servercache', base_dir),
-        'QGIS_SERVER_CACHE_SIZE': root.app.var('server.qgis.serverCacheSize'),
-        'QGIS_SERVER_LOG_LEVEL': root.app.var('server.qgis.serverLogLevel'),
+        'QGIS_SERVER_CACHE_SIZE': root.app.cfg('server.qgis.serverCacheSize'),
+        'QGIS_SERVER_LOG_LEVEL': root.app.cfg('server.qgis.serverLogLevel'),
         # 'QGIS_SERVER_MAX_THREADS': 4,
         # 'QGIS_SERVER_PARALLEL_RENDERING': 'false',
     }
@@ -51,7 +51,7 @@ def environ(root: gws.IRoot):
 
     qgis_env = {
         'QGIS_PREFIX_PATH': '/usr',
-        'QGIS_DEBUG': root.app.var('server.qgis.debug'),
+        'QGIS_DEBUG': root.app.cfg('server.qgis.debug'),
         # 'QGIS_GLOBAL_SETTINGS_FILE': '/global_settings.ini',
         'QGIS_CUSTOM_CONFIG_PATH': base_dir
     }
@@ -85,7 +85,7 @@ def _make_ini(root, base_dir):
     ini = ''
 
     paths = []
-    s = root.app.var('server.qgis.searchPathsForSVG')
+    s = root.app.cfg('server.qgis.searchPathsForSVG')
     if s:
         paths.extend(s)
     paths.extend(SVG_SEARCH_PATHS)

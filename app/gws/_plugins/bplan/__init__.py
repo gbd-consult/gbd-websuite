@@ -135,24 +135,24 @@ class Object(gws.base.api.Action):
     def configure(self):
         
 
-        self.crs = self.var('crs')
+        self.crs = self.cfg('crs')
         self.db = t.cast(
             gws.ext.db.provider.postgres.Object,
             gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
-        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'))
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.cfg('templates'))
         self.qgis_template: gws.ITemplate = gws.base.template.find(self.templates, subject='bplan.qgis')
         self.info_template: gws.ITemplate = gws.base.template.find(self.templates, subject='bplan.info')
 
-        self.plan_table = self.db.configure_table(self.var('planTable'))
-        self.meta_table = self.db.configure_table(self.var('metaTable'))
-        self.data_dir = self.var('dataDir')
+        self.plan_table = self.db.configure_table(self.cfg('planTable'))
+        self.meta_table = self.db.configure_table(self.cfg('metaTable'))
+        self.data_dir = self.cfg('dataDir')
 
-        self.au_list = self.var('administrativeUnits')
-        self.type_list = self.var('planTypes')
-        self.image_quality = self.var('imageQuality')
+        self.au_list = self.cfg('administrativeUnits')
+        self.type_list = self.cfg('planTypes')
+        self.image_quality = self.cfg('imageQuality')
 
-        p = self.var('exportDataModel')
+        p = self.cfg('exportDataModel')
         self.export_data_model: t.Optional[gws.IDataModel] = self.create_child('gws.base.model', p) if p else None
 
         for sub in 'png', 'pdf', 'cnv', 'qgs':
@@ -177,7 +177,7 @@ class Object(gws.base.api.Action):
         return {
             'type': self.type,
             'auList': self._au_list_for(user),
-            'uploadChunkSize': self.var('uploadChunkSize') * 1024 * 1024,
+            'uploadChunkSize': self.cfg('uploadChunkSize') * 1024 * 1024,
         }
 
     def api_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> GetFeaturesResponse:

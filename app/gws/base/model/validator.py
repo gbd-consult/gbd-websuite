@@ -10,6 +10,6 @@ class Config(gws.Config):
 
 class Object(gws.Node, gws.IModelValidator):
     def configure(self):
-        self.message = self.var('message')
-        self.forWrite = self.var('forWrite', default=True)
-        self.forCreate = self.var('forCreate', default=True)
+        self.message = self.cfg('message')
+        self.forWrite = self.cfg('forWrite', default=True)
+        self.forCreate = self.cfg('forCreate', default=True)

@@ -19,7 +19,7 @@ class Object(gws.Node, gws.IActionManager):
     index: dict[str, gws.IAction]
 
     def configure(self):
-        self.items = self.create_children(gws.ext.object.action, self.var('actions'))
+        self.items = self.create_children(gws.ext.object.action, self.cfg('actions'))
         self.index = {}
         for a in self.items:
             self.index[a.extName] = a

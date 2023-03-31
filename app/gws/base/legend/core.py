@@ -26,8 +26,8 @@ class Object(gws.Node, gws.ILegend):
     options: dict
 
     def configure(self):
-        self.options = self.var('options', default={})
-        self.cacheMaxAge = self.var('cacheMaxAge', default=3600*24)
+        self.options = self.cfg('options', default={})
+        self.cacheMaxAge = self.cfg('cacheMaxAge', default=3600*24)
 
 
 def output_to_bytes(lro: gws.LegendRenderOutput) -> t.Optional[bytes]:

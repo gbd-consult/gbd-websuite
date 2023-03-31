@@ -63,9 +63,9 @@ class EigentuemerOptions(gws.Node):
     log_table: str
 
     def configure(self):
-        self.control_mode = self.var('controlMode')
-        self.control_rules = self.var('controlRules', default=[])
-        self.log_table = self.var('logTable')
+        self.control_mode = self.cfg('controlMode')
+        self.control_rules = self.cfg('controlRules', default=[])
+        self.log_table = self.cfg('logTable')
 
 
 ##
@@ -109,10 +109,10 @@ class ExportGroup(gws.Node):
     with_eigentuemer: bool
 
     def configure(self):
-        self.data_model = self.root.create_required(gws.ext.object.model, self.var('dataModel'))
-        self.with_buchung = self.var('withBuchung')
-        self.with_eigentuemer = self.var('withEigentuemer')
-        self.title = self.var('title')
+        self.data_model = self.root.create_required(gws.ext.object.model, self.cfg('dataModel'))
+        self.with_buchung = self.cfg('withBuchung')
+        self.with_eigentuemer = self.cfg('withEigentuemer')
+        self.title = self.cfg('title')
 
 
 class ExportGroupProps(gws.Props):
@@ -378,18 +378,18 @@ class Object(gws.base.action.Object):
     def configure(self):
         self.provider = provider.create(self.root, self.config, shared=True)
 
-        self.limit = self.var('limit')
+        self.limit = self.cfg('limit')
 
         self.templates = gws.base.template.manager.create(
             self.root,
-            items=self.var('templates'),
+            items=self.cfg('templates'),
             defaults=_DEFAULT_TEMPLATES,
             parent=self)
 
         self.print_template = self.templates.find(subject='print')
-        self.ui = self.var('ui')
+        self.ui = self.cfg('ui')
 
-        p = self.var('export')
+        p = self.cfg('export')
         if p:
             groups = p.groups or _DEFAULT_EXPORT_GROUPS
         elif self.ui.useExport:
@@ -398,8 +398,8 @@ class Object(gws.base.action.Object):
             groups = []
         self.export_groups = [self.root.create_required(ExportGroup, g) for g in groups]
 
-        self.buchung = self.create_child(BuchungOptions, self.var('buchung'))
-        self.eigentuemer = self.create_child(EigentuemerOptions, self.var('eigentuemer'))
+        self.buchung = self.create_child(BuchungOptions, self.cfg('buchung'))
+        self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer'))
 
         if self.eigentuemer.log_table:
             with self.provider.connection() as conn:

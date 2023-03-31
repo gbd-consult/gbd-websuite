@@ -27,8 +27,8 @@ class Object(method.Object):
     deletedSession: gws.IAuthSession
 
     def configure(self):
-        self.cookieName = self.var('cookieName')
-        self.cookiePath = self.var('cookiePath')
+        self.cookieName = self.cfg('cookieName')
+        self.cookiePath = self.cfg('cookiePath')
 
     def activate(self):
         self.deletedSession = self.authMgr.session_create(_DELETED, user=self.authMgr.guestUser, method=self)

@@ -29,8 +29,8 @@ class Object(gws.base.action.Object):
     def props(self, user):
         return gws.merge(
             super().props(user),
-            layerUids=self.var('layers') or [],
-            pixelTolerance=self.var('pixelTolerance'),
+            layerUids=self.cfg('layers') or [],
+            pixelTolerance=self.cfg('pixelTolerance'),
         )
 
     @gws.ext.command.api('dimensionStorage')

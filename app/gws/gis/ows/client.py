@@ -9,15 +9,15 @@ import gws.types as t
 
 
 def configure_layers(obj: gws.IOwsClient, provider_class, **filter_args):
-    if obj.var('_provider'):
-        obj.provider = obj.var('_provider')
-        obj.source_layers = obj.var('_source_layers')
+    if obj.cfg('_provider'):
+        obj.provider = obj.cfg('_provider')
+        obj.source_layers = obj.cfg('_source_layers')
     else:
         obj.provider = obj.root.create_shared(provider_class, obj.config)
         slf = gws.merge(
             gws.gis.source.LayerFilter(level=1),
             filter_args,
-            obj.var('sourceLayers')
+            obj.cfg('sourceLayers')
         )
         obj.source_layers = gws.gis.source.filter_layers(obj.provider.sourceLayers, slf)
 

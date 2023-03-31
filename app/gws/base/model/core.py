@@ -44,10 +44,10 @@ class Object(gws.Node, gws.IModel):
         self.geometryName = ''
         self.geometryType = None
         self.geometryCrs = None
-        self.loadingStrategy = self.var('loadingStrategy')
+        self.loadingStrategy = self.cfg('loadingStrategy')
 
     def configure_fields(self):
-        p = self.var('fields')
+        p = self.cfg('fields')
         if p:
             for cfg in p:
                 self.fields.append(

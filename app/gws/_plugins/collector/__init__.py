@@ -61,13 +61,13 @@ class ItemPrototype(gws.Node):
         self.link_col: str = ''
         self.type_col: str = 'type'
 
-        self.data_model: gws.IDataModel = t.cast(gws.IDataModel, self.create_child('gws.base.model', self.var('dataModel')))
+        self.data_model: gws.IDataModel = t.cast(gws.IDataModel, self.create_child('gws.base.model', self.cfg('dataModel')))
 
-        self.type = self.var('type')
-        self.name = self.var('name')
-        self.icon = gws.lib.style.parse_icon(self.var('icon'))
+        self.type = self.cfg('type')
+        self.name = self.cfg('name')
+        self.icon = gws.lib.style.parse_icon(self.cfg('icon'))
 
-        p = self.var('style')
+        p = self.cfg('style')
         self.style: gws.IStyle = (
             gws.base.style.from_config(p) if p
             else gws.base.style.from_props(gws.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES)))
@@ -148,28 +148,28 @@ class CollectionPrototype(gws.Node):
         
 
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.table = self.db.configure_table(self.var('collectionTable'))
-        self.item_table = self.db.configure_table(self.var('itemTable'))
-        self.document_table = self.db.configure_table(self.var('documentTable'))
+        self.table = self.db.configure_table(self.cfg('collectionTable'))
+        self.item_table = self.db.configure_table(self.cfg('itemTable'))
+        self.document_table = self.db.configure_table(self.cfg('documentTable'))
 
-        self.link_col = self.var('linkColumn')
+        self.link_col = self.cfg('linkColumn')
         self.type_col = 'type'
 
-        p = self.var('dataModel') or self.db.table_data_model_config(self.table)
+        p = self.cfg('dataModel') or self.db.table_data_model_config(self.table)
         self.data_model: gws.IDataModel = t.cast(gws.IDataModel, self.create_child('gws.base.model', p))
 
-        self.type = self.var('type')
-        self.name = self.var('name')
+        self.type = self.cfg('type')
+        self.name = self.cfg('name')
 
         self.item_prototypes = []
-        for p in self.var('items'):
+        for p in self.cfg('items'):
             ip = t.cast(ItemPrototype, self.create_child(ItemPrototype, p))
             ip.db = self.db
             ip.table = self.item_table
             ip.link_col = self.link_col
             self.item_prototypes.append(ip)
 
-        p = self.var('style')
+        p = self.cfg('style')
         self.style: gws.IStyle = (
             gws.base.style.from_config(p) if p
             else gws.base.style.from_props(gws.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES)))
@@ -429,7 +429,7 @@ class Object(gws.base.api.Action):
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
         self.collection_prototypes: list[CollectionPrototype] = []
-        for p in self.var('collections'):
+        for p in self.cfg('collections'):
             self.collection_prototypes.append(t.cast(CollectionPrototype, self.create_child(CollectionPrototype, p)))
 
     def api_get_prototypes(self, req: gws.IWebRequest, p: gws.Params) -> GetPrototypesResponse:

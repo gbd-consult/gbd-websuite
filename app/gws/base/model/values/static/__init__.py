@@ -13,4 +13,4 @@ class Config(gws.base.model.value.Config):
 
 class Object(gws.base.model.value.Object):
     def evaluate(self, feature, user, **kwargs):
-        return self.var('value')
+        return self.cfg('value')

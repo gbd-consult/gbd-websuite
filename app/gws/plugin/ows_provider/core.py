@@ -50,10 +50,10 @@ _PREFER_XML_MIME = {gws.lib.mime.GML3, gws.lib.mime.GML, gws.lib.mime.XML}
 
 class Provider(gws.Node, gws.IOwsProvider):
     def configure(self):
-        self.forceCrs = gws.gis.crs.get(self.var('forceCrs'))
-        self.alwaysXY = self.var('alwaysXY', default=False)
+        self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs'))
+        self.alwaysXY = self.cfg('alwaysXY', default=False)
         self.sourceLayers = []
-        self.url = self.var('url')
+        self.url = self.cfg('url')
         self.version = ''
 
     def configure_operations(self, operations_from_caps):
@@ -63,7 +63,7 @@ class Provider(gws.Node, gws.IOwsProvider):
 
         self.operations = []
 
-        for cfg in self.var('operations', default=[]):
+        for cfg in self.cfg('operations', default=[]):
             self.operations.append(gws.OwsOperation(
                 formats=cfg.get('formats', []),
                 params={},
@@ -128,7 +128,7 @@ class Provider(gws.Node, gws.IOwsProvider):
         return args
 
     def get_capabilities(self):
-        url, params = gws.lib.net.extract_params(self.var('url'))
+        url, params = gws.lib.net.extract_params(self.cfg('url'))
         op = gws.OwsOperation(
             formats=[gws.lib.mime.XML],
             url=url,
@@ -136,7 +136,7 @@ class Provider(gws.Node, gws.IOwsProvider):
             verb=gws.OwsVerb.GetCapabilities,
         )
         args = self.prepare_operation(op)
-        return gws.gis.ows.request.get_text(args, max_age=self.var('capsCacheMaxAge'))
+        return gws.gis.ows.request.get_text(args, max_age=self.cfg('capsCacheMaxAge'))
 
     def find_source_features(self, args: gws.SearchArgs, source_layers: list[gws.SourceLayer]) -> list[gws.FeatureData]:
         return []

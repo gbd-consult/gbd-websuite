@@ -46,21 +46,21 @@ class Props(gws.Data):
 class Object(gws.Node, gws.IMap):
 
     def configure(self):
-        self.title = self.var('title') or ''
+        self.title = self.cfg('title') or ''
 
-        p = self.var('crs')
+        p = self.cfg('crs')
         crs = gws.gis.crs.require(p) if p else gws.gis.crs.WEBMERCATOR
 
-        p = self.var('extent')
+        p = self.cfg('extent')
         if p:
             self.bounds = gws.Bounds(crs=crs, extent=gws.gis.extent.from_list(p))
         else:
             self.bounds = gws.Bounds(crs=crs, extent=crs.extent)
 
-        self.center = self.var('center') or gws.gis.extent.center(self.bounds.extent)
+        self.center = self.cfg('center') or gws.gis.extent.center(self.bounds.extent)
         self.wgsExtent = gws.gis.extent.transform_to_wgs(self.bounds.extent, self.bounds.crs)
 
-        p = self.var('zoom')
+        p = self.cfg('zoom')
         if p:
             self.resolutions = gws.gis.zoom.resolutions_from_config(p, gws.gis.zoom.OSM_RESOLUTIONS)
             self.initResolution = gws.gis.zoom.init_resolution(p, self.resolutions)
@@ -68,7 +68,7 @@ class Object(gws.Node, gws.IMap):
             self.resolutions = gws.gis.zoom.OSM_RESOLUTIONS
             self.initResolution = self.resolutions[len(self.resolutions) >> 1]
 
-        p = self.var('coordinatePrecision')
+        p = self.cfg('coordinatePrecision')
         if p:
             self.coordinatePrecision = p
         else:
@@ -76,7 +76,7 @@ class Object(gws.Node, gws.IMap):
 
         self.rootLayer = self.create_child(gws.ext.object.layer, gws.Config(
             type='group',
-            layers=self.var('layers'),
+            layers=self.cfg('layers'),
             _parentBounds=self.bounds,
             _parentResolutions=self.resolutions,
         ))
@@ -97,7 +97,7 @@ class Object(gws.Node, gws.IMap):
 # def _configure_extent(layer: gws.ILayer, crs: gws.ICrs, default_extent):
 #     # we have an explicit extent provided in the config
 #
-#     p = layer.var('extent')
+#     p = layer.cfg('extent')
 #     if p:
 #         layer.extent = gws.gis.extent.from_list(p)
 #         if not layer.extent:
@@ -128,7 +128,7 @@ class Object(gws.Node, gws.IMap):
 #     own_bounds = layer.own_bounds()
 #     if own_bounds:
 #         own_ext = own_bounds.extent
-#         buf = layer.var('extentBuffer')
+#         buf = layer.cfg('extentBuffer')
 #         if buf:
 #             own_ext = gws.gis.extent.buffer(own_ext, buf)
 #         layer.extent = gws.gis.extent.transform(own_ext, own_bounds.crs, crs)

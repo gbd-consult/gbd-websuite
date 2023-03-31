@@ -27,7 +27,7 @@ class Object(gws.base.model.Object):
     tableName: str
 
     def configure(self):
-        self.tableName = self.var('tableName')
+        self.tableName = self.cfg('tableName')
 
         self.configure_provider()
         self.configure_fields()

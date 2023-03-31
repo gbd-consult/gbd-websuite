@@ -19,7 +19,7 @@ class Object(core.Object):
     template: gws.ITemplate
 
     def configure(self):
-        self.template = self.create_child(gws.ext.object.template, self.var('template'))
+        self.template = self.create_child(gws.ext.object.template, self.cfg('template'))
 
     def render(self, args=None):
         # @TODO return html legends as html

@@ -124,9 +124,9 @@ class Object(gws.base.api.Action):
         
 
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.data_table = self.db.configure_table(self.var('dataTable'))
-        self.document_table = self.db.configure_table(self.var('documentTable'))
-        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'))
+        self.data_table = self.db.configure_table(self.cfg('dataTable'))
+        self.document_table = self.db.configure_table(self.cfg('documentTable'))
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.cfg('templates'))
         self.details_template: gws.ITemplate = gws.base.template.find(self.templates, subject='fsinfo.details')
         self.title_template: gws.ITemplate = gws.base.template.find(self.templates, subject='fsinfo.title')
 

@@ -90,7 +90,7 @@ class Object(gws.base.api.Action):
 
         self.tables: list[Table] = []
 
-        for p in self.var('tables'):
+        for p in self.cfg('tables'):
             table = self.db.configure_table(p.table)
             m = p.dataModel or self.db.table_data_model_config(table)
             self.tables.append(Table(

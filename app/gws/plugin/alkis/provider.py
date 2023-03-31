@@ -42,9 +42,9 @@ class Object(gws.Node):
 
     def configure(self):
 
-        self.crs = gws.gis.crs.get(self.var('crs'))
-        self.index_schema = self.var('indexSchema')
-        self.data_schema = self.var('dataSchema')
+        self.crs = gws.gis.crs.get(self.cfg('crs'))
+        self.index_schema = self.cfg('indexSchema')
+        self.data_schema = self.cfg('dataSchema')
 
         db = gws.plugin.postgres.provider.require_for(self)
 
@@ -54,7 +54,7 @@ class Object(gws.Node):
             index_schema=self.index_schema,
             data_schema=self.data_schema,
             crs=self.crs,
-            exclude_gemarkung=self.var('excludeGemarkung'),
+            exclude_gemarkung=self.cfg('excludeGemarkung'),
         )
 
         with self.connection() as conn:

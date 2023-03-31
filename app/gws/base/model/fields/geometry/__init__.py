@@ -31,11 +31,11 @@ class Object(scalar.Object):
     geometryCrs: gws.ICrs
 
     def configure(self):
-        self.geometryType = self.var('geometryType')
+        self.geometryType = self.cfg('geometryType')
 
         self.geometryCrs = None  # type:ignore
-        if self.var('crs'):
-            self.geometryCrs = gws.gis.crs.get(self.var('crs'))
+        if self.cfg('crs'):
+            self.geometryCrs = gws.gis.crs.get(self.cfg('crs'))
 
     def select(self, sel, user):
         shape = None

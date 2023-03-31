@@ -77,11 +77,11 @@ class Object(gws.base.api.Action):
     def configure(self):
         
 
-        self.au_filter: list[str] = self.var('gemeindeFilter', default=[])
-        self.data_table_name: str = self.var('dataTableName')
-        self.request_table_name: str = self.var('requestTableName')
-        self.request_url: str = self.var('requestUrl')
-        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+        self.au_filter: list[str] = self.cfg('gemeindeFilter', default=[])
+        self.data_table_name: str = self.cfg('dataTableName')
+        self.request_table_name: str = self.cfg('requestTableName')
+        self.request_url: str = self.cfg('requestUrl')
+        self.templates: list[gws.ITemplate] = gws.base.template.bundle(self, self.cfg('templates'), _DEFAULT_TEMPLATES)
 
         self.alkis: gws.ext.helper.alkis.Object = t.cast(
             gws.ext.helper.alkis.Object,
@@ -123,7 +123,7 @@ class Object(gws.base.api.Action):
             shape=shape,
         )
 
-        f.apply_templates(self.templates, {'title': self.var('infoTitle')})
+        f.apply_templates(self.templates, {'title': self.cfg('infoTitle')})
 
         return GetDataResponse(feature=f.props)
 
@@ -281,7 +281,7 @@ class Object(gws.base.api.Action):
             conn.exec(f'''
                 DELETE FROM {request_table_name} 
                 WHERE ts < CURRENT_DATE - INTERVAL '%s seconds' 
-            ''', [self.var('cacheTime')])
+            ''', [self.cfg('cacheTime')])
 
     def _selection_for_request(self, request_id):
         with self.alkis.db.connect() as conn:
@@ -302,7 +302,7 @@ class Object(gws.base.api.Action):
             data_schema, data_name = conn.schema_and_table(self.data_table_name)
 
             for tab in conn.table_names(data_schema):
-                if not re.search(self.var('dataTablePattern'), tab):
+                if not re.search(self.cfg('dataTablePattern'), tab):
                     continue
 
                 cols = ','.join(

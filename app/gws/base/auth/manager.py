@@ -52,12 +52,12 @@ class Object(gws.Node, gws.IAuthManager):
 
     def configure(self):
 
-        so = self.var('session') or SessionOptions()
+        so = self.cfg('session') or SessionOptions()
         so.store = sqlite.SessionStore(so.storePath or SQLITE_STORE_PATH)
         so.lifeTime = so.lifeTime or 1200
         self.sessionOptions = so
 
-        self.providers = self.create_children(gws.ext.object.authProvider, self.var('providers'))
+        self.providers = self.create_children(gws.ext.object.authProvider, self.cfg('providers'))
         self.providers.append(self.create_child(gws.ext.object.authProvider, {'type': 'system'}))
 
         self.guestUser = self.providers[-1].get_user('guest')
@@ -65,12 +65,12 @@ class Object(gws.Node, gws.IAuthManager):
 
         self.guestSession = session.Session('guest_session', method=None, user=self.guestUser)
 
-        self.methods = self.create_children(gws.ext.object.authMethod, self.var('methods'))
+        self.methods = self.create_children(gws.ext.object.authMethod, self.cfg('methods'))
         if not self.methods:
             # if no methods configured, enable the Web method
             self.methods.append(self.create_child(gws.ext.object.authMethod, {'type': 'web'}))
 
-        self.mfa = self.create_children(gws.ext.object.authMfa, self.var('mfa'))
+        self.mfa = self.create_children(gws.ext.object.authMfa, self.cfg('mfa'))
 
         for p in self.children:
             p.authMgr = self

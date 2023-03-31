@@ -46,7 +46,7 @@ class Object(scalar.Object):
 
     def configure(self):
         self.textSearch = None
-        p = self.var('textSearch')
+        p = self.cfg('textSearch')
         if p:
             self.textSearch = Search(
                 type=p.get('type', SearchType.exact),

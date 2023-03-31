@@ -42,21 +42,21 @@ class Object(gws.Node, gws.IFinder):
         self.templates = []
         self.models = []
 
-        self.withKeyword = self.var('withKeyword', default=True)
-        self.withGeometry = self.var('withGeometry', default=True)
-        self.withFilter = self.var('withFilter', default=True)
+        self.withKeyword = self.cfg('withKeyword', default=True)
+        self.withGeometry = self.cfg('withGeometry', default=True)
+        self.withFilter = self.cfg('withFilter', default=True)
 
-        self.spatialContext = self.var('spatialContext', default=SpatialContext.map)
-        self.title = self.var('title', default='')
+        self.spatialContext = self.cfg('spatialContext', default=SpatialContext.map)
+        self.title = self.cfg('title', default='')
 
     def configure_models(self):
-        p = self.var('models')
+        p = self.cfg('models')
         if p:
             self.models = self.create_children(gws.ext.object.model, p)
             return True
 
     def configure_templates(self):
-        self.create_children(gws.ext.object.template, self.var('templates'))
+        self.create_children(gws.ext.object.template, self.cfg('templates'))
         return True
 
     def can_run(self, search, user):

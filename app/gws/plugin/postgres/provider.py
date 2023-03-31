@@ -250,7 +250,7 @@ class Object(gws.base.database.provider.Object):
 #
 #
 # def require_for(obj: gws.INode) -> Object:
-#     uid = obj.var('db')
+#     uid = obj.cfg('db')
 #     if uid:
 #         prov = obj.root.find(klass=Object, uid=uid)
 #         if not prov:

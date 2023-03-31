@@ -16,7 +16,7 @@ class Object(gws.Node):
     path: str
 
     def configure(self):
-        self.path = self.var('path') or _DEFAULT_PATH
+        self.path = self.cfg('path') or _DEFAULT_PATH
         with self._connect() as conn:
             conn.execute('''CREATE TABLE IF NOT EXISTS storage(
                 category TEXT,

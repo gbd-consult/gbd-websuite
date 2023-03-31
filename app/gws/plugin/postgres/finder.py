@@ -23,7 +23,7 @@ class Object(gws.base.search.finder.Object):
     tableName: str
 
     def configure(self):
-        self.tableName = self.var('tableName')
+        self.tableName = self.cfg('tableName')
         self.configure_provider()
         self.configure_models()
         self.configure_templates()

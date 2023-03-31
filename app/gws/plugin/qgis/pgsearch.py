@@ -17,7 +17,7 @@ class Object(gws.base.search.provider.Object):
     table: gws.SqlTable
 
     def configure(self):
-        ds = self.var('_data_source')
+        ds = self.cfg('_data_source')
         cfg = {
             'database': ds['dbname'],
             'host': ds['host'],

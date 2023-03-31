@@ -62,7 +62,7 @@ class Object(gws.base.auth.provider.Object):
 
         # the URL is a simplified form of https://httpd.apache.org/docs/2.4/mod/mod_authnz_ldap.html#authldapurl
 
-        p = gws.lib.net.parse_url(self.var('url'))
+        p = gws.lib.net.parse_url(self.cfg('url'))
 
         self.server = 'ldap://' + p['netloc']
         self.base_dn = p['path'].strip('/')
@@ -115,16 +115,16 @@ class Object(gws.base.auth.provider.Object):
     @contextlib.contextmanager
     def _connection(self):
         ld = ldap.initialize(self.server)
-        ld.set_option(ldap.OPT_NETWORK_TIMEOUT, self.var('timeout'))
+        ld.set_option(ldap.OPT_NETWORK_TIMEOUT, self.cfg('timeout'))
 
-        if self.var('activeDirectory'):
+        if self.cfg('activeDirectory'):
             # see https://www.python-ldap.org/faq.html#usage
             ld.set_option(ldap.OPT_REFERRALS, 0)
 
-        if self.var('bindDN'):
+        if self.cfg('bindDN'):
             ld.simple_bind_s(
-                self.var('bindDN'),
-                self.var('bindPassword'))
+                self.cfg('bindDN'),
+                self.cfg('bindPassword'))
 
         try:
             yield ld
@@ -155,7 +155,7 @@ class Object(gws.base.auth.provider.Object):
         user_dn = user_data['dn']
         roles = set()
 
-        for u in self.var('users'):
+        for u in self.cfg('users'):
 
             if u.get('matches'):
                 for dn, data in self._search(ld, u.matches):
@@ -170,9 +170,9 @@ class Object(gws.base.auth.provider.Object):
         return roles
 
     def _make_user(self, ld, user_data):
-        if 'displayName' not in user_data and self.var('displayNameFormat'):
+        if 'displayName' not in user_data and self.cfg('displayNameFormat'):
             user_data['displayName'] = misc.format_placeholders(
-                self.var('displayNameFormat'),
+                self.cfg('displayNameFormat'),
                 user_data)
 
         return gws.base.auth.user.ValidUser().init_from_source(

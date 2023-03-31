@@ -26,13 +26,13 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
     styleName: str
 
     def configure(self):
-        self.provider = self.var('_provider') or self.root.create_shared(provider.Object, self.config)
+        self.provider = self.cfg('_provider') or self.root.create_shared(provider.Object, self.config)
 
-        self.sourceLayers = self.var('_sourceLayers')
+        self.sourceLayers = self.cfg('_sourceLayers')
         if not self.sourceLayers:
             slf = gws.merge(
                 gws.gis.source.LayerFilter(isImage=True),
-                self.var('sourceLayers'))
+                self.cfg('sourceLayers'))
             self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, slf)
         if not self.sourceLayers:
             raise gws.Error(f'no source layers found in {self.provider.url!r}')
@@ -40,7 +40,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         if not self.configure_metadata():
             self.metadata = self.provider.metadata
 
-        p = self.var('sourceGrid', default=gws.Config())
+        p = self.cfg('sourceGrid', default=gws.Config())
         crs = p.crs or gws.gis.crs.best_match(
             self.parentBounds.crs,
             gws.gis.source.combined_crs_list(self.sourceLayers))
@@ -59,7 +59,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
                 p.resolutions or
                 sorted([units.scale_to_res(m.scale) for m in self.tileMatrixSet.matrices], reverse=True))
 
-        p = self.var('grid', default=gws.Config())
+        p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
             corner=p.corner or 'lt',
             tileSize=p.tileSize or 256,

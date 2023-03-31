@@ -96,7 +96,7 @@ class Object(gws.Node, gws.IApplication):
         except gws.lib.osx.Error:
             pass
 
-        if self.var('server.qgis.enabled'):
+        if self.cfg('server.qgis.enabled'):
             qgis_server = gws.lib.importer.import_from_path('gws/plugin/qgis/server.py')
             self.qgisVersion = qgis_server.version()
             if self.qgisVersion:
@@ -106,18 +106,18 @@ class Object(gws.Node, gws.IApplication):
         gws.log.info(self.versionString)
         gws.log.info('*' * 60)
 
-        self._devopts = self.var('developer') or {}
+        self._devopts = self.cfg('developer') or {}
         if self._devopts:
             gws.log.warn('developer mode enabled')
 
         self.webMiddlewareFuncs = {}
-        self.webMiddlewareNames = self.var('middleware', default=_DEFAULT_MIDDLEWARE)
+        self.webMiddlewareNames = self.cfg('middleware', default=_DEFAULT_MIDDLEWARE)
 
-        self.localeUids = self.var('locales') or _DEFAULT_LOCALE
-        self.monitor = self.create_child(gws.server.monitor.Object, self.var('server.monitor'))
-        self.metadata = gws.lib.metadata.from_config(self.var('metadata'))
+        self.localeUids = self.cfg('locales') or _DEFAULT_LOCALE
+        self.monitor = self.create_child(gws.server.monitor.Object, self.cfg('server.monitor'))
+        self.metadata = gws.lib.metadata.from_config(self.cfg('metadata'))
 
-        p = self.var('fonts.dir')
+        p = self.cfg('fonts.dir')
         if p:
             gws.lib.font.install_fonts(p)
 
@@ -128,10 +128,10 @@ class Object(gws.Node, gws.IApplication):
         # - actions, client, web
         # - finally, projects
 
-        self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.var('db'))
+        self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.cfg('db'))
 
         # # helpers are always created, no matter configured or not
-        # cnf = {c.get('type'): c for c in self.var('helpers', default=[])}
+        # cnf = {c.get('type'): c for c in self.cfg('helpers', default=[])}
         # for class_name in self.root.specs.real_class_names('gws.ext.helper'):
         #     desc = self.root.specs.object_descriptor(class_name)
         #     if desc.ext_type not in cnf:
@@ -140,21 +140,21 @@ class Object(gws.Node, gws.IApplication):
         #         cnf[desc.ext_type] = gws.config.parse(self.root.specs, cfg, 'gws.ext.config.helper')
         # self.helpers = self.root.create_many('gws.ext.helper', list(cnf.values()))
 
-        self.authMgr = self.create_child(gws.base.auth.manager.Object, self.var('auth'))
+        self.authMgr = self.create_child(gws.base.auth.manager.Object, self.cfg('auth'))
 
         # @TODO default API
-        self.actionMgr = self.create_child(gws.base.action.manager.Object, self.var('api'))
+        self.actionMgr = self.create_child(gws.base.action.manager.Object, self.cfg('api'))
 
-        self.webMgr = self.create_child(gws.base.web.manager.Object, self.var('web'))
+        self.webMgr = self.create_child(gws.base.web.manager.Object, self.cfg('web'))
 
-        self.client = self.create_child(gws.base.client.Object, self.var('client'))
+        self.client = self.create_child(gws.base.client.Object, self.cfg('client'))
 
-        projects = self.create_children(gws.ext.object.project, self.var('projects'))
+        projects = self.create_children(gws.ext.object.project, self.cfg('projects'))
         self.projects = {p.uid: p for p in projects}
 
     def post_configure(self):
-        if self.var('server.mapproxy.enabled'):
-            self.mpxUrl = f"http://{self.var('server.mapproxy.host')}:{self.var('server.mapproxy.port')}"
+        if self.cfg('server.mapproxy.enabled'):
+            self.mpxUrl = f"http://{self.cfg('server.mapproxy.host')}:{self.cfg('server.mapproxy.port')}"
             self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
         # for p in set(cfg.configPaths):

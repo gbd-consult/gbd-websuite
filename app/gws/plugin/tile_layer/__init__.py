@@ -41,9 +41,9 @@ class Object(gws.base.layer.Object):
         #
         # @TODO make MP cache network requests
 
-        self.url = self.var('url')
+        self.url = self.cfg('url')
 
-        p = self.var('sourceGrid', default=gws.Config())
+        p = self.cfg('sourceGrid', default=gws.Config())
         self.sourceGrid = gws.TileGrid(
             corner=p.corner or 'lt',
             tileSize=p.tileSize or 256,
@@ -55,7 +55,7 @@ class Object(gws.base.layer.Object):
                 p.resolutions or
                 gws.gis.zoom.resolutions_from_bounds(self.sourceGrid.bounds, self.sourceGrid.tileSize))
 
-        p = self.var('grid', default=gws.Config())
+        p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
             corner=p.corner or 'lt',
             tileSize=p.tileSize or 256,

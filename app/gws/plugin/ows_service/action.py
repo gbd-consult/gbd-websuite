@@ -25,7 +25,7 @@ class Object(gws.base.action.Object):
     services: list[gws.IOwsService]
 
     def configure(self):
-        self.services = self.create_children(gws.ext.object.owsService, self.var('services'))
+        self.services = self.create_children(gws.ext.object.owsService, self.cfg('services'))
 
     @gws.ext.command.get('owsService')
     def service(self, req: gws.IWebRequester, p: ServiceParams) -> gws.ContentResponse:

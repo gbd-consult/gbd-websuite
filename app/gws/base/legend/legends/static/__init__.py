@@ -18,7 +18,7 @@ class Object(core.Object):
     path: str
 
     def configure(self):
-        self.path = self.var('path')
+        self.path = self.cfg('path')
 
     def render(self, args=None):
         img = gws.lib.image.from_path(self.path)

@@ -72,24 +72,24 @@ class Object(gws.Node, gws.IWebSite):
 
     def configure(self):
 
-        self.host = self.var('host', default='*')
-        self.canonicalHost = self.var('canonicalHost')
+        self.host = self.cfg('host', default='*')
+        self.canonicalHost = self.cfg('canonicalHost')
 
-        self.staticRoot = gws.WebDocumentRoot(self.var('root'))
+        self.staticRoot = gws.WebDocumentRoot(self.cfg('root'))
 
-        p = self.var('assets')
+        p = self.cfg('assets')
         self.assetsRoot = gws.WebDocumentRoot(p) if p else None
 
-        self.ssl = self.var('ssl')
+        self.ssl = self.cfg('ssl')
 
-        self.rewriteRules = self.var('rewrite', default=[])
+        self.rewriteRules = self.cfg('rewrite', default=[])
         for r in self.rewriteRules:
             if not gws.lib.net.is_abs_url(r.target):
                 # ensure rewriting from root
                 r.target = '/' + r.target.lstrip('/')
 
-        self.errorPage = self.create_child_if_configured(gws.ext.object.template, self.var('errorPage'))
-        self.corsOptions = self.var('cors')
+        self.errorPage = self.create_child_if_configured(gws.ext.object.template, self.cfg('errorPage'))
+        self.corsOptions = self.cfg('cors')
 
     def url_for(self, req, path, **params):
         if gws.lib.net.is_abs_url(path):

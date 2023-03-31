@@ -31,7 +31,7 @@ class Config(gws.Config):
 
 class Object(gws.Node):
     def activate(self):
-        p = self.var('namespaces')
+        p = self.cfg('namespaces')
         if p:
             for ns in p:
                 namespace.register(ns.name, ns.uri, schema=ns.schemaLocation)

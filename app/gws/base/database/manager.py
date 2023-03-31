@@ -46,7 +46,7 @@ class Object(gws.Node, gws.IDatabaseManager):
         self.models = {}
         self.rt = _SaRuntime()
 
-        for cfg in self.var('providers', default=[]):
+        for cfg in self.cfg('providers', default=[]):
             cfg = gws.merge(cfg, _manager=self)
             prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg)
             self.providers[prov.uid] = prov

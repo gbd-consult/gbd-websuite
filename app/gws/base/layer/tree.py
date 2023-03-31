@@ -37,10 +37,10 @@ def layer_configs_from_layer(
     return layer_configs_from_args(
         layer.root,
         source_layers=source_layers,
-        roots_slf=layer.var('rootLayers'),
-        exclude_slf=layer.var('excludeLayers'),
-        flatten_config=layer.var('flattenLayers'),
-        custom_configs=layer.var('layerConfig', default=[]),
+        roots_slf=layer.cfg('rootLayers'),
+        exclude_slf=layer.cfg('excludeLayers'),
+        flatten_config=layer.cfg('flattenLayers'),
+        custom_configs=layer.cfg('layerConfig', default=[]),
         leaf_layer_maker=leaf_layer_maker
     )
 

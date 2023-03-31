@@ -322,8 +322,8 @@ def _remove_dir(dirname):
 #             print('seed already running')
 #             return
 #
-#         max_time = root.app.var('seeding.maxTime')
-#         concurrency = root.app.var('seeding.concurrency')
+#         max_time = root.app.cfg('seeding.maxTime')
+#         concurrency = root.app.cfg('seeding.concurrency')
 #         ts = time.time()
 #
 #         print(f'\nSTART SEEDING (maxTime={max_time} concurrency={concurrency}), ^C ANYTIME TO CANCEL...\n')
