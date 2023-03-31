@@ -3,11 +3,9 @@
 import sqlalchemy as sa
 
 import gws
-import gws.base.database.sql as sql
 import gws.base.database.model
+import gws.base.model.field
 import gws.types as t
-
-import gws.base.model.fields.scalar as scalar
 
 gws.ext.new.modelField('text')
 
@@ -32,15 +30,15 @@ class SearchConfig(gws.Config):
     caseSensitive: bool = False
 
 
-class Config(scalar.Config):
+class Config(gws.base.model.field.Config):
     textSearch: t.Optional[SearchConfig]
 
 
-class Props(scalar.Props):
+class Props(gws.base.model.field.Props):
     pass
 
 
-class Object(scalar.Object):
+class Object(gws.base.model.field.Scalar):
     attributeType = gws.AttributeType.str
     textSearch: t.Optional[Search]
 
@@ -59,6 +57,8 @@ class Object(scalar.Object):
             self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'input'})
             return True
 
+    ##
+
     def select(self, sel, user):
         if not self.textSearch or not sel.search or not sel.search.keyword:
             return
@@ -76,7 +76,7 @@ class Object(scalar.Object):
         if so.type == SearchType.exact:
             sel.keywordWhere.append(fld == kw)
         else:
-            kw = sql.escape_like(kw)
+            kw = _escape_like(kw)
             if so.type == 'any':
                 kw = '%' + kw + '%'
             if so.type == 'begin':
@@ -88,3 +88,11 @@ class Object(scalar.Object):
                 sel.keywordWhere.append(fld.like(kw, escape='\\'))
             else:
                 sel.keywordWhere.append(fld.ilike(kw, escape='\\'))
+
+
+def _escape_like(s, escape='\\'):
+    return (
+        s
+        .replace(escape, escape + escape)
+        .replace('%', escape + '%')
+        .replace('_', escape + '_'))

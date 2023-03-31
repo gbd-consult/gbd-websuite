@@ -203,10 +203,17 @@ def _read_enum(r: Reader, val, typ: core.Type):
     # NB: our Enums accept both names (for configs) and values (for api calls)
     # this prevents silly things like Enum{foo=bar bar=123} but we don't care
     #
+    # the comparison is also case-insensitive
+    #
     # this reader returns a value, it's up to the caller to convert it to the actual enum
 
+    def _lower(s):
+        return s.lower() if isinstance(s, str) else s
+
+    lv = _lower(val)
+
     for k, v in typ.enumValues.items():
-        if val == k or val == v:
+        if lv == _lower(k) or lv == _lower(v):
             return v
     raise core.ReadError(f"invalid value: {val!r}, expected: {_comma(typ.enumValues)}", val)
 
@@ -296,7 +303,7 @@ def _read_date(r: Reader, val, typ: core.Type):
         d = gws.lib.date.from_iso(str(val))
     except ValueError:
         raise core.ReadError(f'invalid date: {val!r}', val)
-    return gws.lib.date.to_iso_date(d)
+    return gws.lib.date.to_iso_date_string(d)
 
 
 def _read_datetime(r: Reader, val, typ: core.Type):
@@ -304,7 +311,7 @@ def _read_datetime(r: Reader, val, typ: core.Type):
         d = gws.lib.date.from_iso(str(val))
     except ValueError:
         raise core.ReadError(f'invalid date: {val!r}', val)
-    return gws.lib.date.to_iso(d)
+    return gws.lib.date.to_iso_string(d)
 
 
 def _read_dirpath(r: Reader, val, typ: core.Type):
@@ -462,4 +469,5 @@ _READERS = {
     'gws.core.types.Regex': _read_regex,
     'gws.core.types.Url': _read_url,
     'gws.core.types.Metadata': _read_metadata,
+    'gws.core.types.Ge': _read_metadata,
 }

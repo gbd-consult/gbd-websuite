@@ -1,7 +1,6 @@
 """Database-based models."""
 
 import sqlalchemy as sa
-import sqlalchemy.orm as saorm
 
 import gws.base.feature
 import gws.base.model
@@ -10,7 +9,7 @@ import gws.gis.crs
 
 import gws.types as t
 
-from . import provider, sql
+from . import provider
 
 
 class Props(gws.base.model.Props):
@@ -19,7 +18,7 @@ class Props(gws.base.model.Props):
 
 class Config(gws.base.model.Config):
     db: t.Optional[str]
-    tableName: str
+    tableName: t.Optional[str]
 
 
 class Object(gws.base.model.Object):

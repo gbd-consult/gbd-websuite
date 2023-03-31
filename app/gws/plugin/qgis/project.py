@@ -5,7 +5,6 @@ import sqlalchemy as sa
 
 import gws
 import gws.base.database
-import gws.base.database.sql
 import gws.lib.xmlx
 import gws.lib.zipx
 import gws.types as t

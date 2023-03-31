@@ -1,33 +1,31 @@
 """Integer field."""
 
 import gws
-import gws.base.database.model
-import gws.base.model.fields.scalar
-import gws.types as t
+import gws.base.model.field
 
 gws.ext.new.modelField('float')
 
 
-class Config(gws.base.model.fields.scalar.Config):
+class Config(gws.base.model.field.Config):
     pass
 
 
-class Props(gws.base.model.fields.scalar.Props):
+class Props(gws.base.model.field.Props):
     pass
 
 
-class Object(gws.base.model.fields.scalar.Object):
+class Object(gws.base.model.field.Scalar):
     """Float field object."""
 
     attributeType = gws.AttributeType.float
 
     def configure_widget(self):
         if not super().configure_widget():
-            self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'integer'})
+            self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'float'})
             return True
 
-    def convert_load(self, value):
+    def prop_to_py(self, val):
         try:
-            return float(value)
+            return float(val)
         except ValueError:
             return gws.ErrorValue

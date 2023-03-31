@@ -8,10 +8,10 @@ class View extends gws.View<gws.types.ModelWidgetProps> {
         let value = this.props.values[field.name];
         return <gws.ui.NumberInput
             step={this.props.options.step || 1}
-            locale={this.props.controller.app.locale}
+            locale={this.app.locale}
             value={gws.lib.isEmpty(value) ? null : Number(value)}
-            whenChanged={v => this.props.when('changed', this.props.controller, this.props.field, v)}
-            whenEntered={v => this.props.when('entered', this.props.controller, this.props.field, v)}
+            whenChanged={v => this.props.when('changed', this.props.controller, field, v)}
+            whenEntered={v => this.props.when('entered', this.props.controller, field, v)}
             disabled={this.props.readOnly}
         />
     }

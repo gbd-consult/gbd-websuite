@@ -5,7 +5,7 @@ import sqlalchemy.pool
 import gws
 import gws.types as t
 
-from . import sql, session as session_module
+from . import session as session_module
 
 
 class Config(gws.Config):
@@ -211,6 +211,47 @@ class Object(gws.Node, gws.IDatabaseManager):
             self.rt.descCache[tuid] = self._load_and_describe(sess, table_name, False)
         return self.rt.descCache[tuid]
 
+    # http://initd.org/psycopg/docs/usage.html?highlight=smallint#adaptation-of-python-values-to-sql-types
+
+    SA_TO_ATTR = {
+        'ARRAY': gws.AttributeType.strlist,
+        'BIGINT': gws.AttributeType.int,
+        'BIGSERIAL': gws.AttributeType.int,
+        'BIT': gws.AttributeType.int,
+        'BOOL': gws.AttributeType.bool,
+        'BOOLEAN': gws.AttributeType.bool,
+        'BYTEA': gws.AttributeType.bytes,
+        'CHAR': gws.AttributeType.str,
+        'CHARACTER VARYING': gws.AttributeType.str,
+        'CHARACTER': gws.AttributeType.str,
+        'DATE': gws.AttributeType.date,
+        'DECIMAL': gws.AttributeType.float,
+        'DOUBLE PRECISION': gws.AttributeType.float,
+        'FLOAT4': gws.AttributeType.float,
+        'FLOAT8': gws.AttributeType.float,
+        'GEOMETRY': gws.AttributeType.geometry,
+        'INT': gws.AttributeType.int,
+        'INT2': gws.AttributeType.int,
+        'INT4': gws.AttributeType.int,
+        'INT8': gws.AttributeType.int,
+        'INTEGER': gws.AttributeType.int,
+        'MONEY': gws.AttributeType.float,
+        'NUMERIC': gws.AttributeType.float,
+        'REAL': gws.AttributeType.float,
+        'SERIAL': gws.AttributeType.int,
+        'SERIAL2': gws.AttributeType.int,
+        'SERIAL4': gws.AttributeType.int,
+        'SERIAL8': gws.AttributeType.int,
+        'SMALLINT': gws.AttributeType.int,
+        'SMALLSERIAL': gws.AttributeType.int,
+        'TEXT': gws.AttributeType.str,
+        'TIME': gws.AttributeType.time,
+        'TIMESTAMP': gws.AttributeType.datetime,
+        'TIMESTAMPTZ': gws.AttributeType.datetime,
+        'TIMETZ': gws.AttributeType.time,
+        'VARCHAR': gws.AttributeType.str,
+    }
+
     def _load_and_describe(self, sess, table_name, load_only):
         ins = sa.inspect(getattr(sess, 'sa').connection())
 
@@ -254,7 +295,7 @@ class Object(gws.Node, gws.IDatabaseManager):
                 col.geometryType = gt.lower()
                 col.geometrySrid = getattr(typ, 'srid')
             else:
-                col.type = sql.SA_TO_ATTR.get(col.nativeType, gws.AttributeType.str)
+                col.type = self.SA_TO_ATTR.get(col.nativeType, gws.AttributeType.str)
 
             desc.columns[col.name] = col
 

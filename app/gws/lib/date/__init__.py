@@ -16,7 +16,7 @@ def set_system_time_zone(tz):
     gws.lib.osx.run(['ln', '-fs', f'/usr/share/zoneinfo/{tz}', '/etc/localtime'])
 
 
-def to_iso(d: datetime.datetime, with_tz='+', sep='T') -> str:
+def to_iso_string(d: datetime.datetime, with_tz='+', sep='T') -> str:
     fmt = f'%Y-%m-%d{sep}%H:%M:%S'
     if with_tz:
         fmt += '%z'
@@ -26,13 +26,13 @@ def to_iso(d: datetime.datetime, with_tz='+', sep='T') -> str:
     return s
 
 
-def to_iso_date(d: datetime.datetime) -> str:
+def to_iso_date_string(d: datetime.datetime) -> str:
     fmt = '%Y-%m-%d'
     return d.strftime(fmt)
 
 
-def to_iso_local(d: datetime.datetime, with_tz='+', sep='T') -> str:
-    return to_iso(d.astimezone())
+def to_iso_local_string(d: datetime.datetime, with_tz='+', sep='T') -> str:
+    return to_iso_string(d.astimezone(), with_tz, sep)
 
 
 def to_timestamp(d: datetime.datetime) -> int:
@@ -48,7 +48,7 @@ def now() -> datetime.datetime:
 
 
 def now_iso(with_tz='+', sep='T') -> str:
-    return to_iso(now(), with_tz, sep)
+    return to_iso_string(now(), with_tz, sep)
 
 
 def to_utc(d: datetime.datetime) -> datetime.datetime:

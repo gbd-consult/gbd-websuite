@@ -1,5 +1,5 @@
 import gws
-import gws.base.database.sql as sql
+import gws.base.database
 import gws.base.layer.vector
 import gws.gis.extent
 import gws.base.feature
@@ -7,7 +7,7 @@ import gws.gis.crs
 import gws.base.shape
 import gws.types as t
 
-from . import provider, model
+from . import provider
 
 gws.ext.new.layer('postgres')
 
@@ -46,12 +46,13 @@ class Object(gws.base.layer.vector.Object):
         return True
 
     def configure_models(self):
-        if super().configure_models():
+        defaults = gws.Config(type='postgres', _provider=self.provider, tableName=self.tableName)
+
+        p = self.cfg('models')
+        if p:
+            self.models = [self.create_child(gws.ext.object.model, gws.merge(defaults, c)) for c in p]
             return True
-        self.models.append(self.create_child(
-            gws.ext.object.model,
-            gws.Config(type='postgres', _provider=self.provider, tableName=self.tableName)
-        ))
+        self.models.append(self.create_child(gws.ext.object.model, defaults))
         return True
 
     def configure_search(self):

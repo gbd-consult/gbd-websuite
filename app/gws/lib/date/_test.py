@@ -14,7 +14,7 @@ def test_set_system_time_zone():
 
 def test_to_iso():
     """
-    def to_iso(d: datetime.datetime, with_tz='+', sep='T') -> str:
+    def to_iso_string(d: datetime.datetime, with_tz='+', sep='T') -> str:
 
     TODO consider removing the sep='T' seperator option to enforce compliance 
         with iso standard. more information here: 
@@ -27,7 +27,7 @@ def test_to_iso():
         extended: 2022-10-21T12:12:12+0000 or 2022-10-21T12:12:12Z
     
     TODO consider with_tz as flag to enable or disable shortening of +0000 to Z 
-        for zero meridian time/gmt. example: def to_iso(d, short_gmt=False)
+        for zero meridian time/gmt. example: def to_iso_string(d, short_gmt=False)
 
     NOTE pythons datetime.datetime.fromisoformat(date_string) is not correctly 
         handling all cases, especially the Z suffix or the +0000 without : for +hh:mm
@@ -35,47 +35,47 @@ def test_to_iso():
 
     """
     dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
-    assert gws.lib.date.to_iso(dt) == "2022-10-31T16:42:22+0900"
-    assert gws.lib.date.to_iso(dt, sep='#') == "2022-10-31#16:42:22+0900"
+    assert gws.lib.date.to_iso_string(dt) == "2022-10-31T16:42:22+0900"
+    assert gws.lib.date.to_iso_string(dt, sep='#') == "2022-10-31#16:42:22+0900"
     dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+00:00')
-    assert gws.lib.date.to_iso(dt, with_tz='+') == "2022-10-31T16:42:22+0000"
-    assert gws.lib.date.to_iso(dt, with_tz='Z', sep='#') == "2022-10-31#16:42:22Z"
+    assert gws.lib.date.to_iso_string(dt, with_tz='+') == "2022-10-31T16:42:22+0000"
+    assert gws.lib.date.to_iso_string(dt, with_tz='Z', sep='#') == "2022-10-31#16:42:22Z"
 
 
-def test_to_iso_date():
+def test_to_iso_date_string():
     """
-    def to_iso_date(d: datetime.datetime) -> str:
+    def to_iso_date_string(d: datetime.datetime) -> str:
     """
 
     dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
-    assert gws.lib.date.to_iso_date(dt) == "2022-10-31"
+    assert gws.lib.date.to_iso_date_string(dt) == "2022-10-31"
     dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59+09:00')
-    assert gws.lib.date.to_iso_date(dt) == "2022-12-31"
+    assert gws.lib.date.to_iso_date_string(dt) == "2022-12-31"
     dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59-09:00')
-    assert gws.lib.date.to_iso_date(dt) == "2022-12-31"
+    assert gws.lib.date.to_iso_date_string(dt) == "2022-12-31"
 
 
 def test_to_iso_local():
     """
-    def to_iso_local(d: datetime.datetime, with_tz='+', sep='T') -> str:
+    def to_iso_local_string(d: datetime.datetime, with_tz='+', sep='T') -> str:
     """
 
     gws.lib.date.set_system_time_zone('Europe/Berlin')
 
     dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
-    assert gws.lib.date.to_iso_local(dt) in [
+    assert gws.lib.date.to_iso_local_string(dt) in [
         "2022-10-31T08:42:22+0100", 
         "2022-10-31T09:42:22+0200"
     ]
 
     # check for year change on tz difference
     dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59+09:00')
-    assert gws.lib.date.to_iso_local(dt) in [
+    assert gws.lib.date.to_iso_local_string(dt) in [
         "2022-12-31T15:59:59+0100", 
         "2022-12-31T16:59:59+0200"
     ] 
     dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59-09:00')
-    assert gws.lib.date.to_iso_local(dt) in [
+    assert gws.lib.date.to_iso_local_string(dt) in [
         "2023-01-01T09:59:59+0100", 
         "2023-01-01T10:59:59+0200"
     ]

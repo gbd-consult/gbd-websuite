@@ -1,3 +1,6 @@
+import sqlalchemy as sa
+import geoalchemy2 as geosa
+
 import gws
 import gws.types as t
 
@@ -108,54 +111,72 @@ class Object(gws.Node, gws.IModelField):
             widget=self.widget
         )
 
-    def convert_load(self, value):
-        return value
+    ##
 
-    def convert_store(self, value):
-        return value
+    def db_to_py(self, val):
+        return val
+
+    def prop_to_py(self, val):
+        return val
+
+    def py_to_db(self, val):
+        return val
+
+    def py_to_prop(self, val):
+        return val
 
     def load_from_record(self, feature, record, user, **kwargs):
         if hasattr(record, self.name):
             val = getattr(record, self.name)
             if val is not None:
-                feature.attributes[self.name] = self.convert_load(val)
+                val = self.db_to_py(val)
+            if val is not None:
+                feature.attributes[self.name] = val
 
     def load_from_data(self, feature, data, user, **kwargs):
         if self.name in data.attributes:
             val = data.attributes[self.name]
             if val is not None:
-                feature.attributes[self.name] = self.convert_load(val)
+                val = self.prop_to_py(val)
+            if val is not None:
+                feature.attributes[self.name] = val
 
     def load_from_props(self, feature, props, user, **kwargs):
         if self.name in props.attributes:
             val = props.attributes[self.name]
             if val is not None:
-                feature.attributes[self.name] = self.convert_load(val)
+                val = self.prop_to_py(val)
+            if val is not None:
+                feature.attributes[self.name] = val
 
-    def value_from_feature(self, feature: gws.IFeature):
+    def _value_from_feature(self, feature: gws.IFeature):
         val = feature.attributes.get(self.name)
         if val is None:
             return False, None
         if val == gws.ErrorValue:
-            raise gws.Error(f'attempt to store an error value, field {self.name!r} model {feature.model.uid!r}, feature {feature.uid()!r}')
+            raise gws.Error(f'attempt to store an error value, field {feature.model.uid!r}.{self.name!r}, feature {feature.uid()!r}')
         return True, val
 
     def store_to_record(self, feature, record, user, **kwargs):
-        ok, val = self.value_from_feature(feature)
+        ok, val = self._value_from_feature(feature)
         if ok:
-            setattr(record, self.name, self.convert_store(val))
+            setattr(record, self.name, self.py_to_db(val))
 
     def store_to_data(self, feature, data, user, **kwargs):
-        ok, val = self.value_from_feature(feature)
+        ok, val = self._value_from_feature(feature)
         if ok:
-            data.attributes[self.name] = self.convert_store(val)
-
-    def store_to_props(self, feature, props, user, **kwargs):
-        ok, val = self.value_from_feature(feature)
-        if ok:
+            val = self.py_to_prop(val)
             if isinstance(val, gws.Object):
                 val = gws.props(val, user, self)
-            props.attributes[self.name] = self.convert_store(val)
+            data.attributes[self.name] = val
+
+    def store_to_props(self, feature, props, user, **kwargs):
+        ok, val = self._value_from_feature(feature)
+        if ok:
+            val = self.py_to_prop(val)
+            if isinstance(val, gws.Object):
+                val = gws.props(val, user, self)
+            props.attributes[self.name] = val
 
     def compute(self, feature, access, user, **kwargs):
         val = self.fixedValues.get(access)
@@ -175,7 +196,7 @@ class Object(gws.Node, gws.IModelField):
             if not ok:
                 feature.errors.append(gws.ModelValidationError(
                     fieldName=self.name,
-                    message=v.message
+                    message=v.message,
                 ))
                 return False
         return True
@@ -187,6 +208,31 @@ class Object(gws.Node, gws.IModelField):
 
     def orm_properties(self):
         return {}
+
+
+##
+
+_SCALAR_TYPES = {
+    gws.AttributeType.bool: sa.Boolean,
+    gws.AttributeType.date: sa.Date,
+    gws.AttributeType.datetime: sa.DateTime,
+    gws.AttributeType.float: sa.Float,
+    gws.AttributeType.int: sa.Integer,
+    gws.AttributeType.str: sa.String,
+    gws.AttributeType.time: sa.Time,
+    gws.AttributeType.geometry: geosa.Geometry,
+}
+
+
+class Scalar(Object):
+    def columns(self):
+        kwargs = {}
+        if self.isPrimaryKey:
+            kwargs['primary_key'] = True
+        # if self.value.serverDefault:
+        #     kwargs['server_default'] = sa.text(self.value.serverDefault)
+        col = sa.Column(self.name, _SCALAR_TYPES[self.attributeType], **kwargs)
+        return [col]
 
 
 ##

@@ -1,24 +1,20 @@
 """Integer field."""
 
 import gws
-import gws.base.database.model
-import gws.base.model.fields.scalar
-import gws.types as t
+import gws.base.model.field
 
 gws.ext.new.modelField('integer')
 
 
-class Config(gws.base.model.fields.scalar.Config):
+class Config(gws.base.model.field.Config):
     pass
 
 
-class Props(gws.base.model.fields.scalar.Props):
+class Props(gws.base.model.field.Props):
     pass
 
 
-class Object(gws.base.model.fields.scalar.Object):
-    """Integer field object."""
-
+class Object(gws.base.model.field.Scalar):
     attributeType = gws.AttributeType.int
 
     def configure_widget(self):
@@ -26,8 +22,10 @@ class Object(gws.base.model.fields.scalar.Object):
             self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'integer'})
             return True
 
-    def convert_load(self, value):
+    ##
+
+    def prop_to_py(self, val):
         try:
-            return int(value)
+            return int(val)
         except ValueError:
             return gws.ErrorValue

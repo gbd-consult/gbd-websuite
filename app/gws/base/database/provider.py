@@ -1,7 +1,7 @@
 import gws
 import gws.types as t
 
-from . import sql, manager
+from . import manager
 
 
 class Config(gws.Config):

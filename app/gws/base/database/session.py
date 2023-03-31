@@ -1,8 +1,7 @@
 import sqlalchemy.orm as saorm
-import sqlalchemy.sql as sql
+import sqlalchemy.sql as sasql
 
 import gws
-import gws.types as t
 
 
 class Object(gws.IDatabaseSession):
@@ -26,7 +25,7 @@ class Object(gws.IDatabaseSession):
     def rollback(self):
         return self.sa.rollback()
 
-    def execute(self, stmt: sql.Executable, params=None, **kwargs):
+    def execute(self, stmt: sasql.Executable, params=None, **kwargs):
         return self.sa.execute(stmt, params, **kwargs)
 
     def describe(self, table_name: str):

@@ -376,7 +376,7 @@ class Object(gws.base.api.Action):
         meta_dates = {}
 
         def _date(s):
-            return gws.lib.date.to_iso(gws.lib.date.to_utc(s), with_tz='Z')
+            return gws.lib.date.to_iso_string(gws.lib.date.to_utc(s), with_tz='Z')
 
         with self.db.connect() as conn:
             rs = conn.select(f'''SELECT * FROM {conn.quote_table(self.meta_table.name)}''')

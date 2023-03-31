@@ -1,41 +1,36 @@
 """Geometry field."""
 
-import sqlalchemy as sa
 import geoalchemy2 as geosa
+import sqlalchemy as sa
 
 import gws
-import gws.base.database.sql as sql
 import gws.base.database.model
+import gws.base.model.field
 import gws.base.shape
 import gws.gis.crs
 import gws.types as t
 
-import gws.base.model.field
-import gws.base.model.fields.scalar as scalar
-
 gws.ext.new.modelField('geometry')
 
 
-class Config(scalar.Config):
+class Config(gws.base.model.field.Config):
     geometryType: t.Optional[gws.GeometryType]
     crs: t.Optional[gws.CrsName]
 
 
-class Props(scalar.Props):
+class Props(gws.base.model.field.Props):
     pass
 
 
-class Object(scalar.Object):
+class Object(gws.base.model.field.Scalar):
     attributeType = gws.AttributeType.geometry
-    geometryType = ''
-    geometryCrs: gws.ICrs
 
     def configure(self):
         self.geometryType = self.cfg('geometryType')
-
-        self.geometryCrs = None  # type:ignore
         if self.cfg('crs'):
             self.geometryCrs = gws.gis.crs.get(self.cfg('crs'))
+
+    ##
 
     def select(self, sel, user):
         shape = None
@@ -59,35 +54,24 @@ class Object(scalar.Object):
                 fld,
                 sa.cast(shape.to_ewkb_hex(), geosa.Geometry())))
 
-    def load_from_record(self, feature, rec, user):
-        if not hasattr(rec, self.name):
-            return
-        val = getattr(rec, self.name)
-        if val is not None:
-            feature.attributes[self.name] = gws.base.shape.from_wkb_hex(str(val))
+    def db_to_py(self, val):
+        # here, val is a geosa WKBElement
+        return gws.base.shape.from_wkb_hex(str(val))
 
-    def load_from_props(self, feature, props, user, **kwargs):
-        if self.name not in props.attributes:
-            return
-        val = props.attributes.get(self.name)
+    def prop_to_py(self, val):
         if isinstance(val, gws.base.shape.Shape):
-            feature.attributes[self.name] = val
-            return
+            return val
         if gws.is_data_object(val):
             try:
-                feature.attributes[self.name] = gws.base.shape.from_props(val)
-                return
+                return gws.base.shape.from_props(val)
             except gws.Error:
                 pass
         if gws.is_dict(val):
             try:
-                feature.attributes[self.name] = gws.base.shape.from_dict(val)
-                return
+                return gws.base.shape.from_dict(val)
             except gws.Error:
                 pass
-        feature.attributes[self.name] = gws.ErrorValue
+        return gws.ErrorValue
 
-    def store_to_record(self, feature, rec, user):
-        ok, val = self.value_from_feature(feature)
-        if ok:
-            setattr(rec, self.name, t.cast(gws.base.shape.Shape, val).to_ewkb_hex())
+    def py_to_db(self, val):
+        return val.to_ewkb_hex()

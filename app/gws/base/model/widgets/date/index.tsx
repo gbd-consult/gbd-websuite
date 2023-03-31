@@ -8,6 +8,7 @@ class View extends gws.View<gws.types.ModelWidgetProps> {
         let value = this.props.values[field.name];
         return <gws.ui.DateInput
             value={gws.lib.isEmpty(value) ? '' : String(value)}
+            locale={this.app.locale}
             whenChanged={v => this.props.when('changed', this.props.controller, this.props.field, v)}
             disabled={this.props.readOnly}
         />

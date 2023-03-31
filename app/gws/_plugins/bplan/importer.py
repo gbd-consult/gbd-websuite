@@ -106,7 +106,7 @@ def _run2(action, src_dir, replace, au_uid, job):
                 # convert all attributes to strings
                 for a in f.attributes:
                     if a.type == gws.AttributeType.datetime:
-                        val = gws.lib.date.to_iso_date(a.value)
+                        val = gws.lib.date.to_iso_date_string(a.value)
                     else:
                         val = str(a.value)
                     r[a.name.lower()] = val

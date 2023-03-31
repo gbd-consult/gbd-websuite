@@ -1,6 +1,5 @@
 import gws
 import gws.base.database
-import gws.base.database.sql as sql
 
 # import gws.base.model
 # import gws.gis.crs

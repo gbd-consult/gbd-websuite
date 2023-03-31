@@ -20,8 +20,8 @@ class Object(gws.Node):
 
         rs = [{
             'user': r['user_uid'],
-            'login': gws.lib.date.to_iso_local(gws.lib.date.from_timestamp(r['created'])),
-            'activity': gws.lib.date.to_iso_local(gws.lib.date.from_timestamp(r['updated'])),
+            'login': gws.lib.date.to_iso_local_string(gws.lib.date.from_timestamp(r['created'])),
+            'activity': gws.lib.date.to_iso_local_string(gws.lib.date.from_timestamp(r['updated'])),
             'duration': r['updated'] - r['created']
         } for r in auth.stored_session_records()]
 
@@ -109,8 +109,8 @@ class Object(gws.Node):
 #
 #     rs = [{
 #         'user': r['user_uid'],
-#         'login': dt.to_iso_local(dt.from_timestamp(r['created'])),
-#         'activity': dt.to_iso_local(dt.from_timestamp(r['updated'])),
+#         'login': dt.to_iso_local_string(dt.from_timestamp(r['created'])),
+#         'activity': dt.to_iso_local_string(dt.from_timestamp(r['updated'])),
 #         'duration': r['updated'] - r['created']
 #     } for r in auth.stored_session_records()]
 #
