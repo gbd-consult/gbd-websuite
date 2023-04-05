@@ -16,6 +16,7 @@ class Config(gws.common.layer.VectorConfig):
 
     db: t.Optional[str]  #: database provider uid
     table: gws.common.db.SqlTableConfig  #: sql table configuration
+    filter: t.Optional[str]
 
 
 class Object(gws.common.layer.Vector):
@@ -63,10 +64,12 @@ class Object(gws.common.layer.Vector):
     def get_features(self, bounds, limit=0) -> t.List[t.IFeature]:
         shape = gws.gis.shape.from_bounds(bounds).transformed_to(self.table.geometry_crs)
 
+        where = self.options.filter or '1=1'
         fs = self.provider.select(t.SelectArgs(
             table=self.table,
             shape=shape,
             limit=limit,
+            extra_where=[where]
         ))
 
         return [self.connect_feature(f) for f in fs]
