@@ -1,3 +1,4 @@
+import gws
 import gws.lib.net
 
 from . import error

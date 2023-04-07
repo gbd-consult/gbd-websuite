@@ -2,6 +2,7 @@
 
 import sqlalchemy as sa
 
+import gws
 import gws.base.feature
 import gws.base.model
 import gws.base.model.field

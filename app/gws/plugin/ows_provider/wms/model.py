@@ -1,5 +1,6 @@
 """Database-based models."""
 
+import gws
 import gws.base.model
 import gws.base.feature
 import gws.gis.source

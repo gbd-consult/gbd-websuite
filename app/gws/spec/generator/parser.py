@@ -592,6 +592,8 @@ def _builtin_name(name: str) -> str:
     for b in base.BUILTIN_TYPES:
         if name.endswith(DOT + b):
             return b
+        if name.startswith(b + DOT):
+            return b
     return ''
 
 

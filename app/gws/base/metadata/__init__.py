@@ -12,7 +12,7 @@ import gws.types as t
 ##
 
 
-class Object(gws.Object, gws.IMetadata):
+class Object(gws.Object):
     def __init__(self, md: gws.Metadata):
         self.md = gws.lib.metadata.check(md)
 

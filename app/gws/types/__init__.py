@@ -51,4 +51,5 @@ __all__ = [
     'Protocol',
     'Sequence',
     'Union',
+    'Enum',
 ]

@@ -13,6 +13,9 @@ BUILTIN_TYPES = [
     'Any',
     'Callable',
     'Dict',
+    'Enum',
+    'Iterable',
+    'Iterator',
     'List',
     'Literal',
     'Optional',
@@ -20,7 +23,11 @@ BUILTIN_TYPES = [
     'Set',
     'Tuple',
     'Union',
-    'Enum',
+
+    # imported in TYPE_CHECKING
+    'sqlalchemy',
+    'osgeo',
+
 ]
 
 # those star-imported in gws/__init__.py

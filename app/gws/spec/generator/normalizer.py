@@ -333,8 +333,18 @@ def _make_props(gen):
 
 def _check_undefined(gen):
     for typ in gen.types.values():
-        if typ.c == base.C.UNDEFINED:
-            base.log.warn(f'undefined type {typ.uid!r} in {typ.pos}')
+        if typ.c != base.C.UNDEFINED:
+            continue
+        if not typ.name.startswith(base.APP_NAME):
+            # foreign module
+            continue
+        if '.vendor.' in typ.name:
+            # vendor module
+            continue
+        if '._' in typ.name:
+            # private type
+            continue
+        base.log.warn(f'undefined type {typ.uid!r} in {typ.pos}')
 
 
 DOT = '.'

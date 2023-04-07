@@ -3,8 +3,7 @@ import gws.gis.extent
 import gws.lib.image
 import gws.gis.mpx as mpx
 
-from . import lib, base
-
+from . import core
 
 
 

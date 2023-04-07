@@ -11,9 +11,9 @@ from .. import core
 
 gws.ext.new.owsService('wms')
 
-_WMS_130 = '1.3.0'
-_WMS_111 = '1.1.1'
-_WMS_110 = '1.1.0'
+WMS_130 = '1.3.0'
+WMS_111 = '1.1.1'
+WMS_110 = '1.1.0'
 
 
 class Config(core.ServiceConfig):
@@ -23,7 +23,7 @@ class Config(core.ServiceConfig):
 
 class Object(core.Service):
     protocol = gws.OwsProtocol.WMS
-    supported_versions = [_WMS_130, _WMS_111, _WMS_110]
+    supported_versions = [WMS_130, WMS_111, WMS_110]
     is_raster_ows = True
 
     search_max_limit = 100
@@ -182,7 +182,7 @@ class Object(core.Service):
             lcs,
             target_crs=request_crs,
             populate=True,
-            invert_axis_if_geographic=self.request_version(rd) >= _WMS_130,
+            invert_axis_if_geographic=self.request_version(rd) >= WMS_130,
             crs_format=gws.CrsFormat.URN,
         )
 
@@ -195,4 +195,4 @@ class Object(core.Service):
         return gws.gis.bounds.from_request_bbox(
             rd.req.param('bbox'),
             gws.gis.crs.get(rd.req.param('crs') or rd.req.param('srs')) or rd.project.map.crs,
-            invert_axis_if_geographic=self.request_version(rd) >= _WMS_130)
+            invert_axis_if_geographic=self.request_version(rd) >= WMS_130)
