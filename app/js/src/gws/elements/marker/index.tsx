@@ -198,7 +198,7 @@ class MarkerController extends gws.Controller {
     }
 
     makeFeature(geom: ol.geom.Geometry) {
-        return this.app.models.defaultModel().featureFromGeometry(this.map, geom);
+        return this.app.models.defaultModel().featureFromGeometry(geom);
     }
 
 }

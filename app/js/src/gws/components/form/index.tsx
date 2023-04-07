@@ -2,20 +2,12 @@ import * as React from 'react';
 
 import * as gws from 'gws';
 
-import * as featureComp from '../feature';
-import * as listComp from '../list';
-// import * as widget from '../widget';
-
-let {Row, Cell} = gws.ui.Layout;
-
-
 interface FormProps {
     controller: gws.types.IController;
     model: gws.types.IModel;
     feature: gws.types.IFeature;
     values: gws.types.Dict;
     errors?: gws.types.Dict;
-    // makeWidget: (field: gws.types.IModelField, feature: gws.types.IFeature, values: gws.types.Dict) => React.ReactElement | null;
     widgets: Array<React.ReactElement>;
 }
 
@@ -26,11 +18,8 @@ interface FormFieldProps {
     values: gws.types.Dict;
     errors?: gws.types.Dict;
     widget: React.ReactElement;
-    // makeWidget: (field: gws.types.IModelField, feature: gws.types.IFeature, values: gws.types.Dict) => React.ReactElement | null;
 }
 
-
-//
 
 //
 
@@ -39,7 +28,7 @@ export class FormField extends React.PureComponent<FormFieldProps> {
     render() {
         let field = this.props.field;
 
-        let widget = this.props.widget; //makeWidget(field, this.props.feature, this.props.values);
+        let widget = this.props.widget;
         if (!widget)
             return null;
 
@@ -50,23 +39,20 @@ export class FormField extends React.PureComponent<FormFieldProps> {
                 <th>
                     {field.title}
                 </th>
+            </tr>
+            <tr className={err ? 'isError' : ''}>
                 <td>
                     {widget}
                 </td>
             </tr>
             <tr {...gws.lib.cls('cmpFormError', err && 'isActive')}>
-                <th>&nbsp;</th>
                 <td>{err}</td>
             </tr>
         </React.Fragment>
-
     }
-
 }
 
 export class Form extends React.PureComponent<FormProps> {
-
-
     render() {
         return <table className="cmpForm">
             <tbody>
@@ -76,7 +62,6 @@ export class Form extends React.PureComponent<FormProps> {
                 controller={this.props.controller}
                 feature={this.props.feature}
                 values={this.props.values}
-                // makeWidget={this.props.makeWidget}
                 widget={this.props.widgets[i]}
                 errors={this.props.errors}
             />)}

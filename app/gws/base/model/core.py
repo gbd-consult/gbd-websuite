@@ -54,6 +54,8 @@ class Object(gws.Node, gws.IModel):
                     self.create_child(gws.ext.object.modelField, config=gws.merge(cfg, _model=self)))
             return True
 
+    ##
+
     def props(self, user):
         layer = t.cast(gws.ILayer, self.parent)
         return gws.Props(
@@ -71,12 +73,14 @@ class Object(gws.Node, gws.IModel):
             uid=self.uid,
         )
 
-    def feature_from_data(self, data, user, **kwargs):
+    ##
+
+    def feature_from_data(self, data, user, relation_depth=0, **kwargs):
         feature = gws.base.feature.with_model(self)
 
         if self.fields:
             for f in self.fields:
-                f.load_from_data(feature, data, user, **kwargs)
+                f.load_from_data(feature, data, user, relation_depth, **kwargs)
         else:
             feature.attributes = dict(data.attributes)
             if data.uid:
@@ -88,23 +92,23 @@ class Object(gws.Node, gws.IModel):
 
         return feature
 
-    def feature_from_props(self, props, user, **kwargs):
+    def feature_from_props(self, props, user, relation_depth=0, **kwargs):
         feature = gws.base.feature.with_model(self)
 
         if self.fields:
             for f in self.fields:
-                f.load_from_props(feature, props, user, **kwargs)
+                f.load_from_props(feature, props, user, relation_depth, **kwargs)
         else:
             feature.attributes = dict(props.attributes)
 
         feature.isNew = bool(props.isNew)
         return feature
 
-    def feature_from_record(self, record, user, **kwargs):
+    def feature_from_record(self, record, user, relation_depth=0, **kwargs):
         feature = gws.base.feature.with_model(self)
 
         for f in self.fields:
-            f.load_from_record(feature, record, user, **kwargs)
+            f.load_from_record(feature, record, user, relation_depth, **kwargs)
 
         return feature
 
@@ -128,6 +132,13 @@ class Object(gws.Node, gws.IModel):
                 props.attributes[self.geometryName] = gws.props(feature.shape(), user, self)
 
         return props
+
+    ##
+
+    def field(self, name):
+        for f in self.fields:
+            if f.name == name:
+                return f
 
     def compute_values(self, feature, access, user, **kwargs):
         for f in self.fields:

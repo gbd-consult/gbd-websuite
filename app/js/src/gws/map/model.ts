@@ -54,18 +54,22 @@ export class ModelRegistry implements types.IModelRegistry {
         return Object.values(d)
     }
 
-    featureFromProps(map, props) {
-        return this.model(props.modelUid).featureFromProps(map, props);
+    featureFromProps(props) {
+        return this.model(props.modelUid).featureFromProps(props);
     }
 
-    featureListFromProps(map, propsList) {
+    featureListFromProps(propsList) {
         let features = [];
         for (let props of propsList)
-            features.push(this.featureFromProps(map, props));
+            features.push(this.featureFromProps(props));
         return features;
     }
 
 
+}
+
+interface FeatureMap {
+    [uid: string]: types.IFeature
 }
 
 export class Model implements types.IModel {
@@ -82,10 +86,13 @@ export class Model implements types.IModel {
     loadingStrategy: api.core.FeatureLoadingStrategy;
     uid: string;
 
+    featureMap: FeatureMap;
+
     registry: ModelRegistry;
 
     constructor(registry, props: api.base.model.Props) {
         this.registry = registry;
+        this.featureMap = {};
 
         this.canCreate = props.canCreate;
         this.canDelete = props.canDelete;
@@ -124,40 +131,43 @@ export class Model implements types.IModel {
                 return f;
     }
 
-    featureWithAttributes(map: types.IMapManager, attributes: types.Dict): types.IFeature {
+    featureWithAttributes(attributes: types.Dict): types.IFeature {
+        let map = this.registry.app.map;
         return new feature.Feature(this, map).setAttributes(attributes);
     }
 
-    featureFromGeometry(map: types.IMapManager, geom: ol.geom.Geometry): types.IFeature {
+    featureFromGeometry(geom: ol.geom.Geometry): types.IFeature {
+        let map = this.registry.app.map;
         return new feature.Feature(this, map).setGeometry(geom);
     }
 
-    featureFromProps(map: types.IMapManager, props: api.core.FeatureProps): types.IFeature {
+    featureFromProps(props: api.core.FeatureProps): types.IFeature {
+        let map = this.registry.app.map;
         let attributes = props.attributes || {};
 
         for (let f of this.fields) {
             let val = attributes[f.name];
 
             if (val && f.attributeType === 'feature') {
-                attributes[f.name] = this.featureFromProps(map, val);
+                attributes[f.name] = this.featureFromProps(val);
             }
 
             if (val && f.attributeType === 'featurelist') {
-                attributes[f.name] = val.map(p => this.featureFromProps(map, p));
+                attributes[f.name] = val.map(p => this.featureFromProps(p));
             }
         }
 
         return new feature.Feature(this, map).setProps({...props, attributes});
     }
 
-    featureListFromProps(map: types.IMapManager, propsList: Array<api.core.FeatureProps>): Array<types.IFeature> {
-        return propsList.map(props => this.featureFromProps(map, props));
+    featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<types.IFeature> {
+        return propsList.map(props => this.featureFromProps(props));
     }
 
-    featureProps(feature: types.IFeature, depth?: number): api.core.FeatureProps {
+    featureProps(feature: types.IFeature, relationDepth?: number): api.core.FeatureProps {
 
         let atts = {};
-        depth = depth || 0;
+        let depth = relationDepth || 0;
 
         if (feature.model) {
 
@@ -205,11 +215,12 @@ export class Model implements types.IModel {
 }
 
 export class ModelField implements types.IModelField {
-    name: string;
-    type: string;
     attributeType: api.core.AttributeType;
     geometryType: api.core.GeometryType;
+    name: string;
     title: string;
+    type: string;
+    uid: string;
 
     relations: Array<types.IModelRelation>;
     widgetProps: api.ext.props.modelWidget;
@@ -221,26 +232,14 @@ export class ModelField implements types.IModelField {
 
     }
 
-    setProps(props: api.base.model.field.Props): ModelField {
-        this.name = props.name;
+    setProps(props: api.ext.props.modelField): ModelField {
         this.attributeType = props.attributeType;
         this.geometryType = props.geometryType;
+        this.name = props.name;
+        this.relations = props.relations || [];
         this.title = props.title;
+        this.uid = props.uid;
         this.widgetProps = props.widget;
-
-
-        this.relations = [];
-
-        // if (props.relations) {
-        //     for (let r of props.relations) {
-        //         this.relations.push({
-        //             type: r.type,
-        //             model: this.model.registry.getModel(r.modelUid),
-        //             fieldName: r.fieldName,
-        //             title: r.title,
-        //         })
-        //     }
-        // }
 
         return this;
     }

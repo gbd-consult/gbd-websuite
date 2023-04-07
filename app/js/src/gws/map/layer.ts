@@ -139,6 +139,10 @@ export class Layer implements types.ILayer {
 
     }
 
+    forceUpdate() {
+
+    }
+
     setComputedOpacity(v) {
         this.computedOpacity = v;
     }
@@ -190,6 +194,11 @@ abstract class OlBackedLayer<T extends ol.layer.Layer> extends Layer {
     setComputedOpacity(v) {
         this.computedOpacity = v;
         this.oLayer.setOpacity(v);
+    }
+
+    forceUpdate() {
+        if (this.oLayer && this.oLayer.getSource())
+            this.oLayer.getSource().changed()
     }
 }
 
@@ -390,6 +399,11 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         return new ol.source.Vector({});
     }
 
+    forceUpdate() {
+        this.lastBbox = '';
+        if (this.oLayer && this.oLayer.getSource())
+            this.oLayer.getSource().changed()
+    }
 
     beforeDraw() {
 
@@ -466,7 +480,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
 
         for (let props of res.features) {
             let model = this.map.app.models.model(props.modelUid);
-            let feature = model.featureFromProps(this.map, props);
+            let feature = model.featureFromProps(props);
             if (!newMap[feature.uid]) {
                 newMap[feature.uid] = feature;
             }

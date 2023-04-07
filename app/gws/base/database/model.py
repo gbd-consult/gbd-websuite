@@ -21,7 +21,7 @@ class Config(gws.base.model.Config):
     tableName: t.Optional[str]
 
 
-class Object(gws.base.model.Object):
+class Object(gws.base.model.Object, gws.IDatabaseModel):
     provider: provider.Object
     tableName: str
 
@@ -77,18 +77,31 @@ class Object(gws.base.model.Object):
             self.geometryType = geom.geometryType
             self.geometryCrs = geom.geometryCrs
 
-    def table(self) -> sa.Table:
+    ##
+
+    def table(self):
         return self.provider.mgr.table_for_model(self)
 
-    def orm_class(self):
+    def record_class(self):
         return self.provider.mgr.class_for_model(self)
+
+    def get_record(self, uid):
+        with self.session() as sess:
+            return sess.saSession.get(self.record_class(), uid)
+
+    def get_records(self, uids):
+        with self.session() as sess:
+            cls = self.record_class()
+            sel = sa.select(cls).where(self.primary_keys()[0].in_(uids))
+            res = sess.execute(sel)
+            return res.unique().scalars().all()
 
     def primary_keys(self):
         return self.provider.mgr.pkeys_for_model(self)
 
     def find_features(self, search, user, **kwargs):
 
-        sel = self.build_select(search, user)
+        sel = self.make_select(search, user)
         if not sel:
             gws.log.debug('empty select')
             return []
@@ -96,68 +109,52 @@ class Object(gws.base.model.Object):
         features = []
 
         with self.session() as sess:
-            cursor = sess.execute(sel.saSelect)
-            for row in cursor.unique().all():
-                record = getattr(row, self.orm_class().__name__)
-                features.append(self.feature_from_record(record, user, **kwargs))
+            res = sess.execute(sel.saSelect)
+            for record in res.unique().scalars().all():
+                features.append(self.feature_from_record(record, user, search.relationDepth or 0, **kwargs))
 
         return features
 
-    def write_features(self, features, user, **kwargs):
-        for feature in features:
-            access = gws.Access.create if feature.isNew else gws.Access.write
+    def write_feature(self, feature, user, **kwargs):
+        access = gws.Access.create if feature.isNew else gws.Access.write
 
-            if not user.can(access, self):
-                raise ValueError('Forbidden')
+        if not user.can(access, self):
+            raise ValueError('Forbidden')
 
-            feature.errors = []
+        feature.errors = []
 
-            for f in self.fields:
-                if f.compute(feature, access, user, **kwargs):
-                    continue
-                if user.can(access, f):
-                    f.validate(feature, access, user, **kwargs)
+        for f in self.fields:
+            if f.compute(feature, access, user, **kwargs):
+                continue
+            if user.can(access, f):
+                f.validate(feature, access, user, **kwargs)
 
-        if any(len(f.errors) > 0 for f in features):
+        if len(feature.errors) > 0:
             return False
 
-        rmap = {}
-        cls = self.orm_class()
+        cls = self.record_class()
 
         with self.session() as sess:
-            with sess.begin():
-                for feature in features:
-                    record = cls() if feature.isNew else sess.sa.get(cls, feature.uid())
-                    access = gws.Access.create if feature.isNew else gws.Access.write
-                    for f in self.fields:
-                        if user.can(access, f, self):
-                            f.store_to_record(feature, record, user)
-                    if feature.isNew:
-                        sess.sa.add(record)
-                    rmap[id(feature)] = record
-
-                sess.commit()
-
-            for feature in features:
-                record = rmap[id(feature)]
-                feature.attributes = {}
-                for f in self.fields:
-                    f.load_from_record(feature, record, user)
+            record = cls() if feature.isNew else sess.saSession.get(cls, feature.uid())
+            for f in self.fields:
+                if user.can(access, f, self):
+                    f.store_to_record(feature, record, user)
+            if feature.isNew:
+                sess.saSession.add(record)
+            sess.commit()
 
         return True
 
-    def delete_features(self, features, user, **kwargs):
+    def delete_feature(self, feature, user, **kwargs):
         if not user.can_delete(self):
             raise ValueError('Forbidden')
 
-        cls = self.orm_class()
+        cls = self.record_class()
 
         with self.session() as sess:
-            with sess.begin():
-                for feature in features:
-                    record = sess.sa.get(cls, feature.uid())
-                    sess.sa.delete(record)
-                sess.commit()
+            record = sess.saSession.get(cls, feature.uid())
+            sess.saSession.delete(record)
+            sess.commit()
 
         return True
 
@@ -166,9 +163,9 @@ class Object(gws.base.model.Object):
     def session(self) -> gws.IDatabaseSession:
         return self.provider.session()
 
-    def build_select(self, search: gws.SearchArgs, user: gws.IUser):
+    def make_select(self, search: gws.SearchArgs, user: gws.IUser):
         sel = gws.SelectStatement(
-            saSelect=sa.select(self.orm_class()),
+            saSelect=sa.select(self.record_class()),
             search=search,
             keywordWhere=[],
             geometryWhere=[],
@@ -191,7 +188,7 @@ class Object(gws.base.model.Object):
             pks = self.primary_keys()
             if not pks:
                 return
-            pk = getattr(self.orm_class(), pks[0].name)
+            pk = getattr(self.record_class(), pks[0].name)
             sel.saSelect = sel.saSelect.where(pk.in_(search.uids))
 
         # extra = (self.extraWhere or [])
@@ -208,8 +205,6 @@ class Object(gws.base.model.Object):
         if search.sort:
             for s in search.sort:
                 fn = sa.desc if s.reverse else sa.asc
-                sel.saSelect = sel.saSelect.order_by(fn(getattr(self.orm_class(), s.fieldName)))
-
-        gws.log.debug(f'make_select: {str(sel.saSelect)}')
+                sel.saSelect = sel.saSelect.order_by(fn(getattr(self.record_class(), s.fieldName)))
 
         return sel

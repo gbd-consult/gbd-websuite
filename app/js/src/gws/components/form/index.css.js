@@ -51,7 +51,58 @@ module.exports = v => ({
 
         },
 
-    }
+    },
+
+    '.cmpFormList': {
+        border: [1, 'solid', v.BORDER_COLOR],
+        position: 'relative',
+
+        '.cmpList': {
+            maxHeight: v.UNIT * 40,
+            overflow: 'auto',
+        },
+
+        '.cmpFormListToolbar': {
+            backgroundColor: v.SIDEBAR_AUX_TOOLBAR_BACKGROUND,
+            paddingRight: v.UNIT2,
+            paddingLeft: v.UNIT2,
+
+            '.uiIconButton': {
+                ...v.ICON_SIZE('small'),
+                '&.isDisabled': {
+                    opacity: 0.5,
+                },
+
+            },
+        },
+
+        '.cmpFormListNewButton': {...v.SVG('google:content/add_circle_outline', v.SIDEBAR_AUX_BUTTON_COLOR)},
+        '.cmpFormListEditButton': {...v.SVG('google:image/edit', v.SIDEBAR_AUX_BUTTON_COLOR)},
+        '.cmpFormListDeleteButton': {...v.SVG('google:action/delete_forever', v.SIDEBAR_AUX_BUTTON_COLOR)},
+        '.cmpFormListLinkButton': {...v.SVG('google:content/link', v.SIDEBAR_AUX_BUTTON_COLOR)},
+        '.cmpFormListUnlinkButton': {...v.SVG(__dirname + '/link_off_black_24dp', v.SIDEBAR_AUX_BUTTON_COLOR)},
+
+        '.cmpFormFileViewButton': {...v.SVG('google:action/visibility', v.SIDEBAR_AUX_BUTTON_COLOR)},
+
+    },
+
+    '.cmpFormDrawGeometryButton': {
+        border: [1, 'solid', v.BORDER_COLOR],
+        ...v.ICON_SIZE('medium'),
+        ...v.SVG(__dirname + '/draw_black_24dp', v.TEXT_COLOR),
+        '&.isActive': {
+            ...v.SVG(__dirname + '/draw_black_24dp', v.FOCUS_COLOR),
+        }
+    },
+
+    '.cmpFormEditGeometryButton': {
+        border: [1, 'solid', v.BORDER_COLOR],
+        ...v.ICON_SIZE('medium'),
+        ...v.SVG(__dirname + '/cursor', v.TEXT_COLOR),
+    },
+
+
+
 
 
 });

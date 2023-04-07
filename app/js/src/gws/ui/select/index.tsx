@@ -172,6 +172,125 @@ export class Select extends base.Control<SelectProps, SelectState> {
 
 //
 
+interface SuggestProps extends base.InputProps<string> {
+    items: Array<ListItem>;
+    withCombo?: boolean;
+    withClear?: boolean;
+    maxDisplayItems?: number;
+    leftButton?: (it: ListItem) => React.ReactNode;
+    rightButton?: (it: ListItem) => React.ReactNode;
+    text: string;
+    whenTextChanged: (v: string) => void;
+}
+
+export class Suggest extends base.Control<SuggestProps> {
+    render() {
+        let value = '';
+
+        if (this.props.withCombo) {
+            value = this.props.value || '';
+        } else {
+            if (this.state.hasFocus) {
+                value = this.props.text || '';
+            } else {
+                value = textFor(this.props.items, this.props.value);
+            }
+        }
+
+        let inputProps = {
+            value,
+            onKeyDown: e => this.onInputKeyDown(e),
+            onChange: e => this.onInputChange(e),
+            disabled: this.props.disabled,
+            className: 'uiRawInput',
+            tabIndex: 0,
+            ref: this.focusRef,
+            title: this.props.tooltip || '',
+            placeholder: this.props.placeholder || '',
+            autoComplete: '__' + Math.random(),
+            onClick: e => this.onInputClick(e),
+        };
+
+
+        return <base.Content of={this} withClass="uiSelect">
+            <base.Box>
+                <input {...inputProps}/>
+
+                {this.props.withClear && <Touchable
+                    className={'uiClearButton' + (util.empty(inputProps.value) ? ' isHidden' : '')}
+                    whenTouched={e => this.onClearClick(e)}/>
+                }
+
+                <Touchable
+                    className="uiDropDownToggleButton"
+                    whenTouched={e => this.onToggleClick(e)}/>
+
+            </base.Box>
+
+            <base.DropDown>
+                <ListBox
+                    value={this.props.value}
+                    items={this.props.items}
+                    maxDisplayItems={this.props.maxDisplayItems}
+                    leftButton={this.props.leftButton}
+                    rightButton={this.props.rightButton}
+                    whenSelected={val => this.whenListSelected(val)}
+                    withFlatten={Boolean(this.props.text)}
+                    withScroll='parentTop'
+                />
+            </base.DropDown>
+        </base.Content>
+    }
+
+    //
+
+    protected onInputChange(e: React.SyntheticEvent<HTMLInputElement>) {
+        let text = e.currentTarget.value;
+        this.setOpen(true);
+        this.props.whenTextChanged(text);
+    }
+
+    protected onInputClick(e) {
+        this.setOpen(true);
+    }
+
+    protected onInputKeyDown(e) {
+    }
+
+    protected onClearClick(e) {
+        this.grabFocus();
+        this.props.whenTextChanged('');
+    }
+
+    protected onToggleClick(e) {
+        this.grabFocus();
+        this.toggleOpen();
+    }
+
+    protected whenListSelected(val) {
+        this.grabFocus();
+        this.setOpen(false);
+        this.setChanged(val);
+        this.focusRef.current.blur();
+    }
+
+    //
+
+    protected setChanged(val) {
+        if (this.props.whenChanged)
+            this.props.whenChanged(val);
+    }
+
+    protected whenFocusChanged(on) {
+        if (!this.props.withCombo)
+            this.props.whenTextChanged('');
+    }
+}
+
+
+
+//
+
 interface ListProps extends base.InputProps<string> {
     items: Array<ListItem>;
     leftButton?: (it: ListItem) => React.ReactNode;

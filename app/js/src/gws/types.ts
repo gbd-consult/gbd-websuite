@@ -90,6 +90,7 @@ export interface IController {
 
     canInit(): boolean;
     init();
+    getValue(key: string): any;
     update(args: any);
     updateObject(key: string, arg: object);
     touched();
@@ -156,6 +157,7 @@ export interface ILayer {
     changed();
     beforeDraw();
     reset();
+    forceUpdate();
 }
 
 export interface IFeatureLayer extends ILayer {
@@ -382,8 +384,8 @@ export interface IFeature {
     shape?: api.base.shape.Props;
 
     getProps(depth?: number): api.core.FeatureProps;
-    getAttribute(name: string): any;
-    getEditedAttribute(name: string): any;
+    getAttribute(name: string, defaultValue?): any;
+    getEditedAttribute(name: string, defaultValue?): any;
 
     setProps(props: api.core.FeatureProps): IFeature;
     setAttributes(attributes: Dict): IFeature;
@@ -392,12 +394,7 @@ export interface IFeature {
     setSelected(f: boolean): IFeature;
 
     redraw(): IFeature;
-
-    isSame(feature: IFeature): Boolean;
     clone(): IFeature;
-
-    resetEdits();
-    commitEdits();
 
     whenGeometryChanged();
 
@@ -437,8 +434,8 @@ export interface IModelRegistry {
     modelForLayer(layer: ILayer): IModel|null;
     editableModels(): Array<IModel>;
     defaultModel(): IModel;
-    featureFromProps(map: IMapManager, props: api.core.FeatureProps): IFeature;
-    featureListFromProps(map: IMapManager, propsList: Array<api.core.FeatureProps>): Array<IFeature>;
+    featureFromProps(props: api.core.FeatureProps): IFeature;
+    featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<IFeature>;
 
 }
 
@@ -453,30 +450,32 @@ export interface IModel {
     geometryType: core.GeometryType
     keyName: string;
     layerUid: string;
-    registry: ModelRegistry;
-    uid: string;
-    title: string;
     loadingStrategy: api.core.FeatureLoadingStrategy;
+    title: string;
+    uid: string;
 
+    registry: ModelRegistry;
     layer?: IFeatureLayer;
+
     getField(name: string): IModelField | null;
 
-    featureWithAttributes(map: IMapManager, attributes: Dict): IFeature;
-    featureFromGeometry(map: IMapManager, geom: ol.geom.Geometry): IFeature;
-    featureFromProps(map: IMapManager, props: api.core.FeatureProps): IFeature;
-    featureListFromProps(map: IMapManager, propsList: Array<api.core.FeatureProps>): Array<IFeature>;
+    featureWithAttributes(attributes: Dict): IFeature;
+    featureFromGeometry(geom: ol.geom.Geometry): IFeature;
+    featureFromProps(props: api.core.FeatureProps): IFeature;
+    featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<IFeature>;
 
-    featureProps(feature: IFeature, depth?: number): api.core.FeatureProps;
+    featureProps(feature: IFeature, relationDepth?: number): api.core.FeatureProps;
 }
 
 export interface IModelRelation {
-    type: string;
-    model: IModel;
+    modelUid: string;
     fieldName?: string;
+    discriminator?: string;
     title?: string;
 }
 
 export interface IModelField {
+    uid: string;
     name: string;
     type: string;
     attributeType: api.core.AttributeType;
@@ -490,17 +489,15 @@ export interface IModelField {
 }
 
 export interface IModelWidget extends IController {
-    type: string;
-    createView(props: ModelWidgetProps): React.ReactElement;
+    view(props: Dict): React.ReactElement;
 }
 
 export interface ModelWidgetProps {
     controller: IModelWidget;
     feature: IFeature;
     field: IModelField;
-    options: Dict;
     values: Dict;
-    readOnly: boolean;
-    when: (event: string, widget: IModelWidget, field: IModelField, value: any) => void;
+    whenChanged?: (value: any) => void;
+    whenEntered?: (value: any) => void;
 }
 

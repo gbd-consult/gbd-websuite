@@ -169,18 +169,6 @@ export class VBox extends base.Pure<{}> {
         let cls = util.className('uiVBox');
         return <div className={cls}>{this.props.children}</div>
     }
-
-    // protected get style() {
-    //     let s: any = {};
-    //
-    //     if (this.props.top)
-    //         s.alignItems = 'flex-start';
-    //
-    //     if (this.props.bottom)
-    //         s.alignItems = 'flex-end';
-    //
-    //     return s;
-    // }
 }
 
 

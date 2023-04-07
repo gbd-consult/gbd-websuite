@@ -7,14 +7,20 @@ class View extends gws.View<gws.types.ModelWidgetProps> {
         let field = this.props.field;
         let value = this.props.values[field.name];
         return <gws.ui.TextInput
+            disabled={field.widgetProps.readOnly}
             value={gws.lib.isEmpty(value) ? '' : String(value)}
-            whenChanged={v => this.props.when('changed', this.props.controller, field, v)}
-            whenEntered={v => this.props.when('entered', this.props.controller, field, v)}
-            disabled={this.props.readOnly}
+            whenChanged={this.props.whenChanged}
+            whenEntered={this.props.whenEntered}
         />
     }
 }
 
+class Controller extends gws.Controller {
+    view(props) {
+        return this.createElement(View, props)
+    }
+}
+
 gws.registerTags({
-    'ModelWidget.input': View,
+    'ModelWidget.input': Controller,
 })

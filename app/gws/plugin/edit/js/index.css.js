@@ -108,6 +108,17 @@ module.exports = v => {
             ...v.SIDEBAR_AUX_BUTTON('google:action/delete')
         },
 
+        // dialogs
+
+        '.uiDialog.editSelectFeatureDialog': {
+            [v.MEDIA('large+')]: {
+                ...v.CENTER_BOX(400, 600),
+            },
+            '.uiControlBox': {
+                border: 0
+            },
+        },
+
 
         // geometry styles
 

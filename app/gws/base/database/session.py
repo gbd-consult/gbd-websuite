@@ -1,32 +1,44 @@
+import sqlalchemy as sa
 import sqlalchemy.orm as saorm
-import sqlalchemy.sql as sasql
 
 import gws
 
 
 class Object(gws.IDatabaseSession):
 
-    def __init__(self, provider: gws.IDatabaseProvider, sess: saorm.Session):
+    def __init__(self, provider: gws.IDatabaseProvider):
         self.provider = provider
-        self.sa = sess
+        self.saSession = saorm.Session(
+            provider.engine(),
+            autoflush=False,
+            autobegin=False
+        )
+        self.nested = 0
 
     def __enter__(self):
+        gws.log.debug(f'session enter: {self.provider.uid!r}: {self.nested=}')
+        if self.nested == 0:
+            self.saSession.begin()
+        self.nested += 1
         return self
 
     def __exit__(self, type_, value, traceback):
-        self.sa.close()
+        self.nested -= 1
+        if self.nested == 0:
+            self.saSession.close()
+        gws.log.debug(f'session exit: {self.provider.uid!r}: {self.nested=}')
 
     def begin(self):
-        return self.sa.begin()
+        return self.saSession.begin()
 
     def commit(self):
-        return self.sa.commit()
+        return self.saSession.commit()
 
     def rollback(self):
-        return self.sa.rollback()
+        return self.saSession.rollback()
 
-    def execute(self, stmt: sasql.Executable, params=None, **kwargs):
-        return self.sa.execute(stmt, params, **kwargs)
+    def execute(self, stmt: sa.sql.Executable, params=None, **kwargs):
+        return self.saSession.execute(stmt, params, **kwargs)
 
     def describe(self, table_name: str):
         return self.provider.mgr.describe(self, table_name)

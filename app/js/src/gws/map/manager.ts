@@ -152,10 +152,7 @@ export class MapManager implements types.IMapManager {
     }
 
     forceUpdate() {
-        this.walk(this.root, la => {
-            if (la.oLayer && la.oLayer.getSource())
-                la.oLayer.getSource().changed()
-        });
+        this.walk(this.root, la => la.forceUpdate())
     }
 
 
@@ -723,7 +720,7 @@ export class MapManager implements types.IMapManager {
 
     _readFeature(props) {
         let model = this.app.models.model(props.modelUid);
-        return model.featureFromProps(this, props)
+        return model.featureFromProps(props)
 
     }
 

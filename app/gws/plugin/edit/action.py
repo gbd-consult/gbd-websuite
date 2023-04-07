@@ -46,7 +46,8 @@ class QueryRequest(BaseRequest):
     extent: t.Optional[gws.Extent]
     featureUids: t.Optional[list[str]]
     keyword: t.Optional[str]
-    resolution: float
+    resolution: t.Optional[float]
+    relationDepth: t.Optional[int]
     shapes: t.Optional[list[gws.ShapeProps]]
     tolerance: t.Optional[str]
 
@@ -58,6 +59,10 @@ class FeatureRequest(BaseRequest):
 
 class FeatureResponse(gws.Response):
     feature: gws.FeatureProps
+
+
+class WriteResponse(gws.Response):
+    validationErrors: list[gws.ModelValidationError]
 
 
 class FeatureListResponse(gws.Response):
@@ -76,7 +81,7 @@ class Object(gws.base.action.Object):
             access=gws.Access.write,
             project=project,
             bounds=project.map.bounds,
-            tolerance=_DEFAULT_TOLERANCE
+            tolerance=_DEFAULT_TOLERANCE,
         )
 
         if p.extent:
@@ -90,6 +95,8 @@ class Object(gws.base.action.Object):
             search.keyword = p.keyword.strip()
         if p.featureUids:
             search.uids = p.featureUids
+        if p.relationDepth:
+            search.relationDepth = p.relationDepth
 
         for model_uid in p.modelUids:
             model = req.require_model(model_uid)
@@ -98,33 +105,34 @@ class Object(gws.base.action.Object):
             features = model.find_features(search, req.user)
             props.extend(self._feature_props(req, p, features))
 
+        gws.log.debug(f'editQueryFeatures: {p=} FOUND {len(props)}')
+
         return FeatureListResponse(features=props)
 
     @gws.ext.command.api('editWriteFeature')
-    def api_write_feature(self, req: gws.IWebRequester, p: FeatureRequest) -> FeatureResponse:
+    def api_write_feature(self, req: gws.IWebRequester, p: FeatureRequest) -> WriteResponse:
         model = req.require_model(p.modelUid)
-        features = [model.feature_from_props(p.feature, req.user)]
-        model.write_features(features, req.user)
-        props = self._feature_props(req, p, features)
-        return FeatureResponse(feature=props[0])
+        feature = model.feature_from_props(p.feature, req.user, relation_depth=1)
+        model.write_feature(feature, req.user)
+        return WriteResponse(validationErrors=feature.errors)
 
     @gws.ext.command.api('editInitFeature')
     def api_init_feature(self, req: gws.IWebRequester, p: FeatureRequest) -> FeatureResponse:
         model = req.require_model(p.modelUid)
         if not req.user.can_create(model):
             raise gws.base.web.error.Forbidden()
-        features = [model.feature_from_props(p.feature, req.user)]
+        features = [model.feature_from_props(p.feature, req.user, relation_depth=1)]
         props = self._feature_props(req, p, features)
         return FeatureResponse(feature=props[0])
 
     @gws.ext.command.api('editDeleteFeature')
-    def api_delete_feature(self, req: gws.IWebRequester, p: FeatureRequest) -> FeatureResponse:
+    def api_delete_feature(self, req: gws.IWebRequester, p: FeatureRequest) -> gws.Response:
         model = req.require_model(p.modelUid)
         if not req.user.can_delete(model):
             raise gws.base.web.error.Forbidden()
-        features = [model.feature_from_props(p.feature, req.user)]
-        model.delete_features(features, req.user)
-        return FeatureResponse(feature=None)
+        feature = model.feature_from_props(p.feature, req.user)
+        model.delete_feature(feature, req.user)
+        return gws.Response()
 
     ##
 
@@ -133,13 +141,11 @@ class Object(gws.base.action.Object):
             return []
 
         project = req.require_project(p.projectUid)
-        layer = t.cast(gws.ILayer, req.acquire(p.layerUid, gws.ext.object.layer))
         views = p.views or _DEFAULT_VIEWS
 
         templates = {}
-        props = []
 
-        for feature in features:
+        def _prepare(feature: gws.IFeature):
             feature.compute_values(gws.Access.read, req.user)
             feature.transform_to(project.map.bounds.crs)
 
@@ -159,9 +165,17 @@ class Object(gws.base.action.Object):
                 user=req.user,
                 layer=feature.model.parent)
 
-            props.append(gws.props(feature, req.user, self))
+            for a in feature.attributes.values():
+                if isinstance(a, gws.base.feature.Feature):
+                    _prepare(a)
+                elif isinstance(a, list) and a and isinstance(a[0], gws.base.feature.Feature):
+                    for f in a:
+                        _prepare(f)
 
-        return props
+        for f in features:
+            _prepare(f)
+
+        return [gws.props(f, req.user, self) for f in features]
 
     # def _apply_permissions_and_defaults(self, fe: t.IFeature, req: gws.IWebRequester, project, mode):
     #     env = t.Data(user=req.user, project=project)

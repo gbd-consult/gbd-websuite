@@ -192,7 +192,7 @@ export class Tool extends gws.Tool {
 
     createFeature(geom: ol.geom.Geometry) {
         this.layer.clear();
-        let f = this.app.models.defaultModel().featureFromGeometry(this.map, geom);
+        let f = this.app.models.defaultModel().featureFromGeometry(geom);
         this.layer.addFeature(f);
         this.layer.show();
         this.ixModify = this.map.modifyInteraction({

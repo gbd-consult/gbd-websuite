@@ -7,6 +7,7 @@ class Props(gws.Props):
     type: str
     options: dict
     readOnly: bool
+    uid: str
 
 
 class Config(gws.Config):
@@ -20,4 +21,5 @@ class Object(gws.Node, gws.IModelWidget):
             type=self.extType,
             options={},
             readOnly=False,
+            uid=self.uid,
         )

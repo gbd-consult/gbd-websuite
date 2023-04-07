@@ -14,21 +14,33 @@ gws.ext.new.modelField('geometry')
 
 
 class Config(gws.base.model.field.Config):
-    geometryType: t.Optional[gws.GeometryType]
-    crs: t.Optional[gws.CrsName]
+    geometryType: gws.GeometryType
+    crs: gws.CrsName
 
 
 class Props(gws.base.model.field.Props):
-    pass
+    geometryType: gws.GeometryType
 
 
 class Object(gws.base.model.field.Scalar):
     attributeType = gws.AttributeType.geometry
 
+    geometryType: gws.GeometryType
+    geometryCrs: gws.ICrs
+
     def configure(self):
         self.geometryType = self.cfg('geometryType')
-        if self.cfg('crs'):
-            self.geometryCrs = gws.gis.crs.get(self.cfg('crs'))
+        self.geometryCrs = gws.gis.crs.get(self.cfg('crs'))
+
+    def configure_widget(self):
+        if not super().configure_widget():
+            self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'geometry'})
+            return True
+
+    ##
+
+    def props(self, user):
+        return gws.merge(super().props(user), geometryType=self.geometryType)
 
     ##
 
@@ -48,7 +60,7 @@ class Object(gws.base.model.field.Scalar):
             shape = shape.transformed_to(self.geometryCrs)
             mod = t.cast(gws.base.database.model.Object, self.model)
             fld = sa.sql.cast(
-                getattr(mod.orm_class(), self.name),
+                getattr(mod.record_class(), self.name),
                 geosa.Geometry)
             sel.geometryWhere.append(sa.func.st_intersects(
                 fld,

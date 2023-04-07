@@ -7,16 +7,23 @@ class View extends gws.View<gws.types.ModelWidgetProps> {
         let field = this.props.field;
         let value = this.props.values[field.name];
         return <gws.ui.NumberInput
-            step={this.props.options.step || 1}
+            step={field.widgetProps.options.step || 1}
+            disabled={field.widgetProps.readOnly}
             locale={this.app.locale}
             value={gws.lib.isEmpty(value) ? null : Number(value)}
-            whenChanged={v => this.props.when('changed', this.props.controller, field, v)}
-            whenEntered={v => this.props.when('entered', this.props.controller, field, v)}
-            disabled={this.props.readOnly}
+            whenChanged={this.props.whenChanged}
+            whenEntered={this.props.whenEntered}
         />
     }
 }
 
+class Controller extends gws.Controller {
+    view(props) {
+        return this.createElement(View, props)
+    }
+}
+
+
 gws.registerTags({
-    'ModelWidget.float': View,
+    'ModelWidget.float': Controller,
 })

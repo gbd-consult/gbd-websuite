@@ -1,7 +1,9 @@
 import sqlalchemy as sa
+import sqlalchemy.orm as saorm
 import geoalchemy2 as geosa
 
 import gws
+import gws.base.database.model
 import gws.types as t
 
 
@@ -9,13 +11,22 @@ class ErrorValue:
     pass
 
 
+class Relation(gws.Data):
+    modelUid: str
+    fieldName: str = ''
+    discriminator: str = ''
+    title: str = ''
+
+
 class Props(gws.Props):
     attributeType: gws.AttributeType
-    geometryType: t.Optional[gws.GeometryType]
+    geometryType: gws.GeometryType
     name: str
+    relations: list[Relation]
     title: str
     type: str
     widget: gws.ext.props.modelWidget
+    uid: str
 
 
 class Config(gws.ConfigWithAccess):
@@ -47,6 +58,8 @@ class Config(gws.ConfigWithAccess):
     # permissions: t.Optional[FieldPermissions]
     # textSearch: t.Optional[FieldTextSearchConfig]
 
+
+##
 
 class Object(gws.Node, gws.IModelField):
 
@@ -104,11 +117,11 @@ class Object(gws.Node, gws.IModelField):
     def props(self, user):
         return Props(
             attributeType=self.attributeType,
-            geometryType=self.geometryType,
             name=self.name,
             title=self.title,
             type=self.extType,
-            widget=self.widget
+            widget=self.widget,
+            uid=self.uid,
         )
 
     ##
@@ -125,7 +138,7 @@ class Object(gws.Node, gws.IModelField):
     def py_to_prop(self, val):
         return val
 
-    def load_from_record(self, feature, record, user, **kwargs):
+    def load_from_record(self, feature, record, user, relation_depth=0, **kwargs):
         if hasattr(record, self.name):
             val = getattr(record, self.name)
             if val is not None:
@@ -133,50 +146,44 @@ class Object(gws.Node, gws.IModelField):
             if val is not None:
                 feature.attributes[self.name] = val
 
-    def load_from_data(self, feature, data, user, **kwargs):
-        if self.name in data.attributes:
-            val = data.attributes[self.name]
-            if val is not None:
-                val = self.prop_to_py(val)
-            if val is not None:
-                feature.attributes[self.name] = val
+    def load_from_data(self, feature, data, user, relation_depth=0, **kwargs):
+        val = data.attributes.get(self.name)
+        if val is not None:
+            val = self.prop_to_py(val)
+        if val is not None:
+            feature.attributes[self.name] = val
 
-    def load_from_props(self, feature, props, user, **kwargs):
-        if self.name in props.attributes:
-            val = props.attributes[self.name]
-            if val is not None:
-                val = self.prop_to_py(val)
-            if val is not None:
-                feature.attributes[self.name] = val
+    def load_from_props(self, feature, props, user, relation_depth=0, **kwargs):
+        val = props.attributes.get(self.name)
+        if val is not None:
+            val = self.prop_to_py(val)
+        if val is not None:
+            feature.attributes[self.name] = val
 
-    def _value_from_feature(self, feature: gws.IFeature):
+    def _value_to_write(self, feature: gws.IFeature):
         val = feature.attributes.get(self.name)
         if val is None:
             return False, None
-        if val == gws.ErrorValue:
+        if val is gws.ErrorValue:
             raise gws.Error(f'attempt to store an error value, field {feature.model.uid!r}.{self.name!r}, feature {feature.uid()!r}')
         return True, val
 
     def store_to_record(self, feature, record, user, **kwargs):
-        ok, val = self._value_from_feature(feature)
+        ok, val = self._value_to_write(feature)
         if ok:
-            setattr(record, self.name, self.py_to_db(val))
-
-    def store_to_data(self, feature, data, user, **kwargs):
-        ok, val = self._value_from_feature(feature)
-        if ok:
-            val = self.py_to_prop(val)
-            if isinstance(val, gws.Object):
-                val = gws.props(val, user, self)
-            data.attributes[self.name] = val
+            val = self.py_to_db(val)
+            if val is not None:
+                setattr(record, self.name, val)
 
     def store_to_props(self, feature, props, user, **kwargs):
-        ok, val = self._value_from_feature(feature)
+        ok, val = self._value_to_write(feature)
         if ok:
             val = self.py_to_prop(val)
-            if isinstance(val, gws.Object):
-                val = gws.props(val, user, self)
-            props.attributes[self.name] = val
+            if val is not None:
+            #     return
+            # if isinstance(val, gws.Object):
+            #     val = gws.props(val, user, self)
+                props.attributes[self.name] = val
 
     def compute(self, feature, access, user, **kwargs):
         val = self.fixedValues.get(access)
@@ -236,6 +243,10 @@ class Scalar(Object):
 
 
 ##
+
+
+##
+
 
 # @TODO this should be populated dynamically from available gws.ext.object.modelField types
 

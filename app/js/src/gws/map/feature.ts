@@ -90,14 +90,16 @@ export class Feature implements types.IFeature {
         return this.model.featureProps(this, depth);
     }
 
-    getAttribute(name: string): any {
-        return this.attributes[name];
+    getAttribute(name, defaultValue = null) {
+        if (name in this.attributes)
+            return this.attributes[name];
+        return defaultValue;
     }
 
-    getEditedAttribute(name: string): any {
+    getEditedAttribute(name, defaultValue = null) {
         if (this.editedAttributes && (name in this.editedAttributes))
             return this.editedAttributes[name];
-        return this.attributes[name];
+        return this.getAttribute(name, defaultValue);
     }
 
     //
@@ -118,14 +120,6 @@ export class Feature implements types.IFeature {
         return this.redraw();
     }
 
-    resetEdits() {
-        this.editedAttributes = {};
-    }
-
-    commitEdits() {
-        // this.originalAttributes = {...this.attributes};
-    }
-
     redraw() {
         if (this.oFeature)
             this.oFeature.changed();
@@ -133,10 +127,6 @@ export class Feature implements types.IFeature {
     }
 
     //
-
-    isSame(feature: types.IFeature) {
-        return feature.uid === this.uid;
-    }
 
     clone() {
         let f = new Feature(this.model, this.map)

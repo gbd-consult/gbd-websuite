@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-import sqlalchemy.orm as orm
+import sqlalchemy.orm as saorm
 import sqlalchemy.pool
 
 import gws
@@ -13,10 +13,6 @@ class Config(gws.Config):
 
     providers: list[gws.ext.config.databaseProvider]
     """database providers"""
-
-
-class _SaOrmBase:
-    feature: gws.IFeature
 
 
 class _SaRuntime:
@@ -116,7 +112,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             provider_uid, table_name = tuid
             provider = self.providers[provider_uid]
             tab = self.table(provider, table_name, cols.values())
-            cls = type('_SA_' + provider_uid + '_' + gws.to_uid(table_name), (_SaOrmBase,), {})
+            cls = type('FeatureRecord_' + provider_uid + '_' + gws.to_uid(table_name), (gws.FeatureRecord,), {})
             self.registry_for_provider(provider).map_imperatively(cls, tab)
             tuid_to_table[tuid] = tab
             tuid_to_class[tuid] = cls
@@ -142,7 +138,7 @@ class Object(gws.Node, gws.IDatabaseManager):
 
     def registry_for_provider(self, provider):
         if not self.rt.registries.get(provider.uid):
-            self.rt.registries[provider.uid] = orm.registry()
+            self.rt.registries[provider.uid] = saorm.registry()
         return self.rt.registries[provider.uid]
 
     def engine_for_provider(self, provider):
@@ -190,16 +186,14 @@ class Object(gws.Node, gws.IDatabaseManager):
     def session(self, provider, **kwargs):
         if not self.rt.sessions.get(provider.uid):
             gws.log.debug(f'db: create session for {provider.uid!r}')
-            self.rt.sessions[provider.uid] = session_module.Object(
-                provider,
-                orm.Session(self.engine_for_provider(provider), future=True, **kwargs))
+            self.rt.sessions[provider.uid] = session_module.Object(provider)
 
         return self.rt.sessions[provider.uid]
 
     def close_sessions(self):
         for provider_uid, sess in self.rt.sessions.items():
             gws.log.debug(f'db: close session for {provider_uid!r}')
-            sess.sa.close()
+            sess.saSession.close()
         self.rt.sessions = {}
 
     def autoload(self, sess, table_name):
@@ -253,7 +247,7 @@ class Object(gws.Node, gws.IDatabaseManager):
     }
 
     def _load_and_describe(self, sess, table_name, load_only):
-        ins = sa.inspect(getattr(sess, 'sa').connection())
+        ins = sa.inspect(sess.saSession.connection())
 
         schema, name = sess.provider.parse_table_name(table_name)
         if not ins.has_table(name, schema):
@@ -264,8 +258,6 @@ class Object(gws.Node, gws.IDatabaseManager):
 
         if load_only:
             return tab
-
-        ins = sa.inspect(getattr(sess, 'sa').connection())
 
         desc = gws.DataSetDescription(
             columns={},

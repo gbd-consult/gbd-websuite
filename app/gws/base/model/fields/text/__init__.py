@@ -20,18 +20,12 @@ class SearchType(t.Enum):
 
 class Search(gws.Data):
     type: SearchType
-    minLength: int
-    caseSensitive: bool
-
-
-class SearchConfig(gws.Config):
-    type: SearchType
     minLength: int = 0
     caseSensitive: bool = False
 
 
 class Config(gws.base.model.field.Config):
-    textSearch: t.Optional[SearchConfig]
+    textSearch: t.Optional[Search]
 
 
 class Props(gws.base.model.field.Props):
@@ -43,14 +37,7 @@ class Object(gws.base.model.field.Scalar):
     textSearch: t.Optional[Search]
 
     def configure(self):
-        self.textSearch = None
-        p = self.cfg('textSearch')
-        if p:
-            self.textSearch = Search(
-                type=p.get('type', SearchType.exact),
-                minLength=p.get('minLength', 0),
-                caseSensitive=p.get('caseSensitive', False),
-            )
+        self.textSearch = self.cfg('textSearch')
 
     def configure_widget(self):
         if not super().configure_widget():
@@ -70,7 +57,7 @@ class Object(gws.base.model.field.Scalar):
 
         mod = t.cast(gws.base.database.model.Object, self.model)
         fld = sa.sql.cast(
-            getattr(mod.orm_class(), self.name),
+            getattr(mod.record_class(), self.name),
             sa.String)
 
         if so.type == SearchType.exact:
