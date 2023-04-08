@@ -1,7 +1,8 @@
 import gws
 import gws.types as t
 
-from .. import provider, user
+
+from . import provider, user
 
 
 gws.ext.new.authProvider('system')
@@ -10,7 +11,7 @@ class Object(provider.Object):
     users: dict[str, user.User]
 
     def configure(self):
-        self.uid = 'gws.base.auth.providers.system'
+        self.uid = 'gws.base.auth.provider.system'
         self.users = {
             'guest': user.from_args(user.Guest, provider=self, localUid='guest', roles=[gws.ROLE_GUEST]),
             'system': user.from_args(user.System, provider=self, localUid='system'),

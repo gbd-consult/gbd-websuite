@@ -1,21 +1,22 @@
+"""HTTP Basic authorisation method."""
+
 import base64
 
 import gws
-import gws.types as t
-
-from .. import error, method
+import gws.base.auth.error
+import gws.base.auth.method
 
 gws.ext.new.authMethod('basic')
 
 
 # @TODO support WWW-Authenticate at some point
 
-class Config(method.Config):
+class Config(gws.base.auth.method.Config):
     """HTTP-basic authorization options"""
     pass
 
 
-class Object(method.Object):
+class Object(gws.base.auth.method.Object):
 
     def open_session(self, req):
         if self.secure and not req.isSecure:
@@ -32,7 +33,7 @@ class Object(method.Object):
             return True
 
         # if the header is provided, it has to be correct
-        raise error.LoginNotFound()
+        raise gws.base.auth.error.LoginNotFound()
 
     def close_session(self, req, res):
         self.auth.session_activate(req, None)

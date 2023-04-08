@@ -3,10 +3,11 @@
 import gws
 import gws.base.action
 import gws.base.web.error
+import gws.base.auth.user
 import gws.types as t
 
-from . import user
-from .methods import web
+from . import core
+
 
 gws.ext.new.action('auth')
 
@@ -20,7 +21,7 @@ class Props(gws.Props):
 
 
 class Response(gws.Response):
-    user: user.Props
+    user: gws.base.auth.user.Props
     mfaFrom: t.Optional[dict]
 
 
@@ -34,12 +35,12 @@ class MfaVerifyRequest(gws.Request):
 
 
 class Object(gws.base.action.Object):
-    webMethod: t.Optional[web.Object]
+    webMethod: t.Optional[core.Object]
 
     def configure(self):
         for m in self.root.app.authMgr.methods:
             if m.extType == 'web':
-                self.webMethod = t.cast(web.Object, m)
+                self.webMethod = t.cast(core.Object, m)
                 break
         if not self.webMethod:
             raise gws.Error('web authorization method required')

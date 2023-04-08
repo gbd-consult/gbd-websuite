@@ -1,26 +1,4 @@
-types = [
-    'action',
-    'application',
-    'authMethod',
-    'authProvider',
-    'authMfa',
-    'cli',
-    'databaseProvider',
-    'finder',
-    'helper',
-    'layer',
-    'legend',
-    'map',
-    'model',
-    'modelField',
-    'modelValidator',
-    'modelValue',
-    'modelWidget',
-    'owsProvider',
-    'owsService',
-    'project',
-    'template',
-]
+import os
 
 commands = [
     'api',
@@ -29,13 +7,20 @@ commands = [
     'cli',
 ]
 
-import os
+path = os.path.dirname(__file__) + '/types.txt'
+with open(path) as fp:
+    types = [s.strip() for s in fp.read().strip().split('\n')]
 
 path = os.path.dirname(__file__) + '/__init__.py'
 with open(path) as fp:
     text = fp.read().split('##')
 
 text = text[0].strip() + '\n\n##'
+
+text += f"\n\n\nTYPES = [\n"
+for t in types:
+    text += f'    "{t}",\n'
+text += ']\n'
 
 text += f"\n\nclass command:\n"
 for t in sorted(commands):

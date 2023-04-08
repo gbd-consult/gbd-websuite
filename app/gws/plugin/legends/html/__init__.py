@@ -1,21 +1,21 @@
+"""HTML legend."""
+
 import gws
+import gws.base.legend
 import gws.lib.image
 import gws.lib.mime
-import gws.types as t
-
-from ... import core
 
 gws.ext.new.legend('html')
 
 
-class Config(core.Config):
+class Config(gws.base.legend.Config):
     """HTML-based legend."""
 
     template: gws.ext.config.template
     """template for an HTML legend"""
 
 
-class Object(core.Object):
+class Object(gws.base.legend.Object):
     template: gws.ITemplate
 
     def configure(self):

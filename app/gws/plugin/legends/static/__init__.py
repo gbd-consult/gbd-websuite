@@ -1,20 +1,21 @@
+"""Static legend."""
+
 import gws
 import gws.lib.image
-import gws.types as t
+import gws.base.legend
 
-from ... import core
 
 gws.ext.new.legend('static')
 
 
-class Config(core.Config):
+class Config(gws.base.legend.Config):
     """Static legend."""
 
     path: gws.FilePath
     """path to the image file"""
 
 
-class Object(core.Object):
+class Object(gws.base.legend.Object):
     path: str
 
     def configure(self):

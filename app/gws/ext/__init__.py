@@ -43,6 +43,32 @@ def name(obj):
 
 ##
 
+
+TYPES = [
+    "action",
+    "application",
+    "authMethod",
+    "authProvider",
+    "authMfa",
+    "cli",
+    "databaseProvider",
+    "finder",
+    "helper",
+    "layer",
+    "legend",
+    "map",
+    "model",
+    "modelField",
+    "modelValidator",
+    "modelValue",
+    "modelWidget",
+    "owsProvider",
+    "owsService",
+    "project",
+    "template",
+]
+
+
 class command:
     class api(_methodTag): pass
     class cli(_methodTag): pass

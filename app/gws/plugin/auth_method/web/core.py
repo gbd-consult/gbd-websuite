@@ -1,13 +1,13 @@
+"""Web authorisation method."""
+
 import gws
+import gws.base.auth.method
 import gws.base.web.error
-
-import gws.types as t
-
-from .. import method
 
 gws.ext.new.authMethod('web')
 
-class Config(method.Config):
+
+class Config(gws.base.auth.method.Config):
     """Web-based authorization options"""
 
     cookieName: str = 'auth'
@@ -20,8 +20,7 @@ _ACTIVE = 'web:active'
 _DELETED = 'web:deleted'
 
 
-
-class Object(method.Object):
+class Object(gws.base.auth.method.Object):
     cookieName: str
     cookiePath: str
     deletedSession: gws.IAuthSession
@@ -152,7 +151,6 @@ class Object(method.Object):
     def mfa_start(self, sess):
         if not sess.user.pendingMfa:
             return
-
 
         mfa = self.authMgr.get_mfa(sess.user.pendingMfa.methodUid)
         mfa.start(sess.user)

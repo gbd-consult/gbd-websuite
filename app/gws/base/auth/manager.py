@@ -10,7 +10,8 @@ import gws.types as t
 
 from . import session
 from . import user as user_api
-from .stores import sqlite
+# @TODO
+import gws.plugin.auth_store.sqlite as sqlite
 
 SQLITE_STORE_PATH = gws.MISC_DIR + '/sessions8.sqlite'
 

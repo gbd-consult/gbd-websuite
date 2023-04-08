@@ -1,21 +1,21 @@
-import gws
-import gws.lib.image
-import gws.gis.ows
-import gws.types as t
+"""Remote legend."""
 
-from ... import core
+import gws
+import gws.base.legend
+import gws.gis.ows
+import gws.lib.image
 
 gws.ext.new.legend('remote')
 
 
-class Config(core.Config):
+class Config(gws.base.legend.Config):
     """External legend."""
 
     urls: list[gws.Url]
     """urls of externals legend images"""
 
 
-class Object(core.Object):
+class Object(gws.base.legend.Object):
     urls: list[str]
 
     def configure(self):
@@ -36,4 +36,4 @@ class Object(core.Object):
                 gws.log.exception(f'render_legend: download failed url={url!r}')
 
         # NB even if there's only one image, it's not a bad idea to run it through the image converter
-        return core.combine_outputs(gws.compact(lros), self.options)
+        return gws.base.legend.combine_outputs(gws.compact(lros), self.options)
