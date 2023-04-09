@@ -68,7 +68,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
 
         p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
-            corner=p.corner or 'lt',
+            corner=p.corner or gws.Corner.nw,
             tileSize=p.tileSize or 256,
         )
         crs = self.parentBounds.crs
@@ -87,28 +87,28 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
     def render(self, lri):
         return gws.base.layer.util.generic_raster_render(self, lri)
 
-    def mapproxy_config(self, mc, options=None):
-        # NB: qgis caps layers are always top-down
-        layers = reversed([sl.name for sl in self.sourceLayers])
-
-        source_uid = mc.source({
-            'type': 'wms',
-            'supported_srs': [self.sourceCrs.epsg],
-            'forward_req_params': ['DPI__gws'],
-            'concurrent_requests': self.root.app.cfg('server.qgis.maxRequests', default=0),
-            'req': {
-                'url': self.provider.url,
-                'map': self.provider.path,
-                'layers': ','.join(layers),
-                'transparent': True,
-            },
-            'wms_opts': {
-                'version': '1.3.0',
-            },
-
-            # add the file checksum to the config, so that the source and cache ids
-            # in the mpx config are recalculated when the file changes
-            '$hash': self.provider.project.sourceHash,
-        })
-
-        gws.base.layer.util.mapproxy_layer_config(self, mc, source_uid)
+    # def mapproxy_config(self, mc, options=None):
+    #     # NB: qgis caps layers are always top-down
+    #     layers = reversed([sl.name for sl in self.sourceLayers])
+    #
+    #     source_uid = mc.source({
+    #         'type': 'wms',
+    #         'supported_srs': [self.sourceCrs.epsg],
+    #         'forward_req_params': ['DPI__gws'],
+    #         'concurrent_requests': self.root.app.cfg('server.qgis.maxRequests', default=0),
+    #         'req': {
+    #             'url': self.provider.url,
+    #             'map': self.provider.path,
+    #             'layers': ','.join(layers),
+    #             'transparent': True,
+    #         },
+    #         'wms_opts': {
+    #             'version': '1.3.0',
+    #         },
+    #
+    #         # add the file checksum to the config, so that the source and cache ids
+    #         # in the mpx config are recalculated when the file changes
+    #         '$hash': self.provider.project.sourceHash,
+    #     })
+    #
+    #     gws.base.layer.util.mapproxy_layer_config(self, mc, source_uid)

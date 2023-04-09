@@ -3,7 +3,7 @@ projects+ {
     metadata.abstract "Cached `wmts` layer."
 
     map {
-        center {DEMO_DUESSELDORF_3857}
+        center {@demo_point_duesseldorf_3857}
         zoom.initScale 70000
     }
 

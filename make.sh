@@ -5,11 +5,6 @@ set -e
 CWD=$(pwd)
 BASE=$(dirname $(realpath $BASH_SOURCE))
 
-BUILD_DIR=$BASE/app/__build
-
-CLIENT_BUILDER=$BASE/app/js/helpers/index.js
-DOC_BUILDER=$BASE/doc/doc.py
-
 PYTHON=python3
 NODE=node
 
@@ -28,6 +23,7 @@ Commands:
     client              - build the production Client
     client-dev          - build the development Client
     client-dev-server   - start the Client dev server
+    demo-config         - generate the config for Demos
     doc                 - build the Docs
     doc-api             - build the API Docs
     doc-dev-server      - start the Doc dev server
@@ -48,6 +44,15 @@ fi
 
 COMMAND=$1
 shift
+
+if [ "$COMMAND" == "" ]; then
+    echo "invalid command, try make.sh -h for help"
+    exit 1
+fi
+
+CLIENT_BUILDER=$BASE/app/js/helpers/index.js
+DOC_BUILDER=$BASE/doc/doc.py
+BUILD_DIR=$BASE/app/__build
 
 MAKE_SPEC="$PYTHON $BASE/app/gws/spec/spec.py $BUILD_DIR"
 
@@ -71,6 +76,10 @@ case $COMMAND in
     ;;
   client-dev-server)
     $MAKE_SPEC && $NODE $CLIENT_BUILDER dev-server $@
+    ;;
+
+  demo-config)
+    $PYTHON $BASE/doc/demos/demo.py $@
     ;;
 
   doc)

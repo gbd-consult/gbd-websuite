@@ -3,7 +3,7 @@ projects+ {
     metadata.abstract "Flatten WMS groups with `flattenLayers`."
 
     map {
-        center {DEMO_DRESDEN_3857}
+        center {@demo_point_dresden_3857}
         zoom.initScale 70000
         zoom.maxScale 1000000
     }

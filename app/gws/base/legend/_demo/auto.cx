@@ -3,7 +3,7 @@ projects+ {
     metadata.abstract "For OWS and QGIS layers, legends are confgured automatically, unless specified otherwise."
 
     map {
-        center {DEMO_DUESSELDORF_3857}
+        center {@demo_point_duesseldorf_3857}
         zoom.initScale 15000
     }
 

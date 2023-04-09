@@ -52,7 +52,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         extent = p.extent or self.tileMatrixSet.matrices[0].extent
         self.sourceGrid = gws.TileGrid(
             bounds=gws.Bounds(crs=crs, extent=extent),
-            corner=p.corner or 'lt',
+            corner=p.corner or gws.Corner.nw,
             tileSize=p.tileSize or self.tileMatrixSet.matrices[0].tileWidth,
         )
         self.sourceGrid.resolutions = (
@@ -61,7 +61,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
 
         p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
-            corner=p.corner or 'lt',
+            corner=p.corner or gws.Corner.nw,
             tileSize=p.tileSize or 256,
         )
         crs = self.parentBounds.crs
@@ -105,9 +105,9 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
 
         sg = self.sourceGrid
 
-        if sg.corner == 'lt':
+        if sg.corner == gws.Corner.nw:
             origin = 'nw'
-        elif sg.corner == 'lb':
+        elif sg.corner == gws.Corner.sw:
             origin = 'sw'
         else:
             raise gws.Error(f'invalid grid corner {sg.corner!r}')

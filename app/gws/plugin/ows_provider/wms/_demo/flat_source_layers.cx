@@ -3,7 +3,7 @@ projects+ {
     metadata.abstract "Select specific source layers from a WMS service."
 
     map {
-        center {DEMO_DUESSELDORF_3857}
+        center {@demo_point_duesseldorf_3857}
         zoom.initScale 15000
     }
 

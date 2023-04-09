@@ -25,7 +25,7 @@ _GRID_DEFAULTS = gws.TileGrid(
         crs=gws.gis.crs.WEBMERCATOR,
         extent=gws.gis.crs.WEBMERCATOR_SQUARE,
     ),
-    corner='lt',
+    corner=gws.Corner.nw,
     tileSize=256,
 )
 
@@ -45,7 +45,7 @@ class Object(gws.base.layer.Object):
 
         p = self.cfg('sourceGrid', default=gws.Config())
         self.sourceGrid = gws.TileGrid(
-            corner=p.corner or 'lt',
+            corner=p.corner or gws.Corner.lt,
             tileSize=p.tileSize or 256,
         )
         crs = p.crs or gws.gis.crs.WEBMERCATOR
@@ -57,7 +57,7 @@ class Object(gws.base.layer.Object):
 
         p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
-            corner=p.corner or 'lt',
+            corner=p.corner or gws.Corner.nw,
             tileSize=p.tileSize or 256,
         )
         crs = self.parentBounds.crs
@@ -96,9 +96,9 @@ class Object(gws.base.layer.Object):
 
         sg = self.sourceGrid
 
-        if sg.corner == 'lt':
+        if sg.corner == gws.Corner.nw:
             origin = 'nw'
-        elif sg.corner == 'lb':
+        elif sg.corner == gws.Corner.sw:
             origin = 'sw'
         else:
             raise gws.Error(f'invalid grid corner {sg.corner!r}')

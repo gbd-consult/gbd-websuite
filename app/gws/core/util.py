@@ -559,8 +559,6 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
         The absolute path to the directory.
     """
 
-    print(f'>>>>>>>>>>> ensure_dir {dir_path=}')
-
     if base_dir:
         if os.path.isabs(dir_path):
             raise ValueError(f'cannot use an absolute path {dir_path!r} with a base dir')
@@ -583,8 +581,6 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
 
 
 def ensure_system_dirs():
-    for k, v in sorted(os.environ.items()):
-        print(k, v)
     ensure_dir(const.CONFIG_DIR)
     ensure_dir(const.LEGEND_CACHE_DIR)
     ensure_dir(const.LOG_DIR)

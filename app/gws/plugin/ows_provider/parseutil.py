@@ -210,7 +210,7 @@ def wgs_bounds(layer_el: gws.IXmlElement) -> t.Optional[gws.Bounds]:
             extent=gws.gis.extent.from_list(_parse_bbox(el)))
 
 
-def supported_crs(layer_el: gws.IXmlElement) -> list[gws.ICrs]:
+def supported_crs(layer_el: gws.IXmlElement, extra_crs_ids: list[str] = None) -> list[gws.ICrs]:
     """Enumerate supported CRS for a Layer/FeatureType element.
 
     For WMS, enumerates CRS/SRS and BoundingBox tags,
@@ -218,6 +218,7 @@ def supported_crs(layer_el: gws.IXmlElement) -> list[gws.ICrs]:
 
     Args:
         layer_el: 'Layer' or 'FeatureType' element.
+        extra_crs_ids: additional CRS ids.
 
     Returns:
         A list of ``Crs`` objects.
@@ -240,6 +241,8 @@ def supported_crs(layer_el: gws.IXmlElement) -> list[gws.ICrs]:
         for el in layer_el.findall(tag):
             if el.text:
                 crsids.add(el.text)
+
+    crsids.update(extra_crs_ids or [])
 
     return gws.compact(gws.gis.crs.get(s) for s in crsids)
 

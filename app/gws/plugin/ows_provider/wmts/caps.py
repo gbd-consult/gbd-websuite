@@ -49,11 +49,11 @@ def _layer(layer_el: gws.IXmlElement, tms_dct):
     sl.tileMatrixSets = [tms_dct[tid] for tid in sl.tileMatrixIds]
 
     extra_crsids = [tms.crs.srid for tms in sl.tileMatrixSets]
-    bounds, crs_list, wgs_ext = u.bounds_and_crs(layer_el, extra_crsids)
+    wgs_bounds = u.wgs_bounds(layer_el)
+    crs_list = u.supported_crs(layer_el, extra_crsids)
 
-    sl.supportedBounds = bounds
     sl.supportedCrs = crs_list or [gws.gis.crs.WGS84]
-    sl.wgsExtent = wgs_ext or gws.gis.crs.WGS84.wgsExtent
+    sl.wgsExtent = wgs_bounds.extent if wgs_bounds else gws.gis.crs.WGS84.wgsExtent
 
     sl.isImage = True
     sl.isVisible = True

@@ -1,7 +1,6 @@
-@let DEMO_DUESSELDORF_3857 = [753753, 6661615]
-@let DEMO_DUESSELDORF_25832 = [344371, 5677471]
-
-@let DEMO_DRESDEN_3857 = [1529461, 6631043]
+@def demo_point_duesseldorf_3857 = [753753, 6661615]
+@def demo_point_duesseldorf_25832 = [344371, 5677471]
+@def demo_point_dresden_3857 = [1529461, 6631043]
 
 @def demo_map(**kw)
 
@@ -39,17 +38,6 @@
     ]
 @end
 
-
-@def demo_databases
-    db.providers+ {
-        type "postgres"
-        database "YOUR-DATABASE"
-        host "YOUR-DATABASE-HOST"
-        password "YOUR-DATABASE-PASSWORD"
-        port YOUR-DATABASE-PORT
-        user "YOUR-DATABASE-USER"
-    }
-@end
 
 @def demo_web_site
     web.sites+ {
@@ -127,19 +115,16 @@
     }
 @end
 
-@def demo_local_config
-    @# insert your local config here
+@def demo_custom_config
+    @# insert your custom config here
 @end
 
 @def demo_init
     access "allow all"
 
     @demo_locales
-    @demo_databases
     @demo_web_site
     @demo_api
     @demo_client
-    @demo_local_config
+    @demo_custom_config
 @end
-
-

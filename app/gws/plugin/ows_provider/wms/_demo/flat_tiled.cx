@@ -3,7 +3,7 @@ projects+ {
     metadata.abstract "Tiled display of a WMS."
 
     map {
-        center {DEMO_DUESSELDORF_3857}
+        center {@demo_point_duesseldorf_3857}
         zoom.initScale 8000
         zoom.maxScale 15000
     }
