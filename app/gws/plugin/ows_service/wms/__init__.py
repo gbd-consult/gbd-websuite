@@ -74,10 +74,10 @@ class Object(core.Service):
 
         tree = self.layer_caps_tree(rd)
         if not tree.roots:
-            gws.log.warn(f'service={self.uid!r}: no layer root found')
+            gws.log.warning(f'service={self.uid!r}: no layer root found')
             raise gws.base.web.error.NotFound()
         if len(tree.roots) > 1:
-            gws.log.warn(f'service={self.uid!r}: multiple layer roots found')
+            gws.log.warning(f'service={self.uid!r}: multiple layer roots found')
             raise gws.base.web.error.NotFound()
 
         fmt = rd.req.param('format') or gws.lib.mime.get('xml')

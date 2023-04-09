@@ -107,7 +107,7 @@ def store_in_web_cache(url: str, img: bytes):
         gws.write_file_b(tmp, img)
         os.rename(tmp, path)
     except OSError:
-        gws.log.warn(f'store_in_web_cache FAILED path={path!r}')
+        gws.log.warning(f'store_in_web_cache FAILED path={path!r}')
 
 
 def _update_file_counts(entries):

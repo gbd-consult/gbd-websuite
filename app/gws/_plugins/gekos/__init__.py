@@ -124,7 +124,7 @@ class Object(gws.base.api.Action):
         f = self._find_alkis_feature(p)
 
         if not f:
-            gws.log.warn(f'gekos: not found {req.params!r}')
+            gws.log.warning(f'gekos: not found {req.params!r}')
             return gws.ContentResponse(mime='text/plain', content='error:')
 
         return gws.ContentResponse(
@@ -175,7 +175,7 @@ class Object(gws.base.api.Action):
 
         for rec in recs:
             if rec['uid'] in uids:
-                gws.log.warn(f"non-unique uid={rec['uid']!r} ignored")
+                gws.log.warning(f"non-unique uid={rec['uid']!r} ignored")
                 continue
             uids.add(rec['uid'])
 

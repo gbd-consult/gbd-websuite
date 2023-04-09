@@ -94,7 +94,7 @@ def _worker(root: gws.IRoot, job: gws.lib.job.Job):
     try:
         w.run()
     except gws.lib.job.PrematureTermination as e:
-        gws.log.warn(f'job={job.uid} TERMINATED {e.args!r}')
+        gws.log.warning(f'job={job.uid} TERMINATED {e.args!r}')
 
 
 _PAPER_COLOR = 'white'
@@ -214,7 +214,7 @@ class _Worker:
             for n, p in enumerate(mp.planes):
                 pp = self.prepare_plane(p)
                 if not pp:
-                    gws.log.warn(f'render plane {n} FAILED')
+                    gws.log.warning(f'render plane {n} FAILED')
                     continue
                 planes.append(pp)
 

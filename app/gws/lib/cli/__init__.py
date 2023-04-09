@@ -39,7 +39,7 @@ def fatal(msg):
     sys.exit(1)
 
 
-def warn(msg):
+def warning(msg):
     cprint('yellow', msg)
 
 

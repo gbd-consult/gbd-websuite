@@ -189,7 +189,7 @@ class Object(gws.Node, gws.IOwsProvider):
 
         # @TODO xyz
 
-        gws.log.warn(f'directRender not supported for {prov!r}')
+        gws.log.warning(f'directRender not supported for {prov!r}')
         return default
 
     def search_config(self, source_layers):
@@ -248,7 +248,7 @@ class Object(gws.Node, gws.IOwsProvider):
 
             return cfg
 
-        gws.log.warn(f'directSearch not supported for {prov!r}')
+        gws.log.warning(f'directSearch not supported for {prov!r}')
         return default
 
     _std_ows_params = {

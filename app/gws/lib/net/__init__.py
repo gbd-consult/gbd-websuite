@@ -236,7 +236,7 @@ def _get_text(content, encoding) -> str:
 
     # both failed, do utf8 with replace
 
-    gws.log.warn(f'decode failed')
+    gws.log.warning(f'decode failed')
     return str(content, encoding='utf8', errors='replace')
 
 
@@ -259,7 +259,7 @@ def _parse_content_type(headers):
     try:
         str(b'.', encoding=enc, errors='strict')
     except LookupError:
-        gws.log.warn(f'invalid content-type encoding {enc!r}')
+        gws.log.warning(f'invalid content-type encoding {enc!r}')
         return ctype, None
 
     return ctype, enc

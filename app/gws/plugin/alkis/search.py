@@ -531,7 +531,7 @@ class Object(gws.base.action.Object):
 
         for feature in res.features:
             if not feature.shape:
-                gws.log.warn(f'feature {feature.uid!r} has no shape')
+                gws.log.warning(f'feature {feature.uid!r} has no shape')
                 continue
             center = feature.shape.centroid
             pp.sections.append(gws.base.printer.core.Section(

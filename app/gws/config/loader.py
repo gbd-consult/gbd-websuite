@@ -54,7 +54,7 @@ def configure(
         for err in root_object.configErrors:
             _report(err)
 
-        gws.log.warn(f'CONFIGURATION ERRORS: {len(root_object.configErrors)}')
+        gws.log.warning(f'CONFIGURATION ERRORS: {len(root_object.configErrors)}')
 
         if not specs.manifest.withStrictConfig:
             return root_object
@@ -64,7 +64,7 @@ def configure(
         _report(exc.args)
 
     if specs.manifest.withFallbackConfig and fallback_config:
-        gws.log.warn(f'using fallback config')
+        gws.log.warning(f'using fallback config')
         return configure(config=fallback_config)
 
     raise gws.ConfigurationError('configuration failed')

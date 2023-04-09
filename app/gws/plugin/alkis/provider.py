@@ -62,14 +62,14 @@ class Object(gws.Node):
                 gws.log.debug(f'ALKIS sources in {db.uid!r} found')
                 self.has_source = True
             else:
-                gws.log.warn(f'ALKIS sources in {db.uid!r} NOT found')
+                gws.log.warning(f'ALKIS sources in {db.uid!r} NOT found')
 
             if index.ok(conn):
                 gws.log.debug(f'ALKIS indexes in {db.uid!r} found')
                 self.has_index = True
                 self.has_flurnummer = flurstueck.has_flurnummer(conn)
             else:
-                gws.log.warn(f'ALKIS indexes in {db.uid!r} NOT found')
+                gws.log.warning(f'ALKIS indexes in {db.uid!r} NOT found')
 
     # public index tools
 

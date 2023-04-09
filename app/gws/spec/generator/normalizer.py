@@ -49,7 +49,7 @@ def _expand_aliases(gen):
         if target in gen.aliases:
             return _exp(gen.aliases[target], stack + [target])
         if target.startswith(base.APP_NAME):
-            base.log.warn(f'unbound alias {target!r}')
+            base.log.warning(f'unbound alias {target!r}')
         return target
 
     new_aliases = {}
@@ -139,7 +139,7 @@ def _evaluate_defaults(gen):
         if typ and typ.c == base.C.ENUM and item in typ.enumValues:
             return typ.enumValues[item]
 
-        base.log.warn(f'invalid expression {value!r}')
+        base.log.warning(f'invalid expression {value!r}')
         return None
 
     for typ in gen.types.values():
@@ -316,7 +316,7 @@ def _make_props(gen):
             if super_typ:
                 props.update(_make(super_typ, stack + [typ.name]))
             elif sup.startswith(base.APP_NAME) and 'vendor' not in sup:
-                base.log.warn(f'unknown supertype {sup!r}')
+                base.log.warning(f'unknown supertype {sup!r}')
 
         if typ.name in own_props_by_name:
             _merge(typ, props, own_props_by_name[typ.name])
@@ -344,7 +344,7 @@ def _check_undefined(gen):
         if '._' in typ.name:
             # private type
             continue
-        base.log.warn(f'undefined type {typ.uid!r} in {typ.pos}')
+        base.log.warning(f'undefined type {typ.uid!r} in {typ.pos}')
 
 
 DOT = '.'

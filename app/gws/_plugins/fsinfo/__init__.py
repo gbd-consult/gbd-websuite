@@ -343,7 +343,7 @@ class Object(gws.base.api.Action):
             rp = gws.lib.os2.rel_path(path, base_dir)
             m = re.match(r'^(\d+)/', rp)
             if not m:
-                gws.log.warn(f'{path!r} - no pn found')
+                gws.log.warning(f'{path!r} - no pn found')
                 continue
             pn = m.group(1)
             if pn not in by_pn:

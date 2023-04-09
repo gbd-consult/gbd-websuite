@@ -108,7 +108,7 @@ class Object(gws.Node, gws.IApplication):
 
         self._devopts = self.cfg('developer') or {}
         if self._devopts:
-            gws.log.warn('developer mode enabled')
+            gws.log.warning('developer mode enabled')
 
         self.webMiddlewareFuncs = {}
         self.webMiddlewareNames = self.cfg('middleware', default=_DEFAULT_MIDDLEWARE)

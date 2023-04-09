@@ -27,7 +27,7 @@ def from_json(s):
 def validate_geoms(conn, table):
     warnings = conn.validate_index_geoms(table)
     for w in warnings:
-        gws.log.warn('geometry error in %r: %s' % (table, w))
+        gws.log.warning('geometry error in %r: %s' % (table, w))
 
 
 def check_version(conn, table):
@@ -35,5 +35,5 @@ def check_version(conn, table):
     if ver == connection.INDEX_VERSION:
         gws.log.debug('index %r version %s, ok' % (table, ver))
         return True
-    gws.log.warn('index %r version %s, needs update' % (table, ver))
+    gws.log.warning('index %r version %s, needs update' % (table, ver))
     return False

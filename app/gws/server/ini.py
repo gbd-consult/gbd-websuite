@@ -79,8 +79,6 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     mapproxy_threads = root.app.cfg('server.mapproxy.threads')
     mapproxy_socket = gws.TMP_DIR + '/uwsgi.mapproxy.sock'
 
-    log = root.app.cfg('server.log.path') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
-
     nginx_log_level = 'info'
     if root.app.developer_option('nginx.log_level_debug'):
         nginx_log_level = 'debug'
@@ -89,21 +87,16 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     if root.app.developer_option('nginx.rewrite_log_on'):
         nginx_rewrite_log = 'on'
 
-    if log == 'syslog':
-        nginx_log = 'syslog:server=unix:/dev/log,nohostname,tag'
+    nginx_log = 'syslog:server=unix:/dev/log,nohostname,tag'
 
-        nginx_main_log = f'{nginx_log}=NGINX_MAIN'
-        nginx_qgis_log = f'{nginx_log}=NGINX_QGIS'
-        nginx_web_log = f'{nginx_log}=NGINX_WEB'
+    nginx_main_log = f'{nginx_log}=NGINX_MAIN'
+    nginx_qgis_log = f'{nginx_log}=NGINX_QGIS'
+    nginx_web_log = f'{nginx_log}=NGINX_WEB'
 
-        uwsgi_qgis_log = 'daemonize=true\nlogger=syslog:QGIS,local6'
-        uwsgi_web_log = 'daemonize=true\nlogger=syslog:WEB,local6'
-        uwsgi_mapproxy_log = 'daemonize=true\nlogger=syslog:MAPPROXY,local6'
-        uwsgi_spool_log = 'daemonize=true\nlogger=syslog:SPOOL,local6'
-
-    else:
-        nginx_main_log = nginx_qgis_log = nginx_web_log = log
-        uwsgi_qgis_log = uwsgi_web_log = uwsgi_mapproxy_log = uwsgi_spool_log = f'daemonize={log}'
+    uwsgi_qgis_log = 'daemonize=true\nlogger=syslog:QGIS,local6'
+    uwsgi_web_log = 'daemonize=true\nlogger=syslog:WEB,local6'
+    uwsgi_mapproxy_log = 'daemonize=true\nlogger=syslog:MAPPROXY,local6'
+    uwsgi_spool_log = 'daemonize=true\nlogger=syslog:SPOOL,local6'
 
     # be rude and reload 'em as fast as possible
     mercy = 5
@@ -143,7 +136,6 @@ def create(root: gws.IRoot, base_dir, pid_dir):
                 property(name="timestamp" dateFormat="mysql")
                 constant(value=" ")
                 property(name="syslogtag")
-                constant(value=" ")
                 property(name="msg" spifno1stsp="on")
                 property(name="msg" droplastlf="on")
                 constant(value="\\n")

@@ -121,7 +121,7 @@ def kill_pid(pid, sig_name='TERM'):
     except psutil.NoSuchProcess:
         return True
     except psutil.Error as e:
-        gws.log.warn(f'send_signal failed, pid={pid!r}, {e}')
+        gws.log.warning(f'send_signal failed, pid={pid!r}, {e}')
         return False
 
 

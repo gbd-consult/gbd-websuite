@@ -76,26 +76,26 @@ class Object(gws.base.auth.provider.Object):
 
     def authenticate(self, method: gws.IAuthMethod, login, password, **args):
         if not password.strip():
-            gws.log.warn('empty password, continue')
+            gws.log.warning('empty password, continue')
             return None
 
         with self._connection() as ld:
             user_data = self._find_user(ld, {self.login_attr: login})
             if not user_data:
-                gws.log.warn('user not found, continue')
+                gws.log.warning('user not found, continue')
                 return None
 
             # check for AD disabled accounts
             uac = str(user_data.get('userAccountControl', ''))
             if uac and uac.isdigit():
                 if int(uac) & _MS_ACCOUNTDISABLE:
-                    gws.log.warn('ACCOUNTDISABLE on, FAIL')
+                    gws.log.warning('ACCOUNTDISABLE on, FAIL')
                     raise gws.base.auth.error.AccessDenied()
 
             try:
                 ld.simple_bind_s(user_data['dn'], password)
             except ldap.INVALID_CREDENTIALS:
-                gws.log.warn('wrong password, FAIL')
+                gws.log.warning('wrong password, FAIL')
                 raise gws.base.auth.error.WrongPassword()
             except ldap.LDAPError:
                 gws.log.error('generic fault, FAIL')

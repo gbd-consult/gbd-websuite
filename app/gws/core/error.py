@@ -12,20 +12,21 @@ class ConfigurationError(Error):
     pass
 
 
-def to_string_list(exc):
+def to_string_list(exc: Exception) -> list:
+    """Exception backtrace as a list of strings."""
+
     head = _name(exc)
-    msg = _message(exc, chain=True)
-    if msg:
-        head += ': ' + msg
+    messages = []
 
     lines = []
     pfx = ''
 
     while exc:
         subhead = _name(exc)
-        msg = _message(exc, chain=False)
+        msg = _message(exc)
         if msg:
             subhead += ': ' + msg
+            messages.append(msg)
         if pfx:
             subhead = pfx + ' ' + subhead
 
@@ -43,32 +44,30 @@ def to_string_list(exc):
         else:
             break
 
+    if messages:
+        head += ': ' + messages[0]
     if lines:
         head += ' ' + lines[1].strip()
 
-    return [head] + lines
+    lines.insert(0, head)
+    return lines
 
+
+##
 
 def _name(exc):
-    t = type(exc) or Exception
-    if t == Error:
-        return 'gws.Error'
-    if t == ConfigurationError:
-        return 'gws.ConfigurationError'
-    name = getattr(t, '__name__', '')
-    mod = getattr(t, '__module__', '')
+    typ = type(exc) or Exception
+    if typ == Error:
+        return 'Error'
+    name = getattr(typ, '__name__', '')
+    mod = getattr(typ, '__module__', '')
     if mod in {'exceptions', 'builtins'}:
         return name
     return mod + '.' + name
 
 
-def _message(exc, chain=False):
-    while exc:
-        try:
-            return repr(exc.args[0])
-        except:
-            pass
-        if not chain:
-            break
-        exc = exc.__cause__
-    return ''
+def _message(exc):
+    try:
+        return repr(exc.args[0])
+    except:
+        return ''

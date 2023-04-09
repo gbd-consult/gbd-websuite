@@ -109,7 +109,7 @@ def _all_buchungsblatt(conn: AlkisConnection):
 
 def _make_list(stellen, stelle, seen_ids):
     if stelle['gml_id'] in seen_ids:
-        gws.log.warn('circular dependency: ' + stelle['gml_id'])
+        gws.log.warning('circular dependency: ' + stelle['gml_id'])
         return []
 
     slist = [stelle]
@@ -154,7 +154,7 @@ def _all_buchungsstelle(conn: AlkisConnection):
             if gml_id is None:
                 continue
             if gml_id not in stellen:
-                gws.log.warn(f'invalid "an" reference: {gml_id!r}')
+                gws.log.warning(f'invalid "an" reference: {gml_id!r}')
                 continue
             target = stellen[gml_id]
             if '_an' not in target:

@@ -85,7 +85,7 @@ class Object(gws.base.template.Object):
 
     def _do_render(self, text, args, parser, runtime):
         def err(e, path, line, env):
-            gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
+            gws.log.warning(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
         if self.root.app.developer_option('template.raise_errors'):
             err = None

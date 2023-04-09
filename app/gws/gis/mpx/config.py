@@ -177,10 +177,10 @@ def create_and_save(root: gws.IRoot):
     if not cfg:
         force = root.app.cfg('server.mapproxy.forceStart')
         if force:
-            gws.log.warn('mapproxy: no configuration, using default')
+            gws.log.warning('mapproxy: no configuration, using default')
             cfg = DEFAULT_CONFIG
         else:
-            gws.log.warn('mapproxy: no configuration, not starting')
+            gws.log.warning('mapproxy: no configuration, not starting')
             gws.lib.osx.unlink(CONFIG_PATH)
             return
 

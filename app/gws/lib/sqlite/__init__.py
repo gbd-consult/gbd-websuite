@@ -39,7 +39,7 @@ class _ConnectionWrapper:
                 return self._conn.execute(sql, parameters or [])
             except sqlite3.OperationalError as e:
                 if 'locked' in e.args[0]:
-                    gws.log.warn(f'SQLITE: db={self._database} retry={retry} {e.args[0]} ')
+                    gws.log.warning(f'SQLITE: db={self._database} retry={retry} {e.args[0]} ')
                     time.sleep(_LOCK_WAIT_TIME)
                 else:
                     raise

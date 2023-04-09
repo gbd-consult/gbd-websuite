@@ -549,12 +549,12 @@ def find(conn: AlkisConnection, query: dict):
             nums = []
             for s in val.replace(';', ' ').replace(',', ' ').strip().split():
                 if not s.isdigit():
-                    gws.log.warn('invalid bblatt', val)
+                    gws.log.warning('invalid bblatt', val)
                     return 0, []
                 nums.append(s)
 
             if not nums:
-                gws.log.warn('invalid bblatt', val)
+                gws.log.warning('invalid bblatt', val)
                 return 0, []
 
             bbmode = query.get('bblattMode', 'any')
@@ -574,7 +574,7 @@ def find(conn: AlkisConnection, query: dict):
         elif key == 'vnum':
             d = _parse_vollnummer(val)
             if not d:
-                gws.log.warn('invalid vnum', val)
+                gws.log.warning('invalid vnum', val)
                 return 0, []
             for k, v in d:
                 where.append(gws.Sql('FS.{:name}={}', k, v))
@@ -582,7 +582,7 @@ def find(conn: AlkisConnection, query: dict):
         elif key in {'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge'}:
             v = _parse_vollnummer_element(key, val)
             if v is None:
-                gws.log.warn(f'invalid element {key!r}', val)
+                gws.log.warning(f'invalid element {key!r}', val)
                 return 0, []
             where.append(gws.Sql('FS.{:name}={}', key, v))
 

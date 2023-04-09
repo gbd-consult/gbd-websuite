@@ -117,7 +117,7 @@ class _Logger:
 
     def error(self, *args): self.log('ERROR', *args)
 
-    def warn(self, *args): self.log('WARNING', *args)
+    def warning(self, *args): self.log('WARNING', *args)
 
     def info(self, *args): self.log('INFO', *args)
 

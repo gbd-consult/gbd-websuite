@@ -87,7 +87,7 @@ class Object(gws.base.api.Action):
             gws.ext.helper.alkis.Object,
             self.root.find_first('gws.ext.helper.alkis'))
         if not self.alkis or not self.alkis.has_index:
-            gws.log.warn('dprocon cannot init, no alkis index found')
+            gws.log.warning('dprocon cannot init, no alkis index found')
             return
 
     def api_connect(self, req: gws.IWebRequest, p: ConnectParams) -> ConnectResponse:
@@ -110,7 +110,7 @@ class Object(gws.base.api.Action):
         geom = self._selection_for_request(request_id)
 
         if not geom:
-            gws.log.warn(f'request {request_id!r} not found')
+            gws.log.warning(f'request {request_id!r} not found')
             raise gws.base.web.error.NotFound()
 
         self._populate_data_table()
