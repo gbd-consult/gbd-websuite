@@ -1,11 +1,7 @@
 # Developer Documentation :/dev-en
 
 
-## Overview
-
-### :models
-
-## Code structure
+## :overview
 
 ## Documentation
 

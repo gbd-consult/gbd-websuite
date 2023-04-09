@@ -236,6 +236,9 @@ nav {
 
 #sidebar-footer {
     background: black;
+    color: #736d6d;
+    padding: 10px;
+    font-size: 10px;
 }
 
 #sidebar-toc {
