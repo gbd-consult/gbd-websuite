@@ -12,7 +12,7 @@ let jadzia = require('./jadzia');
 
 //
 
-const DOC = `
+const USAGE = `
 GWS Client Builder
 ~~~~~~~~~~~~~~~~~~
 
@@ -27,11 +27,11 @@ Commands:
     
 Options:
 
-    --incremental   - do not clear the build directory
-    --locale        - dev server locale
-
-The builder expects the dev spec generator to be run 
-and uses the generated stuff from 'app/gws/spec/__build'
+    -incremental
+        do not clear the build directory
+    
+    -locale
+        dev server locale
 `;
 
 //
@@ -141,7 +141,12 @@ const JS_BUNDLE_TEMPLATE = `(${JS_BUNDLE_FUNCTION_MIN})([__MODULES__],"__STRINGS
 
 module.exports.Builder = class {
 
-    init() {
+    run(args) {
+        if (args.h || args.help) {
+            console.log(USAGE);
+            return;
+        }
+
         this.options = require(path.join(JS_DIR, 'options.js'));
         this.specs = require(path.join(SPEC_DIR, 'specs.json')); // see spec/generator/main
 
@@ -152,12 +157,9 @@ module.exports.Builder = class {
         this.chunks = [];
 
         this.tsConfigPath = path.join(JS_DIR, 'tsconfig.json');
-    }
 
-    run(args) {
-        switch (args.command) {
+        switch (args[0]) {
             case 'dev-server':
-                this.init();
                 this.locale = args.locale || DEFAULT_DEV_LOCALE;
                 if (!args.incremental)
                     clearBuild(this);
@@ -166,7 +168,6 @@ module.exports.Builder = class {
                 break;
 
             case 'dev':
-                this.init();
                 this.options.minify = false;
                 this.options.devVendors = true;
                 if (!args.incremental)
@@ -175,19 +176,17 @@ module.exports.Builder = class {
                 break;
 
             case 'production':
-                this.init();
                 this.options.minify = true;
                 clearBuild(this);
                 this.bundle();
                 break;
 
-            case 'clear':
-                this.init();
+            case 'clean':
                 clearBuild(this);
                 break;
 
             default:
-                console.log(DOC);
+                console.log('invalid command, try build.js -h for help');
                 break;
         }
     }
@@ -1024,7 +1023,6 @@ function readFile(p) {
 }
 
 function writeFile(p, s) {
-    logInfo(`writing ${p}`);
     return fs.writeFileSync(p, s, {encoding: 'utf8'})
 }
 

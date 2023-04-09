@@ -1,62 +1,62 @@
 """Docker builder for GWS and QGIS images."""
 
 import os
-import re
-import subprocess
 import sys
 
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../app'))
+
+import gws.lib.cli as cli
+
 USAGE = """
-Docker image builder
-~~~~~~~~~~~~~~~~~~~~
+GWS Image Builder
+~~~~~~~~~~~~~~~~~
   
-    python3 docker.py <options>
+    python3 image.py <type> <options>
+
+Type:
+    gws             - GWS server without QGIS    
+    gws-qgis        - GWS server with Release QGIS
+    gws-qgis-debug  - GWS server with Debug QGIS
+    qgis            - QGIS Release server
+    qgis-debug      - QGIS Debug server
 
 Options:
-    
-    -image <image-type>
-        Image type is one of:
-            gws             - GWS server without QGIS    
-            gws-qgis        - GWS server with Release QGIS
-            gws-qgis-debug  - GWS server with Debug QGIS
-            qgis            - QGIS Release server
-            qgis-debug      - QGIS Debug server
-            
-    [-qgis <qgis-version>]
+
+    -appdir <dir>
+        app directory to copy to "/gws-app" in the image, defaults to the current source directory
+
+    -arch <architecture>
+        image architecture (amd64 or arm64) 
+
+    -base <image-name>
+        base image, defaults to 'ubuntu'
+
+    -datadir <dir>
+        data directory (default projects) to copy to "/data" in the image
+
+    -name <name>
+        custom image name 
+
+    -prep
+        prepare the build, but don't run it
+
+    -print
+        just print the Dockerfile, do not build
+
+    -qgis <qgis-version>
         QGIS version to include, eg. -qgis 3.25
         The builder looks for QGIS server tarballs on 'gws-files.gbd-consult.de', 
         see the subdirectory './qgis/compile' on how to create a QGIS tarball.      
-    
-    [-arch <architecture>]
-        image architecture (amd64 or arm64) 
 
-    [-base <image-name>]
-        base image, defaults to 'ubuntu'
-        
-    [-appdir <dir>]
-        app directory to copy to "/gws-app" in the image, defaults to the current source directory
-
-    [-datadir <dir>]
-        data directory (default projects) to copy to "/data" in the image
-        
-    [-name <name>]
-        custom image name 
-        
-    [-print]
-        just print the Dockerfile, do not build
-        
-    [-prep]
-        prepare the build, but don't run it
-        
-    [-vendor <vendor-name>]
+    -vendor <vendor-name>
         vendor name for the Dockerfile
 
-    [-version <version>]
+    -version <version>
         override image version
 
 Example:
 
-    python3 docker.py -image gws-qgis-debug -qgis 3.28 -arch amd64 -name my-test-image -datadir my_projects/data
-
+    python3 image.py gws-qgis-debug -qgis 3.28 -arch amd64 -name my-test-image -datadir my_project/data
 """
 
 
@@ -93,13 +93,10 @@ class Builder:
     build_dir = os.path.abspath(f'{gws_dir}/../docker')
 
     def __init__(self, args):
-        if not args or 'h' in args or 'help' in args:
-            exit_help()
-
         try:
-            self.gws_version = read_file(f'{self.gws_dir}/VERSION')
+            self.gws_version = cli.read_file(f'{self.gws_dir}/VERSION')
         except FileNotFoundError:
-            self.gws_version = read_file(f'{self.gws_dir}/app/VERSION')
+            self.gws_version = cli.read_file(f'{self.gws_dir}/app/VERSION')
         self.gws_short_version = self.gws_version.rpartition('.')[0]
 
         self.args = args
@@ -110,9 +107,9 @@ class Builder:
         self.datadir = args.get('data')
         self.vendor = args.get('vendor') or self.vendor
 
-        self.image_name = args.get('image')
+        self.image_name = args.get(1)
         if not self.image_name or self.image_name not in self.image_types:
-            exit_help('image type missing')
+            cli.fatal('invalid image type')
 
         self.image_kind, self.debug_mode, self.with_qgis = self.image_types[self.image_name]
 
@@ -126,11 +123,11 @@ class Builder:
         self.image_full_name = args.get('name') or self.default_image_full_name()
         self.image_description = self.default_image_description()
 
-        self.qgis_apts = lines(read_file(f'{self.this_dir}/qgis/docker/apt.lst'))
-        self.gws_apts = lines(read_file(f'{self.this_dir}/apt.lst'))
+        self.qgis_apts = lines(cli.read_file(f'{self.this_dir}/qgis/docker/apt.lst'))
+        self.gws_apts = lines(cli.read_file(f'{self.this_dir}/apt.lst'))
 
-        self.qgis_pips = lines(read_file(f'{self.this_dir}/qgis/docker/pip.lst'))
-        self.gws_pips = lines(read_file(f'{self.this_dir}/pip.lst'))
+        self.qgis_pips = lines(cli.read_file(f'{self.this_dir}/qgis/docker/pip.lst'))
+        self.gws_pips = lines(cli.read_file(f'{self.this_dir}/pip.lst'))
 
         self.exclude_file = f'{self.gws_dir}/.package_exclude'
 
@@ -156,42 +153,42 @@ class Builder:
 
         self.prepare()
         if self.args.get('prep'):
-            print('[docker.py] prepared, now run:')
+            cli.info('prepared, now run:')
             print(cmd)
             return
 
-        run(cmd)
+        cli.run(cmd)
 
     def prepare(self):
         os.chdir(self.this_dir)
         if not os.path.isdir(self.build_dir):
-            run(f'mkdir -p {self.build_dir}')
+            cli.run(f'mkdir -p {self.build_dir}')
         os.chdir(self.build_dir)
 
         if self.with_qgis:
             if not os.path.isfile(f'{self.qgis_package}.tar.gz'):
-                run(f"curl -sL '{self.qgis_url}' -o {self.qgis_package}.tar.gz")
+                cli.run(f"curl -sL '{self.qgis_url}' -o {self.qgis_package}.tar.gz")
             if not os.path.isdir(self.qgis_package):
-                run(f"tar -xzf {self.qgis_package}.tar.gz")
+                cli.run(f"tar -xzf {self.qgis_package}.tar.gz")
             if not os.path.isdir(f'{self.qgis_package}/usr/share/{self.alkisplugin_package}'):
-                run(f"curl -sL '{self.alkisplugin_url}' -o {self.alkisplugin_package}.tar.gz")
-                run(f"tar -xzf {self.alkisplugin_package}.tar.gz")
-                run(f"mv {self.alkisplugin_package} {self.qgis_package}/usr/share")
+                cli.run(f"curl -sL '{self.alkisplugin_url}' -o {self.alkisplugin_package}.tar.gz")
+                cli.run(f"tar -xzf {self.alkisplugin_package}.tar.gz")
+                cli.run(f"mv {self.alkisplugin_package} {self.qgis_package}/usr/share")
 
-            run(f'cp {self.this_dir}/qgis/docker/qgis-start* {self.build_dir}')
+            cli.run(f'cp {self.this_dir}/qgis/docker/qgis-start* {self.build_dir}')
 
         if not os.path.isfile(self.wkhtmltopdf_package):
-            run(f"curl -sL '{self.wkhtmltopdf_url}' -o {self.wkhtmltopdf_package}")
+            cli.run(f"curl -sL '{self.wkhtmltopdf_url}' -o {self.wkhtmltopdf_package}")
 
         if self.appdir:
-            run(f"mkdir app && rsync -a --exclude-from {self.exclude_file} {self.appdir}/* app")
+            cli.run(f"mkdir app && rsync -a --exclude-from {self.exclude_file} {self.appdir}/* app")
         else:
-            run(f"make -C {self.gws_dir} package DIR={self.build_dir}")
+            cli.run(f"make -C {self.gws_dir} package DIR={self.build_dir}")
 
         if self.datadir:
-            run(f"mkdir data && rsync -a --exclude-from {self.exclude_file} {self.datadir}/* data")
+            cli.run(f"mkdir data && rsync -a --exclude-from {self.exclude_file} {self.datadir}/* data")
 
-        write_file(f'{self.build_dir}/Dockerfile', self.dockerfile())
+        cli.write_file(f'{self.build_dir}/Dockerfile', self.dockerfile())
 
     def default_image_full_name(self):
         # the default name is like "gdbconsult/gws-server-qgis-3.22:8.0.1"
@@ -225,7 +222,7 @@ class Builder:
 
         __(f'#')
         __(f'# {self.image_full_name}')
-        __(f'# generated by gbd-websuite/install/docker.py')
+        __(f'# generated by gbd-websuite/install/image.py')
         __(f'#')
         __(f'FROM --platform=linux/{self.arch} {self.base}')
         __(f'LABEL Description="{self.image_description}" Vendor="{self.vendor}" Version="{self.image_version}"')
@@ -297,18 +294,10 @@ class Builder:
 
 ###
 
-def main():
-    b = Builder(parse_args(sys.argv))
+def main(args):
+    b = Builder(args)
     b.main()
-
-
-def run(cmd):
-    cmd = re.sub(r'\s+', ' ', cmd.strip())
-    print('[docker.py] ' + cmd)
-    res = subprocess.run(cmd, shell=True, capture_output=False)
-    if res.returncode:
-        print(f'FAILED {cmd!r} (code {res.returncode})')
-        sys.exit(1)
+    return 0
 
 
 def commands(txt):
@@ -324,35 +313,6 @@ def lines(txt):
     return ls
 
 
-def read_file(path):
-    with open(path, 'rt', encoding='utf8') as fp:
-        return fp.read()
-
-
-def write_file(path, text):
-    with open(path, 'wt', encoding='utf8') as fp:
-        fp.write(text)
-
-
-def parse_args(argv):
-    args = {}
-    option = None
-    n = 0
-
-    for a in argv[1:]:
-        if a.startswith('-'):
-            option = a.lower().strip('-')
-            args[option] = True
-        elif option:
-            args[option] = a
-            option = None
-        else:
-            args[n] = a
-            n += 1
-
-    return args
-
-
 def uniq(ls):
     s = set()
     r = []
@@ -363,12 +323,5 @@ def uniq(ls):
     return r
 
 
-def exit_help(err=None):
-    print(USAGE)
-    if err:
-        print('ERROR:', err, '\n')
-    sys.exit(255 if err else 0)
-
-
 if __name__ == '__main__':
-    main()
+    cli.main('image.py', main, USAGE)

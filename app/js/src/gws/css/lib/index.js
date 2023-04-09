@@ -44,7 +44,7 @@ module.exports.googleIcon = function(name, opts = {}) {
     let [category, n] = name.split('/');
     let size = opts.size || 24;
 
-    let fileName = `src/gws/css/material-design-icons/${category}/ic_${n}_${size}px.svg`;
+    let fileName = `${__dirname}/../material-design-icons/${category}/ic_${n}_${size}px.svg`;
     return icon(fileName, opts.color);
 };
 

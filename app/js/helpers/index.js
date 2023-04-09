@@ -4,14 +4,22 @@ const builder = require('./builder')
 
 function main(argv) {
     let args = {}
-    let key = 'command'
+    let opt = null
+    let n = 0
 
     for (let a of argv.slice(2)) {
-        if (a.startsWith('--')) {
-            key = a.slice(2)
-            args[key] = true
+        if (a.startsWith('-')) {
+            opt = a.slice(1)
+            args[opt] = true
+        } else if (a.startsWith('--')) {
+            opt = a.slice(2)
+            args[opt] = true
+        } else if (opt) {
+            args[opt] = a
+            opt = null
         } else {
-            args[key] = a
+            args[n] = a
+            n += 1
         }
     }
 

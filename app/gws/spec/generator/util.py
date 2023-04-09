@@ -2,42 +2,12 @@ import os
 import re
 import json
 
-
-def find_dirs(dirname):
-    if not os.path.isdir(dirname):
-        return
-
-    de: os.DirEntry
-    for de in os.scandir(dirname):
-        if de.name.startswith('.'):
-            continue
-        if de.is_dir():
-            yield de.path
-
-
-def find_files(dirname, pattern=None, deep=True):
-    if not os.path.isdir(dirname):
-        return
-
-    de: os.DirEntry
-    for de in os.scandir(dirname):
-        if de.name.startswith('.'):
-            continue
-        if de.is_dir() and deep:
-            yield from find_files(de.path, pattern)
-            continue
-        if de.is_file() and (pattern is None or re.search(pattern, de.path)):
-            yield de.path
-
-
-def read_file(path):
-    with open(path, 'rt', encoding='utf8') as fp:
-        return fp.read().strip()
-
-
-def write_file(path, text):
-    with open(path, 'wt', encoding='utf8') as fp:
-        fp.write(text)
+from gws.lib.cli import (
+    find_files,
+    find_dirs,
+    read_file,
+    write_file,
+)
 
 
 def _json(x):

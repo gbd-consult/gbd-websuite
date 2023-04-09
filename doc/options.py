@@ -5,8 +5,6 @@ SELF_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.realpath(SELF_DIR + '/../')
 DOC_DIR = SELF_DIR
 APP_DIR = ROOT_DIR + '/app'
-BUILD_DIR = APP_DIR + '/__build'
-DOC_BUILD_DIR = BUILD_DIR + '/docbuild'
 
 VERSION, _, _ = open(APP_DIR + '/VERSION').read().strip().rpartition('.')
 
@@ -35,8 +33,6 @@ OPTIONS = {
 
     'includeTemplate': f'{DOC_DIR}/extra_commands.cx.html',
 
-    'outputDir': f'{DOC_BUILD_DIR}/doc/{VERSION}',
-
     'serverPort': 5500,
     'serverHost': '0.0.0.0',
 
@@ -61,7 +57,6 @@ OPTIONS = {
 
     'docDir': DOC_DIR,
     'appDir': APP_DIR,
-    'buildDir': BUILD_DIR,
 
     'apidocWebRoot': f'/apidoc/{VERSION}',
 
@@ -74,8 +69,6 @@ OPTIONS = {
     ],
 
     'pydoctorExtraCss': f'{DOC_DIR}/theme/pydoctor_extra.css',
-
-    'pydoctorOutputDir': f'{DOC_BUILD_DIR}/apidoc/{VERSION}',
 
     'pydoctorArgs': [
         '--make-html',

@@ -2,20 +2,22 @@
 
 import os
 import sys
-import subprocess
 import json
 
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../app'))
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../app/gws/lib/vendor'))
 
+import gws.lib.cli as cli
+
 import options
-import dog
+import gws.lib.vendor.dog as dog
 
 import pydoctor.options
 import pydoctor.driver
 
 USAGE = """
-Documentation generator
-~~~~~~~~~~~~~~~~~~~~~~~
+GWS Doc Builder
+~~~~~~~~~~~~~~~
   
     python3 doc.py <command> <options>
 
@@ -26,29 +28,38 @@ Commands:
     api    - generate api docs
 
 Options:
-    none
 
+    -out <dir>
+        output directory
+
+    -manifest <path>
+        path to MANIFEST.json
+        
+    -v
+        verbose logging
 """
 
 
-def main():
-    args = dog.util.parse_args(sys.argv)
-
-    if 'h' in args or 'help' in args:
-        print(USAGE)
-        return 0
-
+def main(args):
     opts = dog.util.to_data(options.OPTIONS)
     opts.verbose = args.get('v')
 
-    mkdir(opts.outputDir)
-
     cmd = args.get(1)
+
+    out_dir = args.get('out')
+    if not out_dir:
+        if cmd in {'build', 'server'}:
+            out_dir = f'{options.APP_DIR}/__build/doc/{options.VERSION}'
+        if cmd == 'api':
+            out_dir = f'{options.APP_DIR}/__build/apidoc/{options.VERSION}'
+
+    opts.outputDir = out_dir
+    mkdir(opts.outputDir)
 
     if cmd == 'build':
         make_config_ref()
-        dog.build_all('html', opts)
-        dog.build_all('pdf', opts)
+        dog.build_html(opts)
+        dog.build_pdf(opts)
         return 0
 
     if cmd == 'server':
@@ -61,12 +72,11 @@ def main():
         make_api(opts)
         return 0
 
-    print('invalid arguments, try doc.py -h for help')
-    return 255
+    cli.fatal('invalid arguments, try doc.py -h for help')
 
 
 def make_api(opts):
-    copy_dir = options.DOC_BUILD_DIR + '/app-copy'
+    copy_dir = '/tmp/app-copy'
     mkdir(copy_dir)
 
     rsync = ['rsync', '--archive', '--no-links']
@@ -81,7 +91,7 @@ def make_api(opts):
 
     args = list(opts.pydoctorArgs)
     args.extend([
-        '--html-output', opts.pydoctorOutputDir,
+        '--html-output', opts.outputDir,
         '--project-base-dir',
         copy_dir + '/gws',
         copy_dir + '/gws',
@@ -90,7 +100,8 @@ def make_api(opts):
     ps = pydoctor.driver.get_system(pydoctor.options.Options.from_args(args))
     pydoctor.driver.make(ps)
 
-    dog.util.run(['cp', opts.pydoctorExtraCss, opts.pydoctorOutputDir + '/extra.css'])
+    dog.util.run(['cp', opts.pydoctorExtraCss, opts.outputDir + '/extra.css'])
+    dog.util.run(['rm', '-fr', copy_dir])
 
 
 def make_config_ref():
@@ -178,7 +189,7 @@ def make_config_ref():
                 ]
             )
 
-    with open(options.BUILD_DIR + '/types.json') as fp:
+    with open(options.APP_DIR + '/__build/types.json') as fp:
         specs = json.load(fp)['types']
 
     start = 'gws.base.application.Config'
@@ -206,4 +217,4 @@ def mkdir(d):
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    cli.main('doc', main, USAGE)
