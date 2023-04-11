@@ -293,7 +293,7 @@ function startBrowserSync(bb) {
         // the dev server url is localhost:8080/project/name?opts@opts
         // we get "/name..." from the router
 
-        let m = url.match(/^\/*(\w+)/);
+        let m = url.match(/^\/*(.+?)($|\/|@)/);
         if (!m) {
             logError(`cannot get the project name, URL=${url}`)
             return '';
