@@ -1,6 +1,17 @@
-@def demo_point_duesseldorf_3857 = [753753, 6661615]
-@def demo_point_duesseldorf_25832 = [344371, 5677471]
-@def demo_point_dresden_3857 = [1529461, 6631043]
+@let demo_point_duesseldorf_3857 = [753753, 6661615]
+@let demo_point_duesseldorf_25832 = [344371, 5677471]
+@let demo_point_dresden_3857 = [1529461, 6631043]
+
+@let demo_osm_background
+    map.layers+ {
+        title "Open Street Map"
+        type "tile"
+        display "client"
+        opacity 0.3
+        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    }
+@end
 
 @def demo_map(**kw)
 
@@ -73,9 +84,13 @@
     api.actions+ { type "web" }
     api.actions+ { type "map" }
     api.actions+ { type "project" }
+    api.actions+ { type "search" }
 @end
 
 @def demo_client
+    client.elements+ { tag "Toolbar.Identify.Click" }
+    client.elements+ { tag "Toolbar.Print" }
+
     client.elements+ { tag "Decoration.ScaleRuler" }
     client.elements+ { tag "Decoration.Attribution" }
 
@@ -102,17 +117,6 @@
 
 @def demo_locales
     locales+ "de_DE"
-@end
-
-@def demo_osm_background
-    map.layers+ {
-        title "Open Street Map"
-        type "tile"
-        display "client"
-        opacity 0.3
-        url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-        metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-    }
 @end
 
 @def demo_custom_config

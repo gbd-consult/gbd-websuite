@@ -3,7 +3,7 @@ projects+ {
     metadata.abstract "For OWS and QGIS layers, legends are confgured automatically, unless specified otherwise."
 
     map {
-        center {@demo_point_duesseldorf_3857}
+        center {demo_point_duesseldorf_3857}
         zoom.initScale 15000
     }
 
@@ -19,5 +19,5 @@ projects+ {
         metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
     }
 
-    @demo_osm_background
+    {demo_osm_background}
 }

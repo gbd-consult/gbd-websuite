@@ -4,14 +4,14 @@ projects+ {
 
     map {
         crs 3857
-        center {@demo_point_duesseldorf_3857}
+        center {demo_point_duesseldorf_3857}
         zoom.initScale 150000
     }
 
     map.layers+ {
         title "Open Street Map"
         type "tile"
-        url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
         display "client"
 
         legend {
