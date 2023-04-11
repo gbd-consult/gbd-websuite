@@ -18,7 +18,7 @@ class Object(gws.base.layer.Object):
     provider: provider.Object
 
     def configure(self):
-        self.provider = provider.configure_for(self)
+        self.provider = provider.get_for(self)
 
         def leaf_layer_maker(source_layers):
             return dict(

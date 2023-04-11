@@ -140,10 +140,11 @@ class Object(gws.base.ows.provider.Object):
 
         return fdata
 
+
 ##
 
 
-def configure_for(obj: gws.INode) -> Object:
+def get_for(obj: gws.INode) -> Object:
     p = obj.cfg('provider')
     if p:
         return obj.root.create_shared(Object, p)

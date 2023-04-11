@@ -165,7 +165,7 @@ def _best_match(crs, supported_crs):
     if crs.isProjected:
         # for a projected crs, find webmercator
         for sup in supported_crs:
-            if sup.srid == 3857:
+            if sup.srid == WEBMERCATOR.srid:
                 return sup
 
         # not found, return the first projected crs
@@ -177,7 +177,7 @@ def _best_match(crs, supported_crs):
 
         # for a geographic crs, try wgs first
         for sup in supported_crs:
-            if sup.srid == 4326:
+            if sup.srid == WGS84.srid:
                 return sup
 
         # not found, return the first geographic crs

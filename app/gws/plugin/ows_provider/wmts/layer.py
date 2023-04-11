@@ -1,7 +1,9 @@
 import gws
 import gws.base.layer
+import gws.gis.bounds
+import gws.gis.crs
 import gws.gis.source
-import gws.lib.net
+import gws.gis.zoom
 import gws.gis.ows
 import gws.lib.uom as units
 import gws.types as t
@@ -19,85 +21,129 @@ class Config(gws.base.layer.Config):
     """layer display mode"""
     sourceLayer: t.Optional[str]
     """WMTS layer name"""
+    style: t.Optional[str]
+    """WMTS style name"""
 
 
 class Object(gws.base.layer.Object, gws.IOwsClient):
     provider: provider.Object
-    tileMatrixSet: gws.TileMatrixSet
-    sourceCrs: gws.ICrs
-    styleName: str
+    activeLayer: gws.SourceLayer
+    activeStyle: gws.SourceStyle
+    activeTms: gws.TileMatrixSet
 
     def configure(self):
-        self.provider = self.cfg('_defaultProvider') or self.root.create_shared(provider.Object, self.config)
+        self.configure_provider()
+        self.configure_sources()
+        self.configure_models()
+        self.configure_bounds()
+        self.configure_resolutions()
+        self.configure_grid()
+        self.configure_legend()
+        self.configure_cache()
+        self.configure_metadata()
+        self.configure_templates()
+        self.configure_search()
 
-        self.sourceLayers = self.cfg('_sourceLayers')
-        if not self.sourceLayers:
-            slf = gws.merge(
-                gws.gis.source.LayerFilter(isImage=True),
-                self.cfg('sourceLayers'))
-            self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, slf)
-        if not self.sourceLayers:
-            raise gws.Error(f'no source layers found in {self.provider.url!r}')
+    def configure_provider(self):
+        self.provider = provider.get_for(self)
+        return True
 
-        if not self.configure_metadata():
-            self.metadata = self.provider.metadata
+    def configure_sources(self):
+        if super().configure_sources():
+            return True
 
-        p = self.cfg('sourceGrid', default=gws.Config())
-        crs = p.crs or gws.gis.crs.best_match(
-            self.defaultBounds.crs,
-            gws.gis.source.combined_crs_list(self.sourceLayers))
+        self.configure_source_layers()
+        self.activeLayer = self.sourceLayers[0]
+        self.configure_tms()
+        self.configure_style()
 
-        self.tileMatrixSet = self.get_tile_matrix_set_for_crs(crs)
-        if not self.tileMatrixSet:
-            raise gws.Error(f'no suitable tile matrix set found')
+    def configure_source_layers(self):
+        p = self.cfg('sourceLayers')
+        if p:
+            self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, p)
+            return True
+        p = self.cfg('_defaultSourceLayers')
+        if p:
+            self.sourceLayers = p
+            return True
+        self.sourceLayers = self.provider.sourceLayers
+        return True
 
-        extent = p.extent or self.tileMatrixSet.matrices[0].extent
-        self.sourceGrid = gws.TileGrid(
-            bounds=gws.Bounds(crs=crs, extent=extent),
-            corner=p.corner or gws.Corner.nw,
-            tileSize=p.tileSize or self.tileMatrixSet.matrices[0].tileWidth,
-        )
-        self.sourceGrid.resolutions = (
-                p.resolutions or
-                sorted([units.scale_to_res(m.scale) for m in self.tileMatrixSet.matrices], reverse=True))
+    def configure_tms(self):
+        crs = self.provider.forceCrs
+        if not crs:
+            crs = gws.gis.crs.best_match(self.defaultBounds.crs, [tms.crs for tms in self.activeLayer.tileMatrixSets])
+        tms_list = [tms for tms in self.activeLayer.tileMatrixSets if tms.crs == crs]
+        if not tms_list:
+            raise gws.Error(f'no TMS for {crs} in {self.provider.url}')
+        self.activeTms = tms_list[0]
 
+    def configure_style(self):
+        p = self.cfg('styleName')
+        if p:
+            for style in self.activeLayer.styles:
+                if style.name == p:
+                    self.activeStyle = style
+                    return True
+            raise gws.Error(f'style {p!r} not found')
+
+        for style in self.activeLayer.styles:
+            if style.isDefault:
+                self.activeStyle = style
+                return True
+
+        self.activeStyle = gws.SourceStyle(name='default')
+        return True
+
+    def configure_bounds(self):
+        if super().configure_bounds():
+            return True
+        src_bounds = gws.Bounds(crs=self.activeTms.crs, extent=self.activeTms.matrices[0].extent)
+        self.bounds = gws.gis.bounds.transform(src_bounds, self.defaultBounds.crs)
+        return True
+
+    def configure_resolutions(self):
+        if super().configure_resolutions():
+            return True
+        res = [gws.lib.uom.scale_to_res(m.scale) for m in self.activeTms.matrices]
+        self.resolutions = sorted(res, reverse=True)
+        return True
+
+    def configure_grid(self):
         p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
             corner=p.corner or gws.Corner.nw,
-            tileSize=p.tileSize or 256,
+            tileSize=p.tileSize or self.activeTms.matrices[0].tileWidth,
         )
-        crs = self.defaultBounds.crs
-        extent = (
-            p.extent or
-            self.sourceGrid.bounds.extent if crs == self.sourceGrid.bounds.crs else self.defaultBounds.extent)
-        self.grid.bounds = gws.Bounds(crs=crs, extent=extent)
-        self.grid.resolutions = (
-                p.resolutions or
-                gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize))
+        our_crs = self.bounds.crs
+        if p.extent:
+            self.grid.bounds = gws.Bounds(crs=our_crs, extent=p.extent)
+        elif our_crs == self.activeTms.crs:
+            self.grid.bounds = gws.Bounds(crs=our_crs, extent=self.activeTms.matrices[0].extent)
+        else:
+            self.grid.bounds = self.bounds
 
-        if not self.configure_bounds():
-            self.bounds = self.defaultBounds
+        if p.resolutions:
+            self.grid.resolutions = p.resolutions
+        else:
+            self.grid.resolutions = gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize)
 
-        if not self.configure_resolutions():
-            res = [units.scale_to_res(m.scale) for m in self.tileMatrixSet.matrices]
-            self.resolutions = sorted(res, reverse=True)
+    def configure_legend(self):
+        if super().configure_legend():
+            return True
+        url = self.activeStyle.legendUrl
+        if url:
+            self.legend = self.create_child(gws.ext.object.legend, type='remote', urls=[url])
+            return True
 
-        if not self.configure_legend():
-            url = self.sourceLayers[0].legendUrl
-            if url:
-                self.legend = self.create_child(
-                    gws.ext.object.legend,
-                    gws.Config(type='remote', urls=[url]))
-
-        self.styleName = ''
-        if self.sourceLayers[0].defaultStyle:
-            self.styleName = self.sourceLayers[0].defaultStyle.name
-
-    def render(self, lri):
-        return gws.base.layer.util.generic_raster_render(self, lri)
+    def configure_metadata(self):
+        if super().configure_metadata():
+            return True
+        self.metadata = self.provider.metadata
+        return True
 
     def mapproxy_config(self, mc):
-        url = self.get_tile_url()
+        url = self.provider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle)
 
         # mapproxy encoding
 
@@ -105,7 +151,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         url = url.replace('{TileCol}', '%(x)d')
         url = url.replace('{TileRow}', '%(y)d')
 
-        sg = self.sourceGrid
+        sg = self.provider.grid_for_tms(self.activeTms)
 
         if sg.corner == gws.Corner.nw:
             origin = 'nw'
@@ -124,65 +170,9 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
 
         src_uid = gws.base.layer.util.mapproxy_back_cache_config(self, mc, url, back_grid_uid)
         gws.base.layer.util.mapproxy_layer_config(self, mc, src_uid)
-        return
 
-        res = [units.scale_to_res(m.scale) for m in self.tileMatrixSet.matrices]
-        m0 = self.tileMatrixSet.matrices[0]
+    ##
 
-        # res = [156543.03392804097, 78271.51696402048, 39135.75848201024, 19567.87924100512, 9783.93962050256, 4891.96981025128, 2445.98490512564, 1222.99245256282, 611.49622628141, 305.748113140705, 152.8740565703525, 76.43702828517625, 38.21851414258813, 19.109257071294063, 9.554628535647032, 4.777314267823516, 2.388657133911758, 1.194328566955879, 0.5971642834779395, 0.29858214173896974]
+    def render(self, lri):
+        return gws.base.layer.util.generic_raster_render(self, lri)
 
-        grid_uid = mc.grid(gws.compact({
-            'origin': 'nw',  # nw = upper-left for WMTS
-            'bbox': m0.extent,
-            'res': res,
-            'srs': self.sourceCrs.epsg,
-            'tile_size': [m0.tileWidth, m0.tileHeight],
-        }))
-
-        url = self.get_tile_url()
-
-        # mapproxy encoding
-
-        url = url.replace('{TileMatrix}', '%(z)02d')
-        url = url.replace('{TileCol}', '%(x)d')
-        url = url.replace('{TileRow}', '%(y)d')
-
-        src_uid = gws.base.layer.util.mapproxy_back_cache_config(self, mc, url, grid_uid)
-        gws.base.layer.util.mapproxy_layer_config(self, mc, src_uid)
-
-    def get_tile_matrix_set_for_crs(self, crs):
-        for tms in self.sourceLayers[0].tileMatrixSets:
-            if tms.crs == crs:
-                return tms
-
-    def get_tile_url(self):
-        ru = self.sourceLayers[0].resourceUrls
-        resource_url = ru.get('tile') if ru else None
-
-        if resource_url:
-            return (
-                resource_url
-                .replace('{TileMatrixSet}', self.tileMatrixSet.uid)
-                .replace('{Style}', self.styleName or 'default'))
-
-        params = {
-            'SERVICE': 'WMTS',
-            'REQUEST': 'GetTile',
-            'VERSION': self.provider.version,
-            'LAYER': self.sourceLayers[0].name,
-            'FORMAT': self.sourceLayers[0].imageFormat or 'image/jpeg',
-            'TILEMATRIXSET': self.tileMatrixSet.uid,
-            'TILEMATRIX': '{TileMatrix}',
-            'TILECOL': '{TileCol}',
-            'TILEROW': '{TileRow}',
-        }
-
-        if self.styleName:
-            params['STYLE'] = self.styleName
-
-        op = self.provider.operation(gws.OwsVerb.GetTile)
-        args = self.provider.prepare_operation(op, params=params)
-        url = gws.lib.net.add_params(args.url, args.params)
-
-        # {} should not be encoded
-        return url.replace('%7B', '{').replace('%7D', '}')

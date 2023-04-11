@@ -30,7 +30,7 @@ class Object(gws.Node, gws.IProvider):
 
         p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
-            corner=p.corner or gws.Corner.lt,
+            corner=p.corner or gws.Corner.nw,
             tileSize=p.tileSize or 256,
         )
         crs = p.crs or gws.gis.crs.WEBMERCATOR
@@ -39,3 +39,15 @@ class Object(gws.Node, gws.IProvider):
         self.grid.resolutions = (
                 p.resolutions or
                 gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize))
+
+
+##
+
+def get_for(obj: gws.INode) -> Object:
+    p = obj.cfg('provider')
+    if p:
+        return obj.root.create_shared(Object, p)
+    p = obj.cfg('_defaultProvider')
+    if p:
+        return p
+    raise gws.Error(f'no provider found for {obj!r}')

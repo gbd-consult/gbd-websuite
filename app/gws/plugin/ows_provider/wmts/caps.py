@@ -1,24 +1,22 @@
 import gws
+import gws.base.ows
 import gws.gis.crs
 import gws.gis.source
 import gws.lib.uom as units
 import gws.lib.xmlx as xmlx
-import gws.types as t
-
-from .. import core
-from .. import parseutil as u
+import gws.gis.ows.parseutil as u
 
 
 # http://portal.opengeospatial.org/files/?artifact_id=35326
 
 
-def parse(xml: str) -> core.Caps:
+def parse(xml: str) -> gws.base.ows.Caps:
     caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
     tms_lst = [_tile_matrix_set(el) for el in caps_el.findall('Contents/TileMatrixSet')]
     tms_dct = {tms.uid: tms for tms in tms_lst}
     sls = gws.gis.source.check_layers(
         _layer(el, tms_dct) for el in caps_el.findall('Contents/Layer'))
-    return core.Caps(
+    return gws.base.ows.Caps(
         tileMatrixSets=tms_lst,
         metadata=u.service_metadata(caps_el),
         operations=u.service_operations(caps_el),

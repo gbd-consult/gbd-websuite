@@ -10,7 +10,7 @@ projects+ {
     map.layers+ {
         title "Digitale Orthophotos NRW"
         type "wmts"
-        url "https://www.wmts.nrw.de/geobasis/wmts_nw_dop"
+        provider.url "https://www.wmts.nrw.de/geobasis/wmts_nw_dop"
         metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
         cache.enabled true
     }

@@ -1,12 +1,10 @@
-import re
+"""Tile layer."""
 
 import gws
-import gws.gis.crs
-import gws.gis.bounds
-import gws.gis.zoom
 import gws.base.layer
-import gws.types as t
-
+import gws.gis.bounds
+import gws.gis.crs
+import gws.gis.zoom
 from . import provider
 
 gws.ext.new.layer('tile')
@@ -47,7 +45,7 @@ class Object(gws.base.layer.Object):
         self.configure_search()
 
     def configure_provider(self):
-        self.provider = self.root.create_shared(provider.Object, self.cfg('provider'))
+        self.provider = provider.get_for(self)
         return True
 
     def configure_bounds(self):
@@ -66,15 +64,13 @@ class Object(gws.base.layer.Object):
             tileSize=p.tileSize or 256,
         )
 
-        crs = self.defaultBounds.crs
-
         if p.extent:
             extent = p.extent
-        elif crs == self.provider.grid.bounds.crs:
+        elif self.bounds.crs == self.provider.grid.bounds.crs:
             extent = self.provider.grid.bounds.extent
         else:
             extent = self.defaultBounds.extent
-        self.grid.bounds = gws.Bounds(crs=crs, extent=extent)
+        self.grid.bounds = gws.Bounds(crs=self.bounds.crs, extent=extent)
 
         if p.resolutions:
             self.grid.resolutions = p.resolutions

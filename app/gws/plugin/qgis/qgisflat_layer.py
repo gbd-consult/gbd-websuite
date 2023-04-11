@@ -46,7 +46,7 @@ class Object(gws.base.layer.Object):
         self.configure_search()
 
     def configure_provider(self):
-        self.provider = provider.configure_for(self)
+        self.provider = provider.get_for(self)
         return True
 
     def configure_sources(self):

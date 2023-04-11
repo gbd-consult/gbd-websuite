@@ -30,7 +30,7 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.Object):
     provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
-    sourceCrs: gws.ICrs
+    activeCrs: gws.ICrs
 
     imageLayers: list[gws.SourceLayer]
     searchLayers: list[gws.SourceLayer]
@@ -49,22 +49,23 @@ class Object(gws.base.layer.Object):
         self.configure_search()
 
     def configure_provider(self):
-        self.provider = provider.configure_for(self)
+        self.provider = provider.get_for(self)
         return True
 
     def configure_sources(self):
+        if super().configure_sources():
+            return True
+
         self.configure_source_layers()
 
         self.imageLayers = gws.gis.source.filter_layers(self.sourceLayers, is_image=True)
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)
 
-        self.sourceCrs = self.provider.forceCrs or gws.gis.crs.best_match(
+        self.activeCrs = self.provider.forceCrs or gws.gis.crs.best_match(
             self.defaultBounds.crs,
             gws.gis.source.combined_crs_list(self.sourceLayers))
 
     def configure_source_layers(self):
-        if super().configure_sources():
-            return True
         p = self.cfg('sourceLayers')
         if p:
             self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, p)
@@ -79,7 +80,7 @@ class Object(gws.base.layer.Object):
     def configure_models(self):
         if super().configure_models():
             return True
-        self.models.append(self.configure_model({}))
+        self.models.append(self.configure_model(None))
         return True
 
     def configure_model(self, cfg):
@@ -164,7 +165,7 @@ class Object(gws.base.layer.Object):
 
         source_uid = mc.source(gws.compact({
             'type': 'wms',
-            'supported_srs': [self.sourceCrs.epsg],
+            'supported_srs': [self.activeCrs.epsg],
             'concurrent_requests': self.provider.maxRequests,
             'req': req,
             'wms_opts': {

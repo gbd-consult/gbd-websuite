@@ -23,7 +23,7 @@ class Object(gws.base.ows.finder.Object):
     provider: provider.Object
 
     def configure_provider(self):
-        self.provider = provider.configure_for(self)
+        self.provider = provider.get_for(self)
 
     def can_run(self, search, user):
         return (
