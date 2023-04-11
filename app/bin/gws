@@ -33,6 +33,7 @@ ensure_xvfb() {
     start-stop-daemon --start --background --exec $XVFB -- $DISPLAY $XVFBARGS
 }
 
+rm -fr $GWS_TMP_DIR
 mkdir -p $GWS_TMP_DIR
 chown $GWS_UID:$GWS_GID $GWS_TMP_DIR
 chmod 1777 $GWS_TMP_DIR
