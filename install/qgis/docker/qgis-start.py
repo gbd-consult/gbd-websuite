@@ -6,10 +6,10 @@ import urllib.parse
 USER_UID = 1000
 USER_GID = 1000
 
-QGIS_DEBUG = os.environ.get('QGIS_DEBUG', '0')
-QGIS_WORKERS = os.environ.get('QGIS_WORKERS', 1)
-SVG_PATHS = os.environ.get('SVG_PATHS', '')
-TIMEOUT = os.environ.get('TIMEOUT', '60')
+QGIS_DEBUG = os.getenv('QGIS_DEBUG', '0')
+QGIS_WORKERS = os.getenv('QGIS_WORKERS', 1)
+SVG_PATHS = os.getenv('SVG_PATHS', '')
+TIMEOUT = os.getenv('TIMEOUT', '60')
 HTTP_PROXY = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY')
 
 
@@ -17,7 +17,7 @@ HTTP_PROXY = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY')
 
 
 def _from_env(default):
-    return lambda k: os.environ.get(k, default)
+    return lambda k: os.getenv(k, default)
 
 
 class QgisEnv:
@@ -134,6 +134,7 @@ gid = {USER_GID}
 chmod-socket = 666
 fastcgi-socket = /var/run/uwsgi.sock
 daemonize = true
+die-on-term = true
 logger = syslog:QGIS,local6
 master = true
 pidfile = /var/run/uwsgi.pid
@@ -205,10 +206,9 @@ module(
 )
 
 template(name="gws" type="list") {{
-    property(name="timestamp" dateFormat="rfc3339")
+    property(name="timestamp" dateFormat="mysql")
     constant(value=" ")
     property(name="syslogtag")
-    constant(value=" ")
     property(name="msg" spifno1stsp="on" )
     property(name="msg" droplastlf="on" )
     constant(value="\\n")
@@ -253,11 +253,16 @@ rm -fr /tmp/*
 
 XVFB=/usr/bin/Xvfb
 XVFBARGS='-dpi 96 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nolisten tcp'
-start-stop-daemon --start --background --exec $XVFB -- $DISPLAY $XVFBARGS
+
+until start-stop-daemon --status --exec $XVFB; do
+    echo 'waiting for xvfb...'
+    start-stop-daemon --start --background --exec $XVFB --oknodo -- $DISPLAY $XVFBARGS
+    sleep 0.5
+done
 
 rsyslogd -i /var/run/rsyslogd.pid -f /rsyslogd.conf
 uwsgi /uwsgi.ini
-nginx -c /nginx.conf
+exec nginx -c /nginx.conf
 """
 
 write('/qgis-start-configured', qgis_start_configured)

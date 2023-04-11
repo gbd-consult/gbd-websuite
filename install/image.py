@@ -31,8 +31,14 @@ Options:
     -base <image-name>
         base image, defaults to 'ubuntu'
 
+    -builddir <dir>
+        directory to store Dockerfile and assets
+
     -datadir <dir>
         data directory (default projects) to copy to "/data" in the image
+
+    -manifest <path>
+        path to MANIFEST.json
 
     -name <name>
         custom image name 
@@ -90,7 +96,6 @@ class Builder:
 
     this_dir = os.path.abspath(os.path.dirname(__file__))
     gws_dir = os.path.abspath(f'{this_dir}/..')
-    build_dir = os.path.abspath(f'{gws_dir}/../docker')
 
     def __init__(self, args):
         try:
@@ -104,7 +109,8 @@ class Builder:
         self.appdir = args.get('appdir')
         self.arch = args.get('arch') or self.arch
         self.base = args.get('base') or f'ubuntu:{self.ubuntu_version}'
-        self.datadir = args.get('data')
+        self.build_dir = args.get('builddir') or os.path.abspath(f'{self.gws_dir}/app/__build/docker')
+        self.datadir = args.get('datadir')
         self.vendor = args.get('vendor') or self.vendor
 
         self.image_name = args.get(1)
@@ -113,12 +119,7 @@ class Builder:
 
         self.image_kind, self.debug_mode, self.with_qgis = self.image_types[self.image_name]
 
-        self.image_version = args.get('version')
-        if not self.image_version:
-            if self.image_kind == 'gws':
-                self.image_version = self.gws_version
-            if self.image_kind == 'qgis':
-                self.image_version = '0'
+        self.image_version = args.get('version') or self.gws_version
 
         self.image_full_name = args.get('name') or self.default_image_full_name()
         self.image_description = self.default_image_description()
@@ -183,7 +184,7 @@ class Builder:
         if self.appdir:
             cli.run(f"mkdir app && rsync -a --exclude-from {self.exclude_file} {self.appdir}/* app")
         else:
-            cli.run(f"make -C {self.gws_dir} package DIR={self.build_dir}")
+            cli.run(f"cd {self.gws_dir} && bash make.sh package {self.build_dir}")
 
         if self.datadir:
             cli.run(f"mkdir data && rsync -a --exclude-from {self.exclude_file} {self.datadir}/* data")
@@ -191,16 +192,8 @@ class Builder:
         cli.write_file(f'{self.build_dir}/Dockerfile', self.dockerfile())
 
     def default_image_full_name(self):
-        # the default name is like "gdbconsult/gws-server-qgis-3.22:8.0.1"
-        # or "gdbconsult/qgis-server-3.22:3"
-
-        if self.image_kind == 'gws':
-            if self.with_qgis:
-                return f'{self.vendor}/{self.image_name}-{self.qgis_version}-{self.arch}:{self.image_version}'
-            return f'{self.vendor}/{self.image_name}-{self.arch}:{self.image_version}'
-
-        if self.image_kind == 'qgis':
-            return f'{self.vendor}/{self.image_name}-{self.qgis_version}-{self.arch}:{self.image_version}'
+        # the default name is like "gdbconsult/qgis-amd64:8.0"
+        return f'{self.vendor}/{self.image_name}-{self.arch}:{self.image_version}'
 
     def default_image_description(self):
         if self.image_kind == 'gws':
