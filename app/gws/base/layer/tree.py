@@ -133,7 +133,7 @@ def layer_configs_from_args(
             root.specs,
             cfg,
             'gws.ext.config.layer',
-            read_options={'accept_extra_props', 'relax_required'}
+            read_options={'accept_extra_props', 'allow_skip_required'}
         )
         for cfg in configs
     ]
