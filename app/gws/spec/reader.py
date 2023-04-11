@@ -24,7 +24,7 @@ class Reader:
         self.case_insensitive = 'case_insensitive' in options
         self.convert_values = 'convert_values' in options
         self.ignore_extra_props = 'ignore_extra_props' in options
-        self.relax_required = 'relax_required' in options
+        self.allow_skip_required = 'allow_skip_required' in options
         self.verbose_errors = 'verbose_errors' in options
 
         self.stack = None
@@ -243,7 +243,7 @@ def _read_object(r: Reader, val, typ: core.Type):
                 unknown.append(k)
 
     if unknown:
-        raise core.ReadError(f"unknown keys: {_comma(unknown)}, expected: {_comma(typ.tProperties)}", val)
+        raise core.ReadError(f"unknown keys: {_comma(unknown)}, expected: {_comma(typ.tProperties)} for {typ.uid!r}", val)
 
     return gws.Data(res)
 
@@ -253,9 +253,9 @@ def _read_property(r: Reader, val, typ: core.Type):
         return r.read2(val, typ.tValue)
 
     if not typ.hasDefault:
-        if r.relax_required:
+        if r.allow_skip_required:
             return None
-        raise core.ReadError(f"required property missing: {typ.ident!r}", None)
+        raise core.ReadError(f"required property missing: {typ.ident!r} for {typ.tOwner!r}", None)
 
     if typ.default is None:
         return None
@@ -341,10 +341,10 @@ def _read_formatstr(r: Reader, val, typ: core.Type):
 
 
 def _read_metadata(r: Reader, val, typ: core.Type):
-    rr = r.relax_required
-    r.relax_required = True
+    rr = r.allow_skip_required
+    r.allow_skip_required = True
     res = gws.compact(_read_object(r, val, typ))
-    r.relax_required = rr
+    r.allow_skip_required = rr
     return res
 
 
