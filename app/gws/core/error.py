@@ -32,7 +32,7 @@ def to_string_list(exc: Exception) -> list:
 
         lines.append(subhead)
 
-        for f in traceback.extract_tb(exc.__traceback__, limit=20):
+        for f in traceback.extract_tb(exc.__traceback__, limit=100):
             lines.append(f'    in {f[2]} ({f[0]}:{f[1]})')
 
         if exc.__cause__:

@@ -151,12 +151,11 @@ def pick(x, *keys):
     return {}
 
 
-def merge(d, *args, **kwargs):
+def merge(*args, **kwargs) -> dict | Data:
     """Create a new dict/Data object by merging values from dicts/Datas or kwargs.
     Latter vales overwrite former ones unless None.
 
     Args:
-        d: dict or Data.
         *args: dicts or Datas.
         **kwargs: Keyword args.
 
@@ -164,24 +163,22 @@ def merge(d, *args, **kwargs):
         A new object (dict or Data).
     """
 
-    if d is None:
-        return
+    def _merge(arg):
+        for k, v in to_dict(arg).items():
+            if v is not None:
+                m[k] = v
 
     m = {}
 
-    _merge(m, d)
     for a in args:
-        _merge(m, a)
+        if a:
+            _merge(a)
     if kwargs:
-        _merge(m, kwargs)
+        _merge(kwargs)
 
-    return m if is_dict(d) else type(d)(m)
-
-
-def _merge(m, arg):
-    for k, v in to_dict(arg).items():
-        if v is not None:
-            m[k] = v
+    if not args or isinstance(args[0], dict):
+        return m
+    return type(args[0])(m)
 
 
 def deep_merge(x, y, concat_lists=True):

@@ -13,7 +13,15 @@ def class_name(obj):
 
 
 class Object(types.IObject):
-    pass
+    def __repr__(self):
+        r = getattr(self, 'extName', None) or class_name(self)
+        s = getattr(self, 'title', None)
+        if s:
+            r += f' title={s!r}'
+        s = getattr(self, 'uid', None)
+        if s:
+            r += f' uid={s}'
+        return '<' + r + '>'
 
 
 class Node(Object, types.INode):
@@ -28,44 +36,30 @@ class Node(Object, types.INode):
         p = self.cfg('permissions')
         if p:
             for k, v in vars(p).items():
-                self.permissions[k] = util.parse_acl(v)
+                self.permissions[t.cast(gws.Access, k)] = util.parse_acl(v)
         p = self.permissions.get(gws.Access.use)
         if p:
             self.permissions.setdefault(gws.Access.read, p)
 
-        # # since `super().configure` is mandatory in `configure` methods,
-        # # let's automate this by collecting all super 'configure' methods upto 'Node'
-        #
-        mro = []
-        for cls in type(self).mro():
-            if cls == Node:
-                break
-            try:
-                if 'configure' in vars(cls):
-                    mro.append(cls)
-            except TypeError:
-                pass
-
-        self.pre_configure()
-        for cls in reversed(mro):
-            cls.configure(self)  # type: ignore
+        _super_invoke(self, 'pre_configure')
+        _super_invoke(self, 'configure')
 
     def cfg(self, key: str, default=None):
         val = util.get(self.config, key)
         return val if val is not None else default
 
-    def create_child(self, classref, config=None):
-        return self.root.create(classref, parent=self, config=config)
+    def create_child(self, classref, config=None, **kwargs):
+        return self.root.create(classref, parent=self, config=config, **kwargs)
 
-    def create_child_if_configured(self, classref, config=None):
+    def create_child_if_configured(self, classref, config=None, **kwargs):
         if not config:
             return None
-        return self.root.create(classref, parent=self, config=config)
+        return self.root.create(classref, parent=self, config=config, **kwargs)
 
-    def create_children(self, classref, configs):
+    def create_children(self, classref, configs, **kwargs):
         if not configs:
             return []
-        return gws.compact(self.create_child(classref, cfg) for cfg in configs)
+        return gws.compact(self.create_child(classref, cfg, **kwargs) for cfg in configs)
 
     def find_first(self, classref):
         return _find_first_in(self.root, self.children, classref)
@@ -106,7 +100,7 @@ class Root(types.IRoot):
         for obj in reversed(self._objects):
             self._configStack = [obj]
             try:
-                obj.post_configure()
+                _super_invoke(obj, 'post_configure')
             except Exception as exc:
                 log.exception()
                 self._config_error(exc)
@@ -122,9 +116,10 @@ class Root(types.IRoot):
     def find_all(self, classref):
         return _find_all_in(self, self._objects, classref)
 
-    def create_application(self, config=None):
+    def create_application(self, config=None, **kwargs):
+        config = _to_config(config, kwargs)
 
-        obj = self._create('gws.base.application.Object')
+        obj = self._alloc('gws.base.application.Object')
         obj.uid = '0'
         obj.parent = self
         obj.children = []
@@ -133,37 +128,39 @@ class Root(types.IRoot):
         self._uidMap[obj.uid] = obj
         self.app = obj
 
-        self.initialize(obj, util.to_data(config))
+        self.initialize(obj, config)
 
         return obj
 
-    def create_shared(self, classref, config=None):
+    def create_shared(self, classref, config=None, **kwargs):
         if not config:
             cls = self.specs.get_class(classref)
             if not cls:
                 raise error.Error(f'class {classref!r} not found')
             config = dict(uid=f'{cls.__module__}.{cls.__name__}.SHARED.VOID')
 
-        config = util.to_data(config)
+        config = _to_config(config, kwargs)
 
         uid = config.get('uid')
         if uid and uid in self._uidMap:
             return self._uidMap[uid]
 
-        return self.create(classref, config=config)
+        return self._create(classref, None, config)
 
-    def create(self, classref, parent=None, config=None):
-        config = util.to_data(config)
+    def create(self, classref, parent=None, config=None, **kwargs):
+        config = _to_config(config, kwargs)
+        return self._create(classref, parent, config)
 
-        obj = self._create(classref, config.get('type'))
+    def _create(self, classref, parent, config):
+        obj = self._alloc(classref, config.get('type'))
         obj.uid = self._get_uid(config)
         obj.parent = parent
         obj.children = []
 
-        log.debug(f'configuring {_object_name(obj)} in {_object_name(parent)}')
+        log.debug(f'configuring {obj!r} in ' + (repr(parent) if parent else '<root>'))
         ok = self.initialize(obj, config)
         if not ok:
-            log.debug(f'FAILED {_object_name(obj)}')
+            log.debug(f'FAILED {obj!r}')
             return
 
         self._objects.append(obj)
@@ -174,7 +171,7 @@ class Root(types.IRoot):
 
         return obj
 
-    def _create(self, classref, typ=None):
+    def _alloc(self, classref, typ=None):
         cls = self.specs.get_class(classref, typ)
         if not cls:
             raise error.Error(f'class {classref}:{typ} not found')
@@ -196,13 +193,7 @@ class Root(types.IRoot):
         lines = [repr(exc)]
 
         for val in reversed(self._configStack):
-            line = class_name(val)
-            for p in 'title', 'type', 'uid':
-                s = getattr(val, p, None)
-                if s:
-                    line += f' ({p}={s!r})'
-                    break
-            lines.append('in ' + line)
+            lines.append('in ' + repr(val))
 
         self.configErrors.append(lines)
 
@@ -235,6 +226,27 @@ def _is_a(root, obj, classref):
     return False
 
 
+def _super_invoke(obj, method):
+    # since `super().configure` is mandatory in `configure` methods,
+    # let's automate this by collecting all super 'configure' methods
+
+    mro = []
+
+    for cls in type(obj).mro():
+        try:
+            if method in vars(cls):
+                mro.append(cls)
+        except TypeError:
+            pass
+
+    for cls in reversed(mro):
+        getattr(cls, method)(obj)
+
+
+def _to_config(config, defaults):
+    return gws.merge(gws.Data(), defaults, config)
+
+
 ##
 
 
@@ -242,19 +254,6 @@ def create_root_object(specs: types.ISpecRuntime) -> types.IRoot:
     r = Root()
     r.specs = specs
     return r
-
-
-##
-
-
-def _object_name(obj):
-    if not obj:
-        return '?'
-    name = util.get(obj, 'extName', '') or class_name(obj)
-    uid = util.get(obj, 'uid', '')
-    if uid:
-        name += '(' + str(uid) + ')'
-    return name
 
 
 ##

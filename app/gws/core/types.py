@@ -230,11 +230,11 @@ class INode(IObject, Protocol):
 
     def configure(self): ...
 
-    def create_child(self, classref: ClassRef, config=None): ...
+    def create_child(self, classref: ClassRef, config=None, **kwargs): ...
 
-    def create_child_if_configured(self, classref: ClassRef, config=None): ...
+    def create_child_if_configured(self, classref: ClassRef, config=None, **kwargs): ...
 
-    def create_children(self, classref: ClassRef, configs: Any): ...
+    def create_children(self, classref: ClassRef, configs: list, **kwargs): ...
 
     def post_configure(self): ...
 
@@ -262,11 +262,15 @@ class IRoot(Protocol):
 
     def get(self, uid: str, classref: ClassRef = None) -> Optional[INode]: ...
 
-    def create(self, classref: ClassRef, parent: 'INode' = None, config=None): ...
+    def create(self, classref: ClassRef, parent: 'INode' = None, config=None, **kwargs): ...
 
-    def create_shared(self, classref: ClassRef, config=None): ...
+    def create_shared(self, classref: ClassRef, config=None, **kwargs): ...
 
-    def create_application(self, config=None) -> 'IApplication': ...
+    def create_application(self, config=None, **kwargs) -> 'IApplication': ...
+
+
+class IProvider(INode, Protocol):
+    pass
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1051,7 +1055,7 @@ class IDatabaseManager(INode, Protocol):
     def autoload(self, session: 'IDatabaseSession', table_name: str) -> Optional['sqlalchemy.Table']: ...
 
 
-class IDatabaseProvider(INode, Protocol):
+class IDatabaseProvider(IProvider, Protocol):
     mgr: 'IDatabaseManager'
 
     def session(self) -> 'IDatabaseSession': ...
@@ -1224,6 +1228,9 @@ class IModel(INode, Protocol):
     geometryType: Optional[GeometryType]
     geometryCrs: Optional['ICrs']
     loadingStrategy: 'FeatureLoadingStrategy'
+    templates: list['ITemplate']
+
+    provider: 'IProvider'
 
     def field(self, name: str) -> Optional['IModelField']: ...
 
@@ -1630,9 +1637,9 @@ class SearchArgs(Data):
 
 
 class IFinder(INode, Protocol):
-    supportsFilter: bool
-    supportsGeometry: bool
-    supportsKeyword: bool
+    supportsFilter: bool = False
+    supportsGeometry: bool = False
+    supportsKeyword: bool = False
 
     withFilter: bool
     withGeometry: bool
@@ -1640,6 +1647,9 @@ class IFinder(INode, Protocol):
 
     templates: list['ITemplate']
     models: list['IModel']
+
+    provider: 'IProvider'
+    sourceLayers: list['SourceLayer']
 
     tolerance: 'Measurement'
 
@@ -1726,7 +1736,6 @@ class ILayer(INode, Protocol):
     resolutions: list[float]
     title: str
 
-    sourceGrid: Optional[TileGrid]
     grid: Optional[TileGrid]
     cache: Optional[LayerCache]
 
@@ -1738,6 +1747,9 @@ class ILayer(INode, Protocol):
     models: list['IModel']
 
     layers: list['ILayer']
+
+    provider: 'IProvider'
+    sourceLayers: list['SourceLayer']
 
     def ancestors(self) -> list['ILayer']: ...
 
@@ -1865,14 +1877,23 @@ class IOwsService(INode, Protocol):
 
 
 class IOwsProvider(INode, Protocol):
-    forceCrs: 'ICrs'
     alwaysXY: bool
+    forceCrs: 'ICrs'
+    maxRequests: int
     metadata: 'Metadata'
     operations: list[OwsOperation]
     protocol: OwsProtocol
     sourceLayers: list['SourceLayer']
     url: Url
     version: str
+
+    def get_operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
+    def get_feature_info(self, args: SearchArgs, source_layers: list[SourceLayer]) -> list[FeatureData]: ...
+
+
+class IOwsModel(IModel, Protocol):
+    provider: 'IOwsProvider'
+    sourceLayers: list['SourceLayer']
 
     def get_operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
 
