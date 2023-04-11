@@ -9,8 +9,8 @@ import gws.types as t
 
 
 def configure_layers(obj: gws.IOwsClient, provider_class, **filter_args):
-    if obj.cfg('_provider'):
-        obj.provider = obj.cfg('_provider')
+    if obj.cfg('_defaultProvider'):
+        obj.provider = obj.cfg('_defaultProvider')
         obj.source_layers = obj.cfg('_source_layers')
     else:
         obj.provider = obj.root.create_shared(provider_class, obj.config)

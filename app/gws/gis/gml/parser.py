@@ -58,6 +58,10 @@ def parse_envelope(el: gws.IXmlElement, default_crs: gws.ICrs = None, always_xy=
     return gws.gis.bounds.from_extent(ext, crs, always_xy)
 
 
+def is_geometry_element(el: gws.IXmlElement):
+    return el.lname in _GEOMETRY_TAGS
+
+
 def parse_shape(el: gws.IXmlElement, default_crs: gws.ICrs = None, always_xy=False) -> gws.IShape:
     """Convert a GML geometry element to a Shape."""
 

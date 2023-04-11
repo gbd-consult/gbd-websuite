@@ -198,7 +198,7 @@ def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
 
 ##
 
-_DEEP_ATTRIBUTE_DELIMITER = '/'
+_DEEP_ATTRIBUTE_DELIMITER = '.'
 
 
 def _fdata_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureData:
@@ -215,14 +215,14 @@ def _fdata_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureData:
     bbox = None
 
     for el in feature_el:
-        if _is_gml(el) and el.name == 'boundedby':
+        if el.name == 'boundedby':
             # <gml:boundedBy directly under feature
             bbox = gws.gis.gml.parse_envelope(el[0], default_crs, always_xy)
-        elif _is_gml(el):
-            # <gml:GeometryType directly under feature
+        elif gws.gis.gml.is_geometry_element(el):
+            # <gml:Polygon etc directly under feature
             fd.shape = gws.gis.gml.parse_shape(el, default_crs, always_xy)
-        elif len(el) == 1 and _is_gml(el[0]):
-            # <gml:GeometryType in a wrapper tag
+        elif len(el) == 1 and gws.gis.gml.is_geometry_element(el[0]):
+            # <gml:Polygon etc in a wrapper tag
             fd.shape = gws.gis.gml.parse_shape(el[0], default_crs, always_xy)
         elif len(el) > 0:
             # sub-feature

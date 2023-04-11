@@ -10,47 +10,52 @@ import gws.types as t
 class LayerFilter(gws.Data):
     """Source layer filter"""
 
-    level: int = 0 
+    level: int = 0
     """match only layers at this level"""
-    names: t.Optional[list[str]] 
+    names: t.Optional[list[str]]
     """match these layer names (top-to-bottom order)"""
-    titles: t.Optional[list[str]] 
+    titles: t.Optional[list[str]]
     """match these layer titles"""
-    pattern: gws.Regex = '' 
+    pattern: gws.Regex = ''
     """match layers whose full path matches a pattern"""
-    isGroup: t.Optional[bool] 
+    isGroup: t.Optional[bool]
     """if true, match only group layers"""
-    isImage: t.Optional[bool] 
+    isImage: t.Optional[bool]
     """if true, match only images layers"""
-    isQueryable: t.Optional[bool] 
+    isQueryable: t.Optional[bool]
     """if true, match only queryable layers"""
+    isVisible: t.Optional[bool]
+    """if true, match only visible layers"""
 
 
-def layer_matches(sl: gws.SourceLayer, slf: LayerFilter) -> bool:
+def layer_matches(sl: gws.SourceLayer, f: LayerFilter) -> bool:
     """Check if a source layer matches the filter"""
 
-    if not slf:
+    if not f:
         return True
 
-    if slf.level and sl.aLevel != slf.level:
+    if f.level and sl.aLevel != f.level:
         return False
 
-    if slf.names and sl.name not in slf.names:
+    if f.names and sl.name not in f.names:
         return False
 
-    if slf.titles and sl.title not in slf.titles:
+    if f.titles and sl.title not in f.titles:
         return False
 
-    if slf.pattern and not re.search(slf.pattern, sl.aPath):
+    if f.pattern and not re.search(f.pattern, sl.aPath):
         return False
 
-    if slf.isGroup is not None and sl.isGroup != slf.isGroup:
+    if f.isGroup is not None and sl.isGroup != f.isGroup:
         return False
 
-    if slf.isImage is not None and sl.isImage != slf.isImage:
+    if f.isImage is not None and sl.isImage != f.isImage:
         return False
 
-    if slf.isQueryable is not None and sl.isQueryable != slf.isQueryable:
+    if f.isQueryable is not None and sl.isQueryable != f.isQueryable:
+        return False
+
+    if f.isVisible is not None and sl.isVisible != f.isVisible:
         return False
 
     return True
@@ -69,10 +74,32 @@ def check_layers(layers) -> list[gws.SourceLayer]:
     return gws.compact(walk(sl, '', 1) for sl in layers)
 
 
-def filter_layers(layers: list[gws.SourceLayer], slf: LayerFilter) -> list[gws.SourceLayer]:
+def filter_layers(
+        layers: list[gws.SourceLayer],
+        slf: LayerFilter = None,
+        is_group: bool = None,
+        is_image: bool = None,
+        is_queryable: bool = None,
+        is_visible: bool = None,
+) -> list[gws.SourceLayer]:
     """Filter source layers by the given layer filter."""
 
-    if not slf:
+    extra = {}
+    if is_group is not None:
+        extra['isGroup'] = is_group
+    if is_image is not None:
+        extra['isImage'] = is_image
+    if is_queryable is not None:
+        extra['isQueryable'] = is_queryable
+    if is_visible is not None:
+        extra['isVisible'] = is_visible
+
+    if slf:
+        if extra:
+            slf = LayerFilter(slf, extra)
+    elif extra:
+        slf = LayerFilter(extra)
+    else:
         return layers
 
     found = []
