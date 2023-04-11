@@ -106,10 +106,9 @@ class Object(gws.base.ows.provider.Object):
             'QUERY_LAYERS': layer_names,
             'STYLES': [''] * len(layer_names),
             'VERSION': self.version,
+            'FEATURE_COUNT': search.limit or 100,
         }
 
-        if search.limit:
-            params['FEATURE_COUNT'] = search.limit
         if search.extraParams:
             params = gws.merge(params, gws.to_upper_dict(search.extraParams))
 
@@ -123,10 +122,7 @@ class Object(gws.base.ows.provider.Object):
         args = self.prepare_operation(op, params=params)
         text = gws.gis.ows.request.get_text(args)
 
-        fdata = gws.gis.ows.featureinfo.parse(
-            text,
-            default_crs=request_crs,
-            always_xy=always_xy)
+        fdata = gws.gis.ows.featureinfo.parse(text, default_crs=request_crs, always_xy=always_xy)
 
         if fdata is None:
             gws.log.debug(f'get_feature_info: NOT_PARSED params={params!r}')

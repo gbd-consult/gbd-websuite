@@ -14,10 +14,10 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
     """WMS provider"""
 
 
-class Object(gws.base.layer.Object):
+class Object(gws.base.layer.group.Object):
     provider: provider.Object
 
-    def configure(self):
+    def configure_group(self):
         self.provider = provider.get_for(self)
 
         def leaf_layer_maker(source_layers):
@@ -33,10 +33,10 @@ class Object(gws.base.layer.Object):
             leaf_layer_maker,
         )
 
-        self.configure_group(configs)
+        self.configure_group_layers(configs)
 
-        if not self.configure_metadata():
-            self.metadata = self.provider.metadata
-
-    def props(self, user):
-        return gws.merge(super().props(user), type='group')
+    def configure_metadata(self):
+        if super().configure_metadata():
+            return True
+        self.metadata = self.provider.metadata
+        return True

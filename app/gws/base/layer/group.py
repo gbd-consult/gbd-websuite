@@ -25,7 +25,57 @@ class Props(core.Props):
 class Object(core.Object):
 
     def configure(self):
-        self.configure_group(self.cfg('layers'))
+        self.configure_group()
+        if not self.layers:
+            raise gws.Error(f'group {self} is empty')
+
+        self.configure_bounds()
+        self.configure_resolutions()
+        self.configure_legend()
+        self.configure_metadata()
+        self.configure_templates()
+        self.configure_search()
+
+    def configure_group(self):
+        p = self.cfg('layers')
+        if p:
+            self.configure_group_layers(p)
+            return True
+
+    def configure_bounds(self):
+        if super().configure_bounds():
+            return True
+        self.bounds = gws.gis.bounds.union([la.bounds for la in self.layers])
+        return True
+
+    def configure_resolutions(self):
+        if super().configure_resolutions():
+            return True
+        res = set()
+        for la in self.layers:
+            res.update(la.resolutions)
+        self.resolutions = sorted(res)
+        return True
+
+    def configure_legend(self):
+        if super().configure_legend():
+            return True
+        layers_uids = [la.uid for la in self.layers if la.legend]
+        if layers_uids:
+            self.legend = self.create_child(gws.ext.object.legend, type='combined', layerUids=layers_uids)
+            return True
+
+    def post_configure(self):
+        self.canRenderBox = any(la.canRenderBox for la in self.layers)
+        self.canRenderXyz = any(la.canRenderXyz for la in self.layers)
+        self.canRenderSvg = any(la.canRenderSvg for la in self.layers)
+
+        self.supportsRasterServices = any(la.supportsRasterServices for la in self.layers)
+        self.supportsVectorServices = any(la.supportsVectorServices for la in self.layers)
+
+        self.isSearchable = any(la.isSearchable for la in self.layers)
+
+    ##
 
     def props(self, user):
         return gws.merge(super().props(user), layers=self.layers, type='group')

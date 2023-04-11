@@ -120,8 +120,6 @@ class Object(gws.Node, gws.IOwsProvider):
     ##
 
     def get_feature_info(self, search, source_layers):
-        v3 = self.version >= '1.3'
-
         shape = search.shape
         if not shape or shape.type != gws.GeometryType.point:
             return []
@@ -156,40 +154,29 @@ class Object(gws.Node, gws.IOwsProvider):
 
         bbox = gws.gis.extent.transform(bbox, shape.crs, request_crs)
 
-        always_xy = self.alwaysXY or not v3
-        if request_crs.isYX and not always_xy:
-            bbox = gws.gis.extent.swap_xy(bbox)
-
         layer_names = [sl.name for sl in source_layers]
 
         params = {
             'BBOX': bbox,
-            'CRS' if v3 else 'SRS': request_crs.to_string(gws.CrsFormat.epsg),
+            'CRS': request_crs.to_string(gws.CrsFormat.epsg),
             'WIDTH': box_size_px,
             'HEIGHT': box_size_px,
-            'I' if v3 else 'X': box_size_px >> 1,
-            'J' if v3 else 'Y': box_size_px >> 1,
+            'I': box_size_px >> 1,
+            'J': box_size_px >> 1,
             'LAYERS': layer_names,
             'QUERY_LAYERS': layer_names,
             'STYLES': [''] * len(layer_names),
-            'VERSION': self.version,
+            'FEATURE_COUNT': search.limit or 100,
+            'INFO_FORMAT': 'text/xml',
+            'REQUEST': gws.OwsVerb.GetFeatureInfo,
         }
-
-        if search.limit:
-            params['FEATURE_COUNT'] = search.limit
-
-        params['INFO_FORMAT'] = 'text/xml'
-        params['REQUEST'] = gws.OwsVerb.GetFeatureInfo
 
         if search.extraParams:
             params = gws.merge(params, gws.to_upper_dict(search.extraParams))
 
         res = self.call_server(params)
 
-        fdata = gws.gis.ows.featureinfo.parse(
-            res.text,
-            default_crs=request_crs,
-            always_xy=always_xy)
+        fdata = gws.gis.ows.featureinfo.parse(res.text, default_crs=request_crs, always_xy=self.alwaysXY)
 
         if fdata is None:
             gws.log.debug(f'get_feature_info: NOT_PARSED params={params!r}')

@@ -360,12 +360,7 @@ class Object(gws.Node, gws.ILayer):
     def configure_template(self, cfg):
         return self.create_child(gws.ext.object.template, cfg)
 
-    ##
-
-    def configure_group(self, layer_configs):
-        has_resolutions = self.configure_resolutions()
-        has_bounds = self.configure_bounds()
-
+    def configure_group_layers(self, layer_configs):
         ls = []
 
         for cfg in layer_configs:
@@ -377,31 +372,6 @@ class Object(gws.Node, gws.ILayer):
             ls.append(self.create_child(gws.ext.object.layer, cfg))
 
         self.layers = gws.compact(ls)
-        if not self.layers:
-            raise gws.Error(f'group {self.uid!r} is empty')
-
-        if not has_resolutions:
-            res = set()
-            for la in self.layers:
-                res.update(la.resolutions)
-            self.resolutions = sorted(res)
-
-        if not has_bounds:
-            self.bounds = gws.gis.bounds.union([la.bounds for la in self.layers])
-
-        if not self.configure_legend():
-            layers_uids = [la.uid for la in self.layers if la.legend]
-            if layers_uids:
-                self.legend = self.create_child(
-                    gws.ext.object.legend,
-                    gws.Config(type='combined', layerUids=layers_uids))
-
-        self.canRenderBox = any(la.canRenderBox for la in self.layers)
-        self.canRenderXyz = any(la.canRenderXyz for la in self.layers)
-        self.canRenderSvg = any(la.canRenderSvg for la in self.layers)
-
-        self.supportsRasterServices = any(la.supportsRasterServices for la in self.layers)
-        self.supportsVectorServices = any(la.supportsVectorServices for la in self.layers)
 
     ##
 
