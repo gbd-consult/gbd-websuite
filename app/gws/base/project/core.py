@@ -68,7 +68,7 @@ class Object(gws.Node, gws.IProject):
     title: str
 
     def configure(self):
-        self.uid = self.cfg('uid')
+        gws.log.info(f'configuring project {self}')
 
         self.metadata = gws.lib.metadata.from_config(self.cfg('metadata'))
         gws.lib.metadata.extend(self.metadata, self.root.app.metadata)
@@ -77,8 +77,6 @@ class Object(gws.Node, gws.IProject):
         title = self.cfg('title') or self.metadata.get('title') or self.cfg('uid')
         self.metadata.title = title
         self.title = title
-
-        gws.log.info(f'configuring project {self.uid!r}')
 
         self.actionMgr = self.create_child_if_configured(gws.base.action.manager.Object, self.cfg('api'))
 
@@ -100,11 +98,10 @@ class Object(gws.Node, gws.IProject):
         self.client = self.create_child_if_configured(gws.base.client.Object, self.cfg('client'))
 
     def props(self, user):
-        desc = gws.base.template.render(
-            self.templates,
-            gws.TemplateRenderInput(args={'project': self, 'user': user}),
-            user=user,
-            subject='project.description')
+        desc = None
+        tpl = gws.base.template.locate(self, user=user, subject='project.description')
+        if tpl:
+            desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
 
         models = []
         for la in self.map.rootLayer.descendants():

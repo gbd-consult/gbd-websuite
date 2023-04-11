@@ -242,7 +242,7 @@ export class MapManager implements types.IMapManager {
     async selectLayer(layer) {
         if (!layer.description) {
             let res = await this.app.server.mapDescribeLayer({layerUid: layer.uid})
-            layer.description = res.description;
+            layer.description = res.content;
         }
         this.walk(this.root, la => la.selected = false);
         layer.selected = true;

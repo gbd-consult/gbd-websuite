@@ -110,18 +110,6 @@ def locate(
             return tpl
 
 
-def render(
-        templates: list[gws.ITemplate],
-        tri: gws.TemplateRenderInput,
-        user: gws.IUser = None,
-        subject: str = None,
-        mime: str = None
-) -> t.Optional[gws.ContentResponse]:
-    tpl = locate(templates, user, subject, mime)
-    if not tpl:
-        return
-    return tpl.render(tri)
-
 
 ##
 

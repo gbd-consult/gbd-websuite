@@ -62,7 +62,7 @@ class DescribeLayerRequest(gws.Request):
 
 
 class DescribeLayerResponse(gws.Request):
-    description: str
+    content: str
 
 
 class GetFeaturesRequest(gws.Request):
@@ -120,13 +120,18 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('mapDescribeLayer')
     def describe_layer(self, req: gws.IWebRequester, p: DescribeLayerRequest) -> DescribeLayerResponse:
+        project = req.require_project(p.projectUid)
         layer = req.require_layer(p.layerUid)
-        desc = gws.base.template.render(
-            layer.templates,
-            gws.TemplateRenderInput(args=dict(layer=layer, user=req.user)),
-            user=req.user,
-            subject='layer.description')
-        return DescribeLayerResponse(description=desc.content if desc else '')
+        tpl = gws.base.template.locate(layer, project, user=req.user, subject='layer.description')
+
+        if not tpl:
+            return DescribeLayerResponse(content='')
+
+        res = tpl.render(gws.TemplateRenderInput(
+            args={'layer': layer},
+            localeUid=p.localeUid,
+            user=req.user))
+        return DescribeLayerResponse(content=res.content)
 
     @gws.ext.command.api('mapGetFeatures')
     def api_get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> GetFeaturesResponse:
