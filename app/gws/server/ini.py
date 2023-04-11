@@ -493,6 +493,6 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     """
 
     path = _write('nginx.conf', nginx_conf)
-    commands.append(f'nginx -c {path}')
+    commands.append(f'exec nginx -c {path}')
 
     return commands
