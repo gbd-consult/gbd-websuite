@@ -109,8 +109,6 @@ class Config(gws.ConfigWithAccess):
     """layer extent"""
     extentBuffer: t.Optional[int]
     """extent buffer"""
-    sourceGrid: t.Optional[GridConfig]
-    """source grid"""
     grid: t.Optional[GridConfig]
     """target (client) grid"""
     imageFormat: ImageFormat = ImageFormat.png8
@@ -231,6 +229,8 @@ _DEFAULT_TILE_SIZE = 256
 
 
 class Object(gws.Node, gws.ILayer):
+    parent: gws.ILayer
+
     clientOptions: ClientOptions
 
     canRenderBox = False
@@ -240,23 +240,21 @@ class Object(gws.Node, gws.ILayer):
     supportsRasterServices = False
     supportsVectorServices = False
 
-    parentBounds: gws.Bounds
-    parentResolutions: list[float]
+    isSearchable = False
+
+    defaultBounds: gws.Bounds
+    defaultResolutions: list[float]
 
     def configure(self):
-        self.parentBounds = self.cfg('_parentBounds')
-        self.parentResolutions = self.cfg('_parentResolutions')
-
-        self.bounds = self.parentBounds
         self.clientOptions = self.cfg('clientOptions')
         self.displayMode = self.cfg('display')
         self.loadingStrategy = self.cfg('loadingStrategy')
         self.imageFormat = self.cfg('imageFormat')
         self.opacity = self.cfg('opacity')
-        self.resolutions = self.parentResolutions
         self.title = self.cfg('title')
 
-        self.isSearchable = self.cfg('search.enabled')
+        self.bounds = self.defaultBounds = self.cfg('_defaultBounds') or gws.gis.crs.WEBMERCATOR_BOUNDS
+        self.resolutions = self.defaultResolutions = self.cfg('_defaultResolutions') or gws.gis.zoom.OSM_RESOLUTIONS
 
         self.templates = []
         self.models = []
@@ -267,32 +265,38 @@ class Object(gws.Node, gws.ILayer):
 
         self.layers = []
 
-        self.sourceGrid = None
         self.grid = None
-
-        p = self.cfg('grid')
-        if p and p.crs and p.crs != self.parentBounds.crs:
-            raise gws.Error(f'invalid target grid crs')
-
         self.cache = None
-        if self.cfg('cache.enabled'):
-            self.cache = gws.LayerCache(self.cfg('cache'))
+
+        setattr(self, 'provider', None)
+        self.sourceLayers = []
+
+    def post_configure(self):
+        self.isSearchable = bool(self.finders)
+
+    ##
 
     def configure_bounds(self):
         p = self.cfg('extent')
         if p:
             self.bounds = gws.Bounds(
-                crs=self.parentBounds.crs,
+                crs=self.defaultBounds.crs,
                 extent=gws.gis.extent.from_list(p))
             return True
+
+    def configure_cache(self):
+        if self.cfg('cache.enabled'):
+            self.cache = gws.LayerCache(self.cfg('cache'))
 
     def configure_grid(self):
         p = self.cfg('grid')
         if p:
+            if p.crs and p.crs != self.bounds.crs:
+                raise gws.Error(f'invalid target grid crs')
             self.grid = gws.TileGrid(
                 corner=p.corner or gws.Corner.nw,
                 tileSize=p.tileSize or _DEFAULT_TILE_SIZE,
-                bounds=gws.Bounds(crs=self.parentBounds.crs, extent=p.extent),
+                bounds=gws.Bounds(crs=self.bounds.crs, extent=p.extent),
                 resolutions=p.resolutions)
             return True
 
@@ -300,7 +304,7 @@ class Object(gws.Node, gws.ILayer):
         p = self.cfg('legend')
         if p and not p.enabled:
             return True
-        if p and p.enabled and p.type:
+        if p and p.type:
             self.legend = self.create_child(gws.ext.object.legend, p)
             return True
 
@@ -310,33 +314,51 @@ class Object(gws.Node, gws.ILayer):
             self.metadata = gws.lib.metadata.from_config(p)
             return True
 
-    def configure_resolutions(self):
-        p = self.cfg('zoom')
-        if p:
-            self.resolutions = gws.gis.zoom.resolutions_from_config(p, self.parentResolutions)
-            if not self.resolutions:
-                raise gws.Error(f'self {self.uid!r}: no resolutions, config={p!r}, parent={self.parentResolutions!r}')
-            return True
-
     def configure_models(self):
         p = self.cfg('models')
         if p:
-            self.models = self.create_children(gws.ext.object.model, p)
+            self.models = gws.compact(self.configure_model(c) for c in p)
+            return True
+
+    def configure_model(self, cfg):
+        return self.create_child(gws.ext.object.model, cfg)
+
+    def configure_provider(self):
+        pass
+
+    def configure_resolutions(self):
+        p = self.cfg('zoom')
+        if p:
+            self.resolutions = gws.gis.zoom.resolutions_from_config(p, self.cfg('_defaultResolutions'))
+            if not self.resolutions:
+                raise gws.Error(f'layer {self.uid!r}: no resolutions, config={p!r} parent={self.defaultResolutions!r}')
             return True
 
     def configure_search(self):
-        if not self.isSearchable:
+        p = self.cfg('search')
+        if p and not p.enabled:
             return True
         p = self.cfg('finders')
         if p:
-            self.finders = self.create_children(gws.ext.object.finder, p)
+            self.finders = gws.compact(self.configure_finder(c) for c in p)
             return True
 
+    def configure_finder(self, cfg):
+        return self.create_child(gws.ext.object.finder, cfg)
+
+    def configure_sources(self):
+        pass
+
     def configure_templates(self):
-        self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
+        p = self.cfg('templates')
+        if p:
+            self.templates = gws.compact(self.configure_template(cfg) for cfg in p)
         for cfg in _DEFAULT_TEMPLATES:
             self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
         return True
+
+    def configure_template(self, cfg):
+        return self.create_child(gws.ext.object.template, cfg)
 
     ##
 
@@ -349,8 +371,8 @@ class Object(gws.Node, gws.ILayer):
         for cfg in layer_configs:
             cfg = gws.merge(
                 cfg,
-                _parentBounds=self.bounds,
-                _parentResolutions=self.resolutions,
+                _defaultBounds=self.bounds,
+                _defaultResolutions=self.resolutions,
             )
             ls.append(self.create_child(gws.ext.object.layer, cfg))
 

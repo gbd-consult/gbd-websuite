@@ -1,5 +1,6 @@
 import gws
 import gws.base.layer
+import gws.base.layer.group
 import gws.gis.crs
 import gws.gis.bounds
 import gws.gis.extent
@@ -43,6 +44,10 @@ class Props(gws.Data):
     title: str = ''
 
 
+class _RootLayer(gws.base.layer.group.Object):
+    parent: 'Object'
+
+
 class Object(gws.Node, gws.IMap):
 
     def configure(self):
@@ -77,8 +82,8 @@ class Object(gws.Node, gws.IMap):
         self.rootLayer = self.create_child(gws.ext.object.layer, gws.Config(
             type='group',
             layers=self.cfg('layers'),
-            _parentBounds=self.bounds,
-            _parentResolutions=self.resolutions,
+            _defaultBounds=self.bounds,
+            _defaultResolutions=self.resolutions,
         ))
 
     def props(self, user):

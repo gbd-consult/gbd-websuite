@@ -34,10 +34,6 @@ class Object(gws.Node, gws.IFinder):
     spatialContext: SpatialContext
     title: str
 
-    supportsFilter = False
-    supportsGeometry = False
-    supportsKeyword = False
-
     def configure(self):
         self.templates = []
         self.models = []
@@ -49,15 +45,27 @@ class Object(gws.Node, gws.IFinder):
         self.spatialContext = self.cfg('spatialContext', default=SpatialContext.map)
         self.title = self.cfg('title', default='')
 
+    ##
+
     def configure_models(self):
         p = self.cfg('models')
         if p:
-            self.models = self.create_children(gws.ext.object.model, p)
+            self.models = gws.compact(self.configure_model(c) for c in p)
             return True
 
+    def configure_model(self, cfg):
+        return self.create_child(gws.ext.object.model, cfg)
+
     def configure_templates(self):
-        self.create_children(gws.ext.object.template, self.cfg('templates'))
-        return True
+        p = self.cfg('templates')
+        if p:
+            self.templates = gws.compact(self.configure_template(cfg) for cfg in p)
+            return True
+
+    def configure_template(self, cfg):
+        return self.create_child(gws.ext.object.template, cfg)
+
+    ##
 
     def can_run(self, search, user):
         has_param = False

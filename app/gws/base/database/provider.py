@@ -38,8 +38,8 @@ class Object(gws.Node, gws.IDatabaseProvider):
 
 def get_for(obj: gws.INode, uid: str = None, ext_type: str = None):
     uid = uid or obj.cfg('db')
-    if not uid and obj.cfg('_provider'):
-        return obj.cfg('_provider')
+    if not uid and obj.cfg('_defaultProvider'):
+        return obj.cfg('_defaultProvider')
 
     mgr = obj.root.app.databaseMgr
     ext_type = ext_type or obj.extType

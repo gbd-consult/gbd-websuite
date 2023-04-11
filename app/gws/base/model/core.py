@@ -40,6 +40,7 @@ class Props(gws.Props):
 class Object(gws.Node, gws.IModel):
     def configure(self):
         self.fields = []
+        self.templates = []
         self.keyName = ''
         self.geometryName = ''
         self.geometryType = None
@@ -53,6 +54,15 @@ class Object(gws.Node, gws.IModel):
                 self.fields.append(
                     self.create_child(gws.ext.object.modelField, config=gws.merge(cfg, _model=self)))
             return True
+
+    def configure_templates(self):
+        p = self.cfg('templates')
+        if p:
+            self.templates = gws.compact(self.configure_template(cfg) for cfg in p)
+            return True
+
+    def configure_template(self, cfg):
+        return self.create_child(gws.ext.object.template, cfg)
 
     ##
 

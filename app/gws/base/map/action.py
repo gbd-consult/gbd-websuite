@@ -149,11 +149,10 @@ class Object(gws.base.action.Object):
 
     def _get_box(self, req: gws.IWebRequester, p: GetBoxRequest):
         layer = req.require_layer(p.layerUid)
-        lri = gws.LayerRenderInput(type='box')
+        lri = gws.LayerRenderInput(type='box', extraParams={})
 
-        lri.extraRequest = {}
         if p.layers:
-            lri.extraRequest['layers'] = p.layers
+            lri.extraParams['layers'] = p.layers
 
         lri.view = gws.gis.render.map_view_from_bbox(
             crs=gws.gis.crs.get(p.crs) or layer.bounds.crs,
