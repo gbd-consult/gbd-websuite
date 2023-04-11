@@ -27,23 +27,7 @@ class Object(gws.base.layer.vector.Object):
 
     def configure(self):
         self.tableName = self.cfg('tableName')
-        self.configure_provider()
-
-        self.configure_models()
-
-        self.configure_bounds()
-        self.configure_resolutions()
-        self.configure_grid()
-
-        self.configure_legend()
-        self.configure_metadata()
-
-        self.configure_templates()
-        self.configure_search()
-
-    def configure_provider(self):
-        self.provider = gws.base.database.provider.get_for(self)
-        return True
+        self.configure_steps()
 
     def configure_models(self):
         defaults = gws.Config(type='postgres', _provider=self.provider, tableName=self.tableName)
@@ -53,6 +37,10 @@ class Object(gws.base.layer.vector.Object):
             self.models = [self.create_child(gws.ext.object.model, gws.merge(defaults, c)) for c in p]
             return True
         self.models.append(self.create_child(gws.ext.object.model, defaults))
+        return True
+
+    def configure_provider(self):
+        self.provider = gws.base.database.provider.get_for(self)
         return True
 
     def configure_search(self):
