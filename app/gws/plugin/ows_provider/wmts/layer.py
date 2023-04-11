@@ -11,8 +11,10 @@ from . import provider
 gws.ext.new.layer('wmts')
 
 
-class Config(gws.base.layer.Config, provider.Config):
+class Config(gws.base.layer.Config):
     """WMTS layer"""
+    provider: provider.Config
+    """WMTS provider"""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
     """layer display mode"""
     sourceLayer: t.Optional[str]
@@ -26,7 +28,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
     styleName: str
 
     def configure(self):
-        self.provider = self.cfg('_provider') or self.root.create_shared(provider.Object, self.config)
+        self.provider = self.cfg('_defaultProvider') or self.root.create_shared(provider.Object, self.config)
 
         self.sourceLayers = self.cfg('_sourceLayers')
         if not self.sourceLayers:
@@ -42,7 +44,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
 
         p = self.cfg('sourceGrid', default=gws.Config())
         crs = p.crs or gws.gis.crs.best_match(
-            self.parentBounds.crs,
+            self.defaultBounds.crs,
             gws.gis.source.combined_crs_list(self.sourceLayers))
 
         self.tileMatrixSet = self.get_tile_matrix_set_for_crs(crs)
@@ -64,17 +66,17 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             corner=p.corner or gws.Corner.nw,
             tileSize=p.tileSize or 256,
         )
-        crs = self.parentBounds.crs
+        crs = self.defaultBounds.crs
         extent = (
             p.extent or
-            self.sourceGrid.bounds.extent if crs == self.sourceGrid.bounds.crs else self.parentBounds.extent)
+            self.sourceGrid.bounds.extent if crs == self.sourceGrid.bounds.crs else self.defaultBounds.extent)
         self.grid.bounds = gws.Bounds(crs=crs, extent=extent)
         self.grid.resolutions = (
                 p.resolutions or
                 gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize))
 
         if not self.configure_bounds():
-            self.bounds = self.parentBounds
+            self.bounds = self.defaultBounds
 
         if not self.configure_resolutions():
             res = [units.scale_to_res(m.scale) for m in self.tileMatrixSet.matrices]

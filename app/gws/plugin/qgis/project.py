@@ -17,10 +17,10 @@ class Error(gws.Error):
 
 
 class Source(gws.Data):
-    path: t.Optional[gws.FilePath]
-    db: t.Optional[str]
-    schema: t.Optional[str]
-    name: t.Optional[str]
+    path: gws.FilePath
+    db: str
+    schema: str
+    name: str
 
 
 def from_source(source: Source, obj: gws.INode):

@@ -1,4 +1,4 @@
-"""WMS model."""
+"""QGIS Server-based Model."""
 
 import gws
 import gws.base.model
@@ -8,7 +8,7 @@ import gws.types as t
 
 from . import provider
 
-gws.ext.new.model('wms')
+gws.ext.new.model('qgislocal')
 
 
 class Config(gws.base.model.Config):

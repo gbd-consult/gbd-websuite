@@ -7,17 +7,17 @@ import gws.gis.zoom
 import gws.base.layer
 import gws.types as t
 
+from . import provider
+
 gws.ext.new.layer('tile')
 
 
 class Config(gws.base.layer.Config):
     """Tile layer"""
+    provider: provider.Config
+    """tile service provider"""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
     """layer display mode"""
-    maxRequests: int = 0
-    """max concurrent requests to this source"""
-    url: gws.Url
-    """rest url with placeholders {x}, {y} and {z}"""
 
 
 _GRID_DEFAULTS = gws.TileGrid(
@@ -31,70 +31,67 @@ _GRID_DEFAULTS = gws.TileGrid(
 
 
 class Object(gws.base.layer.Object):
-    url: gws.Url
+    provider: provider.Object
 
     def configure(self):
-        # with reqSize=1 MP will request the same tile multiple times
-        # reqSize=4 is more efficient, however, reqSize=1 yields the first tile faster
-        # which is crucial when browsing non-cached low resolutions
-        # so, let's use 1 as default, overridable in the config
-        #
-        # @TODO make MP cache network requests
+        self.configure_provider()
+        self.configure_sources()
+        self.configure_models()
+        self.configure_bounds()
+        self.configure_resolutions()
+        self.configure_grid()
+        self.configure_legend()
+        self.configure_cache()
+        self.configure_metadata()
+        self.configure_templates()
+        self.configure_search()
 
-        self.url = self.cfg('url')
+    def configure_provider(self):
+        self.provider = self.root.create_shared(provider.Object, self.cfg('provider'))
+        return True
 
-        p = self.cfg('sourceGrid', default=gws.Config())
-        self.sourceGrid = gws.TileGrid(
-            corner=p.corner or gws.Corner.lt,
-            tileSize=p.tileSize or 256,
-        )
-        crs = p.crs or gws.gis.crs.WEBMERCATOR
-        extent = p.extent or (gws.gis.crs.WEBMERCATOR_SQUARE if crs == gws.gis.crs.WEBMERCATOR else crs.extent)
-        self.sourceGrid.bounds = gws.Bounds(crs=crs, extent=extent)
-        self.sourceGrid.resolutions = (
-                p.resolutions or
-                gws.gis.zoom.resolutions_from_bounds(self.sourceGrid.bounds, self.sourceGrid.tileSize))
+    def configure_bounds(self):
+        if super().configure_bounds():
+            return True
+        self.bounds = gws.gis.bounds.transform(
+            self.provider.grid.bounds,
+            self.defaultBounds.crs)
+        return True
 
+    def configure_grid(self):
         p = self.cfg('grid', default=gws.Config())
+
         self.grid = gws.TileGrid(
             corner=p.corner or gws.Corner.nw,
             tileSize=p.tileSize or 256,
         )
-        crs = self.parentBounds.crs
-        extent = (
-            p.extent or
-            self.sourceGrid.bounds.extent if crs == self.sourceGrid.bounds.crs else self.parentBounds.extent)
+
+        crs = self.defaultBounds.crs
+
+        if p.extent:
+            extent = p.extent
+        elif crs == self.provider.grid.bounds.crs:
+            extent = self.provider.grid.bounds.extent
+        else:
+            extent = self.defaultBounds.extent
         self.grid.bounds = gws.Bounds(crs=crs, extent=extent)
-        self.grid.resolutions = (
-                p.resolutions or
-                gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize))
 
-        if not self.configure_bounds():
-            self.bounds = self.parentBounds
-
-        self.configure_metadata()
-        self.configure_legend()
-
-    def props(self, user):
-        p = super().props(user)
-        if self.displayMode == gws.LayerDisplayMode.client:
-            return gws.merge(p, type='xyz', url=self.url)
-        return p
-
-    def render(self, lri):
-        return gws.base.layer.util.generic_raster_render(self, lri)
+        if p.resolutions:
+            self.grid.resolutions = p.resolutions
+        else:
+            self.grid.resolutions = gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize)
 
     def mapproxy_config(self, mc, options=None):
         if self.displayMode == gws.LayerDisplayMode.client:
             return
 
         # we use {x} like in Ol, mapproxy wants %(x)s
-        url = self.url
+        url = self.provider.url
         url = url.replace('{x}', '%(x)s')
         url = url.replace('{y}', '%(y)s')
         url = url.replace('{z}', '%(z)s')
 
-        sg = self.sourceGrid
+        sg = self.provider.grid
 
         if sg.corner == gws.Corner.nw:
             origin = 'nw'
@@ -113,3 +110,14 @@ class Object(gws.base.layer.Object):
 
         src_uid = gws.base.layer.util.mapproxy_back_cache_config(self, mc, url, back_grid_uid)
         gws.base.layer.util.mapproxy_layer_config(self, mc, src_uid)
+
+    ##
+
+    def props(self, user):
+        p = super().props(user)
+        if self.displayMode == gws.LayerDisplayMode.client:
+            return gws.merge(p, type='xyz', url=self.provider.url)
+        return p
+
+    def render(self, lri):
+        return gws.base.layer.util.generic_raster_render(self, lri)

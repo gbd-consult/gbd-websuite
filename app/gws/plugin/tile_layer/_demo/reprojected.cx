@@ -4,14 +4,14 @@ projects+ {
 
     map {
         crs 25830
-        extent {@demo_make_extent(1181583, 5720282, 1000)}
+        extent {demo_make_extent(1181583, 5720282, 1000)}
         zoom.initScale 500000
     }
 
     map.layers+ {
         title "Open Street Map"
         type "tile"
-        url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
 
         display "tile"
         cache.enabled true

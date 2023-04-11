@@ -1,6 +1,6 @@
 projects+ {
-    title "QGIS flat layer"
-    metadata.abstract "`qgisflat` layers display multiple layers from a QGIS project as a single WebSuite layer."
+    title "QGIS flat layer, partial"
+    metadata.abstract "Display only some QGIS layers in a `qgisflat` layer."
 
     map {
         center {demo_point_duesseldorf_3857}
@@ -9,9 +9,13 @@ projects+ {
     }
 
     map.layers+ {
-        title "Essen und Trinken in Düsseldorf"
+        title "Bars und Kneipen in Düsseldorf"
         type "qgisflat"
         provider.path "poi.qgs"
+        sourceLayers.names [
+            "Bar"
+            "Kneipe"
+        ]
     }
 
     {demo_osm_background}

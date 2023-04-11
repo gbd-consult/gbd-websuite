@@ -3,7 +3,7 @@ projects+ {
     metadata.abstract "Use `rootLayers` for configure WMS root layers."
 
     map {
-        center {@demo_point_dresden_3857}
+        center {demo_point_dresden_3857}
         zoom.initScale 70000
         zoom.maxScale 1000000
     }
@@ -11,7 +11,7 @@ projects+ {
     map.layers+ {
         title "Sachsenforst: Natur und Erholung"
         type "wms"
-        url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
+        provider.url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
         metadata.attribution.title "Staatsbetrieb Sachsenforst"
 
         rootLayers.titles [
@@ -20,5 +20,5 @@ projects+ {
         ]
     }
 
-    @demo_osm_background
+    {demo_osm_background}
 }

@@ -3,7 +3,7 @@ projects+ {
     metadata.abstract "Tiled display of a WMS."
 
     map {
-        center {@demo_point_duesseldorf_3857}
+        center {demo_point_duesseldorf_3857}
         zoom.initScale 8000
         zoom.maxScale 15000
     }
@@ -11,7 +11,7 @@ projects+ {
     map.layers+ {
         title "NRW Straßenflächen"
         type "wmsflat"
-        url "https://www.wms.nrw.de/geobasis/wms_nw_inspire-verkehrsnetze_alkis"
+        provider.url "https://www.wms.nrw.de/geobasis/wms_nw_inspire-verkehrsnetze_alkis"
         metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
 
         sourceLayers.names [ "TN.RoadTransportNetwork.RoadArea" ]
@@ -19,5 +19,5 @@ projects+ {
         display "tile"
     }
 
-    @demo_osm_background
+    {demo_osm_background}
 }

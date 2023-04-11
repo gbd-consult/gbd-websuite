@@ -1,14 +1,15 @@
-"""WMS Finder."""
+"""QGIS Server-based Finder."""
 
 import gws
-import gws.base.ows
+import gws.base.model
 import gws.base.search
+import gws.base.ows
 import gws.gis.source
 import gws.types as t
 
 from . import provider
 
-gws.ext.new.finder('wms')
+gws.ext.new.finder('qgislocal')
 
 
 class Config(gws.base.search.finder.Config):

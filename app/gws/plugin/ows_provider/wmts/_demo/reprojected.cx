@@ -16,5 +16,5 @@ projects+ {
         cache.enabled true
     }
 
-    @demo_osm_background
+    {demo_osm_background}
 }

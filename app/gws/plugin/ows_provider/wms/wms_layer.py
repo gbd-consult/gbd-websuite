@@ -9,23 +9,23 @@ from . import provider
 gws.ext.new.layer('wms')
 
 
-class Config(gws.base.layer.Config, gws.base.layer.tree.Config, provider.Config):
-    pass
+class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
+    provider: provider.Config
+    """WMS provider"""
 
 
 class Object(gws.base.layer.Object):
     provider: provider.Object
 
     def configure(self):
-        self.provider = self.root.create_shared(provider.Object, self.config)
+        self.provider = provider.configure_for(self)
 
         def leaf_layer_maker(source_layers):
-            return {
-                'type': 'wmsflat',
-                'url': self.provider.url,
-                '_provider': self.provider,
-                '_sourceLayers': source_layers,
-            }
+            return dict(
+                type='wmsflat',
+                _defaultProvider=self.provider,
+                _defaultSourceLayers=source_layers,
+            )
 
         configs = gws.base.layer.tree.layer_configs_from_layer(
             self,

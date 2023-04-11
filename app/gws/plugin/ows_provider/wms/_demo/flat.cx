@@ -3,16 +3,16 @@ projects+ {
     metadata.abstract "`wmsflat` layers display multiple WMS layers as a single WebSuite layer."
 
     map {
-        center {@demo_point_duesseldorf_3857}
+        center {demo_point_duesseldorf_3857}
         zoom.initScale 15000
     }
 
     map.layers+ {
         title "Verkehrsnetze"
         type "wmsflat"
-        url "https://www.wms.nrw.de/geobasis/wms_nw_inspire-verkehrsnetze_alkis"
+        provider.url "https://www.wms.nrw.de/geobasis/wms_nw_inspire-verkehrsnetze_alkis"
         metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
     }
 
-    @demo_osm_background
+    {demo_osm_background}
 }

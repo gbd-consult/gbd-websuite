@@ -3,7 +3,7 @@ projects+ {
     metadata.abstract "`qgis` layers display complete QGIS Projects as WebSuite layers, keeping the structure"
 
     map {
-        center {@demo_point_duesseldorf_3857}
+        center {demo_point_duesseldorf_3857}
         zoom.initScale 30000
         zoom.maxScale  1000000
     }
@@ -11,8 +11,8 @@ projects+ {
     map.layers+ {
         title "Düsseldorf"
         type "qgis"
-        source.path "poi.qgs"
+        provider.path "poi.qgs"
     }
 
-    @demo_osm_background
+    {demo_osm_background}
 }

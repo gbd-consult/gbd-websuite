@@ -30,8 +30,8 @@ class Object(gws.base.template.Object):
     map_position: gws.MSize
 
     def configure(self):
-        if self.cfg('_provider'):
-            self.provider = self.cfg('_provider')
+        if self.cfg('_defaultProvider'):
+            self.provider = self.cfg('_defaultProvider')
         else:
             self.provider = self.create_child(provider.Object, self.config, shared=True)
 

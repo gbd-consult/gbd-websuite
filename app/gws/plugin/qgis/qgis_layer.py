@@ -9,15 +9,16 @@ from . import provider
 gws.ext.new.layer('qgis')
 
 
-class Config(gws.base.layer.Config, gws.base.layer.tree.Config, provider.Config):
-    pass
+class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
+    provider: t.Optional[provider.Config]
+    """qgis provider"""
 
 
 class Object(gws.base.layer.Object):
     provider: provider.Object
 
     def configure(self):
-        self.provider = self.root.create_shared(provider.Object, self.config)
+        self.provider = provider.configure_for(self)
 
         configs = gws.base.layer.tree.layer_configs_from_layer(
             self,

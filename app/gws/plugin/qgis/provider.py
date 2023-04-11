@@ -1,8 +1,10 @@
-import sqlalchemy as sa
+"""QGIS provider."""
 
 import gws
 import gws.lib.metadata
 import gws.gis.crs
+import gws.gis.ows
+import gws.gis.source
 import gws.gis.extent
 import gws.lib.net
 import gws.types as t
@@ -11,14 +13,22 @@ from . import caps, project
 
 
 class Config(gws.Config):
-    source: project.Source
+    path: t.Optional[gws.FilePath]
     """Qgis project file"""
+    db: t.Optional[str]
+    """Qgis project database"""
+    schema: t.Optional[str]
+    """Qgis project schema"""
+    name: t.Optional[str]
+    """Qgis project name"""
     directRender: t.Optional[list[str]]
     """QGIS data providers that should be rendered directly"""
     directSearch: t.Optional[list[str]]
     """QGIS data providers that should be searched directly"""
     forceCrs: t.Optional[gws.CrsName]
     """use this CRS for requests"""
+    sqlFilters: t.Optional[dict]
+    """per-layer sql filters"""
 
 
 # see https://docs.qgis.org/3.22/de/docs/server_manual/services/wms.html#getlegendgraphics
@@ -48,21 +58,25 @@ _DEFAULT_LEGEND_PARAMS = {
 
 class Object(gws.Node, gws.IOwsProvider):
     source: project.Source
+    project: project.Object
     printTemplates: list[caps.PrintTemplate]
     url: str
-    project: project.Object
 
     directRender: set[str]
     directSearch: set[str]
 
-    crs: gws.ICrs
-    extent: t.Optional[gws.Extent]
+    bounds: t.Optional[gws.Bounds]
 
     caps: caps.Caps
 
     def configure(self):
-        self.source = self.cfg('source')
-        # self.root.app.monitor.add_path(self.path)
+        self.source = project.Source(
+            path=self.cfg('path'),
+            db=self.cfg('db'),
+            schema=self.cfg('schema'),
+            name=self.cfg('name'),
+        )
+        # self.root.app.monitor.add_path(self.source.path)
 
         self.url = 'http://%s:%s' % (
             self.root.app.cfg('server.qgis.host'),
@@ -76,84 +90,126 @@ class Object(gws.Node, gws.IOwsProvider):
         self.sourceLayers = self.caps.sourceLayers
         self.version = self.caps.version
 
-        self.crs = gws.gis.crs.get(self.cfg('forceCrs')) or self.caps.projectCrs
+        self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs')) or self.caps.projectCrs
+        self.alwaysXY = False
 
         self.directRender = set(self.cfg('directRender', default=[]))
         self.directSearch = set(self.cfg('directSearch', default=[]))
 
-        self.extent = None
+        self.bounds = None
         wms_extent = self.caps.properties.get('WMSExtent')
         if wms_extent:
-            self.extent = gws.gis.extent.from_list([float(v) for v in wms_extent])
+            self.bounds = gws.Bounds(
+                extent=gws.gis.extent.from_list([float(v) for v in wms_extent]),
+                crs=self.caps.projectCrs)
 
+    ##
 
-    def find_features(self, args, source_layers):
-        if not args.shapes:
+    def call_server(self, params: dict) -> gws.lib.net.HTTPResponse:
+        defaults = dict(
+            # @TODO postgres
+            MAP=self.source.path,
+            SERVICE=gws.OwsProtocol.WMS,
+            VERSION='1.3.0',
+        )
+        params = gws.merge(defaults, gws.to_upper_dict(params))
+        res = gws.lib.net.http_request(self.url, params=params, timeout=1000)
+        res.raise_if_failed()
+        return res
+
+    ##
+
+    def get_feature_info(self, search, source_layers):
+        v3 = self.version >= '1.3'
+
+        shape = search.shape
+        if not shape or shape.type != gws.GeometryType.point:
             return []
 
-        shape = args.shapes[0]
-        if shape.type != gws.GeometryType.point:
+        request_crs = self.forceCrs
+        if not request_crs:
+            request_crs = gws.gis.crs.best_match(
+                shape.crs,
+                gws.gis.source.combined_crs_list(source_layers))
+
+        box_size_m = 500
+        box_size_deg = 1
+        box_size_px = 500
+
+        size = None
+
+        if shape.crs.uom == gws.Uom.m:
+            size = box_size_px * search.resolution
+        if shape.crs.uom == gws.Uom.deg:
+            # @TODO use search.resolution here as well
+            size = box_size_deg
+        if not size:
+            gws.log.debug('cannot request crs {crs!r}, unsupported unit')
             return []
 
-        ps = gws.gis.ows.client.prepared_search(
-            limit=args.limit,
-            point=shape,
-            protocol=gws.OwsProtocol.WMS,
-            protocol_version='1.3.0',
-            request_crs=self.force_crs,
-            request_crs_format=gws.CrsFormat.EPSG,
-            source_layers=source_layers,
+        bbox = (
+            shape.x - (size / 2),
+            shape.y - (size / 2),
+            shape.x + (size / 2),
+            shape.y + (size / 2),
         )
 
-        qgis_defaults = {
-            'INFO_FORMAT': 'text/xml',
-            'MAP': self.path,
+        bbox = gws.gis.extent.transform(bbox, shape.crs, request_crs)
 
-            # @TODO should be configurable
+        always_xy = self.alwaysXY or not v3
+        if request_crs.isYX and not always_xy:
+            bbox = gws.gis.extent.swap_xy(bbox)
 
-            'FI_LINE_TOLERANCE': 8,
-            'FI_POINT_TOLERANCE': 16,
-            'FI_POLYGON_TOLERANCE': 4,
+        layer_names = [sl.name for sl in source_layers]
 
-            # see https://github.com/qgis/qwc2-demo-app/issues/55
-            'WITH_GEOMETRY': 1,
+        params = {
+            'BBOX': bbox,
+            'CRS' if v3 else 'SRS': request_crs.to_string(gws.CrsFormat.epsg),
+            'WIDTH': box_size_px,
+            'HEIGHT': box_size_px,
+            'I' if v3 else 'X': box_size_px >> 1,
+            'J' if v3 else 'Y': box_size_px >> 1,
+            'LAYERS': layer_names,
+            'QUERY_LAYERS': layer_names,
+            'STYLES': [''] * len(layer_names),
+            'VERSION': self.version,
         }
 
-        params = gws.merge(qgis_defaults, ps.params, args.params)
+        if search.limit:
+            params['FEATURE_COUNT'] = search.limit
 
-        text = gws.gis.ows.request.get_text(self.url, gws.OwsProtocol.WMS, gws.OwsVerb.GetFeatureInfo, params=params)
-        features = []  # gws.gis.ows.formats.read(text, crs=ps.request_crs)
+        params['INFO_FORMAT'] = 'text/xml'
+        params['REQUEST'] = gws.OwsVerb.GetFeatureInfo
 
-        if features is None:
-            gws.log.debug(f'QGIS/WMS NOT_PARSED params={params!r}')
+        if search.extraParams:
+            params = gws.merge(params, gws.to_upper_dict(search.extraParams))
+
+        res = self.call_server(params)
+
+        fdata = gws.gis.ows.featureinfo.parse(
+            res.text,
+            default_crs=request_crs,
+            always_xy=always_xy)
+
+        if fdata is None:
+            gws.log.debug(f'get_feature_info: NOT_PARSED params={params!r}')
             return []
 
-        gws.log.debug(f'QGIS/WMS FOUND={len(features)} params={params!r}')
-        return [f.transform_to(shape.crs) for f in features]
+        gws.log.debug(f'get_feature_info: FOUND={len(fdata)} params={params!r}')
 
-    def legendUrl(self, source_layers, params=None):
-        # qgis legends are rendered bottom-up (rightmost first)
-        # we need the straight order (leftmost first), like in the config
+        for fd in fdata:
+            if fd.shape:
+                fd.shape = fd.shape.transformed_to(shape.crs)
 
-        std_params = gws.merge(_DEFAULT_LEGEND_PARAMS, {
-            'MAP': self.path,
-            'LAYER': ','.join(sl.name for sl in reversed(source_layers)),
-            'FORMAT': 'image/png',
-            'TRANSPARENT': True,
-            'STYLE': '',
-            'VERSION': '1.1.1',
-            'DPI': 96,
-            'SERVICE': gws.OwsProtocol.WMS,
-            'REQUEST': gws.OwsVerb.GetLegendGraphic,
-        })
+        return fdata
 
-        return gws.lib.net.add_params(self.url, gws.merge(std_params, params))
+    ##
 
     def leaf_layer_config(self, source_layers):
         default = {
             'type': 'qgisflat',
-            '_provider': self,
-            '_sourceLayers': source_layers
+            '_defaultProvider': self,
+            '_defaultSourceLayers': source_layers
         }
 
         if len(source_layers) > 1 or source_layers[0].isGroup:
@@ -194,9 +250,9 @@ class Object(gws.Node, gws.IOwsProvider):
 
     def search_config(self, source_layers):
         default = {
-            'type': 'qgiswms',
-            '_provider': self,
-            '_source_layers': source_layers,
+            'type': 'qgislocal',
+            '_defaultProvider': self,
+            '_defaultSourceLayers': source_layers
         }
 
         if len(self.source_layers) > 1 or self.source_layers[0].isGroup:
@@ -293,3 +349,34 @@ class Object(gws.Node, gws.IOwsProvider):
         for tpl in pts:
             if tpl.title == ref:
                 return tpl
+
+    def legendUrl(self, source_layers, params=None):
+        # qgis legends are rendered bottom-up (rightmost first)
+        # we need the straight order (leftmost first), like in the config
+
+        std_params = gws.merge(_DEFAULT_LEGEND_PARAMS, {
+            'MAP': self.path,
+            'LAYER': ','.join(sl.name for sl in reversed(source_layers)),
+            'FORMAT': 'image/png',
+            'TRANSPARENT': True,
+            'STYLE': '',
+            'VERSION': '1.1.1',
+            'DPI': 96,
+            'SERVICE': gws.OwsProtocol.WMS,
+            'REQUEST': gws.OwsVerb.GetLegendGraphic,
+        })
+
+        return gws.lib.net.add_params(self.url, gws.merge(std_params, params))
+
+
+##
+
+
+def configure_for(obj: gws.INode) -> Object:
+    p = obj.cfg('provider')
+    if p:
+        return obj.root.create_shared(Object, p)
+    p = obj.cfg('_defaultProvider')
+    if p:
+        return p
+    raise gws.Error(f'no provider found for {obj!r}')

@@ -1,114 +1,170 @@
 import gws
 import gws.base.layer
-import gws.lib.metadata
-import gws.gis.source
-import gws.lib.osx
+import gws.gis.crs
+import gws.gis.bounds
+import gws.gis.extent
 import gws.gis.ows
+import gws.gis.source
+import gws.gis.zoom
+import gws.lib.metadata
+import gws.lib.osx
 import gws.types as t
 
-from . import provider
+from . import provider, render
 
 gws.ext.new.layer('qgisflat')
 
 
-class Config(gws.base.layer.Config, provider.Config):
+class Config(gws.base.layer.Config):
     """Flat Qgis layer"""
 
+    provider: t.Optional[provider.Config]
+    """qgis provider"""
     sourceLayers: t.Optional[gws.gis.source.LayerFilter]
     """source layers to use"""
 
 
-class Object(gws.base.layer.Object, gws.IOwsClient):
+class Object(gws.base.layer.Object):
     provider: provider.Object
-    sourceCrs: gws.ICrs
+    sqlFilters: dict
+    imageLayers: list[gws.SourceLayer]
+    searchLayers: list[gws.SourceLayer]
 
     def configure(self):
-        self.provider = self.cfg('_provider') or self.root.create_shared(provider.Object, self.config)
+        self.sqlFilters = self.cfg('sqlFilters', default={})
 
-        self.sourceLayers = self.cfg('_sourceLayers')
-        if not self.sourceLayers:
-            slf = gws.merge(
-                gws.gis.source.LayerFilter(isImage=True),
-                self.cfg('sourceLayers'))
-            self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, slf)
-        if not self.sourceLayers:
-            raise gws.Error(f'no source layers found in {self.provider.url!r}')
+        self.configure_provider()
+        self.configure_sources()
+        self.configure_models()
+        self.configure_bounds()
+        self.configure_resolutions()
+        self.configure_grid()
+        self.configure_legend()
+        self.configure_cache()
+        self.configure_metadata()
+        self.configure_templates()
+        self.configure_search()
 
-        self.sourceCrs = self.provider.crs
+    def configure_provider(self):
+        self.provider = provider.configure_for(self)
+        return True
 
-        if not self.configure_metadata():
-            if len(self.sourceLayers) == 1:
-                self.metadata = self.sourceLayers[0].metadata
+    def configure_sources(self):
+        if super().configure_sources():
+            return True
+        self.configure_source_layers()
+        self.imageLayers = gws.gis.source.filter_layers(self.sourceLayers, is_image=True)
+        self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)
 
-        if not self.configure_bounds():
-            our_crs = self.parentBounds.crs
-            if self.provider.extent:
-                self.bounds = gws.Bounds(
-                    crs=our_crs,
-                    extent=gws.gis.extent.transform(
-                        self.provider.extent,
-                        self.provider.crs,
-                        our_crs
-                    ))
-            else:
-                wgs_extent = gws.gis.extent.union(
-                    gws.compact(sl.wgsExtent for sl in self.sourceLayers))
-                self.bounds = gws.Bounds(
-                    crs=our_crs,
-                    extent=gws.gis.extent.transform(
-                        wgs_extent,
-                        gws.gis.crs.WGS84,
-                        our_crs
-                    ))
+    def configure_source_layers(self):
+        p = self.cfg('sourceLayers')
+        if p:
+            self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, p)
+            return True
+        p = self.cfg('_defaultSourceLayers')
+        if p:
+            self.sourceLayers = p
+            return True
+        self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, is_visible=True)
+        return True
 
-        if not self.configure_resolutions():
-            self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.parentResolutions)
-            if not self.resolutions:
-                raise gws.Error(f'layer {self.uid!r}: no matching resolutions')
+    def configure_models(self):
+        if super().configure_models():
+            return True
+        self.models.append(self.configure_model({}))
+        return True
 
-        p = self.cfg('grid', default=gws.Config())
+    def configure_model(self, cfg):
+        return self.create_child(
+            gws.ext.object.model,
+            gws.merge(
+                dict(type='qgislocal', _defaultProvider=self.provider, _defaultSourceLayers=self.searchLayers),
+                cfg))
+
+    def configure_bounds(self):
+        if super().configure_bounds():
+            return True
+        if self.provider.bounds:
+            self.bounds = gws.gis.bounds.transform(self.provider.bounds, self.defaultBounds.crs)
+            return True
+        wgs_bounds = gws.gis.bounds.union(gws.compact(sl.wgsBounds for sl in self.sourceLayers))
+        self.bounds = gws.gis.bounds.transform(wgs_bounds, self.defaultBounds.crs)
+        return True
+
+    def configure_resolutions(self):
+        if super().configure_resolutions():
+            return True
+        self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.cfg('_defaultResolutions'))
+        if not self.resolutions:
+            raise gws.Error(f'layer {self.uid!r}: no matching resolutions')
+
+    def configure_grid(self):
+        if super().configure_grid():
+            return True
         self.grid = gws.TileGrid(
-            corner=p.corner or gws.Corner.nw,
-            tileSize=p.tileSize or 256,
-        )
-        crs = self.parentBounds.crs
-        extent = (p.extent or self.parentBounds.extent)
-        self.grid.bounds = gws.Bounds(crs=crs, extent=extent)
-        self.grid.resolutions = p.resolutions or self.resolutions
+            corner=gws.Corner.nw,
+            tileSize=256,
+            bounds=self.bounds,
+            resolutions=self.resolutions)
+        return True
 
-        if not self.configure_legend():
-            urls = gws.compact(sl.legendUrl for sl in self.sourceLayers)
-            if urls:
-                self.legend = self.create_child(
-                    gws.ext.object.legend,
-                    gws.merge(self.cfg('legend'), type='remote', urls=urls))
-                return True
+    def configure_legend(self):
+        if super().configure_legend():
+            return True
+        urls = gws.compact(sl.legendUrl for sl in self.sourceLayers)
+        if urls:
+            self.legend = self.create_child(
+                gws.ext.object.legend,
+                gws.merge(self.cfg('legend'), type='remote', urls=urls))
+            return True
+
+    def configure_metadata(self):
+        if super().configure_metadata():
+            return True
+        if len(self.sourceLayers) == 1:
+            self.metadata = self.sourceLayers[0].metadata
+            return True
+
+    def configure_templates(self):
+        return super().configure_templates()
+
+    def configure_search(self):
+        if super().configure_search():
+            return True
+        if self.searchLayers:
+            self.finders.append(self.configure_finder({}))
+            return True
+
+    def configure_finder(self, cfg):
+        return self.create_child(
+            gws.ext.object.finder,
+            gws.merge(
+                dict(type='qgislocal', _defaultProvider=self.provider, _defaultSourceLayers=self.searchLayers),
+                cfg))
+
+    ##
 
     def render(self, lri):
-        return gws.base.layer.util.generic_raster_render(self, lri)
+        params = dict(lri.extraParams or {})
+        all_names = [sl.name for sl in self.imageLayers]
+        req_names = params.pop('layers', all_names)
+        req_filters = params.pop('filters', self.sqlFilters)
 
-    # def mapproxy_config(self, mc, options=None):
-    #     # NB: qgis caps layers are always top-down
-    #     layers = reversed([sl.name for sl in self.sourceLayers])
-    #
-    #     source_uid = mc.source({
-    #         'type': 'wms',
-    #         'supported_srs': [self.sourceCrs.epsg],
-    #         'forward_req_params': ['DPI__gws'],
-    #         'concurrent_requests': self.root.app.cfg('server.qgis.maxRequests', default=0),
-    #         'req': {
-    #             'url': self.provider.url,
-    #             'map': self.provider.path,
-    #             'layers': ','.join(layers),
-    #             'transparent': True,
-    #         },
-    #         'wms_opts': {
-    #             'version': '1.3.0',
-    #         },
-    #
-    #         # add the file checksum to the config, so that the source and cache ids
-    #         # in the mpx config are recalculated when the file changes
-    #         '$hash': self.provider.project.sourceHash,
-    #     })
-    #
-    #     gws.base.layer.util.mapproxy_layer_config(self, mc, source_uid)
+        layers = []
+        filters = []
+
+        for name in req_names:
+            if name not in all_names:
+                gws.log.warning(f'invalid layer name {name!r}')
+                continue
+            layers.append(name)
+            flt = req_filters.get(name) or req_filters.get('*')
+            if flt:
+                filters.append(name + ': ' + flt)
+
+        params['LAYERS'] = layers
+        if filters:
+            params['FILTER'] = ';'.join(filters)
+
+        img = render.box_to_bytes(self, lri.view, params)
+        return gws.LayerRenderOutput(content=img)
