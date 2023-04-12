@@ -57,7 +57,7 @@ if [ "$1" == "server" ]; then
     $PYTHON $MAIN_PY "$@"
     [ $? -eq 0 ] || exit $?
 
-    [ -f $SERVER_CMD ] && source $SERVER_CMD
+    [ -f $SERVER_CMD ] && chmod 777 $SERVER_CMD && exec $SERVER_CMD
     exit $?
 fi
 
