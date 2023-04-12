@@ -1,10 +1,10 @@
 """Text field."""
 
-import sqlalchemy as sa
-
 import gws
 import gws.base.database.model
 import gws.base.model.field
+import gws.lib.sa as sa
+
 import gws.types as t
 
 gws.ext.new.modelField('text')
@@ -56,7 +56,7 @@ class Object(gws.base.model.field.Scalar):
             return
 
         mod = t.cast(gws.base.database.model.Object, self.model)
-        fld = sa.sql.cast(
+        fld = sa.cast(
             getattr(mod.record_class(), self.name),
             sa.String)
 

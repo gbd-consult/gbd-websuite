@@ -1,14 +1,11 @@
-import sqlalchemy as sa
-import sqlalchemy.orm as saorm
-
 import gws
-
+import gws.lib.sa as sa
 
 class Object(gws.IDatabaseSession):
 
     def __init__(self, provider: gws.IDatabaseProvider):
         self.provider = provider
-        self.saSession = saorm.Session(
+        self.saSession = sa.orm.Session(
             provider.engine(),
             autoflush=False,
             autobegin=False
@@ -37,7 +34,7 @@ class Object(gws.IDatabaseSession):
     def rollback(self):
         return self.saSession.rollback()
 
-    def execute(self, stmt: sa.sql.Executable, params=None, **kwargs):
+    def execute(self, stmt: sa.Executable, params=None, **kwargs):
         return self.saSession.execute(stmt, params, **kwargs)
 
     def describe(self, table_name: str):

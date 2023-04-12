@@ -1,9 +1,7 @@
-import sqlalchemy as sa
-import sqlalchemy.orm as saorm
-import geoalchemy2 as geosa
-
 import gws
 import gws.base.database.model
+import gws.lib.sa as sa
+
 import gws.types as t
 
 
@@ -180,9 +178,9 @@ class Object(gws.Node, gws.IModelField):
         if ok:
             val = self.py_to_prop(val)
             if val is not None:
-            #     return
-            # if isinstance(val, gws.Object):
-            #     val = gws.props(val, user, self)
+                #     return
+                # if isinstance(val, gws.Object):
+                #     val = gws.props(val, user, self)
                 props.attributes[self.name] = val
 
     def compute(self, feature, access, user, **kwargs):
@@ -227,7 +225,7 @@ _SCALAR_TYPES = {
     gws.AttributeType.int: sa.Integer,
     gws.AttributeType.str: sa.String,
     gws.AttributeType.time: sa.Time,
-    gws.AttributeType.geometry: geosa.Geometry,
+    gws.AttributeType.geometry: sa.geo.Geometry,
 }
 
 

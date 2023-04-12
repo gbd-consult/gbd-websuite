@@ -1,13 +1,12 @@
 """Geometry field."""
 
-import geoalchemy2 as geosa
-import sqlalchemy as sa
-
 import gws
 import gws.base.database.model
 import gws.base.model.field
 import gws.base.shape
 import gws.gis.crs
+import gws.lib.sa as sa
+
 import gws.types as t
 
 gws.ext.new.modelField('geometry')
@@ -61,10 +60,10 @@ class Object(gws.base.model.field.Scalar):
             mod = t.cast(gws.base.database.model.Object, self.model)
             fld = sa.sql.cast(
                 getattr(mod.record_class(), self.name),
-                geosa.Geometry)
+                sa.geo.Geometry)
             sel.geometryWhere.append(sa.func.st_intersects(
                 fld,
-                sa.cast(shape.to_ewkb_hex(), geosa.Geometry())))
+                sa.cast(shape.to_ewkb_hex(), sa.geo.Geometry())))
 
     def db_to_py(self, val):
         # here, val is a geosa WKBElement

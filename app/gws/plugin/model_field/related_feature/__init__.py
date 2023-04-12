@@ -1,9 +1,8 @@
-import sqlalchemy as sa
-import sqlalchemy.orm as saorm
-
 import gws
 import gws.base.model.field
 import gws.base.database.model
+import gws.lib.sa as sa
+
 import gws.types as t
 
 gws.ext.new.modelField('relatedFeature')
@@ -77,7 +76,7 @@ class Object(gws.base.model.field.Object):
         depth = sel.search.relationDepth or 0
         if depth > 0:
             sel.saSelect = sel.saSelect.options(
-                saorm.selectinload(
+                sa.orm.selectinload(
                     getattr(
                         self.model.record_class(),
                         self.name)
@@ -105,5 +104,5 @@ class Object(gws.base.model.field.Object):
             kwargs['back_populates'] = self.relations[0].fieldName
 
         return {
-            self.name: saorm.relationship(rel_cls, **kwargs)
+            self.name: sa.orm.relationship(rel_cls, **kwargs)
         }

@@ -1,8 +1,9 @@
-import sqlalchemy as sa
-import sqlalchemy.orm as saorm
-import sqlalchemy.pool
+"""Core database utilities."""
+
 
 import gws
+import gws.lib.sa as sa
+
 import gws.types as t
 
 from . import session as session_module
@@ -138,7 +139,7 @@ class Object(gws.Node, gws.IDatabaseManager):
 
     def registry_for_provider(self, provider):
         if not self.rt.registries.get(provider.uid):
-            self.rt.registries[provider.uid] = saorm.registry()
+            self.rt.registries[provider.uid] = sa.orm.registry()
         return self.rt.registries[provider.uid]
 
     def engine_for_provider(self, provider):
@@ -171,7 +172,7 @@ class Object(gws.Node, gws.IDatabaseManager):
         return tab
 
     def make_engine(self, drivername: str, options, **kwargs):
-        url = sa.engine.URL.create(
+        url = sa.URL.create(
             drivername,
             username=options.get('username'),
             password=options.get('password'),
@@ -179,7 +180,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             port=options.get('port'),
             database=options.get('database'),
         )
-        kwargs.setdefault('poolclass', sqlalchemy.pool.NullPool)
+        kwargs.setdefault('poolclass', sa.NullPool)
         kwargs.setdefault('pool_pre_ping', True)
         return sa.create_engine(url, **kwargs)
 
@@ -267,7 +268,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             qname=tab.schema + '.' + tab.name,
         )
 
-        for c in tab.c:
+        for c in t.cast(t.Iterable, tab.columns):
             col = gws.ColumnDescription(
                 comment=c.comment,
                 default=c.default,
