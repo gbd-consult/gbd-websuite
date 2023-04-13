@@ -43,6 +43,9 @@ Options:
     -name <name>
         custom image name 
 
+    -no-cache
+        disable cache
+
     -prep
         prepare the build, but don't run it
 
@@ -146,7 +149,8 @@ class Builder:
         self.qgis_url = f'{self.packages_url}/{self.qgis_package}.tar.gz'
 
     def main(self):
-        cmd = f'cd {self.build_dir} && docker build -f Dockerfile -t {self.image_full_name} .'
+        nc = '--no-cache' if self.args.get('no-cache') else ''
+        cmd = f'cd {self.build_dir} && docker build -f Dockerfile -t {self.image_full_name} {nc} .'
 
         if self.args.get('print'):
             print(self.dockerfile())
