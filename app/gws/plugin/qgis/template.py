@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.template
-import gws.lib.html2
+import gws.lib.htmlx
 import gws.lib.mime
 import gws.gis.ows
 import gws.lib.pdf
@@ -121,7 +121,7 @@ class Object(gws.base.template.Object):
             height: {int(h)}mm;
         """
         html = f"<div style='{css}'>{html}</div>"
-        gws.lib.html2.render_to_pdf(html, out_path, self.page_size)
+        gws.lib.htmlx.render_to_pdf(html, out_path, self.page_size)
 
         return mro
 

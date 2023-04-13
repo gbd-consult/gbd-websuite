@@ -4,7 +4,7 @@ import re
 
 import gws
 import gws.base.template
-import gws.lib.html2
+import gws.lib.htmlx
 import gws.lib.mime
 import gws.gis.render
 
@@ -55,7 +55,7 @@ class Object(gws.base.template.Object):
 
         if tri.mimeOut == gws.lib.mime.PDF:
             res_path = gws.printtemp('map.pdf')
-            gws.lib.html2.render_to_pdf(
+            gws.lib.htmlx.render_to_pdf(
                 html,
                 out_path=res_path,
                 page_size=self.pageSize,
@@ -65,7 +65,7 @@ class Object(gws.base.template.Object):
 
         if tri.mimeOut == gws.lib.mime.PNG:
             res_path = gws.printtemp('map.png')
-            gws.lib.html2.render_to_png(
+            gws.lib.htmlx.render_to_png(
                 html,
                 out_path=res_path,
                 page_size=self.pageSize,

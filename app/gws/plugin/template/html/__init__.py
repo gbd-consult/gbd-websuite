@@ -4,7 +4,7 @@ import re
 
 import gws
 import gws.base.template
-import gws.lib.html2
+import gws.lib.htmlx
 import gws.lib.mime
 import gws.lib.pdf
 import gws.gis.render
@@ -154,7 +154,7 @@ class Object(gws.base.template.Object):
         psz = engine.pageSize or self.pageSize
         pma = engine.pageMargin or self.pageMargin
 
-        gws.lib.html2.render_to_pdf(
+        gws.lib.htmlx.render_to_pdf(
             self.decorate_html(html),
             out_path=content_path,
             page_size=psz,
@@ -168,7 +168,7 @@ class Object(gws.base.template.Object):
         frame_text = self.frame_template(engine.header or '', engine.footer or '', psz)
         frame_html, _ = self.do_render(tri, frame_text, '', args)
         frame_path = gws.printtemp('frame.pdf')
-        gws.lib.html2.render_to_pdf(frame_html, out_path=frame_path, page_size=psz, page_margin=None)
+        gws.lib.htmlx.render_to_pdf(frame_html, out_path=frame_path, page_size=psz, page_margin=None)
 
         combined_path = gws.printtemp('combined.pdf')
         gws.lib.pdf.overlay(frame_path, content_path, combined_path)
@@ -180,7 +180,7 @@ class Object(gws.base.template.Object):
         psz = engine.pageSize or self.pageSize
         pma = engine.pageMargin or self.pageMargin
 
-        gws.lib.html2.render_to_png(
+        gws.lib.htmlx.render_to_png(
             self.decorate_html(html),
             out_path=res_path,
             page_size=psz,
