@@ -14,20 +14,21 @@ TMP_DIR = os.getenv('GWS_TMP_DIR', TMP_DIR)
 UID = int(os.getenv('GWS_UID', UID))
 GID = int(os.getenv('GWS_GID', GID))
 
-CONFIG_DIR = VAR_DIR + '/config'
-LEGEND_CACHE_DIR = VAR_DIR + '/cache/legend'
-LOG_DIR = VAR_DIR + '/log'
-MAPPROXY_CACHE_DIR = VAR_DIR + '/cache/mpx'
-MISC_DIR = VAR_DIR + '/misc'
-NET_CACHE_DIR = VAR_DIR + '/cache/net'
-OBJECT_CACHE_DIR = VAR_DIR + '/cache/object'
-SERVER_DIR = VAR_DIR + '/server'
-WEB_CACHE_DIR = TMP_DIR + '/webcache'
+CACHE_DIR = f'{VAR_DIR}/cache'
+LEGEND_CACHE_DIR = f'{CACHE_DIR}/legend'
+MAPPROXY_CACHE_DIR = f'{CACHE_DIR}/mpx'
+NET_CACHE_DIR = f'{CACHE_DIR}/net'
+OBJECT_CACHE_DIR = f'{CACHE_DIR}/object'
 
-LOCKS_DIR = TMP_DIR + '/locks'
-GLOBALS_DIR = TMP_DIR + '/globals'
-SPOOL_DIR = TMP_DIR + '/spool'
-EPH_DIR = TMP_DIR + '/ephemeral'
+CONFIG_DIR = f'{VAR_DIR}/config'
+MISC_DIR = f'{VAR_DIR}/misc'
+SERVER_DIR = f'{VAR_DIR}/server'
+PRINT_DIR = f'{VAR_DIR}/print'
+
+FASTCACHE_DIR = f'{TMP_DIR}/fastcache'
+LOCKS_DIR = f'{TMP_DIR}/locks'
+GLOBALS_DIR = f'{TMP_DIR}/globals'
+SPOOL_DIR = f'{TMP_DIR}/spool'
 
 SERVER_ENDPOINT = '/_'
 

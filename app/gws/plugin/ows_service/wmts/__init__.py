@@ -100,10 +100,10 @@ class Object(core.Service):
         # bbox = gws.gis.extent.transform(bbox, tm_crs, crs)
 
         mri = gws.MapRenderInput(
-            background_color=None,
+            backgroundColor=None,
             bbox=bounds.extent,
             crs=bounds.crs,
-            out_size=(256, 256, gws.Uom.px),
+            mapSize=(256, 256, gws.Uom.px),
             planes=[
                 gws.MapRenderInputPlane(type='image_layer', layer=lc.layer)
                 for lc in lcs

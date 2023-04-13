@@ -1,0 +1,25 @@
+projects+ {
+    title "Simple HTML Printing"
+    metadata.abstract "printing with a simple HTML template"
+
+    printer.templates+ {
+        uid "print_simple"
+        type "html"
+        path "simple.cx.html"
+        mapSize [ "200mm" "80mm" ]
+    }
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 30000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Düsseldorf"
+        type "qgis"
+        provider.path "poi.qgs"
+    }
+
+    {demo_osm_background}
+}

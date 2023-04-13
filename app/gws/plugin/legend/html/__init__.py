@@ -25,6 +25,6 @@ class Object(gws.base.legend.Object):
         # @TODO return html legends as html
         res = self.template.render(gws.TemplateRenderInput(
             args=args,
-            out_mime=gws.lib.mime.PNG))
+            mimeOut=gws.lib.mime.PNG))
         img = gws.lib.image.from_path(res.path)
         return gws.LegendRenderOutput(image=img, size=img.size())

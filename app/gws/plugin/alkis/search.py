@@ -306,7 +306,7 @@ class GetDetailsResponse(gws.Response):
 
 class PrintParams(gws.Request):
     findParams: FindFlurstueckParams
-    printParams: gws.base.printer.ParamsWithTemplate
+    printParams: gws.base.printer.Request
     highlightStyle: gws.lib.style.Props
 
 

@@ -74,6 +74,19 @@ class User(gws.IUser):
                 if role in self.roles:
                     return bit
 
+    def require(self, uid, classref=None, access=None):
+        obj = self.provider.root.get(uid, classref)
+        if not obj:
+            raise gws.Error(f'required object {classref} {uid} not found')
+        if not self.can(access or gws.Access.use, obj):
+            raise gws.Error(f'required object {classref} {uid} denied')
+        return obj
+
+    def acquire(self, uid, classref=None, access=None):
+        obj = self.provider.root.get(uid, classref)
+        if obj and self.can(access or gws.Access.use, obj):
+            return obj
+
 
 class Guest(User):
     isGuest = True

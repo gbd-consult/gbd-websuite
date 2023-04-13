@@ -851,11 +851,11 @@ export class MapManager implements types.IMapManager {
 
             if (USE_RAW_BITMAPS_FOR_PRINT) {
                 return {
-                    type: 'bitmap',
-                    mode: 'RGBA',
-                    data: imgData.data,
-                    width: imgData.width,
-                    height: imgData.height,
+                    type: api.base.printer.PlaneType.bitmap,
+                    bitmapMode: 'RGBA',
+                    bitmapData: imgData.data,
+                    bitmapWidth: imgData.width,
+                    bitmapHeight: imgData.height,
                 };
             }
 
@@ -867,7 +867,7 @@ export class MapManager implements types.IMapManager {
             cnv2.getContext('2d').putImageData(imgData, 0, 0);
 
             return {
-                type: 'url',
+                type: api.base.printer.PlaneType.url,
                 url: cnv2.toDataURL()
             };
         }
@@ -952,14 +952,14 @@ export class MapManager implements types.IMapManager {
         return res;
     }
 
-    async basicPrintParams(boxRect, dpi) {
+    async printParams(boxRect, dpi): Promise<api.base.printer.MapParams> {
         let vs = this.viewState,
-            legendLayers = [];
+            visibleLayers = [];
 
         this.walk(this.root, la => {
             let pi = la.shouldDraw && la.printPlane;
             if (pi) {
-                legendLayers.push(la.uid);
+                visibleLayers.push(la.uid);
             }
         });
 
@@ -967,7 +967,8 @@ export class MapManager implements types.IMapManager {
             planes: await this.printPlanes(boxRect, dpi),
             rotation: Math.round(lib.rad2deg(vs.rotation)),
             scale: lib.res2scale(vs.resolution),
-            legendLayers,
+            center: [vs.centerX, vs.centerY],
+            visibleLayers,
         }
     }
 

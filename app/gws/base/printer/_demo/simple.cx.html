@@ -1,0 +1,20 @@
+@page width="210" height="297" margin="5"
+
+<h2>Simple print template</h2>
+
+<div id="map">
+    @map
+</div>
+
+<h4>System variables</h4>
+
+<table border=1 cellpadding=5>
+    <tr><th>   Project:       </th><td>   {project.title}     </td></tr>
+    <tr><th>   User:          </th><td>   {user.displayName}  </td></tr>
+    <tr><th>   Version:       </th><td>   {gwsVersion}        </td></tr>
+    <tr><th>   Locale:        </th><td>   {localeUid}         </td></tr>
+    <tr><th>   Map scale:     </th><td>   {scale}             </td></tr>
+    <tr><th>   Map rotation:  </th><td>   {rotation}          </td></tr>
+    <tr><th>   Date:          </th><td>   {date.medium}       </td></tr>
+    <tr><th>   Time:          </th><td>   {time.medium}       </td></tr>
+</table>

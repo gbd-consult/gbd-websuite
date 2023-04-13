@@ -25,12 +25,12 @@ class Object(gws.base.template.Object):
         mp = tri.maps[0]
 
         mri = gws.MapRenderInput(
-            background_color=mp.background_color,
+            backgroundColor=mp.backgroundColor,
             bbox=mp.bbox,
             center=mp.center,
             crs=tri.crs,
             dpi=tri.dpi,
-            out_size=self.page_size,
+            mapSize=self.pageSize,
             planes=mp.planes,
             rotation=mp.rotation,
             scale=mp.scale,
@@ -54,21 +54,21 @@ class Object(gws.base.template.Object):
             return gws.ContentResponse(mime=gws.lib.mime.HTML, content=html)
 
         if tri.mimeOut == gws.lib.mime.PDF:
-            res_path = gws.tempname('map.pdf')
+            res_path = gws.printtemp('map.pdf')
             gws.lib.html2.render_to_pdf(
                 html,
                 out_path=res_path,
-                page_size=self.page_size,
+                page_size=self.pageSize,
             )
             notify('end_print')
             return gws.ContentResponse(path=res_path)
 
         if tri.mimeOut == gws.lib.mime.PNG:
-            res_path = gws.tempname('map.png')
+            res_path = gws.printtemp('map.png')
             gws.lib.html2.render_to_png(
                 html,
                 out_path=res_path,
-                page_size=self.page_size,
+                page_size=self.pageSize,
             )
             notify('end_print')
             return gws.ContentResponse(path=res_path)

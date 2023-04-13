@@ -104,6 +104,9 @@ MPoint = tuple[float, float, Uom]
 MSize = tuple[float, float, Uom]
 """type: A Size with a unit."""
 
+MExtent = tuple[float, float, float, float, Uom]
+"""type: An Extent with a unit."""
+
 Tag = tuple
 """type: An XML generator tag."""
 
@@ -265,6 +268,8 @@ class IRoot(Protocol):
     def create(self, classref: ClassRef, parent: 'INode' = None, config=None, **kwargs): ...
 
     def create_shared(self, classref: ClassRef, config=None, **kwargs): ...
+
+    def create_temporary(self, classref: ClassRef, config=None, **kwargs): ...
 
     def create_application(self, config=None, **kwargs) -> 'IApplication': ...
 
@@ -588,6 +593,10 @@ class IUser(IObject, Protocol):
     def acl_bit(self, access: Access, obj) -> Optional[int]: ...
 
     def can(self, access: Access, obj: Any, *context) -> bool: ...
+
+    def require(self, uid: str, classref: ClassRef = None, access: Access = None): ...
+
+    def acquire(self, uid: str, classref: ClassRef = None, access: Access = None): ...
 
     def can_use(self, obj: Any, *context) -> bool: ...
 
@@ -1302,8 +1311,16 @@ class MapView(Data):
     dpi: int
 
 
+class MapRenderInputPlaneType(Enum):
+    features = 'features'
+    image = 'image'
+    image_layer = 'image_layer'
+    svg_layer = 'svg_layer'
+    svg_soup = 'svg_soup'
+
+
 class MapRenderInputPlane(Data):
-    type: Literal['features', 'image', 'image_layer', 'svg_layer', 'svg_soup']
+    type: MapRenderInputPlaneType
     features: list['IFeature']
     image: 'IImage'
     layer: 'ILayer'
@@ -1312,24 +1329,32 @@ class MapRenderInputPlane(Data):
     soup_points: list[Point]
     soup_tags: list[Any]
     style: 'IStyle'
-    sub_layers: list[str]
+    subLayers: list[str]
 
 
 class MapRenderInput(Data):
-    background_color: int
+    backgroundColor: int
     bbox: Extent
     center: Point
     crs: 'ICrs'
     dpi: int
+    mapSize: MSize
     notify: Callable
-    out_size: MSize
     planes: list['MapRenderInputPlane']
     rotation: int
     scale: int
+    user: IUser
+    visibleLayers: Optional[list['ILayer']]
+
+
+class MapRenderOutputPlaneType(Enum):
+    image = 'image'
+    path = 'path'
+    svg = 'svg'
 
 
 class MapRenderOutputPlane(Data):
-    type: Literal['image', 'path', 'svg']
+    type: MapRenderOutputPlaneType
     path: str
     elements: list[IXmlElement]
     image: 'IImage'
@@ -1340,8 +1365,14 @@ class MapRenderOutput(Data):
     view: MapView
 
 
+class LayerRenderInputType(Enum):
+    box = 'box'
+    xyz = 'xyz'
+    svg = 'svg'
+
+
 class LayerRenderInput(Data):
-    type: Literal['box', 'xyz', 'svg']
+    type: LayerRenderInputType
     view: MapView
     extraParams: dict
     x: int
@@ -1354,22 +1385,12 @@ class LayerRenderOutput(Data):
     tags: list[IXmlElement]
 
 
-class TemplateRenderInputMap(Data):
-    background_color: int
-    bbox: Extent
-    center: Point
-    planes: list['MapRenderInputPlane']
-    rotation: int
-    scale: int
-    visible_layers: Optional[list['ILayer']]
-
-
 class TemplateRenderInput(Data):
     args: dict
     crs: ICrs
     dpi: int
     localeUid: str
-    maps: list[TemplateRenderInputMap]
+    maps: list[MapRenderInput]
     mimeOut: str
     notify: Callable
     user: IUser
@@ -1381,18 +1402,13 @@ class TemplateQualityLevel(Data):
 
 
 class ITemplate(INode, Protocol):
-    category: str
-    model: Optional['IModel']
+    models: list['IModel']
     mimes: list[str]
-    name: str
-    path: str
     subject: str
-    text: str
-    title: str
     qualityLevels: list[TemplateQualityLevel]
-
-    map_size: Optional[MSize]
-    page_size: Optional[MSize]
+    mapSize: MSize
+    pageSize: MSize
+    pageMargin: MExtent
 
     def render(self, tri: TemplateRenderInput) -> ContentResponse: ...
 
@@ -1888,6 +1904,7 @@ class IOwsProvider(INode, Protocol):
     version: str
 
     def get_operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
+
     def get_feature_info(self, args: SearchArgs, source_layers: list[SourceLayer]) -> list[FeatureData]: ...
 
 

@@ -46,7 +46,7 @@ def output_to_image(lro: gws.LegendRenderOutput) -> t.Optional[gws.IImage]:
 
 def output_to_image_path(lro: gws.LegendRenderOutput) -> t.Optional[str]:
     if lro.image:
-        img_path = gws.tempname('legend.png')
+        img_path = gws.printtemp('legend.png')
         return lro.image.to_path(img_path, gws.lib.mime.PNG)
     if lro.image_path:
         return lro.image_path

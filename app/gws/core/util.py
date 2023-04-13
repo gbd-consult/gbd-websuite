@@ -14,6 +14,7 @@ import threading
 import time
 import urllib.parse
 
+import gws
 from . import const, log, types
 from .data import Data, is_data_object
 from gws.types import cast
@@ -176,7 +177,7 @@ def merge(*args, **kwargs) -> dict | Data:
     if kwargs:
         _merge(kwargs)
 
-    if not args or isinstance(args[0], dict):
+    if not args or isinstance(args[0], dict) or args[0] is None:
         return m
     return type(args[0])(m)
 
@@ -578,22 +579,19 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
 
 
 def ensure_system_dirs():
-    ensure_dir(const.CONFIG_DIR)
+    ensure_dir(const.CACHE_DIR)
     ensure_dir(const.LEGEND_CACHE_DIR)
-    ensure_dir(const.LOG_DIR)
     ensure_dir(const.MAPPROXY_CACHE_DIR)
-    ensure_dir(const.MISC_DIR)
     ensure_dir(const.NET_CACHE_DIR)
     ensure_dir(const.OBJECT_CACHE_DIR)
+    ensure_dir(const.CONFIG_DIR)
+    ensure_dir(const.MISC_DIR)
     ensure_dir(const.SERVER_DIR)
-    ensure_dir(const.SPOOL_DIR)
-    ensure_dir(const.WEB_CACHE_DIR)
-
-    ensure_dir(const.TMP_DIR)
+    ensure_dir(const.PRINT_DIR)
+    ensure_dir(const.FASTCACHE_DIR)
     ensure_dir(const.LOCKS_DIR)
     ensure_dir(const.GLOBALS_DIR)
     ensure_dir(const.SPOOL_DIR)
-    ensure_dir(const.EPH_DIR)
 
 
 def _chown(path, user, group):
@@ -603,13 +601,11 @@ def _chown(path, user, group):
         pass
 
 
-def tempname(name: str) -> str:
-    """Creates a cleanable path name based on the given name"""
+def printtemp(name: str) -> str:
+    """Return a transient path name in the print directory."""
 
-    dir = ensure_dir(const.EPH_DIR)
-    n, _, e = name.rpartition('.')
-    name = str(os.getpid()) + '_' + n + '_' + random_string(10) + '.' + e
-    return dir + '/' + name
+    name = str(os.getpid()) + '_' + random_string(64) + '_' + name
+    return gws.PRINT_DIR + '/' + name
 
 
 def random_string(size: int) -> str:
@@ -699,6 +695,7 @@ def serialize_to_path(obj, path):
     with open(tmp, 'wb') as fp:
         pickle.dump(obj, fp)
     os.replace(tmp, path)
+    return path
 
 
 def unserialize_from_path(path):

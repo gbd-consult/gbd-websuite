@@ -155,7 +155,7 @@ abstract class OlBackedLayer<T extends ol.layer.Layer> extends Layer {
 
     get printPlane(): api.base.printer.Plane {
         return {
-            type: 'raster',
+            type: api.base.printer.PlaneType.raster,
             opacity: this.computedOpacity,
             layerUid: this.uid,
         }
@@ -272,14 +272,14 @@ export class TreeLayer extends OlBackedLayer<ol.layer.Image> {
         return this.visibleLeavesUids().length > 0;
     }
 
-    get printItem() {
+    get printPlane() {
         let ls = this.visibleLeavesUids();
 
         if (!ls.length)
             return null;
 
         return {
-            type: 'raster',
+            type: api.base.printer.PlaneType.raster,
             opacity: this.computedOpacity,
             layerUid: this.uid,
             subLayers: ls,
@@ -377,7 +377,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
 
 
         return {
-            type: 'features',
+            type: api.base.printer.PlaneType.features,
             opacity: this.computedOpacity,
             features: fs,
             style: style ? style.props : null,

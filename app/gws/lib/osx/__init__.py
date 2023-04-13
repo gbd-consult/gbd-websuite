@@ -50,17 +50,25 @@ def run(cmd, input=None, echo=False, strict=True, timeout=None, **kwargs):
     }
     args.update(kwargs)
 
+    scmd = cmd
+    if isinstance(cmd, list):
+        scmd = ' '.join(str(s) for s in cmd)
+
+    gws.log.debug(f'RUN: {scmd}')
+
     try:
         p = subprocess.Popen(cmd, **args)
         out, _ = p.communicate(input, timeout)
         rc = p.returncode
     except subprocess.TimeoutExpired:
-        raise TimeoutError()
+        raise TimeoutError(f'command timed out', scmd)
     except Exception as exc:
-        raise Error(f'failed {cmd=}', cmd) from exc
+        raise Error(f'command failed', scmd) from exc
 
     if rc and strict:
-        raise Error(f'failed {cmd=} {rc=}', cmd, rc, out)
+        gws.log.debug(f'OUT: {out}')
+        gws.log.debug(f'RC:  {rc}')
+        raise Error(f'non-zero exit', cmd)
 
     return rc, out
 

@@ -9,16 +9,20 @@ import gws.types as t
 
 
 class Config(gws.Config):
-    dataModel: t.Optional[gws.base.model.Config]
-    """user-editable template attributes"""
+    models: t.Optional[list[gws.ext.config.model]]
+    """data models"""
     mapSize: t.Optional[gws.MSize]
+    """map size"""
     mimeTypes: t.Optional[list[str]]
     """mime types this template can generate"""
     pageSize: t.Optional[gws.MSize]
+    """page size"""
+    pageMargin: t.Optional[gws.MExtent]
+    """page margin"""
     path: t.Optional[gws.FilePath]
     """path to a template file"""
     qualityLevels: t.Optional[list[gws.TemplateQualityLevel]]
-    """quality levels supported by the template"""
+    """quality levels supported by this template"""
     subject: str = ''
     """template purpose"""
     text: str = ''
@@ -29,14 +33,21 @@ class Config(gws.Config):
 
 class Props(gws.Props):
     model: t.Optional[gws.base.model.Props]
-    mapSize: t.Optional[gws.MSize]
-    pageSize: t.Optional[gws.MSize]
+    mapSize: t.Optional[gws.Size]
+    pageSize: t.Optional[gws.Size]
     qualityLevels: list[gws.TemplateQualityLevel]
     title: str
-    uid: str
+
+
+DEFAULT_MAP_SIZE = (50, 50, gws.Uom.mm)
+DEFAULT_PAGE_SIZE = (210, 297, gws.Uom.mm)
 
 
 class Object(gws.Node, gws.ITemplate):
+    path: str
+    text: str
+    title: str
+
     def configure(self):
         self.path = self.cfg('path')
         self.text = self.cfg('text', default='')
@@ -46,23 +57,20 @@ class Object(gws.Node, gws.ITemplate):
         # self.data_model = self.root.create_optional('gws.base.model', self.cfg('dataModel'))
 
         self.subject = self.cfg('subject', default='').lower()
-        if '.' in self.subject:
-            self.category, _, self.name = self.subject.partition('.')
-        else:
-            self.category, self.name = '', self.subject
 
         self.mimes = []
         for p in self.cfg('mimeTypes', default=[]):
             self.mimes.append(gws.lib.mime.get(p))
 
-        self.map_size = self.cfg('mapSize')
-        self.page_size = self.cfg('pageSize')
+        self.mapSize = self.cfg('mapSize') or DEFAULT_MAP_SIZE
+        self.pageSize = self.cfg('pageSize') or DEFAULT_PAGE_SIZE
+        self.pageMargin = self.cfg('pageMargin')
 
     def props(self, user):
         return gws.Data(
             # dataModel=self.data_model,
-            mapSize=self.map_size,
-            pageSize=self.page_size,
+            mapSize=self.mapSize,
+            pageSize=self.pageSize,
             qualityLevels=self.qualityLevels,
             title=self.title,
             uid=self.uid,
@@ -70,20 +78,17 @@ class Object(gws.Node, gws.ITemplate):
 
     def prepare_args(self, args: dict) -> dict:
         args = args or {}
-        ext = {
-            'gws': {
-                'version': self.root.app.version,
-                'endpoint': gws.SERVER_ENDPOINT,
-            }
-        }
+        locale_uid = args.get('localeUid', 'en_CA')
 
-        locale_uid = args.get('localeUid')
-        if locale_uid:
-            ext['locale'] = gws.lib.intl.locale(locale_uid)
-            ext['date'] = gws.lib.date.date_formatter(locale_uid)
-            ext['time'] = gws.lib.date.time_formatter(locale_uid)
+        extra = dict(
+            gwsVersion=self.root.app.version,
+            gwsBaseUrl=gws.SERVER_ENDPOINT,
+            locale=gws.lib.intl.locale(locale_uid),
+            date=gws.lib.date.date_formatter(locale_uid),
+            time=gws.lib.date.time_formatter(locale_uid),
+        )
 
-        return gws.merge(ext, args)
+        return gws.merge(extra, args)
 
 
 ##
@@ -108,7 +113,6 @@ def locate(
             if subject and tpl.subject != subject:
                 continue
             return tpl
-
 
 
 ##

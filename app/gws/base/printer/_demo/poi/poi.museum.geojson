@@ -1,0 +1,416 @@
+{
+    "type": "FeatureCollection",
+    "crs": {
+        "type": "name",
+        "properties": {
+            "name": "urn:ogc:def:crs:EPSG::3857"
+        }
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753978.544029631,
+                    6662967.8923386
+                ]
+            },
+            "properties": {
+                "id": 138,
+                "fclass": "Museum",
+                "name": "Museum Kunstpalast"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753754.569214153,
+                    6661607.94432221
+                ]
+            },
+            "properties": {
+                "id": 259,
+                "fclass": "Museum",
+                "name": "Schifffahrtsmuseum"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754891.152347103,
+                    6662091.82367773
+                ]
+            },
+            "properties": {
+                "id": 304,
+                "fclass": "Museum",
+                "name": "Theatermuseum"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753969.081872913,
+                    6660691.40737115
+                ]
+            },
+            "properties": {
+                "id": 572,
+                "fclass": "Museum",
+                "name": "Heinrich-Heine-Institut"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754273.184457861,
+                    6661570.17022787
+                ]
+            },
+            "properties": {
+                "id": 573,
+                "fclass": "Museum",
+                "name": "Schmela Haus - Kunstsammlung NRW"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750064.272434611,
+                    6674961.2321491
+                ]
+            },
+            "properties": {
+                "id": 722,
+                "fclass": "Museum",
+                "name": "Museum Kaiserswerth"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753847.042315156,
+                    6663010.75771837
+                ]
+            },
+            "properties": {
+                "id": 868,
+                "fclass": "Museum",
+                "name": "Glasmuseum Hentrich"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    762260.491505667,
+                    6655841.01523265
+                ]
+            },
+            "properties": {
+                "id": 988,
+                "fclass": "Museum",
+                "name": "F8rum"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753715.262301954,
+                    6661031.61060531
+                ]
+            },
+            "properties": {
+                "id": 1011,
+                "fclass": "Museum",
+                "name": "Filmmuseum"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753754.802985084,
+                    6660982.87215784
+                ]
+            },
+            "properties": {
+                "id": 1013,
+                "fclass": "Museum",
+                "name": "Hetjens-Museum"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753621.609214349,
+                    6660722.1210634
+                ]
+            },
+            "properties": {
+                "id": 1015,
+                "fclass": "Museum",
+                "name": "Stadtmuseum Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754276.334799451,
+                    6661642.43000064
+                ]
+            },
+            "properties": {
+                "id": 1113,
+                "fclass": "Museum",
+                "name": "Kunstverein für die Rheinlande und Westfalen"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754056.345221745,
+                    6661616.51239988
+                ]
+            },
+            "properties": {
+                "id": 1120,
+                "fclass": "Museum",
+                "name": "Mahn- und Gedenkstätte für die Opfer der nationalsozialistischen Gewaltherrschaft"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755596.172078143,
+                    6662242.18408341
+                ]
+            },
+            "properties": {
+                "id": 1243,
+                "fclass": "Museum",
+                "name": "Goethe-Museum"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755626.707014469,
+                    6662047.54094958
+                ]
+            },
+            "properties": {
+                "id": 1712,
+                "fclass": "Museum",
+                "name": "Malkasten"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749910.796252655,
+                    6657738.43686364
+                ]
+            },
+            "properties": {
+                "id": 1767,
+                "fclass": "Museum",
+                "name": "Bonsai-Museum Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753266.778337446,
+                    6660269.79894827
+                ]
+            },
+            "properties": {
+                "id": 1818,
+                "fclass": "Museum",
+                "name": "KIT - Kunst im Tunnel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754293.25536205,
+                    6661813.36734457
+                ]
+            },
+            "properties": {
+                "id": 1833,
+                "fclass": "Museum",
+                "name": "K20 - Kunstsammlung NRW"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750984.795567878,
+                    6674348.86512645
+                ]
+            },
+            "properties": {
+                "id": 1925,
+                "fclass": "Museum",
+                "name": "Pflegemuseum Kaiserwerth"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764691.330698325,
+                    6649946.66562903
+                ]
+            },
+            "properties": {
+                "id": 2014,
+                "fclass": "Museum",
+                "name": "Museum für Naturkunde"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764951.161521785,
+                    6649946.11535498
+                ]
+            },
+            "properties": {
+                "id": 2015,
+                "fclass": "Museum",
+                "name": "Museum für Europäische Gartenkunst"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757253.240622243,
+                    6661553.56745758
+                ]
+            },
+            "properties": {
+                "id": 2436,
+                "fclass": "Museum",
+                "name": "Sammlung Philara"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751387.694200906,
+                    6666784.1290908
+                ]
+            },
+            "properties": {
+                "id": 2447,
+                "fclass": "Museum",
+                "name": "Löbbecke Museum"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753863.406280302,
+                    6662649.8670383
+                ]
+            },
+            "properties": {
+                "id": 2581,
+                "fclass": "Museum",
+                "name": "NRW-Forum Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754075.113687892,
+                    6659704.63140145
+                ]
+            },
+            "properties": {
+                "id": 2585,
+                "fclass": "Museum",
+                "name": "K21 Ständehaus - Kunstsammlung NRW"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759600.556800959,
+                    6655871.46203434
+                ]
+            },
+            "properties": {
+                "id": 2588,
+                "fclass": "Museum",
+                "name": "Classic Remise"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764634.947376238,
+                    6650000.94768389
+                ]
+            },
+            "properties": {
+                "id": 2605,
+                "fclass": "Museum",
+                "name": "Westliches Torhaus"
+            }
+        }
+    ]
+}

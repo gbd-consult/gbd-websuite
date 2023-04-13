@@ -151,7 +151,11 @@ class Root(types.IRoot):
         config = _to_config(config, kwargs)
         return self._create(classref, parent, config)
 
-    def _create(self, classref, parent, config):
+    def create_temporary(self, classref, config=None, **kwargs):
+        config = _to_config(config, kwargs)
+        return self._create(classref, None, config, temp=True)
+
+    def _create(self, classref, parent, config, temp=False):
         obj = self._alloc(classref, config.get('type'))
         obj.uid = self._get_uid(config)
         obj.parent = parent
@@ -163,8 +167,9 @@ class Root(types.IRoot):
             log.debug(f'FAILED {obj!r}')
             return
 
-        self._objects.append(obj)
-        self._uidMap[obj.uid] = obj
+        if not temp:
+            self._objects.append(obj)
+            self._uidMap[obj.uid] = obj
 
         if parent:
             parent.children.append(obj)

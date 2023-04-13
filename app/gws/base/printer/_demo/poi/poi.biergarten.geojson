@@ -1,0 +1,266 @@
+{
+    "type": "FeatureCollection",
+    "crs": {
+        "type": "name",
+        "properties": {
+            "name": "urn:ogc:def:crs:EPSG::3857"
+        }
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757213.377112592,
+                    6657141.35796663
+                ]
+            },
+            "properties": {
+                "id": 205,
+                "fclass": "Biergarten",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763861.633137596,
+                    6663108.77467136
+                ]
+            },
+            "properties": {
+                "id": 370,
+                "fclass": "Biergarten",
+                "name": "Zum Jägerhof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753684.927740714,
+                    6663320.15605954
+                ]
+            },
+            "properties": {
+                "id": 462,
+                "fclass": "Biergarten",
+                "name": "Biergarten Rheinterasse"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755669.976900539,
+                    6680370.56773655
+                ]
+            },
+            "properties": {
+                "id": 893,
+                "fclass": "Biergarten",
+                "name": "Anger Krug"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764972.200905546,
+                    6652329.62810049
+                ]
+            },
+            "properties": {
+                "id": 1353,
+                "fclass": "Biergarten",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    762049.541070615,
+                    6670174.81411892
+                ]
+            },
+            "properties": {
+                "id": 1532,
+                "fclass": "Biergarten",
+                "name": "Am Bauenhaus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    769487.074549241,
+                    6667507.03847986
+                ]
+            },
+            "properties": {
+                "id": 1557,
+                "fclass": "Biergarten",
+                "name": "Decker"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756453.076122422,
+                    6658071.4455118
+                ]
+            },
+            "properties": {
+                "id": 1747,
+                "fclass": "Biergarten",
+                "name": "Bootshaus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756365.946356978,
+                    6658177.87894271
+                ]
+            },
+            "properties": {
+                "id": 1748,
+                "fclass": "Biergarten",
+                "name": "Kurhaus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754016.682087176,
+                    6658609.73924089
+                ]
+            },
+            "properties": {
+                "id": 1761,
+                "fclass": "Biergarten",
+                "name": "Florabar"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    761056.359705705,
+                    6654624.2306388
+                ]
+            },
+            "properties": {
+                "id": 2258,
+                "fclass": "Biergarten",
+                "name": "Biergarten"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    766710.031740217,
+                    6651508.47464587
+                ]
+            },
+            "properties": {
+                "id": 2260,
+                "fclass": "Biergarten",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757883.431391575,
+                    6657570.07205282
+                ]
+            },
+            "properties": {
+                "id": 2269,
+                "fclass": "Biergarten",
+                "name": "Biergarten VierLinden"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    767240.279870712,
+                    6656342.63806483
+                ]
+            },
+            "properties": {
+                "id": 2348,
+                "fclass": "Biergarten",
+                "name": "Nichtschwimmer"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750231.452045885,
+                    6678284.88114691
+                ]
+            },
+            "properties": {
+                "id": 2513,
+                "fclass": "Biergarten",
+                "name": "Gasthaus Peters"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749319.600700949,
+                    6674332.30760425
+                ]
+            },
+            "properties": {
+                "id": 2526,
+                "fclass": "Biergarten",
+                "name": "Burghof"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750587.585360831,
+                    6675448.71579583
+                ]
+            },
+            "properties": {
+                "id": 2630,
+                "fclass": "Biergarten",
+                "name": "Steinroth"
+            }
+        }
+    ]
+}

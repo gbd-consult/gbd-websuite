@@ -1,1 +1,7 @@
-from .core import Config, Object, Props, ParamsWithTemplate, StatusResponse
+from .core import (
+    Config,
+    Object,
+    Props,
+    Request,
+    StatusResponse,
+)

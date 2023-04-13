@@ -8,8 +8,9 @@ import gws.lib.html2
 import gws.lib.mime
 import gws.lib.pdf
 import gws.gis.render
-import gws.lib.uom as units
-import gws.lib.vendor.jump as jump
+import gws.base.legend
+import gws.lib.vendor.jump
+
 import gws.types as t
 
 gws.ext.new.template('html')
@@ -18,48 +19,115 @@ gws.ext.new.template('html')
 class Config(gws.base.template.Config):
     pass
 
+
 class Props(gws.base.template.Props):
     pass
 
 
-_dummy_fn = lambda *args: None
-
-
 class Object(gws.base.template.Object):
-
-    def configure(self):
-        if self.path:
-            self.text = gws.read_file(self.path)
-        self.load()
-
-    def load(self):
-        text = gws.read_file(self.path) if self.path else self.text
-
-        parser = _Parser()
-        jump.compile(
-            text,
-            path=self.path or '<string>',
-            commands=parser,
-        )
-
-        self.page_size = parser.page_size
-        self.map_size = parser.map_size
-
     def render(self, tri):
-        notify = tri.notify or _dummy_fn
+        self.notify(tri, 'begin_print')
 
-        notify('begin_print')
+        html, engine = self.do_render(tri, self.text, self.path, self.prepare_args(tri.args))
+        res = self.finalize(tri, html, engine)
 
-        if self.root.app.developer_option('template.always_reload'):
-            if self.path:
-                self.text = gws.read_file(self.path)
+        self.notify(tri, 'end_print')
+        return res
 
-        parser = _Parser()
-        rt = _Engine(self, tri, notify)
+    ##
 
-        html = self._do_render(self.text, self.prepare_args(tri.args), parser, rt)
+    def do_render(self, tri: gws.TemplateRenderInput, text: str, path: str, args):
+        # @TODO cache compiled templates
 
-        notify('finalize_print')
+        args = self.prepare_args(args)
+
+        engine = Engine(self, tri)
+
+        if not text:
+            text = gws.read_file(self.path)
+
+        if self.root.app.developer_option('template.save_compiled') and path:
+            gws.write_file(
+                gws.ensure_dir(f'{gws.VAR_DIR}/debug') + '/template_' + gws.to_uid(path),
+                engine.translate(text, path=path))
+
+        err = self.error_handler
+        if self.root.app.developer_option('template.raise_errors'):
+            err = None
+        # err = None
+
+        html = engine.render(text, path=path, args=args, error=err)
+        return html, engine
+
+    def error_handler(self, exc, path, line, env):
+        gws.log.warning(f'TEMPLATE ERROR: {self.uid}: {exc} IN {path}:{line}')
+        gws.log.exception()
+
+    ##
+
+    def render_map(
+            self,
+            tri: gws.TemplateRenderInput,
+            width,
+            height,
+            index,
+            bbox=None,
+            center=None,
+            scale=None,
+            rotation=None,
+
+    ):
+        self.notify(tri, 'begin_map')
+
+        src: gws.MapRenderInput = tri.maps[index]
+        dst: gws.MapRenderInput = gws.MapRenderInput(src)
+
+        dst.bbox = bbox or src.bbox
+        dst.center = center or src.center
+        dst.crs = tri.crs
+        dst.dpi = tri.dpi
+        dst.mapSize = width, height, gws.Uom.mm
+        dst.rotation = rotation or src.rotation
+        dst.scale = scale or src.scale
+        dst.notify = tri.notify
+
+        mro: gws.MapRenderOutput = gws.gis.render.render_map(dst)
+        html = gws.gis.render.output_to_html_string(mro)
+
+        self.notify(tri, 'end_map')
+        return html
+
+    def render_legend(
+            self,
+            tri: gws.TemplateRenderInput,
+            index,
+            layers,
+
+    ):
+        src: gws.MapRenderInput = tri.maps[index]
+
+        layer_list = src.visibleLayers
+        if layers:
+            layer_list = [tri.user.acquire(la) for la in gws.to_list(layers)]
+
+        if not layer_list:
+            gws.log.debug(f'no layers for a legend')
+            return
+
+        legend = t.cast(gws.ILegend, self.root.create_temporary(
+            gws.ext.object.legend,
+            type='combined',
+            layerUids=[la.uid for la in layer_list]))
+
+        lro = legend.render(tri.args)
+        img_path = gws.base.legend.output_to_image_path(lro)
+
+        return f'<img src="{img_path}"/>'
+
+    ##
+
+    def finalize(self, tri: gws.TemplateRenderInput, html: str, engine: 'Engine'):
+        self.notify(tri, 'finalize_print')
 
         mime = tri.mimeOut
         if not mime and self.mimes:
@@ -68,106 +136,79 @@ class Object(gws.base.template.Object):
             mime = gws.lib.mime.HTML
 
         if mime == gws.lib.mime.HTML:
-            notify('end_print')
             return gws.ContentResponse(mime=mime, content=html)
 
         if mime == gws.lib.mime.PDF:
-            res_path = self._finalize_pdf(tri, html, parser)
-            notify('end_print')
+            res_path = self.finalize_pdf(tri, html, engine)
             return gws.ContentResponse(path=res_path)
 
         if mime == gws.lib.mime.PNG:
-            res_path = self._finalize_png(tri, html, parser)
-            notify('end_print')
+            res_path = self.finalize_png(tri, html, engine)
             return gws.ContentResponse(path=res_path)
 
         raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')
 
-    def _do_render(self, text, args, parser, runtime):
-        def err(e, path, line, env):
-            gws.log.warning(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
+    def finalize_pdf(self, tri: gws.TemplateRenderInput, html: str, engine: 'Engine'):
+        content_path = gws.printtemp('content.pdf')
 
-        if self.root.app.developer_option('template.raise_errors'):
-            err = None
-
-        if self.root.app.developer_option('template.save_compiled'):
-            gws.write_file(
-                gws.VAR_DIR + '/debug_template_' + gws.to_uid(self.path) + '_' + gws.sha256(text),
-                jump.translate(
-                    text,
-                    commands=parser,
-                    path=self.path or '<string>'))
-
-        return jump.render(
-            text,
-            args,
-            path=self.path or '<string>',
-            error=err,
-            runtime=runtime,
-            commands=parser,
-        )
-
-    def _finalize_pdf(self, tri, html, parser):
-        content_path = gws.tempname('final.pdf')
-        has_frame = parser.header or parser.footer
+        psz = engine.pageSize or self.pageSize
+        pma = engine.pageMargin or self.pageMargin
 
         gws.lib.html2.render_to_pdf(
-            html,
+            self.decorate_html(html),
             out_path=content_path,
-            page_size=parser.page_size,
-            page_margin=parser.page_margin,
-        )
+            page_size=psz,
+            page_margin=pma)
 
+        has_frame = engine.header or engine.footer
         if not has_frame:
             return content_path
 
-        args = gws.merge(tri.args, page_count=gws.lib.pdf.page_count(content_path))
-        frame_text = self._page_frame_template(parser.header or '', parser.footer or '', parser.page_size)
-        frame_html = self._do_render(frame_text, args, None, None)
-        frame_path = gws.tempname('frame.pdf')
-        gws.lib.html2.render_to_pdf(
-            frame_html,
-            out_path=frame_path,
-            page_size=parser.page_size,
-            page_margin=None,
-        )
+        args = gws.merge(tri.args, numpages=gws.lib.pdf.page_count(content_path))
+        frame_text = self.frame_template(engine.header or '', engine.footer or '', psz)
+        frame_html, _ = self.do_render(tri, frame_text, '', args)
+        frame_path = gws.printtemp('frame.pdf')
+        gws.lib.html2.render_to_pdf(frame_html, out_path=frame_path, page_size=psz, page_margin=None)
 
-        comb_path = gws.tempname('comb.pdf')
-        gws.lib.pdf.overlay(frame_path, content_path, comb_path)
-        return comb_path
+        combined_path = gws.printtemp('combined.pdf')
+        gws.lib.pdf.overlay(frame_path, content_path, combined_path)
+        return combined_path
 
-    def _finalize_png(self, tri, html, parser):
-        res_path = gws.tempname('final.png')
+    def finalize_png(self, tri: gws.TemplateRenderInput, html: str, engine: 'Engine'):
+        res_path = gws.printtemp('final.png')
+
+        psz = engine.pageSize or self.pageSize
+        pma = engine.pageMargin or self.pageMargin
+
         gws.lib.html2.render_to_png(
-            html,
+            self.decorate_html(html),
             out_path=res_path,
-            page_size=parser.page_size,
-            page_margin=parser.page_margin,
-        )
+            page_size=psz,
+            page_margin=pma)
+
         return res_path
 
-    def _page_frame_template(self, header, footer, page_size):
+    ##
+
+    def decorate_html(self, html):
+        if self.path:
+            d = gws.dirname(self.path)
+            html = f'<base href="file://{d}/" />\n' + html
+        html = '<meta charset="utf8" />\n' + html
+        return html
+
+    def frame_template(self, header, footer, page_size):
         w, h, _ = page_size
 
         return f'''
             <html>
                 <style>
-                    body, table, tr, td {{
-                        margin: 0;
-                        padding: 0;
-                        border: none;
-                    }}
-                    body, table {{
-                        width:  {w}mm;
-                        height: {h}mm;
-                    }}
-                    tr, td {{
-                        width:  {w}mm;
-                        height: {h // 2}mm;
-                    }}
+                    body, table, tr, td {{ margin: 0; padding: 0; border: none; }}
+                    body, table {{ width:  {w}mm; height: {h}mm; }}
+                    tr, td {{ width:  {w}mm; height: {h // 2}mm; }}
                 </style>
                 <body>
-                    @each range(1, page_count + 1) as page:
+                    @for page in range(1, numpages + 1):
                         <table border=0 cellspacing=0 cellpadding=0>
                             <tr valign="top"><td>{header}</td></tr>
                             <tr valign="bottom"><td>{footer}</td></tr>
@@ -177,170 +218,76 @@ class Object(gws.base.template.Object):
             </html>
         '''
 
-
-class _Parser:
-    def __init__(self):
-        self.page_size = None
-        self.map_size = None
-        self.page_margin = None
-        self.header = None
-        self.footer = None
-
-    def command_page(self, cc, arg):
-        cc.code.add(f'_RT.emit_begin_page()')
-        ast = cc.expression.parse_args_ast(arg)
-        self.page_size = self._parse_size(cc, ast)
-        self.page_margin = self._parse_margin(cc, ast)
-        args = cc.expression.walk_args(ast)
-        cc.code.add('_PUSHBUF()')
-        cc.parser.parse_until('end')
-        cc.code.add(f'_RT.emit_end_page(_POPBUF(),{_comma(args)})')
-
-    def command_map(self, cc, arg):
-        ast = cc.expression.parse_args_ast(arg)
-        if not self.map_size:
-            # report the size of the first map only
-            self.map_size = self._parse_size(cc, ast)
-        args = cc.expression.walk_args(ast)
-        cc.code.add(f'_RT.emit_map({_comma(args)})')
-
-    def command_legend(self, cc, arg):
-        ast = cc.expression.parse_args_ast(arg)
-        args = cc.expression.walk_args(ast)
-        cc.code.add(f'_RT.emit_legend({_comma(args)})')
-
-    def command_header(self, cc, arg):
-        self.header = cc.command.extract_text('').strip()
-
-    def command_footer(self, cc, arg):
-        self.footer = cc.command.extract_text('').strip()
-
-    def _parse_size(self, cc, ast):
-        w = self._parse_int(cc, ast, 'width')
-        h = self._parse_int(cc, ast, 'height')
-        return w, h, gws.Uom.mm
-
-    def _parse_int(self, cc, ast, name):
-        val = self._get_arg(ast, name)
-        if not val:
-            return 0
-        try:
-            return int(cc.expression.constant(val))
-        except:
-            raise cc.error("invalid value for {name!r}")
-
-    def _parse_margin(self, cc, ast):
-        val = self._get_arg(ast, 'margin')
-        if not val:
-            return
-        try:
-            m = [int(x) for x in cc.expression.constant(val).split()]
-            if len(m) == 1:
-                return [m[0], m[0], m[0], m[0]]
-            if len(m) == 2:
-                return [m[0], m[1], m[0], m[1]]
-            if len(m) == 4:
-                return [m[0], m[1], m[2], m[3]]
-        except:
-            raise cc.error("invalid value for 'margin'")
-
-    def _get_arg(self, ast, name):
-        for kw in ast.keywords:
-            if kw.arg == name:
-                return kw.value
+    def notify(self, tri, message):
+        if tri.notify:
+            tri.notify(message)
 
 
-class _Engine(jump.Engine):
-    def __init__(self, tpl: Object, tri: gws.TemplateRenderInput, notify: t.Callable):
+##
+
+
+class Engine(gws.lib.vendor.jump.Engine):
+    pageMargin: list[int] = []
+    pageSize: gws.MSize = []
+    header: str = ''
+    footer: str = ''
+
+    def __init__(self, template: Object, tri: t.Optional[gws.TemplateRenderInput] = None):
         super().__init__()
-        self.tpl = tpl
+        self.template = template
         self.tri = tri
-        self.notify = notify or _dummy_fn
-        self.map_count = 0
-        self.page_count = 0
-        self.legend_count = 0
 
-    def emit_begin_page(self):
-        self.notify('begin_page')
-        if self.page_count > 0:
-            self.prints('<div style="page-break-before: always"></div>')
-        self.page_count += 1
-        self.map_count = 0
+    def def_page(self, **kw):
+        self.pageSize = (
+            _scalar(kw, 'width', int, self.template.pageSize[0]),
+            _scalar(kw, 'height', int, self.template.pageSize[1]),
+            gws.Uom.mm)
+        self.pageMargin = _list(kw, 'margin', int, 4, self.template.pageMargin)
 
-    def emit_end_page(self, text, **kwargs):
-        self.prints(text)
-        self.notify('end_page')
-
-    def emit_map(self, **kwargs):
-        self.notify('begin_map')
-        try:
-            html = self._render_map(kwargs)
-        except Exception as exc:
-            gws.log.error(f'template {self.tpl.uid}: map error: {exc!r}')
-            html = ''
-        self.prints(html)
-        self.notify('end_map')
-
-    def _render_map(self, kwargs):
-        index = int(kwargs.get('index')) if 'index' in kwargs else self.map_count
-        self.map_count += 1
-        mri = self._prepare_map(self.tri.maps[index], kwargs)
-        mro = gws.gis.render.render_map(mri, self.notify)
-        return gws.gis.render.output_to_html_string(mro)
-
-    def _prepare_map(self, rim: gws.TemplateRenderInputMap, opts) -> gws.MapRenderInput:
-        # these are mandatory
-        width = int(opts['width'])
-        height = int(opts['height'])
-        return gws.MapRenderInput(
-            background_color=rim.background_color,
-            bbox=opts.get('bbox', rim.bbox),
-            center=opts.get('center', rim.center),
-            crs=self.tri.crs,
-            dpi=self.tri.dpi,
-            out_size=(width, height, gws.Uom.mm),
-            planes=rim.planes,
-            rotation=opts.get('scale', rim.rotation),
-            scale=opts.get('scale', rim.scale),
+    def def_map(self, **kw):
+        if not self.tri:
+            return
+        return self.template.render_map(
+            self.tri,
+            width=_scalar(kw, 'width', int, self.template.mapSize[0]),
+            height=_scalar(kw, 'height', int, self.template.mapSize[1]),
+            index=_scalar(kw, 'number', int, 0),
+            bbox=_list(kw, 'bbox', float, 4),
+            center=_list(kw, 'center', float, 2),
+            scale=_scalar(kw, 'scale', int),
+            rotation=_scalar(kw, 'rotation', int),
         )
 
-    def emit_legend(self, **kwargs):
-        try:
-            html = self._render_legend(kwargs)
-        except Exception as exc:
-            gws.log.error(f'template {self.tpl.uid}: legend error: {exc!r}')
-            html = ''
-        self.prints(html)
-
-    def _render_legend(self, kwargs):
-        layers = self._legend_layers(kwargs)
-        if not layers:
-            raise gws.Error('no legend layers')
-
-        lro = gws.gis.legend.render(gws.Legend(layers=layers))
-        if not lro:
-            raise gws.Error('no legend output')
-
-        img_path = gws.gis.legend.to_image_path(lro)
-        if not img_path:
-            raise gws.Error('no legend image path')
-
-        self.legend_count += 1
-        return f'<img src="{img_path}"/>'
-
-    def _legend_layers(self, kwargs):
-        if 'layers' in kwargs:
-            user = self.tri.user or self.tpl.root.app.auth.guestUser
-            return gws.compact(user.acquire('gws.ext.layer', uid) for uid in kwargs['layers'].split())
-
-        if not self.tri.maps:
+    def def_legend(self, **kw):
+        if not self.tri:
             return
+        return self.template.render_legend(
+            self.tri,
+            index=_scalar(kw, 'number', int, 0),
+            layers=kw.get('layers'),
+        )
 
-        if 'map' in kwargs:
-            mp = self.tri.maps[int(kwargs['map'])]
-            return mp.visible_layers
+    def mbox_header(self, text):
+        self.header = text
 
-        return self.tri.maps[0].visible_layers
+    def mbox_footer(self, text):
+        self.footer = text
 
 
-_comma = ','.join
+def _scalar(kw, name, typ, default=None):
+    val = kw.get(name)
+    if val is None:
+        return default
+    return typ(val)
+
+
+def _list(kw, name, typ, size, default=None):
+    val = kw.get(name)
+    if val is None:
+        return default
+    a = [typ(s) for s in val.split()]
+    if len(a) == 1:
+        return a * size
+    if len(a) == size:
+        return a
+    raise TypeError('invalid length')

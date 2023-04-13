@@ -3,6 +3,8 @@ import gws.lib.image
 import gws.lib.mime
 import gws.base.legend
 
+import gws.types as t
+
 
 gws.ext.new.legend('combined')
 
@@ -21,12 +23,13 @@ class Object(gws.base.legend.Object):
         self.layerUids = self.cfg('layerUids')
 
     def render(self, args=None):
-        lros = []
-        for uid in self.layerUids:
-            layer = self.root.find(gws.ext.object.layer, uid)
-            if layer:
-                lro = layer.render_legend(args)
-                if lro:
-                    lros.append(lro)
+        outputs = []
 
-        return gws.base.legend.combine_outputs(lros, self.options)
+        for uid in self.layerUids:
+            layer = t.cast(gws.ILayer, self.root.get(uid, gws.ext.object.layer))
+            if layer and layer.legend:
+                lro = layer.legend.render(args)
+                if lro:
+                    outputs.append(lro)
+
+        return gws.base.legend.combine_outputs(outputs, self.options)

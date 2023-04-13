@@ -1,0 +1,941 @@
+{
+    "type": "FeatureCollection",
+    "crs": {
+        "type": "name",
+        "properties": {
+            "name": "urn:ogc:def:crs:EPSG::3857"
+        }
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757989.340755114,
+                    6661921.289381
+                ]
+            },
+            "properties": {
+                "id": 64,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759286.068107519,
+                    6653907.39571981
+                ]
+            },
+            "properties": {
+                "id": 90,
+                "fclass": "Postfiliale",
+                "name": "HoRo Lotto-Toto & Hermes-Paketshop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    765263.078734989,
+                    6649896.16482525
+                ]
+            },
+            "properties": {
+                "id": 128,
+                "fclass": "Postfiliale",
+                "name": "Schreibwaren T. Wendel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    768981.016144093,
+                    6644667.91946969
+                ]
+            },
+            "properties": {
+                "id": 135,
+                "fclass": "Postfiliale",
+                "name": "Lotto Toto Berressem"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763539.853017507,
+                    6663032.85721178
+                ]
+            },
+            "properties": {
+                "id": 178,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754307.103506708,
+                    6661549.55008996
+                ]
+            },
+            "properties": {
+                "id": 228,
+                "fclass": "Postfiliale",
+                "name": "Deutsche Post AG"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751697.140121414,
+                    6659135.94874611
+                ]
+            },
+            "properties": {
+                "id": 229,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753417.538323828,
+                    6658752.89217053
+                ]
+            },
+            "properties": {
+                "id": 232,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756697.800890982,
+                    6663267.04794995
+                ]
+            },
+            "properties": {
+                "id": 235,
+                "fclass": "Postfiliale",
+                "name": "Postbank"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754884.53996935,
+                    6660024.97708142
+                ]
+            },
+            "properties": {
+                "id": 265,
+                "fclass": "Postfiliale",
+                "name": "Post"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756489.455332013,
+                    6671409.62934451
+                ]
+            },
+            "properties": {
+                "id": 305,
+                "fclass": "Postfiliale",
+                "name": "Deutsche Post"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    768318.609514127,
+                    6657176.99741146
+                ]
+            },
+            "properties": {
+                "id": 375,
+                "fclass": "Postfiliale",
+                "name": "Schulten"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759274.45748463,
+                    6659096.97765997
+                ]
+            },
+            "properties": {
+                "id": 530,
+                "fclass": "Postfiliale",
+                "name": "First Mail"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763654.634544465,
+                    6658852.70621516
+                ]
+            },
+            "properties": {
+                "id": 591,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764870.699793841,
+                    6652577.96649439
+                ]
+            },
+            "properties": {
+                "id": 638,
+                "fclass": "Postfiliale",
+                "name": "Lotto Grobe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763275.947900685,
+                    6652893.30993563
+                ]
+            },
+            "properties": {
+                "id": 648,
+                "fclass": "Postfiliale",
+                "name": "Trinkhalle Tas & Hermes-Paketshop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757726.571097099,
+                    6659038.33478849
+                ]
+            },
+            "properties": {
+                "id": 695,
+                "fclass": "Postfiliale",
+                "name": "Lottoannahme Arabani Jalaie GbR"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757202.712705374,
+                    6659350.6751181
+                ]
+            },
+            "properties": {
+                "id": 696,
+                "fclass": "Postfiliale",
+                "name": "Lotto Tornow"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764179.94008957,
+                    6650059.6678528
+                ]
+            },
+            "properties": {
+                "id": 742,
+                "fclass": "Postfiliale",
+                "name": "Supermarkt am Schloß"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750374.508723503,
+                    6678515.82195818
+                ]
+            },
+            "properties": {
+                "id": 779,
+                "fclass": "Postfiliale",
+                "name": "Post Wittlaer"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759275.303512759,
+                    6653931.1755455
+                ]
+            },
+            "properties": {
+                "id": 873,
+                "fclass": "Postfiliale",
+                "name": "Schreibwaren Keller & UPS Paketshop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763547.255763645,
+                    6658354.8742291
+                ]
+            },
+            "properties": {
+                "id": 892,
+                "fclass": "Postfiliale",
+                "name": "Express Reinigung"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759335.38264194,
+                    6658250.99720199
+                ]
+            },
+            "properties": {
+                "id": 897,
+                "fclass": "Postfiliale",
+                "name": "UPS Kunden-Center"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753945.003467053,
+                    6657460.14641194
+                ]
+            },
+            "properties": {
+                "id": 932,
+                "fclass": "Postfiliale",
+                "name": "Postpoint"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754117.426226342,
+                    6658261.83617331
+                ]
+            },
+            "properties": {
+                "id": 933,
+                "fclass": "Postfiliale",
+                "name": "Deutsche Post"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754377.05667472,
+                    6659786.34723821
+                ]
+            },
+            "properties": {
+                "id": 937,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760956.149900094,
+                    6652246.29988116
+                ]
+            },
+            "properties": {
+                "id": 970,
+                "fclass": "Postfiliale",
+                "name": "Deutsche Post"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    752021.079839623,
+                    6662386.85836186
+                ]
+            },
+            "properties": {
+                "id": 1079,
+                "fclass": "Postfiliale",
+                "name": "Postfiliale Oberkassel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755538.219151236,
+                    6664804.26446123
+                ]
+            },
+            "properties": {
+                "id": 1219,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755263.393592366,
+                    6659014.30910312
+                ]
+            },
+            "properties": {
+                "id": 1277,
+                "fclass": "Postfiliale",
+                "name": "Postmarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755046.153606083,
+                    6662955.58925159
+                ]
+            },
+            "properties": {
+                "id": 1330,
+                "fclass": "Postfiliale",
+                "name": "Ecke Stern Stehcafe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758431.067626533,
+                    6667919.91173921
+                ]
+            },
+            "properties": {
+                "id": 1356,
+                "fclass": "Postfiliale",
+                "name": "Post"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754903.319567446,
+                    6663218.04726815
+                ]
+            },
+            "properties": {
+                "id": 1439,
+                "fclass": "Postfiliale",
+                "name": "Kiosk - Post/DHL"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    767579.904505174,
+                    6646550.61678141
+                ]
+            },
+            "properties": {
+                "id": 1457,
+                "fclass": "Postfiliale",
+                "name": "Post-Shop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759134.117002586,
+                    6654403.50088438
+                ]
+            },
+            "properties": {
+                "id": 1460,
+                "fclass": "Postfiliale",
+                "name": "Post/DHL Shop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759450.308884235,
+                    6653803.14890484
+                ]
+            },
+            "properties": {
+                "id": 1521,
+                "fclass": "Postfiliale",
+                "name": "DPD Paket-Shop (Handy & PC Welt)"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    752979.651974844,
+                    6665674.79024739
+                ]
+            },
+            "properties": {
+                "id": 1670,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760189.915581067,
+                    6658429.69991119
+                ]
+            },
+            "properties": {
+                "id": 1685,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750821.011201075,
+                    6669936.79545975
+                ]
+            },
+            "properties": {
+                "id": 1744,
+                "fclass": "Postfiliale",
+                "name": "V. Wiesweg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760858.088560654,
+                    6652371.99389157
+                ]
+            },
+            "properties": {
+                "id": 1819,
+                "fclass": "Postfiliale",
+                "name": "ABC Foto DPD PaketShop)"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758794.826326598,
+                    6656069.58217491
+                ]
+            },
+            "properties": {
+                "id": 1914,
+                "fclass": "Postfiliale",
+                "name": "Kiosk - Post/DHL"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    745624.55057915,
+                    6661579.52041098
+                ]
+            },
+            "properties": {
+                "id": 1947,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754029.884578783,
+                    6669482.5577884
+                ]
+            },
+            "properties": {
+                "id": 1954,
+                "fclass": "Postfiliale",
+                "name": "GLS Paketshop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    747757.220515716,
+                    6662426.04067852
+                ]
+            },
+            "properties": {
+                "id": 1965,
+                "fclass": "Postfiliale",
+                "name": "Hermes Paketshop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760274.173303648,
+                    6658256.62991152
+                ]
+            },
+            "properties": {
+                "id": 2030,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754438.004095931,
+                    6658393.93062657
+                ]
+            },
+            "properties": {
+                "id": 2041,
+                "fclass": "Postfiliale",
+                "name": "Uni Computer Shop / DHL Paket Shop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760702.263537442,
+                    6663905.63048054
+                ]
+            },
+            "properties": {
+                "id": 2082,
+                "fclass": "Postfiliale",
+                "name": "Allround Shop / Hermes Paket Shop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759988.761261201,
+                    6664093.916495
+                ]
+            },
+            "properties": {
+                "id": 2088,
+                "fclass": "Postfiliale",
+                "name": "T.H. Kleen Tabak - Toto Lotto / Post DHL"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757717.776857325,
+                    6651339.56328311
+                ]
+            },
+            "properties": {
+                "id": 2095,
+                "fclass": "Postfiliale",
+                "name": "Tabak Börse / Hermes PaketShop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754529.931731427,
+                    6665422.78173163
+                ]
+            },
+            "properties": {
+                "id": 2106,
+                "fclass": "Postfiliale",
+                "name": "Newidimenko"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754966.203947794,
+                    6665581.56219775
+                ]
+            },
+            "properties": {
+                "id": 2109,
+                "fclass": "Postfiliale",
+                "name": "Original 81"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758588.083768296,
+                    6664459.67210951
+                ]
+            },
+            "properties": {
+                "id": 2114,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    765933.645083627,
+                    6648514.23224457
+                ]
+            },
+            "properties": {
+                "id": 2116,
+                "fclass": "Postfiliale",
+                "name": "Postfiliale 555"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750220.654055278,
+                    6674533.4570649
+                ]
+            },
+            "properties": {
+                "id": 2140,
+                "fclass": "Postfiliale",
+                "name": "Deutsche Post"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754184.885837764,
+                    6668705.65420683
+                ]
+            },
+            "properties": {
+                "id": 2158,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    745588.193633456,
+                    6661814.48726615
+                ]
+            },
+            "properties": {
+                "id": 2176,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757747.20973069,
+                    6658994.56615558
+                ]
+            },
+            "properties": {
+                "id": 2492,
+                "fclass": "Postfiliale",
+                "name": "Post/DHL Shop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753643.639341579,
+                    6656409.9308381
+                ]
+            },
+            "properties": {
+                "id": 2496,
+                "fclass": "Postfiliale",
+                "name": "Hermes PaketShop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759629.844958986,
+                    6662705.37123418
+                ]
+            },
+            "properties": {
+                "id": 2543,
+                "fclass": "Postfiliale",
+                "name": "DHL Paketshop 443"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    748343.440086183,
+                    6664265.47409513
+                ]
+            },
+            "properties": {
+                "id": 2561,
+                "fclass": "Postfiliale",
+                "name": "DHL-Kiosk"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    761104.694628608,
+                    6657175.04310089
+                ]
+            },
+            "properties": {
+                "id": 2569,
+                "fclass": "Postfiliale",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    745637.597223471,
+                    6661855.26673733
+                ]
+            },
+            "properties": {
+                "id": 2576,
+                "fclass": "Postfiliale",
+                "name": "Post Partner Filiale"
+            }
+        }
+    ]
+}

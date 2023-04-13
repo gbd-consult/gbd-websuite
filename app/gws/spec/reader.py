@@ -348,6 +348,25 @@ def _read_metadata(r: Reader, val, typ: core.Type):
     return res
 
 
+def _read_measurement(r: Reader, val, typ: core.Type):
+    try:
+        return gws.lib.uom.parse(val)
+    except ValueError as e:
+        raise core.ReadError(f'invalid measurement: {val!r}: {e!r}', val)
+
+
+def _read_mpoint(r: Reader, val, typ: core.Type):
+    try:
+        ls = [gws.lib.uom.parse(s) for s in gws.to_list(val)]
+        if len(ls) != 2:
+            raise ValueError('point length must be 2')
+        a, u = ls[0]
+        b, _ = ls[1]
+        return a, b, u
+    except ValueError as e:
+        raise core.ReadError(f'invalid point: {val!r}: {e!r}', val)
+
+
 def _read_regex(r: Reader, val, typ: core.Type):
     try:
         re.compile(val)
@@ -466,8 +485,10 @@ _READERS = {
     'gws.core.types.Duration': _read_duration,
     'gws.core.types.FilePath': _read_filepath,
     'gws.core.types.FormatStr': _read_formatstr,
+    'gws.core.types.Measurement': _read_measurement,
+    'gws.core.types.Metadata': _read_metadata,
+    'gws.core.types.MPoint': _read_mpoint,
+    'gws.core.types.MSize': _read_mpoint,
     'gws.core.types.Regex': _read_regex,
     'gws.core.types.Url': _read_url,
-    'gws.core.types.Metadata': _read_metadata,
-    'gws.core.types.Ge': _read_metadata,
 }

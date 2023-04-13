@@ -537,10 +537,10 @@ class Service(gws.Node, gws.IOwsService):
             raise gws.base.web.error.BadRequest()
 
         mri = gws.MapRenderInput(
-            background_color=0 if rd.req.param('transparent', '').lower() == 'false' else None,
+            backgroundColor=0 if rd.req.param('transparent', '').lower() == 'false' else None,
             bbox=bounds.extent,
             crs=bounds.crs,
-            out_size=(px_width, px_height, gws.Uom.px),
+            mapSize=(px_width, px_height, gws.Uom.px),
             planes=[
                 gws.MapRenderInputPlane(type='image_layer', layer=lc.layer)
                 for lc in lcs

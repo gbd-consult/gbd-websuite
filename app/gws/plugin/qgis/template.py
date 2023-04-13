@@ -61,12 +61,12 @@ class Object(gws.base.template.Object):
         notify('begin_print')
 
         notify('begin_map')
-        map_pdf_path = gws.tempname('q.map.pdf')
+        map_pdf_path = gws.printtemp('q.map.pdf')
         mro = self._render_map(tri, notify, map_pdf_path)
         notify('end_map')
 
         notify('begin_page')
-        qgis_pdf_path = gws.tempname('q.qgis.pdf')
+        qgis_pdf_path = gws.printtemp('q.qgis.pdf')
         self._render_qgis(tri, notify, mro, qgis_pdf_path)
         notify('end_page')
 
@@ -80,7 +80,7 @@ class Object(gws.base.template.Object):
         # @TODO automatic transparency
 
         notify('finalize_print')
-        comb_path = gws.tempname('q.comb.pdf')
+        comb_path = gws.printtemp('q.comb.pdf')
         gws.lib.pdf.overlay(map_pdf_path, qgis_pdf_path, comb_path)
 
         notify('end_print')
@@ -93,12 +93,12 @@ class Object(gws.base.template.Object):
         mp = tri.maps[0]
 
         mri = gws.MapRenderInput(
-            background_color=mp.background_color,
+            backgroundColor=mp.backgroundColor,
             bbox=mp.bbox,
             center=mp.center,
             crs=tri.crs,
             dpi=tri.dpi,
-            out_size=self.map_size,
+            mapSize=self.map_size,
             planes=mp.planes,
             rotation=mp.rotation,
             scale=mp.scale,
@@ -135,7 +135,7 @@ class Object(gws.base.template.Object):
         project_path = self.provider.path
         boxes = self._render_html_boxes(tri)
         if boxes:
-            project_path = gws.tempname('q.boxes.qgs')
+            project_path = gws.printtemp('q.boxes.qgs')
             self._inject_html_boxes(tri, boxes, project_path)
 
         return self._render_qgis_to_pdf(tri, mro, project_path, out_path)
@@ -150,7 +150,7 @@ class Object(gws.base.template.Object):
             dpi=tri.dpi,
             locale_uid=tri.locale_uid,
             maps=tri.maps,
-            out_mime=gws.lib.mime.HTML,
+            mimeOut=gws.lib.mime.HTML,
             user=tri.user
         )
 

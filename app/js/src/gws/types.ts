@@ -345,7 +345,7 @@ export interface IMapManager {
     geom2shape(geom: ol.geom.Geometry): api.base.shape.Props;
     shape2geom(shape: api.base.shape.Props): ol.geom.Geometry;
 
-    basicPrintParams(boxRect: ClientRect | null, dpi: number): Promise<IBasicPrintParams>;
+    printParams(boxRect: ClientRect | null, dpi: number): Promise<api.base.printer.MapParams>;
 
     searchForFeatures(args: IFeatureSearchArgs): Promise<Array<IFeature>>;
 

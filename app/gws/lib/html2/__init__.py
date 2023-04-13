@@ -1,20 +1,19 @@
 import gws
 import gws.lib.osx
-import gws.lib.uom as units
+import gws.lib.uom
 import gws.types as t
 
 
-def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin: list[int] = None) -> str:
-    if 'charset' not in html:
-        html = '<meta charset="utf8"/>' + html
-    gws.write_file_b(out_path + '.html', gws.to_bytes(html))
+def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin: gws.MExtent = None) -> str:
 
-    mar = page_margin or [0, 0, 0, 0]
+    mar = page_margin or (0, 0, 0, 0, gws.Uom.mm)
 
     # page sizes need to be in mm!
     psz = (210, 297, gws.Uom.mm)
     if page_size:
-        psz = units.msize_to_mm(page_size, units.PDF_DPI)
+        psz = gws.lib.uom.msize_to_mm(page_size, gws.lib.uom.PDF_DPI)
+
+    gws.write_file(out_path + '.html', html)
 
     def f(x):
         return str(int(x))
@@ -23,6 +22,8 @@ def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin:
         'wkhtmltopdf',
         '--disable-javascript',
         '--disable-smart-shrinking',
+        '--load-error-handling', 'ignore',
+        '--enable-local-file-access',
         '--dpi', f(gws.lib.uom.PDF_DPI),
         '--margin-top', f(mar[0]),
         '--margin-right', f(mar[1]),
@@ -35,9 +36,7 @@ def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin:
         out_path,
     ]
 
-    gws.log.debug(cmd)
     gws.lib.osx.run(cmd, echo=False)
-
     return out_path
 
 
@@ -50,9 +49,7 @@ def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin:
             </body>
         """
 
-    if 'charset' not in html:
-        html = '<meta charset="utf8"/>' + html
-    gws.write_file_b(out_path + '.html', gws.to_bytes(html))
+    gws.write_file(out_path + '.html', html)
 
     cmd = ['wkhtmltoimage']
 
@@ -61,7 +58,7 @@ def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin:
 
     if page_size:
         # page sizes need to be in px!
-        psz = units.msize_to_px(page_size, units.PDF_DPI)
+        psz = gws.lib.uom.msize_to_px(page_size, gws.lib.uom.PDF_DPI)
         w, h, _ = psz
         cmd.extend([
             '--width', f(w),
@@ -78,7 +75,5 @@ def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin:
         out_path,
     ])
 
-    gws.log.debug(cmd)
     gws.lib.osx.run(cmd, echo=False)
-
     return out_path

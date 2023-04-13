@@ -20,25 +20,10 @@ class MarkerLayer extends gws.map.layer.FeatureLayer {
     controller: MarkerController;
     cssSelector = '.modMarkerFeature'
 
-    super_printItem(): gws.api.base.printer.Plane {
-        let fs = gws.lib.compact(this.features.map(f => f.getProps()));
-
-        if (fs.length === 0)
-            return null;
-
-        return {
-            type: 'features',
-            opacity: this.computedOpacity,
-            features: fs,
-            style: null // style ? style.props : null,
-        };
-    }
-
     get printPlane() {
-        // @TODO target es6 and use super.printPlane here
-        if (this.controller.getValue('markerPrint'))
-            return this.super_printItem();
-        return null;
+        if (!this.controller.getValue('markerPrint'))
+            return null;
+        return super.printPlane
     }
 }
 

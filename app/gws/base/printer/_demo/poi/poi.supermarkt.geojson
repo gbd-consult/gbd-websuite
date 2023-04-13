@@ -1,0 +1,3296 @@
+{
+    "type": "FeatureCollection",
+    "crs": {
+        "type": "name",
+        "properties": {
+            "name": "urn:ogc:def:crs:EPSG::3857"
+        }
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754369.55374104,
+                    6659342.92688652
+                ]
+            },
+            "properties": {
+                "id": 2,
+                "fclass": "Supermarkt",
+                "name": "basic Bio-Supermarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755368.356740234,
+                    6660319.13743972
+                ]
+            },
+            "properties": {
+                "id": 19,
+                "fclass": "Supermarkt",
+                "name": "Netto City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759701.033773348,
+                    6663913.73865665
+                ]
+            },
+            "properties": {
+                "id": 51,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758541.96410326,
+                    6661871.88789657
+                ]
+            },
+            "properties": {
+                "id": 60,
+                "fclass": "Supermarkt",
+                "name": "Netto City Filiale"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757677.568257251,
+                    6662016.04009417
+                ]
+            },
+            "properties": {
+                "id": 63,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756513.845432445,
+                    6660928.7660668
+                ]
+            },
+            "properties": {
+                "id": 70,
+                "fclass": "Supermarkt",
+                "name": "Kömüscü Market"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    768922.706994817,
+                    6644649.84310265
+                ]
+            },
+            "properties": {
+                "id": 95,
+                "fclass": "Supermarkt",
+                "name": "EDEKA Rath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756879.830522327,
+                    6658605.38569675
+                ]
+            },
+            "properties": {
+                "id": 113,
+                "fclass": "Supermarkt",
+                "name": "Netto Oberbilk"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760576.071762678,
+                    6657964.30273832
+                ]
+            },
+            "properties": {
+                "id": 126,
+                "fclass": "Supermarkt",
+                "name": "Penny Markt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760432.681126587,
+                    6658005.08079273
+                ]
+            },
+            "properties": {
+                "id": 127,
+                "fclass": "Supermarkt",
+                "name": "Marketim Hipermarket"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757715.383488274,
+                    6659062.09398607
+                ]
+            },
+            "properties": {
+                "id": 130,
+                "fclass": "Supermarkt",
+                "name": "Penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    767651.627653092,
+                    6646559.09813924
+                ]
+            },
+            "properties": {
+                "id": 133,
+                "fclass": "Supermarkt",
+                "name": "ALDI"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759824.531616434,
+                    6663278.58697758
+                ]
+            },
+            "properties": {
+                "id": 141,
+                "fclass": "Supermarkt",
+                "name": "METRO Cash & Carry"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764388.931301584,
+                    6653367.7774089
+                ]
+            },
+            "properties": {
+                "id": 148,
+                "fclass": "Supermarkt",
+                "name": "Norma GmbH"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764318.811154333,
+                    6653451.13480257
+                ]
+            },
+            "properties": {
+                "id": 149,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763780.859715076,
+                    6654174.00366466
+                ]
+            },
+            "properties": {
+                "id": 152,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763829.717839583,
+                    6663143.40891272
+                ]
+            },
+            "properties": {
+                "id": 179,
+                "fclass": "Supermarkt",
+                "name": "Aldi Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764266.379674169,
+                    6660198.58213316
+                ]
+            },
+            "properties": {
+                "id": 180,
+                "fclass": "Supermarkt",
+                "name": "Edeka"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759029.176118616,
+                    6654363.14925866
+                ]
+            },
+            "properties": {
+                "id": 181,
+                "fclass": "Supermarkt",
+                "name": "ALDI"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756262.608473675,
+                    6663799.85152453
+                ]
+            },
+            "properties": {
+                "id": 195,
+                "fclass": "Supermarkt",
+                "name": "REWE"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763117.896487657,
+                    6664943.36452719
+                ]
+            },
+            "properties": {
+                "id": 197,
+                "fclass": "Supermarkt",
+                "name": "Bauernladen"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    761200.562974078,
+                    6657003.17219497
+                ]
+            },
+            "properties": {
+                "id": 199,
+                "fclass": "Supermarkt",
+                "name": "REWE CITY"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759061.013492981,
+                    6660184.45259167
+                ]
+            },
+            "properties": {
+                "id": 200,
+                "fclass": "Supermarkt",
+                "name": "REWE Flingern-Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757623.500380573,
+                    6659228.67686465
+                ]
+            },
+            "properties": {
+                "id": 220,
+                "fclass": "Supermarkt",
+                "name": "Edeka Tschoepe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753150.249094484,
+                    6658759.16494182
+                ]
+            },
+            "properties": {
+                "id": 231,
+                "fclass": "Supermarkt",
+                "name": "Penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    761258.705144122,
+                    6656988.99487184
+                ]
+            },
+            "properties": {
+                "id": 248,
+                "fclass": "Supermarkt",
+                "name": "Center Shop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755575.143826331,
+                    6659998.38924561
+                ]
+            },
+            "properties": {
+                "id": 261,
+                "fclass": "Supermarkt",
+                "name": "REWE"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759175.861811634,
+                    6661826.41532932
+                ]
+            },
+            "properties": {
+                "id": 266,
+                "fclass": "Supermarkt",
+                "name": "REWE Flingern-Nord"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    762491.279073979,
+                    6662314.27201612
+                ]
+            },
+            "properties": {
+                "id": 298,
+                "fclass": "Supermarkt",
+                "name": "nah&frisch"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    762908.014719713,
+                    6663403.52599707
+                ]
+            },
+            "properties": {
+                "id": 299,
+                "fclass": "Supermarkt",
+                "name": "REWE"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759493.489714715,
+                    6663406.37079559
+                ]
+            },
+            "properties": {
+                "id": 301,
+                "fclass": "Supermarkt",
+                "name": "Emmas Enkel"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756002.510483437,
+                    6670175.09883439
+                ]
+            },
+            "properties": {
+                "id": 310,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759917.728294126,
+                    6664025.5469575
+                ]
+            },
+            "properties": {
+                "id": 317,
+                "fclass": "Supermarkt",
+                "name": "Netto City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757050.650280949,
+                    6662190.29183161
+                ]
+            },
+            "properties": {
+                "id": 318,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751985.613449856,
+                    6667304.37192799
+                ]
+            },
+            "properties": {
+                "id": 338,
+                "fclass": "Supermarkt",
+                "name": "Aldi Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750999.667851848,
+                    6677899.2877759
+                ]
+            },
+            "properties": {
+                "id": 347,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756918.736684359,
+                    6663480.30034431
+                ]
+            },
+            "properties": {
+                "id": 351,
+                "fclass": "Supermarkt",
+                "name": "REWE CITY"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763958.447698737,
+                    6661181.82709979
+                ]
+            },
+            "properties": {
+                "id": 360,
+                "fclass": "Supermarkt",
+                "name": "REWE"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763976.782018871,
+                    6661282.73730303
+                ]
+            },
+            "properties": {
+                "id": 361,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756234.589357844,
+                    6661251.29271832
+                ]
+            },
+            "properties": {
+                "id": 401,
+                "fclass": "Supermarkt",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755036.669185468,
+                    6665382.71362665
+                ]
+            },
+            "properties": {
+                "id": 410,
+                "fclass": "Supermarkt",
+                "name": "Netto City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754308.50613229,
+                    6659254.33810878
+                ]
+            },
+            "properties": {
+                "id": 414,
+                "fclass": "Supermarkt",
+                "name": "REWE CITY"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754657.203305252,
+                    6659939.57996116
+                ]
+            },
+            "properties": {
+                "id": 466,
+                "fclass": "Supermarkt",
+                "name": "ALDI an der KÖ/Friedrichstadt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764508.020892835,
+                    6647713.95783131
+                ]
+            },
+            "properties": {
+                "id": 484,
+                "fclass": "Supermarkt",
+                "name": "Edeka Uwe Politt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    765211.393095411,
+                    6650593.28094895
+                ]
+            },
+            "properties": {
+                "id": 486,
+                "fclass": "Supermarkt",
+                "name": "TEMMA"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756287.22121309,
+                    6659643.12291175
+                ]
+            },
+            "properties": {
+                "id": 497,
+                "fclass": "Supermarkt",
+                "name": "Nador Markt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760861.76210385,
+                    6657399.02789685
+                ]
+            },
+            "properties": {
+                "id": 514,
+                "fclass": "Supermarkt",
+                "name": "REWE CITY"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755892.560222381,
+                    6661716.32583303
+                ]
+            },
+            "properties": {
+                "id": 540,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755622.488005768,
+                    6680340.74224811
+                ]
+            },
+            "properties": {
+                "id": 549,
+                "fclass": "Supermarkt",
+                "name": "Edeka Steinert"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757843.222791501,
+                    6660148.78227287
+                ]
+            },
+            "properties": {
+                "id": 553,
+                "fclass": "Supermarkt",
+                "name": "LIDL Flingern-Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756334.643316168,
+                    6660190.40654643
+                ]
+            },
+            "properties": {
+                "id": 578,
+                "fclass": "Supermarkt",
+                "name": "Edeka Stockheim"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755229.096057253,
+                    6658900.54346502
+                ]
+            },
+            "properties": {
+                "id": 592,
+                "fclass": "Supermarkt",
+                "name": "Şen Market"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757884.68930182,
+                    6662088.60601659
+                ]
+            },
+            "properties": {
+                "id": 616,
+                "fclass": "Supermarkt",
+                "name": "REWE City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755850.047308846,
+                    6663217.10495022
+                ]
+            },
+            "properties": {
+                "id": 643,
+                "fclass": "Supermarkt",
+                "name": "Penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763184.799501622,
+                    6652828.56756363
+                ]
+            },
+            "properties": {
+                "id": 646,
+                "fclass": "Supermarkt",
+                "name": "Can Feinkost II"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763499.188007522,
+                    6653095.26467797
+                ]
+            },
+            "properties": {
+                "id": 650,
+                "fclass": "Supermarkt",
+                "name": "C & M Market"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757373.087186034,
+                    6660695.74425126
+                ]
+            },
+            "properties": {
+                "id": 657,
+                "fclass": "Supermarkt",
+                "name": "Libanesischer Supermarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757539.966234681,
+                    6660654.70394917
+                ]
+            },
+            "properties": {
+                "id": 658,
+                "fclass": "Supermarkt",
+                "name": "Türkischer Supermarkt Ergül"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    761046.1517084,
+                    6657139.88335686
+                ]
+            },
+            "properties": {
+                "id": 664,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    761792.036824511,
+                    6656711.70700333
+                ]
+            },
+            "properties": {
+                "id": 668,
+                "fclass": "Supermarkt",
+                "name": "Netto Marken-Discount"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753210.695577986,
+                    6659220.94651949
+                ]
+            },
+            "properties": {
+                "id": 687,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751990.199812878,
+                    6662319.1253079
+                ]
+            },
+            "properties": {
+                "id": 688,
+                "fclass": "Supermarkt",
+                "name": "REWE CITY"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755040.108957733,
+                    6656890.12738021
+                ]
+            },
+            "properties": {
+                "id": 700,
+                "fclass": "Supermarkt",
+                "name": "Penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754792.022340552,
+                    6657656.63487032
+                ]
+            },
+            "properties": {
+                "id": 708,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763116.783292747,
+                    6652783.25175925
+                ]
+            },
+            "properties": {
+                "id": 731,
+                "fclass": "Supermarkt",
+                "name": "Daorung Asia Shop"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755076.376847833,
+                    6659069.36214631
+                ]
+            },
+            "properties": {
+                "id": 733,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756024.262311938,
+                    6660368.31626817
+                ]
+            },
+            "properties": {
+                "id": 738,
+                "fclass": "Supermarkt",
+                "name": "Alnatura"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764209.595601917,
+                    6666576.58905889
+                ]
+            },
+            "properties": {
+                "id": 750,
+                "fclass": "Supermarkt",
+                "name": "REWE"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764295.066706947,
+                    6650256.24502558
+                ]
+            },
+            "properties": {
+                "id": 761,
+                "fclass": "Supermarkt",
+                "name": "Annes Bioladen"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763610.0733523,
+                    6655413.93705692
+                ]
+            },
+            "properties": {
+                "id": 762,
+                "fclass": "Supermarkt",
+                "name": "Nah & Frisch"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754732.856031195,
+                    6669798.1798313
+                ]
+            },
+            "properties": {
+                "id": 812,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760689.484059899,
+                    6652481.9755142
+                ]
+            },
+            "properties": {
+                "id": 834,
+                "fclass": "Supermarkt",
+                "name": "NORMA"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758668.478704547,
+                    6655156.16975657
+                ]
+            },
+            "properties": {
+                "id": 851,
+                "fclass": "Supermarkt",
+                "name": "Penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760551.726190043,
+                    6652336.19780226
+                ]
+            },
+            "properties": {
+                "id": 907,
+                "fclass": "Supermarkt",
+                "name": "PENNY"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758659.061075627,
+                    6661914.46310558
+                ]
+            },
+            "properties": {
+                "id": 920,
+                "fclass": "Supermarkt",
+                "name": "Penny Markt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753951.215094639,
+                    6657346.81101545
+                ]
+            },
+            "properties": {
+                "id": 931,
+                "fclass": "Supermarkt",
+                "name": "ALDI"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753964.940787854,
+                    6657544.00744292
+                ]
+            },
+            "properties": {
+                "id": 938,
+                "fclass": "Supermarkt",
+                "name": "SuperBioMarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764230.401214744,
+                    6653480.36514205
+                ]
+            },
+            "properties": {
+                "id": 949,
+                "fclass": "Supermarkt",
+                "name": "Penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    764912.555922377,
+                    6652403.01374436
+                ]
+            },
+            "properties": {
+                "id": 951,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756116.312398874,
+                    6658785.28673235
+                ]
+            },
+            "properties": {
+                "id": 960,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755280.314154965,
+                    6658920.92591461
+                ]
+            },
+            "properties": {
+                "id": 983,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751479.310141829,
+                    6662319.28530658
+                ]
+            },
+            "properties": {
+                "id": 986,
+                "fclass": "Supermarkt",
+                "name": "Kaiser's"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759021.294698667,
+                    6654345.45996433
+                ]
+            },
+            "properties": {
+                "id": 995,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750965.648615462,
+                    6662534.13080089
+                ]
+            },
+            "properties": {
+                "id": 1004,
+                "fclass": "Supermarkt",
+                "name": "ALDI"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    748916.568484531,
+                    6664041.62130453
+                ]
+            },
+            "properties": {
+                "id": 1007,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756406.433255782,
+                    6671421.42903205
+                ]
+            },
+            "properties": {
+                "id": 1018,
+                "fclass": "Supermarkt",
+                "name": "Edeka"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754129.849481517,
+                    6660974.46471614
+                ]
+            },
+            "properties": {
+                "id": 1023,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754941.769319566,
+                    6656594.52692242
+                ]
+            },
+            "properties": {
+                "id": 1034,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756724.517568773,
+                    6659501.76710063
+                ]
+            },
+            "properties": {
+                "id": 1037,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758470.430198475,
+                    6668003.45311024
+                ]
+            },
+            "properties": {
+                "id": 1044,
+                "fclass": "Supermarkt",
+                "name": "REWE"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757971.574164383,
+                    6667858.59049664
+                ]
+            },
+            "properties": {
+                "id": 1047,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750974.120028711,
+                    6663160.10380732
+                ]
+            },
+            "properties": {
+                "id": 1051,
+                "fclass": "Supermarkt",
+                "name": "WAYO Delikatessen"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754806.415950711,
+                    6663777.37656198
+                ]
+            },
+            "properties": {
+                "id": 1163,
+                "fclass": "Supermarkt",
+                "name": "EDEKA"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755031.80452372,
+                    6664750.82662203
+                ]
+            },
+            "properties": {
+                "id": 1172,
+                "fclass": "Supermarkt",
+                "name": "EDEKA xpress Shariat"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755107.579701103,
+                    6665149.51154815
+                ]
+            },
+            "properties": {
+                "id": 1188,
+                "fclass": "Supermarkt",
+                "name": "Deniz Market"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755766.223732279,
+                    6664852.59888739
+                ]
+            },
+            "properties": {
+                "id": 1200,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756020.700088233,
+                    6661764.73089814
+                ]
+            },
+            "properties": {
+                "id": 1210,
+                "fclass": "Supermarkt",
+                "name": "Rewe City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756248.214863516,
+                    6661570.3302119
+                ]
+            },
+            "properties": {
+                "id": 1214,
+                "fclass": "Supermarkt",
+                "name": "Netto City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756258.645499802,
+                    6661428.23007242
+                ]
+            },
+            "properties": {
+                "id": 1216,
+                "fclass": "Supermarkt",
+                "name": "Asia Markt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756268.886892956,
+                    6661406.61485592
+                ]
+            },
+            "properties": {
+                "id": 1217,
+                "fclass": "Supermarkt",
+                "name": "Tak Supermarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755610.788327285,
+                    6664737.68505716
+                ]
+            },
+            "properties": {
+                "id": 1220,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757009.28395817,
+                    6663643.68381662
+                ]
+            },
+            "properties": {
+                "id": 1262,
+                "fclass": "Supermarkt",
+                "name": "REWE"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757195.532598219,
+                    6664623.43079909
+                ]
+            },
+            "properties": {
+                "id": 1267,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757098.718037075,
+                    6663615.28839184
+                ]
+            },
+            "properties": {
+                "id": 1291,
+                "fclass": "Supermarkt",
+                "name": "Reformhaus Bacher"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760466.455460095,
+                    6652541.01533825
+                ]
+            },
+            "properties": {
+                "id": 1294,
+                "fclass": "Supermarkt",
+                "name": "ALDI"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753319.866602606,
+                    6656445.12297603
+                ]
+            },
+            "properties": {
+                "id": 1313,
+                "fclass": "Supermarkt",
+                "name": "Leben-findet-Stadt-Halle"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755967.333524346,
+                    6665698.58651273
+                ]
+            },
+            "properties": {
+                "id": 1392,
+                "fclass": "Supermarkt",
+                "name": "Kaufland Derendorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757563.098424867,
+                    6660596.9563803
+                ]
+            },
+            "properties": {
+                "id": 1399,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750871.294215065,
+                    6669839.9955949
+                ]
+            },
+            "properties": {
+                "id": 1414,
+                "fclass": "Supermarkt",
+                "name": "BioHaus"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754971.714262589,
+                    6663167.35782965
+                ]
+            },
+            "properties": {
+                "id": 1420,
+                "fclass": "Supermarkt",
+                "name": "EDEKA"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754946.67850911,
+                    6663210.3309321
+                ]
+            },
+            "properties": {
+                "id": 1421,
+                "fclass": "Supermarkt",
+                "name": "ALDI"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753145.328772992,
+                    6670411.20254659
+                ]
+            },
+            "properties": {
+                "id": 1456,
+                "fclass": "Supermarkt",
+                "name": "REWE City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    749959.042119965,
+                    6674709.00843608
+                ]
+            },
+            "properties": {
+                "id": 1480,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755661.238320513,
+                    6660511.2511369
+                ]
+            },
+            "properties": {
+                "id": 1508,
+                "fclass": "Supermarkt",
+                "name": "Kashmir Store"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    752870.135859801,
+                    6665786.01792969
+                ]
+            },
+            "properties": {
+                "id": 1518,
+                "fclass": "Supermarkt",
+                "name": "EDEKA Golzheim"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756390.158346226,
+                    6659694.69688712
+                ]
+            },
+            "properties": {
+                "id": 1552,
+                "fclass": "Supermarkt",
+                "name": "Aussar Markt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754777.962688864,
+                    6663730.70209419
+                ]
+            },
+            "properties": {
+                "id": 1563,
+                "fclass": "Supermarkt",
+                "name": "SuperBioMarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754970.233713362,
+                    6656739.421155
+                ]
+            },
+            "properties": {
+                "id": 1567,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754024.218416702,
+                    6658238.79004984
+                ]
+            },
+            "properties": {
+                "id": 1568,
+                "fclass": "Supermarkt",
+                "name": "ALDI"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754582.418871335,
+                    6657938.11249594
+                ]
+            },
+            "properties": {
+                "id": 1594,
+                "fclass": "Supermarkt",
+                "name": "Natürlich Natürlich"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754279.262502058,
+                    6661292.28268703
+                ]
+            },
+            "properties": {
+                "id": 1615,
+                "fclass": "Supermarkt",
+                "name": "REWE to go"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    747169.264361193,
+                    6661703.01137948
+                ]
+            },
+            "properties": {
+                "id": 1625,
+                "fclass": "Supermarkt",
+                "name": "Nikolaou GmbH"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763048.088034979,
+                    6663364.2145387
+                ]
+            },
+            "properties": {
+                "id": 1627,
+                "fclass": "Supermarkt",
+                "name": "Edeka"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755013.214168757,
+                    6658836.97969151
+                ]
+            },
+            "properties": {
+                "id": 1647,
+                "fclass": "Supermarkt",
+                "name": "NORMA"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    767999.645777157,
+                    6646901.12774564
+                ]
+            },
+            "properties": {
+                "id": 1679,
+                "fclass": "Supermarkt",
+                "name": "Penny Garath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760205.366726388,
+                    6658348.24638761
+                ]
+            },
+            "properties": {
+                "id": 1684,
+                "fclass": "Supermarkt",
+                "name": "REWE City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758254.091900069,
+                    6667572.34183302
+                ]
+            },
+            "properties": {
+                "id": 1686,
+                "fclass": "Supermarkt",
+                "name": "Continent"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757371.6734285,
+                    6666924.24115641
+                ]
+            },
+            "properties": {
+                "id": 1688,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753723.188249699,
+                    6656639.54405643
+                ]
+            },
+            "properties": {
+                "id": 1695,
+                "fclass": "Supermarkt",
+                "name": "ALDI Bilk (Süd)"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755656.596297745,
+                    6660710.12351364
+                ]
+            },
+            "properties": {
+                "id": 1716,
+                "fclass": "Supermarkt",
+                "name": "Fresh Asia"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758743.964451254,
+                    6659221.47964651
+                ]
+            },
+            "properties": {
+                "id": 1718,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    765930.082859922,
+                    6648513.13188898
+                ]
+            },
+            "properties": {
+                "id": 1732,
+                "fclass": "Supermarkt",
+                "name": "nah & frisch"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759672.502587859,
+                    6659261.33987496
+                ]
+            },
+            "properties": {
+                "id": 1739,
+                "fclass": "Supermarkt",
+                "name": "PENNY Markt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754023.672951197,
+                    6657281.98010778
+                ]
+            },
+            "properties": {
+                "id": 1781,
+                "fclass": "Supermarkt",
+                "name": "Edeka Paschmann"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755449.631100463,
+                    6661051.10962057
+                ]
+            },
+            "properties": {
+                "id": 1798,
+                "fclass": "Supermarkt",
+                "name": "Shochiku"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755741.666652611,
+                    6660690.57198877
+                ]
+            },
+            "properties": {
+                "id": 1801,
+                "fclass": "Supermarkt",
+                "name": "Hanaro Markt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755225.61175719,
+                    6671205.79821467
+                ]
+            },
+            "properties": {
+                "id": 1825,
+                "fclass": "Supermarkt",
+                "name": "ALDI Lichtenbroich"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753805.186186617,
+                    6657542.17741549
+                ]
+            },
+            "properties": {
+                "id": 1827,
+                "fclass": "Supermarkt",
+                "name": "PENNY Markt Bilker Corner"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755857.38326329,
+                    6661774.45460901
+                ]
+            },
+            "properties": {
+                "id": 1835,
+                "fclass": "Supermarkt",
+                "name": "denn's Biomarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    762621.110996091,
+                    6664480.40627855
+                ]
+            },
+            "properties": {
+                "id": 1858,
+                "fclass": "Supermarkt",
+                "name": "Alnatura"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754846.223800618,
+                    6663823.891268
+                ]
+            },
+            "properties": {
+                "id": 1890,
+                "fclass": "Supermarkt",
+                "name": "Reformhaus Pothmann"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754741.338576392,
+                    6663680.70292168
+                ]
+            },
+            "properties": {
+                "id": 1891,
+                "fclass": "Supermarkt",
+                "name": "BUTLERS"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    746703.470215867,
+                    6662158.61265369
+                ]
+            },
+            "properties": {
+                "id": 1909,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757832.647439876,
+                    6652054.77070719
+                ]
+            },
+            "properties": {
+                "id": 1915,
+                "fclass": "Supermarkt",
+                "name": "ALDI Himmelgeist"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754874.153860859,
+                    6671770.74665334
+                ]
+            },
+            "properties": {
+                "id": 1919,
+                "fclass": "Supermarkt",
+                "name": "Ringeltaube"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760559.874776767,
+                    6657218.53550463
+                ]
+            },
+            "properties": {
+                "id": 1937,
+                "fclass": "Supermarkt",
+                "name": "LIDL Eller"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    746946.046518256,
+                    6662101.47666876
+                ]
+            },
+            "properties": {
+                "id": 1940,
+                "fclass": "Supermarkt",
+                "name": "Penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    747180.340650527,
+                    6662256.08607179
+                ]
+            },
+            "properties": {
+                "id": 1943,
+                "fclass": "Supermarkt",
+                "name": "ALDI Heerdt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750873.509472933,
+                    6662480.06778319
+                ]
+            },
+            "properties": {
+                "id": 1944,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750915.588240452,
+                    6662178.5943431
+                ]
+            },
+            "properties": {
+                "id": 1948,
+                "fclass": "Supermarkt",
+                "name": "Feinkost Cayan"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750814.788441541,
+                    6662510.89485966
+                ]
+            },
+            "properties": {
+                "id": 1978,
+                "fclass": "Supermarkt",
+                "name": "SuperBioMarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    762808.406039351,
+                    6657288.05631793
+                ]
+            },
+            "properties": {
+                "id": 1991,
+                "fclass": "Supermarkt",
+                "name": "Penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    767518.122187783,
+                    6646725.24935565
+                ]
+            },
+            "properties": {
+                "id": 1993,
+                "fclass": "Supermarkt",
+                "name": "Platte"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    762309.07133145,
+                    6663716.70869612
+                ]
+            },
+            "properties": {
+                "id": 2003,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754093.592723366,
+                    6669453.19904538
+                ]
+            },
+            "properties": {
+                "id": 2078,
+                "fclass": "Supermarkt",
+                "name": "penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757265.708405214,
+                    6666816.11078794
+                ]
+            },
+            "properties": {
+                "id": 2126,
+                "fclass": "Supermarkt",
+                "name": "ALDI Mörsenbroich"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754655.711624073,
+                    6663440.17063383
+                ]
+            },
+            "properties": {
+                "id": 2135,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754431.681148854,
+                    6659890.31484788
+                ]
+            },
+            "properties": {
+                "id": 2212,
+                "fclass": "Supermarkt",
+                "name": "Reformhaus Goll"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755353.395400672,
+                    6664609.29361275
+                ]
+            },
+            "properties": {
+                "id": 2273,
+                "fclass": "Supermarkt",
+                "name": "ALDI Derendorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756604.158935328,
+                    6665154.65106322
+                ]
+            },
+            "properties": {
+                "id": 2274,
+                "fclass": "Supermarkt",
+                "name": "LIDL Düsseltal"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756711.504320299,
+                    6663418.69234065
+                ]
+            },
+            "properties": {
+                "id": 2275,
+                "fclass": "Supermarkt",
+                "name": "ALDI Düsseltal"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759260.19745786,
+                    6662006.24498835
+                ]
+            },
+            "properties": {
+                "id": 2276,
+                "fclass": "Supermarkt",
+                "name": "LIDL Flingern-Nord"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759016.708335646,
+                    6661547.32809545
+                ]
+            },
+            "properties": {
+                "id": 2277,
+                "fclass": "Supermarkt",
+                "name": "ALDI Flingern-Nord"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757045.462792679,
+                    6661281.1375191
+                ]
+            },
+            "properties": {
+                "id": 2278,
+                "fclass": "Supermarkt",
+                "name": "ALDI Flingern-Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758840.834672143,
+                    6660122.49617333
+                ]
+            },
+            "properties": {
+                "id": 2279,
+                "fclass": "Supermarkt",
+                "name": "ALDI Flingern-Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    752226.497695985,
+                    6658974.52115948
+                ]
+            },
+            "properties": {
+                "id": 2280,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753460.385195834,
+                    6658519.70131151
+                ]
+            },
+            "properties": {
+                "id": 2281,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754570.819380394,
+                    6658328.30958847
+                ]
+            },
+            "properties": {
+                "id": 2282,
+                "fclass": "Supermarkt",
+                "name": "Real"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753250.19173332,
+                    6657647.55568125
+                ]
+            },
+            "properties": {
+                "id": 2283,
+                "fclass": "Supermarkt",
+                "name": "ALDI"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753820.626199989,
+                    6656486.95935909
+                ]
+            },
+            "properties": {
+                "id": 2284,
+                "fclass": "Supermarkt",
+                "name": "LIDL Bilk"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753747.478162589,
+                    6656350.50780884
+                ]
+            },
+            "properties": {
+                "id": 2285,
+                "fclass": "Supermarkt",
+                "name": "EDEKA Bilk (Süd)"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758673.031671721,
+                    6656597.13840685
+                ]
+            },
+            "properties": {
+                "id": 2287,
+                "fclass": "Supermarkt",
+                "name": "ALDI Oberbilk (Süd)"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755942.208715273,
+                    6658505.6635156
+                ]
+            },
+            "properties": {
+                "id": 2291,
+                "fclass": "Supermarkt",
+                "name": "LIDL Friedrichstadt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756144.943771908,
+                    6658580.91704477
+                ]
+            },
+            "properties": {
+                "id": 2292,
+                "fclass": "Supermarkt",
+                "name": "Polichronidis Handels GmbH"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757257.014352983,
+                    6658349.66790812
+                ]
+            },
+            "properties": {
+                "id": 2293,
+                "fclass": "Supermarkt",
+                "name": "ALDI Oberbilk"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756359.923972528,
+                    6659797.86358529
+                ]
+            },
+            "properties": {
+                "id": 2294,
+                "fclass": "Supermarkt",
+                "name": "Marjan Market"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750649.534657457,
+                    6669981.53019628
+                ]
+            },
+            "properties": {
+                "id": 2296,
+                "fclass": "Supermarkt",
+                "name": "EDEKA"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750313.038100688,
+                    6670959.5275848
+                ]
+            },
+            "properties": {
+                "id": 2297,
+                "fclass": "Supermarkt",
+                "name": "ALDI Lohausen"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    753564.52457947,
+                    6678727.06771182
+                ]
+            },
+            "properties": {
+                "id": 2299,
+                "fclass": "Supermarkt",
+                "name": "LIDL Angermund"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756907.226249012,
+                    6668537.27700587
+                ]
+            },
+            "properties": {
+                "id": 2301,
+                "fclass": "Supermarkt",
+                "name": "LIDL Rath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757172.511727522,
+                    6668319.92538468
+                ]
+            },
+            "properties": {
+                "id": 2302,
+                "fclass": "Supermarkt",
+                "name": "Netto Rath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758448.50025879,
+                    6668302.75739691
+                ]
+            },
+            "properties": {
+                "id": 2303,
+                "fclass": "Supermarkt",
+                "name": "ALDI Rath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759449.952661864,
+                    6668213.18200399
+                ]
+            },
+            "properties": {
+                "id": 2304,
+                "fclass": "Supermarkt",
+                "name": "Penny"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763170.80664163,
+                    6663392.34239244
+                ]
+            },
+            "properties": {
+                "id": 2305,
+                "fclass": "Supermarkt",
+                "name": "SuperBioMarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    767506.589488538,
+                    6657537.66453406
+                ]
+            },
+            "properties": {
+                "id": 2307,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763849.25441022,
+                    6659225.33593297
+                ]
+            },
+            "properties": {
+                "id": 2309,
+                "fclass": "Supermarkt",
+                "name": "ALDI Vennhausen"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760142.504609937,
+                    6657929.26397981
+                ]
+            },
+            "properties": {
+                "id": 2310,
+                "fclass": "Supermarkt",
+                "name": "ALDI Lierenfeld"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759182.273814302,
+                    6657406.15244443
+                ]
+            },
+            "properties": {
+                "id": 2311,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    758775.902013162,
+                    6656051.48061986
+                ]
+            },
+            "properties": {
+                "id": 2312,
+                "fclass": "Supermarkt",
+                "name": "Edeka Center Celik Wersten"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755974.157409132,
+                    6660757.79388194
+                ]
+            },
+            "properties": {
+                "id": 2326,
+                "fclass": "Supermarkt",
+                "name": "Tains nahkauf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757648.992543964,
+                    6661516.75351217
+                ]
+            },
+            "properties": {
+                "id": 2376,
+                "fclass": "Supermarkt",
+                "name": "Netto Marken-Discount City"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    757919.120420324,
+                    6662498.91246435
+                ]
+            },
+            "properties": {
+                "id": 2392,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755797.949787156,
+                    6663358.68499096
+                ]
+            },
+            "properties": {
+                "id": 2396,
+                "fclass": "Supermarkt",
+                "name": null
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    751949.568198736,
+                    6662982.75563024
+                ]
+            },
+            "properties": {
+                "id": 2399,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755830.221307537,
+                    6658711.82607271
+                ]
+            },
+            "properties": {
+                "id": 2402,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    760343.458554716,
+                    6652550.69258311
+                ]
+            },
+            "properties": {
+                "id": 2411,
+                "fclass": "Supermarkt",
+                "name": "LIDL"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763244.19958191,
+                    6653384.54116254
+                ]
+            },
+            "properties": {
+                "id": 2412,
+                "fclass": "Supermarkt",
+                "name": "ALDI Reisholz Nord"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763241.461122436,
+                    6653062.71505405
+                ]
+            },
+            "properties": {
+                "id": 2413,
+                "fclass": "Supermarkt",
+                "name": "LIDL Reisholz"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    765074.982191396,
+                    6651288.23721815
+                ]
+            },
+            "properties": {
+                "id": 2416,
+                "fclass": "Supermarkt",
+                "name": "LIDL Benrath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763853.974356627,
+                    6651369.99334695
+                ]
+            },
+            "properties": {
+                "id": 2417,
+                "fclass": "Supermarkt",
+                "name": "EDEKA - Zurheide"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    765246.269491878,
+                    6650106.76144852
+                ]
+            },
+            "properties": {
+                "id": 2418,
+                "fclass": "Supermarkt",
+                "name": "REWE Benrath"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754772.363318478,
+                    6667881.30794425
+                ]
+            },
+            "properties": {
+                "id": 2450,
+                "fclass": "Supermarkt",
+                "name": "Aldi"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754452.575817274,
+                    6667736.92780865
+                ]
+            },
+            "properties": {
+                "id": 2451,
+                "fclass": "Supermarkt",
+                "name": "Rewe"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759187.194135797,
+                    6665110.31618312
+                ]
+            },
+            "properties": {
+                "id": 2452,
+                "fclass": "Supermarkt",
+                "name": "REWE"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    763673.391878662,
+                    6651555.13271873
+                ]
+            },
+            "properties": {
+                "id": 2453,
+                "fclass": "Supermarkt",
+                "name": "Aldi Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    766000.993375557,
+                    6650301.08530538
+                ]
+            },
+            "properties": {
+                "id": 2454,
+                "fclass": "Supermarkt",
+                "name": "Aldi Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    767744.557164006,
+                    6646710.59299363
+                ]
+            },
+            "properties": {
+                "id": 2456,
+                "fclass": "Supermarkt",
+                "name": "Netto"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    769022.983592124,
+                    6644731.51524878
+                ]
+            },
+            "properties": {
+                "id": 2459,
+                "fclass": "Supermarkt",
+                "name": "ALDI"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755034.509587344,
+                    6660208.17957148
+                ]
+            },
+            "properties": {
+                "id": 2473,
+                "fclass": "Supermarkt",
+                "name": "Zurheide Center Düsseldorf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    750421.22951379,
+                    6678623.8222037
+                ]
+            },
+            "properties": {
+                "id": 2474,
+                "fclass": "Supermarkt",
+                "name": "Nahkauf"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    759113.133278572,
+                    6662878.96205975
+                ]
+            },
+            "properties": {
+                "id": 2519,
+                "fclass": "Supermarkt",
+                "name": "Lidl"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    748990.618209808,
+                    6662680.74808992
+                ]
+            },
+            "properties": {
+                "id": 2525,
+                "fclass": "Supermarkt",
+                "name": "REWE To Go bei Aral"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    755553.013511561,
+                    6661549.30122655
+                ]
+            },
+            "properties": {
+                "id": 2545,
+                "fclass": "Supermarkt",
+                "name": "Aldi Süd"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    756186.744240701,
+                    6659738.52258137
+                ]
+            },
+            "properties": {
+                "id": 2558,
+                "fclass": "Supermarkt",
+                "name": "Al Hoceima Markt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    748076.98575302,
+                    6663423.06622691
+                ]
+            },
+            "properties": {
+                "id": 2562,
+                "fclass": "Supermarkt",
+                "name": "Real"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754209.086695063,
+                    6658288.29398489
+                ]
+            },
+            "properties": {
+                "id": 2612,
+                "fclass": "Supermarkt",
+                "name": "denn's Biomarkt"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754755.042005709,
+                    6657578.35162589
+                ]
+            },
+            "properties": {
+                "id": 2614,
+                "fclass": "Supermarkt",
+                "name": "G.F.T Hypermarket"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    754595.176084981,
+                    6657924.43105938
+                ]
+            },
+            "properties": {
+                "id": 2620,
+                "fclass": "Supermarkt",
+                "name": "Pure Note (verpackungsfrei)"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    762215.217868763,
+                    6661967.43799652
+                ]
+            },
+            "properties": {
+                "id": 2629,
+                "fclass": "Supermarkt",
+                "name": "Lidl"
+            }
+        }
+    ]
+}

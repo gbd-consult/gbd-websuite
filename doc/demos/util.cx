@@ -85,6 +85,7 @@
     api.actions+ { type "map" }
     api.actions+ { type "project" }
     api.actions+ { type "search" }
+    api.actions+ { type "printer" }
 @end
 
 @def demo_client

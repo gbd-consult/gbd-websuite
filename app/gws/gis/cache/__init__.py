@@ -99,7 +99,7 @@ def seed(root: gws.IRoot, layer_uids=None, max_time=None, concurrency=1, levels=
 
 
 def store_in_web_cache(url: str, img: bytes):
-    path = gws.WEB_CACHE_DIR + url
+    path = gws.FASTCACHE_DIR + url
     dirname = os.path.dirname(path)
     tmp = dirname + '/' + gws.random_string(64)
     try:
