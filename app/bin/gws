@@ -30,7 +30,12 @@ ensure_xvfb() {
 
     mkdir -p $XDG_RUNTIME_DIR
     chown $GWS_UID:$GWS_GID $XDG_RUNTIME_DIR
-    start-stop-daemon --start --background --exec $XVFB -- $DISPLAY $XVFBARGS
+
+    until start-stop-daemon --status --exec $XVFB; do
+        echo 'waiting for xvfb...'
+        start-stop-daemon --start --background --exec $XVFB --oknodo -- $DISPLAY $XVFBARGS
+        sleep 0.5
+    done
 }
 
 rm -fr $GWS_TMP_DIR
@@ -57,7 +62,7 @@ if [ "$1" == "server" ]; then
     $PYTHON $MAIN_PY "$@"
     [ $? -eq 0 ] || exit $?
 
-    [ -f $SERVER_CMD ] && chmod 777 $SERVER_CMD && exec $SERVER_CMD
+    [ -f $SERVER_CMD ] && chmod 700 $SERVER_CMD && exec $SERVER_CMD
     exit $?
 fi
 
