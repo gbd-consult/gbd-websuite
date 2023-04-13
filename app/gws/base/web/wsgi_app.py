@@ -49,7 +49,6 @@ def handle_request(environ) -> gws.IWebResponder:
             req.parse_input()
             return req.apply_middleware()
         except gws.base.web.error.HTTPException as exc:
-            gws.log.exception()
             return handle_error(req, exc)
     except:
         gws.log.exception()
@@ -58,6 +57,8 @@ def handle_request(environ) -> gws.IWebResponder:
 
 def handle_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPException) -> gws.IWebResponder:
     # @TODO: image errors
+
+    gws.log.warning(f'HTTPException: {exc.code}')
 
     if req.isApi:
         return req.struct_responder(gws.Response(
