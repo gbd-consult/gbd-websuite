@@ -6,7 +6,7 @@ projects+ {
         uid "print_simple"
         type "html"
         path "simple.cx.html"
-        mapSize [ "200mm" "80mm" ]
+        mapSize [ "150mm" "100mm" ]
     }
 
     map {

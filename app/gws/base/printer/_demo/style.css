@@ -1,0 +1,44 @@
+body {
+    font-family: Helvetica, "DejaVu Sans", sans-serif;
+    font-size: 3.5mm;
+}
+
+h1 {
+    font-size: 8mm;
+    font-weight: normal;
+}
+
+h2 {
+    font-size: 7mm;
+    font-weight: normal;
+}
+
+h3 {
+    font-size: 6mm;
+    font-weight: normal;
+}
+
+h4 {
+    font-size: 3.5mm;
+    font-weight: bold;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+td, th {
+    font-size: 3.5mm;
+    padding: 3mm;
+    border: 1mm solid #e5e3e3;
+    text-align: left;
+    vertical-align: top;
+}
+
+.map {
+    border: 1mm dotted #c0c0c0;
+}
+
+.legend {
+    border: 1mm solid #8f24d0;
+}

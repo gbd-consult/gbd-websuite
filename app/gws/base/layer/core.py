@@ -44,6 +44,17 @@ class ImageFormat(t.Enum):
     """png 24-bit"""
 
 
+class LayerOptions(gws.Data):
+    search: t.Optional[bool] = True
+    """layer is searchable"""
+    legend: t.Optional[bool] = True
+    """layer has a legend"""
+    cache: t.Optional[bool] = False
+    """layer is cached"""
+    ows: t.Optional[bool] = True
+    """layer is enabled for OWS services"""
+
+
 class ClientOptions(gws.Data):
     """Client options for a layer"""
 
@@ -64,7 +75,6 @@ class ClientOptions(gws.Data):
 class CacheConfig(gws.Config):
     """Cache configuration"""
 
-    enabled: bool = True
     maxAge: gws.Duration = '7d'
     """cache max. age"""
     maxLevel: int = 1
@@ -89,16 +99,9 @@ class EditConfig(gws.ConfigWithAccess):
     pass
 
 
-class SearchConfig(gws.Config):
-    enabled: bool = False
-    """search is enabled"""
-
-
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
-    models: t.Optional[list[gws.ext.config.model]]
-    """data models"""
     cache: t.Optional[CacheConfig]
     """cache configuration"""
     clientOptions: ClientOptions = {}
@@ -109,31 +112,25 @@ class Config(gws.ConfigWithAccess):
     """layer extent"""
     extentBuffer: t.Optional[int]
     """extent buffer"""
+    finders: t.Optional[list[gws.ext.config.finder]]
+    """search prodivers"""
     grid: t.Optional[GridConfig]
-    """target (client) grid"""
+    """client grid"""
     imageFormat: ImageFormat = ImageFormat.png8
     """image format"""
     legend: t.Optional[gws.ext.config.legend]
     """legend configuration"""
     metadata: t.Optional[gws.Metadata]
     """layer metadata"""
+    models: t.Optional[list[gws.ext.config.model]]
+    """data models"""
     opacity: float = 1
     """layer opacity"""
-    ows: bool = True  # layer is enabled for OWS services
-    search: t.Optional[SearchConfig]
-    """layer search configuration"""
-    finders: t.Optional[list[gws.ext.config.finder]]
-    """search prodivers"""
+    options: LayerOptions = {}
+    """options for the layer"""
     templates: t.Optional[list[gws.ext.config.template]]
-    """client templates"""
     title: str = ''
-    """layer title"""
     zoom: t.Optional[gws.gis.zoom.Config]
-    """layer resolutions and scales"""
-    loadingStrategy: gws.FeatureLoadingStrategy = gws.FeatureLoadingStrategy.all
-    """loading strategy for features"""
-    cssSelector: t.Optional[str]
-    """css selector for features"""
 
 
 class CustomConfig(gws.ConfigWithAccess):
@@ -285,8 +282,10 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_cache(self):
-        if self.cfg('cache.enabled'):
-            self.cache = gws.LayerCache(self.cfg('cache'))
+        if not self.cfg('options.cache'):
+            return True
+        self.cache = gws.LayerCache(self.cfg('cache'))
+        return True
 
     def configure_grid(self):
         p = self.cfg('grid')
@@ -301,11 +300,7 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_legend(self):
-        p = self.cfg('legend')
-        if p and not p.enabled:
-            return True
-        if p and p.type:
-            self.legend = self.create_child(gws.ext.object.legend, p)
+        if not self.cfg('options.legend'):
             return True
 
     def configure_metadata(self):
@@ -335,8 +330,7 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_search(self):
-        p = self.cfg('search')
-        if p and not p.enabled:
+        if not self.cfg('options.search'):
             return True
         p = self.cfg('finders')
         if p:

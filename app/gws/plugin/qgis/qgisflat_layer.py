@@ -111,12 +111,14 @@ class Object(gws.base.layer.Object):
     def configure_legend(self):
         if super().configure_legend():
             return True
-        urls = gws.compact(sl.legendUrl for sl in self.sourceLayers)
-        if urls:
-            self.legend = self.create_child(
-                gws.ext.object.legend,
-                gws.merge(self.cfg('legend'), type='remote', urls=urls))
-            return True
+        self.legend = self.create_child(
+            gws.ext.object.legend,
+            self.cfg('legend'),
+            type='qgis',
+            _defaultProvider=self.provider,
+            _defaultSourceLayers=self.imageLayers,
+        )
+        return True
 
     def configure_metadata(self):
         if super().configure_metadata():

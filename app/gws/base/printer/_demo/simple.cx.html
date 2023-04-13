@@ -1,20 +1,30 @@
-@page width="210" height="297" margin="5"
+@page width="297" height="210" margin="5"
 
-<h2>Simple print template</h2>
+<link rel="stylesheet" type="text/css" href="style.css">
 
-<div id="map">
+<h1>Simple print template</h1>
+
+<table><tr>
+
+<td>
     @map
-</div>
+</td>
 
-<h4>System variables</h4>
+<td>
+    @legend
+</td>
 
-<table border=1 cellpadding=5>
-    <tr><th>   Project:       </th><td>   {project.title}     </td></tr>
-    <tr><th>   User:          </th><td>   {user.displayName}  </td></tr>
-    <tr><th>   Version:       </th><td>   {gwsVersion}        </td></tr>
-    <tr><th>   Locale:        </th><td>   {localeUid}         </td></tr>
-    <tr><th>   Map scale:     </th><td>   {scale}             </td></tr>
-    <tr><th>   Map rotation:  </th><td>   {rotation}          </td></tr>
-    <tr><th>   Date:          </th><td>   {date.medium}       </td></tr>
-    <tr><th>   Time:          </th><td>   {time.medium}       </td></tr>
-</table>
+<td width=100%>
+
+    <p>Project:       <br> <b>  {project.title}     </b></p>
+    <p>User:          <br> <b>  {user.displayName}  </b></p>
+    <p>Version:       <br> <b>  {gwsVersion}        </b></p>
+    <p>Locale:        <br> <b>  {localeUid}         </b></p>
+    <p>Map scale:     <br> <b>  {scale}             </b></p>
+    <p>Map rotation:  <br> <b>  {rotation}          </b></p>
+    <p>Date:          <br> <b>  {date.medium}       </b></p>
+    <p>Time:          <br> <b>  {time.medium}       </b></p>
+
+</td>
+
+</tr></table>

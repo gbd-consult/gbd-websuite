@@ -2,6 +2,7 @@
 
 import gws
 import gws.lib.metadata
+import gws.lib.mime
 import gws.gis.crs
 import gws.gis.ows
 import gws.gis.source
@@ -29,31 +30,6 @@ class Config(gws.Config):
     """use this CRS for requests"""
     sqlFilters: t.Optional[dict]
     """per-layer sql filters"""
-
-
-# see https://docs.qgis.org/3.22/de/docs/server_manual/services/wms.html#getlegendgraphics
-
-_DEFAULT_LEGEND_PARAMS = {
-    'BOXSPACE': 2,
-    'ICONLABELSPACE': 2,
-    'ITEMFONTBOLD': False,
-    'ITEMFONTCOLOR': '#000000',
-    'ITEMFONTFAMILY': 'DejaVuSans',
-    'ITEMFONTITALIC': False,
-    'ITEMFONTSIZE': 9,
-    'LAYERFONTBOLD': True,
-    'LAYERFONTCOLOR': '#000000',
-    'LAYERFONTFAMILY': 'DejaVuSans',
-    'LAYERFONTITALIC': False,
-    'LAYERFONTSIZE': 9,
-    'LAYERSPACE': 4,
-    'LAYERTITLE': True,
-    'LAYERTITLESPACE': 4,
-    'RULELABEL': True,
-    'SYMBOLHEIGHT': 8,
-    'SYMBOLSPACE': 2,
-    'SYMBOLWIDTH': 8,
-}
 
 
 class Object(gws.Node, gws.IOwsProvider):
@@ -105,15 +81,18 @@ class Object(gws.Node, gws.IOwsProvider):
 
     ##
 
-    def call_server(self, params: dict) -> gws.lib.net.HTTPResponse:
+    def server_params(self, params: dict) -> dict:
         defaults = dict(
             # @TODO postgres
             MAP=self.source.path,
             SERVICE=gws.OwsProtocol.WMS,
             VERSION='1.3.0',
         )
-        params = gws.merge(defaults, gws.to_upper_dict(params))
-        res = gws.lib.net.http_request(self.url, params=params, timeout=1000)
+        return gws.merge(defaults, gws.to_upper_dict(params))
+
+    def call_server(self, params: dict, max_age=0) -> gws.lib.net.HTTPResponse:
+        params = self.server_params(params)
+        res = gws.lib.net.http_request(self.url, params=params, max_age=max_age, timeout=1000)
         res.raise_if_failed()
         return res
 
@@ -189,6 +168,8 @@ class Object(gws.Node, gws.IOwsProvider):
                 fd.shape = fd.shape.transformed_to(shape.crs)
 
         return fdata
+
+    ##
 
     ##
 
@@ -336,24 +317,6 @@ class Object(gws.Node, gws.IOwsProvider):
         for tpl in pts:
             if tpl.title == ref:
                 return tpl
-
-    def legendUrl(self, source_layers, params=None):
-        # qgis legends are rendered bottom-up (rightmost first)
-        # we need the straight order (leftmost first), like in the config
-
-        std_params = gws.merge(_DEFAULT_LEGEND_PARAMS, {
-            'MAP': self.path,
-            'LAYER': ','.join(sl.name for sl in reversed(source_layers)),
-            'FORMAT': 'image/png',
-            'TRANSPARENT': True,
-            'STYLE': '',
-            'VERSION': '1.1.1',
-            'DPI': 96,
-            'SERVICE': gws.OwsProtocol.WMS,
-            'REQUEST': gws.OwsVerb.GetLegendGraphic,
-        })
-
-        return gws.lib.net.add_params(self.url, gws.merge(std_params, params))
 
 
 ##
