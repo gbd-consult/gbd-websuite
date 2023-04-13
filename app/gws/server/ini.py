@@ -31,21 +31,20 @@ _uwsgi_params = """
 """
 
 
-def create(root: gws.IRoot, base_dir, pid_dir):
+def create(root: gws.IRoot, config_dir):
     def _write(p, s):
-        p = base_dir + '/' + p
+        p = config_dir + '/' + p
         s = '\n'.join(x.strip() for x in s.strip().splitlines())
         with open(p, 'wt') as fp:
             fp.write(s + '\n')
         return p
 
-    for p in gws.lib.osx.find_files(base_dir, '(conf|ini)$'):
+    for p in gws.lib.osx.find_files(config_dir, '(conf|ini)$'):
         gws.lib.osx.unlink(p)
 
     commands = []
     frontends = []
 
-    # Check the marker file created by our docker build (see install/build.py)
     try:
         in_container = os.path.isfile('/.dockerenv')
     except:
@@ -59,17 +58,17 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     qgis_port = root.app.cfg('server.qgis.port')
     qgis_workers = root.app.cfg('server.qgis.workers')
     qgis_threads = root.app.cfg('server.qgis.threads')
-    qgis_socket = gws.TMP_DIR + '/uwsgi.qgis.sock'
+    qgis_socket = f'{gws.TMP_DIR}/uwsgi.qgis.sock'
 
     web_enabled = root.app.cfg('server.web.enabled')
     web_workers = root.app.cfg('server.web.workers')
     web_threads = root.app.cfg('server.web.threads')
-    web_socket = gws.TMP_DIR + '/uwsgi.web.sock'
+    web_socket = f'{gws.TMP_DIR}/uwsgi.web.sock'
 
     spool_enabled = root.app.cfg('server.spool.enabled')
     spool_workers = root.app.cfg('server.spool.workers')
     spool_threads = root.app.cfg('server.spool.threads')
-    spool_socket = gws.TMP_DIR + '/uwsgi.spooler.sock'
+    spool_socket = f'{gws.TMP_DIR}/uwsgi.spooler.sock'
     spool_dir = gws.SPOOL_DIR
     spool_freq = root.app.cfg('server.spool.jobFrequency')
 
@@ -77,7 +76,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     mapproxy_port = root.app.cfg('server.mapproxy.port')
     mapproxy_workers = root.app.cfg('server.mapproxy.workers')
     mapproxy_threads = root.app.cfg('server.mapproxy.threads')
-    mapproxy_socket = gws.TMP_DIR + '/uwsgi.mapproxy.sock'
+    mapproxy_socket = f'{gws.TMP_DIR}/uwsgi.mapproxy.sock'
 
     nginx_log_level = 'info'
     if root.app.developer_option('nginx.log_level_debug'):
@@ -150,7 +149,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
         """
 
         path = _write('syslog.conf', syslog_conf)
-        commands.append(f'rsyslogd -i {pid_dir}/rsyslogd.pid -f {path}')
+        commands.append(f'rsyslogd -i {gws.TMP_DIR}/rsyslogd.pid -f {path}')
 
     # qgis
     # ---------------------------------------------------------
@@ -175,7 +174,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             fastcgi-socket = {qgis_socket}
             {uwsgi_qgis_log}
             master = true
-            pidfile = {pid_dir}/qgis.uwsgi.pid
+            pidfile = {gws.TMP_DIR}/qgis.uwsgi.pid
             processes = {qgis_workers}
             reload-mercy = {mercy}
             threads = {qgis_threads}
@@ -240,7 +239,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             harakiri-verbose = true
             http-timeout = {web_timeout}
             {uwsgi_web_log}
-            pidfile = {pid_dir}/web.uwsgi.pid
+            pidfile = {gws.TMP_DIR}/web.uwsgi.pid
             post-buffering = 65535
             processes = {web_workers}
             pythonpath = {gws.APP_DIR}
@@ -286,7 +285,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
         max_body_size = int(root.app.cfg('server.web.maxRequestLength', default=1))
 
         client_buffer_size = 4  # MB
-        client_tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/nginx')
+        client_tmp_dir = gws.ensure_dir(f'{gws.TMP_DIR}/nginx')
 
         web_common = f"""
             error_log {nginx_web_log} {nginx_log_level};
@@ -303,7 +302,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             {roots}
 
             location @cache {{
-                root {gws.WEB_CACHE_DIR};
+                root {gws.FASTCACHE_DIR};
                 try_files $uri @app;
             }}
 
@@ -386,7 +385,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             http = :{mapproxy_port}
             http-to = {mapproxy_socket}
             {uwsgi_mapproxy_log}
-            pidfile = {pid_dir}/mapproxy.uwsgi.pid
+            pidfile = {gws.TMP_DIR}/mapproxy.uwsgi.pid
             post-buffering = 65535
             processes = {mapproxy_workers}
             pythonpath = {gws.APP_DIR}
@@ -417,7 +416,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             harakiri-verbose = true
             {uwsgi_spool_log}
             master = true
-            pidfile = {pid_dir}/spool.uwsgi.pid
+            pidfile = {gws.TMP_DIR}/spool.uwsgi.pid
             post-buffering = 65535
             processes = {spool_workers}
             pythonpath = {gws.APP_DIR}
@@ -449,7 +448,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
 
     nginx_conf = f"""
         worker_processes auto;
-        pid {pid_dir}/nginx.pid;
+        pid {gws.TMP_DIR}/nginx.pid;
         user {u} {g};
 
         events {{

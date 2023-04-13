@@ -24,8 +24,7 @@ def start_configured():
     for p in gws.lib.osx.find_files(gws.SERVER_DIR, '.*'):
         gws.lib.osx.unlink(p)
 
-    pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
-    commands = ini.create(gws.config.root(), gws.SERVER_DIR, pid_dir)
+    commands = ini.create(gws.config.root(), gws.SERVER_DIR)
 
     with open(_START_SCRIPT, 'wt') as fp:
         fp.write('echo "----------------------------------------------------------"\n')
@@ -89,10 +88,8 @@ def reload(modules=None):
 ##
 
 def _reload_uwsgi(module):
-    pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
     pattern = f'({module}).uwsgi.pid'
-
-    for p in gws.lib.osx.find_files(pid_dir, pattern):
+    for p in gws.lib.osx.find_files(gws.TMP_DIR, pattern):
         gws.log.info(f'reloading {p}...')
         gws.lib.osx.run(['/usr/local/bin/uwsgi', '--reload', p])
 

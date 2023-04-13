@@ -8,9 +8,17 @@ RETRY = -1
 IGNORE = 0
 
 
+def is_active():
+    try:
+        gws.server.uwsgi_module.load()
+        return True
+    except ModuleNotFoundError:
+        return False
+
+
 def add(job):
     uwsgi = gws.server.uwsgi_module.load()
-    gws.log.info("SPOOLING", job.uid)
+    gws.log.info(f'SPOOLING {job.uid!r}')
     d = {b'job_uid': gws.to_bytes(job.uid)}
     getattr(uwsgi, 'spool')(d)
 
