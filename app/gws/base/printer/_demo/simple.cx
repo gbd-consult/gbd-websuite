@@ -1,6 +1,6 @@
 projects+ {
-    title "Simple HTML Printing"
-    metadata.abstract "printing with a simple HTML template"
+    title "Printing: HTML"
+    metadata.abstract "Printing with a simple HTML template."
 
     printer.templates+ {
         uid "print_simple"
