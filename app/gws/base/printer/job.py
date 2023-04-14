@@ -113,21 +113,18 @@ class _Worker:
 
         self.tri.crs = gws.gis.crs.get(request.crs) or self.project.map.bounds.crs
         self.tri.maps = [self.prepare_map(m) for m in (request.maps or [])]
+        self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(request.dpi, gws.lib.uom.OGC_SCREEN_PPI)))
 
         if request.type == 'template':
+            # @TODO check dpi against configured qualityLevels
             self.template = t.cast(gws.ITemplate, self.user.require(request.templateUid, gws.ext.object.template))
-            try:
-                ql = self.template.qualityLevels[request.qualityLevel or 0]
-            except IndexError:
-                ql = self.template.qualityLevels[0]
-            self.tri.dpi = ql.dpi
         else:
-            self.tri.dpi = min(gws.gis.render.MAX_DPI, max(request.dpi, gws.lib.uom.OGC_SCREEN_PPI))
             mm = gws.lib.uom.size_px_to_mm(request.outputSize, gws.lib.uom.OGC_SCREEN_PPI)
             px = gws.lib.uom.size_mm_to_px(mm, self.tri.dpi)
             self.template = self.root.create_temporary(
                 gws.ext.object.template,
-                type='map', pageSize=(px[0], px[1], gws.Uom.px))
+                type='map',
+                pageSize=(px[0], px[1], gws.Uom.px))
 
         # if self.template.data_model:
         #     atts = self.template.data_model.apply_to_dict(ctx)
@@ -139,6 +136,9 @@ class _Worker:
             localeUid=self.tri.localeUid,
             scale=self.tri.maps[0].scale if self.tri.maps else 0,
             rotation=self.tri.maps[0].rotation if self.tri.maps else 0,
+            dpi=self.tri.dpi,
+            crs=self.tri.crs.srid,
+            templateRenderInput=self.tri,
         )
 
         self.tri.args = gws.merge(request.args, extra)
@@ -173,7 +173,7 @@ class _Worker:
             for n, p in enumerate(mp.planes):
                 pp = self.prepare_map_plane(p)
                 if not pp:
-                    gws.log.warning(f'render plane {n} FAILED')
+                    gws.log.warning(f'PREPARE_FAILED: plane {n}')
                     continue
                 planes.append(pp)
 

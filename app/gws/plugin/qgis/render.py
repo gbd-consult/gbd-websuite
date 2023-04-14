@@ -12,12 +12,12 @@ def box_to_bytes(layer: gws.ILayer, view: gws.MapView, params: dict) -> bytes:
     size_threshold = 2500
 
     if not view.rotation:
-        return _box_request(layer, view.bounds, view.size_px[0], view.size_px[1], params, tile_size=size_threshold)
+        return _box_request(layer, view.bounds, view.pxSize[0], view.pxSize[1], params, tile_size=size_threshold)
 
     # @TODO merge with layer/util/generic_render
 
     circ = gws.gis.extent.circumsquare(view.bounds.extent)
-    w, h = view.size_px
+    w, h = view.pxSize
     d = gws.gis.extent.diagonal((0, 0, w, h))
 
     r = _box_request(layer, gws.Bounds(crs=view.bounds.crs, extent=circ), d, d, params, tile_size=size_threshold)
@@ -36,7 +36,7 @@ def box_to_bytes(layer: gws.ILayer, view: gws.MapView, params: dict) -> bytes:
 
 def _box_request(layer: gws.ILayer, bounds, width, height, params, tile_size):
     if width < tile_size and height < tile_size:
-        return _qgis_get_map(layer, bounds, width, height, params)
+        return t.cast(provider.Object, layer.provider).get_map(layer, bounds, width, height, params)
 
     # xcount = math.ceil(width / tile_size)
     # ycount = math.ceil(height / tile_size)
@@ -72,21 +72,7 @@ def _box_request(layer: gws.ILayer, bounds, width, height, params, tile_size):
     # return buf.getvalue()
 
 
-def _qgis_get_map(layer: gws.ILayer, bounds, width, height, params):
-    defaults = dict(
-        REQUEST='GetMap',
-        BBOX=bounds.extent,
-        WIDTH=width,
-        HEIGHT=height,
-        CRS=bounds.crs.epsg,
-        FORMAT=gws.lib.mime.PNG,
-        TRANSPARENT='true',
-        STYLES='',
-    )
 
-    params = gws.merge(defaults, params)
+    return int(round((x * ppi) / MM_PER_IN))
 
-    res = t.cast(provider.Object, getattr(layer, 'provider')).call_server(params)
-    if res.content_type.startswith('image/'):
-        return res.content
-    raise ValueError(res.text)
+

@@ -25,6 +25,8 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.Object):
+    canRenderBox = True
+
     provider: provider.Object
     sqlFilters: dict
     imageLayers: list[gws.SourceLayer]

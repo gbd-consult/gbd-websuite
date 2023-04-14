@@ -496,6 +496,7 @@ export interface ModelWidgetProps {
     controller: IModelWidget;
     feature: IFeature;
     field: IModelField;
+    widgetProps: api.ext.props.modelWidget;
     values: Dict;
     whenChanged?: (value: any) => void;
     whenEntered?: (value: any) => void;

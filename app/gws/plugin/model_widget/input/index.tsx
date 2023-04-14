@@ -7,7 +7,7 @@ class View extends gws.View<gws.types.ModelWidgetProps> {
         let field = this.props.field;
         let value = this.props.values[field.name];
         return <gws.ui.TextInput
-            disabled={field.widgetProps.readOnly}
+            disabled={this.props.widgetProps.readOnly}
             value={gws.lib.isEmpty(value) ? '' : String(value)}
             whenChanged={this.props.whenChanged}
             whenEntered={this.props.whenEntered}

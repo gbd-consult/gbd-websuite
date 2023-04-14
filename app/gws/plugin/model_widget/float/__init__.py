@@ -7,12 +7,14 @@ gws.ext.new.modelWidget('float')
 
 
 class Config(gws.base.model.widget.Config):
-    pass
+    step: int = 1
 
 
 class Props(gws.base.model.widget.Props):
-    pass
+    step: int
 
 
 class Object(gws.base.model.widget.Object):
-    pass
+
+    def props(self, user):
+        return gws.merge(super().props(user), step=self.cfg('step'))

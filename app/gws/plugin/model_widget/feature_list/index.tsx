@@ -66,7 +66,7 @@ class View extends gws.View<Props> {
         let field = this.props.field;
         let features = this.props.values[field.name] || [];
         let cc = this.props.controller;
-        let uid = field.widgetProps.uid;
+        let uid = this.props.widgetProps.uid;
 
         let selectedFeatureUid = cc.getValue('editState')['widget' + uid];
 

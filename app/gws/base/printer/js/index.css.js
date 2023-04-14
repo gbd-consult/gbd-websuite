@@ -28,7 +28,7 @@ module.exports = v => ({
         ...v.TOOLBAR_BUTTON(__dirname + '/print')
     },
 
-    '.printerSnapshotToolbarButton': {
+    '.printerScreenshotToolbarButton': {
         ...v.TOOLBAR_BUTTON(__dirname + '/snapshot')
     },
 
@@ -36,7 +36,7 @@ module.exports = v => ({
         ...v.ROUND_OK_BUTTON('google:action/print'),
     },
 
-    '.printerPreviewSnapshotButton': {
+    '.printerPreviewScreenshotButton': {
         ...v.ROUND_OK_BUTTON('google:image/crop_original'),
     },
 

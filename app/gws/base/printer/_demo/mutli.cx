@@ -1,0 +1,52 @@
+projects+ {
+    title "Printing: multiple templates"
+    metadata.abstract "Multiple HTML templates with custom quality levels."
+
+    printer.templates+ {
+        uid "multi_landscape"
+        type "html"
+        path "multi_landscape.cx.html"
+        mapSize [ "250mm" "150mm" ]
+        title "A4 landscape"
+        qualityLevels [
+            { dpi  90 name "screen" }
+            { dpi 150 name "good quality" }
+            { dpi 300 name "best quality" }
+        ]
+    }
+
+    printer.templates+ {
+        uid "multi_portrait"
+        type "html"
+        path "multi_portrait.cx.html"
+        mapSize [ "150mm" "250mm" ]
+        title "A4 portrait"
+        qualityLevels [
+            { dpi  90 name "screen" }
+            { dpi 150 name "good quality" }
+            { dpi 300 name "best quality" }
+        ]
+    }
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 30000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        uid "duesseldorf"
+        title "Düsseldorf"
+        type "qgis"
+        provider.path "poi.qgs"
+    }
+
+    map.layers+ {
+        uid "OSM"
+        title "Open Street Map"
+        type "tile"
+        display "tile"
+        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    }
+}

@@ -98,6 +98,26 @@ class Object(gws.Node, gws.IOwsProvider):
 
     ##
 
+    def get_map(self, layer: gws.ILayer, bounds: gws.Bounds, width: float, height: float, params: dict) -> bytes:
+        defaults = dict(
+            REQUEST=gws.OwsVerb.GetMap,
+            BBOX=bounds.extent,
+            WIDTH=gws.to_rounded_int(width),
+            HEIGHT=gws.to_rounded_int(height),
+            CRS=bounds.crs.epsg,
+            FORMAT=gws.lib.mime.PNG,
+            TRANSPARENT='true',
+            STYLES='',
+        )
+
+        params = gws.merge(defaults, params)
+
+        res = self.call_server(params)
+        if res.content_type.startswith('image/'):
+            return res.content
+        raise gws.Error(res.text)
+
+
     def get_feature_info(self, search, source_layers):
         shape = search.shape
         if not shape or shape.type != gws.GeometryType.point:

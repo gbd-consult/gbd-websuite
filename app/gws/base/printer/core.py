@@ -110,8 +110,6 @@ class Request(gws.Request):
     outputFormat: t.Optional[str]
     maps: t.Optional[list[MapParams]]
 
-    qualityLevel: t.Optional[int]
     templateUid: t.Optional[str]
-
     dpi: t.Optional[int]
     outputSize: t.Optional[gws.Size]

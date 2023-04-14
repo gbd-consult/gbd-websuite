@@ -5,7 +5,6 @@ import gws
 
 class Props(gws.Props):
     type: str
-    options: dict
     readOnly: bool
     uid: str
 
@@ -17,9 +16,4 @@ class Config(gws.Config):
 class Object(gws.Node, gws.IModelWidget):
 
     def props(self, user):
-        return Props(
-            type=self.extType,
-            options={},
-            readOnly=False,
-            uid=self.uid,
-        )
+        return Props(type=self.extType, readOnly=False, uid=self.uid)

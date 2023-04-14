@@ -91,12 +91,12 @@ def generic_render_box_to_bytes(layer: gws.ILayer, lri: gws.LayerRenderInput):
         uid += '_NOCACHE'
 
     if not lri.view.rotation:
-        return gws.gis.mpx.wms_request(uid, lri.view.bounds, lri.view.size_px[0], lri.view.size_px[1], forward=lri.extraParams)
+        return gws.gis.mpx.wms_request(uid, lri.view.bounds, lri.view.pxSize[0], lri.view.pxSize[1], forward=lri.extraParams)
 
     # rotation: render a circumsquare around the wanted extent
 
     circ = gws.gis.extent.circumsquare(lri.view.bounds.extent)
-    w, h = lri.view.size_px
+    w, h = lri.view.pxSize
     d = gws.gis.extent.diagonal((0, 0, w, h))
 
     r = gws.gis.mpx.wms_request(

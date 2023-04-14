@@ -27,7 +27,7 @@ class Object(core.Object):
     # def render_box(self, view, extra_params=None):
     #     fr = self.render_svg_fragment(view)
     #     ts = gws.time_start('render_box:to_png')
-    #     img = gws.lib.svg.fragment_to_image(fr, size=view.size_px, format='png')
+    #     img = gws.lib.svg.fragment_to_image(fr, size=view.pxSize, format='png')
     #     gws.time_end(ts)
     #     return img.to_bytes()
     #

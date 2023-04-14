@@ -34,12 +34,12 @@ class Object(core.Object):
             uid += '_NOCACHE'
 
         if not view.rotation:
-            return gws.gis.mpx.wms_request(uid, view.bounds, view.size_px[0], view.size_px[1], forward=extra_params)
+            return gws.gis.mpx.wms_request(uid, view.bounds, view.pxSize[0], view.pxSize[1], forward=extra_params)
 
         # rotation: render a circumsquare around the wanted extent
 
         circ = gws.gis.extent.circumsquare(view.bounds.extent)
-        w, h = view.size_px
+        w, h = view.pxSize
         d = gws.gis.extent.diagonal((0, 0, w, h))
 
         r = gws.gis.mpx.wms_request(

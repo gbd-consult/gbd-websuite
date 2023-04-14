@@ -19,25 +19,25 @@ const MAX_SNAPSHOT_DPI = 600;
 
 interface ViewProps extends gws.types.ViewProps {
     controller: Controller;
-    printJob?: gws.api.base.printer.StatusResponse;
-    printState?: 'preview' | 'printing' | 'error' | 'complete';
-    printFormData: object;
-    printSnapshotMode: boolean;
-    printSnapshotDpi: number;
-    printSnapshotWidth: number;
-    printSnapshotHeight: number;
-    printDialogZoomed: boolean;
+    printerDialogZoomed: boolean;
+    printerFormValues: object;
+    printerJob?: gws.api.base.printer.StatusResponse;
+    printerMode: 'screenshot' | 'print';
+    printerScreenshotDpi: number;
+    printerScreenshotHeight: number;
+    printerScreenshotWidth: number;
+    printerState?: 'preview' | 'printing' | 'error' | 'complete';
 }
 
 const StoreKeys = [
-    'printJob',
-    'printState',
-    'printFormData',
-    'printSnapshotMode',
-    'printSnapshotDpi',
-    'printSnapshotWidth',
-    'printSnapshotHeight',
-    'printDialogZoomed',
+    'printerDialogZoomed',
+    'printerFormValues',
+    'printerJob',
+    'printerMode',
+    'printerScreenshotDpi',
+    'printerScreenshotHeight',
+    'printerScreenshotWidth',
+    'printerState',
 ];
 
 class PrintTool extends gws.Tool {
@@ -50,9 +50,9 @@ class PrintTool extends gws.Tool {
     }
 }
 
-class SnapshotTool extends gws.Tool {
+class ScreenshotTool extends gws.Tool {
     start() {
-        _master(this).startSnapshotPreview()
+        _master(this).startScreenshotPreview()
     }
 
     stop() {
@@ -69,12 +69,12 @@ class PrintToolbarButton extends toolbar.Button {
     }
 }
 
-class SnapshotToolbarButton extends toolbar.Button {
-    iconClass = 'printerSnapshotToolbarButton';
-    tool = 'Tool.Print.Snapshot';
+class ScreenshotToolbarButton extends toolbar.Button {
+    iconClass = 'printerScreenshotToolbarButton';
+    tool = 'Tool.Print.Screenshot';
 
     get tooltip() {
-        return this.__('printerSnapshotToolbarButton');
+        return this.__('printerScreenshotToolbarButton');
     }
 }
 
@@ -112,7 +112,7 @@ class PreviewBox extends gws.View<ViewProps> {
     printOptionsForm() {
         let cc = this.props.controller;
         let fields = [];
-        let values =         this.props.printFormData || {};
+        let values = this.props.printerFormValues || {};
 
 
         let templateItems = this.templateItems();
@@ -121,11 +121,9 @@ class PreviewBox extends gws.View<ViewProps> {
                 type: "integer",
                 name: "_templateIndex",
                 title: this.__('printerTemplate'),
-                widget: {
+                widgetProps: {
                     type: "select",
-                    options: {
-                        items: templateItems,
-                    },
+                    items: templateItems,
                     readOnly: false,
                 }
             })
@@ -137,11 +135,9 @@ class PreviewBox extends gws.View<ViewProps> {
                 type: "integer",
                 name: "_quality",
                 title: this.__('printerQuality'),
-                widget: {
+                widgetProps: {
                     type: "select",
-                    options: {
-                        items: qualityItems,
-                    },
+                    items: qualityItems,
                     readOnly: false,
                 }
             })
@@ -158,32 +154,31 @@ class PreviewBox extends gws.View<ViewProps> {
                 field={f}
                 controller={this.props.controller}
                 feature={null}
-                values={this.props.printFormData}
+                values={this.props.printerFormValues}
                 widget={cc.createWidget(f, values)}
             />)}
             </tbody>
         </table>
     }
 
-    snapshotOptionsForm() {
+    screenshotOptionsForm() {
         let cc = this.props.controller;
 
         return <React.Fragment>
-
             <Row>
                 <Cell flex>
                     <gws.ui.Slider
                         minValue={MIN_SNAPSHOT_DPI}
                         maxValue={MAX_SNAPSHOT_DPI}
                         step={10}
-                        label={this.__('printerSnapshotResolution')}
-                        {...cc.bind('printSnapshotDpi')}
+                        label={this.__('printerScreenshotResolution')}
+                        {...cc.bind('printerScreenshotDpi')}
                     />
                 </Cell>
             </Row>
             <Row>
                 <Cell flex>
-                    {this.props.printSnapshotDpi} dpi
+                    {this.props.printerScreenshotDpi} dpi
                 </Cell>
 
             </Row>
@@ -204,19 +199,19 @@ class PreviewBox extends gws.View<ViewProps> {
     }
 
     optionsDialog() {
-        let form = this.props.printSnapshotMode
-            ? this.snapshotOptionsForm()
+        let form = (this.props.printerMode === 'screenshot')
+            ? this.screenshotOptionsForm()
             : this.printOptionsForm();
 
-        let ok = this.props.printSnapshotMode
+        let ok = (this.props.printerMode === 'screenshot')
             ? <gws.ui.Button
-                {...gws.lib.cls('printerPreviewSnapshotButton')}
-                whenTouched={() => this.props.controller.startSnapshot()}
-                tooltip={this.__('printerPreviewSnapshotButton')}
+                {...gws.lib.cls('printerPreviewScreenshotButton')}
+                whenTouched={() => this.props.controller.whenPreviewOkButtonTouched()}
+                tooltip={this.__('printerPreviewScreenshotButton')}
             />
             : <gws.ui.Button
                 {...gws.lib.cls('printerPreviewPrintButton')}
-                whenTouched={() => this.props.controller.whenStartPrintButtonTouched()}
+                whenTouched={() => this.props.controller.whenPreviewOkButtonTouched()}
                 tooltip={this.__('printerPreviewPrintButton')}
             />;
 
@@ -230,7 +225,7 @@ class PreviewBox extends gws.View<ViewProps> {
                     <Cell>
                         <gws.ui.Button
                             className="cmpButtonFormCancel"
-                            whenTouched={() => this.props.controller.app.stopTool('Tool.Print')}
+                            whenTouched={() => this.props.controller.whenPreviewCancelButtonTouched()}
                             tooltip={this.__('printerCancel')}
                         />
                     </Cell>
@@ -255,8 +250,8 @@ class PreviewBox extends gws.View<ViewProps> {
                 let h = Math.max(50, 2 * Math.abs(px[1] - (sz[1] >> 1)))
 
                 this.props.controller.update({
-                    printSnapshotWidth: w,
-                    printSnapshotHeight: h,
+                    printerScreenshotWidth: w,
+                    printerScreenshotHeight: h,
                 });
 
             },
@@ -264,17 +259,17 @@ class PreviewBox extends gws.View<ViewProps> {
     }
 
     render() {
-        let ps = this.props.printState;
+        let ps = this.props.printerState;
 
         if (ps !== 'preview')
             return null;
 
         let w, h;
 
-        if (this.props.printSnapshotMode) {
+        if (this.props.printerMode === 'screenshot') {
 
-            w = this.props.printSnapshotWidth || DEFAULT_SNAPSHOT_SIZE;
-            h = this.props.printSnapshotHeight || DEFAULT_SNAPSHOT_SIZE;
+            w = this.props.printerScreenshotWidth || DEFAULT_SNAPSHOT_SIZE;
+            h = this.props.printerScreenshotHeight || DEFAULT_SNAPSHOT_SIZE;
 
         } else {
 
@@ -296,19 +291,19 @@ class PreviewBox extends gws.View<ViewProps> {
 
         const handleSize = 40;
 
+        let handle = <div
+            className="printerPreviewBoxHandle"
+            style={{
+                marginLeft: -(w >> 1) - (handleSize >> 1),
+                marginTop: -(h >> 1) - (handleSize >> 1),
+
+            }}
+            onMouseDown={() => this.handleTouched()}
+        />
+
         return <div>
             <div className="printerPreviewBox" ref={this.boxRef} style={style}/>
-            {this.props.printSnapshotMode && <div
-                className="printerPreviewBoxHandle"
-                style={{
-                    marginLeft: -(w >> 1) - (handleSize >> 1),
-                    marginTop: -(h >> 1) - (handleSize >> 1),
-
-                }}
-                onMouseDown={() => this.handleTouched()}
-            />
-            }
-
+            {(this.props.printerMode === 'screenshot') && handle}
             {this.optionsDialog()}
         </div>;
 
@@ -319,8 +314,8 @@ class PreviewBox extends gws.View<ViewProps> {
 class Dialog extends gws.View<ViewProps> {
 
     render() {
-        let ps = this.props.printState;
-        let job = this.props.printJob;
+        let ps = this.props.printerState;
+        let job = this.props.printerJob;
 
         let cancel = () => this.props.controller.cancelPrinting();
         let stop = () => this.props.controller.stop();
@@ -348,9 +343,9 @@ class Dialog extends gws.View<ViewProps> {
 
         if (ps === 'complete') {
             return <gws.ui.Dialog
-                {...gws.lib.cls('printerResultDialog', this.props.printDialogZoomed && 'isZoomed')}
+                {...gws.lib.cls('printerResultDialog', this.props.printerDialogZoomed && 'isZoomed')}
                 whenClosed={stop}
-                whenZoomed={() => this.props.controller.update({printDialogZoomed: !this.props.printDialogZoomed})}
+                whenZoomed={() => this.props.controller.update({printerDialogZoomed: !this.props.printerDialogZoomed})}
                 frame={job.url}
             />;
         }
@@ -379,7 +374,7 @@ class Controller extends gws.Controller {
     }
 
     get selectedTemplate() {
-        let fd = this.getValue('printFormData') || {},
+        let fd = this.getValue('printerFormValues') || {},
             idx = Number(fd['_templateIndex']) || 0;
         return this.templates[idx] || this.templates[0];
     }
@@ -395,17 +390,17 @@ class Controller extends gws.Controller {
     }
 
     get activeJob() {
-        return this.getValue('printJob');
+        return this.getValue('printerJob');
     }
 
     async init() {
         await super.init();
-        this.app.whenChanged('printJob', job => this.jobUpdated(job));
+        this.app.whenChanged('printerJob', job => this.jobUpdated(job));
         this.update({
-            printSnapshotDpi: MIN_SNAPSHOT_DPI,
-            printSnapshotWidth: DEFAULT_SNAPSHOT_SIZE,
-            printSnapshotHeight: DEFAULT_SNAPSHOT_SIZE,
-            printFormData: {
+            printerScreenshotDpi: MIN_SNAPSHOT_DPI,
+            printerScreenshotWidth: DEFAULT_SNAPSHOT_SIZE,
+            printerScreenshotHeight: DEFAULT_SNAPSHOT_SIZE,
+            printerFormValues: {
                 _templateIndex: 0,
                 _quality: 0,
             }
@@ -414,8 +409,8 @@ class Controller extends gws.Controller {
 
     reset() {
         this.update({
-            printJob: null,
-            printState: null,
+            printerJob: null,
+            printerState: null,
             toolbarItem: null,
         });
         clearTimeout(this.jobTimer);
@@ -430,16 +425,16 @@ class Controller extends gws.Controller {
     startPrintPreview() {
         this.map.resetInteractions();
         return this.update({
-            printState: 'preview',
-            printSnapshotMode: false,
+            printerState: 'preview',
+            printerMode: 'print',
         });
     }
 
-    startSnapshotPreview() {
+    startScreenshotPreview() {
         this.map.resetInteractions();
         return this.update({
-            printState: 'preview',
-            printSnapshotMode: true,
+            printerState: 'preview',
+            printerMode: 'screenshot',
         });
     }
 
@@ -455,6 +450,7 @@ class Controller extends gws.Controller {
         let props: gws.types.Dict = {
             controller,
             field,
+            widgetProps: field.widgetProps,
             values,
             whenChanged: val => this.whenWidgetChanged(field, val),
             whenEntered: val => this.whenWidgetEntered(field, val),
@@ -465,29 +461,38 @@ class Controller extends gws.Controller {
     }
 
     whenWidgetChanged(field: gws.types.IModelField, value) {
-        
-    }
-    whenWidgetEntered(field: gws.types.IModelField, value) {
-        
-    }
-    
-
-
-    async whenFormChanged(field: gws.types.IModelField, value) {
-        let fd = this.getValue('printFormData') || {};
+        let fd = this.getValue('printerFormValues') || {};
         this.update({
-            printFormData: {
+            printerFormValues: {
                 ...fd,
                 [field.name]: value,
             }
         })
     }
 
-    async whenStartPrintButtonTouched() {
-        let fd = this.getValue('printFormData') || {},
-            qualityLevel = Number(fd['_quality']) || 0,
-            template = this.selectedTemplate,
-            level = template.qualityLevels[qualityLevel],
+    whenWidgetEntered(field: gws.types.IModelField, value) {
+        this.whenPreviewOkButtonTouched()
+    }
+
+    whenPreviewOkButtonTouched() {
+        if (this.getValue('printerMode') === 'print')
+            return this.startPrint()
+        if (this.getValue('printerMode') === 'screenshot')
+            return this.startScreenshot()
+    }
+
+    whenPreviewCancelButtonTouched() {
+        this.stop()
+    }
+
+    //
+
+    async startPrint() {
+
+        let template = this.selectedTemplate,
+            fd = this.getValue('printerFormValues') || {};
+
+        let level = template.qualityLevels[Number(fd['_quality']) || 0],
             dpi = level ? level.dpi : 0;
 
         let mapParams = await this.map.printParams(
@@ -495,30 +500,23 @@ class Controller extends gws.Controller {
             dpi
         );
 
-        let vs = this.map.viewState;
-
-        let context = {...fd};
-        delete context['_quality'];
-        delete context['_templateIndex'];
+        let args = {...fd};
+        delete args['_quality'];
+        delete args['_templateIndex'];
 
         let params: gws.api.base.printer.Request = {
             type: gws.api.base.printer.RequestType.template,
+            args,
             templateUid: template.uid,
-            qualityLevel,
+            dpi,
             maps: [mapParams],
-            // sections: [
-            //     {
-            //         center: [vs.centerX, vs.centerY] as gws.api.Point,
-            //         context,
-            //     }
-            // ]
         };
 
         await this.startJob(this.app.server.printerStart(params, {binary: false}));
     }
 
-    async startSnapshot() {
-        let dpi = Number(this.getValue('printSnapshotDpi')) || MIN_SNAPSHOT_DPI;
+    async startScreenshot() {
+        let dpi = Number(this.getValue('printerScreenshotDpi')) || MIN_SNAPSHOT_DPI;
 
         let mapParams = await this.map.printParams(
             this.previewBox.getBoundingClientRect(),
@@ -533,8 +531,8 @@ class Controller extends gws.Controller {
             // format: 'png',
             dpi: dpi,
             outputSize: [
-                Number(this.getValue('printSnapshotWidth')) || DEFAULT_SNAPSHOT_SIZE,
-                Number(this.getValue('printSnapshotHeight')) || DEFAULT_SNAPSHOT_SIZE,
+                Number(this.getValue('printerScreenshotWidth')) || DEFAULT_SNAPSHOT_SIZE,
+                Number(this.getValue('printerScreenshotHeight')) || DEFAULT_SNAPSHOT_SIZE,
             ],
             // sections: [
             //     {
@@ -549,7 +547,7 @@ class Controller extends gws.Controller {
 
     async startJob(res) {
         this.update({
-            printJob: {state: gws.api.base.printer.State.init}
+            printerJob: {state: gws.api.base.printer.State.init}
         });
 
         let job = await res;
@@ -563,7 +561,7 @@ class Controller extends gws.Controller {
         }
 
         this.update({
-            printJob: job
+            printerJob: job
         });
 
     }
@@ -578,11 +576,11 @@ class Controller extends gws.Controller {
 
     protected jobUpdated(job) {
         if (!job) {
-            return this.update({printState: null});
+            return this.update({printerState: null});
         }
 
         if (job.error) {
-            return this.update({printState: 'error'});
+            return this.update({printerState: 'error'});
         }
 
         console.log('JOB_UPDATED', job.state);
@@ -590,12 +588,12 @@ class Controller extends gws.Controller {
         switch (job.state) {
 
             case gws.api.base.printer.State.init:
-                this.update({printState: 'printing'});
+                this.update({printerState: 'printing'});
                 break;
 
             case gws.api.base.printer.State.open:
             case gws.api.base.printer.State.running:
-                this.update({printState: 'printing'});
+                this.update({printerState: 'printing'});
                 this.jobTimer = setTimeout(() => this.poll(), JOB_POLL_INTERVAL);
                 break;
 
@@ -604,29 +602,25 @@ class Controller extends gws.Controller {
                 break;
 
             case gws.api.base.printer.State.complete:
-                if (this.getValue('printSnapshotMode')) {
-                    let a = document.createElement('a');
-                    a.href = job.url;
-                    a.download = 'image.png';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
+                if (this.getValue('printerMode') === 'screenshot') {
+                    gws.lib.downloadUrl(job.url, 'image.png', null);
                     this.stop()
                 } else {
-                    this.update({printState: job.state});
+                    this.update({printerState: job.state});
                 }
                 break;
+
             case gws.api.base.printer.State.error:
-                this.update({printState: job.state});
+                this.update({printerState: job.state});
         }
     }
 
     protected async poll() {
-        let job = this.getValue('printJob');
+        let job = this.getValue('printerJob');
 
         if (job) {
             this.update({
-                printJob: await this.app.server.printerStatus({jobUid: job.jobUid}),
+                printerJob: await this.app.server.printerStatus({jobUid: job.jobUid}),
             });
         }
     }
@@ -643,7 +637,7 @@ class Controller extends gws.Controller {
 gws.registerTags({
     [MASTER]: Controller,
     'Toolbar.Print': PrintToolbarButton,
-    'Toolbar.Snapshot': SnapshotToolbarButton,
+    'Toolbar.Screenshot': ScreenshotToolbarButton,
     'Tool.Print.Print': PrintTool,
-    'Tool.Print.Snapshot': SnapshotTool,
+    'Tool.Print.Screenshot': ScreenshotTool,
 });

@@ -1306,8 +1306,8 @@ class MapView(Data):
     center: Point
     rotation: int
     scale: int
-    size_mm: Size
-    size_px: Size
+    mmSize: Size
+    pxSize: Size
     dpi: int
 
 

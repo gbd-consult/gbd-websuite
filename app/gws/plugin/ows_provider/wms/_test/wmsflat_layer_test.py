@@ -79,7 +79,7 @@ def render_view(layer):
     return gws.MapView(
         bounds=gws.Bounds(crs='EPSG:3857', extent=[100, 200, 300, 400]),
         dpi=0,
-        size_px=(100, 100),
+        pxSize=(100, 100),
     )
 
 

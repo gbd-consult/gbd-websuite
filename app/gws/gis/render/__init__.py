@@ -45,17 +45,17 @@ def _map_view(bbox, center, crs, dpi, rotation, scale, size):
 
     w, h, u = size
     if u == gws.Uom.mm:
-        view.size_mm = w, h
-        view.size_px = gws.lib.uom.size_mm_to_px(view.size_mm, view.dpi)
+        view.mmSize = w, h
+        view.pxSize = gws.lib.uom.size_mm_to_px(view.mmSize, view.dpi)
     if u == gws.Uom.px:
-        view.size_px = w, h
-        view.size_mm = gws.lib.uom.size_px_to_mm(view.size_px, view.dpi)
+        view.pxSize = w, h
+        view.mmSize = gws.lib.uom.size_px_to_mm(view.pxSize, view.dpi)
 
     if bbox:
         view.bounds = gws.Bounds(crs=crs, extent=bbox)
         view.center = gws.gis.extent.center(bbox)
         bw, bh = gws.gis.extent.size(bbox)
-        view.scale = gws.lib.uom.res_to_scale(bw / view.size_px[0])
+        view.scale = gws.lib.uom.res_to_scale(bw / view.pxSize[0])
         return view
 
     if center:
@@ -64,7 +64,7 @@ def _map_view(bbox, center, crs, dpi, rotation, scale, size):
 
         # @TODO assuming projection units are 'm'
         projection_units_per_mm = scale / 1000.0
-        size = view.size_mm[0] * projection_units_per_mm, view.size_mm[1] * projection_units_per_mm
+        size = view.mmSize[0] * projection_units_per_mm, view.mmSize[1] * projection_units_per_mm
         bbox = gws.gis.extent.from_center(center, size)
         view.bounds = gws.Bounds(crs=crs, extent=bbox)
         return view
@@ -154,8 +154,7 @@ def render_map(mri: gws.MapRenderInput) -> gws.MapRenderOutput:
         try:
             _render_plane(rd, p)
         except Exception:
-            # swallow exceptions so that we still can render if a layer fails
-            gws.log.exception(f'render: input plane {len(mri.planes) - n - 1} failed')
+            gws.log.exception(f'RENDER_FAILED: plane {len(mri.planes) - n - 1}')
         if mri.notify:
             mri.notify('end_plane', p)
 
@@ -214,7 +213,7 @@ def _add_image(rd: _Renderer, img, opacity):
         background = rd.mri.backgroundColor if rd.imgCount == 0 else None
         rd.mro.planes.append(gws.MapRenderOutputPlane(
             type=gws.MapRenderOutputPlaneType.image,
-            image=gws.lib.image.from_size(rd.rasterView.size_px, background)))
+            image=gws.lib.image.from_size(rd.rasterView.pxSize, background)))
 
     rd.mro.planes[-1].image = rd.mro.planes[-1].image.compose(img, opacity)
     rd.imgCount += 1
@@ -238,7 +237,7 @@ def _add_svg_elements(rd: _Renderer, elements, opacity):
 
 
 def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.IXmlElement:
-    w, h = mro.view.size_mm
+    w, h = mro.view.mmSize
 
     css_size = f'left:0;top:0;width:{int(w)}mm;height:{int(h)}mm'
     css_abs = f'position:absolute;{css_size}'

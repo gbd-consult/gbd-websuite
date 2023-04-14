@@ -279,6 +279,17 @@ def to_int(x) -> int:
         return 0
 
 
+def to_rounded_int(x) -> int:
+    """Round and convert a value to an int or 0 if this fails."""
+
+    try:
+        if isinstance(x, float):
+            return int(round(x))
+        return int(x)
+    except:
+        return 0
+
+
 def to_float(x) -> float:
     """Convert a value to a float or 0.0 if this fails."""
 
