@@ -1,0 +1,48 @@
+@page width="297" height="210"
+
+<style>
+body {
+    font-family: Helvetica, "DejaVu Sans", sans-serif;
+    font-size: 3.5mm;
+}
+
+h1 {
+    font-size: 6mm;
+    font-weight: normal;
+    position: absolute;
+    left: 10mm;
+    top: 3mm;
+    width: 200mm;
+}
+.map {
+    border: 1mm solid #ddd;
+    position: absolute;
+    left: 10mm;
+    top: 20mm;
+    width: 200mm;
+    height: 180mm;
+}
+
+.legend {
+    position: absolute;
+    right: 10mm;
+    top: 20mm;
+    width: 70mm;
+    height: 180mm;
+    overflow: hidden;
+}
+.legend img {
+    max-width: 100%
+}
+
+</style>
+
+<h1>{project.title | html}</h1>
+
+<div class="map">
+@map
+</div>
+
+<div class="legend">
+@legend
+</div>

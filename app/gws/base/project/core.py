@@ -18,6 +18,18 @@ _DEFAULT_TEMPLATES = [
     ),
 ]
 
+_DEFAULT_PRINTER = gws.Config(
+    templates=[
+        gws.Config(
+            uid='gws.base.project.templates.project_print',
+            type='html',
+            path=gws.dirname(__file__) + '/templates/project_print.cx.html',
+            mapSize=(200, 180, gws.Uom.mm),
+            access=gws.PUBLIC,
+        ),
+    ]
+)
+
 gws.ext.new.project('default')
 
 
@@ -86,7 +98,13 @@ class Object(gws.Node, gws.IProject):
         self.localeUids = self.cfg('locales') or self.root.app.localeUids
 
         self.map = self.create_child_if_configured(gws.ext.object.map, self.cfg('map'))
-        self.printer = self.create_child_if_configured(gws.base.printer.Object, self.cfg('printer'))
+
+        p = self.cfg('printer')
+        if p:
+            self.printer = self.create_child(gws.base.printer.Object, p)
+        else:
+            self.printer = self.root.create_shared(gws.base.printer.Object, _DEFAULT_PRINTER)
+
         #
         # self.overview_map = self.root.create_optional(gws.base.map.Object, self.cfg('overviewMap'))
         #
