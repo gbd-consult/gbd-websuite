@@ -22,8 +22,6 @@ export LC_ALL=C.UTF-8
 export PYTHONPATH=$GWS_APP_DIR
 export PYTHONDONTWRITEBYTECODE=1
 
-###########################################################################
-
 ensure_xvfb() {
     export DISPLAY=:99
     export XDG_RUNTIME_DIR=$GWS_TMP_DIR/xdg
@@ -38,15 +36,26 @@ ensure_xvfb() {
     done
 }
 
-rm -fr $GWS_TMP_DIR
-mkdir -p $GWS_TMP_DIR
-chown $GWS_UID:$GWS_GID $GWS_TMP_DIR
-chmod 1777 $GWS_TMP_DIR
+remove_temp_dir() {
+  rm -fr $GWS_TMP_DIR
+}
 
-mkdir -p $GWS_VAR_DIR
-chown $GWS_UID:$GWS_GID $GWS_VAR_DIR
-chmod 750 $GWS_VAR_DIR
+ensure_temp_dir() {
+  mkdir -p $GWS_TMP_DIR
+  chown $GWS_UID:$GWS_GID $GWS_TMP_DIR
+  chmod 1777 $GWS_TMP_DIR
+}
 
+ensure_var_dir() {
+  mkdir -p $GWS_VAR_DIR
+  chown $GWS_UID:$GWS_GID $GWS_VAR_DIR
+  chmod 750 $GWS_VAR_DIR
+}
+
+###########################################################################
+
+ensure_temp_dir
+ensure_var_dir
 
 if [ "$1" == "server" ]; then
 

@@ -1,6 +1,18 @@
 import gws
 
 
+class CommandNotFound(gws.Error):
+    pass
+
+
+class CommandForbidden(gws.Error):
+    pass
+
+
+class BadRequest(gws.Error):
+    pass
+
+
 class Props(gws.Props):
     type: str
 
@@ -14,4 +26,3 @@ class Object(gws.Node, gws.IAction):
 
     def props(self, user):
         return gws.Data(type=self.extType)
-

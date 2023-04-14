@@ -28,13 +28,13 @@ def init():
         root = gws.config.load()
     except:
         gws.log.exception('UNABLE TO LOAD CONFIGURATION')
-        gws.exit(255)
+        gws.exit(1)
 
     try:
         gws.log.set_level(root.app.cfg('server.log.level'))
         root.app.monitor.start()
     except:
         gws.log.exception('SPOOL INIT ERROR')
-        gws.exit(255)
+        gws.exit(1)
 
     gws.server.uwsgi_module.load().spooler = spooler

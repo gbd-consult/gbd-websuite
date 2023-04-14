@@ -1,7 +1,7 @@
 """web application root"""
 
 import gws
-import gws.base.action.dispatcher
+import gws.base.action
 import gws.base.web.error
 import gws.base.web.site
 import gws.base.web.wsgi
@@ -16,7 +16,6 @@ _STATE = {
 
 def application(environ, start_response):
     if not _STATE['inited']:
-        import os
         init()
     responder = handle_request(environ)
     return responder.send_response(environ, start_response)
@@ -32,7 +31,7 @@ def init():
         _STATE['inited'] = True
     except:
         gws.log.exception('UNABLE TO LOAD CONFIGURATION')
-        gws.exit(255)
+        gws.exit(1)
 
 
 def reload():
@@ -101,14 +100,21 @@ def final_middleware(req: gws.IWebRequester, nxt) -> gws.IWebResponder:
         # @TODO: add HEAD
         raise gws.base.web.error.MethodNotAllowed()
 
-    fn, request = gws.base.action.dispatcher.dispatch(
-        req.root,
-        command_category,
-        command_name,
-        params,
-        req.user,
-        read_options
-    )
+    try:
+        fn, request = gws.base.action.dispatch(
+            req.root,
+            command_category,
+            command_name,
+            params,
+            req.user,
+            read_options
+        )
+    except gws.base.action.CommandNotFound as exc:
+        raise gws.base.web.error.NotFound() from exc
+    except gws.base.action.CommandForbidden as exc:
+        raise gws.base.web.error.Forbidden() from exc
+    except gws.base.action.BadRequest as exc:
+        raise gws.base.web.error.BadRequest() from exc
 
     response = fn(req, request)
 

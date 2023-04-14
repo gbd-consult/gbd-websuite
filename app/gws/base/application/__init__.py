@@ -86,15 +86,12 @@ class Object(gws.Node, gws.IApplication):
     mpxConfig = ''
 
     def configure(self):
+        self._setenv('server.log.level', gws.env.GWS_LOG_LEVEL)
+        self._setenv('server.web.workers', gws.env.GWS_WEB_WORKERS)
+        self._setenv('server.spool.workers', gws.env.GWS_SPOOL_WORKERS)
+
         self.version = self.root.specs.version
-
         self.versionString = f'GWS version {self.version}'
-
-        try:
-            _, s = gws.lib.osx.run(['lsb_release', '-ds'])
-            self.versionString += ', ' + s.decode('ascii').strip()
-        except gws.lib.osx.Error:
-            pass
 
         if self.cfg('server.qgis.enabled'):
             qgis_server = gws.lib.importer.import_from_path('gws/plugin/qgis/server.py')
@@ -184,3 +181,16 @@ class Object(gws.Node, gws.IApplication):
 
     def developer_option(self, name):
         return self._devopts.get(name)
+
+    def _setenv(self, key, val):
+        if not val:
+            return
+        ks = key.split('.')
+        last = ks.pop()
+        cfg = self.config
+        for k in ks:
+            if not hasattr(cfg, k):
+                setattr(cfg, k, gws.Data())
+            cfg = getattr(cfg, k)
+        setattr(cfg, last, val)
+        gws.log.info(f'environment: {key!r}={val!r}')

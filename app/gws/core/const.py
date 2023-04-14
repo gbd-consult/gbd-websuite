@@ -1,18 +1,11 @@
-import os
+from . import env
 
-APP_DIR = '/gws-app'
-VAR_DIR = '/gws-var'
-TMP_DIR = '/tmp/gws'
+APP_DIR = env.GWS_APP_DIR or '/gws-app'
+VAR_DIR = env.GWS_VAR_DIR or '/gws-var'
+TMP_DIR = env.GWS_TMP_DIR or '/tmp/gws'
 
-UID = 1000
-GID = 1000
-
-APP_DIR = os.getenv('GWS_APP_DIR', APP_DIR)
-VAR_DIR = os.getenv('GWS_VAR_DIR', VAR_DIR)
-TMP_DIR = os.getenv('GWS_TMP_DIR', TMP_DIR)
-
-UID = int(os.getenv('GWS_UID', UID))
-GID = int(os.getenv('GWS_GID', GID))
+UID = int(env.GWS_UID or 1000)
+GID = int(env.GWS_GID or 1000)
 
 CACHE_DIR = f'{VAR_DIR}/cache'
 LEGEND_CACHE_DIR = f'{CACHE_DIR}/legend'

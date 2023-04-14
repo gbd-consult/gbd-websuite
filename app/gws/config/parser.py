@@ -45,7 +45,7 @@ def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', read_o
 
 
 def real_config_path(config_path=None):
-    p = config_path or os.getenv('GWS_CONFIG')
+    p = config_path or gws.env.GWS_CONFIG
     if p:
         return p
     for p in DEFAULT_CONFIG_PATHS:
