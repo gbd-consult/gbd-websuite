@@ -79,9 +79,11 @@ class Object(gws.base.layer.Object):
     def configure_model(self, cfg):
         return self.create_child(
             gws.ext.object.model,
-            gws.merge(
-                dict(type='qgislocal', _defaultProvider=self.provider, _defaultSourceLayers=self.searchLayers),
-                cfg))
+            cfg,
+            type='qgislocal',
+            _defaultProvider=self.provider,
+            _defaultSourceLayers=self.searchLayers
+        )
 
     def configure_bounds(self):
         if super().configure_bounds():
@@ -142,9 +144,11 @@ class Object(gws.base.layer.Object):
     def configure_finder(self, cfg):
         return self.create_child(
             gws.ext.object.finder,
-            gws.merge(
-                dict(type='qgislocal', _defaultProvider=self.provider, _defaultSourceLayers=self.searchLayers),
-                cfg))
+            cfg,
+            type='qgislocal',
+            _defaultProvider=self.provider,
+            _defaultSourceLayers=self.searchLayers
+        )
 
     ##
 

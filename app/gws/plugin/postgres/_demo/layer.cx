@@ -1,0 +1,24 @@
+projects+ {
+    title "Postgres layer"
+    metadata.abstract "`postgres` layers display vector features from Postgis tables"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 30000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "POIs"
+        type "postgres"
+        tableName "poi"
+    }
+
+    map.layers+ {
+        title "Districts"
+        type "postgres"
+        tableName "districts"
+    }
+
+    {demo_osm_background}
+}

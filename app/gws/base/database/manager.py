@@ -1,6 +1,5 @@
 """Core database utilities."""
 
-
 import gws
 import gws.lib.sa as sa
 
@@ -44,8 +43,7 @@ class Object(gws.Node, gws.IDatabaseManager):
         self.rt = _SaRuntime()
 
         for cfg in self.cfg('providers', default=[]):
-            cfg = gws.merge(cfg, _manager=self)
-            prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg)
+            prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg, _defaultManager=self)
             self.providers[prov.uid] = prov
 
     def post_configure(self):

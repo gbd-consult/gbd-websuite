@@ -1,7 +1,7 @@
 import gws
 import gws.base.database
 import gws.base.layer.vector
-import gws.gis.extent
+import gws.gis.bounds
 import gws.base.feature
 import gws.gis.crs
 import gws.base.shape
@@ -24,60 +24,70 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.vector.Object):
     provider: provider.Object
     tableName: str
+    tableDesc: gws.DataSetDescription
 
     def configure(self):
-        self.tableName = self.cfg('tableName')
-        self.configure_steps()
-
-    def configure_models(self):
-        defaults = gws.Config(type='postgres', _provider=self.provider, tableName=self.tableName)
-
-        p = self.cfg('models')
-        if p:
-            self.models = [self.create_child(gws.ext.object.model, gws.merge(defaults, c)) for c in p]
-            return True
-        self.models.append(self.create_child(gws.ext.object.model, defaults))
-        return True
+        self.configure_provider()
+        self.configure_sources()
+        self.configure_models()
+        self.configure_bounds()
+        self.configure_resolutions()
+        self.configure_grid()
+        self.configure_legend()
+        self.configure_cache()
+        self.configure_metadata()
+        self.configure_templates()
+        self.configure_search()
 
     def configure_provider(self):
         self.provider = gws.base.database.provider.get_for(self)
         return True
 
+    def configure_sources(self):
+        self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
+        self.tableDesc = self.provider.describe(self.tableName)
+        if not self.tableDesc:
+            raise gws.Error(f'table {self.tableName!r} not found or not readable')
+        return True
+
+    def configure_models(self):
+        if super().configure_models():
+            return True
+        self.models.append(self.configure_model({}))
+        return True
+
+    def configure_model(self, cfg):
+        return self.create_child(
+            gws.ext.object.model,
+            cfg,
+            type='postgres',
+            _defaultProvider=self.provider,
+            _defaultTableName=self.tableName
+        )
+
+    def configure_bounds(self):
+        if super().configure_bounds():
+            return True
+        b = self.provider.bounds_for_table(self.tableName)
+        if b:
+            self.bounds = gws.gis.bounds.transform(b, self.defaultBounds.crs)
+            return True
+        return self.defaultBounds
+
     def configure_search(self):
         if super().configure_search():
             return True
-        self.finders.append(self.create_child(
-            gws.ext.object.finder,
-            gws.Config(type='postgres', _provider=self.provider, tableName=self.tableName)
-        ))
+        self.finders.append(self.configure_finder({}))
         return True
 
-    # def configure_bounds(self):
-    #     if super().configure_bounds():
-    #         return True
-    #     for mod in self.modelMgr.models:
-    #         mod = t.cast(model.Object, model)
-    #         if mod.geometryType:
-    #             return self.configure_bounds_from_model(mod)
-    #     return False
-    #
-    # def configure_bounds_from_model(self, mod):
-    #     table = model.sa_t
-    #     sel = sql.sa.select
-    #
-    #     with self.provider.session() as conn:
-    #         r = conn.select_value(
-    #             'SELECT ST_Extent({:name}) FROM {:qname}',
-    #             self.table.geometry_column.name,
-    #             self.table.name)
-    #     if not r:
-    #         return None
-    #     return gws.Bounds(
-    #         crs=gws.gis.crs.get(self.table.geometry_column.srid),
-    #         extent=gws.gis.extent.from_box(r))
+    def configure_finder(self, cfg):
+        return self.create_child(
+            gws.ext.object.finder,
+            cfg,
+            type='postgres',
+            _defaultProvider=self.provider,
+            _defaultTableName=self.tableName
+        )
 
     def props(self, user):
-        p = super().props(user)
-        # if self.table.geometry_column:
-        #     p = gws.merge(p, geometryType=self.table.geometry_column.gtype)
-        return p
+        return gws.merge(super().props(user), geometryType=self.tableDesc.geometryType)

@@ -120,6 +120,8 @@ class Config(gws.ConfigWithAccess):
     """image format"""
     legend: t.Optional[gws.ext.config.legend]
     """legend configuration"""
+    loadingStrategy: gws.FeatureLoadingStrategy = gws.FeatureLoadingStrategy.all
+    """feature loading strategy"""
     metadata: t.Optional[gws.Metadata]
     """layer metadata"""
     models: t.Optional[list[gws.ext.config.model]]

@@ -26,7 +26,7 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
     tableName: str
 
     def configure(self):
-        self.tableName = self.cfg('tableName')
+        self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
 
         self.configure_provider()
         self.configure_fields()
@@ -35,6 +35,7 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
     def configure_provider(self):
         self.provider = t.cast(provider.Object, provider.get_for(self, ext_type=self.extType))
         self.provider.mgr.register_model(self)
+        return True
 
     def configure_fields(self):
         if super().configure_fields():

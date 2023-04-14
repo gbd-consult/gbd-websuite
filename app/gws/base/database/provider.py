@@ -27,13 +27,17 @@ class Object(gws.Node, gws.IDatabaseProvider):
     mgr: manager.Object
 
     def configure(self):
-        self.mgr = self.cfg('_manager')
+        self.mgr = self.cfg('_defaultManager')
 
     def session(self):
         return self.mgr.session(self)
 
-    def table(self, name, columns=None, **kwargs):
-        return self.mgr.table(self, name, columns, **kwargs)
+    def table(self, table_name, columns=None, **kwargs):
+        return self.mgr.table(self, table_name, columns, **kwargs)
+
+    def describe(self, table_name):
+        with self.session() as sess:
+            return sess.describe(table_name)
 
 
 def get_for(obj: gws.INode, uid: str = None, ext_type: str = None):

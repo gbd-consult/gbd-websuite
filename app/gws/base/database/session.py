@@ -1,6 +1,7 @@
 import gws
 import gws.lib.sa as sa
 
+
 class Object(gws.IDatabaseSession):
 
     def __init__(self, provider: gws.IDatabaseProvider):
