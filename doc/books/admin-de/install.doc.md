@@ -1,48 +1,89 @@
 # Installation :/admin-de/intro/install
 
-## Vor der Installation
+## docker-compose.yml
 
-Als Docker-Anwendung benötigt die GBD WebSuite keine Installation per se, aber Sie müssen ein paar Dinge einstellen, damit die GBD WebSuite problemfrei starten kann.
+```yaml
+version: '3'
+services:
+    gws:
+        image: gbdconsult/gws-amd64:8.0.0
+        container_name: gws
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - "~/gws-welcome/data:/data:ro"
+            - "~/gws-var/print:/gws-var/print"
+            - "~/gws-var:/gws-var"
+      #     - "~/gws-websuite/app:/gws-app:ro"
+      # extra_hosts:
+      # 	- "somehost:162.242.195.82"
+      # 	- "otherhost:50.31.209.229"
+      # environment:
+      #     GWS_UID=1000 # default 1000
+      #     GWS_GID=1000 # default 1000
+      #     GWS_CONFIG=/data/config.json # default /data/config.json
+    qgis:
+        image: gbdconsult/qgis-3.28-amd64:0
+        container_name: qgis
+        ports:
+            - "80"
+        volumes:
+            - "~/gws-welcome/data:/data:ro"
+            - "~/gws-var/print:/gws-var/print:ro"
+        environment:
+            QGIS_DEBUG=0
+            QGIS_WORKERS=1
+```
+
+## Voraussetzungen
 
 ### Verzeichnisse
 
-Die GBD WebSuite benötigt einige Verzeichnisse, die von Ihrem Host-Rechner eingebunden werden müssen, um die Daten mit der Außenwelt auszutauschen.
+Innerhalb des Containers existieren die folgenden relevanten Verzeichnisse:
 
-- ein oder mehrere *Daten*-Verzeichnisse. Hier speichern Sie Ihre Konfiguration und Daten. Der Server schreibt nie in diese Verzeichnisse, daher ist es eine gute Idee, sie schreibgeschützt zu mounten. Diese Verzeichnisse können an beliebige Stellen im Container eingebunden werden (wir verwenden standardmäßig `/data`).
-- ein *var*-Verzeichnis, in dem der Server seine eigenen persistenten Daten wie Caches und Sitzungsdaten speichert. Es sollte an `/gws-var` im Container montiert werden.
-- ein temporäres Verzeichnis *tmp*. Normalerweise würde man es als `tmpfs` bezeichnen.
+`/data`: Enhält Konfiguration und Daten für die Anwendung (z.B. .json, .qgs, .geotiff). Der Container muss in diesem Verzeichnis nicht schreiben. Wird ein Verzeichnis auf dem Host in den Container gemounted, sollte dies readonly (`:ro`) geschehen. Es ist bei Bedarf möglich weitere Datenverzeichnisse an beliebige Orte in den Container zu mounten. Diese müssen dann in der Konfiguration explizit referenziert werden.
 
-### Nutzer
+`/gws-var`: Enhält Cache und Sitzungsdaten. Die GBD WebSuite muss in dieses Verzeichnis schreiben können. Das Verzeichnis muss entweder vom Hostsystem in den Container gemounted werden, oder als persistentes Volume existieren damit Daten nicht zwischen Updates/Neustarts verlorengehen.
 
-Die GBD WebSuite wird intern standardmäßig als Nutzer- und Gruppen-ID `1000` ausgeführt. Sorgen Sie bitte dafür, das dieser Nutzer in Ihrem Hostsystem
+`/gws-var/print`: Muss sowohl vom qgis- als auch vom gws-Container schreibbar sein, um einen Datenaustausch zwischen qgis-server und GBD WebSuite zu ermöglichen. Wird für Druckfunktionalitäten verwendet. Muss nicht persistieren.
 
-- über Leserechte für alle *Daten*-Verzeichnisse verfügt
-- über Schreib- und Leserechte für *var* und *tmp* Verzeichnisse
+`/gws-app`: Enhält den Quellcode der GBD WebSuite Applikation. Nur für Entwickler interessant. In einer normalen Installation die das fertige Image von hub.docker.com verwendet ist der Quellcode bereits im Container hinterlegt. Ein Update geschieht im Normalfall durch Aktualisierung des gesamten Containers.
 
-Sie können die `uid/gid`  Werte mit Umgebungsvariablen `GWS_UID` und `GWS_GID` ändern.
+`TODO: - ein temporäres Verzeichnis *tmp*. Normalerweise würde man es als `tmpfs` bezeichnen.`
 
-### Port
+### Benutzerkonten
 
-Die GBD WebSuite benutzt die Ports `80` und `443`. Sie können sie auf alles abbilden, was Sie beim Testen wollen, und auf echte 80/443 in der Produktion.
+Innerhalb des Docker Containers hat das Benutzerkonto mit dem die GBD WebSuite ausgeführt *standardmäßig* die User- und Gruppen ID `1000`. Um ein problemloses Lesen und Schreiben auf aus dem Hostsystem in den Container gemountete Verzeichnisse zu gewährleisten muss das Hostsystem-Benutzerkonto mit der gleichen ID die entsprechenden Rechte auf die relevanten Verzeichnisse des Hostsystems haben.
+
+Sollte es in Ihrer Infrastruktur nicht möglich sein dem Benutzer mit der ID 1000 die nötigen Rechte zu geben können Sie die innerhalb des Containers verwendete User- und Gruppen ID anpassen in dem Sie die folgenden Umgebungsvariablen beim Start des Containers übergeben: `GWS_UID`, `GWS_GID`.
+
+### Ports
+
+Die GBD WebSuite antwortet auf HTTP und HTTPS Anfragen auf den Standardports 80 und 443. Haben Sie durch Hinterlegen von Zertifikaten in der Konfiguration HTTPS aktiviert, so wird auf 80/HTTP ein *permanenter* Redirect auf 443/HTTPS hinterlegt.
 
 ### Konfiguration
 
-Die GBD WebSuite erwartet die Konfiguration in `/data/config.json`. Wenn Sie einen anderen Speicherort und/oder ein anderes Format bevorzugen, setzen Sie die Umgebungsvariable `GWS_CONFIG` auf den Pfad Ihrer Konfigurationsdatei.
+Der Einstiegspunkt für die Konfiguration ist per Default `/data/config.json`. Alle weiteres Konfigurationsdateien werden von dieser Datei eingebunden.
+Um eine andere Datei als Einstiegspunkt zu verwenden setzen Sie die Umgebungsvariable `GWS_CONFIG`.
 
 ^SEE Die Konfigurationsformate sind unter ^config/intro beschrieben.
 
 ### Externe Adressen
 
-Wenn Ihr GBD WebSuite Container externe Verbindungen benötigt (höchstwahrscheinlich zu Datenbankservern), benötigen Sie eine oder mehrere `--add-host` Optionen in Ihrem Docker-Startbefehl.
+Wenn Ihr GBD WebSuite Container externe Verbindungen benötigt (höchstwahrscheinlich zu Datenbankservern), müssen Sie die Adressen zu diesen Hosts explizit hinterlegen.
+In der `docker-compose.yml` ist dies unter dem Punkt `extra_hosts` möglich. Siehe Beispiel oben.
 
-### Einstiegspunkt
+
+
+### Einstiegspunkt (alt?)
 
 Die GBD WebSuite hat einen einzigen Einstiegspunkt, ein Shell-Skript namens `gws`. Um den Server zu starten oder zu stoppen, nutzen Sie die folgenden Befehle:
 
     gws server start
     gws server stop
 
-## Ausführen mit `gws`-Shell-Skript
+## Ausführen mit `gws`-Shell-Skript (alt?)
 
 Folgende Optionen müssen Sie in Ihrem `gws`-Shell-Skript anpassen:
 
@@ -101,7 +142,7 @@ Sobald Sie dieses Skript als z.B. `gws` in Ihren Pfad abspeichern, können Sie d
     gws server stop
     gws server restart
 
-## Aktuellen Quellcode anbinden
+## Aktuellen Quellcode anbinden (alt?)
 
 Da die GBD WebSuite aktiv entwickelt wird, kann es vorkommen, dass eine in dem Docker-Image enthaltene Version von unserem Quellcode veraltet ist. Sie können aber das Image mit der aktuellen Version ausführen indem Sie das Quellcodeverzeichnis unter `gws-app` mounten.
 
@@ -117,7 +158,7 @@ und mounten Sie den `gws-server/app` Unterordner als `gws-app`:
 
     --mount type=bind,src=<absoluter Pfad>/gws-server/app,dst=/gws-app,readonly
 
-## Host-Installation
+## Host-Installation (alt?)
 
 Wir haben auch ein Skript, das die WebSuite direkt auf Ihrem System installiert, ohne docker. Das Skript finden Sie in unserem Github unter https://github.com/gbd-consult/gbd-websuite/blob/master/install/install.sh
 
