@@ -205,11 +205,6 @@ class Object(gws.base.action.Object):
         #     path = path.replace('{z}', str(p.z))
         #     gws.gis.cache.store_in_web_cache(path, content)
 
-        if self.root.app.developer_option('map.annotate_xyz'):
-            text = f"{p.z} {p.x} {p.y}"
-            img = gws.lib.image.from_bytes(content)
-            content = img.add_text(text, x=5, y=5).add_box().to_bytes()
-
         return gws.lib.mime.PNG, content
 
     def _get_legend(self, req: gws.IWebRequester, p: GetLegendRequest):

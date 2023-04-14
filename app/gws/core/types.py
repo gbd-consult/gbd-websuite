@@ -1375,6 +1375,8 @@ class LayerRenderInput(Data):
     type: LayerRenderInputType
     view: MapView
     extraParams: dict
+    boxSize: int
+    boxBuffer: int
     x: int
     y: int
     z: int

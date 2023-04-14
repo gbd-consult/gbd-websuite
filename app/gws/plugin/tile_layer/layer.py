@@ -120,4 +120,4 @@ class Object(gws.base.layer.Object):
         return p
 
     def render(self, lri):
-        return gws.base.layer.util.generic_raster_render(self, lri)
+        return gws.base.layer.util.mpx_raster_render(self, lri)

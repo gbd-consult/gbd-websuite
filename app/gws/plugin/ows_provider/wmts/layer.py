@@ -174,5 +174,5 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
     ##
 
     def render(self, lri):
-        return gws.base.layer.util.generic_raster_render(self, lri)
+        return gws.base.layer.util.mpx_raster_render(self, lri)
 

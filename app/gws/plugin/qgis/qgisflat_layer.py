@@ -10,7 +10,7 @@ import gws.lib.metadata
 import gws.lib.osx
 import gws.types as t
 
-from . import provider, render
+from . import provider
 
 gws.ext.new.layer('qgisflat')
 
@@ -170,5 +170,8 @@ class Object(gws.base.layer.Object):
         if filters:
             params['FILTER'] = ';'.join(filters)
 
-        img = render.box_to_bytes(self, lri.view, params)
-        return gws.LayerRenderOutput(content=img)
+        def get_box(bounds, width, height):
+            return self.provider.get_map(self, bounds, width, height, params)
+
+        content = gws.base.layer.util.generic_render_box(self, lri, get_box)
+        return gws.LayerRenderOutput(content=content)

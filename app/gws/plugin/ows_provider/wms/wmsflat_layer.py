@@ -146,7 +146,7 @@ class Object(gws.base.layer.Object):
     ##
 
     def render(self, lri):
-        return gws.base.layer.util.generic_raster_render(self, lri)
+        return gws.base.layer.util.mpx_raster_render(self, lri)
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.imageLayers]

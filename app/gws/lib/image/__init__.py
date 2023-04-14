@@ -23,7 +23,8 @@ def from_size(size: gws.Size, color=None) -> 'Image':
 
 
 def from_bytes(r: bytes) -> 'Image':
-    return _new(PIL.Image.open(io.BytesIO(r)))
+    with io.BytesIO(r) as buf:
+        return _new(PIL.Image.open(buf))
 
 
 ImageMode = t.Literal[
@@ -81,7 +82,7 @@ class Image(gws.IImage):
     def size(self) -> gws.Size:
         return self.img.size
 
-    def resize(self, size, **kwargs):
+    def resize(self, size, **kwargs) -> 'Image':
         kwargs.setdefault('resample', PIL.Image.BICUBIC)
         self.img = self.img.resize(_int_size(size), **kwargs)
         return self
@@ -99,7 +100,7 @@ class Image(gws.IImage):
         self.img.paste(t.cast('Image', other).img, where)
         return self
 
-    def compose(self, other, opacity=1) -> 'Image':
+    def compose(self, other, opacity=1):
         oth = t.cast('Image', other).img.convert('RGBA')
 
         if oth.size != self.img.size:
@@ -113,9 +114,9 @@ class Image(gws.IImage):
         return self
 
     def to_bytes(self, mime=None):
-        buf = io.BytesIO()
-        self.img.save(buf, _mime_to_format(mime))
-        return buf.getvalue()
+        with io.BytesIO() as buf:
+            self.img.save(buf, _mime_to_format(mime))
+            return buf.getvalue()
 
     def to_path(self, path, mime=None):
         with open(path, 'wb') as fp:
