@@ -304,6 +304,10 @@ class Object(gws.Node, gws.ILayer):
     def configure_legend(self):
         if not self.cfg('options.legend'):
             return True
+        p = self.cfg('legend')
+        if p:
+            self.legend = self.create_child(gws.ext.object.legend, p)
+            return True
 
     def configure_metadata(self):
         p = self.cfg('metadata')

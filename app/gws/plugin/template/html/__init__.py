@@ -120,8 +120,11 @@ class Object(gws.base.template.Object):
             layerUids=[la.uid for la in layer_list]))
 
         lro = legend.render(tri.args)
-        img_path = gws.base.legend.output_to_image_path(lro)
+        if not lro:
+            gws.log.debug(f'empty legend render')
+            return
 
+        img_path = gws.base.legend.output_to_image_path(lro)
         return f'<img src="{img_path}"/>'
 
     ##
