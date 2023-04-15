@@ -105,7 +105,7 @@ class Object(core.Service):
             crs=bounds.crs,
             mapSize=(256, 256, gws.Uom.px),
             planes=[
-                gws.MapRenderInputPlane(type='image_layer', layer=lc.layer)
+                gws.MapRenderInputPlane(type=gws.MapRenderInputPlaneType.imageLayer, layer=lc.layer)
                 for lc in lcs
             ]
         )

@@ -1,6 +1,6 @@
 projects+ {
     title "Postgres layer"
-    metadata.abstract "`postgres` layers display vector features from Postgis tables"
+    metadata.abstract "`postgres` layers display vector features from Postgis tables."
 
     map {
         center {demo_point_duesseldorf_3857}

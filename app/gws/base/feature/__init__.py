@@ -57,7 +57,7 @@ class Feature(gws.Object, gws.IFeature):
         if not self.shape():
             return []
         shape = self.shape().transformed_to(view.bounds.crs)
-        return gws.lib.svg.shape_to_fragment(shape, view, style, label)
+        return gws.lib.svg.shape_to_fragment(shape, view, label, style)
 
     def to_geojson(self, user):
         p = self.props(user)

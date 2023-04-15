@@ -171,28 +171,35 @@ def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
     else:
         opacity = 1
 
-    if plane.type == gws.MapRenderInputPlaneType.image_layer:
+    if plane.type == gws.MapRenderInputPlaneType.imageLayer:
         extra_params = {}
         if plane.subLayers:
             extra_params = {'layers': plane.subLayers}
-        lri = gws.LayerRenderInput(
+        lro = plane.layer.render(gws.LayerRenderInput(
             type=gws.LayerRenderInputType.box,
             view=rd.rasterView,
             extra_params=extra_params,
-        )
-        lro = plane.layer.render(lri)
+            user=rd.mri.user,
+        ))
         if lro:
             _add_image(rd, gws.lib.image.from_bytes(lro.content), opacity)
+        return
 
     if plane.type == gws.MapRenderInputPlaneType.image:
         _add_image(rd, plane.image, opacity)
         return
 
-    # if plane.type == 'svg_layer':
-    #     els = plane.layer.render_svg_fragment(rd.vectorView, plane.style)
-    #     _add_svg_elements(rd, els, opacity)
-    #     return
-    #
+    if plane.type == gws.MapRenderInputPlaneType.svgLayer:
+        lro = plane.layer.render(gws.LayerRenderInput(
+            type=gws.LayerRenderInputType.svg,
+            view=rd.vectorView,
+            style=plane.style,
+            user=rd.mri.user,
+        ))
+        if lro:
+            _add_svg_elements(rd, lro.tags, opacity)
+        return
+
     # if plane.type == 'features':
     #     for feature in plane.features:
     #         els = feature.to_svg_fragment(rd.vectorView, plane.style)

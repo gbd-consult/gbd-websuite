@@ -154,7 +154,7 @@ class Object(gws.base.action.Object):
 
     def _get_box(self, req: gws.IWebRequester, p: GetBoxRequest):
         layer = req.require_layer(p.layerUid)
-        lri = gws.LayerRenderInput(type='box', extraParams={})
+        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.box, user=req.user, extraParams={})
 
         if p.layers:
             lri.extraParams['layers'] = p.layers
@@ -180,7 +180,7 @@ class Object(gws.base.action.Object):
 
     def _get_xyz(self, req: gws.IWebRequester, p: GetXyzRequest):
         layer = req.require_layer(p.layerUid)
-        lri = gws.LayerRenderInput(type='xyz', x=p.x, y=p.y, z=p.z)
+        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.xyz, user=req.user, x=p.x, y=p.y, z=p.z)
         lro = None
 
         gws.time_start(f'RENDER_XYZ layer={p.layerUid} lri={lri!r}')
@@ -225,10 +225,6 @@ class Object(gws.base.action.Object):
     def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> list[gws.Props]:
         layer = req.require_layer(p.layerUid)
 
-        model = gws.base.model.locate(layer.models, user=req.user, access=gws.Access.read, uid=p.modelUid)
-        if not model:
-            raise gws.base.web.error.Forbidden()
-
         bounds = layer.bounds
         if p.bbox:
             bounds = gws.gis.bounds.from_extent(
@@ -237,20 +233,9 @@ class Object(gws.base.action.Object):
             )
 
         search = gws.SearchArgs(bounds=bounds, limit=_GET_FEATURES_LIMIT)
-        features = model.find_features(search, req.user)
 
-        templates = []
-        for v in p.views or ['label']:
-            tpl = gws.base.template.locate(layer, user=req.user, subject=f'feature.{v}')
-            if tpl:
-                templates.append(tpl)
+        gws.time_start(f'GET_FEATURES layer={p.layerUid}')
+        features = layer.get_features(search, user=req.user, views=p.views, model_uid=p.modelUid)
+        gws.time_end()
 
-        ls = []
-
-        for feature in features:
-            feature.compute_values(gws.Access.read, req.user)
-            feature.transform_to(bounds.crs)
-            feature.render_views(templates, user=req.user, layer=layer)
-            ls.append(gws.props(feature, req.user, layer))
-
-        return ls
+        return [gws.props(f, req.user, layer) for f in features]

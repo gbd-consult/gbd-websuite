@@ -542,7 +542,7 @@ class Service(gws.Node, gws.IOwsService):
             crs=bounds.crs,
             mapSize=(px_width, px_height, gws.Uom.px),
             planes=[
-                gws.MapRenderInputPlane(type='image_layer', layer=lc.layer)
+                gws.MapRenderInputPlane(type=gws.MapRenderInputPlaneType.imageLayer, layer=lc.layer)
                 for lc in lcs
             ]
         )

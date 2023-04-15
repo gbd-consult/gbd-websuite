@@ -1,3 +1,4 @@
+import gws
 from .data import Data
 
 from gws.types import (
@@ -1319,8 +1320,8 @@ class MapView(Data):
 class MapRenderInputPlaneType(Enum):
     features = 'features'
     image = 'image'
-    image_layer = 'image_layer'
-    svg_layer = 'svg_layer'
+    imageLayer = 'imageLayer'
+    svgLayer = 'svgLayer'
     svg_soup = 'svg_soup'
 
 
@@ -1385,6 +1386,8 @@ class LayerRenderInput(Data):
     x: int
     y: int
     z: int
+    user: 'IUser'
+    style: 'IStyle'
 
 
 class LayerRenderOutput(Data):
@@ -1778,7 +1781,9 @@ class ILayer(INode, Protocol):
 
     def descendants(self) -> list['ILayer']: ...
 
-    def render(self, lri: LayerRenderInput) -> 'LayerRenderOutput': ...
+    def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...
+
+    def get_features(self, search: SearchArgs, user: 'IUser', views: Optional[list[str]] = None, model_uid: str = None) -> list['IFeature']: ...
 
     def render_legend(self, args: dict = None) -> Optional['LegendRenderOutput']: ...
 

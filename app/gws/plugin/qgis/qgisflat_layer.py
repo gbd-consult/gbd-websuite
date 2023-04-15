@@ -153,6 +153,9 @@ class Object(gws.base.layer.Object):
     ##
 
     def render(self, lri):
+        if lri.type != gws.LayerRenderInputType.box:
+            return
+
         params = dict(lri.extraParams or {})
         all_names = [sl.name for sl in self.imageLayers]
         req_names = params.pop('layers', all_names)

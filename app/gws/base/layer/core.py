@@ -435,6 +435,12 @@ class Object(gws.Node, gws.ILayer):
 
         return p
 
+    def render(self, lri):
+        pass
+
+    def get_features(self, search, user, views=None, model_uid=None):
+        return []
+
     def render_legend(self, args=None) -> t.Optional[gws.LegendRenderOutput]:
 
         if not self.legend:

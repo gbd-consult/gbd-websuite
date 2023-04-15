@@ -1,5 +1,8 @@
+"""SVG builders."""
+
 import base64
 import math
+import shapely
 import shapely.geometry
 import shapely.ops
 
@@ -7,7 +10,7 @@ import gws
 import gws.lib.font
 import gws.gis.render
 import gws.base.shape
-import gws.lib.uom as units
+import gws.lib.uom
 import gws.lib.xmlx as xmlx
 import gws.types as t
 
@@ -16,7 +19,9 @@ DEFAULT_MARKER_SIZE = 10
 DEFAULT_POINT_SIZE = 10
 
 
-def shape_to_fragment(shape: gws.IShape, view: gws.MapView, style: gws.IStyle = None, label: str = None) -> list[gws.IXmlElement]:
+def shape_to_fragment(shape: gws.IShape, view: gws.MapView, label: str = None, style: gws.IStyle = None) -> list[gws.IXmlElement]:
+    """Convert a shape to a list of XmlElements (a "fragment")."""
+
     if not shape:
         return []
 
@@ -36,6 +41,7 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, style: gws.IStyle = 
     gt = _geom_type(geom)
 
     text = None
+
     if with_label:
         extra_y_offset = 0
         if sv.label_offset_y is None:
@@ -47,47 +53,49 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, style: gws.IStyle = 
 
     marker = None
     marker_id = None
+
     if with_geometry and sv.marker:
         marker_id = '_M' + gws.random_string(8)
         marker = _marker(marker_id, sv)
 
-    icon = None
     atts: dict = {}
+
+    icon = None
+
     if with_geometry and sv.icon:
         res = _parse_icon(sv.icon, view.dpi)
         if res:
-            el, w, h = res
-            x, y, w, h = _icon_size_position(geom, sv, w, h)
+            icon_el, w, h = res
+            x, y, w, h = _icon_size_and_position(geom, sv, w, h)
             atts = {
                 'x': f'{int(x)}',
                 'y': f'{int(y)}',
                 'width': f'{int(w)}',
                 'height': f'{int(h)}',
             }
-            icon = xmlx.element(
-                name=el.name,
-                attributes=gws.merge(el.attributes, atts),
-                children=el.children)
+            icon = xmlx.tag(
+                icon_el.name,
+                attributes=gws.merge(icon_el.attrib, atts),
+                *icon_el.children()
+            )
 
     body = None
+
     if with_geometry:
         _add_paint_atts(atts, sv)
         if marker:
             atts['marker-start'] = atts['marker-mid'] = atts['marker-end'] = f'url(#{marker_id})'
-        if gt == _TYPE_POINT or gt == _TYPE_MULTIPOINT:
+        if gt in {_TYPE_POINT, _TYPE_MULTIPOINT}:
             atts['r'] = (sv.point_size or DEFAULT_POINT_SIZE) // 2
-        if gt == _TYPE_LINESTRING or gt == _TYPE_MUTLILINESTRING:
+        if gt in {_TYPE_LINESTRING, _TYPE_MULTILINESTRING}:
             atts['fill'] = 'none'
         body = _geometry(geom, atts)
 
     return gws.compact([marker, body, icon, text])
 
 
-# ----------------------------------------------------------------------------------------------------------------------
-# soup
-
 def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list[t.Any]) -> list[gws.IXmlElement]:
-    """Convert an svg "soup" to a list of XmlElements.
+    """Convert an svg "soup" to a list of XmlElements (a "fragment").
 
     A soup has two components:
 
@@ -140,29 +148,8 @@ def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list[t.An
     return els
 
 
-def _slope(a: gws.Point, b: gws.Point) -> float:
-    # slope between two points
-    dx = b[0] - a[0]
-    dy = b[1] - a[1]
-
-    if dx == 0:
-        dx = 0.01
-
-    return math.atan(dy / dx)
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # geometry
-
-_TYPE_POINT = 1
-_TYPE_LINESTRING = 2
-_TYPE_POLYGON = 3
-_TYPE_LINEARRING = 4
-_TYPE_MULTI = 0x10
-_TYPE_MULTIPOINT = _TYPE_MULTI | _TYPE_POINT
-_TYPE_MUTLILINESTRING = _TYPE_MULTI | _TYPE_LINESTRING
-_TYPE_MULTIPOLYGON = _TYPE_MULTI | _TYPE_POLYGON
-
 
 def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict = None) -> gws.IXmlElement:
     def _xy(xy):
@@ -196,7 +183,7 @@ def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict = None) -> gw
         d = _lpath(g.exterior.coords) + ' z ' + d
         return xmlx.tag('path', {'fill-rule': 'evenodd', 'd': d.strip()}, atts)
 
-    if gt > _TYPE_MULTI:
+    if gt >= _TYPE_MULTIPOINT:
         g = t.cast(shapely.geometry.base.BaseMultipartGeometry, geom)
         return xmlx.tag('g', *[_geometry(p, atts) for p in g.geoms])
 
@@ -204,30 +191,31 @@ def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict = None) -> gw
 def _enum_points(geom):
     gt = _geom_type(geom)
 
-    if gt == _TYPE_POINT or gt == _TYPE_LINESTRING or gt == _TYPE_LINEARRING:
+    if gt in {_TYPE_POINT, _TYPE_LINESTRING, _TYPE_LINEARRING}:
         return geom.coords
     if gt == _TYPE_POLYGON:
         return geom.exterior.coords
-    if gt > _TYPE_MULTI:
+    if gt >= _TYPE_MULTIPOINT:
         return [p for g in geom.geoms for p in _enum_points(g)]
 
 
-_geom_types = {
-    'point': _TYPE_POINT,
-    'linestring': _TYPE_LINESTRING,
-    'polygon': _TYPE_POLYGON,
-    'linearring': _TYPE_LINEARRING,
-    'multipoint': _TYPE_MULTIPOINT,
-    'mutlilinestring': _TYPE_MUTLILINESTRING,
-    'multipolygon': _TYPE_MULTIPOLYGON,
-}
+# https://shapely.readthedocs.io/en/stable/reference/shapely.get_type_id.html
+
+_TYPE_POINT = 0
+_TYPE_LINESTRING = 1
+_TYPE_LINEARRING = 2
+_TYPE_POLYGON = 3
+_TYPE_MULTIPOINT = 4
+_TYPE_MULTILINESTRING = 5
+_TYPE_MULTIPOLYGON = 6
+_TYPE_GEOMETRYCOLLECTION = 7
 
 
 def _geom_type(geom):
-    try:
-        return _geom_types[geom.type.lower()]
-    except KeyError:
-        raise ValueError(f'unknown type {geom.type!r}')
+    p = shapely.get_type_id(geom)
+    if _TYPE_POINT <= p <= _TYPE_MULTIPOLYGON:
+        return p
+    raise gws.Error(f'unsupported geometry type {geom.type!r}')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -387,44 +375,44 @@ def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.IXmlElement:
 # @TODO options for icon positioning
 
 
-def _parse_icon(icon, dpi):
+def _parse_icon(icon, dpi) -> t.Optional[tuple[gws.IXmlElement, float, float]]:
     # see lib.style.icon
 
-    svg = None
+    svg: t.Optional[gws.IXmlElement] = None
     if gws.is_data_object(icon):
         svg = icon.svg
     if not svg:
         return
 
-    w = xmlx.attr(svg, 'width')
-    h = xmlx.attr(svg, 'height')
+    w = svg.attr('width')
+    h = svg.attr('height')
 
     if not w or not h:
         gws.log.error(f'xml_icon: width and height required')
         return
 
     try:
-        w, wu = units.parse(w, default=gws.Uom.px)
-        h, hu = units.parse(h, default=gws.Uom.px)
+        w, wu = gws.lib.uom.parse(w, default=gws.Uom.px)
+        h, hu = gws.lib.uom.parse(h, default=gws.Uom.px)
     except ValueError:
         gws.log.error(f'xml_icon: invalid units: {w!r} {h!r}')
         return
 
-    if wu == 'mm':
-        w = units.mm_to_px(w, dpi)
-    if hu == 'mm':
-        h = units.mm_to_px(h, dpi)
+    if wu == gws.Uom.mm:
+        w = gws.lib.uom.mm_to_px(w, dpi)
+    if hu == gws.Uom.mm:
+        h = gws.lib.uom.mm_to_px(h, dpi)
 
     return svg, w, h
 
 
-def _icon_size_position(geom, sv, width, height):
+def _icon_size_and_position(geom, sv, width, height) -> tuple[int, int, int, int]:
     c = geom.centroid
     return (
         int(c.x - width / 2),
         int(c.y - height / 2),
-        width,
-        height)
+        int(width),
+        int(height))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -478,3 +466,17 @@ def _add_paint_atts(atts, sv, prefix=''):
         v = sv.get(prefix + 'stroke_' + k)
         if v:
             atts['stroke-' + k] = v
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# misc
+
+def _slope(a: gws.Point, b: gws.Point) -> float:
+    # slope between two points
+    dx = b[0] - a[0]
+    dy = b[1] - a[1]
+
+    if dx == 0:
+        dx = 0.01
+
+    return math.atan(dy / dx)

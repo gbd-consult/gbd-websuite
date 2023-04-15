@@ -53,13 +53,15 @@ def status(job: gws.lib.job.Job) -> core.StatusResponse:
         step = payload.get('step', 0)
         return int(min(100.0, step * 100.0 / num_steps))
 
+    _url_path_suffix = '/gws.pdf'
+
     return core.StatusResponse(
         jobUid=job.uid,
         state=job.state,
         progress=_progress(),
         stepType=payload.get('stepType', ''),
         stepName=payload.get('stepName', ''),
-        url=gws.action_url_path('printerResult', jobUid=job.uid, projectUid=payload.get('projectUid'))
+        url=gws.action_url_path('printerResult', jobUid=job.uid, projectUid=payload.get('projectUid')) + _url_path_suffix
     )
 
 
@@ -207,7 +209,7 @@ class _Worker:
             if not layer or not layer.canRenderBox:
                 return
             return gws.MapRenderInputPlane(
-                type=gws.MapRenderInputPlaneType.image_layer,
+                type=gws.MapRenderInputPlaneType.imageLayer,
                 layer=layer,
                 opacity=opacity,
                 style=style,
@@ -218,7 +220,7 @@ class _Worker:
             if not layer or not layer.canRenderSvg:
                 return
             return gws.MapRenderInputPlane(
-                type=gws.MapRenderInputPlaneType.svg_layer,
+                type=gws.MapRenderInputPlaneType.svgLayer,
                 layer=layer,
                 opacity=opacity,
                 style=style)

@@ -91,7 +91,7 @@ _GetBoxFn = t.Callable[[gws.Bounds, float, float], bytes]
 
 
 def mpx_raster_render(layer: gws.ILayer, lri: gws.LayerRenderInput):
-    if lri.type == 'box':
+    if lri.type == gws.LayerRenderInputType.box:
 
         uid = layer.uid
         if not layer.cache:
@@ -103,7 +103,7 @@ def mpx_raster_render(layer: gws.ILayer, lri: gws.LayerRenderInput):
         content = generic_render_box(layer, lri, get_box)
         return gws.LayerRenderOutput(content=content)
 
-    if lri.type == 'xyz':
+    if lri.type == gws.LayerRenderInputType.xyz:
         content = gws.gis.mpx.wmts_request(
             layer.uid,
             lri.x,
