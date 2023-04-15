@@ -28,6 +28,9 @@ Options:
 
     -only <pattern>
         a regex pattern to use only specific demos
+
+    -out <path>
+        target json path
 """
 
 
@@ -94,7 +97,11 @@ def main(args):
 
     # all done!
 
-    print(json.dumps(config, indent=4, ensure_ascii=False))
+    res = json.dumps(config, indent=4, ensure_ascii=False)
+    if args.get('out'):
+        cli.write_file(args.get('out'), res)
+    else:
+        print(res)
 
 
 def error_lines(src, err):
