@@ -46,12 +46,24 @@ def handle_request(environ) -> gws.IWebResponder:
     try:
         try:
             req.parse_input()
-            return req.apply_middleware()
+            gws.log.if_debug(_debug_repr, 'REQUEST_BEGIN:', req.params)
+            res = req.apply_middleware()
+            gws.log.if_debug(_debug_repr, 'REQUEST_END:', res)
+            return res
         except gws.base.web.error.HTTPException as exc:
             return handle_error(req, exc)
     except:
         gws.log.exception()
         return req.error_responder(gws.base.web.error.InternalServerError())
+
+
+def _debug_repr(prefix, s):
+    s = repr(gws.to_dict(s))
+    m = 400
+    n = len(s)
+    if n <= m:
+        return prefix + ': ' + s
+    return prefix + ': ' + s[:m] + ' [...' + str(n - m) + ' more]'
 
 
 def handle_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPException) -> gws.IWebResponder:

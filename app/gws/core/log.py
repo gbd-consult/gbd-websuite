@@ -11,6 +11,7 @@ class Level:
     CRITICAL = 50
     ERROR = 40
     WARN = 30
+    WARNING = 30
     INFO = 20
     DEBUG = 10
     NOTSET = 0
@@ -38,7 +39,7 @@ def error(msg: str, *args, **kwargs):
 
 
 def warning(msg: str, *args, **kwargs):
-    _raw(Level.WARN, msg, args, kwargs)
+    _raw(Level.WARNING, msg, args, kwargs)
 
 
 def info(msg: str, *args, **kwargs):
@@ -57,6 +58,18 @@ def exception(msg: str = '', *args, **kwargs):
         _raw(Level.DEBUG, 'EXCEPTION :: ' + s)
 
 
+def if_debug(fn, *args):
+    """If debugging, apply the function to args and log the result."""
+
+    if Level.DEBUG < _CURLEVEL:
+        return
+    try:
+        msg = fn(*args)
+    except Exception as exc:
+        msg = repr(exc)
+    _raw(Level.DEBUG, msg)
+
+
 ##
 
 
@@ -67,7 +80,7 @@ _OUT = sys.stdout
 _PREFIX = {
     Level.CRITICAL: 'CRITICAL',
     Level.ERROR: 'ERROR',
-    Level.WARN: 'WARN',
+    Level.WARNING: 'WARNING',
     Level.INFO: 'INFO',
     Level.DEBUG: 'DEBUG',
 }

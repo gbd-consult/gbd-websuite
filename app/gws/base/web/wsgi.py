@@ -21,6 +21,7 @@ class Responder(gws.IWebResponder):
             self._wz = kwargs['wz']
         else:
             self._wz = werkzeug.wrappers.Response(**kwargs)
+        self.response = kwargs.get('response')
         self.status = self._wz.status_code
 
     def send_response(self, environ, start_response):
