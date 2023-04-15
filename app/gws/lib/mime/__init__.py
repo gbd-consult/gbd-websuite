@@ -64,6 +64,10 @@ _common_extensions = {
     'txt': TXT,
     'xml': XML,
     'zip': ZIP,
+
+    'doc': 'application/msword',
+    'xls': 'application/vnd.ms-excel',
+    'ppt': 'application/vnd.ms-powerpoint',
 }
 
 _aliases = {
@@ -80,6 +84,10 @@ _aliases = {
     'image/jpg': JPEG,
     'text/xhmtl': HTML,
     'text/xml': XML,
+
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'application/msword',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'application/vnd.ms-powerpoint',
 }
 
 
@@ -128,8 +136,8 @@ def for_path(path: str) -> str:
 
 
 def extension_for(mt) -> t.Optional[str]:
-    for ext, t in _common_extensions.items():
-        if t == mt:
+    for ext, rt in _common_extensions.items():
+        if rt == mt:
             return ext
     s = mimetypes.guess_extension(mt)
     if s:
