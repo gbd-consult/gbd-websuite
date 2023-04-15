@@ -361,7 +361,6 @@ export interface IFeature {
     uid: string;
 
     attributes: Dict;
-    editedAttributes: Dict;
     category: string;
     views: Dict;
     layer?: IFeatureLayer;
@@ -385,7 +384,11 @@ export interface IFeature {
 
     getProps(depth?: number): api.core.FeatureProps;
     getAttribute(name: string, defaultValue?): any;
-    getEditedAttribute(name: string, defaultValue?): any;
+
+    editAttribute(name: string, newValue);
+    currentAttributes(): Dict;
+    commitEdits();
+    resetEdits();
 
     setProps(props: api.core.FeatureProps): IFeature;
     setAttributes(attributes: Dict): IFeature;
@@ -444,6 +447,8 @@ export interface IModel {
     canDelete: boolean;
     canRead: boolean;
     canWrite: boolean;
+    supportsKeywordSearch: boolean;
+    supportsGeometrySearch: boolean;
     fields: Array<IModelField>;
     geometryCrs: string
     geometryName: string;

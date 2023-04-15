@@ -71,17 +71,17 @@ class Object(gws.Node, gws.IFinder):
         has_param = False
 
         if search.keyword:
-            if not self.supportsKeyword or not self.withKeyword:
+            if not self.supportsKeywordSearch or not self.withKeyword:
                 return False
             has_param = True
 
         if search.shape:
-            if not self.supportsGeometry or not self.withGeometry:
+            if not self.supportsGeometrySearch or not self.withGeometry:
                 return False
             has_param = True
 
         if search.ogcFilter:
-            if not self.supportsFilter or not self.withFilter:
+            if not self.supportsFilterSearch or not self.withFilter:
                 return False
             has_param = True
 

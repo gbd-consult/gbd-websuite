@@ -1,12 +1,5 @@
 import gws
-import gws.base.database.model
-import gws.lib.sa as sa
-
 import gws.types as t
-
-
-class ErrorValue:
-    pass
 
 
 class Relation(gws.Data):
@@ -30,36 +23,21 @@ class Props(gws.Props):
 class Config(gws.ConfigWithAccess):
     name: str
     title: t.Optional[str]
+
     isPrimaryKey: bool = False
+    isRequired: bool = False
 
     values: t.Optional[list[gws.ext.config.modelValue]]
     validators: t.Optional[list[gws.ext.config.modelValidator]]
 
     widget: t.Optional[gws.ext.config.modelWidget]
-    #
-    # relation: t.Optional[FieldRelationConfig]
-    # relations: t.Optional[list[FieldRelationConfig]]
-    #
-    # foreignKey: t.Optional[FieldNameTypeConfig]
-    # discriminatorKey: t.Optional[FieldNameTypeConfig]
-    # link: t.Optional[FieldLinkConfig]
-    #
-    # filePath: t.Optional[str]
-    #
-    # value: t.Optional[FieldValueConfig]
-    # validators: t.Optional[list[ValidatorConfig]]
-    #
-    # geometryType: t.Optional[str]
-    #
-    # errorMessages: t.Optional[dict]
-
-    # permissions: t.Optional[FieldPermissions]
-    # textSearch: t.Optional[FieldTextSearchConfig]
 
 
 ##
 
 class Object(gws.Node, gws.IModelField):
+    _validatorsIndex: dict[gws.Access, list[gws.IModelValidator]]
+    _valuesIndex: dict[tuple[bool, gws.Access], gws.IModelValue]
 
     def configure(self):
         p = self.permissions.get(gws.Access.use)
@@ -70,45 +48,76 @@ class Object(gws.Node, gws.IModelField):
         self.name = self.cfg('name')
         self.title = self.cfg('title', default=self.name)
         self.isPrimaryKey = self.cfg('isPrimaryKey')
+        self.isRequired = self.cfg('isRequired')
+
+        self.values = []
+        self.validators = []
+        self.widget = None
 
         self.configure_values()
         self.configure_validators()
         self.configure_widget()
 
     def configure_values(self):
-
-        self.fixedValues = {}
-        self.defaultValues = {}
-
-        for cfg in self.cfg('values', default=[]):
-            v = self.root.create(gws.ext.object.modelValue, config=cfg)
-            d = self.defaultValues if v.isDefault else self.fixedValues
-            if v.forRead:
-                d[gws.Access.read] = v
-            if v.forWrite:
-                d[gws.Access.write] = v
-            if v.forCreate:
-                d[gws.Access.create] = v
+        p = self.cfg('values')
+        if p:
+            self.values = self.create_children(gws.ext.object.modelValue, p)
+            return True
 
     def configure_validators(self):
-
-        self.validators = {
-            gws.Access.write: [],
-            gws.Access.create: [],
-        }
-
-        for cfg in self.cfg('validators', default=[]):
-            v = self.root.create(gws.ext.object.modelValidator, config=cfg)
-            if v.forWrite:
-                self.validators[gws.Access.write].append(v)
-            if v.forCreate:
-                self.validators[gws.Access.create].append(v)
+        p = self.cfg('validators')
+        if p:
+            self.validators = self.create_children(gws.ext.object.modelValidator, p)
+            return True
 
     def configure_widget(self):
         p = self.cfg('widget')
         if p:
             self.widget = self.create_child(gws.ext.object.modelWidget, p)
             return True
+
+    def post_configure(self):
+        self._create_validators_index()
+        self._create_mandatory_validators()
+        self._create_values_index()
+
+    def _create_validators_index(self):
+        self._validatorsIndex = {gws.Access.write: [], gws.Access.create: []}
+
+        for vd in self.validators:
+            if vd.forWrite:
+                self._validatorsIndex[gws.Access.write].append(vd)
+            if vd.forCreate:
+                self._validatorsIndex[gws.Access.create].append(vd)
+
+    def _create_mandatory_validators(self):
+        vd = self.root.create_shared(
+            gws.ext.object.modelValidator,
+            type='format',
+            uid='gws.base.model.field.default_validator_format')
+        self._validatorsIndex[gws.Access.write].append(vd)
+        self._validatorsIndex[gws.Access.create].append(vd)
+
+        if not self.isRequired:
+            return
+
+        vd = self.root.create_shared(
+            gws.ext.object.modelValidator,
+            type='required',
+            uid='gws.base.model.field.default_validator_required')
+        self._validatorsIndex[gws.Access.write].append(vd)
+        self._validatorsIndex[gws.Access.create].append(vd)
+
+    def _create_values_index(self):
+        self._valuesIndex = {}
+
+        for va in self.values:
+            if va.forRead:
+                self._valuesIndex[va.isDefault, gws.Access.read] = va
+            if va.forWrite:
+                self._valuesIndex[va.isDefault, gws.Access.write] = va
+            if va.forCreate:
+                self._valuesIndex[va.isDefault, gws.Access.create] = va
 
     ##
 
@@ -184,26 +193,27 @@ class Object(gws.Node, gws.IModelField):
                 props.attributes[self.name] = val
 
     def compute(self, feature, access, user, **kwargs):
-        val = self.fixedValues.get(access)
+        val = self._valuesIndex.get((False, access))
         if val:
             feature.attributes[self.name] = val.compute(feature, self, user, **kwargs)
             return
         if self.name in feature.attributes:
             return
-        val = self.defaultValues.get(access)
+        val = self._valuesIndex.get((True, access))
         if val:
             feature.attributes[self.name] = val.compute(feature, self, user, **kwargs)
             return
 
     def validate(self, feature, access, user, **kwargs):
-        for v in self.validators[access]:
-            ok = v.validate(feature, self, user, **kwargs)
+        for vd in self._validatorsIndex[access]:
+            ok = vd.validate(feature, self, user, **kwargs)
             if not ok:
                 feature.errors.append(gws.ModelValidationError(
                     fieldName=self.name,
-                    message=v.message,
+                    message=vd.message,
                 ))
                 return False
+
         return True
 
     ##
@@ -213,66 +223,3 @@ class Object(gws.Node, gws.IModelField):
 
     def orm_properties(self):
         return {}
-
-
-##
-
-_SCALAR_TYPES = {
-    gws.AttributeType.bool: sa.Boolean,
-    gws.AttributeType.date: sa.Date,
-    gws.AttributeType.datetime: sa.DateTime,
-    gws.AttributeType.float: sa.Float,
-    gws.AttributeType.int: sa.Integer,
-    gws.AttributeType.str: sa.String,
-    gws.AttributeType.time: sa.Time,
-    gws.AttributeType.geometry: sa.geo.Geometry,
-}
-
-
-class Scalar(Object):
-    def columns(self):
-        kwargs = {}
-        if self.isPrimaryKey:
-            kwargs['primary_key'] = True
-        # if self.value.serverDefault:
-        #     kwargs['server_default'] = sa.text(self.value.serverDefault)
-        col = sa.Column(self.name, _SCALAR_TYPES[self.attributeType], **kwargs)
-        return [col]
-
-
-##
-
-
-##
-
-
-# @TODO this should be populated dynamically from available gws.ext.object.modelField types
-
-_DEFAULT_FIELD_TYPES = {
-    gws.AttributeType.str: 'text',
-    gws.AttributeType.int: 'integer',
-    gws.AttributeType.date: 'date',
-
-    # gws.AttributeType.bool: 'bool',
-    # gws.AttributeType.bytes: 'bytes',
-    # gws.AttributeType.datetime: 'datetime',
-    # gws.AttributeType.feature: 'feature',
-    # gws.AttributeType.featurelist: 'featurelist',
-    gws.AttributeType.float: 'float',
-    # gws.AttributeType.floatlist: 'floatlist',
-    gws.AttributeType.geometry: 'geometry',
-    # gws.AttributeType.intlist: 'intlist',
-    # gws.AttributeType.strlist: 'strlist',
-    # gws.AttributeType.time: 'time',
-}
-
-
-def config_from_column(column: gws.ColumnDescription) -> gws.Config:
-    typ = _DEFAULT_FIELD_TYPES.get(column.type)
-    if not typ:
-        raise gws.Error(f'cannot find suitable field type for column {column.name!r}:{column.type!r}')
-    return gws.Config(
-        type=typ,
-        name=column.name,
-        isPrimaryKey=column.isPrimaryKey,
-    )

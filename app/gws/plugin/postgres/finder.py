@@ -31,9 +31,9 @@ class Object(gws.base.search.finder.Object):
         # it's difficult to decide if we support keyword/geometry search,
         # because different models can have different rules
 
-        self.supportsKeyword = True
-        self.supportsGeometry = True
-        self.supportsFilter = True
+        self.supportsKeywordSearch = True
+        self.supportsGeometrySearch = True
+        self.supportsFilterSearch = True
 
     def configure_provider(self):
         self.provider = t.cast(provider.Object, gws.base.database.provider.get_for(self, ext_type='postgres'))

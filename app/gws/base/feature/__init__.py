@@ -18,6 +18,13 @@ class Feature(gws.Object, gws.IFeature):
         self.layerName = ''
         self.isNew = False
 
+    def __repr__(self):
+        try:
+            uid = str(self.model.uid) + ':' + str(self.attributes.get(self.model.keyName))
+        except:
+            uid = '?'
+        return f'<feature uid={uid}>'
+
     def props(self, user):
         return self.model.feature_props(self, user)
 
@@ -28,6 +35,20 @@ class Feature(gws.Object, gws.IFeature):
     def shape(self):
         if self.model.geometryName:
             return self.attributes.get(self.model.geometryName)
+
+    def attributes_for_view(self):
+        # SAFETY: do not return any attributes in the view mode,
+        # except uid and geometry
+        atts = {}
+
+        s = self.model.keyName
+        if s:
+            atts[s] = self.attributes.get(s)
+        s = self.model.geometryName
+        if s:
+            atts[s] = self.attributes.get(s)
+
+        return atts
 
     def attr(self, name, default=None):
         return self.attributes.get(name, default)

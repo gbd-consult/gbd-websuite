@@ -136,6 +136,7 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('mapGetFeatures')
     def api_get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
+
         fprops = self._get_features(req, p)
         return GetFeaturesResponse(features=fprops)
 
@@ -236,6 +237,8 @@ class Object(gws.base.action.Object):
 
         gws.time_start(f'GET_FEATURES layer={p.layerUid}')
         features = layer.get_features(search, user=req.user, views=p.views, model_uid=p.modelUid)
+        for f in features:
+            f.attributes = f.attributes_for_view()
         gws.time_end()
 
         return [gws.props(f, req.user, layer) for f in features]

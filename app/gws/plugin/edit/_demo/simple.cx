@@ -1,0 +1,67 @@
+@comment
+
+This demo shows two postgres layers (see `data.sql` for their content),
+with editing enabled (`permissions.edit`).
+
+Since no models are explicitly configured,
+the system creates default editable models,
+which only contain basic widgets and validations.
+
+@end
+
+projects+ {
+    title "Edit: simple features"
+    metadata.abstract "Edit features from postgres tables."
+
+    api.actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 30000
+        zoom.maxScale  1000000
+    }
+
+
+    map.layers+ {
+        title "POIs"
+        type "postgres"
+        tableName "edit.poi_simple"
+
+        permissions.edit 'allow all'
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text """{{name}} ({{id}})"""
+        }
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text """{{name}}"""
+        }
+    }
+
+    map.layers+ {
+        title "Districts"
+        type "postgres"
+        tableName "edit.districts"
+
+        permissions.edit 'allow all'
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text """{{name}}"""
+        }
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text """{{name}}"""
+        }
+    }
+
+    {demo_osm_background}
+}

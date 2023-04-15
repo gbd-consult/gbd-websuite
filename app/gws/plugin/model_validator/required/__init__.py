@@ -1,4 +1,4 @@
-"""Static value."""
+"""Validator for required values."""
 
 import gws
 import gws.base.model.validator

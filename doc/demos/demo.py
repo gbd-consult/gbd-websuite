@@ -115,12 +115,15 @@ START_PROJECT = 'projects+ {'
 
 
 def read_config_file(path):
-    text = cli.read_file(path).strip()
-    if text.startswith(START_PROJECT):
+    text = cli.read_file(path)
+    if START_PROJECT in text:
         # if this is a project config, inject an uid from its path
         text = text.lstrip()
         uid = path_to_uid(path)
-        text = START_PROJECT + f'\n    uid "{uid}"\n' + text[len(START_PROJECT):]
+        text = text.replace(
+            START_PROJECT,
+            START_PROJECT + f' uid "{uid}"\n'
+        )
     return text + '\n\n'
 
 

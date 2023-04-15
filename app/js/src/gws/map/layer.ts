@@ -419,6 +419,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
 
     forceUpdate() {
         this.lastBbox = '';
+        this.loadState = '';
         if (this.oLayer && this.oLayer.getSource())
             this.oLayer.getSource().changed()
     }

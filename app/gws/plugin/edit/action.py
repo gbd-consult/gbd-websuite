@@ -105,8 +105,6 @@ class Object(gws.base.action.Object):
             features = model.find_features(search, req.user)
             props.extend(self._feature_props(req, p, features))
 
-        gws.log.debug(f'editQueryFeatures: {p=} FOUND {len(props)}')
-
         return FeatureListResponse(features=props)
 
     @gws.ext.command.api('editWriteFeature')

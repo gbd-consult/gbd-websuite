@@ -1,3 +1,5 @@
+"""Base model."""
+
 import gws
 import gws.base.feature
 import gws.types as t
@@ -18,7 +20,7 @@ class Config(gws.ConfigWithAccess):
     fields: list[gws.ext.config.modelField]
     filter: t.Optional[str]
     sort: t.Optional[list[SortConfig]]
-    loadingStrategy: t.Optional[gws.FeatureLoadingStrategy]
+    loadingStrategy: gws.FeatureLoadingStrategy = gws.FeatureLoadingStrategy.all
     """loading strategy for features"""
 
 
@@ -27,6 +29,8 @@ class Props(gws.Props):
     canDelete: bool
     canRead: bool
     canWrite: bool
+    supportsKeywordSearch: bool
+    supportsGeometrySearch: bool
     fields: list[gws.ext.props.modelField]
     geometryCrs: t.Optional[str]
     geometryName: t.Optional[str]
@@ -73,6 +77,8 @@ class Object(gws.Node, gws.IModel):
             canDelete=user.can_delete(self),
             canRead=user.can_read(self),
             canWrite=user.can_write(self),
+            supportsKeywordSearch=any(f.supportsKeywordSearch for f in self.fields),
+            supportsGeometrySearch=any(f.supportsGeometrySearch for f in self.fields),
             fields=self.fields,
             geometryCrs=self.geometryCrs.epsg if self.geometryCrs else None,
             geometryName=self.geometryName,
@@ -153,19 +159,3 @@ class Object(gws.Node, gws.IModel):
     def compute_values(self, feature, access, user, **kwargs):
         for f in self.fields:
             f.compute(feature, access, user, **kwargs)
-
-
-##
-
-def locate(
-        models: list[gws.IModel],
-        user: gws.IUser = None,
-        access: gws.Access = None,
-        uid: str = None
-) -> t.Optional[gws.IModel]:
-    for model in models:
-        if user and access and not user.can(access, model):
-            continue
-        if uid and model.uid != uid:
-            continue
-        return model

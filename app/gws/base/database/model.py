@@ -43,7 +43,7 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         with self.provider.session() as sess:
             desc = sess.describe(self.tableName)
         for column in desc.columns.values():
-            cfg = gws.base.model.field.config_from_column(column)
+            cfg = gws.base.model.field_config_from_column(column)
             self.fields.append(
                 self.create_child(gws.ext.object.modelField, config=gws.merge(cfg, _model=self)))
         return True

@@ -7,7 +7,7 @@ import gws.gis.source
 class Object(gws.base.search.finder.Object):
     """Generic OWS Finder."""
 
-    supportsGeometry = True
+    supportsGeometrySearch = True
     provider: gws.IOwsProvider
     sourceLayers: list[gws.SourceLayer]
 

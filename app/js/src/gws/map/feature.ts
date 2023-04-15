@@ -9,7 +9,6 @@ export class Feature implements types.IFeature {
     uid: string = '';
 
     attributes: types.Dict = {};
-    editedAttributes: types.Dict = {};
     category: string = '';
     views: types.Dict = {};
     layer?: types.IFeatureLayer = null;
@@ -21,6 +20,8 @@ export class Feature implements types.IFeature {
 
     model: types.IModel;
     map: types.IMapManager;
+
+    _editedAttributes: types.Dict = {};
 
     constructor(model: types.IModel, map: types.IMapManager) {
         this.map = map;
@@ -46,7 +47,7 @@ export class Feature implements types.IFeature {
 
     setAttributes(attributes) {
         this.attributes = attributes || {};
-        this.editedAttributes = {};
+        this._editedAttributes = {};
 
         let uid = this.attributes[this.keyName];
         if (uid)
@@ -83,7 +84,7 @@ export class Feature implements types.IFeature {
     }
 
     get isDirty() {
-        return !lib.isEmpty(this.editedAttributes);
+        return !lib.isEmpty(this._editedAttributes);
     }
 
     getProps(depth) {
@@ -96,10 +97,30 @@ export class Feature implements types.IFeature {
         return defaultValue;
     }
 
-    getEditedAttribute(name, defaultValue = null) {
-        if (this.editedAttributes && (name in this.editedAttributes))
-            return this.editedAttributes[name];
-        return this.getAttribute(name, defaultValue);
+    //
+
+    editAttribute(name: string, newValue) {
+        let currValue = this.attributes[name];
+        if (currValue === newValue)
+            delete this._editedAttributes[name];
+        else
+            this._editedAttributes[name] = newValue;
+    }
+
+    currentAttributes() {
+        return {
+            ...this.attributes,
+            ...this._editedAttributes,
+        }
+    }
+
+    commitEdits() {
+        this.attributes = this.currentAttributes();
+        this._editedAttributes = {};
+    }
+
+    resetEdits() {
+        this._editedAttributes = {};
     }
 
     //

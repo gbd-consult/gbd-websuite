@@ -1,20 +1,20 @@
 """Integer field."""
 
 import gws
-import gws.base.model.field
+import gws.base.model.scalar_field
 
 gws.ext.new.modelField('integer')
 
 
-class Config(gws.base.model.field.Config):
+class Config(gws.base.model.scalar_field.Config):
     pass
 
 
-class Props(gws.base.model.field.Props):
+class Props(gws.base.model.scalar_field.Props):
     pass
 
 
-class Object(gws.base.model.field.Scalar):
+class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.int
 
     def configure_widget(self):

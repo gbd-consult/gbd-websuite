@@ -203,6 +203,7 @@ class AccessConfig:
     write: Optional[AclSpec]
     create: Optional[AclSpec]
     delete: Optional[AclSpec]
+    edit: Optional[AclSpec]
 
 
 class ConfigWithAccess(Config):
@@ -1121,6 +1122,8 @@ class IFeature(IObject, Protocol):
 
     def attr(self, name: str, default=None) -> Any: ...
 
+    def attributes_for_view(self) -> dict: ...
+
     def to_geojson(self, user: 'IUser') -> dict: ...
 
     def to_svg(self, view: 'MapView', label: str = None, style: 'IStyle' = None) -> list[IXmlElement]: ...
@@ -1182,6 +1185,7 @@ class IModelValidator(INode, Protocol):
 
 class IModelValue(INode, Protocol):
     isDefault: bool
+
     forRead: bool
     forWrite: bool
     forCreate: bool
@@ -1198,12 +1202,15 @@ class IModelField(INode, Protocol):
 
     widget: Optional['IModelWidget'] = None
 
-    fixedValues: dict[Access, 'IModelValue']
-    defaultValues: dict[Access, 'IModelValue']
-
-    validators: dict[Access, list['IModelValidator']]
+    values: list['IModelValue']
+    validators: list['IModelValidator']
 
     isPrimaryKey: bool
+    isRequired: bool
+
+    supportsFilterSearch: bool = False
+    supportsGeometrySearch: bool = False
+    supportsKeywordSearch: bool = False
 
     model: 'IModel'
 
@@ -1663,9 +1670,9 @@ class SearchArgs(Data):
 
 
 class IFinder(INode, Protocol):
-    supportsFilter: bool = False
-    supportsGeometry: bool = False
-    supportsKeyword: bool = False
+    supportsFilterSearch: bool = False
+    supportsGeometrySearch: bool = False
+    supportsKeywordSearch: bool = False
 
     withFilter: bool
     withGeometry: bool

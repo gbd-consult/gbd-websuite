@@ -20,7 +20,7 @@ class Config(gws.base.search.finder.Config):
 
 
 class Object(gws.base.ows.finder.Object):
-    supportsGeometry = True
+    supportsGeometrySearch = True
     provider: provider.Object
 
     def configure_provider(self):

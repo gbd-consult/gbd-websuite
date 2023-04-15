@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.database.model
-import gws.base.model.field
+import gws.base.model.scalar_field
 import gws.lib.sa as sa
 
 import gws.types as t
@@ -24,20 +24,22 @@ class Search(gws.Data):
     caseSensitive: bool = False
 
 
-class Config(gws.base.model.field.Config):
+class Config(gws.base.model.scalar_field.Config):
     textSearch: t.Optional[Search]
 
 
-class Props(gws.base.model.field.Props):
+class Props(gws.base.model.scalar_field.Props):
     pass
 
 
-class Object(gws.base.model.field.Scalar):
+class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.str
     textSearch: t.Optional[Search]
 
     def configure(self):
         self.textSearch = self.cfg('textSearch')
+        if self.textSearch:
+            self.supportsKeywordSearch = True
 
     def configure_widget(self):
         if not super().configure_widget():

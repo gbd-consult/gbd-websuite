@@ -6,21 +6,21 @@ specific locale conversions are left to the client.
 """
 
 import gws
-import gws.base.model.field
+import gws.base.model.scalar_field
 import gws.lib.date
 
 gws.ext.new.modelField('date')
 
 
-class Config(gws.base.model.field.Config):
+class Config(gws.base.model.scalar_field.Config):
     pass
 
 
-class Props(gws.base.model.field.Props):
+class Props(gws.base.model.scalar_field.Props):
     pass
 
 
-class Object(gws.base.model.field.Scalar):
+class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.date
 
     def configure_widget(self):

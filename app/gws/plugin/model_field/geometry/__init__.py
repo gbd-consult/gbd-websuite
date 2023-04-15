@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.database.model
-import gws.base.model.field
+import gws.base.model.scalar_field
 import gws.base.shape
 import gws.gis.crs
 import gws.lib.sa as sa
@@ -12,16 +12,16 @@ import gws.types as t
 gws.ext.new.modelField('geometry')
 
 
-class Config(gws.base.model.field.Config):
+class Config(gws.base.model.scalar_field.Config):
     geometryType: gws.GeometryType
     crs: gws.CrsName
 
 
-class Props(gws.base.model.field.Props):
+class Props(gws.base.model.scalar_field.Props):
     geometryType: gws.GeometryType
 
 
-class Object(gws.base.model.field.Scalar):
+class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.geometry
 
     geometryType: gws.GeometryType
@@ -30,6 +30,7 @@ class Object(gws.base.model.field.Scalar):
     def configure(self):
         self.geometryType = self.cfg('geometryType')
         self.geometryCrs = gws.gis.crs.get(self.cfg('crs'))
+        self.supportsGeometrySearch = True
 
     def configure_widget(self):
         if not super().configure_widget():

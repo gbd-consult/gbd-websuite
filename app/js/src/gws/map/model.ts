@@ -17,6 +17,8 @@ export class ModelRegistry implements types.IModelRegistry {
             canDelete: false,
             canRead: false,
             canWrite: false,
+            supportsKeywordSearch: false,
+            supportsGeometrySearch: false,
             fields: [],
             geometryName: 'geometry',
             keyName: 'uid',
@@ -77,6 +79,8 @@ export class Model implements types.IModel {
     canDelete: boolean;
     canRead: boolean;
     canWrite: boolean;
+    supportsKeywordSearch: boolean;
+    supportsGeometrySearch: boolean;
     fields: Array<types.IModelField>;
     geometryCrs: string
     geometryName: string;
@@ -98,6 +102,8 @@ export class Model implements types.IModel {
         this.canDelete = props.canDelete;
         this.canRead = props.canRead;
         this.canWrite = props.canWrite;
+        this.supportsKeywordSearch = props.supportsKeywordSearch;
+        this.supportsGeometrySearch = props.supportsGeometrySearch;
         this.geometryCrs = props.geometryCrs;
         this.geometryName = props.geometryName;
         this.geometryType = props.geometryType;
