@@ -27,22 +27,31 @@ class Object(types.IObject):
 class Node(Object, types.INode):
     def initialize(self, config):
         self.config = config
+        self.permissions = self._confure_permissions()
+        _super_invoke(self, 'pre_configure')
+        _super_invoke(self, 'configure')
 
-        self.permissions = {}
+    def _confure_permissions(self):
+        perms = {}
 
-        p = util.parse_acl(self.cfg('access'))
+        p = self.cfg('access')
         if p:
-            self.permissions[types.Access.use] = p
+            perms[types.Access.use] = util.parse_acl(p)
+
         p = self.cfg('permissions')
         if p:
             for k, v in vars(p).items():
-                self.permissions[t.cast(gws.Access, k)] = util.parse_acl(v)
-        p = self.permissions.get(gws.Access.use)
-        if p:
-            self.permissions.setdefault(gws.Access.read, p)
+                a = util.parse_acl(v)
+                if k == 'edit':
+                    perms[gws.Access.write] = perms[gws.Access.create] = perms[gws.Access.delete] = a
+                else:
+                    perms[t.cast(gws.Access, k)] = a
 
-        _super_invoke(self, 'pre_configure')
-        _super_invoke(self, 'configure')
+        p = perms.get(gws.Access.use)
+        if p:
+            perms.setdefault(gws.Access.read, p)
+
+        return perms
 
     def cfg(self, key: str, default=None):
         val = util.get(self.config, key)
@@ -133,12 +142,6 @@ class Root(types.IRoot):
         return obj
 
     def create_shared(self, classref, config=None, **kwargs):
-        if not config:
-            cls = self.specs.get_class(classref)
-            if not cls:
-                raise error.Error(f'class {classref!r} not found')
-            config = dict(uid=f'{cls.__module__}.{cls.__name__}.SHARED.VOID')
-
         config = _to_config(config, kwargs)
 
         uid = config.get('uid')
