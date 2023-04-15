@@ -40,8 +40,11 @@ class Environment:
         if errorhandler:
             def err(exc, pos):
                 try:
-                    errorhandler(exc, self.paths[pos[0]], pos[1], self)
+                    ok = errorhandler(exc, self.paths[pos[0]], pos[1], self)
                 except:
+                    self.haserr = True
+                    raise
+                if not ok:
                     self.haserr = True
                     raise
         else:

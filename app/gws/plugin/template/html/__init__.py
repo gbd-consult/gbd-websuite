@@ -28,7 +28,7 @@ class Object(gws.base.template.Object):
     def render(self, tri):
         self.notify(tri, 'begin_print')
 
-        html, engine = self.do_render(tri, self.text, self.path, self.prepare_args(tri.args))
+        html, engine = self.do_render(tri, self.text, self.path, tri.args)
         res = self.finalize(tri, html, engine)
 
         self.notify(tri, 'end_print')
@@ -40,28 +40,37 @@ class Object(gws.base.template.Object):
         # @TODO cache compiled templates
 
         args = self.prepare_args(args)
+        args['__renderUid'] = gws.random_string(8)
 
         engine = Engine(self, tri)
 
         if not text:
             text = gws.read_file(self.path)
 
-        if self.root.app.developer_option('template.save_compiled') and path:
+        if self.root.app.developer_option('template.save_compiled'):
             gws.write_file(
-                gws.ensure_dir(f'{gws.VAR_DIR}/debug') + '/template_' + gws.to_uid(path),
+                gws.ensure_dir(f'{gws.VAR_DIR}/debug') + '/template_' + gws.to_uid(path or text[:100]),
                 engine.translate(text, path=path))
 
         err = self.error_handler
         if self.root.app.developer_option('template.raise_errors'):
-            err = None
-        # err = None
+            err = self.debug_error_handler
 
         html = engine.render(text, path=path, args=args, error=err)
         return html, engine
 
     def error_handler(self, exc, path, line, env):
-        gws.log.warning(f'TEMPLATE ERROR: {self.uid}: {exc} IN {path}:{line}')
-        gws.log.exception()
+        rid = env.ARGS.get('__renderUid', '?')
+        gws.log.warning(f'TEMPLATE_ERROR: {self.uid}/{rid}: {exc} IN {path}:{line}')
+        return True
+
+    def debug_error_handler(self, exc, path, line, env):
+        rid = env.ARGS.get('__renderUid', '?')
+        gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: {exc} IN {path}:{line}')
+        for k, v in sorted(getattr(env, 'ARGS', {}).items()):
+            gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: ARGS {k}={v!r}')
+        gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: stop')
+        return False
 
     ##
 

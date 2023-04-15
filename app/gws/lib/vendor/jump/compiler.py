@@ -950,13 +950,18 @@ class Node:
             if not is_inline:
                 tp.add_raw_text('\n')
 
+    class CommandComment(Command):
+        def parse(self, tp, is_inline):
+            label = tp.command_label(is_inline)
+            tp.expect_end_of_command(is_inline)
+            text = tp.quoted_content(label, is_inline)
+
     class CommandQuote(Command):
         def parse(self, tp, is_inline):
             label = tp.command_label(is_inline)
             tp.expect_end_of_command(is_inline)
             text = tp.quoted_content(label, is_inline)
-            if self.cmd == 'quote':
-                tp.add_raw_text(text)
+            tp.add_raw_text(text)
 
     class CommandReturn(Command):
         def __init__(self, cmd, start_pos):
@@ -1037,6 +1042,7 @@ class Node:
 
         'break': CommandBreakContinue,
         'code': CommandCode,
+        'comment': CommandComment,
         'continue': CommandBreakContinue,
         'do': CommandDo,
         'each': CommandFor,
@@ -1049,7 +1055,7 @@ class Node:
         'print': CommandPrint,
         'quote': CommandQuote,
         'return': CommandReturn,
-        'skip': CommandQuote,
+        'skip': CommandComment,
         'with': CommandWith,
         'without': CommandWith,
     }
