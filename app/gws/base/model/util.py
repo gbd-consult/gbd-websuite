@@ -39,10 +39,11 @@ _DEFAULT_FIELD_TYPES = {
 }
 
 
-def field_config_from_column(column: gws.ColumnDescription) -> gws.Config:
+def field_config_from_column(column: gws.ColumnDescription) -> t.Optional[gws.Config]:
     typ = _DEFAULT_FIELD_TYPES.get(column.type)
     if not typ:
-        raise gws.Error(f'cannot find suitable field type for column {column.name!r}:{column.type!r}')
+        gws.log.warning(f'cannot find suitable field type for column {column.name!r}:{column.type!r}')
+        return
     return gws.Config(
         type=typ,
         name=column.name,

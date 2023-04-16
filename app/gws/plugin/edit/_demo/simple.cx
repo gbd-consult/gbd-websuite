@@ -20,7 +20,7 @@ projects+ {
 
     map {
         center {demo_point_duesseldorf_3857}
-        zoom.initScale 30000
+        zoom.initScale 150000
         zoom.maxScale  1000000
     }
 

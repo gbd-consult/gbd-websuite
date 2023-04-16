@@ -174,18 +174,18 @@ class GridProps(gws.Props):
 
 
 class Props(gws.Props):
-    model: t.Optional[gws.base.model.Props]
+    # style: t.Optional[gws.lib.style.Props]
+    clientOptions: ClientOptions
+    displayMode: str
     extent: t.Optional[gws.Extent]
     geometryType: t.Optional[gws.GeometryType]
+    grid: GridProps
     layers: t.Optional[list['Props']]
     loadingStrategy: gws.FeatureLoadingStrategy
     metadata: gws.lib.metadata.Props
+    model: t.Optional[gws.base.model.Props]
     opacity: t.Optional[float]
-    clientOptions: ClientOptions
     resolutions: t.Optional[list[float]]
-    displayMode: str
-    # style: t.Optional[gws.lib.style.Props]
-    grid: GridProps
     title: str = ''
     type: str
     uid: str

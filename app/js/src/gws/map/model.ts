@@ -6,13 +6,15 @@ import * as feature from './feature';
 
 
 export class ModelRegistry implements types.IModelRegistry {
-    mdict: { [uid: string]: Model };
+    models: Array<Model>;
+    index: { [uid: string]: Model };
     app: types.IApplication;
 
     constructor(app: types.IApplication) {
         this.app = app;
-        this.mdict = {};
-        this.mdict[''] = new Model(this, {
+        this.models = [];
+        this.index = {};
+        this.addModel({
             canCreate: false,
             canDelete: false,
             canRead: false,
@@ -24,36 +26,37 @@ export class ModelRegistry implements types.IModelRegistry {
             keyName: 'uid',
             loadingStrategy: api.core.FeatureLoadingStrategy.all,
             uid: '',
-        })
+        });
     }
 
 
     addModel(props: api.base.model.Props) {
-        this.mdict[props.uid] = new Model(this, props);
+        let m = new Model(this, props);
+        this.models.push(m);
+        this.index[m.uid] = m;
     }
 
     model(uid) {
-        return this.mdict[uid || ''];
+        return this.index[uid || ''];
     }
 
     defaultModel() {
-        return this.mdict[''];
+        return this.index[''];
     }
 
     modelForLayer(layer) {
-        for (let m of Object.values(this.mdict))
+        for (let m of this.models)
             if (m.layerUid === layer.uid)
                 return m
     }
 
     editableModels() {
-        let d: { [k: string]: types.IModel } = {}
-        for (let m of Object.values(this.mdict)) {
+        let d = [];
+        for (let m of this.models) {
             if (m.canCreate || m.canWrite || m.canDelete)
-                if (!d[m.layerUid])
-                    d[m.layerUid] = m;
+                d.push(m)
         }
-        return Object.values(d)
+        return d
     }
 
     featureFromProps(props) {

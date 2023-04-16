@@ -16,7 +16,7 @@ from . import caps, project
 class Config(gws.Config):
     path: t.Optional[gws.FilePath]
     """Qgis project file"""
-    db: t.Optional[str]
+    dbUid: t.Optional[str]
     """Qgis project database"""
     schema: t.Optional[str]
     """Qgis project schema"""
@@ -48,7 +48,7 @@ class Object(gws.Node, gws.IOwsProvider):
     def configure(self):
         self.source = project.Source(
             path=self.cfg('path'),
-            db=self.cfg('db'),
+            dbUid=self.cfg('dbUid'),
             schema=self.cfg('schema'),
             name=self.cfg('name'),
         )

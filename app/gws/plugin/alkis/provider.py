@@ -13,7 +13,7 @@ from .util.connection import AlkisConnection
 class Config(gws.Config):
     """Basic ALKIS configuration"""
 
-    db: str = '' 
+    dbUid: str = ''
     """database provider ID"""
     crs: gws.CrsName 
     """CRS for the ALKIS data"""

@@ -1053,7 +1053,7 @@ class SelectStatement(Data):
 
 
 class IDatabaseManager(INode, Protocol):
-    def provider(self, uid: str, ext_type: str): ...
+    def provider(self, uid: str): ...
 
     def first_provider(self, ext_type: str): ...
 
@@ -1081,13 +1081,14 @@ class IDatabaseProvider(IProvider, Protocol):
 
     def describe(self, table_name: str) -> DataSetDescription: ...
 
+    def table_bounds(self, table_name) -> Optional[Bounds]: ...
+
 
 class IDatabaseSession(Protocol):
     provider: 'IDatabaseProvider'
     saSession: 'sqlalchemy.orm.Session'
 
-    def __enter__(self) -> 'IDatabaseSession':
-        ...
+    def __enter__(self) -> 'IDatabaseSession': ...
 
     def begin(self): ...
 
@@ -1244,15 +1245,20 @@ class IModelField(INode, Protocol):
 
 
 class IModel(INode, Protocol):
-    fields: list['IModelField']
     keyName: str
+
     geometryName: str
     geometryType: Optional[GeometryType]
     geometryCrs: Optional['ICrs']
+
     loadingStrategy: 'FeatureLoadingStrategy'
+
+    fields: list['IModelField']
     templates: list['ITemplate']
 
     provider: 'IProvider'
+
+    def describe(self) -> Optional[DataSetDescription]: ...
 
     def field(self, name: str) -> Optional['IModelField']: ...
 

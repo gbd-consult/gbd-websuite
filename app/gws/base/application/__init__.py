@@ -42,7 +42,7 @@ class Config(gws.ConfigWithAccess):
     """global cache configuration"""
     client: t.Optional[gws.base.client.Config]
     """gws client configuration"""
-    db: t.Optional[gws.base.database.manager.Config]
+    database: t.Optional[gws.base.database.manager.Config]
     """database configuration"""
     developer: t.Optional[dict]
     """developer options"""
@@ -125,7 +125,7 @@ class Object(gws.Node, gws.IApplication):
         # - actions, client, web
         # - finally, projects
 
-        self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.cfg('db'))
+        self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.cfg('database'))
 
         # # helpers are always created, no matter configured or not
         # cnf = {c.get('type'): c for c in self.cfg('helpers', default=[])}

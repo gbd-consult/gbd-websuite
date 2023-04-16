@@ -220,7 +220,7 @@ export function readFile(file: File): Promise<Uint8Array> {
     });
 }
 
-export function downloadUrl(url, fileName, target) {
+export function downloadUrl(url: string, fileName: string, target: string = null) {
     let a = document.createElement('a');
     a.href = url;
     if (target)
@@ -229,4 +229,12 @@ export function downloadUrl(url, fileName, target) {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+}
+
+export function paramsToPath(params: object): string {
+    let s = [];
+    for (let [k, v] of Object.entries(params)) {
+        s.push(k + '/' + encodeURIComponent(v));
+    }
+    return s.join('/');
 }

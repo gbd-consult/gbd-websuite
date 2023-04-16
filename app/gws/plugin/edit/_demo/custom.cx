@@ -1,0 +1,90 @@
+@comment
+
+This demo shows two postgres layers (see `data.sql` for their content),
+with editing enabled (`permissions.edit`).
+
+Since no models are explicitly configured,
+the system creates default editable models,
+which only contain basic widgets and validations.
+
+@end
+
+projects+ {
+    title "Edit: custom model"
+    metadata.abstract "Edit features using a custom model."
+
+    api.actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+
+    map.layers+ {
+        title "POIs"
+        type "postgres"
+        tableName "edit.poi_simple"
+
+        permissions.edit 'allow all'
+
+        models+ {
+            type "postgres"
+            uid "model_poi_simple"
+
+            fields+ {
+                name "id"
+                type "integer"
+                title "Identifier"
+                isPrimaryKey true
+                isRequired true
+                widget { type "input"  }
+            }
+
+            fields+ {
+                name "name"
+                type "text"
+                title "Object name"
+                widget { type "input" }
+                textSearch { type "any" minLength 3 }
+            }
+
+            fields+ {
+                name "code"
+                type "integer"
+                title "Feature Code"
+                widget {
+                    type "select"
+                    items [
+                        { value 100  text "primary feature" }
+                        { value 200  text "secondary feature" }
+                        { value 300  text "tertiary feature" }
+                    ]
+                }
+            }
+
+            fields+ {
+                name "geom"
+                type "geometry"
+                title "Geometry"
+            }
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text """{{name}} ({{id}})"""
+        }
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text """{{name}}"""
+        }
+    }
+
+    {demo_osm_background}
+}

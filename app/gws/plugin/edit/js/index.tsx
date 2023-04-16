@@ -116,7 +116,7 @@ export class PointerTool extends gws.Tool {
 
         this.oFeatureCollection.clear();
 
-        if (!feature) {
+        if (!feature || !feature.geometryName) {
             return;
         }
 
@@ -154,12 +154,8 @@ export class PointerTool extends gws.Tool {
 
     start() {
         let cc = _master(this);
-        let selected = cc.editState.selectedFeature
 
-        this.oFeatureCollection = new ol.Collection<ol.Feature>();
-        if (selected) {
-            this.oFeatureCollection.push(selected.oFeature)
-        }
+        this.setFeature(cc.editState.selectedFeature);
 
         let ixPointer = new ol.interaction.Pointer({
             handleEvent: evt => this.whenPointerDown(evt)
@@ -428,7 +424,9 @@ class FeatureListTab extends gws.View<ViewProps> {
 class ModelListTab extends gws.View<ViewProps> {
     render() {
         let cc = _master(this);
+        let items = [...cc.models];
 
+        items.sort((a, b) => a.layer.title.localeCompare(b.title));
 
         if (gws.lib.isEmpty(cc.models)) {
             return <sidebar.EmptyTab>
@@ -450,7 +448,7 @@ class ModelListTab extends gws.View<ViewProps> {
                     <VRow flex>
                         <components.list.List
                             controller={this.props.controller}
-                            items={cc.models}
+                            items={items}
                             content={model => <gws.ui.Link
                                 whenTouched={() => cc.whenModelListItemTouched(model)}
                                 content={model.title}
@@ -650,7 +648,6 @@ class Controller extends gws.Controller {
         await super.init();
 
         this.models = this.app.models.editableModels();
-        this.models.sort((a, b) => a.layer.title.localeCompare(b.title));
 
         this.updateEditState({
             searchText: {},
@@ -727,10 +724,17 @@ class Controller extends gws.Controller {
 
     async whenPointerDownAtCoordinate(coord: ol.Coordinate) {
         let pt = new ol.geom.Point(coord);
+        let models;
+
+        // @TODO should be an option whether to query the selected model only or all of them
+        if (this.editState.selectedModel)
+            models = [this.editState.selectedModel]
+        else
+            models = this.models.filter(m => m.layer ? m.layer.visible : true);
 
         let res = await this.app.server.editQueryFeatures({
             shapes: [this.map.geom2shape(pt)],
-            modelUids: this.models.map(m => m.uid),
+            modelUids: models.map(m => m.uid),
             resolution: this.map.viewState.resolution,
             relationDepth: 1,
         });
@@ -1204,7 +1208,7 @@ class Controller extends gws.Controller {
 
         if (!feature)
             return;
-
+        console.log('XXXX', field, value)
         es.selectedFeature.editAttribute(field.name, value);
         this.updateEditState()
     }

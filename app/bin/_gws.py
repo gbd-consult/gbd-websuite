@@ -10,6 +10,8 @@ import gws.lib.cli as cli
 def main(args):
     try:
         return main2(args)
+    except gws.ConfigurationError:
+        cli.error('STOP')
     except:
         cli.error('INTERNAL ERROR:')
         gws.log.exception()

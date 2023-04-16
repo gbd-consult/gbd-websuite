@@ -41,20 +41,20 @@ class Object(gws.Node, gws.IDatabaseProvider):
 
 
 def get_for(obj: gws.INode, uid: str = None, ext_type: str = None):
-    uid = uid or obj.cfg('db')
-    if not uid and obj.cfg('_defaultProvider'):
-        return obj.cfg('_defaultProvider')
-
     mgr = obj.root.app.databaseMgr
-    ext_type = ext_type or obj.extType
 
+    uid = uid or obj.cfg('dbUid')
     if uid:
-        p = mgr.provider(uid, ext_type)
+        p = mgr.provider(uid)
         if not p:
-            raise gws.Error(f'database provider {ext_type!r} {uid!r} not found')
+            raise gws.Error(f'database provider {uid!r} not found')
         return p
 
+    if obj.cfg('_defaultProvider'):
+        return obj.cfg('_defaultProvider')
+
+    ext_type = ext_type or obj.extType
     p = mgr.first_provider(ext_type)
     if not p:
-        raise gws.Error(f'database provider {ext_type!r} not found')
+        raise gws.Error(f'no database providers of type {ext_type!r} found')
     return p

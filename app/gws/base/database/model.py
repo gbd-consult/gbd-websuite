@@ -17,7 +17,7 @@ class Props(gws.base.model.Props):
 
 
 class Config(gws.base.model.Config):
-    db: t.Optional[str]
+    dbUid: t.Optional[str]
     tableName: t.Optional[str]
 
 
@@ -40,13 +40,14 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
     def configure_fields(self):
         if super().configure_fields():
             return True
-        with self.provider.session() as sess:
-            desc = sess.describe(self.tableName)
-        for column in desc.columns.values():
-            cfg = gws.base.model.field_config_from_column(column)
-            self.fields.append(
-                self.create_child(gws.ext.object.modelField, config=gws.merge(cfg, _model=self)))
-        return True
+
+        desc = self.describe()
+        if desc:
+            for column in desc.columns.values():
+                cfg = gws.base.model.field_config_from_column(column)
+                if cfg:
+                    self.fields.append(self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self))
+            return True
 
     def configure_properties(self):
         self.geometryType = None
@@ -70,15 +71,14 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
 
         if geom:
             self.geometryName = geom.name
-            if not geom.geometryType:
-                with self.provider.session() as sess:
-                    desc = sess.describe(self.tableName)
-                geom.geometryType = desc.columns[geom.name].geometryType
-                geom.geometryCrs = gws.gis.crs.get(desc.columns[geom.name].geometrySrid)
-            self.geometryType = geom.geometryType
-            self.geometryCrs = geom.geometryCrs
+            self.geometryType = getattr(geom, 'geometryType')
+            self.geometryCrs = getattr(geom, 'geometryCrs')
 
     ##
+
+    def describe(self):
+        with self.provider.session() as sess:
+            return sess.describe(self.tableName)
 
     def table(self):
         return self.provider.mgr.table_for_model(self)

@@ -18,8 +18,8 @@ create table edit.poi
     name        text   not null,
     updated     date    default null,
     code        integer default null,
-    active      integer,
-    image       text    default null,
+    active      boolean,
+    image       bytea   default null,
     description text    default null,
     geom        geometry(Point, 3857),
     classid     int,
@@ -32,8 +32,8 @@ create table edit.poi_simple
     name        text   not null,
     updated     date    default null,
     code        integer default null,
-    active      integer,
-    image       text    default null,
+    active      boolean,
+    image       bytea   default null,
     description text    default null,
     geom        geometry(Point, 3857)
 );

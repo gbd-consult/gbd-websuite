@@ -13,8 +13,8 @@ gws.ext.new.modelField('geometry')
 
 
 class Config(gws.base.model.scalar_field.Config):
-    geometryType: gws.GeometryType
-    crs: gws.CrsName
+    geometryType: t.Optional[gws.GeometryType]
+    crs: t.Optional[gws.CrsName]
 
 
 class Props(gws.base.model.scalar_field.Props):
@@ -28,9 +28,26 @@ class Object(gws.base.model.scalar_field.Object):
     geometryCrs: gws.ICrs
 
     def configure(self):
-        self.geometryType = self.cfg('geometryType')
-        self.geometryCrs = gws.gis.crs.get(self.cfg('crs'))
         self.supportsGeometrySearch = True
+
+        p = self._get_type_and_crs()
+        if p and p[0] and p[1]:
+            self.geometryType = p[0]
+            self.geometryCrs = p[1]
+        else:
+            raise gws.Error(f'unable to find type/crs for column {self.name!r}')
+
+    def _get_type_and_crs(self):
+        p = self.cfg('geometryType')
+        if p:
+            return self.cfg('geometryType'), gws.gis.crs.get(self.cfg('crs'))
+        desc = self.model.describe()
+        if not desc:
+            return
+        col = desc.columns.get(self.name)
+        if not col:
+            return
+        return col.geometryType, gws.gis.crs.get(col.geometrySrid)
 
     def configure_widget(self):
         if not super().configure_widget():

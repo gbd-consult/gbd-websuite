@@ -1,13 +1,9 @@
 """Qgis Project API."""
 
-import zipfile
-import sqlalchemy as sa
-
 import gws
 import gws.base.database
 import gws.lib.xmlx
 import gws.lib.zipx
-import gws.types as t
 
 from . import caps
 
@@ -18,7 +14,7 @@ class Error(gws.Error):
 
 class Source(gws.Data):
     path: gws.FilePath
-    db: str
+    dbUid: str
     schema: str
     name: str
 
@@ -28,7 +24,7 @@ def from_source(source: Source, obj: gws.INode):
         return from_path(source.path)
 
     if source.name:
-        prov = gws.base.database.provider.get_for(obj, source.db, 'postgres')
+        prov = gws.base.database.provider.get_for(obj, source.dbUid, 'postgres')
         schema = source.get('schema', 'public')
         table_name = f'{schema}.qgis_projects'
         with prov.session() as sess:

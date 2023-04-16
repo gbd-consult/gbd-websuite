@@ -19,11 +19,16 @@ class Object(core.Object):
     supportsRasterServices = True
     supportsVectorServices = True
 
+    geometryType: t.Optional[gws.GeometryType] = None
+    geometryCrs: t.Optional[gws.ICrs] = None
+
     def props(self, user):
         return gws.merge(
             super().props(user),
             type='vector',
-            url=self.url_path('features'))
+            url=self.url_path('features'),
+            geometryType=self.geometryType
+        )
 
     def render(self, lri):
         if lri.type == gws.LayerRenderInputType.svg:

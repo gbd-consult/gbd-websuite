@@ -44,7 +44,7 @@ class Object(gws.Node, gws.IModelField):
         if p:
             self.permissions.setdefault(gws.Access.read, p)
 
-        self.model = self.cfg('_model')
+        self.model = self.cfg('_defaultModel')
         self.name = self.cfg('name')
         self.title = self.cfg('title', default=self.name)
         self.isPrimaryKey = self.cfg('isPrimaryKey')
@@ -145,6 +145,8 @@ class Object(gws.Node, gws.IModelField):
     def py_to_prop(self, val):
         return val
 
+    ##
+
     def load_from_record(self, feature, record, user, relation_depth=0, **kwargs):
         if hasattr(record, self.name):
             val = getattr(record, self.name)
@@ -187,10 +189,9 @@ class Object(gws.Node, gws.IModelField):
         if ok:
             val = self.py_to_prop(val)
             if val is not None:
-                #     return
-                # if isinstance(val, gws.Object):
-                #     val = gws.props(val, user, self)
                 props.attributes[self.name] = val
+
+    ##
 
     def compute(self, feature, access, user, **kwargs):
         val = self._valuesIndex.get((False, access))

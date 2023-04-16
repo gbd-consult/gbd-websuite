@@ -1,8 +1,6 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
-import * as toolbar from 'gws/elements/toolbar';
 import * as list from '../list';
 
 let {Row, Cell} = gws.ui.Layout;

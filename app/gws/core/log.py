@@ -73,7 +73,7 @@ def if_debug(fn, *args):
 ##
 
 
-_CURLEVEL = Level.DEBUG
+_CURLEVEL = Level.INFO
 
 _OUT = sys.stdout
 

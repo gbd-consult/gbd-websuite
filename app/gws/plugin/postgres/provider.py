@@ -30,7 +30,7 @@ class Object(gws.base.database.provider.Object):
             return schema, name
         return 'public', table_name
 
-    def bounds_for_table(self, table_name) -> t.Optional[gws.Bounds]:
+    def table_bounds(self, table_name):
         desc = self.describe(table_name)
         if not desc.geometryName:
             return

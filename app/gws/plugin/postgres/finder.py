@@ -12,7 +12,7 @@ gws.ext.new.finder('postgres')
 class Config(gws.base.search.finder.Config):
     """Database-based search"""
 
-    db: t.Optional[str]
+    dbUid: t.Optional[str]
     """database provider uid"""
     tableName: str
     """sql table name"""

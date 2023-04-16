@@ -49,10 +49,8 @@ class Object(gws.Node, gws.IDatabaseManager):
     def post_configure(self):
         self.close_sessions()
 
-    def provider(self, uid, ext_type):
-        prov = self.providers.get(uid)
-        if prov and prov.extType == ext_type:
-            return prov
+    def provider(self, uid):
+        return self.providers.get(uid)
 
     def first_provider(self, ext_type: str):
         for prov in self.providers.values():
@@ -178,7 +176,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             port=options.get('port'),
             database=options.get('database'),
         )
-        kwargs.setdefault('poolclass', sa.NullPool)
+        # kwargs.setdefault('poolclass', sa.NullPool)
         kwargs.setdefault('pool_pre_ping', True)
         return sa.create_engine(url, **kwargs)
 

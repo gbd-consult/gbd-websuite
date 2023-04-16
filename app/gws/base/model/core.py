@@ -54,9 +54,7 @@ class Object(gws.Node, gws.IModel):
     def configure_fields(self):
         p = self.cfg('fields')
         if p:
-            for cfg in p:
-                self.fields.append(
-                    self.create_child(gws.ext.object.modelField, config=gws.merge(cfg, _model=self)))
+            self.fields = self.create_children(gws.ext.object.modelField, p, _defaultModel=self)
             return True
 
     def configure_templates(self):

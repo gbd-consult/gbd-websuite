@@ -13,7 +13,7 @@ class View extends gws.View<Props> {
         let value = this.props.values[field.name];
         return <gws.ui.Select
             disabled={this.props.widgetProps.readOnly}
-            value={gws.lib.isEmpty(value) ? '' : String(value)}
+            value={value}
             items={this.props.widgetProps.items}
             whenChanged={this.props.whenChanged}
         />
