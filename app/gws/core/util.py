@@ -590,19 +590,8 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
 
 
 def ensure_system_dirs():
-    ensure_dir(const.CACHE_DIR)
-    ensure_dir(const.LEGEND_CACHE_DIR)
-    ensure_dir(const.MAPPROXY_CACHE_DIR)
-    ensure_dir(const.NET_CACHE_DIR)
-    ensure_dir(const.OBJECT_CACHE_DIR)
-    ensure_dir(const.CONFIG_DIR)
-    ensure_dir(const.MISC_DIR)
-    ensure_dir(const.SERVER_DIR)
-    ensure_dir(const.PRINT_DIR)
-    ensure_dir(const.FASTCACHE_DIR)
-    ensure_dir(const.LOCKS_DIR)
-    ensure_dir(const.GLOBALS_DIR)
-    ensure_dir(const.SPOOL_DIR)
+    for d in const.ALL_DIRS:
+        ensure_dir(d)
 
 
 def _chown(path, user, group):

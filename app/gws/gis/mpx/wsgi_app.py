@@ -1,10 +1,14 @@
 # https://mapproxy.org/docs/1.11.0/deployment.html?highlight=make_wsgi_app#server-script
 
+import yaml
+
 import gws
 import gws.core.error
 
 import mapproxy.wsgiapp
 import logging
+
+from . import config
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.INFO)
@@ -25,11 +29,14 @@ def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, 
     return app
 
 
-mapproxy_app = make_wsgi_app(gws.CONFIG_DIR + '/mapproxy.yaml')
+mapproxy_app = make_wsgi_app(config.CONFIG_PATH)
 
 
 def init():
-    pass
+    cfg = yaml.safe_load(gws.read_file(config.CONFIG_PATH))
+    gws.ensure_dir(cfg['globals']['cache']['base_dir'])
+    gws.ensure_dir(cfg['globals']['cache']['lock_dir'])
+    gws.ensure_dir(cfg['globals']['cache']['tile_lock_dir'])
 
 
 def application(environ, start_response):

@@ -18,7 +18,7 @@ LoadError = core.LoadError
 
 
 def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'Object':
-    cache_path = gws.TMP_DIR + '/spec_' + gws.to_uid(manifest_path or '') + '.json'
+    cache_path = gws.ensure_dir(gws.SPEC_DIR) + '/spec_' + gws.to_uid(manifest_path or '') + '.json'
 
     if read_cache and gws.is_file(cache_path):
         try:

@@ -31,18 +31,17 @@ _uwsgi_params = """
 """
 
 
-def create(root: gws.IRoot, config_dir):
-    def _write(p, s):
-        p = config_dir + '/' + p
-        s = '\n'.join(x.strip() for x in s.strip().splitlines())
-        with open(p, 'wt') as fp:
-            fp.write(s + '\n')
-        return p
-
-    for p in gws.lib.osx.find_files(config_dir, '(conf|ini)$'):
+def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_path):
+    for p in gws.lib.osx.find_files(configs_dir):
         gws.lib.osx.unlink(p)
 
-    commands = []
+    commands = [
+        'echo "----------------------------------------------------------"',
+        'echo "SERVER START"',
+        'echo "----------------------------------------------------------"',
+        'set -e',
+    ]
+
     frontends = []
 
     try:
@@ -52,8 +51,7 @@ def create(root: gws.IRoot, config_dir):
 
     rsyslogd_enabled = in_container
 
-    # NB it should be possible to have QGIS running somewhere else
-    # so, if 'host' is not localhost, don't start QGIS here
+    # as of ver 8, we try not to run qgis here
     qgis_enabled = root.app.qgisVersion and root.app.cfg('server.qgis.host') == 'localhost'
     qgis_port = root.app.cfg('server.qgis.port')
     qgis_workers = root.app.cfg('server.qgis.workers')
@@ -117,8 +115,8 @@ def create(root: gws.IRoot, config_dir):
 
     stdenv = '\n'.join(f'env = {k}={v}' for k, v in os.environ.items() if k.startswith('GWS_'))
 
-    stdenv += f'\nenv = TMP={gws.TMP_DIR}'
-    stdenv += f'\nenv = TEMP={gws.TMP_DIR}'
+    # stdenv += f'\nenv = TMP={gws.TMP_DIR}'
+    # stdenv += f'\nenv = TEMP={gws.TMP_DIR}'
 
     # rsyslogd
     # ---------------------------------------------------------
@@ -148,8 +146,8 @@ def create(root: gws.IRoot, config_dir):
             *.* /dev/stdout
         """
 
-        path = _write('syslog.conf', syslog_conf)
-        commands.append(f'rsyslogd -i {gws.TMP_DIR}/rsyslogd.pid -f {path}')
+        path = _write(f'{configs_dir}/syslog.conf', syslog_conf)
+        commands.append(f'rsyslogd -i {gws.PIDS_DIR}/rsyslogd.pid -f {path}')
 
     # qgis
     # ---------------------------------------------------------
@@ -174,7 +172,7 @@ def create(root: gws.IRoot, config_dir):
             fastcgi-socket = {qgis_socket}
             {uwsgi_qgis_log}
             master = true
-            pidfile = {gws.TMP_DIR}/qgis.uwsgi.pid
+            pidfile = {gws.PIDS_DIR}/qgis.uwsgi.pid
             processes = {qgis_workers}
             reload-mercy = {mercy}
             threads = {qgis_threads}
@@ -187,7 +185,7 @@ def create(root: gws.IRoot, config_dir):
         for k, v in qgis_server.environ(root).items():
             ini += f'env = {k}={v}\n'
 
-        path = _write('uwsgi_qgis.ini', ini)
+        path = _write(f'{configs_dir}/uwsgi_qgis.ini', ini)
         commands.append(f'uwsgi --ini {path}')
 
         frontends.append(f"""
@@ -239,7 +237,7 @@ def create(root: gws.IRoot, config_dir):
             harakiri-verbose = true
             http-timeout = {web_timeout}
             {uwsgi_web_log}
-            pidfile = {gws.TMP_DIR}/web.uwsgi.pid
+            pidfile = {gws.PIDS_DIR}/web.uwsgi.pid
             post-buffering = 65535
             processes = {web_workers}
             pythonpath = {gws.APP_DIR}
@@ -253,7 +251,7 @@ def create(root: gws.IRoot, config_dir):
             {stdenv}
         """
 
-        path = _write('uwsgi_web.ini', ini)
+        path = _write(f'{configs_dir}/uwsgi_web.ini', ini)
         commands.append(f'uwsgi --ini {path}')
 
         roots = ''
@@ -385,7 +383,7 @@ def create(root: gws.IRoot, config_dir):
             http = :{mapproxy_port}
             http-to = {mapproxy_socket}
             {uwsgi_mapproxy_log}
-            pidfile = {gws.TMP_DIR}/mapproxy.uwsgi.pid
+            pidfile = {gws.PIDS_DIR}/mapproxy.uwsgi.pid
             post-buffering = 65535
             processes = {mapproxy_workers}
             pythonpath = {gws.APP_DIR}
@@ -399,7 +397,7 @@ def create(root: gws.IRoot, config_dir):
             {stdenv}
         """
 
-        path = _write('uwsgi_mapproxy.ini', ini)
+        path = _write(f'{configs_dir}/uwsgi_mapproxy.ini', ini)
         commands.append(f'uwsgi --ini {path}')
 
     # spooler
@@ -416,7 +414,7 @@ def create(root: gws.IRoot, config_dir):
             harakiri-verbose = true
             {uwsgi_spool_log}
             master = true
-            pidfile = {gws.TMP_DIR}/spool.uwsgi.pid
+            pidfile = {gws.PIDS_DIR}/spool.uwsgi.pid
             post-buffering = 65535
             processes = {spool_workers}
             pythonpath = {gws.APP_DIR}
@@ -431,7 +429,7 @@ def create(root: gws.IRoot, config_dir):
             {stdenv}
         """
 
-        path = _write('uwsgi_spool.ini', ini)
+        path = _write(f'{configs_dir}/uwsgi_spool.ini', ini)
         commands.append(f'uwsgi --ini {path}')
 
     # main
@@ -448,7 +446,7 @@ def create(root: gws.IRoot, config_dir):
 
     nginx_conf = f"""
         worker_processes auto;
-        pid {gws.TMP_DIR}/nginx.pid;
+        pid {gws.PIDS_DIR}/nginx.pid;
         user {u} {g};
 
         events {{
@@ -491,7 +489,14 @@ def create(root: gws.IRoot, config_dir):
         }}
     """
 
-    path = _write('nginx.conf', nginx_conf)
+    path = _write(f'{configs_dir}/nginx.conf', nginx_conf)
     commands.append(f'exec nginx -c {path}')
 
-    return commands
+    _write(start_script_path, '\n'.join(commands))
+
+
+def _write(path, s):
+    s = '\n'.join(x.strip() for x in s.strip().splitlines())
+    with open(path, 'wt') as fp:
+        fp.write(s + '\n')
+    return path

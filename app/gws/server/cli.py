@@ -6,16 +6,11 @@ import gws.types as t
 from . import control
 
 
-class StartParams(gws.CliParams):
+class Params(gws.CliParams):
     config: t.Optional[str]
     """configuration file"""
     manifest: t.Optional[str]
     """manifest file"""
-
-
-class ReloadParams(StartParams):
-    modules: t.Optional[list[str]]
-    """list of modules to reload ('qgis', 'mapproxy', 'web', 'spool')"""
 
 
 gws.ext.new.cli('server')
@@ -24,54 +19,40 @@ gws.ext.new.cli('server')
 class Object(gws.Node):
 
     @gws.ext.command.cli('serverStart')
-    def do_start(self, p: StartParams):
-        """Configure and start the server"""
+    def do_start(self, p: Params):
+        """Configure and start the server."""
 
         self._setenv(p)
         control.start(p.manifest, p.config)
 
-    @gws.ext.command.cli('serverRestart')
-    def do_restart(self, p: StartParams):
-        """Stop and start the server"""
-
-        self.do_start(p)
-
-    @gws.ext.command.cli('serverStop')
-    def do_stop(self, p: gws.EmptyRequest):
-        """Stop the server"""
-
-        control.stop()
-
     @gws.ext.command.cli('serverReload')
-    def do_reload(self, p: ReloadParams):
-        """Reload specific (or all) server modules"""
+    def do_reload(self, p: Params):
+        """Restart the server."""
 
         self._setenv(p)
-        if not control.reload(p.modules):
-            gws.log.info('server not running, starting')
-            self.do_start(t.cast(StartParams, p))
+        control.reload()
 
     @gws.ext.command.cli('serverReconfigure')
-    def do_reconfigure(self, p: StartParams):
-        """Reconfigure and restart the server"""
+    def do_reconfigure(self, p: Params):
+        """Reconfigure and restart the server."""
 
         self._setenv(p)
         control.reconfigure(p.manifest, p.config)
 
     @gws.ext.command.cli('serverConfigure')
-    def do_configure(self, p: StartParams):
-        """Configure the server, but do not restart"""
+    def do_configure(self, p: Params):
+        """Configure the server, but do not restart."""
 
         self._setenv(p)
         control.configure_and_store(p.manifest, p.config)
 
     @gws.ext.command.cli('serverConfigtest')
-    def do_configtest(self, p: StartParams):
-        """Test the configuration"""
+    def do_configtest(self, p: Params):
+        """Test the configuration."""
 
         self._setenv(p)
-        control.configure(p.manifest or '', p.config or '', is_starting=False)
+        control.configure(p.manifest, p.config)
 
-    def _setenv(self, p: StartParams):
+    def _setenv(self, p: Params):
         p.config = p.config or gws.env.GWS_CONFIG
         p.manifest = p.manifest or gws.env.GWS_MANIFEST

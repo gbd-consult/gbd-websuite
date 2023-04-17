@@ -1,3 +1,46 @@
+"""Server control.
+
+Following workflows are supported:
+
+1) Server start. This is called only once upon the container start.
+
+    - (empty TMP_DIR completely in bin/gws)
+    - configure
+    - store the config
+    - write server configs
+    - (the actual invocation of the server start script takes place in bin/gws)
+
+2) Server reconfigure. Can be called anytime, e.g. by the monitor
+
+    - configure
+    - store the config
+    - write server configs
+    - empty the TRANSIENT_DIR
+    - reload all uwsgis
+    - reload nginx
+
+3) Server reload. Can be called anytime, e.g. by the monitor
+
+    - write server configs
+    - empty the TRANSIENT_DIR
+    - reload all uwsgis
+    - reload nginx
+
+
+4) Configure (debugging)
+
+    - configure
+    - store the config
+
+
+5) Configtest (debugging)
+
+    - configure
+
+
+
+"""
+
 import shlex
 import time
 
@@ -9,54 +52,47 @@ import gws.types as t
 
 from . import ini
 
-_START_SCRIPT = gws.VAR_DIR + '/server.sh'
+# see bin/gws
+SERVER_START_SCRIPT = f'{gws.VAR_DIR}/server.sh'
 
 
 def start(manifest_path=None, config_path=None):
-    stop()
-    root = configure(manifest_path, config_path, is_starting=True)
-    gws.config.store(root)
+    if _uwsgi_is_running():
+        gws.log.error(f'server already running')
+        gws.exit(1)
+    root = configure_and_store(manifest_path, config_path, is_starting=True)
     gws.config.activate(root)
-    return start_configured()
-
-
-def start_configured():
-    for p in gws.lib.osx.find_files(gws.SERVER_DIR, '.*'):
-        gws.lib.osx.unlink(p)
-
-    commands = ini.create(gws.config.root(), gws.SERVER_DIR)
-
-    with open(_START_SCRIPT, 'wt') as fp:
-        fp.write('echo "----------------------------------------------------------"\n')
-        fp.write('echo "SERVER START"\n')
-        fp.write('echo "----------------------------------------------------------"\n')
-        fp.write('\n'.join(commands))
-
-    return _START_SCRIPT
-
-
-def stop():
-    _stop(['uwsgi', 'qgis_mapserv.fcgi', 'nginx'], signals=['INT', 'KILL'])
-    _stop(['rsyslogd'], signals=['KILL'])
-
-
-def configure_and_store(manifest_path=None, config_path=None):
-    root = configure(manifest_path, config_path, is_starting=False)
-    gws.config.store(root)
+    ini.write_configs_and_start_script(root, gws.SERVER_DIR, SERVER_START_SCRIPT)
 
 
 def reconfigure(manifest_path=None, config_path=None):
     if not _uwsgi_is_running():
-        gws.log.info('server not running, starting...')
-        start(manifest_path, config_path)
-        return
-
-    root = configure(manifest_path, config_path, is_starting=False)
-    gws.config.store(root)
+        gws.log.error(f'server not running')
+        gws.exit(1)
+    root = configure_and_store(manifest_path, config_path, is_starting=False)
+    gws.config.activate(root)
+    ini.write_configs_and_start_script(root, gws.SERVER_DIR, SERVER_START_SCRIPT)
     reload()
 
 
-def configure(manifest_path, config_path, is_starting=False):
+def reload():
+    if not _uwsgi_is_running():
+        gws.log.error(f'server not running')
+        gws.exit(1)
+    gws.lib.osx.run(['rm', '-fr', gws.TRANSIENT_DIR])
+    gws.ensure_system_dirs()
+    _reload_uwsgi()
+    _reload_nginx()
+    return True
+
+
+def configure_and_store(manifest_path=None, config_path=None, is_starting=False):
+    root = configure(manifest_path, config_path, is_starting)
+    gws.config.store(root)
+    return root
+
+
+def configure(manifest_path=None, config_path=None, is_starting=False):
     def _before_init(cfg):
         autorun = gws.get(cfg, 'server.autoRun')
         if autorun:
@@ -76,22 +112,18 @@ def configure(manifest_path, config_path, is_starting=False):
     )
 
 
-def reload(modules=None):
-    if not _uwsgi_is_running():
-        return False
-    for m in ('qgis', 'mapproxy', 'web', 'spool'):
-        if not modules or m in modules:
-            _reload_uwsgi(m)
-    return True
-
-
 ##
 
-def _reload_uwsgi(module):
-    pattern = f'({module}).uwsgi.pid'
-    for p in gws.lib.osx.find_files(gws.TMP_DIR, pattern):
+def _reload_uwsgi():
+    pattern = r'\.uwsgi.pid$'
+    for p in gws.lib.osx.find_files(gws.PIDS_DIR, pattern):
         gws.log.info(f'reloading {p}...')
-        gws.lib.osx.run(['/usr/local/bin/uwsgi', '--reload', p])
+        gws.lib.osx.run(['uwsgi', '--reload', p])
+
+
+def _reload_nginx():
+    gws.log.info(f'reloading nginx...')
+    gws.lib.osx.run(['nginx', '-c', gws.SERVER_DIR + '/nginx.conf', '-s', 'reload'])
 
 
 def _uwsgi_is_running():
@@ -111,34 +143,3 @@ _FALLBACK_CONFIG = {
         'timeZone': 'UTC',
     }
 }
-
-_STOP_RETRY = 20
-_STOP_PAUSE = 1
-
-
-def _stop(names, signals):
-    for sig in signals:
-        for _ in range(_STOP_RETRY):
-            if all(_stop_name(name, sig) for name in names):
-                return
-            time.sleep(_STOP_PAUSE)
-
-    err = ''
-
-    for name in names:
-        pids = gws.lib.osx.pids_of(name)
-        if pids:
-            err += f' {name}={pids!r}'
-
-    if err:
-        raise ValueError(f'failed to stop processes: {err}')
-
-
-def _stop_name(proc_name, sig):
-    pids = gws.lib.osx.pids_of(proc_name)
-    if not pids:
-        return True
-    for pid in pids:
-        gws.log.debug(f'stopping {proc_name} pid={pid}')
-        gws.lib.osx.kill_pid(pid, sig)
-    return False

@@ -12,10 +12,11 @@ def main(args):
         return main2(args)
     except gws.ConfigurationError:
         cli.error('STOP')
-    except:
+        return 3
+    except Exception:
         cli.error('INTERNAL ERROR:')
         gws.log.exception()
-        return 2
+        return 4
 
 
 def main2(args):
@@ -94,10 +95,10 @@ def print_usage(specs, cmd1, cmd2):
         opts = []
         for a in cmd.args:
             if not a.hasDefault:
-                opts.append([f'{tab}{tab}--{a.name}', f'{tab}<{a.doc}> (required)'])
+                opts.append([f'{tab}{tab}-{a.name}', f'{tab}<{a.doc}> (required)'])
         for a in cmd.args:
             if a.hasDefault:
-                opts.append([f'{tab}{tab}--{a.name}', f'{tab}<{a.doc}>'])
+                opts.append([f'{tab}{tab}-{a.name}', f'{tab}<{a.doc}>'])
         if opts:
             cli.info(f'{tab}Options:')
             cli.info(columns(opts, align='<'))
@@ -109,8 +110,8 @@ def print_usage(specs, cmd1, cmd2):
 
     # gws -h
     if not cmd1 or all(c.cmd1 != cmd1 for c in cs):
-        cli.info(columns([f'{tab}{me} {c.cmd1} {c.cmd2}', '- ' + c.doc] for c in cs))
-        cli.info('\nTry "{me} <command> -h" for more info.\n')
+        cli.info(columns([f'{tab}{me} {c.cmd1} {c.cmd2}', ' - ' + c.doc] for c in cs))
+        cli.info(f'\nTry "{me} <command> -h" for more info.\n')
         return
 
     # gws command -h

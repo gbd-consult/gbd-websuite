@@ -19,9 +19,32 @@ SERVER_DIR = f'{VAR_DIR}/server'
 PRINT_DIR = f'{VAR_DIR}/print'
 
 FASTCACHE_DIR = f'{TMP_DIR}/fastcache'
-LOCKS_DIR = f'{TMP_DIR}/locks'
-GLOBALS_DIR = f'{TMP_DIR}/globals'
+PIDS_DIR = f'{TMP_DIR}/pids'
 SPOOL_DIR = f'{TMP_DIR}/spool'
+SPEC_DIR = f'{TMP_DIR}/spec'
+
+TRANSIENT_DIR = f'{TMP_DIR}/transient'
+LOCKS_DIR = f'{TRANSIENT_DIR}/locks'
+GLOBALS_DIR = f'{TRANSIENT_DIR}/globals'
+
+ALL_DIRS = [
+    CACHE_DIR,
+    LEGEND_CACHE_DIR,
+    MAPPROXY_CACHE_DIR,
+    NET_CACHE_DIR,
+    OBJECT_CACHE_DIR,
+    CONFIG_DIR,
+    MISC_DIR,
+    SERVER_DIR,
+    PRINT_DIR,
+    FASTCACHE_DIR,
+    PIDS_DIR,
+    SPOOL_DIR,
+    SPEC_DIR,
+    TRANSIENT_DIR,
+    LOCKS_DIR,
+    GLOBALS_DIR,
+]
 
 SERVER_ENDPOINT = '/_'
 

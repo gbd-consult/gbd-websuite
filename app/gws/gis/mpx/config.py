@@ -7,7 +7,6 @@ import gws.lib.osx
 import gws.types as t
 
 CONFIG_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
-TMP_DIR = gws.TMP_DIR + '/mpx'
 
 DEFAULT_CONFIG = {
     "services": {
@@ -36,8 +35,6 @@ class _Config:
     def __init__(self):
         self.c = 0
 
-        gws.ensure_dir(TMP_DIR)
-
         self.services = {
             'wms': {
                 'image_formats': ['image/png'],
@@ -58,8 +55,8 @@ class _Config:
             },
             'cache': {
                 'base_dir': gws.MAPPROXY_CACHE_DIR,
-                'lock_dir': TMP_DIR + '/locks_' + gws.random_string(16),
-                'tile_lock_dir': TMP_DIR + '/tile_locks_' + gws.random_string(16),
+                'lock_dir': gws.ensure_dir(gws.TRANSIENT_DIR + '/mpx_locks_' + gws.random_string(16)),
+                'tile_lock_dir': gws.ensure_dir(gws.TRANSIENT_DIR + '/mpx_tile_locks_' + gws.random_string(16)),
                 'concurrent_tile_creators': 1,
                 'max_tile_limit': 5000,
 
