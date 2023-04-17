@@ -222,6 +222,20 @@ _DEFAULT_TEMPLATES = [
         access=gws.PUBLIC,
         uid='gws.base.layer.templates.feature_teaser',
     ),
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/feature_title.cx.html',
+        subject='feature.title',
+        access=gws.PUBLIC,
+        uid='gws.base.layer.templates.feature_title',
+    ),
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/feature_label.cx.html',
+        subject='feature.label',
+        access=gws.PUBLIC,
+        uid='gws.base.layer.templates.feature_label',
+    ),
 ]
 
 _DEFAULT_TILE_SIZE = 256
