@@ -82,6 +82,57 @@ projects+ {
         provider.path "poi_districts.qgs"
         sourceLayers.names [ "Districts" ]
         opacity 0.5
+
+        models+ {
+            type "postgres"
+            uid "model_districts_qgis_simple"
+            dbUid "MY_POSTGRES"
+            tableName "edit.districts"
+            permissions.edit "allow all"
+
+            fields+ {
+                name "sid"
+                type "text"
+                title "Identifier"
+                isPrimaryKey true
+                isRequired true
+                widget { type "input"  }
+            }
+
+            fields+ {
+                name "name"
+                type "text"
+                title "Object name"
+                widget { type "input" }
+                textSearch { type "any" }
+            }
+
+            fields+ {
+                name "description"
+                type "text"
+                title "Comments"
+                widget { type "textarea" height 150 }
+            }
+
+            fields+ {
+                name "geom"
+                type "geometry"
+                title "Geometry"
+            }
+
+            templates+ {
+                subject "feature.title"
+                type "html"
+                text "{{name}} {{sid}}"
+            }
+
+            templates+ {
+                subject "feature.label"
+                type "html"
+                text "{{name}}"
+            }
+        }
+
     }
 
     {demo_osm_background}

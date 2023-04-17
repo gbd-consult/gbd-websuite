@@ -70,6 +70,13 @@ projects+ {
             }
 
             fields+ {
+                name "description"
+                type "text"
+                title "Comments"
+                widget { type "textarea" height 150 }
+            }
+
+            fields+ {
                 name "geom"
                 type "geometry"
                 title "Geometry"
