@@ -20,9 +20,6 @@ GWS Demo Compiler
     python3 demo.py <options>
 
 Options:
-    -appdir
-        'app' directory root
-
     -include <path>
         include a file in the config
 
@@ -36,6 +33,7 @@ Options:
 
 def main(args):
     all_paths = list(cli.find_files(APP_DIR, r'_demo/.+?'))
+
     config = ''
 
     # basic demo library - from this dir
@@ -72,29 +70,6 @@ def main(args):
         error_lines(config, exc.args[2])
         cli.fatal(str(exc))
 
-    # relocate assets
-
-    assets = {
-        os.path.basename(path): path
-        for path in all_paths
-        if not path.endswith('.cx')
-    }
-
-    appdir = args.get('appdir') or APP_DIR
-
-    def relocate_path(val):
-        if isinstance(val, list):
-            return [relocate_path(v) for v in val]
-        if isinstance(val, dict):
-            return {k: relocate_path(v) for k, v in val.items()}
-        if isinstance(val, str) and val in assets:
-            r = assets[val].replace(APP_DIR, appdir)
-            # print(val, '->', r)
-            return r
-        return val
-
-    config = relocate_path(config)
-
     # all done!
 
     res = json.dumps(config, indent=4, ensure_ascii=False)
@@ -120,18 +95,53 @@ def error_lines(src, err):
 
 START_PROJECT = 'projects+ {'
 
+RE_ASSET = r'''(?x)
+    ([\x22\x27])
+    (
+        [\w./-]+?
+        \.
+        (?:
+            html|qgs|json|png|tiff
+        )
+    )
+    \1
+'''
+
 
 def read_config_file(path):
     text = cli.read_file(path)
-    if START_PROJECT in text:
-        # if this is a project config, inject an uid from its path
-        text = text.lstrip()
-        uid = path_to_uid(path)
-        text = text.replace(
-            START_PROJECT,
-            START_PROJECT + f' uid "{uid}"\n'
-        )
+    text = generate_project_id(text, path)
+    text = relocate_assets(text, path)
     return text + '\n\n'
+
+
+def generate_project_id(text, path):
+    # if this is a project config, inject an uid generated from its path
+
+    if START_PROJECT not in text:
+        return text
+
+    uid = path_to_uid(path)
+    return text.replace(
+        START_PROJECT,
+        START_PROJECT + f' uid "{uid}"\n'
+    )
+
+
+def relocate_assets(text, path):
+    # replace asset paths with absolute paths
+
+    return re.sub(RE_ASSET, lambda m: relocate_asset(m, path), text)
+
+
+def relocate_asset(m, path):
+    quot, name = m.groups()
+    ps = os.path.realpath(os.path.join(os.path.dirname(path), name))
+    if not ps.startswith(APP_DIR):
+        return m.group(0)
+    pd = ps.replace(APP_DIR, '/gws-app')
+    print(f'ASSET {name!r}: {ps!r} -> {pd!r}')
+    return quot + pd + quot
 
 
 def path_to_uid(path):
