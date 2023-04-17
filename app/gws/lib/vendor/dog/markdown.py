@@ -2,6 +2,9 @@ from typing import List
 
 import mistune
 from mistune import Markdown
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters.html import HtmlFormatter
 
 from . import util
 
@@ -95,11 +98,26 @@ class AstRenderer:
         return Element(type='thematic_break')
 
     def block_code(self, children, info=None):
+        if info:
+            try:
+                lexer = get_lexer_by_name(info, stripall=True)
+                formatter = HtmlFormatter(noclasses=True)
+                res = highlight(children, lexer, formatter)
+                return Element(
+                    type='block_html',
+                    text=res,
+                    info=info
+                )
+            except:
+                # no lexer found
+                pass
+
         return Element(
             type='block_code',
             text=children,
             info=info
         )
+        #return '<pre><code>' + mistune.escape(children) + '</code></pre>'
 
     def block_html(self, children):
         return Element(type='block_html', text=children)
