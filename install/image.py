@@ -150,7 +150,7 @@ class Builder:
 
     def main(self):
         nc = '--no-cache' if self.args.get('no-cache') else ''
-        cmd = f'cd {self.build_dir} && docker build -f Dockerfile -t {self.image_full_name} {nc} .'
+        cmd = f'cd {self.build_dir} && docker build --progress plain -f Dockerfile -t {self.image_full_name} {nc} .'
 
         if self.args.get('print'):
             print(self.dockerfile())
