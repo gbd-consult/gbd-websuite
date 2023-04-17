@@ -91,7 +91,8 @@ class Object(gws.base.layer.Object):
         if self.provider.bounds:
             self.bounds = gws.gis.bounds.transform(self.provider.bounds, self.defaultBounds.crs)
             return True
-        wgs_bounds = gws.gis.bounds.union(gws.compact(sl.wgsBounds for sl in self.sourceLayers))
+        blist = gws.compact(sl.wgsBounds for sl in self.sourceLayers)
+        wgs_bounds = gws.gis.bounds.union(blist) if blist else gws.gis.crs.WGS84_BOUNDS
         self.bounds = gws.gis.bounds.transform(wgs_bounds, self.defaultBounds.crs)
         return True
 
