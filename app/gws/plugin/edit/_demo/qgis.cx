@@ -1,20 +1,19 @@
 @comment
-This demo shows a postgres layer,
-with editing enabled (`permissions.edit`).
 
-This layer has a data model with a subset of the source columns
-and custom widgets.
+Two qgis "flat" layers with editable "postgres" data models
+attached to them.
 
-With model templates one can customize feature lists (`feature.title`)
-and labels (`feature.label`).
+This way users can edit postgres-based data,
+while the qgis server takes care of the actual map display.
 
-The `textSearch` option makes the feature list searchable.
+Note that "dbUid" (= the id of the corresponding postgres `database.provider``)
+is mandatory in this case.
 
 @end
 
 projects+ {
-    title "Edit: custom model"
-    metadata.abstract "Edit features using a custom model."
+    title "Edit: postgres model + qgis"
+    metadata.abstract "Edit features, display via QGIS"
 
     api.actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }
@@ -27,16 +26,18 @@ projects+ {
         zoom.maxScale  1000000
     }
 
-
     map.layers+ {
-        title "POIs"
-        type "postgres"
-        tableName "edit.poi_small"
-        permissions.edit "allow all"
+        title "Points of interest"
+        type "qgisflat"
+        provider.path "poi_districts.qgs"
+        sourceLayers.names [ "Points of interest" ]
 
         models+ {
             type "postgres"
-            uid "model_poi_simple"
+            uid "model_poi_qgis_simple"
+            dbUid "MY_POSTGRES"
+            tableName "edit.poi_small"
+            permissions.edit "allow all"
 
             fields+ {
                 name "id"
@@ -53,20 +54,6 @@ projects+ {
                 title "Object name"
                 widget { type "input" }
                 textSearch { type "any" }
-            }
-
-            fields+ {
-                name "code"
-                type "integer"
-                title "Feature Code"
-                widget {
-                    type "select"
-                    items [
-                        { value 100  text "primary feature" }
-                        { value 200  text "secondary feature" }
-                        { value 300  text "tertiary feature" }
-                    ]
-                }
             }
 
             fields+ {
@@ -87,6 +74,14 @@ projects+ {
                 text "{{name}}"
             }
         }
+    }
+
+    map.layers+ {
+        title "Districts"
+        type "qgisflat"
+        provider.path "poi_districts.qgs"
+        sourceLayers.names [ "Districts" ]
+        opacity 0.5
     }
 
     {demo_osm_background}

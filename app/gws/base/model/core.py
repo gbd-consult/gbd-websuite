@@ -20,6 +20,8 @@ class Config(gws.ConfigWithAccess):
     fields: list[gws.ext.config.modelField]
     filter: t.Optional[str]
     sort: t.Optional[list[SortConfig]]
+    templates: t.Optional[list[gws.ext.config.template]]
+    """templates for this model"""
     loadingStrategy: gws.FeatureLoadingStrategy = gws.FeatureLoadingStrategy.all
     """loading strategy for features"""
 

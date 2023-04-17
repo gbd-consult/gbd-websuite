@@ -4,7 +4,7 @@ This demo shows two postgres layers (see `data.sql` for their content),
 with editing enabled (`permissions.edit`).
 
 Since no models are explicitly configured,
-the system creates default editable models,
+the system creates a default editable model,
 which only contain basic widgets and validations.
 
 @end
@@ -24,43 +24,18 @@ projects+ {
         zoom.maxScale  1000000
     }
 
-
     map.layers+ {
         title "POIs"
         type "postgres"
-        tableName "edit.poi_simple"
-
+        tableName "edit.poi_small"
         permissions.edit 'allow all'
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text """{{name}} ({{id}})"""
-        }
-        templates+ {
-            subject "feature.label"
-            type "html"
-            text """{{name}}"""
-        }
     }
 
     map.layers+ {
         title "Districts"
         type "postgres"
         tableName "edit.districts"
-
         permissions.edit 'allow all'
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text """{{name}}"""
-        }
-        templates+ {
-            subject "feature.label"
-            type "html"
-            text """{{name}}"""
-        }
     }
 
     {demo_osm_background}

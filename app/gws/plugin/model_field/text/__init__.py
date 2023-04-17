@@ -53,8 +53,8 @@ class Object(gws.base.model.scalar_field.Object):
             return
 
         kw = sel.search.keyword
-        so = self.textSearch
-        if so.minLength and len(kw) < so.minLength:
+        ts = self.textSearch
+        if ts.minLength and len(kw) < ts.minLength:
             return
 
         mod = t.cast(gws.base.database.model.Object, self.model)
@@ -62,18 +62,18 @@ class Object(gws.base.model.scalar_field.Object):
             getattr(mod.record_class(), self.name),
             sa.String)
 
-        if so.type == SearchType.exact:
+        if ts.type == SearchType.exact:
             sel.keywordWhere.append(fld == kw)
         else:
             kw = _escape_like(kw)
-            if so.type == 'any':
+            if ts.type == 'any':
                 kw = '%' + kw + '%'
-            if so.type == 'begin':
+            if ts.type == 'begin':
                 kw = kw + '%'
-            if so.type == 'end':
+            if ts.type == 'end':
                 kw = '%' + kw
 
-            if so.caseSensitive:
+            if ts.caseSensitive:
                 sel.keywordWhere.append(fld.like(kw, escape='\\'))
             else:
                 sel.keywordWhere.append(fld.ilike(kw, escape='\\'))
