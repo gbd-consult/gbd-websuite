@@ -35,7 +35,7 @@ projects+ {
         models+ {
             type "postgres"
             uid "model_poi_qgis_simple"
-            dbUid "MY_POSTGRES"
+            dbUid "DEVDEMOS"
             tableName "edit.poi_small"
             permissions.edit "allow all"
 
@@ -86,7 +86,7 @@ projects+ {
         models+ {
             type "postgres"
             uid "model_districts_qgis_simple"
-            dbUid "MY_POSTGRES"
+            dbUid "DEVDEMOS"
             tableName "edit.districts"
             permissions.edit "allow all"
 
