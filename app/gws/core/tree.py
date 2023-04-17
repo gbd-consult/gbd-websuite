@@ -21,7 +21,7 @@ class Object(types.IObject):
         s = getattr(self, 'uid', None)
         if s:
             r += f' uid={s}'
-        return '<' + r + '>'
+        return '<' + r + ' ' + hex(id(self)) + '>'
 
 
 class Node(Object, types.INode):
