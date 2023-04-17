@@ -106,3 +106,27 @@ def spam(ham: int, eggs: t.Optional[list[float]]) -> dict[str, float]:
 ```
 
 ### make script
+
+
+
+#### Building Images
+
+##### gws image
+
+Prerequisites: npm, python3.11
+
+If python3.11 is not your system default, edit make.sh to explicitly use 3.11.
+
+1. Clone the branch of the desired release from github into e.g. `~/gws/gbd-websuite`
+2. If desired, create a default configuration to be included in the image: e.g. `~/gws/gws-welcome`
+3. Install node_modules for the client application: `cd ~/gws/gbd-websuite/app/js && npm i`
+4. Build the image using the make script: `cd ~/gws/gbd-websuite && ./make.sh image gws -appdir ~/gws/gbd-websuite/app -datadir ~/gws/gws-welcome/data`
+
+For arm32 you can add `-arch arm32`. A custom name for the image can be provided with `-name <image_name:0.1>`
+
+##### qgis image
+
+`./make.sh image qgis -appdir ~/gws/gbd-websuite/app`
+
+The -appdir is currently required for the build script to function.
+
