@@ -167,19 +167,6 @@ class Object(gws.Node, gws.IDatabaseManager):
         self.rt.tables[tuid] = tab
         return tab
 
-    def make_engine(self, drivername: str, options, **kwargs):
-        url = sa.URL.create(
-            drivername,
-            username=options.get('username'),
-            password=options.get('password'),
-            host=options.get('host'),
-            port=options.get('port'),
-            database=options.get('database'),
-        )
-        # kwargs.setdefault('poolclass', sa.NullPool)
-        kwargs.setdefault('pool_pre_ping', True)
-        return sa.create_engine(url, **kwargs)
-
     def session(self, provider, **kwargs):
         if not self.rt.sessions.get(provider.uid):
             gws.log.debug(f'db: create session for {provider.uid!r}')
@@ -202,7 +189,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             self.rt.descCache[tuid] = self._load_and_describe(sess, table_name, False)
         return self.rt.descCache[tuid]
 
-    # http://initd.org/psycopg/docs/usage.html?highlight=smallint#adaptation-of-python-values-to-sql-types
+    # https://www.psycopg.org/docs/usage.html#adaptation-of-python-values-to-sql-types
 
     SA_TO_ATTR = {
         'ARRAY': gws.AttributeType.strlist,

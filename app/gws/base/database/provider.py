@@ -6,21 +6,7 @@ from . import manager
 
 class Config(gws.Config):
     """Database provider"""
-
-    database: str = ''
-    """database name"""
-    host: str = 'localhost'
-    """database host"""
-    password: str
-    """password"""
-    port: int = 5432
-    """database port"""
-    timeout: gws.Duration = '0'
-    """query timeout"""
-    connectTimeout: gws.Duration = '0'
-    """connect timeout"""
-    username: str
-    """username"""
+    pass
 
 
 class Object(gws.Node, gws.IDatabaseProvider):

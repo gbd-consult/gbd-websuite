@@ -81,7 +81,7 @@ def parse_url(url: str, **kwargs) -> Url:
     return u
 
 
-def make_url(u: Url | dict, **kwargs) -> str:
+def make_url(u: t.Optional[Url | dict] = None, **kwargs) -> str:
     p = gws.merge({}, u, kwargs)
 
     s = ''
