@@ -5,7 +5,7 @@ set -e
 CWD=$(pwd)
 BASE=$(dirname $(realpath $BASH_SOURCE))
 
-PYTHON=python3
+PYTHON="${PYTHON:-python3}"
 NODE=node
 
 
