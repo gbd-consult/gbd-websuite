@@ -1,12 +1,10 @@
 import livereload
-import gws
 
 from . import builder, util
 
 
 class Server:
     def __init__(self, options):
-        gws.log.set_level('ERROR')
         self.options = util.to_data(options)
         self.liveServer = None
         self.liveScript = f'<script src="//{self.options.serverHost}:{self.options.serverPort}/livereload.js?port={self.options.serverPort}"></script>'
