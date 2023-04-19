@@ -61,6 +61,9 @@ class Requester(gws.IWebRequester):
         self.method = self._wz.method.upper()
         self.isSecure = self._wz.is_secure
 
+        self.session = root.app.authMgr.guestSession
+        self.user = root.app.authMgr.guestUser
+
         self.isPost = self.method == 'POST'
         self.isGet = self.method == 'GET'
 
@@ -89,7 +92,7 @@ class Requester(gws.IWebRequester):
         data = self._wz.get_data(as_text=False, parse_form_data=False)
 
         if self.root.app.developer_option('request.log_all'):
-            gws.write_file_b(f'{gws.VAR_DIR}/debug_request_{gws.lib.date.timestamp_msec()}', data)
+            gws.write_file_b(gws.ensure_dir(f'{gws.VAR_DIR}/debug') + '/request_{gws.lib.date.timestamp_msec()}', data)
 
         if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
@@ -206,6 +209,10 @@ class Requester(gws.IWebRequester):
         obj = self.root.get(uid, classref)
         if obj and self.user and self.user.can_use(obj):
             return obj
+
+    def set_session(self, sess):
+        self.session = sess
+        self.user = sess.user
 
     ##
 

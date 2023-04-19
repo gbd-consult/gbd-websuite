@@ -1,8 +1,9 @@
 action
 application
 authMethod
-authProvider
 authMfa
+authProvider
+authSessionManager
 cli
 databaseProvider
 finder

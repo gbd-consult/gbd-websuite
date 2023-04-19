@@ -14,6 +14,7 @@ class Config(gws.Config):
 
 class Object(gws.Node, gws.IAuthProvider):
     def configure(self):
+        self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
         self.allowedMethods = self.cfg('allowedMethods', default=[])
 
     def authenticate(self, method, credentials):

@@ -9,72 +9,46 @@ import gws.base.web.error
 import gws.types as t
 
 from . import session
-from . import user as user_api
-# @TODO
-import gws.plugin.auth_store.sqlite as sqlite
-
-SQLITE_STORE_PATH = gws.MISC_DIR + '/sessions8.sqlite'
-
-
-class SessionOptions(gws.Data):
-    lifeTime: int
-    store: sqlite.SessionStore
-    storePath: str
-
-
-class SessionConfig(gws.Config):
-    lifeTime: gws.Duration = '1200' 
-    """session life time"""
-    store: str = 'sqlite' 
-    """session storage engine"""
-    storePath: t.Optional[str] 
-    """session storage path"""
 
 
 class Config(gws.Config):
     """Authentication and authorization options"""
 
-    methods: t.Optional[list[gws.ext.config.authMethod]] 
+    methods: t.Optional[list[gws.ext.config.authMethod]]
     """authorization methods"""
-    providers: t.Optional[list[gws.ext.config.authProvider]] 
+    providers: t.Optional[list[gws.ext.config.authProvider]]
     """authorization providers"""
-    mfa: t.Optional[list[gws.ext.config.authMfa]] 
+    mfa: t.Optional[list[gws.ext.config.authMfa]]
     """authorization providers"""
-    session: t.Optional[SessionConfig] 
+    session: t.Optional[gws.ext.config.authSessionManager]
     """session options"""
+
+
+_DEFAULT_SESSION_TYPE = 'sqlite'
 
 
 class Object(gws.Node, gws.IAuthManager):
     """Authorization manager."""
 
-    sessionOptions: SessionOptions
-    guestSession: session.Session
-    webMethod: gws.IAuthMethod
-
     def configure(self):
+        self.sessionMgr = self.create_child(gws.ext.object.authSessionManager, self.cfg('session'), type=_DEFAULT_SESSION_TYPE, _defaultManager=self)
 
-        so = self.cfg('session') or SessionOptions()
-        so.store = sqlite.SessionStore(so.storePath or SQLITE_STORE_PATH)
-        so.lifeTime = so.lifeTime or 1200
-        self.sessionOptions = so
+        self.providers = self.create_children(gws.ext.object.authProvider, self.cfg('providers'), _defaultManager=self)
 
-        self.providers = self.create_children(gws.ext.object.authProvider, self.cfg('providers'))
-        self.providers.append(self.create_child(gws.ext.object.authProvider, {'type': 'system'}))
+        sys_provider = self.create_child(gws.ext.object.authProvider, type='system', _defaultManager=self)
+        self.providers.append(sys_provider)
 
-        self.guestUser = self.providers[-1].get_user('guest')
-        self.systemUser = self.providers[-1].get_user('system')
+        self.guestUser = sys_provider.get_user('guest')
+        self.systemUser = sys_provider.get_user('system')
 
-        self.guestSession = session.Session('guest_session', method=None, user=self.guestUser)
-
-        self.methods = self.create_children(gws.ext.object.authMethod, self.cfg('methods'))
+        self.methods = self.create_children(gws.ext.object.authMethod, self.cfg('methods'), _defaultManager=self)
         if not self.methods:
             # if no methods configured, enable the Web method
-            self.methods.append(self.create_child(gws.ext.object.authMethod, {'type': 'web'}))
+            self.methods.append(self.create_child(gws.ext.object.authMethod, type='web', _defaultManager=self))
 
-        self.mfa = self.create_children(gws.ext.object.authMfa, self.cfg('mfa'))
+        self.mfa = self.create_children(gws.ext.object.authMfa, self.cfg('mfa'), _defaultManager=self)
 
-        for p in self.children:
-            p.authMgr = self
+        self.guestSession = session.Object(uid='guest_session', method=None, user=self.guestUser)
 
     ##
 
@@ -82,22 +56,23 @@ class Object(gws.Node, gws.IAuthManager):
         self.root.app.register_web_middleware('auth', self.auth_middleware)
 
     def auth_middleware(self, req: gws.IWebRequester, nxt) -> gws.IWebResponder:
-        self._open_session(req)
+        self.open_session(req)
         res = nxt()
-        self._close_session(req, res)
+        self.close_session(req, res)
         return res
 
-    def _open_session(self, req):
+    def open_session(self, req):
         for m in self.methods:
-            if m.open_session(req):
+            sess = m.open_session(req)
+            if sess:
+                req.set_session(sess)
                 return
-        self.session_activate(req, None)
 
-    def _close_session(self, req, res):
+    def close_session(self, req, res):
         sess = req.session
-        if sess and sess.method and sess.method.close_session(req, res):
-            return
-        self.session_activate(req, None)
+        if sess.method:
+            sess.method.close_session(req, res)
+        req.set_session(self.guestSession)
 
     ##
 
@@ -113,7 +88,7 @@ class Object(gws.Node, gws.IAuthManager):
     ##
 
     def get_user(self, user_uid):
-        provider_uid, local_uid = user_api.parse_uid(user_uid)
+        provider_uid, local_uid = gws.split_uid(user_uid)
         prov = self.get_provider(provider_uid)
         if prov:
             return prov.get_user(local_uid)
@@ -134,67 +109,3 @@ class Object(gws.Node, gws.IAuthManager):
         provider_uid, ds = gws.lib.jsonx.from_string(data)
         prov = self.get_provider(provider_uid)
         return prov.unserialize_user(ds) if prov else None
-
-    ##
-
-    def session_activate(self, req, sess):
-        if not sess:
-            sess = self.guestSession
-        setattr(req, 'session', sess)
-        setattr(req, 'user', sess.user)
-
-    def session_find(self, uid):
-        self.store.cleanup(self.sessionLifeTime)
-
-        rec = self.store.find(uid)
-        if not rec:
-            return None
-
-        age = gws.lib.date.timestamp() - rec['updated']
-        if age > self.sessionLifeTime:
-            gws.log.debug(f'sess uid={uid!r} EXPIRED age={age!r}')
-            self.store.delete(uid)
-            return None
-
-        user = self.unserialize_user(rec['str_user'])
-        if not user:
-            gws.log.error(f'FAILED to unserialize user from sess={uid!r}')
-            self.store.delete(uid)
-            return None
-
-        return session.Session(
-            rec['typ'],
-            uid=rec['uid'],
-            method=self.get_method(rec['method_uid']),
-            user=user,
-            data=gws.lib.jsonx.from_string(rec['str_data']),
-            saved=True
-        )
-
-    def session_create(self, typ: str, method: gws.IAuthMethod, user: gws.IUser) -> gws.IAuthSession:
-        uid = gws.random_string(64)
-        return session.Session(typ, user, method, uid)
-
-    def session_save(self, sess: gws.IAuthSession):
-        if not sess.saved:
-            self.store.create(
-                uid=sess.uid,
-                typ=sess.typ,
-                method_uid=sess.method.uid,
-                provider_uid=sess.user.provider.uid,
-                user_uid=sess.user.uid,
-                str_user=self.serialize_user(sess.user))
-            sess.saved = True
-        elif sess.changed:
-            self.store.update(sess.uid, str_data=gws.lib.jsonx.to_string(sess.data))
-        else:
-            self.store.touch(sess.uid)
-
-    def session_delete(self, sess: gws.IAuthSession):
-        self.store.delete(sess.uid)
-
-    def session_delete_all(self):
-        self.store.delete_all()
-
-    def stored_session_records(self) -> list[dict]:
-        return self.store.get_all()

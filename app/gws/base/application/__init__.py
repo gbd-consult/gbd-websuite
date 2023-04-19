@@ -36,7 +36,7 @@ class Config(gws.ConfigWithAccess):
 
     api: t.Optional[gws.base.action.manager.Config]
     """system-wide server actions"""
-    auth: t.Optional[gws.base.auth.Config] = {}  # type: ignore
+    auth: t.Optional[gws.base.auth.manager.Config] = {}  # type: ignore
     """authorization methods and options"""
     cache: t.Optional[gws.gis.cache.Config] = {}  # type: ignore
     """global cache configuration"""

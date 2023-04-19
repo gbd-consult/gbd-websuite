@@ -17,6 +17,7 @@ from gws.types import Enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import datetime
     import sqlalchemy
     import sqlalchemy.orm
 
@@ -382,9 +383,10 @@ class IWebRequester(Protocol):
     method: RequestMethod
     root: 'IRoot'
     site: 'IWebSite'
+    params: dict
+
     session: 'IAuthSession'
     user: 'IUser'
-    params: dict
 
     isApi: bool
     isGet: bool
@@ -426,6 +428,8 @@ class IWebRequester(Protocol):
     def require_model(self, uid: str) -> 'IModel': ...
 
     def acquire(self, uid: str, classref: ClassRef): ...
+
+    def set_session(self, sess: 'IAuthSession'): ...
 
 
 class IWebResponder(Protocol):
@@ -478,24 +482,60 @@ class IWebSite(INode, Protocol):
 # authorization
 
 
-class AuthPendingMfa(Data):
-    status: str
-    attemptCount: int
-    restartCount: int
-    timeStarted: int
-    methodUid: str
+class IUser(IObject, Protocol):
+    attributes: dict[str, Any]
+    displayName: str
+    isGuest: bool
+    localUid: str
+    loginName: str
+    provider: 'IAuthProvider'
     roles: set[str]
-    form: dict
-    secret: Optional[str]
+    uid: str
+
+    def acl_bit(self, access: Access, obj) -> Optional[int]: ...
+
+    def can(self, access: Access, obj: Any, *context) -> bool: ...
+
+    def can_create(self, obj: Any, *context) -> bool: ...
+
+    def can_delete(self, obj: Any, *context) -> bool: ...
+
+    def can_read(self, obj: Any, *context) -> bool: ...
+
+    def can_use(self, obj: Any, *context) -> bool: ...
+
+    def can_write(self, obj: Any, *context) -> bool: ...
+
+    def acquire(self, uid: str, classref: ClassRef = None, access: Access = Access.use): ...
+
+    def require(self, uid: str, classref: ClassRef = None, access: Access = Access.use): ...
+
+
+class IAuthSession(IObject, Protocol):
+    uid: str
+    method: Optional['IAuthMethod']
+    user: 'IUser'
+    data: dict
+    created: 'datetime.datetime'
+    updated: 'datetime.datetime'
+    isChanged: bool
+
+    def get(self, key: str, default=None): ...
+
+    def set(self, key: str, val: Any): ...
 
 
 class IAuthManager(INode, Protocol):
+    guestSession: 'IAuthSession'
+
     guestUser: 'IUser'
     systemUser: 'IUser'
 
     providers: list['IAuthProvider']
     methods: list['IAuthMethod']
     mfa: list['IAuthMfa']
+
+    sessionMgr: 'IAuthSessionManager'
 
     def authenticate(self, method: 'IAuthMethod', credentials: Data) -> Optional['IUser']: ...
 
@@ -507,50 +547,22 @@ class IAuthManager(INode, Protocol):
 
     def get_mfa(self, uid: str) -> Optional['IAuthMfa']: ...
 
-    def web_login(self, req: IWebRequester, credentials: Data): ...
-
-    def web_logout(self, ): ...
-
     def serialize_user(self, user: 'IUser') -> str: ...
 
     def unserialize_user(self, ser: str) -> Optional['IUser']: ...
 
-    def session_activate(self, req: IWebRequester, sess: Optional['IAuthSession']): ...
-
-    def session_find(self, uid: str) -> Optional['IAuthSession']: ...
-
-    def session_create(self, typ: str, method: 'IAuthMethod', user: 'IUser') -> 'IAuthSession': ...
-
-    def session_save(self, sess: 'IAuthSession'): ...
-
-    def session_delete(self, sess: 'IAuthSession'): ...
-
-    def session_delete_all(self): ...
-
 
 class IAuthMethod(INode, Protocol):
-    secure: bool
     authMgr: 'IAuthManager'
+    secure: bool
 
-    def open_session(self, req: 'IWebRequester') -> bool: ...
+    def open_session(self, req: IWebRequester) -> Optional['IAuthSession']: ...
 
     def close_session(self, req: IWebRequester, res: IWebResponder) -> bool: ...
 
 
-class IAuthProvider(INode, Protocol):
-    allowedMethods: list[str]
-    authMgr: 'IAuthManager'
-
-    def get_user(self, local_uid: str) -> Optional['IUser']: ...
-
-    def authenticate(self, method: 'IAuthMethod', credentials: Data) -> Optional['IUser']: ...
-
-    def serialize_user(self, user: 'IUser') -> str: ...
-
-    def unserialize_user(self, data: str) -> Optional['IUser']: ...
-
-
 class IAuthMfa(INode, Protocol):
+    authMgr: 'IAuthManager'
     autoStart: bool
     lifeTime: int
     maxAttempts: int
@@ -567,48 +579,40 @@ class IAuthMfa(INode, Protocol):
     def restart(self, user: 'IUser') -> bool: ...
 
 
-class IAuthSession(IObject, Protocol):
-    changed: bool
-    saved: bool
-    data: dict
-    method: Optional['IAuthMethod']
-    typ: str
-    uid: str
-    user: 'IUser'
+class IAuthProvider(INode, Protocol):
+    authMgr: 'IAuthManager'
+    allowedMethods: list[str]
 
-    def get(self, key: str, default=None): ...
+    def get_user(self, local_uid: str) -> Optional['IUser']: ...
 
-    def set(self, key: str, val: Any): ...
+    def authenticate(self, method: 'IAuthMethod', credentials: Data) -> Optional['IUser']: ...
+
+    def serialize_user(self, user: 'IUser') -> str: ...
+
+    def unserialize_user(self, data: str) -> Optional['IUser']: ...
 
 
-class IUser(IObject, Protocol):
-    attributes: dict[str, Any]
-    displayName: str
-    isGuest: bool
-    localUid: str
-    loginName: str
-    pendingMfa: Optional[AuthPendingMfa]
-    provider: 'IAuthProvider'
-    uid: str
-    roles: set[str]
+class IAuthSessionManager(INode, Protocol):
+    authMgr: 'IAuthManager'
+    lifeTime: int
 
-    def acl_bit(self, access: Access, obj) -> Optional[int]: ...
+    def create(self, method: 'IAuthMethod', user: 'IUser', data: dict = None) -> 'IAuthSession': ...
 
-    def can(self, access: Access, obj: Any, *context) -> bool: ...
+    def delete(self, sess: 'IAuthSession'): ...
 
-    def require(self, uid: str, classref: ClassRef = None, access: Access = None): ...
+    def delete_all(self): ...
 
-    def acquire(self, uid: str, classref: ClassRef = None, access: Access = None): ...
+    def get(self, uid: str) -> Optional['IAuthSession']: ...
 
-    def can_use(self, obj: Any, *context) -> bool: ...
+    def get_valid(self, uid: str) -> Optional['IAuthSession']: ...
 
-    def can_read(self, obj: Any, *context) -> bool: ...
+    def get_all(self) -> list['IAuthSession']: ...
 
-    def can_write(self, obj: Any, *context) -> bool: ...
+    def save(self, sess: 'IAuthSession'): ...
 
-    def can_create(self, obj: Any, *context) -> bool: ...
+    def touch(self, sess: 'IAuthSession'): ...
 
-    def can_delete(self, obj: Any, *context) -> bool: ...
+    def cleanup(self): ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------

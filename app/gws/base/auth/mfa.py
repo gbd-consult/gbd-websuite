@@ -1,6 +1,5 @@
 import gws
-
-from . import error
+import gws.types as t
 
 
 class Config(gws.Config):
@@ -10,4 +9,5 @@ class Config(gws.Config):
 
 
 class Object(gws.Node, gws.IAuthMfa):
-    pass
+    def configure(self):
+        self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))

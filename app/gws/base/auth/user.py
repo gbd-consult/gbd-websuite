@@ -7,9 +7,8 @@ class Props(gws.Props):
     displayName: str
 
 
-# https://tools.ietf.org/html/rfc4519
-
-_aliases = [
+_ALIASES = [
+    # https://tools.ietf.org/html/rfc4519
     ('c', 'countryName'),
     ('cn', 'commonName'),
     ('dc', 'domainComponent'),
@@ -24,10 +23,8 @@ _aliases = [
     ('login', 'userPrincipalName'),
 ]
 
-_GUEST_ROLES = set([gws.ROLE_GUEST, gws.ROLE_ALL])
 
-
-class User(gws.IUser):
+class User(gws.Object, gws.IUser):
     isGuest = False
 
     def __init__(self, provider):
@@ -54,6 +51,9 @@ class User(gws.IUser):
         return self.can(gws.Access.delete, obj, *context)
 
     def can(self, access, obj, *context):
+        if gws.ROLE_ADMIN in self.roles:
+            return True
+
         ci = 0
         clen = len(context)
 
@@ -74,17 +74,17 @@ class User(gws.IUser):
                 if role in self.roles:
                     return bit
 
-    def require(self, uid, classref=None, access=None):
+    def require(self, uid, classref=None, access=gws.Access.use):
         obj = self.provider.root.get(uid, classref)
         if not obj:
             raise gws.Error(f'required object {classref} {uid} not found')
-        if not self.can(access or gws.Access.use, obj):
+        if not self.can(access, obj):
             raise gws.Error(f'required object {classref} {uid} denied')
         return obj
 
     def acquire(self, uid, classref=None, access=None):
         obj = self.provider.root.get(uid, classref)
-        if obj and self.can(access or gws.Access.use, obj):
+        if obj and self.can(access, obj):
             return obj
 
 
@@ -93,13 +93,13 @@ class Guest(User):
 
 
 class System(User):
-    def acl_bit(self, access, obj):
-        return gws.ALLOW
+    def can(self, access, obj, *context):
+        return True
 
 
 class Nobody(User):
-    def acl_bit(self, access, obj):
-        return gws.DENY
+    def can(self, access, obj, *context):
+        return False
 
 
 class AuthorizedUser(User):
@@ -122,12 +122,14 @@ def to_dict(usr) -> dict:
 
 def from_dict(cls, provider: gws.IAuthProvider, d: dict) -> User:
     usr = cls(provider)
-    usr.attributes = d.get('attributes')
-    usr.displayName = d.get('displayName')
-    usr.localUid = d.get('localUid')
-    usr.loginName = d.get('loginName')
+
+    usr.attributes = d.get('attributes', {})
+    usr.displayName = d.get('displayName', '')
+    usr.localUid = d.get('localUid', '')
+    usr.loginName = d.get('loginName', '')
     usr.roles = set(d.get('roles'))
     usr.uid = gws.join_uid(provider.uid, usr.localUid)
+
     return usr
 
 
@@ -144,12 +146,9 @@ def from_args(cls, provider: gws.IAuthProvider, **kwargs) -> User:
 
     usr.uid = gws.join_uid(provider.uid, usr.localUid)
 
-    p = kwargs.get('pendingMfa')
-    usr.pendingMfa = gws.AuthPendingMfa(p) if p else None
-
     atts = dict(kwargs.get('attributes', {}))
 
-    for a, b in _aliases:
+    for a, b in _ALIASES:
         if a in atts:
             atts[b] = atts[a]
         elif b in atts:

@@ -1,0 +1,140 @@
+import gws.lib.sa as sa
+
+import gws
+import gws.base.auth
+import gws.lib.date
+import gws.lib.jsonx
+import gws.lib.osx
+
+import gws.types as t
+
+gws.ext.new.authSessionManager('sqlite')
+
+_DEFAULT_STORE_PATH = gws.MISC_DIR + '/sessions8.sqlite'
+
+
+class Config(gws.base.auth.session_manager.Config):
+    """Configuration for sqlite sessions"""
+
+    path: t.Optional[str]
+    """session storage path"""
+
+
+# @TODO proper locking
+
+class Object(gws.base.auth.session_manager.Object):
+    authMgr: gws.IAuthManager
+    dbPath: str
+    metaData: sa.MetaData
+    engine: sa.Engine
+    table: sa.Table
+
+    def configure(self):
+        self.dbPath = self.cfg('path', default=_DEFAULT_STORE_PATH)
+        self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
+
+    def activate(self):
+        self.metaData = sa.MetaData()
+        self.engine = sa.create_engine(f'sqlite:///{self.dbPath}', echo=False)
+
+        self.table = sa.Table(
+            'sess',
+            self.metaData,
+            sa.Column('uid', sa.String, primary_key=True),
+            sa.Column('method_uid', sa.String),
+            sa.Column('provider_uid', sa.String),
+            sa.Column('user_uid', sa.String),
+            sa.Column('str_user', sa.String),
+            sa.Column('str_data', sa.String),
+            sa.Column('created', sa.Integer),
+            sa.Column('updated', sa.Integer),
+        )
+
+        self.metaData.create_all(self.engine, checkfirst=True)
+
+    #            
+
+    def cleanup(self):
+        self._exec(
+            sa.delete(self.table).where(self.table.c.updated < gws.lib.date.timestamp() - self.lifeTime))
+
+    def create(self, method, user, data=None):
+        uid = gws.random_string(64)
+
+        self._exec(sa.insert(self.table).values(
+            uid=uid,
+            method_uid=method.uid,
+            user_uid=user.uid,
+            str_user=self.authMgr.serialize_user(user),
+            str_data=gws.lib.jsonx.to_string(data or {}),
+            created=gws.lib.date.timestamp(),
+            updated=gws.lib.date.timestamp(),
+        ))
+
+        return self.get(uid)
+
+    def delete(self, sess):
+        self._exec(
+            sa.delete(self.table).where(self.table.c.uid == sess.uid))
+
+    def delete_all(self):
+        self.metaData.create_all(self.engine, checkfirst=False)
+
+    def get(self, uid):
+        stmt = sa.select(self.table).where(self.table.c.uid == uid)
+        with self.engine.begin() as conn:
+            for rec in conn.execute(stmt).mappings().all():
+                return self._session(rec)
+
+    def get_valid(self, uid):
+        stmt = (
+            sa
+            .select(self.table)
+            .where(self.table.c.uid == uid)
+            .where(self.table.c.updated >= gws.lib.date.timestamp() - self.lifeTime))
+
+        with self.engine.begin() as conn:
+            for rec in conn.execute(stmt).mappings().all():
+                return self._session(rec)
+
+    def get_all(self):
+        stmt = sa.select(self.table)
+        with self.engine.begin() as conn:
+            return [
+                self._session(rec)
+                for rec in conn.execute(stmt).mappings().all()
+            ]
+
+    def save(self, sess):
+        if not sess.isChanged:
+            return
+
+        self._exec(
+            sa.update(self.table).where(self.table.c.uid == sess.uid).values(
+                str_data=gws.lib.jsonx.to_string(sess.data or {}),
+                updated=gws.lib.date.timestamp()))
+
+        sess.isChanged = False
+
+    def touch(self, sess):
+        if sess.isChanged:
+            return self.save(sess)
+
+        self._exec(sa.update(self.table).where(self.table.c.uid == sess.uid).values(
+            updated=gws.lib.date.timestamp()))
+
+    ##
+
+    def _session(self, rec):
+        return gws.base.auth.session.Object(
+            uid=rec['uid'],
+            method=self.authMgr.get_method(rec['method_uid']),
+            user=self.authMgr.unserialize_user(rec['str_user']),
+            data=gws.lib.jsonx.from_string(rec['str_data']),
+            created=gws.lib.date.from_timestamp(rec['created']),
+            updated=gws.lib.date.from_timestamp(rec['updated']),
+        )
+
+    def _exec(self, stmt):
+        with self.engine.begin() as conn:
+            conn.execute(stmt)

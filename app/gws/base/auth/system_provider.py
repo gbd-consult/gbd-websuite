@@ -1,11 +1,9 @@
 import gws
-import gws.types as t
-
 
 from . import provider, user
 
-
 gws.ext.new.authProvider('system')
+
 
 class Object(provider.Object):
     users: dict[str, user.User]

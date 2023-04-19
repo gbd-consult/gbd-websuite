@@ -3,12 +3,10 @@
 import getpass
 
 import gws
-import gws.base.auth.error
 import gws.base.auth.provider
 import gws.base.auth.user
 import gws.lib.jsonx
 import gws.lib.password
-import gws.types as t
 
 gws.ext.new.authProvider('file')
 
@@ -74,7 +72,6 @@ class Object(gws.base.auth.provider.Object):
             localUid=login,
             loginName=login,
             roles=atts.pop('roles', []),
-            pendingMfa=atts.pop('mfa', None),
             attributes=atts,
         )
 

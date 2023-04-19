@@ -48,8 +48,9 @@ TYPES = [
     "action",
     "application",
     "authMethod",
-    "authProvider",
     "authMfa",
+    "authProvider",
+    "authSessionManager",
     "cli",
     "databaseProvider",
     "finder",
@@ -82,6 +83,7 @@ class new:
     def authMethod(*a): pass
     def authMfa(*a): pass
     def authProvider(*a): pass
+    def authSessionManager(*a): pass
     def cli(*a): pass
     def databaseProvider(*a): pass
     def finder(*a): pass
@@ -106,6 +108,7 @@ class object:
     class authMethod (_classTag): extName = 'gws.ext.object.authMethod'
     class authMfa (_classTag): extName = 'gws.ext.object.authMfa'
     class authProvider (_classTag): extName = 'gws.ext.object.authProvider'
+    class authSessionManager (_classTag): extName = 'gws.ext.object.authSessionManager'
     class cli (_classTag): extName = 'gws.ext.object.cli'
     class databaseProvider (_classTag): extName = 'gws.ext.object.databaseProvider'
     class finder (_classTag): extName = 'gws.ext.object.finder'
@@ -130,6 +133,7 @@ class config:
     class authMethod (_classTag): extName = 'gws.ext.config.authMethod'
     class authMfa (_classTag): extName = 'gws.ext.config.authMfa'
     class authProvider (_classTag): extName = 'gws.ext.config.authProvider'
+    class authSessionManager (_classTag): extName = 'gws.ext.config.authSessionManager'
     class cli (_classTag): extName = 'gws.ext.config.cli'
     class databaseProvider (_classTag): extName = 'gws.ext.config.databaseProvider'
     class finder (_classTag): extName = 'gws.ext.config.finder'
@@ -154,6 +158,7 @@ class props:
     class authMethod (_classTag): extName = 'gws.ext.props.authMethod'
     class authMfa (_classTag): extName = 'gws.ext.props.authMfa'
     class authProvider (_classTag): extName = 'gws.ext.props.authProvider'
+    class authSessionManager (_classTag): extName = 'gws.ext.props.authSessionManager'
     class cli (_classTag): extName = 'gws.ext.props.cli'
     class databaseProvider (_classTag): extName = 'gws.ext.props.databaseProvider'
     class finder (_classTag): extName = 'gws.ext.props.finder'

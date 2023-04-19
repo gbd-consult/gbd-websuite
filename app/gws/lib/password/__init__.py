@@ -1,20 +1,28 @@
+"""Password tools."""
+
 import base64
 import hashlib
 import hmac
 import random
 
 
-def compare(a, b):
-    return hmac.compare_digest(a, b)
+def compare(a: str, b: str) -> bool:
+    """Return a == b"""
+
+    return hmac.compare_digest(a.encode('utf8'), b.encode('utf8'))
 
 
 def encode(password, algo='sha512'):
+    """Encode a password into a hash."""
+
     salt = _random_string(8)
     h = _pbkdf2(password, salt, algo)
     return '$'.join(['', algo, salt, base64.urlsafe_b64encode(h).decode('utf8')])
 
 
 def check(password, encoded):
+    """Check if a password matches a hash."""
+
     try:
         _, algo, salt, hs = str(encoded).split('$')
         h1 = base64.urlsafe_b64decode(hs)
@@ -22,15 +30,10 @@ def check(password, encoded):
     except (TypeError, ValueError):
         return False
 
-    return compare(h1, h2)
+    return hmac.compare_digest(h1, h2)
 
 
-def to_hash(s, algo='sha512'):
-    h = hashlib.new(algo)
-    if not isinstance(s, bytes):
-        s = str(s).encode('utf8')
-    h.update(s)
-    return h.hexdigest()
+##
 
 
 def _pbkdf2(password, salt, algo):
