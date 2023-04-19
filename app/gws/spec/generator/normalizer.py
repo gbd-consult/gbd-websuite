@@ -118,15 +118,15 @@ def _evaluate_defaults(gen):
             name = gen.aliases[name]
         return gen.types.get(name)
 
-    def _eval(val):
+    def _eval(base_type, val):
         c, value = val
         if c == base.C.LITERAL:
             return value
         if isinstance(value, list):
-            return [_eval(v) for v in value]
+            return [_eval(base_type, v) for v in value]
 
         if isinstance(value, dict):
-            return {k: _eval(v) for k, v in value.items()}
+            return {k: _eval(base_type, v) for k, v in value.items()}
 
         # constant?
         typ = _get_type(value)
@@ -139,15 +139,15 @@ def _evaluate_defaults(gen):
         if typ and typ.c == base.C.ENUM and item in typ.enumValues:
             return typ.enumValues[item]
 
-        base.log.warning(f'invalid expression {value!r}')
+        base.log.warning(f'invalid expression {value!r} in {base_type.name!r}')
         return None
 
     for typ in gen.types.values():
-        d = getattr(typ, 'EVAL_DEFAULT', None)
-        if d:
-            typ.default = _eval(d)
+        val = getattr(typ, 'EVAL_DEFAULT', None)
+        if val:
+            typ.default = _eval(typ, val)
             typ.hasDefault = True
-            base.log.debug(f'evaluated {d!r} => {typ.default!r}')
+            base.log.debug(f'evaluated {val!r} => {typ.default!r}')
 
 
 def _check_variants(gen):

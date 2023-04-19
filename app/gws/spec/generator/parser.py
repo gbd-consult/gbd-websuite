@@ -438,7 +438,7 @@ class _PythonParser:
                 raise ValueError('invalid Tuple')
             return self.add(base.C.TUPLE, tItems=list(param_items))
 
-        if g == 'Callable':
+        if g.lower() == 'callable':
             if not param_typ:
                 return self.add(base.C.CALLABLE, tItems=[])
             if not param_items:
@@ -447,6 +447,10 @@ class _PythonParser:
 
         if param:
             raise ValueError('invalid generic type')
+
+        if g:
+            base.log.debug(f'created ATOM for {name!r}, builtin {g!r}')
+            return self.add(base.C.ATOM, name=name)
 
         return self.add(base.C.UNDEFINED, name=name)
 

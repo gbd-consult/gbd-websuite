@@ -25,9 +25,13 @@ BUILTIN_TYPES = [
     'Union',
 
     # imported in TYPE_CHECKING
-    'sqlalchemy',
+    'datetime.datetime',
     'osgeo',
+    'sqlalchemy',
 
+    # vendor libs
+    'gws.lib.vendor',
+    'gws.lib.sa',
 ]
 
 # those star-imported in gws/__init__.py
