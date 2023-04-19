@@ -6,18 +6,28 @@ The GBD WebSuite is a web-based open source GIS platform for geodata processing.
 
 *GBD WebSuite as a web server*:
 
-    can serve static and templated content
-    supports multi-site configurations, url routing and rewriting
-    supports various authorization mechanisms (file system, database, LDAP) and fine-grained permissions
+- can serve static and templated content
+
+- supports multi-site configurations, url routing and rewriting
+
+- supports various authorization mechanisms (file system, database, LDAP) and fine-grained permissions
 
 *GBD WebSuite as a geo server*:
 
-    combines different data sources (files, OGC services, databases) into a unified map
-    has direct support for QGIS projects
-    caches, reprojects and scales raster data as necessary
-    can process and directly render vector data (PostGIS, shapefile, json)
-    provides OGC conformant services (WMS, WMTS, WFS)
+- combines different data sources (files, OGC services, databases) into a unified map
+
+- has direct support for QGIS projects
+    
+- caches, reprojects and scales raster data as necessary
+    
+- can process and directly render vector data (PostGIS, shapefile, json)
+    
+- provides OGC conformant services (WMS, WMTS, WFS)
 
 *GBD WebSuite as an application server*:
 
-    provides a framework for domain-specific extensions and has a pluggable architecture for easy integration.
+- provides a framework for domain-specific extensions and has a pluggable architecture for easy integration.
+
+Homepage: https://gbd-websuite.de/
+
+Documentation: https://gbd-websuite.de/doc/8.0/index.html
