@@ -54,17 +54,17 @@ class Object(gws.base.action.Object):
 
         # eg. '8.0.0.light.css, 8.0.0.vendor.js etc
 
-        if p.path.endswith('.vendor.js'):
+        if p.path.endswith('vendor.js'):
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
                 content=gws.base.client.bundles.javascript(self.root, 'vendor', locale_uid))
 
-        if p.path.endswith('.util.js'):
+        if p.path.endswith('util.js'):
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
                 content=gws.base.client.bundles.javascript(self.root, 'util', locale_uid))
 
-        if p.path.endswith('.app.js'):
+        if p.path.endswith('app.js'):
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
                 content=gws.base.client.bundles.javascript(self.root, 'app', locale_uid))
