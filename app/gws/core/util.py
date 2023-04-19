@@ -667,3 +667,84 @@ def _qs_bytes(x):
         return b','.join(_qs_bytes(y) for y in x)
     except TypeError:
         return str(x).encode('utf8')
+
+
+def parse_access(x):
+    if isinstance(x, t.Data):
+        x = vars(x)
+    if not x:
+        return t.Data()
+    if not isinstance(x, dict):
+        raise ValueError(f'invalid access: {x!r}')
+    a = x.get('access')
+    if not a:
+        raise ValueError(f'invalid access: {x!r}')
+    v = parse_acl(a)
+    if v is None:
+        raise ValueError(f'invalid access: {x!r}')
+    if not v:
+        return t.Data()
+    return t.Data(access=v)
+
+
+def parse_acl(acl) -> t.List[t.Access]:
+    """Parse an ACL config into an ACL.
+
+    Args:
+        acl: an ACL config. Can be given as a string ``allow X, allow Y, deny Z``,
+            or as a list of dicts ``{ role X type allow }, { role Y type deny }``,
+            or it can already be an ACL ``[1 X], [0 Y]``,
+            or it can be None.
+
+    Returns:
+        Access list.
+    """
+
+    if not acl:
+        return []
+
+    a = 'allow'
+    d = 'deny'
+    err = f'invalid ACL: {acl!r}'
+
+    access = []
+
+    if isinstance(acl, str):
+        for p in acl.strip().split(','):
+            s = p.strip().split()
+            if len(s) != 2:
+                raise ValueError(err)
+            if s[0] == a:
+                access.append(t.Access(type=a, role=s[1]))
+            elif s[0] == d:
+                access.append(t.Access(type=d, role=s[1]))
+            else:
+                raise ValueError(err)
+        return access
+
+    if not isinstance(acl, list):
+        raise ValueError(err)
+
+    # if isinstance(acl[0], (list, tuple)):
+    #     try:
+    #         if all(len(s) == 2 and s[0] in {a, d} for s in acl):
+    #             return acl
+    #     except (TypeError, IndexError):
+    #         pass
+    #     raise ValueError(err)
+    #
+    if isinstance(acl[0], dict):
+        for s in acl:
+            tk = s.get('type', '')
+            rk = s.get('role', '')
+            if not isinstance(rk, str) or not rk.isalnum():
+                raise ValueError(err)
+            if tk == a:
+                access.append(t.Access(type=a, role=rk))
+            elif tk == d:
+                access.append(t.Access(type=d, role=rk))
+            else:
+                raise ValueError(err)
+        return access
+
+    raise ValueError(err)

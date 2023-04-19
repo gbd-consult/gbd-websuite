@@ -361,7 +361,7 @@ class IFeature:
 
 
 class IObject:
-    access: 'Access'
+    access: List['Access']
     children: List['IObject']
     config: Config
     parent: 'IObject'
@@ -1323,6 +1323,7 @@ class IModelValidator(IObject):
 
 class IModelWidget(IObject):
     options: dict
+    type: str
 
 
 class IMonitor(IObject):

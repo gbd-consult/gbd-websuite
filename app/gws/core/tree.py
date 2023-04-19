@@ -8,7 +8,7 @@ _UIDS = set()
 
 #:export IObject
 class Object(t.IObject):
-    access: t.Access
+    access: t.List[t.Access]
     config: t.Config
     parent: t.IObject
     root: t.IRootObject
@@ -70,7 +70,7 @@ class Object(t.IObject):
         except Exception as e:
             raise _error(self, e)
 
-        log.debug(f'configured {self.klass} uid={self.uid}')
+        # log.debug(f'configured {self.klass} uid={self.uid}')
 
     def configure(self):
         # this is intended to be overridden

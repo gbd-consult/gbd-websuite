@@ -1245,7 +1245,7 @@ class Controller extends gws.Controller {
 
         let res = await this.app.server.editWriteFeature({
             feature: feSave.getProps(onlyGeometry ? 0 : 1)
-        }, {binary: true});
+        }, {binary: false});
 
         if (res.error) {
             this.update({

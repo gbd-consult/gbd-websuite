@@ -33,6 +33,7 @@ class BaseResponse(t.IResponse):
             self._wz = kwargs['wz']
         else:
             self._wz = werkzeug.wrappers.Response(**kwargs)
+        self.response = kwargs.get('response')
 
     def __call__(self, environ, start_response):
         return self._wz(environ, start_response)

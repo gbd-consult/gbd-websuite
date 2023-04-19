@@ -9,10 +9,14 @@ rsyslog
 # generic
 
 libgeos-c1v5
-libproj15
-libgdal26
+libproj22
+libgdal30
 python3-gdal
 gdal-bin
+
+# for Fiona
+libgdal-dev
+
 
 tzdata
 ghostscript

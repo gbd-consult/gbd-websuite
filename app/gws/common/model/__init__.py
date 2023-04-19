@@ -34,16 +34,34 @@ _SCALAR_TYPES = {
 
 ##
 
-class ModelPermissions(t.Config):
+class ModelPermissionsConfig(t.Config):
     read: t.Optional[t.WithAccess]
     write: t.Optional[t.WithAccess]
     create: t.Optional[t.WithAccess]
     delete: t.Optional[t.WithAccess]
 
 
-class FieldPermissions(t.Config):
+class FieldPermissionsConfig(t.Config):
     read: t.Optional[t.WithAccess]
     write: t.Optional[t.WithAccess]
+
+
+class Permssion(t.Data):
+    access: t.List[t.Access]
+
+
+class ModelPermissions(t.Data):
+    read: Permssion
+    write: Permssion
+    create: Permssion
+    delete: Permssion
+    parent: Permssion
+
+
+class FieldPermissions(t.Data):
+    read: Permssion
+    write: Permssion
+    parent: Permssion
 
 
 ##
@@ -63,6 +81,7 @@ class WidgetProps(t.Props):
 
 #:export IModelWidget
 class Widget(gws.Object, t.IModelWidget):
+    type: str
 
     def configure(self):
         super().configure()
@@ -234,7 +253,7 @@ class FieldConfig(t.WithType):
     isUnique: bool = False
     isPrimaryKey: bool = False
 
-    permissions: t.Optional[FieldPermissions]
+    permissions: t.Optional[FieldPermissionsConfig]
     textSearch: t.Optional[FieldTextSearchConfig]
 
 
@@ -265,6 +284,7 @@ class Field(gws.Object, t.IModelField):
     validators: t.List[t.IModelValidator]
     data_type: str
     geometry_type: str
+    permissions: FieldPermissions
 
     def configure(self):
         super().configure()
@@ -300,7 +320,7 @@ class Field(gws.Object, t.IModelField):
                 v.field = self
                 self.validators.append(v)
 
-        self.permissions: FieldPermissions = FieldPermissions(
+        self.permissions = FieldPermissions(
             read=self.var('permissions.read') or t.Data(),
             write=self.var('permissions.write') or t.Data(),
         )
@@ -1227,7 +1247,7 @@ class Config(t.WithAccess):
     """Model configuration"""
 
     fields: t.List[FieldConfig]
-    permissions: t.Optional[ModelPermissions]
+    permissions: t.Optional[ModelPermissionsConfig]
     filter: t.Optional[str]
     sort: t.Optional[t.List[SortConfig]]
 
@@ -1254,6 +1274,7 @@ class Object(gws.Object, t.IModel):
     key_name: str = ''
     geometry_name: str = ''
     keyword_columns: t.List[str] = []
+    permissions: ModelPermissions
 
     def configure(self):
         super().configure()
@@ -1265,7 +1286,7 @@ class Object(gws.Object, t.IModel):
 
         self.fields = []
 
-        self.permissions: ModelPermissions = ModelPermissions(
+        self.permissions = ModelPermissions(
             read=self.var('permissions.read') or t.Data(),
             write=self.var('permissions.write') or t.Data(),
             create=self.var('permissions.create') or t.Data(),
@@ -1604,6 +1625,7 @@ class ModelRegistry:
         if self.initing:
             raise Error('circular init!')
 
+        gws.log.debug('REGISTRY_INIT')
         self.initing = True
 
         for mod in self.root.find_all(DbModel):
@@ -1614,10 +1636,10 @@ class ModelRegistry:
                 keys=[],
             )
             self.ms[mod.uid] = m
-            gws.log.debug(f'REGISTRY_INIT FOUND:{m.model.uid}')
+            # gws.log.debug(f'REGISTRY_INIT FOUND:{m.model.uid}')
 
         for m in self.ms.values():
-            gws.log.debug(f'REGISTRY_INIT KEYS:{m.model.uid}')
+            # gws.log.debug(f'REGISTRY_INIT KEYS:{m.model.uid}')
             cols = []
             for f in m.model.fields:
                 if f.is_primary_key:
@@ -1625,7 +1647,7 @@ class ModelRegistry:
             m.keys = cols
 
         for m in self.ms.values():
-            gws.log.debug(f'REGISTRY_INIT TABLE:{m.model.uid}')
+            # gws.log.debug(f'REGISTRY_INIT TABLE:{m.model.uid}')
             cols = []
             for f in m.model.fields:
                 if not f.is_primary_key:
@@ -1634,12 +1656,12 @@ class ModelRegistry:
             m.table = self.create_table(m.model.get_table().name, cols)
 
         for m in self.ms.values():
-            gws.log.debug(f'REGISTRY_INIT CLASS:{m.model.uid}')
+            # gws.log.debug(f'REGISTRY_INIT CLASS:{m.model.uid}')
             m.cls = type(f'_SA_{m.model.uid}', (SaBase,), {})
             self.sa_registry.map_imperatively(m.cls, m.table)
 
         for m in self.ms.values():
-            gws.log.debug(f'REGISTRY_INIT PROPS:{m.model.uid}')
+            # gws.log.debug(f'REGISTRY_INIT PROPS:{m.model.uid}')
             props = {}
             for f in m.model.fields:
                 f.sa_properties(props)

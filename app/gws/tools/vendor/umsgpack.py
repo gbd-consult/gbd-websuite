@@ -1,6 +1,8 @@
-#@@gws: patched _pack3 because we desperately need the 'default' option like in json
+# type: ignore
+#
+# #@@gws: patched _pack3 because we desperately need the 'default' option like in json
 
-# u-msgpack-python v2.5.1 - v at sergeev.io
+# u-msgpack-python v2.7.2 - v at sergeev.io
 # https://github.com/vsergeev/u-msgpack-python
 #
 # u-msgpack-python is a lightweight MessagePack serializer and deserializer
@@ -12,7 +14,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2013-2016 vsergeev / Ivan (Vanya) A. Sergeev
+# Copyright (c) 2013-2022 vsergeev / Ivan (Vanya) A. Sergeev
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +35,7 @@
 # THE SOFTWARE.
 #
 """
-u-msgpack-python v2.5.1 - v at sergeev.io
+u-msgpack-python v2.7.2 - v at sergeev.io
 https://github.com/vsergeev/u-msgpack-python
 
 u-msgpack-python is a lightweight MessagePack serializer and deserializer
@@ -51,10 +53,15 @@ import datetime
 import sys
 import io
 
-__version__ = "2.5.1"
+if sys.version_info[0:2] >= (3, 3):
+    from collections.abc import Hashable
+else:
+    from collections import Hashable
+
+__version__ = "2.7.2"
 "Module version string"
 
-version = (2, 5, 1)
+version = (2, 7, 2)
 "Module version tuple"
 
 
@@ -77,23 +84,33 @@ class Ext(object):
             type: application-defined type integer
             data: application-defined data byte array
 
+        TypeError:
+            Type is not an integer.
+        ValueError:
+            Type is out of range of -128 to 127.
+        TypeError::
+            Data is not type 'bytes' (Python 3) or not type 'str' (Python 2).
+
         Example:
-        >>> foo = umsgpack.Ext(0x05, b"\x01\x02\x03")
+        >>> foo = umsgpack.Ext(5, b"\x01\x02\x03")
         >>> umsgpack.packb({u"special stuff": foo, u"awesome": True})
         '\x82\xa7awesome\xc3\xadspecial stuff\xc7\x03\x05\x01\x02\x03'
         >>> bar = umsgpack.unpackb(_)
         >>> print(bar["special stuff"])
-        Ext Object (Type: 0x05, Data: 01 02 03)
+        Ext Object (Type: 5, Data: 01 02 03)
         >>>
         """
-        # Check type is type int
+        # Check type is type int and in range
         if not isinstance(type, int):
             raise TypeError("ext type is not type integer")
-        # Check data is type bytes
+        elif not (-2**7 <= type <= 2**7 - 1):
+            raise ValueError("ext type value {:d} is out of range (-128 to 127)".format(type))
+        # Check data is type bytes or str
         elif sys.version_info[0] == 3 and not isinstance(data, bytes):
             raise TypeError("ext data is not type \'bytes\'")
         elif sys.version_info[0] == 2 and not isinstance(data, str):
             raise TypeError("ext data is not type \'str\'")
+
         self.type = type
         self.data = data
 
@@ -101,9 +118,8 @@ class Ext(object):
         """
         Compare this Ext object with another for equality.
         """
-        return (isinstance(other, self.__class__) and
-                self.type == other.type and
-                self.data == other.data)
+        return isinstance(other, self.__class__) \
+               and self.type == other.type and self.data == other.data
 
     def __ne__(self, other):
         """
@@ -115,8 +131,8 @@ class Ext(object):
         """
         String representation of this Ext object.
         """
-        s = "Ext Object (Type: 0x%02x, Data: " % self.type
-        s += " ".join(["0x%02x" % ord(self.data[i:i + 1])
+        s = "Ext Object (Type: {:d}, Data: ".format(self.type)
+        s += " ".join(["0x{:02x}".format(ord(self.data[i:i + 1]))
                        for i in xrange(min(len(self.data), 8))])
         if len(self.data) > 8:
             s += " ..."
@@ -132,7 +148,52 @@ class Ext(object):
 
 class InvalidString(bytes):
     """Subclass of bytes to hold invalid UTF-8 strings."""
-    pass
+
+
+##############################################################################
+# Ext Serializable Decorator
+##############################################################################
+
+_ext_class_to_type = {}
+_ext_type_to_class = {}
+
+
+def ext_serializable(ext_type):
+    """
+    Return a decorator to register a class for automatic packing and unpacking
+    with the specified Ext type code. The application class should implement a
+    `packb()` method that returns serialized bytes, and an `unpackb()` class
+    method or static method that accepts serialized bytes and returns an
+    instance of the application class.
+
+    Args:
+        ext_type: application-defined Ext type code
+
+    Raises:
+        TypeError:
+            Ext type is not an integer.
+        ValueError:
+            Ext type is out of range of -128 to 127.
+        ValueError:
+            Ext type or class already registered.
+    """
+    def wrapper(cls):
+        if not isinstance(ext_type, int):
+            raise TypeError("Ext type is not type integer")
+        elif not (-2**7 <= ext_type <= 2**7 - 1):
+            raise ValueError("Ext type value {:d} is out of range of -128 to 127".format(ext_type))
+        elif ext_type in _ext_type_to_class:
+            raise ValueError("Ext type {:d} already registered with class {:s}".format(ext_type, repr(_ext_type_to_class[ext_type])))
+        elif cls in _ext_class_to_type:
+            raise ValueError("Class {:s} already registered with Ext type {:d}".format(repr(cls), ext_type))
+
+        _ext_type_to_class[ext_type] = cls
+        _ext_class_to_type[cls] = ext_type
+
+        return cls
+
+    return wrapper
+
 
 ##############################################################################
 # Exceptions
@@ -142,39 +203,32 @@ class InvalidString(bytes):
 # Base Exception classes
 class PackException(Exception):
     "Base class for exceptions encountered during packing."
-    pass
 
 
 class UnpackException(Exception):
     "Base class for exceptions encountered during unpacking."
-    pass
 
 
 # Packing error
 class UnsupportedTypeException(PackException):
     "Object type not supported for packing."
-    pass
 
 
 # Unpacking error
 class InsufficientDataException(UnpackException):
     "Insufficient data to unpack the serialized object."
-    pass
 
 
 class InvalidStringException(UnpackException):
     "Invalid UTF-8 string encountered during unpacking."
-    pass
 
 
 class UnsupportedTimestampException(UnpackException):
     "Unsupported timestamp format encountered during unpacking."
-    pass
 
 
 class ReservedCodeException(UnpackException):
     "Reserved code encountered during unpacking."
-    pass
 
 
 class UnhashableKeyException(UnpackException):
@@ -182,12 +236,10 @@ class UnhashableKeyException(UnpackException):
     Unhashable key encountered during map unpacking.
     The serialized map cannot be deserialized into a Python dictionary.
     """
-    pass
 
 
 class DuplicateKeyException(UnpackException):
     "Duplicate key encountered during map unpacking."
-    pass
 
 
 # Backwards compatibility
@@ -337,14 +389,11 @@ def _pack_ext(obj, fp, options):
     elif obj_len == 16:
         fp.write(b"\xd8" + struct.pack("B", obj.type & 0xff) + obj.data)
     elif obj_len < 2**8:
-        fp.write(b"\xc7" +
-                 struct.pack("BB", obj_len, obj.type & 0xff) + obj.data)
+        fp.write(b"\xc7" + struct.pack("BB", obj_len, obj.type & 0xff) + obj.data)
     elif obj_len < 2**16:
-        fp.write(b"\xc8" +
-                 struct.pack(">HB", obj_len, obj.type & 0xff) + obj.data)
+        fp.write(b"\xc8" + struct.pack(">HB", obj_len, obj.type & 0xff) + obj.data)
     elif obj_len < 2**32:
-        fp.write(b"\xc9" +
-                 struct.pack(">IB", obj_len, obj.type & 0xff) + obj.data)
+        fp.write(b"\xc9" + struct.pack(">IB", obj_len, obj.type & 0xff) + obj.data)
     else:
         raise UnsupportedTypeException("huge ext data")
 
@@ -363,18 +412,14 @@ def _pack_ext_timestamp(obj, fp, options):
 
     if microseconds == 0 and 0 <= seconds <= 2**32 - 1:
         # 32-bit timestamp
-        fp.write(b"\xd6\xff" +
-                 struct.pack(">I", seconds))
+        fp.write(b"\xd6\xff" + struct.pack(">I", seconds))
     elif 0 <= seconds <= 2**34 - 1:
         # 64-bit timestamp
         value = ((microseconds * 1000) << 34) | seconds
-        fp.write(b"\xd7\xff" +
-                 struct.pack(">Q", value))
+        fp.write(b"\xd7\xff" + struct.pack(">Q", value))
     elif -2**63 <= abs(seconds) <= 2**63 - 1:
         # 96-bit timestamp
-        fp.write(b"\xc7\x0c\xff" +
-                 struct.pack(">I", microseconds * 1000) +
-                 struct.pack(">q", seconds))
+        fp.write(b"\xc7\x0c\xff" + struct.pack(">Iq", microseconds * 1000, seconds))
     else:
         raise UnsupportedTypeException("huge timestamp")
 
@@ -450,6 +495,11 @@ def _pack2(obj, fp, **options):
         _pack_nil(obj, fp, options)
     elif ext_handlers and obj.__class__ in ext_handlers:
         _pack_ext(ext_handlers[obj.__class__](obj), fp, options)
+    elif obj.__class__ in _ext_class_to_type:
+        try:
+            _pack_ext(Ext(_ext_class_to_type[obj.__class__], obj.packb()), fp, options)
+        except AttributeError:
+            raise NotImplementedError("Ext serializable class {:s} is missing implementation of packb()".format(repr(obj.__class__)))
     elif isinstance(obj, bool):
         _pack_boolean(obj, fp, options)
     elif isinstance(obj, (int, long)):
@@ -479,9 +529,19 @@ def _pack2(obj, fp, **options):
             _pack_ext(ext_handlers[t](obj), fp, options)
         else:
             raise UnsupportedTypeException(
-                "unsupported type: %s" % str(type(obj)))
+                "unsupported type: {:s}".format(str(type(obj))))
+    elif _ext_class_to_type:
+        # Linear search for superclass
+        t = next((t for t in _ext_class_to_type if isinstance(obj, t)), None)
+        if t:
+            try:
+                _pack_ext(Ext(_ext_class_to_type[t], obj.packb()), fp, options)
+            except AttributeError:
+                raise NotImplementedError("Ext serializable class {:s} is missing implementation of packb()".format(repr(t)))
+        else:
+            raise UnsupportedTypeException("unsupported type: {:s}".format(str(type(obj))))
     else:
-        raise UnsupportedTypeException("unsupported type: %s" % str(type(obj)))
+        raise UnsupportedTypeException("unsupported type: {:s}".format(str(type(obj))))
 
 
 # Pack for Python 3, with unicode 'str' type, 'bytes' type, and no 'long' type
@@ -522,6 +582,11 @@ def _pack3(obj, fp, **options):
         _pack_nil(obj, fp, options)
     elif ext_handlers and obj.__class__ in ext_handlers:
         _pack_ext(ext_handlers[obj.__class__](obj), fp, options)
+    elif obj.__class__ in _ext_class_to_type:
+        try:
+            _pack_ext(Ext(_ext_class_to_type[obj.__class__], obj.packb()), fp, options)
+        except AttributeError:
+            raise NotImplementedError("Ext serializable class {:s} is missing implementation of packb()".format(repr(obj.__class__)))
     elif isinstance(obj, bool):
         _pack_boolean(obj, fp, options)
     elif isinstance(obj, int):
@@ -551,8 +616,17 @@ def _pack3(obj, fp, **options):
             _pack_ext(ext_handlers[t](obj), fp, options)
         else:
             raise UnsupportedTypeException(
-                "unsupported type: %s" % str(type(obj)))
-
+                "unsupported type: {:s}".format(str(type(obj))))
+    elif _ext_class_to_type:
+        # Linear search for superclass
+        t = next((t for t in _ext_class_to_type if isinstance(obj, t)), None)
+        if t:
+            try:
+                _pack_ext(Ext(_ext_class_to_type[t], obj.packb()), fp, options)
+            except AttributeError:
+                raise NotImplementedError("Ext serializable class {:s} is missing implementation of packb()".format(repr(t)))
+        else:
+            raise UnsupportedTypeException("unsupported type: {:s}".format(str(type(obj))))
     #@@gws
     elif options.get("default"):
         _pack3(options.get("default")(obj), fp, **options)
@@ -560,7 +634,7 @@ def _pack3(obj, fp, **options):
 
     else:
         raise UnsupportedTypeException(
-            "unsupported type: %s" % str(type(obj)))
+            "unsupported type: {:s}".format(str(type(obj))))
 
 
 def _packb2(obj, **options):
@@ -672,21 +746,21 @@ def _unpack_integer(code, fp, options):
         return struct.unpack(">I", _read_except(fp, 4))[0]
     elif code == b'\xcf':
         return struct.unpack(">Q", _read_except(fp, 8))[0]
-    raise Exception("logic error, not int: 0x%02x" % ord(code))
+    raise Exception("logic error, not int: 0x{:02x}".format(ord(code)))
 
 
 def _unpack_reserved(code, fp, options):
     if code == b'\xc1':
         raise ReservedCodeException(
-            "encountered reserved code: 0x%02x" % ord(code))
+            "encountered reserved code: 0x{:02x}".format(ord(code)))
     raise Exception(
-        "logic error, not reserved code: 0x%02x" % ord(code))
+        "logic error, not reserved code: 0x{:02x}".format(ord(code)))
 
 
 def _unpack_nil(code, fp, options):
     if code == b'\xc0':
         return None
-    raise Exception("logic error, not nil: 0x%02x" % ord(code))
+    raise Exception("logic error, not nil: 0x{:02x}".format(ord(code)))
 
 
 def _unpack_boolean(code, fp, options):
@@ -694,7 +768,7 @@ def _unpack_boolean(code, fp, options):
         return False
     elif code == b'\xc3':
         return True
-    raise Exception("logic error, not boolean: 0x%02x" % ord(code))
+    raise Exception("logic error, not boolean: 0x{:02x}".format(ord(code)))
 
 
 def _unpack_float(code, fp, options):
@@ -702,7 +776,7 @@ def _unpack_float(code, fp, options):
         return struct.unpack(">f", _read_except(fp, 4))[0]
     elif code == b'\xcb':
         return struct.unpack(">d", _read_except(fp, 8))[0]
-    raise Exception("logic error, not float: 0x%02x" % ord(code))
+    raise Exception("logic error, not float: 0x{:02x}".format(ord(code)))
 
 
 def _unpack_string(code, fp, options):
@@ -715,7 +789,7 @@ def _unpack_string(code, fp, options):
     elif code == b'\xdb':
         length = struct.unpack(">I", _read_except(fp, 4))[0]
     else:
-        raise Exception("logic error, not string: 0x%02x" % ord(code))
+        raise Exception("logic error, not string: 0x{:02x}".format(ord(code)))
 
     # Always return raw bytes in compatibility mode
     global compatibility
@@ -728,7 +802,7 @@ def _unpack_string(code, fp, options):
     except UnicodeDecodeError:
         if options.get("allow_invalid_utf8"):
             return InvalidString(data)
-        raise InvalidStringException("unpacked string is invalid utf-8 " + str(len(data)) + ' ' + repr(data))
+        raise InvalidStringException("unpacked string is invalid utf-8")
 
 
 def _unpack_binary(code, fp, options):
@@ -739,7 +813,7 @@ def _unpack_binary(code, fp, options):
     elif code == b'\xc6':
         length = struct.unpack(">I", _read_except(fp, 4))[0]
     else:
-        raise Exception("logic error, not binary: 0x%02x" % ord(code))
+        raise Exception("logic error, not binary: 0x{:02x}".format(ord(code)))
 
     return _read_except(fp, length)
 
@@ -762,44 +836,48 @@ def _unpack_ext(code, fp, options):
     elif code == b'\xc9':
         length = struct.unpack(">I", _read_except(fp, 4))[0]
     else:
-        raise Exception("logic error, not ext: 0x%02x" % ord(code))
+        raise Exception("logic error, not ext: 0x{:02x}".format(ord(code)))
 
     ext_type = struct.unpack("b", _read_except(fp, 1))[0]
     ext_data = _read_except(fp, length)
 
-    # Create extension object
-    ext = Ext(ext_type, ext_data)
-
     # Unpack with ext handler, if we have one
     ext_handlers = options.get("ext_handlers")
-    if ext_handlers and ext.type in ext_handlers:
-        return ext_handlers[ext.type](ext)
+    if ext_handlers and ext_type in ext_handlers:
+        return ext_handlers[ext_type](Ext(ext_type, ext_data))
+
+    # Unpack with ext classes, if type is registered
+    if ext_type in _ext_type_to_class:
+        try:
+            return _ext_type_to_class[ext_type].unpackb(ext_data)
+        except AttributeError:
+            raise NotImplementedError("Ext serializable class {:s} is missing implementation of unpackb()".format(repr(_ext_type_to_class[ext_type])))
 
     # Timestamp extension
-    if ext.type == -1:
-        return _unpack_ext_timestamp(ext, options)
+    if ext_type == -1:
+        return _unpack_ext_timestamp(ext_data, options)
 
-    return ext
+    return Ext(ext_type, ext_data)
 
 
-def _unpack_ext_timestamp(ext, options):
-    obj_len = len(ext.data)
+def _unpack_ext_timestamp(ext_data, options):
+    obj_len = len(ext_data)
     if obj_len == 4:
         # 32-bit timestamp
-        seconds = struct.unpack(">I", ext.data)[0]
+        seconds = struct.unpack(">I", ext_data)[0]
         microseconds = 0
     elif obj_len == 8:
         # 64-bit timestamp
-        value = struct.unpack(">Q", ext.data)[0]
+        value = struct.unpack(">Q", ext_data)[0]
         seconds = value & 0x3ffffffff
         microseconds = (value >> 34) // 1000
     elif obj_len == 12:
         # 96-bit timestamp
-        seconds = struct.unpack(">q", ext.data[4:12])[0]
-        microseconds = struct.unpack(">I", ext.data[0:4])[0] // 1000
+        seconds = struct.unpack(">q", ext_data[4:12])[0]
+        microseconds = struct.unpack(">I", ext_data[0:4])[0] // 1000
     else:
         raise UnsupportedTimestampException(
-            "unsupported timestamp with data length %d" % len(ext.data))
+            "unsupported timestamp with data length {:d}".format(len(ext_data)))
 
     return _epoch + datetime.timedelta(seconds=seconds,
                                        microseconds=microseconds)
@@ -813,7 +891,10 @@ def _unpack_array(code, fp, options):
     elif code == b'\xdd':
         length = struct.unpack(">I", _read_except(fp, 4))[0]
     else:
-        raise Exception("logic error, not array: 0x%02x" % ord(code))
+        raise Exception("logic error, not array: 0x{:02x}".format(ord(code)))
+
+    if options.get('use_tuple'):
+        return tuple((_unpack(fp, options) for i in xrange(length)))
 
     return [_unpack(fp, options) for i in xrange(length)]
 
@@ -832,10 +913,9 @@ def _unpack_map(code, fp, options):
     elif code == b'\xdf':
         length = struct.unpack(">I", _read_except(fp, 4))[0]
     else:
-        raise Exception("logic error, not map: 0x%02x" % ord(code))
+        raise Exception("logic error, not map: 0x{:02x}".format(ord(code)))
 
-    d = {} if not options.get('use_ordered_dict') \
-        else collections.OrderedDict()
+    d = {} if not options.get('use_ordered_dict') else collections.OrderedDict()
     for _ in xrange(length):
         # Unpack key
         k = _unpack(fp, options)
@@ -843,12 +923,12 @@ def _unpack_map(code, fp, options):
         if isinstance(k, list):
             # Attempt to convert list into a hashable tuple
             k = _deep_list_to_tuple(k)
-        elif not isinstance(k, collections.Hashable):
+        elif not isinstance(k, Hashable):
             raise UnhashableKeyException(
-                "encountered unhashable key: %s, %s" % (str(k), str(type(k))))
+                "encountered unhashable key: \"{:s}\" ({:s})".format(str(k), str(type(k))))
         elif k in d:
             raise DuplicateKeyException(
-                "encountered duplicate key: %s, %s" % (str(k), str(type(k))))
+                "encountered duplicate key: \"{:s}\" ({:s})".format(str(k), str(type(k))))
 
         # Unpack value
         v = _unpack(fp, options)
@@ -857,7 +937,7 @@ def _unpack_map(code, fp, options):
             d[k] = v
         except TypeError:
             raise UnhashableKeyException(
-                "encountered unhashable key: %s" % str(k))
+                "encountered unhashable key: \"{:s}\"".format(str(k)))
     return d
 
 
@@ -881,6 +961,8 @@ def _unpack2(fp, **options):
                              Ext into an object
         use_ordered_dict (bool): unpack maps into OrderedDict, instead of
                                  unordered dict (default False)
+        use_tuple (bool): unpacks arrays into tuples, instead of lists (default
+                          False)
         allow_invalid_utf8 (bool): unpack invalid strings into instances of
                                    InvalidString, for access to the bytes
                                    (default False)
@@ -925,6 +1007,8 @@ def _unpack3(fp, **options):
                              Ext into an object
         use_ordered_dict (bool): unpack maps into OrderedDict, instead of
                                  unordered dict (default False)
+        use_tuple (bool): unpacks arrays into tuples, instead of lists (default
+                          False)
         allow_invalid_utf8 (bool): unpack invalid strings into instances of
                                    InvalidString, for access to the bytes
                                    (default False)
@@ -970,6 +1054,8 @@ def _unpackb2(s, **options):
                              Ext into an object
         use_ordered_dict (bool): unpack maps into OrderedDict, instead of
                                  unordered dict (default False)
+        use_tuple (bool): unpacks arrays into tuples, instead of lists (default
+                          False)
         allow_invalid_utf8 (bool): unpack invalid strings into instances of
                                    InvalidString, for access to the bytes
                                    (default False)
@@ -1018,6 +1104,8 @@ def _unpackb3(s, **options):
                              Ext into an object
         use_ordered_dict (bool): unpack maps into OrderedDict, instead of
                                  unordered dict (default False)
+        use_tuple (bool): unpacks arrays into tuples, instead of lists (default
+                          False)
         allow_invalid_utf8 (bool): unpack invalid strings into instances of
                                    InvalidString, for access to the bytes
                                    (default False)

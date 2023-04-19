@@ -47,10 +47,10 @@ def _handle_request2(root, req) -> t.IResponse:
     gws.common.model.session.open()
     req.auth_open()
 
-    ## gws.p('REQUEST', {'user': req.user, 'params': req.params})
-
     try:
+        gws.log.if_debug(_debug_repr, 'REQUEST_BEGIN:', req.params)
         res = _handle_action(root, req)
+        gws.log.if_debug(_debug_repr, 'REQUEST_END:', res)
     finally:
         gws.common.model.session.close()
 
@@ -60,6 +60,20 @@ def _handle_request2(root, req) -> t.IResponse:
         res = _with_cors_headers(cors, res)
 
     return res
+
+
+def _debug_repr(prefix, v):
+    if not isinstance(v, dict):
+        try:
+            v = vars(v)
+        except:
+            pass
+    s = repr(v)
+    m = 400
+    n = len(s)
+    if n <= m:
+        return prefix + ': ' + s
+    return prefix + ': ' + s[:m] + ' [...' + str(n - m) + ' more]'
 
 
 def _handle_error(root, req, err) -> t.IResponse:

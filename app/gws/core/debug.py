@@ -63,13 +63,13 @@ def _dump(x, name, depth, max_depth, all_props):
         yield pfx + '...'
         return
 
-    if isinstance(x, collections.Mapping) and x:
+    if isinstance(x, dict) and x:
         yield pfx + ' = '
         for k in x:
             for s in _dump(x[k], repr(k), depth + 1, max_depth, all_props):
                 yield s
 
-    elif isinstance(x, (collections.Set, collections.Sequence)) and x:
+    elif isinstance(x, (set, list)) and x:
         yield pfx + ' = '
         for k, v in enumerate(x):
             for s in _dump(v, str(k), depth + 1, max_depth, all_props):

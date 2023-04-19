@@ -37,4 +37,4 @@ class ProgressIndicator:
         self.lastd = d
 
     def write(self, s):
-        gws.log.info(self.title + ': ' + s, extra={'skip_frames': 2})
+        gws.log.info(self.title + ': ' + s, stacklevel=2)

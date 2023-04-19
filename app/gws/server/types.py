@@ -53,7 +53,7 @@ class Config(t.Config):
 
     autoRun: str = ''  #: shell command to run before server start
     log: str = ''  #: log path
-    logLevel: gws.log.Level = 'INFO'  #: logging level
+    logLevel: str = 'INFO'  #: logging level
     mapproxy: MapproxyConfig = {}  #: bundled Mapproxy module
     monitor: MonitorConfig = {}  #: monitor configuation
     qgis: QgisConfig = {}  #: bundled Qgis module

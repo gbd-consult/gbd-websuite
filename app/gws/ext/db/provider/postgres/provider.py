@@ -256,7 +256,7 @@ class Object(gws.common.db.provider.Sql):
             cs = [c.name for c in cols.values() if c.is_key]
             if len(cs) == 1:
                 cname = cs[0]
-                gws.log.debug(f'found primary key {cname!r} for table {table.name!r}')
+                # gws.log.debug(f'found primary key {cname!r} for table {table.name!r}')
 
         table.key_column = cname
 
