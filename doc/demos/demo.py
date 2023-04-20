@@ -140,7 +140,7 @@ def relocate_asset(m, path):
     if not ps.startswith(APP_DIR):
         return m.group(0)
     pd = ps.replace(APP_DIR, '/gws-app')
-    print(f'ASSET {name!r}: {ps!r} -> {pd!r}')
+    # print(f'ASSET {name!r}: {ps!r} -> {pd!r}')
     return quot + pd + quot
 
 
