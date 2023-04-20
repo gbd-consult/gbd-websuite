@@ -32,7 +32,7 @@ Options:
 
 
 def main(args):
-    all_paths = list(cli.find_files(APP_DIR, r'_demo/.+?'))
+    all_paths = list(cli.find_files(APP_DIR + '/gws', r'_demo/.+?'))
 
     config = ''
 
