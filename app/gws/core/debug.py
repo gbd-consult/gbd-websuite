@@ -23,19 +23,19 @@ def p(*args, lines=False, stack=False, d=3, all=False):
     if lines:
         for arg in args:
             for s in enumerate(str(arg).split('\n'), 1):
-                log.debug('%06d:%s' % s, stacklevel=1)
-            log.debug(sep, stacklevel=1)
+                log.debug('%06d:%s' % s, stacklevel=2)
+            log.debug(sep, stacklevel=2)
         return
 
     if stack:
         for s in traceback.format_stack()[:-1]:
-            log.debug(s.replace('\n', ' '), stacklevel=1)
+            log.debug(s.replace('\n', ' '), stacklevel=2)
         return
 
     for arg in args:
         for s in inspect(arg, max_depth=d, all_props=all):
-            log.debug(s, stacklevel=1)
-        log.debug(sep, stacklevel=1)
+            log.debug(s, stacklevel=2)
+        log.debug(sep, stacklevel=2)
 
 
 _TIME_STACK = []
@@ -49,7 +49,7 @@ def time_end():
     if _TIME_STACK:
         t2 = time.time()
         t1, label = _TIME_STACK.pop()
-        log.debug(f'@PROFILE {label} :: {t2 - t1:.2f}', stacklevel=1)
+        log.debug(f'@PROFILE {label} :: {t2 - t1:.2f}', stacklevel=2)
 
 
 def pycharm_debugger_check(path_to_pycharm_debug_egg, host, port, suspend=False):
