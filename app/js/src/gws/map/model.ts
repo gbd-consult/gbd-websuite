@@ -213,6 +213,8 @@ export class Model implements types.IModel {
                     }
             }
         }
+
+        return attributes;
     }
 
 
