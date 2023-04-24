@@ -14,158 +14,164 @@ let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as Contro
 
 interface ViewProps extends gws.types.ViewProps {
     controller: Controller;
-    styleEditorActiveTab: number;
-    styleEditorLabelEnabled: boolean;
-    styleEditorCurrentName: string;
-    styleEditorNewName: string;
-    styleEditorValues: object;
+    stylerActiveTab: number;
+    stylerCurrentStyle: gws.types.IStyle;
+    stylerValues: object;
 }
 
 
 const StoreKeys = [
-    'styleEditorActiveTab',
-    'styleEditorLabelEnabled',
-    'styleEditorCurrentName',
-    'styleEditorNewName',
-    'styleEditorValues',
+    'stylerActiveTab',
+    'stylerCurrentStyle',
+    'stylerValues',
 ];
 
 
 const STORAGE_CATEGORY = 'styles';
 
 
-class StyleForm extends gws.View<ViewProps> {
+class EditForm extends gws.View<ViewProps> {
     render() {
 
         let cc = _master(this.props.controller);
 
         /*
-                    <gws.ui.Group label={cc.__('modStyleName')} className="modStyleRenameControl">
+                    <gws.ui.Group label={cc.__('stylerName')} className="stylerRenameControl">
                 <gws.ui.TextInput
-                    {...cc.bind('styleEditorNewName')}/>
+                    {...cc.bind('stylerNewName')}/>
                 <gws.ui.Button
-                    tooltip={cc.__('modStyleRename')}
+                    tooltip={cc.__('stylerRename')}
                     whenTouched={() => cc.renameStyle()}
                 />
             </gws.ui.Group>
 
          */
 
+        let bind = (prop, getter = null, setter = null) => {
+
+            getter = getter || (x => x);
+            setter = setter || (x => x);
+
+            return {
+                value: getter(this.props.stylerValues[prop]),
+                whenChanged: val => cc.whenPropertyChanged(prop, setter(val))
+            }
+        }
+
+
         let labelPlacement = ['start', 'middle', 'end'].map(opt => <gws.ui.Toggle
-            key={opt}
-            className={'modStyleProp_label_placement_' + opt}
-            tooltip={cc.__('modStyleProp_label_placement_' + opt)}
-            {...cc.bind(
-                'styleEditorValues.label_placement',
-                val => val === opt,
-                val => opt
-            )}/>,
+                key={opt}
+                className={'stylerProp_label_placement_' + opt}
+                tooltip={cc.__('stylerProp_label_placement_' + opt)}
+                {...bind('label_placement', val => val === opt, val => opt)}
+            />,
         );
 
         let labelAlign = ['left', 'center', 'right'].map(opt => <gws.ui.Toggle
-            key={opt}
-            className={'modStyleProp_label_align_' + opt}
-            tooltip={cc.__('modStyleProp_label_align_' + opt)}
-            {...cc.bind(
-                'styleEditorValues.label_align',
-                val => val === opt,
-                val => opt
-            )}/>,
+                key={opt}
+                className={'stylerProp_label_align_' + opt}
+                tooltip={cc.__('stylerProp_label_align_' + opt)}
+                {...bind('label_align', val => val === opt, val => opt)}
+            />,
         );
 
-        let noLabel = false // this.props.styleEditorValues.with_label !== gws.api.StyleLabelOption.all;
-        let noGeom = false // this.props.styleEditorValues.with_geometry !== gws.api.StyleGeometryOption.all;
+        let noLabel = false // this.props.stylerValues.with_label !== gws.api.StyleLabelOption.all;
+        let noGeom = false // this.props.stylerValues.with_geometry !== gws.api.StyleGeometryOption.all;
 
         return <gws.ui.Tabs
-            active={cc.getValue('styleEditorActiveTab')}
-            whenChanged={n => cc.update({styleEditorActiveTab: n})}>
+            active={cc.getValue('stylerActiveTab')}
+            whenChanged={n => cc.update({stylerActiveTab: n})}>
 
-            <gws.ui.Tab label={cc.__('modStyleProp_with_geometry')}>
+            <gws.ui.Tab label={cc.__('stylerProp_with_geometry')}>
 
                 <Form tabular>
-                    <gws.ui.Group noBorder label={cc.__('modStyleEnabled')}>
+                    <gws.ui.Group noBorder label={cc.__('stylerEnabled')}>
                         <gws.ui.Toggle
                             type="checkbox"
-                            {...cc.bind(
-                                'styleEditorValues.with_geometry',
-                                val => val === 'all',
-                                val => val ? 'all' : 'none',
-                            )}/>
+                            {...bind('with_geometry', val => val === 'all', val => val ? 'all' : 'none')}
+                        />
                     </gws.ui.Group>
 
                     <gws.ui.ColorPicker
                         disabled={noGeom}
-                        label={cc.__('modStyleProp_fill')}
-                        {...cc.bind('styleEditorValues.fill')}/>
+                        label={cc.__('stylerProp_fill')}
+                        {...bind('fill')}
+                    />
                     <gws.ui.ColorPicker
                         disabled={noGeom}
-                        label={cc.__('modStyleProp_stroke')}
-                        {...cc.bind('styleEditorValues.stroke')}/>
+                        label={cc.__('stylerProp_stroke')}
+                        {...bind('stroke')}
+                    />
                     <gws.ui.Slider
                         disabled={noGeom}
-                        label={cc.__('modStyleProp_stroke_width')}
+                        label={cc.__('stylerProp_stroke_width')}
                         minValue={0} maxValue={20} step={1}
-                        {...cc.bind('styleEditorValues.stroke_width')}/>
+                        {...bind('stroke_width')}
+                    />
                     <gws.ui.Slider
                         disabled={noGeom}
                         minValue={0} maxValue={20} step={1}
-                        label={cc.__('modStyleProp_point_size')}
-                        {...cc.bind('styleEditorValues.point_size')}/>
+                        label={cc.__('stylerProp_point_size')}
+                        {...bind('point_size')}
+                    />
                 </Form>
             </gws.ui.Tab>
 
-            <gws.ui.Tab label={cc.__('modStyleProp_with_label')}>
+            <gws.ui.Tab label={cc.__('stylerProp_with_label')}>
                 <Form tabular>
 
-                    <gws.ui.Group noBorder label={cc.__('modStyleEnabled')}>
+                    <gws.ui.Group noBorder label={cc.__('stylerEnabled')}>
                         <gws.ui.Toggle
                             type="checkbox"
-                            {...cc.bind(
-                                'styleEditorValues.with_label',
-                                val => val === 'all',
-                                val => val ? 'all' : 'none',
-                            )}/>
+                            {...bind('with_label', val => val === 'all', val => val ? 'all' : 'none')}
+                        />
                     </gws.ui.Group>
 
                     <gws.ui.ColorPicker
                         disabled={noLabel}
-                        label={cc.__('modStyleProp_fill')}
-                        {...cc.bind('styleEditorValues.label_fill')}/>
+                        label={cc.__('stylerProp_fill')}
+                        {...bind('label_fill')}
+                    />
                     <gws.ui.ColorPicker
                         disabled={noLabel}
-                        label={cc.__('modStyleProp_stroke')}
-                        {...cc.bind('styleEditorValues.label_stroke')}/>
+                        label={cc.__('stylerProp_stroke')}
+                        {...bind('label_stroke')}
+                    />
                     <gws.ui.Slider
                         disabled={noLabel}
-                        label={cc.__('modStyleProp_stroke_width')}
+                        label={cc.__('stylerProp_stroke_width')}
                         minValue={0} maxValue={20} step={1}
-                        {...cc.bind('styleEditorValues.label_stroke_width')}/>
+                        {...bind('label_stroke_width')}
+                    />
                     <gws.ui.Slider
                         disabled={noLabel}
                         minValue={10} maxValue={40} step={1}
-                        label={cc.__('modStyleProp_label_font_size')}
-                        {...cc.bind('styleEditorValues.label_font_size')}/>
+                        label={cc.__('stylerProp_label_font_size')}
+                        {...bind('label_font_size')}
+                    />
                     <gws.ui.Group
                         noBorder
                         disabled={noLabel}
-                        label={cc.__('modStyleProp_label_placement')}
+                        label={cc.__('stylerProp_label_placement')}
                     >{labelPlacement}</gws.ui.Group>
                     <gws.ui.Group
                         noBorder
                         disabled={noLabel}
-                        label={cc.__('modStyleProp_label_align')}
+                        label={cc.__('stylerProp_label_align')}
                     >{labelAlign}</gws.ui.Group>
                     <gws.ui.Group
                         noBorder
                         disabled={noLabel}
-                        label={cc.__('modStyleProp_label_offset')}
+                        label={cc.__('stylerProp_label_offset')}
                     >
                         <gws.ui.Slider
                             minValue={-100} maxValue={+100} step={1}
-                            {...cc.bind('styleEditorValues.label_offset_x')}/>
+                            {...bind('label_offset_x')}
+                        />
                         <gws.ui.Slider
                             minValue={-100} maxValue={+100} step={1}
-                            {...cc.bind('styleEditorValues.label_offset_y')}/>
+                            {...bind('label_offset_y')}
+                        />
                     </gws.ui.Group>
                 </Form>
             </gws.ui.Tab>
@@ -182,19 +188,19 @@ class StyleSidebarView extends gws.View<ViewProps> {
 
         let cc = _master(this.props.controller);
 
-        return <sidebar.Tab className="modStyleSidebar">
+        return <sidebar.Tab className="stylerSidebar">
             <sidebar.TabHeader>
                 <Row>
                     <Cell flex>
-                        <gws.ui.Title content={this.__('modStyleSidebarTitle')}/>
+                        <gws.ui.Title content={this.__('stylerSidebarTitle')}/>
                     </Cell>
                     <Cell>
-                        <gws.ui.Select items={styleNames} {...cc.bind('styleEditorCurrentName')}/>
+                        <gws.ui.Select items={styleNames} {...cc.bind('stylerCurrentName')}/>
                     </Cell>
                 </Row>
             </sidebar.TabHeader>
             <sidebar.TabBody>
-                <StyleForm {...this.props}/>
+                <EditForm {...this.props}/>
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
@@ -208,12 +214,12 @@ class StyleSidebarView extends gws.View<ViewProps> {
     }
 }
 
-class StyleSidebar extends gws.Controller implements gws.types.ISidebarItem {
+class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
 
-    iconClass = 'modStyleSidebarIcon';
+    iconClass = 'stylerSidebarIcon';
 
     get tooltip() {
-        return this.__('modStyleSidebarTitle');
+        return this.__('stylerSidebarTitle');
     }
 
     get tabView() {
@@ -229,56 +235,53 @@ const UPDATE_DELAY = 200;
 export class Controller extends gws.Controller {
     uid = MASTER;
 
-    updateTimer: any;
-
 
     async init() {
-        this.update({
-            styleEditorValues: {}
-        });
-        this.whenChanged('styleEditorCurrentName', () => this.loadStyle());
-        this.whenChanged('styleEditorValues', () => this.updateValues());
-
-        let s = this.app.style.get('.modAnnotateFeature');
-        this.update({
-            styleEditorNewName: s.name,
-            styleEditorValues: s.values,
-        });
+        this.whenChanged('stylerCurrentStyle', () => this.loadStyle());
     }
 
 
-    styleForm() {
+    form() {
         return this.createElement(
-            this.connect(StyleForm, StoreKeys)
+            this.connect(EditForm, StoreKeys)
         );
     }
 
 
     loadStyle() {
-        let name = this.getValue('styleEditorCurrentName');
-        console.log('LOAD STYLE', name)
-        let sty = this.app.style.at(name);
+        let sty = this.getValue('stylerCurrentStyle');
         let values = sty ? sty.values : {}
 
         this.update({
-            styleEditorNewName: sty ? sty.name : '',
-            styleEditorValues: {...style.DEFAULT_VALUES, ...values}
+            stylerValues: {...style.DEFAULT_VALUES, ...values}
         });
     }
 
-    updateValues() {
-        let name = this.getValue('styleEditorCurrentName');
-        let sty = this.app.style.at(name);
+    updateTimer: any;
+
+    whenPropertyChanged(prop, val) {
+        let newValues = {
+            ...this.getValue('stylerValues') || {},
+            [prop]: val,
+        };
+
+        this.update({
+            stylerValues: newValues
+        });
+
+        let sty = this.getValue('stylerCurrentStyle');
         if (sty) {
-            sty.update(this.getValue('styleEditorValues'));
+            sty.update(newValues);
             clearTimeout(this.updateTimer);
-            this.updateTimer = setTimeout(() => this.map.style.notifyChanged(this.map, name), UPDATE_DELAY);
+            this.updateTimer = setTimeout(
+                () => this.map.style.whenStyleChanged(this.map, sty.name),
+                UPDATE_DELAY);
         }
     }
 
     readStyles(data) {
         this.map.style.unserialize(data);
-        this.map.style.notifyChanged(this.map);
+        this.map.style.whenStyleChanged(this.map);
         this.loadStyle();
     }
 
@@ -296,6 +299,6 @@ export class Controller extends gws.Controller {
 
 gws.registerTags({
     [MASTER]: Controller,
-    'Sidebar.Style': StyleSidebar,
+    'Sidebar.Style': Sidebar,
 });
 

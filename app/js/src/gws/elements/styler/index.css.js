@@ -1,7 +1,7 @@
 module.exports = v => {
 
     let ICON_RADIO = (prop, icon) => {
-        prop = '.uiToggle.modStyleProp_' + prop
+        prop = '.uiToggle.stylerProp_' + prop
 
         return {
             [prop + ' button']: {
@@ -18,11 +18,11 @@ module.exports = v => {
 
 
     return {
-        '.modStyleSidebarIcon': {
+        '.stylerSidebarIcon': {
             ...v.SIDEBAR_ICON('google:image/color_lens')
         },
 
-        '.modStyleSidebar': {
+        '.stylerSidebar': {
             '.modSidebarTabHeader': {
                 padding: [v.UNIT, v.UNIT4, v.UNIT, v.UNIT2],
                 '.uiControlBox': {
@@ -34,7 +34,7 @@ module.exports = v => {
                 }
             }
         },
-        '.modStyleRenameControl': {
+        '.stylerRenameControl': {
             '.uiInput': {
                 flex: 1,
             },
