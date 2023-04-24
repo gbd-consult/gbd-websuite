@@ -86,6 +86,9 @@ class Object(gws.Node, gws.IMap):
             _defaultResolutions=self.resolutions,
         ))
 
+        if not self.rootLayer:
+            raise gws.Error(f'invalid map {self!r}')
+
     def props(self, user):
         return gws.Data(
             crs=self.bounds.crs.epsg,

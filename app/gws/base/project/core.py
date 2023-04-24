@@ -122,8 +122,9 @@ class Object(gws.Node, gws.IProject):
             desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
 
         models = []
-        for la in self.map.rootLayer.descendants():
-            models.extend(m for m in la.models if user.can_use(la) and user.can_use(m))
+        if self.map:
+            for la in self.map.rootLayer.descendants():
+                models.extend(m for m in la.models if user.can_use(la) and user.can_use(m))
 
         return gws.Props(
             actions=self.root.app.actionMgr.actions_for(user, self.actionMgr),

@@ -102,4 +102,5 @@ class Object(gws.base.database.provider.Object):
         with self.session() as sess:
             sel = sa.select(sa.func.ST_Extent(tab.columns.get(desc.geometryName)))
             box = sess.execute(sel).scalar_one()
-            return gws.Bounds(extent=gws.gis.extent.from_box(box), crs=gws.gis.crs.get(desc.geometrySrid))
+            if box:
+                return gws.Bounds(extent=gws.gis.extent.from_box(box), crs=gws.gis.crs.get(desc.geometrySrid))
