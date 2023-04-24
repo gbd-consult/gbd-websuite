@@ -23,14 +23,14 @@ export class Feature implements types.IFeature {
 
     _editedAttributes: types.Dict = {};
 
-    constructor(model: types.IModel, map: types.IMapManager) {
-        this.map = map;
+    constructor(model: types.IModel) {
         this.model = model;
+        this.map = model.registry.app.map;
         this.uid = lib.uniqId('_feature_');
     }
 
     setProps(props) {
-        this.setAttributes(props.attributes);
+        this.setAttributes(props.attributes || {});
 
         this.category = props.category || '';
         this.views = props.views || {};
@@ -55,9 +55,32 @@ export class Feature implements types.IFeature {
 
         let shape = this.attributes[this.geometryName];
         if (shape)
-            this.createOrUpdateOlFeature(this.map.shape2geom(shape));
+            this.setShape(shape);
 
         return this;
+    }
+
+    setGeometry(geom: ol.geom.Geometry) {
+        return this.setShape(this.map.geom2shape(geom));
+    }
+
+    setCssSelector(sel: string) {
+        this.cssSelector = sel;
+        return this.redraw();
+    }
+
+    setShape(shape: api.base.shape.Props) {
+        this.oFeature = this.ensureOlFeature();
+        this.updateOlFeatureFromShape(shape);
+        this.bindOlFeature();
+        return this.redraw();
+    }
+
+    setOlFeature(oFeature) {
+        this.oFeature = oFeature;
+        this.updateShapeFromOlFeature();
+        this.bindOlFeature();
+        return this.redraw();
     }
 
     //
@@ -125,11 +148,6 @@ export class Feature implements types.IFeature {
 
     //
 
-    setGeometry(geom: ol.geom.Geometry) {
-        this.createOrUpdateOlFeature(geom);
-        this.attributes[this.geometryName] = this.map.geom2shape(geom);
-        return this.redraw();
-    }
 
     setNew(f: boolean) {
         this.isNew = f;
@@ -150,7 +168,7 @@ export class Feature implements types.IFeature {
     //
 
     clone() {
-        let f = new Feature(this.model, this.map)
+        let f = new Feature(this.model)
         f.attributes = {...this.attributes}
         f.category = this.category;
         f.views = {...this.views};
@@ -167,31 +185,44 @@ export class Feature implements types.IFeature {
 
     //
 
-    protected createOrUpdateOlFeature(geom) {
-        if (this.oFeature)
-            this.oFeature.setGeometry(geom);
-        else
-            this.oFeature = new ol.Feature(geom);
-
-        if (this.oFeature) {
-            this.oFeature['_gwsFeature'] = this;
-            this.oFeature.setStyle((f, r) => this.oStyleFunc(f, r))
-        }
-
+    protected bindOlFeature() {
+        this.oFeature['_gwsFeature'] = this;
+        this.oFeature.setStyle((f, r) => this.oStyleFunc(f, r))
         this.oFeature.getGeometry().on('change', () => {
-            let geom = this.oFeature.getGeometry();
-            if (this.geometryName)
-                this.attributes[this.geometryName] = this.map.geom2shape(geom);
-            this.whenGeometryChanged()
+            this.updateShapeFromOlFeature();
+            this.whenGeometryChanged();
+            this.redraw();
+
         });
 
     }
 
+    protected ensureOlFeature() {
+        return this.oFeature || new ol.Feature();
+    }
+
+    protected updateOlFeatureFromShape(shape) {
+        this.oFeature.setGeometry(this.map.shape2geom(shape));
+    }
+
+
+    protected updateShapeFromOlFeature() {
+        let geom = this.oFeature.getGeometry();
+        if (this.geometryName)
+            this.attributes[this.geometryName] = this.map.geom2shape(geom);
+    }
+
+    protected trySelector(c, geom, spec) {
+        return c && (
+            this.map.style.getFromSelector(c + geom + spec) ||
+            this.map.style.getFromSelector(c + geom) ||
+            this.map.style.getFromSelector(c + spec) ||
+            this.map.style.getFromSelector(c)
+        );
+    }
 
     protected currentStyle() {
         let spec = '',
-            style,
-            c,
             geom = '.' + this.oFeature.getGeometry().getType().toLowerCase();
 
         if (this.isSelected) spec = '.isSelected';
@@ -199,21 +230,11 @@ export class Feature implements types.IFeature {
         if (this.isDirty) spec = '.isDirty';
         if (this.isFocused) spec = '.isFocused';
 
-        c = this.cssSelector;
-        if (c && (style = this.map.style.getFromSelector(c + geom + spec)))
-            return style;
-        if (c && (style = this.map.style.getFromSelector(c + spec)))
-            return style;
-
-
-        c = this.layer?.cssSelector;
-        if (c && (style = this.map.style.getFromSelector(c + geom + spec)))
-            return style;
-        if (c && (style = this.map.style.getFromSelector(c + spec)))
-            return style;
-
-        c = '.defaultFeatureStyle'
-        return this.map.style.getFromSelector(c + geom + spec)
+        return (
+            this.trySelector(this.cssSelector, geom, spec) ||
+            this.trySelector(this.layer?.cssSelector, geom, spec) ||
+            this.trySelector('.defaultFeatureStyle', geom, spec)
+        );
     }
 
     protected oStyleFunc(oFeature, resolution) {

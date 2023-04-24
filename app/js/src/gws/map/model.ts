@@ -34,6 +34,7 @@ export class ModelRegistry implements types.IModelRegistry {
         let m = new Model(this, props);
         this.models.push(m);
         this.index[m.uid] = m;
+        return m;
     }
 
     model(uid) {
@@ -140,14 +141,24 @@ export class Model implements types.IModel {
                 return f;
     }
 
+    newFeature() {
+        return new feature.Feature(this);
+    }
+    
+    
     featureWithAttributes(attributes: types.Dict): types.IFeature {
         let map = this.registry.app.map;
-        return new feature.Feature(this, map).setAttributes(attributes);
+        return this.newFeature().setAttributes(attributes);
     }
 
     featureFromGeometry(geom: ol.geom.Geometry): types.IFeature {
         let map = this.registry.app.map;
-        return new feature.Feature(this, map).setGeometry(geom);
+        return this.newFeature().setGeometry(geom);
+    }
+
+    featureFromOlFeature(oFeature: ol.Feature): types.IFeature {
+        let map = this.registry.app.map;
+        return this.newFeature().setOlFeature(oFeature);
     }
 
     featureFromProps(props: api.core.FeatureProps): types.IFeature {
@@ -166,7 +177,7 @@ export class Model implements types.IModel {
             }
         }
 
-        return new feature.Feature(this, map).setProps({...props, attributes});
+        return this.newFeature().setProps({...props, attributes});
     }
 
     featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<types.IFeature> {

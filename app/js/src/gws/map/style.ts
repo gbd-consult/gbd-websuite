@@ -22,6 +22,7 @@ export const DEFAULT_VALUES: types.Dict = {
 export class StyleManager implements types.IStyleManager {
     styles: { [name: string]: types.IStyle } = {};
     notFound: { [name: string]: boolean } = {};
+    map: types.IMapManager;
 
 
     getFromSelector(selector: string): types.IStyle | null {
@@ -35,12 +36,13 @@ export class StyleManager implements types.IStyleManager {
 
         let [values, source] = parseCssSelector(selector);
         if (values) {
+            console.log('getFromSelector: found', selector)
             let s = this.create(values, selector);
             s.source = source;
             return s;
         }
 
-        console.warn('STYLE:not found', selector);
+        console.log('getFromSelector: NOT FOUND', selector)
         this.notFound[selector] = true;
         return null;
     }
@@ -116,18 +118,13 @@ export class StyleManager implements types.IStyleManager {
         return m;
     }
 
-    notifyChanged(map, name = null) {
-        // map.walk(map.root, layer => {
-        //     if (layer['styleNames'] && (!name || name === layer['styleNames']['normal'])) {
-        //         layer.changed()
-        //         return;
-        //     }
-        //     layer.oFeatures.forEach(f => {
-        //         if (f['_gwsFeature'] && (!name || name === f['_gwsFeature']['styleNames']['normal'])) {
-        //             f.changed();
-        //         }
-        //     });
-        // });
+    whenStyleChanged(map: types.IMapManager, name?: string) {
+        map.walk(map.root, layer => {
+            let fs = (layer as types.IFeatureLayer).features;
+            if (fs) {
+                fs.forEach(f => f.redraw())
+            }
+        });
     }
 
     unserialize(data: object) {
@@ -145,6 +142,9 @@ export class StyleManager implements types.IStyleManager {
         return data;
     }
 
+    copy(style: types.IStyle, name: string = null) {
+        return this.create(style.values, name)
+    }
 
     protected getFromNameOrSelector(name: string) {
         if (this.styles[name]) {

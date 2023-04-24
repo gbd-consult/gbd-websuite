@@ -202,10 +202,11 @@ export interface IStyleManager {
     at(name: string): IStyle | null;
     get(style: StyleArg): IStyle | null;
     getMap(src: StyleMapArgs) : StyleNameMap;
-    notifyChanged(map: IMapManager, name?: string);
+    whenStyleChanged(map: IMapManager, name?: string);
     add(s: IStyle) : IStyle;
     serialize(): object;
     unserialize(data: object);
+    copy(style: IStyle, name: string|null);
 }
 
 export interface IStyle {
@@ -392,7 +393,9 @@ export interface IFeature {
 
     setProps(props: api.core.FeatureProps): IFeature;
     setAttributes(attributes: Dict): IFeature;
+    setOlFeature(oFeature: ol.Feature): IFeature;
     setGeometry(geom: ol.geom.Geometry): IFeature;
+    setCssSelector(sel: string);
     setNew(f: boolean): IFeature;
     setSelected(f: boolean): IFeature;
 
@@ -432,7 +435,7 @@ export interface ISidebarItem extends IController {
 }
 
 export interface IModelRegistry {
-    addModel(props: api.base.model.Props);
+    addModel(props: api.base.model.Props): IModel;
     model(uid: string): IModel|null;
     modelForLayer(layer: ILayer): IModel|null;
     editableModels(): Array<IModel>;
@@ -466,8 +469,9 @@ export interface IModel {
 
     featureWithAttributes(attributes: Dict): IFeature;
     featureFromGeometry(geom: ol.geom.Geometry): IFeature;
-    featureFromProps(props: api.core.FeatureProps): IFeature;
-    featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<IFeature>;
+    featureFromOlFeature(oFeature: ol.Feature): IFeature;
+    featureFromProps(props: Partial<api.core.FeatureProps>): IFeature;
+    featureListFromProps(propsList: Array<Partial<api.core.FeatureProps>>): Array<IFeature>;
 
     featureProps(feature: IFeature, relationDepth?: number): api.core.FeatureProps;
 }
