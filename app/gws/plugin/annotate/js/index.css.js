@@ -1,81 +1,83 @@
 module.exports = v => {
 
-    let feature = {
-
+    let FEATURE = {
         fill: v.COLOR.opacity(v.COLOR.blue100, 0.3),
-
         stroke: v.COLOR.blue300,
         strokeWidth: 1,
+        pointSize: 10,
+    }
 
+    let LABEL = {
         withLabel: 'all',
         labelFontSize: 12,
         labelFill: v.COLOR.blue900,
         labelStroke: v.COLOR.white,
         labelStrokeWidth: 6,
+    }
 
-        pointSize: 10,
-    };
-
-    let selected = {
-        marker: 'circle',
-        markerStroke: v.COLOR.opacity(v.COLOR.pink800, 0.3),
-        markerStrokeWidth: 3,
-        markerSize: 20,
-        markerStrokeDasharray: '4',
-    };
+    let MARKER = {
+        markerType: 'circle',
+        markerStroke: v.COLOR.blue300,
+        markerFill: v.COLOR.white,
+        markerStrokeWidth: 4,
+        markerSize: 10,
+    }
 
     return {
-        '.modAnnotateFeature': feature,
-        '.modAnnotateSelected': selected,
-        '.modAnnotateDraw': {...feature, ...selected},
+        '.annotateFeature': {...FEATURE, ...LABEL},
+        '.annotateFeature.isFocused': {...FEATURE, ...LABEL, ...MARKER},
 
+        '.annotateFocused': {...MARKER},
 
-        '.modAnnotateSidebarIcon': {
-            ...v.SIDEBAR_ICON(__dirname + '/markandmeasure')
+        '.annotateSidebarIcon': {
+            ...v.SIDEBAR_ICON(__dirname + '/annotate')
         },
 
-        '.modAnnotateDrawToolbarButton': {
-            ...v.TOOLBAR_BUTTON(__dirname + '/markandmeasure')
+        '.annotateDrawToolbarButton': {
+            ...v.TOOLBAR_BUTTON(__dirname + '/annotate')
         },
 
-        '.modAnnotateEditAuxButton': {
+        '.annotateEditAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON(__dirname + '/cursor')
         },
 
-        '.modAnnotateDrawAuxButton': {
+        '.annotateDrawAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:content/gesture'),
         },
 
-        '.modAnnotateClearAuxButton': {
+        '.annotateClearAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever'),
 
         },
 
-        '.modAnnotateLensAuxButton': {
+        '.annotateLensAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON(__dirname + '/spatialsearch'),
         },
+        '.annotateCancelButton': {
+            ...v.ROUND_CLOSE_BUTTON(),
+        },
 
-        '.modAnnotateRemoveButton': {
+        '.annotateRemoveButton': {
             ...v.ROUND_FORM_BUTTON('google:action/delete')
         },
 
-        '.modAnnotateStyleButton': {
+        '.annotateStyleButton': {
             ...v.ROUND_FORM_BUTTON('google:image/brush')
         },
 
-        '.modAnnotateFormAuxButton': {
+        '.annotateFormAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/list'),
         },
 
-        '.modAnnotateAddAuxButton': {
+        '.annotateAddAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline'),
         },
 
-        '.modAnnotateStyleAuxButton': {
+        '.annotateStyleAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:image/brush'),
         },
 
-        '.modAnnotateDeleteListButton': {
+        '.annotateDeleteListButton': {
             ...v.LIST_BUTTON('google:action/delete_forever')
         },
 

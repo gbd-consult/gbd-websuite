@@ -1,0 +1,35 @@
+@comment
+
+Annotation function.
+
+"Sidebar.Annotate" and "Toolbar.Annotate.Draw" enable the Sidebar and Toolbar buttons,
+"Task.Annotate" adds the "Annotate" item to the Features popup menu.
+
+@end
+
+projects+ {
+    title "Map Annotations"
+    metadata.abstract "Create and edit map annotations."
+
+    api.actions+ { type "annotate" }
+
+    client.addElements+ { tag "Sidebar.Annotate" }
+    client.addElements+ { tag "Toolbar.Annotate.Draw" }
+    client.addElements+ { tag "Task.Annotate" }
+    client.options.sidebarActiveTab "Sidebar.Annotate"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Districts"
+        type "postgres"
+        tableName "edit.districts"
+        permissions.edit 'allow all'
+    }
+
+    {demo_osm_background}
+}
