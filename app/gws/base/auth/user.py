@@ -82,7 +82,7 @@ class User(gws.Object, gws.IUser):
             raise gws.Error(f'required object {classref} {uid} denied')
         return obj
 
-    def acquire(self, uid, classref=None, access=None):
+    def acquire(self, uid, classref=None, access=gws.Access.use):
         obj = self.provider.root.get(uid, classref)
         if obj and self.can(access, obj):
             return obj
