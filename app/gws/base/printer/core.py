@@ -68,7 +68,7 @@ class Plane(gws.Data):
     type: PlaneType
 
     opacity: t.Optional[float]
-    style: t.Optional[gws.lib.style.Props]
+    cssSelector: t.Optional[str]
 
     bitmapData: t.Optional[bytes]
     bitmapMode: t.Optional[str]
@@ -94,6 +94,7 @@ class MapParams(gws.Data):
     planes: list[Plane]
     rotation: t.Optional[int]
     scale: int
+    styles: t.Optional[list[gws.lib.style.Props]]
     visibleLayers: t.Optional[list[str]]
 
 

@@ -1,9 +1,8 @@
-import base64
+"""Style parser."""
+
 import re
 
 import gws
-import gws.types as t
-
 from . import icon
 
 
@@ -32,7 +31,7 @@ def parse_dict(d: dict, trusted, with_strict_mode) -> dict:
             if v is not None:
                 res[k] = v
         except Exception as exc:
-            err = f'style: invalid css value for {key!r}'
+            err = f'style: invalid css value for {key!r}: {val!r}'
             if with_strict_mode:
                 raise gws.Error(err) from exc
             else:
@@ -109,8 +108,6 @@ _ENUMS = dict(
     stroke_linecap=['butt', 'round', 'square'],
     stroke_linejoin=['bevel', 'round', 'miter'],
     marker=['circle', 'square', 'arrow', 'cross'],
-    marker_stroke_linecap=['butt', 'round', 'square'],
-    marker_stroke_linejoin=['bevel', 'round', 'miter'],
     with_geometry=['all', 'none'],
     with_label=['all', 'none'],
     label_align=['left', 'right', 'center'],
@@ -119,8 +116,6 @@ _ENUMS = dict(
     label_padding=[int],
     label_placement=['start', 'end', 'middle'],
     label_stroke_dasharray=[int],
-    label_stroke_linecap=['butt', 'round', 'square'],
-    label_stroke_linejoin=['bevel', 'round', 'miter'],
 )
 
 _COLOR_PATTERNS = (
@@ -174,11 +169,11 @@ def _parse_enum_fn(cls):
     return _check
 
 
-def _parse_int(val):
+def _parse_int(val, trusted):
     return int(val)
 
 
-def _parse_str(val):
+def _parse_str(val, trusted):
     val = str(val).strip()
     return val or None
 
@@ -225,6 +220,7 @@ class _ParseFunctions:
     stroke_width = _parse_unitint
 
     marker = _parse_enum_fn('marker')
+    marker_type = _parse_enum_fn('marker')
     marker_fill = _parse_color
     marker_size = _parse_unitint
     marker_stroke = _parse_color
@@ -235,28 +231,28 @@ class _ParseFunctions:
     marker_stroke_miterlimit = _parse_unitint
     marker_stroke_width = _parse_unitint
 
-    with_geometry = _parse_enum_fn('x')
-    with_label = _parse_enum_fn('x')
+    with_geometry = _parse_enum_fn('with_geometry')
+    with_label = _parse_enum_fn('with_label')
 
-    label_align = _parse_enum_fn('x')
+    label_align = _parse_enum_fn('label_align')
     label_background = _parse_color
     label_fill = _parse_color
     label_font_family = _parse_str
     label_font_size = _parse_unitint
-    label_font_style = _parse_enum_fn('x')
-    label_font_weight = _parse_enum_fn('x')
+    label_font_style = _parse_enum_fn('label_font_style')
+    label_font_weight = _parse_enum_fn('label_font_weight')
     label_line_height = _parse_int
     label_max_scale = _parse_int
     label_min_scale = _parse_int
     label_offset_x = _parse_unitint
     label_offset_y = _parse_unitint
     label_padding = _parse_unitintquad
-    label_placement = _parse_enum_fn('x')
+    label_placement = _parse_enum_fn('label_placement')
     label_stroke = _parse_color
     label_stroke_dasharray = _parse_intlist
     label_stroke_dashoffset = _parse_unitint
-    label_stroke_linecap = _parse_enum_fn('x')
-    label_stroke_linejoin = _parse_enum_fn('x')
+    label_stroke_linecap = _parse_enum_fn('stroke_linecap')
+    label_stroke_linejoin = _parse_enum_fn('stroke_linejoin')
     label_stroke_miterlimit = _parse_unitint
     label_stroke_width = _parse_unitint
 

@@ -313,6 +313,8 @@ def to_str(x, encodings: list[str] = None) -> str:
 
     if isinstance(x, str):
         return x
+    if x is None:
+        return ''
     if not is_bytes(x):
         return str(x)
     if encodings:
@@ -329,6 +331,8 @@ def to_bytes(x, encoding='utf8') -> bytes:
 
     if is_bytes(x):
         return bytes(x)
+    if x is None:
+        return b''
     if not isinstance(x, str):
         x = str(x)
     return x.encode(encoding or 'utf8')

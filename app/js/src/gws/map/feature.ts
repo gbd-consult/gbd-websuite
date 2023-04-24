@@ -42,6 +42,8 @@ export class Feature implements types.IFeature {
         this.isNew = Boolean(props.isNew);
         this.isSelected = Boolean(props.isSelected);
 
+        this.cssSelector = props.cssSelector || '';
+
         return this;
     }
 
@@ -64,13 +66,14 @@ export class Feature implements types.IFeature {
         return this.setShape(this.map.geom2shape(geom));
     }
 
-    setCssSelector(sel: string) {
-        this.cssSelector = sel;
+    setStyle(style: types.IStyle) {
+        this.cssSelector = style.cssSelector;
         return this.redraw();
     }
 
     setShape(shape: api.base.shape.Props) {
         this.oFeature = this.ensureOlFeature();
+        this.attributes[this.geometryName] = shape;
         this.updateOlFeatureFromShape(shape);
         this.bindOlFeature();
         return this.redraw();
@@ -212,29 +215,19 @@ export class Feature implements types.IFeature {
             this.attributes[this.geometryName] = this.map.geom2shape(geom);
     }
 
-    protected trySelector(c, geom, spec) {
-        return c && (
-            this.map.style.getFromSelector(c + geom + spec) ||
-            this.map.style.getFromSelector(c + geom) ||
-            this.map.style.getFromSelector(c + spec) ||
-            this.map.style.getFromSelector(c)
-        );
-    }
-
     protected currentStyle() {
-        let spec = '',
-            geom = '.' + this.oFeature.getGeometry().getType().toLowerCase();
+        let spec = '';
 
-        if (this.isSelected) spec = '.isSelected';
-        if (this.isNew) spec = '.isNew';
-        if (this.isDirty) spec = '.isDirty';
-        if (this.isFocused) spec = '.isFocused';
+        if (this.isSelected) spec = 'isSelected';
+        if (this.isNew) spec = 'isNew';
+        if (this.isDirty) spec = 'isDirty';
+        if (this.isFocused) spec = 'isFocused';
 
-        return (
-            this.trySelector(this.cssSelector, geom, spec) ||
-            this.trySelector(this.layer?.cssSelector, geom, spec) ||
-            this.trySelector('.defaultFeatureStyle', geom, spec)
-        );
+        return this.map.style.findFirst(
+            [this.cssSelector, this.layer?.cssSelector, '.defaultFeatureStyle'],
+            this.geometry?.getType(),
+            spec
+        )
     }
 
     protected oStyleFunc(oFeature, resolution) {

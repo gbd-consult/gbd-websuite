@@ -1113,13 +1113,14 @@ class IDatabaseSession(Protocol):
 
 class IFeature(IObject, Protocol):
     attributes: dict
-    views: dict
+    cssSelector: str
     errors: list['ModelValidationError']
-    model: 'IModel'
-    layerName: str
     isNew: bool
+    layerName: str
+    model: 'IModel'
+    views: dict
 
-    def props(self, user: 'IUser') -> Props: ...
+    def props(self, user: 'IUser') -> 'FeatureProps': ...
 
     def shape(self) -> Optional['IShape']: ...
 
@@ -1155,13 +1156,14 @@ class FeatureRecord:
 
 class FeatureProps(Props):
     attributes: dict
-    views: dict
-    uid: str
-    keyName: str
-    geometryName: str
+    cssSelector: str
     isNew: bool
     modelUid: str
-    errors: list['ModelValidationError']
+    uid: str
+    views: dict
+    errors: Optional[list['ModelValidationError']]
+    keyName: Optional[str]
+    geometryName: Optional[str]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1351,7 +1353,7 @@ class MapRenderInputPlane(Data):
     print_as_vector: bool
     soup_points: list[Point]
     soup_tags: list[Any]
-    style: 'IStyle'
+    styles: list['IStyle']
     subLayers: list[str]
 
 
@@ -1502,8 +1504,7 @@ class StyleValues(Data):
 
 
 class IStyle(IObject, Protocol):
-    name: str
-    selector: str
+    cssSelector: str
     text: str
     values: StyleValues
 

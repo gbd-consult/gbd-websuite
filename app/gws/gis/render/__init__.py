@@ -193,18 +193,21 @@ def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
         lro = plane.layer.render(gws.LayerRenderInput(
             type=gws.LayerRenderInputType.svg,
             view=rd.vectorView,
-            style=plane.style,
+            style=plane.styles[0] if plane.styles else None,
             user=rd.mri.user,
         ))
         if lro:
             _add_svg_elements(rd, lro.tags, opacity)
         return
 
-    # if plane.type == 'features':
-    #     for feature in plane.features:
-    #         els = feature.to_svg_fragment(rd.vectorView, plane.style)
-    #         _add_svg_elements(rd, els, opacity)
-    #     return
+    if plane.type == 'features':
+        style_dct = {}
+        if plane.styles:
+            style_dct = {s.cssSelector: s for s in plane.styles}
+        for f in plane.features:
+            tags = f.to_svg(rd.vectorView, f.views.get('label', ''), style_dct.get(f.cssSelector))
+            _add_svg_elements(rd, tags, opacity)
+        return
     #
     # if plane.type == 'svg_soup':
     #     els = gws.lib.svg.soup_to_fragment(rd.vectorView, plane.soup_points, plane.soup_tags)

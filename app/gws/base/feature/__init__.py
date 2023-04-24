@@ -11,12 +11,13 @@ def with_model(model: gws.IModel):
 
 class Feature(gws.Object, gws.IFeature):
     def __init__(self, model):
-        self.model = model
         self.attributes = {}
-        self.views = {}
+        self.cssSelector = ''
         self.errors = []
-        self.layerName = ''
         self.isNew = False
+        self.layerName = ''
+        self.model = model
+        self.views = {}
 
     def __repr__(self):
         try:

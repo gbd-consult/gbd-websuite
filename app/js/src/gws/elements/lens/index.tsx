@@ -73,7 +73,7 @@ export class Tool extends gws.Tool {
 
     async init() {
         this.overlayRef = React.createRef();
-        this.styleName = this.app.style.get('.modLensFeature').name;
+        this.styleName = this.app.style.get('.modLensFeature').cssSelector;
 
         this.app.whenCalled('lensStartFromFeature', args => {
             this.app.startTool('Tool.Lens');

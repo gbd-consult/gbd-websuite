@@ -240,13 +240,11 @@ export class Controller extends gws.Controller {
         this.whenChanged('stylerCurrentStyle', () => this.loadStyle());
     }
 
-
     form() {
         return this.createElement(
             this.connect(EditForm, StoreKeys)
         );
     }
-
 
     loadStyle() {
         let sty = this.getValue('stylerCurrentStyle');
@@ -278,22 +276,6 @@ export class Controller extends gws.Controller {
                 UPDATE_DELAY);
         }
     }
-
-    readStyles(data) {
-        this.map.style.unserialize(data);
-        this.map.style.whenStyleChanged(this.map);
-        this.loadStyle();
-    }
-
-    writeStyles() {
-        return this.map.style.serialize();
-    }
-
-    renameStyle() {
-
-
-    }
-
 }
 
 

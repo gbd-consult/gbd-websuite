@@ -968,6 +968,7 @@ export class MapManager implements types.IMapManager {
             rotation: Math.round(lib.rad2deg(vs.rotation)),
             scale: lib.res2scale(vs.resolution),
             center: [vs.centerX, vs.centerY],
+            styles: this.style.props,
             visibleLayers,
         }
     }

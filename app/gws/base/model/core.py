@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.feature
+import gws.base.shape
 import gws.types as t
 
 
@@ -51,7 +52,7 @@ class Object(gws.Node, gws.IModel):
         self.geometryName = ''
         self.geometryType = None
         self.geometryCrs = None
-        self.loadingStrategy = self.cfg('loadingStrategy')
+        self.loadingStrategy = self.cfg('loadingStrategy', default=Config.loadingStrategy)
 
     def configure_fields(self):
         p = self.cfg('fields')
@@ -116,7 +117,12 @@ class Object(gws.Node, gws.IModel):
                 f.load_from_props(feature, props, user, relation_depth, **kwargs)
         else:
             feature.attributes = dict(props.attributes)
+            shape_props = props.attributes.get(self.geometryName)
+            if shape_props:
+                feature.attributes[self.geometryName] = gws.base.shape.from_props(shape_props)
 
+        feature.cssSelector = gws.to_str(props.cssSelector)
+        feature.views = gws.to_dict(props.views)
         feature.isNew = bool(props.isNew)
         return feature
 
@@ -131,11 +137,12 @@ class Object(gws.Node, gws.IModel):
     def feature_props(self, feature, user, **kwargs):
         props = gws.FeatureProps(
             attributes={},
-            views=feature.views,
-            uid=feature.uid(),
+            cssSelector=feature.cssSelector,
+            errors=feature.errors,
             isNew=feature.isNew,
             modelUid=self.uid,
-            errors=feature.errors,
+            uid=feature.uid(),
+            views=feature.views,
         )
 
         if self.fields:
@@ -159,3 +166,14 @@ class Object(gws.Node, gws.IModel):
     def compute_values(self, feature, access, user, **kwargs):
         for f in self.fields:
             f.compute(feature, access, user, **kwargs)
+
+
+class _DefaultModel(Object):
+    def configure(self):
+        self.keyName = 'uid'
+        self.geometryName = 'geometry'
+        self.loadingStrategy = gws.FeatureLoadingStrategy.all
+
+
+def get_default(root: gws.IRoot) -> gws.IModel:
+    return root.create_shared(_DefaultModel)

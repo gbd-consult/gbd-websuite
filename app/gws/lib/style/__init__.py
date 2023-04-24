@@ -3,6 +3,7 @@ import gws.types as t
 
 from . import parser, icon
 
+
 ##
 
 # parsing depends on whenever the context is `trusted` (=config) or not (=request)
@@ -19,10 +20,9 @@ def from_dict(d: dict, trusted=False, with_strict_mode=True) -> 'Style':
         vals.update(parser.parse_dict(gws.to_dict(s), trusted, with_strict_mode))
 
     return Style(
-        name=d.get('name', ''),
-        values=gws.StyleValues(vals),
-        selector=d.get('selector', ''),
-        text=d.get('text', ''),
+        d.get('cssSelector', ''),
+        d.get('text', ''),
+        gws.StyleValues(vals),
     )
 
 
@@ -47,31 +47,29 @@ def from_text(text: str) -> 'Style':
 
 
 ##
+
+
 class Props(gws.Props):
-    name: t.Optional[str]
-    values: t.Optional[dict]
-    selector: t.Optional[str]
+    cssSelector: t.Optional[str]
     text: t.Optional[str]
+    values: t.Optional[dict]
 
 
 class Config(gws.Config):
     """Feature style"""
 
-    name: t.Optional[str] 
-    """style name"""
-    selector: t.Optional[str] 
+    cssSelector: t.Optional[str]
     """CSS selector"""
-    text: t.Optional[str] 
+    text: t.Optional[str]
     """raw style content"""
-    values: t.Optional[dict] 
+    values: t.Optional[dict]
     """style values"""
 
 
 class Style(gws.Object, gws.IStyle):
-    def __init__(self, name, selector, text, values):
+    def __init__(self, selector, text, values):
         super().__init__()
-        self.name = name
-        self.selector = selector
+        self.cssSelector = selector
         self.text = text
         self.values = values
 
@@ -83,8 +81,7 @@ class Style(gws.Object, gws.IStyle):
             # NB if icon is not parsed, don't give it back
             ico = ''
 
-        return gws.Data(
+        return Props(
+            cssSelector=self.cssSelector or '',
             values=gws.merge(self.values, icon=ico),
-            name=self.name or '',
-            selector=self.selector or '',
         )

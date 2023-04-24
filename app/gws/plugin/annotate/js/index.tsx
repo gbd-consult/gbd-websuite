@@ -129,7 +129,7 @@ class Feature extends gws.map.Feature {
     // }
 
     redraw() {
-        this.views['label'] = (this.format(this.attributes.labelTemplate));
+        this.views['label'] = this.format(this.attributes.labelTemplate);
         return super.redraw();
     }
 
@@ -317,7 +317,6 @@ class FeatureForm extends gws.View<ViewProps> {
             ta.focus();
 
             cc.whenFeaturePropertyChanged(selectedFeature, 'labelTemplate', val)
-            // cc.updateObject('annotateFormData', {labelTemplate: val});
         };
 
         let form = [];
@@ -624,7 +623,7 @@ class Controller extends gws.Controller {
     whenDrawStarted(shapeType, oFeature) {
         this.drawFeature = this.newFeatureOfType(shapeType);
         this.drawFeature.setOlFeature(oFeature);
-        this.drawFeature.setCssSelector(this.getValue('annotateCurrentStyle').name);
+        this.drawFeature.setStyle(this.getValue('annotateCurrentStyle'));
         this.addFeature(this.drawFeature);
     }
 
@@ -681,10 +680,10 @@ class Controller extends gws.Controller {
 
     createNewFeature(shapeType, geom) {
         let f = this.newFeatureOfType(shapeType);
+
         f.setGeometry(geom);
 
-        let sty = this.cloneStyle(this.getValue('annotateCurrentStyle'));
-        f.setCssSelector(sty.name);
+        f.setStyle(this.cloneStyle(this.getValue('annotateCurrentStyle')));
 
         this.addFeature(f);
         this.selectFeature(f);
@@ -744,10 +743,10 @@ class Controller extends gws.Controller {
         let uid = gws.lib.uniqId('annotateStyle');
 
         let newStyle = this.map.style.copy(currStyle, '.' + uid);
-        let focusedStyle = this.map.style.getFromSelector('.annotateFocused');
+        let focusedStyle = this.map.style.get('.annotateFocused');
 
         this.map.style.add(
-            new style.CascadedStyle(newStyle.name + '.isFocused', [newStyle, focusedStyle]));
+            new style.CascadedStyle(newStyle.cssSelector + '.isFocused', [newStyle, focusedStyle]));
 
         return newStyle;
     }

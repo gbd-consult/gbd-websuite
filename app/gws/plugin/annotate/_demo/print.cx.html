@@ -1,0 +1,32 @@
+@page width="297" height="210"
+
+<style>
+body {
+    font-family: Helvetica, "DejaVu Sans", sans-serif;
+    font-size: 3.5mm;
+}
+
+h1 {
+    font-size: 6mm;
+    font-weight: normal;
+    position: absolute;
+    left: 10mm;
+    top: 3mm;
+    width: 200mm;
+}
+.map {
+    border: 1mm solid #ddd;
+    position: absolute;
+    left: 10mm;
+    top: 20mm;
+    width: 277mm;
+    height: 170mm;
+}
+
+</style>
+
+<h1>{project.title | html}</h1>
+
+<div class="map">
+@map
+</div>

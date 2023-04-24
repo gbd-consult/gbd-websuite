@@ -109,16 +109,7 @@ def from_geojson(geojson: dict, crs: gws.ICrs, always_xy=False) -> gws.IShape:
         A Shape object.
     """
 
-    # _CIRCLE_RESOLUTION = 64
-    # if geojson.get('type').upper() == 'CIRCLE':
-    #     geom = shapely.geometry.Point(geojson.get('center'))
-    #     geom = geom.buffer(
-    #         geojson.get('radius'),
-    #         resolution=_CIRCLE_RESOLUTION,
-    #         cap_style=shapely.geometry.CAP_STYLE.round,
-    #         join_style=shapely.geometry.JOIN_STYLE.round)
-
-    geom = shapely.geometry.shape(geojson)
+    geom = _shapely_shape(geojson)
     if crs.isYX and not always_xy:
         geom = _swap_xy(geom)
     return Shape(geom, crs)
@@ -136,7 +127,7 @@ def from_props(props: gws.Props) -> gws.IShape:
     crs = gws.gis.crs.get(props.get('crs'))
     if not crs:
         raise Error('missing or invalid crs')
-    geom = shapely.geometry.shape(props.get('geometry'))
+    geom = _shapely_shape(props.get('geometry'))
     return Shape(geom, crs)
 
 
@@ -152,7 +143,7 @@ def from_dict(d: dict) -> gws.IShape:
     crs = gws.gis.crs.get(d.get('crs'))
     if not crs:
         raise Error('missing or invalid crs')
-    geom = shapely.geometry.shape(d.get('geometry'))
+    geom = _shapely_shape(d.get('geometry'))
     return Shape(geom, crs)
 
 
@@ -207,6 +198,21 @@ def _swap_xy(geom):
         return y, x
 
     return shapely.ops.transform(f, geom)
+
+
+_CIRCLE_RESOLUTION = 64
+
+
+def _shapely_shape(d):
+    if d.get('type').upper() == 'CIRCLE':
+        geom = shapely.geometry.Point(d.get('center'))
+        return geom.buffer(
+            d.get('radius'),
+            resolution=_CIRCLE_RESOLUTION,
+            cap_style=shapely.geometry.CAP_STYLE.round,
+            join_style=shapely.geometry.JOIN_STYLE.round)
+
+    return shapely.geometry.shape(d)
 
 
 ##

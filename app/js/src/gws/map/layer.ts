@@ -357,7 +357,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
     constructor(map, props) {
         super(map, props);
 
-        this.cssSelector = props.cssSelector;
+        this.cssSelector = props.cssSelector || '.defaultFeatureStyle';
 
         if (props.geometryType)
             this.geometryType = props.geometryType;
@@ -367,37 +367,19 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         this.lastBbox = '';
     }
 
-    printStyle() {
-        let c,
-            style,
-            geom = this.geometryType ?'.' + this.geometryType.toLowerCase() : '';
-
-        c = this.cssSelector;
-
-        if (c) {
-            style = this.map.style.getFromSelector(c + geom) || this.map.style.getFromSelector(c)
-            if (style)
-                return style
-
-        }
-
-        c = '.defaultFeatureStyle'
-        return this.map.style.getFromSelector(c + geom) || this.map.style.getFromSelector(c)
-    }
-
     get printPlane(): api.base.printer.Plane {
         let fs = lib.compact(this.features.map(f => f.getProps()));
 
         if (fs.length === 0)
             return null;
 
-        let style = this.printStyle()
+        let style = this.map.style.findFirst([this.cssSelector], this.geometryType);
 
         return {
             type: this.props.url ? api.base.printer.PlaneType.vector : api.base.printer.PlaneType.features,
             opacity: this.computedOpacity,
             features: this.props.url ? [] : fs,
-            style: style ? style.props : null,
+            cssSelector: style ? style.cssSelector : '',
             layerUid: this.uid,
         };
     }

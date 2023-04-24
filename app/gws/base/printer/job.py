@@ -3,7 +3,7 @@ import os
 
 import gws
 import gws.gis.crs
-import gws.base.feature
+import gws.base.model
 import gws.lib.image
 import gws.lib.job
 import gws.lib.mime
@@ -170,14 +170,18 @@ class _Worker:
 
     def prepare_map(self, mp: core.MapParams) -> gws.MapRenderInput:
         planes = []
+        style_dct = {}
+
+        for p in (mp.styles or []):
+            style = gws.lib.style.from_props(p)
+            if style:
+                style_dct[style.cssSelector] = style
 
         if mp.planes:
             for n, p in enumerate(mp.planes):
-                pp = self.prepare_map_plane(p)
-                if not pp:
-                    gws.log.warning(f'PREPARE_FAILED: plane {n}')
-                    continue
-                planes.append(pp)
+                pp = self.prepare_map_plane(n, p, style_dct)
+                if pp:
+                    planes.append(pp)
 
         return gws.MapRenderInput(
             backgroundColor=_PAPER_COLOR,
@@ -191,7 +195,7 @@ class _Worker:
                 for uid in (mp.visibleLayers or []))
         )
 
-    def prepare_map_plane(self, plane: core.Plane) -> t.Optional[gws.MapRenderInputPlane]:
+    def prepare_map_plane(self, n, plane: core.Plane, style_dct) -> t.Optional[gws.MapRenderInputPlane]:
         opacity = 1
         s = plane.get('opacity')
         if s is not None:
@@ -199,31 +203,36 @@ class _Worker:
             if opacity == 0:
                 return
 
-        style = None
-        s = plane.get('style')
-        if s:
-            style = gws.lib.style.from_props(s)
-
         if plane.type == core.PlaneType.raster:
             layer = t.cast(gws.ILayer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
-            if not layer or not layer.canRenderBox:
+            if not layer:
+                gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} not found')
+                return
+            if not layer.canRenderBox:
+                gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} canRenderBox false')
                 return
             return gws.MapRenderInputPlane(
                 type=gws.MapRenderInputPlaneType.imageLayer,
                 layer=layer,
                 opacity=opacity,
-                style=style,
-                subLayers=plane.get('subLayers'))
+                subLayers=plane.get('subLayers'),
+            )
 
         if plane.type == core.PlaneType.vector:
             layer = t.cast(gws.ILayer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
-            if not layer or not layer.canRenderSvg:
+            if not layer:
+                gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} not found')
                 return
+            if not layer.canRenderSvg:
+                gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} canRenderSvg false')
+                return
+            style = style_dct.get(plane.cssSelector)
             return gws.MapRenderInputPlane(
                 type=gws.MapRenderInputPlaneType.svgLayer,
                 layer=layer,
                 opacity=opacity,
-                style=style)
+                styles=[style] if style else [],
+            )
 
         if plane.type == core.PlaneType.bitmap:
             img = None
@@ -233,44 +242,59 @@ class _Worker:
                     t.cast(gws.lib.image.ImageMode, plane.bitmapMode),
                     (plane.bitmapWidth, plane.bitmapHeight))
             if not img:
+                gws.log.warning(f'PREPARE_FAILED: plane {n}: bitmap error')
                 return
             return gws.MapRenderInputPlane(
                 type=gws.MapRenderInputPlaneType.image,
                 image=img,
                 opacity=opacity,
-                style=style)
+            )
 
         if plane.type == core.PlaneType.url:
             img = gws.lib.image.from_data_url(plane.url)
             if not img:
+                gws.log.warning(f'PREPARE_FAILED: plane {n}: url error')
                 return
             return gws.MapRenderInputPlane(
                 type=gws.MapRenderInputPlaneType.image,
                 image=img,
                 opacity=opacity,
-                style=style)
+            )
 
-        # if plane.type == core.PlaneType.features:
-        #     fs = []
-        #     for p in plane.features:
-        #         f = gws.base.feature.from_props(p)
-        #         if f and f.shape:
-        #             fs.append(f)
-        #     if not fs:
-        #         return
+        if plane.type == core.PlaneType.features:
+            model = gws.base.model.get_default(self.root)
+            used_styles = {}
+
+            features = []
+
+            for p in plane.features:
+                f = model.feature_from_props(p, self.user)
+                if not f or not f.shape:
+                    continue
+                sel = f.cssSelector
+                if sel in style_dct:
+                    used_styles[sel] = style_dct[sel]
+                features.append(f)
+
+            if not features:
+                gws.log.warning(f'PREPARE_FAILED: plane {n}: no features')
+                return
+
+            return gws.MapRenderInputPlane(
+                type=gws.MapRenderInputPlaneType.features,
+                features=features,
+                opacity=opacity,
+                styles=list(used_styles.values()),
+            )
+
+
+        # if plane.type == core.PlaneType.soup:
         #     return gws.MapRenderInputPlane(
-        #         type=gws.MapRenderInputPlaneType.features,
-        #         features=fs,
+        #         type=gws.MapRenderInputPlaneType.svg_soup,
+        #         soup_points=plane.points,
+        #         soup_tags=plane.tags,
         #         opacity=opacity,
         #         style=style)
-
-        if plane.type == core.PlaneType.soup:
-            return gws.MapRenderInputPlane(
-                type=gws.MapRenderInputPlaneType.svg_soup,
-                soup_points=plane.points,
-                soup_tags=plane.tags,
-                opacity=opacity,
-                style=style)
 
         raise gws.Error(f'invalid plane type {plane.type!r}')
 

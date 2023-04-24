@@ -3,6 +3,7 @@ import * as ol from "openlayers";
 import * as types from '../types';
 import * as api from '../core/api';
 import * as feature from './feature';
+import * as lib from '../lib';
 
 
 export class ModelRegistry implements types.IModelRegistry {
@@ -184,54 +185,47 @@ export class Model implements types.IModel {
         return propsList.map(props => this.featureFromProps(props));
     }
 
-    featureProps(feature: types.IFeature, relationDepth?: number): api.core.FeatureProps {
-
-        let atts = {};
-        let depth = relationDepth || 0;
-
-        if (feature.model) {
-
-            for (let f of feature.model.fields) {
-                let val = feature.attributes[f.name];
-
-                switch (f.attributeType) {
-                    case 'feature':
-                        if (val && depth > 0) {
-                            atts[f.name] = this.featureProps(val, depth - 1);
-                        }
-                        break;
-                    case 'featurelist':
-                        if (val && depth > 0) {
-                            atts[f.name] = val.map(f => this.featureProps(f, depth - 1));
-                        }
-                        break;
-                    default:
-                        if (val !== null && val !== undefined) {
-                            atts[f.name] = val;
-                        }
-                }
-            }
-        } else {
-            atts = feature.attributes || {};
+    featureAttributes(feature: types.IFeature, relationDepth?: number): types.Dict {
+        if (lib.isEmpty(this.fields)) {
+            return feature.attributes;
         }
 
-        // let style = self.style.at(f.styleNames.normal);
+        let attributes = {};
+        let depth = relationDepth || 0;
 
-        return {
-            attributes: atts,
-            views: {},
-            // layerUid: feature.layer ? feature.layer.uid : null,
-            modelUid: feature.model ? feature.model.uid : null,
-            uid: feature.uid,
-            isNew: feature.isNew,
-            keyName: feature.keyName,
-            geometryName: feature.geometryName,
-            errors: [],
-            // style: style ? style.props : null,
+        for (let f of this.fields) {
+            let val = feature.attributes[f.name];
+
+            switch (f.attributeType) {
+                case 'feature':
+                    if (val && depth > 0) {
+                        attributes[f.name] = (val as types.IFeature).getProps(depth - 1);
+                    }
+                    break;
+                case 'featurelist':
+                    if (val && depth > 0) {
+                        attributes[f.name] = val.map(f => (f as types.IFeature).getProps(depth - 1));
+                    }
+                    break;
+                default:
+                    if (val !== null && val !== undefined) {
+                        attributes[f.name] = val;
+                    }
+            }
         }
     }
 
 
+    featureProps(feature: types.IFeature, relationDepth?: number): api.core.FeatureProps {
+        return {
+            attributes: this.featureAttributes(feature, relationDepth),
+            cssSelector: feature.cssSelector,
+            isNew: feature.isNew,
+            modelUid: this.uid,
+            uid: feature.uid,
+            views: feature.views,
+        }
+    }
 }
 
 export class ModelField implements types.IModelField {

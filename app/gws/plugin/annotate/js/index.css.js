@@ -16,7 +16,7 @@ module.exports = v => {
     }
 
     let MARKER = {
-        markerType: 'circle',
+        marker: 'circle',
         markerStroke: v.COLOR.blue300,
         markerFill: v.COLOR.white,
         markerStrokeWidth: 4,

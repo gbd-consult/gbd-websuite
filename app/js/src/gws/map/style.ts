@@ -20,71 +20,88 @@ export const DEFAULT_VALUES: types.Dict = {
 
 
 export class StyleManager implements types.IStyleManager {
-    styles: { [name: string]: types.IStyle } = {};
-    notFound: { [name: string]: boolean } = {};
+    styles: { [cssSelector: string]: types.IStyle } = {};
+    notFound: { [cssSelector: string]: boolean } = {};
     map: types.IMapManager;
 
 
-    getFromSelector(selector: string): types.IStyle | null {
-        if (this.styles[selector]) {
-            return this.styles[selector];
+    getFromSelector(cssSelector: string): types.IStyle | null {
+        if (this.styles[cssSelector]) {
+            return this.styles[cssSelector];
         }
 
-        if (this.notFound[selector]) {
+        if (this.notFound[cssSelector]) {
             return null;
         }
 
-        let [values, source] = parseCssSelector(selector);
+        let [values, source] = getFromCss(cssSelector);
         if (values) {
-            console.log('getFromSelector: found', selector)
-            let s = this.create(values, selector);
+            console.log('getFromSelector: found', cssSelector)
+            let s = this.create(values, cssSelector);
             s.source = source;
             return s;
         }
 
-        console.log('getFromSelector: NOT FOUND', selector)
-        this.notFound[selector] = true;
+        console.log('getFromSelector: NOT FOUND', cssSelector)
+        this.notFound[cssSelector] = true;
         return null;
     }
 
+    findFirst(selectors: Array<string>, geometryType: string = null, state: string = null) {
+        let geom = geometryType ? '.' + geometryType.toLowerCase() : '';
+        let spec = state ? '.' + state : '';
+
+        for (let sel of selectors) {
+            if (sel) {
+                let style = (
+                    this.getFromSelector(sel + geom + spec) ||
+                    this.getFromSelector(sel + geom) ||
+                    this.getFromSelector(sel + spec) ||
+                    this.getFromSelector(sel)
+                );
+                if (style)
+                    return style;
+            }
+        }
+    }
 
     get names() {
         return Object.keys(this.styles)
     }
 
-    at(name) {
-        return this.styles[name] || null;
+    at(cssSelector) {
+        return this.styles[cssSelector] || null;
     }
 
     add(s) {
-        this.styles[s.name] = s;
+        this.styles[s.cssSelector] = s;
         return s;
     }
 
-    get(style: types.StyleArg) {
-        if (!style) {
+    get(arg: types.StyleArg) {
+        if (!arg) {
             return null;
         }
 
-        if (style instanceof BaseStyle) {
-            return style;
+        if (arg instanceof BaseStyle) {
+            return arg;
         }
 
-        if (typeof style === 'string') {
-            return this.getFromNameOrSelector(style);
+        if (typeof arg === 'string') {
+            return this.getFromSelector(arg);
         }
 
-        if (typeof style === 'object') {
-            let props = style as api.lib.style.Props;
+        if (typeof arg === 'object') {
+            let props = arg as api.lib.style.Props;
 
-            if (props.selector) {
-                return this.getFromNameOrSelector(props.selector);
+            if (props.cssSelector) {
+                return this.getFromSelector(props.cssSelector);
             }
 
             if (props.values) {
                 return this.create(props.values);
             }
-            
+
             if (props.text) {
 
                 let values = valuesFromCssText(props.text || '');
@@ -92,33 +109,14 @@ export class StyleManager implements types.IStyleManager {
                 if (values) {
                     return this.create(values);
                 }
-
-                console.warn('STYLE:invalid css', style);
-                return null;
             }
         }
 
-        console.warn('STYLE:invalid style', style);
+        console.warn('STYLE:invalid style', arg);
         return null;
     }
 
-    getMap(src) {
-        let m: types.StyleNameMap = {
-            normal: null,
-            selected: null,
-            edit: null
-        };
-
-        Object.keys(m).forEach(k => {
-            let s = this.get(src[k]);
-            if (s)
-                m[k] = s.name;
-        });
-
-        return m;
-    }
-
-    whenStyleChanged(map: types.IMapManager, name?: string) {
+    whenStyleChanged(map: types.IMapManager, cssSelector?: string) {
         map.walk(map.root, layer => {
             let fs = (layer as types.IFeatureLayer).features;
             if (fs) {
@@ -127,52 +125,37 @@ export class StyleManager implements types.IStyleManager {
         });
     }
 
-    unserialize(data: object) {
-        this.styles = {};
-        Object.keys(data).forEach(k =>
-            this.styles[k] = new Style(k, data[k])
+    loadFromProps(data: Array<api.lib.style.Props>) {
+        data.forEach(s =>
+            this.styles[s.cssSelector] = new Style(s.cssSelector, s.values)
         );
     }
 
-    serialize() {
-        let data = {}
-        Object.keys(this.styles).forEach(k =>
-            data[k] = this.styles[k].values
-        );
-        return data;
-    }
+    get props(): Array<api.lib.style.Props> {
+        let ps: Array<api.lib.style.Props> = [];
 
-    copy(style: types.IStyle, name: string = null) {
-        return this.create(style.values, name)
-    }
-
-    protected getFromNameOrSelector(name: string) {
-        if (this.styles[name]) {
-            return this.styles[name];
+        for (let [_, style] of lib.entries(this.styles)) {
+            ps.push(style.props);
         }
 
-        let [values, source] = parseCssSelector(name);
-        if (values) {
-            let s = this.create(values, name);
-            s.source = source;
-            return s;
-        }
-
-        console.warn('STYLE:not found', name);
-        return null;
+        return lib.compact(ps);
     }
 
-    protected create(values: types.Dict, name = null) {
-        name = name || lib.uniqId('style');
-        let s = new Style(name, values);
-        this.styles[name] = s;
+    copy(style: types.IStyle, cssSelector: string = null) {
+        return this.create(style.values, cssSelector)
+    }
+
+    protected create(values: types.Dict, cssSelector = null) {
+        cssSelector = cssSelector || lib.uniqId('style');
+        let s = new Style(cssSelector, values);
+        this.styles[cssSelector] = s;
         return s;
     }
 
 }
 
 abstract class BaseStyle implements types.IStyle {
-    name: string;
+    cssSelector: string;
     values: types.Dict;
     source: string = '';
 
@@ -206,16 +189,16 @@ export class Style extends BaseStyle {
         labelPlacement?: string;
     };
 
-    constructor(name: string, values: types.Dict) {
+    constructor(cssSelector: string, values: types.Dict) {
         super();
-        this.name = name;
+        this.cssSelector = cssSelector;
         this.values = values;
     }
 
-
     get props() {
         return {
-            'values': this.values,
+            cssSelector: this.cssSelector,
+            values: this.values,
         }
     }
 
@@ -401,9 +384,9 @@ export class Style extends BaseStyle {
 export class CascadedStyle extends BaseStyle {
     styles: Array<types.IStyle>;
 
-    constructor(name: string, styles: Array<types.IStyle>) {
+    constructor(cssSelector: string, styles: Array<types.IStyle>) {
         super();
-        this.name = name;
+        this.cssSelector = cssSelector;
         this.styles = styles;
     }
 
@@ -507,7 +490,7 @@ function compact(obj): any {
 
 //
 
-export function parseCssSelector(selector: string): [types.Dict, string] {
+export function getFromCss(selector: string): [types.Dict, string] {
 
 
     function getStyleSheets() {
@@ -652,7 +635,7 @@ _Parser.label_fill = _color;
 _Parser.label_font_family = _str;
 _Parser.label_font_size = _px;
 _Parser.label_font_style = _str;
-_Parser.label_font_weight =_str;
+_Parser.label_font_weight = _str;
 _Parser.label_line_height = _int;
 _Parser.label_max_scale = _int;
 _Parser.label_min_scale = _int;

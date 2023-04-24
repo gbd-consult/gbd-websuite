@@ -196,21 +196,19 @@ export type StyleMapArgs = {[m in FeatureMode]: StyleArg};
 
 export interface IStyleManager {
     names: Array<string>;
+    props: Array<api.lib.style.Props>;
 
-    getFromSelector(selector: string): IStyle | null;
-
-    at(name: string): IStyle | null;
-    get(style: StyleArg): IStyle | null;
-    getMap(src: StyleMapArgs) : StyleNameMap;
-    whenStyleChanged(map: IMapManager, name?: string);
     add(s: IStyle) : IStyle;
-    serialize(): object;
-    unserialize(data: object);
+    at(name: string): IStyle | null;
     copy(style: IStyle, name: string|null);
+    findFirst(selectors: Array<string>, geometryType?: string, state?: string): IStyle | null;
+    get(style: StyleArg): IStyle | null;
+    loadFromProps(styles: Array<api.lib.style.Props>);
+    whenStyleChanged(map: IMapManager, name?: string);
 }
 
 export interface IStyle {
-    name: string;
+    cssSelector: string;
     values: Dict;
     props: api.lib.style.Props;
     source: string;
@@ -395,7 +393,7 @@ export interface IFeature {
     setAttributes(attributes: Dict): IFeature;
     setOlFeature(oFeature: ol.Feature): IFeature;
     setGeometry(geom: ol.geom.Geometry): IFeature;
-    setCssSelector(sel: string);
+    setStyle(style: IStyle);
     setNew(f: boolean): IFeature;
     setSelected(f: boolean): IFeature;
 

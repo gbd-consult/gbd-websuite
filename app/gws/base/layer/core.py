@@ -106,6 +106,8 @@ class Config(gws.ConfigWithAccess):
     """cache configuration"""
     clientOptions: ClientOptions = {}
     """options for the layer display in the client"""
+    cssSelector: str = ''
+    """css selector for feature layers"""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.box
     """layer display mode"""
     extent: t.Optional[gws.Extent]
@@ -174,8 +176,8 @@ class GridProps(gws.Props):
 
 
 class Props(gws.Props):
-    # style: t.Optional[gws.lib.style.Props]
     clientOptions: ClientOptions
+    cssSelector: str
     displayMode: str
     extent: t.Optional[gws.Extent]
     geometryType: t.Optional[gws.GeometryType]
@@ -245,6 +247,7 @@ class Object(gws.Node, gws.ILayer):
     parent: gws.ILayer
 
     clientOptions: ClientOptions
+    cssSelector: str
 
     canRenderBox = False
     canRenderXyz = False
@@ -260,6 +263,7 @@ class Object(gws.Node, gws.ILayer):
 
     def configure(self):
         self.clientOptions = self.cfg('clientOptions')
+        self.cssSelector = self.cfg('cssSelector')
         self.displayMode = self.cfg('display')
         self.loadingStrategy = self.cfg('loadingStrategy')
         self.imageFormat = self.cfg('imageFormat')
@@ -418,8 +422,9 @@ class Object(gws.Node, gws.ILayer):
             return gws.action_url_path('mapGetFeatures', layerUid=self.uid)
 
     def props(self, user):
-        p = gws.Data(
+        p = Props(
             clientOptions=self.clientOptions,
+            cssSelector=self.cssSelector,
             displayMode=self.displayMode,
             extent=self.bounds.extent,
             layers=self.layers,
