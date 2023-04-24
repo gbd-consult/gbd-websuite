@@ -11,6 +11,7 @@ QGIS_WORKERS = os.getenv('QGIS_WORKERS', 1)
 SVG_PATHS = os.getenv('SVG_PATHS', '')
 TIMEOUT = os.getenv('TIMEOUT', '60')
 HTTP_PROXY = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY')
+PGSERVICEFILE = os.getenv('PGSERVICEFILE', '')
 
 
 ##
@@ -148,6 +149,11 @@ harakiri = {TIMEOUT}
 """
 
 ##
+custom_fcgi_params = {
+        'PGSERVICEFILE': PGSERVICEFILE
+}
+def fcgi_params (params):
+    return '\n'.join([f'fastcgi_param {k} {v};' for k,v in params.items() if v])
 
 nginx_conf = fr"""
 user gws;
@@ -170,6 +176,7 @@ http {{
             fastcgi_read_timeout {TIMEOUT}s;
             add_header 'Access-Control-Allow-Origin' *;
             include /etc/nginx/fastcgi_params;
+            {fcgi_params(custom_fcgi_params)}
             
             # replace mapproxy forward params (e.g. LAYERS__gws) with their real names
             
