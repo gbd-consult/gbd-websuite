@@ -1306,6 +1306,14 @@ class Object(gws.Object, t.IModel):
             if f.is_primary_key:
                 self.key_name = f.name
 
+    def activate(self):
+        try:
+            registry().init()
+        except Exception as exc:
+            gws.log.error('MODEL REGISTRY INIT FAILED')
+            gws.log.error(repr(exc))
+            raise
+
     def select(self, args: t.SelectArgs) -> t.List[t.IFeature]:
         return []
 
