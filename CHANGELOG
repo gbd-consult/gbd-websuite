@@ -1,3 +1,9 @@
+## Version 8.0.1
+
+- annotation plugin
+- improved vector printing
+- support for PGSERVICEFILE in qgis
+
 ## Version 8.0.0
 
 - new plugin-based architecture
