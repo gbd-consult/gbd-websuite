@@ -11,11 +11,17 @@ QGIS_WORKERS = os.getenv('QGIS_WORKERS', 1)
 SVG_PATHS = os.getenv('SVG_PATHS', '')
 TIMEOUT = os.getenv('TIMEOUT', '60')
 HTTP_PROXY = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY')
-PGSERVICEFILE = os.getenv('PGSERVICEFILE', '')
+PGSERVICEFILE = os.getenv('PGSERVICEFILE')
 
 
-##
+def write(p, s):
+    with open(p, 'wt') as fp:
+        fp.write(s.strip() + '\n')
+    _(f'chmod 666 {p}')
 
+
+# prepare the qgis environment
+# ------------------------------------------------------------------------------------
 
 def _from_env(default):
     return lambda k: os.getenv(k, default)
@@ -78,7 +84,8 @@ for key, val in vars(QgisEnv).items():
     if val:
         qgis_env += f'export {key}={val}\n'
 
-##
+# create qgis runtime dirs
+# ------------------------------------------------------------------------------------
 
 _ = os.system
 
@@ -93,7 +100,8 @@ _('mkdir -p /var/run')
 _('chmod 777 /var/run')
 _(f'chown -R {USER_UID}:{USER_GID} /var/run')
 
-##
+# qgis config
+# ------------------------------------------------------------------------------------
 
 svg_paths = '/usr/share/qgis/svg,/usr/share/alkisplugin/svg'
 if SVG_PATHS:
@@ -126,7 +134,11 @@ searchPathsForSVG={svg_paths}
 {proxy}
 """
 
-##
+write('/qgis/profiles/default/QGIS/QGIS3.ini', qgis_ini)
+_(f'chown -R {USER_UID}:{USER_GID} /qgis')
+
+# uwsgi config
+# ------------------------------------------------------------------------------------
 
 uwsgi_ini = fr"""
 [uwsgi]
@@ -148,12 +160,22 @@ worker-reload-mercy = 5
 harakiri = {TIMEOUT}
 """
 
-##
-custom_fcgi_params = {
-        'PGSERVICEFILE': PGSERVICEFILE
+write('/uwsgi.ini', uwsgi_ini)
+
+# nginx config
+# ------------------------------------------------------------------------------------
+
+# for some reason, qgis only sees certain vars this way
+
+extra_fcgi_params = {
+    'PGSERVICEFILE': PGSERVICEFILE,
 }
-def fcgi_params (params):
-    return '\n'.join([f'fastcgi_param {k} {v};' for k,v in params.items() if v])
+
+extra_fcgi_params = '\n'.join(
+    f'fastcgi_param {key} {val};'
+    for key, val in extra_fcgi_params.items()
+    if val
+)
 
 nginx_conf = fr"""
 user gws;
@@ -176,7 +198,7 @@ http {{
             fastcgi_read_timeout {TIMEOUT}s;
             add_header 'Access-Control-Allow-Origin' *;
             include /etc/nginx/fastcgi_params;
-            {fcgi_params(custom_fcgi_params)}
+            {extra_fcgi_params}
             
             # replace mapproxy forward params (e.g. LAYERS__gws) with their real names
             
@@ -194,7 +216,10 @@ http {{
 }}
 """
 
-##
+write('/nginx.conf', nginx_conf)
+
+# rsyslogd config
+# ------------------------------------------------------------------------------------
 
 # silence some warnings unless debugging
 
@@ -231,21 +256,10 @@ module(
 *.* /dev/stdout
 """
 
-
-##
-
-def write(p, s):
-    with open(p, 'wt') as fp:
-        fp.write(s.strip() + '\n')
-    _(f'chmod 666 {p}')
-
-
-write('/qgis/profiles/default/QGIS/QGIS3.ini', qgis_ini)
-write('/uwsgi.ini', uwsgi_ini)
-write('/nginx.conf', nginx_conf)
 write('/rsyslogd.conf', rsyslogd_conf)
 
-_(f'chown -R {USER_UID}:{USER_GID} /qgis')
+# main startup script
+# ------------------------------------------------------------------------------------
 
 qgis_start_configured = f"""
 #!/bin/bash
@@ -275,4 +289,12 @@ exec nginx -c /nginx.conf
 write('/qgis-start-configured', qgis_start_configured)
 _('chmod 777 /qgis-start-configured')
 
-print(f'\nQGIS ENVIRONMENT:\n\n{qgis_env}')
+# done
+# ------------------------------------------------------------------------------------
+
+print('-' * 80)
+print('QGIS ENVIRONMENT:')
+print(qgis_env)
+print('FCGI PARAMS:')
+print(extra_fcgi_params)
+print('-' * 80)
