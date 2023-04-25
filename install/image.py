@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../app'))
 
@@ -21,9 +22,6 @@ Type:
     qgis-debug      - QGIS Debug server
 
 Options:
-
-    -appdir <dir>
-        app directory to copy to "/gws-app" in the image, defaults to the current source directory
 
     -arch <architecture>
         image architecture (amd64 or arm64) 
@@ -101,6 +99,8 @@ class Builder:
     gws_dir = os.path.abspath(f'{this_dir}/..')
 
     def __init__(self, args):
+        self.skip_cache = '_skip_cache_' + str(time.time()).replace('.', '') + '_'
+
         try:
             self.gws_version = cli.read_file(f'{self.gws_dir}/VERSION')
         except FileNotFoundError:
@@ -109,7 +109,6 @@ class Builder:
 
         self.args = args
 
-        self.appdir = args.get('appdir')
         self.arch = args.get('arch') or self.arch
         self.base = args.get('base') or f'ubuntu:{self.ubuntu_version}'
         self.build_dir = args.get('builddir') or os.path.abspath(f'{self.gws_dir}/app/__build/docker')
@@ -119,6 +118,8 @@ class Builder:
         self.image_name = args.get(1)
         if not self.image_name or self.image_name not in self.image_types:
             cli.fatal('invalid image type')
+
+        self.context_dir = f'{self.build_dir}/{self.image_name}'
 
         self.image_kind, self.debug_mode, self.with_qgis = self.image_types[self.image_name]
 
@@ -150,7 +151,7 @@ class Builder:
 
     def main(self):
         nc = '--no-cache' if self.args.get('no-cache') else ''
-        cmd = f'cd {self.build_dir} && docker build --progress plain -f Dockerfile -t {self.image_full_name} {nc} .'
+        cmd = f'cd {self.context_dir} && docker build --progress plain -f Dockerfile -t {self.image_full_name} {nc} .'
 
         if self.args.get('print'):
             print(self.dockerfile())
@@ -163,12 +164,17 @@ class Builder:
             return
 
         cli.run(cmd)
+        cli.run(f'rm -fr {self.context_dir}/_skip_cache_*')
 
     def prepare(self):
-        os.chdir(self.this_dir)
-        if not os.path.isdir(self.build_dir):
-            cli.run(f'mkdir -p {self.build_dir}')
-        os.chdir(self.build_dir)
+        if not os.path.isdir(self.context_dir):
+            cli.run(f'mkdir -p {self.context_dir}')
+
+        os.chdir(self.context_dir)
+
+        cli.write_file(f'Dockerfile', self.dockerfile())
+
+        # 3rd party packages
 
         if self.with_qgis:
             if not os.path.isfile(f'{self.qgis_package}.tar.gz'):
@@ -180,23 +186,20 @@ class Builder:
                 cli.run(f"tar -xzf {self.alkisplugin_package}.tar.gz")
                 cli.run(f"mv {self.alkisplugin_package} {self.qgis_package}/usr/share")
 
-            cli.run(f'cp {self.this_dir}/qgis/docker/qgis-start* {self.build_dir}')
-
         if not os.path.isfile(self.wkhtmltopdf_package):
             cli.run(f"curl -sL '{self.wkhtmltopdf_url}' -o {self.wkhtmltopdf_package}")
 
-        if self.appdir:
-            cli.run(f"mkdir app && rsync -a --exclude-from {self.exclude_file} {self.appdir}/* app")
-        else:
-            cli.run(f"cd {self.gws_dir} && bash make.sh package {self.build_dir}")
+        # our stuff (skip the cache for these)
 
+        cli.run(f'cp {self.this_dir}/qgis/docker/qgis-start.py {self.skip_cache}qgis-start.py')
+        cli.run(f'cp {self.this_dir}/qgis/docker/qgis-start.sh {self.skip_cache}qgis-start.sh')
+        cli.run(f'bash {self.gws_dir}/make.sh package . && mv app {self.skip_cache}app')
         if self.datadir:
-            cli.run(f"mkdir data && rsync -a --exclude-from {self.exclude_file} {self.datadir}/* data")
-
-        cli.write_file(f'{self.build_dir}/Dockerfile', self.dockerfile())
+            cli.run(f'mkdir {self.skip_cache}data')
+            cli.run(f'rsync -a --exclude-from {self.exclude_file} {self.datadir}/* {self.skip_cache}data')
 
     def default_image_full_name(self):
-        # the default name is like "gdbconsult/qgis-amd64:8.0"
+        # the default name is like "gdbconsult/qgis-amd64:8.0.0"
         return f'{self.vendor}/{self.image_name}-{self.arch}:{self.image_version}'
 
     def default_image_description(self):
@@ -269,9 +272,9 @@ class Builder:
                 chown -R {self.gws_user_name}:{self.gws_user_name} /gws-var
             '''))
 
-            __('COPY app /gws-app')
+            __(f'COPY {self.skip_cache}app /gws-app')
             if self.datadir:
-                __(f'COPY --chown={self.gws_user_name}:{self.gws_user_name} data /data')
+                __(f'COPY --chown={self.gws_user_name}:{self.gws_user_name} {self.skip_cache}data /data')
 
             __('ENV QT_SELECT=5')
             __('ENV LANG=C.UTF-8')
@@ -279,8 +282,8 @@ class Builder:
             __('CMD ["/gws-app/bin/gws", "server", "start"]')
 
         if self.image_kind == 'qgis':
-            __(f'COPY qgis-start.sh /')
-            __(f'COPY qgis-start.py /')
+            __(f'COPY {self.skip_cache}qgis-start.sh /qgis-start.sh')
+            __(f'COPY {self.skip_cache}qgis-start.py /qgis-start.py')
             __(f'RUN chmod 777 /qgis-start.sh')
             __(f'ENV QT_SELECT=5')
             __(f'ENV LANG=C.UTF-8')
