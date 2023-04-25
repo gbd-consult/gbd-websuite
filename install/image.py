@@ -119,7 +119,7 @@ class Builder:
         if not self.image_name or self.image_name not in self.image_types:
             cli.fatal('invalid image type')
 
-        self.context_dir = f'{self.build_dir}/{self.image_name}'
+        self.context_dir = f'{self.build_dir}/{self.image_name}_{self.arch}'
 
         self.image_kind, self.debug_mode, self.with_qgis = self.image_types[self.image_name]
 
