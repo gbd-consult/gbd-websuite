@@ -134,7 +134,8 @@ class Renderer:
 
         if item.type == t.MapRenderInputItemType.features:
             for feature in item.features:
-                tags = feature.to_svg_tags(self.ri.view, item.style)
+                style = feature.style or item.style
+                tags = feature.to_svg_tags(self.ri.view, style)
                 self._add_svg_tags(tags)
             return
 

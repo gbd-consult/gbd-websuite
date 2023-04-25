@@ -63,7 +63,7 @@ const StoreKeys = [
     'annotateLabelTemplates',
     'appActiveTool',
     'mapFocusedFeature',
-    'mapUpdateCount',
+    // 'mapUpdateCount',
 ];
 
 
@@ -429,7 +429,7 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
                             whenTouched={submit}
                         />
                     </Cell>
-                    {false && <Cell>
+                    {<Cell>
                         <gws.ui.Button
                             className="modAnnotateStyleButton"
                             tooltip={cc.__('modAnnotateStyleButton')}
@@ -477,13 +477,13 @@ class AnnotateFeatureTabFooter extends gws.View<ViewProps> {
                     />
                 </Cell>
                 <Cell flex/>
-                <Cell>
+                {false && <Cell>
                     <gws.components.feature.TaskButton
                         controller={this.props.controller}
                         feature={selectedFeature}
                         source="annotate"
                     />
-                </Cell>
+                </Cell>}
                 <Cell>
                     <sidebar.AuxCloseButton
                         whenTouched={close}
@@ -725,12 +725,18 @@ class Controller extends gws.Controller {
 
     }
 
+    newStyle(values) {
+        let newCssSelector = '.' + gws.tools.uniqId('AnnotateStyle');
+        let newStyle = this.app.style.add(new style.Style(newCssSelector, values));
+        let focusedStyle = this.map.style.get('.modAnnotateFocus');
+        this.map.style.add(
+            new style.CascadedStyle(newCssSelector + '.isFocused', [newStyle, focusedStyle]));
+        return newCssSelector;
+    }
+
     newFeature(shapeType, oFeature?: ol.Feature) {
         let lastStyle = this.app.style.getFromSelector(this.getValue('annotateLastCssSelector'));
-        let newCssSelector = '.' + gws.tools.uniqId('AnnotateStyle');
-
-        this.app.style.add(new style.Style(newCssSelector, lastStyle.values));
-
+        let newCssSelector = this.newStyle(lastStyle.values);
         let templates = this.getValue('annotateLabelTemplates'),
             labelTemplate = (templates && templates[shapeType]) || defaultLabelTemplates[shapeType];
 
@@ -747,6 +753,7 @@ class Controller extends gws.Controller {
 
         this.update({
             annotateLastCssSelector: newCssSelector,
+            styleEditorCurrentSelector: newCssSelector,
         });
 
         feature.update();
@@ -831,22 +838,30 @@ class Controller extends gws.Controller {
         this.app.stopTool('Tool.Annotate.*');
         this.layer.clear();
 
-        this.layer.addFeatures(data.features.map(props => {
+        let features = [];
+
+        for (let props of data.features) {
             let f = new AnnotateFeature(this.map)
             f.setProps(props);
+
+            if (props.style) {
+                f.cssSelector = this.newStyle(props.style.values);
+            }
+
             f.redraw();
-            lastFeature = f;
-            return f;
-        }));
+            features.push(f);
+        }
+
+        this.layer.addFeatures(features);
 
         if (this.hasFeatures)
             this.app.startTool('Tool.Annotate.Modify');
 
-        if (lastFeature) {
-            this.update({
-                // annotateLastCssClass: lastFeature.styleNames.normal,
-            });
-        }
+        // if (lastFeature) {
+        //     this.update({
+        //         // annotateLastCssClass: lastFeature.styleNames.normal,
+        //     });
+        // }
 
     }
 

@@ -38,12 +38,23 @@ const STORAGE_CATEGORY = 'styles';
 class StyleForm extends gws.View<ViewProps> {
     render() {
 
+        let bind = (prop, getter = null, setter = null) => {
+
+            getter = getter || (x => x);
+            setter = setter || (x => x);
+
+            return {
+                value: getter(this.props.styleEditorValues[prop]),
+                whenChanged: val => cc.whenPropertyChanged(prop, setter(val))
+            }
+        }
+
         let cc = _master(this.props.controller);
 
         /*
                     <gws.ui.Group label={cc.__('modStyleName')} className="modStyleRenameControl">
                 <gws.ui.TextInput
-                    {...cc.bind('styleEditorNewName')}/>
+                    {...bind('styleEditorNewName')}/>
                 <gws.ui.Button
                     tooltip={cc.__('modStyleRename')}
                     whenTouched={() => cc.renameStyle()}
@@ -53,29 +64,23 @@ class StyleForm extends gws.View<ViewProps> {
          */
 
         let labelPlacement = ['start', 'middle', 'end'].map(opt => <gws.ui.Toggle
-            key={opt}
-            className={'modStyleProp_label_placement_' + opt}
-            tooltip={cc.__('modStyleProp_label_placement_' + opt)}
-            {...cc.bind(
-                'styleEditorValues.label_placement',
-                val => val === opt,
-                val => opt
-            )}/>,
+                key={opt}
+                className={'modStyleProp_label_placement_' + opt}
+                tooltip={cc.__('modStyleProp_label_placement_' + opt)}
+                {...bind('label_placement', val => val === opt, val => opt)}
+            />,
         );
 
         let labelAlign = ['left', 'center', 'right'].map(opt => <gws.ui.Toggle
-            key={opt}
-            className={'modStyleProp_label_align_' + opt}
-            tooltip={cc.__('modStyleProp_label_align_' + opt)}
-            {...cc.bind(
-                'styleEditorValues.label_align',
-                val => val === opt,
-                val => opt
-            )}/>,
+                key={opt}
+                className={'modStyleProp_label_align_' + opt}
+                tooltip={cc.__('modStyleProp_label_align_' + opt)}
+                {...bind('label_align', val => val === opt, val => opt)}
+            />,
         );
 
-        let noLabel = this.props.styleEditorValues.with_label !== gws.api.StyleLabelOption.all;
-        let noGeom = this.props.styleEditorValues.with_geometry !== gws.api.StyleGeometryOption.all;
+        let noLabel = false // this.props.stylerValues.with_label !== gws.api.StyleLabelOption.all;
+        let noGeom = false // this.props.stylerValues.with_geometry !== gws.api.StyleGeometryOption.all;
 
         return <gws.ui.Tabs
             active={cc.getValue('styleEditorActiveTab')}
@@ -87,31 +92,32 @@ class StyleForm extends gws.View<ViewProps> {
                     <gws.ui.Group noBorder label={cc.__('modStyleEnabled')}>
                         <gws.ui.Toggle
                             type="checkbox"
-                            {...cc.bind(
-                                'styleEditorValues.with_geometry',
-                                val => val === 'all',
-                                val => val ? 'all' : 'none',
-                            )}/>
+                            {...bind('with_geometry', val => val === 'all', val => val ? 'all' : 'none')}
+                        />
                     </gws.ui.Group>
 
                     <gws.ui.ColorPicker
                         disabled={noGeom}
                         label={cc.__('modStyleProp_fill')}
-                        {...cc.bind('styleEditorValues.fill')}/>
+                        {...bind('fill')}
+                    />
                     <gws.ui.ColorPicker
                         disabled={noGeom}
                         label={cc.__('modStyleProp_stroke')}
-                        {...cc.bind('styleEditorValues.stroke')}/>
+                        {...bind('stroke')}
+                    />
                     <gws.ui.Slider
                         disabled={noGeom}
                         label={cc.__('modStyleProp_stroke_width')}
                         minValue={0} maxValue={20} step={1}
-                        {...cc.bind('styleEditorValues.stroke_width')}/>
+                        {...bind('stroke_width')}
+                    />
                     <gws.ui.Slider
                         disabled={noGeom}
                         minValue={0} maxValue={20} step={1}
                         label={cc.__('modStyleProp_point_size')}
-                        {...cc.bind('styleEditorValues.point_size')}/>
+                        {...bind('point_size')}
+                    />
                 </Form>
             </gws.ui.Tab>
 
@@ -121,31 +127,32 @@ class StyleForm extends gws.View<ViewProps> {
                     <gws.ui.Group noBorder label={cc.__('modStyleEnabled')}>
                         <gws.ui.Toggle
                             type="checkbox"
-                            {...cc.bind(
-                                'styleEditorValues.with_label',
-                                val => val === 'all',
-                                val => val ? 'all' : 'none',
-                            )}/>
+                            {...bind('with_label', val => val === 'all', val => val ? 'all' : 'none')}
+                        />
                     </gws.ui.Group>
 
                     <gws.ui.ColorPicker
                         disabled={noLabel}
                         label={cc.__('modStyleProp_fill')}
-                        {...cc.bind('styleEditorValues.label_fill')}/>
+                        {...bind('label_fill')}
+                    />
                     <gws.ui.ColorPicker
                         disabled={noLabel}
                         label={cc.__('modStyleProp_stroke')}
-                        {...cc.bind('styleEditorValues.label_stroke')}/>
+                        {...bind('label_stroke')}
+                    />
                     <gws.ui.Slider
                         disabled={noLabel}
                         label={cc.__('modStyleProp_stroke_width')}
                         minValue={0} maxValue={20} step={1}
-                        {...cc.bind('styleEditorValues.label_stroke_width')}/>
+                        {...bind('label_stroke_width')}
+                    />
                     <gws.ui.Slider
                         disabled={noLabel}
                         minValue={10} maxValue={40} step={1}
                         label={cc.__('modStyleProp_label_font_size')}
-                        {...cc.bind('styleEditorValues.label_font_size')}/>
+                        {...bind('label_font_size')}
+                    />
                     <gws.ui.Group
                         noBorder
                         disabled={noLabel}
@@ -163,10 +170,12 @@ class StyleForm extends gws.View<ViewProps> {
                     >
                         <gws.ui.Slider
                             minValue={-100} maxValue={+100} step={1}
-                            {...cc.bind('styleEditorValues.label_offset_x')}/>
+                            {...bind('label_offset_x')}
+                        />
                         <gws.ui.Slider
                             minValue={-100} maxValue={+100} step={1}
-                            {...cc.bind('styleEditorValues.label_offset_y')}/>
+                            {...bind('label_offset_y')}
+                        />
                     </gws.ui.Group>
                 </Form>
             </gws.ui.Tab>
@@ -238,7 +247,7 @@ export class StyleController extends gws.Controller {
             styleEditorValues: {}
         });
         this.whenChanged('styleEditorCurrentSelector', () => this.loadStyle());
-        this.whenChanged('styleEditorValues', () => this.updateValues());
+        // this.whenChanged('styleEditorValues', () => this.updateValues());
 
         let s = this.app.style.get('.modAnnotateFeature');
         this.update({
@@ -267,15 +276,37 @@ export class StyleController extends gws.Controller {
         });
     }
 
-    updateValues() {
+    whenPropertyChanged(prop, val) {
+        let newValues = {
+            ...this.getValue('styleEditorValues') || {},
+            [prop]: val,
+        };
+
+        this.update({
+            styleEditorValues: newValues
+        });
+
         let name = this.getValue('styleEditorCurrentSelector');
         let sty = this.app.style.at(name);
         if (sty) {
-            sty.update(this.getValue('styleEditorValues'));
+            sty.update(newValues);
             clearTimeout(this.updateTimer);
-            this.updateTimer = setTimeout(() => this.map.style.notifyChanged(this.map, name), UPDATE_DELAY);
+            this.updateTimer = setTimeout(
+                () => this.map.style.notifyChanged(this.map, sty.name),
+                UPDATE_DELAY);
         }
     }
+
+
+    // updateValues() {
+    //     let name = this.getValue('styleEditorCurrentSelector');
+    //     let sty = this.app.style.at(name);
+    //     if (sty) {
+    //         sty.update(this.getValue('styleEditorValues'));
+    //         clearTimeout(this.updateTimer);
+    //         this.updateTimer = setTimeout(() => this.map.style.notifyChanged(this.map, name), UPDATE_DELAY);
+    //     }
+    // }
 
     readStyles(data) {
         this.map.style.unserialize(data);

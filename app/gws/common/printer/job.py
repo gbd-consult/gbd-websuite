@@ -370,8 +370,17 @@ class _Worker:
 
         if item.type == 'features':
             mod = gws.common.model.generic()
-            features = [mod.feature_from_props(p) for p in item.features]
-            features = [f for f in features if f and f.shape]
+            features = []
+            for p in item.features:
+                f = mod.feature_from_props(p)
+                if not f or not f.shape:
+                    continue
+                s = p.get('style')
+                if s:
+                    s = gws.common.style.from_props(s)
+                if s:
+                    f.style = s
+                features.append(f)
             if not features:
                 return
             ii.type = t.MapRenderInputItemType.features
