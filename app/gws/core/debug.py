@@ -101,19 +101,19 @@ def p(*args, **kwargs):
     if kwargs.get('lines'):
         for arg in args:
             for s in enumerate(str(arg).split('\n'), 1):
-                log.debug('%06d:%s' % s, extra={'skip_frames': 1})
-            log.debug(sep, extra={'skip_frames': 1})
+                log.debug('%06d:%s' % s, stacklevel=2)
+            log.debug(sep, stacklevel=2)
     else:
         max_depth = kwargs.get('d', 3)
         all_props = kwargs.get('all', False)
         for arg in args:
             for s in inspect(arg, max_depth=max_depth, all_props=all_props):
-                log.debug(s, extra={'skip_frames': 1})
-            log.debug(sep, extra={'skip_frames': 1})
+                log.debug(s, stacklevel=2)
+            log.debug(sep, stacklevel=2)
 
     if kwargs.get('stack'):
         for s in traceback.format_stack()[:-1]:
-            log.debug(s.replace('\n', ' '), extra={'skip_frames': 1})
+            log.debug(s.replace('\n', ' '), stacklevel=2)
 
 
 _timers = {}
@@ -126,7 +126,7 @@ def time_start(label):
 def time_end(label):
     if label in _timers:
         ts = time.time() - _timers.pop(label)
-        log.debug('TIMER %s=%.2f', label, ts, extra={'skip_frames': 1})
+        log.debug('TIMER %s=%.2f', label, ts, stacklevel=2)
 
 
 def pycharm_debugger_check(path_to_pycharm_debug_egg, host, port, suspend=False):
