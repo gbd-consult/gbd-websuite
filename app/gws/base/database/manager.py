@@ -169,14 +169,12 @@ class Object(gws.Node, gws.IDatabaseManager):
 
     def session(self, provider, **kwargs):
         if not self.rt.sessions.get(provider.uid):
-            gws.log.debug(f'db: create session for {provider.uid!r}')
             self.rt.sessions[provider.uid] = session_module.Object(provider)
 
         return self.rt.sessions[provider.uid]
 
     def close_sessions(self):
         for provider_uid, sess in self.rt.sessions.items():
-            gws.log.debug(f'db: close session for {provider_uid!r}')
             sess.saSession.close()
         self.rt.sessions = {}
 

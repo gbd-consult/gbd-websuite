@@ -14,7 +14,6 @@ class Object(gws.IDatabaseSession):
         self.nested = 0
 
     def __enter__(self):
-        gws.log.debug(f'session enter: {self.provider.uid!r}: {self.nested=}')
         if self.nested == 0:
             self.saSession.begin()
         self.nested += 1
@@ -24,7 +23,6 @@ class Object(gws.IDatabaseSession):
         self.nested -= 1
         if self.nested == 0:
             self.saSession.close()
-        gws.log.debug(f'session exit: {self.provider.uid!r}: {self.nested=}')
 
     def begin(self):
         return self.saSession.begin()
