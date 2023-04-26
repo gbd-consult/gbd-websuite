@@ -11,7 +11,7 @@ projects+ {
     map.layers+ {
         title "Essen und Trinken in Düsseldorf"
         type "qgisflat"
-        provider.path "poi.qgs"
+        provider.path "/data/demos/poi_geojson.qgs"
     }
 
     {demo_osm_background}

@@ -38,7 +38,7 @@ projects+ {
         uid "duesseldorf"
         title "Düsseldorf"
         type "qgis"
-        provider.path "poi.qgs"
+        provider.path "/data/demos/poi_geojson.qgs"
     }
 
     map.layers+ {

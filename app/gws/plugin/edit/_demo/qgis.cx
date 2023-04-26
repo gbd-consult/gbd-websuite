@@ -29,7 +29,7 @@ projects+ {
     map.layers+ {
         title "Points of interest"
         type "qgisflat"
-        provider.path "poi_districts.qgs"
+        provider.path "/data/demos/poi_districts_postgres.qgs"
         sourceLayers.names [ "Points of interest" ]
 
         models+ {
@@ -79,7 +79,7 @@ projects+ {
     map.layers+ {
         title "Districts"
         type "qgisflat"
-        provider.path "poi_districts.qgs"
+        provider.path "/data/demos/poi_districts_postgres.qgs"
         sourceLayers.names [ "Districts" ]
         opacity 0.5
 
