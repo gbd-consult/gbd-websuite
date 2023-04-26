@@ -41,10 +41,15 @@ def handle_request(environ) -> gws.IWebResponder:
     site = root.app.webMgr.site_from_environ(environ)
     req = gws.base.web.wsgi.Requester(root, environ, site)
 
-    req.parse_input()
+    try:
+        req.parse_input()
+    except Exception as exc:
+        return handle_error(req, exc)
+
     gws.log.if_debug(_debug_repr, 'REQUEST_BEGIN:', req.params)
     res = apply_middleware(root, req)
     gws.log.if_debug(_debug_repr, 'REQUEST_END:', res)
+
     return res
 
 

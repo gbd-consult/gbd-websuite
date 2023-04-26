@@ -263,13 +263,9 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
 
             d = site.staticRoot.dir
             roots += f"""
-                location =/ {{
-                    root {d};
-                    index index.html;
-                }}
                 location / {{
                     root {d};
-                    try_files $uri @cache;
+                    try_files $uri $uri/index.html @cache;
                 }}
                 location = /favicon.ico {{
                     root /;
