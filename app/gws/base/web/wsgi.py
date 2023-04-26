@@ -24,6 +24,9 @@ class Responder(gws.IWebResponder):
         self.response = kwargs.get('response')
         self.status = self._wz.status_code
 
+    def __repr__(self):
+        return f'<Responder {self._wz}>'
+
     def send_response(self, environ, start_response):
         return self._wz(environ, start_response)
 
@@ -43,16 +46,10 @@ class Requester(gws.IWebRequester):
         'msgpack': 'application/msgpack',
     }
 
-    _middlewareList: list[gws.WebMiddlewareHandler]
-    _middlewareIndex: int
-
-    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite, middleware: list[gws.WebMiddlewareHandler]):
+    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite):
         self._wz = werkzeug.wrappers.Request(environ)
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
         self._wz.max_content_length = int(root.app.cfg('server.web.maxRequestLength', default=1)) * 1024 * 1024
-
-        self._middlewareList = middleware
-        self._middlewareIndex = 0
 
         self.root = root
         self.site = site
@@ -80,10 +77,8 @@ class Requester(gws.IWebRequester):
         self.params: dict[str, t.Any] = {}
         self.lowerParams: dict[str, t.Any] = {}
 
-    def apply_middleware(self):
-        fn = self._middlewareList[self._middlewareIndex]
-        self._middlewareIndex += 1
-        return fn(self, self.apply_middleware)
+    def __repr__(self):
+        return f'<Requester {self._wz}>'
 
     def data(self):
         if not self.isPost:

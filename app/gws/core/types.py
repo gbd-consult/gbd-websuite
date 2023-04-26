@@ -393,8 +393,6 @@ class IWebRequester(Protocol):
     isPost: bool
     isSecure: bool
 
-    def apply_middleware(self) -> 'IWebResponder': ...
-
     def cookie(self, key: str, default: str = '') -> str: ...
 
     def data(self) -> Optional[bytes]: ...
@@ -2009,6 +2007,12 @@ class IMonitor(INode, Protocol):
 WebMiddlewareHandler = Callable[['IWebRequester', Callable], 'IWebResponder']
 
 
+class IMiddleware(Protocol):
+    def enter_middleware(self, req: 'IWebRequester') -> Optional['IWebResponder']: ...
+
+    def exit_middleware(self, req: 'IWebRequester', res: 'IWebResponder'): ...
+
+
 class IApplication(INode, Protocol):
     client: 'IClient'
     localeUids: list[str]
@@ -2023,9 +2027,9 @@ class IApplication(INode, Protocol):
     databaseMgr: 'IDatabaseManager'
     webMgr: 'IWebManager'
 
-    def register_web_middleware(self, name: str, fn: WebMiddlewareHandler): ...
+    def register_middleware(self, name: str, obj: IMiddleware, depends_on=Optional[list[str]]): ...
 
-    def web_middleware_list(self) -> list[WebMiddlewareHandler]: ...
+    def middleware_objects(self) -> list[tuple[str, IMiddleware]]: ...
 
     def developer_option(self, name: str): ...
 

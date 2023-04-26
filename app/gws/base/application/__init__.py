@@ -20,7 +20,6 @@ import gws.spec
 import gws.base.web.error
 import gws.types as t
 
-_DEFAULT_MIDDLEWARE = ['cors', 'auth']
 _DEFAULT_LOCALE = ['en_CA']
 
 
@@ -77,8 +76,9 @@ class Object(gws.Node, gws.IApplication):
     qgisVersion = ''
     projects: dict[str, gws.IProject]
 
-    webMiddlewareFuncs: dict[str, t.Callable]
-    webMiddlewareNames: list[str]
+    middlewareObjects: dict[str, gws.IMiddleware]
+    middlewareDeps: dict[str, list[str]]
+    middlewareNames: list[str]
 
     _devopts: dict
 
@@ -107,8 +107,9 @@ class Object(gws.Node, gws.IApplication):
         if self._devopts:
             gws.log.warning('developer mode enabled')
 
-        self.webMiddlewareFuncs = {}
-        self.webMiddlewareNames = self.cfg('middleware', default=_DEFAULT_MIDDLEWARE)
+        self.middlewareObjects = {}
+        self.middlewareDeps = {}
+        self.middlewareNames = []
 
         self.localeUids = self.cfg('locales') or _DEFAULT_LOCALE
         self.monitor = self.create_child(gws.server.monitor.Object, self.cfg('server.monitor'))
@@ -154,6 +155,8 @@ class Object(gws.Node, gws.IApplication):
             self.mpxUrl = f"http://{self.cfg('server.mapproxy.host')}:{self.cfg('server.mapproxy.port')}"
             self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
+        self.middlewareNames = self._sort_middleware()
+
         # for p in set(cfg.configPaths):
         #     root.app.monitor.add_path(p)
         # for p in set(cfg.projectPaths):
@@ -164,11 +167,43 @@ class Object(gws.Node, gws.IApplication):
         # if root.app.developer_option('server.auto_reload'):
         #     root.app.monitor.add_directory(gws.APP_DIR, '\.py$')
 
-    def register_web_middleware(self, name, fn):
-        self.webMiddlewareFuncs[name] = fn
+    def _sort_middleware(self):
 
-    def web_middleware_list(self):
-        return gws.compact(self.webMiddlewareFuncs.get(name) for name in self.webMiddlewareNames)
+        def visit(name, stack):
+            stack += [name]
+
+            if color.get(name) == 2:
+                return
+            if color.get(name) == 1:
+                raise gws.Error('middleware: cyclic dependency: ' + '->'.join(stack))
+
+            if name not in self.middlewareObjects:
+                raise gws.Error('middleware: not found: ' + '->'.join(stack))
+
+            color[name] = 1
+
+            depends_on = self.middlewareDeps[name]
+            if depends_on:
+                for d in depends_on:
+                    visit(d, stack)
+
+            color[name] = 2
+            names.append(name)
+
+        color = {}
+        names = []
+
+        for name in self.middlewareObjects:
+            visit(name, [])
+
+        return names
+
+    def register_middleware(self, name, obj, depends_on=None):
+        self.middlewareObjects[name] = obj
+        self.middlewareDeps[name] = depends_on
+
+    def middleware_objects(self):
+        return [(name, self.middlewareObjects[name]) for name in self.middlewareNames]
 
     def get_project(self, uid):
         return self.projects.get(uid)

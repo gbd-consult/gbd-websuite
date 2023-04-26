@@ -46,6 +46,18 @@ class Object(gws.Node, gws.IDatabaseManager):
             prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg, _defaultManager=self)
             self.providers[prov.uid] = prov
 
+        self.root.app.register_middleware('db', self)
+
+    ##
+
+    def enter_middleware(self, req: gws.IWebRequester):
+        pass
+
+    def exit_middleware(self, req: gws.IWebRequester, res: gws.IWebResponder):
+        self.close_sessions()
+
+    ##
+
     def post_configure(self):
         self.close_sessions()
 

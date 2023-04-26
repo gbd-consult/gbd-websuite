@@ -11,9 +11,9 @@ _FALLBACK_SITE = gws.Config(
 class Config(gws.Config):
     """Web server configuration"""
 
-    sites: t.Optional[list[site.Config]] 
+    sites: t.Optional[list[site.Config]]
     """configured sites"""
-    ssl: t.Optional[site.SSLConfig] 
+    ssl: t.Optional[site.SSLConfig]
     """ssl configuration"""
 
 
@@ -26,40 +26,42 @@ class Object(gws.Node, gws.IWebManager):
             cfgs = [gws.merge(c, ssl=True) for c in cfgs]
         self.sites = self.create_children(site.Object, cfgs)
 
-    def activate(self):
-        self.root.app.register_web_middleware('cors', self.cors_middleware)
+        self.root.app.register_middleware('cors', self)
 
-    def cors_middleware(self, req: gws.IWebRequester, nxt):
+    ##
+
+    def enter_middleware(self, req: gws.IWebRequester):
         cors = req.site.corsOptions
         if not cors:
-            return nxt()
-
+            return
         if req.method == 'OPTIONS':
             return gws.ContentResponse(mime='text/plain', content='')
 
-        res = nxt()
+    def exit_middleware(self, req: gws.IWebRequester, res: gws.IWebResponder):
+        cors = req.site.corsOptions
 
-        if res.status < 400:
+        if not cors or res.status >= 400:
+            return
 
-            p = cors.get('allowOrigin')
-            if p:
-                res.add_header('Access-Control-Allow-Origin', p)
+        p = cors.get('allowOrigin')
+        if p:
+            res.add_header('Access-Control-Allow-Origin', p)
 
-            p = cors.get('allowCredentials')
-            if p:
-                res.add_header('Access-Control-Allow-Credentials', 'true')
+        p = cors.get('allowCredentials')
+        if p:
+            res.add_header('Access-Control-Allow-Credentials', 'true')
 
-            p = cors.get('allowHeaders')
-            if p:
-                res.add_header('Access-Control-Allow-Headers', ', '.join(p))
+        p = cors.get('allowHeaders')
+        if p:
+            res.add_header('Access-Control-Allow-Headers', ', '.join(p))
 
-            p = cors.get('allowMethods')
-            if p:
-                res.add_header('Access-Control-Allow-Methods', ', '.join(p))
-            else:
-                res.add_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        p = cors.get('allowMethods')
+        if p:
+            res.add_header('Access-Control-Allow-Methods', ', '.join(p))
+        else:
+            res.add_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
-        return res
+    ##
 
     def site_from_environ(self, environ):
         host = environ.get('HTTP_HOST', '').lower().split(':')[0].strip()

@@ -26,8 +26,6 @@ def init():
         gws.log.info('initializing WEB application')
         root = gws.config.load()
         gws.log.set_level(root.app.cfg('server.log.level'))
-
-        _STATE['middleware'] = root.app.web_middleware_list() + [final_middleware]
         _STATE['inited'] = True
     except:
         gws.log.exception('UNABLE TO LOAD CONFIGURATION')
@@ -41,20 +39,46 @@ def reload():
 def handle_request(environ) -> gws.IWebResponder:
     root = gws.config.root()
     site = root.app.webMgr.site_from_environ(environ)
-    req = gws.base.web.wsgi.Requester(root, environ, site, _STATE['middleware'])
+    req = gws.base.web.wsgi.Requester(root, environ, site)
 
-    try:
+    req.parse_input()
+    gws.log.if_debug(_debug_repr, 'REQUEST_BEGIN:', req.params)
+    res = apply_middleware(root, req)
+    gws.log.if_debug(_debug_repr, 'REQUEST_END:', res)
+    return res
+
+
+def apply_middleware(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebResponder:
+    res = None
+    done = []
+
+    for name, obj in root.app.middleware_objects():
         try:
-            req.parse_input()
-            gws.log.if_debug(_debug_repr, 'REQUEST_BEGIN:', req.params)
-            res = req.apply_middleware()
-            gws.log.if_debug(_debug_repr, 'REQUEST_END:', res)
-            return res
-        except gws.base.web.error.HTTPException as exc:
-            return handle_error(req, exc)
-    except:
-        gws.log.exception()
-        return req.error_responder(gws.base.web.error.InternalServerError())
+            res = obj.enter_middleware(req)
+            done.append((name, obj))
+        except Exception as exc:
+            res = handle_error(req, exc)
+
+        # gws.log.debug(f'middleware enter: {name=} {res=}')
+
+        if res:
+            break
+
+    if not res:
+        try:
+            res = final_middleware(req)
+        except Exception as exc:
+            res = handle_error(req, exc)
+
+    for name, obj in reversed(done):
+        try:
+            obj.exit_middleware(req, res)
+        except Exception as exc:
+            res = handle_error(req, exc)
+
+        # gws.log.debug(f'middleware exit: {name=} {res=}')
+
+    return res
 
 
 def _debug_repr(prefix, s):
@@ -66,7 +90,16 @@ def _debug_repr(prefix, s):
     return prefix + ': ' + s[:m] + ' [...' + str(n - m) + ' more]'
 
 
-def handle_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPException) -> gws.IWebResponder:
+def handle_error(req: gws.IWebRequester, exc: Exception) -> gws.IWebResponder:
+    if isinstance(exc, gws.base.web.error.HTTPException):
+        return handle_http_error(req, exc)
+
+    gws.log.exception()
+    return req.error_responder(gws.base.web.error.InternalServerError())
+
+
+def handle_http_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPException) -> gws.IWebResponder:
+    #
     # @TODO: image errors
 
     gws.log.warning(f'HTTPException: {exc.code}')
@@ -90,7 +123,7 @@ def handle_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPException) 
 _relaxed_read_options = {'case_insensitive', 'convert_values', 'ignore_extra_props'}
 
 
-def final_middleware(req: gws.IWebRequester, nxt) -> gws.IWebResponder:
+def final_middleware(req: gws.IWebRequester) -> gws.IWebResponder:
     command_name = req.param('cmd')
     if not command_name:
         raise gws.base.web.error.NotFound()

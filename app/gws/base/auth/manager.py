@@ -50,16 +50,17 @@ class Object(gws.Node, gws.IAuthManager):
 
         self.guestSession = session.Object(uid='guest_session', method=None, user=self.guestUser)
 
+        self.root.app.register_middleware('auth', self, depends_on=['db'])
+
     ##
 
-    def activate(self):
-        self.root.app.register_web_middleware('auth', self.auth_middleware)
-
-    def auth_middleware(self, req: gws.IWebRequester, nxt) -> gws.IWebResponder:
+    def enter_middleware(self, req):
         self.open_session(req)
-        res = nxt()
+
+    def exit_middleware(self, req, res):
         self.close_session(req, res)
-        return res
+
+    ##
 
     def open_session(self, req):
         for m in self.methods:
