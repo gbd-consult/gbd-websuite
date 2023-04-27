@@ -63,9 +63,9 @@ class Object(gws.Node, gws.IClient):
             self.cfg('options'))
 
     def props(self, user):
-        return gws.Data(
+        return Props(
             options=self.options,
-            elements=[e.props(user) for e in self.elements]
+            elements=self.elements,
         )
 
     def _get_elements(self, app_client):
