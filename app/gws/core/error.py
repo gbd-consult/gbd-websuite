@@ -12,6 +12,24 @@ class ConfigurationError(Error):
     pass
 
 
+class NotFoundError(Error):
+    """Generic 'object not found' error."""
+    pass
+
+
+class ForbiddenError(Error):
+    """Generic 'forbidden' error."""
+    pass
+
+
+class BadRequestError(Error):
+    """Generic 'bad request' error."""
+    pass
+
+
+##
+
+
 def to_string_list(exc: Exception) -> list:
     """Exception backtrace as a list of strings."""
 

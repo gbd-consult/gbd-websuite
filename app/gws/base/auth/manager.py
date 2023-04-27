@@ -4,11 +4,9 @@ import gws
 import gws.config
 import gws.lib.date
 import gws.lib.jsonx
-import gws.base.web.wsgi
-import gws.base.web.error
 import gws.types as t
 
-from . import session
+from . import session, system_provider
 
 
 class Config(gws.Config):
@@ -35,7 +33,7 @@ class Object(gws.Node, gws.IAuthManager):
 
         self.providers = self.create_children(gws.ext.object.authProvider, self.cfg('providers'), _defaultManager=self)
 
-        sys_provider = self.create_child(gws.ext.object.authProvider, type='system', _defaultManager=self)
+        sys_provider = self.create_child(system_provider.Object, _defaultManager=self)
         self.providers.append(sys_provider)
 
         self.guestUser = sys_provider.get_user('guest')
@@ -56,6 +54,7 @@ class Object(gws.Node, gws.IAuthManager):
 
     def enter_middleware(self, req):
         self.open_session(req)
+        gws.log.debug(f'session opened: user={req.session.user.uid!r} roles={req.session.user.roles}')
 
     def exit_middleware(self, req, res):
         self.close_session(req, res)

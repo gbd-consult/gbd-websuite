@@ -3,7 +3,6 @@
 import base64
 
 import gws
-import gws.base.auth.error
 import gws.base.auth.method
 
 gws.ext.new.authMethod('basic')
@@ -33,7 +32,7 @@ class Object(gws.base.auth.method.Object):
             return True
 
         # if the header is provided, it has to be correct
-        raise gws.base.auth.error.LoginNotFound()
+        # raise gws.base.auth.error.LoginNotFound()
 
     def close_session(self, req, res):
         self.auth.session_activate(req, None)

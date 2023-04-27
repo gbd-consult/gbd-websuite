@@ -111,7 +111,7 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
         res = gws.ContentResponse()
         args = {
             'project': project,
-            'projects': _projects_for_user(root, req.user),
+            'projects': sorted(root.app.projects_for_user(req.user), key=lambda p: p.title),
             'request': req,
             'user': req.user,
             'params': p,
@@ -136,15 +136,6 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
     gws.log.debug(f'serving {rpath!r} for {spath!r}')
 
     return gws.ContentResponse(mime=mime, path=rpath, asAttachment=as_attachment)
-
-
-def _projects_for_user(root, user):
-    ps = [
-        p
-        for p in root.app.projects.values()
-        if user.can_use(p)
-    ]
-    return sorted(ps, key=lambda p: p.title)
 
 
 _dir_re = r'^[A-Za-z0-9_]+$'

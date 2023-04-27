@@ -182,14 +182,12 @@ class Requester(gws.IWebRequester):
     ##
 
     def require(self, uid, classref):
-        obj = self.root.get(uid, classref)
-        if obj and self.user and self.user.can_use(obj):
-            return obj
-        if not obj:
-            gws.log.error('require: not found', classref, uid)
+        try:
+            return self.user.require(uid, classref)
+        except gws.NotFoundError:
             raise gws.base.web.error.NotFound()
-        gws.log.error('require: denied', classref, uid)
-        raise gws.base.web.error.Forbidden()
+        except gws.ForbiddenError:
+            raise gws.base.web.error.Forbidden()
 
     def require_project(self, uid):
         return t.cast(gws.IProject, self.require(uid, gws.ext.object.project))
@@ -201,9 +199,7 @@ class Requester(gws.IWebRequester):
         return t.cast(gws.IModel, self.require(uid, gws.ext.object.model))
 
     def acquire(self, uid, classref):
-        obj = self.root.get(uid, classref)
-        if obj and self.user and self.user.can_use(obj):
-            return obj
+        return self.user.acquire(uid, classref)
 
     def set_session(self, sess):
         self.session = sess

@@ -17,7 +17,6 @@ class Provider(gws.base.auth.provider.Object):
         for login, roles in self.users.items():
             if local_uid == login:
                 return gws.base.auth.user.from_args(
-                    gws.base.auth.user.AuthorizedUser,
                     provider=self,
                     roles=roles,
                     localUid=local_uid,

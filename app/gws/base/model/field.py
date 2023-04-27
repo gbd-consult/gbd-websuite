@@ -40,10 +40,6 @@ class Object(gws.Node, gws.IModelField):
     _valuesIndex: dict[tuple[bool, gws.Access], gws.IModelValue]
 
     def configure(self):
-        p = self.permissions.get(gws.Access.use)
-        if p:
-            self.permissions.setdefault(gws.Access.read, p)
-
         self.model = self.cfg('_defaultModel')
         self.name = self.cfg('name')
         self.title = self.cfg('title', default=self.name)

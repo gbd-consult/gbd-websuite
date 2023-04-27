@@ -74,7 +74,7 @@ class Object(gws.Node, gws.IApplication):
 
     helpers: list[gws.Node]
     qgisVersion = ''
-    projects: dict[str, gws.IProject]
+    projectsDct: dict[str, gws.IProject]
 
     middlewareObjects: dict[str, gws.IMiddleware]
     middlewareDeps: dict[str, list[str]]
@@ -148,7 +148,7 @@ class Object(gws.Node, gws.IApplication):
         self.client = self.create_child(gws.base.client.Object, self.cfg('client'))
 
         projects = self.create_children(gws.ext.object.project, self.cfg('projects'))
-        self.projects = {p.uid: p for p in projects}
+        self.projectsDct = {p.uid: p for p in projects}
 
     def post_configure(self):
         if self.cfg('server.mapproxy.enabled'):
@@ -205,8 +205,11 @@ class Object(gws.Node, gws.IApplication):
     def middleware_objects(self):
         return [(name, self.middlewareObjects[name]) for name in self.middlewareNames]
 
-    def get_project(self, uid):
-        return self.projects.get(uid)
+    def projects_for_user(self, user):
+        return [p for p in self.projectsDct.values() if user.can_use(p)]
+
+    def project(self, uid):
+        return self.projectsDct.get(uid)
 
     def require_helper(self, ext_type):
         for obj in self.helpers:

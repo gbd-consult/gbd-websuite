@@ -5,4 +5,5 @@ from . import (
     provider,
     session,
     session_manager,
+    user,
 )

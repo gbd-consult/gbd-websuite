@@ -68,7 +68,6 @@ class Config(gws.Config):
 
 class Style(gws.Object, gws.IStyle):
     def __init__(self, selector, text, values):
-        super().__init__()
         self.cssSelector = selector
         self.text = text
         self.values = values

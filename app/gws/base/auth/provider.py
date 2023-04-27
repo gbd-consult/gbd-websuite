@@ -25,4 +25,4 @@ class Object(gws.Node, gws.IAuthProvider):
 
     def unserialize_user(self, data):
         d = gws.lib.jsonx.from_string(data)
-        return user_api.from_dict(user_api.AuthorizedUser, self, d) if d else None
+        return user_api.from_dict(self, d) if d else None

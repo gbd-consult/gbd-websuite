@@ -13,6 +13,8 @@ def class_name(obj):
 
 
 class Object(types.IObject):
+    permissions = {}
+
     def __repr__(self):
         r = getattr(self, 'extName', None) or class_name(self)
         s = getattr(self, 'title', None)
@@ -36,7 +38,7 @@ class Node(Object, types.INode):
 
         p = self.cfg('access')
         if p:
-            perms[types.Access.use] = util.parse_acl(p)
+            perms[types.Access.read] = util.parse_acl(p)
 
         p = self.cfg('permissions')
         if p:
@@ -46,10 +48,6 @@ class Node(Object, types.INode):
                     perms[gws.Access.write] = perms[gws.Access.create] = perms[gws.Access.delete] = a
                 else:
                     perms[t.cast(gws.Access, k)] = a
-
-        p = perms.get(gws.Access.use)
-        if p:
-            perms.setdefault(gws.Access.read, p)
 
         return perms
 
@@ -80,6 +78,7 @@ class Node(Object, types.INode):
 class Root(types.IRoot):
     def __init__(self):
         self.app = t.cast(types.IApplication, None)
+        self.permissions = {}
         self.configErrors = []
         self._configStack = []
         self._cachedDescriptors: dict[str, types.ExtObjectDescriptor] = {}
@@ -267,7 +266,7 @@ def create_root_object(specs: types.ISpecRuntime) -> types.IRoot:
 ##
 
 
-def props(obj: object, user: types.IUser, *context) -> t.Optional[types.Props]:
+def props(obj: types.IObject, user: types.IUser, *context) -> t.Optional[types.Props]:
     if not user.can_use(obj, *context):
         return None
     p = _make_props(obj, user)
@@ -278,14 +277,13 @@ def props(obj: object, user: types.IUser, *context) -> t.Optional[types.Props]:
     raise error.Error('invalid props type')
 
 
-def _make_props(obj: t.Any, user: types.IUser):
+def _make_props(obj, user: types.IUser):
     if util.is_atom(obj):
         return obj
 
-    if user.acl_bit(obj, gws.Access.use) == gws.DENY:
-        return None
-
     if isinstance(obj, Object):
+        if user.acl_bit(gws.Access.read, obj) == gws.DENY:
+            return None
         obj = obj.props(user)
 
     if util.is_data_object(obj):

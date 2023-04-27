@@ -3,8 +3,7 @@
 import getpass
 
 import gws
-import gws.base.auth.provider
-import gws.base.auth.user
+import gws.base.auth
 import gws.lib.jsonx
 import gws.lib.password
 
@@ -63,15 +62,15 @@ class Object(gws.base.auth.provider.Object):
     def _make_user(self, rec):
         atts = dict(rec)
         login = atts.pop('login')
-        atts.pop('password', '')
+        _ = atts.pop('password', '')
+        roles = atts.pop('roles', [])
 
-        return gws.base.auth.user.from_args(
-            gws.base.auth.user.AuthorizedUser,
+        return gws.base.auth.user.init(
             provider=self,
             displayName=atts.pop('name', login),
             localUid=login,
             loginName=login,
-            roles=atts.pop('roles', []),
+            roles=roles,
             attributes=atts,
         )
 

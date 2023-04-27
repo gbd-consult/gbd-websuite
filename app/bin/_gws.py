@@ -61,13 +61,13 @@ def main2(args):
             params={camelize(key): val for key, val in args.items()},
             read_options={'case_insensitive', 'convert_values', 'ignore_extra_props'}
         )
-    except gws.base.action.CommandNotFound:
+    except gws.NotFoundError:
         cli.error('command not found, try "gws -h" for help')
         return 1
-    except gws.base.action.CommandForbidden:
+    except gws.ForbiddenError:
         cli.error('command forbidden')
         return 1
-    except gws.base.action.BadRequest:
+    except gws.BadRequestError:
         cli.error('invalid arguments, try "gws -h" for help')
         return 1
 

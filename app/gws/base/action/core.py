@@ -1,18 +1,6 @@
 import gws
 
 
-class CommandNotFound(gws.Error):
-    pass
-
-
-class CommandForbidden(gws.Error):
-    pass
-
-
-class BadRequest(gws.Error):
-    pass
-
-
 class Props(gws.Props):
     type: str
 

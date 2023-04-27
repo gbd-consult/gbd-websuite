@@ -159,11 +159,11 @@ def final_middleware(req: gws.IWebRequester) -> gws.IWebResponder:
             req.user,
             read_options
         )
-    except gws.base.action.CommandNotFound as exc:
+    except gws.NotFoundError as exc:
         raise gws.base.web.error.NotFound() from exc
-    except gws.base.action.CommandForbidden as exc:
+    except gws.ForbiddenError as exc:
         raise gws.base.web.error.Forbidden() from exc
-    except gws.base.action.BadRequest as exc:
+    except gws.BadRequestError as exc:
         raise gws.base.web.error.BadRequest() from exc
 
     response = fn(req, request)

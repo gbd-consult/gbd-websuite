@@ -84,14 +84,17 @@ class Object(gws.base.auth.method.Object):
             gws.log.debug(f'insecure context, login failed')
             raise gws.base.web.error.Forbidden()
 
-        user = self.authMgr.authenticate(self, credentials)
+        try:
+            user = self.authMgr.authenticate(self, credentials)
+        except gws.ForbiddenError as exc:
+            raise gws.base.web.error.Forbidden() from exc
         if not user:
             raise gws.base.web.error.Forbidden()
 
         sess = self.authMgr.sessionMgr.create(self, user)
         req.set_session(sess)
 
-        gws.log.info(f'LOGGED_IN: user={req.session.user.uid!r}')
+        gws.log.info(f'LOGGED_IN: user={req.session.user.uid!r} roles={req.session.user.roles}')
 
     def handle_logout(self, req: gws.IWebRequester):
         if req.user.isGuest:
