@@ -216,7 +216,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
                 user={p.user}
                 password={p.password}
             """
-        path = _write('.pg_service.conf', pgservicefile)
+        pgservicefilepath = _write('.pg_service.conf', pgservicefile)
 
         frontends.append(f"""
             server {{
@@ -245,6 +245,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
                     }}
 
                     include /etc/nginx/fastcgi_params;
+                    fastcgi_param PGSERVICEFILE {pgservicefilepath};
                 }}
             }}
         """)
