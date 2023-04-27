@@ -3,40 +3,54 @@
 import base64
 
 import gws
-import gws.base.auth.method
+import gws.base.auth
+import gws.base.web.error
+import gws.types as t
 
 gws.ext.new.authMethod('basic')
 
 
-# @TODO support WWW-Authenticate at some point
-
 class Config(gws.base.auth.method.Config):
     """HTTP-basic authorization options"""
-    pass
+
+    realm: t.Optional[str]
+    """authentication realm"""
 
 
 class Object(gws.base.auth.method.Object):
+    realm: str
+
+    def configure(self):
+        self.uid = 'gws.plugin.auth_method.basic'
+        self.realm = self.cfg('realm', default='Restricted Area')
+        self.root.app.register_middleware(self.uid, self, depends_on=['auth'])
+
+    ##
+
+    def enter_middleware(self, req):
+        pass
+
+    def exit_middleware(self, req, res):
+        if res.status == 403 and req.isGet:
+            res.set_status(401)
+            res.add_header('WWW-Authenticate', f'Basic realm={self.realm}, charset="UTF-8')
 
     def open_session(self, req):
-        if self.secure and not req.isSecure:
-            return False
-
-        login_pass = _parse_header(req)
-        if not login_pass:
-            return False
-
-        user = self.auth.authenticate(self, gws.Data(username=login_pass[0], password=login_pass[1]))
+        credentials = _parse_header(req)
+        if not credentials:
+            return
+        try:
+            user = self.authMgr.authenticate(self, credentials)
+        except gws.ForbiddenError as exc:
+            raise gws.base.web.error.Forbidden() from exc
         if user:
-            sess = self.auth.session_create('http-basic', method=self, user=user)
-            self.auth.session_activate(req, sess)
-            return True
-
-        # if the header is provided, it has to be correct
-        # raise gws.base.auth.error.LoginNotFound()
+            return self.authMgr.sessionMgr.create(self, user)
 
     def close_session(self, req, res):
-        self.auth.session_activate(req, None)
-        return True
+        pass
+
+
+##
 
 
 def _parse_header(req: gws.IWebRequester):
@@ -57,4 +71,8 @@ def _parse_header(req: gws.IWebRequester):
     if len(c) != 2:
         return
 
-    return c
+    username = c[0].strip()
+    if not username:
+        return
+
+    return gws.Data(username=username, password=c[1])

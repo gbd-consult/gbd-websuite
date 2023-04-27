@@ -39,6 +39,9 @@ class Responder(gws.IWebResponder):
     def add_header(self, key, value):
         self._wz.headers.add(key, value)
 
+    def set_status(self, value):
+        self._wz.status_code = int(value)
+
 
 class Requester(gws.IWebRequester):
     _struct_mime = {

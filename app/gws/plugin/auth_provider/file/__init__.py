@@ -44,12 +44,10 @@ class Object(gws.base.auth.provider.Object):
                 wrong_password += 1
 
         if wrong_password:
-            gws.log.error(f'wrong password for {username!r}')
-            return
+            raise gws.ForbiddenError(f'wrong password for {username!r}')
 
         if len(found) > 1:
-            gws.log.error(f'multiple entries for {username!r}')
-            return
+            raise gws.ForbiddenError(f'multiple entries for {username!r}')
 
         if len(found) == 1:
             return self._make_user(found[0])

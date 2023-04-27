@@ -53,22 +53,15 @@ class Object(gws.Node, gws.IAuthManager):
     ##
 
     def enter_middleware(self, req):
-        self.open_session(req)
-        gws.log.debug(f'session opened: user={req.session.user.uid!r} roles={req.session.user.roles}')
-
-    def exit_middleware(self, req, res):
-        self.close_session(req, res)
-
-    ##
-
-    def open_session(self, req):
+        req.set_session(self.guestSession)
         for m in self.methods:
             sess = m.open_session(req)
             if sess:
                 req.set_session(sess)
-                return
+                break
+        gws.log.debug(f'session opened: user={req.session.user.uid!r} roles={req.session.user.roles}')
 
-    def close_session(self, req, res):
+    def exit_middleware(self, req, res):
         sess = req.session
         if sess.method:
             sess.method.close_session(req, res)

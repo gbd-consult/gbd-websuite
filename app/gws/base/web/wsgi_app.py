@@ -10,7 +10,6 @@ import gws.spec.runtime
 
 _STATE = {
     'inited': False,
-    'middleware': []
 }
 
 
