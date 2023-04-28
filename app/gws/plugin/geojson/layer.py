@@ -1,54 +1,54 @@
 """GeoJSON layer"""
 
 import gws
-import gws.base.layer
+import gws.base.layer.vector
+import gws.base.shape
+import gws.gis.bounds
 import gws.gis.crs
 import gws.lib.jsonx
-import gws.base.feature
-import gws.base.shape
-import gws.gis.ows
-import gws.types as t
+
+from . import provider
 
 gws.ext.new.layer('geojson')
 
 
-class Config(gws.base.layer.vector.Config):
+class Config(gws.base.layer.Config):
     """GeoJson layer"""
 
-    path: gws.FilePath
-    """geojson file"""
-    keyName: str = 'id'
-    """property name for unique ids"""
+    provider: provider.Config
+    """geojson provider"""
 
 
-class Object(gws.base.layer.vector.Object, gws.IOwsClient):
+class Object(gws.base.layer.vector.Object):
     path: str
+    provider: provider.Object
     source_crs: gws.ICrs
     features: list[gws.IFeature]
 
-    def configure_source(self):
-        self.path = self.cfg('path')
-        js = gws.lib.jsonx.from_path(self.path)
-        self.source_crs = self._get_crs(js) or self.map.crs
-        self.features = [
-            gws.base.feature.from_geojson(f, self.crs, self.cfg('keyName'))
-            for f in js['features']]
+    def configure(self):
+        self.configure_provider()
+        self.configure_models()
+        self.configure_bounds()
 
-    def get_features(self, bounds, limit=0):
-        shape = gws.base.shape.from_bounds(bounds).transformed_to(self.source_crs)
-        fs = [f for f in self.features if f.shape.intersects(shape)]
-        if limit:
-            fs = fs[:limit]
-        return [f.connect_to(self) for f in fs]
+    def configure_provider(self):
+        self.provider = provider.get_for(self)
+        return True
 
-    def _get_crs(self, js):
-        p = js.get('crs')
-        if not p:
-            return
+    def configure_bounds(self):
+        if super().configure_bounds():
+            return True
+        fds = self.provider.feature_data()
+        if fds:
+            bs = [fd.shape.bounds() for fd in fds if fd.shape]
+            if bs:
+                self.bounds = gws.gis.bounds.union(bs)
+                return True
 
-        if p.get('type') == 'name':
-            crs = gws.gis.crs.get(gws.get(p, 'properties.name'))
-            if crs:
-                return crs
+    def configure_models(self):
+        if super().configure_models():
+            return True
+        self.models.append(self.configure_model({}))
+        return True
 
-        raise gws.Error(f'unsupported geojson crs format')
+    def configure_model(self, cfg):
+        return self.create_child(gws.ext.object.model, cfg, type=self.extType, _defaultProvider=self.provider)
