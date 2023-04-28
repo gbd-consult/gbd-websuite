@@ -28,50 +28,27 @@ Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren 
 | ![](outline-insert_photo-24px.svg)    | [](/user-de/screenshot)    | Abspeichern eines Kartenausschnitts als PNG-Datei           |
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapfunction>`
 
-**Menüleiste**
+## Menüleiste
 
-+------------------------+------------------------------------------------------+-----------------------------------------+
-| **Symbol**             | **Funktion**                                         |          **Funktionsbeschreibung**      |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |menu|            |    Menü ausklappen                                   |Anzeigen des Untermenüs                  |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |project|         |    :ref:`Projektübersicht <project_overview>`        |Übersicht über die Projekteigenschaften  |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |layers|          |    :ref:`Layer <map_element>`                        |Übersicht über die einzelnen Layer       |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |search|          |    :ref:`Suche <search>`                             |Liste von Ergebnissen der Suche          |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |select|          |    :ref:`Auswahl <select>`                           |Liste der ausgewählten Objekte           |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |cadastralunit|   |    :ref:`Flurstücksuche <cadastral_unit_searching>` |Liste der ausgewählten Flurstücke        |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |measure|         |   :ref:`Markierungen <markings>`                     |Liste der ausgewählten Markierungen      |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |dimensions|      |   :ref:`Bemaßung <dimensions>`                       |Auflistung der erstellten Bemaßungen     |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |edit|            |   :ref:`Editieren <editing>`                         |Liste der editierbaren Objekte           |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |authorization|   |   :ref:`Anmeldung <sign_in>`                         |An- und Abmelden von Benutzern           |
-+------------------------+------------------------------------------------------+-----------------------------------------+
+| Symbol                                | Funktion                   		| Funktionsbeschreibung                         |
+|---------------------------------------|---------------------------------------|-----------------------------------------------|
+| ![](gbd-icon-menu-01.svg)          	| [](/user-de/submenu)	     		| Anzeigen des Untermenüs			|
+| ![](gbd-icon-project-01.svg)          | [](/user-de/project_overview) 	| Übersicht über die Projekteigenschaften       |
+| ![](gbd-icon-layers-01.svg)          	| [](/user-de/map_element)     		| Übersicht über die einzelnen Layer            |
+| ![](gbd-icon-search-01.svg) 		| [](/user-de/search)        		| Liste von Ergebnissen der Suche               |
+| ![](gbd-icon-select-01.svg)        	| [](/user-de/select)  			| Liste der ausgewählten Objekte                |
+| ![](gbd-icon-cadastralunit-01.svg) 	| [](/user-de/cadastral_unit_searching)	| Liste der ausgewählten Flurstücke             |
+| ![](gbd-icon-measure-01.svg)         	| [](/user-de/markings)       		| Liste der ausgewählten Markierungen     	|
+| ![](gbd-icon-dimensions-01.svg)	| [](/user-de/dimensions)     		| Auflistung der erstellten Bemaßungen        	|
+| ![](gbd-icon-edit-01.svg)		| [](/user-de/editing)         		| Liste der editierbaren Objekte        	|
+| ![](gbd-icon-authorization-01.svg)	| [](/user-de/sign_in)         		| An- und Abmelden von Benutzern      		|
+
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste <sidebar>`
 
-**Statusleiste**
+## Statusleiste
 
 +------------------------+--------------------------------------------+-----------------------------------------+
 | **Symbol**             | **Funktion**                               |       **Funktionsbeschreibung**         |
