@@ -4,20 +4,19 @@ import gws.types as t
 from . import parser, icon
 
 
-##
-
 # parsing depends on whenever the context is `trusted` (=config) or not (=request)
 
-def from_dict(d: dict, trusted=False, with_strict_mode=True) -> 'Style':
+def from_dict(d: dict, opts: parser.Options = None) -> 'Style':
     vals = {}
+    opts = opts or parser.Options(trusted=False, strict=True)
 
     s = d.get('text')
     if s:
-        vals.update(parser.parse_text(s, trusted, with_strict_mode))
+        vals.update(parser.parse_text(s, opts))
 
     s = d.get('values')
     if s:
-        vals.update(parser.parse_dict(gws.to_dict(s), trusted, with_strict_mode))
+        vals.update(parser.parse_dict(gws.to_dict(s), opts))
 
     return Style(
         d.get('cssSelector', ''),
@@ -26,24 +25,16 @@ def from_dict(d: dict, trusted=False, with_strict_mode=True) -> 'Style':
     )
 
 
-def from_args(**kwargs) -> 'Style':
-    d = {'values': kwargs}
-    return from_dict(d, trusted=True, with_strict_mode=True)
+def from_config(cfg: gws.Config, opts: parser.Options = None) -> 'Style':
+    return from_dict(
+        gws.to_dict(cfg),
+        opts or parser.Options(trusted=True, strict=True))
 
 
-def from_config(cfg: gws.Config) -> 'Style':
-    d = gws.to_dict(cfg)
-    return from_dict(d, trusted=True, with_strict_mode=True)
-
-
-def from_props(props: gws.Props) -> 'Style':
-    d = gws.to_dict(props)
-    return from_dict(d, trusted=False, with_strict_mode=False)
-
-
-def from_text(text: str) -> 'Style':
-    d = {'text': text}
-    return from_dict(d, trusted=True, with_strict_mode=True)
+def from_props(props: gws.Props, opts: parser.Options = None) -> 'Style':
+    return from_dict(
+        gws.to_dict(props),
+        opts or parser.Options(trusted=False, strict=False))
 
 
 ##

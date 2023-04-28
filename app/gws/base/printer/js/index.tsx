@@ -93,7 +93,7 @@ class PreviewBox extends gws.View<ViewProps> {
 
     templateItems() {
         return this.props.controller.templates.map((t, n) => ({
-            value: String(n),
+            value: n,
             text: t.title
         }));
     }
@@ -104,7 +104,7 @@ class PreviewBox extends gws.View<ViewProps> {
             return [];
 
         return (tpl.qualityLevels || []).map((level, n) => ({
-            value: String(n),
+            value: n,
             text: level.name || (level.dpi + ' dpi')
         }));
     }
@@ -133,7 +133,7 @@ class PreviewBox extends gws.View<ViewProps> {
         if (qualityItems.length > 1) {
             fields.push({
                 type: "integer",
-                name: "_quality",
+                name: "_qualityIndex",
                 title: this.__('printerQuality'),
                 widgetProps: {
                     type: "select",
@@ -402,7 +402,7 @@ class Controller extends gws.Controller {
             printerScreenshotHeight: DEFAULT_SNAPSHOT_SIZE,
             printerFormValues: {
                 _templateIndex: 0,
-                _quality: 0,
+                _qualityIndex: 0,
             }
         })
     }
@@ -492,7 +492,7 @@ class Controller extends gws.Controller {
         let template = this.selectedTemplate,
             fd = this.getValue('printerFormValues') || {};
 
-        let level = template.qualityLevels[Number(fd['_quality']) || 0],
+        let level = template.qualityLevels[Number(fd['_qualityIndex']) || 0],
             dpi = level ? level.dpi : 0;
 
         let mapParams = await this.map.printParams(
@@ -501,7 +501,7 @@ class Controller extends gws.Controller {
         );
 
         let args = {...fd};
-        delete args['_quality'];
+        delete args['_qualityIndex'];
         delete args['_templateIndex'];
 
         let params: gws.api.base.printer.Request = {

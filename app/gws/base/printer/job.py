@@ -170,10 +170,16 @@ class _Worker:
 
     def prepare_map(self, mp: core.MapParams) -> gws.MapRenderInput:
         planes = []
+
+        style_opts = gws.lib.style.parser.Options(
+            trusted=False,
+            strict=False,
+            imageDirs=[self.root.app.webMgr.sites[0].staticRoot.dir],
+        )
         style_dct = {}
 
         for p in (mp.styles or []):
-            style = gws.lib.style.from_props(p)
+            style = gws.lib.style.from_props(p, style_opts)
             if style:
                 style_dct[style.cssSelector] = style
 

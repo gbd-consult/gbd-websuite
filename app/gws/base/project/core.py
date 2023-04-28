@@ -25,6 +25,7 @@ _DEFAULT_PRINTER = gws.Config(
             type='html',
             path=gws.dirname(__file__) + '/templates/project_print.cx.html',
             mapSize=(200, 180, gws.Uom.mm),
+            qualityLevels=[{'dpi': 72}],
             access=gws.PUBLIC,
         ),
     ]

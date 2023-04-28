@@ -4,6 +4,7 @@ import re
 import gws
 import gws.lib.net
 import gws.lib.svg
+import gws.lib.osx
 import gws.lib.xmlx as xmlx
 import gws.types as t
 
@@ -23,7 +24,7 @@ def to_data_url(icon: ParsedIcon) -> str:
     return ''
 
 
-def parse(val, trusted):
+def parse(val, opts):
     if not val:
         return
 
@@ -34,7 +35,7 @@ def parse(val, trusted):
 
     val = val.strip('\'\"')
 
-    bs = _get_bytes(val, trusted)
+    bs = _get_bytes(val, opts)
     if not bs:
         return
 
@@ -49,11 +50,20 @@ def parse(val, trusted):
 ##
 
 
-def _get_bytes(val, trusted) -> t.Optional[bytes]:
+def _get_bytes(val, opts) -> t.Optional[bytes]:
     if val.startswith('data:'):
-        return _decode_data_url(val, trusted)
+        return _decode_data_url(val, opts)
 
-    if not trusted:
+    # if not trusted, looks in provided public dirs
+
+    for img_dir in opts.get('imageDirs', []):
+        path = gws.lib.osx.abs_web_path(val, img_dir)
+        if path:
+            return gws.read_file_b(path)
+
+    # network and aribtrary files only in the trusted mode
+
+    if not opts.get('trusted'):
         raise Error('untrusted value', val)
 
     if re.match(r'^https?:', val):

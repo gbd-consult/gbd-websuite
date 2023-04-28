@@ -46,7 +46,7 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, label: str = None, s
         extra_y_offset = 0
         if sv.label_offset_y is None:
             if gt == _TYPE_POINT:
-                extra_y_offset = 12
+                extra_y_offset = (sv.label_font_size or DEFAULT_FONT_SIZE) * 2
             if gt == _TYPE_LINESTRING:
                 extra_y_offset = 6
         text = _label(geom, label, sv, extra_y_offset)
@@ -75,7 +75,7 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, label: str = None, s
             }
             icon = xmlx.tag(
                 icon_el.name,
-                attributes=gws.merge(icon_el.attrib, atts),
+                gws.merge(icon_el.attrib, atts),
                 *icon_el.children()
             )
 

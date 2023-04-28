@@ -1,0 +1,72 @@
+@comment
+
+In this demo, we define two vector layers (`postgres` and `geojson`),
+which have custom css classes attached to them
+(see `/style.css` for their definitions).
+
+The print template defines four quality levels:
+
+    - dpi  0   = everything is printed as a screenshot
+    - dpi  90  = rasters are printed as a screenshot, vector data as vectors
+    - dpi 150  = everything is printed in medium resolution
+    - dpi 300  = everything is printed in high resolution
+
+@end
+
+projects+ {
+    title "Printing: vectors"
+    metadata.abstract "Styling and printing of vector layers."
+
+    printer.templates+ {
+        type "html"
+        path "multi_landscape.cx.html"
+        mapSize [ "250mm" "150mm" ]
+        title "A4 landscape"
+        qualityLevels [
+            { dpi  0  name "screen" }
+            { dpi  72 name "nice vectors" }
+            { dpi 150 name "good quality" }
+            { dpi 300 name "best quality" }
+        ]
+    }
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 30000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Bank"
+        type "geojson"
+        provider.path "/data/demos/poi/poi.bank.geojson"
+        cssSelector ".custom_poi_bank"
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text """{{name}}"""
+        }
+    }
+
+    map.layers+ {
+        title "Districts"
+        type "postgres"
+        tableName "districts"
+        cssSelector ".custom_district"
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text """{{name}}"""
+        }
+    }
+
+    map.layers+ {
+        uid "OSM"
+        title "Open Street Map"
+        type "tile"
+        display "tile"
+        opacity 0.5
+        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    }
+}

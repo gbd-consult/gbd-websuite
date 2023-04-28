@@ -532,6 +532,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
     protected setFeatures(newMap: FeatureMap) {
         let oFeatures = [];
         for (let fe of Object.values(newMap)) {
+            fe.layer = this;
             if (fe.oFeature)
                 oFeatures.push(fe.oFeature);
         }

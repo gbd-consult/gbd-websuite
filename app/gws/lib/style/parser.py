@@ -6,7 +6,13 @@ import gws
 from . import icon
 
 
-def parse_dict(d: dict, trusted, with_strict_mode) -> dict:
+class Options(gws.Data):
+    trusted: bool
+    strict: bool
+    imageDirs: list[str]
+
+
+def parse_dict(d: dict, opts: Options) -> dict:
     res = dict(_DEFAULTS)
 
     for key, val in d.items():
@@ -20,19 +26,19 @@ def parse_dict(d: dict, trusted, with_strict_mode) -> dict:
 
         if not fn:
             err = f'style: invalid css property {key!r}'
-            if with_strict_mode:
+            if opts.strict:
                 raise gws.Error(err)
             else:
                 gws.log.error(err)
                 continue
 
         try:
-            v = fn(val, trusted)
+            v = fn(val, opts)
             if v is not None:
                 res[k] = v
         except Exception as exc:
             err = f'style: invalid css value for {key!r}: {val!r}'
-            if with_strict_mode:
+            if opts.strict:
                 raise gws.Error(err) from exc
             else:
                 gws.log.error(err)
@@ -42,7 +48,7 @@ def parse_dict(d: dict, trusted, with_strict_mode) -> dict:
 
 # @TODO use a real CSS parser
 
-def parse_text(text: str, trusted, with_strict_mode) -> dict:
+def parse_text(text: str, opts: Options) -> dict:
     d = {}
     for r in text.split(';'):
         r = r.strip()
@@ -50,7 +56,7 @@ def parse_text(text: str, trusted, with_strict_mode) -> dict:
             continue
         a, _, b = r.partition(':')
         d[a.strip()] = b.strip()
-    return parse_dict(d, trusted, with_strict_mode)
+    return parse_dict(d, opts)
 
 
 ##
@@ -86,8 +92,8 @@ _DEFAULTS: dict = dict(
     label_line_height=1,
     label_max_scale=1000000000,
     label_min_scale=0,
-    label_offset_x=0,
-    label_offset_y=0,
+    label_offset_x=None,
+    label_offset_y=None,
     label_placement='middle',
     label_stroke_dasharray=[],
     label_stroke_dashoffset=0,
@@ -130,25 +136,25 @@ _COLOR_PATTERNS = (
 
 ##
 
-def _parse_color(val, trusted):
+def _parse_color(val, opts):
     val = re.sub(r'\s+', '', str(val))
     if any(re.match(p, val) for p in _COLOR_PATTERNS):
         return val
 
 
-def _parse_intlist(val, trusted):
+def _parse_intlist(val, opts):
     return [int(x) for x in _make_list(val)]
 
 
-def _parse_icon(val, trusted):
-    return icon.parse(val, trusted)
+def _parse_icon(val, opts):
+    return icon.parse(val, opts)
 
 
-def _parse_unitint(val, trusted):
+def _parse_unitint(val, opts):
     return _unitint(val)
 
 
-def _parse_unitintquad(val, trusted):
+def _parse_unitintquad(val, opts):
     val = [_unitint(x) for x in _make_list(val)]
     if any(x is None for x in val):
         return None
@@ -161,7 +167,7 @@ def _parse_unitintquad(val, trusted):
 
 
 def _parse_enum_fn(cls):
-    def _check(val, trusted):
+    def _check(val, opts):
         vals = _ENUMS.get(cls)
         if vals and val in vals:
             return val
@@ -169,11 +175,11 @@ def _parse_enum_fn(cls):
     return _check
 
 
-def _parse_int(val, trusted):
+def _parse_int(val, opts):
     return int(val)
 
 
-def _parse_str(val, trusted):
+def _parse_str(val, opts):
     val = str(val).strip()
     return val or None
 
