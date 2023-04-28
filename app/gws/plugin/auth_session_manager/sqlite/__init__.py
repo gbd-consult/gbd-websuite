@@ -50,7 +50,10 @@ class Object(gws.base.auth.session_manager.Object):
             sa.Column('updated', sa.Integer),
         )
 
-        self.metaData.create_all(self.engine, checkfirst=True)
+        try:
+            self.metaData.create_all(self.engine, checkfirst=True)
+        except Exception as exc:
+            raise gws.Error(f'cannot open {self.dbPath!r}') from exc
 
     #            
 
