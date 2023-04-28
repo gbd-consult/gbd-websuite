@@ -77,6 +77,7 @@ const DEV_INDEX_HTML_TEMPLATE = String.raw`
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <title>gws client</title>
     <link rel="stylesheet" href="/DEV-CSS/style.css?r=__RANDOM__">
+    <link rel="stylesheet" href="/style.css?r=__RANDOM__">
     
     <style>
         html, body {
