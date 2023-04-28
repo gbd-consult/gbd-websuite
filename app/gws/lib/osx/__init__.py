@@ -205,6 +205,46 @@ def abs_path(path: _Path, base: str) -> str:
     return os.path.abspath(os.path.join(base, str_path))
 
 
+def abs_web_path(path: str, basedir: str) -> t.Optional[str]:
+    """Return an absolute path in a base dir and ensure the path is correct."""
+
+    _dir_re = r'^[A-Za-z0-9_]+$'
+    _fil_re = r'^[A-Za-z0-9_]+(\.[a-z0-9]+)*$'
+
+    gws.log.debug(f'abs_web_path: trying {path!r} in {basedir!r}')
+
+    dirs = []
+    for s in path.split('/'):
+        s = s.strip()
+        if s:
+            dirs.append(s)
+
+    fname = dirs.pop()
+
+    if not all(re.match(_dir_re, p) for p in dirs):
+        gws.log.error(f'abs_web_path: invalid dirname in path={path!r}')
+        return
+
+    if not re.match(_fil_re, fname):
+        gws.log.error(f'abs_web_path: invalid filename in path={path!r}')
+        return
+
+    p = basedir
+    if dirs:
+        p += '/' + '/'.join(dirs)
+    p += '/' + fname
+
+    if not os.path.isfile(p):
+        gws.log.error(f'abs_web_path: not a file path={path!r}')
+        return
+
+    return p
+
+
+
+
+
+
 def rel_path(path: _Path, base: str) -> str:
     """Relativize an absolute path with respect to a base directory or file path"""
 

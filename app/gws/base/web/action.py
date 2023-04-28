@@ -9,6 +9,7 @@ import gws.base.client.bundles
 import gws.base.template
 import gws.base.web.error
 import gws.lib.mime
+import gws.lib.osx
 import gws.types as t
 
 gws.ext.new.action('web')
@@ -94,9 +95,9 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
     rpath = None
 
     if project_assets:
-        rpath = _abs_path(spath, project_assets.dir)
+        rpath = gws.lib.osx.abs_web_path(spath, project_assets.dir)
     if not rpath and site_assets:
-        rpath = _abs_path(spath, site_assets.dir)
+        rpath = gws.lib.osx.abs_web_path(spath, site_assets.dir)
     if not rpath:
         raise gws.base.web.error.NotFound()
 
@@ -136,38 +137,6 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
     gws.log.debug(f'serving {rpath!r} for {spath!r}')
 
     return gws.ContentResponse(mime=mime, path=rpath, asAttachment=as_attachment)
-
-
-_dir_re = r'^[A-Za-z0-9_]+$'
-_fil_re = r'^[A-Za-z0-9_]+(\.[a-z0-9]+)*$'
-
-
-def _abs_path(path, basedir):
-    gws.log.debug(f'trying {path!r} in {basedir!r}')
-
-    dirs = []
-    for s in path.split('/'):
-        s = s.strip()
-        if s:
-            dirs.append(s)
-
-    fname = dirs.pop()
-
-    if not all(re.match(_dir_re, p) for p in dirs):
-        gws.log.error(f'invalid dirname in path={path!r}')
-        return
-
-    if not re.match(_fil_re, fname):
-        gws.log.error(f'invalid filename in path={path!r}')
-        return
-
-    p = basedir + '/' + '/'.join(dirs) + '/' + fname
-
-    if not os.path.isfile(p):
-        gws.log.error(f'not a file path={path!r}')
-        return
-
-    return p
 
 
 _DEFAULT_ALLOWED_MIME_TYPES = {
