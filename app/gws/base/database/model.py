@@ -45,14 +45,8 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
     def configure_fields(self):
         if super().configure_fields():
             return True
-
-        desc = self.describe()
-        if desc:
-            for column in desc.columns.values():
-                cfg = gws.base.model.field_config_from_column(column)
-                if cfg:
-                    self.fields.append(self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self))
-            return True
+        self.configure_auto_fields()
+        return True
 
     def configure_properties(self):
         self.geometryType = None

@@ -5,6 +5,8 @@ import gws.base.feature
 import gws.base.shape
 import gws.types as t
 
+from . import util
+
 
 class SortConfig:
     fieldName: str
@@ -58,6 +60,15 @@ class Object(gws.Node, gws.IModel):
         p = self.cfg('fields')
         if p:
             self.fields = self.create_children(gws.ext.object.modelField, p, _defaultModel=self)
+            return True
+
+    def configure_auto_fields(self):
+        desc = self.describe()
+        if desc:
+            for col in desc.columns.values():
+                cfg = util.field_config_from_column(col)
+                if cfg:
+                    self.fields.append(self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self))
             return True
 
     def configure_templates(self):
@@ -157,6 +168,9 @@ class Object(gws.Node, gws.IModel):
         return props
 
     ##
+
+    def feature_matches(self, feature, search, user) -> bool:
+        return all(f.feature_matches(feature, search, ) for f in self.fields)
 
     def field(self, name):
         for f in self.fields:
