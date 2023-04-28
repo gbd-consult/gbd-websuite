@@ -1,22 +1,4 @@
-"""Base layer object.
-
-
-
-Layer configuration protocol
-
-    configure_bounds
-    configure_grid
-    configure_legend
-    configure_metadata
-    configure_models
-    configure_resolutions
-    configure_search
-    configure_templates    
-
-
-
-
-"""
+"""Base layer object."""
 
 import gws
 import gws.base.legend
@@ -287,6 +269,20 @@ class Object(gws.Node, gws.ILayer):
 
         setattr(self, 'provider', None)
         self.sourceLayers = []
+
+    def configure_layer(self):
+        """Standart layer configuration protocol."""
+        self.configure_provider()
+        self.configure_sources()
+        self.configure_models()
+        self.configure_bounds()
+        self.configure_resolutions()
+        self.configure_grid()
+        self.configure_legend()
+        self.configure_cache()
+        self.configure_metadata()
+        self.configure_templates()
+        self.configure_search()
 
     def post_configure(self):
         self.isSearchable = bool(self.finders)

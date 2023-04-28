@@ -28,13 +28,7 @@ class Object(core.Object):
         self.configure_group()
         if not self.layers:
             raise gws.Error(f'group {self} is empty')
-
-        self.configure_bounds()
-        self.configure_resolutions()
-        self.configure_legend()
-        self.configure_metadata()
-        self.configure_templates()
-        self.configure_search()
+        self.configure_layer()
 
     def configure_group(self):
         p = self.cfg('layers')

@@ -36,17 +36,7 @@ class Object(gws.base.layer.Object):
     provider: provider.Object
 
     def configure(self):
-        self.configure_provider()
-        self.configure_sources()
-        self.configure_models()
-        self.configure_bounds()
-        self.configure_resolutions()
-        self.configure_grid()
-        self.configure_legend()
-        self.configure_cache()
-        self.configure_metadata()
-        self.configure_templates()
-        self.configure_search()
+        self.configure_layer()
 
     def configure_provider(self):
         self.provider = provider.get_for(self)

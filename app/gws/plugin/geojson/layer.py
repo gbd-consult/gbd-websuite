@@ -26,9 +26,7 @@ class Object(gws.base.layer.vector.Object):
     features: list[gws.IFeature]
 
     def configure(self):
-        self.configure_provider()
-        self.configure_models()
-        self.configure_bounds()
+        self.configure_layer()
 
     def configure_provider(self):
         self.provider = provider.get_for(self)
