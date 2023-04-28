@@ -117,7 +117,7 @@ class Object(gws.base.template.Object):
 
         layer_list = src.visibleLayers
         if layers:
-            layer_list = [tri.user.acquire(la) for la in gws.to_list(layers)]
+            layer_list = gws.compact(tri.user.acquire(la) for la in gws.to_list(layers))
 
         if not layer_list:
             gws.log.debug(f'no layers for a legend')
