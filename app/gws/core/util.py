@@ -546,12 +546,14 @@ def write_file(path: str, s: str, user: int = None, group: int = None):
     with open(path, 'wt', encoding='utf8') as fp:
         fp.write(s)
     _chown(path, user, group)
+    return path
 
 
 def write_file_b(path: str, s: bytes, user: int = None, group: int = None):
     with open(path, 'wb') as fp:
         fp.write(s)
     _chown(path, user, group)
+    return path
 
 
 def dirname(path):
