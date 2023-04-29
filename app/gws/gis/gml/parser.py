@@ -43,7 +43,7 @@ def parse_envelope(el: gws.IXmlElement, default_crs: gws.ICrs = None, always_xy=
             coords = _coords(el)
 
         elif el.lname == 'envelope':
-            coords = []
+            coords = [None, None]
             for coord_el in el:
                 if coord_el.lname == 'lowercorner':
                     coords[0] = _coords_pos(coord_el)[0]
@@ -112,7 +112,7 @@ def _to_geom(el: gws.IXmlElement):
         # GML3: <gml:MultiCurve> <gml:curveMember> <gml:Curve>
         return {'type': 'MultiLineString', 'coordinates': [m['coordinates'] for m in _members(el)]}
 
-    if el.lname == {'multipolygon', 'multisurface'}:
+    if el.lname in {'multipolygon', 'multisurface'}:
         # GML2: <gml:MultiPolygon> <gml:polygonMember> <gml:Polygon>
         # GML3: <gml:MultiSurface> <gml:surfaceMember> <gml:Polygon>
         return {'type': 'MultiPolygon', 'coordinates': [m['coordinates'] for m in _members(el)]}
