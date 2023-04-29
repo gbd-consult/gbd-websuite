@@ -1,11 +1,11 @@
 """Tile provider."""
 
 import gws
-import gws.lib.metadata
+import gws.base.layer
 import gws.gis.crs
-import gws.gis.zoom
 import gws.gis.extent
-import gws.base.layer.core
+import gws.gis.zoom
+import gws.lib.metadata
 import gws.lib.net
 import gws.types as t
 
@@ -15,7 +15,7 @@ class Config(gws.Config):
     """max concurrent requests to this source"""
     url: gws.Url
     """rest url with placeholders {x}, {y} and {z}"""
-    grid: t.Optional[gws.base.layer.core.GridConfig]
+    grid: t.Optional[gws.base.layer.GridConfig]
     """source grid"""
 
 

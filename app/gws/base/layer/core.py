@@ -17,15 +17,6 @@ import gws.lib.svg
 import gws.types as t
 
 
-class ImageFormat(t.Enum):
-    """Image format"""
-
-    png8 = 'png8'
-    """png 8-bit"""
-    png24 = 'png24'
-    """png 24-bit"""
-
-
 class LayerOptions(gws.Data):
     search: t.Optional[bool] = True
     """layer is searchable"""
@@ -75,12 +66,6 @@ class GridConfig(gws.Config):
     tileSize: t.Optional[int]
 
 
-class EditConfig(gws.ConfigWithAccess):
-    """Edit access for a layer"""
-
-    pass
-
-
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
@@ -100,7 +85,7 @@ class Config(gws.ConfigWithAccess):
     """search prodivers"""
     grid: t.Optional[GridConfig]
     """client grid"""
-    imageFormat: ImageFormat = ImageFormat.png8
+    imageFormat: gws.ImageFormat = gws.ImageFormat.png8
     """image format"""
     legend: t.Optional[gws.ext.config.legend]
     """legend configuration"""

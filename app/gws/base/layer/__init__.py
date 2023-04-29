@@ -1,4 +1,10 @@
-from .core import Config, Object, Props
-from . import util, tree, group
-
-# _keep_imports = [Object, Config, Props]
+from .core import (
+    Config,
+    Object,
+    Props,
+    LayerOptions,
+    ClientOptions,
+    CacheConfig,
+    GridConfig,
+)
+from . import group, tree, util, vector

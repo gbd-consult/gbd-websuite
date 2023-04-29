@@ -1,7 +1,7 @@
 """WMTS provider"""
 
 import gws
-import gws.base.layer.core
+import gws.base.layer
 import gws.base.ows
 import gws.lib.uom
 import gws.lib.net
@@ -11,7 +11,7 @@ from . import caps
 
 
 class Config(gws.base.ows.ProviderConfig):
-    grid: t.Optional[gws.base.layer.core.GridConfig]
+    grid: t.Optional[gws.base.layer.GridConfig]
     """source grid"""
 
 

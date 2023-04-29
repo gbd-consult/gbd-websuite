@@ -1,7 +1,7 @@
 """GeoJSON layer"""
 
 import gws
-import gws.base.layer.vector
+import gws.base.layer
 import gws.base.shape
 import gws.gis.bounds
 import gws.gis.crs

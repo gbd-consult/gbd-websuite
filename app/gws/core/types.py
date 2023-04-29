@@ -1304,6 +1304,15 @@ class IDatabaseModel(IModel, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # templates and rendering
 
+class ImageFormat(Enum):
+    """Image format"""
+
+    png8 = 'png8'
+    """png 8-bit"""
+    png24 = 'png24'
+    """png 24-bit"""
+
+
 class IImage(IObject, Protocol):
     def size(self) -> Size: ...
 
@@ -1935,7 +1944,7 @@ class IOwsProvider(INode, Protocol):
 
     def get_operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
 
-    def get_feature_info(self, args: SearchArgs, source_layers: list[SourceLayer]) -> list[FeatureData]: ...
+    def get_features(self, args: SearchArgs, source_layers: list[SourceLayer]) -> list[FeatureData]: ...
 
 
 class IOwsModel(IModel, Protocol):

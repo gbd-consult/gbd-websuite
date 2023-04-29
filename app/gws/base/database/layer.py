@@ -1,6 +1,6 @@
 import gws
 import gws.base.database
-import gws.base.layer.vector
+import gws.base.layer
 import gws.gis.bounds
 import gws.base.feature
 import gws.gis.crs

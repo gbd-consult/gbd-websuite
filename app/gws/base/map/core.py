@@ -1,6 +1,5 @@
 import gws
 import gws.base.layer
-import gws.base.layer.group
 import gws.gis.crs
 import gws.gis.bounds
 import gws.gis.extent
