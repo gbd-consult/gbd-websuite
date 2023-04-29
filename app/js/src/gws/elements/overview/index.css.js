@@ -1,11 +1,11 @@
 module.exports = v => ({
 
-    '.modOverviewSidebarIcon': {
+    '.overviewSidebarIcon': {
         ...v.SIDEBAR_ICON('google:maps/map', v.SIDEBAR_HEADER_COLOR)
 
     },
 
-    '.modOverviewMap': {
+    '.overviewMap': {
         borderWidth: 1,
         borderStyle: 'solid',
         borderColor: v.BORDER_COLOR,
@@ -13,24 +13,31 @@ module.exports = v => ({
         marginBottom: v.UNIT4,
     },
 
-    '.modOverviewBox': {
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: v.COLOR.blueGrey200,
-        boxShadow: '0 0 0 4000px ' + v.COLOR.opacity(v.COLOR.blueGrey50, 0.7),
-        minWidth: 20,
-        minHeight: 20,
-
+    '.overviewBox': {
+        position: 'absolute',
+        border: [2, 'solid', v.COLOR.blueGrey300],
+        boxShadow: '0 0 0 4000px ' + v.COLOR.opacity(v.COLOR.blueGrey50, 0.5),
     },
 
+    '.overviewBoxCenter': {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 12,
+        height: 12,
+        backgroundColor: v.COLOR.blueGrey100,
+        border: [3, 'solid', v.COLOR.blueGrey500],
+        borderRadius: 6,
+    },
 
-    '.modOverviewTabFooter': {
+    '.overviewTabFooter': {
         borderTop: [1, 'solid', v.BORDER_COLOR],
         padding: v.UNIT4,
     },
 
 
-    '.modOverviewUpdateButton': {
+    '.overviewUpdateButton': {
         ...v.ICON_SIZE(),
         backgroundColor: v.PRIMARY_BACKGROUND,
         borderRadius: v.BORDER_RADIUS,

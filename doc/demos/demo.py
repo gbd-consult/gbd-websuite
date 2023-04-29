@@ -32,7 +32,7 @@ Options:
 
 
 def main(args):
-    all_paths = list(cli.find_files(APP_DIR + '/gws', r'_demo/.+?'))
+    all_paths = list(cli.find_files(APP_DIR, r'_demo/.+?'))
 
     config = ''
 
@@ -146,10 +146,13 @@ def relocate_asset(m, path):
 
 def path_to_uid(path):
     # .../app/gws/plugin/qgis/_demo/flat.cx -> gws.plugin.qgis._demo.flat
-    p = path.split('.')[0].split('/')
-    if 'gws' in p:
-        p = p[p.index('gws'):]
-    return '.'.join(p)
+    return (
+        path
+        .split('.')[0]
+        .replace(APP_DIR, '')
+        .strip('/')
+        .replace('/', '.')
+    )
 
 
 if __name__ == '__main__':

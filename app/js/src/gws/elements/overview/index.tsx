@@ -7,7 +7,7 @@ import * as sidebar from 'gws/elements/sidebar';
 let {Form, Row, Cell} = gws.ui.Layout;
 
 interface ViewProps extends gws.types.ViewProps {
-    controller: SidebarOverviewController;
+    controller: Controller;
     mapUpdateCount: number;
     mapEditScale: number;
     mapEditAngle: number;
@@ -18,22 +18,228 @@ interface ViewProps extends gws.types.ViewProps {
 
 const POINTER_DEBOUNCE = 800;
 const MIN_MAP_HEIGHT = 100;
-const MAX_MAP_HEIGHT = 300;
+const MAX_MAP_HEIGHT = 500;
 const MIN_BOX_SIZE = 10;
 
 
-class SidebarBody extends gws.View<ViewProps> {
+interface SmallMapProps extends gws.types.ViewProps {
+    boxSize?: Array<number>;
+}
+
+interface SmallMapState {
+    inited: boolean;
+}
+
+const OSM_SCALES = [
+    150000000,
+    70000000,
+    35000000,
+    15000000,
+    10000000,
+    4000000,
+    2000000,
+    1000000,
+    500000,
+    250000,
+    150000,
+    70000,
+    35000,
+    15000,
+    8000,
+    4000,
+    2000,
+    1000,
+    500,
+]
+
+
+export class SmallMap extends React.Component<SmallMapProps, SmallMapState> {
+
+    smallMap: gws.types.IMapManager | null = null;
+    mainMap: gws.types.IMapManager;
     mapRef: React.RefObject<HTMLDivElement>;
+    oMap: ol.Map = null;
+    oProjection: ol.proj.Projection;
+    oOverlay: ol.Overlay;
+    state: SmallMapState = {inited: false}
+
+    get app() {
+        return this.props.controller.app;
+    }
+
+    __(key) {
+        return this.props.controller.__(key);
+    }
 
     constructor(props) {
         super(props);
         this.mapRef = React.createRef();
     }
 
-    componentDidMount() {
-        if (this.mapRef.current)
-            this.props.controller.mounted(this.mapRef.current);
+    async componentDidMount() {
+        if (!this.state.inited)
+            await this.init()
+
+        if (!this.smallMap)
+            return;
+
+        if (this.mapRef.current) {
+            this.setMapTarget(this.mapRef.current);
+        }
+
+        this.refresh()
     }
+
+    componentDidUpdate() {
+        if (!this.state.inited)
+            return;
+
+        this.refresh()
+    }
+
+    async init() {
+        if (!this.app.project.overviewMap)
+            return;
+
+        // if (this.props.boxSize) {
+        //     this.app.project.overviewMap.resolutions = OSM_SCALES.map(s => gws.lib.scale2res(s))
+        //     this.app.project.overviewMap.rootLayer.resolutions = OSM_SCALES.map(s => gws.lib.scale2res(s))
+        // }
+
+        this.mainMap = this.props.controller.map;
+
+        this.smallMap = new gws.MapManager(this.app, false);
+        await this.smallMap.init(this.app.project.overviewMap, {});
+
+        this.smallMap.oMap.addInteraction(new ol.interaction.Pointer({
+            handleDownEvent: e => this.handleMouseEvent(e),
+            handleDragEvent: e => this.handleMouseEvent(e),
+
+        }));
+
+        this.oProjection = this.smallMap.oMap.getView().getProjection();
+
+        let d = document.createElement('div');
+        d.className = 'overviewBox';
+
+        let c = document.createElement('div');
+        c.className = 'overviewBoxCenter';
+
+        d.appendChild(c);
+
+
+        this.oOverlay = new ol.Overlay({
+            element: d,
+            stopEvent: false,
+            positioning: 'top-left',
+        });
+
+        this.smallMap.oMap.addOverlay(this.oOverlay);
+
+        this.app.whenChanged('mapUpdateCount', () => this.refresh());
+        this.app.whenChanged('windowSize', () => this.refresh());
+        this.setState({inited: true})
+
+    }
+
+    setMapTarget(div) {
+
+        if (this.props.boxSize) {
+            div.style.height = div.offsetWidth + 'px';
+        } else {
+            let e = this.app.project.overviewMap.extent;
+            let f = ol.extent.getWidth(e) / ol.extent.getHeight(e);
+            let h = gws.lib.clamp(div.offsetWidth / f, MIN_MAP_HEIGHT, MAX_MAP_HEIGHT);
+            div.style.height = (h | 0) + 'px';
+        }
+
+        this.smallMap.oMap.setTarget(div);
+    }
+
+
+    render() {
+        return this.smallMap && <div className="overviewMap" ref={this.mapRef}/>
+    }
+
+
+    mouseTimer: any = 0;
+
+    handleMouseEvent(evt: ol.MapBrowserPointerEvent) {
+        clearTimeout(this.mouseTimer);
+
+        // prevent excessive map updates when dragging
+
+        let cc = ol.proj.transform(
+            evt.coordinate,
+            this.oProjection,
+            this.mainMap.projection,
+        );
+
+        this.oOverlay.setPosition(cc);
+
+        this.mouseTimer = setTimeout(
+            () => this.mainMap.setViewState({center: cc}),
+            POINTER_DEBOUNCE);
+
+        return true;
+    }
+
+    refresh() {
+        clearTimeout(this.mouseTimer);
+
+        let vs = this.mainMap.viewState;
+
+        this.smallMap.setRotation(vs.rotation);
+
+        let w, h;
+
+        if (this.props.boxSize) {
+            let div = this.mapRef.current;
+
+            if (!div)
+                return;
+
+            let [mw, mh] = this.props.boxSize;
+
+            if (mw > mh) {
+                w = div.offsetWidth * 0.9
+                h = w * (mh / mw)
+            } else {
+                h = div.offsetWidth * 0.9
+                w = h * (mw / mh)
+            }
+
+            this.smallMap.setResolution(vs.resolution * (mw / w))
+            this.smallMap.setCenter([vs.centerX, vs.centerY])
+
+        } else {
+
+            let size = vs.size
+            let res = vs.resolution / this.smallMap.oMap.getView().getResolution();
+            w = Math.max(MIN_BOX_SIZE, (size[0] * res) | 0);
+            h = Math.max(MIN_BOX_SIZE, (size[1] * res) | 0);
+
+        }
+
+        let el = this.oOverlay.getElement() as HTMLDivElement;
+        el.style.width = w + 'px';
+        el.style.height = h + 'px';
+        el.style.left = (-w / 2) + 'px';
+        el.style.top = (-h / 2) + 'px';
+
+        let cc = ol.proj.transform(
+            [vs.centerX, vs.centerY],
+            this.mainMap.projection,
+            this.oProjection,
+        );
+
+        this.oOverlay.setPosition(cc);
+    }
+}
+
+
+class SidebarBody extends gws.View<ViewProps> {
+
 
     submit() {
         let map = this.props.controller.map;
@@ -57,10 +263,8 @@ class SidebarBody extends gws.View<ViewProps> {
 
         let bind = k => ({
             whenChanged: v => this.props.controller.update({[k]: v}),
-            whenEntered: v => this.submit(),
-            value: this.props[k]
+            whenEntered: () => this.submit(),
         });
-
 
 
         return <Form>
@@ -68,36 +272,44 @@ class SidebarBody extends gws.View<ViewProps> {
                 <Cell flex>
                     <Form tabular>
                         <gws.ui.TextInput
-                            label={this.__('modOverviewProjection')}
+                            label={this.__('overviewProjection')}
                             value={map.projection.getCode()}
-                            readOnly/>
+                            readOnly
+                        />
                         <gws.ui.TextInput
-                            label={this.__('modOverviewExtent')}
+                            label={this.__('overviewExtent')}
                             value={ext}
-                            readOnly/>
+                            readOnly
+                        />
                         <gws.ui.TextInput
-                            label={this.__('modOverviewCenterX')}
-                            {...bind('mapEditCenterX')}/>
+                            label={this.__('overviewCenterX')}
+                            value={coord(this.props.mapEditCenterX)}
+                            {...bind('mapEditCenterX')}
+                        />
                         <gws.ui.TextInput
-                            label={this.__('modOverviewCenterY')}
-                            {...bind('mapEditCenterY')}/>
+                            label={this.__('overviewCenterY')}
+                            value={coord(this.props.mapEditCenterY)}
+                            {...bind('mapEditCenterY')}
+                        />
                         <gws.ui.NumberInput
                             minValue={minScale}
                             maxValue={maxScale}
                             step={1000}
-                            label={this.__('modOverviewScale')}
-                            {...bind('mapEditScale')}/>
+                            label={this.__('overviewScale')}
+                            value={this.props.mapEditScale}
+                            {...bind('mapEditScale')}
+                        />
                         <gws.ui.NumberInput
                             minValue={0}
                             maxValue={359}
                             step={5}
                             withClear
-                            label={this.__('modOverviewRotation')}
-                            {...bind('mapEditAngle')}/>
+                            label={this.__('overviewRotation')}
+                            value={this.props.mapEditAngle}
+                            {...bind('mapEditAngle')}
+                        />
                     </Form>
                 </Cell>
-
-
             </Row>
             <Row>
                 <Cell flex/>
@@ -105,7 +317,7 @@ class SidebarBody extends gws.View<ViewProps> {
                     <gws.ui.Button
                         primary
                         whenTouched={() => this.submit()}
-                        label={this.__('modOverviewUpdateButton')}
+                        label={this.__('overviewUpdateButton')}
                     />
                 </Cell>
             </Row>
@@ -118,47 +330,33 @@ class SidebarBody extends gws.View<ViewProps> {
         return <sidebar.Tab>
 
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('modOverviewSidebarTitle')}/>
+                <gws.ui.Title content={this.__('overviewSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                {this.props.controller.overviewMap && <div className="modOverviewMap" ref={this.mapRef}/>}
+                <SmallMap controller={this.props.controller}/>
                 {this.mapInfoBlock()}
             </sidebar.TabBody>
 
             {desc && <sidebar.TabFooter>
-                <div className="modOverviewTabFooter">
+                <div className="overviewTabFooter">
                     <gws.ui.TextBlock className="cmpDescription" withHTML content={desc}/>
                 </div>
             </sidebar.TabFooter>}
-
-
         </sidebar.Tab>
     }
 }
 
-class SidebarOverviewController extends gws.Controller implements gws.types.ISidebarItem {
-    overviewMap: gws.types.IMapManager;
-    oMap: ol.Map = null;
-    oProjection: ol.proj.Projection;
-    oOverlay: ol.Overlay;
+class Controller extends gws.Controller implements gws.types.ISidebarItem {
+    iconClass = 'overviewSidebarIcon';
 
     async init() {
-        await super.init();
-
-        if (this.app.project.overviewMap) {
-            this.overviewMap = new gws.MapManager(this.app, false);
-            await this.overviewMap.init(this.app.project.overviewMap, {});
-        }
-
         this.app.whenChanged('mapUpdateCount', () => this.refresh());
         this.app.whenChanged('windowSize', () => this.refresh());
     }
 
-    iconClass = 'modOverviewSidebarIcon';
-
     get tooltip() {
-        return this.__('modOverviewSidebarTitle');
+        return this.__('overviewSidebarTitle');
     }
 
     get tabView() {
@@ -173,80 +371,6 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
         );
     }
 
-    mounted(div) {
-        if (!this.overviewMap)
-            return;
-
-        if (!this.oMap)
-            this.initMap();
-
-        this.setMapTarget(div);
-    }
-
-    setMapTarget(div) {
-
-        let e = this.app.project.overviewMap.extent;
-        let f = ol.extent.getWidth(e) / ol.extent.getHeight(e);
-        let h = gws.lib.clamp(div.offsetWidth / f, MIN_MAP_HEIGHT, MAX_MAP_HEIGHT);
-
-        div.style.height = (h | 0) + 'px';
-
-        this.oMap.setTarget(div);
-
-        // overview map always fits the extent
-        // @TODO: if we don't specify the resolution in the backend, we can't cache it!
-        // so stick with a backend resolution for now (which is easy to compute as extentWidth/pixelWidth)
-        // this.oMap.getView().fit(e, {constrainResolution: false})
-    }
-
-    initMap() {
-
-        this.oMap = this.overviewMap.oMap;
-
-        this.oMap.addInteraction(new ol.interaction.Pointer({
-            handleDownEvent: e => this.handleMouseEvent(e),
-            handleDragEvent: e => this.handleMouseEvent(e),
-
-        }));
-
-        this.oProjection = this.oMap.getView().getProjection();
-
-        let d = document.createElement('div');
-        d.className = 'modOverviewBox';
-
-        this.oOverlay = new ol.Overlay({
-            element: d,
-            stopEvent: false,
-            positioning: 'center-center',
-        });
-
-        this.oMap.addOverlay(this.oOverlay);
-
-        this.refresh();
-
-    }
-
-    mouseTimer: any = 0;
-
-    handleMouseEvent(evt: ol.MapBrowserPointerEvent) {
-        clearTimeout(this.mouseTimer);
-        this.oOverlay.setPosition(evt.coordinate);
-
-        // prevent excessive map updates when dragging
-
-        let cc = ol.proj.transform(
-            evt.coordinate,
-            this.oProjection,
-            this.map.projection,
-        );
-
-        this.mouseTimer = setTimeout(
-            () => this.map.setViewState({center: cc}),
-            POINTER_DEBOUNCE);
-
-        return true;
-    }
-
     refresh() {
         let vs = this.map.viewState;
 
@@ -256,42 +380,11 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
             'mapEditCenterX': vs.centerX,
             'mapEditCenterY': vs.centerY,
         });
-
-        if (this.oMap) {
-            this.updateMap();
-        }
     }
 
-    updateMap() {
-        clearTimeout(this.mouseTimer);
-
-        let vs = this.map.viewState;
-
-        let cc = ol.proj.transform(
-            [vs.centerX, vs.centerY],
-            this.map.projection,
-            this.oProjection,
-        );
-
-        this.oOverlay.setPosition(cc);
-        this.oMap.getView().setRotation(vs.rotation);
-
-        let size = this.map.size;
-
-        if (size) {
-            let res = vs.resolution / this.oMap.getView().getResolution();
-
-            let el = this.oOverlay.getElement() as HTMLDivElement;
-
-            res = Math.max(MIN_BOX_SIZE / size[0], res)
-
-            el.style.width = (size[0] * res) + 'px';
-            el.style.height = (size[1] * res) + 'px';
-        }
-    }
 }
 
 gws.registerTags({
-    'Sidebar.Overview': SidebarOverviewController
+    'Sidebar.Overview': Controller
 });
 

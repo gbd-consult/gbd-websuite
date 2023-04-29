@@ -76,7 +76,7 @@ class Props(gws.Props):
 
 
 class Object(gws.Node, gws.IProject):
-    overview_map: gws.base.map.Object
+    overviewMap: gws.base.map.Object
     printer: gws.base.printer.Object
     title: str
 
@@ -106,9 +106,7 @@ class Object(gws.Node, gws.IProject):
         else:
             self.printer = self.root.create_shared(gws.base.printer.Object, _DEFAULT_PRINTER)
 
-        #
-        # self.overview_map = self.root.create_optional(gws.base.map.Object, self.cfg('overviewMap'))
-        #
+        self.overviewMap = self.create_child_if_configured(gws.base.map.Object, self.cfg('overviewMap'))
 
         self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
         for cfg in _DEFAULT_TEMPLATES:
@@ -126,14 +124,18 @@ class Object(gws.Node, gws.IProject):
         if self.map:
             for la in self.map.rootLayer.descendants():
                 models.extend(m for m in la.models if user.can_use(la) and user.can_use(m))
+        if self.overviewMap:
+            for la in self.overviewMap.rootLayer.descendants():
+                models.extend(m for m in la.models if user.can_use(la) and user.can_use(m))
 
         return gws.Props(
             actions=self.root.app.actionMgr.actions_for(user, self.actionMgr),
             client=self.client or self.root.app.client,
             description=desc.content if desc else '',
             map=self.map,
-            models=models,
             metadata=gws.lib.metadata.props(self.metadata),
+            models=models,
+            overviewMap=self.overviewMap,
             printer=self.printer,
             title=self.title,
             uid=self.uid,

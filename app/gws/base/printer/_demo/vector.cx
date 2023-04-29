@@ -44,7 +44,7 @@ projects+ {
         templates+ {
             subject "feature.label"
             type "html"
-            text """{{name}}"""
+            text "{{name}}"
         }
     }
 
@@ -56,7 +56,7 @@ projects+ {
         templates+ {
             subject "feature.label"
             type "html"
-            text """{{name}}"""
+            text "{{name}}"
         }
     }
 

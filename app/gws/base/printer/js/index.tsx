@@ -2,7 +2,7 @@ import * as React from 'react';
 
 
 import * as gws from 'gws';
-import * as components from 'gws/components';
+import * as overview from 'gws/elements/overview';
 import * as toolbar from 'gws/elements/toolbar';
 import {FormField} from "gws/components/form";
 
@@ -194,8 +194,7 @@ class PreviewBox extends gws.View<ViewProps> {
         let w = gws.lib.mm2px(tpl.mapSize[0]);
         let h = gws.lib.mm2px(tpl.mapSize[1]);
 
-        // return <overview.SmallMap controller={this.props.controller} boxSize={[w, h]}/>;
-        return null;
+        return <overview.SmallMap controller={this.props.controller} boxSize={[w, h]}/>;
     }
 
     optionsDialog() {
