@@ -1,0 +1,26 @@
+projects+ {
+    title "WFS flat layer"
+    metadata.abstract "`wfsflat` layers display a single 'feature type' from a WFS services."
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 1000000
+    }
+
+    map.layers+ {
+        title "Kreise und kreisfreie Städte"
+        type "wfsflat"
+        provider.url "https://www.wfs.nrw.de/geobasis/wfs_nw_dvg"
+        sourceLayers.names [ "dvg:nw_dvg1_krs" ]
+        metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{gn}}"
+        }
+        cssSelector ".nrw_kreise"
+    }
+
+    {demo_osm_background}
+}

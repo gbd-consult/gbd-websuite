@@ -1,96 +1,143 @@
-# """WFS provider."""
-#
-# import gws
-# import gws.gis.ows
-# import gws.base.shape
-# import gws.types as t
-#
-# from . import caps
-# from .. import core, featureinfo
-#
-# """
-#     References
-#
-#     wfs 1.0.0: http://portal.opengeospatial.org/files/?artifact_id=7176 Sec 13.7.3
-#     wfs 1.1.0: http://portal.opengeospatial.org/files/?artifact_id=8339 Sec 14.7.3
-#     wfs 2.0.0: http://docs.opengeospatial.org/is/09-025r2/09-025r2.html Sec 11.1.3
-#
-#     see also https://docs.geoserver.org/latest/en/user/services/wfs/reference.html
-#
-# """
-#
-#
-# class Config(core.ProviderConfig):
-#     pass
-#
-#
-# class Object(core.Provider):
-#     protocol = gws.OwsProtocol.WFS
-#
-#     def configure(self):
-#         cc = caps.parse(self.get_capabilities())
-#         self.metadata = cc.metadata
-#         self.source_layers = cc.source_layers
-#         self.version = cc.version
-#         self.operations.extend(cc.operations)
-#
-#     def find_source_features(self, args: gws.SearchArgs, source_layers: list[gws.SourceLayer]) -> list[gws.IFeature]:
-#         # first, find features within the bounds of given shapes,
-#         # then, filter features precisely
-#         # this is more performant than WFS spatial ops (at least for qgis)
-#         # and also works without spatial ops support on the provider side
-#
-#         bounds = args.bounds
-#         search_shape = None
-#
-#         if args.shapes:
-#             geometry_tolerance = 0.0
-#
-#             if args.tolerance:
-#                 n, u = args.tolerance
-#                 geometry_tolerance = n * (args.resolution or 1) if u == 'px' else n
-#
-#             search_shape = gws.base.shape.union(args.shapes).tolerance_polygon(geometry_tolerance)
-#             bounds = search_shape.bounds
-#
-#         ps = gws.gis.ows.client.prepared_search(
-#             inverted_crs=self.inverted_crs,
-#             limit=args.limit,
-#             bounds=bounds,
-#             protocol=self.protocol,
-#             protocol_version=self.version,
-#             request_crs=self.force_crs,
-#             request_crs_format=gws.CrsFormat.EPSG,
-#             source_layers=source_layers,
-#         )
-#
-#         fmt = self.preferred_formats.get(gws.OwsVerb.GetFeature)
-#         if fmt:
-#             ps.params.setdefault('OUTPUTFORMAT', fmt)
-#
-#         params = gws.merge(ps.params, args.params)
-#
-#         text = gws.gis.ows.request.get_text(**self.prepare_operation(gws.OwsVerb.GetFeature, params=params))
-#         features = featureinfo.parse(text, crs=ps.request_crs, axis=ps.axis)
-#
-#         if features is None:
-#             gws.log.debug(f'WFS NOT_PARSED params={params!r}')
-#             return []
-#         gws.log.debug(f'WFS FOUND={len(features)} params={params!r}')
-#
-#         features = [f.transform_to(bounds.crs) for f in features]
-#
-#         if not search_shape:
-#             return features
-#
-#         filtered = []
-#         for f in features:
-#             if not f.shape:
-#                 continue
-#             if f.shape.intersects(search_shape):
-#                 filtered.append(f)
-#
-#         if len(filtered) != len(features):
-#             gws.log.debug(f'WFS filter: before={len(features)} after={len(filtered)}')
-#
-#         return filtered
+"""WFS provider."""
+
+import gws
+import gws.base.ows
+import gws.base.shape
+import gws.gis.bounds
+import gws.gis.crs
+import gws.gis.extent
+import gws.gis.ows
+import gws.gis.source
+import gws.types as t
+
+from . import caps
+
+"""
+    References
+
+    wfs 1.0.0: http://portal.opengeospatial.org/files/?artifact_id=7176 Sec 13.7.3
+    wfs 1.1.0: http://portal.opengeospatial.org/files/?artifact_id=8339 Sec 14.7.3
+    wfs 2.0.0: http://docs.opengeospatial.org/is/09-025r2/09-025r2.html Sec 11.1.3
+
+    see also https://docs.geoserver.org/latest/en/user/services/wfs/reference.html
+
+"""
+
+
+class Config(gws.base.ows.ProviderConfig):
+    extendedBbox: t.Optional[bool]
+    """whether to use extended bbox format (with CRS)"""
+
+
+class Object(gws.base.ows.provider.Object):
+    protocol = gws.OwsProtocol.WFS
+    extendedBbox: bool | None
+
+    def configure(self):
+        cc = caps.parse(self.get_capabilities())
+
+        self.metadata = cc.metadata
+        self.sourceLayers = cc.sourceLayers
+        self.version = cc.version
+
+        self.operations.extend(cc.operations)
+
+        self.extendedBbox = self.cfg('extendedBbox')
+
+    DEFAULT_GET_FEATURE_LIMIT = 100
+
+    def get_features(self, search, source_layers):
+        """Perform the WFS GetFeature operation.
+
+        We only do spatial searches here.
+        If no bounds and no shapes are given, return all features.
+        If a shape is given, find features within its bounds first,
+        and filter features on our side.
+        This is more performant than WFS spatial ops (at least for qgis),
+        and also works without spatial ops support on the provider side.
+        """
+
+        bounds = search.bounds
+        search_shape = None
+
+        if search.shape:
+            geometry_tolerance = 0.0
+
+            if search.tolerance:
+                n, u = search.tolerance
+                geometry_tolerance = n * (search.resolution or 1) if u == 'px' else n
+
+            search_shape = search.shape.tolerance_polygon(geometry_tolerance)
+            bounds = search_shape.bounds()
+
+        request_crs = self.forceCrs or gws.gis.crs.WGS84
+        # if not request_crs:
+        #     request_crs = gws.gis.crs.best_match(
+        #         bounds.crs,
+        #         gws.gis.source.combined_crs_list(source_layers))
+
+        bbox = gws.gis.bounds.transform(bounds, request_crs).extent
+        if request_crs.isYX and not self.alwaysXY:
+            bbox = gws.gis.extent.swap_xy(bbox)
+        bbox = ','.join(str(k) for k in bbox)
+
+        # see comments in qgis/qgswfsfeatureiterator.cpp buildURL
+
+        srs = request_crs.to_string(gws.CrsFormat.urn)
+        if (self.extendedBbox is True) or (self.extendedBbox is None and self.version >= '2'):
+            bbox += ',' + srs
+
+        params = {
+            'BBOX': bbox,
+            'COUNT' if self.version >= '2' else 'MAXFEATURES': search.limit or self.DEFAULT_GET_FEATURE_LIMIT,
+            'SRSNAME': request_crs.to_string(gws.CrsFormat.urn),
+            'TYPENAMES' if self.version >= '2' else 'TYPENAME': [sl.name for sl in source_layers],
+            'VERSION': self.version,
+        }
+
+        if search.extraParams:
+            params = gws.merge(params, gws.to_upper_dict(search.extraParams))
+
+        op = self.get_operation(gws.OwsVerb.GetFeature)
+        if not op:
+            return []
+
+        args = self.prepare_operation(op, params=params)
+        text = gws.gis.ows.request.get_text(args)
+
+        fdata = gws.gis.ows.featureinfo.parse(text, default_crs=request_crs, always_xy=self.alwaysXY)
+
+        if fdata is None:
+            gws.log.debug(f'get_features: NOT_PARSED params={params!r}')
+            return []
+
+        gws.log.debug(f'get_features: FOUND={len(fdata)} params={params!r}')
+
+        for fd in fdata:
+            if fd.shape:
+                fd.shape = fd.shape.transformed_to(bounds.crs)
+
+        if not search_shape:
+            return fdata
+
+        filtered = [
+            fd for fd in fdata
+            if not fd.shape or fd.shape.intersects(search_shape)
+
+        ]
+
+        gws.log.debug(f'get_features: FILTERED={len(filtered)}')
+        return filtered
+
+
+##
+
+
+def get_for(obj: gws.INode) -> Object:
+    p = obj.cfg('provider')
+    if p:
+        return obj.root.create_shared(Object, p)
+    p = obj.cfg('_defaultProvider')
+    if p:
+        return p
+    raise gws.Error(f'no provider found for {obj!r}')
