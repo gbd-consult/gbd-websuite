@@ -118,7 +118,7 @@ class Object(gws.Node, gws.IOwsProvider):
         raise gws.Error(res.text)
 
 
-    def get_feature_info(self, search, source_layers):
+    def get_features(self, search, source_layers):
         shape = search.shape
         if not shape or shape.type != gws.GeometryType.point:
             return []
@@ -178,10 +178,10 @@ class Object(gws.Node, gws.IOwsProvider):
         fdata = gws.gis.ows.featureinfo.parse(res.text, default_crs=request_crs, always_xy=self.alwaysXY)
 
         if fdata is None:
-            gws.log.debug(f'get_feature_info: NOT_PARSED params={params!r}')
+            gws.log.debug(f'get_features: NOT_PARSED params={params!r}')
             return []
 
-        gws.log.debug(f'get_feature_info: FOUND={len(fdata)} params={params!r}')
+        gws.log.debug(f'get_features: FOUND={len(fdata)} params={params!r}')
 
         for fd in fdata:
             if fd.shape:

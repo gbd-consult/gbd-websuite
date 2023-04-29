@@ -30,7 +30,7 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.Object):
     provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
-    activeCrs: gws.ICrs
+    sourceCrs: gws.ICrs
 
     imageLayers: list[gws.SourceLayer]
     searchLayers: list[gws.SourceLayer]
@@ -51,7 +51,7 @@ class Object(gws.base.layer.Object):
         self.imageLayers = gws.gis.source.filter_layers(self.sourceLayers, is_image=True)
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)
 
-        self.activeCrs = self.provider.forceCrs or gws.gis.crs.best_match(
+        self.sourceCrs = self.provider.forceCrs or gws.gis.crs.best_match(
             self.defaultBounds.crs,
             gws.gis.source.combined_crs_list(self.sourceLayers))
 
@@ -120,9 +120,6 @@ class Object(gws.base.layer.Object):
             self.metadata = self.sourceLayers[0].metadata
             return True
 
-    def configure_templates(self):
-        return super().configure_templates()
-
     def configure_search(self):
         if super().configure_search():
             return True
@@ -155,7 +152,7 @@ class Object(gws.base.layer.Object):
 
         source_uid = mc.source(gws.compact({
             'type': 'wms',
-            'supported_srs': [self.activeCrs.epsg],
+            'supported_srs': [self.sourceCrs.epsg],
             'concurrent_requests': self.provider.maxRequests,
             'req': req,
             'wms_opts': {

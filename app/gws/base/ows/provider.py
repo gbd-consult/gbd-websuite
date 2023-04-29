@@ -22,6 +22,7 @@ class Object(gws.Node, gws.IOwsProvider):
         self.alwaysXY = self.cfg('alwaysXY', default=False)
         self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs'))
         self.maxRequests = self.cfg('maxRequests')
+        self.operations = []
         self.sourceLayers = []
         self.url = self.cfg('url')
         self.version = ''

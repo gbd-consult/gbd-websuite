@@ -1,13 +1,11 @@
 """WMS provder."""
 
 import gws
-import gws.lib.metadata
 import gws.base.ows
-import gws.gis.ows
-import gws.gis.source
 import gws.gis.crs
 import gws.gis.extent
-import gws.types as t
+import gws.gis.ows
+import gws.gis.source
 
 from . import caps
 
@@ -52,7 +50,9 @@ class Object(gws.base.ows.provider.Object):
         self.capsLayersBottomUp = self.cfg('capsLayersBottomUp')
         self.configure_operations(cc.operations)
 
-    def get_feature_info(self, search, source_layers):
+    DEFAULT_GET_FEATURE_LIMIT = 100
+
+    def get_features(self, search, source_layers):
         v3 = self.version >= '1.3'
 
         shape = search.shape
@@ -106,7 +106,7 @@ class Object(gws.base.ows.provider.Object):
             'QUERY_LAYERS': layer_names,
             'STYLES': [''] * len(layer_names),
             'VERSION': self.version,
-            'FEATURE_COUNT': search.limit or 100,
+            'FEATURE_COUNT': search.limit or self.DEFAULT_GET_FEATURE_LIMIT,
         }
 
         if search.extraParams:
@@ -125,10 +125,10 @@ class Object(gws.base.ows.provider.Object):
         fdata = gws.gis.ows.featureinfo.parse(text, default_crs=request_crs, always_xy=always_xy)
 
         if fdata is None:
-            gws.log.debug(f'get_feature_info: NOT_PARSED params={params!r}')
+            gws.log.debug(f'get_features: NOT_PARSED params={params!r}')
             return []
 
-        gws.log.debug(f'get_feature_info: FOUND={len(fdata)} params={params!r}')
+        gws.log.debug(f'get_features: FOUND={len(fdata)} params={params!r}')
 
         for fd in fdata:
             if fd.shape:

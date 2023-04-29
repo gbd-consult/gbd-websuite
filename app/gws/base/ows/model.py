@@ -47,5 +47,5 @@ class Object(gws.base.model.Object):
             return []
         return [
             self.feature_from_data(fd, user, **kwargs)
-            for fd in self.provider.get_feature_info(search, self.sourceLayers)
+            for fd in self.provider.get_features(search, self.sourceLayers)
         ]
