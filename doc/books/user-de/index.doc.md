@@ -10,7 +10,20 @@ Die GBD WebSuite ist eine Open Source WebGIS Plattform zur Geodatenverarbeitung.
 
 Dem Anwender stellt die GBD WebSuite eine Vielzahl an GIS Funktionalität zur Verfügung, um Informationen in der Karte zu suchen, abzufragen, zu erstellen, zu bearbeiten und als druckfertige Karte auszugeben. Externe (Fach-)Anwendungen und neue Funktionalität können modular integriert und deren Nutzung individuell konfiguriert werden.
 
-Die GBD WebSuite wird unter der GNU Affero General Public License (AGPL) veröffentlicht. Die Entwicklung der GBD WebSuite unter dieser Lizenz bedeutet, dass Sie den Quellcode einsehen und verändern können, und garantiert.
+Die GBD WebSuite wird unter der GNU Affero General Public License (AGPL) veröffentlicht. Weitere Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gbd-websuite.de/
+
+**Hinweise zur Dokumentation**
+
+In diesem Benutzerhandbuch werden zum besseren Verständnis verschiedene Schreibstile verwendet.
+
+
+| Formatierung       | Beschreibung                                      |
+|--------------------|---------------------------------------------------|
+| Bedienelement      | Titel des Bedienelements                          |
+| Schältfläche       | Schaltfläche zum Anklicken                        |
+| Parameter          | Parameter mit Eingabemöglichkeit                  |
+| `Verlinkung`       | innerhalb des Handbuchs oder zu externer Webseite |
+
 
 ### :function_overview
 

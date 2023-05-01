@@ -1,10 +1,9 @@
 # Funktionsübersicht :/user-de/function_overview
 
-Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebSuite, unterteilt in die Bereiche Werkzeug-, Menü- und Statusleiste.
+Die Navigation durch die Kapitel der Dokumentation ist über die Seitenleiste möglich, oder auch über die untenstehende Auflistung. Sie können alternativ auch die Suchfunktion verwenden, welche in der Seitenleiste oberhalb angeordnet ist. Eine ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren Verlauf dieser Dokumentation. 
 
-Über die Verlinkung der Funktionalität gelangen Sie auf weitere Unterseiten, die eine ausführliche Beschreibung und Hilfe im Umgang bietet.
+Hier finden Sie im Folgenden eine Auflistung aller Bedienelemente der GBD WebSuite, mit einer Kurzbeschreibung der Funktion.
 
-Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gbd-websuite.de/
 
 
 .. |addall| image:: ../../../images/gbd-icon-alle-ablage-01.svg
