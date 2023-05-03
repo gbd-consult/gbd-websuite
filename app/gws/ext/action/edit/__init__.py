@@ -83,9 +83,12 @@ class Object(gws.common.action.Object):
         models = []
 
         for la in self._editable_layers(req, project):
-            models.append(la.editor.model)
+            m = la.editor.model
+            p = m.props_for(req.user)
+            p['layerUid'] = la.uid
+            models.append(p)
 
-        return GetModelsResponse(models=[m.props_for(req.user) for m in models])
+        return GetModelsResponse(models=models)
 
     def api_query_features(self, req: t.IRequest, p: QueryParams) -> ListResponse:
         project = req.require_project(p.projectUid)
@@ -119,7 +122,7 @@ class Object(gws.common.action.Object):
         for fe in out_features:
             self._apply_templates_deep(fe, 'title')
 
-        return ListResponse(features=[fe.props for fe in out_features])
+        return ListResponse(features=[self._feature_props(project, fe) for fe in out_features])
 
     def api_init_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
         project = req.require_project(p.projectUid)
@@ -132,7 +135,7 @@ class Object(gws.common.action.Object):
         self._apply_permissions_and_defaults(fe, req, project, 'read')
         self._apply_templates_deep(fe, 'title')
 
-        return FeatureResponse(feature=fe.props)
+        return FeatureResponse(feature=self._feature_props(project, fe))
 
     def api_read_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
         project = req.require_project(p.projectUid)
@@ -148,7 +151,7 @@ class Object(gws.common.action.Object):
         self._apply_permissions_and_defaults(fe, req, project, 'read')
         self._apply_templates_deep(fe, 'title')
 
-        return FeatureResponse(feature=fe.props)
+        return FeatureResponse(feature=self._feature_props(project, fe))
 
     def api_write_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
         project = req.require_project(p.projectUid)
@@ -165,7 +168,7 @@ class Object(gws.common.action.Object):
         if errors:
             fe.attributes = {}
             fe.errors = errors
-            return FeatureResponse(feature=fe.props)
+            return FeatureResponse(feature=self._feature_props(project, fe))
 
         fe.model.save(fe)
         gws.common.model.session.commit()
@@ -174,7 +177,7 @@ class Object(gws.common.action.Object):
         # fe = fe.model.get_feature(fe.uid, depth=1)
         self._apply_templates_deep(fe, 'title')
 
-        return FeatureResponse(feature=fe.props)
+        return FeatureResponse(feature=self._feature_props(project, fe))
 
     def api_delete_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
         fe = self._load_feature(req, p)
@@ -244,7 +247,7 @@ class Object(gws.common.action.Object):
     def _editable_layers(self, req, project):
         ls = []
         for la in self._enum_layers(project.map):
-            if req.user.can_use(la.editor):
+            if req.user.can_use(la.editor, parent=project):
                 ls.append(la)
         return ls
 
@@ -258,5 +261,7 @@ class Object(gws.common.action.Object):
             ls.extend(self._enum_layers(la))
         return ls
 
-    def _list_response(self, features) -> ListResponse:
-        return ListResponse(features=[fe.props for fe in features])
+    def _feature_props(self, project, fe):
+        p = fe.props
+        p.layerUid = project.uid + '.map.' + p.layerUid.split('.')[-1]
+        return p
