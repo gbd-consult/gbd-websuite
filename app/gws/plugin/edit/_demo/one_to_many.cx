@@ -34,7 +34,7 @@ projects+ {
             type "integer"
             title "Identifier"
             isPrimaryKey true
-            permissions.write "deny all"
+            permissions.edit "deny all"
         }
 
         fields+ {

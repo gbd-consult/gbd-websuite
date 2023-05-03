@@ -479,18 +479,10 @@ class ModelsTabController extends Helper {
 
 class ListTab extends gws.View<ViewProps> {
     async componentDidMount() {
-        console.log('FeaturesTab componentDidMount')
         let cc = _master(this).listTabController;
         await cc.whenMounted()
     }
 
-    // componentDidUpdate() {
-    //     console.log('FeaturesTab componentDidUpdate')
-    //     let cc = _master(this).listTabController;
-    //     cc.whenMounted()
-    //
-    // }
-    //
     render() {
         let cc = _master(this).listTabController;
         let es = this.props.editState;
@@ -554,7 +546,7 @@ class ListTabController extends Helper {
     }
 
     async whenMounted() {
-        await this.loadFeaturesForSelectedModel();
+        await this.master.loadFeaturesForSelectedModel();
     }
 
 
@@ -571,7 +563,7 @@ class ListTabController extends Helper {
         this.master.updateSearchText(model.uid, val);
         clearTimeout(this._searchTimer);
         this._searchTimer = Number(setTimeout(
-            () => this.loadFeaturesForSelectedModel(),
+            () => this.master.loadFeaturesForSelectedModel(),
             SEARCH_TIMEOUT
         ));
     }
@@ -594,16 +586,6 @@ class ListTabController extends Helper {
         });
         this.master.app.startTool('Tool.Edit.Draw')
     }
-
-    async loadFeaturesForSelectedModel() {
-        let es = this.master.editState;
-        await this.master.loadFeaturesForList(
-            es.selectedModel.uid,
-            es.selectedModel,
-            es.searchText[es.selectedModel.uid],
-        );
-    }
-
 }
 
 //
@@ -613,10 +595,6 @@ class FormTab extends gws.View<ViewProps> {
         console.log('FormTab componentDidMount')
         let cc = _master(this).formTabController;
         await cc.whenMounted()
-    }
-
-    async componentDidUpdate() {
-        // await _master(this).whenMounted();
     }
 
     render() {
@@ -857,12 +835,7 @@ class FormTabController extends Helper {
         this.master.updateEditState({formErrors: []});
 
         for (let field of sf.model.fields) {
-            let p = field.widgetProps;
-            console.log('XXX', field)
-            if (p && p.type == 'featureSelect') {
-                await this.loadRelatedFeatures(field)
-            }
-            if (p && p.type == 'featureSuggest') {
+            if (field.attributeType === gws.api.core.AttributeType.feature) {
                 await this.loadRelatedFeatures(field)
             }
         }
@@ -1063,9 +1036,7 @@ class Controller extends gws.Controller {
             return;
 
         if (model.loadingStrategy == gws.api.core.FeatureLoadingStrategy.bbox) {
-            this.updateEditState({
-                selectedModel: model,
-            })
+            await this.loadFeaturesForSelectedModel();
         }
     }
 
@@ -1257,6 +1228,18 @@ class Controller extends gws.Controller {
     }
 
     //
+
+    async loadFeaturesForSelectedModel() {
+        let es = this.editState;
+        if (es.selectedModel) {
+            await this.loadFeaturesForList(
+                es.selectedModel.uid,
+                es.selectedModel,
+                es.searchText[es.selectedModel.uid],
+            );
+        }
+    }
+
 
     async loadFeaturesForList(cacheUid: string, model: gws.types.IModel, searchText?: string) {
         let ls = model.loadingStrategy;

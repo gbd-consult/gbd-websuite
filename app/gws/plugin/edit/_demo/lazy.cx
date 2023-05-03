@@ -1,6 +1,6 @@
 @comment
 
-Editing 1:M and M:1 relationships.
+Editing 1:M relationships (person->poi and person->district).
 
 Using `featureSuggest` widgets and `loadingStrategy lazy`
 to facilitate lazy loading: useful for big tables.
@@ -8,7 +8,7 @@ to facilitate lazy loading: useful for big tables.
 @end
 
 projects+ {
-    title "Edit: Lazy loading"
+    title "Edit: lazy loading"
     metadata.abstract "Loading related features on demand."
 
     api.actions+ { type "edit" }
@@ -36,7 +36,7 @@ projects+ {
             type "integer"
             title "Identifier"
             isPrimaryKey true
-            permissions.write "deny all"
+            permissions.edit "deny all"
         }
 
         fields+ {
@@ -112,7 +112,7 @@ projects+ {
             type "integer"
             title "Identifier"
             isPrimaryKey true
-            isRequired true
+            permissions.edit "deny all"
         }
 
         fields+ {
@@ -155,13 +155,6 @@ projects+ {
             text "{{@if feature.isNew}} neue Person {{@else}} {{name}} {{@end}}"
         }
     }
-
-#    map.layers+ {
-#        title "POIs"
-#        type "postgres"
-#        tableName "edit.poi"
-#        extent [ 431881, 6505964, 1076161, 6877804 ]
-#    }
 
     {demo_osm_background}
 }

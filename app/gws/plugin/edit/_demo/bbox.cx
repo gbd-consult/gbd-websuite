@@ -1,0 +1,43 @@
+@comment
+
+Using `loadingStrategy bbox` to edit only features in the map extent.
+
+@end
+
+projects+ {
+    title "Edit: bbox loading"
+    metadata.abstract "Editing features in the map extent."
+
+    api.actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 4000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "POIs"
+        type "postgres"
+        tableName "edit.poi_small"
+        permissions.edit 'allow all'
+        loadingStrategy "bbox"
+        cssSelector ".custom_poi"
+
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{name}}"
+        }
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{name}}"
+        }
+    }
+
+    {demo_osm_background}
+}
