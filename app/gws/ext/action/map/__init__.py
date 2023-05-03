@@ -190,7 +190,13 @@ class Object(gws.common.action.Object):
 
         gws.debug.time_end('api_get_features_TRANSFORM')
 
-        return GetFeaturesResponse(features=[fe.view_props for fe in flist])
+        fprops = []
+        for fe in flist:
+            p = fe.view_props
+            p.layerUid = layer.uid
+            fprops.append(p)
+
+        return GetFeaturesResponse(features=fprops)
 
     def http_get_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
         return self.api_render_box(req, p)
