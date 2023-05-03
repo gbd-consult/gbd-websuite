@@ -10,10 +10,11 @@ export class Feature implements types.IFeature {
 
     attributes: types.Dict = {};
     category: string = '';
-    views: types.Dict = {};
-    layer?: types.IFeatureLayer = null;
-    oFeature?: ol.Feature = null;
     cssSelector: string;
+    layer?: types.IFeatureLayer = null;
+    views: types.Dict = {};
+
+    oFeature?: ol.Feature = null;
 
     isNew: boolean = false;
     isSelected: boolean = false;
@@ -27,6 +28,11 @@ export class Feature implements types.IFeature {
         this.model = model;
         this.map = model.registry.app.map;
         this.uid = lib.uniqId('_feature_');
+
+        this.attributes = {}
+        this.category = ''
+        this.cssSelector = ''
+        this.views = {}
     }
 
     setProps(props) {

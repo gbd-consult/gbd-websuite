@@ -43,12 +43,12 @@ class Object(gws.base.model.scalar_field.Object):
 
     def configure_widget(self):
         if not super().configure_widget():
-            self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'input'})
+            self.widget = self.create_child(gws.ext.object.modelWidget, type='input')
             return True
 
     ##
 
-    def select(self, sel, user):
+    def augment_select(self, sel, user):
         if not self.textSearch or not sel.search or not sel.search.keyword:
             return
 

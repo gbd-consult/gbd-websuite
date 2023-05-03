@@ -16,16 +16,28 @@ class Props(gws.base.model.Props):
     pass
 
 
+class SortConfig:
+    fieldName: str
+    reverse: bool = False
+
+
 class Config(gws.base.model.Config):
     dbUid: t.Optional[str]
+    """db provider uid"""
     tableName: t.Optional[str]
+    """table name for the model"""
+    filter: t.Optional[str]
+    """extra SQL filter"""
+    sort: t.Optional[list[SortConfig]]
+    """default sorting"""
 
 
 class Object(gws.base.model.Object, gws.IDatabaseModel):
     provider: provider.Object
-    tableName: str
 
     def configure(self):
+        self.sqlFilter = self.cfg('filter')
+        self.sqlSort = [gws.SearchSort(c) for c in self.cfg('sort', default=[])]
         self.configure_provider()
         self.configure_sources()
         self.configure_fields()
@@ -119,7 +131,7 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         access = gws.Access.create if feature.isNew else gws.Access.write
 
         if not user.can(access, self):
-            raise ValueError('Forbidden')
+            raise gws.ForbiddenError('forbidden')
 
         feature.errors = []
 
@@ -163,16 +175,18 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
     def session(self) -> gws.IDatabaseSession:
         return self.provider.session()
 
-    def make_select(self, search: gws.SearchArgs, user: gws.IUser):
+    def make_select(self, search: gws.SearchQuery, user: gws.IUser):
+        cls = self.record_class()
+
         sel = gws.SelectStatement(
-            saSelect=sa.select(self.record_class()),
+            saSelect=sa.select(cls),
             search=search,
             keywordWhere=[],
             geometryWhere=[],
         )
 
         for f in self.fields:
-            f.select(sel, user)
+            f.augment_select(sel, user)
 
         if search.keyword and not sel.keywordWhere:
             return
@@ -188,23 +202,25 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
             pks = self.primary_keys()
             if not pks:
                 return
-            pk = getattr(self.record_class(), pks[0].name)
+            pk = getattr(cls, pks[0].name)
             sel.saSelect = sel.saSelect.where(pk.in_(search.uids))
 
-        # extra = (self.extraWhere or [])
-        #
-        # if args.extra_where:
-        #     s = sa.text(args.extra_where[0])
-        #     if len(args.extra_where) > 1:
-        #         s = s.bindparams(**args.extra_where[1])
-        #     select.saSelect = select.saSelect.where(s)
-        #
-        # if self.filter:
-        #     select.saSelect = select.saSelect.where(sa.text(self.filter))
+        if search.extraWhere:
+            for c in search.extraWhere:
+                where = sa.text(c.text)
+                if c.args:
+                    where = where.bindparams(**c.args)
+                sel.saSelect = sel.saSelect.where(where)
 
-        if search.sort:
-            for s in search.sort:
+        if self.sqlFilter:
+            sel.saSelect = sel.saSelect.where(sa.text(self.sqlFilter))
+
+        sorter = search.sort or self.sqlSort
+        if sorter:
+            order = []
+            for s in sorter:
                 fn = sa.desc if s.reverse else sa.asc
-                sel.saSelect = sel.saSelect.order_by(fn(getattr(self.record_class(), s.fieldName)))
+                order.append(fn(getattr(cls, s.fieldName)))
+            sel.saSelect = sel.saSelect.order_by(*order)
 
         return sel

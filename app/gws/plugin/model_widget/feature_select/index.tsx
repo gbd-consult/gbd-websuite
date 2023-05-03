@@ -15,11 +15,11 @@ class View extends gws.View<Props> {
 
         for (let f of this.props.features) {
             fmap[f.uid] = f;
-            items.push({text: f.views.title, value: String(f.uid)})
+            items.push({text: f.views.title, value: f.uid})
         }
 
         return <gws.ui.Select
-            value={feature ? String(feature.uid) : null}
+            value={feature ? feature.uid : null}
             items={items}
             whenChanged={v => this.props.whenChanged(fmap[v])}
         />;

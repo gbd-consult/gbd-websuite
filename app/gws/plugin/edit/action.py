@@ -77,7 +77,7 @@ class Object(gws.base.action.Object):
         props = []
         project = req.require_project(p.projectUid)
 
-        search = gws.SearchArgs(
+        search = gws.SearchQuery(
             access=gws.Access.write,
             project=project,
             bounds=project.map.bounds,
@@ -174,77 +174,3 @@ class Object(gws.base.action.Object):
             _prepare(f)
 
         return [gws.props(f, req.user, self) for f in features]
-
-    # def _apply_permissions_and_defaults(self, fe: t.IFeature, req: gws.IWebRequester, project, mode):
-    #     env = t.Data(user=req.user, project=project)
-    #     for f in fe.model.fields:
-    #         if f.apply_value(fe, mode, 'fixed', env):
-    #             continue
-    #         if not req.user.can_use(f.permissions.get(mode)):
-    #             gws.log.debug(f'remove field={f.name!r} mode={mode!r}')
-    #             del fe.attributes[f.name]
-    #         f.apply_value(fe, mode, 'default', env)
-    #     return fe
-    #
-    # def _load_feature(self, req: gws.IWebRequester, p: FeatureParams) -> t.IFeature:
-    #     layer_uid = p.feature.layerUid
-    #     layer = t.cast(t.ILayer, self.root.find('gws.ext.layer', layer_uid))
-    #     if not layer or not req.user.can_use(layer.editor):
-    #         raise gws.web.error.Forbidden()
-    #     fe = layer.editor.model.feature_from_props(p.feature, depth=1)
-    #     return fe
-    #
-    # def _prepare_features(self, req: gws.IWebRequester, p: ListParams) -> t.Optional[_PreparedCollection]:
-    #     pc = _PreparedCollection(
-    #         by_layer={},
-    #         layers={},
-    #         features=[],
-    #     )
-    #
-    #     for index, fp in enumerate(p.features):
-    #         lid = fp.layerUid
-    #
-    #         if lid not in pc.by_layer:
-    #             layer = t.cast(t.ILayer, self.root.find('gws.ext.layer', lid))
-    #             if not layer or not layer.edit_access(req.user):
-    #                 raise gws.web.error.Forbidden()
-    #             pc.by_layer[lid] = []
-    #             pc.layers[lid] = layer
-    #
-    #         fe = pc.layers[lid].editor.model.feature_from_props(fp, depth=1)
-    #         pc.features.append(fe)
-    #         pc.by_layer[lid].append(index)
-    #
-    #     if not pc.features:
-    #         return
-    #
-    #     return pc
-    #
-    # def _apply_templates_deep(self, fe: t.IFeature, key):
-    #     fe.apply_template(key)
-    #     for k, v in fe.attributes.items():
-    #         if isinstance(v, t.IFeature):
-    #             self._apply_templates_deep(v, key)
-    #         if isinstance(v, list) and v and isinstance(v[0], t.IFeature):
-    #             for f in v:
-    #                 self._apply_templates_deep(f, key)
-    #
-    # def _editable_layers(self, req, project):
-    #     ls = []
-    #     for la in self._enum_layers(project.map):
-    #         if req.user.can_use(la.editor):
-    #             ls.append(la)
-    #     return ls
-    #
-    # def _enum_layers(self, obj):
-    #     layers = getattr(obj, 'layers', None)
-    #     if not layers:
-    #         return [obj]
-    #
-    #     ls = []
-    #     for la in layers:
-    #         ls.extend(self._enum_layers(la))
-    #     return ls
-    #
-    # def _list_response(self, features) -> FeatureListResponse:
-    #     return FeatureListResponse(features=[fe.props for fe in features])

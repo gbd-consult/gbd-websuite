@@ -252,6 +252,8 @@ class INode(IObject, Protocol):
 
     def find_first(self, classref: ClassRef) -> Optional['INode']: ...
 
+    def closest(self, classref: ClassRef) -> Optional['INode']: ...
+
 
 class IRoot(Protocol):
     app: 'IApplication'
@@ -1051,7 +1053,7 @@ class DataSetDescription(Data):
 
 class SelectStatement(Data):
     saSelect: 'sqlalchemy.select'
-    search: 'SearchArgs'
+    search: 'SearchQuery'
     keywordWhere: list
     geometryWhere: list
 
@@ -1211,6 +1213,7 @@ class IModelField(INode, Protocol):
 
     values: list['IModelValue']
     validators: list['IModelValidator']
+    serverDefault: str
 
     isPrimaryKey: bool
     isRequired: bool
@@ -1247,22 +1250,19 @@ class IModelField(INode, Protocol):
 
     def orm_properties(self) -> dict: ...
 
-    def select(self, sel: 'SelectStatement', user: IUser): ...
+    def augment_select(self, sel: 'SelectStatement', user: IUser): ...
 
 
 class IModel(INode, Protocol):
-    keyName: str
-
+    fields: list['IModelField']
+    geometryCrs: Optional['ICrs']
     geometryName: str
     geometryType: Optional[GeometryType]
-    geometryCrs: Optional['ICrs']
-
+    keyName: str
     loadingStrategy: 'FeatureLoadingStrategy'
-
-    fields: list['IModelField']
-    templates: list['ITemplate']
-
     provider: 'IProvider'
+    templates: list['ITemplate']
+    title: str
 
     def describe(self) -> Optional[DataSetDescription]: ...
 
@@ -1270,7 +1270,7 @@ class IModel(INode, Protocol):
 
     def compute_values(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
 
-    def find_features(self, search: 'SearchArgs', user: IUser) -> list['IFeature']: ...
+    def find_features(self, search: 'SearchQuery', user: IUser) -> list['IFeature']: ...
 
     def write_feature(self, feature: 'IFeature', user: IUser, **kwargs) -> bool: ...
 
@@ -1287,6 +1287,9 @@ class IModel(INode, Protocol):
 
 class IDatabaseModel(IModel, Protocol):
     provider: 'IDatabaseProvider'
+    sqlFilter: str
+    sqlSort: list['SearchSort']
+    tableName: str
 
     def table(self) -> 'sqlalchemy.Table': ...
 
@@ -1658,7 +1661,7 @@ class SearchSort(Data):
 
 class SearchWhere(Data):
     text: str
-    args: list[Any]
+    args: dict
 
 
 class SearchOgcFilter(Data):
@@ -1669,7 +1672,7 @@ class SearchOgcFilter(Data):
     value: str
 
 
-class SearchArgs(Data):
+class SearchQuery(Data):
     access: Access
     bounds: Bounds
     extraParams: dict
@@ -1678,7 +1681,6 @@ class SearchArgs(Data):
     layers: list['ILayer']
     limit: int
     ogcFilter: SearchOgcFilter
-    params: dict
     project: 'IProject'
     relationDepth: int
     resolution: float
@@ -1706,9 +1708,9 @@ class IFinder(INode, Protocol):
 
     tolerance: 'Measurement'
 
-    def run(self, search: SearchArgs, user: IUser, layer: 'ILayer' = None) -> list['IFeature']: ...
+    def run(self, search: SearchQuery, user: IUser, layer: 'ILayer' = None) -> list['IFeature']: ...
 
-    def can_run(self, search: SearchArgs, user: IUser) -> bool: ...
+    def can_run(self, search: SearchQuery, user: IUser) -> bool: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1810,65 +1812,11 @@ class ILayer(INode, Protocol):
 
     def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...
 
-    def get_features(self, search: SearchArgs, user: 'IUser', views: Optional[list[str]] = None, model_uid: str = None) -> list['IFeature']: ...
+    def get_features(self, search: SearchQuery, user: 'IUser', views: Optional[list[str]] = None, model_uid: str = None) -> list['IFeature']: ...
 
     def render_legend(self, args: dict = None) -> Optional['LegendRenderOutput']: ...
 
     def url_path(self, kind: Literal['box', 'tile', 'legend', 'features']) -> str: ...
-
-
-#
-# def render_xyz(self, x: int, y: int, z: int) -> bytes: ...
-#
-# def render_svg_element(self, view: 'MapView', style: Optional['IStyle']) -> Optional[IXmlElement]: ...
-#
-# def render_svg_fragment(self, view: 'MapView', style: Optional['IStyle']) -> list[IXmlElement]: ...
-
-#
-#
-#
-# isGroup: bool
-# is_editable: bool
-#
-# supports_raster_ows: bool
-# supports_vector_ows: bool
-#
-# legend: 'Legend'
-#
-# display: str
-#
-# layers: list['ILayer'] = []
-#
-# templates: list['ITemplate']
-# models: list['IModel']
-# finders: list['IFinder']
-#
-#
-# client_options: Data
-#
-# geometry_type: Optional[GeometryType]
-# ows_enabled: bool
-#
-# def description(self) -> str: ...
-#
-# def has_search(self) -> bool: ...
-#
-# def has_legend(self) -> bool: ...
-#
-# def has_cache(self) -> bool: ...
-#
-# def own_bounds(self) -> Optional[Bounds]: ...
-#
-# def legendUrl(self) -> Url: ...
-#
-# def ancestors(self) -> list['ILayer']: ...
-#
-#
-# def render_legend_with_cache(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
-#
-# def render_legend(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
-#
-# def get_features(self, bounds: Bounds, limit: int = 0) -> list['IFeature']: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1944,7 +1892,7 @@ class IOwsProvider(INode, Protocol):
 
     def get_operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
 
-    def get_features(self, args: SearchArgs, source_layers: list[SourceLayer]) -> list[FeatureData]: ...
+    def get_features(self, args: SearchQuery, source_layers: list[SourceLayer]) -> list[FeatureData]: ...
 
 
 class IOwsModel(IModel, Protocol):
@@ -2001,6 +1949,7 @@ class IProject(INode, Protocol):
     localeUids: list[str]
     map: 'IMap'
     metadata: 'Metadata'
+    models: list['IModel']
     templates: list['ITemplate']
 
 
@@ -2045,5 +1994,7 @@ class IApplication(INode, Protocol):
     def projects_for_user(self, user: 'IUser') -> list['IProject']: ...
 
     def project(self, uid: str) -> Optional['IProject']: ...
+
+    def developer_option(self, name: str): ...
 
     def require_helper(self, ext_type: str): ...

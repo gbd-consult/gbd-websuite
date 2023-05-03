@@ -21,7 +21,7 @@ class Object(gws.base.model.scalar_field.Object):
 
     def configure_widget(self):
         if not super().configure_widget():
-            self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'float'})
+            self.widget = self.create_child(gws.ext.object.modelWidget, type='float')
             return True
 
     def prop_to_py(self, val):

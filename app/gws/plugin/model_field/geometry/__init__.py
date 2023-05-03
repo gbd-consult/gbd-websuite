@@ -51,7 +51,7 @@ class Object(gws.base.model.scalar_field.Object):
 
     def configure_widget(self):
         if not super().configure_widget():
-            self.widget = self.create_child(gws.ext.object.modelWidget, {'type': 'geometry'})
+            self.widget = self.create_child(gws.ext.object.modelWidget, type='geometry')
             return True
 
     ##
@@ -61,7 +61,7 @@ class Object(gws.base.model.scalar_field.Object):
 
     ##
 
-    def select(self, sel, user):
+    def augment_select(self, sel, user):
         shape = None
         if sel.search.shape:
             shape = sel.search.shape

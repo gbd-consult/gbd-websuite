@@ -51,6 +51,8 @@ class Config(gws.ConfigWithAccess):
     """Map configuration"""
     metadata: t.Optional[gws.Metadata]
     """project metadata"""
+    models: t.Optional[list[gws.ext.config.model]]
+    """data models"""
     overviewMap: t.Optional[gws.base.map.Config]
     """Overview map configuration"""
     printer: t.Optional[gws.base.printer.Config]
@@ -112,6 +114,8 @@ class Object(gws.Node, gws.IProject):
         for cfg in _DEFAULT_TEMPLATES:
             self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
 
+        self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
+
         self.client = self.create_child_if_configured(gws.base.client.Object, self.cfg('client'))
 
     def props(self, user):
@@ -120,7 +124,7 @@ class Object(gws.Node, gws.IProject):
         if tpl:
             desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
 
-        models = []
+        models = list(self.models)
         if self.map:
             for la in self.map.rootLayer.descendants():
                 models.extend(m for m in la.models if user.can_use(la) and user.can_use(m))

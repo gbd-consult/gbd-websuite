@@ -31,6 +31,10 @@ class Object(gws.base.model.field.Object):
     def configure(self):
         self.relations = [self.cfg('relation')]
 
+    def configure_widget(self):
+        if not super().configure_widget():
+            self.widget = self.create_child(gws.ext.object.modelWidget, type='featureList')
+            return True
     ##
 
     def props(self, user):
@@ -38,7 +42,7 @@ class Object(gws.base.model.field.Object):
 
     ##
 
-    def select(self, sel, user):
+    def augment_select(self, sel, user):
         depth = sel.search.relationDepth or 0
         if depth > 0:
             sel.saSelect = sel.saSelect.options(
@@ -80,18 +84,25 @@ class Object(gws.base.model.field.Object):
     ##
 
     def orm_properties(self):
-        rel_model = self.model.provider.mgr.model(self.relations[0].modelUid)
+        rel_model = t.cast(gws.IDatabaseModel, self.model.provider.mgr.model(self.relations[0].modelUid))
         rel_cls = rel_model.record_class()
         kwargs = {}
 
         own_pk = self.model.primary_keys()
-        rel_fk_name = rel_model.field(self.relations[0].fieldName).foreignKey.name
+        rel_fk = getattr(rel_model.field(self.relations[0].fieldName), 'foreignKey')
         own_cls = self.model.record_class()
 
-        kwargs['primaryjoin'] = getattr(own_cls, own_pk[0].name) == getattr(rel_cls, rel_fk_name)
-        kwargs['foreign_keys'] = getattr(rel_cls, rel_fk_name)
-
+        kwargs['primaryjoin'] = getattr(own_cls, own_pk[0].name) == getattr(rel_cls, rel_fk.name)
+        kwargs['foreign_keys'] = getattr(rel_cls, rel_fk.name)
         kwargs['back_populates'] = self.relations[0].fieldName
+
+        if rel_model.sqlSort:
+            order = []
+            for s in rel_model.sqlSort:
+                fn = sa.desc if s.reverse else sa.asc
+                order.append(fn(getattr(rel_cls, s.fieldName)))
+            kwargs['order_by'] = order
+
         return {
             self.name: sa.orm.relationship(rel_cls, **kwargs)
         }

@@ -44,10 +44,11 @@ class Node(Object, types.INode):
         if p:
             for k, v in vars(p).items():
                 a = util.parse_acl(v)
-                if k == 'edit':
-                    perms[gws.Access.write] = perms[gws.Access.create] = perms[gws.Access.delete] = a
-                else:
-                    perms[t.cast(gws.Access, k)] = a
+                if a:
+                    if k == 'edit':
+                        perms[gws.Access.write] = perms[gws.Access.create] = perms[gws.Access.delete] = a
+                    else:
+                        perms[t.cast(gws.Access, k)] = a
 
         return perms
 
@@ -73,6 +74,15 @@ class Node(Object, types.INode):
 
     def find_all(self, classref):
         return _find_all_in(self.root, self.children, classref)
+
+    def closest(self, classref):
+        obj = self.parent
+        while True:
+            if not obj or isinstance(obj, Root):
+                return
+            if _is_a(self.root, obj, classref):
+                return obj
+            obj = obj.parent
 
 
 class Root(types.IRoot):

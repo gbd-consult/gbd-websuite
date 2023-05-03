@@ -33,6 +33,11 @@ class Object(gws.base.model.field.Object):
         self.relations = [self.cfg('relation')]
         self.foreignKey = self.cfg('foreignKey')
 
+    def configure_widget(self):
+        if not super().configure_widget():
+            self.widget = self.create_child(gws.ext.object.modelWidget, type='featureSelect')
+            return True
+
     ##
 
     def props(self, user):
@@ -72,7 +77,7 @@ class Object(gws.base.model.field.Object):
 
     ##
 
-    def select(self, sel, user):
+    def augment_select(self, sel, user):
         depth = sel.search.relationDepth or 0
         if depth > 0:
             sel.saSelect = sel.saSelect.options(

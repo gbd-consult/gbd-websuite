@@ -1,0 +1,148 @@
+@comment
+
+Editing 1:M (fclass->poi) and M:1 (poi->fclass) relationships.
+
+Title templates accomodated for displaying new features.
+
+@end
+
+projects+ {
+    title "Edit: 1:M relationship"
+    metadata.abstract "Editing related features."
+
+    api.actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_poi_1m"
+        tableName "edit.poi_small"
+        sort+ { fieldName "name" }
+        title "POIs"
+        permissions.edit "allow all"
+
+        fields+ {
+            name "id"
+            type "integer"
+            title "Identifier"
+            isPrimaryKey true
+            permissions.write "deny all"
+        }
+
+        fields+ {
+            name "name"
+            type "text"
+            title "Object name"
+            isRequired true
+            textSearch { type "any" }
+        }
+
+        fields+ {
+            name "fclass"
+            type "relatedFeature"
+            relation {
+                modelUid "model_fclass_1m"
+                fieldName "pois"
+            }
+            foreignKey {
+                name "fclass_id"
+            }
+            title "Feature Class"
+            widget.type "featureSelect"
+        }
+
+        fields+ {
+            name "description"
+            type "text"
+            title "Comments"
+            widget { type "textarea" height 150 }
+        }
+
+        fields+ {
+            name "geom"
+            type "geometry"
+            title "Geometry"
+            isRequired true
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{@if feature.isNew}} Unbenannt {{@else}} {{name}} {{@end}}"
+        }
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_fclass_1m"
+        tableName "edit.fclass"
+        permissions.edit "allow all"
+        sort+ { fieldName "name_de" }
+        title "Classes"
+
+        fields+ {
+            name "id"
+            type "integer"
+            title "Identifier"
+            isPrimaryKey true
+            isRequired true
+        }
+
+        fields+ {
+            name "name_de"
+            type "text"
+            title "Name (Deutsch)"
+            isRequired true
+            textSearch { type "any" }
+        }
+
+        fields+ {
+            name "name_en"
+            type "text"
+            title "Name (English)"
+            isRequired true
+            textSearch { type "any" }
+        }
+
+        fields+ {
+            name "pois"
+            type "relatedFeatureList"
+            relation {
+                modelUid "model_poi_1m"
+                fieldName "fclass"
+            }
+            title "Related Objects"
+        }
+
+        fields+ {
+            name "description"
+            type "text"
+            title "Comments"
+            widget { type "textarea" height 150 }
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{@if feature.isNew}} Unbenannt {{@else}} {{name_de}} {{@end}}"
+        }
+    }
+
+    map.layers+ {
+    uid "ZZZ"
+        title "POIs"
+        type "postgres"
+        tableName "edit.poi_small"
+        extent [ 431881, 6505964, 1076161, 6877804 ]
+    }
+
+    {demo_osm_background}
+}

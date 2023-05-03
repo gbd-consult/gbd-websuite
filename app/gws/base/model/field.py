@@ -25,10 +25,11 @@ class Config(gws.ConfigWithAccess):
     title: t.Optional[str]
 
     isPrimaryKey: bool = False
-    isRequired: bool = False
+    isRequired: t.Optional[bool]
 
     values: t.Optional[list[gws.ext.config.modelValue]]
     validators: t.Optional[list[gws.ext.config.modelValidator]]
+    serverDefault: t.Optional[str]
 
     widget: t.Optional[gws.ext.config.modelWidget]
 
@@ -49,6 +50,7 @@ class Object(gws.Node, gws.IModelField):
         self.values = []
         self.validators = []
         self.widget = None
+        self.serverDefault = self.cfg('serverDefault')
 
         self.configure_values()
         self.configure_validators()
@@ -118,12 +120,18 @@ class Object(gws.Node, gws.IModelField):
     ##
 
     def props(self, user):
+        wp = None
+        if self.widget:
+            wp = gws.props(self.widget, user)
+            if not user.can_write(self):
+                wp.readOnly = True
+
         return Props(
             attributeType=self.attributeType,
             name=self.name,
             title=self.title,
             type=self.extType,
-            widget=self.widget,
+            widget=wp,
             uid=self.uid,
         )
 

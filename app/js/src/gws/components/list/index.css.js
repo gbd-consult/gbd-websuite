@@ -15,6 +15,10 @@ module.exports = v => ({
         ...v.LIST_BUTTON(v.ZOOM_ICON)
     },
 
+    '.cmpListDefaultListButton': {
+        ...v.LIST_BUTTON('google:image/crop_din'),
+    },
+
     '.cmpList .uiRow': {
         ...v.TRANSITION(),
     },

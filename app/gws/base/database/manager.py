@@ -21,8 +21,8 @@ class _SaRuntime:
         self.engines = {}
         self.sessions = {}
         self.tables = {}
-        self.modelTables = {}
-        self.modelClasses = {}
+        self.modelTable = {}
+        self.modelClass = {}
         self.pkColumns = {}
         self.descCache = {}
 
@@ -48,6 +48,13 @@ class Object(gws.Node, gws.IDatabaseManager):
 
         self.root.app.register_middleware('db', self)
 
+    def post_configure(self):
+        self.activate_runtime()
+        self.close_sessions()
+
+    def activate(self):
+        self.activate_runtime()
+
     ##
 
     def enter_middleware(self, req: gws.IWebRequester):
@@ -57,9 +64,6 @@ class Object(gws.Node, gws.IDatabaseManager):
         self.close_sessions()
 
     ##
-
-    def post_configure(self):
-        self.close_sessions()
 
     def provider(self, uid):
         return self.providers.get(uid)
@@ -75,72 +79,82 @@ class Object(gws.Node, gws.IDatabaseManager):
     def model(self, model_uid):
         return self.models.get(model_uid)
 
-    def activate(self):
-        self.activate_runtime()
-
     def activate_runtime(self):
         self.rt = _SaRuntime()
 
-        model_to_tuid = {}
+        model_to_tabid = {}
 
         for model_uid, mod in self.models.items():
             table_name = getattr(mod, 'tableName', None)
             if not table_name:
                 continue
             provider = t.cast(gws.IDatabaseProvider, getattr(mod, 'provider'))
-            model_to_tuid[model_uid] = self.table_uid(provider, table_name)
+            model_to_tabid[model_uid] = self.table_uid(provider, table_name)
 
-        tuid_to_cols = {}
-        tuid_to_prim = {}
+        columns = {}
 
-        for model_uid, tuid in model_to_tuid.items():
-            d = {}
+        # this is to ensure that the same column configured in different models
+        # matches the type and other props, like foreign keys
+
+        def _check_column(model_uid, tabid, col):
+            key = tabid, col.name
+            old = columns.get(key)
+            if not old:
+                columns[key] = [model_uid, col]
+                return
+
+            old_model_uid, old_col = old
+            for k, v in vars(col).items():
+                if k.startswith('_'):
+                    continue
+                old_val = getattr(old_col, k, None)
+                if repr(old_val) != repr(v):
+                    raise gws.Error(f'column conflict: {model_uid}.{col.name}.{k}={v!r}, {old_model_uid}.{col.name}.{k}={old_val!r}')
+
+        for model_uid, tabid in model_to_tabid.items():
             for f in self.models[model_uid].fields:
                 if f.isPrimaryKey:
                     for col in f.columns():
-                        d[col.name] = col
-            tuid_to_prim.setdefault(tuid, {}).update(d)
-            tuid_to_cols.setdefault(tuid, {}).update(d)
+                        _check_column(model_uid, tabid, col)
 
-        for model_uid, tuid in model_to_tuid.items():
-            if tuid in tuid_to_prim:
-                self.rt.pkColumns[model_uid] = list(tuid_to_prim[tuid].values())
+        for model_uid, tabid in model_to_tabid.items():
+            self.rt.pkColumns[model_uid] = [v[1] for k, v in columns.items() if k[0] == tabid]
 
-        for model_uid, tuid in model_to_tuid.items():
-            d = {}
+        for model_uid, tabid in model_to_tabid.items():
             for f in self.models[model_uid].fields:
                 if not f.isPrimaryKey:
                     for col in f.columns():
-                        d[col.name] = col
-            tuid_to_cols.setdefault(tuid, {}).update(d)
+                        _check_column(model_uid, tabid, col)
 
-        tuid_to_table = {}
-        tuid_to_class = {}
+        tabid_to_table = {}
+        tabid_to_class = {}
 
-        for tuid, cols in tuid_to_cols.items():
-            provider_uid, table_name = tuid
+        for model_uid, tabid in model_to_tabid.items():
+            if tabid in tabid_to_table:
+                continue
+            provider_uid, table_name = tabid
             provider = self.providers[provider_uid]
-            tab = self.table(provider, table_name, cols.values())
+            cols = [v[1] for k, v in columns.items() if k[0] == tabid]
+            tab = self.table(provider, table_name, cols)
             cls = type('FeatureRecord_' + provider_uid + '_' + gws.to_uid(table_name), (gws.FeatureRecord,), {})
             self.registry_for_provider(provider).map_imperatively(cls, tab)
-            tuid_to_table[tuid] = tab
-            tuid_to_class[tuid] = cls
+            tabid_to_table[tabid] = tab
+            tabid_to_class[tabid] = cls
 
-        for model_uid, tuid in model_to_tuid.items():
-            self.rt.modelTables[model_uid] = tuid_to_table[tuid]
-            self.rt.modelClasses[model_uid] = tuid_to_class[tuid]
+        self.rt.modelTable = {model_uid: tabid_to_table[tabid] for model_uid, tabid in model_to_tabid.items()}
+        self.rt.modelClass = {model_uid: tabid_to_class[tabid] for model_uid, tabid in model_to_tabid.items()}
 
-        tuid_to_props = {}
+        tabid_to_props = {}
 
-        for model_uid, tuid in model_to_tuid.items():
+        for model_uid, tabid in model_to_tabid.items():
             d = {}
             for f in self.models[model_uid].fields:
                 d.update(f.orm_properties())
-            tuid_to_props.setdefault(tuid, {}).update(d)
+            tabid_to_props.setdefault(tabid, {}).update(d)
 
-        for tuid, props in tuid_to_props.items():
+        for tabid, props in tabid_to_props.items():
             for k, v in props.items():
-                getattr(tuid_to_class[tuid], '__mapper__').add_property(k, v)
+                getattr(tabid_to_class[tabid], '__mapper__').add_property(k, v)
 
     def table_uid(self, provider: gws.IDatabaseProvider, table_name: str):
         return provider.uid, provider.qualified_table_name(table_name)
@@ -156,18 +170,18 @@ class Object(gws.Node, gws.IDatabaseManager):
         return self.rt.engines[provider.uid]
 
     def table_for_model(self, model) -> sa.Table:
-        return self.rt.modelTables[model.uid]
+        return self.rt.modelTable[model.uid]
 
     def class_for_model(self, model) -> type:
-        return self.rt.modelClasses[model.uid]
+        return self.rt.modelClass[model.uid]
 
     def pkeys_for_model(self, model) -> list[sa.Column]:
         return self.rt.pkColumns.get(model.uid, [])
 
     def table(self, provider: gws.IDatabaseProvider, table_name: str, columns: list[sa.Column] = None, **kwargs):
-        tuid = self.table_uid(provider, table_name)
-        if tuid in self.rt.tables and not columns:
-            return self.rt.tables[tuid]
+        tabid = self.table_uid(provider, table_name)
+        if tabid in self.rt.tables and not columns:
+            return self.rt.tables[tabid]
         metadata = self.registry_for_provider(provider).metadata
         schema, name = provider.parse_table_name(table_name)
         kwargs.setdefault('schema', schema)
@@ -176,7 +190,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             tab = sa.Table(name, metadata, *columns, **kwargs)
         else:
             tab = sa.Table(name, metadata, **kwargs)
-        self.rt.tables[tuid] = tab
+        self.rt.tables[tabid] = tab
         return tab
 
     def session(self, provider, **kwargs):
@@ -194,10 +208,10 @@ class Object(gws.Node, gws.IDatabaseManager):
         return self._load_and_describe(sess, table_name, True)
 
     def describe(self, sess, table_name):
-        tuid = self.table_uid(sess.provider, table_name)
-        if tuid not in self.rt.descCache:
-            self.rt.descCache[tuid] = self._load_and_describe(sess, table_name, False)
-        return self.rt.descCache[tuid]
+        tabid = self.table_uid(sess.provider, table_name)
+        if tabid not in self.rt.descCache:
+            self.rt.descCache[tabid] = self._load_and_describe(sess, table_name, False)
+        return self.rt.descCache[tabid]
 
     # https://www.psycopg.org/docs/usage.html#adaptation-of-python-values-to-sql-types
 

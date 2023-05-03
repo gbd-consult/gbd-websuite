@@ -5,7 +5,7 @@ import * as gws from 'gws';
 interface Props extends gws.types.ModelWidgetProps {
     features: Array<gws.types.IFeature>;
     searchText: string;
-    whenSearchTextChanged: (val: string) => void;
+    whenSearchChanged: (val: string) => void;
 }
 
 class View extends gws.View<Props> {
@@ -27,7 +27,7 @@ class View extends gws.View<Props> {
             items={items}
             text={this.props.searchText}
             whenChanged={v => this.props.whenChanged(fmap[v])}
-            whenTextChanged={val => this.props.whenSearchTextChanged(val)}
+            whenTextChanged={val => this.props.whenSearchChanged(val)}
         />;
     }
 }

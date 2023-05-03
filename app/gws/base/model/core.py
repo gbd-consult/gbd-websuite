@@ -8,25 +8,17 @@ import gws.types as t
 from . import util
 
 
-class SortConfig:
-    fieldName: str
-    reverse: bool
-
-
-class ValueConfig(gws.Config):
-    pass
-
-
 class Config(gws.ConfigWithAccess):
     """Model configuration"""
 
     fields: list[gws.ext.config.modelField]
-    filter: t.Optional[str]
-    sort: t.Optional[list[SortConfig]]
+    """model fields"""
+    loadingStrategy: t.Optional[gws.FeatureLoadingStrategy]
+    """loading strategy for features"""
     templates: t.Optional[list[gws.ext.config.template]]
     """templates for this model"""
-    loadingStrategy: gws.FeatureLoadingStrategy = gws.FeatureLoadingStrategy.all
-    """loading strategy for features"""
+    title: str = ''
+    """model title"""
 
 
 class Props(gws.Props):
@@ -34,8 +26,6 @@ class Props(gws.Props):
     canDelete: bool
     canRead: bool
     canWrite: bool
-    supportsKeywordSearch: bool
-    supportsGeometrySearch: bool
     fields: list[gws.ext.props.modelField]
     geometryCrs: t.Optional[str]
     geometryName: t.Optional[str]
@@ -43,18 +33,22 @@ class Props(gws.Props):
     keyName: t.Optional[str]
     layerUid: t.Optional[str]
     loadingStrategy: gws.FeatureLoadingStrategy
+    supportsGeometrySearch: bool
+    supportsKeywordSearch: bool
+    title: str
     uid: str
 
 
 class Object(gws.Node, gws.IModel):
     def configure(self):
         self.fields = []
-        self.templates = []
-        self.keyName = ''
+        self.geometryCrs = None
         self.geometryName = ''
         self.geometryType = None
-        self.geometryCrs = None
-        self.loadingStrategy = self.cfg('loadingStrategy', default=Config.loadingStrategy)
+        self.keyName = ''
+        self.loadingStrategy = self.cfg('loadingStrategy')
+        self.templates = []
+        self.title = self.cfg('title')
 
     def configure_fields(self):
         p = self.cfg('fields')
@@ -64,12 +58,17 @@ class Object(gws.Node, gws.IModel):
 
     def configure_auto_fields(self):
         desc = self.describe()
-        if desc:
-            for col in desc.columns.values():
-                cfg = util.field_config_from_column(col)
-                if cfg:
-                    self.fields.append(self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self))
-            return True
+        if not desc:
+            return False
+        for col in desc.columns.values():
+            if col.relation:
+                # we do not configure relations automatically
+                # treating them as scalars leads to conflicts in sa Table classes
+                continue
+            cfg = util.field_config_from_column(col)
+            if cfg:
+                self.fields.append(self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self))
+        return True
 
     def configure_templates(self):
         p = self.cfg('templates')
@@ -83,14 +82,12 @@ class Object(gws.Node, gws.IModel):
     ##
 
     def props(self, user):
-        layer = t.cast(gws.ILayer, self.parent)
+        layer = t.cast(gws.ILayer, self.closest(gws.ext.object.layer))
         return gws.Props(
             canCreate=user.can_create(self),
             canDelete=user.can_delete(self),
             canRead=user.can_read(self),
             canWrite=user.can_write(self),
-            supportsKeywordSearch=any(f.supportsKeywordSearch for f in self.fields),
-            supportsGeometrySearch=any(f.supportsGeometrySearch for f in self.fields),
             fields=self.fields,
             geometryCrs=self.geometryCrs.epsg if self.geometryCrs else None,
             geometryName=self.geometryName,
@@ -98,6 +95,9 @@ class Object(gws.Node, gws.IModel):
             keyName=self.keyName,
             layerUid=layer.uid if layer else None,
             loadingStrategy=self.loadingStrategy or (layer.loadingStrategy if layer else gws.FeatureLoadingStrategy.all),
+            supportsGeometrySearch=any(f.supportsGeometrySearch for f in self.fields),
+            supportsKeywordSearch=any(f.supportsKeywordSearch for f in self.fields),
+            title=self.title or (layer.title if layer else ''),
             uid=self.uid,
         )
 

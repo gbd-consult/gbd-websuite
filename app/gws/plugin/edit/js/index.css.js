@@ -90,7 +90,7 @@ module.exports = v => {
         },
 
 
-        '.editGotoModelListAuxButton': {
+        '.editModelsAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:maps/layers')
         },
 

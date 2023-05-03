@@ -10,10 +10,14 @@ class Props(gws.Props):
 
 
 class Config(gws.Config):
-    pass
+    readOnly: bool = False
 
 
 class Object(gws.Node, gws.IModelWidget):
+    readOnly: bool
+
+    def configure(self):
+        self.readOnly = self.cfg('readOnly', default=False)
 
     def props(self, user):
-        return Props(type=self.extType, readOnly=False, uid=self.uid)
+        return Props(type=self.extType, readOnly=self.readOnly, uid=self.uid)

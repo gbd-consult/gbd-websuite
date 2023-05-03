@@ -455,13 +455,13 @@ export interface IModel {
     geometryName: string;
     geometryType: core.GeometryType
     keyName: string;
+    layer?: IFeatureLayer;
     layerUid: string;
     loadingStrategy: api.core.FeatureLoadingStrategy;
     title: string;
     uid: string;
 
     registry: ModelRegistry;
-    layer?: IFeatureLayer;
 
     getField(name: string): IModelField | null;
 

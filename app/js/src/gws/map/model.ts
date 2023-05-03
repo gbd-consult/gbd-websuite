@@ -26,6 +26,7 @@ export class ModelRegistry implements types.IModelRegistry {
             geometryName: 'geometry',
             keyName: 'uid',
             loadingStrategy: api.core.FeatureLoadingStrategy.all,
+            title: '',
             uid: '',
         });
     }
@@ -93,6 +94,7 @@ export class Model implements types.IModel {
     keyName: string;
     layerUid: string;
     loadingStrategy: api.core.FeatureLoadingStrategy;
+    title: string;
     uid: string;
 
     featureMap: FeatureMap;
@@ -115,6 +117,7 @@ export class Model implements types.IModel {
         this.keyName = props.keyName;
         this.layerUid = props.layerUid;
         this.loadingStrategy = props.loadingStrategy;
+        this.title = props.title;
         this.uid = props.uid;
 
         this.fields = [];
@@ -130,12 +133,6 @@ export class Model implements types.IModel {
         return this.registry.app.map.getLayer(this.layerUid) as types.IFeatureLayer;
     }
 
-    get title() {
-        let la = this.layer;
-        return la ? la.title : '...';
-
-    }
-
     getField(name) {
         for (let f of this.fields)
             if (f.name === name)
@@ -148,7 +145,6 @@ export class Model implements types.IModel {
     
     
     featureWithAttributes(attributes: types.Dict): types.IFeature {
-        let map = this.registry.app.map;
         return this.newFeature().setAttributes(attributes);
     }
 
@@ -170,11 +166,11 @@ export class Model implements types.IModel {
             let val = attributes[f.name];
 
             if (val && f.attributeType === 'feature') {
-                attributes[f.name] = this.featureFromProps(val);
+                attributes[f.name] = this.registry.featureFromProps(val);
             }
 
             if (val && f.attributeType === 'featurelist') {
-                attributes[f.name] = val.map(p => this.featureFromProps(p));
+                attributes[f.name] = val.map(p => this.registry.featureFromProps(p));
             }
         }
 
