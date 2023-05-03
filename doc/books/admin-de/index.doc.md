@@ -1,6 +1,8 @@
 # Administrator Handbuch :/admin-de
 
-Dokumentation für GBD WebSuite Server Administratoren (Deutsch).
+Dies ist die Dokumentation für GBD WebSuite Server Administratoren.
+
+Weitere Informationen zum GBD WebSuite Projekt finden Sie unter https://gbd-websuite.de.
 
 ## Einführung :intro
 
