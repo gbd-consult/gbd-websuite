@@ -63,7 +63,7 @@ class Object(gws.base.action.Object):
     def _find(self, req, p):
 
         project = req.require_project(p.projectUid)
-        search = gws.SearchArgs(project=project)
+        search = gws.SearchQuery(project=project)
 
         if p.layerUids:
             search.layers = gws.compact(req.acquire(uid, gws.ext.object.layer) for uid in p.layerUids)

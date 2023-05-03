@@ -233,7 +233,7 @@ class Object(gws.base.action.Object):
                 gws.gis.crs.get(p.crs) or layer.bounds.crs
             )
 
-        search = gws.SearchArgs(bounds=bounds, limit=_GET_FEATURES_LIMIT)
+        search = gws.SearchQuery(bounds=bounds, limit=_GET_FEATURES_LIMIT)
 
         gws.time_start(f'GET_FEATURES layer={p.layerUid}')
         features = layer.get_features(search, user=req.user, views=p.views, model_uid=p.modelUid)

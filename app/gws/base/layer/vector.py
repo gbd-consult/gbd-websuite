@@ -50,7 +50,7 @@ class Object(core.Object):
         if lri.view.rotation:
             bounds = gws.Bounds(crs=lri.view.bounds.crs, extent=gws.gis.extent.circumsquare(bounds.extent))
 
-        search = gws.SearchArgs(bounds=bounds)
+        search = gws.SearchQuery(bounds=bounds)
         features = self.get_features(search, lri.user, views=['label'])
 
         if not features:

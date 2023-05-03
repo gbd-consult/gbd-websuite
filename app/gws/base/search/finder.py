@@ -87,7 +87,7 @@ class Object(gws.Node, gws.IFinder):
 
         return has_param
 
-    def context_shape(self, search: gws.SearchArgs) -> gws.IShape:
+    def context_shape(self, search: gws.SearchQuery) -> gws.IShape:
         if search.shape:
             return search.shape
         if self.spatialContext == SpatialContext.view and search.bounds:

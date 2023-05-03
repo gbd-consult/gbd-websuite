@@ -8,7 +8,7 @@ class Result(gws.Data):
     finder: gws.IFinder
 
 
-def run(search: gws.SearchArgs, user: gws.IUser) -> list[Result]:
+def run(search: gws.SearchQuery, user: gws.IUser) -> list[Result]:
     used_layer_ids = set()
     results: list[Result] = []
     layers = search.layers or []
@@ -35,7 +35,7 @@ def run(search: gws.SearchArgs, user: gws.IUser) -> list[Result]:
 
 
 def _run(
-        search: gws.SearchArgs,
+        search: gws.SearchQuery,
         user: gws.IUser,
         finder: gws.IFinder,
         layer: gws.ILayer,

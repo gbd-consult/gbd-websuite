@@ -128,7 +128,7 @@ class Object(core.Service):
             raise gws.base.web.error.BadRequest('Invalid RESULTTYPE value')
         populate = result_type == 'results'
 
-        args = gws.SearchArgs(
+        args = gws.SearchQuery(
             project=rd.project,
             shapes=[shape],
             filter=flt,

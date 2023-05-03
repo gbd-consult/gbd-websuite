@@ -165,7 +165,7 @@ class Object(core.Service):
         # @TODO: should be a parameter
         pixel_tolerance = 10
 
-        args = gws.SearchArgs(
+        args = gws.SearchQuery(
             project=rd.project,
             layers=[lc.layer for lc in lcs],
             limit=min(limit, self.search_max_limit),

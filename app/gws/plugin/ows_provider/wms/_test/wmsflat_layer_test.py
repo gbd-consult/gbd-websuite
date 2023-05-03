@@ -62,7 +62,7 @@ def web_request():
 
 
 def search_args(layer):
-    return gws.SearchArgs(
+    return gws.SearchQuery(
         bounds=gws.Bounds(crs='EPSG:3857', extent=[100, 200, 300, 400]),
         resolution=10,
         layers=[layer],
