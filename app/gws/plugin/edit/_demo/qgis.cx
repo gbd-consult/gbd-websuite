@@ -87,7 +87,7 @@ projects+ {
             type "postgres"
             uid "model_districts_qgis_simple"
             dbUid "DEVDEMOS"
-            tableName "edit.districts"
+            tableName "edit.district"
             permissions.edit "allow all"
 
             fields+ {

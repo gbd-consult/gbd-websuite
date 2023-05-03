@@ -51,7 +51,7 @@ projects+ {
     map.layers+ {
         title "Districts"
         type "postgres"
-        tableName "districts"
+        tableName "edit.district"
         cssSelector ".custom_district"
         templates+ {
             subject "feature.label"

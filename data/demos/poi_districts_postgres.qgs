@@ -27,7 +27,7 @@
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer expanded="0" name="Districts" providerKey="postgres" legend_exp="" patch_size="-1,-1" legend_split_behavior="0" source="dbname='devdemos' service='DEVDEMOS' sslmode=disable key='sid' srid=3857 type=MultiPolygon checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;districts&quot; (geom)" id="districts_2d2acf11_3db4_4afa_879f_b9aaa74bbcdf" checked="Qt::Checked">
+    <layer-tree-layer expanded="0" name="Districts" providerKey="postgres" legend_exp="" patch_size="-1,-1" legend_split_behavior="0" source="dbname='devdemos' service='DEVDEMOS' sslmode=disable key='sid' srid=3857 type=MultiPolygon checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;district&quot; (geom)" id="districts_2d2acf11_3db4_4afa_879f_b9aaa74bbcdf" checked="Qt::Checked">
       <customproperties>
         <Option/>
       </customproperties>
@@ -149,7 +149,7 @@
         <ymax>51.3547323921839407</ymax>
       </wgs84extent>
       <id>districts_2d2acf11_3db4_4afa_879f_b9aaa74bbcdf</id>
-      <datasource>dbname='devdemos' service='DEVDEMOS' sslmode=disable key='sid' srid=3857 type=MultiPolygon checkPrimaryKeyUnicity='1' table="edit"."districts" (geom)</datasource>
+      <datasource>dbname='devdemos' service='DEVDEMOS' sslmode=disable key='sid' srid=3857 type=MultiPolygon checkPrimaryKeyUnicity='1' table="edit"."district" (geom)</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -598,7 +598,7 @@
         </fixedRange>
       </temporal>
       <elevation clamping="Terrain" binding="Centroid" zscale="1" extrusionEnabled="0" zoffset="0" extrusion="0"/>
-      <renderer-v2 type="categorizedSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1" attr="classid">
+      <renderer-v2 type="categorizedSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1" attr="fclass_id">
         <categories>
           <category type="long" value="1" render="true" label="1" symbol="0"/>
           <category type="long" value="2" render="true" label="2" symbol="1"/>
@@ -1777,7 +1777,7 @@
             </config>
           </editWidget>
         </field>
-        <field name="classid" configurationFlags="None">
+        <field name="fclass_id" configurationFlags="None">
           <editWidget type="Range">
             <config>
               <Option/>
@@ -1793,7 +1793,7 @@
         <alias name="" field="active" index="4"/>
         <alias name="" field="image" index="5"/>
         <alias name="" field="description" index="6"/>
-        <alias name="" field="classid" index="7"/>
+        <alias name="" field="fclass_id" index="7"/>
       </aliases>
       <defaults>
         <default expression="" field="id" applyOnUpdate="0"/>
@@ -1803,7 +1803,7 @@
         <default expression="" field="active" applyOnUpdate="0"/>
         <default expression="" field="image" applyOnUpdate="0"/>
         <default expression="" field="description" applyOnUpdate="0"/>
-        <default expression="" field="classid" applyOnUpdate="0"/>
+        <default expression="" field="fclass_id" applyOnUpdate="0"/>
       </defaults>
       <constraints>
         <constraint exp_strength="0" unique_strength="1" field="id" constraints="3" notnull_strength="1"/>
@@ -1813,7 +1813,7 @@
         <constraint exp_strength="0" unique_strength="0" field="active" constraints="0" notnull_strength="0"/>
         <constraint exp_strength="0" unique_strength="0" field="image" constraints="0" notnull_strength="0"/>
         <constraint exp_strength="0" unique_strength="0" field="description" constraints="0" notnull_strength="0"/>
-        <constraint exp_strength="0" unique_strength="0" field="classid" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="fclass_id" constraints="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" desc="" exp=""/>
@@ -1823,7 +1823,7 @@
         <constraint field="active" desc="" exp=""/>
         <constraint field="image" desc="" exp=""/>
         <constraint field="description" desc="" exp=""/>
-        <constraint field="classid" desc="" exp=""/>
+        <constraint field="fclass_id" desc="" exp=""/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
@@ -1838,7 +1838,7 @@
           <column type="field" name="active" width="-1" hidden="0"/>
           <column type="field" name="image" width="-1" hidden="0"/>
           <column type="field" name="description" width="-1" hidden="0"/>
-          <column type="field" name="classid" width="-1" hidden="0"/>
+          <column type="field" name="fclass_id" width="-1" hidden="0"/>
           <column type="actions" width="-1" hidden="1"/>
         </columns>
       </attributetableconfig>
@@ -1872,7 +1872,7 @@ def my_form_open(dialog, layer, feature):
       <editorlayout>generatedlayout</editorlayout>
       <editable>
         <field name="active" editable="1"/>
-        <field name="classid" editable="1"/>
+        <field name="fclass_id" editable="1"/>
         <field name="code" editable="1"/>
         <field name="description" editable="1"/>
         <field name="id" editable="1"/>
@@ -1882,7 +1882,7 @@ def my_form_open(dialog, layer, feature):
       </editable>
       <labelOnTop>
         <field name="active" labelOnTop="0"/>
-        <field name="classid" labelOnTop="0"/>
+        <field name="fclass_id" labelOnTop="0"/>
         <field name="code" labelOnTop="0"/>
         <field name="description" labelOnTop="0"/>
         <field name="id" labelOnTop="0"/>
@@ -1892,7 +1892,7 @@ def my_form_open(dialog, layer, feature):
       </labelOnTop>
       <reuseLastValue>
         <field name="active" reuseLastValue="0"/>
-        <field name="classid" reuseLastValue="0"/>
+        <field name="fclass_id" reuseLastValue="0"/>
         <field name="code" reuseLastValue="0"/>
         <field name="description" reuseLastValue="0"/>
         <field name="id" reuseLastValue="0"/>

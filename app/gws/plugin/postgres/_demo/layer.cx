@@ -11,13 +11,13 @@ projects+ {
     map.layers+ {
         title "POIs"
         type "postgres"
-        tableName "poi"
+        tableName "edit.poi"
     }
 
     map.layers+ {
         title "Districts"
         type "postgres"
-        tableName "districts"
+        tableName "edit.district"
     }
 
     {demo_osm_background}

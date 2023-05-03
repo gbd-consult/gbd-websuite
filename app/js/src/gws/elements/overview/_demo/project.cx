@@ -28,7 +28,7 @@ projects+ {
         layers+ {
             title "Districts"
             type "postgres"
-            tableName "edit.districts"
+            tableName "edit.district"
             cssSelector ".custom_district_outline"
         }
         layers+ {

@@ -33,7 +33,7 @@ projects+ {
     map.layers+ {
         title "Districts"
         type "postgres"
-        tableName "edit.districts"
+        tableName "edit.district"
         permissions.edit "allow groupB, deny all"
     }
 
