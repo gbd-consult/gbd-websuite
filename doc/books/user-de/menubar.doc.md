@@ -8,7 +8,7 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 
 | Symbol                                | Funktion                   				| Funktionsbeschreibung                         |
 |---------------------------------------|-------------------------------------------------------|-----------------------------------------------|
-| ![](baseline-menu-24px.svg)          	| [Menü ausklappen](/user-de/submenu)			| Untermenü aus- und zuklappen			|
+| ![](baseline-menu-24px.svg)          	| [Menü](/user-de/submenu)				| Untermenü aus- und zuklappen			|
 | ![](baseline-person-24px.svg)		| [Anmelden](/user-de/sign_in)         			| Benutzer an- und abmelden	 		|
 | ![](gbd-icon-auswahl-01.svg)        	| [Auswahl](/user-de/select)  				| Liste ausgewählter Objekte anzeigen    	|
 | ![](bplan.svg)          		| [Bauleitplanung](/user-de/) 				| Daten der Bauleitplanung administrieren       |
@@ -24,15 +24,17 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 | ![](table_view_black_24dp.svg)       	| [Tabellen editieren](/user-de/select) 		| Attributtabelle eines Layers editieren   	|
 
 
+## Menü :/user-de/
+## Anmelden :/user-de/	
+## Auswahl :/user-de/
+## Bauleitplanung :/user-de/
+## Bemaßung :/user-de/
+## Digitalisieren :/user-de/
+## Flurstücksuche :/user-de/
 ## Layer :/user-de/
+## Location Manager :/user-de/
+## Markierungen :/user-de/
+## Personen Informationen :/user-de/
 ## Projektübersicht :/user-de/
 ## Suche :/user-de/
-## Selektion :/user-de/
-## Auswahl :/user-de/
-## Flurstücksuche :/user-de/
-## Markierungen :/user-de/
-## LocationManager :/user-de/
-## Bemaßung :/user-de/
-## Editieren :/user-de/
 ## Tabellen editieren :/user-de/
-## Anmeldung :/user-de/	
