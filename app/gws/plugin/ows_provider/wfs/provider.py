@@ -31,7 +31,7 @@ class Config(gws.base.ows.ProviderConfig):
 
 class Object(gws.base.ows.provider.Object):
     protocol = gws.OwsProtocol.WFS
-    extendedBbox: bool | None
+    extendedBbox: bool
 
     def configure(self):
         cc = caps.parse(self.get_capabilities())
@@ -42,7 +42,12 @@ class Object(gws.base.ows.provider.Object):
 
         self.operations.extend(cc.operations)
 
-        self.extendedBbox = self.cfg('extendedBbox')
+        # use extended bbox (with crs) for wfs 2 by default
+        # see als comments in qgis/qgswfsfeatureiterator.cpp buildURL
+        p = self.cfg('extendedBbox')
+        if p is None:
+            p = self.version >= '2'
+        self.extendedBbox = p
 
     DEFAULT_GET_FEATURE_LIMIT = 100
 
@@ -71,26 +76,20 @@ class Object(gws.base.ows.provider.Object):
             bounds = search_shape.bounds()
 
         request_crs = self.forceCrs or gws.gis.crs.WGS84
-        # if not request_crs:
-        #     request_crs = gws.gis.crs.best_match(
-        #         bounds.crs,
-        #         gws.gis.source.combined_crs_list(source_layers))
 
         bbox = gws.gis.bounds.transform(bounds, request_crs).extent
         if request_crs.isYX and not self.alwaysXY:
             bbox = gws.gis.extent.swap_xy(bbox)
         bbox = ','.join(str(k) for k in bbox)
 
-        # see comments in qgis/qgswfsfeatureiterator.cpp buildURL
-
         srs = request_crs.to_string(gws.CrsFormat.urn)
-        if (self.extendedBbox is True) or (self.extendedBbox is None and self.version >= '2'):
+        if self.extendedBbox:
             bbox += ',' + srs
 
         params = {
             'BBOX': bbox,
             'COUNT' if self.version >= '2' else 'MAXFEATURES': search.limit or self.DEFAULT_GET_FEATURE_LIMIT,
-            'SRSNAME': request_crs.to_string(gws.CrsFormat.urn),
+            'SRSNAME': srs,
             'TYPENAMES' if self.version >= '2' else 'TYPENAME': [sl.name for sl in source_layers],
             'VERSION': self.version,
         }
@@ -123,7 +122,6 @@ class Object(gws.base.ows.provider.Object):
         filtered = [
             fd for fd in fdata
             if not fd.shape or fd.shape.intersects(search_shape)
-
         ]
 
         gws.log.debug(f'get_features: FILTERED={len(filtered)}')
