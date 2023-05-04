@@ -39,7 +39,7 @@ class Object(gws.base.ows.provider.Object):
         if p:
             self.grids.append(gws.TileGrid(
                 bounds=gws.Bounds(crs=p.crs, extent=p.extent),
-                corner=p.corner or gws.Corner.nw,
+                origin=p.origin or gws.Origin.nw,
                 tileSize=p.tileSize or self.tileMatrixSets[0].matrices[0].tileWidth,
             ))
             return True
@@ -55,7 +55,7 @@ class Object(gws.base.ows.provider.Object):
     def grid_for_tms(self, tms: gws.TileMatrixSet) -> gws.TileGrid:
         return gws.TileGrid(
             bounds=gws.Bounds(crs=tms.crs, extent=tms.matrices[0].extent),
-            corner=gws.Corner.nw,
+            origin=gws.Origin.nw,
             resolutions=sorted([gws.lib.uom.scale_to_res(m.scale) for m in tms.matrices], reverse=True),
             tileSize=tms.matrices[0].tileWidth,
         )

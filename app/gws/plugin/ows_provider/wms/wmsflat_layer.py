@@ -97,7 +97,7 @@ class Object(gws.base.layer.Object):
         if super().configure_grid():
             return True
         self.grid = gws.TileGrid(
-            corner=gws.Corner.nw,
+            origin=gws.Origin.nw,
             tileSize=256,
             bounds=self.bounds,
             resolutions=self.resolutions)

@@ -86,7 +86,7 @@ class Object(gws.base.action.Object):
 
         search.tolerance = self.tolerance
         if p.tolerance:
-            search.tolerance = gws.lib.uom.parse(p.tolerance, default=gws.Uom.px)
+            search.tolerance = gws.lib.uom.parse(p.tolerance, gws.Uom.px)
 
         if p.resolution:
             search.resolution = p.resolution

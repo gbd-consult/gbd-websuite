@@ -61,7 +61,7 @@ class GridConfig(gws.Config):
 
     crs: t.Optional[gws.CrsName]
     extent: t.Optional[gws.Extent]
-    corner: t.Optional[gws.Corner]
+    origin: t.Optional[gws.Origin]
     resolutions: t.Optional[list[float]]
     tileSize: t.Optional[int]
 
@@ -136,7 +136,7 @@ class CustomConfig(gws.ConfigWithAccess):
 
 
 class GridProps(gws.Props):
-    corner: str
+    origin: str
     extent: gws.Extent
     resolutions: list[float]
     tileSize: int
@@ -256,7 +256,7 @@ class Object(gws.Node, gws.ILayer):
         self.sourceLayers = []
 
     def configure_layer(self):
-        """Standart layer configuration protocol."""
+        """Layer configuration protocol."""
         self.configure_provider()
         self.configure_sources()
         self.configure_models()
@@ -294,7 +294,7 @@ class Object(gws.Node, gws.ILayer):
             if p.crs and p.crs != self.bounds.crs:
                 raise gws.Error(f'invalid target grid crs')
             self.grid = gws.TileGrid(
-                corner=p.corner or gws.Corner.nw,
+                origin=p.origin or gws.Origin.nw,
                 tileSize=p.tileSize or _DEFAULT_TILE_SIZE,
                 bounds=gws.Bounds(crs=self.bounds.crs, extent=p.extent),
                 resolutions=p.resolutions)
@@ -419,7 +419,7 @@ class Object(gws.Node, gws.ILayer):
 
         if self.grid:
             p.grid = GridProps(
-                corner=self.grid.corner,
+                origin=self.grid.origin,
                 extent=self.grid.bounds.extent,
                 resolutions=sorted(self.grid.resolutions, reverse=True),
                 tileSize=self.grid.tileSize,

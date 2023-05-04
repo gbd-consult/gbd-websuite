@@ -392,8 +392,8 @@ def _parse_icon(icon, dpi) -> t.Optional[tuple[gws.IXmlElement, float, float]]:
         return
 
     try:
-        w, wu = gws.lib.uom.parse(w, default=gws.Uom.px)
-        h, hu = gws.lib.uom.parse(h, default=gws.Uom.px)
+        w, wu = gws.lib.uom.parse(w, gws.Uom.px)
+        h, hu = gws.lib.uom.parse(h, gws.Uom.px)
     except ValueError:
         gws.log.error(f'xml_icon: invalid units: {w!r} {h!r}')
         return

@@ -72,4 +72,4 @@ class Object(core.Object):
     ##
 
     def props(self, user):
-        return gws.merge(super().props(user), layers=self.layers, type='group')
+        return gws.merge(super().props(user), type='group')

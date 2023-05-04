@@ -26,24 +26,33 @@ if TYPE_CHECKING:
 
 
 Extent = tuple[float, float, float, float]
-"""type: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]."""
+"""type: An array of 4 elements representing extent coordinates ``[minx, miny, maxx, maxy]``."""
 
 Point = tuple[float, float]
-"""type: Point coordinates [x, y]."""
+"""type: Point coordinates ``[x, y]``."""
 
 Size = tuple[float, float]
-"""type: Size [width, height]."""
+"""type: Size ``[width, height]``."""
 
 
-class Corner(Enum):
+class Origin(Enum):
+    """Grid origin."""
     nw = 'nw'
+    """north-west"""
     sw = 'sw'
+    """south-west"""
     ne = 'ne'
+    """north-east"""
     se = 'se'
+    """south-east"""
     lt = 'nw'
+    """left top"""
     lb = 'sw'
+    """left bottom"""
     rt = 'ne'
+    """right top"""
     rb = 'se'
+    """right bottom"""
 
 
 class Uom(Enum):
@@ -98,16 +107,16 @@ class Uom(Enum):
 
 
 Measurement = tuple[float, Uom]
-"""type: A value with a unit."""
+"""type: A value with a unit, like ``"5mm"``."""
 
 MPoint = tuple[float, float, Uom]
 """type: A Point with a unit."""
 
 MSize = tuple[float, float, Uom]
-"""type: A Size with a unit."""
+"""type: A Size with a unit, like ``["1mm", "2mm"]``."""
 
 MExtent = tuple[float, float, float, float, Uom]
-"""type: An Extent with a unit."""
+"""type: An Extent with a unit, like ``["1mm", "2mm", "3mm", "4mm"]``"""
 
 Tag = tuple
 """type: An XML generator tag."""
@@ -119,25 +128,25 @@ DirPath = str
 """type: Valid readable directory path on the server."""
 
 Duration = str
-"""type: String like "1w 2d 3h 4m 5s" or a number of seconds."""
+"""type: A string like ``1w 2d 3h 4m 5s`` or an integer number of seconds."""
 
 Color = str
-"""type: CSS color name."""
+"""type: A CSS color name."""
 
 Regex = str
-"""type: Regular expression, as used in Python."""
+"""type: A regular expression, as used in Python."""
 
 FormatStr = str
-"""type: String with {attribute} placeholders."""
+"""type: A string with ``{attribute}`` placeholders."""
 
 Date = str
-"""type: ISO date like "2019-01-30"."""
+"""type: An ISO date string like ``2019-01-30``."""
 
 DateTime = str
-"""type: ISO date/time like "2019-01-30 01:02:03"."""
+"""type: An ISO datetime string like ``2019-01-30 01:02:03``."""
 
 Url = str
-"""type: Http or https URL."""
+"""type: An http or https URL."""
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -185,7 +194,7 @@ Acl = list[tuple[int, str]]
 """type: Access Control list."""
 
 AclSpec = str
-"""type: A string of comma-separated pairs 'allow <role>' or 'deny <role>'."""
+"""type: A string of comma-separated pairs ``allow <role>`` or ``deny <role>``."""
 
 
 class Access(Enum):
@@ -197,20 +206,24 @@ class Access(Enum):
 
 
 class AccessConfig:
-    """Additional access permissions."""
-    use: Optional[AclSpec]
+    """Access permissions."""
     read: Optional[AclSpec]
+    """permission to read the object"""
     write: Optional[AclSpec]
+    """permission to change the object"""
     create: Optional[AclSpec]
+    """permission to create new objects"""
     delete: Optional[AclSpec]
+    """permission to delete objects"""
     edit: Optional[AclSpec]
+    """read, write, create and delete"""
 
 
 class ConfigWithAccess(Config):
     access: Optional[AclSpec]
     """permission to use the object"""
     permissions: Optional[AccessConfig]
-    """Additional access permissions"""
+    """additional permissions"""
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -682,7 +695,7 @@ class GeometryType(Enum):
 # CRS
 
 CrsName = int | str
-"""type: CRS code like "EPSG:3857" or a srid like 3857."""
+"""type: A CRS code like `EPSG:3857` or a srid like `3857`."""
 
 
 class CrsFormat(Enum):
@@ -1549,105 +1562,105 @@ class Locale(Data):
 
 
 class MetadataLink(Data):
-    """Link metadata"""
+    """Link metadata."""
 
-    description: str
-    format: str
-    formatVersion: str
-    function: str
-    mimeType: str
-    scheme: str
-    title: str
-    type: str
-    url: Url
+    description: Optional[str]
+    format: Optional[str]
+    formatVersion: Optional[str]
+    function: Optional[str]
+    mimeType: Optional[str]
+    scheme: Optional[str]
+    title: Optional[str]
+    type: Optional[str]
+    url: Optional[Url]
 
 
 class MetadataAccessConstraint(Data):
-    title: str
-    type: str
+    title: Optional[str]
+    type: Optional[str]
 
 
 class MetadataLicense(Data):
-    title: str
-    url: Url
+    title: Optional[str]
+    url: Optional[Url]
 
 
 class MetadataAttribution(Data):
-    title: str
-    url: Url
+    title: Optional[str]
+    url: Optional[Url]
 
 
 class Metadata(Data):
-    abstract: str
-    accessConstraints: list[MetadataAccessConstraint]
-    attribution: MetadataAttribution
-    authorityIdentifier: str
-    authorityName: str
-    authorityUrl: str
-    catalogCitationUid: str
-    catalogUid: str
-    fees: str
-    image: str
-    keywords: list[str]
-    language3: str
-    language: str
-    languageName: str
-    license: MetadataLicense
-    name: str
-    parentIdentifier: str
-    title: str
+    abstract: Optional[str]
+    accessConstraints: Optional[list[MetadataAccessConstraint]]
+    attribution: Optional[MetadataAttribution]
+    authorityIdentifier: Optional[str]
+    authorityName: Optional[str]
+    authorityUrl: Optional[str]
+    catalogCitationUid: Optional[str]
+    catalogUid: Optional[str]
+    fees: Optional[str]
+    image: Optional[str]
+    keywords: Optional[list[str]]
+    language3: Optional[str]
+    language: Optional[str]
+    languageName: Optional[str]
+    license: Optional[MetadataLicense]
+    name: Optional[str]
+    parentIdentifier: Optional[str]
+    title: Optional[str]
 
-    contactAddress: str
-    contactAddressType: str
-    contactArea: str
-    contactCity: str
-    contactCountry: str
-    contactEmail: str
-    contactFax: str
-    contactOrganization: str
-    contactPerson: str
-    contactPhone: str
-    contactPosition: str
-    contactProviderName: str
-    contactProviderSite: str
-    contactRole: str
-    contactUrl: str
-    contactZip: str
+    contactAddress: Optional[str]
+    contactAddressType: Optional[str]
+    contactArea: Optional[str]
+    contactCity: Optional[str]
+    contactCountry: Optional[str]
+    contactEmail: Optional[str]
+    contactFax: Optional[str]
+    contactOrganization: Optional[str]
+    contactPerson: Optional[str]
+    contactPhone: Optional[str]
+    contactPosition: Optional[str]
+    contactProviderName: Optional[str]
+    contactProviderSite: Optional[str]
+    contactRole: Optional[str]
+    contactUrl: Optional[str]
+    contactZip: Optional[str]
 
-    dateBegin: str
-    dateCreated: str
-    dateEnd: str
-    dateUpdated: str
+    dateBegin: Optional[str]
+    dateCreated: Optional[str]
+    dateEnd: Optional[str]
+    dateUpdated: Optional[str]
 
-    inspireKeywords: list[str]
-    inspireMandatoryKeyword: str
-    inspireDegreeOfConformity: str
-    inspireResourceType: str
-    inspireSpatialDataServiceType: str
-    inspireSpatialScope: str
-    inspireSpatialScopeName: str
-    inspireTheme: str
-    inspireThemeName: str
-    inspireThemeNameEn: str
+    inspireKeywords: Optional[list[str]]
+    inspireMandatoryKeyword: Optional[str]
+    inspireDegreeOfConformity: Optional[str]
+    inspireResourceType: Optional[str]
+    inspireSpatialDataServiceType: Optional[str]
+    inspireSpatialScope: Optional[str]
+    inspireSpatialScopeName: Optional[str]
+    inspireTheme: Optional[str]
+    inspireThemeName: Optional[str]
+    inspireThemeNameEn: Optional[str]
 
-    isoMaintenanceFrequencyCode: str
-    isoQualityConformanceExplanation: str
-    isoQualityConformanceQualityPass: bool
-    isoQualityConformanceSpecificationDate: str
-    isoQualityConformanceSpecificationTitle: str
-    isoQualityLineageSource: str
-    isoQualityLineageSourceScale: int
-    isoQualityLineageStatement: str
-    isoRestrictionCode: str
-    isoScope: str
-    isoScopeName: str
-    isoSpatialRepresentationType: str
-    isoTopicCategories: list[str]
-    isoSpatialResolution: str
+    isoMaintenanceFrequencyCode: Optional[str]
+    isoQualityConformanceExplanation: Optional[str]
+    isoQualityConformanceQualityPass: Optional[bool]
+    isoQualityConformanceSpecificationDate: Optional[str]
+    isoQualityConformanceSpecificationTitle: Optional[str]
+    isoQualityLineageSource: Optional[str]
+    isoQualityLineageSourceScale: Optional[int]
+    isoQualityLineageStatement: Optional[str]
+    isoRestrictionCode: Optional[str]
+    isoScope: Optional[str]
+    isoScopeName: Optional[str]
+    isoSpatialRepresentationType: Optional[str]
+    isoTopicCategories: Optional[list[str]]
+    isoSpatialResolution: Optional[str]
 
-    metaLinks: list[MetadataLink]
-    serviceMetaLink: MetadataLink
-    extraLinks: list[MetadataLink]
+    metaLinks: Optional[list[MetadataLink]]
+    serviceMetaLink: Optional[MetadataLink]
+    extraLinks: Optional[list[MetadataLink]]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1755,7 +1768,7 @@ class LayerDisplayMode(Enum):
 class TileGrid(Data):
     uid: str
     bounds: Bounds
-    corner: Corner
+    origin: Origin
     resolutions: list[float]
     tileSize: int
 
@@ -1768,9 +1781,13 @@ class LayerCache(Data):
 
 
 class FeatureLoadingStrategy(Enum):
+    """Loading strategy for features."""
     all = 'all'
-    lazy = 'lazy'
+    """load all features"""
     bbox = 'bbox'
+    """load only features in the current map extent"""
+    lazy = 'lazy'
+    """load features on demand"""
 
 
 class ILayer(INode, Protocol):

@@ -137,11 +137,11 @@ _METRIC = {
 }
 
 
-def parse(s: str, default=None) -> gws.Measurement:
+def parse(s: str, default_unit=None) -> gws.Measurement:
     if isinstance(s, (int, float)):
-        if not default:
+        if not default_unit:
             raise ValueError(f'missing unit: {s!r}')
-        return s, default
+        return s, default_unit
 
     s = gws.to_str(s).strip()
     m = _unit_re.match(s)
@@ -152,9 +152,9 @@ def parse(s: str, default=None) -> gws.Measurement:
     u = getattr(gws.Uom, m.group('unit').strip().lower(), None)
 
     if not u:
-        if not default:
+        if not default_unit:
             raise ValueError(f'invalid unit: {s!r}')
-        return n, default
+        return n, default_unit
 
     return n, u
 

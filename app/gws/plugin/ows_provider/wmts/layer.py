@@ -102,7 +102,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
     def configure_grid(self):
         p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
-            corner=p.corner or gws.Corner.nw,
+            origin=p.origin or gws.Origin.nw,
             tileSize=p.tileSize or self.activeTms.matrices[0].tileWidth,
         )
         our_crs = self.bounds.crs
@@ -143,12 +143,12 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
 
         sg = self.provider.grid_for_tms(self.activeTms)
 
-        if sg.corner == gws.Corner.nw:
+        if sg.origin == gws.Origin.nw:
             origin = 'nw'
-        elif sg.corner == gws.Corner.sw:
+        elif sg.origin == gws.Origin.sw:
             origin = 'sw'
         else:
-            raise gws.Error(f'invalid grid corner {sg.corner!r}')
+            raise gws.Error(f'invalid grid origin {sg.origin!r}')
 
         back_grid_uid = mc.grid(gws.compact({
             'origin': origin,

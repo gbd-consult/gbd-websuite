@@ -25,7 +25,7 @@ def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):
     tg = layer.grid
 
     tg.uid = mc.grid(gws.compact({
-        'origin': tg.corner,
+        'origin': tg.origin,
         'tile_size': [tg.tileSize, tg.tileSize],
         'res': tg.resolutions,
         'srs': tg.bounds.crs.epsg,

@@ -30,7 +30,7 @@ class Object(gws.Node, gws.IProvider):
 
         p = self.cfg('grid', default=gws.Config())
         self.grid = gws.TileGrid(
-            corner=p.corner or gws.Corner.nw,
+            origin=p.origin or gws.Origin.nw,
             tileSize=p.tileSize or 256,
         )
         crs = p.crs or gws.gis.crs.WEBMERCATOR
