@@ -381,6 +381,7 @@ code.configref_literal {
     display: inline-block;
     padding: 0 6px;
     margin: 0 3px;
+    vertical-align: middle;
 }
 
 code.configref_typename {
@@ -391,6 +392,7 @@ code.configref_typename {
     padding: 0 6px;
     margin: 0 3px;
     font-weight: 600;
+    vertical-align: middle;
 }
 
 code.configref_category {
@@ -401,6 +403,7 @@ code.configref_category {
     display: inline-block;
     padding: 0 6px;
     margin: 0 3px;
+    vertical-align: middle;
 }
 
 code.configref_propname {
@@ -410,6 +413,7 @@ code.configref_propname {
     display: inline-block;
     padding: 0 6px;
     margin: 0 3px;
+    vertical-align: middle;
 }
 
 code.configref_required {

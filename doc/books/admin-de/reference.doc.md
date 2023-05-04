@@ -34,4 +34,4 @@
 </div>
 
 
-%include __build.configref.de.html
+%include ../../../app/__build/configref.de.html

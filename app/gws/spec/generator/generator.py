@@ -1,6 +1,6 @@
 import os
 
-from . import base, manifest, normalizer, parser, specs, strings, typescript, util
+from . import base, configref, manifest, normalizer, parser, specs, strings, typescript, util
 
 Error = base.Error
 
@@ -23,6 +23,9 @@ def generate_and_store(root_dir=None, out_dir=None, manifest_path=None, debug=Fa
     util.write_file(gen.outDir + '/specs.strings.ini', util.make_ini(gen.strings))
     util.write_file(gen.outDir + '/specs.ts', gen.typescript)
 
+    util.write_file(gen.outDir + '/configref.en.html', gen.configRef['en'])
+    util.write_file(gen.outDir + '/configref.de.html', gen.configRef['de'])
+
 
 def generate_specs(manifest_path=None):
     gen = generate_all(manifest_path=manifest_path)
@@ -30,7 +33,7 @@ def generate_specs(manifest_path=None):
         'meta': gen.meta,
         'chunks': gen.chunks,
         'specs': gen.specs,
-        'strings': gen.strings
+        'strings': gen.strings,
     }
 
 
@@ -59,6 +62,9 @@ def generate_all(root_dir=None, out_dir=None, manifest_path=None, debug=False):
 
     gen.typescript = typescript.create(gen)
     gen.strings = strings.collect(gen)
+
+    gen.configRef['en'] = configref.create(gen, 'en')
+    gen.configRef['de'] = configref.create(gen, 'de')
 
     return gen
 

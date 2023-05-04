@@ -134,10 +134,11 @@ log = _Logger()
 class Generator(Data):
     meta: dict
     types: Dict[str, Type]
-    extRefs: Dict[str, List]
     specs = {}
     typescript = ''
     strings = {}
+
+    configRef = {}
 
     rootDir = ''
     selfDir = ''
@@ -152,7 +153,6 @@ class Generator(Data):
         super().__init__()
         self.aliases = {}
         self.types = {}
-        self.extRefs = {}
 
     def new_type(self, c, **kwargs):
         if kwargs.get('name'):
