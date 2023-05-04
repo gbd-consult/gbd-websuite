@@ -17,12 +17,12 @@ Die GBD WebSuite wird unter der GNU Affero General Public License (AGPL) veröff
 In diesem Benutzerhandbuch werden zum besseren Verständnis verschiedene Schreibstile verwendet.
 
 
-| Formatierung       | Beschreibung                                      |
-|--------------------|---------------------------------------------------|
-| Bedienelement      | Titel des Bedienelements                          |
-| Schältfläche       | Schaltfläche zum Anklicken                        |
-| Parameter          | Parameter mit Eingabemöglichkeit                  |
-| `Verlinkung`       | innerhalb des Handbuchs oder zu externer Webseite |
+| Formatierung          | Beschreibung                                      |
+|-----------------------|---------------------------------------------------|
+| {title Bedienelement} | Titel des Bedienelements                          |
+| {button Schältfläche} | Schaltfläche zum Anklicken                        |
+| {param Parameter}     | Parameter mit Eingabemöglichkeit                  |
+| {link Verlinkung}     | innerhalb des Handbuchs oder zu externer Webseite |
 
 
 ### :function_overview

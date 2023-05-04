@@ -59,8 +59,6 @@ class Section(util.Data):
     htmlBaseUrl: str
     htmlId: str
 
-    walkColor: int
-
 
 class Builder:
     options: util.Data
@@ -69,6 +67,7 @@ class Builder:
     docPaths: set[str]
     assetPaths: set[str]
     sectionMap: dict[str, Section]
+    walkColors: dict[str, int]
     assetMap: dict[str, str]
 
     def __init__(self, options):
@@ -89,6 +88,7 @@ class Builder:
         self.assetPaths = set()
         self.sectionMap = {}
         self.assetMap = {}
+        self.walkColors = {}
 
         self.collect_sources()
         self.parse_all()
@@ -295,10 +295,10 @@ class Builder:
                 util.log.error(f'attempt to relink section {sec.sid!r} for {sec.parentSid!r} to {parent_sec.sid!r}')
             sec.parentSid = parent_sec.sid
 
-        if sec.walkColor == 2:
+        if self.walkColors.get(sec.sid) == 2:
             return
 
-        if sec.walkColor == 1:
+        if self.walkColors.get(sec.sid) == 1:
             util.log.error(f'circular dependency in {sec.sid!r}')
             return
 
@@ -306,7 +306,7 @@ class Builder:
 
         sec.subSids = []
         sec.nodes = []
-        sec.walkColor = 1
+        self.walkColors[sec.sid] = 1
 
         for node in cur_nodes:
 
@@ -336,7 +336,7 @@ class Builder:
 
             sec.nodes.append(node)
 
-        sec.walkColor = 2
+        self.walkColors[sec.sid] = 2
 
     def add_url_and_path(self, sec: Section):
         sl = self.options.htmlSplitLevel or 0
@@ -646,6 +646,7 @@ class MarkdownRenderer(markdown.Renderer):
         paths = [path for path in self.b.assetPaths if path.endswith(el.src)]
         if not paths:
             util.log.error(f'asset not found: {el.src!r} ')
+            el.src = ''
             return super().tag_image(el)
         el.src = self.b.add_asset(paths[0])
         return super().tag_image(el)

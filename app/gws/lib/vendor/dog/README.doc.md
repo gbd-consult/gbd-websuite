@@ -199,6 +199,58 @@ If you have multiple different assets with the same filename, provide just enoug
 
     Look at ![this](bw/picture.jpg)
 
+## Markdown extensions
+
+Dog provides a few extensions to standard Markdown.
+
+### Tables
+
+Tables work as in [GFM](https://github.github.com/gfm/):
+
+    | foo | bar |
+    |-----|-----|
+    | baz | bim |
+
+| foo | bar |
+|-----|-----|
+| baz | bim |
+
+### Autolinks
+
+Everything that looks like a URL is converted to a link:
+
+    Our markdown formatter is https://mistune.lepture.com
+
+>> Our markdown formatter is https://mistune.lepture.com
+
+### Syntax highlighting
+
+A fenced code block with a tag formats the content with [Pygments](https://pygments.org/):
+
+    ```py
+    
+    print("Hi", 40 + 2)  # test
+    
+    ```
+
+```py
+print("Hi", 40 + 2)  # test
+```
+
+
+### Decorations
+
+A decoration looks like `{myclass text}` and generates an HTML `span` element with the class name `decoration_myclass`.
+For example, this Markdown
+
+    Click the {button Exit} button to exit
+
+looks this when rendered:
+
+> > Click the {button Exit} button to exit
+
+provided `.decoration_button` is defined in your css.
+
 ## Commands
 
 Dog supports all Jump commands (like `if` or `include`) and provides a set of its own commands. To avoid excessive escaping, Jump syntax is redefined as

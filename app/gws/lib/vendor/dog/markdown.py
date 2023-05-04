@@ -2,9 +2,11 @@ from typing import List
 
 import mistune
 from mistune import Markdown
-from pygments import highlight
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters.html import HtmlFormatter
+
+import pygments
+import pygments.util
+import pygments.lexers
+import pygments.formatters.html
 
 from . import util
 
@@ -30,10 +32,37 @@ class Element(util.Data):
 
 
 def parser() -> Markdown:
-    return mistune.create_markdown(
+    md = mistune.create_markdown(
         renderer=AstRenderer(),
-        plugins=['table', 'url']
+        plugins=['table', 'url', inline_decoration_plugin]
     )
+    return md
+
+
+# plugin: inline decorations
+# {someclass some text} => <span class="decoration_someclass">some text</span>
+# reference: https://mistune.lepture.com/en/v2.0.5/advanced.html#create-plugins
+
+
+INLINE_DECORATION_PATTERN = r'\{(\w+ .+?)\}'
+
+
+def inline_decoration_plugin(md):
+    md.inline.register_rule('inline_decoration', INLINE_DECORATION_PATTERN, inline_decoration_parser)
+    md.inline.rules.append('inline_decoration')
+
+
+def inline_decoration_parser(inline, m, state):
+    return 'inline_decoration', m.group(1).split(None, 1)
+
+
+##
+
+def process(text):
+    md = parser()
+    els = md(text)
+    rd = Renderer()
+    return ''.join(rd.render_element(el) for el in els)
 
 
 def strip_text_content(el: Element):
@@ -98,26 +127,7 @@ class AstRenderer:
         return Element(type='thematic_break')
 
     def block_code(self, children, info=None):
-        if info:
-            try:
-                lexer = get_lexer_by_name(info, stripall=True)
-                formatter = HtmlFormatter(noclasses=True)
-                res = highlight(children, lexer, formatter)
-                return Element(
-                    type='block_html',
-                    text=res,
-                    info=info
-                )
-            except:
-                # no lexer found
-                pass
-
-        return Element(
-            type='block_code',
-            text=children,
-            info=info
-        )
-        #return '<pre><code>' + mistune.escape(children) + '</code></pre>'
+        return Element(type='block_code', text=children, info=info)
 
     def block_html(self, children):
         return Element(type='block_html', text=children)
@@ -238,7 +248,14 @@ class Renderer:
         return self.render_content(el)
 
     def tag_block_code(self, el: Element):
-        # @TODO syntax highlighting
+        if el.info:
+            try:
+                lexer = pygments.lexers.get_lexer_by_name(el.info, stripall=True)
+                formatter = pygments.formatters.html.HtmlFormatter(noclasses=True)
+                return pygments.highlight(el.text, lexer, formatter)
+            except pygments.util.ClassNotFound:
+                util.log.warning(f'pygments lexer {el.info!r} not found')
+                pass
         c = escape(el.text.strip())
         return f'<pre><code>{c}</code></pre>'
 
@@ -288,6 +305,10 @@ class Renderer:
         if el.align:
             s = f' style="text-align:{el.align}"'
         return f'<{tag}{s}>{c}</{tag}>'
+
+    def tag_inline_decoration(self, el: Element):
+        cls, text = el.children
+        return f'<span class="decoration_{cls}">{text}</span>'
 
 
 def escape(s, quote=True):

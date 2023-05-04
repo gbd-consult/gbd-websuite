@@ -169,9 +169,10 @@ main table tr:nth-child(even) {
 }
 
 main table th {
-    font-weight: 700;
+    font-weight: 600;
     text-align: left;
     background: #f8f8f8;
+    font-variant-caps: small-caps;
 }
 
 figure {
@@ -371,4 +372,92 @@ nav {
     h1, h2, h3 {
         page-break-before: always;
     }
+}
+
+code.configref_literal {
+    background: #e3f2fd;
+    border: none;
+    border-radius: 4px;
+    display: inline-block;
+    padding: 0 6px;
+    margin: 0 3px;
+}
+
+code.configref_typename {
+    background: none;
+    border: none;
+    border-radius: 4px;
+    display: inline-block;
+    padding: 0 6px;
+    margin: 0 3px;
+    font-weight: 600;
+}
+
+code.configref_category {
+    background: #0086c9;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    display: inline-block;
+    padding: 0 6px;
+    margin: 0 3px;
+}
+
+code.configref_propname {
+    background: #fff8e1;
+    border: 1px solid #ffd54f;
+    border-radius: 4px;
+    display: inline-block;
+    padding: 0 6px;
+    margin: 0 3px;
+}
+
+code.configref_required {
+    background: none;
+    border: none;
+    border-radius: 4px;
+    display: inline-block;
+    color: #fa3749;
+    padding: 0 6px;
+    margin: 0 3px;
+    font-weight: 600;
+}
+
+.decoration_title {
+    background: #fdffab;
+    border-radius: 4px;
+    border: 1px solid #9f866a;
+    color: #333;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 3px;
+    padding: 0 6px;
+}
+
+.decoration_button {
+    background: #d8dde0;
+    border-radius: 4px;
+    border: 1px solid #04121c;
+    color: #333;
+    display: inline-block;
+    font-size: 12px;
+    margin: 0 3px;
+    padding: 0 6px;
+}
+
+.decoration_param {
+    background: #e8f2fa;
+    border-radius: 4px;
+    border: 1px solid #7fbbe3;
+    color: #333;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 3px;
+    padding: 0 6px;
+}
+
+.decoration_link {
+    color: #0277bd;
 }

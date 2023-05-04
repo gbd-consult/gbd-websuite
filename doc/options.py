@@ -5,10 +5,15 @@ SELF_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.realpath(SELF_DIR + '/../')
 DOC_DIR = SELF_DIR
 APP_DIR = ROOT_DIR + '/app'
+BUILD_DIR = APP_DIR + '/__build'
 
 VERSION, _, _ = open(APP_DIR + '/VERSION').read().strip().rpartition('.')
 
 OPTIONS = {
+
+    'docDir': DOC_DIR,
+    'appDir': APP_DIR,
+    'buildDir': BUILD_DIR,
 
     # docs options (see lib/vendor/dog)
 
@@ -54,9 +59,6 @@ OPTIONS = {
     },
 
     # apidoc options (see make_api)
-
-    'docDir': DOC_DIR,
-    'appDir': APP_DIR,
 
     'apidocWebRoot': f'/apidoc/{VERSION}',
 
