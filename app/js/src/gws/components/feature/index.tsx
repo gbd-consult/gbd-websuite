@@ -78,7 +78,7 @@ export class List extends React.PureComponent<ListProps> {
             controller={this.props.controller}
             items={this.props.features}
             content={contentFn}
-            uid={f => f.uid}
+            uid={f => f.model.uid + '::' + f.uid}
             isSelected={this.props.isSelected}
             leftButton={this.props.withZoom
                 ? f => <list.Button className="cmpListZoomListButton" whenTouched={() => zoom(f)}/>

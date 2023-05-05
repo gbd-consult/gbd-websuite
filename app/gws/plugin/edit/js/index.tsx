@@ -597,6 +597,12 @@ class FormTab extends gws.View<ViewProps> {
         await cc.whenMounted()
     }
 
+    // async componentDidUpdate() {
+    //     console.log('FormTab componentDidUpdate')
+    //     let cc = _master(this).formTabController;
+    //     await cc.whenMounted()
+    // }
+    //
     render() {
         let cc = _master(this).formTabController;
         let es = this.props.editState;
@@ -739,8 +745,11 @@ class FeatureListWidgetHelper extends Helper implements WidgetHelper {
             attributes[relField.name] = [sf];
         }
 
+        let feature = await this.master.createFeature(relModel, attributes, null);
+        await this.master.formTabController.updateRelatedFeatures(feature);
+
         this.master.pushFeature(sf);
-        this.master.selectFeature(await this.master.createFeature(relModel, attributes, null));
+        this.master.selectFeature(feature);
         this.master.closeDialog();
     }
 
@@ -753,6 +762,18 @@ class FeatureListWidgetHelper extends Helper implements WidgetHelper {
             relations: field.relations,
             whenRelationSelected: rel => this.whenRelationSelected(field, rel),
         });
+    }
+
+    async whenEditButtonTouched(field: gws.types.IModelField, feature: gws.types.IFeature) {
+        let es = this.editState;
+        let sf = es.selectedFeature;
+        let loaded = await this.master.loadFeatureForForm(feature);
+        if (loaded) {
+            await this.master.formTabController.updateRelatedFeatures(loaded);
+            this.master.pushFeature(sf);
+            this.master.selectFeature(loaded);
+            this.master.panToFeature(loaded);
+        }
     }
 
     whenLinkedFeatureSelected(field, feature) {
@@ -774,17 +795,6 @@ class FeatureListWidgetHelper extends Helper implements WidgetHelper {
             whenFeatureTouched: feature => this.whenLinkedFeatureSelected(field, feature),
             whenSearchChanged: val => this.master.formTabController.whenSearchChanged(field, val),
         });
-    }
-
-    async whenEditButtonTouched(field: gws.types.IModelField, feature: gws.types.IFeature) {
-        let es = this.editState;
-        let sf = es.selectedFeature;
-        let loaded = await this.master.loadFeatureForForm(feature);
-        if (loaded) {
-            this.master.pushFeature(sf);
-            this.master.selectFeature(loaded);
-            this.master.panToFeature(loaded);
-        }
     }
 
     whenUnlinkButtonTouched(field: gws.types.IModelField, feature: gws.types.IFeature) {
@@ -831,14 +841,8 @@ class FormTabController extends Helper {
         let sf = this.editState.selectedFeature;
         if (!sf)
             return;
-
         this.master.updateEditState({formErrors: []});
-
-        for (let field of sf.model.fields) {
-            if (field.attributeType === gws.api.core.AttributeType.feature) {
-                await this.loadRelatedFeatures(field)
-            }
-        }
+        await this.updateRelatedFeatures(sf);
     }
 
     async whenSaveButtonTouched() {
@@ -920,6 +924,14 @@ class FormTabController extends Helper {
         }
 
         return controller.view(props)
+    }
+
+    async updateRelatedFeatures(feature) {
+        for (let field of feature.model.fields) {
+            if (field.attributeType === gws.api.core.AttributeType.feature) {
+                await this.loadRelatedFeatures(field)
+            }
+        }
     }
 
     async loadRelatedFeatures(field: gws.types.IModelField) {

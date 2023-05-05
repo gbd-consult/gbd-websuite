@@ -1,0 +1,168 @@
+@comment
+
+Editing 1:M relationships to multiple tables:
+
+    baustelle ->> kanalarbeiten
+    baustelle ->> sperrung
+    baustelle ->> umleitung
+    baustelle ->> verkehrsschild
+
+
+@end
+
+projects+ {
+    title "Edit: mutitable relationship"
+    metadata.abstract "Editing related features from multiple tables."
+
+    api.actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        crs 25832
+        center {demo_point_duesseldorf_25832}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_multi_baustelle"
+        tableName "baustellen.baustelle"
+        title "Baustellen"
+        permissions.edit "allow all"
+
+        fields+ {
+            name "id"
+            type "integer"
+            title "ID"
+            isPrimaryKey true
+            permissions.edit "deny all"
+        }
+
+        fields+ {
+            name "name"
+            type "text"
+            title "Name"
+            isRequired true
+            textSearch { type "any" }
+        }
+        fields+ {
+            name "beginn"
+            type "date"
+            title "Beginn"
+        }
+        fields+ {
+            name "ende"
+            type "date"
+            title "Ende"
+        }
+        fields+ {
+            name "relatedObjects"
+            title "Objekte"
+            type "relatedMultiFeatureList"
+            relations [
+                { modelUid "model_multi_kanalarbeiten"  fieldName "relatedBaustelle" }
+                { modelUid "model_multi_sperrung"       fieldName "relatedBaustelle" }
+#                { modelUid "model_multi_umleitung"      fieldName "relatedBaustelle" }
+#                { modelUid "model_multi_verkehrsschild" fieldName "relatedBaustelle" }
+            ]
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{@if feature.isNew}} Unbenannt {{@else}} {{name}} {{@end}}"
+        }
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_multi_kanalarbeiten"
+        tableName "baustellen.kanalarbeiten"
+        permissions.edit "allow all"
+        title "Kanalarbeiten"
+
+        fields+ {
+            name "id"
+            type "integer"
+            title "ID"
+            isPrimaryKey true
+            permissions.edit "deny all"
+        }
+
+        fields+ {
+            name "beschreibung"
+            type "text"
+            title "Beschreibung"
+            widget { type "textarea" height 150 }
+        }
+
+        fields+ {
+            name "relatedBaustelle"
+            title "Baustelle"
+            type "relatedFeature"
+            relation {
+                modelUid "model_multi_baustelle"
+
+            }
+            foreignKey {
+                name "baustelle_id"
+            }
+        }
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "Kanalarbeiten: {{beschreibung}}"
+        }
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_multi_sperrung"
+        tableName "baustellen.sperrung"
+        permissions.edit "allow all"
+        title "Sperrung"
+
+        fields+ {
+            name "id"
+            type "integer"
+            title "ID"
+            isPrimaryKey true
+            permissions.edit "deny all"
+        }
+
+        fields+ {
+            name "art"
+            type "text"
+            title "Art"
+        }
+
+        fields+ {
+            name "beschreibung"
+            type "text"
+            title "Beschreibung"
+            widget { type "textarea" height 150 }
+        }
+
+        fields+ {
+            name "relatedBaustelle"
+            title "Baustelle"
+            type "relatedFeature"
+            relation {
+                modelUid "model_multi_baustelle"
+            }
+            foreignKey {
+                name "baustelle_id"
+            }
+        }
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "Sperrung: {{beschreibung}}"
+        }
+    }
+
+    {demo_osm_background}
+}

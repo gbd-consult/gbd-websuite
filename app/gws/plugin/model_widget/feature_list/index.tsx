@@ -17,9 +17,6 @@ interface Props extends gws.types.ModelWidgetProps {
 
 class View extends gws.View<Props> {
     buttons(selectedFeature) {
-        let cc = this.props.controller;
-        let field = this.props.field;
-
         return <React.Fragment>
             {this.props.whenNewButtonTouched && <Cell>
                 <gws.ui.Button
@@ -68,12 +65,15 @@ class View extends gws.View<Props> {
         let cc = this.props.controller;
         let uid = this.props.widgetProps.uid;
 
-        let selectedFeatureUid = cc.getValue('editState')['widget' + uid];
+        let selection = cc.getValue('editState')['widget' + uid] || {};
 
         let selectedFeature = null;
-        for (let f of features)
-            if (f.uid === selectedFeatureUid)
-                selectedFeature = f;
+        for (let feature of features) {
+            if (feature.model.uid === selection.modelUid && feature.uid === selection.uid) {
+                selectedFeature = feature;
+                break;
+            }
+        }
 
         let zoomTo = f => cc.update({
             marker: {
@@ -82,9 +82,9 @@ class View extends gws.View<Props> {
             }
         });
 
-        let select = f => cc.updateObject('editState', {
-            ['widget' + uid]: f.uid,
-        })
+        let select = feature => cc.updateObject('editState', {
+            ['widget' + uid]: {modelUid: feature.model.uid, uid: feature.uid}
+        });
 
         let leftButton = f => {
             if (f.geometryName)
@@ -107,7 +107,7 @@ class View extends gws.View<Props> {
                     content={f.views.title}
                     whenTouched={() => select(f)}
                 />}
-                isSelected={f => f.uid === selectedFeatureUid}
+                isSelected={f => f === selectedFeature}
                 leftButton={leftButton}
             />
             <gws.ui.Row className="cmpFormListToolbar">

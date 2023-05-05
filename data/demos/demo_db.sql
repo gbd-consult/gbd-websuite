@@ -1,3 +1,90 @@
+create schema if not exists baustellen;
+
+drop table if exists baustellen.kanalarbeiten cascade;
+drop table if exists baustellen.sperrung cascade;
+drop table if exists baustellen.umleitung cascade;
+drop table if exists baustellen.verkehrsschild cascade;
+drop table if exists baustellen.baustelle cascade;
+
+create table baustellen.baustelle
+(
+    id           int primary key generated always as identity,
+    name         varchar,
+    beginn       date,
+    ende         date
+);
+
+create table baustellen.kanalarbeiten
+(
+    id           int primary key generated always as identity,
+    beschreibung text,
+    geom         geometry(Polygon, 25832),
+    baustelle_id int,
+    foreign key (baustelle_id) references baustellen.baustelle (id)
+
+);
+
+create table baustellen.sperrung
+(
+    id           int primary key generated always as identity,
+    art          varchar,
+    beschreibung text,
+    geom         geometry(Point, 25832),
+    baustelle_id int,
+    foreign key (baustelle_id) references baustellen.baustelle (id)
+);
+
+create table baustellen.umleitung
+(
+    id           int primary key generated always as identity,
+    beschreibung text,
+    geom         geometry(LineString, 25832),
+    baustelle_id int,
+    foreign key (baustelle_id) references baustellen.baustelle (id)
+);
+
+create table baustellen.verkehrsschild
+(
+    id           int primary key generated always as identity,
+    vznummer     varchar,
+    beschreibung text,
+    geom         geometry(Point, 25832),
+    baustelle_id int,
+    foreign key (baustelle_id) references baustellen.baustelle (id)
+
+);
+
+
+
+insert into baustellen.baustelle(name, beginn, ende)
+values ('Sanierung Citadellstraße', '2021-06-01', '2023-06-01'),
+       ('Sanierung Fürstenwall', '2021-06-01', '2023-12-14');
+
+
+insert into baustellen.kanalarbeiten (baustelle_id, beschreibung)
+values (1, 'Citadellstraße'),
+       (2, 'Fürstenwall');
+
+insert into baustellen.sperrung (baustelle_id, art, beschreibung)
+values (1, 'voll', 'Kasernenstraße / Bastionstraße'),
+       (1, 'rechts', 'Königsallee / Graf-Adolf-Platz'),
+       (2, 'links', 'Breite Straße');
+
+insert into baustellen.umleitung (baustelle_id, beschreibung)
+values (1, 'Citadellstraße 56'),
+       (2, 'Fürstenwall');
+
+insert into baustellen.verkehrsschild (baustelle_id, beschreibung, vznummer)
+values (1, 'Einfahrt verboten', '267'),
+       (1, 'verengte Fahrbahn rechts', '121-10'),
+       (2, 'verengte Fahrbahn links', '121-20'),
+       (2, 'Einfahrt verboten', '267');
+
+
+---------------------------------------------------------------------
+
+create schema if not exists edit;
+
 drop table if exists edit.poi cascade;
 drop table if exists edit.poi_small cascade;
 drop table if exists edit.person cascade;
