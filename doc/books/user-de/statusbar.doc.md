@@ -1,4 +1,4 @@
-## Statusleiste :/user-de/statusbar
+# Statusleiste :/user-de/statusbar
 
 Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebSuite, unterteilt in die Bereiche Werkzeug-, Menü- und Statusleiste.
 
@@ -8,7 +8,7 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 |-------------------------------|-------------------------------------------------------|-----------------------------------------------|
 | ![](zoom-in-24px.svg) 	|[Hineinzoomen](/user-de/zoomin)           		|In die Karte Hineinzoomen                	|
 | ![](zoom-out-24px.svg)   	|[Herauszoomen](/user-de/zoomout)            		|Aus der Karte Herauszoomen               	|
-| ![](zoom-24.svg)  		|[Ganzes Projekt anzeigen](/user-de/zoomproject)	|Herauszoomen auf die Ausmaße des Projekts	|
+| ![](zoom_reset_24px.svg)	|[Ganzes Projekt anzeigen](/user-de/zoomproject)	|Herauszoomen auf die Ausmaße des Projekts	|
 | ![](xy.png)   		|[Koordinatenanzeige](/user-de/coordinates)    		|Zeigt die Koordinaten der Mausposition an	|
 | ![](massstab.png)   		|[Maßstab](/user-de/scale)	                  	|Ablesen des aktuellen Kartenmaßstabs     	|
 | ![](rotation.png)   		|[Rotation](/user-de/rotation)                   	|Ablesen der aktuellen Kartenrotation     	|
@@ -19,4 +19,13 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <infobar>`
 
+## Hineinzoomen :/user-de/
+## Herauszoomen :/user-de/	
+## Ganzes Projekt anzeigen :/user-de/
+## Koordinatenanzeige :/user-de/
+## Maßstab :/user-de/
+## Rotation :/user-de/
+## Zurück zur Startseite :/user-de/
+## Hilfe :/user-de/
+## Informationen zur GBD WebSuite :/user-de/
 

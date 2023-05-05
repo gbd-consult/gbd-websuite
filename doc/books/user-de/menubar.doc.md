@@ -6,26 +6,26 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 
 **Menüleiste**
 
-| Symbol                                | Funktion                   				| Funktionsbeschreibung                         |
-|---------------------------------------|-------------------------------------------------------|-----------------------------------------------|
-| ![](baseline-menu-24px.svg)          	| [Menü](/user-de/submenu)				| Untermenü aus- und zuklappen			|
-| ![](baseline-person-24px.svg)		| [Anmelden](/user-de/sign_in)         			| Benutzer an- und abmelden	 		|
-| ![](gbd-icon-auswahl-01.svg)        	| [Auswahl](/user-de/select)  				| Liste ausgewählter Objekte anzeigen    	|
-| ![](bplan.svg)          		| [Bauleitplanung](/user-de/) 				| Daten der Bauleitplanung administrieren       |
-| ![](gbd-icon-bemassung-02.svg)      	| [Bemaßung](/user-de/dimensions)  			| Liste bemaßter Objekte anzeigen          	|
-| ![](sharp-edit-24px.svg) 		| [Digitalisieren](/user-de/search) 			| Objekte digitalisieren               		|
-| ![](gbd-icon-flurstuecksuche-01.svg) 	| [Flurstücksuche](/user-de/cadastral_unit_searching)	| Flurstücksuche             			|
-| ![](baseline-layers-24px.svg)        	| [Layer](/user-de/layers)       			| Layerstruktur anzeigen    			|
-| ![](directions_black_24dp.svg)	| [Location Manager](/user-de/location_manager)  	| Location Manager        			|
-| ![](gbd-icon-markieren-messen-01.svg)	| [Markierungen](/user-de/marking)    			| Markierungen verwalten        		|
-| ![](person_search_black_24dp.svg)     | [Personen Informationen](/user-de/select)  		| Liste der selektierten Objekte    		|
-| ![](map-24px.svg)        		| [Projektübersicht](/user-de/project_overview)		| Anzeigen der Projektübersicht    		|
-| ![](baseline-search-24px.svg)        	| [Suche](/user-de/search)  				| Suche    					|
-| ![](table_view_black_24dp.svg)       	| [Tabellen editieren](/user-de/select) 		| Attributtabelle eines Layers editieren   	|
+| Symbol                                | Funktion                   					| Funktionsbeschreibung                         |
+|---------------------------------------|---------------------------------------------------------------|-----------------------------------------------|
+| ![](baseline-menu-24px.svg)          	| [Menü](/user-de/menubar.menu)					| Untermenü aus- und zuklappen			|
+| ![](baseline-person-24px.svg)		| [Anmelden](/user-de/menubar.sign-in)  			| Benutzer an- und abmelden	 		|
+| ![](gbd-icon-auswahl-01.svg)        	| [Auswahl](/user-de/menubar.select)  				| Liste ausgewählter Objekte anzeigen    	|
+| ![](bplan.svg)          		| [Bauleitplanung](/user-de/menubar.bplan)			| Daten der Bauleitplanung administrieren       |
+| ![](gbd-icon-bemassung-02.svg)      	| [Bemaßung](/user-de/menubar.dimensions)  			| Liste bemaßter Objekte anzeigen          	|
+| ![](sharp-edit-24px.svg) 		| [Digitalisieren](/user-de/menubar.digitize) 			| Objekte digitalisieren               		|
+| ![](gbd-icon-flurstuecksuche-01.svg) 	| [Flurstücksuche](/user-de/menubar.cadastral_unit_searching)	| Flurstücksuche             			|
+| ![](baseline-layers-24px.svg)        	| [Layer](/user-de/menubar.layers)       			| Layerstruktur anzeigen    			|
+| ![](directions_black_24px.svg)	| [Location Manager](/user-de/menubar.location_manager)  	| Location Manager        			|
+| ![](gbd-icon-markieren-messen-01.svg)	| [Markierungen](/user-de/menubar.marking)    			| Markierungen verwalten        		|
+| ![](person_search-24px.svg)     	| [Personen Informationen](/user-de/menubar.person_search)	| Liste der selektierten Objekte    		|
+| ![](map-24px.svg)        		| [Projektübersicht](/user-de/menubar.project_overview)		| Anzeigen der Projektübersicht    		|
+| ![](baseline-search-24px.svg)        	| [Suche](/user-de/menubar.search)  				| Suche    					|
+| ![](table_view_black_24px.svg)       	| [Tabellen editieren](/user-de/menubar.tableview) 		| Attributtabelle eines Layers editieren   	|
 
 
 ## Menü :/user-de/
-## Anmelden :/user-de/	
+## Anmelden :/user-de/menubar.sign-in
 ## Auswahl :/user-de/
 ## Bauleitplanung :/user-de/
 ## Bemaßung :/user-de/
