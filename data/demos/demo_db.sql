@@ -8,10 +8,10 @@ drop table if exists baustellen.baustelle cascade;
 
 create table baustellen.baustelle
 (
-    id           int primary key generated always as identity,
-    name         varchar,
-    beginn       date,
-    ende         date
+    id     int primary key generated always as identity,
+    name   varchar,
+    beginn date,
+    ende   date
 );
 
 create table baustellen.kanalarbeiten
@@ -43,56 +43,40 @@ create table baustellen.umleitung
     foreign key (baustelle_id) references baustellen.baustelle (id)
 );
 
-create table baustellen.verkehrsschild
-(
-    id           int primary key generated always as identity,
-    vznummer     varchar,
-    beschreibung text,
-    geom         geometry(Point, 25832),
-    baustelle_id int,
-    foreign key (baustelle_id) references baustellen.baustelle (id)
+INSERT INTO baustellen.baustelle (name, beginn, ende)
+VALUES ('Altstadt', '2021-06-01', '2023-12-14');
+INSERT INTO baustellen.baustelle (name, beginn, ende)
+VALUES ('Carlstadt', '2021-06-01', '2023-06-01');
 
-);
+INSERT INTO baustellen.kanalarbeiten (beschreibung, geom, baustelle_id)
+VALUES ('Burgplatz', '0103000020E864000001000000050000001E85EBED1005154148E13AAC58A85541F5285C4705051541CDCCCC7465A85541B91E85A782041541E27A144C63A855415D8FC28D74041541713D0A0E57A855411E85EBED1005154148E13AAC58A85541', 1);
+INSERT INTO baustellen.kanalarbeiten (beschreibung, geom, baustelle_id)
+VALUES ('Carlsplatz', '0103000020E86400000100000005000000D7A370B5E7071541C3F568EFF1A755416766663AF3071541AF47A16DFFA75541CECCCC0CD0061541275C0F5800A85541F7285CE7B906154183EBD1A2F2A75541D7A370B5E7071541C3F568EFF1A75541', 2);
 
+INSERT INTO baustellen.sperrung (art, beschreibung, geom, baustelle_id)
+VALUES ('rechts', 'Kurze Straße', '0101000020E86400007A14AEE77606154115AE47EC58A85541', 1);
+INSERT INTO baustellen.sperrung (art, beschreibung, geom, baustelle_id)
+VALUES ('links', 'Bolkerstraße', '0101000020E8640000FFFFFF3F9C061541B81E85D341A85541', 1);
+INSERT INTO baustellen.sperrung (art, beschreibung, geom, baustelle_id)
+VALUES ('voll', 'Hohe Straße', '0101000020E864000013AE4705000815418FC295D8EEA75541', 2);
 
-
-insert into baustellen.baustelle(name, beginn, ende)
-values ('Sanierung Citadellstraße', '2021-06-01', '2023-06-01'),
-       ('Sanierung Fürstenwall', '2021-06-01', '2023-12-14');
-
-
-insert into baustellen.kanalarbeiten (baustelle_id, beschreibung)
-values (1, 'Citadellstraße'),
-       (2, 'Fürstenwall');
-
-insert into baustellen.sperrung (baustelle_id, art, beschreibung)
-values (1, 'voll', 'Kasernenstraße / Bastionstraße'),
-       (1, 'rechts', 'Königsallee / Graf-Adolf-Platz'),
-       (2, 'links', 'Breite Straße');
-
-insert into baustellen.umleitung (baustelle_id, beschreibung)
-values (1, 'Citadellstraße 56'),
-       (2, 'Fürstenwall');
-
-insert into baustellen.verkehrsschild (baustelle_id, beschreibung, vznummer)
-values (1, 'Einfahrt verboten', '267'),
-       (1, 'verengte Fahrbahn rechts', '121-10'),
-       (2, 'verengte Fahrbahn links', '121-20'),
-       (2, 'Einfahrt verboten', '267');
+INSERT INTO baustellen.umleitung (beschreibung, geom, baustelle_id)
+VALUES ('Zollstraße', '0102000020E8640000030000003D0AD76FC70515411F85AB2357A85541EB51B83E200615417B146E0037A85541D7A3702576041541295C8F6035A85541', 1);
+INSERT INTO baustellen.umleitung (beschreibung, geom, baustelle_id)
+VALUES ('Bastionstraße', '0102000020E864000003000000C3F528DC6C061541F6285C16C5A75541C3F5288CD707154147E13A08C4A75541CDCCCC3CF107154114AE47D5DEA75541', 2);
 
 
 ---------------------------------------------------------------------
 
 create schema if not exists edit;
-
 drop table if exists edit.poi cascade;
 drop table if exists edit.poi_small cascade;
 drop table if exists edit.person cascade;
 drop table if exists edit.district cascade;
-drop table if exists edit.fclass cascade;
+drop table if exists edit.category cascade;
 
 
-create table edit.fclass
+create table edit.category
 (
     id          int  not null primary key,
     name_de     text not null,
@@ -110,8 +94,8 @@ create table edit.poi
     image       bytea default null,
     description text  default null,
     geom        geometry(Point, 3857),
-    fclass_id   int,
-    foreign key (fclass_id) references edit.fclass (id)
+    category_id int,
+    foreign key (category_id) references edit.category (id)
 );
 
 create table edit.poi_small
@@ -124,8 +108,8 @@ create table edit.poi_small
     image       bytea default null,
     description text  default null,
     geom        geometry(Point, 3857),
-    fclass_id   int,
-    foreign key (fclass_id) references edit.fclass (id)
+    category_id int,
+    foreign key (category_id) references edit.category (id)
 );
 
 create table edit.district
@@ -150,7 +134,7 @@ create table edit.person
 
 --
 
-insert into edit.fclass (id, name_de, name_en)
+insert into edit.category (id, name_de, name_en)
 values (1, 'Bäckerei', 'backery'),
        (2, 'Bank', 'bank'),
        (3, 'Bar', 'bar'),
@@ -167,7 +151,7 @@ values (1, 'Bäckerei', 'backery'),
 
 
 
-insert into edit.poi (fclass_id, name, geom)
+insert into edit.poi (category_id, name, geom)
 values (12, 'Haus Rheingarten', '0101000020110F00009408A3A8E9D9264175EF387E05735941'),
        (13, 'basic Bio-Supermarkt', '0101000020110F000013F2831B83052741D71B52BB43675941'),
        (12, 'Gut Moschenhof', '0101000020110F00001441C2AB875A2741599FF65D4F6E5941'),
@@ -2882,7 +2866,7 @@ insert into edit.poi_small
  image,
  description,
  geom,
- fclass_id)
+ category_id)
 select name,
        updated,
        code,
@@ -2890,6 +2874,6 @@ select name,
        image,
        description,
        geom,
-       fclass_id
+       category_id
 from edit.poi
 where id % (1 + random() * 100)::int = 0;

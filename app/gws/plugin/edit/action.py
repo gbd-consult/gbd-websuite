@@ -78,9 +78,7 @@ class Object(gws.base.action.Object):
         project = req.require_project(p.projectUid)
 
         search = gws.SearchQuery(
-            access=gws.Access.write,
             project=project,
-            bounds=project.map.bounds,
             tolerance=_DEFAULT_TOLERANCE,
         )
 
@@ -100,8 +98,6 @@ class Object(gws.base.action.Object):
 
         for model_uid in p.modelUids:
             model = req.require_model(model_uid)
-            if not req.user.can_write(model):
-                continue
             features = model.find_features(search, req.user)
             props.extend(self._feature_props(req, p, features))
 

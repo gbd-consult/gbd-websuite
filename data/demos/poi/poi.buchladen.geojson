@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 208,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Buch in Bilk"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 340,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Mayersche"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 445,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Bolland & Böttcher"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 600,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Buchhandlung Dietsch"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 615,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Bücherstube Eller"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 719,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Antiquariat Querido"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 855,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Werstenbuch"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 1012,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Heinrich Heine Antiquariat"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 1060,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Frank Petzchen Kochbücher"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 1074,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "BiBaBuZe"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 1123,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Müller & Böhm Literaturhandlung"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 1157,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Buchhandlung Walther König in der Kunsthalle"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 1338,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Bücher Müchler"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 1469,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Buchhandlung Gossens"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 1517,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "BOOXYCLE"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 1582,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Garather Buchhandlung"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 1608,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "HörbuchHandlung Romeike"
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 1631,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "WHSmith"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 1633,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Bücherarche in Benrath"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 1708,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": null
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 1733,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Regenbogen Buchhandlung"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 1764,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Der Bücher Ober - bookstore"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 1799,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Bookstore Nippon"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 1859,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": null
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 1892,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Mayersche M"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 1966,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Buchhandlung Gossens junior"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 1974,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Schulz & Schulz Bücher"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 1998,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Mayersche"
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 2033,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Antique"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 2057,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Jokers"
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 2068,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Christliche Bücherstube"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 2120,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Takagi - Books & More"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 2151,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "INFINIBU"
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 2152,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Antiquariat"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 2153,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Max Apel"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 2155,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Buchhandlung Lesezeit"
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 2190,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Mayersche Buchhandlung"
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 2286,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Lehmanns"
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 2334,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Die BücherFee"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 2438,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Antiquariat Querido – Kunst"
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 2515,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Varia Vardar"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 2550,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Musik Fratz"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 2613,
-                "fclass": "Buchladen",
+                "category": "Buchladen",
                 "name": "Thalia"
             }
         }

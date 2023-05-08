@@ -61,7 +61,7 @@ class Object(gws.Node, gws.IModel):
         if not desc:
             return False
         for col in desc.columns.values():
-            if col.relation:
+            if col.isForeignKey:
                 # we do not configure relations automatically
                 # treating them as scalars leads to conflicts in sa Table classes
                 continue

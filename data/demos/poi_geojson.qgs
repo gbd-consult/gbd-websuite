@@ -597,7 +597,7 @@
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -614,22 +614,22 @@
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -639,7 +639,7 @@
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -673,12 +673,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -965,7 +965,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -982,22 +982,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -1007,7 +1007,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -1041,12 +1041,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -1333,7 +1333,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -1350,22 +1350,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -1375,7 +1375,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -1409,12 +1409,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -1701,7 +1701,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -1718,22 +1718,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -1743,7 +1743,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -1777,12 +1777,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -2069,7 +2069,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -2086,22 +2086,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -2111,7 +2111,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -2145,12 +2145,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -2437,7 +2437,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -2454,22 +2454,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -2479,7 +2479,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -2513,12 +2513,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -2805,7 +2805,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -2822,22 +2822,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -2847,7 +2847,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -2881,12 +2881,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -3173,7 +3173,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -3190,22 +3190,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -3215,7 +3215,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -3249,12 +3249,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -3541,7 +3541,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -3558,22 +3558,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -3583,7 +3583,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -3617,12 +3617,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -3909,7 +3909,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -3926,22 +3926,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -3951,7 +3951,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -3985,12 +3985,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -4277,7 +4277,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -4294,22 +4294,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -4319,7 +4319,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -4353,12 +4353,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -4645,7 +4645,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -4662,22 +4662,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -4687,7 +4687,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -4721,12 +4721,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>
@@ -5013,7 +5013,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -5030,22 +5030,22 @@ def my_form_open(dialog, layer, feature):
       </fieldConfiguration>
       <aliases>
         <alias field="id" name="" index="0"/>
-        <alias field="fclass" name="" index="1"/>
+        <alias field="category" name="" index="1"/>
         <alias field="name" name="" index="2"/>
       </aliases>
       <defaults>
         <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="fclass" applyOnUpdate="0" expression=""/>
+        <default field="category" applyOnUpdate="0" expression=""/>
         <default field="name" applyOnUpdate="0" expression=""/>
       </defaults>
       <constraints>
         <constraint field="id" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
-        <constraint field="fclass" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
+        <constraint field="category" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
         <constraint field="name" unique_strength="0" constraints="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
         <constraint field="id" exp="" desc=""/>
-        <constraint field="fclass" exp="" desc=""/>
+        <constraint field="category" exp="" desc=""/>
         <constraint field="name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
@@ -5055,7 +5055,7 @@ def my_form_open(dialog, layer, feature):
       <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
         <columns>
           <column width="-1" hidden="0" type="field" name="id"/>
-          <column width="-1" hidden="0" type="field" name="fclass"/>
+          <column width="-1" hidden="0" type="field" name="category"/>
           <column width="-1" hidden="0" type="field" name="name"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
@@ -5089,12 +5089,12 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="fclass" editable="1"/>
+        <field name="category" editable="1"/>
         <field name="id" editable="1"/>
         <field name="name" editable="1"/>
       </editable>
       <labelOnTop>
-        <field labelOnTop="0" name="fclass"/>
+        <field labelOnTop="0" name="category"/>
         <field labelOnTop="0" name="id"/>
         <field labelOnTop="0" name="name"/>
       </labelOnTop>

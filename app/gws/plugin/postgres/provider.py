@@ -88,11 +88,16 @@ class Object(gws.base.database.provider.Object):
             return table_name
         return 'public.' + table_name
 
-    def parse_table_name(self, table_name):
+    def split_table_name(self, table_name):
         if '.' in table_name:
             schema, name = table_name.split('.')
             return schema, name
         return 'public', table_name
+
+    def join_table_name(self, table_name, schema=None):
+        if not schema and '.' in table_name:
+            schema, name = table_name.split('.')
+        return schema + '.' + table_name
 
     def table_bounds(self, table_name):
         desc = self.describe(table_name)

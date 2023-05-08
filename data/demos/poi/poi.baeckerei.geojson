@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 89,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäckerei"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 98,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Schrage"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 134,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Busch"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 142,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäckerei"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 153,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Busch"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 156,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 157,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Pass"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 173,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Pass"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 185,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Oehme"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 194,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 206,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps Bäcker & Stehcafe"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 223,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "brötchenLaden"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 244,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei & Konditorei Schrage"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 249,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Busch's Backstube"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 250,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 253,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 264,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 277,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 278,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Damla"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 284,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäckerei Düsseldorf"
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 289,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 309,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Pass"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 326,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 331,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Brotkörbchen Garath"
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 344,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 345,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 358,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 363,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Hußels"
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 404,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 412,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 418,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Pass"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 420,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Schüren"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 426,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Pass"
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 438,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Kamps"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 443,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 456,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 460,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 474,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 492,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 495,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Allee-Café"
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 496,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 498,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Café Bäckerei Kronen"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 499,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Al Afrah"
             }
         },
@@ -663,7 +663,7 @@
             },
             "properties": {
                 "id": 503,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -678,7 +678,7 @@
             },
             "properties": {
                 "id": 529,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Pass"
             }
         },
@@ -693,7 +693,7 @@
             },
             "properties": {
                 "id": 537,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Schneider"
             }
         },
@@ -708,7 +708,7 @@
             },
             "properties": {
                 "id": 538,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -723,7 +723,7 @@
             },
             "properties": {
                 "id": 539,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -738,7 +738,7 @@
             },
             "properties": {
                 "id": 545,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäckerei"
             }
         },
@@ -753,7 +753,7 @@
             },
             "properties": {
                 "id": 550,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -768,7 +768,7 @@
             },
             "properties": {
                 "id": 554,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -783,7 +783,7 @@
             },
             "properties": {
                 "id": 569,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -798,7 +798,7 @@
             },
             "properties": {
                 "id": 571,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Le Crobag"
             }
         },
@@ -813,7 +813,7 @@
             },
             "properties": {
                 "id": 579,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Mmmh... lecker!"
             }
         },
@@ -828,7 +828,7 @@
             },
             "properties": {
                 "id": 580,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Backwerk"
             }
         },
@@ -843,7 +843,7 @@
             },
             "properties": {
                 "id": 581,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Brezel Bub'"
             }
         },
@@ -858,7 +858,7 @@
             },
             "properties": {
                 "id": 586,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Simon's Brotkörbchen"
             }
         },
@@ -873,7 +873,7 @@
             },
             "properties": {
                 "id": 589,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Le Crobag"
             }
         },
@@ -888,7 +888,7 @@
             },
             "properties": {
                 "id": 593,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -903,7 +903,7 @@
             },
             "properties": {
                 "id": 594,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -918,7 +918,7 @@
             },
             "properties": {
                 "id": 597,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Pass"
             }
         },
@@ -933,7 +933,7 @@
             },
             "properties": {
                 "id": 598,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -948,7 +948,7 @@
             },
             "properties": {
                 "id": 608,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Ditsch"
             }
         },
@@ -963,7 +963,7 @@
             },
             "properties": {
                 "id": 609,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -978,7 +978,7 @@
             },
             "properties": {
                 "id": 618,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "siebrecht"
             }
         },
@@ -993,7 +993,7 @@
             },
             "properties": {
                 "id": 628,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Orientalische Bäckerei Afren"
             }
         },
@@ -1008,7 +1008,7 @@
             },
             "properties": {
                 "id": 636,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -1023,7 +1023,7 @@
             },
             "properties": {
                 "id": 652,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Wolfgang Frick"
             }
         },
@@ -1038,7 +1038,7 @@
             },
             "properties": {
                 "id": 654,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei PASS"
             }
         },
@@ -1053,7 +1053,7 @@
             },
             "properties": {
                 "id": 655,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Ingensandt"
             }
         },
@@ -1068,7 +1068,7 @@
             },
             "properties": {
                 "id": 656,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Ditsch"
             }
         },
@@ -1083,7 +1083,7 @@
             },
             "properties": {
                 "id": 677,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -1098,7 +1098,7 @@
             },
             "properties": {
                 "id": 698,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Pass"
             }
         },
@@ -1113,7 +1113,7 @@
             },
             "properties": {
                 "id": 699,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -1128,7 +1128,7 @@
             },
             "properties": {
                 "id": 703,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäckerei"
             }
         },
@@ -1143,7 +1143,7 @@
             },
             "properties": {
                 "id": 709,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Behmer"
             }
         },
@@ -1158,7 +1158,7 @@
             },
             "properties": {
                 "id": 711,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Back-König"
             }
         },
@@ -1173,7 +1173,7 @@
             },
             "properties": {
                 "id": 713,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "herzhaft & süß"
             }
         },
@@ -1188,7 +1188,7 @@
             },
             "properties": {
                 "id": 718,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Cölven"
             }
         },
@@ -1203,7 +1203,7 @@
             },
             "properties": {
                 "id": 728,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Karl"
             }
         },
@@ -1218,7 +1218,7 @@
             },
             "properties": {
                 "id": 739,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Back Factory"
             }
         },
@@ -1233,7 +1233,7 @@
             },
             "properties": {
                 "id": 758,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Pass"
             }
         },
@@ -1248,7 +1248,7 @@
             },
             "properties": {
                 "id": 766,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -1263,7 +1263,7 @@
             },
             "properties": {
                 "id": 771,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Pass"
             }
         },
@@ -1278,7 +1278,7 @@
             },
             "properties": {
                 "id": 775,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Schusters"
             }
         },
@@ -1293,7 +1293,7 @@
             },
             "properties": {
                 "id": 777,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Wolf"
             }
         },
@@ -1308,7 +1308,7 @@
             },
             "properties": {
                 "id": 780,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Wolff"
             }
         },
@@ -1323,7 +1323,7 @@
             },
             "properties": {
                 "id": 790,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -1338,7 +1338,7 @@
             },
             "properties": {
                 "id": 808,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Horsthemke"
             }
         },
@@ -1353,7 +1353,7 @@
             },
             "properties": {
                 "id": 810,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -1368,7 +1368,7 @@
             },
             "properties": {
                 "id": 813,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "il panino"
             }
         },
@@ -1383,7 +1383,7 @@
             },
             "properties": {
                 "id": 838,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Pass"
             }
         },
@@ -1398,7 +1398,7 @@
             },
             "properties": {
                 "id": 841,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Busch's"
             }
         },
@@ -1413,7 +1413,7 @@
             },
             "properties": {
                 "id": 845,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Zimtstern"
             }
         },
@@ -1428,7 +1428,7 @@
             },
             "properties": {
                 "id": 852,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -1443,7 +1443,7 @@
             },
             "properties": {
                 "id": 854,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -1458,7 +1458,7 @@
             },
             "properties": {
                 "id": 859,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Schneider"
             }
         },
@@ -1473,7 +1473,7 @@
             },
             "properties": {
                 "id": 862,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäckerei"
             }
         },
@@ -1488,7 +1488,7 @@
             },
             "properties": {
                 "id": 877,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Ko"
             }
         },
@@ -1503,7 +1503,7 @@
             },
             "properties": {
                 "id": 881,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "SB macht glücklich"
             }
         },
@@ -1518,7 +1518,7 @@
             },
             "properties": {
                 "id": 890,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Nur"
             }
         },
@@ -1533,7 +1533,7 @@
             },
             "properties": {
                 "id": 894,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Wolff"
             }
         },
@@ -1548,7 +1548,7 @@
             },
             "properties": {
                 "id": 918,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäckerei"
             }
         },
@@ -1563,7 +1563,7 @@
             },
             "properties": {
                 "id": 919,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -1578,7 +1578,7 @@
             },
             "properties": {
                 "id": 929,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Wolff"
             }
         },
@@ -1593,7 +1593,7 @@
             },
             "properties": {
                 "id": 939,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Peter Lück"
             }
         },
@@ -1608,7 +1608,7 @@
             },
             "properties": {
                 "id": 952,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -1623,7 +1623,7 @@
             },
             "properties": {
                 "id": 984,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Puppe"
             }
         },
@@ -1638,7 +1638,7 @@
             },
             "properties": {
                 "id": 1003,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Christophel"
             }
         },
@@ -1653,7 +1653,7 @@
             },
             "properties": {
                 "id": 1005,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Puppe"
             }
         },
@@ -1668,7 +1668,7 @@
             },
             "properties": {
                 "id": 1006,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -1683,7 +1683,7 @@
             },
             "properties": {
                 "id": 1008,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Oehme"
             }
         },
@@ -1698,7 +1698,7 @@
             },
             "properties": {
                 "id": 1021,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -1713,7 +1713,7 @@
             },
             "properties": {
                 "id": 1042,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Nur / Nur Firini"
             }
         },
@@ -1728,7 +1728,7 @@
             },
             "properties": {
                 "id": 1043,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Delicious Bakery"
             }
         },
@@ -1743,7 +1743,7 @@
             },
             "properties": {
                 "id": 1049,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Back König"
             }
         },
@@ -1758,7 +1758,7 @@
             },
             "properties": {
                 "id": 1059,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Evertzberg"
             }
         },
@@ -1773,7 +1773,7 @@
             },
             "properties": {
                 "id": 1061,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Hinkel"
             }
         },
@@ -1788,7 +1788,7 @@
             },
             "properties": {
                 "id": 1084,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Back Werk"
             }
         },
@@ -1803,7 +1803,7 @@
             },
             "properties": {
                 "id": 1144,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -1818,7 +1818,7 @@
             },
             "properties": {
                 "id": 1166,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Busch´s Backstube"
             }
         },
@@ -1833,7 +1833,7 @@
             },
             "properties": {
                 "id": 1173,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Hinkel"
             }
         },
@@ -1848,7 +1848,7 @@
             },
             "properties": {
                 "id": 1192,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Terbuyken"
             }
         },
@@ -1863,7 +1863,7 @@
             },
             "properties": {
                 "id": 1195,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Karadenz"
             }
         },
@@ -1878,7 +1878,7 @@
             },
             "properties": {
                 "id": 1202,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Simon's Brotkörbchen"
             }
         },
@@ -1893,7 +1893,7 @@
             },
             "properties": {
                 "id": 1258,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -1908,7 +1908,7 @@
             },
             "properties": {
                 "id": 1261,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäcker Schüren"
             }
         },
@@ -1923,7 +1923,7 @@
             },
             "properties": {
                 "id": 1265,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Winkels"
             }
         },
@@ -1938,7 +1938,7 @@
             },
             "properties": {
                 "id": 1270,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "backWerk"
             }
         },
@@ -1953,7 +1953,7 @@
             },
             "properties": {
                 "id": 1280,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -1968,7 +1968,7 @@
             },
             "properties": {
                 "id": 1299,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Hinkel"
             }
         },
@@ -1983,7 +1983,7 @@
             },
             "properties": {
                 "id": 1334,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Backtreff"
             }
         },
@@ -1998,7 +1998,7 @@
             },
             "properties": {
                 "id": 1342,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -2013,7 +2013,7 @@
             },
             "properties": {
                 "id": 1347,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Hercules Vollkorn- und Mühlenbäckerei"
             }
         },
@@ -2028,7 +2028,7 @@
             },
             "properties": {
                 "id": 1352,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -2043,7 +2043,7 @@
             },
             "properties": {
                 "id": 1365,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -2058,7 +2058,7 @@
             },
             "properties": {
                 "id": 1366,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Back-König"
             }
         },
@@ -2073,7 +2073,7 @@
             },
             "properties": {
                 "id": 1378,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Bernhard Schmalz"
             }
         },
@@ -2088,7 +2088,7 @@
             },
             "properties": {
                 "id": 1393,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Busch's Backstube"
             }
         },
@@ -2103,7 +2103,7 @@
             },
             "properties": {
                 "id": 1396,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -2118,7 +2118,7 @@
             },
             "properties": {
                 "id": 1398,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäcker Wolff"
             }
         },
@@ -2133,7 +2133,7 @@
             },
             "properties": {
                 "id": 1401,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäckerei"
             }
         },
@@ -2148,7 +2148,7 @@
             },
             "properties": {
                 "id": 1413,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Peter Lück"
             }
         },
@@ -2163,7 +2163,7 @@
             },
             "properties": {
                 "id": 1415,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Casablanca"
             }
         },
@@ -2178,7 +2178,7 @@
             },
             "properties": {
                 "id": 1418,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -2193,7 +2193,7 @@
             },
             "properties": {
                 "id": 1427,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Wolff"
             }
         },
@@ -2208,7 +2208,7 @@
             },
             "properties": {
                 "id": 1430,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -2223,7 +2223,7 @@
             },
             "properties": {
                 "id": 1431,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Unterbacher Backtreff"
             }
         },
@@ -2238,7 +2238,7 @@
             },
             "properties": {
                 "id": 1436,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Simon's Brotkörbchen"
             }
         },
@@ -2253,7 +2253,7 @@
             },
             "properties": {
                 "id": 1464,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Rheinische Backkultur Terbuyken"
             }
         },
@@ -2268,7 +2268,7 @@
             },
             "properties": {
                 "id": 1490,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Ditsch"
             }
         },
@@ -2283,7 +2283,7 @@
             },
             "properties": {
                 "id": 1492,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oebel"
             }
         },
@@ -2298,7 +2298,7 @@
             },
             "properties": {
                 "id": 1514,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Puppe"
             }
         },
@@ -2313,7 +2313,7 @@
             },
             "properties": {
                 "id": 1515,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Pass"
             }
         },
@@ -2328,7 +2328,7 @@
             },
             "properties": {
                 "id": 1520,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Oebel"
             }
         },
@@ -2343,7 +2343,7 @@
             },
             "properties": {
                 "id": 1533,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Hinkel"
             }
         },
@@ -2358,7 +2358,7 @@
             },
             "properties": {
                 "id": 1541,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Mr. Baker"
             }
         },
@@ -2373,7 +2373,7 @@
             },
             "properties": {
                 "id": 1559,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Hünemeyer"
             }
         },
@@ -2388,7 +2388,7 @@
             },
             "properties": {
                 "id": 1564,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäcker"
             }
         },
@@ -2403,7 +2403,7 @@
             },
             "properties": {
                 "id": 1585,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -2418,7 +2418,7 @@
             },
             "properties": {
                 "id": 1598,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -2433,7 +2433,7 @@
             },
             "properties": {
                 "id": 1606,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -2448,7 +2448,7 @@
             },
             "properties": {
                 "id": 1612,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäckerei"
             }
         },
@@ -2463,7 +2463,7 @@
             },
             "properties": {
                 "id": 1628,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Ihr Bäcker Schüren - Filiale Düsseldorf - Oberkassel"
             }
         },
@@ -2478,7 +2478,7 @@
             },
             "properties": {
                 "id": 1632,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -2493,7 +2493,7 @@
             },
             "properties": {
                 "id": 1635,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Schüren"
             }
         },
@@ -2508,7 +2508,7 @@
             },
             "properties": {
                 "id": 1653,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei / Café"
             }
         },
@@ -2523,7 +2523,7 @@
             },
             "properties": {
                 "id": 1673,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Stehkcafe Hüneneyer"
             }
         },
@@ -2538,7 +2538,7 @@
             },
             "properties": {
                 "id": 1676,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -2553,7 +2553,7 @@
             },
             "properties": {
                 "id": 1677,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Puppe"
             }
         },
@@ -2568,7 +2568,7 @@
             },
             "properties": {
                 "id": 1692,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Puppe"
             }
         },
@@ -2583,7 +2583,7 @@
             },
             "properties": {
                 "id": 1699,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Büsch"
             }
         },
@@ -2598,7 +2598,7 @@
             },
             "properties": {
                 "id": 1754,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -2613,7 +2613,7 @@
             },
             "properties": {
                 "id": 1769,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Hammer Brotkorb Hinkel"
             }
         },
@@ -2628,7 +2628,7 @@
             },
             "properties": {
                 "id": 1772,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -2643,7 +2643,7 @@
             },
             "properties": {
                 "id": 1783,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -2658,7 +2658,7 @@
             },
             "properties": {
                 "id": 1784,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Behmer"
             }
         },
@@ -2673,7 +2673,7 @@
             },
             "properties": {
                 "id": 1796,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -2688,7 +2688,7 @@
             },
             "properties": {
                 "id": 1800,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Japanische Bäckerei Taka"
             }
         },
@@ -2703,7 +2703,7 @@
             },
             "properties": {
                 "id": 1810,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bakery My Heart"
             }
         },
@@ -2718,7 +2718,7 @@
             },
             "properties": {
                 "id": 1822,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Büsch"
             }
         },
@@ -2733,7 +2733,7 @@
             },
             "properties": {
                 "id": 1823,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bolten"
             }
         },
@@ -2748,7 +2748,7 @@
             },
             "properties": {
                 "id": 1826,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Winkels"
             }
         },
@@ -2763,7 +2763,7 @@
             },
             "properties": {
                 "id": 1834,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -2778,7 +2778,7 @@
             },
             "properties": {
                 "id": 1836,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Back-Insel"
             }
         },
@@ -2793,7 +2793,7 @@
             },
             "properties": {
                 "id": 1838,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -2808,7 +2808,7 @@
             },
             "properties": {
                 "id": 1841,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -2823,7 +2823,7 @@
             },
             "properties": {
                 "id": 1848,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Backwerk"
             }
         },
@@ -2838,7 +2838,7 @@
             },
             "properties": {
                 "id": 1849,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäcker"
             }
         },
@@ -2853,7 +2853,7 @@
             },
             "properties": {
                 "id": 1867,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -2868,7 +2868,7 @@
             },
             "properties": {
                 "id": 1875,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -2883,7 +2883,7 @@
             },
             "properties": {
                 "id": 1882,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -2898,7 +2898,7 @@
             },
             "properties": {
                 "id": 1887,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -2913,7 +2913,7 @@
             },
             "properties": {
                 "id": 1893,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -2928,7 +2928,7 @@
             },
             "properties": {
                 "id": 1899,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäcker"
             }
         },
@@ -2943,7 +2943,7 @@
             },
             "properties": {
                 "id": 1912,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Büsch"
             }
         },
@@ -2958,7 +2958,7 @@
             },
             "properties": {
                 "id": 1939,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Serhat Firin"
             }
         },
@@ -2973,7 +2973,7 @@
             },
             "properties": {
                 "id": 1950,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Christophel"
             }
         },
@@ -2988,7 +2988,7 @@
             },
             "properties": {
                 "id": 1973,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Kamps"
             }
         },
@@ -3003,7 +3003,7 @@
             },
             "properties": {
                 "id": 1975,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Terbuyken"
             }
         },
@@ -3018,7 +3018,7 @@
             },
             "properties": {
                 "id": 1976,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäcker Wolf"
             }
         },
@@ -3033,7 +3033,7 @@
             },
             "properties": {
                 "id": 1980,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -3048,7 +3048,7 @@
             },
             "properties": {
                 "id": 1985,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bastian´s"
             }
         },
@@ -3063,7 +3063,7 @@
             },
             "properties": {
                 "id": 2023,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäcker"
             }
         },
@@ -3078,7 +3078,7 @@
             },
             "properties": {
                 "id": 2024,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Leziz Frühstückbuffet"
             }
         },
@@ -3093,7 +3093,7 @@
             },
             "properties": {
                 "id": 2036,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -3108,7 +3108,7 @@
             },
             "properties": {
                 "id": 2059,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme"
             }
         },
@@ -3123,7 +3123,7 @@
             },
             "properties": {
                 "id": 2060,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Manufactum - Brot&Butter"
             }
         },
@@ -3138,7 +3138,7 @@
             },
             "properties": {
                 "id": 2061,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Schneider"
             }
         },
@@ -3153,7 +3153,7 @@
             },
             "properties": {
                 "id": 2065,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -3168,7 +3168,7 @@
             },
             "properties": {
                 "id": 2102,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Simon's Brotkörbchen"
             }
         },
@@ -3183,7 +3183,7 @@
             },
             "properties": {
                 "id": 2108,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Oehme Brot & Kuchen"
             }
         },
@@ -3198,7 +3198,7 @@
             },
             "properties": {
                 "id": 2128,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Pass"
             }
         },
@@ -3213,7 +3213,7 @@
             },
             "properties": {
                 "id": 2130,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Schneider (im Netto)"
             }
         },
@@ -3228,7 +3228,7 @@
             },
             "properties": {
                 "id": 2174,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stehcafé Tiggelkamp"
             }
         },
@@ -3243,7 +3243,7 @@
             },
             "properties": {
                 "id": 2189,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -3258,7 +3258,7 @@
             },
             "properties": {
                 "id": 2230,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Stadtbäcker Westerhorstmann"
             }
         },
@@ -3273,7 +3273,7 @@
             },
             "properties": {
                 "id": 2295,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Back-Eck"
             }
         },
@@ -3288,7 +3288,7 @@
             },
             "properties": {
                 "id": 2298,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Wolff"
             }
         },
@@ -3303,7 +3303,7 @@
             },
             "properties": {
                 "id": 2306,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Glomm"
             }
         },
@@ -3318,7 +3318,7 @@
             },
             "properties": {
                 "id": 2328,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Simon's Brötchen"
             }
         },
@@ -3333,7 +3333,7 @@
             },
             "properties": {
                 "id": 2372,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -3348,7 +3348,7 @@
             },
             "properties": {
                 "id": 2382,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -3363,7 +3363,7 @@
             },
             "properties": {
                 "id": 2384,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -3378,7 +3378,7 @@
             },
             "properties": {
                 "id": 2385,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Büsch"
             }
         },
@@ -3393,7 +3393,7 @@
             },
             "properties": {
                 "id": 2390,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -3408,7 +3408,7 @@
             },
             "properties": {
                 "id": 2391,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Kamps"
             }
         },
@@ -3423,7 +3423,7 @@
             },
             "properties": {
                 "id": 2406,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Pass"
             }
         },
@@ -3438,7 +3438,7 @@
             },
             "properties": {
                 "id": 2409,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Terbuyken"
             }
         },
@@ -3453,7 +3453,7 @@
             },
             "properties": {
                 "id": 2441,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Puppe"
             }
         },
@@ -3468,7 +3468,7 @@
             },
             "properties": {
                 "id": 2445,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": null
             }
         },
@@ -3483,7 +3483,7 @@
             },
             "properties": {
                 "id": 2498,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Büsch"
             }
         },
@@ -3498,7 +3498,7 @@
             },
             "properties": {
                 "id": 2500,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Obel"
             }
         },
@@ -3513,7 +3513,7 @@
             },
             "properties": {
                 "id": 2508,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Konditorei Glomm"
             }
         },
@@ -3528,7 +3528,7 @@
             },
             "properties": {
                 "id": 2537,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Middelberg"
             }
         },
@@ -3543,7 +3543,7 @@
             },
             "properties": {
                 "id": 2560,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Bäckerei Zanders"
             }
         },
@@ -3558,7 +3558,7 @@
             },
             "properties": {
                 "id": 2625,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Orientalische Bäckerei"
             }
         },
@@ -3573,7 +3573,7 @@
             },
             "properties": {
                 "id": 2626,
-                "fclass": "Bäckerei",
+                "category": "Bäckerei",
                 "name": "Orientalische Bäckerei"
             }
         }

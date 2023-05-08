@@ -1046,11 +1046,19 @@ class ColumnDescription(Data):
     isAutoincrement: bool
     isNullable: bool
     isPrimaryKey: bool
+    isForeignKey: bool
     name: str
     nativeType: str
     options: dict
-    relation: str
     type: AttributeType
+
+
+class RelationshipDescription(Data):
+    name: str
+    schema: str
+    fullName: str
+    foreignKeys: str
+    referredKeys: str
 
 
 class DataSetDescription(Data):
@@ -1062,6 +1070,7 @@ class DataSetDescription(Data):
     geometryName: str
     geometryType: GeometryType
     geometrySrid: int
+    relationships: list[RelationshipDescription]
 
 
 class SelectStatement(Data):
@@ -1094,7 +1103,9 @@ class IDatabaseProvider(IProvider, Protocol):
 
     def qualified_table_name(self, table_name: str) -> str: ...
 
-    def parse_table_name(self, table_name: str) -> tuple[str, str]: ...
+    def split_table_name(self, table_name: str) -> tuple[str, str]: ...
+
+    def join_table_name(self, table_name: str, schema: str = None) -> str: ...
 
     def table(self, table_name: str, columns: list['sqlalchemy.Column'] = None, **kwargs) -> 'sqlalchemy.Table': ...
 

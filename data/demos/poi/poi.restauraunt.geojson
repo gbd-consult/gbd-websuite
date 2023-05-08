@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 1,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Haus Rheingarten"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 3,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gut Moschenhof"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 4,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Am Bauenhaus"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 8,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lauren's Cafe"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 10,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "fu chu yuan"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 14,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Taj Mahal"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 16,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hai Xian"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 17,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Han-Kook Kwan"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 30,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kagoya"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 35,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sila Thai"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 36,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Akropolis"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 37,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Korea"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 44,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "The Bosporus"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 52,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "nineOfive"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 72,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Konaq"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 80,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Red Mado"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 82,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 85,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bar Olio"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 86,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "El Olivio"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 94,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kaisershaus"
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 104,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "la Grilladine"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 115,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mythos"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 119,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Da Gino"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 139,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Da Franco"
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 145,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Asia Thai"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 146,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Theodorus Doras Platon"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 147,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Alde Brück"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 158,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Haus Ausleger"
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 165,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "A'Marina"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 166,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pattaya Island"
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 168,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Monte Cristo"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 169,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Khao homo"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 170,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Palmenhaus"
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 175,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Drei Amigos"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 186,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Syrtaki"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 188,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "The Classic Western Steakhouse"
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 190,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Brauhaus Rittel"
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 192,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Löffelbar"
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 196,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gut Knittkuhle"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 201,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rohbau"
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 203,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ugly Deluxe"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 204,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gallo Nero"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 209,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "S-Manufaktur"
             }
         },
@@ -663,7 +663,7 @@
             },
             "properties": {
                 "id": 215,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vereinsheim Schwarz-Weiss 06"
             }
         },
@@ -678,7 +678,7 @@
             },
             "properties": {
                 "id": 221,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Amor Grill"
             }
         },
@@ -693,7 +693,7 @@
             },
             "properties": {
                 "id": 225,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gaststätte Netz"
             }
         },
@@ -708,7 +708,7 @@
             },
             "properties": {
                 "id": 230,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cucina Farina"
             }
         },
@@ -723,7 +723,7 @@
             },
             "properties": {
                 "id": 233,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pssst Bandido"
             }
         },
@@ -738,7 +738,7 @@
             },
             "properties": {
                 "id": 234,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Valentino"
             }
         },
@@ -753,7 +753,7 @@
             },
             "properties": {
                 "id": 238,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mila Tapas y mas"
             }
         },
@@ -768,7 +768,7 @@
             },
             "properties": {
                 "id": 239,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Haus am Rhein"
             }
         },
@@ -783,7 +783,7 @@
             },
             "properties": {
                 "id": 241,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hotel Restaurant Pigage"
             }
         },
@@ -798,7 +798,7 @@
             },
             "properties": {
                 "id": 243,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "El Paso"
             }
         },
@@ -813,7 +813,7 @@
             },
             "properties": {
                 "id": 245,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria GiGi"
             }
         },
@@ -828,7 +828,7 @@
             },
             "properties": {
                 "id": 247,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Toscana‎"
             }
         },
@@ -843,7 +843,7 @@
             },
             "properties": {
                 "id": 252,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kastanie"
             }
         },
@@ -858,7 +858,7 @@
             },
             "properties": {
                 "id": 256,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Alte Rheinfähre"
             }
         },
@@ -873,7 +873,7 @@
             },
             "properties": {
                 "id": 257,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Burghof"
             }
         },
@@ -888,7 +888,7 @@
             },
             "properties": {
                 "id": 263,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Coa Wok & Bowls"
             }
         },
@@ -903,7 +903,7 @@
             },
             "properties": {
                 "id": 274,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Bora – Cuccini"
             }
         },
@@ -918,7 +918,7 @@
             },
             "properties": {
                 "id": 276,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Monza"
             }
         },
@@ -933,7 +933,7 @@
             },
             "properties": {
                 "id": 279,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Athos Taverne"
             }
         },
@@ -948,7 +948,7 @@
             },
             "properties": {
                 "id": 282,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hausbar"
             }
         },
@@ -963,7 +963,7 @@
             },
             "properties": {
                 "id": 287,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Richarder Grill-Stube"
             }
         },
@@ -978,7 +978,7 @@
             },
             "properties": {
                 "id": 290,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizza Pazza"
             }
         },
@@ -993,7 +993,7 @@
             },
             "properties": {
                 "id": 293,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ep's"
             }
         },
@@ -1008,7 +1008,7 @@
             },
             "properties": {
                 "id": 295,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Grill Stübchen"
             }
         },
@@ -1023,7 +1023,7 @@
             },
             "properties": {
                 "id": 296,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "San Remo"
             }
         },
@@ -1038,7 +1038,7 @@
             },
             "properties": {
                 "id": 307,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kirti's Dhaba"
             }
         },
@@ -1053,7 +1053,7 @@
             },
             "properties": {
                 "id": 308,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Luce"
             }
         },
@@ -1068,7 +1068,7 @@
             },
             "properties": {
                 "id": 311,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Barca"
             }
         },
@@ -1083,7 +1083,7 @@
             },
             "properties": {
                 "id": 312,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Osteria Massimo Milano"
             }
         },
@@ -1098,7 +1098,7 @@
             },
             "properties": {
                 "id": 315,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Brasserie Hülsmann"
             }
         },
@@ -1113,7 +1113,7 @@
             },
             "properties": {
                 "id": 320,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "sumi."
             }
         },
@@ -1128,7 +1128,7 @@
             },
             "properties": {
                 "id": 321,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Aldo Genovese"
             }
         },
@@ -1143,7 +1143,7 @@
             },
             "properties": {
                 "id": 322,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Auf'm Hennekamp bei Iljias"
             }
         },
@@ -1158,7 +1158,7 @@
             },
             "properties": {
                 "id": 323,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Bottella"
             }
         },
@@ -1173,7 +1173,7 @@
             },
             "properties": {
                 "id": 324,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Vulcanello"
             }
         },
@@ -1188,7 +1188,7 @@
             },
             "properties": {
                 "id": 328,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kebap Haus"
             }
         },
@@ -1203,7 +1203,7 @@
             },
             "properties": {
                 "id": 332,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casita Mexicana Pempelfort"
             }
         },
@@ -1218,7 +1218,7 @@
             },
             "properties": {
                 "id": 335,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mayflower"
             }
         },
@@ -1233,7 +1233,7 @@
             },
             "properties": {
                 "id": 336,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Safran"
             }
         },
@@ -1248,7 +1248,7 @@
             },
             "properties": {
                 "id": 337,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Teatro Piu"
             }
         },
@@ -1263,7 +1263,7 @@
             },
             "properties": {
                 "id": 339,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Venezia"
             }
         },
@@ -1278,7 +1278,7 @@
             },
             "properties": {
                 "id": 346,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lila Mond"
             }
         },
@@ -1293,7 +1293,7 @@
             },
             "properties": {
                 "id": 348,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Shanghai Garden"
             }
         },
@@ -1308,7 +1308,7 @@
             },
             "properties": {
                 "id": 350,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -1323,7 +1323,7 @@
             },
             "properties": {
                 "id": 352,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lindenhof"
             }
         },
@@ -1338,7 +1338,7 @@
             },
             "properties": {
                 "id": 355,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Bella Vista"
             }
         },
@@ -1353,7 +1353,7 @@
             },
             "properties": {
                 "id": 368,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Saltimbocca"
             }
         },
@@ -1368,7 +1368,7 @@
             },
             "properties": {
                 "id": 372,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Al Tramonto"
             }
         },
@@ -1383,7 +1383,7 @@
             },
             "properties": {
                 "id": 373,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Stern Stube"
             }
         },
@@ -1398,7 +1398,7 @@
             },
             "properties": {
                 "id": 374,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hong Kong"
             }
         },
@@ -1413,7 +1413,7 @@
             },
             "properties": {
                 "id": 377,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gaststätte F.C. Tannenhof 1950 e.V."
             }
         },
@@ -1428,7 +1428,7 @@
             },
             "properties": {
                 "id": 380,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria del Pesce"
             }
         },
@@ -1443,7 +1443,7 @@
             },
             "properties": {
                 "id": 382,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cucina die Casa"
             }
         },
@@ -1458,7 +1458,7 @@
             },
             "properties": {
                 "id": 387,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Casita"
             }
         },
@@ -1473,7 +1473,7 @@
             },
             "properties": {
                 "id": 388,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Oh Sushi"
             }
         },
@@ -1488,7 +1488,7 @@
             },
             "properties": {
                 "id": 389,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rosengarten"
             }
         },
@@ -1503,7 +1503,7 @@
             },
             "properties": {
                 "id": 390,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Shang Hai"
             }
         },
@@ -1518,7 +1518,7 @@
             },
             "properties": {
                 "id": 391,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Platia"
             }
         },
@@ -1533,7 +1533,7 @@
             },
             "properties": {
                 "id": 392,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Amici"
             }
         },
@@ -1548,7 +1548,7 @@
             },
             "properties": {
                 "id": 393,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "ANDREJ's Oyster Bar & Restaurant"
             }
         },
@@ -1563,7 +1563,7 @@
             },
             "properties": {
                 "id": 394,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vamps"
             }
         },
@@ -1578,7 +1578,7 @@
             },
             "properties": {
                 "id": 395,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Yabase"
             }
         },
@@ -1593,7 +1593,7 @@
             },
             "properties": {
                 "id": 396,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizza Novitá"
             }
         },
@@ -1608,7 +1608,7 @@
             },
             "properties": {
                 "id": 397,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mekong"
             }
         },
@@ -1623,7 +1623,7 @@
             },
             "properties": {
                 "id": 398,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gogi Matcha"
             }
         },
@@ -1638,7 +1638,7 @@
             },
             "properties": {
                 "id": 402,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Active"
             }
         },
@@ -1653,7 +1653,7 @@
             },
             "properties": {
                 "id": 407,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Weiße Nächte"
             }
         },
@@ -1668,7 +1668,7 @@
             },
             "properties": {
                 "id": 408,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "What's Beef"
             }
         },
@@ -1683,7 +1683,7 @@
             },
             "properties": {
                 "id": 417,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pane & Vino"
             }
         },
@@ -1698,7 +1698,7 @@
             },
             "properties": {
                 "id": 422,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casa Mattoni"
             }
         },
@@ -1713,7 +1713,7 @@
             },
             "properties": {
                 "id": 425,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "RESTAURANT SPOERL FABRIK"
             }
         },
@@ -1728,7 +1728,7 @@
             },
             "properties": {
                 "id": 427,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schwan"
             }
         },
@@ -1743,7 +1743,7 @@
             },
             "properties": {
                 "id": 428,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cocos"
             }
         },
@@ -1758,7 +1758,7 @@
             },
             "properties": {
                 "id": 429,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "D'Vine"
             }
         },
@@ -1773,7 +1773,7 @@
             },
             "properties": {
                 "id": 430,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Menta"
             }
         },
@@ -1788,7 +1788,7 @@
             },
             "properties": {
                 "id": 432,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bernstein & Inbar"
             }
         },
@@ -1803,7 +1803,7 @@
             },
             "properties": {
                 "id": 435,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ristorante Agave"
             }
         },
@@ -1818,7 +1818,7 @@
             },
             "properties": {
                 "id": 437,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Weise"
             }
         },
@@ -1833,7 +1833,7 @@
             },
             "properties": {
                 "id": 442,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Va Veloce Due"
             }
         },
@@ -1848,7 +1848,7 @@
             },
             "properties": {
                 "id": 446,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zur Sennhütte"
             }
         },
@@ -1863,7 +1863,7 @@
             },
             "properties": {
                 "id": 447,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Chiang Mai"
             }
         },
@@ -1878,7 +1878,7 @@
             },
             "properties": {
                 "id": 451,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bauernstube Deppe"
             }
         },
@@ -1893,7 +1893,7 @@
             },
             "properties": {
                 "id": 452,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hirschchen"
             }
         },
@@ -1908,7 +1908,7 @@
             },
             "properties": {
                 "id": 455,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria"
             }
         },
@@ -1923,7 +1923,7 @@
             },
             "properties": {
                 "id": 464,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Maredo (Königsallee)"
             }
         },
@@ -1938,7 +1938,7 @@
             },
             "properties": {
                 "id": 467,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria La Noce"
             }
         },
@@ -1953,7 +1953,7 @@
             },
             "properties": {
                 "id": 468,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tannenbaum"
             }
         },
@@ -1968,7 +1968,7 @@
             },
             "properties": {
                 "id": 470,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tavernaki"
             }
         },
@@ -1983,7 +1983,7 @@
             },
             "properties": {
                 "id": 476,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Extratour"
             }
         },
@@ -1998,7 +1998,7 @@
             },
             "properties": {
                 "id": 477,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Fernando"
             }
         },
@@ -2013,7 +2013,7 @@
             },
             "properties": {
                 "id": 478,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pasquale"
             }
         },
@@ -2028,7 +2028,7 @@
             },
             "properties": {
                 "id": 481,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schiff Ahoi"
             }
         },
@@ -2043,7 +2043,7 @@
             },
             "properties": {
                 "id": 488,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Jägerhof"
             }
         },
@@ -2058,7 +2058,7 @@
             },
             "properties": {
                 "id": 493,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "NA NI WA - noodles & soup"
             }
         },
@@ -2073,7 +2073,7 @@
             },
             "properties": {
                 "id": 494,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "NA NI WA - sushi & more"
             }
         },
@@ -2088,7 +2088,7 @@
             },
             "properties": {
                 "id": 502,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Il Mercato"
             }
         },
@@ -2103,7 +2103,7 @@
             },
             "properties": {
                 "id": 507,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Asia Loi"
             }
         },
@@ -2118,7 +2118,7 @@
             },
             "properties": {
                 "id": 508,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mensa Süd"
             }
         },
@@ -2133,7 +2133,7 @@
             },
             "properties": {
                 "id": 509,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Laura's Deli"
             }
         },
@@ -2148,7 +2148,7 @@
             },
             "properties": {
                 "id": 510,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Riva"
             }
         },
@@ -2163,7 +2163,7 @@
             },
             "properties": {
                 "id": 511,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Brazil's Restaurant"
             }
         },
@@ -2178,7 +2178,7 @@
             },
             "properties": {
                 "id": 512,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Takumi"
             }
         },
@@ -2193,7 +2193,7 @@
             },
             "properties": {
                 "id": 513,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Massaman Thai Restaurant"
             }
         },
@@ -2208,7 +2208,7 @@
             },
             "properties": {
                 "id": 515,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hassler Fass"
             }
         },
@@ -2223,7 +2223,7 @@
             },
             "properties": {
                 "id": 517,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "da noi"
             }
         },
@@ -2238,7 +2238,7 @@
             },
             "properties": {
                 "id": 519,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "NOOIJ bar.restaurant"
             }
         },
@@ -2253,7 +2253,7 @@
             },
             "properties": {
                 "id": 522,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Michaelshaus"
             }
         },
@@ -2268,7 +2268,7 @@
             },
             "properties": {
                 "id": 524,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Osteria Montini"
             }
         },
@@ -2283,7 +2283,7 @@
             },
             "properties": {
                 "id": 525,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Top 180"
             }
         },
@@ -2298,7 +2298,7 @@
             },
             "properties": {
                 "id": 527,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Dong Dong"
             }
         },
@@ -2313,7 +2313,7 @@
             },
             "properties": {
                 "id": 528,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kenny's Restaurant und Biergarten"
             }
         },
@@ -2328,7 +2328,7 @@
             },
             "properties": {
                 "id": 535,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Thai Orchid Bistro"
             }
         },
@@ -2343,7 +2343,7 @@
             },
             "properties": {
                 "id": 536,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bistro Konrad 2"
             }
         },
@@ -2358,7 +2358,7 @@
             },
             "properties": {
                 "id": 541,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Golf-Restaurant Grafenberg Le Chardonnay"
             }
         },
@@ -2373,7 +2373,7 @@
             },
             "properties": {
                 "id": 542,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pardo's"
             }
         },
@@ -2388,7 +2388,7 @@
             },
             "properties": {
                 "id": 547,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria da Giacomo"
             }
         },
@@ -2403,7 +2403,7 @@
             },
             "properties": {
                 "id": 552,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Kardelen"
             }
         },
@@ -2418,7 +2418,7 @@
             },
             "properties": {
                 "id": 557,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": ".de Rheinzelmännchen an der Freilichtbühne"
             }
         },
@@ -2433,7 +2433,7 @@
             },
             "properties": {
                 "id": 562,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Dim Sum"
             }
         },
@@ -2448,7 +2448,7 @@
             },
             "properties": {
                 "id": 563,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Miss Moneypenny"
             }
         },
@@ -2463,7 +2463,7 @@
             },
             "properties": {
                 "id": 564,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "En de Kull"
             }
         },
@@ -2478,7 +2478,7 @@
             },
             "properties": {
                 "id": 570,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Treasure"
             }
         },
@@ -2493,7 +2493,7 @@
             },
             "properties": {
                 "id": 575,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Principale"
             }
         },
@@ -2508,7 +2508,7 @@
             },
             "properties": {
                 "id": 576,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Buster Pasta"
             }
         },
@@ -2523,7 +2523,7 @@
             },
             "properties": {
                 "id": 584,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria S. Marzano"
             }
         },
@@ -2538,7 +2538,7 @@
             },
             "properties": {
                 "id": 588,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vapiano"
             }
         },
@@ -2553,7 +2553,7 @@
             },
             "properties": {
                 "id": 590,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -2568,7 +2568,7 @@
             },
             "properties": {
                 "id": 599,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Salent"
             }
         },
@@ -2583,7 +2583,7 @@
             },
             "properties": {
                 "id": 603,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bonalumi"
             }
         },
@@ -2598,7 +2598,7 @@
             },
             "properties": {
                 "id": 605,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zum Schiffchen"
             }
         },
@@ -2613,7 +2613,7 @@
             },
             "properties": {
                 "id": 613,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bella Ciao"
             }
         },
@@ -2628,7 +2628,7 @@
             },
             "properties": {
                 "id": 619,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hans Wurst GmbH"
             }
         },
@@ -2643,7 +2643,7 @@
             },
             "properties": {
                 "id": 620,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Taverna Preuss"
             }
         },
@@ -2658,7 +2658,7 @@
             },
             "properties": {
                 "id": 621,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zur Mühle"
             }
         },
@@ -2673,7 +2673,7 @@
             },
             "properties": {
                 "id": 623,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hammer Blick"
             }
         },
@@ -2688,7 +2688,7 @@
             },
             "properties": {
                 "id": 624,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Fujiyama"
             }
         },
@@ -2703,7 +2703,7 @@
             },
             "properties": {
                 "id": 634,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schützenhaus Goldene Mösch"
             }
         },
@@ -2718,7 +2718,7 @@
             },
             "properties": {
                 "id": 637,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -2733,7 +2733,7 @@
             },
             "properties": {
                 "id": 639,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Club Portugése"
             }
         },
@@ -2748,7 +2748,7 @@
             },
             "properties": {
                 "id": 651,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Strada"
             }
         },
@@ -2763,7 +2763,7 @@
             },
             "properties": {
                 "id": 663,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Bistro Sila"
             }
         },
@@ -2778,7 +2778,7 @@
             },
             "properties": {
                 "id": 665,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Reef & Beef"
             }
         },
@@ -2793,7 +2793,7 @@
             },
             "properties": {
                 "id": 667,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Jade-Imbiss"
             }
         },
@@ -2808,7 +2808,7 @@
             },
             "properties": {
                 "id": 671,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Toscana"
             }
         },
@@ -2823,7 +2823,7 @@
             },
             "properties": {
                 "id": 672,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -2838,7 +2838,7 @@
             },
             "properties": {
                 "id": 676,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Al Colosseo"
             }
         },
@@ -2853,7 +2853,7 @@
             },
             "properties": {
                 "id": 689,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Edessa"
             }
         },
@@ -2868,7 +2868,7 @@
             },
             "properties": {
                 "id": 690,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sattgrün"
             }
         },
@@ -2883,7 +2883,7 @@
             },
             "properties": {
                 "id": 691,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sattgrün"
             }
         },
@@ -2898,7 +2898,7 @@
             },
             "properties": {
                 "id": 704,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Toni & Pizza"
             }
         },
@@ -2913,7 +2913,7 @@
             },
             "properties": {
                 "id": 705,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Route 46 American Burger & Steak Grill"
             }
         },
@@ -2928,7 +2928,7 @@
             },
             "properties": {
                 "id": 707,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Massenberg"
             }
         },
@@ -2943,7 +2943,7 @@
             },
             "properties": {
                 "id": 714,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "3K"
             }
         },
@@ -2958,7 +2958,7 @@
             },
             "properties": {
                 "id": 716,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Brot & Olive"
             }
         },
@@ -2973,7 +2973,7 @@
             },
             "properties": {
                 "id": 717,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Messina Due"
             }
         },
@@ -2988,7 +2988,7 @@
             },
             "properties": {
                 "id": 732,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Im Schiffchen"
             }
         },
@@ -3003,7 +3003,7 @@
             },
             "properties": {
                 "id": 735,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Patrick's Seafood"
             }
         },
@@ -3018,7 +3018,7 @@
             },
             "properties": {
                 "id": 736,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Reusch Gaststätte"
             }
         },
@@ -3033,7 +3033,7 @@
             },
             "properties": {
                 "id": 737,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vente"
             }
         },
@@ -3048,7 +3048,7 @@
             },
             "properties": {
                 "id": 741,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zweierlei"
             }
         },
@@ -3063,7 +3063,7 @@
             },
             "properties": {
                 "id": 747,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "EssBar"
             }
         },
@@ -3078,7 +3078,7 @@
             },
             "properties": {
                 "id": 748,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bürgerhaus Hubbelrath"
             }
         },
@@ -3093,7 +3093,7 @@
             },
             "properties": {
                 "id": 749,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Artemis im Neuenhaus"
             }
         },
@@ -3108,7 +3108,7 @@
             },
             "properties": {
                 "id": 751,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Anfora Türk. Rest."
             }
         },
@@ -3123,7 +3123,7 @@
             },
             "properties": {
                 "id": 752,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Lampada"
             }
         },
@@ -3138,7 +3138,7 @@
             },
             "properties": {
                 "id": 753,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Im Jäger"
             }
         },
@@ -3153,7 +3153,7 @@
             },
             "properties": {
                 "id": 754,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schmitz Loekes"
             }
         },
@@ -3168,7 +3168,7 @@
             },
             "properties": {
                 "id": 755,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gasthaus Peters"
             }
         },
@@ -3183,7 +3183,7 @@
             },
             "properties": {
                 "id": 760,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mayers Daily"
             }
         },
@@ -3198,7 +3198,7 @@
             },
             "properties": {
                 "id": 763,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Chinesisches Grill-Restaurant"
             }
         },
@@ -3213,7 +3213,7 @@
             },
             "properties": {
                 "id": 765,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Linguini"
             }
         },
@@ -3228,7 +3228,7 @@
             },
             "properties": {
                 "id": 767,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Die Kurve"
             }
         },
@@ -3243,7 +3243,7 @@
             },
             "properties": {
                 "id": 770,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Don Sancillo"
             }
         },
@@ -3258,7 +3258,7 @@
             },
             "properties": {
                 "id": 773,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Brand's Jupp"
             }
         },
@@ -3273,7 +3273,7 @@
             },
             "properties": {
                 "id": 774,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Meyer & Freemann"
             }
         },
@@ -3288,7 +3288,7 @@
             },
             "properties": {
                 "id": 776,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Werthvoll"
             }
         },
@@ -3303,7 +3303,7 @@
             },
             "properties": {
                 "id": 778,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -3318,7 +3318,7 @@
             },
             "properties": {
                 "id": 781,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Wirtshaus zur Linde"
             }
         },
@@ -3333,7 +3333,7 @@
             },
             "properties": {
                 "id": 784,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pasta e Vino"
             }
         },
@@ -3348,7 +3348,7 @@
             },
             "properties": {
                 "id": 786,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Alt Pempelfort"
             }
         },
@@ -3363,7 +3363,7 @@
             },
             "properties": {
                 "id": 788,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "L'Arcobaleno"
             }
         },
@@ -3378,7 +3378,7 @@
             },
             "properties": {
                 "id": 792,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Su Nuraghe"
             }
         },
@@ -3393,7 +3393,7 @@
             },
             "properties": {
                 "id": 793,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sichuan"
             }
         },
@@ -3408,7 +3408,7 @@
             },
             "properties": {
                 "id": 796,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Emiliana"
             }
         },
@@ -3423,7 +3423,7 @@
             },
             "properties": {
                 "id": 798,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "K"
             }
         },
@@ -3438,7 +3438,7 @@
             },
             "properties": {
                 "id": 802,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Cantina"
             }
         },
@@ -3453,7 +3453,7 @@
             },
             "properties": {
                 "id": 804,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "E- Plus Kantine"
             }
         },
@@ -3468,7 +3468,7 @@
             },
             "properties": {
                 "id": 816,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mezzomar"
             }
         },
@@ -3483,7 +3483,7 @@
             },
             "properties": {
                 "id": 817,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Snack Point"
             }
         },
@@ -3498,7 +3498,7 @@
             },
             "properties": {
                 "id": 819,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Am Kämpchen"
             }
         },
@@ -3513,7 +3513,7 @@
             },
             "properties": {
                 "id": 820,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lindentor"
             }
         },
@@ -3528,7 +3528,7 @@
             },
             "properties": {
                 "id": 824,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mediterran"
             }
         },
@@ -3543,7 +3543,7 @@
             },
             "properties": {
                 "id": 826,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zwölf Apostel"
             }
         },
@@ -3558,7 +3558,7 @@
             },
             "properties": {
                 "id": 833,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kamper-Hof"
             }
         },
@@ -3573,7 +3573,7 @@
             },
             "properties": {
                 "id": 837,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -3588,7 +3588,7 @@
             },
             "properties": {
                 "id": 848,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -3603,7 +3603,7 @@
             },
             "properties": {
                 "id": 867,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "E.ON Betriebskantine"
             }
         },
@@ -3618,7 +3618,7 @@
             },
             "properties": {
                 "id": 872,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Faßbock"
             }
         },
@@ -3633,7 +3633,7 @@
             },
             "properties": {
                 "id": 874,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Messina"
             }
         },
@@ -3648,7 +3648,7 @@
             },
             "properties": {
                 "id": 886,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Chi Bay"
             }
         },
@@ -3663,7 +3663,7 @@
             },
             "properties": {
                 "id": 903,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Gargano"
             }
         },
@@ -3678,7 +3678,7 @@
             },
             "properties": {
                 "id": 904,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zum Siedlerkrug"
             }
         },
@@ -3693,7 +3693,7 @@
             },
             "properties": {
                 "id": 911,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vapiano"
             }
         },
@@ -3708,7 +3708,7 @@
             },
             "properties": {
                 "id": 913,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rather Fass"
             }
         },
@@ -3723,7 +3723,7 @@
             },
             "properties": {
                 "id": 915,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kantine"
             }
         },
@@ -3738,7 +3738,7 @@
             },
             "properties": {
                 "id": 923,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Mediterran"
             }
         },
@@ -3753,7 +3753,7 @@
             },
             "properties": {
                 "id": 924,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Em Krönche"
             }
         },
@@ -3768,7 +3768,7 @@
             },
             "properties": {
                 "id": 925,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Luso"
             }
         },
@@ -3783,7 +3783,7 @@
             },
             "properties": {
                 "id": 926,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Der Asiate"
             }
         },
@@ -3798,7 +3798,7 @@
             },
             "properties": {
                 "id": 927,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Okinii - Sushi & Grill"
             }
         },
@@ -3813,7 +3813,7 @@
             },
             "properties": {
                 "id": 930,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria S'Aposentu"
             }
         },
@@ -3828,7 +3828,7 @@
             },
             "properties": {
                 "id": 940,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ashley's Garden"
             }
         },
@@ -3843,7 +3843,7 @@
             },
             "properties": {
                 "id": 943,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Di Napoli"
             }
         },
@@ -3858,7 +3858,7 @@
             },
             "properties": {
                 "id": 946,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Piazza Saitta"
             }
         },
@@ -3873,7 +3873,7 @@
             },
             "properties": {
                 "id": 947,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Prinzinger"
             }
         },
@@ -3888,7 +3888,7 @@
             },
             "properties": {
                 "id": 963,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "dreiRaum"
             }
         },
@@ -3903,7 +3903,7 @@
             },
             "properties": {
                 "id": 964,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rote Laterne"
             }
         },
@@ -3918,7 +3918,7 @@
             },
             "properties": {
                 "id": 971,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Alte Stadtgrenze"
             }
         },
@@ -3933,7 +3933,7 @@
             },
             "properties": {
                 "id": 972,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Polifemo"
             }
         },
@@ -3948,7 +3948,7 @@
             },
             "properties": {
                 "id": 974,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sato"
             }
         },
@@ -3963,7 +3963,7 @@
             },
             "properties": {
                 "id": 977,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tante Anna"
             }
         },
@@ -3978,7 +3978,7 @@
             },
             "properties": {
                 "id": 991,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Poseidon"
             }
         },
@@ -3993,7 +3993,7 @@
             },
             "properties": {
                 "id": 993,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Byblos"
             }
         },
@@ -4008,7 +4008,7 @@
             },
             "properties": {
                 "id": 996,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Da Piero"
             }
         },
@@ -4023,7 +4023,7 @@
             },
             "properties": {
                 "id": 997,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Füchschen im Werstener Hof"
             }
         },
@@ -4038,7 +4038,7 @@
             },
             "properties": {
                 "id": 998,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Taverna Folia"
             }
         },
@@ -4053,7 +4053,7 @@
             },
             "properties": {
                 "id": 1009,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schnellenburg"
             }
         },
@@ -4068,7 +4068,7 @@
             },
             "properties": {
                 "id": 1014,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bob & Mary"
             }
         },
@@ -4083,7 +4083,7 @@
             },
             "properties": {
                 "id": 1017,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zum Schiffchen"
             }
         },
@@ -4098,7 +4098,7 @@
             },
             "properties": {
                 "id": 1025,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vini Divini"
             }
         },
@@ -4113,7 +4113,7 @@
             },
             "properties": {
                 "id": 1027,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "ALEX Brasserie"
             }
         },
@@ -4128,7 +4128,7 @@
             },
             "properties": {
                 "id": 1028,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "ALEX"
             }
         },
@@ -4143,7 +4143,7 @@
             },
             "properties": {
                 "id": 1053,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Frida"
             }
         },
@@ -4158,7 +4158,7 @@
             },
             "properties": {
                 "id": 1054,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cucina Italiana"
             }
         },
@@ -4173,7 +4173,7 @@
             },
             "properties": {
                 "id": 1055,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Baan Thai"
             }
         },
@@ -4188,7 +4188,7 @@
             },
             "properties": {
                 "id": 1057,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cha Cha"
             }
         },
@@ -4203,7 +4203,7 @@
             },
             "properties": {
                 "id": 1058,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "El Gitano"
             }
         },
@@ -4218,7 +4218,7 @@
             },
             "properties": {
                 "id": 1063,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Candeletta"
             }
         },
@@ -4233,7 +4233,7 @@
             },
             "properties": {
                 "id": 1064,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Grappa"
             }
         },
@@ -4248,7 +4248,7 @@
             },
             "properties": {
                 "id": 1066,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mayur"
             }
         },
@@ -4263,7 +4263,7 @@
             },
             "properties": {
                 "id": 1067,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mezzomar"
             }
         },
@@ -4278,7 +4278,7 @@
             },
             "properties": {
                 "id": 1068,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Picasso"
             }
         },
@@ -4293,7 +4293,7 @@
             },
             "properties": {
                 "id": 1069,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Shangri-la"
             }
         },
@@ -4308,7 +4308,7 @@
             },
             "properties": {
                 "id": 1070,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "San Leo"
             }
         },
@@ -4323,7 +4323,7 @@
             },
             "properties": {
                 "id": 1071,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Shilla"
             }
         },
@@ -4338,7 +4338,7 @@
             },
             "properties": {
                 "id": 1075,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Libanon Exclusiv"
             }
         },
@@ -4353,7 +4353,7 @@
             },
             "properties": {
                 "id": 1076,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "MS Allegra"
             }
         },
@@ -4368,7 +4368,7 @@
             },
             "properties": {
                 "id": 1082,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "d-town"
             }
         },
@@ -4383,7 +4383,7 @@
             },
             "properties": {
                 "id": 1088,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Block House"
             }
         },
@@ -4398,7 +4398,7 @@
             },
             "properties": {
                 "id": 1090,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Im Goldenen Ring"
             }
         },
@@ -4413,7 +4413,7 @@
             },
             "properties": {
                 "id": 1092,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Chop-Chop"
             }
         },
@@ -4428,7 +4428,7 @@
             },
             "properties": {
                 "id": 1094,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Los Chicos"
             }
         },
@@ -4443,7 +4443,7 @@
             },
             "properties": {
                 "id": 1096,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "El Lazo"
             }
         },
@@ -4458,7 +4458,7 @@
             },
             "properties": {
                 "id": 1103,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schweine Janes"
             }
         },
@@ -4473,7 +4473,7 @@
             },
             "properties": {
                 "id": 1116,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Bouillabaisse"
             }
         },
@@ -4488,7 +4488,7 @@
             },
             "properties": {
                 "id": 1117,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pascha Döner 68"
             }
         },
@@ -4503,7 +4503,7 @@
             },
             "properties": {
                 "id": 1119,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Madrid"
             }
         },
@@ -4518,7 +4518,7 @@
             },
             "properties": {
                 "id": 1124,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Quang Minh"
             }
         },
@@ -4533,7 +4533,7 @@
             },
             "properties": {
                 "id": 1125,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ohme Jupp"
             }
         },
@@ -4548,7 +4548,7 @@
             },
             "properties": {
                 "id": 1129,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Pinocchio"
             }
         },
@@ -4563,7 +4563,7 @@
             },
             "properties": {
                 "id": 1133,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ristorante Arlecchino"
             }
         },
@@ -4578,7 +4578,7 @@
             },
             "properties": {
                 "id": 1134,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ristorante Colosseo"
             }
         },
@@ -4593,7 +4593,7 @@
             },
             "properties": {
                 "id": 1135,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ristorante Rialto"
             }
         },
@@ -4608,7 +4608,7 @@
             },
             "properties": {
                 "id": 1137,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Santiago Bistro"
             }
         },
@@ -4623,7 +4623,7 @@
             },
             "properties": {
                 "id": 1139,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schwan"
             }
         },
@@ -4638,7 +4638,7 @@
             },
             "properties": {
                 "id": 1140,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schwarzer Peter"
             }
         },
@@ -4653,7 +4653,7 @@
             },
             "properties": {
                 "id": 1142,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Space Burger"
             }
         },
@@ -4668,7 +4668,7 @@
             },
             "properties": {
                 "id": 1147,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Weinhaus Tante Anna"
             }
         },
@@ -4683,7 +4683,7 @@
             },
             "properties": {
                 "id": 1160,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pegasos"
             }
         },
@@ -4698,7 +4698,7 @@
             },
             "properties": {
                 "id": 1161,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Primitivo"
             }
         },
@@ -4713,7 +4713,7 @@
             },
             "properties": {
                 "id": 1171,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Dionysos the Greek"
             }
         },
@@ -4728,7 +4728,7 @@
             },
             "properties": {
                 "id": 1174,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mangold"
             }
         },
@@ -4743,7 +4743,7 @@
             },
             "properties": {
                 "id": 1179,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria & Bar - Da Antonio"
             }
         },
@@ -4758,7 +4758,7 @@
             },
             "properties": {
                 "id": 1180,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Aria"
             }
         },
@@ -4773,7 +4773,7 @@
             },
             "properties": {
                 "id": 1182,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Symposion"
             }
         },
@@ -4788,7 +4788,7 @@
             },
             "properties": {
                 "id": 1189,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Karl's"
             }
         },
@@ -4803,7 +4803,7 @@
             },
             "properties": {
                 "id": 1194,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Manufacture"
             }
         },
@@ -4818,7 +4818,7 @@
             },
             "properties": {
                 "id": 1198,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Da Anna"
             }
         },
@@ -4833,7 +4833,7 @@
             },
             "properties": {
                 "id": 1205,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ab der Fisch"
             }
         },
@@ -4848,7 +4848,7 @@
             },
             "properties": {
                 "id": 1206,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Manima, der Laote"
             }
         },
@@ -4863,7 +4863,7 @@
             },
             "properties": {
                 "id": 1209,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -4878,7 +4878,7 @@
             },
             "properties": {
                 "id": 1213,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Maslina"
             }
         },
@@ -4893,7 +4893,7 @@
             },
             "properties": {
                 "id": 1215,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bread and Roses"
             }
         },
@@ -4908,7 +4908,7 @@
             },
             "properties": {
                 "id": 1221,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Alberobello"
             }
         },
@@ -4923,7 +4923,7 @@
             },
             "properties": {
                 "id": 1223,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kavala"
             }
         },
@@ -4938,7 +4938,7 @@
             },
             "properties": {
                 "id": 1230,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Askitis"
             }
         },
@@ -4953,7 +4953,7 @@
             },
             "properties": {
                 "id": 1232,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Moskito"
             }
         },
@@ -4968,7 +4968,7 @@
             },
             "properties": {
                 "id": 1233,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ostaria Diego"
             }
         },
@@ -4983,7 +4983,7 @@
             },
             "properties": {
                 "id": 1236,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Combo"
             }
         },
@@ -4998,7 +4998,7 @@
             },
             "properties": {
                 "id": 1237,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "By Nikos"
             }
         },
@@ -5013,7 +5013,7 @@
             },
             "properties": {
                 "id": 1244,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cala d'Oro"
             }
         },
@@ -5028,7 +5028,7 @@
             },
             "properties": {
                 "id": 1246,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Luce Due"
             }
         },
@@ -5043,7 +5043,7 @@
             },
             "properties": {
                 "id": 1247,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "EigelStein"
             }
         },
@@ -5058,7 +5058,7 @@
             },
             "properties": {
                 "id": 1248,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kirti's"
             }
         },
@@ -5073,7 +5073,7 @@
             },
             "properties": {
                 "id": 1250,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "China Restauraut - Bambus Garten"
             }
         },
@@ -5088,7 +5088,7 @@
             },
             "properties": {
                 "id": 1252,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Zucchero"
             }
         },
@@ -5103,7 +5103,7 @@
             },
             "properties": {
                 "id": 1254,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Antoniushof"
             }
         },
@@ -5118,7 +5118,7 @@
             },
             "properties": {
                 "id": 1257,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "il Disperato"
             }
         },
@@ -5133,7 +5133,7 @@
             },
             "properties": {
                 "id": 1264,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Grill am Eisstadion"
             }
         },
@@ -5148,7 +5148,7 @@
             },
             "properties": {
                 "id": 1268,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tafelspitz"
             }
         },
@@ -5163,7 +5163,7 @@
             },
             "properties": {
                 "id": 1269,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "BBQ4U"
             }
         },
@@ -5178,7 +5178,7 @@
             },
             "properties": {
                 "id": 1271,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Düsseldorfer Sportverein 04 Lierenfeld e.V."
             }
         },
@@ -5193,7 +5193,7 @@
             },
             "properties": {
                 "id": 1274,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Tosca"
             }
         },
@@ -5208,7 +5208,7 @@
             },
             "properties": {
                 "id": 1275,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Pasta"
             }
         },
@@ -5223,7 +5223,7 @@
             },
             "properties": {
                 "id": 1281,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sporthaus Club Eller 04"
             }
         },
@@ -5238,7 +5238,7 @@
             },
             "properties": {
                 "id": 1286,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gingerboy"
             }
         },
@@ -5253,7 +5253,7 @@
             },
             "properties": {
                 "id": 1287,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Café Florian"
             }
         },
@@ -5268,7 +5268,7 @@
             },
             "properties": {
                 "id": 1290,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Brisella"
             }
         },
@@ -5283,7 +5283,7 @@
             },
             "properties": {
                 "id": 1295,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Le Vante"
             }
         },
@@ -5298,7 +5298,7 @@
             },
             "properties": {
                 "id": 1298,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Im Försterhaus"
             }
         },
@@ -5313,7 +5313,7 @@
             },
             "properties": {
                 "id": 1304,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Düsseldorfer Gulaschkanone Dauser"
             }
         },
@@ -5328,7 +5328,7 @@
             },
             "properties": {
                 "id": 1305,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Soban"
             }
         },
@@ -5343,7 +5343,7 @@
             },
             "properties": {
                 "id": 1306,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "El Flamenco"
             }
         },
@@ -5358,7 +5358,7 @@
             },
             "properties": {
                 "id": 1307,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Las Tapas"
             }
         },
@@ -5373,7 +5373,7 @@
             },
             "properties": {
                 "id": 1309,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Dorfstube"
             }
         },
@@ -5388,7 +5388,7 @@
             },
             "properties": {
                 "id": 1310,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kärntner Stuben"
             }
         },
@@ -5403,7 +5403,7 @@
             },
             "properties": {
                 "id": 1311,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bei Kostas"
             }
         },
@@ -5418,7 +5418,7 @@
             },
             "properties": {
                 "id": 1314,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Volmerswerther Krug"
             }
         },
@@ -5433,7 +5433,7 @@
             },
             "properties": {
                 "id": 1317,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "El Amigo"
             }
         },
@@ -5448,7 +5448,7 @@
             },
             "properties": {
                 "id": 1318,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Maredo"
             }
         },
@@ -5463,7 +5463,7 @@
             },
             "properties": {
                 "id": 1319,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Buschhausen"
             }
         },
@@ -5478,7 +5478,7 @@
             },
             "properties": {
                 "id": 1320,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Haucks Grillstation"
             }
         },
@@ -5493,7 +5493,7 @@
             },
             "properties": {
                 "id": 1322,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -5508,7 +5508,7 @@
             },
             "properties": {
                 "id": 1324,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -5523,7 +5523,7 @@
             },
             "properties": {
                 "id": 1325,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Da Nando"
             }
         },
@@ -5538,7 +5538,7 @@
             },
             "properties": {
                 "id": 1327,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Nero Nudelhaus"
             }
         },
@@ -5553,7 +5553,7 @@
             },
             "properties": {
                 "id": 1331,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Asia Thai"
             }
         },
@@ -5568,7 +5568,7 @@
             },
             "properties": {
                 "id": 1333,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mercatino Trattoria"
             }
         },
@@ -5583,7 +5583,7 @@
             },
             "properties": {
                 "id": 1337,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lu Fung"
             }
         },
@@ -5598,7 +5598,7 @@
             },
             "properties": {
                 "id": 1340,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Bei Stephan"
             }
         },
@@ -5613,7 +5613,7 @@
             },
             "properties": {
                 "id": 1344,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "bogart's"
             }
         },
@@ -5628,7 +5628,7 @@
             },
             "properties": {
                 "id": 1346,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schweinske"
             }
         },
@@ -5643,7 +5643,7 @@
             },
             "properties": {
                 "id": 1348,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bistro EssArt"
             }
         },
@@ -5658,7 +5658,7 @@
             },
             "properties": {
                 "id": 1351,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria La Duck"
             }
         },
@@ -5673,7 +5673,7 @@
             },
             "properties": {
                 "id": 1355,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mongo's Restaurant"
             }
         },
@@ -5688,7 +5688,7 @@
             },
             "properties": {
                 "id": 1359,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Grenzenlos"
             }
         },
@@ -5703,7 +5703,7 @@
             },
             "properties": {
                 "id": 1360,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hot La Cucina"
             }
         },
@@ -5718,7 +5718,7 @@
             },
             "properties": {
                 "id": 1362,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casa Galicia"
             }
         },
@@ -5733,7 +5733,7 @@
             },
             "properties": {
                 "id": 1371,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -5748,7 +5748,7 @@
             },
             "properties": {
                 "id": 1372,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -5763,7 +5763,7 @@
             },
             "properties": {
                 "id": 1373,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -5778,7 +5778,7 @@
             },
             "properties": {
                 "id": 1374,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -5793,7 +5793,7 @@
             },
             "properties": {
                 "id": 1377,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Da Ciro"
             }
         },
@@ -5808,7 +5808,7 @@
             },
             "properties": {
                 "id": 1382,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Okra"
             }
         },
@@ -5823,7 +5823,7 @@
             },
             "properties": {
                 "id": 1383,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "El Greco"
             }
         },
@@ -5838,7 +5838,7 @@
             },
             "properties": {
                 "id": 1384,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gusan Reis'n'Roll"
             }
         },
@@ -5853,7 +5853,7 @@
             },
             "properties": {
                 "id": 1385,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Em Brass"
             }
         },
@@ -5868,7 +5868,7 @@
             },
             "properties": {
                 "id": 1386,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Efsin im Trompeter"
             }
         },
@@ -5883,7 +5883,7 @@
             },
             "properties": {
                 "id": 1388,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "ZiN-ZiN Restaurant-bar-lounge"
             }
         },
@@ -5898,7 +5898,7 @@
             },
             "properties": {
                 "id": 1390,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kleingärtnerverein Grashofsiedlung e.V."
             }
         },
@@ -5913,7 +5913,7 @@
             },
             "properties": {
                 "id": 1391,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kleingärtnerverein Am Kittelbach e.V."
             }
         },
@@ -5928,7 +5928,7 @@
             },
             "properties": {
                 "id": 1400,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kleingärtnerverein Trockene Erde e.V."
             }
         },
@@ -5943,7 +5943,7 @@
             },
             "properties": {
                 "id": 1403,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Zollhof"
             }
         },
@@ -5958,7 +5958,7 @@
             },
             "properties": {
                 "id": 1404,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Böser Chinese"
             }
         },
@@ -5973,7 +5973,7 @@
             },
             "properties": {
                 "id": 1405,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Massaman"
             }
         },
@@ -5988,7 +5988,7 @@
             },
             "properties": {
                 "id": 1407,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Julian's"
             }
         },
@@ -6003,7 +6003,7 @@
             },
             "properties": {
                 "id": 1408,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lieblings"
             }
         },
@@ -6018,7 +6018,7 @@
             },
             "properties": {
                 "id": 1409,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Baan Prickynoo"
             }
         },
@@ -6033,7 +6033,7 @@
             },
             "properties": {
                 "id": 1410,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Meuser"
             }
         },
@@ -6048,7 +6048,7 @@
             },
             "properties": {
                 "id": 1423,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schwan Restaurant"
             }
         },
@@ -6063,7 +6063,7 @@
             },
             "properties": {
                 "id": 1425,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzaria Roma"
             }
         },
@@ -6078,7 +6078,7 @@
             },
             "properties": {
                 "id": 1428,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Antiochia"
             }
         },
@@ -6093,7 +6093,7 @@
             },
             "properties": {
                 "id": 1429,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Da Massimo"
             }
         },
@@ -6108,7 +6108,7 @@
             },
             "properties": {
                 "id": 1434,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria La Rucola"
             }
         },
@@ -6123,7 +6123,7 @@
             },
             "properties": {
                 "id": 1435,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Haus Litzbrück"
             }
         },
@@ -6138,7 +6138,7 @@
             },
             "properties": {
                 "id": 1441,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Geissel"
             }
         },
@@ -6153,7 +6153,7 @@
             },
             "properties": {
                 "id": 1442,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Bruschetta"
             }
         },
@@ -6168,7 +6168,7 @@
             },
             "properties": {
                 "id": 1443,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Piazzetta"
             }
         },
@@ -6183,7 +6183,7 @@
             },
             "properties": {
                 "id": 1444,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria La Famosa"
             }
         },
@@ -6198,7 +6198,7 @@
             },
             "properties": {
                 "id": 1448,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Amanti Restaurant"
             }
         },
@@ -6213,7 +6213,7 @@
             },
             "properties": {
                 "id": 1449,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hafenbar"
             }
         },
@@ -6228,7 +6228,7 @@
             },
             "properties": {
                 "id": 1454,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Moon Thai Bistro"
             }
         },
@@ -6243,7 +6243,7 @@
             },
             "properties": {
                 "id": 1458,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sankt Suitbertus"
             }
         },
@@ -6258,7 +6258,7 @@
             },
             "properties": {
                 "id": 1459,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bötchen"
             }
         },
@@ -6273,7 +6273,7 @@
             },
             "properties": {
                 "id": 1461,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "please fix"
             }
         },
@@ -6288,7 +6288,7 @@
             },
             "properties": {
                 "id": 1462,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Am Kapellchen"
             }
         },
@@ -6303,7 +6303,7 @@
             },
             "properties": {
                 "id": 1465,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Saittavini"
             }
         },
@@ -6318,7 +6318,7 @@
             },
             "properties": {
                 "id": 1467,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Shennong Tee Lounge"
             }
         },
@@ -6333,7 +6333,7 @@
             },
             "properties": {
                 "id": 1471,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Positano"
             }
         },
@@ -6348,7 +6348,7 @@
             },
             "properties": {
                 "id": 1473,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gill's"
             }
         },
@@ -6363,7 +6363,7 @@
             },
             "properties": {
                 "id": 1474,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Flurklinik"
             }
         },
@@ -6378,7 +6378,7 @@
             },
             "properties": {
                 "id": 1475,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Luang Prabang"
             }
         },
@@ -6393,7 +6393,7 @@
             },
             "properties": {
                 "id": 1485,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Romina"
             }
         },
@@ -6408,7 +6408,7 @@
             },
             "properties": {
                 "id": 1487,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "RIKA - Japanisches Restaurant"
             }
         },
@@ -6423,7 +6423,7 @@
             },
             "properties": {
                 "id": 1495,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ha Noi"
             }
         },
@@ -6438,7 +6438,7 @@
             },
             "properties": {
                 "id": 1510,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Die chinesische Mauer"
             }
         },
@@ -6453,7 +6453,7 @@
             },
             "properties": {
                 "id": 1512,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zum Bruderhaus"
             }
         },
@@ -6468,7 +6468,7 @@
             },
             "properties": {
                 "id": 1523,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schloss Kebaphaus"
             }
         },
@@ -6483,7 +6483,7 @@
             },
             "properties": {
                 "id": 1524,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Dietze Döres"
             }
         },
@@ -6498,7 +6498,7 @@
             },
             "properties": {
                 "id": 1526,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mi Dang"
             }
         },
@@ -6513,7 +6513,7 @@
             },
             "properties": {
                 "id": 1528,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Frango Portugues"
             }
         },
@@ -6528,7 +6528,7 @@
             },
             "properties": {
                 "id": 1529,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Glorreich"
             }
         },
@@ -6543,7 +6543,7 @@
             },
             "properties": {
                 "id": 1531,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "CA´ DEL RE"
             }
         },
@@ -6558,7 +6558,7 @@
             },
             "properties": {
                 "id": 1534,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sol y Sombra"
             }
         },
@@ -6573,7 +6573,7 @@
             },
             "properties": {
                 "id": 1535,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gaststätte Franz Ratte"
             }
         },
@@ -6588,7 +6588,7 @@
             },
             "properties": {
                 "id": 1538,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tang Wang"
             }
         },
@@ -6603,7 +6603,7 @@
             },
             "properties": {
                 "id": 1540,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Himmel & Ähd"
             }
         },
@@ -6618,7 +6618,7 @@
             },
             "properties": {
                 "id": 1542,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Garcias, Restaurant & Partyservice"
             }
         },
@@ -6633,7 +6633,7 @@
             },
             "properties": {
                 "id": 1545,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Fischhaus"
             }
         },
@@ -6648,7 +6648,7 @@
             },
             "properties": {
                 "id": 1547,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Via Appia"
             }
         },
@@ -6663,7 +6663,7 @@
             },
             "properties": {
                 "id": 1548,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Emmafisch"
             }
         },
@@ -6678,7 +6678,7 @@
             },
             "properties": {
                 "id": 1551,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Al Baraka"
             }
         },
@@ -6693,7 +6693,7 @@
             },
             "properties": {
                 "id": 1560,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Perla Porto"
             }
         },
@@ -6708,7 +6708,7 @@
             },
             "properties": {
                 "id": 1561,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Maria"
             }
         },
@@ -6723,7 +6723,7 @@
             },
             "properties": {
                 "id": 1562,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -6738,7 +6738,7 @@
             },
             "properties": {
                 "id": 1570,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "China Star Restaurant"
             }
         },
@@ -6753,7 +6753,7 @@
             },
             "properties": {
                 "id": 1571,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Klußka polska restauracja"
             }
         },
@@ -6768,7 +6768,7 @@
             },
             "properties": {
                 "id": 1572,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Poldi"
             }
         },
@@ -6783,7 +6783,7 @@
             },
             "properties": {
                 "id": 1574,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Space Burger"
             }
         },
@@ -6798,7 +6798,7 @@
             },
             "properties": {
                 "id": 1575,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Michele"
             }
         },
@@ -6813,7 +6813,7 @@
             },
             "properties": {
                 "id": 1578,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tokyo Lounge"
             }
         },
@@ -6828,7 +6828,7 @@
             },
             "properties": {
                 "id": 1579,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Suzie Q"
             }
         },
@@ -6843,7 +6843,7 @@
             },
             "properties": {
                 "id": 1581,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "ZEN"
             }
         },
@@ -6858,7 +6858,7 @@
             },
             "properties": {
                 "id": 1583,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "ALOHA POKE"
             }
         },
@@ -6873,7 +6873,7 @@
             },
             "properties": {
                 "id": 1586,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "nagomi"
             }
         },
@@ -6888,7 +6888,7 @@
             },
             "properties": {
                 "id": 1587,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bistro Schmelztiegel"
             }
         },
@@ -6903,7 +6903,7 @@
             },
             "properties": {
                 "id": 1588,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bella Venezia"
             }
         },
@@ -6918,7 +6918,7 @@
             },
             "properties": {
                 "id": 1596,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Benders Marie"
             }
         },
@@ -6933,7 +6933,7 @@
             },
             "properties": {
                 "id": 1599,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Stappen"
             }
         },
@@ -6948,7 +6948,7 @@
             },
             "properties": {
                 "id": 1607,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Nagaya"
             }
         },
@@ -6963,7 +6963,7 @@
             },
             "properties": {
                 "id": 1610,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "le Buffet (im Karstadt)"
             }
         },
@@ -6978,7 +6978,7 @@
             },
             "properties": {
                 "id": 1611,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "What's Beef"
             }
         },
@@ -6993,7 +6993,7 @@
             },
             "properties": {
                 "id": 1613,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizza Big Boss"
             }
         },
@@ -7008,7 +7008,7 @@
             },
             "properties": {
                 "id": 1616,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Krevet's"
             }
         },
@@ -7023,7 +7023,7 @@
             },
             "properties": {
                 "id": 1617,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Roter Teppich"
             }
         },
@@ -7038,7 +7038,7 @@
             },
             "properties": {
                 "id": 1621,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Shabby Chic"
             }
         },
@@ -7053,7 +7053,7 @@
             },
             "properties": {
                 "id": 1629,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vapiano"
             }
         },
@@ -7068,7 +7068,7 @@
             },
             "properties": {
                 "id": 1630,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant KIKAKU"
             }
         },
@@ -7083,7 +7083,7 @@
             },
             "properties": {
                 "id": 1637,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Bei Mama Lisi"
             }
         },
@@ -7098,7 +7098,7 @@
             },
             "properties": {
                 "id": 1638,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hu'o'ng Việt"
             }
         },
@@ -7113,7 +7113,7 @@
             },
             "properties": {
                 "id": 1639,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Ravenna"
             }
         },
@@ -7128,7 +7128,7 @@
             },
             "properties": {
                 "id": 1640,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "MATAR kocht für euch"
             }
         },
@@ -7143,7 +7143,7 @@
             },
             "properties": {
                 "id": 1641,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Vulcano"
             }
         },
@@ -7158,7 +7158,7 @@
             },
             "properties": {
                 "id": 1650,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schlösser am Fürstenplatz"
             }
         },
@@ -7173,7 +7173,7 @@
             },
             "properties": {
                 "id": 1651,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Scaramanga's"
             }
         },
@@ -7188,7 +7188,7 @@
             },
             "properties": {
                 "id": 1656,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Due Fratelli"
             }
         },
@@ -7203,7 +7203,7 @@
             },
             "properties": {
                 "id": 1657,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Taverna Olympia"
             }
         },
@@ -7218,7 +7218,7 @@
             },
             "properties": {
                 "id": 1658,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Piccola Ergo"
             }
         },
@@ -7233,7 +7233,7 @@
             },
             "properties": {
                 "id": 1660,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Malfi"
             }
         },
@@ -7248,7 +7248,7 @@
             },
             "properties": {
                 "id": 1661,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vossen"
             }
         },
@@ -7263,7 +7263,7 @@
             },
             "properties": {
                 "id": 1669,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Al Dente"
             }
         },
@@ -7278,7 +7278,7 @@
             },
             "properties": {
                 "id": 1674,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Osteria Italiana"
             }
         },
@@ -7293,7 +7293,7 @@
             },
             "properties": {
                 "id": 1681,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Burger Stop"
             }
         },
@@ -7308,7 +7308,7 @@
             },
             "properties": {
                 "id": 1689,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Waldgasthof Gut Wolfsaap"
             }
         },
@@ -7323,7 +7323,7 @@
             },
             "properties": {
                 "id": 1690,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sparta"
             }
         },
@@ -7338,7 +7338,7 @@
             },
             "properties": {
                 "id": 1693,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "What's Pizza?"
             }
         },
@@ -7353,7 +7353,7 @@
             },
             "properties": {
                 "id": 1694,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Menya Takeichi"
             }
         },
@@ -7368,7 +7368,7 @@
             },
             "properties": {
                 "id": 1700,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gatto Verde"
             }
         },
@@ -7383,7 +7383,7 @@
             },
             "properties": {
                 "id": 1702,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "3h's burger & chicken"
             }
         },
@@ -7398,7 +7398,7 @@
             },
             "properties": {
                 "id": 1706,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Albers"
             }
         },
@@ -7413,7 +7413,7 @@
             },
             "properties": {
                 "id": 1707,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ausbildungsrestaurant L'Abbaye"
             }
         },
@@ -7428,7 +7428,7 @@
             },
             "properties": {
                 "id": 1709,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -7443,7 +7443,7 @@
             },
             "properties": {
                 "id": 1710,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -7458,7 +7458,7 @@
             },
             "properties": {
                 "id": 1719,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ristorante L'Arte in Cucina"
             }
         },
@@ -7473,7 +7473,7 @@
             },
             "properties": {
                 "id": 1720,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sattgrün"
             }
         },
@@ -7488,7 +7488,7 @@
             },
             "properties": {
                 "id": 1724,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hase + Igel"
             }
         },
@@ -7503,7 +7503,7 @@
             },
             "properties": {
                 "id": 1726,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zerogardi"
             }
         },
@@ -7518,7 +7518,7 @@
             },
             "properties": {
                 "id": 1728,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Decker"
             }
         },
@@ -7533,7 +7533,7 @@
             },
             "properties": {
                 "id": 1734,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hans im Glück"
             }
         },
@@ -7548,7 +7548,7 @@
             },
             "properties": {
                 "id": 1736,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Maruyasu"
             }
         },
@@ -7563,7 +7563,7 @@
             },
             "properties": {
                 "id": 1737,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Roberts Bistro"
             }
         },
@@ -7578,7 +7578,7 @@
             },
             "properties": {
                 "id": 1738,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "El beso - Zum Trotzkopf"
             }
         },
@@ -7593,7 +7593,7 @@
             },
             "properties": {
                 "id": 1741,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "King Fusion"
             }
         },
@@ -7608,7 +7608,7 @@
             },
             "properties": {
                 "id": 1746,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Due Mila"
             }
         },
@@ -7623,7 +7623,7 @@
             },
             "properties": {
                 "id": 1749,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "da Antonio"
             }
         },
@@ -7638,7 +7638,7 @@
             },
             "properties": {
                 "id": 1750,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Se[h]restaurant"
             }
         },
@@ -7653,7 +7653,7 @@
             },
             "properties": {
                 "id": 1752,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trüffelschwein"
             }
         },
@@ -7668,7 +7668,7 @@
             },
             "properties": {
                 "id": 1755,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "En de Ehd"
             }
         },
@@ -7683,7 +7683,7 @@
             },
             "properties": {
                 "id": 1758,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tigges"
             }
         },
@@ -7698,7 +7698,7 @@
             },
             "properties": {
                 "id": 1760,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rodizio Royal"
             }
         },
@@ -7713,7 +7713,7 @@
             },
             "properties": {
                 "id": 1762,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rochusclub Restaurant"
             }
         },
@@ -7728,7 +7728,7 @@
             },
             "properties": {
                 "id": 1765,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Canoo"
             }
         },
@@ -7743,7 +7743,7 @@
             },
             "properties": {
                 "id": 1766,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Brauhaus am Quadenhof"
             }
         },
@@ -7758,7 +7758,7 @@
             },
             "properties": {
                 "id": 1768,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gasthaus Im Silbernen Ringe"
             }
         },
@@ -7773,7 +7773,7 @@
             },
             "properties": {
                 "id": 1774,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Libanon Restaurant"
             }
         },
@@ -7788,7 +7788,7 @@
             },
             "properties": {
                 "id": 1775,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casita Mexicana"
             }
         },
@@ -7803,7 +7803,7 @@
             },
             "properties": {
                 "id": 1780,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Daidokoro Umaimon"
             }
         },
@@ -7818,7 +7818,7 @@
             },
             "properties": {
                 "id": 1787,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizza Hut"
             }
         },
@@ -7833,7 +7833,7 @@
             },
             "properties": {
                 "id": 1794,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzaria Venezia"
             }
         },
@@ -7848,7 +7848,7 @@
             },
             "properties": {
                 "id": 1795,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "I Love Doener"
             }
         },
@@ -7863,7 +7863,7 @@
             },
             "properties": {
                 "id": 1797,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kushi Tei"
             }
         },
@@ -7878,7 +7878,7 @@
             },
             "properties": {
                 "id": 1802,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Benkay"
             }
         },
@@ -7893,7 +7893,7 @@
             },
             "properties": {
                 "id": 1803,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Waraku"
             }
         },
@@ -7908,7 +7908,7 @@
             },
             "properties": {
                 "id": 1804,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Nari Sushi"
             }
         },
@@ -7923,7 +7923,7 @@
             },
             "properties": {
                 "id": 1806,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Marli"
             }
         },
@@ -7938,7 +7938,7 @@
             },
             "properties": {
                 "id": 1807,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "VaVeloce"
             }
         },
@@ -7953,7 +7953,7 @@
             },
             "properties": {
                 "id": 1814,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lucy Abyssinia"
             }
         },
@@ -7968,7 +7968,7 @@
             },
             "properties": {
                 "id": 1815,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Asia fünf Sterne"
             }
         },
@@ -7983,7 +7983,7 @@
             },
             "properties": {
                 "id": 1816,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zum grünen Winkel"
             }
         },
@@ -7998,7 +7998,7 @@
             },
             "properties": {
                 "id": 1820,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Fischparadies"
             }
         },
@@ -8013,7 +8013,7 @@
             },
             "properties": {
                 "id": 1831,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Patthaya Thailand Imbiss"
             }
         },
@@ -8028,7 +8028,7 @@
             },
             "properties": {
                 "id": 1832,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casa Bistro"
             }
         },
@@ -8043,7 +8043,7 @@
             },
             "properties": {
                 "id": 1847,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Uerige Hausbrauerei"
             }
         },
@@ -8058,7 +8058,7 @@
             },
             "properties": {
                 "id": 1850,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Copita Tapas-Restaurant"
             }
         },
@@ -8073,7 +8073,7 @@
             },
             "properties": {
                 "id": 1854,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Guiseppe"
             }
         },
@@ -8088,7 +8088,7 @@
             },
             "properties": {
                 "id": 1856,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kronen-Stube"
             }
         },
@@ -8103,7 +8103,7 @@
             },
             "properties": {
                 "id": 1857,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ziegel Eck"
             }
         },
@@ -8118,7 +8118,7 @@
             },
             "properties": {
                 "id": 1862,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "ARNOLD's Grill & Garden"
             }
         },
@@ -8133,7 +8133,7 @@
             },
             "properties": {
                 "id": 1863,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "EssART"
             }
         },
@@ -8148,7 +8148,7 @@
             },
             "properties": {
                 "id": 1866,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "China Haus"
             }
         },
@@ -8163,7 +8163,7 @@
             },
             "properties": {
                 "id": 1868,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Ruchetta"
             }
         },
@@ -8178,7 +8178,7 @@
             },
             "properties": {
                 "id": 1872,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sey's Food"
             }
         },
@@ -8193,7 +8193,7 @@
             },
             "properties": {
                 "id": 1873,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Anadolu"
             }
         },
@@ -8208,7 +8208,7 @@
             },
             "properties": {
                 "id": 1878,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bistro EssART"
             }
         },
@@ -8223,7 +8223,7 @@
             },
             "properties": {
                 "id": 1880,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Porto Cervo"
             }
         },
@@ -8238,7 +8238,7 @@
             },
             "properties": {
                 "id": 1881,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casa Espana"
             }
         },
@@ -8253,7 +8253,7 @@
             },
             "properties": {
                 "id": 1885,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Maurizio"
             }
         },
@@ -8268,7 +8268,7 @@
             },
             "properties": {
                 "id": 1886,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Saffran's"
             }
         },
@@ -8283,7 +8283,7 @@
             },
             "properties": {
                 "id": 1894,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Eat Tokyo"
             }
         },
@@ -8298,7 +8298,7 @@
             },
             "properties": {
                 "id": 1895,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Les Halles St. Honoré"
             }
         },
@@ -8313,7 +8313,7 @@
             },
             "properties": {
                 "id": 1896,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ratatouille Düsseldorf"
             }
         },
@@ -8328,7 +8328,7 @@
             },
             "properties": {
                 "id": 1897,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lili’s Bar Restaurant"
             }
         },
@@ -8343,7 +8343,7 @@
             },
             "properties": {
                 "id": 1898,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Imerio"
             }
         },
@@ -8358,7 +8358,7 @@
             },
             "properties": {
                 "id": 1903,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kitzbüheler Stuben"
             }
         },
@@ -8373,7 +8373,7 @@
             },
             "properties": {
                 "id": 1907,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sushi Kaiser"
             }
         },
@@ -8388,7 +8388,7 @@
             },
             "properties": {
                 "id": 1910,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Estia Restaurant & mehr"
             }
         },
@@ -8403,7 +8403,7 @@
             },
             "properties": {
                 "id": 1917,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bob & Mary"
             }
         },
@@ -8418,7 +8418,7 @@
             },
             "properties": {
                 "id": 1918,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Amano Verde"
             }
         },
@@ -8433,7 +8433,7 @@
             },
             "properties": {
                 "id": 1922,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hyuga"
             }
         },
@@ -8448,7 +8448,7 @@
             },
             "properties": {
                 "id": 1929,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zum Froschenteich"
             }
         },
@@ -8463,7 +8463,7 @@
             },
             "properties": {
                 "id": 1930,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Malinas"
             }
         },
@@ -8478,7 +8478,7 @@
             },
             "properties": {
                 "id": 1933,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Meerbar"
             }
         },
@@ -8493,7 +8493,7 @@
             },
             "properties": {
                 "id": 1934,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Grindhouse − Homemade Burgers"
             }
         },
@@ -8508,7 +8508,7 @@
             },
             "properties": {
                 "id": 1941,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Suppenwerk"
             }
         },
@@ -8523,7 +8523,7 @@
             },
             "properties": {
                 "id": 1945,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gaststätte Samothraki"
             }
         },
@@ -8538,7 +8538,7 @@
             },
             "properties": {
                 "id": 1951,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria & Nudelhaus Da Vinci"
             }
         },
@@ -8553,7 +8553,7 @@
             },
             "properties": {
                 "id": 1953,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Richie’n Rose"
             }
         },
@@ -8568,7 +8568,7 @@
             },
             "properties": {
                 "id": 1955,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Carissima"
             }
         },
@@ -8583,7 +8583,7 @@
             },
             "properties": {
                 "id": 1958,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Le Flair"
             }
         },
@@ -8598,7 +8598,7 @@
             },
             "properties": {
                 "id": 1959,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "TAO China Bistro"
             }
         },
@@ -8613,7 +8613,7 @@
             },
             "properties": {
                 "id": 1960,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "China Imbiss Ulmen"
             }
         },
@@ -8628,7 +8628,7 @@
             },
             "properties": {
                 "id": 1961,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Biergarten Rheinterrasse"
             }
         },
@@ -8643,7 +8643,7 @@
             },
             "properties": {
                 "id": 1967,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Stielmus"
             }
         },
@@ -8658,7 +8658,7 @@
             },
             "properties": {
                 "id": 1968,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bistro Kombu"
             }
         },
@@ -8673,7 +8673,7 @@
             },
             "properties": {
                 "id": 1970,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kucci"
             }
         },
@@ -8688,7 +8688,7 @@
             },
             "properties": {
                 "id": 1986,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Haus Gantenberg"
             }
         },
@@ -8703,7 +8703,7 @@
             },
             "properties": {
                 "id": 1987,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zum Goldenen Bock"
             }
         },
@@ -8718,7 +8718,7 @@
             },
             "properties": {
                 "id": 1989,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mensa"
             }
         },
@@ -8733,7 +8733,7 @@
             },
             "properties": {
                 "id": 1990,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gosch"
             }
         },
@@ -8748,7 +8748,7 @@
             },
             "properties": {
                 "id": 1994,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Asia Wok"
             }
         },
@@ -8763,7 +8763,7 @@
             },
             "properties": {
                 "id": 1996,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Reul's"
             }
         },
@@ -8778,7 +8778,7 @@
             },
             "properties": {
                 "id": 2000,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Taverne Mesdheu"
             }
         },
@@ -8793,7 +8793,7 @@
             },
             "properties": {
                 "id": 2001,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casanova"
             }
         },
@@ -8808,7 +8808,7 @@
             },
             "properties": {
                 "id": 2005,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Confetti's"
             }
         },
@@ -8823,7 +8823,7 @@
             },
             "properties": {
                 "id": 2007,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Anemos"
             }
         },
@@ -8838,7 +8838,7 @@
             },
             "properties": {
                 "id": 2008,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lettinis Gusteria"
             }
         },
@@ -8853,7 +8853,7 @@
             },
             "properties": {
                 "id": 2009,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Contessa"
             }
         },
@@ -8868,7 +8868,7 @@
             },
             "properties": {
                 "id": 2010,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Jaipur Palace"
             }
         },
@@ -8883,7 +8883,7 @@
             },
             "properties": {
                 "id": 2011,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tsun Gai"
             }
         },
@@ -8898,7 +8898,7 @@
             },
             "properties": {
                 "id": 2013,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ristorante Pizzeria Casa Lerose"
             }
         },
@@ -8913,7 +8913,7 @@
             },
             "properties": {
                 "id": 2017,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Salädchen"
             }
         },
@@ -8928,7 +8928,7 @@
             },
             "properties": {
                 "id": 2018,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Lezzet"
             }
         },
@@ -8943,7 +8943,7 @@
             },
             "properties": {
                 "id": 2020,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Zur alten Töpferei"
             }
         },
@@ -8958,7 +8958,7 @@
             },
             "properties": {
                 "id": 2028,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sarajevo"
             }
         },
@@ -8973,7 +8973,7 @@
             },
             "properties": {
                 "id": 2029,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cafe Salvano"
             }
         },
@@ -8988,7 +8988,7 @@
             },
             "properties": {
                 "id": 2031,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Im Brühl"
             }
         },
@@ -9003,7 +9003,7 @@
             },
             "properties": {
                 "id": 2032,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "A Tavola"
             }
         },
@@ -9018,7 +9018,7 @@
             },
             "properties": {
                 "id": 2037,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Chrystall Bar & Kitchen"
             }
         },
@@ -9033,7 +9033,7 @@
             },
             "properties": {
                 "id": 2040,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Famai Thai"
             }
         },
@@ -9048,7 +9048,7 @@
             },
             "properties": {
                 "id": 2043,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -9063,7 +9063,7 @@
             },
             "properties": {
                 "id": 2048,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Klee's"
             }
         },
@@ -9078,7 +9078,7 @@
             },
             "properties": {
                 "id": 2049,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casa Luigi"
             }
         },
@@ -9093,7 +9093,7 @@
             },
             "properties": {
                 "id": 2058,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Boccocino"
             }
         },
@@ -9108,7 +9108,7 @@
             },
             "properties": {
                 "id": 2067,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pronto-Pizza"
             }
         },
@@ -9123,7 +9123,7 @@
             },
             "properties": {
                 "id": 2075,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "W59 - Airhotel Wartburg"
             }
         },
@@ -9138,7 +9138,7 @@
             },
             "properties": {
                 "id": 2079,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "China Star Cuisine"
             }
         },
@@ -9153,7 +9153,7 @@
             },
             "properties": {
                 "id": 2081,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Donna Cannone"
             }
         },
@@ -9168,7 +9168,7 @@
             },
             "properties": {
                 "id": 2083,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Arabesq"
             }
         },
@@ -9183,7 +9183,7 @@
             },
             "properties": {
                 "id": 2084,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casa Los Locos"
             }
         },
@@ -9198,7 +9198,7 @@
             },
             "properties": {
                 "id": 2085,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Der Grieche zum Staufenplatz"
             }
         },
@@ -9213,7 +9213,7 @@
             },
             "properties": {
                 "id": 2087,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schlebuschs / Löwenburg"
             }
         },
@@ -9228,7 +9228,7 @@
             },
             "properties": {
                 "id": 2089,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tehran Restaurant"
             }
         },
@@ -9243,7 +9243,7 @@
             },
             "properties": {
                 "id": 2092,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Goten-Klause"
             }
         },
@@ -9258,7 +9258,7 @@
             },
             "properties": {
                 "id": 2098,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Soba-an"
             }
         },
@@ -9273,7 +9273,7 @@
             },
             "properties": {
                 "id": 2099,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "U. das Restaurant"
             }
         },
@@ -9288,7 +9288,7 @@
             },
             "properties": {
                 "id": 2100,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Seoul"
             }
         },
@@ -9303,7 +9303,7 @@
             },
             "properties": {
                 "id": 2101,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Bellissima"
             }
         },
@@ -9318,7 +9318,7 @@
             },
             "properties": {
                 "id": 2103,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vereinslokal BV04"
             }
         },
@@ -9333,7 +9333,7 @@
             },
             "properties": {
                 "id": 2104,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rocaille"
             }
         },
@@ -9348,7 +9348,7 @@
             },
             "properties": {
                 "id": 2105,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casino Kräuterküche"
             }
         },
@@ -9363,7 +9363,7 @@
             },
             "properties": {
                 "id": 2112,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant \"DA ZIO\""
             }
         },
@@ -9378,7 +9378,7 @@
             },
             "properties": {
                 "id": 2118,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Takezo - Ramen Bar"
             }
         },
@@ -9393,7 +9393,7 @@
             },
             "properties": {
                 "id": 2119,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tonkatsu Gonta"
             }
         },
@@ -9408,7 +9408,7 @@
             },
             "properties": {
                 "id": 2121,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Tre Stelle"
             }
         },
@@ -9423,7 +9423,7 @@
             },
             "properties": {
                 "id": 2122,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tafelgrün"
             }
         },
@@ -9438,7 +9438,7 @@
             },
             "properties": {
                 "id": 2123,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ganesha"
             }
         },
@@ -9453,7 +9453,7 @@
             },
             "properties": {
                 "id": 2124,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Luisa"
             }
         },
@@ -9468,7 +9468,7 @@
             },
             "properties": {
                 "id": 2127,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hafenquelle"
             }
         },
@@ -9483,7 +9483,7 @@
             },
             "properties": {
                 "id": 2129,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Limoncello"
             }
         },
@@ -9498,7 +9498,7 @@
             },
             "properties": {
                 "id": 2132,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hutong Bistro"
             }
         },
@@ -9513,7 +9513,7 @@
             },
             "properties": {
                 "id": 2136,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Quintooo"
             }
         },
@@ -9528,7 +9528,7 @@
             },
             "properties": {
                 "id": 2138,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cenerentola"
             }
         },
@@ -9543,7 +9543,7 @@
             },
             "properties": {
                 "id": 2139,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tonhalle"
             }
         },
@@ -9558,7 +9558,7 @@
             },
             "properties": {
                 "id": 2142,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Four Seasons"
             }
         },
@@ -9573,7 +9573,7 @@
             },
             "properties": {
                 "id": 2143,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Im kuehlen Grund"
             }
         },
@@ -9588,7 +9588,7 @@
             },
             "properties": {
                 "id": 2144,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Meteora Restaurant/Gästehaus"
             }
         },
@@ -9603,7 +9603,7 @@
             },
             "properties": {
                 "id": 2148,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Leger"
             }
         },
@@ -9618,7 +9618,7 @@
             },
             "properties": {
                 "id": 2154,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casa Massimo"
             }
         },
@@ -9633,7 +9633,7 @@
             },
             "properties": {
                 "id": 2156,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Fellini"
             }
         },
@@ -9648,7 +9648,7 @@
             },
             "properties": {
                 "id": 2157,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ristorante Rigoletto"
             }
         },
@@ -9663,7 +9663,7 @@
             },
             "properties": {
                 "id": 2159,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "DSC Treffpunkt"
             }
         },
@@ -9678,7 +9678,7 @@
             },
             "properties": {
                 "id": 2160,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant am Zoopark"
             }
         },
@@ -9693,7 +9693,7 @@
             },
             "properties": {
                 "id": 2161,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Dr. Thompson's Bar & Grill"
             }
         },
@@ -9708,7 +9708,7 @@
             },
             "properties": {
                 "id": 2162,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lido"
             }
         },
@@ -9723,7 +9723,7 @@
             },
             "properties": {
                 "id": 2165,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Byliny"
             }
         },
@@ -9738,7 +9738,7 @@
             },
             "properties": {
                 "id": 2166,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Stella"
             }
         },
@@ -9753,7 +9753,7 @@
             },
             "properties": {
                 "id": 2167,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Veatnam"
             }
         },
@@ -9768,7 +9768,7 @@
             },
             "properties": {
                 "id": 2169,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cafe-Restaurant-Biergarten Stoffeln"
             }
         },
@@ -9783,7 +9783,7 @@
             },
             "properties": {
                 "id": 2170,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Haus Deichgraf"
             }
         },
@@ -9798,7 +9798,7 @@
             },
             "properties": {
                 "id": 2171,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Uerige am Markt"
             }
         },
@@ -9813,7 +9813,7 @@
             },
             "properties": {
                 "id": 2179,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "China Restaurant Konfuzius"
             }
         },
@@ -9828,7 +9828,7 @@
             },
             "properties": {
                 "id": 2181,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria La Ruota"
             }
         },
@@ -9843,7 +9843,7 @@
             },
             "properties": {
                 "id": 2184,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "I Due Amici Bistro Ristorante"
             }
         },
@@ -9858,7 +9858,7 @@
             },
             "properties": {
                 "id": 2185,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Haus Germania"
             }
         },
@@ -9873,7 +9873,7 @@
             },
             "properties": {
                 "id": 2192,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hallo Pizza"
             }
         },
@@ -9888,7 +9888,7 @@
             },
             "properties": {
                 "id": 2201,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Landhotel Am Zault"
             }
         },
@@ -9903,7 +9903,7 @@
             },
             "properties": {
                 "id": 2203,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Am Zault"
             }
         },
@@ -9918,7 +9918,7 @@
             },
             "properties": {
                 "id": 2208,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Nostalgia Zur Delle"
             }
         },
@@ -9933,7 +9933,7 @@
             },
             "properties": {
                 "id": 2210,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Maruyasu"
             }
         },
@@ -9948,7 +9948,7 @@
             },
             "properties": {
                 "id": 2215,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Byblos Restaurant"
             }
         },
@@ -9963,7 +9963,7 @@
             },
             "properties": {
                 "id": 2220,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sausalitos"
             }
         },
@@ -9978,7 +9978,7 @@
             },
             "properties": {
                 "id": 2221,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Takumi Tonkotsu"
             }
         },
@@ -9993,7 +9993,7 @@
             },
             "properties": {
                 "id": 2231,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casino des Landtages"
             }
         },
@@ -10008,7 +10008,7 @@
             },
             "properties": {
                 "id": 2238,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bistro Essart"
             }
         },
@@ -10023,7 +10023,7 @@
             },
             "properties": {
                 "id": 2243,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Nudelquelle"
             }
         },
@@ -10038,7 +10038,7 @@
             },
             "properties": {
                 "id": 2244,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "noa foodbar"
             }
         },
@@ -10053,7 +10053,7 @@
             },
             "properties": {
                 "id": 2250,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Barril"
             }
         },
@@ -10068,7 +10068,7 @@
             },
             "properties": {
                 "id": 2251,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Uns Lüü"
             }
         },
@@ -10083,7 +10083,7 @@
             },
             "properties": {
                 "id": 2252,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Mamma"
             }
         },
@@ -10098,7 +10098,7 @@
             },
             "properties": {
                 "id": 2255,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Il Carpaccio"
             }
         },
@@ -10113,7 +10113,7 @@
             },
             "properties": {
                 "id": 2261,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hotel Waldesruh"
             }
         },
@@ -10128,7 +10128,7 @@
             },
             "properties": {
                 "id": 2263,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Altes Fischerhaus"
             }
         },
@@ -10143,7 +10143,7 @@
             },
             "properties": {
                 "id": 2264,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hotte-Hü"
             }
         },
@@ -10158,7 +10158,7 @@
             },
             "properties": {
                 "id": 2265,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Garather Hof"
             }
         },
@@ -10173,7 +10173,7 @@
             },
             "properties": {
                 "id": 2267,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Octagon"
             }
         },
@@ -10188,7 +10188,7 @@
             },
             "properties": {
                 "id": 2270,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Campus Vita – Bar & Restaurant"
             }
         },
@@ -10203,7 +10203,7 @@
             },
             "properties": {
                 "id": 2272,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Mensa"
             }
         },
@@ -10218,7 +10218,7 @@
             },
             "properties": {
                 "id": 2314,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Sabor de España"
             }
         },
@@ -10233,7 +10233,7 @@
             },
             "properties": {
                 "id": 2315,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kleine Trattoria Fratelli"
             }
         },
@@ -10248,7 +10248,7 @@
             },
             "properties": {
                 "id": 2317,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rivass"
             }
         },
@@ -10263,7 +10263,7 @@
             },
             "properties": {
                 "id": 2322,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Famiglia"
             }
         },
@@ -10278,7 +10278,7 @@
             },
             "properties": {
                 "id": 2323,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Nöthel's"
             }
         },
@@ -10293,7 +10293,7 @@
             },
             "properties": {
                 "id": 2327,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Fuyu"
             }
         },
@@ -10308,7 +10308,7 @@
             },
             "properties": {
                 "id": 2331,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Centro Pizza"
             }
         },
@@ -10323,7 +10323,7 @@
             },
             "properties": {
                 "id": 2335,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Franz Brasserie"
             }
         },
@@ -10338,7 +10338,7 @@
             },
             "properties": {
                 "id": 2336,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lupo"
             }
         },
@@ -10353,7 +10353,7 @@
             },
             "properties": {
                 "id": 2338,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "ramen soul"
             }
         },
@@ -10368,7 +10368,7 @@
             },
             "properties": {
                 "id": 2344,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Imbiss Damask"
             }
         },
@@ -10383,7 +10383,7 @@
             },
             "properties": {
                 "id": 2345,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -10398,7 +10398,7 @@
             },
             "properties": {
                 "id": 2346,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Baba Green Kebab & Falafel"
             }
         },
@@ -10413,7 +10413,7 @@
             },
             "properties": {
                 "id": 2350,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vecchio"
             }
         },
@@ -10428,7 +10428,7 @@
             },
             "properties": {
                 "id": 2353,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kichererbse"
             }
         },
@@ -10443,7 +10443,7 @@
             },
             "properties": {
                 "id": 2355,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bistro fatal"
             }
         },
@@ -10458,7 +10458,7 @@
             },
             "properties": {
                 "id": 2356,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Noha"
             }
         },
@@ -10473,7 +10473,7 @@
             },
             "properties": {
                 "id": 2357,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -10488,7 +10488,7 @@
             },
             "properties": {
                 "id": 2359,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rocca"
             }
         },
@@ -10503,7 +10503,7 @@
             },
             "properties": {
                 "id": 2362,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria La Castagnas"
             }
         },
@@ -10518,7 +10518,7 @@
             },
             "properties": {
                 "id": 2364,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cafe D"
             }
         },
@@ -10533,7 +10533,7 @@
             },
             "properties": {
                 "id": 2366,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Yaz"
             }
         },
@@ -10548,7 +10548,7 @@
             },
             "properties": {
                 "id": 2367,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vapiano"
             }
         },
@@ -10563,7 +10563,7 @@
             },
             "properties": {
                 "id": 2370,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Asia Restaurant"
             }
         },
@@ -10578,7 +10578,7 @@
             },
             "properties": {
                 "id": 2374,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Maruyasu"
             }
         },
@@ -10593,7 +10593,7 @@
             },
             "properties": {
                 "id": 2375,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "beluga"
             }
         },
@@ -10608,7 +10608,7 @@
             },
             "properties": {
                 "id": 2379,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Terra Mia"
             }
         },
@@ -10623,7 +10623,7 @@
             },
             "properties": {
                 "id": 2387,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "waraku"
             }
         },
@@ -10638,7 +10638,7 @@
             },
             "properties": {
                 "id": 2388,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Chuzo"
             }
         },
@@ -10653,7 +10653,7 @@
             },
             "properties": {
                 "id": 2393,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Münstermann Kontor"
             }
         },
@@ -10668,7 +10668,7 @@
             },
             "properties": {
                 "id": 2394,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "The Longhorn Steak & Grillhouse"
             }
         },
@@ -10683,7 +10683,7 @@
             },
             "properties": {
                 "id": 2397,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Altstadt-Restaurant"
             }
         },
@@ -10698,7 +10698,7 @@
             },
             "properties": {
                 "id": 2398,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gin Seng"
             }
         },
@@ -10713,7 +10713,7 @@
             },
             "properties": {
                 "id": 2401,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Banh Boyo"
             }
         },
@@ -10728,7 +10728,7 @@
             },
             "properties": {
                 "id": 2403,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "The Grill upper Kö"
             }
         },
@@ -10743,7 +10743,7 @@
             },
             "properties": {
                 "id": 2407,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Soups & Stars"
             }
         },
@@ -10758,7 +10758,7 @@
             },
             "properties": {
                 "id": 2419,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Alberto"
             }
         },
@@ -10773,7 +10773,7 @@
             },
             "properties": {
                 "id": 2421,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Tam Tam"
             }
         },
@@ -10788,7 +10788,7 @@
             },
             "properties": {
                 "id": 2424,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "MASH"
             }
         },
@@ -10803,7 +10803,7 @@
             },
             "properties": {
                 "id": 2428,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "YAKI-THE-EMON 焼左衛門"
             }
         },
@@ -10818,7 +10818,7 @@
             },
             "properties": {
                 "id": 2429,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Takumi Chicken&Veggie"
             }
         },
@@ -10833,7 +10833,7 @@
             },
             "properties": {
                 "id": 2430,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cho"
             }
         },
@@ -10848,7 +10848,7 @@
             },
             "properties": {
                 "id": 2432,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ah-Un"
             }
         },
@@ -10863,7 +10863,7 @@
             },
             "properties": {
                 "id": 2434,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Berens am Kai"
             }
         },
@@ -10878,7 +10878,7 @@
             },
             "properties": {
                 "id": 2435,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Agata's"
             }
         },
@@ -10893,7 +10893,7 @@
             },
             "properties": {
                 "id": 2442,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "China-Thai Imbiss YumYum"
             }
         },
@@ -10908,7 +10908,7 @@
             },
             "properties": {
                 "id": 2443,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vertiko"
             }
         },
@@ -10923,7 +10923,7 @@
             },
             "properties": {
                 "id": 2444,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ein kleines Genussreich"
             }
         },
@@ -10938,7 +10938,7 @@
             },
             "properties": {
                 "id": 2448,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Schwarzes Meer"
             }
         },
@@ -10953,7 +10953,7 @@
             },
             "properties": {
                 "id": 2449,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "POZANGMATCHA 포장마차"
             }
         },
@@ -10968,7 +10968,7 @@
             },
             "properties": {
                 "id": 2460,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Nikolaus Grill"
             }
         },
@@ -10983,7 +10983,7 @@
             },
             "properties": {
                 "id": 2461,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Thymian Pizzeria – Trattoria"
             }
         },
@@ -10998,7 +10998,7 @@
             },
             "properties": {
                 "id": 2462,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Portofino"
             }
         },
@@ -11013,7 +11013,7 @@
             },
             "properties": {
                 "id": 2463,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "I-Gourmet"
             }
         },
@@ -11028,7 +11028,7 @@
             },
             "properties": {
                 "id": 2475,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rajdarbaar"
             }
         },
@@ -11043,7 +11043,7 @@
             },
             "properties": {
                 "id": 2476,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Dr. Kosch"
             }
         },
@@ -11058,7 +11058,7 @@
             },
             "properties": {
                 "id": 2477,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -11073,7 +11073,7 @@
             },
             "properties": {
                 "id": 2478,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -11088,7 +11088,7 @@
             },
             "properties": {
                 "id": 2480,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Da Enzo"
             }
         },
@@ -11103,7 +11103,7 @@
             },
             "properties": {
                 "id": 2482,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Lunitas"
             }
         },
@@ -11118,7 +11118,7 @@
             },
             "properties": {
                 "id": 2488,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "DINEA Café & Restaurant"
             }
         },
@@ -11133,7 +11133,7 @@
             },
             "properties": {
                 "id": 2499,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Perla Beirut"
             }
         },
@@ -11148,7 +11148,7 @@
             },
             "properties": {
                 "id": 2505,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Spaghetti & Stars"
             }
         },
@@ -11163,7 +11163,7 @@
             },
             "properties": {
                 "id": 2512,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Kouzina Restaurant"
             }
         },
@@ -11178,7 +11178,7 @@
             },
             "properties": {
                 "id": 2514,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Trattoria Bistro Bellissima Due"
             }
         },
@@ -11193,7 +11193,7 @@
             },
             "properties": {
                 "id": 2516,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Devona"
             }
         },
@@ -11208,7 +11208,7 @@
             },
             "properties": {
                 "id": 2517,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Emozioni"
             }
         },
@@ -11223,7 +11223,7 @@
             },
             "properties": {
                 "id": 2520,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Esst grün"
             }
         },
@@ -11238,7 +11238,7 @@
             },
             "properties": {
                 "id": 2521,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Beluga"
             }
         },
@@ -11253,7 +11253,7 @@
             },
             "properties": {
                 "id": 2522,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pepella"
             }
         },
@@ -11268,7 +11268,7 @@
             },
             "properties": {
                 "id": 2523,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Trattoria Ottavio"
             }
         },
@@ -11283,7 +11283,7 @@
             },
             "properties": {
                 "id": 2529,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Albers"
             }
         },
@@ -11298,7 +11298,7 @@
             },
             "properties": {
                 "id": 2531,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Fischer´s Kahn"
             }
         },
@@ -11313,7 +11313,7 @@
             },
             "properties": {
                 "id": 2533,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Three kingdoms"
             }
         },
@@ -11328,7 +11328,7 @@
             },
             "properties": {
                 "id": 2535,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Code 6"
             }
         },
@@ -11343,7 +11343,7 @@
             },
             "properties": {
                 "id": 2536,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Brauhof Düsseldorf"
             }
         },
@@ -11358,7 +11358,7 @@
             },
             "properties": {
                 "id": 2538,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "3kingdoms"
             }
         },
@@ -11373,7 +11373,7 @@
             },
             "properties": {
                 "id": 2539,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "La Passione"
             }
         },
@@ -11388,7 +11388,7 @@
             },
             "properties": {
                 "id": 2541,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Green Karma Salads"
             }
         },
@@ -11403,7 +11403,7 @@
             },
             "properties": {
                 "id": 2548,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Pizzeria Tutti Frutti"
             }
         },
@@ -11418,7 +11418,7 @@
             },
             "properties": {
                 "id": 2549,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rossini"
             }
         },
@@ -11433,7 +11433,7 @@
             },
             "properties": {
                 "id": 2552,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Casa Palmieri"
             }
         },
@@ -11448,7 +11448,7 @@
             },
             "properties": {
                 "id": 2555,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Rhodos Taverne"
             }
         },
@@ -11463,7 +11463,7 @@
             },
             "properties": {
                 "id": 2559,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": null
             }
         },
@@ -11478,7 +11478,7 @@
             },
             "properties": {
                 "id": 2563,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Wilma Wunder"
             }
         },
@@ -11493,7 +11493,7 @@
             },
             "properties": {
                 "id": 2564,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Vereinsheim Turngemeinde von 1881 e.V."
             }
         },
@@ -11508,7 +11508,7 @@
             },
             "properties": {
                 "id": 2565,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "China Town"
             }
         },
@@ -11523,7 +11523,7 @@
             },
             "properties": {
                 "id": 2567,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Gastronomie der Tennisgemeinschaft Lörick"
             }
         },
@@ -11538,7 +11538,7 @@
             },
             "properties": {
                 "id": 2568,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Restaurant Am Damm"
             }
         },
@@ -11553,7 +11553,7 @@
             },
             "properties": {
                 "id": 2570,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Okinii"
             }
         },
@@ -11568,7 +11568,7 @@
             },
             "properties": {
                 "id": 2571,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Massi"
             }
         },
@@ -11583,7 +11583,7 @@
             },
             "properties": {
                 "id": 2573,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "finefine"
             }
         },
@@ -11598,7 +11598,7 @@
             },
             "properties": {
                 "id": 2575,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Bistro Erminig"
             }
         },
@@ -11613,7 +11613,7 @@
             },
             "properties": {
                 "id": 2606,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Next to Kushi"
             }
         },
@@ -11628,7 +11628,7 @@
             },
             "properties": {
                 "id": 2607,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "串门Plus Chuan Chuan Plus"
             }
         },
@@ -11643,7 +11643,7 @@
             },
             "properties": {
                 "id": 2608,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Stipes frittierte Pizza"
             }
         },
@@ -11658,7 +11658,7 @@
             },
             "properties": {
                 "id": 2609,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Spatz up"
             }
         },
@@ -11673,7 +11673,7 @@
             },
             "properties": {
                 "id": 2610,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Hai Xian"
             }
         },
@@ -11688,7 +11688,7 @@
             },
             "properties": {
                 "id": 2615,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "öffentliches Betriebscasino IT-NRW"
             }
         },
@@ -11703,7 +11703,7 @@
             },
             "properties": {
                 "id": 2616,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cafe Ouzo Taverna"
             }
         },
@@ -11718,7 +11718,7 @@
             },
             "properties": {
                 "id": 2617,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "L'Osteria"
             }
         },
@@ -11733,7 +11733,7 @@
             },
             "properties": {
                 "id": 2618,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Ponte Vecchio"
             }
         },
@@ -11748,7 +11748,7 @@
             },
             "properties": {
                 "id": 2622,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "L'anima"
             }
         },
@@ -11763,7 +11763,7 @@
             },
             "properties": {
                 "id": 2623,
-                "fclass": "Restauraunt",
+                "category": "Restauraunt",
                 "name": "Cafeteria"
             }
         }

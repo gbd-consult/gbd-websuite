@@ -8,14 +8,16 @@ import gws.types as t
 gws.ext.new.modelField('relatedFeature')
 
 
-class FieldRef(gws.Data):
-    type: t.Optional[str]
-    name: str
+# @TODO support composite keys
+# @TODO support non-primary foreign keys
+
+class RelationshipConfig(gws.Data):
+    modelUid: str
+    foreignKey: str
 
 
 class Config(gws.base.model.field.Config):
-    foreignKey: FieldRef
-    relation: gws.base.model.field.Relation
+    relationship: RelationshipConfig
 
 
 class Props(gws.base.model.field.Props):
@@ -26,12 +28,10 @@ class Object(gws.base.model.field.Object):
     attributeType = gws.AttributeType.feature
 
     model: gws.base.database.model.Object
-    relation: gws.base.model.field.Relation
-    foreignKey: FieldRef
+    relationship: gws.base.model.field.Relationship
 
     def configure(self):
-        self.relation = self.cfg('relation')
-        self.foreignKey = self.cfg('foreignKey')
+        self.relationship = gws.base.model.field.Relationship(self.cfg('relationship'))
 
     def configure_widget(self):
         if not super().configure_widget():
@@ -39,72 +39,91 @@ class Object(gws.base.model.field.Object):
             return True
 
     def props(self, user):
-        return gws.merge(super().props(user), relations=[self.relation])
+        return gws.merge(super().props(user), relationships=[
+            gws.base.model.field.RelationshipProps(
+                modelUid=self.relationship.modelUid,
+                fieldName=self.relationship.fieldName,
+            )
+        ])
 
     def load_from_props(self, feature, props, user, relation_depth=0, **kwargs):
         if relation_depth <= 0:
             return
+
         val = props.attributes.get(self.name)
-        if val is not None:
-            rel_model = self.related_model()
-            rel_rec = rel_model.get_record(gws.FeatureProps(val).uid)
-            rel_feature = rel_model.feature_from_record(rel_rec, user, relation_depth - 1, **kwargs)
-            if rel_feature:
-                feature.attributes[self.name] = rel_feature
+        if val is None:
+            return
+
+        rel_model = self.related_model()
+        if not user.can_read(rel_model):
+            return
+
+        rel_rec = rel_model.get_record(gws.FeatureProps(val).uid)
+        rel_feature = rel_model.feature_from_record(rel_rec, user, relation_depth - 1, **kwargs)
+        if rel_feature:
+            feature.attributes[self.name] = rel_feature
 
     def load_from_record(self, feature, record, user, relation_depth=0, **kwargs):
         if relation_depth <= 0:
             return
-        if hasattr(record, self.name):
-            rel_model = self.related_model()
-            rel_rec = getattr(record, self.name)
-            rel_feature = rel_model.feature_from_record(rel_rec, user, relation_depth - 1, **kwargs)
-            if rel_feature:
-                feature.attributes[self.name] = rel_feature
+
+        rel_rec = getattr(record, self.name, None)
+        if rel_rec is None:
+            return
+
+        rel_model = self.related_model()
+        if not user.can_read(rel_model):
+            return
+
+        rel_feature = rel_model.feature_from_record(rel_rec, user, relation_depth - 1, **kwargs)
+        if rel_feature:
+            feature.attributes[self.name] = rel_feature
 
     def store_to_record(self, feature, record, user, **kwargs):
         ok, rel_feature = self._value_to_write(feature)
-        if ok:
-            rel_model = self.related_model()
-            rel_rec = rel_model.get_record(rel_feature.uid())
-            if rel_rec is not None:
-                setattr(record, self.name, rel_rec)
+        if not ok:
+            return
+        rel_model = self.related_model()
+        rel_rec = rel_model.get_record(rel_feature.uid())
+        if rel_rec is not None:
+            setattr(record, self.name, rel_rec)
 
     ##
 
     def augment_select(self, sel, user):
-        depth = sel.search.relationDepth or 0
-        if depth > 0:
-            sel.saSelect = sel.saSelect.options(
-                sa.orm.selectinload(
-                    getattr(
-                        self.model.record_class(),
-                        self.name)
-                ))
+        relation_depth = sel.search.relationDepth or 0
+        if relation_depth <= 0:
+            return
+        sel.saSelect = sel.saSelect.options(
+            sa.orm.selectinload(
+                getattr(
+                    self.model.record_class(),
+                    self.name)
+            ))
 
     def columns(self):
         rel_model = self.related_model()
-        rel_keys = rel_model.primary_keys()
+        rel_key = rel_model.primary_keys()[0]
         return [
-            sa.Column(self.foreignKey.name, sa.ForeignKey(rel_keys[0]))
+            sa.Column(self.relationship.foreignKey, sa.ForeignKey(rel_key))
         ]
 
     def orm_properties(self):
         rel_model = self.related_model()
         rel_cls = rel_model.record_class()
+        rel_key = rel_model.primary_keys()[0]
+
+        our_cls = self.model.record_class()
+
         kwargs = {}
-
-        rel_pk = rel_model.primary_keys()[0]
-        own_cls = self.model.record_class()
-
-        kwargs['primaryjoin'] = getattr(own_cls, self.foreignKey.name) == getattr(rel_cls, rel_pk.name)
-
-        if self.relation.fieldName:
-            kwargs['back_populates'] = self.relation.fieldName
+        # kwargs['primaryjoin'] = getattr(our_cls, self.relationship.foreignKey) == getattr(rel_cls, rel_key.name)
+        kwargs['foreign_keys'] = getattr(our_cls, self.relationship.foreignKey)
+        # if self.relationship.fieldName:
+        #     kwargs['back_populates'] = self.relationship.fieldName
 
         return {
             self.name: sa.orm.relationship(rel_cls, **kwargs)
         }
 
     def related_model(self) -> gws.IDatabaseModel:
-        return self.model.provider.mgr.model(self.relation.modelUid)
+        return self.model.provider.mgr.model(self.relationship.modelUid)

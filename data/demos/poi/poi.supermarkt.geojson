@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 2,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "basic Bio-Supermarkt"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 19,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto City"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 51,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 60,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto City Filiale"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 63,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 70,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Kömüscü Market"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 95,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "EDEKA Rath"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 113,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto Oberbilk"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 126,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny Markt"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 127,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Marketim Hipermarket"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 130,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 133,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 141,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "METRO Cash & Carry"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 148,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Norma GmbH"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 149,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 152,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 179,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Aldi Süd"
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 180,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Edeka"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 181,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 195,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE"
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 197,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Bauernladen"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 199,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE CITY"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 200,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE Flingern-Süd"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 220,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Edeka Tschoepe"
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 231,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 248,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Center Shop"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 261,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 266,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE Flingern-Nord"
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 298,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "nah&frisch"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 299,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE"
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 301,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Emmas Enkel"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 310,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 317,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto City"
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 318,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 338,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Aldi Süd"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 347,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 351,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE CITY"
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 360,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE"
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 361,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 401,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": null
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 410,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto City"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 414,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE CITY"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 466,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI an der KÖ/Friedrichstadt"
             }
         },
@@ -663,7 +663,7 @@
             },
             "properties": {
                 "id": 484,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Edeka Uwe Politt"
             }
         },
@@ -678,7 +678,7 @@
             },
             "properties": {
                 "id": 486,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "TEMMA"
             }
         },
@@ -693,7 +693,7 @@
             },
             "properties": {
                 "id": 497,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Nador Markt"
             }
         },
@@ -708,7 +708,7 @@
             },
             "properties": {
                 "id": 514,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE CITY"
             }
         },
@@ -723,7 +723,7 @@
             },
             "properties": {
                 "id": 540,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -738,7 +738,7 @@
             },
             "properties": {
                 "id": 549,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Edeka Steinert"
             }
         },
@@ -753,7 +753,7 @@
             },
             "properties": {
                 "id": 553,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Flingern-Süd"
             }
         },
@@ -768,7 +768,7 @@
             },
             "properties": {
                 "id": 578,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Edeka Stockheim"
             }
         },
@@ -783,7 +783,7 @@
             },
             "properties": {
                 "id": 592,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Şen Market"
             }
         },
@@ -798,7 +798,7 @@
             },
             "properties": {
                 "id": 616,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE City"
             }
         },
@@ -813,7 +813,7 @@
             },
             "properties": {
                 "id": 643,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny"
             }
         },
@@ -828,7 +828,7 @@
             },
             "properties": {
                 "id": 646,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Can Feinkost II"
             }
         },
@@ -843,7 +843,7 @@
             },
             "properties": {
                 "id": 650,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "C & M Market"
             }
         },
@@ -858,7 +858,7 @@
             },
             "properties": {
                 "id": 657,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Libanesischer Supermarkt"
             }
         },
@@ -873,7 +873,7 @@
             },
             "properties": {
                 "id": 658,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Türkischer Supermarkt Ergül"
             }
         },
@@ -888,7 +888,7 @@
             },
             "properties": {
                 "id": 664,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -903,7 +903,7 @@
             },
             "properties": {
                 "id": 668,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto Marken-Discount"
             }
         },
@@ -918,7 +918,7 @@
             },
             "properties": {
                 "id": 687,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -933,7 +933,7 @@
             },
             "properties": {
                 "id": 688,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE CITY"
             }
         },
@@ -948,7 +948,7 @@
             },
             "properties": {
                 "id": 700,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny"
             }
         },
@@ -963,7 +963,7 @@
             },
             "properties": {
                 "id": 708,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -978,7 +978,7 @@
             },
             "properties": {
                 "id": 731,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Daorung Asia Shop"
             }
         },
@@ -993,7 +993,7 @@
             },
             "properties": {
                 "id": 733,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1008,7 +1008,7 @@
             },
             "properties": {
                 "id": 738,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Alnatura"
             }
         },
@@ -1023,7 +1023,7 @@
             },
             "properties": {
                 "id": 750,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE"
             }
         },
@@ -1038,7 +1038,7 @@
             },
             "properties": {
                 "id": 761,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Annes Bioladen"
             }
         },
@@ -1053,7 +1053,7 @@
             },
             "properties": {
                 "id": 762,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Nah & Frisch"
             }
         },
@@ -1068,7 +1068,7 @@
             },
             "properties": {
                 "id": 812,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1083,7 +1083,7 @@
             },
             "properties": {
                 "id": 834,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "NORMA"
             }
         },
@@ -1098,7 +1098,7 @@
             },
             "properties": {
                 "id": 851,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny"
             }
         },
@@ -1113,7 +1113,7 @@
             },
             "properties": {
                 "id": 907,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "PENNY"
             }
         },
@@ -1128,7 +1128,7 @@
             },
             "properties": {
                 "id": 920,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny Markt"
             }
         },
@@ -1143,7 +1143,7 @@
             },
             "properties": {
                 "id": 931,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI"
             }
         },
@@ -1158,7 +1158,7 @@
             },
             "properties": {
                 "id": 938,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "SuperBioMarkt"
             }
         },
@@ -1173,7 +1173,7 @@
             },
             "properties": {
                 "id": 949,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny"
             }
         },
@@ -1188,7 +1188,7 @@
             },
             "properties": {
                 "id": 951,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1203,7 +1203,7 @@
             },
             "properties": {
                 "id": 960,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1218,7 +1218,7 @@
             },
             "properties": {
                 "id": 983,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -1233,7 +1233,7 @@
             },
             "properties": {
                 "id": 986,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Kaiser's"
             }
         },
@@ -1248,7 +1248,7 @@
             },
             "properties": {
                 "id": 995,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -1263,7 +1263,7 @@
             },
             "properties": {
                 "id": 1004,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI"
             }
         },
@@ -1278,7 +1278,7 @@
             },
             "properties": {
                 "id": 1007,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1293,7 +1293,7 @@
             },
             "properties": {
                 "id": 1018,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Edeka"
             }
         },
@@ -1308,7 +1308,7 @@
             },
             "properties": {
                 "id": 1023,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -1323,7 +1323,7 @@
             },
             "properties": {
                 "id": 1034,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -1338,7 +1338,7 @@
             },
             "properties": {
                 "id": 1037,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1353,7 +1353,7 @@
             },
             "properties": {
                 "id": 1044,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE"
             }
         },
@@ -1368,7 +1368,7 @@
             },
             "properties": {
                 "id": 1047,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1383,7 +1383,7 @@
             },
             "properties": {
                 "id": 1051,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "WAYO Delikatessen"
             }
         },
@@ -1398,7 +1398,7 @@
             },
             "properties": {
                 "id": 1163,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "EDEKA"
             }
         },
@@ -1413,7 +1413,7 @@
             },
             "properties": {
                 "id": 1172,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "EDEKA xpress Shariat"
             }
         },
@@ -1428,7 +1428,7 @@
             },
             "properties": {
                 "id": 1188,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Deniz Market"
             }
         },
@@ -1443,7 +1443,7 @@
             },
             "properties": {
                 "id": 1200,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1458,7 +1458,7 @@
             },
             "properties": {
                 "id": 1210,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe City"
             }
         },
@@ -1473,7 +1473,7 @@
             },
             "properties": {
                 "id": 1214,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto City"
             }
         },
@@ -1488,7 +1488,7 @@
             },
             "properties": {
                 "id": 1216,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Asia Markt"
             }
         },
@@ -1503,7 +1503,7 @@
             },
             "properties": {
                 "id": 1217,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Tak Supermarkt"
             }
         },
@@ -1518,7 +1518,7 @@
             },
             "properties": {
                 "id": 1220,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -1533,7 +1533,7 @@
             },
             "properties": {
                 "id": 1262,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE"
             }
         },
@@ -1548,7 +1548,7 @@
             },
             "properties": {
                 "id": 1267,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1563,7 +1563,7 @@
             },
             "properties": {
                 "id": 1291,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Reformhaus Bacher"
             }
         },
@@ -1578,7 +1578,7 @@
             },
             "properties": {
                 "id": 1294,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI"
             }
         },
@@ -1593,7 +1593,7 @@
             },
             "properties": {
                 "id": 1313,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Leben-findet-Stadt-Halle"
             }
         },
@@ -1608,7 +1608,7 @@
             },
             "properties": {
                 "id": 1392,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Kaufland Derendorf"
             }
         },
@@ -1623,7 +1623,7 @@
             },
             "properties": {
                 "id": 1399,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1638,7 +1638,7 @@
             },
             "properties": {
                 "id": 1414,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "BioHaus"
             }
         },
@@ -1653,7 +1653,7 @@
             },
             "properties": {
                 "id": 1420,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "EDEKA"
             }
         },
@@ -1668,7 +1668,7 @@
             },
             "properties": {
                 "id": 1421,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI"
             }
         },
@@ -1683,7 +1683,7 @@
             },
             "properties": {
                 "id": 1456,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE City"
             }
         },
@@ -1698,7 +1698,7 @@
             },
             "properties": {
                 "id": 1480,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -1713,7 +1713,7 @@
             },
             "properties": {
                 "id": 1508,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Kashmir Store"
             }
         },
@@ -1728,7 +1728,7 @@
             },
             "properties": {
                 "id": 1518,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "EDEKA Golzheim"
             }
         },
@@ -1743,7 +1743,7 @@
             },
             "properties": {
                 "id": 1552,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Aussar Markt"
             }
         },
@@ -1758,7 +1758,7 @@
             },
             "properties": {
                 "id": 1563,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "SuperBioMarkt"
             }
         },
@@ -1773,7 +1773,7 @@
             },
             "properties": {
                 "id": 1567,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1788,7 +1788,7 @@
             },
             "properties": {
                 "id": 1568,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI"
             }
         },
@@ -1803,7 +1803,7 @@
             },
             "properties": {
                 "id": 1594,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Natürlich Natürlich"
             }
         },
@@ -1818,7 +1818,7 @@
             },
             "properties": {
                 "id": 1615,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE to go"
             }
         },
@@ -1833,7 +1833,7 @@
             },
             "properties": {
                 "id": 1625,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Nikolaou GmbH"
             }
         },
@@ -1848,7 +1848,7 @@
             },
             "properties": {
                 "id": 1627,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Edeka"
             }
         },
@@ -1863,7 +1863,7 @@
             },
             "properties": {
                 "id": 1647,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "NORMA"
             }
         },
@@ -1878,7 +1878,7 @@
             },
             "properties": {
                 "id": 1679,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny Garath"
             }
         },
@@ -1893,7 +1893,7 @@
             },
             "properties": {
                 "id": 1684,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE City"
             }
         },
@@ -1908,7 +1908,7 @@
             },
             "properties": {
                 "id": 1686,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Continent"
             }
         },
@@ -1923,7 +1923,7 @@
             },
             "properties": {
                 "id": 1688,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1938,7 +1938,7 @@
             },
             "properties": {
                 "id": 1695,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Bilk (Süd)"
             }
         },
@@ -1953,7 +1953,7 @@
             },
             "properties": {
                 "id": 1716,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Fresh Asia"
             }
         },
@@ -1968,7 +1968,7 @@
             },
             "properties": {
                 "id": 1718,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -1983,7 +1983,7 @@
             },
             "properties": {
                 "id": 1732,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "nah & frisch"
             }
         },
@@ -1998,7 +1998,7 @@
             },
             "properties": {
                 "id": 1739,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "PENNY Markt"
             }
         },
@@ -2013,7 +2013,7 @@
             },
             "properties": {
                 "id": 1781,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Edeka Paschmann"
             }
         },
@@ -2028,7 +2028,7 @@
             },
             "properties": {
                 "id": 1798,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Shochiku"
             }
         },
@@ -2043,7 +2043,7 @@
             },
             "properties": {
                 "id": 1801,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Hanaro Markt"
             }
         },
@@ -2058,7 +2058,7 @@
             },
             "properties": {
                 "id": 1825,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Lichtenbroich"
             }
         },
@@ -2073,7 +2073,7 @@
             },
             "properties": {
                 "id": 1827,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "PENNY Markt Bilker Corner"
             }
         },
@@ -2088,7 +2088,7 @@
             },
             "properties": {
                 "id": 1835,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "denn's Biomarkt"
             }
         },
@@ -2103,7 +2103,7 @@
             },
             "properties": {
                 "id": 1858,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Alnatura"
             }
         },
@@ -2118,7 +2118,7 @@
             },
             "properties": {
                 "id": 1890,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Reformhaus Pothmann"
             }
         },
@@ -2133,7 +2133,7 @@
             },
             "properties": {
                 "id": 1891,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "BUTLERS"
             }
         },
@@ -2148,7 +2148,7 @@
             },
             "properties": {
                 "id": 1909,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -2163,7 +2163,7 @@
             },
             "properties": {
                 "id": 1915,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Himmelgeist"
             }
         },
@@ -2178,7 +2178,7 @@
             },
             "properties": {
                 "id": 1919,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Ringeltaube"
             }
         },
@@ -2193,7 +2193,7 @@
             },
             "properties": {
                 "id": 1937,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Eller"
             }
         },
@@ -2208,7 +2208,7 @@
             },
             "properties": {
                 "id": 1940,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny"
             }
         },
@@ -2223,7 +2223,7 @@
             },
             "properties": {
                 "id": 1943,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Heerdt"
             }
         },
@@ -2238,7 +2238,7 @@
             },
             "properties": {
                 "id": 1944,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -2253,7 +2253,7 @@
             },
             "properties": {
                 "id": 1948,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Feinkost Cayan"
             }
         },
@@ -2268,7 +2268,7 @@
             },
             "properties": {
                 "id": 1978,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "SuperBioMarkt"
             }
         },
@@ -2283,7 +2283,7 @@
             },
             "properties": {
                 "id": 1991,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny"
             }
         },
@@ -2298,7 +2298,7 @@
             },
             "properties": {
                 "id": 1993,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Platte"
             }
         },
@@ -2313,7 +2313,7 @@
             },
             "properties": {
                 "id": 2003,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -2328,7 +2328,7 @@
             },
             "properties": {
                 "id": 2078,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "penny"
             }
         },
@@ -2343,7 +2343,7 @@
             },
             "properties": {
                 "id": 2126,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Mörsenbroich"
             }
         },
@@ -2358,7 +2358,7 @@
             },
             "properties": {
                 "id": 2135,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -2373,7 +2373,7 @@
             },
             "properties": {
                 "id": 2212,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Reformhaus Goll"
             }
         },
@@ -2388,7 +2388,7 @@
             },
             "properties": {
                 "id": 2273,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Derendorf"
             }
         },
@@ -2403,7 +2403,7 @@
             },
             "properties": {
                 "id": 2274,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Düsseltal"
             }
         },
@@ -2418,7 +2418,7 @@
             },
             "properties": {
                 "id": 2275,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Düsseltal"
             }
         },
@@ -2433,7 +2433,7 @@
             },
             "properties": {
                 "id": 2276,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Flingern-Nord"
             }
         },
@@ -2448,7 +2448,7 @@
             },
             "properties": {
                 "id": 2277,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Flingern-Nord"
             }
         },
@@ -2463,7 +2463,7 @@
             },
             "properties": {
                 "id": 2278,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Flingern-Süd"
             }
         },
@@ -2478,7 +2478,7 @@
             },
             "properties": {
                 "id": 2279,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Flingern-Süd"
             }
         },
@@ -2493,7 +2493,7 @@
             },
             "properties": {
                 "id": 2280,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -2508,7 +2508,7 @@
             },
             "properties": {
                 "id": 2281,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -2523,7 +2523,7 @@
             },
             "properties": {
                 "id": 2282,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Real"
             }
         },
@@ -2538,7 +2538,7 @@
             },
             "properties": {
                 "id": 2283,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI"
             }
         },
@@ -2553,7 +2553,7 @@
             },
             "properties": {
                 "id": 2284,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Bilk"
             }
         },
@@ -2568,7 +2568,7 @@
             },
             "properties": {
                 "id": 2285,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "EDEKA Bilk (Süd)"
             }
         },
@@ -2583,7 +2583,7 @@
             },
             "properties": {
                 "id": 2287,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Oberbilk (Süd)"
             }
         },
@@ -2598,7 +2598,7 @@
             },
             "properties": {
                 "id": 2291,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Friedrichstadt"
             }
         },
@@ -2613,7 +2613,7 @@
             },
             "properties": {
                 "id": 2292,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Polichronidis Handels GmbH"
             }
         },
@@ -2628,7 +2628,7 @@
             },
             "properties": {
                 "id": 2293,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Oberbilk"
             }
         },
@@ -2643,7 +2643,7 @@
             },
             "properties": {
                 "id": 2294,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Marjan Market"
             }
         },
@@ -2658,7 +2658,7 @@
             },
             "properties": {
                 "id": 2296,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "EDEKA"
             }
         },
@@ -2673,7 +2673,7 @@
             },
             "properties": {
                 "id": 2297,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Lohausen"
             }
         },
@@ -2688,7 +2688,7 @@
             },
             "properties": {
                 "id": 2299,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Angermund"
             }
         },
@@ -2703,7 +2703,7 @@
             },
             "properties": {
                 "id": 2301,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Rath"
             }
         },
@@ -2718,7 +2718,7 @@
             },
             "properties": {
                 "id": 2302,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto Rath"
             }
         },
@@ -2733,7 +2733,7 @@
             },
             "properties": {
                 "id": 2303,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Rath"
             }
         },
@@ -2748,7 +2748,7 @@
             },
             "properties": {
                 "id": 2304,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Penny"
             }
         },
@@ -2763,7 +2763,7 @@
             },
             "properties": {
                 "id": 2305,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "SuperBioMarkt"
             }
         },
@@ -2778,7 +2778,7 @@
             },
             "properties": {
                 "id": 2307,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -2793,7 +2793,7 @@
             },
             "properties": {
                 "id": 2309,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Vennhausen"
             }
         },
@@ -2808,7 +2808,7 @@
             },
             "properties": {
                 "id": 2310,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Lierenfeld"
             }
         },
@@ -2823,7 +2823,7 @@
             },
             "properties": {
                 "id": 2311,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -2838,7 +2838,7 @@
             },
             "properties": {
                 "id": 2312,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Edeka Center Celik Wersten"
             }
         },
@@ -2853,7 +2853,7 @@
             },
             "properties": {
                 "id": 2326,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Tains nahkauf"
             }
         },
@@ -2868,7 +2868,7 @@
             },
             "properties": {
                 "id": 2376,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto Marken-Discount City"
             }
         },
@@ -2883,7 +2883,7 @@
             },
             "properties": {
                 "id": 2392,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -2898,7 +2898,7 @@
             },
             "properties": {
                 "id": 2396,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": null
             }
         },
@@ -2913,7 +2913,7 @@
             },
             "properties": {
                 "id": 2399,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -2928,7 +2928,7 @@
             },
             "properties": {
                 "id": 2402,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -2943,7 +2943,7 @@
             },
             "properties": {
                 "id": 2411,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL"
             }
         },
@@ -2958,7 +2958,7 @@
             },
             "properties": {
                 "id": 2412,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI Reisholz Nord"
             }
         },
@@ -2973,7 +2973,7 @@
             },
             "properties": {
                 "id": 2413,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Reisholz"
             }
         },
@@ -2988,7 +2988,7 @@
             },
             "properties": {
                 "id": 2416,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "LIDL Benrath"
             }
         },
@@ -3003,7 +3003,7 @@
             },
             "properties": {
                 "id": 2417,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "EDEKA - Zurheide"
             }
         },
@@ -3018,7 +3018,7 @@
             },
             "properties": {
                 "id": 2418,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE Benrath"
             }
         },
@@ -3033,7 +3033,7 @@
             },
             "properties": {
                 "id": 2450,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Aldi"
             }
         },
@@ -3048,7 +3048,7 @@
             },
             "properties": {
                 "id": 2451,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Rewe"
             }
         },
@@ -3063,7 +3063,7 @@
             },
             "properties": {
                 "id": 2452,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE"
             }
         },
@@ -3078,7 +3078,7 @@
             },
             "properties": {
                 "id": 2453,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Aldi Süd"
             }
         },
@@ -3093,7 +3093,7 @@
             },
             "properties": {
                 "id": 2454,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Aldi Süd"
             }
         },
@@ -3108,7 +3108,7 @@
             },
             "properties": {
                 "id": 2456,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Netto"
             }
         },
@@ -3123,7 +3123,7 @@
             },
             "properties": {
                 "id": 2459,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "ALDI"
             }
         },
@@ -3138,7 +3138,7 @@
             },
             "properties": {
                 "id": 2473,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Zurheide Center Düsseldorf"
             }
         },
@@ -3153,7 +3153,7 @@
             },
             "properties": {
                 "id": 2474,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Nahkauf"
             }
         },
@@ -3168,7 +3168,7 @@
             },
             "properties": {
                 "id": 2519,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Lidl"
             }
         },
@@ -3183,7 +3183,7 @@
             },
             "properties": {
                 "id": 2525,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "REWE To Go bei Aral"
             }
         },
@@ -3198,7 +3198,7 @@
             },
             "properties": {
                 "id": 2545,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Aldi Süd"
             }
         },
@@ -3213,7 +3213,7 @@
             },
             "properties": {
                 "id": 2558,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Al Hoceima Markt"
             }
         },
@@ -3228,7 +3228,7 @@
             },
             "properties": {
                 "id": 2562,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Real"
             }
         },
@@ -3243,7 +3243,7 @@
             },
             "properties": {
                 "id": 2612,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "denn's Biomarkt"
             }
         },
@@ -3258,7 +3258,7 @@
             },
             "properties": {
                 "id": 2614,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "G.F.T Hypermarket"
             }
         },
@@ -3273,7 +3273,7 @@
             },
             "properties": {
                 "id": 2620,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Pure Note (verpackungsfrei)"
             }
         },
@@ -3288,7 +3288,7 @@
             },
             "properties": {
                 "id": 2629,
-                "fclass": "Supermarkt",
+                "category": "Supermarkt",
                 "name": "Lidl"
             }
         }

@@ -123,7 +123,8 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         with self.session() as sess:
             res = sess.execute(sel.saSelect)
             for record in res.unique().scalars().all():
-                features.append(self.feature_from_record(record, user, search.relationDepth or 0, **kwargs))
+                features.append(
+                    self.feature_from_record(record, user, search.relationDepth or 0, **kwargs))
 
         return features
 

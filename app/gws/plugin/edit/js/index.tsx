@@ -11,7 +11,7 @@ import * as components from 'gws/components';
 const DEFAULT_MESSAGE_PREFIX = 'validationError_';
 
 const SEARCH_TIMEOUT = 500;
-const GEOMETRY_TIMEOUT = 500;
+const GEOMETRY_TIMEOUT = 2000;
 
 
 let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
@@ -42,14 +42,15 @@ interface EditState {
     featureCache: { [key: string]: FeatureCacheElement },
 }
 
-interface SelectRelationDialogData {
-    type: 'SelectRelation';
-    relations: Array<gws.types.IModelRelation>;
-    whenRelationSelected: (r: gws.types.IModelRelation) => void;
+interface SelectRelationshipDialogData {
+    type: 'SelectRelationship';
+    relationships: Array<gws.api.base.model.field.RelationshipProps>;
+    whenRelationshipSelected: (r: gws.api.base.model.field.RelationshipProps) => void;
 }
 
 interface SelectFeatureDialogData {
     type: 'SelectFeature';
+    model: gws.types.IModel;
     field: gws.types.IModelField;
     features: Array<gws.types.IFeature>;
     whenFeatureTouched: (f: gws.types.IFeature) => void;
@@ -69,7 +70,7 @@ interface ErrorDialogData {
 }
 
 type DialogData =
-    SelectRelationDialogData
+    SelectRelationshipDialogData
     | SelectFeatureDialogData
     | DeleteFeatureDialogData
     | ErrorDialogData;
@@ -290,8 +291,8 @@ class Dialog extends gws.View<ViewProps> {
         }
 
         switch (dd.type) {
-            case 'SelectRelation':
-                return <SelectRelationDialog {...this.props} />
+            case 'SelectRelationship':
+                return <SelectRelationshipDialog {...this.props} />
             case 'SelectFeature':
                 return <SelectFeatureDialog {...this.props} />
             case 'DeleteFeature':
@@ -302,9 +303,9 @@ class Dialog extends gws.View<ViewProps> {
     }
 }
 
-class SelectRelationDialog extends gws.View<ViewProps> {
+class SelectRelationshipDialog extends gws.View<ViewProps> {
     render() {
-        let dd = this.props.editDialogData as SelectRelationDialogData;
+        let dd = this.props.editDialogData as SelectRelationshipDialogData;
         let cc = _master(this);
 
         let cancelButton = <gws.ui.Button
@@ -312,16 +313,14 @@ class SelectRelationDialog extends gws.View<ViewProps> {
             whenTouched={() => cc.closeDialog()}
         />;
 
-        let relations = dd.relations;
-        let items = relations.map((r, n) => ({
+        let items = dd.relationships.map((rel, n) => ({
             value: n,
-            text: r.title,
+            text: cc.getModel(rel.modelUid).title,
         }));
-        let fn = dd.whenRelationSelected;
 
         return <gws.ui.Dialog
-            className="editSelectRelationDialog"
-            title={this.__('editSelectRelationTitle')}
+            className="editSelectRelationshipDialog"
+            title={this.__('editSelectRelationshipTitle')}
             whenClosed={() => cc.closeDialog()}
             buttons={[cancelButton]}
         >
@@ -331,7 +330,7 @@ class SelectRelationDialog extends gws.View<ViewProps> {
                         <gws.ui.List
                             items={items}
                             value={null}
-                            whenChanged={v => fn(relations[v])}
+                            whenChanged={v => dd.whenRelationshipSelected(dd.relationships[v])}
                         />
                     </Cell>
                 </Row>
@@ -352,8 +351,6 @@ class SelectFeatureDialog extends gws.View<ViewProps> {
             whenTouched={() => cc.closeDialog()}
         />;
 
-        let relModel = cc.relatedModelForField(dd.field)
-
         return <gws.ui.Dialog
             className="editSelectFeatureDialog"
             title={this.__('editSelectFeatureTitle')}
@@ -366,7 +363,7 @@ class SelectFeatureDialog extends gws.View<ViewProps> {
                 whenSearchChanged={dd.whenSearchChanged}
                 features={features}
                 searchText={searchText}
-                withSearch={relModel && relModel.supportsKeywordSearch}
+                withSearch={dd.model.supportsKeywordSearch}
             />
         </gws.ui.Dialog>;
     }
@@ -467,7 +464,7 @@ class ModelsTab extends gws.View<ViewProps> {
 
 class ModelsTabController extends Helper {
     get models() {
-        return this.master.models;
+        return this.master.app.models.editableModels();
     }
 
     async whenModelListItemTouched(model: gws.types.IModel) {
@@ -541,10 +538,6 @@ class ListTab extends gws.View<ViewProps> {
 class ListTabController extends Helper {
     _searchTimer = 0;
 
-    get models() {
-        return this.master.models;
-    }
-
     async whenMounted() {
         await this.master.loadFeaturesForSelectedModel();
     }
@@ -592,17 +585,10 @@ class ListTabController extends Helper {
 
 class FormTab extends gws.View<ViewProps> {
     async componentDidMount() {
-        console.log('FormTab componentDidMount')
         let cc = _master(this).formTabController;
         await cc.whenMounted()
     }
 
-    // async componentDidUpdate() {
-    //     console.log('FormTab componentDidUpdate')
-    //     let cc = _master(this).formTabController;
-    //     await cc.whenMounted()
-    // }
-    //
     render() {
         let cc = _master(this).formTabController;
         let es = this.props.editState;
@@ -730,12 +716,12 @@ class FeatureListWidgetHelper extends Helper implements WidgetHelper {
         props.whenDeleteButtonTouched = f => this.whenDeleteButtonTouched(field, f);
     }
 
-    async whenRelationSelected(field: gws.types.IModelField, relation: gws.types.IModelRelation) {
+    async whenRelationshipForNewSelected(field: gws.types.IModelField, rel: gws.api.base.model.field.RelationshipProps) {
         let es = this.editState;
         let sf = es.selectedFeature;
         let attributes = {};
-        let relModel = this.master.relatedModelForField(field);
-        let relField = relModel.getField(relation.fieldName);
+        let relModel = this.master.getModel(rel.modelUid);
+        let relField = relModel.getField(rel.fieldName);
 
         if (relField.attributeType === gws.api.core.AttributeType.feature) {
             attributes[relField.name] = sf;
@@ -746,7 +732,7 @@ class FeatureListWidgetHelper extends Helper implements WidgetHelper {
         }
 
         let feature = await this.master.createFeature(relModel, attributes, null);
-        await this.master.formTabController.updateRelatedFeatures(feature);
+        await this.master.updateRelatedFeatures(feature);
 
         this.master.pushFeature(sf);
         this.master.selectFeature(feature);
@@ -754,26 +740,35 @@ class FeatureListWidgetHelper extends Helper implements WidgetHelper {
     }
 
     async whenNewButtonTouched(field: gws.types.IModelField) {
-        if (field.relations.length === 1)
-            return this.whenRelationSelected(field, field.relations[0]);
-
+        if (field.relationships.length === 1) {
+            return this.whenRelationshipForNewSelected(field, field.relationships[0]);
+        }
         this.master.showDialog({
-            type: 'SelectRelation',
-            relations: field.relations,
-            whenRelationSelected: rel => this.whenRelationSelected(field, rel),
+            type: 'SelectRelationship',
+            relationships: field.relationships,
+            whenRelationshipSelected: rel => this.whenRelationshipForNewSelected(field, rel),
         });
     }
 
-    async whenEditButtonTouched(field: gws.types.IModelField, feature: gws.types.IFeature) {
-        let es = this.editState;
-        let sf = es.selectedFeature;
-        let loaded = await this.master.loadFeatureForForm(feature);
-        if (loaded) {
-            await this.master.formTabController.updateRelatedFeatures(loaded);
-            this.master.pushFeature(sf);
-            this.master.selectFeature(loaded);
-            this.master.panToFeature(loaded);
-        }
+    async whenRelationshipForLinkSelected(field: gws.types.IModelField, rel: gws.api.base.model.field.RelationshipProps) {
+        let relModel = this.master.getModel(rel.modelUid);
+        let cacheUid = field.uid + relModel.uid;
+
+        await this.master.loadFeaturesForList(
+            cacheUid,
+            relModel,
+            this.editState.searchText[field.uid],
+        );
+
+        this.master.showDialog({
+            type: 'SelectFeature',
+            model: relModel,
+            field,
+            features: this.master.cachedFeatures(cacheUid),
+            whenFeatureTouched: feature => this.whenLinkedFeatureSelected(field, feature),
+            whenSearchChanged: val => this.master.formTabController.whenSearchChanged(field, val),
+        });
+
     }
 
     whenLinkedFeatureSelected(field, feature) {
@@ -787,15 +782,28 @@ class FeatureListWidgetHelper extends Helper implements WidgetHelper {
     }
 
     async whenLinkButtonTouched(field: gws.types.IModelField) {
-        await this.master.formTabController.loadRelatedFeatures(field);
+        if (field.relationships.length === 1) {
+            return this.whenRelationshipForLinkSelected(field, field.relationships[0]);
+        }
         this.master.showDialog({
-            type: 'SelectFeature',
-            field,
-            features: this.master.cachedFeatures(field.uid),
-            whenFeatureTouched: feature => this.whenLinkedFeatureSelected(field, feature),
-            whenSearchChanged: val => this.master.formTabController.whenSearchChanged(field, val),
+            type: 'SelectRelationship',
+            relationships: field.relationships,
+            whenRelationshipSelected: rel => this.whenRelationshipForLinkSelected(field, rel),
         });
     }
+
+    async whenEditButtonTouched(field: gws.types.IModelField, feature: gws.types.IFeature) {
+        let es = this.editState;
+        let sf = es.selectedFeature;
+        let loaded = await this.master.loadFeatureForForm(feature);
+        if (loaded) {
+            await this.master.updateRelatedFeatures(loaded);
+            this.master.pushFeature(sf);
+            this.master.selectFeature(loaded);
+            this.master.panToFeature(loaded);
+        }
+    }
+
 
     whenUnlinkButtonTouched(field: gws.types.IModelField, feature: gws.types.IFeature) {
     }
@@ -836,13 +844,12 @@ class FormTabController extends Helper {
         }
     }
 
-
     async whenMounted() {
         let sf = this.editState.selectedFeature;
         if (!sf)
             return;
         this.master.updateEditState({formErrors: []});
-        await this.updateRelatedFeatures(sf);
+        await this.master.updateRelatedFeatures(sf);
     }
 
     async whenSaveButtonTouched() {
@@ -885,7 +892,7 @@ class FormTabController extends Helper {
         this.master.updateSearchText(field.uid, val);
         clearTimeout(this._searchTimer);
         this._searchTimer = Number(setTimeout(
-            () => this.loadRelatedFeatures(field),
+            () => this.master.loadRelatedFeatures(field),
             SEARCH_TIMEOUT));
     }
 
@@ -924,25 +931,6 @@ class FormTabController extends Helper {
         }
 
         return controller.view(props)
-    }
-
-    async updateRelatedFeatures(feature) {
-        for (let field of feature.model.fields) {
-            if (field.attributeType === gws.api.core.AttributeType.feature) {
-                await this.loadRelatedFeatures(field)
-            }
-        }
-    }
-
-    async loadRelatedFeatures(field: gws.types.IModelField) {
-        let model = this.master.relatedModelForField(field);
-        if (model) {
-            return this.master.loadFeaturesForList(
-                field.uid,
-                model,
-                this.editState.searchText[field.uid],
-            );
-        }
     }
 
 }
@@ -1002,9 +990,7 @@ class EditLayer extends gws.map.layer.FeatureLayer {
 
 class Controller extends gws.Controller {
     uid = MASTER;
-    models: Array<gws.types.IModel>;
     editLayer: EditLayer;
-    _geometryTimer = 0;
 
     modelsTabController = new ModelsTabController(this);
     listTabController = new ListTabController(this);
@@ -1014,7 +1000,7 @@ class Controller extends gws.Controller {
     async init() {
         await super.init();
 
-        this.models = this.app.models.editableModels();
+        let models = this.app.models.editableModels();
 
         this.updateEditState({
             searchText: {},
@@ -1023,7 +1009,7 @@ class Controller extends gws.Controller {
         });
 
 
-        if (!gws.lib.isEmpty(this.models)) {
+        if (!gws.lib.isEmpty(models)) {
             this.editLayer = this.map.addServiceLayer(new EditLayer(this.map, {
                 uid: '_edit',
             }));
@@ -1062,7 +1048,7 @@ class Controller extends gws.Controller {
         if (this.editState.selectedModel)
             models = [this.editState.selectedModel]
         else
-            models = this.models.filter(m => m.layer && m.layer.visible);
+            models = this.app.models.editableModels().filter(m => !m.layer || m.layer.visible);
 
         let res = await this.app.server.editQueryFeatures({
             shapes: [this.map.geom2shape(pt)],
@@ -1073,6 +1059,7 @@ class Controller extends gws.Controller {
 
         if (gws.lib.isEmpty(res.features)) {
             this.unselectFeature();
+            console.log('whenPointerDownAtCoordinate: no feature')
             return;
         }
 
@@ -1080,12 +1067,18 @@ class Controller extends gws.Controller {
         let selected = this.editState.selectedFeature;
 
         if (selected && selected.model === loaded.model && selected.uid === loaded.uid) {
+            console.log('whenPointerDownAtCoordinate: same feature')
             return;
         }
 
         this.selectFeature(loaded);
         this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Edit'});
+
+        console.log('whenPointerDownAtCoordinate: found feature', loaded)
+
     }
+
+    _geometrySaveTimer = 0;
 
 
     async whenModifyEnded(feature: gws.types.IFeature) {
@@ -1093,13 +1086,26 @@ class Controller extends gws.Controller {
             if (feature.isNew) {
                 return;
             }
+
+            console.log('whenModifyEnded: begin save')
+            this.app.stopTool('Tool.Edit.Pointer');
+
             let ok = await this.saveFeature(feature, true);
             if (ok) {
-                this.map.forceUpdate();
+                await this.loadFeaturesForSelectedModel();
+                await this.updateRelatedFeatures(feature);
             }
+
+            this.app.startTool('Tool.Edit.Pointer');
+            console.log('whenModifyEnded: end save')
         }
-        clearTimeout(this._geometryTimer);
-        this._geometryTimer = Number(setTimeout(save, GEOMETRY_TIMEOUT));
+
+        let schedule = () => {
+            clearTimeout(this._geometrySaveTimer);
+            this._geometrySaveTimer = Number(setTimeout(save, GEOMETRY_TIMEOUT));
+        }
+
+        schedule();
     }
 
     async whenDrawEnded(oFeature: ol.Feature) {
@@ -1241,6 +1247,26 @@ class Controller extends gws.Controller {
 
     //
 
+    async updateRelatedFeatures(feature) {
+        for (let field of feature.model.fields) {
+            if (field.attributeType === gws.api.core.AttributeType.feature) {
+                await this.loadRelatedFeatures(field)
+            }
+        }
+    }
+
+    async loadRelatedFeatures(field: gws.types.IModelField) {
+        let model = this.relatedModelForField(field);
+        if (model) {
+            return this.loadFeaturesForList(
+                field.uid,
+                model,
+                this.editState.searchText[field.uid],
+            );
+        }
+    }
+
+
     async loadFeaturesForSelectedModel() {
         let es = this.editState;
         if (es.selectedModel) {
@@ -1337,9 +1363,13 @@ class Controller extends gws.Controller {
 
     //
 
+    getModel(modelUid) {
+        return this.app.models.model(modelUid)
+    }
+
     relatedModelForField(field) {
-        if (!gws.lib.isEmpty(field.relations))
-            return this.app.models.model(field.relations[0].modelUid)
+        if (!gws.lib.isEmpty(field.relationships))
+            return this.app.models.model(field.relationships[0].modelUid)
     }
 
     removeFeature(flist: Array<gws.types.IFeature>, feature: gws.types.IFeature) {
@@ -1366,7 +1396,7 @@ class Controller extends gws.Controller {
         let res = await this.app.server.editWriteFeature({
             modelUid: model.uid,
             feature: featureToWrite.getProps(1),
-        }, {binary: true});
+        }, {binary: false});
 
         if (res.error) {
             this.showDialog({

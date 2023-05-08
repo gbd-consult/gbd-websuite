@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 138,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Museum Kunstpalast"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 259,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Schifffahrtsmuseum"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 304,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Theatermuseum"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 572,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Heinrich-Heine-Institut"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 573,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Schmela Haus - Kunstsammlung NRW"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 722,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Museum Kaiserswerth"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 868,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Glasmuseum Hentrich"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 988,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "F8rum"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 1011,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Filmmuseum"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 1013,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Hetjens-Museum"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 1015,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Stadtmuseum Düsseldorf"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 1113,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Kunstverein für die Rheinlande und Westfalen"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 1120,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Mahn- und Gedenkstätte für die Opfer der nationalsozialistischen Gewaltherrschaft"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 1243,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Goethe-Museum"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 1712,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Malkasten"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 1767,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Bonsai-Museum Düsseldorf"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 1818,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "KIT - Kunst im Tunnel"
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 1833,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "K20 - Kunstsammlung NRW"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 1925,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Pflegemuseum Kaiserwerth"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 2014,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Museum für Naturkunde"
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 2015,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Museum für Europäische Gartenkunst"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 2436,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Sammlung Philara"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 2447,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Löbbecke Museum"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 2581,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "NRW-Forum Düsseldorf"
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 2585,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "K21 Ständehaus - Kunstsammlung NRW"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 2588,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Classic Remise"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 2605,
-                "fclass": "Museum",
+                "category": "Museum",
                 "name": "Westliches Torhaus"
             }
         }

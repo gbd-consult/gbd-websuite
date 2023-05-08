@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 22,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Exodus"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 281,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Twenty Four"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 431,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Seifen Horst"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 434,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Bar Alexander"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 543,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Mojito's Fine Cocktailbar"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 566,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Chateau Rikx"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 612,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "La Guantanamera"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 627,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "RP lounge"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 630,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Bistro Edo"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 640,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Salon des Amateurs"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 800,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Sport Lounge 40219 Düsseldorf"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 1078,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Elephant Bar"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 1091,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Chill Out"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 1115,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Köhlerliesel"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 1131,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Schlösser Quartier Bohème"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 1175,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Squarebar"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 1183,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Paradise – Cocktail & Shisha Bar"
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 1238,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Decuzzi"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 1279,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Gelateria Caputo"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 1316,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "#3 hashtag"
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 1380,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Pechmarie"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 1389,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Frida"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 1402,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Alexandra"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 1406,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Ellington"
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 1505,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Zur Acht"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 1519,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Rhein Rondell"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 1549,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Kassette"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 1566,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Keeno´s Sportbar"
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 1602,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Motel One Bar"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 1642,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Konvex"
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 1652,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Bistro Blue Angels"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 1725,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Miet Bar"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 1735,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Le Bar du Bistro"
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 1751,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Papidoux"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 1788,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Liq Bar"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 1791,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Kleine Luise"
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 1792,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Grand Pu Bar"
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 1957,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Stickum"
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 2002,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Bistro Deluxe"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 2047,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Weinbar Eiskeller"
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 2091,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Cocktailbar 112"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 2145,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Dubai Night"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 2211,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Sky Barrister"
             }
         },
@@ -663,7 +663,7 @@
             },
             "properties": {
                 "id": 2219,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "#10"
             }
         },
@@ -678,7 +678,7 @@
             },
             "properties": {
                 "id": 2223,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Sansibar by Breuninger"
             }
         },
@@ -693,7 +693,7 @@
             },
             "properties": {
                 "id": 2225,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "The Attic Kö 1"
             }
         },
@@ -708,7 +708,7 @@
             },
             "properties": {
                 "id": 2241,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Clubhaus DJK Sparta Bilk e.V."
             }
         },
@@ -723,7 +723,7 @@
             },
             "properties": {
                 "id": 2247,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Shisha"
             }
         },
@@ -738,7 +738,7 @@
             },
             "properties": {
                 "id": 2249,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Tagtraum Jazz Café"
             }
         },
@@ -753,7 +753,7 @@
             },
             "properties": {
                 "id": 2329,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Fortuna Eck"
             }
         },
@@ -768,7 +768,7 @@
             },
             "properties": {
                 "id": 2365,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Pebble's Terrasse"
             }
         },
@@ -783,7 +783,7 @@
             },
             "properties": {
                 "id": 2381,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Café á GoGo"
             }
         },
@@ -798,7 +798,7 @@
             },
             "properties": {
                 "id": 2395,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Gob's"
             }
         },
@@ -813,7 +813,7 @@
             },
             "properties": {
                 "id": 2422,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "20° Restobar"
             }
         },
@@ -828,7 +828,7 @@
             },
             "properties": {
                 "id": 2485,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "bar studio 1"
             }
         },
@@ -843,7 +843,7 @@
             },
             "properties": {
                 "id": 2532,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Cafe Bar Zogel"
             }
         },
@@ -858,7 +858,7 @@
             },
             "properties": {
                 "id": 2551,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Purple Lounge"
             }
         },
@@ -873,7 +873,7 @@
             },
             "properties": {
                 "id": 2578,
-                "fclass": "Bar",
+                "category": "Bar",
                 "name": "Retematäng"
             }
         }

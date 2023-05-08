@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 20,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 50,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 61,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": null
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 132,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 136,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 163,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 177,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkassen Geldautomaten"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 191,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf, Geschäftsstelle Benrath"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 202,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 216,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Postbank Finanzcenter"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 227,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 237,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volksbank"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 251,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 254,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 262,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 269,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 273,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 280,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse Düsseldorf"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 303,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 313,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 316,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Postbank AG"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 327,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 333,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volksbank Düsseldorf Neuss eG"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 342,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Targobank - Filiale Düsseldorf-Oberbilk"
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 381,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Targobank"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 419,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank, Filiale Düsseldorf-Benrath Hauptstraße"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 423,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 453,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 458,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 465,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 473,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 487,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Targobank"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 516,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparda-Bank Filiale Düsseldorf-Pempelfort"
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 520,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Targobank"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 555,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 558,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 596,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 622,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 633,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 647,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse Reisholz"
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 685,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 702,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparda-Bank Filiale Düsseldorf-Benrath"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 721,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -663,7 +663,7 @@
             },
             "properties": {
                 "id": 724,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -678,7 +678,7 @@
             },
             "properties": {
                 "id": 725,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volkbank Düsseldorf Neuss eG"
             }
         },
@@ -693,7 +693,7 @@
             },
             "properties": {
                 "id": 759,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse"
             }
         },
@@ -708,7 +708,7 @@
             },
             "properties": {
                 "id": 782,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volksbank"
             }
         },
@@ -723,7 +723,7 @@
             },
             "properties": {
                 "id": 789,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -738,7 +738,7 @@
             },
             "properties": {
                 "id": 809,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -753,7 +753,7 @@
             },
             "properties": {
                 "id": 815,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank Investment & FinanzCenter"
             }
         },
@@ -768,7 +768,7 @@
             },
             "properties": {
                 "id": 846,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Degussa Bank"
             }
         },
@@ -783,7 +783,7 @@
             },
             "properties": {
                 "id": 860,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -798,7 +798,7 @@
             },
             "properties": {
                 "id": 885,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparda-Bank"
             }
         },
@@ -813,7 +813,7 @@
             },
             "properties": {
                 "id": 898,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "SSK Düsseldorf"
             }
         },
@@ -828,7 +828,7 @@
             },
             "properties": {
                 "id": 908,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -843,7 +843,7 @@
             },
             "properties": {
                 "id": 917,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -858,7 +858,7 @@
             },
             "properties": {
                 "id": 921,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Postbank"
             }
         },
@@ -873,7 +873,7 @@
             },
             "properties": {
                 "id": 934,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volksbank"
             }
         },
@@ -888,7 +888,7 @@
             },
             "properties": {
                 "id": 953,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf - Filiale Hassels"
             }
         },
@@ -903,7 +903,7 @@
             },
             "properties": {
                 "id": 955,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volksbank"
             }
         },
@@ -918,7 +918,7 @@
             },
             "properties": {
                 "id": 957,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "SSK Düsseldorf"
             }
         },
@@ -933,7 +933,7 @@
             },
             "properties": {
                 "id": 985,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -948,7 +948,7 @@
             },
             "properties": {
                 "id": 1000,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -963,7 +963,7 @@
             },
             "properties": {
                 "id": 1019,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -978,7 +978,7 @@
             },
             "properties": {
                 "id": 1026,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -993,7 +993,7 @@
             },
             "properties": {
                 "id": 1029,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -1008,7 +1008,7 @@
             },
             "properties": {
                 "id": 1035,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -1023,7 +1023,7 @@
             },
             "properties": {
                 "id": 1041,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -1038,7 +1038,7 @@
             },
             "properties": {
                 "id": 1046,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -1053,7 +1053,7 @@
             },
             "properties": {
                 "id": 1072,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparda-Bank"
             }
         },
@@ -1068,7 +1068,7 @@
             },
             "properties": {
                 "id": 1164,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "LBS"
             }
         },
@@ -1083,7 +1083,7 @@
             },
             "properties": {
                 "id": 1165,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank Düsseldorf-Nordstraße"
             }
         },
@@ -1098,7 +1098,7 @@
             },
             "properties": {
                 "id": 1167,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -1113,7 +1113,7 @@
             },
             "properties": {
                 "id": 1203,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse"
             }
         },
@@ -1128,7 +1128,7 @@
             },
             "properties": {
                 "id": 1224,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -1143,7 +1143,7 @@
             },
             "properties": {
                 "id": 1231,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -1158,7 +1158,7 @@
             },
             "properties": {
                 "id": 1234,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -1173,7 +1173,7 @@
             },
             "properties": {
                 "id": 1282,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank, Filiale Düsseldorf-Friedrichstadt"
             }
         },
@@ -1188,7 +1188,7 @@
             },
             "properties": {
                 "id": 1289,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -1203,7 +1203,7 @@
             },
             "properties": {
                 "id": 1363,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volksbank"
             }
         },
@@ -1218,7 +1218,7 @@
             },
             "properties": {
                 "id": 1364,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "HypoVereinsbank"
             }
         },
@@ -1233,7 +1233,7 @@
             },
             "properties": {
                 "id": 1387,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "HypoVereinsbank Firmenkunden"
             }
         },
@@ -1248,7 +1248,7 @@
             },
             "properties": {
                 "id": 1397,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank, Filiale Düsseldorf-Friedrichstraße"
             }
         },
@@ -1263,7 +1263,7 @@
             },
             "properties": {
                 "id": 1422,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -1278,7 +1278,7 @@
             },
             "properties": {
                 "id": 1453,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volksbank"
             }
         },
@@ -1293,7 +1293,7 @@
             },
             "properties": {
                 "id": 1476,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank - Filiale Düsseldorf-Oberkassel"
             }
         },
@@ -1308,7 +1308,7 @@
             },
             "properties": {
                 "id": 1478,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volksbank"
             }
         },
@@ -1323,7 +1323,7 @@
             },
             "properties": {
                 "id": 1516,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": null
             }
         },
@@ -1338,7 +1338,7 @@
             },
             "properties": {
                 "id": 1536,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": null
             }
         },
@@ -1353,7 +1353,7 @@
             },
             "properties": {
                 "id": 1546,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -1368,7 +1368,7 @@
             },
             "properties": {
                 "id": 1603,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -1383,7 +1383,7 @@
             },
             "properties": {
                 "id": 1680,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Berenberg Bank"
             }
         },
@@ -1398,7 +1398,7 @@
             },
             "properties": {
                 "id": 1682,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "IKB Deutsche Industriebank"
             }
         },
@@ -1413,7 +1413,7 @@
             },
             "properties": {
                 "id": 1704,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Bankhaus Lampe"
             }
         },
@@ -1428,7 +1428,7 @@
             },
             "properties": {
                 "id": 1742,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank Investment & FinanzCenter"
             }
         },
@@ -1443,7 +1443,7 @@
             },
             "properties": {
                 "id": 1778,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "BBBank"
             }
         },
@@ -1458,7 +1458,7 @@
             },
             "properties": {
                 "id": 1782,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "National-Bank"
             }
         },
@@ -1473,7 +1473,7 @@
             },
             "properties": {
                 "id": 1808,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bundesbank"
             }
         },
@@ -1488,7 +1488,7 @@
             },
             "properties": {
                 "id": 1813,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparda-Bank Filiale Düsseldorf-Friedrichstadt"
             }
         },
@@ -1503,7 +1503,7 @@
             },
             "properties": {
                 "id": 1837,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Bank"
             }
         },
@@ -1518,7 +1518,7 @@
             },
             "properties": {
                 "id": 1916,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -1533,7 +1533,7 @@
             },
             "properties": {
                 "id": 1923,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -1548,7 +1548,7 @@
             },
             "properties": {
                 "id": 1926,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": null
             }
         },
@@ -1563,7 +1563,7 @@
             },
             "properties": {
                 "id": 1992,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -1578,7 +1578,7 @@
             },
             "properties": {
                 "id": 1997,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Postbank"
             }
         },
@@ -1593,7 +1593,7 @@
             },
             "properties": {
                 "id": 2074,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -1608,7 +1608,7 @@
             },
             "properties": {
                 "id": 2080,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Santander Bank"
             }
         },
@@ -1623,7 +1623,7 @@
             },
             "properties": {
                 "id": 2137,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Santander Consumer Bank Filiale Düsseldorf"
             }
         },
@@ -1638,7 +1638,7 @@
             },
             "properties": {
                 "id": 2141,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparda-Bank Filiale Düsseldorf-Kaiserswerth"
             }
         },
@@ -1653,7 +1653,7 @@
             },
             "properties": {
                 "id": 2164,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -1668,7 +1668,7 @@
             },
             "properties": {
                 "id": 2173,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -1683,7 +1683,7 @@
             },
             "properties": {
                 "id": 2182,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Santander Bank Filiale Gerresheim"
             }
         },
@@ -1698,7 +1698,7 @@
             },
             "properties": {
                 "id": 2186,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Commerzbank"
             }
         },
@@ -1713,7 +1713,7 @@
             },
             "properties": {
                 "id": 2188,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse"
             }
         },
@@ -1728,7 +1728,7 @@
             },
             "properties": {
                 "id": 2213,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparda-Bank"
             }
         },
@@ -1743,7 +1743,7 @@
             },
             "properties": {
                 "id": 2216,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "UBS"
             }
         },
@@ -1758,7 +1758,7 @@
             },
             "properties": {
                 "id": 2222,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "HSBC"
             }
         },
@@ -1773,7 +1773,7 @@
             },
             "properties": {
                 "id": 2319,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse"
             }
         },
@@ -1788,7 +1788,7 @@
             },
             "properties": {
                 "id": 2360,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Volksbank"
             }
         },
@@ -1803,7 +1803,7 @@
             },
             "properties": {
                 "id": 2378,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Helaba"
             }
         },
@@ -1818,7 +1818,7 @@
             },
             "properties": {
                 "id": 2408,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "vPE Bank"
             }
         },
@@ -1833,7 +1833,7 @@
             },
             "properties": {
                 "id": 2481,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Sparkasse"
             }
         },
@@ -1848,7 +1848,7 @@
             },
             "properties": {
                 "id": 2486,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Deutsche Apotheker- und Ärztebank"
             }
         },
@@ -1863,7 +1863,7 @@
             },
             "properties": {
                 "id": 2489,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Stadtsparkasse Düsseldorf"
             }
         },
@@ -1878,7 +1878,7 @@
             },
             "properties": {
                 "id": 2495,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Postbank"
             }
         },
@@ -1893,7 +1893,7 @@
             },
             "properties": {
                 "id": 2554,
-                "fclass": "Bank",
+                "category": "Bank",
                 "name": "Walser Privatbank"
             }
         }

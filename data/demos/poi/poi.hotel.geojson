@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 5,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Lindenhof"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 9,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Batavia"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 12,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Sir Astor"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 21,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Lady Astor"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 24,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "City Hotel"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 25,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Ko"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 26,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Mercure"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 27,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Monopol"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 29,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Pars"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 31,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Prinz Anton"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 34,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Asahi"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 38,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Burns"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 40,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Weidenhof"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 41,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Max Brown Düsseldorf"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 42,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Düsseldorf Mitte"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 43,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Stadt München"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 45,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Max"
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 48,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "ibis Düsseldorf City"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 53,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Kempe Comfort"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 66,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "zum Tönnchen"
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 73,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Friends"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 79,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Residenz"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 83,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Schumacher"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 109,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Berliner Hof"
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 116,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Berial"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 118,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Novum Hotel Maxim Düsseldorf City"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 120,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Günnewig Hotel Esplanade"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 122,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Engelbert"
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 151,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Acora"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 160,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Novotel Düsseldorf City West"
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 161,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Mercure"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 167,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Zum neuen Rathaus"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 174,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "ibis Hotel Düsseldorf Hbf"
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 189,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Renaissance Düsseldorf Hotel"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 193,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Mercure Hotel Düsseldorf Süd"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 198,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hilton Dusseldorf"
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 212,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Best Western Ambassador"
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 242,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Restaurant Pigage"
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 283,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Carat Hotel"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 334,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Fährhaus"
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 409,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Gut Moschenhof"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 415,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Holiday Inn"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 424,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Carlton"
             }
         },
@@ -663,7 +663,7 @@
             },
             "properties": {
                 "id": 463,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "InterContinental Hotel Düsseldorf"
             }
         },
@@ -678,7 +678,7 @@
             },
             "properties": {
                 "id": 504,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Intercity Hotel Düsseldorf"
             }
         },
@@ -693,7 +693,7 @@
             },
             "properties": {
                 "id": 561,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Stage 47"
             }
         },
@@ -708,7 +708,7 @@
             },
             "properties": {
                 "id": 625,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Leonardo Hotel : Düsseldorf"
             }
         },
@@ -723,7 +723,7 @@
             },
             "properties": {
                 "id": 679,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "NH Düsseldorf Königsallee"
             }
         },
@@ -738,7 +738,7 @@
             },
             "properties": {
                 "id": 694,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Mercure"
             }
         },
@@ -753,7 +753,7 @@
             },
             "properties": {
                 "id": 697,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Lessing"
             }
         },
@@ -768,7 +768,7 @@
             },
             "properties": {
                 "id": 727,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Schnellenburg"
             }
         },
@@ -783,7 +783,7 @@
             },
             "properties": {
                 "id": 729,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Am Hoxbach Garni"
             }
         },
@@ -798,7 +798,7 @@
             },
             "properties": {
                 "id": 734,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel an der Kö"
             }
         },
@@ -813,7 +813,7 @@
             },
             "properties": {
                 "id": 743,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Four Points"
             }
         },
@@ -828,7 +828,7 @@
             },
             "properties": {
                 "id": 746,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Bellevue"
             }
         },
@@ -843,7 +843,7 @@
             },
             "properties": {
                 "id": 787,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Wieland"
             }
         },
@@ -858,7 +858,7 @@
             },
             "properties": {
                 "id": 794,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Terminus"
             }
         },
@@ -873,7 +873,7 @@
             },
             "properties": {
                 "id": 795,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Am Schwan"
             }
         },
@@ -888,7 +888,7 @@
             },
             "properties": {
                 "id": 821,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Lindentor"
             }
         },
@@ -903,7 +903,7 @@
             },
             "properties": {
                 "id": 823,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Messe-Hotel Lohauser Hof"
             }
         },
@@ -918,7 +918,7 @@
             },
             "properties": {
                 "id": 829,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Holthausen-Center"
             }
         },
@@ -933,7 +933,7 @@
             },
             "properties": {
                 "id": 831,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "centro Hotel Schuhmann"
             }
         },
@@ -948,7 +948,7 @@
             },
             "properties": {
                 "id": 891,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Sheraton Düsseldorf Airport Hotel"
             }
         },
@@ -963,7 +963,7 @@
             },
             "properties": {
                 "id": 899,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Waldhotel"
             }
         },
@@ -978,7 +978,7 @@
             },
             "properties": {
                 "id": 914,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Flora"
             }
         },
@@ -993,7 +993,7 @@
             },
             "properties": {
                 "id": 941,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Ashley's Garden"
             }
         },
@@ -1008,7 +1008,7 @@
             },
             "properties": {
                 "id": 965,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Burns"
             }
         },
@@ -1023,7 +1023,7 @@
             },
             "properties": {
                 "id": 966,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Minerva"
             }
         },
@@ -1038,7 +1038,7 @@
             },
             "properties": {
                 "id": 979,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Niku"
             }
         },
@@ -1053,7 +1053,7 @@
             },
             "properties": {
                 "id": 994,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Motel One"
             }
         },
@@ -1068,7 +1068,7 @@
             },
             "properties": {
                 "id": 1002,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Diana"
             }
         },
@@ -1083,7 +1083,7 @@
             },
             "properties": {
                 "id": 1100,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Haus Rheinblick"
             }
         },
@@ -1098,7 +1098,7 @@
             },
             "properties": {
                 "id": 1106,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel St. Andreas"
             }
         },
@@ -1113,7 +1113,7 @@
             },
             "properties": {
                 "id": 1107,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Neues Hotel an der Oper"
             }
         },
@@ -1128,7 +1128,7 @@
             },
             "properties": {
                 "id": 1130,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": null
             }
         },
@@ -1143,7 +1143,7 @@
             },
             "properties": {
                 "id": 1208,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Duesseldorf City"
             }
         },
@@ -1158,7 +1158,7 @@
             },
             "properties": {
                 "id": 1212,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Uebachs"
             }
         },
@@ -1173,7 +1173,7 @@
             },
             "properties": {
                 "id": 1227,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "NH Düsseldorf City Nord"
             }
         },
@@ -1188,7 +1188,7 @@
             },
             "properties": {
                 "id": 1266,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Haus am Zoo"
             }
         },
@@ -1203,7 +1203,7 @@
             },
             "properties": {
                 "id": 1326,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Ufer"
             }
         },
@@ -1218,7 +1218,7 @@
             },
             "properties": {
                 "id": 1332,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Am Wehrhahn"
             }
         },
@@ -1233,7 +1233,7 @@
             },
             "properties": {
                 "id": 1336,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Steigenberger Parkhotel"
             }
         },
@@ -1248,7 +1248,7 @@
             },
             "properties": {
                 "id": 1343,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Courtyard Düsseldorf Hafen"
             }
         },
@@ -1263,7 +1263,7 @@
             },
             "properties": {
                 "id": 1367,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Berna"
             }
         },
@@ -1278,7 +1278,7 @@
             },
             "properties": {
                 "id": 1370,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Am Vogelsanger Weg"
             }
         },
@@ -1293,7 +1293,7 @@
             },
             "properties": {
                 "id": 1376,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Lindner Airport"
             }
         },
@@ -1308,7 +1308,7 @@
             },
             "properties": {
                 "id": 1379,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Derag Livinghotel Duesseldorf"
             }
         },
@@ -1323,7 +1323,7 @@
             },
             "properties": {
                 "id": 1455,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Am Bauenhaus"
             }
         },
@@ -1338,7 +1338,7 @@
             },
             "properties": {
                 "id": 1463,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Am Ehrenhof"
             }
         },
@@ -1353,7 +1353,7 @@
             },
             "properties": {
                 "id": 1466,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Moon"
             }
         },
@@ -1368,7 +1368,7 @@
             },
             "properties": {
                 "id": 1468,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Meliã"
             }
         },
@@ -1383,7 +1383,7 @@
             },
             "properties": {
                 "id": 1472,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Excelsior Düsseldorf"
             }
         },
@@ -1398,7 +1398,7 @@
             },
             "properties": {
                 "id": 1483,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Haus Hillesheim"
             }
         },
@@ -1413,7 +1413,7 @@
             },
             "properties": {
                 "id": 1497,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Karolinger"
             }
         },
@@ -1428,7 +1428,7 @@
             },
             "properties": {
                 "id": 1550,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Motel One"
             }
         },
@@ -1443,7 +1443,7 @@
             },
             "properties": {
                 "id": 1573,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Imperial"
             }
         },
@@ -1458,7 +1458,7 @@
             },
             "properties": {
                 "id": 1580,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Doria"
             }
         },
@@ -1473,7 +1473,7 @@
             },
             "properties": {
                 "id": 1592,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Helvetia Suites"
             }
         },
@@ -1488,7 +1488,7 @@
             },
             "properties": {
                 "id": 1601,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Motel One"
             }
         },
@@ -1503,7 +1503,7 @@
             },
             "properties": {
                 "id": 1605,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Domo"
             }
         },
@@ -1518,7 +1518,7 @@
             },
             "properties": {
                 "id": 1636,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Kleine Oase Im Treibhaus GmbH"
             }
         },
@@ -1533,7 +1533,7 @@
             },
             "properties": {
                 "id": 1654,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Backpackers Düsseldorf"
             }
         },
@@ -1548,7 +1548,7 @@
             },
             "properties": {
                 "id": 1655,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Rubin"
             }
         },
@@ -1563,7 +1563,7 @@
             },
             "properties": {
                 "id": 1664,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hütte 91"
             }
         },
@@ -1578,7 +1578,7 @@
             },
             "properties": {
                 "id": 1665,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Antares"
             }
         },
@@ -1593,7 +1593,7 @@
             },
             "properties": {
                 "id": 1675,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Alexsandra"
             }
         },
@@ -1608,7 +1608,7 @@
             },
             "properties": {
                 "id": 1683,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "FFFZ Hotel"
             }
         },
@@ -1623,7 +1623,7 @@
             },
             "properties": {
                 "id": 1697,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Express Holiday Inn"
             }
         },
@@ -1638,7 +1638,7 @@
             },
             "properties": {
                 "id": 1701,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Villa Viktoria"
             }
         },
@@ -1653,7 +1653,7 @@
             },
             "properties": {
                 "id": 1705,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "nH Hotels Düsseldorf"
             }
         },
@@ -1668,7 +1668,7 @@
             },
             "properties": {
                 "id": 1714,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "B&B Hotel Düsseldorf-Hbf"
             }
         },
@@ -1683,7 +1683,7 @@
             },
             "properties": {
                 "id": 1721,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel an der Uni"
             }
         },
@@ -1698,7 +1698,7 @@
             },
             "properties": {
                 "id": 1722,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Haus Mooren"
             }
         },
@@ -1713,7 +1713,7 @@
             },
             "properties": {
                 "id": 1723,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Metropol"
             }
         },
@@ -1728,7 +1728,7 @@
             },
             "properties": {
                 "id": 1727,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Decker"
             }
         },
@@ -1743,7 +1743,7 @@
             },
             "properties": {
                 "id": 1730,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Nikko"
             }
         },
@@ -1758,7 +1758,7 @@
             },
             "properties": {
                 "id": 1740,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel am Hofgarten"
             }
         },
@@ -1773,7 +1773,7 @@
             },
             "properties": {
                 "id": 1753,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "CVJM Düsseldorf Hotel & Tagung"
             }
         },
@@ -1788,7 +1788,7 @@
             },
             "properties": {
                 "id": 1756,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Auszeit Hotel"
             }
         },
@@ -1803,7 +1803,7 @@
             },
             "properties": {
                 "id": 1757,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Residenz Hotel Eurostar"
             }
         },
@@ -1818,7 +1818,7 @@
             },
             "properties": {
                 "id": 1759,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Chrisma"
             }
         },
@@ -1833,7 +1833,7 @@
             },
             "properties": {
                 "id": 1763,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Kastens Hotel"
             }
         },
@@ -1848,7 +1848,7 @@
             },
             "properties": {
                 "id": 1770,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Garni Landhaus Hamm"
             }
         },
@@ -1863,7 +1863,7 @@
             },
             "properties": {
                 "id": 1771,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Knell"
             }
         },
@@ -1878,7 +1878,7 @@
             },
             "properties": {
                 "id": 1776,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Adler"
             }
         },
@@ -1893,7 +1893,7 @@
             },
             "properties": {
                 "id": 1785,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Orangerie"
             }
         },
@@ -1908,7 +1908,7 @@
             },
             "properties": {
                 "id": 1789,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Beyer"
             }
         },
@@ -1923,7 +1923,7 @@
             },
             "properties": {
                 "id": 1790,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Breidenbacher Hof"
             }
         },
@@ -1938,7 +1938,7 @@
             },
             "properties": {
                 "id": 1812,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "HK-Hotel Düsseldorf City"
             }
         },
@@ -1953,7 +1953,7 @@
             },
             "properties": {
                 "id": 1817,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hansa Hotel"
             }
         },
@@ -1968,7 +1968,7 @@
             },
             "properties": {
                 "id": 1830,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Westfälischer Hof"
             }
         },
@@ -1983,7 +1983,7 @@
             },
             "properties": {
                 "id": 1844,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Altstadt Hotel Barcelona"
             }
         },
@@ -1998,7 +1998,7 @@
             },
             "properties": {
                 "id": 1846,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Derag Livinghotel De Medici"
             }
         },
@@ -2013,7 +2013,7 @@
             },
             "properties": {
                 "id": 1860,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "City Partner Hotel - Villa Fiore"
             }
         },
@@ -2028,7 +2028,7 @@
             },
             "properties": {
                 "id": 1871,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Bahn-Hotel"
             }
         },
@@ -2043,7 +2043,7 @@
             },
             "properties": {
                 "id": 1908,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Alt-Heerdt garni"
             }
         },
@@ -2058,7 +2058,7 @@
             },
             "properties": {
                 "id": 1920,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Kaiserswerth"
             }
         },
@@ -2073,7 +2073,7 @@
             },
             "properties": {
                 "id": 1928,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Schloß Hotel Benrath"
             }
         },
@@ -2088,7 +2088,7 @@
             },
             "properties": {
                 "id": 1942,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Leonardo Royal Hotel"
             }
         },
@@ -2103,7 +2103,7 @@
             },
             "properties": {
                 "id": 1956,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Acon"
             }
         },
@@ -2118,7 +2118,7 @@
             },
             "properties": {
                 "id": 1969,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Holiday Inn Express Düsseldorf City"
             }
         },
@@ -2133,7 +2133,7 @@
             },
             "properties": {
                 "id": 1988,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Innside Düsseldorf Hafen"
             }
         },
@@ -2148,7 +2148,7 @@
             },
             "properties": {
                 "id": 2006,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Mondial"
             }
         },
@@ -2163,7 +2163,7 @@
             },
             "properties": {
                 "id": 2038,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Villa Achenbach"
             }
         },
@@ -2178,7 +2178,7 @@
             },
             "properties": {
                 "id": 2042,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Garden Hotel"
             }
         },
@@ -2193,7 +2193,7 @@
             },
             "properties": {
                 "id": 2045,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Centro Hotel Design Apart Düsseldorf"
             }
         },
@@ -2208,7 +2208,7 @@
             },
             "properties": {
                 "id": 2070,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": null
             }
         },
@@ -2223,7 +2223,7 @@
             },
             "properties": {
                 "id": 2071,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Airhotel Wartburg"
             }
         },
@@ -2238,7 +2238,7 @@
             },
             "properties": {
                 "id": 2072,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Messeschlaf"
             }
         },
@@ -2253,7 +2253,7 @@
             },
             "properties": {
                 "id": 2076,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": null
             }
         },
@@ -2268,7 +2268,7 @@
             },
             "properties": {
                 "id": 2110,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel am Spichernplatz"
             }
         },
@@ -2283,7 +2283,7 @@
             },
             "properties": {
                 "id": 2163,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hyatt Regency"
             }
         },
@@ -2298,7 +2298,7 @@
             },
             "properties": {
                 "id": 2200,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Landhotel Am Zault"
             }
         },
@@ -2313,7 +2313,7 @@
             },
             "properties": {
                 "id": 2202,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Am Zault Residenz"
             }
         },
@@ -2328,7 +2328,7 @@
             },
             "properties": {
                 "id": 2224,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Favor"
             }
         },
@@ -2343,7 +2343,7 @@
             },
             "properties": {
                 "id": 2262,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Waldesruh"
             }
         },
@@ -2358,7 +2358,7 @@
             },
             "properties": {
                 "id": 2266,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Octagon"
             }
         },
@@ -2373,7 +2373,7 @@
             },
             "properties": {
                 "id": 2324,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Fischerhaus"
             }
         },
@@ -2388,7 +2388,7 @@
             },
             "properties": {
                 "id": 2361,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Holiday Inn Dusseldorf City Toulouser Allee"
             }
         },
@@ -2403,7 +2403,7 @@
             },
             "properties": {
                 "id": 2368,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Stadthotel Düsseldorf"
             }
         },
@@ -2418,7 +2418,7 @@
             },
             "properties": {
                 "id": 2373,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Elbroich"
             }
         },
@@ -2433,7 +2433,7 @@
             },
             "properties": {
                 "id": 2386,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": null
             }
         },
@@ -2448,7 +2448,7 @@
             },
             "properties": {
                 "id": 2425,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "HYATT House"
             }
         },
@@ -2463,7 +2463,7 @@
             },
             "properties": {
                 "id": 2431,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Savoy Hotel Düsseldorf"
             }
         },
@@ -2478,7 +2478,7 @@
             },
             "properties": {
                 "id": 2464,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Cascade"
             }
         },
@@ -2493,7 +2493,7 @@
             },
             "properties": {
                 "id": 2465,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel National Düsseldorf"
             }
         },
@@ -2508,7 +2508,7 @@
             },
             "properties": {
                 "id": 2466,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "City Apart Hotel"
             }
         },
@@ -2523,7 +2523,7 @@
             },
             "properties": {
                 "id": 2467,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "me and all hotel düsseldorf"
             }
         },
@@ -2538,7 +2538,7 @@
             },
             "properties": {
                 "id": 2468,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Radisson Blu Scandinavia Hotel"
             }
         },
@@ -2553,7 +2553,7 @@
             },
             "properties": {
                 "id": 2469,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Indigo DÜSSELDORF - VICTORIAPLATZ"
             }
         },
@@ -2568,7 +2568,7 @@
             },
             "properties": {
                 "id": 2470,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Mingarden"
             }
         },
@@ -2583,7 +2583,7 @@
             },
             "properties": {
                 "id": 2471,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "B&B Hotel"
             }
         },
@@ -2598,7 +2598,7 @@
             },
             "properties": {
                 "id": 2479,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "B&B Hotel Düsseldorf-Airport"
             }
         },
@@ -2613,7 +2613,7 @@
             },
             "properties": {
                 "id": 2484,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "McDreams Hotel"
             }
         },
@@ -2628,7 +2628,7 @@
             },
             "properties": {
                 "id": 2506,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Mercure Hotel Duesseldorf Zentrum"
             }
         },
@@ -2643,7 +2643,7 @@
             },
             "properties": {
                 "id": 2507,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Townhouse Düsseldorf"
             }
         },
@@ -2658,7 +2658,7 @@
             },
             "properties": {
                 "id": 2509,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Rheingoldhotel"
             }
         },
@@ -2673,7 +2673,7 @@
             },
             "properties": {
                 "id": 2556,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "MOXY Düsseldorf Süd"
             }
         },
@@ -2688,7 +2688,7 @@
             },
             "properties": {
                 "id": 2577,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Holiday Inn Express Düsseldorf Nord"
             }
         },
@@ -2703,7 +2703,7 @@
             },
             "properties": {
                 "id": 2580,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Innside"
             }
         },
@@ -2718,7 +2718,7 @@
             },
             "properties": {
                 "id": 2582,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Kleine Luise"
             }
         },
@@ -2733,7 +2733,7 @@
             },
             "properties": {
                 "id": 2583,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Heidelberger Hof"
             }
         },
@@ -2748,7 +2748,7 @@
             },
             "properties": {
                 "id": 2584,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Windsor"
             }
         },
@@ -2763,7 +2763,7 @@
             },
             "properties": {
                 "id": 2586,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Radisson Blu Media Harbour Hotel"
             }
         },
@@ -2778,7 +2778,7 @@
             },
             "properties": {
                 "id": 2587,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Astra"
             }
         },
@@ -2793,7 +2793,7 @@
             },
             "properties": {
                 "id": 2589,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Lindner Congress Hotel"
             }
         },
@@ -2808,7 +2808,7 @@
             },
             "properties": {
                 "id": 2590,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": null
             }
         },
@@ -2823,7 +2823,7 @@
             },
             "properties": {
                 "id": 2591,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Innside"
             }
         },
@@ -2838,7 +2838,7 @@
             },
             "properties": {
                 "id": 2592,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Hanseat"
             }
         },
@@ -2853,7 +2853,7 @@
             },
             "properties": {
                 "id": 2593,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Arosa"
             }
         },
@@ -2868,7 +2868,7 @@
             },
             "properties": {
                 "id": 2594,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel MutterHaus"
             }
         },
@@ -2883,7 +2883,7 @@
             },
             "properties": {
                 "id": 2595,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Barbarossa"
             }
         },
@@ -2898,7 +2898,7 @@
             },
             "properties": {
                 "id": 2596,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Tulip Inn Düsseldorf Arena - Hotel"
             }
         },
@@ -2913,7 +2913,7 @@
             },
             "properties": {
                 "id": 2597,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Garni Hein"
             }
         },
@@ -2928,7 +2928,7 @@
             },
             "properties": {
                 "id": 2598,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Messehotel Medici"
             }
         },
@@ -2943,7 +2943,7 @@
             },
             "properties": {
                 "id": 2599,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Hotel Maritim"
             }
         },
@@ -2958,7 +2958,7 @@
             },
             "properties": {
                 "id": 2600,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "AVIDON Design Hotel"
             }
         },
@@ -2973,7 +2973,7 @@
             },
             "properties": {
                 "id": 2601,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Airporthotel Düsseldorf"
             }
         },
@@ -2988,7 +2988,7 @@
             },
             "properties": {
                 "id": 2602,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Concorde Hotel Ascot"
             }
         },
@@ -3003,7 +3003,7 @@
             },
             "properties": {
                 "id": 2603,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Pension Melcher"
             }
         },
@@ -3018,7 +3018,7 @@
             },
             "properties": {
                 "id": 2604,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Rheinterrasse Benrath"
             }
         },
@@ -3033,7 +3033,7 @@
             },
             "properties": {
                 "id": 2619,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Henri"
             }
         },
@@ -3048,7 +3048,7 @@
             },
             "properties": {
                 "id": 2624,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Carathotel Düsseldorf City"
             }
         },
@@ -3063,7 +3063,7 @@
             },
             "properties": {
                 "id": 2633,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "25hours Hotel"
             }
         },
@@ -3078,7 +3078,7 @@
             },
             "properties": {
                 "id": 2634,
-                "fclass": "Hotel",
+                "category": "Hotel",
                 "name": "Wyndham Garden Düsseldorf City Centre Königsallee"
             }
         }

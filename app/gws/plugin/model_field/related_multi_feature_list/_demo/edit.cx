@@ -1,0 +1,115 @@
+@comment
+
+Editing 1:M relationships to multiple tables:
+
+    baustelle -< kanalarbeiten
+    baustelle -< sperrung
+    baustelle -< umleitung
+
+Using `relatedMultiFeatureList` for the parent table
+and `relatedFeature` as backlinks in child tables.
+
+Models are defined directly in the project,
+map layers are for view only, have no relevance for editing.
+
+@end
+
+projects+ {
+    title "Models: relatedMultiFeatureList"
+    metadata.abstract "Editing related features from multiple tables."
+
+    api.actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        crs 25832
+        center {demo_point_duesseldorf_25832}
+        zoom.initScale 4000
+        zoom.maxScale  1000000
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_related_multi_feature_list_baustelle"
+        tableName "baustellen.baustelle"
+        title "Baustellen"
+        permissions.edit "allow all"
+        fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "name" type "text" isRequired true textSearch { type "any" } }
+        templates+ { subject "feature.title" type "html" text "{{@if feature.isNew}} neue Baustelle {{@else}} {{name}} {{@end}}" }
+
+        fields+ {
+            name "objekte"
+            title "Objekte"
+            type "relatedMultiFeatureList"
+            relationships+ { modelUid "model_related_multi_feature_list_kanalarbeiten"  fieldName "baustelle" }
+            relationships+ { modelUid "model_related_multi_feature_list_sperrung"       fieldName "baustelle" }
+            relationships+ { modelUid "model_related_multi_feature_list_umleitung"      fieldName "baustelle" }
+        }
+    }
+    
+    models+ {
+        type "postgres"
+        uid "model_related_multi_feature_list_kanalarbeiten"
+        tableName "baustellen.kanalarbeiten"
+        permissions.edit "allow all"
+        title "kanalarbeiten"
+        templates+ { subject "feature.title" type "html" text "kanalarbeiten {{beschreibung}}" }
+        fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
+        fields+ { name "geom" type "geometry" }
+
+        fields+ { name "baustelle" type "relatedFeature"
+            relationship {
+                modelUid "model_related_multi_feature_list_baustelle"
+                foreignKey "baustelle_id"
+            }
+        }
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_related_multi_feature_list_sperrung"
+        tableName "baustellen.sperrung"
+        permissions.edit "allow all"
+        title "sperrung"
+        templates+ { subject "feature.title" type "html" text "sperrung {{beschreibung}}" }
+        fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
+        fields+ { name "geom" type "geometry" }
+
+        fields+ { name "baustelle" type "relatedFeature"
+            relationship {
+                modelUid "model_related_multi_feature_list_baustelle"
+                foreignKey "baustelle_id"
+            }
+        }
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_related_multi_feature_list_umleitung"
+        tableName "baustellen.umleitung"
+        permissions.edit "allow all"
+        title "umleitung"
+        templates+ { subject "feature.title" type "html" text "umleitung {{beschreibung}}" }
+        fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
+        fields+ { name "geom" type "geometry" }
+
+        fields+ { name "baustelle" type "relatedFeature"
+            relationship {
+                modelUid "model_related_multi_feature_list_baustelle"
+                foreignKey "baustelle_id"
+            }
+        }
+    }
+
+    map.layers+ { type "postgres" title "kanalarbeiten"  tableName "baustellen.kanalarbeiten" }
+    map.layers+ { type "postgres" title "sperrung"       tableName "baustellen.sperrung" }
+    map.layers+ { type "postgres" title "umleitung"      tableName "baustellen.umleitung" }
+
+    {demo_osm_background}
+}

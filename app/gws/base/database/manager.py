@@ -91,31 +91,13 @@ class Object(gws.Node, gws.IDatabaseManager):
             provider = t.cast(gws.IDatabaseProvider, getattr(mod, 'provider'))
             model_to_tabid[model_uid] = self.table_uid(provider, table_name)
 
-        columns = {}
-
-        # this is to ensure that the same column configured in different models
-        # matches the type and other props, like foreign keys
-
-        def _check_column(model_uid, tabid, col):
-            key = tabid, col.name
-            old = columns.get(key)
-            if not old:
-                columns[key] = [model_uid, col]
-                return
-
-            old_model_uid, old_col = old
-            for k, v in vars(col).items():
-                if k.startswith('_'):
-                    continue
-                old_val = getattr(old_col, k, None)
-                if repr(old_val) != repr(v):
-                    raise gws.Error(f'column conflict: {model_uid}.{col.name}.{k}={v!r}, {old_model_uid}.{col.name}.{k}={old_val!r}')
+        columns: dict[str, tuple[str, sa.Column]] = {}
 
         for model_uid, tabid in model_to_tabid.items():
             for f in self.models[model_uid].fields:
                 if f.isPrimaryKey:
                     for col in f.columns():
-                        _check_column(model_uid, tabid, col)
+                        self._add_column(columns, model_uid, tabid, col)
 
         for model_uid, tabid in model_to_tabid.items():
             self.rt.pkColumns[model_uid] = [v[1] for k, v in columns.items() if k[0] == tabid]
@@ -124,7 +106,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             for f in self.models[model_uid].fields:
                 if not f.isPrimaryKey:
                     for col in f.columns():
-                        _check_column(model_uid, tabid, col)
+                        self._add_column(columns, model_uid, tabid, col)
 
         tabid_to_table = {}
         tabid_to_class = {}
@@ -154,7 +136,63 @@ class Object(gws.Node, gws.IDatabaseManager):
 
         for tabid, props in tabid_to_props.items():
             for k, v in props.items():
-                getattr(tabid_to_class[tabid], '__mapper__').add_property(k, v)
+                sa.orm.add_mapped_attribute(tabid_to_class[tabid], k, v) # type: ignore
+                # getattr(tabid_to_class[tabid], '__mapper__').add_property(k, v)
+
+    _add_column_check_keys = [
+        'autoincrement',
+        'comment',
+        'computed',
+        'constraints',
+        'default',
+        'description',
+        'dialect_options',
+        'doc',
+        'foreign_keys',
+        'identity',
+        'index',
+        'info',
+        'inherit_cache',
+        'is_clause_element',
+        'is_dml',
+        'is_literal',
+        'is_selectable',
+        'key',
+        'name',
+        'nullable',
+        'onpudate',
+        'onupdate',
+        'primary_key',
+        'proxy_set',
+        'server_default',
+        'server_onupdate',
+        'stringify_dialect',
+        'supports_execution',
+        'system',
+        'table',
+        'type',
+        'unique',
+        'uses_inspection',
+    ]
+
+    def _add_column(self, columns, model_uid, tabid, col: sa.Column):
+        # this is to ensure that the same column configured in different models
+        # matches the type and other props, like foreign keys
+
+        key = tabid, col.name
+        if key not in columns:
+            columns[key] = [model_uid, col]
+            return
+
+        old_model_uid, old_col = columns[key]
+        for k in self._add_column_check_keys:
+            new_val = getattr(col, k, None)
+            old_val = getattr(old_col, k, None)
+            if repr(old_val) != repr(new_val):
+                raise gws.Error(
+                    f'column conflict: '
+                    + f'{model_uid}.{col.name}.{k} ={new_val!r}, '
+                    + f'{old_model_uid}.{old_col.name}.{k}={old_val!r}')
 
     def table_uid(self, provider: gws.IDatabaseProvider, table_name: str):
         return provider.uid, provider.qualified_table_name(table_name)
@@ -183,7 +221,7 @@ class Object(gws.Node, gws.IDatabaseManager):
         if tabid in self.rt.tables and not columns:
             return self.rt.tables[tabid]
         metadata = self.registry_for_provider(provider).metadata
-        schema, name = provider.parse_table_name(table_name)
+        schema, name = provider.split_table_name(table_name)
         kwargs.setdefault('schema', schema)
         if columns:
             kwargs.setdefault('extend_existing', True)
@@ -254,10 +292,10 @@ class Object(gws.Node, gws.IDatabaseManager):
         'VARCHAR': gws.AttributeType.str,
     }
 
-    def _load_and_describe(self, sess, table_name, load_only):
+    def _load_and_describe(self, sess: session_module.Object, table_name, load_only):
         ins = sa.inspect(sess.saSession.connection())
 
-        schema, name = sess.provider.parse_table_name(table_name)
+        schema, name = sess.provider.split_table_name(table_name)
         if not ins.has_table(name, schema):
             return None
 
@@ -272,7 +310,8 @@ class Object(gws.Node, gws.IDatabaseManager):
             keyNames=[],
             schema=tab.schema,
             name=tab.name,
-            qname=tab.schema + '.' + tab.name,
+            fullName=sess.provider.join_table_name(tab.name, tab.schema),
+            relationships=[],
         )
 
         for c in t.cast(t.Iterable, tab.columns):
@@ -282,6 +321,7 @@ class Object(gws.Node, gws.IDatabaseManager):
                 isAutoincrement=c.autoincrement,
                 isNullable=c.nullable,
                 isPrimaryKey=False,
+                isForeignKey=False,
                 name=c.name,
                 options=c.dialect_options
             )
@@ -305,9 +345,16 @@ class Object(gws.Node, gws.IDatabaseManager):
             desc.keyNames.append(name)
 
         for c in ins.get_foreign_keys(desc.name, desc.schema):
-            rel = c['referred_schema'] + '.' + c['referred_table']
-            for name in c['constrained_columns']:
-                desc.columns[name].relation = rel
+            rel = gws.RelationshipDescription(
+                name=c['referred_table'],
+                schema=c['referred_schema'],
+                fullName=sess.provider.join_table_name(c['referred_table'], c['referred_schema']),
+                foreignKeys=list(c['constrained_columns']),
+                referredKeys=list(c['referred_columns']),
+            )
+            desc.relationships.append(rel)
+            for name in rel.foreignKeys:
+                desc.columns[name].isForeignKey = True
 
         for col in desc.columns.values():
             if col.geometryType:

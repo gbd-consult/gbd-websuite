@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 7,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Wilma Next Generation"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 11,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Comback"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 13,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "BUTTERSHAKER"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 15,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Cafe de Paris"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 18,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bar l'Apero"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 23,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Brauhaus Schumacher"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 32,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Kränkel"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 33,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Highway Karaoke"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 47,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "sanfter Rebell"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 49,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Flur-Schänke"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 56,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Spiegelstübchen"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 58,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Birkeneck"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 59,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Boosen Hoffelder Hof"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 67,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Lotte"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 68,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "XXL Musikcafee"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 69,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Gaststätte Held"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 71,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Postillion"
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 75,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bogeneck"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 76,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum neuen Wolkenkratzer"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 78,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Billard-Forum"
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 84,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Frankenheim"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 88,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "SV Oberbilk 09"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 93,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bar Ciao Italia"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 97,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Alt Tannenhof"
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 100,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bar 95 - Fortuna Clubhaus"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 101,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Beim Box-Papst"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 108,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "White Dream"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 114,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Falkenhorst"
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 117,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Antonius-Klause"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 124,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Gaststätte Vereinshaus Kleingartenverein Solidarität e.V."
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 125,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Fuchsjagd"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 129,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Dr. Schmid"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 140,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Altstadt 1895"
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 144,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Scotti's"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 154,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "T-Bar"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 171,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Garather Krug"
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 172,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schumacher in Gerresheim"
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 176,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Louisiana"
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 182,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bergschlößchen"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 183,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zur Isa"
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 210,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Haus Dreieck"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 211,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Sias Treff"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 218,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Sausalitos"
             }
         },
@@ -663,7 +663,7 @@
             },
             "properties": {
                 "id": 226,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "SP-Saal"
             }
         },
@@ -678,7 +678,7 @@
             },
             "properties": {
                 "id": 236,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Barco Bar & Coffee Lounge"
             }
         },
@@ -693,7 +693,7 @@
             },
             "properties": {
                 "id": 246,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schweidnitzer Eck"
             }
         },
@@ -708,7 +708,7 @@
             },
             "properties": {
                 "id": 267,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Brauhaus Albrecht"
             }
         },
@@ -723,7 +723,7 @@
             },
             "properties": {
                 "id": 268,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zille"
             }
         },
@@ -738,7 +738,7 @@
             },
             "properties": {
                 "id": 291,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Top Treff '91"
             }
         },
@@ -753,7 +753,7 @@
             },
             "properties": {
                 "id": 294,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Tuppes"
             }
         },
@@ -768,7 +768,7 @@
             },
             "properties": {
                 "id": 306,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Rochusschänke"
             }
         },
@@ -783,7 +783,7 @@
             },
             "properties": {
                 "id": 325,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "En de Möhl"
             }
         },
@@ -798,7 +798,7 @@
             },
             "properties": {
                 "id": 329,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schlusslicht"
             }
         },
@@ -813,7 +813,7 @@
             },
             "properties": {
                 "id": 341,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Haus Meschede"
             }
         },
@@ -828,7 +828,7 @@
             },
             "properties": {
                 "id": 349,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Pief"
             }
         },
@@ -843,7 +843,7 @@
             },
             "properties": {
                 "id": 357,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Deutschen Kaiser"
             }
         },
@@ -858,7 +858,7 @@
             },
             "properties": {
                 "id": 362,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Salamander"
             }
         },
@@ -873,7 +873,7 @@
             },
             "properties": {
                 "id": 364,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Adler"
             }
         },
@@ -888,7 +888,7 @@
             },
             "properties": {
                 "id": 365,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Jägerhaus"
             }
         },
@@ -903,7 +903,7 @@
             },
             "properties": {
                 "id": 367,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zur Schönau"
             }
         },
@@ -918,7 +918,7 @@
             },
             "properties": {
                 "id": 378,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Promille"
             }
         },
@@ -933,7 +933,7 @@
             },
             "properties": {
                 "id": 383,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schlössers Bierhaus"
             }
         },
@@ -948,7 +948,7 @@
             },
             "properties": {
                 "id": 386,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Blauen Bock"
             }
         },
@@ -963,7 +963,7 @@
             },
             "properties": {
                 "id": 405,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Linden-Eck"
             }
         },
@@ -978,7 +978,7 @@
             },
             "properties": {
                 "id": 441,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Frankenheim am Zoo"
             }
         },
@@ -993,7 +993,7 @@
             },
             "properties": {
                 "id": 461,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Fuchs"
             }
         },
@@ -1008,7 +1008,7 @@
             },
             "properties": {
                 "id": 469,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Em Eck"
             }
         },
@@ -1023,7 +1023,7 @@
             },
             "properties": {
                 "id": 475,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Alte Apotheke"
             }
         },
@@ -1038,7 +1038,7 @@
             },
             "properties": {
                 "id": 482,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "En de Kull"
             }
         },
@@ -1053,7 +1053,7 @@
             },
             "properties": {
                 "id": 483,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bürgerstube"
             }
         },
@@ -1068,7 +1068,7 @@
             },
             "properties": {
                 "id": 500,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Töpferstube"
             }
         },
@@ -1083,7 +1083,7 @@
             },
             "properties": {
                 "id": 501,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Vereinshaus KGV Berta 3"
             }
         },
@@ -1098,7 +1098,7 @@
             },
             "properties": {
                 "id": 505,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Fatty's Irish Pub"
             }
         },
@@ -1113,7 +1113,7 @@
             },
             "properties": {
                 "id": 506,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Sutton's Irish Pub"
             }
         },
@@ -1128,7 +1128,7 @@
             },
             "properties": {
                 "id": 523,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Benni"
             }
         },
@@ -1143,7 +1143,7 @@
             },
             "properties": {
                 "id": 534,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Marktstübchen"
             }
         },
@@ -1158,7 +1158,7 @@
             },
             "properties": {
                 "id": 551,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Beuys Bar"
             }
         },
@@ -1173,7 +1173,7 @@
             },
             "properties": {
                 "id": 560,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Rudis Pinte"
             }
         },
@@ -1188,7 +1188,7 @@
             },
             "properties": {
                 "id": 565,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Kepler-Eck"
             }
         },
@@ -1203,7 +1203,7 @@
             },
             "properties": {
                 "id": 595,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Pitcher"
             }
         },
@@ -1218,7 +1218,7 @@
             },
             "properties": {
                 "id": 602,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Markt 33"
             }
         },
@@ -1233,7 +1233,7 @@
             },
             "properties": {
                 "id": 611,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Pfeffer Stube"
             }
         },
@@ -1248,7 +1248,7 @@
             },
             "properties": {
                 "id": 626,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Trinkhalle"
             }
         },
@@ -1263,7 +1263,7 @@
             },
             "properties": {
                 "id": 632,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "schöne amasya"
             }
         },
@@ -1278,7 +1278,7 @@
             },
             "properties": {
                 "id": 635,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Am Denkmal"
             }
         },
@@ -1293,7 +1293,7 @@
             },
             "properties": {
                 "id": 659,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Kronenklause"
             }
         },
@@ -1308,7 +1308,7 @@
             },
             "properties": {
                 "id": 662,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zur gemütlichen Ecke"
             }
         },
@@ -1323,7 +1323,7 @@
             },
             "properties": {
                 "id": 666,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Braustübl"
             }
         },
@@ -1338,7 +1338,7 @@
             },
             "properties": {
                 "id": 669,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Im alde Bültmann"
             }
         },
@@ -1353,7 +1353,7 @@
             },
             "properties": {
                 "id": 673,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Panneflicker"
             }
         },
@@ -1368,7 +1368,7 @@
             },
             "properties": {
                 "id": 678,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Mississippi"
             }
         },
@@ -1383,7 +1383,7 @@
             },
             "properties": {
                 "id": 680,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Rosie's"
             }
         },
@@ -1398,7 +1398,7 @@
             },
             "properties": {
                 "id": 681,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "En de Hött"
             }
         },
@@ -1413,7 +1413,7 @@
             },
             "properties": {
                 "id": 682,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Wirtshaus Bischofseck"
             }
         },
@@ -1428,7 +1428,7 @@
             },
             "properties": {
                 "id": 683,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zur Tränke"
             }
         },
@@ -1443,7 +1443,7 @@
             },
             "properties": {
                 "id": 684,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum goldenen Faß"
             }
         },
@@ -1458,7 +1458,7 @@
             },
             "properties": {
                 "id": 693,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "RotKompot"
             }
         },
@@ -1473,7 +1473,7 @@
             },
             "properties": {
                 "id": 701,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Oerschbach Klause"
             }
         },
@@ -1488,7 +1488,7 @@
             },
             "properties": {
                 "id": 706,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "KAMIN"
             }
         },
@@ -1503,7 +1503,7 @@
             },
             "properties": {
                 "id": 715,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Lot Jonn"
             }
         },
@@ -1518,7 +1518,7 @@
             },
             "properties": {
                 "id": 744,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bumblebee's Pub"
             }
         },
@@ -1533,7 +1533,7 @@
             },
             "properties": {
                 "id": 801,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "BAD - Brauhaus am Dreieck"
             }
         },
@@ -1548,7 +1548,7 @@
             },
             "properties": {
                 "id": 807,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Kik Klause"
             }
         },
@@ -1563,7 +1563,7 @@
             },
             "properties": {
                 "id": 814,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zu den Linden"
             }
         },
@@ -1578,7 +1578,7 @@
             },
             "properties": {
                 "id": 822,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "San Tuana"
             }
         },
@@ -1593,7 +1593,7 @@
             },
             "properties": {
                 "id": 825,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Die Blende"
             }
         },
@@ -1608,7 +1608,7 @@
             },
             "properties": {
                 "id": 832,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schumann-Klause"
             }
         },
@@ -1623,7 +1623,7 @@
             },
             "properties": {
                 "id": 836,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Tennisclub Holthausen e.V."
             }
         },
@@ -1638,7 +1638,7 @@
             },
             "properties": {
                 "id": 842,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Heimspiel"
             }
         },
@@ -1653,7 +1653,7 @@
             },
             "properties": {
                 "id": 843,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Jimmy's Bar"
             }
         },
@@ -1668,7 +1668,7 @@
             },
             "properties": {
                 "id": 849,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "West Side"
             }
         },
@@ -1683,7 +1683,7 @@
             },
             "properties": {
                 "id": 850,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Elegance"
             }
         },
@@ -1698,7 +1698,7 @@
             },
             "properties": {
                 "id": 864,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Werstener Klause"
             }
         },
@@ -1713,7 +1713,7 @@
             },
             "properties": {
                 "id": 866,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Hötter Jong"
             }
         },
@@ -1728,7 +1728,7 @@
             },
             "properties": {
                 "id": 871,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Vereinshaus"
             }
         },
@@ -1743,7 +1743,7 @@
             },
             "properties": {
                 "id": 882,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Alde Schür"
             }
         },
@@ -1758,7 +1758,7 @@
             },
             "properties": {
                 "id": 883,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Rockwerk"
             }
         },
@@ -1773,7 +1773,7 @@
             },
             "properties": {
                 "id": 887,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Frieda´s"
             }
         },
@@ -1788,7 +1788,7 @@
             },
             "properties": {
                 "id": 900,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zur alten Ziegelei"
             }
         },
@@ -1803,7 +1803,7 @@
             },
             "properties": {
                 "id": 901,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Hoferhof"
             }
         },
@@ -1818,7 +1818,7 @@
             },
             "properties": {
                 "id": 905,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Haus Schmalbauch"
             }
         },
@@ -1833,7 +1833,7 @@
             },
             "properties": {
                 "id": 906,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zoppoter 22"
             }
         },
@@ -1848,7 +1848,7 @@
             },
             "properties": {
                 "id": 909,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Lindwurm"
             }
         },
@@ -1863,7 +1863,7 @@
             },
             "properties": {
                 "id": 922,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schlüssel Angermund"
             }
         },
@@ -1878,7 +1878,7 @@
             },
             "properties": {
                 "id": 935,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Frankenheim in Bilk"
             }
         },
@@ -1893,7 +1893,7 @@
             },
             "properties": {
                 "id": 945,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Brauerei Kürzer"
             }
         },
@@ -1908,7 +1908,7 @@
             },
             "properties": {
                 "id": 948,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Brauereiausschank Orginal Schlüssel in Oberkassel"
             }
         },
@@ -1923,7 +1923,7 @@
             },
             "properties": {
                 "id": 950,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Buergerhaus Hassels"
             }
         },
@@ -1938,7 +1938,7 @@
             },
             "properties": {
                 "id": 958,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Treppchen"
             }
         },
@@ -1953,7 +1953,7 @@
             },
             "properties": {
                 "id": 967,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Sunshine Bar"
             }
         },
@@ -1968,7 +1968,7 @@
             },
             "properties": {
                 "id": 968,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Im Nest"
             }
         },
@@ -1983,7 +1983,7 @@
             },
             "properties": {
                 "id": 975,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schalander"
             }
         },
@@ -1998,7 +1998,7 @@
             },
             "properties": {
                 "id": 978,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Treffpunkt"
             }
         },
@@ -2013,7 +2013,7 @@
             },
             "properties": {
                 "id": 989,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Klein-Eller Stube"
             }
         },
@@ -2028,7 +2028,7 @@
             },
             "properties": {
                 "id": 990,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Sassafras"
             }
         },
@@ -2043,7 +2043,7 @@
             },
             "properties": {
                 "id": 992,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Woyaya"
             }
         },
@@ -2058,7 +2058,7 @@
             },
             "properties": {
                 "id": 999,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Elko"
             }
         },
@@ -2073,7 +2073,7 @@
             },
             "properties": {
                 "id": 1001,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Jägerklause"
             }
         },
@@ -2088,7 +2088,7 @@
             },
             "properties": {
                 "id": 1020,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Destille"
             }
         },
@@ -2103,7 +2103,7 @@
             },
             "properties": {
                 "id": 1030,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "zakk"
             }
         },
@@ -2118,7 +2118,7 @@
             },
             "properties": {
                 "id": 1032,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "AK47 - Punkrock Club"
             }
         },
@@ -2133,7 +2133,7 @@
             },
             "properties": {
                 "id": 1045,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Rather Fuchs"
             }
         },
@@ -2148,7 +2148,7 @@
             },
             "properties": {
                 "id": 1050,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bauernschänke"
             }
         },
@@ -2163,7 +2163,7 @@
             },
             "properties": {
                 "id": 1052,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Cafe Modigliani"
             }
         },
@@ -2178,7 +2178,7 @@
             },
             "properties": {
                 "id": 1073,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "The Red Lounge"
             }
         },
@@ -2193,7 +2193,7 @@
             },
             "properties": {
                 "id": 1077,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schaukelstühlchen"
             }
         },
@@ -2208,7 +2208,7 @@
             },
             "properties": {
                 "id": 1081,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Anton's Bierkönig"
             }
         },
@@ -2223,7 +2223,7 @@
             },
             "properties": {
                 "id": 1083,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Auberge"
             }
         },
@@ -2238,7 +2238,7 @@
             },
             "properties": {
                 "id": 1085,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Ballermann 6"
             }
         },
@@ -2253,7 +2253,7 @@
             },
             "properties": {
                 "id": 1086,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Brauhaus zum Weißen Bären"
             }
         },
@@ -2268,7 +2268,7 @@
             },
             "properties": {
                 "id": 1087,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bierhaus Zille"
             }
         },
@@ -2283,7 +2283,7 @@
             },
             "properties": {
                 "id": 1093,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Contiki"
             }
         },
@@ -2298,7 +2298,7 @@
             },
             "properties": {
                 "id": 1095,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Dä Spiegel"
             }
         },
@@ -2313,7 +2313,7 @@
             },
             "properties": {
                 "id": 1097,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Em Pöötzke"
             }
         },
@@ -2328,7 +2328,7 @@
             },
             "properties": {
                 "id": 1098,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Engel"
             }
         },
@@ -2343,7 +2343,7 @@
             },
             "properties": {
                 "id": 1099,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Engelchen"
             }
         },
@@ -2358,7 +2358,7 @@
             },
             "properties": {
                 "id": 1101,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Hausbrauerei Zum Schlüssel"
             }
         },
@@ -2373,7 +2373,7 @@
             },
             "properties": {
                 "id": 1104,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Kostbar"
             }
         },
@@ -2388,7 +2388,7 @@
             },
             "properties": {
                 "id": 1108,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Im Füchschen"
             }
         },
@@ -2403,7 +2403,7 @@
             },
             "properties": {
                 "id": 1109,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Im Goldenen Kessel"
             }
         },
@@ -2418,7 +2418,7 @@
             },
             "properties": {
                 "id": 1110,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Knoten"
             }
         },
@@ -2433,7 +2433,7 @@
             },
             "properties": {
                 "id": 1111,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Kreuzherreneck"
             }
         },
@@ -2448,7 +2448,7 @@
             },
             "properties": {
                 "id": 1112,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Kuhstall"
             }
         },
@@ -2463,7 +2463,7 @@
             },
             "properties": {
                 "id": 1114,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "König-City"
             }
         },
@@ -2478,7 +2478,7 @@
             },
             "properties": {
                 "id": 1118,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bar Cherie"
             }
         },
@@ -2493,7 +2493,7 @@
             },
             "properties": {
                 "id": 1121,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Meilenstein"
             }
         },
@@ -2508,7 +2508,7 @@
             },
             "properties": {
                 "id": 1126,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Opernstube"
             }
         },
@@ -2523,7 +2523,7 @@
             },
             "properties": {
                 "id": 1127,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "O'Reilly's Irish Pub"
             }
         },
@@ -2538,7 +2538,7 @@
             },
             "properties": {
                 "id": 1128,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Pinte"
             }
         },
@@ -2553,7 +2553,7 @@
             },
             "properties": {
                 "id": 1136,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Rosenrot"
             }
         },
@@ -2568,7 +2568,7 @@
             },
             "properties": {
                 "id": 1138,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schlüssel Schwemme"
             }
         },
@@ -2583,7 +2583,7 @@
             },
             "properties": {
                 "id": 1141,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Siam Cocktailbar"
             }
         },
@@ -2598,7 +2598,7 @@
             },
             "properties": {
                 "id": 1145,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Naseband's"
             }
         },
@@ -2613,7 +2613,7 @@
             },
             "properties": {
                 "id": 1146,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Tir na nog"
             }
         },
@@ -2628,7 +2628,7 @@
             },
             "properties": {
                 "id": 1150,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum St. Sebastian"
             }
         },
@@ -2643,7 +2643,7 @@
             },
             "properties": {
                 "id": 1151,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Weißer Bär"
             }
         },
@@ -2658,7 +2658,7 @@
             },
             "properties": {
                 "id": 1152,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum goldenen Einhorn"
             }
         },
@@ -2673,7 +2673,7 @@
             },
             "properties": {
                 "id": 1153,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zur Uel"
             }
         },
@@ -2688,7 +2688,7 @@
             },
             "properties": {
                 "id": 1154,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "mc laughlins"
             }
         },
@@ -2703,7 +2703,7 @@
             },
             "properties": {
                 "id": 1155,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "„Kneipe“"
             }
         },
@@ -2718,7 +2718,7 @@
             },
             "properties": {
                 "id": 1156,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "HOLY CRAFT Beer Bar"
             }
         },
@@ -2733,7 +2733,7 @@
             },
             "properties": {
                 "id": 1158,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Frankenheim In Den Kasematten"
             }
         },
@@ -2748,7 +2748,7 @@
             },
             "properties": {
                 "id": 1159,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schlüssel In Den Kasematten"
             }
         },
@@ -2763,7 +2763,7 @@
             },
             "properties": {
                 "id": 1169,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Butze Düsseldorf"
             }
         },
@@ -2778,7 +2778,7 @@
             },
             "properties": {
                 "id": 1170,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Derendorfer Tränke"
             }
         },
@@ -2793,7 +2793,7 @@
             },
             "properties": {
                 "id": 1178,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Weissenburg"
             }
         },
@@ -2808,7 +2808,7 @@
             },
             "properties": {
                 "id": 1181,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Vixen"
             }
         },
@@ -2823,7 +2823,7 @@
             },
             "properties": {
                 "id": 1191,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Fox"
             }
         },
@@ -2838,7 +2838,7 @@
             },
             "properties": {
                 "id": 1197,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bechereck"
             }
         },
@@ -2853,7 +2853,7 @@
             },
             "properties": {
                 "id": 1199,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Muenster Eck"
             }
         },
@@ -2868,7 +2868,7 @@
             },
             "properties": {
                 "id": 1204,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Derendorfer Treff"
             }
         },
@@ -2883,7 +2883,7 @@
             },
             "properties": {
                 "id": 1211,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Werhahn-Stuben"
             }
         },
@@ -2898,7 +2898,7 @@
             },
             "properties": {
                 "id": 1226,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Sutton's Irish Pub"
             }
         },
@@ -2913,7 +2913,7 @@
             },
             "properties": {
                 "id": 1251,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Brehmstube"
             }
         },
@@ -2928,7 +2928,7 @@
             },
             "properties": {
                 "id": 1255,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Brauereiausschank Am Zoo"
             }
         },
@@ -2943,7 +2943,7 @@
             },
             "properties": {
                 "id": 1260,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Rather Stube"
             }
         },
@@ -2958,7 +2958,7 @@
             },
             "properties": {
                 "id": 1273,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bar Dello Sport"
             }
         },
@@ -2973,7 +2973,7 @@
             },
             "properties": {
                 "id": 1276,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "nachspielzeit"
             }
         },
@@ -2988,7 +2988,7 @@
             },
             "properties": {
                 "id": 1278,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Mümmelmann"
             }
         },
@@ -3003,7 +3003,7 @@
             },
             "properties": {
                 "id": 1288,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "damenundherren e.v."
             }
         },
@@ -3018,7 +3018,7 @@
             },
             "properties": {
                 "id": 1293,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Krokodil"
             }
         },
@@ -3033,7 +3033,7 @@
             },
             "properties": {
                 "id": 1300,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zunftstuben"
             }
         },
@@ -3048,7 +3048,7 @@
             },
             "properties": {
                 "id": 1301,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Blue Note"
             }
         },
@@ -3063,7 +3063,7 @@
             },
             "properties": {
                 "id": 1308,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "beethoven"
             }
         },
@@ -3078,7 +3078,7 @@
             },
             "properties": {
                 "id": 1315,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Weisse Maus"
             }
         },
@@ -3093,7 +3093,7 @@
             },
             "properties": {
                 "id": 1354,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Fuchs am Klemensplatz"
             }
         },
@@ -3108,7 +3108,7 @@
             },
             "properties": {
                 "id": 1358,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Doro Linde"
             }
         },
@@ -3123,7 +3123,7 @@
             },
             "properties": {
                 "id": 1361,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Pauls"
             }
         },
@@ -3138,7 +3138,7 @@
             },
             "properties": {
                 "id": 1368,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Levent"
             }
         },
@@ -3153,7 +3153,7 @@
             },
             "properties": {
                 "id": 1369,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Club Musk"
             }
         },
@@ -3168,7 +3168,7 @@
             },
             "properties": {
                 "id": 1411,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum armen Mann"
             }
         },
@@ -3183,7 +3183,7 @@
             },
             "properties": {
                 "id": 1416,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "KuPe!"
             }
         },
@@ -3198,7 +3198,7 @@
             },
             "properties": {
                 "id": 1433,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Unterbacher Treff"
             }
         },
@@ -3213,7 +3213,7 @@
             },
             "properties": {
                 "id": 1445,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "PyjaMa"
             }
         },
@@ -3228,7 +3228,7 @@
             },
             "properties": {
                 "id": 1446,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Gaststätte Freese"
             }
         },
@@ -3243,7 +3243,7 @@
             },
             "properties": {
                 "id": 1450,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "K1"
             }
         },
@@ -3258,7 +3258,7 @@
             },
             "properties": {
                 "id": 1451,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Galapagoz"
             }
         },
@@ -3273,7 +3273,7 @@
             },
             "properties": {
                 "id": 1452,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Nähkörbchen"
             }
         },
@@ -3288,7 +3288,7 @@
             },
             "properties": {
                 "id": 1479,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Einhorn"
             }
         },
@@ -3303,7 +3303,7 @@
             },
             "properties": {
                 "id": 1481,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "El Mundo Restaurant"
             }
         },
@@ -3318,7 +3318,7 @@
             },
             "properties": {
                 "id": 1502,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Sonnenklause"
             }
         },
@@ -3333,7 +3333,7 @@
             },
             "properties": {
                 "id": 1509,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zur Laterne"
             }
         },
@@ -3348,7 +3348,7 @@
             },
             "properties": {
                 "id": 1525,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Gaststätte Dietze-Mamm"
             }
         },
@@ -3363,7 +3363,7 @@
             },
             "properties": {
                 "id": 1527,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Lang"
             }
         },
@@ -3378,7 +3378,7 @@
             },
             "properties": {
                 "id": 1539,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Schlösser Treff"
             }
         },
@@ -3393,7 +3393,7 @@
             },
             "properties": {
                 "id": 1543,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Katholisches Vereinshaus"
             }
         },
@@ -3408,7 +3408,7 @@
             },
             "properties": {
                 "id": 1558,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Xtreme LOUNGE"
             }
         },
@@ -3423,7 +3423,7 @@
             },
             "properties": {
                 "id": 1584,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Derendorfer Destille"
             }
         },
@@ -3438,7 +3438,7 @@
             },
             "properties": {
                 "id": 1589,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Trinkhalle Am Röttchen"
             }
         },
@@ -3453,7 +3453,7 @@
             },
             "properties": {
                 "id": 1590,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Gaststaette im Keller"
             }
         },
@@ -3468,7 +3468,7 @@
             },
             "properties": {
                 "id": 1591,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bei Bobby"
             }
         },
@@ -3483,7 +3483,7 @@
             },
             "properties": {
                 "id": 1597,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Das Weiss Blaue Haus"
             }
         },
@@ -3498,7 +3498,7 @@
             },
             "properties": {
                 "id": 1604,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "McLaughlins Irish Pub"
             }
         },
@@ -3513,7 +3513,7 @@
             },
             "properties": {
                 "id": 1614,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Pub Kanzlei"
             }
         },
@@ -3528,7 +3528,7 @@
             },
             "properties": {
                 "id": 1646,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "BRAUSE / Metzgerei Schnitzel e.V."
             }
         },
@@ -3543,7 +3543,7 @@
             },
             "properties": {
                 "id": 1649,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bilker Häzz"
             }
         },
@@ -3558,7 +3558,7 @@
             },
             "properties": {
                 "id": 1666,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Kopernikus-Eck"
             }
         },
@@ -3573,7 +3573,7 @@
             },
             "properties": {
                 "id": 1672,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Gaststätte Köhler"
             }
         },
@@ -3588,7 +3588,7 @@
             },
             "properties": {
                 "id": 1691,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Hubertusstube"
             }
         },
@@ -3603,7 +3603,7 @@
             },
             "properties": {
                 "id": 1698,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Williams Bar & Kitchen"
             }
         },
@@ -3618,7 +3618,7 @@
             },
             "properties": {
                 "id": 1703,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Villa Wahnsinn"
             }
         },
@@ -3633,7 +3633,7 @@
             },
             "properties": {
                 "id": 1743,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Gambrinus"
             }
         },
@@ -3648,7 +3648,7 @@
             },
             "properties": {
                 "id": 1786,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Jupp-Pitter"
             }
         },
@@ -3663,7 +3663,7 @@
             },
             "properties": {
                 "id": 1842,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Kalkumer Stuben"
             }
         },
@@ -3678,7 +3678,7 @@
             },
             "properties": {
                 "id": 1843,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "zur Hütte"
             }
         },
@@ -3693,7 +3693,7 @@
             },
             "properties": {
                 "id": 1845,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Julio's Guinness Pub"
             }
         },
@@ -3708,7 +3708,7 @@
             },
             "properties": {
                 "id": 1883,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum Franz"
             }
         },
@@ -3723,7 +3723,7 @@
             },
             "properties": {
                 "id": 1900,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Sportsbar Da Aldo"
             }
         },
@@ -3738,7 +3738,7 @@
             },
             "properties": {
                 "id": 1911,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zur Rheinfähre"
             }
         },
@@ -3753,7 +3753,7 @@
             },
             "properties": {
                 "id": 1938,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Vereinshaus Kleingärtner-Verein Eller-Lierenfeld 1922 e.V."
             }
         },
@@ -3768,7 +3768,7 @@
             },
             "properties": {
                 "id": 1971,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Küppers Bierstuben"
             }
         },
@@ -3783,7 +3783,7 @@
             },
             "properties": {
                 "id": 1981,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": null
             }
         },
@@ -3798,7 +3798,7 @@
             },
             "properties": {
                 "id": 1982,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": null
             }
         },
@@ -3813,7 +3813,7 @@
             },
             "properties": {
                 "id": 2022,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Nachtfalter"
             }
         },
@@ -3828,7 +3828,7 @@
             },
             "properties": {
                 "id": 2026,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Em Zeppelin"
             }
         },
@@ -3843,7 +3843,7 @@
             },
             "properties": {
                 "id": 2035,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Frank's Billiard Cafe"
             }
         },
@@ -3858,7 +3858,7 @@
             },
             "properties": {
                 "id": 2039,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zinnstübchen"
             }
         },
@@ -3873,7 +3873,7 @@
             },
             "properties": {
                 "id": 2066,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "GALERIE am Karlplatz"
             }
         },
@@ -3888,7 +3888,7 @@
             },
             "properties": {
                 "id": 2073,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Pablo´s Bar"
             }
         },
@@ -3903,7 +3903,7 @@
             },
             "properties": {
                 "id": 2086,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Ludenberger"
             }
         },
@@ -3918,7 +3918,7 @@
             },
             "properties": {
                 "id": 2090,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum kotzenden Einhorn"
             }
         },
@@ -3933,7 +3933,7 @@
             },
             "properties": {
                 "id": 2097,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Cranach-Eck"
             }
         },
@@ -3948,7 +3948,7 @@
             },
             "properties": {
                 "id": 2117,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": null
             }
         },
@@ -3963,7 +3963,7 @@
             },
             "properties": {
                 "id": 2134,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Derendorfer Stuben"
             }
         },
@@ -3978,7 +3978,7 @@
             },
             "properties": {
                 "id": 2172,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bistro BB"
             }
         },
@@ -3993,7 +3993,7 @@
             },
             "properties": {
                 "id": 2175,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Heerdter Gasthaus"
             }
         },
@@ -4008,7 +4008,7 @@
             },
             "properties": {
                 "id": 2183,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Gaststätte \"Am Ostpark\""
             }
         },
@@ -4023,7 +4023,7 @@
             },
             "properties": {
                 "id": 2191,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bogart's"
             }
         },
@@ -4038,7 +4038,7 @@
             },
             "properties": {
                 "id": 2196,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Holländisches Haus"
             }
         },
@@ -4053,7 +4053,7 @@
             },
             "properties": {
                 "id": 2197,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bräderbuud"
             }
         },
@@ -4068,7 +4068,7 @@
             },
             "properties": {
                 "id": 2204,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Am Zault Dorfstube"
             }
         },
@@ -4083,7 +4083,7 @@
             },
             "properties": {
                 "id": 2205,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Am Zault Wirtschaft"
             }
         },
@@ -4098,7 +4098,7 @@
             },
             "properties": {
                 "id": 2206,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Feldmanns Saal"
             }
         },
@@ -4113,7 +4113,7 @@
             },
             "properties": {
                 "id": 2207,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Brücken-Schänke"
             }
         },
@@ -4128,7 +4128,7 @@
             },
             "properties": {
                 "id": 2239,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Fuchs im Hofmann's"
             }
         },
@@ -4143,7 +4143,7 @@
             },
             "properties": {
                 "id": 2242,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zielhoff"
             }
         },
@@ -4158,7 +4158,7 @@
             },
             "properties": {
                 "id": 2246,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Zum goldenen Nest"
             }
         },
@@ -4173,7 +4173,7 @@
             },
             "properties": {
                 "id": 2256,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Jägerstübchen"
             }
         },
@@ -4188,7 +4188,7 @@
             },
             "properties": {
                 "id": 2257,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Im Grünen Winkel"
             }
         },
@@ -4203,7 +4203,7 @@
             },
             "properties": {
                 "id": 2268,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Café Bistro Strass"
             }
         },
@@ -4218,7 +4218,7 @@
             },
             "properties": {
                 "id": 2332,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Treff19"
             }
         },
@@ -4233,7 +4233,7 @@
             },
             "properties": {
                 "id": 2337,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Cafe 38"
             }
         },
@@ -4248,7 +4248,7 @@
             },
             "properties": {
                 "id": 2341,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Gaststätte Peters"
             }
         },
@@ -4263,7 +4263,7 @@
             },
             "properties": {
                 "id": 2380,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Brauhaus Zum Goldenen Handwerk"
             }
         },
@@ -4278,7 +4278,7 @@
             },
             "properties": {
                 "id": 2420,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Bei Marko"
             }
         },
@@ -4293,7 +4293,7 @@
             },
             "properties": {
                 "id": 2546,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Im Birk's"
             }
         },
@@ -4308,7 +4308,7 @@
             },
             "properties": {
                 "id": 2553,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Sternschnuppe"
             }
         },
@@ -4323,7 +4323,7 @@
             },
             "properties": {
                 "id": 2566,
-                "fclass": "Kneipe",
+                "category": "Kneipe",
                 "name": "Alter Bahnhof Oberkassel"
             }
         }

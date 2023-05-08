@@ -8,8 +8,13 @@ import gws.types as t
 gws.ext.new.modelField('relatedFeatureList')
 
 
+class RelationshipConfig(gws.Config):
+    modelUid: str
+    fieldName: str
+
+
 class Config(gws.base.model.field.Config):
-    relation: gws.base.model.field.Relation
+    relationship: RelationshipConfig
 
 
 class Props(gws.base.model.field.Props):
@@ -20,10 +25,10 @@ class Object(gws.base.model.field.Object):
     attributeType = gws.AttributeType.featurelist
 
     model: gws.base.database.model.Object
-    relation: gws.base.model.field.Relation
+    relationship: gws.base.model.field.Relationship
 
     def configure(self):
-        self.relation = self.cfg('relation')
+        self.relationship = self.cfg('relationship')
 
     def configure_widget(self):
         if not super().configure_widget():
@@ -31,7 +36,12 @@ class Object(gws.base.model.field.Object):
             return True
 
     def props(self, user):
-        return gws.merge(super().props(user), relations=[self.relation])
+        return gws.merge(super().props(user), relationships=[
+            gws.base.model.field.RelationshipProps(
+                modelUid=self.relationship.modelUid,
+                fieldName=self.relationship.fieldName,
+            )
+        ])
 
     def load_from_props(self, feature, props, user, relation_depth=0, **kwargs):
         if relation_depth <= 0:
@@ -61,24 +71,25 @@ class Object(gws.base.model.field.Object):
 
     def store_to_record(self, feature, record, user, **kwargs):
         ok, feature_list = self._value_to_write(feature)
-        if ok:
-            rel_model = self.related_model()
-            uids = [feature.uid() for feature in feature_list]
-            recs = rel_model.get_records(uids)
-            setattr(record, self.name, recs)
+        if not ok:
+            return
+        rel_model = self.related_model()
+        uids = [feature.uid() for feature in feature_list]
+        recs = rel_model.get_records(uids)
+        setattr(record, self.name, recs)
 
     def orm_properties(self):
-        own_pk = self.model.primary_keys()[0]
-        own_cls = self.model.record_class()
+        our_pk = self.model.primary_keys()[0]
+        our_cls = self.model.record_class()
 
         rel_model = self.related_model()
         rel_cls = rel_model.record_class()
-        rel_field_name = self.relation.fieldName
-        rel_fk = getattr(rel_model.field(rel_field_name), 'foreignKey')
+        rel_field_name = self.relationship.fieldName
+        # rel_fk = getattr(rel_model.field(rel_field_name), 'foreignKey')
 
         kwargs = {}
-        kwargs['primaryjoin'] = getattr(own_cls, own_pk.name) == getattr(rel_cls, rel_fk.name)
-        kwargs['foreign_keys'] = getattr(rel_cls, rel_fk.name)
+        # kwargs['primaryjoin'] = getattr(our_cls, our_pk.name) == getattr(rel_cls, rel_fk.name)
+        # kwargs['foreign_keys'] = getattr(rel_cls, rel_fk.name)
         kwargs['back_populates'] = rel_field_name
 
         if rel_model.sqlSort:
@@ -93,4 +104,4 @@ class Object(gws.base.model.field.Object):
         }
 
     def related_model(self) -> gws.IDatabaseModel:
-        return self.model.provider.mgr.model(self.relation.modelUid)
+        return self.model.provider.mgr.model(self.relationship.modelUid)

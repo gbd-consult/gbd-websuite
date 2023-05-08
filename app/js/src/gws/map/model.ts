@@ -234,7 +234,7 @@ export class ModelField implements types.IModelField {
     type: string;
     uid: string;
 
-    relations: Array<types.IModelRelation>;
+    relationships: Array<api.base.model.field.RelationshipProps>;
     widgetProps: api.ext.props.modelWidget;
 
     model: Model;
@@ -248,7 +248,7 @@ export class ModelField implements types.IModelField {
         this.attributeType = props.attributeType;
         this.geometryType = props.geometryType;
         this.name = props.name;
-        this.relations = props.relations || [];
+        this.relationships = props.relationships || [];
         this.title = props.title;
         this.uid = props.uid;
         this.widgetProps = props.widget;

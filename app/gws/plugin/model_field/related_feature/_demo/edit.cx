@@ -1,13 +1,17 @@
 @comment
 
-Editing 1:M (fclass->poi) and M:1 (poi->fclass) relationships.
+Editing the "child" side of a 1:M relationship (poi >>- category)
+
+Use a "relatedFeature" field and a "featureSelect" widget.
+
+The configuration should provide the "parent" model uid and the foreign key.
 
 Title templates accomodated for displaying new features.
 
 @end
 
 projects+ {
-    title "Edit: 1:M relationship"
+    title "Models: relatedFeature"
     metadata.abstract "Editing related features."
 
     api.actions+ { type "edit" }
@@ -23,7 +27,7 @@ projects+ {
 
     models+ {
         type "postgres"
-        uid "model_poi_1m"
+        uid "model_related_feature_poi"
         tableName "edit.poi_small"
         sort+ { fieldName "name" }
         title "POIs"
@@ -46,24 +50,14 @@ projects+ {
         }
 
         fields+ {
-            name "fclass"
+            name "category"
+            title "Category"
             type "relatedFeature"
-            relation {
-                modelUid "model_fclass_1m"
-                fieldName "pois"
+            relationship {
+                modelUid "model_related_feature_category"
+                foreignKey "category_id"
             }
-            foreignKey {
-                name "fclass_id"
-            }
-            title "Feature Class"
             widget.type "featureSelect"
-        }
-
-        fields+ {
-            name "description"
-            type "text"
-            title "Comments"
-            widget { type "textarea" height 150 }
         }
 
         fields+ {
@@ -82,11 +76,9 @@ projects+ {
 
     models+ {
         type "postgres"
-        uid "model_fclass_1m"
-        tableName "edit.fclass"
-        permissions.edit "allow all"
+        uid "model_related_feature_category"
+        tableName "edit.category"
         sort+ { fieldName "name_de" }
-        title "Classes"
 
         fields+ {
             name "id"
@@ -99,50 +91,19 @@ projects+ {
         fields+ {
             name "name_de"
             type "text"
-            title "Name (Deutsch)"
+            title "Name"
             isRequired true
             textSearch { type "any" }
-        }
-
-        fields+ {
-            name "name_en"
-            type "text"
-            title "Name (English)"
-            isRequired true
-            textSearch { type "any" }
-        }
-
-        fields+ {
-            name "pois"
-            type "relatedFeatureList"
-            relation {
-                modelUid "model_poi_1m"
-                fieldName "fclass"
-            }
-            title "Related Objects"
-        }
-
-        fields+ {
-            name "description"
-            type "text"
-            title "Comments"
-            widget { type "textarea" height 150 }
         }
 
         templates+ {
             subject "feature.title"
             type "html"
-            text "{{@if feature.isNew}} Unbenannt {{@else}} {{name_de}} {{@end}}"
+            text "{{name_de}}"
         }
     }
 
-    map.layers+ {
-    uid "ZZZ"
-        title "POIs"
-        type "postgres"
-        tableName "edit.poi_small"
-        extent [ 431881, 6505964, 1076161, 6877804 ]
-    }
+    map.layers+ { type "postgres" title "POIs"  tableName "edit.poi_small" }
 
     {demo_osm_background}
 }

@@ -1,14 +1,16 @@
 @comment
 
-Editing 1:M relationships (person->poi and person->district).
+Editing 1:M relationships (person >- poi).
 
 Using `featureSuggest` widgets and `loadingStrategy lazy`
 to facilitate lazy loading: useful for big tables.
 
+The "parent" model must have at least one field with "textSearch" defined.
+
 @end
 
 projects+ {
-    title "Edit: lazy loading"
+    title "Models: relatedFeature (lazy loading)"
     metadata.abstract "Loading related features on demand."
 
     api.actions+ { type "edit" }
@@ -24,34 +26,22 @@ projects+ {
 
     models+ {
         type "postgres"
-        uid "model_poi_lazy"
+        uid "model_related_feature_lazy_poi"
         title "POIs"
         loadingStrategy "lazy"
         sort+ { fieldName "name" }
         tableName "edit.poi"
-        permissions.edit "allow all"
 
         fields+ {
             name "id"
             type "integer"
-            title "Identifier"
             isPrimaryKey true
-            permissions.edit "deny all"
         }
 
         fields+ {
             name "name"
             type "text"
-            title "Object name"
-            isRequired true
             textSearch { type "any" }
-        }
-
-        fields+ {
-            name "geom"
-            type "geometry"
-            title "Geometry"
-            isRequired true
         }
 
         templates+ {
@@ -63,45 +53,7 @@ projects+ {
 
     models+ {
         type "postgres"
-        uid "model_district_lazy"
-        title "Districts"
-        loadingStrategy "lazy"
-        sort+ { fieldName "name" }
-        tableName "edit.district"
-        permissions.edit "allow all"
-
-        fields+ {
-            name "sid"
-            type "text"
-            title "Identifier"
-            isPrimaryKey true
-        }
-
-        fields+ {
-            name "name"
-            type "text"
-            title "Object name"
-            isRequired true
-            textSearch { type "any" }
-        }
-
-        fields+ {
-            name "geom"
-            type "geometry"
-            title "Geometry"
-            isRequired true
-        }
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{name}} ( {{sid}} )"
-        }
-    }
-
-    models+ {
-        type "postgres"
-        uid "model_person_lazy"
+        uid "model_related_feature_lazy_person"
         tableName "edit.person"
         permissions.edit "allow all"
         sort+ { fieldName "name" }
@@ -120,31 +72,15 @@ projects+ {
             type "text"
             title "Name"
             isRequired true
-            textSearch { type "any" }
         }
 
         fields+ {
             name "favorite"
             title "Favourite Location"
             type "relatedFeature"
-            relation {
-                modelUid "model_poi_lazy"
-            }
-            foreignKey {
-                name "poi_id"
-            }
-            widget.type "featureSuggest"
-        }
-
-        fields+ {
-            name "lives"
-            title "Lives in"
-            type "relatedFeature"
-            relation {
-                modelUid "model_district_lazy"
-            }
-            foreignKey {
-                name "district_sid"
+            relationship {
+                modelUid "model_related_feature_lazy_poi"
+                foreignKey "poi_id"
             }
             widget.type "featureSuggest"
         }

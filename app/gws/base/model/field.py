@@ -2,18 +2,24 @@ import gws
 import gws.types as t
 
 
-class Relation(gws.Data):
+class Relationship(gws.Data):
     modelUid: str
-    fieldName: str = ''
-    discriminator: str = ''
-    title: str = ''
+    fieldName: str
+    foreignKey: str
+    relatedKey: str
+    discriminator: str
+
+
+class RelationshipProps(gws.Data):
+    modelUid: str
+    fieldName: str
 
 
 class Props(gws.Props):
     attributeType: gws.AttributeType
     geometryType: gws.GeometryType
     name: str
-    relations: list[Relation]
+    relationships: list[RelationshipProps]
     title: str
     type: str
     widget: gws.ext.props.modelWidget

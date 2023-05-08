@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 6,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Zaxopondeiva Cafe"
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 28,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Byzantin Cafe"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 74,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafe Stefan"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 106,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Mamounia"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 110,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Agadir"
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 111,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Salam"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 121,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Yakamoz Schisha Bar"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 155,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Oebel"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 159,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Kalusch"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 162,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Ballon"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 164,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "La Corte"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 213,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Pause"
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 217,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Königsberg"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 219,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Liebeck & Gabel"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 255,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafé am Schloss"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 260,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Ghirloni Eismanufaktur"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 272,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Pit Stop"
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 292,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Simon's Cafe"
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 302,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Rekord"
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 319,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "zimmer no. 01"
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 330,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Brotkörbchen Garath"
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 343,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Dolce Vita"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 353,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Sportcafe"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 354,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bistro Italy da Pino"
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 356,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Gattopardo"
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 359,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café-Bistro Terranova"
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 379,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Fame"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 384,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bistro Polonia"
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 385,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Orient Lounge"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 399,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafeteria Le Carré"
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 400,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Suli's Café"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 403,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Chelsea"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 406,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Miles"
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 411,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Markt-Cafe"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 413,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Starbucks"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 416,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "JSchoco & Laden"
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 421,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bäckerei Oehme"
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 433,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eis-Café Palatini"
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 436,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Curtiz"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 439,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bäckerei Kamps"
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 440,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café de France"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 454,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Woyton"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 459,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafe Elisa"
             }
         },
@@ -663,7 +663,7 @@
             },
             "properties": {
                 "id": 480,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "ZOO pavillon"
             }
         },
@@ -678,7 +678,7 @@
             },
             "properties": {
                 "id": 489,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bauern Cafe Am Kapellchen"
             }
         },
@@ -693,7 +693,7 @@
             },
             "properties": {
                 "id": 490,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafé Unbehaun"
             }
         },
@@ -708,7 +708,7 @@
             },
             "properties": {
                 "id": 491,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Oehme"
             }
         },
@@ -723,7 +723,7 @@
             },
             "properties": {
                 "id": 526,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bistro Panorama"
             }
         },
@@ -738,7 +738,7 @@
             },
             "properties": {
                 "id": 531,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Salam"
             }
         },
@@ -753,7 +753,7 @@
             },
             "properties": {
                 "id": 532,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "bistro"
             }
         },
@@ -768,7 +768,7 @@
             },
             "properties": {
                 "id": 533,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "La Gelateria"
             }
         },
@@ -783,7 +783,7 @@
             },
             "properties": {
                 "id": 544,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Caffé Italiano"
             }
         },
@@ -798,7 +798,7 @@
             },
             "properties": {
                 "id": 548,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café & Crepes"
             }
         },
@@ -813,7 +813,7 @@
             },
             "properties": {
                 "id": 567,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Woyton"
             }
         },
@@ -828,7 +828,7 @@
             },
             "properties": {
                 "id": 568,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafetiero"
             }
         },
@@ -843,7 +843,7 @@
             },
             "properties": {
                 "id": 582,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafetiero"
             }
         },
@@ -858,7 +858,7 @@
             },
             "properties": {
                 "id": 583,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Tchibo"
             }
         },
@@ -873,7 +873,7 @@
             },
             "properties": {
                 "id": 587,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Simon's Brotkörbchen"
             }
         },
@@ -888,7 +888,7 @@
             },
             "properties": {
                 "id": 601,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafe Tuga"
             }
         },
@@ -903,7 +903,7 @@
             },
             "properties": {
                 "id": 604,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eis-Cafe Fantasia"
             }
         },
@@ -918,7 +918,7 @@
             },
             "properties": {
                 "id": 606,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Tchibo"
             }
         },
@@ -933,7 +933,7 @@
             },
             "properties": {
                 "id": 610,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Ex Libris"
             }
         },
@@ -948,7 +948,7 @@
             },
             "properties": {
                 "id": 631,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafeteria Süd"
             }
         },
@@ -963,7 +963,7 @@
             },
             "properties": {
                 "id": 642,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -978,7 +978,7 @@
             },
             "properties": {
                 "id": 644,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Sultan Call Shop"
             }
         },
@@ -993,7 +993,7 @@
             },
             "properties": {
                 "id": 692,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Leopold"
             }
         },
@@ -1008,7 +1008,7 @@
             },
             "properties": {
                 "id": 720,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Hüftgold"
             }
         },
@@ -1023,7 +1023,7 @@
             },
             "properties": {
                 "id": 745,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Johnny's"
             }
         },
@@ -1038,7 +1038,7 @@
             },
             "properties": {
                 "id": 756,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Schuster / K5"
             }
         },
@@ -1053,7 +1053,7 @@
             },
             "properties": {
                 "id": 757,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Hell-Ga"
             }
         },
@@ -1068,7 +1068,7 @@
             },
             "properties": {
                 "id": 769,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Carrot/Cake"
             }
         },
@@ -1083,7 +1083,7 @@
             },
             "properties": {
                 "id": 799,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -1098,7 +1098,7 @@
             },
             "properties": {
                 "id": 803,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -1113,7 +1113,7 @@
             },
             "properties": {
                 "id": 806,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "E-Plus Cafeteria"
             }
         },
@@ -1128,7 +1128,7 @@
             },
             "properties": {
                 "id": 818,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "musetti"
             }
         },
@@ -1143,7 +1143,7 @@
             },
             "properties": {
                 "id": 827,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Förderbar"
             }
         },
@@ -1158,7 +1158,7 @@
             },
             "properties": {
                 "id": 828,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafe San Remo"
             }
         },
@@ -1173,7 +1173,7 @@
             },
             "properties": {
                 "id": 856,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Wunderhaus / Indoorspielplatz"
             }
         },
@@ -1188,7 +1188,7 @@
             },
             "properties": {
                 "id": 858,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bäckerei Schneider"
             }
         },
@@ -1203,7 +1203,7 @@
             },
             "properties": {
                 "id": 870,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Internet Sport Cafe"
             }
         },
@@ -1218,7 +1218,7 @@
             },
             "properties": {
                 "id": 875,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eis Café Piccolo"
             }
         },
@@ -1233,7 +1233,7 @@
             },
             "properties": {
                 "id": 876,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Chance"
             }
         },
@@ -1248,7 +1248,7 @@
             },
             "properties": {
                 "id": 880,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -1263,7 +1263,7 @@
             },
             "properties": {
                 "id": 884,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Royal Cafe"
             }
         },
@@ -1278,7 +1278,7 @@
             },
             "properties": {
                 "id": 888,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Antep Altinsöz"
             }
         },
@@ -1293,7 +1293,7 @@
             },
             "properties": {
                 "id": 889,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -1308,7 +1308,7 @@
             },
             "properties": {
                 "id": 910,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Woyton"
             }
         },
@@ -1323,7 +1323,7 @@
             },
             "properties": {
                 "id": 912,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "G28"
             }
         },
@@ -1338,7 +1338,7 @@
             },
             "properties": {
                 "id": 928,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafe Baldini"
             }
         },
@@ -1353,7 +1353,7 @@
             },
             "properties": {
                 "id": 1010,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Myndos Café"
             }
         },
@@ -1368,7 +1368,7 @@
             },
             "properties": {
                 "id": 1016,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Zicke"
             }
         },
@@ -1383,7 +1383,7 @@
             },
             "properties": {
                 "id": 1022,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Copenhagen Coffee Lab & bakery"
             }
         },
@@ -1398,7 +1398,7 @@
             },
             "properties": {
                 "id": 1024,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Engels"
             }
         },
@@ -1413,7 +1413,7 @@
             },
             "properties": {
                 "id": 1031,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Stadtbäckerei"
             }
         },
@@ -1428,7 +1428,7 @@
             },
             "properties": {
                 "id": 1033,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Laguna Blu"
             }
         },
@@ -1443,7 +1443,7 @@
             },
             "properties": {
                 "id": 1036,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Mautz"
             }
         },
@@ -1458,7 +1458,7 @@
             },
             "properties": {
                 "id": 1048,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Stehcafe"
             }
         },
@@ -1473,7 +1473,7 @@
             },
             "properties": {
                 "id": 1062,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kebali Coffee Co."
             }
         },
@@ -1488,7 +1488,7 @@
             },
             "properties": {
                 "id": 1065,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Markt-Cafe"
             }
         },
@@ -1503,7 +1503,7 @@
             },
             "properties": {
                 "id": 1105,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Holzwurm"
             }
         },
@@ -1518,7 +1518,7 @@
             },
             "properties": {
                 "id": 1132,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Richy's"
             }
         },
@@ -1533,7 +1533,7 @@
             },
             "properties": {
                 "id": 1143,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "dean & david"
             }
         },
@@ -1548,7 +1548,7 @@
             },
             "properties": {
                 "id": 1148,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Rösterei Vier"
             }
         },
@@ -1563,7 +1563,7 @@
             },
             "properties": {
                 "id": 1149,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Woyton"
             }
         },
@@ -1578,7 +1578,7 @@
             },
             "properties": {
                 "id": 1162,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Goldregen"
             }
         },
@@ -1593,7 +1593,7 @@
             },
             "properties": {
                 "id": 1168,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafè Good Times"
             }
         },
@@ -1608,7 +1608,7 @@
             },
             "properties": {
                 "id": 1185,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Catz Cafe Düsseldorf"
             }
         },
@@ -1623,7 +1623,7 @@
             },
             "properties": {
                 "id": 1207,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "kwadrat"
             }
         },
@@ -1638,7 +1638,7 @@
             },
             "properties": {
                 "id": 1218,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Casa Nostra"
             }
         },
@@ -1653,7 +1653,7 @@
             },
             "properties": {
                 "id": 1222,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Day to Day"
             }
         },
@@ -1668,7 +1668,7 @@
             },
             "properties": {
                 "id": 1225,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Atempause"
             }
         },
@@ -1683,7 +1683,7 @@
             },
             "properties": {
                 "id": 1235,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Alma"
             }
         },
@@ -1698,7 +1698,7 @@
             },
             "properties": {
                 "id": 1240,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Bato"
             }
         },
@@ -1713,7 +1713,7 @@
             },
             "properties": {
                 "id": 1241,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Eistraum"
             }
         },
@@ -1728,7 +1728,7 @@
             },
             "properties": {
                 "id": 1242,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Marcel's"
             }
         },
@@ -1743,7 +1743,7 @@
             },
             "properties": {
                 "id": 1253,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Knülle"
             }
         },
@@ -1758,7 +1758,7 @@
             },
             "properties": {
                 "id": 1283,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eis Cafe Belluno"
             }
         },
@@ -1773,7 +1773,7 @@
             },
             "properties": {
                 "id": 1285,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Die Kaffee Privatrösterei"
             }
         },
@@ -1788,7 +1788,7 @@
             },
             "properties": {
                 "id": 1292,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Talamini"
             }
         },
@@ -1803,7 +1803,7 @@
             },
             "properties": {
                 "id": 1302,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Heinemann"
             }
         },
@@ -1818,7 +1818,7 @@
             },
             "properties": {
                 "id": 1303,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -1833,7 +1833,7 @@
             },
             "properties": {
                 "id": 1312,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Röstzeit"
             }
         },
@@ -1848,7 +1848,7 @@
             },
             "properties": {
                 "id": 1323,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Palme Cafe"
             }
         },
@@ -1863,7 +1863,7 @@
             },
             "properties": {
                 "id": 1345,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Muggel"
             }
         },
@@ -1878,7 +1878,7 @@
             },
             "properties": {
                 "id": 1357,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Alte Metzgerei"
             }
         },
@@ -1893,7 +1893,7 @@
             },
             "properties": {
                 "id": 1412,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Omonia"
             }
         },
@@ -1908,7 +1908,7 @@
             },
             "properties": {
                 "id": 1419,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cemil’s Manege"
             }
         },
@@ -1923,7 +1923,7 @@
             },
             "properties": {
                 "id": 1424,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -1938,7 +1938,7 @@
             },
             "properties": {
                 "id": 1426,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Wolff"
             }
         },
@@ -1953,7 +1953,7 @@
             },
             "properties": {
                 "id": 1437,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Da Forno"
             }
         },
@@ -1968,7 +1968,7 @@
             },
             "properties": {
                 "id": 1440,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Sugarbird"
             }
         },
@@ -1983,7 +1983,7 @@
             },
             "properties": {
                 "id": 1470,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "freund"
             }
         },
@@ -1998,7 +1998,7 @@
             },
             "properties": {
                 "id": 1477,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Die Röstmeister"
             }
         },
@@ -2013,7 +2013,7 @@
             },
             "properties": {
                 "id": 1482,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kaffeeschmiede"
             }
         },
@@ -2028,7 +2028,7 @@
             },
             "properties": {
                 "id": 1484,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafe Mokka"
             }
         },
@@ -2043,7 +2043,7 @@
             },
             "properties": {
                 "id": 1489,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Pia Eis"
             }
         },
@@ -2058,7 +2058,7 @@
             },
             "properties": {
                 "id": 1494,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Ital. Eis-Café-Adria"
             }
         },
@@ -2073,7 +2073,7 @@
             },
             "properties": {
                 "id": 1498,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafeteria, Medizinische Fakultät"
             }
         },
@@ -2088,7 +2088,7 @@
             },
             "properties": {
                 "id": 1503,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Sitzcafé der Stadtbäckerei"
             }
         },
@@ -2103,7 +2103,7 @@
             },
             "properties": {
                 "id": 1504,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kaffeepott"
             }
         },
@@ -2118,7 +2118,7 @@
             },
             "properties": {
                 "id": 1506,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Nespresso"
             }
         },
@@ -2133,7 +2133,7 @@
             },
             "properties": {
                 "id": 1507,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Leysieffer"
             }
         },
@@ -2148,7 +2148,7 @@
             },
             "properties": {
                 "id": 1513,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kulturcafé Solaris 53 e.V."
             }
         },
@@ -2163,7 +2163,7 @@
             },
             "properties": {
                 "id": 1537,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -2178,7 +2178,7 @@
             },
             "properties": {
                 "id": 1544,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Shisha-Café Tropicana"
             }
         },
@@ -2193,7 +2193,7 @@
             },
             "properties": {
                 "id": 1553,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Tanger"
             }
         },
@@ -2208,7 +2208,7 @@
             },
             "properties": {
                 "id": 1555,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Patisserie Tanger"
             }
         },
@@ -2223,7 +2223,7 @@
             },
             "properties": {
                 "id": 1576,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Poccino"
             }
         },
@@ -2238,7 +2238,7 @@
             },
             "properties": {
                 "id": 1577,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Mutt's"
             }
         },
@@ -2253,7 +2253,7 @@
             },
             "properties": {
                 "id": 1593,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café süße Erinnerung"
             }
         },
@@ -2268,7 +2268,7 @@
             },
             "properties": {
                 "id": 1595,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Woyton"
             }
         },
@@ -2283,7 +2283,7 @@
             },
             "properties": {
                 "id": 1600,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "KiT (Kunst im Tunnel)"
             }
         },
@@ -2298,7 +2298,7 @@
             },
             "properties": {
                 "id": 1609,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "La Cité (im P&C)"
             }
         },
@@ -2313,7 +2313,7 @@
             },
             "properties": {
                 "id": 1618,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Aktuell"
             }
         },
@@ -2328,7 +2328,7 @@
             },
             "properties": {
                 "id": 1619,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Stehcafe"
             }
         },
@@ -2343,7 +2343,7 @@
             },
             "properties": {
                 "id": 1620,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Stehcafe"
             }
         },
@@ -2358,7 +2358,7 @@
             },
             "properties": {
                 "id": 1622,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Die Tanke"
             }
         },
@@ -2373,7 +2373,7 @@
             },
             "properties": {
                 "id": 1623,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cave Portugesa"
             }
         },
@@ -2388,7 +2388,7 @@
             },
             "properties": {
                 "id": 1624,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Petit Rouge"
             }
         },
@@ -2403,7 +2403,7 @@
             },
             "properties": {
                 "id": 1626,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Matilda"
             }
         },
@@ -2418,7 +2418,7 @@
             },
             "properties": {
                 "id": 1634,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Yomaro"
             }
         },
@@ -2433,7 +2433,7 @@
             },
             "properties": {
                 "id": 1643,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kucheneck"
             }
         },
@@ -2448,7 +2448,7 @@
             },
             "properties": {
                 "id": 1644,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Back & Café"
             }
         },
@@ -2463,7 +2463,7 @@
             },
             "properties": {
                 "id": 1662,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eis-Café Belluno"
             }
         },
@@ -2478,7 +2478,7 @@
             },
             "properties": {
                 "id": 1663,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Stehcafé / Trinkhalle"
             }
         },
@@ -2493,7 +2493,7 @@
             },
             "properties": {
                 "id": 1671,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Friends Café & Shisha"
             }
         },
@@ -2508,7 +2508,7 @@
             },
             "properties": {
                 "id": 1711,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Starbucks"
             }
         },
@@ -2523,7 +2523,7 @@
             },
             "properties": {
                 "id": 1713,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "BACK KONTOR - Oehme Brot & Kuchen"
             }
         },
@@ -2538,7 +2538,7 @@
             },
             "properties": {
                 "id": 1715,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Don Melone"
             }
         },
@@ -2553,7 +2553,7 @@
             },
             "properties": {
                 "id": 1717,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kaffeepiraten"
             }
         },
@@ -2568,7 +2568,7 @@
             },
             "properties": {
                 "id": 1729,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Tenten coffee"
             }
         },
@@ -2583,7 +2583,7 @@
             },
             "properties": {
                 "id": 1731,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Palio Poccino Cafe"
             }
         },
@@ -2598,7 +2598,7 @@
             },
             "properties": {
                 "id": 1745,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Dulce - Chocolate & Ice Cream"
             }
         },
@@ -2613,7 +2613,7 @@
             },
             "properties": {
                 "id": 1777,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "m"
             }
         },
@@ -2628,7 +2628,7 @@
             },
             "properties": {
                 "id": 1779,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Ferdinand"
             }
         },
@@ -2643,7 +2643,7 @@
             },
             "properties": {
                 "id": 1793,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Angercafé"
             }
         },
@@ -2658,7 +2658,7 @@
             },
             "properties": {
                 "id": 1805,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Restaurant-Cafe Süd"
             }
         },
@@ -2673,7 +2673,7 @@
             },
             "properties": {
                 "id": 1811,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafeteria Marien-Hospital"
             }
         },
@@ -2688,7 +2688,7 @@
             },
             "properties": {
                 "id": 1824,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafeteria"
             }
         },
@@ -2703,7 +2703,7 @@
             },
             "properties": {
                 "id": 1861,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eisprinzeissin"
             }
         },
@@ -2718,7 +2718,7 @@
             },
             "properties": {
                 "id": 1865,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafe Adria"
             }
         },
@@ -2733,7 +2733,7 @@
             },
             "properties": {
                 "id": 1869,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "La baguette"
             }
         },
@@ -2748,7 +2748,7 @@
             },
             "properties": {
                 "id": 1870,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Ăn Bánh Mì"
             }
         },
@@ -2763,7 +2763,7 @@
             },
             "properties": {
                 "id": 1884,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Hollywood"
             }
         },
@@ -2778,7 +2778,7 @@
             },
             "properties": {
                 "id": 1904,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafé Romeo"
             }
         },
@@ -2793,7 +2793,7 @@
             },
             "properties": {
                 "id": 1905,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Tazzina"
             }
         },
@@ -2808,7 +2808,7 @@
             },
             "properties": {
                 "id": 1931,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Caffe Blutrot"
             }
         },
@@ -2823,7 +2823,7 @@
             },
             "properties": {
                 "id": 1932,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "DOLCINELLA Sweet & Fine Food"
             }
         },
@@ -2838,7 +2838,7 @@
             },
             "properties": {
                 "id": 1935,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kaffee Reich"
             }
         },
@@ -2853,7 +2853,7 @@
             },
             "properties": {
                 "id": 1936,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kaffeerösterei Röstzeit"
             }
         },
@@ -2868,7 +2868,7 @@
             },
             "properties": {
                 "id": 1962,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bäckerei Oebel"
             }
         },
@@ -2883,7 +2883,7 @@
             },
             "properties": {
                 "id": 1963,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Wonder Waffel"
             }
         },
@@ -2898,7 +2898,7 @@
             },
             "properties": {
                 "id": 1964,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café A.nni"
             }
         },
@@ -2913,7 +2913,7 @@
             },
             "properties": {
                 "id": 1983,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Dritan Alsela"
             }
         },
@@ -2928,7 +2928,7 @@
             },
             "properties": {
                 "id": 1984,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bastian´s"
             }
         },
@@ -2943,7 +2943,7 @@
             },
             "properties": {
                 "id": 1995,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Welcome"
             }
         },
@@ -2958,7 +2958,7 @@
             },
             "properties": {
                 "id": 1999,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Baustoff Kaffee"
             }
         },
@@ -2973,7 +2973,7 @@
             },
             "properties": {
                 "id": 2004,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Boulevard"
             }
         },
@@ -2988,7 +2988,7 @@
             },
             "properties": {
                 "id": 2016,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Schlosscafé Benrath"
             }
         },
@@ -3003,7 +3003,7 @@
             },
             "properties": {
                 "id": 2019,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Erikas 349"
             }
         },
@@ -3018,7 +3018,7 @@
             },
             "properties": {
                 "id": 2021,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Trinkhalle"
             }
         },
@@ -3033,7 +3033,7 @@
             },
             "properties": {
                 "id": 2025,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Sin City"
             }
         },
@@ -3048,7 +3048,7 @@
             },
             "properties": {
                 "id": 2027,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Die Süße meines Landes"
             }
         },
@@ -3063,7 +3063,7 @@
             },
             "properties": {
                 "id": 2034,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Bazzar Caffè"
             }
         },
@@ -3078,7 +3078,7 @@
             },
             "properties": {
                 "id": 2044,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "einfach Damos"
             }
         },
@@ -3093,7 +3093,7 @@
             },
             "properties": {
                 "id": 2046,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Sugarbird Cupcakes"
             }
         },
@@ -3108,7 +3108,7 @@
             },
             "properties": {
                 "id": 2050,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café \"Pure Freude\""
             }
         },
@@ -3123,7 +3123,7 @@
             },
             "properties": {
                 "id": 2051,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Chrystall Bar"
             }
         },
@@ -3138,7 +3138,7 @@
             },
             "properties": {
                 "id": 2052,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Gagliardi (gebrannte Mandeln)"
             }
         },
@@ -3153,7 +3153,7 @@
             },
             "properties": {
                 "id": 2053,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Gut & Gerne (Schokoladen-Café)"
             }
         },
@@ -3168,7 +3168,7 @@
             },
             "properties": {
                 "id": 2054,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "World Coffee (Mayersche 3. OG)"
             }
         },
@@ -3183,7 +3183,7 @@
             },
             "properties": {
                 "id": 2055,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kasbah"
             }
         },
@@ -3198,7 +3198,7 @@
             },
             "properties": {
                 "id": 2056,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Extrablatt"
             }
         },
@@ -3213,7 +3213,7 @@
             },
             "properties": {
                 "id": 2062,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Caffè NRW-Forum"
             }
         },
@@ -3228,7 +3228,7 @@
             },
             "properties": {
                 "id": 2063,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Yomaro (Frozen Yoghurt)"
             }
         },
@@ -3243,7 +3243,7 @@
             },
             "properties": {
                 "id": 2064,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Espresso Perfetto"
             }
         },
@@ -3258,7 +3258,7 @@
             },
             "properties": {
                 "id": 2077,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Soup and Co."
             }
         },
@@ -3273,7 +3273,7 @@
             },
             "properties": {
                 "id": 2093,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Starbucks"
             }
         },
@@ -3288,7 +3288,7 @@
             },
             "properties": {
                 "id": 2094,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "G-Cafe"
             }
         },
@@ -3303,7 +3303,7 @@
             },
             "properties": {
                 "id": 2111,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafe Laguna Blu"
             }
         },
@@ -3318,7 +3318,7 @@
             },
             "properties": {
                 "id": 2113,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "kausal"
             }
         },
@@ -3333,7 +3333,7 @@
             },
             "properties": {
                 "id": 2115,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Afacan Café"
             }
         },
@@ -3348,7 +3348,7 @@
             },
             "properties": {
                 "id": 2125,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "400grad"
             }
         },
@@ -3363,7 +3363,7 @@
             },
             "properties": {
                 "id": 2131,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Matcha Café Wakaba"
             }
         },
@@ -3378,7 +3378,7 @@
             },
             "properties": {
                 "id": 2149,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Im Nordpark"
             }
         },
@@ -3393,7 +3393,7 @@
             },
             "properties": {
                 "id": 2168,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "H18"
             }
         },
@@ -3408,7 +3408,7 @@
             },
             "properties": {
                 "id": 2180,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "NaturFreundehaus Gerresheim"
             }
         },
@@ -3423,7 +3423,7 @@
             },
             "properties": {
                 "id": 2187,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Eiscafe Cescon"
             }
         },
@@ -3438,7 +3438,7 @@
             },
             "properties": {
                 "id": 2193,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Starbucks"
             }
         },
@@ -3453,7 +3453,7 @@
             },
             "properties": {
                 "id": 2194,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Caphe am Gertrudisplatz"
             }
         },
@@ -3468,7 +3468,7 @@
             },
             "properties": {
                 "id": 2195,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Düssel-Café"
             }
         },
@@ -3483,7 +3483,7 @@
             },
             "properties": {
                 "id": 2198,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Strandcafe Ponton"
             }
         },
@@ -3498,7 +3498,7 @@
             },
             "properties": {
                 "id": 2209,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Familiencafe am EVK"
             }
         },
@@ -3513,7 +3513,7 @@
             },
             "properties": {
                 "id": 2214,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Espresso Perfetto"
             }
         },
@@ -3528,7 +3528,7 @@
             },
             "properties": {
                 "id": 2217,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Hub Drei"
             }
         },
@@ -3543,7 +3543,7 @@
             },
             "properties": {
                 "id": 2218,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Horizont"
             }
         },
@@ -3558,7 +3558,7 @@
             },
             "properties": {
                 "id": 2234,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -3573,7 +3573,7 @@
             },
             "properties": {
                 "id": 2240,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe"
             }
         },
@@ -3588,7 +3588,7 @@
             },
             "properties": {
                 "id": 2253,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe ShuShu"
             }
         },
@@ -3603,7 +3603,7 @@
             },
             "properties": {
                 "id": 2254,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Südpark"
             }
         },
@@ -3618,7 +3618,7 @@
             },
             "properties": {
                 "id": 2259,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Blum"
             }
         },
@@ -3633,7 +3633,7 @@
             },
             "properties": {
                 "id": 2271,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafeteria Bistro Uno"
             }
         },
@@ -3648,7 +3648,7 @@
             },
             "properties": {
                 "id": 2290,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Wunderhaus deli&friends"
             }
         },
@@ -3663,7 +3663,7 @@
             },
             "properties": {
                 "id": 2313,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Mrs. Dolittle"
             }
         },
@@ -3678,7 +3678,7 @@
             },
             "properties": {
                 "id": 2316,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Florabar"
             }
         },
@@ -3693,7 +3693,7 @@
             },
             "properties": {
                 "id": 2320,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Justitia"
             }
         },
@@ -3708,7 +3708,7 @@
             },
             "properties": {
                 "id": 2321,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Shari´s Kitchen"
             }
         },
@@ -3723,7 +3723,7 @@
             },
             "properties": {
                 "id": 2330,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Coffee-Bar"
             }
         },
@@ -3738,7 +3738,7 @@
             },
             "properties": {
                 "id": 2333,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Bar Nana"
             }
         },
@@ -3753,7 +3753,7 @@
             },
             "properties": {
                 "id": 2339,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": null
             }
         },
@@ -3768,7 +3768,7 @@
             },
             "properties": {
                 "id": 2340,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Lina's Coffee"
             }
         },
@@ -3783,7 +3783,7 @@
             },
             "properties": {
                 "id": 2342,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "betty & samy"
             }
         },
@@ -3798,7 +3798,7 @@
             },
             "properties": {
                 "id": 2343,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "á midi"
             }
         },
@@ -3813,7 +3813,7 @@
             },
             "properties": {
                 "id": 2349,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Coffee Fellows"
             }
         },
@@ -3828,7 +3828,7 @@
             },
             "properties": {
                 "id": 2351,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Giovanni L. Eiscafe"
             }
         },
@@ -3843,7 +3843,7 @@
             },
             "properties": {
                 "id": 2352,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Caphe House"
             }
         },
@@ -3858,7 +3858,7 @@
             },
             "properties": {
                 "id": 2354,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Oma Erika"
             }
         },
@@ -3873,7 +3873,7 @@
             },
             "properties": {
                 "id": 2358,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Barré - Cuisine & Pâtisserie"
             }
         },
@@ -3888,7 +3888,7 @@
             },
             "properties": {
                 "id": 2369,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Europa"
             }
         },
@@ -3903,7 +3903,7 @@
             },
             "properties": {
                 "id": 2377,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Coffe Delight"
             }
         },
@@ -3918,7 +3918,7 @@
             },
             "properties": {
                 "id": 2383,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cøffe"
             }
         },
@@ -3933,7 +3933,7 @@
             },
             "properties": {
                 "id": 2423,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Mutter EY Café & Galerie"
             }
         },
@@ -3948,7 +3948,7 @@
             },
             "properties": {
                 "id": 2426,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café du Sommelier"
             }
         },
@@ -3963,7 +3963,7 @@
             },
             "properties": {
                 "id": 2433,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Calu"
             }
         },
@@ -3978,7 +3978,7 @@
             },
             "properties": {
                 "id": 2440,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Ruthis Café & Bistro"
             }
         },
@@ -3993,7 +3993,7 @@
             },
             "properties": {
                 "id": 2472,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "manko café + workspace"
             }
         },
@@ -4008,7 +4008,7 @@
             },
             "properties": {
                 "id": 2483,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "cloud cafe"
             }
         },
@@ -4023,7 +4023,7 @@
             },
             "properties": {
                 "id": 2487,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Laterne im Schlossturm"
             }
         },
@@ -4038,7 +4038,7 @@
             },
             "properties": {
                 "id": 2494,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Cerisier"
             }
         },
@@ -4053,7 +4053,7 @@
             },
             "properties": {
                 "id": 2501,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Klosterhof Bistro im Maxhaus"
             }
         },
@@ -4068,7 +4068,7 @@
             },
             "properties": {
                 "id": 2502,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Bonema"
             }
         },
@@ -4083,7 +4083,7 @@
             },
             "properties": {
                 "id": 2503,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Heinemann"
             }
         },
@@ -4098,7 +4098,7 @@
             },
             "properties": {
                 "id": 2504,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Nikan"
             }
         },
@@ -4113,7 +4113,7 @@
             },
             "properties": {
                 "id": 2511,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Schvarz"
             }
         },
@@ -4128,7 +4128,7 @@
             },
             "properties": {
                 "id": 2518,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Teassion / Zeitlos"
             }
         },
@@ -4143,7 +4143,7 @@
             },
             "properties": {
                 "id": 2524,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Oehme Brot & Kuchen"
             }
         },
@@ -4158,7 +4158,7 @@
             },
             "properties": {
                 "id": 2527,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Café Drrüsch"
             }
         },
@@ -4173,7 +4173,7 @@
             },
             "properties": {
                 "id": 2528,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Nussecke"
             }
         },
@@ -4188,7 +4188,7 @@
             },
             "properties": {
                 "id": 2540,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Patisserie Atiki Cafe"
             }
         },
@@ -4203,7 +4203,7 @@
             },
             "properties": {
                 "id": 2557,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Marny's"
             }
         },
@@ -4218,7 +4218,7 @@
             },
             "properties": {
                 "id": 2574,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Rösterei Vier"
             }
         },
@@ -4233,7 +4233,7 @@
             },
             "properties": {
                 "id": 2579,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Kyto coffee"
             }
         },
@@ -4248,7 +4248,7 @@
             },
             "properties": {
                 "id": 2611,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Louise26"
             }
         },
@@ -4263,7 +4263,7 @@
             },
             "properties": {
                 "id": 2621,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Deich 281"
             }
         },
@@ -4278,7 +4278,7 @@
             },
             "properties": {
                 "id": 2627,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Genußstation"
             }
         },
@@ -4293,7 +4293,7 @@
             },
             "properties": {
                 "id": 2628,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "pyc cheesecake & gallery"
             }
         },
@@ -4308,7 +4308,7 @@
             },
             "properties": {
                 "id": 2631,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Tomo Café"
             }
         },
@@ -4323,7 +4323,7 @@
             },
             "properties": {
                 "id": 2632,
-                "fclass": "Cafe",
+                "category": "Cafe",
                 "name": "Cafe Schneider"
             }
         }

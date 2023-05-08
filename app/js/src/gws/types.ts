@@ -474,13 +474,6 @@ export interface IModel {
     featureProps(feature: IFeature, relationDepth?: number): api.core.FeatureProps;
 }
 
-export interface IModelRelation {
-    modelUid: string;
-    fieldName?: string;
-    discriminator?: string;
-    title?: string;
-}
-
 export interface IModelField {
     uid: string;
     name: string;
@@ -492,7 +485,7 @@ export interface IModelField {
 
     model: IModel;
 
-    relations: Array<IModelRelation>;
+    relationships: Array<api.base.model.field.RelationshipProps>;
 }
 
 export interface IModelWidget extends IController {

@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 205,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": null
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 370,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Zum Jägerhof"
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 462,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Biergarten Rheinterasse"
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 893,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Anger Krug"
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 1353,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": null
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 1532,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Am Bauenhaus"
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 1557,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Decker"
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 1747,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Bootshaus"
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 1748,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Kurhaus"
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 1761,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Florabar"
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 2258,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Biergarten"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 2260,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": null
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 2269,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Biergarten VierLinden"
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 2348,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Nichtschwimmer"
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 2513,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Gasthaus Peters"
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 2526,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Burghof"
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 2630,
-                "fclass": "Biergarten",
+                "category": "Biergarten",
                 "name": "Steinroth"
             }
         }

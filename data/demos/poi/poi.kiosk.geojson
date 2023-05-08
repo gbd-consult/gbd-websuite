@@ -18,7 +18,7 @@
             },
             "properties": {
                 "id": 39,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -33,7 +33,7 @@
             },
             "properties": {
                 "id": 46,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -48,7 +48,7 @@
             },
             "properties": {
                 "id": 54,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -63,7 +63,7 @@
             },
             "properties": {
                 "id": 55,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -78,7 +78,7 @@
             },
             "properties": {
                 "id": 57,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -93,7 +93,7 @@
             },
             "properties": {
                 "id": 62,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -108,7 +108,7 @@
             },
             "properties": {
                 "id": 65,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -123,7 +123,7 @@
             },
             "properties": {
                 "id": 77,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -138,7 +138,7 @@
             },
             "properties": {
                 "id": 81,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -153,7 +153,7 @@
             },
             "properties": {
                 "id": 87,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -168,7 +168,7 @@
             },
             "properties": {
                 "id": 91,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "HoRo Lotto-Toto & Hermes-Paketshop"
             }
         },
@@ -183,7 +183,7 @@
             },
             "properties": {
                 "id": 92,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -198,7 +198,7 @@
             },
             "properties": {
                 "id": 96,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -213,7 +213,7 @@
             },
             "properties": {
                 "id": 99,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -228,7 +228,7 @@
             },
             "properties": {
                 "id": 102,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -243,7 +243,7 @@
             },
             "properties": {
                 "id": 103,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -258,7 +258,7 @@
             },
             "properties": {
                 "id": 105,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -273,7 +273,7 @@
             },
             "properties": {
                 "id": 107,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -288,7 +288,7 @@
             },
             "properties": {
                 "id": 112,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -303,7 +303,7 @@
             },
             "properties": {
                 "id": 123,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -318,7 +318,7 @@
             },
             "properties": {
                 "id": 131,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -333,7 +333,7 @@
             },
             "properties": {
                 "id": 137,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Shell"
             }
         },
@@ -348,7 +348,7 @@
             },
             "properties": {
                 "id": 143,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Eckkiosk"
             }
         },
@@ -363,7 +363,7 @@
             },
             "properties": {
                 "id": 150,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -378,7 +378,7 @@
             },
             "properties": {
                 "id": 184,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -393,7 +393,7 @@
             },
             "properties": {
                 "id": 187,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -408,7 +408,7 @@
             },
             "properties": {
                 "id": 207,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Jaf"
             }
         },
@@ -423,7 +423,7 @@
             },
             "properties": {
                 "id": 214,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -438,7 +438,7 @@
             },
             "properties": {
                 "id": 222,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Stefano"
             }
         },
@@ -453,7 +453,7 @@
             },
             "properties": {
                 "id": 224,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -468,7 +468,7 @@
             },
             "properties": {
                 "id": 240,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Stehcafe (Trinkhalle)"
             }
         },
@@ -483,7 +483,7 @@
             },
             "properties": {
                 "id": 258,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Ute's Büdchen"
             }
         },
@@ -498,7 +498,7 @@
             },
             "properties": {
                 "id": 270,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -513,7 +513,7 @@
             },
             "properties": {
                 "id": 271,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Isfahan"
             }
         },
@@ -528,7 +528,7 @@
             },
             "properties": {
                 "id": 275,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Pickers GO"
             }
         },
@@ -543,7 +543,7 @@
             },
             "properties": {
                 "id": 285,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -558,7 +558,7 @@
             },
             "properties": {
                 "id": 286,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -573,7 +573,7 @@
             },
             "properties": {
                 "id": 288,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "kio"
             }
         },
@@ -588,7 +588,7 @@
             },
             "properties": {
                 "id": 297,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -603,7 +603,7 @@
             },
             "properties": {
                 "id": 300,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Phönix Apotheke"
             }
         },
@@ -618,7 +618,7 @@
             },
             "properties": {
                 "id": 314,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kantinchen"
             }
         },
@@ -633,7 +633,7 @@
             },
             "properties": {
                 "id": 366,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Der Getränke Spezialist"
             }
         },
@@ -648,7 +648,7 @@
             },
             "properties": {
                 "id": 369,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -663,7 +663,7 @@
             },
             "properties": {
                 "id": 371,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -678,7 +678,7 @@
             },
             "properties": {
                 "id": 376,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -693,7 +693,7 @@
             },
             "properties": {
                 "id": 444,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -708,7 +708,7 @@
             },
             "properties": {
                 "id": 448,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Stehcafe Heisse"
             }
         },
@@ -723,7 +723,7 @@
             },
             "properties": {
                 "id": 449,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -738,7 +738,7 @@
             },
             "properties": {
                 "id": 450,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle Schillerplatz"
             }
         },
@@ -753,7 +753,7 @@
             },
             "properties": {
                 "id": 457,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Tabak Börse"
             }
         },
@@ -768,7 +768,7 @@
             },
             "properties": {
                 "id": 471,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle April"
             }
         },
@@ -783,7 +783,7 @@
             },
             "properties": {
                 "id": 472,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Handy Cafe"
             }
         },
@@ -798,7 +798,7 @@
             },
             "properties": {
                 "id": 479,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle am Zoo"
             }
         },
@@ -813,7 +813,7 @@
             },
             "properties": {
                 "id": 485,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -828,7 +828,7 @@
             },
             "properties": {
                 "id": 518,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -843,7 +843,7 @@
             },
             "properties": {
                 "id": 521,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Ihr Trink-Shop"
             }
         },
@@ -858,7 +858,7 @@
             },
             "properties": {
                 "id": 546,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Tabakwaren Degen"
             }
         },
@@ -873,7 +873,7 @@
             },
             "properties": {
                 "id": 556,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle bei Chris"
             }
         },
@@ -888,7 +888,7 @@
             },
             "properties": {
                 "id": 559,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Stehcafe Flingern"
             }
         },
@@ -903,7 +903,7 @@
             },
             "properties": {
                 "id": 574,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -918,7 +918,7 @@
             },
             "properties": {
                 "id": 577,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -933,7 +933,7 @@
             },
             "properties": {
                 "id": 585,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -948,7 +948,7 @@
             },
             "properties": {
                 "id": 607,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Das Bierparadies"
             }
         },
@@ -963,7 +963,7 @@
             },
             "properties": {
                 "id": 614,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Am Hermannplatz"
             }
         },
@@ -978,7 +978,7 @@
             },
             "properties": {
                 "id": 617,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk Trinkhalle"
             }
         },
@@ -993,7 +993,7 @@
             },
             "properties": {
                 "id": 629,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1008,7 +1008,7 @@
             },
             "properties": {
                 "id": 641,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1023,7 +1023,7 @@
             },
             "properties": {
                 "id": 645,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1038,7 +1038,7 @@
             },
             "properties": {
                 "id": 649,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle Tas & Hermes-Paketshop"
             }
         },
@@ -1053,7 +1053,7 @@
             },
             "properties": {
                 "id": 653,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1068,7 +1068,7 @@
             },
             "properties": {
                 "id": 660,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -1083,7 +1083,7 @@
             },
             "properties": {
                 "id": 661,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle Eritzjan"
             }
         },
@@ -1098,7 +1098,7 @@
             },
             "properties": {
                 "id": 670,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -1113,7 +1113,7 @@
             },
             "properties": {
                 "id": 674,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1128,7 +1128,7 @@
             },
             "properties": {
                 "id": 675,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -1143,7 +1143,7 @@
             },
             "properties": {
                 "id": 686,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1158,7 +1158,7 @@
             },
             "properties": {
                 "id": 710,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1173,7 +1173,7 @@
             },
             "properties": {
                 "id": 712,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -1188,7 +1188,7 @@
             },
             "properties": {
                 "id": 723,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1203,7 +1203,7 @@
             },
             "properties": {
                 "id": 726,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -1218,7 +1218,7 @@
             },
             "properties": {
                 "id": 730,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -1233,7 +1233,7 @@
             },
             "properties": {
                 "id": 740,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1248,7 +1248,7 @@
             },
             "properties": {
                 "id": 764,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Pamukkale Trinkhalle"
             }
         },
@@ -1263,7 +1263,7 @@
             },
             "properties": {
                 "id": 768,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1278,7 +1278,7 @@
             },
             "properties": {
                 "id": 772,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1293,7 +1293,7 @@
             },
             "properties": {
                 "id": 783,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1308,7 +1308,7 @@
             },
             "properties": {
                 "id": 785,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Wehrhahn-Shop"
             }
         },
@@ -1323,7 +1323,7 @@
             },
             "properties": {
                 "id": 791,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1338,7 +1338,7 @@
             },
             "properties": {
                 "id": 797,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1353,7 +1353,7 @@
             },
             "properties": {
                 "id": 805,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1368,7 +1368,7 @@
             },
             "properties": {
                 "id": 811,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1383,7 +1383,7 @@
             },
             "properties": {
                 "id": 830,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle/Stehcafe"
             }
         },
@@ -1398,7 +1398,7 @@
             },
             "properties": {
                 "id": 835,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -1413,7 +1413,7 @@
             },
             "properties": {
                 "id": 839,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle Bouhamed/Hermes PaketShop"
             }
         },
@@ -1428,7 +1428,7 @@
             },
             "properties": {
                 "id": 840,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1443,7 +1443,7 @@
             },
             "properties": {
                 "id": 844,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1458,7 +1458,7 @@
             },
             "properties": {
                 "id": 847,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle - Kiosk - Stehcafe"
             }
         },
@@ -1473,7 +1473,7 @@
             },
             "properties": {
                 "id": 853,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1488,7 +1488,7 @@
             },
             "properties": {
                 "id": 857,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1503,7 +1503,7 @@
             },
             "properties": {
                 "id": 861,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk Dimu"
             }
         },
@@ -1518,7 +1518,7 @@
             },
             "properties": {
                 "id": 863,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Rosi's Kiosk"
             }
         },
@@ -1533,7 +1533,7 @@
             },
             "properties": {
                 "id": 865,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1548,7 +1548,7 @@
             },
             "properties": {
                 "id": 869,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk Eis-Kaffee"
             }
         },
@@ -1563,7 +1563,7 @@
             },
             "properties": {
                 "id": 878,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1578,7 +1578,7 @@
             },
             "properties": {
                 "id": 879,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1593,7 +1593,7 @@
             },
             "properties": {
                 "id": 895,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1608,7 +1608,7 @@
             },
             "properties": {
                 "id": 896,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1623,7 +1623,7 @@
             },
             "properties": {
                 "id": 902,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1638,7 +1638,7 @@
             },
             "properties": {
                 "id": 916,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -1653,7 +1653,7 @@
             },
             "properties": {
                 "id": 936,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1668,7 +1668,7 @@
             },
             "properties": {
                 "id": 942,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1683,7 +1683,7 @@
             },
             "properties": {
                 "id": 944,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1698,7 +1698,7 @@
             },
             "properties": {
                 "id": 954,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1713,7 +1713,7 @@
             },
             "properties": {
                 "id": 956,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1728,7 +1728,7 @@
             },
             "properties": {
                 "id": 959,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Deutzer Kiosk"
             }
         },
@@ -1743,7 +1743,7 @@
             },
             "properties": {
                 "id": 961,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1758,7 +1758,7 @@
             },
             "properties": {
                 "id": 962,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1773,7 +1773,7 @@
             },
             "properties": {
                 "id": 969,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1788,7 +1788,7 @@
             },
             "properties": {
                 "id": 973,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1803,7 +1803,7 @@
             },
             "properties": {
                 "id": 976,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "SB tank"
             }
         },
@@ -1818,7 +1818,7 @@
             },
             "properties": {
                 "id": 980,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1833,7 +1833,7 @@
             },
             "properties": {
                 "id": 981,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1848,7 +1848,7 @@
             },
             "properties": {
                 "id": 982,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1863,7 +1863,7 @@
             },
             "properties": {
                 "id": 987,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle Radisch"
             }
         },
@@ -1878,7 +1878,7 @@
             },
             "properties": {
                 "id": 1038,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -1893,7 +1893,7 @@
             },
             "properties": {
                 "id": 1039,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1908,7 +1908,7 @@
             },
             "properties": {
                 "id": 1040,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Candy Shop"
             }
         },
@@ -1923,7 +1923,7 @@
             },
             "properties": {
                 "id": 1056,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Beckmann"
             }
         },
@@ -1938,7 +1938,7 @@
             },
             "properties": {
                 "id": 1080,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1953,7 +1953,7 @@
             },
             "properties": {
                 "id": 1089,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Bolker 54"
             }
         },
@@ -1968,7 +1968,7 @@
             },
             "properties": {
                 "id": 1102,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -1983,7 +1983,7 @@
             },
             "properties": {
                 "id": 1122,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Multi-Kult Store"
             }
         },
@@ -1998,7 +1998,7 @@
             },
             "properties": {
                 "id": 1176,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2013,7 +2013,7 @@
             },
             "properties": {
                 "id": 1177,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Treff 27"
             }
         },
@@ -2028,7 +2028,7 @@
             },
             "properties": {
                 "id": 1184,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2043,7 +2043,7 @@
             },
             "properties": {
                 "id": 1186,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Markthalle"
             }
         },
@@ -2058,7 +2058,7 @@
             },
             "properties": {
                 "id": 1187,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2073,7 +2073,7 @@
             },
             "properties": {
                 "id": 1190,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2088,7 +2088,7 @@
             },
             "properties": {
                 "id": 1193,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2103,7 +2103,7 @@
             },
             "properties": {
                 "id": 1196,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2118,7 +2118,7 @@
             },
             "properties": {
                 "id": 1201,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2133,7 +2133,7 @@
             },
             "properties": {
                 "id": 1228,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2148,7 +2148,7 @@
             },
             "properties": {
                 "id": 1229,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2163,7 +2163,7 @@
             },
             "properties": {
                 "id": 1239,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2178,7 +2178,7 @@
             },
             "properties": {
                 "id": 1245,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Coffee Beans"
             }
         },
@@ -2193,7 +2193,7 @@
             },
             "properties": {
                 "id": 1249,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Hafenkiosk"
             }
         },
@@ -2208,7 +2208,7 @@
             },
             "properties": {
                 "id": 1256,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "am Rondell"
             }
         },
@@ -2223,7 +2223,7 @@
             },
             "properties": {
                 "id": 1259,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2238,7 +2238,7 @@
             },
             "properties": {
                 "id": 1263,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2253,7 +2253,7 @@
             },
             "properties": {
                 "id": 1272,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -2268,7 +2268,7 @@
             },
             "properties": {
                 "id": 1284,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2283,7 +2283,7 @@
             },
             "properties": {
                 "id": 1296,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2298,7 +2298,7 @@
             },
             "properties": {
                 "id": 1297,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2313,7 +2313,7 @@
             },
             "properties": {
                 "id": 1321,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2328,7 +2328,7 @@
             },
             "properties": {
                 "id": 1328,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2343,7 +2343,7 @@
             },
             "properties": {
                 "id": 1329,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Ecke Stern Stehcafe"
             }
         },
@@ -2358,7 +2358,7 @@
             },
             "properties": {
                 "id": 1335,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -2373,7 +2373,7 @@
             },
             "properties": {
                 "id": 1339,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -2388,7 +2388,7 @@
             },
             "properties": {
                 "id": 1341,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -2403,7 +2403,7 @@
             },
             "properties": {
                 "id": 1349,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -2418,7 +2418,7 @@
             },
             "properties": {
                 "id": 1350,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2433,7 +2433,7 @@
             },
             "properties": {
                 "id": 1375,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2448,7 +2448,7 @@
             },
             "properties": {
                 "id": 1381,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2463,7 +2463,7 @@
             },
             "properties": {
                 "id": 1394,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Steh Kaffee Bella"
             }
         },
@@ -2478,7 +2478,7 @@
             },
             "properties": {
                 "id": 1395,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Düsseldorfer Fan-Buud"
             }
         },
@@ -2493,7 +2493,7 @@
             },
             "properties": {
                 "id": 1417,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Lotto"
             }
         },
@@ -2508,7 +2508,7 @@
             },
             "properties": {
                 "id": 1432,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk & Hermes-Paketshop"
             }
         },
@@ -2523,7 +2523,7 @@
             },
             "properties": {
                 "id": 1438,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk - Post/DHL"
             }
         },
@@ -2538,7 +2538,7 @@
             },
             "properties": {
                 "id": 1447,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2553,7 +2553,7 @@
             },
             "properties": {
                 "id": 1486,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kaffeebüdchen"
             }
         },
@@ -2568,7 +2568,7 @@
             },
             "properties": {
                 "id": 1488,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2583,7 +2583,7 @@
             },
             "properties": {
                 "id": 1491,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2598,7 +2598,7 @@
             },
             "properties": {
                 "id": 1493,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Tabac & Co"
             }
         },
@@ -2613,7 +2613,7 @@
             },
             "properties": {
                 "id": 1496,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Der Kiosk Schnell & Freundlich"
             }
         },
@@ -2628,7 +2628,7 @@
             },
             "properties": {
                 "id": 1499,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2643,7 +2643,7 @@
             },
             "properties": {
                 "id": 1500,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2658,7 +2658,7 @@
             },
             "properties": {
                 "id": 1501,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Stehcafé"
             }
         },
@@ -2673,7 +2673,7 @@
             },
             "properties": {
                 "id": 1511,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Markthalle"
             }
         },
@@ -2688,7 +2688,7 @@
             },
             "properties": {
                 "id": 1522,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2703,7 +2703,7 @@
             },
             "properties": {
                 "id": 1530,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2718,7 +2718,7 @@
             },
             "properties": {
                 "id": 1554,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2733,7 +2733,7 @@
             },
             "properties": {
                 "id": 1556,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Limon"
             }
         },
@@ -2748,7 +2748,7 @@
             },
             "properties": {
                 "id": 1565,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2763,7 +2763,7 @@
             },
             "properties": {
                 "id": 1569,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2778,7 +2778,7 @@
             },
             "properties": {
                 "id": 1645,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle Sengül"
             }
         },
@@ -2793,7 +2793,7 @@
             },
             "properties": {
                 "id": 1648,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2808,7 +2808,7 @@
             },
             "properties": {
                 "id": 1659,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2823,7 +2823,7 @@
             },
             "properties": {
                 "id": 1667,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "kio"
             }
         },
@@ -2838,7 +2838,7 @@
             },
             "properties": {
                 "id": 1668,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -2853,7 +2853,7 @@
             },
             "properties": {
                 "id": 1678,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -2868,7 +2868,7 @@
             },
             "properties": {
                 "id": 1687,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "ESSO Düsseltal"
             }
         },
@@ -2883,7 +2883,7 @@
             },
             "properties": {
                 "id": 1696,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2898,7 +2898,7 @@
             },
             "properties": {
                 "id": 1773,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Tabak-Börse"
             }
         },
@@ -2913,7 +2913,7 @@
             },
             "properties": {
                 "id": 1809,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2928,7 +2928,7 @@
             },
             "properties": {
                 "id": 1821,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Schmitze-Büdchen"
             }
         },
@@ -2943,7 +2943,7 @@
             },
             "properties": {
                 "id": 1828,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Tabac & Co"
             }
         },
@@ -2958,7 +2958,7 @@
             },
             "properties": {
                 "id": 1829,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "City Kiosk"
             }
         },
@@ -2973,7 +2973,7 @@
             },
             "properties": {
                 "id": 1839,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -2988,7 +2988,7 @@
             },
             "properties": {
                 "id": 1840,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3003,7 +3003,7 @@
             },
             "properties": {
                 "id": 1851,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Markt-Halle"
             }
         },
@@ -3018,7 +3018,7 @@
             },
             "properties": {
                 "id": 1852,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Büdchen"
             }
         },
@@ -3033,7 +3033,7 @@
             },
             "properties": {
                 "id": 1853,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3048,7 +3048,7 @@
             },
             "properties": {
                 "id": 1855,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3063,7 +3063,7 @@
             },
             "properties": {
                 "id": 1864,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3078,7 +3078,7 @@
             },
             "properties": {
                 "id": 1874,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Pizza Türmchen Kiosk"
             }
         },
@@ -3093,7 +3093,7 @@
             },
             "properties": {
                 "id": 1876,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -3108,7 +3108,7 @@
             },
             "properties": {
                 "id": 1877,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3123,7 +3123,7 @@
             },
             "properties": {
                 "id": 1879,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Ulmen - Kiosk und Stehcafe"
             }
         },
@@ -3138,7 +3138,7 @@
             },
             "properties": {
                 "id": 1888,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk Dreieck"
             }
         },
@@ -3153,7 +3153,7 @@
             },
             "properties": {
                 "id": 1889,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3168,7 +3168,7 @@
             },
             "properties": {
                 "id": 1901,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3183,7 +3183,7 @@
             },
             "properties": {
                 "id": 1902,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk & Stehcafe Kurt"
             }
         },
@@ -3198,7 +3198,7 @@
             },
             "properties": {
                 "id": 1906,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Tazzina"
             }
         },
@@ -3213,7 +3213,7 @@
             },
             "properties": {
                 "id": 1913,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk - Post/DHL"
             }
         },
@@ -3228,7 +3228,7 @@
             },
             "properties": {
                 "id": 1921,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Ankes Brötchenladen"
             }
         },
@@ -3243,7 +3243,7 @@
             },
             "properties": {
                 "id": 1924,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Tappert's"
             }
         },
@@ -3258,7 +3258,7 @@
             },
             "properties": {
                 "id": 1927,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Rheinbahn Kiosk"
             }
         },
@@ -3273,7 +3273,7 @@
             },
             "properties": {
                 "id": 1946,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3288,7 +3288,7 @@
             },
             "properties": {
                 "id": 1949,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "KRINGS KG"
             }
         },
@@ -3303,7 +3303,7 @@
             },
             "properties": {
                 "id": 1952,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3318,7 +3318,7 @@
             },
             "properties": {
                 "id": 1972,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3333,7 +3333,7 @@
             },
             "properties": {
                 "id": 1977,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "U-Bilk Dini"
             }
         },
@@ -3348,7 +3348,7 @@
             },
             "properties": {
                 "id": 1979,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3363,7 +3363,7 @@
             },
             "properties": {
                 "id": 2012,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3378,7 +3378,7 @@
             },
             "properties": {
                 "id": 2069,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -3393,7 +3393,7 @@
             },
             "properties": {
                 "id": 2096,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Tabak Börse / Hermes PaketShop"
             }
         },
@@ -3408,7 +3408,7 @@
             },
             "properties": {
                 "id": 2107,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle Newidimenko"
             }
         },
@@ -3423,7 +3423,7 @@
             },
             "properties": {
                 "id": 2133,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Esso"
             }
         },
@@ -3438,7 +3438,7 @@
             },
             "properties": {
                 "id": 2146,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -3453,7 +3453,7 @@
             },
             "properties": {
                 "id": 2147,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Orchidee Kiosk"
             }
         },
@@ -3468,7 +3468,7 @@
             },
             "properties": {
                 "id": 2150,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -3483,7 +3483,7 @@
             },
             "properties": {
                 "id": 2177,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3498,7 +3498,7 @@
             },
             "properties": {
                 "id": 2178,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Star"
             }
         },
@@ -3513,7 +3513,7 @@
             },
             "properties": {
                 "id": 2199,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Strandcafe"
             }
         },
@@ -3528,7 +3528,7 @@
             },
             "properties": {
                 "id": 2226,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Bier Paradies"
             }
         },
@@ -3543,7 +3543,7 @@
             },
             "properties": {
                 "id": 2227,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3558,7 +3558,7 @@
             },
             "properties": {
                 "id": 2228,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3573,7 +3573,7 @@
             },
             "properties": {
                 "id": 2229,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Happy Shop"
             }
         },
@@ -3588,7 +3588,7 @@
             },
             "properties": {
                 "id": 2232,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Hammer Büdchen"
             }
         },
@@ -3603,7 +3603,7 @@
             },
             "properties": {
                 "id": 2233,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3618,7 +3618,7 @@
             },
             "properties": {
                 "id": 2235,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3633,7 +3633,7 @@
             },
             "properties": {
                 "id": 2236,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3648,7 +3648,7 @@
             },
             "properties": {
                 "id": 2237,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3663,7 +3663,7 @@
             },
             "properties": {
                 "id": 2245,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3678,7 +3678,7 @@
             },
             "properties": {
                 "id": 2248,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3693,7 +3693,7 @@
             },
             "properties": {
                 "id": 2288,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "RGB"
             }
         },
@@ -3708,7 +3708,7 @@
             },
             "properties": {
                 "id": 2289,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -3723,7 +3723,7 @@
             },
             "properties": {
                 "id": 2300,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -3738,7 +3738,7 @@
             },
             "properties": {
                 "id": 2308,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3753,7 +3753,7 @@
             },
             "properties": {
                 "id": 2318,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Stehcafe"
             }
         },
@@ -3768,7 +3768,7 @@
             },
             "properties": {
                 "id": 2325,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "PRESSE-CENTER AM DREIECK"
             }
         },
@@ -3783,7 +3783,7 @@
             },
             "properties": {
                 "id": 2347,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk am Nordstrand"
             }
         },
@@ -3798,7 +3798,7 @@
             },
             "properties": {
                 "id": 2363,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3813,7 +3813,7 @@
             },
             "properties": {
                 "id": 2371,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "F95 Kiosk"
             }
         },
@@ -3828,7 +3828,7 @@
             },
             "properties": {
                 "id": 2389,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Lotto Fölbach"
             }
         },
@@ -3843,7 +3843,7 @@
             },
             "properties": {
                 "id": 2400,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Saras Trinkhalle - Hermes Packetshop"
             }
         },
@@ -3858,7 +3858,7 @@
             },
             "properties": {
                 "id": 2404,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3873,7 +3873,7 @@
             },
             "properties": {
                 "id": 2405,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3888,7 +3888,7 @@
             },
             "properties": {
                 "id": 2410,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -3903,7 +3903,7 @@
             },
             "properties": {
                 "id": 2414,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Tante-Emma-Laden"
             }
         },
@@ -3918,7 +3918,7 @@
             },
             "properties": {
                 "id": 2415,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Seis"
             }
         },
@@ -3933,7 +3933,7 @@
             },
             "properties": {
                 "id": 2427,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Pickers GO"
             }
         },
@@ -3948,7 +3948,7 @@
             },
             "properties": {
                 "id": 2437,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk Endstation"
             }
         },
@@ -3963,7 +3963,7 @@
             },
             "properties": {
                 "id": 2439,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Wunnenber"
             }
         },
@@ -3978,7 +3978,7 @@
             },
             "properties": {
                 "id": 2446,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -3993,7 +3993,7 @@
             },
             "properties": {
                 "id": 2455,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -4008,7 +4008,7 @@
             },
             "properties": {
                 "id": 2457,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         },
@@ -4023,7 +4023,7 @@
             },
             "properties": {
                 "id": 2458,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -4038,7 +4038,7 @@
             },
             "properties": {
                 "id": 2490,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": null
             }
         },
@@ -4053,7 +4053,7 @@
             },
             "properties": {
                 "id": 2491,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "My Kiosk"
             }
         },
@@ -4068,7 +4068,7 @@
             },
             "properties": {
                 "id": 2493,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Post/DHL Shop"
             }
         },
@@ -4083,7 +4083,7 @@
             },
             "properties": {
                 "id": 2497,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk Sunshine"
             }
         },
@@ -4098,7 +4098,7 @@
             },
             "properties": {
                 "id": 2510,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk am Präsidium"
             }
         },
@@ -4113,7 +4113,7 @@
             },
             "properties": {
                 "id": 2530,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Lotto Toto Geschäft"
             }
         },
@@ -4128,7 +4128,7 @@
             },
             "properties": {
                 "id": 2534,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Telenet"
             }
         },
@@ -4143,7 +4143,7 @@
             },
             "properties": {
                 "id": 2542,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -4158,7 +4158,7 @@
             },
             "properties": {
                 "id": 2544,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Inside"
             }
         },
@@ -4173,7 +4173,7 @@
             },
             "properties": {
                 "id": 2547,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Kiosk"
             }
         },
@@ -4188,7 +4188,7 @@
             },
             "properties": {
                 "id": 2572,
-                "fclass": "Kiosk",
+                "category": "Kiosk",
                 "name": "Trinkhalle"
             }
         }

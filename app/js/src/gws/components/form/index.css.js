@@ -64,8 +64,6 @@ module.exports = v => ({
 
         '.cmpFormListToolbar': {
             backgroundColor: v.SIDEBAR_AUX_TOOLBAR_BACKGROUND,
-            paddingRight: v.UNIT2,
-            paddingLeft: v.UNIT2,
 
             '.uiIconButton': {
                 ...v.ICON_SIZE('small'),

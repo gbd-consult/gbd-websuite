@@ -8,8 +8,13 @@ import gws.types as t
 gws.ext.new.modelField('relatedMultiFeatureList')
 
 
+class RelationshipConfig(gws.Config):
+    modelUid: str
+    fieldName: str
+
+
 class Config(gws.base.model.field.Config):
-    relations: list[gws.base.model.field.Relation]
+    relationships: list[RelationshipConfig]
 
 
 class Props(gws.base.model.field.Props):
@@ -20,15 +25,24 @@ class Object(gws.base.model.field.Object):
     attributeType = gws.AttributeType.featurelist
 
     model: gws.base.database.model.Object
-    relations: list[gws.base.model.field.Relation]
+    relationships: list[gws.base.model.field.Relationship]
 
     def configure(self):
-        self.relations = self.cfg('relations')
+        self.relationships = self.cfg('relationships')
 
     def configure_widget(self):
         if not super().configure_widget():
             self.widget = self.create_child(gws.ext.object.modelWidget, type='featureList')
             return True
+
+    def props(self, user):
+        return gws.merge(super().props(user), relationships=[
+            gws.base.model.field.RelationshipProps(
+                modelUid=rel.modelUid,
+                fieldName=rel.fieldName,
+            )
+            for rel in self.relationships
+        ])
 
     def load_from_props(self, feature, props, user, relation_depth=0, **kwargs):
         if relation_depth <= 0:
@@ -59,9 +73,9 @@ class Object(gws.base.model.field.Object):
 
         feature_list = []
 
-        for rel in self.relations:
-            virt_key = gws.join_uid(self.name, rel.modelUid)
-            recs = getattr(record, virt_key, None)
+        for rel in self.relationships:
+            virt_col_name = gws.join_uid(self.name, rel.modelUid)
+            recs = getattr(record, virt_col_name, None)
             if recs is None:
                 continue
             rel_model = self.model.provider.mgr.model(rel.modelUid)
@@ -74,12 +88,18 @@ class Object(gws.base.model.field.Object):
             feature.attributes[self.name] = feature_list
 
     def store_to_record(self, feature, record, user, **kwargs):
-        ok, val = self._value_to_write(feature)
-        if ok:
-            rel_model = self.related_model()
-            uids = [f.uid() for f in val]
+        ok, feature_list = self._value_to_write(feature)
+
+        if not ok:
+            return
+
+        for rel in self.relationships:
+            rel_model = self.model.provider.mgr.model(rel.modelUid)
+            uids = [feature.uid() for feature in feature_list if feature.model.uid == rel_model.uid]
             recs = rel_model.get_records(uids)
-            setattr(record, self.name, recs)
+            if recs:
+                virt_col_name = gws.join_uid(self.name, rel.modelUid)
+                setattr(record, virt_col_name, recs)
 
     ##
 
@@ -89,15 +109,15 @@ class Object(gws.base.model.field.Object):
         own_pk = self.model.primary_keys()[0]
         own_cls = self.model.record_class()
 
-        for rel in self.relations:
+        for rel in self.relationships:
             rel_model = self.model.provider.mgr.model(rel.modelUid)
             rel_cls = rel_model.record_class()
             rel_field_name = rel.fieldName
-            rel_fk = getattr(rel_model.field(rel_field_name), 'foreignKey')
+            # rel_fk = getattr(rel_model.field(rel_field_name), 'foreignKey')
 
             kwargs = {}
-            kwargs['primaryjoin'] = getattr(own_cls, own_pk.name) == getattr(rel_cls, rel_fk.name)
-            kwargs['foreign_keys'] = getattr(rel_cls, rel_fk.name)
+            # kwargs['primaryjoin'] = getattr(own_cls, own_pk.name) == getattr(rel_cls, rel_fk.name)
+            # kwargs['foreign_keys'] = getattr(rel_cls, rel_fk.name)
             kwargs['back_populates'] = rel_field_name
 
             if rel_model.sqlSort:
@@ -107,7 +127,7 @@ class Object(gws.base.model.field.Object):
                     order.append(fn(getattr(rel_cls, s.fieldName)))
                 kwargs['order_by'] = order
 
-            virt_key = gws.join_uid(self.name, rel.modelUid)
-            props[virt_key] = sa.orm.relationship(rel_cls, **kwargs)
+            virt_col_name = gws.join_uid(self.name, rel.modelUid)
+            props[virt_col_name] = sa.orm.relationship(rel_cls, **kwargs)
 
         return props

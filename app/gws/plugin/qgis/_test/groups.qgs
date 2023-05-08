@@ -340,7 +340,7 @@
             </config>
           </editWidget>
         </field>
-        <field name="fclass" configurationFlags="None">
+        <field name="category" configurationFlags="None">
           <editWidget type="">
             <config>
               <Option/>
@@ -357,22 +357,22 @@
       </fieldConfiguration>
       <aliases>
         <alias name="" index="0" field="id"/>
-        <alias name="" index="1" field="fclass"/>
+        <alias name="" index="1" field="category"/>
         <alias name="" index="2" field="name"/>
       </aliases>
       <defaults>
         <default applyOnUpdate="0" expression="" field="id"/>
-        <default applyOnUpdate="0" expression="" field="fclass"/>
+        <default applyOnUpdate="0" expression="" field="category"/>
         <default applyOnUpdate="0" expression="" field="name"/>
       </defaults>
       <constraints>
         <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="id"/>
-        <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="fclass"/>
+        <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="category"/>
         <constraint constraints="0" unique_strength="0" notnull_strength="0" exp_strength="0" field="name"/>
       </constraints>
       <constraintExpressions>
         <constraint desc="" exp="" field="id"/>
-        <constraint desc="" exp="" field="fclass"/>
+        <constraint desc="" exp="" field="category"/>
         <constraint desc="" exp="" field="name"/>
       </constraintExpressions>
       <expressionfields/>
