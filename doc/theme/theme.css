@@ -325,9 +325,11 @@ nav {
 }
 
 .reference {
-    background: #ffe0b2;
-    padding: 10px;
-    font-weight: 500;
+    border-bottom: 1px solid #bbdefb;
+    padding: 5px 0;
+    margin-bottom: 10px;
+    display: inline-block;
+    font-size: 13px;
 }
 
 .admonition_info {
