@@ -135,15 +135,18 @@ class Engine(jump.Engine):
             >]"""
 
         def make_arrow(src, arr, dst):
-            mid = (src + '_' + dst).replace('.', '_')
-            head = 'veevee' if arr == '->>' else 'vee'
             src = src.replace('.', ':')
             dst = dst.replace('.', ':')
+
+            head = tail = "none"
+            if arr == '>-':
+                tail = 'crow'
+            if arr == '-<':
+                head = 'crow'
+
             c = self.DBGRAPH_COLORS['arrow']
             return f"""
-                {mid}          [shape=point width=0.001]
-                {src} -> {mid} [color="{c}", arrowhead="{head}"]    
-                {mid} -> {dst} [color="{c}", arrowhead="none"]    
+                {src} -> {dst} [color="{c}", dir="both", arrowhead="{head}", arrowtail="{tail}"]    
             """
 
         def go():
@@ -153,7 +156,7 @@ class Engine(jump.Engine):
 
             arrows = ''.join(
                 make_arrow(src, arr, dst)
-                for src, arr, dst in re.findall(r'(?sx) ([\w.]+) \s* (->>|->) \s* ([\w.]+)', text))
+                for src, arr, dst in re.findall(r'(?sx) ([\w.]+) \s* (>-|-<|--) \s* ([\w.]+)', text))
 
             dot = f"""
                 digraph {{

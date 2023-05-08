@@ -331,48 +331,54 @@ Draws a graph with [GraphViz](https://graphviz.org). The `dot` command must be i
 
 Draws a database diagram. 
 
-A DB diagram consists of tables and arrows. A table is a name, followed by a list of columns in `(...)`. Each column has a name, an optional type and an optional key indicator (`pk` for a primary key, `fk` for a foreign key). An arrow is like `table.column -> table.column`, where `->` indicates an m:1 relation and `->>` an 1:m one.
+A DB diagram consists of tables and arrows. A table is a name, followed by a list of columns in `(...)`. Each column has a name, an optional type and an optional key indicator (`pk` for a primary key, `fk` for a foreign key). An arrow is like `parent.column -< child.column` or `child.column >- parent.column`, where  `<` and `>` indicate the "crow's foot", the "many" side of a 1:m link.
 
     %quote xmp    
     %dbgraph 'Our database layout'
         house (
-            id integer pk,
-            name character varying,
+            id int pk,
+            name text,
             ...more,
             street_id fk
         )
-
         street (
-            id integer pk,
+            id int pk,
             name text,
-            images integer[]
+            ...more,
+            city_id fk
+        )
+        city (
+            id int, 
+            ...more,
+            name text
         )
 
-        image (id integer, name text)
-
-        house.street_id -> street.id
-        street.images ->> image.id
+        house.street_id >- street.id
+        city.id -< street.city_id  
     %end
     %end xmp
 
     %dbgraph 'Our database layout'
         house (
-            id integer pk,
-            name character varying,
+            id int pk,
+            name text,
             ...more,
             street_id fk
         )
-
         street (
-            id integer pk,
+            id int pk,
             name text,
-            images integer[]
+            ...more,
+            city_id fk
+        )
+        city (
+            id int, 
+            ...more,
+            name text
         )
 
-        image (id integer, name text)
-
-        house.street_id -> street.id
-        street.images ->> image.id
+        house.street_id >- street.id
+        city.id -< street.city_id  
     %end
 
 ## API and options
