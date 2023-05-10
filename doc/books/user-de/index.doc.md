@@ -25,8 +25,6 @@ In diesem Benutzerhandbuch werden zum besseren Verständnis verschiedene Schreib
 | {link Verlinkung}     | innerhalb des Handbuchs oder zu externer Webseite |
 
 
-### :function_overview
-
 ## :menubar
 ## :toolbar
 ## :statusbar
