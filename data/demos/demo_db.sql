@@ -146,7 +146,7 @@ values (1, 'Bäckerei', 'backery'),
        (9, 'Kneipe', 'pub'),
        (10, 'Museum', 'museum'),
        (11, 'Postfiliale', 'post office'),
-       (12, 'Restauraunt', 'restauraunt'),
+       (12, 'Restaurant', 'restaurant'),
        (13, 'Supermarkt', 'supermarket');
 
 

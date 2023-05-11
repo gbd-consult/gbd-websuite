@@ -88,8 +88,8 @@ def init_generator(gen) -> base.Generator:
             base.log.debug(f'loading manifest {gen.manifestPath!r}')
             gen.meta['manifestPath'] = gen.manifestPath
             gen.meta['manifest'] = manifest.from_path(gen.manifestPath)
-        except Exception as e:
-            raise base.Error(f'error loading manifest {gen.manifestPath!r}') from e
+        except Exception as exc:
+            raise base.Error(f'error loading manifest {gen.manifestPath!r}') from exc
         manifest_plugins = gen.meta['manifest'].get('plugins')
 
     plugin_dict = {}
@@ -102,6 +102,8 @@ def init_generator(gen) -> base.Generator:
     for p in manifest_plugins or []:
         path = p.get('path')
         name = p.get('name') or os.path.basename(path)
+        if not os.path.isdir(path):
+            raise base.Error(f'error loading plugin {name!r}: directory {path!r} not found')
         chunk = dict(name=base.PLUGIN_PREFIX + '.' + name, sourceDir=path, bundleDir=path)
         plugin_dict[chunk['name']] = chunk
 

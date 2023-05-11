@@ -51,6 +51,10 @@ class Object(gws.Node, gws.ITemplate):
     def configure(self):
         self.path = self.cfg('path')
         self.text = self.cfg('text', default='')
+
+        if not self.path and not self.text:
+            raise gws.Error('either "path" or "text" required')
+
         self.title = self.cfg('title', default='')
 
         self.qualityLevels = self.cfg('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]

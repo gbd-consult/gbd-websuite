@@ -66,7 +66,7 @@
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer checked="Qt::Checked" expanded="1" legend_split_behavior="0" providerKey="ogr" id="poi_restauraunt_be910756_8e03_4498_b4a2_149ef01f1297" legend_exp="" name="Restauraunt" patch_size="0,0" source="./poi/poi.restauraunt.geojson">
+      <layer-tree-layer checked="Qt::Checked" expanded="1" legend_split_behavior="0" providerKey="ogr" id="poi_restaurant_be910756_8e03_4498_b4a2_149ef01f1297" legend_exp="" name="Restaurant" patch_size="0,0" source="./poi/poi.restaurant.geojson">
         <customproperties>
           <Option/>
         </customproperties>
@@ -119,7 +119,7 @@
       <item>poi_kneipe_d636fd7d_1095_49fe_b6b6_8989cec4d419</item>
       <item>poi_museum_98b1c56a_179b_4017_91eb_7ac14852fe57</item>
       <item>poi_postfiliale_81fcf7ed_36cd_4e28_80b6_21f0cf93836e</item>
-      <item>poi_restauraunt_be910756_8e03_4498_b4a2_149ef01f1297</item>
+      <item>poi_restaurant_be910756_8e03_4498_b4a2_149ef01f1297</item>
       <item>poi_supermarkt_159ca63b_9f95_4c97_b760_4f1e390b3cb0</item>
     </custom-order>
   </layer-tree-group>
@@ -136,7 +136,7 @@
       <layer-setting tolerance="12" type="1" id="poi_kneipe_d636fd7d_1095_49fe_b6b6_8989cec4d419" units="1" minScale="0" enabled="0" maxScale="0"/>
       <layer-setting tolerance="12" type="1" id="poi_postfiliale_81fcf7ed_36cd_4e28_80b6_21f0cf93836e" units="1" minScale="0" enabled="0" maxScale="0"/>
       <layer-setting tolerance="12" type="1" id="poi_bar_1948a4af_1df7_482f_954c_224b02943435" units="1" minScale="0" enabled="0" maxScale="0"/>
-      <layer-setting tolerance="12" type="1" id="poi_restauraunt_be910756_8e03_4498_b4a2_149ef01f1297" units="1" minScale="0" enabled="0" maxScale="0"/>
+      <layer-setting tolerance="12" type="1" id="poi_restaurant_be910756_8e03_4498_b4a2_149ef01f1297" units="1" minScale="0" enabled="0" maxScale="0"/>
       <layer-setting tolerance="12" type="1" id="poi_supermarkt_159ca63b_9f95_4c97_b760_4f1e390b3cb0" units="1" minScale="0" enabled="0" maxScale="0"/>
     </individual-layer-settings>
   </snapping-settings>
@@ -207,9 +207,9 @@
           <legendlayerfile visible="1" isInOverview="0" layerid="poi_kneipe_d636fd7d_1095_49fe_b6b6_8989cec4d419"/>
         </filegroup>
       </legendlayer>
-      <legendlayer checked="Qt::Checked" open="true" name="Restauraunt" showFeatureCount="0" drawingOrder="-1">
+      <legendlayer checked="Qt::Checked" open="true" name="Restaurant" showFeatureCount="0" drawingOrder="-1">
         <filegroup hidden="false" open="true">
-          <legendlayerfile visible="1" isInOverview="0" layerid="poi_restauraunt_be910756_8e03_4498_b4a2_149ef01f1297"/>
+          <legendlayerfile visible="1" isInOverview="0" layerid="poi_restaurant_be910756_8e03_4498_b4a2_149ef01f1297"/>
         </filegroup>
       </legendlayer>
     </legendgroup>
@@ -4381,12 +4381,12 @@ def my_form_open(dialog, layer, feature):
         <xmax>6.91241320000000492</xmax>
         <ymax>51.33785189908012825</ymax>
       </wgs84extent>
-      <id>poi_restauraunt_be910756_8e03_4498_b4a2_149ef01f1297</id>
-      <datasource>./poi/poi.restauraunt.geojson</datasource>
+      <id>poi_restaurant_be910756_8e03_4498_b4a2_149ef01f1297</id>
+      <datasource>./poi/poi.restaurant.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
-      <layername>Restauraunt</layername>
+      <layername>Restaurant</layername>
       <srs>
         <spatialrefsys nativeFormat="Wkt">
           <wkt>PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]</wkt>
@@ -4481,7 +4481,7 @@ def my_form_open(dialog, layer, feature):
                 <Option value="183,72,75,255" type="QString" name="color"/>
                 <Option value="0" type="QString" name="fixedAspectRatio"/>
                 <Option value="1" type="QString" name="horizontal_anchor_point"/>
-                <Option value="./poi/icons/restauraunt.svg" type="QString" name="name"/>
+                <Option value="./poi/icons/restaurant.svg" type="QString" name="name"/>
                 <Option value="0,0" type="QString" name="offset"/>
                 <Option value="3x:0,0,0,0,0,0" type="QString" name="offset_map_unit_scale"/>
                 <Option value="MM" type="QString" name="offset_unit"/>
@@ -4500,7 +4500,7 @@ def my_form_open(dialog, layer, feature):
               <prop k="color" v="183,72,75,255"/>
               <prop k="fixedAspectRatio" v="0"/>
               <prop k="horizontal_anchor_point" v="1"/>
-              <prop k="name" v="./poi/icons/restauraunt.svg"/>
+              <prop k="name" v="./poi/icons/restaurant.svg"/>
               <prop k="offset" v="0,0"/>
               <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
               <prop k="offset_unit" v="MM"/>
@@ -5117,7 +5117,7 @@ def my_form_open(dialog, layer, feature):
     <layer id="poi_kneipe_d636fd7d_1095_49fe_b6b6_8989cec4d419"/>
     <layer id="poi_museum_98b1c56a_179b_4017_91eb_7ac14852fe57"/>
     <layer id="poi_postfiliale_81fcf7ed_36cd_4e28_80b6_21f0cf93836e"/>
-    <layer id="poi_restauraunt_be910756_8e03_4498_b4a2_149ef01f1297"/>
+    <layer id="poi_restaurant_be910756_8e03_4498_b4a2_149ef01f1297"/>
     <layer id="poi_supermarkt_159ca63b_9f95_4c97_b760_4f1e390b3cb0"/>
   </layerorder>
   <properties>

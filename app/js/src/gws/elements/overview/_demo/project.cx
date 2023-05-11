@@ -77,7 +77,7 @@ projects+ {
     map.layers+ {
         title "POIs"
         type "postgres"
-        tableName "poi"
+        tableName "edit.poi"
     }
 
     {demo_osm_background}

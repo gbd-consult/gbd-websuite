@@ -1,20 +1,44 @@
 """CLI utilty for qgis"""
 
 import gws
+import gws.config
 import gws.base.shape
 import gws.gis.crs
 import gws.lib.importer
 import gws.lib.jsonx
 
+from . import project
+
 
 class CapsParams(gws.CliParams):
-    path: str 
+    path: str
     """path to a qgis file"""
-    out: str = '' 
+    out: str = ''
+    """output filename"""
+
+
+class DbreadParams(gws.CliParams):
+    schema: str
+    """database schema"""
+    name: str
+    """project name"""
+    out: str = ''
     """output filename"""
 
 
 class Object(gws.Node):
+
+    @gws.ext.command.cli('qgisDbread')
+    def db2file(self, p: DbreadParams):
+        """Copy a project from the db to a local file."""
+
+        root = gws.config.load()
+        source = project.Source(schema=p.schema, name=p.name)
+        prj = project.from_source(source, root.app)
+        if p.out:
+            gws.write_file(p.out, prj.text)
+        else:
+            print(prj.text)
 
     @gws.ext.command.cli('qgisCaps')
     def caps(self, p: CapsParams):
