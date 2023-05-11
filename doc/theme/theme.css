@@ -333,14 +333,14 @@ nav {
 }
 
 .admonition_info {
-    background-color: #e3f2fd;
+    background-color: #e7fdea;
     background-image: url('theme_info.svg') ;
     background-position: 20px center;
     background-size: 30px 30px;
     background-repeat: no-repeat;
     border-radius: 4px;
-    border: 1px solid #bbdefb;
-    color: #0d47a1;
+    border: 1px solid #b3fbc9;
+    color: #1b7908;
     margin: 12px 0;
     padding: 20px 20px 20px 70px;
 }

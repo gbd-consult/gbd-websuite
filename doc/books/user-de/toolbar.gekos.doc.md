@@ -1,3 +1,3 @@
-# Suche :/user-de/menubar.search
+# GeKos :/user-de/toolbar.gekos
 
-Über das Menü ![](baseline-search-24px.svg) {title Suche} kann 
+Über das Werkzeug ![](gbd-icon-gekos-04.svg) {title GeKos} kann 

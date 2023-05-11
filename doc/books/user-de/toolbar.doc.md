@@ -19,8 +19,8 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 | ![](gbd-icon-markieren-messen-01.svg)	| [Markieren & Messen](/user-de/toolbar.messen-markieren)	| Selektierte Auswahl an Objekten an D-ProCon übermitteln     	|
 | ![](gps_fixed-24px.svg)		| [Mein Standort](/user-de/toolbar.mein-standort)		| Selektierte Auswahl an Objekten an GeKoS übermitteln        	|
 | ![](gbd-icon-raeumliche-suche-01.svg)	| [Räumliche Suche](/user-de/toolbar.raeumliche-suche)		| PDF-Generierung welche gespeichert und gedruckt werden kann 	|
-| ![](georisk.svg)			| [Report Georisk](/user-de/toolbar.georisken)			| Abspeichern eines Kartenausschnitts als PNG-Datei           	|
+| ![](georisk.svg)			| [Georisko melden](/user-de/toolbar.georisken)			| Abspeichern eines Kartenausschnitts als PNG-Datei           	|
 | ![](outline-insert_photo-24px.svg)    | [Screenshot](/user-de/toolbar.screenshot)			| Abspeichern eines Kartenausschnitts als PNG-Datei           	|
-| ![](baseline-search-24px.svg)		| [Suchen](/user-de/toolbar.suche)				| Abspeichern eines Kartenausschnitts als PNG-Datei           	|
+| ![](baseline-search-24px.svg)		| [Suchen](/user-de/toolbar.suchen)				| Abspeichern eines Kartenausschnitts als PNG-Datei           	|
 
 ## :/user-de/toolbar.*

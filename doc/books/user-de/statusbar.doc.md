@@ -4,28 +4,20 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 
 **Statusleiste**
 
-| Symbol			| Funktion                              		|       Funktionsbeschreibung             	|
-|-------------------------------|-------------------------------------------------------|-----------------------------------------------|
-| ![](zoom-in-24px.svg) 	|[Hineinzoomen](/user-de/zoomin)           		|In die Karte Hineinzoomen                	|
-| ![](zoom-out-24px.svg)   	|[Herauszoomen](/user-de/zoomout)            		|Aus der Karte Herauszoomen               	|
-| ![](zoom_reset_24px.svg)	|[Ganzes Projekt anzeigen](/user-de/zoomproject)	|Herauszoomen auf die Ausmaße des Projekts	|
-| ![](xy.png)   		|[Koordinatenanzeige](/user-de/coordinates)    		|Zeigt die Koordinaten der Mausposition an	|
-| ![](massstab.png)   		|[Maßstab](/user-de/scale)	                  	|Ablesen des aktuellen Kartenmaßstabs     	|
-| ![](rotation.png)   		|[Rotation](/user-de/rotation)                   	|Ablesen der aktuellen Kartenrotation     	|
-| ![](baseline-home-24px.svg)   |[Zurück zur Startseite](/user-de/home)		      	|Öffnet die Anmeldeseite der WebSuite     	|
-| ![](sharp-help-24px.svg)   	|[Hilfe](/user-de/help)		               		|Öffnet die Dokumentation der GBD WebSuite	|
-| ![]()   			|[Verlinkung](/user-de/freelink)             		|Hinzufügen eines freien Verweises		|
-| ![](gws-logo-24px.svg) 	|[Informationen zur GBD WebSuite](/user-de/gwsinfo)     |Öffnet die Dokumentation der GBD WebSuite	|
+| Symbol			| Funktion                              			|       Funktionsbeschreibung             	|
+|-------------------------------|---------------------------------------------------------------|-----------------------------------------------|
+| ![](zoom-in-24px.svg) 	|[Hineinzoomen](/user-de/statusbar.hineinzoomen)         	|In die Karte Hineinzoomen                	|
+| ![](zoom-out-24px.svg)   	|[Herauszoomen](/user-de/statusbar.herauszoomen)         	|Aus der Karte Herauszoomen               	|
+| ![](zoom-reset-24px.svg)	|[Projektausdehnung](/user-de/statusbar.zoomprojekt)		|Herauszoomen auf die Ausmaße des Projekts	|
+| ![](xy.png)   		|[Koordinatenanzeige](/user-de/statusbar.koordinaten)    	|Zeigt die Koordinaten der Mausposition an	|
+| ![](massstab.png)   		|[Maßstab](/user-de/statusbar.massstab)	                  	|Ablesen des aktuellen Kartenmaßstabs     	|
+| ![](rotation.png)   		|[Rotation](/user-de/statusbar.drehung)                   	|Ablesen der aktuellen Kartenrotation     	|
+| ![](baseline-home-24px.svg)   |[Zurück zur Startseite](/user-de/statusbar.startseite)	      	|Öffnet die Anmeldeseite der WebSuite     	|
+| ![](sharp-help-24px.svg)   	|[Hilfe](/user-de/statusbar.hilfe)	               		|Öffnet die Dokumentation der GBD WebSuite	|
+| ![](info_fill_24px.svg)   	|[Freier Verweis](/user-de/statusbar.freier-link)            	|Hinzufügen eines freien Verweises		|
+| ![](gws-logo-24px.svg) 	|[Informationen zur GBD WebSuite](/user-de/statusbar.gwsinfo)	|Öffnet die Dokumentation der GBD WebSuite	|
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <infobar>`
 
-## Hineinzoomen :/user-de/
-## Herauszoomen :/user-de/	
-## Ganzes Projekt anzeigen :/user-de/
-## Koordinatenanzeige :/user-de/
-## Maßstab :/user-de/
-## Rotation :/user-de/
-## Zurück zur Startseite :/user-de/
-## Hilfe :/user-de/
-## Informationen zur GBD WebSuite :/user-de/
+## :/user-de/statusbar.*
 

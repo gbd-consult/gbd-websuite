@@ -1,3 +1,3 @@
-# Suche :/user-de/menubar.search
+# Anzeigen :/user-de/toolbar.mouseover
 
-Über das Menü ![](baseline-search-24px.svg) {title Suche} kann 
+Über das Werkzeug ![](gbd-icon-anzeige-01.svg) {title Anzeigen} kann  

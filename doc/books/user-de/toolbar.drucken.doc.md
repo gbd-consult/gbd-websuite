@@ -1,3 +1,3 @@
-# Suche :/user-de/menubar.search
+# Drucken :/user-de/toolbar.drucken
 
-Über das Menü ![](baseline-search-24px.svg) {title Suche} kann 
+Über das Werkzeug ![](baseline-print-24px.svg) {title Drucken} kann 

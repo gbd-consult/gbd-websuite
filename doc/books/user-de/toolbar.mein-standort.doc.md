@@ -1,3 +1,3 @@
-# Suche :/user-de/menubar.search
+# Mein Standort :/user-de/toolbar.mein-standort
 
-Über das Menü ![](baseline-search-24px.svg) {title Suche} kann 
+Über das Werkzeug ![](gps_fixed-24px.svg) {title Mein Standort} kann  

@@ -1,3 +1,3 @@
-# Suche :/user-de/menubar.search
+# Räumliche Suche :/user-de/menubar.raeumliche-suche
 
-Über das Menü ![](baseline-search-24px.svg) {title Suche} kann 
+Über das Menü ![](gbd-icon-raeumliche-suche-01.svg) {title Räumliche Suche} kann 

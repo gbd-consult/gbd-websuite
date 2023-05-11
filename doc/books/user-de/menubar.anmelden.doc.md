@@ -1,5 +1,11 @@
-# Anmelden :/user-de/menubar.sign-in
+# Anmelden :/user-de/menubar.anmelden
 
-Über das Menü ![](baseline-person-24px.svg) {title Anmeldung} kann sich der Anwender mit Nutzername und Passwort anmelden. Jedem Benutzer kann individuell Berechtigungen und Funktionen zugewiesen werden. So kann zum Beispiel der Zugriff auf spezielle Projekte oder auch der Zugriff auf gewisse Werkzeuge geregelt werden. Auch sensible Inhalte wie zum Beispiel ALKIS Daten können so nur berechtigten Personen zur Verfügung gestellt werden. Das Layout und die Darstellung des GBD WebSuite Clients kann für die angemeldeten Benutzer personalisiert werden.
+Über das Menü ![](baseline-person-24px.svg) {title Anmeldung} können sich Benutzer:innen mit Nutzername und Passwort anmelden und abmelden. Die Funktionalität, die dann zur Verfügung steht basiert auf individuell der Benutzer- oder Gruppenrolle zugewiesenen Berechtigungen. So kann der Zugriff auf Projekte, Funktionalität oder Daten individuell geregelt werden. Sensible Inhalte wie zum Beispiel Eigentümerinformationen in Liegenschaftsdaten (ALKIS) können so nur berechtigten Personen zur Verfügung gestellt werden.
 
+![](sign-in.png) 
 
+%info
+
+	Die GBD WebSuite bietet umfangreiche Optionen zum Thema Autorisierung. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [Autorisierung](/doc/8.0/admin-de/config/auth/index.html).
+
+%end

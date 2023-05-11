@@ -1,3 +1,3 @@
 # Projektübersicht :/user-de/menubar.project-overview
 
-Über das Menü ![](map-24px.svg) {title Projektübersicht} kann 
+Über das Menü ![](gbd-icon-projectoverview.svg) {title Projektübersicht} kann 

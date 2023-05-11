@@ -1,3 +1,3 @@
-# Suche :/user-de/menubar.search
+# Bemaßung :/user-de/toolbar.bemassung
 
-Über das Menü ![](baseline-search-24px.svg) {title Suche} kann 
+Über das Werkzeug ![](gbd-icon-bemassung-02.svg) {title Bemaßung} kann 

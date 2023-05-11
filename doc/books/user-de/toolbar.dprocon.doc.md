@@ -1,3 +1,3 @@
-# Suche :/user-de/menubar.search
+# D-ProCon :/user-de/toolbar.dprocon
 
-Über das Menü ![](baseline-search-24px.svg) {title Suche} kann 
+Über das Werkzeug ![](gbd-icon-d-procon-02.svg) {title D-ProCon} kann 

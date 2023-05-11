@@ -1,3 +1,3 @@
-# Suche :/user-de/menubar.search
+# Screenshot :/user-de/menubar.screenshot
 
-Über das Menü ![](baseline-search-24px.svg) {title Suche} kann 
+Über das Menü ![](outline-insert_photo-24px.svg) {title Screenshot} kann 
