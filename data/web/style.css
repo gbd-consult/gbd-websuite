@@ -1,0 +1,114 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+body {
+    background-image: url("/osm.jpg");
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 15px;
+}
+
+main {
+    flex: 1;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+nav {
+    background-color: rgba(0, 158, 255, 0.1);
+    background-image: url("/gws_logo.svg");
+    background-repeat: no-repeat;
+    background-size: 80px;
+    background-position: 30px center;
+    padding: 40px 0;
+}
+
+nav h1 {
+    color: rgb(0, 112, 184);
+    font-size: 32px;
+    font-weight: 200;
+    padding: 0 0 0 130px;
+    margin: 0;
+}
+
+article {
+    background-color: rgb(0, 112, 184, 0.8);
+    color: white;
+    margin: 30px 0 30px 0;
+    padding: 30px;
+}
+
+@media (min-width: 800px) {
+    nav {
+        background-position: 100px center;
+    }
+    nav h1 {
+        font-size: 46px;
+        padding: 0 0 0 200px;
+    }
+    article {
+        border-radius: 30px;
+        margin: 30px 0 30px 100px;
+        max-width: 600px;
+    }
+}
+
+article h2 {
+    font-size: 24px;
+    font-weight: 200;
+    margin: 0 0 16px 0;
+    padding: 0;
+}
+
+article p {
+    font-weight: 200;
+    line-height: 1.5;
+    margin: 15px 0;
+}
+
+article ul {
+    font-size: 14px;
+    margin: 16px 16px 16px 0;
+}
+
+article li {
+    color: rgb(169, 239, 9);
+    list-style-type: disc;
+    margin: 14px 0;
+}
+
+article a {
+    color: rgb(169, 239, 9);
+    font-weight: 600;
+}
+
+footer {
+    background-color: rgb(132, 172, 43);
+    font-size: 11px;
+    padding: 15px;
+}
+
+footer a {
+    color: white;
+}
+
+.restaurant {
+    --icon: url('/restaurant.svg');
+    --with_label: all;
+    --label-fill: rgb(0, 79, 255);
+    --label-font-size: 8px;
+    --label-font-weight: bold;
+    --label-max-scale: 1000;
+}

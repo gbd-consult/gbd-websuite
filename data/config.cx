@@ -1,0 +1,103 @@
+permissions.read "allow all"
+
+api.actions+ { type "map" }
+api.actions+ { type "printer" }
+api.actions+ { type "project" }
+api.actions+ { type "web" }
+
+locales ["de_DE"]
+
+web.sites+ {
+    root.dir "web"
+    rewrite [
+        {
+            pattern "^/demo"
+            target "/demo.html"
+        }
+    ]
+}
+
+
+projects+ {
+    title "Restaurants in Düsseldorf"
+    uid "demo"
+
+    client.elements+ { tag "Decoration.ScaleRuler" }
+    client.elements+ { tag "Decoration.Attribution" }
+
+    client.elements+ { tag "Infobar.ZoomOut" }
+    client.elements+ { tag "Infobar.ZoomIn" }
+    client.elements+ { tag "Infobar.ZoomReset" }
+    client.elements+ { tag "Infobar.Position" }
+    client.elements+ { tag "Infobar.Scale" }
+    client.elements+ { tag "Infobar.Loader" }
+    client.elements+ { tag "Infobar.Spacer" }
+    client.elements+ { tag "Infobar.HomeLink" }
+    client.elements+ { tag "Infobar.Help" }
+    client.elements+ { tag "Infobar.About" }
+
+    client.elements+ { tag "Toolbar.Print" }
+
+    client.elements+ { tag "Sidebar.Overview" }
+    client.options.sidebarActiveTab "Sidebar.Overview"
+
+    client.options.sidebarVisible true
+
+    overviewMap {
+        extent [
+             {753753  - 12000}
+             {6661615 - 6000}
+             {753753  + 12000}
+             {6661615 + 6000}
+        ]
+        layers+ {
+            title "Open Street Map"
+            type "tile"
+            display "client"
+            provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+            opacity 0.5
+        }
+    }
+
+    templates+ {
+        subject "project.description"
+        type "html"
+        text """
+            <p class="head">Willkommen bei der GBD WebSuite!</p>
+            <p>Wenn Sie diese Seite sehen, haben Sie die GBD Websuite erfolgreich installiert.</p>
+            <ul>
+                <li><a href="https://gbd-websuite.de/doc/8.0/index.html" target="_blank">Lesen Sie die Dokumentation</a></li>
+                <li><a href="https://gbd-websuite.de/" target="_blank">Besuchen Sie die Projekt Webseite</a></li>
+            </ul>
+        """
+    }
+
+    map {
+        center [753753, 6661615]
+        zoom.initScale 7000
+        zoom.maxScale  1000000
+    }
+
+
+    map.layers+ {
+        title "Restaurant"
+        type "geojson"
+        provider.path "/data/demos/poi/poi.restaurant.geojson"
+        cssSelector ".restaurant"
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{name}}"
+        }
+    }
+
+    map.layers+ {
+        uid "OSM"
+        title "Open Street Map"
+        type "tile"
+        display "client"
+        opacity 0.5
+        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    }
+}
