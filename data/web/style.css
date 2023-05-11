@@ -101,6 +101,12 @@ a:hover {
     text-decoration: underline;
 }
 
+main {
+    /*  main content fills screen so 
+        that footer is at bottom of page */
+    flex: 1; 
+}
+
 nav {
     color: white;
     backdrop-filter: blur(3px) brightness(0.35);
@@ -157,9 +163,7 @@ article {
     nav h1 {
         font-size: 40pt;
         padding-top: .3em;
-    }
-    nav img {
-        width: 180px;
+        padding-left: 0;
     }
     article {
         border-radius: 0 0 0 45px;
