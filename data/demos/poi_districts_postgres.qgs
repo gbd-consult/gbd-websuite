@@ -22,12 +22,12 @@
     <customproperties>
       <Option/>
     </customproperties>
-    <layer-tree-layer expanded="0" name="Points of interest" providerKey="postgres" legend_exp="" patch_size="-1,-1" legend_split_behavior="0" source="dbname='devdemos' service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;poi_small&quot; (geom)" id="poi_6bf838c6_861a_4a61_aa64_9c15084e70ae" checked="Qt::Checked">
+    <layer-tree-layer expanded="0" name="Points of interest" providerKey="postgres" legend_exp="" patch_size="-1,-1" legend_split_behavior="0" source="service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;poi_small&quot; (geom)" id="poi_6bf838c6_861a_4a61_aa64_9c15084e70ae" checked="Qt::Checked">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer expanded="0" name="Districts" providerKey="postgres" legend_exp="" patch_size="-1,-1" legend_split_behavior="0" source="dbname='devdemos' service='DEVDEMOS' sslmode=disable key='sid' srid=3857 type=MultiPolygon checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;district&quot; (geom)" id="districts_2d2acf11_3db4_4afa_879f_b9aaa74bbcdf" checked="Qt::Checked">
+    <layer-tree-layer expanded="0" name="Districts" providerKey="postgres" legend_exp="" patch_size="-1,-1" legend_split_behavior="0" source="service='DEVDEMOS' sslmode=disable key='sid' srid=3857 type=MultiPolygon checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;district&quot; (geom)" id="districts_2d2acf11_3db4_4afa_879f_b9aaa74bbcdf" checked="Qt::Checked">
       <customproperties>
         <Option/>
       </customproperties>
@@ -149,7 +149,7 @@
         <ymax>51.3547323921839407</ymax>
       </wgs84extent>
       <id>districts_2d2acf11_3db4_4afa_879f_b9aaa74bbcdf</id>
-      <datasource>dbname='devdemos' service='DEVDEMOS' sslmode=disable key='sid' srid=3857 type=MultiPolygon checkPrimaryKeyUnicity='1' table="edit"."district" (geom)</datasource>
+      <datasource>service='DEVDEMOS' sslmode=disable key='sid' srid=3857 type=MultiPolygon checkPrimaryKeyUnicity='1' table="edit"."district" (geom)</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -515,7 +515,7 @@
         <ymax>51.34749660166585272</ymax>
       </wgs84extent>
       <id>poi_6bf838c6_861a_4a61_aa64_9c15084e70ae</id>
-      <datasource>dbname='devdemos' service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table="edit"."poi_small" (geom)</datasource>
+      <datasource>service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table="edit"."poi_small" (geom)</datasource>
       <keywordList>
         <value></value>
       </keywordList>

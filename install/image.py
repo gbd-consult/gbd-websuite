@@ -112,7 +112,7 @@ class Builder:
         self.arch = args.get('arch') or self.arch
         self.base = args.get('base') or f'ubuntu:{self.ubuntu_version}'
         self.build_dir = args.get('builddir') or os.path.abspath(f'{self.gws_dir}/app/__build/docker')
-        self.datadir = args.get('datadir')
+        self.datadir = args.get('datadir') or f'{self.gws_dir}/data'
         self.vendor = args.get('vendor') or self.vendor
 
         self.image_name = args.get(1)
