@@ -72,6 +72,13 @@ projects+ {
         """
     }
 
+    printer.templates+ {
+        type "html"
+        path "/data/web/simple.cx.html"
+        mapSize [ "200mm" "160mm" ]
+        qualityLevels+ { dpi 72  name "Screen" }
+    }
+
     map {
         center [753753, 6661615]
         zoom.initScale 7000

@@ -1,0 +1,61 @@
+@page width="297" height="210" margin="5"
+
+<style>
+body {
+    font-family: Helvetica, "DejaVu Sans", sans-serif;
+    font-size: 3.5mm;
+}
+
+h1 {
+    font-size: 6mm;
+    font-weight: normal;
+    position: absolute;
+    left: 10mm;
+    top: 3mm;
+    width: 200mm;
+}
+.map {
+    border: 1mm solid #ddd;
+    position: absolute;
+    left: 10mm;
+    top: 20mm;
+    width: 200mm;
+    height: 160mm;
+}
+
+.info {
+    position: absolute;
+    left: 220mm;
+    top: 20mm;
+}
+
+.footer {
+    position: absolute;
+    left: 10mm;
+    bottom: 0;
+    font-size: 1.5mm;
+}
+
+</style>
+
+<h1>{project.title}</h1>
+
+<div class="map">
+    @map
+</div>
+
+<div class="info">
+    <p>GWS version:   <br> <b>  {gwsVersion}        </b></p>
+    <p>Locale:        <br> <b>  {localeUid}         </b></p>
+    <p>Map scale:     <br> <b>  {scale}             </b></p>
+    <p>Map rotation:  <br> <b>  {rotation}&deg;     </b></p>
+    <p>Map CRS:       <br> <b>  {crs}               </b></p>
+    <p>Quality (DPI): <br> <b>  {dpi}               </b></p>
+    <p>Date:          <br> <b>  {date.medium}       </b></p>
+    <p>Time:          <br> <b>  {time.medium}       </b></p>
+</div>
+
+<div class="footer">
+    &copy; GEOINFORMATIKBÜRO DASSAU GMBH 2006 - 2023<br/>
+    &copy; OpenStreetMap contributors (https://www.openstreetmap.org/copyright)
+</div>
