@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 import mistune
@@ -12,6 +13,8 @@ from . import util
 
 
 class Element(util.Data):
+    type: str
+
     align: str
     alt: str
     children: List['Element']
@@ -25,7 +28,9 @@ class Element(util.Data):
     start: str
     text: str
     title: str
-    type: str
+
+    classname: str  # inline_decoration_plugin
+    attributes: dict  # link_attributes_plugin
 
     def __repr__(self):
         return repr(vars(self))
@@ -34,26 +39,45 @@ class Element(util.Data):
 def parser() -> Markdown:
     md = mistune.create_markdown(
         renderer=AstRenderer(),
-        plugins=['table', 'url', inline_decoration_plugin]
+        plugins=['table', 'url', inline_decoration_plugin, link_attributes_plugin]
     )
     return md
 
 
+# plugin API reference: https://mistune.lepture.com/en/v2.0.5/advanced.html#create-plugins
+
 # plugin: inline decorations
 # {someclass some text} => <span class="decoration_someclass">some text</span>
-# reference: https://mistune.lepture.com/en/v2.0.5/advanced.html#create-plugins
-
-
-INLINE_DECORATION_PATTERN = r'\{(\w+ .+?)\}'
 
 
 def inline_decoration_plugin(md):
-    md.inline.register_rule('inline_decoration', INLINE_DECORATION_PATTERN, inline_decoration_parser)
-    md.inline.rules.append('inline_decoration')
+    name = 'inline_decoration'
+    pattern = r'\{(\w+ .+?)\}'
+
+    def parser(inline, m, state):
+        return name, *m.group(1).split(None, 1)
+
+    md.inline.register_rule(name, pattern, parser)
+    md.inline.rules.append(name)
 
 
-def inline_decoration_parser(inline, m, state):
-    return 'inline_decoration', m.group(1).split(None, 1)
+# plugin: link attributes
+# https://pandoc.org/MANUAL.html#extension-link_attributes
+
+
+def link_attributes_plugin(md):
+    name = 'link_attributes'
+    pattern = r'(?<=\)){.+?}'
+
+    def parser(inline, m, state):
+        text = m.group(0)
+        attributes = _parse_attributes(text[1:-1])
+        if attributes:
+            return name, text, attributes
+        return 'text', text
+
+    md.inline.register_rule(name, pattern, parser)
+    md.inline.rules.append(name)
 
 
 ##
@@ -88,86 +112,27 @@ def text_from_element(el: Element) -> str:
 class AstRenderer:
     NAME = 'ast'
 
+    def __init__(self):
+        self.renderer = Renderer()
+
     def register(self, name, method):
         pass
-        # setattr(self, name, method)
-
-    def text(self, text):
-        return Element(type='text', text=text)
-
-    def link(self, link, children=None, title=None):
-        if isinstance(children, str):
-            children = [Element(type='text', text=children)]
-        return Element(
-            type='link',
-            link=link,
-            children=children,
-            title=title,
-        )
-
-    def image(self, src, alt="", title=None):
-        return Element(type='image', src=src, alt=alt, title=title)
-
-    def codespan(self, text):
-        return Element(type='codespan', text=text)
-
-    def linebreak(self):
-        return Element(type='linebreak')
-
-    def inline_html(self, html):
-        return Element(type='inline_html', text=html)
-
-    def heading(self, children, level):
-        return Element(type='heading', children=children, level=level)
-
-    def newline(self):
-        return Element(type='newline')
-
-    def thematic_break(self):
-        return Element(type='thematic_break')
-
-    def block_code(self, children, info=None):
-        return Element(type='block_code', text=children, info=info)
-
-    def block_html(self, children):
-        return Element(type='block_html', text=children)
-
-    def list(self, children, ordered, level, start=None):
-        token = {
-            'type': 'list',
-            'children': children,
-            'ordered': ordered,
-            'level': level,
-        }
-        if start is not None:
-            token['start'] = start
-        return Element(**token)
-
-    def list_item(self, children, level):
-        return Element(type='list_item', children=children, level=level)
-
-    def table_cell(self, children, align=None, is_head=False):
-        return Element(
-            type='table_cell',
-            children=children,
-            align=align,
-            is_head=is_head,
-        )
-
-    def _create_default_method(self, name):
-        def __ast(children=None):
-            return Element(type=name, children=children)
-
-        return __ast
 
     def _get_method(self, name):
-        try:
-            return getattr(self, name)
-        except AttributeError:
-            return self._create_default_method(name)
+        return getattr(self.renderer, f'{name}_parse')
 
-    def finalize(self, data):
-        return list(data)
+    def finalize(self, elements: List[Element]):
+        # merge 'link attributes' with the previous element
+        res = []
+        for el in elements:
+            if el.type == 'link_attributes':
+                if res and res[-1].type in {'image', 'link'}:
+                    res[-1].attributes = el.attributes
+                    continue
+                else:
+                    el.type = 'text'
+            res.append(el)
+        return res
 
 
 ##
@@ -180,74 +145,23 @@ class Renderer:
         return ''
 
     def render_element(self, el: Element):
-        fn = getattr(self, 'tag_' + el.type)
+        fn = getattr(self, f'{el.type}_render')
         return fn(el)
 
-    def render_a(self, href, title, content):
-        s = f' href="{href}"'
+    def render_a(self, href, title, content, el):
+        a = {'href': href}
         if title:
-            s += f'title="{escape(title)}"'
-        return f'<a{s}>{content or href}</a>'
+            a['title'] = escape(title)
+        if el.attributes:
+            a.update(el.attributes)
+        return f'<a{attributes(a)}>{content or href}</a>'
 
     ##
 
-    def tag_text(self, el: Element):
-        return escape(el.text)
+    def block_code_parse(self, children, info=None):
+        return Element(type='block_code', text=children, info=info)
 
-    def tag_link(self, el: Element):
-        c = self.render_content(el)
-        link = el.link
-        return self.render_a(link, el.title, c)
-
-    def tag_image(self, el: Element):
-        s = ''
-        if el.src:
-            s += f' src="{el.src}"'
-        if el.alt:
-            s += f' alt="{escape(el.alt)}"'
-        if el.title:
-            s += f' title="{escape(el.title)}"'
-        return f'<img{s} />'
-
-    def tag_emphasis(self, el: Element):
-        c = self.render_content(el)
-        return f'<em>{c}</em>'
-
-    def tag_strong(self, el: Element):
-        c = self.render_content(el)
-        return f'<strong>{c}</strong>'
-
-    def tag_codespan(self, el: Element):
-        return '<code>' + escape(el.text) + '</code>'
-
-    def tag_linebreak(self, el: Element):
-        return '<br />\n'
-
-    def tag_inline_html(self, el: Element):
-        return el.text
-
-    def tag_paragraph(self, el: Element):
-        c = self.render_content(el)
-        return f'<p>{c}</p>\n'
-
-    def tag_heading(self, el: Element):
-        c = self.render_content(el)
-        tag = 'h' + str(el.level)
-        s = ''
-        if el.id:
-            s += f' id="{el.id}"'
-        return f'<{tag}{s}>{c}</{tag}>\n'
-
-    def tag_newline(self, el: Element):
-        return ''
-
-    def tag_thematic_break(self, el: Element):
-        return '<hr/>\n'
-
-    def tag_block_text(self, el: Element):
-        return self.render_content(el)
-
-    def tag_block_code(self, el: Element):
+    def block_code_render(self, el: Element):
         if el.info:
             try:
                 lexer = pygments.lexers.get_lexer_by_name(el.info, stripall=True)
@@ -259,46 +173,161 @@ class Renderer:
         c = escape(el.text.strip())
         return f'<pre><code>{c}</code></pre>'
 
-    def tag_block_quote(self, el: Element):
-        c = self.render_content(el)
-        return f'<blockquote>\n{c}</blockquote>\n'
+    def block_error_parse(self, children=None):
+        return Element(type='block_error', children=children)
 
-    def tag_block_html(self, el: Element):
-        return el.text
-
-    def tag_block_error(self, el: Element):
+    def block_error_render(self, el: Element):
         c = self.render_content(el)
         return f'<div class="error">{c}</div>\n'
 
-    def tag_list(self, el: Element):
-        c = self.render_content(el)
-        tag = 'ol' if el.ordered else 'ul'
-        s = ''
-        if el.start:
-            s = f' start="{el.start}"'
-        return f'<{tag}{s}>\n{c}</{tag}>\n'
+    def block_html_parse(self, text):
+        return Element(type='block_html', text=text)
 
-    def tag_list_item(self, el: Element):
+    def block_html_render(self, el: Element):
+        return el.text
+
+    def block_quote_parse(self, children=None):
+        return Element(type='block_quote', children=children)
+
+    def block_quote_render(self, el: Element):
+        c = self.render_content(el)
+        return f'<blockquote>\n{c}</blockquote>\n'
+
+    def block_text_parse(self, children=None):
+        return Element(type='block_text', children=children)
+
+    def block_text_render(self, el: Element):
+        return self.render_content(el)
+
+    def codespan_parse(self, text):
+        return Element(type='codespan', text=text)
+
+    def codespan_render(self, el: Element):
+        return '<code>' + escape(el.text) + '</code>'
+
+    def emphasis_parse(self, text):
+        return Element(type='emphasis', text=text)
+
+    def emphasis_render(self, el: Element):
+        c = self.render_content(el)
+        return f'<em>{c}</em>'
+
+    def heading_parse(self, children, level):
+        return Element(type='heading', children=children, level=level)
+
+    def heading_render(self, el: Element):
+        c = self.render_content(el)
+        tag = 'h' + str(el.level)
+        s = ''
+        if el.id:
+            s += f' id="{el.id}"'
+        return f'<{tag}{s}>{c}</{tag}>\n'
+
+    def image_parse(self, src, alt="", title=None):
+        return Element(type='image', src=src, alt=alt, title=title)
+
+    def image_render(self, el: Element):
+        a = {}
+        if el.src:
+            a['src'] = el.src
+        if el.alt:
+            a['alt'] = escape(el.alt)
+        if el.title:
+            a['title'] = escape(el.title)
+        if el.attributes:
+            a.update(el.attributes)
+            n = a.pop('width', '')
+            if n:
+                if n.isdigit():
+                    n += 'px'
+                a['style'] = f"width:{n};" + a.get('style', '')
+            n = a.pop('height', '')
+            if n:
+                if n.isdigit():
+                    n += 'px'
+                a['style'] = f"height:{n};" + a.get('style', '')
+
+        return f'<img{attributes(a)}/>'
+
+    def inline_decoration_parse(self, classname, text):
+        return Element(type='inline_decoration', classname=classname, text=text)
+
+    def inline_decoration_render(self, el: Element):
+        return f'<span class="decoration_{el.classname}">{escape(el.text)}</span>'
+
+    def inline_html_parse(self, text):
+        return Element(type='inline_html', text=text)
+
+    def inline_html_render(self, el: Element):
+        return el.text
+
+    def linebreak_parse(self):
+        return Element(type='linebreak')
+
+    def linebreak_render(self, el: Element):
+        return '<br />\n'
+
+    def link_parse(self, link, children=None, title=None):
+        if isinstance(children, str):
+            children = [Element(type='text', text=children)]
+        return Element(type='link', link=link, children=children, title=title)
+
+    def link_render(self, el: Element):
+        c = self.render_content(el)
+        return self.render_a(el.link, el.title, c, el)
+
+    def link_attributes_parse(self, text, attributes):
+        return Element(type='link_attributes', text=text, attributes=attributes)
+
+    def list_item_parse(self, children, level):
+        return Element(type='list_item', children=children, level=level)
+
+    def list_item_render(self, el: Element):
         c = self.render_content(el)
         return f'<li>{c}</li>\n'
 
-    def tag_table(self, el: Element):
-        c = self.render_content(el)
-        return f'<table>{c}</table>\n'
+    def list_parse(self, children, ordered, level, start=None):
+        return Element(type='list', children=children, ordered=ordered, level=level, start=start)
 
-    def tag_table_head(self, el: Element):
+    def list_render(self, el: Element):
         c = self.render_content(el)
-        return f'<thead>\n<tr>{c}</tr>\n</thead>\n'
+        tag = 'ol' if el.ordered else 'ul'
+        a = {}
+        if el.start:
+            a['start'] = el.start
+        return f'<{tag}{attributes(a)}>\n{c}</{tag}>\n'
 
-    def tag_table_body(self, el: Element):
+    def newline_parse(self):
+        return Element(type='newline')
+
+    def newline_render(self, el: Element):
+        return ''
+
+    def paragraph_parse(self, children=None):
+        return Element(type='paragraph', children=children)
+
+    def paragraph_render(self, el: Element):
+        c = self.render_content(el)
+        return f'<p>{c}</p>\n'
+
+    def strong_parse(self, text):
+        return Element(type='strong', text=text)
+
+    def strong_render(self, el: Element):
+        c = self.render_content(el)
+        return f'<strong>{c}</strong>'
+
+    def table_body_parse(self, children=None):
+        return Element(type='table_body', children=children)
+
+    def table_body_render(self, el: Element):
         c = self.render_content(el)
         return f'<tbody>\n{c}</tbody>\n'
 
-    def tag_table_row(self, el: Element):
-        c = self.render_content(el)
-        return f'<tr>{c}</tr>\n'
+    def table_cell_parse(self, children, align=None, is_head=False):
+        return Element(type='table_cell', children=children, align=align, is_head=is_head)
 
-    def tag_table_cell(self, el: Element):
+    def table_cell_render(self, el: Element):
         c = self.render_content(el)
         tag = 'th' if el.is_head else 'td'
         s = ''
@@ -306,9 +335,38 @@ class Renderer:
             s = f' style="text-align:{el.align}"'
         return f'<{tag}{s}>{c}</{tag}>'
 
-    def tag_inline_decoration(self, el: Element):
-        cls, text = el.children
-        return f'<span class="decoration_{cls}">{text}</span>'
+    def table_head_parse(self, children=None):
+        return Element(type='table_head', children=children)
+
+    def table_head_render(self, el: Element):
+        c = self.render_content(el)
+        return f'<thead>\n<tr>{c}</tr>\n</thead>\n'
+
+    def table_parse(self, children=None):
+        return Element(type='table', children=children)
+
+    def table_render(self, el: Element):
+        c = self.render_content(el)
+        return f'<table>{c}</table>\n'
+
+    def table_row_parse(self, children=None):
+        return Element(type='table_row', children=children)
+
+    def table_row_render(self, el: Element):
+        c = self.render_content(el)
+        return f'<tr>{c}</tr>\n'
+
+    def text_parse(self, text):
+        return Element(type='text', text=text)
+
+    def text_render(self, el: Element):
+        return escape(el.text)
+
+    def thematic_break_parse(self):
+        return Element(type='thematic_break')
+
+    def thematic_break_render(self, el: Element):
+        return '<hr/>\n'
 
 
 def escape(s, quote=True):
@@ -318,3 +376,56 @@ def escape(s, quote=True):
     if quote:
         s = s.replace('"', "&quot;")
     return s
+
+
+def attributes(attrs):
+    s = ''
+    if attrs:
+        for k, v in attrs.items():
+            s += f' {k}="{v}"'
+    return s
+
+
+##
+
+
+_ATTRIBUTE_RE = r'''(?x)
+    (
+        (\# (?P<id> [\w-]+) )
+        |
+        (\. (?P<class> [\w-]+) )
+        |
+        (
+            (?P<key> \w+)
+            =
+            (
+                " (?P<quoted> [^"]*) "
+                |
+                (?P<simple> \S+)
+            )
+        )
+    )
+    \x20
+'''
+
+
+def _parse_attributes(text):
+    text = text.strip() + ' '
+    res = {}
+
+    while text:
+        m = re.match(_ATTRIBUTE_RE, text)
+        if not m:
+            return
+
+        text = text[m.end():].lstrip()
+
+        g = m.groupdict()
+        if g['id']:
+            res['id'] = g['id']
+        elif g['class']:
+            res['class'] = (res.get('class', '') + ' ' + g['class']).strip()
+        else:
+            res[g['key']] = g['simple'] or g['quoted'].strip()
+
+    return res

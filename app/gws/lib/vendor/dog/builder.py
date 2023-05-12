@@ -620,45 +620,45 @@ class MarkdownRenderer(markdown.Renderer):
         self.b = b
         self.sec = sec
 
-    def tag_link(self, el: markdown.Element):
+    def link_render(self, el: markdown.Element):
         c = self.render_content(el)
         link = el.link
         if link.startswith(('http:', 'https:')):
-            return self.render_a(link, el.title, c)
+            return self.render_a(link, el.title, c, el)
         if link.startswith('//'):
-            return self.render_a(link[1:], el.title, c)
+            return self.render_a(link[1:], el.title, c, el)
 
         sid = self.b.make_sid(link, self.sec.sid)
         target = self.b.get_section(sid)
         if not target:
-            return self.render_a(link, el.title, c)
-
+            return self.render_a(link, el.title, c, el)
         return self.render_a(
             target.htmlUrl,
             el.title or target.headText,
-            c or target.headHtml)
+            c or target.headHtml,
+            el
+        )
 
-    def tag_image(self, el: markdown.Element):
+    def image_render(self, el: markdown.Element):
         if not el.src:
             return ''
         if el.src.startswith(('http:', 'https:')):
-            return super().tag_image(el)
+            return super().image_render(el)
         paths = [path for path in self.b.assetPaths if path.endswith(el.src)]
         if not paths:
             util.log.error(f'asset not found: {el.src!r} ')
             el.src = ''
-            return super().tag_image(el)
+            return super().image_render(el)
         el.src = self.b.add_asset(paths[0])
-        return super().tag_image(el)
+        return super().image_render(el)
 
-    def tag_heading(self, el: markdown.Element):
+    def heading_render(self, el: markdown.Element):
         sec = self.b.section_from_element(el)
         if not sec:
             return
-
         c = self.render_content(el)
         tag = 'h' + str(sec.headLevel)
-        atts = f' data-url="{sec.htmlUrl}"'
+        a = {'data-url': sec.htmlUrl}
         if self.b.options.debug:
-            atts += f' title="{markdown.escape(sec.sourcePath)}"'
-        return f'<{tag}{atts}>{c}</{tag}>\n'
+            a['title'] = markdown.escape(sec.sourcePath)
+        return f'<{tag}{markdown.attributes(a)}>{c}</{tag}>\n'

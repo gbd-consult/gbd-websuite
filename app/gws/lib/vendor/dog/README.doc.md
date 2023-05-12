@@ -211,6 +211,8 @@ Tables work as in [GFM](https://github.github.com/gfm/):
     |-----|-----|
     | baz | bim |
 
+Result:
+
 | foo | bar |
 |-----|-----|
 | baz | bim |
@@ -220,6 +222,8 @@ Tables work as in [GFM](https://github.github.com/gfm/):
 Everything that looks like a URL is converted to a link:
 
     Our markdown formatter is https://mistune.lepture.com
+
+Result:
 
 >> Our markdown formatter is https://mistune.lepture.com
 
@@ -232,24 +236,35 @@ A fenced code block with a tag formats the content with [Pygments](https://pygme
     print("Hi", 40 + 2)  # test
     
     ```
+Result:
 
 ```py
 print("Hi", 40 + 2)  # test
 ```
 
-
 ### Decorations
 
 A decoration looks like `{myclass text}` and generates an HTML `span` element with the class name `decoration_myclass`.
-For example, this Markdown
 
     Click the {button Exit} button to exit
 
-looks this when rendered:
+Result:
 
-> > Click the {button Exit} button to exit
+>> Click the {button Exit} button to exit
 
-provided `.decoration_button` is defined in your css.
+(provided `.decoration_button` is defined in your css).
+
+### Link attributes
+
+Attributes can be set on links and images, similarly to [Pandoc](https://pandoc.org/MANUAL.html#extension-link_attributes):
+
+    Some image ![](theme_info.svg){.someclass .otherclass width=3em height=20px border=1}
+
+Result:
+
+>> Some image ![](theme_info.svg){.someclass .otherclass width=3em height=20px border=1}
+
+`width` and `height` accept arbitrary CSS units. This extension currently works for inline elements only.
 
 ## Commands
 
