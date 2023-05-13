@@ -1,7 +1,7 @@
 Bemaßung
 ========
 
-^REF gws.ext.action.dimension.Config
+%reference_de 'gws.ext.action.dimension.Config'
 
 Mit der Funktion Bemaßung (``dimension``) kann der Nutzer im Client Bemaßungen zeichnen, die optional an bestimmte Vektor-Objekte einrasten.
 

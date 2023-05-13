@@ -47,6 +47,11 @@ def main(args):
 
     cmd = args.get(1)
 
+    if cmd == 'dump':
+        opts.outputDir = ''
+        dog.dump(opts)
+        return 0
+
     out_dir = args.get('out')
     if not out_dir:
         if cmd in {'build', 'server'}:

@@ -1,7 +1,7 @@
 Helper
 ======
 
-^REF gws.types.ext.helper.Config
+%reference_de 'gws.types.ext.helper.Config'
 
 Helper sind allgemeine Tools, die in verschiedenen Bereichen des Servers Verwendung finden. Es können folgende Helper konfiguriert werden:
 

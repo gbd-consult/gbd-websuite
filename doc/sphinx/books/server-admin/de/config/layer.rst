@@ -32,7 +32,7 @@ Dies betrifft auch die URLs die das System z.B. für Map-Darstellung verwendet, 
 Konfiguration
 -------------
 
-^REF gws.types.ext.layer.Config
+%reference_de 'gws.types.ext.layer.Config'
 
 Bei einer Layerkonfiguration stehen viele Optionen zur Verfügung. Die wichtigsten davon sind:
 
@@ -103,7 +103,7 @@ Für einen Layer können Sie eine Vorlage mit dem ``subject`` ``layer.descriptio
 Legenden
 --------
 
-^REF gws.base.layer.types.LegendConfig
+%reference_de 'gws.base.layer.types.LegendConfig'
 
 Mit der Option ``legend`` können Sie die Legende für den Layer konfigurieren. Sie haben die Wahl zwischen:
 
@@ -118,21 +118,21 @@ Layer Typen
 geojson
 ~~~~~~~
 
-^REF gws.ext.layer.geojson.Config
+%reference_de 'gws.ext.layer.geojson.Config'
 
 Vektorlayer, der die Daten aus einer GeoJSON (https://geojson.org/) Datei darstellt.
 
 group
 ~~~~~
 
-^REF gws.ext.layer.group.Config
+%reference_de 'gws.ext.layer.group.Config'
 
 Gruppenlayer enthalten andere Layer, sie liefern selbst keine Geodaten. Neben der visuellen Gruppierung besteht ein weiterer Zweck einer Gruppe darin, die Zugriffs- bzw Ausmaß-Konfigurationen für ihre untergeordneten Layer beizubehalten. Eine Gruppe kann "virtuell" oder ``unfolded`` erstellt werden, in diesem Fall wird sie im Client nicht angezeigt, während ihre untergeordneten Layer vorhanden sind.
 
 postgres
 ~~~~~~~~
 
-^REF gws.ext.layer.postgres.Config
+%reference_de 'gws.ext.layer.postgres.Config'
 
 Vektor-Layer, übernimmt Geometrien aus einer Postgres-Tabelle. Sie müssen die zu verwendende Tabelle angeben ::
 
@@ -159,7 +159,7 @@ QGIS Layer, mehr dazu in ^qgis.
 tile
 ~~~~
 
-^REF gws.ext.layer.tile.Config
+%reference_de 'gws.ext.layer.tile.Config'
 
 Rasterlayer, zeigt Kachel aus einer XYZ-Kachelquelle (wie z.B. OSM). Sie müssen die URL mit Platzhaltern ``{x}``, ``{y}`` und ``{z}`` angeben ::
 
@@ -172,7 +172,7 @@ Rasterlayer, zeigt Kachel aus einer XYZ-Kachelquelle (wie z.B. OSM). Sie müssen
 wfs
 ~~~
 
-^REF gws.ext.layer.wfs.Config
+%reference_de 'gws.ext.layer.wfs.Config'
 
 Vektorlayer, zeigt Features aus einen WFS Dienst ::
 
@@ -188,7 +188,7 @@ Vektorlayer, zeigt Features aus einen WFS Dienst ::
 wms
 ~~~
 
-^REF gws.ext.layer.wms.Config
+%reference_de 'gws.ext.layer.wms.Config'
 
 Rasterlayer, zeigt Rasterdaten aus einem WMS Dienst. Falls der Dienst mehrere Layer enthält, werden diese als eine Baumstruktur dargestellt ::
 
@@ -201,7 +201,7 @@ Rasterlayer, zeigt Rasterdaten aus einem WMS Dienst. Falls der Dienst mehrere La
 wmsflat
 ~~~~~~~
 
-^REF gws.ext.layer.wmsflat.Config
+%reference_de 'gws.ext.layer.wmsflat.Config'
 
 Rasterlayer, zeigt Rasterdaten aus einem WMS Dienst. Die WMS-Layer werden kombiniert, ggf. umprojiziert,  und als einzelnes Bild angezeigt ::
 
@@ -217,7 +217,7 @@ Rasterlayer, zeigt Rasterdaten aus einem WMS Dienst. Die WMS-Layer werden kombin
 wmts
 ~~~~
 
-^REF gws.ext.layer.wmts.Config
+%reference_de 'gws.ext.layer.wmts.Config'
 
 Rasterlayer, zeigt Rasterdaten aus einem WMTS Dienst ::
 

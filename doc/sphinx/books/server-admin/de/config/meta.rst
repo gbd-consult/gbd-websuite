@@ -1,7 +1,7 @@
 Metadaten
 =========
 
-^REF gws.lib.metadata.Config
+%reference_de 'gws.lib.metadata.Config'
 
 GBD WebSuite Metadata konfiguration ist umfangreich und beinhaltet folgende Themen:
 

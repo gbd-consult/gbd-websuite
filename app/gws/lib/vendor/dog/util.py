@@ -232,3 +232,12 @@ def time_end():
         t2 = time.time()
         t1, label = _TIME_STACK.pop()
         log.debug(f'{label} in {t2 - t1:.2f}s')
+
+
+def base36(n):
+    abc = '0123456789abcdefghijklmnopqrstuvwxyz'
+    enc = ''
+    while n:
+        n, i = divmod(n, 36)
+        enc = abc[i] + enc
+    return enc

@@ -172,7 +172,7 @@ main table th {
     font-weight: 600;
     text-align: left;
     background: #f8f8f8;
-    font-variant-caps: small-caps;
+    font-variant-caps: all-small-caps;
 }
 
 figure {
@@ -219,7 +219,6 @@ nav {
     text-align: center;
 }
 
-
 #sidebar-title {
     font-size: 16px;
     padding: 10px 0;
@@ -229,18 +228,69 @@ nav {
     font-size: 14px;
 }
 
-#sidebar-toc {
+#sidebar-content {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-#sidebar-footer {
-    background: black;
-    color: #736d6d;
-    padding: 10px;
-    font-size: 10px;
+#sidebar-search {
+    padding: 20px;
+    background: #0f638d;
 }
+
+#sidebar-search-box {
+    background-color: #cce2ec;
+    background-image: url('theme_search.svg');
+    background-position: 8px center;
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+    border-radius: 20px;
+    display: flex;
+}
+
+#sidebar-search input {
+    border: 0;
+    flex: 1;
+    background: none;
+    padding: 10px 10px 10px 35px;
+}
+
+#sidebar-search button {
+    border: 0;
+    background: none;
+    width: 40px;
+    color: #78909c;
+    font-size: 21px;
+}
+
+#sidebar-search-results {
+    display: none;
+    background: #0f638d;
+    padding: 0 0 20px 0;
+}
+
+#sidebar-search-results ul {
+    font-size: 13px;
+    padding: 0 20px;
+}
+
+#sidebar-search-results li {
+    font-size: 13px;
+    padding: 5px 0;
+}
+
+#sidebar-search-results a {
+    color: #eceff1;
+    text-decoration: none;
+    display: inline-block;
+    padding: 0;
+}
+
+#sidebar-search-results a:hover {
+    text-decoration: underline;
+}
+
 
 #sidebar-toc {
     padding: 8px 0;
@@ -266,7 +316,6 @@ nav {
     color: white;
 }
 
-
 #sidebar-toc ul li a {
     padding-left: 20px;
 }
@@ -291,6 +340,7 @@ nav {
 #sidebar-toc ul ul li {
     background: #37474f;
 }
+
 #sidebar-toc ul ul ul li {
     background: #455a64;
 }
@@ -302,6 +352,7 @@ nav {
 #sidebar-toc ul ul ul ul ul li {
     background: #607d8b;
 }
+
 #sidebar-toc ul ul ul ul ul li {
     background: #78909c;
 }
@@ -324,6 +375,22 @@ nav {
     transition: all 0.5s ease;
 }
 
+body.withSearch #sidebar-search-results {
+    display: block;
+}
+
+body.withSearch #sidebar-toc {
+    display: none;
+}
+
+#sidebar-footer {
+    background: black;
+    color: #736d6d;
+    padding: 10px;
+    font-size: 10px;
+}
+
+
 .reference {
     border-bottom: 1px solid #bbdefb;
     padding: 5px 0;
@@ -334,7 +401,7 @@ nav {
 
 .admonition_info {
     background-color: #e7fdea;
-    background-image: url('theme_info.svg') ;
+    background-image: url('theme_info.svg');
     background-position: 20px center;
     background-size: 30px 30px;
     background-repeat: no-repeat;
@@ -347,7 +414,7 @@ nav {
 
 .admonition_warn {
     background-color: #ffebee;
-    background-image: url('theme_warning.svg') ;
+    background-image: url('theme_warning.svg');
     background-position: 20px center;
     background-size: 30px 30px;
     background-repeat: no-repeat;
@@ -362,15 +429,19 @@ nav {
     body {
         background: white;
     }
+
     nav {
         display: none
     }
+
     aside {
         display: none
     }
+
     main {
         padding: 20px 60px 20px 60px;
     }
+
     h1, h2, h3 {
         page-break-before: always;
     }
@@ -405,7 +476,7 @@ code.configref_category {
     display: inline-block;
     padding: 0 6px;
     margin: 0 3px;
-    vertical-align: middle;
+    vertical-align: text-top;
 }
 
 code.configref_propname {
@@ -419,13 +490,18 @@ code.configref_propname {
 }
 
 code.configref_required {
-    background: none;
-    border: none;
+    background: #fff8e1;
+    border: 1px solid #ffd54f;
     border-radius: 4px;
     display: inline-block;
-    color: #fa3749;
     padding: 0 6px;
     margin: 0 3px;
+    vertical-align: middle;
+}
+
+code.configref_required::after {
+    content: ' *';
+    color: #fa3749;
     font-weight: 600;
 }
 

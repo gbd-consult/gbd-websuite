@@ -96,7 +96,9 @@ YAML (https://yaml.org) ist eine Alternative zu JSON, die einfacher zu schreiben
 
 SLON (https://github.com/gebrkn/slon) ist  eine Alternative zu JSON, die die Strukturen in einer weiter vereinfachten Form darstellt. Bei diesem Format können Sie auch alle Befehle der Templating-Sprache verwenden (wie z.B. `@include` oder `@if`). Konfigdateien im SLON Format müssen eine Erweiterung `.cx` haben.
 
-^SEE Mehr über Templating-Sprache lesen Sie unter ^template.
+%info
+ Mehr über Templating-Sprache lesen Sie unter ^template.
+%end
 
 #### python
 
@@ -126,7 +128,9 @@ Diese Optionen können miteinander auch frei kombiniert werden.
 
 GWS Server enthält ein *Monitor* Modul, der das Dateisystem überwacht, die Änderungen in Ihren Projekten und Konfigurationen überprüft und ggf. einen Hot-Reload des Servers durchführt. Sie können Intervalle für diese Prüfungen konfigurieren, es wird empfohlen, das Monitorintervall auf mindestens 30 Sekunden einzustellen, da Dateisystemprüfungen ressourcenintensiv sind.
 
-^SEE Sie können Monitoring unter ^server konfigurieren.
+%info
+ Sie können Monitoring unter ^server konfigurieren.
+%end
 
 ## Konfiguration A-Z :config
 

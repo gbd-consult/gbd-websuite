@@ -17,7 +17,9 @@ Die Anbieter werden für das ganze Projekt oder für individuelle Layers konfigu
 
 Mit der Aktion ``search`` schalten Sie die Suchfunktionalität frei. Mit dem Parameter ``limit`` können Sie steuern, wie viele Suchergebnisse der Server zurückgibt (unter allen Anbietern).
 
-^NOTE In der Zukunft können Sie auch ein ``limit`` pro Anbieter steuern.
+%info
+ In der Zukunft können Sie auch ein ``limit`` pro Anbieter steuern.
+%end
 
 Allgemeine Optionen
 -------------------
@@ -39,14 +41,14 @@ Suchanbieter
 nominatim
 ~~~~~~~~~
 
-^REF gws.ext.search.provider.nominatim.Config
+%reference_de 'gws.ext.search.provider.nominatim.Config'
 
 Schnittstelle zu `Nominatim <https://nominatim.openstreetmap.org//>`_, der OSM-Suchmaschine. Sie können die Parameter ``country`` und ``language`` konfigurieren, um die Suchergebnisse anzupassen.
 
 postgres
 ~~~~~~~~
 
-^REF gws.ext.search.provider.postgres.Config
+%reference_de 'gws.ext.search.provider.postgres.Config'
 
 Bietet direkte Suche in Postgres/PostGIS Tabellen. Sie müssen und die zu durchsuchende Tabelle (``table``) angeben (s. ^db). Zusätzlich können Sie die Spalte in der nach dem Stichwort gesucht werden soll (``searchColumn``) konfigurieren.
 
@@ -59,19 +61,21 @@ Wenn der Server eine Abfrage mit *keyword* und *shape* bearbeitet, wird ungefäh
 
 Anders gesagt, wird Stichword case-insensitiv mit beliebiger Platzierung und Geometrie mit der Überschneidung gesucht. Wenn ``searchColumn`` bzw ``geometryColumn`` fehlen, wird in dieser Abfrage nur eine Bedingung stehen.
 
-^NOTE In der Zukunft wird es möglich sein, diese Abfrage flexibel zu konfigurieren.
+%info
+ In der Zukunft wird es möglich sein, diese Abfrage flexibel zu konfigurieren.
+%end
 
 wfs
 ~~~
 
-^REF gws.ext.search.provider.wfs.Config
+%reference_de 'gws.ext.search.provider.wfs.Config'
 
 Implementiert ``GetFeature``-Anfragen für WFS-Quellen. Sie müssen die Service-URL bereitstellen. Es ist auch möglich, die Suche auf bestimmte Layer (oder "Typen") zu beschränken.
 
 wms
 ~~~
 
-^REF gws.ext.search.provider.wms.Config
+%reference_de 'gws.ext.search.provider.wms.Config'
 
 Implementiert ``GetFeatureInfo`` Anfragen für WMS-Quellen. Wie bei WFS, muss die Service-URL und optional die Suchlayers konfiguriert werden.
 

@@ -67,6 +67,7 @@ class Builder:
     docPaths: set[str]
     assetPaths: set[str]
     sectionMap: dict[str, Section]
+    sectionNotFound: set[str]
     walkColors: dict[str, int]
     assetMap: dict[str, str]
 
@@ -87,6 +88,7 @@ class Builder:
         self.docPaths = set()
         self.assetPaths = set()
         self.sectionMap = {}
+        self.sectionNotFound = set()
         self.assetMap = {}
         self.walkColors = {}
 
@@ -96,6 +98,8 @@ class Builder:
     def build_html(self, write=False):
         self.collect_and_parse()
         self.generate_html(write=write)
+        if write:
+            self.generate_search_index()
 
     def build_pdf(self):
         pdf_dir = '/tmp/dogpdf'
@@ -125,11 +129,7 @@ class Builder:
             return d
 
         self.collect_and_parse()
-
-        return json.dumps(
-            {'sec': list(self.sectionMap.values())},
-            indent=4,
-            default=dflt)
+        return json.dumps(list(self.sectionMap.values()), indent=4, sort_keys=True, ensure_ascii=False, default=dflt)
 
     ##
 
@@ -156,8 +156,11 @@ class Builder:
     ##
 
     def get_section(self, sid) -> Optional[Section]:
+        if sid in self.sectionNotFound:
+            return
         if sid not in self.sectionMap:
             util.log.error(f'section not found: {sid!r}')
+            self.sectionNotFound.add(sid)
             return
         return self.sectionMap.get(sid)
 
@@ -228,6 +231,56 @@ class Builder:
         cmd.append(target)
 
         util.run(cmd, pipe=True)
+
+    ##
+
+    def generate_search_index(self):
+        words = {}
+
+        for sec in self.sectionMap.values():
+            words[sec.sid] = []
+            for node in sec.nodes:
+                if isinstance(node, MarkdownNode):
+                    self.extract_text(node.el, words[sec.sid])
+
+        for sid in words:
+            ws = ' '.join(words[sid])
+            ws = ws.replace("'", '')
+            ws = re.sub(r'\W+', ' ', ws).lower().strip().split()
+            words[sid] = ws
+
+        all_words = sorted(set(w for ws in words.values() for w in ws))
+        word_index = {w: n for n, w in enumerate(all_words, 1)}
+
+        sections = []
+        for sid, ws in words.items():
+            sec = self.sectionMap[sid]
+            head = sec.headHtml
+            if sec.parentSid:
+                parent = self.sectionMap[sec.parentSid]
+                head += ' (' + parent.headHtml + ')'
+            sections.append({
+                'h': head,
+                'u': sec.htmlUrl,
+                'w': '.' + '.'.join(util.base36(word_index[w]) for w in ws) + '.'
+            })
+
+        script = {
+            'words': '.' + '.'.join(all_words),
+            'sections': sorted(sections, key=lambda s: s['h']),
+        }
+
+        dst = os.path.join(self.options.outputDir, self.options.staticDir, 'search_index.js')
+        util.write_file(dst, 'SEARCH_INDEX = ' + json.dumps(script, ensure_ascii=False, indent=4) + '\n')
+
+    def extract_text(self, el: markdown.Element, out: list):
+        if el.text:
+            out.append(el.text)
+            return
+        if el.children:
+            for c in el.children:
+                self.extract_text(c, out)
+            out.append('.')
 
     ##
 
@@ -509,7 +562,7 @@ class HTMLGenerator:
     def render_section_heads(self):
         for sec in self.b.sectionMap.values():
             mr = MarkdownRenderer(self.b, sec)
-            sec.headHtml = mr.render_content(sec.headNode.el)
+            sec.headHtml = mr.render_children(sec.headNode.el)
             sec.headHtmlLink = f'<a href="{sec.htmlUrl}">{sec.headHtml}</a>'
 
     def render_sections(self):
@@ -621,7 +674,7 @@ class MarkdownRenderer(markdown.Renderer):
         self.sec = sec
 
     def link_render(self, el: markdown.Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         link = el.link
         if link.startswith(('http:', 'https:')):
             return self.render_a(link, el.title, c, el)
@@ -656,7 +709,7 @@ class MarkdownRenderer(markdown.Renderer):
         sec = self.b.section_from_element(el)
         if not sec:
             return
-        c = self.render_content(el)
+        c = self.render_children(el)
         tag = 'h' + str(sec.headLevel)
         a = {'data-url': sec.htmlUrl}
         if self.b.options.debug:

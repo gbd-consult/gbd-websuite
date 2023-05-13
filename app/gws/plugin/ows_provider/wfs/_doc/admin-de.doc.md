@@ -1,6 +1,6 @@
 # wfs :/admin-de/config/layer/type/
 
-^REF gws.ext.layer.wfs.Config
+%reference_de 'gws.ext.layer.wfs.Config'
 
 Vektorlayer, zeigt Features aus einen WFS Dienst
 

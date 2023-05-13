@@ -1,37 +1,24 @@
 # Referenz :/admin-de/reference
 
-<div>
+**Legende**
 
-<h5>Legend</h5>
-<table>
+| Schriftart                             | Bezeichnung               |
+|----------------------------------------|---------------------------|
+| `str`{.configref_typename}             | Typ                       |
+| **[** `str`{.configref_typename} **]** | eine List vom Typ         |
+| `access`{.configref_propname}          | Eigenschaft               |
+| `access`{.configref_required}          | erforderliche Eigenschaft |
+| `hello`{.configref_literal}            | literaler Wert            |
 
-<tr>
-<td><code class="configref_typename">str</code></td>
-<td>type name</td>
-</tr>
 
-<tr>
-<td><b>[</b> <code class="configref_typename">type</code> <b>]</b></td>
-<td>list of elements of specific type</td>
-</tr>
+**Konfiguration**
 
-<tr>
-<td><code class="configref_propname">access</code></td>
-<td>property name</td>
-</tr>
+Das primäre Konfigurationsobjekt ist [](gws.base.application.Config).
 
-<tr>
-<td><code class="configref_propname">access</code><code class="configref_required">*</code></td>
-<td>mandatory property</td>
-</tr>
+**Konfigurationsobjekte**
 
-<tr>
-<td><code class="configref_literal">hello</code></td>
-<td>literal value</td>
-</tr>
-
-</table>
-</div>
-
+%toc
+/admin-de/reference/*
+%end
 
 %include ../../../app/__build/configref.de.html

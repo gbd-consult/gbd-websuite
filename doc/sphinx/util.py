@@ -104,15 +104,23 @@ def format_special(txt, book, lang):
 
     txt = re.sub(r'(?<!")\^(\.*[a-z_/]+)', r':doc:`\1`', txt)
 
-    # ^SEE => ..seealso:
+    # %info
+ => ..seealso:
+%end
 
-    txt = re.sub(r'\^SEE', r'.. seealso::', txt)
+    txt = re.sub(r'\%info
+', r'.. seealso::', txt)
+%end
 
-    # ^NOTE => ..note:
+    # %info
+ => ..note:
+%end
 
-    txt = re.sub(r'\^NOTE', r'.. note::', txt)
+    txt = re.sub(r'\%info
+', r'.. note::', txt)
+%end
 
-    # ^REF class => config reference link
+    # %reference_de 'class' => config reference link
 
     txt = re.sub(r'\^REF(.+)', _ref, txt)
 

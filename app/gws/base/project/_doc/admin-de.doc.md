@@ -1,6 +1,6 @@
 # Projekte :/admin-de/config/project
 
-^REF gws.base.project.Config
+%reference_de 'gws.base.project.Config'
 
 Ein *Projekt* (`project`) in der GBD WebSuite besteht aus einer Karte (`map`), optionale Druck-Konfiguration (`print`) und zusätzlichen Optionen. In Abschnitten `api` und `client` können Sie die im App-Konfig definierte Aktionen und Client-Optionen überschreiben bzw. erweitern. Mittels `access` können Sie die Zugriffsrechte zu Projekten steuern.
 

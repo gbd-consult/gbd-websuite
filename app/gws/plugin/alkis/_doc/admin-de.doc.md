@@ -11,7 +11,7 @@ Um die ALKIS Integration zu nutzen benötigen Sie folgendes:
 
 ## Helper `alkis`
 
-^REF gws.ext.helper.alkis.Config
+%reference_de 'gws.ext.helper.alkis.Config'
 
 In diesem Helper (s. ^helper) werden allgemeine ALKIS Einstellungen konfiguriert:
 
@@ -38,7 +38,7 @@ Die Index Tabellen werden in das unter `indexSchema` angegebene Schema geschrieb
 
 ## Aktion `alkissearch`
 
-^REF gws.plugins.alkis.alkissearch.Config
+%reference_de 'gws.plugins.alkis.alkissearch.Config'
 
 Die Optionen für diese Aktion sind:
 
@@ -121,6 +121,6 @@ Der Datenbank-Nutzer muss `INSERT` Recht auf diese Tabelle haben, aber nicht unb
 
 ## Aktion `alkisgeocoder`
 
-^REF gws.plugins.alkis.alkisgeocoder.Config
+%reference_de 'gws.plugins.alkis.alkisgeocoder.Config'
 
 Für diese Aktion sind keine spezielle Optionen vorhanden. Da diese Aktion über unser QGIS-Plugin aufgerufen wird und über keine UI verfügt, müssen Sie die Autorisierungsmethode `basic` im System freischalten wenn Sie diese Aktion mit einem Passwort schützen möchten. Siehe dazu ^auth.

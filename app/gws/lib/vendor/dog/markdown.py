@@ -27,6 +27,7 @@ class Element(util.Data):
     src: str
     start: str
     text: str
+    html: str
     title: str
 
     classname: str  # inline_decoration_plugin
@@ -67,7 +68,7 @@ def inline_decoration_plugin(md):
 
 def link_attributes_plugin(md):
     name = 'link_attributes'
-    pattern = r'(?<=\)){.+?}'
+    pattern = r'(?<=[)`]){.+?}'
 
     def parser(inline, m, state):
         text = m.group(0)
@@ -126,7 +127,7 @@ class AstRenderer:
         res = []
         for el in elements:
             if el.type == 'link_attributes':
-                if res and res[-1].type in {'image', 'link'}:
+                if res and res[-1].type in {'image', 'link', 'codespan'}:
                     res[-1].attributes = el.attributes
                     continue
                 else:
@@ -139,7 +140,7 @@ class AstRenderer:
 
 class Renderer:
 
-    def render_content(self, el: Element):
+    def render_children(self, el: Element):
         if el.children:
             return ''.join(self.render_element(c) for c in el.children)
         return ''
@@ -158,8 +159,8 @@ class Renderer:
 
     ##
 
-    def block_code_parse(self, children, info=None):
-        return Element(type='block_code', text=children, info=info)
+    def block_code_parse(self, text, info=None):
+        return Element(type='block_code', text=text, info=info)
 
     def block_code_render(self, el: Element):
         if el.info:
@@ -177,46 +178,47 @@ class Renderer:
         return Element(type='block_error', children=children)
 
     def block_error_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<div class="error">{c}</div>\n'
 
-    def block_html_parse(self, text):
-        return Element(type='block_html', text=text)
+    def block_html_parse(self, html):
+        return Element(type='block_html', html=html)
 
     def block_html_render(self, el: Element):
-        return el.text
+        return el.html
 
     def block_quote_parse(self, children=None):
         return Element(type='block_quote', children=children)
 
     def block_quote_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<blockquote>\n{c}</blockquote>\n'
 
     def block_text_parse(self, children=None):
         return Element(type='block_text', children=children)
 
     def block_text_render(self, el: Element):
-        return self.render_content(el)
+        return self.render_children(el)
 
     def codespan_parse(self, text):
         return Element(type='codespan', text=text)
 
     def codespan_render(self, el: Element):
-        return '<code>' + escape(el.text) + '</code>'
+        c = escape(el.text)
+        return f'<code{attributes(el.attributes)}>{c}</code>'
 
-    def emphasis_parse(self, text):
-        return Element(type='emphasis', text=text)
+    def emphasis_parse(self, children):
+        return Element(type='emphasis', children=children)
 
     def emphasis_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<em>{c}</em>'
 
     def heading_parse(self, children, level):
         return Element(type='heading', children=children, level=level)
 
     def heading_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         tag = 'h' + str(el.level)
         s = ''
         if el.id:
@@ -253,19 +255,20 @@ class Renderer:
         return Element(type='inline_decoration', classname=classname, text=text)
 
     def inline_decoration_render(self, el: Element):
-        return f'<span class="decoration_{el.classname}">{escape(el.text)}</span>'
+        c = escape(el.text)
+        return f'<span class="decoration_{el.classname}">{c}</span>'
 
-    def inline_html_parse(self, text):
-        return Element(type='inline_html', text=text)
+    def inline_html_parse(self, html):
+        return Element(type='inline_html', html=html)
 
     def inline_html_render(self, el: Element):
-        return el.text
+        return el.html
 
     def linebreak_parse(self):
         return Element(type='linebreak')
 
     def linebreak_render(self, el: Element):
-        return '<br />\n'
+        return '<br/>\n'
 
     def link_parse(self, link, children=None, title=None):
         if isinstance(children, str):
@@ -273,7 +276,7 @@ class Renderer:
         return Element(type='link', link=link, children=children, title=title)
 
     def link_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return self.render_a(el.link, el.title, c, el)
 
     def link_attributes_parse(self, text, attributes):
@@ -283,19 +286,19 @@ class Renderer:
         return Element(type='list_item', children=children, level=level)
 
     def list_item_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<li>{c}</li>\n'
 
     def list_parse(self, children, ordered, level, start=None):
         return Element(type='list', children=children, ordered=ordered, level=level, start=start)
 
     def list_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         tag = 'ol' if el.ordered else 'ul'
         a = {}
         if el.start:
             a['start'] = el.start
-        return f'<{tag}{attributes(a)}>\n{c}</{tag}>\n'
+        return f'<{tag}{attributes(a)}>\n{c}\n</{tag}>\n'
 
     def newline_parse(self):
         return Element(type='newline')
@@ -307,53 +310,53 @@ class Renderer:
         return Element(type='paragraph', children=children)
 
     def paragraph_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<p>{c}</p>\n'
 
-    def strong_parse(self, text):
-        return Element(type='strong', text=text)
+    def strong_parse(self, children=None):
+        return Element(type='strong', children=children)
 
     def strong_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<strong>{c}</strong>'
 
     def table_body_parse(self, children=None):
         return Element(type='table_body', children=children)
 
     def table_body_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<tbody>\n{c}</tbody>\n'
 
     def table_cell_parse(self, children, align=None, is_head=False):
         return Element(type='table_cell', children=children, align=align, is_head=is_head)
 
     def table_cell_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         tag = 'th' if el.is_head else 'td'
-        s = ''
+        a = {}
         if el.align:
-            s = f' style="text-align:{el.align}"'
-        return f'<{tag}{s}>{c}</{tag}>'
+            a['style'] = f'text-align:{el.align}'
+        return f'<{tag}{attributes(a)}>{c}</{tag}>'
 
     def table_head_parse(self, children=None):
         return Element(type='table_head', children=children)
 
     def table_head_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<thead>\n<tr>{c}</tr>\n</thead>\n'
 
     def table_parse(self, children=None):
         return Element(type='table', children=children)
 
     def table_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<table>{c}</table>\n'
 
     def table_row_parse(self, children=None):
         return Element(type='table_row', children=children)
 
     def table_row_render(self, el: Element):
-        c = self.render_content(el)
+        c = self.render_children(el)
         return f'<tr>{c}</tr>\n'
 
     def text_parse(self, text):

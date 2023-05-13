@@ -6,7 +6,7 @@ Die GBD WebSuite kann als OWS (OGC Web Services) Server fungieren. Sie können d
 Aktion ``ows``
 --------------
 
-^REF gws.ext.action.ows.Config
+%reference_de 'gws.ext.action.ows.Config'
 
 Die Dienste werden freigeschaltet indem Sie die Aktion ``ows`` global oder in einem Projekt konfigurieren. Diese Aktion besitzt eine Liste von Diensten (``service``), wo Sie die konkrete Dienste konfigurieren.
 
@@ -20,14 +20,14 @@ Derzeit sind folgende Dienste implementiert:
 wms
 ~~~
 
-^REF gws.ext.ows.service.wms.Config
+%reference_de 'gws.ext.ows.service.wms.Config'
 
 Der WMS-Dienst ist vollständig gemäß der Eigenschaften der Version ``1.1.0``, ``1.1.1`` und ``1.3.0`` implementiert.
 
 wfs
 ~~~
 
-^REF gws.ext.ows.service.wfs.Config
+%reference_de 'gws.ext.ows.service.wfs.Config'
 
 Der WFS-Dienst ist gemäß der Eigenschaften der Version ``2.0`` implementiert. Derzeit unterstützen wir nur folgenden Funktionen:
 
@@ -35,26 +35,28 @@ Der WFS-Dienst ist gemäß der Eigenschaften der Version ``2.0`` implementiert. 
 - ``DescribeFeatureType``
 - ``GetFeature`` mit der ``Envelope`` Operation
 
-^NOTE In der Zukunft, planen wir das "Basic WFS" Profil sowie WFS 3.0 umzusetzen.
+%info
+ In der Zukunft, planen wir das "Basic WFS" Profil sowie WFS 3.0 umzusetzen.
+%end
 
 wcs
 ~~~
 
-^REF gws.ext.ows.service.wcs.Config
+%reference_de 'gws.ext.ows.service.wcs.Config'
 
 Es werden WCS Versionen ``1.0.0`` und ``2.0.1`` unterstützt.
 
 wmts
 ~~~~
 
-^REF gws.ext.ows.service.wmts.Config
+%reference_de 'gws.ext.ows.service.wmts.Config'
 
 Es wird WMTS Version ``1.0.0`` unterstützt.
 
 CSW Dienst
 ----------
 
-^REF gws.ext.ows.service.csw.Config
+%reference_de 'gws.ext.ows.service.csw.Config'
 
 Die GBD WebSuite enthält eine Basis-Implementation von einem CSW Dienst. Dieser Dienst kann nur in der App-Konfig konfiguriert werden. Derzeit sind folgende Operationen implementiert:
 
@@ -70,7 +72,7 @@ CSW Dienst ist für alle OWS und ISO Metadaten zuständig. Sobald Sie den Dienst
 Layer-Konfiguration
 -------------------
 
-^REF gws.base.layer.types.OwsConfig
+%reference_de 'gws.base.layer.types.OwsConfig'
 
 Zusätzlich zur der Aktion Konfiguration, können Sie bei jedem Layer definieren, ob dieser Layer überhaupt für OWS Dienste berücksichtigt wird (``enabled``), wenn ja, für welche (``enabledServices``) und welchen Namen der Layer selbst (``name``) und die Features, die sich auf diesem Layer befinden (``featureName``) haben.
 

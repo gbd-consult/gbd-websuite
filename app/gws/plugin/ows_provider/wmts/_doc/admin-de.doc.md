@@ -1,6 +1,6 @@
 # wmts :/admin-de/config/layer/type/
 
-^REF gws.ext.layer.wmts.Config
+%reference_de 'gws.ext.layer.wmts.Config'
 
 Rasterlayer, zeigt Rasterdaten aus einem WMTS Dienst
 

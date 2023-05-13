@@ -29,4 +29,6 @@ Beschreibung (`subject: feature.description`) eines "city" Feature, welches die 
     <p> <strong>Area:</strong> {area} </p>
     <p> <strong>Population:</strong> {population} </p>
 
-^NOTE Das erste Zeichen (ausgenommen Whitespace) der Ausgabe einer HTML-Vorlage muss `<` sein, ansonsten wird die Vorlage als `text` interpretiert.
+%info
+ Das erste Zeichen (ausgenommen Whitespace) der Ausgabe einer HTML-Vorlage muss `<` sein, ansonsten wird die Vorlage als `text` interpretiert.
+%end

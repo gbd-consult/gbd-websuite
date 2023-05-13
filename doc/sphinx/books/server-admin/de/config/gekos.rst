@@ -1,7 +1,7 @@
 GekoS Integration
 =================
 
-^REF gws.ext.action.gekos.Config
+%reference_de 'gws.ext.action.gekos.Config'
 
 Die GBD WebSuite kann mit dem System "GekoS Bau+" der Firma GekoS (https://www.gekos.de) integriert werden. Dafür muss eine Aktion vom Typ ``gekos`` im Abschnitt ``actions`` eingetragen werden.
 

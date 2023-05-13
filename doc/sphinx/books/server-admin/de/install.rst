@@ -35,7 +35,9 @@ Konfiguration
 
 Die GBD WebSuite erwartet die Konfiguration in ``/data/config.json``. Wenn Sie einen anderen Speicherort und/oder ein anderes Format bevorzugen, setzen Sie die Umgebungsvariable ``GWS_CONFIG`` auf den Pfad Ihrer Konfigurationsdatei.
 
-^SEE Die Konfigurationsformate sind unter ^config/intro beschrieben.
+%info
+ Die Konfigurationsformate sind unter ^config/intro beschrieben.
+%end
 
 Externe Adressen
 ~~~~~~~~~~~~~~~~

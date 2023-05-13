@@ -14,16 +14,18 @@ Für QGIS Layer können Sie unter `legend.options` einige visuelle Einstellungen
 Druckvorlagen
 -------------
 
-^REF gws.ext.template.qgis.Config
+%reference_de 'gws.ext.template.qgis.Config'
 
 Sie können QGIS Druckvorlagen ("Layouts") frei verwenden, auch für nicht-QGIS bzw. gemischte Karten. In der Vorlagen-Konfiguration muss den Pfad zu der QGIS Projektdatei angegeben werden, sowie Layout-Namen bzw Nummer. In dem Layout wird das `Map` Element mit der aktuellen GWS Karte ersetzt, zusätzlich können Sie in `HTML-Frame` Elements einige `gws:` Tags nutzen, wie z.B. `<gws:legend>` (s. ^print für mehr Info). Die vom Nutzer definierte Druck-Attribute können Sie mit dem QGIS Syntax `[% @variable %]` einfügen.
 
-^NOTE Beachten Sie, dass der Hintergrund der Vorlage (unter "Seiteneigenschaften") transparent sein muss.
+%info
+ Beachten Sie, dass der Hintergrund der Vorlage (unter "Seiteneigenschaften") transparent sein muss.
+%end
 
 Server Einstelligen
 -------------------
 
-^REF gws.server.types.QgisConfig
+%reference_de 'gws.server.types.QgisConfig'
 
 In der Serverkonfiguration (s. ^server) gibt es einige Optionen, die die Werte von QGIS-Umgebungsvariablen setzen. Die genaue Bedeutung entnehmen Sie bitte der QGIS-Dokumentation:
 
@@ -38,7 +40,7 @@ Die Option `searchPathsForSVG` zeigt an, wo der Server SVG-Bilder in QGIS-Karten
 
 # qgis :/admin-de/config/layer/type/
 
-^REF gws.ext.layer.qgis.Config
+%reference_de 'gws.ext.layer.qgis.Config'
 
 QGIS-Layer zeigen ganze QGIS-Projekte als einzelne Gruppe im GWS-Layerbaum an. Zusätzlich zu einem Layerfilter können Sie angeben, ob entfernte (z. B. WMS-) Layer direkt gerendert und / oder durchsucht werden sollen, oder den QGIS-Server verwenden:
 
@@ -53,7 +55,7 @@ Sie können auch die Struktur der Gruppe mit `flattenLayers` beinflüssen, indem
 
 # qgisflat :/admin-de/config/layer/type/
 
-^REF gws.ext.layer.qgisflat.Config
+%reference_de 'gws.ext.layer.qgisflat.Config'
 
 `qgisflat`-Layer zeigen einzelne Layer aus einem QGIS-Projekt als einzelnes flaches Bild an:
 

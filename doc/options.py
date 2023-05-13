@@ -33,6 +33,7 @@ OPTIONS = {
         f'{DOC_DIR}/theme/theme.js',
         f'{DOC_DIR}/theme/theme_home.svg',
         f'{DOC_DIR}/theme/theme_info.svg',
+        f'{DOC_DIR}/theme/theme_search.svg',
         f'{DOC_DIR}/theme/theme_warning.svg',
     ],
 

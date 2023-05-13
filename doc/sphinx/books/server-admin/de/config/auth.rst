@@ -6,7 +6,7 @@ Eine Rolle in der GBD WebSuit wird mit einer einfachen Zeichenkette bezeichnet. 
 Zugangsreglungen
 ----------------
 
-^REF gws.types.Access
+%reference_de 'gws.types.Access'
 
 In der Konfiguration können einige Typen von Objekten  verknüpft sein mit Zugangsblock (``access``) Konfigurationen, wie z.B.
 
@@ -96,7 +96,7 @@ und erlauben dann explizit den Zugriff auf bestimmte Objekte: ::
 Aktion ``auth``
 ---------------
 
-^REF gws.ext.action.auth.Config
+%reference_de 'gws.ext.action.auth.Config'
 
 Diese Aktion ist für die Bearbeitung der Zugangsdaten zuständig und muss freigeschaltet sein wenn Sie Logins verwenden. Wenn Sie die "deny all" Strategie folgen, achten Sie darauf, dass die ``auth`` Aktion für ``all`` zugänglich ist, andernfalls könnten sich Ihre Benutzer nicht einmal anmelden.
 
@@ -108,7 +108,7 @@ Die Aufgabe eines Autorisierungsanbieters ist, die Zugangsdaten mit der Quelle z
 file
 ~~~~
 
-^REF gws.ext.auth.provider.file.Config
+%reference_de 'gws.ext.auth.provider.file.Config'
 
 Der Dateianbieter verwendet eine einfache Json-Datei, um Zugangsdaten zu speichern. Der json ist nur ein Array von "user"-Objekten ::
 
@@ -133,7 +133,7 @@ Um das verschlüsselte Passwort zu generieren, verwenden Sie den Kommandozeilen-
 ldap
 ~~~~
 
-^REF gws.ext.auth.provider.ldap.Config
+%reference_de 'gws.ext.auth.provider.ldap.Config'
 
 Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuit Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys.com` bereitgestellten `LDAP-Testservers <http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server>`_ ::
 
@@ -177,7 +177,7 @@ Eine Autorisierungsmethode sorgt dafür, dass die Zugangsdaten vom Nutzer zu ein
 web
 ~~~
 
-^REF gws.ext.auth.method.web.Config
+%reference_de 'gws.ext.auth.method.web.Config'
 
 Sendet die Zugangsdaten als eine JSON-Struktur an den Server Endpunkt. Bei der positiven Prüfung setzt der Server ein Sitzungscookie, das bei weiteren Anfragen mitgesendet wird.
 
@@ -212,7 +212,7 @@ Siehe auch ^template für Details über die Vorlagen-Sprache.
 basic
 ~~~~~
 
-^REF gws.ext.auth.method.basic.Config
+%reference_de 'gws.ext.auth.method.basic.Config'
 
 Mit dieser Methode werden die Zugangsdaten in HTTP Header mitgesendet. Diese Methode in vor allem für automatische Anmeldungen durch QGIS Plugins und geschützten OWS Dienste gedacht.
 

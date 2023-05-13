@@ -16,7 +16,7 @@ Für Projekt-, Layer- und Feature-Vorlagen stellt das System Objekte ``project``
 Konfiguration
 -------------
 
-^REF gws.types.ext.template.Config
+%reference_de 'gws.types.ext.template.Config'
 
 Eine Vorlagen-Konfiguration enthält zwei grundlegende Eigenschaften: den Typ (``type``) und das Subjekt (``subject``), das angibt, für welchen Zweck die Vorlage verwendet wird.
 
@@ -32,7 +32,9 @@ Neben den Variablen, können in Vorlagen auch Basis Programmierkonstrukte verwen
 - Funktion (Snippet) Definitionen ``@def``
 - Inklusion ``@include`` mit der die Vorlagen ineinander inkludiert werden können
 
-^SEE Eine vollständige Beschreibung aller verfügbaren Konstrukte finden Sie in der Dokumentation zur Template-Engine unter https://github.com/gebrkn/chartreux.
+%info
+ Eine vollständige Beschreibung aller verfügbaren Konstrukte finden Sie in der Dokumentation zur Template-Engine unter https://github.com/gebrkn/chartreux.
+%end
 
 Vorlage Typen
 -------------
@@ -74,7 +76,9 @@ Beschreibung (``subject: feature.description``) eines "city" Feature, welches di
     <p> <strong>Area:</strong> {area} </p>
     <p> <strong>Population:</strong> {population} </p>
 
-^NOTE Das erste Zeichen (ausgenommen Whitespace) der Ausgabe einer HTML-Vorlage muss ``<`` sein, ansonsten wird die Vorlage als ``text`` interpretiert.
+%info
+ Das erste Zeichen (ausgenommen Whitespace) der Ausgabe einer HTML-Vorlage muss ``<`` sein, ansonsten wird die Vorlage als ``text`` interpretiert.
+%end
 
 xml
 ~~~

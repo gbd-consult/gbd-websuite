@@ -6,6 +6,7 @@
     <title><% options.title %> - <% options.subTitle %></title>
     <link rel="stylesheet" href="<% options.webRoot %>/_static/theme.css" type="text/css" />
     <script src="<% options.webRoot %>/_static/theme.js"></script>
+    <script src="<% options.webRoot %>/_static/search_index.js"></script>
 </head>
 
 <body>
@@ -19,11 +20,21 @@
                     <% subTitle %>
                 </div>
             </div>
-            <div id="sidebar-toc">
-                <ul>
-                    <% mainToc %>
-                    <li><a href="<% options.apidocWebRoot %>/index.html">API documentation</a></li>
-                </ul>
+            <div id="sidebar-search">
+                <div id="sidebar-search-box">
+                    <input>
+                    <button>&times;</button>
+                </div>
+            </div>
+            <div id="sidebar-content">
+                <div id="sidebar-search-results">
+                </div>
+                <div id="sidebar-toc">
+                    <ul>
+                        <% mainToc %>
+                        <li><a href="<% options.apidocWebRoot %>/index.html">API documentation</a></li>
+                    </ul>
+                </div>
             </div>
             <div id="sidebar-footer">
                 &copy; Geoinformatikbüro Dassau GmbH 2006–2023

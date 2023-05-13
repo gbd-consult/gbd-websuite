@@ -91,7 +91,7 @@ Für mehr Info s. ^web.
 
 ## UI-Konfiguration
 
-^REF gws.base.client.Config
+%reference_de 'gws.base.client.Config'
 
 Jedes GBD WebSuite Projekt, wie auch die Hauptanwendung, kann ein `client` Objekt enthalten, das verschiedene Optionen
 für den Client und dessen UI-Layout beschreibt, so dass Sie bestimmte UI-Elemente pro Projekt ein- und ausschalten
@@ -163,7 +163,7 @@ Es werden folgende Element-Tags unterstützt:
 
 ## Layer flags
 
-^REF gws.base.layer.types.ClientOptions
+%reference_de 'gws.base.layer.types.ClientOptions'
 
 Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll.
 
@@ -189,5 +189,7 @@ Sie können den Stil der integrierten Funktionen anpassen, z. B. Markierungen vo
 | `.gws.modAnnotateBox`     | Box-Markierung                |
 | `.gws.modAnnotateCircle`  | Kreis-Markierung              |
 
-^SEE Unter ^style finden Sie eine Auflistung von CSS Eingenschaften.
+%info
+ Unter ^style finden Sie eine Auflistung von CSS Eingenschaften.
+%end
 

@@ -1,6 +1,6 @@
 # wms :/admin-de/config/layer/type/
 
-^REF gws.ext.layer.wms.Config
+%reference_de 'gws.ext.layer.wms.Config'
 
 Rasterlayer, zeigt Rasterdaten aus einem WMS Dienst. Falls der Dienst mehrere Layer enthält, werden diese als eine Baumstruktur dargestellt
 
@@ -12,7 +12,7 @@ Rasterlayer, zeigt Rasterdaten aus einem WMS Dienst. Falls der Dienst mehrere La
 
 # wmsflat :/admin-de/config/layer/type/
 
-^REF gws.ext.layer.wmsflat.Config
+%reference_de 'gws.ext.layer.wmsflat.Config'
 
 Rasterlayer, zeigt Rasterdaten aus einem WMS Dienst. Die WMS-Layer werden kombiniert, ggf. umprojiziert,  und als einzelnes Bild angezeigt
 

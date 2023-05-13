@@ -1,7 +1,7 @@
 D-ProCon Integration
 ====================
 
-^REF gws.ext.action.dprocon.Config
+%reference_de 'gws.ext.action.dprocon.Config'
 
 Die GBD WebSuite kann mit dem System "D-ProCon" der Firma Sisterhenn (https://www.sisterhenn-it.de) integriert werden. Dafür muss eine Aktion vom Typ ``dprocon`` im Abschnitt ``actions`` eingetragen werden. Es gibt folgende Konfigurationsoptionen:
 

@@ -1,6 +1,6 @@
 # tile :/admin-de/config/layer/type/
 
-^REF gws.ext.layer.tile.Config
+%reference_de 'gws.ext.layer.tile.Config'
 
 Rasterlayer, zeigt Kachel aus einer XYZ-Kachelquelle (wie z.B. OSM). Sie müssen die URL mit Platzhaltern `{x}`, `{y}` und `{z}` angeben
 

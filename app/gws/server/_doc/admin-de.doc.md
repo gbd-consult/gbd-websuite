@@ -1,6 +1,6 @@
 # Server :/admin-de/config/server
 
-^REF gws.server.types.Config
+%reference_de 'gws.server.types.Config'
 
 Loggen
 ------

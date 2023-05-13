@@ -16,7 +16,7 @@ Die Ablage wird in *Kategorien* (``category``) unterteilt wobei jede Kategorie e
 Helper ``storage``
 ------------------
 
-^REF gws.ext.helper.storage.Config
+%reference_de 'gws.ext.helper.storage.Config'
 
 In der Konfiguration des Helpers geben Sie an, welche User-Rollen den Zugriff zu bestimmten Ablagen-Kategorien  haben. Zu jeder Kategorie kann eine Liste von Regeln zugeordnet werden, die angeben welche Rollen die Einträge in dieser Kategorie erzeugen (``write``) oder lesen (``read``) kann, oder beides (``all``). Außerdem können Sie ein Sternchen (``*``) eingeben, das für alle Kategorien steht. Im folgenden Beispiel haben die Rollen ``nutzer`` und ``expert`` Lesezugriff auf alle Kategorien, und die Rolle ``expert`` Schreibzugriff auf ``Dimension``: ::
 

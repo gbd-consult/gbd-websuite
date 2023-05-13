@@ -1,7 +1,7 @@
 Web Server
 ==========
 
-^REF gws.base.application.WebConfig
+%reference_de 'gws.base.application.WebConfig'
 
 Web-Inhalte (HTML-Dateien, Bilder, Downloads) werden in der GBD WebSuite von dem integrierten NGINX, einem schnellen und zuverlässigen Web-Server, verarbeitet.
 

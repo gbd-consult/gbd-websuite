@@ -1,10 +1,12 @@
 # Karten :/admin-de/config/map
 
-^REF gws.base.map.Config
+%reference_de 'gws.base.map.Config'
 
 Eine Karte ist im Grunde eine Sammlung von *Layern* (`layers`). Die Option `crs` muss ein gültiger EPSG KBS-Referenzstring sein. Alle Layer im Projekt werden in diesem KBS angezeigt, wobei die Quellen mit unterschiedlichen Projektionen dynamisch umprojiziert werden.
 
-^NOTE In der Zukunft wird es möglich sein, mehrere KBS pro Projekt zu nutzen.
+%info
+ In der Zukunft wird es möglich sein, mehrere KBS pro Projekt zu nutzen.
+%end
 
 Die Darstellung der Karte wird von der Aktion `map` behandelt.
 

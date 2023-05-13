@@ -1,7 +1,7 @@
 Server Konfiguration
 ====================
 
-^REF gws.server.types.Config
+%reference_de 'gws.server.types.Config'
 
 Loggen
 ------

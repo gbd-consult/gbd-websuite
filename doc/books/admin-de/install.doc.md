@@ -67,7 +67,9 @@ Die GBD WebSuite antwortet auf HTTP und HTTPS Anfragen auf den Standardports 80 
 Der Einstiegspunkt für die Konfiguration ist per Default `/data/config.json`. Alle weiteres Konfigurationsdateien werden von dieser Datei eingebunden.
 Um eine andere Datei als Einstiegspunkt zu verwenden setzen Sie die Umgebungsvariable `GWS_CONFIG`.
 
-^SEE Die Konfigurationsformate sind unter ^config/intro beschrieben.
+%info
+ Die Konfigurationsformate sind unter ^config/intro beschrieben.
+%end
 
 ### Externe Adressen
 

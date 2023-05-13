@@ -1,6 +1,5 @@
 """Generate configuration references."""
 
-import re
 from . import base
 
 STRINGS = {}
@@ -29,7 +28,7 @@ STRINGS['de'] = {
     'tag_type': 'type',
 }
 
-LIST_FORMAT = '<b>[</b>{}<b>]</b>'
+LIST_FORMAT = '**[** {} **]**'
 
 
 def create(gen: base.Generator, lang: str):
@@ -87,8 +86,8 @@ class _Creator:
     def process_class(self, tid):
         typ = self.gen.types[tid]
 
-        yield header(tid, self.strings['tag_struct'])
-        yield f'<p>{self.docstring(tid)}</p>\n'
+        yield header(tid)
+        yield subhead(self.strings['tag_struct'], self.docstring(tid))
 
         rows = {False: [], True: []}
 
@@ -96,7 +95,7 @@ class _Creator:
             prop_typ = self.gen.types[prop_tid]
             self.queue.append(prop_typ.tValue)
             rows[prop_typ.hasDefault].append([
-                as_propname(prop_name) + (as_required('*') if not prop_typ.hasDefault else ''),
+                as_propname(prop_name) if prop_typ.hasDefault else as_required(prop_name),
                 self.type_string(prop_typ.tValue),
                 self.default_string(prop_tid),
                 self.docstring(prop_tid),
@@ -110,10 +109,10 @@ class _Creator:
     def process_enum(self, tid):
         typ = self.gen.types[tid]
 
-        yield header(tid, self.strings['tag_enum'])
-        yield f'<p>{self.docstring(tid)}</p>\n'
+        yield header(tid)
+        yield subhead(self.strings['tag_enum'], self.docstring(tid))
         yield table(
-            [],
+            ['', ''],
             [
                 [as_literal(key), self.docstring(tid, key)]
                 for key in typ.enumValues
@@ -124,7 +123,8 @@ class _Creator:
         typ = self.gen.types[tid]
         target = self.gen.types[typ.tTarget]
 
-        yield header(tid, self.strings['tag_variant'])
+        yield header(tid)
+        yield subhead(self.strings['tag_variant'], '')
 
         rows = []
         for member_name, member_tid in sorted(target.tMembers.items()):
@@ -137,14 +137,14 @@ class _Creator:
         )
 
     def process_type(self, tid):
-        yield header(tid, self.strings['tag_type'])
-        yield f'<p>{self.docstring(tid)}</p>\n'
+        yield header(tid)
+        yield subhead(self.strings['tag_type'], self.docstring(tid))
 
     def type_string(self, tid):
         typ = self.gen.types[tid]
 
         if typ.c in {base.C.CLASS, base.C.TYPE, base.C.ENUM}:
-            return f"<a href='#{tid}'>{as_typename(tid)}</a>"
+            return link(tid, as_typename(tid))
 
         if typ.c == base.C.DICT:
             return as_code('dict')
@@ -182,48 +182,68 @@ class _Creator:
     def docstring(self, tid, enum_value=None):
         ds = self.raw_docstring(tid, enum_value)
         ds = ds.strip().split('\n')[0]
-        ds = escape(ds)
-        ds = re.sub(r'`+(.+?)`+', r'<code>\1</code>', ds)
+        # ds = escape(ds)
+        # ds = re.sub(r'`+(.+?)`+', r'`\1`', ds)
         return ds
 
 
 def as_literal(s):
-    return f'<code class="configref_literal">{escape(s)}</code>'
+    return f'`{s}`{{.configref_literal}}'
 
 
 def as_typename(s):
-    return f'<code class="configref_typename">{escape(s)}</code>'
+    return f'`{s}`{{.configref_typename}}'
 
 
 def as_category(s):
-    return f'<code class="configref_category">{escape(s)}</code>'
+    return f'`{s}`{{.configref_category}}'
 
 
 def as_propname(s):
-    return f'<code class="configref_propname">{escape(s)}</code>'
+    return f'`{s}`{{.configref_propname}}'
 
 
 def as_required(s):
-    return f'<code class="configref_required">{escape(s)}</code>'
+    return f'`{s}`{{.configref_required}}'
 
 
 def as_code(s):
-    return f'<code>{escape(s)}</code>'
+    return f'`{s}`'
 
 
-def header(tid, category):
-    return f'<h5 data-url="#{tid}" id="{tid}">{tid} {as_category(category)}</h5>\n'
+def header(tid):
+    return f'\n## {tid} :{tid}\n'
+
+
+def subhead(category, text):
+    return as_category(category) + ' ' + text + '\n'
+
+
+def link(target, text):
+    return f'[{text}](../{target})'
 
 
 def table(heads, rows):
-    h = ''
-    if heads:
-        h = '<thead><tr>' + nl(f'<th>{h}</th>' for h in heads) + '</tr></thead>\n'
-    b = nl(
-        '<tr>' + nl(f'<td>{c}</td>' for c in row) + '</tr>'
-        for row in rows
-    )
-    return f'<table>\n{h}<tbody>{b}</tbody></table>\n'
+    widths = [len(h) for h in heads]
+
+    for r in rows:
+        widths = [
+            max(a, b)
+            for a, b in zip(
+                widths,
+                [len(str(s)) for s in r]
+            )
+        ]
+
+    def field(n, v):
+        return str(v).ljust(widths[n])
+
+    def row(r):
+        return ' | '.join(field(n, v) for n, v in enumerate(r))
+
+    out = [row(heads), '', *[row(r) for r in rows]]
+    out[1] = '-' * len(out[0])
+    return '\n'.join(f'| {s} |' for s in out) + '\n'
 
 
 def escape(s, quote=True):

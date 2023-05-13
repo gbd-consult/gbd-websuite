@@ -6,7 +6,9 @@ Die GBD WebSuite kann Geodaten aus Datenbanken beziehen, entweder indirekt über
 
 Eine Anbieter (`prodiver`) Konfiguration beschreibt, welche Datenbanken und mit welchen Zugangsdaten verwendet werden. Zur Zeit unterstützen wir nur PostgreSQL/PostGIS Datenbanken.
 
-^NOTE In der Zukunft sind auch Sqlite/SpatiaLite, MySQL und MongoDB geplant.
+%info
+ In der Zukunft sind auch Sqlite/SpatiaLite, MySQL und MongoDB geplant.
+%end
 
 ### :/admin-de/config/db/type/*
 
@@ -18,7 +20,7 @@ Wir empfehlen Ihrem Datenbank-Nutzer möglichst wenige Rechte zu vergeben. Für 
 Datenbank-Tabellen
 ------------------
 
-^REF gws.base.db.SqlTableConfig
+%reference_de 'gws.base.db.SqlTableConfig'
 
 Bei einigen GBD WebSuite Funktionen wie z.B. ^search oder ^digitize ist eine Tabellen-Konfiguration notwendig. Minimal ist ein Tabellen-Namen anzugeben (optional mit einem Schema). Sie können auch die Namen für Primärschlüssel (`keyColumn`) und Geometrie-Spalte (`geometryColumn`) angeben, per Default versucht das System diese Werte aus `INFORMATION_SCHEMA` und `GEOMETRY_COLUMNS` automatisch zu ermitteln.
 

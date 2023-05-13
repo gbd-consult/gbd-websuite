@@ -1,7 +1,7 @@
 Server Aktionen
 ===============
 
-^REF gws.types.ext.action.Config
+%reference_de 'gws.types.ext.action.Config'
 
 Die GBD WebSuite unterstützt viele verschiedene Befehle. In Ihrer App- und Projektkonfiguration können Sie entscheiden, welche Sie in Ihrer speziellen Installation verwenden möchten.
 Hier ein kurzer Überblick über die unterstützten Aktionstypen:

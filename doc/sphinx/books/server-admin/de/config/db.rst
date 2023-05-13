@@ -8,12 +8,14 @@ Datenbank-Anbieter
 
 Eine Anbieter (``prodiver``) Konfiguration beschreibt, welche Datenbanken und mit welchen Zugangsdaten verwendet werden. Zur Zeit unterstützen wir nur PostgreSQL/PostGIS Datenbanken.
 
-^NOTE In der Zukunft sind auch Sqlite/SpatiaLite, MySQL und MongoDB geplant.
+%info
+ In der Zukunft sind auch Sqlite/SpatiaLite, MySQL und MongoDB geplant.
+%end
 
 postgres
 ~~~~~~~~
 
-^REF gws.ext.db.provider.postgres.Config
+%reference_de 'gws.ext.db.provider.postgres.Config'
 
 Wir unterstützen PostgreSQL ab Version 10 mit der obligatorisch PostGIS (ab 2.4) Extension.
 
@@ -35,7 +37,9 @@ Beispiel einer Postgres-Provider-Konfiguration ::
 
 Wenn Sie mehrere Server bzw. mehrere Zugangsdaten auf dem gleichen Server haben, müssen Sie diese als verschiedene Anbieter konfigurieren.
 
-^NOTE Auch wenn Ihr DB-Server sich auf demselben physischen Host befindet, können Sie nicht ``localhost`` als Hostname verwenden, weil die GBD WebSuite in einem Docker-Container läuft. Stattdessen sollte die IP-Adresse des Docker-Hosts wie ``172.17.0.1`` verwendet werden (der genaue Wert hängt von den Einstellungen Ihres Docker-Netzwerks ab). Aus Gründen der Portabilität ist es empfehlenswert, es mit ``--add-host`` zu aliasieren.
+%info
+ Auch wenn Ihr DB-Server sich auf demselben physischen Host befindet, können Sie nicht ``localhost`` als Hostname verwenden, weil die GBD WebSuite in einem Docker-Container läuft. Stattdessen sollte die IP-Adresse des Docker-Hosts wie ``172.17.0.1`` verwendet werden (der genaue Wert hängt von den Einstellungen Ihres Docker-Netzwerks ab). Aus Gründen der Portabilität ist es empfehlenswert, es mit ``--add-host`` zu aliasieren.
+%end
 
 Zugriffsrechte
 --------------
@@ -45,7 +49,7 @@ Wir empfehlen Ihrem Datenbank-Nutzer möglichst wenige Rechte zu vergeben. Für 
 Datenbank-Tabellen
 ------------------
 
-^REF gws.base.db.SqlTableConfig
+%reference_de 'gws.base.db.SqlTableConfig'
 
 Bei einigen GBD WebSuite Funktionen wie z.B. ^search oder ^digitize ist eine Tabellen-Konfiguration notwendig. Minimal ist ein Tabellen-Namen anzugeben (optional mit einem Schema). Sie können auch die Namen für Primärschlüssel (``keyColumn``) und Geometrie-Spalte (``geometryColumn``) angeben, per Default versucht das System diese Werte aus ``INFORMATION_SCHEMA`` und ``GEOMETRY_COLUMNS`` automatisch zu ermitteln.
 
