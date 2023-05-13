@@ -1,6 +1,3 @@
-from typing import Any, List, Dict
-
-
 class Error(Exception):
     pass
 
@@ -94,23 +91,23 @@ class Type:
     tTarget: TypeId = ''
     tValue: TypeId = ''
 
-    tArgs: List[TypeId] = []
-    tItems: List[TypeId] = []
-    tSupers: List[TypeId] = []
+    tArgs: list[TypeId] = []
+    tItems: list[TypeId] = []
+    tSupers: list[TypeId] = []
 
-    tMembers: Dict[str, TypeId] = {}
-    tProperties: Dict[str, TypeId] = {}
+    tMembers: dict[str, TypeId] = {}
+    tProperties: dict[str, TypeId] = {}
 
-    default: Any = None
+    default = None
     hasDefault: bool = False
 
     enumText: str = ''
     enumDocs: dict = {}
     enumValues: dict = {}
 
-    literalValues: List[Any] = []
+    literalValues: list = []
 
-    vars: Dict[str, TypeId] = {}
+    vars: dict[str, TypeId] = {}
 
     def __init__(self, **kwargs):
         vars(self).update(kwargs)

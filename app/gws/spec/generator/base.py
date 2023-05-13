@@ -133,7 +133,7 @@ log = _Logger()
 
 class Generator(Data):
     meta: dict
-    types: Dict[str, Type]
+    types: dict[str, Type]
     specs = {}
     typescript = ''
     strings = {}
@@ -147,7 +147,7 @@ class Generator(Data):
 
     debug = False
 
-    chunks: List[dict]
+    chunks: list[dict]
 
     def __init__(self):
         super().__init__()

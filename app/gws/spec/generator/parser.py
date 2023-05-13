@@ -3,7 +3,7 @@
 import ast
 import re
 
-from typing import Dict, List, cast
+from typing import cast
 
 from . import base, util
 
@@ -53,11 +53,11 @@ def parse_path(gen: base.Generator, path: str, base_name: str, base_dir: str, pa
 ##
 
 class _PythonParser:
-    lines: List[str]
+    lines: list[str]
     module_node: ast.Module
     module_name: str
-    docs: Dict[int, str]
-    imports: Dict[str, str]
+    docs: dict[int, str]
+    imports: dict[str, str]
 
     def __init__(self, gen: base.Generator, module_name: str, path: str, text: str, parse_all: bool):
         self.gen = gen
@@ -67,7 +67,7 @@ class _PythonParser:
         self.text = text
         self.source_lines = [''] + self.text.splitlines()
         self.is_init = path.endswith('__init__.py')
-        self.context: List = []
+        self.context: list = []
         self.parse_all = parse_all
 
     def run(self):
