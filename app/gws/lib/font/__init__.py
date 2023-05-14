@@ -1,6 +1,19 @@
 import PIL.ImageFont
 
+import gws
 import gws.lib.osx
+
+
+class Config(gws.Config):
+    """Custom fonts configuration."""
+
+    dir: gws.DirPath
+    """directory with custom fonts"""
+
+
+def configure(cfg: Config):
+    if cfg.dir:
+        install_fonts(cfg.dir)
 
 
 def install_fonts(source_dir):

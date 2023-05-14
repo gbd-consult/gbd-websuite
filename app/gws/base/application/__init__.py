@@ -20,14 +20,9 @@ import gws.spec
 import gws.base.web.error
 import gws.types as t
 
+from . import middleware
+
 _DEFAULT_LOCALE = ['en_CA']
-
-
-class FontConfig(gws.Config):
-    """Fonts configuration."""
-
-    dir: gws.DirPath
-    """directory with custom fonts"""
 
 
 class Config(gws.ConfigWithAccess):
@@ -45,7 +40,7 @@ class Config(gws.ConfigWithAccess):
     """database configuration"""
     developer: t.Optional[dict]
     """developer options"""
-    fonts: t.Optional[FontConfig]
+    fonts: t.Optional[gws.lib.font.Config]
     """fonts configuration"""
     helpers: t.Optional[list[gws.ext.config.helper]]
     """helpers configurations"""
@@ -53,8 +48,6 @@ class Config(gws.ConfigWithAccess):
     """default locales for all projects"""
     metadata: t.Optional[gws.Metadata]
     """application metadata"""
-    middleware: t.Optional[list[str]]
-    """middleware function names"""
     plugins: t.Optional[list[dict]]
     """configuration for plugins"""
     projectDirs: t.Optional[list[gws.DirPath]]
@@ -76,14 +69,12 @@ class Object(gws.Node, gws.IApplication):
     qgisVersion = ''
     projectsDct: dict[str, gws.IProject]
 
-    middlewareObjects: dict[str, gws.IMiddleware]
-    middlewareDeps: dict[str, list[str]]
-    middlewareNames: list[str]
-
     _devopts: dict
 
     mpxUrl = ''
     mpxConfig = ''
+
+    middlewareMgr: middleware.Manager
 
     def configure(self):
         self._setenv('server.log.level', gws.env.GWS_LOG_LEVEL)
@@ -107,17 +98,15 @@ class Object(gws.Node, gws.IApplication):
         if self._devopts:
             gws.log.warning('developer mode enabled')
 
-        self.middlewareObjects = {}
-        self.middlewareDeps = {}
-        self.middlewareNames = []
-
         self.localeUids = self.cfg('locales') or _DEFAULT_LOCALE
         self.monitor = self.create_child(gws.server.monitor.Object, self.cfg('server.monitor'))
         self.metadata = gws.lib.metadata.from_config(self.cfg('metadata'))
 
-        p = self.cfg('fonts.dir')
+        self.middlewareMgr = middleware.Manager()
+
+        p = self.cfg('fonts')
         if p:
-            gws.lib.font.install_fonts(p)
+            gws.lib.font.configure(p)
 
         # NB the order of initialization is important
         # - db
@@ -155,8 +144,6 @@ class Object(gws.Node, gws.IApplication):
             self.mpxUrl = f"http://{self.cfg('server.mapproxy.host')}:{self.cfg('server.mapproxy.port')}"
             self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
-        self.middlewareNames = self._sort_middleware()
-
         # for p in set(cfg.configPaths):
         #     root.app.monitor.add_path(p)
         # for p in set(cfg.projectPaths):
@@ -167,43 +154,11 @@ class Object(gws.Node, gws.IApplication):
         # if root.app.developer_option('server.auto_reload'):
         #     root.app.monitor.add_directory(gws.APP_DIR, '\.py$')
 
-    def _sort_middleware(self):
-
-        def visit(name, stack):
-            stack += [name]
-
-            if color.get(name) == 2:
-                return
-            if color.get(name) == 1:
-                raise gws.Error('middleware: cyclic dependency: ' + '->'.join(stack))
-
-            if name not in self.middlewareObjects:
-                raise gws.Error('middleware: not found: ' + '->'.join(stack))
-
-            color[name] = 1
-
-            depends_on = self.middlewareDeps[name]
-            if depends_on:
-                for d in depends_on:
-                    visit(d, stack)
-
-            color[name] = 2
-            names.append(name)
-
-        color = {}
-        names = []
-
-        for name in self.middlewareObjects:
-            visit(name, [])
-
-        return names
-
     def register_middleware(self, name, obj, depends_on=None):
-        self.middlewareObjects[name] = obj
-        self.middlewareDeps[name] = depends_on
+        self.middlewareMgr.register(name, obj, depends_on)
 
     def middleware_objects(self):
-        return [(name, self.middlewareObjects[name]) for name in self.middlewareNames]
+        return self.middlewareMgr.sorted_objects()
 
     def projects_for_user(self, user):
         return [p for p in self.projectsDct.values() if user.can_use(p)]
