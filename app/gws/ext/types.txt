@@ -19,4 +19,5 @@ modelWidget
 owsProvider
 owsService
 project
+storageProvider
 template

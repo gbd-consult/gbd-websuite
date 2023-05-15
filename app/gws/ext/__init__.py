@@ -66,6 +66,7 @@ TYPES = [
     "owsProvider",
     "owsService",
     "project",
+    "storageProvider",
     "template",
 ]
 
@@ -99,6 +100,7 @@ class new:
     def owsProvider(*a): pass
     def owsService(*a): pass
     def project(*a): pass
+    def storageProvider(*a): pass
     def template(*a): pass
 
 
@@ -124,6 +126,7 @@ class object:
     class owsProvider (_classTag): extName = 'gws.ext.object.owsProvider'
     class owsService (_classTag): extName = 'gws.ext.object.owsService'
     class project (_classTag): extName = 'gws.ext.object.project'
+    class storageProvider (_classTag): extName = 'gws.ext.object.storageProvider'
     class template (_classTag): extName = 'gws.ext.object.template'
 
 
@@ -149,6 +152,7 @@ class config:
     class owsProvider (_classTag): extName = 'gws.ext.config.owsProvider'
     class owsService (_classTag): extName = 'gws.ext.config.owsService'
     class project (_classTag): extName = 'gws.ext.config.project'
+    class storageProvider (_classTag): extName = 'gws.ext.config.storageProvider'
     class template (_classTag): extName = 'gws.ext.config.template'
 
 
@@ -174,4 +178,5 @@ class props:
     class owsProvider (_classTag): extName = 'gws.ext.props.owsProvider'
     class owsService (_classTag): extName = 'gws.ext.props.owsService'
     class project (_classTag): extName = 'gws.ext.props.project'
+    class storageProvider (_classTag): extName = 'gws.ext.props.storageProvider'
     class template (_classTag): extName = 'gws.ext.props.template'

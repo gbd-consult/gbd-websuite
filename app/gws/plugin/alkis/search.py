@@ -549,10 +549,10 @@ class Object(gws.base.action.Object):
         job = gws.base.printer.job.start(req, pp)
         return gws.base.printer.job.status(job)
 
-    @gws.ext.command.api('alkissearchStorage')
-    def storage(self, req: gws.IWebRequester, p: gws.base.storage.Params) -> gws.base.storage.Response:
-        helper: gws.base.storage.Object = self.root.app.require_helper('storage')
-        return helper.handle_action(req, p, STORAGE_CATEGORY)
+    # @gws.ext.command.api('alkissearchStorage')
+    # def storage(self, req: gws.IWebRequester, p: gws.base.storage.Params) -> gws.base.storage.Response:
+    #     helper: gws.base.storage.Object = self.root.app.require_helper('storage')
+    #     return helper.handle_action(req, p, STORAGE_CATEGORY)
 
     ##
 

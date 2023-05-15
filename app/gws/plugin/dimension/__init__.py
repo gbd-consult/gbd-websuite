@@ -33,7 +33,7 @@ class Object(gws.base.action.Object):
             pixelTolerance=self.cfg('pixelTolerance'),
         )
 
-    @gws.ext.command.api('dimensionStorage')
-    def storage(self, req: gws.IWebRequester, p: gws.base.storage.Params) -> gws.base.storage.Response:
-        helper: gws.base.storage.Object = self.root.app.require_helper('storage')
-        return helper.handle_action(req, p, STORAGE_CATEGORY)
+    # @gws.ext.command.api('dimensionStorage')
+    # def storage(self, req: gws.IWebRequester, p: gws.base.storage.Params) -> gws.base.storage.Response:
+    #     helper: gws.base.storage.Object = self.root.app.require_helper('storage')
+    #     return helper.handle_action(req, p, STORAGE_CATEGORY)

@@ -5,19 +5,19 @@ import gws.base.action
 import gws.base.auth
 import gws.base.client
 import gws.base.database
-import gws.lib.metadata
 import gws.base.project
+import gws.base.storage
 import gws.base.web
 import gws.config
 import gws.gis.cache
 import gws.gis.mpx.config
 import gws.lib.font
 import gws.lib.importer
+import gws.lib.metadata
 import gws.lib.osx
 import gws.server
 import gws.server.monitor
 import gws.spec
-import gws.base.web.error
 import gws.types as t
 
 from . import middleware
@@ -58,6 +58,8 @@ class Config(gws.ConfigWithAccess):
     """project configurations"""
     server: t.Optional[gws.server.Config] = {}  # type: ignore
     """server engine options"""
+    storage: t.Optional[gws.base.storage.manager.Config]
+    """database configuration"""
     web: t.Optional[gws.base.web.manager.Config]
     """web server options"""
 
@@ -116,6 +118,7 @@ class Object(gws.Node, gws.IApplication):
         # - finally, projects
 
         self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.cfg('database'))
+        self.storageMgr = self.create_child(gws.base.storage.manager.Object, self.cfg('storage'))
 
         # # helpers are always created, no matter configured or not
         # cnf = {c.get('type'): c for c in self.cfg('helpers', default=[])}

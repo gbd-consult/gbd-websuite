@@ -1134,6 +1134,14 @@ class IDatabaseSession(Protocol):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# storage
+
+class IStorageManager(INode, Protocol):
+    def provider(self, uid: str): ...
+    def first_provider(self): ...
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # features
 
 
@@ -2013,6 +2021,7 @@ class IApplication(INode, Protocol):
     actionMgr: 'IActionManager'
     authMgr: 'IAuthManager'
     databaseMgr: 'IDatabaseManager'
+    storageMgr: 'IStorageManager'
     webMgr: 'IWebManager'
 
     def register_middleware(self, name: str, obj: IMiddleware, depends_on=Optional[list[str]]): ...
