@@ -573,9 +573,11 @@ class Controller extends gws.Controller {
         });
 
         let props = this.app.actionProps('annotate') as gws.api.plugin.annotate.Props;
-        this.updateObject('storageState', {
-            'annotateStorage': props.storageState,
-        })
+        if (props) {
+            this.updateObject('storageState', {
+                annotateStorage: props.storageState,
+            })
+        }
 
         this.app.whenCalled('annotateFromFeature', args =>
             this.createNewFeatureFromFeature(args.feature)
