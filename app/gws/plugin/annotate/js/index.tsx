@@ -8,13 +8,13 @@ import * as style from 'gws/map/style';
 import * as styler from 'gws/elements/styler';
 import * as draw from 'gws/elements/draw';
 import * as modify from 'gws/elements/modify';
+import * as storage from 'gws/elements/storage';
 import * as sidebar from 'gws/elements/sidebar';
 import * as toolbar from 'gws/elements/toolbar';
 import * as components from 'gws/components';
 
 
 const MASTER = 'Shared.Annotate';
-const STORAGE_CATEGORY = 'Annotate';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as Controller;
 
@@ -83,16 +83,6 @@ const StoreKeys = [
 // }
 
 class Feature extends gws.map.Feature {
-    // getProps(depth) {
-    //     let p = super.getProps(depth);
-    //     p.elements = {
-    //         shapeType: this.attributes.shapeType,
-    //         labelTemplate: this.attributes.labelTemplate,
-    //         label: this.format(this.attributes.labelTemplate),
-    //     };
-    //     return p;
-    // }
-
     get formData(): FormData {
         return {
             shapeType: this.attributes.shapeType,
@@ -108,25 +98,6 @@ class Feature extends gws.map.Feature {
     get master(): Controller {
         return this.map.app.controller(MASTER) as Controller;
     }
-
-
-    // setStyles(src) {
-    //     let styleNames = this.master.app.style.getMap(src);
-    //     let normal = this.master.app.style.at(styleNames.normal);
-    //     let selName = '_selected_' + normal.name;
-    //     let selected = this.master.app.style.at(selName) || this.master.app.style.add(
-    //         new style.CascadedStyle(selName, [normal, this.master.selectedStyle]));
-    //     super.setStyles({normal, selected});
-    // }
-
-    // setChanged() {
-    //     super.setChanged();
-    //     this.geometry.changed();
-    // }
-    //
-    // setSelected(sel) {
-    //     this.setMode(sel ? 'selected' : 'normal');
-    // }
 
     redraw() {
         this.views['label'] = this.format(this.attributes.labelTemplate);
@@ -442,11 +413,6 @@ class FeatureTabFooter extends gws.View<ViewProps> {
                         source="annotate"
                     />
                 </Cell>
-                {/*<Cell>*/}
-                {/*    <sidebar.AuxCloseButton*/}
-                {/*        whenTouched={() => cc.whenFeatureFormClosed()}*/}
-                {/*    />*/}
-                {/*</Cell>*/}
             </sidebar.AuxToolbar>
         </sidebar.TabFooter>
     }
@@ -538,12 +504,13 @@ class ListTab extends gws.View<ViewProps> {
                         whenTouched={() => cc.app.toggleTool('Tool.Annotate.Draw')}
                     />
                     <Cell flex/>
-                    {/*{storage.auxButtons(cc, {*/}
-                    {/*    category: STORAGE_CATEGORY,*/}
-                    {/*    hasData: hasFeatures,*/}
-                    {/*    getData: name => cc.storageGetData(name),*/}
-                    {/*    dataReader: (name, data) => cc.storageReader(name, data)*/}
-                    {/*})}*/}
+                    <storage.AuxButtons
+                        controller={cc}
+                        actionName={'annotateStorage'}
+                        hasData={hasFeatures}
+                        getData={() => cc.storageGetData()}
+                        loadData={(data) => cc.storageLoadData(data)}
+                    />
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -605,6 +572,11 @@ class Controller extends gws.Controller {
             annotateLabelTemplates: defaultLabelTemplates,
         });
 
+        let props = this.app.actionProps('annotate') as gws.api.plugin.annotate.Props;
+        this.updateObject('storageState', {
+            'annotateStorage': props.storageState,
+        })
+
         this.app.whenCalled('annotateFromFeature', args =>
             this.createNewFeatureFromFeature(args.feature)
         );
@@ -618,9 +590,11 @@ class Controller extends gws.Controller {
         return this.features.length > 0;
     }
 
+
     //
 
     whenDrawStarted(shapeType, oFeature) {
+        this.unselectFeature();
         this.drawFeature = this.newFeatureOfType(shapeType);
         this.drawFeature.setOlFeature(oFeature);
         this.drawFeature.setStyle(this.getValue('annotateCurrentStyle'));
@@ -686,7 +660,7 @@ class Controller extends gws.Controller {
         f.setStyle(this.cloneStyle(this.getValue('annotateCurrentStyle')));
 
         this.addFeature(f);
-        this.selectFeature(f);
+        // this.selectFeature(f);
     }
 
     createNewFeatureFromFeature(src: gws.types.IFeature) {
@@ -741,14 +715,15 @@ class Controller extends gws.Controller {
 
     cloneStyle(currStyle) {
         let uid = gws.lib.uniqId('annotateStyle');
-
         let newStyle = this.map.style.copy(currStyle, '.' + uid);
-        let focusedStyle = this.map.style.get('.annotateFocused');
-
-        this.map.style.add(
-            new style.CascadedStyle(newStyle.cssSelector + '.isFocused', [newStyle, focusedStyle]));
-
+        this.createFocusStyle(newStyle);
         return newStyle;
+    }
+
+    createFocusStyle(sty) {
+        let focusedStyle = this.map.style.get('.annotateFocused');
+        this.map.style.add(
+            new style.CascadedStyle(sty.cssSelector + '.isFocused', [sty, focusedStyle]));
     }
 
     panToFeature(f: Feature) {
@@ -809,36 +784,42 @@ class Controller extends gws.Controller {
         });
     }
 
-    // storageReader(name, data) {
-    //     let lastFeature = null;
-    //
-    //     this.app.stopTool('Tool.Annotate.*');
-    //     this.layer.clear();
-    //
-    //     this.layer.addFeatures(data.features.map(props => {
-    //         let f = new Feature(this.map, {props})
-    //         f.setChanged();
-    //         lastFeature = f;
-    //         return f;
-    //     }));
-    //
-    //     if (this.hasFeatures)
-    //         this.app.startTool('Tool.Annotate.Modify');
-    //
-    //     if (lastFeature) {
-    //         this.update({
-    //             annotateLastStyleName: lastFeature.styleNames.normal,
-    //         });
-    //     }
-    //
-    //     this.setUpdated();
-    // }
-    //
-    // storageGetData(name) {
-    //     return {
-    //         'features': this.features.map(f => f.getProps())
-    //     }
-    // }
+    storageLoadData(data) {
+        let lastFeature = null;
+
+        this.app.stopTool('Tool.Annotate.*');
+
+        // @TODO an option to add data
+        this.clear();
+
+        let sty;
+        for (let p of (data.styles || [])) {
+            sty = this.map.style.loadFromProps(p);
+            this.createFocusStyle(sty);
+        }
+
+        for (let p of data.features) {
+            let f = new Feature(this.app.models.defaultModel());
+            f.setProps(p);
+            this.layer.addFeature(f);
+        }
+
+        this.update({
+            annotateFeatures: this.layer.features,
+        });
+
+        if (sty) {
+            this.update({annotateCurrentStyle: sty})
+        }
+
+    }
+
+    storageGetData() {
+        return {
+            'features': this.features.map(f => f.getProps()),
+            'styles': this.map.style.props,
+        }
+    }
 
 
 }

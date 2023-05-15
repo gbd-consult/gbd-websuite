@@ -1,0 +1,50 @@
+@comment
+
+Annotation function with "storage".
+
+@end
+
+storage.providers+ {
+    uid "common_storage"
+    type "sqlite"
+    path "/gws-var/common_storage.sqlite"
+}
+
+projects+ {
+    title "Map Annotations + Storage"
+    metadata.abstract "Create, edit and save map annotations."
+
+    api.actions+ {
+        type "annotate"
+        storageUid "common_storage"
+        storageCategory {
+            name "saved"
+            permissions {
+                read "allow all"
+                write "allow all"
+                create "allow all"
+            }
+        }
+    }
+
+    client.addElements+ { tag "Sidebar.Annotate" }
+    client.addElements+ { tag "Toolbar.Annotate.Draw" }
+    client.addElements+ { tag "Task.Annotate" }
+    client.options.sidebarActiveTab "Sidebar.Annotate"
+
+
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Districts"
+        type "postgres"
+        tableName "edit.district"
+    }
+
+    {demo_osm_background}
+}
