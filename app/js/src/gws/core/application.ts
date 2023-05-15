@@ -217,7 +217,7 @@ export class Application implements types.IApplication {
         return this;
     }
 
-    actionSetup(type) {
+    actionProps(type) {
         for (let action of this.project.actions)
             if (action.type === type)
                 return action

@@ -850,7 +850,7 @@
 //
 //     async init() {
 //
-//         this.setup = this.app.actionSetup('dimension');
+//         this.setup = this.app.actionProps('dimension');
 //         if (!this.setup)
 //             return;
 //

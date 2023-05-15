@@ -119,7 +119,7 @@ export class Feature implements types.IFeature {
         return !lib.isEmpty(this._editedAttributes);
     }
 
-    getProps(depth) {
+    getProps(depth=0) {
         return this.model.featureProps(this, depth);
     }
 

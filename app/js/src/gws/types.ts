@@ -58,7 +58,7 @@ export interface IApplication {
 
     mounted();
 
-    actionSetup(type: string): any;
+    actionProps(type: string): any;
 
     whenLoaded(fn: (value: any) => void);
     whenChanged(prop: string, fn: (value: any) => void);
@@ -203,7 +203,7 @@ export interface IStyleManager {
     copy(style: IStyle, name: string|null);
     findFirst(selectors: Array<string>, geometryType?: string, state?: string): IStyle | null;
     get(style: StyleArg): IStyle | null;
-    loadFromProps(styles: Array<api.lib.style.Props>);
+    loadFromProps(props: api.lib.style.Props): IStyle;
     whenStyleChanged(map: IMapManager, name?: string);
 }
 

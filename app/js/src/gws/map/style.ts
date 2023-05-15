@@ -125,10 +125,9 @@ export class StyleManager implements types.IStyleManager {
         });
     }
 
-    loadFromProps(data: Array<api.lib.style.Props>) {
-        data.forEach(s =>
-            this.styles[s.cssSelector] = new Style(s.cssSelector, s.values)
-        );
+    loadFromProps(props: api.lib.style.Props) {
+        this.styles[props.cssSelector] = new Style(props.cssSelector, props.values);
+        return this.styles[props.cssSelector];
     }
 
     get props(): Array<api.lib.style.Props> {

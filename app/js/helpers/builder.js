@@ -728,6 +728,7 @@ function cssModules(bb) {
             unit: 'px',
             sort: true,
             rootSelector: '.gws',
+            quote: ['marker'],
         };
 
         for (let k of Object.keys(require.cache)) {

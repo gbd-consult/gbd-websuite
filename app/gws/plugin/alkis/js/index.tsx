@@ -858,7 +858,7 @@
 //     toponyms: Toponyms;
 //
 //     async init() {
-//         this.setup = this.app.actionSetup('alkissearch');
+//         this.setup = this.app.actionProps('alkissearch');
 //         if (!this.setup)
 //             return;
 //
