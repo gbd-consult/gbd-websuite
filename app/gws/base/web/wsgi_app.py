@@ -2,9 +2,7 @@
 
 import gws
 import gws.base.action
-import gws.base.web.error
-import gws.base.web.site
-import gws.base.web.wsgi
+import gws.base.web
 import gws.config
 import gws.spec.runtime
 

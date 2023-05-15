@@ -2,7 +2,6 @@
 
 import gws
 import gws.base.action
-import gws.base.web.error
 import gws.base.auth.user
 import gws.types as t
 

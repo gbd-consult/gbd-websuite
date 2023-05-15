@@ -3,7 +3,6 @@ import sys
 import gws
 import gws.spec.runtime
 import gws.base.action.dispatcher
-import gws.base.web.error
 import gws.lib.cli as cli
 
 

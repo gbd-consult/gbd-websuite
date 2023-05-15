@@ -2,10 +2,9 @@
 
 import gws
 import gws.base.action
-import gws.base.web.error
+import gws.base.web
 import gws.lib.mime
 import gws.lib.xmlx as xmlx
-import gws.types as t
 
 gws.ext.new.action('ows')
 

@@ -2,15 +2,15 @@ import re
 
 import gws
 import gws.base.template
-import gws.base.web.error
+import gws.base.web
 import gws.gis.crs
-import gws.lib.date
 import gws.gis.extent
 import gws.gis.gml
+import gws.gis.render
+import gws.lib.date
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
-import gws.gis.render
 import gws.lib.uom as units
 import gws.lib.xmlx as xmlx
 import gws.types as t

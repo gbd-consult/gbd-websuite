@@ -1,21 +1,19 @@
 """Backend for vector edit operations."""
 
 import gws
-
 import gws.base.action
 import gws.base.feature
 import gws.base.layer
 import gws.base.legend
 import gws.base.shape
 import gws.base.template
+import gws.base.web
 import gws.gis.cache
-import gws.base.web.error
 import gws.gis.crs
 import gws.gis.render
 import gws.lib.image
 import gws.lib.jsonx
 import gws.lib.mime
-
 import gws.types as t
 
 gws.ext.new.action('edit')

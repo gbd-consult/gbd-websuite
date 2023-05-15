@@ -1,5 +1,5 @@
 import gws
-import gws.base.web.error
+import gws.base.web
 import gws.gis.crs
 import gws.gis.bounds
 import gws.types as t

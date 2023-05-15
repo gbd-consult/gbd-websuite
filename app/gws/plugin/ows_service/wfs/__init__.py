@@ -1,12 +1,11 @@
 import gws
 import gws.base.search.runner
-import gws.base.web.error
-import gws.gis.crs
-import gws.gis.bounds
-import gws.gis.ows.filter
 import gws.base.shape
+import gws.base.web
+import gws.gis.bounds
+import gws.gis.crs
+import gws.gis.ows.filter
 import gws.types as t
-
 from .. import core
 
 gws.ext.new.owsService('wfs')

@@ -1,5 +1,5 @@
 import gws
-import gws.base.web.error
+import gws.base.web
 import gws.lib.date
 import gws.gis.extent
 import gws.lib.metadata

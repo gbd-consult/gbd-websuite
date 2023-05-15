@@ -1,12 +1,11 @@
 import gws
 import gws.base.search.runner
-import gws.base.web.error
-import gws.gis.crs
+import gws.base.shape
+import gws.base.web
 import gws.gis.bounds
+import gws.gis.crs
 import gws.lib.image
 import gws.lib.mime
-import gws.base.shape
-
 from .. import core
 
 gws.ext.new.owsService('wms')

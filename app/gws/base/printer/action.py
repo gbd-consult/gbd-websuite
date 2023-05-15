@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.action
-import gws.base.web.error
+import gws.base.web
 import gws.config
 import gws.lib.job
 import gws.lib.jsonx

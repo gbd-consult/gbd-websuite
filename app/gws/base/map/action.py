@@ -8,7 +8,6 @@ import gws.base.model
 import gws.base.layer
 import gws.base.template
 import gws.base.legend
-import gws.base.web.error
 import gws.gis.cache
 import gws.gis.crs
 import gws.gis.bounds

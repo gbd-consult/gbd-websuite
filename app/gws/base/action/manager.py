@@ -1,7 +1,6 @@
 import gws
 import gws.spec
 import gws.types as t
-import gws.base.web.error
 
 
 class Props(gws.Props):

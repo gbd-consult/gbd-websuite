@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.auth
-import gws.base.web.error
+import gws.base.web
 
 gws.ext.new.authMethod('web')
 

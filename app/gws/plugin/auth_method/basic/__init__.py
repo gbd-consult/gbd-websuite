@@ -4,7 +4,7 @@ import base64
 
 import gws
 import gws.base.auth
-import gws.base.web.error
+import gws.base.web
 import gws.types as t
 
 gws.ext.new.authMethod('basic')
