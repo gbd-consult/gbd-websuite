@@ -98,6 +98,8 @@ class Root(types.IRoot):
 
     def activate(self):
         for obj in self._objects:
+            if type(obj).activate != Node.activate:
+                log.debug(f'activate: {obj!r}')
             obj.activate()
 
     def initialize(self, obj, config):

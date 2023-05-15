@@ -61,7 +61,6 @@ def start(manifest_path=None, config_path=None):
         gws.log.error(f'server already running')
         gws.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=True)
-    gws.config.activate(root)
     ini.write_configs_and_start_script(root, gws.SERVER_DIR, SERVER_START_SCRIPT)
 
 
@@ -70,7 +69,6 @@ def reconfigure(manifest_path=None, config_path=None):
         gws.log.error(f'server not running')
         gws.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=False)
-    gws.config.activate(root)
     ini.write_configs_and_start_script(root, gws.SERVER_DIR, SERVER_START_SCRIPT)
     reload()
 

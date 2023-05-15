@@ -21,6 +21,7 @@ def application(environ, start_response):
 def init():
     try:
         gws.log.info('initializing WEB application')
+        gws.log.set_level('DEBUG')
         root = gws.config.load()
         gws.log.set_level(root.app.cfg('server.log.level'))
         _STATE['inited'] = True
