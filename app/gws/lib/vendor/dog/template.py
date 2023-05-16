@@ -137,17 +137,30 @@ class Engine(jump.Engine):
         def make_arrow(src, arr, dst):
             src = src.replace('.', ':')
             dst = dst.replace('.', ':')
-
-            head = tail = "none"
-            if arr == '>-':
-                tail = 'crow'
-            if arr == '-<':
-                head = 'crow'
+            mid = (src + '_' + dst).replace(':', '_')
 
             c = self.DBGRAPH_COLORS['arrow']
-            return f"""
-                {src} -> {dst} [color="{c}", dir="both", arrowhead="{head}", arrowtail="{tail}"]    
+            d = 0.3
+
+            s = f"""
+                {mid} [shape=point width=0.001]
             """
+
+            if arr == '>-':
+                return s + f"""
+                    {src} -> {mid} [color="{c}", dir="both", arrowtail="crow", arrowhead="none", arrowsize="1"]
+                    {mid} -> {dst} [color="{c}", dir="both", arrowtail="none", arrowhead="dot",  arrowsize="{d}"]
+                """
+            if arr == '-<':
+                return s + f"""
+                    {src} -> {mid} [color="{c}", dir="both", arrowtail="dot",  arrowhead="none", arrowsize="{d}"]
+                    {mid} -> {dst} [color="{c}", dir="both", arrowtail="none", arrowhead="crow", arrowsize="1"]
+                """
+            if arr == '--':
+                return s + f"""
+                    {src} -> {mid} [color="{c}", dir="both", arrowtail="dot",  arrowhead="none", arrowsize="{d}"]
+                    {mid} -> {dst} [color="{c}", dir="both", arrowtail="none", arrowhead="dot",  arrowsize="{d}"]
+                """
 
         def go():
             tables = ''.join(

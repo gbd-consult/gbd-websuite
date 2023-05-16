@@ -171,7 +171,7 @@ class _Creator:
         v = typ.default
         if v is None or v == '':
             return ''
-        return as_literal(str(v))
+        return as_literal(v)
 
     def raw_docstring(self, tid, enum_value=None):
         typ = self.gen.types[tid]
@@ -188,7 +188,7 @@ class _Creator:
 
 
 def as_literal(s):
-    return f'`{s}`{{.configref_literal}}'
+    return f'`{s!r}`{{.configref_literal}}'
 
 
 def as_typename(s):

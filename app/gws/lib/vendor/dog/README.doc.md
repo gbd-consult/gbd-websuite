@@ -221,11 +221,11 @@ Result:
 
 Everything that looks like a URL is converted to a link:
 
-    Our markdown formatter is https://mistune.lepture.com
+    > Our markdown formatter is https://mistune.lepture.com
 
 Result:
 
->> Our markdown formatter is https://mistune.lepture.com
+> Our markdown formatter is https://mistune.lepture.com
 
 ### Syntax highlighting
 
@@ -246,11 +246,11 @@ print("Hi", 40 + 2)  # test
 
 A decoration looks like `{myclass text}` and generates an HTML `span` element with the class name `decoration_myclass`.
 
-    Click the {button Exit} button to exit
+    > Click the {button Exit} button to exit
 
 Result:
 
->> Click the {button Exit} button to exit
+> Click the {button Exit} button to exit
 
 (provided `.decoration_button` is defined in your css).
 
@@ -258,11 +258,11 @@ Result:
 
 Attributes can be set on links and images, similarly to [Pandoc](https://pandoc.org/MANUAL.html#extension-link_attributes):
 
-    Some image ![](theme_info.svg){.someclass .otherclass width=3em height=20px border=1}
+    > Some image ![](theme_info.svg){.someclass .otherclass width=3em height=20px border=1}
 
 Result:
 
->> Some image ![](theme_info.svg){.someclass .otherclass width=3em height=20px border=1}
+> Some image ![](theme_info.svg){.someclass .otherclass width=3em height=20px border=1}
 
 `width` and `height` accept arbitrary CSS units. This extension currently works for inline elements only.
 
@@ -353,18 +353,15 @@ A DB diagram consists of tables and arrows. A table is a name, followed by a lis
         house (
             id int pk,
             name text,
-            ...more,
             street_id fk
         )
         street (
             id int pk,
             name text,
-            ...more,
             city_id fk
         )
         city (
-            id int, 
-            ...more,
+            id int pk, 
             name text
         )
 
@@ -377,18 +374,15 @@ A DB diagram consists of tables and arrows. A table is a name, followed by a lis
         house (
             id int pk,
             name text,
-            ...more,
             street_id fk
         )
         street (
             id int pk,
             name text,
-            ...more,
             city_id fk
         )
         city (
-            id int, 
-            ...more,
+            id int pk, 
             name text
         )
 
