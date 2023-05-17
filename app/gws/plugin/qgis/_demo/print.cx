@@ -1,0 +1,53 @@
+projects+ {
+    title "QGIS Print Template"
+    metadata.abstract "Use a print template from a QGIS Project"
+
+    printer.templates+ {
+        uid "print_template_qgis_simple_0"
+        type "qgis"
+        provider.path "print.qgs"
+        index 0
+        qualityLevels [ { dpi  72 name "nice vectors" } { dpi 150 name "good quality" } ]
+    }
+
+    printer.templates+ {
+        uid "print_template_qgis_simple_1"
+        type "qgis"
+        provider.path "print.qgs"
+        index 1
+        qualityLevels [ { dpi  72 name "nice vectors" } { dpi 150 name "good quality" } ]
+    }
+
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 250000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Bank"
+        type "geojson"
+        provider.path "/data/demos/poi/poi.bank.geojson"
+        cssSelector ".custom_poi_bank"
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{name}}"
+        }
+    }
+
+    map.layers+ {
+        title "Districts"
+        type "postgres"
+        tableName "edit.district"
+        cssSelector ".custom_district"
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{name}}"
+        }
+    }
+
+    {demo_osm_background}
+}

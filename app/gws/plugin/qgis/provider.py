@@ -34,7 +34,6 @@ class Config(gws.Config):
 
 class Object(gws.Node, gws.IOwsProvider):
     source: project.Source
-    project: project.Object
     printTemplates: list[caps.PrintTemplate]
     url: str
 
@@ -58,8 +57,7 @@ class Object(gws.Node, gws.IOwsProvider):
             self.root.app.cfg('server.qgis.host'),
             self.root.app.cfg('server.qgis.port'))
 
-        self.project = project.from_source(self.source, self)
-        self.caps = self.project.caps()
+        self.caps = self.qgis_project().caps()
 
         self.metadata = self.caps.metadata
         self.printTemplates = self.caps.printTemplates
@@ -81,10 +79,16 @@ class Object(gws.Node, gws.IOwsProvider):
 
     ##
 
+    def qgis_project(self) -> project.Object:
+        return project.from_source(self.source, self)
+
+    def server_project_path(self):
+        # @TODO postgres
+        return self.source.path
+
     def server_params(self, params: dict) -> dict:
         defaults = dict(
-            # @TODO postgres
-            MAP=self.source.path,
+            MAP=self.server_project_path(),
             SERVICE=gws.OwsProtocol.WMS,
             VERSION='1.3.0',
         )
@@ -116,7 +120,6 @@ class Object(gws.Node, gws.IOwsProvider):
         if res.content_type.startswith('image/'):
             return res.content
         raise gws.Error(res.text)
-
 
     def get_features(self, search, source_layers):
         shape = search.shape
@@ -321,22 +324,6 @@ class Object(gws.Node, gws.IOwsProvider):
 
         p = {k: v for k, v in params.items() if k.lower() not in self._std_ows_params}
         return gws.lib.net.add_params(url, p)
-
-    def print_template(self, ref: str) -> t.Optional[caps.PrintTemplate]:
-        pts = self.print_templates
-
-        if not self.print_templates:
-            return
-
-        if not ref:
-            return pts[0]
-
-        if ref.isdigit() and int(ref) < len(pts):
-            return pts[int(ref)]
-
-        for tpl in pts:
-            if tpl.title == ref:
-                return tpl
 
 
 ##
