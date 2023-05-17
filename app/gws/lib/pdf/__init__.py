@@ -1,32 +1,26 @@
-import PyPDF2
-
-import gws
-import gws.lib.mime
-import gws.lib.osx
-import gws.types as t
+import pypdf
 
 
-def overlay(aPath, b_path, out_path):
+def overlay(a_path, b_path, out_path):
     """Overlay two pdfs page-wise."""
 
-    fa = open(aPath, 'rb')
+    fa = open(a_path, 'rb')
     fb = open(b_path, 'rb')
 
-    ra = PyPDF2.PdfFileReader(fa)
-    rb = PyPDF2.PdfFileReader(fb)
+    ra = pypdf.PdfReader(fa)
+    rb = pypdf.PdfReader(fb)
 
-    w = PyPDF2.PdfFileWriter()
+    w = pypdf.PdfWriter()
 
-    for n in range(ra.getNumPages()):
-        page = ra.getPage(n)
+    for n, page in enumerate(ra.pages):
         other = None
         try:
-            other = rb.getPage(n)
+            other = rb.pages[n]
         except IndexError:
             pass
         if other:
-            page.mergePage(other)
-        w.addPage(page)
+            page.merge_page(other)
+        w.add_page(page)
 
     with open(out_path, 'wb') as out_fp:
         w.write(out_fp)
@@ -47,12 +41,12 @@ def concat(paths, out_path):
     # NB: readers must be kept around until the writer is done
 
     files = [open(p, 'rb') for p in paths]
-    readers = [PyPDF2.PdfFileReader(fp) for fp in files]
+    readers = [pypdf.PdfReader(fp) for fp in files]
 
-    w = PyPDF2.PdfFileWriter()
+    w = pypdf.PdfWriter()
 
     for r in readers:
-        w.appendPagesFromReader(r)
+        w.append_pages_from_reader(r)
 
     with open(out_path, 'wb') as out_fp:
         w.write(out_fp)
@@ -65,34 +59,33 @@ def concat(paths, out_path):
 
 def page_count(path):
     with open(path, 'rb') as fp:
-        r = PyPDF2.PdfFileReader(fp)
-        return r.getNumPages()
+        r = pypdf.PdfReader(fp)
+        return len(r.pages)
 
-
-def to_image(in_path, out_path, size, mime):
-    if mime == gws.lib.mime.PNG:
-        device = 'png16m'
-    elif mime == gws.lib.mime.JPEG:
-        device = 'jpeg'
-    else:
-        raise ValueError(f'uknown format {format!r}')
-
-    cmd = [
-        'gs',
-        '-q',
-        f'-dNOPAUSE',
-        f'-dBATCH',
-        f'-dDEVICEWIDTHPOINTS={size[0]}',
-        f'-dDEVICEHEIGHTPOINTS={size[1]}',
-        f'-dPDFFitPage=true',
-        f'-sDEVICE={device}',
-        f'-dTextAlphaBits=4',
-        f'-dGraphicsAlphaBits=4',
-        f'-sOutputFile={out_path}',
-        in_path,
-    ]
-
-    gws.log.debug(cmd)
-    gws.lib.osx.run(cmd, echo=False)
-
-    return out_path
+# def to_image(in_path, out_path, size, mime):
+#     if mime == gws.lib.mime.PNG:
+#         device = 'png16m'
+#     elif mime == gws.lib.mime.JPEG:
+#         device = 'jpeg'
+#     else:
+#         raise ValueError(f'uknown format {format!r}')
+#
+#     cmd = [
+#         'gs',
+#         '-q',
+#         f'-dNOPAUSE',
+#         f'-dBATCH',
+#         f'-dDEVICEWIDTHPOINTS={size[0]}',
+#         f'-dDEVICEHEIGHTPOINTS={size[1]}',
+#         f'-dPDFFitPage=true',
+#         f'-sDEVICE={device}',
+#         f'-dTextAlphaBits=4',
+#         f'-dGraphicsAlphaBits=4',
+#         f'-sOutputFile={out_path}',
+#         in_path,
+#     ]
+#
+#     gws.log.debug(repr(cmd))
+#     gws.lib.osx.run(cmd, echo=False)
+#
+#     return out_path
