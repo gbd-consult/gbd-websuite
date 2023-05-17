@@ -19,14 +19,10 @@ class Config(gws.Config):
     """page size"""
     pageMargin: t.Optional[gws.MExtent]
     """page margin"""
-    path: t.Optional[gws.FilePath]
-    """path to a template file"""
     qualityLevels: t.Optional[list[gws.TemplateQualityLevel]]
     """quality levels supported by this template"""
     subject: str = ''
     """template purpose"""
-    text: str = ''
-    """template content"""
     title: str = ''
     """template title"""
 
@@ -44,17 +40,9 @@ DEFAULT_PAGE_SIZE = (210, 297, gws.Uom.mm)
 
 
 class Object(gws.Node, gws.ITemplate):
-    path: str
-    text: str
     title: str
 
     def configure(self):
-        self.path = self.cfg('path')
-        self.text = self.cfg('text', default='')
-
-        if not self.path and not self.text:
-            raise gws.Error('either "path" or "text" required')
-
         self.title = self.cfg('title', default='')
 
         self.qualityLevels = self.cfg('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
@@ -93,6 +81,10 @@ class Object(gws.Node, gws.ITemplate):
         )
 
         return gws.merge(extra, args)
+
+    def notify(self, tri: gws.TemplateRenderInput, message: str):
+        if tri.notify:
+            tri.notify(message)
 
 
 ##

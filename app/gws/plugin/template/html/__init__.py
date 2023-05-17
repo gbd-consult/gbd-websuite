@@ -17,7 +17,10 @@ gws.ext.new.template('html')
 
 
 class Config(gws.base.template.Config):
-    pass
+    path: t.Optional[gws.FilePath]
+    """path to a template file"""
+    text: str = ''
+    """template content"""
 
 
 class Props(gws.base.template.Props):
@@ -25,6 +28,15 @@ class Props(gws.base.template.Props):
 
 
 class Object(gws.base.template.Object):
+    path: str
+    text: str
+
+    def configure(self):
+        self.path = self.cfg('path')
+        self.text = self.cfg('text', default='')
+        if not self.path and not self.text:
+            raise gws.Error('either "path" or "text" required')
+
     def render(self, tri):
         self.notify(tri, 'begin_print')
 
@@ -229,10 +241,6 @@ class Object(gws.base.template.Object):
                 </body>
             </html>
         '''
-
-    def notify(self, tri, message):
-        if tri.notify:
-            tri.notify(message)
 
 
 ##
