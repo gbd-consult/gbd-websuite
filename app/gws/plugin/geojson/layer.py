@@ -22,11 +22,15 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.vector.Object):
     path: str
     provider: provider.Object
-    source_crs: gws.ICrs
     features: list[gws.IFeature]
 
     def configure(self):
         self.configure_layer()
+        for fd in self.provider.feature_data():
+            if fd.shape:
+                self.geometryType = fd.shape.type
+                self.geometryCrs = fd.shape.crs
+                break
 
     def configure_provider(self):
         self.provider = provider.get_for(self)
