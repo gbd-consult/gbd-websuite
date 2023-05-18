@@ -36,7 +36,7 @@ class Reader:
         if not self.verbose_errors:
             return self.read2(value, type_uid)
 
-        self.stack = [[value, type_uid]]
+        self.stack = [('', value, type_uid)]
         self.push = self.stack.append
         self.pop = self.stack.pop
 
@@ -143,7 +143,7 @@ def _read_list(r: Reader, val, typ: core.Type):
     lst = _read_any_list(r, val)
     res = []
     for n, v in enumerate(lst):
-        r.push([v, n])
+        r.push((n, v, typ.tItem))
         res.append(r.read2(v, typ.tItem))
         r.pop()
     return res
@@ -162,7 +162,7 @@ def _read_tuple(r: Reader, val, typ: core.Type):
 
     res = []
     for n, v in enumerate(lst):
-        r.push([v, n])
+        r.push((n, v, typ.tItems[n]))
         res.append(r.read2(v, typ.tItems[n]))
         r.pop()
     return res
@@ -227,7 +227,7 @@ def _read_object(r: Reader, val, typ: core.Type):
 
     for prop_name, prop_type_uid in typ.tProperties.items():
         prop_val = val.get(prop_name.lower() if r.case_insensitive else prop_name)
-        r.push([prop_val, prop_name])
+        r.push((prop_name, prop_val, prop_type_uid))
         res[prop_name] = r.read2(prop_val, prop_type_uid)
         r.pop()
 
@@ -432,12 +432,14 @@ def _format_error_value(exc):
 def _format_error_stack(stack):
     f = []
 
-    for val, name in reversed(stack):
+    for name, value, type_uid in reversed(stack):
         name = repr(name)
         line = 'item ' + name if name.isdigit() else name
+        if type_uid:
+            line += f' [{type_uid}]'
         for p in 'uid', 'title', 'type':
             try:
-                s = val.get(p)
+                s = value.get(p)
                 if s is not None:
                     line += f' ({p}={s!r})'
                     break
