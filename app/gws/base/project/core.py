@@ -8,16 +8,6 @@ import gws.base.web
 import gws.lib.metadata
 import gws.types as t
 
-_DEFAULT_TEMPLATES = [
-    gws.Config(
-        uid='gws.base.project.templates.project_description',
-        type='html',
-        path=gws.dirname(__file__) + '/templates/project_description.cx.html',
-        subject='project.description',
-        access=gws.PUBLIC,
-    ),
-]
-
 _DEFAULT_PRINTER = gws.Config(
     templates=[
         gws.Config(
@@ -45,6 +35,8 @@ class Config(gws.ConfigWithAccess):
     """project-specific assets options"""
     client: t.Optional[gws.base.client.Config]
     """project-specific gws client configuration"""
+    finders: t.Optional[list[gws.ext.config.finder]]
+    """search prodivers"""
     locales: t.Optional[list[str]]
     """project locales"""
     map: t.Optional[gws.base.map.Config]
@@ -110,11 +102,9 @@ class Object(gws.Node, gws.IProject):
 
         self.overviewMap = self.create_child_if_configured(gws.base.map.Object, self.cfg('overviewMap'))
 
-        self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
-        for cfg in _DEFAULT_TEMPLATES:
-            self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
-
+        self.finders = self.create_children(gws.ext.object.finder, self.cfg('finders'))
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
+        self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
 
         self.client = self.create_child_if_configured(gws.base.client.Object, self.cfg('client'))
 

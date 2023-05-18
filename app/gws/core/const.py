@@ -1,6 +1,9 @@
 from . import env
 
-APP_DIR = env.GWS_APP_DIR or '/gws-app'
+import os
+
+APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../..')
+
 VAR_DIR = env.GWS_VAR_DIR or '/gws-var'
 TMP_DIR = env.GWS_TMP_DIR or '/tmp/gws'
 

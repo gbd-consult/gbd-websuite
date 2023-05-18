@@ -101,7 +101,7 @@ class Object(gws.base.action.Object):
         for res in results:
             templates = []
             for v in views:
-                tpl = gws.base.template.locate(res.finder, res.layer, user=req.user, subject=f'feature.{v}')
+                tpl = gws.base.template.locate(res.finder, res.layer, project, user=req.user, subject=f'feature.{v}')
                 if tpl:
                     templates.append(tpl)
 

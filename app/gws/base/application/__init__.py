@@ -24,6 +24,51 @@ from . import middleware
 
 _DEFAULT_LOCALE = ['en_CA']
 
+_DEFAULT_TEMPLATES = [
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/project_description.cx.html',
+        subject='project.description',
+        access=gws.PUBLIC,
+        uid='default_template.project_description',
+    ),
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/layer_description.cx.html',
+        subject='layer.description',
+        access=gws.PUBLIC,
+        uid='default_template.layer_description',
+    ),
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/feature_description.cx.html',
+        subject='feature.description',
+        access=gws.PUBLIC,
+        uid='default_template.feature_description',
+    ),
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/feature_teaser.cx.html',
+        subject='feature.teaser',
+        access=gws.PUBLIC,
+        uid='default_template.feature_teaser',
+    ),
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/feature_title.cx.html',
+        subject='feature.title',
+        access=gws.PUBLIC,
+        uid='default_template.feature_title',
+    ),
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/feature_label.cx.html',
+        subject='feature.label',
+        access=gws.PUBLIC,
+        uid='default_template.feature_label',
+    ),
+]
+
 
 class Config(gws.ConfigWithAccess):
     """Main application configuration"""
@@ -40,6 +85,8 @@ class Config(gws.ConfigWithAccess):
     """database configuration"""
     developer: t.Optional[dict]
     """developer options"""
+    finders: t.Optional[list[gws.ext.config.finder]]
+    """global search prodivers"""
     fonts: t.Optional[gws.lib.font.Config]
     """fonts configuration"""
     helpers: t.Optional[list[gws.ext.config.helper]]
@@ -48,6 +95,8 @@ class Config(gws.ConfigWithAccess):
     """default locales for all projects"""
     metadata: t.Optional[gws.Metadata]
     """application metadata"""
+    models: t.Optional[list[gws.ext.config.model]]
+    """global data models"""
     plugins: t.Optional[list[dict]]
     """configuration for plugins"""
     projectDirs: t.Optional[list[gws.DirPath]]
@@ -60,6 +109,8 @@ class Config(gws.ConfigWithAccess):
     """server engine options"""
     storage: t.Optional[gws.base.storage.manager.Config]
     """database configuration"""
+    templates: t.Optional[list[gws.ext.config.template]]
+    """default templates"""
     web: t.Optional[gws.base.web.manager.Config]
     """web server options"""
 
@@ -119,23 +170,19 @@ class Object(gws.Node, gws.IApplication):
 
         self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.cfg('database'))
         self.storageMgr = self.create_child(gws.base.storage.manager.Object, self.cfg('storage'))
-
-        # # helpers are always created, no matter configured or not
-        # cnf = {c.get('type'): c for c in self.cfg('helpers', default=[])}
-        # for class_name in self.root.specs.real_class_names('gws.ext.helper'):
-        #     desc = self.root.specs.object_descriptor(class_name)
-        #     if desc.ext_type not in cnf:
-        #         gws.log.debug(f'ad-hoc helper {desc.ext_type!r} will be created')
-        #         cfg = gws.Config(type=desc.ext_type)
-        #         cnf[desc.ext_type] = gws.config.parse(self.root.specs, cfg, 'gws.ext.config.helper')
-        # self.helpers = self.root.create_many('gws.ext.helper', list(cnf.values()))
-
         self.authMgr = self.create_child(gws.base.auth.manager.Object, self.cfg('auth'))
 
         # @TODO default API
         self.actionMgr = self.create_child(gws.base.action.manager.Object, self.cfg('api'))
 
         self.webMgr = self.create_child(gws.base.web.manager.Object, self.cfg('web'))
+
+        self.finders = self.create_children(gws.ext.object.finder, self.cfg('finders'))
+        self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
+        self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
+
+        for cfg in _DEFAULT_TEMPLATES:
+            self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
 
         self.client = self.create_child(gws.base.client.Object, self.cfg('client'))
 
@@ -168,12 +215,6 @@ class Object(gws.Node, gws.IApplication):
 
     def project(self, uid):
         return self.projectsDct.get(uid)
-
-    def require_helper(self, ext_type):
-        for obj in self.helpers:
-            if obj.ext_type == ext_type:
-                return obj
-        raise gws.Error(f'helper {ext_type!r} not found')
 
     def developer_option(self, name):
         return self._devopts.get(name)

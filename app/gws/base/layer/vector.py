@@ -75,7 +75,7 @@ class Object(core.Object):
         templates = []
 
         for v in views or ['label']:
-            tpl = gws.base.template.locate(self, user=user, subject=f'feature.{v}')
+            tpl = gws.base.template.locate(self, search.project, user=user, subject=f'feature.{v}')
             if tpl:
                 templates.append(tpl)
 

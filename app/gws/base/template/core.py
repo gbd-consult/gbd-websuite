@@ -98,17 +98,33 @@ def locate(
 ) -> t.Optional[gws.ITemplate]:
     mt = gws.lib.mime.get(mime) if mime else None
 
-    for obj in objects:
-        if not obj:
-            continue
+    def locate_in(obj):
         for tpl in getattr(obj, 'templates', []):
+            if subject and tpl.subject != subject:
+                continue
             if user and not user.can_use(tpl):
                 continue
             if mt and tpl.mimes and mt not in tpl.mimes:
                 continue
-            if subject and tpl.subject != subject:
-                continue
             return tpl
+
+    app = None
+
+    for obj in objects:
+        if obj:
+            app = obj.root.app
+            tpl = locate_in(obj)
+            if tpl:
+                gws.log.debug(f'template.locate: found {subject=} in {obj=} {user=} {mime=}')
+                return tpl
+
+    if app:
+        tpl = locate_in(app)
+        if tpl:
+            gws.log.debug(f'template.locate: found {subject=} in APP {user=} {mime=}')
+            return tpl
+
+    gws.log.debug(f'template.locate: NOT FOUND {subject=}')
 
 
 ##

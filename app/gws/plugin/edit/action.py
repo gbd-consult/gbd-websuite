@@ -147,6 +147,7 @@ class Object(gws.base.action.Object):
                     tpl = gws.base.template.locate(
                         feature.model,
                         feature.model.parent,
+                        project,
                         user=req.user,
                         subject=f'feature.{v}')
                     if tpl:

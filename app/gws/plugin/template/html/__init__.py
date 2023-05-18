@@ -57,7 +57,10 @@ class Object(gws.base.template.Object):
         engine = Engine(self, tri)
 
         if not text:
-            text = gws.read_file(self.path)
+            try:
+                text = gws.read_file(self.path)
+            except OSError as exc:
+                raise gws.Error(f'read error: {self.path!r}') from exc
 
         if self.root.app.developer_option('template.save_compiled'):
             gws.write_file(

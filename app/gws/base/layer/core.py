@@ -352,8 +352,6 @@ class Object(gws.Node, gws.ILayer):
         p = self.cfg('templates')
         if p:
             self.templates = gws.compact(self.configure_template(cfg) for cfg in p)
-        for cfg in _DEFAULT_TEMPLATES:
-            self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
         return True
 
     def configure_template(self, cfg):

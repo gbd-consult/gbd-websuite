@@ -1138,6 +1138,7 @@ class IDatabaseSession(Protocol):
 
 class IStorageManager(INode, Protocol):
     def provider(self, uid: str): ...
+
     def first_provider(self): ...
 
 
@@ -1985,6 +1986,8 @@ class IProject(INode, Protocol):
     localeUids: list[str]
     map: 'IMap'
     metadata: 'Metadata'
+
+    finders: list['IFinder']
     models: list['IModel']
     templates: list['ITemplate']
 
@@ -2023,6 +2026,10 @@ class IApplication(INode, Protocol):
     databaseMgr: 'IDatabaseManager'
     storageMgr: 'IStorageManager'
     webMgr: 'IWebManager'
+
+    finders: list['IFinder']
+    templates: list['ITemplate']
+    models: list['IModel']
 
     def register_middleware(self, name: str, obj: IMiddleware, depends_on=Optional[list[str]]): ...
 
