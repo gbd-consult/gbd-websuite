@@ -1048,7 +1048,7 @@ class Controller extends gws.Controller {
         if (this.editState.selectedModel)
             models = [this.editState.selectedModel]
         else
-            models = this.app.models.editableModels().filter(m => !m.layer || m.layer.visible);
+            models = this.app.models.editableModels().filter(m => !m.layer || !m.layer.hidden);
 
         let res = await this.app.server.editQueryFeatures({
             shapes: [this.map.geom2shape(pt)],

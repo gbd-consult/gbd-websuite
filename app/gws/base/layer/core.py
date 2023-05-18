@@ -33,12 +33,12 @@ class ClientOptions(gws.Data):
 
     expanded: t.Optional[bool] = False
     """the layer is expanded in the list view"""
-    listed: t.Optional[bool] = True
-    """the layer is displayed in this list view"""
+    unlisted: t.Optional[bool] = False
+    """the layer is hidden in the list view"""
     selected: t.Optional[bool] = False
     """the layer is intially selected"""
-    visible: t.Optional[bool] = True
-    """the layer is intially visible"""
+    hidden: t.Optional[bool] = False
+    """the layer is intially hidden"""
     unfolded: t.Optional[bool] = False
     """the layer is not listed, but its children are"""
     exclusive: t.Optional[bool] = False

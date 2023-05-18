@@ -1,0 +1,150 @@
+projects+ {
+    title "Layer client options"
+    metadata.abstract "Various layer client options."
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 250000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Bank (normal)"
+        type "geojson"
+        provider.path "/data/demos/poi/poi.bank.geojson"
+        cssSelector ".point-red"
+    }
+
+    map.layers+ {
+        title "Bar (hidden)"
+        type "geojson"
+        provider.path "/data/demos/poi/poi.bar.geojson"
+        clientOptions.hidden true
+        cssSelector ".point-pink"
+    }
+
+    map.layers+ {
+        title "Biergarten (selected)"
+        type "geojson"
+        provider.path "/data/demos/poi/poi.biergarten.geojson"
+        clientOptions.selected true
+        cssSelector ".point-indigo"
+    }
+
+    map.layers+ {
+        title "Hotel (scale 0-10000)"
+        type "geojson"
+        provider.path "/data/demos/poi/poi.hotel.geojson"
+        zoom { minScale 0 maxScale 10000 }
+        cssSelector ".point-amber"
+    }
+
+    map.layers+ {
+        title "Cafe (scale 10000-50000)"
+        type "geojson"
+        provider.path "/data/demos/poi/poi.cafe.geojson"
+        zoom { minScale 10000 maxScale 50000 }
+        cssSelector ".point-deepPurple"
+    }
+
+    map.layers+ {
+        title "Kultur (normal group)"
+        type "group"
+
+        layers+ {
+            title "Buchladen"
+            type "geojson"
+            provider.path "/data/demos/poi/poi.buchladen.geojson"
+            cssSelector ".point-blue"
+        }
+        layers+ {
+            title "Museum"
+            type "geojson"
+            provider.path "/data/demos/poi/poi.museum.geojson"
+            cssSelector ".point-lightBlue"
+        }
+    }
+
+    map.layers+ {
+        title "Einkaufen (expanded group)"
+        type "group"
+        clientOptions.expanded true
+
+        layers+ {
+            title "Kiosk"
+            type "geojson"
+            provider.path "/data/demos/poi/poi.kiosk.geojson"
+            cssSelector ".point-cyan"
+        }
+        layers+ {
+            title "Supermarkt"
+            type "geojson"
+            provider.path "/data/demos/poi/poi.supermarkt.geojson"
+            cssSelector ".point-teal"
+        }
+    }
+
+    map.layers+ {
+        title "Essen (unfolded group)"
+        type "group"
+        clientOptions.unfolded true
+
+        layers+ {
+            title "Kneipe"
+            type "geojson"
+            provider.path "/data/demos/poi/poi.kneipe.geojson"
+            cssSelector ".point-yellow"
+        }
+        layers+ {
+            title "Restaurant"
+            type "geojson"
+            provider.path "/data/demos/poi/poi.restaurant.geojson"
+            cssSelector ".point-orange"
+        }
+    }
+
+    map.layers+ {
+        title "Districts (unlisted)"
+        type "geojson"
+        provider.path "/data/demos/districts.geojson"
+        clientOptions.unlisted true
+    }
+
+    map.layers+ {
+        title "Background (exclusive group)"
+        type "group"
+        clientOptions.exclusive true
+
+        layers+ {
+            title "Google Road Map"
+            type "tile"
+            provider.url "http://mt1.google.com/vt/lyrs=m&x={{x}}&y={{y}}&z={{z}}"
+            display "client"
+        }
+        layers+ {
+            title "Google Road Names"
+            type "tile"
+            provider.url "http://mt1.google.com/vt/lyrs=h&x={{x}}&y={{y}}&z={{z}}"
+            display "client"
+            clientOptions.hidden true
+        }
+        layers+ {
+            title "Google Satellite"
+            type "tile"
+            provider.url "http://mt1.google.com/vt/lyrs=s&hl=pl&&x={{x}}&y={{y}}&z={{z}}"
+            display "client"
+            clientOptions.hidden true
+        }
+        layers+ {
+            title "Google Terrain"
+            type "tile"
+            provider.url "http://mt1.google.com/vt/lyrs=t&x={{x}}&y={{y}}&z={{z}}"
+            display "client"
+            clientOptions.hidden true
+        }
+    }
+
+    {demo_osm_background}
+}
+
+

@@ -97,7 +97,7 @@ def layer_configs_from_args(
         cfg = gws.merge(cfg, {
             'title': sl.title,
             'clientOptions': {
-                'visible': sl.isVisible,
+                'hidden': not sl.isVisible,
                 'expanded': sl.isExpanded,
             },
             'opacity': sl.opacity or 1,

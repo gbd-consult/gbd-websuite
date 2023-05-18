@@ -52,7 +52,7 @@ class LayersCheckButton extends gws.View<ViewProps> {
 
         let cls = gws.lib.cls(
             'modLayersCheckButton',
-            layer.visible && 'isVisible',
+            layer.hidden && 'isHidden',
             isExclusive && 'isExclusive',
             isChecked && 'isChecked',
             isGroup && 'isGroup',
@@ -61,7 +61,7 @@ class LayersCheckButton extends gws.View<ViewProps> {
         return <gws.ui.Button
             {...cls}
             tooltip={this.__('modLayersCheckButton')}
-            whenTouched={() => this.props.controller.map.setLayerChecked(layer, !(layer.visible && layer.checked))}
+            whenTouched={() => this.props.controller.map.setLayerChecked(layer, !(!layer.hidden && layer.checked))}
         />;
     }
 }
@@ -93,7 +93,7 @@ let _layerTree = (layer: gws.types.ILayer, props) => {
     let cc = [];
 
     layer.children.forEach(la => {
-        if (!la.listed)
+        if (la.unlisted)
             return;
         if(!la.inResolution && !props.layersShowInactive)
             return;
@@ -113,7 +113,7 @@ class LayersTreeNode extends gws.View<ViewProps> {
             children = _layerTree(layer, this.props),
             cls = gws.lib.cls(
                 'modLayersTreeRow',
-                layer.visible && layer.inResolution && 'isVisible',
+                (layer.hidden || !layer.inResolution) && 'isHidden',
                 layer.selected && 'isSelected',
                 !layer.inResolution && 'isInactive',
             );

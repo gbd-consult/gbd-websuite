@@ -168,8 +168,7 @@ export class MapManager implements types.IMapManager {
     }
 
     addServiceLayer(layer: types.IFeatureLayer) {
-        layer.visible = true;
-        layer.listed = false;
+        layer.unlisted = true;
         this.addTopLayer(layer);
         return layer;
     }
@@ -209,9 +208,9 @@ export class MapManager implements types.IMapManager {
             la.children.forEach(c => exclusiveCheck(c, parents));
         }
 
-        function update(la, visible) {
-            la.visible = visible && la.checked;
-            la.children.forEach(c => update(c, la.visible));
+        function update(la, hidden) {
+            la.hidden = hidden || !la.checked;
+            la.children.forEach(c => update(c, la.hidden));
         }
 
         if (!on) {
@@ -230,7 +229,7 @@ export class MapManager implements types.IMapManager {
             exclusiveCheck(this.root, parents);
         }
 
-        update(this.root, true);
+        update(this.root, false);
         this.changed();
     }
 
@@ -263,7 +262,7 @@ export class MapManager implements types.IMapManager {
     hideAllLayers() {
         this.walk(this.root, la => {
             if (!la.isSystem)
-                la.visible = false
+                la.hidden = true
         });
         this.changed();
     }
@@ -532,9 +531,6 @@ export class MapManager implements types.IMapManager {
 
         if (props['layers']) {
             props['layers'].forEach(p => {
-                // // propagate group visibility down...
-                // if (!props.options.visible)
-                //     p.options.visible = false;
                 this.initLayer(p, layer)
             });
         }
@@ -876,7 +872,7 @@ export class MapManager implements types.IMapManager {
             let hidden = [];
 
             _this.walk(_this.root, la => {
-                if (la.visible && !layers.includes(la)) {
+                if (!la.hidden && !layers.includes(la)) {
                     hidden.push(la);
                     la.hide();
                 }

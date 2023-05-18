@@ -171,10 +171,10 @@ Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optio
 |-------------|------------------------------------------------------------------------|
 | `exclusive` | (bei Gruppenlayern) nur ein Unterlayer zeigen                          |
 | `expanded`  | (bei Gruppenlayern) Gruppe im Layerbaum ausklappen                     |
-| `listed`    | Layer im Layerbaum zeigen                                              |
+| `unlisted`  | Layer im Layerbaum verstecken                                          |
 | `selected`  | Layer im Layerbaum auswählen                                           |
 | `unfolded`  | (bei Gruppenlayern) nur die Unterlayer zeigen, nicht die Gruppe selbst |
-| `visible`   | Layer ist sichtbar                                                     |
+| `hidden`    | Layer ist zunächst unsichtbar                                          |
 
 ## CSS Anpassungen
 

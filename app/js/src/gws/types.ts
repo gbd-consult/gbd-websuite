@@ -133,9 +133,9 @@ export interface ILayer {
     hasChildren: boolean;
 
     expanded: boolean;
-    visible: boolean;
+    hidden: boolean;
     selected: boolean;
-    listed: boolean;
+    unlisted: boolean;
     unfolded: boolean;
     exclusive: boolean;
 

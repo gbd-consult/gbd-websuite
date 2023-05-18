@@ -18,9 +18,9 @@ export class Layer implements types.ILayer {
     children = [];
 
     expanded = false;
-    visible = false;
+    hidden = false;
     selected = false;
-    listed = false;
+    unlisted = false;
     unfolded = false;
     exclusive = false;
 
@@ -61,11 +61,11 @@ export class Layer implements types.ILayer {
     }
 
     get shouldDraw() {
-        return this.visible && this.inResolution;
+        return !this.hidden && this.inResolution;
     }
 
     get shouldList() {
-        if (!this.listed)
+        if (this.unlisted)
             return false;
         if (!this.inResolution)
             return false;
@@ -101,24 +101,16 @@ export class Layer implements types.ILayer {
         this.minResolution = Math.min(...this.resolutions);
         this.maxResolution = Math.max(...this.resolutions);
 
-        let defaultOpts = {
-            expanded: false,
-            visible: true,
-            selected: false,
-            listed: true,
-            unfolded: false,
-            exclusive: false,
-        };
-        let opts = Object.assign(defaultOpts, props.clientOptions || {});
+        let opts = props.clientOptions || {}
 
         this.expanded = opts['expanded'];
-        this.visible = opts['visible'];
+        this.hidden = opts['hidden'];
         this.selected = opts['selected'];
-        this.listed = opts['listed'];
+        this.unlisted = opts['unlisted'];
         this.unfolded = opts['unfolded'];
         this.exclusive = opts['exclusive'];
 
-        this.checked = this.visible;
+        this.checked = !this.hidden;
 
     }
 
