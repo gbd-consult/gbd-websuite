@@ -1,3 +1,10 @@
+## Version 8.0.4
+
+- storage subsystem
+- fulltext search
+- qgis print templates
+- better documentation
+
 ## Version 8.0.3
 
 - editing of multitable relations
