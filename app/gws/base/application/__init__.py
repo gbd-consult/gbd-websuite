@@ -48,13 +48,6 @@ _DEFAULT_TEMPLATES = [
     ),
     gws.Config(
         type='html',
-        path=gws.dirname(__file__) + '/templates/feature_teaser.cx.html',
-        subject='feature.teaser',
-        access=gws.PUBLIC,
-        uid='default_template.feature_teaser',
-    ),
-    gws.Config(
-        type='html',
         path=gws.dirname(__file__) + '/templates/feature_title.cx.html',
         subject='feature.title',
         access=gws.PUBLIC,

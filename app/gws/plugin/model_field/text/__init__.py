@@ -10,22 +10,8 @@ import gws.types as t
 gws.ext.new.modelField('text')
 
 
-class SearchType(t.Enum):
-    exact = 'exact'
-    begin = 'begin'
-    end = 'end'
-    any = 'any'
-    like = 'like'
-
-
-class Search(gws.Data):
-    type: SearchType
-    minLength: int = 0
-    caseSensitive: bool = False
-
-
 class Config(gws.base.model.scalar_field.Config):
-    textSearch: t.Optional[Search]
+    textSearch: t.Optional[gws.TextSearchOptions]
 
 
 class Props(gws.base.model.scalar_field.Props):
@@ -34,7 +20,7 @@ class Props(gws.base.model.scalar_field.Props):
 
 class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.str
-    textSearch: t.Optional[Search]
+    textSearch: t.Optional[gws.TextSearchOptions]
 
     def configure(self):
         self.textSearch = self.cfg('textSearch')
@@ -62,16 +48,17 @@ class Object(gws.base.model.scalar_field.Object):
             getattr(mod.record_class(), self.name),
             sa.String)
 
-        if ts.type == SearchType.exact:
+        if ts.type == gws.TextSearchType.exact:
             sel.keywordWhere.append(fld == kw)
         else:
-            kw = _escape_like(kw)
-            if ts.type == 'any':
-                kw = '%' + kw + '%'
-            if ts.type == 'begin':
-                kw = kw + '%'
-            if ts.type == 'end':
-                kw = '%' + kw
+            if ts.type == gws.TextSearchType.any:
+                kw = '%' + _escape_like(kw) + '%'
+            if ts.type == gws.TextSearchType.begin:
+                kw = _escape_like(kw) + '%'
+            if ts.type == gws.TextSearchType.end:
+                kw = '%' + _escape_like(kw)
+            if ts.type == gws.TextSearchType.like:
+                pass
 
             if ts.caseSensitive:
                 sel.keywordWhere.append(fld.like(kw, escape='\\'))

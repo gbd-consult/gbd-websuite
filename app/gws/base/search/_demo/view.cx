@@ -1,0 +1,50 @@
+projects+ {
+    title "Search in view"
+    metadata.abstract "Full-text search, limited to the current map extent"
+
+    client.addElements+ { tag "Sidebar.Search" }
+    client.options.sidebarActiveTab "Sidebar.Search"
+
+    api.actions+ { type "search" }
+
+    finders+ {
+        type "postgres"
+        tableName "edit.poi"
+
+        spatialContext "view"
+
+        models+ {
+            type "postgres"
+            sort+ { fieldName "name" }
+
+            fields+ {
+                name "id"
+                type "integer"
+                isPrimaryKey true
+            }
+            fields+ {
+                name "name"
+                type "text"
+                textSearch { type "any" minLength 3 }
+            }
+            fields+ {
+                name "geom"
+                type "geometry"
+            }
+        }
+
+        templates+ {
+            type "html"
+            subject "feature.title"
+            text "{{name}}"
+        }
+    }
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 30000
+        zoom.maxScale  1000000
+    }
+
+    {demo_osm_background}
+}

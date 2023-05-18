@@ -150,7 +150,9 @@ class Object(gws.Node, gws.IModel):
             attributes={},
             cssSelector=feature.cssSelector,
             errors=feature.errors,
+            geometryName=self.geometryName,
             isNew=feature.isNew,
+            keyName=self.keyName,
             modelUid=self.uid,
             uid=feature.uid(),
             views=feature.views,
@@ -168,9 +170,6 @@ class Object(gws.Node, gws.IModel):
         return props
 
     ##
-
-    def feature_matches(self, feature, search, user) -> bool:
-        return all(f.feature_matches(feature, search, ) for f in self.fields)
 
     def field(self, name):
         for f in self.fields:

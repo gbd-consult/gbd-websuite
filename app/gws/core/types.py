@@ -1724,6 +1724,28 @@ class SearchQuery(Data):
     views: list[str]
 
 
+class TextSearchType(Enum):
+    exact = 'exact'
+    """match the whole string"""
+    begin = 'begin'
+    """match the beginning of the string"""
+    end = 'end'
+    """match the end of the string"""
+    any = 'any'
+    """match any substring"""
+    like = 'like'
+    """use the percent sign as a placeholder"""
+
+
+class TextSearchOptions(Data):
+    type: TextSearchType
+    """type of the search"""
+    minLength: int = 0
+    """minimal pattern length"""
+    caseSensitive: bool = False
+    """use the case sensitive search"""
+
+
 class IFinder(INode, Protocol):
     supportsFilterSearch: bool = False
     supportsGeometrySearch: bool = False

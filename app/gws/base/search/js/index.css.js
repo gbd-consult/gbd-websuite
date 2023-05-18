@@ -55,7 +55,7 @@ module.exports = v => ({
         }
     },
 
-    '.searchResultsFeatureText': {
+    '.searchResultsTeaser': {
         position: 'relative',
         'p.head': {
             color: v.FOCUS_COLOR,

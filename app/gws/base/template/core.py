@@ -115,16 +115,16 @@ def locate(
             app = obj.root.app
             tpl = locate_in(obj)
             if tpl:
-                gws.log.debug(f'template.locate: found {subject=} in {obj=} {user=} {mime=}')
+                # gws.log.debug(f'template.locate: found {subject=} in {obj=} {user=} {mime=}')
                 return tpl
 
     if app:
         tpl = locate_in(app)
         if tpl:
-            gws.log.debug(f'template.locate: found {subject=} in APP {user=} {mime=}')
+            # gws.log.debug(f'template.locate: found {subject=} in APP {user=} {mime=}')
             return tpl
 
-    gws.log.debug(f'template.locate: NOT FOUND {subject=}')
+    # gws.log.debug(f'template.locate: NOT FOUND {subject=}')
 
 
 ##

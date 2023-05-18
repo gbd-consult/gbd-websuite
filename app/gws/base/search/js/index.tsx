@@ -33,18 +33,52 @@ const SearchStoreKeys = [
 
 class SearchResults extends gws.View<SearchViewProps> {
     render() {
+        let cc = _master(this);
+
         if (!this.props.searchResults || !this.props.searchResults.length)
             return null;
+
+        let zoomTo = f => this.props.controller.update({
+            marker: {
+                features: [f],
+                mode: 'zoom draw fade'
+            }
+        });
+
+        let leftButton = f => {
+            if (f.geometry)
+                return <components.list.Button
+                    className="cmpListZoomListButton"
+                    whenTouched={() => zoomTo(f)}
+                />
+            else
+                return <components.list.Button
+                    className="cmpListDefaultListButton"
+                    whenTouched={() => cc.whenFeatureTouched(f)}
+                />
+        }
+
+        let content = f => {
+            if (f.views.teaser)
+                return <gws.ui.TextBlock
+                    className="searchResultsTeaser"
+                    withHTML
+                    whenTouched={() => cc.whenFeatureTouched(f)}
+                    content={f.views.teaser}
+                />
+            if (f.views.title)
+                return <gws.ui.Link
+                    whenTouched={() => cc.whenFeatureTouched(f)}
+                    content={f.views.title}
+                />
+        }
+
         return <div className="searchResults">
             <components.feature.List
                 controller={this.props.controller}
                 features={this.props.searchResults}
-                content={f => <gws.ui.TextBlock
-                    className="searchResultsFeatureText"
-                    withHTML
-                    whenTouched={() => _master(this).show(f)}
-                    content={f.views.teaser || f.views.title}
-                />}
+                content={content}
+                leftButton={leftButton}
             />
         </div>;
     }
@@ -61,7 +95,7 @@ class SearchBox extends gws.View<SearchViewProps> {
             return <gws.ui.Button
                 className="searchClearButton"
                 tooltip={this.__('searchClearButton')}
-                whenTouched={() => _master(this).clear()}
+                whenTouched={() => _master(this).whenClearButtonTouched()}
             />
     }
 
@@ -75,7 +109,7 @@ class SearchBox extends gws.View<SearchViewProps> {
                     <gws.ui.TextInput
                         value={this.props.searchInput}
                         placeholder={this.__('searchPlaceholder')}
-                        whenChanged={val => _master(this).changed(val)}
+                        whenChanged={val => _master(this).whenSearchChanged(val)}
                     />
                 </Cell>
                 <Cell className='searchSideButton'>{this.sideButton()}</Cell>
@@ -142,7 +176,6 @@ class SearchController extends gws.Controller {
 
             val = val.trim();
             if (!val) {
-                this.clear();
                 return;
             }
 
@@ -174,13 +207,13 @@ class SearchController extends gws.Controller {
 
     }
 
-    changed(value) {
+    whenSearchChanged(value) {
         this.update({
             searchInput: value
         });
     }
 
-    clear() {
+    whenClearButtonTouched() {
         this.update({
             searchInput: '',
             searchWaiting: false,
@@ -190,7 +223,7 @@ class SearchController extends gws.Controller {
         });
     }
 
-    show(f) {
+    whenFeatureTouched(f) {
         this.update({
             marker: {
                 features: [f],

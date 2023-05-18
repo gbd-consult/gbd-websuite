@@ -102,7 +102,10 @@ class Object(gws.Node, gws.IFinder):
         if not model:
             gws.log.debug(f'no model for {user.uid=} in finder {self.uid!r}')
             return []
-        return model.find_features(search, user)
+        return model.find_features(
+            t.cast(gws.SearchQuery, gws.merge(search, shape=self.context_shape(search))),
+            user,
+        )
 
 
 ##

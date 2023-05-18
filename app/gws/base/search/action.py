@@ -68,10 +68,6 @@ class Object(gws.base.action.Object):
         if p.layerUids:
             search.layers = gws.compact(req.acquire(uid, gws.ext.object.layer) for uid in p.layerUids)
 
-        if not search.layers:
-            gws.log.debug(f'no layers found for {p!r}')
-            return []
-
         search.bounds = project.map.bounds
         if p.extent:
             search.bounds = gws.Bounds(crs=p.crs or project.map.bounds.crs, extent=p.extent)
@@ -94,9 +90,11 @@ class Object(gws.base.action.Object):
         if p.keyword.strip():
             search.keyword = p.keyword.strip()
 
-        results = runner.run(search, req.user)
+        results = runner.run(self.root, search, req.user)
         views = p.views or _DEFAULT_VIEWS
         features = []
+
+        gws.time_start(f'SEARCH.FIND: formatting')
 
         for res in results:
             templates = []
@@ -110,5 +108,7 @@ class Object(gws.base.action.Object):
             res.feature.render_views(templates, user=req.user, layer=res.layer)
 
             features.append(res.feature)
+
+        gws.time_end()
 
         return features

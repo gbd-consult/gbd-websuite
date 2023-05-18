@@ -39,6 +39,16 @@ class Object(gws.base.search.finder.Object):
         self.provider = t.cast(provider.Object, gws.base.database.provider.get_for(self, ext_type='postgres'))
         return True
 
+    def configure_model(self, cfg):
+        return self.create_child(
+            gws.ext.object.model,
+            cfg,
+            type=self.extType,
+            _defaultProvider=self.provider,
+            _defaultTableName=self.tableName
+        )
+
+
     # def _filter_to_sql(self, f: gws.SearchFilter):
     #     if not f:
     #         return

@@ -22,6 +22,9 @@ export class Feature implements types.IFeature {
     model: types.IModel;
     map: types.IMapManager;
 
+    keyName: string;
+    geometryName: string;
+
     _editedAttributes: types.Dict = {};
 
     constructor(model: types.IModel) {
@@ -33,11 +36,12 @@ export class Feature implements types.IFeature {
         this.category = ''
         this.cssSelector = ''
         this.views = {}
+
+        this.keyName = this.model.keyName;
+        this.geometryName = this.model.geometryName;
     }
 
     setProps(props) {
-        this.setAttributes(props.attributes || {});
-
         this.category = props.category || '';
         this.views = props.views || {};
 
@@ -50,6 +54,10 @@ export class Feature implements types.IFeature {
 
         this.cssSelector = props.cssSelector || '';
 
+        this.keyName = props.keyName || this.model.keyName;
+        this.geometryName = props.geometryName || this.model.geometryName;
+
+        this.setAttributes(props.attributes || {});
         return this;
     }
 
@@ -93,14 +101,6 @@ export class Feature implements types.IFeature {
     }
 
     //
-
-    get keyName() {
-        return this.model.keyName
-    }
-
-    get geometryName() {
-        return this.model.geometryName
-    }
 
     get geometry() {
         return this.oFeature ? this.oFeature.getGeometry() : null;
