@@ -21,4 +21,4 @@ Das primäre Konfigurationsobjekt ist [](gws.base.application.Config).
 /admin-de/reference/*
 %end
 
-%include ../../../app/__build/configref.de.html
+%include ../../../../app/__build/configref.de.html

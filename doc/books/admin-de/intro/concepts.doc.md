@@ -36,7 +36,7 @@ Eine dynamische POST-Anfrage (z.B. Suche):
 Anhand vom `cmd` Parameter entscheidet der Server welche *Server Aktion* die Bearbeitung der Anfrage übernimmt. Falls die Aktion existiert und richtig konfiguriert ist,  wird die Anfrage zu dieser Aktion weitergeleitet. Die Aktion bearbeitet die Anfrage und stellt eine Antwort bereit, die abhängig von der Natur der Anfrage, in HTML, JSON oder PNG Format vorliegt. Intern sind die Aktionen die Python-Klassen, die für jeden Befehl (`cmd`) über eine Methode verfügen. Im obigen Beispiel (`cmd=mapHttpGetBox`) ist `map` die Aktion und `httpGetBox` die Methode, die diese Anfrage bearbeitet.
 
 %info
- Server Aktionen sind unter [](../../config/actions) beschrieben.
+ Server Aktionen sind unter [Actions](/admin-de/config/actions) beschrieben. MISSING! TODO!
 %end
 
 ## Webseiten und Projekte
@@ -56,7 +56,7 @@ Webseiten und Projekte sind orthogonale Konzepte. Sie können dasselbe Projekt u
 Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Hauptzweck, zusammen mit einem "reichen" Javascript-Client verwendet zu werden, der in der Lage ist, dynamische Web-Maps wie OpenLayers of Leaflet anzuzeigen. Wir bieten einen solchen Client als Teil der GBD WebSuite an und stellen einige Optionen in der Serverkonfiguration zur Verfügung, um unseren Client gezielt zu unterstützen.
 
 %info
- Mehr dazu in [](/admin-de/config/common/client)
+ Mehr dazu in [Client](/admin-de/config/client)
 %end
 
 ## Statische Dokumente und Assets
@@ -66,7 +66,7 @@ Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Haupt
 Ein *Asset* ist dagegen ein Dokument, das dynamisch erzeugt wird, abhängig vom Kontext (eine *Vorlage*) oder nur berechtigten Nutzern zur Verfügung steht. Assets werden in einem speziellen Ordner platziert, der sowohl für eine Webseite als auch Projekt-abhängig konfiguriert werden kann.
 
 %info
- Mehr dazu in ^config/web, ^config/template und ^config/project.
+ Mehr dazu in [App](/admin-de/config/app), [Vorlagen](/admin-de/config/template) und [Projekte](/admin-de/config/project).
 %end
 
 ## Autorisierung
@@ -89,7 +89,7 @@ Individuelle Zugangsdaten (Nutzername, Passwort) werden zu Rollen mittels *Autor
 %end
 
 %info
- Mehr dazu in ^config/auth.
+ Mehr dazu in [Autorisierung](/admin-de/config/auth).
 %end
 
 ## Karten und Layer
@@ -106,7 +106,7 @@ Jedes GBD WebSuite Projekt enthält eine *Karte* (`map`), die eine Sammlung von 
 %end
 
 %info
- ^config/map und ^config/layer.
+ Mehr dazu in [Karten](/admin-de/config/map) und [Layer](/admin-de/config/layer).
 %end
 
 ## Suche und Features
@@ -118,17 +118,17 @@ Ein Feature ist ein Objekt das sowohl Sachdaten in Form von *Attributen*, als au
 GWS bietet Werkzeuge um die Features aus diversen Quellen im Client oder in einem OWS Dienst einheitlich darzustellen. Dazu gehören *Datenmodellen* (`dataModel`), die Attributen transformieren und *Vorlagen* (`template`), die aus Attributen Präsentationsobjekte, wie HTML Snippets, erstellen.
 
 %info
- ^config/search und ^config/feature.
+ Mehr dazu in [Suche](/admin-de/config/search) und [Features](/admin-de/config/feature).
 %end
 
 ## Arbeiten mit QGIS
 
-Die GBD WebSuite bietet dedizierten Support für `QGIS <https://qgis.org>`_, ein kostenloses und quelloffenes geografisches Informationssystem. Die Unterstützung ist optional und kann abgeschaltet werden, wenn Sie QGIS nicht verwenden.
+Die GBD WebSuite bietet dedizierten Support für [QGIS](https://qgis.org), ein kostenloses und quelloffenes geografisches Informationssystem. Die Unterstützung ist optional und kann abgeschaltet werden, wenn Sie QGIS nicht verwenden.
 
 QGIS Projekte können in den GWS Karten reibungslos integriert werden. Ein QGIS Projekt wird als ein Layer in der GWS Karte dargestellt und kann mit anderen Layer-Typen frei kombiniert werden.
 
 Für Drucken unterstützt GWS auch die QGIS Druckvorlagen ("Layouts"), die auch für nicht-QGIS Karten verwendet werden können.
 
 %info
- Mehr dazu in ^config/qgis.
+ Mehr dazu im [QGIS-Plugin](/admin-de/plugin/qgis).
 %end

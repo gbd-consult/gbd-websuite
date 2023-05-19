@@ -68,7 +68,7 @@ Der Einstiegspunkt für die Konfiguration ist per Default `/data/config.json`. A
 Um eine andere Datei als Einstiegspunkt zu verwenden setzen Sie die Umgebungsvariable `GWS_CONFIG`.
 
 %info
- Die Konfigurationsformate sind unter ^config/intro beschrieben.
+ Die Konfigurationsformate sind unter [Einführung](/admin-de/config-introduction/konfigurationsformate) beschrieben.
 %end
 
 ### Externe Adressen
