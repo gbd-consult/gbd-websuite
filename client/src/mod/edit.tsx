@@ -285,11 +285,16 @@ class FeatureDetailsTab extends gws.View<EditViewProps> {
             ...es.feature.editedAttributes,
         };
 
+        let title = cc.featureTitle(es.feature);
+        try {
+            title = es.feature.model.getLayer().title + ': ' + title
+        } catch {}
+
         return <sidebar.Tab className="modEditSidebar modEditSidebarFormTab">
             <sidebar.TabHeader>
                 <Row>
                     <Cell flex>
-                        <gws.ui.Title content={cc.featureTitle(es.feature)}/>
+                        <gws.ui.Title content={title}/>
                     </Cell>
                 </Row>
             </sidebar.TabHeader>
@@ -399,6 +404,11 @@ class FeatureListTab extends gws.View<EditViewProps> {
                         whenTouched={() => cc.whenGotoLayersButtonTouched()}
                     />
                     <Cell flex/>
+                    {hasGeom && <sidebar.AuxButton
+                        {...gws.tools.cls('modEditPointerAuxButton', this.props.appActiveTool === 'Tool.Edit.Pointer' && 'isActive')}
+                        tooltip={this.__('modEditPointerAuxButton')}
+                        whenTouched={() => cc.whenFeatureListPointerButtonTouched()}
+                    />}
                     <sidebar.AuxButton
                         {...gws.tools.cls('modEditAddAuxButton')}
                         tooltip={this.__('modEditAddAuxButton')}
@@ -695,6 +705,10 @@ class Controller extends gws.Controller {
     async whenFeatureListNewButtonTouched() {
         let feature = await this.createNewFeature(this.activeLayer, {}, null);
         this.activateFeature(feature, 'pan');
+    }
+
+    async whenFeatureListPointerButtonTouched() {
+        this.app.toggleTool('Tool.Edit.Pointer');
     }
 
     //
