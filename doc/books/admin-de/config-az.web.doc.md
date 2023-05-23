@@ -1,6 +1,6 @@
 # Web Server :/admin-de/config-az/web
 
-TODO! %reference_de 'gws.base.application.WebConfig'
+TODO! %reference_de 'gws.base.web.site.Config¶'
 
 Web-Inhalte (HTML-Dateien, Bilder, Downloads) werden in der GBD WebSuite von dem integrierten NGINX, einem schnellen und zuverlässigen Web-Server, verarbeitet.
 
@@ -32,7 +32,7 @@ dann wird das Asset zuerst in den Projekt-Assets gesucht, wenn es nicht gefunden
 
 *Rewrite-Regel* ermöglicht es Ihnen, komplizierte GET-Anfragen in einer einfacheren Form darzustellen. Eine Regel besteht aus zwei Komponenten: das ``match`` ist ein regulärer Ausdruck und das ``target`` ist die endgültige URL mit Platzhaltern ``$1``, ``$2`` usw , die den Capture-Gruppen ``(...)`` im diesem Ausdruck entsprechen. Wenn die Ziel-URL absolut ist (beginnt mit einem Schema), führt der Server einen Redirect statt eines Rewritings durch.
 
-Zum Beispiel, diese "schöne" URLs ::
+Zum Beispiel, diese "schöne" URLs
 
     http://example.com/pages/products
     http://example.com/pages/services
@@ -41,10 +41,10 @@ können mit dieser Regel
 
 ```javascript
 
-    {
-        "match": "^/pages/([a-z]+)",
-        "target": "_?cmd=assetHttpGetPath&path=page_$1.html"
-    }
+{
+    "match": "^/pages/([a-z]+)",
+    "target": "_?cmd=assetHttpGetPath&path=page_$1.html"
+}
 ```
 
 in folgende Asset-Anfragen umgewandelt werden
@@ -77,13 +77,13 @@ SSL kann unter ``web.ssl`` konfiguriert werden. Sie müssen Pfade (wie im Contai
 
 ```javascript
 
-    "web": {
-        ...
-        "ssl": {
-            "crt": "/path/to/your-certificate-bundle.crt",
-            "key": "/path/to/your-private-key.crt"
-        }
+"web": {
+    ...
+    "ssl": {
+        "crt": "/path/to/your-certificate-bundle.crt",
+        "key": "/path/to/your-private-key.crt"
     }
+}
 ```
 
 Wenn Ihr Zertifikat aus separaten Dateien besteht (z. B. Domainzertifikat, Zwischenzertifikat und Stammzertifikat), können Sie das Bundle erstellen, indem Sie sie zusammenfügen

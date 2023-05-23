@@ -13,3 +13,5 @@ Weitere Informationen zum GBD WebSuite Projekt finden Sie unter https://gbd-webs
 ## :/admin-de/plugin
 
 ## :/admin-de/reference
+
+## :/admin-de/cli

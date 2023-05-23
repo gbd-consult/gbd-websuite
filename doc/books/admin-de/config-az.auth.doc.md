@@ -5,7 +5,7 @@ Eine Rolle in der GBD WebSuit wird mit einer einfachen Zeichenkette bezeichnet. 
 Zugangsreglungen
 ----------------
 
-TODO! %reference_de 'gws.types.Access'
+%reference_de 'gws.core.types.AccessConfig'
 
 In der Konfiguration können einige Typen von Objekten verknüpft sein mit Zugangsblock (``access``) Konfigurationen, wie z.B.
 
@@ -43,33 +43,33 @@ Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt kei
 
 ```javascript
 
-    "app": {
-        "access": [
-            {
-                "role": "all",
-                "type": "allow"
-            }
-        ]
-    }
+"app": {
+    "access": [
+        {
+            "role": "all",
+            "type": "allow"
+        }
+    ]
+}
 ```
 
 Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen, benötigen Sie zwei Zugriffsregeln: eine, um eine bestimmte Rolle zuzulassen, und eine, um ``all`` zu verwehren: ::
 
 ```javascript
 
-    # project
-    { 
-        "access": [
-            {
-                "role": "member",
-                "type": "allow"
-            },
-            {
-                "role": "all",
-                "type": "deny"
-            }
-        ]
-    }
+# project
+{ 
+    "access": [
+        {
+            "role": "member",
+            "type": "allow"
+        },
+        {
+            "role": "all",
+            "type": "deny"
+        }
+    ]
+}
 ```
 
 ### selektives ``allow``
@@ -78,34 +78,34 @@ Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist 
 
 ```javascript
 
-    "app": {
-        "access": [
-            {
-                "role": "all",
-                "type": "deny"
-            }
-        ]
-    }
+"app": {
+    "access": [
+        {
+            "role": "all",
+            "type": "deny"
+        }
+    ]
+}
 ```
 
 und erlauben dann explizit den Zugriff auf bestimmte Objekte:
 
 ```javascript
 
-    #project
-    {
-        "access": [
-            {
-                "role": "member",
-                "type": "allow"
-            }
-        ]
-    }
+#project
+{
+    "access": [
+        {
+            "role": "member",
+            "type": "allow"
+        }
+    ]
+}
 ```
 
 ## Aktion ``auth``
 
-TODO! %reference_de 'gws.ext.action.auth.Config'
+%reference_de 'gws.base.auth.manager.Config'
 
 Diese Aktion ist für die Bearbeitung der Zugangsdaten zuständig und muss freigeschaltet sein wenn Sie Logins verwenden. Wenn Sie die "deny all" Strategie folgen, achten Sie darauf, dass die ``auth`` Aktion für ``all`` zugänglich ist, andernfalls könnten sich Ihre Benutzer nicht einmal anmelden.
 
@@ -115,22 +115,22 @@ Die Aufgabe eines Autorisierungsanbieters ist, die Zugangsdaten mit der Quelle z
 
 ### file
 
-TODO! %reference_de 'gws.ext.auth.provider.file.Config'
+%reference_de 'gws.plugin.auth_provider.file.Config'
 
 Der Dateianbieter verwendet eine einfache Json-Datei, um Zugangsdaten zu speichern. Der json ist nur ein Array von "user"-Objekten:
 
 ```javascript
-    [
-        {
-            "login": "user login",
-            "password": "sha512 encoded password",
-            "name": "display name for the user",
-            "roles": [ "role1", "role2", ...]
-        },
-        {
-            ...
-        }
+[
+    {
+        "login": "user login",
+        "password": "sha512 encoded password",
+        "name": "display name for the user",
+        "roles": [ "role1", "role2", ...]
+    },
+    {
+        ...
     }
+]
 ```
 
 Der Name und der Speicherort der Datei ist Ihnen überlassen, geben Sie einfach ihren absoluten Pfad in der Konfiguration an.
@@ -146,37 +146,37 @@ TODO! %reference_de 'gws.ext.auth.provider.ldap.Config'
 Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuit Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys.com` bereitgestellten [LDAP-Testservers](http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server)
 
 ```javascript
-    {
-        "type": "ldap",
+{
+    "type": "ldap",
 
-        ## das Format ist  "ldap://host:port/baseDN?searchAttribute":
+    ## das Format ist  "ldap://host:port/baseDN?searchAttribute":
 
-        "url": "ldap://ldap.forumsys.com:389/dc=example,dc=com?uid",
+    "url": "ldap://ldap.forumsys.com:389/dc=example,dc=com?uid",
 
-        ## Anmeldeinformationen, um sich an den Server zu binden:
+    ## Anmeldeinformationen, um sich an den Server zu binden:
 
-        "bindDN": "cn=read-only-admin,dc=example,dc=com",
-        "bindPassword": "password",
+    "bindDN": "cn=read-only-admin,dc=example,dc=com",
+    "bindPassword": "password",
 
-        ## Filter auf Rollen abbilden:
+    ## Filter auf Rollen abbilden:
 
-        "users": [
+    "users": [
 
-            ## LDAP-Benutzer "euler" hat Rollen "moderator" und "expert":
+        ## LDAP-Benutzer "euler" hat Rollen "moderator" und "expert":
 
-            {
-                "matches": "(&(cn=euler))",
-                "roles": ["moderator", "expert"]
-            },
+        {
+            "matches": "(&(cn=euler))",
+            "roles": ["moderator", "expert"]
+        },
 
-            ## alle Mitglieder der LDAP-Gruppe "mathematicians" haben die Rolle "member":
+        ## alle Mitglieder der LDAP-Gruppe "mathematicians" haben die Rolle "member":
 
-            {
-                "memberOf": "mathematicians",
-                "roles": ["member"]
-            }
-        ]
-    }
+        {
+            "memberOf": "mathematicians",
+            "roles": ["member"]
+        }
+    ]
+}
 ```
 
 ## Autorisierungsmethoden
@@ -185,7 +185,7 @@ Eine Autorisierungsmethode sorgt dafür, dass die Zugangsdaten vom Nutzer zu ein
 
 ### web
 
-TODO! %reference_de 'gws.ext.auth.method.web.Config'
+%reference_de 'gws.plugin.auth_method.web.action.Config'
 
 Sendet die Zugangsdaten als eine JSON-Struktur an den Server Endpunkt. Bei der positiven Prüfung setzt der Server ein Sitzungscookie, das bei weiteren Anfragen mitgesendet wird.
 
@@ -217,11 +217,11 @@ Im Browser wird zur Bearbeitung eines Login-Formulars eine Javascript Funktion b
 
 Die Definitionen der Funktionen ``gwsLogin`` und ``gwsLogout`` finder Sie unter https://github.com/gbd-consult/gbd-websuite/blob/master/client/src/gws-start.js. Sie können auch eigene Funktionen verwenden.
 
-Siehe auch ^template für Details über die Vorlagen-Sprache.
+Siehe auch [Vorlage](/admin-de/config-az/template) für Details über die Vorlagen-Sprache.
 
 ### basic
 
-TODO! %reference_de 'gws.ext.auth.method.basic.Config'
+%reference_de 'gws.plugin.auth_method.basic.Config'
 
 Mit dieser Methode werden die Zugangsdaten in HTTP Header mitgesendet. Diese Methode in vor allem für automatische Anmeldungen durch QGIS Plugins und geschützten OWS Dienste gedacht.
 

@@ -1,6 +1,6 @@
 # Metadaten :/admin-de/config-az/metadata
 
-TODO! %reference_de 'gws.lib.metadata.Config'
+%reference_de 'gws.core.types.Metadata'
 
 GBD WebSuite Metadata konfiguration ist umfangreich und beinhaltet folgende Themen:
 
@@ -12,33 +12,35 @@ Die Metadaten können bei Projekten, Layern und OWS Diensten separat konfigurier
 
 ```javascript
 
-    "actions": [
-        ...
-        {
-            "type": "ows",
-            "services": [
-                "type": "wms",
-                "uid": "my_wms_service",
-                "meta": {
-                    "name": "WMS",
-                    "title": "Mein WMS Dienst",
-                }
+"actions": [
+    ...
+    {
+        "type": "ows",
+        "services": [
+            "type": "wms",
+            "uid": "my_wms_service",
+            "meta": {
+                "name": "WMS",
+                "title": "Mein WMS Dienst",
             }
         }
-        ...
+    }
+    ...
+]
 ```
 
 und in einer Projekt-Konfiguration folgendes:
 
 ```javascript
 
-    ...
+...
+{
     "uid": "meinprojekt",
     "meta": {
         "abstract": "Mehr über Mein Projekt"
         }
-    }
-    ...
+}
+...
 ```
 
 dann werden die Capabilities unter der URL

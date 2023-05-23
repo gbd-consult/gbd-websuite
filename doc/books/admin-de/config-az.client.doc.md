@@ -60,39 +60,38 @@ Hier ist ein Vorlage der Client-Seite, die Sie nach Ihren Bedürfnissen anpassen
     </html>
 ```
 
-Um diese Vorlage für mehrere Projekte zu verwenden, setzen Sie den ``GWS_PROJECT_UID`` auf einen dynamischen Wert: ::
+Um diese Vorlage für mehrere Projekte zu verwenden, setzen Sie den ``GWS_PROJECT_UID`` auf einen dynamischen Wert:
 
     GWS_PROJECT_UID = "{project.uid}";
 
-und speichern Sie die Vorlage als z.B. "project.html" in Ihren ``assets`` Ordner. Dann kann diese Seit im Browser wie folgt aufgerufen werden: ::
+und speichern Sie die Vorlage als z.B. "project.html" in Ihren ``assets`` Ordner. Dann kann diese Seit im Browser wie folgt aufgerufen werden:
 
     http://example.com/_?cmd=assetHttpGetPath&path=project.html&projectUid=meinprojekt
 
 Diese URL kann auch "schöner" gemacht werden, indem Sie diese Rewrite-Regel verwenden: ::
 
 ```javascript
-    {
-        "match": "^/project/([a-z][a-z0-9_]*)",
-        "target": "_?cmd=assetHttpGetPath&path=project.html&projectUid=$1"
-    }
+{
+    "match": "^/project/([a-z][a-z0-9_]*)",
+    "target": "_?cmd=assetHttpGetPath&path=project.html&projectUid=$1"
+}
 ```
 
-Dann heißt die URL einfach ::
+Dann heißt die URL einfach
 
     http://example.com/project/meinprojekt
 
-Für mehr Info s. ^web.
+Für mehr Info siehe [Web Server](/admin-de/config-az/web).
 
 ## UI-Konfiguration
 
-TODO! %reference_de 'gws.base.client.Config'
+%reference_de 'gws.base.client.core.Config'
 
 Jedes GBD WebSuite Projekt, wie auch die Hauptanwendung, kann ein ``client`` Objekt enthalten, das verschiedene Optionen für den Client und dessen UI-Layout beschreibt, so dass Sie bestimmte UI-Elemente pro Projekt ein- und ausschalten können. Dieses Objekt besteht aus zwei Teilen: ``options`` (generelle Optionen) und ``elements`` (Auflistung der UI Elemente).
 
 ### options
 
 Die Optionen sind wie folgt:
-
 
 | Option | Typ | Bedeutung | Beispielwert |
 |---|---|---|---|
@@ -107,7 +106,6 @@ Die Optionen sind wie folgt:
 Jede Element Konfiguration enthält einen Tag-Namen sowie optional eine Zugriffsberechtigung, sodass die UI Elemente nur für bestimmte Nutzer erscheinen.
 
 Es werden folgende Element-Tags unterstützt:
-
 
 *untere Leiste*
 
@@ -128,9 +126,9 @@ Es werden folgende Element-Tags unterstützt:
 |---|---|
 |``Sidebar.Alkis`` | Flurstücksuche |
 |``Sidebar.Annotate`` | Markieren und Messen |
-|``Sidebar.Bplan`` | Bauleitplanung (s. ^bplan) |
-|``Sidebar.Dimension`` | Bemaßung (s. ^dimension) |
-|``Sidebar.Edit`` | Digitalisierung (s. ^digitize) |
+|``Sidebar.Bplan`` | Bauleitplanung, siehe [Bauleitplanung](/admin-de/config-az/bplan) |
+|``Sidebar.Dimension`` | Bemaßung, siehe [Bemaßung](/admin-de/config-az/dimension) |
+|``Sidebar.Edit`` | Digitalisierung, siehe [Digitalisierung](/admin-de/plugin/edit) |
 |``Sidebar.Layers`` | Layerbaum |
 |``Sidebar.Overview`` | Projektübersicht |
 |``Sidebar.Search`` | Suche |
@@ -143,8 +141,8 @@ Es werden folgende Element-Tags unterstützt:
 |---|---|
 |``Toolbar.Annotate`` | Markieren und Messen |
 |``Toolbar.Dimension`` | Bemaßung |
-|``Toolbar.Dprocon`` | DPro-Con aufurfen (s. ^dprocon) |
-|``Toolbar.Gekos`` | GekoS aufrufen (s. ^gekos) |
+|``Toolbar.Dprocon`` | D-ProCon aufurfen, siehe [D-ProCon](/admin-de/config-az/dprocon) |
+|``Toolbar.Gekos`` | GekoS aufrufen, siehe [GekoS Integration](/admin-de/config-az/gekos) |
 |``Toolbar.Identify.Click`` | Objekt-Identifizierung mit Klicken |
 |``Toolbar.Identify.Hover`` | Objekt-Identifizierung mit Ziehen |
 |``Toolbar.Lens`` | räumliche Suche |
@@ -152,7 +150,7 @@ Es werden folgende Element-Tags unterstützt:
 |``Toolbar.Print`` | Drucken |
 |``Toolbar.Select`` | Objekte auswählen |
 |``Toolbar.Snapshot`` | Screenshot |
-|``Toolbar.Tabedit`` | tabellarisches Editieren (s. ^tabedit) |
+|``Toolbar.Tabedit`` | tabellarisches Editieren, siehe [Tabellarisces Editieren](/admin-de/plugin/tabedit) |
 
 *Popup-Menüs für Feature Objekte*
 
@@ -171,12 +169,12 @@ Es werden folgende Element-Tags unterstützt:
 |``Altbar.Search`` | Such-Box in rechten Bereich |
 |``Decoration.Attribution`` | Attribution auf der Karte |
 |``Decoration.ScaleRuler`` | Maßstabsbalken auf der Karte |
-|``Storage.Read`` | Datenablage lesen (s. ^storage) |
-|``Storage.Write`` | in der Datenablage speichern (s. ^storage) |
+|``Storage.Read`` | Datenablage lesen, siehe [Datenablage](/admin-de/config-az/storage) |
+|``Storage.Write`` | in der Datenablage speichern, siehe [Datenablage](/admin-de/config-az/storage) |
 
 ### Layer flags
 
-TODO! %reference_de 'gws.base.layer.types.ClientOptions'
+%reference_de 'gws.base.layer.core.ClientOptions'
 
 Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll.
 
@@ -203,5 +201,5 @@ Sie können den Stil der integrierten Funktionen anpassen, z. B. Markierungen vo
 |``.gws.modAnnotateCircle`` | Kreis-Markierung |
 
 %info
- Unter ^style finden Sie eine Auflistung von CSS Eingenschaften.
+ Unter [Styling](/admin-de/config-az/style) finden Sie eine Auflistung von CSS Eingenschaften.
 %end

@@ -7,10 +7,10 @@ Alle Anfragen an den GBD WebSuite Server und alle Serverantworten werden als ``U
 Beispiel für die Gebietsschema-Konfiguration:
 
 ```javascript
-    {
-        "locales": ["de_DE", "en_US"],
-        "timeZone": "Europe/Berlin"
-    }
+{
+    "locales": ["de_DE", "en_US"],
+    "timeZone": "Europe/Berlin"
+}
 ```
 
 Für Druckvorlagen bieten wir lokale ``date`` und ``time`` Objekte, mit den Eigenschaften ``long``, ``medium`` und ``short``. Ausgabebeispiele für das Gebietsschema ``de_DE``:

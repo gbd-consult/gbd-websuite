@@ -2,7 +2,7 @@
 
 In diesem Kapitel finden Sie eine detaillierte Beschreibung der GBD WebSuite Konfiguration. 
 
-Die GBD WebSuite Konfiguration besteht aus Applikations-Konfigurationsdatein [App](/admin-de/config/app) und optional mehrere Projekt-Konfigurationsdateien [Projekte](/admin-de/config/project). Die Struktur der Konfigurationsobjekte ist in [Referenz](/admin-de/reference) vollständig beschrieben.
+Die GBD WebSuite Konfiguration besteht aus Applikations-Konfigurationsdatein [App](/admin-de/config-az/app) und optional mehrere Projekt-Konfigurationsdateien [Projekte](/admin-de/config-az/project). Die Struktur der Konfigurationsobjekte ist in [Referenz](/admin-de/reference) vollständig beschrieben.
 
 ### Konfigurationsformate
 
@@ -21,7 +21,7 @@ Bei [JSON](https://www.json.org) handelt es sich um ein gängiges Konfigurations
 [SLON](https://github.com/gebrkn/slon) ist  eine Alternative zu JSON, die die Strukturen in einer weiter vereinfachten Form darstellt. Bei diesem Format können Sie auch alle Befehle der Templating-Sprache verwenden (wie z.B. `@include` oder `@if`). Konfigdateien im SLON Format müssen eine Erweiterung `.cx` haben.
 
 %info
- Mehr über Templating-Sprache lesen Sie unter [Vorlagen](/admin-de/config/template).
+ Mehr über Templating-Sprache lesen Sie unter [Vorlagen](/admin-de/config-az/template).
 %end
 
 #### python
@@ -53,5 +53,5 @@ Diese Optionen können miteinander auch frei kombiniert werden.
 GWS Server enthält ein *Monitor* Modul, der das Dateisystem überwacht, die Änderungen in Ihren Projekten und Konfigurationen überprüft und ggf. einen Hot-Reload des Servers durchführt. Sie können Intervalle für diese Prüfungen konfigurieren, es wird empfohlen, das Monitorintervall auf mindestens 30 Sekunden einzustellen, da Dateisystemprüfungen ressourcenintensiv sind.
 
 %info
- Sie können Monitoring unter [Server](/admin-de/config/server) konfigurieren.
+ Sie können Monitoring unter [Server](/admin-de/config-az/server) konfigurieren.
 %end

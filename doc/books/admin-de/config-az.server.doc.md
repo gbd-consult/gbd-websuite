@@ -1,6 +1,6 @@
 # Server Konfiguration :/admin-de/config-az/server
 
-TODO!  %reference_de 'gws.server.types.Config'
+%reference_de 'gws.server.core.Config'
 
 ## Loggen
 
@@ -20,7 +20,7 @@ Für das Loggen sind folgende Stufen definiert:
 
 Die GBD WebSuite betreibt intern mehrere Servermodule:
 
-- das ``web``-Modul, das eingehende Anfragen entgegennimmt und versendet [Web Server](/admin-de/config/web)
+- das ``web``-Modul, das eingehende Anfragen entgegennimmt und versendet [Web Server](/admin-de/config-az/web)
 - das ``mapproxy`` Modul, das den gebündelten MapProxy ausführt und sich um externe Quellen, Caching und Umprojizieren kümmert
 - das ``qgis`` Modul, das den gebündelten QGIS Server betreibt und QGIS Projekte und Layer rendert [QGIS](/admin-de/intro/concepts)
 - das ``spool`` Modul, das den Druck und andere Hintergrundaufgaben übernimmt.
@@ -36,7 +36,7 @@ Normalerweise, überwacht der Montior folgende Daten und Ordner:
 
 - App-Konfigurationsdatei
 - Projekt-Konfigurationsdateien
-- Projekt-Konfigurations-Ordner, falls Sie die Option ``projectDirs`` verwenden [Applikation](/admin-de/config/app)
+- Projekt-Konfigurations-Ordner, falls Sie die Option ``projectDirs`` verwenden [Applikation](/admin-de/config-az/app)
 - Vorlagen
 - QGIS Projekte
 
