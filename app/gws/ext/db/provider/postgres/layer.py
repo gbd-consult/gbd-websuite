@@ -25,6 +25,7 @@ class Object(gws.common.layer.Vector):
         super().configure()
 
         self.is_editable = True
+        self.filter = self.var('filter') or '1 = 1'
 
         self.provider = t.cast(provider.Object, gws.common.db.require_provider(self, provider.Object))
         self.table = self.provider.configure_table(self.var('table'))
@@ -64,7 +65,7 @@ class Object(gws.common.layer.Vector):
     def get_features(self, bounds, limit=0) -> t.List[t.IFeature]:
         shape = gws.gis.shape.from_bounds(bounds).transformed_to(self.table.geometry_crs)
 
-        where = self.options.filter or '1=1'
+        where = self.filter or '1=1'
         fs = self.provider.select(t.SelectArgs(
             table=self.table,
             shape=shape,
@@ -75,10 +76,9 @@ class Object(gws.common.layer.Vector):
         return [self.connect_feature(f) for f in fs]
 
     def get_editable_features(self) -> t.List[t.IFeature]:
-        where = self.edit_options.filter or '1=1'
         fs = self.provider.select(t.SelectArgs(
             table=self.table,
-            extra_where=[where],
+            extra_where=[self.filter],
             sort=self.table.search_column,
         ))
         return [self.connect_feature(f) for f in fs]
