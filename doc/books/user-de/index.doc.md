@@ -6,9 +6,11 @@ Weitere Informationen zum GBD WebSuite Projekt finden Sie unter https://gbd-webs
 
 ## Einführung :intro
 
-Die GBD WebSuite ist eine Open Source WebGIS Plattform zur Geodatenverarbeitung. Das Projekt wurde im Herbst 2017 begonnen. Am 10. Januar 2019 wurde die Version 1.0.0 veröffentlicht und über github und dockerhub bereitgestellt. Seit dieser Zeit arbeiten wir hart daran, die GBD WebSuite zu verbessern und mit neuer Funktionalität zu erweitern.
+Die GBD WebSuite ist eine modulare Open Source WebGIS Plattform zur Geodatenverarbeitung. 
 
-Dem Anwender stellt die GBD WebSuite eine Vielzahl an GIS Funktionalität zur Verfügung, um Informationen in der Karte zu suchen, abzufragen, zu erstellen, zu bearbeiten und als druckfertige Karte auszugeben. Externe (Fach-)Anwendungen und neue Funktionalität können modular integriert und deren Nutzung individuell konfiguriert werden.
+Das Projekt wurde im Herbst 2017 begonnen. Am 10. Januar 2019 wurde die Version 1.0.0 veröffentlicht und über github und dockerhub bereitgestellt. Seit dieser Zeit arbeiten wir hart daran, die GBD WebSuite zu verbessern und mit neuer Funktionalität zu erweitern.
+
+Dem Anwender stellt die GBD WebSuite eine Vielzahl an GIS Funktionalität durch Kernfunktionen und Erweiterungen zur Verfügung, um Informationen in der Karte zu suchen, abzufragen, zu erstellen, zu bearbeiten und als druckfertige Karte auszugeben. Externe (Fach-)Anwendungen und neue Funktionalität können modular integriert und deren Nutzung individuell konfiguriert werden.
 
 Die GBD WebSuite wird unter der GNU Affero General Public License (AGPL) veröffentlicht. Weitere Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gbd-websuite.de/
 
