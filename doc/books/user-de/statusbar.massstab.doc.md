@@ -1,3 +1,7 @@
-# Massstab :/user-de/statusbar.massstab
+# Maßstab :/user-de/statusbar.massstab
 
-Über das Statusbar Tool ![](massstab.png) {title Maßstab} kann 
+Über den ![](massstab.png) {title Maßstab} Schieberegler kann der Kartenmaßstab in den für das Projekt konfigurierten Grenzen mit gedrückter linker Maustaster auf den Punkt im Schieberegler frei eingestellt werden. 
+
+Durch einen Klick mit der linken Maustaste auf den Maßstabswert kann ein gewünschter Wert für den Maßstab direkt eingetragen werden.
+
+
