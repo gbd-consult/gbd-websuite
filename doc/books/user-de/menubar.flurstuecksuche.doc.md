@@ -2,23 +2,15 @@
 
 Über das Menü ![](gbd-icon-flurstuecksuche-01.svg) {title Flurstücksuche} kann eine Beauskunftung zu amtlichen Liegenschaftsdaten "ALKIS" stattfinden.
 
-Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen verschiedene Suchfelder zur Auswahl die individuell konfiguriert werden können. So kann man Flurstücke nach Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen.
+Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen konfigurierbare Suchfelder zur Auswahl. So kann man Flurstücke z.B. nach Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen.
 
-Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden. Dabei werden die Inhalte aller Felder gelöscht.
+Die Flurstücksuche wird über das Icon ![](baseline-search-24px.svg){button Suche} gestartet. Eine neue Anfrage findet über das Icon ![](baseline-delete_sweep-24px.svg){button Neue Anfrage} statt. Dabei werden die bisherigen Inhalte aller Felder gelöscht.
 
 ![](cadastral_unit_searching_1.png)
 
-%info
-    Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten, die je nach Bundesland unterschiedlich sein kann. Für die Suche nach einer Adresse ist aktuell eine Eingrenzung über eine Gemarkung vorzunehmen.
-%end
-
 **Anzeigen der Ergebnisse**
 
-%info
- Für die Ausgabe der Ergebnisse kann die maximale Anzahl der Flurstücke konfiguriert werden.
-%end
-
-Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Ergebnisse in der Karte markiert und unter |results| ``Ergebnisse`` aufgelistet.
+Nach dem Anklicken des Icons ![](baseline-search-24px.svg){button Suche} unter den Suchfeldern, werden die Ergebnisse in der Karte markiert und unter |results| ``Ergebnisse`` aufgelistet.
 
 ![](cadastral_unit_searching_2.png)
 
@@ -51,11 +43,11 @@ Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen u
 
 Die Flurstückinformationen bestehen aus unterschiedlichen Teilbereichen. Beim Export in das CSV Format können Sie eine Auswahl treffen und dann auf den Button ``Exportieren`` klicken.
 
-.. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
-  :align: center
+![](cadastral_unit_searching_area_csv.png)
 
-.. note::
+%info
    Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen. Das ist u.a. dann der Fall, wenn ein Flurstück mehrere Eigentümer hat.
+%end
 
 **Drucken der Flurstückinformationen**
 
