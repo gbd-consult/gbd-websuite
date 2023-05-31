@@ -1,3 +1,3 @@
 # Freier Verweis :/user-de/statusbar.freier-link
 
-Über das Statusbar Icon ![](info_fill_24px.svg) {title Freier Verweis} kann 
+Mit der Funktionalität ![](info_fill_24px.svg) {title Freier Verweis} kann über die Statusleiste ein individueller Verweis erstellt werden. Dabei ist der Verweis als auch das Icon frei konfigurierbar. Es kann darüber z.B. ein Dokument geladen oder auf eine andere Webseite weitergeleitet werden.

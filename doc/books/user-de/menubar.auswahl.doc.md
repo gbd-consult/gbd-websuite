@@ -1,10 +1,10 @@
 # Auswahl :/user-de/menubar.auswahl
 
-Das Menü ![](gbd-icon-auswahl-01.svg) {title Auswahl} interagiert mit dem Werkzeug {title Auswählen}. Es wird automatisch aktiviert, wenn dass Werkzeug aktiviert wird und listet dann alle selektierten Objekte in der Ablage dieses Menüpunkts. 
+Das Menü ![](gbd-icon-auswahl-01.svg) {title Auswahl} interagiert mit dem Werkzeug {button Auswählen}. Es wird automatisch aktiviert, wenn dass Werkzeug aktiviert wird und listet dann alle selektierten Objekte in der Ablage dieses Menüpunkts. 
 
 ![](auswahl.png)
 
-Links neben jedem Objekt der Auswahlliste kann mit der Funktion ![](sharp-center_focus_weak-24px.svg) {titel Hinzoomen} auf das Objekt gezoomt werden. Rechts neben jedem Objekt der Auswahlliste kann mit der Funktion ![](sharp-remove_circle_outline-24px.svg) {titel Herausnehmen} das Objekt aus der Auswahlliste entfernt werden.
+Links neben jedem Objekt der Auswahlliste kann mit der Funktion ![](sharp-center_focus_weak-24px.svg) {button Hinzoomen} auf das Objekt gezoomt werden. Rechts neben jedem Objekt der Auswahlliste kann mit der Funktion ![](sharp-remove_circle_outline-24px.svg) {button Herausnehmen} das Objekt aus der Auswahlliste entfernt werden.
 
 Am unteren Menüfensterrand befindet sich weitere Funktionalität für die Ablage der ausgewählten Objekte:
 
