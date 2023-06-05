@@ -94,6 +94,10 @@ export async function delay(time, fn) {
     return new Promise(res => setTimeout(_ => res(fn()), time));
 }
 
+export async function sleep(time) {
+    return new Promise(res => setTimeout(res, time));
+}
+
 export function later(time, fn) {
     return setTimeout(fn, time);
 }
