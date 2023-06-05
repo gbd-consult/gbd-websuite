@@ -75,13 +75,20 @@ drop table if exists edit.person cascade;
 drop table if exists edit.district cascade;
 drop table if exists edit.category cascade;
 
+create table edit.editor
+(
+    id   int primary key generated always as identity,
+    name text not null
+);
 
 create table edit.category
 (
     id          int  not null primary key,
     name_de     text not null,
     name_en     text not null,
-    description text default null
+    description text default null,
+    editor_id   int,
+    foreign key (editor_id) references edit.editor (id)
 );
 
 create table edit.poi
@@ -134,20 +141,44 @@ create table edit.person
 
 --
 
-insert into edit.category (id, name_de, name_en)
-values (1, 'Bäckerei', 'backery'),
-       (2, 'Bank', 'bank'),
-       (3, 'Bar', 'bar'),
-       (4, 'Biergarten', 'beer garden'),
-       (5, 'Buchladen', 'bookstore'),
-       (6, 'Cafe', 'café'),
-       (7, 'Hotel', 'hotel'),
-       (8, 'Kiosk', 'kiosk'),
-       (9, 'Kneipe', 'pub'),
-       (10, 'Museum', 'museum'),
-       (11, 'Postfiliale', 'post office'),
-       (12, 'Restaurant', 'restaurant'),
-       (13, 'Supermarkt', 'supermarket');
+insert into edit.editor (name)
+values ('Liam'),
+       ('Noah'),
+       ('Oliver'),
+       ('Elijah'),
+       ('Mateo'),
+       ('Leo'),
+       ('Lucas'),
+       ('Ethan'),
+       ('Aiden'),
+       ('James'),
+       ('Asher'),
+       ('Ezra'),
+       ('Luca'),
+       ('Jack'),
+       ('Theo'),
+       ('William'),
+       ('Daniel'),
+       ('Luke'),
+       ('Jayden'),
+       ('Michael')
+;
+
+
+insert into edit.category (id, name_de, name_en, editor_id)
+values (1, 'Bäckerei', 'backery', 1),
+       (2, 'Bank', 'bank', 2),
+       (3, 'Bar', 'bar', 3),
+       (4, 'Biergarten', 'beer garden', 4),
+       (5, 'Buchladen', 'bookstore', 5),
+       (6, 'Cafe', 'café', 6),
+       (7, 'Hotel', 'hotel', 7),
+       (8, 'Kiosk', 'kiosk', 8),
+       (9, 'Kneipe', 'pub', 9),
+       (10, 'Museum', 'museum', 10),
+       (11, 'Postfiliale', 'post office', 11),
+       (12, 'Restaurant', 'restaurant', 12),
+       (13, 'Supermarkt', 'supermarket', 13);
 
 
 
