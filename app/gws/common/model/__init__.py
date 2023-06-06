@@ -1240,7 +1240,7 @@ _TYPES = {
 
 class SortConfig:
     fieldName: str
-    order: str
+    reverse: bool = False
 
 
 class Config(t.WithAccess):
@@ -1514,7 +1514,7 @@ class DbModel(Object, t.IDbModel):
             state.sel = state.sel.where(s)
 
         for s in self.sort:
-            fn = sa.desc if s.order == 'desc' else sa.asc
+            fn = sa.desc if s.reverse else sa.asc
             state.sel = state.sel.order_by(fn(getattr(cls, s.fieldName)))
 
         gws.log.debug(f'SA_MAKE_SELECT: {str(state.sel)}')

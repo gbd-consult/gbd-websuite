@@ -96,7 +96,7 @@ module.exports = v => ({
             top: '50%',
             margin: 'auto',
             ...v.SHADOW,
-            ...v.CENTER_BOX(300, 200),
+            ...v.CENTER_BOX(400, 400),
         },
     },
 

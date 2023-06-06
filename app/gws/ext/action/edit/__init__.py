@@ -171,7 +171,16 @@ class Object(gws.common.action.Object):
             return FeatureResponse(feature=self._feature_props(project, fe))
 
         fe.model.save(fe)
-        gws.common.model.session.commit()
+
+        try:
+            gws.common.model.session.commit()
+        except Exception as exc:
+            try:
+                msg = exc.args[0]
+            except:
+                msg = None
+            raise gws.web.error.BadRequest(msg)
+
         fe.model.reload(fe, depth=1)
 
         # fe = fe.model.get_feature(fe.uid, depth=1)
