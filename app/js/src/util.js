@@ -16,7 +16,7 @@ function _gwsPostRequest(cmd, params, onSuccess, onFailure) {
             let res = xhr.responseText || '';
             try {
                 res = JSON.parse(xhr.responseText)
-            } catch(exc) {
+            } catch (exc) {
                 res = {'text': res}
             }
             if (xhr.status === 200) {
@@ -31,37 +31,37 @@ function _gwsPostRequest(cmd, params, onSuccess, onFailure) {
 }
 
 function gwsLogin(onSuccess, onFailure) {
-    let err = document.getElementById('gwsError');
+    let cls = document.body.classList;
 
-    if (err) {
-        err.style.display = 'none';
-    }
+    cls.remove('gwsLoginError');
+    cls.add('gwsLoginProgress');
 
     let params = {
         username: document.getElementById('gwsUsername').value,
         password: document.getElementById('gwsPassword').value
     };
 
-    onSuccess = onSuccess || function () {
-        window.location.reload()
-    };
+    onSuccess = onSuccess || (() => window.location.reload());
+    onFailure = onFailure || (() => 0);
 
-    onFailure = onFailure || function () {
-        if (err) {
-            err.style.display = 'block';
-        }
-    };
-
-    _gwsPostRequest('authLogin', params, onSuccess, onFailure);
+    _gwsPostRequest(
+        'authLogin',
+        params,
+        () => {
+            cls.remove('gwsLoginProgress');
+            onSuccess()
+        },
+        () => {
+            cls.remove('gwsLoginProgress');
+            cls.add('gwsLoginError');
+            onFailure()
+        },
+    );
 }
 
 function gwsLogout(onSuccess, onFailure) {
-    onSuccess = onSuccess || function () {
-        window.location.reload()
-    };
-
-    onFailure = onFailure || function () {
-    };
+    onSuccess = onSuccess || (() => window.location.reload());
+    onFailure = onFailure || (() => 0);
 
     _gwsPostRequest('authLogout', {}, onSuccess, onFailure);
 }
