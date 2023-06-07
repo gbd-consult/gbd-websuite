@@ -40,6 +40,7 @@ interface EditState {
     relationFieldName?: string;
     searchText: { [modelUid: string]: string };
     featureCache: { [key: string]: FeatureCacheElement },
+    isWaiting: boolean,
 }
 
 interface SelectRelationshipDialogData {
@@ -817,7 +818,10 @@ class FeatureListWidgetHelper extends Helper implements WidgetHelper {
         let flist = this.master.removeFeature(atts[field.name], feature);
         sf.editAttribute(field.name, flist);
         this.master.closeDialog();
-        this.master.updateEditState();
+
+        this.master.updateEditState({isWaiting: true});
+        await gws.lib.sleep(2);
+        this.master.updateEditState({isWaiting: false});
     }
 
     whenDeleteButtonTouched(field: gws.types.IModelField, feature: gws.types.IFeature) {
@@ -941,6 +945,9 @@ class FormTabController extends Helper {
 class SidebarView extends gws.View<ViewProps> {
     render() {
         let es = this.props.editState;
+
+        if (es.isWaiting)
+            return <gws.ui.Loader/>;
 
         if (es.selectedFeature)
             return <FormTab {...this.props} />;
@@ -1234,6 +1241,13 @@ class Controller extends gws.Controller {
     }
 
     async closeForm() {
+        this.updateEditState({isWaiting: true});
+        await gws.lib.sleep(2);
+        await this.closeForm2();
+        this.updateEditState({isWaiting: false});
+    }
+
+    async closeForm2() {
         let ok = await this.popFeature();
         if (ok) {
             return;
