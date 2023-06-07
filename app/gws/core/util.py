@@ -502,6 +502,7 @@ def parse_acl(acl) -> types.Acl:
                 access.append((const.DENY, rk))
             else:
                 raise ValueError(err)
+        return access
 
     raise ValueError(err)
 
