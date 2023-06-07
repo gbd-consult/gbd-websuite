@@ -40,6 +40,8 @@ class Object(gws.base.layer.Object):
 
     def configure_provider(self):
         self.provider = provider.get_for(self)
+        if not self.provider:
+            raise gws.Error(f'no provider found in {self.uid!r}')
         return True
 
     def configure_sources(self):
@@ -47,6 +49,8 @@ class Object(gws.base.layer.Object):
             return True
 
         self.configure_source_layers()
+        if not self.sourceLayers:
+            raise gws.Error(f'no source layers found for {self.provider.url!r} in {self.uid!r}')
 
         self.imageLayers = gws.gis.source.filter_layers(self.sourceLayers, is_image=True)
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)

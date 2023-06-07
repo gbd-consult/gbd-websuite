@@ -20,17 +20,10 @@ class Object(gws.base.layer.group.Object):
     def configure_group(self):
         self.provider = provider.get_for(self)
 
-        def leaf_layer_maker(source_layers):
-            return dict(
-                type='qgisflat',
-                _defaultProvider=self.provider,
-                _defaultSourceLayers=source_layers,
-            )
-
         configs = gws.base.layer.tree.layer_configs_from_layer(
             self,
             self.provider.sourceLayers,
-            leaf_layer_maker,
+            self.provider.leaf_layer_config,
         )
 
         self.configure_group_layers(configs)

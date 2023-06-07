@@ -220,21 +220,31 @@ class Object(gws.Node, gws.IOwsProvider):
             return {
                 'type': 'wmsflat',
                 'sourceLayers': {'names': ds['layers']},
-                'url': self.make_ows_url(ds['url'], ds['params']),
+                'provider': {
+                    'url': self.make_ows_url(ds['url'], ds['params']),
+                }
             }
 
         if prov == 'wmts':
             layers = ds.get('layers')
             if not layers:
                 return
-            return gws.compact({
+            return {
                 'type': 'wmts',
                 'sourceLayer': ds['layers'][0],
-                'sourceStyle': (ds['options'] or {}).get('styles'),
-                'url': self.make_ows_url(ds['url'], ds['params']),
-            })
+                'style': ds['styles'][0],
+                'provider': {
+                    'url': self.make_ows_url(ds['url'], ds['params']),
+                }
+            }
 
-        # @TODO xyz
+        if prov == 'xyz':
+            return {
+                'type': 'tile',
+                'provider': {
+                    'url': self.make_ows_url(ds['url'], ds['params']),
+                }
+            }
 
         gws.log.warning(f'directRender not supported for {prov!r}')
         return default
