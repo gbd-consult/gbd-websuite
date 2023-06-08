@@ -4,21 +4,21 @@
 
 Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen konfigurierbare Suchfelder zur Auswahl. So kann man Flurstücke z.B. nach Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen.
 
-Die Flurstücksuche wird über das Icon ![](baseline-search-24px.svg){button Suche} gestartet. Eine neue Anfrage findet über das Icon ![](baseline-delete_sweep-24px.svg){button Neue Anfrage} statt. Dabei werden die bisherigen Inhalte aller Felder gelöscht.
+Die Flurstücksuche wird über das Icon ![](baseline-search-24px.svg) {button Suche} gestartet. Eine neue Anfrage findet über das Icon ![](baseline-delete_sweep-24px.svg) {button Neue Anfrage} statt. Dabei werden die bisherigen Inhalte aller Felder gelöscht.
 
 ![](cadastral_unit_searching_1.png)
 
 **Anzeigen der Ergebnisse**
 
-Nach dem Anklicken des Icons ![](baseline-search-24px.svg){button Suche} unter den Suchfeldern, werden die Ergebnisse in der Karte markiert und unter |results| ``Ergebnisse`` aufgelistet.
+Nach dem Anklicken des Icons ![](baseline-search-24px.svg) {button Suche} unter den Suchfeldern, werden die Ergebnisse in der Karte markiert und unter |results| ``Ergebnisse`` aufgelistet.
 
 ![](cadastral_unit_searching_2.png)
 
-Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinformationen. Diese können individuell konfiguriert werden und bestehen in diesem Beispiel aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche. Über die Symbole |add| und |delete| rechts neben der Flurstücksbezeichnung, können einzelne Flurstücke in eine Ablage gelegt werden. Diese kann für einen späteren Zugriff gespeichert werden. Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden.
+Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinformationen. Diese können individuell konfiguriert werden und bestehen in diesem Beispiel aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche. Über die Symbole ![](sharp-control_point-24px.svg) {button Hinzufügen} und ![](sharp-remove_circle_outline-24px.svg) {button Löschen} rechts neben der Flurstücksbezeichnung, können einzelne Flurstücke in eine Ablage gelegt werden. Diese kann für einen späteren Zugriff gespeichert werden. Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden.
 
 ![](cadastral_unit_searching_4.png)
 
-Die gewonnenen Ergebnisse können durch klicken des neben dem Objekt stehenden |fokus| Symbol fokussiert werden. Außerdem ist es möglich über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage zu entfernen. Oder über das |addall| Icon ebenfalls in der Leiste am unteren Fensterrand ``Alle zur Ablage`` hinzufügen.  So können Sie in der |tab| ``Ablage`` , welche ebenfalls am unteren Fensterrand der ``Flurstücksuche`` zu finden ist, eine Sammlung gesuchter Flurstücke anlegen und diese |save| ``Speichern``, |load| ``Laden``, |csv| als CSV-Datei exportieren oder |print| ``Drucken``.
+Die gewonnenen Ergebnisse können durch klicken des neben dem Objekt stehenden ![](sharp-center_focus_weak-24px.svg) {button Hinzoomen} Symbol fokussiert werden. Außerdem ist es möglich über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage zu entfernen. Oder über das |addall| Icon ebenfalls in der Leiste am unteren Fensterrand ``Alle zur Ablage`` hinzufügen.  So können Sie in der |tab| ``Ablage`` , welche ebenfalls am unteren Fensterrand der ``Flurstücksuche`` zu finden ist, eine Sammlung gesuchter Flurstücke anlegen und diese ![](save.svg) {button Speichern}, ![](load.svg) {button Laden}, |csv| als CSV-Datei exportieren oder ![](baseline-print-24px.svg) {button Drucken}.
 
 Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen und deren Funktion im Ablagefenster ab.
 
@@ -35,9 +35,11 @@ Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen u
 | ![](baseline-print-24px.svg)	                | Drucken der in der Ablage befindlichen Flurstücke, Ausgabe im Format PDF              |
 | ![](sharp-delete_forever-24px.svg)	        | Leeren der Ablage                                                                     |
 
-.. Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind. Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage entfernen. Zusätzlich können die Informationen des Objektes gedruckt werden oder weitere Funktionen, ähnlich wie beim ``Auswahl``-Menü, gewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokussieren Sie das gewünschte Objekt.
+ Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück.
 
-## Exportieren und Drucken
+
+TODO: BELLOW!!!
+## Exportieren und Drucken**
 
 **Exportieren als CSV**
 

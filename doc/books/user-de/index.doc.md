@@ -2,31 +2,66 @@
 
 Dies ist das Benutzerhandbuch für die GBD WebSuite.
 
-Weitere Informationen zum GBD WebSuite Projekt finden Sie unter https://gbd-websuite.de.
-
 ## Einführung :intro
 
-Die GBD WebSuite ist eine modulare Open Source WebGIS Plattform zur Geodatenverarbeitung. 
+Willkommen im Benutzerhandbuch der GBD WebSuite, hier werden Sie alle Funktionen der Client-Oberfläche und deren Bedienung kennenlernen.
 
-Das Projekt wurde im Herbst 2017 begonnen. Am 10. Januar 2019 wurde die Version 1.0.0 veröffentlicht und über github und dockerhub bereitgestellt. Seit dieser Zeit arbeiten wir hart daran, die GBD WebSuite zu verbessern und mit neuer Funktionalität zu erweitern.
+**Übersicht**
 
-Dem Anwender stellt die GBD WebSuite eine Vielzahl an GIS Funktionalität durch Kernfunktionen und Erweiterungen zur Verfügung, um Informationen in der Karte zu suchen, abzufragen, zu erstellen, zu bearbeiten und als druckfertige Karte auszugeben. Externe (Fach-)Anwendungen und neue Funktionalität können modular integriert und deren Nutzung individuell konfiguriert werden.
+![](client_overview.png)
 
-Die GBD WebSuite wird unter der GNU Affero General Public License (AGPL) veröffentlicht. Weitere Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gbd-websuite.de/
+Übersicht der Bedienelemente in der GBD WebSuite
 
-**Hinweise zur Dokumentation**
+**Werkzeugleiste**
 
-In diesem Benutzerhandbuch werden zum besseren Verständnis verschiedene Schreibstile verwendet.
+| Symbol | Funktion | Funktionsbeschreibung |
+|---|---|---|
+| select | Auswählen | Auswählen von Objekten per Mausklick |
+| info | Abfragen | Informationen von Objekten per Mausklick |
+| mouseover | Anzeigen | Informationen von Objekten per Mouseover |
+| geo_search | Räumliche Suche | Suche mit Hilfe von geometrischen Objekten |
+| dimensions | Bemaßung | Erfassung von Strecken-Distanzen |
+| measure | Markieren & Messen | Markieren mit Hilfe von geometrischen Objekten |
+| dpro | Auswahl an D-ProCon übermittlen | Selektierte Auswahl an Objekten an D-ProCon übermitteln |
+| gkos | `Auswahl an GeKos übermittlen | Selektierte Auswahl an Objekten an GeKoS übermitteln |
+| print | Drucken | PDF-Generierung welche gespeichert und gedruckt werden kann |
+| screenshot | Screenshot exportieren | Abspeichern eines Kartenausschnitts als PNG-Datei |
 
+Mehr über die einzelnen Funktionen finden sie unter [Werkzeugleiste](/user-de/toolbar)
 
-| Formatierung          | Beschreibung                                      |
-|-----------------------|---------------------------------------------------|
-| {title Bedienelement} | Titel des Bedienelements                          |
-| {button Schältfläche} | Schaltfläche zum Anklicken                        |
-| {param Parameter}     | Parameter mit Eingabemöglichkeit                  |
-| {link Verlinkung}     | innerhalb des Handbuchs oder zu externer Webseite |
+**Menüleiste**
 
+| Symbol | Funktion | Funktionsbeschreibung |
+|---|---|---|
+| menu | Menü ausklappen | Anzeigen des Untermenüs |
+| project | Projektübersicht | Übersicht über die Projekteigenschaften |
+| layers | Layer | Übersicht über die einzelnen Layer |
+| search | Suche | Liste von Ergebnissen der Suche |
+| select | Auswahl | Liste der ausgewählten Objekte |
+| cadastralunit | Flurstücksuche | Liste der ausgewählten Flurstücke |
+| measure | Markierungen | Liste der ausgewählten Markierungen |
+| dimensions | Bemaßung | Auflistung der erstellten Bemaßungen |
+| edit | Editieren | Liste der editierbaren Objekte |
+| authorization | Anmeldung | An- und Abmelden von Benutzern |
 
-## :menubar
-## :toolbar
-## :statusbar
+Mehr über die einzelnen Funktionen finden sie unter: [Menüleiste](/user-de/menubar)
+
+**Statusleiste**
+
+| Symbol | Funktion | **Funktionsbeschreibung |
+|---|---|---|
+| zoomin | Hineinzoomen | In die Karte Hineinzoomen |
+| zoomout | Herauszoomen | Aus der Karte Herauszoomen |
+| zoommap | Ganzes Projekt anzeigen | Herauszoomen auf die Ausmaße des Projekts |
+| home | Zurück zur Startseite | Öffnet die Anmeldeseite der WebSuite |
+| help | Hilfe | Öffnet die Dokumentation der GBD WebSuite |
+
+Mehr über die einzelnen Funktionen finden sie unter: [Statusleiste](/user-de/statusbar)
+
+## :/user-de/function_overview
+
+## :/user-de/menubar
+
+## :/user-de/toolbar
+
+## :/user-de/statusbar

@@ -14,9 +14,9 @@ Die Menüleiste ![](baseline-menu-24px.svg) {title Menü} ermöglicht den Zugrif
 | ![](gbd-icon-flurstuecksuche-01.svg) 	| [Flurstücksuche](/user-de/menubar.flurstuecksuche)			| Beauskunftung zum Thema Liegenschaftskataster (ALKIS)	|
 | ![](baseline-layers-24px.svg)        	| [Layer](/user-de/menubar.layer)       				| Layer anzeigen und einstellen				|
 | ![](directions_black_24px.svg)	| [Location Manager](/user-de/menubar.location-manager) 	 	| Location Manager        				|
-| ![](gbd-icon-markieren-messen-01.svg)	| [Markierungen](/user-de/menubar.markierung)    			| Liste von Messungen & Markierungen verwalten		|
+| ![](gbd-icon-markieren-messen-01.svg)	| [Markierungen](/user-de/menubar.marking)    			| Liste von Messungen & Markierungen verwalten		|
 | ![](person_search-24px.svg)     	| [Personen Informationen](/user-de/menubar.personen-information)	| Liste der selektierten Objekte    			|
-| ![](gbd-icon-projectoverview.svg)    	| [Projektübersicht](/user-de/menubar.projektuebersicht)		| Allgemeine Projektinformationen anzeigen		|
+| ![](gbd-icon-projectoverview.svg)    	| [Projektübersicht](/user-de/menubar.project-overview)		| Allgemeine Projektinformationen anzeigen		|
 | ![](baseline-search-24px.svg)        	| [Suche](/user-de/menubar.suche)  					| Inhalte suchen und als Ergebnis auflisten		|
 | ![](table_view_black_24px.svg)       	| [Tabellen editieren](/user-de/menubar.tabellen)	 		| Attributtabelle eines Layers editieren   		|
 

@@ -1,4 +1,4 @@
-# Layer :/user-de/menubar.layers
+# Layer :/user-de/menubar.layer
 
 Im Menü ![](baseline-layers-24px.svg) {title Layer} findet man eine Liste der Layer und Layergruppen des Projekts. Anhand dieser Auflistung kann ein Überblick über die einzelnen Layer gewonnen und deren  Sichtbarkeit verwaltet werden.
 

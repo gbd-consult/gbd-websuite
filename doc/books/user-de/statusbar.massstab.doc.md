@@ -4,4 +4,7 @@
 
 Durch einen Klick mit der linken Maustaste auf den Maßstabswert kann ein gewünschter Wert für den Maßstab direkt eingetragen werden.
 
-
+%info
+Der Maßstabsregler wird nur ab einer bestimmten Bildschirmgröße angezeigt.
+Auf mobilen Endgeräten wird die Zoomstufe anhand von Fingergestiken gesteuert.
+%end

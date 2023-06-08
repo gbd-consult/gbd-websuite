@@ -2,7 +2,7 @@
 
 Das Menü ![](gbd-icon-markieren-messen-01.svg) {title Markierungen} interagiert mit dem Werkzeug ![](gbd-icon-markieren-messen-01.svg) {button Markieren und Messen}.
 
-Die Objekte, die man mit Hilfe des Werkzeuges erzeugt hat, werden hier aufgelistet. Über ![](sharp-center_focus_weak-24px.svg) {button } kann man zu dem gezeichneten Objekt hineinzoomen, über |delete| können Sie das gezeichnete Objekt direkt löschen.
+Die Objekte, die man mit Hilfe des Werkzeuges erzeugt hat, werden hier aufgelistet. Über ![](sharp-center_focus_weak-24px.svg) kann man zu dem gezeichneten Objekt hineinzoomen, über ![](sharp-delete_forever-24px.svg) können Sie das gezeichnete Objekt direkt löschen.
 
 ![](marking.png)
 
@@ -28,11 +28,12 @@ Für die Verwendung der Platzhalter wurde eine Formel entwickelt, wodurch die Ei
 
 **Beispiele**
 
-| {x | km | 2}   | x Position in Kilometer, 2 Dezimalstellen|
+|Wert| Erläuterung|
 |----------------|------------------------------------------|
-| {x | dms }     | x Position in Dezimalstellen             |
-| {area | ha | 3}| Fläche in ha, 3 Dezimalstellen           |
-| {area | km}    | Fläche in km2, 0 Dezimalstellen          |
+| \{x \| km \| 2\}   | x Position in Kilometer, 2 Dezimalstellen|
+| \{x \| dms \}     | x Position in Dezimalstellen          |
+| \{area \| ha \| 3\}| Fläche in ha, 3 Dezimalstellen       |
+| \{area \| km\}    | Fläche in km2, 0 Dezimalstellen       |
 
 
 **Darstellungskonfigurationen**
@@ -44,3 +45,7 @@ Zusätzlich kann jedoch über die Menüpunkte ``Platzierung``, ``Ausrichtung`` u
 
 Mit Hilfe des Werkzeuges ![](cursor.svg) {Bearbeiten} können erstellte Markierungen in der Karte angewählt und danach bearbeitet werden. Eine neue Markierung kann über das ![](sharp-gesture-24px.svg) Icon angelegt werden oder über das Werkzeug ![](gbd-icon-markieren-messen-01.svg) {button Markieren und Messen}. Das Laden ![](gbd-icon-ablage-oeffnen-01.svg) und Abspeichern ![](sharp-save-24px.svg) der gewählten Markierungen ist ebenfalls möglich. Über das Werkzeug ![](sharp-delete_forever-24px.svg) {Alle löschen} werden alle Markierung auf einmal gelöscht.
 
+%info
+  Die Einheit der Markierung kann beliebig angepasst werden. 
+  All diese Funktionen können deaktiviert oder nur gewissen Nutzern zur Verfügung gestellt werden.
+%end
