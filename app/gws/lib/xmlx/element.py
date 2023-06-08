@@ -91,7 +91,22 @@ class XElement(xml.etree.ElementTree.Element):
                 s = str(s)
             if compact_whitespace:
                 s = ' '.join(s.strip().split())
-            return _encode(s)
+            s = s.replace(">", "&gt;")
+            s = s.replace("<", "&lt;")
+            return s
+
+        def make_attr(s):
+            if s is None:
+                return ''
+            if isinstance(s, (int, float, bool)):
+                return str(s).lower()
+            if not isinstance(s, str):
+                s = str(s)
+            s = s.replace("&", "&amp;")
+            s = s.replace('"', "&quot;")
+            s = s.replace(">", "&gt;")
+            s = s.replace("<", "&lt;")
+            return s
 
         def make_name(name):
             if remove_namespaces:
@@ -105,7 +120,7 @@ class XElement(xml.etree.ElementTree.Element):
             for key, val in el.attrib.items():
                 if val is None:
                     continue
-                atts[make_name(key)] = make_text(val)
+                atts[make_name(key)] = make_attr(val)
 
             if with_xmlns:
                 atts.update(
@@ -221,13 +236,6 @@ class XElement(xml.etree.ElementTree.Element):
 ##
 
 
-def _encode(v) -> str:
-    s = str(v)
-    s = s.replace("&", "&amp;")
-    s = s.replace(">", "&gt;")
-    s = s.replace("<", "&lt;")
-    s = s.replace('"', "&quot;")
-    return s
 
 
 _XML_DECL = '<?xml version="1.0" encoding="UTF-8"?>'

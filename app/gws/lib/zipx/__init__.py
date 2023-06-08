@@ -64,6 +64,11 @@ def _zip(target, sources, flat):
 
     for src in sources:
 
+        if isinstance(src, dict):
+            for name, content in src.items():
+                dct[os.path.basename(name) if flat else name] = content
+            continue
+
         if os.path.isdir(src):
             for p in _scan_dir(src):
                 if flat:
@@ -77,11 +82,6 @@ def _zip(target, sources, flat):
                 files.append([src, os.path.basename(src)])
             else:
                 files.append([src, src])
-            continue
-
-        if isinstance(src, dict):
-            for name, content in src.items():
-                dct[os.path.basename(name) if flat else name] = content
             continue
 
         raise Error(f'zip: invalid argument: {src!r}')

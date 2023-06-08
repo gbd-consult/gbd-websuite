@@ -1,0 +1,18 @@
+projects+ {
+    title "QGIS layer, stored in Postgres"
+    metadata.abstract "Qgis project, stored in a Postgres database"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Düsseldorf"
+        type "qgis"
+        provider { name "districts" schema "public" }
+    }
+
+    {demo_osm_background}
+}

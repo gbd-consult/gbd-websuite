@@ -10,6 +10,7 @@ def main(args):
     try:
         return main2(args)
     except gws.ConfigurationError:
+        gws.log.exception()
         cli.error('STOP')
         return 3
     except Exception:

@@ -1096,6 +1096,7 @@ class IDatabaseManager(INode, Protocol):
 
 class IDatabaseProvider(IProvider, Protocol):
     mgr: 'IDatabaseManager'
+    url: str
 
     def session(self) -> 'IDatabaseSession': ...
 

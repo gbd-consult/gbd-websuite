@@ -18,7 +18,7 @@ class CapsParams(gws.CliParams):
 
 
 class DbreadParams(gws.CliParams):
-    schema: str
+    schema: str = ''
     """database schema"""
     name: str
     """project name"""
@@ -26,19 +26,38 @@ class DbreadParams(gws.CliParams):
     """output filename"""
 
 
+class DbwriteParams(gws.CliParams):
+    schema: str = ''
+    """database schema"""
+    name: str
+    """project name"""
+    path: str
+    """project filename"""
+
+
 class Object(gws.Node):
 
     @gws.ext.command.cli('qgisDbread')
-    def db2file(self, p: DbreadParams):
+    def db_read(self, p: DbreadParams):
         """Copy a project from the db to a local file."""
 
         root = gws.config.load()
-        source = project.Source(schema=p.schema, name=p.name)
-        prj = project.from_source(source, root.app)
+        src = project.Storage(type=project.StorageType.postgres, schema=p.schema, name=p.name)
+        prj = project.from_storage(src, root.app)
         if p.out:
             gws.write_file(p.out, prj.text)
         else:
             print(prj.text)
+
+    @gws.ext.command.cli('qgisDbwrite')
+    def db_write(self, p: DbwriteParams):
+        """Copy a project from a local file to the db."""
+
+        root = gws.config.load()
+        src = project.Storage(type=project.StorageType.file, path=p.path)
+        prj = project.from_storage(src, root.app)
+        dst = project.Storage(type=project.StorageType.postgres, schema=p.schema, name=p.name)
+        prj.to_storage(dst, root.app)
 
     @gws.ext.command.cli('qgisCaps')
     def caps(self, p: CapsParams):

@@ -33,8 +33,6 @@ class Config(gws.base.database.provider.Config):
 
 
 class Object(gws.base.database.provider.Object):
-    url: str
-
     def configure(self):
         self.url = self.configure_url()
 

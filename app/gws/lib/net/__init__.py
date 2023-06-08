@@ -94,13 +94,17 @@ def make_url(u: t.Optional[Url | dict] = None, **kwargs) -> str:
     if p.get('username'):
         s += quote_param(p['username']) + ':' + quote_param(p.get('password', '')) + '@'
 
-    s += p['hostname']
-
-    if p.get('port'):
-        s += ':' + str(p['port'])
+    if p.get('hostname'):
+        s += p['hostname']
+        if p.get('port'):
+            s += ':' + str(p['port'])
+        if p.get('path'):
+            s += '/'
+    else:
+        s += '/'
 
     if p.get('path'):
-        s += '/' + quote_path(p['path'].lstrip('/'))
+        s += quote_path(p['path'].lstrip('/'))
 
     if p.get('params'):
         s += '?' + make_qs(p['params'])
@@ -164,11 +168,11 @@ def unquote(s: str) -> str:
     return urllib.parse.unquote(s)
 
 
-def add_params(url: str, params: dict) -> str:
-    if not params:
-        return url
+def add_params(url: str, params: dict = None, **kwargs) -> str:
     u = parse_url(url)
-    u.params.update(params)
+    if params:
+        u.params.update(params)
+    u.params.update(kwargs)
     return make_url(u)
 
 

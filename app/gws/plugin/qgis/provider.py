@@ -1,7 +1,9 @@
 """QGIS provider."""
 
 import gws
+import gws.base.database
 import gws.lib.metadata
+import gws.lib.net
 import gws.lib.mime
 import gws.gis.crs
 import gws.gis.ows
@@ -33,7 +35,7 @@ class Config(gws.Config):
 
 
 class Object(gws.Node, gws.IOwsProvider):
-    source: project.Source
+    storage: project.Storage
     printTemplates: list[caps.PrintTemplate]
     url: str
 
@@ -45,15 +47,10 @@ class Object(gws.Node, gws.IOwsProvider):
     caps: caps.Caps
 
     def configure(self):
-        self.source = project.Source(
-            path=self.cfg('path'),
-            dbUid=self.cfg('dbUid'),
-            schema=self.cfg('schema'),
-            name=self.cfg('name'),
-        )
-        # self.root.app.monitor.add_path(self.source.path)
+        self.configure_storage()
+        # self.root.app.monitor.add_path(self.storage.path)
 
-        self.url = 'http://%s:%s' % (
+        self.url = 'http://{}:{}'.format(
             self.root.app.cfg('server.qgis.host'),
             self.root.app.cfg('server.qgis.port'))
 
@@ -77,14 +74,34 @@ class Object(gws.Node, gws.IOwsProvider):
                 extent=gws.gis.extent.from_list([float(v) for v in wms_extent]),
                 crs=self.caps.projectCrs)
 
+    def configure_storage(self):
+        p = self.cfg('path')
+        if p:
+            self.storage = project.Storage(type=project.StorageType.file, path=p)
+            return
+        p = self.cfg('name')
+        if p:
+            self.storage = project.Storage(
+                type=project.StorageType.postgres,
+                name=p,
+                dbUid=self.cfg('dbUid'),
+                schema=self.cfg('schema') or 'public',
+            )
+            return
+        # @TODO gpkg, etc
+        raise gws.Error('cannot load qgis project ("path" or "name" must be specified)')
+
     ##
 
     def qgis_project(self) -> project.Object:
-        return project.from_source(self.source, self)
+        return project.from_storage(self.storage, self)
 
     def server_project_path(self):
-        # @TODO postgres
-        return self.source.path
+        if self.storage.type == project.StorageType.file:
+            return self.storage.path
+        if self.storage.type == project.StorageType.postgres:
+            prov = gws.base.database.provider.get_for(self, self.storage.dbUid, 'postgres')
+            return gws.lib.net.add_params(prov.url, schema=self.storage.schema, project=self.storage.name)
 
     def server_params(self, params: dict) -> dict:
         defaults = dict(
