@@ -1,5 +1,6 @@
 # Developer Documentation :/dev-en
 
+Documentation for developers who want to extend the GBD WebSuite Client.
 
 ## :overview
 
@@ -9,3 +10,6 @@
 
 ## Testing
 
+## :/dev-en/css
+
+## :/dev-en/i18n

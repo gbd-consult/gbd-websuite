@@ -1,12 +1,12 @@
-Working with css
-================
+## Working with css :/dev-en/css
 
 CSS support in GBD WebSuite Client is theme-based. Themes are located in ``./src/css/themes``. Each theme must have at least one ``index`` file, which is responsible for the generating of the target css. Our default theme, ``light``, is written in a css-in-js dialect, but you can use whatever you want (sass, less, straight css etc).
 
-css-in-js Syntax
-~~~~~~~~~~~~~~~~
+*css-in-js Syntax*
 
-Our css-in-js syntax is straight-forward and resembles the actual css. Each ``css.js`` file must export an object of rules: ::
+Our css-in-js syntax is straight-forward and resembles the actual css. Each ``css.js`` file must export an object of rules:
+
+```
 
     module.exports = {
         'selector1: {
@@ -19,9 +19,11 @@ Our css-in-js syntax is straight-forward and resembles the actual css. Each ``cs
         }
         ...
     }
+```
 
-or a function that returns such an object: ::
+or a function that returns such an object:
 
+```
     module.exports = function(globalObject) {
         return {
             'selector1: {
@@ -35,20 +37,25 @@ or a function that returns such an object: ::
             ...
         }
     }
+```
 
 where ``globalObject`` contains global theme options. It's normally defined in the theme's ``index`` file.
 
-Rule objects are plain JS objects: ::
+Rule objects are plain JS objects:
+
+```css
 
     'someSelector' : {
         backgroundColor: 'red',
         padding: [10, 20, 30, 40],
         marginTop: 50,
     }
-
+```
 Note that use can use unitless values (which will be converted to the default unit, ``px`` ), and arrays in place of space separated values.
 
-The syntax also supports nested selectors, as in ::
+The syntax also supports nested selectors, as in
+
+```css
 
     '.someClass' : {
         backgroundColor: 'red',
@@ -56,13 +63,18 @@ The syntax also supports nested selectors, as in ::
             paddingTop: 30
         },
     }
+```
 
-which results in the following css ::
+which results in the following css
 
+```css
     .someClass { background-color: red }
     .someClass .inside { padding-top: 30px }
+```
 
-Selectors prefixed with ``&`` are attached to their parent, so this ::
+Selectors prefixed with ``&`` are attached to their parent, so this :
+
+```css
 
     '.someClass' : {
         backgroundColor: 'red',
@@ -70,28 +82,31 @@ Selectors prefixed with ``&`` are attached to their parent, so this ::
             paddingTop: 30
         },
     }
+```
 
-produces ::
+produces
 
+```css
     .someClass { background-color: red }
     .someClass.special { padding-top: 30px }
+```
 
-Since css-in-js rules are just plain objects, you can use arbitrary javascript in selectors and values, e.g. ::
+Since css-in-js rules are just plain objects, you can use arbitrary javascript in selectors and values, e.g.
 
+```css
     [getMySelector()]: {
         backgroundColor: randomColor(),
         padding: TOP_PADDING * 2,
         ...someOtherRule
         // etc...
     }
+```
 
-Default theme
-~~~~~~~~~~~~~
+**Default theme**
 
 The global object in the default theme, called ``v`` for brevity, contains various theme parameters and useful utilities:
 
-Color helpers
--------------
+*Color helpers*
 
 - ``v.COLOR.color-name``
 
@@ -108,45 +123,48 @@ Color helpers
     - desaturate
     - saturate
 
-    Example ::
+    Example
 
         v.COLOR.opacity('red', 0.5)
 
-Object helpers
---------------
+*Object helpers*
 
 These helpers retun objects, so they must be used with the spread operator ``...``:
 
 - ``v.GOOGLE_SVG(category/name, color)``
 
-    Sets ``backgroundImage`` to a `material icon <https://material.io/tools/icons>`_ from the given category/name. ``color`` defaults to ``v.ICON_COLOR`` if omitted. Example ::
+    Sets ``backgroundImage`` to a `material icon <https://material.io/tools/icons>`_ from the given category/name. ``color`` defaults to ``v.ICON_COLOR`` if omitted. Example 
 
+```css
         '.mySelector': {
             ...v.SVG('google:image/straighten', 'blue')
-
+```
 - ``v.SVG(filename, color)``
 
-    Sets ``backgroundImage`` to an svg icon placed in ``themes/light/img``. Example ::
-
+    Sets ``backgroundImage`` to an svg icon placed in ``themes/light/img``. Example
+    
+```css
         '.mySelector': {
             ...v.SVG('zoom_rectangle', 'cyan')
-
+```
 - ``v.TRANSITION(property)``
 
-    Inserts the default ``transiition`` for the given property::
+    Inserts the default ``transiition`` for the given property
 
+```css
         '.mySelector': {
             ...v.TRANSITION('left')
 
 - ``v.SHADOW()``
 
-    Inserts the default ``boxShadow``::
+    Inserts the default ``boxShadow``
 
+```css
         '.mySelector': {
             ...v.SHADOW()
+```
+*Selector helpers*
 
-Selector helpers
-----------------
 
 These are intended to be used in selectors (using the js key evaluation operator ``[...]``).
 
@@ -160,31 +178,33 @@ These are intended to be used in selectors (using the js key evaluation operator
     - large
     - xlarge
 
-    You can also suffix a name with ``+`` (= breakpoint and up) or ``-`` (= breakpoint and down). Examples: ::
+    You can also suffix a name with ``+`` (= breakpoint and up) or ``-`` (= breakpoint and down). Examples:
 
-        [v.MEDIA('small')]: {
+```css
+[v.MEDIA('small')]: {
 
-            // only for "small" devices
+    // only for "small" devices
 
-            'someSelector' {
-                width: 300
-            }
-        }
+    'someSelector' {
+        width: 300
+    }
+}
 
-        [v.MEDIA('medium+')]: {
+[v.MEDIA('medium+')]: {
 
-            // for "medium" and wider devices
+    // for "medium" and wider devices
 
-            'someSelector' {
-                color: 'blue'
-            }
-        }
+    'someSelector' {
+        color: 'blue'
+    }
+}
 
-        [v.MEDIA('small-')]: {
+[v.MEDIA('small-')]: {
 
-            // "small" and "xsmall" devices only
+    // "small" and "xsmall" devices only
 
-            'someSelector' {
-                display: 'none'
-            }
-        }
+    'someSelector' {
+        display: 'none'
+    }
+}
+```
