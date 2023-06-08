@@ -88,6 +88,12 @@ class Object(gws.base.model.scalar_field.Object):
         return gws.base.shape.from_wkb_hex(str(val))
 
     def prop_to_py(self, val):
+        shape = self.prop_to_shape(val)
+        if shape:
+            return shape.transformed_to(self.geometryCrs)
+        return gws.ErrorValue
+
+    def prop_to_shape(self, val):
         if isinstance(val, gws.base.shape.Shape):
             return val
         if gws.is_data_object(val):
@@ -100,7 +106,6 @@ class Object(gws.base.model.scalar_field.Object):
                 return gws.base.shape.from_dict(val)
             except gws.Error:
                 pass
-        return gws.ErrorValue
 
     def py_to_db(self, val):
         return val.to_ewkb_hex()
