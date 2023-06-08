@@ -49,3 +49,11 @@ class Object(gws.base.model.Object):
             self.feature_from_data(fd, user, **kwargs)
             for fd in self.provider.get_features(search, self.sourceLayers)
         ]
+
+    def props(self, user):
+        return gws.merge(
+            super().props(user),
+            canCreate=False,
+            canDelete=False,
+            canWrite=False,
+        )
