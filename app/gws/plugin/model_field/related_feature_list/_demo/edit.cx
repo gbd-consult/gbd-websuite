@@ -107,12 +107,55 @@ projects+ {
             widget.type "featureList"
         }
 
+        fields+ {
+            name "editor"
+            title "Editor"
+            type "relatedFeature"
+            relationship {
+                modelUid "model_related_feature_editor"
+                foreignKey "editor_id"
+            }
+            widget.type "featureSelect"
+        }
+
         templates+ {
             subject "feature.title"
             type "html"
             text "{{name_de}}"
         }
     }
+
+
+    models+ {
+        type "postgres"
+        uid "model_related_feature_editor"
+        tableName "edit.editor"
+        permissions.edit "allow all"
+        sort+ { fieldName "name" }
+        title "Editors"
+
+        fields+ {
+            name "id"
+            type "integer"
+            title "Identifier"
+            isPrimaryKey true
+            permissions.edit "deny all"
+        }
+
+        fields+ {
+            name "name"
+            type "text"
+            title "Name"
+            isRequired true
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{@if feature.isNew}} neue Person {{@else}} {{name}} {{@end}}"
+        }
+    }
+
 
     {demo_osm_background}
 }
