@@ -1,4 +1,4 @@
-# Styling :/admin-de/config-az/style
+# Styling :/admin-de/config-az/styling
 
 Vektor-Feature-Stile können über CSS angepasst werden. Die GBD WebSuite unterstützt standard CSS-Eigenschaften für SVG Symbole (zum Beispiel, ``fill``) und einige erweiterte Eigenschaften, welche in Ihrer CSS-Konfiguration mit ``--`` vorangestellt werden müssen.
 

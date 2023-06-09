@@ -1,4 +1,4 @@
-# Datenablage :/admin-de/config-az/storage
+# Datenablage :/admin-de/config-az/datenablage
 
 Im GBD WebSuite Client besteht die Möglichkeit, bestimmte Objekte, wie Markierungen, Bemaßungen oder Auswahllisten abzuspeichern und später aufzurufen. Serverseitig wird dies mit der Funktion *Datenablage* (``storage``) unterstützt. Die Datenablage wird mit dem ``storage`` Helper (siehe [Helper](/admin-de/config-az/helper)) konfiguriert. Zusätzlich zu der Helper-Konfiguration muss auch die ``storage`` Aktion und die Client Elemente ``Storage.Read`` und ``Storage.Write`` aktiviert werden.
 
@@ -8,7 +8,7 @@ Die Ablage wird in *Kategorien* (``category``) unterteilt wobei jede Kategorie e
 |---|---|
 | ``Alkis`` | Flurstückslisten, siehe [Alkis](/admin-de/config-az/alkis) |
 | ``Annotate`` | vom Benutzer erstellte Markierungen |
-| ``Dimension`` | Bemaßungen, siehe [FeatuBemaßungre](/admin-de/config-az/dimension) |
+| ``Dimension`` | Bemaßungen, siehe [FeatuBemaßungre](/admin-de/config-az/bemassung) |
 | ``Select`` | Auswahllisten |
 | ``Styles`` | vom Benutzer editierte Style Eigenschaften |
 

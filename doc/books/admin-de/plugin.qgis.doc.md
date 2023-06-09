@@ -48,7 +48,7 @@ Für QGIS Layer können Sie unter ``legend.options`` einige visuelle Einstellung
 
 TODO! %reference_de 'gws.ext.template.qgis.Config'
 
-Sie können QGIS Druckvorlagen ("Layouts") frei verwenden, auch für nicht-QGIS bzw. gemischte Karten. In der Vorlagen-Konfiguration muss den Pfad zu der QGIS Projektdatei angegeben werden, sowie Layout-Namen bzw Nummer. In dem Layout wird das ``Map`` Element mit der aktuellen GWS Karte ersetzt, zusätzlich können Sie in ``HTML-Frame`` Elements einige ``gws:`` Tags nutzen, wie z.B. ``<gws:legend>`` (siehe [Drucken](/admin-de/config-az/print)). Die vom Nutzer definierte Druck-Attribute können Sie mit dem QGIS Syntax ``[% @variable %]`` einfügen.
+Sie können QGIS Druckvorlagen ("Layouts") frei verwenden, auch für nicht-QGIS bzw. gemischte Karten. In der Vorlagen-Konfiguration muss den Pfad zu der QGIS Projektdatei angegeben werden, sowie Layout-Namen bzw Nummer. In dem Layout wird das ``Map`` Element mit der aktuellen GWS Karte ersetzt, zusätzlich können Sie in ``HTML-Frame`` Elements einige ``gws:`` Tags nutzen, wie z.B. ``<gws:legend>`` (siehe [Drucken](/admin-de/config-az/drucken)). Die vom Nutzer definierte Druck-Attribute können Sie mit dem QGIS Syntax ``[% @variable %]`` einfügen.
 
 %info
  Beachten Sie, dass der Hintergrund der Vorlage (unter "Seiteneigenschaften") transparent sein muss.

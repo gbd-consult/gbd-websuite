@@ -1,4 +1,4 @@
-# Suche :/user-de/menubar.search
+# Suche :/user-de/menubar.suche
 
 Über das Menü ![](baseline-search-24px.svg) {title Suche} kann unterschiedlich konfiguriert werden.
 

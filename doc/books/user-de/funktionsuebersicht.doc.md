@@ -1,4 +1,4 @@
-# Funktionsübersicht :/user-de/function_overview
+# Funktionsübersicht :/user-de/funktionsuebersicht
 
 Die Navigation durch die Kapitel der Dokumentation ist über die Seitenleiste möglich, oder auch über die untenstehende Auflistung. Sie können alternativ auch die Suchfunktion verwenden, welche in der Seitenleiste oberhalb angeordnet ist. Eine ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren Verlauf dieser Dokumentation. 
 

@@ -58,7 +58,7 @@ Mehr über die einzelnen Funktionen finden sie unter: [Menüleiste](/user-de/men
 
 Mehr über die einzelnen Funktionen finden sie unter: [Statusleiste](/user-de/statusbar)
 
-## :/user-de/function_overview
+## :/user-de/funktionsuebersicht
 
 ## :/user-de/menubar
 

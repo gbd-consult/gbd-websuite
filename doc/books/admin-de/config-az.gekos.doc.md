@@ -1,4 +1,4 @@
-# GekoS Integration :/admin-de/config-az/gekoz
+# GekoS Integration :/admin-de/config-az/gekos
 
 TODO! %reference_de 'gws.ext.action.gekos.Config'
 

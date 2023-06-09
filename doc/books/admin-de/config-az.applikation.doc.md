@@ -1,17 +1,17 @@
-# Applikation :/admin-de/config-az/app
+# Applikation :/admin-de/config-az/applikation
 
 %reference_de 'gws.base.application.Config'
 
 Die wichtigsten Teile der App-Konfiguration sind die folgenden Abschnitte, welche weiter im Detail beschrieben werden:
 
 
-- Server Aktionen → [``api``](/admin-de/config-az/api) TODO!
-- Zugriffsrechte → [``auth``](/admin-de/config-az/auth)
+- Server Aktionen → [``Action``](/admin-de/config-az/server-aktionen)
+- Zugriffsrechte → [``auth``](/admin-de/config-az/autorisierung)
 - Client Optionen → [``client``](/admin-de/config-az/client)
-- Datenbankanbindung →[``database``](/admin-de/config-az/database) TODO!
-- Server-Helper → [``helpers``](/admin-de/config-az/helpers) TODO!
+- Datenbankanbindung →[``database``](/admin-de/config-az/datenbanken)
+- Server-Helper → [``helpers``](/admin-de/config-az/helper)
 - Server Localen → [``locales``](/admin-de/config-az/intl)
-- globale Metadaten → [``metadata``](/admin-de/config-az/meta) TODO!
+- globale Metadaten → [``metadata``](/admin-de/config-az/metadaten)
 - Server Optionen → [``server``](/admin-de/config-az/server)
 - Web-Server Konfigurationen → [``web``](/admin-de/config-az/web)
 

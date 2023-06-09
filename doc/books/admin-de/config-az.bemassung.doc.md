@@ -1,4 +1,4 @@
-# Bemaßung :/admin-de/config-az/dimension
+# Bemaßung :/admin-de/config-az/bemassung
 
 %reference_de 'gws.plugin.dimension.Config'
 
@@ -39,7 +39,7 @@ Mit dieser Konfiguration werden Bemaßungen an Konturen aus der Tabelle ``strass
 
 Zusätzlich müssen auch Client-Elemente ``Sidebar.Dimension`` und ``Toolbar.Dimension`` aktiviert werden, siehe [Client](/admin-de/config-az/client).
 
-Wenn die Bemaßungen gespeichert werden sollen, muss auch die Datenablage freigeschaltet und konfiguriert werden, siehe [Datenablage](/admin-de/config-az/storage).
+Wenn die Bemaßungen gespeichert werden sollen, muss auch die Datenablage freigeschaltet und konfiguriert werden, siehe [Datenablage](/admin-de/config-az/datenablage).
 
 ## CSS Anpassungen
 

@@ -1,4 +1,4 @@
-# Markierungen :/user-de/menubar.marking
+# Markierungen :/user-de/menubar.markierung
 
 Das Menü ![](gbd-icon-markieren-messen-01.svg) {title Markierungen} interagiert mit dem Werkzeug ![](gbd-icon-markieren-messen-01.svg) {button Markieren und Messen}.
 

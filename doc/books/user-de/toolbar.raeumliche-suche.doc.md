@@ -1,4 +1,4 @@
-# Räumliche Suche :/user-de/menubar.raeumliche-suche
+# Räumliche Suche :/user-de/toolbar.raeumliche-suche
 
 Das Werkzeug ![](gbd-icon-raeumliche-suche-01.svg) {title Räumliche Suche} ermöglicht die Erstellung geometrischer Formen mit Hilfe derer, verschiedene Objekte ausgewählt werden können.
 So ist es zum Beispiel möglich Punkte, Linien, Polygone oder Kreise zu erstellen. Diese können beliebig auf der Karte verschoben werden, um so verschiedene Bereiche zu selektieren.

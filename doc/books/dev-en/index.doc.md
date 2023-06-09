@@ -26,6 +26,6 @@ Documentation for developers who want to extend the GBD WebSuite Client.
 ## :/dev-en/server-request
 ## :/dev-en/server-testing
 
-**Documentation**
+## Documentation
 
 ### :dog

@@ -1,4 +1,4 @@
-# Drucken :/admin-de/config-az/print
+# Drucken :/admin-de/config-az/drucken
 
 Ein Projekt in der GBD WebSuite kann eine oder mehrere Druckvorlagen bereitstellen. Bei mehreren Vorlagen wird dem Nutzer im Client ein Menü angezeigt, wo die Vorlage und ggf. die Qualitätsstufe gewählt werden kann.
 
@@ -15,7 +15,7 @@ Zwei DPI-Werte werden in GWS auf besondere Weise bearbeitet:
 
 ### html
 
-Eine ``html`` Druckvorlage ist eine Vorlage (siehe [Vorlagen](/admin-de/config-az/template)),welche spezielle HTML-Tags enthält die beim drucken mit aktuellen Werten ersetzt werden. Es werden folgende Tags unterstützt:
+Eine ``html`` Druckvorlage ist eine Vorlage (siehe [Vorlagen](/admin-de/config-az/vorlagen)),welche spezielle HTML-Tags enthält die beim drucken mit aktuellen Werten ersetzt werden. Es werden folgende Tags unterstützt:
 
 | Tag | Bedeutung | Beispiel|
 |---|---|---|

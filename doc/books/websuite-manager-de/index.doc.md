@@ -5,7 +5,7 @@ Benutzerhandbuch für das GBD WebSuite Manager Plugin
 **Übersicht**
 
 
-Das ![](gws_logo-24px.svg) GBD WebSuite Manager Plugin ist eine Erweiterung die in QGIS installiert werden kann. Es ermöglicht die einfache Bereitstellung von QGIS Projekten in der GBD WebSuite. Voraussetzung ist, dass ein Nutzeraccount zu einer GBD WebSuite vorhanden ist, und dass deren GBD WebSuite Manager Schnittstelle aktiv ist.
+Das ![](gws-logo-24px.svg) GBD WebSuite Manager Plugin ist eine Erweiterung die in QGIS installiert werden kann. Es ermöglicht die einfache Bereitstellung von QGIS Projekten in der GBD WebSuite. Voraussetzung ist, dass ein Nutzeraccount zu einer GBD WebSuite vorhanden ist, und dass deren GBD WebSuite Manager Schnittstelle aktiv ist.
 
 ![](uebersicht_f.png)
 
@@ -55,10 +55,10 @@ Wenn alles angepasst ist, muss man nur noch auf ![](mActionAdd.svg) ``Aktuelles 
 
 **Vorhandene Projekte verwalten**
 
-![](project_list.png)
+![](projects_list.png)
 
 Anhand dieser Liste kann man eine Übersicht über die hochgeladenen Projekte gewinnen.
-Das gewählte Projekt kann man über ![](gws_logo-24px.svg) ``Öffne die WebSuite`` sich in der WebSuite anzeigen lassen.
+Das gewählte Projekt kann man über ![](gws-logo-24px.svg) ``Öffne die WebSuite`` sich in der WebSuite anzeigen lassen.
 Über ![](link_24px.svg) ``Link anzeigen`` kann man sich den Projektlink oder die URLs der OGC-Dienste anzeigen lassen,
 über die das Projekt in andere Anwendungen integriert werden können.
 

@@ -13,15 +13,15 @@ Die Menüleiste ![](baseline-menu-24px.svg) {title Menü} ermöglicht den Zugrif
 | ![](sharp-edit-24px.svg) 		| [Digitalisieren](/user-de/menubar.digitalisieren) 			| Objekte digitalisieren und deren Attribute editieren	|
 | ![](gbd-icon-flurstuecksuche-01.svg) 	| [Flurstücksuche](/user-de/menubar.flurstuecksuche)			| Beauskunftung zum Thema Liegenschaftskataster (ALKIS)	|
 | ![](baseline-layers-24px.svg)        	| [Layer](/user-de/menubar.layer)       				| Layer anzeigen und einstellen				|
-| ![](directions_black_24px.svg)	| [Location Manager](/user-de/menubar.location-manager) 	 	| Location Manager        				|
-| ![](gbd-icon-markieren-messen-01.svg)	| [Markierungen](/user-de/menubar.marking)    			| Liste von Messungen & Markierungen verwalten		|
+| ![](directions_black_24px.svg)	| [Location Manager](/user-de/menubar.standort-manager) 	 	| Location Manager        				|
+| ![](gbd-icon-markieren-messen-01.svg)	| [Markierungen](/user-de/menubar.markierung)    			| Liste von Messungen & Markierungen verwalten		|
 | ![](person_search-24px.svg)     	| [Personen Informationen](/user-de/menubar.personen-information)	| Liste der selektierten Objekte    			|
-| ![](gbd-icon-projectoverview.svg)    	| [Projektübersicht](/user-de/menubar.project-overview)		| Allgemeine Projektinformationen anzeigen		|
+| ![](gbd-icon-projectoverview.svg)    	| [Projektübersicht](/user-de/menubar.projektuebersicht)		| Allgemeine Projektinformationen anzeigen		|
 | ![](baseline-search-24px.svg)        	| [Suche](/user-de/menubar.suche)  					| Inhalte suchen und als Ergebnis auflisten		|
 | ![](table_view_black_24px.svg)       	| [Tabellen editieren](/user-de/menubar.tabellen)	 		| Attributtabelle eines Layers editieren   		|
 
 %info
-	Die Elemente in der Menüleiste und ihre Reihenfolge können durch einen Administrator für Benutzer oder Benutzergruppen individuelle konfiguriert werden. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [UI-Konfiguration](/doc/8.0/admin-de/config/client/index.html#ui-konfiguration).
+	Die Elemente in der Menüleiste und ihre Reihenfolge können durch einen Administrator für Benutzer oder Benutzergruppen individuelle konfiguriert werden. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [UI-Konfiguration](/admin-de/config-az/client).
 %end
 
 ## :/user-de/menubar.*

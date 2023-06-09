@@ -1,11 +1,11 @@
-# Vorlagen :/admin-de/config-az/template
+# Vorlagen :/admin-de/config-az/vorlagen
 
 Vorlagen werden an verschiedenen Stellen in der GBD WebSuite genutzt.
 
 - für dynamische Web-Pages oder *Assets* , siehe [Web-Server](/admin-de/config-az/web)
-- bei Projekten (siehe [Projekte](/admin-de/config-az/project)) für Project Infoboxen
+- bei Projekten (siehe [Projekte](/admin-de/config-az/projekte)) für Project Infoboxen
 - bei Layern  für Layer Infoboxen und Features, siehe [Layer](/admin-de/config-az/layer) und [Feature](/admin-de/config-az/feature)
-- bei Suchprovidern für Features, siehe [Suche](/admin-de/config-az/search)
+- bei Suchprovidern für Features, siehe [Suche](/admin-de/config-az/suche)
 - bei OWS Diensten für XML Dokumente, siehe [OWS](/admin-de/config-az/ows)
 
 Eine Vorlage ist eine Text oder eine HTML-Datei mit externen Variablen, die in Klammern ``{...}`` eingeschlossen sind. Zusätzlich gibt es grundlegende Programmierkonstrukte (Bedingungen, Schleifen, Funktionen), mit denen die Vorlagenausgabe in Abhängigkeit von den Variablen geändert werden kann.
@@ -41,7 +41,7 @@ Text-Vorlagen enthalten Befehle der Vorlagen-Sprache, ansonsten werden alle Zeic
 
 ### html
 
-HTML-Vorlagen können die Befehle der Vorlagen-Sprache enthalten, beliebige HTML Formatierung und spezielle HTML Tags die unter [Drucken](/admin-de/config-az/print) beschrieben sind.
+HTML-Vorlagen können die Befehle der Vorlagen-Sprache enthalten, beliebige HTML Formatierung und spezielle HTML Tags die unter [Drucken](/admin-de/config-az/drucken) beschrieben sind.
 
 Zum Beispiel, hier ist eine Vorlage fur die Layer-Beschreibung (``subject: layer.description``):
 

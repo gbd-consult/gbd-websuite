@@ -1,4 +1,4 @@
-# Suche :/admin-de/config-az/search
+# Suche :/admin-de/config-az/suche
 
 %reference_de 'gws.ext.config.finder'
 
@@ -48,7 +48,7 @@ Schnittstelle zu [Nominatim](https://nominatim.openstreetmap.org/), der OSM-Such
 
 %reference_de 'gws.plugin.postgres.finder.Config'
 
-Bietet direkte Suche in Postgres/PostGIS Tabellen. Sie müssen und die zu durchsuchende Tabelle (``tableName``) angeben (siehe [Datenbanken](/admin-de/config-az/database)). Zusätzlich können Sie die Spalte in der nach dem Stichwort gesucht werden soll (``searchColumn``) konfigurieren.
+Bietet direkte Suche in Postgres/PostGIS Tabellen. Sie müssen und die zu durchsuchende Tabelle (``tableName``) angeben (siehe [Datenbanken](/admin-de/config-az/datenbanken)). Zusätzlich können Sie die Spalte in der nach dem Stichwort gesucht werden soll (``searchColumn``) konfigurieren.
 
 Wenn der Server eine Abfrage mit *keyword* und *shape* bearbeitet, wird ungefähr folgende SQL Abfrage ausgeführt:
 

@@ -1,4 +1,4 @@
-# Autorisierung :/admin-de/config-az/auth
+# Autorisierung :/admin-de/config-az/autorisierung
 
 Eine Rolle in der GBD WebSuit wird mit einer einfachen Zeichenkette bezeichnet. Ein Nutzer, der sich mit den Zugangsdaten identifiziert, kann mehrere Rollen besitzen.
 
@@ -217,7 +217,7 @@ Im Browser wird zur Bearbeitung eines Login-Formulars eine Javascript Funktion b
 
 Die Definitionen der Funktionen ``gwsLogin`` und ``gwsLogout`` finder Sie unter https://github.com/gbd-consult/gbd-websuite/blob/master/client/src/gws-start.js. Sie können auch eigene Funktionen verwenden.
 
-Siehe auch [Vorlage](/admin-de/config-az/template) für Details über die Vorlagen-Sprache.
+Siehe auch [Vorlage](/admin-de/config-az/vorlagen) für Details über die Vorlagen-Sprache.
 
 ### basic
 

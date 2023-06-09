@@ -1,4 +1,4 @@
-# Karten :/admin-de/config-az/map
+# Karten :/admin-de/config-az/karten
 
 %reference_de 'gws.base.map.core.Config'
 

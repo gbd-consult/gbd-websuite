@@ -127,8 +127,8 @@ Es werden folgende Element-Tags unterstützt:
 |``Sidebar.Alkis`` | Flurstücksuche |
 |``Sidebar.Annotate`` | Markieren und Messen |
 |``Sidebar.Bplan`` | Bauleitplanung, siehe [Bauleitplanung](/admin-de/config-az/bplan) |
-|``Sidebar.Dimension`` | Bemaßung, siehe [Bemaßung](/admin-de/config-az/dimension) |
-|``Sidebar.Edit`` | Digitalisierung, siehe [Digitalisierung](/admin-de/plugin/edit) |
+|``Sidebar.Dimension`` | Bemaßung, siehe [Bemaßung](/admin-de/config-az/bemassung) |
+|``Sidebar.Edit`` | Digitalisierung, siehe [Digitalisierung](/admin-de/plugin/digitalisierung) |
 |``Sidebar.Layers`` | Layerbaum |
 |``Sidebar.Overview`` | Projektübersicht |
 |``Sidebar.Search`` | Suche |
@@ -169,8 +169,8 @@ Es werden folgende Element-Tags unterstützt:
 |``Altbar.Search`` | Such-Box in rechten Bereich |
 |``Decoration.Attribution`` | Attribution auf der Karte |
 |``Decoration.ScaleRuler`` | Maßstabsbalken auf der Karte |
-|``Storage.Read`` | Datenablage lesen, siehe [Datenablage](/admin-de/config-az/storage) |
-|``Storage.Write`` | in der Datenablage speichern, siehe [Datenablage](/admin-de/config-az/storage) |
+|``Storage.Read`` | Datenablage lesen, siehe [Datenablage](/admin-de/config-az/datenablage) |
+|``Storage.Write`` | in der Datenablage speichern, siehe [Datenablage](/admin-de/config-az/datenablage) |
 
 ### Layer flags
 
@@ -201,5 +201,5 @@ Sie können den Stil der integrierten Funktionen anpassen, z. B. Markierungen vo
 |``.gws.modAnnotateCircle`` | Kreis-Markierung |
 
 %info
- Unter [Styling](/admin-de/config-az/style) finden Sie eine Auflistung von CSS Eingenschaften.
+ Unter [Styling](/admin-de/config-az/styling) finden Sie eine Auflistung von CSS Eingenschaften.
 %end

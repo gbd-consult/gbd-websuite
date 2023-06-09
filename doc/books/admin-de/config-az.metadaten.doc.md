@@ -1,4 +1,4 @@
-# Metadaten :/admin-de/config-az/metadata
+# Metadaten :/admin-de/config-az/metadaten
 
 %reference_de 'gws.core.types.Metadata'
 

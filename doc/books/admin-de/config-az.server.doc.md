@@ -35,7 +35,7 @@ Normalerweise, überwacht der Montior folgende Daten und Ordner:
 
 - App-Konfigurationsdatei
 - Projekt-Konfigurationsdateien
-- Projekt-Konfigurations-Ordner, falls Sie die Option ``projectDirs`` verwenden [Applikation](/admin-de/config-az/app)
+- Projekt-Konfigurations-Ordner, falls Sie die Option ``projectDirs`` verwenden [Applikation](/admin-de/config-az/applikation)
 - Vorlagen
 - QGIS Projekte
 
