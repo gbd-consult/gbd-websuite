@@ -18,8 +18,7 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 | ![](sharp-help-24px.svg)   	|[Hilfe](/user-de/statusbar.hilfe)	               		|Öffnet die Dokumentation der GBD WebSuite	|
 | ![](info_fill_24px.svg)   	|[Freier Verweis](/user-de/statusbar.freier-link)            	|Hinzufügen eines freien Verweises		|
 | ![](gws-logo-24px.svg) 	|[Informationen zur GBD WebSuite](/user-de/statusbar.gwsinfo)	|Öffnet die Dokumentation der GBD WebSuite	|
-
-Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <infobar>`
+| ![](ajax.gif) |  | Zeigt an, dass gerade Ressourcen geladen werden |
 
 ## :/user-de/statusbar.*
 
