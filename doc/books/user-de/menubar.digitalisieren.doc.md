@@ -50,6 +50,4 @@ Mit dem Symbol ![](draw-black-24px.svg) {button Zeichnen} kann ein neues Geometr
 
 Mit dem Symbol ![](sharp-control_point-24px.svg) {button Hinzufügen} können neue Punktgeometrien durch die Eingabe von X- und Y-Koordinaten erstellt werden. 
 
-
 Mit dem Symbol ![](baseline-close-24px.svg) {button Beenden} navigiert man zurück zur Layeransicht.
-

@@ -1,4 +1,4 @@
-# Layer :/user-de/menubar.layers
+# Layer :/user-de/menubar.layer
 
 Im Menü ![](baseline-layers-24px.svg) {title Layer} findet man eine Liste der Layer und Layergruppen des Projekts. Anhand dieser Auflistung kann ein Überblick über die einzelnen Layer gewonnen und deren  Sichtbarkeit verwaltet werden.
 
@@ -30,7 +30,7 @@ Mit einem Klick auf den Layernamen wird dieser blau markiert. Es öffenen sich d
 | ![](baseline-close-24px.svg)        	| {button Layereigenschaften schließen}		| Layereigenschaften schliessen und Markierung des Layers beenden					|
 
 %info
- Die Möglichkeiten zur Konfiguration des Menüs ![](baseline-layers-24px.svg) {title Layer} sind sehr umfangreich. Dazu gehört z.B. die maßstabsbezogene Darstellung. Weitere Informationen finden sich im Administrator Handbuch im Bereich [Layer](/doc/8.0/admin-de/config-az/layer/index.html#konfiguration).
+ Die Möglichkeiten zur Konfiguration des Menüs ![](baseline-layers-24px.svg) {title Layer} sind sehr umfangreich. Dazu gehört z.B. die maßstabsbezogene Darstellung. Weitere Informationen finden sich im Administrator Handbuch im Bereich [Layer](/admin-de/config-az/layer).
 %end 
 
 

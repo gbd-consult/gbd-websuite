@@ -15,7 +15,7 @@ Am unteren Menüfensterrand befindet sich weitere Funktionalität für die Ablag
 | ![](sharp-delete_forever-24px.svg)   	| {button Auswahl löschen}	| Aktuelle Auswahlliste löschen			|
 
 
-Beim Auswählen eines Objekts in der Auswahlliste öffnet sich automatisch das Informationsfenster mit den Objekteigenschaften. Unter ￼unteren Bereich findet sich das Menü ![](round-settings-24px.svg) {title Aufgaben}, hinter dem weitere interaktive Funktionalität zur Verfügung steht:
+Beim Auswählen eines Objekts in der Auswahlliste öffnet sich automatisch das Informationsfenster mit den Objekteigenschaften. Im unteren Bereich findet sich das Menü ![](round-settings-24px.svg) {title Aufgaben}, hinter dem weitere interaktive Funktionalität zur Verfügung steht:
 
 | Symbol                                | Funktion                	| Funktionsbeschreibung                         |
 |---------------------------------------|-------------------------------|-----------------------------------------------|

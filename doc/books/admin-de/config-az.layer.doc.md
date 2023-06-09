@@ -1,6 +1,6 @@
 # Layer :/admin-de/config-az/layer
 
-Ein *Layer* in einem GBD WebSuite Projekt wird durch seinen ``type`` identifiziert. Grundsätzlich unterteilen sich Layer in  *Raster-* und *Vektorlayern*. Ein Rasterlayer stellt Geoinformation in der Pixelform dar. Die Rasterlayer enthalten keine Sachdaten (Attribute), sie können jedoch mit Suchquellen kombiniert werden, die Sachdaten enthalten. Ein Vektorlayer ist eine Sammlung von *Features*, aus geometrischen Objekten (Punkte, Linien und Polygone), zu denen auch Sachdaten zugeordnet werden. Die Darstellung von Vektorlayern können Sie mit Styling (siehe [Styling](/admin-de/config-az/style)) frei gestalten.
+Ein *Layer* in einem GBD WebSuite Projekt wird durch seinen ``type`` identifiziert. Grundsätzlich unterteilen sich Layer in  *Raster-* und *Vektorlayern*. Ein Rasterlayer stellt Geoinformation in der Pixelform dar. Die Rasterlayer enthalten keine Sachdaten (Attribute), sie können jedoch mit Suchquellen kombiniert werden, die Sachdaten enthalten. Ein Vektorlayer ist eine Sammlung von *Features*, aus geometrischen Objekten (Punkte, Linien und Polygone), zu denen auch Sachdaten zugeordnet werden. Die Darstellung von Vektorlayern können Sie mit Styling (siehe [Styling](/admin-de/config-az/styling)) frei gestalten.
 
 ## Layer ``uid``
 
@@ -25,7 +25,7 @@ Damit die Layer in dem System eindeutig identifiziert werden können, sind die L
 }
 ```
 
-und Sie auf den Layer ``strassen`` woanders verweisen wollen (z.B. für Einrasten Funktion in [Bemaßung](/admin-de/config-az/dimension)), dann ist die ``uid`` wie folgt anzugeben:
+und Sie auf den Layer ``strassen`` woanders verweisen wollen (z.B. für Einrasten Funktion in [Bemaßung](/admin-de/config-az/bemassung)), dann ist die ``uid`` wie folgt anzugeben:
 
 ```javascript
 
@@ -51,23 +51,23 @@ Bei einer Layerkonfiguration stehen viele Optionen zur Verfügung. Die wichtigst
 |``clientOptions`` | Optionen für darstellung im Client, siehe [client](/admin-de/config-az/client) |
 |``display`` | Anzeige-Modus (``box`` - den ganzen Kartenausschnitt rendern, ``tile`` - gekachelte Darstellung ``client`` - Darstellung im Client mit Javascript) |
 |``legend`` | Optionen für Legenden |
-|``meta`` | Layer-Metadaten [Metadaten](/admin-de/config-az/meta) |
+|``meta`` | Layer-Metadaten [Metadaten](/admin-de/config-az/metadaten) |
 |``opacity`` | Transparenz als eine Fließkommazahl |
 |``ows`` |  Eigenschaften im Bezug auf OWS Dienste, siehe [OWS](/admin-de/config-az/ows) |
-|``search`` | Such-Provider, siehe [Suche](/admin-de/config-az/search) |
+|``search`` | Such-Provider, siehe [Suche](/admin-de/config-az/suche) |
 |``templates`` | Vorlagen |
 |``title`` | Layer-Titel |
 
-Außerdem können Sie mit ``extent``, ``extentBuffer`` und ``zoom`` die entsprechenden Eigenschaften der Karte (siehe [Karte](/admin-de/config-az/map)) überschreiben.
+Außerdem können Sie mit ``extent``, ``extentBuffer`` und ``zoom`` die entsprechenden Eigenschaften der Karte (siehe [Karte](/admin-de/config-az/karten)) überschreiben.
 
 Für Vektorlayer sind zusätzlich diese Optionen vorhanden:
 
 |OPTION|BEDEUTUNG|
 |---|---|
 |``dataModel`` | Feature Transformationsregeln, siehe [Feature](/admin-de/config-az/feature)|
-|``edit`` und ``editDataModel`` | unterstützt Editieren von Layern, siehe [Digitalisierung](/admin-de/plugin/edit)|
+|``edit`` und ``editDataModel`` | unterstützt Editieren von Layern, siehe [Digitalisierung](/admin-de/plugin/digitalisierung)|
 |``loadingStrategy`` | steuert das Laden von Features (``all`` - alle laden, ``bbox`` - nur Features im Kartenausschnitt laden)|
-|``style`` | Style für Features, siehe [Styling](/admin-de/config-az/style)|
+|``style`` | Style für Features, siehe [Styling](/admin-de/config-az/styling)|
 
 Für Rasterlayer können Sie mit ``cache`` und ``grid`` das Cachen von Rasterdaten steuern, siehe [Caching-Framework](/admin-de/config-az/cache).
 
@@ -157,13 +157,13 @@ Vektor-Layer, übernimmt Geometrien aus einer Postgres-Tabelle. Sie müssen die 
 }
 ```
 
-Mehr über Tabellen-Konfigurationen siehe [Datenbanken](/admin-de/config-az/datenbank).
+Mehr über Tabellen-Konfigurationen siehe [Datenbanken](/admin-de/config-az/datenbanken).
 
 ### qgis/qgisflat
 
 %reference_de  'gws.plugin.qgis.qgisflat_layer.Config'
 
-QGIS Layer, mehr dazu in [QGIS](/admin-de/config-az/qgis).
+QGIS Layer, mehr dazu in [QGIS](/admin-de/config-az/layer).
 
 ### tile
 

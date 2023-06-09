@@ -12,9 +12,8 @@ Für das Loggen sind folgende Stufen definiert:
 | TAG | EIGENSCHAFT |
 |---|---|
 | ``ERROR`` | schwerwiegende Fehler, die die Funktion des GWS Servers beeinträchtigen |
-| ``WARN`` | zusätzlich, Warnungen, z.B. nicht verfügbare Ressourcen |
-| ``INFO`` | zusätzlich, Informationsmeldungen (Defaultwert) |
-| ``INFO`` | zusätzlich, Debug-Information |
+| ``INFO`` | zusätzliche Informationsmeldungen (Defaultwert) |
+| ``DEBUG`` | zusätzliche Ausgaben zur Fehlersuche |
 
 ## Module
 
@@ -36,7 +35,7 @@ Normalerweise, überwacht der Montior folgende Daten und Ordner:
 
 - App-Konfigurationsdatei
 - Projekt-Konfigurationsdateien
-- Projekt-Konfigurations-Ordner, falls Sie die Option ``projectDirs`` verwenden [Applikation](/admin-de/config-az/app)
+- Projekt-Konfigurations-Ordner, falls Sie die Option ``projectDirs`` verwenden [Applikation](/admin-de/config-az/applikation)
 - Vorlagen
 - QGIS Projekte
 
