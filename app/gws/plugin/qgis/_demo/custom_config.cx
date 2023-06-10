@@ -1,0 +1,53 @@
+projects+ {
+    title "QGIS layer, custom config"
+    metadata.abstract "Change automatically created sub-layers with `customConfig`."
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 30000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Düsseldorf"
+        type "qgis"
+        provider.path "/data/demos/poi_geojson.qgs"
+
+        @# since there's no "applyTo", applies to all layers
+        customConfig+ {
+            config {
+                metadata.abstract "Custom metadata"
+            }
+        }
+
+        @# applies to image (leaf) layers
+        customConfig+ {
+            applyTo { isImage true }
+            config {
+                legend { type "qgis" options.layerfontsize 12 }
+            }
+        }
+
+        @# applies to layers whose path contains "sonstiges", e.g. "/sonstiges/hotel"
+        customConfig+ {
+            applyTo { pattern "sonstiges" }
+            config {
+                templates+ {
+                    type "html"
+                    subject "feature.description"
+                    text "<p>Sonstiges: <b>{{name}}</b></p>"
+                }
+            }
+        }
+
+        @# applies to specific layers
+        customConfig+ {
+            applyTo { names ["Bäckerei", "Kiosk", "Supermarkt"] }
+            config {
+                legend { type "qgis" options.layerfontcolor "red" }
+            }
+        }
+    }
+
+    {demo_osm_background}
+}

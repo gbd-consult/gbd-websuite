@@ -17,17 +17,6 @@ import gws.lib.svg
 import gws.types as t
 
 
-class LayerOptions(gws.Data):
-    search: t.Optional[bool] = True
-    """layer is searchable"""
-    legend: t.Optional[bool] = True
-    """layer has a legend"""
-    cache: t.Optional[bool] = False
-    """layer is cached"""
-    ows: t.Optional[bool] = True
-    """layer is enabled for OWS services"""
-
-
 class ClientOptions(gws.Data):
     """Client options for a layer"""
 
@@ -97,42 +86,20 @@ class Config(gws.ConfigWithAccess):
     """data models"""
     opacity: float = 1
     """layer opacity"""
-    options: LayerOptions = {}
-    """options for the layer"""
     templates: t.Optional[list[gws.ext.config.template]]
+    """layer templates"""
     title: str = ''
-    zoom: t.Optional[gws.gis.zoom.Config]
-
-
-class CustomConfig(gws.ConfigWithAccess):
-    """Custom layer configuration"""
-
-    applyTo: t.Optional[gws.gis.source.LayerFilter]
-    """source layers this configuration applies to"""
-    clientOptions: t.Optional[ClientOptions]  # options for the layer display in the client
-    dataModel: t.Optional[gws.base.model.Config]
-    """layer data model"""
-    display: t.Optional[gws.LayerDisplayMode]
-    """layer display mode"""
-    extent: t.Optional[gws.Extent]
-    """layer extent"""
-    extentBuffer: t.Optional[int]
-    """extent buffer"""
-    legend: gws.base.legend.Config = {}  # type:ignore
-    """legend configuration"""
-    metadata: t.Optional[gws.Metadata]
-    """layer metadata"""
-    opacity: t.Optional[float]
-    """layer opacity"""
-    ows: bool = True  # layer is enabled for OWS services
-    # search: gws.base.search.finder.collection.Config = {}  # type:ignore
-    """layer search configuration"""
-    templates: t.Optional[list[gws.ext.config.template]]
-    """client templates"""
-    title: t.Optional[str]
     """layer title"""
     zoom: t.Optional[gws.gis.zoom.Config]
     """layer resolutions and scales"""
+    withSearch: t.Optional[bool] = True
+    """layer is searchable"""
+    withLegend: t.Optional[bool] = True
+    """layer has a legend"""
+    withCache: t.Optional[bool] = True
+    """layer is cached"""
+    withOws: t.Optional[bool] = True
+    """layer is enabled for OWS services"""
 
 
 class GridProps(gws.Props):
@@ -160,52 +127,6 @@ class Props(gws.Props):
     uid: str
     url: str = ''
 
-
-_DEFAULT_STYLE = gws.Config(
-    values={
-        'fill': 'rgba(0,0,0,1)',
-        'stroke': 'rgba(0,0,0,1)',
-        'stroke-width': 1,
-    }
-)
-
-_DEFAULT_TEMPLATES = [
-    gws.Config(
-        type='html',
-        path=gws.dirname(__file__) + '/templates/layer_description.cx.html',
-        subject='layer.description',
-        access=gws.PUBLIC,
-        uid='gws.base.layer.templates.layer_description',
-    ),
-    gws.Config(
-        type='html',
-        path=gws.dirname(__file__) + '/templates/feature_description.cx.html',
-        subject='feature.description',
-        access=gws.PUBLIC,
-        uid='gws.base.layer.templates.feature_description',
-    ),
-    gws.Config(
-        type='html',
-        path=gws.dirname(__file__) + '/templates/feature_teaser.cx.html',
-        subject='feature.teaser',
-        access=gws.PUBLIC,
-        uid='gws.base.layer.templates.feature_teaser',
-    ),
-    gws.Config(
-        type='html',
-        path=gws.dirname(__file__) + '/templates/feature_title.cx.html',
-        subject='feature.title',
-        access=gws.PUBLIC,
-        uid='gws.base.layer.templates.feature_title',
-    ),
-    gws.Config(
-        type='html',
-        path=gws.dirname(__file__) + '/templates/feature_label.cx.html',
-        subject='feature.label',
-        access=gws.PUBLIC,
-        uid='gws.base.layer.templates.feature_label',
-    ),
-]
 
 _DEFAULT_TILE_SIZE = 256
 
@@ -283,7 +204,7 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_cache(self):
-        if not self.cfg('options.cache'):
+        if not self.cfg('withCache'):
             return True
         self.cache = gws.LayerCache(self.cfg('cache'))
         return True
@@ -301,7 +222,7 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_legend(self):
-        if not self.cfg('options.legend'):
+        if not self.cfg('withLegend'):
             return True
         p = self.cfg('legend')
         if p:
@@ -335,7 +256,7 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_search(self):
-        if not self.cfg('options.search'):
+        if not self.cfg('withSearch'):
             return True
         p = self.cfg('finders')
         if p:

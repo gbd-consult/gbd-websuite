@@ -2,7 +2,6 @@ from .core import (
     Config,
     Object,
     Props,
-    LayerOptions,
     ClientOptions,
     CacheConfig,
     GridConfig,

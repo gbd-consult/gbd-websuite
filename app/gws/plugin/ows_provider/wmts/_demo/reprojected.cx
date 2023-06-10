@@ -13,7 +13,6 @@ projects+ {
         type "wmts"
         provider.url "https://www.wmts.nrw.de/geobasis/wmts_nw_dtk"
         metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
-        options.cache true
     }
 
     {demo_osm_background}
