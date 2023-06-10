@@ -36,7 +36,7 @@ Eine dynamische POST-Anfrage (z.B. Suche):
 Anhand vom `cmd` Parameter entscheidet der Server welche *Server Aktion* die Bearbeitung der Anfrage übernimmt. Falls die Aktion existiert und richtig konfiguriert ist,  wird die Anfrage zu dieser Aktion weitergeleitet. Die Aktion bearbeitet die Anfrage und stellt eine Antwort bereit, die abhängig von der Natur der Anfrage, in HTML, JSON oder PNG Format vorliegt. Intern sind die Aktionen die Python-Klassen, die für jeden Befehl (`cmd`) über eine Methode verfügen. Im obigen Beispiel (`cmd=mapHttpGetBox`) ist `map` die Aktion und `httpGetBox` die Methode, die diese Anfrage bearbeitet.
 
 %info
- Server Aktionen sind unter [Actions](/admin-de/config-az/actions) beschrieben. MISSING! TODO!
+ Server Aktionen sind unter [Actions](/admin-de/config-az/server-aktionen) beschrieben. MISSING! TODO!
 %end
 
 ## Webseiten und Projekte
@@ -66,7 +66,7 @@ Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Haupt
 Ein *Asset* ist dagegen ein Dokument, das dynamisch erzeugt wird, abhängig vom Kontext (eine *Vorlage*) oder nur berechtigten Nutzern zur Verfügung steht. Assets werden in einem speziellen Ordner platziert, der sowohl für eine Webseite als auch Projekt-abhängig konfiguriert werden kann.
 
 %info
- Mehr dazu in [App](/admin-de/config-az/app), [Vorlagen](/admin-de/config-az/template) und [Projekte](/admin-de/config-az/project).
+ Mehr dazu in [App](/admin-de/config-az/applikation), [Vorlagen](/admin-de/config-az/vorlagen) und [Projekte](/admin-de/config-az/projekte).
 %end
 
 ## Autorisierung
@@ -89,7 +89,7 @@ Individuelle Zugangsdaten (Nutzername, Passwort) werden zu Rollen mittels *Autor
 %end
 
 %info
- Mehr dazu in [Autorisierung](/admin-de/config-az/auth).
+ Mehr dazu in [Autorisierung](/admin-de/config-az/autorisierung).
 %end
 
 ## Karten und Layer
@@ -106,7 +106,7 @@ Jedes GBD WebSuite Projekt enthält eine *Karte* (`map`), die eine Sammlung von 
 %end
 
 %info
- Mehr dazu in [Karten](/admin-de/config-az/map) und [Layer](/admin-de/config-az/layer).
+ Mehr dazu in [Karten](/admin-de/config-az/karten) und [Layer](/admin-de/config-az/layer).
 %end
 
 ## Suche und Features
@@ -118,7 +118,7 @@ Ein Feature ist ein Objekt das sowohl Sachdaten in Form von *Attributen*, als au
 GWS bietet Werkzeuge um die Features aus diversen Quellen im Client oder in einem OWS Dienst einheitlich darzustellen. Dazu gehören *Datenmodellen* (`dataModel`), die Attributen transformieren und *Vorlagen* (`template`), die aus Attributen Präsentationsobjekte, wie HTML Snippets, erstellen.
 
 %info
- Mehr dazu in [Suche](/admin-de/config-az/search) und [Features](/admin-de/config-az/feature).
+ Mehr dazu in [Suche](/admin-de/config-az/suche) und [Features](/admin-de/config-az/feature).
 %end
 
 ## Arbeiten mit QGIS

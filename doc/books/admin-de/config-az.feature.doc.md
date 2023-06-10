@@ -141,7 +141,7 @@ Es werden folgende Regel unterstützt:
 
 ## Client-Vorlagen
 
-Sie können Vorlagen (siehe [Vorlagen](/admin-de/config-az/tamplate)) Konfigurieren um die Features an verschiedenen Stellen im Client darzustellen. Die Vorlagen sind mit einem entsprechenden ``subject`` Wert zu versehen
+Sie können Vorlagen (siehe [Vorlagen](/admin-de/config-az/vorlagen)) Konfigurieren um die Features an verschiedenen Stellen im Client darzustellen. Die Vorlagen sind mit einem entsprechenden ``subject`` Wert zu versehen
 
 | ``subject`` | Funktion |
 |---|---|
@@ -150,7 +150,7 @@ Sie können Vorlagen (siehe [Vorlagen](/admin-de/config-az/tamplate)) Konfigurie
 |``feature.description`` | detaillierte Beschreibung, erscheint in der Info-Box |
 |``feature.label`` | Kartenbeschriftung für das Feature |
 
-Diese Vorlagen können für Layer (siehe [Layer](/admin-de/config-az/layer)) oder Suchprovider (siehe [Suche](/admin-de/config-az/search)) konfiguriert werden.
+Diese Vorlagen können für Layer (siehe [Layer](/admin-de/config-az/layer)) oder Suchprovider (siehe [Suche](/admin-de/config-az/suche)) konfiguriert werden.
 
 ## XML Vorlagen
 

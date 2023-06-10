@@ -6,6 +6,6 @@
 
 %info
 
-	Die GBD WebSuite bietet umfangreiche Optionen zum Thema Autorisierung. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [Autorisierung](/doc/8.0/admin-de/config-az/auth/index.html).
+	Die GBD WebSuite bietet umfangreiche Optionen zum Thema Autorisierung. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [Autorisierung](/admin-de/config-az/autorisierung).
 
 %end

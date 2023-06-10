@@ -130,4 +130,4 @@ Der Datenbank-Nutzer muss ``INSERT`` Recht auf diese Tabelle haben, aber nicht u
 
 %reference_de 'gws.plugin.alkis.geocoder.Config'
 
-Für diese Aktion sind keine spezielle Optionen vorhanden. Da diese Aktion über unser QGIS-Plugin aufgerufen wird und über keine UI verfügt, müssen Sie die Autorisierungsmethode ``basic`` im System freischalten wenn Sie diese Aktion mit einem Passwort schützen möchten. Siehe dazu [Autorisierung](/admin-de/config-az/auth).
+Für diese Aktion sind keine spezielle Optionen vorhanden. Da diese Aktion über unser QGIS-Plugin aufgerufen wird und über keine UI verfügt, müssen Sie die Autorisierungsmethode ``basic`` im System freischalten wenn Sie diese Aktion mit einem Passwort schützen möchten. Siehe dazu [Autorisierung](/admin-de/config-az/autorisierung).
