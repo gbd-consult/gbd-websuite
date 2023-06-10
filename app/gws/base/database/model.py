@@ -70,6 +70,9 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
                     self.keyName = f.name
                     break
 
+        if not self.keyName:
+            raise gws.Error(f'primary key not found for table {self.tableName!r}')
+
         geom = None
 
         for f in self.fields:
