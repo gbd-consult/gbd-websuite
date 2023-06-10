@@ -103,7 +103,8 @@ class Object(gws.base.layer.Object):
         return True
 
     def configure_legend(self):
-        if super().configure_legend():
+        # cannot use super() here, because the config must be extended with defaults
+        if not self.cfg('withLegend'):
             return True
         self.legend = self.create_child(
             gws.ext.object.legend,

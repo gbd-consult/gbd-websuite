@@ -112,9 +112,7 @@ class Object(gws.base.layer.Object):
             return True
         urls = gws.compact(sl.legendUrl for sl in self.imageLayers)
         if urls:
-            self.legend = self.create_child(
-                gws.ext.object.legend,
-                gws.Config(type='remote', urls=urls))
+            self.legend = self.create_child(gws.ext.object.legend, type='remote', urls=urls)
             return True
 
     def configure_metadata(self):
