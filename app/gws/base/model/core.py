@@ -11,7 +11,7 @@ from . import util
 class Config(gws.ConfigWithAccess):
     """Model configuration"""
 
-    fields: list[gws.ext.config.modelField]
+    fields: t.Optional[list[gws.ext.config.modelField]]
     """model fields"""
     loadingStrategy: t.Optional[gws.FeatureLoadingStrategy]
     """loading strategy for features"""
