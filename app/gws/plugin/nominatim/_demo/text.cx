@@ -1,0 +1,23 @@
+projects+ {
+    title "Search: Nominatim"
+    metadata.abstract "Full-text search with the Nominatim"
+
+    client.addElements+ { tag "Sidebar.Search" }
+    client.options.sidebarActiveTab "Sidebar.Search"
+
+    api.actions+ { type "search" }
+
+    finders+ {
+        type "nominatim"
+        spatialContext "map"
+    }
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        extent [ 447705, 6478918, 1023665, 6813238 ]
+        zoom.initScale 1000000
+        zoom.maxScale  1000000
+    }
+
+    {demo_osm_background}
+}
