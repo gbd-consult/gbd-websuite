@@ -8,19 +8,6 @@ import gws.base.web
 import gws.lib.metadata
 import gws.types as t
 
-_DEFAULT_PRINTER = gws.Config(
-    templates=[
-        gws.Config(
-            uid='gws.base.project.templates.project_print',
-            type='html',
-            path=gws.dirname(__file__) + '/templates/project_print.cx.html',
-            mapSize=(200, 180, gws.Uom.mm),
-            qualityLevels=[{'dpi': 72}],
-            access=gws.PUBLIC,
-        ),
-    ]
-)
-
 gws.ext.new.project('default')
 
 
@@ -71,7 +58,6 @@ class Props(gws.Props):
 
 class Object(gws.Node, gws.IProject):
     overviewMap: gws.base.map.Object
-    printer: gws.base.printer.Object
     title: str
 
     def configure(self):
@@ -93,12 +79,7 @@ class Object(gws.Node, gws.IProject):
         self.localeUids = self.cfg('locales') or self.root.app.localeUids
 
         self.map = self.create_child_if_configured(gws.ext.object.map, self.cfg('map'))
-
-        p = self.cfg('printer')
-        if p:
-            self.printer = self.create_child(gws.base.printer.Object, p)
-        else:
-            self.printer = self.root.create_shared(gws.base.printer.Object, _DEFAULT_PRINTER)
+        self.printer = self.create_child_if_configured(gws.base.printer.Object, self.cfg('printer'))
 
         self.overviewMap = self.create_child_if_configured(gws.base.map.Object, self.cfg('overviewMap'))
 
@@ -130,7 +111,7 @@ class Object(gws.Node, gws.IProject):
             metadata=gws.lib.metadata.props(self.metadata),
             models=models,
             overviewMap=self.overviewMap,
-            printer=self.printer,
+            printer=self.printer or self.root.app.printer,
             title=self.title,
             uid=self.uid,
         )

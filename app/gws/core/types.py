@@ -1489,7 +1489,7 @@ class ITemplate(INode, Protocol):
 
 
 class IPrinter(INode, Protocol):
-    pass
+    templates: list[ITemplate]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -2006,6 +2006,8 @@ class IProject(INode, Protocol):
     actionMgr: 'IActionManager'
     assetsRoot: Optional['WebDocumentRoot']
     client: 'IClient'
+    printer: 'IPrinter'
+
     localeUids: list[str]
     map: 'IMap'
     metadata: 'Metadata'
@@ -2037,6 +2039,7 @@ class IMiddleware(Protocol):
 
 class IApplication(INode, Protocol):
     client: 'IClient'
+    printer: 'IPrinter'
     localeUids: list[str]
     metadata: 'Metadata'
     monitor: 'IMonitor'

@@ -17,8 +17,7 @@ class Props(gws.Data):
     templates: list[gws.base.template.Props]
 
 
-class Object(gws.Node):
-    templates: list[gws.ITemplate]
+class Object(gws.Node, gws.IPrinter):
 
     def configure(self):
         self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
