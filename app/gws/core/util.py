@@ -469,7 +469,7 @@ def parse_acl(acl) -> types.Acl:
     if isinstance(acl, str):
         for p in acl.strip().split(','):
             s = p.strip().split()
-            if len(s) != 2 or not s[1].isalnum():
+            if len(s) != 2:
                 raise ValueError(err)
             if s[0] == a:
                 access.append((const.ALLOW, s[1]))
@@ -494,7 +494,7 @@ def parse_acl(acl) -> types.Acl:
         for s in acl:
             tk = s.get('type', '')
             rk = s.get('role', '')
-            if not isinstance(rk, str) or not rk.isalnum():
+            if not isinstance(rk, str):
                 raise ValueError(err)
             if tk == a:
                 access.append((const.ALLOW, rk))
