@@ -187,9 +187,9 @@ def deep_merge(x, y, concat_lists=True):
     Latter vales overwrite former ones unless None.
 
     Args:
-        *x: dict or Data.
-        *y: dict or Data.
-        *concat_lists: if true, list will be concatenated, otherwise merged
+        x: dict or Data.
+        y: dict or Data.
+        concat_lists: if true, list will be concatenated, otherwise merged
 
     Returns:
         A new object (dict or Data).
