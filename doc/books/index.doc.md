@@ -105,8 +105,12 @@ Weitere Informationen finden sie im:
 %end
 
 
-## :/user-de/gbd
+%comment
 ## :/websuite-manager 
+%end
 ## :/user-de
 ## :/admin-de
 ## :/dev-en
+%comment
+## :/user-de/gbd
+%end

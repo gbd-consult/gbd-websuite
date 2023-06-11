@@ -168,17 +168,17 @@ main table {
 main table th, main table td {
     margin: 0;
     padding: 12px;
-    border: 1px solid #eaeaea;
+    border: 1px solid #e6e6e6;
 }
 
 main table tr:nth-child(even) {
-    background: #f8f8f8;
+    background: #e6e6e6;
 }
 
 main table th {
     font-weight: 600;
     text-align: left;
-    background: #f8f8f8;
+    background: #e6e6e6;
     font-variant-caps: all-small-caps;
 }
 
