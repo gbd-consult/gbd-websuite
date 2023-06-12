@@ -1,6 +1,6 @@
 # Web Server :/admin-de/config-az/web
 
-TODO! %reference_de 'gws.base.web.site.Config¶'
+%reference_de 'gws.base.web.site.Config'
 
 Web-Inhalte (HTML-Dateien, Bilder, Downloads) werden in der GBD WebSuite von dem integrierten NGINX, einem schnellen und zuverlässigen Web-Server, verarbeitet.
 
