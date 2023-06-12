@@ -29,7 +29,7 @@ class _SaRuntime:
 
 class Object(gws.Node, gws.IDatabaseManager):
     models: dict[str, gws.IModel]
-    providers: dict[str, gws.IDatabaseProvider]
+    providersDct: dict[str, gws.IDatabaseProvider]
     rt: _SaRuntime
 
     def __getstate__(self):
@@ -38,13 +38,12 @@ class Object(gws.Node, gws.IDatabaseManager):
         return state
 
     def configure(self):
-        self.providers = {}
+        self.providersDct = {}
         self.models = {}
         self.rt = _SaRuntime()
 
         for cfg in self.cfg('providers', default=[]):
-            prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg, _defaultManager=self)
-            self.providers[prov.uid] = prov
+            self.create_provider(cfg)
 
         self.root.app.register_middleware('db', self)
 
@@ -65,11 +64,19 @@ class Object(gws.Node, gws.IDatabaseManager):
 
     ##
 
+    def create_provider(self, cfg, **kwargs):
+        prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg, _defaultManager=self, **kwargs)
+        self.providersDct[prov.uid] = prov
+        return prov
+
+    def providers(self):
+        return list(self.providersDct.values())
+
     def provider(self, uid):
-        return self.providers.get(uid)
+        return self.providersDct.get(uid)
 
     def first_provider(self, ext_type: str):
-        for prov in self.providers.values():
+        for prov in self.providersDct.values():
             if prov.extType == ext_type:
                 return prov
 
@@ -115,7 +122,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             if tabid in tabid_to_table:
                 continue
             provider_uid, table_name = tabid
-            provider = self.providers[provider_uid]
+            provider = self.provider(provider_uid)
             cols = [v[1] for k, v in columns.items() if k[0] == tabid]
             tab = self.table(provider, table_name, cols)
             cls = type('FeatureRecord_' + provider_uid + '_' + gws.to_uid(table_name), (gws.FeatureRecord,), {})
@@ -136,7 +143,7 @@ class Object(gws.Node, gws.IDatabaseManager):
 
         for tabid, props in tabid_to_props.items():
             for k, v in props.items():
-                sa.orm.add_mapped_attribute(tabid_to_class[tabid], k, v) # type: ignore
+                sa.orm.add_mapped_attribute(tabid_to_class[tabid], k, v)  # type: ignore
                 # getattr(tabid_to_class[tabid], '__mapper__').add_property(k, v)
 
     _add_column_check_keys = [

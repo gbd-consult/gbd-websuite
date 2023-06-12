@@ -371,8 +371,6 @@ def _map_layer(layer_el: gws.IXmlElement):
 
     prov = layer_el.textof('provider').lower()
     sl.dataSource = parse_datasource(prov, layer_el.textof('datasource'))
-    if sl.dataSource and 'provider' not in sl.dataSource:
-        sl.dataSource['provider'] = _parse_datasource_provider(prov, sl.dataSource)
 
     sl.opacity = _parse_float(layer_el.textof('layerOpacity') or '1')
     sl.isQueryable = layer_el.textof('flags/Identifiable') == '1'
@@ -421,7 +419,26 @@ def _layer_tree(el: gws.IXmlElement, layers_dct):
 
 ##
 
-def parse_datasource(provider, text):
+def parse_datasource(prov, text):
+    ds = _parse_datasource(text)
+    if not ds:
+        return
+
+    ds = gws.to_lower_dict(ds)
+    if not ds.get('provider'):
+        ds['provider'] = prov
+
+    if prov == 'wms' and 'tilematrixset' in ds:
+        ds['provider'] = 'wmts'
+    elif prov == 'wms' and ds.get('type') == 'xyz':
+        ds['provider'] = 'xyz'
+
+    # @TODO classify ogr's based on a file extension
+
+    return ds
+
+
+def _parse_datasource(text):
     # Datasources are very versatile and the format depends on the provider.
     # For some hints see `decodedSource` in qgsvectorlayer.cpp/qgsrasterlayer.cpp.
     # We don't have ambition to parse them all, just do some ad-hoc parsing
@@ -564,15 +581,6 @@ def _datasource_space_delimited(text):
             ds[key] = _value(v)
 
     return ds
-
-
-def _parse_datasource_provider(prov, ds):
-    if prov == 'wms' and 'tileMatrixSet' in ds:
-        return 'wmts'
-    if prov == 'wms' and ds.get('type') == 'xyz':
-        return 'xyz'
-    # @TODO classify ogr's based on a file extension
-    return prov
 
 
 ##

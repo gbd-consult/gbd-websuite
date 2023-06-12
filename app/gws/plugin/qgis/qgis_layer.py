@@ -23,7 +23,7 @@ class Object(gws.base.layer.group.Object):
         configs = gws.base.layer.tree.layer_configs_from_layer(
             self,
             self.provider.sourceLayers,
-            self.provider.leaf_layer_config,
+            self.provider.leaf_config,
         )
 
         self.configure_group_layers(configs)

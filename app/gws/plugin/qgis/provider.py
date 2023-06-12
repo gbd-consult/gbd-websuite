@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.database
+import gws.plugin.postgres.provider
 import gws.lib.metadata
 import gws.lib.net
 import gws.lib.mime
@@ -211,141 +212,197 @@ class Object(gws.Node, gws.IOwsProvider):
 
     ##
 
-    ##
+    def leaf_config(self, source_layers):
+        cfg = self._leaf_base_config(source_layers)
+        if not cfg:
+            return
+        finder = self._leaf_finder_config(source_layers)
+        if finder:
+            cfg['finders'] = [finder]
+        return cfg
 
-    def leaf_layer_config(self, source_layers):
+    def _leaf_base_config(self, source_layers):
         default = {
             'type': 'qgisflat',
+            'withSearch': True,
             '_defaultProvider': self,
-            '_defaultSourceLayers': source_layers
+            '_defaultSourceLayers': source_layers,
         }
 
         if len(source_layers) > 1 or source_layers[0].isGroup:
             return default
 
-        sl = source_layers[0]
-        ds = sl.dataSource
-        prov = ds.get('provider')
+        ds = source_layers[0].dataSource
+        if not ds:
+            return default
 
+        prov = ds.get('provider')
         if prov not in self.directRender:
             return default
 
         if prov == 'wms':
-            layers = ds.get('layers')
-            if not layers:
-                return
-            return {
-                'type': 'wmsflat',
-                'sourceLayers': {'names': ds['layers']},
-                'provider': {
-                    'url': self.make_ows_url(ds['url'], ds['params']),
-                }
-            }
-
+            return self._leaf_direct_render_wms(ds)
         if prov == 'wmts':
-            layers = ds.get('layers')
-            if not layers:
-                return
-            return {
-                'type': 'wmts',
-                'sourceLayer': ds['layers'][0],
-                'style': ds['styles'][0],
-                'provider': {
-                    'url': self.make_ows_url(ds['url'], ds['params']),
-                }
-            }
-
+            return self._leaf_direct_render_wmts(ds)
         if prov == 'xyz':
-            return {
-                'type': 'tile',
-                'provider': {
-                    'url': self.make_ows_url(ds['url'], ds['params']),
-                }
-            }
+            return self._leaf_direct_render_xyz(ds)
 
         gws.log.warning(f'directRender not supported for {prov!r}')
         return default
 
-    def search_config(self, source_layers):
-        default = {
-            'type': 'qgislocal',
-            '_defaultProvider': self,
-            '_defaultSourceLayers': source_layers
-        }
+    def _leaf_finder_config(self, source_layers):
+        if len(source_layers) > 1 or source_layers[0].isGroup:
+            return
 
-        if len(self.source_layers) > 1 or self.source_layers[0].isGroup:
-            return default
+        ds = source_layers[0].dataSource
+        if not ds:
+            return
 
-        sl = source_layers[0]
-        ds = sl.dataSource
         prov = ds.get('provider')
-
-        if prov not in self.direct_search:
-            return default
+        if prov not in self.directSearch:
+            return
 
         if prov == 'wms':
-            layers = ds.get('layers')
-            if layers:
-                return {
-                    'type': 'wms',
-                    'sourceLayers': {
-                        'names': ds['layers']
-                    },
-                    'url': self.make_wms_url(ds['url'], ds['params']),
-                }
-
-        if prov == 'postgres':
-            tab = sl.dataSource.get('table')
-
-            # 'table' can also be a select statement, in which case it might be enclosed in parens
-            if not tab or tab.startswith('(') or tab.upper().startswith('SELECT '):
-                return
-
-            return {
-                'type': 'qgispostgres',
-                '_data_source': ds
-            }
-
+            return self._leaf_direct_search_wms(ds)
         if prov == 'wfs':
-            cfg = {
-                'type': 'wfs',
-                'url': ds['url'],
-            }
-            if gws.get(ds, 'typeName'):
-                cfg['sourceLayers'] = {
-                    'names': [ds['typeName']]
-                }
-            crs = gws.get(ds, 'params.srsname')
-            inv = gws.get(ds, 'params.InvertAxisOrientation')
-            if inv == '1' and crs:
-                cfg['invertAxis'] = [crs]
-
-            return cfg
+            return self._leaf_direct_search_wfs(ds)
+        if prov == 'postgres':
+            return self._leaf_direct_search_postgres(ds)
 
         gws.log.warning(f'directSearch not supported for {prov!r}')
-        return default
+
+    def _leaf_direct_render_wms(self, ds):
+        layers = ds.get('layers')
+        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
+        if not layers or not url:
+            return
+        return {
+            'type': 'wmsflat',
+            'sourceLayers': {'names': layers},
+            'display': 'tile',
+            'provider': {'url': url},
+        }
+
+    def _leaf_direct_search_wms(self, ds):
+        layers = ds.get('layers')
+        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
+        if not layers or not url:
+            return
+        return {
+            'type': 'wms',
+            'sourceLayers': {'names': layers},
+            'provider': {'url': url}
+        }
+
+    def _leaf_direct_render_wmts(self, ds):
+        layers = ds.get('layers')
+        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
+        if not layers or not url:
+            return
+        cfg = {
+            'type': 'wmts',
+            'sourceLayer': layers[0],
+            'provider': {'url': url},
+        }
+        p = ds.get('styles')
+        if p:
+            cfg['style'] = p[0]
+        return cfg
+
+    def _leaf_direct_render_xyz(self, ds):
+        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
+        if not url:
+            return
+        return {
+            'type': 'tile',
+            'provider': {'url': url},
+        }
+
+    def _leaf_direct_search_wfs(self, ds):
+        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
+        if not url:
+            return
+        cfg = {
+            'type': 'wfs',
+            'provider': {'url': url},
+        }
+        p = ds.get('typename')
+        if p:
+            cfg['sourceLayers'] = {'names': [p]}
+        p = ds.get('srsname')
+        if p:
+            cfg['forceCrs'] = p
+        p = ds.get('ignoreaxisorientation')
+        if p == '1':
+            cfg['alwaysXY'] = True
+        p = ds.get('invertaxisorientation')
+        if p == '1':
+            # NB assuming this might be only '1' for lat-lon projections
+            cfg['alwaysXY'] = True
+
+        return cfg
+
+    def _leaf_direct_search_postgres(self, ds):
+        tab = ds.get('table')
+
+        # 'table' can also be a select statement, in which case it might be enclosed in parens
+        if not tab or tab.startswith('(') or tab.upper().startswith('SELECT '):
+            return
+
+        pg_provider = self._postgres_provider(gws.Config(
+            host=ds.get('host'),
+            port=ds.get('port'),
+            database=ds.get('dbname'),
+            username=ds.get('username'),
+            password=ds.get('password'),
+            serviceName=ds.get('service'),
+            options=ds.get('options'),
+        ))
+
+        return {
+            'type': 'postgres',
+            'tableName': tab,
+            'models': [{'type': 'postgres'}],
+            '_defaultProvider': pg_provider
+        }
+
+    def _postgres_provider(self, cfg):
+        url = gws.plugin.postgres.provider.connection_url(cfg)
+        mgr = self.root.app.databaseMgr
+
+        for p in mgr.providers():
+            if p.extType == 'postgres' and p.url == url:
+                return p
+
+        gws.log.debug('creating an ad-hoc postgres provider for qgis')
+        return mgr.create_provider(cfg, type='postgres')
 
     _std_ows_params = {
-        'service',
-        'version',
-        'request',
-        'layers',
-        'styles',
-        'srs',
-        'crs',
         'bbox',
-        'width',
-        'height',
-        'format',
-        'transparent',
         'bgcolor',
+        'crs',
         'exceptions',
-        'time',
+        'format',
+        'height',
+        'layers',
+        'request',
+        'service',
         'sld',
         'sld_body',
+        'srs',
+        'styles',
+        'time',
+        'transparent',
+        'version',
+        'width',
     }
 
-    def make_ows_url(self, url, params):
+    def _leaf_service_url(self, url, params):
+        if not url:
+            return
+        if not params:
+            return url
+
         # a wms url can be like "server?service=WMS....&bbox=.... &some-non-std-param=...
         # we need to keep non-std params for caps requests
 

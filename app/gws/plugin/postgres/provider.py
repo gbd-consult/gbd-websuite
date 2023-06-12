@@ -34,47 +34,9 @@ class Config(gws.base.database.provider.Config):
 
 class Object(gws.base.database.provider.Object):
     def configure(self):
-        self.url = self.configure_url()
-
-    def configure_url(self):
-
-        # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING
-        # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
-
-        defaults = {
-            'application_name': 'GWS',
-        }
-
-        params = gws.merge(defaults, self.cfg('options'))
-
-        p = self.cfg('host')
-        if p:
-            return gws.lib.net.make_url(
-                scheme='postgresql',
-                username=self.cfg('username'),
-                password=self.cfg('password'),
-                hostname=p,
-                port=self.cfg('port'),
-                path=self.cfg('database'),
-                params=params,
-            )
-
-        p = self.cfg('serviceName')
-        if p:
-            s = os.getenv('PGSERVICEFILE')
-            if not s or not os.path.isfile(s):
-                raise gws.Error(f'PGSERVICEFILE not found')
-
-            params['service'] = p
-
-            return gws.lib.net.make_url(
-                scheme='postgresql',
-                hostname='',
-                path=self.cfg('database', default=''),
-                params=params,
-            )
-
-        raise gws.Error(f'"host/database" or "serviceName" are required')
+        self.url = connection_url(self.config)
+        if not self.url:
+            raise gws.Error(f'"host/database" or "serviceName" are required')
 
     def engine(self, **kwargs):
         # kwargs.setdefault('poolclass', sa.NullPool)
@@ -107,3 +69,43 @@ class Object(gws.base.database.provider.Object):
             box = sess.execute(sel).scalar_one()
             if box:
                 return gws.Bounds(extent=gws.gis.extent.from_box(box), crs=gws.gis.crs.get(desc.geometrySrid))
+
+
+##
+
+def connection_url(cfg: gws.Config):
+    # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING
+    # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
+
+    defaults = {
+        'application_name': 'GWS',
+    }
+
+    params = gws.merge(defaults, cfg.get('options'))
+
+    p = cfg.get('host')
+    if p:
+        return gws.lib.net.make_url(
+            scheme='postgresql',
+            username=cfg.get('username'),
+            password=cfg.get('password'),
+            hostname=p,
+            port=cfg.get('port'),
+            path=cfg.get('database') or cfg.get('dbname') or '',
+            params=params,
+        )
+
+    p = cfg.get('serviceName')
+    if p:
+        s = os.getenv('PGSERVICEFILE')
+        if not s or not os.path.isfile(s):
+            raise gws.Error(f'PGSERVICEFILE not found')
+
+        params['service'] = p
+
+        return gws.lib.net.make_url(
+            scheme='postgresql',
+            hostname='',
+            path=cfg.get('database') or cfg.get('dbname') or '',
+            params=params,
+        )
