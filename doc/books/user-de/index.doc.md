@@ -1,9 +1,5 @@
 # Benutzerhandbuch :/user-de
 
-Dies ist das Benutzerhandbuch für die GBD WebSuite.
-
-## Einführung :intro
-
 Willkommen im Benutzerhandbuch der GBD WebSuite, hier werden Sie alle Funktionen der Client-Oberfläche und deren Bedienung kennenlernen.
 
 **Übersicht**

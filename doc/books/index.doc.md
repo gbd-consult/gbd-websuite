@@ -1,32 +1,14 @@
-# GBD WebSuite Documentation :/
-
+# GBD WebSuite Dokumentation :/
 
 Die **GBD WebSuite** ist eine webbasierte Open Source GIS Plattform zur Geodatenverarbeitung.
 Sie beinhaltet den GBD WebSuite Server und GBD WebSuite Client und zeichnet sich neben der klassischen WebGIS Funktionalität vor allem dadurch aus, externe Anwendungen und neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Konfigurationen zu ermöglichen.
 Die Kern-Bibliotheken von Client und Server sind schlank gehalten. Die gesamte Architektur ist Plugin-basiert.
 Auch die QGIS Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
 
-**Geschichte**
+**Funktionalität**
 
-Das Projekt wurde im Herbst 2017 begonnen. Am 10. Januar 2019 wurde die Version 1.0.0 veröffentlicht und über github und dockerhub bereitgestellt. Seit dieser Zeit arbeiten wir hart daran, die **GBD WebSuite** zu verbessern und mit neuer Funktionalität zu erweitern.
+Dem Anwender werden eine Vielzahl an GIS Funktionalität durch Kernfunktionen und Erweiterungen zur Verfügung gestellt, um Informationen in der Karte zu suchen, abzufragen, zu erstellen, zu bearbeiten und als druckfertige Karte auszugeben. Externe (Fach-)Anwendungen und neue Funktionalität können modular integriert und deren Nutzung individuell konfiguriert werden.
 
-**Lizenz und Veröffentlichung**
-
-Die **GBD WebSuite** wird als Docker Image bereitgestellt und kann plattformunabhängig in IT-Infrastrukturen integriert werden. Sie kombiniert die Funktionalität zahlreicher Open Source Software, wie QGIS, MapProxy, uWSGI oder NGINX und stellt diese den Anwendern zur Verfügung.
-
-Die **GBD WebSuite** wird unter der GNU Affero General Public License (AGPL) veröffentlicht.
-
-
-**Funktionalität** **Funktionsübersicht**
-
-Sie zeichnet sich neben der klassischen WebGIS Funktionalität vor allem dadurch aus, externe Anwendungen und
-neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Konfigurationen zu ermöglichen. Die
-Kern-Bibliotheken von Client und Server sind schlank gehalten. Die gesamte Architektur ist Plugin-basiert. Auch die QGIS
-Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
-
-Dem Anwender stellt die **GBD WebSuite** eine Vielzahl an GIS Funktionalität durch Kernfunktionen und Erweiterungen zur Verfügung, um Informationen in der Karte zu suchen, abzufragen, zu erstellen, zu bearbeiten und als druckfertige Karte auszugeben. Externe (Fach-)Anwendungen und neue Funktionalität können modular integriert und deren Nutzung individuell konfiguriert werden.
-
-Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis von Plugins zur Verfügung gestellt und flexibel konfiguriert werden können.
 Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebung angepasst oder in diese integriert werden. Die aktuelle Funktionalität umfasst:
 
 * QGIS und QGIS Server Integration
@@ -45,8 +27,7 @@ Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebu
 * Drucken in unterschiedlicher Auflösung inklusive redlining
 * Screenshots erstellen im PNG-Format
 
-GBD WebSuite Server und Client
-..............................
+**GBD WebSuite Server und Client**
 
 Der **GBD WebSuite Server** basiert auf Python mit Support für PyQGIS und weiteren GIS Bibliotheken.
 Er läuft in einem WSGI Container hinter einem Caching NGINX Proxy.
@@ -62,7 +43,6 @@ Dabei besteht die Möglichkeit, dass QGIS Desktop Benutzer über ein Plugin, Anp
 
 Die **GBD WebSuite** ist eine modulare Open Source WebGIS Plattform zur Geodatenverarbeitun. Demzufolge verwendet diese für die Darstellung von Daten in der Karte WebGIS Layer und WebGIS Gruppen.
 Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine Übersicht von verwendeten Abkürzungen.
-
 
 Die GBD WebSuite als **Web Server**:
 
@@ -99,6 +79,7 @@ In diesem Benutzerhandbuch werden zum besseren Verständnis verschiedene Schreib
 Weitere Informationen finden sie im:
 
 %toc
+/common-de
 /user-de
 /admin-de
 /dev-en
@@ -108,9 +89,7 @@ Weitere Informationen finden sie im:
 %comment
 ## :/websuite-manager 
 %end
+## :/common-de
 ## :/user-de
 ## :/admin-de
 ## :/dev-en
-%comment
-## :/user-de/gbd
-%end
