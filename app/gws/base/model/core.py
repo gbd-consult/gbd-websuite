@@ -66,8 +66,11 @@ class Object(gws.Node, gws.IModel):
                 # treating them as scalars leads to conflicts in sa Table classes
                 continue
             cfg = util.field_config_from_column(col)
-            if cfg:
-                self.fields.append(self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self))
+            if not cfg:
+                continue
+            fld = self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self)
+            if fld:
+                self.fields.append(fld)
         return True
 
     def configure_templates(self):
