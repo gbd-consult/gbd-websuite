@@ -96,7 +96,7 @@ class Config(gws.ConfigWithAccess):
     """layer is searchable"""
     withLegend: t.Optional[bool] = True
     """layer has a legend"""
-    withCache: t.Optional[bool] = True
+    withCache: t.Optional[bool] = False
     """layer is cached"""
     withOws: t.Optional[bool] = True
     """layer is enabled for OWS services"""
