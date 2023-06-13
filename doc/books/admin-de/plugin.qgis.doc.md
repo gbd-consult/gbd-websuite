@@ -6,7 +6,7 @@ Es gibt zwei Möglichkeiten, QGIS Projekte als Layer in Ihren Karten einzubinden
 
 ## qgis
 
-TODO! %reference_de 'gws.ext.layer.qgis.Config'
+%reference_de 'gws.plugin.qgis.qgis_layer.Config'
 
 QGIS-Layer zeigen ganze QGIS-Projekte als einzelne Gruppe im GWS-Layerbaum an. Zusätzlich zu einem Layerfilter können Sie angeben, ob entfernte (z. B. WMS-) Layer direkt gerendert und / oder durchsucht werden sollen, oder den QGIS-Server verwenden:
 
@@ -24,7 +24,7 @@ Sie können auch die Struktur der Gruppe mit ``flattenLayers`` beinflüssen, ind
 
 ## qgisflat
 
-TODO! %reference_de 'gws.ext.layer.qgisflat.Config'
+%reference_de 'gws.plugin.qgis.qgisflat_layer.Config'
 
 ``qgisflat``-Layer zeigen einzelne Layer aus einem QGIS-Projekt als einzelnes flaches Bild an:
 

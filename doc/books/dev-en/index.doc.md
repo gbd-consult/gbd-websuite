@@ -16,6 +16,9 @@ Documentation for developers who want to extend the GBD WebSuite Client.
 
 **Server**
 
+
+Welcome to the GBD WebSuite Developer documentation. Here you will learn how to improve and extend this software.
+
 %toc
 /dev-en/server-overview
 /dev-en/server-request
