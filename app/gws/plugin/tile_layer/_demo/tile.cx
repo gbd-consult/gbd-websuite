@@ -14,5 +14,6 @@ projects+ {
         provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
 
         display "tile"
+        withCache true
     }
 }
