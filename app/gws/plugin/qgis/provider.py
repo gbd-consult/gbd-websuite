@@ -349,6 +349,8 @@ class Object(gws.Node, gws.IOwsProvider):
         if not tab or tab.startswith('(') or tab.upper().startswith('SELECT '):
             return
 
+        # @TODO support extra sql from ds['sql']
+
         pg_provider = self._postgres_provider(gws.Config(
             host=ds.get('host'),
             port=ds.get('port'),

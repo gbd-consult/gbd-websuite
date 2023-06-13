@@ -50,7 +50,7 @@ class Object(gws.base.database.provider.Object):
 
     def split_table_name(self, table_name):
         if '.' in table_name:
-            schema, name = table_name.split('.')
+            schema, _, name = table_name.partition('.')
             return schema, name
         return 'public', table_name
 

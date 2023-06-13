@@ -4,18 +4,18 @@ projects+ {
 
     map {
         center {demo_point_duesseldorf_3857}
-        zoom.initScale 15000
+        zoom.initScale 4000
     }
 
     map.layers+ {
-        title "Verkehrsnetze (Eisenbahn)"
+        title "NRW ALKIS"
         type "wmsflat"
-        provider.url "https://www.wms.nrw.de/geobasis/wms_nw_inspire-verkehrsnetze_alkis"
+        provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
 
         sourceLayers.names [
-            "TN.RailTransportNetwork.RailwayArea"
-            "TN.RailTransportNetwork.RailwayLink"
-            "TN.RailTransportNetwork.RailwayStationArea"
+            "adv_alkis_gewaesser"
+            "adv_alkis_vegetation"
+            "adv_alkis_bodensch"
         ]
         metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
     }

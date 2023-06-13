@@ -35,7 +35,9 @@ class Object(gws.base.model.scalar_field.Object):
             self.geometryType = p[0]
             self.geometryCrs = p[1]
         else:
-            raise gws.Error(f'unable to find type/crs for column {self.name!r}')
+            desc = self.model.describe()
+            tab = desc.name if desc else ''
+            raise gws.Error(f'unable to find type/crs for column {tab!r}.{self.name!r}')
 
     def _get_type_and_crs(self):
         p = self.cfg('geometryType')
