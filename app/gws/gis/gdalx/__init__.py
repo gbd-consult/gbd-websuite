@@ -320,6 +320,9 @@ def _srs(srid):
 
 
 def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str = 'utf8'):
+    if gd_feature.IsFieldNull(idx):
+        return None
+
     if gtype == ogr.OFTString:
         b = gd_feature.GetFieldAsBinary(idx)
         if encoding:
