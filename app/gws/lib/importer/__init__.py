@@ -12,44 +12,60 @@ class Error(gws.Error):
 
 
 def import_from_path(path, base_dir=gws.APP_DIR):
-    in_path, root, mod = _find_import_root_and_module_name(path, base_dir)
-    if not in_path:
-        sys.path.insert(0, root)
-    try:
-        return importlib.import_module(mod)
-    except Exception as exc:
-        raise Error(f'import of {mod!r} failed') from exc
+    abs_path = _abs_path(path, base_dir)
+    if not os.path.isfile(abs_path):
+        raise Error(f'{abs_path!r}: not found')
+
+    if abs_path.startswith(base_dir):
+        # our own module, import relatively to base_dir
+        return _do_import(abs_path, base_dir)
+
+    # plugin module, import relatively to the bottom-most "namespace" dir (without __init__)
+
+    dirs = abs_path.strip('/').split('/')
+    dirs.pop()
+
+    for n in range(len(dirs), 0, -1):
+        ns_dir = '/' + '/'.join(dirs[:n])
+        if not os.path.isfile(ns_dir + '/__init__.py'):
+            return _do_import(abs_path, ns_dir)
+
+    raise Error(f'{abs_path!r}: cannot locate a base directory')
 
 
-def _find_import_root_and_module_name(path, base_dir):
+def _abs_path(path, base_dir):
     if not os.path.isabs(path):
-        path = base_dir + '/' + path
-
-    init = '__init__.py'
+        path = os.path.join(base_dir, path)
     path = os.path.normpath(path)
-
     if os.path.isdir(path):
-        path += '/' + init
-    if not os.path.isfile(path):
-        raise Error(f'import_from_path: {path!r}: not found')
+        path += '/__init__.py'
+    return path
 
-    dirname, filename = os.path.split(path)
-    lastmod = [] if filename == init else [filename.split('.')[0]]
-    dirs = dirname.strip('/').split('/')
 
-    # first, try to locate the longest directory root in sys.path
+def _do_import(abs_path, base_dir):
+    mod_name = _module_name(abs_path[len(base_dir):])
 
-    for n in range(len(dirs), 0, -1):
-        root = '/' + '/'.join(dirs[:n])
-        if root in sys.path:
-            return True, root, '.'.join(dirs[n:] + lastmod)
+    if mod_name in sys.modules:
+        mpath = getattr(sys.modules[mod_name], '__file__', None)
+        if mpath != abs_path:
+            raise Error(f'{abs_path!r}: overwriting {mod_name!r} from {mpath!r}')
+        return sys.modules[mod_name]
 
-    # second, find the longest path that doesn't contain __init__.py
-    # this will be a new root
+    gws.log.debug(f'import: {abs_path=} {mod_name=} {base_dir=}')
 
-    for n in range(len(dirs), 0, -1):
-        root = '/' + '/'.join(dirs[:n])
-        if not os.path.isfile(root + '/' + init):
-            return False, root, '.'.join(dirs[n:] + lastmod)
+    if base_dir not in sys.path:
+        sys.path.insert(0, base_dir)
 
-    raise Error(f'import_from_path: {path!r}: cannot be imported')
+    try:
+        return importlib.import_module(mod_name)
+    except Exception as exc:
+        raise Error(f'{abs_path!r}: import failed') from exc
+
+
+def _module_name(path):
+    parts = path.strip('/').split('/')
+    if parts[-1] == '__init__.py':
+        parts.pop()
+    elif parts[-1].endswith('.py'):
+        parts[-1] = parts[-1][:-3]
+    return '.'.join(parts)

@@ -111,13 +111,10 @@ class Object(gws.ISpecRuntime):
             return
 
         if not desc.classPtr:
-            if desc.modName in sys.modules:
-                mod = sys.modules[desc.modName]
-            else:
-                try:
-                    mod = gws.lib.importer.import_from_path(desc.modPath, gws.APP_DIR)
-                except gws.lib.importer.Error as exc:
-                    raise LoadError(f'cannot load class {classref!r} from {desc.modPath!r}') from exc
+            try:
+                mod = gws.lib.importer.import_from_path(desc.modPath, gws.APP_DIR)
+            except gws.lib.importer.Error as exc:
+                raise LoadError(f'cannot load class {classref!r} from {desc.modPath!r}') from exc
             desc.classPtr = getattr(mod, desc.ident)
             setattr(desc.classPtr, 'extName', desc.extName)
             setattr(desc.classPtr, 'extType', desc.extType)
