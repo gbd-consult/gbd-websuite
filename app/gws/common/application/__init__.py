@@ -1,4 +1,5 @@
 """Core application object"""
+import os
 
 import gws
 
@@ -82,6 +83,10 @@ class Object(gws.Object, t.IApplication):
 
     def configure(self):
         super().configure()
+
+        p = os.environ.get('GWS_LOG_LEVEL')
+        if p and self.config.server:
+            self.config.server.logLevel = p
 
         self._devopts: dict = self.var('developer') or {}
         if self._devopts:
