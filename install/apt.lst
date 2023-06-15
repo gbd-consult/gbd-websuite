@@ -55,4 +55,5 @@ libqt5sql5-odbc
 freetds-dev
 tdsodbc
 
-
+# for Fiona
+libgdal-dev

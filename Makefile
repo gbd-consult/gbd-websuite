@@ -13,13 +13,14 @@ help:
 	@echo ""
 	@echo "commands"
 	@echo "--------"
-	@echo "spec        - build the Server spec files"
-	@echo "client      - build the Client in client/_build"
-	@echo "client-dev  - start the Client dev server"
-	@echo "doc         - build the Docs in doc/_build"
-	@echo "doc-dev     - start the Docs dev server"
-	@echo "image       - build the Docker Image (with optional IMAGE_NAME=...)"
-	@echo "image-debug - build the debug Docker Image (with optional IMAGE_NAME=...)"
+	@echo "spec             - build the Server spec files"
+	@echo "client           - build the Client in client/_build"
+	@echo "client-dev       - start the Client dev server"
+	@echo "doc              - build the Docs in doc/_build"
+	@echo "doc-dev          - start the Docs dev server"
+	@echo "image            - build the Docker Image (with optional IMAGE_NAME=...)"
+	@echo "image-debug      - build the debug Docker Image (with optional IMAGE_NAME=...)"
+	@echo "image-standalone - build the standalone Docker Image (with optional IMAGE_NAME=...)"
 	@echo ""
 
 
@@ -45,11 +46,14 @@ doc: spec
 doc-dev: doc
 	sphinx-autobuild --open-browser $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
 
-image:
+image: client
 	$(PYTHON) $(BASE)install/build.py docker release $(IMAGE_NAME) && cd $(CWD)
 
-image-debug:
+image-debug: client
 	$(PYTHON) $(BASE)install/build.py docker debug $(IMAGE_NAME) && cd $(CWD)
+
+image-standalone: client
+	$(PYTHON) $(BASE)install/build.py docker standalone $(IMAGE_NAME) && cd $(CWD)
 
 clean:
 	rm -rf $(BASE)client/_build

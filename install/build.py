@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 
 
 class ENV:
@@ -13,10 +14,10 @@ class ENV:
 def show_help():
     print("""
         Create a docker image:
-            build.py docker [debug|release] [image-name] 
+            build.py docker [debug|release|standalone] [image-name] 
     
         Print the dockerfile:
-            build.py dockerfile [debug|release] 
+            build.py dockerfile [debug|release|standalone] 
     
         Print the install script:
             build.py install 
@@ -40,6 +41,7 @@ def main(argv):
             fp.write(s)
 
         run("docker build -f dockerfile -t {IMAGE_NAME} .")
+        run("docker image tag {IMAGE_NAME} {SHORT_IMAGE_NAME}")
 
     elif what == 'dockerfile':
         s = docker_file()
@@ -58,6 +60,8 @@ def init(argv):
     ENV.SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
     ENV.BASE_DIR = os.path.abspath(ENV.SCRIPT_DIR + '/..')
     ENV.BUILD_DIR = os.path.abspath(ENV.SCRIPT_DIR + '/_build')
+
+    ENV.SKIP_CACHE = '_skip_cache_' + str(time.time()).replace('.', '') + '_'
 
     ENV.QGIS_VERSION = '3.10.7'
 
@@ -78,14 +82,20 @@ def init(argv):
         pass
 
     if ENV.MODE == 'release':
-        ENV.IMAGE_NAME = _f('gbdconsult/gws-server:{SHORT_VERSION}')
+        name = 'gws-server'
     elif ENV.MODE == 'debug':
-        ENV.IMAGE_NAME = _f('gbdconsult/gws-server-debug:{SHORT_VERSION}')
+        name = 'gws-server-debug'
+    elif ENV.MODE == 'standalone':
+        name = 'gws-server-standalone'
     else:
         print('invalid mode')
         sys.exit(255)
+
+    ENV.IMAGE_NAME = 'gbdconsult/' + name + ':' + ENV.VERSION
+    ENV.SHORT_IMAGE_NAME = 'gbdconsult/' + name + ':' + ENV.SHORT_VERSION
+
     try:
-        ENV.IMAGE_NAME = argv[3]
+        ENV.IMAGE_NAME = ENV.SHORT_IMAGE_NAME = argv[3]
     except IndexError:
         pass
 
@@ -104,13 +114,8 @@ def init(argv):
     ENV.APTS = ' '.join(lines_from(_f('{SCRIPT_DIR}/apt.lst')))
     ENV.PIPS = ' '.join(lines_from(_f('{SCRIPT_DIR}/pip.lst')))
 
-    ENV.APT_INSTALL = _f("""
-        apt-get update
-        apt-get install -y software-properties-common
-        apt-get update
-        DEBIAN_FRONTEND=noninteractive apt-get install -y {APTS}
-        cp /usr/share/tdsodbc/odbcinst.ini /etc
-    """)
+    ENV.UID = 1000
+    ENV.GID = 1000
 
 
 def docker_prepare():
@@ -122,8 +127,9 @@ def docker_prepare():
     with open('.GWS_IN_CONTAINER', 'w') as fp:
         fp.write('#')
 
-    run("curl -L '{QGIS_URL}' -o {QGIS_DIR}.tar.gz")
-    run("tar -xzf {QGIS_DIR}.tar.gz")
+    if ENV.MODE != 'standalone':
+        run("curl -L '{QGIS_URL}' -o {QGIS_DIR}.tar.gz")
+        run("tar -xzf {QGIS_DIR}.tar.gz")
 
     run("curl -L '{WKHTMLTOPDF_URL}' -o {WKHTMLTOPDF_PATH}")
 
@@ -144,36 +150,57 @@ def docker_prepare():
     for doc in documents:
         run("cp {BASE_DIR}/" + doc + " ./app")
 
+    run('mv app  ' + ENV.SKIP_CACHE + 'app')
+    run('mv data ' + ENV.SKIP_CACHE + 'data')
+
 
 def docker_file():
-    commands = """
-        {APT_INSTALL}
+    commands_1 = """
+        apt-get update
+        apt-get install -y software-properties-common
+        apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get install -y {APTS}
+        cp /usr/share/tdsodbc/odbcinst.ini /etc
         apt install -y ./{WKHTMLTOPDF_PATH}
         rm -f ./{WKHTMLTOPDF_PATH}
+    """
+    commands_2 = """
         pip3 install --no-cache-dir {PIPS}
         apt-get clean
         rm -f /usr/bin/python
-        ln -s /usr/bin/python3 /usr/bin/python 
+        ln -s /usr/bin/python3 /usr/bin/python
+    """
+    commands_3 = """
         groupadd -g {GID} gws
         useradd -M -u {UID} -g {GID} gws
         mkdir -p /gws-var
         chown -R gws:gws /gws-var
     """
 
-    ENV.COMMANDS = ' \\\n && '.join(lines(_f(commands)))
+    ENV.COMMANDS_1 = ' \\\n && '.join(lines(_f(commands_1)))
+    ENV.COMMANDS_2 = ' \\\n && '.join(lines(_f(commands_2)))
+    ENV.COMMANDS_3 = ' \\\n && '.join(lines(_f(commands_3)))
 
     df = """
-        FROM  ubuntu:18.04
-        LABEL Description="GWS Server" Vendor="gbd-consult.de" Version="{SHORT_VERSION}"
+        FROM  --platform=linux/amd64 ubuntu:18.04
+        LABEL Description="GWS Server" Vendor="gbd-consult.de" Version="{VERSION}"
         
         COPY {WKHTMLTOPDF_PATH} /
         
-        RUN {COMMANDS}
-        
-        COPY app /gws-app
+        RUN {COMMANDS_1}
+        RUN {COMMANDS_2}
+        RUN {COMMANDS_3}
+    """
+
+    if ENV.MODE != 'standalone':
+        df += """
         COPY {QGIS_DIR}/usr /usr
         COPY {ALKISPLUGIN_DIR} /usr/share/alkisplugin
-        COPY --chown=gws:gws data /data
+    """
+
+    df += """
+        COPY {SKIP_CACHE}app /gws-app
+        COPY --chown=gws:gws {SKIP_CACHE}data /data
         COPY .GWS_IN_CONTAINER /
         
         ENV QT_SELECT=5
@@ -190,6 +217,14 @@ def docker_file():
 
 
 def install_script():
+    ENV.APT_INSTALL = _f("""
+        apt-get update
+        apt-get install -y software-properties-common
+        apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get install -y {APTS}
+        cp /usr/share/tdsodbc/odbcinst.ini /etc
+    """)
+
     ENV.APT_INSTALL += '\n apt install -y curl'
     ENV.APT_INSTALL = ' \\\n && '.join(lines(ENV.APT_INSTALL))
 
