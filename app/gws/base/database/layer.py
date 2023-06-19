@@ -57,9 +57,9 @@ class Object(gws.base.layer.vector.Object):
             return True
         b = self.provider.table_bounds(self.tableName)
         if b:
-            self.bounds = gws.gis.bounds.transform(b, self.defaultBounds.crs)
+            self.bounds = gws.gis.bounds.transform(b, self.mapCrs)
             return True
-        return self.defaultBounds
+        return self.parentBounds
 
     def configure_search(self):
         if super().configure_search():

@@ -62,7 +62,7 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
     def configure_tms(self):
         crs = self.provider.forceCrs
         if not crs:
-            crs = gws.gis.crs.best_match(self.defaultBounds.crs, [tms.crs for tms in self.activeLayer.tileMatrixSets])
+            crs = gws.gis.crs.best_match(self.mapCrs, [tms.crs for tms in self.activeLayer.tileMatrixSets])
         tms_list = [tms for tms in self.activeLayer.tileMatrixSets if tms.crs == crs]
         if not tms_list:
             raise gws.Error(f'no TMS for {crs} in {self.provider.url}')
@@ -85,12 +85,16 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         self.activeStyle = gws.SourceStyle(name='default')
         return True
 
-    def configure_bounds(self):
-        if super().configure_bounds():
-            return True
-        src_bounds = gws.Bounds(crs=self.activeTms.crs, extent=self.activeTms.matrices[0].extent)
-        self.bounds = gws.gis.bounds.transform(src_bounds, self.defaultBounds.crs)
-        return True
+    #
+    # reprojecting the world doesn't make sense, just use the map extent here
+    # @TODO maybe look for more sensible grid alignment
+    #
+    # def configure_bounds(self):
+    #     if super().configure_bounds():
+    #         return True
+    #     src_bounds = gws.Bounds(crs=self.activeTms.crs, extent=self.activeTms.matrices[0].extent)
+    #     self.bounds = gws.gis.bounds.transform(src_bounds, self.mapCrs)
+    #     return True
 
     def configure_resolutions(self):
         if super().configure_resolutions():
@@ -105,11 +109,10 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
             origin=p.origin or gws.Origin.nw,
             tileSize=p.tileSize or self.activeTms.matrices[0].tileWidth,
         )
-        our_crs = self.bounds.crs
         if p.extent:
-            self.grid.bounds = gws.Bounds(crs=our_crs, extent=p.extent)
-        elif our_crs == self.activeTms.crs:
-            self.grid.bounds = gws.Bounds(crs=our_crs, extent=self.activeTms.matrices[0].extent)
+            self.grid.bounds = gws.Bounds(crs=self.mapCrs, extent=p.extent)
+        elif self.activeTms.crs == self.mapCrs:
+            self.grid.bounds = gws.Bounds(crs=self.mapCrs, extent=self.activeTms.matrices[0].extent)
         else:
             self.grid.bounds = self.bounds
 
@@ -141,24 +144,24 @@ class Object(gws.base.layer.Object, gws.IOwsClient):
         url = url.replace('{TileCol}', '%(x)d')
         url = url.replace('{TileRow}', '%(y)d')
 
-        sg = self.provider.grid_for_tms(self.activeTms)
+        source_grid = self.provider.grid_for_tms(self.activeTms)
 
-        if sg.origin == gws.Origin.nw:
+        if source_grid.origin == gws.Origin.nw:
             origin = 'nw'
-        elif sg.origin == gws.Origin.sw:
+        elif source_grid.origin == gws.Origin.sw:
             origin = 'sw'
         else:
-            raise gws.Error(f'invalid grid origin {sg.origin!r}')
+            raise gws.Error(f'invalid grid origin {source_grid.origin!r}')
 
-        back_grid_uid = mc.grid(gws.compact({
+        source_grid_uid = mc.grid(gws.compact({
             'origin': origin,
-            'srs': sg.bounds.crs.epsg,
-            'bbox': sg.bounds.extent,
-            'res': sg.resolutions,
-            'tile_size': [sg.tileSize, sg.tileSize],
+            'srs': source_grid.bounds.crs.epsg,
+            'bbox': source_grid.bounds.extent,
+            'res': source_grid.resolutions,
+            'tile_size': [source_grid.tileSize, source_grid.tileSize],
         }))
 
-        src_uid = gws.base.layer.util.mapproxy_back_cache_config(self, mc, url, back_grid_uid)
+        src_uid = gws.base.layer.util.mapproxy_back_cache_config(self, mc, url, source_grid_uid)
         gws.base.layer.util.mapproxy_layer_config(self, mc, src_uid)
 
     ##

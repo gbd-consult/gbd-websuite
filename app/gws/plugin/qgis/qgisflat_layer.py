@@ -78,17 +78,17 @@ class Object(gws.base.layer.Object):
         if super().configure_bounds():
             return True
         if self.provider.bounds:
-            self.bounds = gws.gis.bounds.transform(self.provider.bounds, self.defaultBounds.crs)
+            self.bounds = gws.gis.bounds.transform(self.provider.bounds, self.mapCrs)
             return True
         blist = gws.compact(sl.wgsBounds for sl in self.sourceLayers)
         wgs_bounds = gws.gis.bounds.union(blist) if blist else gws.gis.crs.WGS84_BOUNDS
-        self.bounds = gws.gis.bounds.transform(wgs_bounds, self.defaultBounds.crs)
+        self.bounds = gws.gis.bounds.transform(wgs_bounds, self.mapCrs)
         return True
 
     def configure_resolutions(self):
         if super().configure_resolutions():
             return True
-        self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.cfg('_defaultResolutions'))
+        self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.cfg('_parentResolutions'))
         if not self.resolutions:
             raise gws.Error(f'layer {self.uid!r}: no matching resolutions')
 

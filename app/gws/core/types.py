@@ -1848,6 +1848,7 @@ class ILayer(INode, Protocol):
     isSearchable: bool
 
     bounds: Bounds
+    mapCrs: 'ICrs'
     displayMode: LayerDisplayMode
     loadingStrategy: FeatureLoadingStrategy
     imageFormat: str

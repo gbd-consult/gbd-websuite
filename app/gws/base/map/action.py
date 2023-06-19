@@ -160,7 +160,7 @@ class Object(gws.base.action.Object):
             lri.extraParams['layers'] = p.layers
 
         lri.view = gws.gis.render.map_view_from_bbox(
-            crs=gws.gis.crs.get(p.crs) or layer.bounds.crs,
+            crs=gws.gis.crs.get(p.crs) or layer.mapCrs,
             bbox=p.bbox,
             size=(p.width, p.height, gws.Uom.px),
             dpi=gws.lib.uom.OGC_SCREEN_PPI,
@@ -224,13 +224,11 @@ class Object(gws.base.action.Object):
 
     def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> list[gws.Props]:
         layer = req.require_layer(p.layerUid)
+        crs = gws.gis.crs.get(p.crs) or layer.mapCrs
 
         bounds = layer.bounds
         if p.bbox:
-            bounds = gws.gis.bounds.from_extent(
-                p.bbox,
-                gws.gis.crs.get(p.crs) or layer.bounds.crs
-            )
+            bounds = gws.gis.bounds.from_extent(p.bbox, crs)
 
         search = gws.SearchQuery(bounds=bounds, limit=_GET_FEATURES_LIMIT)
 
@@ -238,6 +236,7 @@ class Object(gws.base.action.Object):
         features = layer.get_features(search, user=req.user, views=p.views, model_uid=p.modelUid)
         for f in features:
             f.attributes = f.attributes_for_view()
+            f.transform_to(crs)
         gws.time_end()
 
         return [gws.props(f, req.user, layer) for f in features]

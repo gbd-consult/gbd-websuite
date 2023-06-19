@@ -146,8 +146,8 @@ class Object(gws.Node, gws.ILayer):
 
     isSearchable = False
 
-    defaultBounds: gws.Bounds
-    defaultResolutions: list[float]
+    parentBounds: gws.Bounds
+    parentResolutions: list[float]
 
     def configure(self):
         self.clientOptions = self.cfg('clientOptions')
@@ -158,8 +158,12 @@ class Object(gws.Node, gws.ILayer):
         self.opacity = self.cfg('opacity')
         self.title = self.cfg('title')
 
-        self.bounds = self.defaultBounds = self.cfg('_defaultBounds') or gws.gis.crs.WEBMERCATOR_BOUNDS
-        self.resolutions = self.defaultResolutions = self.cfg('_defaultResolutions') or gws.gis.zoom.OSM_RESOLUTIONS
+        self.parentBounds = self.cfg('_parentBounds')
+        self.parentResolutions = self.cfg('_parentResolutions')
+        self.mapCrs = self.parentBounds.crs
+
+        self.bounds = self.parentBounds
+        self.resolutions = self.parentResolutions
 
         self.templates = []
         self.models = []
@@ -193,13 +197,16 @@ class Object(gws.Node, gws.ILayer):
     def post_configure(self):
         self.isSearchable = bool(self.finders)
 
+        if self.bounds.crs != self.mapCrs:
+            raise gws.Error(f'invalid layer CRS')
+
     ##
 
     def configure_bounds(self):
         p = self.cfg('extent')
         if p:
             self.bounds = gws.Bounds(
-                crs=self.defaultBounds.crs,
+                crs=self.mapCrs,
                 extent=gws.gis.extent.from_list(p))
             return True
 
@@ -250,9 +257,9 @@ class Object(gws.Node, gws.ILayer):
     def configure_resolutions(self):
         p = self.cfg('zoom')
         if p:
-            self.resolutions = gws.gis.zoom.resolutions_from_config(p, self.cfg('_defaultResolutions'))
+            self.resolutions = gws.gis.zoom.resolutions_from_config(p, self.cfg('_parentResolutions'))
             if not self.resolutions:
-                raise gws.Error(f'layer {self.uid!r}: no resolutions, config={p!r} parent={self.defaultResolutions!r}')
+                raise gws.Error(f'layer {self.uid!r}: no resolutions, config={p!r} parent={self.parentResolutions!r}')
             return True
 
     def configure_search(self):
@@ -284,8 +291,8 @@ class Object(gws.Node, gws.ILayer):
         for cfg in layer_configs:
             cfg = gws.merge(
                 cfg,
-                _defaultBounds=self.bounds,
-                _defaultResolutions=self.resolutions,
+                _parentBounds=self.bounds,
+                _parentResolutions=self.resolutions,
             )
             ls.append(self.create_child(gws.ext.object.layer, cfg))
 

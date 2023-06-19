@@ -43,7 +43,7 @@ class Object(gws.base.layer.vector.Object):
         if fds:
             bs = [fd.shape.bounds() for fd in fds if fd.shape]
             if bs:
-                self.bounds = gws.gis.bounds.union(bs)
+                self.bounds = gws.gis.bounds.transform(gws.gis.bounds.union(bs), self.mapCrs)
                 return True
 
     def configure_models(self):

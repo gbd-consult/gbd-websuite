@@ -29,28 +29,7 @@ class Object(gws.base.ows.provider.Object):
         self.version = cc.version
         self.tileMatrixSets = cc.tileMatrixSets
 
-        self.configure_grids()
         self.configure_operations(cc.operations)
-
-    def configure_grids(self):
-        self.grids = []
-
-        p = self.cfg('grid')
-        if p:
-            self.grids.append(gws.TileGrid(
-                bounds=gws.Bounds(crs=p.crs, extent=p.extent),
-                origin=p.origin or gws.Origin.nw,
-                tileSize=p.tileSize or self.tileMatrixSets[0].matrices[0].tileWidth,
-            ))
-            return True
-
-        for tms in self.tileMatrixSets:
-            grids = []
-            if self.forceCrs:
-                grids = [g for g in grids if g.bounds.crs == self.forceCrs]
-                if not grids:
-                    gws.Error(f'no TileMatrixSet found for {self.forceCrs!r} in {self}')
-            self.grids = grids
 
     def grid_for_tms(self, tms: gws.TileMatrixSet) -> gws.TileGrid:
         return gws.TileGrid(

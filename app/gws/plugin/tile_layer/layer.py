@@ -45,9 +45,7 @@ class Object(gws.base.layer.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        self.bounds = gws.gis.bounds.transform(
-            self.provider.grid.bounds,
-            self.defaultBounds.crs)
+        self.bounds = gws.gis.bounds.transform(self.provider.grid.bounds, self.mapCrs)
         return True
 
     def configure_grid(self):
@@ -63,7 +61,7 @@ class Object(gws.base.layer.Object):
         elif self.bounds.crs == self.provider.grid.bounds.crs:
             extent = self.provider.grid.bounds.extent
         else:
-            extent = self.defaultBounds.extent
+            extent = self.parentBounds.extent
         self.grid.bounds = gws.Bounds(crs=self.bounds.crs, extent=extent)
 
         if p.resolutions:
