@@ -101,7 +101,7 @@ class Image(layer.Layer):
         w, h = rv.size_px
         d = gws.gis.extent.diagonal((0, 0, w, h))
 
-        r = _box_request(uid, t.Bounds(crs=rv.bounds.crs, extent=circ), d, d, forward=extra_params, tile_size=size_threshold)
+        r = _box_request(uid, t.Bounds(crs=rv.bounds.crs, extent=circ), int(d), int(d), forward=extra_params, tile_size=size_threshold)
         if not r:
             return
 

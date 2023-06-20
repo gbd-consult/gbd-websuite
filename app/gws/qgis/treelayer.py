@@ -346,7 +346,7 @@ def _render_box(layer: Object, rv: t.MapRenderView, extra_params: dict = None):
     w, h = rv.size_px
     d = gws.gis.extent.diagonal((0, 0, w, h))
 
-    r = _box_request(layer, t.Bounds(crs=rv.bounds.crs, extent=circ), d, d, extra_params, tile_size=size_threshold)
+    r = _box_request(layer, t.Bounds(crs=rv.bounds.crs, extent=circ), int(d), int(d), extra_params, tile_size=size_threshold)
     if not r:
         return
 
