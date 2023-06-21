@@ -1,6 +1,6 @@
 # Werkzeugleiste :/user-de/toolbar
 
-Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebSuite, unterteilt in die Bereiche Werkzeug-, Menü- und Statusleiste.
+Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebSuite, unterteilt in die Bereiche Werkzeug-, Menü- und Infoleiste.
 
 Über die Verlinkung der Funktionalität gelangen Sie auf weitere Unterseiten, die eine ausführliche Beschreibung und Hilfe im Umgang bietet.
 
@@ -8,7 +8,7 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 
 | Symbol                                | Funktion                   					| Funktionsbeschreibung                                   	|
 |---------------------------------------|---------------------------------------------------------------|---------------------------------------------------------------|
-| ![](gbd-icon-abfrage-01.svg)          | [Abfragen](/user-de/toolbar.objektabfrage)			| Auswählen von Objekten per Mausklick                        	|
+| ![](gbd-icon-abfrage-01.svg)          | [Abfragen](/user-de/toolbar.abfrage)			| Auswählen von Objekten per Mausklick                        	|
 | ![](gbd-icon-anzeige-01.svg)          | [Anzeigen](/user-de/toolbar.mouseover)			| Informationen von Objekten per Mausklick                    	|
 | ![](gbd-icon-auswahl-01.svg)          | [Auswählen](/user-de/toolbar.auswahl)				| Informationen von Objekten per Mouseover                    	|
 | ![](gbd-icon-bemassung-02.svg)	| [Bemaßung](/user-de/toolbar.bemassung)			| Suche mit Hilfe von geometrischen Objekten                  	|

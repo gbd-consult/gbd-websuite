@@ -1,4 +1,4 @@
-# Auswahl :/user-de/menubar.auswahl
+# Auswahl :/user-de/sidebar.auswahl
 
 Das Menü ![](gbd-icon-auswahl-01.svg) {title Auswahl} interagiert mit dem Werkzeug {button Auswählen}. Es wird automatisch aktiviert, wenn dass Werkzeug aktiviert wird und listet dann alle selektierten Objekte in der Ablage dieses Menüpunkts. 
 

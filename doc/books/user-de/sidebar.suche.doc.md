@@ -1,4 +1,4 @@
-# Suche :/user-de/menubar.suche
+# Suche :/user-de/sidebar.suche
 
 Über das Menü ![](baseline-search-24px.svg) {title Suche} kann unterschiedlich konfiguriert werden.
 
@@ -10,5 +10,5 @@ Bei der ALKIS-Suche werden Attribute des amtlichen Liegenschaftskataster durchsu
 
 
 %info
- Die Suche kann deaktiviert werden. Außerdem ist es möglich, dass die Suche anstatt in der Menüleiste, prominent auf der Karte zu sehen ist. Optional können Suchparameter definiert werden.
+ Die Suche kann deaktiviert werden. Außerdem ist es möglich, dass die Suche anstatt in der Seitenleiste, prominent auf der Karte zu sehen ist. Optional können Suchparameter definiert werden.
 %end

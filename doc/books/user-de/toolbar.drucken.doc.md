@@ -4,7 +4,7 @@
 Die GBD WebSuite kann in QGIS erstellte Druckvorlagen übernehmen und in Form einer Auswahl bereitstellen.
 Beim Starten der Druckfunktion wird der aktuelle Kartenausschnitt unverändert übernommen.
 Auf der Karte gezeichnete, beschriftete oder durch eine Abfrage markierte Objekte werden dabei in die Druckkarte übernommen.
-Globale Einstellung wie die festgelegte [Drehung](/user-de/statusbar.drehung) und maßstabsbezogene Ebenendarstellungen werden beim Druck mit übernommen.
+Globale Einstellung wie die festgelegte [Drehung](/user-de/infobar.drehung) und maßstabsbezogene Ebenendarstellungen werden beim Druck mit übernommen.
 Auch manuell festgelegte Transparenzen für einzelne Layer und Layergruppen werden übernommen.
 
 Beim Aktivieren der Druckfunktion öffnet sich auf der Karte ein Kartenrahmen, der den zu druckenden Auswahlbereich symbolisiert.

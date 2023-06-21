@@ -10,6 +10,12 @@ Eine Karte ist im Grunde eine Sammlung von *Layern* (``layers``). Die Option ``c
 
 Die Darstellung der Karte wird von der Aktion ``map`` behandelt.
 
+## Koordinatenreferenzsystem
+
+Das Standard ``crs`` ist mit EPGS 3857 definiert und kann in das bevorzugte Referenzsystem geändert werden.
+
+Passen das CRS der Quelldaten nicht zum definierten CRS der Karte, werden diese automatisch umgewandelt um eine korrekte Anzeige zu gewährleisten.
+
 ## Karten-Ausmaß
 
 Das Ausmaß der Karte kann mit ``extent`` konfiguriert werden. In Client kann der Nutzer die Karte nicht außerhalb des Extents scrollen. Die Koordinaten des Extents sind in KBS Einheiten anzugeben. Falls Sie kein ``extent`` angeben, wird das Ausmaß aus den Layer-Ausmaßen berechnet. Mit ``extentBuffer`` können Sie den automatisch berechneten Extent-Wert erweitern.

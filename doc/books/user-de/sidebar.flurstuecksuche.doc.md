@@ -1,8 +1,8 @@
-# Flurstücksuche :/user-de/menubar.flurstuecksuche
+# Flurstücksuche :/user-de/sidebar.flurstuecksuche
 
 Über das Menü ![](gbd-icon-flurstuecksuche-01.svg) {title Flurstücksuche} kann eine Beauskunftung zu amtlichen Liegenschaftsdaten "ALKIS" stattfinden.
 
-Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen konfigurierbare Suchfelder zur Auswahl. So kann man Flurstücke z.B. nach Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen.
+Öffnet man die Flurstücksuche über die Seitenleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen konfigurierbare Suchfelder zur Auswahl. So kann man Flurstücke z.B. nach Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen.
 
 Die Flurstücksuche wird über das Icon ![](baseline-search-24px.svg) {button Suche} gestartet. Eine neue Anfrage findet über das Icon ![](baseline-delete_sweep-24px.svg) {button Neue Anfrage} statt. Dabei werden die bisherigen Inhalte aller Felder gelöscht.
 

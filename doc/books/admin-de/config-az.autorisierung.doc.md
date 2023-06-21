@@ -135,7 +135,7 @@ Der Dateianbieter verwendet eine einfache Json-Datei, um Zugangsdaten zu speiche
 
 Der Name und der Speicherort der Datei ist Ihnen überlassen, geben Sie einfach ihren absoluten Pfad in der Konfiguration an.
 
-^CLIREF auth.passwd
+TODO! ^CLIREF auth.passwd
 
 Um das verschlüsselte Passwort zu generieren, verwenden Sie den Kommandozeilen-Befehl ``gws auth passwd``.
 

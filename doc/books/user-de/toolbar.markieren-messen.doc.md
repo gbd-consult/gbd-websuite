@@ -7,7 +7,7 @@ Das Werkzeug ![](gbd-icon-markieren-messen-01.svg) {title Markieren & Messen} ka
 Die ![](g_point.svg) {button Punktmarkierung} dient dem Markierungszweck. Ein Messen ist hier nicht möglich.
 Aktivieren Sie das Werkzeug und klicken Sie mit der linken Maustaste auf den gewünschten Punkt in der Karte.
 Sofort wird ein Punkt gesetzt, welcher standardmäßig mit X- und Y-Koordinate beschriftet wird. Sie können die Beschriftung beliebig anpassen.
-Nutzen Sie dazu das sich automatisch öffnende {title Markierung bearbeiten}-Menü in der Menüleiste.
+Nutzen Sie dazu das sich automatisch öffnende {title Markierung bearbeiten}-Menü in der Seitenleiste.
 Ausführlichere Darstellungskonfigurationen für Geometrie und Beschriftung sind unter ![](brush.svg) { button Stil } vorhanden.
 
 Bei der ![](g_line.svg) {button Distanzmessung} wird mit der linken Maustaste auf die Karte ein Startpunkt und mit jedem weiteren Klick ein weiterer Punkt gesetzt.
@@ -15,7 +15,7 @@ Mit einem Doppelklick wird der Endpunkt gesetzt und die Länge der Strecke angez
 
 Für die ![](g_box.svg) {button Rechtecksflächenmessung} müssen zwei Punkte gesetzt werden. Erzeugen Sie den ersten Punkt mit der linken Maustaste.
 Ziehen Sie nun das Rechteck über die gewünschte Fläche in der Karte. Durch ein weiteres Klicken mit der linken Maustaste wird das Rechteck festgestellt.
-Nun öffnet sich automatisch wieder das Fenster in der Menüleiste.
+Nun öffnet sich automatisch wieder das Fenster in der Seitenleiste.
 Hier kann jetzt neben der X- und Y-Koordinate auch die Breite und Höhe des gezeichneten Rechtecks abgelesen werden.
 Diese Werte dienen zur standardmäßigen Beschriftung. Über das Beschriftungsfeld kann der Text nach Belieben angepasst werden.
 

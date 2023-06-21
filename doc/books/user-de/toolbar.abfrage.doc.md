@@ -1,4 +1,4 @@
-# Abfragen :/user-de/toolbar.objektabfrage
+# Abfragen :/user-de/toolbar.abfrage
 
 Bestimmte Sachdaten können über das Werkzeug ![](gbd-icon-abfrage-01.svg) {title Abfragen} abgefragt weden.
 

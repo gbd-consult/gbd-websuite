@@ -25,7 +25,7 @@ Willkommen im Benutzerhandbuch der GBD WebSuite, hier werden Sie alle Funktionen
 
 Mehr über die einzelnen Funktionen finden sie unter [Werkzeugleiste](/user-de/toolbar)
 
-**Menüleiste**
+**Seitenleiste**
 
 | Symbol | Funktion | Funktionsbeschreibung |
 |---|---|---|
@@ -40,9 +40,9 @@ Mehr über die einzelnen Funktionen finden sie unter [Werkzeugleiste](/user-de/t
 | edit | Editieren | Liste der editierbaren Objekte |
 | authorization | Anmeldung | An- und Abmelden von Benutzern |
 
-Mehr über die einzelnen Funktionen finden sie unter: [Menüleiste](/user-de/menubar)
+Mehr über die einzelnen Funktionen finden sie unter: [Seitenleiste](/user-de/sidebar)
 
-**Statusleiste**
+**Infoleiste**
 
 | Symbol | Funktion | **Funktionsbeschreibung |
 |---|---|---|
@@ -52,12 +52,12 @@ Mehr über die einzelnen Funktionen finden sie unter: [Menüleiste](/user-de/men
 | home | Zurück zur Startseite | Öffnet die Anmeldeseite der WebSuite |
 | help | Hilfe | Öffnet die Dokumentation der GBD WebSuite |
 
-Mehr über die einzelnen Funktionen finden sie unter: [Statusleiste](/user-de/statusbar)
+Mehr über die einzelnen Funktionen finden sie unter: [Infoleiste](/user-de/infobar)
 
 ## :/user-de/funktionsuebersicht
 
-## :/user-de/menubar
+## :/user-de/sidebar
 
 ## :/user-de/toolbar
 
-## :/user-de/statusbar
+## :/user-de/infobar

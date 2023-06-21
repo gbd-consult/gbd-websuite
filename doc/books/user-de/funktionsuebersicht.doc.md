@@ -8,7 +8,7 @@ Hier finden Sie im Folgenden eine Auflistung aller Bedienelemente der GBD WebSui
 |---|---|---|
 | ![](gbd-icon-alle-ablage-01.svg) | {button Alle Hinzufügen} | alle gewählten Objekte zur Ablage hinzufügen |
 | ![](sharp-control_point-24px.svg) | {button add} | ein Objekt zur Ablage hinzufügen |
-| ![](cursor.svg) | {button arrow} |  |
+| ![](cursor_24px.svg) | {button arrow} |  |
 | ![](baseline-person-24px.svg) | {button authorization} |  |
 | ![](baseline-keyboard_arrow_left-24px.svg) | {button back } |  |
 | ![](gbd-icon-flurstuecksuche-01.svg) | {button cadastralunit} |  |

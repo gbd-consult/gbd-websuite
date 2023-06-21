@@ -111,6 +111,9 @@ Es werden folgende Element-Tags unterstützt:
 
 |Tag | Bedeutung|
 |---|---|
+|``Infobar.ZoomOut`` | Rauszoomen |
+|``Infobar.ZoomIn`` | Reinzoomen |
+|``Infobar.ZoomReset`` | Zoomstufe zurücksetzen |
 |``Infobar.About`` | Link "Über uns" |
 |``Infobar.Help`` | Link "Hilfe" |
 |``Infobar.HomeLink`` | Link "Startseite" |
@@ -150,7 +153,7 @@ Es werden folgende Element-Tags unterstützt:
 |``Toolbar.Print`` | Drucken |
 |``Toolbar.Select`` | Objekte auswählen |
 |``Toolbar.Snapshot`` | Screenshot |
-|``Toolbar.Tabedit`` | tabellarisches Editieren, siehe [Tabellarisces Editieren](/admin-de/plugin/tabedit) |
+|``Toolbar.Tabedit`` | tabellarisches Editieren, siehe [Tabellarisches Editieren](/admin-de/plugin/tabedit) |
 
 *Popup-Menüs für Feature Objekte*
 

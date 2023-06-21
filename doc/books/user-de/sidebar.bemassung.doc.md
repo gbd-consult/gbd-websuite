@@ -1,4 +1,4 @@
-# Bemaßung :/user-de/menubar.bemassung
+# Bemaßung :/user-de/sidebar.bemassung
 
 Das Menü ![](gbd-icon-bemassung-02.svg) {title Bemaßung} interagiert mit dem Werkzeug ![](gbd-icon-bemassung-02.svg) {button Bemaßung} Auswählen. Es wird automatisch aktiviert, wenn dass Werkzeug aktiviert wird und listet dann alle erstellten Bemaßungen in der Ablage dieses Menüpunkts. Dargestellt wird die Streckenlängen mit der textlichen Erweiterung., durch das Zeichnen von Linien. Ähnlich einer technischen Bemaßung. Zum genauen Bemessen der Strecken, wird das Zeichnen durch eine Snap-Funktion unterstützt. Diese Snap-Funktion fängt auf ALKIS und Gebäude Daten.
 

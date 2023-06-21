@@ -2,7 +2,7 @@
 
 Mit dem ![](baseline-search-24px.svg) {title Suchen}-Werkzeug ist es möglich, in Attributwerten von Objekten zu suchen. Diese Objekte werden dann aufgelistet und können so überblickt werden.
 
-Durch die verschiedenen Konfigurationsmöglichkeiten der GBD WebSuite kann die search Suchen in die Werkzeugleiste, sowie in die Menüleiste als Menüpunkt Suche integriert sein. Die Möglichkeiten und Optionen dazu sind im “GBD WebSuite Server Administrator Handbuch” beschrieben. Je nachdem ob Sie die Suche über die Menü- oder Werkzeugleiste aktivieren, öffnet sich auch eine Suchleiste an dazugehöriger Stelle.
+Durch die verschiedenen Konfigurationsmöglichkeiten der GBD WebSuite kann die search Suchen in die Werkzeugleiste, sowie in die Seitenleiste als Menüpunkt Suche integriert sein. Die Möglichkeiten und Optionen dazu sind im “GBD WebSuite Server Administrator Handbuch” beschrieben. Je nachdem ob Sie die Suche über die Menü- oder Werkzeugleiste aktivieren, öffnet sich auch eine Suchleiste an dazugehöriger Stelle.
 
 In diese können Sie klicken und Ihren gesuchten Begriff eingeben. Die Ergebnisse werden unterhalb der Suchleiste aufgelistet. Durch ein Anklicken eines Ergebnis, wird das dazugehörige Objekt automatisch im Kartenfenster fokussiert und es öffnen sich die dazugehörigen Objekteigenschaften in einem Pop-up Fenster.
 

@@ -36,7 +36,7 @@ Eine dynamische POST-Anfrage (z.B. Suche):
 Anhand vom `cmd` Parameter entscheidet der Server welche *Server Aktion* die Bearbeitung der Anfrage übernimmt. Falls die Aktion existiert und richtig konfiguriert ist,  wird die Anfrage zu dieser Aktion weitergeleitet. Die Aktion bearbeitet die Anfrage und stellt eine Antwort bereit, die abhängig von der Natur der Anfrage, in HTML, JSON oder PNG Format vorliegt. Intern sind die Aktionen die Python-Klassen, die für jeden Befehl (`cmd`) über eine Methode verfügen. Im obigen Beispiel (`cmd=mapHttpGetBox`) ist `map` die Aktion und `httpGetBox` die Methode, die diese Anfrage bearbeitet.
 
 %info
- Server Aktionen sind unter [Actions](/admin-de/config-az/server-aktionen) beschrieben. MISSING! TODO!
+ Server Aktionen sind unter [Actions](/admin-de/config-az/server-aktionen) beschrieben.
 %end
 
 ## Webseiten und Projekte
