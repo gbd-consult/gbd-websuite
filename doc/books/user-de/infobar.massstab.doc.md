@@ -1,4 +1,4 @@
-# Maßstab :/user-de/statusbar.massstab
+# Maßstab :/user-de/infobar.massstab
 
 Über den ![](massstab.png) {title Maßstab} Schieberegler kann der Kartenmaßstab in den für das Projekt konfigurierten Grenzen mit gedrückter linker Maustaster auf den Punkt im Schieberegler frei eingestellt werden. 
 

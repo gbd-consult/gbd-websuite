@@ -1,4 +1,4 @@
-# Drehung :/user-de/statusbar.drehung
+# Drehung :/user-de/infobar.drehung
 
 Die GBD WebSuite ermöglicht das Drehen der Karte im Kartenfenster auf zwei Arten: 
 

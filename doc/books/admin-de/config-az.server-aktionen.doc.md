@@ -18,7 +18,7 @@ Hier ein kurzer Überblick über die unterstützten Aktionstypen und deren Clien
 | ``printer`` | Drucken, siehe [Drucken](/admin-de/config-az/drucken) | | [Drucken](/user-de/toolbar.drucken) |
 | ``project`` | Projektbeschreibung und Konfiguration für den Client, siehe [Projekte](/admin-de/config-az/projekte) |[Porjektübersicht](/user-de/sidebar.projektuebersicht) | |
 | ``search`` | allgemeine Such-Anfragen, siehe [Suche](/admin-de/config-az/suche) | [Suche](/user-de/sidebar.suche) | [Suche](/user-de/toolbar.suchen) & [Räumliche Suche](/user-de/toolbar.raeumliche-suche) |
-| ``storage`` | Datenaustausch mit der Datenablage, siehe [Datenablage](/admin-de/config-az/datenablage) | [Markierungen](/user-de/sidebar.markierung) & [Bemaßung](/user-de/sidebar.bemassung) & [Auswahl](/user-de/sidebar.auswahl) | [Markieren](/toolbar.markieren-messen) & [Bemaßung](/user-de/toolbar.bemassung) & [Auswahl](/user-de/toolbar.auswahl) |
+| ``storage`` | Datenaustausch mit der Datenablage, siehe [Datenablage](/admin-de/config-az/datenablage) | [Markierungen](/user-de/sidebar.markierung) & [Bemaßung](/user-de/sidebar.bemassung) & [Auswahl](/user-de/sidebar.auswahl) | [Markieren](/user-de/toolbar.markieren-messen) & [Bemaßung](/user-de/toolbar.bemassung) & [Auswahl](/user-de/toolbar.auswahl) |
 | ``web`` | liefert Webseiten aus, siehe [Web-Server](/admin-de/config-az/web) | | |
 
 

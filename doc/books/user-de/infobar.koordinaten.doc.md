@@ -1,4 +1,4 @@
-# Koordinaten :/user-de/statusbar.koordinaten
+# Koordinaten :/user-de/infobar.koordinaten
 
 Hier können die ![](xy.png) {title Koordinaten} für das im Projekt definierte Koordinatenbezugsystem (KBS) abgelesen werden.
 

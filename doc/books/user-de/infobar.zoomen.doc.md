@@ -1,4 +1,4 @@
-# Zoomen :/user-de/statusbar.zoomen
+# Zoomen :/user-de/infobar.zoomen
 
 Die Navigation (hinein- und herauszoomen) kann über die Maus in der Karte gesteuert werden. Mit der linken Maustaste oder dem gedrückten Mausrad, kann die Karte bewegt werden.
 Zum Zoomen wird das Mausrad genutzt. Zum Vergrößern wird das Mausrad nach vorne und zum Verkleinern nach hinten gedreht. In der Infoleiste stehen folgende Möglichkeiten zur Verfügung:
