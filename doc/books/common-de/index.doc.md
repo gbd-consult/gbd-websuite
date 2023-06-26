@@ -1,63 +1,38 @@
-## Allgemein :/common-de
+## Allgemeiner Überblick :/common-de
 
+Die GBD WebSuite ist eine Open Source WebGIS Plattform zur Geodatenverarbeitung und wird seit Herbst 2017 entwickelt. Sie ist unter der GNU Affero General Public License (AGPL) lizensiert und wird über Docker Compose plattformunabhängig in bestehende IT-Infrastrukturen integriert.
 
+Die GBD WebSuite besteht aus einer Serveranwendung mit einem responsiven WebGIS Client, der individuell an eine bestehende Umgebung angepasst oder in diese integriert werden kann. 
 
-### Geoinformatikbüro Dassau GmbH :/common-de/gbd
+Nahezu alle Funktionalität ist plugin-basiert. So können kleine, individuelle Tools für bestimmte Installationen und Zwecke bereitgestellt werden. 
 
-Die **Geoinformatikbüro Dassau GmbH** ist seit mehr als 10 Jahren an der Entwicklung von Open Source Software und Projekten beteiligt. Wir setzen diese Erfahrung erfolgreich in GIS- und WebGIS-Projekten, sowie in Geodateninfrastrukturen (GDI) in Deutschland und darüber hinaus, bei unseren Kunden ein.
+![](uebersicht.png)
 
-Auf Basis unserer Expertise bieten wir umfassende Unterstützung in den Bereichen GIS und GDI. Dazu gehört:
+Die GBD WebSuite als {title Webserver}
 
-* Beratung und Konzeption
-* Schulung und Workshops
-* Datenverarbeitung und Fernerkundung
-* Softwaredesign und -entwicklung
-* Wartung und Support
+  *  kann statische Inhalte und Vorlagen bereitstellen
+  *  unterstützt multi-site Konfigurationen, url routing und rewriting
+  *  unterstützt verschiedene Anmelde- und Autorisierungsmechanismen (File System, Datenbank, LDAP) und bietet ein feinabgestimmtes Rechtemanagement.
 
-Unsere Kernkompetenz liegt in der Software QGIS Desktop, QGIS Server, QGIS Web Client, GRASS GIS und PostgreSQL/POSTGIS und der von uns entwickelten GBD WebSuite.
+Die GBD WebSuite als {title Kartenserver}
 
-Weitere Informationen finden Sie auf unserer [Website](https://www.gbd-consult.de).
+  *  kombiniert unterschiedliche Quellen (WMS, Tile Server und Datenbanken) in einer Karte
+  *  ermöglicht das direkte Einbindung von QGIS Projekten (QGS-, QGZ-Format) auch aus PostgreSQL 
+  *  bietet Cachen, Reprojizieren und Resampling von Rasterdaten
+  *  erlaubt das direkte Verarbeiten und Darstellen von Vektordaten (z.B. PostGIS, Shapefile, JSON)
+  *  ermöglicht die Integration und die Bereitstellung von OGC Diensten (z.B. WMS, WMTS, WFS)
 
-### Was ist die GBD WebSuite :/common-de/websuite
+Die GBD WebSuite als {title Applikationsserver}
 
-Bei der GBD WebSuite handelt es sich um einen Anwendungs- und Webserver, welcher den Schwerpunkt auf die Geodatenverarbeitung legt.
+  *  bietet ein Framework für domänenspezifische Erweiterungen
+  *  verfügt über eine modulare Architektur zur einfachen Integration von (Fach)-Anwendungen
 
-Die GBD WebSuite als Webserver:
+Weitere Informationen, die Software und den Quellcode finden Sie auf der [GBD WebSuite Projektseite](https://gbd-websuite.de/).
 
-- kann statische- und Template-Inhalte bedienen
-- unterstützt Multi-Site-Konfigurationen, URL-Routing und Rewriting
-- unterstützt verschiedene Berechtigungsmechanismen (Dateisystem, Datenbank, LDAP) und feinkörnige Berechtigungen
+### :/common-de/funktionalitaet
+### :/common-de/komponenten
+### :/common-de/gbd
+%comment
+### :/common-de/lizenz
+%end
 
-Die GBD WebSuite als Geo-Server:
-
-- kombiniert verschiedene Quellen (WMS, Kachelserver, Datenbanken) zu einer einheitlichen Karte
-- hat direkte Unterstützung für QGIS-Projekte
-- Caches, Reprojekte und Skalierung von Rasterdaten nach Bedarf kann Vektordaten verarbeiten und rendern (PostGIS, Shapes, JSON)
-- bietet OGC-konforme Dienste an (WMS, WMTS, WFS)
-
-Die GBD WebSuite als Anwendungsserver:
-
-- bietet einen Rahmen für domänenspezifische Erweiterungen
-- hat eine modulare Architektur für einfache Integration
-
-Die GBD WebSuite ist eine Docker-Anwendung, die die folgenden Komponenten beinhaltet:
-
-- [NGINX](https://www.nginx.com) Webserver, der für statische Inhalte sowie URL-Rewriting zuständig ist
-- [uWSGI](https://github.com/unbit/uwsgi) Application Server, der dynamische Anfragen bearbeitet
-- Python Komponente ("Aktionen"), die für Datenabfragen und Verarbeitung zuständig sind
-- [QGIS](https://qgis.org) Server, zum Rendern von QGIS Projekten
-- [MapProxy](https://mapproxy.org) Server, zum Cachen von Kartenbildern
-
-
-### Lizenz und Veröffentlichung :/common-de/lizenz
-
-Die **GBD WebSuite** wird als Docker Image bereitgestellt und kann plattformunabhängig in IT-Infrastrukturen integriert werden. Sie kombiniert die Funktionalität zahlreicher Open Source Software, wie QGIS, MapProxy, uWSGI oder NGINX und stellt diese den Anwendern zur Verfügung.
-
-
-Die GBD WebSuite basiert vollständig auf Free Open Source Software, und wird unter der GNU Affero General Public License (AGPL) veröffentlicht.
-
-Den Quellcode finden sie auf [GitHub](https://github.com/gbd-consult/gbd-websuite)
-
-### Geschichte :/common-de/geschichte
-
-Das Projekt wurde im Herbst 2017 begonnen. Am 10. Januar 2019 wurde die Version 1.0.0 veröffentlicht und über github und dockerhub bereitgestellt. Seit dieser Zeit arbeiten wir hart daran, die **GBD WebSuite** zu verbessern und mit neuer Funktionalität zu erweitern.

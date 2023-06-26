@@ -10,7 +10,9 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 
 | Symbol			| Funktion                              			|       Funktionsbeschreibung             	|
 |-------------------------------|---------------------------------------------------------------|-----------------------------------------------|
-| ![](zoom-in-24px.svg) ![](zoom-out-24px.svg) ![](zoom-reset-24px.svg)	|[Zoomen](/user-de/infobar.zoomen)	         	|In und aus der Karte zoomen, Gesamte Karte anzeigen                	|
+| ![](zoom-in-24px.svg) 	|[Hineinzoomen](/user-de/infobar.zoomen)	         	|In die Karte zoomen             		|
+| ![](zoom-out-24px.svg) 	|[Herauszoomen](/user-de/infobar.zoomen)	         	|Aus der Karte zoomen              		|
+| ![](zoom-reset-24px.svg)	|[Gesamte Karte anzeigen](/user-de/infobar.zoomen)         	|Gesamte Karte anzeigen               	 	|
 | ![](xy.png)   		|[Koordinatenanzeige](/user-de/infobar.koordinaten)    	|Zeigt die Koordinaten der Mausposition an	|
 | ![](massstab.png)   		|[Maßstab](/user-de/infobar.massstab)	                  	|Ablesen des aktuellen Kartenmaßstabs     	|
 | ![](rotation.png)   		|[Drehung](/user-de/infobar.drehung)                   	|Ablesen der aktuellen Kartenrotation     	|

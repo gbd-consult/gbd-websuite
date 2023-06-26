@@ -12,7 +12,7 @@ Dieser Abschnitt gibt eine Übersicht zur aktuellen Funktionalität der GBD WebS
 | ![](gbd-icon-anzeige-01.svg)          | [Anzeigen](/user-de/toolbar.mouseover)			| Informationen von Objekten per Mausklick                    	|
 | ![](gbd-icon-auswahl-01.svg)          | [Auswählen](/user-de/toolbar.auswahl)				| Informationen von Objekten per Mouseover                    	|
 | ![](gbd-icon-bemassung-02.svg)	| [Bemaßung](/user-de/toolbar.bemassung)			| Suche mit Hilfe von geometrischen Objekten                  	|
-| ![](sharp-edit-24px.svg)		| [Digitalisieren](/user-de/toolbar.digitalisieren)		| Digitalisieren						|
+| ![](sharp-edit-24px.svg)		| [Editieren](/user-de/toolbar.digitalisieren)		| Digitalisieren						|
 | ![](gbd-icon-d-procon-02.svg)		| [D-ProCon](/user-de/toolbar.dprocon)				| Erfassung von Strecken-Distanzen                            	|
 | ![](baseline-print-24px.svg)		| [Drucken](/user-de/toolbar.drucken)				| Markieren mit Hilfe von geometrischen Objekten              	|
 | ![](gbd-icon-gekos-04.svg)		| [GeKos](/user-de/toolbar.gekos)				| Markieren mit Hilfe von geometrischen Objekten              	|
