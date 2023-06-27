@@ -34,14 +34,18 @@ module.exports = v => ({
     },
 
     '.uiControl.isDisabled': {
-        opacity: 0.4,
+        opacity: 0.5,
         pointerEvents: 'none',
     },
 
-    '.uiControl.isReadOnly .uiControlBox': {
-        backgroundColor: '#f5f5f5',
-        borderColor: '#f5f5f5',
+    '.uiControl.isReadOnly': {
+        opacity: 0.5,
     },
+
+    // '.uiControl.isReadOnly .uiControlBox': {
+    //     backgroundColor: '#f5f5f5',
+    //     borderColor: '#f5f5f5',
+    // },
 
     '.uiControlBody': {
         position: 'relative'
