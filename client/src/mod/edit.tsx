@@ -1151,9 +1151,11 @@ class Controller extends gws.Controller {
 
     async reloadFeature(feature: gws.types.IFeature) {
         let feUpdated = await this.loadFeature(feature);
-        feature.layer.removeFeature(feature);
+        if (feature.layer)
+            feature.layer.removeFeature(feature);
         feature.updateFrom(feUpdated);
-        feature.layer.addFeature(feature);
+        if (feature.layer)
+            feature.layer.addFeature(feature);
     }
 
     async reloadAndActivateFeature(feature: gws.types.IFeature, markerMode = '') {
@@ -1259,7 +1261,7 @@ class Controller extends gws.Controller {
 
         let res = await this.app.server.editWriteFeature({
             feature: feSave.getProps(onlyGeometry ? 0 : 1)
-        }, {binary: false});
+        }, {binary: true});
 
         if (res.error) {
             this.update({
@@ -1334,7 +1336,7 @@ class Controller extends gws.Controller {
     async loadFeature(feature: gws.types.IFeature) {
         let res = await this.app.server.editReadFeature({
             feature: {
-                layerUid: String(feature.layer.uid),
+                layerUid: feature.layerUid,
                 attributes: {
                     [feature.keyName]: String(feature.uid)
                 },
