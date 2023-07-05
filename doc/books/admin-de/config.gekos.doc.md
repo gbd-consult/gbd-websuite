@@ -1,4 +1,4 @@
-# GekoS Integration :/admin-de/config-az/gekos
+# GekoS Integration :/admin-de/config/gekos
 
 TODO! %reference_de 'gws.ext.action.gekos.Config'
 
@@ -32,6 +32,6 @@ Für die visuelle Anbindung an GekoS Programm muss in der GBD WebSuite ein Proje
 | ``GIS-URL-GetXYFromFs`` | ``/_/?cmd=gekosHttpGetXy&alkisFs=<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>`` |
 | ``GIS-URL-GetXYFromGrd`` | ``/_/?cmd=gekosHttpGetXy&alkisAd=<str>_<hnr><hnralpha>_<plz>_<ort>_<bishnr><bishnralpha>`` |
 
-(Es wird angenommen, dass Sie die "project" Rewrite-Regel nutzen, siehe [Client](/admin-de/config-az/client)).
+(Es wird angenommen, dass Sie die "project" Rewrite-Regel nutzen, siehe [Client](/admin-de/config/client)).
 
 Zusätzlich muss im Client das Element ``Toolbar.Gekos`` aktiviert werden.

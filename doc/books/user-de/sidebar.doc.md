@@ -21,7 +21,7 @@ Die Seitenleiste ![](baseline-menu-24px.svg) {title Menü} ermöglicht den Zugri
 | ![](table_view_black_24px.svg)       	| [Tabellen editieren](/user-de/sidebar.tabellen)	 		| Attributtabelle eines Layers editieren   		|
 
 %info
-	Die Elemente in der Seitenleiste und ihre Reihenfolge können durch einen Administrator für Benutzer oder Benutzergruppen individuelle konfiguriert werden. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [UI-Konfiguration](/admin-de/config-az/client).
+	Die Elemente in der Seitenleiste und ihre Reihenfolge können durch einen Administrator für Benutzer oder Benutzergruppen individuelle konfiguriert werden. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [UI-Konfiguration](/admin-de/config/client).
 %end
 
 ## :/user-de/sidebar.*

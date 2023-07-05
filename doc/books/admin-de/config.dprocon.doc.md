@@ -1,4 +1,4 @@
-# D-ProCon Integration :/admin-de/config-az/dprocon
+# D-ProCon Integration :/admin-de/config/dprocon
 
 TODO! %reference_de 'gws.ext.action.dprocon.Config'
 

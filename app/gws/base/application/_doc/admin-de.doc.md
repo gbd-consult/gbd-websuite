@@ -1,18 +1,18 @@
-# Applikation :/admin-de/config/app
+# Applikation :/admin-de/config/applikation
 
 %reference_de 'gws.base.application.Config'
 
 Die wichtigsten Teile der App-Konfiguration sind die folgenden Abschnitte, welche weiter im Detail beschrieben werden:
 
-- `api` - [](/admin-de/config/api)
-- `auth` - [](/admin-de/config/api)
-- `client` - [](/admin-de/config/api)
-- `db` - [](/admin-de/config/api)
-- `helper` - [](/admin-de/config/api)
-- `locales` - [](/admin-de/config/api)
-- `meta` - [](/admin-de/config/api)
-- `server` - [](/admin-de/config/api)
-- `web` - [](/admin-de/config/api)
+
+- Server Aktionen → [``Action``](/admin-de/config/server-aktionen)
+- Zugriffsrechte → [``auth``](/admin-de/config/autorisierung)
+- Client Optionen → [``client``](/admin-de/config/client)
+- Datenbankanbindung →[``database``](/admin-de/config/datenbanken)
+- Server-Helper → [``helpers``](/admin-de/config/helper)
+- Server Localen → [``locales``](/admin-de/config/intl)
+- globale Metadaten → [``metadata``](/admin-de/config/metadaten)
+- Server Optionen → [``server``](/admin-de/config/server)
+- Web-Server Konfigurationen → [``web``](/admin-de/config/web)
 
 Ein minimales Beispiel einer App-Konfiguration finden Sie unter https://github.com/gbd-consult/gbd-websuite/tree/master/doc/examples/quickstart/config.json.
-

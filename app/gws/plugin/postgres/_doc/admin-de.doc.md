@@ -1,4 +1,4 @@
-# postgres :/admin-de/config/layer/type/
+# postgres :/admin-de/config/layer/type/postgres
 
 %reference_de 'gws.ext.layer.postgres.Config'
 
@@ -20,7 +20,7 @@ Vektor-Layer, übernimmt Geometrien aus einer Postgres-Tabelle. Sie müssen die 
 Mehr über Tabellen-Konfigurationen siehe in ^db.
 
 
-# postgres :/admin-de/config/db/type/
+# postgres :/admin-de/config/db/type/postgres
 
 %reference_de 'gws.ext.db.provider.postgres.Config'
 
@@ -28,6 +28,7 @@ Wir unterstützen PostgreSQL ab Version 10 mit der obligatorisch PostGIS (ab 2.4
 
 Beispiel einer Postgres-Provider-Konfiguration
 
+```javascript
     "db": {
         "providers" [
             {
@@ -41,6 +42,7 @@ Beispiel einer Postgres-Provider-Konfiguration
             }
         ]
     }
+```
 
 Wenn Sie mehrere Server bzw. mehrere Zugangsdaten auf dem gleichen Server haben, müssen Sie diese als verschiedene Anbieter konfigurieren.
 

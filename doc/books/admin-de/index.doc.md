@@ -1,6 +1,6 @@
 ## Einführung :/admin-de/intro
 
-Wenn Sie die GBD WebSuite zum ersten Mal nutzen, starten Sie mit dem Kapitel [Schnellstart](/admin-de/quickstart), welches den ersten Start des Servers und Ihres ersten Projektes beschreibt. Im Kapitel [Installation](/admin-de/intro/install) wird die Installation der GBD WebSuite ausführlicher beschrieben.  In dem Kapitel [Grundkonzepte](/admin-de/intro/concepts) werden dann die Grundkonzepte und Funktionen der GBD WebSuite vorgestellt. Im Kapitel [Konfiguration A-Z](/admin-de/config-az) finden Sie detaillierte Anweisungen zur Konfiguration. In dem Kapitel [Referenz](/admin-de/reference) finden Sie eine Auflistung aler Konfigurationsoptionen sowie aller Kommandozeilen Tools.
+Wenn Sie die GBD WebSuite zum ersten Mal nutzen, starten Sie mit dem Kapitel [Schnellstart](/admin-de/quickstart), welches den ersten Start des Servers und Ihres ersten Projektes beschreibt. Im Kapitel [Installation](/admin-de/intro/install) wird die Installation der GBD WebSuite ausführlicher beschrieben.  In dem Kapitel [Grundkonzepte](/admin-de/intro/concepts) werden dann die Grundkonzepte und Funktionen der GBD WebSuite vorgestellt. Im Kapitel [Konfiguration A-Z](/admin-de/config) finden Sie detaillierte Anweisungen zur Konfiguration. In dem Kapitel [Referenz](/admin-de/reference) finden Sie eine Auflistung aler Konfigurationsoptionen sowie aller Kommandozeilen Tools.
 
 ### Schnellstart :/admin-de/quickstart
 

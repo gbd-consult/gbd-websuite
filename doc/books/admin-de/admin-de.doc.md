@@ -8,7 +8,7 @@ Weitere Informationen zum GBD WebSuite Projekt finden Sie unter https://gbd-webs
 
 ## :/admin-de/config-introduction
 
-## :/admin-de/config-az
+## :/admin-de/config
 
 ## :/admin-de/plugin
 

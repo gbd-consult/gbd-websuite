@@ -1,1 +1,1 @@
-# map :/admin-de/config/template/type/
+# map :/admin-de/config/template/type/map
