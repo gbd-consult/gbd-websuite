@@ -45,6 +45,7 @@ interface EditState {
     drawFeature?: gws.types.IFeature;
     prevState?: EditState;
     relationFieldName?: string;
+    waiting?: boolean;
 }
 
 
@@ -481,6 +482,9 @@ class EditSidebarView extends gws.View<EditViewProps> {
         let cc = _master(this);
         let es = cc.editState;
 
+        if (es.waiting)
+            return null; //<gws.ui.Loader/>;
+
         if (es.feature)
             return <FeatureDetailsTab {...this.props} />;
 
@@ -781,11 +785,14 @@ class Controller extends gws.Controller {
 
             let feature = await this.createNewFeature(relation.model.getLayer(), attributes, null);
 
-            this.setState({
-                feature,
-                prevState: es,
-                relationFieldName: field.name,
-            });
+            this.setState({waiting: true})
+            gws.tools.nextTick(() => {
+                this.setState({
+                    feature,
+                    prevState: es,
+                    relationFieldName: field.name,
+                })
+            })
 
             this.update({editDialogData: null})
 
@@ -1386,7 +1393,8 @@ class Controller extends gws.Controller {
             }
         }
 
-        this.setState({...ps});
+        this.setState({waiting: true})
+        gws.tools.nextTick(() => this.setState({...ps}));
     }
 
 }
