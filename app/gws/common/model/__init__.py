@@ -561,12 +561,18 @@ class Field_file(ScalarField):
 
     def name_to_path(self, name: str, fe: t.IFeature):
         p = gws.tools.os2.parse_path(name)
-        context = dict(fe.attributes)
-        context['file'] = t.Data(
-            name=gws.as_uid(p['name']),
-            extension=gws.as_uid(p['extension'])
+        env = t.Data(
+            feature=fe,
+            file=t.Data(
+                name=gws.as_uid(p['name']),
+                extension=gws.as_uid(p['extension'].lower())
+            )
         )
-        return self.var('filePath').format_map(context)
+        fp = self.var('filePath')
+        gws.log.debug(f'name_to_path {fp=}')
+        path = eval(fp)
+        gws.log.debug(f'name_to_path {path=}')
+        return path
 
     def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
@@ -580,7 +586,8 @@ class Field_file(ScalarField):
         if val:
             props.attributes[self.name] = FileValue(
                 name=val.name,
-                mime=val.mime)
+                mime=gws.tools.mime.for_path(val.name)
+            )
 
     def read_from_orm(self, fe: t.IFeature, obj, depth):
         path = getattr(obj, self.name, None)
@@ -1041,16 +1048,22 @@ class Field_relatedGenericFeature(RelatedFeatureField):
         if val is None:
             return
 
+        rel_model = None
         if isinstance(val, (int, str)):
             uid = val
         elif isinstance(val, t.IFeature):
             uid = val.uid
+            rel_model = val.model
         else:
             key = gws.get(val, 'keyName')
             uid = gws.get(val, ['attributes', key])
+            rel_model = registry().get_model(gws.get(val, 'modelUid'))
 
         if uid:
-            fe.attributes[self.name] = generic_feature(uid=uid)
+            if rel_model:
+                fe.attributes[self.name] = rel_model.get_feature(uid, depth - 1)
+            else:
+                fe.attributes[self.name] = generic_feature(uid=uid)
 
     def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = fe.attributes.get(self.name)

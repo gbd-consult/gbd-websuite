@@ -175,6 +175,7 @@ class Object(gws.common.action.Object):
         try:
             gws.common.model.session.commit()
         except Exception as exc:
+            gws.log.exception()
             try:
                 msg = exc.args[0]
             except:
