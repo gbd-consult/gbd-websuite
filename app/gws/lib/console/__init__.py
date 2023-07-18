@@ -7,7 +7,7 @@ import gws.types as t
 
 
 class ProgressIndicator:
-    def __init__(self, title, total, resolution=10):
+    def __init__(self, title, total=0, resolution=10):
         self.resolution = resolution
         self.title = title
         self.total = total
@@ -15,7 +15,7 @@ class ProgressIndicator:
         self.lastd = 0
 
     def __enter__(self):
-        self.log(f'START (total={self.total})')
+        self.log(f'START ({self.total})' if self.total else 'START')
         self.starttime = time.time()
         return self
 
@@ -25,17 +25,19 @@ class ProgressIndicator:
             self.log(f'END ({ts:.2f} sec)')
 
     def update(self, add=1):
+        if not self.total:
+            return
         self.progress += add
         p = math.floor(self.progress * 100.0 / self.total)
         if p > 100:
             p = 100
         d = round(p / self.resolution) * self.resolution
         if d > self.lastd:
-            self.log(f'{d}%%')
+            self.log(f'{d}%')
         self.lastd = d
 
     def log(self, s):
-        gws.log.info(f'{self.title}: {s}')
+        gws.log.info(f'{self.title}: {s}', stacklevel=3)
 
 
 def text_table(data, header=None, delim=' | '):

@@ -50,9 +50,15 @@ class Object(gws.base.auth.session_manager.Object):
             sa.Column('updated', sa.Integer),
         )
 
+        if not gws.is_file(self.dbPath):
+            try:
+                self.metaData.create_all(self.engine, checkfirst=False)
+            except sa.exc.SQLAlchemyError as exc:
+                raise gws.Error(f'cannot create {self.dbPath!r}') from exc
+
         try:
-            self.metaData.create_all(self.engine, checkfirst=True)
-        except Exception as exc:
+            self.metaData.reflect(self.engine)
+        except sa.exc.SQLAlchemyError as exc:
             raise gws.Error(f'cannot open {self.dbPath!r}') from exc
 
     #            

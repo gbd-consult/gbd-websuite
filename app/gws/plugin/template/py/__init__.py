@@ -16,34 +16,45 @@ gws.ext.new.template('py')
 
 class Config(gws.base.template.Config):
     """Python template"""
-    pass
+
+    path: t.Optional[gws.FilePath]
+    """path to a template file"""
+
 
 class Props(gws.base.template.Props):
     pass
 
 
+_ENTRYPOINT_NAME = 'main'
+
+
 class Object(gws.base.template.Object):
+    path: str
+
     def configure(self):
+        self.path = self.cfg('path')
         self.compile()
 
-    def render(self, tri, notify=None):
-        fn = self.compile()
+    def render(self, tri):
+        self.notify(tri, 'begin_print')
 
-        ctx = self.prepare_context(tri.context)
-        if isinstance(ctx, dict):
-            ctx = gws.Data(ctx)
+        args = self.prepare_args(tri.args)
+        entrypoint = self.compile()
 
         try:
-            return fn(ctx)
+            res = entrypoint(args)
         except Exception as exc:
             gws.log.exception()
             raise gws.Error(f'py error: {exc!r} path={self.path!r}') from exc
 
+        self.notify(tri, 'end_print')
+        return res
+
     def compile(self):
-        text = gws.read_file(self.path) if self.path else self.text
+        text = gws.read_file(self.path)
         try:
             g = {}
             exec(text, g)
-            return g['main']
+            return g[_ENTRYPOINT_NAME]
         except Exception as exc:
             raise gws.Error(f'py load error: {exc!r} in {self.path!r}') from exc
