@@ -14,6 +14,7 @@ import shapely.wkt
 
 import gws
 import gws.gis.crs
+import gws.lib.sa as sa
 
 _TOLERANCE_QUAD_SEGS = 6
 _MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections
@@ -91,6 +92,16 @@ def _from_wkb(wkb: bytes, default_crs):
 
     geom = shapely.wkb.loads(wkb)
     return Shape(geom, crs)
+
+
+def from_wkb_element(element: sa.geo.WKBElement, default_crs):
+    data = element.data
+    if isinstance(data, str):
+        wkb = bytes.fromhex(data)
+    else:
+        wkb = bytes(data)
+    crs = gws.gis.crs.get(element.srid)
+    return _from_wkb(wkb, crs or default_crs)
 
 
 def from_geojson(geojson: dict, crs: gws.ICrs, always_xy=False) -> gws.IShape:
