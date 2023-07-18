@@ -1,0 +1,11 @@
+@include data.cx.html
+
+<div class="alkisFs">
+    <p class="alkisFsTitle">
+        {fs_kennzeichen(fs.flurstueckskennzeichen)}
+        @if fs.endet
+            (h)
+        @end
+    </p>
+    @flurstueck fs
+</div>

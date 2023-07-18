@@ -1,45 +1,39 @@
-<html>
+@include data.cx.html
 
-<gws:page width="297" height="210"/>
+@page width="210" height="297" margin="10 10 30 10"
 
-<meta charset="utf8"/>
+@footer
+    <table border="0" cellspacing="0" cellpadding="10" width="100%">
+        <td style="text-align: left; font-size:9pt">
+            {date.medium}
+        </td>
+        <td style="text-align: right; font-size:9pt">
+            {page}/{numpages}
+        </td>
+    </tr></table>
+@end footer
+
+
 <style>
-    body {
-        padding: 10mm;
-        margin: 0;
-    }
-
-    #map {
-        width: 150mm;
-        height: 100mm;
-        border: 1mm dotted magenta;
-        position: relative;
-        margin-right: 10mm;
-    }
-
-    td {
-        padding: 3mm;
-    }
-
-
+@include print.css
 </style>
 
-<body>
-<h1>{title}</h1>
-<table>
-    <tr valign="top">
-        <td>
-            <div id="map">
-                <gws:map width="150" height="100"/>
-            </div>
-        </td>
-        <td>
-            @include data.cx.html
-        </td>
-    </tr>
-</table>
+@for fs in flurstueckList index n length total
+    <h1>
+        Flurstück {fs_kennzeichen(fs.flurstueckskennzeichen)}
+    </h1>
 
-</body>
+    <div class="map">
+        @map number=n-1 width="188" height="220"
+    </div>
 
-</html>
+    <div class="br"></div>
 
+    <div class="alkisFs">
+        @flurstueck fs
+    </div>
+
+    @if n < total
+        <div class="br"></div>
+    @end
+@end

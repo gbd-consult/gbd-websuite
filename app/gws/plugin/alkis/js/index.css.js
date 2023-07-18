@@ -68,6 +68,68 @@ module.exports = v => ({
 
     },
 
+    'p.alkisFsTitle': {
+        fontSize: 15,
+    },
+
+    '.alkisFsSection1': {
+    },
+
+    '.alkisFsSection1 p.alkisFsTitle': {
+        fontSize: 14,
+        margin: [v.UNIT4, 0],
+    },
+
+    '.alkisFsSection2': {
+    },
+
+    '.alkisFsSection2 p.alkisFsTitle': {
+        fontSize: 12,
+        margin: [v.UNIT4, 0],
+    },
+
+    '.alkisFs table': {
+        borderCollapse: 'collapse',
+        width: '100%',
+        margin: [v.UNIT4, 0],
+    },
+
+    '.alkisFs table td, .alkisFs table th': {
+        padding: v.UNIT2,
+        textAlign: 'left',
+        fontSize: 12,
+    },
+
+    '.alkisFs table td p': {
+        margin: 0,
+        padding: 0,
+    },
+
+    '.alkisFs table th': {
+        fontWeight: 'normal',
+        color: v.LIGHT_TEXT_COLOR,
+        width: 130,
+    },
+
+    '.alkisFs table td.alkisFsSubhead1': {
+        background: v.EVEN_STRIPE_COLOR,
+        fontWeight: 'bold',
+        fontSize: 11,
+    },
+
+    '.alkisFs table td.alkisFsSubhead2': {
+        background: v.EVEN_STRIPE_COLOR,
+        fontWeight: 'bold',
+        fontSize: 10,
+    },
+
+    '.alkisFs tbody.alkisFsHistory': {
+        background: v.COLOR.pink50,
+    },
+
+    '.alkisFsDebug': {
+        color: 'red',
+    }
 
 
 });

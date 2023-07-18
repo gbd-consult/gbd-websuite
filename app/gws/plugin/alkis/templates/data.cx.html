@@ -1,80 +1,439 @@
-@block group(rows, title)
-    <tbody>
-        <tr class="thead"><td colspan=2>{title | html}</td></tr>
-        {rows}
+@let WITH_DEBUG = 1
+
+@let HEADERS = {
+
+    'flurstueck': 'Flurstück',
+    'flurstueck.flurnummer': 'Flurnummer',
+    'flurstueck.zaehler': 'Zähler',
+    'flurstueck.nenner': 'Nenner',
+    'flurstueck.gemeinde': 'Gemeinde',
+    'flurstueck.gemarkung': 'Gemarkung',
+    'flurstueck.amtlicheFlaeche': 'Fläche (amtlich)',
+    'flurstueck.area': 'Fläche (geometrisch)',
+    'flurstueck.gebaeudeGrundflaeche': 'Gesamtfläche (amtlich)',
+    'flurstueck.gebaeudeArea': 'Gesamtfläche (geometrisch)',
+    'flurstueck.nachfolgerFlurstueckskennzeichen': 'Nachfolger-Flurstückskennzeichen',
+
+    'lage.title': 'Angaben zur Lage',
+    'lage.adresse': 'Adresse',
+
+    'gebaeude.title': 'Gebäudenachweis',
+    'gebaeude': 'Gebäude',
+    'gebaeude.grundflaeche': 'Fläche (amtlich)',
+    'gebaeude.area': 'Fläche (geometrisch)',
+
+    'buchung.title': 'Personen und Bestandsdaten',
+    'buchung.buchungsstelle': 'Buchungsstelle',
+
+    'buchungsblatt.title': 'Buchungsblatt',
+    'buchungsblatt.blattart': 'Blattart',
+    'buchungsblatt.buchungsblattbezirk': 'Bezirk',
+
+    'buchungsstelle.title': 'Buchungsstelle',
+    'buchungsstelle.buchungsart': 'Buchungsart',
+    'buchungsstelle.laufendeNummer': 'Nr',
+    'buchungsstelle.zu': 'zu',
+    'buchungsstelle.flurstueck': 'Flurstück',
+    'buchungsstelle.buchungstext': 'Buchungstext',
+    'buchungsstelle.beschreibungDesSondereigentums': 'Beschreibung des Sondereigentums',
+    'buchungsstelle.beschreibungDesUmfangsDerBuchung': 'Beschreibung des Umfangs der Buchung',
+
+    'namensnummer.title': 'Eigentümer',
+    'namensnummer.anteil': 'Anteil',
+    'namensnummer.laufendeNummer': 'Nr.',
+    'namensnummer.rechtsgemeinschaft': 'Rechtsgemeinschaft',
+    'namensnummer.eigentuemerart': 'Eigentümerart',
+
+    'person.title': 'Angaben zur Person',
+    'person.name': 'Name',
+    'person.anschrift': 'Anschrift',
+    'person.adresse': 'Adresse',
+    'person.geburtsdatum': 'Geburtsdatum',
+
+    'nutzung.title': 'Tatsächliche Nutzung',
+    'nutzung.name': 'Art',
+    'nutzung.area': 'Fläche',
+
+    'zeitraum': 'Zeitraum',
+    'anlass': 'Anlass',
+}
+
+
+@def h arg
+    @return HEADERS.get(arg, arg)
+@end
+
+@def text arg, default=None
+    @without arg
+        @return default
+    @end
+    @with arg.text
+        @return arg.text + ' (' + arg.code + ')'
+    @end
+    @return str(arg)
+@end
+
+@def area arg
+    @if arg
+        @return '{:.1f}&nbsp;m²'.format(arg)
+    @end
+@end
+
+@def join(a, delim)
+    @let vs = []
+    @for arg in a
+        @let v = text(arg)
+        @if v != None
+            @do vs.append(v)
+        @end
+    @end
+    @if not vs
+        @return None
+    @end
+    @return delim.join(vs)
+@end
+
+@def nl(*a)    = join(a, '<br>')
+@def space(*a) = join(a, ' ')
+@def dot(*a)   = join(a, '.')
+
+@box section content, title=None
+    <div class="alkisFsSection1">
+        @if title
+            <p class="alkisFsTitle">{title}</p>
+        @end
+        {content}
+    </div>
+@end
+
+@box subsection content, title=None
+    <div class="alkisFsSection2">
+        @if title
+            <p class="alkisFsTitle">{title}</p>
+        @end
+        {content}
+    </div>
+@end
+
+@box table content
+    <table>
+    {content}
+    </table>
+@end
+
+@box tbody content, obj
+    <tbody {'class="alkisFsHistory"' if obj.endet else ''}>
+    {content}
     </tbody>
 @end
 
-@def row(key, val)
-    @with val
+
+@def row_title s
+    @if s != None
+        <tr><td colspan="2" class="alkisFsSubhead1">{s}</td></tr>
+    @end
+@end
+
+@def row_subtl s
+    @if s != None
+        <tr><td colspan="2" class="alkisFsSubhead2">{s}</td></tr>
+    @end
+@end
+
+@def row_value key, val
+    @if key != None and val != None
+        <tr><th>{key}</th><td>{val}</th></tr>
+    @end
+@end
+
+@def row_times obj
+    @if withHistory
         <tr>
-            <th>{key | html | nl2br}</th>
-            <td>{val | html | nl2br}</td>
+            <th>{h('zeitraum')}</th>
+            <td>
+                @if obj.endet == obj.beginnt
+                    ...&nbsp;&mdash;&nbsp;{obj.endet}
+                @elif obj.endet
+                    {obj.beginnt}&nbsp;&mdash;&nbsp;{obj.endet}
+                @else
+                    {obj.beginnt}&nbsp;&mdash;&nbsp;...
+                @end
+            </td>
+        </tr>
+        @with obj.anlass
+            <tr>
+                <th>{h('anlass')}</th>
+                <td>{text(obj.anlass)}</td>
+            </tr>
+        @end
+    @end
+@end
+
+@def row_debug key, val
+    @if withDebug
+        <tr>
+            <th><span class="alkisFsDebug">{key}</span></th>
+            <td><span class="alkisFsDebug">{val}</span></td>
         </tr>
     @end
 @end
 
-@def area(v)
-    @if v:
-        @return v | '{:.1f}m²'
+@def debug val
+    @if withDebug
+        @return '<span class="alkisFsDebug">' + str(val) + '</span>'
     @end
-    @return '-'
 @end
 
-<p class="head2">Flurstück {vollnummer}</p>
+@def fs_kennzeichen(k)
+    @return k.replace('_', '')
+@end
 
-<table>
+@def records(obj)
+    @return obj.recs or []
+@end
 
-    @group 'Basisdaten'
-        @row 'Flurnummer', flurnummer
-        @row 'Zähler', zaehler
-        @row 'Nenner', nenner
-        @row 'Fläche', amtlicheflaeche | area
-        @row 'ges. Gebäudefläche', gebaeude_area | area
-    @end
-
-    @group 'Lage'
-        @row 'Gemeinde', gemeinde
-        @row 'Gemarkung', gemarkung
-        @each lage as la
-            @row 'Adresse', la.strasse + ' ' + la.hausnummer
+@def records_from(obj_list)
+    @let ls = []
+    @for o in obj_list
+        @for r in o.recs
+            @do ls.append(r)
         @end
     @end
+    @return ls
+@end
 
-    @with gebaeude as geb
-        @group 'Gebäudenachweis'
-            @each geb as g
-                @row g.gebaeudefunktion, g.area | area
+@######
+
+@def anschrift an_obj
+    @for an in records(an_obj)
+        @tbody an
+            @row_value h('person.adresse'), nl(space(an.strasse, an.hausnummer), space(an.plz, an.ort))
+            @row_times an
+        @end
+    @end
+@end
+
+@def person pe_obj
+    @for pe in records(pe_obj)
+        @tbody pe
+            @row_debug 'person.uid', pe.uid
+            @row_value h('person.name'), space(pe.anrede, pe.akademischerGrad, pe.vorname, pe.nachnameOderFirma)
+            @row_value h('person.geburtsdatum'), pe.geburtsdatum
+            @row_times pe
+        @end
+    @end
+    @with pe_obj.anschriftList
+        @row_subtl h('person.anschrift')
+        @for an_obj in pe_obj.anschriftList
+            @anschrift an_obj
+        @end
+    @end
+@end
+
+@def namensnummer nn_obj
+    @table
+        @row_title space(h('namensnummer.title'), text(nn_obj.laufendeNummer))
+
+        @for nn in records(nn_obj)
+            @tbody nn
+                @row_debug 'namensnummer.uid', nn.uid
+                @row_value h('namensnummer.anteil'), text(nn.anteil)
+                @row_value h('namensnummer.rechtsgemeinschaft'), nl(nn.artDerRechtsgemeinschaft, nn.beschriebDerRechtsgemeinschaft)
+                @row_value h('namensnummer.eigentuemerart'), text(nn.eigentuemerart)
+                @row_times nn
+            @end
+        @end
+
+        @with nn_obj.personList
+            @row_subtl h('person.title')
+            @for pe_obj in nn_obj.personList
+                @person pe_obj
+            @end
+        @end
+    @end
+@end
+
+
+@def buchungsstelle bs_obj
+    @table
+        @row_title space(h('buchungsstelle.title'), text(bs_obj.laufendeNummer))
+
+        @for bs in records(bs_obj)
+            @tbody bs
+                @row_debug 'buchungsstelle.uid', bs.uid
+                @row_value h('buchungsstelle.buchungsart'), text(bs.buchungsart)
+                @row_value h('buchungsstelle.buchungstext'), text(bs.buchungstext)
+                @row_value h('buchungsstelle.beschreibungDesSondereigentums'), text(bs.beschreibungDesSondereigentums)
+                @row_value h('buchungsstelle.beschreibungDesUmfangsDerBuchung'), text(bs.beschreibungDesUmfangsDerBuchung)
+
+                @row_times bs
+            @end
+        @end
+
+        @with bs_obj.parentRefs
+            <tr>
+                <th>{h('buchungsstelle.zu')}</th>
+                <td>
+                    @for ref in bs_obj.parentRefs
+                        <p>{dot(ref.bbKennzeichen, ref.bsLaufendeNummer)} {debug(ref.bsUid)}</p>
+                    @end
+                </td>
+            </tr>
+        @end
+
+        @with bs_obj.flurstueckskennzeichenList
+            <tr>
+                <th>{h('buchungsstelle.flurstueck')}</th>
+                <td>
+                    @for k in set(bs_obj.flurstueckskennzeichenList)
+                        <p>{fs_kennzeichen(k)}</p>
+                    @end
+                </td>
+            </tr>
+        @end
+    @end
+@end
+
+@def buchungsblatt bb_obj
+    @subsection space(h('buchungsblatt.title'), bb_obj.buchungsblattkennzeichen)
+        @for bb in records(bb_obj)
+            @table
+                @tbody bb
+                    @row_debug 'buchungsblatt.uid', bb.uid
+                    @row_value h('buchungsblatt.blattart'), text(bb.blattart)
+                    @row_value h('buchungsblatt.buchungsblattbezirk'), text(bb.buchungsblattbezirk)
+                    @row_times bb
+                @end
+            @end
+        @end
+
+        @for bs_obj in bb_obj.buchungsstelleList
+            @buchungsstelle bs_obj
+        @end
+
+        @for nn_obj in bb_obj.namensnummerList
+            @namensnummer nn_obj
+        @end
+    @end
+@end
+
+@def fs_buchung(fs_obj)
+    @without fs_obj.buchungsstelleRefs
+        @return
+    @end
+
+    @section h('buchung.title')
+        @table
+            @for ref in fs_obj.buchungsstelleRefs
+                @row_debug 'buchungsstelle.uid', ref.bsUid
+                @row_value h('buchung.buchungsstelle'), dot(ref.bbKennzeichen, ref.bsLaufendeNummer)
             @end
         @end
     @end
 
-    @each buchung as bs
-        @group 'Buchungssatz'
-            @row 'Buchungsart', bs.buchungsart
-            @row 'Anteil', bs.anteil
-            @row 'Buchungsblattnummer', bs.buchungsblatt.buchungsblattnummermitbuchstabenerweiterung
+    @for bb_obj in fs_obj.buchungsblattList
+        @buchungsblatt bb_obj
+    @end
+@end
 
-            @each bs.eigentuemer as eg
-                @let val
-                    {eg.person.vorname} {eg.person.nachnameoderfirma}
-                    @with eg.person.anschrift as a
-                        {a.strasse} {a.hausnummer}
-                        {a.postleitzahlpostzustellung} {a.ort_post}
+
+@def fs_basis(fs_obj)
+    @for fs in records(fs_obj)
+        @table
+            @tbody fs
+                @row_debug 'flurstueck.uid', fs.uid
+                @row_value h('flurstueck.flurnummer'), text(fs.flurnummer)
+                @row_value h('flurstueck.zaehler'), text(fs.zaehler)
+                @row_value h('flurstueck.nenner'), text(fs.nenner, '-')
+                @row_value h('flurstueck.amtlicheFlaeche'), area(fs.amtlicheFlaeche)
+                @row_value h('flurstueck.area'), area(fs.area)
+
+                @for nf in fs.nachfolgerFlurstueckskennzeichen
+                    @row_value h('flurstueck.nachfolgerFlurstueckskennzeichen'), nf.replace('_', '')
+                @end
+
+                @row_times fs
+            @end
+        @end
+    @end
+@end
+
+@def fs_lage(fs_obj)
+    @section h('lage.title')
+        @table
+            @row_value h('flurstueck.gemeinde'),  text(fs.recs[-1].gemeinde)
+            @row_value h('flurstueck.gemarkung'), text(fs.recs[-1].gemarkung)
+        @end
+        @for la in records_from(fs.lageList)
+            @table
+                @tbody la
+                    @row_value h('lage.adresse'), space(la.strasse, la.hausnummer)
+                    @row_times la
+                @end
+            @end
+        @end
+    @end
+@end
+
+@def fs_gebaeude(fs_obj)
+    @without fs_obj.gebaeudeList
+        @return
+    @end
+
+    @section h('gebaeude.title')
+        @table
+            @row_value h('flurstueck.gebaeudeGrundflaeche'), area(fs_obj.gebaeudeGrundflaeche)
+            @row_value h('flurstueck.gebaeudeArea'), area(fs_obj.gebaeudeArea)
+        @end
+
+        @for ge in records_from(fs_obj.gebaeudeList)
+            @table
+                @tbody ge
+                    @row_debug 'gebaeude.uid', ge.uid
+                    @row_value h('gebaeude.gebaeudekennzeichen'), text(ge.gebaeudekennzeichen)
+                    @row_value h('gebaeude.grundflaeche'), area(ge.grundflaeche)
+                    @row_value h('gebaeude.area'), area(ge.area)
+                    @for k, v in ge.props
+                        @row_value k, text(v)
+                    @end
+                    @row_times ge
+                @end
+            @end
+        @end
+    @end
+@end
+
+
+@def fs_nutzung(fs_obj)
+    @without fs_obj.nutzungList
+        @return
+    @end
+
+    @section h('nutzung.title')
+        @for nu_obj in fs_obj.nutzungList
+            @for nu in records(nu_obj)
+                @table
+                    @row_debug 'part.uid', nu_obj.uid
+                    @tbody nu
+                        @row_value h('nutzung.name'), text(nu_obj.name)
+                        @row_value h('nutzung.area'), area(nu.area)
+                        @for k, v in nu.props
+                            @row_value k, text(v)
+                        @end
+                        @row_times nu
                     @end
                 @end
-                @row 'Eigentümer\n' + eg.anteil, val
             @end
         @end
     @end
+@end
 
-    @with nutzung as nutzung
-        @group 'Nutzung'
-            @each nutzung as nu
-                @row nu.type, nu.a_area | area
-            @end
-        @end
-    @end
+@def flurstueck(fs_obj)
+    @fs_basis    fs_obj
+    @fs_lage     fs_obj
+    @fs_gebaeude fs_obj
+    @fs_nutzung  fs_obj
+    @fs_buchung  fs_obj
 
+@end
 
-</table>

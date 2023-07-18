@@ -1,0 +1,68 @@
+body {
+    padding: 0;
+    margin: 0;
+    font-family: DejaVuSans, Helvetica, sans-serif;
+}
+
+.map {
+    width: 185mm;
+    height: 220mm;
+    border: 1mm solid #aaa;
+}
+
+.br {
+    page-break-after: always;
+}
+
+.alkisFs {
+    padding: 10mm 10mm 40mm 10mm;
+}
+
+.alkisFs table {
+    border-collapse: collapse;
+    margin: 5mm 0;
+    width: 100%;
+}
+
+.alkisFs table td, .alkisFs table th {
+    font-size: 10pt;
+    padding: 2mm;
+    text-align: left;
+    border: 0.5mm solid #aaa;
+}
+
+.alkisFs table th {
+    color: #444;
+    font-weight: normal;
+    width: 40mm;
+}
+
+.alkisFs table td.alkisFsSubhead1 {
+    font-size: 10pt;
+    font-weight: bold;
+}
+
+.alkisFs table td.alkisFsSubhead2 {
+    font-size: 9pt;
+    font-weight: bold;
+}
+
+.alkisFs tbody.alkisFsHistory {
+    background-color: #ddd;
+}
+
+
+.alkisFsDebug {
+    color: red;
+}
+
+.alkisFsSection1 p.alkisFsTitle {
+    font-size: 12pt;
+    font-weight: normal;
+    margin: 5mm 0;
+}
+
+.alkisFsSection2 p.alkisFsTitle {
+    font-size: 10pt;
+    margin: 5mm 0;
+}
