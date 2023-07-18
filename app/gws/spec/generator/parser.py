@@ -71,6 +71,9 @@ class _PythonParser:
         self.parse_all = parse_all
 
     def run(self):
+        if any('# gws:nospec' in ln for ln in self.source_lines):
+            return
+
         tree = ast.parse(self.text)
 
         for node in ast.walk(tree):
