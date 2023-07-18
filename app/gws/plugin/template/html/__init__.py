@@ -230,15 +230,15 @@ class Object(gws.base.template.Object):
         return f'''
             <html>
                 <style>
-                    body, table, tr, td {{ margin: 0; padding: 0; border: none; }}
-                    body, table {{ width:  {w}mm; height: {h}mm; }}
-                    tr, td {{ width:  {w}mm; height: {h // 2}mm; }}
+                    body, .FRAME_TABLE, .FRAME_TR, .FRAME_TD {{ margin: 0; padding: 0; border: none; }}
+                    body, .FRAME_TABLE {{ width:  {w}mm; height: {h}mm; }}
+                    .FRAME_TR, .FRAME_TD {{ width:  {w}mm; height: {h // 2}mm; }}
                 </style>
                 <body>
-                    @for page in range(1, numpages + 1):
-                        <table border=0 cellspacing=0 cellpadding=0>
-                            <tr valign="top"><td>{header}</td></tr>
-                            <tr valign="bottom"><td>{footer}</td></tr>
+                    @for page in range(1, numpages + 1)
+                        <table class="FRAME_TABLE" border=0 cellspacing=0 cellpadding=0>
+                            <tr class="FRAME_TR" valign="top"><td class="FRAME_TD">{header}</td></tr>
+                            <tr class="FRAME_TR" valign="bottom"><td class="FRAME_TD">{footer}</td></tr>
                         </table>
                     @end
                 </body>
