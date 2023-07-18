@@ -1,108 +1,114 @@
 # ALKIS Integration :/admin-de/plugin/alkis
 
-
 Die GBD WebSuite kann die Daten aus dem Amtliches Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Es steht eine Client-Oberfläche für Flurstücksuche zur Verfügung und ein QGIS Plugin für ALKIS-basierte Geocodierung.
 
 Um die ALKIS Integration zu nutzen benötigen Sie folgendes:
 
-- eine Postgres/PostGIS Datenbank, die aus ALKIS Quelldaten (*NAS-Format*) erstellt wurde, z.B. mittels ALKIS-Import Software der Firma Norbit (http://www.norbit.de/68/)
+- eine Postgres/PostGIS Datenbank, die aus ALKIS Quelldaten (*NAS-Format*) erstellt wurde, z.B. mittels ALKIS-Import Software der [Firma Norbit](http://www.norbit.de/68/)
 - eine Helper Konfiguration
-- Aktion Konfigurationen für die Flurstücksuche (`alkissearch`) und/oder Geocodierung (`alkisgeocoder`)
+- Aktion Konfigurationen für die Flurstücksuche (``alkissearch``) und/oder Geocodierung (``alkisgeocoder``)
 
-## Helper `alkis`
+## Helper ``alkis``
 
-%reference_de 'gws.ext.helper.alkis.Config'
+%reference_de 'gws.plugin.alkis.geocoder.Config'
 
-In diesem Helper (s. ^helper) werden allgemeine ALKIS Einstellungen konfiguriert:
+In diesem Helper (siehe [Helper](/admin-de/config/helper)) werden allgemeine ALKIS Einstellungen konfiguriert:
 
-| Option             | Bedeutung                                                                                      |
-|--------------------|------------------------------------------------------------------------------------------------|
-| `crs`              | KBS für ALKIS Daten, normalerweise `EPSG:25832` oder `EPSG:25833`                              |
-| `dataSchema`       | Postgres Schema in dem die ALKIS Tabellen liegen                                               |
-| `excludeGemarkung` | Liste von Gemarkungen IDs (*gemarkungsnummer*), die aus der Suche ausgeschlossen werden müssen |
-| `indexSchema`      | Postgres Schema in dem die Indexe geschrieben werden                                           |
+| OPTION | BEDEUTUNG|
+|---|---|
+| ``crs`` | KBS für ALKIS Daten, normalerweise ``EPSG:25832`` oder ``EPSG:25833`` |
+| ``dataSchema`` | Postgres Schema in dem die ALKIS Tabellen liegen |
+| ``excludeGemarkung`` | Liste von Gemarkungen IDs (*gemarkungsnummer*), die aus der Suche ausgeschlossen werden müssen |
+| ``indexSchema`` | Postgres Schema in dem die Indexe geschrieben werden |
 
 Sie können bei Bedarf auch mehrere Alkis Helper einrichten, z.B. für verschiedene Zuständigkeitsbereiche. In diesem Fall muss jeder Helper eine eindeutige ID haben.
 
 ## Indizierung
 
-^CLIREF alkis.create-index
-^CLIREF alkis.drop-index
+TODO! ^CLIREF alkis.create-index
+TODO! ^CLIREF alkis.drop-index
 
 Bevor die ALKIS Daten für die Flurstücksuche verwendet werden können, müssen sie für GWS speziell indiziert werden. Dies erfolgt mit folgenden Kommandozeilen Befehlen:
 
-- `gws alkis drop-index` - GWS Indizien löschen
-- `gws alkis create-index` - GWS Indizien erzeugen
+- ``gws alkis drop-index`` - GWS Indizien löschen
+- ``gws alkis create-index`` - GWS Indizien erzeugen
 
-Die Index Tabellen werden in das unter `indexSchema` angegebene Schema geschrieben. Das ALKIS Modul schreibt nie in das ALKIS Schema (`dataSchema`). Diese Befehle müssen nach jeder ALKIS-Aktualisierung erneut ausgeführt werden. Aus Sicherheitsgründen werden bei diesen Befehlen Datenbank Benutzer- Kennung und Passwort explizit abgefragt.
+Die Index Tabellen werden in das unter ``indexSchema`` angegebene Schema geschrieben. Das ALKIS Modul schreibt nie in das ALKIS Schema (``dataSchema``). Diese Befehle müssen nach jeder ALKIS-Aktualisierung erneut ausgeführt werden. Aus Sicherheitsgründen werden bei diesen Befehlen Datenbank Benutzer- Kennung und Passwort explizit abgefragt.
 
-## Aktion `alkissearch`
+## Aktion ``alkissearch``
 
-%reference_de 'gws.plugins.alkis.alkissearch.Config'
+%reference_de 'gws.plugin.alkis.search.Config'
 
 Die Optionen für diese Aktion sind:
 
-| Option          | Bedeutung                                                                                                        |
-|-----------------|------------------------------------------------------------------------------------------------------------------|
-| `helper`        | ALKIS Helper ID (falls Sie mehrere Helper konfiguriert haben)                                                    |
-| `buchung`       | Zugang zu Grundbuchung Daten (z.B. Blattnummer)                                                                  |
-| `eigentuemer`   | Zugang zu Eigentümerdaten (z.B. Name, Adresse)                                                                   |
-| `export`        | Konfiguration der CSV-Export Funktion. Für diese Funktion muss auch den CSV Helper konfiguriert werden (s. ^csv) |
-| `templates`     | Format-Vorlagen für Flurstückdaten                                                                               |
-| `limit`         | max. Anzahl von Ergebnissen                                                                                      |
-| `printTemplate` | Druckvorlage für Flurstückdaten                                                                                  |
-| `ui`            | Einstellungen der Benutzeroberfläche                                                                             |
+| OPTION | BEDEUTUNG|
+|---|---|
+| ``helper`` | ALKIS Helper ID (falls Sie mehrere Helper konfiguriert haben) |
+| ``buchung`` | Zugang zu Grundbuchung Daten (z.B. Blattnummer) |
+| ``eigentuemer`` | Zugang zu Eigentümerdaten (z.B. Name, Adresse) |
+| ``export`` | Konfiguration der CSV-Export Funktion. Für diese Funktion muss auch den CSV Helper konfiguriert werden, siehe [CSV Export](/admin-de/config/csv) |
+| ``templates`` | Format-Vorlagen für Flurstückdaten |
+| ``limit`` | max. Anzahl von Ergebnissen |
+| ``printTemplate`` | Druckvorlage für Flurstückdaten |
+| ``ui`` | Einstellungen der Benutzeroberfläche |
 
 ### Einstellungen der Benutzeroberfläche
 
 Einstellungen der Benutzeroberfläche sind wie folgt:
 
-| Option              | Bedeutung                                                                                                                                                                                                                                                                        |
-|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `autoSpatialSearch` | räumliche Suche nach dem Absenden des Formulars aktivieren                                                                                                                                                                                                                       |
-| `gemarkungListMode` | Darstellung der Gemarkungsliste: `plain` = nur Gemarkungen, `combined` = "Gemarkung (Gemeinde)", `tree` = Baumansicht mit Gemeinden und Gemarkungen                                                                                                                              |
-| `searchSelection`   | Funktion "In der Auswahl suchen" aktivieren                                                                                                                                                                                                                                      |
-| `searchSpatial`     | räumliche Suche freischalten                                                                                                                                                                                                                                                     |
-| `strasseListMode`   | Darstellung der Straßen-Liste: `plain` = nur Straßennamen zeigen, `withGemeinde` oder `withGemarkung` = Straßenname + Gemeinde (oder Gemarkung),  `withGemeindeIfRepeated` / `withGemarkungIfRepeated` =  Straßenname + Gemeinde (Gemarkung) nur wenn der Name mehrmals vorkommt |
-| `strasseSearchMode` | Suchverhalten der Straßen-Liste (`start` = nur Anfangssuche, `all` = überall suchen)                                                                                                                                                                                             |
-| `useExport`         | CSV-Export Funktion freischalten                                                                                                                                                                                                                                                 |
-| `usePick`           | Funktion "Flurstück direkt auswahlen" freischalten                                                                                                                                                                                                                               |
-| `useSelect`         | Funktion "Flurstück selektieren" und die Ablage freischalten                                                                                                                                                                                                                     |
+| OPTION | BEDEUTUNG|
+|---|---|
+| ``autoSpatialSearch`` | räumliche Suche nach dem Absenden des Formulars aktivieren |
+| ``gemarkungListMode`` | Darstellung der Gemarkungsliste: ``plain`` = nur Gemarkungen, ``combined`` = "Gemarkung (Gemeinde)", ``tree`` = Baumansicht mit Gemeinden und Gemarkungen |
+| ``searchSelection`` | Funktion "In der Auswahl suchen" aktivieren |
+| ``searchSpatial`` | räumliche Suche freischalten |
+| ``strasseListMode`` | Darstellung der Straßen-Liste: ``plain`` = nur Straßennamen zeigen, ``withGemeinde`` oder ``withGemarkung`` = Straßenname + Gemeinde (oder Gemarkung),  ``withGemeindeIfRepeated`` / ``withGemarkungIfRepeated`` =  Straßenname + Gemeinde (Gemarkung) nur wenn der Name mehrmals vorkommt |
+| ``strasseSearchMode`` | Suchverhalten der Straßen-Liste (``start`` = nur Anfangssuche, ``all`` = überall suchen) |
+| ``useExport`` | CSV-Export Funktion freischalten |
+| ``usePick`` | Funktion "Flurstück direkt auswahlen" freischalten |
+| ``useSelect`` | Funktion "Flurstück selektieren" und die Ablage freischalten |
 
-
-Außerdem muss im Client-Einstellungen (s. ^client) das Element `Sidebar.Alkis` aktiviert werden.
+Außerdem muss im Client-Einstellungen (siehe [Client](/admin-de/config/client)) das Element ``Sidebar.Alkis`` aktiviert werden.
 
 ### Vorlagen
 
-Sie können Vorlagen mit Subjekten `feature.title`, `feature.teaser` (Listenansicht) und `feature.description` (Detailsansicht) bei Bedarf anpassen. Die Standardvorlagen finden Sie unter https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws/ext/action/alkissearch/templates zu finden. Ebenso kann mit `printTemplate` eine Druckvorlage angepasst werden.
+Sie können Vorlagen mit Subjekten ``feature.title``, ``feature.teaser`` (Listenansicht) und ``feature.description`` (Detailsansicht) bei Bedarf anpassen. Die Standardvorlagen finden Sie unter https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws/ext/action/alkissearch/templates zu finden. Ebenso kann mit ``printTemplate`` eine Druckvorlage angepasst werden.
 
 ### Zugang zu Eigentümerdaten
 
-Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutzerrollen einzugrenzen. Zusätzlich kann das Kontrolmodus (`controlMode`) aktiviert werden, wobei alle Zugriffe auf Eigentümerdaten auf Plausibilität geprüft und protokolliert werden. Die Plausibilitätsprüfung erfolgt indem das Formularfeld "Abrufgrund" mit angegebenen Regulären Ausdrucken verglichen wird. Eine Beispielkonfiguration kann wie folgt aussehen ::
+Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutzerrollen einzugrenzen. Zusätzlich kann das Kontrolmodus (``controlMode``) aktiviert werden, wobei alle Zugriffe auf Eigentümerdaten auf Plausibilität geprüft und protokolliert werden. Die Plausibilitätsprüfung erfolgt indem das Formularfeld "Abrufgrund" mit angegebenen Regulären Ausdrucken verglichen wird. Eine Beispielkonfiguration kann wie folgt aussehen
 
-    "eigentuemer": {
+```javascript
 
-        ## Zugang nur für "vorstand" zulassen
+"eigentuemer": {
 
-        "access": "allow vorstand, deny all"
+    ## Zugang nur für "vorstand" zulassen
 
-        ## Kontrolmodus aktivieren
+    "access": [
+        {"type": "allow", "role": "vorstand"},
+        {"type": "deny", "role": "all"}
+    ],
 
-        "controlMode": true,
+    ## Kontrolmodus aktivieren
 
-        ## Regel für Plausibilitätsprüfung
+    "controlMode": true,
 
-        "controlRules": [
-            ## ein Aktenzeichen im Format 2 Buchstaben / 2 Zahlen
-            "^[A-Z][A-Z]/[0-9][0-9]$"
-        ],
+    ## Regel für Plausibilitätsprüfung
 
-        ## Postgis Tabelle für Protokollierung
+    "controlRules": [
+        ## ein Aktenzeichen im Format 2 Buchstaben / 2 Zahlen
+        "^[A-Z][A-Z]/[0-9][0-9]$"
+    ],
 
-        "logTable": "eigen_log"
-    }
+    ## Postgis Tabelle für Protokollierung
 
-Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgender Struktur ::
+    "logTable": "eigen_log"
+}
+```
+
+Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgender Struktur
+
+```sql
 
     CREATE TABLE .... (
         id SERIAL PRIMARY KEY,
@@ -116,11 +122,12 @@ Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgender Struktur 
         fs_count INTEGER,
         fs_ids TEXT
     )
+```
 
-Der Datenbank-Nutzer muss `INSERT` Recht auf diese Tabelle haben, aber nicht unbedingt `SELECT`.
+Der Datenbank-Nutzer muss ``INSERT`` Recht auf diese Tabelle haben, aber nicht unbedingt ``SELECT``.
 
-## Aktion `alkisgeocoder`
+### Aktion ``alkisgeocoder``
 
-%reference_de 'gws.plugins.alkis.alkisgeocoder.Config'
+%reference_de 'gws.plugin.alkis.geocoder.Config'
 
-Für diese Aktion sind keine spezielle Optionen vorhanden. Da diese Aktion über unser QGIS-Plugin aufgerufen wird und über keine UI verfügt, müssen Sie die Autorisierungsmethode `basic` im System freischalten wenn Sie diese Aktion mit einem Passwort schützen möchten. Siehe dazu ^auth.
+Für diese Aktion sind keine spezielle Optionen vorhanden. Da diese Aktion über unser QGIS-Plugin aufgerufen wird und über keine UI verfügt, müssen Sie die Autorisierungsmethode ``basic`` im System freischalten wenn Sie diese Aktion mit einem Passwort schützen möchten. Siehe dazu [Autorisierung](/admin-de/config/autorisierung).

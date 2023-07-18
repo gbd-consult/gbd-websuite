@@ -42,7 +42,7 @@ OPTIONS = {
     'serverPort': 5500,
     'serverHost': '0.0.0.0',
 
-    'title': 'GBD WebSuite',
+    'title': 'GBD WebSuite Dokumentation',
     'subTitle': VERSION,
 
     # wkhtmltopdf options
@@ -53,7 +53,7 @@ OPTIONS = {
         'margin-right': 20,
         'margin-top': 20,
         'footer-font-size': 7,
-        'footer-left': 'GBD WebSuite :: ' + VERSION,
+        'footer-left': 'GBD WebSuite Dokumentation :: ' + VERSION,
         'footer-right': '[page]',
         'footer-spacing': 5,
         'footer-line': True,
@@ -75,7 +75,7 @@ OPTIONS = {
 
     'pydoctorArgs': [
         '--make-html',
-        '--project-name', 'GBD WebSuite',
+        '--project-name', 'GBD WebSuite Dokumentation',
         '--project-version', VERSION,
         '--no-sidebar',
         '--docformat', 'google',

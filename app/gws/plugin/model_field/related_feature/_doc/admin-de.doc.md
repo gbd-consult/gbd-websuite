@@ -1,4 +1,4 @@
-# relatedFeature :/admin-de/config/model/field/
+# relatedFeature :/admin-de/config/model/field/relatedFeature
 
 %reference_de 'gws.plugin.model_field.related_feature.Config'
 

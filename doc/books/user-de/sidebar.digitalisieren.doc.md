@@ -1,6 +1,6 @@
-# Digitalisieren :/user-de/sidebar.digitalisieren
+# Editieren :/user-de/sidebar.digitalisieren
 
-Über das Menü ![](sharp-edit-24px.svg) {title Digitalisieren} ist es möglich, vorhandene Objekte zu editieren und neue Objekte hinzuzufügen. Wenn Sie die Funktion in der Seitenleiste auswählen, öffnet sich eine Liste mit Vektorlayern, die bearbeitet werden können. In der Abbildung werden zwei Layer "Restaurants" und "Gewässer" angezeigt.
+Über das Menü ![](sharp-edit-24px.svg) {title Editieren} ist es möglich, vorhandene Objekte zu editieren und neue Objekte hinzuzufügen. Wenn Sie die Funktion in der Seitenleiste auswählen, öffnet sich eine Liste mit Vektorlayern, die bearbeitet werden können. In der Abbildung werden zwei Layer "Restaurants" und "Gewässer" angezeigt.
 
 ![](digitalisieren1.png)
 

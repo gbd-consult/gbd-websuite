@@ -1,8 +1,9 @@
-# html :/admin-de/config/template/type/
+# html :/admin-de/config/template/type/html
+HTML-Vorlagen können die Befehle der Vorlagen-Sprache enthalten, beliebige HTML Formatierung und spezielle HTML Tags die unter [Drucken](/admin-de/config/drucken) beschrieben sind.
 
-HTML-Vorlagen können die Befehle der Vorlagen-Sprache enthalten, beliebige HTML Formatierung und spezielle HTML Tags die unter ^print beschrieben sind.
+Zum Beispiel, hier ist eine Vorlage fur die Layer-Beschreibung (``subject: layer.description``):
 
-Zum Beispiel, hier ist eine Vorlage fur die Layer-Beschreibung (`subject: layer.description`):
+```html
 
     <h1>{layer.title}</h1>
 
@@ -17,8 +18,11 @@ Zum Beispiel, hier ist eine Vorlage fur die Layer-Beschreibung (`subject: layer.
             <li>{keyword}</li>
         @end
     </ul>
+```
 
-Beschreibung (`subject: feature.description`) eines "city" Feature, welches die Attribute "name", "area" und "population" besitzt:
+Beschreibung (``subject: feature.description``) eines "city" Feature, welches die Attribute "name", "area" und "population" besitzt:
+
+```html
 
     @if population > 100000
         <div class="big-city">{name}</div>
@@ -28,7 +32,8 @@ Beschreibung (`subject: feature.description`) eines "city" Feature, welches die 
 
     <p> <strong>Area:</strong> {area} </p>
     <p> <strong>Population:</strong> {population} </p>
+```
 
 %info
- Das erste Zeichen (ausgenommen Whitespace) der Ausgabe einer HTML-Vorlage muss `<` sein, ansonsten wird die Vorlage als `text` interpretiert.
+ Das erste Zeichen (ausgenommen Whitespace) der Ausgabe einer HTML-Vorlage muss ``<`` sein, ansonsten wird die Vorlage als ``text`` interpretiert.
 %end

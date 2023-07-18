@@ -23,11 +23,14 @@ Welcome to the GBD WebSuite Developer documentation. Here you will learn how to 
 /dev-en/server-overview
 /dev-en/server-request
 /dev-en/server-testing
+/dev-en/overview/models
 %end
 
 ## :/dev-en/server-overview
 ## :/dev-en/server-request
 ## :/dev-en/server-testing
+
+## :/dev-en/overview/models
 
 ## Documentation
 

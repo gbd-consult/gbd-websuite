@@ -65,24 +65,19 @@ Für die Validierungsregel kann eine Liste `validators` einem Attribut zugeordne
             },
             ...
 
-Es werden folgende Regel unterstützt:
+## Client-Vorlagen
 
+Sie können Vorlagen (siehe [Vorlagen](/admin-de/config/vorlagen)) Konfigurieren um die Features an verschiedenen Stellen im Client darzustellen. Die Vorlagen sind mit einem entsprechenden ``subject`` Wert zu versehen
 
-Client-Vorlagen
----------------
+| ``subject`` | Funktion |
+|---|---|
+|``feature.title`` | Feature-Titel |
+|``feature.teaser`` | Kurzbeschreibung des Features, erscheint in der Autocomplete-Box beim Suchen |
+|``feature.description`` | detaillierte Beschreibung, erscheint in der Info-Box |
+|``feature.label`` | Kartenbeschriftung für das Feature |
 
-Sie können Vorlagen (s. ^template) Konfigurieren um die Features an verschiedenen Stellen im Client darzustellen. Die Vorlagen sind mit einem entsprechenden `subject` Wert zu versehen
+Diese Vorlagen können für Layer (siehe [Layer](/admin-de/config/layer)) oder Suchprovider (siehe [Suche](/admin-de/config/suche)) konfiguriert werden.
 
-| `subject`             | Funktion                                                                     |
-|-----------------------|------------------------------------------------------------------------------|
-| `feature.title`       | Feature-Titel                                                                |
-| `feature.teaser`      | Kurzbeschreibung des Features, erscheint in der Autocomplete-Box beim Suchen |
-| `feature.description` | detaillierte Beschreibung, erscheint in der Info-Box                         |
-| `feature.label`       | Kartenbeschriftung für das Feature                                           |
+## XML Vorlagen
 
-Diese Vorlagen können für Layer (s. ^layer) oder Suchprovider (s. ^search) konfiguriert werden.
-
-XML Vorlagen
-------------
-
-Für WMS/WFS Dienste besteht die Möglichkeit, für bestimmte Features eine angepasste XML Präsentation zu konfigurieren. Dazu erstellen Sie in der Konfiguration der jeweiligen Dienstes eine Vorlage mit dem `subject` `ows.GetFeatureInfo` (s. ^ows).
+Für WMS/WFS Dienste besteht die Möglichkeit, für bestimmte Features eine angepasste XML Präsentation zu konfigurieren. Dazu erstellen Sie in der Konfiguration der jeweiligen Dienstes eine Vorlage mit dem ``subject`` ``ows.GetFeatureInfo`` (siehe [OWS](/admin-de/config/ows)).

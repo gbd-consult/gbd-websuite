@@ -1,4 +1,4 @@
-# Caching-Framework :/admin-de/config-az/cache
+# Caching-Framework :/admin-de/config/cache
 
 Der GBD WebSuite Server kann Geo-Bilder aus externen Quellen auf der Festplatte zwischenspeichern (bzw. *cachen*), sodass weitere Anfragen zu der selben Quelle viel schneller ausgeführt werden können.  Das Cache Verzeichnis befindet sich in dem von Ihnen konfigurierten *var* Verzeichnis und kann bei Bedarf jederzeit komplett gelöscht werden
 

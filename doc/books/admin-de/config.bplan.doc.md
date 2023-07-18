@@ -1,4 +1,4 @@
-# Bauleitplanung :/admin-de/config-az/bplan
+# Bauleitplanung :/admin-de/config/bplan
 
 TODO! %reference_de 'gws.ext.action.bplan.Config'
 
