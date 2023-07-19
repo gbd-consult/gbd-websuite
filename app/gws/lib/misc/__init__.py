@@ -36,7 +36,7 @@ class _Default:
         return self.default if t is None else t
 
 
-def format_placeholders(fmt, data, default=''):
+def format_map(fmt, data, default=''):
     return fmt.format_map(_Default(data, default))
 
 
