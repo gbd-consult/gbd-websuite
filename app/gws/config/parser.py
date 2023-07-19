@@ -139,6 +139,7 @@ def _parse_cx_config(path):
 
     def _error_handler(exc, path, line, env):
         runtime_errors.append(_syntax_error(path, gws.read_file(path), repr(exc), line))
+        return True
 
     def _loader(cur_path, p):
         if not os.path.isabs(p):
