@@ -96,8 +96,8 @@ def _raw(level, msg, args=None, kwargs=None):
         msg = msg % args
 
     pid = os.getpid()
-    loc = ''
-    if _CURLEVEL >= Level.DEBUG:
+    loc = ' '
+    if _CURLEVEL <= Level.DEBUG:
         stacklevel = kwargs.get('stacklevel', 1) if kwargs else 1
         loc = ' ' + _location(2 + stacklevel) + ' '
     pfx = '[' + str(pid) + ']' + loc + _PREFIX[level] + ' :: '
