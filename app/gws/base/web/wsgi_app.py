@@ -18,6 +18,11 @@ def application(environ, start_response):
     return responder.send_response(environ, start_response)
 
 
+def initialized_application(environ, start_response):
+    responder = handle_request(environ)
+    return responder.send_response(environ, start_response)
+
+
 def init():
     try:
         gws.log.info('initializing WEB application')
@@ -105,7 +110,7 @@ def handle_http_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPExcept
     #
     # @TODO: image errors
 
-    gws.log.warning(f'HTTPException: {exc.code}')
+    gws.log.warning(f'HTTPException: {exc.code} cause={exc.__cause__}')
 
     if req.isApi:
         return req.struct_responder(gws.Response(
