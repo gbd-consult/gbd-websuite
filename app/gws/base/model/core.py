@@ -192,4 +192,4 @@ class _DefaultModel(Object):
 
 
 def get_default(root: gws.IRoot) -> gws.IModel:
-    return root.create_shared(_DefaultModel)
+    return root.create_shared(_DefaultModel, uid='gws.base.model.core._DefaultModel')

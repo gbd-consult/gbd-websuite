@@ -61,7 +61,7 @@ class Object(gws.Node, gws.IProject):
     title: str
 
     def configure(self):
-        gws.log.info(f'configuring project {self}')
+        gws.log.info(f'configuring project {self.uid!r}')
 
         self.metadata = gws.lib.metadata.from_config(self.cfg('metadata'))
         gws.lib.metadata.extend(self.metadata, self.root.app.metadata)
