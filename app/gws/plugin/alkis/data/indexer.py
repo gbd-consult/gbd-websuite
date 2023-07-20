@@ -14,12 +14,20 @@ import gws.types as t
 
 from . import types as dt
 from . import index
+from . import norbit6
 
 from .geo_info_dok import gid6 as gid
 
 
-def run(ix: index.Object, reader: dt.Reader, with_cache=False):
-    rr = _Runner(ix, reader, with_cache)
+def run(ix: index.Object, data_schema: str, with_force=False, with_cache=False):
+    if with_force:
+        ix.drop()
+    elif ix.exists():
+        gws.log.info('ALKIS index ok')
+        return
+
+    rdr = norbit6.Object(ix.provider, schema=data_schema)
+    rr = _Runner(ix, rdr, with_cache)
     rr.run()
 
 
@@ -52,7 +60,7 @@ class _ObjectDict(Generic[T]):
 
         return list(res.values())
 
-    def get_from_ptr(self, obj: dt.Object, attr):
+    def get_from_ptr(self, obj: dt.Entity, attr):
         uids = []
 
         for r in obj.recs:
@@ -81,8 +89,8 @@ class _ObjectMap:
         self.Gebaeude: _ObjectDict[dt.Gebaeude] = _ObjectDict(dt.Gebaeude)
         self.Lage: _ObjectDict[dt.Lage] = _ObjectDict(dt.Lage)
         self.Namensnummer: _ObjectDict[dt.Namensnummer] = _ObjectDict(dt.Namensnummer)
-        self.Person: _ObjectDict[dt.Person] = _ObjectDict(dt.Person)
         self.Part: _ObjectDict[dt.Part] = _ObjectDict(dt.Part)
+        self.Person: _ObjectDict[dt.Person] = _ObjectDict(dt.Person)
 
         self.places: dict = {}
         self.catalog: dict = {}
@@ -585,16 +593,20 @@ class _FsDataIndexer(_Indexer):
 
     def collect(self):
         for uid, axs in self.rr.read_grouped(gid.AX_Flurstueck):
-            self.om.Flurstueck.add(uid, gws.compact(self.record(ax) for ax in axs))
+            recs = gws.compact(self.record(ax) for ax in axs)
+            if recs:
+                self.om.Flurstueck.add(uid, recs)
 
         for uid, axs in self.rr.read_grouped(gid.AX_HistorischesFlurstueck):
-            fs = self.om.Flurstueck.add(uid, gws.compact(self.record(ax) for ax in axs))
-            fs.istHistorisch = True
-            # For a historic FS, 'beginnt' is basically when the history beginnt
-            # (see comments for AX_HistorischesFlurstueck in gid6).
-            # we set F.endet=F.beginnt to designate this one as 'historic'
-            for r in fs.recs:
-                r.endet = r.beginnt
+            recs = gws.compact(self.record(ax) for ax in axs)
+            if recs:
+                fs = self.om.Flurstueck.add(uid, recs)
+                fs.istHistorisch = True
+                # For a historic FS, 'beginnt' is basically when the history beginnt
+                # (see comments for AX_HistorischesFlurstueck in gid6).
+                # we set F.endet=F.beginnt to designate this one as 'historic'
+                for r in fs.recs:
+                    r.endet = r.beginnt
 
         for fs in self.om.Flurstueck:
             fs.flurstueckskennzeichen = fs.recs[-1].flurstueckskennzeichen
@@ -622,6 +634,9 @@ class _FsDataIndexer(_Indexer):
         r.regierungsbezirk = self.rr.places.get_regierungsbezirk(ax.gemeindezugehoerigkeit)
         r.kreis = self.rr.places.get_kreis(ax.gemeindezugehoerigkeit)
         r.land = self.rr.places.get_land(ax.gemeindezugehoerigkeit)
+
+        if r.gemarkung.code in self.ix.excludeGemarkung:
+            return None
 
         # geometry
 

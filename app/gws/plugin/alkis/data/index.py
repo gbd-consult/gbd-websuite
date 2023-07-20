@@ -5,10 +5,12 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 import gws
 import gws.base.shape
+import gws.base.database
 import gws.gis.crs
 import gws.plugin.postgres.provider
 import gws.lib.sa as sa
 from gws.lib.console import ProgressIndicator
+
 import gws.types as t
 
 from . import types as dt
@@ -28,18 +30,22 @@ TABLE_INDEXGEOM = 'indexgeom'
 class Object(gws.Node):
     VERSION = '8'
 
+    provider: gws.plugin.postgres.provider.Object
     crs: gws.ICrs
     schema: str
+    excludeGemarkung: set[str]
+
     saMeta: sa.MetaData
-    provider: gws.plugin.postgres.provider.Object
     tables: dict[str, sa.Table]
 
     columns = {}
 
     def configure(self):
-        self.provider = self.cfg('provider')
+        self.provider = gws.base.database.provider.get_for(self, ext_type='postgres')
         self.crs = gws.gis.crs.get(self.cfg('crs'))
-        self.schema = self.cfg('schema')
+        self.schema = self.cfg('schema', default='public')
+        self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
+
         self.saMeta = sa.MetaData(schema=self.schema)
         self.tables = {}
 

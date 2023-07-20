@@ -41,7 +41,6 @@ class EigentuemerOptions(gws.Node):
     controlMode: bool
     controlRules: list[str]
     logTable: str
-    saTable: sa.Table
 
     def configure(self):
         self.controlMode = self.cfg('controlMode')
@@ -228,7 +227,7 @@ class FindAdresseResponse(gws.Response):
 class PrintFlurstueckRequest(gws.Request):
     findRequest: FindFlurstueckRequest
     printRequest: gws.base.printer.Request
-    highlightStyle: gws.lib.style.Props
+    featureStyle: gws.lib.style.Props
 
 
 class ExportRequest(gws.Request):
@@ -271,10 +270,6 @@ _DEFAULT_TEMPLATES = [
         subject='feature.print',
         type='html',
         path=f'{_dir}/templates/print.cx.html',
-        pageWidth=210,
-        pageHeight=297,
-        mapWidth=100,
-        mapHeight=100,
         qualityLevels=[gws.TemplateQualityLevel(name='default', dpi=150)],
     ),
 ]
@@ -292,19 +287,18 @@ class Model(gws.base.model.Object):
 class Object(gws.base.action.Object):
     index: index.Object
     indexExists: bool
-    dataSchema: str
 
     buchung: BuchungOptions
     eigentuemer: EigentuemerOptions
 
-    # export_groups: list[ExportGroup]
-    limit: int
-
-    templates: list[gws.ITemplate]
+    dataSchema: str
+    excludeGemarkung: set[str]
 
     model: gws.IModel
-
+    templates: list[gws.ITemplate]
+    # export_groups: list[ExportGroup]
     ui: Ui
+    limit: int
 
     strasseSearchOptions: gws.TextSearchOptions
     nameSearchOptions: gws.TextSearchOptions
@@ -315,9 +309,10 @@ class Object(gws.base.action.Object):
 
         self.index = self.root.create_shared(
             index.Object,
-            provider=provider,
+            _defaultProvider=provider,
             crs=self.cfg('crs'),
             schema=self.cfg('indexSchema'),
+            excludeGemarkung=self.cfg('excludeGemarkung'),
             uid='gws.plugin.alkis.data.index.' + self.cfg('indexSchema')
         )
 
@@ -330,6 +325,8 @@ class Object(gws.base.action.Object):
         self.limit = self.cfg('limit')
         self.model = self.create_child(Model)
         self.ui = self.cfg('ui')
+
+        self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
 
         p = self.cfg('templates', default=[]) + _DEFAULT_TEMPLATES
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
@@ -488,26 +485,28 @@ class Object(gws.base.action.Object):
             gws.base.template.locate(self, user=req.user, subject='feature.label'),
         ]
 
-        maps = []
+        base_map = pr.maps[0]
+        fs_maps = []
 
         for fs in res.flurstueckList:
             f = gws.base.feature.with_model(self.model)
             f.attributes = dict(uid=fs.uid, fs=fs, geometry=fs.shape)
             f.transform_to(crs)
             f.render_views(templates, user=req.user)
-            f.cssSelector = '.modMarkerFeature'
-            mp = gws.base.printer.core.MapParams(pr.maps[0])
-            c = f.shape().centroid()
-            mp.center = (c.x, c.y)
-            mp.planes += [
-                gws.base.printer.core.Plane(
-                    type=gws.base.printer.core.PlaneType.features,
-                    features=[gws.props(f, req.user, self)],
-                )
-            ]
-            maps.append(mp)
+            f.cssSelector = p.featureStyle.cssSelector
 
-        pr.maps = maps
+            c = f.shape().centroid()
+            fs_map = gws.base.printer.core.MapParams(base_map)
+            # @TODO scale to fit the fs?
+            fs_map.center = (c.x, c.y)
+            fs_plane = gws.base.printer.core.Plane(
+                type=gws.base.printer.core.PlaneType.features,
+                features=[gws.props(f, req.user, self)],
+            )
+            fs_map.planes = [fs_plane] + base_map.planes
+            fs_maps.append(fs_map)
+
+        pr.maps = fs_maps
         pr.args = dict(
             flurstueckList=res.flurstueckList,
             withHistory=res.queryOptions.withHistoryDisplay,
@@ -625,50 +624,47 @@ class Object(gws.base.action.Object):
             return False
         return True
 
-    """
-    log table:
-    
-    
-    create table <name> (
-        id serial primary key,
-        app_name varchar(255),
-        date_time timestamp,
-        ip varchar(255),
-        login varchar(255),
-        user_name varchar(255),
-        control_input varchar(255),
-        control_result integer,
-        fs_count integer,
-        fs_ids text
-    )
-    
-    grant insert on <name> to <user>
-    grant usage on <name>_id_seq to <user>
-    
-    """
+    _eigentuemerLogTable = None
 
     def _log_eigentuemer_access(self, req: gws.IWebRequester, control_input: str, is_ok: bool, total=None, fs_uids=None):
         if not self.eigentuemer.logTable:
-            gws.log.debug(f'_log_eigentuemer_access {is_ok=} no log table!')
             return
 
-        data = {
-            'app_name': 'gws',
-            'date_time': gws.lib.date.now_iso(),
-            'ip': req.env('REMOTE_ADDR', ''),
-            'login': req.user.uid,
-            'user_name': req.user.displayName,
-            'control_input': (control_input or '').strip(),
-            'control_result': 1 if is_ok else 0,
-            'fs_count': total or 0,
-            'fs_ids': ','.join(fs_uids or []),
-        }
+        if self._eigentuemerLogTable is None:
+            schema, name = self.index.provider.split_table_name(self.eigentuemer.logTable)
+            self._eigentuemerLogTable = sa.Table(
+                name,
+                self.index.saMeta,
+                sa.Column('id', sa.Integer, primary_key=True),
+                sa.Column('app_name', sa.Text),
+                sa.Column('date_time', sa.DateTime),
+                sa.Column('ip', sa.Text),
+                sa.Column('login', sa.Text),
+                sa.Column('user_name', sa.Text),
+                sa.Column('control_input', sa.Text),
+                sa.Column('control_result', sa.Integer),
+                sa.Column('fs_count', sa.Integer),
+                sa.Column('fs_ids', sa.Text),
+                schema=schema
+            )
+
+        data = dict(
+            app_name='gws',
+            date_time=gws.lib.date.now_iso(),
+            ip=req.env('REMOTE_ADDR', ''),
+            login=req.user.uid,
+            user_name=req.user.displayName,
+            control_input=(control_input or '').strip(),
+            control_result=1 if is_ok else 0,
+            fs_count=total or 0,
+            fs_ids=','.join(fs_uids or []),
+        )
 
         with self.index.connect() as conn:
-            conn.execute(sa.insert(self.eigentuemer.saTable).values([data]))
+            conn.execute(sa.insert(self._eigentuemerLogTable).values([data]))
             conn.commit()
 
-        gws.log.debug('_log_eigentuemer_access', is_ok, 'ok')
+        gws.log.debug('_log_eigentuemer_access {is_ok=}')
 
     def _check_eigentuemer_control_input(self, control_input):
         if not self.eigentuemer.controlRules:

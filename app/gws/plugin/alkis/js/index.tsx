@@ -934,19 +934,20 @@ class Controller extends gws.Controller {
         };
 
         for (let g of res.gemeinde) {
-            t.gemeinden.push({name: g[0], code: g[1]});
-            t.gemeindeIndex[g[1]] = g;
+            let d = {name: g[0], code: g[1]};
+            t.gemeinden.push(d);
+            t.gemeindeIndex[g[1]] = d;
         }
         for (let g of res.gemarkung) {
-            t.gemarkungen.push({name: g[0], code: g[1], gemeindeCode: g[2]});
-            t.gemarkungIndex[g[1]] = g;
+            let d = {name: g[0], code: g[1], gemeindeCode: g[2]};
+            t.gemarkungen.push(d);
+            t.gemarkungIndex[g[1]] = d;
         }
         let n = 0;
         for (let s of res.strasse) {
             t.strassen.push({name: s[0], code: String(n), gemeindeCode: s[1], gemarkungCode: s[2]});
             n += 1;
         }
-
         return t;
     }
 
@@ -998,10 +999,10 @@ class Controller extends gws.Controller {
     }
 
     strasseListItems(strassen: Array<Strasse>): Array<gws.ui.ListItem> {
-        let strasseStats = {}, ls = [];
+        let strasseCounts = {}, ls = [];
 
         for (let s of strassen) {
-            strasseStats[s.name] = (strasseStats[s.name] || 0) + 1;
+            strasseCounts[s.name] = (strasseCounts[s.name] || 0) + 1;
         }
 
         switch (this.setup.ui.strasseListMode) {
@@ -1026,7 +1027,7 @@ class Controller extends gws.Controller {
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.code,
-                    extraText: strasseStats[s.name] > 1
+                    extraText: strasseCounts[s.name] > 1
                         ? this.toponyms.gemarkungIndex[s.gemarkungCode].name
                         : ''
                 }));
@@ -1044,7 +1045,7 @@ class Controller extends gws.Controller {
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.code,
-                    extraText: strasseStats[s.name] > 1
+                    extraText: strasseCounts[s.name] > 1
                         ? this.toponyms.gemeindeIndex[s.gemeindeCode].name
                         : ''
                 }));
@@ -1255,6 +1256,7 @@ class Controller extends gws.Controller {
 
         let level = this.setup.printTemplate.qualityLevels[0];
         let dpi = level ? level.dpi : 0;
+        let featureStyle = this.app.style.get('.alkisFeature').props;
 
         let mapParams = await this.map.printParams(null, dpi);
 
@@ -1268,7 +1270,7 @@ class Controller extends gws.Controller {
         let q = {
             findRequest: this.fsDetailsRequest(fs),
             printRequest,
-            highlightStyle: this.app.style.get('.modMarkerFeature').props,
+            featureStyle,
         };
 
         this.update({

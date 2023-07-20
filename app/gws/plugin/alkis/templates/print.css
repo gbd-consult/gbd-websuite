@@ -28,11 +28,11 @@ body {
     font-size: 10pt;
     padding: 2mm;
     text-align: left;
-    border: 0.5mm solid #aaa;
+    border: 0.5mm solid #555;
 }
 
 .alkisFs table th {
-    color: #444;
+    color: #555;
     font-weight: normal;
     width: 40mm;
 }
@@ -40,11 +40,13 @@ body {
 .alkisFs table td.alkisFsSubhead1 {
     font-size: 10pt;
     font-weight: bold;
+    background: #eee;
 }
 
 .alkisFs table td.alkisFsSubhead2 {
-    font-size: 9pt;
+    font-size: 8pt;
     font-weight: bold;
+    background: #eee;
 }
 
 .alkisFs tbody.alkisFsHistory {

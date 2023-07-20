@@ -51,6 +51,10 @@ class Record(Object):
     endet: str
 
 
+class Entity(Object):
+    recs: list['Record']
+
+
 class FlurstueckRecord(Record):
     flurnummer: str
     zaehler: str
@@ -66,11 +70,10 @@ class FlurstueckRecord(Record):
 
     amtlicheFlaeche: float
 
+    geom: str
     area: float
     x: float
     y: float
-    geom: str
-    shape: gws.IShape
 
     abweichenderRechtszustand: bool
     rechtsbehelfsverfahren: bool
@@ -80,7 +83,7 @@ class FlurstueckRecord(Record):
     nachfolgerFlurstueckskennzeichen: list[str]
 
 
-class Flurstueck(Object):
+class Flurstueck(Entity):
     recs: list[FlurstueckRecord]
 
     flurstueckskennzeichen: str
@@ -100,6 +103,9 @@ class Flurstueck(Object):
     festlegungList: list['Part']
     bewertungList: list['Part']
 
+    geom: str
+    shape: gws.IShape
+
     istHistorisch: bool
 
 
@@ -111,7 +117,7 @@ class BuchungsblattRecord(Record):
     buchungsblattnummerMitBuchstabenerweiterung: str
 
 
-class Buchungsblatt(Object):
+class Buchungsblatt(Entity):
     recs: list[BuchungsblattRecord]
     buchungsstelleList: list['Buchungsstelle']
     namensnummerList: list['Namensnummer']
@@ -128,7 +134,7 @@ class BuchungsstelleRecord(Record):
     laufendeNummer: str
 
 
-class Buchungsstelle(Object):
+class Buchungsstelle(Entity):
     recs: list[BuchungsstelleRecord]
     buchungsblattRefs: list['BoRef']
     parentRefs: list['BoRef']
@@ -149,7 +155,7 @@ class NamensnummerRecord(Record):
     strichblattnummer: int
 
 
-class Namensnummer(Object):
+class Namensnummer(Entity):
     recs: list[NamensnummerRecord]
     buchungsblattRefs: list['BoRef']
     personList: list['Person']
@@ -165,7 +171,7 @@ class PersonRecord(Record):
     vorname: str
 
 
-class Person(Object):
+class Person(Entity):
     recs: list[PersonRecord]
     anschriftList: list['Anschrift']
 
@@ -178,7 +184,7 @@ class AnschriftRecord(Record):
     telefon: str
 
 
-class Anschrift(Object):
+class Anschrift(Entity):
     recs: list[AnschriftRecord]
 
 
@@ -190,7 +196,7 @@ class LageRecord(Record):
     strasse: str
 
 
-class Lage(Object):
+class Lage(Entity):
     recs: list['LageRecord']
     gebaeudeList: list['Gebaeude']
 
@@ -203,7 +209,7 @@ class GebaeudeRecord(Record):
     area: float
 
 
-class Gebaeude(Object):
+class Gebaeude(Entity):
     PROP_KEYS = {
         'anzahlDerOberirdischenGeschosse',
         'anzahlDerUnterirdischenGeschosse',
@@ -236,7 +242,7 @@ class PartRecord(Record):
     geom: str
 
 
-class Part(Object):
+class Part(Entity):
     KIND = {
         PART_NUTZUNG: [
             'Tatsächliche Nutzung',
@@ -270,7 +276,6 @@ class Part(Object):
         'besondereFahrstreifen',
         'besondereFunktion',
         'bezeichnung',
-        'bezeichnung',
         'bodenart',
         'bodenzahlOderGruenlandgrundzahl',
         'breiteDerFahrbahn',
@@ -288,23 +293,17 @@ class Part(Object):
         'funktion',
         'gehoertZu',
         'gemeindeflaeche',
-        'gemeindekennzeichen',
         'gewaesserkennziffer',
         'hydrologischesMerkmal',
-        'inGemarkung',
         'jahreszahl',
         'kennziffer',
         'klassifizierung',
-        'kreis',
         'kulturart',
         'lagergut',
-        'land',
         'landschaftstyp',
         'markierung',
         'merkmal',
         'name',
-        'name',
-        'nationalstaat',
         'nummer',
         'nummerDerBahnstrecke',
         'nummerDerSchutzzone',
@@ -312,11 +311,9 @@ class Part(Object):
         'oberflaechenmaterial',
         'primaerenergie',
         'rechtszustand',
-        'regierungsbezirk',
         'schifffahrtskategorie',
         'sonstigeAngaben',
         'spurweite',
-        'strassenschluessel',
         'tagesabschnittsnummer',
         'tidemerkmal',
         'vegetationsmerkmal',

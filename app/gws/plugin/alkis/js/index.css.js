@@ -1,6 +1,6 @@
 module.exports = v => ({
     '.alkisSidebarIcon': {
-        ...v.ROUND_FORM_BUTTON(__dirname + '/searchparcel')
+        ...v.SIDEBAR_ICON(__dirname + '/searchparcel')
     },
 
     '.alkisSearchSubmitButton': {
@@ -38,6 +38,15 @@ module.exports = v => ({
         fill: v.COLOR.opacity(v.COLOR.cyan500, 0.3),
     },
 
+    '.alkisFeature': {
+        stroke: v.COLOR.pink800,
+        strokeWidth: 1,
+        fill: v.COLOR.opacity(v.COLOR.pink300, 0.3),
+        pointSize: 20,
+        // withLabel: 'all',
+        // labelFill: v.COLOR.pink800,
+        // labelFontSize: '7pt',
+    },
 
     '.alkisExportAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:image/grid_on')},
     '.alkisPrintAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/print')},

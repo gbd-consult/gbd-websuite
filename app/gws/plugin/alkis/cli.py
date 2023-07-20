@@ -4,9 +4,7 @@ import gws
 import gws.config
 import gws.types as t
 
-from .data import index
 from .data import indexer
-from .data import norbit6 as reader
 from . import action
 
 gws.ext.new.cli('alkis')
@@ -37,10 +35,4 @@ class Object(gws.Node):
             gws.log.error('ALKIS action not found')
             return
 
-        rdr = reader.Object(act.index.provider, schema=act.dataSchema)
-        if p.force:
-            act.index.drop()
-        if act.index.exists():
-            gws.log.info('ALKIS index ok')
-            return
-        indexer.run(act.index, rdr, with_cache=p.cache)
+        indexer.run(act.index, act.dataSchema, with_force=p.force, with_cache=p.cache)
