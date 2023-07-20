@@ -46,6 +46,7 @@ class Object(gws.Node):
         self.schema = self.cfg('schema', default='public')
         self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
 
+    def activate(self):
         self.saMeta = sa.MetaData(schema=self.schema)
         self.tables = {}
 
