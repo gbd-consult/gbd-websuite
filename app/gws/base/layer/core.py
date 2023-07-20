@@ -198,7 +198,10 @@ class Object(gws.Node, gws.ILayer):
         self.isSearchable = bool(self.finders)
 
         if self.bounds.crs != self.mapCrs:
-            raise gws.Error(f'invalid layer CRS')
+            raise gws.Error(f'layer {self!r}: invalid CRS {self.bounds.crs}')
+
+        if not gws.gis.bounds.intersect(self.bounds, self.parentBounds):
+            raise gws.Error(f'layer {self!r}: bounds outside of the parent bounds')
 
     ##
 
@@ -220,7 +223,7 @@ class Object(gws.Node, gws.ILayer):
         p = self.cfg('grid')
         if p:
             if p.crs and p.crs != self.bounds.crs:
-                raise gws.Error(f'invalid target grid crs')
+                raise gws.Error(f'layer {self!r}: invalid target grid crs')
             self.grid = gws.TileGrid(
                 origin=p.origin or gws.Origin.nw,
                 tileSize=p.tileSize or _DEFAULT_TILE_SIZE,
@@ -259,7 +262,7 @@ class Object(gws.Node, gws.ILayer):
         if p:
             self.resolutions = gws.gis.zoom.resolutions_from_config(p, self.cfg('_parentResolutions'))
             if not self.resolutions:
-                raise gws.Error(f'layer {self.uid!r}: no resolutions, config={p!r} parent={self.parentResolutions!r}')
+                raise gws.Error(f'layer {self!r}: no resolutions, config={p!r} parent={self.parentResolutions!r}')
             return True
 
     def configure_search(self):
