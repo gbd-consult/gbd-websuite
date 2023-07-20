@@ -19,6 +19,7 @@ class Object(field.Object):
         kwargs = {}
         if self.isPrimaryKey:
             kwargs['primary_key'] = True
+        kwargs['nullable'] = self.isRequired
         if self.serverDefault:
             kwargs['server_default'] = sa.text(self.serverDefault)
         col = sa.Column(self.name, _SCALAR_TYPES[self.attributeType], **kwargs)

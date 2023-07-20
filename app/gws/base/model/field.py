@@ -50,8 +50,8 @@ class Object(gws.Node, gws.IModelField):
         self.model = self.cfg('_defaultModel')
         self.name = self.cfg('name')
         self.title = self.cfg('title', default=self.name)
-        self.isPrimaryKey = self.cfg('isPrimaryKey')
-        self.isRequired = self.cfg('isRequired')
+        self.isPrimaryKey = bool(self.cfg('isPrimaryKey'))
+        self.isRequired = bool(self.cfg('isRequired'))
 
         self.values = []
         self.validators = []
