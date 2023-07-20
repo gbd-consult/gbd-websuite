@@ -1,6 +1,7 @@
 """Core database utilities."""
 
 import gws
+import gws.gis.crs
 import gws.lib.sa as sa
 
 import gws.types as t
@@ -28,14 +29,12 @@ class _SaRuntime:
 
 
 class Object(gws.Node, gws.IDatabaseManager):
-    models: dict[str, gws.IModel]
+    models: dict[str, gws.IDatabaseModel]
     providersDct: dict[str, gws.IDatabaseProvider]
     rt: _SaRuntime
 
     def __getstate__(self):
-        state = dict(vars(self))
-        del state['rt']
-        return state
+        return gws.omit(vars(self), 'rt')
 
     def configure(self):
         self.providersDct = {}
@@ -81,7 +80,7 @@ class Object(gws.Node, gws.IDatabaseManager):
                 return prov
 
     def register_model(self, model):
-        self.models[model.uid] = model
+        self.models[model.uid] = t.cast(gws.IDatabaseModel, model)
 
     def model(self, model_uid):
         return self.models.get(model_uid)
@@ -144,7 +143,10 @@ class Object(gws.Node, gws.IDatabaseManager):
         for tabid, props in tabid_to_props.items():
             for k, v in props.items():
                 sa.orm.add_mapped_attribute(tabid_to_class[tabid], k, v)  # type: ignore
-                # getattr(tabid_to_class[tabid], '__mapper__').add_property(k, v)
+
+        for model in self.models.values():
+            self._configure_model_key(model)
+            self._configure_model_geometry(model)
 
     _add_column_check_keys = [
         'autoincrement',
@@ -190,16 +192,75 @@ class Object(gws.Node, gws.IDatabaseManager):
         if key not in columns:
             columns[key] = [model_uid, col]
             return
-
         old_model_uid, old_col = columns[key]
+        if self._column_declarations_differ(model_uid, col, old_model_uid, old_col):
+            gws.log.warning(f'confilcting column {col.name!r} in models {old_model_uid!r} and {model_uid!r}')
+
+    def _column_declarations_differ(self, new_model_uid, new_col, old_model_uid, old_col):
         for k in self._add_column_check_keys:
-            new_val = getattr(col, k, None)
+            new_val = getattr(new_col, k, None)
             old_val = getattr(old_col, k, None)
             if repr(old_val) != repr(new_val):
-                raise gws.Error(
+                gws.log.debug(
                     f'column conflict: '
-                    + f'{model_uid}.{col.name}.{k} ={new_val!r}, '
+                    + f'{new_model_uid}.{new_col.name}.{k}={new_val!r}, '
                     + f'{old_model_uid}.{old_col.name}.{k}={old_val!r}')
+                return True
+
+    def _configure_model_key(self, model: gws.IDatabaseModel):
+        tab = self.table_for_model(model)
+        pcol = None
+
+        for c in self.table_columns(tab):
+            if c.primary_key:
+                pcol = c
+                break
+
+        if pcol is None:
+            raise gws.Error(f'primary key not found for table {tab.name!r}')
+
+        model.keyName = pcol.name
+
+    def _configure_model_geometry(self, model):
+        tab = self.table_for_model(model)
+
+        geom_cols = {
+            c.name: c
+            for c in self.table_columns(tab)
+            if isinstance(c.type, sa.geo.Geometry)
+        }
+
+        gcol = None
+
+        if model.geometryName:
+            gcol = geom_cols.get(model.geometryName)
+            if gcol is None:
+                raise gws.Error(f'geometryName {model.geometryName!r} not found for table {tab.name!r}')
+        elif geom_cols:
+            gcol = list(geom_cols.values())[0]
+
+        if gcol is None:
+            model.geometryName = ''
+            model.geometryType = None
+            model.geometryCrs = None
+            return
+
+        model.geometryName = gcol.name
+
+        real_type = self.SA_TO_GEOM.get(gcol.type.geometry_type)
+        real_srid = gcol.type.srid
+
+        fields = [f for f in model.fields if f.name == gcol.name]
+        if not fields:
+            model.geometryType = real_type
+            model.geometryCrs = gws.gis.crs.get(real_srid)
+            return
+
+        decl_type = getattr(fields[0], 'geometryType', None)
+        decl_crs = getattr(fields[0], 'geometryCrs', None)
+
+        model.geometryType = decl_type or real_type
+        model.geometryCrs = decl_crs or gws.gis.crs.get(real_srid)
 
     def table_uid(self, provider: gws.IDatabaseProvider, table_name: str):
         return provider.uid, provider.qualified_table_name(table_name)
@@ -237,6 +298,9 @@ class Object(gws.Node, gws.IDatabaseManager):
             tab = sa.Table(name, metadata, **kwargs)
         self.rt.tables[tabid] = tab
         return tab
+
+    def table_columns(self, tab: sa.Table) -> list[sa.Column]:
+        return t.cast(list[sa.Column], tab.columns)
 
     def session(self, provider, **kwargs):
         if not self.rt.sessions.get(provider.uid):
@@ -298,6 +362,17 @@ class Object(gws.Node, gws.IDatabaseManager):
         'TIMETZ': gws.AttributeType.time,
         'VARCHAR': gws.AttributeType.str,
     }
+    SA_TO_GEOM = {
+        'GEOMETRY': gws.GeometryType.geometry,
+        'POINT': gws.GeometryType.point,
+        'LINESTRING': gws.GeometryType.linestring,
+        'POLYGON': gws.GeometryType.polygon,
+        'MULTIPOINT': gws.GeometryType.multipoint,
+        'MULTILINESTRING': gws.GeometryType.multilinestring,
+        'MULTIPOLYGON': gws.GeometryType.multipolygon,
+        'GEOMETRYCOLLECTION': gws.GeometryType.geometrycollection,
+        'CURVE': gws.GeometryType.curve,
+    }
 
     def _load_and_describe(self, sess: session_module.Object, table_name, load_only):
         ins = sa.inspect(sess.saSession.connection())
@@ -321,7 +396,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             relationships=[],
         )
 
-        for c in t.cast(t.Iterable, tab.columns):
+        for c in self.table_columns(tab):
             col = gws.ColumnDescription(
                 comment=c.comment,
                 default=c.default,

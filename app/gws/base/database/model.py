@@ -42,7 +42,6 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         self.configure_sources()
         self.configure_fields()
         self.configure_templates()
-        self.configure_properties()
 
     def configure_provider(self):
         self.provider = t.cast(provider.Object, provider.get_for(self, ext_type=self.extType))
@@ -59,34 +58,6 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
             return True
         self.configure_auto_fields()
         return True
-
-    def configure_properties(self):
-        self.geometryType = None
-        self.geometryCrs = None
-
-        if not self.keyName:
-            for f in self.fields:
-                if f.isPrimaryKey:
-                    self.keyName = f.name
-                    break
-
-        if not self.keyName:
-            raise gws.Error(f'primary key not found for table {self.tableName!r}')
-
-        geom = None
-
-        for f in self.fields:
-            if self.geometryName and f.name == self.geometryName:
-                geom = f
-                break
-            if not self.geometryName and f.attributeType == gws.AttributeType.geometry:
-                geom = f
-                break
-
-        if geom:
-            self.geometryName = geom.name
-            self.geometryType = getattr(geom, 'geometryType')
-            self.geometryCrs = getattr(geom, 'geometryCrs')
 
     ##
 
