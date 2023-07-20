@@ -4,6 +4,7 @@ import math
 import re
 
 import gws
+import gws.gis.extent
 import gws.gis.crs
 import gws.gis.source
 import gws.lib.metadata
@@ -219,15 +220,10 @@ def _metadata(el: gws.IXmlElement, md: gws.Metadata):
 
     e = el.find('extent/spatial')
     if e:
-        md.bounds = gws.Bounds(
-            crs=gws.gis.crs.get(e.get('crs')),
-            extent=(
-                _parse_float(e.get('minx')),
-                _parse_float(e.get('miny')),
-                _parse_float(e.get('maxx')),
-                _parse_float(e.get('maxy')),
-            )
-        )
+        extent = _extent_from_atts(e)
+        crs = gws.gis.crs.get(e.get('crs'))
+        if extent and crs:
+            md.bounds = gws.Bounds(extent=extent, crs=crs)
 
     e = el.find('extent/temporal')
     if e:
@@ -360,7 +356,9 @@ def _map_layer(layer_el: gws.IXmlElement):
 
     ext = layer_el.find('wgs84extent')
     if ext:
-        sl.wgsExtent = _parse_extent(ext)
+        extent = _extent_from_tag(ext)
+        if extent:
+            sl.wgsExtent = extent
 
     if layer_el.get('hasScaleBasedVisibilityFlag') == '1':
         # in qgis, maxScale < minScale
@@ -586,13 +584,31 @@ def _datasource_space_delimited(text):
 ##
 
 
-def _parse_extent(extent_el):
-    return (
-        _parse_float(extent_el.textof('xmin')),
-        _parse_float(extent_el.textof('ymin')),
-        _parse_float(extent_el.textof('xmax')),
-        _parse_float(extent_el.textof('ymax')),
-    )
+def _extent_from_atts(el):
+    # <spatial dimensions="2" miny="0" maxz="0" maxx="0" crs="EPSG:25832" minx="0" minz="0" maxy="0"/>
+
+    return gws.gis.extent.from_list([
+        el.get('minx'),
+        el.get('miny'),
+        el.get('maxx'),
+        el.get('maxy'),
+    ])
+
+
+def _extent_from_tag(el):
+    # <wgs84extent>
+    #     <xmin>1</xmin>
+    #     <ymin>2</ymin>
+    #     <xmax>3</xmax>
+    #     <ymax>4</ymax>
+    # </wgs84extent>
+
+    return gws.gis.extent.from_list([
+        el.textof('xmin'),
+        el.textof('ymin'),
+        el.textof('xmax'),
+        el.textof('ymax'),
+    ])
 
 
 def _parse_msize(s):

@@ -125,9 +125,7 @@ class Object:
         self.version = ver
 
     def __getstate__(self):
-        d = dict(vars(self))
-        d.pop('_xml_root', None)
-        return d
+        return gws.omit(vars(self), '_xml_root')
 
     def xml_root(self) -> gws.IXmlElement:
         if not hasattr(self, '_xml_root'):

@@ -355,11 +355,13 @@ class Object(gws.Node, gws.IOwsProvider):
             host=ds.get('host'),
             port=ds.get('port'),
             database=ds.get('dbname'),
-            username=ds.get('username'),
+            username=ds.get('user'),
             password=ds.get('password'),
             serviceName=ds.get('service'),
             options=ds.get('options'),
         ))
+
+        # @TODO find a model configured for this table and use it
 
         return {
             'type': 'postgres',

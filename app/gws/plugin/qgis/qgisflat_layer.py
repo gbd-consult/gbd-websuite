@@ -81,9 +81,11 @@ class Object(gws.base.layer.Object):
             self.bounds = gws.gis.bounds.transform(self.provider.bounds, self.mapCrs)
             return True
         blist = gws.compact(sl.wgsBounds for sl in self.sourceLayers)
-        wgs_bounds = gws.gis.bounds.union(blist) if blist else gws.gis.crs.WGS84_BOUNDS
-        self.bounds = gws.gis.bounds.transform(wgs_bounds, self.mapCrs)
-        return True
+        if blist:
+            wgs_bounds = gws.gis.bounds.union(blist)
+            self.bounds = gws.gis.bounds.transform(wgs_bounds, self.mapCrs)
+            return True
+        return False
 
     def configure_resolutions(self):
         if super().configure_resolutions():
@@ -129,13 +131,12 @@ class Object(gws.base.layer.Object):
         if super().configure_search():
             return True
         if self.searchLayers:
-            self.finders.append(self.configure_finder({}))
+            self.finders.append(self.configure_local_finder())
             return True
 
-    def configure_finder(self, cfg):
+    def configure_local_finder(self):
         return self.create_child(
             gws.ext.object.finder,
-            cfg,
             type='qgislocal',
             _defaultProvider=self.provider,
             _defaultSourceLayers=self.searchLayers
