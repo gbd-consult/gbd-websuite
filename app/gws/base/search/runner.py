@@ -26,7 +26,7 @@ def run(root: gws.IRoot, search: gws.SearchQuery, user: gws.IUser) -> list[Resul
                 if ancestor.uid in used_layer_ids:
                     continue
                 used_layer_ids.add(ancestor.uid)
-                gws.log.debug(f'SEARCH_ANCESTOR {ancestor.uid=} {layer.uid=}')
+                gws.log.debug(f'SEARCH_ANCESTOR {ancestor=} {layer=}')
                 for finder in ancestor.finders:
                     _run(search, user, finder, ancestor, results)
                     if len(results) > search.limit:
