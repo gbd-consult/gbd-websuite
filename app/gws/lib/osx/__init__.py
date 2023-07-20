@@ -133,14 +133,11 @@ def kill_pid(pid, sig_name='TERM'):
         return False
 
 
-def pids_of(proc_name):
-    pids = []
-
+def running_pids() -> dict[int, str]:
+    d = {}
     for p in psutil.process_iter():
-        if p.name() == proc_name:
-            pids.append(p.pid)
-
-    return pids
+        d[p.pid] = p.name()
+    return d
 
 
 def find_files(dirname, pattern=None, ext=None, deep=True):
@@ -239,10 +236,6 @@ def abs_web_path(path: str, basedir: str) -> t.Optional[str]:
         return
 
     return p
-
-
-
-
 
 
 def rel_path(path: _Path, base: str) -> str:
