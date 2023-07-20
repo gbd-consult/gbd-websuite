@@ -71,6 +71,12 @@ def union(bs: list[gws.Bounds]) -> gws.Bounds:
         extent=gws.gis.extent.union(exts))
 
 
+def intersect(b1: gws.Bounds, b2: gws.Bounds) -> bool:
+    e1 = b1.extent
+    e2 = gws.gis.extent.transform(b2.extent, crs_from=b2.crs, crs_to=b1.crs)
+    return gws.gis.extent.intersect(e1, e2)
+
+
 def transform(b: gws.Bounds, crs_to: gws.ICrs) -> gws.Bounds:
     if b.crs == crs_to:
         return b

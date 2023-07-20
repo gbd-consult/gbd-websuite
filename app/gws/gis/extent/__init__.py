@@ -15,16 +15,11 @@ def from_string(s: str) -> t.Optional[gws.Extent]:
 def from_list(ls: list[t.Any]) -> t.Optional[gws.Extent]:
     """Create an extent from a list of values"""
 
-    try:
-        ns = [float(n) for n in ls]
-    except:
-        return None
-
-    return _valid(ns)
+    return _check(ls)
 
 
 def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
-    return _valid([a[0], a[1], b[0], b[1]])
+    return _check([a[0], a[1], b[0], b[1]])
 
 
 def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
@@ -46,30 +41,13 @@ def from_box(box: str) -> t.Optional[gws.Extent]:
     if not m:
         return None
 
-    try:
-        a, b = m.group(1).split(',')
-        c, d = a.split(), b.split()
-        ls = [
-            float(c[0]),
-            float(c[1]),
-            float(d[0]),
-            float(d[1]),
-        ]
-    except:
-        return None
+    a, b = m.group(1).split(',')
+    c, d = a.split(), b.split()
 
-    return _valid(ls)
+    return _check([c[0], c[1], d[0], d[1]])
 
 
 #
-
-def _valid(ls: list[t.Any]) -> t.Optional[gws.Extent]:
-    try:
-        if len(ls) == 4 and all(math.isfinite(p) for p in ls):
-            return _sort(ls)
-    except:
-        return None
-
 
 def constrain(a: gws.Extent, b: gws.Extent) -> gws.Extent:
     a = _sort(a)
@@ -150,6 +128,21 @@ def transform_to_wgs(e: gws.Extent, crs_from: gws.ICrs) -> gws.Extent:
 
 def swap_xy(e: gws.Extent) -> gws.Extent:
     return e[1], e[0], e[3], e[2]
+
+
+def _check(ls: list[t.Any]) -> t.Optional[gws.Extent]:
+    if len(ls) != 4:
+        return None
+    try:
+        e = [float(p) for p in ls]
+    except ValueError:
+        return None
+    if not all(math.isfinite(p) for p in e):
+        return None
+    e = _sort(e)
+    if e[0] >= e[2] or e[1] >= e[3]:
+        return None
+    return e
 
 
 def _sort(e):
