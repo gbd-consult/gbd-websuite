@@ -1,7 +1,3 @@
-import importlib
-import importlib.machinery
-import importlib.util
-import os
 import time
 
 
@@ -46,25 +42,3 @@ def retry(times=100, pause=10, factor=1.0):
 
 def utime():
     return time.time()
-
-
-class lock:
-    def __init__(self, path):
-        self.path = path
-        self.ok = False
-
-    def __enter__(self):
-        try:
-            fp = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            os.close(fp)
-            self.ok = True
-        except:
-            self.ok = False
-        return self.ok
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.ok:
-            try:
-                os.unlink(self.path)
-            except OSError:
-                pass

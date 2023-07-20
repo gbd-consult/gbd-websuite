@@ -209,15 +209,15 @@ class Object(gws.Node, gws.IApplication):
             self.mpxUrl = f"http://{self.cfg('server.mapproxy.host')}:{self.cfg('server.mapproxy.port')}"
             self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
-        # for p in set(cfg.configPaths):
-        #     root.app.monitor.add_path(p)
-        # for p in set(cfg.projectPaths):
-        #     root.app.monitor.add_path(p)
-        # for d in set(cfg.projectDirs):
-        #     root.app.monitor.add_directory(d, parser.config_path_pattern)
-        #
-        # if root.app.developer_option('server.auto_reload'):
-        #     root.app.monitor.add_directory(gws.APP_DIR, '\.py$')
+        # NB these are populated in config.parser
+        for p in self.config.get('configPaths', []):
+            self.monitor.add_file(p)
+        for p in self.config.get('projectPaths', []):
+            self.monitor.add_file(p)
+        for d in self.config.get('projectDirs', []):
+            self.monitor.add_directory(d, gws.config.CONFIG_PATH_PATTERN)
+        if self.developer_option('server.auto_reload'):
+            self.monitor.add_directory(gws.APP_DIR, r'\.py$')
 
     def register_middleware(self, name, obj, depends_on=None):
         self.middlewareMgr.register(name, obj, depends_on)
