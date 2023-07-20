@@ -138,7 +138,7 @@ def pop(x, key, default=None):
 
 
 def pick(x, *keys):
-    def _pick(d, keys):
+    def _pick(d):
         r = {}
         for k in keys:
             if k in d:
@@ -146,9 +146,24 @@ def pick(x, *keys):
         return r
 
     if is_dict(x):
-        return _pick(x, keys)
+        return _pick(x)
     if is_data_object(x):
-        return type(x)(_pick(vars(x), keys))
+        return type(x)(_pick(vars(x)))
+    return {}
+
+
+def omit(x, *keys):
+    def _omit(d):
+        r = {}
+        for k, v in d.items():
+            if k not in keys:
+                r[k] = d[k]
+        return r
+
+    if is_dict(x):
+        return _omit(x)
+    if is_data_object(x):
+        return type(x)(_omit(vars(x)))
     return {}
 
 
