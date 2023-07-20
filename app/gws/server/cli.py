@@ -30,7 +30,7 @@ class Object(gws.Node):
         """Restart the server."""
 
         self._setenv(p)
-        control.reload()
+        control.reload_all()
 
     @gws.ext.command.cli('serverReconfigure')
     def do_reconfigure(self, p: Params):

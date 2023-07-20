@@ -30,6 +30,13 @@ _uwsgi_params = """
     uwsgi_param HTTPS $https;
 """
 
+PID_PATHS = {
+    'qgis': f'{gws.PIDS_DIR}/qgis.uwsgi.pid',
+    'web': f'{gws.PIDS_DIR}/web.uwsgi.pid',
+    'spool': f'{gws.PIDS_DIR}/spool.uwsgi.pid',
+    'mapproxy': f'{gws.PIDS_DIR}/mapproxy.uwsgi.pid',
+}
+
 
 def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_path):
     for p in gws.lib.osx.find_files(configs_dir):
@@ -172,7 +179,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
             fastcgi-socket = {qgis_socket}
             {uwsgi_qgis_log}
             master = true
-            pidfile = {gws.PIDS_DIR}/qgis.uwsgi.pid
+            pidfile = {PID_PATHS['qgis']}
             processes = {qgis_workers}
             reload-mercy = {mercy}
             threads = {qgis_threads}
@@ -237,7 +244,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
             harakiri-verbose = true
             http-timeout = {web_timeout}
             {uwsgi_web_log}
-            pidfile = {gws.PIDS_DIR}/web.uwsgi.pid
+            pidfile = {PID_PATHS['web']}
             post-buffering = 65535
             processes = {web_workers}
             pythonpath = {gws.APP_DIR}
@@ -379,7 +386,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
             http = :{mapproxy_port}
             http-to = {mapproxy_socket}
             {uwsgi_mapproxy_log}
-            pidfile = {gws.PIDS_DIR}/mapproxy.uwsgi.pid
+            pidfile = {PID_PATHS['mapproxy']}
             post-buffering = 65535
             processes = {mapproxy_workers}
             pythonpath = {gws.APP_DIR}
@@ -410,7 +417,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
             harakiri-verbose = true
             {uwsgi_spool_log}
             master = true
-            pidfile = {gws.PIDS_DIR}/spool.uwsgi.pid
+            pidfile = {PID_PATHS['spool']}
             post-buffering = 65535
             processes = {spool_workers}
             pythonpath = {gws.APP_DIR}

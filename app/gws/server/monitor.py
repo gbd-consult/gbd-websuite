@@ -1,43 +1,40 @@
 import os
-import psutil
 import re
 
 import gws
 import gws.config
-import gws.lib.misc
+import gws.lib.lock
 import gws.lib.osx
 import gws.server.uwsgi_module
-import gws.types as t
 
 from . import control
 
-_lockfile = '/tmp/monitor.lock'
-
-
-def _m() -> gws.IMonitor:
-    return gws.config.root().app.monitor
+_LOCK_FILE = '/tmp/monitor.lock'
 
 
 class Object(gws.Node, gws.IMonitor):
-    def configure(self):
+    watchDirs: dict
+    watchFiles: dict
+    pathStats: dict
 
-        self.watch_dirs = {}
-        self.watch_files = {}
-        self.path_stats = {}
+    enabled: bool
+    frequency: int
+    ignore: list[str]
+
+    def configure(self):
         self.enabled = self.cfg('enabled', default=True)
         self.frequency = self.cfg('frequency', default=30)
         self.ignore = self.cfg('ignore', default=[])
 
-    def add_directory(self, path, pattern):
-        if os.path.isfile(path):
-            path = os.path.dirname(path)
-        self.watch_dirs[path] = pattern
+        self.watchDirs = {}
+        self.watchFiles = {}
+        self.pathStats = {}
 
-    def add_path(self, path):
-        if os.path.isfile(path):
-            self.watch_files[path] = 1
-        else:
-            raise ValueError(f'{path!r} is not a file')
+    def add_directory(self, path, pattern):
+        self.watchDirs[path] = pattern
+
+    def add_file(self, path):
+        self.watchFiles[path] = 1
 
     def start(self):
         if not self.enabled:
@@ -48,15 +45,15 @@ class Object(gws.Node, gws.IMonitor):
         # actually, we should be using uwsgi.add_file_monitor here, however I keep having problems
         # getting inotify working on docker-mounted volumes (is that possible at all)?
 
-        self._prepare()
+        self._cleanup()
 
-        for s in self.watch_dirs:
+        for s in self.watchDirs:
             gws.log.info(f'MONITOR: watching directory {s!r}')
-        for s in self.watch_files:
+        for s in self.watchFiles:
             gws.log.info(f'MONITOR: watching file {s!r}')
 
         try:
-            os.unlink(_lockfile)
+            os.unlink(_LOCK_FILE)
         except OSError:
             pass
 
@@ -70,42 +67,31 @@ class Object(gws.Node, gws.IMonitor):
         gws.log.info(f'MONITOR: started, frequency={self.frequency}')
 
     def _worker(self, signo):
-        with gws.lib.misc.lock(_lockfile) as ok:
+        with gws.lib.lock.SoftFileLock(_LOCK_FILE) as ok:
             if not ok:
-                try:
-                    pid = int(gws.read_file(_lockfile))
-                except:
-                    pid = None
-                if not pid or not psutil.pid_exists(pid):
-                    gws.log.info(f'MONITOR: locked by dead pid={pid!r}, releasing')
-                else:
-                    gws.log.info(f'MONITOR: locked by pid={pid!r}')
-                    return
-
-            gws.write_file(_lockfile, str(os.getpid()))
-            changed = self._poll()
-
-            if not changed:
                 return
 
-            for path in changed:
+            changed_paths = self._poll()
+            if not changed_paths:
+                return
+
+            for path in changed_paths:
                 gws.log.info(f'MONITOR: changed {path!r}')
 
             # @TODO: smarter reload
 
-            reconf = any(gws.APP_DIR not in path for path in changed)
+            needs_reconfigure = any(not path.endswith('.py') for path in changed_paths)
+            gws.log.info(f'MONITOR: begin reload {needs_reconfigure=}')
 
-            gws.log.info(f'MONITOR: begin reload (reconfigure={reconf})')
-
-            if not self._reload(reconf):
+            if not self._reload(needs_reconfigure):
                 return
 
         # finally, reload ourselves
         gws.log.info(f'MONITOR: bye bye')
-        control.reload('spool')
+        control.reload_server('spool')
 
-    def _reload(self, reconf):
-        if reconf:
+    def _reload(self, needs_reconfigure):
+        if needs_reconfigure:
             try:
                 control.configure_and_store()
             except:
@@ -113,43 +99,59 @@ class Object(gws.Node, gws.IMonitor):
                 return False
 
         try:
-            control.reload('qgis')
-            control.reload('mapproxy')
-            control.reload('web')
+            control.reload_server('qgis')
+            control.reload_server('mapproxy')
+            control.reload_server('web')
+            # reloading nginx in a spooler doesn't work properly,
+            # but actually it is not needed
+            # control.reload_nginx()
             return True
         except:
             gws.log.exception('MONITOR: reload error')
             return False
 
-    def _prepare(self):
-        dirs = self.watch_dirs
-        ds = []
-        for d in sorted(dirs):
-            if d in ds or any(d.startswith(r + '/') for r in ds):
+    def _cleanup(self):
+        """Remove superfluous directory and file entries."""
+
+        ls = []
+        for d in sorted(self.watchDirs):
+            if d in ls or any(d.startswith(e + '/') for e in ls):
+                # if we watch /some/dir already, there's no need to watch /some/dir/subdir
                 continue
-            ds.append(d)
-        self.watch_dirs = {d: dirs[d] for d in ds}
+            ls.append(d)
+        self.watchDirs = {d: self.watchDirs[d] for d in sorted(ls)}
+
+        ls = []
+        for f in sorted(self.watchFiles):
+            if any(f.startswith(e + '/') for e in self.watchDirs):
+                # if we watch /some/dir already, there's no need to watch /some/dir/some.file
+                continue
+            ls.append(f)
+        self.watchFiles = {f: 1 for f in sorted(ls)}
 
     def _poll(self):
         new_stats = {}
-        changed = []
+        changed_paths = []
 
-        for dirname, pattern in self.watch_dirs.items():
-            if not self._ignored(dirname):
-                for filename in gws.lib.osx.find_files(dirname, pattern):
-                    if not self._ignored(filename):
-                        new_stats[filename] = self._stats(filename)
+        for dirpath, pattern in self.watchDirs.items():
+            if self._ignored(dirpath):
+                continue
+            if not gws.is_dir(dirpath):
+                continue
+            for path in gws.lib.osx.find_files(dirpath, pattern):
+                if not self._ignored(path):
+                    new_stats[path] = self._stats(path)
 
-        for filename, _ in self.watch_files.items():
-            if filename not in new_stats and not self._ignored(filename):
-                new_stats[filename] = self._stats(filename)
+        for path, _ in self.watchFiles.items():
+            if path not in new_stats and not self._ignored(path):
+                new_stats[path] = self._stats(path)
 
-        for p in set(self.path_stats) | set(new_stats):
-            if self.path_stats.get(p) != new_stats.get(p):
-                changed.append(p)
+        for path in set(self.pathStats) | set(new_stats):
+            if self.pathStats.get(path) != new_stats.get(path):
+                changed_paths.append(path)
 
-        self.path_stats = new_stats
-        return changed
+        self.pathStats = new_stats
+        return changed_paths
 
     def _stats(self, path):
         try:
@@ -160,22 +162,3 @@ class Object(gws.Node, gws.IMonitor):
 
     def _ignored(self, filename):
         return self.ignore and any(re.search(p, filename) for p in self.ignore)
-
-
-#
-#
-# # remove jobs older than that
-#
-# _MAX_LIFETIME = 3600 * 1
-#
-#
-# def cleanup():
-#     for p in os.listdir(gws.PRINT_DIR):
-#         d = gws.PRINT_DIR + '/' + p
-#         age = gws.lib.osx.file_age(d)
-#         if age > _MAX_LIFETIME:
-#             gws.lib.osx.run(['rm', '-fr', d])
-#             gws.lib.job.remove(p)
-#             gws.log.debug(f'cleaned up job {p} age={age}')
-#
-#

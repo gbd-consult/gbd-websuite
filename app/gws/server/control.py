@@ -57,7 +57,7 @@ SERVER_START_SCRIPT = f'{gws.VAR_DIR}/server.sh'
 
 
 def start(manifest_path=None, config_path=None):
-    if _uwsgi_is_running():
+    if server_is_running('web'):
         gws.log.error(f'server already running')
         gws.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=True)
@@ -65,23 +65,12 @@ def start(manifest_path=None, config_path=None):
 
 
 def reconfigure(manifest_path=None, config_path=None):
-    if not _uwsgi_is_running():
+    if not server_is_running('web'):
         gws.log.error(f'server not running')
         gws.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=False)
     ini.write_configs_and_start_script(root, gws.SERVER_DIR, SERVER_START_SCRIPT)
-    reload()
-
-
-def reload():
-    if not _uwsgi_is_running():
-        gws.log.error(f'server not running')
-        gws.exit(1)
-    gws.lib.osx.run(['rm', '-fr', gws.TRANSIENT_DIR])
-    gws.ensure_system_dirs()
-    _reload_uwsgi()
-    _reload_nginx()
-    return True
+    reload_all()
 
 
 def configure_and_store(manifest_path=None, config_path=None, is_starting=False):
@@ -112,20 +101,39 @@ def configure(manifest_path=None, config_path=None, is_starting=False):
 
 ##
 
-def _reload_uwsgi():
-    pattern = r'\.uwsgi.pid$'
-    for p in gws.lib.osx.find_files(gws.PIDS_DIR, pattern):
-        gws.log.info(f'reloading {p}...')
-        gws.lib.osx.run(['uwsgi', '--reload', p])
+def reload_all():
+    gws.lib.osx.run(['rm', '-fr', gws.TRANSIENT_DIR])
+    gws.ensure_system_dirs()
+    for srv in ini.PID_PATHS:
+        reload_server(srv)
+    reload_nginx()
+    return True
 
 
-def _reload_nginx():
+def reload_server(srv):
+    if not server_is_running(srv):
+        gws.log.debug(f'reload: {srv=} not running')
+        return
+    gws.log.info(f'reloading {srv}...')
+    gws.lib.osx.run(['uwsgi', '--reload', ini.PID_PATHS[srv]])
+
+
+def reload_nginx():
     gws.log.info(f'reloading nginx...')
     gws.lib.osx.run(['nginx', '-c', gws.SERVER_DIR + '/nginx.conf', '-s', 'reload'])
 
 
-def _uwsgi_is_running():
-    return bool(gws.lib.osx.pids_of('uwsgi'))
+def server_is_running(srv):
+    try:
+        with open(ini.PID_PATHS[srv]) as fp:
+            pid = int(fp.read())
+    except (FileNotFoundError, ValueError):
+        pid = 0
+    gws.log.debug(f'found {pid=} for {srv=}')
+    return pid and pid in gws.lib.osx.running_pids()
+
+
+##
 
 
 _FALLBACK_CONFIG = {
