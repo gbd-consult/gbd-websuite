@@ -5,7 +5,7 @@ The Qgis print templates work this way:
 We read the qgis project and locate a template object within by its title or the index,
 by default the first template is taken.
 
-We find all `LayoutHtml` blocks in the template and create our `html` templates from
+We find all `label` and `html` blocks in the template and create our `html` templates from
 them, so that they can make use of our placeholders like `@legend`.
 
 When rendering, we render our map as pdf.
@@ -47,11 +47,16 @@ class Config(gws.base.template.Config):
     mapPosition: t.Optional[gws.MSize]
 
 
+class _HtmlBlock(gws.Data):
+    attrName: str
+    template: gws.plugin.template.html.Object
+
+
 class Object(gws.base.template.Object):
     provider: provider.Object
     qgisTemplate: caps.PrintTemplate
     mapPosition: gws.MSize
-    htmlTemplates: dict[str, gws.plugin.template.html.Object]
+    htmlBlocks: dict[str, _HtmlBlock]
 
     def configure(self):
         self.provider = provider.get_for(self)
@@ -118,14 +123,7 @@ class Object(gws.base.template.Object):
         if not self.pageSize or not self.mapSize or not self.mapPosition:
             raise gws.Error('cannot read page or map size')
 
-        self.htmlTemplates = {}
-
-        for el in self.qgisTemplate.elements:
-            if el.type != 'html':
-                continue
-            text = el.attributes.get('html', '')
-            uid = 'qgis_html_' + gws.sha256(text)
-            self.htmlTemplates[el.uuid] = self.root.create_shared(gws.ext.object.template, uid=uid, type='html', text=text)
+        self._collect_html_blocks()
 
     def _find_template_by_index(self, idx):
         try:
@@ -212,8 +210,29 @@ class Object(gws.base.template.Object):
         res = self.provider.call_server(params)
         gws.write_file_b(out_path, res.content)
 
+    def _collect_html_blocks(self):
+        self.htmlBlocks = {}
+
+        for el in self.qgisTemplate.elements:
+            if el.type not in {'html', 'label'}:
+                continue
+
+            attr = 'html' if el.type == 'html' else 'labelText'
+            text = el.attributes.get(attr, '').strip()
+
+            if text:
+                self.htmlBlocks[el.uuid] = _HtmlBlock(
+                    attrName=attr,
+                    template=self.root.create_shared(
+                        gws.ext.object.template,
+                        uid='qgis_html_' + gws.sha256(text),
+                        type='html',
+                        text=text,
+                    )
+                )
+
     def _render_html_blocks(self, tri: gws.TemplateRenderInput, qgis_project: project.Object):
-        if not self.htmlTemplates:
+        if not self.htmlBlocks:
             # there are no html blocks...
             return False
 
@@ -226,21 +245,22 @@ class Object(gws.base.template.Object):
             user=tri.user
         )
 
-        html_blocks = {}
+        render_results = {}
 
-        for uuid, tpl in self.htmlTemplates.items():
-            res = tpl.render(tri_for_blocks)
-            if res.content != tpl.text:
-                html_blocks[uuid] = res.content
+        for uuid, block in self.htmlBlocks.items():
+            res = block.template.render(tri_for_blocks)
+            if res.content != block.template.text:
+                render_results[uuid] = [block.attrName, res.content]
 
-        if not html_blocks:
+        if not render_results:
             # no blocks are changed - means, they contain no our placeholders
             return False
 
         for layout_el in qgis_project.xml_root().findall('Layouts/Layout'):
             for item_el in layout_el:
                 uuid = item_el.get('uuid')
-                if uuid in html_blocks:
-                    item_el.set('html', html_blocks[uuid])
+                if uuid in render_results:
+                    attr, content = render_results[uuid]
+                    item_el.set(attr, content)
 
         return True
