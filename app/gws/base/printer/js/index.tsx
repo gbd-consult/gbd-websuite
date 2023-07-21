@@ -94,7 +94,7 @@ class PreviewBox extends gws.View<ViewProps> {
     templateItems() {
         return this.props.controller.templates.map((t, n) => ({
             value: n,
-            text: t.title
+            text: t.props.title
         }));
     }
 
@@ -103,7 +103,7 @@ class PreviewBox extends gws.View<ViewProps> {
         if (!tpl)
             return [];
 
-        return (tpl.qualityLevels || []).map((level, n) => ({
+        return (tpl.props.qualityLevels || []).map((level, n) => ({
             value: n,
             text: level.name || (level.dpi + ' dpi')
         }));
@@ -144,8 +144,9 @@ class PreviewBox extends gws.View<ViewProps> {
         }
 
         let tpl = cc.selectedTemplate;
-        if (tpl && tpl.model)
+        if (tpl && tpl.model) {
             fields = fields.concat(tpl.model.fields)
+        }
 
         return <table className="cmpForm">
             <tbody>
@@ -191,8 +192,8 @@ class PreviewBox extends gws.View<ViewProps> {
         if (!tpl)
             return null;
 
-        let w = gws.lib.mm2px(tpl.mapSize[0]);
-        let h = gws.lib.mm2px(tpl.mapSize[1]);
+        let w = gws.lib.mm2px(tpl.props.mapSize[0]);
+        let h = gws.lib.mm2px(tpl.props.mapSize[1]);
 
         return <overview.SmallMap controller={this.props.controller} boxSize={[w, h]}/>;
     }
@@ -277,8 +278,8 @@ class PreviewBox extends gws.View<ViewProps> {
             if (!tpl)
                 return null;
 
-            w = gws.lib.mm2px(tpl.mapSize[0]);
-            h = gws.lib.mm2px(tpl.mapSize[1]);
+            w = gws.lib.mm2px(tpl.props.mapSize[0]);
+            h = gws.lib.mm2px(tpl.props.mapSize[1]);
         }
 
         let style = {
@@ -361,16 +362,17 @@ class Dialog extends gws.View<ViewProps> {
     }
 }
 
+class Template {
+    props: gws.api.base.template.Props
+    model?: gws.types.IModel
+}
+
 class Controller extends gws.Controller {
     uid = MASTER;
     jobTimer: any = null;
     previewBox: HTMLDivElement;
+    templates: Array<Template>;
 
-    get templates() {
-        if (!this.app.project.printer)
-            return [];
-        return this.app.project.printer.templates || [];
-    }
 
     get selectedTemplate() {
         let fd = this.getValue('printerFormValues') || {},
@@ -394,7 +396,21 @@ class Controller extends gws.Controller {
 
     async init() {
         await super.init();
+
+        this.templates = [];
+
+        if (this.app.project.printer) {
+            for (let p of this.app.project.printer.templates || []) {
+                let tpl = new Template();
+                tpl.props = p;
+                if (p.model)
+                    tpl.model = this.app.models.readModel(p.model)
+                this.templates.push(tpl);
+            }
+        }
+
         this.app.whenChanged('printerJob', job => this.jobUpdated(job));
+
         this.update({
             printerScreenshotDpi: MIN_SNAPSHOT_DPI,
             printerScreenshotWidth: DEFAULT_SNAPSHOT_SIZE,
@@ -491,7 +507,7 @@ class Controller extends gws.Controller {
         let template = this.selectedTemplate,
             fd = this.getValue('printerFormValues') || {};
 
-        let level = template.qualityLevels[Number(fd['_qualityIndex']) || 0],
+        let level = template.props.qualityLevels[Number(fd['_qualityIndex']) || 0],
             dpi = level ? level.dpi : 0;
 
         let mapParams = await this.map.printParams(
@@ -506,7 +522,7 @@ class Controller extends gws.Controller {
         let params: gws.api.base.printer.Request = {
             type: gws.api.base.printer.RequestType.template,
             args,
-            templateUid: template.uid,
+            templateUid: template.props.uid,
             dpi,
             maps: [mapParams],
         };

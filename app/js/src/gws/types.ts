@@ -433,6 +433,7 @@ export interface ISidebarItem extends IController {
 }
 
 export interface IModelRegistry {
+    readModel(props: api.base.model.Props): IModel;
     addModel(props: api.base.model.Props): IModel;
     model(uid: string): IModel|null;
     modelForLayer(layer: ILayer): IModel|null;

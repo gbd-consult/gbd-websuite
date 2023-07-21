@@ -32,6 +32,10 @@ export class ModelRegistry implements types.IModelRegistry {
     }
 
 
+    readModel(props: api.base.model.Props) {
+        return new Model(this, props);
+    }
+
     addModel(props: api.base.model.Props) {
         let m = new Model(this, props);
         this.models.push(m);

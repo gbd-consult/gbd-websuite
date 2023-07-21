@@ -44,11 +44,13 @@ class Object(gws.Node, gws.ITemplate):
 
     def configure(self):
         self.title = self.cfg('title', default='')
-
         self.qualityLevels = self.cfg('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
-        # self.data_model = self.root.create_optional('gws.base.model', self.cfg('dataModel'))
-
         self.subject = self.cfg('subject', default='').lower()
+
+        self.models = []
+        p = self.cfg('models')
+        if p:
+            self.models = gws.compact(self.configure_model(c) for c in p)
 
         self.mimes = []
         for p in self.cfg('mimeTypes', default=[]):
@@ -58,9 +60,13 @@ class Object(gws.Node, gws.ITemplate):
         self.pageSize = self.cfg('pageSize') or DEFAULT_PAGE_SIZE
         self.pageMargin = self.cfg('pageMargin')
 
+    def configure_model(self, cfg):
+        return self.create_child(gws.ext.object.model, cfg)
+
     def props(self, user):
+        models = [m for m in self.models if user.can_use(m)]
         return gws.Data(
-            # dataModel=self.data_model,
+            model=models[0] if models else None,
             mapSize=self.mapSize,
             pageSize=self.pageSize,
             qualityLevels=self.qualityLevels,
