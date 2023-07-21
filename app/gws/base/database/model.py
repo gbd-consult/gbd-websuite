@@ -53,12 +53,6 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         if not self.tableName:
             raise gws.Error(f'table not found for model {self.uid!r}')
 
-    def configure_fields(self):
-        if super().configure_fields():
-            return True
-        self.configure_auto_fields()
-        return True
-
     ##
 
     def describe(self):

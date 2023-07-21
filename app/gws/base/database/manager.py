@@ -29,7 +29,7 @@ class _SaRuntime:
 
 
 class Object(gws.Node, gws.IDatabaseManager):
-    models: dict[str, gws.IDatabaseModel]
+    modelsDct: dict[str, gws.IDatabaseModel]
     providersDct: dict[str, gws.IDatabaseProvider]
     rt: _SaRuntime
 
@@ -38,7 +38,7 @@ class Object(gws.Node, gws.IDatabaseManager):
 
     def configure(self):
         self.providersDct = {}
-        self.models = {}
+        self.modelsDct = {}
         self.rt = _SaRuntime()
 
         for cfg in self.cfg('providers', default=[]):
@@ -80,17 +80,20 @@ class Object(gws.Node, gws.IDatabaseManager):
                 return prov
 
     def register_model(self, model):
-        self.models[model.uid] = t.cast(gws.IDatabaseModel, model)
+        self.modelsDct[model.uid] = t.cast(gws.IDatabaseModel, model)
 
     def model(self, model_uid):
-        return self.models.get(model_uid)
+        return self.modelsDct.get(model_uid)
+
+    def models(self):
+        return list(self.modelsDct.values())
 
     def activate_runtime(self):
         self.rt = _SaRuntime()
 
         model_to_tabid = {}
 
-        for model_uid, mod in self.models.items():
+        for model_uid, mod in self.modelsDct.items():
             table_name = getattr(mod, 'tableName', None)
             if not table_name:
                 continue
@@ -100,7 +103,7 @@ class Object(gws.Node, gws.IDatabaseManager):
         columns: dict[str, tuple[str, sa.Column]] = {}
 
         for model_uid, tabid in model_to_tabid.items():
-            for f in self.models[model_uid].fields:
+            for f in self.modelsDct[model_uid].fields:
                 if f.isPrimaryKey:
                     for col in f.columns():
                         self._add_column(columns, model_uid, tabid, col)
@@ -109,7 +112,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             self.rt.pkColumns[model_uid] = [v[1] for k, v in columns.items() if k[0] == tabid]
 
         for model_uid, tabid in model_to_tabid.items():
-            for f in self.models[model_uid].fields:
+            for f in self.modelsDct[model_uid].fields:
                 if not f.isPrimaryKey:
                     for col in f.columns():
                         self._add_column(columns, model_uid, tabid, col)
@@ -120,12 +123,18 @@ class Object(gws.Node, gws.IDatabaseManager):
         for model_uid, tabid in model_to_tabid.items():
             if tabid in tabid_to_table:
                 continue
+
             provider_uid, table_name = tabid
+
+            if not self.rt.pkColumns[model_uid]:
+                raise gws.Error(f'no primary key for table {table_name!r} in model {model_uid!r}')
+
             provider = self.provider(provider_uid)
             cols = [v[1] for k, v in columns.items() if k[0] == tabid]
             tab = self.table(provider, table_name, cols)
             cls = type('FeatureRecord_' + provider_uid + '_' + gws.to_uid(table_name), (gws.FeatureRecord,), {})
             self.registry_for_provider(provider).map_imperatively(cls, tab)
+
             tabid_to_table[tabid] = tab
             tabid_to_class[tabid] = cls
 
@@ -136,7 +145,7 @@ class Object(gws.Node, gws.IDatabaseManager):
 
         for model_uid, tabid in model_to_tabid.items():
             d = {}
-            for f in self.models[model_uid].fields:
+            for f in self.modelsDct[model_uid].fields:
                 d.update(f.orm_properties())
             tabid_to_props.setdefault(tabid, {}).update(d)
 
@@ -144,7 +153,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             for k, v in props.items():
                 sa.orm.add_mapped_attribute(tabid_to_class[tabid], k, v)  # type: ignore
 
-        for model in self.models.values():
+        for model in self.modelsDct.values():
             self._configure_model_key(model)
             self._configure_model_geometry(model)
 
@@ -203,23 +212,19 @@ class Object(gws.Node, gws.IDatabaseManager):
             if repr(old_val) != repr(new_val):
                 gws.log.debug(
                     f'column conflict: '
-                    + f'{new_model_uid}.{new_col.name}.{k}={new_val!r}, '
+                    + f'{new_model_uid}.{new_col.name}.{k}={new_val!r},'
                     + f'{old_model_uid}.{old_col.name}.{k}={old_val!r}')
                 return True
 
     def _configure_model_key(self, model: gws.IDatabaseModel):
         tab = self.table_for_model(model)
-        pcol = None
 
         for c in self.table_columns(tab):
             if c.primary_key:
-                pcol = c
-                break
+                model.keyName = str(c.name)
+                return
 
-        if pcol is None:
-            raise gws.Error(f'primary key not found for table {tab.name!r}')
-
-        model.keyName = pcol.name
+        raise gws.Error(f'primary key not found for table {tab.name!r}')
 
     def _configure_model_geometry(self, model):
         tab = self.table_for_model(model)
@@ -245,9 +250,9 @@ class Object(gws.Node, gws.IDatabaseManager):
             model.geometryCrs = None
             return
 
-        model.geometryName = gcol.name
+        model.geometryName = str(gcol.name)
 
-        real_type = self.SA_TO_GEOM.get(gcol.type.geometry_type)
+        real_type = self.SA_TO_GEOM.get(gcol.type.geometry_type, gws.GeometryType.geometry)
         real_srid = gcol.type.srid
 
         fields = [f for f in model.fields if f.name == gcol.name]
