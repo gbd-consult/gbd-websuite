@@ -182,14 +182,3 @@ class Object(gws.Node, gws.IModel):
     def compute_values(self, feature, access, user, **kwargs):
         for f in self.fields:
             f.compute(feature, access, user, **kwargs)
-
-
-class _DefaultModel(Object):
-    def configure(self):
-        self.keyName = 'uid'
-        self.geometryName = 'geometry'
-        self.loadingStrategy = gws.FeatureLoadingStrategy.all
-
-
-def get_default(root: gws.IRoot) -> gws.IModel:
-    return root.create_shared(_DefaultModel, uid='gws.base.model.core._DefaultModel')
