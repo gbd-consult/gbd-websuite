@@ -19,6 +19,10 @@ class Config(gws.ConfigWithAccess):
     """templates for this model"""
     title: str = ''
     """model title"""
+    withAutoload: bool = False
+    """autoload non-configured model fields from the source"""
+    autoloadExclude: t.Optional[list[str]]
+    """exclude field names from autoload"""
 
 
 class Props(gws.Props):
@@ -51,15 +55,23 @@ class Object(gws.Node, gws.IModel):
         self.title = self.cfg('title')
 
     def configure_fields(self):
+        has_conf = False
+        has_auto = False
         p = self.cfg('fields')
         if p:
             self.fields = self.create_children(gws.ext.object.modelField, p, _defaultModel=self)
-            return True
+            has_conf = True
+        if not p or self.cfg('withAutoload'):
+            has_auto = self.configure_auto_fields()
+        return has_conf or has_auto
 
     def configure_auto_fields(self):
+        exclude = set(self.cfg('autoloadExclude', default=[]))
+
         desc = self.describe()
         if not desc:
             return False
+
         for col in desc.columns.values():
             if col.isForeignKey:
                 # we do not configure relations automatically
@@ -68,9 +80,13 @@ class Object(gws.Node, gws.IModel):
             cfg = util.field_config_from_column(col)
             if not cfg:
                 continue
+            name = cfg.get('name')
+            if name in exclude or any(f.name == name for f in self.fields):
+                continue
             fld = self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self)
             if fld:
                 self.fields.append(fld)
+
         return True
 
     def configure_templates(self):
