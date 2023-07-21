@@ -250,27 +250,6 @@ class Object(gws.Node, gws.IOwsProvider):
         gws.log.warning(f'directRender not supported for {prov!r}')
         return default
 
-    def _leaf_finder_config(self, source_layers):
-        if len(source_layers) > 1 or source_layers[0].isGroup:
-            return
-
-        ds = source_layers[0].dataSource
-        if not ds:
-            return
-
-        prov = ds.get('provider')
-        if prov not in self.directSearch:
-            return
-
-        if prov == 'wms':
-            return self._leaf_direct_search_wms(ds)
-        if prov == 'wfs':
-            return self._leaf_direct_search_wfs(ds)
-        if prov == 'postgres':
-            return self._leaf_direct_search_postgres(ds)
-
-        gws.log.warning(f'directSearch not supported for {prov!r}')
-
     def _leaf_direct_render_wms(self, ds):
         layers = ds.get('layers')
         url = self._leaf_service_url(ds.get('url'), ds.get('params'))
@@ -281,17 +260,6 @@ class Object(gws.Node, gws.IOwsProvider):
             'sourceLayers': {'names': layers},
             'display': 'tile',
             'provider': {'url': url},
-        }
-
-    def _leaf_direct_search_wms(self, ds):
-        layers = ds.get('layers')
-        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
-        if not layers or not url:
-            return
-        return {
-            'type': 'wms',
-            'sourceLayers': {'names': layers},
-            'provider': {'url': url}
         }
 
     def _leaf_direct_render_wmts(self, ds):
@@ -316,6 +284,38 @@ class Object(gws.Node, gws.IOwsProvider):
         return {
             'type': 'tile',
             'provider': {'url': url},
+        }
+
+    def _leaf_finder_config(self, source_layers):
+        if len(source_layers) > 1 or source_layers[0].isGroup:
+            return
+
+        ds = source_layers[0].dataSource
+        if not ds:
+            return
+
+        prov = ds.get('provider')
+        if prov not in self.directSearch:
+            return
+
+        if prov == 'wms':
+            return self._leaf_direct_search_wms(ds)
+        if prov == 'wfs':
+            return self._leaf_direct_search_wfs(ds)
+        if prov == 'postgres':
+            return self._leaf_direct_search_postgres(ds)
+
+        gws.log.warning(f'directSearch not supported for {prov!r}')
+
+    def _leaf_direct_search_wms(self, ds):
+        layers = ds.get('layers')
+        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
+        if not layers or not url:
+            return
+        return {
+            'type': 'wms',
+            'sourceLayers': {'names': layers},
+            'provider': {'url': url}
         }
 
     def _leaf_direct_search_wfs(self, ds):
@@ -343,10 +343,10 @@ class Object(gws.Node, gws.IOwsProvider):
         return cfg
 
     def _leaf_direct_search_postgres(self, ds):
-        tab = ds.get('table')
+        table_name = ds.get('table')
 
         # 'table' can also be a select statement, in which case it might be enclosed in parens
-        if not tab or tab.startswith('(') or tab.upper().startswith('SELECT '):
+        if not table_name or table_name.startswith('(') or table_name.upper().startswith('SELECT '):
             return
 
         # @TODO support extra sql from ds['sql']
@@ -361,11 +361,9 @@ class Object(gws.Node, gws.IOwsProvider):
             options=ds.get('options'),
         ))
 
-        # @TODO find a model configured for this table and use it
-
         return {
             'type': 'postgres',
-            'tableName': tab,
+            'tableName': table_name,
             'models': [{'type': 'postgres'}],
             '_defaultProvider': pg_provider
         }
