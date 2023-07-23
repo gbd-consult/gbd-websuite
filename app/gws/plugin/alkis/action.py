@@ -316,11 +316,7 @@ class Object(gws.base.action.Object):
             uid='gws.plugin.alkis.data.index.' + self.cfg('indexSchema')
         )
 
-        self.indexExists = self.index.exists()
-        if self.indexExists:
-            gws.log.info(f'alkis index ok')
-        else:
-            gws.log.warning(f'alkis index NOT FOUND')
+        self.indexExists = False
 
         self.limit = self.cfg('limit')
         self.model = self.create_child(Model)
@@ -350,6 +346,13 @@ class Object(gws.base.action.Object):
         # else:
         #     groups = []
         # self.export_groups = [self.root.create_required(ExportGroup, g) for g in groups]
+
+    def activate(self):
+        self.indexExists = self.index.exists()
+        if self.indexExists:
+            gws.log.info(f'alkis index ok')
+        else:
+            gws.log.warning(f'alkis index NOT FOUND')
 
     def props(self, user):
         if not self.indexExists:

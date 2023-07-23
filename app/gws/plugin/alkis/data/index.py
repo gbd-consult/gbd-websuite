@@ -30,6 +30,18 @@ TABLE_INDEXGEOM = 'indexgeom'
 class Object(gws.Node):
     VERSION = '8'
 
+    TABLE_IDS = [
+        TABLE_FLURSTUECK,
+        TABLE_BUCHUNGSBLATT,
+        TABLE_LAGE,
+        TABLE_PART,
+        TABLE_INDEXFLURSTUECK,
+        TABLE_INDEXLAGE,
+        TABLE_INDEXBUCHUNGSBLATT,
+        TABLE_INDEXPERSON,
+        TABLE_INDEXGEOM,
+    ]
+
     provider: gws.plugin.postgres.provider.Object
     crs: gws.ICrs
     schema: str
@@ -38,19 +50,20 @@ class Object(gws.Node):
     saMeta: sa.MetaData
     tables: dict[str, sa.Table]
 
-    columns = {}
+    columnDct = {}
 
     def configure(self):
         self.provider = gws.base.database.provider.get_for(self, ext_type='postgres')
         self.crs = gws.gis.crs.get(self.cfg('crs'))
         self.schema = self.cfg('schema', default='public')
         self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
+        self.tables = {}
 
     def activate(self):
         self.saMeta = sa.MetaData(schema=self.schema)
         self.tables = {}
 
-        self.columns = {
+        self.columnDct = {
             TABLE_FLURSTUECK: [
                 sa.Column('uid', sa.Text, primary_key=True),
                 sa.Column('rc', sa.Integer),
@@ -209,7 +222,7 @@ class Object(gws.Node):
             self.tables[table_id] = sa.Table(
                 table_name,
                 self.saMeta,
-                *self.columns[table_id],
+                *self.columnDct[table_id],
                 schema=self.schema,
             )
         return self.tables[table_id]
@@ -232,7 +245,7 @@ class Object(gws.Node):
 
     def exists(self):
         with self.connect() as conn:
-            for table_id in self.columns:
+            for table_id in self.TABLE_IDS:
                 size = self._table_size(conn, table_id)
                 gws.log.debug(f'{table_id=} {size=}')
                 if size == 0:
@@ -246,7 +259,7 @@ class Object(gws.Node):
         self.saMeta.drop_all(self.provider.engine(), tables=[tab])
 
     def drop(self):
-        tabs = [self.table(table_id) for table_id in self.columns]
+        tabs = [self.table(table_id) for table_id in self.TABLE_IDS]
         self.saMeta.drop_all(self.provider.engine(), tables=tabs)
 
     INSERT_SIZE = 5000
