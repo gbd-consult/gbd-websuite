@@ -15,6 +15,7 @@ class View extends gws.View<Props> {
             disabled={this.props.widgetProps.readOnly}
             value={value}
             items={this.props.widgetProps.items}
+            withSearch={this.props.widgetProps.withSearch}
             whenChanged={this.props.whenChanged}
         />
     }
