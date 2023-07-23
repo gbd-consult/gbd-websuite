@@ -64,7 +64,7 @@ def to_string_list(exc: Exception) -> list:
 
     if messages:
         head += ': ' + messages[0]
-    if lines:
+    if len(lines) > 1:
         head += ' ' + lines[1].strip()
 
     lines.insert(0, head)

@@ -433,19 +433,23 @@ def _format_error_stack(stack):
     f = []
 
     for name, value, type_uid in reversed(stack):
-        name = repr(name)
-        line = 'item ' + name if name.isdigit() else name
-        if type_uid:
-            line += f' [{type_uid}]'
+        line = ''
+
+        if name:
+            name = repr(name)
+            line = f'item {name}' if name.isdigit() else name
+
+        obj = type_uid or 'object'
         for p in 'uid', 'title', 'type':
             try:
                 s = value.get(p)
                 if s is not None:
-                    line += f' ({p}={s!r})'
+                    obj += f' {p}={s!r}'
                     break
             except AttributeError:
                 pass
-        f.append('in ' + line)
+
+        f.append(f'in {line} <{obj}>')
 
     return f
 

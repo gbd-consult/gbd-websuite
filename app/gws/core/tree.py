@@ -136,6 +136,9 @@ class Root(types.IRoot):
     def find_all(self, classref):
         return _find_all_in(self, self._objects, classref)
 
+    def object_count(self):
+        return len(self._objects)
+
     def create_application(self, config=None, **kwargs):
         config = _to_config(config, kwargs)
 
@@ -209,12 +212,10 @@ class Root(types.IRoot):
         return str(self._uidCount)
 
     def _config_error(self, exc):
-        lines = [repr(exc)]
-
-        for val in reversed(self._configStack):
-            lines.append('in ' + repr(val))
-
-        self.configErrors.append(lines)
+        lines = ['in ' + repr(val) for val in reversed(self._configStack)]
+        err = gws.ConfigurationError(repr(exc), *lines)
+        err.__cause__ = exc
+        self.configErrors.append(err)
 
 
 ##

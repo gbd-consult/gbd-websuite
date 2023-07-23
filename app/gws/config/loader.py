@@ -25,43 +25,48 @@ def configure(
                 _print(item)
         elif a is not None:
             for s in str(a).split('\n'):
-                gws.log.error('CONFIGURATION ERROR: ' + s)
+                gws.log.error(errpfx + s)
 
-    def _report(_args):
-        _print('-' * 60)
-        _print(_args)
-        _print('-' * 60)
+    def _report(_exc):
+        _print(getattr(_exc, 'args', repr(_exc)))
+
+    errors = []
+    errpfx = 'CONFIGURATION ERROR: '
+    root_object = None
 
     try:
         specs = gws.spec.runtime.create(manifest_path, read_cache=True, write_cache=True)
     except Exception as exc:
-        _report(exc.args)
+        _report(exc)
         raise gws.ConfigurationError('spec failed') from exc
 
-    try:
-        if not config:
-            config = parser.parse_main(specs, config_path)
+    if not config:
+        p = parser.ConfigParser(specs)
+        config = p.parse_main(config_path)
+        errors.extend(p.errors)
 
+    if config:
         if before_init:
             before_init(config)
-
         root_object = initialize(specs, config)
+        if root_object:
+            errors.extend(root_object.configErrors)
 
-        if not root_object.configErrors:
-            gws.log.info('configuration ok')
-            return root_object
-
-        for err in root_object.configErrors:
+    if errors:
+        cnt = len(errors)
+        for n, err in enumerate(errors, 1):
+            gws.log.error(errpfx + f'{n} of {cnt}')
             _report(err)
+            gws.log.error(errpfx + ('-' * 60))
+        gws.log.error(errpfx + f'total {cnt} error(s)')
 
-        gws.log.warning(f'CONFIGURATION ERRORS: {len(root_object.configErrors)}')
-
-        if not specs.manifest.withStrictConfig:
+    if root_object:
+        if not errors:
+            gws.log.info(f'configuration ok, {root_object.object_count()} objects')
             return root_object
-
-    except Exception as exc:
-        gws.log.exception()
-        _report(exc.args)
+        if not specs.manifest.withStrictConfig:
+            gws.log.warning(f'configuration complete with errors, {root_object.object_count()} objects')
+            return root_object
 
     if specs.manifest.withFallbackConfig and fallback_config:
         gws.log.warning(f'using fallback config')

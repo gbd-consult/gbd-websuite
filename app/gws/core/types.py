@@ -283,6 +283,8 @@ class IRoot(Protocol):
 
     def get(self, uid: str, classref: ClassRef = None) -> Optional[INode]: ...
 
+    def object_count(self) -> int: ...
+
     def create(self, classref: ClassRef, parent: 'INode' = None, config=None, **kwargs): ...
 
     def create_shared(self, classref: ClassRef, config=None, **kwargs): ...
@@ -1863,6 +1865,7 @@ class ILayer(INode, Protocol):
 
     metadata: 'Metadata'
     legend: Optional['ILegend']
+    legendUrl: str
 
     finders: list['IFinder']
     templates: list['ITemplate']
