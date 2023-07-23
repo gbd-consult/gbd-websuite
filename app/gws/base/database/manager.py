@@ -181,7 +181,6 @@ class Object(gws.Node, gws.IDatabaseManager):
         'onpudate',
         'onupdate',
         'primary_key',
-        'proxy_set',
         'server_default',
         'server_onupdate',
         'stringify_dialect',
@@ -202,10 +201,11 @@ class Object(gws.Node, gws.IDatabaseManager):
             columns[key] = [model_uid, col]
             return
         old_model_uid, old_col = columns[key]
-        if self._column_declarations_differ(model_uid, col, old_model_uid, old_col):
-            gws.log.warning(f'confilcting column {col.name!r} in models {old_model_uid!r} and {model_uid!r}')
+        if old_model_uid == model_uid:
+            return
+        self._check_column_conflicts(model_uid, col, old_model_uid, old_col)
 
-    def _column_declarations_differ(self, new_model_uid, new_col, old_model_uid, old_col):
+    def _check_column_conflicts(self, new_model_uid, new_col, old_model_uid, old_col):
         for k in self._add_column_check_keys:
             new_val = getattr(new_col, k, None)
             old_val = getattr(old_col, k, None)
@@ -214,7 +214,6 @@ class Object(gws.Node, gws.IDatabaseManager):
                     f'column conflict: '
                     + f'{new_model_uid}.{new_col.name}.{k}={new_val!r},'
                     + f'{old_model_uid}.{old_col.name}.{k}={old_val!r}')
-                return True
 
     def _configure_model_key(self, model: gws.IDatabaseModel):
         tab = self.table_for_model(model)

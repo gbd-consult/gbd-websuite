@@ -47,7 +47,7 @@ class Object(gws.base.layer.vector.Object):
         return self.create_child(
             gws.ext.object.model,
             cfg,
-            type='postgres',
+            type=self.extType,
             _defaultProvider=self.provider,
             _defaultTableName=self.tableName
         )
