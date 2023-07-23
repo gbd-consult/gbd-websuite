@@ -171,6 +171,7 @@ class Object(gws.Node, gws.ILayer):
 
         self.metadata = gws.Metadata()
         self.legend = None
+        self.legendUrl = ''
 
         self.layers = []
 
@@ -202,6 +203,9 @@ class Object(gws.Node, gws.ILayer):
 
         if not gws.gis.bounds.intersect(self.bounds, self.parentBounds):
             raise gws.Error(f'layer {self!r}: bounds outside of the parent bounds')
+
+        if self.legend:
+            self.legendUrl = self.url_path('legend')
 
     ##
 
