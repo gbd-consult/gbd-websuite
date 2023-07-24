@@ -118,7 +118,11 @@ class Root(types.IRoot):
 
     def post_initialize(self):
         for obj in reversed(self._objects):
-            self._configStack = [obj]
+            self._configStack = []
+            p = obj
+            while p:
+                self._configStack.insert(0, p)
+                p = getattr(p, 'parent', None)
             try:
                 _super_invoke(obj, 'post_configure')
             except Exception as exc:
