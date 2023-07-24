@@ -27,7 +27,7 @@ let {Form, Row, Cell} = gws.ui.Layout;
 
 const defaultLabelTemplates = {
     Point: '{xy}',
-    Line: '{len}',
+    Line: '{len | m | 2}',
     Polygon: '{area}',
     Circle: '{radius}',
     Box: '{width} x {height}',
