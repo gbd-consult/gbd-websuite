@@ -1,5 +1,4 @@
 import re
-import psutil
 from typing import Generic, TypeVar
 
 import shapely
@@ -7,6 +6,7 @@ import shapely.strtree
 import shapely.wkb
 
 import gws
+import gws.lib.osx
 from gws.lib.console import ProgressIndicator
 import gws.plugin.postgres.provider
 
@@ -901,7 +901,7 @@ class _Runner:
         self.fsdata = _FsDataIndexer(self)
         self.fsindex = _FsIndexIndexer(self)
 
-        self.initMemory = psutil.Process().memory_info().rss
+        self.initMemory = gws.lib.osx.process_rss_size()
 
     def run(self):
         with ProgressIndicator(f'ALKIS: indexing'):
@@ -930,8 +930,7 @@ class _Runner:
             self.fsindex.write()
 
     def memory_info(self):
-        m = psutil.Process().memory_info().rss
-        v = (m - self.initMemory) / (1024 * 1024)
+        v = gws.lib.osx.process_rss_size() - self.initMemory
         if v > 0:
             gws.log.info(f'ALKIS: memory used: {v:.2f} MB', stacklevel=2)
 

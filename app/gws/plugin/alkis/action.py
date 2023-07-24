@@ -350,9 +350,9 @@ class Object(gws.base.action.Object):
     def activate(self):
         self.indexExists = self.index.exists()
         if self.indexExists:
-            gws.log.info(f'alkis index ok')
+            gws.log.info(f'ALKIS index ok')
         else:
-            gws.log.warning(f'alkis index NOT FOUND')
+            gws.log.warning(f'ALKIS index NOT FOUND')
 
     def props(self, user):
         if not self.indexExists:
