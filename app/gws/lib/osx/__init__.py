@@ -25,6 +25,10 @@ def getenv(key: str, default: str = None) -> t.Optional[str]:
     return os.getenv(key, default)
 
 
+def utime():
+    return time.time()
+
+
 def run_nowait(cmd, **kwargs):
     """Run a process and return immediately"""
 
@@ -138,6 +142,17 @@ def running_pids() -> dict[int, str]:
     for p in psutil.process_iter():
         d[p.pid] = p.name()
     return d
+
+
+def process_rss_size(unit='m') -> float:
+    n = psutil.Process().memory_info().rss
+    if unit == 'k':
+        return n / 1e3
+    if unit == 'm':
+        return n / 1e6
+    if unit == 'g':
+        return n / 1e9
+    return n
 
 
 def find_files(dirname, pattern=None, ext=None, deep=True):

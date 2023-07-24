@@ -39,6 +39,3 @@ def format_map(fmt, data, default=''):
 def retry(times=100, pause=10, factor=1.0):
     return _Retry(times, pause, factor)
 
-
-def utime():
-    return time.time()
