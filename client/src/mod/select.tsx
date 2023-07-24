@@ -340,7 +340,7 @@ class SelectController extends gws.Controller {
         if (!this.layer) {
             this.layer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
                 uid: '_select',
-                style: '.modSelectFeature',
+                cssSelector: '.modSelectFeature',
             }));
         }
 
