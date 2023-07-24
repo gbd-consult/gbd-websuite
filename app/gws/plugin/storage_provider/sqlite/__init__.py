@@ -29,7 +29,7 @@ class Object(gws.base.storage.provider.Object):
 
     def activate(self):
         self.metaData = sa.MetaData()
-        self.engine = sa.create_engine(f'sqlite:///{self.dbPath}', echo=True)
+        self.engine = sa.create_engine(f'sqlite:///{self.dbPath}')
 
         self.table = sa.Table(
             'storage',
