@@ -42,11 +42,15 @@ class Object(gws.base.layer.Object):
         self.provider = provider.get_for(self)
         return True
 
-    def configure_bounds(self):
-        if super().configure_bounds():
-            return True
-        self.bounds = gws.gis.bounds.transform(self.provider.grid.bounds, self.mapCrs)
-        return True
+    #
+    # reprojecting the world doesn't make sense, just use the map extent here
+    # see also ows_provider/wmts
+    #
+    # def configure_bounds(self):
+    #     if super().configure_bounds():
+    #         return True
+    #     self.bounds = gws.gis.bounds.transform(self.provider.grid.bounds, self.mapCrs)
+    #     return True
 
     def configure_grid(self):
         p = self.cfg('grid', default=gws.Config())
