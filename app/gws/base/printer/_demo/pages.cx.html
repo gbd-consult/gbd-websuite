@@ -1,0 +1,53 @@
+@page width="210" height="297" margin="30 10 30 10"
+
+@header
+    <table width="100%">
+        <th style="text-align: center; padding: 6pt; font-size:12pt; border-bottom: 0.5mm solid black">
+            Multi-page template
+        </td>
+    </tr></table>
+@end header
+
+@footer
+    <table width="100%">
+        <td style="text-align: left; padding: 6pt; font-size:9pt">
+            {date.medium}
+        </td>
+        <td style="text-align: right; padding: 6pt; font-size:9pt">
+            Page {page} of {numpages}
+        </td>
+    </tr></table>
+@end footer
+
+<h1>Map</h1>
+
+@map
+
+<div style="page-break-after: always"></div>
+
+<h1>Data</h1>
+
+<p>Project:       <br> <b>  {project.title}     </b></p>
+<p>User:          <br> <b>  {user.displayName}  </b></p>
+<p>Version:       <br> <b>  {gwsVersion}        </b></p>
+<p>Locale:        <br> <b>  {localeUid}         </b></p>
+<p>Map scale:     <br> <b>  {scale}             </b></p>
+<p>Map rotation:  <br> <b>  {rotation}          </b></p>
+<p>Map CRS:       <br> <b>  {crs}               </b></p>
+<p>Quality (DPI): <br> <b>  {dpi}               </b></p>
+<p>Date:          <br> <b>  {date.medium}       </b></p>
+<p>Time:          <br> <b>  {time.medium}       </b></p>
+
+<div style="page-break-after: always"></div>
+
+<h1>Information</h1>
+
+<p>
+Düsseldorf ist die Landeshauptstadt Nordrhein-Westfalens und der Behördensitz des Regierungsbezirks Düsseldorf. Die kreisfreie Stadt am Rhein ist mit 629.047 Einwohnern am 31. Dezember 2022 – hinter Köln – die zweitgrößte Stadt des Bundeslandes und die siebtgrößte Stadt in Deutschland. Düsseldorf ist Teil der Metropolregion Rhein-Ruhr mit rund 10,2 Millionen Einwohnern und der Metropolregion Rheinland mit 8,7 Millionen Einwohnern. Die Stadt liegt im Kern des zentralen europäischen Wirtschaftsraumes.
+</p>
+
+<p>
+Im Jahr 1288 erhielt der Ort an der Mündung des Flüsschens Düssel in den Rhein das Stadtrecht. Vom Ende des 14. Jahrhunderts bis zum Beginn des 19. Jahrhunderts war die Stadt Regierungssitz von Ländern des Heiligen Römischen Reichs und des Rheinbundes: des Herzogtums Berg, der Herzogtümer Jülich-Berg und Jülich-Kleve-Berg sowie des Großherzogtums Berg, von 1690 bis 1716 auch Residenz des Pfalzgrafen und Kurfürsten Johann Wilhelm von der Pfalz. Durch den Bau einer Kurfürstlichen Gemäldegalerie mit einer international rezipierten Kunstsammlung wurde 1709 eine bedeutende Kunst- und Ausstellungstradition begründet. Seit 1815 preußisch, wurde die Stadt 1816 Sitz des Regierungsbezirks Düsseldorf. Von 1824 bis 1933 war sie der Parlamentssitz der Rheinprovinz. Im Kaiserreich entwickelte sich Düsseldorf im Zuge der Hochindustrialisierung in Deutschland zum „Schreibtisch des Ruhrgebiets“ und wurde mit dem Überschreiten der Marke von 100.000 Einwohnern im Jahr 1882 zur Großstadt.
+</p>
+
+<p><i>Quelle: Wikipedia</i></p>

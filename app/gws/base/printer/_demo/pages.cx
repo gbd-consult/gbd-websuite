@@ -1,0 +1,25 @@
+projects+ {
+    title "Printing: multi-page"
+    metadata.abstract "Multi-page print template with headers and footers."
+
+    printer.templates+ {
+        uid "print_pages"
+        type "html"
+        path "pages.cx.html"
+        mapSize [ "180mm" "140mm" ]
+    }
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 30000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "Düsseldorf"
+        type "qgis"
+        provider.path "/data/demos/poi_geojson.qgs"
+    }
+
+    {demo_osm_background}
+}
