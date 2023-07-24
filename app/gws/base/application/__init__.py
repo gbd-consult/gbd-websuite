@@ -146,11 +146,11 @@ class Object(gws.Node, gws.IApplication):
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
 
-        if self.cfg('server.qgis.enabled'):
-            qgis_server = gws.lib.importer.import_from_path('gws/plugin/qgis/server.py')
-            self.qgisVersion = qgis_server.version()
-            if self.qgisVersion:
-                self.versionString += f', QGis {self.qgisVersion}'
+        # if self.cfg('server.qgis.enabled'):
+        #     qgis_server = gws.lib.importer.import_from_path('gws/plugin/qgis/server.py')
+        #     self.qgisVersion = qgis_server.version()
+        #     if self.qgisVersion:
+        #         self.versionString += f', QGis {self.qgisVersion}'
 
         gws.log.info('*' * 60)
         gws.log.info(self.versionString)

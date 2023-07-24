@@ -3,6 +3,7 @@ import sys
 import gws
 import gws.spec.runtime
 import gws.lib.jsonx
+import gws.lib.osx
 
 from . import parser
 
@@ -34,6 +35,9 @@ def configure(
     errpfx = 'CONFIGURATION ERROR: '
     root_object = None
 
+    ts = gws.lib.osx.utime()
+    ms = gws.lib.osx.process_rss_size()
+
     try:
         specs = gws.spec.runtime.create(manifest_path, read_cache=True, write_cache=True)
     except Exception as exc:
@@ -52,20 +56,26 @@ def configure(
         if root_object:
             errors.extend(root_object.configErrors)
 
+    err_cnt = 0
+
     if errors:
-        cnt = len(errors)
+        err_cnt = len(errors)
         for n, err in enumerate(errors, 1):
-            gws.log.error(errpfx + f'{n} of {cnt}')
+            gws.log.error(errpfx + f'{n} of {err_cnt}')
             _report(err)
             gws.log.error(errpfx + ('-' * 60))
-        gws.log.error(errpfx + f'total {cnt} error(s)')
 
     if root_object:
+        info = '{:d} objects, time: {:.2f} s., memory: {:.2f} MB'.format(
+            root_object.object_count(),
+            gws.lib.osx.utime() - ts,
+            gws.lib.osx.process_rss_size() - ms,
+        )
         if not errors:
-            gws.log.info(f'configuration ok, {root_object.object_count()} objects')
+            gws.log.info(f'configuration ok, {info}')
             return root_object
         if not specs.manifest.withStrictConfig:
-            gws.log.warning(f'configuration complete with errors, {root_object.object_count()} objects')
+            gws.log.warning(f'configuration complete with {err_cnt} error(s), {info}')
             return root_object
 
     if specs.manifest.withFallbackConfig and fallback_config:
@@ -77,16 +87,8 @@ def configure(
 
 def initialize(specs, parsed_config) -> gws.IRoot:
     r = gws.create_root_object(specs)
-
-    try:
-        gws.time_start('configuring application')
-        r.create_application(parsed_config)
-        gws.time_end()
-    except Exception as exc:
-        raise gws.ConfigurationError(*exc.args)
-
+    r.create_application(parsed_config)
     r.post_initialize()
-
     return r
 
 

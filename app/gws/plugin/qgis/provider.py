@@ -49,7 +49,8 @@ class Object(gws.Node, gws.IOwsProvider):
 
     def configure(self):
         self.configure_storage()
-        # self.root.app.monitor.add_path(self.storage.path)
+        if self.storage.path:
+            self.root.app.monitor.add_file(self.storage.path)
 
         self.url = 'http://{}:{}'.format(
             self.root.app.cfg('server.qgis.host'),
