@@ -277,9 +277,9 @@ class _Worker:
                 f = model.feature_from_props(p, self.user)
                 if not f or not f.shape:
                     continue
-                sel = f.cssSelector
-                if sel in style_dct:
-                    used_styles[sel] = style_dct[sel]
+                f.cssSelector = f.cssSelector or plane.cssSelector
+                if f.cssSelector in style_dct:
+                    used_styles[f.cssSelector] = style_dct[f.cssSelector]
                 features.append(f)
 
             if not features:

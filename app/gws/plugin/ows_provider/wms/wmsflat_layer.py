@@ -28,6 +28,9 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.Object):
+    canRenderBox = True
+    canRenderXyz = True
+
     provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
     sourceCrs: gws.ICrs
