@@ -16,9 +16,9 @@ projects+ {
 
     api.actions+ {
         type "annotate"
-        storageUid "common_storage"
-        storageCategory {
-            name "saved"
+        storage {
+            providerUid "common_storage"
+            categoryName "saved"
             permissions {
                 read "allow all"
                 write "allow all"

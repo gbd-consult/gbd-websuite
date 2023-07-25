@@ -575,7 +575,7 @@ class Controller extends gws.Controller {
         let props = this.app.actionProps('annotate') as gws.api.plugin.annotate.Props;
         if (props) {
             this.updateObject('storageState', {
-                annotateStorage: props.storageState,
+                annotateStorage: props.storage ? props.storage.state : null,
             })
         }
 
@@ -796,8 +796,11 @@ class Controller extends gws.Controller {
 
         let sty;
         for (let p of (data.styles || [])) {
-            sty = this.map.style.loadFromProps(p);
-            this.createFocusStyle(sty);
+            let s = p.cssSelector;
+            if (s && s.includes('annotateStyle')) {
+                sty = this.map.style.loadFromProps(p);
+                this.createFocusStyle(sty);
+            }
         }
 
         for (let p of data.features) {
