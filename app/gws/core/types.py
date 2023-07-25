@@ -1146,9 +1146,27 @@ class IDatabaseSession(Protocol):
 # storage
 
 class IStorageManager(INode, Protocol):
-    def provider(self, uid: str): ...
+    def provider(self, uid: str) -> Optional['IStorageProvider']: ...
 
-    def first_provider(self): ...
+    def first_provider(self) -> Optional['IStorageProvider']: ...
+
+
+class StorageRecord(Data):
+    name: str
+    userUid: str
+    data: str
+    created: int
+    updated: int
+
+
+class IStorageProvider(INode, Protocol):
+    def list_names(self, category: str) -> list[str]: ...
+
+    def read(self, category: str, name: str) -> Optional['StorageRecord']: ...
+
+    def write(self, category: str, name: str, data: str, user_uid: str): ...
+
+    def delete(self, category: str, name: str): ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------

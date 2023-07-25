@@ -3,8 +3,6 @@
 import gws
 import gws.types as t
 
-from . import provider
-
 
 class Config(gws.Config):
     """Storage configuration"""
@@ -14,7 +12,7 @@ class Config(gws.Config):
 
 
 class Object(gws.Node, gws.IStorageManager):
-    providers: dict[str, provider.Object]
+    providers: dict[str, gws.IStorageProvider]
 
     def configure(self):
         self.providers = {}

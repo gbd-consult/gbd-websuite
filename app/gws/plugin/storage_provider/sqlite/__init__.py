@@ -9,14 +9,14 @@ _DEFAULT_STORE_PATH = gws.MISC_DIR + '/storage8.sqlite'
 gws.ext.new.storageProvider('sqlite')
 
 
-class Config(gws.base.storage.provider.Config):
+class Config(gws.Config):
     """Configuration for sqlite storage."""
 
     path: t.Optional[str]
     """storage path"""
 
 
-class Object(gws.base.storage.provider.Object):
+class Object(gws.Node, gws.IStorageProvider):
     tableName = 'storage'
 
     dbPath: str
@@ -47,16 +47,16 @@ class Object(gws.base.storage.provider.Object):
         except Exception as exc:
             raise gws.Error(f'cannot open {self.dbPath!r}') from exc
 
-    def db_list_names(self, cat):
+    def list_names(self, category):
         return sorted(self._exec(sa.select(self.table.c.name)).scalars().all())
 
-    def db_read(self, cat, name):
+    def read(self, category, name):
         stmt = (
             sa.select(self.table)
-            .where(self.table.c.category == cat.name)
+            .where(self.table.c.category == category)
             .where(self.table.c.name == name))
         for rec in self._exec(stmt).mappings().all():
-            return gws.base.storage.provider.Record(
+            return gws.StorageRecord(
                 category=rec['category'],
                 name=rec['name'],
                 userUid=rec['user_uid'],
@@ -65,12 +65,12 @@ class Object(gws.base.storage.provider.Object):
                 updated=rec['updated'],
             )
 
-    def db_write(self, cat, name, data, user_uid):
-        rec = self.db_read(cat, name)
+    def write(self, category, name, data, user_uid):
+        rec = self.read(category, name)
         tmp = gws.random_string(64)
 
         self._exec(sa.insert(self.table).values(
-            category=cat.name,
+            category=category,
             name=tmp if rec else name,
             user_uid=user_uid,
             data=data,
@@ -79,16 +79,16 @@ class Object(gws.base.storage.provider.Object):
         ))
 
         if rec:
-            self.db_delete(cat, name)
+            self.delete(category, name)
             self._exec(
                 sa.update(self.table)
                 .where(self.table.c.name == tmp)
                 .values(name=name))
 
-    def db_delete(self, cat, name):
+    def delete(self, category, name):
         self._exec(
             sa.delete(self.table)
-            .where(self.table.c.category == cat.name)
+            .where(self.table.c.category == category)
             .where(self.table.c.name == name))
 
     def _exec(self, stmt):

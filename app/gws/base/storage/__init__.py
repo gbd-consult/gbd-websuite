@@ -1,10 +1,4 @@
 """Storage API."""
 
-from .core import (
-    Request,
-    Response,
-    State,
-    CategoryConfig
-)
-
-from . import manager, provider
+from .core import Request, Response, Config, Props, Object
+from . import manager
