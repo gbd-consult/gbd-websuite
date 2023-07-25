@@ -1,3 +1,13 @@
+## Version 8.0.6
+
+- ALKIS plugin updated
+- LDAP authorization
+- multi-page printing
+- better error handling in configuration
+- autoload option for models
+- support "label" elements in qgis printing
+- "search" option for select widgets
+
 ## Version 8.0.5
 
 - direct render and search options for qgis
