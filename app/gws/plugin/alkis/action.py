@@ -12,11 +12,12 @@ import gws.base.printer
 import gws.base.printer.core
 import gws.base.printer.job
 import gws.base.shape
+import gws.base.storage
 import gws.base.template
 import gws.base.web
 import gws.lib.date
-import gws.lib.style
 import gws.lib.sa as sa
+import gws.lib.style
 
 import gws.types as t
 
@@ -132,7 +133,10 @@ class Config(gws.ConfigWithAccess):
     nameSearchOptions: t.Optional[gws.TextSearchOptions]
     buchungsblattSearchOptions: t.Optional[gws.TextSearchOptions]
 
-    # export: t.Optional[ExportConfig] 
+    storage: t.Optional[gws.base.storage.Config]
+    """storage configuration"""
+
+    # export: t.Optional[ExportConfig]
     # """csv export configuration"""
 
 
@@ -141,6 +145,7 @@ class Props(gws.base.action.Props):
     limit: int
     printTemplate: gws.base.template.Props
     ui: Ui
+    storage: t.Optional[gws.base.storage.Props]
     withBuchung: bool
     withEigentuemer: bool
     withEigentuemerControl: bool
@@ -304,6 +309,8 @@ class Object(gws.base.action.Object):
     nameSearchOptions: gws.TextSearchOptions
     buchungsblattSearchOptions: gws.TextSearchOptions
 
+    storage: t.Optional[gws.base.storage.Object]
+
     def configure(self):
         provider = gws.base.database.provider.get_for(self, ext_type='postgres')
 
@@ -336,6 +343,9 @@ class Object(gws.base.action.Object):
         self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer'))
 
         self.dataSchema = self.cfg('dataSchema')
+
+        self.storage = self.create_child_if_configured(
+            gws.base.storage.Object, self.cfg('storage'), categoryName='Alkis')
 
         #
         # p = self.cfg('export')
@@ -375,6 +385,7 @@ class Object(gws.base.action.Object):
             limit=self.limit,
             printTemplate=gws.base.template.locate(self, user=user, subject='feature.print'),
             ui=self.ui,
+            storage=self.storage,
             withBuchung=user.can_read(self.buchung),
             withEigentuemer=user.can_read(self.eigentuemer),
             withEigentuemerControl=user.can_read(self.eigentuemer) and self.eigentuemer.controlMode,
@@ -518,6 +529,12 @@ class Object(gws.base.action.Object):
 
         job = gws.base.printer.job.start(self.root, pr, req.user)
         return gws.base.printer.job.status(job)
+
+    @gws.ext.command.api('alkisSelectionStorage')
+    def handle_storage(self, req: gws.IWebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
+        if not self.storage:
+            raise gws.base.web.error.NotFound()
+        return self.storage.handle_request(req, p)
 
     ##
 

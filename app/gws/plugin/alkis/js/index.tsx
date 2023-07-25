@@ -700,14 +700,14 @@ class SelectionTab extends gws.View<ViewProps> {
                     <Cell flex/>
                     {hasFeatures && <ExportAuxButton {...this.props} features={features}/>}
                     {hasFeatures && <PrintAuxButton {...this.props} features={features}/>}
-                    {/*<storage.AuxButtons*/}
-                    {/*    controller={cc}*/}
-                    {/*    actionName="alkissearchStorage"*/}
-                    {/*    hasData={hasFeatures}*/}
-                    {/*    dataWriter={name => cc.storageWriter()}*/}
-                    {/*    dataReader={(name, data) => cc.storageReader(data)}*/}
-                    {/*/>*/}
-                    {/*{hasFeatures && <ClearAuxButton {...this.props} />}*/}
+                    <storage.AuxButtons
+                        controller={cc}
+                        actionName="alkisSelectionStorage"
+                        hasData={hasFeatures}
+                        getData={() => cc.storageGetData()}
+                        loadData={(data) => cc.storageLoadData(data)}
+                    />
+                    {hasFeatures && <ClearAuxButton {...this.props} />}
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -905,6 +905,12 @@ class Controller extends gws.Controller {
         this.toponyms = await this.loadToponyms();
 
         console.timeEnd('ALKIS:toponyms:load');
+
+        this.updateObject('storageState', {
+            alkisSelectionStorage: this.setup.storage ? this.setup.storage.state : null,
+        })
+
+
 
         this.update({
             alkisTab: 'form',
@@ -1130,7 +1136,7 @@ class Controller extends gws.Controller {
         let pt = new ol.geom.Point(coord);
 
         let res = await this.app.server.alkisFindFlurstueck({
-                shapes: [this.map.geom2shape(pt)],
+            shapes: [this.map.geom2shape(pt)],
         });
 
         if (res.error) {
@@ -1339,38 +1345,37 @@ class Controller extends gws.Controller {
         this.selectionLayer.addFeatures(this.getValue('alkisFsSelection'));
     }
 
-    storageWriter() {
+    storageGetData() {
         let fs = this.getValue('alkisFsSelection');
         return {
             selection: fs.map(f => f.uid)
         }
     }
 
-    async storageReader(data) {
+    async storageLoadData(data) {
         this.clearSelection();
 
-        // if (!data || !data.selection)
-        //     return;
-        //
-        // let res = await this.app.server.alkissearchFindFlurstueck({
-        //     wantEigentuemer: false,
-        //     fsUids: data.selection,
-        // });
-        //
-        // if (res.error) {
-        //     return;
-        // }
-        //
-        // let features = this.map.readFeatures(res.features);
-        //
-        // this.select(features);
-        //
-        // this.update({
-        //     marker: {
-        //         features,
-        //         mode: 'zoom fade',
-        //     }
-        // });
+        if (!data || !data.selection)
+            return;
+
+        let res = await this.app.server.alkisFindFlurstueck({
+            uids: data.selection,
+        });
+
+        if (res.error) {
+            return;
+        }
+
+        let features = this.map.readFeatures(res.features);
+
+        this.select(features);
+
+        this.update({
+            marker: {
+                features,
+                mode: 'zoom fade',
+            }
+        });
 
     }
 
