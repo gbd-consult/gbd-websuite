@@ -698,8 +698,8 @@ class SelectionTab extends gws.View<ViewProps> {
                 <sidebar.AuxToolbar>
                     <Navigation {...this.props}/>
                     <Cell flex/>
-                    {/*{hasFeatures && <ExportAuxButton {...this.props} features={features}/>}*/}
-                    {/*{hasFeatures && <PrintAuxButton {...this.props} features={features}/>}*/}
+                    {hasFeatures && <ExportAuxButton {...this.props} features={features}/>}
+                    {hasFeatures && <PrintAuxButton {...this.props} features={features}/>}
                     {/*<storage.AuxButtons*/}
                     {/*    controller={cc}*/}
                     {/*    actionName="alkissearchStorage"*/}
@@ -1259,6 +1259,7 @@ class Controller extends gws.Controller {
         let featureStyle = this.app.style.get('.alkisFeature').props;
 
         let mapParams = await this.map.printParams(null, dpi);
+        mapParams.planes = mapParams.planes.filter(p => p.layerUid !== '_alkisSelectLayer');
 
         let printRequest: gws.api.base.printer.Request = {
             type: gws.api.base.printer.RequestType.template,
@@ -1306,8 +1307,8 @@ class Controller extends gws.Controller {
     select(fs: Array<gws.types.IFeature>) {
         if (!this.selectionLayer) {
             this.selectionLayer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
-                uid: '_select',
-                style: '.alkisSelectFeature',
+                uid: '_alkisSelectLayer',
+                cssSelector: '.alkisSelectFeature',
             }));
         }
 

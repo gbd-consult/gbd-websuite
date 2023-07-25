@@ -347,10 +347,16 @@ class Object(gws.Node):
         if q.uids:
             where.append(indexfs.c.fs.in_(q.uids))
 
-        for name in 'flurnummer', 'flurstuecksfolge', 'zaehler', 'nenner', 'flurstueckskennzeichen':
+        for name in 'flurnummer', 'flurstuecksfolge', 'zaehler', 'nenner':
             val = getattr(q, name, None)
             if val is not None:
                 where.append(getattr(indexfs.c, name) == val)
+
+        if q.flurstueckskennzeichen:
+            val = re.sub(r'[^0-9_]', '', q.flurstueckskennzeichen)
+            if not val:
+                raise gws.BadRequestError(f'invalid flurstueckskennzeichen {q.flurstueckskennzeichen!r}')
+            where.append(indexfs.c.flurstueckskennzeichen.like(val + '%'))
 
         if q.gemarkungCode:
             where.append(indexfs.c.gemarkungcode == q.gemarkungCode)
