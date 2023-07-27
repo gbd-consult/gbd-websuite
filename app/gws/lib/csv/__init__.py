@@ -1,62 +1,70 @@
 """Common csv writer helper."""
 
+import decimal
+import datetime
+
 import gws
+import gws.lib.intl
 import gws.types as t
 
 gws.ext.new.helper('csv')
 
 
-# @TODO use locale-dependent formatting
-
 class Config(gws.Config):
     """CSV format settings"""
 
-    decimal: str = '.' 
-    """decimal sign"""
-    delimiter: str = ',' 
+    delimiter: str = ','
     """field delimiter"""
-    encoding: str = 'utf8' 
+    encoding: str = 'utf8'
     """encoding for CSV files"""
-    formulaHack: bool = True 
+    formulaHack: bool = True
     """prepend numeric strings with an equal sign"""
-    precision: int = 2 
-    """precision for floats"""
-    quote: str = '"' 
+    quote: str = '"'
     """quote sign"""
-    quoteAll: bool = False 
+    quoteAll: bool = False
     """quote all fields"""
-    rowDelimiter: str = '\n' 
+    rowDelimiter: str = '\n'
     """row delimiter"""
 
 
-
 class Object(gws.Node):
+    delimiter: str
+    encoding: str
+    formulaHack: bool
+    quote: str
+    quoteAll: bool
+    rowDelimiter: str
+
     def configure(self):
-        self.decimal = self.cfg('decimal')
         self.delimiter = self.cfg('delimiter')
         self.encoding = self.cfg('encoding')
-        self.formula_hack = self.cfg('formulaHack')
-        self.precision = self.cfg('precision')
+        self.formulaHack = self.cfg('formulaHack')
         self.quote = self.cfg('quote')
-        self.quote_all = self.cfg('quoteAll')
-        self.row_delimiter = self.cfg('rowDelimiter', default='\n').replace('CR', '\r').replace('LF', '\n')
+        self.quoteAll = self.cfg('quoteAll')
+        self.rowDelimiter = self.cfg('rowDelimiter', default='\n').replace('CR', '\r').replace('LF', '\n')
 
-    def writer(self):
-        return _Writer(self)
+    def writer(self, locale_uid: t.Optional[str] = None):
+        if not locale_uid and self.root.app.localeUids:
+            locale_uid = self.root.app.localeUids[0]
+        return _Writer(self, locale_uid)
 
 
 class _Writer:
-    def __init__(self, helper):
+    def __init__(self, helper, locale_uid):
         self.h: Object = helper
         self.rows = []
         self.headers = ''
+        locale_uid = locale_uid or 'en_CA'
+        self.numberFormatter = gws.lib.intl.NumberFormatter(locale_uid)
+        self.dateFormatter = gws.lib.intl.DateFormatter(locale_uid)
+        self.timeFormatter = gws.lib.intl.TimeFormatter(locale_uid)
 
     def write_headers(self, headers: list[str]):
         self.headers = self.h.delimiter.join(self._quote(s) for s in headers)
         return self
 
-    def write_attributes(self, attributes: list[gws.Attribute]):
-        self.rows.append(self.h.delimiter.join(self._format(a.value, a.type) for a in attributes))
+    def write_row(self, row: list):
+        self.rows.append(self.h.delimiter.join(self._format(v) for v in row))
         return self
 
     def to_str(self):
@@ -64,27 +72,34 @@ class _Writer:
         if self.headers:
             rows.append(self.headers)
         rows.extend(self.rows)
-        return self.h.row_delimiter.join(rows)
+        return self.h.rowDelimiter.join(rows)
 
     def to_bytes(self, encoding=None):
         return self.to_str().encode(encoding or self.h.encoding, errors='replace')
 
-    def _format(self, val, type):
+    def _format(self, val):
         if val is None:
             return self._quote('')
 
-        if type == gws.AttributeType.float:
-            s = '{:.{prec}f}'.format(float(val), prec=self.h.precision)
-            s = s.replace('.', self.h.decimal)
-            return self._quote(s) if self.h.quote_all else s
+        if isinstance(val, (float, decimal.Decimal)):
+            s = self.numberFormatter.format(gws.lib.intl.NumberFormat.decimal, val)
+            return self._quote(s) if self.h.quoteAll else s
 
-        if type == gws.AttributeType.int:
+        if isinstance(val, int):
             s = str(val)
-            return self._quote(s) if self.h.quote_all else s
+            return self._quote(s) if self.h.quoteAll else s
+
+        if isinstance(val, (datetime.datetime, datetime.date)):
+            s = self.dateFormatter.format(gws.lib.intl.DateTimeFormat.short, val)
+            return self._quote(s)
+
+        if isinstance(val, datetime.time):
+            s = self.timeFormatter.format(gws.lib.intl.DateTimeFormat.short, val)
+            return self._quote(s)
 
         val = gws.to_str(val)
 
-        if val and val.isdigit() and self.h.formula_hack:
+        if val and val.isdigit() and self.h.formulaHack:
             val = '=' + self._quote(val)
 
         return self._quote(val)

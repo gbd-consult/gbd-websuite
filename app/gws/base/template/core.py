@@ -2,7 +2,6 @@ import os
 
 import gws
 import gws.base.model
-import gws.lib.date
 import gws.lib.intl
 import gws.lib.mime
 import gws.types as t
@@ -82,8 +81,8 @@ class Object(gws.Node, gws.ITemplate):
             gwsVersion=self.root.app.version,
             gwsBaseUrl=gws.SERVER_ENDPOINT,
             locale=gws.lib.intl.locale(locale_uid),
-            date=gws.lib.date.date_formatter(locale_uid),
-            time=gws.lib.date.time_formatter(locale_uid),
+            date=gws.lib.intl.date_formatter(locale_uid),
+            time=gws.lib.intl.time_formatter(locale_uid),
         )
 
         return gws.merge(extra, args)

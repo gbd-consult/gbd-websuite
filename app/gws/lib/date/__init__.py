@@ -1,4 +1,3 @@
-import babel.dates
 import datetime
 import calendar
 import re
@@ -177,62 +176,3 @@ def from_iso(s: str) -> t.Optional[datetime.datetime]:
         int(g['f'] or 0),
         tz
     )
-
-
-class DateFormatter:
-    def __init__(self, locale_uid):
-        self.locale_uid = locale_uid
-
-    def format(self, fmt, d=None):
-        if not d:
-            d = datetime.datetime.now()
-        elif isinstance(d, str):
-            d = babel.dates.parse_date(d, self.locale_uid)
-        if fmt == 'iso':
-            return d.isoformat()
-        return babel.dates.format_date(d, locale=self.locale_uid, format=fmt)
-
-    @property
-    def short(self):
-        return self.format('short')
-
-    @property
-    def medium(self):
-        return self.format('medium')
-
-    @property
-    def long(self):
-        return self.format('long')
-
-    @property
-    def iso(self):
-        return self.format('iso')
-
-
-class TimeFormatter:
-    def __init__(self, locale_uid):
-        self.locale_uid = locale_uid
-
-    def format(self, fmt, d=None):
-        d = babel.dates.parse_time(d, self.locale_uid) if d else datetime.datetime.now()
-        return babel.dates.format_time(d, locale=self.locale_uid, format=fmt)
-
-    @property
-    def short(self):
-        return self.format('short')
-
-    @property
-    def medium(self):
-        return self.format('medium')
-
-    @property
-    def long(self):
-        return self.format('long')
-
-
-def date_formatter(locale_uid):
-    return DateFormatter(locale_uid)
-
-
-def time_formatter(locale_uid):
-    return TimeFormatter(locale_uid)
