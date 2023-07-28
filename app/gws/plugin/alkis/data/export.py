@@ -1,0 +1,192 @@
+import gws
+import gws.base.model
+import gws.base.feature
+import gws.lib.csv
+import gws.types as t
+
+from . import types as dt
+
+
+class Config(gws.ConfigWithAccess):
+    """CSV export configuration"""
+
+    models: t.Optional[list[gws.ext.config.model]]
+    """export groups"""
+
+
+_DEFAULT_MODELS = [
+    gws.Config(
+        title='Basisdaten',
+        fields=[
+            gws.Config(type='text', name='fs_recs_gemeinde_text', title='Gemeinde'),
+            gws.Config(type='text', name='fs_recs_gemarkung_code', title='Gemarkungsnummer'),
+            gws.Config(type='text', name='fs_recs_gemarkung_text', title='Gemarkung'),
+            gws.Config(type='text', name='fs_recs_flurnummer', title='Flurnummer'),
+            gws.Config(type='text', name='fs_recs_zaehler', title='Zähler'),
+            gws.Config(type='text', name='fs_recs_nenner', title='Nenner'),
+            gws.Config(type='text', name='fs_recs_flurstuecksfolge', title='Folge'),
+            gws.Config(type='text', name='fs_recs_amtlicheFlaeche', title='Fläche'),
+            gws.Config(type='text', name='fs_recs_x', title='X'),
+            gws.Config(type='text', name='fs_recs_y', title='Y'),
+        ]
+    ),
+    gws.Config(
+        title='Lage',
+        fields=[
+            gws.Config(type='text', name='fs_lageList_recs_strasse', title='FS Strasse'),
+            gws.Config(type='text', name='fs_lageList_recs_hausnummer', title='FS Hnr'),
+        ]
+    ),
+    gws.Config(
+        title='Gebäude',
+        fields=[
+            gws.Config(type='text', name='fs_gebaeudeList_recs_area', title='Gebäude Fläche'),
+            gws.Config(type='text', name='fs_gebaeudeList_recs_props_Gebäudefunktion_text', title='Gebäude Funktion'),
+        ]
+    ),
+    gws.Config(
+        title='Buchungsblatt',
+        fields=[
+            gws.Config(type='text', name='fs_buchungList_recs_buchungsstelle_recs_buchungsart_code', title='Buchungsart'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_recs_blattart_text', title='Blattart'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_recs_buchungsblattkennzeichen', title='Blattkennzeichen'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_recs_buchungsblattnummerMitBuchstabenerweiterung', title='Blattnummer'),
+            gws.Config(type='text', name='fs_buchungList_recs_buchungsstelle_laufendeNummer', title='Laufende Nummer'),
+        ]
+    ),
+    gws.Config(
+        title='Eigentümer',
+        fields=[
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_recs_vorname', title='Vorname'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_recs_nachnameOderFirma', title='Name'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_recs_geburtsdatum', title='Geburtsdatum'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_strasse', title='Strasse'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_hausnummer', title='Hnr'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_plz', title='PLZ'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_ort', title='Ort'),
+        ]
+    ),
+    gws.Config(
+        title='Nutzung',
+        fields=[
+            gws.Config(type='text', name='fs_nutzungList_area', title='Nutzung Fläche'),
+            gws.Config(type='text', name='fs_nutzungList_name_text', title='Nutzung Typ'),
+        ]
+    ),
+]
+
+
+class Group(gws.Data):
+    index: int
+    title: str
+    withEigentuemer: bool
+    withBuchung: bool
+    fieldNames: list[str]
+
+
+class Object(gws.Node):
+    model: gws.base.model.default.Object
+    groups: list[Group]
+
+    def configure(self):
+        self.groups = []
+
+        fields_map = {}
+
+        p = self.cfg('models') or _DEFAULT_MODELS
+        for n, cfg in enumerate(p, 1):
+            self.groups.append(Group(
+                index=n,
+                title=cfg.title,
+                fieldNames=[f.name for f in cfg.fields],
+                withEigentuemer=any('namensnummer' in f.name for f in cfg.fields),
+                withBuchung=any('buchung' in f.name for f in cfg.fields),
+            ))
+            for f in cfg.fields:
+                if f.name not in fields_map:
+                    fields_map[f.name] = f
+
+        self.model = self.create_child(gws.base.model.default.Object, fields=list(fields_map.values()))
+
+    """
+    The Flurstueck structure, as created by our indexer, is deeply nested.
+    We flatten it first, creating a dicts 'nested_key->value'. For list values, we repeat the dict 
+    for each item in the list, thus creating a product of all lists, e.g.
+    
+        record:  
+            a:x, b:[1,2], c:[3,4]
+    
+        flat list:
+            a:x, b:1, c:3
+            a:x, b:1, c:4
+            a:x, b:2, c:3
+            a:x, b:2, c:4
+        
+    Then we apply our composite model to each element in the flat list.
+    
+    Finally, keep only keys which are members in the requested models.
+    """
+
+    def export_as_csv(self, fs_list: list[dt.Flurstueck], groups: list[Group], user: gws.IUser):
+
+        field_names = []
+
+        for g in groups:
+            for s in g.fieldNames:
+                if s not in field_names:
+                    field_names.append(s)
+
+        csv_helper = t.cast(gws.lib.csv.Object, self.root.app.helper('csv'))
+        writer = csv_helper.writer()
+
+        writer.write_headers([
+            f.title
+            for s in field_names
+            for f in self.model.fields
+            if f.name == s
+        ])
+
+        for fs in fs_list:
+            row_hashes = set()
+            for rec in _flatten(fs):
+                feature = gws.base.feature.with_model(self.model)
+                feature.attributes = rec
+                feature.compute_values(gws.Access.write, user)
+                row = [feature.attributes.get(s) for s in field_names]
+                h = gws.sha256(row)
+                if h not in row_hashes:
+                    row_hashes.add(h)
+                    writer.write_row(row)
+
+        return writer.to_bytes()
+
+
+def _flatten(obj):
+    def f(o, key, rs):
+        if isinstance(o, list):
+            if not o:
+                return rs
+            rs2 = []
+            for v in o:
+                rs2.extend(f(v, key, rs))
+            return rs2
+
+        if isinstance(o, (dt.Object, dt.EnumPair)):
+            for k, v in vars(o).items():
+                if k == 'props':
+                    # the 'props' element, which is a list of key-value pairs
+                    # requires a special treatment
+                    for k2, v2 in v:
+                        rs = f(v2, key + '_props_' + str(k2), rs)
+                else:
+                    rs = f(v, key + '_' + str(k), rs)
+            return rs
+
+        rs2 = []
+        for r in rs:
+            r = dict(r)
+            r[key] = o
+            rs2.append(r)
+        return rs2
+
+    return f(obj, 'fs', [{}])

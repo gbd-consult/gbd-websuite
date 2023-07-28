@@ -43,6 +43,7 @@ class _ObjectDict(Generic[T]):
 
     def add(self, uid, recs) -> T:
         o = self.cls(uid=uid, recs=recs)
+        o.isHistoric = all(r.isHistoric for r in recs)
         self.d[o.uid] = o
         return o
 
@@ -92,7 +93,8 @@ class _ObjectMap:
         self.Part: _ObjectDict[dt.Part] = _ObjectDict(dt.Part)
         self.Person: _ObjectDict[dt.Person] = _ObjectDict(dt.Person)
 
-        self.places: dict = {}
+        self.placeAll: dict = {}
+        self.placeIdx: dict = {}
         self.catalog: dict = {}
 
 
@@ -142,13 +144,13 @@ class _Indexer:
         pass
 
 
-class _PlacesIndexer(_Indexer):
+class _PlaceIndexer(_Indexer):
     """Index places (Administration- und Verwaltungseinheiten).
 
     References: https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel
     """
 
-    CACHE_KEY = 'places'
+    CACHE_KEY = index.TABLE_PLACE
 
     empty1 = dt.EnumPair(code='0', text='')
     empty2 = dt.EnumPair(code='00', text='')
@@ -166,16 +168,14 @@ class _PlacesIndexer(_Indexer):
         p.kind = kind
         setattr(p, kind, value)
 
-        self.om.places['all'][p.uid] = p
-        self.om.places['idx'][p.uid] = value
+        self.om.placeAll[p.uid] = p
+        self.om.placeIdx[p.uid] = value
 
         return value
 
     def collect(self):
-        self.om.places = {
-            'all': {},
-            'idx': {},
-        }
+        self.om.placeAll = {}
+        self.om.placeIdx = {}
 
         for ax in self.rr.read_flat(gid.AX_Bundesland):
             self.add('land', ax, ax.schluessel)
@@ -206,6 +206,17 @@ class _PlacesIndexer(_Indexer):
             o = ax.schluessel
             self.add('dienststelle', ax, o, land=self.get_land(o))
 
+    def write(self):
+        values = []
+
+        for place in self.om.placeAll.values():
+            values.append(dict(
+                uid=place.uid,
+                data=index.serialize(place),
+            ))
+
+        self.write_table(index.TABLE_PLACE, values)
+
     def get_land(self, o):
         return self.get('land', o) or self.empty2
 
@@ -228,7 +239,7 @@ class _PlacesIndexer(_Indexer):
         return self.get('dienststelle', o) or self.empty1
 
     def get(self, kind, o):
-        return self.om.places['idx'].get(kind + self.code(kind, o))
+        return self.om.placeIdx.get(kind + self.code(kind, o))
 
     CODES = {
         'land': lambda o: o.land,
@@ -245,7 +256,7 @@ class _PlacesIndexer(_Indexer):
 
 
 class _LageIndexer(_Indexer):
-    CACHE_KEY = 'lage'
+    CACHE_KEY = index.TABLE_LAGE
 
     def collect(self):
         for ax in self.rr.read_flat(gid.AX_LagebezeichnungKatalogeintrag):
@@ -271,7 +282,7 @@ class _LageIndexer(_Indexer):
                     dt.GebaeudeRecord,
                     ax,
                     name=', '.join(ax.name) if ax.name else None,
-                    grundflaeche=ax.grundflaeche or 0,
+                    amtlicheFlaeche=ax.grundflaeche or 0,
                     props=self.rr.props_from(ax, atts),
                     _zeigtAuf=ax.zeigtAuf,
                 )
@@ -281,7 +292,7 @@ class _LageIndexer(_Indexer):
         for ge in self.om.Gebaeude:
             for r in ge.recs:
                 geom = _geom_of(r)
-                r.area = round(geom.area, 2) if geom else 0
+                r.geomFlaeche = round(geom.area, 2) if geom else 0
 
         # omit Gebaeude geometries for now
         for ge in self.om.Gebaeude:
@@ -324,7 +335,7 @@ class _LageIndexer(_Indexer):
 
 
 class _BuchungIndexer(_Indexer):
-    CACHE_KEY = 'buchung'
+    CACHE_KEY = index.TABLE_BUCHUNGSBLATT
 
     buchungsblattkennzeichenMap: dict[str, dt.Buchungsblatt] = {}
 
@@ -396,7 +407,7 @@ class _BuchungIndexer(_Indexer):
                 _from_ax(
                     dt.BuchungsblattRecord,
                     ax,
-                    buchungsblattbezirk=self.rr.places.get_buchungsblattbezirk(ax.buchungsblattbezirk),
+                    buchungsblattbezirk=self.rr.place.get_buchungsblattbezirk(ax.buchungsblattbezirk),
                 )
                 for ax in axs
             ])
@@ -410,47 +421,47 @@ class _BuchungIndexer(_Indexer):
         # AX_Buchungsstelle.istBestandteilVon -> AX_Buchungsblatt
         for bs in self.om.Buchungsstelle:
             bb_list = self.om.Buchungsblatt.get_from_ptr(bs, '_istBestandteilVon')
-            bs.buchungsblattRefs = [dt.BoRef(bb.uid, bb.buchungsblattkennzeichen) for bb in bb_list]
+            bs.buchungsblattUids = [bb.uid for bb in bb_list]
+            bs.buchungsblattkennzeichenList = [bb.buchungsblattkennzeichen for bb in bb_list]
             for bb in bb_list:
                 bb.buchungsstelleList.append(bs)
 
         # AX_Namensnummer.istBestandteilVon -> AX_Buchungsblatt
         for nn in self.om.Namensnummer:
             bb_list = self.om.Buchungsblatt.get_from_ptr(nn, '_istBestandteilVon')
-            nn.buchungsblattRefs = [dt.BoRef(bb.uid, bb.buchungsblattkennzeichen) for bb in bb_list]
+            nn.buchungsblattUids = [bb.uid for bb in bb_list]
+            nn.buchungsblattkennzeichenList = [bb.buchungsblattkennzeichen for bb in bb_list]
             for bb in bb_list:
                 bb.namensnummerList.append(nn)
 
         for bb in self.om.Buchungsblatt:
-            bb.buchungsstelleList.sort(key=self.sortkey_buchungsstelle)
-            bb.namensnummerList.sort(key=self.sortkey_namensnummer)
+            bb.buchungsstelleList.sort(key=_sortkey_buchungsstelle)
+            bb.namensnummerList.sort(key=_sortkey_namensnummer)
 
         # AX_Buchungsstelle.an -> [AX_Buchungsstelle]
         # AX_Buchungsstelle.zu -> [AX_Buchungsstelle]
         # see Erläuterungen zu ALKIS Version 6, page 116-119
 
         for bs in self.om.Buchungsstelle:
-            bs.childRefs = []
-            bs.parentRefs = []
+            bs.childUids = []
+            bs.parentUids = []
+            bs.parentkennzeichenList = []
 
         for bs in self.om.Buchungsstelle:
             parent_uids = set()
+            parent_knz = set()
 
             for r in bs.recs:
                 parent_uids.update(_pop(r, '_an'))
                 parent_uids.update(_pop(r, '_zu'))
 
             for parent_bs in self.om.Buchungsstelle.get_many(parent_uids):
-                for ref in bs.buchungsblattRefs:
-                    parent_bs.childRefs.append(dt.BoRef(ref.bbUid, ref.bbKennzeichen, bs.uid, bs.laufendeNummer))
-                for ref in parent_bs.buchungsblattRefs:
-                    bs.parentRefs.append(dt.BoRef(ref.bbUid, ref.bbKennzeichen, parent_bs.uid, parent_bs.laufendeNummer))
+                parent_bs.childUids.append(bs.uid)
+                bs.parentUids.append(parent_bs.uid)
+                for bb_knz in parent_bs.buchungsblattkennzeichenList:
+                    parent_knz.add(bb_knz + '.' + parent_bs.laufendeNummer)
 
-    def sortkey_namensnummer(self, nn: dt.Namensnummer):
-        return _natkey(nn.recs[-1].laufendeNummerNachDIN1421), nn.recs[-1].beginnt
-
-    def sortkey_buchungsstelle(self, bs: dt.Buchungsstelle):
-        return _natkey(bs.recs[-1].laufendeNummer), bs.recs[-1].beginnt
+            bs.parentkennzeichenList = sorted(parent_knz)
 
     def write(self):
         values = []
@@ -465,13 +476,13 @@ class _BuchungIndexer(_Indexer):
         self.write_table(index.TABLE_BUCHUNGSBLATT, values)
 
 
-class _PartsIndexer(_Indexer):
-    CACHE_KEY: str = 'part'
+class _PartIndexer(_Indexer):
+    CACHE_KEY = index.TABLE_PART
     MIN_PART_AREA = 1
 
     parts: list[dt.Part] = []
 
-    fs_uids = []
+    fs_list = []
     fs_geom = []
 
     stree: shapely.strtree.STRtree
@@ -482,7 +493,7 @@ class _PartsIndexer(_Indexer):
             self.collect_kind(kind)
 
         for fs in self.rr.fsdata.om.Flurstueck:
-            self.fs_uids.append(fs.uid)
+            self.fs_list.append(fs)
             # NB take only the most recent fs geometry into account
             self.fs_geom.append(_geom_of(fs.recs[-1]))
 
@@ -493,7 +504,10 @@ class _PartsIndexer(_Indexer):
                 self.compute_intersections(pa)
                 progress.update(1)
 
-        self.parts.sort(key=self.sortkey_part)
+        self.parts.sort(key=_sortkey_part)
+
+        for pa in self.parts:
+            pa.isHistoric = all(r.isHistoric for r in pa.recs)
 
     def collect_kind(self, kind):
         _, key = dt.Part.KIND[kind]
@@ -527,7 +541,7 @@ class _PartsIndexer(_Indexer):
             pa.name = dt.EnumPair(meta['uid'], meta['title'])
 
     def compute_intersections(self, pa: dt.Part):
-        parts = {}
+        parts_map = {}
 
         for r in pa.recs:
             geom = _geom_of(r)
@@ -540,31 +554,37 @@ class _PartsIndexer(_Indexer):
                 if part_area < self.MIN_PART_AREA:
                     continue
 
-                fs_uid = self.fs_uids[i]
-                if fs_uid not in parts:
-                    parts[fs_uid] = dt.Part(
-                        uid=pa.uid,
-                        recs=[],
-                        kind=pa.kind,
-                        name=pa.name,
-                        fs=fs_uid,
-                    )
+                fs = self.fs_list[i]
 
-                parts[fs_uid].recs.append(dt.PartRecord(
+                part = parts_map.setdefault(fs.uid, dt.Part(
+                    uid=pa.uid,
+                    recs=[],
+                    kind=pa.kind,
+                    name=pa.name,
+                    fs=fs.uid,
+                ))
+
+                # computed area corrected with respect to FS's "amtlicheFlaeche"
+                part_area_corrected = round(
+                    fs.recs[-1].amtlicheFlaeche * (part_area / fs.recs[-1].geomFlaeche),
+                    2)
+
+                part.recs.append(dt.PartRecord(
                     uid=r.uid,
                     beginnt=r.beginnt,
                     endet=r.endet,
                     anlass=r.anlass,
                     props=r.props,
-                    area=part_area,
+                    geomFlaeche=part_area,
+                    amtlicheFlaeche=part_area_corrected,
+                    isHistoric=r.endet is not None,
                 ))
-                parts[fs_uid].geom = shapely.wkb.dumps(part_geom, srid=self.ix.crs.srid, hex=True)
-                parts[fs_uid].area = part_area
 
-        self.parts.extend(parts.values())
+                part.geom = shapely.wkb.dumps(part_geom, srid=self.ix.crs.srid, hex=True)
+                part.geomFlaeche = part_area
+                part.amtlicheFlaeche = part_area_corrected
 
-    def sortkey_part(self, pa: dt.Part):
-        return pa.name.text, -pa.area
+        self.parts.extend(parts_map.values())
 
     def write(self):
         values = []
@@ -581,6 +601,7 @@ class _PartsIndexer(_Indexer):
                 endet=pa.recs[-1].endet,
                 kind=pa.kind,
                 name=pa.name.text,
+                parthistoric=pa.isHistoric,
                 data=data,
                 geom=geom,
             ))
@@ -589,7 +610,7 @@ class _PartsIndexer(_Indexer):
 
 
 class _FsDataIndexer(_Indexer):
-    CACHE_KEY = 'flurstueck'
+    CACHE_KEY = index.TABLE_FLURSTUECK
 
     def collect(self):
         for uid, axs in self.rr.read_grouped(gid.AX_Flurstueck):
@@ -599,27 +620,31 @@ class _FsDataIndexer(_Indexer):
 
         for uid, axs in self.rr.read_grouped(gid.AX_HistorischesFlurstueck):
             recs = gws.compact(self.record(ax) for ax in axs)
-            if recs:
-                fs = self.om.Flurstueck.add(uid, recs)
-                fs.istHistorisch = True
-                # For a historic FS, 'beginnt' is basically when the history beginnt
-                # (see comments for AX_HistorischesFlurstueck in gid6).
-                # we set F.endet=F.beginnt to designate this one as 'historic'
-                for r in fs.recs:
-                    r.endet = r.beginnt
+            if not recs:
+                continue
+            # For a historic FS, 'beginnt' is basically when the history beginnt
+            # (see comments for AX_HistorischesFlurstueck in gid6).
+            # we set F.endet=F.beginnt to designate this one as 'historic'
+            for r in recs:
+                r.endet = r.beginnt
+                r.isHistoric = True
+            self.om.Flurstueck.add(uid, recs)
 
         for fs in self.om.Flurstueck:
             fs.flurstueckskennzeichen = fs.recs[-1].flurstueckskennzeichen
-            self.process(fs)
+            self.process_lage(fs)
+            self.process_gebaeude(fs)
+            self.process_buchung(fs)
 
     def record(self, ax):
         r: dt.FlurstueckRecord = _from_ax(
             dt.FlurstueckRecord,
             ax,
+            amtlicheFlaeche=ax.amtlicheFlaeche or 0,
             flurnummer=_str(ax.flurnummer),
             zaehler=_str(ax.flurstuecksnummer.zaehler),
             nenner=_str(ax.flurstuecksnummer.nenner),
-            zustaendigeStelle=[self.rr.places.get_dienststelle(p) for p in (ax.zustaendigeStelle or [])],
+            zustaendigeStelle=[self.rr.place.get_dienststelle(p) for p in (ax.zustaendigeStelle or [])],
 
             _weistAuf=ax.weistAuf,
             _zeigtAuf=ax.zeigtAuf,
@@ -629,11 +654,11 @@ class _FsDataIndexer(_Indexer):
 
         # basic data
 
-        r.gemarkung = self.rr.places.get_gemarkung(ax.gemarkung)
-        r.gemeinde = self.rr.places.get_gemeinde(ax.gemeindezugehoerigkeit)
-        r.regierungsbezirk = self.rr.places.get_regierungsbezirk(ax.gemeindezugehoerigkeit)
-        r.kreis = self.rr.places.get_kreis(ax.gemeindezugehoerigkeit)
-        r.land = self.rr.places.get_land(ax.gemeindezugehoerigkeit)
+        r.gemarkung = self.rr.place.get_gemarkung(ax.gemarkung)
+        r.gemeinde = self.rr.place.get_gemeinde(ax.gemeindezugehoerigkeit)
+        r.regierungsbezirk = self.rr.place.get_regierungsbezirk(ax.gemeindezugehoerigkeit)
+        r.kreis = self.rr.place.get_kreis(ax.gemeindezugehoerigkeit)
+        r.land = self.rr.place.get_land(ax.gemeindezugehoerigkeit)
 
         if r.gemarkung.code in self.ix.excludeGemarkung:
             return None
@@ -644,15 +669,13 @@ class _FsDataIndexer(_Indexer):
         if not geom:
             return None
 
-        r.area = round(geom.area, 2)
+        r.geomFlaeche = round(geom.area, 2)
         r.x = round(geom.centroid.x, 2)
         r.y = round(geom.centroid.y, 2)
 
         return r
 
-    def process(self, fs: dt.Flurstueck):
-        # lage
-
+    def process_lage(self, fs: dt.Flurstueck):
         fs.lageList = []
 
         # AX_Flurstueck.weistAuf -> AX_LagebezeichnungMitHausnummer
@@ -660,8 +683,7 @@ class _FsDataIndexer(_Indexer):
         fs.lageList.extend(self.rr.lage.om.Lage.get_from_ptr(fs, '_weistAuf'))
         fs.lageList.extend(self.rr.lage.om.Lage.get_from_ptr(fs, '_zeigtAuf'))
 
-        # gebaeude
-
+    def process_gebaeude(self, fs: dt.Flurstueck):
         ge_map = {}
 
         for la in fs.lageList:
@@ -669,79 +691,126 @@ class _FsDataIndexer(_Indexer):
                 ge_map[ge.uid] = ge
 
         fs.gebaeudeList = list(ge_map.values())
-        fs.gebaeudeList.sort(key=self._sortkey_gebaeude)
+        fs.gebaeudeList.sort(key=_sortkey_gebaeude)
 
-        fs.gebaeudeGrundflaeche = sum(ge.recs[-1].grundflaeche for ge in fs.gebaeudeList if not ge.recs[-1].endet)
-        fs.gebaeudeArea = sum(ge.recs[-1].area for ge in fs.gebaeudeList if not ge.recs[-1].endet)
+        fs.gebaeudeAmtlicheFlaeche = sum(ge.recs[-1].amtlicheFlaeche for ge in fs.gebaeudeList if not ge.recs[-1].endet)
+        fs.gebaeudeGeomFlaeche = sum(ge.recs[-1].geomFlaeche for ge in fs.gebaeudeList if not ge.recs[-1].endet)
 
-        # buchung
+    def process_buchung(self, fs: dt.Flurstueck):
+        bs_historic_map = {}
+        bs_seen = set()
+        buchung_map = {}
 
-        fs.buchungsstelleRefs = []
-        fs.buchungsblattRefs = []
+        # for each Flurstück record, we collect all related Buchungsstellen (with respect to parent-child relations)
+        # then group Buchungsstellen by their Buchungsblatt
+        # and create Buchung objects for a FS
 
-        if fs.istHistorisch:
-            # this is an AX_HistorischesFlurstueck with a speicial 'buchung' reference
-            self.collect_historic_buchung(fs)
-        else:
-            self.collect_buchung(fs)
+        for r in fs.recs:
+            hist_buchung = _pop(r, '_buchung')
+            if hist_buchung:
+                bs_list = self.historic_buchungsstelle_list(r, hist_buchung)
+            else:
+                bs_list = self.buchungsstelle_list(r)
+
+            for bs in bs_list:
+                # a Buchungsstelle referred to by an expired Flurstück might not be expired itself,
+                # so we have to track its state separately by wrapping it in a BuchungsstelleReference
+                # a BuchungsstelleReference is historic if its Flurstück is
+                bs_historic_map[bs.uid] = r.isHistoric
+
+                if bs.uid in bs_seen:
+                    continue
+                bs_seen.add(bs.uid)
+
+                # populate Flurstück references in a Buchungsstelle
+                if fs.uid not in bs.fsUids:
+                    bs.fsUids.append(fs.uid)
+                    bs.flurstueckskennzeichenList.append(fs.flurstueckskennzeichen)
+
+                # create Buchung records by grouping Buchungsstellen
+                for bb_uid in bs.buchungsblattUids:
+                    bu = buchung_map.setdefault(bb_uid, dt.Buchung(recs=[], buchungsblattUid=bb_uid))
+                    bu.recs.append(dt.BuchungsstelleReference(buchungsstelle=bs))
+
+        fs.buchungList = list(buchung_map.values())
+
+        for bu in fs.buchungList:
+            for ref in bu.recs:
+                ref.isHistoric = bs_historic_map[ref.buchungsstelle.uid]
+            bu.isHistoric = all(ref.isHistoric for ref in bu.recs)
 
         return fs
 
-    def _sortkey_gebaeude(self, ge):
-        # sort Gebaeude by area (big->small)
-        return ge.recs[-1].beginnt, -ge.recs[-1].area
+    def historic_buchungsstelle_list(self, r: dt.FlurstueckRecord, hist_buchung):
+        # an AX_HistorischesFlurstueck with a speicial 'buchung' reference
 
-    def collect_historic_buchung(self, fs: dt.Flurstueck):
-        for r in fs.recs:
-            for bu in _pop(r, '_buchung') or []:
-                bb = self.rr.buchung.buchungsblattkennzeichenMap.get(bu.buchungsblattkennzeichen)
-                if bb:
-                    fs.buchungsblattRefs.append(dt.BoRef(bb.uid, bb.buchungsblattkennzeichen))
-                    fs.buchungsstelleRefs.append(dt.BoRef(bb.uid, bb.buchungsblattkennzeichen, 'bs_historic', bu.laufendeNummerDerBuchungsstelle))
+        bs_list = []
 
-    def collect_buchung(self, fs):
+        for bu in hist_buchung:
+            bb = self.rr.buchung.buchungsblattkennzeichenMap.get(bu.buchungsblattkennzeichen)
+            if not bb:
+                continue
+            # create a fake historic Buchungstelle
+            bs_list.append(dt.Buchungsstelle(
+                uid=bb.uid + '_' + bu.laufendeNummerDerBuchungsstelle,
+                recs=[
+                    dt.BuchungsstelleRecord(
+                        endet=r.endet,
+                        laufendeNummer=bu.laufendeNummerDerBuchungsstelle,
+                        isHistoric=True,
+                    )
+                ],
+                buchungsblattUids=[bb.uid],
+                buchungsblattkennzeichenList=[bb.buchungsblattkennzeichen],
+                parentUids=[],
+                childUids=[],
+                fsUids=[],
+                parentkennzeichenList=[],
+                flurstueckskennzeichenList=[],
+                laufendeNummer=bu.laufendeNummerDerBuchungsstelle,
+                isHistoric=True,
+            ))
+
+        return bs_list
+
+    def buchungsstelle_list(self, r: dt.FlurstueckRecord):
         # AX_Flurstueck.istGebucht -> AX_Buchungsstelle
-        bs_list: list[dt.Buchungsstelle] = self.rr.buchung.om.Buchungsstelle.get_from_ptr(fs, '_istGebucht')
 
-        for bs in bs_list:
-            for ref in bs.buchungsblattRefs:
-                fs.buchungsstelleRefs.append(dt.BoRef(ref.bbUid, ref.bbKennzeichen, bs.uid, bs.laufendeNummer))
-            bs.fsUids.append(fs.uid)
-            bs.flurstueckskennzeichenList.append(fs.recs[-1].flurstueckskennzeichen)
+        this_bs = self.rr.buchung.om.Buchungsstelle.get(_pop(r, '_istGebucht'))
+        if not this_bs:
+            return []
+
+        bs_list = []
 
         # A Flurstück points to a Buchungsstelle (F.istGebucht -> B).
         # A Buchungsstelle can have parent (B.an -> parent.uid) and child (child.an -> B.uid) Buchungsstellen
         # (these references are populated in _BuchungIndexer above).
         # Our task here, given F.istGebucht -> B, collect B's parents and children
-        # and create a list of Buchungsblatt objects linked to them.
-        # These are Buchungsblatts that directly or indirectly mention the current Flurstück.
+        # These are Buchungsstellen that directly or indirectly mention the current Flurstück.
 
-        bs_chain = []
-
-        queue: list[dt.Buchungsstelle] = list(bs_list)
+        queue: list[dt.Buchungsstelle] = [this_bs]
         while queue:
             bs = queue.pop(0)
-            bs_chain.insert(0, bs)
-            for ref in bs.parentRefs:
-                queue.append(self.rr.buchung.om.Buchungsstelle.get(ref.bsUid))
+            bs_list.insert(0, bs)
+            for uid in bs.parentUids:
+                queue.append(self.rr.buchung.om.Buchungsstelle.get(uid))
 
-        queue: list[dt.Buchungsstelle] = list(bs_list)
+        # remove this_bs
+        bs_list.pop()
+
+        queue: list[dt.Buchungsstelle] = [this_bs]
         while queue:
             bs = queue.pop(0)
-            bs_chain.append(bs)
-            for ref in bs.childRefs:
-                queue.append(self.rr.buchung.om.Buchungsstelle.get(ref.bsUid))
+            bs_list.append(bs)
+            # sort related (child) Buchungsstellen by their BB-Kennzeichen
+            child_bs_list = self.rr.buchung.om.Buchungsstelle.get_many(bs.childUids)
+            child_bs_list.sort(key=_sortkey_buchungsstelle_by_bblatt)
+            queue.extend(child_bs_list)
 
-        # gws.log.debug(f'bs chain: {fs.uid=}, {[bs.uid for bs in bs_chain]}')
+        # if len(bs_list) > 1:
+        #     gws.log.debug(f'bs chain: {r.uid=} {this_bs.uid=} {[bs.uid for bs in bs_list]}')
 
-        bb_uids = set()
-
-        for bs in bs_chain:
-            for ref in bs.buchungsblattRefs:
-                if ref.bbUid in bb_uids:
-                    continue
-                bb_uids.add(ref.bbUid)
-                fs.buchungsblattRefs.append(ref)
+        return bs_list
 
     def write(self):
         values = []
@@ -755,6 +824,7 @@ class _FsDataIndexer(_Indexer):
             values.append(dict(
                 uid=fs.uid,
                 rc=len(fs.recs),
+                fshistoric=fs.isHistoric,
                 data=data,
                 geom=geoms[-1],
             ))
@@ -781,8 +851,7 @@ class _FsIndexIndexer(_Indexer):
     def add(self, fs: dt.Flurstueck, r: dt.FlurstueckRecord):
         base = dict(
             fs=r.uid,
-            fsbeginnt=r.beginnt,
-            fsendet=r.endet,
+            fshistoric=r.isHistoric,
         )
 
         places = dict(
@@ -813,6 +882,7 @@ class _FsIndexIndexer(_Indexer):
             **places,
 
             amtlicheflaeche=r.amtlicheFlaeche,
+            geomflaeche=r.geomFlaeche,
 
             flurnummer=r.flurnummer,
             zaehler=r.zaehler,
@@ -820,14 +890,13 @@ class _FsIndexIndexer(_Indexer):
             flurstuecksfolge=r.flurstuecksfolge,
             flurstueckskennzeichen=r.flurstueckskennzeichen,
 
-            area=r.area,
             x=r.x,
             y=r.y,
         ))
 
         self.entries[index.TABLE_INDEXGEOM].append(dict(
             **base,
-            area=r.area,
+            geomflaeche=r.geomFlaeche,
             x=r.x,
             y=r.y,
             geom=r.geom,
@@ -839,8 +908,7 @@ class _FsIndexIndexer(_Indexer):
                     **base,
                     **places,
                     lageuid=la_r.uid,
-                    lagebeginnt=la_r.beginnt,
-                    lageendet=la_r.endet,
+                    lagehistoric=la_r.isHistoric,
                     strasse=la_r.strasse,
                     strasse_t=index.strasse_key(la_r.strasse),
                     hausnummer=la_r.hausnummer,
@@ -848,13 +916,15 @@ class _FsIndexIndexer(_Indexer):
                     y=r.y,
                 ))
 
-        for ref in fs.buchungsblattRefs:
-            bb = self.rr.buchung.om.Buchungsblatt.get(ref.bbUid)
+        for bu in fs.buchungList:
+            bb = self.rr.buchung.om.Buchungsblatt.get(bu.buchungsblattUid)
+
             for bb_r in bb.recs:
                 self.entries[index.TABLE_INDEXBUCHUNGSBLATT].append(dict(
                     **base,
                     buchungsblattuid=bb_r.uid,
                     buchungsblattkennzeichen=bb_r.buchungsblattkennzeichen,
+                    buchungsblatthistoric=bu.isHistoric,
                 ))
 
             pe_uids = set()
@@ -868,8 +938,7 @@ class _FsIndexIndexer(_Indexer):
                         self.entries[index.TABLE_INDEXPERSON].append(dict(
                             **base,
                             personuid=pe_r.uid,
-                            personbeginnt=pe_r.beginnt,
-                            personendet=pe_r.endet,
+                            personhistoric=pe_r.isHistoric,
                             name=pe_r.nachnameOderFirma,
                             name_t=index.text_key(pe_r.nachnameOderFirma),
                             vorname=pe_r.vorname,
@@ -894,10 +963,10 @@ class _Runner:
         if self.withCache:
             gws.ensure_dir(self.cacheDir)
 
-        self.places = _PlacesIndexer(self)
+        self.place = _PlaceIndexer(self)
         self.lage = _LageIndexer(self)
         self.buchung = _BuchungIndexer(self)
-        self.parts = _PartsIndexer(self)
+        self.part = _PartIndexer(self)
         self.fsdata = _FsDataIndexer(self)
         self.fsindex = _FsIndexIndexer(self)
 
@@ -905,7 +974,7 @@ class _Runner:
 
     def run(self):
         with ProgressIndicator(f'ALKIS: indexing'):
-            self.places.load_or_collect()
+            self.place.load_or_collect()
             self.memory_info()
 
             self.buchung.load_or_collect()
@@ -917,16 +986,17 @@ class _Runner:
             self.fsdata.load_or_collect()
             self.memory_info()
 
-            self.parts.load_or_collect()
+            self.part.load_or_collect()
             self.memory_info()
 
             self.fsindex.collect()
             self.memory_info()
 
+            self.place.write()
             self.buchung.write()
             self.lage.write()
             self.fsdata.write()
-            self.parts.write()
+            self.part.write()
             self.fsindex.write()
 
     def memory_info(self):
@@ -935,31 +1005,53 @@ class _Runner:
             gws.log.info(f'ALKIS: memory used: {v:.2f} MB', stacklevel=2)
 
     def read_flat(self, cls):
+        cpath = self.cacheDir + '/flat_' + cls.__name__
+        if self.withCache and gws.is_file(cpath):
+            return gws.unserialize_from_path(cpath)
+
+        rs = self._read_flat(cls)
+        if self.withCache:
+            gws.serialize_to_path(rs, cpath)
+
+        return rs
+
+    def _read_flat(self, cls):
         cnt = self.reader.count(cls)
         if cnt <= 0:
-            return
+            return []
 
+        rs = []
         with ProgressIndicator(f'ALKIS: read {cls.__name__}', cnt) as progress:
             for ax in self.reader.read_all(cls):
-                yield ax
+                rs.append(ax)
                 progress.update(1)
+        return rs
 
     def read_grouped(self, cls):
+        cpath = self.cacheDir + '/grouped_' + cls.__name__
+        if self.withCache and gws.is_file(cpath):
+            return gws.unserialize_from_path(cpath)
+
+        rs = self._read_grouped(cls)
+        if self.withCache:
+            gws.serialize_to_path(rs, cpath)
+
+        return rs
+
+    def _read_grouped(self, cls):
         cnt = self.reader.count(cls)
         if cnt <= 0:
             return []
 
         groups = {}
-
         with ProgressIndicator(f'ALKIS: read {cls.__name__}', cnt) as progress:
             for ax in self.reader.read_all(cls):
                 groups.setdefault(ax.identifikator, []).append(ax)
                 progress.update(1)
-
         for g in groups.values():
             g.sort(key=_sortkey_lebenszeitintervall)
 
-        return groups.items()
+        return list(groups.items())
 
     def props_from(self, ax, atts):
         props = []
@@ -1000,7 +1092,7 @@ def _from_ax(cls, ax, **kwargs):
         d['uid'] = ax.identifikator
         d['beginnt'] = ax.lebenszeitintervall.beginnt
         d['endet'] = ax.lebenszeitintervall.endet
-
+        d['isHistoric'] = d['endet'] is not None
         if ax.anlass and ax.anlass[0].code != '000000':
             d['anlass'] = ax.anlass[0]
         if ax.geom:
@@ -1050,6 +1142,27 @@ def _sortkey_beginnt(o):
 
 def _sortkey_lebenszeitintervall(o):
     return o.lebenszeitintervall.beginnt
+
+
+def _sortkey_namensnummer(nn: dt.Namensnummer):
+    return _natkey(nn.recs[-1].laufendeNummerNachDIN1421), nn.recs[-1].beginnt
+
+
+def _sortkey_buchungsstelle(bs: dt.Buchungsstelle):
+    return _natkey(bs.recs[-1].laufendeNummer), bs.recs[-1].beginnt
+
+
+def _sortkey_buchungsstelle_by_bblatt(bs: dt.Buchungsstelle):
+    return bs.buchungsblattkennzeichenList[0], bs.recs[-1].beginnt
+
+
+def _sortkey_part(pa: dt.Part):
+    return pa.name.text, -pa.geomFlaeche
+
+
+def _sortkey_gebaeude(ge: dt.Gebaeude):
+    # sort Gebaeude by area (big->small)
+    return ge.recs[-1].beginnt, -ge.recs[-1].geomFlaeche
 
 
 def _natkey(v):

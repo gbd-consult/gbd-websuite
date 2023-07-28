@@ -15,6 +15,7 @@ import gws.types as t
 
 from . import types as dt
 
+TABLE_PLACE = 'place'
 TABLE_FLURSTUECK = 'flurstueck'
 TABLE_BUCHUNGSBLATT = 'buchungsblatt'
 TABLE_LAGE = 'lage'
@@ -31,6 +32,7 @@ class Object(gws.Node):
     VERSION = '8'
 
     TABLE_IDS = [
+        TABLE_PLACE,
         TABLE_FLURSTUECK,
         TABLE_BUCHUNGSBLATT,
         TABLE_LAGE,
@@ -64,9 +66,14 @@ class Object(gws.Node):
         self.tables = {}
 
         self.columnDct = {
+            TABLE_PLACE: [
+                sa.Column('uid', sa.Text, primary_key=True),
+                sa.Column('data', JSONB),
+            ],
             TABLE_FLURSTUECK: [
                 sa.Column('uid', sa.Text, primary_key=True),
                 sa.Column('rc', sa.Integer),
+                sa.Column('fshistoric', sa.Boolean),
                 sa.Column('data', JSONB),
                 sa.Column('geom', sa.geo.Geometry(srid=self.crs.srid)),
             ],
@@ -88,6 +95,7 @@ class Object(gws.Node):
                 sa.Column('endet', sa.DateTime),
                 sa.Column('kind', sa.Integer),
                 sa.Column('name', sa.Text),
+                sa.Column('parthistoric', sa.Boolean),
                 sa.Column('data', JSONB),
                 sa.Column('geom', sa.geo.Geometry(srid=self.crs.srid)),
             ],
@@ -95,8 +103,7 @@ class Object(gws.Node):
                 sa.Column('n', sa.Integer, primary_key=True),
 
                 sa.Column('fs', sa.Text, index=True),
-                sa.Column('fsbeginnt', sa.DateTime, index=True),
-                sa.Column('fsendet', sa.DateTime, index=True),
+                sa.Column('fshistoric', sa.Boolean, index=True),
 
                 sa.Column('land', sa.Text, index=True),
                 sa.Column('land_t', sa.Text, index=True),
@@ -119,6 +126,7 @@ class Object(gws.Node):
                 sa.Column('gemarkungcode', sa.Text, index=True),
 
                 sa.Column('amtlicheflaeche', sa.Float, index=True),
+                sa.Column('geomflaeche', sa.Float, index=True),
 
                 sa.Column('flurnummer', sa.Text, index=True),
                 sa.Column('zaehler', sa.Text, index=True),
@@ -126,7 +134,6 @@ class Object(gws.Node):
                 sa.Column('flurstuecksfolge', sa.Text, index=True),
                 sa.Column('flurstueckskennzeichen', sa.Text, index=True),
 
-                sa.Column('area', sa.Float, index=True),
                 sa.Column('x', sa.Float, index=True),
                 sa.Column('y', sa.Float, index=True),
             ],
@@ -134,8 +141,7 @@ class Object(gws.Node):
                 sa.Column('n', sa.Integer, primary_key=True),
 
                 sa.Column('fs', sa.Text, index=True),
-                sa.Column('fsbeginnt', sa.DateTime, index=True),
-                sa.Column('fsendet', sa.DateTime, index=True),
+                sa.Column('fshistoric', sa.Boolean, index=True),
 
                 sa.Column('land', sa.Text, index=True),
                 sa.Column('land_t', sa.Text, index=True),
@@ -158,8 +164,7 @@ class Object(gws.Node):
                 sa.Column('gemarkungcode', sa.Text, index=True),
 
                 sa.Column('lageuid', sa.Text, index=True),
-                sa.Column('lagebeginnt', sa.DateTime, index=True),
-                sa.Column('lageendet', sa.DateTime, index=True),
+                sa.Column('lagehistoric', sa.Boolean, index=True),
 
                 sa.Column('strasse', sa.Text, index=True),
                 sa.Column('strasse_t', sa.Text, index=True),
@@ -172,24 +177,22 @@ class Object(gws.Node):
                 sa.Column('n', sa.Integer, primary_key=True),
 
                 sa.Column('fs', sa.Text, index=True),
-                sa.Column('fsbeginnt', sa.DateTime, index=True),
-                sa.Column('fsendet', sa.DateTime, index=True),
+                sa.Column('fshistoric', sa.Boolean, index=True),
 
                 sa.Column('buchungsblattuid', sa.Text, index=True),
                 sa.Column('buchungsblattbeginnt', sa.DateTime, index=True),
                 sa.Column('buchungsblattendet', sa.DateTime, index=True),
                 sa.Column('buchungsblattkennzeichen', sa.Text, index=True),
+                sa.Column('buchungsblatthistoric', sa.Boolean, index=True),
             ],
             TABLE_INDEXPERSON: [
                 sa.Column('n', sa.Integer, primary_key=True),
 
                 sa.Column('fs', sa.Text, index=True),
-                sa.Column('fsbeginnt', sa.DateTime, index=True),
-                sa.Column('fsendet', sa.DateTime, index=True),
+                sa.Column('fshistoric', sa.Boolean, index=True),
 
                 sa.Column('personuid', sa.Text, index=True),
-                sa.Column('personbeginnt', sa.DateTime, index=True),
-                sa.Column('personendet', sa.DateTime, index=True),
+                sa.Column('personhistoric', sa.Boolean, index=True),
 
                 sa.Column('name', sa.Text, index=True),
                 sa.Column('name_t', sa.Text, index=True),
@@ -200,10 +203,9 @@ class Object(gws.Node):
                 sa.Column('n', sa.Integer, primary_key=True),
 
                 sa.Column('fs', sa.Text, index=True),
-                sa.Column('fsbeginnt', sa.DateTime, index=True),
-                sa.Column('fsendet', sa.DateTime, index=True),
+                sa.Column('fshistoric', sa.Boolean, index=True),
 
-                sa.Column('area', sa.Float, index=True),
+                sa.Column('geomflaeche', sa.Float, index=True),
                 sa.Column('x', sa.Float, index=True),
                 sa.Column('y', sa.Float, index=True),
 
@@ -423,22 +425,22 @@ class Object(gws.Node):
         if has_lage:
             join.append([indexlage, indexlage.c.fs == indexfs.c.fs])
             if not qo.withHistorySearch:
-                where.append(indexlage.c.fsendet.is_(None))
-                where.append(indexlage.c.lageendet.is_(None))
+                where.append(~indexlage.c.fshistoric)
+                where.append(~indexlage.c.lagehistoric)
 
         if has_person:
             join.append([indexperson, indexperson.c.fs == indexfs.c.fs])
             if not qo.withHistorySearch:
-                where.append(indexperson.c.fsendet.is_(None))
-                where.append(indexperson.c.personendet.is_(None))
+                where.append(~indexperson.c.fshistoric)
+                where.append(~indexperson.c.personhistoric)
 
         if has_geom:
             join.append([indexgeom, indexgeom.c.fs == indexfs.c.fs])
             if not qo.withHistorySearch:
-                where.append(indexgeom.c.fsendet.is_(None))
+                where.append(~indexgeom.c.fshistoric)
 
         if not qo.withHistorySearch:
-            where.append(indexfs.c.fsendet.is_(None))
+            where.append(~indexfs.c.fshistoric)
 
         return join, where
 
@@ -447,6 +449,19 @@ class Object(gws.Node):
             return self._load_flurstueck(conn, fs_uids, qo)
 
     def _load_flurstueck(self, conn, fs_uids, qo: dt.FlurstueckSearchOptions):
+
+        def _check_history(objects):
+            if qo.withHistoryDisplay:
+                return objects
+            res = []
+            for o in objects:
+                if o.isHistoric:
+                    continue
+                o.recs = [r for r in o.recs if not r.isHistoric]
+                if not o.recs:
+                    continue
+                res.append(o)
+            return res
 
         with_lage = dt.DisplayTheme.lage in qo.displayThemes
         with_gebaeude = dt.DisplayTheme.gebaeude in qo.displayThemes
@@ -460,62 +475,62 @@ class Object(gws.Node):
         sel = sa.select(tab).where(tab.c.uid.in_(set(fs_uids)))
 
         fs_list = []
+
         for r in conn.execute(sel):
             fs = unserialize(r.data)
             fs.geom = r.geom
             fs_list.append(fs)
 
-        fs_list = self._check_history(fs_list, qo)
-
+        fs_list = _check_history(fs_list)
         if not fs_list:
             return []
 
-        fs_map = {}
+        fs_map = {fs.uid: fs for fs in fs_list}
 
-        for fs in fs_list:
+        for fs in fs_map.values():
             fs.shape = gws.base.shape.from_wkb_element(fs.geom, default_crs=self.crs)
 
-            fs.lageList = self._check_history(fs.lageList, qo) if with_lage else []
-            fs.gebaeudeList = self._check_history(fs.gebaeudeList, qo) if with_gebaeude else []
+            fs.lageList = _check_history(fs.lageList) if with_lage else []
+            fs.gebaeudeList = _check_history(fs.gebaeudeList) if with_gebaeude else []
+            fs.buchungList = _check_history(fs.buchungList) if with_buchung else []
 
             fs.bewertungList = []
             fs.festlegungList = []
             fs.nutzungList = []
 
-            fs.buchungsblattList = []
-
-            if not with_buchung:
-                fs.buchungsstelleRefs = []
-                fs.buchungsblattRefs = []
-
-            fs_map[fs.uid] = fs
-
         if with_buchung:
-            bb_uids = set(ref.bbUid for fs in fs_map.values() for ref in fs.buchungsblattRefs)
+            bb_uids = set(
+                bu.buchungsblattUid
+                for fs in fs_map.values()
+                for bu in fs.buchungList
+            )
 
             tab = self.table(TABLE_BUCHUNGSBLATT)
             sel = sa.select(tab).where(tab.c.uid.in_(bb_uids))
             bb_list = [unserialize(r.data) for r in conn.execute(sel)]
-            bb_list = self._check_history(bb_list, qo)
+            bb_list = _check_history(bb_list)
 
             for bb in bb_list:
-                bb.buchungsstelleList = self._check_history(bb.buchungsstelleList, qo)
-                bb.namensnummerList = self._check_history(bb.namensnummerList, qo) if with_eigentuemer else []
-
+                bb.buchungsstelleList = _check_history(bb.buchungsstelleList)
+                bb.namensnummerList = _check_history(bb.namensnummerList) if with_eigentuemer else []
                 for nn in bb.namensnummerList:
-                    nn.personList = self._check_history(nn.personList, qo)
+                    nn.personList = _check_history(nn.personList)
                     for pe in nn.personList:
-                        pe.anschriftList = self._check_history(pe.anschriftList, qo)
+                        pe.anschriftList = _check_history(pe.anschriftList)
 
             bb_map = {bb.uid: bb for bb in bb_list}
+
             for fs in fs_map.values():
-                fs.buchungsblattList = gws.compact(bb_map.get(ref.bbUid) for ref in fs.buchungsblattRefs)
+                for bu in fs.buchungList:
+                    bu.buchungsblatt = bb_map.get(bu.buchungsblattUid)
 
         if with_nutzung or with_festlegung or with_bewertung:
             tab = self.table(TABLE_PART)
             sel = sa.select(tab).where(tab.c.fs.in_(list(fs_map)))
+            if not qo.withHistorySearch:
+                sel.where(~tab.c.parthistoric)
             pa_list = [unserialize(r.data) for r in conn.execute(sel)]
-            pa_list = self._check_history(pa_list, qo)
+            pa_list = _check_history(pa_list)
 
             for pa in pa_list:
                 fs = fs_map[pa.fs]
@@ -527,18 +542,6 @@ class Object(gws.Node):
                     fs.bewertungList.append(pa)
 
         return gws.compact(fs_map.get(uid) for uid in fs_uids)
-
-    def _check_history(self, objects, qo: dt.FlurstueckSearchOptions):
-        if qo.withHistoryDisplay:
-            return objects
-
-        res = []
-        for o in objects:
-            o.recs = [r for r in o.recs if not r.endet]
-            if o.recs:
-                res.append(o)
-
-        return res
 
 
 ##
@@ -561,9 +564,6 @@ def serialize(o: dt.Object) -> dict:
         if isinstance(r, dt.EnumPair):
             return f'${r.code}${r.text}'
 
-        if isinstance(r, dt.BoRef):
-            return f'@{r.bbUid}@{r.bbKennzeichen}@{r.bsUid}@{r.bsLaufendeNummer}'
-
         if isinstance(r, dt.Object):
             return {k: encode(v) for k, v in vars(r).items()}
 
@@ -580,9 +580,6 @@ def unserialize(data: dict):
             if r[0] == '$':
                 s = r.split('$')
                 return dt.EnumPair(s[1], s[2])
-            if r[0] == '@':
-                s = r.split('@')
-                return dt.BoRef(s[1], s[2], s[3], s[4])
             return r
         if isinstance(r, list):
             return [decode(e) for e in r]
@@ -639,7 +636,7 @@ def normalize_hausnummer(s):
     return s
 
 
-def fs_vollnummer(fs: dt.Flurstueck):
+def fs_vollnummer(fs: dt.FlurstueckRecord):
     """Create a 'vollNummer' for a Flurstueck, which is 'flur-zaeher/nenner (folge)'."""
 
     v = fs.gemarkung.code + ' '

@@ -20,7 +20,7 @@ body {
 
 .alkisFs table {
     border-collapse: collapse;
-    margin: 5mm 0;
+    margin: 3mm 0;
     width: 100%;
 }
 
@@ -37,20 +37,33 @@ body {
     width: 40mm;
 }
 
-.alkisFs table td.alkisFsSubhead1 {
-    font-size: 10pt;
-    font-weight: bold;
-    background: #eee;
+.alkisFsH1 {
+    font-size: 13pt;
+    font-weight: normal;
+    margin: 5mm 0;
 }
 
-.alkisFs table td.alkisFsSubhead2 {
+.alkisFsH2 {
+    font-size: 11pt;
+    margin: 5mm 0;
+}
+
+.alkisFsH3 {
+    font-size: 9pt;
+    font-weight: bold;
+}
+
+.alkisFsH4 {
     font-size: 8pt;
     font-weight: bold;
-    background: #eee;
 }
 
-.alkisFs tbody.alkisFsHistory {
+.alkisFsHistoric td, .alkisFsHistoric th  {
     background-color: #ddd;
+}
+
+.alkisFsHistoric p  {
+    color: #777;
 }
 
 
@@ -58,13 +71,3 @@ body {
     color: red;
 }
 
-.alkisFsSection1 p.alkisFsTitle {
-    font-size: 12pt;
-    font-weight: normal;
-    margin: 5mm 0;
-}
-
-.alkisFsSection2 p.alkisFsTitle {
-    font-size: 10pt;
-    margin: 5mm 0;
-}

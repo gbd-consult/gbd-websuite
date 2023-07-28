@@ -8,19 +8,6 @@ class EnumPair:
         self.text = text
 
 
-class BoRef:
-    bbUid: str
-    bbKennzeichen: str
-    bsUid: str
-    bsLaufendeNummer: str
-
-    def __init__(self, bb_uid='', bb_kennzeichen='', bs_uid='', bs_laufendenummer=''):
-        self.bbUid = bb_uid
-        self.bbKennzeichen = bb_kennzeichen
-        self.bsUid = bs_uid
-        self.bsLaufendeNummer = bs_laufendenummer
-
-
 class Strasse(gws.Data):
     """Strasse (street) Record"""
 
@@ -31,8 +18,10 @@ class Strasse(gws.Data):
 
 class Object:
     uid: str
+    isHistoric: bool
 
     def __init__(self, **kwargs):
+        self.isHistoric = False
         self.__dict__.update(kwargs)
 
 
@@ -71,7 +60,7 @@ class FlurstueckRecord(Record):
     amtlicheFlaeche: float
 
     geom: str
-    area: float
+    geomFlaeche: float
     x: float
     y: float
 
@@ -83,30 +72,34 @@ class FlurstueckRecord(Record):
     nachfolgerFlurstueckskennzeichen: list[str]
 
 
+class BuchungsstelleReference(Object):
+    buchungsstelle: 'Buchungsstelle'
+
+
+class Buchung(Entity):
+    recs: list['BuchungsstelleReference']
+    buchungsblattUid: str
+    buchungsblatt: 'Buchungsblatt'
+
+
 class Flurstueck(Entity):
     recs: list[FlurstueckRecord]
 
     flurstueckskennzeichen: str
 
-    buchungsstelleRefs: list['BoRef']
-    buchungsblattRefs: list['BoRef']
-
-    buchungsblattList: list['Buchungsblatt']
-
+    buchungList: list['Buchung']
     lageList: list['Lage']
 
     gebaeudeList: list['Gebaeude']
-    gebaeudeGrundflaeche: float
-    gebaeudeArea: float
+    gebaeudeAmtlicheFlaeche: float
+    gebaeudeGeomFlaeche: float
 
     nutzungList: list['Part']
     festlegungList: list['Part']
     bewertungList: list['Part']
 
-    geom: str
+    geom: t.Any
     shape: gws.IShape
-
-    istHistorisch: bool
 
 
 class BuchungsblattRecord(Record):
@@ -122,7 +115,6 @@ class Buchungsblatt(Entity):
     buchungsstelleList: list['Buchungsstelle']
     namensnummerList: list['Namensnummer']
     buchungsblattkennzeichen: str
-    istHistorisch: bool
 
 
 class BuchungsstelleRecord(Record):
@@ -136,13 +128,14 @@ class BuchungsstelleRecord(Record):
 
 class Buchungsstelle(Entity):
     recs: list[BuchungsstelleRecord]
-    buchungsblattRefs: list['BoRef']
-    parentRefs: list['BoRef']
-    childRefs: list['BoRef']
+    buchungsblattUids: list[str]
+    buchungsblattkennzeichenList: list[str]
+    parentUids: list[str]
+    childUids: list[str]
     fsUids: list[str]
+    parentkennzeichenList: list[str]
     flurstueckskennzeichenList: list[str]
     laufendeNummer: str
-    istHistorisch: bool
 
 
 class NamensnummerRecord(Record):
@@ -157,7 +150,8 @@ class NamensnummerRecord(Record):
 
 class Namensnummer(Entity):
     recs: list[NamensnummerRecord]
-    buchungsblattRefs: list['BoRef']
+    buchungsblattUids: list[str]
+    buchungsblattkennzeichenList: list[str]
     personList: list['Person']
     laufendeNummer: str
 
@@ -205,8 +199,8 @@ class GebaeudeRecord(Record):
     gebaeudekennzeichen: int
     props: list[tuple]
     geom: str
-    grundflaeche: float
-    area: float
+    amtlicheFlaeche: float
+    geomFlaeche: float
 
 
 class Gebaeude(Entity):
@@ -238,7 +232,8 @@ PART_FESTLEGUNG = 3
 
 class PartRecord(Record):
     props: list[tuple]
-    area: float
+    amtlicheFlaeche: float  # corrected
+    geomFlaeche: float
     geom: str
 
 
@@ -332,7 +327,8 @@ class Part(Entity):
     fs: str
     kind: int
     name: EnumPair
-    area: float
+    amtlicheFlaeche: float
+    geomFlaeche: float
     geom: str
 
 

@@ -132,7 +132,7 @@ class ExportAuxButton extends gws.View<ViewProps> {
     render() {
         let cc = _master(this);
 
-        if (!cc.setup.ui.useExport || this.props.features.length === 0)
+        if (cc.setup.exportGroups.length === 0 || this.props.features.length === 0)
             return null;
         return <sidebar.AuxButton
             className="alkisExportAuxButton"
@@ -754,7 +754,7 @@ class ExportTab extends gws.View<ViewProps> {
     render() {
         let cc = _master(this);
 
-        let allGroups = [], //cc.setup.exportGroups,
+        let allGroups = cc.setup.exportGroups,
             selectedGroupIndexes = this.props.alkisFsExportGroupIndexes;
 
         let changed = (gid, value) => cc.update({
@@ -1415,26 +1415,18 @@ class Controller extends gws.Controller {
     async submitExport() {
         let fs: Array<gws.types.IFeature> = this.getValue('alkisFsExportFeatures');
 
-        // let q = {
-        //     findParams: this.paramsForFeatures(fs),
-        //     groupIndexes: this.getValue('alkisFsExportGroupIndexes'),
-        // };
-        //
-        // // NB: must use binary because csv doesn't neccessary come in utf8
-        //
-        // let res = await this.app.server.alkissearchExport(q, {binary: true});
-        //
-        // if (res.error) {
-        //     return;
-        // }
-        //
-        // let a = document.createElement('a');
-        // a.href = window.URL.createObjectURL(new Blob([res.content], {type: res.mime}));
-        // a.download = EXPORT_PATH;
-        // document.body.appendChild(a);
-        // a.click();
-        // window.URL.revokeObjectURL(a.href);
-        // document.body.removeChild(a);
+        let q = {
+            findRequest: this.fsDetailsRequest(fs),
+            groupIndexes: this.getValue('alkisFsExportGroupIndexes'),
+        };
+
+        // NB: must use binary because csv doesn't neccessary come in utf8
+
+        let res = await this.app.server.alkisExportFlurstueck(q, {binary: true});
+        if (res.error) {
+            return;
+        }
+        gws.lib.downloadContent(res.content, res.mime, EXPORT_PATH)
     }
 
     goTo(tab) {

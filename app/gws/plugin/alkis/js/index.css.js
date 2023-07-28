@@ -81,26 +81,32 @@ module.exports = v => ({
         fontSize: 15,
     },
 
-    '.alkisFsSection1': {
-    },
-
-    '.alkisFsSection1 p.alkisFsTitle': {
+    'p.alkisFsH1': {
         fontSize: 14,
         margin: [v.UNIT4, 0],
     },
 
-    '.alkisFsSection2': {
-    },
-
-    '.alkisFsSection2 p.alkisFsTitle': {
+    'p.alkisFsH2': {
         fontSize: 12,
         margin: [v.UNIT4, 0],
+    },
+
+    'p.alkisFsH3': {
+        fontWeight: 'bold',
+        fontSize: 11,
+        margin: [v.UNIT2, 0],
+    },
+
+    'p.alkisFsH4': {
+        fontWeight: 'bold',
+        fontSize: 10,
+        margin: [v.UNIT2, 0],
     },
 
     '.alkisFs table': {
         borderCollapse: 'collapse',
         width: '100%',
-        margin: [v.UNIT4, 0],
+        margin: [v.UNIT2, 0],
     },
 
     '.alkisFs table td, .alkisFs table th': {
@@ -120,25 +126,17 @@ module.exports = v => ({
         width: 130,
     },
 
-    '.alkisFs table td.alkisFsSubhead1': {
-        background: v.EVEN_STRIPE_COLOR,
-        fontWeight: 'bold',
-        fontSize: 11,
-    },
-
-    '.alkisFs table td.alkisFsSubhead2': {
-        background: v.EVEN_STRIPE_COLOR,
-        fontWeight: 'bold',
-        fontSize: 10,
-    },
-
-    '.alkisFs tbody.alkisFsHistory': {
-        background: v.COLOR.pink50,
+    '.alkisFsHistoric': {
+        'td, tr': {
+            background: v.COLOR.pink50,
+        },
+        'p': {
+            color: v.COLOR.pink800,
+        }
     },
 
     '.alkisFsDebug': {
         color: 'red',
     }
-
 
 });
