@@ -235,6 +235,19 @@ export function downloadUrl(url: string, fileName: string, target: string = null
     document.body.removeChild(a);
 }
 
+export function downloadContent(content: string, mime: string, fileName: string, target: string = null) {
+    let a = document.createElement('a');
+    a.href = window.URL.createObjectURL(new Blob([content], {type: mime}));
+    if (target)
+        a.target = target;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(a.href);
+    document.body.removeChild(a);
+}
+
+
 export function paramsToPath(params: object): string {
     let s = [];
     for (let [k, v] of Object.entries(params)) {
