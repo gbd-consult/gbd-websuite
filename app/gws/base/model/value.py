@@ -3,7 +3,7 @@ import gws.types as t
 
 
 class Config(gws.Config):
-    isDefault: bool
+    isDefault: bool = False
     forRead: bool = True
     forWrite: bool = True
     forCreate: bool = True
@@ -11,7 +11,7 @@ class Config(gws.Config):
 
 class Object(gws.Node, gws.IModelValue):
     def configure(self):
-        self.isDefault = self.cfg('isDefault')
+        self.isDefault = self.cfg('isDefault', default=False)
         self.forRead = self.cfg('forRead', default=True)
         self.forWrite = self.cfg('forWrite', default=True)
         self.forCreate = self.cfg('forCreate', default=True)
