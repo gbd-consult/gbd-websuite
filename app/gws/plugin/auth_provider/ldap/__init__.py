@@ -8,7 +8,6 @@ import ldap.filter
 import gws
 import gws.base.auth
 import gws.lib.net
-import gws.lib.misc
 
 import gws.types as t
 
@@ -112,7 +111,7 @@ class Object(gws.base.auth.provider.Object):
     def _make_user(self, conn, user_dict):
         display_name = user_dict.get('displayName', '')
         if not display_name and self.cfg('displayNameFormat'):
-            display_name = gws.lib.misc.format_map(self.cfg('displayNameFormat'), user_dict)
+            display_name = gws.format_map(self.cfg('displayNameFormat'), user_dict)
 
         login = user_dict.get(self.loginAttribute)
         roles = self._roles_for_user(conn, user_dict)

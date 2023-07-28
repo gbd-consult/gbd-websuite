@@ -638,6 +638,20 @@ def random_string(size: int) -> str:
     return ''.join(r.choice(a) for _ in range(size))
 
 
+class _FormatMapDefault:
+    def __init__(self, d, default):
+        self.d = d
+        self.default = default
+
+    def __getitem__(self, item):
+        val = self.d.get(item)
+        return val if val is not None else self.default
+
+
+def format_map(fmt: str, x: dict | Data, default: str = '') -> str:
+    return fmt.format_map(_FormatMapDefault(x, default))
+
+
 def sha256(x):
     def _bytes(x):
         if is_bytes(x):
