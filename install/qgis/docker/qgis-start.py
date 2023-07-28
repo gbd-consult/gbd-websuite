@@ -226,6 +226,9 @@ write('/nginx.conf', nginx_conf)
 silence = '''
 # 'QFont::setPointSize: Point size must be greater than 0'
 :msg, contains, "QFont::setPointSizeF" stop
+
+# 'Using QCharRef with an index pointing outside the valid range of a QString'
+:msg, contains, "Using QCharRef" stop
 '''
 
 if QGIS_DEBUG != '0':
