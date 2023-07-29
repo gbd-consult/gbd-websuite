@@ -162,14 +162,16 @@ class Object(gws.Node):
 
 
 def _flatten(obj):
-    def f(o, key, rs):
+    def flat(o, key, ds):
         if isinstance(o, list):
             if not o:
-                return rs
-            rs2 = []
+                return ds
+            ds2 = []
             for v in o:
-                rs2.extend(f(v, key, rs))
-            return rs2
+                for d2 in flat(v, key, [{}]):
+                    for d in ds:
+                        ds2.append(d | d2)
+            return ds2
 
         if isinstance(o, (dt.Object, dt.EnumPair)):
             for k, v in vars(o).items():
@@ -177,16 +179,13 @@ def _flatten(obj):
                     # the 'props' element, which is a list of key-value pairs
                     # requires a special treatment
                     for k2, v2 in v:
-                        rs = f(v2, key + '_props_' + str(k2), rs)
+                        ds = flat(v2, f'{key}_props_{k2}', ds)
                 else:
-                    rs = f(v, key + '_' + str(k), rs)
-            return rs
+                    ds = flat(v, f'{key}_{k}', ds)
+            return ds
 
-        rs2 = []
-        for r in rs:
-            r = dict(r)
-            r[key] = o
-            rs2.append(r)
-        return rs2
+        for d in ds:
+            d[key] = o
+        return ds
 
-    return f(obj, 'fs', [{}])
+    return flat(obj, 'fs', [{}])
