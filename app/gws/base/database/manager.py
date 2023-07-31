@@ -126,20 +126,21 @@ class Object(gws.Node, gws.IDatabaseManager):
 
             provider_uid, table_name = tabid
 
-            if not self.rt.pkColumns[model_uid]:
-                raise gws.Error(f'no primary key for table {table_name!r} in model {model_uid!r}')
-
             provider = self.provider(provider_uid)
             cols = [v[1] for k, v in columns.items() if k[0] == tabid]
             tab = self.table(provider, table_name, cols)
+            tabid_to_table[tabid] = tab
+
+            if not self.rt.pkColumns[model_uid]:
+                gws.log.warning(f'no primary key for table {table_name!r} in model {model_uid!r}')
+                continue
+
             cls = type('FeatureRecord_' + provider_uid + '_' + gws.to_uid(table_name), (gws.FeatureRecord,), {})
             self.registry_for_provider(provider).map_imperatively(cls, tab)
-
-            tabid_to_table[tabid] = tab
             tabid_to_class[tabid] = cls
 
-        self.rt.modelTable = {model_uid: tabid_to_table[tabid] for model_uid, tabid in model_to_tabid.items()}
-        self.rt.modelClass = {model_uid: tabid_to_class[tabid] for model_uid, tabid in model_to_tabid.items()}
+        self.rt.modelTable = {model_uid: tabid_to_table.get(tabid) for model_uid, tabid in model_to_tabid.items()}
+        self.rt.modelClass = {model_uid: tabid_to_class.get(tabid) for model_uid, tabid in model_to_tabid.items()}
 
         tabid_to_props = {}
 
@@ -222,8 +223,6 @@ class Object(gws.Node, gws.IDatabaseManager):
             if c.primary_key:
                 model.keyName = str(c.name)
                 return
-
-        raise gws.Error(f'primary key not found for table {tab.name!r}')
 
     def _configure_model_geometry(self, model):
         tab = self.table_for_model(model)
