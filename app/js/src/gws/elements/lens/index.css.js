@@ -1,6 +1,6 @@
 module.exports = v => ({
 
-    '.modLensFeature': {
+    '.lensFeature': {
         stroke: v.COLOR.blueGrey800,
         strokeWidth: 3,
         strokeDasharray: "5,5",
@@ -10,7 +10,7 @@ module.exports = v => ({
         fill: v.COLOR.opacity(v.COLOR.blueGrey500, 0.3),
     },
 
-    '.modLensFeatureEdit': {
+    '.lensFeatureEdit': {
         stroke: v.COLOR.blueGrey100,
         strokeWidth: 3,
         strokeDasharray: "5,5",
@@ -22,7 +22,7 @@ module.exports = v => ({
         fill: v.COLOR.opacity(v.COLOR.blueGrey50, 0.3),
     },
 
-    '.modLensOverlay': {
+    '.lensOverlay': {
         backgroundColor: v.COLOR.opacity(v.COLOR.blueGrey900, 0.7),
         borderRadius: v.CONTROL_SIZE,
 
@@ -32,20 +32,20 @@ module.exports = v => ({
         }
     },
 
-    '.modLensOverlayAnchorButton': {
+    '.lensOverlayAnchorButton': {
         ...v.SVG(__dirname + '/move', v.COLOR.white),
     },
 
-    '.modLensOverlayDrawButton': {
+    '.lensOverlayDrawButton': {
         ...v.SVG('google:content/create', v.COLOR.white),
     },
 
-    '.modLensOverlayCancelButton': {
+    '.lensOverlayCancelButton': {
         ...v.SVG('google:content/clear', v.COLOR.white),
     },
 
 
-    '.modLensToolbarButton': {
+    '.lensToolbarButton': {
         ...v.TOOLBAR_BUTTON(__dirname + '/spatialsearch')
     }
 

@@ -50,7 +50,6 @@ class ToolboxView extends gws.View<ViewProps> {
         ];
 
         return <toolbox.Content
-            title={this.props.controller.title}
             controller={this.props.controller}
             buttons={buttons}
         />
@@ -67,13 +66,10 @@ export class Tool extends gws.Tool {
     ixDraw: ol.interaction.Draw;
     ixModify: ol.interaction.Modify;
     drawState: string = '';
-    styleName: string;
-
-    title = this.__('modLens');
+    styleName = '.lensFeature';
 
     async init() {
         this.overlayRef = React.createRef();
-        this.styleName = this.app.style.get('.modLensFeature').cssSelector;
 
         this.app.whenCalled('lensStartFromFeature', args => {
             this.app.startTool('Tool.Lens');
@@ -127,7 +123,7 @@ export class Tool extends gws.Tool {
         if (!this.layerPtr) {
             this.layerPtr = this.map.addServiceLayer(new LensLayer(this.map, {
                 uid: '_lens',
-                style: this.styleName,
+                cssSelector: this.styleName,
             }));
         }
         return this.layerPtr;
@@ -213,11 +209,11 @@ export class Tool extends gws.Tool {
         // so let's do it the old way
 
         let div = document.createElement('div');
-        div.className = 'modLensOverlay';
+        div.className = 'lensOverlay';
 
         let button = document.createElement('div');
-        button.className = 'uiIconButton modLensOverlayAnchorButton';
-        button.title = this.__('modLensOverlayAnchorButton');
+        button.className = 'uiIconButton lensOverlayAnchorButton';
+        button.title = this.__('lensOverlayAnchorButton');
         button.addEventListener('mousedown', evt => this.overlayMoveTouched(evt))
 
         div.appendChild(button);
@@ -273,7 +269,7 @@ export class Tool extends gws.Tool {
 }
 
 class ToolbarButton extends toolbar.Button {
-    iconClass = 'modToolbarButton';
+    iconClass = 'lensToolbarButton';
     tool = 'Tool.Lens';
 
     get tooltip() {
