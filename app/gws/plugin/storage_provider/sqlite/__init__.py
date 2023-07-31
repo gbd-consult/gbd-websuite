@@ -48,13 +48,11 @@ class Object(gws.Node, gws.IStorageProvider):
             raise gws.Error(f'cannot open {self.dbPath!r}') from exc
 
     def list_names(self, category):
-        return sorted(self._exec(sa.select(self.table.c.name)).scalars().all())
+        stmt = sa.select(self.table.c.name).where(self.table.c.category == category)
+        return sorted(self._exec(stmt).scalars().all())
 
     def read(self, category, name):
-        stmt = (
-            sa.select(self.table)
-            .where(self.table.c.category == category)
-            .where(self.table.c.name == name))
+        stmt = sa.select(self.table).where(self.table.c.category == category).where(self.table.c.name == name)
         for rec in self._exec(stmt).mappings().all():
             return gws.StorageRecord(
                 category=rec['category'],
