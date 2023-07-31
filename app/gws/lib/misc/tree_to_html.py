@@ -251,7 +251,7 @@ def load_pickle(path):
         if isinstance(obj, (list, tuple, set)):
             return [transform(x) for x in obj]
         if isinstance(obj, dict):
-            return {k: transform(v) for k, v in obj.items()}
+            return {str(k): transform(v) for k, v in obj.items()}
         if hasattr(obj, 'KLASS'):
             h = hash(obj)
             if h in hash_map:
@@ -269,9 +269,9 @@ def load_pickle(path):
 
             state = getattr(obj, 'STATE', {})
             if isinstance(state, dict):
-                d = {k: transform(v) for k, v in state.items()}
+                d = {str(k): transform(v) for k, v in state.items()}
             else:
-                d = {'state': state}
+                d = {'state': repr(state)}
             d['$'] = name
             obj_list[idx] = d
 
