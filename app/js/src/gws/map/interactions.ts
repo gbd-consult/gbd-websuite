@@ -185,7 +185,7 @@ export function pointer(map: types.IMapManager, options: types.IMapPointerIntera
         handleDownEvent: down,
         handleUpEvent: up,
         handleDragEvent: drag,
-        handleMoveEvent: lib.debounce(move, HOVER_DELAY)
+        handleMoveEvent: lib.debounce(move, HOVER_DELAY) as ((event: ol.MapBrowserPointerEvent) => boolean),
     };
 
     let ix = new ol.interaction.Pointer(opts);

@@ -81,9 +81,11 @@ export function cls(...classNames) {
 }
 
 export function debounce(fn, timeout) {
-    // return _.debounce(fn, timeout);
-    // @TODO
-    return fn;
+    let timer = null;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), timeout);
+    }
 }
 
 export function nextTick(fn) {
