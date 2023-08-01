@@ -1,3 +1,11 @@
+## Version 8.0.7
+
+- better localization support
+- CSV export for ALKIS data
+- "format" model value
+- client "select" tool
+- client "lens" tool
+
 ## Version 8.0.6
 
 - ALKIS plugin updated
