@@ -1,38 +1,30 @@
 @comment
 
-Annotation function.
-
-"Sidebar.Annotate" and "Toolbar.Annotate.Draw" enable the Sidebar and Toolbar buttons,
-"Task.Annotate" adds the "Annotate" item to the Features popup menu.
+Annotation function with "storage".
 
 @end
 
 projects+ {
     title "Map Annotations"
-    metadata.abstract "Create and edit map annotations."
+    metadata.abstract "Create, edit and save map annotations."
 
-    api.actions+ { type "annotate" }
+    api.actions+ {
+        type "annotate"
+        storage {
+            permissions {
+                read "allow all"
+                write "allow all"
+                create "allow all"
+            }
+        }
+    }
 
     client.addElements+ { tag "Sidebar.Annotate" }
     client.addElements+ { tag "Toolbar.Annotate.Draw" }
     client.addElements+ { tag "Task.Annotate" }
     client.options.sidebarActiveTab "Sidebar.Annotate"
 
-    client.addElements+ { tag "Toolbar.Print" }
 
-    printer.templates+ {
-        uid "annotate_print"
-        type "html"
-        path "print.cx.html"
-        mapSize [ "277mm" "170mm" ]
-        title "A4 landscape"
-        qualityLevels [
-            { dpi  0  name "screen" }
-            { dpi  90 name "nice vectors" }
-            { dpi 150 name "good quality" }
-            { dpi 300 name "best quality" }
-        ]
-    }
 
     map {
         center {demo_point_duesseldorf_3857}

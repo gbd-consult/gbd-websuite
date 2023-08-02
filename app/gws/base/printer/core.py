@@ -83,7 +83,6 @@ class Plane(gws.Data):
 
     soupPoints: t.Optional[list[gws.Point]]
     soupTags: t.Optional[list[t.Any]]
-    soupStyles: t.Optional[list[gws.lib.style.Props]]
 
 
 class MapParams(gws.Data):

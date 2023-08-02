@@ -47,8 +47,8 @@ Sie können das Aussehen von Bemaßungen (z.B. Farbe, Linienbreite) mit diesen C
 
 | OPTION | BEDEUTUNG |
 |--|--|
-| ``.gws.modDimensionDimLine`` | Hauptlinie, normalerweise mit der ``--marker`` Eigenschaft ``cross`` oder ``arrow`` |
-| ``.gws.modDimensionDimPlumb`` | Lotlinie |
-| ``.gws.modDimensionDimCross`` | ``cross`` (Kreuz) Marker |
-| ``.gws.modDimensionDimArrow`` | ``arrow`` (Pfeil) Marker |
-| ``.gws.modDimensionDimLabel`` | Beschriftung |
+| ``.gws.dimensionDimLine`` | Hauptlinie, normalerweise mit der ``--marker`` Eigenschaft ``cross`` oder ``arrow`` |
+| ``.gws.dimensionDimPlumb`` | Lotlinie |
+| ``.gws.dimensionDimCross`` | ``cross`` (Kreuz) Marker |
+| ``.gws.dimensionDimArrow`` | ``arrow`` (Pfeil) Marker |
+| ``.gws.dimensionDimLabel`` | Beschriftung |

@@ -293,14 +293,13 @@ class _Worker:
                 styles=list(used_styles.values()),
             )
 
-
-        # if plane.type == core.PlaneType.soup:
-        #     return gws.MapRenderInputPlane(
-        #         type=gws.MapRenderInputPlaneType.svg_soup,
-        #         soup_points=plane.points,
-        #         soup_tags=plane.tags,
-        #         opacity=opacity,
-        #         style=style)
+        if plane.type == core.PlaneType.soup:
+            return gws.MapRenderInputPlane(
+                type=gws.MapRenderInputPlaneType.svgSoup,
+                soupPoints=plane.soupPoints,
+                soupTags=plane.soupTags,
+                opacity=opacity,
+            )
 
         raise gws.Error(f'invalid plane type {plane.type!r}')
 

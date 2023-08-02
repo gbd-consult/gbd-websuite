@@ -200,7 +200,7 @@ def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
             _add_svg_elements(rd, lro.tags, opacity)
         return
 
-    if plane.type == 'features':
+    if plane.type == gws.MapRenderInputPlaneType.features:
         style_dct = {}
         if plane.styles:
             style_dct = {s.cssSelector: s for s in plane.styles}
@@ -208,11 +208,11 @@ def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
             tags = f.to_svg(rd.vectorView, f.views.get('label', ''), style_dct.get(f.cssSelector))
             _add_svg_elements(rd, tags, opacity)
         return
-    #
-    # if plane.type == 'svg_soup':
-    #     els = gws.lib.svg.soup_to_fragment(rd.vectorView, plane.soup_points, plane.soup_tags)
-    #     _add_svg_elements(rd, els, opacity)
-    #     return
+
+    if plane.type == gws.MapRenderInputPlaneType.svgSoup:
+        els = gws.lib.svg.soup_to_fragment(rd.vectorView, plane.soupPoints, plane.soupTags)
+        _add_svg_elements(rd, els, opacity)
+        return
 
 
 def _add_image(rd: _Renderer, img, opacity):

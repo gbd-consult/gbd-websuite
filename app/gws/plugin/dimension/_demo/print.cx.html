@@ -1,0 +1,45 @@
+@page width="297" height="210" margin="10"
+
+<style>
+.dimensionDimArrow {
+    fill: #01579b;
+    height: 8px;
+    stroke: #01579b;
+    stroke-width: 2px;
+    width: 12px;
+}
+.dimensionDimCross {
+    fill: transparent;
+    height: 10px;
+    stroke: #01579b;
+    stroke-width: 1px;
+}
+.dimensionDimExt {
+    stroke: #01579b;
+    stroke-dasharray: 4;
+    stroke-width: 2px;
+}
+.dimensionDimLabel {
+    --offset-y: 5;
+    --user-select: none;
+    fill: #01579b;
+    font-size: 11px;
+}
+.dimensionDimLine {
+    --marker: arrow;
+    fill: transparent;
+    stroke: #01579b;
+    stroke-width: 2px;
+}
+.dimensionDimPlumb {
+    stroke: #01579b;
+    stroke-dasharray: 2;
+    stroke-width: 1px;
+}
+</style>
+
+<h1>{project.title | html}</h1>
+
+<div class="map">
+@map
+</div>

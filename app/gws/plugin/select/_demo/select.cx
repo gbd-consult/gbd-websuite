@@ -10,12 +10,6 @@ The polygon selection only works with sources which support geometry queries lik
 
 @end
 
-storage.providers+ {
-    uid "common_storage"
-    type "sqlite"
-    path "/gws-var/common_storage.sqlite"
-}
-
 projects+ {
     title "Select Tool"
     metadata.abstract "Select vector objects on the map."

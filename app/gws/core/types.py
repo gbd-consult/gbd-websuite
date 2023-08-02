@@ -1413,7 +1413,7 @@ class MapRenderInputPlaneType(Enum):
     image = 'image'
     imageLayer = 'imageLayer'
     svgLayer = 'svgLayer'
-    svg_soup = 'svg_soup'
+    svgSoup = 'svgSoup'
 
 
 class MapRenderInputPlane(Data):
@@ -1422,9 +1422,8 @@ class MapRenderInputPlane(Data):
     image: 'IImage'
     layer: 'ILayer'
     opacity: float
-    print_as_vector: bool
-    soup_points: list[Point]
-    soup_tags: list[Any]
+    soupPoints: list[Point]
+    soupTags: list[Any]
     styles: list['IStyle']
     subLayers: list[str]
 

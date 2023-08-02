@@ -7,33 +7,41 @@ import gws.types as t
 
 gws.ext.new.action('dimension')
 
-STORAGE_CATEGORY = 'Dimension'
-
 
 class Config(gws.ConfigWithAccess):
     """Dimension action"""
 
-    layers: t.Optional[list[str]]
-    """target layer uids"""
+    layerUids: t.Optional[list[str]]
+    """snap layer uids"""
     pixelTolerance: int = 10
     """pixel tolerance"""
+    storage: t.Optional[gws.base.storage.Config]
+    """storage configuration"""
 
 
 class Props(gws.base.action.Props):
     layerUids: t.Optional[list[str]]
     pixelTolerance: int
+    storage: gws.base.storage.Props
 
 
 class Object(gws.base.action.Object):
+    storage: t.Optional[gws.base.storage.Object]
+
+    def configure(self):
+        self.storage = self.create_child_if_configured(
+            gws.base.storage.Object, self.cfg('storage'), categoryName='Dimension')
 
     def props(self, user):
         return gws.merge(
             super().props(user),
-            layerUids=self.cfg('layers') or [],
+            layerUids=self.cfg('layerUids') or [],
             pixelTolerance=self.cfg('pixelTolerance'),
+            storage=self.storage,
         )
 
-    # @gws.ext.command.api('dimensionStorage')
-    # def storage(self, req: gws.IWebRequester, p: gws.base.storage.Params) -> gws.base.storage.Response:
-    #     helper: gws.base.storage.Object = self.root.app.require_helper('storage')
-    #     return helper.handle_action(req, p, STORAGE_CATEGORY)
+    @gws.ext.command.api('dimensionStorage')
+    def handle_storage(self, req: gws.IWebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
+        if not self.storage:
+            raise gws.NotFoundError()
+        return self.storage.handle_request(req, p)

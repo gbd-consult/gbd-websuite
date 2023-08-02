@@ -1,0 +1,66 @@
+@comment
+
+Dimension function.
+
+For printing dimensions it is important to include dimensionDimXXX styles
+in the print template (see print.cx.html).
+
+With `layerUids` you can configure which features dimension will snap to
+when drawing.
+
+@end
+
+projects+ {
+    title "Dimension (Bemaßung)"
+    metadata.abstract "Create, edit and save dimensions."
+
+    api.actions+ {
+        type "dimension"
+        layerUids [ "nrw_kreise_wfs" ]
+        storage {
+            permissions {
+                read "allow all"
+                write "allow all"
+                create "allow all"
+            }
+        }
+    }
+
+    client.addElements+ { tag "Sidebar.Dimension" }
+    client.addElements+ { tag "Toolbar.Dimension" }
+    client.options.sidebarActiveTab "Sidebar.Dimension"
+
+    printer.templates+ {
+        uid "print_dimension"
+        type "html"
+        path "print.cx.html"
+        mapSize [ "250mm" "150mm" ]
+        qualityLevels [
+            { dpi 150 name "150 dpi" }
+        ]
+    }
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 250000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        uid "nrw_kreise_wfs"
+        title "Kreise und kreisfreie Städte"
+        type "wfsflat"
+        provider.url "https://www.wfs.nrw.de/geobasis/wfs_nw_dvg"
+        sourceLayers.names [ "dvg:nw_dvg1_krs" ]
+        metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{gn}}"
+        }
+        cssSelector ".nrw_kreise"
+    }
+
+    {demo_osm_background}
+}

@@ -120,6 +120,14 @@
     locales+ "de_DE"
 @end
 
+@def demo_storage
+    storage.providers+ {
+        uid "common_storage"
+        type "sqlite"
+        path "/gws-var/common_storage.sqlite"
+    }
+@end
+
 @def demo_custom_config
     @# insert your custom config here
 @end
@@ -131,5 +139,6 @@
     @demo_web_site
     @demo_api
     @demo_client
+    @demo_storage
     @demo_custom_config
 @end
