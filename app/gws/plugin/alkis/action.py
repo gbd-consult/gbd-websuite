@@ -363,6 +363,7 @@ class Object(gws.base.action.Object):
         else:
             self.export = None
 
+    def activate(self):
         self.indexExists = self.index.exists()
         if self.indexExists:
             gws.log.info(f'ALKIS index ok')
