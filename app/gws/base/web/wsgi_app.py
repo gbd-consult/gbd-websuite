@@ -67,8 +67,6 @@ def apply_middleware(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebRespond
         except Exception as exc:
             res = handle_error(req, exc)
 
-        # gws.log.debug(f'middleware enter: {name=} {res=}')
-
         if res:
             break
 
@@ -83,8 +81,6 @@ def apply_middleware(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebRespond
             obj.exit_middleware(req, res)
         except Exception as exc:
             res = handle_error(req, exc)
-
-        # gws.log.debug(f'middleware exit: {name=} {res=}')
 
     return res
 
@@ -101,6 +97,19 @@ def _debug_repr(prefix, s):
 def handle_error(req: gws.IWebRequester, exc: Exception) -> gws.IWebResponder:
     if isinstance(exc, gws.base.web.error.HTTPException):
         return handle_http_error(req, exc)
+
+    exc2 = None
+
+    if isinstance(exc, gws.NotFoundError):
+        exc2 = gws.base.web.error.NotFound()
+    if isinstance(exc, gws.ForbiddenError):
+        exc2 = gws.base.web.error.Forbidden()
+    if isinstance(exc, gws.BadRequestError):
+        exc2 = gws.base.web.error.BadRequest()
+
+    if exc2:
+        exc2.__cause__ = exc
+        return handle_http_error(req, exc2)
 
     gws.log.exception()
     return req.error_responder(gws.base.web.error.InternalServerError())
@@ -153,21 +162,14 @@ def final_middleware(req: gws.IWebRequester) -> gws.IWebResponder:
         # @TODO: add HEAD
         raise gws.base.web.error.MethodNotAllowed()
 
-    try:
-        fn, request = gws.base.action.dispatch(
-            req.root,
-            command_category,
-            command_name,
-            params,
-            req.user,
-            read_options
-        )
-    except gws.NotFoundError as exc:
-        raise gws.base.web.error.NotFound() from exc
-    except gws.ForbiddenError as exc:
-        raise gws.base.web.error.Forbidden() from exc
-    except gws.BadRequestError as exc:
-        raise gws.base.web.error.BadRequest() from exc
+    fn, request = gws.base.action.dispatch(
+        req.root,
+        command_category,
+        command_name,
+        params,
+        req.user,
+        read_options
+    )
 
     response = fn(req, request)
 
