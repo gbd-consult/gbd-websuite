@@ -201,6 +201,7 @@ class FindFlurstueckRequest(gws.Request):
     eigentuemerControlInput: t.Optional[str]
     limit: t.Optional[int]
 
+    wantEigentuemer: t.Optional[bool]
     wantHistorySearch: t.Optional[bool]
     wantHistoryDisplay: t.Optional[bool]
 
@@ -465,10 +466,10 @@ class Object(gws.base.action.Object):
         if not groups:
             raise gws.NotFoundError()
 
-        fr = p.findRequest
-        fr.projectUid = p.projectUid
+        find_request = p.findRequest
+        find_request.projectUid = p.projectUid
 
-        res = self._find_flurstueck(req, fr)
+        res = self._find_flurstueck(req, find_request)
         if not res.flurstueckList:
             raise gws.NotFoundError()
 
@@ -482,22 +483,22 @@ class Object(gws.base.action.Object):
 
         project = req.require_project(p.projectUid)
 
-        fr = p.findRequest
-        fr.projectUid = p.projectUid
+        find_request = p.findRequest
+        find_request.projectUid = p.projectUid
 
-        res = self._find_flurstueck(req, fr)
+        res = self._find_flurstueck(req, find_request)
         if not res.flurstueckList:
             raise gws.NotFoundError()
 
-        pr = p.printRequest
-        pr.projectUid = p.projectUid
-        crs = pr.get('crs') or project.map.bounds.crs
+        print_request = p.printRequest
+        print_request.projectUid = p.projectUid
+        crs = print_request.get('crs') or project.map.bounds.crs
 
         templates = [
             gws.base.template.locate(self, user=req.user, subject='feature.label'),
         ]
 
-        base_map = pr.maps[0]
+        base_map = print_request.maps[0]
         fs_maps = []
 
         for fs in res.flurstueckList:
@@ -518,14 +519,14 @@ class Object(gws.base.action.Object):
             fs_map.planes = [fs_plane] + base_map.planes
             fs_maps.append(fs_map)
 
-        pr.maps = fs_maps
-        pr.args = dict(
+        print_request.maps = fs_maps
+        print_request.args = dict(
             flurstueckList=res.flurstueckList,
             withHistory=res.queryOptions.withHistoryDisplay,
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
         )
 
-        job = gws.base.printer.job.start(self.root, pr, req.user)
+        job = gws.base.printer.job.start(self.root, print_request, req.user)
         return gws.base.printer.job.status(job)
 
     @gws.ext.command.api('alkisSelectionStorage')
@@ -574,22 +575,19 @@ class Object(gws.base.action.Object):
         )
 
         want_eigentuemer = (
-                dt.DisplayTheme.eigentuemer in qo.displayThemes
+                p.wantEigentuemer
+                or dt.DisplayTheme.eigentuemer in qo.displayThemes
                 or any(getattr(query, key) is not None for key in dt.EigentuemerAccessRequired)
         )
-        if want_eigentuemer and not self._check_eigentuemer_access(req, p.eigentuemerControlInput):
-            qo.displayThemes.remove(dt.DisplayTheme.eigentuemer)
-            for key in dt.EigentuemerAccessRequired:
-                setattr(query, key, None)
+        if want_eigentuemer:
+            self._check_eigentuemer_access(req, p.eigentuemerControlInput)
 
         want_buchung = (
                 dt.DisplayTheme.buchung in qo.displayThemes
                 or any(getattr(query, key) is not None for key in dt.BuchungAccessRequired)
         )
-        if want_buchung and not self._check_buchung_access(req, p.eigentuemerControlInput):
-            qo.displayThemes.remove(dt.DisplayTheme.buchung)
-            for key in dt.BuchungAccessRequired:
-                setattr(query, key, None)
+        if want_buchung:
+            self._check_buchung_access(req, p.eigentuemerControlInput)
 
         fs_uids = self.index.find_flurstueck_uids(query, qo)
         total = len(fs_uids)
@@ -614,8 +612,10 @@ class Object(gws.base.action.Object):
             query.uids.append(vn)
             return
 
-        if re.match('^[0-9_]+$', vn):
+        if re.match('^[0-9_]+$', vn) and len(vn) >= 14:
             # search by fs kennzeichen
+            # the length must be at least 2+4+3+5
+            # (see gdi6, AX_Flurstueck_Kerndaten.flurstueckskennzeichen)
             query.flurstueckskennzeichen = vn
             return
 
@@ -644,18 +644,14 @@ class Object(gws.base.action.Object):
 
     def _check_eigentuemer_access(self, req: gws.IWebRequester, control_input: str):
         if not req.user.can_read(self.eigentuemer):
-            return False
-
+            raise gws.ForbiddenError('cannot read eigentuemer')
         if self.eigentuemer.controlMode and not self._check_eigentuemer_control_input(control_input):
             self._log_eigentuemer_access(req, is_ok=False, control_input=control_input)
-            raise gws.ForbiddenError()
-
-        return True
+            raise gws.ForbiddenError('eigentuemer control input failed')
 
     def _check_buchung_access(self, req: gws.IWebRequester, control_input: str):
         if not req.user.can_read(self.buchung):
-            return False
-        return True
+            raise gws.ForbiddenError('cannot read buchung')
 
     _eigentuemerLogTable = None
 
