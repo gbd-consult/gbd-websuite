@@ -691,7 +691,7 @@ def fs_parse_vollnummer(s):
     m = re.match(_RE_VOLLNUMMER, s.strip())
     if not m:
         return None
-    return m.groupdict()
+    return gws.compact(m.groupdict())
 
 
 def text_search_clause(column, val, tso: gws.TextSearchOptions):

@@ -241,6 +241,9 @@ class _PlaceIndexer(_Indexer):
     def get(self, kind, o):
         return self.om.placeIdx.get(kind + self.code(kind, o))
 
+    def is_empty(self, p: dt.EnumPair):
+        return p.code == '0' or p.code == '00'
+
     CODES = {
         'land': lambda o: o.land,
         'regierungsbezirk': lambda o: o.land + (o.regierungsbezirk or '0'),
@@ -659,6 +662,11 @@ class _FsDataIndexer(_Indexer):
         r.regierungsbezirk = self.rr.place.get_regierungsbezirk(ax.gemeindezugehoerigkeit)
         r.kreis = self.rr.place.get_kreis(ax.gemeindezugehoerigkeit)
         r.land = self.rr.place.get_land(ax.gemeindezugehoerigkeit)
+
+        if self.rr.place.is_empty(r.gemarkung) or self.rr.place.is_empty(r.gemeinde):
+            # exclude Flurstücke that refer to Gemeinde/Gemarkung
+            # which do not exist in the reference AX tables
+            return None
 
         if r.gemarkung.code in self.ix.excludeGemarkung:
             return None

@@ -1156,22 +1156,7 @@ class Controller extends gws.Controller {
         let res = await this.app.server.alkisFindFlurstueck(this.fsSearchRequest());
 
         if (res.error) {
-            let msg = this.__('alkisErrorGeneric');
-
-            if (res.status === 400) {
-                msg = this.__('alkisErrorControl');
-            }
-
-            if (res.status === 409) {
-                msg = this.__('alkisErrorTooMany').replace(/\$1/g, this.setup.limit);
-            }
-
-            this.update({
-                alkisFsError: msg,
-            });
-
-            this.update({alkisFsLoading: false});
-            return this.goTo('error');
+            return this.showError(res)
         }
 
         let features = this.map.readFeatures(res.features);
@@ -1207,8 +1192,6 @@ class Controller extends gws.Controller {
         }
 
         delete req.strasseCode;
-        delete req.wantEigentuemer;
-
         return req;
     }
 
@@ -1239,6 +1222,10 @@ class Controller extends gws.Controller {
 
     async showDetails(f: gws.types.IFeature, highlight = true) {
         let res = await this.app.server.alkisFindFlurstueck(this.fsDetailsRequest([f]));
+        if (res.error) {
+            return this.showError(res);
+        }
+
         let features = this.map.readFeatures(res.features);
 
         if (features.length > 0) {
@@ -1427,6 +1414,25 @@ class Controller extends gws.Controller {
             return;
         }
         gws.lib.downloadContent(res.content, res.mime, EXPORT_PATH)
+    }
+
+    showError(res) {
+        let msg = this.__('alkisErrorGeneric');
+
+        if (res.status === 403) {
+            msg = this.__('alkisErrorForbidden');
+        }
+
+        if (res.status === 409) {
+            msg = this.__('alkisErrorTooMany').replace(/\$1/g, this.setup.limit);
+        }
+
+        this.update({
+            alkisFsError: msg,
+        });
+
+        this.update({alkisFsLoading: false});
+        return this.goTo('error');
     }
 
     goTo(tab) {
