@@ -324,7 +324,7 @@ class Dialog extends gws.View<ViewProps> {
 
             let label = '';
 
-            if (job.stepType === 'layer' && job.stepName)
+            if (job.stepName)
                 label = gws.lib.shorten(job.stepName, 40);
 
 

@@ -176,44 +176,50 @@ class Object(gws.base.template.Object):
         raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')
 
     def finalize_pdf(self, tri: gws.TemplateRenderInput, html: str, engine: 'Engine'):
-        content_path = gws.printtemp('content.pdf')
+        content_pdf_path = gws.printtemp('content.pdf')
 
         psz = engine.pageSize or self.pageSize
         pma = engine.pageMargin or self.pageMargin
 
         gws.lib.htmlx.render_to_pdf(
             self.decorate_html(html),
-            out_path=content_path,
+            out_path=content_pdf_path,
             page_size=psz,
-            page_margin=pma)
+            page_margin=pma,
+        )
 
         has_frame = engine.header or engine.footer
         if not has_frame:
-            return content_path
+            return content_pdf_path
 
-        args = gws.merge(tri.args, numpages=gws.lib.pdf.page_count(content_path))
+        args = gws.merge(tri.args, numpages=gws.lib.pdf.page_count(content_pdf_path))
         frame_text = self.frame_template(engine.header or '', engine.footer or '', psz)
         frame_html, _ = self.do_render(tri, frame_text, '', args)
-        frame_path = gws.printtemp('frame.pdf')
-        gws.lib.htmlx.render_to_pdf(frame_html, out_path=frame_path, page_size=psz, page_margin=None)
+        frame_pdf_path = gws.printtemp('frame.pdf')
+        gws.lib.htmlx.render_to_pdf(
+            self.decorate_html(frame_html),
+            out_path=frame_pdf_path,
+            page_size=psz,
+            page_margin=None,
+        )
 
-        combined_path = gws.printtemp('combined.pdf')
-        gws.lib.pdf.overlay(frame_path, content_path, combined_path)
-        return combined_path
+        combined_pdf_path = gws.printtemp('combined.pdf')
+        gws.lib.pdf.overlay(frame_pdf_path, content_pdf_path, combined_pdf_path)
+        return combined_pdf_path
 
     def finalize_png(self, tri: gws.TemplateRenderInput, html: str, engine: 'Engine'):
-        res_path = gws.printtemp('final.png')
+        out_png_path = gws.printtemp('out.png')
 
         psz = engine.pageSize or self.pageSize
         pma = engine.pageMargin or self.pageMargin
 
         gws.lib.htmlx.render_to_png(
             self.decorate_html(html),
-            out_path=res_path,
+            out_path=out_png_path,
             page_size=psz,
             page_margin=pma)
 
-        return res_path
+        return out_png_path
 
     ##
 
