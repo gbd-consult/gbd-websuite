@@ -128,8 +128,8 @@ class Object(gws.Node, gws.IApplication):
     """Main Appilication object"""
 
     qgisVersion = ''
-    projectDct: dict[str, gws.IProject]
-    helperDct: dict[str, gws.INode]
+    projectMap: dict[str, gws.IProject]
+    helperMap: dict[str, gws.INode]
 
     _devopts: dict
 
@@ -182,7 +182,7 @@ class Object(gws.Node, gws.IApplication):
         self.authMgr = self.create_child(gws.base.auth.manager.Object, self.cfg('auth'))
 
         helpers = self.create_children(gws.ext.object.helper, self.cfg('helpers'))
-        self.helperDct = {p.extType: p for p in helpers}
+        self.helperMap = {p.extType: p for p in helpers}
 
         # @TODO default API
         self.actionMgr = self.create_child(gws.base.action.manager.Object, self.cfg('api'))
@@ -205,7 +205,7 @@ class Object(gws.Node, gws.IApplication):
             self.printer = self.root.create_shared(gws.base.printer.Object, _DEFAULT_PRINTER)
 
         projects = self.create_children(gws.ext.object.project, self.cfg('projects'))
-        self.projectDct = {p.uid: p for p in projects}
+        self.projectMap = {p.uid: p for p in projects}
 
     def post_configure(self):
         if self.cfg('server.mapproxy.enabled'):
@@ -229,13 +229,13 @@ class Object(gws.Node, gws.IApplication):
         return self.middlewareMgr.sorted_objects()
 
     def projects_for_user(self, user):
-        return [p for p in self.projectDct.values() if user.can_use(p)]
+        return [p for p in self.projectMap.values() if user.can_use(p)]
 
     def project(self, uid):
-        return self.projectDct.get(uid)
+        return self.projectMap.get(uid)
 
     def helper(self, ext_type):
-        return self.helperDct.get(ext_type)
+        return self.helperMap.get(ext_type)
 
     def developer_option(self, name):
         return self._devopts.get(name)
