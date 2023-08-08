@@ -162,9 +162,12 @@ class Root(types.IRoot):
     def create_shared(self, classref, config=None, **kwargs):
         config = _to_config(config, kwargs)
 
-        uid = config.get('uid')
-        if uid and uid in self._uidMap:
-            return self._uidMap[uid]
+        uid = config.uid
+        if not uid:
+            config.uid = '_s_' + util.sha256([repr(classref), config])
+
+        if config.uid in self._uidMap:
+            return self._uidMap[config.uid]
 
         return self._create(classref, None, config)
 
