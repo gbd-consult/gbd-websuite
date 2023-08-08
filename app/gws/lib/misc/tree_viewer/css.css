@@ -1,0 +1,113 @@
+::-webkit-scrollbar {
+    background: #444;
+}
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+}
+
+html, body {
+    font: 14px Consolas, monospace;
+    box-sizing: border-box;
+    background: black;
+    color: white;
+}
+
+#main {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    overflow-x: scroll;
+    background: #151520;
+    color: #ADAEAD;
+}
+
+.column {
+    min-height: 100%;
+    max-height: 100%;
+    min-width: 500px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.column-content {
+    overflow: scroll;
+    white-space: pre;
+    padding: 5px;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.column-top {
+    padding: 10px;
+    display: flex;
+    background: black;
+    position: relative;
+}
+
+.column-bottom {
+    padding: 10px;
+    background: black;
+    position: relative;
+}
+
+.column-bottom a {
+    display: block;
+    font-size: 12px;
+    width: 95%;
+    overflow: hidden;
+}
+
+.column-top input {
+    width: 400px;
+    background: #151520;
+    color: white;
+    border: none;
+    padding: 5px;
+}
+
+.column-top button {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: black;
+    color: #ADAEAD;
+    font-size: 20px;
+}
+.column-top button[disabled] {
+    display: none;
+}
+
+.column b {
+    font-weight: 500;
+    color: #b67b41;
+    padding: 3px;
+}
+
+.column i {
+    font-style: normal;
+    background: yellow;
+    color: black;
+}
+
+.column u {
+    text-decoration: none;
+    color: #afc0f5;
+}
+
+a {
+    color: #7D89B5;
+    cursor: pointer;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+
