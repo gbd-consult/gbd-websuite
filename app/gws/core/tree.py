@@ -94,7 +94,7 @@ class Root(types.IRoot):
         self._cachedDescriptors: dict[str, types.ExtObjectDescriptor] = {}
         self._objects: list['Node'] = []
         self._uidMap: dict[str, 'Node'] = {}
-        self._uidCount = 0
+        self._uidCount = 1
 
     def activate(self):
         for obj in self._objects:
@@ -147,7 +147,7 @@ class Root(types.IRoot):
         config = _to_config(config, kwargs)
 
         obj = self._alloc('gws.base.application.Object')
-        obj.uid = '0'
+        obj.uid = '1'
         obj.parent = self
         obj.children = []
 
