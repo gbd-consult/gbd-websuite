@@ -93,7 +93,7 @@ def parse(s) -> t.Optional[datetime.datetime]:
     return None
 
 
-_dmy_re = r'''(?x)
+_DMY_RE = r'''(?x)
     ^
         (?P<d> \d{1,2})
         [./\s]
@@ -105,7 +105,7 @@ _dmy_re = r'''(?x)
 
 
 def from_dmy(s: str) -> t.Optional[datetime.datetime]:
-    m = re.match(_dmy_re, s)
+    m = re.match(_DMY_RE, s)
     if not m:
         raise ValueError(f'invalid date {s!r}')
     g = m.groupdict()
@@ -118,7 +118,7 @@ def from_dmy(s: str) -> t.Optional[datetime.datetime]:
     )
 
 
-_iso_re = r'''(?x)
+_ISO_DATE_RE = r'''(?x)
     ^
 
     # date
@@ -153,7 +153,7 @@ _iso_re = r'''(?x)
 
 
 def from_iso(s: str) -> t.Optional[datetime.datetime]:
-    m = re.match(_iso_re, s)
+    m = re.match(_ISO_DATE_RE, s)
     if not m:
         raise ValueError(f'invalid date {s!r}')
 
@@ -175,4 +175,39 @@ def from_iso(s: str) -> t.Optional[datetime.datetime]:
         int(g['S'] or 0),
         int(g['f'] or 0),
         tz
+    )
+
+
+_ISO_TIME_RE = r'''(?x)
+    ^
+    (?P<H> \d{1,2}) 
+    (
+        \s* : \s* 
+        (?P<M> \d{1,2}) 
+        (
+            \s* : \s* 
+            (?P<S> \d{1,2} )
+        )?
+    )?
+    $
+'''
+
+
+def parse_time(s: str) -> t.Optional[datetime.time]:
+    m = re.match(_ISO_TIME_RE, s)
+    if not m:
+        raise ValueError(f'invalid time {s!r}')
+    g = m.groupdict()
+    return datetime.time(
+        int(g['H'] or 0),
+        int(g['M'] or 0),
+        int(g['S'] or 0)
+    )
+
+
+def to_iso_time_string(tt: datetime.time) -> str:
+    return '{:02d}:{:02d}:{:02d}'.format(
+        tt.hour,
+        tt.minute,
+        tt.second
     )
