@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as gws from 'gws';
 
 interface Props extends gws.types.ModelWidgetProps {
-    //widgetProps: gws.api.plugin.model_widget.checkbox.Props
+    widgetProps: gws.api.plugin.model_widget.toggle.Props
 }
 
 
@@ -15,7 +15,7 @@ class View extends gws.View<Props> {
             disabled={this.props.widgetProps.readOnly}
             value={gws.lib.isEmpty(value) ? null : Boolean(value)}
             whenChanged={this.props.whenChanged}
-            type={'radio'}
+            type={this.props.widgetProps.kind}
         />
     }
 }
@@ -28,5 +28,5 @@ class Controller extends gws.Controller {
 
 
 gws.registerTags({
-    'ModelWidget.checkbox': Controller,
+    'ModelWidget.toggle': Controller,
 })

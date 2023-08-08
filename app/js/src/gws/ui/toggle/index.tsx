@@ -4,7 +4,7 @@ import * as base from '../base';
 import * as util from '../util';
 
 export interface ToggleProps extends base.InputProps<boolean> {
-    type?: 'radio' | 'checkbox';
+    type?: string;
     alignRight?: boolean;
     inline?: boolean;
 }
