@@ -1009,21 +1009,30 @@ class Controller extends gws.Controller {
 
         let models = this.app.models.editableModels();
 
+        if (gws.lib.isEmpty(models)) {
+            return;
+        }
+
+        this.editLayer = this.map.addServiceLayer(new EditLayer(this.map, {
+            uid: '_edit',
+        }));
+        this.editLayer.controller = this;
+
         this.updateEditState({
             searchText: {},
             prevFeatures: [],
             featureCache: {},
         });
 
+        this.app.whenCalled('editModel', args => {
+            this.selectModel(args.model);
+            this.update({
+                sidebarActiveTab: 'Sidebar.Edit',
+            });
+        });
 
-        if (!gws.lib.isEmpty(models)) {
-            this.editLayer = this.map.addServiceLayer(new EditLayer(this.map, {
-                uid: '_edit',
-            }));
-            this.editLayer.controller = this;
-        }
-
-        this.app.whenChanged('mapViewState', () => this.whenMapStateChanged());
+        this.app.whenChanged('mapViewState', () =>
+            this.whenMapStateChanged());
     }
 
     get appOverlayView() {

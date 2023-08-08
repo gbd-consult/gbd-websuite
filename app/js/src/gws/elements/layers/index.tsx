@@ -95,7 +95,7 @@ let _layerTree = (layer: gws.types.ILayer, props) => {
     layer.children.forEach(la => {
         if (la.unlisted)
             return;
-        if(!la.inResolution && !props.layersShowInactive)
+        if (!la.inResolution && !props.layersShowInactive)
             return;
         if (la.unfolded)
             cc.push(..._layerTree(la, props));
@@ -146,6 +146,10 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
             cc = this.props.controller,
             map = cc.map;
 
+        let models = this.app.models.editableModels().filter(m => m.layer === layer);
+        let model = models.length ? models[0] : null;
+
+
         let f = {
             zoom() {
                 console.log('ZOOM_TO_LAYER', layer.uid, layer.extent);
@@ -156,11 +160,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                 map.setLayerChecked(layer, true)
             },
             edit() {
-                cc.update({
-                    editLayer: layer,
-                    editFeature: null,
-                    sidebarActiveTab: 'Sidebar.Edit',
-                });
+                cc.app.call('editModel', {model})
             },
             close() {
                 map.deselectAllLayers()
@@ -221,7 +221,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                     tooltip={this.__('modLayersZoomAuxButton')}
                     whenTouched={f.zoom}
                 />
-                {layer.editAccess && <sidebar.AuxButton
+                {model && <sidebar.AuxButton
                     className="modLayersEditAuxButton"
                     tooltip={this.__('modLayersEditAuxButton')}
                     whenTouched={f.edit}
