@@ -27,6 +27,8 @@ class Object(gws.base.model.Object):
 
         self.configure_provider()
         self.configure_fields()
+        self.configure_key()
+        self.configure_geometry()
         self.configure_templates()
 
     def configure_provider(self):

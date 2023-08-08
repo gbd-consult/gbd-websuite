@@ -57,16 +57,18 @@ class Object(gws.Node, gws.IModel):
     def configure_fields(self):
         has_conf = False
         has_auto = False
+
         p = self.cfg('fields')
         if p:
             self.fields = self.create_children(gws.ext.object.modelField, p, _defaultModel=self)
             has_conf = True
         if not p or self.cfg('withAutoload'):
             has_auto = self.configure_auto_fields()
+
         return has_conf or has_auto
 
     def configure_auto_fields(self):
-        exclude = set(self.cfg('autoloadExclude', default=[]))
+        exclude = set(self.cfg('autoFieldsExclude', default=[]))
 
         desc = self.describe()
         if not desc:
@@ -77,17 +79,40 @@ class Object(gws.Node, gws.IModel):
                 # we do not configure relations automatically
                 # treating them as scalars leads to conflicts in sa Table classes
                 continue
-            cfg = util.field_config_from_column(col)
-            if not cfg:
+
+            if col.name in exclude or any(f.name == col.name for f in self.fields):
                 continue
-            name = cfg.get('name')
-            if name in exclude or any(f.name == name for f in self.fields):
+
+            typ = DEFAULT_FIELD_TYPES.get(col.type)
+            if not typ:
+                gws.log.warning(f'cannot find suitable field type for column {col.name!r} ({col.type})')
                 continue
+
+            cfg = gws.Config(
+                type=typ,
+                name=col.name,
+                isPrimaryKey=col.isPrimaryKey,
+                isRequired=not col.isNullable,
+            )
             fld = self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self)
             if fld:
                 self.fields.append(fld)
 
         return True
+
+    def configure_key(self):
+        for f in self.fields:
+            if f.isPrimaryKey:
+                self.keyName = f.name
+                return True
+
+    def configure_geometry(self):
+        for f in self.fields:
+            if getattr(f, 'geometryType', None):
+                self.geometryName = f.name
+                self.geometryType = getattr(f, 'geometryType')
+                self.geometryCrs = getattr(f, 'geometryCrs')
+                return True
 
     def configure_templates(self):
         p = self.cfg('templates')
@@ -198,3 +223,25 @@ class Object(gws.Node, gws.IModel):
     def compute_values(self, feature, access, user, **kwargs):
         for f in self.fields:
             f.compute(feature, access, user, **kwargs)
+
+
+##
+
+# @TODO this should be populated dynamically from available gws.ext.object.modelField types
+
+DEFAULT_FIELD_TYPES = {
+    gws.AttributeType.str: 'text',
+    gws.AttributeType.int: 'integer',
+    gws.AttributeType.date: 'date',
+    gws.AttributeType.bool: 'bool',
+    # gws.AttributeType.bytes: 'bytea',
+    gws.AttributeType.datetime: 'datetime',
+    # gws.AttributeType.feature: 'feature',
+    # gws.AttributeType.featurelist: 'featurelist',
+    gws.AttributeType.float: 'float',
+    # gws.AttributeType.floatlist: 'floatlist',
+    gws.AttributeType.geometry: 'geometry',
+    # gws.AttributeType.intlist: 'intlist',
+    # gws.AttributeType.strlist: 'strlist',
+    gws.AttributeType.time: 'time',
+}

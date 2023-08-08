@@ -1277,6 +1277,7 @@ class IModelField(INode, Protocol):
 
     isPrimaryKey: bool
     isRequired: bool
+    isUnique: bool
 
     supportsFilterSearch: bool = False
     supportsGeometrySearch: bool = False
@@ -1306,11 +1307,15 @@ class IModelField(INode, Protocol):
 
     def py_to_prop(self, val): ...
 
-    def columns(self) -> list['sqlalchemy.Column']: ...
+    def orm_depends_on(self) -> list[str]: ...
+
+    def orm_columns(self) -> list['sqlalchemy.Column']: ...
 
     def orm_properties(self) -> dict: ...
 
     def augment_select(self, sel: 'SelectStatement', user: IUser): ...
+
+    def describe(self) -> Optional[ColumnDescription]: ...
 
 
 class IModel(INode, Protocol):

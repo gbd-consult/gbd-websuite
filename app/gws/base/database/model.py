@@ -41,6 +41,8 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         self.configure_provider()
         self.configure_sources()
         self.configure_fields()
+        self.configure_key()
+        self.configure_geometry()
         self.configure_templates()
 
     def configure_provider(self):
@@ -77,7 +79,7 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
             return res.unique().scalars().all()
 
     def primary_keys(self):
-        return self.provider.mgr.pkeys_for_model(self)
+        return self.provider.mgr.primary_keys_for_model(self)
 
     def find_features(self, search, user, **kwargs):
 

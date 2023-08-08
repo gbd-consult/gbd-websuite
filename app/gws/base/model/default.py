@@ -14,6 +14,8 @@ class Object(core.Object):
         self.geometryName = 'geometry'
         self.loadingStrategy = gws.FeatureLoadingStrategy.all
         self.configure_fields()
+        self.configure_key()
+        self.configure_geometry()
 
     def find_features(self, search, user):
         raise gws.Error('find_features invoked for default model')

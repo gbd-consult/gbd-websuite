@@ -16,42 +16,32 @@ class Config(gws.Config):
     """database providers"""
 
 
-class _SaRuntime:
-    def __init__(self):
-        self.registries = {}
-        self.engines = {}
-        self.sessions = {}
-        self.tables = {}
-        self.modelTable = {}
-        self.modelClass = {}
-        self.pkColumns = {}
-        self.descCache = {}
-
-
 class Object(gws.Node, gws.IDatabaseManager):
-    modelsDct: dict[str, gws.IDatabaseModel]
-    providersDct: dict[str, gws.IDatabaseProvider]
-    rt: _SaRuntime
+    modelMap: dict[str, gws.IDatabaseModel]
+    providerMap: dict[str, gws.IDatabaseProvider]
+    rt: '_SaRuntime'
 
     def __getstate__(self):
         return gws.omit(vars(self), 'rt')
 
     def configure(self):
-        self.providersDct = {}
-        self.modelsDct = {}
-        self.rt = _SaRuntime()
+        self.rt = _SaRuntime(self)
 
+        self.providerMap = {}
         for cfg in self.cfg('providers', default=[]):
-            self.create_provider(cfg)
+            prov = self.create_provider(cfg)
+            self.providerMap[prov.uid] = prov
 
+        self.modelMap = {}
         self.root.app.register_middleware('db', self)
 
     def post_configure(self):
-        self.activate_runtime()
+        self.rt.create_orm()
         self.close_sessions()
 
     def activate(self):
-        self.activate_runtime()
+        self.rt = _SaRuntime(self)
+        self.rt.create_orm()
 
     ##
 
@@ -64,209 +54,32 @@ class Object(gws.Node, gws.IDatabaseManager):
     ##
 
     def create_provider(self, cfg, **kwargs):
-        prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg, _defaultManager=self, **kwargs)
-        self.providersDct[prov.uid] = prov
-        return prov
+        return self.root.create_shared(gws.ext.object.databaseProvider, cfg, _defaultManager=self, **kwargs)
 
     def providers(self):
-        return list(self.providersDct.values())
+        return list(self.providerMap.values())
 
     def provider(self, uid):
-        return self.providersDct.get(uid)
+        return self.providerMap.get(uid)
 
     def first_provider(self, ext_type: str):
-        for prov in self.providersDct.values():
+        for prov in self.providerMap.values():
             if prov.extType == ext_type:
                 return prov
 
     def register_model(self, model):
-        self.modelsDct[model.uid] = t.cast(gws.IDatabaseModel, model)
+        self.modelMap[model.uid] = t.cast(gws.IDatabaseModel, model)
 
     def model(self, model_uid):
-        return self.modelsDct.get(model_uid)
+        return self.modelMap.get(model_uid)
 
     def models(self):
-        return list(self.modelsDct.values())
+        return list(self.modelMap.values())
 
-    def activate_runtime(self):
-        self.rt = _SaRuntime()
+    ##
 
-        model_to_tabid = {}
-
-        for model_uid, mod in self.modelsDct.items():
-            table_name = getattr(mod, 'tableName', None)
-            if not table_name:
-                continue
-            provider = t.cast(gws.IDatabaseProvider, getattr(mod, 'provider'))
-            model_to_tabid[model_uid] = self.table_uid(provider, table_name)
-
-        columns: dict[str, tuple[str, sa.Column]] = {}
-
-        for model_uid, tabid in model_to_tabid.items():
-            for f in self.modelsDct[model_uid].fields:
-                if f.isPrimaryKey:
-                    for col in f.columns():
-                        self._add_column(columns, model_uid, tabid, col)
-
-        for model_uid, tabid in model_to_tabid.items():
-            self.rt.pkColumns[model_uid] = [v[1] for k, v in columns.items() if k[0] == tabid]
-
-        for model_uid, tabid in model_to_tabid.items():
-            for f in self.modelsDct[model_uid].fields:
-                if not f.isPrimaryKey:
-                    for col in f.columns():
-                        self._add_column(columns, model_uid, tabid, col)
-
-        tabid_to_table = {}
-        tabid_to_class = {}
-
-        for model_uid, tabid in model_to_tabid.items():
-            if tabid in tabid_to_table:
-                continue
-
-            provider_uid, table_name = tabid
-
-            provider = self.provider(provider_uid)
-            cols = [v[1] for k, v in columns.items() if k[0] == tabid]
-            tab = self.table(provider, table_name, cols)
-            tabid_to_table[tabid] = tab
-
-            if not self.rt.pkColumns[model_uid]:
-                gws.log.warning(f'no primary key for table {table_name!r} in model {model_uid!r}')
-                continue
-
-            cls = type('FeatureRecord_' + provider_uid + '_' + gws.to_uid(table_name), (gws.FeatureRecord,), {})
-            self.registry_for_provider(provider).map_imperatively(cls, tab)
-            tabid_to_class[tabid] = cls
-
-        self.rt.modelTable = {model_uid: tabid_to_table.get(tabid) for model_uid, tabid in model_to_tabid.items()}
-        self.rt.modelClass = {model_uid: tabid_to_class.get(tabid) for model_uid, tabid in model_to_tabid.items()}
-
-        tabid_to_props = {}
-
-        for model_uid, tabid in model_to_tabid.items():
-            d = {}
-            for f in self.modelsDct[model_uid].fields:
-                d.update(f.orm_properties())
-            tabid_to_props.setdefault(tabid, {}).update(d)
-
-        for tabid, props in tabid_to_props.items():
-            for k, v in props.items():
-                sa.orm.add_mapped_attribute(tabid_to_class[tabid], k, v)  # type: ignore
-
-        for model in self.modelsDct.values():
-            self._configure_model_key(model)
-            self._configure_model_geometry(model)
-
-    _add_column_check_keys = [
-        'autoincrement',
-        'comment',
-        'computed',
-        'constraints',
-        'default',
-        'description',
-        'dialect_options',
-        'doc',
-        'foreign_keys',
-        'identity',
-        'index',
-        'info',
-        'inherit_cache',
-        'is_clause_element',
-        'is_dml',
-        'is_literal',
-        'is_selectable',
-        'key',
-        'name',
-        'nullable',
-        'onpudate',
-        'onupdate',
-        'primary_key',
-        'server_default',
-        'server_onupdate',
-        'stringify_dialect',
-        'supports_execution',
-        'system',
-        'table',
-        'type',
-        'unique',
-        'uses_inspection',
-    ]
-
-    def _add_column(self, columns, model_uid, tabid, col: sa.Column):
-        # this is to ensure that the same column configured in different models
-        # matches the type and other props, like foreign keys
-
-        key = tabid, col.name
-        if key not in columns:
-            columns[key] = [model_uid, col]
-            return
-        old_model_uid, old_col = columns[key]
-        if old_model_uid == model_uid:
-            return
-        self._check_column_conflicts(model_uid, col, old_model_uid, old_col)
-
-    def _check_column_conflicts(self, new_model_uid, new_col, old_model_uid, old_col):
-        for k in self._add_column_check_keys:
-            new_val = getattr(new_col, k, None)
-            old_val = getattr(old_col, k, None)
-            if repr(old_val) != repr(new_val):
-                gws.log.debug(
-                    f'column conflict: '
-                    + f'{new_model_uid}.{new_col.name}.{k}={new_val!r},'
-                    + f'{old_model_uid}.{old_col.name}.{k}={old_val!r}')
-
-    def _configure_model_key(self, model: gws.IDatabaseModel):
-        tab = self.table_for_model(model)
-
-        for c in self.table_columns(tab):
-            if c.primary_key:
-                model.keyName = str(c.name)
-                return
-
-    def _configure_model_geometry(self, model):
-        tab = self.table_for_model(model)
-
-        geom_cols = {
-            c.name: c
-            for c in self.table_columns(tab)
-            if isinstance(c.type, sa.geo.Geometry)
-        }
-
-        gcol = None
-
-        if model.geometryName:
-            gcol = geom_cols.get(model.geometryName)
-            if gcol is None:
-                raise gws.Error(f'geometryName {model.geometryName!r} not found for table {tab.name!r}')
-        elif geom_cols:
-            gcol = list(geom_cols.values())[0]
-
-        if gcol is None:
-            model.geometryName = ''
-            model.geometryType = None
-            model.geometryCrs = None
-            return
-
-        model.geometryName = str(gcol.name)
-
-        real_type = self.SA_TO_GEOM.get(gcol.type.geometry_type, gws.GeometryType.geometry)
-        real_srid = gcol.type.srid
-
-        fields = [f for f in model.fields if f.name == gcol.name]
-        if not fields:
-            model.geometryType = real_type
-            model.geometryCrs = gws.gis.crs.get(real_srid)
-            return
-
-        decl_type = getattr(fields[0], 'geometryType', None)
-        decl_crs = getattr(fields[0], 'geometryCrs', None)
-
-        model.geometryType = decl_type or real_type
-        model.geometryCrs = decl_crs or gws.gis.crs.get(real_srid)
-
-    def table_uid(self, provider: gws.IDatabaseProvider, table_name: str):
-        return provider.uid, provider.qualified_table_name(table_name)
+    def table_uid(self, provider: gws.IDatabaseProvider, table_name: str) -> str:
+        return provider.uid + ':' + provider.qualified_table_name(table_name)
 
     def registry_for_provider(self, provider):
         if not self.rt.registries.get(provider.uid):
@@ -284,31 +97,30 @@ class Object(gws.Node, gws.IDatabaseManager):
     def class_for_model(self, model) -> type:
         return self.rt.modelClass[model.uid]
 
-    def pkeys_for_model(self, model) -> list[sa.Column]:
-        return self.rt.pkColumns.get(model.uid, [])
+    def primary_keys_for_model(self, model) -> list[sa.Column]:
+        return self.rt.primaryKeyColumns.get(model.uid, [])
 
     def table(self, provider: gws.IDatabaseProvider, table_name: str, columns: list[sa.Column] = None, **kwargs):
-        tabid = self.table_uid(provider, table_name)
-        if tabid in self.rt.tables and not columns:
-            return self.rt.tables[tabid]
+        tid = self.table_uid(provider, table_name)
+        if tid in self.rt.tables and not columns:
+            return self.rt.tables[tid]
         metadata = self.registry_for_provider(provider).metadata
         schema, name = provider.split_table_name(table_name)
         kwargs.setdefault('schema', schema)
         if columns:
             kwargs.setdefault('extend_existing', True)
-            tab = sa.Table(name, metadata, *columns, **kwargs)
+            table = sa.Table(name, metadata, *columns, **kwargs)
         else:
-            tab = sa.Table(name, metadata, **kwargs)
-        self.rt.tables[tabid] = tab
-        return tab
+            table = sa.Table(name, metadata, **kwargs)
+        self.rt.tables[tid] = table
+        return table
 
-    def table_columns(self, tab: sa.Table) -> list[sa.Column]:
-        return t.cast(list[sa.Column], tab.columns)
+    def table_columns(self, table: sa.Table) -> list[sa.Column]:
+        return t.cast(list[sa.Column], table.columns)
 
     def session(self, provider, **kwargs):
         if not self.rt.sessions.get(provider.uid):
             self.rt.sessions[provider.uid] = session_module.Object(provider)
-
         return self.rt.sessions[provider.uid]
 
     def close_sessions(self):
@@ -317,13 +129,16 @@ class Object(gws.Node, gws.IDatabaseManager):
         self.rt.sessions = {}
 
     def autoload(self, sess, table_name):
-        return self._load_and_describe(sess, table_name, True)
+        ins: sa.Inspector = sa.inspect(sess.saSession.connection())
+        table = self.table(sess.provider, table_name)
+        ins.reflect_table(table, include_columns=None)
+        return table
 
     def describe(self, sess, table_name):
-        tabid = self.table_uid(sess.provider, table_name)
-        if tabid not in self.rt.descCache:
-            self.rt.descCache[tabid] = self._load_and_describe(sess, table_name, False)
-        return self.rt.descCache[tabid]
+        tid = self.table_uid(sess.provider, table_name)
+        if tid not in self.rt.describeCache:
+            self.rt.describeCache[tid] = self._describe(sess, table_name)
+        return self.rt.describeCache[tid]
 
     # https://www.psycopg.org/docs/usage.html#adaptation-of-python-values-to-sql-types
 
@@ -377,41 +192,35 @@ class Object(gws.Node, gws.IDatabaseManager):
         'CURVE': gws.GeometryType.curve,
     }
 
-    def _load_and_describe(self, sess: session_module.Object, table_name, load_only):
-        ins = sa.inspect(sess.saSession.connection())
+    def _describe(self, sess: session_module.Object, table_name):
+        ins: sa.Inspector = sa.inspect(sess.saSession.connection())
 
         schema, name = sess.provider.split_table_name(table_name)
         if not ins.has_table(name, schema):
             return None
 
-        tab = self.table(sess.provider, table_name)
-        ins.reflect_table(tab, include_columns=None)
-
-        if load_only:
-            return tab
-
         desc = gws.DataSetDescription(
             columns={},
             keyNames=[],
-            schema=tab.schema,
-            name=tab.name,
-            fullName=sess.provider.join_table_name(tab.name, tab.schema),
+            schema=schema,
+            name=name,
+            fullName=sess.provider.join_table_name(name, schema),
             relationships=[],
         )
 
-        for c in self.table_columns(tab):
+        for c in ins.get_columns(name, schema=schema):
             col = gws.ColumnDescription(
-                comment=c.comment,
-                default=c.default,
-                isAutoincrement=c.autoincrement,
-                isNullable=c.nullable,
+                comment=c.get('comment'),
+                default=c.get('default'),
+                isAutoincrement=bool(c.get('autoincrement')),
+                isNullable=bool(c.get('nullable')),
                 isPrimaryKey=False,
                 isForeignKey=False,
-                name=c.name,
-                options=c.dialect_options
+                name=c.get('name'),
+                options=gws.merge({}, c.get('dialect_options'), identity=c.get('identity')),
             )
 
-            typ = c.type
+            typ = c.get('type')
             col.nativeType = str(typ).upper()
 
             gt = getattr(typ, 'geometry_type', None)
@@ -449,3 +258,188 @@ class Object(gws.Node, gws.IDatabaseManager):
                 break
 
         return desc
+
+
+class _SaOrmCreateData:
+    tid_to_models = {}
+    tid_to_name = {}
+    tid_to_provider = {}
+    tid_to_table = {}
+    tid_to_class = {}
+
+    model_uid_to_tid = {}
+
+
+class _SaRuntime:
+    def __init__(self, mgr: Object):
+        self.m = mgr
+        self.registries = {}
+        self.engines = {}
+        self.sessions = {}
+        self.tables = {}
+        self.modelTable = {}
+        self.modelClass = {}
+        self.primaryKeyColumns = {}
+        self.describeCache: dict[str, gws.DataSetDescription] = {}
+
+    def create_orm(self):
+        for model_uid in self.m.modelMap:
+            self.primaryKeyColumns[model_uid] = []
+            self.modelTable[model_uid] = None
+            self.modelClass[model_uid] = None
+
+        oc = _SaOrmCreateData()
+
+        self._enumerate_tables(oc)
+
+        deps = self._compute_table_dependencies(oc)
+
+        tids = self._top_sort(oc.tid_to_models, deps)
+
+        for tid in tids:
+            oc.tid_to_table[tid] = self._create_table(tid, oc)
+
+        for tid in tids:
+            oc.tid_to_class[tid] = self._create_class(tid, oc)
+
+        for tid in tids:
+            for model in oc.tid_to_models[tid]:
+                self.modelTable[model.uid] = oc.tid_to_table[tid]
+                self.modelClass[model.uid] = oc.tid_to_class[tid]
+
+    def _enumerate_tables(self, oc: _SaOrmCreateData):
+        for model in self.m.modelMap.values():
+            table_name = getattr(model, 'tableName', None)
+            if not table_name:
+                continue
+
+            provider = t.cast(gws.IDatabaseProvider, getattr(model, 'provider'))
+            tid = self.m.table_uid(provider, table_name)
+
+            oc.model_uid_to_tid[model.uid] = tid
+            oc.tid_to_models.setdefault(tid, []).append(model)
+            oc.tid_to_provider[tid] = provider
+            oc.tid_to_name[tid] = table_name
+
+    def _compute_table_dependencies(self, oc: _SaOrmCreateData):
+
+        deps = {}
+
+        for tid, models in oc.tid_to_models.items():
+            for model in models:
+                for f in model.fields:
+                    for dep_model_uid in f.orm_depends_on():
+                        if dep_model_uid not in self.m.modelMap:
+                            raise gws.Error(f'field {model.uid}.{f.name} depends on non-existing model {dep_model_uid!r}')
+                        dep_tid = oc.model_uid_to_tid[dep_model_uid]
+                        deps.setdefault(tid, []).append(dep_tid)
+
+        return deps
+
+    def _create_table(self, tid, oc: _SaOrmCreateData):
+        name_to_col = {}
+        name_to_model = {}
+
+        for model in oc.tid_to_models[tid]:
+            for f in model.fields:
+                for col in f.orm_columns():
+                    name = col.name
+                    if name not in name_to_col:
+                        name_to_col[name] = col
+                        name_to_model[name] = model
+                    else:
+                        self._check_column_conflicts(
+                            model,
+                            col,
+                            name_to_model[name],
+                            name_to_col[name]
+                        )
+                    if f.isPrimaryKey:
+                        self.primaryKeyColumns[model.uid].append(col)
+
+        provider = oc.tid_to_provider[tid]
+        name = oc.tid_to_name[tid]
+        return self.m.table(provider, name, list(name_to_col.values()))
+
+    def _create_class(self, tid, oc: _SaOrmCreateData):
+        cls = type('FeatureRecord_' + gws.to_uid(tid), (gws.FeatureRecord,), {})
+        provider = oc.tid_to_provider[tid]
+        table = oc.tid_to_table[tid]
+        self.m.registry_for_provider(provider).map_imperatively(cls, table)
+        return cls
+
+    def _add_props(self, tid, oc: _SaOrmCreateData):
+        props = {}
+
+        for model in oc.tid_to_models[tid]:
+            for f in model.fields:
+                props.update(f.orm_properties())
+
+        cls = oc.tid_to_class[tid]
+
+        for k, v in props.items():
+            sa.orm.add_mapped_attribute(cls, k, v)
+
+    def _top_sort(self, model_uids, model_deps):
+        res = []
+
+        def visit(uid, stack):
+            if uid in res:
+                return
+            if uid in stack:
+                s = '->'.join(stack)
+                raise gws.Error(f'circular model dependency: {s}->{uid}')
+            for dep in model_deps.get(uid, []):
+                visit(dep, stack + [uid])
+            res.append(uid)
+
+        for model_uid in model_uids:
+            visit(model_uid, [])
+
+        return res
+
+    _CHECK_KEYS = [
+        'autoincrement',
+        'comment',
+        'computed',
+        'constraints',
+        'default',
+        'description',
+        'dialect_options',
+        'doc',
+        'foreign_keys',
+        'identity',
+        'index',
+        'info',
+        'inherit_cache',
+        'is_clause_element',
+        'is_dml',
+        'is_literal',
+        'is_selectable',
+        'key',
+        'name',
+        'nullable',
+        'onpudate',
+        'onupdate',
+        'primary_key',
+        'server_default',
+        'server_onupdate',
+        'stringify_dialect',
+        'supports_execution',
+        'system',
+        'table',
+        'type',
+        'unique',
+        'uses_inspection',
+    ]
+
+    def _check_column_conflicts(self, new_model, new_col, old_model, old_col):
+        for k in self._CHECK_KEYS:
+            new_val = getattr(new_col, k, None)
+            old_val = getattr(old_col, k, None)
+            if repr(old_val) != repr(new_val):
+                gws.log.debug(
+                    f'column conflict: '
+                    + f'{new_model.uid}.{new_col.name} {k}={new_val!r}'
+                    + ' <> '
+                    + f'{old_model.uid}.{old_col.name} {k}={old_val!r}')

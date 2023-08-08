@@ -30,8 +30,9 @@ class Config(gws.ConfigWithAccess):
     name: str
     title: t.Optional[str]
 
-    isPrimaryKey: bool = False
+    isPrimaryKey: t.Optional[bool]
     isRequired: t.Optional[bool]
+    isUnique: t.Optional[bool]
 
     values: t.Optional[list[gws.ext.config.modelValue]]
     validators: t.Optional[list[gws.ext.config.modelValidator]]
@@ -50,17 +51,43 @@ class Object(gws.Node, gws.IModelField):
         self.model = self.cfg('_defaultModel')
         self.name = self.cfg('name')
         self.title = self.cfg('title', default=self.name)
-        self.isPrimaryKey = bool(self.cfg('isPrimaryKey'))
-        self.isRequired = bool(self.cfg('isRequired'))
 
         self.values = []
         self.validators = []
         self.widget = None
         self.serverDefault = self.cfg('serverDefault')
 
+        self.isPrimaryKey = False
+        self.isRequired = False
+
+        self.configure_primary_key()
+        self.configure_required()
+
+        self.isUnique = bool(self.cfg('isUnique'))
+
         self.configure_values()
         self.configure_validators()
         self.configure_widget()
+
+    def configure_primary_key(self):
+        b = self.cfg('isPrimaryKey')
+        if b is not None:
+            self.isPrimaryKey = b
+            return True
+        c = self.describe()
+        if c:
+            self.isPrimaryKey = c.isPrimaryKey
+            return True
+
+    def configure_required(self):
+        b = self.cfg('isRequired')
+        if b is not None:
+            self.isRequired = b
+            return True
+        c = self.describe()
+        if c:
+            self.isRequired = not c.isNullable
+            return True
 
     def configure_values(self):
         p = self.cfg('values')
@@ -128,7 +155,7 @@ class Object(gws.Node, gws.IModelField):
     def props(self, user):
         wp = None
         if self.widget:
-            wp = gws.props(self.widget, user)
+            wp = gws.props(self.widget, user, self)
             if not user.can_write(self):
                 wp.readOnly = True
 
@@ -229,8 +256,17 @@ class Object(gws.Node, gws.IModelField):
 
     ##
 
-    def columns(self):
+    def orm_depends_on(self):
+        return []
+
+    def orm_columns(self):
         return []
 
     def orm_properties(self):
         return {}
+
+    ##
+
+    def describe(self):
+        desc = self.model.describe()
+        return desc.columns.get(self.name) if desc else None

@@ -35,7 +35,7 @@ class Object(gws.base.model.field.Object):
 
     def configure_widget(self):
         if not super().configure_widget():
-            self.widget = self.create_child(gws.ext.object.modelWidget, type='featureSelect')
+            self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='featureSelect')
             return True
 
     def props(self, user):
@@ -101,7 +101,10 @@ class Object(gws.base.model.field.Object):
                     self.name)
             ))
 
-    def columns(self):
+    def orm_depends_on(self):
+        return [self.relationship.modelUid]
+
+    def orm_columns(self):
         rel_model = self.related_model()
         rel_key = rel_model.primary_keys()[0]
         return [

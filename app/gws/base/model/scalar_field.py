@@ -15,7 +15,7 @@ class Props(field.Props):
 
 
 class Object(field.Object):
-    def columns(self):
+    def orm_columns(self):
         kwargs = {}
         if self.isPrimaryKey:
             kwargs['primary_key'] = True

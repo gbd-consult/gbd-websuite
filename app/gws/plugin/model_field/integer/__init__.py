@@ -19,7 +19,7 @@ class Object(gws.base.model.scalar_field.Object):
 
     def configure_widget(self):
         if not super().configure_widget():
-            self.widget = self.create_child(gws.ext.object.modelWidget, type='integer')
+            self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='integer')
             return True
 
     ##

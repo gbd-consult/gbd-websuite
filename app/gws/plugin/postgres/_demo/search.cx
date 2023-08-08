@@ -43,5 +43,7 @@ projects+ {
         zoom.maxScale  1000000
     }
 
+    map.layers+ { type "postgres" title "POIs"  tableName "edit.poi_small" }
+
     {demo_osm_background}
 }

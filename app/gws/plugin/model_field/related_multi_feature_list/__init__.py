@@ -32,7 +32,7 @@ class Object(gws.base.model.field.Object):
 
     def configure_widget(self):
         if not super().configure_widget():
-            self.widget = self.create_child(gws.ext.object.modelWidget, type='featureList')
+            self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='featureList')
             return True
 
     def props(self, user):

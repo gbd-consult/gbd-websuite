@@ -23,37 +23,40 @@ class Props(gws.base.model.scalar_field.Props):
 
 class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.geometry
+    supportsGeometrySearch = True
 
     geometryType: gws.GeometryType
     geometryCrs: gws.ICrs
 
     def configure(self):
-        self.supportsGeometrySearch = True
+        setattr(self, 'geometryType', None)
+        setattr(self, 'geometryCrs', None)
+        self.configure_geometry_type()
+        self.configure_geometry_crs()
 
-        p = self._get_type_and_crs()
-        if p and p[0] and p[1]:
-            self.geometryType = p[0]
-            self.geometryCrs = p[1]
-        else:
-            desc = self.model.describe()
-            tab = desc.name if desc else ''
-            raise gws.Error(f'unable to find type/crs for column {tab!r}.{self.name!r}')
+    def configure_geometry_type(self):
+        s = self.cfg('geometryType')
+        if s:
+            self.geometryType = s
+            return True
+        c = self.describe()
+        if c and c.geometryType:
+            self.geometryType = c.geometryType
+            return True
 
-    def _get_type_and_crs(self):
-        p = self.cfg('geometryType')
-        if p:
-            return self.cfg('geometryType'), gws.gis.crs.get(self.cfg('crs'))
-        desc = self.model.describe()
-        if not desc:
-            return
-        col = desc.columns.get(self.name)
-        if not col:
-            return
-        return col.geometryType, gws.gis.crs.get(col.geometrySrid)
+    def configure_geometry_crs(self):
+        s = self.cfg('geometryCrs')
+        if s:
+            self.geometryCrs = gws.gis.crs.get(s)
+            return True
+        c = self.describe()
+        if c and c.geometrySrid:
+            self.geometryCrs = gws.gis.crs.get(c.geometrySrid)
+            return True
 
     def configure_widget(self):
         if not super().configure_widget():
-            self.widget = self.create_child(gws.ext.object.modelWidget, type='geometry')
+            self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='geometry')
             return True
 
     ##
