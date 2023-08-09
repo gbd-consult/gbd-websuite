@@ -1367,7 +1367,7 @@ class AlkisController extends gws.Controller {
 
         // NB: must use binary because csv doesn't neccessary come in utf8
 
-        let res = await this.app.server.alkissearchExport(q, {binary: true});
+        let res = await this.app.server.alkissearchExport(q, {binaryRequest: false, binaryResponse: true});
 
         if (res.error) {
             return;
