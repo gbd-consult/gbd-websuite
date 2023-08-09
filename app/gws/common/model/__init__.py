@@ -1057,7 +1057,9 @@ class Field_relatedGenericFeature(RelatedFeatureField):
         else:
             key = gws.get(val, 'keyName')
             uid = gws.get(val, ['attributes', key])
-            rel_model = registry().get_model(gws.get(val, 'modelUid'))
+            model_uid = gws.get(val, 'modelUid')
+            if model_uid:
+                rel_model = registry().get_model(model_uid)
 
         if uid:
             if rel_model:

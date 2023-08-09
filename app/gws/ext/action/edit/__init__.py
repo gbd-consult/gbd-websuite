@@ -170,9 +170,8 @@ class Object(gws.common.action.Object):
             fe.errors = errors
             return FeatureResponse(feature=self._feature_props(project, fe))
 
-        fe.model.save(fe)
-
         try:
+            fe.model.save(fe)
             gws.common.model.session.commit()
         except Exception as exc:
             gws.log.exception()
