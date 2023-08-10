@@ -89,12 +89,13 @@ class _PythonParser:
         self.imports = self.prepare_imports()
 
         for node in self.nodes(self.module_node.body):
-            if _cls(node) == 'Expr':
+            cc = _cls(node)
+            if cc == 'Expr':
                 self.parse_ext_declaration(node)
-            if _cls(node) == 'ClassDef':
+            if cc == 'ClassDef':
                 self.parse_class(node)
-            elif _cls(node) == 'Assign':
-                self.parse_assign(node, self.outer_doc(node, self.module_node.body))
+            elif cc in {'Assign', 'AnnAssign'}:
+                self.parse_assign(node, self.outer_doc(node, self.module_node.body), annotated=(cc == 'AnnAssign'))
 
     def prepare_imports(self):
         # map import names to module names
@@ -165,41 +166,41 @@ class _PythonParser:
             tTarget=self.qname(args.pop(0) if args else base.EXT_PROPS_CLASS)
         )
 
-    def parse_assign(self, node, doc):
-        """Parse a module level assignment.
-        
-        It can be a constant or a type alias declaration.
-        """
+    def parse_assign(self, node, doc, annotated):
+        """Parse a module level assignment, possibly a type alias or a constant."""
 
-        name_node = node.targets[0]
+        if annotated:
+            name_node = node.target
+        else:
+            if len(node.targets) > 1:
+                return
+            name_node = node.targets[0]
 
-        if len(node.targets) > 1 or _cls(name_node) != 'Name' or not _is_type_name(name_node.id):
+        if _cls(name_node) != 'Name' or not _is_type_name(name_node.id):
             return
 
-        # type declaration docstring must start with "type:" or "variant:"
+        typ = None
+        if hasattr(node, 'annotation'):
+            typ = self.type_from_node(node.annotation)
 
-        kind = None
-
-        if doc.startswith(base.TYPE_COMMENT_PREFIX):
-            kind = 'type'
-            doc = doc.partition(base.TYPE_COMMENT_PREFIX)[-1].strip()
-        elif doc.startswith(base.VARIANT_COMMENT_PREFIX):
-            kind = 'variant'
-            doc = doc.partition(base.VARIANT_COMMENT_PREFIX)[-1].strip()
-
-        if kind:
-            # type alias or a variant
+        if typ and typ.name == 'TypeAlias':
+            # type alias
             target_type = self.type_from_node(node.value)
-            if kind == 'variant':
+            if doc.startswith(base.VARIANT_COMMENT_PREFIX):
+                # variant
                 if target_type.c != base.C.UNION:
                     raise ValueError('a Variant must be a Union')
+                doc = doc.partition(base.VARIANT_COMMENT_PREFIX)[-1].strip()
                 target_type = self.add(base.C.VARIANT, tItems=target_type.tItems)
             self.add(base.C.TYPE, doc=doc, ident=name_node.id, name=self.qname(name_node), tTarget=target_type.uid)
-        else:
-            # possibly, a constant
-            c, value = self.parse_const_value(node.value)
-            if c == base.C.LITERAL:
-                self.add(base.C.CONSTANT, doc=doc, ident=name_node.id, name=self.qname(name_node), value=value)
+
+            return
+
+        # possibly, a constant
+
+        c, value = self.parse_const_value(node.value)
+        if c == base.C.LITERAL:
+            self.add(base.C.CONSTANT, doc=doc, ident=name_node.id, name=self.qname(name_node), value=value)
 
     def parse_class(self, node):
         if not _is_type_name(node.name):
@@ -218,11 +219,11 @@ class _PythonParser:
         )
 
         for nn in self.nodes(node.body):
-            mc = _cls(nn)
-            if mc in {'Assign', 'AnnAssign'}:
+            cc = _cls(nn)
+            if cc in {'Assign', 'AnnAssign'}:
                 doc = self.outer_doc(nn, node.body)
-                self.parse_property(typ, nn, doc, annotated=(mc == 'AnnAssign'))
-            elif mc == 'FunctionDef':
+                self.parse_property(typ, nn, doc, annotated=(cc == 'AnnAssign'))
+            elif cc == 'FunctionDef':
                 self.parse_method(typ, nn)
 
     def parse_enum(self, node):

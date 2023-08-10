@@ -8,6 +8,7 @@ from typing import (
     Literal,
     Optional,
     Protocol,
+    TypeAlias,
     Union,
 )
 
@@ -50,6 +51,7 @@ __all__ = [
     'Optional',
     'Protocol',
     'Sequence',
+    'TypeAlias',
     'Union',
     'Enum',
 ]

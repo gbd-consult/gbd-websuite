@@ -1,4 +1,8 @@
-import gws
+"""Basic GWS types."""
+
+# mypy: disable-error-code="empty-body"
+
+
 from .data import Data
 
 from gws.types import (
@@ -10,6 +14,7 @@ from gws.types import (
     Literal,
     Optional,
     Protocol,
+    TypeAlias,
 )
 
 from gws.types import Enum
@@ -24,15 +29,14 @@ if TYPE_CHECKING:
 # ----------------------------------------------------------------------------------------------------------------------
 # custom types, used everywhere
 
+Extent: TypeAlias = tuple[float, float, float, float]
+"""An array of 4 elements representing extent coordinates ``[minx, miny, maxx, maxy]``."""
 
-Extent = tuple[float, float, float, float]
-"""type: An array of 4 elements representing extent coordinates ``[minx, miny, maxx, maxy]``."""
+Point: TypeAlias = tuple[float, float]
+"""Point coordinates ``[x, y]``."""
 
-Point = tuple[float, float]
-"""type: Point coordinates ``[x, y]``."""
-
-Size = tuple[float, float]
-"""type: Size ``[width, height]``."""
+Size: TypeAlias = tuple[float, float]
+"""Size ``[width, height]``."""
 
 
 class Origin(Enum):
@@ -106,47 +110,47 @@ class Uom(Enum):
     """point"""
 
 
-Measurement = tuple[float, Uom]
-"""type: A value with a unit, like ``"5mm"``."""
+Measurement: TypeAlias = tuple[float, Uom]
+"""A value with a unit, like ``"5mm"``."""
 
-MPoint = tuple[float, float, Uom]
-"""type: A Point with a unit."""
+MPoint: TypeAlias = tuple[float, float, Uom]
+"""A Point with a unit."""
 
-MSize = tuple[float, float, Uom]
-"""type: A Size with a unit, like ``["1mm", "2mm"]``."""
+MSize: TypeAlias = tuple[float, float, Uom]
+"""A Size with a unit, like ``["1mm", "2mm"]``."""
 
-MExtent = tuple[float, float, float, float, Uom]
-"""type: An Extent with a unit, like ``["1mm", "2mm", "3mm", "4mm"]``"""
+MExtent: TypeAlias = tuple[float, float, float, float, Uom]
+"""An Extent with a unit, like ``["1mm", "2mm", "3mm", "4mm"]``"""
 
-Tag = tuple
-"""type: An XML generator tag."""
+Tag: TypeAlias = tuple
+"""An XML generator tag."""
 
-FilePath = str
-"""type: Valid readable file path on the server."""
+FilePath: TypeAlias = str
+"""Valid readable file path on the server."""
 
-DirPath = str
-"""type: Valid readable directory path on the server."""
+DirPath: TypeAlias = str
+"""Valid readable directory path on the server."""
 
-Duration = str
-"""type: A string like ``1w 2d 3h 4m 5s`` or an integer number of seconds."""
+Duration: TypeAlias = str
+"""A string like ``1w 2d 3h 4m 5s`` or an integer number of seconds."""
 
-Color = str
-"""type: A CSS color name."""
+Color: TypeAlias = str
+"""A CSS color name."""
 
-Regex = str
-"""type: A regular expression, as used in Python."""
+Regex: TypeAlias = str
+"""A regular expression, as used in Python."""
 
-FormatStr = str
-"""type: A string with ``{attribute}`` placeholders."""
+FormatStr: TypeAlias = str
+"""A string with ``{attribute}`` placeholders."""
 
-Date = str
-"""type: An ISO date string like ``2019-01-30``."""
+Date: TypeAlias = str
+"""An ISO date string like ``2019-01-30``."""
 
-DateTime = str
-"""type: An ISO datetime string like ``2019-01-30 01:02:03``."""
+DateTime: TypeAlias = str
+"""An ISO datetime string like ``2019-01-30 01:02:03``."""
 
-Url = str
-"""type: An http or https URL."""
+Url: TypeAlias = str
+"""An http or https URL."""
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -170,7 +174,7 @@ class ApplicationManifest(Data):
 # ----------------------------------------------------------------------------------------------------------------------
 # basic objects
 
-ClassRef = type | str
+ClassRef: TypeAlias = type | str
 
 
 class Config(Data):
@@ -190,11 +194,11 @@ class Props(Data):
 # permissions
 
 
-Acl = list[tuple[int, str]]
-"""type: Access Control list."""
+Acl: TypeAlias = list[tuple[int, str]]
+"""Access Control list."""
 
-AclSpec = str
-"""type: A string of comma-separated pairs ``allow <role>`` or ``deny <role>``."""
+AclSpec: TypeAlias = str
+"""A string of comma-separated pairs ``allow <role>`` or ``deny <role>``."""
 
 
 class Access(Enum):
@@ -281,11 +285,11 @@ class IRoot(Protocol):
 
     def find_first(self, classref: ClassRef) -> Optional[INode]: ...
 
-    def get(self, uid: str, classref: ClassRef = None) -> Optional[INode]: ...
+    def get(self, uid: str, classref: Optional[ClassRef] = None) -> Optional[INode]: ...
 
     def object_count(self) -> int: ...
 
-    def create(self, classref: ClassRef, parent: 'INode' = None, config=None, **kwargs): ...
+    def create(self, classref: ClassRef, parent: Optional['INode'] = None, config=None, **kwargs): ...
 
     def create_shared(self, classref: ClassRef, config=None, **kwargs): ...
 
@@ -332,7 +336,7 @@ class ISpecRuntime(Protocol):
 
     def command_descriptor(self, command_category: str, command_name: str) -> Optional[ExtCommandDescriptor]: ...
 
-    def get_class(self, classref: ClassRef, ext_type: str = None) -> Optional[type]: ...
+    def get_class(self, classref: ClassRef, ext_type: Optional[str] = None) -> Optional[type]: ...
 
     def cli_docs(self, lang: str = 'en') -> dict: ...
 
@@ -523,9 +527,9 @@ class IUser(IObject, Protocol):
 
     def can_write(self, obj: IObject, *context) -> bool: ...
 
-    def acquire(self, uid: str, classref: ClassRef = None, access: Access = Access.read) -> Optional[IObject]: ...
+    def acquire(self, uid: str, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Optional[IObject]: ...
 
-    def require(self, uid: str, classref: ClassRef = None, access: Access = Access.read) -> IObject: ...
+    def require(self, uid: str, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> IObject: ...
 
 
 class IAuthSession(IObject, Protocol):
@@ -613,7 +617,7 @@ class IAuthSessionManager(INode, Protocol):
     authMgr: 'IAuthManager'
     lifeTime: int
 
-    def create(self, method: 'IAuthMethod', user: 'IUser', data: dict = None) -> 'IAuthSession': ...
+    def create(self, method: 'IAuthMethod', user: 'IUser', data: Optional[dict] = None) -> 'IAuthSession': ...
 
     def delete(self, sess: 'IAuthSession'): ...
 
@@ -696,8 +700,8 @@ class GeometryType(Enum):
 # ----------------------------------------------------------------------------------------------------------------------
 # CRS
 
-CrsName = int | str
-"""type: A CRS code like `EPSG:3857` or a srid like `3857`."""
+CrsName: TypeAlias = int | str
+"""A CRS code like `EPSG:3857` or a srid like `3857`."""
 
 
 class CrsFormat(Enum):
@@ -748,7 +752,7 @@ class ICrs(Protocol):
 
     def transformer(self, crs_to: 'ICrs') -> Callable: ...
 
-    def to_string(self, fmt: 'CrsFormat' = None) -> str: ...
+    def to_string(self, fmt: Optional['CrsFormat'] = None) -> str: ...
 
     def to_geojson(self) -> dict: ...
 
@@ -871,11 +875,11 @@ class IXmlElement(Iterable):
 
     def findall(self, path: str) -> list['IXmlElement']: ...
 
-    def findtext(self, path: str, default: str = None) -> str: ...
+    def findtext(self, path: str, default: Optional[str] = None) -> str: ...
 
-    def iter(self, tag: str = None) -> Iterable['IXmlElement']: ...
+    def iter(self, tag: Optional[str] = None) -> Iterable['IXmlElement']: ...
 
-    def iterfind(self, path: str = None) -> Iterable['IXmlElement']: ...
+    def iterfind(self, path: Optional[str] = None) -> Iterable['IXmlElement']: ...
 
     def itertext(self) -> Iterable[str]: ...
 
@@ -883,7 +887,7 @@ class IXmlElement(Iterable):
 
     # extensions
 
-    def add(self, tag: str, attrib: dict = None, **extra) -> 'IXmlElement': ...
+    def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'IXmlElement': ...
 
     def children(self) -> list['IXmlElement']: ...
 
@@ -1076,7 +1080,7 @@ class DataSetDescription(Data):
 
 
 class SelectStatement(Data):
-    saSelect: 'sqlalchemy.select'
+    saSelect: 'sqlalchemy.Select'
     search: 'SearchQuery'
     keywordWhere: list
     geometryWhere: list
@@ -1114,9 +1118,9 @@ class IDatabaseProvider(IProvider, Protocol):
 
     def split_table_name(self, table_name: str) -> tuple[str, str]: ...
 
-    def join_table_name(self, table_name: str, schema: str = None) -> str: ...
+    def join_table_name(self, table_name: str, schema: Optional[str] = None) -> str: ...
 
-    def table(self, table_name: str, columns: list['sqlalchemy.Column'] = None, **kwargs) -> 'sqlalchemy.Table': ...
+    def table(self, table_name: str, columns: Optional[list['sqlalchemy.Column']] = None, **kwargs) -> 'sqlalchemy.Table': ...
 
     def describe(self, table_name: str) -> DataSetDescription: ...
 
@@ -1194,7 +1198,7 @@ class IFeature(IObject, Protocol):
 
     def to_geojson(self, user: 'IUser') -> dict: ...
 
-    def to_svg(self, view: 'MapView', label: str = None, style: 'IStyle' = None) -> list[IXmlElement]: ...
+    def to_svg(self, view: 'MapView', label: Optional[str] = None, style: Optional['IStyle'] = None) -> list[IXmlElement]: ...
 
     def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
 
@@ -1269,7 +1273,7 @@ class IModelField(INode, Protocol):
 
     attributeType: AttributeType
 
-    widget: Optional['IModelWidget'] = None
+    widget: Optional[Optional['IModelWidget']] = None
 
     values: list['IModelValue']
     validators: list['IModelValidator']
@@ -1398,9 +1402,9 @@ class IImage(IObject, Protocol):
 
     def rotate(self, angle: int, **kwargs) -> 'IImage': ...
 
-    def to_bytes(self, mime: str = None) -> bytes: ...
+    def to_bytes(self, mime: Optional[str] = None) -> bytes: ...
 
-    def to_path(self, path: str, mime: str = None) -> str: ...
+    def to_path(self, path: str, mime: Optional[str] = None) -> str: ...
 
 
 class MapView(Data):
@@ -1794,7 +1798,7 @@ class IFinder(INode, Protocol):
 
     tolerance: 'Measurement'
 
-    def run(self, search: SearchQuery, user: IUser, layer: 'ILayer' = None) -> list['IFeature']: ...
+    def run(self, search: SearchQuery, user: IUser, layer: Optional['ILayer'] = None) -> list['IFeature']: ...
 
     def can_run(self, search: SearchQuery, user: IUser) -> bool: ...
 
@@ -1824,7 +1828,7 @@ class LegendRenderOutput(Data):
 
 
 class ILegend(INode, Protocol):
-    def render(self, args: dict = None) -> Optional[LegendRenderOutput]: ...
+    def render(self, args: Optional[dict] = None) -> Optional[LegendRenderOutput]: ...
 
 
 class LayerDisplayMode(Enum):
@@ -1904,11 +1908,11 @@ class ILayer(INode, Protocol):
 
     def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...
 
-    def get_features(self, search: SearchQuery, user: 'IUser', views: Optional[list[str]] = None, model_uid: str = None) -> list['IFeature']: ...
+    def get_features(self, search: SearchQuery, user: 'IUser', views: Optional[Optional[list[str]]] = None, model_uid: Optional[str] = None) -> list['IFeature']: ...
 
-    def render_legend(self, args: dict = None) -> Optional['LegendRenderOutput']: ...
+    def render_legend(self, args: Optional[dict] = None) -> Optional['LegendRenderOutput']: ...
 
-    def url_path(self, kind: Literal['box', 'tile', 'legend', 'features']) -> str: ...
+    def url_path(self, kind: str) -> str: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1982,7 +1986,7 @@ class IOwsProvider(INode, Protocol):
     url: Url
     version: str
 
-    def get_operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
+    def get_operation(self, verb: OwsVerb, method: Optional[RequestMethod] = None) -> Optional[OwsOperation]: ...
 
     def get_features(self, args: SearchQuery, source_layers: list[SourceLayer]) -> list[FeatureData]: ...
 
@@ -1991,7 +1995,7 @@ class IOwsModel(IModel, Protocol):
     provider: 'IOwsProvider'
     sourceLayers: list['SourceLayer']
 
-    def get_operation(self, verb: OwsVerb, method: RequestMethod = None) -> Optional[OwsOperation]: ...
+    def get_operation(self, verb: OwsVerb, method: Optional[RequestMethod] = None) -> Optional[OwsOperation]: ...
 
 
 class IOwsClient(INode, Protocol):
@@ -2018,7 +2022,7 @@ class IActionManager(INode, Protocol):
 
     def get_action(self, desc: ExtCommandDescriptor) -> Optional['IAction']: ...
 
-    def actions_for(self, user: IUser, other: 'IActionManager' = None) -> list['IAction']: ...
+    def actions_for(self, user: IUser, other: Optional['IActionManager'] = None) -> list['IAction']: ...
 
 
 class IAction(INode, Protocol):
@@ -2060,7 +2064,7 @@ class IMonitor(INode, Protocol):
     def start(self): ...
 
 
-WebMiddlewareHandler = Callable[['IWebRequester', Callable], 'IWebResponder']
+WebMiddlewareHandler: TypeAlias = Callable[['IWebRequester', Callable], 'IWebResponder']
 
 
 class IMiddleware(Protocol):

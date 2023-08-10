@@ -54,7 +54,8 @@ class User(gws.Object, gws.IUser):
                 if role in self.roles:
                     return bit
 
-    def require(self, uid, classref=None, access=gws.Access.read):
+    def require(self, uid, classref=None, access=None):
+        access = access or gws.Access.read
         obj = self.provider.root.get(uid, classref)
         if not obj:
             raise gws.NotFoundError(f'required object {classref} {uid} not found')
@@ -62,7 +63,8 @@ class User(gws.Object, gws.IUser):
             raise gws.ForbiddenError(f'required object {classref} {uid} forbidden')
         return obj
 
-    def acquire(self, uid, classref=None, access=gws.Access.read):
+    def acquire(self, uid, classref=None, access=None):
+        access = access or gws.Access.read
         obj = self.provider.root.get(uid, classref)
         if obj and self.can(access, obj):
             return obj

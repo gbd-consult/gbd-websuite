@@ -22,6 +22,7 @@ BUILTIN_TYPES = [
     'Protocol',
     'Set',
     'Tuple',
+    'TypeAlias',
     'Union',
 
     # imported in TYPE_CHECKING
@@ -52,9 +53,6 @@ DEFAULT_EXT_SUPERS = {
 
 # prefix for gws.plugin class names
 PLUGIN_PREFIX = APP_NAME + '.plugin'
-
-# comment prefix for Type aliases
-TYPE_COMMENT_PREFIX = 'type:'
 
 # comment prefix for Variant aliases
 VARIANT_COMMENT_PREFIX = 'variant:'
