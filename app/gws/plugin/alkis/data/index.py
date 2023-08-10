@@ -336,15 +336,17 @@ class Object(gws.Node):
     def _find_prepare(self, q: dt.FlurstueckSearchQuery, qo: dt.FlurstueckSearchOptions):
 
         indexfs = self.table(TABLE_INDEXFLURSTUECK)
+        indexbuchungsblatt = self.table(TABLE_INDEXBUCHUNGSBLATT)
+        indexgeom = self.table(TABLE_INDEXGEOM)
         indexlage = self.table(TABLE_INDEXLAGE)
         indexperson = self.table(TABLE_INDEXPERSON)
-        indexgeom = self.table(TABLE_INDEXGEOM)
 
         where = []
 
+        has_buchungsblatt = False
+        has_geom = False
         has_lage = False
         has_person = False
-        has_geom = False
 
         if q.uids:
             where.append(indexfs.c.fs.in_(q.uids))
@@ -381,10 +383,11 @@ class Object(gws.Node):
             ws = []
 
             for s in q.buchungsblattkennzeichenList:
-                w = text_search_clause(indexfs.c.buchungsblattkennzeichen, s, qo.buchungsblattSearchOptions)
-                if w:
+                w = text_search_clause(indexbuchungsblatt.c.buchungsblattkennzeichen, s, qo.buchungsblattSearchOptions)
+                if w is not None:
                     ws.append(w)
             if ws:
+                has_buchungsblatt = True
                 where.append(sa.or_(*ws))
 
         if q.strasse:
@@ -422,6 +425,17 @@ class Object(gws.Node):
 
         join = []
 
+        if has_buchungsblatt:
+            join.append([indexbuchungsblatt, indexbuchungsblatt.c.fs == indexfs.c.fs])
+            if not qo.withHistorySearch:
+                where.append(~indexbuchungsblatt.c.fshistoric)
+                where.append(~indexbuchungsblatt.c.buchungsblatthistoric)
+
+        if has_geom:
+            join.append([indexgeom, indexgeom.c.fs == indexfs.c.fs])
+            if not qo.withHistorySearch:
+                where.append(~indexgeom.c.fshistoric)
+
         if has_lage:
             join.append([indexlage, indexlage.c.fs == indexfs.c.fs])
             if not qo.withHistorySearch:
@@ -433,11 +447,6 @@ class Object(gws.Node):
             if not qo.withHistorySearch:
                 where.append(~indexperson.c.fshistoric)
                 where.append(~indexperson.c.personhistoric)
-
-        if has_geom:
-            join.append([indexgeom, indexgeom.c.fs == indexfs.c.fs])
-            if not qo.withHistorySearch:
-                where.append(~indexgeom.c.fshistoric)
 
         if not qo.withHistorySearch:
             where.append(~indexfs.c.fshistoric)

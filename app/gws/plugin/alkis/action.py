@@ -563,7 +563,7 @@ class Object(gws.base.action.Object):
             query.shape = shapes[0] if len(shapes) == 1 else shapes[0].union(shapes[1:])
 
         if p.bblatt:
-            query.buchungsblattkennzeichen = p.bblatt.replace(';', ' ').replace(',', ' ').strip().split()
+            query.buchungsblattkennzeichenList = p.bblatt.replace(';', ' ').replace(',', ' ').strip().split()
 
         qo = dt.FlurstueckSearchOptions(
             strasseSearchOptions=self.strasseSearchOptions,

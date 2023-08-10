@@ -367,7 +367,7 @@ class DisplayTheme(t.Enum):
 
 EigentuemerAccessRequired = ['personName', 'personVorname']
 
-BuchungAccessRequired = ['buchungsblattkennzeichen']
+BuchungAccessRequired = ['buchungsblattkennzeichenList']
 
 
 class FlurstueckSearchQuery(gws.Data):
