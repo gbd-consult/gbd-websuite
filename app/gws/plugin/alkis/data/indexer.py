@@ -635,6 +635,9 @@ class _FsDataIndexer(_Indexer):
 
         for fs in self.om.Flurstueck:
             fs.flurstueckskennzeichen = fs.recs[-1].flurstueckskennzeichen
+            fs.fsnummer = index.make_fsnummer(fs.recs[-1])
+            fs.x = fs.recs[-1].x
+            fs.y = fs.recs[-1].y
             self.process_lage(fs)
             self.process_gebaeude(fs)
             self.process_buchung(fs)

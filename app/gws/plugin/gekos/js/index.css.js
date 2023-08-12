@@ -1,8 +1,8 @@
 module.exports = v => ({
-    '.modGekosToolbarButton': {
-        ...v.TOOLBAR_BUTTON('gekos')
+    '.gekosToolbarButton': {
+        ...v.TOOLBAR_BUTTON(__dirname + '/gekos')
     },
-    '.uiDialog.modGekosDialog': {
+    '.uiDialog.gekosDialog': {
         [v.MEDIA('large+')]: {
             ...v.CENTER_BOX(420, 350),
         }

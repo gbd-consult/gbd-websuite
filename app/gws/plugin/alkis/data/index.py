@@ -313,27 +313,74 @@ class Object(gws.Node):
 
         return self._strasseList
 
-    def find_flurstueck_uids(self, q: dt.FlurstueckSearchQuery, qo: dt.FlurstueckSearchOptions) -> list[str]:
-        indexfs = self.table(TABLE_INDEXFLURSTUECK)
+    def find_adresse(self, q: dt.AdresseQuery) -> list[dt.Adresse]:
+        indexlage = self.table(TABLE_INDEXLAGE)
 
-        join, where = self._find_prepare(q, qo)
+        qo = q.options or gws.Data()
+        sel = self._make_adresse_select(q, qo)
 
-        sel = sa.select(sa.distinct(indexfs.c.fs))
-        for tab, cond in join:
-            sel = sel.join(tab, cond)
-        sel = sel.where(*where)
+        lage_uids = []
+        adresse_map = {}
 
-        if qo.limit:
-            sel = sel.limit(qo.limit)
-
-        fs_uids = set()
         with self.connect() as conn:
             for r in conn.execute(sel):
-                fs_uids.add(r[0].partition('_')[0])
+                lage_uids.append(r[0])
 
-        return list(fs_uids)
+            if qo.hardLimit and len(lage_uids) > qo.hardLimit:
+                raise gws.ResponseTooLargeError(len(lage_uids))
 
-    def _find_prepare(self, q: dt.FlurstueckSearchQuery, qo: dt.FlurstueckSearchOptions):
+            if qo.offset:
+                lage_uids = lage_uids[qo.offset:]
+            if qo.limit:
+                lage_uids = lage_uids[:qo.limit]
+
+            sel = indexlage.select().where(indexlage.c.lageuid.in_(lage_uids))
+
+            for r in conn.execute(sel).mappings():
+                uid = r['lageuid']
+                adresse_map[uid] = dt.Adresse(
+                    uid=uid,
+                    land=dt.EnumPair(r['landcode'], r['land']),
+                    regierungsbezirk=dt.EnumPair(r['regierungsbezirkcode'], r['regierungsbezirk']),
+                    kreis=dt.EnumPair(r['kreiscode'], r['kreis']),
+                    gemeinde=dt.EnumPair(r['gemeindecode'], r['gemeinde']),
+                    gemarkung=dt.EnumPair(r['gemarkungcode'], r['gemarkung']),
+                    strasse=r['strasse'],
+                    hausnummer=r['hausnummer'],
+                    x=r['x'],
+                    y=r['y'],
+                    shape=gws.base.shape.from_xy(r['x'], r['y'], crs=self.crs),
+                )
+
+        return gws.compact(adresse_map.get(uid) for uid in lage_uids)
+
+    def find_flurstueck(self, q: dt.FlurstueckQuery) -> list[dt.Flurstueck]:
+        qo = q.options or gws.Data()
+        sel = self._make_flurstueck_select(q, qo)
+
+        fs_uids = []
+
+        with self.connect() as conn:
+            for r in conn.execute(sel):
+                uid = r[0].partition('_')[0]
+                if uid not in fs_uids:
+                    fs_uids.append(uid)
+
+            if qo.hardLimit and len(fs_uids) > qo.hardLimit:
+                raise gws.ResponseTooLargeError(len(fs_uids))
+
+            if qo.offset:
+                fs_uids = fs_uids[qo.offset:]
+            if qo.limit:
+                fs_uids = fs_uids[:qo.limit]
+
+            fs_list = self._load_flurstueck(conn, fs_uids, qo)
+
+        return fs_list
+
+    HAUSNUMMER_NOT_NULL_VALUE = '*'
+
+    def _make_flurstueck_select(self, q: dt.FlurstueckQuery, qo: dt.FlurstueckQueryOptions):
 
         indexfs = self.table(TABLE_INDEXFLURSTUECK)
         indexbuchungsblatt = self.table(TABLE_INDEXBUCHUNGSBLATT)
@@ -348,24 +395,21 @@ class Object(gws.Node):
         has_lage = False
         has_person = False
 
+        where.extend(self._make_places_where(q, indexfs))
+
         if q.uids:
             where.append(indexfs.c.fs.in_(q.uids))
 
-        for name in 'flurnummer', 'flurstuecksfolge', 'zaehler', 'nenner':
-            val = getattr(q, name, None)
+        for f in 'flurnummer', 'flurstuecksfolge', 'zaehler', 'nenner':
+            val = getattr(q, f, None)
             if val is not None:
-                where.append(getattr(indexfs.c, name) == val)
+                where.append(getattr(indexfs.c, f.lower()) == val)
 
         if q.flurstueckskennzeichen:
             val = re.sub(r'[^0-9_]', '', q.flurstueckskennzeichen)
             if not val:
                 raise gws.BadRequestError(f'invalid flurstueckskennzeichen {q.flurstueckskennzeichen!r}')
             where.append(indexfs.c.flurstueckskennzeichen.like(val + '%'))
-
-        if q.gemarkungCode:
-            where.append(indexfs.c.gemarkungcode == q.gemarkungCode)
-        if q.gemeindeCode:
-            where.append(indexfs.c.gemeindecode == q.gemeindeCode)
 
         if q.flaecheVon:
             try:
@@ -399,7 +443,7 @@ class Object(gws.Node):
         if q.hausnummer:
             if not has_lage:
                 raise gws.BadRequestError(f'hausnummer without strasse')
-            if q.hausnummer == '*':
+            if q.hausnummer == self.HAUSNUMMER_NOT_NULL_VALUE:
                 where.append(indexlage.c.hausnummer.is_not(None))
             else:
                 where.append(indexlage.c.hausnummer == normalize_hausnummer(q.hausnummer))
@@ -451,14 +495,86 @@ class Object(gws.Node):
         if not qo.withHistorySearch:
             where.append(~indexfs.c.fshistoric)
 
-        return join, where
+        sel = sa.select(sa.distinct(indexfs.c.fs))
 
-    def load_flurstueck(self, fs_uids: list[str], qo: dt.FlurstueckSearchOptions) -> list[dt.Flurstueck]:
+        for tab, cond in join:
+            sel = sel.join(tab, cond)
+
+        sel = sel.where(*where)
+
+        return self._make_sort(sel, qo.sort, indexfs)
+
+    def _make_adresse_select(self, q: dt.AdresseQuery, qo: dt.AdresseQueryOptions):
+        indexlage = self.table(TABLE_INDEXLAGE)
+        where = []
+
+        where.extend(self._make_places_where(q, indexlage))
+
+        has_strasse = False
+
+        if q.strasse:
+            w = text_search_clause(indexlage.c.strasse_t, strasse_key(q.strasse), qo.strasseSearchOptions)
+            if w is not None:
+                has_strasse = True
+                where.append(w)
+
+        if q.hausnummer:
+            if not has_strasse:
+                raise gws.BadRequestError(f'hausnummer without strasse')
+            if q.hausnummer == self.HAUSNUMMER_NOT_NULL_VALUE:
+                where.append(indexlage.c.hausnummer.is_not(None))
+            else:
+                where.append(indexlage.c.hausnummer == normalize_hausnummer(q.hausnummer))
+
+        if q.bisHausnummer:
+            if not has_strasse:
+                raise gws.BadRequestError(f'hausnummer without strasse')
+            where.append(indexlage.c.hausnummer < normalize_hausnummer(q.hausnummer))
+
+        if q.hausnummerNotNull:
+            if not has_strasse:
+                raise gws.BadRequestError(f'hausnummer without strasse')
+            where.append(indexlage.c.hausnummer.is_not(None))
+
+        if not qo.withHistorySearch:
+            where.append(~indexlage.c.lagehistoric)
+
+        sel = sa.select(sa.distinct(indexlage.c.lageuid))
+
+        sel = sel.where(*where)
+
+        return self._make_sort(sel, qo.sort, indexlage)
+
+    def _make_places_where(self, q: dt.FlurstueckQuery | dt.AdresseQuery, table: sa.Table):
+        where = []
+
+        for f in 'land', 'regierungsbezirk', 'kreis', 'gemarkung', 'gemeinde':
+            val = getattr(q, f, None)
+            if val is not None:
+                where.append(getattr(table.c, f.lower() + '_t') == text_key(val))
+            val = getattr(q, f + 'Code', None)
+            if val is not None:
+                where.append(getattr(table.c, f.lower() + 'code') == val)
+
+        return where
+
+    def _make_sort(self, sel, sort, table: sa.Table):
+        if not sort:
+            return sel
+
+        order = []
+        for s in sort:
+            fn = sa.desc if s.reverse else sa.asc
+            order.append(fn(getattr(table.c, s.fieldName)))
+        sel = sel.order_by(*order)
+
+        return sel
+
+    def load_flurstueck(self, fs_uids: list[str], qo: dt.FlurstueckQueryOptions) -> list[dt.Flurstueck]:
         with self.connect() as conn:
             return self._load_flurstueck(conn, fs_uids, qo)
 
-    def _load_flurstueck(self, conn, fs_uids, qo: dt.FlurstueckSearchOptions):
-
+    def _load_flurstueck(self, conn, fs_uids, qo: dt.FlurstueckQueryOptions):
         def _check_history(objects):
             if qo.withHistoryDisplay:
                 return objects
@@ -609,29 +725,37 @@ def text_key(s):
     if s is None:
         return ''
 
-    s = str(s).strip().lower()
+    s = _text_umlauts(str(s).strip().lower())
+    return _text_nopunct(s)
 
+
+def strasse_key(s):
+    """Normalize a steet name for full-text search."""
+
+    if s is None:
+        return ''
+
+    s = _text_umlauts(str(s).strip().lower())
+
+    s = re.sub(r'\s?str\.$', '.strasse', s)
+    s = re.sub(r'\s?pl\.$', '.platz', s)
+    s = re.sub(r'\s?(strasse|allee|damm|gasse|pfad|platz|ring|steig|wall|weg|zeile)$', r'.\1', s)
+
+    return _text_nopunct(s)
+
+
+def _text_umlauts(s):
     s = s.replace(u'ä', 'ae')
     s = s.replace(u'ë', 'ee')
     s = s.replace(u'ö', 'oe')
     s = s.replace(u'ü', 'ue')
     s = s.replace(u'ß', 'ss')
 
-    s = re.sub(r'\W+', ' ', s)
-    return s.strip()
-
-
-def strasse_key(s):
-    """Normalize a steet name for full-text search."""
-
-    s = text_key(s)
-
-    s = re.sub(r'\s?str\.$', '.strasse', s)
-    s = re.sub(r'\s?pl\.$', '.platz', s)
-    s = re.sub(r'\s?(strasse|allee|damm|gasse|pfad|platz|ring|steig|wall|weg|zeile)$', r'.\1', s)
-
-    s = s.replace(' ', '.')
     return s
+
+
+def _text_nopunct(s):
+    return re.sub(r'\W+', ' ', s)
 
 
 def normalize_hausnummer(s):
@@ -645,30 +769,30 @@ def normalize_hausnummer(s):
     return s
 
 
-def fs_vollnummer(fs: dt.FlurstueckRecord):
-    """Create a 'vollNummer' for a Flurstueck, which is 'flur-zaeher/nenner (folge)'."""
+def make_fsnummer(r: dt.FlurstueckRecord):
+    """Create a 'fsnummer' for a Flurstueck, which is 'flur-zaeher/nenner (folge)'."""
 
-    v = fs.gemarkung.code + ' '
+    v = r.gemarkung.code + ' '
 
-    s = fs.flurnummer
+    s = r.flurnummer
     if s:
         v += str(s) + '-'
 
-    v += fs.zaehler
-    s = fs.nenner
+    v += str(r.zaehler)
+    s = r.nenner
     if s:
         v += '/' + str(s)
 
-    s = fs.flurstuecksfolge
+    s = r.flurstuecksfolge
     if s and str(s) != '00':
         v += ' (' + str(s) + ')'
 
     return v
 
 
-# parse a vollnummer in the above format, all parts are optional
+# parse a fsnummer in the above format, all parts are optional
 
-_RE_VOLLNUMMER = r'''(?x)
+_RE_FSNUMMER = r'''(?x)
     ^
     (
         (?P<gemarkungCode> [0-9]+)
@@ -694,10 +818,10 @@ _RE_VOLLNUMMER = r'''(?x)
 '''
 
 
-def fs_parse_vollnummer(s):
-    """Parse the Flurstueck vollNummer into parts."""
+def parse_fsnummer(s):
+    """Parse a Flurstueck fsnummer into parts."""
 
-    m = re.match(_RE_VOLLNUMMER, s.strip())
+    m = re.match(_RE_FSNUMMER, s.strip())
     if not m:
         return None
     return gws.compact(m.groupdict())
@@ -705,6 +829,13 @@ def fs_parse_vollnummer(s):
 
 def text_search_clause(column, val, tso: gws.TextSearchOptions):
     # @TODO merge with model_field/text
+
+    if val is None:
+        return
+
+    val = str(val).strip()
+    if len(val) == 0:
+        return
 
     if not tso:
         return column == val
@@ -724,6 +855,7 @@ def text_search_clause(column, val, tso: gws.TextSearchOptions):
 
     if tso.caseSensitive:
         return column.like(val, escape='\\')
+
     return column.ilike(val, escape='\\')
 
 

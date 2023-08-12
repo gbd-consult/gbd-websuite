@@ -44,6 +44,21 @@ class Entity(Object):
     recs: list['Record']
 
 
+class Adresse(Object):
+    land: EnumPair
+    regierungsbezirk: EnumPair
+    kreis: EnumPair
+    gemeinde: EnumPair
+    gemarkung: EnumPair
+
+    strasse: str
+    hausnummer: str
+
+    x: float
+    y: float
+    shape: gws.IShape
+
+
 class FlurstueckRecord(Record):
     flurnummer: str
     zaehler: str
@@ -86,6 +101,7 @@ class Flurstueck(Entity):
     recs: list[FlurstueckRecord]
 
     flurstueckskennzeichen: str
+    fsnummer: str
 
     buchungList: list['Buchung']
     lageList: list['Lage']
@@ -99,6 +115,8 @@ class Flurstueck(Entity):
     bewertungList: list['Part']
 
     geom: t.Any
+    x: float
+    y: float
     shape: gws.IShape
 
 
@@ -370,7 +388,25 @@ EigentuemerAccessRequired = ['personName', 'personVorname']
 BuchungAccessRequired = ['buchungsblattkennzeichenList']
 
 
-class FlurstueckSearchQuery(gws.Data):
+class FlurstueckQueryOptions(gws.Data):
+    strasseSearchOptions: gws.TextSearchOptions
+    nameSearchOptions: gws.TextSearchOptions
+    buchungsblattSearchOptions: gws.TextSearchOptions
+
+    limit: int
+    offset: int
+    hardLimit: int
+    sort: t.Optional[list[gws.SortOptions]]
+
+    displayThemes: list[DisplayTheme]
+
+    withEigentuemer: bool
+    withBuchung: bool
+    withHistorySearch: bool
+    withHistoryDisplay: bool
+
+
+class FlurstueckQuery(gws.Data):
     flurnummer: str
     flurstuecksfolge: str
     zaehler: str
@@ -380,8 +416,16 @@ class FlurstueckSearchQuery(gws.Data):
     flaecheBis: float
     flaecheVon: float
 
+    gemarkung: str
     gemarkungCode: str
+    gemeinde: str
     gemeindeCode: str
+    kreis: str
+    kreisCode: str
+    land: str
+    landCode: str
+    regierungsbezirk: str
+    regierungsbezirkCode: str
 
     strasse: str
     hausnummer: str
@@ -395,15 +439,38 @@ class FlurstueckSearchQuery(gws.Data):
 
     uids: list[str]
 
+    options: t.Optional['FlurstueckQueryOptions']
 
-class FlurstueckSearchOptions(gws.Data):
+
+class AdresseQueryOptions(gws.Data):
     strasseSearchOptions: gws.TextSearchOptions
-    nameSearchOptions: gws.TextSearchOptions
-    buchungsblattSearchOptions: gws.TextSearchOptions
+
     limit: int
-    displayThemes: list[DisplayTheme]
+    offset: int
+    hardLimit: int
+    sort: t.Optional[list[gws.SortOptions]]
+
     withHistorySearch: bool
-    withHistoryDisplay: bool
+
+
+class AdresseQuery(gws.Data):
+    gemarkung: str
+    gemarkungCode: str
+    gemeinde: str
+    gemeindeCode: str
+    kreis: str
+    kreisCode: str
+    land: str
+    landCode: str
+    regierungsbezirk: str
+    regierungsbezirkCode: str
+
+    strasse: str
+    hausnummer: str
+    bisHausnummer: str
+    hausnummerNotNull: bool
+
+    options: t.Optional['AdresseQueryOptions']
 
 
 ##

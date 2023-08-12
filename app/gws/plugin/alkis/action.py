@@ -177,13 +177,21 @@ class FindFlurstueckRequest(gws.Request):
     flurstuecksfolge: t.Optional[str]
     zaehler: t.Optional[str]
     nenner: t.Optional[str]
-    vollNummer: t.Optional[str]
+    fsnummer: t.Optional[str]
 
     flaecheBis: t.Optional[float]
     flaecheVon: t.Optional[float]
 
+    gemarkung: t.Optional[str]
     gemarkungCode: t.Optional[str]
+    gemeinde: t.Optional[str]
     gemeindeCode: t.Optional[str]
+    kreis: t.Optional[str]
+    kreisCode: t.Optional[str]
+    land: t.Optional[str]
+    landCode: t.Optional[str]
+    regierungsbezirk: t.Optional[str]
+    regierungsbezirkCode: t.Optional[str]
 
     strasse: t.Optional[str]
     hausnummer: t.Optional[str]
@@ -192,6 +200,8 @@ class FindFlurstueckRequest(gws.Request):
 
     personName: t.Optional[str]
     personVorname: t.Optional[str]
+
+    combinedFlurstueckCode: t.Optional[str]
 
     shapes: t.Optional[list[gws.base.shape.Props]]
 
@@ -208,29 +218,39 @@ class FindFlurstueckRequest(gws.Request):
     displayThemes: t.Optional[list[dt.DisplayTheme]]
 
 
-class FindFlurstueckResult(gws.Data):
-    flurstueckList: list[dt.Flurstueck]
-    total: int
-    query: dt.FlurstueckSearchQuery
-    queryOptions: dt.FlurstueckSearchOptions
-
-
 class FindFlurstueckResponse(gws.Response):
     features: list[gws.FeatureProps]
     total: int
 
 
-class FindAdresseRequest():
+class FindFlurstueckResult(gws.Data):
+    flurstueckList: list[dt.Flurstueck]
+    total: int
+    query: dt.FlurstueckQuery
+
+
+class FindAdresseRequest(gws.Request):
     crs: t.Optional[gws.ICrs]
 
-    bisHausnummer: str = ''
-    hausnummer: str = ''
-    kreis: str = ''
-    kreisUid: str = ''
-    land: str = ''
-    landUid: str = ''
-    regierungsbezirk: str = ''
-    regierungsbezirkUid: str = ''
+    gemarkung: t.Optional[str]
+    gemarkungCode: t.Optional[str]
+    gemeinde: t.Optional[str]
+    gemeindeCode: t.Optional[str]
+    kreis: t.Optional[str]
+    kreisCode: t.Optional[str]
+    land: t.Optional[str]
+    landCode: t.Optional[str]
+    regierungsbezirk: t.Optional[str]
+    regierungsbezirkCode: t.Optional[str]
+
+    strasse: t.Optional[str]
+    hausnummer: t.Optional[str]
+    bisHausnummer: t.Optional[str]
+    hausnummerNotNull: t.Optional[bool]
+
+    wantHistorySearch: t.Optional[bool]
+
+    combinedAdresseCode: t.Optional[str]
 
 
 class FindAdresseResponse(gws.Response):
@@ -261,30 +281,45 @@ _dir = os.path.dirname(__file__)
 
 _DEFAULT_TEMPLATES = [
     gws.Config(
-        subject='feature.title',
+        subject='flurstueck.title',
         type='html',
         path=f'{_dir}/templates/title.cx.html',
     ),
     gws.Config(
-        subject='feature.teaser',
+        subject='flurstueck.teaser',
         type='html',
         path=f'{_dir}/templates/title.cx.html',
     ),
     gws.Config(
-        subject='feature.label',
+        subject='flurstueck.label',
         type='html',
-        path=f'{_dir}/templates/label.cx.html',
+        path=f'{_dir}/templates/title.cx.html',
     ),
     gws.Config(
-        subject='feature.description',
+        subject='flurstueck.description',
         type='html',
         path=f'{_dir}/templates/description.cx.html',
     ),
     gws.Config(
-        subject='feature.print',
+        subject='flurstueck.print',
         type='html',
         path=f'{_dir}/templates/print.cx.html',
         qualityLevels=[gws.TemplateQualityLevel(name='default', dpi=150)],
+    ),
+    gws.Config(
+        subject='adresse.title',
+        type='html',
+        path=f'{_dir}/templates/adresse_title.cx.html',
+    ),
+    gws.Config(
+        subject='adresse.teaser',
+        type='html',
+        path=f'{_dir}/templates/adresse_title.cx.html',
+    ),
+    gws.Config(
+        subject='adresse.label',
+        type='html',
+        path=f'{_dir}/templates/adresse_title.cx.html',
     ),
 ]
 
@@ -383,7 +418,7 @@ class Object(gws.base.action.Object):
             super().props(user),
             exportGroups=export_groups,
             limit=self.limit,
-            printTemplate=gws.base.template.locate(self, user=user, subject='feature.print'),
+            printTemplate=gws.base.template.locate(self, user=user, subject='flurstueck.print'),
             ui=self.ui,
             storage=self.storage,
             withBuchung=user.can_read(self.buchung),
@@ -413,6 +448,41 @@ class Object(gws.base.action.Object):
             strasse=sorted(strasse_lst)
         )
 
+    @gws.ext.command.api('alkisFindAdresse')
+    def find_adresse(self, req: gws.IWebRequester, p: FindAdresseRequest) -> FindAdresseResponse:
+        """Perform an Adresse search."""
+
+        project = req.require_project(p.projectUid)
+        crs = p.get('crs') or project.map.bounds.crs
+
+        ad_list, query = self.find_adresse_objects(req, p)
+        if not ad_list:
+            return FindAdresseResponse(
+                features=[],
+                total=0,
+            )
+
+        templates = [
+            gws.base.template.locate(self, user=req.user, subject='adresse.title'),
+            gws.base.template.locate(self, user=req.user, subject='adresse.teaser'),
+            gws.base.template.locate(self, user=req.user, subject='adresse.label'),
+        ]
+
+        features = []
+
+        for ad in ad_list:
+            f = gws.base.feature.with_model(self.model)
+            f.attributes = vars(ad)
+            f.attributes['geometry'] = f.attributes.pop('shape')
+            f.transform_to(crs)
+            f.render_views(templates, user=req.user)
+            features.append(f)
+
+        return FindAdresseResponse(
+            features=[gws.props(f, req.user, self) for f in features],
+            total=len(ad_list),
+        )
+
     @gws.ext.command.api('alkisFindFlurstueck')
     def find_flurstueck(self, req: gws.IWebRequester, p: FindFlurstueckRequest) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""
@@ -420,31 +490,31 @@ class Object(gws.base.action.Object):
         project = req.require_project(p.projectUid)
         crs = p.get('crs') or project.map.bounds.crs
 
-        res = self._find_flurstueck(req, p)
-        if not res.flurstueckList:
+        fs_list, query = self.find_flurstueck_objects(req, p)
+        if not fs_list:
             return FindFlurstueckResponse(
                 features=[],
                 total=0,
             )
 
         templates = [
-            gws.base.template.locate(self, user=req.user, subject='feature.title'),
-            gws.base.template.locate(self, user=req.user, subject='feature.teaser'),
+            gws.base.template.locate(self, user=req.user, subject='flurstueck.title'),
+            gws.base.template.locate(self, user=req.user, subject='flurstueck.teaser'),
         ]
 
-        if res.queryOptions.displayThemes:
+        if query.options.displayThemes:
             templates.append(
-                gws.base.template.locate(self, req.user, subject='feature.description'),
+                gws.base.template.locate(self, req.user, subject='flurstueck.description'),
             )
 
         args = dict(
-            withHistory=res.queryOptions.withHistoryDisplay,
+            withHistory=query.options.withHistoryDisplay,
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
         )
 
         features = []
 
-        for fs in res.flurstueckList:
+        for fs in fs_list:
             f = gws.base.feature.with_model(self.model)
             f.attributes = dict(uid=fs.uid, fs=fs, geometry=fs.shape)
             f.transform_to(crs)
@@ -454,11 +524,11 @@ class Object(gws.base.action.Object):
 
         return FindFlurstueckResponse(
             features=[gws.props(f, req.user, self) for f in features],
-            total=res.total,
+            total=len(fs_list),
         )
 
     @gws.ext.command.api('alkisExportFlurstueck')
-    def export_flurstueck(self, req: gws.IWebRequester, p: ExportFlurstueckRequest) -> ExportFlurstueckResponse:
+    def export_flurstueck(self, req: gws.IWebRequester, p: ExportFlurstueckRequest) -> gws.ContentResponse:
         if not self.export:
             raise gws.NotFoundError()
 
@@ -469,13 +539,13 @@ class Object(gws.base.action.Object):
         find_request = p.findRequest
         find_request.projectUid = p.projectUid
 
-        res = self._find_flurstueck(req, find_request)
-        if not res.flurstueckList:
+        fs_list, _ = self.find_flurstueck_objects(req, find_request)
+        if not fs_list:
             raise gws.NotFoundError()
 
-        csv_bytes = self.export.export_as_csv(res.flurstueckList, groups, req.user)
+        csv_bytes = self.export.export_as_csv(fs_list, groups, req.user)
 
-        return ExportFlurstueckResponse(content=csv_bytes, mime='text/csv')
+        return gws.ContentResponse(content=csv_bytes, mime='text/csv')
 
     @gws.ext.command.api('alkisPrintFlurstueck')
     def print_flurstueck(self, req: gws.IWebRequester, p: PrintFlurstueckRequest) -> gws.base.printer.StatusResponse:
@@ -486,8 +556,8 @@ class Object(gws.base.action.Object):
         find_request = p.findRequest
         find_request.projectUid = p.projectUid
 
-        res = self._find_flurstueck(req, find_request)
-        if not res.flurstueckList:
+        fs_list, query = self.find_flurstueck_objects(req, find_request)
+        if not fs_list:
             raise gws.NotFoundError()
 
         print_request = p.printRequest
@@ -495,13 +565,13 @@ class Object(gws.base.action.Object):
         crs = print_request.get('crs') or project.map.bounds.crs
 
         templates = [
-            gws.base.template.locate(self, user=req.user, subject='feature.label'),
+            gws.base.template.locate(self, user=req.user, subject='flurstueck.label'),
         ]
 
         base_map = print_request.maps[0]
         fs_maps = []
 
-        for fs in res.flurstueckList:
+        for fs in fs_list:
             f = gws.base.feature.with_model(self.model)
             f.attributes = dict(uid=fs.uid, fs=fs, geometry=fs.shape)
             f.transform_to(crs)
@@ -521,8 +591,8 @@ class Object(gws.base.action.Object):
 
         print_request.maps = fs_maps
         print_request.args = dict(
-            flurstueckList=res.flurstueckList,
-            withHistory=res.queryOptions.withHistoryDisplay,
+            flurstueckList=fs_list,
+            withHistory=query.options.withHistoryDisplay,
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
         )
 
@@ -537,26 +607,84 @@ class Object(gws.base.action.Object):
 
     ##
 
-    def _find_flurstueck(self, req: gws.IWebRequester, p: FindFlurstueckRequest) -> FindFlurstueckResult:
+    def find_flurstueck_objects(self, req: gws.IWebRequester, p: FindFlurstueckRequest) -> tuple[list[dt.Flurstueck], dt.FlurstueckQuery]:
+        query = self._prepare_flurstueck_query(req, p)
+        fs_list = self.index.find_flurstueck(query)
 
-        query = dt.FlurstueckSearchQuery(
-            flurnummer=p.flurnummer,
-            flurstuecksfolge=p.flurstuecksfolge,
-            zaehler=p.zaehler,
-            nenner=p.nenner,
-            flaecheBis=p.flaecheBis,
-            flaecheVon=p.flaecheVon,
-            gemarkungCode=p.gemarkungCode,
-            gemeindeCode=p.gemeindeCode,
-            strasse=p.strasse,
-            hausnummer=p.hausnummer,
-            personName=p.personName,
-            personVorname=p.personVorname,
-            uids=p.uids,
-        )
+        if query.options.withEigentuemer:
+            self._log_eigentuemer_access(
+                req,
+                p.eigentuemerControlInput,
+                is_ok=True,
+                total=len(fs_list),
+                fs_uids=[fs.uid for fs in fs_list]
+            )
 
-        if p.vollNummer:
-            self._query_vollnummer(query, p.vollNummer)
+        return fs_list, query
+
+    def find_adresse_objects(self, req: gws.IWebRequester, p: FindAdresseRequest) -> tuple[list[dt.Adresse], dt.AdresseQuery]:
+        query = self._prepare_adresse_query(req, p)
+        ad_list = self.index.find_adresse(query)
+        return ad_list, query
+
+    FLURSTUECK_QUERY_FIELDS = [
+        'flurnummer',
+        'flurstuecksfolge',
+        'zaehler',
+        'nenner',
+        'flurstueckskennzeichen',
+        'flaecheBis',
+        'flaecheVon',
+        'gemarkung',
+        'gemarkungCode',
+        'gemeinde',
+        'gemeindeCode',
+        'kreis',
+        'kreisCode',
+        'land',
+        'landCode',
+        'regierungsbezirk',
+        'regierungsbezirkCode',
+        'strasse',
+        'hausnummer',
+        'personName',
+        'personVorname',
+        'uids',
+    ]
+    ADRESSE_QUERY_FIELDS = [
+        'gemarkung',
+        'gemarkungCode',
+        'gemeinde',
+        'gemeindeCode',
+        'kreis',
+        'kreisCode',
+        'land',
+        'landCode',
+        'regierungsbezirk',
+        'regierungsbezirkCode',
+        'strasse',
+        'hausnummer',
+        'bisHausnummer',
+        'hausnummerNotNull',
+    ]
+    COMBINED_FLURSTUECK_FIELDS = [
+        'landCode', 'gemarkungCode', 'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge'
+    ]
+    COMBINED_ADRESSE_FIELDS = [
+        'strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnummer'
+    ]
+
+    def _prepare_flurstueck_query(self, req: gws.IWebRequester, p: FindFlurstueckRequest) -> dt.FlurstueckQuery:
+        query = dt.FlurstueckQuery()
+
+        for f in self.FLURSTUECK_QUERY_FIELDS:
+            setattr(query, f, getattr(p, f, None))
+
+        if p.combinedFlurstueckCode:
+            self._query_combined_code(query, p.combinedFlurstueckCode, self.COMBINED_FLURSTUECK_FIELDS)
+
+        if p.fsnummer:
+            self._query_fsnummer(query, p.fsnummer)
 
         if p.shapes:
             shapes = [gws.base.shape.from_props(s) for s in p.shapes]
@@ -565,10 +693,13 @@ class Object(gws.base.action.Object):
         if p.bblatt:
             query.buchungsblattkennzeichenList = p.bblatt.replace(';', ' ').replace(',', ' ').strip().split()
 
-        qo = dt.FlurstueckSearchOptions(
+        options = dt.FlurstueckQueryOptions(
             strasseSearchOptions=self.strasseSearchOptions,
             nameSearchOptions=self.nameSearchOptions,
             buchungsblattSearchOptions=self.buchungsblattSearchOptions,
+            hardLimit=self.limit,
+            withEigentuemer=False,
+            withBuchung=False,
             withHistorySearch=bool(p.wantHistorySearch),
             withHistoryDisplay=bool(p.wantHistoryDisplay),
             displayThemes=p.displayThemes or [],
@@ -576,35 +707,42 @@ class Object(gws.base.action.Object):
 
         want_eigentuemer = (
                 p.wantEigentuemer
-                or dt.DisplayTheme.eigentuemer in qo.displayThemes
-                or any(getattr(query, key) is not None for key in dt.EigentuemerAccessRequired)
+                or dt.DisplayTheme.eigentuemer in options.displayThemes
+                or any(getattr(query, f) is not None for f in dt.EigentuemerAccessRequired)
         )
         if want_eigentuemer:
             self._check_eigentuemer_access(req, p.eigentuemerControlInput)
+            options.withEigentuemer = True
 
         want_buchung = (
-                dt.DisplayTheme.buchung in qo.displayThemes
-                or any(getattr(query, key) is not None for key in dt.BuchungAccessRequired)
+                dt.DisplayTheme.buchung in options.displayThemes
+                or any(getattr(query, f) is not None for f in dt.BuchungAccessRequired)
         )
         if want_buchung:
             self._check_buchung_access(req, p.eigentuemerControlInput)
+            options.withBuchung = True
 
-        fs_uids = self.index.find_flurstueck_uids(query, qo)
-        total = len(fs_uids)
-        fs_uids = fs_uids[:self.limit]
+        query.options = options
+        return query
 
-        fs_list = self.index.load_flurstueck(fs_uids, qo)
-        if want_eigentuemer:
-            self._log_eigentuemer_access(req, p.eigentuemerControlInput, is_ok=True, total=total, fs_uids=fs_uids)
+    def _prepare_adresse_query(self, req: gws.IWebRequester, p: FindAdresseRequest) -> dt.AdresseQuery:
+        query = dt.AdresseQuery()
 
-        return FindFlurstueckResult(
-            flurstueckList=fs_list,
-            total=total,
-            query=query,
-            queryOptions=qo,
+        for f in self.ADRESSE_QUERY_FIELDS:
+            setattr(query, f, getattr(p, f, None))
+
+        if p.combinedAdresseCode:
+            self._query_combined_code(query, p.combinedAdresseCode, self.COMBINED_ADRESSE_FIELDS)
+
+        options = dt.AdresseQueryOptions(
+            strasseSearchOptions=self.strasseSearchOptions,
+            withHistorySearch=bool(p.wantHistorySearch),
         )
 
-    def _query_vollnummer(self, query: dt.FlurstueckSearchQuery, vn: str):
+        query.options = options
+        return query
+
+    def _query_fsnummer(self, query: dt.FlurstueckQuery, vn: str):
 
         if vn.startswith('DE'):
             # search by gml_id
@@ -620,10 +758,15 @@ class Object(gws.base.action.Object):
             return
 
         # search by a compound fs number
-        num = index.fs_parse_vollnummer(vn)
-        if num is None:
-            raise gws.BadRequestError(f'invalid vollNummer {vn!r}')
-        query.update(num)
+        parts = index.parse_fsnummer(vn)
+        if parts is None:
+            raise gws.BadRequestError(f'invalid fsnummer {vn!r}')
+        query.update(parts)
+
+    def _query_combined_code(self, query: dt.FlurstueckQuery | dt.AdresseQuery, code_value: str, code_fields: list[str]):
+        for val, field in zip(code_value.split('_'), code_fields):
+            if val and val != '0':
+                setattr(query, field, val)
 
     ##
 

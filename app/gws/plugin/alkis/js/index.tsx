@@ -37,7 +37,7 @@ interface FormValues {
     personVorname?: string;
     shapes?: Array<gws.api.base.shape.Props>;
     strasseCode?: string;
-    vollNummer?: string;
+    fsnummer?: string;
     wantEigentuemer?: boolean;
     wantHistoryDisplay?: boolean;
     wantHistorySearch?: boolean;
@@ -441,7 +441,7 @@ class SearchForm extends gws.View<ViewProps> {
                                 ? cc.__('alkisVnumFlur')
                                 : cc.__('alkisVnum')
                         }
-                        {...boundTo('vollNummer')}
+                        {...boundTo('fsnummer')}
                         withClear
                     />
                 </Cell>
@@ -908,9 +908,7 @@ class Controller extends gws.Controller {
 
         this.updateObject('storageState', {
             alkisSelectionStorage: this.setup.storage ? this.setup.storage.state : null,
-        })
-
-
+        });
 
         this.update({
             alkisTab: 'form',
@@ -926,6 +924,40 @@ class Controller extends gws.Controller {
             alkisFsDetailsResponse: null,
             alkisFsSelection: [],
         });
+
+        this.app.whenLoaded(() => this.findFlurstueckFromUrl());
+    }
+
+    async findFlurstueckFromUrl() {
+        let p, res = null;
+
+        p = this.app.urlParams['alkisFs'];
+        if (p) {
+            res = await this.app.server.alkisFindFlurstueck({combinedFlurstueckCode: p});
+        }
+
+        p = this.app.urlParams['alkisAd'];
+        if (p) {
+            res = await this.app.server.alkisFindAdresse({combinedAdresseCode: p});
+        }
+
+        if (!res || res.error) {
+            return;
+        }
+
+        let features = this.map.readFeatures(res.features);
+
+        if (features.length > 0) {
+            this.update({
+                marker: {
+                    features: [features[0]],
+                    mode: 'draw zoom',
+                },
+                infoboxContent: <components.Infobox
+                    controller={this}>{features[0].views.teaser}</components.Infobox>,
+            });
+        }
+
     }
 
     async loadToponyms(): Promise<Toponyms> {
@@ -1418,12 +1450,13 @@ class Controller extends gws.Controller {
 
     showError(res) {
         let msg = this.__('alkisErrorGeneric');
+        let err = res.error ? res.error.status : res.status;
 
-        if (res.status === 403) {
+        if (err === 403) {
             msg = this.__('alkisErrorForbidden');
         }
 
-        if (res.status === 409) {
+        if (err === 409) {
             msg = this.__('alkisErrorTooMany').replace(/\$1/g, this.setup.limit);
         }
 
