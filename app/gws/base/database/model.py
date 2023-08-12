@@ -16,11 +16,6 @@ class Props(gws.base.model.Props):
     pass
 
 
-class SortConfig:
-    fieldName: str
-    reverse: bool = False
-
-
 class Config(gws.base.model.Config):
     dbUid: t.Optional[str]
     """db provider uid"""
@@ -28,7 +23,7 @@ class Config(gws.base.model.Config):
     """table name for the model"""
     filter: t.Optional[str]
     """extra SQL filter"""
-    sort: t.Optional[list[SortConfig]]
+    sort: t.Optional[list[gws.SortOptions]]
     """default sorting"""
 
 

@@ -1781,6 +1781,11 @@ class TextSearchOptions(Data):
     """use the case sensitive search"""
 
 
+class SortOptions(Data):
+    fieldName: str
+    reverse: bool = False
+
+
 class IFinder(INode, Protocol):
     supportsFilterSearch: bool = False
     supportsGeometrySearch: bool = False
@@ -2020,7 +2025,7 @@ class CliParams(Data):
 class IActionManager(INode, Protocol):
     items: list['IAction']
 
-    def get_action(self, desc: ExtCommandDescriptor) -> Optional['IAction']: ...
+    def get_action(self, ext_name: str) -> Optional['IAction']: ...
 
     def actions_for(self, user: IUser, other: Optional['IActionManager'] = None) -> list['IAction']: ...
 
