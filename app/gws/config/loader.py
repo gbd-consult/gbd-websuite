@@ -33,7 +33,7 @@ def configure(
 
     errors = []
     errpfx = 'CONFIGURATION ERROR: '
-    root_object = None
+    ro = None
 
     ts = gws.lib.osx.utime()
     ms = gws.lib.osx.process_rss_size()
@@ -52,9 +52,9 @@ def configure(
     if config:
         if before_init:
             before_init(config)
-        root_object = initialize(specs, config)
-        if root_object:
-            errors.extend(root_object.configErrors)
+        ro = initialize(specs, config)
+        if ro:
+            errors.extend(ro.configErrors)
 
     err_cnt = 0
 
@@ -65,18 +65,18 @@ def configure(
             _report(err)
             gws.log.error(errpfx + ('-' * 60))
 
-    if root_object:
+    if ro:
         info = '{:d} objects, time: {:.2f} s., memory: {:.2f} MB'.format(
-            root_object.object_count(),
+            ro.object_count(),
             gws.lib.osx.utime() - ts,
             gws.lib.osx.process_rss_size() - ms,
         )
         if not errors:
             gws.log.info(f'configuration ok, {info}')
-            return root_object
+            return ro
         if not specs.manifest.withStrictConfig:
             gws.log.warning(f'configuration complete with {err_cnt} error(s), {info}')
-            return root_object
+            return ro
 
     if specs.manifest.withFallbackConfig and fallback_config:
         gws.log.warning(f'using fallback config')
@@ -86,27 +86,27 @@ def configure(
 
 
 def initialize(specs, parsed_config) -> gws.IRoot:
-    r = gws.create_root_object(specs)
-    r.create_application(parsed_config)
-    r.post_initialize()
-    return r
+    ro = gws.create_root_object(specs)
+    ro.create_application(parsed_config)
+    ro.post_initialize()
+    return ro
 
 
-def activate(r: gws.IRoot):
-    r.activate()
-    return gws.set_app_global(ROOT_NAME, r)
+def activate(ro: gws.IRoot):
+    ro.activate()
+    return gws.set_app_global(ROOT_NAME, ro)
 
 
 def deactivate():
     return gws.delete_app_global(ROOT_NAME)
 
 
-def store(r: gws.IRoot, path=None):
+def store(ro: gws.IRoot, path=None):
     path = path or STORE_PATH
     gws.log.debug(f'writing config to {path!r}')
     try:
         gws.lib.jsonx.to_path(f'{path}.syspath.json', sys.path)
-        gws.serialize_to_path(r, path)
+        gws.serialize_to_path(ro, path)
     except Exception as exc:
         raise gws.ConfigurationError('unable to store configuration') from exc
 
@@ -115,18 +115,34 @@ def load(path=None) -> gws.Root:
     path = path or STORE_PATH
     gws.log.debug(f'loading config from {path!r}')
     try:
-        sys_path = gws.lib.jsonx.from_path(f'{path}.syspath.json')
-        for p in sys_path:
-            if p not in sys.path:
-                sys.path.insert(0, p)
-                gws.log.debug(f'path {p!r} added to sys.path')
-
-        gws.time_start('loading config')
-        r = gws.unserialize_from_path(path)
-        gws.time_end()
-        return activate(r)
+        return _load(path)
     except Exception as exc:
         raise gws.ConfigurationError('unable to load configuration') from exc
+
+
+def _load(path) -> gws.Root:
+    sys_path = gws.lib.jsonx.from_path(f'{path}.syspath.json')
+    for p in sys_path:
+        if p not in sys.path:
+            sys.path.insert(0, p)
+            gws.log.debug(f'path {p!r} added to sys.path')
+
+    ts = gws.lib.osx.utime()
+    ms = gws.lib.osx.process_rss_size()
+
+    ro = gws.unserialize_from_path(path)
+
+    activate(ro)
+
+    info = 'configuration ok, {:d} objects, time: {:.2f} s., memory: {:.2f} MB'.format(
+        ro.object_count(),
+        gws.lib.osx.utime() - ts,
+        gws.lib.osx.process_rss_size() - ms,
+    )
+
+    gws.log.info(info)
+
+    return ro
 
 
 def root() -> gws.Root:

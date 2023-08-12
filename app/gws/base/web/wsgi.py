@@ -185,14 +185,7 @@ class Requester(gws.IWebRequester):
     ##
 
     def require(self, uid, classref):
-        try:
-            return self.user.require(uid, classref)
-        except gws.NotFoundError:
-            gws.log.debug(f'require {uid=} not found')
-            raise gws.base.web.error.NotFound()
-        except gws.ForbiddenError:
-            gws.log.debug(f'require {uid=} forbidden')
-            raise gws.base.web.error.Forbidden()
+        return self.user.require(uid, classref)
 
     def require_project(self, uid):
         return t.cast(gws.IProject, self.require(uid, gws.ext.object.project))

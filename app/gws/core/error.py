@@ -27,6 +27,11 @@ class BadRequestError(Error):
     pass
 
 
+class ResponseTooLargeError(Error):
+    """Generic error when a response is too large."""
+    pass
+
+
 ##
 
 
