@@ -36,5 +36,5 @@ class Object(gws.Node, gws.IActionManager):
                     d[a.extType] = a
         return list(d.values())
 
-    def get_action(self, desc):
-        return self.index.get(desc.owner.extName)
+    def get_action(self, ext_name):
+        return self.index.get(ext_name)
