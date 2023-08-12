@@ -98,21 +98,25 @@ def handle_error(req: gws.IWebRequester, exc: Exception) -> gws.IWebResponder:
     if isinstance(exc, gws.base.web.error.HTTPException):
         return handle_http_error(req, exc)
 
-    exc2 = None
+    web_exc = None
+
+    # convert our generic errors to http errors
 
     if isinstance(exc, gws.NotFoundError):
-        exc2 = gws.base.web.error.NotFound()
-    if isinstance(exc, gws.ForbiddenError):
-        exc2 = gws.base.web.error.Forbidden()
-    if isinstance(exc, gws.BadRequestError):
-        exc2 = gws.base.web.error.BadRequest()
+        web_exc = gws.base.web.error.NotFound()
+    elif isinstance(exc, gws.ForbiddenError):
+        web_exc = gws.base.web.error.Forbidden()
+    elif isinstance(exc, gws.BadRequestError):
+        web_exc = gws.base.web.error.BadRequest()
+    elif isinstance(exc, gws.ResponseTooLargeError):
+        web_exc = gws.base.web.error.Conflict()
 
-    if exc2:
-        exc2.__cause__ = exc
-        return handle_http_error(req, exc2)
+    if web_exc:
+        web_exc.__cause__ = exc
+        return handle_http_error(req, web_exc)
 
     gws.log.exception()
-    return req.error_responder(gws.base.web.error.InternalServerError())
+    return handle_http_error(req, gws.base.web.error.InternalServerError())
 
 
 def handle_http_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPException) -> gws.IWebResponder:
