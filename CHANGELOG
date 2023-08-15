@@ -1,3 +1,9 @@
+## Version 8.0.10
+
+- GekoS support
+- adress search in ALKIS
+- better error messages in backend
+
 ## Version 8.0.9
 
 - postgres support improved
