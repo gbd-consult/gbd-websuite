@@ -28,11 +28,7 @@ _GRID_DEFAULTS = gws.TileGrid(
 )
 
 
-class Object(gws.base.layer.Object):
-    canRenderBox = True
-    canRenderXyz = True
-    canRenderSvg = False
-
+class Object(gws.base.layer.image.Object):
     provider: provider.Object
 
     def configure(self):
