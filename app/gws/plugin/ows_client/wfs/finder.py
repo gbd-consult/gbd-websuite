@@ -1,15 +1,14 @@
-"""QGIS Server-based Finder."""
+"""WFS Finder."""
 
 import gws
-import gws.base.model
-import gws.base.search
 import gws.base.ows.client
+import gws.base.search
 import gws.gis.source
 import gws.types as t
 
 from . import provider
 
-gws.ext.new.finder('qgislocal')
+gws.ext.new.finder('wfs')
 
 
 class Config(gws.base.search.finder.Config):
@@ -25,9 +24,3 @@ class Object(gws.base.ows.client.finder.Object):
 
     def configure_provider(self):
         self.provider = provider.get_for(self)
-
-    def can_run(self, search, user):
-        return (
-                super().can_run(search, user)
-                and bool(search.shape)
-                and search.shape.type == gws.GeometryType.point)

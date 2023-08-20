@@ -3,7 +3,6 @@ import gws.base.layer
 import gws.gis.crs
 import gws.gis.bounds
 import gws.gis.extent
-import gws.gis.ows
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.metadata
@@ -24,9 +23,7 @@ class Config(gws.base.layer.Config):
     """source layers to use"""
 
 
-class Object(gws.base.layer.Object):
-    canRenderBox = True
-
+class Object(gws.base.layer.image.Object):
     provider: provider.Object
     sqlFilters: dict
     imageLayers: list[gws.SourceLayer]

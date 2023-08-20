@@ -8,7 +8,6 @@ import gws.lib.net
 import gws.lib.jsonx
 import gws.gis.source
 import gws.gis.crs
-import gws.gis.ows
 import gws.gis.bounds
 
 import gws.types as t

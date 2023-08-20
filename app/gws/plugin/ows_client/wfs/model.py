@@ -1,4 +1,4 @@
-"""QGIS Server-based Model."""
+"""WFS model."""
 
 import gws
 import gws.base.model
@@ -8,12 +8,12 @@ import gws.types as t
 
 from . import provider
 
-gws.ext.new.model('qgislocal')
+gws.ext.new.model('wfs')
 
 
 class Config(gws.base.model.Config):
     provider: t.Optional[provider.Config]
-    """WMS provider"""
+    """WFS provider"""
     sourceLayers: t.Optional[gws.gis.source.LayerFilter]
     """Source layers to search for."""
 

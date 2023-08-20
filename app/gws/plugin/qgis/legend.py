@@ -3,7 +3,6 @@
 import gws
 import gws.base.legend
 import gws.lib.mime
-import gws.gis.ows
 import gws.gis.source
 import gws.lib.image
 

@@ -823,6 +823,20 @@ class SourceLayer(Data):
 # ----------------------------------------------------------------------------------------------------------------------
 # XML
 
+
+class XmlNamespace(Data):
+    """XML namespace"""
+
+    xmlns: str
+    """namespace name"""
+    uri: Url
+    """namespace uri"""
+    schemaLocation: Url
+    """namespace schema location"""
+    version: str
+    """namespace version"""
+
+
 class IXmlElement(Iterable):
     # ElementTree API
 
@@ -1707,6 +1721,7 @@ class Metadata(Data):
     isoQualityLineageSourceScale: Optional[int]
     isoQualityLineageStatement: Optional[str]
     isoRestrictionCode: Optional[str]
+    isoServiceFunction: Optional[str]
     isoScope: Optional[str]
     isoScopeName: Optional[str]
     isoSpatialRepresentationType: Optional[str]
@@ -1757,6 +1772,12 @@ class SearchQuery(Data):
     tolerance: 'Measurement'
     uids: list[str]
     views: list[str]
+
+
+class SearchResult(Data):
+    feature: 'IFeature'
+    layer: 'ILayer'
+    finder: 'IFinder'
 
 
 class TextSearchType(Enum):
@@ -1847,6 +1868,23 @@ class LayerDisplayMode(Enum):
     """draw a layer in the client"""
 
 
+class LayerClientOptions(Data):
+    """Client options for a layer"""
+
+    expanded: bool
+    """the layer is expanded in the list view"""
+    unlisted: bool
+    """the layer is hidden in the list view"""
+    selected: bool
+    """the layer is intially selected"""
+    hidden: bool
+    """the layer is intially hidden"""
+    unfolded: bool
+    """the layer is not listed, but its children are"""
+    exclusive: bool
+    """only one of this layer's children is visible at a time"""
+
+
 class TileGrid(Data):
     uid: str
     bounds: Bounds
@@ -1872,24 +1910,37 @@ class FeatureLoadingStrategy(Enum):
     """load features on demand"""
 
 
+class LayerOwsOptions(Data):
+    enabled: bool
+    layerName: str
+    featureName: str
+    xmlNamespace: 'XmlNamespace'
+    geometryName: str
+
+
 class ILayer(INode, Protocol):
     canRenderBox: bool
-    canRenderXyz: bool
     canRenderSvg: bool
+    canRenderXyz: bool
 
-    supportsRasterServices: bool
-    supportsVectorServices: bool
-
+    isEnabledForOws: bool
+    isGroup: bool
     isSearchable: bool
 
+    hasLegend: bool
+
     bounds: Bounds
+    wgsExtent: Extent
     mapCrs: 'ICrs'
+    clientOptions: LayerClientOptions
     displayMode: LayerDisplayMode
     loadingStrategy: FeatureLoadingStrategy
     imageFormat: str
     opacity: float
     resolutions: list[float]
     title: str
+
+    owsOptions: Optional['LayerOwsOptions']
 
     grid: Optional[TileGrid]
     cache: Optional[LayerCache]
@@ -1966,16 +2017,29 @@ class OwsOperation(Data):
     verb: OwsVerb
 
 
+class OwsCapabilities(Data):
+    metadata: 'Metadata'
+    operations: list['OwsOperation']
+    sourceLayers: list['SourceLayer']
+    tileMatrixSets: list['TileMatrixSet']
+    version: str
+
+
 class IOwsService(INode, Protocol):
+    isRasterService: bool
+    isVectorService: bool
+
     metadata: 'Metadata'
     name: str
     protocol: OwsProtocol
-    supported_bounds: list[Bounds]
-    supported_versions: list[str]
+    supportedBounds: list[Bounds]
+    supportedVersions: list[str]
+    supportedOperations: list['OwsOperation']
     templates: list['ITemplate']
+    updateSequence: str
     version: str
-    with_inspire_meta: bool
-    with_strict_params: bool
+    withInspireMeta: bool
+    withStrictParams: bool
 
     def handle_request(self, req: 'IWebRequester') -> ContentResponse: ...
 
@@ -2001,11 +2065,6 @@ class IOwsModel(IModel, Protocol):
     sourceLayers: list['SourceLayer']
 
     def get_operation(self, verb: OwsVerb, method: Optional[RequestMethod] = None) -> Optional[OwsOperation]: ...
-
-
-class IOwsClient(INode, Protocol):
-    provider: 'IOwsProvider'
-    sourceLayers: list['SourceLayer']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -2056,6 +2115,7 @@ class IProject(INode, Protocol):
     finders: list['IFinder']
     models: list['IModel']
     templates: list['ITemplate']
+    owsServices: list['IOwsService']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -2097,6 +2157,7 @@ class IApplication(INode, Protocol):
     finders: list['IFinder']
     templates: list['ITemplate']
     models: list['IModel']
+    owsServices: list['IOwsService']
 
     def register_middleware(self, name: str, obj: IMiddleware, depends_on=Optional[list[str]]): ...
 

@@ -104,6 +104,8 @@ class Config(gws.ConfigWithAccess):
     """application metadata"""
     models: t.Optional[list[gws.ext.config.model]]
     """global data models"""
+    owsServices: t.Optional[list[gws.ext.config.owsService]]
+    """OWS services configuration"""
     plugins: t.Optional[list[dict]]
     """configuration for plugins"""
     projectDirs: t.Optional[list[gws.DirPath]]
@@ -192,6 +194,7 @@ class Object(gws.Node, gws.IApplication):
         self.finders = self.create_children(gws.ext.object.finder, self.cfg('finders'))
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
         self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
+        self.owsServices = self.create_children(gws.ext.object.owsService, self.cfg('owsServices'))
 
         for cfg in _DEFAULT_TEMPLATES:
             self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))

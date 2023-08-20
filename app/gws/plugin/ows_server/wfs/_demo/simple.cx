@@ -1,0 +1,56 @@
+@comment
+
+Simple WFS service, provides a single Postgres layer.
+
+@end
+
+projects+ {
+    title "OWS: WFS Service"
+    metadata.abstract """
+        Simple `WFS` service:
+            see [<a href='/_/owsService/serviceUid/simple_wfs_service/projectUid/gws.plugin.ows_server.wfs._demo.simple?request=GetCapabilities'>link</a>]
+        """
+
+    owsServices+ {
+        type "wfs"
+        uid "simple_wfs_service"
+        metadata {
+            abstract "Simple WFS service"
+            keywords ["test" "wfs" "demo"]
+            name "SIMPLE_WFS"
+            title "Simple WFS"
+            {demo_metadata}
+        }
+    }
+
+    api.actions+ {
+        type "ows"
+    }
+
+    map {
+        extent [
+            {demo_point_duesseldorf_3857[0] - 20000}
+            {demo_point_duesseldorf_3857[1] - 20000}
+            {demo_point_duesseldorf_3857[0] + 20000}
+            {demo_point_duesseldorf_3857[1] + 20000}
+        ]
+        zoom.initScale 30000
+        zoom.minScale  1000
+        zoom.maxScale  1000000
+    }
+
+    map.layers+ {
+        title "POIs"
+        type "postgres"
+        tableName "edit.poi"
+
+        ows.xmlNamespace {
+            xmlns "test"
+            uri "http://test.namespace"
+schemaLocation "http://foo"
+version "1"
+        }
+
+    }
+
+}

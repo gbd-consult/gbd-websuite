@@ -2,12 +2,12 @@
 
 import gws
 import gws.base.database
+import gws.base.ows.client
 import gws.plugin.postgres.provider
 import gws.lib.metadata
 import gws.lib.net
 import gws.lib.mime
 import gws.gis.crs
-import gws.gis.ows
 import gws.gis.source
 import gws.gis.extent
 import gws.lib.net
@@ -197,7 +197,7 @@ class Object(gws.Node, gws.IOwsProvider):
 
         res = self.call_server(params)
 
-        fdata = gws.gis.ows.featureinfo.parse(res.text, default_crs=request_crs, always_xy=self.alwaysXY)
+        fdata = gws.base.ows.client.featureinfo.parse(res.text, default_crs=request_crs, always_xy=self.alwaysXY)
 
         if fdata is None:
             gws.log.debug(f'get_features: NOT_PARSED params={params!r}')

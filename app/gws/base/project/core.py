@@ -34,6 +34,8 @@ class Config(gws.ConfigWithAccess):
     """data models"""
     overviewMap: t.Optional[gws.base.map.Config]
     """Overview map configuration"""
+    owsServices: t.Optional[list[gws.ext.config.owsService]]
+    """OWS services configuration"""
     printer: t.Optional[gws.base.printer.Config]
     """print configuration"""
     templates: t.Optional[list[gws.ext.config.template]]
@@ -63,15 +65,13 @@ class Object(gws.Node, gws.IProject):
     def configure(self):
         gws.log.info(f'configuring project {self.uid!r}')
 
-        self.metadata = gws.lib.metadata.from_config(self.cfg('metadata'))
-        gws.lib.metadata.extend(self.metadata, self.root.app.metadata)
+        self.metadata = gws.lib.metadata.merge(
+            self.root.app.metadata,
+            gws.lib.metadata.from_config(self.cfg('metadata')))
 
-        # title at the top level config preferred
         title = self.cfg('title') or self.metadata.get('title') or self.cfg('uid')
-        self.metadata.title = title
-        self.title = title
-
-        self.actionMgr = self.create_child_if_configured(gws.base.action.manager.Object, self.cfg('api'))
+        # title at the top level config preferred to metadata
+        self.title = self.metadata.title = title
 
         p = self.cfg('assets')
         self.assetsRoot = gws.WebDocumentRoot(p) if p else None
@@ -79,15 +79,14 @@ class Object(gws.Node, gws.IProject):
         self.localeUids = self.cfg('locales') or self.root.app.localeUids
 
         self.map = self.create_child_if_configured(gws.ext.object.map, self.cfg('map'))
-        self.printer = self.create_child_if_configured(gws.base.printer.Object, self.cfg('printer'))
-
         self.overviewMap = self.create_child_if_configured(gws.base.map.Object, self.cfg('overviewMap'))
-
-        self.finders = self.create_children(gws.ext.object.finder, self.cfg('finders'))
+        self.printer = self.create_child_if_configured(gws.base.printer.Object, self.cfg('printer'))
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
+        self.finders = self.create_children(gws.ext.object.finder, self.cfg('finders'))
         self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
-
         self.client = self.create_child_if_configured(gws.base.client.Object, self.cfg('client'))
+        self.owsServices = self.create_children(gws.ext.object.owsService, self.cfg('owsServices'))
+        self.actionMgr = self.create_child_if_configured(gws.base.action.manager.Object, self.cfg('api'))
 
     def props(self, user):
         desc = None
