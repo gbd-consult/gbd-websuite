@@ -1,11 +1,9 @@
 """Pure python templates.
 
 A template is a python module that has a function `main`,
-which receives a Data object with context vars
-and should return a `gws.ContentResponse` object.
+which receives a dict with template arguments
+and is supposed return a `gws.ContentResponse` object.
 """
-
-import re
 
 import gws
 import gws.base.template
@@ -44,6 +42,7 @@ class Object(gws.base.template.Object):
         try:
             res = entrypoint(args)
         except Exception as exc:
+            # @TODO stack traces with the filename
             gws.log.exception()
             raise gws.Error(f'py error: {exc!r} path={self.path!r}') from exc
 
