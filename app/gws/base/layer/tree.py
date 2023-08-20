@@ -17,13 +17,6 @@ class FlattenConfig(gws.Config):
     """use group names (true) or image layer names (false)"""
 
 
-class CustomConfigElement(gws.ConfigWithAccess):
-    """Custom layer configuration"""
-
-    applyTo: t.Optional[gws.gis.source.LayerFilter]
-    config: core.Config
-
-
 class Config(gws.Config):
     rootLayers: t.Optional[gws.gis.source.LayerFilter]
     """source layers to use as roots"""
@@ -31,7 +24,7 @@ class Config(gws.Config):
     """source layers to exclude"""
     flattenLayers: t.Optional[FlattenConfig]
     """flatten the layer hierarchy"""
-    customConfig: t.Optional[list[CustomConfigElement]]
+    customConfig: t.Optional[list[core.CustomConfigElement]]
     """custom configurations for specific layers"""
 
 
@@ -41,7 +34,7 @@ class TreeConfigArgs(gws.Data):
     roots_slf: gws.gis.source.LayerFilter
     exclude_slf: gws.gis.source.LayerFilter
     flatten_config: FlattenConfig
-    custom_configs: list[CustomConfigElement]
+    custom_configs: list[core.CustomConfigElement]
     leaf_layer_maker: t.Callable
 
 

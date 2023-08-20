@@ -23,6 +23,7 @@ class Props(core.Props):
 
 
 class Object(core.Object):
+    isGroup = True
 
     def configure(self):
         self.configure_group()
@@ -63,9 +64,6 @@ class Object(core.Object):
         self.canRenderBox = any(la.canRenderBox for la in self.layers)
         self.canRenderXyz = any(la.canRenderXyz for la in self.layers)
         self.canRenderSvg = any(la.canRenderSvg for la in self.layers)
-
-        self.supportsRasterServices = any(la.supportsRasterServices for la in self.layers)
-        self.supportsVectorServices = any(la.supportsVectorServices for la in self.layers)
 
         self.isSearchable = any(la.isSearchable for la in self.layers)
 

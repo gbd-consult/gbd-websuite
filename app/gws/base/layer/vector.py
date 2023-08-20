@@ -6,18 +6,16 @@ import gws.lib.style
 import gws.lib.svg
 import gws.types as t
 
-from . import core, util
+from . import core
 
 
 class Object(core.Object):
     """Base vector layer"""
 
-    canRenderBox = True
+    # @TODO rasterize vector layers
+    canRenderBox = False
     canRenderXyz = False
     canRenderSvg = True
-
-    supportsRasterServices = True
-    supportsVectorServices = True
 
     geometryType: t.Optional[gws.GeometryType] = None
     geometryCrs: t.Optional[gws.ICrs] = None

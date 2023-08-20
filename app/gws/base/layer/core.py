@@ -13,25 +13,11 @@ import gws.gis.zoom
 import gws.lib.metadata
 import gws.lib.style
 import gws.lib.svg
+import gws.lib.xmlx
 
 import gws.types as t
 
-
-class ClientOptions(gws.Data):
-    """Client options for a layer"""
-
-    expanded: t.Optional[bool] = False
-    """the layer is expanded in the list view"""
-    unlisted: t.Optional[bool] = False
-    """the layer is hidden in the list view"""
-    selected: t.Optional[bool] = False
-    """the layer is intially selected"""
-    hidden: t.Optional[bool] = False
-    """the layer is intially hidden"""
-    unfolded: t.Optional[bool] = False
-    """the layer is not listed, but its children are"""
-    exclusive: t.Optional[bool] = False
-    """only one of this layer's children is visible at a time"""
+DEFAULT_TILE_SIZE = 256
 
 
 class CacheConfig(gws.Config):
@@ -55,12 +41,43 @@ class GridConfig(gws.Config):
     tileSize: t.Optional[int]
 
 
+class CustomConfigElement(gws.ConfigWithAccess):
+    """Custom layer configuration"""
+
+    applyTo: t.Optional[gws.gis.source.LayerFilter]
+    config: 'Config'
+
+
+class OwsConfig(gws.Config):
+    layerName: str = ''
+    featureName: str = ''
+    geometryName: str = ''
+    xmlNamespace: t.Optional[gws.XmlNamespace]
+
+
+class ClientConfig(gws.Data):
+    """Client options for a layer"""
+
+    expanded: bool = False
+    """the layer is expanded in the list view"""
+    unlisted: bool = False
+    """the layer is hidden in the list view"""
+    selected: bool = False
+    """the layer is intially selected"""
+    hidden: bool = False
+    """the layer is intially hidden"""
+    unfolded: bool = False
+    """the layer is not listed, but its children are"""
+    exclusive: bool = False
+    """only one of this layer's children is visible at a time"""
+
+
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
     cache: t.Optional[CacheConfig]
     """cache configuration"""
-    clientOptions: ClientOptions = {}
+    clientOptions: ClientConfig = {}
     """options for the layer display in the client"""
     cssSelector: str = ''
     """css selector for feature layers"""
@@ -86,6 +103,8 @@ class Config(gws.ConfigWithAccess):
     """data models"""
     opacity: float = 1
     """layer opacity"""
+    ows: t.Optional[OwsConfig]
+    """configuration for OWS services"""
     templates: t.Optional[list[gws.ext.config.template]]
     """layer templates"""
     title: str = ''
@@ -110,7 +129,7 @@ class GridProps(gws.Props):
 
 
 class Props(gws.Props):
-    clientOptions: ClientOptions
+    clientOptions: gws.LayerClientOptions
     cssSelector: str
     displayMode: str
     extent: t.Optional[gws.Extent]
@@ -128,29 +147,27 @@ class Props(gws.Props):
     url: str = ''
 
 
-_DEFAULT_TILE_SIZE = 256
-
-
 class Object(gws.Node, gws.ILayer):
     parent: gws.ILayer
 
-    clientOptions: ClientOptions
+    clientOptions: gws.LayerClientOptions
     cssSelector: str
 
     canRenderBox = False
-    canRenderXyz = False
     canRenderSvg = False
+    canRenderXyz = False
 
-    supportsRasterServices = False
-    supportsVectorServices = False
-
+    isEnabledForOws = False
+    isGroup = False
     isSearchable = False
+
+    hasLegend = False
 
     parentBounds: gws.Bounds
     parentResolutions: list[float]
 
     def configure(self):
-        self.clientOptions = self.cfg('clientOptions')
+        self.clientOptions = self.cfg('clientOptions') or gws.Data()
         self.cssSelector = self.cfg('cssSelector')
         self.displayMode = self.cfg('display')
         self.loadingStrategy = self.cfg('loadingStrategy')
@@ -177,6 +194,7 @@ class Object(gws.Node, gws.ILayer):
 
         self.grid = None
         self.cache = None
+        self.owsOptions = None
 
         setattr(self, 'provider', None)
         self.sourceLayers = []
@@ -194,18 +212,7 @@ class Object(gws.Node, gws.ILayer):
         self.configure_metadata()
         self.configure_templates()
         self.configure_search()
-
-    def post_configure(self):
-        self.isSearchable = bool(self.finders)
-
-        if self.bounds.crs != self.mapCrs:
-            raise gws.Error(f'layer {self!r}: invalid CRS {self.bounds.crs}')
-
-        if not gws.gis.bounds.intersect(self.bounds, self.parentBounds):
-            raise gws.Error(f'layer {self!r}: bounds outside of the parent bounds')
-
-        if self.legend:
-            self.legendUrl = self.url_path('legend')
+        self.configure_ows()
 
     ##
 
@@ -230,7 +237,7 @@ class Object(gws.Node, gws.ILayer):
                 raise gws.Error(f'layer {self!r}: invalid target grid crs')
             self.grid = gws.TileGrid(
                 origin=p.origin or gws.Origin.nw,
-                tileSize=p.tileSize or _DEFAULT_TILE_SIZE,
+                tileSize=p.tileSize or DEFAULT_TILE_SIZE,
                 bounds=gws.Bounds(crs=self.bounds.crs, extent=p.extent),
                 resolutions=p.resolutions)
             return True
@@ -304,6 +311,34 @@ class Object(gws.Node, gws.ILayer):
             ls.append(self.create_child(gws.ext.object.layer, cfg))
 
         self.layers = gws.compact(ls)
+
+    def configure_ows(self):
+        self.isEnabledForOws = self.cfg('withOws')
+
+        p = self.cfg('ows') or gws.Data()
+        self.owsOptions = gws.LayerOwsOptions(
+            layerName=p.layerName or gws.to_uid(self.title),
+            featureName=p.featureName or gws.to_uid(self.title),
+            geometryName=p.geometryName or 'geometry',
+            xmlNamespace=p.xmlNamespace,
+        )
+
+    ##
+
+    def post_configure(self):
+        self.isSearchable = bool(self.finders)
+        self.hasLegend = bool(self.legend)
+
+        if self.bounds.crs != self.mapCrs:
+            raise gws.Error(f'layer {self!r}: invalid CRS {self.bounds.crs}')
+
+        if not gws.gis.bounds.intersect(self.bounds, self.parentBounds):
+            raise gws.Error(f'layer {self!r}: bounds outside of the parent bounds')
+
+        self.wgsExtent = gws.gis.bounds.transform(self.bounds, gws.gis.crs.WGS84).extent
+
+        if self.legend:
+            self.legendUrl = self.url_path('legend')
 
     ##
 
