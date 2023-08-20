@@ -124,6 +124,10 @@ class DataSet:
 
         return Layer(gd_layer)
 
+    def layers(self):
+        cnt = self.gdDataset.GetLayerCount()
+        return [Layer(self.gdDataset.GetLayerByIndex(n)) for n in range(cnt)]
+
     def layer(self, name) -> t.Optional['Layer']:
         gd_layer = self.gdDataset.GetLayer(name)
         return Layer(gd_layer) if gd_layer else None
@@ -210,9 +214,6 @@ class Layer:
 
         return desc
 
-    def count(self):
-        return self.gdLayer.GetFeatureCount()
-
     def insert(self, fds: list[gws.FeatureData], encoding: str = None) -> list[int]:
         desc = self.describe()
         fids = []
@@ -248,8 +249,12 @@ class Layer:
 
         return fids
 
+    def count(self, force=False):
+        return self.gdLayer.GetFeatureCount(force=1 if force else 0)
+
     def get_all(self, default_srid: int = 0, encoding: str = None) -> list[gws.FeatureData]:
         fds = []
+        self.gdLayer.ResetReading()
         while True:
             gd_feature = self.gdLayer.GetNextFeature()
             if not gd_feature:
