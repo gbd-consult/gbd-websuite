@@ -2,14 +2,8 @@ import gws
 import gws.types as t
 
 
-class Result(gws.Data):
-    feature: gws.IFeature
-    layer: gws.ILayer
-    finder: gws.IFinder
-
-
-def run(root: gws.IRoot, search: gws.SearchQuery, user: gws.IUser) -> list[Result]:
-    results: list[Result] = []
+def run(root: gws.IRoot, search: gws.SearchQuery, user: gws.IUser) -> list[gws.SearchResult]:
+    results: list[gws.SearchResult] = []
 
     if search.layers:
         used_layer_ids = set()
@@ -72,7 +66,7 @@ def _run(
     for feature in features:
         if not feature.layerName and layer:
             feature.layerName = layer.title
-        results.append(Result(feature=feature, layer=layer, finder=finder))
+        results.append(gws.SearchResult(feature=feature, layer=layer, finder=finder))
         if len(results) > search.limit:
             break
 

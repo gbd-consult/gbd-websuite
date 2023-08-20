@@ -72,16 +72,19 @@ class Object(gws.Node, gws.IFinder):
 
         if search.keyword:
             if not self.supportsKeywordSearch or not self.withKeyword:
+                gws.log.debug(f'can run: False: {self} {search.keyword=} {self.supportsKeywordSearch=} {self.withKeyword=}')
                 return False
             has_param = True
 
         if search.shape:
             if not self.supportsGeometrySearch or not self.withGeometry:
+                gws.log.debug(f'can run: False: {self} <shape> {self.supportsGeometrySearch=} {self.withGeometry=}')
                 return False
             has_param = True
 
         if search.ogcFilter:
             if not self.supportsFilterSearch or not self.withFilter:
+                gws.log.debug(f'can run: False: {self} {search.ogcFilter=} {self.supportsFilterSearch=} {self.withFilter=}')
                 return False
             has_param = True
 
