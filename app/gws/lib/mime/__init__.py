@@ -9,8 +9,9 @@ CSS = 'text/css'
 CSV = 'text/csv'
 GEOJSON = 'application/geojson'
 GIF = 'image/gif'
-GML = 'application/vnd.ogc.gml'
-GML3 = 'application/vnd.ogc.gml/3.1.1'
+GML = 'application/gml+xml'
+GML2 = 'application/gml+xml; version=2'
+GML3 = 'application/gml+xml; version=3'
 GZIP = 'application/gzip'
 HTML = 'text/html'
 JPEG = 'image/jpeg'
@@ -71,11 +72,11 @@ _common_extensions = {
 }
 
 _aliases = {
-    'application/gml+xml': GML,
-    'application/gml+xml; version=2': GML,
-    'application/gml+xml; version=3': GML3,
+
+    'application/vnd.ogc.gml': GML,
+    'application/vnd.ogc.gml/3.1.1': GML3,
     'application/gml:3': GML3,
-    'application/xml; subtype=gml/2': GML,
+    'application/xml; subtype=gml/2': GML2,
     'application/xml; subtype=gml/3': GML3,
 
     'application/html': HTML,
