@@ -13,6 +13,34 @@
     }
 @end
 
+@let demo_metadata
+    attribution { title "(c) Geoinformatikbüro Dassau GmbH" url "http://gbd-websuite.de" }
+    fees "free"
+    language "de"
+    license { title "GPL" url "https://www.gnu.org/licenses/gpl-3.0.en.html" }
+    contactAddress "Rethelstrasse 153"
+    contactAddressType "postal"
+    contactArea "NRW"
+    contactCity "Düsseldorf"
+    contactCountry "Germany"
+    contactEmail "info@gbd-consult.de"
+    contactFax "+49 (0)211 699 377 50"
+    contactOrganization "Geoinformatikbüro Dassau GmbH"
+    contactPerson "Administrator"
+    contactPhone "+49 (0)211 699 377 50"
+    contactPosition "CTO"
+    contactProviderName "GBD"
+    contactProviderSite "https://www.gbd-consult.de"
+    contactRole "admin"
+    contactUrl "https://www.gbd-consult.de"
+    contactZip "40237"
+
+    dateBegin "2023-01-02"
+    dateCreated "2023-01-02"
+    dateEnd "2023-01-02"
+    dateUpdated "2023-01-02"
+@end
+
 @def demo_map(**kw)
 
     @with kw.crs
@@ -63,14 +91,6 @@
             {
                 pattern "^/project/([a-z0-9_.-]+)(/@.*)?$"
                 target "/_/webAsset/projectUid/$1/path/project.cx.html"
-            }
-            {
-                pattern "^/(wms|wmts|wfs|wcs)"
-                target "/_/owsService/serviceUid/$1_service/projectUid/$1_service_project"
-            }
-            {
-                pattern "^/csw"
-                target "/_/owsService/serviceUid/csw_service"
             }
         ]
         errorPage {
