@@ -14,6 +14,13 @@ OGC_SCREEN_PPI = MM_PER_IN / (OGC_M_PER_PX * 1000)  # 90.71
 
 PDF_DPI = 96
 
+# 1 centrimeter precision
+
+DEFAULT_PRECISION = {
+    gws.Uom.deg: 7,
+    gws.Uom.m: 2,
+}
+
 _number = int | float
 
 
