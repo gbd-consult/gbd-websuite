@@ -87,7 +87,7 @@ class Object(gws.Node, gws.IMap):
         )
 
         if not self.rootLayer:
-            raise gws.Error(f'invalid map {self!r}')
+            raise gws.Error(f'missing or invalid root layer in {self!r}')
 
     def props(self, user):
         return gws.Data(
