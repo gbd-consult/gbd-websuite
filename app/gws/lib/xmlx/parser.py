@@ -56,18 +56,17 @@ class _ParserTarget:
         self.normalize_namespaces = normalize_namespaces
 
     def convert_name(self, s):
-        if s[0] != '{':
-            return s.lower() if self.case_insensitive else s
-        uri, name = s[1:].split('}')
-        if self.case_insensitive:
-            name = name.lower()
+        xmlns, uri, pname = namespace.split_name(s)
+        pname = pname.lower() if self.case_insensitive else pname
+        if not xmlns and not uri:
+            return pname
         if self.remove_namespaces:
-            return name
+            return pname
         if self.normalize_namespaces:
-            pfx = namespace.prefix_for_uri(uri)
-            if pfx:
-                uri = namespace.uri_for_prefix(pfx)
-        return '{' + uri + '}' + name
+            ns = namespace.find_by_uri(uri)
+            if ns:
+                uri = ns.uri
+        return '{' + uri + '}' + pname
 
     def make(self, tag, attrib):
         attrib2 = {}

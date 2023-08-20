@@ -11,207 +11,229 @@ import gws.types as t
 from . import error
 
 
-class NamespaceManager:
-    def __init__(self):
-        self._prefix_to_uri = {}
-        self._uri_to_prefix = {}
-        self._prefix_to_version = {}
-        self._prefix_to_schema = {}
+def find_by_uri(uri: str) -> t.Optional[gws.XmlNamespace]:
+    """Locate the Namespace by an Uri.
 
-        for ln in _KNOWN_NAMESPACES.strip().split('\n'):
-            ln = ln.strip()
-            if not ln:
-                continue
-            pfx, version, uri, schema = [s.strip() for s in ln.split('|')]
-            if uri:
-                uri = 'http://' + uri
-            self._prefix_to_uri[pfx] = uri
-            self._uri_to_prefix[uri] = pfx
-            if version:
-                self._prefix_to_version[pfx] = version
-                self._uri_to_prefix[uri + '/' + version] = pfx
-            if schema:
-                self._prefix_to_schema[pfx] = 'http://' + schema
+    If the Uri ends with a version number, and there is no namespace
+    for this specific Uri, try to locate a non-versioned Uri.
+    That is, ``http://www.opengis.net/gml/9999`` will look up for ``http://www.opengis.net/gml``.
 
-    def uri_for_prefix(self, prefix: str) -> str | None:
-        """Returns an Uri for a canonical prefix.
+    Args:
+        uri: An Uri like ``http://www.opengis.net/gml``.
+    Returns:
+        A Namespace.
+    """
 
-        Args:
-            prefix: Canonical prefix, e.g. ``gml``.
-        Returns:
-            Namespace Uri, e.g. ``http://www.opengis.net/gml``.
-        """
-        return self._prefix_to_uri.get(prefix)
+    ns = _INDEX.uri.get(uri)
+    if ns:
+        return ns
 
-    def prefix_for_uri(self, uri):
-        """Returns the canonical prefix for a namespace Uri.
+    base_uri, version = _parse_versioned_uri(uri)
+    if version:
+        ns = _INDEX.uri.get(base_uri)
+        if ns:
+            _INDEX.uri[uri] = ns
+            return ns
 
-        If the Uri ends with a version number, and there is no prefix
-        for this specific Uri, the function tries to locate a non-versioned Uri.
-        That is, ``http://www.opengis.net/gml/3.2 -> http://www.opengis.net/gml -> 'gml'``.
 
-        Args:
-            uri: An Uri like ``http://www.opengis.net/gml``.
-        Returns:
-            Canonical prefix, e.g. ``gml``.
-        """
+def find_by_xmlns(xmlns: str) -> t.Optional[gws.XmlNamespace]:
+    """Locate the Namespace by a name.
 
-        pfx = self._uri_to_prefix.get(uri)
-        if pfx:
-            return pfx
+    Args:
+        xmlns: A name like ``gml``.
+    Returns:
+        A Namespace.
+    """
 
-        # try with a version removed
-        m = re.match(r'(.+?)/[\d.]+$', uri)
-        if m:
-            pfx = self._uri_to_prefix.get(m.group(1))
-            if pfx:
-                # cache for future use
-                self._uri_to_prefix[uri] = pfx
-                return pfx
+    return _INDEX.xmlns.get(xmlns)
 
-    def parse_name(self, name):
-        """Parses an XML name.
 
-        Args:
-            name: XML name.
-        Returns:
-            A triple ``(canonical prefix, Uri, proper name)``.
-        """
+def get(xmlns_or_uri: str) -> t.Optional[gws.XmlNamespace]:
+    return find_by_xmlns(xmlns_or_uri) or find_by_uri(xmlns_or_uri)
 
-        if name and name[0] == '{':
-            s = name[1:].split('}')
-            return self.prefix_for_uri(s[0]), s[0], s[1]
 
-        if ':' in name:
-            s = name.split(':')
-            return s[0], self.uri_for_prefix(s[0]), s[1]
+def register(ns: gws.XmlNamespace):
+    """Register a Namespace.
 
+    Args:
+        ns: Namespace
+    """
+
+    if ns.uri not in _INDEX.uri:
+        _INDEX.uri[ns.uri] = ns
+        _INDEX.xmlns[ns.xmlns] = ns
+
+
+def split_name(name: str) -> tuple[str, str, str]:
+    """Parses an XML name.
+
+    Args:
+        name: XML name.
+    Returns:
+        A tuple ``(xmlns, uri, proper name)``.
+    """
+
+    if not name:
         return '', '', name
 
-    def unqualify(self, name):
-        """Returns an unqualified XML name."""
+    if name[0] == '{':
+        s = name.split('}')
+        return '', s[0][1:], s[1]
 
-        _, _, name = self.parse_name(name)
-        return name
+    if ':' in name:
+        s = name.split(':')
+        return s[0], '', s[1]
 
-    def qualify(self, name: str, default_prefix: str = ''):
-        """Qualifies an XML name.
+    return '', '', name
 
-        If the name does not contain a namespace, returns it as is.
-        If the namespace prefix is equal to the default prefix, returns a proper name.
-        Othewise, returns ``prefix:name``.
 
-        Args:
-            name: An XML name.
-            default_prefix: Default namespace prefix.
-        Returns:
-            A quailified name.
-        """
+def parse_name(name: str) -> tuple[t.Optional[gws.XmlNamespace], str]:
+    xmlns, uri, pname = split_name(name)
 
-        pfx, uri, name = self.parse_name(name)
-        if not pfx:
-            if not uri:
-                return name
+    if xmlns:
+        ns = find_by_xmlns(xmlns)
+        if not ns:
+            raise error.NamespaceError(f'unknown namespace {xmlns!r}')
+        return ns, pname
+
+    if uri:
+        ns = find_by_uri(uri)
+        if not ns:
             raise error.NamespaceError(f'unknown namespace uri {uri!r}')
-        if pfx == default_prefix:
-            return name
-        return pfx + ':' + name
+        return ns, pname
 
-    def clarkify(self, name):
-        """Returns an XML name in the Clark notation."""
+    return None, pname
 
-        pfx, uri, name = self.parse_name(name)
-        if not uri:
-            if not pfx:
-                return name
-            raise error.NamespaceError(f'unknown namespace prefix {pfx!r}')
-        return '{' + uri + '}' + name
 
-    def register(self, prefix: str, uri: str, version: str = '', schema: str = ''):
-        """Registers a new namespace.
+def qualify_name(name: str, ns: gws.XmlNamespace, replace=False) -> str:
+    """Qualifies an XML name.
 
-        Args:
-            prefix: Canonical prefix.
-            uri: Namespace Uri.
-            version: Namespace version to use in ``xmlns`` declarations.
-            schema: Schema Uri.
-        """
+    If the name contains a namespace, return as is, otherwise, prepend the namespace.
 
-        self._prefix_to_uri[prefix] = uri
-        self._uri_to_prefix[uri] = prefix
-        if version is not None:
-            self._prefix_to_version[prefix] = version
-        if schema is not None:
-            self._prefix_to_schema[prefix] = schema
+    Args:
+        name: An XML name.
+        ns: A namespace.
+        replace: If true, replace the existing namespace.
+    Returns:
+        A quailified name.
+    """
 
-    def declarations(
-            self,
-            default_prefix: str = None,
-            for_element: gws.IXmlElement = None,
-            extra_prefixes: list[str] = None,
-            with_schema_locations: bool = False,
-    ) -> dict:
-        """Returns an xmlns declaration block as dictionary of attributes.
+    ns2, pname = parse_name(name)
+    if ns2 and not replace:
+        return ns2.xmlns + ':' + pname
+    if ns:
+        return ns.xmlns + ':' + pname
+    return pname
 
-        Args:
-            default_prefix: Default namespace prefix. For example,
-                if ``default_prefix`` is ``gml``, the declaration will be ``xmls=http://www.opengis.net/gml``).
-            for_element: If given, collect namespaces from this element
-                and its descendants.
-            extra_prefixes: Extra prefixes to create declarations for.
-            with_schema_locations: Add the "schema location" attribute.
 
-        Returns:
-            A dict of attributes.
-        """
+def unqualify_name(name: str) -> str:
+    """Returns an unqualified XML name."""
 
-        pfx_set = set()
+    _, _, name = split_name(name)
+    return name
 
-        if for_element:
-            self._collect_prefixes(for_element, pfx_set)
-        if extra_prefixes:
-            pfx_set.update(extra_prefixes)
-        if default_prefix:
-            pfx_set.add(default_prefix)
 
-        atts = []
-        schema_locations = []
+def unqualify_default(name: str, default_ns: gws.XmlNamespace) -> str:
+    """Removes the default namespace prefx.
 
-        for pfx in pfx_set:
-            uri = self._prefix_to_uri.get(pfx)
-            if not uri and pfx in self._uri_to_prefix:
-                # ns URI given instead of a prefix?
-                uri = pfx
-            if not uri:
-                raise error.NamespaceError(f'unknown namespace {pfx!r}')
-            version = self._prefix_to_version.get(pfx)
-            if version:
-                uri += '/' + version
-            atts.append((_XMLNS if pfx == default_prefix else _XMLNS + ':' + pfx, uri))
-            if with_schema_locations:
-                sch = self._prefix_to_schema.get(pfx)
-                if sch:
-                    schema_locations.append(uri)
-                    schema_locations.append(sch)
+    If the name contains the default namespace, remove it, otherwise return the name as is.
 
-        if schema_locations:
-            atts.append((_XMLNS + ':' + _XSI, _XSI_URL))
-            atts.append((_XSI + ':schemaLocation', ' '.join(schema_locations)))
+    Args:
+        name: An XML name.
+        default_ns: A namespace.
+    Returns:
+        The name.
+    """
 
-        return dict(sorted(atts))
+    ns, pname = parse_name(name)
+    if ns and ns.uri == default_ns.uri:
+        return pname
+    if ns:
+        return ns.xmlns + ':' + pname
+    return name
 
-    def _collect_prefixes(self, el: gws.IXmlElement, pfx_set):
-        pfx, uri, name = self.parse_name(el.tag)
-        if pfx:
-            pfx_set.add(pfx)
 
-        for key in el.attrib:
-            pfx, uri, name = self.parse_name(key)
-            if pfx:
-                pfx_set.add(name if pfx == _XMLNS else pfx)
+def clarkify_name(name: str) -> str:
+    """Returns an XML name in the Clark notation."""
 
-        for sub in el:
-            self._collect_prefixes(sub, pfx_set)
+    ns, pname = parse_name(name)
+    if ns:
+        return '{' + ns.uri + '}' + pname
+    return pname
+
+
+def declarations(
+        default_ns: t.Optional[gws.XmlNamespace] = None,
+        for_element: gws.IXmlElement = None,
+        extra_ns: t.Optional[list[gws.XmlNamespace]] = None,
+        with_schema_locations: bool = False,
+) -> dict:
+    """Returns an xmlns declaration block as dictionary of attributes.
+
+    Args:
+        default_ns: Default namespace.
+        for_element: If given, collect namespaces from this element and its descendants.
+        extra_ns: Extra namespaces to create declarations for.
+        with_schema_locations: Add the "schema location" attribute.
+
+    Returns:
+        A dict of attributes.
+    """
+
+    uri_map = {}
+
+    if for_element:
+        _collect_namespaces(for_element, uri_map)
+    if extra_ns:
+        for ns in extra_ns:
+            uri_map[ns.uri] = ns
+    if default_ns:
+        uri_map[default_ns.uri] = default_ns
+
+    atts = []
+    schemas = []
+
+    for ns in uri_map.values():
+        uri = ns.uri
+        if ns.version:
+            uri += '/' + ns.version
+
+        if default_ns and ns.uri == default_ns.uri:
+            a = _XMLNS
+        else:
+            a = _XMLNS + ':' + ns.xmlns
+        atts.append((a, uri))
+
+        if with_schema_locations and ns.schemaLocation:
+            schemas.append(ns.uri)
+            schemas.append(ns.schemaLocation)
+
+    if schemas:
+        atts.append((_XMLNS + ':' + _XSI, _XSI_URL))
+        atts.append((_XSI + ':schemaLocation', ' '.join(schemas)))
+
+    return dict(sorted(atts))
+
+
+def _collect_namespaces(el: gws.IXmlElement, uri_map):
+    ns, _ = parse_name(el.tag)
+    if ns:
+        uri_map[ns.uri] = ns
+
+    for key in el.attrib:
+        ns, _ = parse_name(key)
+        if ns and ns.xmlns != _XMLNS:
+            uri_map[ns.uri] = ns
+
+    for sub in el:
+        _collect_namespaces(sub, uri_map)
+
+
+def _parse_versioned_uri(uri: str) -> tuple[str, str]:
+    m = re.match(r'(.+?)/([\d.]+)$', uri)
+    if m:
+        return m.group(1), m.group(2)
+    return '', uri
 
 
 # prefix | preferred version for output | uri | schema location
@@ -353,13 +375,28 @@ _XMLNS = 'xmlns'
 _XSI = 'xsi'
 _XSI_URL = 'http://www.w3.org/2001/XMLSchema-instance'
 
-_mgr = NamespaceManager()
 
-uri_for_prefix = _mgr.uri_for_prefix
-prefix_for_uri = _mgr.prefix_for_uri
-parse_name = _mgr.parse_name
-unqualify = _mgr.unqualify
-qualify = _mgr.qualify
-clarkify = _mgr.clarkify
-register = _mgr.register
-declarations = _mgr.declarations
+class _Index:
+    xmlns = {}
+    uri = {}
+
+
+_INDEX = _Index()
+
+_INDEX.xmlns[_XMLNS] = gws.XmlNamespace(xmlns=_XMLNS, uri='', schemaLocation='', version='')
+
+
+def _load_known():
+    for ln in _KNOWN_NAMESPACES.strip().split('\n'):
+        ln = ln.strip()
+        if not ln or ln.startswith('#'):
+            continue
+        xmlns, version, uri, schema = [s.strip() for s in ln.split('|')]
+        if uri:
+            uri = 'http://' + uri
+        if schema:
+            schema = 'http://' + schema
+        register(gws.XmlNamespace(xmlns=xmlns, uri=uri, schemaLocation=schema, version=version))
+
+
+_load_known()

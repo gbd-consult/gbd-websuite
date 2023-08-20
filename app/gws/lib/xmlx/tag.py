@@ -3,7 +3,7 @@
 This module provides a single function ``tag``, which creates an Xml Element from a list of arguments.
 
 The first argument to this function is interpreted as a tag name
-or a space separated list of tag names, in which case nested elements are created.
+or a slash separated list of tag names, in which case nested elements are created.
 
 The remaining ``*args`` are interpreted as follows:
 
@@ -18,7 +18,7 @@ If keyword arguments are given, they are added to the Element's attributes.
 
 
     tag(
-        'geometry gml:Point',
+        'geometry/gml:Point',
         {'gml:id': 'xy'},
         ['gml:coordinates', '12.345,56.789'],
         srsName=3857,
@@ -54,8 +54,8 @@ def tag(names: str, *args, **kwargs) -> gws.IXmlElement:
 
     first = last = None
 
-    for name in names.split():
-        el = element.XElement(name)
+    for name in names.split('/'):
+        el = element.XElement(name.strip())
         if not first:
             first = last = el
         else:
@@ -101,12 +101,7 @@ def _add(el: gws.IXmlElement, arg):
         _add_list(el, arg)
         return
 
-    try:
-        ls = list(arg)
-    except TypeError as exc:
-        raise error.BuildError('invalid argument for tag', arg) from exc
-
-    _add_list(el, ls)
+    _add_list(el, list(arg))
 
 
 def _add_text(el, s):

@@ -9,7 +9,7 @@ import xml.etree.ElementTree
 import gws
 import gws.types as t
 
-from . import namespace
+from . import namespace, error
 
 
 class XElement(xml.etree.ElementTree.Element):
@@ -23,9 +23,9 @@ class XElement(xml.etree.ElementTree.Element):
         self.text = self.text or ''
         self.tail = self.tail or ''
 
-        p = namespace.parse_name(tag)
-        self.name = p[-1]
-        self.lname = self.name.lower()
+        _, _, pname = namespace.split_name(tag)
+        self.name = pname
+        self.lname = pname.lower()
 
         self.caseInsensitive = False
 
@@ -55,7 +55,7 @@ class XElement(xml.etree.ElementTree.Element):
         if key in self.attrib:
             return self.attrib[key]
         for k, v in self.attrib.items():
-            if namespace.unqualify(k) == key:
+            if namespace.unqualify_name(k) == key:
                 return v
         return default
 
@@ -91,6 +91,7 @@ class XElement(xml.etree.ElementTree.Element):
                 s = str(s)
             if compact_whitespace:
                 s = ' '.join(s.strip().split())
+            s = s.replace("&", "&amp;")
             s = s.replace(">", "&gt;")
             s = s.replace("<", "&lt;")
             return s
@@ -110,8 +111,13 @@ class XElement(xml.etree.ElementTree.Element):
 
         def make_name(name):
             if remove_namespaces:
-                return namespace.unqualify(name)
-            return namespace.qualify(name, default_prefix)
+                return namespace.unqualify_name(name)
+            ns, pname = namespace.parse_name(name)
+            if not ns:
+                return name
+            if ns and default_ns and ns.uri == default_ns.uri:
+                return pname
+            return ns.xmlns + ':' + pname
 
         def to_str(el, with_xmlns):
 
@@ -126,10 +132,10 @@ class XElement(xml.etree.ElementTree.Element):
                 atts.update(
                     namespace.declarations(
                         for_element=el,
-                        default_prefix=default_prefix,
+                        default_ns=default_ns,
                         with_schema_locations=with_schema_locations))
 
-            head_pos = len(buf)
+            open_pos = len(buf)
             buf.append('')
 
             s = make_text(el.text)
@@ -139,16 +145,16 @@ class XElement(xml.etree.ElementTree.Element):
             for ch in el:
                 to_str(ch, False)
 
-            tag = make_name(el.tag)
-            head = tag
+            open_tag = make_name(el.tag)
+            close_tag = open_tag
             if atts:
-                head += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
+                open_tag += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
 
-            if len(buf) > head_pos + 1:
-                buf[head_pos] = '<' + head + '>'
-                buf.append('</' + tag + '>')
+            if len(buf) > open_pos + 1:
+                buf[open_pos] = f'<{open_tag}>'
+                buf.append(f'</{close_tag}>')
             else:
-                buf[head_pos] += '<' + head + '/>'
+                buf[open_pos] += f'<{open_tag}/>'
 
             s = make_text(el.tail)
             if s:
@@ -157,10 +163,19 @@ class XElement(xml.etree.ElementTree.Element):
         ##
 
         buf = ['']
-        default_prefix = self.get('xmlns')
+
+        default_ns = None
+        xmlns = self.get('xmlns')
+        if xmlns:
+            default_ns = namespace.get(xmlns)
+            if not default_ns:
+                raise error.NamespaceError(f'unknown namespace {xmlns!r}')
+
         to_str(self, with_namespace_declarations)
+
         if with_xml_declaration:
             buf[0] = _XML_DECL
+
         return ''.join(buf)
 
     ##
@@ -231,11 +246,6 @@ class XElement(xml.etree.ElementTree.Element):
         if self.caseInsensitive:
             key = key.lower()
         return key
-
-
-##
-
-
 
 
 _XML_DECL = '<?xml version="1.0" encoding="UTF-8"?>'
