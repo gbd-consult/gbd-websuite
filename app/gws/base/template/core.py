@@ -44,7 +44,7 @@ class Object(gws.Node, gws.ITemplate):
     def configure(self):
         self.title = self.cfg('title', default='')
         self.qualityLevels = self.cfg('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
-        self.subject = self.cfg('subject', default='').lower()
+        self.subject = self.cfg('subject', default='')
 
         self.models = []
         p = self.cfg('models')
