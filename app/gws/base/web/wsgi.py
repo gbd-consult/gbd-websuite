@@ -184,6 +184,11 @@ class Requester(gws.IWebRequester):
 
     ##
 
+    def url_for(self, path, **params):
+        return self.site.url_for(self, path, **params)
+
+    ##
+
     def require(self, uid, classref):
         return self.user.require(uid, classref)
 
