@@ -266,7 +266,8 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
 
         for site in root.app.webMgr.sites:
             for r in site.rewriteRules:
-                rewr += f'rewrite {r.pattern} {r.target} last;\n'
+                if not r.reversed:
+                    rewr += f'rewrite {r.pattern} {r.target} last;\n'
 
             d = site.staticRoot.dir
             roots += f"""
