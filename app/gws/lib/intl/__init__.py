@@ -58,7 +58,7 @@ def bibliographic_name(language: str) -> str:
         lang = pycountry.languages.get(alpha_2=language.lower())
         if not lang:
             return ''
-        return lang.bibliographic
+        return lang.alpha_3
 
     return gws.get_app_global(f'gws.lib.intl.bibliographic_name.{language}', f)
 

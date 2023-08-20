@@ -16,19 +16,19 @@ class Props(gws.Props):
 
 
 def from_dict(d: dict) -> gws.Metadata:
-    return gws.Metadata(d)
+    return check(gws.Metadata(d))
 
 
 def from_args(**kwargs) -> gws.Metadata:
     return from_dict(kwargs)
 
 
-def from_config(config) -> gws.Metadata:
-    return gws.Metadata(gws.to_dict(config))
+def from_config(c: gws.Config) -> gws.Metadata:
+    return check(gws.Metadata(gws.to_dict(c)))
 
 
-def from_props(props: gws.Props) -> gws.Metadata:
-    return gws.Metadata(gws.to_dict(props))
+def from_props(p: gws.Props) -> gws.Metadata:
+    return check(gws.Metadata(gws.to_dict(p)))
 
 
 def props(md: gws.Metadata) -> gws.Props:
@@ -46,11 +46,18 @@ def props(md: gws.Metadata) -> gws.Props:
 _LIST_KEYS = [
     p
     for p, typ in gws.Metadata.__annotations__.items()
-    if 'List' in repr(typ)
+    if 'list' in repr(typ).lower()
 ]
 
 
-def set_value(md: gws.Metadata, key: str, val: t.Any) -> gws.Metadata:
+def set_value(md: gws.Metadata, key: str, val) -> gws.Metadata:
+    setattr(md, key, val)
+    return check(md)
+
+
+def set_default(md: gws.Metadata, key: str, val) -> gws.Metadata:
+    if hasattr(md, key):
+        return md
     setattr(md, key, val)
     return check(md)
 
@@ -74,18 +81,17 @@ def check(md: gws.Metadata) -> gws.Metadata:
     return md
 
 
-def extend(md: gws.Metadata, *others, extend_lists=False) -> gws.Metadata:
-    for other in others:
-        if not other:
-            continue
-        if hasattr(other, 'md'):
-            other = getattr(other, 'md')
+def merge(*mds, extend_lists=False) -> gws.Metadata:
+    d = {}
 
-        for key, val in gws.to_dict(other).items():
+    for md in mds:
+        if not md:
+            continue
+        for key, val in gws.to_dict(md).items():
             if gws.is_empty(val):
                 continue
             if extend_lists and key in _LIST_KEYS:
-                val = getattr(md, key, []) + val
-            setattr(md, key, val)
+                val = d.get(key, []) + val
+            d[key] = val
 
-    return check(md)
+    return from_dict(d)
