@@ -68,11 +68,11 @@ class Object(gws.Node, gws.IModel):
         return has_conf or has_auto
 
     def configure_auto_fields(self):
-        exclude = set(self.cfg('autoFieldsExclude', default=[]))
-
         desc = self.describe()
         if not desc:
             return False
+
+        exclude = set(self.cfg('autoFieldsExclude', default=[]))
 
         for col in desc.columns.values():
             if col.isForeignKey:

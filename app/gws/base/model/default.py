@@ -1,14 +1,14 @@
 import gws
-from . import core
+from . import model
 
 gws.ext.new.model('default')
 
 
-class Config(core.Config):
+class Config(model.Config):
     pass
 
 
-class Object(core.Object):
+class Object(model.Object):
     def configure(self):
         self.keyName = 'uid'
         self.geometryName = 'geometry'
