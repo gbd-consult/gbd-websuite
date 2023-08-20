@@ -8,63 +8,65 @@ import gws.gis.extent
 import gws.base.feature
 import gws.base.shape
 import gws.lib.xmlx as xmlx
+import gws.lib.uom
 import gws.types as t
 
 
 # @TODO support GML2
 # @TODO PostGis options 2 and 4 (https://postgis.net/docs/ST_AsGML.html)
-
 def shape_to_element(
-    shape: gws.IShape,
-    precision=0,
-    axis: gws.Axis = gws.Axis.xy,
-    crs_format: gws.CrsFormat = gws.CrsFormat.urn,
-    with_ns='gml'
+        shape: gws.IShape,
+        coordinate_precision: t.Optional[int] = None,
+        always_xy=False,
+        crs_format: gws.CrsFormat = gws.CrsFormat.urn,
+        namespace: t.Optional[gws.XmlNamespace] = None,
+        with_xmlns=True,
 ) -> gws.IXmlElement:
     """Convert a Shape to a GML3 geometry element."""
 
+    opts = gws.Data()
+
+    opts.axis = gws.Axis.xy if always_xy else shape.crs.axis
+    opts.precision = gws.lib.uom.DEFAULT_PRECISION[shape.crs.uom] if coordinate_precision is None else coordinate_precision
+    opts.atts = {
+        'srsName': shape.crs.to_string(crs_format),
+    }
+
+    if with_xmlns:
+        ns = namespace or xmlx.namespace.get('gml')
+        opts.ns = ns.xmlns + ':'
+
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
-    srs = shape.crs.to_string(crs_format)
-    ns = (with_ns + ':') if with_ns else ''
+    return xmlx.tag(*_tag(geom, opts))
 
-    opts = gws.Data(
-        precision=precision,
-        axis=axis,
-        ns=ns
-    )
-
-    return xmlx.tag(*_tag(geom, opts), srsName=srs)
-
-
-##
 
 def _tag(geom, opts):
-    typ = geom.type
+    typ = geom.geom_type
 
     if typ == 'Point':
-        return opts.ns + 'Point', _pos(geom, opts, False)
+        return f'{opts.ns}Point', opts.atts, _pos(geom, opts, as_list=False)
 
     if typ == 'LineString':
-        return opts.ns + 'Curve', (opts.ns + 'segments', (opts.ns + 'LineStringSegment', _pos(geom, opts)))
+        return f'{opts.ns}Curve/{opts.ns}segments/{opts.ns}LineStringSegment', opts.atts, _pos(geom, opts)
 
     if typ == 'Polygon':
         return (
-            opts.ns + 'Polygon',
-            (opts.ns + 'exterior', (opts.ns + 'LinearRing', _pos(geom.exterior, opts))),
+            f'{opts.ns}Polygon',
+            (f'{opts.ns}exterior/{opts.ns}LinearRing', opts.atts, _pos(geom.exterior, opts)),
             [
-                (opts.ns + 'interior', (opts.ns + 'LinearRing', _pos(r, opts)))
-                for r in geom.interiors
+                (f'{opts.ns}interior/{opts.ns}LinearRing', opts.atts, _pos(interior, opts))
+                for interior in geom.interiors
             ]
         )
 
     if typ == 'MultiPoint':
-        return opts.ns + 'MultiPoint', [(opts.ns + 'pointMember', _tag(p, opts)) for p in geom]
+        return f'{opts.ns}MultiPoint', opts.atts, [(f'{opts.ns}pointMember', _tag(p, opts)) for p in geom.geoms]
 
     if typ == 'MultiLineString':
-        return opts.ns + 'MultiCurve', [(opts.ns + 'curveMember', _tag(p, opts)) for p in geom]
+        return f'{opts.ns}MultiCurve', opts.atts, [(f'{opts.ns}curveMember', _tag(p, opts)) for p in geom.geoms]
 
     if typ == 'MultiPolygon':
-        return opts.ns + 'MultiSurface', [(opts.ns + 'surfaceMember', _tag(p, opts)) for p in geom]
+        return f'{opts.ns}MultiSurface', opts.atts, [(f'{opts.ns}surfaceMember', _tag(p, opts)) for p in geom.geoms]
 
     raise gws.Error(f'cannot convert geometry type {typ!r} to GML')
 
@@ -81,10 +83,6 @@ def _pos(geom, opts, as_list=True):
             cs.append(y)
             cs.append(x)
 
-    if opts.precision:
-        cs = [round(c, opts.precision) for c in cs]
-    else:
-        cs = [int(c) for c in cs]
-
+    cs = [round(c, opts.precision) for c in cs]
     tag = 'posList' if as_list else 'pos'
-    return opts.ns + tag, {'srsDimension': 2}, ' '.join(str(c) for c in cs)
+    return f'{opts.ns}{tag}', {'srsDimension': 2}, ' '.join(str(c) for c in cs)
