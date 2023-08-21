@@ -43,7 +43,6 @@ class Object(gws.base.template.Object):
             res = entrypoint(args)
         except Exception as exc:
             # @TODO stack traces with the filename
-            gws.log.exception()
             raise gws.Error(f'py error: {exc!r} path={self.path!r}') from exc
 
         self.notify(tri, 'end_print')
