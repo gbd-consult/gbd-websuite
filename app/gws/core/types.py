@@ -827,8 +827,10 @@ class SourceLayer(Data):
 class XmlNamespace(Data):
     """XML namespace"""
 
+    uid: str
+    """unique ID"""
     xmlns: str
-    """namespace name"""
+    """default namespace prefix"""
     uri: Url
     """namespace uri"""
     schemaLocation: Url

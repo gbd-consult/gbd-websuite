@@ -101,7 +101,12 @@ def _add(el: gws.IXmlElement, arg):
         _add_list(el, arg)
         return
 
-    _add_list(el, list(arg))
+    try:
+        ls = list(arg)
+    except Exception as exc:
+        raise error.BuildError(f'invalid argument: in {el.tag!r}, {arg=}') from exc
+
+    _add_list(el, ls)
 
 
 def _add_text(el, s):
