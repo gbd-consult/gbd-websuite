@@ -58,8 +58,9 @@ def service_meta(ta: tpl.TemplateArgs):
 
     if md.fees:
         yield 'Fees', md.fees
+
     if md.accessConstraints:
-        yield 'AccessConstraints', md.accessConstraints
+        yield 'AccessConstraints', md.accessConstraints[0].title
 
     yield meta_links(ta, md)
 

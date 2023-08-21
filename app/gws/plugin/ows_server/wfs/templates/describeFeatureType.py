@@ -20,7 +20,7 @@ def schema(ta: tpl.TemplateArgs):
         'elementFormDefault': 'qualified',
     }
 
-    gml = xmlx.namespace.get('gml')
+    gml = xmlx.namespace.get('gml3')
 
     yield 'xsd:import', {
         'namespace': gml.uri,

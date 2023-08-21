@@ -1,6 +1,7 @@
 import gws
 import gws.base.ows.server as ows
 import gws.base.ows.server.templatelib as tpl
+import datetime
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
 import gws.gis.gml
@@ -31,10 +32,16 @@ def member(ta: tpl.TemplateArgs, m: ows.FeatureCollectionMember):
     for name, value in sorted(m.feature.attributes.items()):
         if name != m.feature.model.geometryName:
             qname = xmlx.namespace.qualify_name(name, m.options.xmlNamespace)
-            yield qname, value
+            yield qname, to_str(value)
 
     shape = m.feature.shape()
     if shape:
-        el = gws.gis.gml.shape_to_element(shape, always_xy=ta.request.alwaysXY)
+        el = gws.gis.gml.shape_to_element(shape, always_xy=ta.request.alwaysXY, with_inline_xmlns=True)
         qname = xmlx.namespace.qualify_name(m.options.geometryName, m.options.xmlNamespace)
         yield qname, el
+
+
+def to_str(value):
+    if isinstance(value, (datetime.datetime, datetime.date)):
+        return value.isoformat()
+    return str(value)

@@ -169,7 +169,7 @@ class Object(server.service.Object):
         return self.template_response(
             rd,
             gws.OwsVerb.GetFeatureInfo,
-            format=rd.req.param('info_format', default='gml3'),
+            rd.req.param('info_format', default='gml3'),
             featureCollection=fc)
 
     ###

@@ -21,6 +21,7 @@ def shape_to_element(
         crs_format: gws.CrsFormat = gws.CrsFormat.urn,
         namespace: t.Optional[gws.XmlNamespace] = None,
         with_xmlns=True,
+        with_inline_xmlns=False,
 ) -> gws.IXmlElement:
     """Convert a Shape to a GML3 geometry element."""
 
@@ -33,8 +34,12 @@ def shape_to_element(
     }
 
     if with_xmlns:
-        ns = namespace or xmlx.namespace.get('gml')
+        ns = namespace or xmlx.namespace.get('gml3')
         opts.ns = ns.xmlns + ':'
+
+    if with_inline_xmlns:
+        ns = namespace or xmlx.namespace.get('gml3')
+        opts.atts['xmlns:' + ns.xmlns] = ns.uri
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
     return xmlx.tag(*_tag(geom, opts))
@@ -47,12 +52,18 @@ def _tag(geom, opts):
         return f'{opts.ns}Point', opts.atts, _pos(geom, opts, as_list=False)
 
     if typ == 'LineString':
-        return f'{opts.ns}Curve/{opts.ns}segments/{opts.ns}LineStringSegment', opts.atts, _pos(geom, opts)
+        return (
+            f'{opts.ns}Curve',
+            opts.atts,
+            f'{opts.ns}segments/{opts.ns}LineStringSegment', opts.atts, _pos(geom, opts)
+        )
 
     if typ == 'Polygon':
         return (
             f'{opts.ns}Polygon',
-            (f'{opts.ns}exterior/{opts.ns}LinearRing', opts.atts, _pos(geom.exterior, opts)),
+            opts.atts,
+            (
+                f'{opts.ns}exterior/{opts.ns}LinearRing', opts.atts, _pos(geom.exterior, opts)),
             [
                 (f'{opts.ns}interior/{opts.ns}LinearRing', opts.atts, _pos(interior, opts))
                 for interior in geom.interiors
