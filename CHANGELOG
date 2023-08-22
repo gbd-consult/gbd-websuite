@@ -1,3 +1,9 @@
+## Version 8.0.11
+
+- basic OWS server support
+- WMS server
+- XML and GML generators improved
+
 ## Version 8.0.10
 
 - GekoS support
