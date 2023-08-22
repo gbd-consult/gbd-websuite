@@ -1007,6 +1007,12 @@ class Controller extends gws.Controller {
     async init() {
         await super.init();
 
+        this.updateEditState({
+            searchText: {},
+            prevFeatures: [],
+            featureCache: {},
+        });
+
         let models = this.app.models.editableModels();
 
         if (gws.lib.isEmpty(models)) {
@@ -1017,12 +1023,6 @@ class Controller extends gws.Controller {
             uid: '_edit',
         }));
         this.editLayer.controller = this;
-
-        this.updateEditState({
-            searchText: {},
-            prevFeatures: [],
-            featureCache: {},
-        });
 
         this.app.whenCalled('editModel', args => {
             this.selectModel(args.model);

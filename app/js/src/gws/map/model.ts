@@ -32,11 +32,11 @@ export class ModelRegistry implements types.IModelRegistry {
     }
 
 
-    readModel(props: api.base.model.Props) {
+    readModel(props: api.base.model.model.Props) {
         return new Model(this, props);
     }
 
-    addModel(props: api.base.model.Props) {
+    addModel(props: api.base.model.model.Props) {
         let m = new Model(this, props);
         this.models.push(m);
         this.index[m.uid] = m;
@@ -105,7 +105,7 @@ export class Model implements types.IModel {
 
     registry: ModelRegistry;
 
-    constructor(registry, props: api.base.model.Props) {
+    constructor(registry, props: api.base.model.model.Props) {
         this.registry = registry;
         this.featureMap = {};
 
