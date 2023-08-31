@@ -367,8 +367,7 @@ def _map_layer(layer_el: gws.IXmlElement):
         if z > a:
             sl.scaleRange = [a, z]
 
-    prov = layer_el.textof('provider').lower()
-    sl.dataSource = parse_datasource(prov, layer_el.textof('datasource'))
+    sl.dataSource = _layer_datasource(layer_el)
 
     sl.opacity = _parse_float(layer_el.textof('layerOpacity') or '1')
     sl.isQueryable = layer_el.textof('flags/Identifiable') == '1'
@@ -415,20 +414,26 @@ def _layer_tree(el: gws.IXmlElement, layers_dct):
             return sl
 
 
+def _layer_datasource(layer_el: gws.IXmlElement) -> dict:
+    prov = layer_el.textof('provider')
+    ds_text = layer_el.textof('datasource')
+
+    if ds_text:
+        return parse_datasource((prov or '').lower(), ds_text)
+    if prov:
+        return {'provider': prov.lower()}
+    return {}
+
+
 ##
 
 def parse_datasource(prov, text):
-    ds = _parse_datasource(text)
-    if not ds:
-        return
+    ds = gws.to_lower_dict(_parse_datasource(text) or {})
+    ds['provider'] = (ds.get('provider') or prov).lower()
 
-    ds = gws.to_lower_dict(ds)
-    if not ds.get('provider'):
-        ds['provider'] = prov
-
-    if prov == 'wms' and 'tilematrixset' in ds:
+    if ds['provider'] == 'wms' and 'tilematrixset' in ds:
         ds['provider'] = 'wmts'
-    elif prov == 'wms' and ds.get('type') == 'xyz':
+    elif ds['provider'] == 'wms' and ds.get('type') == 'xyz':
         ds['provider'] = 'xyz'
 
     # @TODO classify ogr's based on a file extension
