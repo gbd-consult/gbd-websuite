@@ -8,7 +8,7 @@ import gws.types as t
 gws.ext.new.action('dimension')
 
 
-class Config(gws.ConfigWithAccess):
+class Config(gws.base.action.Config):
     """Dimension action"""
 
     layerUids: t.Optional[list[str]]

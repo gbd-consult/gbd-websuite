@@ -55,7 +55,7 @@ class GetFsResponse(gws.Response):
     feature: gws.FeatureProps
 
 
-class Config(gws.ConfigWithAccess):
+class Config(gws.base.action.Config):
     """GekoS action"""
 
     index: t.Optional[index.Config]

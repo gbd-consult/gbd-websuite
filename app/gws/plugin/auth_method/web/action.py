@@ -10,11 +10,11 @@ from . import core
 gws.ext.new.action('auth')
 
 
-class Config(gws.Config):
+class Config(gws.base.action.Config):
     pass
 
 
-class Props(gws.Props):
+class Props(gws.base.action.Props):
     pass
 
 
