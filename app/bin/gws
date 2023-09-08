@@ -52,7 +52,7 @@ chmod 750 $GWS_VAR_DIR
 
 
 if [ "$1" == "server" ]; then
-    ensure_xvfb
+#    ensure_xvfb
 
     rm -f $SERVER_CMD
 
