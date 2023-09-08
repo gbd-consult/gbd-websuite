@@ -36,7 +36,7 @@ def read(text, crs=None, invert_axis=None, **kwargs) -> t.List[t.IFeature]:
     else:
 
         for p in text_formats:
-            res = p.parse(s, crs, invert_axis, **kwargs)
+            res = p.parse(text, **kwargs)
             if res is not None:
                 gws.log.debug(f'parsed with {p!r}')
                 return res
