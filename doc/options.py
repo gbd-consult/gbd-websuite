@@ -75,10 +75,10 @@ OPTIONS = {
 
     'pydoctorArgs': [
         '--make-html',
-        '--project-name', 'GBD WebSuite Dokumentation',
+        '--project-name', 'GBD WebSuite',
         '--project-version', VERSION,
-        '--no-sidebar',
         '--docformat', 'google',
+        '--theme', 'readthedocs',
         '--html-viewsource-base', 'https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws',
     ]
 }
