@@ -33,8 +33,9 @@ export async function main(win, strings) {
         strings,
         locale: win['GWS_LOCALE'] || 'en_CA',
         tags,
-        defaultHelpUrl: '',
-        defaultHomeUrl: '/',
+        helpUrl: '',
+        helpUrlTarget: 'blank',
+        homeUrl: '/',
         version: gws.api.VERSION,
         domNode,
         markFeatures: win['GWS_MARK_FEATURES'],
@@ -50,7 +51,7 @@ export async function main(win, strings) {
     let release = options.version.replace(/\.\d+$/, '');
     let lang = options.locale.split('_')[0];
 
-    options.defaultHelpUrl = `https://gbd-websuite.de/doc/${release}/help_${lang}.html`;
+    options.helpUrl = `https://gbd-websuite.de/doc/${release}/user-${lang}`;
 
     let app = await gws.Application.create(options);
     if (app) {

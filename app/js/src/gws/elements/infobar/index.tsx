@@ -236,7 +236,7 @@ class HelpWidget extends LinkWidget {
     get defaultView() {
         this.options = {
             ...this.options,
-            target: 'frame',
+            target: this.getValue('helpUrlTarget'),
             href: this.getValue('helpUrl'),
             title: this.__('modInfobarHelpTitle'),
             className: 'modInfobarHelpButton',

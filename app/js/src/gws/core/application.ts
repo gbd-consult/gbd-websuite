@@ -161,8 +161,9 @@ export class Application implements types.IApplication {
         this.initialState = this.project.client.options || {};
         this.initialState.user = res.user;
 
-        this.initialState.helpUrl = this.project.client.options.helpUrl || this.options.defaultHelpUrl;
-        this.initialState.homeUrl = this.project.client.options.homeUrl || this.options.defaultHomeUrl;
+        this.initialState.helpUrl = this.project.client.options.helpUrl || this.options.helpUrl;
+        this.initialState.helpUrlTarget = this.project.client.options.helpUrlTarget || this.options.helpUrlTarget;
+        this.initialState.homeUrl = this.project.client.options.homeUrl || this.options.homeUrl;
 
         this.initialState.appToolbarState = {};
         this.initialState.appActiveTool = 'Tool.Default';
