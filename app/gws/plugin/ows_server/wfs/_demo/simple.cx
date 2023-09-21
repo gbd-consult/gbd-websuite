@@ -45,10 +45,11 @@ projects+ {
         tableName "edit.poi"
 
         ows.xmlNamespace {
+            uid "test_namespace"
             xmlns "test"
             uri "http://test.namespace"
-schemaLocation "http://foo"
-version "1"
+            schemaLocation "http://foo"
+            version "1"
         }
 
     }
