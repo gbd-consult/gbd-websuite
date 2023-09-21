@@ -295,9 +295,9 @@ _('chmod 777 /qgis-start-configured')
 # done
 # ------------------------------------------------------------------------------------
 
+_('/usr/bin/qgis_mapserv.fcgi  2>&1 | grep version')
+
 print('-' * 80)
-print('QGIS ENVIRONMENT:')
 print(qgis_env)
-print('FCGI PARAMS:')
 print(extra_fcgi_params)
 print('-' * 80)

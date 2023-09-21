@@ -63,7 +63,7 @@ Options:
 
 Example:
 
-    python3 image.py gws-qgis-debug -qgis 3.28 -arch amd64 -name my-test-image -datadir my_project/data
+    python3 image.py gws-qgis-debug -qgis 3.28.11 -arch amd64 -name my-test-image -datadir my_project/data
 """
 
 
@@ -81,7 +81,7 @@ class Builder:
 
     arch = 'amd64'
 
-    qgis_version = '3.28'
+    qgis_version = '3.28.11'
 
     qgis_fcgi_port = 9993
     qgis_start_sh = 'qgis-start.sh'
