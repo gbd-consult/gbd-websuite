@@ -1,3 +1,7 @@
+## Version 8.0.14
+
+- Regression in printing fixed
+
 ## Version 8.0.13
 
 - Configurable help url and target in the client
