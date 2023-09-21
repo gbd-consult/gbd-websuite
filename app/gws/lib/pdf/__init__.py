@@ -19,6 +19,8 @@ def overlay(a_path, b_path, out_path):
         except IndexError:
             pass
         if other:
+            # https://github.com/py-pdf/pypdf/issues/2139
+            page.transfer_rotation_to_content()
             page.merge_page(other)
         w.add_page(page)
 
