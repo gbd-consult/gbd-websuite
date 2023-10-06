@@ -76,4 +76,4 @@ class Object(gws.common.action.Object):
             f.apply_template('teaser')
             f.apply_template('description')
 
-        return Response(features=[f.view_props for f in found])
+        return Response(features=[f.get_view_props(req.user) for f in found])

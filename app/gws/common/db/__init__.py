@@ -47,6 +47,7 @@ class SelectArgs(t.Data):
     uids: t.Optional[t.List[str]]
     columns: t.Optional[t.List[str]]
     depth: t.Optional[int]
+    user: t.IUser
 
 
 #:export

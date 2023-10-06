@@ -34,6 +34,18 @@ _SCALAR_TYPES = {
 
 ##
 
+#:export ModelContext
+class ModelContext(t.Data):
+    mode: str
+    user: t.IUser
+    depth: int
+    errors: t.List[t.FeatureError]
+    access: str
+    project: t.IProject
+
+
+
+
 class ModelPermissionsConfig(t.Config):
     read: t.Optional[t.WithAccess]
     write: t.Optional[t.WithAccess]
@@ -71,6 +83,8 @@ class WidgetConfig(t.WithType):
     items: t.Optional[t.List[t.Any]]
     fileField: t.Optional['FieldNameTypeConfig']
     search: t.Optional[str]
+    previewUrl: t.Optional[str]
+    downloadUrl: t.Optional[str]
 
 
 class WidgetProps(t.Props):
@@ -158,7 +172,7 @@ class Validator_geometryConstraint(Validator):
     def validate(self, field, value, fe):
         this = t.cast(gws.gis.shape.Shape, value)
 
-        v = eval_value(fe, self.var('value'))
+        v = eval_value(fe, self.var('value'), None)
         if isinstance(v, dict):
             other = gws.gis.shape.from_geometry(v, this.crs)
         elif isinstance(v, str):
@@ -182,6 +196,7 @@ def eval_value(fe: t.IFeature, val: 'ValueConfig', env):
     if val.type == 'static':
         return val.value
     if val.type == 'expression':
+        gws.log.debug(f'evaluating {val.expression=}')
         return eval(val.expression)
 
 
@@ -285,6 +300,9 @@ class Field(gws.Object, t.IModelField):
     data_type: str
     geometry_type: str
     permissions: FieldPermissions
+    value: t.Data
+    error_messages: t.Dict[str, str]
+    text_search: t.Data
 
     def configure(self):
         super().configure()
@@ -306,7 +324,7 @@ class Field(gws.Object, t.IModelField):
         self.widget = None
         p = self.var('widget')
         if p:
-            cls = _TYPES['widget:' + p.type]
+            cls = get_class('widget', p.type)
             uid = gws.sha256(repr(p))
             wgt = t.cast(t.IModelWidget, self.root.create_shared_object(cls, uid, p))
             self.widget = wgt
@@ -315,7 +333,7 @@ class Field(gws.Object, t.IModelField):
         ps = self.var('validators')
         if ps:
             for p in ps:
-                cls = _TYPES['validator:' + p.type]
+                cls = get_class('validator', p.type)
                 v = t.cast(t.IModelValidator, self.create_child(cls, p))
                 v.field = self
                 self.validators.append(v)
@@ -342,22 +360,22 @@ class Field(gws.Object, t.IModelField):
     def sa_adapt_select(self, state):
         pass
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth: int):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         pass
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth: int):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         pass
 
-    def read_from_orm(self, fe: t.IFeature, obj, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         pass
 
-    def write_to_orm(self, fe: t.IFeature, obj):
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         pass
 
-    def apply_value(self, fe: t.IFeature, mode, kind, env):
-        val = gws.get(self.value, mode + ('Default' if kind == 'default' else ''))
+    def apply_value(self, fe: t.IFeature, kind, mc: t.ModelContext):
+        val = gws.get(self.value, mc.access + ('Default' if kind == 'default' else ''))
         if val is not None and (kind == 'fixed' or fe.attr(self.name) is None):
-            fe.attributes[self.name] = eval_value(fe, val, env)
+            fe.attributes[self.name] = eval_value(fe, val, mc)
             return True
         return False
 
@@ -365,11 +383,11 @@ class Field(gws.Object, t.IModelField):
         for v in self.validators:
             if v.type == cfg.type:
                 return
-        cls = _TYPES['validator:' + cfg.type]
+        cls = get_class('validator', cfg.type)
         v = t.cast(t.IModelValidator, self.create_child(cls, cfg))
         self.validators.insert(0, v)
 
-    def validate(self, fe: t.IFeature, errors):
+    def validate(self, fe: t.IFeature, mc: t.ModelContext):
         try:
             if fe.attr(self.name) is None:
                 if self.is_required:
@@ -383,7 +401,7 @@ class Field(gws.Object, t.IModelField):
                 msg = self.error_messages[msg]
             else:
                 msg = VALIDATION_ERROR_PREFIX + msg
-            errors.append(t.FeatureError(fieldName=self.name, message=msg))
+            mc.errors.append(t.FeatureError(fieldName=self.name, message=msg))
 
     def validate_value(self, value):
         return value
@@ -417,22 +435,22 @@ class ScalarField(Field):
         col = sa.Column(self.name, _SCALAR_TYPES[self.data_type], **kwargs)
         columns.append(col)
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         val = props.attributes.get(self.name)
         if val is not None:
             fe.attributes[self.name] = val
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         val = fe.attributes.get(self.name)
         if val is not None:
             props.attributes[self.name] = val
 
-    def read_from_orm(self, fe: t.IFeature, obj, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         val = getattr(obj, self.name, None)
         if val is not None:
             fe.attributes[self.name] = val
 
-    def write_to_orm(self, fe: t.IFeature, obj):
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         if self.name in fe.attributes:
             setattr(obj, self.name, fe.attributes[self.name])
 
@@ -497,10 +515,20 @@ class Field_integer(ScalarField):
 
 class Field_float(ScalarField):
     data_type = 'float'
+    min_value = None
+    max_value = None
 
     def configure(self):
         super().configure()
         self.prepend_validator(t.Data(type='float'))
+
+    def convert(self, val):
+        if isinstance(val, float):
+            return val
+        try:
+            return float(val)
+        except:
+            raise ValueError('invalid float')
 
     def validate_value(self, value):
         try:
@@ -574,14 +602,14 @@ class Field_file(ScalarField):
         gws.log.debug(f'name_to_path {path=}')
         return path
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, mc):
         val = props.attributes.get(self.name)
         if val is not None:
             fe.attributes[self.name] = FileValue(
                 name=gws.get(val, 'name'),
                 content=gws.get(val, 'content'))
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, mc):
         val = fe.attr(self.name)
         if val:
             props.attributes[self.name] = FileValue(
@@ -589,7 +617,7 @@ class Field_file(ScalarField):
                 mime=gws.tools.mime.for_path(val.name)
             )
 
-    def read_from_orm(self, fe: t.IFeature, obj, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         path = getattr(obj, self.name, None)
         if path is not None:
             p = gws.tools.os2.parse_path(path)
@@ -598,7 +626,7 @@ class Field_file(ScalarField):
                 name=p['filename'],
                 mime=gws.tools.mime.for_path(path))
 
-    def write_to_orm(self, fe: t.IFeature, obj):
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         val = fe.attr(self.name)
         if val is not None:
             name = gws.get(val, 'name')
@@ -623,22 +651,22 @@ class Field_geometry(ScalarField):
                 getattr(model.get_class(), self.name),
                 sa.cast(shape.ewkb_hex, geosa.Geometry())))
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         val = props.attributes.get(self.name)
         if val is not None:
             fe.attributes[self.name] = gws.gis.shape.from_props(val)
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         val = fe.attributes.get(self.name)
         if val is not None:
             props.attributes[self.name] = val.props
 
-    def read_from_orm(self, fe: t.IFeature, obj, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         val = getattr(obj, self.name, None)
         if val is not None:
             fe.attributes[self.name] = gws.gis.shape.from_wkb_hex(val)
 
-    def write_to_orm(self, fe: t.IFeature, obj):
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         val = fe.attributes.get(self.name)
         if val is not None:
             setattr(obj, self.name, val.ewkb_hex)
@@ -649,6 +677,13 @@ class Field_geometry(ScalarField):
 
 class RelatedField(Field):
     model: t.IDbModel
+    link_table_name: str
+    link_key_name: str
+    foreign_key_name: str
+    foreign_key_type: str
+    discriminator_name: str
+    discriminator_type: str
+    relations: t.List[t.Data]
 
     def configure(self):
         super().configure()
@@ -709,13 +744,13 @@ class RelatedField(Field):
             if r.model_uid == model.uid:
                 return r
 
-    def apply_value(self, fe: t.IFeature, mode, kind, env):
-        val = gws.get(self.value, mode + ('Default' if kind == 'default' else ''))
+    def apply_value(self, fe: t.IFeature, kind, mc: t.ModelContext):
+        val = gws.get(self.value, mc.access + ('Default' if kind == 'default' else ''))
         if val is not None and (kind == 'fixed' or fe.attr(self.name) is None):
-            v = eval_value(fe, val, env)
+            v = eval_value(fe, val, mc)
             rel_model = self.first_related_model()
             if rel_model:
-                fe.attributes[self.name] = rel_model.get_feature(v)
+                fe.attributes[self.name] = rel_model.get_feature(v, mc)
             return True
         return False
 
@@ -728,8 +763,8 @@ class RelatedField(Field):
 class RelatedFeatureField(RelatedField):
     data_type = 'feature'
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
-        if depth <= 0:
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
+        if mc.depth <= 0:
             return
 
         val = props.attributes.get(self.name)
@@ -738,23 +773,23 @@ class RelatedFeatureField(RelatedField):
 
         rel_model = self.first_related_model()
         uid = val.get('attributes', {}).get(rel_model.key_name)
-        fe.attributes[self.name] = rel_model.get_feature(uid, depth - 1)
+        fe.attributes[self.name] = rel_model.get_feature(uid, clone_mc(mc, depth=mc.depth - 1))
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         fe2 = fe.attributes.get(self.name)
         if fe2:
-            props.attributes[self.name] = fe2.model.feature_props(fe2, depth - 1)
+            props.attributes[self.name] = fe2.model.feature_props(fe2, mc.depth - 1)
 
-    def read_from_orm(self, fe: t.IFeature, obj, depth):
-        if depth <= 0:
+    def read_from_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
+        if mc.depth <= 0:
             return
         rel_model = self.first_related_model()
         obj2 = getattr(obj, self.name, None)
         if obj2:
             # exclude = (exclude or []) + [self.relations[0].field_name]
-            fe.attributes[self.name] = rel_model.feature_from_orm(obj2, depth - 1)
+            fe.attributes[self.name] = rel_model.feature_from_orm(obj2, clone_mc(mc, depth=mc.depth - 1))
 
-    def write_to_orm(self, fe: t.IFeature, obj):
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         rel_model = self.first_related_model()
         rel_feature = fe.attributes.get(self.name)
         if rel_feature:
@@ -764,8 +799,8 @@ class RelatedFeatureField(RelatedField):
 class RelatedFeatureListField(RelatedField):
     data_type = 'featureList'
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
-        if depth <= 0:
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
+        if mc.depth <= 0:
             return
         val = props.attributes.get(self.name)
         if val is None:
@@ -773,28 +808,29 @@ class RelatedFeatureListField(RelatedField):
 
         rel_model = self.first_related_model()
         uids = [f.get('attributes').get(rel_model.key_name) for f in val]
-        fe.attributes[self.name] = [rel_model.get_feature(uid, depth - 1) for uid in uids]
+        mc2 = clone_mc(mc, depth=mc.depth - 1)
+        fe.attributes[self.name] = [rel_model.get_feature(uid, mc2) for uid in uids]
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         flist = fe.attributes.get(self.name)
         if flist:
-            props.attributes[self.name] = [fe2.model.feature_props(fe2, depth - 1) for fe2 in flist]
+            props.attributes[self.name] = [fe2.model.feature_props(fe2, mc.depth - 1) for fe2 in flist]
 
-    def read_from_orm(self, fe: t.IFeature, obj, depth):
-        if depth <= 0:
+    def read_from_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
+        if mc.depth <= 0:
             return
 
         rel_model = self.first_related_model()
 
         objlist = getattr(obj, self.name, None)
         if objlist:
-            # exclude = (exclude or []) + [self.relations[0].field_name]
+            mc2 = clone_mc(mc, depth=mc.depth - 1)
             fe.attributes[self.name] = [
-                rel_model.feature_from_orm(o, depth - 1)
+                rel_model.feature_from_orm(o, mc2)
                 for o in objlist
             ]
 
-    def write_to_orm(self, fe: t.IFeature, obj):
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         rel_model = self.first_related_model()
         flist = fe.attributes.get(self.name)
         if flist:
@@ -898,8 +934,8 @@ class Field_relatedMultiFeatureList(RelatedFeatureListField):
             key = self.name + ':' + r.model_uid
             properties[key] = sa.orm.relationship(rel_cls, **kwargs)
 
-    def read_from_orm(self, fe: t.IFeature, obj, depth):
-        if depth <= 0:
+    def read_from_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
+        if mc.depth <= 0:
             return
 
         flist = []
@@ -910,13 +946,14 @@ class Field_relatedMultiFeatureList(RelatedFeatureListField):
             if val is None:
                 continue
             rel_model = registry().get_model(r.model_uid)
+
             for obj2 in val:
-                flist.append(rel_model.feature_from_orm(obj2, depth - 1))
+                flist.append(rel_model.feature_from_orm(obj2, clone_mc(mc, depth=mc.depth-1)))
 
         if flist:
             fe.attributes[self.name] = flist
 
-    def write_to_orm(self, fe: t.IFeature, obj):
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         val = fe.attributes.get(self.name)
         if val is None:
             return
@@ -1043,7 +1080,7 @@ class Field_relatedGenericFeature(RelatedFeatureField):
         col = sa.Column(self.foreign_key_name, _SCALAR_TYPES[self.foreign_key_type])
         columns.append(col)
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         val = props.attributes.get(self.name)
         if val is None:
             return
@@ -1063,23 +1100,23 @@ class Field_relatedGenericFeature(RelatedFeatureField):
 
         if uid:
             if rel_model:
-                fe.attributes[self.name] = rel_model.get_feature(uid, depth - 1)
+                fe.attributes[self.name] = rel_model.get_feature(uid, clone_mc(mc, depth=mc.depth-1))
             else:
                 fe.attributes[self.name] = generic_feature(uid=uid)
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         val = fe.attributes.get(self.name)
         if val is not None:
-            props.attributes[self.name] = val.model.feature_props(val, depth - 1)
+            props.attributes[self.name] = val.model.feature_props(val, clone_mc(mc, depth=mc.depth-1))
             return
 
-    def read_from_orm(self, fe: t.IFeature, obj, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         val = getattr(obj, self.foreign_key_name, None)
         if val is not None:
             fe.attributes[self.name] = generic_feature(uid=val)
             return
 
-    def write_to_orm(self, fe: t.IFeature, obj):
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         val = fe.attributes.get(self.name)
         if val is not None:
             setattr(obj, self.foreign_key_name, val.uid)
@@ -1114,7 +1151,7 @@ class Field_relatedDiscriminatedFeatureList(RelatedFeatureListField):
         own_cls = self.model.get_class()
         rel_cls = rel_model.get_class()
 
-        rel_field = rel_model.get_field(self.relations[0].field_name)
+        rel_field = t.cast(RelatedField, rel_model.get_field(self.relations[0].field_name))
 
         rel = rel_field.relation_for_model(self.model)
         own_pk = self.model.get_keys()
@@ -1129,13 +1166,13 @@ class Field_relatedDiscriminatedFeatureList(RelatedFeatureListField):
 
         properties[self.name] = sa.orm.relationship(rel_cls, **kwargs)
 
-    def write_to_orm(self, fe: t.IFeature, obj):
-        super().write_to_orm(fe, obj)
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
+        super().write_to_orm(fe, obj, mc)
 
         rel_model = self.first_related_model()
         rel_obj_list = getattr(obj, self.name)
         if rel_obj_list:
-            rel_field = rel_model.get_field(self.relations[0].field_name)
+            rel_field = t.cast(RelatedField, rel_model.get_field(self.relations[0].field_name))
             rel = rel_field.relation_for_model(self.model)
             for o in rel_obj_list:
                 setattr(o, rel_field.discriminator_name, rel.discriminator)
@@ -1175,79 +1212,36 @@ class Field_relatedDiscriminatedFeature(RelatedFeatureField):
         col = sa.Column(self.discriminator_name, _SCALAR_TYPES[self.discriminator_type])
         columns.append(col)
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
-        if depth <= 0:
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
+        if mc.depth <= 0:
             return
         val = props.attributes.get(self.name)
         if val is not None:
             rel_model = registry().get_model(val.get('modelUid'))
             uid = val.get('attributes', {}).get(rel_model.key_name)
-            fe.attributes[self.name] = rel_model.get_feature(uid, depth - 1)
+            fe.attributes[self.name] = rel_model.get_feature(uid, clone_mc(mc, depth=mc.depth-1))
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, mc: t.ModelContext):
         val = fe.attributes.get(self.name)
         if val is not None:
             props.attributes[self.name] = val.props
 
-    def read_from_orm(self, fe: t.IFeature, obj, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         val = getattr(obj, self.foreign_key_name, None)
         rel = self.relation_for_discriminator(getattr(obj, self.discriminator_name, None))
         if val is not None:
             rel_model = registry().get_model(rel.model_uid)
             sobj = rel_model.get_object(val)
-            fe.attributes[self.name] = rel_model.feature_from_orm(sobj)
+            fe.attributes[self.name] = rel_model.feature_from_orm(sobj, clone_mc(mc, depth=mc.depth-1))
             return
 
-    def write_to_orm(self, fe: t.IFeature, obj):
+    def write_to_orm(self, fe: t.IFeature, obj, mc: t.ModelContext):
         val = fe.attributes.get(self.name)
         if val is not None:
             rel = self.relation_for_model(val.model)
             setattr(obj, self.foreign_key_name, val.uid)
             setattr(obj, self.discriminator_name, rel.discriminator)
             gws.log.debug(f'@@ {self.foreign_key_name}={val.uid!r}, {self.discriminator_name}={rel.discriminator!r}')
-
-
-##
-
-_TYPES = {
-    'widget:checkBox': Widget,
-    'widget:comboBox': Widget,
-    'widget:dateInput': Widget,
-    'widget:documentList': Widget,
-    'widget:featureList': Widget,
-    'widget:featureSelect': Widget,
-    'widget:featureSuggest': Widget,
-    'widget:file': Widget,
-    'widget:floatInput': Widget,
-    'widget:geometry': Widget,
-    'widget:input': Widget,
-    'widget:integerInput': Widget,
-    'widget:measurement': Widget,
-    'widget:select': Widget,
-    'widget:staticText': Widget,
-    'widget:textArea': Widget,
-
-    'field:string': Field_string,
-    'field:integer': Field_integer,
-    'field:float': Field_float,
-    'field:date': Field_date,
-    'field:file': Field_file,
-    'field:geometry': Field_geometry,
-    'field:relatedFeature': Field_relatedFeature,
-    'field:relatedFeatureList': Field_relatedFeatureList,
-    'field:relatedMultiFeatureList': Field_relatedMultiFeatureList,
-    'field:relatedLinkedFeatureList': Field_relatedLinkedFeatureList,
-    'field:relatedGenericFeatureList': Field_relatedGenericFeatureList,
-    'field:relatedGenericFeature': Field_relatedGenericFeature,
-    'field:relatedDiscriminatedFeatureList': Field_relatedDiscriminatedFeatureList,
-    'field:relatedDiscriminatedFeature': Field_relatedDiscriminatedFeature,
-
-    'validator:string': Validator_string,
-    'validator:integer': Validator_integer,
-    'validator:float': Validator_float,
-    'validator:geometryConstraint': Validator_geometryConstraint,
-
-}
 
 
 ##
@@ -1261,6 +1255,7 @@ class SortConfig:
 class Config(t.WithAccess):
     """Model configuration"""
 
+    type: t.Optional[str]
     fields: t.List[FieldConfig]
     permissions: t.Optional[ModelPermissionsConfig]
     filter: t.Optional[str]
@@ -1309,7 +1304,7 @@ class Object(gws.Object, t.IModel):
         )
 
         for p in self.var('fields'):
-            cls = _TYPES['field:' + p.type]
+            cls = get_class('field', p.type)
             f = t.cast(t.IModelField, self.create_child(cls, p))
             f.model = self
             f.permissions.read.parent = self.permissions.read
@@ -1329,23 +1324,22 @@ class Object(gws.Object, t.IModel):
             gws.log.error(repr(exc))
             raise
 
-    def select(self, args: t.SelectArgs) -> t.List[t.IFeature]:
+    def select(self, args: t.SelectArgs, mc: t.ModelContext) -> t.List[t.IFeature]:
         return []
 
-    def save(self, fe: t.IFeature) -> t.IFeature:
+    def save(self, fe: t.IFeature, mc: t.ModelContext) -> t.IFeature:
         return fe
 
-    def delete(self, fe: t.IFeature):
+    def delete(self, fe: t.IFeature, mc: t.ModelContext):
         pass
 
-    def reload(self, fe: t.IFeature, depth: int = 0):
+    def reload(self, fe: t.IFeature, mc: t.ModelContext):
         pass
 
-    def validate(self, fe: t.IFeature) -> t.List[t.FeatureError]:
-        errors = []
+    def validate(self, fe: t.IFeature, mc: t.ModelContext) -> t.List[t.FeatureError]:
         for f in self.fields:
-            f.validate(fe, errors)
-        return errors
+            f.validate(fe, mc)
+        return mc.errors
 
     def init_feature(self):
         fe = gws.gis.feature.Feature(self)
@@ -1360,19 +1354,19 @@ class Object(gws.Object, t.IModel):
         fe.is_new = True
         return fe
 
-    def get_feature(self, uid, depth=0) -> t.Optional[t.IFeature]:
+    def get_feature(self, uid, mc: t.ModelContext) -> t.Optional[t.IFeature]:
         return None
 
-    def feature_from_props(self, props: t.FeatureProps, depth=0):
+    def feature_from_props(self, props: t.FeatureProps, mc: t.ModelContext):
         fe = self.init_feature()
         fe.elements = props.get('elements') or {}
         fe.category = props.get('category') or ''
         fe.is_new = bool(props.get('isNew'))
         for f in self.fields:
-            f.read_from_props(fe, props, depth)
+            f.read_from_props(fe, props, mc)
         return fe
 
-    def feature_props(self, fe, depth=0):
+    def feature_props(self, fe: t.IFeature, mc: t.ModelContext):
         props = t.FeatureProps(
             attributes={},
             keyName=self.key_name,
@@ -1385,7 +1379,7 @@ class Object(gws.Object, t.IModel):
         )
 
         for f in self.fields:
-            f.write_to_props(fe, props, depth)
+            f.write_to_props(fe, props, mc)
 
         if fe.errors:
             props.errors = fe.errors
@@ -1402,6 +1396,16 @@ class Object(gws.Object, t.IModel):
         p['fields'] = [f.props_for(user) for f in self.fields]
         return p
 
+    def apply_permissions_and_defaults(self, fe: t.IFeature, mc: t.ModelContext):
+        for f in self.fields:
+            if f.apply_value(fe, 'fixed', mc):
+                continue
+            if not mc.user.can_use(f.permissions.get(mc.access)):
+                gws.log.debug(f'remove field={f.name!r} mode={mc.access!r}')
+                fe.attributes.pop(f.name, None)
+            f.apply_value(fe, 'default', mc)
+        return fe
+
     @property
     def props(self):
         p = Props(uid=self.uid)
@@ -1416,13 +1420,15 @@ class Object(gws.Object, t.IModel):
 
 #:export IDbModel
 class DbModel(Object, t.IDbModel):
+    filter = None
+    sort = None
+
     def configure(self):
         super().configure()
         self.filter = self.var('filter')
         self.sort = self.var('sort', default=[])
 
-    def select(self, args: t.SelectArgs) -> t.List[t.IFeature]:
-
+    def select(self, args: t.SelectArgs, mc: t.ModelContext) -> t.List[t.IFeature]:
         sel = self.sa_make_select(args)
         if sel is None:
             gws.log.debug('empty select')
@@ -1434,50 +1440,57 @@ class DbModel(Object, t.IDbModel):
         cursor = self.sa_session().execute(sel)
         for row in cursor.unique().all():
             obj = getattr(row, cls.__name__)
-            fe = self.feature_from_orm(obj, depth=args.depth or 0)
+            fe = self.feature_from_orm(obj, mc)
             flist.append(fe)
 
         return flist
 
-    def save(self, fe: t.IFeature):
+    def save(self, fe: t.IFeature, mc: t.ModelContext) -> t.IFeature:
+        mc = ModelContext(mode='save', user=mc.user, depth=1,)
+        obj = self.orm_object_for_save(fe, mc)
+        self.sa_session().commit()
+        return self.feature_from_orm(obj, mc)
 
+    def delete(self, fe: t.IFeature, mc: t.ModelContext):
+        self.sa_session().delete(self.get_object(fe.uid))
+
+    def reload(self, fe: t.IFeature, mc: t.ModelContext):
+        md = getattr(fe, '_model_data', None)
+        if md:
+            f2 = self.feature_from_orm(md['object'], mc)
+            fe.attributes = f2.attributes
+        fe.is_new = False
+        return fe
+
+    ##
+
+    def orm_object_for_save(self, fe: t.IFeature, mc: t.ModelContext):
         if fe.is_new:
             obj = self.get_class()()
         else:
             obj = self.get_object(fe.uid)
 
         for f in self.fields:
-            f.write_to_orm(fe, obj)
+            f.write_to_orm(fe, obj, mc)
 
         if fe.is_new:
             self.sa_session().add(obj)
 
         fe._model_data = {'object': obj}
-        return fe
+        return obj
 
-    def delete(self, fe: t.IFeature):
-        self.sa_session().delete(self.get_object(fe.uid))
-
-    def reload(self, fe: t.IFeature, depth: int = 0):
-        md = getattr(fe, '_model_data', None)
-        if md:
-            f2 = self.feature_from_orm(md['object'], depth=depth)
-            fe.attributes = f2.attributes
-        fe.is_new = False
-        return fe
-
-    def get_feature(self, uid, depth=0):
+    def get_feature(self, uid, mc: t.ModelContext) -> t.Optional[t.IFeature]:
         obj = self.get_object(uid)
         if obj:
-            return self.feature_from_orm(obj, depth)
+            return self.feature_from_orm(obj, mc)
 
-    def feature_from_orm(self, obj, depth=0):
+    def feature_from_orm(self, obj, mc: t.ModelContext):
         fe = self.init_feature()
 
         # gws.log.debug(f"FETCH {self.uid} uid={getattr(obj, self.key_name, '?')}")
 
         for f in self.fields:
-            f.read_from_orm(fe, obj, depth)
+            f.read_from_orm(fe, obj, mc)
 
         return fe
 
@@ -1488,6 +1501,9 @@ class DbModel(Object, t.IDbModel):
     def get_table(self) -> t.SqlTable:
         if self.layer:
             return getattr(self.layer, 'table', None)
+
+    def get_sa_table(self):
+        return registry().get_table_for_model(self.uid)
 
     def get_class(self):
         return registry().get_class(self.uid)
@@ -1532,6 +1548,9 @@ class DbModel(Object, t.IDbModel):
             fn = sa.desc if s.reverse else sa.asc
             state.sel = state.sel.order_by(fn(getattr(cls, s.fieldName)))
 
+        if args.limit:
+            state.sel = state.sel.limit(args.limit)
+
         gws.log.debug(f'SA_MAKE_SELECT: {str(state.sel)}')
 
         return state.sel
@@ -1552,8 +1571,8 @@ class GenericModel(Object):
     geometry_name = 'geometry'
     layer = None
 
-    def feature_from_props(self, props: t.FeatureProps, depth=0):
-        fe = super().feature_from_props(props, depth)
+    def feature_from_props(self, props: t.FeatureProps, mc: t.ModelContext):
+        fe = super().feature_from_props(props, mc)
         fe.attributes = gws.get(props, 'attributes', default={})
         if props.geometryName:
             fe.geometry_name = props.geometryName
@@ -1562,8 +1581,8 @@ class GenericModel(Object):
             fe.attributes[gn] = gws.gis.shape.from_props(fe.attributes.get(gn))
         return fe
 
-    def feature_props(self, fe, depth=0):
-        props = super().feature_props(fe, depth)
+    def feature_props(self, fe: t.IFeature, mc: t.ModelContext):
+        props = super().feature_props(fe, mc)
         for k, v in fe.attributes.items():
             if hasattr(v, 'props'):
                 v = v.props
@@ -1607,6 +1626,7 @@ class ModelRegistry:
     def __init__(self, root):
         self.root = root
         self.ms = {}
+        self.tables = {}
         self.engines: t.Dict[str, sa.engine.Engine] = {}
         self.sessions: t.Dict[str, sa.orm.Session] = {}
         self.inited = False
@@ -1618,7 +1638,7 @@ class ModelRegistry:
             raise Error(f'model {uid!r} not found')
         return self.ms[uid]
 
-    def get_model(self, uid):
+    def get_model(self, uid) -> t.IDbModel:
         return self.get(uid).model
 
     def get_class(self, uid):
@@ -1626,6 +1646,11 @@ class ModelRegistry:
 
     def get_keys(self, uid):
         return self.get(uid).keys
+
+    def get_table_for_model(self, uid):
+        if uid not in self.ms:
+            raise Error(f'model {uid!r} not found')
+        return self.ms[uid].table
 
     @property
     def models(self):
@@ -1647,6 +1672,8 @@ class ModelRegistry:
 
         if self.initing:
             raise Error('circular init!')
+
+        gws.log.set_level('DEBUG')
 
         gws.log.debug('REGISTRY_INIT')
         self.initing = True
@@ -1670,7 +1697,7 @@ class ModelRegistry:
             m.keys = cols
 
         for m in self.ms.values():
-            # gws.log.debug(f'REGISTRY_INIT TABLE:{m.model.uid}')
+            gws.log.debug(f'REGISTRY_INIT TABLE:{m.model.uid}')
             cols = []
             for f in m.model.fields:
                 if not f.is_primary_key:
@@ -1697,12 +1724,16 @@ class ModelRegistry:
 
     def create_table(self, name, cols):
         metadata = self.sa_registry.metadata
-
         schema = 'public'
         if '.' in name:
             schema, name = name.split('.')
 
-        return sa.Table(name, metadata, *cols, schema=schema, extend_existing=True)
+        tab = sa.Table(name, metadata, *cols, schema=schema, extend_existing=True)
+        self.tables[name] = tab
+        return tab
+
+    def get_table(self, name):
+        return self.tables.get(name)
 
     def session(self, db):
         uid = db.uid
@@ -1759,3 +1790,64 @@ session = ModelSession()
 
 def get(uid: str) -> t.Optional[t.IModel]:
     return registry().get_model(uid)
+
+
+##
+
+_TYPES = {
+    'widget:checkBox': Widget,
+    'widget:comboBox': Widget,
+    'widget:dateInput': Widget,
+    'widget:documentList': Widget,
+    'widget:featureList': Widget,
+    'widget:featureSelect': Widget,
+    'widget:featureSuggest': Widget,
+    'widget:file': Widget,
+    'widget:floatInput': Widget,
+    'widget:geometry': Widget,
+    'widget:input': Widget,
+    'widget:integerInput': Widget,
+    'widget:measurement': Widget,
+    'widget:select': Widget,
+    'widget:staticText': Widget,
+    'widget:textArea': Widget,
+
+    'field:string': Field_string,
+    'field:integer': Field_integer,
+    'field:float': Field_float,
+    'field:date': Field_date,
+    'field:file': Field_file,
+    'field:geometry': Field_geometry,
+    'field:relatedFeature': Field_relatedFeature,
+    'field:relatedFeatureList': Field_relatedFeatureList,
+    'field:relatedMultiFeatureList': Field_relatedMultiFeatureList,
+    'field:relatedLinkedFeatureList': Field_relatedLinkedFeatureList,
+    'field:relatedGenericFeatureList': Field_relatedGenericFeatureList,
+    'field:relatedGenericFeature': Field_relatedGenericFeature,
+    'field:relatedDiscriminatedFeatureList': Field_relatedDiscriminatedFeatureList,
+    'field:relatedDiscriminatedFeature': Field_relatedDiscriminatedFeature,
+
+    'validator:string': Validator_string,
+    'validator:integer': Validator_integer,
+    'validator:float': Validator_float,
+    'validator:geometryConstraint': Validator_geometryConstraint,
+
+    'model:db': DbModel,
+
+}
+
+
+def register_class(category, name, cls):
+    _TYPES[category + ':' + name] = cls
+
+
+def get_class(category, name):
+    cls = _TYPES.get(category + ':' + name)
+    if not cls:
+        raise gws.Error(f'class not found: {category}:{name}')
+    return cls
+
+def clone_mc(mc, **kwargs):
+    mc2 = ModelContext(**vars(mc))
+    mc2.__dict__.update(kwargs)
+    return mc2

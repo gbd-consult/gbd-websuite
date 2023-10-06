@@ -102,12 +102,15 @@ class Object(gws.common.action.Object):
         args = t.SelectArgs(
             keyword=p.keyword,
             depth=1,
-            map_tolerance=PIXEL_TOLERANCE * p.resolution)
+            map_tolerance=PIXEL_TOLERANCE * p.resolution,
+            user=req.user,
+        )
 
         if p.shapes:
             args.shape = gws.gis.shape.union([gws.gis.shape.from_props(s) for s in p.shapes])
 
         out_features = []
+        mc = t.ModelContext(access='read', user=req.user, project=project, depth=1)
 
         for layer in layers:
             args.extra_where = []
@@ -117,61 +120,64 @@ class Object(gws.common.action.Object):
                     gws.log.debug(f'using {flt=} for {layer.uid=}')
                     args.extra_where = [flt]
 
-            out_features.extend(layer.editor.model.select(args))
+            out_features.extend(layer.editor.model.select(args, mc))
 
         for fe in out_features:
             self._apply_templates_deep(fe, 'title')
 
-        return ListResponse(features=[self._feature_props(project, fe) for fe in out_features])
+        return ListResponse(features=[self._feature_props(fe, mc) for fe in out_features])
 
     def api_init_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
         project = req.require_project(p.projectUid)
-        fe_in = self._load_feature(req, p)
+        mc = t.ModelContext(access='read', user=req.user, project=project, depth=0)
+        fe_in = self._load_feature(p, mc)
 
         if not req.user.can_use(fe_in.model.permissions.read):
             raise gws.web.error.Forbidden()
 
         fe = fe_in
-        self._apply_permissions_and_defaults(fe, req, project, 'read')
+        fe.model.apply_permissions_and_defaults(fe, mc)
         self._apply_templates_deep(fe, 'title')
 
-        return FeatureResponse(feature=self._feature_props(project, fe))
+        return FeatureResponse(feature=self._feature_props(fe, mc))
 
     def api_read_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
         project = req.require_project(p.projectUid)
-        fe_in = self._load_feature(req, p)
+        mc = t.ModelContext(access='read', user=req.user, project=project, depth=1)
+        fe_in = self._load_feature(p, mc)
 
         if not req.user.can_use(fe_in.model.permissions.read):
             raise gws.web.error.Forbidden()
 
-        fe = fe_in.model.get_feature(fe_in.uid, depth=1)
+        fe = fe_in.model.get_feature(fe_in.uid, mc)
         if not fe:
             raise gws.web.error.NotFound()
 
-        self._apply_permissions_and_defaults(fe, req, project, 'read')
+        fe.model.apply_permissions_and_defaults(fe, mc)
         self._apply_templates_deep(fe, 'title')
 
-        return FeatureResponse(feature=self._feature_props(project, fe))
+        return FeatureResponse(feature=self._feature_props(fe, mc))
 
     def api_write_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
         project = req.require_project(p.projectUid)
-        fe = self._load_feature(req, p)
+        mc = t.ModelContext(access='write', user=req.user, project=project, depth=1)
+        fe = self._load_feature(p, mc)
 
         if fe.is_new and not req.user.can_use(fe.model.permissions.create):
             raise gws.web.error.Forbidden()
         if not fe.is_new and not req.user.can_use(fe.model.permissions.write):
             raise gws.web.error.Forbidden()
 
-        self._apply_permissions_and_defaults(fe, req, project, 'write')
+        fe.model.apply_permissions_and_defaults(fe, mc)
 
-        errors = fe.model.validate(fe)
+        errors = fe.model.validate(fe, mc)
         if errors:
             fe.attributes = {}
             fe.errors = errors
-            return FeatureResponse(feature=self._feature_props(project, fe))
+            return FeatureResponse(feature=self._feature_props(fe, mc))
 
         try:
-            fe.model.save(fe)
+            fe = fe.model.save(fe, mc)
             gws.common.model.session.commit()
         except Exception as exc:
             gws.log.exception()
@@ -181,69 +187,31 @@ class Object(gws.common.action.Object):
                 msg = None
             raise gws.web.error.BadRequest(msg)
 
-        fe.model.reload(fe, depth=1)
-
-        # fe = fe.model.get_feature(fe.uid, depth=1)
         self._apply_templates_deep(fe, 'title')
 
-        return FeatureResponse(feature=self._feature_props(project, fe))
+        return FeatureResponse(feature=self._feature_props(fe, mc))
 
     def api_delete_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
-        fe = self._load_feature(req, p)
+        project = req.require_project(p.projectUid)
+        mc = t.ModelContext(access='write', user=req.user, project=project, depth=1)
+        fe = self._load_feature(p, mc)
 
         if not req.user.can_use(fe.model.permissions.delete):
             raise gws.web.error.Forbidden()
 
-        fe.model.delete(fe)
+        fe.model.delete(fe, mc)
         gws.common.model.session.commit()
 
         return FeatureResponse(feature=None)
 
-    def _apply_permissions_and_defaults(self, fe: t.IFeature, req: t.IRequest, project, mode):
-        env = t.Data(user=req.user, project=project)
-        for f in fe.model.fields:
-            if f.apply_value(fe, mode, 'fixed', env):
-                continue
-            if not req.user.can_use(f.permissions.get(mode)):
-                gws.log.debug(f'remove field={f.name!r} mode={mode!r}')
-                fe.attributes.pop(f.name, None)
-            f.apply_value(fe, mode, 'default', env)
-        return fe
-
-    def _load_feature(self, req: t.IRequest, p: FeatureParams) -> t.IFeature:
+    def _load_feature(self, p: FeatureParams, mc: t.ModelContext) -> t.IFeature:
         layer_uid = p.feature.layerUid
         layer = t.cast(t.ILayer, self.root.find('gws.ext.layer', layer_uid))
-        if not layer or not req.user.can_use(layer.editor):
+        if not layer or not mc.user.can_use(layer.editor):
             raise gws.web.error.Forbidden()
-        fe = layer.editor.model.feature_from_props(p.feature, depth=1)
+        fe = layer.editor.model.feature_from_props(p.feature, mc)
         return fe
 
-    # def _prepare_features(self, req: t.IRequest, p: ListParams) -> t.Optional[_PreparedCollection]:
-    #     pc = _PreparedCollection(
-    #         by_layer={},
-    #         layers={},
-    #         features=[],
-    #     )
-    #
-    #     for index, fp in enumerate(p.features):
-    #         lid = fp.layerUid
-    #
-    #         if lid not in pc.by_layer:
-    #             layer = t.cast(t.ILayer, self.root.find('gws.ext.layer', lid))
-    #             if not layer or not layer.edit_access(req.user):
-    #                 raise gws.web.error.Forbidden()
-    #             pc.by_layer[lid] = []
-    #             pc.layers[lid] = layer
-    #
-    #         fe = pc.layers[lid].editor.model.feature_from_props(fp, depth=1)
-    #         pc.features.append(fe)
-    #         pc.by_layer[lid].append(index)
-    #
-    #     if not pc.features:
-    #         return
-    #
-    #     return pc
-    #
     def _apply_templates_deep(self, fe: t.IFeature, key):
         fe.apply_template(key)
         for k, v in fe.attributes.items():
@@ -270,7 +238,7 @@ class Object(gws.common.action.Object):
             ls.extend(self._enum_layers(la))
         return ls
 
-    def _feature_props(self, project, fe):
-        p = fe.props
-        p.layerUid = project.uid + '.map.' + p.layerUid.split('.')[-1]
+    def _feature_props(self, fe: t.IFeature, mc: t.ModelContext):
+        p = fe.model.feature_props(fe, mc)
+        p.layerUid = mc.project.uid + '.map.' + p.layerUid.split('.')[-1]
         return p

@@ -346,13 +346,13 @@ class IFeature:
     key_name: str
     layer: Optional['ILayer']
     model: 'IModel'
-    props: 'FeatureProps'
     shape: 'IShape'
     style: Optional['IStyle']
     template_context: dict
-    view_props: 'FeatureProps'
     def apply_template(self, key, templates: List['ITemplate'] = None, extra_context: dict = None) -> 'IFeature': pass
     def attr(self, name: str): pass
+    def get_uid(self): pass
+    def get_view_props(self, user: 'IUser') -> 'FeatureProps': pass
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
     def to_svg_tags(self, rv: 'MapRenderView', style: 'IStyle' = None) -> List['Tag']: pass
@@ -835,6 +835,15 @@ class MetaLink(Data):
     url: 'Url'
 
 
+class ModelContext(Data):
+    access: str
+    depth: int
+    errors: List['FeatureError']
+    mode: str
+    project: 'IProject'
+    user: 'IUser'
+
+
 class ModelSession:
     def close(self): pass
     def commit(self): pass
@@ -909,6 +918,7 @@ class SelectArgs(Data):
     sort: Optional[str]
     table: 'SqlTable'
     uids: Optional[List[str]]
+    user: 'IUser'
 
 
 class ShapeProps(Props):
@@ -1275,21 +1285,23 @@ class IModel(IObject):
     keyword_columns: List[str]
     layer: Optional['ILayer']
     permissions: 'ModelPermissions'
-    def delete(self, fe: 'IFeature'): pass
-    def feature_from_props(self, props: 'FeatureProps', depth=0): pass
-    def feature_props(self, fe, depth=0): pass
-    def get_feature(self, uid, depth=0) -> Optional['IFeature']: pass
+    def apply_permissions_and_defaults(self, fe: 'IFeature', mc: 'ModelContext'): pass
+    def delete(self, fe: 'IFeature', mc: 'ModelContext'): pass
+    def feature_from_props(self, props: 'FeatureProps', mc: 'ModelContext'): pass
+    def feature_props(self, fe: 'IFeature', mc: 'ModelContext'): pass
+    def get_feature(self, uid, mc: 'ModelContext') -> Optional['IFeature']: pass
     def get_field(self, name: str) -> Optional['IModelField']: pass
     def init_feature(self): pass
     def new_feature(self): pass
-    def reload(self, fe: 'IFeature', depth: int = 0): pass
-    def save(self, fe: 'IFeature') -> 'IFeature': pass
-    def select(self, args: 'SelectArgs') -> List['IFeature']: pass
-    def validate(self, fe: 'IFeature') -> List['FeatureError']: pass
+    def reload(self, fe: 'IFeature', mc: 'ModelContext'): pass
+    def save(self, fe: 'IFeature', mc: 'ModelContext') -> 'IFeature': pass
+    def select(self, args: 'SelectArgs', mc: 'ModelContext') -> List['IFeature']: pass
+    def validate(self, fe: 'IFeature', mc: 'ModelContext') -> List['FeatureError']: pass
 
 
 class IModelField(IObject):
     data_type: str
+    error_messages: Dict[str, str]
     geometry_type: str
     is_primary_key: bool
     is_required: bool
@@ -1298,21 +1310,23 @@ class IModelField(IObject):
     model: 'IModel'
     name: str
     permissions: 'FieldPermissions'
+    text_search: Data
     title: str
     type: str
     validators: list
+    value: Data
     widget: Optional['IModelWidget']
-    def apply_value(self, fe: 'IFeature', mode, kind, env): pass
+    def apply_value(self, fe: 'IFeature', kind, mc: 'ModelContext'): pass
     def prepend_validator(self, cfg): pass
-    def read_from_orm(self, fe: 'IFeature', obj, depth): pass
-    def read_from_props(self, fe: 'IFeature', props: 'FeatureProps', depth: int): pass
+    def read_from_orm(self, fe: 'IFeature', obj, mc: 'ModelContext'): pass
+    def read_from_props(self, fe: 'IFeature', props: 'FeatureProps', mc: 'ModelContext'): pass
     def sa_adapt_select(self, state): pass
     def sa_columns(self, columns): pass
     def sa_properties(self, properties): pass
-    def validate(self, fe: 'IFeature', errors): pass
+    def validate(self, fe: 'IFeature', mc: 'ModelContext'): pass
     def validate_value(self, value): pass
-    def write_to_orm(self, fe: 'IFeature', obj): pass
-    def write_to_props(self, fe: 'IFeature', props: 'FeatureProps', depth: int): pass
+    def write_to_orm(self, fe: 'IFeature', obj, mc: 'ModelContext'): pass
+    def write_to_props(self, fe: 'IFeature', props: 'FeatureProps', mc: 'ModelContext'): pass
 
 
 class IModelValidator(IObject):
@@ -1454,12 +1468,14 @@ class IWebSite(IObject):
 
 
 class IDbModel(IModel):
-    def feature_from_orm(self, obj, depth=0): pass
+    def feature_from_orm(self, obj, mc: 'ModelContext'): pass
     def get_class(self): pass
     def get_db(self): pass
     def get_keys(self): pass
     def get_object(self, uid): pass
+    def get_sa_table(self): pass
     def get_table(self) -> 'SqlTable': pass
+    def orm_object_for_save(self, fe: 'IFeature', mc: 'ModelContext'): pass
     def sa_make_select(self, args: 'SelectArgs'): pass
     def sa_session(self): pass
 

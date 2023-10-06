@@ -158,6 +158,7 @@ class Object(gws.common.action.Object):
 
         args = t.SelectArgs(
             limit=p.get('limit'),
+            user=req.user,
         )
 
         bounds = t.Bounds(
@@ -192,7 +193,7 @@ class Object(gws.common.action.Object):
 
         fprops = []
         for fe in flist:
-            p = fe.view_props
+            p = fe.get_view_props(req.user)
             p.layerUid = layer.uid
             fprops.append(p)
 

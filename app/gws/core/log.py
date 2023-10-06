@@ -59,7 +59,7 @@ def exception(msg: str = '', *args, **kwargs):
     ls = err.to_string_list(exc)
     _raw(Level.ERROR, msg or ls[0], args, kwargs)
     for s in ls[1:]:
-        _raw(Level.DEBUG, 'EXCEPTION :: ' + s)
+        _raw(Level.ERROR, 'EXCEPTION :: ' + s)
 
 
 def if_debug(fn, *args):

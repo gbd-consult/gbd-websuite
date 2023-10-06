@@ -31,7 +31,8 @@ class Object(gws.common.layer.Vector):
         self.table = self.provider.configure_table(self.var('table'))
 
     def create_model(self, cfg):
-        return self.create_child(gws.common.model.DbModel, cfg)
+        cls = gws.common.model.get_class('model', gws.get(cfg, 'type') or 'db')
+        return self.create_child(cls, cfg)
 
     @property
     def own_bounds(self):
@@ -69,4 +70,4 @@ class Object(gws.common.layer.Vector):
 
         args.table = self.table
 
-        return model.select(args)
+        return model.select(args, t.ModelContext(user=user, depth=args.depth or 0))

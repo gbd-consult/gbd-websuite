@@ -178,7 +178,7 @@ def _find_files(dirname, pattern):
 
 
 def _ignore_path(p):
-    return 'types/' in p or p.startswith('___') or p.endswith('.in.py')
+    return ('types/' in p) or ('___' in p) or p.endswith('.in.py')
 
 
 def _make_cli_main(cli_funcs, path):

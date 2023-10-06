@@ -566,26 +566,11 @@ class EditDialog extends gws.View<EditViewProps> {
                 buttons={[cancelButton]}
             >
                 <Form>
-
                     <FeatureList
                         controller={cc}
                         layers={dd.layers}
                         whenFeatureListNameTouched={dd.whenFeatureSelected.bind(dd)}
                     />
-
-                    {/*<Row>*/}
-                    {/*    <Cell flex>*/}
-                    {/*        <gws.components.feature.List*/}
-                    {/*            controller={cc}*/}
-                    {/*            features={features}*/}
-                    {/*            content={f => <gws.ui.Link*/}
-                    {/*                content={cc.featureTitle(f)}*/}
-                    {/*                whenTouched={() => dd.whenFeatureSelected(f)}*/}
-                    {/*            />}*/}
-                    {/*            withZoom*/}
-                    {/*        />*/}
-                    {/*    </Cell>*/}
-                    {/*</Row>*/}
                 </Form>
             </gws.ui.Dialog>;
         }
@@ -779,10 +764,14 @@ class Controller extends gws.Controller {
                 attributes[field.name] = es.feature;
             }
 
+            if (field.dataType === 'featureUid') {
+                attributes[field.name] = es.feature.uid;
+            }
+
             if (field.dataType === 'featureList') {
                 attributes[field.name] = [es.feature];
             }
-
+            console.log('XXX',field, attributes )
             let feature = await this.createNewFeature(relation.model.getLayer(), attributes, null);
 
             this.setState({waiting: true})
@@ -940,7 +929,7 @@ class Controller extends gws.Controller {
             props['whenNewButtonTouched'] = this.whenFeatureListWidgetNewButtonTouched.bind(this);
             props['whenLinkButtonTouched'] = this.whenFeatureListWidgetLinkButtonTouched.bind(this);
             props['whenEditButtonTouched'] = this.whenFeatureListWidgetEditButtonTouched.bind(this);
-            props['whenDeleteButtonTouched'] = this.whenFeatureListWidgetDeleteButtonTouched.bind(this);
+            // props['whenDeleteButtonTouched'] = this.whenFeatureListWidgetDeleteButtonTouched.bind(this);
         }
 
         if (type == 'featureSelect') {
@@ -1268,7 +1257,7 @@ class Controller extends gws.Controller {
 
         let res = await this.app.server.editWriteFeature({
             feature: feSave.getProps(onlyGeometry ? 0 : 1)
-        }, {binaryRequest: true, binaryResponse: false});
+        }, {binaryRequest: false, binaryResponse: false});
 
         if (res.error) {
             this.update({

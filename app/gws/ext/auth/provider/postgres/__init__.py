@@ -96,5 +96,5 @@ class Object(gws.common.auth.provider.Object):
 
         if validate and not valid_password:
             raise gws.common.auth.error.WrongPassword()
-
+        gws.log.debug(f'LOGIN {args["attributes"]=}')
         return gws.common.auth.user.ValidUser().init_from_source(**args)

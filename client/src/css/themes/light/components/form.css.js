@@ -81,6 +81,7 @@ module.exports = v => ({
         '.cmpFormListLinkButton': {...v.SVG('google:content/link', v.SIDEBAR_AUX_BUTTON_COLOR)},
         '.cmpFormListUnlinkButton': {...v.SVG('link_off_black_24dp', v.SIDEBAR_AUX_BUTTON_COLOR)},
 
+        '.cmpFormFileDownloadButton': {...v.SVG('google:file/download', v.SIDEBAR_AUX_BUTTON_COLOR)},
         '.cmpFormFileViewButton': {...v.SVG('google:action/visibility', v.SIDEBAR_AUX_BUTTON_COLOR)},
 
     },

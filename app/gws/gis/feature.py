@@ -56,13 +56,9 @@ class Feature(t.IFeature):
         self.is_new: bool = False
         self.errors: t.List[t.FeatureError] = []
 
-    @property
-    def props(self) -> t.FeatureProps:
-        return self.model.feature_props(self)
-
-    @property
-    def view_props(self) -> t.FeatureProps:
-        fp = self.props
+    def get_view_props(self, user: t.IUser) -> t.FeatureProps:
+        mc = t.ModelContext(user=user, depth=1)
+        fp = self.model.feature_props(self, mc)
         fp.attributes = {
             k: v
             for k, v in fp.attributes.items()
@@ -82,6 +78,9 @@ class Feature(t.IFeature):
 
     @property
     def uid(self) -> t.Any:
+        return self.attributes.get(self.key_name)
+
+    def get_uid(self):
         return self.attributes.get(self.key_name)
 
     @uid.setter

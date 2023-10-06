@@ -40,8 +40,7 @@ class Object(gws.common.search.provider.Object):
         map_tolerance = n * args.resolution if u == 'px' else n
 
         model = self.model or layer.model
-
-        return model.select(t.SelectArgs(
+        args = t.SelectArgs(
             table=self.table,
             keyword=args.keyword,
             keyword_columns=self.keyword_columns,
@@ -51,7 +50,8 @@ class Object(gws.common.search.provider.Object):
             map_tolerance=map_tolerance,
             extra_where=self._filter_to_sql(args.filter),
             depth=args.relation_depth or 0,
-        ))
+        )
+        return model.select(args, t.ModelContext(user=args.user, depth=args.depth))
 
     def _filter_to_sql(self, f: t.SearchFilter):
         if not f:
