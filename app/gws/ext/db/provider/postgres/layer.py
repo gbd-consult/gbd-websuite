@@ -70,4 +70,4 @@ class Object(gws.common.layer.Vector):
 
         args.table = self.table
 
-        return model.select(args, t.ModelContext(user=user, depth=args.depth or 0))
+        return model.select(args, t.ModelContext(user=user, project=args.project, depth=args.depth or 0))

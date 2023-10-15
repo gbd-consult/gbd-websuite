@@ -166,9 +166,10 @@ class Object(gws.Object):
 
         writer.write_headers([f.title for f in fields])
 
+        mc = t.ModelContext()
         for fs in fs_features:
             for rec in _recs_from_feature(fs, field_names):
-                f = self.model.feature_from_props(t.FeatureProps(attributes=rec))
+                f = self.model.feature_from_props(t.FeatureProps(attributes=rec), mc)
                 writer.write_dict(field_names, f.attributes)
 
         return writer.as_bytes()

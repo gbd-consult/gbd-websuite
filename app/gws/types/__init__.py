@@ -352,6 +352,7 @@ class IFeature:
     def apply_template(self, key, templates: List['ITemplate'] = None, extra_context: dict = None) -> 'IFeature': pass
     def attr(self, name: str): pass
     def get_uid(self): pass
+    def get_props(self, user: 'IUser') -> 'FeatureProps': pass
     def get_view_props(self, user: 'IUser') -> 'FeatureProps': pass
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass

@@ -48,6 +48,7 @@ class SelectArgs(t.Data):
     columns: t.Optional[t.List[str]]
     depth: t.Optional[int]
     user: t.IUser
+    project: t.Optional[t.IProject]
 
 
 #:export

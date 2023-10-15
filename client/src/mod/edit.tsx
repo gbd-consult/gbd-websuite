@@ -771,7 +771,6 @@ class Controller extends gws.Controller {
             if (field.dataType === 'featureList') {
                 attributes[field.name] = [es.feature];
             }
-            console.log('XXX',field, attributes )
             let feature = await this.createNewFeature(relation.model.getLayer(), attributes, null);
 
             this.setState({waiting: true})

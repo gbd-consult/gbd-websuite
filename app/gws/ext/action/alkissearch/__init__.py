@@ -451,7 +451,7 @@ class Object(gws.common.action.Object):
                 items=[
                     gws.common.printer.types.PrintItemFeatures(
                         type='features',
-                        features=[feature.props],
+                        features=[feature.get_props(req.user)],
                         style=p.highlightStyle,
                     )
                 ]
@@ -474,7 +474,7 @@ class Object(gws.common.action.Object):
         for f in res.features:
             for tpl in templates:
                 f.apply_template(tpl, self.feature_templates)
-            props = f.props
+            props = f.get_props(req.user)
             props.attributes = {
                 'uid': props.attributes['uid'],
                 'geometry': props.attributes['geometry'],

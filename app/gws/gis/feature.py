@@ -67,6 +67,10 @@ class Feature(t.IFeature):
         # del fp.modelUid
         return fp
 
+    def get_props(self, user: t.IUser) -> t.FeatureProps:
+        mc = t.ModelContext(user=user, depth=1)
+        return self.model.feature_props(self, mc)
+
     @property
     def template_context(self) -> dict:
         d = dict(self.attributes)

@@ -370,9 +370,10 @@ class _Worker:
 
         if item.type == 'features':
             mod = gws.common.model.generic()
+            mc = t.ModelContext()
             features = []
             for p in item.features:
-                f = mod.feature_from_props(p)
+                f = mod.feature_from_props(p, mc)
                 if not f or not f.shape:
                     continue
                 s = p.get('style')

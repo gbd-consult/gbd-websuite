@@ -155,10 +155,12 @@ class Object(gws.common.action.Object):
 
         layer = req.require_layer(p.layerUid)
         model = layer.model
+        project = req.require_project(p.projectUid)
 
         args = t.SelectArgs(
             limit=p.get('limit'),
             user=req.user,
+            project=project,
         )
 
         bounds = t.Bounds(
@@ -170,7 +172,6 @@ class Object(gws.common.action.Object):
             args.shape = gws.gis.shape.from_bounds(bounds)
 
         if layer.table:
-            project = req.require_project(p.projectUid)
             flt = project.variable('table_filters', {}).get(layer.table.name)
             if flt:
                 gws.log.debug(f'using {flt=} for {layer.uid=}')
