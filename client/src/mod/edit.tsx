@@ -990,8 +990,7 @@ class Controller extends gws.Controller {
         let pt = new ol.geom.Point(coord);
         let res = await this.app.server.editQueryFeatures({
             shapes: [this.map.geom2shape(pt)],
-            // layerUids: this.activeLayer ? [this.activeLayer.uid] : [],
-            layerUids: [],
+            layerUids: this.activeLayer ? [this.activeLayer.uid] : [],
             resolution: this.map.viewState.resolution,
         });
 

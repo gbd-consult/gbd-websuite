@@ -103,6 +103,7 @@ class Object(gws.common.action.Object):
             keyword=p.keyword,
             depth=1,
             map_tolerance=PIXEL_TOLERANCE * p.resolution,
+            project=project,
             user=req.user,
         )
 
