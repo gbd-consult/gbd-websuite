@@ -52,7 +52,7 @@ Options:
 
     -qgis <qgis-version>
         QGIS version to include, eg. -qgis 3.25
-        The builder looks for QGIS server tarballs on 'gws-files.gbd-consult.de', 
+        The builder looks for QGIS server tarballs on 'files.gbd-websuite.de', 
         see the subdirectory './qgis/compile' on how to create a QGIS tarball.      
 
     -vendor <vendor-name>
@@ -87,7 +87,7 @@ class Builder:
     qgis_start_sh = 'qgis-start.sh'
     qgis_nginx_conf = 'nginx.conf'
 
-    packages_url = 'http://gws-files.gbd-consult.de'
+    packages_url = 'https://files.gbd-websuite.de'
 
     gws_user_uid = 1000
     gws_user_gid = 1000
