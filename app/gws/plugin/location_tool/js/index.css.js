@@ -1,8 +1,8 @@
 module.exports = v => ({
-    '.modLocationToolbarButton': {
+    '.locationToolToolbarButton': {
         ...v.TOOLBAR_BUTTON('google:maps/my_location'),
     },
-    '.uiDialog.modLocationErrorDialog': {
+    '.uiDialog.locationToolErrorDialog': {
         [v.MEDIA('large+')]: {
             ...v.CENTER_BOX(500, 200),
         },
