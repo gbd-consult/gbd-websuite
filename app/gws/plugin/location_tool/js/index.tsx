@@ -98,7 +98,7 @@ class Controller extends gws.Controller {
 
         let circ = new ol.geom.Circle(xy, pos.coords.accuracy);
 
-        let f = this.app.models.defaultModel().featureFromGeometry(circ);
+        let f = this.app.modelRegistry.defaultModel().featureFromGeometry(circ);
 
         this.update({
             marker: {

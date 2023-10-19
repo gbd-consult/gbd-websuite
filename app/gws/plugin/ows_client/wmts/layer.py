@@ -1,5 +1,6 @@
 import gws
 import gws.base.layer
+import gws.config.util
 import gws.gis.bounds
 import gws.gis.crs
 import gws.gis.source
@@ -49,16 +50,7 @@ class Object(gws.base.layer.image.Object):
         self.configure_style()
 
     def configure_source_layers(self):
-        p = self.cfg('sourceLayers')
-        if p:
-            self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, p)
-            return True
-        p = self.cfg('_defaultSourceLayers')
-        if p:
-            self.sourceLayers = p
-            return True
-        self.sourceLayers = self.provider.sourceLayers
-        return True
+        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers)
 
     def configure_tms(self):
         crs = self.provider.forceCrs

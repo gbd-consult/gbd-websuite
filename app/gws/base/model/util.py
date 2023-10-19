@@ -5,21 +5,6 @@ import datetime
 import gws
 import gws.types as t
 
-
-def locate(
-        models: list[gws.IModel],
-        user: gws.IUser = None,
-        access: gws.Access = None,
-        uid: str = None
-) -> t.Optional[gws.IModel]:
-    for model in models:
-        if user and access and not user.can(access, model):
-            continue
-        if uid and model.uid != uid:
-            continue
-        return model
-
-
 _ATTR_TO_PY = {
     gws.AttributeType.bool: bool,
     gws.AttributeType.bytes: bytes,
@@ -38,18 +23,18 @@ _ATTR_TO_PY = {
 }
 
 
-def describe_from_feature_data(fd: gws.FeatureData) -> gws.DataSetDescription:
+def describe_from_feature_data(fd: gws.FeatureRecord) -> gws.DataSetDescription:
     py_to_attr = {str(v): k for k, v in _ATTR_TO_PY.items()}
 
     desc = gws.DataSetDescription(columns=[])
 
     for k, v in fd.attributes:
         typ = str(type(v))
-        desc.columns[k] = gws.ColumnDescription(
+        desc.columns.append(gws.ColumnDescription(
             name=k,
             nativeType=typ,
             type=py_to_attr.get(typ, gws.AttributeType.str),
-        )
+        ))
         if fd.shape:
             col = gws.ColumnDescription(
                 name='geometry',
@@ -57,11 +42,20 @@ def describe_from_feature_data(fd: gws.FeatureData) -> gws.DataSetDescription:
                 geometrySrid=fd.shape.crs.srid,
                 type=gws.AttributeType.geometry,
             )
-            desc.columns[col.name] = col
+            desc.columns.append(col)
             desc.geometryName = col.name
             desc.geometryType = col.geometryType
             desc.geometrySrid = col.geometrySrid
 
+    desc.columnMap = {col.name: col for col in desc.columns}
     return desc
 
 
+def clone_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
+    return gws.ModelContext(gws.merge(mc, **kwargs))
+
+
+def secondary_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
+    mc2 = clone_context(mc, **kwargs)
+    mc2.relDepth = mc.relDepth + 1
+    return mc2

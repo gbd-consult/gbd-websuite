@@ -198,9 +198,6 @@ class Requester(gws.IWebRequester):
     def require_layer(self, uid):
         return t.cast(gws.ILayer, self.require(uid, gws.ext.object.layer))
 
-    def require_model(self, uid):
-        return t.cast(gws.IModel, self.require(uid, gws.ext.object.model))
-
     def acquire(self, uid, classref):
         return self.user.acquire(uid, classref)
 

@@ -4,27 +4,27 @@ import * as types from '../types';
 import * as api from '../core/api';
 import * as feature from './feature';
 import * as lib from '../lib';
+import {IFeature, IModel} from "../types";
 
 
 export class ModelRegistry implements types.IModelRegistry {
-    models: Array<Model>;
     index: { [uid: string]: Model };
     app: types.IApplication;
 
     constructor(app: types.IApplication) {
         this.app = app;
-        this.models = [];
         this.index = {};
         this.addModel({
             canCreate: false,
             canDelete: false,
             canRead: false,
             canWrite: false,
+            isEditable: false,
             supportsKeywordSearch: false,
             supportsGeometrySearch: false,
             fields: [],
             geometryName: 'geometry',
-            keyName: 'uid',
+            uidName: 'uid',
             loadingStrategy: api.core.FeatureLoadingStrategy.all,
             title: '',
             uid: '',
@@ -32,42 +32,35 @@ export class ModelRegistry implements types.IModelRegistry {
     }
 
 
-    readModel(props: api.base.model.model.Props) {
+    readModel(props: api.base.model.Props) {
         return new Model(this, props);
     }
 
-    addModel(props: api.base.model.model.Props) {
+    addModel(props: api.base.model.Props) {
         let m = new Model(this, props);
-        this.models.push(m);
         this.index[m.uid] = m;
         return m;
     }
 
-    model(uid) {
-        return this.index[uid || ''];
+    getModel(uid) {
+        let m = this.index[uid || ''];
+        if (!m)
+            throw new Error(`model ${uid} not found`);
+        return m;
     }
 
     defaultModel() {
         return this.index[''];
     }
 
-    modelForLayer(layer) {
-        for (let m of this.models)
+    getModelForLayer(layer) {
+        for (let m of Object.values(this.index))
             if (m.layerUid === layer.uid)
                 return m
     }
 
-    editableModels() {
-        let d = [];
-        for (let m of this.models) {
-            if (m.canCreate || m.canWrite || m.canDelete)
-                d.push(m)
-        }
-        return d
-    }
-
     featureFromProps(props) {
-        return this.model(props.modelUid).featureFromProps(props);
+        return this.getModel(props.modelUid).featureFromProps(props);
     }
 
     featureListFromProps(propsList) {
@@ -76,8 +69,6 @@ export class ModelRegistry implements types.IModelRegistry {
             features.push(this.featureFromProps(props));
         return features;
     }
-
-
 }
 
 interface FeatureMap {
@@ -95,7 +86,7 @@ export class Model implements types.IModel {
     geometryCrs: string
     geometryName: string;
     geometryType: api.core.GeometryType
-    keyName: string;
+    uidName: string;
     layerUid: string;
     loadingStrategy: api.core.FeatureLoadingStrategy;
     title: string;
@@ -105,7 +96,7 @@ export class Model implements types.IModel {
 
     registry: ModelRegistry;
 
-    constructor(registry, props: api.base.model.model.Props) {
+    constructor(registry, props: api.base.model.Props) {
         this.registry = registry;
         this.featureMap = {};
 
@@ -118,7 +109,7 @@ export class Model implements types.IModel {
         this.geometryCrs = props.geometryCrs;
         this.geometryName = props.geometryName;
         this.geometryType = props.geometryType;
-        this.keyName = props.keyName;
+        this.uidName = props.uidName;
         this.layerUid = props.layerUid;
         this.loadingStrategy = props.loadingStrategy;
         this.title = props.title;
@@ -146,8 +137,8 @@ export class Model implements types.IModel {
     newFeature() {
         return new feature.Feature(this);
     }
-    
-    
+
+
     featureWithAttributes(attributes: types.Dict): types.IFeature {
         return this.newFeature().setAttributes(attributes);
     }
@@ -185,13 +176,13 @@ export class Model implements types.IModel {
         return propsList.map(props => this.featureFromProps(props));
     }
 
-    featureAttributes(feature: types.IFeature, relationDepth?: number): types.Dict {
+    featureAttributes(feature: types.IFeature, relDepth?: number): types.Dict {
         if (lib.isEmpty(this.fields)) {
             return feature.attributes;
         }
 
         let attributes = {};
-        let depth = relationDepth || 0;
+        let depth = relDepth || 0;
 
         for (let f of this.fields) {
             let val = feature.attributes[f.name];
@@ -218,9 +209,9 @@ export class Model implements types.IModel {
     }
 
 
-    featureProps(feature: types.IFeature, relationDepth?: number): api.core.FeatureProps {
+    featureProps(feature: types.IFeature, relDepth?: number): api.core.FeatureProps {
         return {
-            attributes: this.featureAttributes(feature, relationDepth),
+            attributes: this.featureAttributes(feature, relDepth),
             cssSelector: feature.cssSelector,
             isNew: feature.isNew,
             modelUid: this.uid,
@@ -238,25 +229,78 @@ export class ModelField implements types.IModelField {
     type: string;
     uid: string;
 
-    relationships: Array<api.base.model.field.RelationshipProps>;
+    relatedModelUids: Array<string>;
     widgetProps: api.ext.props.modelWidget;
 
     model: Model;
 
     constructor(model) {
         this.model = model;
-
     }
 
     setProps(props: api.ext.props.modelField): ModelField {
         this.attributeType = props.attributeType;
         this.geometryType = props.geometryType;
         this.name = props.name;
-        this.relationships = props.relationships || [];
+        this.relatedModelUids = props.relatedModelUids || [];
         this.title = props.title;
         this.uid = props.uid;
         this.widgetProps = props.widget;
 
         return this;
     }
+
+    relatedModels() {
+        return (this.relatedModelUids || []).map(uid => this.model.registry.getModel(uid));
+    }
+
+    addRelatedFeature(targetFeature: IFeature, relatedFeature: IFeature) {
+
+        if (this.attributeType == api.core.AttributeType.feature) {
+            targetFeature.editAttribute(this.name, relatedFeature);
+        }
+
+        if (this.attributeType == api.core.AttributeType.featurelist) {
+            let curList = targetFeature.currentAttributes()[this.name] || [];
+            let newList = [];
+            let added = false;
+
+            for (let f of curList) {
+                if (f.model !== relatedFeature.model || f.uid !== relatedFeature.uid) {
+                    newList.push(f);
+                } else {
+                    newList.push(relatedFeature);
+                    added = true
+                }
+            }
+
+            if (!added) {
+                newList.push(relatedFeature);
+            }
+
+            targetFeature.editAttribute(this.name, newList);
+        }
+    }
+
+    removeRelatedFeature(targetFeature: IFeature, relatedFeature: IFeature) {
+
+        if (this.attributeType == api.core.AttributeType.feature) {
+            targetFeature.editAttribute(this.name, null);
+        }
+
+        if (this.attributeType == api.core.AttributeType.featurelist) {
+            let curList = targetFeature.currentAttributes()[this.name] || [];
+            let newList = [];
+
+            for (let f of curList) {
+                if (f.model !== relatedFeature.model || f.uid !== relatedFeature.uid) {
+                    newList.push(f);
+                }
+            }
+
+            targetFeature.editAttribute(this.name, newList);
+        }
+    }
+
+
 }

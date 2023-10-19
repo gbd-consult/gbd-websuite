@@ -167,6 +167,21 @@ def omit(x, *keys):
     return {}
 
 
+def collect(pairs):
+    m = {}
+
+    for key, val in pairs:
+        if key is not None:
+            m.setdefault(key, []).append(val)
+
+    return m
+
+
+def first(it):
+    for x in it:
+        return x
+
+
 def merge(*args, **kwargs) -> dict | Data:
     """Create a new dict/Data object by merging values from dicts/Datas or kwargs.
     Latter vales overwrite former ones unless None.
@@ -586,7 +601,7 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
         user: Directory user (defaults to gws.UID)
         group: Directory group (defaults to gws.GID)
 
-    Retruns:
+    Returns:
         The absolute path to the directory.
     """
 

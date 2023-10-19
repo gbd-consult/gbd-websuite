@@ -2,14 +2,6 @@ import gws
 import gws.types as t
 
 
-class Relationship(gws.Data):
-    modelUid: str
-    fieldName: str
-    foreignKey: str
-    relatedKey: str
-    discriminator: str
-
-
 class RelationshipProps(gws.Data):
     modelUid: str
     fieldName: str
@@ -19,11 +11,11 @@ class Props(gws.Props):
     attributeType: gws.AttributeType
     geometryType: gws.GeometryType
     name: str
-    relationships: list[RelationshipProps]
     title: str
     type: str
     widget: gws.ext.props.modelWidget
     uid: str
+    relatedModelUids: list[str]
 
 
 class Config(gws.ConfigWithAccess):
@@ -33,10 +25,10 @@ class Config(gws.ConfigWithAccess):
     isPrimaryKey: t.Optional[bool]
     isRequired: t.Optional[bool]
     isUnique: t.Optional[bool]
+    isAuto: t.Optional[bool]
 
     values: t.Optional[list[gws.ext.config.modelValue]]
     validators: t.Optional[list[gws.ext.config.modelValidator]]
-    serverDefault: t.Optional[str]
 
     widget: t.Optional[gws.ext.config.modelWidget]
 
@@ -44,8 +36,6 @@ class Config(gws.ConfigWithAccess):
 ##
 
 class Object(gws.Node, gws.IModelField):
-    _validatorsIndex: dict[gws.Access, list[gws.IModelValidator]]
-    _valuesIndex: dict[tuple[bool, gws.Access], gws.IModelValue]
 
     def configure(self):
         self.model = self.cfg('_defaultModel')
@@ -55,39 +45,41 @@ class Object(gws.Node, gws.IModelField):
         self.values = []
         self.validators = []
         self.widget = None
-        self.serverDefault = self.cfg('serverDefault')
 
-        self.isPrimaryKey = False
-        self.isRequired = False
-
-        self.configure_primary_key()
-        self.configure_required()
-
-        self.isUnique = bool(self.cfg('isUnique'))
-
+        self.configure_flags()
         self.configure_values()
         self.configure_validators()
         self.configure_widget()
 
-    def configure_primary_key(self):
-        b = self.cfg('isPrimaryKey')
-        if b is not None:
-            self.isPrimaryKey = b
-            return True
-        c = self.describe()
-        if c:
-            self.isPrimaryKey = c.isPrimaryKey
-            return True
+    def configure_flags(self):
+        col = None
+        desc = self.model.describe()
+        if desc:
+            col = desc.columnMap.get(self.name)
 
-    def configure_required(self):
-        b = self.cfg('isRequired')
-        if b is not None:
-            self.isRequired = b
-            return True
-        c = self.describe()
-        if c:
-            self.isRequired = not c.isNullable
-            return True
+        p = self.cfg('isPrimaryKey')
+        if p is not None:
+            self.isPrimaryKey = p
+        else:
+            self.isPrimaryKey = col and col.isPrimaryKey
+
+        p = self.cfg('isRequired')
+        if p is not None:
+            self.isRequired = p
+        else:
+            self.isRequired = col and not col.isNullable
+
+        p = self.cfg('isAuto')
+        if p is not None:
+            self.isAuto = p
+        else:
+            self.isAuto = col and col.isAutoincrement
+
+        p = self.cfg('isUnique')
+        if p is not None:
+            self.isUnique = p
+        else:
+            self.isUnique = False
 
     def configure_values(self):
         p = self.cfg('values')
@@ -108,47 +100,25 @@ class Object(gws.Node, gws.IModelField):
             return True
 
     def post_configure(self):
-        self._create_validators_index()
-        self._create_mandatory_validators()
-        self._create_values_index()
+        if self.isRequired:
+            vd = self.root.create_shared(
+                gws.ext.object.modelValidator,
+                type='required',
+                uid='gws.base.model.field.default_validator_required',
+                forCreate=True,
+                forUpdate=True,
+            )
+            self.validators.append(vd)
 
-    def _create_validators_index(self):
-        self._validatorsIndex = {gws.Access.write: [], gws.Access.create: []}
-
-        for vd in self.validators:
-            if vd.forWrite:
-                self._validatorsIndex[gws.Access.write].append(vd)
-            if vd.forCreate:
-                self._validatorsIndex[gws.Access.create].append(vd)
-
-    def _create_mandatory_validators(self):
         vd = self.root.create_shared(
             gws.ext.object.modelValidator,
             type='format',
-            uid='gws.base.model.field.default_validator_format')
-        self._validatorsIndex[gws.Access.write].append(vd)
-        self._validatorsIndex[gws.Access.create].append(vd)
+            uid='gws.base.model.field.default_validator_format',
+            forCreate=True,
+            forUpdate=True,
+        )
 
-        if not self.isRequired:
-            return
-
-        vd = self.root.create_shared(
-            gws.ext.object.modelValidator,
-            type='required',
-            uid='gws.base.model.field.default_validator_required')
-        self._validatorsIndex[gws.Access.write].append(vd)
-        self._validatorsIndex[gws.Access.create].append(vd)
-
-    def _create_values_index(self):
-        self._valuesIndex = {}
-
-        for va in self.values:
-            if va.forRead:
-                self._valuesIndex[va.isDefault, gws.Access.read] = va
-            if va.forWrite:
-                self._valuesIndex[va.isDefault, gws.Access.write] = va
-            if va.forCreate:
-                self._valuesIndex[va.isDefault, gws.Access.create] = va
+        self.validators.append(vd)
 
     ##
 
@@ -170,103 +140,14 @@ class Object(gws.Node, gws.IModelField):
 
     ##
 
-    def db_to_py(self, val):
-        return val
-
-    def prop_to_py(self, val):
-        return val
-
-    def py_to_db(self, val):
-        return val
-
-    def py_to_prop(self, val):
-        return val
-
-    ##
-
-    def load_from_record(self, feature, record, user, relation_depth=0, **kwargs):
-        if hasattr(record, self.name):
-            val = getattr(record, self.name)
-            if val is not None:
-                val = self.db_to_py(val)
-            if val is not None:
-                feature.attributes[self.name] = val
-
-    def load_from_data(self, feature, data, user, relation_depth=0, **kwargs):
-        val = data.attributes.get(self.name)
-        if val is not None:
-            val = self.prop_to_py(val)
-        if val is not None:
-            feature.attributes[self.name] = val
-
-    def load_from_props(self, feature, props, user, relation_depth=0, **kwargs):
-        val = props.attributes.get(self.name)
-        if val is not None:
-            val = self.prop_to_py(val)
-        if val is not None:
-            feature.attributes[self.name] = val
-
-    def _value_to_write(self, feature: gws.IFeature):
-        val = feature.attributes.get(self.name)
-        if val is None:
-            return False, None
-        if val is gws.ErrorValue:
-            raise gws.Error(f'attempt to store an error value, field {feature.model.uid!r}.{self.name!r}, feature {feature.uid()!r}')
-        return True, val
-
-    def store_to_record(self, feature, record, user, **kwargs):
-        ok, val = self._value_to_write(feature)
-        if ok:
-            val = self.py_to_db(val)
-            if val is not None:
-                setattr(record, self.name, val)
-
-    def store_to_props(self, feature, props, user, **kwargs):
-        ok, val = self._value_to_write(feature)
-        if ok:
-            val = self.py_to_prop(val)
-            if val is not None:
-                props.attributes[self.name] = val
-
-    ##
-
-    def compute(self, feature, access, user, **kwargs):
-        val = self._valuesIndex.get((False, access))
-        if val:
-            feature.attributes[self.name] = val.compute(feature, self, user, **kwargs)
-            return
-        if self.name in feature.attributes:
-            return
-        val = self._valuesIndex.get((True, access))
-        if val:
-            feature.attributes[self.name] = val.compute(feature, self, user, **kwargs)
-            return
-
-    def validate(self, feature, access, user, **kwargs):
-        for vd in self._validatorsIndex[access]:
-            ok = vd.validate(feature, self, user, **kwargs)
-            if not ok:
-                feature.errors.append(gws.ModelValidationError(
-                    fieldName=self.name,
-                    message=vd.message,
-                ))
-                return False
-
-        return True
-
-    ##
-
-    def orm_depends_on(self):
-        return []
-
-    def orm_columns(self):
-        return []
-
-    def orm_properties(self):
-        return {}
-
-    ##
-
-    def describe(self):
-        desc = self.model.describe()
-        return desc.columns.get(self.name) if desc else None
+    def do_validate(self, features, mc):
+        for feature in features:
+            for vd in self.validators:
+                if mc.mode not in vd.modes:
+                    continue
+                if not vd.validate(self, feature, mc):
+                    feature.errors.append(gws.ModelValidationError(
+                        fieldName=self.name,
+                        message=vd.message,
+                    ))
+                    break

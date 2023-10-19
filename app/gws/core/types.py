@@ -9,6 +9,7 @@ from gws.types import (
     cast,
     Any,
     Callable,
+    ContextManager,
     Iterable,
     Iterator,
     Literal,
@@ -444,8 +445,6 @@ class IWebRequester(Protocol):
 
     def require_layer(self, uid: str) -> 'ILayer': ...
 
-    def require_model(self, uid: str) -> 'IModel': ...
-
     def acquire(self, uid: str, classref: ClassRef): ...
 
     def set_session(self, sess: 'IAuthSession'): ...
@@ -526,6 +525,8 @@ class IUser(IObject, Protocol):
     def can_use(self, obj: IObject, *context) -> bool: ...
 
     def can_write(self, obj: IObject, *context) -> bool: ...
+
+    def can_edit(self, obj: IObject, *context) -> bool: ...
 
     def acquire(self, uid: str, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Optional[IObject]: ...
 
@@ -932,8 +933,14 @@ class IXmlElement(Iterable):
 # ----------------------------------------------------------------------------------------------------------------------
 # shapes
 
-class IShape(IObject, Protocol):
-    """Georeferenced geometry."""
+class ShapeProps(Props):
+    """Shape properties object."""
+    crs: str
+    geometry: dict
+
+
+class IShape(Protocol):
+    """Geo-referenced geometry."""
 
     type: GeometryType
     """Geometry type."""
@@ -953,7 +960,7 @@ class IShape(IObject, Protocol):
         """Computes the area of the geometry."""
 
     def bounds(self) -> Bounds:
-        """Retuns a Bounds object that bounds this shape."""
+        """Returns a Bounds object that bounds this shape."""
 
     def centroid(self) -> 'IShape':
         """Returns a centroid as a Point shape."""
@@ -979,6 +986,9 @@ class IShape(IObject, Protocol):
         """Returns an EWKT representation of this shape."""
 
     def to_geojson(self, always_xy=False) -> dict:
+        """Returns a GeoJSON representation of this shape."""
+
+    def to_props(self) -> ShapeProps:
         """Returns a GeoJSON representation of this shape."""
 
     # predicates (https://shapely.readthedocs.io/en/stable/manual.html#predicates-and-relationships)
@@ -1047,13 +1057,7 @@ class IShape(IObject, Protocol):
         """Builds a buffer polygon around the shape."""
 
     def transformed_to(self, crs: 'ICrs') -> 'IShape':
-        """Returns this shape transormed to another CRS."""
-
-
-class ShapeProps(Props):
-    """Shape properties object."""
-    crs: str
-    geometry: dict
+        """Returns this shape transformed to another CRS."""
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1068,7 +1072,8 @@ class ColumnDescription(Data):
     isAutoincrement: bool
     isNullable: bool
     isPrimaryKey: bool
-    isForeignKey: bool
+    isUnique: bool
+    hasDefault: bool
     name: str
     nativeType: str
     options: dict
@@ -1084,22 +1089,14 @@ class RelationshipDescription(Data):
 
 
 class DataSetDescription(Data):
+    columns: list[ColumnDescription]
+    columnMap: dict[str, ColumnDescription]
+    fullName: str
+    geometryName: str
+    geometrySrid: int
+    geometryType: GeometryType
     name: str
     schema: str
-    fullName: str
-    columns: dict[str, ColumnDescription]
-    keyNames: list[str]
-    geometryName: str
-    geometryType: GeometryType
-    geometrySrid: int
-    relationships: list[RelationshipDescription]
-
-
-class SelectStatement(Data):
-    saSelect: 'sqlalchemy.Select'
-    search: 'SearchQuery'
-    keywordWhere: list
-    geometryWhere: list
 
 
 class IDatabaseManager(INode, Protocol):
@@ -1111,55 +1108,31 @@ class IDatabaseManager(INode, Protocol):
 
     def first_provider(self, ext_type: str) -> Optional['IDatabaseProvider']: ...
 
-    def register_model(self, model: 'IModel'): ...
-
-    def models(self) -> list['IDatabaseModel']: ...
-
-    def model(self, model_uid) -> 'IDatabaseModel': ...
-
-    def describe(self, session: 'IDatabaseSession', table_name: str) -> Optional[DataSetDescription]: ...
-
-    def autoload(self, session: 'IDatabaseSession', table_name: str) -> Optional['sqlalchemy.Table']: ...
-
 
 class IDatabaseProvider(IProvider, Protocol):
     mgr: 'IDatabaseManager'
     url: str
+    models: list['IDatabaseModel']
 
-    def session(self) -> 'IDatabaseSession': ...
+    def connection(self) -> 'sqlalchemy.Connection': ...
 
-    def engine(self, **kwargs) -> 'sqlalchemy.engine.Engine': ...
-
-    def qualified_table_name(self, table_name: str) -> str: ...
+    def engine(self, **kwargs) -> 'sqlalchemy.Engine': ...
 
     def split_table_name(self, table_name: str) -> tuple[str, str]: ...
 
-    def join_table_name(self, table_name: str, schema: Optional[str] = None) -> str: ...
+    def join_table_name(self, schema: str, name: str) -> str: ...
 
-    def table(self, table_name: str, columns: Optional[list['sqlalchemy.Column']] = None, **kwargs) -> 'sqlalchemy.Table': ...
+    def table(self, table_name: str, **kwargs) -> 'sqlalchemy.Table': ...
+
+    def has_table(self, table_name: str) -> bool: ...
+
+    def column(self, table: 'sqlalchemy.Table', column_name: str) -> 'sqlalchemy.Column': ...
+
+    def has_column(self, table: 'sqlalchemy.Table', column_name: str) -> bool: ...
 
     def describe(self, table_name: str) -> DataSetDescription: ...
 
     def table_bounds(self, table_name) -> Optional[Bounds]: ...
-
-
-class IDatabaseSession(Protocol):
-    provider: 'IDatabaseProvider'
-    saSession: 'sqlalchemy.orm.Session'
-
-    def __enter__(self) -> 'IDatabaseSession': ...
-
-    def begin(self): ...
-
-    def commit(self): ...
-
-    def rollback(self): ...
-
-    def execute(self, stmt, params=None, **kwargs) -> 'sqlalchemy.Result': ...
-
-    def describe(self, table_name: str) -> Optional[DataSetDescription]: ...
-
-    def autoload(self, table_name: str) -> Optional['sqlalchemy.Table']: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1193,24 +1166,44 @@ class IStorageProvider(INode, Protocol):
 # features
 
 
-class IFeature(IObject, Protocol):
+class FeatureRecord(Data):
+    """Raw data from a feature source."""
+    attributes: dict
+    meta: dict
+
+
+class FeatureProps(Props):
+    attributes: dict
+    cssSelector: str
+    errors: Optional[list['ModelValidationError']]
+    isNew: bool
+    modelUid: str
+    uid: str
+    views: dict
+
+
+class IFeature(Protocol):
     attributes: dict
     cssSelector: str
     errors: list['ModelValidationError']
     isNew: bool
     layerName: str
     model: 'IModel'
+    props: 'FeatureProps'
+    record: 'FeatureRecord'
     views: dict
 
-    def props(self, user: 'IUser') -> 'FeatureProps': ...
+    def get(self, name: str, default=None) -> Any: ...
+
+    def has(self, name: str) -> bool: ...
+
+    def set(self, name: str, value: Any) -> 'IFeature': ...
+
+    def raw(self, name: str) -> Any: ...
+
+    def render_views(self, templates: list['ITemplate'], **kwargs) -> 'IFeature': ...
 
     def shape(self) -> Optional['IShape']: ...
-
-    def uid(self) -> Optional[str]: ...
-
-    def attr(self, name: str, default=None) -> Any: ...
-
-    def attributes_for_view(self) -> dict: ...
 
     def to_geojson(self, user: 'IUser') -> dict: ...
 
@@ -1218,42 +1211,46 @@ class IFeature(IObject, Protocol):
 
     def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
 
-    def compute_values(self, access: Access, user: IUser, **kwargs) -> 'IFeature': ...
-
-    def render_views(self, templates: list['ITemplate'], **kwargs) -> 'IFeature': ...
-
-
-class FeatureData(Data):
-    uid: int | str
-    attributes: dict
-    shape: IShape
-    wkt: Optional[str]
-    wkb: Optional[str]
-    layerName: Optional[str]
-
-
-class FeatureRecord:
-    pass
-
-
-class FeatureProps(Props):
-    attributes: dict
-    cssSelector: str
-    isNew: bool
-    modelUid: str
-    uid: str
-    views: dict
-    errors: Optional[list['ModelValidationError']]
-    keyName: Optional[str]
-    geometryName: Optional[str]
+    def uid(self) -> Optional[str]: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # models
 
+ModelKey: TypeAlias = Any
+
+
 class ModelValidationError(Data):
     fieldName: str
     message: str
+
+
+class ModelMode(Enum):
+    view = 'view'
+    edit = 'edit'
+    init = 'init'
+    create = 'create'
+    update = 'update'
+    delete = 'delete'
+
+
+class ModelDbSelect(Data):
+    columns: list['sqlalchemy.Column']
+    geometryWhere: list
+    keywordWhere: list
+    where: list
+    order: list
+
+
+class ModelContext(Data):
+    mode: ModelMode
+    user: 'IUser'
+    project: 'IProject'
+    relDepth: int = 0
+    maxDepth: int = 0
+    search: 'SearchQuery'
+    dbSelect: ModelDbSelect
+    dbConnection: 'sqlalchemy.Connection'
 
 
 EmptyValue = object()
@@ -1266,20 +1263,16 @@ class IModelWidget(INode, Protocol):
 
 class IModelValidator(INode, Protocol):
     message: str
-    forWrite: bool
-    forCreate: bool
+    modes: set[ModelMode]
 
-    def validate(self, feature: 'IFeature', field: 'IModelField', user: 'IUser', **kwargs) -> bool: ...
+    def validate(self, field: 'IModelField', feature: 'IFeature', mc: ModelContext) -> bool: ...
 
 
 class IModelValue(INode, Protocol):
     isDefault: bool
+    modes: set[ModelMode]
 
-    forRead: bool
-    forWrite: bool
-    forCreate: bool
-
-    def compute(self, feature: 'IFeature', field: 'IModelField', user: 'IUser', **kwargs) -> Any: ...
+    def compute(self, field: 'IModelField', feature: 'IFeature', mc: 'ModelContext') -> Any: ...
 
 
 class IModelField(INode, Protocol):
@@ -1289,15 +1282,15 @@ class IModelField(INode, Protocol):
 
     attributeType: AttributeType
 
-    widget: Optional[Optional['IModelWidget']] = None
+    widget: Optional['IModelWidget'] = None
 
     values: list['IModelValue']
     validators: list['IModelValidator']
-    serverDefault: str
 
     isPrimaryKey: bool
     isRequired: bool
     isUnique: bool
+    isAuto: bool
 
     supportsFilterSearch: bool = False
     supportsGeometrySearch: bool = False
@@ -1305,88 +1298,114 @@ class IModelField(INode, Protocol):
 
     model: 'IModel'
 
-    def load_from_data(self, feature: IFeature, data: FeatureData, user: 'IUser', relation_depth: int = 0, **kwargs): ...
+    def before_select(self, mc: ModelContext): ...
 
-    def load_from_props(self, feature: IFeature, props: FeatureProps, user: 'IUser', relation_depth: int = 0, **kwargs): ...
+    def after_select(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def load_from_record(self, feature: IFeature, record: FeatureRecord, user: 'IUser', relation_depth: int = 0, **kwargs): ...
+    def before_create(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def store_to_record(self, feature: IFeature, record: FeatureRecord, user: 'IUser', **kwargs): ...
+    def after_create(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def store_to_props(self, feature: IFeature, props: FeatureProps, user: 'IUser', **kwargs): ...
+    def before_update(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def compute(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
+    def after_update(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def validate(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
+    def before_delete(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def db_to_py(self, val): ...
+    def after_delete(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def prop_to_py(self, val): ...
+    def do_init_with_record(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def py_to_db(self, val): ...
+    def do_init_with_props(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def py_to_prop(self, val): ...
+    def do_validate(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def orm_depends_on(self) -> list[str]: ...
+    def from_props(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def orm_columns(self) -> list['sqlalchemy.Column']: ...
+    def to_props(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def orm_properties(self) -> dict: ...
 
-    def augment_select(self, sel: 'SelectStatement', user: IUser): ...
+class IModelScalarField(IModelField):
+    def raw_to_python(self, value, mc: ModelContext): ...
 
-    def describe(self) -> Optional[ColumnDescription]: ...
+    def prop_to_python(self, value, mc: ModelContext): ...
+
+    def python_to_raw(self, value, mc: ModelContext): ...
+
+    def python_to_prop(self, value, mc: ModelContext): ...
+
+
+class IModelRelatedField(IModelField):
+    def find_relatable_features(self, search: 'SearchQuery', mc: ModelContext) -> list['IFeature']: ...
+
+    def new_related_feature(self, from_feature: 'IFeature', related_model: 'IModel', mc: ModelContext) -> Optional['IFeature']: ...
 
 
 class IModel(INode, Protocol):
+    isEditable: bool
     fields: list['IModelField']
+
+    title: str
+    defaultSort: list['SearchSort']
+    loadingStrategy: 'FeatureLoadingStrategy'
+
     geometryCrs: Optional['ICrs']
     geometryName: str
     geometryType: Optional[GeometryType]
-    keyName: str
-    loadingStrategy: 'FeatureLoadingStrategy'
-    provider: 'IProvider'
-    templates: list['ITemplate']
-    title: str
+
+    uidName: str
+
+    def find_features(self, search: 'SearchQuery', mc: ModelContext) -> list['IFeature']: ...
+
+    def get_features(self, uids: Iterable[ModelKey], mc: ModelContext) -> list['IFeature']: ...
+
+    def new_feature_from_props(self, props: FeatureProps, mc: ModelContext) -> 'IFeature': ...
+
+    def new_feature_from_record(self, record: FeatureRecord, mc: ModelContext) -> 'IFeature': ...
+
+    def new_related_feature(self, field_name: str, from_feature: 'IFeature', related_model: 'IModel', mc: ModelContext) -> Optional['IFeature']: ...
+
+    def create_features(self, features: list['IFeature'], mc: ModelContext) -> list[ModelKey]: ...
+
+    def update_features(self, features: list['IFeature'], mc: ModelContext) -> list[ModelKey]: ...
+
+    def delete_features(self, features: list['IFeature'], mc: ModelContext) -> list[ModelKey]: ...
+
+    def validate_features(self, features: list['IFeature'], mc: ModelContext) -> bool: ...
+
+    def features_from_props(self, propses: list['FeatureProps'], mc: ModelContext) -> list['IFeature']: ...
+
+    def features_to_props(self, features: list['IFeature'], mc: ModelContext) -> list['FeatureProps']: ...
 
     def describe(self) -> Optional[DataSetDescription]: ...
 
     def field(self, name: str) -> Optional['IModelField']: ...
 
-    def compute_values(self, feature: IFeature, access: Access, user: 'IUser', **kwargs) -> bool: ...
-
-    def find_features(self, search: 'SearchQuery', user: IUser) -> list['IFeature']: ...
-
-    def write_feature(self, feature: 'IFeature', user: IUser, **kwargs) -> bool: ...
-
-    def delete_feature(self, feature: 'IFeature', user: IUser, **kwargs) -> bool: ...
-
-    def feature_props(self, feature: 'IFeature', user: 'IUser') -> FeatureProps: ...
-
-    def feature_from_data(self, data: FeatureData, user: 'IUser', relation_depth: int = 0, **kwargs) -> IFeature: ...
-
-    def feature_from_props(self, props: FeatureProps, user: 'IUser', relation_depth: int = 0, **kwargs) -> IFeature: ...
-
-    def feature_from_record(self, record: FeatureRecord, user: 'IUser', relation_depth: int = 0, **kwargs) -> IFeature: ...
-
 
 class IDatabaseModel(IModel, Protocol):
     provider: 'IDatabaseProvider'
     sqlFilter: str
-    sqlSort: list['SearchSort']
     tableName: str
+
+    def fetch_features(self, sql: 'sqlalchemy.Select', mc: ModelContext) -> list['IFeature']: ...
 
     def table(self) -> 'sqlalchemy.Table': ...
 
-    def record_class(self) -> type: ...
+    def column(self, column_name: str) -> 'sqlalchemy.Column': ...
 
-    def get_record(self, uid: str) -> Optional[FeatureRecord]: ...
+    def uid_column(self) -> 'sqlalchemy.Column': ...
 
-    def get_records(self, uids: list[str]) -> list[FeatureRecord]: ...
+    def connection(self) -> 'sqlalchemy.Connection': ...
 
-    def primary_keys(self) -> list['sqlalchemy.Column']: ...
+    def execute(self, sql: 'sqlalchemy.Executable', mc: ModelContext, parameters=None) -> 'sqlalchemy.CursorResult': ...
 
-    def session(self) -> 'IDatabaseSession': ...
+
+class IModelManager(INode, Protocol):
+    def locate_model(self, *objects, user: IUser = None, access: Access = None, uid: str = None) -> Optional['IModel']: ...
+
+    def collect_editable(self, project: 'IProject', user: 'IUser') -> list['IModel']: ...
+
+    def default_model(self) -> 'IModel': ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1542,7 +1561,15 @@ class IPrinter(INode, Protocol):
     templates: list[ITemplate]
 
 
+class ITemplateManager(INode, Protocol):
+    def locate_template(self, *objects, user: IUser = None, subject: str = None, mime: str = None) -> Optional['ITemplate']: ...
+
+    def template_from_path(self, path: str) -> Optional['ITemplate']: ...
+
+
 # ----------------------------------------------------------------------------------------------------------------------
+
+
 # styles
 
 class StyleValues(Data):
@@ -1744,11 +1771,6 @@ class SearchSort(Data):
     reverse: bool
 
 
-class SearchWhere(Data):
-    text: str
-    args: dict
-
-
 class SearchOgcFilter(Data):
     name: str
     operator: str
@@ -1759,21 +1781,22 @@ class SearchOgcFilter(Data):
 
 class SearchQuery(Data):
     access: Access
+    all: bool
     bounds: Bounds
+    extraColumns: list
     extraParams: dict
-    extraWhere: list[SearchWhere]
+    extraWhere: list
     keyword: str
     layers: list['ILayer']
     limit: int
     ogcFilter: SearchOgcFilter
     project: 'IProject'
-    relationDepth: int
+    relDepth: int
     resolution: float
     shape: 'IShape'
     sort: list[SearchSort]
     tolerance: 'Measurement'
     uids: list[str]
-    views: list[str]
 
 
 class SearchResult(Data):
@@ -1807,6 +1830,10 @@ class TextSearchOptions(Data):
 class SortOptions(Data):
     fieldName: str
     reverse: bool = False
+
+
+class ISearchManager(INode, Protocol):
+    def run_search(self, search: 'SearchQuery', user: IUser) -> list['SearchResult']: ...
 
 
 class IFinder(INode, Protocol):
@@ -1966,7 +1993,7 @@ class ILayer(INode, Protocol):
 
     def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...
 
-    def get_features(self, search: SearchQuery, user: 'IUser', views: Optional[Optional[list[str]]] = None, model_uid: Optional[str] = None) -> list['IFeature']: ...
+    def get_features(self, search: SearchQuery, user: 'IUser', views: Optional[list[str]] = None, model_uid: Optional[str] = None) -> list['IFeature']: ...
 
     def render_legend(self, args: Optional[dict] = None) -> Optional['LegendRenderOutput']: ...
 
@@ -2059,7 +2086,7 @@ class IOwsProvider(INode, Protocol):
 
     def get_operation(self, verb: OwsVerb, method: Optional[RequestMethod] = None) -> Optional[OwsOperation]: ...
 
-    def get_features(self, args: SearchQuery, source_layers: list[SourceLayer]) -> list[FeatureData]: ...
+    def get_features(self, args: SearchQuery, source_layers: list[SourceLayer]) -> list[FeatureRecord]: ...
 
 
 class IOwsModel(IModel, Protocol):
@@ -2153,7 +2180,10 @@ class IApplication(INode, Protocol):
     actionMgr: 'IActionManager'
     authMgr: 'IAuthManager'
     databaseMgr: 'IDatabaseManager'
+    modelMgr: 'IModelManager'
+    searchMgr: 'ISearchManager'
     storageMgr: 'IStorageManager'
+    templateMgr: 'ITemplateManager'
     webMgr: 'IWebManager'
 
     finders: list['IFinder']

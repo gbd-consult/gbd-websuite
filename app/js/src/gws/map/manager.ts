@@ -715,7 +715,7 @@ export class MapManager implements types.IMapManager {
     }
 
     _readFeature(props) {
-        let model = this.app.models.model(props.modelUid) || this.app.models.defaultModel();
+        let model = this.app.modelRegistry.getModel(props.modelUid) || this.app.modelRegistry.defaultModel();
         return model.featureFromProps(props)
 
     }

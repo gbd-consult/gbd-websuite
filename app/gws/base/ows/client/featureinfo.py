@@ -7,7 +7,7 @@ import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
-def parse(text: str, default_crs: gws.ICrs = None, always_xy=False) -> list[gws.FeatureData]:
+def parse(text: str, default_crs: gws.ICrs = None, always_xy=False) -> list[gws.FeatureRecord]:
     gws.time_start('featureinfo:parse')
     res = _parse(text, default_crs, always_xy)
     gws.time_end()
@@ -116,7 +116,7 @@ def _parse_getfeatureinforesponse(xml_el: gws.IXmlElement, default_crs, always_x
         layer_name = layer_el.get('name')
         for feature_el in layer_el:
 
-            fd = gws.FeatureData(
+            fd = gws.FeatureRecord(
                 attributes={},
                 layerName=layer_name,
                 uid=feature_el.get('id'))
@@ -149,7 +149,7 @@ def _parse_featureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
 
     for fields_el in xml_el:
         if fields_el.name == 'fields':
-            fd = gws.FeatureData(attributes={})
+            fd = gws.FeatureRecord(attributes={})
             for key, val in fields_el.attrib.items():
                 if key.lower() in {'id', 'fid'}:
                     fd.uid = val
@@ -177,7 +177,7 @@ def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
     fds = []
 
     for el in xml_el:
-        fd = gws.FeatureData(attributes={})
+        fd = gws.FeatureRecord(attributes={})
 
         if el.name == 'kartenebene':
             fd.layerName = el.text
@@ -201,12 +201,12 @@ def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
 _DEEP_ATTRIBUTE_DELIMITER = '.'
 
 
-def _fdata_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureData:
+def _fdata_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureRecord:
     # like GDAL does:
     # "When reading a feature, the driver will by default only take into account
     # the last recognized GML geometry found..." (https://gdal.org/drivers/vector/gml.html)
 
-    fd = gws.FeatureData(
+    fd = gws.FeatureRecord(
         attributes={},
         uid=feature_el.get('id') or feature_el.get('fid'),
         layerName=feature_el.name

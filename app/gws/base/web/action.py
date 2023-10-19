@@ -105,7 +105,7 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
     if project and locale_uid not in project.localeUids:
         locale_uid = project.localeUids[0]
 
-    tpl = gws.base.template.from_path(root, rpath)
+    tpl = root.app.templateMgr.template_from_path(rpath)
 
     if tpl:
         # give the template an empty response to manipulate (e.g. add 'location')

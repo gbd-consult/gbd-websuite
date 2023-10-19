@@ -1,8 +1,8 @@
 import gws
 import gws.base.ows.server as server
-import gws.base.search.runner
 import gws.base.shape
 import gws.base.web
+import gws.config.util
 import gws.gis.bounds
 import gws.gis.crs
 import gws.lib.metadata
@@ -55,8 +55,7 @@ class Object(server.service.Object):
     isVectorService = True
 
     def configure_templates(self):
-        super().configure_templates()
-        self.templates.extend(self.configure_template(c) for c in _DEFAULT_TEMPLATES)
+        return gws.config.util.configure_templates(self, extra=_DEFAULT_TEMPLATES)
 
     def configure_metadata(self):
         super().configure_metadata()
@@ -114,7 +113,7 @@ class Object(server.service.Object):
             shape=gws.base.shape.from_bounds(rd.bounds),
         )
 
-        results = gws.base.search.runner.run(self.root, search, rd.req.user)
+        results = self.root.app.searchMgr.run_search(search, rd.req.user)
 
         result_type = rd.req.param('resultType', default='results').lower()
         if result_type not in ('hits', 'results'):

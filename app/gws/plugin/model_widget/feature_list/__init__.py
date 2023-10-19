@@ -7,12 +7,28 @@ gws.ext.new.modelWidget('featureList')
 
 
 class Config(gws.base.model.widget.Config):
-    pass
+    withNewButton: bool = True
+    withLinkButton: bool = True
+    withEditButton: bool = True
+    withUnlinkButton: bool = False
+    withDeleteButton: bool = False
 
 
 class Props(gws.base.model.widget.Props):
-    pass
+    withNewButton: bool
+    withLinkButton: bool
+    withEditButton: bool
+    withUnlinkButton: bool
+    withDeleteButton: bool
 
 
 class Object(gws.base.model.widget.Object):
-    pass
+    def props(self, user):
+        return gws.merge(
+            super().props(user),
+            withNewButton=self.cfg('withNewButton', default=True),
+            withLinkButton=self.cfg('withLinkButton', default=True),
+            withEditButton=self.cfg('withEditButton'), default=True,
+            withUnlinkButton=self.cfg('withUnlinkButton', default=False),
+            withDeleteButton=self.cfg('withDeleteButton', default=False),
+        )

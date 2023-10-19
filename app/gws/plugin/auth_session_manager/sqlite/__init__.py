@@ -34,6 +34,7 @@ class Object(gws.base.auth.session_manager.Object):
         self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
 
     def activate(self):
+        return
         self.metaData = sa.MetaData()
         self.engine = sa.create_engine(f'sqlite:///{self.dbPath}')
 
@@ -61,7 +62,7 @@ class Object(gws.base.auth.session_manager.Object):
         except sa.exc.SQLAlchemyError as exc:
             raise gws.Error(f'cannot open {self.dbPath!r}') from exc
 
-    #            
+    #
 
     def cleanup(self):
         self._exec(

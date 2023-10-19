@@ -40,8 +40,10 @@ class Object(gws.base.database.provider.Object):
 
     def engine(self, **kwargs):
         # kwargs.setdefault('poolclass', sa.NullPool)
-        kwargs.setdefault('pool_pre_ping', True)
-        return sa.create_engine(self.url, **kwargs)
+        # kwargs.setdefault('pool_pre_ping', True)
+        kwargs.setdefault('echo', self.root.app.developer_option('db.engine_echo'))
+        url = connection_url(self.config)
+        return sa.create_engine(url, **kwargs)
 
     def qualified_table_name(self, table_name):
         if '.' in table_name:
@@ -54,21 +56,22 @@ class Object(gws.base.database.provider.Object):
             return schema, name
         return 'public', table_name
 
-    def join_table_name(self, table_name, schema=None):
-        if not schema and '.' in table_name:
-            schema, name = table_name.split('.')
-        return schema + '.' + table_name
+    def join_table_name(self, schema, name):
+        if schema:
+            return schema + '.' + name
+        schema, name2 = self.split_table_name(name)
+        return schema + '.' + name2
 
     def table_bounds(self, table_name):
         desc = self.describe(table_name)
         if not desc.geometryName:
             return
         tab = self.table(table_name)
-        with self.session() as sess:
-            sel = sa.select(sa.func.ST_Extent(tab.columns.get(desc.geometryName)))
-            box = sess.execute(sel).scalar_one()
-            if box:
-                return gws.Bounds(extent=gws.gis.extent.from_box(box), crs=gws.gis.crs.get(desc.geometrySrid))
+
+        sel = sa.select(sa.func.ST_Extent(tab.columns.get(desc.geometryName)))
+        box = self.connection().execute(sel).scalar_one()
+        if box:
+            return gws.Bounds(extent=gws.gis.extent.from_box(box), crs=gws.gis.crs.get(desc.geometrySrid))
 
 
 ##

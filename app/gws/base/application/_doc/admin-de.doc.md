@@ -1,6 +1,6 @@
 # Applikation :/admin-de/config/applikation
 
-%reference_de 'gws.base.application.Config'
+%reference_de 'gws.base.application.core.Config'
 
 Die wichtigsten Teile der App-Konfiguration sind die folgenden Abschnitte, welche weiter im Detail beschrieben werden:
 

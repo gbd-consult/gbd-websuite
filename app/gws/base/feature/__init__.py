@@ -5,12 +5,19 @@ import gws.lib.svg
 import gws.types as t
 
 
-def with_model(model: gws.IModel):
-    return Feature(model)
+def with_model(
+        model: gws.IModel,
+        record: t.Optional[gws.FeatureRecord] = None,
+        props: t.Optional[gws.FeatureProps] = None
+) -> gws.IFeature:
+    f = Feature(model)
+    f.record = record or gws.FeatureRecord(attributes={})
+    f.props = props or gws.FeatureProps(attributes={})
+    return f
 
 
 class Feature(gws.Object, gws.IFeature):
-    def __init__(self, model):
+    def __init__(self, model: gws.IModel):
         self.attributes = {}
         self.cssSelector = ''
         self.errors = []
@@ -21,42 +28,31 @@ class Feature(gws.Object, gws.IFeature):
 
     def __repr__(self):
         try:
-            uid = str(self.model.uid) + ':' + str(self.attributes.get(self.model.keyName))
+            uid = str(self.model.uid) + ':' + str(self.attributes.get(self.model.uidName))
         except:
             uid = '?'
         return f'<feature uid={uid}>'
 
-    def props(self, user):
-        return self.model.feature_props(self, user)
-
     def uid(self):
-        if self.model.keyName:
-            return self.attributes.get(self.model.keyName)
+        if self.model.uidName:
+            return self.attributes.get(self.model.uidName)
 
     def shape(self):
         if self.model.geometryName:
             return self.attributes.get(self.model.geometryName)
 
-    def attributes_for_view(self):
-        # SAFETY: do not return any attributes in the view mode,
-        # except uid and geometry
-        atts = {}
-
-        s = self.model.keyName
-        if s:
-            atts[s] = self.attributes.get(s)
-        s = self.model.geometryName
-        if s:
-            atts[s] = self.attributes.get(s)
-
-        return atts
-
-    def attr(self, name, default=None):
+    def get(self, name, default=None):
         return self.attributes.get(name, default)
 
-    def compute_values(self, access, user, **kwargs):
-        self.model.compute_values(self, access, user, **kwargs)
+    def has(self, name):
+        return name in self.attributes
+
+    def set(self, name, value):
+        self.attributes[name] = value
         return self
+
+    def raw(self, name):
+        return self.record.attributes.get(name)
 
     def render_views(self, templates, **kwargs):
         tri = gws.TemplateRenderInput(

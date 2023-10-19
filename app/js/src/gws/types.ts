@@ -42,7 +42,7 @@ export interface IApplication {
     urlParams: Dict;
     localeUid: string;
     locale: api.core.Locale;
-    models: IModelRegistry;
+    modelRegistry: IModelRegistry;
 
 
     __(key);
@@ -375,7 +375,7 @@ export interface IFeature {
     isSelected: boolean;
     isFocused: boolean;
 
-    keyName: string;
+    uidName: string;
     geometryName: string;
 
     geometry?: ol.geom.Geometry;
@@ -399,8 +399,10 @@ export interface IFeature {
 
     redraw(): IFeature;
     clone(): IFeature;
+    copyFrom(f: IFeature)
 
     whenGeometryChanged();
+    whenSaved: (f: IFeature) => void;
 
 }
 
@@ -433,11 +435,10 @@ export interface ISidebarItem extends IController {
 }
 
 export interface IModelRegistry {
-    readModel(props: api.base.model.model.Props): IModel;
-    addModel(props: api.base.model.model.Props): IModel;
-    model(uid: string): IModel|null;
-    modelForLayer(layer: ILayer): IModel|null;
-    editableModels(): Array<IModel>;
+    readModel(props: api.base.model.Props): IModel;
+    addModel(props: api.base.model.Props): IModel;
+    getModel(uid: string): IModel|null;
+    getModelForLayer(layer: ILayer): IModel|null;
     defaultModel(): IModel;
     featureFromProps(props: api.core.FeatureProps): IFeature;
     featureListFromProps(propsList: Array<api.core.FeatureProps>): Array<IFeature>;
@@ -455,7 +456,7 @@ export interface IModel {
     geometryCrs: string
     geometryName: string;
     geometryType: core.GeometryType
-    keyName: string;
+    uidName: string;
     layer?: IFeatureLayer;
     layerUid: string;
     loadingStrategy: api.core.FeatureLoadingStrategy;
@@ -472,7 +473,7 @@ export interface IModel {
     featureFromProps(props: Partial<api.core.FeatureProps>): IFeature;
     featureListFromProps(propsList: Array<Partial<api.core.FeatureProps>>): Array<IFeature>;
 
-    featureProps(feature: IFeature, relationDepth?: number): api.core.FeatureProps;
+    featureProps(feature: IFeature, relDepth?: number): api.core.FeatureProps;
 }
 
 export interface IModelField {
@@ -483,10 +484,12 @@ export interface IModelField {
     geometryType: api.core.GeometryType;
     title: string;
     widgetProps: api.ext.props.modelWidget;
-
     model: IModel;
+    relatedModelUids: Array<string>;
 
-    relationships: Array<api.base.model.field.RelationshipProps>;
+    relatedModels(): Array<IModel>;
+    addRelatedFeature(targetFeature: IFeature, relatedFeature: IFeature);
+    removeRelatedFeature(targetFeature: IFeature, relatedFeature: IFeature);
 }
 
 export interface IModelWidget extends IController {

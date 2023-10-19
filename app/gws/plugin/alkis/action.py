@@ -328,7 +328,7 @@ _DEFAULT_TEMPLATES = [
 
 class Model(gws.base.model.Object):
     def configure(self):
-        self.keyName = 'uid'
+        self.uidName = 'uid'
         self.geometryName = 'geometry'
         self.loadingStrategy = gws.FeatureLoadingStrategy.all
 
@@ -418,7 +418,7 @@ class Object(gws.base.action.Object):
             super().props(user),
             exportGroups=export_groups,
             limit=self.limit,
-            printTemplate=gws.base.template.locate(self, user=user, subject='flurstueck.print'),
+            printTemplate=self.root.app.templateMgr.locate_template(self, user=user, subject='flurstueck.print'),
             ui=self.ui,
             storage=self.storage,
             withBuchung=user.can_read(self.buchung),
@@ -463,9 +463,9 @@ class Object(gws.base.action.Object):
             )
 
         templates = [
-            gws.base.template.locate(self, user=req.user, subject='adresse.title'),
-            gws.base.template.locate(self, user=req.user, subject='adresse.teaser'),
-            gws.base.template.locate(self, user=req.user, subject='adresse.label'),
+            self.root.app.templateMgr.locate_template(self, user=req.user, subject='adresse.title'),
+            self.root.app.templateMgr.locate_template(self, user=req.user, subject='adresse.teaser'),
+            self.root.app.templateMgr.locate_template(self, user=req.user, subject='adresse.label'),
         ]
 
         features = []
@@ -498,13 +498,13 @@ class Object(gws.base.action.Object):
             )
 
         templates = [
-            gws.base.template.locate(self, user=req.user, subject='flurstueck.title'),
-            gws.base.template.locate(self, user=req.user, subject='flurstueck.teaser'),
+            self.root.app.templateMgr.locate_template(self, user=req.user, subject='flurstueck.title'),
+            self.root.app.templateMgr.locate_template(self, user=req.user, subject='flurstueck.teaser'),
         ]
 
         if query.options.displayThemes:
             templates.append(
-                gws.base.template.locate(self, req.user, subject='flurstueck.description'),
+                self.root.app.templateMgr.locate_template(self, req.user, subject='flurstueck.description'),
             )
 
         args = dict(
@@ -565,7 +565,7 @@ class Object(gws.base.action.Object):
         crs = print_request.get('crs') or project.map.bounds.crs
 
         templates = [
-            gws.base.template.locate(self, user=req.user, subject='flurstueck.label'),
+            self.root.app.templateMgr.locate_template(self, user=req.user, subject='flurstueck.label'),
         ]
 
         base_map = print_request.maps[0]

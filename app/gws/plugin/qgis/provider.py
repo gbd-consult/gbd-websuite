@@ -3,6 +3,7 @@
 import gws
 import gws.base.database
 import gws.base.ows.client
+import gws.config.util
 import gws.plugin.postgres.provider
 import gws.lib.metadata
 import gws.lib.net
@@ -225,7 +226,6 @@ class Object(gws.Node, gws.IOwsProvider):
     def _leaf_base_config(self, source_layers):
         default = {
             'type': 'qgisflat',
-            'withSearch': True,
             '_defaultProvider': self,
             '_defaultSourceLayers': source_layers,
         }
@@ -417,10 +417,4 @@ class Object(gws.Node, gws.IOwsProvider):
 
 
 def get_for(obj: gws.INode) -> Object:
-    p = obj.cfg('provider')
-    if p:
-        return obj.root.create_shared(Object, p)
-    p = obj.cfg('_defaultProvider')
-    if p:
-        return p
-    raise gws.Error(f'no provider found for {obj!r}')
+    return t.cast(Object, gws.config.util.get_provider(Object, obj))

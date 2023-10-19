@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.legend
+import gws.config.util
 import gws.lib.mime
 import gws.gis.source
 import gws.lib.image
@@ -63,16 +64,7 @@ class Object(gws.base.legend.Object):
         self.configure_source_layers()
 
     def configure_source_layers(self):
-        p = self.cfg('sourceLayers')
-        if p:
-            self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, p)
-            return True
-        p = self.cfg('_defaultSourceLayers')
-        if p:
-            self.sourceLayers = p
-            return True
-        self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, is_queryable=True)
-        return True
+        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers)
 
     def configure_params(self):
         defaults = dict(

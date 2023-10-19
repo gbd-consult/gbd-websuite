@@ -22,12 +22,12 @@ class Object(gws.base.model.Object):
     provider: provider.Object
 
     def configure(self):
-        self.keyName = 'id'
+        self.uidName = 'id'
         self.geometryName = 'geometry'
 
         self.configure_provider()
         self.configure_fields()
-        self.configure_key()
+        self.configure_uid()
         self.configure_geometry()
         self.configure_templates()
 
@@ -39,5 +39,5 @@ class Object(gws.base.model.Object):
     def find_features(self, search, user, **kwargs):
         fs = []
         for fd in self.provider.feature_data():
-            fs.append(self.feature_from_data(fd, user))
+            fs.append(self.feature_from_record(fd, user))
         return fs

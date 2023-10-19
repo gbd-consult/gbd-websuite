@@ -404,7 +404,7 @@ class Controller extends gws.Controller {
                 let tpl = new Template();
                 tpl.props = p;
                 if (p.model)
-                    tpl.model = this.app.models.readModel(p.model)
+                    tpl.model = this.app.modelRegistry.readModel(p.model)
                 this.templates.push(tpl);
             }
         }

@@ -8,28 +8,27 @@ import gws.lib.jsonx
 from . import util
 
 
-def make(name, geom_type, columns, crs, xy, rows, cols, gap):
+def make(table_name, geom_type, column_defs, crs, start_xy, num_rows, num_cols, gap):
     features = []
 
-    sx, sy = xy
+    sx, sy = start_xy
 
-    for r in range(rows):
-        for c in range(cols):
-            uid = r * cols + (c + 1)
-
+    for r in range(num_rows):
+        for c in range(num_cols):
+            uid = r * num_cols + (c + 1)
             atts = []
 
-            for k, v in columns.items():
+            for name, typ in column_defs.items():
                 val = ''
-                if v == 'int':
+                if typ == 'int':
                     val = uid * 100
-                if v == 'float':
+                if typ == 'float':
                     val = uid * 200.0
-                if v in ('varchar', 'text'):
+                if typ in ('varchar', 'text'):
                     val = f"{name}/{uid}"
-                if v == 'date':
+                if typ == 'date':
                     val = datetime.datetime(2019, 1, 1) + datetime.timedelta(days=uid - 1)
-                atts.append(gws.Attribute(name=k, value=val))
+                atts[name] = val
 
             x = sx + c * gap
             y = sy + r * gap
@@ -55,11 +54,11 @@ def make(name, geom_type, columns, crs, xy, rows, cols, gap):
                     ]]
                 }
 
-            features.append(gws.base.feature.from_props(gws.Data(
+            features.append(gws.Data(
                 uid=uid,
                 attributes=atts,
                 shape={'crs': crs, 'geometry': geom} if geom else None
-            )))
+            ))
 
     return features
 

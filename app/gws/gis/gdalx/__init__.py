@@ -214,7 +214,7 @@ class Layer:
 
         return desc
 
-    def insert(self, fds: list[gws.FeatureData], encoding: str = None) -> list[int]:
+    def insert(self, fds: list[gws.FeatureRecord], encoding: str = None) -> list[int]:
         desc = self.describe()
         fids = []
 
@@ -252,7 +252,7 @@ class Layer:
     def count(self, force=False):
         return self.gdLayer.GetFeatureCount(force=1 if force else 0)
 
-    def get_all(self, default_srid: int = 0, encoding: str = None) -> list[gws.FeatureData]:
+    def get_all(self, default_srid: int = 0, encoding: str = None) -> list[gws.FeatureRecord]:
         fds = []
         self.gdLayer.ResetReading()
         while True:
@@ -262,13 +262,13 @@ class Layer:
             fds.append(self._feature_data(gd_feature, default_srid, encoding))
         return fds
 
-    def get_one(self, fid: int, default_srid: int = 0, encoding: str = None) -> t.Optional[gws.FeatureData]:
+    def get_one(self, fid: int, default_srid: int = 0, encoding: str = None) -> t.Optional[gws.FeatureRecord]:
         gd_feature = self.gdLayer.GetFeature(fid)
         if gd_feature:
             return self._feature_data(gd_feature, default_srid, encoding)
 
     def _feature_data(self, gd_feature, default_srid, encoding):
-        fd = gws.FeatureData(
+        fd = gws.FeatureRecord(
             attributes={},
             shape=None,
             layerName=self.name,

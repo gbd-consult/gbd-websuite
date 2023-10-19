@@ -32,39 +32,19 @@ projects+ {
         sort+ { fieldName "name" }
         title "POIs"
         permissions.edit "allow all"
+        editable true
+
+        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "name" type "text" title "Object name" isRequired true textSearch { type "any" } }
+        fields+ { name "geom" type "geometry" title "Geometry" isRequired true }
 
         fields+ {
-            name "id"
-            type "integer"
-            title "Identifier"
-            isPrimaryKey true
-            permissions.edit "deny all"
-        }
-
-        fields+ {
-            name "name"
-            type "text"
-            title "Object name"
-            isRequired true
-            textSearch { type "any" }
-        }
-
-        fields+ {
-            name "category"
+            name "category_for_poi"
             title "Category"
             type "relatedFeature"
-            relationship {
-                modelUid "model_related_feature_category"
-                foreignKey "category_id"
-            }
-            widget.type "featureSelect"
-        }
-
-        fields+ {
-            name "geom"
-            type "geometry"
-            title "Geometry"
-            isRequired true
+            fromColumn "category_id"
+            toModel "model_related_feature_category"
+            toColumn "id"
         }
 
         templates+ {
@@ -74,27 +54,18 @@ projects+ {
         }
     }
 
+
     models+ {
         type "postgres"
         uid "model_related_feature_category"
         tableName "edit.category"
         sort+ { fieldName "name_de" }
+        title "Categories"
+        permissions.edit "allow all"
+        editable true
 
-        fields+ {
-            name "id"
-            type "integer"
-            title "Identifier"
-            isPrimaryKey true
-            isRequired true
-        }
-
-        fields+ {
-            name "name_de"
-            type "text"
-            title "Name"
-            isRequired true
-            textSearch { type "any" }
-        }
+        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "name_de" type "text" title "Name" isRequired true textSearch { type "any" } }
 
         templates+ {
             subject "feature.title"

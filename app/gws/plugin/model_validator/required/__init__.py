@@ -12,10 +12,14 @@ class Config(gws.base.model.validator.Config):
 
 
 class Object(gws.base.model.validator.Object):
-    def validate(self, feature, field, user, **kwargs):
+    def validate(self, field, feature, mc):
         val = feature.attributes.get(field.name)
-        if val is None:
-            return False
-        if isinstance(val, str) and not val.strip():
-            return False
-        return True
+
+        if isinstance(val, str) and len(val.strip()) > 0:
+            return True
+        if val is not None:
+            return True
+        if mc.mode == gws.ModelMode.create and field.isAuto:
+            return True
+
+        return False

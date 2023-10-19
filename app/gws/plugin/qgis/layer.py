@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.layer
+import gws.config.util
 import gws.types as t
 
 from . import provider
@@ -33,3 +34,11 @@ class Object(gws.base.layer.group.Object):
             return True
         self.metadata = self.provider.metadata
         return True
+
+    def create_finder(self, cfg):
+        return self.create_child(
+            gws.ext.object.finder,
+            cfg,
+            type=self.extType,
+            _defaultProvider=self.provider
+        )

@@ -4,12 +4,14 @@ import gws.base.legend
 import gws.base.model
 import gws.base.search
 import gws.base.template
+import gws.config.util
 import gws.lib.metadata
 import gws.gis.crs
 import gws.gis.source
 import gws.gis.zoom
 import gws.gis.bounds
 import gws.gis.extent
+
 import gws.types as t
 
 from . import provider
@@ -47,30 +49,18 @@ class Object(gws.base.layer.vector.Object):
         return True
 
     def configure_source_layers(self):
-        p = self.cfg('sourceLayers')
-        if p:
-            self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, p)
-            return True
-        p = self.cfg('_defaultSourceLayers')
-        if p:
-            self.sourceLayers = p
-            return True
-        self.sourceLayers = self.provider.sourceLayers
-        return True
+        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers)
 
     def configure_models(self):
-        if super().configure_models():
-            return True
-        self.models.append(self.configure_model(None))
-        return True
+        return gws.config.util.configure_models(self, with_default=True)
 
-    def configure_model(self, cfg):
+    def create_model(self, cfg):
         return self.create_child(
             gws.ext.object.model,
             cfg,
-            type='wfs',
+            type=self.extType,
             _defaultProvider=self.provider,
-            _defaultSourceLayers=self.sourceLayers,
+            _defaultSourceLayers=self.sourceLayers
         )
 
     def configure_bounds(self):
@@ -91,13 +81,14 @@ class Object(gws.base.layer.vector.Object):
     def configure_search(self):
         if super().configure_search():
             return True
-        self.finders.append(self.configure_finder({}))
+        self.finders.append(self.create_finder(None))
         return True
 
-    def configure_finder(self, cfg):
+    def create_finder(self, cfg):
         return self.create_child(
             gws.ext.object.finder,
-            type='wfs',
+            cfg,
+            type=self.extType,
             _defaultProvider=self.provider,
-            _defaultSourceLayers=self.sourceLayers,
+            _defaultSourceLayers=self.sourceLayers
         )

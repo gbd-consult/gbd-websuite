@@ -16,7 +16,8 @@ def configure(
         config_path=None,
         config=None,
         before_init=None,
-        fallback_config=None
+        fallback_config=None,
+        with_spec_cache=True,
 ) -> gws.IRoot:
     """Configure the server"""
 
@@ -39,7 +40,7 @@ def configure(
     ms = gws.lib.osx.process_rss_size()
 
     try:
-        specs = gws.spec.runtime.create(manifest_path, read_cache=True, write_cache=True)
+        specs = gws.spec.runtime.create(manifest_path, read_cache=with_spec_cache, write_cache=with_spec_cache)
     except Exception as exc:
         _report(exc)
         raise gws.ConfigurationError('spec failed') from exc
@@ -101,12 +102,13 @@ def deactivate():
     return gws.delete_app_global(ROOT_NAME)
 
 
-def store(ro: gws.IRoot, path=None):
+def store(ro: gws.IRoot, path=None) -> str:
     path = path or STORE_PATH
     gws.log.debug(f'writing config to {path!r}')
     try:
         gws.lib.jsonx.to_path(f'{path}.syspath.json', sys.path)
         gws.serialize_to_path(ro, path)
+        return path
     except Exception as exc:
         raise gws.ConfigurationError('unable to store configuration') from exc
 

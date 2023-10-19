@@ -5,7 +5,7 @@ set -e
 CWD=$(pwd)
 BASE=$(dirname $(realpath $BASH_SOURCE))
 
-PYTHON="${PYTHON:-python3}"
+PYTHON="${PYTHON:-python3} -B"
 NODE=node
 
 
@@ -102,7 +102,7 @@ case $COMMAND in
     $MAKE_SPEC $@
     ;;
   test)
-    $MAKE_SPEC && $PYTHON $BASE/app/gws/lib/test/host_runner.py $@
+    $PYTHON $BASE/app/gws/lib/test/test.py $@
     ;;
 
   *)

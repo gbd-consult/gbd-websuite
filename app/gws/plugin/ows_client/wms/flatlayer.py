@@ -4,6 +4,7 @@ import gws.base.legend
 import gws.base.model
 import gws.base.search
 import gws.base.template
+import gws.config.util
 import gws.lib.metadata
 import gws.gis.crs
 import gws.gis.source
@@ -59,25 +60,19 @@ class Object(gws.base.layer.image.Object):
             gws.gis.source.combined_crs_list(self.sourceLayers))
 
     def configure_source_layers(self):
-        p = self.cfg('sourceLayers')
-        if p:
-            self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, p)
-            return True
-        p = self.cfg('_defaultSourceLayers')
-        if p:
-            self.sourceLayers = p
-            return True
-        self.sourceLayers = self.provider.sourceLayers
-        return True
+        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers)
 
     def configure_models(self):
-        if super().configure_models():
-            return True
-        self.models.append(self.configure_model(None))
-        return True
+        return gws.config.util.configure_models(self, with_default=True)
 
-    def configure_model(self, cfg):
-        return self.create_child(gws.ext.object.model, cfg, type='wms', _defaultProvider=self.provider, _defaultSourceLayers=self.searchLayers)
+    def create_model(self, cfg):
+        return self.create_child(
+            gws.ext.object.model,
+            cfg,
+            type='wms',
+            _defaultProvider=self.provider,
+            _defaultSourceLayers=self.sourceLayers
+        )
 
     def configure_bounds(self):
         if super().configure_bounds():
@@ -125,11 +120,17 @@ class Object(gws.base.layer.image.Object):
         if super().configure_search():
             return True
         if self.searchLayers:
-            self.finders.append(self.configure_finder({}))
+            self.finders.append(self.create_finder(None))
             return True
 
-    def configure_finder(self, cfg):
-        return self.create_child(gws.ext.object.finder, type='wms', _defaultProvider=self.provider, _defaultSourceLayers=self.searchLayers)
+    def create_finder(self, cfg):
+        return self.create_child(
+            gws.ext.object.finder,
+            cfg,
+            type='wms',
+            _defaultProvider=self.provider,
+            _defaultSourceLayers=self.searchLayers
+        )
 
     ##
 

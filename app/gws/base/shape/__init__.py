@@ -248,11 +248,6 @@ class Shape(gws.Object, gws.IShape):
         self.x = getattr(self.geom, 'x', None)
         self.y = getattr(self.geom, 'y', None)
 
-    def props(self, user):
-        return Props(
-            crs=self.crs.epsg,
-            geometry=shapely.geometry.mapping(self.geom))
-
     def area(self):
         return getattr(self.geom, 'area', 0)
 
@@ -285,6 +280,11 @@ class Shape(gws.Object, gws.IShape):
         if self.crs.isYX and not always_xy:
             geom = _swap_xy(geom)
         return shapely.geometry.mapping(geom)
+
+    def to_props(self):
+        return gws.ShapeProps(
+            crs=self.crs.epsg,
+            geometry=shapely.geometry.mapping(self.geom))
 
     def is_empty(self):
         return self.geom.is_empty()

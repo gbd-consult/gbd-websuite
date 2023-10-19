@@ -5,6 +5,7 @@ import enum
 from typing import (
     cast,
     Any,
+    ContextManager,
     Literal,
     Optional,
     Protocol,
@@ -19,6 +20,7 @@ from collections.abc import (
     Mapping,
     Sequence,
 )
+
 
 
 # Variant is tagged Union, discriminated by the 'type' property
@@ -44,6 +46,7 @@ __all__ = [
     'cast',
     'Any',
     'Callable',
+    'ContextManager',
     'Iterable',
     'Iterator',
     'Literal',

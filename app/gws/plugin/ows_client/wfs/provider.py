@@ -3,10 +3,12 @@
 import gws
 import gws.base.ows.client
 import gws.base.shape
+import gws.config.util
 import gws.gis.bounds
 import gws.gis.crs
 import gws.gis.extent
 import gws.gis.source
+
 import gws.types as t
 
 from . import caps
@@ -131,10 +133,4 @@ class Object(gws.base.ows.client.provider.Object):
 
 
 def get_for(obj: gws.INode) -> Object:
-    p = obj.cfg('provider')
-    if p:
-        return obj.root.create_shared(Object, p)
-    p = obj.cfg('_defaultProvider')
-    if p:
-        return p
-    raise gws.Error(f'no provider found for {obj!r}')
+    return t.cast(Object, gws.config.util.get_provider(Object, obj))

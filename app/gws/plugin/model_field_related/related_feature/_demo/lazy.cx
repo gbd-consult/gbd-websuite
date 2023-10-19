@@ -1,96 +1,96 @@
-@comment
-
-Editing 1:M relationships (person >- poi).
-
-Using `featureSuggest` widgets and `loadingStrategy lazy`
-to facilitate lazy loading: useful for big tables.
-
-The "parent" model must have at least one field with "textSearch" defined.
-
-@end
-
-projects+ {
-    title "Models: relatedFeature (lazy loading)"
-    metadata.abstract "Loading related features on demand."
-
-    api.actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
-
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
-
-    models+ {
-        type "postgres"
-        uid "model_related_feature_lazy_poi"
-        title "POIs"
-        loadingStrategy "lazy"
-        sort+ { fieldName "name" }
-        tableName "edit.poi"
-
-        fields+ {
-            name "id"
-            type "integer"
-            isPrimaryKey true
-        }
-
-        fields+ {
-            name "name"
-            type "text"
-            textSearch { type "any" }
-        }
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{name}} ( {{id}} )"
-        }
-    }
-
-    models+ {
-        type "postgres"
-        uid "model_related_feature_lazy_person"
-        tableName "edit.person"
-        permissions.edit "allow all"
-        sort+ { fieldName "name" }
-        title "Personen"
-
-        fields+ {
-            name "id"
-            type "integer"
-            title "Identifier"
-            isPrimaryKey true
-            permissions.edit "deny all"
-        }
-
-        fields+ {
-            name "name"
-            type "text"
-            title "Name"
-            isRequired true
-        }
-
-        fields+ {
-            name "favorite"
-            title "Favourite Location"
-            type "relatedFeature"
-            relationship {
-                modelUid "model_related_feature_lazy_poi"
-                foreignKey "poi_id"
-            }
-            widget.type "featureSuggest"
-        }
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{@if feature.isNew}} neue Person {{@else}} {{name}} {{@end}}"
-        }
-    }
-
-    {demo_osm_background}
-}
+@#@comment
+@#
+@#Editing 1:M relationships (person >- poi).
+@#
+@#Using `featureSuggest` widgets and `loadingStrategy lazy`
+@#to facilitate lazy loading: useful for big tables.
+@#
+@#The "parent" model must have at least one field with "textSearch" defined.
+@#
+@#@end
+@#
+@#projects+ {
+@#    title "Models: relatedFeature (lazy loading)"
+@#    metadata.abstract "Loading related features on demand."
+@#
+@#    api.actions+ { type "edit" }
+@#    client.addElements+ { tag "Sidebar.Edit" }
+@#    client.addElements+ { tag "Toolbar.Edit" }
+@#    client.options.sidebarActiveTab "Sidebar.Edit"
+@#
+@#    map {
+@#        center {demo_point_duesseldorf_3857}
+@#        zoom.initScale 150000
+@#        zoom.maxScale  1000000
+@#    }
+@#
+@#    models+ {
+@#        type "postgres"
+@#        uid "model_related_feature_lazy_poi"
+@#        title "POIs"
+@#        loadingStrategy "lazy"
+@#        sort+ { fieldName "name" }
+@#        tableName "edit.poi"
+@#
+@#        fields+ {
+@#            name "id"
+@#            type "integer"
+@#            isPrimaryKey true
+@#        }
+@#
+@#        fields+ {
+@#            name "name"
+@#            type "text"
+@#            textSearch { type "any" }
+@#        }
+@#
+@#        templates+ {
+@#            subject "feature.title"
+@#            type "html"
+@#            text "{{name}} ( {{id}} )"
+@#        }
+@#    }
+@#
+@#    models+ {
+@#        type "postgres"
+@#        uid "model_related_feature_lazy_person"
+@#        tableName "edit.person"
+@#        permissions.edit "allow all"
+@#        sort+ { fieldName "name" }
+@#        title "Personen"
+@#
+@#        fields+ {
+@#            name "id"
+@#            type "integer"
+@#            title "Identifier"
+@#            isPrimaryKey true
+@#            permissions.edit "deny all"
+@#        }
+@#
+@#        fields+ {
+@#            name "name"
+@#            type "text"
+@#            title "Name"
+@#            isRequired true
+@#        }
+@#
+@#        fields+ {
+@#            name "favorite"
+@#            title "Favourite Location"
+@#            type "relatedFeature"
+@#            relationship {
+@#                modelUid "model_related_feature_lazy_poi"
+@#                foreignKey "poi_id"
+@#            }
+@#            widget.type "featureSuggest"
+@#        }
+@#
+@#        templates+ {
+@#            subject "feature.title"
+@#            type "html"
+@#            text "{{@if feature.isNew}} neue Person {{@else}} {{name}} {{@end}}"
+@#        }
+@#    }
+@#
+@#    {demo_osm_background}
+@#}

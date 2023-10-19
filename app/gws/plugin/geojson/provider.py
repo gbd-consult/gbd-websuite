@@ -1,9 +1,12 @@
 """GeoJson provder."""
 
 import gws
+import gws.config.util
 import gws.gis.crs
 import gws.base.shape
 import gws.lib.jsonx
+
+import gws.types as t
 
 
 class Config(gws.Config):
@@ -22,7 +25,7 @@ class Object(gws.Node):
     def post_configure(self):
         self._featureData = None
 
-    def feature_data(self) -> list[gws.FeatureData]:
+    def feature_data(self) -> list[gws.FeatureRecord]:
         if self._featureData is None:
             self._featureData = self._load()
         return self._featureData
@@ -38,7 +41,7 @@ class Object(gws.Node):
         fds = []
 
         for f in js.get('features', []):
-            fd = gws.FeatureData(attributes=f.get('properties', {}))
+            fd = gws.FeatureRecord(attributes=f.get('properties', {}))
             if f.get('geometry'):
                 fd.shape = gws.base.shape.from_geojson(f['geometry'], crs)
             fds.append(fd)
@@ -50,10 +53,4 @@ class Object(gws.Node):
 
 
 def get_for(obj: gws.INode) -> Object:
-    p = obj.cfg('provider')
-    if p:
-        return obj.root.create_shared(Object, p)
-    p = obj.cfg('_defaultProvider')
-    if p:
-        return p
-    raise gws.Error(f'no provider found for {obj!r}')
+    return t.cast(Object, gws.config.util.get_provider(Object, obj))

@@ -63,24 +63,23 @@ class Object(core.Object):
 
         return tags
 
-    def get_features(self, search, user, views=None, model_uid=None):
-        model = gws.base.model.locate(self.models, user=user, access=gws.Access.read, uid=model_uid)
-        if not model:
-            return []
-
-        features = model.find_features(search, user)
-
-        templates = []
-
-        for v in views or ['label']:
-            tpl = gws.base.template.locate(self, search.project, user=user, subject=f'feature.{v}')
-            if tpl:
-                templates.append(tpl)
-
-        for feature in features:
-            feature.compute_values(gws.Access.read, user)
-            if search.bounds:
-                feature.transform_to(search.bounds.crs)
-            feature.render_views(templates, user=user, layer=self)
-
-        return features
+    # def get_features(self, search, user, views=None, model_uid=None):
+    #     model = gws.base.model.locate(self.models, user=user, access=gws.Access.read, uid=model_uid)
+    #     if not model:
+    #         return []
+    #
+    #     features = model.find_features(gws.ModelMode.view, search, user)
+    #
+    #     templates = []
+    #
+    #     for v in views or ['label']:
+    #         tpl = self.root.app.templateMgr.locate_template(self, search.project, user=user, subject=f'feature.{v}')
+    #         if tpl:
+    #             templates.append(tpl)
+    #
+    #     for feature in features:
+    #         if search.bounds:
+    #             feature.transform_to(search.bounds.crs)
+    #         feature.render_views(templates, user=user, layer=self)
+    #
+    #     return features

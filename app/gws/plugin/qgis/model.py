@@ -8,7 +8,7 @@ import gws.types as t
 
 from . import provider
 
-gws.ext.new.model('qgislocal')
+gws.ext.new.model('qgis')
 
 
 class Config(gws.base.model.Config):

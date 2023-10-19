@@ -5,6 +5,7 @@ import gws.base.legend
 import gws.base.model
 import gws.base.search
 import gws.base.template
+import gws.config.util
 import gws.gis.bounds
 import gws.gis.crs
 import gws.gis.extent
@@ -41,8 +42,8 @@ class GridConfig(gws.Config):
     tileSize: t.Optional[int]
 
 
-class CustomConfigElement(gws.ConfigWithAccess):
-    """Custom layer configuration"""
+class AutoLayersOptions(gws.ConfigWithAccess):
+    """Configuration for automatic layers."""
 
     applyTo: t.Optional[gws.gis.source.LayerFilter]
     config: 'Config'
@@ -257,13 +258,7 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def configure_models(self):
-        p = self.cfg('models')
-        if p:
-            self.models = gws.compact(self.configure_model(c) for c in p)
-            return True
-
-    def configure_model(self, cfg):
-        return self.create_child(gws.ext.object.model, cfg)
+        return gws.config.util.configure_models(self)
 
     def configure_provider(self):
         pass
@@ -279,25 +274,13 @@ class Object(gws.Node, gws.ILayer):
     def configure_search(self):
         if not self.cfg('withSearch'):
             return True
-        p = self.cfg('finders')
-        if p:
-            self.finders = gws.compact(self.configure_finder(c) for c in p)
-            return True
-
-    def configure_finder(self, cfg):
-        return self.create_child(gws.ext.object.finder, cfg)
+        return gws.config.util.configure_finders(self)
 
     def configure_sources(self):
         pass
 
     def configure_templates(self):
-        p = self.cfg('templates')
-        if p:
-            self.templates = gws.compact(self.configure_template(cfg) for cfg in p)
-        return True
-
-    def configure_template(self, cfg):
-        return self.create_child(gws.ext.object.template, cfg)
+        return gws.config.util.configure_templates(self)
 
     def configure_group_layers(self, layer_configs):
         ls = []

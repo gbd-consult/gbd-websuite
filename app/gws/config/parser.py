@@ -83,7 +83,7 @@ class ConfigParser:
 
         gws.log.info('parsing main configuration...')
         try:
-            app_cfg = parse(self.specs, dct, 'gws.base.application.Config', config_path)
+            app_cfg = parse(self.specs, dct, 'gws.base.application.core.Config', config_path)
         except gws.ConfigurationError as exc:
             self.errors.append(exc)
             return None

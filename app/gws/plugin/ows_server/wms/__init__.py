@@ -1,9 +1,9 @@
 import gws
 import gws.base.legend
 import gws.base.ows.server as server
-import gws.base.search.runner
 import gws.base.shape
 import gws.base.web
+import gws.config.util
 import gws.gis.bounds
 import gws.gis.crs
 import gws.lib.image
@@ -60,8 +60,7 @@ class Object(server.service.Object):
     isRasterService = True
 
     def configure_templates(self):
-        super().configure_templates()
-        self.templates.extend(self.configure_template(c) for c in _DEFAULT_TEMPLATES)
+        return gws.config.util.configure_templates(self, extra=_DEFAULT_TEMPLATES)
 
     def configure_metadata(self):
         super().configure_metadata()
@@ -163,7 +162,7 @@ class Object(server.service.Object):
             tolerance=self.searchTolerance,
         )
 
-        results = gws.base.search.runner.run(self.root, search, rd.req.user)
+        results = self.root.app.searchMgr.run_search(search, rd.req.user)
 
         fc = server.util.feature_collection(rd, results)
         return self.template_response(

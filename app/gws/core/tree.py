@@ -29,11 +29,11 @@ class Object(types.IObject):
 class Node(Object, types.INode):
     def initialize(self, config):
         self.config = config
-        self.permissions = self._confure_permissions()
+        self.permissions = self._configure_permissions()
         _super_invoke(self, 'pre_configure')
         _super_invoke(self, 'configure')
 
-    def _confure_permissions(self):
+    def _configure_permissions(self):
         perms = {}
 
         p = self.cfg('access')
@@ -146,7 +146,7 @@ class Root(types.IRoot):
     def create_application(self, config=None, **kwargs):
         config = _to_config(config, kwargs)
 
-        obj = self._alloc('gws.base.application.Object')
+        obj = self._alloc('gws.base.application.core.Object')
         obj.uid = '1'
         obj.parent = self
         obj.children = []

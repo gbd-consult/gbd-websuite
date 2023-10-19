@@ -35,7 +35,7 @@ class Object(gws.base.model.Object):
     def configure(self):
         self.country = self.cfg('country')
         self.language = self.cfg('language')
-        self.keyName = 'uid'
+        self.uidName = 'uid'
         self.geometryName = 'geometry'
         self.loadingStrategy = gws.FeatureLoadingStrategy.all
 
@@ -81,8 +81,8 @@ class Object(gws.base.model.Object):
                 gws.log.debug(f'SKIP {uid}: no intersection')
                 continue
 
-            features.append(self.feature_from_data(
-                gws.FeatureData(uid=uid, shape=shape, attributes=self._normalize(rec)),
+            features.append(self.feature_from_record(
+                gws.FeatureRecord(uid=uid, shape=shape, attributes=self._normalize(rec)),
                 user))
 
         return sorted(features, key=lambda f: (f.attr('name'), f.attr('osm_class'), f.attr('osm_type')))

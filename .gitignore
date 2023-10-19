@@ -22,3 +22,4 @@ _autosummary
 node_modules
 *bundle.json
 *bundle.js
+test.local.ini

@@ -4,12 +4,13 @@ import gws
 import gws.base.model
 import gws.base.search
 import gws.base.ows.client
+import gws.config.util
 import gws.gis.source
 import gws.types as t
 
 from . import provider
 
-gws.ext.new.finder('qgislocal')
+gws.ext.new.finder('qgis')
 
 
 class Config(gws.base.search.finder.Config):

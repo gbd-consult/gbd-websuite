@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.model.scalar_field
+from gws import IUser
 
 gws.ext.new.modelField('integer')
 
@@ -22,10 +23,10 @@ class Object(gws.base.model.scalar_field.Object):
             self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='integer')
             return True
 
-    ##
-
-    def prop_to_py(self, val):
-        try:
-            return int(val)
-        except ValueError:
-            return gws.ErrorValue
+    def convert(self, val, mc):
+        if mc.translation == gws.ModelTranslation.propsToFeature:
+            try:
+                return int(val)
+            except ValueError:
+                return gws.ErrorValue
+        return val

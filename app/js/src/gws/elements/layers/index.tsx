@@ -146,8 +146,10 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
             cc = this.props.controller,
             map = cc.map;
 
-        let models = this.app.models.editableModels().filter(m => m.layer === layer);
-        let model = models.length ? models[0] : null;
+        // let models = this.app.modelRegistry.editableModels().filter(m => m.layer === layer);
+        // let model = models.length ? models[0] : null;
+
+        let model = null;
 
 
         let f = {

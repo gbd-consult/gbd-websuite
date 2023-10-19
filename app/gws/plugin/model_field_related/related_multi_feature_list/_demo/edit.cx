@@ -2,9 +2,9 @@
 
 Editing 1:M relationships to multiple tables:
 
-    baustelle -< kanalarbeiten
-    baustelle -< sperrung
-    baustelle -< umleitung
+    baustelle --<< kanalarbeiten
+    baustelle --<< sperrung
+    baustelle --<< umleitung
 
 Using `relatedMultiFeatureList` for the parent table
 and `relatedFeature` as backlinks in child tables.
@@ -32,79 +32,78 @@ projects+ {
 
     models+ {
         type "postgres"
-        uid "model_related_multi_feature_list_baustelle"
+        uid "mod_baustelle"
         tableName "baustellen.baustelle"
         title "Baustellen"
+        editable true
         permissions.edit "allow all"
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{@if feature.isNew}} neue Baustelle {{@else}} {{name}} {{@end}}"
+        }
+
         fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
         fields+ { name "name" type "text" isRequired true textSearch { type "any" } }
-        templates+ { subject "feature.title" type "html" text "{{@if feature.isNew}} neue Baustelle {{@else}} {{name}} {{@end}}" }
-
         fields+ {
             name "objekte"
             title "Objekte"
             type "relatedMultiFeatureList"
-            relationships+ { modelUid "model_related_multi_feature_list_kanalarbeiten"  fieldName "baustelle" }
-            relationships+ { modelUid "model_related_multi_feature_list_sperrung"       fieldName "baustelle" }
-            relationships+ { modelUid "model_related_multi_feature_list_umleitung"      fieldName "baustelle" }
+            related [
+                { toModel "mod_kanalarbeiten" toColumn "baustelle_id" }
+                { toModel "mod_sperrung"      toColumn "baustelle_id" }
+                { toModel "mod_umleitung"     toColumn "baustelle_id" }
+            ]
         }
     }
-    
+
     models+ {
         type "postgres"
-        uid "model_related_multi_feature_list_kanalarbeiten"
+        uid "mod_kanalarbeiten"
         tableName "baustellen.kanalarbeiten"
+        title "Kanalarbeiten"
+        editable true
         permissions.edit "allow all"
-        title "kanalarbeiten"
-        templates+ { subject "feature.title" type "html" text "kanalarbeiten {{beschreibung}}" }
+
+        templates+ { subject "feature.title" type "html" text "Kanalarbeiten {{beschreibung}}" }
+
         fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
         fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
         fields+ { name "geom" type "geometry" }
-
-        fields+ { name "baustelle" type "relatedFeature"
-            relationship {
-                modelUid "model_related_multi_feature_list_baustelle"
-                foreignKey "baustelle_id"
-            }
-        }
+        fields+ { name "baustelle" type "relatedFeature" fromColumn "baustelle_id" toModel "mod_baustelle" }
     }
 
     models+ {
         type "postgres"
-        uid "model_related_multi_feature_list_sperrung"
+        uid "mod_sperrung"
         tableName "baustellen.sperrung"
+        title "Sperrung"
+        editable true
         permissions.edit "allow all"
-        title "sperrung"
-        templates+ { subject "feature.title" type "html" text "sperrung {{beschreibung}}" }
+
+        templates+ { subject "feature.title" type "html" text "Sperrung {{beschreibung}}" }
+
         fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
         fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
         fields+ { name "geom" type "geometry" }
-
-        fields+ { name "baustelle" type "relatedFeature"
-            relationship {
-                modelUid "model_related_multi_feature_list_baustelle"
-                foreignKey "baustelle_id"
-            }
-        }
+        fields+ { name "baustelle" type "relatedFeature" fromColumn "baustelle_id" toModel "mod_baustelle" }
     }
 
     models+ {
         type "postgres"
-        uid "model_related_multi_feature_list_umleitung"
+        uid "mod_umleitung"
         tableName "baustellen.umleitung"
+        title "Umleitung"
+        editable true
         permissions.edit "allow all"
-        title "umleitung"
-        templates+ { subject "feature.title" type "html" text "umleitung {{beschreibung}}" }
+
+        templates+ { subject "feature.title" type "html" text "Umleitung {{beschreibung}}" }
+
         fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
         fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
         fields+ { name "geom" type "geometry" }
-
-        fields+ { name "baustelle" type "relatedFeature"
-            relationship {
-                modelUid "model_related_multi_feature_list_baustelle"
-                foreignKey "baustelle_id"
-            }
-        }
+        fields+ { name "baustelle" type "relatedFeature" fromColumn "baustelle_id" toModel "mod_baustelle" }
     }
 
     map.layers+ { type "postgres" title "kanalarbeiten"  tableName "baustellen.kanalarbeiten" }

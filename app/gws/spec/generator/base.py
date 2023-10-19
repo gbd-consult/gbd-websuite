@@ -12,6 +12,7 @@ BUILTINS = ATOMS + ['type', 'object', 'Exception', 'dict', 'list', 'set', 'tuple
 BUILTIN_TYPES = [
     'Any',
     'Callable',
+    'ContextManager',
     'Dict',
     'Enum',
     'Iterable',

@@ -3,6 +3,7 @@
 import gws
 import gws.base.layer
 import gws.base.ows.client
+import gws.config.util
 import gws.lib.uom
 import gws.lib.net
 import gws.types as t
@@ -73,10 +74,4 @@ class Object(gws.base.ows.client.provider.Object):
 #
 
 def get_for(obj: gws.INode) -> Object:
-    p = obj.cfg('provider')
-    if p:
-        return obj.root.create_shared(Object, p)
-    p = obj.cfg('_defaultProvider')
-    if p:
-        return p
-    raise gws.Error(f'no provider found for {obj!r}')
+    return t.cast(Object, gws.config.util.get_provider(Object, obj))

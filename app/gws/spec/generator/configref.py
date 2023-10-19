@@ -46,7 +46,7 @@ class _Creator:
         self.html = {}
 
     def run(self):
-        start_tid = 'gws.base.application.Config'
+        start_tid = 'gws.base.application.core.Config'
 
         self.queue = [start_tid]
         self.html = {}

@@ -39,7 +39,7 @@ class Object(gws.base.model.scalar_field.Object):
         if s:
             self.geometryType = s
             return True
-        c = self.describe()
+        c = self.model.describe().columnMap.get(self.name)
         if c and c.geometryType:
             self.geometryType = c.geometryType
             return True
@@ -49,7 +49,7 @@ class Object(gws.base.model.scalar_field.Object):
         if s:
             self.geometryCrs = gws.gis.crs.get(s)
             return True
-        c = self.describe()
+        c = self.model.describe().columnMap.get(self.name)
         if c and c.geometrySrid:
             self.geometryCrs = gws.gis.crs.get(c.geometrySrid)
             return True
@@ -66,39 +66,48 @@ class Object(gws.base.model.scalar_field.Object):
 
     ##
 
-    def augment_select(self, sel, user):
+    def before_select(self, mc):
+        super().before_select(mc)
+
         shape = None
-        if sel.search.shape:
-            shape = sel.search.shape
-            if sel.search.tolerance:
-                tol_value, tol_unit = sel.search.tolerance
+
+        if mc.search.shape:
+            shape = mc.search.shape
+            if mc.search.tolerance:
+                tol_value, tol_unit = mc.search.tolerance
                 if tol_unit == gws.Uom.px:
-                    tol_value *= sel.search.resolution
+                    tol_value *= mc.search.resolution
                 shape = shape.tolerance_polygon(tol_value)
-        elif sel.search.bounds:
-            shape = gws.base.shape.from_bounds(sel.search.bounds)
+        elif mc.search.bounds:
+            shape = gws.base.shape.from_bounds(mc.search.bounds)
 
         if shape:
             shape = shape.transformed_to(self.geometryCrs)
-            mod = t.cast(gws.base.database.model.Object, self.model)
-            fld = sa.sql.cast(
-                getattr(mod.record_class(), self.name),
-                sa.geo.Geometry)
-            sel.geometryWhere.append(sa.func.st_intersects(
-                fld,
+
+            model = t.cast(gws.base.database.model.Object, self.model)
+            col = model.column(self.name)
+
+            mc.dbSelect.geometryWhere.append(sa.func.st_intersects(
+                col,
                 sa.cast(shape.to_ewkb_hex(), sa.geo.Geometry())))
 
-    def db_to_py(self, val):
+    def raw_to_python(self, val, mc):
         # here, val is a geosa WKBElement
         return gws.base.shape.from_wkb_hex(str(val))
 
-    def prop_to_py(self, val):
-        shape = self.prop_to_shape(val)
+    def prop_to_python(self, val, mc):
+        shape = self._prop_to_shape(val)
         if shape:
             return shape.transformed_to(self.geometryCrs)
         return gws.ErrorValue
 
-    def prop_to_shape(self, val):
+    def python_to_raw(self, val, mc):
+        return val.to_ewkb_hex()
+
+    def python_to_prop(self, val, mc):
+        return t.cast(gws.IShape, val).to_props()
+
+    def _prop_to_shape(self, val):
         if isinstance(val, gws.base.shape.Shape):
             return val
         if gws.is_data_object(val):
@@ -112,5 +121,3 @@ class Object(gws.base.model.scalar_field.Object):
             except gws.Error:
                 pass
 
-    def py_to_db(self, val):
-        return val.to_ewkb_hex()

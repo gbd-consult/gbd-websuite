@@ -268,7 +268,7 @@ class _Worker:
             )
 
         if plane.type == core.PlaneType.features:
-            model = gws.base.model.get_default(self.root)
+            model = self.root.app.modelMgr.default_model()
             used_styles = {}
 
             features = []

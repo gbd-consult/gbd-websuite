@@ -6,10 +6,12 @@ https://nominatim.org/release-docs/develop/api/Search/
 """
 
 import gws
-import gws.types as t
 import gws.base.search
 import gws.base.template
+import gws.config.util
 import gws.lib.net
+
+import gws.types as t
 
 gws.ext.new.finder('nominatim')
 
@@ -54,16 +56,16 @@ class Object(gws.base.search.finder.Object):
         self.configure_templates()
 
     def configure_templates(self):
-        if super().configure_templates():
-            return True
-        self.templates = [self.configure_template(cfg) for cfg in _DEFAULT_TEMPLATES]
-        return True
+        return gws.config.util.configure_templates(self, extra=_DEFAULT_TEMPLATES)
 
     def configure_models(self):
-        if super().configure_models():
-            return True
-        self.models.append(self.configure_model(None))
-        return True
+        return gws.config.util.configure_models(self, with_default=True)
 
-    def configure_model(self, cfg):
-        return self.create_child(gws.ext.object.model, cfg, type=self.extType, country=self.cfg('country'), language=self.cfg('language'))
+    def create_model(self, cfg):
+        return self.create_child(
+            gws.ext.object.model,
+            cfg,
+            type=self.extType,
+            country=self.cfg('country'),
+            language=self.cfg('language')
+        )

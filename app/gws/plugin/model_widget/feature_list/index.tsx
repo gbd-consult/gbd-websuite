@@ -18,21 +18,21 @@ interface Props extends gws.types.ModelWidgetProps {
 class View extends gws.View<Props> {
     buttons(selectedFeature) {
         return <React.Fragment>
-            {this.props.whenNewButtonTouched && <Cell>
+            {this.props.widgetProps['withNewButton'] && this.props.whenNewButtonTouched && <Cell>
                 <gws.ui.Button
                     className='cmpFormListNewButton'
                     tooltip={this.__('widgetFeatureListNewObject')}
                     whenTouched={this.props.whenNewButtonTouched}
                 />
             </Cell>}
-            {this.props.whenLinkButtonTouched && <Cell>
+            {this.props.widgetProps['withLinkButton'] && this.props.whenLinkButtonTouched && <Cell>
                 <gws.ui.Button
                     className='cmpFormListLinkButton'
                     tooltip={this.__('widgetFeatureListLinkObject')}
                     whenTouched={this.props.whenLinkButtonTouched}
                 />
             </Cell>}
-            {this.props.whenEditButtonTouched && <Cell>
+            {this.props.widgetProps['withEditButton'] && this.props.whenEditButtonTouched && <Cell>
                 <gws.ui.Button
                     className='cmpFormListEditButton'
                     tooltip={this.__('widgetFeatureListEditObject')}
@@ -40,7 +40,7 @@ class View extends gws.View<Props> {
                     whenTouched={() => this.props.whenEditButtonTouched(selectedFeature)}
                 />
             </Cell>}
-            {this.props.whenUnlinkButtonTouched && <Cell>
+            {this.props.widgetProps['withUnlinkButton'] && this.props.whenUnlinkButtonTouched && <Cell>
                 <gws.ui.Button
                     className='cmpFormListUnlinkButton'
                     tooltip={this.__('widgetFeatureListUnlinkObject')}
@@ -48,7 +48,7 @@ class View extends gws.View<Props> {
                     whenTouched={() => this.props.whenUnlinkButtonTouched(selectedFeature)}
                 />
             </Cell>}
-            {this.props.whenDeleteButtonTouched && <Cell>
+            {this.props.widgetProps['withDeleteButton'] && this.props.whenDeleteButtonTouched && <Cell>
                 <gws.ui.Button
                     className='cmpFormListDeleteButton'
                     tooltip={this.__('widgetFeatureListDeleteObject')}

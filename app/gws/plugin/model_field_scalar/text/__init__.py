@@ -34,36 +34,35 @@ class Object(gws.base.model.scalar_field.Object):
 
     ##
 
-    def augment_select(self, sel, user):
-        if not self.textSearch or not sel.search or not sel.search.keyword:
-            return
+    def before_select(self, mc):
+        super().before_select(mc)
 
-        kw = sel.search.keyword
+        kw = mc.search.keyword
         ts = self.textSearch
-        if ts.minLength and len(kw) < ts.minLength:
+
+        if not kw or not ts or (ts.minLength and len(kw) < ts.minLength):
             return
 
-        mod = t.cast(gws.base.database.model.Object, self.model)
-        fld = sa.cast(
-            getattr(mod.record_class(), self.name),
-            sa.String)
+        model = t.cast(gws.base.database.model.Object, self.model)
+        col = model.column(self.name)
 
         if ts.type == gws.TextSearchType.exact:
-            sel.keywordWhere.append(fld == kw)
-        else:
-            if ts.type == gws.TextSearchType.any:
-                kw = '%' + _escape_like(kw) + '%'
-            if ts.type == gws.TextSearchType.begin:
-                kw = _escape_like(kw) + '%'
-            if ts.type == gws.TextSearchType.end:
-                kw = '%' + _escape_like(kw)
-            if ts.type == gws.TextSearchType.like:
-                pass
+            mc.dbSelect.keywordWhere.append(col.__eq__(kw))
+            return
 
-            if ts.caseSensitive:
-                sel.keywordWhere.append(fld.like(kw, escape='\\'))
-            else:
-                sel.keywordWhere.append(fld.ilike(kw, escape='\\'))
+        if ts.type == gws.TextSearchType.any:
+            kw = '%' + _escape_like(kw) + '%'
+        elif ts.type == gws.TextSearchType.begin:
+            kw = _escape_like(kw) + '%'
+        elif ts.type == gws.TextSearchType.end:
+            kw = '%' + _escape_like(kw)
+        elif ts.type == gws.TextSearchType.like:
+            pass
+
+        if ts.caseSensitive:
+            mc.dbSelect.keywordWhere.append(col.like(kw, escape='\\'))
+        else:
+            mc.dbSelect.keywordWhere.append(col.ilike(kw, escape='\\'))
 
 
 def _escape_like(s, escape='\\'):

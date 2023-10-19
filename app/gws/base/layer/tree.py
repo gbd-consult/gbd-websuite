@@ -24,8 +24,8 @@ class Config(gws.Config):
     """source layers to exclude"""
     flattenLayers: t.Optional[FlattenConfig]
     """flatten the layer hierarchy"""
-    customConfig: t.Optional[list[core.CustomConfigElement]]
-    """custom configurations for specific layers"""
+    autoLayers: t.Optional[list[core.AutoLayersOptions]]
+    """custom configurations for automatically created layers"""
 
 
 class TreeConfigArgs(gws.Data):
@@ -34,7 +34,7 @@ class TreeConfigArgs(gws.Data):
     roots_slf: gws.gis.source.LayerFilter
     exclude_slf: gws.gis.source.LayerFilter
     flatten_config: FlattenConfig
-    custom_configs: list[core.CustomConfigElement]
+    auto_layers: list[core.AutoLayersOptions]
     leaf_layer_maker: t.Callable
 
 
@@ -47,7 +47,7 @@ def layer_configs_from_layer(layer: core.Object, source_layers: list[gws.SourceL
         roots_slf=layer.cfg('rootLayers'),
         exclude_slf=layer.cfg('excludeLayers'),
         flatten_config=layer.cfg('flattenLayers'),
-        custom_configs=layer.cfg('customConfig', default=[]),
+        auto_layers=layer.cfg('autoLayers', default=[]),
         leaf_layer_maker=leaf_layer_maker
     ))
 
@@ -88,7 +88,7 @@ def _config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
         'opacity': sl.opacity or 1,
     })
 
-    for cc in tca.custom_configs:
+    for cc in tca.auto_layers:
         if gws.gis.source.layer_matches(sl, cc.applyTo):
             cfg = gws.deep_merge(cc.config, cfg)
 

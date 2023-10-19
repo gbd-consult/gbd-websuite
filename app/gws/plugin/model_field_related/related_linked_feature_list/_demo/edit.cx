@@ -1,0 +1,83 @@
+@comment
+
+Editing two models linked to each other via a link table.
+
+@end
+
+projects+ {
+    title "Models: relatedLinkedFeatureList"
+    metadata.abstract "Editing linked related features"
+
+    api.actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    models+ {
+        type "postgres"
+        uid "mod_poi_linked"
+        tableName "edit.poi_small"
+        sort+ { fieldName "name" }
+        title "POIs"
+        editable true
+        permissions.edit "allow all"
+
+        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "name" type "text" title "Object name" isRequired true textSearch { type "any" } }
+
+        fields+ {
+            name "tags"
+            title "Tags"
+            type "relatedLinkedFeatureList"
+
+            toModel "mod_tag_linked"
+
+            linkTableName "edit.tagging"
+            linkFromColumn "poi_id"
+            linkToColumn "tag_id"
+
+            widget {
+                type "featureList"
+                withNewButton     true
+                withLinkButton    true
+                withEditButton    true
+                withUnlinkButton  true
+            }
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{@if feature.isNew}} new POI {{@else}} {{name}} {{@end}}"
+        }
+    }
+
+    models+ {
+        type "postgres"
+        uid "mod_tag_linked"
+        tableName "edit.tag"
+        sort+ { fieldName "name_de" }
+        title "Tags"
+        editable true
+        permissions.edit "allow all"
+
+        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "name_de" type "text" title "Tag (DE)" isRequired true textSearch { type "any" } }
+        fields+ { name "name_en" type "text" title "Tag (EN)" isRequired true textSearch { type "any" } }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{@if feature.isNew}} new tag {{@else}} {{name_de}} {{@end}}"
+        }
+    }
+
+
+    {demo_osm_background}
+}

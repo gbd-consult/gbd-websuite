@@ -4,6 +4,7 @@ import gws
 import gws.base.layer.core
 import gws.base.template
 import gws.base.web
+import gws.config.util
 import gws.gis.bounds
 import gws.gis.crs
 import gws.gis.extent
@@ -89,11 +90,7 @@ class Object(gws.Node, gws.IOwsService):
         return True
 
     def configure_templates(self):
-        self.templates = gws.compact(self.configure_template(c) for c in self.cfg('templates', default=[]))
-        return True
-
-    def configure_template(self, cfg):
-        return self.create_child(gws.ext.object.template, cfg)
+        return gws.config.util.configure_templates(self)
 
     def configure_operations(self):
         fs = {}
@@ -225,7 +222,7 @@ class Object(gws.Node, gws.IOwsService):
                 gws.log.debug(f'no mimetype: {verb=} {format_name=}')
                 raise gws.base.web.error.BadRequest('Invalid FORMAT')
 
-        tpl = gws.base.template.locate(self, user=rd.req.user, subject=f'ows.{verb}', mime=mime)
+        tpl = self.root.app.templateMgr.locate_template(self, user=rd.req.user, subject=f'ows.{verb}', mime=mime)
         if not tpl:
             gws.log.debug(f'no template: {verb=} {format_name=}')
             raise gws.base.web.error.BadRequest('Unsupported FORMAT')

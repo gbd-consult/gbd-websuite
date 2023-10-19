@@ -24,7 +24,7 @@ class Object(gws.base.model.scalar_field.Object):
 
     ##
 
-    def prop_to_py(self, val):
+    def prop_to_python(self, val, mc):
         try:
             return bool(val)
         except ValueError:

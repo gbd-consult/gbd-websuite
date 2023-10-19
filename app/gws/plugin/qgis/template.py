@@ -28,6 +28,7 @@ Caveats/todos:
 
 import gws
 import gws.base.template
+import gws.config.util
 import gws.plugin.template.html
 import gws.lib.htmlx
 import gws.lib.mime

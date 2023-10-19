@@ -1,132 +1,124 @@
-import gws
-import gws.base.model.field
-import gws.base.database.model
-import gws.lib.sa as sa
+"""Related Feature field
 
+Represents a child->parent M:1 relationship to another model::
+
+    +-------------+         +--------------+
+    | model       |         | toModel      |
+    +-------------+         +--------------+
+    | fromKey     |-------->| toKey        |
+    +-------------+         +--------------+
+
+The value of the field is the parent feature.
+"""
+
+import gws
+import gws.base.database.model
+import gws.base.model.related_field as related_field
+import gws.lib.sa as sa
 import gws.types as t
 
 gws.ext.new.modelField('relatedFeature')
 
 
-# @TODO support composite keys
-# @TODO support non-primary foreign keys
-
-class RelationshipConfig(gws.Data):
-    modelUid: str
-    foreignKey: str
-
-
-class Config(gws.base.model.field.Config):
-    relationship: RelationshipConfig
+class Config(related_field.Config):
+    fromColumn: str
+    """foreign key column in this table"""
+    toModel: str
+    """related model"""
+    toColumn: str = ''
+    """key column in the related model, primary key by default"""
 
 
-class Props(gws.base.model.field.Props):
+class Props(related_field.Props):
     pass
 
 
-class Object(gws.base.model.field.Object):
+class Object(related_field.Object):
     attributeType = gws.AttributeType.feature
 
-    model: gws.base.database.model.Object
-    relationship: gws.base.model.field.Relationship
+    def configure_relationship(self):
+        to_mod = t.cast(gws.IDatabaseModel, self.root.get(self.cfg('toModel')))
 
-    def configure(self):
-        self.relationship = gws.base.model.field.Relationship(self.cfg('relationship'))
+        self.rel = related_field.Relationship(
 
-    def configure_widget(self):
-        if not super().configure_widget():
-            self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='featureSelect')
-            return True
+            src=related_field.RelRef(
+                model=self.model,
+                table=self.model.table(),
+                column=self.model.column(self.cfg('fromColumn')),
+                uid=self.model.uid_column(),
+            ),
 
-    def props(self, user):
-        return gws.merge(super().props(user), relationships=[
-            gws.base.model.field.RelationshipProps(
-                modelUid=self.relationship.modelUid,
-                fieldName=self.relationship.fieldName,
-            )
-        ])
-
-    def load_from_props(self, feature, props, user, relation_depth=0, **kwargs):
-        if relation_depth <= 0:
-            return
-
-        val = props.attributes.get(self.name)
-        if val is None:
-            return
-
-        rel_model = self.related_model()
-        if not user.can_read(rel_model):
-            return
-
-        rel_rec = rel_model.get_record(gws.FeatureProps(val).uid)
-        rel_feature = rel_model.feature_from_record(rel_rec, user, relation_depth - 1, **kwargs)
-        if rel_feature:
-            feature.attributes[self.name] = rel_feature
-
-    def load_from_record(self, feature, record, user, relation_depth=0, **kwargs):
-        if relation_depth <= 0:
-            return
-
-        rel_rec = getattr(record, self.name, None)
-        if rel_rec is None:
-            return
-
-        rel_model = self.related_model()
-        if not user.can_read(rel_model):
-            return
-
-        rel_feature = rel_model.feature_from_record(rel_rec, user, relation_depth - 1, **kwargs)
-        if rel_feature:
-            feature.attributes[self.name] = rel_feature
-
-    def store_to_record(self, feature, record, user, **kwargs):
-        ok, rel_feature = self._value_to_write(feature)
-        if not ok:
-            return
-        rel_model = self.related_model()
-        rel_rec = rel_model.get_record(rel_feature.uid())
-        if rel_rec is not None:
-            setattr(record, self.name, rel_rec)
+            to=[
+                related_field.RelRef(
+                    model=to_mod,
+                    table=to_mod.table(),
+                    column=self.col_or_uid(to_mod, self.cfg('toColumn')),
+                    uid=to_mod.uid_column(),
+                )
+            ],
+        )
 
     ##
 
-    def augment_select(self, sel, user):
-        relation_depth = sel.search.relationDepth or 0
-        if relation_depth <= 0:
+    def do_init_with_record(self, feature, mc):
+        self.load_related_from_record([feature], mc)
+
+    def after_select(self, features, mc):
+        if not mc.user.can_read(self) or mc.relDepth >= mc.maxDepth:
             return
-        sel.saSelect = sel.saSelect.options(
-            sa.orm.selectinload(
-                getattr(
-                    self.model.record_class(),
-                    self.name)
-            ))
+        self.load_related_from_record(features, mc)
 
-    def orm_depends_on(self):
-        return [self.relationship.modelUid]
+    def before_create(self, features, mc):
+        self.before_write(features, mc)
 
-    def orm_columns(self):
-        rel_model = self.related_model()
-        rel_key = rel_model.primary_keys()[0]
-        return [
-            sa.Column(self.relationship.foreignKey, sa.ForeignKey(rel_key))
+    def before_update(self, features, mc):
+        self.before_write(features, mc)
+
+    def before_write(self, features: list[gws.IFeature], mc: gws.ModelContext):
+        if not mc.user.can_write(self):
+            return
+
+        for f in features:
+            f.record.attributes[self.rel.src.column.name] = None
+
+        related_uid_to_f = [
+            (f.get(self.name).uid(), f)
+            for f in features
+            if f.get(self.name)
         ]
+        related_uid_and_key = self.uid_and_key_for_uids(
+            self.rel.to[0].model,
+            self.rel.to[0].column,
+            [r for r, _ in related_uid_to_f],
+            mc
+        )
+        for rel_uid, f in related_uid_to_f:
+            keys = [k for r, k in related_uid_and_key if r == rel_uid]
+            if keys:
+                f.record.attributes[self.rel.src.column.name] = keys[0]
 
-    def orm_properties(self):
-        rel_model = self.related_model()
-        rel_cls = rel_model.record_class()
-        rel_key = rel_model.primary_keys()[0]
+    def load_related_from_record(self, features, mc):
+        uid_to_f = {f.uid(): f for f in features}
 
-        our_cls = self.model.record_class()
+        sql = sa.select(
+            self.rel.to[0].uid,
+            self.rel.src.uid,
+        ).select_from(
+            self.rel.to[0].table.join(
+                self.rel.src.table, self.rel.to[0].column.__eq__(self.rel.src.column)
+            )
+        ).where(
+            self.rel.src.uid.in_(uid_to_f)
+        )
 
-        kwargs = {}
-        # kwargs['primaryjoin'] = getattr(our_cls, self.relationship.foreignKey) == getattr(rel_cls, rel_key.name)
-        kwargs['foreign_keys'] = getattr(our_cls, self.relationship.foreignKey)
-        # if self.relationship.fieldName:
-        #     kwargs['back_populates'] = self.relationship.fieldName
+        r_to_u = gws.collect(self.model.execute(sql, mc))
 
-        return {
-            self.name: sa.orm.relationship(rel_cls, **kwargs)
-        }
+        related = self.get_related(
+            self.rel.to[0].model,
+            r_to_u,
+            mc
+        )
 
-    def related_model(self) -> gws.IDatabaseModel:
-        return self.model.provider.mgr.model(self.relationship.modelUid)
+        for rf in related:
+            for uid in r_to_u.get(rf.uid()):
+                uid_to_f.get(uid).set(self.name, rf)

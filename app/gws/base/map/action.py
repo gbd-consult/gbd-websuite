@@ -121,7 +121,7 @@ class Object(gws.base.action.Object):
     def describe_layer(self, req: gws.IWebRequester, p: DescribeLayerRequest) -> DescribeLayerResponse:
         project = req.require_project(p.projectUid)
         layer = req.require_layer(p.layerUid)
-        tpl = gws.base.template.locate(layer, project, user=req.user, subject='layer.description')
+        tpl = self.root.app.templateMgr.locate_template(layer, project, user=req.user, subject='layer.description')
 
         if not tpl:
             return DescribeLayerResponse(content='')
@@ -136,16 +136,16 @@ class Object(gws.base.action.Object):
     def api_get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
 
-        fprops = self._get_features(req, p)
-        return GetFeaturesResponse(features=fprops)
+        propses = self._get_features(req, p)
+        return GetFeaturesResponse(features=propses)
 
     @gws.ext.command.get('mapGetFeatures')
     def http_get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> gws.ContentResponse:
         # @TODO the response should be geojson FeatureCollection
 
-        fprops = self._get_features(req, p)
+        propses = self._get_features(req, p)
         js = gws.lib.jsonx.to_string({
-            'features': fprops
+            'features': propses
         })
 
         return gws.ContentResponse(mime=gws.lib.mime.JSON, content=js)
@@ -222,21 +222,39 @@ class Object(gws.base.action.Object):
             return ImageResponse(mime='image/png', content=lro.content)
         return ImageResponse(mime='image/png', content=gws.lib.image.PIXEL_PNG8)
 
-    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> list[gws.Props]:
+    def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> list[gws.FeatureProps]:
         layer = req.require_layer(p.layerUid)
+        project = layer.closest(gws.ext.object.project)
+
         crs = gws.gis.crs.get(p.crs) or layer.mapCrs
 
         bounds = layer.bounds
         if p.bbox:
             bounds = gws.gis.bounds.from_extent(p.bbox, crs)
 
-        search = gws.SearchQuery(bounds=bounds, limit=_GET_FEATURES_LIMIT)
+        search = gws.SearchQuery(
+            bounds=bounds,
+            project=project,
+            layers=[layer],
+            limit=_GET_FEATURES_LIMIT
+        )
 
-        gws.time_start(f'GET_FEATURES layer={p.layerUid}')
-        features = layer.get_features(search, user=req.user, views=p.views, model_uid=p.modelUid)
-        for f in features:
-            f.attributes = f.attributes_for_view()
-            f.transform_to(crs)
-        gws.time_end()
+        model = self.root.app.modelMgr.locate_model(layer, user=req.user, access=gws.Access.read)
+        if not model:
+            return []
 
-        return [gws.props(f, req.user, layer) for f in features]
+        mc = gws.ModelContext(mode=gws.ModelMode.view, user=req.user)
+        features = model.find_features(search, mc)
+        if not features:
+            return []
+
+        if search.bounds:
+            for feature in features:
+                feature.transform_to(search.bounds.crs)
+
+        tpl = self.root.app.templateMgr.locate_template(layer, project, user=req.user, subject=f'feature.label')
+        if tpl:
+            for feature in features:
+                feature.render_views([tpl], project=project, layer=layer)
+
+        return model.features_to_props(features, mc)

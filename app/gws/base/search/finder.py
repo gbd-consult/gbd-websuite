@@ -2,6 +2,7 @@ import gws
 import gws.base.model
 import gws.base.template
 import gws.base.shape
+import gws.config.util
 import gws.lib.uom
 import gws.types as t
 
@@ -48,22 +49,10 @@ class Object(gws.Node, gws.IFinder):
     ##
 
     def configure_models(self):
-        p = self.cfg('models')
-        if p:
-            self.models = gws.compact(self.configure_model(c) for c in p)
-            return True
-
-    def configure_model(self, cfg):
-        return self.create_child(gws.ext.object.model, cfg)
+        return gws.config.util.configure_models(self)
 
     def configure_templates(self):
-        p = self.cfg('templates')
-        if p:
-            self.templates = gws.compact(self.configure_template(cfg) for cfg in p)
-            return True
-
-    def configure_template(self, cfg):
-        return self.create_child(gws.ext.object.template, cfg)
+        return gws.config.util.configure_templates(self)
 
     ##
 
@@ -99,28 +88,10 @@ class Object(gws.Node, gws.IFinder):
             return gws.base.shape.from_bounds(search.project.map.bounds)
 
     def run(self, search, user, layer=None):
-        model = gws.base.model.locate(self.models, user, gws.Access.read)
-        if not model and layer:
-            model = gws.base.model.locate(layer.models, user, gws.Access.read)
+        model = self.root.app.modelMgr.locate_model(self, layer, user=user, access=gws.Access.read)
         if not model:
             gws.log.debug(f'no model for {user.uid=} in finder {self.uid!r}')
             return []
-        return model.find_features(
-            t.cast(gws.SearchQuery, gws.merge(search, shape=self.context_shape(search))),
-            user,
-        )
-
-
-##
-
-def locate(
-        finders: list[gws.IFinder],
-        user: gws.IUser = None,
-        uid: str = None
-) -> t.Optional[gws.IFinder]:
-    for finder in finders:
-        if user and user.can_use(finder):
-            continue
-        if uid and finder.uid != uid:
-            continue
-        return finder
+        search = t.cast(gws.SearchQuery, gws.merge(search, shape=self.context_shape(search)))
+        mc = gws.ModelContext(mode=gws.ModelMode.view, user=user)
+        return model.find_features(search, mc)

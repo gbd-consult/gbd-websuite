@@ -3,6 +3,7 @@
 import gws
 import gws.base.layer
 import gws.base.shape
+import gws.config.util
 import gws.gis.bounds
 import gws.gis.crs
 import gws.lib.jsonx
@@ -47,10 +48,12 @@ class Object(gws.base.layer.vector.Object):
                 return True
 
     def configure_models(self):
-        if super().configure_models():
-            return True
-        self.models.append(self.configure_model({}))
-        return True
+        return gws.config.util.configure_models(self, with_default=True)
 
-    def configure_model(self, cfg):
-        return self.create_child(gws.ext.object.model, cfg, type=self.extType, _defaultProvider=self.provider)
+    def create_model(self, cfg):
+        return self.create_child(
+            gws.ext.object.model,
+            cfg,
+            type=self.extType,
+            _defaultProvider=self.provider
+        )

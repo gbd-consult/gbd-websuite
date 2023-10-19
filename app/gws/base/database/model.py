@@ -28,165 +28,237 @@ class Config(gws.base.model.Config):
 
 
 class Object(gws.base.model.Object, gws.IDatabaseModel):
-    provider: provider.Object
+    provider: gws.IDatabaseProvider
 
     def configure(self):
+        self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
         self.sqlFilter = self.cfg('filter')
-        self.sqlSort = [gws.SearchSort(c) for c in self.cfg('sort', default=[])]
+        self.defaultSort = [gws.SearchSort(c) for c in self.cfg('sort', default=[])]
+
         self.configure_provider()
-        self.configure_sources()
         self.configure_fields()
-        self.configure_key()
+        self.configure_uid()
         self.configure_geometry()
         self.configure_templates()
 
     def configure_provider(self):
-        self.provider = t.cast(provider.Object, provider.get_for(self, ext_type=self.extType))
-        self.provider.mgr.register_model(self)
+        self.provider = t.cast(gws.IDatabaseProvider, provider.get_for(self, ext_type=self.extType))
         return True
-
-    def configure_sources(self):
-        self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
-        if not self.tableName:
-            raise gws.Error(f'table not found for model {self.uid!r}')
 
     ##
 
     def describe(self):
-        with self.provider.session() as sess:
-            return sess.describe(self.tableName)
+        return self.provider.describe(self.tableName)
 
     def table(self):
-        return self.provider.mgr.table_for_model(self)
+        return self.provider.table(self.tableName)
 
-    def record_class(self):
-        return self.provider.mgr.class_for_model(self)
+    def column(self, column_name):
+        return self.provider.column(self.table(), column_name)
 
-    def get_record(self, uid):
-        with self.session() as sess:
-            return sess.saSession.get(self.record_class(), uid)
+    def uid_column(self):
+        if not self.uidName:
+            raise gws.Error(f'no primary key found for table {self.tableName!r}')
+        if not self.provider.has_column(self.table(), self.uidName):
+            raise gws.Error(f'invalid primary key {self.uidName!r} for table {self.tableName!r}')
+        return self.provider.column(self.table(), self.uidName)
 
-    def get_records(self, uids):
-        with self.session() as sess:
-            cls = self.record_class()
-            sel = sa.select(cls).where(self.primary_keys()[0].in_(uids))
-            res = sess.execute(sel)
-            return res.unique().scalars().all()
+    def connection(self):
+        return self.provider.connection()
 
-    def primary_keys(self):
-        return self.provider.mgr.primary_keys_for_model(self)
+    def _context_connection(self, mc):
+        return _ContextConnection(self, mc)
 
-    def find_features(self, search, user, **kwargs):
+    def execute(self, sql, mc, parameters=None) -> sa.CursorResult:
+        with self._context_connection(mc):
+            return mc.dbConnection.execute(sql, parameters or [])
 
-        sel = self.make_select(search, user)
-        if not sel:
-            gws.log.debug('empty select')
-            return []
-
-        features = []
-
-        with self.session() as sess:
-            res = sess.execute(sel.saSelect)
-            for record in res.unique().scalars().all():
-                features.append(
-                    self.feature_from_record(record, user, search.relationDepth or 0, **kwargs))
-
-        return features
-
-    def write_feature(self, feature, user, **kwargs):
-        access = gws.Access.create if feature.isNew else gws.Access.write
-
-        if not user.can(access, self):
-            raise gws.ForbiddenError('forbidden')
-
-        feature.errors = []
-
-        for f in self.fields:
-            if f.compute(feature, access, user, **kwargs):
-                continue
-            if user.can(access, f):
-                f.validate(feature, access, user, **kwargs)
-
-        if len(feature.errors) > 0:
-            return False
-
-        cls = self.record_class()
-
-        with self.session() as sess:
-            record = cls() if feature.isNew else sess.saSession.get(cls, feature.uid())
-            for f in self.fields:
-                if user.can(access, f, self):
-                    f.store_to_record(feature, record, user)
-            if feature.isNew:
-                sess.saSession.add(record)
-            sess.commit()
-
-        return True
-
-    def delete_feature(self, feature, user, **kwargs):
-        if not user.can_delete(self):
-            raise ValueError('Forbidden')
-
-        cls = self.record_class()
-
-        with self.session() as sess:
-            record = sess.saSession.get(cls, feature.uid())
-            sess.saSession.delete(record)
-            sess.commit()
-
-        return True
+    def commit(self, mc) -> sa.CursorResult:
+        with self._context_connection(mc):
+            return mc.dbConnection.commit()
 
     ##
 
-    def session(self) -> gws.IDatabaseSession:
-        return self.provider.session()
+    def new_feature_from_props(self, props, mc):
+        with self._context_connection(mc):
+            return super().new_feature_from_props(props, mc)
 
-    def make_select(self, search: gws.SearchQuery, user: gws.IUser):
-        cls = self.record_class()
+    def new_feature_from_record(self, record, mc):
+        with self._context_connection(mc):
+            return super().new_feature_from_record(record, mc)
 
-        sel = gws.SelectStatement(
-            saSelect=sa.select(cls),
-            search=search,
-            keywordWhere=[],
+    def find_features(self, search, mc):
+        if not mc.user.can_read(self):
+            raise gws.ForbiddenError()
+
+        mc.search = search
+        mc.dbSelect = gws.ModelDbSelect(
+            columns=[],
             geometryWhere=[],
+            keywordWhere=[],
+            order=[],
+            where=[]
         )
 
+        with self._context_connection(mc):
+            sql = self._make_select(mc)
+            if sql is None:
+                gws.log.debug('empty select')
+                return []
+
+            return self.fetch_features(sql, mc)
+
+    def fetch_features(self, sql, mc):
+        features = []
+
+        with self._context_connection(mc):
+            res = self.execute(sql, mc)
+            for r in res.mappings():
+                features.append(gws.base.feature.with_model(self, record=gws.FeatureRecord(attributes=r)))
+            for fld in self.fields:
+                fld.after_select(features, mc)
+
+        return features
+
+    def _make_select(self, mc: gws.ModelContext) -> t.Optional[sa.Select]:
         for f in self.fields:
-            f.augment_select(sel, user)
+            f.before_select(mc)
 
-        if search.keyword and not sel.keywordWhere:
-            return
-        if sel.keywordWhere:
-            sel.saSelect = sel.saSelect.where(sa.or_(*sel.keywordWhere))
+        # @TODO this should happen on the field level
+        sorts = mc.search.sort or self.defaultSort or []
+        for s in sorts:
+            fn = sa.desc if s.reverse else sa.asc
+            mc.dbSelect.order.append(fn(self.column(s.fieldName)))
 
-        if search.shape and not sel.geometryWhere:
-            return
-        if sel.geometryWhere:
-            sel.saSelect = sel.saSelect.where(sa.or_(*sel.geometryWhere))
+        sel = sa.select().select_from(self.table())
 
-        if search.uids:
-            pks = self.primary_keys()
-            if not pks:
+        if mc.search.uids:
+            if not self.uidName:
                 return
-            pk = getattr(cls, pks[0].name)
-            sel.saSelect = sel.saSelect.where(pk.in_(search.uids))
+            sel = sel.where(self.uid_column().in_(mc.search.uids))
 
-        if search.extraWhere:
-            for c in search.extraWhere:
-                where = sa.text(c.text)
-                if c.args:
-                    where = where.bindparams(**c.args)
-                sel.saSelect = sel.saSelect.where(where)
+        if mc.search.keyword and not mc.dbSelect.keywordWhere:
+            return
+        if mc.dbSelect.keywordWhere:
+            sel = sel.where(sa.or_(*mc.dbSelect.keywordWhere))
+
+        if mc.search.shape and not mc.dbSelect.geometryWhere:
+            return
+        if mc.dbSelect.geometryWhere:
+            sel = sel.where(sa.or_(*mc.dbSelect.geometryWhere))
+
+        sel = sel.where(*mc.dbSelect.where)
+        if mc.search.extraWhere:
+            for w in mc.search.extraWhere:
+                sel = sel.where(w)
 
         if self.sqlFilter:
-            sel.saSelect = sel.saSelect.where(sa.text(self.sqlFilter))
+            sel = sel.where(sa.text(self.sqlFilter))
 
-        sorter = search.sort or self.sqlSort
-        if sorter:
-            order = []
-            for s in sorter:
-                fn = sa.desc if s.reverse else sa.asc
-                order.append(fn(getattr(cls, s.fieldName)))
-            sel.saSelect = sel.saSelect.order_by(*order)
+        cols = []
+        for c in mc.dbSelect.columns:
+            if c not in cols:
+                cols.append(c)
+        if mc.search.extraColumns:
+            for c in mc.search.extraColumns:
+                if c not in cols:
+                    cols.append(c)
+
+        sel = sel.add_columns(*cols)
+
+        if mc.dbSelect.order:
+            sel = sel.order_by(*mc.dbSelect.order)
 
         return sel
+
+    ##
+
+    def create_features(self, features, mc):
+        if not mc.user.can_create(self):
+            raise gws.ForbiddenError()
+
+        for feature in features:
+            feature.record = gws.FeatureRecord(attributes={}, meta={})
+
+        with self._context_connection(mc):
+            for fld in self.fields:
+                fld.before_create(features, mc)
+
+            for feature in features:
+                sql = sa.insert(self.table())
+                rs = self.execute(sql, mc, feature.record.attributes)
+                feature.record.attributes[self.uidName] = rs.inserted_primary_key[0]
+
+            for fld in self.fields:
+                fld.after_create(features, mc)
+
+            self.commit(mc)
+
+        return [f.record.attributes[self.uidName] for f in features]
+
+    def update_features(self, features, mc):
+        if not mc.user.can_write(self):
+            raise gws.ForbiddenError()
+
+        for feature in features:
+            feature.record = gws.FeatureRecord(attributes={}, meta={})
+
+        with self._context_connection(mc):
+            for fld in self.fields:
+                fld.before_update(features, mc)
+
+            for feature in features:
+                sql = self.table().update().where(
+                    self.uid_column().__eq__(feature.uid())
+                ).values(
+                    feature.record.attributes
+                )
+                self.execute(sql, mc)
+
+            for fld in self.fields:
+                fld.after_update(features, mc)
+
+            self.commit(mc)
+
+        return [f.uid() for f in features]
+
+    def delete_features(self, features, mc):
+        if not mc.user.can_delete(self):
+            raise gws.ForbiddenError()
+
+        uids = [f.uid() for f in features]
+
+        with self._context_connection(mc):
+            for fld in self.fields:
+                fld.before_delete(features, mc)
+
+            sql = sa.delete(self.table()).where(
+                self.uid_column().in_(uids)
+            )
+
+            self.execute(sql, mc)
+
+            for fld in self.fields:
+                fld.after_delete(features, mc)
+
+            self.commit(mc)
+
+        return uids
+
+    ##
+
+
+class _ContextConnection:
+    def __init__(self, model: Object, mc: gws.ModelContext):
+        self.mc = mc
+        self.isTop = self.mc.dbConnection is None
+        if self.isTop:
+            self.mc.dbConnection = model.connection()
+
+    def __enter__(self) -> sa.Connection:
+        return self.mc.dbConnection
+
+    def __exit__(self, typ, value, traceback):
+        if self.isTop:
+            self.mc.dbConnection.close()
+            self.mc.dbConnection = None

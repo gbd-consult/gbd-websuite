@@ -16,11 +16,11 @@ def extract(gen: base.Generator):
     queue = []
     out: Dict[str, Dict] = dict()
 
-    typ = gen.types['gws.base.application.Config']
+    typ = gen.types['gws.base.application.core.Config']
     out[typ.uid] = dict(c=base.C.CONFIG, tProperties=typ.tProperties)
     queue.extend(typ.tProperties.values())
 
-    typ = gen.types['gws.base.application.Object']
+    typ = gen.types['gws.base.application.core.Object']
     mod = gen.types.get(typ.tModule)
     out[typ.uid] = dict(c=base.C.OBJECT, modName=mod.name, modPath=mod.path)  # type: ignore
 

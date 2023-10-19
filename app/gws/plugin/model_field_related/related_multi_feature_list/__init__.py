@@ -1,133 +1,214 @@
-import gws
-import gws.base.model.field
-import gws.base.database.model
-import gws.lib.sa as sa
+"""Related Multi Feature List field
 
+Represents a 1:M relationship betweens a "parent" and multiple "child" tables ::
+
+    +---------+         +------------+
+    | parent  |         | child 1    |
+    +---------+         +------------+
+    | key     |-------<<| parent_key |
+    |         |         +------------+
+    |         |
+    |         |         +------------+
+    |         |         | child 2    |
+    |         |         +------------+
+    |         |-------<<| parent_key |
+    |         |         +------------+
+    |         |
+    |         |         +------------+
+    |         |         | child 3    |
+    |         |         +------------+
+    |         |-------<<| parent_key |
+    +---------+         +------------+
+
+
+
+"""
+
+import gws
+import gws.base.database.model
+import gws.base.model.related_field as related_field
+import gws.lib.sa as sa
 import gws.types as t
 
 gws.ext.new.modelField('relatedMultiFeatureList')
 
 
-class RelationshipConfig(gws.Config):
-    modelUid: str
-    fieldName: str
+class RelatedItem(gws.Data):
+    toModel: str
+    toColumn: str
 
 
-class Config(gws.base.model.field.Config):
-    relationships: list[RelationshipConfig]
+class Config(related_field.Config):
+    fromColumn: str = ''
+    """key column in this table, primary key by default"""
+    related: list[RelatedItem]
+    """related models and keys"""
 
 
-class Props(gws.base.model.field.Props):
+class Props(related_field.Props):
     pass
 
 
-class Object(gws.base.model.field.Object):
+class Object(related_field.Object):
     attributeType = gws.AttributeType.featurelist
 
-    model: gws.base.database.model.Object
-    relationships: list[gws.base.model.field.Relationship]
+    def configure_relationship(self):
+        self.rel = related_field.Relationship(
+            src=related_field.RelRef(
+                model=self.model,
+                table=self.model.table(),
+                column=self.col_or_uid(self.model, self.cfg('fromColumn')),
+                uid=self.model.uid_column(),
+            ),
+            to=[]
+        )
 
-    def configure(self):
-        self.relationships = self.cfg('relationships')
-
-    def configure_widget(self):
-        if not super().configure_widget():
-            self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='featureList')
-            return True
-
-    def props(self, user):
-        return gws.merge(super().props(user), relationships=[
-            gws.base.model.field.RelationshipProps(
-                modelUid=rel.modelUid,
-                fieldName=rel.fieldName,
-            )
-            for rel in self.relationships
-        ])
-
-    def load_from_props(self, feature, props, user, relation_depth=0, **kwargs):
-        if relation_depth <= 0:
-            return
-
-        val = props.attributes.get(self.name)
-        if val is None:
-            return
-
-        feature_list = []
-
-        for v in val:
-            fp = gws.FeatureProps(v)
-            rel_model = self.model.provider.mgr.model(fp.modelUid)
-            if not rel_model:
-                continue
-            # @TODO optimize
-            rec = rel_model.get_record(fp.uid)
-            if rec:
-                feature_list.append(rel_model.feature_from_record(rec, user, relation_depth - 1))
-
-        if feature_list:
-            feature.attributes[self.name] = feature_list
-
-    def load_from_record(self, feature, record, user, relation_depth=0, **kwargs):
-        if relation_depth <= 0:
-            return
-
-        feature_list = []
-
-        for rel in self.relationships:
-            virt_col_name = gws.join_uid(self.name, rel.modelUid)
-            recs = getattr(record, virt_col_name, None)
-            if recs is None:
-                continue
-            rel_model = self.model.provider.mgr.model(rel.modelUid)
-            feature_list.extend(
-                rel_model.feature_from_record(rec, user, relation_depth - 1)
-                for rec in recs
-            )
-
-        if feature_list:
-            feature.attributes[self.name] = feature_list
-
-    def store_to_record(self, feature, record, user, **kwargs):
-        ok, feature_list = self._value_to_write(feature)
-
-        if not ok:
-            return
-
-        for rel in self.relationships:
-            rel_model = self.model.provider.mgr.model(rel.modelUid)
-            uids = [feature.uid() for feature in feature_list if feature.model.uid == rel_model.uid]
-            recs = rel_model.get_records(uids)
-            if recs:
-                virt_col_name = gws.join_uid(self.name, rel.modelUid)
-                setattr(record, virt_col_name, recs)
+        for c in self.cfg('related'):
+            to_mod = t.cast(gws.IDatabaseModel, self.root.get(c.toModel))
+            self.rel.to.append(related_field.RelRef(
+                model=to_mod,
+                table=to_mod.table(),
+                column=to_mod.column(c.toColumn),
+                uid=to_mod.uid_column(),
+            ))
 
     ##
 
-    def orm_properties(self):
-        props = {}
+    def new_related_feature(self, from_feature, related_model, mc):
+        uid_and_key = self.uid_and_key_for_uids(
+            self.model,
+            self.rel.src.column,
+            [from_feature.uid()],
+            mc
+        )
 
-        own_pk = self.model.primary_keys()[0]
-        own_cls = self.model.record_class()
+        key = gws.first(k for _, k in uid_and_key)
 
-        for rel in self.relationships:
-            rel_model = self.model.provider.mgr.model(rel.modelUid)
-            rel_cls = rel_model.record_class()
-            rel_field_name = rel.fieldName
-            # rel_fk = getattr(rel_model.field(rel_field_name), 'foreignKey')
+        for to in self.rel.to:
+            if related_model == to.model:
+                record = gws.FeatureRecord(attributes={to.column.name: key})
+                return to.model.new_feature_from_record(record, mc)
 
-            kwargs = {}
-            # kwargs['primaryjoin'] = getattr(own_cls, own_pk.name) == getattr(rel_cls, rel_fk.name)
-            # kwargs['foreign_keys'] = getattr(rel_cls, rel_fk.name)
-            kwargs['back_populates'] = rel_field_name
+    def before_select(self, mc):
+        if not mc.user.can_read(self) or mc.relDepth >= mc.maxDepth:
+            return
+        mc.dbSelect.columns.append(self.rel.src.column)
 
-            if rel_model.sqlSort:
-                order = []
-                for s in rel_model.sqlSort:
-                    fn = sa.desc if s.reverse else sa.asc
-                    order.append(fn(getattr(rel_cls, s.fieldName)))
-                kwargs['order_by'] = order
+    def after_select(self, features, mc):
+        if not mc.user.can_read(self) or mc.relDepth >= mc.maxDepth:
+            return
 
-            virt_col_name = gws.join_uid(self.name, rel.modelUid)
-            props[virt_col_name] = sa.orm.relationship(rel_cls, **kwargs)
+        for f in features:
+            f.set(self.name, [])
 
-        return props
+        uid_to_f = {f.uid(): f for f in features}
+
+        for to in self.rel.to:
+            sql = sa.select(
+                to.uid,
+                self.rel.src.uid,
+            ).select_from(
+                to.table.join(
+                    self.rel.src.table, to.column.__eq__(self.rel.src.column)
+                )
+            ).where(
+                self.rel.src.uid.in_(uid_to_f)
+            )
+
+            r_to_u = gws.collect(self.model.execute(sql, mc))
+
+            related = self.get_related(
+                to.model,
+                r_to_u,
+                mc
+            )
+
+            for rf in related:
+                for uid in r_to_u.get(rf.uid()):
+                    uid_to_f.get(uid).get(self.name).append(rf)
+
+    def after_create(self, features, mc):
+        self.after_write(features, mc)
+
+    def after_update(self, features, mc):
+        self.after_write(features, mc)
+
+    def after_write(self, features, mc: gws.ModelContext):
+        if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
+            return
+
+        uid_to_key = dict(self.uid_and_key_for_uids(
+            self.model,
+            self.rel.src.column,
+            [f.uid() for f in features],
+            mc
+        ))
+
+        for to in self.rel.to:
+            if not mc.user.can_edit(to.model):
+                continue
+
+            cur_pairs = self.uid_and_key_for_keys(
+                to.model,
+                to.column,
+                uid_to_key.values(),
+                mc
+            )
+
+            new_pairs = set(
+                (related.uid(), uid_to_key.get(f.uid()))
+                for f in features
+                for related in f.get(self.name, [])
+                if related.model == to.model
+            )
+
+            self.update_uid_and_key(
+                to.model,
+                to.column,
+                new_pairs - cur_pairs,
+                mc
+            )
+
+            self.drop_uid_and_key(
+                to.model,
+                to.column,
+                set(r for r, _ in cur_pairs) - set(r for r, _ in new_pairs),
+                False,
+                mc
+            )
+
+    def before_delete(self, features, mc):
+        if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
+            return
+
+        uid_to_key = dict(self.uid_and_key_for_uids(
+            self.model,
+            self.rel.src.column,
+            [f.uid() for f in features],
+            mc
+        ))
+        setattr(mc, f'_uid_to_key_{self.uid}', uid_to_key)
+
+    def after_delete(self, features, mc):
+        if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
+            return
+
+        uid_to_key = getattr(mc, f'_uid_to_key_{self.uid}')
+
+        for to in self.rel.to:
+            if not mc.user.can_edit(to.model):
+                continue
+
+            cur_pairs = self.uid_and_key_for_keys(
+                to.model,
+                to.column,
+                uid_to_key.values(),
+                mc
+            )
+            self.drop_uid_and_key(
+                to.model,
+                to.column,
+                set(r for r, _ in cur_pairs),
+                False,
+                mc
+            )

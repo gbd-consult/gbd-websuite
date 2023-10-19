@@ -1,6 +1,6 @@
 projects+ {
     title "QGIS layer, custom config"
-    metadata.abstract "Change automatically created sub-layers with `customConfig`."
+    metadata.abstract "Change automatically created sub-layers with `autoLayers`."
 
     map {
         center {demo_point_duesseldorf_3857}
@@ -14,14 +14,14 @@ projects+ {
         provider.path "/data/demos/poi_geojson.qgs"
 
         @# since there's no "applyTo", applies to all layers
-        customConfig+ {
+        autoLayers+ {
             config {
                 metadata.abstract "Custom metadata"
             }
         }
 
         @# applies to image (leaf) layers
-        customConfig+ {
+        autoLayers+ {
             applyTo { isImage true }
             config {
                 legend { type "qgis" options.layerfontsize 12 }
@@ -29,7 +29,7 @@ projects+ {
         }
 
         @# applies to layers whose path contains "sonstiges", e.g. "/sonstiges/hotel"
-        customConfig+ {
+        autoLayers+ {
             applyTo { pattern "sonstiges" }
             config {
                 templates+ {
@@ -41,7 +41,7 @@ projects+ {
         }
 
         @# applies to specific layers
-        customConfig+ {
+        autoLayers+ {
             applyTo { names ["Bäckerei", "Kiosk", "Supermarkt"] }
             config {
                 legend { type "qgis" options.layerfontcolor "red" }

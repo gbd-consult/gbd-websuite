@@ -6,8 +6,6 @@ import * as lib from '../lib';
 
 
 export class Feature implements types.IFeature {
-    uid: string = '';
-
     attributes: types.Dict = {};
     category: string = '';
     cssSelector: string;
@@ -22,7 +20,7 @@ export class Feature implements types.IFeature {
     model: types.IModel;
     map: types.IMapManager;
 
-    keyName: string;
+    uidName: string;
     geometryName: string;
 
     _editedAttributes: types.Dict = {};
@@ -30,15 +28,21 @@ export class Feature implements types.IFeature {
     constructor(model: types.IModel) {
         this.model = model;
         this.map = model.registry.app.map;
-        this.uid = lib.uniqId('_feature_');
 
         this.attributes = {}
         this.category = ''
         this.cssSelector = ''
         this.views = {}
 
-        this.keyName = this.model.keyName;
+        this.attributes[this.uidName] = lib.uniqId('_feature_');
+
+
+        this.uidName = this.model.uidName;
         this.geometryName = this.model.geometryName;
+    }
+
+    get uid() {
+        return String(this.attributes[this.uidName]);
     }
 
     setProps(props) {
@@ -54,7 +58,7 @@ export class Feature implements types.IFeature {
 
         this.cssSelector = props.cssSelector || '';
 
-        this.keyName = props.keyName || this.model.keyName;
+        this.uidName = props.uidName || this.model.uidName;
         this.geometryName = props.geometryName || this.model.geometryName;
 
         this.setAttributes(props.attributes || {});
@@ -65,14 +69,9 @@ export class Feature implements types.IFeature {
         this.attributes = attributes || {};
         this._editedAttributes = {};
 
-        let uid = this.attributes[this.keyName];
-        if (uid)
-            this.uid = String(uid);
-
         let shape = this.attributes[this.geometryName];
         if (shape)
             this.setShape(shape);
-
         return this;
     }
 
@@ -119,7 +118,7 @@ export class Feature implements types.IFeature {
         return !lib.isEmpty(this._editedAttributes);
     }
 
-    getProps(depth=0) {
+    getProps(depth = 0) {
         return this.model.featureProps(this, depth);
     }
 
@@ -178,16 +177,24 @@ export class Feature implements types.IFeature {
 
     clone() {
         let f = new Feature(this.model)
-        f.attributes = {...this.attributes}
-        f.category = this.category;
-        f.views = {...this.views};
-        f.layer = this.layer;
-        f.cssSelector = this.cssSelector
-        f.isNew = this.isNew
+        f.copyFrom(this);
         return f;
     }
 
+    copyFrom(f: Feature) {
+        this.attributes = {...f.attributes}
+        this.category = f.category;
+        this.views = {...f.views};
+        this.layer = f.layer;
+        this.cssSelector = f.cssSelector
+        this.isNew = f.isNew
+    }
+
     whenGeometryChanged() {
+
+    }
+
+    whenSaved(f) {
 
     }
 

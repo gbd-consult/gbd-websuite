@@ -90,17 +90,9 @@ class Object(gws.Node, gws.IProject):
 
     def props(self, user):
         desc = None
-        tpl = gws.base.template.locate(self, user=user, subject='project.description')
+        tpl = self.root.app.templateMgr.locate_template(self, user=user, subject='project.description')
         if tpl:
             desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
-
-        models = list(self.models)
-        if self.map:
-            for la in self.map.rootLayer.descendants():
-                models.extend(m for m in la.models if user.can_use(la) and user.can_use(m))
-        if self.overviewMap:
-            for la in self.overviewMap.rootLayer.descendants():
-                models.extend(m for m in la.models if user.can_use(la) and user.can_use(m))
 
         return gws.Props(
             actions=self.root.app.actionMgr.actions_for(user, self.actionMgr),
@@ -108,7 +100,7 @@ class Object(gws.Node, gws.IProject):
             description=desc.content if desc else '',
             map=self.map,
             metadata=gws.lib.metadata.props(self.metadata),
-            models=models,
+            models=[], #self.root.app.modelMgr.collect_for_project(self, user),
             overviewMap=self.overviewMap,
             printer=self.printer or self.root.app.printer,
             title=self.title,

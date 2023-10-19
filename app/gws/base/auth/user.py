@@ -29,6 +29,13 @@ class User(gws.Object, gws.IUser):
     def can_create(self, obj, *context):
         return self.can(gws.Access.create, obj, *context)
 
+    def can_edit(self, obj, *context):
+        return (
+                self.can(gws.Access.write, obj, *context)
+                or self.can(gws.Access.create, obj, *context)
+                or self.can(gws.Access.delete, obj, *context)
+        )
+
     def can_delete(self, obj, *context):
         return self.can(gws.Access.delete, obj, *context)
 

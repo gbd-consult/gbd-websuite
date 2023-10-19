@@ -472,7 +472,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         }
 
         for (let props of res.features) {
-            let model = this.map.app.models.model(props.modelUid);
+            let model = this.map.app.modelRegistry.getModel(props.modelUid);
             let feature = model.featureFromProps(props);
             if (!newMap[feature.uid]) {
                 newMap[feature.uid] = feature;

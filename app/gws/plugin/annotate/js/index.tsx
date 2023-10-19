@@ -704,7 +704,7 @@ class Controller extends gws.Controller {
         let templates = this.getValue('annotateLabelTemplates'),
             labelTemplate = (templates && templates[shapeType]) || defaultLabelTemplates[shapeType];
 
-        let f = new Feature(this.app.models.defaultModel());
+        let f = new Feature(this.app.modelRegistry.defaultModel());
 
         f.setAttributes({
             uid: gws.lib.uniqId('annotate'),
@@ -804,7 +804,7 @@ class Controller extends gws.Controller {
         }
 
         for (let p of data.features) {
-            let f = new Feature(this.app.models.defaultModel());
+            let f = new Feature(this.app.modelRegistry.defaultModel());
             f.setProps(p);
             this.layer.addFeature(f);
         }

@@ -100,7 +100,11 @@ def parse_args(argv):
     n = 0
 
     for a in argv:
-        if a.startswith('--'):
+        if a == '-':
+            args['_rest'] = []
+        elif '_rest' in args:
+            args['_rest'].append(a)
+        elif a.startswith('--'):
             opt = a[2:]
             args[opt] = True
         elif a.startswith('-'):

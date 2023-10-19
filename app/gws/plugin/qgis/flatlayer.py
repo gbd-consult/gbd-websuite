@@ -1,5 +1,6 @@
 import gws
 import gws.base.layer
+import gws.config.util
 import gws.gis.crs
 import gws.gis.bounds
 import gws.gis.extent
@@ -45,28 +46,21 @@ class Object(gws.base.layer.image.Object):
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)
 
     def configure_source_layers(self):
-        p = self.cfg('sourceLayers')
-        if p:
-            self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, p)
-            return True
-        p = self.cfg('_defaultSourceLayers')
-        if p:
-            self.sourceLayers = p
-            return True
-        self.sourceLayers = gws.gis.source.filter_layers(self.provider.sourceLayers, is_visible=True)
-        return True
+        return gws.config.util.configure_source_layers(
+            self,
+            self.provider.sourceLayers,
+            is_image=True,
+            is_visible=True
+        )
 
     def configure_models(self):
-        if super().configure_models():
-            return True
-        self.models.append(self.configure_model({}))
-        return True
+        return gws.config.util.configure_models(self, with_default=True)
 
-    def configure_model(self, cfg):
+    def create_model(self, cfg):
         return self.create_child(
             gws.ext.object.model,
             cfg,
-            type='qgislocal',
+            type='qgis',
             _defaultProvider=self.provider,
             _defaultSourceLayers=self.searchLayers
         )
@@ -122,19 +116,20 @@ class Object(gws.base.layer.image.Object):
             return True
 
     def configure_templates(self):
-        return super().configure_templates()
+        return gws.config.util.configure_templates(self)
 
     def configure_search(self):
         if super().configure_search():
             return True
         if self.searchLayers:
-            self.finders.append(self.configure_local_finder())
+            self.finders.append(self.create_finder(None))
             return True
 
-    def configure_local_finder(self):
+    def create_finder(self, cfg):
         return self.create_child(
             gws.ext.object.finder,
-            type='qgislocal',
+            cfg,
+            type=self.extType,
             _defaultProvider=self.provider,
             _defaultSourceLayers=self.searchLayers
         )

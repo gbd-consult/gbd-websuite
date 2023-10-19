@@ -859,7 +859,7 @@ class ListTab extends gws.View<ViewProps> {
         let hasElements = !gws.lib.isEmpty(cc.model.elements);
 
         let zoom = (e: Element, mode) => {
-            let f = cc.app.models.defaultModel().featureFromGeometry(
+            let f = cc.app.modelRegistry.defaultModel().featureFromGeometry(
                 new ol.geom.MultiPoint(e.coordinates)
             );
             this.props.controller.update({

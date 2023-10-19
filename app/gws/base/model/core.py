@@ -1,11 +1,11 @@
 """Base model."""
+from typing import Optional
 
 import gws
 import gws.base.feature
 import gws.base.shape
+import gws.config.util
 import gws.types as t
-
-from . import util
 
 
 class Config(gws.ConfigWithAccess):
@@ -15,14 +15,16 @@ class Config(gws.ConfigWithAccess):
     """model fields"""
     loadingStrategy: t.Optional[gws.FeatureLoadingStrategy]
     """loading strategy for features"""
-    templates: t.Optional[list[gws.ext.config.template]]
-    """templates for this model"""
     title: str = ''
     """model title"""
-    withAutoload: bool = False
+    editable: bool = False
+    """this model is editable"""
+    withAutoFields: bool = False
     """autoload non-configured model fields from the source"""
-    autoloadExclude: t.Optional[list[str]]
+    excludeFields: t.Optional[list[str]]
     """exclude field names from autoload"""
+    templates: t.Optional[list[gws.ext.config.template]]
+    """feature templates"""
 
 
 class Props(gws.Props):
@@ -34,24 +36,25 @@ class Props(gws.Props):
     geometryCrs: t.Optional[str]
     geometryName: t.Optional[str]
     geometryType: t.Optional[gws.GeometryType]
-    keyName: t.Optional[str]
+    isEditable: bool
     layerUid: t.Optional[str]
     loadingStrategy: gws.FeatureLoadingStrategy
     supportsGeometrySearch: bool
     supportsKeywordSearch: bool
     title: str
     uid: str
+    uidName: t.Optional[str]
 
 
 class Object(gws.Node, gws.IModel):
     def configure(self):
+        self.isEditable = self.cfg('editable')
         self.fields = []
         self.geometryCrs = None
         self.geometryName = ''
         self.geometryType = None
-        self.keyName = ''
+        self.uidName = ''
         self.loadingStrategy = self.cfg('loadingStrategy')
-        self.templates = []
         self.title = self.cfg('title')
 
     def configure_fields(self):
@@ -62,7 +65,7 @@ class Object(gws.Node, gws.IModel):
         if p:
             self.fields = self.create_children(gws.ext.object.modelField, p, _defaultModel=self)
             has_conf = True
-        if not p or self.cfg('withAutoload'):
+        if not has_conf or self.cfg('withAutoFields'):
             has_auto = self.configure_auto_fields()
 
         return has_conf or has_auto
@@ -72,18 +75,14 @@ class Object(gws.Node, gws.IModel):
         if not desc:
             return False
 
-        exclude = set(self.cfg('autoFieldsExclude', default=[]))
+        exclude = set(self.cfg('excludeFields', default=[]))
+        exclude.update(fld.name for fld in self.fields)
 
-        for col in desc.columns.values():
-            if col.isForeignKey:
-                # we do not configure relations automatically
-                # treating them as scalars leads to conflicts in sa Table classes
+        for col in desc.columns:
+            if col.name in exclude:
                 continue
 
-            if col.name in exclude or any(f.name == col.name for f in self.fields):
-                continue
-
-            typ = DEFAULT_FIELD_TYPES.get(col.type)
+            typ = _DEFAULT_FIELD_TYPES.get(col.type)
             if not typ:
                 gws.log.warning(f'cannot find suitable field type for column {col.name!r} ({col.type})')
                 continue
@@ -97,31 +96,29 @@ class Object(gws.Node, gws.IModel):
             fld = self.create_child(gws.ext.object.modelField, cfg, _defaultModel=self)
             if fld:
                 self.fields.append(fld)
+                exclude.add(fld.name)
 
         return True
 
-    def configure_key(self):
-        for f in self.fields:
-            if f.isPrimaryKey:
-                self.keyName = f.name
-                return True
+    def configure_uid(self):
+        uids = []
+        for fld in self.fields:
+            if fld.isPrimaryKey:
+                uids.append(fld.name)
+        if len(uids) == 1:
+            self.uidName = uids[0]
+            return True
 
     def configure_geometry(self):
-        for f in self.fields:
-            if getattr(f, 'geometryType', None):
-                self.geometryName = f.name
-                self.geometryType = getattr(f, 'geometryType')
-                self.geometryCrs = getattr(f, 'geometryCrs')
+        for fld in self.fields:
+            if getattr(fld, 'geometryType', None):
+                self.geometryName = fld.name
+                self.geometryType = getattr(fld, 'geometryType')
+                self.geometryCrs = getattr(fld, 'geometryCrs')
                 return True
 
     def configure_templates(self):
-        p = self.cfg('templates')
-        if p:
-            self.templates = gws.compact(self.configure_template(cfg) for cfg in p)
-            return True
-
-    def configure_template(self, cfg):
-        return self.create_child(gws.ext.object.template, cfg)
+        return gws.config.util.configure_templates(self)
 
     ##
 
@@ -136,100 +133,105 @@ class Object(gws.Node, gws.IModel):
             geometryCrs=self.geometryCrs.epsg if self.geometryCrs else None,
             geometryName=self.geometryName,
             geometryType=self.geometryType,
-            keyName=self.keyName,
+            isEditable=self.isEditable,
             layerUid=layer.uid if layer else None,
             loadingStrategy=self.loadingStrategy or (layer.loadingStrategy if layer else gws.FeatureLoadingStrategy.all),
-            supportsGeometrySearch=any(f.supportsGeometrySearch for f in self.fields),
-            supportsKeywordSearch=any(f.supportsKeywordSearch for f in self.fields),
+            supportsGeometrySearch=any(fld.supportsGeometrySearch for fld in self.fields),
+            supportsKeywordSearch=any(fld.supportsKeywordSearch for fld in self.fields),
             title=self.title or (layer.title if layer else ''),
             uid=self.uid,
+            uidName=self.uidName,
         )
-
-    ##
-
-    def feature_from_data(self, data, user, relation_depth=0, **kwargs):
-        feature = gws.base.feature.with_model(self)
-
-        if self.fields:
-            for f in self.fields:
-                f.load_from_data(feature, data, user, relation_depth, **kwargs)
-        else:
-            feature.attributes = dict(data.attributes)
-            if data.uid:
-                feature.attributes[self.keyName] = data.uid
-            if data.layerName:
-                feature.layerName = data.layerName
-            if data.shape:
-                feature.attributes[self.geometryName] = data.shape
-
-        return feature
-
-    def feature_from_props(self, props, user, relation_depth=0, **kwargs):
-        feature = gws.base.feature.with_model(self)
-
-        if self.fields:
-            for f in self.fields:
-                f.load_from_props(feature, props, user, relation_depth, **kwargs)
-        else:
-            feature.attributes = dict(props.attributes)
-            shape_props = props.attributes.get(self.geometryName)
-            if shape_props:
-                feature.attributes[self.geometryName] = gws.base.shape.from_props(shape_props)
-
-        feature.cssSelector = gws.to_str(props.cssSelector)
-        feature.views = gws.to_dict(props.views)
-        feature.isNew = bool(props.isNew)
-        return feature
-
-    def feature_from_record(self, record, user, relation_depth=0, **kwargs):
-        feature = gws.base.feature.with_model(self)
-
-        for f in self.fields:
-            f.load_from_record(feature, record, user, relation_depth, **kwargs)
-
-        return feature
-
-    def feature_props(self, feature, user, **kwargs):
-        props = gws.FeatureProps(
-            attributes={},
-            cssSelector=feature.cssSelector,
-            errors=feature.errors,
-            geometryName=self.geometryName,
-            isNew=feature.isNew,
-            keyName=self.keyName,
-            modelUid=self.uid,
-            uid=feature.uid(),
-            views=feature.views,
-        )
-
-        if self.fields:
-            for f in self.fields:
-                if user.can_read(f, self):
-                    f.store_to_props(feature, props, user, **kwargs)
-        else:
-            props.attributes.update(feature.attributes)
-            if feature.shape():
-                props.attributes[self.geometryName] = gws.props(feature.shape(), user, self)
-
-        return props
 
     ##
 
     def field(self, name):
-        for f in self.fields:
-            if f.name == name:
-                return f
+        for fld in self.fields:
+            if fld.name == name:
+                return fld
 
-    def compute_values(self, feature, access, user, **kwargs):
-        for f in self.fields:
-            f.compute(feature, access, user, **kwargs)
+    def new_feature_from_props(self, props, mc):
+        new_feature = gws.base.feature.with_model(self, props=props)
+        for fld in self.fields:
+            fld.do_init_with_props(new_feature, mc)
+        return new_feature
+
+    def new_feature_from_record(self, record, mc):
+        new_feature = gws.base.feature.with_model(self, record=record)
+        for fld in self.fields:
+            fld.do_init_with_record(new_feature, mc)
+        return new_feature
+
+    def new_related_feature(self, field_name, from_feature, related_model, mc):
+        field = t.cast(gws.IModelRelatedField, self.field(field_name))
+        return field.new_related_feature(from_feature, related_model, mc)
+
+    def validate_features(self, features, mc):
+        for feature in features:
+            feature.errors = []
+
+        for fld in self.fields:
+            fld.do_validate(features, mc)
+
+        return all(len(feature.errors) == 0 for feature in features)
+
+    ##
+
+    def get_features(self, uids, mc):
+        search = gws.SearchQuery(uids=set(uids))
+        return self.find_features(search, mc)
+
+    def find_features(self, search, mc):
+        return []
+
+    ##
+
+    def features_from_props(self, propses, mc):
+        features = []
+
+        for p in propses:
+            if isinstance(p, dict):
+                p = gws.FeatureProps(**p)
+            features.append(gws.base.feature.with_model(self, props=p))
+
+        for fld in self.fields:
+            fld.from_props(features, mc)
+
+        return features
+
+    def features_to_props(self, features, mc):
+        for f in features:
+            f.props = gws.FeatureProps(
+                attributes={},
+                cssSelector=f.cssSelector,
+                errors=f.errors or [],
+                geometryName=self.geometryName,
+                isNew=f.isNew,
+                uidName=self.uidName,
+                modelUid=self.uid,
+                uid=f.uid(),
+                views=f.views,
+            )
+
+        for fld in self.fields:
+            fld.to_props(features, mc)
+
+        if mc.mode == gws.ModelMode.view:
+            for f in features:
+                f.props.attributes = {
+                    self.uidName: f.props.attributes.get(self.uidName),
+                    self.geometryName: f.props.attributes.get(self.geometryName),
+                }
+                f.props.modelUid = ''
+
+        return [f.props for f in features]
 
 
 ##
 
 # @TODO this should be populated dynamically from available gws.ext.object.modelField types
 
-DEFAULT_FIELD_TYPES = {
+_DEFAULT_FIELD_TYPES = {
     gws.AttributeType.str: 'text',
     gws.AttributeType.int: 'integer',
     gws.AttributeType.date: 'date',

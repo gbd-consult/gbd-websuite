@@ -1,1 +1,3 @@
-from .core import Config, Object, Props, from_path, locate
+from .core import Config, Object, Props
+from . import manager
+

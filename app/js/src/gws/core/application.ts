@@ -33,7 +33,7 @@ export class Application implements types.IApplication {
     localeUid = '';
     languageUid = '';
     locale: api.core.Locale;
-    models: types.IModelRegistry = null;
+    modelRegistry: types.IModelRegistry = null;
 
 
     protected controllers: { [key: string]: types.IController } = {};
@@ -149,9 +149,9 @@ export class Application implements types.IApplication {
         this.locale = res.locale;
         this.localeUid = res.locale.id;
 
-        this.models = new model.ModelRegistry(this);
+        this.modelRegistry = new model.ModelRegistry(this);
         for (let props of res.project.models)
-            this.models.addModel(props);
+            this.modelRegistry.addModel(props);
 
         let loc = _url2loc(location.href);
         this.urlParams = _qsparse(loc.qs);

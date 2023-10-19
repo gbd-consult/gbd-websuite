@@ -8,8 +8,6 @@ import gws.base.shape
 import gws.lib.uom
 import gws.types as t
 
-from . import runner
-
 gws.ext.new.action('search')
 
 _DEFAULT_VIEWS = ['title', 'teaser', 'description']
@@ -57,10 +55,10 @@ class Object(gws.base.action.Object):
     def find(self, req: gws.IWebRequester, p: Request) -> Response:
         """Perform a search"""
 
-        features = self._find(req, p)
-        return Response(features=[gws.props(f, req.user, self) for f in features])
+        propses = self._get_features(req, p)
+        return Response(features=propses)
 
-    def _find(self, req, p):
+    def _get_features(self, req: gws.IWebRequester, p: Request) -> list[gws.FeatureProps]:
 
         project = req.require_project(p.projectUid)
         search = gws.SearchQuery(project=project)
@@ -90,25 +88,29 @@ class Object(gws.base.action.Object):
         if p.keyword.strip():
             search.keyword = p.keyword.strip()
 
-        results = runner.run(self.root, search, req.user)
-        views = p.views or _DEFAULT_VIEWS
-        features = []
+        results = self.root.app.searchMgr.run_search(search, req.user)
+        if not results:
+            return []
 
         gws.time_start(f'SEARCH.FIND: formatting')
 
         for res in results:
-            templates = []
-            for v in views:
-                tpl = gws.base.template.locate(res.finder, res.layer, project, user=req.user, subject=f'feature.{v}')
-                if tpl:
-                    templates.append(tpl)
-
-            res.feature.compute_values(gws.Access.read, req.user)
             res.feature.transform_to(search.bounds.crs)
-            res.feature.render_views(templates, user=req.user, layer=res.layer)
 
-            features.append(res.feature)
+        for res in results:
+            templates = gws.compact(
+                self.root.app.templateMgr.locate_template(res.finder, res.layer, project, user=req.user, subject=f'feature.{v}')
+                for v in p.views or _DEFAULT_VIEWS
+            )
+            res.feature.render_views(templates, user=req.user, project=project, layer=res.layer)
 
         gws.time_end()
 
-        return features
+        propses = []
+        mc = gws.ModelContext(mode=gws.ModelMode.view, user=req.user)
+
+        for res in results:
+            p = res.feature.model.features_to_props([res.feature], mc)
+            propses.append(p[0])
+
+        return propses

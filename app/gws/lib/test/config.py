@@ -8,7 +8,6 @@ import gws.lib.vendor.slon
 import gws.lib.net
 import gws.server.control
 
-from . import glob
 
 
 def root():
