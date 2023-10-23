@@ -1,18 +1,6 @@
-@comment
-
-Editing the "child" side of a 1:M relationship (poi >>- category)
-
-Use a "relatedFeature" field and a "featureSelect" widget.
-
-The configuration should provide the "parent" model uid and the foreign key.
-
-Title templates accomodated for displaying new features.
-
-@end
-
 projects+ {
-    title "Models: relatedFeature"
-    metadata.abstract "Editing related features."
+    title "Edit: relatedFeature"
+    metadata.abstract "Editing related 'parent' feature"
 
     api.actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }
@@ -27,24 +15,25 @@ projects+ {
 
     models+ {
         type "postgres"
-        uid "model_related_feature_poi"
+        uid "model_poi_003"
         tableName "edit.poi_small"
         sort+ { fieldName "name" }
         title "POIs"
+        isEditable true
         permissions.edit "allow all"
-        editable true
 
         fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "name" type "text" title "Object name" isRequired true textSearch { type "any" } }
+        fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
         fields+ { name "geom" type "geometry" title "Geometry" isRequired true }
 
         fields+ {
-            name "category_for_poi"
+            name "category"
             title "Category"
             type "relatedFeature"
             fromColumn "category_id"
-            toModel "model_related_feature_category"
+            toModel "model_category_003"
             toColumn "id"
+            widget.type "featureSelect"
         }
 
         templates+ {
@@ -54,27 +43,19 @@ projects+ {
         }
     }
 
-
     models+ {
         type "postgres"
-        uid "model_related_feature_category"
+        uid "model_category_003"
         tableName "edit.category"
-        sort+ { fieldName "name_de" }
         title "Categories"
-        permissions.edit "allow all"
-        editable true
+        sort+ { fieldName "name_de" }
+        permissions.edit "deny all"
 
         fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "name_de" type "text" title "Name" isRequired true textSearch { type "any" } }
+        fields+ { name "name_de" type "text" title "Name (DE)" isRequired true textSearch { type "any" } }
 
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{name_de}}"
-        }
+        templates+ { subject "feature.title" type "html" text "{{name_de}}" }
     }
-
-    map.layers+ { type "postgres" title "POIs"  tableName "edit.poi_small" }
 
     {demo_osm_background}
 }

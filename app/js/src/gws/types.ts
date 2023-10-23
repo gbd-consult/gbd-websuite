@@ -381,7 +381,10 @@ export interface IFeature {
     geometry?: ol.geom.Geometry;
     shape?: api.base.shape.Props;
 
+    createWithFeatures: Array<IFeature>;
+
     getProps(depth?: number): api.core.FeatureProps;
+    getMinimalProps(): api.core.FeatureProps;
     getAttribute(name: string, defaultValue?): any;
 
     editAttribute(name: string, newValue);
@@ -450,6 +453,7 @@ export interface IModel {
     canDelete: boolean;
     canRead: boolean;
     canWrite: boolean;
+    isEditable: boolean;
     supportsKeywordSearch: boolean;
     supportsGeometrySearch: boolean;
     fields: Array<IModelField>;

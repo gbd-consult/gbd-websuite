@@ -16,8 +16,8 @@ class Object(gws.Node, gws.IModelValidator):
     def configure(self):
         self.message = self.cfg('message', default=DEFAULT_MESSAGE_PREFIX + self.extType)
 
-        self.modes = set()
+        self.ops = set()
         if self.cfg('forCreate'):
-            self.modes.add(gws.ModelMode.create)
+            self.ops.add(gws.ModelOperation.create)
         if self.cfg('forUpdate'):
-            self.modes.add(gws.ModelMode.update)
+            self.ops.add(gws.ModelOperation.update)

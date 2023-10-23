@@ -17,6 +17,8 @@ module.exports = v => ({
     '.uiFileInput': {
         '.uiControlBox': {
             width: v.CONTROL_SIZE,
+            border: 'none',
+            transition: 'none',
         },
         '&.uiHasContent .uiControlBox': {
             width: '100%',
@@ -24,7 +26,7 @@ module.exports = v => ({
 
         '.uiRawButton': {
             ...v.ICON_BUTTON(),
-            ...v.ICON_SIZE('normal'),
+            ...v.ICON_SIZE('small'),
             ...v.SVG('google:editor/attach_file'),
         },
 

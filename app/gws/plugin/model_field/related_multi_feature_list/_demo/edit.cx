@@ -15,7 +15,7 @@ map layers are for view only, have no relevance for editing.
 @end
 
 projects+ {
-    title "Models: relatedMultiFeatureList"
+    title "Edit: relatedMultiFeatureList"
     metadata.abstract "Editing related features from multiple tables."
 
     api.actions+ { type "edit" }
@@ -32,10 +32,10 @@ projects+ {
 
     models+ {
         type "postgres"
-        uid "mod_baustelle"
+        uid "model_baustelle"
         tableName "baustellen.baustelle"
         title "Baustellen"
-        editable true
+        isEditable true
         permissions.edit "allow all"
 
         templates+ {
@@ -51,19 +51,19 @@ projects+ {
             title "Objekte"
             type "relatedMultiFeatureList"
             related [
-                { toModel "mod_kanalarbeiten" toColumn "baustelle_id" }
-                { toModel "mod_sperrung"      toColumn "baustelle_id" }
-                { toModel "mod_umleitung"     toColumn "baustelle_id" }
+                { toModel "model_kanalarbeiten" toColumn "baustelle_id" }
+                { toModel "model_sperrung"      toColumn "baustelle_id" }
+                { toModel "model_umleitung"     toColumn "baustelle_id" }
             ]
         }
     }
 
     models+ {
         type "postgres"
-        uid "mod_kanalarbeiten"
+        uid "model_kanalarbeiten"
         tableName "baustellen.kanalarbeiten"
         title "Kanalarbeiten"
-        editable true
+        isEditable true
         permissions.edit "allow all"
 
         templates+ { subject "feature.title" type "html" text "Kanalarbeiten {{beschreibung}}" }
@@ -71,15 +71,14 @@ projects+ {
         fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
         fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
         fields+ { name "geom" type "geometry" }
-        fields+ { name "baustelle" type "relatedFeature" fromColumn "baustelle_id" toModel "mod_baustelle" }
     }
 
     models+ {
         type "postgres"
-        uid "mod_sperrung"
+        uid "model_sperrung"
         tableName "baustellen.sperrung"
         title "Sperrung"
-        editable true
+        isEditable true
         permissions.edit "allow all"
 
         templates+ { subject "feature.title" type "html" text "Sperrung {{beschreibung}}" }
@@ -87,15 +86,14 @@ projects+ {
         fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
         fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
         fields+ { name "geom" type "geometry" }
-        fields+ { name "baustelle" type "relatedFeature" fromColumn "baustelle_id" toModel "mod_baustelle" }
     }
 
     models+ {
         type "postgres"
-        uid "mod_umleitung"
+        uid "model_umleitung"
         tableName "baustellen.umleitung"
         title "Umleitung"
-        editable true
+        isEditable true
         permissions.edit "allow all"
 
         templates+ { subject "feature.title" type "html" text "Umleitung {{beschreibung}}" }
@@ -103,7 +101,6 @@ projects+ {
         fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
         fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
         fields+ { name "geom" type "geometry" }
-        fields+ { name "baustelle" type "relatedFeature" fromColumn "baustelle_id" toModel "mod_baustelle" }
     }
 
     map.layers+ { type "postgres" title "kanalarbeiten"  tableName "baustellen.kanalarbeiten" }

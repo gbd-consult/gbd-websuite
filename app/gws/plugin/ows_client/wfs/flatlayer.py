@@ -58,7 +58,7 @@ class Object(gws.base.layer.vector.Object):
         return self.create_child(
             gws.ext.object.model,
             cfg,
-            type=self.extType,
+            type='wfs',
             _defaultProvider=self.provider,
             _defaultSourceLayers=self.sourceLayers
         )
@@ -88,7 +88,7 @@ class Object(gws.base.layer.vector.Object):
         return self.create_child(
             gws.ext.object.finder,
             cfg,
-            type=self.extType,
+            type='wfs',
             _defaultProvider=self.provider,
             _defaultSourceLayers=self.sourceLayers
         )

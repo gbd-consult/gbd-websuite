@@ -53,7 +53,7 @@ def _search(**kwargs):
     mc = gws.ModelContext(
         user=u.gws_system_user(),
         search=gws.SearchQuery(**kwargs),
-        mode=gws.ModelMode.edit,
+        op=gws.ModelOperation.read,
     )
     return mc
 

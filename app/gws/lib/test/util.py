@@ -104,6 +104,9 @@ def make_ini(opts):
 ##
 
 _SPEC = None
+_CONFIG_DEFAULTS = '''
+    database.providers+ { type "postgres" serviceName "gws_test_postgres" } 
+'''
 
 
 def gws_root():
@@ -113,42 +116,30 @@ def gws_root():
     return gws.create_root_object(_SPEC)
 
 
-def gws_configure(config, parse=True):
-    def _dct2cfg(d):
-        if isinstance(d, dict):
-            return gws.Config({k: _dct2cfg(v) for k, v in d.items()})
-        if isinstance(d, (list, tuple)):
-            return [_dct2cfg(v) for v in d]
-        return d
-
-    if isinstance(config, str):
-        dct = gws.lib.vendor.slon.parse(config, as_object=True)
-        config = _dct2cfg(dct)
-
+def gws_configure(config: str):
     wd = work_dir()
 
-    if parse:
-        gws.lib.jsonx.to_path(f'{wd}/config.json', config, pretty=True)
-        root = gws.config.configure(
-            manifest_path=f'{wd}/MANIFEST.json',
-            config_path=f'{wd}/config.json',
-            with_spec_cache=False
-        )
-    else:
-        root = gws.config.configure(
-            manifest_path=f'{wd}/MANIFEST.json',
-            config=config,
-            with_spec_cache=False
-        )
+    config = _CONFIG_DEFAULTS + '\n' + config
+    dct = gws.lib.vendor.slon.parse(config, as_object=True)
 
-    # gws.config.store(root)
+    gws.lib.jsonx.to_path(f'{wd}/config.json', dct, pretty=True)
+    root = gws.config.configure(
+        manifest_path=f'{wd}/MANIFEST.json',
+        config_path=f'{wd}/config.json',
+        with_spec_cache=False
+    )
     gws.config.activate(root)
-
     return root
 
 
 def gws_system_user():
     return gws.base.auth.user.SystemUser(None, roles=[])
+
+
+def gws_model_context(**kwargs):
+    kwargs.setdefault('op', gws.ModelOperation.read)
+    kwargs.setdefault('user', gws_system_user())
+    return gws.ModelContext(**kwargs)
 
 
 ##
@@ -205,19 +196,23 @@ def pg_connect():
     return _PG_CONN
 
 
-def pg_create_table(name, col_defs, *row_dicts):
+def pg_create(table_name, col_defs):
     conn = pg_connect()
-    conn.execute(sa.text(f'DROP TABLE IF EXISTS {name} CASCADE'))
+    conn.execute(sa.text(f'DROP TABLE IF EXISTS {table_name} CASCADE'))
     ddl = _comma(f'{k} {v}' for k, v in col_defs.items())
-    conn.execute(sa.text(f'CREATE TABLE {name} ( {ddl} )'))
+    conn.execute(sa.text(f'CREATE TABLE {table_name} ( {ddl} )'))
     conn.commit()
 
+
+def pg_insert(table_name, row_dicts):
+    conn = pg_connect()
+    conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
     if row_dicts:
         names = _comma(k for k in row_dicts[0])
         values = _comma(':' + k for k in row_dicts[0])
-        ins = sa.text(f'INSERT INTO {name} ( {names} ) VALUES( {values} )')
+        ins = sa.text(f'INSERT INTO {table_name} ( {names} ) VALUES( {values} )')
         conn.execute(ins, row_dicts)
-        conn.commit()
+    conn.commit()
 
 
 def pg_rows(sql: str) -> list[tuple]:

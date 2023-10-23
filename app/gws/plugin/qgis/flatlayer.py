@@ -129,7 +129,7 @@ class Object(gws.base.layer.image.Object):
         return self.create_child(
             gws.ext.object.finder,
             cfg,
-            type=self.extType,
+            type='qgis',
             _defaultProvider=self.provider,
             _defaultSourceLayers=self.searchLayers
         )

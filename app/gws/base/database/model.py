@@ -79,14 +79,6 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
 
     ##
 
-    def new_feature_from_props(self, props, mc):
-        with self._context_connection(mc):
-            return super().new_feature_from_props(props, mc)
-
-    def new_feature_from_record(self, record, mc):
-        with self._context_connection(mc):
-            return super().new_feature_from_record(record, mc)
-
     def find_features(self, search, mc):
         if not mc.user.can_read(self):
             raise gws.ForbiddenError()
@@ -112,9 +104,8 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         features = []
 
         with self._context_connection(mc):
-            res = self.execute(sql, mc)
-            for r in res.mappings():
-                features.append(gws.base.feature.with_model(self, record=gws.FeatureRecord(attributes=r)))
+            for row in self.execute(sql, mc):
+                features.append(gws.base.feature.with_model(self, record=gws.FeatureRecord(attributes=row._asdict())))
             for fld in self.fields:
                 fld.after_select(features, mc)
 
@@ -156,13 +147,14 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
             sel = sel.where(sa.text(self.sqlFilter))
 
         cols = []
-        for c in mc.dbSelect.columns:
-            if c not in cols:
-                cols.append(c)
-        if mc.search.extraColumns:
-            for c in mc.search.extraColumns:
-                if c not in cols:
-                    cols.append(c)
+        for col in mc.dbSelect.columns or []:
+            if any(col is c for c in cols):
+                continue
+            cols.append(col)
+        for col in mc.search.extraColumns or []:
+            if any(col is c for c in cols):
+                continue
+            cols.append(col)
 
         sel = sel.add_columns(*cols)
 
@@ -173,79 +165,95 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
 
     ##
 
-    def create_features(self, features, mc):
+    def init_feature(self, feature, mc):
         if not mc.user.can_create(self):
             raise gws.ForbiddenError()
 
-        for feature in features:
-            feature.record = gws.FeatureRecord(attributes={}, meta={})
+        for fld in self.fields:
+            fld.do_init(feature, mc)
+
+        for rf in feature.createWithFeatures:
+            for fld in rf.model.fields:
+                fld.do_init_related(feature, mc)
+
+    def create_feature(self, feature, mc):
+        if not mc.user.can_create(self):
+            raise gws.ForbiddenError()
+
+        feature.record = gws.FeatureRecord(attributes={}, meta={})
+
+        related_models = []
+        for from_feature in feature.createWithFeatures:
+            if from_feature.model not in related_models:
+                related_models.append(from_feature.model)
 
         with self._context_connection(mc):
-            for fld in self.fields:
-                fld.before_create(features, mc)
-
-            for feature in features:
-                sql = sa.insert(self.table())
-                rs = self.execute(sql, mc, feature.record.attributes)
-                feature.record.attributes[self.uidName] = rs.inserted_primary_key[0]
+            for m in related_models:
+                for fld in m.fields:
+                    fld.before_create_related(feature, mc)
 
             for fld in self.fields:
-                fld.after_create(features, mc)
+                fld.before_create(feature, mc)
+
+            sql = sa.insert(self.table())
+            rs = self.execute(sql, mc, feature.record.attributes)
+            feature.insertedPrimaryKey = rs.inserted_primary_key[0]
+
+            for fld in self.fields:
+                fld.after_create(feature, mc)
+
+            for m in related_models:
+                for fld in m.fields:
+                    fld.after_create_related(feature, mc)
 
             self.commit(mc)
 
-        return [f.record.attributes[self.uidName] for f in features]
+        return feature.insertedPrimaryKey
 
-    def update_features(self, features, mc):
+    def update_feature(self, feature, mc):
         if not mc.user.can_write(self):
             raise gws.ForbiddenError()
 
-        for feature in features:
-            feature.record = gws.FeatureRecord(attributes={}, meta={})
+        feature.record = gws.FeatureRecord(attributes={}, meta={})
 
         with self._context_connection(mc):
             for fld in self.fields:
-                fld.before_update(features, mc)
+                fld.before_update(feature, mc)
 
-            for feature in features:
-                sql = self.table().update().where(
-                    self.uid_column().__eq__(feature.uid())
-                ).values(
-                    feature.record.attributes
-                )
-                self.execute(sql, mc)
+            sql = self.table().update().where(
+                self.uid_column().__eq__(feature.uid())
+            ).values(
+                feature.record.attributes
+            )
+            self.execute(sql, mc)
 
             for fld in self.fields:
-                fld.after_update(features, mc)
+                fld.after_update(feature, mc)
 
             self.commit(mc)
 
-        return [f.uid() for f in features]
+        return feature.uid()
 
-    def delete_features(self, features, mc):
+    def delete_feature(self, feature, mc):
         if not mc.user.can_delete(self):
             raise gws.ForbiddenError()
 
-        uids = [f.uid() for f in features]
-
         with self._context_connection(mc):
             for fld in self.fields:
-                fld.before_delete(features, mc)
+                fld.before_delete(feature, mc)
 
             sql = sa.delete(self.table()).where(
-                self.uid_column().in_(uids)
+                self.uid_column().__eq__(feature.uid())
             )
 
             self.execute(sql, mc)
 
             for fld in self.fields:
-                fld.after_delete(features, mc)
+                fld.after_delete(feature, mc)
 
             self.commit(mc)
 
-        return uids
-
-    ##
+        return feature.uid()
 
 
 class _ContextConnection:

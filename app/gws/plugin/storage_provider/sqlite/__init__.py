@@ -4,8 +4,6 @@ import gws.lib.date
 import gws.lib.sa as sa
 import gws.types as t
 
-_DEFAULT_STORE_PATH = gws.MISC_DIR + '/storage8.sqlite'
-
 gws.ext.new.storageProvider('sqlite')
 
 
@@ -25,6 +23,7 @@ class Object(gws.Node, gws.IStorageProvider):
     table: sa.Table
 
     def configure(self):
+        _DEFAULT_STORE_PATH = gws.MISC_DIR + '/storage8.sqlite'
         self.dbPath = self.cfg('path', default=_DEFAULT_STORE_PATH)
 
     def activate(self):

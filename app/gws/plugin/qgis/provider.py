@@ -80,7 +80,10 @@ class Object(gws.Node, gws.IOwsProvider):
     def configure_storage(self):
         p = self.cfg('path')
         if p:
-            self.storage = project.Storage(type=project.StorageType.file, path=p)
+            self.storage = project.Storage(
+                type=project.StorageType.file,
+                path=p,
+            )
             return
         p = self.cfg('name')
         if p:
@@ -97,7 +100,7 @@ class Object(gws.Node, gws.IOwsProvider):
     ##
 
     def qgis_project(self) -> project.Object:
-        return project.from_storage(self.storage, self)
+        return project.from_storage(self.root, self.storage)
 
     def server_project_path(self):
         if self.storage.type == project.StorageType.file:

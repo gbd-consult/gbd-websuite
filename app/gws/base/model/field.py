@@ -2,11 +2,6 @@ import gws
 import gws.types as t
 
 
-class RelationshipProps(gws.Data):
-    modelUid: str
-    fieldName: str
-
-
 class Props(gws.Props):
     attributeType: gws.AttributeType
     geometryType: gws.GeometryType
@@ -136,18 +131,38 @@ class Object(gws.Node, gws.IModelField):
             type=self.extType,
             widget=wp,
             uid=self.uid,
+            relatedModelUids=[
+                m.uid
+                for m in self.related_models()
+                if user.can_read(m)
+            ],
         )
 
     ##
 
-    def do_validate(self, features, mc):
-        for feature in features:
-            for vd in self.validators:
-                if mc.mode not in vd.modes:
-                    continue
-                if not vd.validate(self, feature, mc):
-                    feature.errors.append(gws.ModelValidationError(
-                        fieldName=self.name,
-                        message=vd.message,
-                    ))
-                    break
+    def do_validate(self, feature, mc):
+        for vd in self.validators:
+            if mc.op in vd.ops and not vd.validate(self, feature, mc):
+                feature.errors.append(gws.ModelValidationError(
+                    fieldName=self.name,
+                    message=vd.message,
+                ))
+                break
+
+    def related_models(self):
+        return []
+
+    def find_relatable_features(self, search, mc):
+        return []
+
+    def raw_to_python(self, feature, value, mc: gws.ModelContext):
+        return value
+
+    def prop_to_python(self, feature, value, mc: gws.ModelContext):
+        return value
+
+    def python_to_raw(self, feature, value, mc: gws.ModelContext):
+        return value
+
+    def python_to_prop(self, feature, value, mc: gws.ModelContext):
+        return value

@@ -1,0 +1,44 @@
+projects+ {
+    title "Edit: file field"
+    metadata.abstract "Editing files."
+
+    api.actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_file_001"
+        tableName "edit.document"
+        sort+ { fieldName "name" }
+        title "Documents"
+        permissions.edit "allow all"
+        isEditable true
+
+        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "name" type "text" title "Name" textSearch { type "any" } }
+
+        fields+ {
+            name "file"
+            title "File"
+            type "file"
+            contentColumn "content"
+            nameColumn "name"
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{@if feature.isNew}} Unbenannt {{@else}} {{name}} {{@end}}"
+        }
+    }
+
+    {demo_osm_background}
+}

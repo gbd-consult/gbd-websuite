@@ -144,7 +144,7 @@
     storage.providers+ {
         uid "common_storage"
         type "sqlite"
-        path "/gws-var/common_storage.sqlite"
+@#        path "/gws-var/common_storage.sqlite"
     }
 @end
 

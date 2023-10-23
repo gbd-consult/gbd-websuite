@@ -243,7 +243,7 @@ class Object(gws.base.action.Object):
         if not model:
             return []
 
-        mc = gws.ModelContext(mode=gws.ModelMode.view, user=req.user)
+        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
         features = model.find_features(search, mc)
         if not features:
             return []
@@ -257,4 +257,4 @@ class Object(gws.base.action.Object):
             for feature in features:
                 feature.render_views([tpl], project=project, layer=layer)
 
-        return model.features_to_props(features, mc)
+        return [model.feature_to_view_props(f, mc) for f in features]

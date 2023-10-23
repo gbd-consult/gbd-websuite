@@ -17,7 +17,7 @@ class Config(gws.ConfigWithAccess):
     """loading strategy for features"""
     title: str = ''
     """model title"""
-    editable: bool = False
+    isEditable: bool = False
     """this model is editable"""
     withAutoFields: bool = False
     """autoload non-configured model fields from the source"""
@@ -32,11 +32,11 @@ class Props(gws.Props):
     canDelete: bool
     canRead: bool
     canWrite: bool
+    isEditable: bool
     fields: list[gws.ext.props.modelField]
     geometryCrs: t.Optional[str]
     geometryName: t.Optional[str]
     geometryType: t.Optional[gws.GeometryType]
-    isEditable: bool
     layerUid: t.Optional[str]
     loadingStrategy: gws.FeatureLoadingStrategy
     supportsGeometrySearch: bool
@@ -48,7 +48,7 @@ class Props(gws.Props):
 
 class Object(gws.Node, gws.IModel):
     def configure(self):
-        self.isEditable = self.cfg('editable')
+        self.isEditable = self.cfg('isEditable')
         self.fields = []
         self.geometryCrs = None
         self.geometryName = ''
@@ -150,34 +150,26 @@ class Object(gws.Node, gws.IModel):
             if fld.name == name:
                 return fld
 
-    def new_feature_from_props(self, props, mc):
-        new_feature = gws.base.feature.with_model(self, props=props)
+    def validate_feature(self, feature, mc):
+        feature.errors = []
         for fld in self.fields:
-            fld.do_init_with_props(new_feature, mc)
-        return new_feature
+            fld.do_validate(feature, mc)
+        return len(feature.errors) == 0
 
-    def new_feature_from_record(self, record, mc):
-        new_feature = gws.base.feature.with_model(self, record=record)
-        for fld in self.fields:
-            fld.do_init_with_record(new_feature, mc)
-        return new_feature
-
-    def new_related_feature(self, field_name, from_feature, related_model, mc):
-        field = t.cast(gws.IModelRelatedField, self.field(field_name))
-        return field.new_related_feature(from_feature, related_model, mc)
-
-    def validate_features(self, features, mc):
-        for feature in features:
-            feature.errors = []
+    def related_models(self):
+        d = {}
 
         for fld in self.fields:
-            fld.do_validate(features, mc)
+            for model in fld.related_models():
+                d[model.uid] = model
 
-        return all(len(feature.errors) == 0 for feature in features)
+        return list(d.values())
 
     ##
 
     def get_features(self, uids, mc):
+        if not uids:
+            return []
         search = gws.SearchQuery(uids=set(uids))
         return self.find_features(search, mc)
 
@@ -186,45 +178,45 @@ class Object(gws.Node, gws.IModel):
 
     ##
 
-    def features_from_props(self, propses, mc):
-        features = []
+    def feature_from_props(self, props, mc):
+        props = t.cast(gws.FeatureProps, gws.to_data(props))
+        feature = gws.base.feature.with_model(self, props=props)
+        for fld in self.fields:
+            fld.from_props(feature, mc)
+        return feature
 
-        for p in propses:
-            if isinstance(p, dict):
-                p = gws.FeatureProps(**p)
-            features.append(gws.base.feature.with_model(self, props=p))
+    def feature_to_props(self, feature, mc):
+        feature.props = gws.FeatureProps(
+            attributes={},
+            cssSelector=feature.cssSelector,
+            errors=feature.errors or [],
+            geometryName=self.geometryName,
+            isNew=feature.isNew,
+            uidName=self.uidName,
+            modelUid=self.uid,
+            uid=feature.uid(),
+            views=feature.views,
+        )
 
         for fld in self.fields:
-            fld.from_props(features, mc)
+            fld.to_props(feature, mc)
 
-        return features
+        return feature.props
 
-    def features_to_props(self, features, mc):
-        for f in features:
-            f.props = gws.FeatureProps(
-                attributes={},
-                cssSelector=f.cssSelector,
-                errors=f.errors or [],
-                geometryName=self.geometryName,
-                isNew=f.isNew,
-                uidName=self.uidName,
-                modelUid=self.uid,
-                uid=f.uid(),
-                views=f.views,
-            )
+    def feature_to_view_props(self, feature, mc):
+        props = self.feature_to_props(feature, mc)
 
-        for fld in self.fields:
-            fld.to_props(features, mc)
+        a = {}
 
-        if mc.mode == gws.ModelMode.view:
-            for f in features:
-                f.props.attributes = {
-                    self.uidName: f.props.attributes.get(self.uidName),
-                    self.geometryName: f.props.attributes.get(self.geometryName),
-                }
-                f.props.modelUid = ''
+        if self.uidName:
+            a[self.uidName] = props.attributes.get(self.uidName)
+        if self.geometryName:
+            a[self.geometryName] = props.attributes.get(self.geometryName)
 
-        return [f.props for f in features]
+        props.attributes = a
+        props.modelUid = ''
+
+        return props
 
 
 ##

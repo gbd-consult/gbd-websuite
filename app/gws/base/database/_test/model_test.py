@@ -48,7 +48,7 @@ def gws_root():
 def test_find_by_ids(gws_root):
     mc = gws.ModelContext(
         user=u.gws_system_user(),
-        mode=gws.ModelMode.edit,
+        op=gws.ModelOperation.read,
     )
     mm = u.model(gws_root, 'PLAIN')
     fs = mm.find_features(gws.SearchQuery(uids=[2, 3]), mc)

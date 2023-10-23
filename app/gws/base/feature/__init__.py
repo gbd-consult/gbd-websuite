@@ -25,17 +25,19 @@ class Feature(gws.Object, gws.IFeature):
         self.layerName = ''
         self.model = model
         self.views = {}
+        self.createWithFeatures = []
+        self.insertedPrimaryKey = ''
 
     def __repr__(self):
         try:
-            uid = str(self.model.uid) + ':' + str(self.attributes.get(self.model.uidName))
+            return f'<feature {self.model.uid}:{self.uid()}>'
         except:
-            uid = '?'
-        return f'<feature uid={uid}>'
+            return f'<feature ?>'
 
     def uid(self):
         if self.model.uidName:
-            return self.attributes.get(self.model.uidName)
+            return str(self.attributes.get(self.model.uidName))
+        return ''
 
     def shape(self):
         if self.model.geometryName:

@@ -19,7 +19,7 @@ class Object(gws.base.model.validator.Object):
             return True
         if val is not None:
             return True
-        if mc.mode == gws.ModelMode.create and field.isAuto:
+        if mc.op == gws.ModelOperation.create and field.isAuto:
             return True
 
         return False

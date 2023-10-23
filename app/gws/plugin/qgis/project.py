@@ -8,6 +8,7 @@ import gws.lib.jsonx
 import gws.lib.date
 import gws.lib.xmlx
 import gws.lib.zipx
+import gws.lib.sa as sa
 
 from . import caps
 
@@ -34,11 +35,11 @@ _ZIP_EXT = '.qgz'
 _PRJ_TABLE = 'qgis_projects'
 
 
-def from_storage(storage: Storage, obj: gws.INode):
+def from_storage(root: gws.IRoot, storage: Storage) -> 'Object':
     if storage.type == StorageType.file:
         return from_path(storage.path)
     if storage.type == StorageType.postgres:
-        return _db_op('read', storage, obj)
+        return _db_read(root, storage)
     raise Error(f'qgis project cannot be loaded')
 
 
@@ -52,25 +53,6 @@ def from_string(text: str) -> 'Object':
     return Object(text)
 
 
-def to_storage(storage: Storage, text: str, obj: gws.INode):
-    if storage.path:
-        return to_path(storage.path, text)
-    if storage.name:
-        name = storage.name + _PRJ_EXT
-        content = gws.lib.zipx.zip_to_bytes({name: text})
-        return _db_op('write', storage, obj, content)
-    raise Error(f'qgis project cannot be stored')
-
-
-def to_path(path: str, text: str):
-    if path.endswith(_ZIP_EXT):
-        name = os.path.basename(path).replace(_ZIP_EXT, _PRJ_EXT)
-        content = gws.lib.zipx.zip_to_bytes({name: text})
-        gws.write_file_b(path, content)
-    else:
-        gws.write_file(path, text)
-
-
 def _from_bytes(b: bytes) -> 'Object':
     d = gws.lib.zipx.unzip_bytes_to_dict(b)
     for k, v in d.items():
@@ -79,36 +61,36 @@ def _from_bytes(b: bytes) -> 'Object':
     raise Error(f'no qgis project')
 
 
-def _db_op(op: str, storage: Storage, obj: gws.INode, content: bytes = None):
-    prov = gws.base.database.provider.get_for(obj, storage.dbUid, 'postgres')
+def _db_read(root: gws.IRoot, storage: Storage):
+    prov = gws.base.database.provider.get_for(root.app, storage.dbUid, 'postgres')
     schema = storage.get('schema') or 'public'
-    table_name = f'{schema}.{_PRJ_TABLE}'
+    tab = prov.table(f'{schema}.{_PRJ_TABLE}')
 
-    with prov.session() as sess:
-        tab = sess.autoload(table_name)
-        if tab is None:
-            raise Error(f'table {table_name!r} does not exist')
+    with prov.connection() as conn:
+        for row in conn.execute(sa.select(tab.c.content).where(tab.c.name.__eq__(storage.name))):
+            return _from_bytes(row[0])
+        raise Error(f'{storage.name!r} not found')
 
-        if op == 'read':
-            rs = sess.execute(tab.select().where(tab.c.name == storage.name))
-            for r in rs.mappings().all():
-                return _from_bytes(r['content'])
-            raise Error(f'{storage.name!r} not found')
 
-        if op == 'write':
-            metadata = {
-                'last_modified_time': gws.lib.date.now_iso(),
-                'last_modified_user': 'GWS',
-            }
-            sess.execute(tab.delete().where(tab.c.name == storage.name + '.bak'))
-            sess.execute(tab.update().values(name=storage.name + '.bak').where(tab.c.name == storage.name))
-            sess.execute(tab.insert().values(
-                name=storage.name,
-                metadata=metadata,
-                content=content,
-            ))
-            sess.execute(tab.delete().where(tab.c.name == storage.name + '.bak'))
-            sess.commit()
+def _db_write(root: gws.IRoot, storage: Storage, content: bytes):
+    prov = gws.base.database.provider.get_for(root.app, storage.dbUid, 'postgres')
+    schema = storage.get('schema') or 'public'
+    tab = prov.table(f'{schema}.{_PRJ_TABLE}')
+
+    metadata = {
+        'last_modified_time': gws.lib.date.now_iso(),
+        'last_modified_user': 'GWS',
+    }
+
+    with prov.connection() as conn:
+        conn.execute(tab.delete().where(tab.c.name.__eq__(storage.name + '.bak')))
+        conn.execute(tab.update().values(name=storage.name + '.bak').where(tab.c.name.__eq__(storage.name)))
+        conn.execute(tab.insert().values(
+            name=storage.name,
+            metadata=metadata,
+            content=content,
+        ))
+        conn.commit()
 
 
 class Object:
@@ -132,11 +114,24 @@ class Object:
             setattr(self, '_xml_root', gws.lib.xmlx.from_string(self.text))
         return getattr(self, '_xml_root')
 
-    def to_storage(self, storage: Storage, obj: gws.INode):
-        return to_storage(storage, self.to_xml(), obj)
+    def to_storage(self, root: gws.IRoot, storage: Storage):
+        if storage.path:
+            return self.to_path(storage.path)
+        if storage.name:
+            src = self.to_xml()
+            name = storage.name + _PRJ_EXT
+            content = gws.lib.zipx.zip_to_bytes({name: src})
+            return _db_write(root, storage, content)
+        raise Error(f'qgis project cannot be stored')
 
-    def to_path(self, path):
-        to_path(path, self.to_xml())
+    def to_path(self, path: str, text: str):
+        src = self.to_xml()
+        if path.endswith(_ZIP_EXT):
+            name = os.path.basename(path).replace(_ZIP_EXT, _PRJ_EXT)
+            content = gws.lib.zipx.zip_to_bytes({name: src})
+            gws.write_file_b(path, content)
+        else:
+            gws.write_file(path, src)
 
     def to_xml(self):
         return self.xml_root().to_string()

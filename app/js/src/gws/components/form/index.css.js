@@ -78,9 +78,8 @@ module.exports = v => ({
         '.cmpFormListEditButton': {...v.SVG('google:image/edit', v.SIDEBAR_AUX_BUTTON_COLOR)},
         '.cmpFormListDeleteButton': {...v.SVG('google:action/delete_forever', v.SIDEBAR_AUX_BUTTON_COLOR)},
         '.cmpFormListLinkButton': {...v.SVG('google:content/link', v.SIDEBAR_AUX_BUTTON_COLOR)},
-        '.cmpFormListUnlinkButton': {...v.SVG('google:action/delete', v.SIDEBAR_AUX_BUTTON_COLOR)},
-
-        '.cmpFormFileViewButton': {...v.SVG('google:action/visibility', v.SIDEBAR_AUX_BUTTON_COLOR)},
+        '.cmpFormListUnlinkButton': {...v.SVG(__dirname + '/link_off_black_24dp', v.SIDEBAR_AUX_BUTTON_COLOR)},
+        '.cmpFormFileDownloadButton': {...v.SVG('google:file/download', v.SIDEBAR_AUX_BUTTON_COLOR)},
 
     },
 

@@ -43,7 +43,7 @@ class Object(gws.Node):
 
         root = gws.config.load()
         src = project.Storage(type=project.StorageType.postgres, schema=p.schema, name=p.name)
-        prj = project.from_storage(src, root.app)
+        prj = project.from_storage(root, src)
         if p.out:
             gws.write_file(p.out, prj.text)
         else:
@@ -55,9 +55,9 @@ class Object(gws.Node):
 
         root = gws.config.load()
         src = project.Storage(type=project.StorageType.file, path=p.path)
-        prj = project.from_storage(src, root.app)
+        prj = project.from_storage(root, src)
         dst = project.Storage(type=project.StorageType.postgres, schema=p.schema, name=p.name)
-        prj.to_storage(dst, root.app)
+        prj.to_storage(root, src)
 
     @gws.ext.command.cli('qgisCaps')
     def caps(self, p: CapsParams):

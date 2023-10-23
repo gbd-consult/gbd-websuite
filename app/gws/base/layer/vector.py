@@ -68,7 +68,7 @@ class Object(core.Object):
     #     if not model:
     #         return []
     #
-    #     features = model.find_features(gws.ModelMode.view, search, user)
+    #     features = model.find_features(gws.ModelOperation.view, search, user)
     #
     #     templates = []
     #

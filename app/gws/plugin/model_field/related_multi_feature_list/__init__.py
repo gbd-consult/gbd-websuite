@@ -26,6 +26,7 @@ Represents a 1:M relationship betweens a "parent" and multiple "child" tables ::
 
 import gws
 import gws.base.database.model
+import gws.base.model.util as mu
 import gws.base.model.related_field as related_field
 import gws.lib.sa as sa
 import gws.types as t
@@ -57,42 +58,31 @@ class Object(related_field.Object):
             src=related_field.RelRef(
                 model=self.model,
                 table=self.model.table(),
-                column=self.col_or_uid(self.model, self.cfg('fromColumn')),
+                key=self.column_or_uid(self.model, self.cfg('fromColumn')),
                 uid=self.model.uid_column(),
             ),
-            to=[]
+            tos=[]
         )
 
         for c in self.cfg('related'):
             to_mod = t.cast(gws.IDatabaseModel, self.root.get(c.toModel))
-            self.rel.to.append(related_field.RelRef(
+            self.rel.tos.append(related_field.RelRef(
                 model=to_mod,
                 table=to_mod.table(),
-                column=to_mod.column(c.toColumn),
+                key=to_mod.column(c.toColumn),
                 uid=to_mod.uid_column(),
             ))
 
     ##
 
-    def new_related_feature(self, from_feature, related_model, mc):
-        uid_and_key = self.uid_and_key_for_uids(
-            self.model,
-            self.rel.src.column,
-            [from_feature.uid()],
-            mc
-        )
-
-        key = gws.first(k for _, k in uid_and_key)
-
-        for to in self.rel.to:
-            if related_model == to.model:
-                record = gws.FeatureRecord(attributes={to.column.name: key})
-                return to.model.new_feature_from_record(record, mc)
-
-    def before_select(self, mc):
-        if not mc.user.can_read(self) or mc.relDepth >= mc.maxDepth:
-            return
-        mc.dbSelect.columns.append(self.rel.src.column)
+    def before_create_related(self, to_feature, mc):
+        for feature in to_feature.createWithFeatures:
+            if feature.model == self.model:
+                key = self.key_for_uid(self.rel.src.model, self.rel.src.key, feature.uid(), mc)
+                for to in self.rel.tos:
+                    if to_feature.model == to.model:
+                        to_feature.record.attributes[to.key.name] = key
+                        return
 
     def after_select(self, features, mc):
         if not mc.user.can_read(self) or mc.relDepth >= mc.maxDepth:
@@ -103,112 +93,86 @@ class Object(related_field.Object):
 
         uid_to_f = {f.uid(): f for f in features}
 
-        for to in self.rel.to:
+        for to in self.rel.tos:
             sql = sa.select(
                 to.uid,
                 self.rel.src.uid,
             ).select_from(
                 to.table.join(
-                    self.rel.src.table, to.column.__eq__(self.rel.src.column)
+                    self.rel.src.table, self.rel.src.key.__eq__(to.key)
                 )
             ).where(
                 self.rel.src.uid.in_(uid_to_f)
             )
 
-            r_to_u = gws.collect(self.model.execute(sql, mc))
+            r_to_uids = {}
+            for r, u in self.model.execute(sql, mc):
+                r_to_uids.setdefault(str(r), []).append(str(u))
 
-            related = self.get_related(
-                to.model,
-                r_to_u,
-                mc
-            )
+            for to_feature in to.model.get_features(r_to_uids, mu.secondary_context(mc)):
+                for uid in r_to_uids.get(to_feature.uid(), []):
+                    feature = uid_to_f.get(uid)
+                    feature.get(self.name).append(to_feature)
 
-            for rf in related:
-                for uid in r_to_u.get(rf.uid()):
-                    uid_to_f.get(uid).get(self.name).append(rf)
+    def after_create(self, feature, mc):
+        key = self.key_for_uid(self.model, self.rel.src.key, feature.insertedPrimaryKey, mc)
+        self.after_write(feature, key, mc)
 
-    def after_create(self, features, mc):
-        self.after_write(features, mc)
+    def after_update(self, feature, mc):
+        key = self.key_for_uid(self.model, self.rel.src.key, feature.uid(), mc)
+        self.after_write(feature, key, mc)
 
-    def after_update(self, features, mc):
-        self.after_write(features, mc)
-
-    def after_write(self, features, mc: gws.ModelContext):
+    def after_write(self, feature: gws.IFeature, key, mc: gws.ModelContext):
         if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
             return
 
-        uid_to_key = dict(self.uid_and_key_for_uids(
-            self.model,
-            self.rel.src.column,
-            [f.uid() for f in features],
-            mc
-        ))
-
-        for to in self.rel.to:
+        for to in self.rel.tos:
             if not mc.user.can_edit(to.model):
                 continue
 
-            cur_pairs = self.uid_and_key_for_keys(
-                to.model,
-                to.column,
-                uid_to_key.values(),
-                mc
+            cur_uids = self.to_uids_for_key(to, key, mc)
+
+            new_uids = set(
+                to_feature.uid()
+                for to_feature in feature.get(self.name, [])
+                if to_feature.model == to.model
             )
 
-            new_pairs = set(
-                (related.uid(), uid_to_key.get(f.uid()))
-                for f in features
-                for related in f.get(self.name, [])
-                if related.model == to.model
-            )
+            ins_uids = new_uids - cur_uids
+            if ins_uids:
+                sql = sa.update(to.table).values({to.key.name: key}).where(to.uid.in_(ins_uids))
+                to.model.execute(sql, mc)
 
-            self.update_uid_and_key(
-                to.model,
-                to.column,
-                new_pairs - cur_pairs,
-                mc
-            )
+            self.drop_links(to, cur_uids - new_uids, mc)
 
-            self.drop_uid_and_key(
-                to.model,
-                to.column,
-                set(r for r, _ in cur_pairs) - set(r for r, _ in new_pairs),
-                False,
-                mc
-            )
-
-    def before_delete(self, features, mc):
+    def before_delete(self, feature, mc):
         if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
             return
 
-        uid_to_key = dict(self.uid_and_key_for_uids(
-            self.model,
-            self.rel.src.column,
-            [f.uid() for f in features],
-            mc
-        ))
-        setattr(mc, f'_uid_to_key_{self.uid}', uid_to_key)
+        key = self.key_for_uid(self.model, self.rel.src.key, feature.uid(), mc)
+        setattr(mc, f'_DELETED_KEY_{self.uid}', key)
 
     def after_delete(self, features, mc):
         if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
             return
 
-        uid_to_key = getattr(mc, f'_uid_to_key_{self.uid}')
+        key = getattr(mc, f'_DELETED_KEY_{self.uid}')
 
-        for to in self.rel.to:
+        for to in self.rel.tos:
             if not mc.user.can_edit(to.model):
                 continue
+            cur_uids = self.to_uids_for_key(to, key, mc)
+            self.drop_links(to, cur_uids, mc)
 
-            cur_pairs = self.uid_and_key_for_keys(
-                to.model,
-                to.column,
-                uid_to_key.values(),
-                mc
-            )
-            self.drop_uid_and_key(
-                to.model,
-                to.column,
-                set(r for r, _ in cur_pairs),
-                False,
-                mc
-            )
+    def to_uids_for_key(self, to: related_field.RelRef, key, mc):
+        sql = sa.select(to.uid).where(to.key.__eq__(key))
+        return set(str(u[0]) for u in to.model.execute(sql, mc))
+
+    def drop_links(self, to: related_field.RelRef, to_uids, mc):
+        if not to_uids:
+            return
+        if self.rel.deleteCascade:
+            sql = sa.delete(to.table).where(to.uid.in_(to_uids))
+        else:
+            sql = sa.update(to.table).values({to.key.name: None}).where(to.uid.in_(to_uids))
+        to.model.execute(sql, mc)

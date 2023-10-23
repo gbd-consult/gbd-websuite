@@ -13,6 +13,3 @@ class Object(core.Object):
         self.uidName = 'uid'
         self.geometryName = 'geometry'
         self.loadingStrategy = gws.FeatureLoadingStrategy.all
-        self.configure_fields()
-        self.configure_uid()
-        self.configure_geometry()

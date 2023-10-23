@@ -16,7 +16,7 @@ class Config(gws.base.model.Config):
     """GeoJson provider"""
 
 
-class Object(gws.base.model.Object):
+class Object(gws.base.model.dynamic_model.Object):
     """GeoJson Model."""
 
     provider: provider.Object

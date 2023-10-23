@@ -56,7 +56,7 @@ class OwsConfig(gws.Config):
     xmlNamespace: t.Optional[gws.XmlNamespace]
 
 
-class ClientConfig(gws.Data):
+class ClientOptions(gws.Data):
     """Client options for a layer"""
 
     expanded: bool = False
@@ -64,9 +64,9 @@ class ClientConfig(gws.Data):
     unlisted: bool = False
     """the layer is hidden in the list view"""
     selected: bool = False
-    """the layer is intially selected"""
+    """the layer is initially selected"""
     hidden: bool = False
-    """the layer is intially hidden"""
+    """the layer is initially hidden"""
     unfolded: bool = False
     """the layer is not listed, but its children are"""
     exclusive: bool = False
@@ -78,7 +78,7 @@ class Config(gws.ConfigWithAccess):
 
     cache: t.Optional[CacheConfig]
     """cache configuration"""
-    clientOptions: ClientConfig = {}
+    clientOptions: ClientOptions = {}
     """options for the layer display in the client"""
     cssSelector: str = ''
     """css selector for feature layers"""
@@ -89,7 +89,7 @@ class Config(gws.ConfigWithAccess):
     extentBuffer: t.Optional[int]
     """extent buffer"""
     finders: t.Optional[list[gws.ext.config.finder]]
-    """search prodivers"""
+    """search providers"""
     grid: t.Optional[GridConfig]
     """client grid"""
     imageFormat: gws.ImageFormat = gws.ImageFormat.png8

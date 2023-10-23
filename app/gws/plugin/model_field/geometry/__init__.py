@@ -91,33 +91,33 @@ class Object(gws.base.model.scalar_field.Object):
                 col,
                 sa.cast(shape.to_ewkb_hex(), sa.geo.Geometry())))
 
-    def raw_to_python(self, val, mc):
-        # here, val is a geosa WKBElement
-        return gws.base.shape.from_wkb_hex(str(val))
+    def raw_to_python(self, feature, value, mc):
+        # here, value is a geosa WKBElement
+        return gws.base.shape.from_wkb_hex(str(value))
 
-    def prop_to_python(self, val, mc):
-        shape = self._prop_to_shape(val)
+    def prop_to_python(self, feature, value, mc):
+        shape = self._prop_to_shape(value)
         if shape:
             return shape.transformed_to(self.geometryCrs)
         return gws.ErrorValue
 
-    def python_to_raw(self, val, mc):
-        return val.to_ewkb_hex()
+    def python_to_raw(self, feature, value, mc):
+        return value.to_ewkb_hex()
 
-    def python_to_prop(self, val, mc):
-        return t.cast(gws.IShape, val).to_props()
+    def python_to_prop(self, feature, value, mc):
+        return t.cast(gws.IShape, value).to_props()
 
-    def _prop_to_shape(self, val):
-        if isinstance(val, gws.base.shape.Shape):
-            return val
-        if gws.is_data_object(val):
+    def _prop_to_shape(self, value):
+        if isinstance(value, gws.base.shape.Shape):
+            return value
+        if gws.is_data_object(value):
             try:
-                return gws.base.shape.from_props(val)
+                return gws.base.shape.from_props(value)
             except gws.Error:
                 pass
-        if gws.is_dict(val):
+        if gws.is_dict(value):
             try:
-                return gws.base.shape.from_dict(val)
+                return gws.base.shape.from_dict(value)
             except gws.Error:
                 pass
 

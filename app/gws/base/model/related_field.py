@@ -2,40 +2,41 @@
 
 import gws
 import gws.base.model.util as mu
+import gws.base.model.field
 import gws.lib.sa as sa
 import gws.types as t
-from . import field
 
 
-class Config(field.Config):
+class Config(gws.base.model.field.Config):
     pass
 
 
-class Props(field.Props):
+class Props(gws.base.model.field.Props):
     pass
 
 
 class Link(gws.Data):
     table: sa.Table
-    fromColumn: sa.Column
-    toColumn: sa.Column
+    fromKey: sa.Column
+    toKey: sa.Column
 
 
 class RelRef(gws.Data):
     model: gws.IDatabaseModel
     table: sa.Table
-    column: sa.Column
+    key: sa.Column
     uid: sa.Column
 
 
 class Relationship(gws.Data):
     src: RelRef
-    to: list[RelRef]
+    to: RelRef
+    tos: list[RelRef]
     link: Link
     deleteCascade: bool = False
 
 
-class Object(field.Object, gws.IModelRelatedField):
+class Object(gws.base.model.field.Object, gws.IModelField):
     model: gws.IDatabaseModel
     rel: Relationship
 
@@ -60,83 +61,149 @@ class Object(field.Object, gws.IModelRelatedField):
                 self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='featureList')
                 return True
 
-    def props(self, user):
-        return gws.merge(super().props(user), relatedModelUids=[to.model.uid for to in self.rel.to])
-
-    ##
-
     def find_relatable_features(self, search, mc):
-        features = []
-        for to in self.rel.to:
-            features.extend(to.model.find_features(search, mc))
-        return features
+        return [
+            f
+            for to in self.rel.tos
+            for f in to.model.find_features(search, mc)
+        ]
 
-    def new_related_feature(self, from_feature, related_model, mc):
-        for to in self.rel.to:
-            if related_model == to.model:
-                record = gws.FeatureRecord(attributes={})
-                return to.model.new_feature_from_record(record, mc)
+    def related_field(self, to: RelRef):
+        for fld in to.model.fields:
+            rel2 = t.cast(Relationship, getattr(fld, 'rel', None))
+            if not rel2:
+                continue
+            if rel2.src.model == to.model and rel2.src.key == to.key:
+                return fld
+
+    def do_init_related(self, to_feature, mc):
+        our_features = [f for f in to_feature.createWithFeatures if f.model == self.model]
+        if not our_features:
+            return
+
+        for to in self.rel.tos:
+            if to.model == to_feature.model:
+                fld = self.related_field(to)
+                if fld:
+                    if fld.type == gws.AttributeType.feature:
+                        to_feature.attributes[fld.name] = our_features[0]
+                    if fld.type == gws.AttributeType.featurelist:
+                        to_feature.attributes.setdefault(fld.name, []).extend(our_features)
+
+    def related_models(self):
+        return [to.model for to in self.rel.tos]
 
     ##
 
-    def to_props(self, features, mc):
+    def to_props(self, feature, mc):
         if not mc.user.can_read(self) or mc.relDepth >= mc.maxDepth:
             return
 
-        mc2 = mu.secondary_context(mc)
+        value = feature.get(self.name)
+        if not value:
+            return
+        if not isinstance(value, list):
+            value = [value]
 
-        if self.attributeType == gws.AttributeType.feature:
-            for f in features:
-                f2 = f.get(self.name)
-                if f2:
-                    ps = f2.model.features_to_props([f2], mc2)
-                    f.props.attributes[self.name] = ps[0]
+        mc2 = mu.secondary_context(mc)
+        res = []
+
+        for v in value:
+            related = t.cast(gws.IFeature, v)
+            if related:
+                p = related.model.feature_to_props(related, mc2)
+                if p:
+                    res.append(p)
 
         if self.attributeType == gws.AttributeType.featurelist:
-            for f in features:
-                f.props.attributes[self.name] = []
-                for f2 in f.get(self.name, []):
-                    ps = f2.model.features_to_props([f2], mc2)
-                    f.props.attributes[self.name].append(ps[0])
+            feature.props.attributes[self.name] = res
+        elif res:
+            feature.props.attributes[self.name] = res[0]
 
-    def from_props(self, features, mc):
+    def from_props(self, feature, mc):
         if mc.relDepth >= mc.maxDepth:
             return
 
+        value = feature.props.attributes.get(self.name)
+        if not value:
+            return
+        if not isinstance(value, list):
+            value = [value]
+
         mc2 = mu.secondary_context(mc)
-        uid_to_model = {to.model.uid: to.model for to in self.rel.to}
-        as_list = self.attributeType == gws.AttributeType.featurelist
+        res = []
+        to_model_map: dict[str, gws.IModel] = {to.model.uid: to.model for to in self.rel.tos}
 
-        for f in features:
-            if as_list:
-                f.set(self.name, [])
+        for v in value:
+            rel_props = t.cast(gws.FeatureProps, gws.to_data(v))
+            if rel_props:
+                to_model = to_model_map.get(rel_props.modelUid)
+                if to_model:
+                    related = to_model.feature_from_props(rel_props, mc2)
+                    if related:
+                        res.append(related)
 
-            val = f.props.attributes.get(self.name)
-            if not val:
-                continue
-            if not isinstance(val, list):
-                val = [val]
-
-            for p in val:
-                if isinstance(p, dict):
-                    p = gws.FeatureProps(**p)
-                model = uid_to_model.get(p.modelUid)
-                if model:
-                    related = gws.first(model.features_from_props([p], mc2))
-                    if as_list:
-                        f.get(self.name).append(related)
-                    else:
-                        f.set(self.name, related)
+        if self.attributeType == gws.AttributeType.featurelist:
+            feature.set(self.name, res)
+        elif res:
+            feature.set(self.name, res[0])
 
     ##
+
+    def key_for_uid(
+            self,
+            model: gws.IDatabaseModel,
+            key_column: sa.Column,
+            uid: gws.FeatureUid,
+            mc: gws.ModelContext
+    ):
+        sql = sa.select(key_column).where(model.uid_column().__eq__(uid))
+        rs = list(self.model.execute(sql, mc))
+        return rs[0][0] if rs else None
+
+    def update_key_for_uids(
+            self,
+            model: gws.IDatabaseModel,
+            key_column: sa.Column,
+            uids: list[gws.FeatureUid],
+            key: t.Any,
+            mc: gws.ModelContext
+    ):
+
+        sql = sa.update(
+            model.table()
+        ).values({
+            key_column: key
+        }).where(
+            model.uid_column().in_(uids)
+        )
+        self.model.execute(sql, mc)
+
+    def uids_to_keys(
+            self,
+            mc: gws.ModelContext,
+            model: gws.IDatabaseModel,
+            key_column: sa.Column,
+            uids: t.Optional[t.Iterable[gws.FeatureUid]] = None,
+            keys: t.Optional[t.Iterable[t.Any]] = None,
+    ):
+
+        if uids:
+            uids = set(v for v in uids if v is not None)
+            sql = sa.select(model.uid_column(), key_column).where(model.uid_column().in_(uids))
+        else:
+            keys = set(v for v in keys if v is not None)
+            sql = sa.select(model.uid_column(), key_column).where(key_column.in_(keys))
+
+        return {str(uid): key for uid, key in self.model.execute(sql, mc)}
 
     def uid_and_key_for_uids(
             self,
             model: gws.IDatabaseModel,
             key_column: sa.Column,
-            uids: t.Iterable[gws.ModelKey],
+            uids: t.Iterable[gws.FeatureUid],
             mc: gws.ModelContext
-    ) -> set[tuple[gws.ModelKey, gws.ModelKey]]:
+    ) -> set[tuple[gws.FeatureUid, gws.FeatureUid]]:
 
         vs = set(v for v in uids if v is not None)
         sql = sa.select(model.uid_column(), key_column).where(model.uid_column().in_(vs))
@@ -146,9 +213,9 @@ class Object(field.Object, gws.IModelRelatedField):
             self,
             model: gws.IDatabaseModel,
             key_column: sa.Column,
-            keys: t.Iterable[gws.ModelKey],
+            keys: t.Iterable[gws.FeatureUid],
             mc: gws.ModelContext
-    ) -> set[tuple[gws.ModelKey, gws.ModelKey]]:
+    ) -> set[tuple[gws.FeatureUid, gws.FeatureUid]]:
 
         vs = set(v for v in keys if v is not None)
         sql = sa.select(model.uid_column(), key_column).where(key_column.in_(vs))
@@ -158,7 +225,7 @@ class Object(field.Object, gws.IModelRelatedField):
             self,
             model: gws.IDatabaseModel,
             key_column: sa.Column,
-            uid_and_key: t.Iterable[tuple[gws.ModelKey, gws.ModelKey]],
+            uid_and_key: t.Iterable[tuple[gws.FeatureUid, gws.FeatureUid]],
             mc: gws.ModelContext
     ):
 
@@ -176,7 +243,7 @@ class Object(field.Object, gws.IModelRelatedField):
             self,
             model: gws.IDatabaseModel,
             key_column: sa.Column,
-            uids: t.Iterable[gws.ModelKey],
+            uids: t.Iterable[gws.FeatureUid],
             delete: bool,
             mc: gws.ModelContext,
     ):
@@ -202,25 +269,13 @@ class Object(field.Object, gws.IModelRelatedField):
 
         self.model.execute(sql, mc)
 
-    def feature_map(
-            self,
-            model: gws.IDatabaseModel,
-            search: gws.SearchQuery,
-            mc: gws.ModelContext
-    ) -> dict[gws.ModelKey, gws.IFeature]:
-        return {
-            f.uid(): f
-            for f in model.find_features(search, mu.secondary_context(mc))
-        }
-
     def get_related(
             self,
             model: gws.IDatabaseModel,
-            uids: t.Iterable[gws.ModelKey],
+            uids: t.Iterable[gws.FeatureUid],
             mc: gws.ModelContext
     ) -> list[gws.IFeature]:
         return model.get_features(uids, mu.secondary_context(mc))
 
-    def col_or_uid(self, model, cfg):
+    def column_or_uid(self, model, cfg):
         return model.column(cfg) if cfg else model.uid_column()
-

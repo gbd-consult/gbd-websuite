@@ -107,10 +107,10 @@ class Object(gws.base.action.Object):
         gws.time_end()
 
         propses = []
-        mc = gws.ModelContext(mode=gws.ModelMode.view, user=req.user)
+        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=req.user)
 
         for res in results:
-            p = res.feature.model.features_to_props([res.feature], mc)
-            propses.append(p[0])
+            p = res.feature.model.feature_to_view_props(res.feature, mc)
+            propses.append(p)
 
         return propses

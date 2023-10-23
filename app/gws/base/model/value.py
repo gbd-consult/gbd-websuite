@@ -13,12 +13,11 @@ class Object(gws.Node, gws.IModelValue):
     def configure(self):
         self.isDefault = self.cfg('isDefault', default=False)
 
-        self.modes = set()
+        self.ops = set()
 
         if self.cfg('forRead'):
-            self.modes.add(gws.ModelMode.view)
-            self.modes.add(gws.ModelMode.edit)
+            self.ops.add(gws.ModelOperation.read)
         if self.cfg('forCreate'):
-            self.modes.add(gws.ModelMode.create)
+            self.ops.add(gws.ModelOperation.create)
         if self.cfg('forUpdate'):
-            self.modes.add(gws.ModelMode.update)
+            self.ops.add(gws.ModelOperation.update)

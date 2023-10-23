@@ -69,19 +69,12 @@ class InitFeatureRequest(gws.Request):
     feature: gws.FeatureProps
 
 
-class InitRelatedFeatureRequest(gws.Request):
-    modelUid: str
-    feature: gws.FeatureProps
-    fieldName: str
-    relatedModelUid: str
-
-
 class WriteFeatureRequest(gws.Request):
     modelUid: str
     feature: gws.FeatureProps
 
 
-class FeatureRequest(gws.Request):
+class DeleteFeatureRequest(gws.Request):
     modelUid: str
     feature: gws.FeatureProps
 
@@ -110,7 +103,8 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('editGetFeatures')
     def get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> FeatureListResponse:
         mc = gws.ModelContext(
-            mode=gws.ModelMode.edit,
+            op=gws.ModelOperation.read,
+            readMode=gws.ModelReadMode.list,
             user=req.user,
             project=req.require_project(p.projectUid),
             maxDepth=1,
@@ -141,7 +135,8 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('editGetRelatableFeatures')
     def get_relatable_features(self, req: gws.IWebRequester, p: GetRelatableFeaturesRequest) -> FeatureListResponse:
         mc = gws.ModelContext(
-            mode=gws.ModelMode.edit,
+            op=gws.ModelOperation.read,
+            readMode=gws.ModelReadMode.list,
             user=req.user,
             project=req.require_project(p.projectUid),
             maxDepth=0,
@@ -150,22 +145,26 @@ class Object(gws.base.action.Object):
         model = self.require_model(p.modelUid, req.user, gws.Access.read)
         field = self.require_field(model, p.fieldName, req.user, gws.Access.read)
         search = gws.SearchQuery(keyword=p.keyword)
-        features = field.find_relatable_features(search, mc)
 
+        fn = getattr(field, 'find_relatable_features', None)
+        if not fn:
+            raise gws.NotFoundError()
+
+        features = fn(search, mc)
         propses = self.make_propses(features, mc)
         return FeatureListResponse(features=propses)
 
     @gws.ext.command.api('editGetFeature')
     def get_feature(self, req: gws.IWebRequester, p: GetFeatureRequest) -> FeatureResponse:
         mc = gws.ModelContext(
-            mode=gws.ModelMode.edit,
+            op=gws.ModelOperation.read,
+            readMode=gws.ModelReadMode.form,
             user=req.user,
             project=req.require_project(p.projectUid),
             maxDepth=1,
         )
 
         model = self.require_model(p.modelUid, req.user, gws.Access.read)
-
         features = model.get_features([p.featureUid], mc)
         if not features:
             raise gws.NotFoundError()
@@ -174,39 +173,23 @@ class Object(gws.base.action.Object):
         return FeatureResponse(feature=propses[0])
 
     @gws.ext.command.api('editInitFeature')
-    def init_feature(self, req: gws.IWebRequester, p: FeatureRequest) -> FeatureResponse:
+    def init_feature(self, req: gws.IWebRequester, p: InitFeatureRequest) -> FeatureResponse:
         mc = gws.ModelContext(
-            mode=gws.ModelMode.init,
+            op=gws.ModelOperation.create,
             user=req.user,
             project=req.require_project(p.projectUid),
             maxDepth=1,
         )
 
-        model = self.require_model(p.modelUid, req.user, gws.Access.create)
-        new_feature = model.new_feature_from_props(p.feature, mc)
+        feature = self.from_props(p.feature, gws.Access.create, mc)
+        feature.createWithFeatures = [
+            self.from_props(r, gws.Access.read, mc)
+            for r in (p.feature.createWithFeatures or [])
+        ]
 
-        propses = self.make_propses([new_feature], mc)
-        return FeatureResponse(feature=propses[0])
+        feature.model.init_feature(feature, mc)
 
-    @gws.ext.command.api('editInitRelatedFeature')
-    def init_related_feature(self, req: gws.IWebRequester, p: InitRelatedFeatureRequest) -> FeatureResponse:
-        mc = gws.ModelContext(
-            mode=gws.ModelMode.init,
-            user=req.user,
-            project=req.require_project(p.projectUid),
-            maxDepth=1,
-        )
-
-        model = self.require_model(p.modelUid, req.user, gws.Access.write)
-        related_model = self.require_model(p.relatedModelUid, req.user, gws.Access.create)
-
-        features = model.features_from_props([p.feature], mc)
-        if not features:
-            raise gws.NotFoundError()
-
-        new_feature = model.new_related_feature(p.fieldName, features[0], related_model, mc)
-
-        propses = self.make_propses([new_feature], mc)
+        propses = self.make_propses([feature], mc)
         return FeatureResponse(feature=propses[0])
 
     @gws.ext.command.api('editWriteFeature')
@@ -214,42 +197,48 @@ class Object(gws.base.action.Object):
         is_new = p.feature.isNew
 
         mc = gws.ModelContext(
-            mode=gws.ModelMode.create if is_new else gws.ModelMode.update,
+            op=gws.ModelOperation.create if is_new else gws.ModelOperation.update,
             user=req.user,
             project=req.require_project(p.projectUid),
             maxDepth=1,
         )
 
-        model = self.require_model(p.modelUid, req.user, gws.Access.create if is_new else gws.Access.write)
-        features = model.features_from_props([p.feature], mc)
-        if not features:
-            raise gws.NotFoundError()
+        feature = self.from_props(p.feature, gws.Access.write, mc)
+        feature.createWithFeatures = [
+            self.from_props(r, gws.Access.read, mc)
+            for r in (p.feature.createWithFeatures or [])
+        ]
 
-        if not model.validate_features(features, mc):
-            return WriteResponse(validationErrors=features[0].errors)
+        if not feature.model.validate_feature(feature, mc):
+            return WriteResponse(validationErrors=feature.errors)
 
         if is_new:
-            uids = model.create_features(features, mc)
+            uid = feature.model.create_feature(feature, mc)
         else:
-            uids = model.update_features(features, mc)
+            uid = feature.model.update_feature(feature, mc)
 
-        mc.mode = gws.ModelMode.edit
-        features = model.get_features(uids, mc)
+        mc = gws.ModelContext(
+            op=gws.ModelOperation.read,
+            readMode=gws.ModelReadMode.form,
+            user=req.user,
+            project=req.require_project(p.projectUid),
+            maxDepth=1,
+        )
+        features = feature.model.get_features([uid], mc)
 
         propses = self.make_propses(features, mc)
-
         return WriteResponse(validationErrors=[], feature=propses[0])
 
     @gws.ext.command.api('editDeleteFeature')
-    def delete_feature(self, req: gws.IWebRequester, p: FeatureRequest) -> gws.Response:
+    def delete_feature(self, req: gws.IWebRequester, p: DeleteFeatureRequest) -> gws.Response:
         mc = gws.ModelContext(
-            mode=gws.ModelMode.delete,
+            op=gws.ModelOperation.delete,
             user=req.user,
             project=req.require_project(p.projectUid),
         )
-        model = self.require_model(p.modelUid, req.user, gws.Access.delete)
-        features = model.features_from_props([p.feature], mc)
-        model.delete_features(features, mc)
+
+        feature = self.from_props(p.feature, gws.Access.delete, mc)
+        feature.model.delete_feature(feature, mc)
         return gws.Response()
 
     ##
@@ -266,13 +255,20 @@ class Object(gws.base.action.Object):
             raise gws.ForbiddenError()
         return field
 
+    def from_props(self, props: gws.FeatureProps, access: gws.Access, mc: gws.ModelContext):
+        model = self.require_model(props.modelUid, mc.user, access)
+        feature = model.feature_from_props(props, mc)
+        if not feature:
+            raise gws.NotFoundError()
+        return feature
+
     def make_propses(self, features: list[gws.IFeature], mc: gws.ModelContext) -> list[gws.FeatureProps]:
         propses = []
         template_map = {}
 
         for feature in features:
             self.format_feature(feature, template_map, mc, 1)
-            propses.extend(feature.model.features_to_props([feature], mc))
+            propses.append(feature.model.feature_to_props(feature, mc))
 
         return propses
 

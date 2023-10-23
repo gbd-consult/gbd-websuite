@@ -44,7 +44,7 @@ def _parse(text, default_crs, always_xy):
 
 def _parse_msgmloutput(xml_el: gws.IXmlElement, default_crs, always_xy):
     # msGMLOutput (MapServer)
-    # 
+    #
     # <msGMLOutput
     #     <LAYER_1>
     #         <gml:name>LAYER_NAME
@@ -64,12 +64,11 @@ def _parse_msgmloutput(xml_el: gws.IXmlElement, default_crs, always_xy):
     for layer_el in xml_el:
         layer_name = layer_el.name
         for feature_el in layer_el:
-            gws.p(layer_el)
             if _is_gml(feature_el) and feature_el.name == 'name':
                 layer_name = feature_el.text
             else:
                 fd = _fdata_from_gml(feature_el, default_crs, always_xy)
-                fd.layerName = layer_name
+                fd.meta = {'layerName': layer_name}
                 fds.append(fd)
 
     return fds
@@ -77,7 +76,7 @@ def _parse_msgmloutput(xml_el: gws.IXmlElement, default_crs, always_xy):
 
 def _parse_featurecollection(xml_el: gws.IXmlElement, default_crs, always_xy):
     # FeatureCollection (OGC)
-    # 
+    #
     # <FeatureCollection
     #     <wfs:member>
     #         <FEATURE gml:id=...
@@ -103,7 +102,7 @@ def _parse_featurecollection(xml_el: gws.IXmlElement, default_crs, always_xy):
 
 def _parse_getfeatureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
     # GetFeatureInfoResponse (geoserver/qgis)
-    # 
+    #
     # <GetFeatureInfoResponse>
     #      <Layer name="....">
     #          <Feature id="...">
@@ -118,8 +117,9 @@ def _parse_getfeatureinforesponse(xml_el: gws.IXmlElement, default_crs, always_x
 
             fd = gws.FeatureRecord(
                 attributes={},
-                layerName=layer_name,
-                uid=feature_el.get('id'))
+                uid=feature_el.get('id'),
+                meta={'layerName': layer_name},
+            )
 
             for el in feature_el:
                 if el.name != 'attribute':
@@ -138,9 +138,9 @@ def _parse_getfeatureinforesponse(xml_el: gws.IXmlElement, default_crs, always_x
 
 def _parse_featureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
     # FeatureInfoResponse (Arcgis)
-    # 
+    #
     # https://webhelp.esri.com/arcims/9.3/General/mergedProjects/wms_connect/wms_connector/get_featureinfo.htm
-    # 
+    #
     # <FeatureInfoResponse...
     #     <fields objectid="15111" shape="polygon"...
     #     <fields objectid="15111" shape="polygon"...
@@ -162,7 +162,7 @@ def _parse_featureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
 
 def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
     # GeoBAK (https://www.egovernment.sachsen.de/geodaten.html)
-    # 
+    #
     # <geobak_20:Sachdatenabfrage...
     #     <geobak_20:Kartenebene>....
     #     <geobak_20:Inhalt>
@@ -180,7 +180,7 @@ def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
         fd = gws.FeatureRecord(attributes={})
 
         if el.name == 'kartenebene':
-            fd.layerName = el.text
+            fd.meta = {'layerName': el.text}
             continue
 
         if el.name == 'inhalt':
@@ -209,7 +209,7 @@ def _fdata_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureRecord:
     fd = gws.FeatureRecord(
         attributes={},
         uid=feature_el.get('id') or feature_el.get('fid'),
-        layerName=feature_el.name
+        meta={'layerName': feature_el.name},
     )
 
     bbox = None

@@ -28,7 +28,7 @@ class Object(gws.base.model.widget.Object):
             super().props(user),
             withNewButton=self.cfg('withNewButton', default=True),
             withLinkButton=self.cfg('withLinkButton', default=True),
-            withEditButton=self.cfg('withEditButton'), default=True,
+            withEditButton=self.cfg('withEditButton', default=True),
             withUnlinkButton=self.cfg('withUnlinkButton', default=False),
             withDeleteButton=self.cfg('withDeleteButton', default=False),
         )

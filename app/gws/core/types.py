@@ -1166,16 +1166,22 @@ class IStorageProvider(INode, Protocol):
 # features
 
 
+FeatureUid: TypeAlias = str
+
+
 class FeatureRecord(Data):
     """Raw data from a feature source."""
     attributes: dict
     meta: dict
+    uid: Optional[str]
+    shape: Optional['IShape']
 
 
 class FeatureProps(Props):
     attributes: dict
     cssSelector: str
     errors: Optional[list['ModelValidationError']]
+    createWithFeatures: Optional[list['FeatureProps']]
     isNew: bool
     modelUid: str
     uid: str
@@ -1192,6 +1198,8 @@ class IFeature(Protocol):
     props: 'FeatureProps'
     record: 'FeatureRecord'
     views: dict
+    createWithFeatures: list['IFeature']
+    insertedPrimaryKey: str
 
     def get(self, name: str, default=None) -> Any: ...
 
@@ -1211,27 +1219,29 @@ class IFeature(Protocol):
 
     def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
 
-    def uid(self) -> Optional[str]: ...
+    def uid(self) -> FeatureUid: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # models
-
-ModelKey: TypeAlias = Any
-
 
 class ModelValidationError(Data):
     fieldName: str
     message: str
 
 
-class ModelMode(Enum):
-    view = 'view'
-    edit = 'edit'
-    init = 'init'
+class ModelOperation(Enum):
+    read = 'read'
     create = 'create'
     update = 'update'
     delete = 'delete'
+
+
+class ModelReadMode(Enum):
+    render = 'render'
+    search = 'search'
+    list = 'list'
+    form = 'form'
 
 
 class ModelDbSelect(Data):
@@ -1243,7 +1253,8 @@ class ModelDbSelect(Data):
 
 
 class ModelContext(Data):
-    mode: ModelMode
+    op: ModelOperation
+    readMode: ModelReadMode
     user: 'IUser'
     project: 'IProject'
     relDepth: int = 0
@@ -1263,14 +1274,14 @@ class IModelWidget(INode, Protocol):
 
 class IModelValidator(INode, Protocol):
     message: str
-    modes: set[ModelMode]
+    ops: set[ModelOperation]
 
     def validate(self, field: 'IModelField', feature: 'IFeature', mc: ModelContext) -> bool: ...
 
 
 class IModelValue(INode, Protocol):
     isDefault: bool
-    modes: set[ModelMode]
+    ops: set[ModelOperation]
 
     def compute(self, field: 'IModelField', feature: 'IFeature', mc: 'ModelContext') -> Any: ...
 
@@ -1302,84 +1313,81 @@ class IModelField(INode, Protocol):
 
     def after_select(self, features: list['IFeature'], mc: ModelContext): ...
 
-    def before_create(self, features: list['IFeature'], mc: ModelContext): ...
+    def before_create(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def after_create(self, features: list['IFeature'], mc: ModelContext): ...
+    def after_create(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def before_update(self, features: list['IFeature'], mc: ModelContext): ...
+    def before_create_related(self, to_feature: 'IFeature', mc: ModelContext): ...
 
-    def after_update(self, features: list['IFeature'], mc: ModelContext): ...
+    def after_create_related(self, to_feature: 'IFeature', mc: ModelContext): ...
 
-    def before_delete(self, features: list['IFeature'], mc: ModelContext): ...
+    def before_update(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def after_delete(self, features: list['IFeature'], mc: ModelContext): ...
+    def after_update(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def do_init_with_record(self, feature: 'IFeature', mc: ModelContext): ...
+    def before_delete(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def do_init_with_props(self, feature: 'IFeature', mc: ModelContext): ...
+    def after_delete(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def do_validate(self, features: list['IFeature'], mc: ModelContext): ...
+    def do_init(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def from_props(self, features: list['IFeature'], mc: ModelContext): ...
+    def do_init_related(self, to_feature: 'IFeature', mc: ModelContext): ...
 
-    def to_props(self, features: list['IFeature'], mc: ModelContext): ...
+    def do_validate(self, feature: 'IFeature', mc: ModelContext): ...
 
+    def from_props(self, feature: 'IFeature', mc: ModelContext): ...
 
-class IModelScalarField(IModelField):
-    def raw_to_python(self, value, mc: ModelContext): ...
+    def to_props(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def prop_to_python(self, value, mc: ModelContext): ...
+    def related_models(self) -> list['IModel']: ...
 
-    def python_to_raw(self, value, mc: ModelContext): ...
-
-    def python_to_prop(self, value, mc: ModelContext): ...
-
-
-class IModelRelatedField(IModelField):
     def find_relatable_features(self, search: 'SearchQuery', mc: ModelContext) -> list['IFeature']: ...
 
-    def new_related_feature(self, from_feature: 'IFeature', related_model: 'IModel', mc: ModelContext) -> Optional['IFeature']: ...
+    def raw_to_python(self, feature: 'IFeature', value, mc: ModelContext): ...
+
+    def prop_to_python(self, feature: 'IFeature', value, mc: ModelContext): ...
+
+    def python_to_raw(self, feature: 'IFeature', value, mc: ModelContext): ...
+
+    def python_to_prop(self, feature: 'IFeature', value, mc: ModelContext): ...
 
 
 class IModel(INode, Protocol):
-    isEditable: bool
-    fields: list['IModelField']
-
-    title: str
     defaultSort: list['SearchSort']
-    loadingStrategy: 'FeatureLoadingStrategy'
-
+    fields: list['IModelField']
     geometryCrs: Optional['ICrs']
     geometryName: str
     geometryType: Optional[GeometryType]
-
+    isEditable: bool
+    loadingStrategy: 'FeatureLoadingStrategy'
+    title: str
     uidName: str
 
     def find_features(self, search: 'SearchQuery', mc: ModelContext) -> list['IFeature']: ...
 
-    def get_features(self, uids: Iterable[ModelKey], mc: ModelContext) -> list['IFeature']: ...
+    def get_features(self, uids: Iterable[str | int], mc: ModelContext) -> list['IFeature']: ...
 
-    def new_feature_from_props(self, props: FeatureProps, mc: ModelContext) -> 'IFeature': ...
+    def init_feature(self, feature: 'IFeature', mc: ModelContext): ...
 
-    def new_feature_from_record(self, record: FeatureRecord, mc: ModelContext) -> 'IFeature': ...
+    def create_feature(self, feature: 'IFeature', mc: ModelContext) -> FeatureUid: ...
 
-    def new_related_feature(self, field_name: str, from_feature: 'IFeature', related_model: 'IModel', mc: ModelContext) -> Optional['IFeature']: ...
+    def update_feature(self, feature: 'IFeature', mc: ModelContext) -> FeatureUid: ...
 
-    def create_features(self, features: list['IFeature'], mc: ModelContext) -> list[ModelKey]: ...
+    def delete_feature(self, feature: 'IFeature', mc: ModelContext) -> FeatureUid: ...
 
-    def update_features(self, features: list['IFeature'], mc: ModelContext) -> list[ModelKey]: ...
+    def validate_feature(self, feature: 'IFeature', mc: ModelContext) -> bool: ...
 
-    def delete_features(self, features: list['IFeature'], mc: ModelContext) -> list[ModelKey]: ...
+    def feature_from_props(self, props: 'FeatureProps', mc: ModelContext) -> 'IFeature': ...
 
-    def validate_features(self, features: list['IFeature'], mc: ModelContext) -> bool: ...
+    def feature_to_props(self, feature: 'IFeature', mc: ModelContext) -> 'FeatureProps': ...
 
-    def features_from_props(self, propses: list['FeatureProps'], mc: ModelContext) -> list['IFeature']: ...
-
-    def features_to_props(self, features: list['IFeature'], mc: ModelContext) -> list['FeatureProps']: ...
+    def feature_to_view_props(self, feature: 'IFeature', mc: ModelContext) -> 'FeatureProps': ...
 
     def describe(self) -> Optional[DataSetDescription]: ...
 
     def field(self, name: str) -> Optional['IModelField']: ...
+
+    def related_models(self) -> list['IModel']: ...
 
 
 class IDatabaseModel(IModel, Protocol):
@@ -1401,7 +1409,9 @@ class IDatabaseModel(IModel, Protocol):
 
 
 class IModelManager(INode, Protocol):
-    def locate_model(self, *objects, user: IUser = None, access: Access = None, uid: str = None) -> Optional['IModel']: ...
+    def get_model(self, uid: str, user: IUser = None, access: Access = None) -> Optional['IModel']: ...
+
+    def locate_model(self, *objects, uid: str = None, user: IUser = None, access: Access = None) -> Optional['IModel']: ...
 
     def collect_editable(self, project: 'IProject', user: 'IUser') -> list['IModel']: ...
 
@@ -1905,9 +1915,9 @@ class LayerClientOptions(Data):
     unlisted: bool
     """the layer is hidden in the list view"""
     selected: bool
-    """the layer is intially selected"""
+    """the layer is initially selected"""
     hidden: bool
-    """the layer is intially hidden"""
+    """the layer is initially hidden"""
     unfolded: bool
     """the layer is not listed, but its children are"""
     exclusive: bool

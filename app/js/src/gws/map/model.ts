@@ -80,6 +80,7 @@ export class Model implements types.IModel {
     canDelete: boolean;
     canRead: boolean;
     canWrite: boolean;
+    isEditable: boolean;
     supportsKeywordSearch: boolean;
     supportsGeometrySearch: boolean;
     fields: Array<types.IModelField>;
@@ -104,6 +105,7 @@ export class Model implements types.IModel {
         this.canDelete = props.canDelete;
         this.canRead = props.canRead;
         this.canWrite = props.canWrite;
+        this.isEditable = props.isEditable;
         this.supportsKeywordSearch = props.supportsKeywordSearch;
         this.supportsGeometrySearch = props.supportsGeometrySearch;
         this.geometryCrs = props.geometryCrs;
@@ -217,6 +219,7 @@ export class Model implements types.IModel {
             modelUid: this.uid,
             uid: feature.uid,
             views: feature.views,
+            createWithFeatures: feature.createWithFeatures.map(c => c.getMinimalProps())
         }
     }
 }

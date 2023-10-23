@@ -32,6 +32,13 @@ class AssetResponse(gws.Request):
     mime: str
 
 
+class FileRequest(gws.Request):
+    preview: bool = False
+    modelUid: str
+    fieldName: str
+    featureUid: str
+
+
 class Object(gws.base.action.Object):
     """Web action"""
 
@@ -48,6 +55,26 @@ class Object(gws.base.action.Object):
     @gws.ext.command.get('webDownload')
     def download(self, req: gws.IWebRequester, p) -> gws.ContentResponse:
         return _serve_path(self.root, req, p, as_attachment=True)
+
+    @gws.ext.command.get('webFile')
+    def file(self, req: gws.IWebRequester, p: FileRequest) -> gws.ContentResponse:
+        model = t.cast(gws.IModel, req.user.acquire(p.modelUid, gws.ext.object.model, gws.Access.read))
+        field = model.field(p.fieldName)
+        if not field:
+            raise gws.NotFoundError()
+        fn = getattr(field, 'handle_web_file_request', None)
+        if not fn:
+            raise gws.NotFoundError()
+        mc = gws.ModelContext(
+            op=gws.ModelOperation.read,
+            user=req.user,
+            project=req.require_project(p.projectUid),
+            maxDepth=0,
+        )
+        res = fn(p.featureUid, p.preview, mc)
+        if not res:
+            raise gws.NotFoundError()
+        return res
 
     @gws.ext.command.get('webSystemAsset')
     def sys_asset(self, req: gws.IWebRequester, p: AssetRequest) -> gws.ContentResponse:

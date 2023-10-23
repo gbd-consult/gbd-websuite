@@ -1,10 +1,19 @@
 """Model manager."""
 
 import gws
+import gws.types as t
 from . import default_model
 
 
 class Object(gws.Node, gws.IModelManager):
+    def get_model(self, uid, user=None, access=None):
+        model = t.cast(gws.IModel, self.root.get(uid, gws.ext.object.model))
+        if not model:
+            return
+        if user and access and not user.can(access, model):
+            return
+        return model
+
     def locate_model(self, *objects, user=None, access=None, uid=None):
         def _locate(obj):
             for model in getattr(obj, 'models', []):
@@ -24,12 +33,12 @@ class Object(gws.Node, gws.IModelManager):
         return _locate(self.root.app)
 
     def collect_editable(self, project, user):
-        d = {}
+        res = {}
 
         def _collect(obj):
             for model in getattr(obj, 'models', []):
                 if model.isEditable and user.can_edit(model):
-                    d[model.uid] = model
+                    res[model.uid] = model
 
         if project.map:
             for la in project.map.rootLayer.descendants():
@@ -38,7 +47,20 @@ class Object(gws.Node, gws.IModelManager):
         _collect(project)
         _collect(self.root.app)
 
-        return sorted(d.values(), key=lambda m: m.title)
+        queue = []
+        for model in res.values():
+            queue.extend(model.related_models())
+
+        while queue:
+            model = queue.pop(0)
+            if model.uid in res:
+                continue
+            if not user.can_read(model):
+                continue
+            res[model.uid] = model
+            queue.extend(model.related_models())
+
+        return sorted(res.values(), key=lambda m: m.title)
 
     def default_model(self):
         return self.root.create_shared(default_model.Object, uid='gws.base.core.default_model.Object')

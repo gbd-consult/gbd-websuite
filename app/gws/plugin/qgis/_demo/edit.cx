@@ -37,6 +37,7 @@ projects+ {
             uid "model_poi_qgis_simple"
             dbUid "DEVDEMOS"
             tableName "edit.poi_small"
+            isEditable true
             permissions.edit "allow all"
 
             fields+ {
@@ -45,7 +46,7 @@ projects+ {
                 title "Identifier"
                 isPrimaryKey true
                 isRequired true
-                widget { type "input"  }
+                permissions.edit "deny all"
             }
 
             fields+ {
@@ -88,6 +89,7 @@ projects+ {
             uid "model_districts_qgis_simple"
             dbUid "DEVDEMOS"
             tableName "edit.district"
+            isEditable true
             permissions.edit "allow all"
 
             fields+ {
@@ -96,7 +98,7 @@ projects+ {
                 title "Identifier"
                 isPrimaryKey true
                 isRequired true
-                widget { type "input"  }
+                permissions.edit "deny all"
             }
 
             fields+ {

@@ -10,8 +10,6 @@ import gws.types as t
 
 gws.ext.new.authSessionManager('sqlite')
 
-_DEFAULT_STORE_PATH = gws.MISC_DIR + '/sessions8.sqlite'
-
 
 class Config(gws.base.auth.session_manager.Config):
     """Configuration for sqlite sessions"""
@@ -30,11 +28,11 @@ class Object(gws.base.auth.session_manager.Object):
     table: sa.Table
 
     def configure(self):
+        _DEFAULT_STORE_PATH = gws.MISC_DIR + '/sessions8.sqlite'
         self.dbPath = self.cfg('path', default=_DEFAULT_STORE_PATH)
         self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
 
     def activate(self):
-        return
         self.metaData = sa.MetaData()
         self.engine = sa.create_engine(f'sqlite:///{self.dbPath}')
 

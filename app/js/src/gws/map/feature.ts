@@ -23,6 +23,8 @@ export class Feature implements types.IFeature {
     uidName: string;
     geometryName: string;
 
+    createWithFeatures = [];
+
     _editedAttributes: types.Dict = {};
 
     constructor(model: types.IModel) {
@@ -36,9 +38,10 @@ export class Feature implements types.IFeature {
 
         this.attributes[this.uidName] = lib.uniqId('_feature_');
 
-
         this.uidName = this.model.uidName;
         this.geometryName = this.model.geometryName;
+
+        this.createWithFeatures = [];
     }
 
     get uid() {
@@ -122,6 +125,20 @@ export class Feature implements types.IFeature {
         return this.model.featureProps(this, depth);
     }
 
+    getMinimalProps() {
+        let p = this.model.featureProps(this, 0);
+        return {
+            attributes: {
+                [this.model.uidName]: p.attributes[this.model.uidName],
+            },
+            cssSelector: '',
+            isNew: p.isNew,
+            modelUid: p.modelUid,
+            uid: p.uid,
+            views: {},
+        }
+    }
+
     getAttribute(name, defaultValue = null) {
         if (name in this.attributes)
             return this.attributes[name];
@@ -188,6 +205,7 @@ export class Feature implements types.IFeature {
         this.layer = f.layer;
         this.cssSelector = f.cssSelector
         this.isNew = f.isNew
+        this.createWithFeatures = f.createWithFeatures
     }
 
     whenGeometryChanged() {

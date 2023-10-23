@@ -1,13 +1,6 @@
-@comment
-
-Editing two models linked to each other via a link table.
-
-@end
-
 projects+ {
-    title "Models: relatedLinkedFeatureList"
-    metadata.abstract "Editing linked related features"
-
+    title "Edit: relatedLinkedFeatureList"
+    metadata.abstract "Editing two models connected via a link table."
     api.actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }
     client.addElements+ { tag "Toolbar.Edit" }
@@ -21,11 +14,11 @@ projects+ {
 
     models+ {
         type "postgres"
-        uid "mod_poi_linked"
+        uid "model_poi_005"
         tableName "edit.poi_small"
         sort+ { fieldName "name" }
         title "POIs"
-        editable true
+        isEditable true
         permissions.edit "allow all"
 
         fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
@@ -36,7 +29,7 @@ projects+ {
             title "Tags"
             type "relatedLinkedFeatureList"
 
-            toModel "mod_tag_linked"
+            toModel "model_tag_005"
 
             linkTableName "edit.tagging"
             linkFromColumn "poi_id"
@@ -44,9 +37,6 @@ projects+ {
 
             widget {
                 type "featureList"
-                withNewButton     true
-                withLinkButton    true
-                withEditButton    true
                 withUnlinkButton  true
             }
         }
@@ -60,11 +50,11 @@ projects+ {
 
     models+ {
         type "postgres"
-        uid "mod_tag_linked"
+        uid "model_tag_005"
         tableName "edit.tag"
         sort+ { fieldName "name_de" }
         title "Tags"
-        editable true
+        isEditable true
         permissions.edit "allow all"
 
         fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }

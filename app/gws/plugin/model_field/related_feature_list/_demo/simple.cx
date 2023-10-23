@@ -1,0 +1,63 @@
+projects+ {
+    title "Edit: relatedFeatureList"
+    metadata.abstract "Editing related 'child' features"
+
+    api.actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_poi_001"
+        tableName "edit.poi_small"
+        sort+ { fieldName "name" }
+        title "POIs"
+        isEditable true
+        permissions.edit "allow all"
+
+        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
+        fields+ { name "geom" type "geometry" title "Geometry" isRequired true }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{@if feature.isNew}} Unbenannt {{@else}} {{name}} {{@end}}"
+        }
+    }
+
+    models+ {
+        type "postgres"
+        uid "model_category_001"
+        tableName "edit.category"
+        title "Categories"
+        sort+ { fieldName "name_de" }
+        isEditable true
+        permissions.edit "allow all"
+
+        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "name_de" type "text" title "Name (DE)" isRequired true textSearch { type "any" } }
+        fields+ { name "name_en" type "text" title "Name (EN)" isRequired true textSearch { type "any" } }
+
+        fields+ {
+            name "pois"
+            title "POIs"
+            type "relatedFeatureList"
+            fromColumn "id"
+            toModel "model_poi_001"
+            toColumn "category_id"
+            widget.type "featureList"
+        }
+
+        templates+ { subject "feature.title" type "html" text "{{name_de}}" }
+    }
+
+    {demo_osm_background}
+}

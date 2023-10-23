@@ -119,12 +119,24 @@ export class Server extends api.BaseServer {
             withCredentials: true
         };
 
-        if (options && options.binary) {
+        let binaryRequest = false;
+        let binaryResponse = false;
+
+        if (options) {
+            binaryRequest = !!options.binaryRequest;
+            binaryResponse = !!options.binaryResponse;
+            if (options.binary)
+                binaryRequest = binaryResponse = true;
+        }
+
+        req.headers = {}
+
+        if (binaryRequest) {
             req.data = msgpack.serialize(req.data);
-            req.headers = {
-                'content-type': MSGPACK_MIME,
-                'accept': MSGPACK_MIME
-            };
+            req.headers['content-type'] = MSGPACK_MIME
+        }
+        if (binaryResponse) {
+            req.headers['accept'] = MSGPACK_MIME;
             req.responseType = 'arraybuffer';
         }
 
@@ -135,6 +147,8 @@ export class Server extends api.BaseServer {
                 data = msgpack.deserialize(new Uint8Array(data));
             return data;
         } catch (err) {
+            if (err && err.response && err.response.data)
+                return err.response.data;
             return errorResponse(err);
         }
     }

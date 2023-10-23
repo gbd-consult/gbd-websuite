@@ -25,7 +25,7 @@ depending on the source. For example, GML feature records usually contain the la
 
 The ``FeatureProps`` object (`gws.core.types.FeatureProps`) contains data necessary to display
 a Feature in the client. When viewing Features, client only needs their ``shape`` and ``views``.
-In the edit context, ``FeatureProps`` also contains a dict of (editable) attributes.
+In the edit context, ``FeatureProps`` also contains a dict of attributes.
 
 Operation modes
 ---------------
@@ -42,7 +42,7 @@ Models are used to perform several abstract operations:
 Fields
 ------
 
-A Model usually contains a collection of ``Field`` objects (`gws.core.types.IModelRelatedField`).
+A Model usually contains a collection of ``Field`` objects (`gws.core.types.IModelField`).
 A Field deals with a subset of feature data and can convert it between representations and validate it.
 
 When a Model performs an operation, it is delegated to all its Fields in turn.
@@ -118,5 +118,5 @@ For example, the ``update`` workflow is designed like this::
 """
 
 from .core import Config, Object, Props
-from . import manager, util
+from . import manager, dynamic_model, util
 from .default_model import Object as DefaultModel

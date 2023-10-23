@@ -24,7 +24,7 @@ class Config(gws.base.model.Config):
     """language to return the results in"""
 
 
-class Object(gws.base.model.Object):
+class Object(gws.base.model.dynamic_model.Object):
     """Nominatim model."""
 
     country: str

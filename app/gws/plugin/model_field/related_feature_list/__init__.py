@@ -18,7 +18,7 @@ import gws.base.database.model
 import gws.base.model.related_field as related_field
 import gws.types as t
 
-from gws.plugin.model_field_related import related_multi_feature_list
+from gws.plugin.model_field import related_multi_feature_list
 
 gws.ext.new.modelField('relatedFeatureList')
 
@@ -45,15 +45,16 @@ class Object(related_multi_feature_list.Object):
             src=related_field.RelRef(
                 model=self.model,
                 table=self.model.table(),
-                column=self.col_or_uid(self.model, self.cfg('fromColumn')),
+                key=self.column_or_uid(self.model, self.cfg('fromColumn')),
                 uid=self.model.uid_column(),
             ),
-            to=[
+            tos=[
                 related_field.RelRef(
                     model=to_mod,
                     table=to_mod.table(),
-                    column=to_mod.column(self.cfg('toColumn')),
+                    key=to_mod.column(self.cfg('toColumn')),
                     uid=to_mod.uid_column(),
                 )
             ]
         )
+        self.rel.to = self.rel.tos[0]

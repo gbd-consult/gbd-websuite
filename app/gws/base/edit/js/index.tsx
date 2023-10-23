@@ -332,7 +332,6 @@ class SelectFeatureDialog extends gws.View<ViewProps> {
     async componentDidMount() {
         let cc = _master(this);
         let dd = this.props.editDialogData as SelectFeatureDialogData;
-        console.log(dd)
         await cc.featureCache.updateForModel(dd.model);
     }
 
@@ -400,7 +399,7 @@ class ModelsTab extends gws.View<ViewProps> {
 
     render() {
         let cc = _master(this);
-        let items = cc.models;
+        let items = cc.models.filter(m => m.isEditable);
 
         items.sort((a, b) => a.title.localeCompare(b.title));
 
@@ -857,16 +856,17 @@ class FeatureListWidgetHelper extends WidgetHelper {
         let es = cc.editState;
         let sf = es.selectedFeature;
 
-        let res = await this.app.server.editInitRelatedFeature({
-            modelUid: sf.model.uid,
-            feature: sf.getProps(),
-            fieldName: field.name,
-            relatedModelUid: model.uid,
+        let initFeature = model.featureWithAttributes({})
+        initFeature.createWithFeatures = [sf]
+
+        let res = await this.app.server.editInitFeature({
+            modelUid: model.uid,
+            feature: initFeature.getProps(1),
         });
 
         let newFeature = cc.app.modelRegistry.featureFromProps(res.feature);
         newFeature.isNew = true;
-        newFeature.whenSaved = (f) => field.addRelatedFeature(sf, f);
+        newFeature.createWithFeatures = [sf]
 
         cc.pushFeature(sf);
         cc.selectFeature(newFeature);
@@ -1150,6 +1150,7 @@ class Controller extends gws.Controller {
     widgetHelpers: { [key: string]: WidgetHelper } = {
         'geometry': new GeometryWidgetHelper(this),
         'featureList': new FeatureListWidgetHelper(this),
+        'fileList': new FeatureListWidgetHelper(this),
         'featureSelect': new FeatureSelectWidgetHelper(this),
         'featureSuggest': new FeatureSuggestWidgetHelper(this),
     }
@@ -1166,7 +1167,11 @@ class Controller extends gws.Controller {
         });
 
         this.models = [];
+
         let res = await this.app.server.editGetModels({});
+        if(res.error) {
+            return
+        }
         for (let props of res.models) {
             this.models.push(this.app.modelRegistry.addModel(props));
         }
@@ -1399,26 +1404,19 @@ class Controller extends gws.Controller {
         }
 
         let last = hist[hist.length - 1];
+        let loaded = await this.featureCache.loadOne(last);
+        if (loaded) {
+            this.updateEditState({
+                featureHistory: hist.slice(0, -1)
+            });
+            this.selectFeature(loaded);
+            return true;
+        }
+
         this.updateEditState({
-            featureHistory: hist.slice(0, -1)
+            featureHistory: [],
         });
-        this.selectFeature(last);
-        return true;
-        //
-        //
-        // let loaded = await this.featureCache.loadOne(hist[hist.length - 1]);
-        // if (loaded) {
-        //     this.updateEditState({
-        //         featureHistory: hist.slice(0, -1)
-        //     });
-        //     this.selectFeature(loaded);
-        //     return true;
-        // }
-        //
-        // this.updateEditState({
-        //     featureHistory: [],
-        // });
-        // return false;
+        return false;
     }
 
     panToFeature(feature) {
@@ -1489,7 +1487,7 @@ class Controller extends gws.Controller {
         let res = await this.app.server.editWriteFeature({
             modelUid: model.uid,
             feature: featureToWrite.getProps(1),
-        }, {binary: false});
+        }, {binaryRequest: true});
 
         if (res.error) {
             this.showDialog({
