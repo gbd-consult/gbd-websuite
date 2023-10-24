@@ -1,97 +1,83 @@
-module.exports = v => ({
+module.exports = v => {
 
-    '.uiGrid': {
-        '> .uiRow > .uiCell': {
-            minHeight: v.UNIT * 10,
+    let FIXED = {
+        position: 'sticky',
+        backgroundColor: v.COLOR.blueGrey100,
+        '.uiText': {
+            fontWeight: 600,
+        },
+    }
+
+    return {
+        '.uiTable': {
+            width: '100%',
+            height: '100%',
+            overflow: 'auto',
+
+            '> table': {
+                borderCollapse: 'collapse',
+
+                '> thead, > tfoot': {
+                    ...FIXED,
+                    'tr:nth-child(2)': {
+                        backgroundColor: v.COLOR.blueGrey50,
+                    },
+                    'td.uiTableCell': {
+                        borderTopWidth: 0,
+                        borderBottomWidth: 0,
+                    },
+                    zIndex: 2,
+                },
+
+                '> thead': {
+                    top: 0,
+                },
+
+                '> tfoot': {
+                    bottom: 0,
+                },
+
+                'td.uiTableCell': {
+                    verticalAlign: 'top',
+                    border: [1, 'solid', v.COLOR.blueGrey50],
+                    minWidth: v.UNIT * 10,
+
+                    '.uiControlBox': {
+                        borderWidth: 0,
+                    },
+                    '.uiRawInput': {
+                        minWidth: v.UNIT * 20,
+                    },
+                    '.uiText': {
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        height: v.CONTROL_SIZE,
+                        padding: v.UNIT2,
+                        width: '100%',
+                    }
+                },
+
+                'tbody > tr > td.uiTableCell': {
+                    '.uiText': {
+                        color: v.LABEL_COLOR,
+                    }
+                },
+                'txd.uiTableCell:last-child': {
+                    width: '100%'
+                },
+            }
         },
 
-        '.uiControlBox': {
-            borderWidth: 0,
+        '.uiTable.uiTableWithFixedLeftColumn td.uiTableCell:first-child': {
+            ...FIXED,
+            left: 0,
+            zIndex: 1,
         },
-
-        '.uiLabel': {
-            display: 'none',
+        '.uiTable.uiTableWithFixedRightColumn td.uiTableCell:last-child': {
+            ...FIXED,
+            right: 0,
+            zIndex: 1,
         },
-    },
-
-
-    '.uiTable': {
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-
-        '.uiGrid': {
-            position: 'relative',
-        }
-    },
-
-    '.uiTableCell': {
-        border: [1, 'solid', v.BORDER_COLOR],
-    },
-
-    '.uiTableHead': {
-        '.uiTableCell': {
-            backgroundColor: v.COLOR.blueGrey100,
-        },
-    },
-
-    '.uiTableBody .uiTableCell .uiControl.hasFocus' : {
-        backgroundColor: v.SELECTED_ITEM_BACKGROUND,
-    },
-
-    '.uiTableCell .uiControl.isDirty input' : {
-        fontWeight: 800,
-    },
-
-    '.uiTableCell .uiControl.isDirty textarea' : {
-        fontWeight: 800,
-    },
-
-    '.uiTableFixed .uiTableCell': {
-        backgroundColor: v.COLOR.blueGrey50,
-    },
-
-    '.uiTableStaticText': {
-        display: 'flex',
-        height: v.UNIT * 15,
-        alignItems: 'center',
-        paddingLeft: v.UNIT * 2,
-        paddingRight: v.UNIT * 2,
-    },
-
-    '.uiTableHead .uiTableStaticText': {
-        height: v.UNIT * 10,
-    },
-
-    '.uiTableBody .uiTableStaticText': {
-        color: v.DISABLED_COLOR,
-    },
-
-    '.uiTableReadonlyValue': {
-        color: v.DISABLED_COLOR,
-        padding: v.UNIT2,
-        height: v.UNIT * 15,
-    },
-
-    '.uiPagerFirst': {
-        ...v.ICON_BUTTON(),
-        ...v.ICON_SIZE('small'),
-        ...v.SVG('google:navigation/first_page', v.INFOBOX_BUTTON_COLOR),
-    },
-    '.uiPagerPrev': {
-        ...v.ICON_BUTTON(),
-        ...v.ICON_SIZE('small'),
-        ...v.SVG('google:navigation/chevron_left', v.INFOBOX_BUTTON_COLOR),
-    },
-    '.uiPagerNext': {
-        ...v.ICON_BUTTON(),
-        ...v.ICON_SIZE('small'),
-        ...v.SVG('google:navigation/chevron_right', v.INFOBOX_BUTTON_COLOR),
-    },
-    '.uiPagerLast': {
-        ...v.ICON_BUTTON(),
-        ...v.ICON_SIZE('small'),
-        ...v.SVG('google:navigation/last_page', v.INFOBOX_BUTTON_COLOR),
-    },
-
-});
+    }
+}
