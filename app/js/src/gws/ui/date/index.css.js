@@ -1,6 +1,7 @@
 module.exports = v => ({
 
     '.uiDateInput': {
+        minWidth: v.UNIT * 50,
 
         '.uiDropDown': {
             maxWidth: v.UNIT * 60,

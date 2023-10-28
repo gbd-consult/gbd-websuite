@@ -14,6 +14,12 @@ interface Props extends gws.types.ModelWidgetProps {
     whenDeleteButtonTouched?: (feature?: gws.types.IFeature) => void;
 }
 
+interface ListProps extends Props {
+    selectedFeature?: gws.types.IFeature;
+    whenTouched?: (feature: gws.types.IFeature) => void;
+    withZoom?: boolean;
+}
+
 // see app/gws/plugin/model_field/file/__init__.py
 export interface FileOutputProps {
     downloadUrl?: string
@@ -24,7 +30,7 @@ export interface FileOutputProps {
 }
 
 
-class View extends gws.View<Props> {
+class FormView extends gws.View<Props> {
     buttons(sf) {
         return <React.Fragment>
             {this.props.widgetProps['withNewButton'] && this.props.whenNewButtonTouched && <Cell>
@@ -112,11 +118,63 @@ class View extends gws.View<Props> {
         gws.lib.downloadUrl(u, u.split('/').pop())
     }
 
-    renderAsFeatureList() {
+    render() {
+        let sf = this.selectedFeature();
+
+        let list = this.props.widgetProps['toFileField']
+            ? <FileList
+                {...this.props}
+                selectedFeature={sf}
+                whenTouched={f => this.selectFeature(f)}
+            />
+            : <FeatureList
+                {...this.props}
+                selectedFeature={sf}
+                whenTouched={f => this.selectFeature(f)}
+                withZoom={true}
+            />
+        ;
+
+        return <div className="cmpFormList">
+            {list}
+            <gws.ui.Row className="cmpFormListToolbar">
+                {this.buttons(sf)}
+            </gws.ui.Row>
+        </div>
+    }
+}
+
+class CellView extends gws.View<Props> {
+    render() {
+
+        let field = this.props.field;
+        let features = this.props.values[field.name] || [];
+
+        if (features.length === 0)
+            return null;
+
+        let list = this.props.widgetProps['toFileField']
+            ? <FileList
+                {...this.props}
+            />
+            : <FeatureList
+                {...this.props}
+                withZoom={false}
+            />
+        ;
+
+        return <div className="cmpFormList">
+            {list}
+        </div>
+    }
+}
+
+class FeatureList extends gws.View<ListProps> {
+    render() {
         let cc = this.props.controller;
         let field = this.props.field;
         let features = this.props.values[field.name] || [];
-        let sf = this.selectedFeature();
+        let touched = this.props.whenTouched || (f => null);
 
         let zoomTo = f => cc.update({
             marker: {
@@ -126,7 +184,7 @@ class View extends gws.View<Props> {
         });
 
         let leftButton = f => {
-            if (f.geometryName)
+            if (this.props.withZoom && f.geometryName)
                 return <components.list.Button
                     className="cmpListZoomListButton"
                     whenTouched={() => zoomTo(f)}
@@ -134,35 +192,30 @@ class View extends gws.View<Props> {
             else
                 return <components.list.Button
                     className="cmpListDefaultListButton"
-                    whenTouched={() => this.selectFeature(f)}
+                    whenTouched={() => touched(f)}
                 />
         }
 
-        return <div className="cmpFormList">
-            <components.feature.List
-                controller={this.props.controller}
-                features={features}
-                content={f => <gws.ui.Link
-                    content={f.views.title}
-                    whenTouched={() => this.selectFeature(f)}
-                />}
-                isSelected={f => f === sf}
-                leftButton={leftButton}
-            />
-            <gws.ui.Row className="cmpFormListToolbar">
-                {this.buttons(sf)}
-            </gws.ui.Row>
-        </div>
+        return <components.feature.List
+            controller={this.props.controller}
+            features={features}
+            content={f => <gws.ui.Link
+                content={f.views.title}
+                whenTouched={() => touched(f)}
+            />}
+            isSelected={f => f === this.props.selectedFeature}
+            leftButton={leftButton}
+        />
 
     }
+}
 
-    renderAsFileList() {
-        let cc = this.props.controller;
+class FileList extends gws.View<ListProps> {
+    render() {
         let field = this.props.field;
         let features = this.props.values[field.name] || [];
-        let sf = this.selectedFeature();
-
         let items: Array<components.file.FileItem> = [];
+        let touched = this.props.whenTouched || (f => null);
 
         for (let f of features) {
             let fp = f.getAttribute(this.props.widgetProps['toFileField']) as FileOutputProps;
@@ -174,31 +227,28 @@ class View extends gws.View<Props> {
             })
         }
 
-        return <div className="cmpFormList">
-            <components.file.FileList
-                controller={this.props.controller}
-                items={items}
-                isSelected={item => item.feature === sf}
-                whenTouched={item => this.selectFeature(item.feature)}
-            />
-            <gws.ui.Row className="cmpFormListToolbar">
-                {this.buttons(sf)}
-            </gws.ui.Row>
-        </div>
+        return <components.file.FileList
+            controller={this.props.controller}
+            items={items}
+            isSelected={item => item.feature === this.props.selectedFeature}
+            whenTouched={item => touched(item.feature)}
+        />
+
     }
-
-    render() {
-        if (this.props.widgetProps['toFileField'])
-            return this.renderAsFileList()
-        return this.renderAsFeatureList();
-    }
-
-
 }
 
 class Controller extends gws.Controller {
-    view(props) {
-        return this.createElement(View, props)
+    cellView(props) {
+        return this.createElement(CellView, props)
+    }
+
+    activeCellView(props) {
+        // feature lists no editable in a table
+        return this.createElement(CellView, props)
+    }
+
+    formView(props) {
+        return this.createElement(FormView, props)
     }
 }
 

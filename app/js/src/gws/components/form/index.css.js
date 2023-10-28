@@ -83,6 +83,10 @@ module.exports = v => ({
 
     },
 
+    '.uiTableCell .cmpFormList': {
+        borderWidth: 0,
+    },
+
     '.cmpFormDrawGeometryButton': {
         border: [1, 'solid', v.BORDER_COLOR],
         ...v.ICON_SIZE('medium'),

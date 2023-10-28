@@ -26,6 +26,7 @@ export class ModelRegistry implements types.IModelRegistry {
             geometryName: 'geometry',
             uidName: 'uid',
             loadingStrategy: api.core.FeatureLoadingStrategy.all,
+            tableViewFields: [],
             title: '',
             uid: '',
         });
@@ -90,6 +91,8 @@ export class Model implements types.IModel {
     uidName: string;
     layerUid: string;
     loadingStrategy: api.core.FeatureLoadingStrategy;
+    tableViewFields: Array<types.IModelField>;
+    hasTableView: boolean;
     title: string;
     uid: string;
 
@@ -115,6 +118,8 @@ export class Model implements types.IModel {
         this.layerUid = props.layerUid;
         this.loadingStrategy = props.loadingStrategy;
         this.title = props.title;
+        this.tableViewFields = [];
+        this.hasTableView =  false;
         this.uid = props.uid;
 
         this.fields = [];
@@ -122,6 +127,18 @@ export class Model implements types.IModel {
         if (props.fields)
             for (let p of props.fields)
                 this.fields.push(new ModelField(this).setProps(p));
+
+        if (props.tableViewFields) {
+            this.tableViewFields = []
+            for (let name of props.tableViewFields)
+                for (let f of this.fields)
+                    if (f.name === name)
+                        this.tableViewFields.push(f)
+
+
+        }
+        this.hasTableView = this.tableViewFields.length > 0
+
 
         return this;
     }

@@ -21,8 +21,12 @@ class Config(gws.ConfigWithAccess):
     """this model is editable"""
     withAutoFields: bool = False
     """autoload non-configured model fields from the source"""
-    excludeFields: t.Optional[list[str]]
-    """exclude field names from autoload"""
+    excludeColumns: t.Optional[list[str]]
+    """exclude columns names from autoload"""
+    withTableView: bool = True
+    """enable table view for this model"""
+    tableViewFields: t.Optional[list[str]]
+    """list of fields to include in the table view"""
     templates: t.Optional[list[gws.ext.config.template]]
     """feature templates"""
 
@@ -41,6 +45,7 @@ class Props(gws.Props):
     loadingStrategy: gws.FeatureLoadingStrategy
     supportsGeometrySearch: bool
     supportsKeywordSearch: bool
+    tableViewFields: list[str]
     title: str
     uid: str
     uidName: t.Optional[str]
@@ -75,7 +80,7 @@ class Object(gws.Node, gws.IModel):
         if not desc:
             return False
 
-        exclude = set(self.cfg('excludeFields', default=[]))
+        exclude = set(self.cfg('excludeColumns', default=[]))
         exclude.update(fld.name for fld in self.fields)
 
         for col in desc.columns:
@@ -124,6 +129,17 @@ class Object(gws.Node, gws.IModel):
 
     def props(self, user):
         layer = t.cast(gws.ILayer, self.closest(gws.ext.object.layer))
+
+        tab_names = []
+        p = self.cfg('withTableView', default=True)
+        if p:
+            fields = self.fields
+            p = self.cfg('tableViewFields')
+            if p:
+                fmap = {fld.name: fld for fld in self.fields}
+                fields = [fmap.get(name) for name in p if name in fmap]
+            tab_names = [fld.name for fld in fields if user.can_read(fld)]
+
         return gws.Props(
             canCreate=user.can_create(self),
             canDelete=user.can_delete(self),
@@ -138,6 +154,7 @@ class Object(gws.Node, gws.IModel):
             loadingStrategy=self.loadingStrategy or (layer.loadingStrategy if layer else gws.FeatureLoadingStrategy.all),
             supportsGeometrySearch=any(fld.supportsGeometrySearch for fld in self.fields),
             supportsKeywordSearch=any(fld.supportsKeywordSearch for fld in self.fields),
+            tableViewFields=tab_names,
             title=self.title or (layer.title if layer else ''),
             uid=self.uid,
             uidName=self.uidName,

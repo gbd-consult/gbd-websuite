@@ -27,6 +27,8 @@ class Object(field.Object, gws.IModelField):
         self.store_to_record(feature, mc)
 
     def before_update(self, feature, mc):
+        if self.isAuto:
+            return
         self.store_to_record(feature, mc)
 
     ##

@@ -57,8 +57,12 @@ module.exports = v => {
         },
 
 
-        '.editorModelListButton': {
-            ...v.LIST_BUTTON('google:image/edit')
+        '.editModelButton': {
+            ...v.LIST_BUTTON(__dirname + '/database_FILL1_wght400_GRAD0_opsz24')
+        },
+
+        '.editTableViewButton': {
+            ...v.LIST_BUTTON(__dirname + '/table_FILL1_wght400_GRAD0_opsz24')
         },
 
         '.editModifyAuxButton': {
@@ -70,6 +74,10 @@ module.exports = v => {
         },
         '.editSaveButton': {
             ...v.ROUND_OK_BUTTON(),
+            opacity: 0.3,
+            '&.isActive': {
+                opacity: 1,
+            }
         },
         '.editCancelButton': {
             ...v.ROUND_CLOSE_BUTTON(),
@@ -82,7 +90,18 @@ module.exports = v => {
             }
         },
         '.editDeleteButton': {
-            ...v.ROUND_FORM_BUTTON('google:action/delete')
+            ...v.ROUND_FORM_BUTTON('google:action/delete'),
+            backgroundColor: v.COLOR.pink200,
+
+        },
+        '.editOpenFormButton': {
+            ...v.ROUND_FORM_BUTTON(__dirname + '/subject_FILL1_wght400_GRAD0_opsz24'),
+
+        },
+
+        '.editNewButton': {
+            ...v.ROUND_FORM_BUTTON('google:content/add_circle_outline'),
+
         },
 
         '.editStyleButton': {
@@ -90,8 +109,12 @@ module.exports = v => {
         },
 
 
-        '.editModelsAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON('google:maps/layers')
+        '.editModelListAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/database_FILL1_wght400_GRAD0_opsz24')
+        },
+
+        '.editTableViewAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/table_FILL1_wght400_GRAD0_opsz24')
         },
 
         '.editCloseFeatureAuxButton': {
@@ -101,12 +124,29 @@ module.exports = v => {
         '.editDrawAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON(__dirname + '/draw_black_24dp')
         },
-        '.editAddAuxButton': {
+        '.editNewAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline')
         },
         '.editRemoveAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/delete')
         },
+
+
+        '.editTableError': {
+            fontSize: v.TINY_FONT_SIZE,
+            color: v.ERROR_COLOR,
+            opacity: 0,
+            padding: 0,
+            ...v.TRANSITION('opacity'),
+
+            '&.isActive': {
+                opacity: 1,
+                padding: [v.UNIT, v.UNIT2],
+                ...v.TRANSITION('opacity'),
+            }
+
+        },
+
 
         // dialogs
 
@@ -118,6 +158,17 @@ module.exports = v => {
                 border: 0
             },
         },
+
+        '.uiDialog.editTableViewDialog': {
+            [v.MEDIA('large+')]: {
+                left: '5%',
+                top: '5%',
+                width: '90%',
+                height: '90%',
+                margin: 0,
+            },
+        },
+
 
 
         // geometry styles

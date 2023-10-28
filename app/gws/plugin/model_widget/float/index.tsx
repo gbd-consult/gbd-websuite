@@ -7,10 +7,11 @@ interface Props extends gws.types.ModelWidgetProps {
     widgetProps: gws.api.plugin.model_widget.integer.Props
 }
 
-class View extends gws.View<Props> {
+class FormView extends gws.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name];
+
         return <gws.ui.NumberInput
             step={this.props.widgetProps.step || 1}
             disabled={this.props.widgetProps.readOnly}
@@ -22,9 +23,28 @@ class View extends gws.View<Props> {
     }
 }
 
+class CellView extends gws.View<Props> {
+    render() {
+        let field = this.props.field;
+        let value = this.props.values[field.name];
+
+        let v = gws.lib.isEmpty(value) ? '' : gws.ui.util.formatNumber(Number(value), this.app.locale)
+        return <gws.ui.TableCell align="right" content={v}/>
+    }
+
+}
+
 class Controller extends gws.Controller {
-    view(props) {
-        return this.createElement(View, props)
+    cellView(props) {
+        return this.createElement(CellView, props)
+    }
+
+    activeCellView(props) {
+        return this.createElement(FormView, props)
+    }
+
+    formView(props) {
+        return this.createElement(FormView, props)
     }
 }
 

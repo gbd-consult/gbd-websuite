@@ -386,6 +386,7 @@ export interface IFeature {
     getProps(depth?: number): api.core.FeatureProps;
     getMinimalProps(): api.core.FeatureProps;
     getAttribute(name: string, defaultValue?): any;
+    getAttributeWithEdit(name: string, defaultValue?): any;
 
     editAttribute(name: string, newValue);
     currentAttributes(): Dict;
@@ -466,6 +467,8 @@ export interface IModel {
     loadingStrategy: api.core.FeatureLoadingStrategy;
     title: string;
     uid: string;
+    tableViewFields: Array<IModelField>;
+    hasTableView: boolean;
 
     registry: ModelRegistry;
 
@@ -497,10 +500,18 @@ export interface IModelField {
 }
 
 export interface IModelWidget extends IController {
-    view(props: Dict): React.ReactElement;
+    formView(props: Dict): React.ReactElement;
+    cellView(values: Dict): string;
+}
+
+export enum ModelWidgetMode {
+    form = 'form',
+    cell = 'cell',
+    activeCell = 'activeCell',
 }
 
 export interface ModelWidgetProps {
+    mode: ModelWidgetMode;
     controller: IModelWidget;
     feature: IFeature;
     field: IModelField;

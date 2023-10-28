@@ -1173,7 +1173,7 @@ class Controller extends gws.Controller {
             whenChanged: val => this.whenWidgetChanged(field, val),
             whenEntered: val => this.whenWidgetEntered(field, val),
         }
-        return controller.view(props)
+        return controller.formView(props)
     }
 
     whenWidgetChanged(field: gws.types.IModelField, value) {

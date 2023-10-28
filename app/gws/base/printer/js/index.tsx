@@ -472,7 +472,7 @@ class Controller extends gws.Controller {
         }
 
 
-        return controller.view(props)
+        return controller.formView(props)
     }
 
     whenWidgetChanged(field: gws.types.IModelField, value) {

@@ -8,7 +8,7 @@ interface Props extends gws.types.ModelWidgetProps {
     whenSearchChanged: (val: string) => void;
 }
 
-class View extends gws.View<Props> {
+class FormView extends gws.View<Props> {
     render() {
         let field = this.props.field;
         let feature = this.props.values[field.name];
@@ -31,10 +31,32 @@ class View extends gws.View<Props> {
         />;
     }
 }
+class CellView extends gws.View<Props> {
+    render() {
+        let field = this.props.field;
+        let feature = this.props.values[field.name];
+        let text = ''
+
+        for (let f of this.props.features) {
+            if (feature && feature.uid === f.uid)
+                text = f.views.title
+        }
+
+        return <gws.ui.TableCell content={text}/>;
+    }
+}
 
 class Controller extends gws.Controller {
-    view(props) {
-        return this.createElement(View, props)
+    cellView(props) {
+        return this.createElement(CellView, props)
+    }
+
+    activeCellView(props) {
+        return this.createElement(FormView, props)
+    }
+
+    formView(props) {
+        return this.createElement(FormView, props)
     }
 }
 

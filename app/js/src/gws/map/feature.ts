@@ -145,6 +145,14 @@ export class Feature implements types.IFeature {
         return defaultValue;
     }
 
+    getAttributeWithEdit(name, defaultValue = null) {
+        if (name in this._editedAttributes)
+            return this._editedAttributes[name];
+        if (name in this.attributes)
+            return this.attributes[name];
+        return defaultValue;
+    }
+
     //
 
     editAttribute(name: string, newValue) {

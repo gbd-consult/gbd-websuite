@@ -1,20 +1,6 @@
-@comment
-This layer has a data model with a subset of the source columns
-and custom widgets.
-
-With model templates one can customize feature lists (`feature.title`)
-and labels (`feature.label`).
-
-The `textSearch` option makes the feature list searchable.
-
-For this layer, the extent is defined explicitly
-to allow creating features outside of the computed extent.
-
-@end
-
 projects+ {
-    title "Edit: custom model"
-    metadata.abstract "Edit features using a custom model."
+    title "Edit: table view"
+    metadata.abstract "Custom table view for a model."
 
     api.actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }
@@ -40,6 +26,9 @@ projects+ {
             sort+ { fieldName "name" }
             isEditable true
             permissions.edit "allow all"
+
+            withTableView true
+            tableViewFields ["name", "updated", "code"]
 
             fields+ {
                 name "id"

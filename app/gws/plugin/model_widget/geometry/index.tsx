@@ -7,7 +7,7 @@ interface Props extends gws.types.ModelWidgetProps {
     whenEditButtonTouched?: () => void;
 }
 
-class View extends gws.View<Props> {
+class FormView extends gws.View<Props> {
     render() {
         let cc = this.props.controller;
         let field = this.props.field;
@@ -36,10 +36,17 @@ class View extends gws.View<Props> {
 
 
 class Controller extends gws.Controller {
-    view(props) {
-        return this.createElement(View, props)
+    cellView(props) {
+    }
+
+    activeCellView(props) {
+    }
+
+    formView(props) {
+        return this.createElement(FormView, props)
     }
 }
+
 
 
 gws.registerTags({

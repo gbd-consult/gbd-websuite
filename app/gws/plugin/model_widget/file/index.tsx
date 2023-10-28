@@ -19,7 +19,7 @@ export interface FileOutputProps {
 }
 
 
-class View extends gws.View<gws.types.ModelWidgetProps> {
+class FormView extends gws.View<gws.types.ModelWidgetProps> {
     download(fp: FileOutputProps) {
         let u = fp.downloadUrl || '';
         gws.lib.downloadUrl(u, u.split('/').pop())
@@ -64,9 +64,37 @@ class View extends gws.View<gws.types.ModelWidgetProps> {
     }
 }
 
+class CellView extends gws.View<gws.types.ModelWidgetProps> {
+    render() {
+        let field = this.props.field;
+        let cc = this.props.controller;
+        let value = this.props.values[field.name];
+        let fp = this.props.feature.getAttribute(field.name) as FileOutputProps;
+
+        return <div className="cmpFormList">
+            {fp && <components.file.File
+                controller={cc}
+                item={{
+                    label: fp.label,
+                    extension: fp.extension,
+                    previewUrl: fp.previewUrl,
+                }}
+            />}
+        </div>
+    }
+}
+
 class Controller extends gws.Controller {
-    view(props) {
-        return this.createElement(View, props)
+    cellView(props) {
+        return this.createElement(CellView, props)
+    }
+
+    activeCellView(props) {
+        return this.createElement(FormView, props)
+    }
+
+    formView(props) {
+        return this.createElement(FormView, props)
     }
 }
 

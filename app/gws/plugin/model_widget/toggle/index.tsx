@@ -7,7 +7,7 @@ interface Props extends gws.types.ModelWidgetProps {
 }
 
 
-class View extends gws.View<Props> {
+class FormView extends gws.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name];
@@ -20,11 +20,35 @@ class View extends gws.View<Props> {
     }
 }
 
-class Controller extends gws.Controller {
-    view(props) {
-        return this.createElement(View, props)
+class CellView extends gws.View<Props> {
+    render() {
+        let field = this.props.field;
+        let value = this.props.values[field.name];
+
+        if (value) {
+            return <gws.ui.TableCell content="✔" />
+        }
+
+        return null
     }
 }
+
+class Controller extends gws.Controller {
+    cellView(props) {
+        return this.createElement(CellView, props)
+    }
+
+    activeCellView(props) {
+        return this.createElement(FormView, props)
+    }
+
+    formView(props) {
+        return this.createElement(FormView, props)
+    }
+}
+
+
+
 
 
 gws.registerTags({

@@ -100,6 +100,8 @@ create table edit.poi
     name        text not null,
     updated     date  default null,
     code        int   default null,
+    idata       int   default null,
+    fdata       float   default null,
     active      boolean,
     description text  default null,
     geom        geometry(Point, 3857),
@@ -112,6 +114,8 @@ create table edit.poi_small
     name        text not null,
     updated     date  default null,
     code        int   default null,
+    idata       int   default null,
+    fdata       float   default null,
     active      boolean,
     description text  default null,
     geom        geometry(Point, 3857),
@@ -2944,13 +2948,44 @@ values
 ;
 
 
+update edit.poi
+set updated=current_date - id,
+    code=(id % 4) * 100,
+    idata=id * 997,
+    fdata=id * 3.1456,
+    active=(id % 7 = 0)
+;
 
+-- https://pangrampangram.com/blogs/journal/best-pangrams-a-tool-for-every-graphic-designers
+
+update edit.poi set description='Two driven jocks help fax my big quiz.' where id % 20 = 0;
+update edit.poi set description='Fickle jinx bog dwarves spy math quiz.' where id % 20 = 1;
+update edit.poi set description='Public junk dwarves hug my quartz fox.' where id % 20 = 2;
+update edit.poi set description='Quick fox jumps nightly above wizard.' where id % 20 = 3;
+update edit.poi set description='Five quacking zephyrs jolt my wax bed.' where id % 20 = 4;
+update edit.poi set description='The five boxing wizards jump quickly.' where id % 20 = 5;
+update edit.poi set description='Pack my box with five dozen liquor jugs.' where id % 20 = 6;
+update edit.poi set description='The quick brown fox jumps over the lazy dog.' where id % 20 = 7;
+update edit.poi set description='When zombies arrive, quickly fax judge Pat.' where id % 20 = 8;
+update edit.poi set description='Woven silk pyjamas exchanged for blue quartz.' where id % 20 = 9;
+update edit.poi set description='The quick onyx goblin jumps over the lazy dwarf.' where id % 20 = 10;
+update edit.poi set description='Foxy diva Jennifer Lopez wasn’t baking my quiche.' where id % 20 = 11;
+update edit.poi set description='My girl wove six dozen plaid jackets before she quit.' where id % 20 = 12;
+update edit.poi set description='Grumpy wizards make a toxic brew for the jovial queen.' where id % 20 = 13;
+update edit.poi set description='A quivering Texas zombie fought republic linked jewelry.' where id % 20 = 14;
+update edit.poi set description='All questions asked by five watched experts amaze the judge.' where id % 20 = 15;
+update edit.poi set description='Back in June we delivered oxygen equipment of the same size.' where id % 20 = 16;
+update edit.poi set description='The wizard quickly jinxed the gnomes before they vaporized.' where id % 20 = 17;
+update edit.poi set description='We promptly judged antique ivory buckles for the next prize.' where id % 20 = 18;
+update edit.poi set description='Jim quickly realized that the beautiful gowns are expensive.' where id % 20 = 19;
 
 
 insert into edit.poi_small
 (name,
  updated,
  code,
+ idata,
+ fdata,
  active,
  description,
  geom,
@@ -2958,6 +2993,8 @@ insert into edit.poi_small
 select name,
        updated,
        code,
+       idata,
+       fdata,
        active,
        description,
        geom,
