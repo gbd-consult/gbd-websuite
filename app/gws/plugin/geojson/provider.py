@@ -17,18 +17,18 @@ class Config(gws.Config):
 class Object(gws.Node):
     path: str
 
-    _featureData = None
+    _records = None
 
     def configure(self):
         self.path = self.cfg('path')
 
     def post_configure(self):
-        self._featureData = None
+        self._records = None
 
-    def feature_data(self) -> list[gws.FeatureRecord]:
-        if self._featureData is None:
-            self._featureData = self._load()
-        return self._featureData
+    def get_records(self) -> list[gws.FeatureRecord]:
+        if self._records is None:
+            self._records = self._load()
+        return self._records
 
     def _load(self):
         js = gws.lib.jsonx.from_path(self.path)
@@ -38,15 +38,17 @@ class Object(gws.Node):
             # https://geojson.org/geojson-spec#named-crs
             crs = gws.gis.crs.get(js['crs']['properties']['name'])
 
-        fds = []
+        records = []
 
-        for f in js.get('features', []):
-            fd = gws.FeatureRecord(attributes=f.get('properties', {}))
+        for n, f in enumerate(js.get('features', []), 1):
+            p = f.get('properties', {})
+            rec = gws.FeatureRecord(attributes=p)
             if f.get('geometry'):
-                fd.shape = gws.base.shape.from_geojson(f['geometry'], crs)
-            fds.append(fd)
+                rec.shape = gws.base.shape.from_geojson(f['geometry'], crs)
+            rec.uid = p.get('id') or p.get('uid') or p.get('fid') or p.get('sid') or n
+            records.append(rec)
 
-        return fds
+        return records
 
 
 ##

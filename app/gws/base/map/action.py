@@ -239,22 +239,10 @@ class Object(gws.base.action.Object):
             limit=_GET_FEATURES_LIMIT
         )
 
-        model = self.root.app.modelMgr.locate_model(layer, user=req.user, access=gws.Access.read)
-        if not model:
-            return []
-
-        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
-        features = model.find_features(search, mc)
+        features = layer.get_features_for_view(search, req.user)
         if not features:
             return []
 
-        if search.bounds:
-            for feature in features:
-                feature.transform_to(search.bounds.crs)
-
-        tpl = self.root.app.templateMgr.locate_template(layer, project, user=req.user, subject=f'feature.label')
-        if tpl:
-            for feature in features:
-                feature.render_views([tpl], project=project, layer=layer)
-
+        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
+        model = features[0].model
         return [model.feature_to_view_props(f, mc) for f in features]

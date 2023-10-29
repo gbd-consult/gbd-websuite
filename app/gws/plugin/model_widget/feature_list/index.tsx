@@ -20,16 +20,6 @@ interface ListProps extends Props {
     withZoom?: boolean;
 }
 
-// see app/gws/plugin/model_field/file/__init__.py
-export interface FileOutputProps {
-    downloadUrl?: string
-    extension?: string
-    label?: string
-    previewUrl?: string
-    size?: number
-}
-
-
 class FormView extends gws.View<Props> {
     buttons(sf) {
         return <React.Fragment>
@@ -113,7 +103,7 @@ class FormView extends gws.View<Props> {
     }
 
     download(feature: gws.types.IFeature) {
-        let fp = feature.getAttribute(this.props.widgetProps['toFileField']) as FileOutputProps;
+        let fp = feature.getAttribute(this.props.widgetProps['toFileField']) as gws.types.ServerFileProps;
         let u = fp.downloadUrl || '';
         gws.lib.downloadUrl(u, u.split('/').pop())
     }
@@ -218,7 +208,7 @@ class FileList extends gws.View<ListProps> {
         let touched = this.props.whenTouched || (f => null);
 
         for (let f of features) {
-            let fp = f.getAttribute(this.props.widgetProps['toFileField']) as FileOutputProps;
+            let fp = f.getAttribute(this.props.widgetProps['toFileField']) as gws.types.ServerFileProps;
             items.push({
                 feature: f,
                 label: f.views.title,

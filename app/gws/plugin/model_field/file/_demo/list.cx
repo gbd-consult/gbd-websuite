@@ -1,5 +1,5 @@
 projects+ {
-    title "Edit: related files"
+    title "Edit: file list"
     metadata.abstract "Editing files from a related model."
 
     api.actions+ { type "edit" }
@@ -17,26 +17,26 @@ projects+ {
         type "postgres"
         uid "model_file_010"
         tableName "edit.document"
-        sort+ { fieldName "name" }
-        title "Files"
+        sort+ { fieldName "title" }
+        title "Documents"
         isEditable true
         permissions.edit "allow all"
 
         fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "name" type "text" title "Name" isRequired false textSearch { type "any" } }
+        fields+ { name "title" type "text" title "Title" isRequired true textSearch { type "any" } }
 
         fields+ {
-            name "file"
+            name "documentFile"
             title "File"
             type "file"
             contentColumn "content"
-            nameColumn "name"
+            nameColumn "filename"
         }
 
         templates+ {
             subject "feature.title"
             type "html"
-            text "{{@if feature.isNew}} Unbenannt {{@else}} {{name}} {{@end}}"
+            text "{{@if feature.isNew}} New {{@else}} {{title}} {{@end}}"
         }
     }
 
@@ -54,14 +54,14 @@ projects+ {
 
         fields+ {
             name "docs"
-            title "Files"
+            title "Related documents"
             type "relatedFeatureList"
             fromColumn "id"
             toModel "model_file_010"
             toColumn "poi_id"
             widget {
                 type "fileList"
-                toFileField "file"
+                toFileField "documentFile"
                 withNewButton true
                 withLinkButton true
                 withEditButton true

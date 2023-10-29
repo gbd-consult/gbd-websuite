@@ -16,12 +16,7 @@ class Object(gws.base.model.dynamic_model.Object):
     sourceLayers: list[gws.SourceLayer]
 
     def configure(self):
-        self.configure_provider()
-        self.configure_sources()
-        self.configure_fields()
-        self.configure_uid()
-        self.configure_geometry()
-        self.configure_templates()
+        self.configure_model()
 
     def configure_provider(self):
         pass

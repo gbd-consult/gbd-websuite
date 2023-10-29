@@ -24,12 +24,7 @@ class Object(gws.base.model.dynamic_model.Object):
     def configure(self):
         self.uidName = 'id'
         self.geometryName = 'geometry'
-
-        self.configure_provider()
-        self.configure_fields()
-        self.configure_uid()
-        self.configure_geometry()
-        self.configure_templates()
+        self.configure_model()
 
     def configure_provider(self):
         self.provider = provider.get_for(self)
@@ -37,7 +32,7 @@ class Object(gws.base.model.dynamic_model.Object):
     ##
 
     def find_features(self, search, user, **kwargs):
-        fs = []
-        for fd in self.provider.feature_data():
-            fs.append(self.feature_from_record(fd, user))
-        return fs
+        return [
+            self.feature_from_record(rec, user)
+            for rec in self.provider.get_records()
+        ]

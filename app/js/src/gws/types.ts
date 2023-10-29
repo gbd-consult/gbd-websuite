@@ -521,3 +521,17 @@ export interface ModelWidgetProps {
     whenEntered?: (value: any) => void;
 }
 
+// see app/gws/plugin/model_field/file/__init__.py
+// @TODO this belongs to the api
+
+export interface ServerFileProps {
+    downloadUrl?: string
+    extension?: string
+    label?: string
+    previewUrl?: string
+    size?: number
+}
+export interface ClientFileProps {
+    name: string
+    content: Uint8Array
+}

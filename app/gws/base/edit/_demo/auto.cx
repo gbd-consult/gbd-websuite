@@ -1,6 +1,6 @@
 projects+ {
-    title "Edit: automatic"
-    metadata.abstract "Edit features from postgres tables."
+    title "Edit: automatic form"
+    metadata.abstract "Edit features from postgres tables, minimal configuration"
 
     api.actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }

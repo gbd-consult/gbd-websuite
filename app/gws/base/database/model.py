@@ -23,8 +23,6 @@ class Config(gws.base.model.Config):
     """table name for the model"""
     filter: t.Optional[str]
     """extra SQL filter"""
-    sort: t.Optional[list[gws.SortOptions]]
-    """default sorting"""
 
 
 class Object(gws.base.model.Object, gws.IDatabaseModel):
@@ -33,13 +31,7 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
     def configure(self):
         self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
         self.sqlFilter = self.cfg('filter')
-        self.defaultSort = [gws.SearchSort(c) for c in self.cfg('sort', default=[])]
-
-        self.configure_provider()
-        self.configure_fields()
-        self.configure_uid()
-        self.configure_geometry()
-        self.configure_templates()
+        self.configure_model()
 
     def configure_provider(self):
         self.provider = t.cast(gws.IDatabaseProvider, provider.get_for(self, ext_type=self.extType))
@@ -93,27 +85,28 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         )
 
         with self._context_connection(mc):
+            for fld in self.fields:
+                fld.before_select(mc)
+
             sql = self._make_select(mc)
             if sql is None:
                 gws.log.debug('empty select')
                 return []
 
-            return self.fetch_features(sql, mc)
+            features = []
 
-    def fetch_features(self, sql, mc):
-        features = []
-
-        with self._context_connection(mc):
             for row in self.execute(sql, mc):
-                features.append(gws.base.feature.with_model(self, record=gws.FeatureRecord(attributes=row._asdict())))
+                features.append(gws.base.feature.with_model(
+                    self,
+                    record=gws.FeatureRecord(attributes=row._asdict())
+                ))
+
             for fld in self.fields:
                 fld.after_select(features, mc)
 
         return features
 
     def _make_select(self, mc: gws.ModelContext) -> t.Optional[sa.Select]:
-        for f in self.fields:
-            f.before_select(mc)
 
         # @TODO this should happen on the field level
         sorts = mc.search.sort or self.defaultSort or []
@@ -219,6 +212,9 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         with self._context_connection(mc):
             for fld in self.fields:
                 fld.before_update(feature, mc)
+
+            if not feature.record.attributes:
+                return feature.uid()
 
             sql = self.table().update().where(
                 self.uid_column().__eq__(feature.uid())

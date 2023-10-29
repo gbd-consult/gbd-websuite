@@ -17,15 +17,23 @@ projects+ {
         center {demo_point_duesseldorf_3857}
         zoom.initScale 4000
         zoom.maxScale  1000000
+        zoom.minScale  100
     }
 
     map.layers+ {
         title "POIs"
         type "postgres"
-        tableName "edit.poi_small"
-        permissions.edit 'allow all'
+        tableName "edit.poi"
         loadingStrategy "bbox"
         cssSelector ".custom_poi"
+
+        models+ {
+            type "postgres"
+            isEditable true
+            permissions.edit 'allow all'
+            sort+ { fieldName "name" }
+
+        }
 
         templates+ {
             subject "feature.label"

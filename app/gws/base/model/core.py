@@ -29,6 +29,8 @@ class Config(gws.ConfigWithAccess):
     """list of fields to include in the table view"""
     templates: t.Optional[list[gws.ext.config.template]]
     """feature templates"""
+    sort: t.Optional[list[gws.SortOptions]]
+    """default sorting"""
 
 
 class Props(gws.Props):
@@ -61,6 +63,23 @@ class Object(gws.Node, gws.IModel):
         self.uidName = ''
         self.loadingStrategy = self.cfg('loadingStrategy')
         self.title = self.cfg('title')
+
+    def configure_model(self):
+        """Model configuration protocol."""
+
+        self.configure_provider()
+        self.configure_sources()
+        self.configure_fields()
+        self.configure_uid()
+        self.configure_geometry()
+        self.configure_sort()
+        self.configure_templates()
+
+    def configure_provider(self):
+        return False
+
+    def configure_sources(self):
+        return False
 
     def configure_fields(self):
         has_conf = False
@@ -106,6 +125,8 @@ class Object(gws.Node, gws.IModel):
         return True
 
     def configure_uid(self):
+        if self.uidName:
+            return True
         uids = []
         for fld in self.fields:
             if fld.isPrimaryKey:
@@ -121,6 +142,17 @@ class Object(gws.Node, gws.IModel):
                 self.geometryType = getattr(fld, 'geometryType')
                 self.geometryCrs = getattr(fld, 'geometryCrs')
                 return True
+
+    def configure_sort(self):
+        p = self.cfg('sort')
+        if p:
+            self.defaultSort = [gws.SearchSort(c) for c in p]
+            return True
+        if self.uidName:
+            self.defaultSort = [gws.SearchSort(fieldName=self.uidName, reversed=False)]
+            return False
+        self.defaultSort = []
+        return False
 
     def configure_templates(self):
         return gws.config.util.configure_templates(self)

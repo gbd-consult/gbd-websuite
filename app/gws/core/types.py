@@ -649,6 +649,7 @@ class AttributeType(Enum):
     datetime = 'datetime'
     feature = 'feature'
     featurelist = 'featurelist'
+    file = 'file'
     float = 'float'
     floatlist = 'floatlist'
     geometry = 'geometry'
@@ -1395,8 +1396,6 @@ class IDatabaseModel(IModel, Protocol):
     sqlFilter: str
     tableName: str
 
-    def fetch_features(self, sql: 'sqlalchemy.Select', mc: ModelContext) -> list['IFeature']: ...
-
     def table(self) -> 'sqlalchemy.Table': ...
 
     def column(self, column_name: str) -> 'sqlalchemy.Column': ...
@@ -2003,7 +2002,7 @@ class ILayer(INode, Protocol):
 
     def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...
 
-    def get_features(self, search: SearchQuery, user: 'IUser', views: Optional[list[str]] = None, model_uid: Optional[str] = None) -> list['IFeature']: ...
+    def get_features_for_view(self, search: SearchQuery, user: 'IUser', view_names: Optional[list[str]] = None) -> list['IFeature']: ...
 
     def render_legend(self, args: Optional[dict] = None) -> Optional['LegendRenderOutput']: ...
 

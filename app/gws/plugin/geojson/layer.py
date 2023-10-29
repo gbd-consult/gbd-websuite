@@ -27,10 +27,10 @@ class Object(gws.base.layer.vector.Object):
 
     def configure(self):
         self.configure_layer()
-        for fd in self.provider.feature_data():
-            if fd.shape:
-                self.geometryType = fd.shape.type
-                self.geometryCrs = fd.shape.crs
+        for rec in self.provider.get_records():
+            if rec.shape:
+                self.geometryType = rec.shape.type
+                self.geometryCrs = rec.shape.crs
                 break
 
     def configure_provider(self):
@@ -40,9 +40,9 @@ class Object(gws.base.layer.vector.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        fds = self.provider.feature_data()
-        if fds:
-            bs = [fd.shape.bounds() for fd in fds if fd.shape]
+        recs = self.provider.get_records()
+        if recs:
+            bs = [rec.shape.bounds() for rec in recs if rec.shape]
             if bs:
                 self.bounds = gws.gis.bounds.transform(gws.gis.bounds.union(bs), self.mapCrs)
                 return True

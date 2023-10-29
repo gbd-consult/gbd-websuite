@@ -1,4 +1,5 @@
 """Base layer object."""
+from typing import Optional
 
 import gws
 import gws.base.legend
@@ -389,7 +390,7 @@ class Object(gws.Node, gws.ILayer):
     def render(self, lri):
         pass
 
-    def get_features(self, search, user, views=None, model_uid=None):
+    def get_features_for_view(self, search, user, view_names= None):
         return []
 
     def render_legend(self, args=None) -> t.Optional[gws.LegendRenderOutput]:

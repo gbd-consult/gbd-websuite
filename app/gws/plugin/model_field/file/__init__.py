@@ -32,12 +32,17 @@ class FileInputProps(gws.Data):
     name: str
 
 
-class FileOutputProps(gws.Data):
+class ServerFileProps(gws.Data):
     downloadUrl: str
     extension: str
     label: str
     previewUrl: str
     size: int
+
+
+class ClientFileProps(gws.Data):
+    name: str
+    content: bytes
 
 
 class FileValue(gws.Data):
@@ -48,7 +53,7 @@ class FileValue(gws.Data):
 
 
 class Object(gws.base.model.field.Object):
-    attributeType = gws.AttributeType.str
+    attributeType = gws.AttributeType.file
     cols: Cols
 
     def __getstate__(self):
@@ -142,13 +147,13 @@ class Object(gws.base.model.field.Object):
         except ValueError:
             return gws.ErrorValue
 
-    def python_to_prop(self, feature, value, mc) -> FileOutputProps:
+    def python_to_prop(self, feature, value, mc) -> ServerFileProps:
         fv = t.cast(FileValue, value)
 
         mime = self.get_mime_type(fv)
         ext = gws.lib.mime.extension_for(mime)
 
-        p = FileOutputProps(
+        p = ServerFileProps(
             # @TODO use a template
             label=fv.name or '',
             extension=ext,

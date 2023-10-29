@@ -9,18 +9,10 @@ interface Props extends gws.types.ModelWidgetProps {
     widgetProps: gws.api.plugin.model_widget.file.Props
 }
 
-// see app/gws/plugin/model_field/file/__init__.py
-export interface FileOutputProps {
-    downloadUrl?: string
-    extension?: string
-    label?: string
-    previewUrl?: string
-    size?: number
-}
 
 
 class FormView extends gws.View<gws.types.ModelWidgetProps> {
-    download(fp: FileOutputProps) {
+    download(fp: gws.types.ServerFileProps) {
         let u = fp.downloadUrl || '';
         gws.lib.downloadUrl(u, u.split('/').pop())
     }
@@ -30,7 +22,7 @@ class FormView extends gws.View<gws.types.ModelWidgetProps> {
         let field = this.props.field;
         let cc = this.props.controller;
         let value = this.props.values[field.name];
-        let fp = this.props.feature.getAttribute(field.name) as FileOutputProps;
+        let fp = this.props.feature.getAttribute(field.name) as gws.types.ServerFileProps;
 
         return <div className="cmpFormList">
             {fp && <components.file.File
@@ -69,7 +61,7 @@ class CellView extends gws.View<gws.types.ModelWidgetProps> {
         let field = this.props.field;
         let cc = this.props.controller;
         let value = this.props.values[field.name];
-        let fp = this.props.feature.getAttribute(field.name) as FileOutputProps;
+        let fp = this.props.feature.getAttribute(field.name) as gws.types.ServerFileProps;
 
         return <div className="cmpFormList">
             {fp && <components.file.File

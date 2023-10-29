@@ -33,24 +33,24 @@ OSM_RESOLUTIONS = list(reversed([units.scale_to_res(s) for s in OSM_SCALES]))
 class Config(gws.Config):
     """Zoom levels and resolutions"""
 
-    resolutions: t.Optional[list[float]] 
+    resolutions: t.Optional[list[float]]
     """allowed resolutions"""
-    initResolution: t.Optional[float] 
+    initResolution: t.Optional[float]
     """initial resolution"""
 
-    scales: t.Optional[list[float]] 
+    scales: t.Optional[list[float]]
     """allowed scales"""
-    initScale: t.Optional[float] 
+    initScale: t.Optional[float]
     """initial scale"""
 
-    minResolution: t.Optional[float] 
+    minResolution: t.Optional[float]
     """minimal resolution"""
-    maxResolution: t.Optional[float] 
+    maxResolution: t.Optional[float]
     """maximal resolution"""
 
-    minScale: t.Optional[float] 
+    minScale: t.Optional[float]
     """minimal scale"""
-    maxScale: t.Optional[float] 
+    maxScale: t.Optional[float]
     """maximal scale"""
 
 
@@ -59,17 +59,21 @@ def resolutions_from_config(cfg, parent_resolultions: list[float] = None) -> lis
 
     # @TODO deal with scales separately
 
+    rmin = _res_or_scale(cfg, 'minResolution', 'minScale')
+    rmax = _res_or_scale(cfg, 'maxResolution', 'maxScale')
+
     res = _explicit_resolutions(cfg) or parent_resolultions
     if not res:
-        return []
+        res = list(OSM_RESOLUTIONS)
+        if rmax and rmax > max(res):
+            res.append(rmax)
+        if rmin and rmin < min(res):
+            res.append(rmin)
 
-    a = _res_or_scale(cfg, 'minResolution', 'minScale')
-    z = _res_or_scale(cfg, 'maxResolution', 'maxScale')
-
-    if a:
-        res = [x for x in res if x >= a]
-    if z:
-        res = [x for x in res if x <= z]
+    if rmin:
+        res = [r for r in res if r >= rmin]
+    if rmax:
+        res = [r for r in res if r <= rmax]
 
     return sorted(res)
 

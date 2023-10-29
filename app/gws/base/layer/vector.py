@@ -49,7 +49,7 @@ class Object(core.Object):
             bounds = gws.Bounds(crs=lri.view.bounds.crs, extent=gws.gis.extent.circumsquare(bounds.extent))
 
         search = gws.SearchQuery(bounds=bounds)
-        features = self.get_features(search, lri.user, views=['label'])
+        features = self.get_features_for_view(search, lri.user)
 
         if not features:
             gws.log.debug(f'render {self}: no features found')
@@ -63,23 +63,30 @@ class Object(core.Object):
 
         return tags
 
-    # def get_features(self, search, user, views=None, model_uid=None):
-    #     model = gws.base.model.locate(self.models, user=user, access=gws.Access.read, uid=model_uid)
-    #     if not model:
-    #         return []
-    #
-    #     features = model.find_features(gws.ModelOperation.view, search, user)
-    #
-    #     templates = []
-    #
-    #     for v in views or ['label']:
-    #         tpl = self.root.app.templateMgr.locate_template(self, search.project, user=user, subject=f'feature.{v}')
-    #         if tpl:
-    #             templates.append(tpl)
-    #
-    #     for feature in features:
-    #         if search.bounds:
-    #             feature.transform_to(search.bounds.crs)
-    #         feature.render_views(templates, user=user, layer=self)
-    #
-    #     return features
+    def get_features_for_view(self, search, user, view_names=None):
+        model = self.root.app.modelMgr.locate_model(self, user=user, access=gws.Access.read)
+        if not model:
+            return []
+
+        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=user)
+        features = model.find_features(search, mc)
+        if not features:
+            return []
+
+        if search.bounds:
+            for feature in features:
+                feature.transform_to(search.bounds.crs)
+
+        view_names = view_names or ['label']
+        templates = []
+        for v in view_names:
+            tpl = self.root.app.templateMgr.locate_template(
+                self, search.project, user=user, subject=f'feature.{v}')
+            if tpl:
+                templates.append(tpl)
+
+        if templates:
+            for feature in features:
+                feature.render_views(templates, project=search.project, layer=self, user=user)
+
+        return features

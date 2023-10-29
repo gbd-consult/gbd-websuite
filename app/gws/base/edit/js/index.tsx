@@ -419,7 +419,7 @@ class TableViewDialog extends gws.View<ViewProps> {
         cc.updateEditState({tableViewLoading: true})
 
         let model = cc.editState.tableViewSelectedModel;
-        let ok = await cc.saveFeature(feature);
+        let ok = await cc.saveFeature(feature, model.tableViewFields);
 
         if (ok) {
             cc.featureCache.clear();
@@ -666,7 +666,6 @@ class TableViewDialog extends gws.View<ViewProps> {
 
         }
     }
-
 
 
     async componentDidMount() {
@@ -1047,8 +1046,6 @@ class FormTab extends gws.View<ViewProps> {
         }
 
         let isDirty = sf.isNew || sf.isDirty;
-
-        console.log(sf.isNew, sf.isDirty, sf['_editedAttributes'])
 
         return <sidebar.Tab className="editSidebar editSidebarFormTab">
             <sidebar.TabHeader>
@@ -1501,6 +1498,7 @@ class Controller extends gws.Controller {
     uid = MASTER;
     editLayer: EditLayer;
     models: Array<gws.types.IModel>
+    setup: gws.api.base.edit.action.Props;
 
     widgetHelpers: { [key: string]: WidgetHelper } = {
         'geometry': new GeometryWidgetHelper(this),
@@ -1520,6 +1518,10 @@ class Controller extends gws.Controller {
             featureHistory: [],
             featureCache: {},
         });
+
+        this.setup = this.app.actionProps('edit');
+        if (!this.setup)
+            return;
 
         this.models = [];
 
@@ -1549,15 +1551,15 @@ class Controller extends gws.Controller {
 
         this.app.whenChanged('mapViewState', () =>
             this.whenMapStateChanged());
-
-        setTimeout(() => {
-            for (let m of this.models) {
-                this.selectModelInTableView(m)
-                return
-            }
-
-
-        }, 1000)
+        //
+        // setTimeout(() => {
+        //     for (let m of this.models) {
+        //         this.selectModelInTableView(m)
+        //         return
+        //     }
+        //
+        //
+        // }, 1000)
     }
 
     get appOverlayView() {
@@ -1888,7 +1890,7 @@ class Controller extends gws.Controller {
     //
 
     async saveFeatureInSidebar(feature: gws.types.IFeature) {
-        let ok = await this.saveFeature(feature)
+        let ok = await this.saveFeature(feature, feature.model.fields)
 
         if (!ok && this.editState.serverError) {
             this.showDialog({
@@ -1909,7 +1911,7 @@ class Controller extends gws.Controller {
         return true
     }
 
-    async saveFeature(feature: gws.types.IFeature) {
+    async saveFeature(feature: gws.types.IFeature, fields: Array<gws.types.IModelField>) {
         this.updateEditState({
             serverError: '',
             formErrors: null,
@@ -1918,16 +1920,23 @@ class Controller extends gws.Controller {
         let model = feature.model;
 
         let atts = feature.currentAttributes();
+        let attsToWrite = {}
 
-        // NB changing geometry saves everything,
-        // otherwise we cannot validate the form completely
+        // for (let [k, v] of gws.lib.entries(atts)) {
+        //     atts[k] = await this.serializeValue(v);
+        // }
 
-        for (let [k, v] of gws.lib.entries(atts)) {
-            atts[k] = await this.serializeValue(v);
+        for (let field of fields) {
+            let v = atts[field.name]
+            if (!gws.lib.isEmpty(v))
+                attsToWrite[field.name] = await this.serializeValue(field, v);
         }
 
+        if (!attsToWrite[feature.model.uidName])
+            attsToWrite[feature.model.uidName] = feature.uid
+
         let featureToWrite = feature.clone();
-        featureToWrite.attributes = atts;
+        featureToWrite.attributes = attsToWrite;
 
         let res = await this.app.server.editWriteFeature({
             modelUid: model.uid,
@@ -2001,15 +2010,14 @@ class Controller extends gws.Controller {
         return true;
     }
 
-    async serializeValue(val) {
-        if (!val)
-            return val;
-
-        if (val instanceof FileList) {
-            let content: Uint8Array = await gws.lib.readFile(val[0]);
-            return {name: val[0].name, content}
+    async serializeValue(field: gws.types.IModelField, val) {
+        if (field.attributeType === gws.api.core.AttributeType.file) {
+            if (val instanceof FileList) {
+                let content: Uint8Array = await gws.lib.readFile(val[0]);
+                return {name: val[0].name, content} as gws.types.ClientFileProps
+            }
+            return null
         }
-
         return val;
     }
 
