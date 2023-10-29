@@ -124,7 +124,7 @@ class Object:
             return _db_write(root, storage, content)
         raise Error(f'qgis project cannot be stored')
 
-    def to_path(self, path: str, text: str):
+    def to_path(self, path: str):
         src = self.to_xml()
         if path.endswith(_ZIP_EXT):
             name = os.path.basename(path).replace(_ZIP_EXT, _PRJ_EXT)

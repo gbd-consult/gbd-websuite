@@ -1275,12 +1275,13 @@ class Controller extends gws.Controller {
     async startPrint(fs: Array<gws.types.IFeature>) {
 
         this.update({
-            printJob: {state: gws.api.base.printer.State.init},
+            printJob: {state: gws.api.core.JobState.init},
             marker: null,
         });
 
-        let level = this.setup.printTemplate.qualityLevels[0];
-        let dpi = level ? level.dpi : 0;
+        // let level = this.setup.printTemplate.qualityLevels[0];
+        // let dpi = level ? level.dpi : 0;
+        let dpi = 150;
         let featureStyle = this.app.style.get('.alkisFeature').props;
 
         let mapParams = await this.map.printParams(null, dpi);
@@ -1288,7 +1289,7 @@ class Controller extends gws.Controller {
 
         let printRequest: gws.api.base.printer.Request = {
             type: gws.api.base.printer.RequestType.template,
-            templateUid: this.setup.printTemplate.uid,
+            printerUid: this.setup.printTemplate.uid,
             dpi,
             maps: [mapParams]
         };

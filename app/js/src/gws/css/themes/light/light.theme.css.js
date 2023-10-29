@@ -263,3 +263,11 @@ v.FIT_SCREEN = () => ({
     paddingBottom: v.CONTROL_SIZE,
     margin: 0,
 });
+
+v.BIG_BOX = (percent = 5) => ({
+    left: percent + '%',
+    top: percent + '%',
+    width: (100 - percent * 2) + '%',
+    height: (100 - percent * 2) + '%',
+    margin: 0,
+})

@@ -1,91 +1,32 @@
-import base64
-import os
-
 import gws
-import gws.gis.crs
 import gws.base.model
+import gws.gis.crs
+import gws.gis.render
 import gws.lib.image
 import gws.lib.job
 import gws.lib.mime
 import gws.lib.osx
-import gws.gis.render
 import gws.lib.style
 import gws.lib.uom as units
-import gws.server.spool
-
 import gws.types as t
-
 from . import core
 
 
-def start(root: gws.IRoot, request: core.Request, user: gws.IUser) -> gws.lib.job.Job:
-    request_path = gws.serialize_to_path(request, gws.printtemp('print.pickle'))
-
-    job = gws.lib.job.create(
-        root,
-        user=user,
-        payload=dict(requestPath=request_path, projectUid=request.projectUid),
-        worker=__name__ + '._worker')
-
-    if gws.server.spool.is_active():
-        gws.server.spool.add(job)
-    else:
-        gws.lib.job.run(root, job.uid)
-    return gws.lib.job.get(root, job.uid)
-
-
-def run(root: gws.IRoot, request: core.Request, user: gws.IUser):
-    w = _Worker(root, '', request, user)
-    return w.run()
-
-
-def status(job: gws.lib.job.Job) -> core.StatusResponse:
-    payload = job.payload
-
-    def _progress():
-        if job.state == gws.lib.job.State.complete:
-            return 100
-        if job.state != gws.lib.job.State.running:
-            return 0
-        num_steps = payload.get('numSteps', 0)
-        if not num_steps:
-            return 0
-        step = payload.get('step', 0)
-        return int(min(100.0, step * 100.0 / num_steps))
-
-    _url_path_suffix = '/gws.pdf'
-
-    return core.StatusResponse(
-        jobUid=job.uid,
-        state=job.state,
-        progress=_progress(),
-        stepType=payload.get('stepType', ''),
-        stepName=payload.get('stepName', ''),
-        url=gws.action_url_path('printerResult', jobUid=job.uid, projectUid=payload.get('projectUid')) + _url_path_suffix
-    )
-
-
-def result_path(job: gws.lib.job.Job) -> str:
-    return job.payload.get('resultPath')
-
-
-##
-
-
-def _worker(root: gws.IRoot, job: gws.lib.job.Job):
+def worker(root: gws.IRoot, job: gws.lib.job.Object):
     request = gws.unserialize_from_path(job.payload.get('requestPath'))
-    w = _Worker(root, job.uid, request, job.user)
+    w = Object(root, job.uid, request, job.user)
     w.run()
 
 
 _PAPER_COLOR = 'white'
 
 
-class _Worker:
+class Object:
     jobUid: str
     user: gws.IUser
     project: gws.IProject
     tri: gws.TemplateRenderInput
+    printer: gws.IPrinter
     template: gws.ITemplate
 
     def __init__(self, root: gws.IRoot, job_uid: str, request: core.Request, user: gws.IUser):
@@ -120,7 +61,8 @@ class _Worker:
 
         if request.type == 'template':
             # @TODO check dpi against configured qualityLevels
-            self.template = t.cast(gws.ITemplate, self.user.require(request.templateUid, gws.ext.object.template))
+            self.printer = t.cast(gws.IPrinter, self.user.require(request.printerUid, gws.ext.object.printer))
+            self.template = self.printer.template
         else:
             mm = gws.lib.uom.size_px_to_mm(request.outputSize, gws.lib.uom.OGC_SCREEN_PPI)
             px = gws.lib.uom.size_mm_to_px(mm, self.tri.dpi)
@@ -128,10 +70,6 @@ class _Worker:
                 gws.ext.object.template,
                 type='map',
                 pageSize=(px[0], px[1], gws.Uom.px))
-
-        # if self.template.data_model:
-        #     atts = self.template.data_model.apply_to_dict(ctx)
-        #     ctx = {a.name: a.value for a in atts}
 
         extra = dict(
             project=self.project,
@@ -144,11 +82,12 @@ class _Worker:
             templateRenderInput=self.tri,
         )
 
+        # @TODO read the args feature from the request
         self.tri.args = gws.merge(request.args, extra)
 
         num_steps = sum(len(mp.planes) for mp in self.tri.maps) + 1
 
-        self.update_job(state=gws.lib.job.State.running, numSteps=num_steps)
+        self.update_job(state=gws.JobState.running, numSteps=num_steps)
 
     def notify(self, event, details=None):
         gws.log.debug(f'JOB {self.jobUid}: print.worker.notify {event=} {details=}')
@@ -166,7 +105,7 @@ class _Worker:
 
     def run(self):
         resp = self.template.render(self.tri)
-        self.update_job(state=gws.lib.job.State.complete, resultPath=resp.path)
+        self.update_job(state=gws.JobState.complete, resultPath=resp.path)
         return resp.path
 
     def prepare_map(self, tri: gws.TemplateRenderInput, mp: core.MapParams) -> gws.MapRenderInput:
@@ -324,16 +263,17 @@ class _Worker:
 
         job.update(state=state, payload=gws.merge(job.payload, kwargs))
 
-    def get_job(self) -> t.Optional[gws.lib.job.Job]:
+    def get_job(self) -> t.Optional[gws.lib.job.Object]:
         if not self.jobUid:
             return None
 
-        job = gws.lib.job.get_for(self.root, self.user, self.jobUid)
+        job = gws.lib.job.get(self.root, self.jobUid)
 
         if not job:
             raise gws.lib.job.PrematureTermination('JOB_NOT_FOUND')
-
-        if job.state != gws.lib.job.State.running:
+        if job.user.uid != self.user.uid:
+            raise gws.lib.job.PrematureTermination('WRONG_USER {job.user.uid}')
+        if job.state != gws.JobState.running:
             raise gws.lib.job.PrematureTermination(f'JOB_WRONG_STATE={job.state!r}')
 
         return job

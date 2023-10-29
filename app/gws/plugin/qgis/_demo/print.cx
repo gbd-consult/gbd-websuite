@@ -2,22 +2,23 @@ projects+ {
     title "QGIS Print Template"
     metadata.abstract "Use a print template from a QGIS Project"
 
-    printer.templates+ {
-        uid "print_template_qgis_simple_0"
-        type "qgis"
-        provider.path "print.qgs"
-        index 0
+    printers+ {
+        template {
+            type "qgis"
+            provider.path "print.qgs"
+            index 0
+        }
         qualityLevels [ { dpi  72 name "nice vectors" } { dpi 150 name "good quality" } ]
     }
 
-    printer.templates+ {
-        uid "print_template_qgis_simple_1"
-        type "qgis"
-        provider.path "print.qgs"
-        index 1
+    printers+ {
+        template {
+            type "qgis"
+            provider.path "print.qgs"
+            index 1
+        }
         qualityLevels [ { dpi  72 name "nice vectors" } { dpi 150 name "good quality" } ]
     }
-
 
     map {
         center {demo_point_duesseldorf_3857}

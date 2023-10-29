@@ -66,16 +66,14 @@ _DEFAULT_TEMPLATES = [
 ]
 
 _DEFAULT_PRINTER = gws.Config(
-    templates=[
-        gws.Config(
-            uid='gws.base.project.templates.project_print',
-            type='html',
-            path=gws.dirname(__file__) + '/templates/project_print.cx.html',
-            mapSize=(200, 180, gws.Uom.mm),
-            qualityLevels=[{'dpi': 72}],
-            access=gws.PUBLIC,
-        ),
-    ]
+    uid='gws.base.application.default_printer',
+    access=gws.PUBLIC,
+    template=gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/project_print.cx.html',
+        mapSize=(200, 180, gws.Uom.mm),
+    ),
+    qualityLevels=[{'dpi': 72}],
 )
 
 
@@ -114,8 +112,8 @@ class Config(gws.ConfigWithAccess):
     """directories with additional projects"""
     projectPaths: t.Optional[list[gws.FilePath]]
     """additional project paths"""
-    printer: t.Optional[gws.base.printer.Config]
-    """print configuration"""
+    printers: t.Optional[list[gws.ext.config.printer]]
+    """print configurations"""
     projects: t.Optional[list[gws.ext.config.project]]
     """project configurations"""
     server: t.Optional[gws.server.Config] = {}  # type: ignore
@@ -204,15 +202,13 @@ class Object(gws.Node, gws.IApplication):
         for cfg in _DEFAULT_TEMPLATES:
             self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
 
+        self.printerMgr = self.create_child(gws.base.printer.manager.Object)
+        self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
+        self.defaultPrinter = self.root.create_shared(gws.ext.object.printer, _DEFAULT_PRINTER)
+
         self.owsServices = self.create_children(gws.ext.object.owsService, self.cfg('owsServices'))
 
         self.client = self.create_child(gws.base.client.Object, self.cfg('client'))
-
-        p = self.cfg('printer')
-        if p:
-            self.printer = self.create_child(gws.base.printer.Object, p)
-        else:
-            self.printer = self.root.create_shared(gws.base.printer.Object, _DEFAULT_PRINTER)
 
         projects = self.create_children(gws.ext.object.project, self.cfg('projects'))
         self.projectMap = {p.uid: p for p in projects}

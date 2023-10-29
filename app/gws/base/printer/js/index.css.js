@@ -70,5 +70,11 @@ module.exports = v => ({
         }
     },
 
+    '.uiDialog.printerResultDialog': {
+        [v.MEDIA('large+')]: {
+            ...v.BIG_BOX(),
+        }
+    },
+
 
 });

@@ -18,6 +18,7 @@ modelValue
 modelWidget
 owsProvider
 owsService
+printer
 project
 storageProvider
 template

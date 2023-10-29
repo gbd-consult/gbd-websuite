@@ -2,12 +2,13 @@ projects+ {
     title "Printing: multiple templates"
     metadata.abstract "Multiple HTML templates with custom quality levels."
 
-    printer.templates+ {
-        uid "multi_landscape"
-        type "html"
-        path "multi_landscape.cx.html"
-        mapSize [ "250mm" "150mm" ]
-        title "A4 landscape"
+    printers+ {
+        template {
+            type "html"
+            path "multi_landscape.cx.html"
+            mapSize [ "250mm" "150mm" ]
+            title "A4 landscape"
+        }
         qualityLevels [
             { dpi  90 name "screen" }
             { dpi 150 name "good quality" }
@@ -15,12 +16,13 @@ projects+ {
         ]
     }
 
-    printer.templates+ {
-        uid "multi_portrait"
-        type "html"
-        path "multi_portrait.cx.html"
-        mapSize [ "150mm" "250mm" ]
-        title "A4 portrait"
+    printers+ {
+        template {
+            type "html"
+            path "multi_portrait.cx.html"
+            mapSize [ "150mm" "250mm" ]
+            title "A4 portrait"
+        }
         qualityLevels [
             { dpi  90 name "screen" }
             { dpi 150 name "good quality" }

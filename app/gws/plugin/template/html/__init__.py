@@ -157,8 +157,8 @@ class Object(gws.base.template.Object):
         self.notify(tri, 'finalize_print')
 
         mime = tri.mimeOut
-        if not mime and self.mimes:
-            mime = self.mimes[0]
+        if not mime and self.mimeTypes:
+            mime = self.mimeTypes[0]
         if not mime:
             mime = gws.lib.mime.HTML
 

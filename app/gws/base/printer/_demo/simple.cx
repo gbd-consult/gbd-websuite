@@ -2,11 +2,12 @@ projects+ {
     title "Printing: HTML"
     metadata.abstract "Printing with a simple HTML template."
 
-    printer.templates+ {
-        uid "print_simple"
-        type "html"
-        path "simple.cx.html"
-        mapSize [ "150mm" "100mm" ]
+    printers+ {
+        template {
+            type "html"
+            path "simple.cx.html"
+            mapSize [ "150mm" "100mm" ]
+        }
     }
 
     map {

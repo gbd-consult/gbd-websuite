@@ -5,3 +5,4 @@ from .core import (
     Request,
     StatusResponse,
 )
+from . import manager

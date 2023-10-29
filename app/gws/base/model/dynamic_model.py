@@ -17,6 +17,8 @@ class Object(core.Object):
         self.geometryName = 'geometry'
         self.loadingStrategy = gws.FeatureLoadingStrategy.all
 
+        self.configure_fields()
+
     def feature_from_props(self, props, mc):
         feature = super().feature_from_props(props, mc)
         feature.attributes = dict(props.attributes)

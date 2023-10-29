@@ -161,11 +161,7 @@ module.exports = v => {
 
         '.uiDialog.editTableViewDialog': {
             [v.MEDIA('large+')]: {
-                left: '5%',
-                top: '5%',
-                width: '90%',
-                height: '90%',
-                margin: 0,
+                ...v.BIG_BOX(),
             },
         },
 

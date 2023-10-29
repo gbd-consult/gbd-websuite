@@ -7,21 +7,6 @@ import gws.types as t
 from . import storage
 
 
-class State(t.Enum):
-    init = 'init'
-    """the job is being created"""
-    open = 'open'
-    """the job is just created and waiting for start"""
-    running = 'running'
-    """the job is running"""
-    complete = 'complete'
-    """the job has been completed successfully"""
-    error = 'error'
-    """there was an error"""
-    cancel = 'cancel'
-    """the job was cancelled"""
-
-
 class Error(gws.Error):
     pass
 
@@ -30,7 +15,7 @@ class PrematureTermination(Exception):
     pass
 
 
-def create(root: gws.IRoot, user: gws.IUser, worker: str, payload: dict = None) -> 'Job':
+def create(root: gws.IRoot, user: gws.IUser, worker: str, payload: dict = None) -> 'Object':
     uid = gws.random_string(64)
     gws.log.debug(f'JOB {uid}: creating: {worker=}  {user.uid=}')
     storage.create(uid)
@@ -40,7 +25,7 @@ def create(root: gws.IRoot, user: gws.IUser, worker: str, payload: dict = None) 
         str_user=root.app.authMgr.serialize_user(user),
         worker=worker,
         payload=gws.lib.jsonx.to_string(payload or {}),
-        state=State.open,
+        state=gws.JobState.open,
         error='',
     )
     return get(root, uid)
@@ -53,33 +38,17 @@ def run(root: gws.IRoot, uid):
     job.run()
 
 
-def get(root: gws.IRoot, uid) -> t.Optional['Job']:
+def get(root: gws.IRoot, uid) -> t.Optional['Object']:
     rec = storage.find(uid)
     if rec:
-        return Job(root, rec)
-
-
-def get_for(root: gws.IRoot, user, uid) -> t.Optional['Job']:
-    job = get(root, uid)
-    if not job:
-        gws.log.error(f'JOB {uid}: not found')
-        return
-    if job.user.uid != user.uid:
-        gws.log.error(f'JOB {uid}: wrong user (job={job.user.uid!r} user={user.uid!r})')
-        return
-    return job
+        return Object(root, rec)
 
 
 def remove(uid):
     storage.remove(uid)
 
 
-class Job:
-    error: str
-    payload: dict
-    state: State
-    uid: str
-    user: gws.IUser
+class Object:
     worker: str
 
     def __init__(self, root: gws.IRoot, rec):
@@ -101,12 +70,12 @@ class Job:
         return auth.guestUser
 
     def run(self):
-        if self.state != State.open:
+        if self.state != gws.JobState.open:
             gws.log.error(f'JOB {self.uid}: invalid state for run={self.state!r}')
             return
 
         # @TODO lock
-        self.update(state=State.running)
+        self.update(state=gws.JobState.running)
 
         try:
             mod_name, _, fn_name = self.worker.rpartition('.')
@@ -115,11 +84,11 @@ class Job:
             fn(self.root, self)
         except PrematureTermination as exc:
             gws.log.error(f'JOB {self.uid}: PrematureTermination: {exc.args[0]!r}')
-            self.update(state=State.error)
+            self.update(state=gws.JobState.error)
         except Exception as exc:
             gws.log.error(f'JOB {self.uid}: FAILED')
             gws.log.exception()
-            self.update(state=State.error, error=repr(exc))
+            self.update(state=gws.JobState.error, error=repr(exc))
 
     def update(self, payload=None, state=None, error=None):
         rec = {}
@@ -135,7 +104,7 @@ class Job:
         gws.log.debug(f'JOB {self.uid}: update: {rec=}')
 
     def cancel(self):
-        self.update(state=State.cancel)
+        self.update(state=gws.JobState.cancel)
 
     def remove(self):
         storage.remove(self.uid)

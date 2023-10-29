@@ -96,7 +96,7 @@ class Object(gws.Node, gws.IOwsService):
         fs = {}
 
         for tpl in self.templates:
-            for mime in tpl.mimes:
+            for mime in tpl.mimeTypes:
                 s = tpl.subject.split('.')
                 fs.setdefault(s[-1], set()).add(mime)
 

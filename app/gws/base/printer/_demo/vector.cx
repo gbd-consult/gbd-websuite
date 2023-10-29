@@ -17,11 +17,13 @@ projects+ {
     title "Printing: vectors"
     metadata.abstract "Styling and printing of vector layers."
 
-    printer.templates+ {
-        type "html"
-        path "multi_landscape.cx.html"
-        mapSize [ "250mm" "150mm" ]
-        title "A4 landscape"
+    printers+ {
+        template {
+            type "html"
+            path "multi_landscape.cx.html"
+            mapSize [ "250mm" "150mm" ]
+            title "A4 landscape"
+        }
         qualityLevels [
             { dpi  0  name "screen" }
             { dpi  72 name "nice vectors" }

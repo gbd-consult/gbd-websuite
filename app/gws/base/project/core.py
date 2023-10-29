@@ -36,8 +36,8 @@ class Config(gws.ConfigWithAccess):
     """Overview map configuration"""
     owsServices: t.Optional[list[gws.ext.config.owsService]]
     """OWS services configuration"""
-    printer: t.Optional[gws.base.printer.Config]
-    """print configuration"""
+    printers: t.Optional[list[gws.base.printer.Config]]
+    """print configurations"""
     templates: t.Optional[list[gws.ext.config.template]]
     """project info templates"""
     title: str = ''
@@ -53,7 +53,7 @@ class Props(gws.Props):
     models: list[gws.ext.props.model]
     metadata: gws.lib.metadata.Props
     overviewMap: gws.ext.props.map
-    printer: gws.base.printer.Props
+    printers: list[gws.base.printer.Props]
     title: str
     uid: str
 
@@ -80,7 +80,7 @@ class Object(gws.Node, gws.IProject):
 
         self.map = self.create_child_if_configured(gws.ext.object.map, self.cfg('map'))
         self.overviewMap = self.create_child_if_configured(gws.base.map.Object, self.cfg('overviewMap'))
-        self.printer = self.create_child_if_configured(gws.base.printer.Object, self.cfg('printer'))
+        self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
         self.finders = self.create_children(gws.ext.object.finder, self.cfg('finders'))
         self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
@@ -100,9 +100,9 @@ class Object(gws.Node, gws.IProject):
             description=desc.content if desc else '',
             map=self.map,
             metadata=gws.lib.metadata.props(self.metadata),
-            models=[], #self.root.app.modelMgr.collect_for_project(self, user),
+            models=[],
             overviewMap=self.overviewMap,
-            printer=self.printer or self.root.app.printer,
+            printers=self.root.app.printerMgr.printers_for_project(self, user),
             title=self.title,
             uid=self.uid,
         )

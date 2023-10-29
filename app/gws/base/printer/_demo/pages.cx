@@ -2,11 +2,12 @@ projects+ {
     title "Printing: multi-page"
     metadata.abstract "Multi-page print template with headers and footers."
 
-    printer.templates+ {
-        uid "print_pages"
-        type "html"
-        path "pages.cx.html"
-        mapSize [ "180mm" "140mm" ]
+    printers+ {
+        template {
+            type "html"
+            path "pages.cx.html"
+            mapSize [ "180mm" "140mm" ]
+        }
     }
 
     map {

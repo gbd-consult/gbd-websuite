@@ -65,6 +65,7 @@ TYPES = [
     "modelWidget",
     "owsProvider",
     "owsService",
+    "printer",
     "project",
     "storageProvider",
     "template",
@@ -99,6 +100,7 @@ class new:
     def modelWidget(*a): pass
     def owsProvider(*a): pass
     def owsService(*a): pass
+    def printer(*a): pass
     def project(*a): pass
     def storageProvider(*a): pass
     def template(*a): pass
@@ -125,6 +127,7 @@ class object:
     class modelWidget (_classTag): extName = 'gws.ext.object.modelWidget'
     class owsProvider (_classTag): extName = 'gws.ext.object.owsProvider'
     class owsService (_classTag): extName = 'gws.ext.object.owsService'
+    class printer (_classTag): extName = 'gws.ext.object.printer'
     class project (_classTag): extName = 'gws.ext.object.project'
     class storageProvider (_classTag): extName = 'gws.ext.object.storageProvider'
     class template (_classTag): extName = 'gws.ext.object.template'
@@ -151,6 +154,7 @@ class config:
     class modelWidget (_classTag): extName = 'gws.ext.config.modelWidget'
     class owsProvider (_classTag): extName = 'gws.ext.config.owsProvider'
     class owsService (_classTag): extName = 'gws.ext.config.owsService'
+    class printer (_classTag): extName = 'gws.ext.config.printer'
     class project (_classTag): extName = 'gws.ext.config.project'
     class storageProvider (_classTag): extName = 'gws.ext.config.storageProvider'
     class template (_classTag): extName = 'gws.ext.config.template'
@@ -177,6 +181,7 @@ class props:
     class modelWidget (_classTag): extName = 'gws.ext.props.modelWidget'
     class owsProvider (_classTag): extName = 'gws.ext.props.owsProvider'
     class owsService (_classTag): extName = 'gws.ext.props.owsService'
+    class printer (_classTag): extName = 'gws.ext.props.printer'
     class project (_classTag): extName = 'gws.ext.props.project'
     class storageProvider (_classTag): extName = 'gws.ext.props.storageProvider'
     class template (_classTag): extName = 'gws.ext.props.template'

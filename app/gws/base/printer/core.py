@@ -1,52 +1,60 @@
 import gws
 import gws.base.feature
+import gws.base.model
 import gws.base.template
+import gws.config.util
 import gws.lib.job
 import gws.lib.style
 import gws.types as t
+
+gws.ext.new.printer('default')
 
 
 class Config(gws.Config):
     """Printer configuration"""
 
-    templates: list[gws.ext.config.template]
-    """print templates"""
+    template: gws.ext.config.template
+    """Print template"""
+    title: str = ''
+    """Printer title"""
+    models: t.Optional[list[gws.ext.config.model]]
+    """Data models"""
+    qualityLevels: t.Optional[list[gws.TemplateQualityLevel]]
+    """Quality levels supported by this printer"""
 
 
-class Props(gws.Data):
-    templates: list[gws.base.template.Props]
+class Props(gws.Props):
+    template: gws.base.template.Props
+    model: gws.base.model.Props
+    qualityLevels: list[gws.TemplateQualityLevel]
+    title: str
 
 
 class Object(gws.Node, gws.IPrinter):
 
     def configure(self):
-        self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
+        gws.config.util.configure_models(self)
+        self.template = self.create_child(gws.ext.object.template, self.cfg('template'))
+        self.qualityLevels = self.cfg('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
+        self.title = self.cfg('title') or self.template.title or ''
 
     def props(self, user):
-        return gws.Props(
-            templates=[tpl for tpl in self.templates if user.can_use(tpl)]
+        model = self.root.app.modelMgr.locate_model(self, user=user, access=gws.Access.write)
+        return Props(
+            uid=self.uid,
+            template=self.template,
+            model=model,
+            qualityLevels=self.qualityLevels,
+            title=self.title,
         )
 
 
 ##
 
-class State(t.Enum):
-    init = 'init'
-    open = 'open'
-    running = 'running'
-    complete = 'complete'
-    error = 'error'
-    cancel = 'cancel'
-
-
-class StatusRequest(gws.Request):
-    jobUid: str
-
-
 class StatusResponse(gws.Response):
     jobUid: str
     progress: int
-    state: State
+    state: gws.JobState
     stepType: str
     stepName: str
     url: str
@@ -109,6 +117,6 @@ class Request(gws.Request):
     outputFormat: t.Optional[str]
     maps: t.Optional[list[MapParams]]
 
-    templateUid: t.Optional[str]
+    printerUid: t.Optional[str]
     dpi: t.Optional[int]
     outputSize: t.Optional[gws.Size]

@@ -17,8 +17,6 @@ class Config(gws.Config):
     """page size"""
     pageMargin: t.Optional[gws.MExtent]
     """page margin"""
-    qualityLevels: t.Optional[list[gws.TemplateQualityLevel]]
-    """quality levels supported by this template"""
     subject: str = ''
     """template purpose"""
     title: str = ''
@@ -28,7 +26,6 @@ class Config(gws.Config):
 class Props(gws.Props):
     mapSize: t.Optional[gws.Size]
     pageSize: t.Optional[gws.Size]
-    qualityLevels: list[gws.TemplateQualityLevel]
     title: str
 
 
@@ -37,16 +34,13 @@ DEFAULT_PAGE_SIZE = (210, 297, gws.Uom.mm)
 
 
 class Object(gws.Node, gws.ITemplate):
-    title: str
-
     def configure(self):
         self.title = self.cfg('title', default='')
-        self.qualityLevels = self.cfg('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
         self.subject = self.cfg('subject', default='')
 
-        self.mimes = []
+        self.mimeTypes = []
         for p in self.cfg('mimeTypes', default=[]):
-            self.mimes.append(gws.lib.mime.get(p))
+            self.mimeTypes.append(gws.lib.mime.get(p))
 
         self.mapSize = self.cfg('mapSize') or DEFAULT_MAP_SIZE
         self.pageSize = self.cfg('pageSize') or DEFAULT_PAGE_SIZE
@@ -56,7 +50,6 @@ class Object(gws.Node, gws.ITemplate):
         return gws.Data(
             mapSize=self.mapSize,
             pageSize=self.pageSize,
-            qualityLevels=self.qualityLevels,
             title=self.title,
             uid=self.uid,
         )

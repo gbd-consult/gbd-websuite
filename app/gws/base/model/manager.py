@@ -32,7 +32,7 @@ class Object(gws.Node, gws.IModelManager):
 
         return _locate(self.root.app)
 
-    def collect_editable(self, project, user):
+    def editable_models(self, project, user):
         res = {}
 
         def _collect(obj):

@@ -97,7 +97,7 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('editGetModels')
     def get_models(self, req: gws.IWebRequester, p: GetModelsRequest) -> GetModelsResponse:
         project = req.require_project(p.projectUid)
-        models = self.root.app.modelMgr.collect_editable(project, req.user)
+        models = self.root.app.modelMgr.editable_models(project, req.user)
         return GetModelsResponse(models=[gws.props(m, req.user) for m in models])
 
     @gws.ext.command.api('editGetFeatures')

@@ -30,11 +30,12 @@ projects+ {
     client.addElements+ { tag "Toolbar.Dimension" }
     client.options.sidebarActiveTab "Sidebar.Dimension"
 
-    printer.templates+ {
-        uid "print_dimension"
-        type "html"
-        path "print.cx.html"
-        mapSize [ "250mm" "150mm" ]
+    printers+ {
+        template {
+            type "html"
+            path "print.cx.html"
+            mapSize [ "250mm" "150mm" ]
+        }
         qualityLevels [
             { dpi 150 name "150 dpi" }
         ]

@@ -23,7 +23,7 @@ class Object(gws.Node, gws.ITemplateManager):
                 continue
             if user and not user.can_use(tpl):
                 continue
-            if mime and tpl.mimes and mime not in tpl.mimes:
+            if mime and tpl.mimeTypes and mime not in tpl.mimeTypes:
                 continue
             return tpl
 

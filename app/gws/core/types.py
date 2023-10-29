@@ -1412,7 +1412,7 @@ class IModelManager(INode, Protocol):
 
     def locate_model(self, *objects, uid: str = None, user: IUser = None, access: Access = None) -> Optional['IModel']: ...
 
-    def collect_editable(self, project: 'IProject', user: 'IUser') -> list['IModel']: ...
+    def editable_models(self, project: 'IProject', user: 'IUser') -> list['IModel']: ...
 
     def default_model(self) -> 'IModel': ...
 
@@ -1558,19 +1558,14 @@ class TemplateQualityLevel(Data):
 
 
 class ITemplate(INode, Protocol):
-    models: list['IModel']
-    mimes: list[str]
-    subject: str
-    qualityLevels: list[TemplateQualityLevel]
     mapSize: MSize
-    pageSize: MSize
+    mimeTypes: list[str]
     pageMargin: MExtent
+    pageSize: MSize
+    subject: str
+    title: str
 
     def render(self, tri: TemplateRenderInput) -> ContentResponse: ...
-
-
-class IPrinter(INode, Protocol):
-    templates: list[ITemplate]
 
 
 class ITemplateManager(INode, Protocol):
@@ -1579,9 +1574,33 @@ class ITemplateManager(INode, Protocol):
     def template_from_path(self, path: str) -> Optional['ITemplate']: ...
 
 
+class IPrinter(INode, Protocol):
+    title: str
+    template: 'ITemplate'
+    models: list['IModel']
+    qualityLevels: list[TemplateQualityLevel]
+
+
+class IPrinterManager(INode, Protocol):
+    def printers_for_project(self, project: 'IProject', user: 'IUser') -> list['IPrinter']: ...
+
+
+class JobState(Enum):
+    init = 'init'
+    """the job is being created"""
+    open = 'open'
+    """the job is just created and waiting for start"""
+    running = 'running'
+    """the job is running"""
+    complete = 'complete'
+    """the job has been completed successfully"""
+    error = 'error'
+    """there was an error"""
+    cancel = 'cancel'
+    """the job was cancelled"""
+
+
 # ----------------------------------------------------------------------------------------------------------------------
-
-
 # styles
 
 class StyleValues(Data):
@@ -2147,7 +2166,6 @@ class IProject(INode, Protocol):
     actionMgr: 'IActionManager'
     assetsRoot: Optional['WebDocumentRoot']
     client: 'IClient'
-    printer: 'IPrinter'
 
     localeUids: list[str]
     map: 'IMap'
@@ -2155,6 +2173,7 @@ class IProject(INode, Protocol):
 
     finders: list['IFinder']
     models: list['IModel']
+    printers: list['IPrinter']
     templates: list['ITemplate']
     owsServices: list['IOwsService']
 
@@ -2181,18 +2200,19 @@ class IMiddleware(Protocol):
 
 class IApplication(INode, Protocol):
     client: 'IClient'
-    printer: 'IPrinter'
     localeUids: list[str]
     metadata: 'Metadata'
     monitor: 'IMonitor'
     qgisVersion: str
     version: str
     versionString: str
+    defaultPrinter: 'IPrinter'
 
     actionMgr: 'IActionManager'
     authMgr: 'IAuthManager'
     databaseMgr: 'IDatabaseManager'
     modelMgr: 'IModelManager'
+    printerMgr: 'IPrinterManager'
     searchMgr: 'ISearchManager'
     storageMgr: 'IStorageManager'
     templateMgr: 'ITemplateManager'
@@ -2200,6 +2220,7 @@ class IApplication(INode, Protocol):
 
     finders: list['IFinder']
     templates: list['ITemplate']
+    printers: list['IPrinter']
     models: list['IModel']
     owsServices: list['IOwsService']
 
