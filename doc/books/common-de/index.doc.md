@@ -1,8 +1,8 @@
 ## Allgemeiner Überblick :/common-de
 
-Die GBD WebSuite ist eine Open Source WebGIS Plattform zur Geodatenverarbeitung und wird seit Herbst 2017 entwickelt. Sie ist unter der GNU Affero General Public License (AGPL) lizensiert und wird über Docker Compose plattformunabhängig in bestehende IT-Infrastrukturen integriert.
+Die GBD WebSuite ist eine Open Source WebGIS Plattform zur Geodatenverarbeitung und wird seit 2017 entwickelt. Sie ist unter der GNU Affero General Public License (AGPL) lizensiert und wird über Docker Compose plattformunabhängig in bestehende IT-Infrastrukturen integriert.
 
-Die GBD WebSuite besteht aus einer Serveranwendung mit einem responsiven WebGIS Client, der individuell an eine bestehende Umgebung angepasst oder in diese integriert werden kann. 
+Die GBD WebSuite ist eine Serveranwendung mit einem responsiven WebGIS Client, der individuell an eine bestehende Umgebung angepasst oder in diese integriert werden kann. 
 
 Nahezu alle Funktionalität ist plugin-basiert. So können kleine, individuelle Tools für bestimmte Installationen und Zwecke bereitgestellt werden. 
 
