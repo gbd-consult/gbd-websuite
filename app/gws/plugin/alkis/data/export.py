@@ -149,7 +149,7 @@ class Object(gws.Node):
         for fs in fs_list:
             row_hashes = set()
             for rec in _flatten(fs):
-                feature = gws.base.feature.with_model(self.model)
+                feature = gws.base.feature.new(model=self.model)
                 feature.attributes = rec
                 feature.compute_values(gws.Access.write, user)
                 row = [feature.attributes.get(s) for s in field_names]

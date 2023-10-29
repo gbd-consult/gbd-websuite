@@ -119,4 +119,3 @@ For example, the ``update`` workflow is designed like this::
 
 from .core import Config, Object, Props
 from . import manager, dynamic_model, util
-from .default_model import Object as DefaultModel

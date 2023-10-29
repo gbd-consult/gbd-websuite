@@ -152,8 +152,10 @@ class Object(gws.base.template.Object):
             dpi=tri.dpi,
             mapSize=self.mapSize,
             planes=map0.planes,
+            project=tri.project,
             rotation=map0.rotation,
             scale=map0.scale,
+            user=tri.user,
         )
 
         mro = gws.gis.render.render_map(mri)

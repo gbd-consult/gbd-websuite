@@ -95,7 +95,7 @@ def _collect_layer_caps(
         for b in rd.service.supportedBounds
     ]
 
-    lc.model = gws.base.model.locate(layer.models, user=rd.req.user, access=gws.Access.read)
+    lc.model = rd.project.root.app.modelMgr.locate_model(layer, user=rd.req.user, access=gws.Access.read)
 
 
 def layer_caps_by_layer_name(lct: core.LayerCapsTree, names: t.Optional[str | list[str]] = None, with_ancestors=False) -> list[core.LayerCaps]:
@@ -207,15 +207,19 @@ def render_map_bbox(rd: core.Request, lcs: list[core.LayerCaps]) -> gws.ContentR
     elif s:
         raise gws.base.web.error.BadRequest(f'invalid TRANSPARENT')
 
+    planes = [
+        gws.MapRenderInputPlane(type=gws.MapRenderInputPlaneType.imageLayer, layer=lc.layer)
+        for lc in lcs
+    ]
+
     mri = gws.MapRenderInput(
         backgroundColor=None if transparent else 0,
         bbox=rd.bounds.extent,
         crs=rd.bounds.crs,
         mapSize=(px_width, px_height, gws.Uom.px),
-        planes=[
-            gws.MapRenderInputPlane(type=gws.MapRenderInputPlaneType.imageLayer, layer=lc.layer)
-            for lc in lcs
-        ]
+        planes=planes,
+        project=rd.project,
+        user=rd.req.user,
     )
 
     mro = gws.gis.render.render_map(mri)

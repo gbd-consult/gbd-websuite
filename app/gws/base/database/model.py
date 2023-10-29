@@ -96,8 +96,8 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
             features = []
 
             for row in self.execute(sql, mc):
-                features.append(gws.base.feature.with_model(
-                    self,
+                features.append(gws.base.feature.new(
+                    model=self,
                     record=gws.FeatureRecord(attributes=row._asdict())
                 ))
 

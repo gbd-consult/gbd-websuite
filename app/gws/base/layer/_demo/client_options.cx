@@ -90,13 +90,13 @@ projects+ {
         clientOptions.unfolded true
 
         layers+ {
-            title "Kneipe"
+            title "Kneipe (unfolded group)"
             type "geojson"
             provider.path "/data/demos/poi/poi.kneipe.geojson"
             cssSelector ".point-yellow"
         }
         layers+ {
-            title "Restaurant"
+            title "Restaurant (unfolded group)"
             type "geojson"
             provider.path "/data/demos/poi/poi.restaurant.geojson"
             cssSelector ".point-orange"

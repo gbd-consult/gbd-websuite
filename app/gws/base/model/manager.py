@@ -2,7 +2,7 @@
 
 import gws
 import gws.types as t
-from . import default_model
+from . import dynamic_model
 
 
 class Object(gws.Node, gws.IModelManager):
@@ -63,4 +63,4 @@ class Object(gws.Node, gws.IModelManager):
         return sorted(res.values(), key=lambda m: m.title)
 
     def default_model(self):
-        return self.root.create_shared(default_model.Object, uid='gws.base.core.default_model.Object')
+        return self.root.create_shared(dynamic_model.Object, uid='gws.base.core.dynamic_model.Object')

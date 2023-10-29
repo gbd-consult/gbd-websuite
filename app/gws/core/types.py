@@ -1490,9 +1490,10 @@ class MapRenderInput(Data):
     mapSize: MSize
     notify: Callable
     planes: list['MapRenderInputPlane']
+    project: 'IProject'
     rotation: int
     scale: int
-    user: IUser
+    user: 'IUser'
     visibleLayers: Optional[list['ILayer']]
 
 
@@ -1521,16 +1522,17 @@ class LayerRenderInputType(Enum):
 
 
 class LayerRenderInput(Data):
-    type: LayerRenderInputType
-    view: MapView
-    extraParams: dict
-    boxSize: int
     boxBuffer: int
+    boxSize: int
+    extraParams: dict
+    project: 'IProject'
+    style: 'IStyle'
+    type: LayerRenderInputType
+    user: 'IUser'
+    view: MapView
     x: int
     y: int
     z: int
-    user: 'IUser'
-    style: 'IStyle'
 
 
 class LayerRenderOutput(Data):
@@ -1546,7 +1548,8 @@ class TemplateRenderInput(Data):
     maps: list[MapRenderInput]
     mimeOut: str
     notify: Callable
-    user: IUser
+    project: 'IProject'
+    user: 'IUser'
 
 
 class TemplateQualityLevel(Data):

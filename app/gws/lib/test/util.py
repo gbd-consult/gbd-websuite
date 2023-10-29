@@ -239,8 +239,7 @@ def db_model(root, name) -> gws.IDatabaseModel:
 
 
 def feature(model, **atts) -> gws.IFeature:
-    f = gws.base.feature.with_model(model)
-    f.record = gws.FeatureRecord(attributes=atts)
+    f = gws.base.feature.new(model=model, record = gws.FeatureRecord(attributes=atts))
     f.attributes = atts
     return f
 

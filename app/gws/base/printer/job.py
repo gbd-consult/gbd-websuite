@@ -98,6 +98,7 @@ class _Worker:
         self.page_count = 0
 
         self.tri = gws.TemplateRenderInput(
+            project=self.project,
             user=self.user,
             notify=self.notify,
         )
@@ -114,7 +115,7 @@ class _Worker:
         self.tri.localeUid = s if s in self.project.localeUids else self.project.localeUids[0]
 
         self.tri.crs = gws.gis.crs.get(request.crs) or self.project.map.bounds.crs
-        self.tri.maps = [self.prepare_map(m) for m in (request.maps or [])]
+        self.tri.maps = [self.prepare_map(self.tri, m) for m in (request.maps or [])]
         self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(request.dpi, gws.lib.uom.OGC_SCREEN_PPI)))
 
         if request.type == 'template':
@@ -168,7 +169,7 @@ class _Worker:
         self.update_job(state=gws.lib.job.State.complete, resultPath=resp.path)
         return resp.path
 
-    def prepare_map(self, mp: core.MapParams) -> gws.MapRenderInput:
+    def prepare_map(self, tri: gws.TemplateRenderInput, mp: core.MapParams) -> gws.MapRenderInput:
         planes = []
 
         style_opts = gws.lib.style.parser.Options(
@@ -189,16 +190,23 @@ class _Worker:
                 if pp:
                     planes.append(pp)
 
+        layers = gws.compact(
+            self.user.acquire(uid, gws.ext.object.layer)
+            for uid in (mp.visibleLayers or []))
+
         return gws.MapRenderInput(
             backgroundColor=_PAPER_COLOR,
             bbox=mp.bbox,
             center=mp.center,
+            crs=tri.crs,
+            dpi=tri.dpi,
+            notify=tri.notify,
             planes=planes,
+            project=tri.project,
             rotation=mp.rotation or 0,
             scale=mp.scale,
-            visibleLayers=gws.compact(
-                self.user.acquire(uid, gws.ext.object.layer)
-                for uid in (mp.visibleLayers or []))
+            user=tri.user,
+            visibleLayers=layers,
         )
 
     def prepare_map_plane(self, n, plane: core.Plane, style_dct) -> t.Optional[gws.MapRenderInputPlane]:
@@ -271,16 +279,17 @@ class _Worker:
             model = self.root.app.modelMgr.default_model()
             used_styles = {}
 
+            mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=self.user)
             features = []
 
-            for p in plane.features:
-                f = model.feature_from_props(p, self.user)
-                if not f or not f.shape:
+            for props in plane.features:
+                feature = model.feature_from_props(props, mc)
+                if not feature or not feature.shape():
                     continue
-                f.cssSelector = f.cssSelector or plane.cssSelector
-                if f.cssSelector in style_dct:
-                    used_styles[f.cssSelector] = style_dct[f.cssSelector]
-                features.append(f)
+                feature.cssSelector = feature.cssSelector or plane.cssSelector
+                if feature.cssSelector in style_dct:
+                    used_styles[feature.cssSelector] = style_dct[feature.cssSelector]
+                features.append(feature)
 
             if not features:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: no features')

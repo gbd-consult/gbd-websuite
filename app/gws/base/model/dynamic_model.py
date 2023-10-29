@@ -4,6 +4,8 @@ import gws.base.shape
 import gws.types as t
 from . import core
 
+gws.ext.new.model('default')
+
 
 class Config(core.Config):
     pass
@@ -35,7 +37,7 @@ class Object(core.Object):
 
     def feature_from_record(self, record: gws.FeatureRecord, mc: gws.ModelContext) -> t.Optional[gws.IFeature]:
         record = t.cast(gws.FeatureRecord, gws.to_data(record))
-        feature = gws.base.feature.with_model(self, record=record)
+        feature = gws.base.feature.new(model=self, record=record)
         feature.attributes = record.attributes
         if record.uid and self.uidName:
             feature.attributes[self.uidName] = record.uid

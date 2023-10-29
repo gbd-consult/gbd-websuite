@@ -229,9 +229,14 @@ class Object(gws.Node, gws.IModel):
 
     def feature_from_props(self, props, mc):
         props = t.cast(gws.FeatureProps, gws.to_data(props))
-        feature = gws.base.feature.with_model(self, props=props)
+        feature = gws.base.feature.new(model=self, props=props)
+        feature.cssSelector = props.cssSelector or ''
+        feature.isNew = props.isNew or False
+        feature.views = props.views or {}
+
         for fld in self.fields:
             fld.from_props(feature, mc)
+
         return feature
 
     def feature_to_props(self, feature, mc):

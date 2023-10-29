@@ -471,7 +471,7 @@ class Object(gws.base.action.Object):
         features = []
 
         for ad in ad_list:
-            f = gws.base.feature.with_model(self.model)
+            f = gws.base.feature.new(model=self.model)
             f.attributes = vars(ad)
             f.attributes['geometry'] = f.attributes.pop('shape')
             f.transform_to(crs)
@@ -515,7 +515,7 @@ class Object(gws.base.action.Object):
         features = []
 
         for fs in fs_list:
-            f = gws.base.feature.with_model(self.model)
+            f = gws.base.feature.new(model=self.model)
             f.attributes = dict(uid=fs.uid, fs=fs, geometry=fs.shape)
             f.transform_to(crs)
             f.render_views(templates, user=req.user, **args)
@@ -572,7 +572,7 @@ class Object(gws.base.action.Object):
         fs_maps = []
 
         for fs in fs_list:
-            f = gws.base.feature.with_model(self.model)
+            f = gws.base.feature.new(model=self.model)
             f.attributes = dict(uid=fs.uid, fs=fs, geometry=fs.shape)
             f.transform_to(crs)
             f.render_views(templates, user=req.user)

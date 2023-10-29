@@ -21,7 +21,9 @@ class Props(gws.base.template.Props):
 
 class Object(gws.base.template.Object):
 
-    def render(self, tri, notify=None):
+    def render(self, tri):
+        notify = tri.notify or (lambda *args: None)
+
         mp = tri.maps[0]
 
         mri = gws.MapRenderInput(
@@ -31,18 +33,19 @@ class Object(gws.base.template.Object):
             crs=tri.crs,
             dpi=tri.dpi,
             mapSize=self.pageSize,
+            notify=notify,
             planes=mp.planes,
+            project=tri.project,
             rotation=mp.rotation,
             scale=mp.scale,
+            user=tri.user,
         )
-
-        notify = notify or (lambda a, b=None: None)
 
         notify('begin_print')
         notify('begin_page')
         notify('begin_map')
 
-        mro = gws.gis.render.render_map(mri, notify)
+        mro = gws.gis.render.render_map(mri)
         html = gws.gis.render.output_to_html_string(mro, wrap='fixed')
 
         notify('end_map')

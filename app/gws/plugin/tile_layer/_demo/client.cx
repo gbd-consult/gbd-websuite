@@ -9,6 +9,41 @@ projects+ {
     }
 
     map.layers+ {
+        title "Google"
+        type "group"
+        clientOptions.exclusive true
+        clientOptions.expanded true
+
+        layers+ {
+            title "Road Map"
+            type "tile"
+            provider.url "http://mt1.google.com/vt/lyrs=m&x={{x}}&y={{y}}&z={{z}}"
+            display "client"
+        }
+        layers+ {
+            title "Road Names"
+            type "tile"
+            provider.url "http://mt1.google.com/vt/lyrs=h&x={{x}}&y={{y}}&z={{z}}"
+            display "client"
+            clientOptions.hidden true
+        }
+        layers+ {
+            title "Satellite"
+            type "tile"
+            provider.url "http://mt1.google.com/vt/lyrs=s&hl=pl&&x={{x}}&y={{y}}&z={{z}}"
+            display "client"
+            clientOptions.hidden true
+        }
+        layers+ {
+            title "Terrain"
+            type "tile"
+            provider.url "http://mt1.google.com/vt/lyrs=t&x={{x}}&y={{y}}&z={{z}}"
+            display "client"
+            clientOptions.hidden true
+        }
+    }
+
+    map.layers+ {
         title "Open Street Map"
         type "tile"
         provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"

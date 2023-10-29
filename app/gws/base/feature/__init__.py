@@ -5,7 +5,7 @@ import gws.lib.svg
 import gws.types as t
 
 
-def with_model(
+def new(
         model: gws.IModel,
         record: t.Optional[gws.FeatureRecord] = None,
         props: t.Optional[gws.FeatureProps] = None

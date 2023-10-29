@@ -9,8 +9,6 @@ import gws.types as t
 
 
 class Config(gws.Config):
-    models: t.Optional[list[gws.ext.config.model]]
-    """data models"""
     mapSize: t.Optional[gws.MSize]
     """map size"""
     mimeTypes: t.Optional[list[str]]
@@ -28,7 +26,6 @@ class Config(gws.Config):
 
 
 class Props(gws.Props):
-    model: t.Optional[gws.base.model.Props]
     mapSize: t.Optional[gws.Size]
     pageSize: t.Optional[gws.Size]
     qualityLevels: list[gws.TemplateQualityLevel]
@@ -47,8 +44,6 @@ class Object(gws.Node, gws.ITemplate):
         self.qualityLevels = self.cfg('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
         self.subject = self.cfg('subject', default='')
 
-        self.configure_models()
-
         self.mimes = []
         for p in self.cfg('mimeTypes', default=[]):
             self.mimes.append(gws.lib.mime.get(p))
@@ -57,13 +52,8 @@ class Object(gws.Node, gws.ITemplate):
         self.pageSize = self.cfg('pageSize') or DEFAULT_PAGE_SIZE
         self.pageMargin = self.cfg('pageMargin')
 
-    def configure_models(self):
-        return gws.config.util.configure_models(self)
-
     def props(self, user):
-        models = [m for m in self.models if user.can_use(m)]
         return gws.Data(
-            model=models[0] if models else None,
             mapSize=self.mapSize,
             pageSize=self.pageSize,
             qualityLevels=self.qualityLevels,
