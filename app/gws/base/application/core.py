@@ -80,7 +80,7 @@ _DEFAULT_PRINTER = gws.Config(
 class Config(gws.ConfigWithAccess):
     """Main application configuration"""
 
-    api: t.Optional[gws.base.action.manager.Config]
+    actions: t.Optional[list[gws.ext.config.action]]
     """system-wide server actions"""
     auth: t.Optional[gws.base.auth.manager.Config] = {}  # type: ignore
     """authorization methods and options"""
@@ -187,7 +187,8 @@ class Object(gws.Node, gws.IApplication):
         self.helperMap = {p.extType: p for p in helpers}
 
         # @TODO default API
-        self.actionMgr = self.create_child(gws.base.action.manager.Object, self.cfg('api'))
+        self.actionMgr = self.create_child(gws.base.action.manager.Object)
+        self.actions = self.create_children(gws.ext.object.action, self.cfg('actions'))
 
         self.webMgr = self.create_child(gws.base.web.manager.Object, self.cfg('web'))
 

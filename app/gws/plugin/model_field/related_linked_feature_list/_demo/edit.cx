@@ -1,7 +1,7 @@
 projects+ {
     title "Edit: relatedLinkedFeatureList"
     metadata.abstract "Editing two models connected via a link table."
-    api.actions+ { type "edit" }
+    actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }
     client.addElements+ { tag "Toolbar.Edit" }
     client.options.sidebarActiveTab "Sidebar.Edit"

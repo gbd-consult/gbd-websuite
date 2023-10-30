@@ -79,6 +79,7 @@ class Requester(gws.IWebRequester):
 
         self.params: dict[str, t.Any] = {}
         self.lowerParams: dict[str, t.Any] = {}
+        self.command = ''
 
     def __repr__(self):
         return f'<Requester {self._wz}>'
@@ -126,7 +127,7 @@ class Requester(gws.IWebRequester):
         return self._wz.cookies.get(key, default)
 
     def parse_input(self):
-        self.params = self._parse_params() or {}
+        self.command, self.params = self._parse_params()
         self.lowerParams = {k.lower(): v for k, v in self.params.items()}
 
     def content_responder(self, response):
@@ -218,7 +219,7 @@ class Requester(gws.IWebRequester):
         if path == gws.SERVER_ENDPOINT:
             # example.com/_
             # the cmd param is expected to be in the query string or json
-            cmd = None
+            cmd = ''
         elif path.startswith(gws.SERVER_ENDPOINT + '/'):
             # example.com/_/someCommand
             # the cmd param is in the url
@@ -231,21 +232,15 @@ class Requester(gws.IWebRequester):
             raise error.NotFound()
 
         if self.inputType:
-            args = self._decode_struct(self.inputType)
+            params = self._decode_struct(self.inputType)
         else:
-            args = dict(self._wz.args)
+            params = dict(self._wz.args)
             if path_parts:
                 for n in range(1, len(path_parts), 2):
-                    args[path_parts[n - 1]] = path_parts[n]
+                    params[path_parts[n - 1]] = path_parts[n]
 
-        if cmd:
-            cmd2 = args.get('cmd')
-            if cmd2 and cmd2 != cmd:
-                gws.log.error(f'cmd params do not match: {cmd!r} {cmd2!r}')
-                raise error.BadRequest()
-            args['cmd'] = cmd
-
-        return args
+        cmd = cmd or params.get('cmd', '')
+        return cmd, params
 
     def _struct_type(self, header):
         if header:

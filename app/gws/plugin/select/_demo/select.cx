@@ -14,7 +14,7 @@ projects+ {
     title "Select Tool"
     metadata.abstract "Select vector objects on the map."
 
-    api.actions+ {
+    actions+ {
         type "select"
         storage {
             permissions {

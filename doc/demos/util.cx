@@ -101,11 +101,11 @@
 @end
 
 @def demo_api
-    api.actions+ { type "web" }
-    api.actions+ { type "map" }
-    api.actions+ { type "project" }
-    api.actions+ { type "search" }
-    api.actions+ { type "printer" }
+    actions+ { type "web" }
+    actions+ { type "map" }
+    actions+ { type "project" }
+    actions+ { type "search" }
+    actions+ { type "printer" }
 @end
 
 @def demo_client

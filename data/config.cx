@@ -1,9 +1,9 @@
 permissions.read "allow all"
 
-api.actions+ { type "map" }
-api.actions+ { type "printer" }
-api.actions+ { type "project" }
-api.actions+ { type "web" }
+actions+ { type "map" }
+actions+ { type "printer" }
+actions+ { type "project" }
+actions+ { type "web" }
 
 locales ["de_DE"]
 

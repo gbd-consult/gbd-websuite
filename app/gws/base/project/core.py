@@ -16,7 +16,7 @@ class Config(gws.ConfigWithAccess):
 
     type: str = 'default'
 
-    api: t.Optional[gws.base.action.manager.Config]
+    actions: t.Optional[list[gws.ext.config.action]]
     """project-specific actions"""
     assets: t.Optional[gws.base.web.site.DocumentRootConfig]
     """project-specific assets options"""
@@ -78,6 +78,7 @@ class Object(gws.Node, gws.IProject):
 
         self.localeUids = self.cfg('locales') or self.root.app.localeUids
 
+        self.actions = self.create_children(gws.ext.object.action, self.cfg('actions'))
         self.map = self.create_child_if_configured(gws.ext.object.map, self.cfg('map'))
         self.overviewMap = self.create_child_if_configured(gws.base.map.Object, self.cfg('overviewMap'))
         self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
@@ -86,7 +87,6 @@ class Object(gws.Node, gws.IProject):
         self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
         self.client = self.create_child_if_configured(gws.base.client.Object, self.cfg('client'))
         self.owsServices = self.create_children(gws.ext.object.owsService, self.cfg('owsServices'))
-        self.actionMgr = self.create_child_if_configured(gws.base.action.manager.Object, self.cfg('api'))
 
     def props(self, user):
         desc = None
@@ -95,7 +95,7 @@ class Object(gws.Node, gws.IProject):
             desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
 
         return gws.Props(
-            actions=self.root.app.actionMgr.actions_for(user, self.actionMgr),
+            actions=self.root.app.actionMgr.actions_for_project(self, user),
             client=self.client or self.root.app.client,
             description=desc.content if desc else '',
             map=self.map,

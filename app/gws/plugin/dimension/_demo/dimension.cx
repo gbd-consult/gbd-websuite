@@ -14,7 +14,7 @@ projects+ {
     title "Dimension (Bemaßung)"
     metadata.abstract "Create, edit and save dimensions."
 
-    api.actions+ {
+    actions+ {
         type "dimension"
         layerUids [ "nrw_kreise_wfs" ]
         storage {

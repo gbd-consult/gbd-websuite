@@ -49,9 +49,11 @@ def handle_request(environ) -> gws.IWebResponder:
     except Exception as exc:
         return handle_error(req, exc)
 
-    gws.log.if_debug(_debug_repr, 'REQUEST_BEGIN:', req.params)
+    gws.log.if_debug(_debug_repr, f'REQUEST_BEGIN {req.command}', req.params)
+    gws.time_start(f'REQUEST {req.command}')
     res = apply_middleware(root, req)
-    gws.log.if_debug(_debug_repr, 'REQUEST_END:', res)
+    gws.time_end()
+    gws.log.if_debug(_debug_repr, f'REQUEST_END {req.command}', res)
 
     return res
 
@@ -72,7 +74,7 @@ def apply_middleware(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebRespond
 
     if not res:
         try:
-            res = final_middleware(req)
+            res = handle_action(root, req)
         except Exception as exc:
             res = handle_error(req, exc)
 
@@ -144,32 +146,29 @@ def handle_http_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPExcept
 _relaxed_read_options = {'case_insensitive', 'convert_values', 'ignore_extra_props'}
 
 
-def final_middleware(req: gws.IWebRequester) -> gws.IWebResponder:
-    command_name = req.param('cmd')
-    if not command_name:
+def handle_action(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebResponder:
+    if not req.command:
         raise gws.base.web.error.NotFound()
 
-    read_options = None
-
     if req.isApi:
-        command_category = 'api'
-        params = req.param('params')
+        category = 'api'
+        params = req.params
+        read_options = None
     elif req.isGet:
-        command_category = 'get'
+        category = 'get'
         params = req.params
         read_options = _relaxed_read_options
     elif req.isPost:
-        command_category = 'post'
+        category = 'post'
         params = req.params
         read_options = _relaxed_read_options
     else:
         # @TODO: add HEAD
         raise gws.base.web.error.MethodNotAllowed()
 
-    fn, request = gws.base.action.dispatch(
-        req.root,
-        command_category,
-        command_name,
+    fn, request = root.app.actionMgr.prepare_action(
+        category,
+        req.command,
         params,
         req.user,
         read_options
@@ -178,7 +177,7 @@ def final_middleware(req: gws.IWebRequester) -> gws.IWebResponder:
     response = fn(req, request)
 
     if response is None:
-        gws.log.error(f'action not handled {command_category!r}:{command_name!r}')
+        gws.log.error(f'action not handled {category!r}:{req.command!r}')
         raise gws.base.web.error.NotFound()
 
     if isinstance(response, gws.ContentResponse):

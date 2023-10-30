@@ -17,7 +17,7 @@ projects+ {
         }
     }
 
-    api.actions+ {
+    actions+ {
         type "ows"
     }
 

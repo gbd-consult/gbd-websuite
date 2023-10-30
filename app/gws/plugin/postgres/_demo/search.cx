@@ -5,7 +5,7 @@ projects+ {
     client.addElements+ { tag "Sidebar.Search" }
     client.options.sidebarActiveTab "Sidebar.Search"
 
-    api.actions+ { type "search" }
+    actions+ { type "search" }
 
     finders+ {
         type "postgres"

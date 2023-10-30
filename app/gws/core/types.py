@@ -406,6 +406,7 @@ class IWebRequester(Protocol):
     root: 'IRoot'
     site: 'IWebSite'
     params: dict
+    command: str
 
     session: 'IAuthSession'
     user: 'IUser'
@@ -2142,11 +2143,18 @@ class CliParams(Data):
 
 
 class IActionManager(INode, Protocol):
-    items: list['IAction']
+    def actions_for_project(self, project: 'IProject', user: IUser) -> list['IAction']: ...
 
-    def get_action(self, ext_name: str) -> Optional['IAction']: ...
+    def locate_action(self, *objects, ext_name: str, user: IUser) -> Optional['IAction']: ...
 
-    def actions_for(self, user: IUser, other: Optional['IActionManager'] = None) -> list['IAction']: ...
+    def prepare_action(
+            self,
+            command_category: str,
+            command_name: str,
+            params: dict,
+            user: Optional['IUser'],
+            read_options=None,
+    ): tuple[Callable, Request]: ...
 
 
 class IAction(INode, Protocol):
@@ -2163,7 +2171,6 @@ class IClient(INode, Protocol):
 
 
 class IProject(INode, Protocol):
-    actionMgr: 'IActionManager'
     assetsRoot: Optional['WebDocumentRoot']
     client: 'IClient'
 
@@ -2171,6 +2178,7 @@ class IProject(INode, Protocol):
     map: 'IMap'
     metadata: 'Metadata'
 
+    actions: list['IAction']
     finders: list['IFinder']
     models: list['IModel']
     printers: list['IPrinter']
@@ -2218,6 +2226,7 @@ class IApplication(INode, Protocol):
     templateMgr: 'ITemplateManager'
     webMgr: 'IWebManager'
 
+    actions: list['IAction']
     finders: list['IFinder']
     templates: list['ITemplate']
     printers: list['IPrinter']

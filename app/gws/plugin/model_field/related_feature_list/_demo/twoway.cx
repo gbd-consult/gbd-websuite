@@ -2,7 +2,7 @@ projects+ {
     title "Edit: relatedFeatureList (two-way)"
     metadata.abstract "Editing related 'child' and 'parent' features"
 
-    api.actions+ { type "edit" }
+    actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }
     client.addElements+ { tag "Toolbar.Edit" }
     client.options.sidebarActiveTab "Sidebar.Edit"

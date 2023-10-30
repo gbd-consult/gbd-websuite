@@ -19,7 +19,7 @@ projects+ {
         zoom.maxScale  1000000
     }
 
-    api.actions+        { type "edit"         access "allow user, deny all" }
+    actions+        { type "edit"         access "allow user, deny all" }
     client.addElements+ { tag "Sidebar.Edit"  access "allow user, deny all" }
     client.addElements+ { tag "Toolbar.Edit"  access "allow user, deny all" }
 

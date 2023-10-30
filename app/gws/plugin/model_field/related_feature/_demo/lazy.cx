@@ -13,7 +13,7 @@ projects+ {
     title "Edit: relatedFeature (lazy loading)"
     metadata.abstract "Loading related features on demand."
 
-    api.actions+ { type "edit" }
+    actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }
     client.addElements+ { tag "Toolbar.Edit" }
     client.options.sidebarActiveTab "Sidebar.Edit"

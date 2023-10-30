@@ -2,7 +2,7 @@ projects+ {
     title "Edit: file list"
     metadata.abstract "Editing files from a related model."
 
-    api.actions+ { type "edit" }
+    actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }
     client.addElements+ { tag "Toolbar.Edit" }
     client.options.sidebarActiveTab "Sidebar.Edit"

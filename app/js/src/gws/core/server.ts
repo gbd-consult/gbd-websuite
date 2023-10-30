@@ -115,7 +115,7 @@ export class Server extends api.BaseServer {
         let req: any = {
             url: this.url + '/' + cmd,
             method: 'POST',
-            data: {params},
+            data: params,
             withCredentials: true
         };
 

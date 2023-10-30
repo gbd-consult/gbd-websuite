@@ -2,7 +2,7 @@ projects+ {
     title "QGIS direct search"
     metadata.abstract "`qgis` layers with direct search for postgres and OWS layers"
 
-    api.actions+ { type "search" }
+    actions+ { type "search" }
 
     map {
         center {demo_point_duesseldorf_3857}
