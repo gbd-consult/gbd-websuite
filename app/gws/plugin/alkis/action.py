@@ -9,8 +9,6 @@ import gws.base.database
 import gws.base.feature
 import gws.base.model
 import gws.base.printer
-import gws.base.printer.core
-import gws.base.printer.job
 import gws.base.shape
 import gws.base.storage
 import gws.base.template

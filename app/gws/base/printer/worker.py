@@ -91,17 +91,25 @@ class Object:
 
     def notify(self, event, details=None):
         gws.log.debug(f'JOB {self.jobUid}: print.worker.notify {event=} {details=}')
+        args = {
+            'stepType': event,
+        }
 
         if event == 'begin_plane':
             name = gws.get(details, 'layer.title')
-            return self.update_job(inc=True, stepType='begin_plane', stepName=name or '')
+            args['progress'] = True
+            args['stepName'] = name or ''
 
-        if event == 'finalize_print':
+        elif event == 'finalize_print':
+            args['progress'] = True
             return self.update_job(inc=True)
 
-        if event == 'begin_page':
+        elif event == 'begin_page':
             self.page_count += 1
-            return self.update_job(step=0, stepType='begin_page', stepName=str(self.page_count))
+            args['step'] = 0
+            args['stepName'] = str(self.page_count)
+
+        return self.update_job(**args)
 
     def run(self):
         resp = self.template.render(self.tri)
@@ -258,7 +266,7 @@ class Object:
 
         state = kwargs.pop('state', None)
 
-        if kwargs.pop('inc', None):
+        if kwargs.pop('progress', None):
             kwargs['step'] = job.payload.get('step', 0) + 1
 
         job.update(state=state, payload=gws.merge(job.payload, kwargs))

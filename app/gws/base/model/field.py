@@ -47,10 +47,7 @@ class Object(gws.Node, gws.IModelField):
         self.configure_widget()
 
     def configure_flags(self):
-        col = None
-        desc = self.model.describe()
-        if desc:
-            col = desc.columnMap.get(self.name)
+        col = self.describe()
 
         p = self.cfg('isPrimaryKey')
         if p is not None:
@@ -166,3 +163,10 @@ class Object(gws.Node, gws.IModelField):
 
     def python_to_prop(self, feature, value, mc: gws.ModelContext):
         return value
+
+    ##
+
+    def describe(self):
+        desc = self.model.describe()
+        if desc:
+            return desc.columnMap.get(self.name)

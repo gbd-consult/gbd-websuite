@@ -142,19 +142,21 @@ class Object(gws.base.template.Object):
         if not tri.maps:
             return
 
-        map0 = tri.maps[0]
+        notify = tri.notify or (lambda *args: None)
+        mp = tri.maps[0]
 
         mri = gws.MapRenderInput(
-            backgroundColor=map0.backgroundColor,
-            bbox=map0.bbox,
-            center=map0.center,
+            backgroundColor=mp.backgroundColor,
+            bbox=mp.bbox,
+            center=mp.center,
             crs=tri.crs,
             dpi=tri.dpi,
             mapSize=self.mapSize,
-            planes=map0.planes,
+            notify=notify,
+            planes=mp.planes,
             project=tri.project,
-            rotation=map0.rotation,
-            scale=map0.scale,
+            rotation=mp.rotation,
+            scale=mp.scale,
             user=tri.user,
         )
 

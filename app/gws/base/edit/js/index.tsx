@@ -423,10 +423,7 @@ class TableViewDialog extends gws.View<ViewProps> {
 
         if (ok) {
             cc.featureCache.clear();
-
             await this.makeAndCacheRows()
-
-
         }
 
         cc.updateEditState({tableViewLoading: false})

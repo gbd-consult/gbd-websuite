@@ -2,9 +2,7 @@
 // Version __VERSION__
 
 function _gwsPostRequest(cmd, params, onSuccess, onFailure) {
-    let data = {
-        params: params || {}
-    };
+    let data = params || {};
 
     let xhr = new XMLHttpRequest()
     xhr.open('POST', '/_/' + cmd, true)

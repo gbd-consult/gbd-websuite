@@ -39,9 +39,10 @@ class Object(gws.base.model.scalar_field.Object):
         if s:
             self.geometryType = s
             return True
-        c = self.model.describe().columnMap.get(self.name)
-        if c and c.geometryType:
-            self.geometryType = c.geometryType
+
+        col = self.describe()
+        if col and col.geometryType:
+            self.geometryType = col.geometryType
             return True
 
     def configure_geometry_crs(self):
@@ -49,10 +50,13 @@ class Object(gws.base.model.scalar_field.Object):
         if s:
             self.geometryCrs = gws.gis.crs.get(s)
             return True
-        c = self.model.describe().columnMap.get(self.name)
-        if c and c.geometrySrid:
-            self.geometryCrs = gws.gis.crs.get(c.geometrySrid)
-            return True
+
+        col = self.describe()
+        if col and col.geometrySrid:
+            crs = gws.gis.crs.get(col.geometrySrid)
+            if crs:
+                self.geometryCrs = crs
+                return True
 
     def configure_widget(self):
         if not super().configure_widget():

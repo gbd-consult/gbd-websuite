@@ -85,7 +85,7 @@ class Group(gws.Data):
 
 
 class Object(gws.Node):
-    model: gws.base.model.DefaultModel
+    model: gws.base.model.dynamic_model.Object
     groups: list[Group]
 
     def configure(self):
@@ -106,7 +106,7 @@ class Object(gws.Node):
                 if f.name not in fields_map:
                     fields_map[f.name] = f
 
-        self.model = self.create_child(gws.base.model.DefaultModel, fields=list(fields_map.values()))
+        self.model = self.create_child(gws.base.model.dynamic_model.Object, fields=list(fields_map.values()))
 
     """
     The Flurstueck structure, as created by our indexer, is deeply nested.

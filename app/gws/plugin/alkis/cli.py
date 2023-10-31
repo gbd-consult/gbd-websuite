@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.action
+import gws.lib.cli as cli
 import gws.config
 import gws.types as t
 
@@ -27,7 +28,20 @@ class Object(gws.Node):
         """Create the ALKIS index."""
 
         root = gws.config.load()
-        act = t.cast(action.Object, gws.base.action.find(root, 'alkis', root.app.authMgr.systemUser, p.projectUid))
+        project = None
+
+        if p.projectUid:
+            project = root.app.project(p.projectUid)
+            if not project:
+                gws.log.error(f'project {p.projectUid} not found')
+                return
+        act = t.cast(
+            action.Object,
+            root.app.actionMgr.locate_action(project, 'alkis', root.app.authMgr.systemUser)
+        )
+        if not act:
+            gws.log.error(f'action "alkis" not found')
+            return
         if act.indexExists and not p.force:
             return
         indexer.run(act.index, act.dataSchema, with_force=p.force, with_cache=p.cache)

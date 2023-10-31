@@ -1353,6 +1353,8 @@ class IModelField(INode, Protocol):
 
     def python_to_prop(self, feature: 'IFeature', value, mc: ModelContext): ...
 
+    def describe(self) -> Optional[ColumnDescription]: ...
+
 
 class IModel(INode, Protocol):
     defaultSort: list['SearchSort']
@@ -2145,14 +2147,14 @@ class CliParams(Data):
 class IActionManager(INode, Protocol):
     def actions_for_project(self, project: 'IProject', user: IUser) -> list['IAction']: ...
 
-    def locate_action(self, *objects, ext_name: str, user: IUser) -> Optional['IAction']: ...
+    def locate_action(self, project: Optional['IProject'], ext_type: str, user: IUser) -> Optional['IAction']: ...
 
     def prepare_action(
             self,
             command_category: str,
             command_name: str,
             params: dict,
-            user: Optional['IUser'],
+            user: 'IUser',
             read_options=None,
     ): tuple[Callable, Request]: ...
 

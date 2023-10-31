@@ -4,7 +4,6 @@ import gws
 import gws.spec.runtime
 import gws.base.action
 import gws.lib.cli as cli
-import gws.types as t
 
 
 def main(args):
@@ -53,10 +52,10 @@ def main2(args):
         return 1
 
     root = gws.create_root_object(specs)
-    mgr = t.cast(gws.base.action.manager.Object, root.create(gws.base.action.manager.Object))
 
     try:
-        fn, request = mgr.prepare_action(
+        fn, request = gws.base.action.prepare_cli_action(
+            root,
             command_category='cli',
             command_name=camelize(cmd1 + '-' + cmd2),
             params={camelize(key): val for key, val in args.items()},

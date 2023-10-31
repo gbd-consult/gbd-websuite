@@ -23,7 +23,6 @@ class Object(gws.base.template.Object):
 
     def render(self, tri):
         notify = tri.notify or (lambda *args: None)
-
         mp = tri.maps[0]
 
         mri = gws.MapRenderInput(
