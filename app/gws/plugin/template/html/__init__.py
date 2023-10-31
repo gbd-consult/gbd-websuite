@@ -1,16 +1,15 @@
 """CX templates"""
 
-import re
-
 import gws
+import gws.base.legend
 import gws.base.template
+import gws.gis.render
+import gws.lib.date
 import gws.lib.htmlx
 import gws.lib.mime
+import gws.lib.osx
 import gws.lib.pdf
-import gws.gis.render
-import gws.base.legend
 import gws.lib.vendor.jump
-
 import gws.types as t
 
 gws.ext.new.template('html')
@@ -30,6 +29,8 @@ class Props(gws.base.template.Props):
 class Object(gws.base.template.Object):
     path: str
     text: str
+    compiledTime: float = 0
+    compiledFn = None
 
     def configure(self):
         self.path = self.cfg('path')
@@ -40,52 +41,50 @@ class Object(gws.base.template.Object):
     def render(self, tri):
         self.notify(tri, 'begin_print')
 
-        html, engine = self.do_render(tri, self.text, self.path, tri.args)
-        res = self.finalize(tri, html, engine)
+        engine = Engine(self, tri)
+        self.compile(engine)
+
+        args = self.prepare_args(tri.args)
+        args['__renderUid'] = gws.random_string(8)
+        html = engine.call(self.compiledFn, args=args, error=self.error_handler)
+
+        res = self.finalize(tri, html, args, engine)
 
         self.notify(tri, 'end_print')
         return res
 
-    ##
+    def compile(self, engine: 'Engine'):
 
-    def do_render(self, tri: gws.TemplateRenderInput, text: str, path: str, args):
-        # @TODO cache compiled templates
+        if self.path and (not self.text or gws.lib.osx.file_mtime(self.path) > self.compiledTime):
+            self.text = gws.read_file(self.path)
+            self.compiledFn = None
 
-        args = self.prepare_args(args)
-        args['__renderUid'] = gws.random_string(8)
+        if self.root.app.developer_option('template.no_cache'):
+            self.compiledFn = None
 
-        engine = Engine(self, tri)
+        if not self.compiledFn:
+            gws.log.debug(f'compiling {self.uid!r} {self.path=}')
+            if self.root.app.developer_option('template.save_compiled'):
+                gws.write_file(
+                    gws.ensure_dir(f'{gws.VAR_DIR}/debug') + f'/compiled_template_{self.uid}',
+                    engine.translate(self.text, path=self.path)
+                )
 
-        if not text:
-            try:
-                text = gws.read_file(self.path)
-            except OSError as exc:
-                raise gws.Error(f'read error: {self.path!r}') from exc
-
-        if self.root.app.developer_option('template.save_compiled'):
-            gws.write_file(
-                gws.ensure_dir(f'{gws.VAR_DIR}/debug') + '/template_' + gws.to_uid(path or text[:100]),
-                engine.translate(text, path=path))
-
-        err = self.error_handler
-        if self.root.app.developer_option('template.raise_errors'):
-            err = self.debug_error_handler
-
-        html = engine.render(text, path=path, args=args, error=err)
-        return html, engine
+            self.compiledFn = engine.compile(self.text, path=self.path)
+            self.compiledTime = gws.lib.date.utime()
 
     def error_handler(self, exc, path, line, env):
         rid = env.ARGS.get('__renderUid', '?')
+
+        if self.root.app.developer_option('template.raise_errors'):
+            gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: {exc} IN {path}:{line}')
+            for k, v in sorted(getattr(env, 'ARGS', {}).items()):
+                gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: ARGS {k}={v!r}')
+            gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: stop')
+            return False
+
         gws.log.warning(f'TEMPLATE_ERROR: {self.uid}/{rid}: {exc} IN {path}:{line}')
         return True
-
-    def debug_error_handler(self, exc, path, line, env):
-        rid = env.ARGS.get('__renderUid', '?')
-        gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: {exc} IN {path}:{line}')
-        for k, v in sorted(getattr(env, 'ARGS', {}).items()):
-            gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: ARGS {k}={v!r}')
-        gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: stop')
-        return False
 
     ##
 
@@ -153,7 +152,7 @@ class Object(gws.base.template.Object):
 
     ##
 
-    def finalize(self, tri: gws.TemplateRenderInput, html: str, engine: 'Engine'):
+    def finalize(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
         self.notify(tri, 'finalize_print')
 
         mime = tri.mimeOut
@@ -166,58 +165,64 @@ class Object(gws.base.template.Object):
             return gws.ContentResponse(mime=mime, content=html)
 
         if mime == gws.lib.mime.PDF:
-            res_path = self.finalize_pdf(tri, html, engine)
+            res_path = self.finalize_pdf(tri, html, args, main_engine)
             return gws.ContentResponse(path=res_path)
 
         if mime == gws.lib.mime.PNG:
-            res_path = self.finalize_png(tri, html, engine)
+            res_path = self.finalize_png(tri, html, args, main_engine)
             return gws.ContentResponse(path=res_path)
 
         raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')
 
-    def finalize_pdf(self, tri: gws.TemplateRenderInput, html: str, engine: 'Engine'):
+    def finalize_pdf(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
         content_pdf_path = gws.printtemp('content.pdf')
 
-        psz = engine.pageSize or self.pageSize
-        pma = engine.pageMargin or self.pageMargin
+        page_size = main_engine.pageSize or self.pageSize
+        page_margin = main_engine.pageMargin or self.pageMargin
 
         gws.lib.htmlx.render_to_pdf(
             self.decorate_html(html),
             out_path=content_pdf_path,
-            page_size=psz,
-            page_margin=pma,
+            page_size=page_size,
+            page_margin=page_margin,
         )
 
-        has_frame = engine.header or engine.footer
+        has_frame = main_engine.header or main_engine.footer
         if not has_frame:
             return content_pdf_path
 
-        args = gws.merge(tri.args, numpages=gws.lib.pdf.page_count(content_pdf_path))
-        frame_text = self.frame_template(engine.header or '', engine.footer or '', psz)
-        frame_html, _ = self.do_render(tri, frame_text, '', args)
+        args = gws.merge(args, numpages=gws.lib.pdf.page_count(content_pdf_path))
+
+        frame_engine = Engine(self, tri)
+        frame_text = self.frame_template(main_engine.header or '', main_engine.footer or '', page_size)
+        frame_html = frame_engine.render(frame_text, args=args, error=self.error_handler)
+
         frame_pdf_path = gws.printtemp('frame.pdf')
+
         gws.lib.htmlx.render_to_pdf(
             self.decorate_html(frame_html),
             out_path=frame_pdf_path,
-            page_size=psz,
+            page_size=page_size,
             page_margin=None,
         )
 
         combined_pdf_path = gws.printtemp('combined.pdf')
         gws.lib.pdf.overlay(frame_pdf_path, content_pdf_path, combined_pdf_path)
+
         return combined_pdf_path
 
-    def finalize_png(self, tri: gws.TemplateRenderInput, html: str, engine: 'Engine'):
+    def finalize_png(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
         out_png_path = gws.printtemp('out.png')
 
-        psz = engine.pageSize or self.pageSize
-        pma = engine.pageMargin or self.pageMargin
+        page_size = main_engine.pageSize or self.pageSize
+        page_margin = main_engine.pageMargin or self.pageMargin
 
         gws.lib.htmlx.render_to_png(
             self.decorate_html(html),
             out_path=out_png_path,
-            page_size=psz,
-            page_margin=pma)
+            page_size=page_size,
+            page_margin=page_margin,
+        )
 
         return out_png_path
 
