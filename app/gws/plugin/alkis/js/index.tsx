@@ -146,7 +146,7 @@ class PrintAuxButton extends gws.View<ViewProps> {
     render() {
         let cc = _master(this);
 
-        if (!cc.setup.printTemplate || this.props.features.length === 0)
+        if (!cc.setup.printer || this.props.features.length === 0)
             return null;
         return <sidebar.AuxButton
             className="alkisPrintAuxButton"
@@ -160,7 +160,7 @@ class HighlightAuxButton extends gws.View<ViewProps> {
     render() {
         let cc = _master(this);
 
-        if (!cc.setup.printTemplate || this.props.features.length === 0)
+        if (!cc.setup.printer || this.props.features.length === 0)
             return null;
         return <sidebar.AuxButton
             className="alkisHighlightAuxButton"
@@ -1279,17 +1279,16 @@ class Controller extends gws.Controller {
             marker: null,
         });
 
-        // let level = this.setup.printTemplate.qualityLevels[0];
-        // let dpi = level ? level.dpi : 0;
-        let dpi = 150;
+        let level = this.setup.printer.qualityLevels[0];
+        let dpi = level ? level.dpi : 0;
         let featureStyle = this.app.style.get('.alkisFeature').props;
 
         let mapParams = await this.map.printParams(null, dpi);
         mapParams.planes = mapParams.planes.filter(p => p.layerUid !== '_alkisSelectLayer');
 
-        let printRequest: gws.api.base.printer.Request = {
-            type: gws.api.base.printer.RequestType.template,
-            printerUid: this.setup.printTemplate.uid,
+        let printRequest: gws.api.core.PrintRequest = {
+            type: gws.api.core.PrintRequestType.template,
+            printerUid: this.setup.printer.uid,
             dpi,
             maps: [mapParams]
         };

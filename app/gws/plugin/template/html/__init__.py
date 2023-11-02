@@ -59,7 +59,7 @@ class Object(gws.base.template.Object):
             self.text = gws.read_file(self.path)
             self.compiledFn = None
 
-        if self.root.app.developer_option('template.no_cache'):
+        if self.root.app.developer_option('template.always_reload'):
             self.compiledFn = None
 
         if not self.compiledFn:

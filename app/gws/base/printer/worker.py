@@ -9,7 +9,6 @@ import gws.lib.osx
 import gws.lib.style
 import gws.lib.uom as units
 import gws.types as t
-from . import core
 
 
 def worker(root: gws.IRoot, job: gws.lib.job.Object):
@@ -29,7 +28,7 @@ class Object:
     printer: gws.IPrinter
     template: gws.ITemplate
 
-    def __init__(self, root: gws.IRoot, job_uid: str, request: core.Request, user: gws.IUser):
+    def __init__(self, root: gws.IRoot, job_uid: str, request: gws.PrintRequest, user: gws.IUser):
         self.jobUid = job_uid
         self.root = root
         self.user = user
@@ -116,7 +115,7 @@ class Object:
         self.update_job(state=gws.JobState.complete, resultPath=resp.path)
         return resp.path
 
-    def prepare_map(self, tri: gws.TemplateRenderInput, mp: core.MapParams) -> gws.MapRenderInput:
+    def prepare_map(self, tri: gws.TemplateRenderInput, mp: gws.PrintMap) -> gws.MapRenderInput:
         planes = []
 
         style_opts = gws.lib.style.parser.Options(
@@ -156,7 +155,7 @@ class Object:
             visibleLayers=layers,
         )
 
-    def prepare_map_plane(self, n, plane: core.Plane, style_dct) -> t.Optional[gws.MapRenderInputPlane]:
+    def prepare_map_plane(self, n, plane: gws.PrintPlane, style_dct) -> t.Optional[gws.MapRenderInputPlane]:
         opacity = 1
         s = plane.get('opacity')
         if s is not None:
@@ -164,7 +163,7 @@ class Object:
             if opacity == 0:
                 return
 
-        if plane.type == core.PlaneType.raster:
+        if plane.type == gws.PrintPlaneType.raster:
             layer = t.cast(gws.ILayer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
             if not layer:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} not found')
@@ -179,7 +178,7 @@ class Object:
                 subLayers=plane.get('subLayers'),
             )
 
-        if plane.type == core.PlaneType.vector:
+        if plane.type == gws.PrintPlaneType.vector:
             layer = t.cast(gws.ILayer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
             if not layer:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} not found')
@@ -195,7 +194,7 @@ class Object:
                 styles=[style] if style else [],
             )
 
-        if plane.type == core.PlaneType.bitmap:
+        if plane.type == gws.PrintPlaneType.bitmap:
             img = None
             if plane.bitmapMode in ('RGBA', 'RGB'):
                 img = gws.lib.image.from_raw_data(
@@ -211,7 +210,7 @@ class Object:
                 opacity=opacity,
             )
 
-        if plane.type == core.PlaneType.url:
+        if plane.type == gws.PrintPlaneType.url:
             img = gws.lib.image.from_data_url(plane.url)
             if not img:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: url error')
@@ -222,7 +221,7 @@ class Object:
                 opacity=opacity,
             )
 
-        if plane.type == core.PlaneType.features:
+        if plane.type == gws.PrintPlaneType.features:
             model = self.root.app.modelMgr.default_model()
             used_styles = {}
 
@@ -249,7 +248,7 @@ class Object:
                 styles=list(used_styles.values()),
             )
 
-        if plane.type == core.PlaneType.soup:
+        if plane.type == gws.PrintPlaneType.soup:
             return gws.MapRenderInputPlane(
                 type=gws.MapRenderInputPlaneType.svgSoup,
                 soupPoints=plane.soupPoints,

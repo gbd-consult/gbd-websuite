@@ -150,7 +150,7 @@ export interface ILayer {
     isSystem: boolean;
 
     oLayer?: ol.layer.Layer;
-    printPlane?: api.base.printer.Plane;
+    printPlane?: api.core.PrintPlane;
 
     show();
     hide();
@@ -187,7 +187,7 @@ export interface MapViewState {
 
 export type FeatureMode = 'normal' | 'selected' | 'edit';
 
-export type StyleArg = string | api.lib.style.Props | IStyle;
+export type StyleArg = string | api.core.StyleProps | IStyle;
 
 export type StyleNameMap = {[m in FeatureMode]: string};
 export type StyleMapArgs = {[m in FeatureMode]: StyleArg};
@@ -196,21 +196,21 @@ export type StyleMapArgs = {[m in FeatureMode]: StyleArg};
 
 export interface IStyleManager {
     names: Array<string>;
-    props: Array<api.lib.style.Props>;
+    props: Array<api.core.StyleProps>;
 
     add(s: IStyle) : IStyle;
     at(name: string): IStyle | null;
     copy(style: IStyle, name: string|null);
     findFirst(selectors: Array<string>, geometryType?: string, state?: string): IStyle | null;
     get(style: StyleArg): IStyle | null;
-    loadFromProps(props: api.lib.style.Props): IStyle;
+    loadFromProps(props: api.core.StyleProps): IStyle;
     whenStyleChanged(map: IMapManager, name?: string);
 }
 
 export interface IStyle {
     cssSelector: string;
     values: Dict;
-    props: api.lib.style.Props;
+    props: api.core.StyleProps;
     source: string;
     olFunction: ol.StyleFunction;
     apply(geom: ol.geom.Geometry, label: string, resolution: number): Array<ol.style.Style>;
@@ -259,7 +259,7 @@ export interface IFeatureSearchArgs {
 }
 
 export interface IBasicPrintParams {
-    planes: Array<api.base.printer.Plane>,
+    planes: Array<api.core.PrintPlane>,
     rotation: number,
     scale: number
 }
@@ -344,7 +344,7 @@ export interface IMapManager {
     geom2shape(geom: ol.geom.Geometry): api.base.shape.Props;
     shape2geom(shape: api.base.shape.Props): ol.geom.Geometry;
 
-    printParams(boxRect: ClientRect | null, dpi: number): Promise<api.base.printer.MapParams>;
+    printParams(boxRect: ClientRect | null, dpi: number): Promise<api.core.PrintMap>;
 
     searchForFeatures(args: IFeatureSearchArgs): Promise<Array<IFeature>>;
 

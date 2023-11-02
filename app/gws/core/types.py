@@ -1577,15 +1577,8 @@ class ITemplateManager(INode, Protocol):
     def template_from_path(self, path: str) -> Optional['ITemplate']: ...
 
 
-class IPrinter(INode, Protocol):
-    title: str
-    template: 'ITemplate'
-    models: list['IModel']
-    qualityLevels: list[TemplateQualityLevel]
-
-
-class IPrinterManager(INode, Protocol):
-    def printers_for_project(self, project: 'IProject', user: 'IUser') -> list['IPrinter']: ...
+# ----------------------------------------------------------------------------------------------------------------------
+# jobs
 
 
 class JobState(Enum):
@@ -1601,6 +1594,118 @@ class JobState(Enum):
     """there was an error"""
     cancel = 'cancel'
     """the job was cancelled"""
+
+
+class IJob(Protocol):
+    error: str
+    payload: dict
+    state: JobState
+    uid: str
+    user: IUser
+
+    def run(self): ...
+
+    def update(self, payload: Optional[dict] = None, state: Optional[JobState] = None, error: Optional[str] = None): ...
+
+    def cancel(self): ...
+
+    def remove(self): ...
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# printing
+
+
+class PrintPlaneType(Enum):
+    bitmap = 'bitmap'
+    url = 'url'
+    features = 'features'
+    raster = 'raster'
+    vector = 'vector'
+    soup = 'soup'
+
+
+class PrintPlane(Data):
+    type: PrintPlaneType
+
+    opacity: Optional[float]
+    cssSelector: Optional[str]
+
+    bitmapData: Optional[bytes]
+    bitmapMode: Optional[str]
+    bitmapWidth: Optional[int]
+    bitmapHeight: Optional[int]
+
+    url: Optional[str]
+
+    features: Optional[list['FeatureProps']]
+
+    layerUid: Optional[str]
+    subLayers: Optional[list[str]]
+
+    soupPoints: Optional[list[Point]]
+    soupTags: Optional[list[Any]]
+
+
+class PrintMap(Data):
+    backgroundColor: Optional[int]
+    bbox: Optional[Extent]
+    center: Optional[Point]
+    planes: list[PrintPlane]
+    rotation: Optional[int]
+    scale: int
+    styles: Optional[list['StyleProps']]
+    visibleLayers: Optional[list[str]]
+
+
+class PrintRequestType(Enum):
+    template = 'template'
+    map = 'map'
+
+
+class PrintRequest(Request):
+    type: PrintRequestType
+
+    args: Optional[dict]
+    crs: Optional[CrsName]
+    outputFormat: Optional[str]
+    maps: Optional[list[PrintMap]]
+
+    printerUid: Optional[str]
+    dpi: Optional[int]
+    outputSize: Optional[Size]
+
+
+class PrintJobResponse(Response):
+    jobUid: str
+    progress: int
+    state: JobState
+    stepType: str
+    stepName: str
+    url: str
+
+
+class IPrinter(INode, Protocol):
+    title: str
+    template: 'ITemplate'
+    models: list['IModel']
+    qualityLevels: list[TemplateQualityLevel]
+
+
+class IPrinterManager(INode, Protocol):
+    def printers_for_project(self, project: 'IProject', user: 'IUser') -> list['IPrinter']: ...
+
+    def start_job(self, request: PrintRequest, user: IUser) -> IJob: ...
+
+    def get_job(self, uid: str, user: IUser) -> Optional[IJob]: ...
+
+    def run_job(self, request: PrintRequest, user: IUser): ...
+
+    def cancel_job(self, job: IJob): ...
+
+    def result_path(self, job: IJob) -> str: ...
+
+    def status(self, job: IJob) -> PrintJobResponse: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1658,6 +1763,12 @@ class StyleValues(Data):
 
     offset_x: int
     offset_y: int
+
+
+class StyleProps(Props):
+    cssSelector: Optional[str]
+    text: Optional[str]
+    values: Optional[dict]
 
 
 class IStyle(IObject, Protocol):

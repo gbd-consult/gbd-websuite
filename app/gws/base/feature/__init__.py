@@ -16,7 +16,7 @@ def new(
     return f
 
 
-class Feature(gws.Object, gws.IFeature):
+class Feature(gws.IFeature):
     def __init__(self, model: gws.IModel):
         self.attributes = {}
         self.cssSelector = ''

@@ -40,12 +40,6 @@ def from_props(props: gws.Props, opts: parser.Options = None) -> 'Style':
 ##
 
 
-class Props(gws.Props):
-    cssSelector: t.Optional[str]
-    text: t.Optional[str]
-    values: t.Optional[dict]
-
-
 class Config(gws.Config):
     """Feature style"""
 

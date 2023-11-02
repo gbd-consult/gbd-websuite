@@ -92,7 +92,7 @@ export class StyleManager implements types.IStyleManager {
         }
 
         if (typeof arg === 'object') {
-            let props = arg as api.lib.style.Props;
+            let props = arg as api.core.StyleProps;
 
             if (props.cssSelector) {
                 return this.getFromSelector(props.cssSelector);
@@ -125,13 +125,13 @@ export class StyleManager implements types.IStyleManager {
         });
     }
 
-    loadFromProps(props: api.lib.style.Props) {
+    loadFromProps(props: api.core.StyleProps) {
         this.styles[props.cssSelector] = new Style(props.cssSelector, props.values);
         return this.styles[props.cssSelector];
     }
 
-    get props(): Array<api.lib.style.Props> {
-        let ps: Array<api.lib.style.Props> = [];
+    get props(): Array<api.core.StyleProps> {
+        let ps: Array<api.core.StyleProps> = [];
 
         for (let [_, style] of lib.entries(this.styles)) {
             ps.push(style.props);

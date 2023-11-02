@@ -125,6 +125,8 @@ class Config(gws.ConfigWithAccess):
     """search results limit"""
     templates: t.Optional[list[gws.ext.config.template]]
     """templates for Flurstueck details"""
+    printers: t.Optional[list[gws.base.printer.Config]]
+    """print configurations"""
     ui: t.Optional[Ui] = {}
     """ui options"""
 
@@ -149,7 +151,7 @@ class ExportGroupProps(gws.Props):
 class Props(gws.base.action.Props):
     exportGroups: list[ExportGroupProps]
     limit: int
-    printTemplate: gws.base.template.Props
+    printer: t.Optional[gws.base.printer.Props]
     ui: Ui
     storage: t.Optional[gws.base.storage.Props]
     withBuchung: bool
@@ -258,8 +260,8 @@ class FindAdresseResponse(gws.Response):
 
 class PrintFlurstueckRequest(gws.Request):
     findRequest: FindFlurstueckRequest
-    printRequest: gws.base.printer.Request
-    featureStyle: gws.lib.style.Props
+    printRequest: gws.PrintRequest
+    featureStyle: gws.StyleProps
 
 
 class ExportFlurstueckRequest(gws.Request):
@@ -299,12 +301,6 @@ _DEFAULT_TEMPLATES = [
         path=f'{_dir}/templates/description.cx.html',
     ),
     gws.Config(
-        subject='flurstueck.print',
-        type='html',
-        path=f'{_dir}/templates/print.cx.html',
-        qualityLevels=[gws.TemplateQualityLevel(name='default', dpi=150)],
-    ),
-    gws.Config(
         subject='adresse.title',
         type='html',
         path=f'{_dir}/templates/adresse_title.cx.html',
@@ -321,10 +317,19 @@ _DEFAULT_TEMPLATES = [
     ),
 ]
 
+_DEFAULT_PRINTER = gws.Config(
+    uid='gws.plugin.alkis.default_printer',
+    template=gws.Config(
+        type='html',
+        path=f'{_dir}/templates/print.cx.html',
+    ),
+    qualityLevels=[{'dpi': 72}],
+)
+
 
 ##
 
-class Model(gws.base.model.Object):
+class Model(gws.base.model.dynamic_model.Object):
     def configure(self):
         self.uidName = 'uid'
         self.geometryName = 'geometry'
@@ -342,9 +347,11 @@ class Object(gws.base.action.Object):
     excludeGemarkung: set[str]
 
     model: gws.IModel
-    templates: list[gws.ITemplate]
     ui: Ui
     limit: int
+
+    templates: list[gws.ITemplate]
+    printers: list[gws.IPrinter]
 
     export: t.Optional[export.Object]
 
@@ -377,6 +384,9 @@ class Object(gws.base.action.Object):
 
         p = self.cfg('templates', default=[]) + _DEFAULT_TEMPLATES
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
+
+        self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
+        self.printers.append(self.root.create_shared(gws.ext.object.printer, _DEFAULT_PRINTER))
 
         d = gws.TextSearchOptions(type='exact')
         self.strasseSearchOptions = self.cfg('strasseSearchOptions', default=d)
@@ -412,11 +422,12 @@ class Object(gws.base.action.Object):
         if self.ui.useExport:
             export_groups = [ExportGroupProps(title=g.title, index=g.index) for g in self._export_groups(user)]
 
+
         return gws.merge(
             super().props(user),
             exportGroups=export_groups,
             limit=self.limit,
-            printTemplate=self.root.app.templateMgr.locate_template(self, user=user, subject='flurstueck.print'),
+            printer=gws.first(p for p in self.printers if user.can_use(p)),
             ui=self.ui,
             storage=self.storage,
             withBuchung=user.can_read(self.buchung),
@@ -510,7 +521,8 @@ class Object(gws.base.action.Object):
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
         )
 
-        features = []
+        fprops = []
+        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
 
         for fs in fs_list:
             f = gws.base.feature.new(model=self.model)
@@ -518,10 +530,10 @@ class Object(gws.base.action.Object):
             f.transform_to(crs)
             f.render_views(templates, user=req.user, **args)
             f.attributes.pop('fs')
-            features.append(f)
+            fprops.append(self.model.feature_to_view_props(f, mc))
 
         return FindFlurstueckResponse(
-            features=[gws.props(f, req.user, self) for f in features],
+            features=fprops,
             total=len(fs_list),
         )
 
@@ -546,7 +558,7 @@ class Object(gws.base.action.Object):
         return gws.ContentResponse(content=csv_bytes, mime='text/csv')
 
     @gws.ext.command.api('alkisPrintFlurstueck')
-    def print_flurstueck(self, req: gws.IWebRequester, p: PrintFlurstueckRequest) -> gws.base.printer.StatusResponse:
+    def print_flurstueck(self, req: gws.IWebRequester, p: PrintFlurstueckRequest) -> gws.PrintJobResponse:
         """Print Flurstueck features"""
 
         project = req.require_project(p.projectUid)
@@ -569,6 +581,8 @@ class Object(gws.base.action.Object):
         base_map = print_request.maps[0]
         fs_maps = []
 
+        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
+
         for fs in fs_list:
             f = gws.base.feature.new(model=self.model)
             f.attributes = dict(uid=fs.uid, fs=fs, geometry=fs.shape)
@@ -577,12 +591,12 @@ class Object(gws.base.action.Object):
             f.cssSelector = p.featureStyle.cssSelector
 
             c = f.shape().centroid()
-            fs_map = gws.base.printer.core.MapParams(base_map)
+            fs_map = gws.PrintMap(base_map)
             # @TODO scale to fit the fs?
             fs_map.center = (c.x, c.y)
-            fs_plane = gws.base.printer.core.Plane(
-                type=gws.base.printer.core.PlaneType.features,
-                features=[gws.props(f, req.user, self)],
+            fs_plane = gws.PrintPlane(
+                type=gws.PrintPlaneType.features,
+                features=[self.model.feature_to_view_props(f, mc)],
             )
             fs_map.planes = [fs_plane] + base_map.planes
             fs_maps.append(fs_map)
@@ -594,8 +608,8 @@ class Object(gws.base.action.Object):
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
         )
 
-        job = gws.base.printer.job.start(self.root, print_request, req.user)
-        return gws.base.printer.job.status(job)
+        job = self.root.app.printerMgr.start_job(print_request, req.user)
+        return self.root.app.printerMgr.status(job)
 
     @gws.ext.command.api('alkisSelectionStorage')
     def handle_storage(self, req: gws.IWebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:

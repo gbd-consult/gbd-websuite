@@ -48,7 +48,7 @@ def remove(uid):
     storage.remove(uid)
 
 
-class Object:
+class Object(gws.IJob):
     worker: str
 
     def __init__(self, root: gws.IRoot, rec):

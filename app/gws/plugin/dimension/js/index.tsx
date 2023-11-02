@@ -625,7 +625,7 @@ class Model {
         </svg>`;
     }
 
-    printPlane(): gws.api.base.printer.Plane {
+    printPlane(): gws.api.core.PrintPlane {
         let soup = {points: [], tags: [], styles: []};
 
         this.createDefsTag(soup);
@@ -637,7 +637,7 @@ class Model {
         }));
 
         return {
-            type: gws.api.base.printer.PlaneType.soup,
+            type: gws.api.core.PrintPlaneType.soup,
             soupPoints: soup.points,
             soupTags: soup.tags,
         }
@@ -648,7 +648,7 @@ class Model {
 class Layer extends gws.map.layer.FeatureLayer {
     master: Controller;
 
-    get printPlane(): gws.api.base.printer.Plane {
+    get printPlane(): gws.api.core.PrintPlane {
         if (this.master.model.empty)
             return null;
         return this.master.model.printPlane()

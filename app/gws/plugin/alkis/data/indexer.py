@@ -137,8 +137,7 @@ class _Indexer:
     def write_table(self, table_id, values):
         if self.ix.has_table(table_id):
             return
-        cnt = len(values)
-        with ProgressIndicator(f'ALKIS: write {table_id!r} ({cnt})', cnt) as progress:
+        with ProgressIndicator(f'ALKIS: write {table_id!r}', len(values)) as progress:
             self.ix.create_table(table_id, values, progress)
 
     def write(self):
@@ -854,8 +853,7 @@ class _FsIndexIndexer(_Indexer):
     }
 
     def collect(self):
-        cnt = len(self.rr.fsdata.om.Flurstueck)
-        with ProgressIndicator(f'ALKIS: creating indexes ({cnt})', cnt) as progress:
+        with ProgressIndicator(f'ALKIS: creating indexes', len(self.rr.fsdata.om.Flurstueck)) as progress:
             for fs in self.rr.fsdata.om.Flurstueck:
                 for r in fs.recs:
                     self.add(fs, r)

@@ -238,7 +238,7 @@ class Props(gws.Props):
 ##
 
 
-class Shape(gws.Object, gws.IShape):
+class Shape(gws.IShape):
     geom: shapely.geometry.base.BaseGeometry
 
     def __init__(self, geom, crs: gws.ICrs):

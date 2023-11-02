@@ -145,9 +145,9 @@ abstract class OlBackedLayer<T extends ol.layer.Layer> extends Layer {
 
     abstract createOLayer(): T;
 
-    get printPlane(): api.base.printer.Plane {
+    get printPlane(): api.core.PrintPlane {
         return {
-            type: api.base.printer.PlaneType.raster,
+            type: api.core.PrintPlaneType.raster,
             opacity: this.computedOpacity,
             layerUid: this.uid,
         }
@@ -271,7 +271,7 @@ export class TreeLayer extends OlBackedLayer<ol.layer.Image> {
             return null;
 
         return {
-            type: api.base.printer.PlaneType.raster,
+            type: api.core.PrintPlaneType.raster,
             opacity: this.computedOpacity,
             layerUid: this.uid,
             subLayers: ls,
@@ -359,7 +359,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         this.lastBbox = '';
     }
 
-    get printPlane(): api.base.printer.Plane {
+    get printPlane(): api.core.PrintPlane {
         let fs = lib.compact(this.features.map(f => f.getProps()));
 
         if (fs.length === 0)
@@ -368,7 +368,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         let style = this.map.style.findFirst([this.cssSelector], this.geometryType);
 
         return {
-            type: this.props.url ? api.base.printer.PlaneType.vector : api.base.printer.PlaneType.features,
+            type: this.props.url ? api.core.PrintPlaneType.vector : api.core.PrintPlaneType.features,
             opacity: this.computedOpacity,
             features: this.props.url ? [] : fs,
             cssSelector: style ? style.cssSelector : '',

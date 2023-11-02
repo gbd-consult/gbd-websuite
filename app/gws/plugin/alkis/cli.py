@@ -44,4 +44,5 @@ class Object(gws.Node):
             return
         if act.indexExists and not p.force:
             return
+
         indexer.run(act.index, act.dataSchema, with_force=p.force, with_cache=p.cache)

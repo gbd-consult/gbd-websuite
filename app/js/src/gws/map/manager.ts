@@ -831,10 +831,10 @@ export class MapManager implements types.IMapManager {
         return lib.uniq(layers);
     }
 
-    protected async printPlanes(boxRect, dpi): Promise<Array<api.base.printer.Plane>> {
+    protected async printPlanes(boxRect, dpi): Promise<Array<api.core.PrintPlane>> {
         let _this = this;
 
-        function makeBitmap2(): api.base.printer.Plane {
+        function makeBitmap2(): api.core.PrintPlane {
             let canvas = _this.oMap.getViewport().firstChild as HTMLCanvasElement;
 
             let rc = canvas.getBoundingClientRect(),
@@ -847,7 +847,7 @@ export class MapManager implements types.IMapManager {
 
             if (USE_RAW_BITMAPS_FOR_PRINT) {
                 return {
-                    type: api.base.printer.PlaneType.bitmap,
+                    type: api.core.PrintPlaneType.bitmap,
                     bitmapMode: 'RGBA',
                     bitmapData: imgData.data,
                     bitmapWidth: imgData.width,
@@ -863,12 +863,12 @@ export class MapManager implements types.IMapManager {
             cnv2.getContext('2d').putImageData(imgData, 0, 0);
 
             return {
-                type: api.base.printer.PlaneType.url,
+                type: api.core.PrintPlaneType.url,
                 url: cnv2.toDataURL()
             };
         }
 
-        async function makeBitmap(layers): Promise<api.base.printer.Plane> {
+        async function makeBitmap(layers): Promise<api.core.PrintPlane> {
             let hidden = [];
 
             _this.walk(_this.root, la => {
@@ -878,7 +878,7 @@ export class MapManager implements types.IMapManager {
                 }
             });
 
-            let bmp: api.base.printer.Plane;
+            let bmp: api.core.PrintPlane;
 
             await lib.delay(200, () => {
                 console.time('creating_bitmap');
@@ -908,7 +908,7 @@ export class MapManager implements types.IMapManager {
         // collect printItems or bitmaps for layers, group sequential bitmaps together
 
         interface PrintItemOrBitmap {
-            pi?: api.base.printer.Plane
+            pi?: api.core.PrintPlane
             bmpLayers?: Array<types.ILayer>
         }
 
@@ -935,7 +935,7 @@ export class MapManager implements types.IMapManager {
             }
         });
 
-        let res: Array<api.base.printer.Plane> = [];
+        let res: Array<api.core.PrintPlane> = [];
 
         for (let item of items) {
             if (item.pi) {
@@ -948,7 +948,7 @@ export class MapManager implements types.IMapManager {
         return res;
     }
 
-    async printParams(boxRect, dpi): Promise<api.base.printer.MapParams> {
+    async printParams(boxRect, dpi): Promise<api.core.PrintMap> {
         let vs = this.viewState,
             visibleLayers = [];
 

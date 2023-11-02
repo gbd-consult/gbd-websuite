@@ -26,7 +26,7 @@ interface ViewProps extends gws.types.ViewProps {
     controller: Controller;
     printerDialogZoomed: boolean;
     printerFormValues: object;
-    printerJob?: gws.api.base.printer.StatusResponse;
+    printerJob?: gws.api.core.PrintJobResponse;
     printerMode: 'screenshot' | 'print';
     printerScreenshotDpi: number;
     printerScreenshotHeight: number;
@@ -542,8 +542,8 @@ class Controller extends gws.Controller {
         delete args['_qualityIndex'];
         delete args['_printerIndex'];
 
-        let params: gws.api.base.printer.Request = {
-            type: gws.api.base.printer.RequestType.template,
+        let params: gws.api.core.PrintRequest = {
+            type: gws.api.core.PrintRequestType.template,
             args,
             printerUid: prt.uid,
             dpi,
@@ -563,8 +563,8 @@ class Controller extends gws.Controller {
 
         let vs = this.map.viewState;
 
-        let params: gws.api.base.printer.Request = {
-            type: gws.api.base.printer.RequestType.map,
+        let params: gws.api.core.PrintRequest = {
+            type: gws.api.core.PrintRequestType.map,
             maps: [mapParams],
             // format: 'png',
             dpi: dpi,
