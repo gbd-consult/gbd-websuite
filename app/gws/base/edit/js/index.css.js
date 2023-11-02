@@ -136,13 +136,11 @@ module.exports = v => {
             fontSize: v.TINY_FONT_SIZE,
             color: v.ERROR_COLOR,
             opacity: 0,
-            padding: 0,
+            padding: [v.UNIT, v.UNIT2],
             ...v.TRANSITION('opacity'),
 
             '&.isActive': {
                 opacity: 1,
-                padding: [v.UNIT, v.UNIT2],
-                ...v.TRANSITION('opacity'),
             }
 
         },

@@ -26,7 +26,7 @@ export class ModelRegistry implements types.IModelRegistry {
             geometryName: 'geometry',
             uidName: 'uid',
             loadingStrategy: api.core.FeatureLoadingStrategy.all,
-            tableViewFields: [],
+            tableViewColumns: [],
             title: '',
             uid: '',
         });
@@ -91,7 +91,7 @@ export class Model implements types.IModel {
     uidName: string;
     layerUid: string;
     loadingStrategy: api.core.FeatureLoadingStrategy;
-    tableViewFields: Array<types.IModelField>;
+    tableViewColumns: Array<types.TableViewColumn>;
     hasTableView: boolean;
     title: string;
     uid: string;
@@ -118,27 +118,23 @@ export class Model implements types.IModel {
         this.layerUid = props.layerUid;
         this.loadingStrategy = props.loadingStrategy;
         this.title = props.title;
-        this.tableViewFields = [];
-        this.hasTableView =  false;
+        this.tableViewColumns = [];
+        this.hasTableView = false;
         this.uid = props.uid;
 
         this.fields = [];
 
-        if (props.fields)
-            for (let p of props.fields)
-                this.fields.push(new ModelField(this).setProps(p));
-
-        if (props.tableViewFields) {
-            this.tableViewFields = []
-            for (let name of props.tableViewFields)
-                for (let f of this.fields)
-                    if (f.name === name)
-                        this.tableViewFields.push(f)
-
-
+        for (let p of (props.fields || [])) {
+            this.fields.push(new ModelField(this).setProps(p));
         }
-        this.hasTableView = this.tableViewFields.length > 0
 
+        for (let c of (props.tableViewColumns || [])) {
+            for (let fld of this.fields)
+                if (fld.name === c.name)
+                    this.tableViewColumns.push({field: fld, width: c.width || 0})
+        }
+
+        this.hasTableView = this.tableViewColumns.length > 0;
 
         return this;
     }

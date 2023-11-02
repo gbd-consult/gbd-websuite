@@ -8,6 +8,11 @@ import gws.config.util
 import gws.types as t
 
 
+class TableViewColumn(gws.Data):
+    name: str
+    width: t.Optional[int]
+
+
 class Config(gws.ConfigWithAccess):
     """Model configuration"""
 
@@ -25,8 +30,8 @@ class Config(gws.ConfigWithAccess):
     """exclude columns names from autoload"""
     withTableView: bool = True
     """enable table view for this model"""
-    tableViewFields: t.Optional[list[str]]
-    """list of fields to include in the table view"""
+    tableViewColumns: t.Optional[list[TableViewColumn]]
+    """fields to include in the table view"""
     templates: t.Optional[list[gws.ext.config.template]]
     """feature templates"""
     sort: t.Optional[list[gws.SortOptions]]
@@ -47,7 +52,7 @@ class Props(gws.Props):
     loadingStrategy: gws.FeatureLoadingStrategy
     supportsGeometrySearch: bool
     supportsKeywordSearch: bool
-    tableViewFields: list[str]
+    tableViewColumns: list[TableViewColumn]
     title: str
     uid: str
     uidName: t.Optional[str]
@@ -55,7 +60,8 @@ class Props(gws.Props):
 
 class Object(gws.Node, gws.IModel):
     def configure(self):
-        self.isEditable = self.cfg('isEditable')
+        self.isEditable = self.cfg('isEditable', default=False)
+        self.withTableView = self.cfg('withTableView', default=True)
         self.fields = []
         self.geometryCrs = None
         self.geometryName = ''
@@ -162,16 +168,6 @@ class Object(gws.Node, gws.IModel):
     def props(self, user):
         layer = t.cast(gws.ILayer, self.closest(gws.ext.object.layer))
 
-        tab_names = []
-        p = self.cfg('withTableView', default=True)
-        if p:
-            fields = self.fields
-            p = self.cfg('tableViewFields')
-            if p:
-                fmap = {fld.name: fld for fld in self.fields}
-                fields = [fmap.get(name) for name in p if name in fmap]
-            tab_names = [fld.name for fld in fields if user.can_read(fld)]
-
         return gws.Props(
             canCreate=user.can_create(self),
             canDelete=user.can_delete(self),
@@ -186,13 +182,33 @@ class Object(gws.Node, gws.IModel):
             loadingStrategy=self.loadingStrategy or (layer.loadingStrategy if layer else gws.FeatureLoadingStrategy.all),
             supportsGeometrySearch=any(fld.supportsGeometrySearch for fld in self.fields),
             supportsKeywordSearch=any(fld.supportsKeywordSearch for fld in self.fields),
-            tableViewFields=tab_names,
+            tableViewColumns=self.table_view_columns(user),
             title=self.title or (layer.title if layer else ''),
             uid=self.uid,
             uidName=self.uidName,
         )
 
     ##
+
+    def table_view_columns(self, user):
+        if not self.withTableView:
+            return []
+
+        cols = []
+
+        p = self.cfg('tableViewColumns')
+        if p:
+            fmap = {fld.name: fld for fld in self.fields}
+            for c in p:
+                fld = fmap.get(c.name)
+                if fld and user.can_use(fld) and fld.widget and fld.widget.supportsTableView:
+                    cols.append(TableViewColumn(name=c.name, width=c.width or 0))
+        else:
+            for fld in self.fields:
+                if fld and user.can_use(fld) and fld.widget and fld.widget.supportsTableView:
+                    cols.append(TableViewColumn(name=fld.name, width=0))
+
+        return cols
 
     def field(self, name):
         for fld in self.fields:

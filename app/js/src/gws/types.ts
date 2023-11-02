@@ -449,6 +449,13 @@ export interface IModelRegistry {
 
 }
 
+export interface TableViewColumn {
+    field: IModelField
+    width: number
+}
+
+
+
 export interface IModel {
     canCreate: boolean;
     canDelete: boolean;
@@ -467,7 +474,7 @@ export interface IModel {
     loadingStrategy: api.core.FeatureLoadingStrategy;
     title: string;
     uid: string;
-    tableViewFields: Array<IModelField>;
+    tableViewColumns: Array<TableViewColumn>;
     hasTableView: boolean;
 
     registry: ModelRegistry;

@@ -14,90 +14,141 @@ projects+ {
     }
 
 
+    models+ {
+        title "Category (auto table view)"
+        type "postgres"
+        tableName "edit.category"
+        sort+ { fieldName "name_de" }
+        isEditable true
+        permissions.edit "allow all"
+
+        fields+ {
+            name "id"
+            type "integer"
+            title "Identifier"
+            isPrimaryKey true
+            isRequired true
+        }
+
+        fields+ {
+            name "name_de"
+            type "text"
+            title "Name (DE)"
+            isRequired true
+            textSearch { type "any" }
+        }
+        fields+ {
+            name "name_en"
+            type "text"
+            title "Name (EN)"
+            isRequired true
+            textSearch { type "any" }
+        }
+        fields+ {
+            name "description"
+            type "text"
+            title "Description"
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{name_de}}"
+        }
+    }
+
+    models+ {
+        title "POI (custom table view)"
+        type "postgres"
+        tableName "edit.poi"
+        sort+ { fieldName "name" }
+        isEditable true
+        permissions.edit "allow all"
+
+        tableViewColumns [
+            { name "name" width 150 }
+            { name "updated" width 100 }
+            { name "code" width 300 }
+            { name "description" }
+        ]
+
+        fields+ {
+            name "id"
+            type "integer"
+            title "Identifier"
+            isPrimaryKey true
+            isRequired true
+            permissions.edit "deny all"
+            widget { type "input" }
+        }
+
+        fields+ {
+            name "name"
+            type "text"
+            title "Object name"
+            isRequired true
+            widget { type "input" }
+            textSearch { type "any" }
+        }
+
+        fields+ {
+            name "code"
+            type "integer"
+            title "Feature Code"
+            widget {
+                type "select"
+                items [
+                    { value 0  text "unknown" }
+                    { value 100  text "primary feature" }
+                    { value 200  text "secondary feature" }
+                    { value 300  text "tertiary feature" }
+                ]
+            }
+        }
+
+        fields+ {
+            name "updated"
+            type "date"
+            title "Date updated"
+            widget {
+                type "date"
+            }
+        }
+
+        fields+ {
+            name "description"
+            type "text"
+            title "Comments"
+            widget { type "textarea" height 150 }
+        }
+
+        fields+ {
+            name "geom"
+            type "geometry"
+            title "Geometry"
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{name}} {{id}}"
+        }
+
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{name}}"
+        }
+    }
+
+
+
+
     map.layers+ {
         title "POIs"
         type "postgres"
         tableName "edit.poi"
         extent [ 431881, 6505964, 1076161, 6877804 ]
-
-        models+ {
-            type "postgres"
-            uid "model_poi_simple"
-            sort+ { fieldName "name" }
-            isEditable true
-            permissions.edit "allow all"
-
-            withTableView true
-            tableViewFields ["name", "updated", "code"]
-
-            fields+ {
-                name "id"
-                type "integer"
-                title "Identifier"
-                isPrimaryKey true
-                isRequired true
-                permissions.edit "deny all"
-                widget { type "input" }
-            }
-
-            fields+ {
-                name "name"
-                type "text"
-                title "Object name"
-                isRequired true
-                widget { type "input" }
-                textSearch { type "any" }
-            }
-
-            fields+ {
-                name "code"
-                type "integer"
-                title "Feature Code"
-                widget {
-                    type "select"
-                    items [
-                        { value 0  text "unknown" }
-                        { value 100  text "primary feature" }
-                        { value 200  text "secondary feature" }
-                        { value 300  text "tertiary feature" }
-                    ]
-                }
-            }
-
-            fields+ {
-                name "updated"
-                type "date"
-                title "Date updated"
-                widget {
-                    type "date"
-                }
-            }
-
-            fields+ {
-                name "description"
-                type "text"
-                title "Comments"
-                widget { type "textarea" height 150 }
-            }
-
-            fields+ {
-                name "geom"
-                type "geometry"
-                title "Geometry"
-            }
-
-            templates+ {
-                subject "feature.title"
-                type "html"
-                text "{{name}} {{id}}"
-            }
-
-            templates+ {
-                subject "feature.label"
-                type "html"
-                text "{{name}}"
-            }
-        }
     }
 
     {demo_osm_background}

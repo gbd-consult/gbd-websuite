@@ -225,6 +225,8 @@ class Object(gws.base.action.Object):
             maxDepth=1,
         )
         features = feature.model.get_features([uid], mc)
+        if not features:
+            raise gws.NotFoundError()
 
         propses = self.make_propses(features, mc)
         return WriteResponse(validationErrors=[], feature=propses[0])

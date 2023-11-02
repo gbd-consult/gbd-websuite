@@ -15,4 +15,4 @@ class Props(gws.base.model.widget.Props):
 
 
 class Object(gws.base.model.widget.Object):
-    pass
+    supportsTableView = False

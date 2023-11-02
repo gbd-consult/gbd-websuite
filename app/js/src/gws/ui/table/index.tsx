@@ -11,6 +11,7 @@ interface TableProps {
     rows: Array<Array<string | React.ReactNode>>;
     selectedIndex?: number;
     tableRef?: React.RefObject<HTMLTableElement>;
+    columnWidths?: Array<number>;
     whenCellTouched?: (e) => any;
 }
 
@@ -54,6 +55,16 @@ export class Table extends base.Pure<TableProps> {
         )
     }
 
+    renderColgroup() {
+        return <colgroup>
+            {this.props.columnWidths.map((w, n) => <col
+                    key={n}
+                    style={{width: w || 'auto'}}
+                />
+            )}
+        </colgroup>
+    }
+
     render() {
         let n = Number(this.props.selectedIndex);
         let selectedIndex = (n >= 0) ? n : -1;
@@ -67,6 +78,7 @@ export class Table extends base.Pure<TableProps> {
 
         return <div className={cls}>
             <table ref={this.props.tableRef}>
+                {this.props.columnWidths && this.renderColgroup()}
                 {this.props.headers && <thead>{this.renderRows(this.props.headers, -1)}</thead>}
                 <tbody>{this.renderRows(this.props.rows, selectedIndex)}</tbody>
                 {this.props.footers && <tfoot>{this.renderRows(this.props.footers, -1)}</tfoot>}

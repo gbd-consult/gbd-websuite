@@ -24,12 +24,18 @@ function _master(obj: any): Controller {
         return obj.props.controller.app.controller(MASTER) as Controller;
 }
 
+interface TableViewRow {
+    cells: Array<React.ReactElement>;
+    featureUid: string;
+}
+
+
 interface EditState {
     sidebarSelectedModel?: gws.types.IModel;
     sidebarSelectedFeature?: gws.types.IFeature;
     tableViewSelectedModel?: gws.types.IModel;
     tableViewSelectedFeature?: gws.types.IFeature;
-    tableViewRows: Array<any>;
+    tableViewRows: Array<TableViewRow>;
     tableViewTouchPos?: Array<number>;
     tableViewLoading: boolean;
     formErrors?: object;
@@ -419,7 +425,8 @@ class TableViewDialog extends gws.View<ViewProps> {
         cc.updateEditState({tableViewLoading: true})
 
         let model = cc.editState.tableViewSelectedModel;
-        let ok = await cc.saveFeature(feature, model.tableViewFields);
+        let fields = model.tableViewColumns.map(c => c.field);
+        let ok = await cc.saveFeature(feature, fields);
 
         if (ok) {
             cc.featureCache.clear();
@@ -444,47 +451,47 @@ class TableViewDialog extends gws.View<ViewProps> {
     }
 
 
-    makeRow(feature) {
+    makeRow(feature: gws.types.IFeature): TableViewRow {
         let cc = _master(this);
-        let row = [];
+        let cells = [];
         let values = feature.attributes;
-        for (let field of feature.model.tableViewFields) {
-            row.push(cc.createWidget(
+        for (let col of feature.model.tableViewColumns) {
+            cells.push(cc.createWidget(
                 gws.types.ModelWidgetMode.cell,
-                field,
+                col.field,
                 feature,
                 values,
                 this.whenWidgetChanged.bind(this),
                 this.whenWidgetEntered.bind(this),
             ))
         }
-        return row
+        return {cells, featureUid: feature.uid}
     }
 
-    makeSelectedRow(feature: gws.types.IFeature) {
+    makeSelectedRow(feature: gws.types.IFeature): TableViewRow {
         let cc = _master(this);
         let values = feature.currentAttributes()
         let errors = cc.editState.formErrors || {}
-        let row = [];
+        let cells = [];
 
-        for (let field of feature.model.tableViewFields) {
-            let err = errors[field.name]
+        for (let col of feature.model.tableViewColumns) {
+            let err = errors[col.field.name]
             let widget = cc.createWidget(
                 gws.types.ModelWidgetMode.activeCell,
-                field,
+                col.field,
                 feature,
                 values,
                 this.whenWidgetChanged.bind(this),
                 this.whenWidgetEntered.bind(this),
             )
-            row.push(<React.Fragment>
+            cells.push(<React.Fragment>
                 {widget}
                 <div {...gws.lib.cls('editTableError', err && 'isActive')}>
-                    {err}
+                    {err || ' '}
                 </div>
             </React.Fragment>)
         }
-        return row
+        return {cells, featureUid: feature.uid}
     }
 
 
@@ -544,6 +551,7 @@ class TableViewDialog extends gws.View<ViewProps> {
         cc.updateEditState({
             tableViewSelectedFeature: nf,
             tableViewTouchPos: pos,
+            serverError: '',
         })
     }
 
@@ -611,6 +619,8 @@ class TableViewDialog extends gws.View<ViewProps> {
         let cc = _master(this);
         cc.updateEditState({
             tableViewSelectedFeature: null,
+            serverError: '',
+            formErrors: null,
         })
     }
 
@@ -627,7 +637,8 @@ class TableViewDialog extends gws.View<ViewProps> {
         cc.updateEditState({
             tableViewSelectedFeature: feature,
             tableViewTouchPos: [features.length, 0, 1],
-
+            serverError: '',
+            formErrors: null,
         })
         await this.makeAndCacheRows()
 
@@ -672,9 +683,9 @@ class TableViewDialog extends gws.View<ViewProps> {
     dialogFooter(sf) {
         let cc = _master(this);
 
-        let pager = ''
-        let error = ''
-        let buttons
+        let pager = '';
+        let error = cc.editState.serverError;
+        let buttons;
 
         if (sf) {
 
@@ -718,7 +729,7 @@ class TableViewDialog extends gws.View<ViewProps> {
         return <Row>
             {pager}
             <Cell>
-                {error}
+                {error && <gws.ui.Error text={error}/>}
             </Cell>
             <Cell flex/>
             {
@@ -732,53 +743,64 @@ class TableViewDialog extends gws.View<ViewProps> {
 
     }
 
-    render() {
+    renderTable() {
         let cc = _master(this);
         let model = cc.editState.tableViewSelectedModel;
-        let features = cc.featureCache.getForModel(model);
+
+        let savedRows = cc.editState.tableViewRows;
+
+        if (gws.lib.isEmpty(savedRows)) {
+            return null;
+        }
+
         let sf = cc.editState.tableViewSelectedFeature;
-        let selectedIndex = features.indexOf(sf)
+        let selectedIndex = sf ? savedRows.findIndex(r => r.featureUid === sf.uid) : -1;
 
         let headerRow = []
         let filterRow = []
 
-        for (let field of model.tableViewFields) {
-            headerRow.push(field.title)
+        for (let col of model.tableViewColumns) {
+            headerRow.push(col.field.title)
             filterRow.push(<gws.ui.TextInput value={''} withClear={true}/>)
         }
 
-        let table = null
+        let rows = savedRows;
 
-        let rows = cc.editState.tableViewRows
+        if (sf) {
+            if (selectedIndex >= 0) {
+                rows = savedRows.slice(0, selectedIndex)
+                rows.push(this.makeSelectedRow(sf))
+                rows = rows.concat(savedRows.slice(selectedIndex + 1))
+            } else {
+                rows = savedRows.slice(0)
+                rows.push(this.makeSelectedRow(sf))
+                selectedIndex = savedRows.length
 
-        if (rows) {
-            let tableRows = rows
-
-            if (sf) {
-                if (selectedIndex >= 0) {
-                    tableRows = rows.slice(0, selectedIndex)
-                    tableRows.push(this.makeSelectedRow(sf))
-                    tableRows = tableRows.concat(rows.slice(selectedIndex + 1))
-                } else {
-                    tableRows = rows.slice(0)
-                    tableRows.push(this.makeSelectedRow(sf))
-                    selectedIndex = rows.length
-
-                }
             }
-
-            table =
-                <gws.ui.Table
-                    tableRef={this.tableRef}
-                    rows={tableRows}
-                    selectedIndex={selectedIndex}
-                    fixedLeftColumn={false}
-                    fixedRightColumn={false}
-                    // headers={[headerRow, filterRow]}
-                    headers={[headerRow]}
-                    whenCellTouched={e => this.whenCellTouched(e)}
-                />
         }
+
+        let widths = [];
+        for (let col of model.tableViewColumns) {
+            widths.push(col.width);
+        }
+
+        return <gws.ui.Table
+            tableRef={this.tableRef}
+            rows={rows.map(r => r.cells)}
+            selectedIndex={selectedIndex}
+            fixedLeftColumn={false}
+            fixedRightColumn={false}
+            // headers={[headerRow, filterRow]}
+            headers={[headerRow]}
+            columnWidths={widths}
+            whenCellTouched={e => this.whenCellTouched(e)}
+        />
+    }
+
+    render() {
+        let cc = _master(this);
+        let model = cc.editState.tableViewSelectedModel;
+        let sf = cc.editState.tableViewSelectedFeature;
 
         return <gws.ui.Dialog
             {...gws.lib.cls('editTableViewDialog', this.props.editTableViewDialogZoomed && 'isZoomed')}
@@ -786,7 +808,9 @@ class TableViewDialog extends gws.View<ViewProps> {
             whenClosed={() => this.closeDialog()}
             // whenZoomed={() => this.props.controller.update({editTableViewDialogZoomed: !this.props.editTableViewDialogZoomed})}
             footer={this.dialogFooter(sf)}
-        >{table}</gws.ui.Dialog>;
+        >
+            {this.renderTable()}
+        </gws.ui.Dialog>;
     }
 }
 
@@ -1918,10 +1942,6 @@ class Controller extends gws.Controller {
 
         let atts = feature.currentAttributes();
         let attsToWrite = {}
-
-        // for (let [k, v] of gws.lib.entries(atts)) {
-        //     atts[k] = await this.serializeValue(v);
-        // }
 
         for (let field of fields) {
             let v = atts[field.name]

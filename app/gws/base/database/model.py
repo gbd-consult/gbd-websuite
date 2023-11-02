@@ -30,6 +30,9 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
 
     def configure(self):
         self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
+        if not self.tableName:
+            raise gws.ConfigurationError(f'table name missing in model {self!r}')
+
         self.sqlFilter = self.cfg('filter')
         self.configure_model()
 

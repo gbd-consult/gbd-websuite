@@ -1271,7 +1271,7 @@ ErrorValue = object()
 
 
 class IModelWidget(INode, Protocol):
-    pass
+    supportsTableView: bool = True
 
 
 class IModelValidator(INode, Protocol):
@@ -1366,6 +1366,7 @@ class IModel(INode, Protocol):
     loadingStrategy: 'FeatureLoadingStrategy'
     title: str
     uidName: str
+    withTableView: bool
 
     def find_features(self, search: 'SearchQuery', mc: ModelContext) -> list['IFeature']: ...
 
