@@ -21,37 +21,28 @@ class Object(gws.Node, gws.IDatabaseProvider):
 
     def configure(self):
         self.mgr = self.cfg('_defaultManager')
-        self.saMetaMap = {}
-        self.saEngine = self.engine()
         self.models = []
 
-    def activate(self):
-        self.saMetaMap = {}
         self.saEngine = self.engine()
-        #
-        # table_map = {}
-        #
-        # for model in self.models:
-        #     schema, name = self.split_table_name(model.tableName)
-        #     table_map.setdefault(schema, set()).add(name)
-        #
-        # for schema, names in table_map.items():
-        #     self.autoload(schema, list(names))
-        #
-        # pass
+        self.saMetaMap = {}
 
-    def autoload(self, schema: str, table_names: t.Optional[list[str]] = None):
+    def activate(self):
+        self.saEngine = self.engine()
+        self.saMetaMap = {}
+
+    def autoload(self, schema: str):
         if schema in self.saMetaMap:
             return
 
         self.saMetaMap[schema] = sa.MetaData(schema=schema)
 
-        gws.log.debug(f'BEGIN_AUTOLOAD {self.uid=} {schema=} {table_names=}')
-        # , only=list(names) - ??
-        # introspecting the whole schema appears faster
-        # @TODO add options for introspection
+        # introspecting the whole schema is generally faster
+        # but what if we only need a single table from a big schema?
+        # @TODO add options for reflection
+
+        gws.time_start(f'AUTOLOAD {self.uid=} {schema=}')
         self.saMetaMap[schema].reflect(self.saEngine, schema, resolve_fks=False, views=True)
-        gws.log.debug(f'END_AUTOLOAD {self.uid=} {schema=} {table_names=}')
+        gws.time_end()
 
     def connection(self) -> sa.Connection:
         return self.saEngine.connect()
