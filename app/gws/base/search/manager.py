@@ -65,8 +65,11 @@ class Object(gws.Node, gws.ISearchManager):
             return
 
         for feature in features:
-            if not feature.layerName and layer:
-                feature.layerName = layer.title
+            if finder.title:
+                feature.category = finder.title
+            elif not feature.category and layer and layer.title:
+                feature.category = layer.title
+
             results.append(gws.SearchResult(feature=feature, layer=layer, finder=finder))
             if len(results) > search.limit:
                 break

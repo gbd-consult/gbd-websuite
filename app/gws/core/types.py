@@ -1192,10 +1192,10 @@ class FeatureProps(Props):
 
 class IFeature(Protocol):
     attributes: dict
+    category: str
     cssSelector: str
     errors: list['ModelValidationError']
     isNew: bool
-    layerName: str
     model: 'IModel'
     props: 'FeatureProps'
     record: 'FeatureRecord'
@@ -1983,6 +1983,8 @@ class ISearchManager(INode, Protocol):
 
 
 class IFinder(INode, Protocol):
+    title: str
+
     supportsFilterSearch: bool = False
     supportsGeometrySearch: bool = False
     supportsKeywordSearch: bool = False

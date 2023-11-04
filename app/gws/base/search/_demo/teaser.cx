@@ -10,6 +10,7 @@ projects+ {
     finders+ {
         type "postgres"
         tableName "edit.poi"
+        title "POIs"
         models+ {
             type "postgres"
             sort+ { fieldName "name" }

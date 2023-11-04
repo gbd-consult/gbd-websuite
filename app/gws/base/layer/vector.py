@@ -73,9 +73,11 @@ class Object(core.Object):
         if not features:
             return []
 
-        if search.bounds:
-            for feature in features:
+        for feature in features:
+            if search.bounds:
                 feature.transform_to(search.bounds.crs)
+            if not feature.category:
+                feature.category = self.title
 
         view_names = view_names or ['label']
         templates = []

@@ -271,7 +271,7 @@ class Layer:
         fd = gws.FeatureRecord(
             attributes={},
             shape=None,
-            layerName=self.name,
+            meta={'layerName': self.name},
             uid=str(gd_feature.GetFID()),
         )
 

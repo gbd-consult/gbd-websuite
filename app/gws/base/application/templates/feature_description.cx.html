@@ -1,17 +1,31 @@
-@with feature.layerName as s
+@with feature.category as s
     <p class="head">{s | html}</p>
+@end
+
+@def format_for_display(value)
+    @if isinstance(value, bool)
+        @return "&#x2713;" if value else " "
+    @end
+    @if isinstance(value, int)
+        @return str(value)
+    @end
+    @if isinstance(value, float)
+        @return str(value)
+    @end
+    @if isinstance(value, str) and value != "NULL"
+        @return value | html | nl2br | linkify(target="_blank", cut=30)
+    @end
 @end
 
 <table><tbody>
 
 @for name, value in feature.attributes
-    @if name != feature.model.geometryName
-        @with value
-            <tr>
-                <th>{name | html}</th>
-                <td>{value | html | nl2br | linkify(target="_blank", cut=30)}</td>
-            </tr>
-        @end
+    @let v = format_for_display(value)
+    @if v
+        <tr>
+            <th>{name | html}</th>
+            <td>{v}</td>
+        </tr>
     @end
 @end
 

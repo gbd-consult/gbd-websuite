@@ -45,4 +45,6 @@ class Object(core.Object):
             feature.attributes[self.uidName] = record.uid
         if record.shape and self.geometryName:
             feature.attributes[self.geometryName] = record.shape
+        if record.meta:
+            feature.category = record.meta.get('layerName', '')
         return feature

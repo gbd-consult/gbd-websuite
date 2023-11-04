@@ -19,10 +19,10 @@ def new(
 class Feature(gws.IFeature):
     def __init__(self, model: gws.IModel):
         self.attributes = {}
+        self.category = ''
         self.cssSelector = ''
         self.errors = []
         self.isNew = False
-        self.layerName = ''
         self.model = model
         self.views = {}
         self.createWithFeatures = []

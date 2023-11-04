@@ -33,7 +33,6 @@ class Config(gws.ConfigWithAccess):
 
 class Object(gws.Node, gws.IFinder):
     spatialContext: SpatialContext
-    title: str
 
     def configure(self):
         self.templates = []
