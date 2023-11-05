@@ -268,19 +268,13 @@ class Object(gws.base.action.Object):
         propses = []
         template_map = {}
 
-        gws.time_start('format')
         for feature in features:
-            self.format_feature(feature, template_map, mc, 1)
-        gws.time_end()
-
-        gws.time_start('ps')
-        for feature in features:
+            self.prepare_feature(feature, template_map, mc, 1)
             propses.append(feature.model.feature_to_props(feature, mc))
-        gws.time_end()
 
         return propses
 
-    def format_feature(self, feature, template_map, mc, depth):
+    def prepare_feature(self, feature, template_map, mc, depth):
         model = feature.model
 
         if model.uid not in template_map:
@@ -291,7 +285,6 @@ class Object(gws.base.action.Object):
             )
 
         feature.transform_to(mc.project.map.bounds.crs)
-
         feature.render_views(template_map[model.uid], user=mc.user, project=mc.project)
 
         if depth < 1:
@@ -300,9 +293,9 @@ class Object(gws.base.action.Object):
         for val in feature.attributes.values():
 
             if isinstance(val, gws.base.feature.Feature):
-                self.format_feature(val, template_map, mc, depth - 1)
+                self.prepare_feature(val, template_map, mc, depth - 1)
 
             elif isinstance(val, list):
                 for v in val:
                     if isinstance(v, gws.base.feature.Feature):
-                        self.format_feature(v, template_map, mc, depth - 1)
+                        self.prepare_feature(v, template_map, mc, depth - 1)

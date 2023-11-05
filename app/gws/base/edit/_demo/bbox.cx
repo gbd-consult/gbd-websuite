@@ -1,12 +1,6 @@
-@comment
-
-Using `loadingStrategy bbox` to edit only features in the map extent.
-
-@end
-
 projects+ {
     title "Edit: bbox loading"
-    metadata.abstract "Editing features in the map extent."
+    metadata.abstract "Using `loadingStrategy bbox` to edit only features in the map extent."
 
     actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }

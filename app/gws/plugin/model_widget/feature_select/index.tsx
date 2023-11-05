@@ -30,13 +30,7 @@ class CellView extends gws.View<Props> {
     render() {
         let field = this.props.field;
         let feature = this.props.values[field.name];
-        let text = ''
-
-        for (let f of this.props.features) {
-            if (feature && feature.uid === f.uid)
-                text = f.views.title
-        }
-
+        let text = feature ? feature.views.title : '';
         return <gws.ui.TableCell content={text}/>;
     }
 }

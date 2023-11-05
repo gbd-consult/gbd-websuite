@@ -31,17 +31,25 @@ projects+ {
         title "POIs"
         loadingStrategy "lazy"
         sort+ { fieldName "name" }
-        isEditable true
-        permissions.edit "allow all"
 
         fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
         fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
 
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{name}} ( {{id}} )"
-        }
+        templates+ { subject "feature.title" type "html" text "{{name}}" }
+    }
+
+    models+ {
+        type "postgres"
+        tableName "edit.district"
+        uid "model_district_004"
+        title "Districts"
+        loadingStrategy "lazy"
+        sort+ { fieldName "name" }
+
+        fields+ { name "sid" type "text" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+        fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
+
+        templates+ { subject "feature.title" type "html" text "{{name}}" }
     }
 
     models+ {
@@ -63,6 +71,16 @@ projects+ {
             fromColumn "poi_id"
             toModel "model_poi_004"
             toColumn "id"
+            widget.type "featureSuggest"
+        }
+
+        fields+ {
+            name "lives"
+            title "Lives in"
+            type "relatedFeature"
+            fromColumn "district_name"
+            toModel "model_district_004"
+            toColumn "name"
             widget.type "featureSuggest"
         }
 

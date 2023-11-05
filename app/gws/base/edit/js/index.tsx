@@ -1185,20 +1185,32 @@ class FeatureSelectWidgetHelper extends WidgetHelper {
 class FeatureSuggestWidgetHelper extends WidgetHelper {
     async init(field) {
         let cc = _master(this);
-        await cc.featureCache.updateRelatableForField(field)
+        let searchText = cc.getFeatureListSearchText(field.uid);
+
+        if (searchText) {
+            await cc.featureCache.updateRelatableForField(field)
+        }
     }
 
     setProps(feature, field, props) {
         let cc = _master(this);
+        let searchText = cc.getFeatureListSearchText(field.uid);
 
-        props.features = cc.featureCache.getRelatableForField(field);
-        props.searchText = cc.getFeatureListSearchText(field.uid);
+        props.features = searchText ? cc.featureCache.getRelatableForField(field) : [];
+        props.searchText = searchText;
         props.whenSearchChanged = val => this.whenSearchChanged(field, val);
     }
 
     whenSearchChanged(field, val: string) {
         let cc = _master(this);
-        cc.whenFieldSearchChanged(field, val)
+        cc.updateFeatureListSearchText(field.uid, val);
+        if (val) {
+            clearTimeout(cc.searchTimer);
+            cc.searchTimer = Number(setTimeout(
+                () => cc.featureCache.updateRelatableForField(field),
+                SEARCH_TIMEOUT
+            ));
+        }
     }
 }
 
@@ -1602,23 +1614,13 @@ class Controller extends gws.Controller {
         }
     }
 
-    _searchTimer = 0
+    searchTimer = 0
 
     async whenFeatureListSearchChanged(model: gws.types.IModel, val: string) {
         this.updateFeatureListSearchText(model.uid, val);
-        clearTimeout(this._searchTimer);
-        this._searchTimer = Number(setTimeout(
+        clearTimeout(this.searchTimer);
+        this.searchTimer = Number(setTimeout(
             () => this.featureCache.updateForModel(model),
-            SEARCH_TIMEOUT
-        ));
-    }
-
-
-    async whenFieldSearchChanged(field: gws.types.IModelField, val: string) {
-        this.updateFeatureListSearchText(field.uid, val);
-        clearTimeout(this._searchTimer);
-        this._searchTimer = Number(setTimeout(
-            () => this.featureCache.updateRelatableForField(field),
             SEARCH_TIMEOUT
         ));
     }
