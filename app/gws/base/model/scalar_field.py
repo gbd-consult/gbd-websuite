@@ -21,15 +21,15 @@ class Object(field.Object, gws.IModelField):
 
     def after_select(self, features, mc):
         for feature in features:
-            self.load_from_record(feature, mc)
+            self.from_record(feature, mc)
 
     def before_create(self, feature, mc):
-        self.store_to_record(feature, mc)
+        self.to_record(feature, mc)
 
     def before_update(self, feature, mc):
         if self.isAuto:
             return
-        self.store_to_record(feature, mc)
+        self.to_record(feature, mc)
 
     ##
 
@@ -64,7 +64,7 @@ class Object(field.Object, gws.IModelField):
 
     ##
 
-    def load_from_record(self, feature, mc):
+    def from_record(self, feature, mc):
         value = self.get_value(
             feature,
             feature.record.attributes,
@@ -75,7 +75,7 @@ class Object(field.Object, gws.IModelField):
         if value is not None:
             feature.set(self.name, value)
 
-    def store_to_record(self, feature, mc):
+    def to_record(self, feature, mc):
         value = self.get_value(
             feature,
             feature.attributes,

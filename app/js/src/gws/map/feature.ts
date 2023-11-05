@@ -45,7 +45,8 @@ export class Feature implements types.IFeature {
     }
 
     get uid() {
-        return String(this.attributes[this.uidName]);
+        let s = this.attributes[this.uidName];
+        return lib.isEmpty(s) ? '' : String(s);
     }
 
     setProps(props) {

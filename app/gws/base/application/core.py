@@ -242,6 +242,10 @@ class Object(gws.Node, gws.IApplication):
         return self.projectMap.get(uid)
 
     def helper(self, ext_type):
+        if ext_type not in self.helperMap:
+            p = self.create_child(gws.ext.object.helper, type=ext_type)
+            gws.log.info(f'created helper {ext_type!r}')
+            self.helperMap[ext_type] = p
         return self.helperMap.get(ext_type)
 
     def developer_option(self, name):
