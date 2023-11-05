@@ -96,16 +96,19 @@ class Object(gws.base.model.field.Object):
         mc.dbSelect.columns.extend(self.select_columns(False, mc))
 
     def after_select(self, features, mc):
-        for f in features:
-            f.set(self.name, self.load_value(f.record.attributes, mc))
+        for feature in features:
+            self.from_record(feature, mc)
 
     def before_create(self, feature, mc):
-        self.store_to_record(feature, mc)
+        self.to_record(feature, mc)
 
     def before_update(self, feature, mc):
-        self.store_to_record(feature, mc)
+        self.to_record(feature, mc)
 
-    def store_to_record(self, feature, mc):
+    def from_record(self, feature, mc):
+        feature.set(self.name, self.load_value(feature.record.attributes, mc))
+
+    def to_record(self, feature, mc):
         if not mc.user.can_write(self):
             return
 

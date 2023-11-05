@@ -1439,9 +1439,7 @@ class Controller extends gws.Controller {
             groupIndexes: this.getValue('alkisFsExportGroupIndexes'),
         };
 
-        // NB: must use binary because csv doesn't neccessary come in utf8
-
-        let res = await this.app.server.alkisExportFlurstueck(q, {binary: true});
+        let res = await this.app.server.alkisExportFlurstueck(q, {binaryResponse: true});
         if (res.error) {
             return;
         }

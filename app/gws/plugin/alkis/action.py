@@ -538,7 +538,7 @@ class Object(gws.base.action.Object):
         )
 
     @gws.ext.command.api('alkisExportFlurstueck')
-    def export_flurstueck(self, req: gws.IWebRequester, p: ExportFlurstueckRequest) -> gws.ContentResponse:
+    def export_flurstueck(self, req: gws.IWebRequester, p: ExportFlurstueckRequest) -> ExportFlurstueckResponse:
         if not self.export:
             raise gws.NotFoundError()
 
@@ -555,7 +555,7 @@ class Object(gws.base.action.Object):
 
         csv_bytes = self.export.export_as_csv(fs_list, groups, req.user)
 
-        return gws.ContentResponse(content=csv_bytes, mime='text/csv')
+        return ExportFlurstueckResponse(content=csv_bytes, mime='text/csv')
 
     @gws.ext.command.api('alkisPrintFlurstueck')
     def print_flurstueck(self, req: gws.IWebRequester, p: PrintFlurstueckRequest) -> gws.PrintJobResponse:

@@ -84,8 +84,13 @@ class Group(gws.Data):
     fieldNames: list[str]
 
 
+class Model(gws.base.model.Object):
+    def configure(self):
+        self.configure_model()
+
+
 class Object(gws.Node):
-    model: gws.base.model.dynamic_model.Object
+    model: Model
     groups: list[Group]
 
     def configure(self):
@@ -106,7 +111,10 @@ class Object(gws.Node):
                 if f.name not in fields_map:
                     fields_map[f.name] = f
 
-        self.model = self.create_child(gws.base.model.dynamic_model.Object, fields=list(fields_map.values()))
+        self.model = self.create_child(
+            Model,
+            fields=list(fields_map.values())
+        )
 
     """
     The Flurstueck structure, as created by our indexer, is deeply nested.
@@ -136,23 +144,27 @@ class Object(gws.Node):
                 if s not in field_names:
                     field_names.append(s)
 
+        fields = [
+            fld
+            for name in field_names
+            for fld in self.model.fields
+            if fld.name == name
+        ]
+
         csv_helper = t.cast(gws.lib.csv.Object, self.root.app.helper('csv'))
         writer = csv_helper.writer()
 
-        writer.write_headers([
-            f.title
-            for s in field_names
-            for f in self.model.fields
-            if f.name == s
-        ])
+        writer.write_headers([fld.title for fld in fields])
+        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=user)
 
         for fs in fs_list:
             row_hashes = set()
-            for rec in _flatten(fs):
-                feature = gws.base.feature.new(model=self.model)
-                feature.attributes = rec
-                feature.compute_values(gws.Access.write, user)
-                row = [feature.attributes.get(s) for s in field_names]
+            for atts in _flatten(fs):
+                rec = gws.FeatureRecord(attributes=atts)
+                feature = gws.base.feature.new(model=self.model, record=rec)
+                for fld in fields:
+                    fld.from_record(feature, mc)
+                row = [feature.get(fld.name, '') for fld in fields]
                 h = gws.sha256(row)
                 if h not in row_hashes:
                     row_hashes.add(h)
