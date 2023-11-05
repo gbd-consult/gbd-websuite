@@ -1450,13 +1450,12 @@ class Controller extends gws.Controller {
 
     showError(res) {
         let msg = this.__('alkisErrorGeneric');
-        let err = res.error ? res.error.status : res.status;
 
-        if (err === 403) {
+        if (res.status === 403) {
             msg = this.__('alkisErrorForbidden');
         }
 
-        if (err === 409) {
+        if (res.status === 409) {
             msg = this.__('alkisErrorTooMany').replace(/\$1/g, this.setup.limit);
         }
 
