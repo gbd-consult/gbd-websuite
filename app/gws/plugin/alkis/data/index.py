@@ -28,20 +28,37 @@ TABLE_INDEXPERSON = 'indexperson'
 TABLE_INDEXGEOM = 'indexgeom'
 
 
+class Status(gws.Data):
+    """Index status"""
+
+    complete: bool
+    basic: bool
+    eigentuemer: bool
+    buchung: bool
+
+
 class Object(gws.Node):
     VERSION = '8'
 
-    TABLE_IDS = [
+    TABLES_BASIC = [
         TABLE_PLACE,
         TABLE_FLURSTUECK,
-        TABLE_BUCHUNGSBLATT,
         TABLE_LAGE,
         TABLE_PART,
         TABLE_INDEXFLURSTUECK,
         TABLE_INDEXLAGE,
+        TABLE_INDEXGEOM,
+    ]
+
+    TABLES_BUCHUNG = [
+        TABLE_BUCHUNGSBLATT,
+        TABLE_INDEXBUCHUNGSBLATT,
+    ]
+
+    TABLES_EIGENTUEMER = [
+        TABLE_BUCHUNGSBLATT,
         TABLE_INDEXBUCHUNGSBLATT,
         TABLE_INDEXPERSON,
-        TABLE_INDEXGEOM,
     ]
 
     provider: gws.plugin.postgres.provider.Object
@@ -54,11 +71,15 @@ class Object(gws.Node):
 
     columnDct = {}
 
+    def __getstate__(self):
+        return gws.omit(vars(self), 'saMeta')
+
     def configure(self):
         self.provider = gws.base.database.provider.get_for(self, ext_type='postgres')
         self.crs = gws.gis.crs.get(self.cfg('crs'))
         self.schema = self.cfg('schema', default='public')
         self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
+        self.saMeta = sa.MetaData(schema=self.schema)
         self.tables = {}
 
     def activate(self):
@@ -245,15 +266,15 @@ class Object(gws.Node):
     def has_table(self, table_id: str) -> bool:
         return self.table_size(table_id) > 0
 
-    def exists(self):
+    def status(self) -> Status:
         with self.connect() as conn:
-            for table_id in self.TABLE_IDS:
-                size = self._table_size(conn, table_id)
-                gws.log.debug(f'{table_id=} {size=}')
-                if size == 0:
-                    return False
-
-        return True
+            s = Status(
+                basic=all(self._table_size(conn, tid) > 0 for tid in self.TABLES_BASIC),
+                buchung=all(self._table_size(conn, tid) > 0 for tid in self.TABLES_BUCHUNG),
+                eigentuemer=all(self._table_size(conn, tid) > 0 for tid in self.TABLES_EIGENTUEMER),
+            )
+            s.complete = s.basic and s.buchung and s.eigentuemer
+        return s
 
     def drop_table(self, table_id: str):
         tab = self.table(table_id)
@@ -261,7 +282,8 @@ class Object(gws.Node):
         self.saMeta.drop_all(self.provider.engine(), tables=[tab])
 
     def drop(self):
-        tabs = [self.table(table_id) for table_id in self.TABLE_IDS]
+        all_ids = self.TABLES_BASIC + self.TABLES_BUCHUNG + self.TABLES_EIGENTUEMER
+        tabs = [self.table(tid) for tid in all_ids]
         self.saMeta.drop_all(self.provider.engine(), tables=tabs)
 
     INSERT_SIZE = 5000

@@ -42,7 +42,10 @@ class Object(gws.Node):
         if not act:
             gws.log.error(f'action "alkis" not found')
             return
-        if act.indexExists and not p.force:
+
+        status = act.index.status()
+        if status.complete and not p.force:
+            gws.log.info(f'ALKIS index ok')
             return
 
         indexer.run(act.index, act.dataSchema, with_force=p.force, with_cache=p.cache)

@@ -22,8 +22,7 @@ from .geo_info_dok import gid6 as gid
 def run(ix: index.Object, data_schema: str, with_force=False, with_cache=False):
     if with_force:
         ix.drop()
-    elif ix.exists():
-        gws.log.info('ALKIS index ok')
+    elif ix.status().complete:
         return
 
     rdr = norbit6.Object(ix.provider, schema=data_schema)
@@ -753,7 +752,7 @@ class _FsDataIndexer(_Indexer):
         return fs
 
     def historic_buchungsstelle_list(self, r: dt.FlurstueckRecord, hist_buchung):
-        # an AX_HistorischesFlurstueck with a speicial 'buchung' reference
+        # an AX_HistorischesFlurstueck with a special 'buchung' reference
 
         bs_list = []
 

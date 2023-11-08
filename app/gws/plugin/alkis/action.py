@@ -337,8 +337,8 @@ class Model(gws.base.model.dynamic_model.Object):
 
 
 class Object(gws.base.action.Object):
-    index: index.Object
-    indexExists: bool
+    ix: index.Object
+    ixStatus: index.Status
 
     buchung: BuchungOptions
     eigentuemer: EigentuemerOptions
@@ -364,7 +364,7 @@ class Object(gws.base.action.Object):
     def configure(self):
         provider = gws.base.database.provider.get_for(self, ext_type='postgres')
 
-        self.index = self.root.create_shared(
+        self.ix = self.root.create_shared(
             index.Object,
             _defaultProvider=provider,
             crs=self.cfg('crs'),
@@ -372,8 +372,6 @@ class Object(gws.base.action.Object):
             excludeGemarkung=self.cfg('excludeGemarkung'),
             uid='gws.plugin.alkis.data.index.' + self.cfg('indexSchema')
         )
-
-        self.indexExists = False
 
         self.limit = self.cfg('limit')
         self.model = self.create_child(Model)
@@ -408,20 +406,15 @@ class Object(gws.base.action.Object):
             self.export = None
 
     def activate(self):
-        self.indexExists = self.index.exists()
-        if self.indexExists:
-            gws.log.info(f'ALKIS index ok')
-        else:
-            gws.log.warning(f'ALKIS index NOT FOUND')
+        self.ixStatus = self.ix.status()
 
     def props(self, user):
-        if not self.indexExists:
+        if not self.ixStatus.basic:
             return None
 
         export_groups = []
         if self.ui.useExport:
             export_groups = [ExportGroupProps(title=g.title, index=g.index) for g in self._export_groups(user)]
-
 
         return gws.merge(
             super().props(user),
@@ -430,9 +423,19 @@ class Object(gws.base.action.Object):
             printer=gws.first(p for p in self.printers if user.can_use(p)),
             ui=self.ui,
             storage=self.storage,
-            withBuchung=user.can_read(self.buchung),
-            withEigentuemer=user.can_read(self.eigentuemer),
-            withEigentuemerControl=user.can_read(self.eigentuemer) and self.eigentuemer.controlMode,
+            withBuchung=(
+                    self.ixStatus.buchung
+                    and user.can_read(self.buchung)
+            ),
+            withEigentuemer=(
+                    self.ixStatus.eigentuemer
+                    and user.can_read(self.eigentuemer)
+            ),
+            withEigentuemerControl=(
+                    self.ixStatus.eigentuemer
+                    and user.can_read(self.eigentuemer)
+                    and self.eigentuemer.controlMode
+            ),
             # withFlurnummer=self.provider.has_flurnummer,
         )
 
@@ -446,7 +449,7 @@ class Object(gws.base.action.Object):
         gemarkung_dct = {}
         strasse_lst = []
 
-        for s in self.index.strasse_list():
+        for s in self.ix.strasse_list():
             gemeinde_dct[s.gemeinde.code] = [s.gemeinde.text, s.gemeinde.code]
             gemarkung_dct[s.gemarkung.code] = [s.gemarkung.text, s.gemarkung.code, s.gemeinde.code]
             strasse_lst.append([s.name, s.gemeinde.code, s.gemarkung.code])
@@ -477,7 +480,8 @@ class Object(gws.base.action.Object):
             self.root.app.templateMgr.locate_template(self, user=req.user, subject='adresse.label'),
         ]
 
-        features = []
+        fprops = []
+        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
 
         for ad in ad_list:
             f = gws.base.feature.new(model=self.model)
@@ -485,10 +489,10 @@ class Object(gws.base.action.Object):
             f.attributes['geometry'] = f.attributes.pop('shape')
             f.transform_to(crs)
             f.render_views(templates, user=req.user)
-            features.append(f)
+            fprops.append(self.model.feature_to_view_props(f, mc))
 
         return FindAdresseResponse(
-            features=[gws.props(f, req.user, self) for f in features],
+            features=fprops,
             total=len(ad_list),
         )
 
@@ -531,6 +535,8 @@ class Object(gws.base.action.Object):
             f.render_views(templates, user=req.user, **args)
             f.attributes.pop('fs')
             fprops.append(self.model.feature_to_view_props(f, mc))
+
+        fprops.sort(key=lambda p: p.views['title'])
 
         return FindFlurstueckResponse(
             features=fprops,
@@ -621,7 +627,7 @@ class Object(gws.base.action.Object):
 
     def find_flurstueck_objects(self, req: gws.IWebRequester, p: FindFlurstueckRequest) -> tuple[list[dt.Flurstueck], dt.FlurstueckQuery]:
         query = self._prepare_flurstueck_query(req, p)
-        fs_list = self.index.find_flurstueck(query)
+        fs_list = self.ix.find_flurstueck(query)
 
         if query.options.withEigentuemer:
             self._log_eigentuemer_access(
@@ -636,7 +642,7 @@ class Object(gws.base.action.Object):
 
     def find_adresse_objects(self, req: gws.IWebRequester, p: FindAdresseRequest) -> tuple[list[dt.Adresse], dt.AdresseQuery]:
         query = self._prepare_adresse_query(req, p)
-        ad_list = self.index.find_adresse(query)
+        ad_list = self.ix.find_adresse(query)
         return ad_list, query
 
     FLURSTUECK_QUERY_FIELDS = [
@@ -815,10 +821,10 @@ class Object(gws.base.action.Object):
             return
 
         if self._eigentuemerLogTable is None:
-            schema, name = self.index.provider.split_table_name(self.eigentuemer.logTable)
+            schema, name = self.ix.provider.split_table_name(self.eigentuemer.logTable)
             self._eigentuemerLogTable = sa.Table(
                 name,
-                self.index.saMeta,
+                self.ix.saMeta,
                 sa.Column('id', sa.Integer, primary_key=True),
                 sa.Column('app_name', sa.Text),
                 sa.Column('date_time', sa.DateTime),
@@ -844,7 +850,7 @@ class Object(gws.base.action.Object):
             fs_ids=','.join(fs_uids or []),
         )
 
-        with self.index.connect() as conn:
+        with self.ix.connect() as conn:
             conn.execute(sa.insert(self._eigentuemerLogTable).values([data]))
             conn.commit()
 
