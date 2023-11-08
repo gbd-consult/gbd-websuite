@@ -1545,6 +1545,7 @@ class Controller extends gws.Controller {
 
     async init() {
         await super.init();
+        this.models = [];
 
         this.updateEditState({
             featureListSearchText: {},
@@ -1556,7 +1557,6 @@ class Controller extends gws.Controller {
         if (!this.setup)
             return;
 
-        this.models = [];
 
         let res = await this.app.server.editGetModels({});
         if (res.error) {

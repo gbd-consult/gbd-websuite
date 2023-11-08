@@ -102,7 +102,7 @@ def connection_url(cfg: gws.Config):
     if p:
         s = os.getenv('PGSERVICEFILE')
         if not s or not os.path.isfile(s):
-            raise gws.Error(f'PGSERVICEFILE not found')
+            raise gws.Error(f'PGSERVICEFILE {s!r} not found')
 
         params['service'] = p
 
