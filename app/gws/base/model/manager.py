@@ -14,23 +14,19 @@ class Object(gws.Node, gws.IModelManager):
             return
         return model
 
-    def locate_model(self, *objects, user=None, access=None, uid=None):
-        def _locate(obj):
-            for model in getattr(obj, 'models', []):
-                if user and access and not user.can(access, model):
-                    continue
-                if uid and model.uid != uid:
-                    continue
-                return model
-
+    def locate_model(self, *objects, user=None, access=None):
         for obj in objects:
             if not obj:
                 continue
-            p = _locate(obj)
+            p = self._locate(obj, user, access)
             if p:
                 return p
 
-        return _locate(self.root.app)
+    def _locate(self, obj, user, access):
+        for model in getattr(obj, 'models', []):
+            if user and access and not user.can(access, model):
+                continue
+            return model
 
     def editable_models(self, project, user):
         res = {}
