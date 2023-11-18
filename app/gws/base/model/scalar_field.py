@@ -24,6 +24,8 @@ class Object(field.Object, gws.IModelField):
             self.from_record(feature, mc)
 
     def before_create(self, feature, mc):
+        if self.isAuto:
+            return
         self.to_record(feature, mc)
 
     def before_update(self, feature, mc):

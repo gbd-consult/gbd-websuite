@@ -21,7 +21,7 @@ class Config(gws.base.model.Config):
     """db provider uid"""
     tableName: t.Optional[str]
     """table name for the model"""
-    filter: t.Optional[str]
+    sqlFilter: t.Optional[str]
     """extra SQL filter"""
 
 
@@ -33,7 +33,7 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         if not self.tableName:
             raise gws.ConfigurationError(f'table name missing in model {self!r}')
 
-        self.sqlFilter = self.cfg('filter')
+        self.sqlFilter = self.cfg('sqlFilter')
         self.configure_model()
 
     def configure_provider(self):
@@ -140,7 +140,7 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
                 sel = sel.where(w)
 
         if self.sqlFilter:
-            sel = sel.where(sa.text(self.sqlFilter))
+            sel = sel.where(sa.text('(' + self.sqlFilter + ')'))
 
         cols = []
         for col in mc.dbSelect.columns or []:

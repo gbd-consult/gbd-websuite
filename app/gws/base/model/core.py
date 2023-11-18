@@ -70,6 +70,10 @@ class Object(gws.Node, gws.IModel):
         self.loadingStrategy = self.cfg('loadingStrategy')
         self.title = self.cfg('title')
 
+    def post_configure(self):
+        if self.isEditable and not self.uidName:
+            raise gws.ConfigurationError(f'no primary key found for editable model {self}')
+
     def configure_model(self):
         """Model configuration protocol."""
 

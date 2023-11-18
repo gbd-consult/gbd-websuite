@@ -15,11 +15,11 @@ class Object(gws.base.model.validator.Object):
     def validate(self, field, feature, mc):
         val = feature.attributes.get(field.name)
 
+        if mc.op == gws.ModelOperation.create and field.isAuto:
+            return True
         if isinstance(val, str):
             return len(val.strip()) > 0
         if val is not None:
-            return True
-        if mc.op == gws.ModelOperation.create and field.isAuto:
             return True
 
         return False
