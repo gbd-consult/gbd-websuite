@@ -45,7 +45,11 @@ class Config(gws.base.template.Config):
     provider: t.Optional[provider.Config]
     """qgis provider"""
     index: t.Optional[int]
+    """template index"""
     mapPosition: t.Optional[gws.MSize]
+    """position for the main map"""
+    cssPath: t.Optional[gws.FilePath]
+    """css file"""
 
 
 class _HtmlBlock(gws.Data):
@@ -57,10 +61,12 @@ class Object(gws.base.template.Object):
     provider: provider.Object
     qgisTemplate: caps.PrintTemplate
     mapPosition: gws.MSize
+    cssPath: str
     htmlBlocks: dict[str, _HtmlBlock]
 
     def configure(self):
         self.provider = provider.get_for(self)
+        self.cssPath = self.cfg('cssPath', '')
         self._load()
 
     def render(self, tri):
@@ -173,8 +179,11 @@ class Object(gws.base.template.Object):
             height: {int(h)}mm;
         """
         html = f"<div style='{css}'>{html}</div>"
-        gws.lib.htmlx.render_to_pdf(self._decorate_html(html), out_path, self.pageSize)
 
+        if self.cssPath:
+            html = f"""<link rel="stylesheet" href="file://{self.cssPath}">""" + html
+
+        gws.lib.htmlx.render_to_pdf(self._decorate_html(html), out_path, self.pageSize)
         return mro
 
     def _decorate_html(self, html):
