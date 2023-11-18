@@ -16,14 +16,6 @@ import gws.types as t
 CONFIG_PATH_PATTERN = r'\bconfig\.(py|json|yaml|cx)$'
 CONFIG_FUNCTION_NAME = 'config'
 
-DEFAULT_CONFIG_PATHS = [
-    '/data/config.cx',
-    '/data/config.json',
-    '/data/config.yaml',
-    '/data/config.py',
-]
-
-
 def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', read_options=None):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
@@ -46,15 +38,6 @@ def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', read_o
         raise gws.ConfigurationError(f'parse error: {message}', lines) from exc
 
 
-def real_config_path(config_path=None):
-    p = config_path or gws.env.GWS_CONFIG
-    if p:
-        return p
-    for p in DEFAULT_CONFIG_PATHS:
-        if gws.is_file(p):
-            return p
-
-
 class ConfigParser:
     """Read and parse the main config file"""
 
@@ -64,11 +47,6 @@ class ConfigParser:
         self.paths = set()
 
     def parse_main(self, config_path=None) -> t.Optional[gws.Config]:
-        config_path = real_config_path(config_path)
-        if not config_path:
-            self.errors.append(_error('no configuration file found'))
-            return None
-        gws.log.info(f'using config {config_path!r}...')
         payload = self.read(config_path)
         if not payload:
             return None

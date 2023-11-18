@@ -34,28 +34,41 @@ def configure(
 
     errors = []
     errpfx = 'CONFIGURATION ERROR: '
-    ro = None
+    root_obj = None
 
     ts = gws.lib.osx.utime()
     ms = gws.lib.osx.process_rss_size()
 
+    manifest_path = real_manifest_path(manifest_path)
+    if manifest_path:
+        gws.log.info(f'using manifest {manifest_path!r}...')
+
     try:
-        specs = gws.spec.runtime.create(manifest_path, read_cache=with_spec_cache, write_cache=with_spec_cache)
+        specs = gws.spec.runtime.create(
+            manifest_path=manifest_path,
+            read_cache=with_spec_cache,
+            write_cache=with_spec_cache
+        )
     except Exception as exc:
         _report(exc)
         raise gws.ConfigurationError('spec failed') from exc
 
     if not config:
-        p = parser.ConfigParser(specs)
-        config = p.parse_main(config_path)
-        errors.extend(p.errors)
+        config_path = real_config_path(config_path)
+        if config_path:
+            gws.log.info(f'using config {config_path!r}...')
+            p = parser.ConfigParser(specs)
+            config = p.parse_main(config_path)
+            errors.extend(p.errors)
+        else:
+            errors.append(gws.ConfigurationError('no configuration file found'))
 
     if config:
         if before_init:
             before_init(config)
-        ro = initialize(specs, config)
-        if ro:
-            errors.extend(ro.configErrors)
+        root_obj = initialize(specs, config)
+        if root_obj:
+            errors.extend(root_obj.configErrors)
 
     err_cnt = 0
 
@@ -66,18 +79,18 @@ def configure(
             _report(err)
             gws.log.error(errpfx + ('-' * 60))
 
-    if ro:
+    if root_obj:
         info = '{:d} objects, time: {:.2f} s., memory: {:.2f} MB'.format(
-            ro.object_count(),
+            root_obj.object_count(),
             gws.lib.osx.utime() - ts,
             gws.lib.osx.process_rss_size() - ms,
         )
         if not errors:
             gws.log.info(f'configuration ok, {info}')
-            return ro
+            return root_obj
         if not specs.manifest.withStrictConfig:
             gws.log.warning(f'configuration complete with {err_cnt} error(s), {info}')
-            return ro
+            return root_obj
 
     if specs.manifest.withFallbackConfig and fallback_config:
         gws.log.warning(f'using fallback config')
@@ -152,3 +165,34 @@ def root() -> gws.Root:
         raise gws.Error('no configuration root found')
 
     return gws.get_app_global(ROOT_NAME, _err)
+
+
+_DEFAULT_CONFIG_PATHS = [
+    '/data/config.cx',
+    '/data/config.json',
+    '/data/config.yaml',
+    '/data/config.py',
+]
+
+
+def real_config_path(config_path):
+    p = config_path or gws.env.GWS_CONFIG
+    if p:
+        return p
+    for p in _DEFAULT_CONFIG_PATHS:
+        if gws.is_file(p):
+            return p
+
+
+_DEFAULT_MANIFEST_PATHS = [
+    '/data/MANIFEST.json',
+]
+
+
+def real_manifest_path(manifest_path):
+    p = manifest_path or gws.env.GWS_MANIFEST
+    if p:
+        return p
+    for p in _DEFAULT_MANIFEST_PATHS:
+        if gws.is_file(p):
+            return p

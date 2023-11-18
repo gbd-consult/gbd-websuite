@@ -26,10 +26,12 @@ def main2(args):
     if args.pop('v', None) or args.pop('verbose', None):
         gws.log.set_level('DEBUG')
 
-    manifest = args.pop('manifest', None) or gws.env.GWS_MANIFEST
+    manifest_path = real_manifest_path(args.get('manifest', None))
+    if manifest_path and 'manifest' in args:
+        args['manifest'] = manifest_path
 
     # specs are fast enough, don't bother with caching for now
-    specs = gws.spec.runtime.create(manifest, read_cache=False, write_cache=False)
+    specs = gws.spec.runtime.create(manifest_path, read_cache=False, write_cache=False)
 
     # all cli command lines are "gws command subcommand -opt1 val1 -opt2 val2 ...."
     # command + sub are translated to a camelized method name:  'gws auth password' => 'authPassword'
@@ -131,6 +133,22 @@ def camelize(p):
         return ''
     s = ''.join(parts)
     return s[0].lower() + s[1:]
+
+
+# from config.loader
+
+_DEFAULT_MANIFEST_PATHS = [
+    '/data/MANIFEST.json',
+]
+
+
+def real_manifest_path(manifest_path):
+    p = manifest_path or gws.env.GWS_MANIFEST
+    if p:
+        return p
+    for p in _DEFAULT_MANIFEST_PATHS:
+        if gws.is_file(p):
+            return p
 
 
 if __name__ == '__main__':
