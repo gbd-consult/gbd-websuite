@@ -8,6 +8,7 @@ interface SidebarProps extends gws.types.ViewProps {
     sidebarVisible: boolean;
     sidebarOverflowExpanded: boolean;
     sidebarSize: number;
+    sidebarHiddenItems: object;
 }
 
 const SidebarStoreKeys = [
@@ -15,6 +16,7 @@ const SidebarStoreKeys = [
     'sidebarVisible',
     'sidebarOverflowExpanded',
     'sidebarSize',
+    'sidebarHiddenItems',
 ];
 
 let {Row, Cell} = gws.ui.Layout;
@@ -109,8 +111,11 @@ class Header extends gws.View<SidebarProps> {
         let size = this.props.sidebarSize || 999;
 
         let expanded = this.props.sidebarOverflowExpanded,
-            items = this.props.controller.children,
-            front = items.slice(0, size),
+            items = this.props.controller.children;
+
+        items = items.filter(it => !(this.props.sidebarHiddenItems || {})[it.tag]);
+
+        let front = items.slice(0, size),
             rest = items.slice(size);
 
         return <div className="modSidebarHeader">
