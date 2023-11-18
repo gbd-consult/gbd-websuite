@@ -63,7 +63,7 @@ class Object(gws.base.template.Object):
             self.compiledFn = None
 
         if not self.compiledFn:
-            gws.log.debug(f'compiling {self.uid!r} {self.path=}')
+            gws.log.debug(f'compiling {self} {self.path=}')
             if self.root.app.developer_option('template.save_compiled'):
                 gws.write_file(
                     gws.ensure_dir(f'{gws.VAR_DIR}/debug') + f'/compiled_template_{self.uid}',
@@ -77,13 +77,13 @@ class Object(gws.base.template.Object):
         rid = env.ARGS.get('__renderUid', '?')
 
         if self.root.app.developer_option('template.raise_errors'):
-            gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: {exc} IN {path}:{line}')
+            gws.log.error(f'TEMPLATE_ERROR: {self}/{rid}: {exc} IN {path}:{line}')
             for k, v in sorted(getattr(env, 'ARGS', {}).items()):
-                gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: ARGS {k}={v!r}')
-            gws.log.error(f'TEMPLATE_ERROR: {self.uid}/{rid}: stop')
+                gws.log.error(f'TEMPLATE_ERROR: {self}/{rid}: ARGS {k}={v!r}')
+            gws.log.error(f'TEMPLATE_ERROR: {self}/{rid}: stop')
             return False
 
-        gws.log.warning(f'TEMPLATE_ERROR: {self.uid}/{rid}: {exc} IN {path}:{line}')
+        gws.log.warning(f'TEMPLATE_ERROR: {self}/{rid}: {exc} IN {path}:{line}')
         return True
 
     ##

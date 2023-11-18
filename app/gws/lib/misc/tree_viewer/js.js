@@ -141,7 +141,9 @@ function formatString(val, isKey) {
 }
 
 function matches(search, obj) {
-    return JSON.stringify(obj).includes(search)
+    if (search[0] === '*')
+        return JSON.stringify(obj).includes(search.slice(1))
+    return (obj.$ || '').includes(search)
 }
 
 function htmlize(s) {
