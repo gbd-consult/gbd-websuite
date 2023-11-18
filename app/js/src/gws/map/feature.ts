@@ -66,6 +66,13 @@ export class Feature implements types.IFeature {
         this.geometryName = props.geometryName || this.model.geometryName;
 
         this.setAttributes(props.attributes || {});
+
+        if (props.uid) {
+            if (!this.attributes[this.uidName]) {
+                this.attributes[this.uidName] = props.uid;
+            }
+        }
+
         return this;
     }
 

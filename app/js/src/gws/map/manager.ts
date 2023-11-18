@@ -795,7 +795,8 @@ export class MapManager implements types.IMapManager {
             keyword: args.keyword || '',
             layerUids: lib.compact(ls.map(la => la.uid)),
             resolution: this.viewState.resolution,
-            limit: args.limit || 999
+            limit: args.limit || 999,
+            tolerance: args.tolerance || '',
         };
 
         if (args.geometry) {

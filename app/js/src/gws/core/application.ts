@@ -168,6 +168,8 @@ export class Application implements types.IApplication {
         this.initialState.appToolbarState = {};
         this.initialState.appActiveTool = 'Tool.Default';
 
+        this.initialState.sidebarHiddenItems = {};
+
         this.store.update(this.initialState);
 
         this.style = new StyleManager();

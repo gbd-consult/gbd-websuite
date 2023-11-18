@@ -14,7 +14,7 @@ OGC_SCREEN_PPI = MM_PER_IN / (OGC_M_PER_PX * 1000)  # 90.71
 
 PDF_DPI = 96
 
-# 1 centrimeter precision
+# 1 centimeter precision
 
 DEFAULT_PRECISION = {
     gws.Uom.deg: 7,
@@ -119,6 +119,15 @@ def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
     if u == gws.Uom.px:
         return px_to_mm(x, ppi), px_to_mm(y, ppi), gws.Uom.mm
     raise ValueError(f'invalid unit {u!r}')
+
+
+##
+
+
+def to_str(xu: gws.Measurement) -> str:
+    x, u = xu
+    sx = str(int(x)) if x.is_integer() else str(x)
+    return sx + str(u)
 
 
 ##

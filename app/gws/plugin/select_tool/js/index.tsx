@@ -210,6 +210,7 @@ class SelectDrawToolbarButton extends toolbar.Button {
 class SelectController extends gws.Controller {
     uid = MASTER;
     layer: gws.types.IFeatureLayer;
+    tolerance: string = '';
 
     async init() {
         this.update({
@@ -218,16 +219,18 @@ class SelectController extends gws.Controller {
         this.app.whenCalled('selectFeature', args => {
             this.addFeature(args.feature);
         });
-        let props = this.app.actionProps('select') as gws.api.plugin.annotate.Props;
-        if (props) {
+
+        let setup = this.app.actionProps('select') as gws.api.plugin.select_tool.action.Props;
+        if (setup) {
+            this.tolerance = setup.tolerance || '';
             this.updateObject('storageState', {
-                selectStorage: props.storage ? props.storage.state : null,
+                selectStorage: setup.storage ? setup.storage.state : null,
             })
         }
     }
 
     async doSelect(geometry: ol.geom.Geometry, toggle: boolean) {
-        let features = await this.map.searchForFeatures({geometry});
+        let features = await this.map.searchForFeatures({geometry, tolerance: this.tolerance});
 
         if (gws.lib.isEmpty(features))
             return;
@@ -235,7 +238,7 @@ class SelectController extends gws.Controller {
         features.forEach(f => this.addFeature(f, toggle));
     }
 
-    addFeature(feature, toggle = false) {
+    addFeature(feature: gws.types.IFeature, toggle = false) {
 
         if (!this.layer) {
             this.layer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
@@ -249,20 +252,18 @@ class SelectController extends gws.Controller {
             feature.oFeature = new ol.Feature({geometry});
         }
 
-
         let f = this.findFeatureByUid(feature.uid);
-        console.log(feature, f);
 
         if (f) {
             if (toggle)
                 this.layer.removeFeature(f);
-        } else
+        } else {
             this.layer.addFeatures([feature]);
+        }
 
         this.update({
             selectFeatures: this.layer.features
         });
-
     }
 
     featureTitle(feature: gws.types.IFeature) {
@@ -313,7 +314,7 @@ class SelectController extends gws.Controller {
     }
 
     storageGetData() {
-        let fs = this.getValue("selectFeatures") || [];
+        let fs = (this.getValue("selectFeatures") || []) as Array<gws.types.IFeature>;
         return {
             features: fs.map(f => f.getProps())
         }

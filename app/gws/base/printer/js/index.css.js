@@ -29,7 +29,7 @@ module.exports = v => ({
     },
 
     '.printerScreenshotToolbarButton': {
-        ...v.TOOLBAR_BUTTON(__dirname + '/snapshot')
+        ...v.TOOLBAR_BUTTON(__dirname + '/screenshot')
     },
 
     '.printerPreviewPrintButton': {

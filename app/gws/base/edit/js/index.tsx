@@ -1554,19 +1554,21 @@ class Controller extends gws.Controller {
         });
 
         this.setup = this.app.actionProps('edit');
-        if (!this.setup)
+        if (!this.setup) {
+            this.updateObject('sidebarHiddenItems', {'Sidebar.Edit': true});
             return;
+        }
 
 
         let res = await this.app.server.editGetModels({});
-        if (res.error) {
-            return
-        }
-        for (let props of res.models) {
-            this.models.push(this.app.modelRegistry.addModel(props));
+        if (!res.error) {
+            for (let props of res.models) {
+                this.models.push(this.app.modelRegistry.addModel(props));
+            }
         }
 
         if (gws.lib.isEmpty(this.models)) {
+            this.updateObject('sidebarHiddenItems', {'Sidebar.Edit': true});
             return;
         }
 

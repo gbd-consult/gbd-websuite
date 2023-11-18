@@ -256,6 +256,7 @@ export interface IFeatureSearchArgs {
     keyword?: string;
     geometry?: ol.geom.Geometry;
     limit?: number;
+    tolerance?: string;
 }
 
 export interface IBasicPrintParams {

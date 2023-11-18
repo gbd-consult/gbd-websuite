@@ -18,9 +18,9 @@ function _master(obj: any): Controller {
 }
 
 const JOB_POLL_INTERVAL = 2000;
-const DEFAULT_SNAPSHOT_SIZE = 300;
-const MIN_SNAPSHOT_DPI = 70;
-const MAX_SNAPSHOT_DPI = 600;
+const DEFAULT_SCREENSHOT_SIZE = 300;
+const MIN_SCREENSHOT_DPI = 70;
+const MAX_SCREENSHOT_DPI = 600;
 
 interface ViewProps extends gws.types.ViewProps {
     controller: Controller;
@@ -175,8 +175,8 @@ class PreviewBox extends gws.View<ViewProps> {
             <Row>
                 <Cell flex>
                     <gws.ui.Slider
-                        minValue={MIN_SNAPSHOT_DPI}
-                        maxValue={MAX_SNAPSHOT_DPI}
+                        minValue={MIN_SCREENSHOT_DPI}
+                        maxValue={MAX_SCREENSHOT_DPI}
                         step={10}
                         label={this.__('printerScreenshotResolution')}
                         {...cc.bind('printerScreenshotDpi')}
@@ -229,7 +229,9 @@ class PreviewBox extends gws.View<ViewProps> {
                 tooltip={this.__('printerPreviewPrintButton')}
             />;
 
-        let map = this.overviewMap()
+        let map = (this.props.printerMode === 'screenshot')
+            ? null
+            : this.overviewMap();
 
         return <div className="printerPreviewDialog">
             <Form>
@@ -283,8 +285,8 @@ class PreviewBox extends gws.View<ViewProps> {
 
         if (this.props.printerMode === 'screenshot') {
 
-            w = this.props.printerScreenshotWidth || DEFAULT_SNAPSHOT_SIZE;
-            h = this.props.printerScreenshotHeight || DEFAULT_SNAPSHOT_SIZE;
+            w = this.props.printerScreenshotWidth || DEFAULT_SCREENSHOT_SIZE;
+            h = this.props.printerScreenshotHeight || DEFAULT_SCREENSHOT_SIZE;
 
         } else {
             if (!prt)
@@ -434,9 +436,9 @@ class Controller extends gws.Controller {
         this.app.whenChanged('printerJob', job => this.jobUpdated(job));
 
         this.update({
-            printerScreenshotDpi: MIN_SNAPSHOT_DPI,
-            printerScreenshotWidth: DEFAULT_SNAPSHOT_SIZE,
-            printerScreenshotHeight: DEFAULT_SNAPSHOT_SIZE,
+            printerScreenshotDpi: MIN_SCREENSHOT_DPI,
+            printerScreenshotWidth: DEFAULT_SCREENSHOT_SIZE,
+            printerScreenshotHeight: DEFAULT_SCREENSHOT_SIZE,
             printerFormValues: {
                 _printerIndex: 0,
                 _qualityIndex: 0,
@@ -554,7 +556,7 @@ class Controller extends gws.Controller {
     }
 
     async startScreenshot() {
-        let dpi = Number(this.getValue('printerScreenshotDpi')) || MIN_SNAPSHOT_DPI;
+        let dpi = Number(this.getValue('printerScreenshotDpi')) || MIN_SCREENSHOT_DPI;
 
         let mapParams = await this.map.printParams(
             this.previewBox.getBoundingClientRect(),
@@ -566,20 +568,15 @@ class Controller extends gws.Controller {
         let params: gws.api.core.PrintRequest = {
             type: gws.api.core.PrintRequestType.map,
             maps: [mapParams],
-            // format: 'png',
-            dpi: dpi,
+            outputFormat: 'png',
+            dpi,
             outputSize: [
-                Number(this.getValue('printerScreenshotWidth')) || DEFAULT_SNAPSHOT_SIZE,
-                Number(this.getValue('printerScreenshotHeight')) || DEFAULT_SNAPSHOT_SIZE,
+                Number(this.getValue('printerScreenshotWidth')) || DEFAULT_SCREENSHOT_SIZE,
+                Number(this.getValue('printerScreenshotHeight')) || DEFAULT_SCREENSHOT_SIZE,
             ],
-            // sections: [
-            //     {
-            //         center: [vs.centerX, vs.centerY] as gws.api.Point,
-            //     }
-            // ]
         };
 
-        await this.startJob(this.app.server.printerStart(params, {binaryRequest: true}));
+        await this.startJob(this.app.server.printerStart(params, {binaryRequest: false}));
 
     }
 

@@ -71,6 +71,7 @@ def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin:
         '--disable-javascript',
         '--disable-smart-width',
         '--transparent',
+        '--enable-local-file-access',
         out_path + '.html',
         out_path,
     ])

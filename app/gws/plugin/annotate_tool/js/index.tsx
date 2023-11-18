@@ -563,21 +563,20 @@ class Controller extends gws.Controller {
     async init() {
         await super.init();
 
+        let setup = (this.app.actionProps('annotate') || {}) as gws.api.plugin.annotate_tool.action.Props;
+
         this.layer = this.map.addServiceLayer(new Layer(this.map, {
             uid: '_annotate',
         }));
 
         this.update({
             annotateCurrentStyle: this.map.style.get('.annotateFeature'),
-            annotateLabelTemplates: defaultLabelTemplates,
+            annotateLabelTemplates: setup.labels || defaultLabelTemplates,
         });
 
-        let props = this.app.actionProps('annotate') as gws.api.plugin.annotate.Props;
-        if (props) {
-            this.updateObject('storageState', {
-                annotateStorage: props.storage ? props.storage.state : null,
-            })
-        }
+        this.updateObject('storageState', {
+            annotateStorage: setup.storage ? setup.storage.state : null,
+        });
 
         this.app.whenCalled('annotateFromFeature', args =>
             this.createNewFeatureFromFeature(args.feature)
@@ -701,8 +700,13 @@ class Controller extends gws.Controller {
     }
 
     newFeatureOfType(shapeType): Feature {
-        let templates = this.getValue('annotateLabelTemplates'),
-            labelTemplate = (templates && templates[shapeType]) || defaultLabelTemplates[shapeType];
+        let templates = this.getValue('annotateLabelTemplates');
+        let labelTemplate = '';
+
+        if (templates) {
+            labelTemplate = templates[shapeType] || templates[shapeType.toLowerCase()];
+        }
+        labelTemplate = labelTemplate || defaultLabelTemplates[shapeType];
 
         let f = new Feature(this.app.modelRegistry.defaultModel());
 
@@ -836,4 +840,3 @@ gws.registerTags({
     'Tool.Annotate.Modify': ModifyTool,
     'Tool.Annotate.Draw': DrawTool,
 });
-      
