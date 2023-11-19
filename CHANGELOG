@@ -1,3 +1,10 @@
+## Version 8.0.18
+
+- configurable tolerance for the Select tool
+- default labels for map annotations
+- screenshot function
+- css support for QGis print templates
+
 ## Version 8.0.17
 
 - models optimized and simplified
