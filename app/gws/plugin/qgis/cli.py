@@ -42,8 +42,8 @@ class Object(gws.Node):
         """Copy a project from the db to a local file."""
 
         root = gws.config.load()
-        src = project.Storage(type=project.StorageType.postgres, schema=p.schema, name=p.name)
-        prj = project.from_storage(root, src)
+        src = project.Store(type=project.StoreType.postgres, schema=p.schema, name=p.name)
+        prj = project.from_store(root, src)
         if p.out:
             gws.write_file(p.out, prj.text)
         else:
@@ -54,10 +54,10 @@ class Object(gws.Node):
         """Copy a project from a local file to the db."""
 
         root = gws.config.load()
-        src = project.Storage(type=project.StorageType.file, path=p.path)
-        prj = project.from_storage(root, src)
-        dst = project.Storage(type=project.StorageType.postgres, schema=p.schema, name=p.name)
-        prj.to_storage(root, src)
+        src = project.Store(type=project.StoreType.file, path=p.path)
+        prj = project.from_store(root, src)
+        dst = project.Store(type=project.StoreType.postgres, schema=p.schema, name=p.name)
+        prj.to_store(root, src)
 
     @gws.ext.command.cli('qgisCaps')
     def caps(self, p: CapsParams):

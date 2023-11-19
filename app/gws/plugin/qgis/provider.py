@@ -24,7 +24,7 @@ class Config(gws.Config):
     """Qgis project database"""
     schema: t.Optional[str]
     """Qgis project schema"""
-    name: t.Optional[str]
+    projectName: t.Optional[str]
     """Qgis project name"""
     directRender: t.Optional[list[str]]
     """QGIS data providers that should be rendered directly"""
@@ -37,7 +37,7 @@ class Config(gws.Config):
 
 
 class Object(gws.Node, gws.IOwsProvider):
-    storage: project.Storage
+    store: project.Store
     printTemplates: list[caps.PrintTemplate]
     url: str
 
@@ -49,9 +49,9 @@ class Object(gws.Node, gws.IOwsProvider):
     caps: caps.Caps
 
     def configure(self):
-        self.configure_storage()
-        if self.storage.path:
-            self.root.app.monitor.add_file(self.storage.path)
+        self.configure_store()
+        if self.store.path:
+            self.root.app.monitor.add_file(self.store.path)
 
         self.url = 'http://{}:{}'.format(
             self.root.app.cfg('server.qgis.host'),
@@ -77,37 +77,37 @@ class Object(gws.Node, gws.IOwsProvider):
                 extent=gws.gis.extent.from_list([float(v) for v in wms_extent]),
                 crs=self.caps.projectCrs)
 
-    def configure_storage(self):
+    def configure_store(self):
         p = self.cfg('path')
         if p:
-            self.storage = project.Storage(
-                type=project.StorageType.file,
+            self.store = project.Store(
+                type=project.StoreType.file,
                 path=p,
             )
             return
-        p = self.cfg('name')
+        p = self.cfg('projectName')
         if p:
-            self.storage = project.Storage(
-                type=project.StorageType.postgres,
-                name=p,
+            self.store = project.Store(
+                type=project.StoreType.postgres,
+                projectName=p,
                 dbUid=self.cfg('dbUid'),
                 schema=self.cfg('schema') or 'public',
             )
             return
         # @TODO gpkg, etc
-        raise gws.Error('cannot load qgis project ("path" or "name" must be specified)')
+        raise gws.Error('cannot load qgis project ("path" or "projectName" must be specified)')
 
     ##
 
     def qgis_project(self) -> project.Object:
-        return project.from_storage(self.root, self.storage)
+        return project.from_store(self.root, self.store)
 
     def server_project_path(self):
-        if self.storage.type == project.StorageType.file:
-            return self.storage.path
-        if self.storage.type == project.StorageType.postgres:
-            prov = gws.base.database.provider.get_for(self, self.storage.dbUid, 'postgres')
-            return gws.lib.net.add_params(prov.url, schema=self.storage.schema, project=self.storage.name)
+        if self.store.type == project.StoreType.file:
+            return self.store.path
+        if self.store.type == project.StoreType.postgres:
+            prov = gws.base.database.provider.get_for(self, self.store.dbUid, 'postgres')
+            return gws.lib.net.add_params(prov.url, schema=self.store.schema, project=self.store.projectName)
 
     def server_params(self, params: dict) -> dict:
         defaults = dict(

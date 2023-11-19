@@ -11,7 +11,7 @@ projects+ {
     map.layers+ {
         title "Düsseldorf"
         type "qgis"
-        provider { name "districts" schema "public" }
+        provider { schema "public" projectName "districts" }
     }
 
     {demo_osm_background}

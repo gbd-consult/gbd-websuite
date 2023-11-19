@@ -17,17 +17,17 @@ class Error(gws.Error):
     pass
 
 
-class StorageType(gws.Enum):
+class StoreType(gws.Enum):
     file = 'file'
     postgres = 'postgres'
 
 
-class Storage(gws.Data):
-    type: StorageType
+class Store(gws.Data):
+    type: StoreType
     path: gws.FilePath
     dbUid: str
     schema: str
-    name: str
+    projectName: str
 
 
 _PRJ_EXT = '.qgs'
@@ -35,17 +35,17 @@ _ZIP_EXT = '.qgz'
 _PRJ_TABLE = 'qgis_projects'
 
 
-def from_storage(root: gws.IRoot, storage: Storage) -> 'Object':
-    if storage.type == StorageType.file:
-        return from_path(storage.path)
-    if storage.type == StorageType.postgres:
-        return _db_read(root, storage)
+def from_store(root: gws.IRoot, store: Store) -> 'Object':
+    if store.type == StoreType.file:
+        return from_path(store.path)
+    if store.type == StoreType.postgres:
+        return _from_db(root, store)
     raise Error(f'qgis project cannot be loaded')
 
 
 def from_path(path: str) -> 'Object':
     if path.endswith(_ZIP_EXT):
-        return _from_bytes(gws.read_file_b(path))
+        return _from_zipped_bytes(gws.read_file_b(path))
     return from_string(gws.read_file(path))
 
 
@@ -53,7 +53,7 @@ def from_string(text: str) -> 'Object':
     return Object(text)
 
 
-def _from_bytes(b: bytes) -> 'Object':
+def _from_zipped_bytes(b: bytes) -> 'Object':
     d = gws.lib.zipx.unzip_bytes_to_dict(b)
     for k, v in d.items():
         if k.endswith(_PRJ_EXT):
@@ -61,20 +61,20 @@ def _from_bytes(b: bytes) -> 'Object':
     raise Error(f'no qgis project')
 
 
-def _db_read(root: gws.IRoot, storage: Storage):
-    prov = gws.base.database.provider.get_for(root.app, storage.dbUid, 'postgres')
-    schema = storage.get('schema') or 'public'
+def _from_db(root: gws.IRoot, store: Store):
+    prov = gws.base.database.provider.get_for(root.app, store.dbUid, 'postgres')
+    schema = store.get('schema') or 'public'
     tab = prov.table(f'{schema}.{_PRJ_TABLE}')
 
     with prov.connection() as conn:
-        for row in conn.execute(sa.select(tab.c.content).where(tab.c.name.__eq__(storage.name))):
-            return _from_bytes(row[0])
-        raise Error(f'{storage.name!r} not found')
+        for row in conn.execute(sa.select(tab.c.content).where(tab.c.name.__eq__(store.projectName))):
+            return _from_zipped_bytes(row[0])
+        raise Error(f'{store.projectName!r} not found')
 
 
-def _db_write(root: gws.IRoot, storage: Storage, content: bytes):
-    prov = gws.base.database.provider.get_for(root.app, storage.dbUid, 'postgres')
-    schema = storage.get('schema') or 'public'
+def _to_db(root: gws.IRoot, store: Store, content: bytes):
+    prov = gws.base.database.provider.get_for(root.app, store.dbUid, 'postgres')
+    schema = store.get('schema') or 'public'
     tab = prov.table(f'{schema}.{_PRJ_TABLE}')
 
     metadata = {
@@ -83,10 +83,10 @@ def _db_write(root: gws.IRoot, storage: Storage, content: bytes):
     }
 
     with prov.connection() as conn:
-        conn.execute(tab.delete().where(tab.c.name.__eq__(storage.name + '.bak')))
-        conn.execute(tab.update().values(name=storage.name + '.bak').where(tab.c.name.__eq__(storage.name)))
+        conn.execute(tab.delete().where(tab.c.name.__eq__(store.projectName + '.bak')))
+        conn.execute(tab.update().values(name=store.projectName + '.bak').where(tab.c.name.__eq__(store.projectName)))
         conn.execute(tab.insert().values(
-            name=storage.name,
+            name=store.projectName,
             metadata=metadata,
             content=content,
         ))
@@ -114,14 +114,14 @@ class Object:
             setattr(self, '_xml_root', gws.lib.xmlx.from_string(self.text))
         return getattr(self, '_xml_root')
 
-    def to_storage(self, root: gws.IRoot, storage: Storage):
-        if storage.path:
-            return self.to_path(storage.path)
-        if storage.name:
+    def to_store(self, root: gws.IRoot, store: Store):
+        if store.path:
+            return self.to_path(store.path)
+        if store.projectName:
             src = self.to_xml()
-            name = storage.name + _PRJ_EXT
+            name = store.projectName + _PRJ_EXT
             content = gws.lib.zipx.zip_to_bytes({name: src})
-            return _db_write(root, storage, content)
+            return _to_db(root, store, content)
         raise Error(f'qgis project cannot be stored')
 
     def to_path(self, path: str):
