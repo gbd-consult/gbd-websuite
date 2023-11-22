@@ -30,7 +30,7 @@ interface TableViewRow {
 }
 
 
-interface EditState {
+export interface EditState {
     sidebarSelectedModel?: gws.types.IModel;
     sidebarSelectedFeature?: gws.types.IFeature;
     tableViewSelectedModel?: gws.types.IModel;
@@ -88,7 +88,7 @@ interface ViewProps extends gws.types.ViewProps {
     appActiveTool: string;
 }
 
-const StoreKeys = [
+export const StoreKeys = [
     'editState',
     'editDialogData',
     'editTableViewDialogZoomed',
@@ -815,7 +815,7 @@ class TableViewDialog extends gws.View<ViewProps> {
 }
 
 
-class ModelsTab extends gws.View<ViewProps> {
+export class ModelsTab extends gws.View<ViewProps> {
     async whenItemTouched(model: gws.types.IModel) {
         _master(this).selectModelInSidebar(model)
     }
@@ -874,7 +874,7 @@ class ModelsTab extends gws.View<ViewProps> {
     }
 }
 
-class ListTab extends gws.View<ViewProps> {
+export class ListTab extends gws.View<ViewProps> {
     async whenFeatureTouched(feature: gws.types.IFeature) {
         let cc = _master(this);
         let loaded = await cc.featureCache.loadOne(feature);
@@ -984,7 +984,7 @@ class ListTab extends gws.View<ViewProps> {
     }
 }
 
-class FormTab extends gws.View<ViewProps> {
+export class FormTab extends gws.View<ViewProps> {
     async whenSaveButtonTouched(feature: gws.types.IFeature) {
         let cc = _master(this);
         let ok = await cc.saveFeatureInSidebar(feature);
@@ -1148,7 +1148,7 @@ class WidgetHelper {
     }
 }
 
-class GeometryWidgetHelper extends WidgetHelper {
+export class GeometryWidgetHelper extends WidgetHelper {
     setProps(feature, field, props) {
         props.whenNewButtonTouched = () => this.whenNewButtonTouched(feature, field);
         props.whenEditButtonTouched = () => this.whenEditButtonTouched(feature, field);
@@ -1346,7 +1346,7 @@ class FeatureListWidgetHelper extends WidgetHelper {
 
 }
 
-class SidebarView extends gws.View<ViewProps> {
+export class SidebarView extends gws.View<ViewProps> {
     render() {
         let es = this.props.editState;
 
@@ -1363,7 +1363,7 @@ class SidebarView extends gws.View<ViewProps> {
     }
 }
 
-class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
+export class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
     iconClass = 'editSidebarIcon';
 
     get tooltip() {
@@ -1396,7 +1396,7 @@ class EditLayer extends gws.map.layer.FeatureLayer {
     }
 }
 
-class FeatureCache {
+export class FeatureCache {
     app: gws.types.IApplication
 
     constructor(controller: gws.types.IController) {
@@ -1527,7 +1527,7 @@ class FeatureCache {
     }
 }
 
-class Controller extends gws.Controller {
+export class Controller extends gws.Controller {
     uid = MASTER;
     editLayer: EditLayer;
     models: Array<gws.types.IModel>
