@@ -14,11 +14,9 @@
         "noImplicitAny": false,
         "outDir": "../__build/js",
         "paths": {
-            "@build/*": [ "../__build/*"],
-            "*": [
-                "./src/*",
-                "./node_modules/*"
-            ]
+            "@build/*": [ "../__build/*" ],
+            "gws.base/*": [ "../gws/base/*" ],
+            "*": ["./node_modules/*", "./src/*"]
         },
         "preserveWatchOutput": true,
         "rootDir": "/",
