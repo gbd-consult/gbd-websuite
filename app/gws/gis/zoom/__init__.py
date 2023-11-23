@@ -54,7 +54,7 @@ class Config(gws.Config):
     """maximal scale"""
 
 
-def resolutions_from_config(cfg, parent_resolultions: list[float] = None) -> list[float]:
+def resolutions_from_config(cfg, parent_resolutions: list[float] = None) -> list[float]:
     # see also https://mapproxy.org/docs/1.11.0/configuration.html#res and below
 
     # @TODO deal with scales separately
@@ -62,7 +62,7 @@ def resolutions_from_config(cfg, parent_resolultions: list[float] = None) -> lis
     rmin = _res_or_scale(cfg, 'minResolution', 'minScale')
     rmax = _res_or_scale(cfg, 'maxResolution', 'maxScale')
 
-    res = _explicit_resolutions(cfg) or parent_resolultions
+    res = _explicit_resolutions(cfg) or parent_resolutions
     if not res:
         res = list(OSM_RESOLUTIONS)
         if rmax and rmax > max(res):
@@ -78,7 +78,7 @@ def resolutions_from_config(cfg, parent_resolultions: list[float] = None) -> lis
     return sorted(res)
 
 
-def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolultions: list[float]) -> list[float]:
+def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolutions: list[float]) -> list[float]:
     smin = []
     smax = []
 
@@ -89,24 +89,24 @@ def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_
             smax.append(sr[1])
 
     if not smin:
-        return parent_resolultions
+        return parent_resolutions
 
     rmin = units.scale_to_res(min(smin))
     rmax = units.scale_to_res(max(smax))
 
-    pmin = min(parent_resolultions)
-    pmax = max(parent_resolultions)
+    pmin = min(parent_resolutions)
+    pmax = max(parent_resolutions)
 
     if rmin > pmax or rmax < pmin:
         return []
 
-    lt = [r for r in parent_resolultions if r <= rmin]
-    gt = [r for r in parent_resolultions if r >= rmax]
+    lt = [r for r in parent_resolutions if r <= rmin]
+    gt = [r for r in parent_resolutions if r >= rmax]
 
     rmin = max(lt) if lt else pmin
     rmax = min(gt) if gt else pmax
 
-    return [r for r in parent_resolultions if rmin <= r <= rmax]
+    return [r for r in parent_resolutions if rmin <= r <= rmax]
 
 
 def resolutions_from_bounds(b: gws.Bounds, tile_size: int) -> list[float]:

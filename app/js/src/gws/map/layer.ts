@@ -231,7 +231,8 @@ export class TileLayer extends OlBackedLayer<ol.layer.Image> {
                     extent: this.props.grid.extent,
                     tileSize: this.props.grid.tileSize,
                     resolutions: this.props.grid.resolutions,
-                })
+                }),
+                wrapX: this.map.wrapX,
             })
         });
     }
@@ -243,7 +244,7 @@ export class XYZLayer extends OlBackedLayer<ol.layer.Image> {
             source: new ol.source.XYZ({
                 url: this.props.url,
                 crossOrigin: 'Anonymous',
-
+                wrapX: this.map.wrapX,
             })
         });
     }
@@ -388,7 +389,9 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
     }
 
     protected createSource() {
-        return new ol.source.Vector({});
+        return new ol.source.Vector({
+            wrapX: this.map.wrapX,
+        });
     }
 
     forceUpdate() {

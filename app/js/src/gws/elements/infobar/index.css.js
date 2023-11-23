@@ -92,7 +92,7 @@ module.exports = v => ({
 
 
     '.modInfobarPositionInput .uiInput .uiRawInput': {
-        width: 110,
+        width: 120,
     },
 
     '.modInfobarRotationInput .uiInput .uiRawInput': {
@@ -100,7 +100,7 @@ module.exports = v => ({
     },
 
     '.modInfobarScaleInput .uiInput .uiRawInput': {
-        width: 60,
+        width: 80,
     },
 
     '.modInfobarLoaderIcon.uiIconButton': {

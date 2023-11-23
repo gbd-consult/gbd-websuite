@@ -46,6 +46,7 @@ export class MapManager implements types.IMapManager {
     root = null;
     resolutions = null;
     extent = null;
+    wrapX = false;
 
     protected connectedToStore = false;
     protected coordinatePrecision = 0;
@@ -110,6 +111,7 @@ export class MapManager implements types.IMapManager {
         this.resolutions = this.props.resolutions;
         this.extent = this.props.extent;
         this.coordinatePrecision = this.props.coordinatePrecision || 0;
+        this.wrapX = this.props.wrapX;
 
         this.defaultViewState = {
             centerX: this.props.center[0],
@@ -513,6 +515,44 @@ export class MapManager implements types.IMapManager {
         });
 
         this.oView = this.oMap.getView();
+
+        let constrainCenter = (xy) => {
+            let size = this.oMap.getSize();
+            if (!size)
+                return xy;
+
+            let res = this.oView.getResolution();
+            let ext = [
+                this.extent[0] + (size[0] / 2) * res,
+                this.extent[1] + (size[1] / 2) * res,
+                this.extent[2] - (size[0] / 2) * res,
+                this.extent[3] - (size[1] / 2) * res,
+            ];
+
+            let c = [
+                lib.clamp(xy[0], Math.min(ext[0], ext[2]), Math.max(ext[0], ext[2])),
+                lib.clamp(xy[1], Math.min(ext[1], ext[3]), Math.max(ext[1], ext[3])),
+            ];
+
+            if (this.wrapX) {
+                c[0] = xy[0];
+
+                while (c[0] < this.extent[0])
+                    c[0] += (this.extent[2] - this.extent[0])
+                while (c[0] > this.extent[2])
+                    c[0] -= (this.extent[2] - this.extent[0])
+            }
+            return c;
+        }
+
+        // OL4 doesn't support getConstraints, inject our 'constrainCenter' into a minimized private prop
+        let proto = Object.getPrototypeOf(this.oView);
+        let cc = proto.constrainCenter;
+        for (let p in proto) {
+            if (proto[p] === cc) {
+                proto[p] = constrainCenter;
+            }
+        }
     }
 
     protected initLayers() {

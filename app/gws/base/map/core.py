@@ -27,6 +27,8 @@ class Config(gws.Config):
     """collection of layers for this map"""
     title: str = ''
     """map title"""
+    wrapX: bool = False
+    """wrap the world horizontally"""
     zoom: t.Optional[gws.gis.zoom.Config]
     """map scales and resolutions"""
 
@@ -41,6 +43,7 @@ class Props(gws.Data):
     rootLayer: gws.base.layer.Props
     resolutions: list[float]
     title: str = ''
+    wrapX: bool
 
 
 class _RootLayer(gws.base.layer.group.Object):
@@ -48,6 +51,7 @@ class _RootLayer(gws.base.layer.group.Object):
 
 
 class Object(gws.Node, gws.IMap):
+    wrapX: bool
 
     def configure(self):
         self.title = self.cfg('title') or ''
@@ -63,6 +67,7 @@ class Object(gws.Node, gws.IMap):
 
         self.center = self.cfg('center') or gws.gis.extent.center(self.bounds.extent)
         self.wgsExtent = gws.gis.extent.transform_to_wgs(self.bounds.extent, self.bounds.crs)
+        self.wrapX = self.cfg('wrapX', default=False)
 
         p = self.cfg('zoom')
         if p:
@@ -100,4 +105,5 @@ class Object(gws.Node, gws.IMap):
             rootLayer=self.rootLayer,
             resolutions=sorted(self.resolutions, reverse=True),
             title=self.title,
+            wrapX=self.wrapX,
         )

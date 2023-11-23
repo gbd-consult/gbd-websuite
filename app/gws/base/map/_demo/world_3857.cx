@@ -1,0 +1,28 @@
+projects+ {
+    title "World 3857"
+    metadata.abstract "Whole world map in EPSG:3857."
+
+    map {
+        crs 3857
+        center [0 0]
+        zoom.initScale 70000000
+        wrapX true
+    }
+
+    map.layers+ {
+        title "Countries (Natural Earth)"
+        type "postgres"
+        tableName "public.ne_10m_admin_0_countries_3857"
+        metadata.attribution.title "Made with Natural Earth"
+        cssSelector ".ne_countries"
+    }
+
+    map.layers+ {
+        title "Open Street Map"
+        type "tile"
+        provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
+        display "tile"
+        withCache true
+        metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    }
+}

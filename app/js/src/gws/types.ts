@@ -281,6 +281,7 @@ export interface IMapManager {
     root: ILayer;
     size: ol.Size;
     viewState: MapViewState;
+    wrapX: boolean;
 
     init(props: api.base.map.Props, appLoc: object);
     update(args: any);
