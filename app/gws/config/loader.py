@@ -100,27 +100,27 @@ def configure(
 
 
 def initialize(specs, parsed_config) -> gws.IRoot:
-    ro = gws.create_root_object(specs)
-    ro.create_application(parsed_config)
-    ro.post_initialize()
-    return ro
+    root_obj = gws.create_root_object(specs)
+    root_obj.create_application(parsed_config)
+    root_obj.post_initialize()
+    return root_obj
 
 
-def activate(ro: gws.IRoot):
-    ro.activate()
-    return gws.set_app_global(ROOT_NAME, ro)
+def activate(root_obj: gws.IRoot):
+    root_obj.activate()
+    return gws.set_app_global(ROOT_NAME, root_obj)
 
 
 def deactivate():
     return gws.delete_app_global(ROOT_NAME)
 
 
-def store(ro: gws.IRoot, path=None) -> str:
+def store(root_obj: gws.IRoot, path=None) -> str:
     path = path or STORE_PATH
     gws.log.debug(f'writing config to {path!r}')
     try:
         gws.lib.jsonx.to_path(f'{path}.syspath.json', sys.path)
-        gws.serialize_to_path(ro, path)
+        gws.serialize_to_path(root_obj, path)
         return path
     except Exception as exc:
         raise gws.ConfigurationError('unable to store configuration') from exc
@@ -145,19 +145,17 @@ def _load(path) -> gws.Root:
     ts = gws.lib.osx.utime()
     ms = gws.lib.osx.process_rss_size()
 
-    ro = gws.unserialize_from_path(path)
+    root_obj = gws.unserialize_from_path(path)
 
-    activate(ro)
+    activate(root_obj)
 
-    info = 'configuration ok, {:d} objects, time: {:.2f} s., memory: {:.2f} MB'.format(
-        ro.object_count(),
+    gws.log.info('configuration ok, {:d} objects, time: {:.2f} s., memory: {:.2f} MB'.format(
+        root_obj.object_count(),
         gws.lib.osx.utime() - ts,
         gws.lib.osx.process_rss_size() - ms,
-    )
+    ))
 
-    gws.log.info(info)
-
-    return ro
+    return root_obj
 
 
 def root() -> gws.Root:
