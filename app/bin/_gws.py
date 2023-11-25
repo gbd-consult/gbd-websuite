@@ -61,7 +61,7 @@ def main2(args):
             command_category='cli',
             command_name=camelize(cmd1 + '-' + cmd2),
             params={camelize(key): val for key, val in args.items()},
-            read_options={'case_insensitive', 'convert_values', 'ignore_extra_props'}
+            read_options={'case_insensitive', 'convert_values'}
         )
     except gws.NotFoundError:
         cli.error('command not found, try "gws -h" for help')
