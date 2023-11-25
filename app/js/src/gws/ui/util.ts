@@ -134,13 +134,14 @@ export function formatDate(dmy: DMY, fmt: string, lo: Locale): string {
 }
 
 export function iso2dmy(val): DMY {
-    let s = (String(val || '').trim()).split('-'),
-        y = parseNumber(s[0]),
-        m = parseNumber(s[1]),
-        d = parseNumber(s[2]);
-
-    if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d))
+    let s = String(val || '').trim().match(/^(\d+)-(\d+)-(\d+)/);
+    if (!s) {
         return null;
+    }
+
+    let y = Number(s[1]);
+    let m = Number(s[2]);
+    let d = Number(s[3]);
 
     return {d, m, y};
 }
