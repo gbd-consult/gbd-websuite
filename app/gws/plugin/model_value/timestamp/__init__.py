@@ -1,16 +1,17 @@
-"""Static value."""
+"""Current timestamp value."""
 
 import gws
 import gws.base.model.value
+import gws.lib.date
 import gws.types as t
 
-gws.ext.new.modelValue('static')
+gws.ext.new.modelValue('timestamp')
 
 
 class Config(gws.base.model.value.Config):
-    value: t.Any
+    pass
 
 
 class Object(gws.base.model.value.Object):
     def compute(self, field, feature, mc):
-        return self.cfg('value')
+        return gws.lib.date.now()

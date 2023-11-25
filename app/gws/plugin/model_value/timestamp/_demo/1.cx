@@ -1,0 +1,60 @@
+projects+ {
+    title "Model value: `timestamp`"
+    metadata.abstract "Automatically insert current timestamp."
+
+    actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    models+ {
+        title "Districts"
+        type "postgres"
+        tableName "edit.district"
+        isEditable true
+        permissions.edit 'allow all'
+        fields+ {
+            name "sid"
+            type "text"
+            title "Identifier"
+            isPrimaryKey true
+            permissions.edit "deny all"
+        }
+
+        fields+ {
+            name "name"
+            type "text"
+            title "Object name"
+        }
+
+        fields+ {
+            name "updated_at"
+            type "date"
+            title "Date updated"
+            permissions.edit "deny all"
+            values+ {
+                type "timestamp"
+                forRead false
+                forUpdate true
+            }
+        }
+
+        templates+ { subject "feature.label" type "html" text "{{name}}" }
+        templates+ { subject "feature.title" type "html" text "{{name}}" }
+
+    }
+
+    map.layers+ {
+        title "Districts"
+        type "postgres"
+        tableName "edit.district"
+    }
+
+    {demo_osm_background}
+}

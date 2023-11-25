@@ -15,5 +15,10 @@ class Config(gws.base.model.value.Config):
 
 
 class Object(gws.base.model.value.Object):
-    def compute(self, feature, field, user, **kwargs):
-        return gws.format_map(self.cfg('format'), feature.attributes)
+    format: str
+
+    def configure(self):
+        self.format = self.cfg('format')
+
+    def compute(self, field, feature, mc):
+        return gws.format_map(self.format, feature.attributes)

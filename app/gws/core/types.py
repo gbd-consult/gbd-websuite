@@ -1285,7 +1285,7 @@ class IModelValue(INode, Protocol):
     isDefault: bool
     ops: set[ModelOperation]
 
-    def compute(self, field: 'IModelField', feature: 'IFeature', mc: 'ModelContext') -> Any: ...
+    def compute(self, field: 'IModelField', feature: 'IFeature', mc: 'ModelContext'): ...
 
 
 class IModelField(INode, Protocol):

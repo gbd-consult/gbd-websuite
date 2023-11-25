@@ -130,10 +130,12 @@ create table edit.tagging
 
 create table edit.district
 (
-    sid         text not null primary key,
-    name        text not null,
-    description text default null,
-    geom        geometry(MultiPolygon, 3857)
+    sid          text not null primary key,
+    name         text not null,
+    description  text default null,
+    updated_at   date  default '2000-01-01',
+    updated_by   text default '',
+    geom         geometry(MultiPolygon, 3857)
 );
 
 create table edit.person

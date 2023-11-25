@@ -1,0 +1,60 @@
+projects+ {
+    title "Model value: `format`"
+    metadata.abstract "Create a value from feature attributes."
+
+    actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    models+ {
+        title "Districts"
+        type "postgres"
+        tableName "edit.district"
+        isEditable true
+        permissions.edit 'allow all'
+        fields+ {
+            name "sid"
+            type "text"
+            title "Identifier"
+            isPrimaryKey true
+            permissions.edit "deny all"
+        }
+
+        fields+ {
+            name "name"
+            type "text"
+            title "Object name"
+        }
+
+        fields+ {
+            name "description"
+            type "text"
+            title "Description"
+            widget.type "textarea"
+            values+ {
+                type "format"
+                isDefault true
+                format "TODO: write description for {{name}} (id={{sid}})"
+            }
+        }
+
+        templates+ { subject "feature.label" type "html" text "{{name}}" }
+        templates+ { subject "feature.title" type "html" text "{{name}}" }
+
+    }
+
+    map.layers+ {
+        title "Districts"
+        type "postgres"
+        tableName "edit.district"
+    }
+
+    {demo_osm_background}
+}

@@ -105,7 +105,6 @@ class Object(field.Object, gws.IModelField):
             value = source.get(self.name)
             if value is not None:
                 return convert_fn(feature, value, mc)
-            return
 
         if mv:
             return mv.compute(self, feature, mc)
