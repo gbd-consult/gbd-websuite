@@ -13,9 +13,13 @@ class Object(gws.Node, gws.ITemplateManager):
                 continue
             p = self._locate(obj, user, subject, mime)
             if p:
+                gws.log.debug(f'locate_template: found {subject=} {obj=}')
                 return p
 
-        return self._locate(self.root.app, user, subject, mime)
+        p = self._locate(self.root.app, user, subject, mime)
+        if p:
+            gws.log.debug(f'locate_template: found {subject=} APP')
+            return p
 
     def _locate(self, obj, user, subject, mime):
         for tpl in getattr(obj, 'templates', []):
