@@ -61,6 +61,8 @@ class Object(gws.Node):
         TABLE_INDEXPERSON,
     ]
 
+    ALL_TABLES = TABLES_BASIC + TABLES_BUCHUNG + TABLES_EIGENTUEMER
+
     provider: gws.plugin.postgres.provider.Object
     crs: gws.ICrs
     schema: str
@@ -252,39 +254,54 @@ class Object(gws.Node):
 
     def table_size(self, table_id) -> int:
         with self.connect() as conn:
-            return self._table_size(conn, table_id)
+            sizes = self._table_size_map(conn, [table_id])
+            return sizes.get(table_id, 0)
 
-    def _table_size(self, conn, table_id):
-        tab = self.table(table_id)
-        sel = sa.text(f'SELECT COUNT(*) FROM {self.schema}.{tab.name}')
-        try:
-            for r in conn.execute(sel):
-                return r[0]
-        except sa.exc.ProgrammingError:
-            return 0
+    def _table_size_map(self, conn, table_ids):
+        d = {}
+
+        for table_id in table_ids:
+            tab = self.table(table_id)
+            sel = sa.select(sa.func.count()).select_from(tab)
+            try:
+                for r in conn.execute(sel):
+                    d[table_id] = r[0]
+            except sa.exc.ProgrammingError:
+                d[table_id] = 0
+            finally:
+                conn.rollback()
+
+        return d
 
     def has_table(self, table_id: str) -> bool:
         return self.table_size(table_id) > 0
 
     def status(self) -> Status:
         with self.connect() as conn:
+            sizes = self._table_size_map(conn, self.ALL_TABLES)
             s = Status(
-                basic=all(self._table_size(conn, tid) > 0 for tid in self.TABLES_BASIC),
-                buchung=all(self._table_size(conn, tid) > 0 for tid in self.TABLES_BUCHUNG),
-                eigentuemer=all(self._table_size(conn, tid) > 0 for tid in self.TABLES_EIGENTUEMER),
+                basic=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_BASIC),
+                buchung=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_BUCHUNG),
+                eigentuemer=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_EIGENTUEMER),
             )
             s.complete = s.basic and s.buchung and s.eigentuemer
+            gws.log.debug(f'ALKIS: table sizes {sizes!r}')
         return s
 
     def drop_table(self, table_id: str):
-        tab = self.table(table_id)
-        gws.log.debug(f'drop {tab.name!r}')
-        self.saMeta.drop_all(self.provider.engine(), tables=[tab])
+        with self.connect() as conn:
+            self._drop_table(conn, table_id)
+            conn.commit()
 
     def drop(self):
-        all_ids = self.TABLES_BASIC + self.TABLES_BUCHUNG + self.TABLES_EIGENTUEMER
-        tabs = [self.table(tid) for tid in all_ids]
-        self.saMeta.drop_all(self.provider.engine(), tables=tabs)
+        with self.connect() as conn:
+            for table_id in self.ALL_TABLES:
+                self._drop_table(conn, table_id)
+            conn.commit()
+
+    def _drop_table(self, conn, table_id):
+        tab = self.table(table_id)
+        conn.execute(sa.text(f'DROP TABLE IF EXISTS {self.schema}.{tab.name}'))
 
     INSERT_SIZE = 5000
 

@@ -952,7 +952,7 @@ class _FsIndexIndexer(_Indexer):
                             name=pe_r.nachnameOderFirma,
                             name_t=index.text_key(pe_r.nachnameOderFirma),
                             vorname=pe_r.vorname,
-                            vorname_t=index.text_key(pe_r.nachnameOderFirma),
+                            vorname_t=index.text_key(pe_r.vorname),
                         ))
 
     def write(self):
