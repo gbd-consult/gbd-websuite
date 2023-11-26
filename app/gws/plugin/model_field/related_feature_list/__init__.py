@@ -39,7 +39,7 @@ class Props(related_field.Props):
 class Object(related_multi_feature_list.Object):
 
     def configure_relationship(self):
-        to_mod = t.cast(gws.IDatabaseModel, self.root.get(self.cfg('toModel')))
+        to_mod = self.get_model(self.cfg('toModel'))
 
         self.rel = related_field.Relationship(
             src=related_field.RelRef(

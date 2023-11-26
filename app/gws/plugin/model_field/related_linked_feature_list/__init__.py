@@ -44,7 +44,7 @@ class Object(related_field.Object):
     attributeType = gws.AttributeType.featurelist
 
     def configure_relationship(self):
-        to_mod = t.cast(gws.IDatabaseModel, self.root.get(self.cfg('toModel')))
+        to_mod = self.get_model(self.cfg('toModel'))
         link_tab = self.model.provider.table(self.cfg('linkTableName'))
 
         self.rel = related_field.Relationship(

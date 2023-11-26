@@ -61,6 +61,12 @@ class Object(gws.base.model.field.Object, gws.IModelField):
                 self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='featureList')
                 return True
 
+    def get_model(self, uid: str) -> gws.IDatabaseModel:
+        mod = self.root.get(uid)
+        if not mod:
+            raise gws.ConfigurationError(f'model {uid!r} not found')
+        return t.cast(gws.IDatabaseModel, mod)
+
     def find_relatable_features(self, search, mc):
         return [
             f

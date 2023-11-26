@@ -65,7 +65,7 @@ class Object(related_field.Object):
         )
 
         for c in self.cfg('related'):
-            to_mod = t.cast(gws.IDatabaseModel, self.root.get(c.toModel))
+            to_mod = self.get_model(c.toModel)
             self.rel.tos.append(related_field.RelRef(
                 model=to_mod,
                 table=to_mod.table(),
