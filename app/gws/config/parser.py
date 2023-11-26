@@ -184,22 +184,21 @@ class ConfigParser:
 def _syntax_error(path, src, message, line, context=10, cause=None):
     lines = [f'PATH: {path!r}']
 
-    for n, t in enumerate(src.splitlines(), 1):
+    for n, ln in enumerate(src.splitlines(), 1):
         if n < line - context:
             continue
         if n > line + context:
             break
-        t = str(n) + ': ' + t
+        ln = f'{n}: {ln}'
         if n == line:
-            t = '>>>' + t
-        lines.append(t)
+            ln = f'>>> {ln}'
+        lines.append(ln)
 
     return _error(f'syntax error: {message}', *lines, cause=cause)
 
 
 def _save_intermediate(path, txt, ext):
-    p = gws.lib.osx.parse_path(path)
-    gws.write_file(f"{gws.CONFIG_DIR}/{p['name']}.parsed.{ext}", txt)
+    gws.write_file(f"{gws.CONFIG_DIR}/{gws.to_uid(path)}.parsed.{ext}", txt)
 
 
 def _as_flat_list(ls):
