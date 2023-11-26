@@ -1,0 +1,25 @@
+projects+ {
+    title "Edit: handle postgres types"
+    metadata.abstract "Editing various postgres column types"
+
+    actions+ { type "edit" }
+    client.addElements+ { tag "Sidebar.Edit" }
+    client.addElements+ { tag "Toolbar.Edit" }
+    client.options.sidebarActiveTab "Sidebar.Edit"
+
+    map {
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 150000
+        zoom.maxScale  1000000
+    }
+
+    models+ {
+        type "postgres"
+        tableName "public.pg_types"
+        title "Postgres types"
+        isEditable true
+        permissions.edit 'allow all'
+    }
+
+    {demo_osm_background}
+}

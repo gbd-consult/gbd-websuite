@@ -71,57 +71,50 @@ class Object(gws.Node, gws.IDatabaseProvider):
     def has_column(self, table, column_name):
         return column_name in table.columns
 
-    # https://www.psycopg.org/docs/usage.html#adaptation-of-python-values-to-sql-types
-
     SA_TO_ATTR = {
-        'ARRAY': gws.AttributeType.strlist,
+        # common: sqlalchemy.sql.sqltypes
+
         'BIGINT': gws.AttributeType.int,
-        'BIGSERIAL': gws.AttributeType.int,
-        'BIT': gws.AttributeType.int,
-        'BOOL': gws.AttributeType.bool,
         'BOOLEAN': gws.AttributeType.bool,
-        'BYTEA': gws.AttributeType.bytes,
         'CHAR': gws.AttributeType.str,
-        'CHARACTER VARYING': gws.AttributeType.str,
-        'CHARACTER': gws.AttributeType.str,
         'DATE': gws.AttributeType.date,
-        'DECIMAL': gws.AttributeType.float,
-        'DOUBLE PRECISION': gws.AttributeType.float,
-        'FLOAT4': gws.AttributeType.float,
-        'FLOAT8': gws.AttributeType.float,
-        'GEOMETRY': gws.AttributeType.geometry,
-        'INT': gws.AttributeType.int,
-        'INT2': gws.AttributeType.int,
-        'INT4': gws.AttributeType.int,
-        'INT8': gws.AttributeType.int,
+        'DOUBLE_PRECISION': gws.AttributeType.float,
         'INTEGER': gws.AttributeType.int,
-        'MONEY': gws.AttributeType.float,
         'NUMERIC': gws.AttributeType.float,
         'REAL': gws.AttributeType.float,
-        'SERIAL': gws.AttributeType.int,
-        'SERIAL2': gws.AttributeType.int,
-        'SERIAL4': gws.AttributeType.int,
-        'SERIAL8': gws.AttributeType.int,
         'SMALLINT': gws.AttributeType.int,
-        'SMALLSERIAL': gws.AttributeType.int,
         'TEXT': gws.AttributeType.str,
+        # 'UUID': ...,
+        'VARCHAR': gws.AttributeType.str,
+
+        # postgres specific: sqlalchemy.dialects.postgresql.types
+
+        # 'JSON': ...,
+        # 'JSONB': ...,
+        # 'BIT': ...,
+        'BYTEA': gws.AttributeType.bytes,
+        # 'CIDR': ...,
+        # 'INET': ...,
+        # 'MACADDR': ...,
+        # 'MACADDR8': ...,
+        # 'MONEY': ...,
         'TIME': gws.AttributeType.time,
         'TIMESTAMP': gws.AttributeType.datetime,
-        'TIMESTAMPTZ': gws.AttributeType.datetime,
-        'TIMETZ': gws.AttributeType.time,
-        'VARCHAR': gws.AttributeType.str,
     }
+
     SA_TO_GEOM = {
-        'GEOMETRY': gws.GeometryType.geometry,
         'POINT': gws.GeometryType.point,
         'LINESTRING': gws.GeometryType.linestring,
         'POLYGON': gws.GeometryType.polygon,
         'MULTIPOINT': gws.GeometryType.multipoint,
         'MULTILINESTRING': gws.GeometryType.multilinestring,
         'MULTIPOLYGON': gws.GeometryType.multipolygon,
-        'GEOMETRYCOLLECTION': gws.GeometryType.geometrycollection,
-        'CURVE': gws.GeometryType.curve,
+        # 'GEOMETRYCOLLECTION': gws.GeometryType.geometrycollection,
+        # 'CURVE': gws.GeometryType.curve,
     }
+
+    UNKNOWN_TYPE = gws.AttributeType.str
+    UNKNOWN_ARRAY_TYPE = gws.AttributeType.strlist
 
     def describe(self, table_name: str):
         table = self._table(table_name)
@@ -158,16 +151,32 @@ class Object(gws.Node, gws.IDatabaseProvider):
                 type='',
             )
 
-            typ = c.type
-            col.nativeType = str(typ).upper()
+            col.nativeType = type(c.type).__name__.upper()
 
-            gt = getattr(typ, 'geometry_type', None)
-            if gt:
-                col.type = gws.AttributeType.geometry
-                col.geometryType = gt.lower()
-                col.geometrySrid = getattr(typ, 'srid')
+            if col.nativeType == 'ARRAY':
+                it = getattr(c.type, 'item_type', None)
+                ia = self.SA_TO_ATTR.get(type(it).__name__.upper())
+                if ia == gws.AttributeType.str:
+                    col.type = gws.AttributeType.strlist
+                elif ia == gws.AttributeType.int:
+                    col.type = gws.AttributeType.intlist
+                elif ia == gws.AttributeType.float:
+                    col.type = gws.AttributeType.floatlist
+                else:
+                    col.type = self.UNKNOWN_ARRAY_TYPE
+
+            elif col.nativeType == 'GEOMETRY':
+                gt = getattr(c.type, 'geometry_type', '').upper()
+                ga = self.SA_TO_GEOM.get(gt)
+                if ga:
+                    col.type = gws.AttributeType.geometry
+                    col.geometryType = ga
+                    col.geometrySrid = getattr(c.type, 'srid', 0)
+                else:
+                    col.type = self.UNKNOWN_TYPE
+
             else:
-                col.type = self.SA_TO_ATTR.get(col.nativeType, gws.AttributeType.str)
+                col.type = self.SA_TO_ATTR.get(col.nativeType, self.UNKNOWN_TYPE)
 
             desc.columns.append(col)
             desc.columnMap[col.name] = col
