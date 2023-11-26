@@ -1290,7 +1290,6 @@ class IModelValue(INode, Protocol):
 
 class IModelField(INode, Protocol):
     name: str
-    type: str
     title: str
 
     attributeType: AttributeType

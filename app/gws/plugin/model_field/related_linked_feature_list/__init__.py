@@ -54,18 +54,21 @@ class Object(related_field.Object):
                 key=self.column_or_uid(self.model, self.cfg('fromColumn')),
                 uid=self.model.uid_column(),
             ),
-            to=related_field.RelRef(
-                model=to_mod,
-                table=to_mod.table(),
-                key=self.column_or_uid(to_mod, self.cfg('toColumn')),
-                uid=to_mod.uid_column(),
-            ),
+            tos=[
+                related_field.RelRef(
+                    model=to_mod,
+                    table=to_mod.table(),
+                    key=self.column_or_uid(to_mod, self.cfg('toColumn')),
+                    uid=to_mod.uid_column(),
+                )
+            ],
             link=related_field.Link(
                 table=link_tab,
                 fromKey=self.model.provider.column(link_tab, self.cfg('linkFromColumn')),
                 toKey=self.model.provider.column(link_tab, self.cfg('linkToColumn')),
             )
         )
+        self.rel.to = self.rel.tos[0]
 
     ##
 

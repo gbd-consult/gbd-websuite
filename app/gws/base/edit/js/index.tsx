@@ -1314,9 +1314,13 @@ class FeatureListWidgetHelper extends WidgetHelper {
 
         let loaded = await cc.featureCache.loadOne(relatedFeature);
         if (loaded) {
-            cc.pushFeature(feature);
-            cc.selectFeatureInSidebar(loaded);
-            cc.panToFeature(loaded);
+            cc.updateEditState({isWaiting: true, sidebarSelectedFeature: null});
+            gws.lib.nextTick(() => {
+                cc.updateEditState({isWaiting: false});
+                cc.pushFeature(feature);
+                cc.selectFeatureInSidebar(loaded);
+                cc.panToFeature(loaded);
+            })
         }
     }
 
@@ -1750,7 +1754,6 @@ export class Controller extends gws.Controller {
         let controller = cc.widgetControllerForField(field);
         if (!controller)
             return null;
-
 
         let props: gws.types.Dict = {
             controller,

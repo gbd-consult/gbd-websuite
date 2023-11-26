@@ -74,7 +74,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
             for f in to.model.find_features(search, mc)
         ]
 
-    def related_field(self, to: RelRef):
+    def related_field(self, to: RelRef) -> t.Optional[gws.IModelField]:
         for fld in to.model.fields:
             rel2 = t.cast(Relationship, getattr(fld, 'rel', None))
             if not rel2:
@@ -91,9 +91,9 @@ class Object(gws.base.model.field.Object, gws.IModelField):
             if to.model == to_feature.model:
                 fld = self.related_field(to)
                 if fld:
-                    if fld.type == gws.AttributeType.feature:
+                    if fld.attributeType == gws.AttributeType.feature:
                         to_feature.attributes[fld.name] = our_features[0]
-                    if fld.type == gws.AttributeType.featurelist:
+                    if fld.attributeType == gws.AttributeType.featurelist:
                         to_feature.attributes.setdefault(fld.name, []).extend(our_features)
 
     def related_models(self):
