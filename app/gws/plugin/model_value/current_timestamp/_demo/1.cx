@@ -1,5 +1,5 @@
 projects+ {
-    title "Model value: `timestamp`"
+    title "Model value: `currentTimestamp`"
     metadata.abstract "Automatically insert current timestamp."
 
     actions+ { type "edit" }
@@ -39,7 +39,7 @@ projects+ {
             title "Date updated"
             permissions.edit "deny all"
             values+ {
-                type "timestamp"
+                type "currentTimestamp"
                 forRead false
                 forUpdate true
             }

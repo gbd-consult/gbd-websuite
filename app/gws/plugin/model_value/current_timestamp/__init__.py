@@ -5,7 +5,7 @@ import gws.base.model.value
 import gws.lib.date
 import gws.types as t
 
-gws.ext.new.modelValue('timestamp')
+gws.ext.new.modelValue('currentTimestamp')
 
 
 class Config(gws.base.model.value.Config):
