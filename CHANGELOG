@@ -1,3 +1,9 @@
+## Version 8.0.19
+
+- better support for world maps
+- model values "currentTimestamp" and "currentUser"
+- improved database reflection
+
 ## Version 8.0.18
 
 - configurable tolerance for the Select tool
