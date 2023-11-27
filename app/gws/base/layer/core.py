@@ -317,7 +317,8 @@ class Object(gws.Node, gws.ILayer):
             raise gws.Error(f'layer {self!r}: invalid CRS {self.bounds.crs}')
 
         if not gws.gis.bounds.intersect(self.bounds, self.parentBounds):
-            raise gws.Error(f'layer {self!r}: bounds outside of the parent bounds')
+            gws.log.warning(f'layer {self!r}: bounds outside of the parent bounds')
+            self.bounds = gws.gis.bounds.copy(self.parentBounds)
 
         self.wgsExtent = gws.gis.bounds.transform(self.bounds, gws.gis.crs.WGS84).extent
 
