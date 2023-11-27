@@ -7,9 +7,9 @@ def collect(gen: base.Generator):
     dct = {}
 
     for spec in gen.specs:
-        if spec['c'] not in {base.C.CONFIG, base.C.COMMAND, base.C.CLASS, base.C.PROPERTY}:
-            continue
         typ = gen.types[spec['uid']]
+        if not typ.name:
+            continue
         _add_string(dct, typ.name, typ.doc)
         if typ.enumDocs:
             for k, v in typ.enumDocs.items():

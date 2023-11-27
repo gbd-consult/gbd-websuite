@@ -17,10 +17,10 @@ STRINGS['en'] = {
 }
 
 STRINGS['de'] = {
-    'head_property': 'property',
-    'head_type': 'type',
-    'head_default': 'default',
-    'head_value': 'value',
+    'head_property': 'Eigenschaft',
+    'head_type': 'Typ',
+    'head_default': 'Default',
+    'head_value': 'Wert',
 
     'tag_variant': 'variant',
     'tag_struct': 'struct',
@@ -174,6 +174,17 @@ class _Creator:
         return as_literal(v)
 
     def raw_docstring(self, tid, enum_value=None):
+        key = tid
+        if enum_value:
+            key += '.' + enum_value
+        s = self.gen.strings[self.lang].get(key)
+        if s:
+            return s
+        if self.lang != 'en':
+            base.log.debug(f'missing {self.lang} translation for {key!r}')
+        s = self.gen.strings['en'].get(key)
+        if s:
+            return s
         typ = self.gen.types[tid]
         if enum_value:
             return typ.enumDocs[enum_value]

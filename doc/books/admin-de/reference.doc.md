@@ -17,7 +17,7 @@
 
 **Konfiguration**
 
-Das primäre Konfigurationsobjekt ist [](gws.base.application.Config).
+Das primäre Konfigurationsobjekt ist [](gws.base.application.core.Config).
 
 **Konfigurationsobjekte**
 

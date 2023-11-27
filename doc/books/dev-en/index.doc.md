@@ -33,6 +33,4 @@ Welcome to the GBD WebSuite Developer documentation. Here you will learn how to 
 
 ## :/dev-en/overview/models
 
-## Documentation
-
-### :dog
+## :/dev-en/documentation
