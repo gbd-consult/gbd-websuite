@@ -102,12 +102,29 @@ class Object(gws.Node, gws.IDatabaseProvider):
         'TIMESTAMP': gws.AttributeType.datetime,
     }
 
+    # @TODO proper support for Z/M geoms
+
     SA_TO_GEOM = {
         'POINT': gws.GeometryType.point,
+        'POINTM': gws.GeometryType.point,
+        'POINTZ': gws.GeometryType.point,
+        'POINTZM': gws.GeometryType.point,
         'LINESTRING': gws.GeometryType.linestring,
+        'LINESTRINGM': gws.GeometryType.linestring,
+        'LINESTRINGZ': gws.GeometryType.linestring,
+        'LINESTRINGZM': gws.GeometryType.linestring,
         'POLYGON': gws.GeometryType.polygon,
+        'POLYGONM': gws.GeometryType.polygon,
+        'POLYGONZ': gws.GeometryType.polygon,
+        'POLYGONZM': gws.GeometryType.polygon,
         'MULTIPOINT': gws.GeometryType.multipoint,
+        'MULTIPOINTM': gws.GeometryType.multipoint,
+        'MULTIPOINTZ': gws.GeometryType.multipoint,
+        'MULTIPOINTZM': gws.GeometryType.multipoint,
         'MULTILINESTRING': gws.GeometryType.multilinestring,
+        'MULTILINESTRINGM': gws.GeometryType.multilinestring,
+        'MULTILINESTRINGZ': gws.GeometryType.multilinestring,
+        'MULTILINESTRINGZM': gws.GeometryType.multilinestring,
         'MULTIPOLYGON': gws.GeometryType.multipolygon,
         # 'GEOMETRYCOLLECTION': gws.GeometryType.geometrycollection,
         # 'CURVE': gws.GeometryType.curve,
