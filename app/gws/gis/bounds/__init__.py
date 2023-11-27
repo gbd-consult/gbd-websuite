@@ -11,9 +11,9 @@ def from_request_bbox(bbox: str, default_crs: gws.ICrs = None, always_xy=False) 
     """Create Bounds from a KVP BBOX param.
 
     See OGC 06-121r9, 10.2.3 Bounding box KVP encoding.
-    
+
     Args:
-        bbox: A string with four coodinates, optionally followed by a CRS spec.
+        bbox: A string with four coordinates, optionally followed by a CRS spec.
         default_crs: Default Crs.
         always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order
 

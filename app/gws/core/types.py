@@ -668,7 +668,7 @@ class GeometryType(Enum):
 
     Sources:
     - OGC 06-103r4 (https://www.ogc.org/standards/sfa)
-    - https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.htm
+    - https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.html
     """
 
     geometry = 'geometry'
