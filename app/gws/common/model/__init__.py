@@ -1745,7 +1745,7 @@ class ModelRegistry:
 
         if uid not in self.sessions:
             gws.log.debug(f'SESSION CREATE {uid}')
-            self.sessions[uid] = sa.orm.Session(self.engines[uid], future=True)
+            self.sessions[uid] = sa.orm.Session(self.engines[uid], future=True, autoflush=False)
 
         return self.sessions[uid]
 
