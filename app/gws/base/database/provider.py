@@ -41,7 +41,8 @@ class Object(gws.Node, gws.IDatabaseProvider):
         # @TODO add options for reflection
 
         gws.time_start(f'AUTOLOAD {self.uid=} {schema=}')
-        self.saMetaMap[schema].reflect(self.saEngine, schema, resolve_fks=False, views=True)
+        with self.connection() as conn:
+            self.saMetaMap[schema].reflect(conn, schema, resolve_fks=False, views=True)
         gws.time_end()
 
     def connection(self) -> sa.Connection:
@@ -184,13 +185,10 @@ class Object(gws.Node, gws.IDatabaseProvider):
 
             elif col.nativeType == 'GEOMETRY':
                 gt = getattr(c.type, 'geometry_type', '').upper()
-                ga = self.SA_TO_GEOM.get(gt)
-                if ga:
-                    col.type = gws.AttributeType.geometry
-                    col.geometryType = ga
-                    col.geometrySrid = getattr(c.type, 'srid', 0)
-                else:
-                    col.type = self.UNKNOWN_TYPE
+                ga = self.SA_TO_GEOM.get(gt, gws.GeometryType.geometry)
+                col.type = gws.AttributeType.geometry
+                col.geometryType = ga
+                col.geometrySrid = getattr(c.type, 'srid', 0)
 
             else:
                 col.type = self.SA_TO_ATTR.get(col.nativeType, self.UNKNOWN_TYPE)
