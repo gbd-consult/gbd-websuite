@@ -1,3 +1,8 @@
+## Version 8.0.20
+
+- source layers for WMTS services
+- correct layer ordering for WMS and QGis
+
 ## Version 8.0.19
 
 - better support for world maps
