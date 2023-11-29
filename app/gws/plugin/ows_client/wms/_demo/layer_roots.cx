@@ -3,20 +3,20 @@ projects+ {
     metadata.abstract "Use `rootLayers` for configure WMS root layers."
 
     map {
-        center {demo_point_dresden_3857}
-        zoom.initScale 70000
-        zoom.maxScale 1000000
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 4000
     }
 
     map.layers+ {
-        title "Sachsenforst: Natur und Erholung"
         type "wms"
-        provider.url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
-        metadata.attribution.title "Staatsbetrieb Sachsenforst"
+        title "NRW ALKIS"
+        provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+        metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
 
-        rootLayers.titles [
-            '7_Bereich_Erholung'
-            '4_Bereich_Natur'
+        rootLayers.names [
+            'adv_alkis_weiteres',
+            'adv_alkis_gebaeude'
+            'adv_alkis_flurstuecke'
         ]
     }
 

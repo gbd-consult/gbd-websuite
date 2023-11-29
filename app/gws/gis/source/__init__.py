@@ -61,7 +61,16 @@ def layer_matches(sl: gws.SourceLayer, f: LayerFilter) -> bool:
     return True
 
 
-def check_layers(layers) -> list[gws.SourceLayer]:
+def check_layers(layers: list[gws.SourceLayer], revert: bool = False) -> list[gws.SourceLayer]:
+    """Insert our properties in the source layer tree.
+
+    Also remove empty layers.
+
+    Args:
+        layers: List of source layers
+        revert: Revert the order of layers and sub-layers.
+    """
+
     def walk(sl, parent_path, level):
         if not sl:
             return
@@ -69,9 +78,14 @@ def check_layers(layers) -> list[gws.SourceLayer]:
         sl.aPath = parent_path + '/' + sl.aUid
         sl.aLevel = level
         sl.layers = gws.compact(walk(c, sl.aPath, level + 1) for c in (sl.layers or []))
+        if revert:
+            sl.layers = list(reversed(sl.layers))
         return sl
 
-    return gws.compact(walk(sl, '', 1) for sl in layers)
+    ls = gws.compact(walk(sl, '', 1) for sl in layers)
+    if revert:
+        ls = list(reversed(ls))
+    return ls
 
 
 def filter_layers(

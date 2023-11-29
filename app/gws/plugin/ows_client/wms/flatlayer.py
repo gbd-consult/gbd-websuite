@@ -138,10 +138,8 @@ class Object(gws.base.layer.image.Object):
         return gws.base.layer.util.mpx_raster_render(self, lri)
 
     def mapproxy_config(self, mc, options=None):
-        layers = [sl.name for sl in self.imageLayers]
-        if not self.provider.capsLayersBottomUp:
-            layers = reversed(layers)
-
+        # NB reversed: see the note in plugin/ows_client/wms/provider.py
+        layers = reversed([sl.name for sl in self.imageLayers])
         op = self.provider.get_operation(gws.OwsVerb.GetMap)
         args = self.provider.prepare_operation(op)
 

@@ -10,11 +10,12 @@ import gws.base.ows.client.parseutil as u
 import gws.types as t
 
 
-def parse(xml: str) -> gws.OwsCapabilities:
+def parse(xml: str, bottom_first: bool=False) -> gws.OwsCapabilities:
     """Read WMS capabilities from the GetCapabilities XML.
 
     Args:
         xml: GetCapabilities XML
+        bottom_first: True if layers are listed bottom-first
 
     Returns:
         The Capabilities object.
@@ -22,7 +23,9 @@ def parse(xml: str) -> gws.OwsCapabilities:
 
     caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
     source_layers = gws.gis.source.check_layers(
-        _layer(el) for el in caps_el.findall('Capability/Layer'))
+        [_layer(el) for el in caps_el.findall('Capability/Layer')],
+        revert=bottom_first
+    )
     return gws.OwsCapabilities(
         metadata=u.service_metadata(caps_el),
         operations=u.service_operations(caps_el),

@@ -1,18 +1,17 @@
 projects+ {
     title "WMS layer"
-    metadata.abstract "`wms` layers display WMS layers as WebSuite layers, keeping the structure"
+    metadata.abstract "`wms` layers display separate WMS layers as WebSuite layers, keeping the tree structure."
 
     map {
-        center {demo_point_dresden_3857}
-        zoom.initScale 70000
-        zoom.maxScale 1000000
+        center {demo_point_duesseldorf_3857}
+        zoom.initScale 4000
     }
 
     map.layers+ {
-        title "Sachsenforst: Waldfunktionen"
         type "wms"
-        provider.url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
-        metadata.attribution.title "Staatsbetrieb Sachsenforst"
+        title "NRW ALKIS"
+        provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+        metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
     }
 
     {demo_osm_background}

@@ -157,7 +157,8 @@ class Object(gws.base.layer.image.Object):
             if flt:
                 filters.append(name + ': ' + flt)
 
-        params['LAYERS'] = layers
+        # NB reversed: see the note in plugin/ows_client/wms/provider.py
+        params['LAYERS'] = list(reversed(layers))
         if filters:
             params['FILTER'] = ';'.join(filters)
 

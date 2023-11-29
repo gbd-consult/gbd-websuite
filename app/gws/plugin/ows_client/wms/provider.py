@@ -1,4 +1,29 @@
-"""WMS provider."""
+"""WMS provider.
+
+References.
+
+    - OGC 01-068r3: WMS 1.1.1
+    - OGC 06-042: WMS 1.3.0
+
+see also https://docs.geoserver.org/latest/en/user/services/wms/reference.html
+
+A note on layer order:
+
+Internally we always list source layers topmost layer first,
+which corresponds to the layer tree display.
+
+WMS capabilities are assumed to be top-first by default,
+for servers with bottom-first caps, set ``bottomFirst=True``,
+in which case the capabilities parser will revert all layer lists.
+
+The order of GetMap is always bottom first:
+
+> A WMS shall render the requested layers by drawing the leftmost in the list bottommost,
+> the next one over that, and so on. (OGC 06-042, 7.3.3.3)
+
+therefore when invoking GetMap, our layer lists should be reversed.
+
+"""
 
 import gws
 import gws.base.ows.client
@@ -11,45 +36,22 @@ import gws.types as t
 
 from . import caps
 
-"""
-OGC documents:
-    - OGC 01-068r3: WMS 1.1.1
-    - OGC 06-042: WMS 1.3.0
-
-see also https://docs.geoserver.org/latest/en/user/services/wms/reference.html
-
-NB: layer order
-our configuration lists layers top-to-bottom,
-this also applies by default to WMS caps (like in qgis)
-
-for servers with bottom-up caps, set capsLayersBottomUp=True
-
-the order of GetMap is always bottomUp:
-
-> A WMS shall render the requested layers by drawing the leftmost in the list bottommost,
-> the next one over that, and so on.
-
-OGC 06-042, 7.3.3.3
-"""
-
 
 class Config(gws.base.ows.client.provider.Config):
-    capsLayersBottomUp: bool = False
-    """layers are listed from bottom to top in the GetCapabilities document"""
+    bottomFirst: bool = False
+    """true if layers are listed from bottom to top"""
 
 
 class Object(gws.base.ows.client.provider.Object):
     protocol = gws.OwsProtocol.WMS
-    capsLayersBottomUp: bool = False
 
     def configure(self):
-        cc = caps.parse(self.get_capabilities())
+        cc = caps.parse(self.get_capabilities(), self.cfg('bottomFirst', default=False))
 
         self.metadata = cc.metadata
         self.sourceLayers = cc.sourceLayers
         self.version = cc.version
 
-        self.capsLayersBottomUp = self.cfg('capsLayersBottomUp')
         self.configure_operations(cc.operations)
 
     DEFAULT_GET_FEATURE_LIMIT = 100
