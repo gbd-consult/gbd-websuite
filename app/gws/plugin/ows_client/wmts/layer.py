@@ -19,8 +19,8 @@ class Config(gws.base.layer.Config):
     """WMTS provider"""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
     """layer display mode"""
-    sourceLayer: t.Optional[str]
-    """WMTS layer name"""
+    sourceLayers: t.Optional[gws.gis.source.LayerFilter]
+    """source layer filter"""
     style: t.Optional[str]
     """WMTS style name"""
 
@@ -50,7 +50,7 @@ class Object(gws.base.layer.image.Object):
         self.configure_style()
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers)
+        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers, is_image=True)
 
     def configure_tms(self):
         crs = self.provider.forceCrs
