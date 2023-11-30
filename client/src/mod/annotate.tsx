@@ -210,6 +210,15 @@ class AnnotateDrawTool extends draw.Tool {
         return this.__('modAnnotateDrawToolbarButton')
     }
 
+    enabledShapes() {
+        return [
+            'Point',
+            'Line',
+            'Polygon',
+            'Circle',
+        ]
+    }
+
     whenStarted(shapeType, oFeature) {
         let cc = _master(this);
         this.drawFeature = cc.newFeatureFromDraw(shapeType, oFeature);
