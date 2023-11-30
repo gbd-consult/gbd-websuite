@@ -130,7 +130,7 @@ class Object(gws.common.action.Object):
 
     def api_init_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
         project = req.require_project(p.projectUid)
-        mc = t.ModelContext(access='read', user=req.user, project=project, depth=0)
+        mc = t.ModelContext(access='read', user=req.user, project=project, depth=1)
         fe_in = self._load_feature(p, mc)
 
         if not req.user.can_use(fe_in.model.permissions.read):
