@@ -67,7 +67,6 @@
 
 @end
 
-
 @def demo_make_extent(x, y, km)
     [
         {x - km * 1000}
@@ -75,29 +74,6 @@
         {x + km * 1000}
         {y + km * 1000}
     ]
-@end
-
-
-@def demo_web_site
-    web.sites+ {
-        assets.dir "assets"
-        root.dir "web"
-        host "*"
-        rewrite [
-            {
-                pattern "^/$"
-                target "/_/webAsset/path/index.cx.html"
-            }
-            {
-                pattern "^/project/([a-z0-9_.-]+)(/@.*)?$"
-                target "/_/webAsset/projectUid/$1/path/project.cx.html"
-            }
-        ]
-        errorPage {
-            type "html"
-            text "Error {{error}}"
-        }
-    }
 @end
 
 @def demo_api
@@ -156,7 +132,6 @@
     access "allow all"
 
     @demo_locales
-    @demo_web_site
     @demo_api
     @demo_client
     @demo_storage

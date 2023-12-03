@@ -1,6 +1,10 @@
 projects+ {
     title "Printing: HTML"
-    metadata.abstract "Printing with a simple HTML template."
+    metadata.abstract """
+        Use a simple html/cx template, which contains `@page`, `@map` and `@legend` commands,
+        along with `{{}}` echo statements to display the current map properties
+        and the system version.
+    """
 
     printers+ {
         template {

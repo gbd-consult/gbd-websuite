@@ -121,11 +121,18 @@ def generate_project_id(text, path):
     if START_PROJECT not in text:
         return text
 
-    uid = path_to_uid(path)
-    return text.replace(
-        START_PROJECT,
-        START_PROJECT + f' uid "{uid}"\n'
-    )
+    m = re.search(r'title (["\'])(.+?)\1', text)
+    if not m:
+        return text
+
+    uid = re.sub(r'\W+', '_', m.group(2).strip().lower())
+    path = path.replace(APP_DIR, '')
+    extra = f"""
+        uid "{uid}"
+        metadata.authorityIdentifier "/app/{path}"
+    """
+
+    return text.replace(START_PROJECT, START_PROJECT + extra)
 
 
 def relocate_assets(text, path):

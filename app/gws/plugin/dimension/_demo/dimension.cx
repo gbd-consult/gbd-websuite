@@ -11,7 +11,7 @@ when drawing.
 @end
 
 projects+ {
-    title "Dimension (Bemaßung)"
+    title "Dimension"
     metadata.abstract "Create, edit and save dimensions."
 
     actions+ {
