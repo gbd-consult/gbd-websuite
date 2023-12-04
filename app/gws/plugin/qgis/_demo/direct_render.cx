@@ -1,19 +1,24 @@
-projects+ {
-    title "QGIS direct render"
-    metadata.abstract "`qgis` layers with direct rendering of external services"
+uid "qgis_direct_render"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
+title "Direct render"
 
-    map.layers+ {
-        title "Düsseldorf"
-        type "qgis"
-        provider.path "/data/demos/poi_districts_postgres_services.qgs"
-        provider.directRender [ "wms" "wmts" "xyz" ]
-    }
+metadata.keywords [ "qgis" "ows" ]
 
-    {demo_osm_background}
+metadata.abstract """
+`qgis` layers with direct rendering of external services.
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
 }
+
+map.layers+ {
+    title "Düsseldorf"
+    type "qgis"
+    provider.path "/demos/poi_districts_postgres_services.qgs"
+    provider.directRender [ "wms" "wmts" "xyz" ]
+}
+
+{demo_osm_background}

@@ -1,73 +1,78 @@
-projects+ {
-    title "Edit: relatedFeatureList (two-way)"
-    metadata.abstract "Editing related 'child' and 'parent' features"
+uid "field_related_feature_list_2"
 
-    actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
+title "relatedFeatureList (two-way)"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
+metadata.keywords [ "edit" "model-field" "database" ]
 
-    models+ {
-        type "postgres"
-        uid "model_poi_002"
-        tableName "edit.poi_small"
-        sort+ { fieldName "name" }
-        title "POIs"
-        isEditable true
-        permissions.edit "allow all"
+metadata.abstract """
+Editing related 'child' and 'parent' features
+"""
 
-        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
-        fields+ { name "geom" type "geometry" title "Geometry" isRequired true }
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
 
-        fields+ {
-            name "category"
-            title "Category"
-            type "relatedFeature"
-            fromColumn "category_id"
-            toModel "model_category_002"
-            toColumn "id"
-            widget.type "featureSelect"
-        }
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{@if feature.isNew}} Unbenannt {{@else}} {{name}} {{@end}}"
-        }
-    }
-
-    models+ {
-        type "postgres"
-        uid "model_category_002"
-        tableName "edit.category"
-        title "Categories"
-        sort+ { fieldName "name_de" }
-        isEditable true
-        permissions.edit "allow all"
-
-        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "name_de" type "text" title "Name (DE)" isRequired true textSearch { type "any" } }
-        fields+ { name "name_en" type "text" title "Name (EN)" isRequired true textSearch { type "any" } }
-
-        fields+ {
-            name "pois"
-            title "POIs"
-            type "relatedFeatureList"
-            fromColumn "id"
-            toModel "model_poi_002"
-            toColumn "category_id"
-            widget.type "featureList"
-        }
-
-        templates+ { subject "feature.title" type "html" text "{{name_de}}" }
-    }
-
-    {demo_osm_background}
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
 }
+
+models+ {
+    type "postgres"
+    uid "model_poi_002"
+    tableName "edit.poi_small"
+    sort+ { fieldName "name" }
+    title "POIs"
+    isEditable true
+    permissions.edit "allow all"
+
+    fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
+    fields+ { name "geom" type "geometry" title "Geometry" isRequired true }
+
+    fields+ {
+        name "category"
+        title "Category"
+        type "relatedFeature"
+        fromColumn "category_id"
+        toModel "model_category_002"
+        toColumn "id"
+        widget.type "featureSelect"
+    }
+
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{@if feature.isNew}} Unbenannt {{@else}} {{name}} {{@end}}"
+    }
+}
+
+models+ {
+    type "postgres"
+    uid "model_category_002"
+    tableName "edit.category"
+    title "Categories"
+    sort+ { fieldName "name_de" }
+    isEditable true
+    permissions.edit "allow all"
+
+    fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "name_de" type "text" title "Name (DE)" isRequired true textSearch { type "any" } }
+    fields+ { name "name_en" type "text" title "Name (EN)" isRequired true textSearch { type "any" } }
+
+    fields+ {
+        name "pois"
+        title "POIs"
+        type "relatedFeatureList"
+        fromColumn "id"
+        toModel "model_poi_002"
+        toColumn "category_id"
+        widget.type "featureList"
+    }
+
+    templates+ { subject "feature.title" type "html" text "{{name_de}}" }
+}
+
+{demo_osm_background}

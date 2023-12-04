@@ -79,7 +79,7 @@ case $COMMAND in
     ;;
 
   demo-config)
-    $PYTHON $BASE/doc/demos/demo.py $@
+    $PYTHON $BASE/demos/make.py $@
     ;;
 
   doc)

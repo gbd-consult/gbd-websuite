@@ -1,95 +1,94 @@
-@comment
+uid "field_related_feature_lazy"
 
-Editing 1:M relationships (person -<< poi).
+title "relatedFeature (lazy)"
+
+metadata.keywords [ "edit" "model-field" "database" ]
+
+metadata.abstract """
+Editing 1:M relationships (`person -<< poi`).
 
 Using `featureSuggest` widgets and `loadingStrategy lazy`
 to facilitate lazy loading: useful for big tables.
 
-The "parent" model must have at least one field with "textSearch" defined.
+The "parent" model must have at least one field with `textSearch` defined.
+"""
 
-@end
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
 
-projects+ {
-    title "Edit: relatedFeature (lazy loading)"
-    metadata.abstract "Loading related features on demand."
-
-    actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
-
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
-
-    models+ {
-        type "postgres"
-        tableName "edit.poi"
-        uid "model_poi_004"
-        title "POIs"
-        loadingStrategy "lazy"
-        sort+ { fieldName "name" }
-
-        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
-
-        templates+ { subject "feature.title" type "html" text "{{name}}" }
-    }
-
-    models+ {
-        type "postgres"
-        tableName "edit.district"
-        uid "model_district_004"
-        title "Districts"
-        loadingStrategy "lazy"
-        sort+ { fieldName "name" }
-
-        fields+ { name "sid" type "text" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
-
-        templates+ { subject "feature.title" type "html" text "{{name}}" }
-    }
-
-    models+ {
-        type "postgres"
-        uid "model_person_004"
-        tableName "edit.person"
-        sort+ { fieldName "name" }
-        title "People"
-        isEditable true
-        permissions.edit "allow all"
-
-        fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
-
-        fields+ {
-            name "favorite"
-            title "Favourite Location"
-            type "relatedFeature"
-            fromColumn "poi_id"
-            toModel "model_poi_004"
-            toColumn "id"
-            widget.type "featureSuggest"
-        }
-
-        fields+ {
-            name "lives"
-            title "Lives in"
-            type "relatedFeature"
-            fromColumn "district_name"
-            toModel "model_district_004"
-            toColumn "name"
-            widget.type "featureSuggest"
-        }
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{@if feature.isNew}} neue Person {{@else}} {{name}} {{@end}}"
-        }
-    }
-
-    {demo_osm_background}
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
 }
+
+models+ {
+    type "postgres"
+    tableName "edit.poi"
+    uid "model_poi_004"
+    title "POIs"
+    loadingStrategy "lazy"
+    sort+ { fieldName "name" }
+
+    fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
+
+    templates+ { subject "feature.title" type "html" text "{{name}}" }
+}
+
+models+ {
+    type "postgres"
+    tableName "edit.district"
+    uid "model_district_004"
+    title "Districts"
+    loadingStrategy "lazy"
+    sort+ { fieldName "name" }
+
+    fields+ { name "sid" type "text" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
+
+    templates+ { subject "feature.title" type "html" text "{{name}}" }
+}
+
+models+ {
+    type "postgres"
+    uid "model_person_004"
+    tableName "edit.person"
+    sort+ { fieldName "name" }
+    title "People"
+    isEditable true
+    permissions.edit "allow all"
+
+    fields+ { name "id" type "integer" title "Identifier" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "name" type "text" title "Name" isRequired true textSearch { type "any" } }
+
+    fields+ {
+        name "favorite"
+        title "Favourite Location"
+        type "relatedFeature"
+        fromColumn "poi_id"
+        toModel "model_poi_004"
+        toColumn "id"
+        widget.type "featureSuggest"
+    }
+
+    fields+ {
+        name "lives"
+        title "Lives in"
+        type "relatedFeature"
+        fromColumn "district_name"
+        toModel "model_district_004"
+        toColumn "name"
+        widget.type "featureSuggest"
+    }
+
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{@if feature.isNew}} neue Person {{@else}} {{name}} {{@end}}"
+    }
+}
+
+{demo_osm_background}

@@ -1,52 +1,57 @@
-projects+ {
-    title "Printing: user-defined fields"
-    metadata.abstract "Data models for user input in print templates."
+uid "print_fields"
 
-    printers+ {
-        template {
-            type "html"
-            path "model.cx.html"
-            mapSize [ "150mm" "100mm" ]
-        }
-        qualityLevels [
-            { dpi  90 name "screen" }
-            { dpi 150 name "good quality" }
-            { dpi 300 name "best quality" }
-        ]
-        models+ {
-            permissions.write "allow all"
-            fields+ {
-                name "title"
-                title "Page Title"
-                type "text"
-                widget.type "input"
-            }
-            fields+ {
-                name "comments"
-                title "Your comments"
-                type "text"
-                widget.type "textarea"
-            }
-        }
+title "User-defined fields"
+
+metadata.keywords [ "print" ]
+
+metadata.abstract """
+Data models for user input in print templates.
+"""
+
+printers+ {
+    template {
+        type "html"
+        path "model.cx.html"
+        mapSize [ "150mm" "100mm" ]
     }
-
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 30000
-        zoom.maxScale  1000000
-    }
-
-    map.layers+ {
-        title "Districts"
-        type "postgres"
-        tableName "edit.district"
-        cssSelector ".custom_district"
-        templates+ {
-            subject "feature.label"
-            type "html"
-            text "{{name}}"
+    qualityLevels [
+        { dpi  90 name "screen" }
+        { dpi 150 name "good quality" }
+        { dpi 300 name "best quality" }
+    ]
+    models+ {
+        permissions.write "allow all"
+        fields+ {
+            name "title"
+            title "Page Title"
+            type "text"
+            widget.type "input"
+        }
+        fields+ {
+            name "comments"
+            title "Your comments"
+            type "text"
+            widget.type "textarea"
         }
     }
-
-    {demo_osm_background}
 }
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 30000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "Districts"
+    type "postgres"
+    tableName "edit.district"
+    cssSelector ".custom_district"
+    templates+ {
+        subject "feature.label"
+        type "html"
+        text "{{name}}"
+    }
+}
+
+{demo_osm_background}

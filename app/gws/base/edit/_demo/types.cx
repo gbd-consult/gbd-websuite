@@ -1,25 +1,34 @@
-projects+ {
-    title "Edit: handle postgres types"
-    metadata.abstract "Editing various postgres column types"
+uid "edit_types"
 
-    actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
+title "Postgres types"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
+metadata.keywords [ "edit" "postgres" ]
 
-    models+ {
-        type "postgres"
-        tableName "public.pg_types"
-        title "Postgres types"
-        isEditable true
-        permissions.edit 'allow all'
-    }
+metadata.abstract """
+This demo shows how different postgres data types
+are presented on the client.
 
-    {demo_osm_background}
+See [github](https://github.com/gbd-consult/gbd-websuite/blob/master/demos/demo_db.sql)
+for the definition of the table `pg_types` used in this demo.
+"""
+
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
 }
+
+models+ {
+    type "postgres"
+    tableName "public.pg_types"
+    title "Postgres types"
+    isEditable true
+    permissions.edit 'allow all'
+}
+
+{demo_osm_background}

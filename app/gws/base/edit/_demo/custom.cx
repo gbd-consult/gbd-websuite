@@ -1,6 +1,10 @@
-projects+ {
-    title "Edit: custom model"
-    metadata.abstract """
+uid "edit_custom"
+
+title "Custom model"
+
+metadata.keywords [ "edit" ]
+
+metadata.abstract """
 This layer has a data model with a subset of the source columns
 and custom widgets.
 
@@ -13,100 +17,99 @@ For this layer, the extent is defined explicitly
 to allow creating features outside of the computed extent.
 """
 
-    actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
+}
 
 
-    map.layers+ {
-        title "POIs"
+map.layers+ {
+    title "POIs"
+    type "postgres"
+    tableName "edit.poi"
+    extent [ 431881, 6505964, 1076161, 6877804 ]
+
+    models+ {
         type "postgres"
-        tableName "edit.poi"
-        extent [ 431881, 6505964, 1076161, 6877804 ]
+        uid "model_poi_simple"
+        sort+ { fieldName "name" }
+        isEditable true
+        permissions.edit "allow all"
 
-        models+ {
-            type "postgres"
-            uid "model_poi_simple"
-            sort+ { fieldName "name" }
-            isEditable true
-            permissions.edit "allow all"
+        fields+ {
+            name "id"
+            type "integer"
+            title "Identifier"
+            isPrimaryKey true
+            isRequired true
+            permissions.edit "deny all"
+            widget { type "input" }
+        }
 
-            fields+ {
-                name "id"
-                type "integer"
-                title "Identifier"
-                isPrimaryKey true
-                isRequired true
-                permissions.edit "deny all"
-                widget { type "input" }
-            }
+        fields+ {
+            name "name"
+            type "text"
+            title "Object name"
+            isRequired true
+            widget { type "input" }
+            textSearch { type "any" }
+        }
 
-            fields+ {
-                name "name"
-                type "text"
-                title "Object name"
-                isRequired true
-                widget { type "input" }
-                textSearch { type "any" }
-            }
-
-            fields+ {
-                name "code"
-                type "integer"
-                title "Feature Code"
-                widget {
-                    type "select"
-                    items [
-                        { value 0  text "unknown" }
-                        { value 100  text "primary feature" }
-                        { value 200  text "secondary feature" }
-                        { value 300  text "tertiary feature" }
-                    ]
-                }
-            }
-
-            fields+ {
-                name "updated"
-                type "date"
-                title "Date updated"
-                widget {
-                    type "date"
-                }
-            }
-
-            fields+ {
-                name "description"
-                type "text"
-                title "Comments"
-                widget { type "textarea" height 150 }
-            }
-
-            fields+ {
-                name "geom"
-                type "geometry"
-                title "Geometry"
-            }
-
-            templates+ {
-                subject "feature.title"
-                type "html"
-                text "{{name}} {{id}}"
-            }
-
-            templates+ {
-                subject "feature.label"
-                type "html"
-                text "{{name}}"
+        fields+ {
+            name "code"
+            type "integer"
+            title "Feature Code"
+            widget {
+                type "select"
+                items [
+                    { value 0  text "unknown" }
+                    { value 100  text "primary feature" }
+                    { value 200  text "secondary feature" }
+                    { value 300  text "tertiary feature" }
+                ]
             }
         }
-    }
 
-    {demo_osm_background}
+        fields+ {
+            name "updated"
+            type "date"
+            title "Date updated"
+            widget {
+                type "date"
+            }
+        }
+
+        fields+ {
+            name "description"
+            type "text"
+            title "Comments"
+            widget { type "textarea" height 150 }
+        }
+
+        fields+ {
+            name "geom"
+            type "geometry"
+            title "Geometry"
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{name}} {{id}}"
+        }
+
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{name}}"
+        }
+    }
 }
+
+{demo_osm_background}

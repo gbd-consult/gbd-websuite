@@ -1,23 +1,28 @@
-projects+ {
-    title "Legend: automatic"
-    metadata.abstract "For OWS and QGIS layers, legends are confgured automatically by default."
+uid "legend_auto"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 4000
-    }
+title "Automatic legend"
 
-    map.layers+ {
-        title "NRW ALKIS"
-        type "wmsflat"
-        provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
-        sourceLayers.names [
-            "adv_alkis_gewaesser"
-            "adv_alkis_vegetation"
-            "adv_alkis_bodensch"
-        ]
-        metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
-    }
+metadata.keywords [ "legend" "wms" ]
 
-    {demo_osm_background}
+metadata.abstract """
+For OWS and QGIS layers, legends are configured automatically by default.
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 4000
 }
+
+map.layers+ {
+    title "NRW ALKIS"
+    type "wmsflat"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+    sourceLayers.names [
+        "adv_alkis_gewaesser"
+        "adv_alkis_vegetation"
+        "adv_alkis_bodensch"
+    ]
+    metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+}
+
+{demo_osm_background}

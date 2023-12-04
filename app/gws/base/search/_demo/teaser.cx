@@ -1,52 +1,57 @@
-projects+ {
-    title "Search with teaser"
-    metadata.abstract "Full-text search with `teaser` views."
+uid "search_teaser"
 
-    client.addElements+ { tag "Sidebar.Search" }
-    client.options.sidebarActiveTab "Sidebar.Search"
+title "Search with teaser"
 
-    actions+ { type "search" }
+metadata.keywords [ "search" "client" ]
 
-    finders+ {
+metadata.abstract """
+Full-text search with `teaser` views.
+"""
+
+client.addElements+ { tag "Sidebar.Search" }
+client.options.sidebarActiveTab "Sidebar.Search"
+
+actions+ { type "search" }
+
+finders+ {
+    type "postgres"
+    tableName "edit.poi"
+    title "POIs"
+    models+ {
         type "postgres"
-        tableName "edit.poi"
-        title "POIs"
-        models+ {
-            type "postgres"
-            sort+ { fieldName "name" }
+        sort+ { fieldName "name" }
 
-            fields+ {
-                name "id"
-                type "integer"
-                isPrimaryKey true
-            }
-            fields+ {
-                name "name"
-                type "text"
-                textSearch { type "any" minLength 3 }
-            }
-            fields+ {
-                name "category_id"
-                type "integer"
-            }
-            fields+ {
-                name "geom"
-                type "geometry"
-            }
+        fields+ {
+            name "id"
+            type "integer"
+            isPrimaryKey true
         }
-
-        templates+ {
-            type "html"
-            subject "feature.teaser"
-            path "teaser.html"
+        fields+ {
+            name "name"
+            type "text"
+            textSearch { type "any" minLength 3 }
+        }
+        fields+ {
+            name "category_id"
+            type "integer"
+        }
+        fields+ {
+            name "geom"
+            type "geometry"
         }
     }
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 30000
-        zoom.maxScale  1000000
+    templates+ {
+        type "html"
+        subject "feature.teaser"
+        path "teaser.html"
     }
-
-    {demo_osm_background}
 }
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 30000
+    zoom.maxScale  1000000
+}
+
+{demo_osm_background}

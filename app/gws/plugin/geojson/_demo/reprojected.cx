@@ -1,26 +1,31 @@
-projects+ {
-    title "Geojson layers, reprojected"
-    metadata.abstract "`geojson` layers with CRS reprojection."
+uid "geojson_reprojected"
 
-    map {
-        crs 25832
-        center {demo_point_duesseldorf_25832}
-    }
+title "Reprojected Geojson"
 
-    ## search is not supported for geojson
-    client.removeElements+ { tag "Toolbar.Identify.Click" }
+metadata.keywords [ "geojson" "vector-data" "crs" ]
 
-    map.layers+ {
-        title "Bank"
-        type "geojson"
-        provider.path "/data/demos/poi/poi.bank.geojson"
-    }
+metadata.abstract """
+`geojson` layers with CRS re-projection.
+"""
 
-    map.layers+ {
-        title "Districts"
-        type "geojson"
-        provider.path "/data/demos/districts.geojson"
-    }
-
-    {demo_osm_background}
+map {
+    crs 25832
+    center {demo_point_duesseldorf_25832}
 }
+
+## search is not supported for geojson
+client.removeElements+ { tag "Toolbar.Identify.Click" }
+
+map.layers+ {
+    title "Bank"
+    type "geojson"
+    provider.path "/demos/poi/poi.bank.geojson"
+}
+
+map.layers+ {
+    title "Districts"
+    type "geojson"
+    provider.path "/demos/districts.geojson"
+}
+
+{demo_osm_background}

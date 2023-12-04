@@ -1,24 +1,29 @@
-projects+ {
-    title "WMS flat layer, partial"
-    metadata.abstract "Select specific source layers from a WMS service."
+uid "wms_flat_partial"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 4000
-    }
+title "Partial flat layer"
 
-    map.layers+ {
-        title "NRW ALKIS"
-        type "wmsflat"
-        provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+metadata.keywords [ "wms" "ows" ]
 
-        sourceLayers.names [
-            "adv_alkis_gewaesser"
-            "adv_alkis_vegetation"
-            "adv_alkis_bodensch"
-        ]
-        metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
-    }
+metadata.abstract """
+Select specific source layers from a WMS service.
+"""
 
-    {demo_osm_background}
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 4000
 }
+
+map.layers+ {
+    title "NRW ALKIS"
+    type "wmsflat"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+
+    sourceLayers.names [
+        "adv_alkis_gewaesser"
+        "adv_alkis_vegetation"
+        "adv_alkis_bodensch"
+    ]
+    metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+}
+
+{demo_osm_background}

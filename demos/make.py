@@ -5,8 +5,10 @@ import sys
 import re
 import json
 
-CUR_DIR = os.path.abspath(os.path.dirname(__file__))
-APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../../app')
+import mistune
+
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../app')
 sys.path.append(APP_DIR)
 
 import gws.lib.cli as cli
@@ -32,47 +34,67 @@ Options:
 
 
 def main(args):
-    all_paths = list(cli.find_files(APP_DIR, r'_demo/.+?'))
+    # basic config - from this dir
 
-    config = ''
-
-    # basic demo library - from this dir
-
-    for path in sorted(cli.find_files(CUR_DIR, r'\.cx$')):
-        config += read_config_file(path)
+    config = read_config_file(THIS_DIR + '/config_base.cx')
 
     # extra include
 
     if args.get('include'):
-        config += read_config_file(args.get('include'))
-
-    # template init code
-
-    config += '@demo_init\n'
+        config += '\n@include ' + args.get('include') + '\n'
 
     # include projects
 
-    only = args.get('only') or '.'
-    for path in all_paths:
-        if path.endswith('.cx') and re.search(only, path):
-            config += read_config_file(path)
+    only = args.get('only')
+    project_paths = list(cli.find_files(APP_DIR, r'_demo/.+?\.cx$'))
+    for path in project_paths:
+        if not only or re.search(only, path):
+            prj = read_config_file(path)
+            prj += f"""\nmetadata.authorityIdentifier "/app{path.replace(APP_DIR, '')}" """
+            config += '\nprojects+ {\n' + prj + '\n}\n'
 
-    # render everything
+    # parse config
 
     try:
         config = gws.lib.vendor.jump.render(config)
     except gws.lib.vendor.jump.CompileError as exc:
         error_lines(config, exc.line)
-        cli.fatal(str(exc))
+        return cli.fatal(str(exc))
+
     try:
-        config = gws.lib.vendor.slon.parse(config, as_object=True)
+        config_dct = gws.lib.vendor.slon.parse(config, as_object=True)
     except gws.lib.vendor.slon.SlonError as exc:
         error_lines(config, exc.args[2])
-        cli.fatal(str(exc))
+        return cli.fatal(str(exc))
+
+    # render abstracts
+
+    markdown = mistune.create_markdown()
+    for prj in config_dct['projects']:
+        text = prj.get('metadata', {}).get('abstract', '')
+        if text:
+            text = markdown(text)
+
+            # some annoyances
+            text = re.sub(r'\s+(</code>)', r'\1', text)
+            text = re.sub(r'<a', r'<a target="_blank"', text)
+
+            prj['metadata']['abstract'] = text
+
+    # check uids
+
+    uids = set()
+    for prj in config_dct['projects']:
+        uid = prj.get('uid')
+        if not uid:
+            cli.fatal(f'no uid for project {prj!r}')
+        if uid in uids:
+            cli.fatal(f'duplicate uid {uid!r} for project {prj!r}')
+        uids.add(uid)
 
     # all done!
 
-    res = json.dumps(config, indent=4, ensure_ascii=False)
+    res = json.dumps(config_dct, indent=4, ensure_ascii=False)
     if args.get('out'):
         cli.write_file(args.get('out'), res)
     else:
@@ -93,8 +115,6 @@ def error_lines(src, err):
         cli.error(s)
 
 
-START_PROJECT = 'projects+ {'
-
 RE_ASSET = r'''(?x)
     ([\x22\x27])
     (
@@ -110,34 +130,12 @@ RE_ASSET = r'''(?x)
 
 def read_config_file(path):
     text = cli.read_file(path)
-    text = generate_project_id(text, path)
     text = relocate_assets(text, path)
     return text + '\n\n'
 
 
-def generate_project_id(text, path):
-    # if this is a project config, inject an uid generated from its path
-
-    if START_PROJECT not in text:
-        return text
-
-    m = re.search(r'title (["\'])(.+?)\1', text)
-    if not m:
-        return text
-
-    uid = re.sub(r'\W+', '_', m.group(2).strip().lower())
-    path = path.replace(APP_DIR, '')
-    extra = f"""
-        uid "{uid}"
-        metadata.authorityIdentifier "/app/{path}"
-    """
-
-    return text.replace(START_PROJECT, START_PROJECT + extra)
-
-
 def relocate_assets(text, path):
     # replace asset paths with absolute paths
-
     return re.sub(RE_ASSET, lambda m: relocate_asset(m, path), text)
 
 
@@ -147,19 +145,7 @@ def relocate_asset(m, path):
     if not ps.startswith(APP_DIR):
         return m.group(0)
     pd = ps.replace(APP_DIR, '/gws-app')
-    # print(f'ASSET {name!r}: {ps!r} -> {pd!r}')
     return quot + pd + quot
-
-
-def path_to_uid(path):
-    # .../app/gws/plugin/qgis/_demo/flat.cx -> gws.plugin.qgis._demo.flat
-    return (
-        path
-        .split('.')[0]
-        .replace(APP_DIR, '')
-        .strip('/')
-        .replace('/', '.')
-    )
 
 
 if __name__ == '__main__':

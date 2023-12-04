@@ -1,19 +1,24 @@
-projects+ {
-    title "Tile layer, server-side"
-    metadata.abstract "Tile layer, cached on the server."
+uid "tile_layer_server"
 
-    map {
-        crs 3857
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-    }
+title "Tile layer"
 
-    map.layers+ {
-        title "Open Street Map"
-        type "tile"
-        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+metadata.keywords [ "tile" "ows" ]
 
-        display "tile"
-        withCache true
-    }
+metadata.abstract """
+Tile layer, cached on the server.
+"""
+
+map {
+    crs 3857
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+}
+
+map.layers+ {
+    title "Open Street Map"
+    type "tile"
+    provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+
+    display "tile"
+    withCache true
 }

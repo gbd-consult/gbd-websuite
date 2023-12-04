@@ -1,57 +1,54 @@
-@comment
+uid "wfs_service"
 
-Simple WFS service, provides a single Postgres layer.
+title "WFS service"
 
-@end
+metadata.keywords [ "wfs" "ows-service" ]
 
-projects+ {
-    title "OWS: WFS Service"
-    metadata.abstract """
-        Simple `WFS` service:
-            see [<a href='/_/owsService/serviceUid/simple_wfs_service/projectUid/gws.plugin.ows_server.wfs._demo.simple?request=GetCapabilities'>link</a>]
-        """
+metadata.abstract """
+Simple `WFS` service, provides a single Postgres layer.
 
-    owsServices+ {
-        type "wfs"
-        uid "simple_wfs_service"
-        metadata {
-            abstract "Simple WFS service"
-            keywords ["test" "wfs" "demo"]
-            name "SIMPLE_WFS"
-            title "Simple WFS"
-            {demo_metadata}
-        }
+[Service URL](/_/owsService/serviceUid/service_002/projectUid/wfs_service?request=GetCapabilities)
+"""
+
+owsServices+ {
+    type "wfs"
+    uid "service_002"
+    metadata {
+        abstract "Simple WFS service"
+        keywords ["test" "wfs" "demo"]
+        name "SIMPLE_WFS"
+        title "Simple WFS"
+        {demo_metadata}
     }
+}
 
-    actions+ {
-        type "ows"
-    }
+actions+ {
+    type "ows"
+}
 
-    map {
-        extent [
-            {demo_point_duesseldorf_3857[0] - 20000}
-            {demo_point_duesseldorf_3857[1] - 20000}
-            {demo_point_duesseldorf_3857[0] + 20000}
-            {demo_point_duesseldorf_3857[1] + 20000}
-        ]
-        zoom.initScale 30000
-        zoom.minScale  1000
-        zoom.maxScale  1000000
-    }
+map {
+    extent [
+        {demo_point_duesseldorf_3857[0] - 20000}
+        {demo_point_duesseldorf_3857[1] - 20000}
+        {demo_point_duesseldorf_3857[0] + 20000}
+        {demo_point_duesseldorf_3857[1] + 20000}
+    ]
+    zoom.initScale 30000
+    zoom.minScale  1000
+    zoom.maxScale  1000000
+}
 
-    map.layers+ {
-        title "POIs"
-        type "postgres"
-        tableName "edit.poi"
+map.layers+ {
+    title "POIs"
+    type "postgres"
+    tableName "edit.poi"
 
-        ows.xmlNamespace {
-            uid "test_namespace"
-            xmlns "test"
-            uri "http://test.namespace"
-            schemaLocation "http://foo"
-            version "1"
-        }
-
+    ows.xmlNamespace {
+        uid "test_namespace"
+        xmlns "test"
+        uri "http://test.namespace"
+        schemaLocation "http://foo"
+        version "1"
     }
 
 }

@@ -1,25 +1,30 @@
-projects+ {
-    title "Postgres layer, reprojected"
-    metadata.abstract "`postgres` layers with CRS reprojection."
+uid "postgres_reprojected"
 
-    map {
-        crs 25838
-        extent {demo_make_extent(-2112230, 6402292, 1000)}
-        zoom.initScale 70000
-        zoom.maxScale  1000000
-    }
+title "Reprojected Postgres layer"
 
-    map.layers+ {
-        title "POIs"
-        type "postgres"
-        tableName "edit.poi"
-    }
+metadata.keywords [ "postgres" "vector-data" "crs" ]
 
-    map.layers+ {
-        title "Districts"
-        type "postgres"
-        tableName "edit.district"
-    }
+metadata.abstract """
+`postgres` layers with CRS re-projection.
+"""
 
-    {demo_osm_background}
+map {
+    crs 25838
+    extent {demo_make_extent(-2112230, 6402292, 1000)}
+    zoom.initScale 70000
+    zoom.maxScale  1000000
 }
+
+map.layers+ {
+    title "POIs"
+    type "postgres"
+    tableName "edit.poi"
+}
+
+map.layers+ {
+    title "Districts"
+    type "postgres"
+    tableName "edit.district"
+}
+
+{demo_osm_background}

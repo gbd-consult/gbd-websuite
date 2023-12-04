@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+@import time
+
+<html>
+<head>
+    <title>{project.title}</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <link rel="stylesheet" href="/_/webSystemAsset/path/{gwsVersion}.light.css" type="text/css"/>
+    <link rel="stylesheet" href="/project.css?r={time.time()}"/>
+    <style>
+        .gws {
+            position: fixed;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+<script>
+    GWS_PROJECT_UID = "{project.uid}";
+    GWS_LOCALE = "de_DE";
+</script>
+<script src="/_/webSystemAsset/path/{gwsVersion}.vendor.js"></script>
+<script src="/_/webSystemAsset/path/{gwsVersion}.app.js"></script>
+</body>
+</html>

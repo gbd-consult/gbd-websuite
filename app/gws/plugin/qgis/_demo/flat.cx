@@ -1,18 +1,23 @@
-projects+ {
-    title "QGIS flat layer"
-    metadata.abstract "`qgisflat` layers display multiple layers from a QGIS project as a single WebSuite layer."
+uid "qgis_flat"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 15000
-        zoom.maxScale  1000000
-    }
+title "QGIS flat layer"
 
-    map.layers+ {
-        title "Essen und Trinken in Düsseldorf"
-        type "qgisflat"
-        provider.path "/data/demos/poi_geojson.qgs"
-    }
+metadata.keywords [ "qgis" ]
 
-    {demo_osm_background}
+metadata.abstract """
+`qgisflat` layers display multiple layers from a QGIS project as a single WebSuite layer.
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 15000
+    zoom.maxScale  1000000
 }
+
+map.layers+ {
+    title "Essen und Trinken in Düsseldorf"
+    type "qgisflat"
+    provider.path "/demos/poi_geojson.qgs"
+}
+
+{demo_osm_background}

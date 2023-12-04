@@ -1,22 +1,27 @@
-projects+ {
-    title "QGIS flat layer, partial"
-    metadata.abstract "Display only some QGIS layers in a `qgisflat` layer."
+uid "qgis_flat_partial"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 15000
-        zoom.maxScale  1000000
-    }
+title "QGIS partial flat layer"
 
-    map.layers+ {
-        title "Bars und Kneipen in Düsseldorf"
-        type "qgisflat"
-        provider.path "/data/demos/poi_geojson.qgs"
-        sourceLayers.names [
-            "Bar"
-            "Kneipe"
-        ]
-    }
+metadata.keywords [ "qgis" ]
 
-    {demo_osm_background}
+metadata.abstract """
+Display only some QGIS layers in a `qgisflat` layer.
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 15000
+    zoom.maxScale  1000000
 }
+
+map.layers+ {
+    title "Bars und Kneipen in Düsseldorf"
+    type "qgisflat"
+    provider.path "/demos/poi_geojson.qgs"
+    sourceLayers.names [
+        "Bar"
+        "Kneipe"
+    ]
+}
+
+{demo_osm_background}

@@ -91,7 +91,7 @@ projects+ {
     map.layers+ {
         title "Restaurant"
         type "geojson"
-        provider.path "/data/demos/poi/poi.restaurant.geojson"
+        provider.path "/demos/poi/poi.restaurant.geojson"
         cssSelector ".restaurant"
         templates+ {
             subject "feature.label"

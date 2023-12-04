@@ -1,30 +1,33 @@
-projects+ {
-    title "Printing: HTML"
-    metadata.abstract """
-        Use a simple html/cx template, which contains `@page`, `@map` and `@legend` commands,
-        along with `{{}}` echo statements to display the current map properties
-        and the system version.
-    """
+uid "print_simple"
 
-    printers+ {
-        template {
-            type "html"
-            path "simple.cx.html"
-            mapSize [ "150mm" "100mm" ]
-        }
+title "HTML printing"
+
+metadata.keywords [ "print" ]
+
+metadata.abstract """
+Use a simple html/cx template, which contains `@page`, `@map` and `@legend` commands,
+along with `{{}}` echo statements to display the current map properties
+and the system version.
+"""
+
+printers+ {
+    template {
+        type "html"
+        path "simple.cx.html"
+        mapSize [ "150mm" "100mm" ]
     }
-
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 30000
-        zoom.maxScale  1000000
-    }
-
-    map.layers+ {
-        title "Düsseldorf"
-        type "qgis"
-        provider.path "/data/demos/poi_geojson.qgs"
-    }
-
-    {demo_osm_background}
 }
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 30000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "Düsseldorf"
+    type "qgis"
+    provider.path "/demos/poi_geojson.qgs"
+}
+
+{demo_osm_background}

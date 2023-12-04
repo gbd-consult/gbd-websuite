@@ -1,23 +1,28 @@
-projects+ {
-    title "Search: Nominatim"
-    metadata.abstract "Full-text search with the Nominatim"
+uid "nominatim_search"
 
-    client.addElements+ { tag "Sidebar.Search" }
-    client.options.sidebarActiveTab "Sidebar.Search"
+title "Nominatim"
 
-    actions+ { type "search" }
+metadata.keywords [ "search" ]
 
-    finders+ {
-        type "nominatim"
-        spatialContext "map"
-    }
+metadata.abstract """
+Full-text search with [Nominatim](https://nominatim.openstreetmap.org/)
+"""
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        extent [ 447705, 6478918, 1023665, 6813238 ]
-        zoom.initScale 1000000
-        zoom.maxScale  1000000
-    }
+client.addElements+ { tag "Sidebar.Search" }
+client.options.sidebarActiveTab "Sidebar.Search"
 
-    {demo_osm_background}
+actions+ { type "search" }
+
+finders+ {
+    type "nominatim"
+    spatialContext "map"
 }
+
+map {
+    center {demo_point_duesseldorf_3857}
+    extent [ 447705, 6478918, 1023665, 6813238 ]
+    zoom.initScale 1000000
+    zoom.maxScale  1000000
+}
+
+{demo_osm_background}

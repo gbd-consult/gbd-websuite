@@ -1,0 +1,82 @@
+body {
+    background: #333;
+}
+
+@media (min-width: 576px) {
+    .gws .modSidebar {
+        left: -460px;
+        width: 460px;
+    }
+    .gws .modSidebarOverflowPopup {
+        left: 144px;
+        right: auto;
+    }
+}
+
+.custom_poi {
+    --icon: url('/pin.svg');
+    --with_label: all;
+    --label-fill: #C74040;
+    --label-font-size: 10px;
+    --label-max-scale: 10000;
+}
+
+.custom_poi_bank {
+    --icon: url('/bank2.svg');
+    --with_label: all;
+    --label-fill: #894a93;
+    --label-font-size: 10px;
+    --label-font-weight: bold;
+    --label-max-scale: 10000;
+}
+
+.custom_district {
+    fill: rgba(186, 104, 200, 0.3);
+    stroke: rgba(186, 104, 200, 0.9);
+    stroke-width: 1px;
+    --with_label: all;
+    --label-fill: #7f418a;
+    --label-font-size: 14px;
+    --label-max-scale: 70000;
+}
+
+.custom_district_outline {
+    stroke: rgba(186, 104, 200, 1);
+    stroke-width: 3px;
+}
+
+.nrw_kreise {
+    fill: rgb(125, 126, 63, 0.6);
+    stroke: rgb(250, 252, 199);
+    stroke-width: 1px;
+    --with_label: all;
+    --label-fill: rgb(250, 252, 199);
+    --label-font-size: 12px;
+    --label-max-scale: 500000;
+}
+
+.point-red { --point-size: 10; fill: #b71c1c }
+.point-pink { --point-size: 10; fill: #880e4f }
+.point-purple { --point-size: 10; fill: #4a148c }
+.point-deepPurple { --point-size: 10; fill: #311b92 }
+.point-indigo { --point-size: 10; fill: #1a237e }
+.point-blue { --point-size: 10; fill: #0d47a1 }
+.point-lightBlue { --point-size: 10; fill: #01579b }
+.point-cyan { --point-size: 10; fill: #006064 }
+.point-teal { --point-size: 10; fill: #004d40 }
+.point-green { --point-size: 10; fill: #1b5e20 }
+.point-lightGreen { --point-size: 10; fill: #33691e }
+.point-lime { --point-size: 10; fill: #827717 }
+.point-yellow { --point-size: 10; fill: #f57f17 }
+.point-amber { --point-size: 10; fill: #ff6f00 }
+.point-orange { --point-size: 10; fill: #e65100 }
+.point-deepOrange { --point-size: 10; fill: #bf360c }
+.point-brown { --point-size: 10; fill: #3e2723 }
+.point-blueGrey { --point-size: 10; fill: #263238 }
+.point-grey { --point-size: 10; fill: #212121 }
+
+.ne_countries {
+    fill: rgba(194, 139, 50, 0.44);
+    stroke: rgb(6, 92, 185);
+    stroke-width: 1px;
+}

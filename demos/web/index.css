@@ -1,0 +1,272 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Helvetica, sans-serif;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background: #333;
+    color: #ccc;
+    font-size: 14px;
+}
+
+#side {
+    position: fixed;
+    width: 20em;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    background: #eee;
+}
+
+#side-search {
+    padding: 1em 1em;
+    background: #777;
+}
+
+#side-search input {
+    background: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.5em;
+    width: 100%;
+    color: #000;
+}
+
+#project-list {
+    color: #b0bec5;
+    flex: 1;
+    overflow: auto;
+    background: #f3f3f3;
+    position: relative;
+}
+
+#side-toolbar {
+    padding: 1em;
+    background: #777;
+}
+
+#side-toolbar a.icon {
+    width: 45px;
+    color: #ddd;
+}
+
+.with-mobile-view #side-toolbar #button-mobile-view {
+    color: #333;
+}
+
+.with-user #side-toolbar #button-login {
+    color: #333;
+}
+
+
+
+#demo-container {
+    position: fixed;
+    left: 40em;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    padding: 1em 1em 1em 0;
+}
+
+#demo-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #aaa;
+    margin: 0;
+    padding: 0;
+}
+
+.with-mobile-view #demo-container iframe {
+    width: 400px;
+}
+
+.project-list-entry {
+    margin: 0;
+    padding: 0.8em 0.8em 1.2em 0.8em;
+    border-bottom: 1px dotted #aaa;
+}
+
+.project-list-entry.hidden {
+    display: none;
+}
+
+.project-list-entry > .links  {
+    display: flex;
+    padding: 0 0 0.8em 0;
+}
+.project-list-entry a {
+    display: block;
+    font-size: 1em;
+    font-weight: 500;
+    color: #2180a6;
+    text-decoration: none;
+}
+
+.project-list-entry.selected {
+    background: #ccc;
+}
+.project-list-entry.selected a {
+    color: #222;
+}
+
+.project-list-entry a.frame-link {
+    flex: 1
+}
+.project-list-entry .material-symbols-rounded {
+    font-size: 15px;
+}
+
+#project-details {
+    position: fixed;
+    left: 20em;
+    top: 0;
+    bottom: 0;
+    width: 20em;
+    padding: 2em;
+    overflow: auto;
+}
+
+.project-details-entry.hidden {
+    display: none;
+}
+
+.project-details-entry h2 {
+    font-size: 1.5em;
+    font-weight: normal;
+    line-height: 1.2;
+}
+
+.project-details-entry p {
+    line-height: 1.4;
+    margin: 1em 0;
+}
+
+.project-details-entry a {
+    color: white;
+}
+
+.project-details-entry h6 {
+    font-size: 0.8em;
+    margin: 4em 0 0 0;
+    text-align: right;
+}
+.project-details-entry h6 a {
+    color: #76fc02;
+}
+
+.project-details-entry ul {
+    padding-left: 2em;
+}
+
+a.icon {
+    display: inline-block;
+}
+
+#login-box {
+    display: none;
+    position: fixed;
+    left: 0;
+    bottom: 4em;
+    padding: 1em;
+    background-color: #222;
+    color: #ccc;
+    width: 20em;
+    z-index: 1;
+}
+
+#login-box td {
+    padding: 0.5em;
+}
+#login-box input {
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    width: 100%;
+    background: #ddd;
+    color: #333;
+}
+
+#login-box button {
+    padding: 8px;
+    margin-right: 8px;
+    background: #999;
+    color: white;
+    border: 0;
+}
+
+.with-login-box #login-box {
+    display: block;
+}
+
+#login-form {
+    display: block;
+}
+
+#logout-form {
+    display: none;
+}
+
+.with-user #login-form {
+    display: none;
+}
+.with-user #logout-form {
+    display: block;
+}
+
+#login-error {
+    color: red;
+    display: none;
+}
+
+.gwsLoginError #login-error {
+    display: block;
+}
+
+pre, code {
+    font-family: "JetBrains Mono", Monaco, monospace;
+    background-color: #222;
+    color: #76fc02;
+    font-size: 12px;
+
+}
+
+p > code {
+    padding: 2px 7px;
+    white-space: nowrap;
+    border-radius: 7px;
+}
+
+pre {
+    padding: 1em;
+    border-radius: 7px;
+    width: 100%;
+    overflow: auto;
+}
+
+mark {
+    padding: 2px 7px;
+    white-space: nowrap;
+    border-radius: 7px;
+    font-size: 11px;
+    color: #333;
+    background: #e3e1d5;
+    display: inline-block;
+    margin: 0 0.2em;
+    cursor: pointer;
+}
+
+mark.selected {
+    background: #ff8100;
+
+}

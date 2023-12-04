@@ -1,64 +1,63 @@
-@comment
+uid "select_tool"
 
+title "Select Tool"
+
+metadata.keywords [ "client" "search" ]
+
+metadata.abstract """
 Select function with "storage".
 
 The point-and-click selection works by running a search query around the clicked point,
-and then selecting returned features. It works with any kind of layer (in this example, posrgres and wms),
+and then selecting returned features. It works with any kind of layer (in this example, postgres and wms),
 as long as this layer can return geometric features.
 
 The polygon selection only works with sources which support geometry queries like "intersects".
+"""
 
-@end
-
-projects+ {
-    title "Select Tool"
-    metadata.abstract "Select vector objects on the map."
-
-    actions+ {
-        type "select"
-        storage {
-            permissions {
-                read "allow all"
-                write "allow all"
-                create "allow all"
-            }
+actions+ {
+    type "select"
+    storage {
+        permissions {
+            read "allow all"
+            write "allow all"
+            create "allow all"
         }
     }
-
-    client.addElements+ { tag "Sidebar.Select" }
-    client.addElements+ { tag "Toolbar.Select" }
-    client.addElements+ { tag "Toolbar.Select.Draw" }
-    client.addElements+ { tag "Task.Select" }
-    client.options.sidebarActiveTab "Sidebar.Select"
-
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 4000
-        zoom.maxScale  1000000
-    }
-
-    map.layers+ {
-        type "postgres"
-        title "POIs"
-        tableName "edit.poi_small"
-        cssSelector ".point-pink"
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{name}} {{id}}"
-        }
-    }
-
-    map.layers+ {
-        type "wmsflat"
-        title "NRW ALKIS Flurstücke"
-        provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
-        metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
-        sourceLayers.names [ "adv_alkis_flurstuecke" ]
-        display "tile"
-        withCache true
-    }
-
-    {demo_osm_background}
 }
+
+client.addElements+ { tag "Sidebar.Select" }
+client.addElements+ { tag "Toolbar.Select" }
+client.addElements+ { tag "Toolbar.Select.Draw" }
+client.addElements+ { tag "Task.Select" }
+client.options.sidebarActiveTab "Sidebar.Select"
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 4000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    type "postgres"
+    title "POIs"
+    tableName "edit.poi_small"
+    cssSelector ".point-pink"
+
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{name}} {{id}}"
+    }
+}
+
+map.layers+ {
+    type "wmsflat"
+    title "NRW ALKIS Flurstücke"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+    metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+    sourceLayers.names [ "adv_alkis_flurstuecke" ]
+    display "tile"
+    withCache true
+}
+
+{demo_osm_background}

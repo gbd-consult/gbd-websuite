@@ -1,0 +1,34 @@
+[
+    {
+        "login": "demo1",
+        "name": "Demo User 1",
+        "password": "$sha512$3IuG8xQm$Nw-lUcWvTGURG5zkXfCRyptG7uj4GXNqpfT2-d-KnWs-V5ZElKNWOOhjG-0aj6PD5q8Z1fGA8Cx6a84jSEwwGA==",
+        "roles": [
+            "groupA"
+        ]
+    },
+    {
+        "login": "demo2",
+        "name": "Demo User 2",
+        "password": "$sha512$3IuG8xQm$Nw-lUcWvTGURG5zkXfCRyptG7uj4GXNqpfT2-d-KnWs-V5ZElKNWOOhjG-0aj6PD5q8Z1fGA8Cx6a84jSEwwGA==",
+        "roles": [
+            "groupA"
+        ]
+    },
+    {
+        "login": "demo3",
+        "name": "Demo User 3",
+        "password": "$sha512$3IuG8xQm$Nw-lUcWvTGURG5zkXfCRyptG7uj4GXNqpfT2-d-KnWs-V5ZElKNWOOhjG-0aj6PD5q8Z1fGA8Cx6a84jSEwwGA==",
+        "roles": [
+            "groupB"
+        ]
+    },
+    {
+        "login": "demo4",
+        "name": "Demo User 4",
+        "password": "$sha512$3IuG8xQm$Nw-lUcWvTGURG5zkXfCRyptG7uj4GXNqpfT2-d-KnWs-V5ZElKNWOOhjG-0aj6PD5q8Z1fGA8Cx6a84jSEwwGA==",
+        "roles": [
+            "groupB"
+        ]
+    }
+]

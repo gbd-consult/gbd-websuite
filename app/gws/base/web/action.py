@@ -139,7 +139,7 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
         res = gws.ContentResponse()
         args = {
             'project': project,
-            'projects': sorted(root.app.projects_for_user(req.user), key=lambda p: p.title),
+            'projects': sorted(root.app.projects_for_user(req.user), key=lambda p: p.title.lower()),
             'request': req,
             'user': req.user,
             'params': p,

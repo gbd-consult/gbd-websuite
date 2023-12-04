@@ -1,45 +1,50 @@
-projects+ {
-    title "Edit: bbox loading"
-    metadata.abstract "Using `loadingStrategy bbox` to edit only features in the map extent."
+uid "edit_bbox"
 
-    actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
+title "bbox loading"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 4000
-        zoom.maxScale  1000000
-        zoom.minScale  100
-    }
+metadata.keywords [ "edit" ]
 
-    map.layers+ {
-        title "POIs"
-        type "postgres"
-        tableName "edit.poi"
-        loadingStrategy "bbox"
-        cssSelector ".custom_poi"
+metadata.abstract """
+Using `loadingStrategy bbox` to edit only features in the map extent.
+"""
 
-        models+ {
-            type "postgres"
-            isEditable true
-            permissions.edit 'allow all'
-            sort+ { fieldName "name" }
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
 
-        }
-
-        templates+ {
-            subject "feature.label"
-            type "html"
-            text "{{name}}"
-        }
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{name}}"
-        }
-    }
-
-    {demo_osm_background}
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 4000
+    zoom.maxScale  1000000
+    zoom.minScale  100
 }
+
+map.layers+ {
+    title "POIs"
+    type "postgres"
+    tableName "edit.poi"
+    loadingStrategy "bbox"
+    cssSelector ".custom_poi"
+
+    models+ {
+        type "postgres"
+        isEditable true
+        permissions.edit 'allow all'
+        sort+ { fieldName "name" }
+
+    }
+
+    templates+ {
+        subject "feature.label"
+        type "html"
+        text "{{name}}"
+    }
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{name}}"
+    }
+}
+
+{demo_osm_background}

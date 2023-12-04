@@ -76,64 +76,79 @@
     ]
 @end
 
-@def demo_api
-    actions+ { type "web" }
-    actions+ { type "map" }
-    actions+ { type "project" }
-    actions+ { type "search" }
-    actions+ { type "printer" }
-@end
 
-@def demo_client
-    client.elements+ { tag "Toolbar.Identify.Click" }
-    client.elements+ { tag "Toolbar.Print" }
 
-    client.elements+ { tag "Decoration.ScaleRuler" }
-    client.elements+ { tag "Decoration.Attribution" }
+@# main config
 
-    client.elements+ { tag "Infobar.ZoomOut" }
-    client.elements+ { tag "Infobar.ZoomIn" }
-    client.elements+ { tag "Infobar.ZoomReset" }
-    client.elements+ { tag "Infobar.Position" }
-    client.elements+ { tag "Infobar.Scale" }
-    client.elements+ { tag "Infobar.Loader" }
-    client.elements+ { tag "Infobar.Spacer" }
-    client.elements+ { tag "Infobar.HomeLink" }
-    client.elements+ { tag "Infobar.Help" }
-    client.elements+ { tag "Infobar.About" }
+access "allow all"
 
-    client.elements+ { tag "Sidebar.Overview" }
-    client.elements+ { tag "Sidebar.Layers" }
+locales+ "de_DE"
 
-    client.elements+ { tag "Task.Zoom" }
+storage.providers+ {
+    uid "common_storage"
+    type "sqlite"
+}
 
-    client.options.sidebarActiveTab "Sidebar.Layers"
-    client.options.sidebarVisible true
-    client.options.layersShowInactive true
-@end
+actions+ { type "auth" }
+actions+ { type "map" }
+actions+ { type "printer" }
+actions+ { type "project" }
+actions+ { type "search" }
+actions+ { type "web" }
 
-@def demo_locales
-    locales+ "de_DE"
-@end
+auth {
+    methods+ { type "web" secure false }
+    providers+ { type "file" path "/demos/users.json" }
+    session { type "sqlite" }
+}
 
-@def demo_storage
-    storage.providers+ {
-        uid "common_storage"
-        type "sqlite"
-@#        path "/gws-var/common_storage.sqlite"
+
+client.elements+ { tag "Toolbar.Identify.Click" }
+client.elements+ { tag "Toolbar.Print" }
+
+client.elements+ { tag "Decoration.ScaleRuler" }
+client.elements+ { tag "Decoration.Attribution" }
+
+client.elements+ { tag "Infobar.ZoomOut" }
+client.elements+ { tag "Infobar.ZoomIn" }
+client.elements+ { tag "Infobar.ZoomReset" }
+client.elements+ { tag "Infobar.Position" }
+client.elements+ { tag "Infobar.Scale" }
+client.elements+ { tag "Infobar.Loader" }
+client.elements+ { tag "Infobar.Spacer" }
+client.elements+ { tag "Infobar.HomeLink" }
+client.elements+ { tag "Infobar.Help" }
+client.elements+ { tag "Infobar.About" }
+
+client.elements+ { tag "Sidebar.Overview" }
+client.elements+ { tag "Sidebar.Layers" }
+
+client.elements+ { tag "Task.Zoom" }
+
+client.options.sidebarActiveTab "Sidebar.Layers"
+client.options.sidebarVisible true
+client.options.layersShowInactive true
+
+web.sites+ {
+    assets.dir "/demos/assets"
+    root.dir "/demos/web"
+    host "*"
+    rewrite [
+        {
+            pattern "^/project/([a-z0-9_.-]+)(/@.*)?$"
+            target "/_/webAsset/projectUid/$1/path/project.cx.html"
+        }
+        {
+            pattern "^/$"
+            target "/_/webAsset/path/index.cx.html"
+        }
+        {
+            pattern "^/(demo|tag)"
+            target "/_/webAsset/path/index.cx.html"
+        }
+    ]
+    errorPage {
+        type "html"
+        text "Error {{error}}"
     }
-@end
-
-@def demo_custom_config
-    @# insert your custom config here
-@end
-
-@def demo_init
-    access "allow all"
-
-    @demo_locales
-    @demo_api
-    @demo_client
-    @demo_storage
-    @demo_custom_config
-@end
+}

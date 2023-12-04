@@ -1,111 +1,110 @@
-@comment
+uid "field_related_multi_feature_list"
 
+title "relatedMultiFeatureList"
+
+metadata.keywords [ "edit" "model-field" "database" ]
+
+metadata.abstract """
 Editing 1:M relationships to multiple tables:
 
-    baustelle --<< kanalarbeiten
-    baustelle --<< sperrung
-    baustelle --<< umleitung
+    baustelle -<< kanalarbeiten
+    baustelle -<< sperrung
+    baustelle -<< umleitung
 
 Using `relatedMultiFeatureList` for the parent table
 and `relatedFeature` as backlinks in child tables.
 
 Models are defined directly in the project,
 map layers are for view only, have no relevance for editing.
+"""
 
-@end
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
 
-projects+ {
-    title "Edit: relatedMultiFeatureList"
-    metadata.abstract "Editing related features from multiple tables."
-
-    actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
-
-    map {
-        crs 25832
-        center {demo_point_duesseldorf_25832}
-        zoom.initScale 4000
-        zoom.maxScale  1000000
-    }
-
-    models+ {
-        type "postgres"
-        uid "model_baustelle"
-        tableName "baustellen.baustelle"
-        title "Baustellen"
-        isEditable true
-        permissions.edit "allow all"
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{@if feature.isNew}} neue Baustelle {{@else}} {{name}} {{@end}}"
-        }
-
-        fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "name" type "text" isRequired true textSearch { type "any" } }
-        fields+ {
-            name "objekte"
-            title "Objekte"
-            type "relatedMultiFeatureList"
-            related [
-                { toModel "model_kanalarbeiten" toColumn "baustelle_id" }
-                { toModel "model_sperrung"      toColumn "baustelle_id" }
-                { toModel "model_umleitung"     toColumn "baustelle_id" }
-            ]
-        }
-    }
-
-    models+ {
-        type "postgres"
-        uid "model_kanalarbeiten"
-        tableName "baustellen.kanalarbeiten"
-        title "Kanalarbeiten"
-        isEditable true
-        permissions.edit "allow all"
-
-        templates+ { subject "feature.title" type "html" text "Kanalarbeiten {{beschreibung}}" }
-
-        fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
-        fields+ { name "geom" type "geometry" }
-    }
-
-    models+ {
-        type "postgres"
-        uid "model_sperrung"
-        tableName "baustellen.sperrung"
-        title "Sperrung"
-        isEditable true
-        permissions.edit "allow all"
-
-        templates+ { subject "feature.title" type "html" text "Sperrung {{beschreibung}}" }
-
-        fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
-        fields+ { name "geom" type "geometry" }
-    }
-
-    models+ {
-        type "postgres"
-        uid "model_umleitung"
-        tableName "baustellen.umleitung"
-        title "Umleitung"
-        isEditable true
-        permissions.edit "allow all"
-
-        templates+ { subject "feature.title" type "html" text "Umleitung {{beschreibung}}" }
-
-        fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
-        fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
-        fields+ { name "geom" type "geometry" }
-    }
-
-    map.layers+ { type "postgres" title "kanalarbeiten"  tableName "baustellen.kanalarbeiten" }
-    map.layers+ { type "postgres" title "sperrung"       tableName "baustellen.sperrung" }
-    map.layers+ { type "postgres" title "umleitung"      tableName "baustellen.umleitung" }
-
-    {demo_osm_background}
+map {
+    crs 25832
+    center {demo_point_duesseldorf_25832}
+    zoom.initScale 4000
+    zoom.maxScale  1000000
 }
+
+models+ {
+    type "postgres"
+    uid "model_baustelle"
+    tableName "baustellen.baustelle"
+    title "Baustellen"
+    isEditable true
+    permissions.edit "allow all"
+
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{@if feature.isNew}} neue Baustelle {{@else}} {{name}} {{@end}}"
+    }
+
+    fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "name" type "text" isRequired true textSearch { type "any" } }
+    fields+ {
+        name "objekte"
+        title "Objekte"
+        type "relatedMultiFeatureList"
+        related [
+            { toModel "model_kanalarbeiten" toColumn "baustelle_id" }
+            { toModel "model_sperrung"      toColumn "baustelle_id" }
+            { toModel "model_umleitung"     toColumn "baustelle_id" }
+        ]
+    }
+}
+
+models+ {
+    type "postgres"
+    uid "model_kanalarbeiten"
+    tableName "baustellen.kanalarbeiten"
+    title "Kanalarbeiten"
+    isEditable true
+    permissions.edit "allow all"
+
+    templates+ { subject "feature.title" type "html" text "Kanalarbeiten {{beschreibung}}" }
+
+    fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
+    fields+ { name "geom" type "geometry" }
+}
+
+models+ {
+    type "postgres"
+    uid "model_sperrung"
+    tableName "baustellen.sperrung"
+    title "Sperrung"
+    isEditable true
+    permissions.edit "allow all"
+
+    templates+ { subject "feature.title" type "html" text "Sperrung {{beschreibung}}" }
+
+    fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
+    fields+ { name "geom" type "geometry" }
+}
+
+models+ {
+    type "postgres"
+    uid "model_umleitung"
+    tableName "baustellen.umleitung"
+    title "Umleitung"
+    isEditable true
+    permissions.edit "allow all"
+
+    templates+ { subject "feature.title" type "html" text "Umleitung {{beschreibung}}" }
+
+    fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "beschreibung" type "text" widget { type "textarea" height 150 } }
+    fields+ { name "geom" type "geometry" }
+}
+
+map.layers+ { type "postgres" title "kanalarbeiten"  tableName "baustellen.kanalarbeiten" }
+map.layers+ { type "postgres" title "sperrung"       tableName "baustellen.sperrung" }
+map.layers+ { type "postgres" title "umleitung"      tableName "baustellen.umleitung" }
+
+{demo_osm_background}

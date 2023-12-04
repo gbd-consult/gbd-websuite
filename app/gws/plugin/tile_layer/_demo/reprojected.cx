@@ -1,18 +1,23 @@
-projects+ {
-    title "Tile layer, reprojected"
-    metadata.abstract "Tile layer, cached on the server and reprojected to another CRS."
+uid "tile_reprojected"
 
-    map {
-        crs 25830
-        extent {demo_make_extent(1181583, 5720282, 1000)}
-        zoom.initScale 500000
-    }
+title "Reprojected tile layer"
 
-    map.layers+ {
-        title "Open Street Map"
-        type "tile"
-        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+metadata.keywords [ "tile" "ows" "crs" ]
 
-        display "tile"
-    }
+metadata.abstract """
+Tile layer, cached on the server and reprojected to another CRS.
+"""
+
+map {
+    crs 25830
+    extent {demo_make_extent(1181583, 5720282, 1000)}
+    zoom.initScale 500000
+}
+
+map.layers+ {
+    title "Open Street Map"
+    type "tile"
+    provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+
+    display "tile"
 }

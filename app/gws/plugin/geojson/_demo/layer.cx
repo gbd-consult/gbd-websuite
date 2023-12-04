@@ -1,27 +1,32 @@
-projects+ {
-    title "Geojson layers"
-    metadata.abstract "`geojson` layers display vector features from Geojson files."
+uid "geojson_layer"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
+title "Simple layer"
 
-    ## search is not supported for geojson
-    client.removeElements+ { tag "Toolbar.Identify.Click" }
+metadata.keywords [ "geojson" "vector-data" ]
 
-    map.layers+ {
-        title "Bank"
-        type "geojson"
-        provider.path "/data/demos/poi/poi.bank.geojson"
-    }
+metadata.abstract """
+`geojson` layers display vector features from Geojson files.
+"""
 
-    map.layers+ {
-        title "Districts"
-        type "geojson"
-        provider.path "/data/demos/districts.geojson"
-    }
-
-    {demo_osm_background}
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
 }
+
+## search is not supported for geojson
+client.removeElements+ { tag "Toolbar.Identify.Click" }
+
+map.layers+ {
+    title "Bank"
+    type "geojson"
+    provider.path "/demos/poi/poi.bank.geojson"
+}
+
+map.layers+ {
+    title "Districts"
+    type "geojson"
+    provider.path "/demos/districts.geojson"
+}
+
+{demo_osm_background}

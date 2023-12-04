@@ -1,55 +1,60 @@
-projects+ {
-    title "Edit: lazy loading"
-    metadata.abstract "Using `loadingStrategy lazy` to edit only features matching a keyword."
+uid "edit_lazy"
 
-    actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
+title "Lazy loading"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 4000
-        zoom.maxScale  1000000
-        zoom.minScale  100
-    }
+metadata.keywords [ "edit" ]
 
-    map.layers+ {
-        title "POIs"
+metadata.abstract """
+Using `loadingStrategy lazy` to edit only features matching a keyword.
+"""
+
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 4000
+    zoom.maxScale  1000000
+    zoom.minScale  100
+}
+
+map.layers+ {
+    title "POIs"
+    type "postgres"
+    tableName "edit.poi"
+    loadingStrategy "lazy"
+    cssSelector ".custom_poi"
+
+    models+ {
         type "postgres"
-        tableName "edit.poi"
-        loadingStrategy "lazy"
-        cssSelector ".custom_poi"
+        isEditable true
+        permissions.edit 'allow all'
+        sort+ { fieldName "name" }
 
-        models+ {
-            type "postgres"
-            isEditable true
-            permissions.edit 'allow all'
-            sort+ { fieldName "name" }
-
-            fields+ {
-                name "id"
-                type "integer"
-                title "Identifier"
-                isPrimaryKey true
-                isRequired true
-                permissions.edit "deny all"
-                widget { type "input" }
-            }
-
-            fields+ {
-                name "name"
-                type "text"
-                title "Object name"
-                isRequired true
-                widget { type "input" }
-                textSearch { type "any" }
-            }
+        fields+ {
+            name "id"
+            type "integer"
+            title "Identifier"
+            isPrimaryKey true
+            isRequired true
+            permissions.edit "deny all"
+            widget { type "input" }
         }
 
-        templates+ { subject "feature.label" type "html" text "{{name}}" }
-        templates+ { subject "feature.title" type "html" text "{{name}}" }
+        fields+ {
+            name "name"
+            type "text"
+            title "Object name"
+            isRequired true
+            widget { type "input" }
+            textSearch { type "any" }
+        }
     }
 
-    {demo_osm_background}
+    templates+ { subject "feature.label" type "html" text "{{name}}" }
+    templates+ { subject "feature.title" type "html" text "{{name}}" }
 }
+
+{demo_osm_background}

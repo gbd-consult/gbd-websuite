@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+@import re
+@import time
+
+
+<html>
+<head>
+    <title>GBD WebSuite Developer Demos</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+    <script src="/_/webSystemAsset/path/{gwsVersion}.util.js"></script>
+    <link rel="stylesheet" href="/index.css?r={time.time()}"/>
+    <script src="/index.js?r={time.time()}"></script>
+</head>
+
+<body class="{@if not user.isGuest}with-user{@end}">
+
+<div id="login-box">
+
+    <div id="login-form">
+        <table>
+            <tr>
+                <td>Username</td>
+                <td><input id="gwsUsername" name="username"></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><input id="gwsPassword" name="password" type="password"></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <small>
+                        There are two user groups: <b>groupA</b> and <b>groupB</b>,
+                        you can use logins <b>demo1</b> or <b>demo2</b> for the first group
+                        and <b>demo3</b> or <b>demo4</b> for the second.
+                        The password for all users is <b>demo</b>.
+                    </small>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button onclick="gwsLogin()">Log in</button>
+                </td>
+            </tr>
+        </table>
+        <p id="login-error">Invalid username or password</p>
+    </div>
+
+    <div id="logout-form">
+        <table>
+            <tr>
+                <td>{user.displayName}</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button onclick="gwsLogout()">Log out</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+<div id="side">
+    <div id="side-search">
+        <input placeholder="search">
+    </div>
+
+    <div id="project-list">
+        @for prj in projects
+        <div class="project-list-entry hidden" data-uid="{prj.uid}">
+            <p class="links">
+                <a href="/" class="frame-link" data-uid="{prj.uid}">
+                    {prj.title | html}
+                </a>
+                <a href="/project/{prj.uid}" target="_blank" class="icon" title="open fullscreen">
+                    <span class="material-symbols-rounded">open_in_new</span>
+                </a>
+            </p>
+            <p class="keywords">
+                @for kw in sorted(prj.metadata.keywords)
+                    <mark>{kw}</mark>
+                @end
+            </p>
+        </div>
+        @end
+    </div>
+
+    <div id="side-toolbar">
+        <a href="/" class="icon" title="home page">
+            <span class="material-symbols-rounded">home</span>
+        </a>
+        <a href="/" id="button-prev-demo" class="icon" title="previous">
+            <span class="material-symbols-rounded">arrow_circle_up</span>
+        </a>
+        <a href="/" id="button-next-demo" class="icon" title="next">
+            <span class="material-symbols-rounded">arrow_circle_down</span>
+        </a>
+        <a href="/" id="button-mobile-view" class="icon" title="mobile view">
+            <span class="material-symbols-rounded">smartphone</span>
+        </a>
+        <a href="/" id="button-login" class="icon" title="login">
+            <span class="material-symbols-rounded">person</span>
+        </a>
+    </div>
+
+</div>
+
+@import re
+
+<div id="project-details">
+    @for prj in projects
+    <div class="project-details-entry hidden" data-uid="{prj.uid}">
+        <h2>{prj.title | html}</h2>
+        {prj.metadata.abstract}
+        <h6>
+            <a
+                    href="https://github.com/gbd-consult/gbd-websuite/tree/master/{prj.metadata.authorityIdentifier}"
+                    target="_blank"
+                    title="view configuration"
+            >
+                        <span class="material-symbols-rounded">data_object</span>
+
+            </a>
+        </h6>
+    </div>
+    @end
+</div>
+
+<div id="demo-container"></div>
+
+
+</body>
+</html>

@@ -1,92 +1,91 @@
-@comment
+uid "overview_map"
 
+title "Overview map"
+
+metadata.keywords [ "client" ]
+
+metadata.abstract """
 An overview map can contain any type of layers.
 
 The `extent` configuration is mandatory for the overview map,
-you can convenietly use arithmetic expressions to define the extent
+you can conveniently use arithmetic expressions to define the extent
 relatively to the map center.
 
 The print templates demonstrate how overview maps work
 for different page and map sizes.
+"""
 
-@end
+client.addElements+ { tag "Sidebar.Overview" }
+client.options.sidebarActiveTab "Sidebar.Overview"
 
-projects+ {
-    title "Overview map"
-    metadata.abstract "Overview maps for navigation and printing."
-
-    client.addElements+ { tag "Sidebar.Overview" }
-    client.options.sidebarActiveTab "Sidebar.Overview"
-
-    overviewMap {
-        extent [
-             {753753  - 12000}
-             {6661615 - 6000}
-             {753753  + 12000}
-             {6661615 + 6000}
-        ]
-        layers+ {
-            title "Districts"
-            type "postgres"
-            tableName "edit.district"
-            cssSelector ".custom_district_outline"
-        }
-        layers+ {
-            title "Open Street Map"
-            type "tile"
-            display "client"
-            provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-            opacity 0.5
-        }
-    }
-
-    printers+ {
-        template {
-            title "A4 Vertical"
-            type "html"
-            path "a4.cx.html"
-            mapSize [ "100mm" "200mm" ]
-        }
-    }
-
-    printers+ {
-        template {
-            title "A4 Horizontal"
-            type "html"
-            path "a4.cx.html"
-            mapSize [ "200mm" "100mm" ]
-        }
-    }
-
-    printers+ {
-        template {
-            title "A2 Vertical"
-            type "html"
-            path "a2.cx.html"
-            mapSize [ "200mm" "400mm" ]
-        }
-    }
-
-    printers+ {
-        template {
-            title "A2 Horizontal"
-            type "html"
-            path "a2.cx.html"
-            mapSize [ "400mm" "200mm" ]
-        }
-    }
-
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 35000
-        zoom.maxScale  1000000
-    }
-
-    map.layers+ {
-        title "POIs"
+overviewMap {
+    extent [
+         {753753  - 12000}
+         {6661615 - 6000}
+         {753753  + 12000}
+         {6661615 + 6000}
+    ]
+    layers+ {
+        title "Districts"
         type "postgres"
-        tableName "edit.poi"
+        tableName "edit.district"
+        cssSelector ".custom_district_outline"
     }
-
-    {demo_osm_background}
+    layers+ {
+        title "Open Street Map"
+        type "tile"
+        display "client"
+        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        opacity 0.5
+    }
 }
+
+printers+ {
+    template {
+        title "A4 Vertical"
+        type "html"
+        path "a4.cx.html"
+        mapSize [ "100mm" "200mm" ]
+    }
+}
+
+printers+ {
+    template {
+        title "A4 Horizontal"
+        type "html"
+        path "a4.cx.html"
+        mapSize [ "200mm" "100mm" ]
+    }
+}
+
+printers+ {
+    template {
+        title "A2 Vertical"
+        type "html"
+        path "a2.cx.html"
+        mapSize [ "200mm" "400mm" ]
+    }
+}
+
+printers+ {
+    template {
+        title "A2 Horizontal"
+        type "html"
+        path "a2.cx.html"
+        mapSize [ "400mm" "200mm" ]
+    }
+}
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 35000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "POIs"
+    type "postgres"
+    tableName "edit.poi"
+}
+
+{demo_osm_background}

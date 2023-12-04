@@ -1,21 +1,26 @@
-projects+ {
-    title "QGIS direct search"
-    metadata.abstract "`qgis` layers with direct search for postgres and OWS layers"
+uid "qgis_direct_search"
 
-    actions+ { type "search" }
+title "Direct search"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
+metadata.keywords [ "qgis" "postgres" ]
 
-    map.layers+ {
-        title "Düsseldorf"
-        type "qgis"
-        provider.path "/data/demos/poi_districts_postgres_services.qgs"
-        provider.directSearch [ "wms" "wfs" "postgres" ]
-    }
+metadata.abstract """
+`qgis` layers with direct search for postgres and OWS layers
+"""
 
-    {demo_osm_background}
+actions+ { type "search" }
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
 }
+
+map.layers+ {
+    title "Düsseldorf"
+    type "qgis"
+    provider.path "/demos/poi_districts_postgres_services.qgs"
+    provider.directSearch [ "wms" "wfs" "postgres" ]
+}
+
+{demo_osm_background}

@@ -3021,3 +3021,83 @@ alter table edit.tagging
 alter table edit.person
     add foreign key (poi_id) references edit.poi (id);
 
+
+--
+
+drop table if exists public.pg_types;
+
+create table public.pg_types
+(
+    pk                   integer generated always as identity primary key,
+    f_bigint             bigint,
+    f_bit                bit,
+    f_bit_varying        bit varying(16),
+    f_boolean            boolean,
+    f_bytea              bytea,
+    f_character          char,
+    f_character_varying  varchar(19),
+    f_cidr               cidr,
+    f_date               date,
+    f_double_precision   double precision,
+    f_inet               inet,
+    f_integer            integer,
+    f_json               json,
+    f_jsonb              jsonb,
+    f_macaddr            macaddr,
+    f_macaddr8           macaddr8,
+    f_money              money,
+    f_numeric            numeric,
+    f_real               real,
+    f_smallint           smallint,
+    f_text               text,
+    f_time               time,
+    f_timestamp          timestamp,
+    f_uuid               uuid,
+    g_point              geometry(Point, 3857),
+    a_bigint             bigint[],
+    a_bit                bit[],
+    a_bit_varying        bit varying[],
+    a_boolean            boolean[],
+    a_bytea              bytea[],
+    a_character          char[],
+    a_character_varying  character varying[],
+    a_cidr               cidr[],
+    a_date               date[],
+    a_double_precision   double precision[],
+    a_inet               inet[],
+    a_integer            integer[],
+    a_json               json[],
+    a_jsonb              jsonb[],
+    a_macaddr            macaddr[],
+    a_macaddr8           macaddr8[],
+    a_money              money[],
+    a_numeric            numeric[],
+    a_real               real[],
+    a_smallint           smallint[],
+    a_text               text[],
+    a_time               time without time zone[],
+    a_timestamp          timestamp without time zone[],
+    a_uuid               uuid[]
+);
+
+drop table if exists public.pg_geom_types;
+
+create table public.pg_geom_types
+(
+    pk                   integer generated always as identity primary key,
+    g_point              geometry(Point, 3857),
+    g_linestring         geometry(LineString, 3857),
+    g_polygon            geometry(Polygon, 3857),
+    g_multipoint         geometry(MultiPoint, 3857),
+    g_multilinestring    geometry(MultiLineString, 3857),
+    g_multipolygon       geometry(MultiPolygon, 3857),
+    g_geometrycollection geometry(GeometryCollection, 3857),
+    g_circularstring     geometry(CircularString, 3857),
+    g_compoundcurve      geometry(CompoundCurve, 3857),
+    g_curvepolygon       geometry(CurvePolygon, 3857),
+    g_multicurve         geometry(MultiCurve, 3857),
+    g_multisurface       geometry(MultiSurface, 3857),
+    g_polyhedralsurface  geometry(PolyhedralSurface, 3857),
+    g_tin                geometry(Tin, 3857),
+    g_triangle           geometry(Triangle, 3857)
+);

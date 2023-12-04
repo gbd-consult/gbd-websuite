@@ -1,53 +1,57 @@
-projects+ {
-    title "OWS server: WMS from QGIS"
-    metadata.abstract """
-        `WMS` service with qgis layers
-        [<a href='/_/owsService/serviceUid/qgis_wms_service/projectUid/gws.plugin.ows_server.wms._demo.qgis?request=GetCapabilities'>link</a>]
-    """
+uid "wms_service_qgis"
 
-    owsServices+ {
-        type "wms"
-        uid "qgis_wms_service"
-        metadata {
-            abstract "QGIS-based WMS service"
-            keywords ["test" "wms" "qgis" "demo"]
-            name "QGIS_WMS"
-            title "Qgis WMS"
-            {demo_metadata}
-        }
+title "WMS service from QGIS"
+
+metadata.keywords [ "wms" "ows-service" "qgis" ]
+
+metadata.abstract """
+`WMS` service with qgis layers
+
+[Service URL](/_/owsService/serviceUid/service_001/projectUid/wms_service_qgis?request=GetCapabilities)
+"""
+
+owsServices+ {
+    type "wms"
+    uid "service_001"
+    metadata {
+        abstract "QGIS-based WMS service"
+        keywords ["test" "wms" "qgis" "demo"]
+        name "QGIS_WMS"
+        title "Qgis WMS"
+        {demo_metadata}
     }
+}
 
-    actions+ {
-        type "ows"
+actions+ {
+    type "ows"
+}
+
+map {
+    extent [
+        {demo_point_duesseldorf_3857[0] - 20000}
+        {demo_point_duesseldorf_3857[1] - 20000}
+        {demo_point_duesseldorf_3857[0] + 20000}
+        {demo_point_duesseldorf_3857[1] + 20000}
+    ]
+    zoom.initScale 30000
+    zoom.minScale  1000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "Düsseldorf"
+    type "group"
+
+    layers+ {
+        title "Points of interest"
+        type "qgis"
+        provider { path "/demos/poi_districts_postgres.qgs" directSearch ["postgres"] }
+        rootLayers.names [ "Points of interest" ]
     }
-
-    map {
-        extent [
-            {demo_point_duesseldorf_3857[0] - 20000}
-            {demo_point_duesseldorf_3857[1] - 20000}
-            {demo_point_duesseldorf_3857[0] + 20000}
-            {demo_point_duesseldorf_3857[1] + 20000}
-        ]
-        zoom.initScale 30000
-        zoom.minScale  1000
-        zoom.maxScale  1000000
-    }
-
-    map.layers+ {
-        title "Düsseldorf"
-        type "group"
-
-        layers+ {
-            title "Points of interest"
-            type "qgis"
-            provider { path "/data/demos/poi_districts_postgres.qgs" directSearch ["postgres"] }
-            rootLayers.names [ "Points of interest" ]
-        }
-        layers+ {
-            title "Districts"
-            type "qgis"
-            provider { path "/data/demos/poi_districts_postgres.qgs" directSearch ["postgres"] }
-            rootLayers.names [ "Districts" ]
-        }
+    layers+ {
+        title "Districts"
+        type "qgis"
+        provider { path "/demos/poi_districts_postgres.qgs" directSearch ["postgres"] }
+        rootLayers.names [ "Districts" ]
     }
 }

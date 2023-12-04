@@ -1,55 +1,53 @@
-@comment
+uid "wms_service"
 
-Simple WMS service, provides a single OSM layer.
+title "WMS Service"
 
-@end
+metadata.keywords [ "wms" "ows-service" ]
 
-projects+ {
-    title "OWS server: WMS Service"
-    metadata.abstract """
-        Simple `WMS` service
-        [<a href='/_/owsService/serviceUid/simple_wms_service/projectUid/gws.plugin.ows_server.wms._demo.simple?request=GetCapabilities'>link</a>]
-    """
+metadata.abstract """
+Simple `WMS` service, provides a single OSM layer.
 
-    owsServices+ {
-        type "wms"
-        uid "simple_wms_service"
-        metadata {
-            abstract "Simple WMS service"
-            keywords ["test" "wms" "demo"]
-            name "SIMPLE_WMS"
-            title "Simple WMS"
-            {demo_metadata}
-        }
+[Service URL](/_/owsService/serviceUid/service_003/projectUid/wms_service?request=GetCapabilities)
+"""
+
+owsServices+ {
+    type "wms"
+    uid "service_003"
+    metadata {
+        abstract "Simple WMS service"
+        keywords ["test" "wms" "demo"]
+        name "SIMPLE_WMS"
+        title "Simple WMS"
+        {demo_metadata}
+    }
+}
+
+actions+ {
+    type "ows"
+}
+
+map {
+    extent [
+        {demo_point_duesseldorf_3857[0] - 20000}
+        {demo_point_duesseldorf_3857[1] - 20000}
+        {demo_point_duesseldorf_3857[0] + 20000}
+        {demo_point_duesseldorf_3857[1] + 20000}
+    ]
+    zoom.initScale 30000
+    zoom.minScale  1000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "Open Street Map"
+    type "tile"
+    provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+
+    withCache true
+
+    legend {
+        type "static"
+        path "osm_legend.png"
     }
 
-    actions+ {
-        type "ows"
-    }
-
-    map {
-        extent [
-            {demo_point_duesseldorf_3857[0] - 20000}
-            {demo_point_duesseldorf_3857[1] - 20000}
-            {demo_point_duesseldorf_3857[0] + 20000}
-            {demo_point_duesseldorf_3857[1] + 20000}
-        ]
-        zoom.initScale 30000
-        zoom.minScale  1000
-        zoom.maxScale  1000000
-    }
-
-    map.layers+ {
-        title "Open Street Map"
-        type "tile"
-        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-
-        withCache true
-
-        legend {
-            type "static"
-            path "osm_legend.png"
-        }
-
-    }
 }

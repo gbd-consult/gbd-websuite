@@ -1,18 +1,23 @@
-projects+ {
-    title "WFS layer"
-    metadata.abstract "`wfs` layers display WFS 'feature types' as separate WebSuite layers"
+uid "wfs_layer"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 1000000
-    }
+title "Tree layer"
 
-    map.layers+ {
-        title "Digitalen Verwaltungsgrenzen NRW"
-        type "wfs"
-        provider.url "https://www.wfs.nrw.de/geobasis/wfs_nw_dvg"
-        metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
-    }
+metadata.keywords [ "wfs" "ows" ]
 
-    {demo_osm_background}
+metadata.abstract """
+`wfs` layers display WFS "feature types" as separate WebSuite layers
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 1000000
 }
+
+map.layers+ {
+    title "Digitalen Verwaltungsgrenzen NRW"
+    type "wfs"
+    provider.url "https://www.wfs.nrw.de/geobasis/wfs_nw_dvg"
+    metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+}
+
+{demo_osm_background}

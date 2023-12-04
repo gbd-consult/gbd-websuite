@@ -7147,7 +7147,7 @@ def my_form_open(dialog, layer, feature):
       </spatialrefsys>
     </CoordinateCustomCrs>
   </ProjectDisplaySettings>
-  <ProjectGpsSettings destinationLayerName="districts — city_parts" destinationLayerProvider="ogr" autoCommitFeatures="0" destinationLayerSource="/opt/w/gp/gbd-websuite/data/demos/districts.geojson" autoAddTrackVertices="0" destinationLayer="city_parts_56a1508b_350b_45cc_bd91_d9bdce7c22dd" destinationFollowsActiveLayer="1">
+  <ProjectGpsSettings destinationLayerName="districts — city_parts" destinationLayerProvider="ogr" autoCommitFeatures="0" destinationLayerSource="/demos/districts.geojson" autoAddTrackVertices="0" destinationLayer="city_parts_56a1508b_350b_45cc_bd91_d9bdce7c22dd" destinationFollowsActiveLayer="1">
     <timeStampFields/>
   </ProjectGpsSettings>
 </qgis>

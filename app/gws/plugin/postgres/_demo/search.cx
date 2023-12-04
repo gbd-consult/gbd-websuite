@@ -1,49 +1,54 @@
-projects+ {
-    title "Search: postgres"
-    metadata.abstract "Full-text search with a `postgres` Finder."
+uid "postgres_search"
 
-    client.addElements+ { tag "Sidebar.Search" }
-    client.options.sidebarActiveTab "Sidebar.Search"
+title "Postgres search"
 
-    actions+ { type "search" }
+metadata.keywords [ "postgres" "search" "vector-data" ]
 
-    finders+ {
+metadata.abstract """
+Full-text search with a `postgres` Finder.
+"""
+
+client.addElements+ { tag "Sidebar.Search" }
+client.options.sidebarActiveTab "Sidebar.Search"
+
+actions+ { type "search" }
+
+finders+ {
+    type "postgres"
+    tableName "edit.poi"
+    models+ {
         type "postgres"
-        tableName "edit.poi"
-        models+ {
-            type "postgres"
-            sort+ { fieldName "name" }
+        sort+ { fieldName "name" }
 
-            fields+ {
-                name "id"
-                type "integer"
-                isPrimaryKey true
-            }
-            fields+ {
-                name "name"
-                type "text"
-                textSearch { type "any" minLength 3 }
-            }
-            fields+ {
-                name "geom"
-                type "geometry"
-            }
+        fields+ {
+            name "id"
+            type "integer"
+            isPrimaryKey true
         }
-
-        templates+ {
-            type "html"
-            subject "feature.title"
-            text "{{name}}"
+        fields+ {
+            name "name"
+            type "text"
+            textSearch { type "any" minLength 3 }
+        }
+        fields+ {
+            name "geom"
+            type "geometry"
         }
     }
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 30000
-        zoom.maxScale  1000000
+    templates+ {
+        type "html"
+        subject "feature.title"
+        text "{{name}}"
     }
-
-    map.layers+ { type "postgres" title "POIs"  tableName "edit.poi_small" }
-
-    {demo_osm_background}
 }
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 30000
+    zoom.maxScale  1000000
+}
+
+map.layers+ { type "postgres" title "POIs"  tableName "edit.poi_small" }
+
+{demo_osm_background}

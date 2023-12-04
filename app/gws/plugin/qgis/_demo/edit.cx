@@ -1,5 +1,10 @@
-@comment
+uid "qgis_edit"
 
+title "QGIS/Postgres editing"
+
+metadata.keywords [ "qgis" "edit" "postgres" ]
+
+metadata.abstract """
 Two qgis "flat" layers with editable "postgres" data models
 attached to them.
 
@@ -8,134 +13,128 @@ while the qgis server takes care of the actual map display.
 
 Note that "dbUid" (= the id of the corresponding postgres `database.provider``)
 is mandatory in this case.
+"""
 
-@end
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
 
-projects+ {
-    title "Edit: postgres model + qgis"
-    metadata.abstract "Edit features, display via QGIS"
-
-    actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
-
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
-
-    map.layers+ {
-        title "Points of interest"
-        type "qgisflat"
-        provider.path "/data/demos/poi_districts_postgres.qgs"
-        sourceLayers.names [ "Points of interest" ]
-
-        models+ {
-            type "postgres"
-            uid "model_poi_qgis_simple"
-            dbUid "DEVDEMOS"
-            tableName "edit.poi_small"
-            isEditable true
-            permissions.edit "allow all"
-
-            fields+ {
-                name "id"
-                type "integer"
-                title "Identifier"
-                isPrimaryKey true
-                isRequired true
-                permissions.edit "deny all"
-            }
-
-            fields+ {
-                name "name"
-                type "text"
-                title "Object name"
-                widget { type "input" }
-                textSearch { type "any" }
-            }
-
-            fields+ {
-                name "geom"
-                type "geometry"
-                title "Geometry"
-            }
-
-            templates+ {
-                subject "feature.title"
-                type "html"
-                text "{{name}} {{id}}"
-            }
-
-            templates+ {
-                subject "feature.label"
-                type "html"
-                text "{{name}}"
-            }
-        }
-    }
-
-    map.layers+ {
-        title "Districts"
-        type "qgisflat"
-        provider.path "/data/demos/poi_districts_postgres.qgs"
-        sourceLayers.names [ "Districts" ]
-        opacity 0.5
-
-        models+ {
-            type "postgres"
-            uid "model_districts_qgis_simple"
-            dbUid "DEVDEMOS"
-            tableName "edit.district"
-            isEditable true
-            permissions.edit "allow all"
-
-            fields+ {
-                name "sid"
-                type "text"
-                title "Identifier"
-                isPrimaryKey true
-                isRequired true
-                permissions.edit "deny all"
-            }
-
-            fields+ {
-                name "name"
-                type "text"
-                title "Object name"
-                widget { type "input" }
-                textSearch { type "any" }
-            }
-
-            fields+ {
-                name "description"
-                type "text"
-                title "Comments"
-                widget { type "textarea" height 150 }
-            }
-
-            fields+ {
-                name "geom"
-                type "geometry"
-                title "Geometry"
-            }
-
-            templates+ {
-                subject "feature.title"
-                type "html"
-                text "{{name}} {{sid}}"
-            }
-
-            templates+ {
-                subject "feature.label"
-                type "html"
-                text "{{name}}"
-            }
-        }
-
-    }
-
-    {demo_osm_background}
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
 }
+
+map.layers+ {
+    title "Points of interest"
+    type "qgisflat"
+    provider.path "/demos/poi_districts_postgres.qgs"
+    sourceLayers.names [ "Points of interest" ]
+
+    models+ {
+        type "postgres"
+        uid "model_poi_qgis_simple"
+        dbUid "DEVDEMOS"
+        tableName "edit.poi_small"
+        isEditable true
+        permissions.edit "allow all"
+
+        fields+ {
+            name "id"
+            type "integer"
+            title "Identifier"
+            isPrimaryKey true
+            isRequired true
+            permissions.edit "deny all"
+        }
+
+        fields+ {
+            name "name"
+            type "text"
+            title "Object name"
+            widget { type "input" }
+            textSearch { type "any" }
+        }
+
+        fields+ {
+            name "geom"
+            type "geometry"
+            title "Geometry"
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{name}} {{id}}"
+        }
+
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{name}}"
+        }
+    }
+}
+
+map.layers+ {
+    title "Districts"
+    type "qgisflat"
+    provider.path "/demos/poi_districts_postgres.qgs"
+    sourceLayers.names [ "Districts" ]
+    opacity 0.5
+
+    models+ {
+        type "postgres"
+        uid "model_districts_qgis_simple"
+        dbUid "DEVDEMOS"
+        tableName "edit.district"
+        isEditable true
+        permissions.edit "allow all"
+
+        fields+ {
+            name "sid"
+            type "text"
+            title "Identifier"
+            isPrimaryKey true
+            isRequired true
+            permissions.edit "deny all"
+        }
+
+        fields+ {
+            name "name"
+            type "text"
+            title "Object name"
+            widget { type "input" }
+            textSearch { type "any" }
+        }
+
+        fields+ {
+            name "description"
+            type "text"
+            title "Comments"
+            widget { type "textarea" height 150 }
+        }
+
+        fields+ {
+            name "geom"
+            type "geometry"
+            title "Geometry"
+        }
+
+        templates+ {
+            subject "feature.title"
+            type "html"
+            text "{{name}} {{sid}}"
+        }
+
+        templates+ {
+            subject "feature.label"
+            type "html"
+            text "{{name}}"
+        }
+    }
+
+}
+
+{demo_osm_background}

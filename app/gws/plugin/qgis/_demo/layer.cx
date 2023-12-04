@@ -1,18 +1,23 @@
-projects+ {
-    title "QGIS layer"
-    metadata.abstract "`qgis` layers display complete QGIS Projects as WebSuite layers, keeping the structure"
+uid "qgis_layer"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 30000
-        zoom.maxScale  1000000
-    }
+title "QGIS layer"
 
-    map.layers+ {
-        title "Düsseldorf"
-        type "qgis"
-        provider.path "/data/demos/poi_geojson.qgs"
-    }
+metadata.keywords [ "qgis" ]
 
-    {demo_osm_background}
+metadata.abstract """
+`qgis` layers display complete QGIS Projects as WebSuite layers, keeping the structure
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 30000
+    zoom.maxScale  1000000
 }
+
+map.layers+ {
+    title "Düsseldorf"
+    type "qgis"
+    provider.path "/demos/poi_geojson.qgs"
+}
+
+{demo_osm_background}

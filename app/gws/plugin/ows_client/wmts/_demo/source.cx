@@ -1,42 +1,47 @@
-projects+ {
-    title "WMTS layer, specific layers"
-    metadata.abstract "Use `sourceLayers` to display specific layers from a WMTS service"
+uid "wmts_source"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 70000
-    }
+title "Selected WMTS layers"
 
-    map.layers+ {
-        type "group"
-        title "Stadtplanwerk Ruhrgebiet"
-        clientOptions { exclusive true expanded true }
-        layers [
-            {
-                type "wmts"
-                title "Light"
-                provider.url "https://geodaten.metropoleruhr.de/spw2"
-                sourceLayers.names [ "spw2_light_plus" ]
-                withCache true
-            }
-            {
-                type "wmts"
-                title "Extra Light"
-                provider.url "https://geodaten.metropoleruhr.de/spw2"
-                sourceLayers.names [ "spw2_extralight_plus" ]
-                withCache true
-                clientOptions.hidden true
-            }
-            {
-                type "wmts"
-                title "Orange"
-                provider.url "https://geodaten.metropoleruhr.de/spw2"
-                sourceLayers.names [ "spw2_orange_plus" ]
-                withCache true
-                clientOptions.hidden true
-            }
-        ]
-    }
+metadata.keywords [ "wmts" "ows" ]
 
-    {demo_osm_background}
+metadata.abstract """
+Use `sourceLayers` to display specific layers from a WMTS service
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 70000
 }
+
+map.layers+ {
+    type "group"
+    title "Stadtplanwerk Ruhrgebiet"
+    clientOptions { exclusive true expanded true }
+    layers [
+        {
+            type "wmts"
+            title "Light"
+            provider.url "https://geodaten.metropoleruhr.de/spw2"
+            sourceLayers.names [ "spw2_light_plus" ]
+            withCache true
+        }
+        {
+            type "wmts"
+            title "Extra Light"
+            provider.url "https://geodaten.metropoleruhr.de/spw2"
+            sourceLayers.names [ "spw2_extralight_plus" ]
+            withCache true
+            clientOptions.hidden true
+        }
+        {
+            type "wmts"
+            title "Orange"
+            provider.url "https://geodaten.metropoleruhr.de/spw2"
+            sourceLayers.names [ "spw2_orange_plus" ]
+            withCache true
+            clientOptions.hidden true
+        }
+    ]
+}
+
+{demo_osm_background}

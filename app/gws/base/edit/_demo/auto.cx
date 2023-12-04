@@ -1,39 +1,44 @@
-projects+ {
-    title "Edit: automatic form"
-    metadata.abstract "Edit features from postgres tables, minimal configuration"
+uid "edit_auto"
 
-    actions+ { type "edit" }
-    client.addElements+ { tag "Sidebar.Edit" }
-    client.addElements+ { tag "Toolbar.Edit" }
-    client.options.sidebarActiveTab "Sidebar.Edit"
+title "Automatic form"
 
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-        zoom.maxScale  1000000
-    }
+metadata.keywords [ "edit" ]
 
-    map.layers+ {
-        title "POIs"
-        type "postgres"
-        tableName "edit.poi"
-        models+ {
-            type "postgres"
-            isEditable true
-            permissions.edit 'allow all'
-        }
-    }
+metadata.abstract """
+Edit features from postgres tables, minimal configuration
+"""
 
-    map.layers+ {
-        title "Districts"
-        type "postgres"
-        tableName "edit.district"
-        models+ {
-            type "postgres"
-            isEditable true
-            permissions.edit 'allow all'
-        }
-    }
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
 
-    {demo_osm_background}
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
 }
+
+map.layers+ {
+    title "POIs"
+    type "postgres"
+    tableName "edit.poi"
+    models+ {
+        type "postgres"
+        isEditable true
+        permissions.edit 'allow all'
+    }
+}
+
+map.layers+ {
+    title "Districts"
+    type "postgres"
+    tableName "edit.district"
+    models+ {
+        type "postgres"
+        isEditable true
+        permissions.edit 'allow all'
+    }
+}
+
+{demo_osm_background}

@@ -1,38 +1,35 @@
-@comment
+uid "lens_tool"
 
-Lens tool.
+title "Lens Tool"
 
+metadata.keywords [ "client" "search" ]
+
+metadata.abstract """
 The lens tool provides dynamic spatial search.
+"""
 
-@end
+client.addElements+ { tag "Sidebar.Search" }
+client.addElements+ { tag "Toolbar.Lens" }
+client.addElements+ { tag "Task.Lens" }
+client.options.sidebarActiveTab "Sidebar.Search"
 
-projects+ {
-    title "Lens Tool"
-    metadata.abstract "Dynamic spatial search."
-
-    client.addElements+ { tag "Sidebar.Search" }
-    client.addElements+ { tag "Toolbar.Lens" }
-    client.addElements+ { tag "Task.Lens" }
-    client.options.sidebarActiveTab "Sidebar.Search"
-
-    map {
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 70000
-        zoom.maxScale  1000000
-    }
-
-    map.layers+ {
-        type "postgres"
-        title "POIs"
-        tableName "edit.poi_small"
-        cssSelector ".point-pink"
-
-        templates+ {
-            subject "feature.title"
-            type "html"
-            text "{{name}} {{id}}"
-        }
-    }
-
-    {demo_osm_background}
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 70000
+    zoom.maxScale  1000000
 }
+
+map.layers+ {
+    type "postgres"
+    title "POIs"
+    tableName "edit.poi_small"
+    cssSelector ".point-pink"
+
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{name}} {{id}}"
+    }
+}
+
+{demo_osm_background}

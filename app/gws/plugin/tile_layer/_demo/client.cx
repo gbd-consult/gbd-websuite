@@ -1,53 +1,58 @@
-projects+ {
-    title "Tile layer: client display"
-    metadata.abstract "Title layer, displayed directly on the client."
+uid "tile_client"
 
-    map {
-        crs 3857
-        center {demo_point_duesseldorf_3857}
-        zoom.initScale 150000
-    }
+title "Client display for tile layers"
 
-    map.layers+ {
-        title "Google"
-        type "group"
-        clientOptions.exclusive true
-        clientOptions.expanded true
+metadata.keywords [ "tile" "ows" "client "]
 
-        layers+ {
-            title "Road Map"
-            type "tile"
-            provider.url "http://mt1.google.com/vt/lyrs=m&x={{x}}&y={{y}}&z={{z}}"
-            display "client"
-        }
-        layers+ {
-            title "Road Names"
-            type "tile"
-            provider.url "http://mt1.google.com/vt/lyrs=h&x={{x}}&y={{y}}&z={{z}}"
-            display "client"
-            clientOptions.hidden true
-        }
-        layers+ {
-            title "Satellite"
-            type "tile"
-            provider.url "http://mt1.google.com/vt/lyrs=s&hl=pl&&x={{x}}&y={{y}}&z={{z}}"
-            display "client"
-            clientOptions.hidden true
-        }
-        layers+ {
-            title "Terrain"
-            type "tile"
-            provider.url "http://mt1.google.com/vt/lyrs=t&x={{x}}&y={{y}}&z={{z}}"
-            display "client"
-            clientOptions.hidden true
-        }
-    }
+metadata.abstract """
+Title layer, displayed directly on the client.
+"""
 
-    map.layers+ {
-        title "Open Street Map"
+map {
+    crs 3857
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+}
+
+map.layers+ {
+    title "Google"
+    type "group"
+    clientOptions.exclusive true
+    clientOptions.expanded true
+
+    layers+ {
+        title "Road Map"
         type "tile"
-        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-
+        provider.url "http://mt1.google.com/vt/lyrs=m&x={{x}}&y={{y}}&z={{z}}"
         display "client"
     }
+    layers+ {
+        title "Road Names"
+        type "tile"
+        provider.url "http://mt1.google.com/vt/lyrs=h&x={{x}}&y={{y}}&z={{z}}"
+        display "client"
+        clientOptions.hidden true
+    }
+    layers+ {
+        title "Satellite"
+        type "tile"
+        provider.url "http://mt1.google.com/vt/lyrs=s&hl=pl&&x={{x}}&y={{y}}&z={{z}}"
+        display "client"
+        clientOptions.hidden true
+    }
+    layers+ {
+        title "Terrain"
+        type "tile"
+        provider.url "http://mt1.google.com/vt/lyrs=t&x={{x}}&y={{y}}&z={{z}}"
+        display "client"
+        clientOptions.hidden true
+    }
+}
+
+map.layers+ {
+    title "Open Street Map"
+    type "tile"
+    provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+
+    display "client"
 }
