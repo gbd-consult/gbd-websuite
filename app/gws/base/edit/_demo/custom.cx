@@ -1,4 +1,6 @@
-@comment
+projects+ {
+    title "Edit: custom model"
+    metadata.abstract """
 This layer has a data model with a subset of the source columns
 and custom widgets.
 
@@ -9,12 +11,7 @@ The `textSearch` option makes the feature list searchable.
 
 For this layer, the extent is defined explicitly
 to allow creating features outside of the computed extent.
-
-@end
-
-projects+ {
-    title "Edit: custom model"
-    metadata.abstract "Edit features using a custom model."
+"""
 
     actions+ { type "edit" }
     client.addElements+ { tag "Sidebar.Edit" }
