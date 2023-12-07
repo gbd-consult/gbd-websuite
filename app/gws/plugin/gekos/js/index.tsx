@@ -94,12 +94,7 @@ class Controller extends gws.Controller {
         if (this.gekosUrl) {
             this.app.startTool('Tool.Gekos');
         } else {
-            // @TODO
-            let tb = this.app.controllerByTag('Toolbar');
-            if (tb) {
-                tb.children = tb.children.filter(c => c.tag !== 'Toolbar.Gekos');
-                this.updateObject('appToolbarState', {gekos: false})
-            }
+            this.updateObject('toolbarHiddenItems', {'Toolbar.Gekos': true})
         }
     }
 

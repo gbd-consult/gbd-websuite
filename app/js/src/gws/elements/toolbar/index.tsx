@@ -7,7 +7,7 @@ let {Row, Cell} = gws.ui.Layout;
 interface ToolbarProps extends gws.types.ViewProps {
     toolbarOverflowExpanded: boolean;
     appActiveTool: string;
-    appToolbarState: object;
+    toolbarHiddenItems: object;
 }
 
 interface ToolbarButtonProps extends ToolbarProps {
@@ -21,19 +21,20 @@ interface ToolbarButtonProps extends ToolbarProps {
 const ToolbarElementStoreKeys = [
     'toolbarOverflowExpanded',
     'appActiveTool',
-    'appToolbarState'
+    'toolbarHiddenItems'
 ];
 
 interface ToolbarContainerProps extends gws.types.ViewProps {
     toolbarSize: number;
     toolbarOverflowExpanded: boolean;
     isOverflow: boolean;
+    toolbarHiddenItems: object;
 }
 
 const ToolbarContainerStoreKeys = [
     'toolbarSize',
     'toolbarOverflowExpanded',
-    'appToolbarState'
+    'toolbarHiddenItems'
 ];
 
 class ButtonView extends gws.View<ToolbarButtonProps> {
@@ -41,13 +42,9 @@ class ButtonView extends gws.View<ToolbarButtonProps> {
         return this.props.tool && this.props.appActiveTool === this.props.tool;
     }
 
-    get disabled() {
-        return this.props.appToolbarState[this.props.controller.tag] === 'disabled';
-    }
-
     render() {
-        let touched = () => this.disabled ? null : this.props.whenTouched(),
-            cls = gws.lib.cls(this.props.iconClass, this.active && 'isActive', this.disabled && 'isDisabled');
+        let touched = () => this.props.whenTouched(),
+            cls = gws.lib.cls(this.props.iconClass, this.active && 'isActive');
 
         let btn = <gws.ui.Button
             {...cls}
@@ -115,8 +112,11 @@ class ToolbarContainerView extends gws.View<ToolbarContainerProps> {
         let size = this.props.toolbarSize || 999;
 
         let expanded = this.props.toolbarOverflowExpanded,
-            items = this.props.controller.children as Array<gws.types.IToolbarItem>,
-            front = items.slice(0, size),
+            items = this.props.controller.children as Array<gws.types.IToolbarItem>;
+
+        items = items.filter(it => !(this.props.toolbarHiddenItems || {})[it.tag]);
+
+        let front = items.slice(0, size),
             rest = items.slice(size);
 
         if (this.props.isOverflow) {

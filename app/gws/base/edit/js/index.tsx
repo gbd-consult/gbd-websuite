@@ -1560,6 +1560,7 @@ export class Controller extends gws.Controller {
         this.setup = this.app.actionProps('edit');
         if (!this.setup) {
             this.updateObject('sidebarHiddenItems', {'Sidebar.Edit': true});
+            this.updateObject('toolbarHiddenItems', {'Toolbar.Edit': true});
             return;
         }
 
@@ -1573,6 +1574,7 @@ export class Controller extends gws.Controller {
 
         if (gws.lib.isEmpty(this.models)) {
             this.updateObject('sidebarHiddenItems', {'Sidebar.Edit': true});
+            this.updateObject('toolbarHiddenItems', {'Toolbar.Edit': true});
             return;
         }
 
