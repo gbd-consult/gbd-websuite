@@ -146,11 +146,9 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
             cc = this.props.controller,
             map = cc.map;
 
-        // let models = this.app.modelRegistry.editableModels().filter(m => m.layer === layer);
-        // let model = models.length ? models[0] : null;
-
-        let model = null;
-
+        let editModel = this.app.modelRegistry.getModelForLayer(layer);
+        if (editModel && !editModel.canWrite)
+            editModel = null;
 
         let f = {
             zoom() {
@@ -162,7 +160,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                 map.setLayerChecked(layer, true)
             },
             edit() {
-                cc.app.call('editModel', {model})
+                cc.app.call('editModel', {model: editModel})
             },
             close() {
                 map.deselectAllLayers()
@@ -223,7 +221,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                     tooltip={this.__('modLayersZoomAuxButton')}
                     whenTouched={f.zoom}
                 />
-                {model && <sidebar.AuxButton
+                {editModel && <sidebar.AuxButton
                     className="modLayersEditAuxButton"
                     tooltip={this.__('modLayersEditAuxButton')}
                     whenTouched={f.edit}
