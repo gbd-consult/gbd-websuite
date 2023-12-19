@@ -757,7 +757,45 @@ def unserialize_from_path(path):
 _server_globals = {}
 
 
-def get_server_global(name, init_fn):
+def get_cached_object(name: str, life_time: int, init_fn):
+    uid = to_uid(name)
+    path = const.OBJECT_CACHE_DIR + '/' + uid
+
+    def _get():
+        if not os.path.isfile(path):
+            return
+        try:
+            age = int(time.time() - os.stat(path).st_mtime)
+        except OSError:
+            return
+        if age < life_time:
+            try:
+                obj = unserialize_from_path(path)
+                log.debug(f'get_cached_object {uid!r} {life_time=} {age=} - loaded')
+                return obj
+            except:
+                log.exception(f'get_cached_object {uid!r} LOAD ERROR')
+
+    obj = _get()
+    if obj:
+        return obj
+
+    with server_lock(uid):
+        obj = _get()
+        if obj:
+            return obj
+
+        obj = init_fn()
+        try:
+            serialize_to_path(obj, path)
+            log.debug(f'get_cached_object {uid!r} - stored')
+        except:
+            log.exception(f'get_cached_object {uid!r} STORE ERROR')
+
+        return obj
+
+
+def get_server_global(name: str, init_fn):
     uid = to_uid(name)
     path = const.GLOBALS_DIR + '/' + uid
 

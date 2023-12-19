@@ -8,7 +8,9 @@ from . import manager
 
 class Config(gws.Config):
     """Database provider"""
-    pass
+
+    schemaCacheLifeTime: gws.Duration = 3600
+    """life time for schema caches"""
 
 
 class Object(gws.Node, gws.IDatabaseProvider):
@@ -34,16 +36,25 @@ class Object(gws.Node, gws.IDatabaseProvider):
         if schema in self.saMetaMap:
             return
 
-        self.saMetaMap[schema] = sa.MetaData(schema=schema)
+        def _load():
+            md = sa.MetaData(schema=schema)
 
-        # introspecting the whole schema is generally faster
-        # but what if we only need a single table from a big schema?
-        # @TODO add options for reflection
+            # introspecting the whole schema is generally faster
+            # but what if we only need a single table from a big schema?
+            # @TODO add options for reflection
 
-        gws.time_start(f'AUTOLOAD {self.uid=} {schema=}')
-        with self.connection() as conn:
-            self.saMetaMap[schema].reflect(conn, schema, resolve_fks=False, views=True)
-        gws.time_end()
+            gws.time_start(f'AUTOLOAD {self.uid=} {schema=}')
+            with self.connection() as conn:
+                md.reflect(conn, schema, resolve_fks=False, views=True)
+            gws.time_end()
+
+            return md
+
+        life_time = self.cfg('schemaCacheLifeTime', 0)
+        if not life_time:
+            self.saMetaMap[schema] = _load()
+        else:
+            self.saMetaMap[schema] = gws.get_cached_object(f'database_metadata_schema_{schema}', life_time, _load)
 
     def connection(self) -> sa.Connection:
         return self.saEngine.connect()
