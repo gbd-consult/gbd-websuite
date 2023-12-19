@@ -7,12 +7,13 @@ gws.ext.new.modelWidget('featureSelect')
 
 
 class Config(gws.base.model.widget.Config):
-    pass
+    withSearch: bool = False
 
 
 class Props(gws.base.model.widget.Props):
-    pass
+    withSearch: bool
 
 
 class Object(gws.base.model.widget.Object):
-    pass
+    def props(self, user):
+        return gws.merge(super().props(user), withSearch=self.cfg('withSearch', default=False))

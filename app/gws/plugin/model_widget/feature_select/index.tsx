@@ -4,6 +4,7 @@ import * as gws from 'gws';
 
 interface Props extends gws.types.ModelWidgetProps {
     features: Array<gws.types.IFeature>;
+    widgetProps: gws.api.plugin.model_widget.feature_select.Props
 }
 
 class FormView extends gws.View<Props> {
@@ -21,6 +22,7 @@ class FormView extends gws.View<Props> {
         return <gws.ui.Select
             value={feature ? feature.uid : null}
             items={items}
+            withSearch={this.props.widgetProps.withSearch}
             whenChanged={v => this.props.whenChanged(fmap[v])}
         />;
     }
