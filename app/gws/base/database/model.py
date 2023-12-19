@@ -66,7 +66,12 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
 
     def execute(self, sql, mc, parameters=None) -> sa.CursorResult:
         with self._context_connection(mc):
-            return mc.dbConnection.execute(sql, parameters or [])
+            try:
+                return mc.dbConnection.execute(sql, parameters or [])
+            except sa.exc.SQLAlchemyError as exc:
+                gws.log.debug(f'SQLAlchemyError: {exc=}')
+                gws.log.debug(f'SQLAlchemyError: sql={str(sql)!r}')
+                raise
 
     def commit(self, mc) -> sa.CursorResult:
         with self._context_connection(mc):
