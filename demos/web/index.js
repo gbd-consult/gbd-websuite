@@ -56,7 +56,6 @@ function scrollIntoView(el) {
 }
 
 function update() {
-    console.log(state)
     $$('.project-list-entry').forEach(pe => pe.classList.remove('selected'));
     $$('.project-list-entry').forEach(pe => pe.classList.add('hidden'));
     $$('.project-details-entry').forEach(pd => pd.classList.add('hidden'));
