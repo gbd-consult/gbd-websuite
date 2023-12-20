@@ -43,8 +43,8 @@ def locale(locale_uid: str) -> t.Optional[gws.Locale]:
         lo.monthNamesLong = list(p.months['format']['wide'].values())
         lo.monthNamesNarrow = list(p.months['format']['narrow'].values())
         lo.monthNamesShort = list(p.months['format']['abbreviated'].values())
-        lo.numberDecimal = p.number_symbols['decimal']
-        lo.numberGroup = p.number_symbols['group']
+        lo.numberDecimal = p.number_symbols['latn']['decimal']
+        lo.numberGroup = p.number_symbols['latn']['group']
 
         return lo
 
