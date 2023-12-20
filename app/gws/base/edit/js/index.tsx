@@ -1752,16 +1752,22 @@ export class Controller extends gws.Controller {
         whenEntered,
     ): React.ReactElement | null {
         let cc = _master(this);
+        let widgetProps = field.widgetProps;
+
+        if (widgetProps.type === 'hidden') {
+            return null;
+        }
 
         let controller = cc.widgetControllerForField(field);
-        if (!controller)
+        if (!controller) {
             return null;
+        }
 
         let props: gws.types.Dict = {
             controller,
             feature,
             field,
-            widgetProps: field.widgetProps,
+            widgetProps,
             values,
             whenChanged: val => whenChanged(feature, field, val),
             whenEntered: val => whenEntered(feature, field, val),
