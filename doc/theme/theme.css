@@ -512,6 +512,18 @@ code.configref_required::after {
     font-weight: 600;
 }
 
+code.configref_missing_translation {
+    background: #ffd1d1;
+    border: none;
+    border-radius: 4px;
+    display: inline-block;
+    padding: 0 6px;
+    margin: 0 3px;
+    vertical-align: middle;
+}
+
+
+
 .decoration_title {
     background: #fdffab;
     border-radius: 4px;

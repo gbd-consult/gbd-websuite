@@ -182,9 +182,8 @@ class _Creator:
             return s
         if self.lang != 'en':
             base.log.debug(f'missing {self.lang} translation for {key!r}')
-        s = self.gen.strings['en'].get(key)
-        if s:
-            return s
+            s = self.gen.strings['en'].get(key)
+            return f'{s}  `{key}`{{.configref_missing_translation}}'
         typ = self.gen.types[tid]
         if enum_value:
             return typ.enumDocs[enum_value]
