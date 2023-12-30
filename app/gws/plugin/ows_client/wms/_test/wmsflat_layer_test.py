@@ -2,21 +2,18 @@ import gws
 import gws.lib.net
 import gws.base.shape
 import gws.gis.crs
-import gws.base.search.runner
 import gws.base.auth.user
-import gws.lib.test as test
-
-import gws.plugin.ows_provider.wms.wmsflat_layer as flatlayer
-from gws.plugin.ows_provider.wms.test import fixtures
+import gws.test.util as u
 
 
-@test.fixture(scope='module', autouse=True)
+
+@u.fixture(scope='module', autouse=True)
 def configuration():
     test.mockserv.create_wms(fixtures.WMS_CONFIG)
     yield
 
 
-@test.fixture(scope='module')
+@u.fixture(scope='module')
 def layer_from_root():
     root = test.config.configure(f'''
         projects+ {{
@@ -35,7 +32,7 @@ def layer_from_root():
     yield root.find(gws.ext.object.layer, uid='layer_from_root')
 
 
-@test.fixture(scope='module')
+@u.fixture(scope='module')
 def layer_from_a_b():
     root = test.config.configure(f'''
         projects+ {{
@@ -55,7 +52,7 @@ def layer_from_a_b():
     yield root.find(uid='one.map.layer_from_a_b')
 
 
-@test.fixture(scope='module')
+@u.fixture(scope='module')
 def web_request():
     user = test.config.root().find(klass=gws.ext.object.authProvider('system')).users['system']
     return gws.Data(user=user)
@@ -85,41 +82,41 @@ def render_view(layer):
 
 #
 
-def test_default_source_layer_is_root(layer_from_root: flatlayer.Object):
+def test_default_source_layer_is_root(layer_from_root):
     assert len(layer_from_root.sourceLayers) == 1
     assert layer_from_root.sourceLayers[0].aUid == 'root'
 
 
-def test_default_bounds_are_from_root(layer_from_root: flatlayer.Object):
+def test_default_bounds_are_from_root(layer_from_root):
     assert layer_from_root.own_bounds.extent == (111.0, 222.0, 888.0, 999.0)
 
 
-def test_default_render_uses_root(layer_from_root: flatlayer.Object):
+def test_default_render_uses_root(layer_from_root):
     test.mockserv.begin_capture()
     layer_from_root.render_box(render_view(layer_from_root))
     urls = test.mockserv.end_capture()
     assert urls[0].params['layers'] == 'root'
 
 
-def test_default_search_uses_queryable_layers(layer_from_root: flatlayer.Object, web_request):
+def test_default_search_uses_queryable_layers(layer_from_root, web_request):
     test.mockserv.begin_capture()
     gws.base.search.runner.run(web_request, search_args(layer_from_root))
     urls = test.mockserv.end_capture()
     assert urls[0].params['query_layers'] == 'A,C'
 
 
-def test_explicit_bounds_are_combined(layer_from_a_b: flatlayer.Object):
+def test_explicit_bounds_are_combined(layer_from_a_b):
     assert layer_from_a_b.own_bounds.extent == (100.0, 200.0, 500.0, 600.0)
 
 
-def test_explicit_render_uses_configured_layers_bottom_up(layer_from_a_b: flatlayer.Object):
+def test_explicit_render_uses_configured_layers_bottom_up(layer_from_a_b):
     test.mockserv.begin_capture()
     layer_from_a_b.render_box(render_view(layer_from_a_b))
     urls = test.mockserv.end_capture()
     assert urls[0].params['layers'] == 'B,A'
 
 
-def test_explicit_search_user_queryable_layers(layer_from_a_b: flatlayer.Object, web_request):
+def test_explicit_search_user_queryable_layers(layer_from_a_b, web_request):
     test.mockserv.begin_capture()
     gws.base.search.runner.run(web_request, search_args(layer_from_a_b))
     urls = test.mockserv.end_capture()

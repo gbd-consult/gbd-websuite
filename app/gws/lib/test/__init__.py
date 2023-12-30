@@ -1,2 +1,0 @@
-"""Support library for tests."""
-

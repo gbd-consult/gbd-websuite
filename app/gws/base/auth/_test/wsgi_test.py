@@ -2,13 +2,13 @@ import time
 
 import gws
 import gws.lib.jsonx
-import gws.lib.test as test
+import gws.test.util as u
 
 COOKIE_NAME = 'TESTAUTH'
 SESSION_LIFETIME = 2
 
 
-@test.fixture(scope='module', autouse=True)
+@u.fixture(scope='module', autouse=True)
 def configuration():
     test.setup()
 

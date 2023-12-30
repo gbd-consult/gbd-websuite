@@ -1,4 +1,4 @@
-import gws.lib.test as test
+import gws.test.util as u
 
 SERVICE_URL = test.mockserv.url('XYZ')
 

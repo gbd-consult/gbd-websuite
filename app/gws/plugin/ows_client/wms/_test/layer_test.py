@@ -1,16 +1,12 @@
 import gws
 import gws.lib.net
 import gws.base.shape
-import gws.base.search.runner
 import gws.base.auth.user
-import gws.lib.test as test
-
-from gws.plugin.ows_provider.wms import layer
-
-from gws.plugin.ows_provider.wms._test import fixtures
+import gws.test.util as u
 
 
-@test.fixture(scope='module', autouse=True)
+
+@u.fixture(scope='module', autouse=True)
 def configuration():
     test.setup()
     test.web_server_create_wms(fixtures.WMS_CONFIG)
@@ -18,7 +14,7 @@ def configuration():
     test.teardown()
 
 
-@test.fixture(scope='module')
+@u.fixture(scope='module')
 def layer_from_root():
     root = test.configure_and_reload(f'''
         projects+ {{
@@ -36,7 +32,7 @@ def layer_from_root():
     yield root.find(uid='one.map.layer_from_root')
 
 
-@test.fixture(scope='module')
+@u.fixture(scope='module')
 def layer_from_a_b():
     root = test.configure_and_reload(f'''
         projects+ {{
@@ -55,7 +51,7 @@ def layer_from_a_b():
     yield root.find(uid='one.map.layer_from_a_b')
 
 
-@test.fixture(scope='module')
+@u.fixture(scope='module')
 def layer_without_b():
     root = test.configure_and_reload(f'''
         projects+ {{
@@ -88,16 +84,16 @@ def layer_tree(root):
 
 #
 
-def test_default_layer_tree(layer_from_root: layer.Object):
+def test_default_layer_tree(layer_from_root):
     tree = layer_tree(layer_from_root.root)
     assert tree == 'one.map(one.map.layer_from_root(root_TITLE(A_TITLE(A1_TITLE) B_TITLE(B1_TITLE) C_TITLE(C1_TITLE C2_TITLE))))'
 
 
-def test_filtered_layer_tree(layer_from_a_b: layer.Object):
+def test_filtered_layer_tree(layer_from_a_b):
     tree = layer_tree(layer_from_a_b.root)
     assert tree == 'one.map(one.map.layer_from_a_b(A_TITLE(A1_TITLE) B_TITLE(B1_TITLE)))'
 
 
-def test_excluded_layer_tree(layer_without_b: layer.Object):
+def test_excluded_layer_tree(layer_without_b):
     tree = layer_tree(layer_without_b.root)
     assert tree == 'one.map(one.map.layer_without_b(root_TITLE(A_TITLE(A1_TITLE) C_TITLE(C1_TITLE C2_TITLE))))'

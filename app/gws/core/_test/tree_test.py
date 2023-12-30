@@ -1,6 +1,6 @@
 import gws
 import gws.spec.runtime
-import gws.lib.test as test
+import gws.test.util as u
 from gws.base.auth.user import User
 import gws.types as t
 

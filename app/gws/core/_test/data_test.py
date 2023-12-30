@@ -1,5 +1,5 @@
 from gws.core.data import Data
-import gws.lib.test as test
+import gws.test.util as u
 
 
 def test_init_accepts_dicts_and_kwargs():

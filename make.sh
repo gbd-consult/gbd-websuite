@@ -53,6 +53,7 @@ fi
 CLIENT_BUILDER=$BASE/app/js/helpers/index.js
 DOC_BUILDER=$BASE/doc/doc.py
 BUILD_DIR=$BASE/app/__build
+TEST_RUNNER=$BASE/app/gws/test/host_runner.py
 
 MAKE_SPEC="$PYTHON $BASE/app/gws/spec/spec.py $BUILD_DIR"
 
@@ -102,7 +103,7 @@ case $COMMAND in
     $MAKE_SPEC $@
     ;;
   test)
-    $PYTHON $BASE/app/gws/lib/test/test.py $@
+    $PYTHON $TEST_RUNNER $@
     ;;
 
   *)
