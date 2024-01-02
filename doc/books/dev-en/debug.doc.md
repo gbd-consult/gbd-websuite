@@ -1,6 +1,6 @@
 # Testing and debugging :/dev-en/debug
 
-The following section describe GWS debug and test frameworks.
+The following sections describe GWS debug and test frameworks.
 
 
 ## Host debugging
@@ -77,17 +77,42 @@ There are two ways to run the tests:
 
 In both cases, you can select specific tests with the `--only` option and provide additional pytest options. See `make.sh test -h` for details.
 
+A couple of examples:
+
+```shell
+# automatic test of everything
+/path/to/gws/root/make.sh test go 
+
+# automatic test of module 'foo;
+/path/to/gws/root/make.sh test go --only foo 
+
+# start the test framework
+/path/to/gws/root/make.sh test start 
+
+# (in a new shell) run tests for 'foo'
+/path/to/gws/root/make.sh test run --only foo
+```
 
 ### Configuration
 
-The configuration for tests is in `test.ini` in the application root directory. If you need custom options (e.g. local directory names), create a secondary `ini` file with values you want to change and pass it as `--ini myconfig.ini`.
+The configuration for tests is in `test.ini` in the application root directory. If you need custom options (e.g. local directory names), create a secondary `ini` file with your overrides and pass it as `--ini myconfig.ini`.
 
 ### Test files
 
-All test files must end with `_test.py`, all test functions must start with `test_`. It is recommended to always import the test utilities library, which provides some useful shortcuts and mocks. Here
+All test files must end with `_test.py`, all test functions must start with `test_`. It is recommended to always import the test utilities library, which provides some useful shortcuts and mocks. Here is an example of a test file:
 
 ```py
 
-import gws.test.util as u
+"""Testing the foo package."""
 
+import gws
+import gws.test.util as u
+import gws.lib.foo as foo
+
+def test_one():
+    assert foo.bar == 1
+
+def test_two():
+    with u.raises(ValueError):
+        foo.blah()
 ```
