@@ -1,36 +1,19 @@
 # Developer Documentation :/dev-en
 
-Documentation for developers who want to extend the GBD WebSuite Client.
+Documentation for developers who work on GBD WebSuite or want to extend it. 
 
-**Client** 
-
-%toc
-/dev-en/client-overview
-/dev-en/client-css
-/dev-en/client-i18n
+%toc depth=4
+    overview
+    server
+    client
+    debug
+    documentation
 %end
 
-## :/dev-en/client-overview
-## :/dev-en/client-css
-## :/dev-en/client-i18n
 
-**Server**
+## :overview
 
+## :server
 
-Welcome to the GBD WebSuite Developer documentation. Here you will learn how to improve and extend this software.
+## :debug
 
-%toc
-/dev-en/server-overview
-/dev-en/server-request
-/dev-en/server-testing
-/dev-en/overview/models
-%end
-
-## :/dev-en/server-overview
-## :/dev-en/server-request
-## :/dev-en/server-testing
-## :/dev-en/debugging
-
-## :/dev-en/overview/models
-
-## :/dev-en/documentation
