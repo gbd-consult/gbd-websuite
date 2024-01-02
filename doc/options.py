@@ -35,6 +35,9 @@ OPTIONS = {
         f'{DOC_DIR}/theme/theme_info.svg',
         f'{DOC_DIR}/theme/theme_search.svg',
         f'{DOC_DIR}/theme/theme_warning.svg',
+        f'{DOC_DIR}/theme/theme_arrow_prev.svg',
+        f'{DOC_DIR}/theme/theme_arrow_next.svg',
+        f'{DOC_DIR}/theme/theme_arrow_up.svg',
     ],
 
     'includeTemplate': f'{DOC_DIR}/extra_commands.cx.html',

@@ -1,6 +1,102 @@
 let $ = sel => document.querySelector(sel);
 let $$ = sel => document.querySelectorAll(sel);
 
+function makeNavigation() {
+    let toc = GLOBAL_TOC;
+
+    for (let node of Object.values(toc)) {
+        node.open = false;
+        node.active = false;
+    }
+
+    let u = location.pathname + location.hash;
+
+    for (let [sid, node] of Object.entries(toc)) {
+        if (node.u === u) {
+            setActiveNavNode(toc, sid);
+            break;
+        }
+    }
+
+    toc['/'].open = true;
+
+
+    let li = makeNavNode(toc, '/')
+    let div = $('#sidebar-toc');
+
+    while (div.firstChild) {
+        div.removeChild(div.firstChild)
+    }
+
+    div.appendChild(li.lastChild);
+}
+
+function makeNavNode(toc, sid) {
+    let node = toc[sid];
+
+    let a = document.createElement('a');
+    a.textContent = node.h;
+    a.href = node.u;
+
+    let li = document.createElement('li');
+    li.dataset['sid'] = sid;
+    li.appendChild(a);
+
+    if (node.active) {
+        li.className = 'active';
+    }
+
+    let sub = node.s.map(subSid => makeNavNode(toc, subSid))
+
+    if (sub.length) {
+        let ul = document.createElement('ul');
+        for (let s of sub) {
+            ul.appendChild(s);
+        }
+        if (node.open) {
+            ul.className = 'open';
+        }
+        li.appendChild(ul);
+    }
+
+    return li;
+}
+
+function setActiveNavNode(toc, sid) {
+    let node = toc[sid];
+    let parent =  toc[node.p];
+
+    $('#nav-arrow-prev').href = $('#nav-arrow-up').href = $('#nav-arrow-next').href = '#';
+    $('#nav-arrow-prev').className = $('#nav-arrow-up').className = $('#nav-arrow-next').className = 'disabled';
+
+    if (!parent) {
+        return;
+    }
+
+    $('#nav-arrow-up').href = parent.u;
+    $('#nav-arrow-up').className = '';
+
+    let i = parent.s.indexOf(sid);
+
+    let prev = toc[parent.s[i - 1]];
+    if (prev) {
+        $('#nav-arrow-prev').href = prev.u;
+        $('#nav-arrow-prev').className = '';
+    }
+
+    let next = toc[parent.s[i + 1]];
+    if (next) {
+        $('#nav-arrow-next').href = next.u;
+        $('#nav-arrow-next').className = '';
+    }
+
+    node.active = true;
+    while (node) {
+        node.open = true;
+        node = toc[node.p];
+    }
+}
+
 function syncNavigation() {
     let curr = null;
 
@@ -117,8 +213,8 @@ function searchFindSections(val) {
 //
 
 function main() {
-    syncNavigation();
-    window.addEventListener('popstate', syncNavigation);
+    makeNavigation();
+    window.addEventListener('popstate', makeNavigation);
     searchInit();
     addRefMarks();
 }

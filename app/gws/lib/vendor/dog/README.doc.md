@@ -461,7 +461,6 @@ A page template is a Jump template which is rendered for each html page. This te
 |---------------|----------------------------------------------|
 | `breadcrumbs` | array of tuples `(section-url,section-head)` |
 | `main`        | main html content for this page              |
-| `mainToc`     | main table of contents as html `LI` elements |
 | `options`     | options object as defined above              |
 | `path`        | html path for this page                      |
 | `subTitle`    | documentation subtitle                       |
