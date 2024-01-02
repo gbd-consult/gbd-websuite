@@ -2,10 +2,8 @@
 
 Documentation for developers who work on GBD WebSuite or want to extend it. 
 
-%toc depth=4
+%toc depth=2
     overview
-    server
-    client
     debug
     documentation
 %end
@@ -13,7 +11,6 @@ Documentation for developers who work on GBD WebSuite or want to extend it.
 
 ## :overview
 
-## :server
-
 ## :debug
 
+## :documentation
