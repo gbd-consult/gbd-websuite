@@ -49,7 +49,7 @@ def main(args):
 
     if cmd == 'dump':
         opts.outputDir = ''
-        dog.dump(opts)
+        dog.dump(opts, args.get('path'))
         return 0
 
     out_dir = args.get('out')

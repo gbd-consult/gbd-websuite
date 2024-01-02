@@ -9,8 +9,10 @@ def build_pdf(options):
     builder.Builder(options).build_pdf()
 
 
-def dump(options):
-    print(builder.Builder(options).dump())
+def dump(options, out_path):
+    js = builder.Builder(options).dump()
+    with open(out_path, 'wt', encoding='utf8') as fp:
+        fp.write(js)
 
 
 def start_server(options):
