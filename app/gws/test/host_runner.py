@@ -179,7 +179,7 @@ def make_pytest_ini(options):
     wd = options.get('runner.work_dir')
 
     ini = {
-        'pytest.cache_dir': f'{wd}/pytest_cache'
+        'pytest.cache_dir': '/pytest_cache'
     }
     for k, v in options.items():
         if k.startswith('pytest.'):
@@ -194,11 +194,12 @@ def compose_start(options, detach=False):
 
 
 def compose_stop(options):
-    wd = options.get('runner.work_dir')
-    try:
-        cli.run(f'''{options.get('runner.docker_compose')} --file {wd}/docker-compose.yml down''')
-    except:
-        pass
+    dc = options.get('runner.work_dir') + '/docker-compose.yml'
+    if os.path.isfile(dc):
+        try:
+            cli.run(f'''{options.get('runner.docker_compose')} --file {dc} down''')
+        except:
+            pass
 
 
 ##
@@ -221,17 +222,21 @@ def load_options(local_ini):
     cli.info(f'using configs: {inis}')
     options = inifile.from_paths(*inis)
 
+    wd = options.get('runner.work_dir', '')
+    if wd.startswith('./'):
+        wd = APP_DIR + wd[1:]
+    options['runner.work_dir'] = wd
+
+    for k, v in options.items():
+        if v.startswith('./'):
+            options[k] = wd + v[1:]
+
     env = {}
     for k, v in options.items():
         sec, _, name = k.partition('.')
         if sec == 'environment':
-            if v.startswith('./'):
-                v = options.get('runner.work_dir') + v[1:]
             env[name] = v
     options['environment'] = env
-
-    for k, v in env.items():
-        os.environ[k] = v
 
     return options
 
@@ -251,11 +256,8 @@ def clear_dir(d):
 ##
 
 def service_gws(options):
-    wd = options.get('runner.work_dir')
-
-    make_dir(f'{wd}/gws-var')
-    make_dir(f'{wd}/gws-tmp')
     make_dir(options.get('service.gws.data_dir'))
+    make_dir(options.get('service.gws.var_dir'))
 
     return {
         'command': 'sleep infinity',
@@ -265,9 +267,8 @@ def service_gws(options):
         ],
         'volumes': [
             f"{APP_DIR}:/gws-app",
-            f"{wd}/gws-var:/gws-var",
-            # f"{wd}/gws-tmp:/tmp",
             f"{options.get('service.gws.data_dir')}:/data",
+            f"{options.get('service.gws.var_dir')}:/gws-var",
         ],
     }
 
@@ -278,15 +279,17 @@ def service_qgis(options):
         'ports': [
             f"{options.get('service.qgis.expose_port')}:80",
         ],
+        'volumes': [
+            f"{options.get('service.gws.data_dir')}:/data",
+            f"{options.get('service.gws.var_dir')}:/gws-var",
+        ],
     }
 
 
 def service_postgres(options):
     # https://github.com/docker-library/docs/blob/master/postgres/README.md
 
-    make_dir(options.get('service.postgres.data_dir'))
-
-    return {
+    cfg = {
         'environment': {
             'POSTGRES_DB': options.get('service.postgres.database'),
             'POSTGRES_PASSWORD': options.get('service.postgres.password'),
@@ -295,10 +298,16 @@ def service_postgres(options):
         'ports': [
             f"{options.get('service.postgres.expose_port')}:5432",
         ],
-        'volumes': [
-            f"{options.get('service.postgres.data_dir')}:/var/lib/postgresql/data",
-        ],
     }
+
+    dd = options.get('service.postgres.data_dir')
+    if dd:
+        make_dir(dd)
+        cfg['volumes'] = [
+            f"{dd}:/var/lib/postgresql/data",
+        ]
+
+    return cfg
 
 
 def service_mockserver(options):
@@ -310,10 +319,10 @@ def service_mockserver(options):
     return {
         # NB use the gws image
         'image': options.get('service.gws.image'),
+        'command': f'python3 {wd}/{server_app}',
         'ports': [
             f"{options.get('service.mockserver.expose_port')}:80",
         ],
-        'command': f'python3 {wd}/{server_app}',
     }
 
 
