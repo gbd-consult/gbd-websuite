@@ -138,6 +138,14 @@ def _get_quick(mt):
 
 
 def for_path(path: str) -> str:
+    """Returns the mime type for a given path
+
+    Args:
+        path: Path to mime type
+
+    Returns:
+        The mime type or BIN if type is unknown
+    """
     _, _, e = path.rpartition('.')
     if e in _common_extensions:
         return _common_extensions[e]
@@ -146,6 +154,14 @@ def for_path(path: str) -> str:
 
 
 def extension_for(mt) -> t.Optional[str]:
+    """Returns the extension of a given mime type
+
+    Args:
+        mt: mime type
+
+    Returns:
+        The mime type extension
+    """
 
     for ext, rt in _common_extensions.items():
         if rt == mt:
