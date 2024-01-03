@@ -93,6 +93,15 @@ _aliases = {
 
 
 def get(mt: str) -> t.Optional[str]:
+    """Return the normalized mime type.
+
+    Args:
+        mt: mime type or content type
+
+    Returns:
+        The normalized mime type.
+    """
+
     if not mt:
         return None
 
@@ -137,6 +146,7 @@ def for_path(path: str) -> str:
 
 
 def extension_for(mt) -> t.Optional[str]:
+
     for ext, rt in _common_extensions.items():
         if rt == mt:
             return ext
