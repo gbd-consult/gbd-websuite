@@ -22,8 +22,8 @@ class Server:
             return [b'Not Found']
 
         mime, content = res
-        if mime == 'text/html':
-            content += self.liveScript
+        # if mime == 'text/html':
+        #     content += self.liveScript
 
         if isinstance(content, str):
             content = content.encode('utf8')
@@ -37,7 +37,7 @@ class Server:
         return [content]
 
     def rebuild(self):
-        util.time_start('rebuilt')
+        util.time_start('rebuild')
         self.builder.build_html(write=False)
         util.time_end()
 

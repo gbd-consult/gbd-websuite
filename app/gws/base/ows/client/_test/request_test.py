@@ -1,6 +1,6 @@
 # import gws.base.ows.client.request
 # import gws.gis.ows.error
-# import gws.lib.test as test
+# import gws.test.util as u
 #
 #
 # def test_request_ok():

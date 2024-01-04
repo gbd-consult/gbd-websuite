@@ -6,7 +6,8 @@
     <title><% options.title %> - <% options.subTitle %></title>
     <link rel="stylesheet" href="<% options.webRoot %>/_static/theme.css" type="text/css" />
     <script src="<% options.webRoot %>/_static/theme.js"></script>
-    <script src="<% options.webRoot %>/_static/search_index.js"></script>
+    <script src="<% options.webRoot %>/_static/_global_toc.js"></script>
+    <script src="<% options.webRoot %>/_static/_search_index.js"></script>
 </head>
 
 <body>
@@ -30,10 +31,6 @@
                 <div id="sidebar-search-results">
                 </div>
                 <div id="sidebar-toc">
-                    <ul>
-                        <% mainToc %>
-                        <li><a href="<% options.apidocWebRoot %>/index.html">API documentation</a></li>
-                    </ul>
                 </div>
             </div>
             <div id="sidebar-footer">
@@ -54,6 +51,11 @@
                         &raquo; <a href="<% url %>"><% head %></a>
                     %end
                 %end
+            </div>
+            <div id="nav-arrows">
+                <a id="nav-arrow-prev"><img src="<% options.webRoot %>/_static/theme_arrow_prev.svg"></a>
+                <a id="nav-arrow-up"><img src="<% options.webRoot %>/_static/theme_arrow_up.svg"></a>
+                <a id="nav-arrow-next"><img src="<% options.webRoot %>/_static/theme_arrow_next.svg"></a>
             </div>
         </nav>
         <% main %>

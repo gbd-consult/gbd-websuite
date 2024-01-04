@@ -2,6 +2,7 @@
 
 import inspect
 import io
+import json
 import os
 import shutil
 import time
@@ -23,82 +24,18 @@ import gws.lib.net
 import gws.lib.sa as sa
 import gws.lib.password
 
-APP_DIR = os.path.realpath(os.path.dirname(__file__) + '/../../../')
-TEST_FILE_RE = r'_test\.py$'
-TEST_FILE_GLOB = '*_test.py'
-
 fixture = pytest.fixture
+raises = pytest.raises
 
-_OPTIONS = {}
-
-
-def option(key, default=None):
-    opts = options()
-    if key in opts:
-        return opts[key]
-    if default is not None:
-        return default
-    raise KeyError(f'test: option {key!r} not found')
+OPTIONS = {}
 
 
-def options():
-    if _OPTIONS:
-        return _OPTIONS
-
-    _OPTIONS.update(read_ini(
-        APP_DIR + '/test.ini',
-        APP_DIR + '/test.local.ini'
-    ))
-
-    env = {}
-    for k, v in _OPTIONS.items():
-        sec, _, name = k.partition('.')
-        if sec == 'environment':
-            if v.startswith('./'):
-                v = work_dir() + v[1:]
-            env[name] = v
-    _OPTIONS['environment'] = env
-
-    for k, v in env.items():
-        os.environ[k] = v
-
-    return _OPTIONS
+def option(name, default=None):
+    return OPTIONS.get(name, default)
 
 
 def work_dir():
     return option('runner.work_dir')
-
-
-##
-
-def read_ini(*paths):
-    opts = {}
-    cc = configparser.ConfigParser()
-    cc.optionxform = str
-
-    for path in paths:
-        if os.path.isfile(path):
-            cc.read(path)
-
-    for sec in cc.sections():
-        for opt in cc.options(sec):
-            opts[sec + '.' + opt] = cc.get(sec, opt)
-
-    return opts
-
-
-def make_ini(opts):
-    cc = configparser.ConfigParser()
-
-    for k, v in opts.items():
-        sec, _, name = k.partition('.')
-        if not cc.has_section(sec):
-            cc.add_section(sec)
-        cc.set(sec, name, v)
-
-    with io.StringIO() as fp:
-        cc.write(fp, space_around_delimiters=False)
-        return fp.getvalue()
 
 
 ##
@@ -112,7 +49,7 @@ _CONFIG_DEFAULTS = '''
 def gws_root():
     global _SPEC
     if _SPEC is None:
-        _SPEC = gws.spec.runtime.create(work_dir() + '/MANIFEST.json', read_cache=True, write_cache=True)
+        _SPEC = gws.spec.runtime.create(work_dir() + '/MANIFEST.json', read_cache=False, write_cache=False)
     return gws.create_root_object(_SPEC)
 
 
@@ -143,26 +80,6 @@ def gws_model_context(**kwargs):
 
 
 ##
-
-def enumerate_files_for_test(only):
-    # enumerate files to test, wrt --only
-
-    files = list(gws.lib.osx.find_files(f'{APP_DIR}/gws', TEST_FILE_RE))
-    if only:
-        files = [f for f in files if re.search(only, f)]
-
-    # sort files semantically
-
-    _sort_order = ['/core/', '/lib/', '/base/', '/plugin/']
-
-    def _sort_key(path):
-        for n, s in enumerate(_sort_order):
-            if s in path:
-                return n, path
-        return 99, path
-
-    files.sort(key=_sort_key)
-    return files
 
 
 ##
@@ -239,9 +156,54 @@ def db_model(root, name) -> gws.IDatabaseModel:
 
 
 def feature(model, **atts) -> gws.IFeature:
-    f = gws.base.feature.new(model=model, record = gws.FeatureRecord(attributes=atts))
+    f = gws.base.feature.new(model=model, record=gws.FeatureRecord(attributes=atts))
     f.attributes = atts
     return f
+
+
+##
+
+
+def mockserver_add_snippet(text):
+    mockserver_invoke('/__add', data=text)
+
+
+def mockserver_clear():
+    mockserver_invoke('/__del', data='')
+
+
+def mockserver_invoke(url_path, params: dict = None, data: str | bytes | dict = None) -> str | bytes | dict | None:
+    host = option('service.mockserver.name')
+    args = {}
+    if data is not None:
+        args['method'] = 'POST'
+        if isinstance(data, dict):
+            args['data'] = gws.lib.jsonx.to_string(data).encode('utf8')
+            args['headers'] = {'content-type': 'application/json'}
+        elif isinstance(data, str):
+            args['data'] = data.encode('utf8')
+        else:
+            args['data'] = data
+    else:
+        args['method'] = 'GET'
+        args['params'] = params
+
+    url = gws.lib.net.make_url(
+        scheme='http',
+        hostname=option('service.mockserver.host'),
+        port=option('service.mockserver.port'),
+        path=url_path
+    )
+    res = gws.lib.net.http_request(url, **args)
+    if not res.ok:
+        return
+
+    ct = res.content_type
+    if ct == 'application/octet-stream' or ct.startswith('image/'):
+        return res.content
+    if ct == 'application/json':
+        return gws.lib.jsonx.from_string(res.text)
+    return res.text
 
 
 ##

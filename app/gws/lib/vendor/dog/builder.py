@@ -40,7 +40,7 @@ class RawHtmlNode(ParseNode):
 class Section(util.Data):
     sid: str
     level: int
-
+    status: str
     subSids: List[str]
     parentSid: str
 
@@ -68,7 +68,6 @@ class Builder:
     assetPaths: set[str]
     sectionMap: dict[str, Section]
     sectionNotFound: set[str]
-    walkColors: dict[str, int]
     assetMap: dict[str, str]
 
     def __init__(self, options):
@@ -90,7 +89,6 @@ class Builder:
         self.sectionMap = {}
         self.sectionNotFound = set()
         self.assetMap = {}
-        self.walkColors = {}
 
         self.collect_sources()
         self.parse_all()
@@ -98,8 +96,6 @@ class Builder:
     def build_html(self, write=False):
         self.collect_and_parse()
         self.generate_html(write=write)
-        if write:
-            self.generate_search_index()
 
     def build_pdf(self):
         pdf_dir = '/tmp/dogpdf'
@@ -123,13 +119,14 @@ class Builder:
         shutil.rmtree(pdf_dir, ignore_errors=True)
 
     def dump(self):
-        def dflt(x):
+        def _default(x):
             d = dict(vars(x))
             d['$'] = x.__class__.__name__
             return d
 
         self.collect_and_parse()
-        return json.dumps(list(self.sectionMap.values()), indent=4, sort_keys=True, ensure_ascii=False, default=dflt)
+        return json.dumps(
+            self.sectionMap, indent=4, sort_keys=True, ensure_ascii=False, default=_default)
 
     ##
 
@@ -155,7 +152,7 @@ class Builder:
 
     ##
 
-    def get_section(self, sid) -> Optional[Section]:
+    def get_section(self, sid: str) -> Optional[Section]:
         if sid in self.sectionNotFound:
             return
         if sid not in self.sectionMap:
@@ -212,6 +209,14 @@ class Builder:
             self.htmlGenerator.write()
             self.write_assets()
 
+            util.write_file(
+                str(os.path.join(self.options.outputDir, self.options.staticDir, self.GLOBAL_TOC_SCRIPT)),
+                self.generate_global_toc())
+
+            util.write_file(
+                str(os.path.join(self.options.outputDir, self.options.staticDir, self.SEARCH_INDEX_SCRIPT)),
+                self.generate_search_index())
+
     def generate_pdf(self, source: str, target: str):
         cmd = [
             'wkhtmltopdf',
@@ -234,26 +239,47 @@ class Builder:
 
     ##
 
+    GLOBAL_TOC_SCRIPT = '_global_toc.js'
+    SEARCH_INDEX_SCRIPT = '_search_index.js'
+
+    def generate_global_toc(self):
+        js = {
+            sec.sid: {
+                'h': sec.headText,
+                'u': sec.htmlUrl,
+                'p': '',
+                's': sec.subSids
+            }
+            for sec in self.sectionMap.values()
+        }
+        for sec in self.sectionMap.values():
+            for sub in sec.subSids:
+                node = js.get(sub)
+                if node:
+                    node['p'] = sec.sid
+
+        return 'GLOBAL_TOC = ' + json.dumps(js, ensure_ascii=False, indent=4) + '\n'
+
     def generate_search_index(self):
-        words = {}
+        words_map = {}
 
         for sec in self.sectionMap.values():
-            words[sec.sid] = []
+            words_map[sec.sid] = []
             for node in sec.nodes:
                 if isinstance(node, MarkdownNode):
-                    self.extract_text(node.el, words[sec.sid])
+                    self.extract_text(node.el, words_map[sec.sid])
 
-        for sid in words:
-            ws = ' '.join(words[sid])
+        for sid, words in words_map.items():
+            ws = ' '.join(words)
             ws = ws.replace("'", '')
-            ws = re.sub(r'\W+', ' ', ws).lower().strip().split()
-            words[sid] = ws
+            ws = re.sub(r'\W+', ' ', ws).lower().strip()
+            words_map[sid] = ws.split()
 
-        all_words = sorted(set(w for ws in words.values() for w in ws))
+        all_words = sorted(set(w for ws in words_map.values() for w in ws))
         word_index = {w: n for n, w in enumerate(all_words, 1)}
 
         sections = []
-        for sid, ws in words.items():
+        for sid, words in words_map.items():
             sec = self.sectionMap[sid]
             head = sec.headHtml
             if sec.parentSid:
@@ -262,16 +288,15 @@ class Builder:
             sections.append({
                 'h': head,
                 'u': sec.htmlUrl,
-                'w': '.' + '.'.join(util.base36(word_index[w]) for w in ws) + '.'
+                'w': '.' + '.'.join(util.base36(word_index[w]) for w in words) + '.'
             })
 
-        script = {
+        js = {
             'words': '.' + '.'.join(all_words),
             'sections': sorted(sections, key=lambda s: s['h']),
         }
 
-        dst = os.path.join(self.options.outputDir, self.options.staticDir, 'search_index.js')
-        util.write_file(dst, 'SEARCH_INDEX = ' + json.dumps(script, ensure_ascii=False, indent=4) + '\n')
+        return 'SEARCH_INDEX = ' + json.dumps(js, ensure_ascii=False, indent=4) + '\n'
 
     def extract_text(self, el: markdown.Element, out: list):
         if el.text:
@@ -294,7 +319,11 @@ class Builder:
         m = re.search(self.options.staticDir + '/(.+)$', url)
         if not m:
             return
+
         fn = m.group(1)
+        if fn.endswith(self.GLOBAL_TOC_SCRIPT):
+            return 'application/javascript', self.generate_global_toc()
+
         for path, fname in self.assetMap.items():
             if fname == fn:
                 mt = mimetypes.guess_type(path)
@@ -320,7 +349,7 @@ class Builder:
 
     def write_assets(self):
         for src, fname in self.assetMap.items():
-            dst = os.path.join(self.options.outputDir, self.options.staticDir, fname)
+            dst = str(os.path.join(self.options.outputDir, self.options.staticDir, fname))
             util.log.debug(f'copy {src!r} => {dst!r}')
             util.write_file_b(dst, util.read_file_b(src))
 
@@ -331,65 +360,85 @@ class Builder:
 
         for path in self.docPaths:
             for sec in self.parse_file(path):
+                prev = self.sectionMap.get(sec.sid)
+                if prev:
+                    util.log.warning(f'section {sec.sid!r} in {prev.sourcePath!r} redefined in {sec.sourcePath!r}')
                 self.sectionMap[sec.sid] = sec
 
-        for sec in self.sectionMap.values():
-            self.make_tree(sec)
+        root = self.sectionMap.get('/')
+        if not root:
+            util.log.error('no root section found')
+            self.sectionMap = {}
+            return
+
+        new_map = {}
+        self.make_tree(root, None, new_map)
 
         for sec in self.sectionMap.values():
+            if sec.sid not in new_map:
+                util.log.warning(f'section not linked: {sec.sid!r} in {sec.sourcePath!r}')
+                continue
+
+        self.sectionMap = new_map
+
+        for sec in self.sectionMap.values():
+            self.expand_toc_nodes(sec)
             self.add_url_and_path(sec)
 
     def parse_file(self, path):
         return FileParser(self, path).sections()
 
-    def make_tree(self, sec: Section, parent_sec=None):
+    def make_tree(self, sec: Section, parent_sec: Section | None, new_map):
         if parent_sec:
             if sec.parentSid:
                 util.log.error(f'attempt to relink section {sec.sid!r} for {sec.parentSid!r} to {parent_sec.sid!r}')
             sec.parentSid = parent_sec.sid
 
-        if self.walkColors.get(sec.sid) == 2:
+        if sec.status == 'ok':
             return
 
-        if self.walkColors.get(sec.sid) == 1:
+        if sec.status == 'walk':
             util.log.error(f'circular dependency in {sec.sid!r}')
             return
 
-        cur_nodes = sec.nodes
+        sec.status = 'walk'
 
-        sec.subSids = []
-        sec.nodes = []
-        self.walkColors[sec.sid] = 1
+        sub_sids: list[str] = []
+        new_nodes: list[ParseNode] = []
+        new_map[sec.sid] = sec
 
-        for node in cur_nodes:
+        for node in sec.nodes:
 
             if isinstance(node, SectionNode):
                 sub = self.get_section(node.sid)
                 if sub:
-                    self.make_tree(sub, sec)
-                    sec.subSids.append(sub.sid)
-                    sec.nodes.append(node)
+                    self.make_tree(sub, sec, new_map)
+                    sub_sids.append(sub.sid)
+                    new_nodes.append(node)
                 continue
 
             if isinstance(node, EmbedNode):
                 secs = self.sections_from_wildcard_sid(node.sid, sec)
                 for sub in secs:
-                    self.make_tree(sub, sec)
-                    sec.subSids.append(sub.sid)
-                    sec.nodes.append(SectionNode(sid=sub.sid))
+                    self.make_tree(sub, sec, new_map)
+                    sub_sids.append(sub.sid)
+                    new_nodes.append(SectionNode(sid=sub.sid))
                 continue
 
+            new_nodes.append(node)
+
+        sec.nodes = new_nodes
+        sec.subSids = sub_sids
+        sec.status = 'ok'
+
+    def expand_toc_nodes(self, sec: Section):
+        for node in sec.nodes:
             if isinstance(node, TocNode):
                 sids = []
                 for sid in node.items:
                     secs = self.sections_from_wildcard_sid(sid, sec)
                     sids.extend(s.sid for s in secs)
-                sec.nodes.append(TocNode(depth=node.depth, sids=sids))
-                continue
-
-            sec.nodes.append(node)
-
-        self.walkColors[sec.sid] = 2
+                node.sids = sids
 
     def add_url_and_path(self, sec: Section):
         sl = self.options.htmlSplitLevel or 0
@@ -490,8 +539,6 @@ class FileParser:
         return sections
 
     def parse(self) -> list[markdown.Element]:
-        util.log.debug(f'pre_parse {self.path!r}')
-
         text = self.b.includeTemplate + util.read_file(self.path)
         text = template.render(self.b, text, self.path, {
             'options': self.b.options,
@@ -531,6 +578,7 @@ class FileParser:
         return Section(
             sid=sid,
             level=0 if sid == '/' else sid.count('/'),
+            status='',
             sourcePath=self.path,
             headText=text,
             headNode=head_node,
@@ -630,7 +678,6 @@ class HTMLGenerator:
 
     def flush(self):
         tpl = template.compile(self.b, self.b.options.pageTemplate)
-        maintoc = self.render_main_toc()
 
         self.content = {}
 
@@ -639,7 +686,6 @@ class HTMLGenerator:
                 'path': path,
                 'title': self.b.options.title,
                 'subTitle': self.b.options.subTitle,
-                'mainToc': maintoc,
                 'main': ''.join(buf.html),
                 'breadcrumbs': self.get_breadcrumbs(buf.sids[0]),
                 'builder': self.b,

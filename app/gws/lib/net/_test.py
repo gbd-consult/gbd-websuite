@@ -1,5 +1,5 @@
 import gws.lib.net
-import gws.lib.test as test
+import gws.test.util as u
 
 
 def test_parse_url():

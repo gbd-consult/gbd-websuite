@@ -1,17 +1,8 @@
 ## Client-Overview :/dev-en/client-overview
 
-GBD WebSuite (GWS) is a python application, intended to be run as a server in a docker container. GWS also features a client, written in Typescript. Some parts of the application are also accessible as CLI scripts.
+GBD WebSuite (GWS) is a python application, intended to be run as a server in a docker container. GWS also features a client, written in Typescript. 
 
-To start using GWS, grab `gbdconsult/gws-amd64` or `gbdconsult/gws-arm64` from dockerhub. For local development, mount your working copy as `/gws-app` in the container:
 
-```
-docker run -it \
-    --mount type=bind,src=/PATH/TO/gbd-websuite/app,dst=/gws-app \
-    gbdconsult/gws-arm64:latest \
-    /bin/bash
-```
-
-Once in the container, run the cli script `gws` to start exploring the possibilities.
 
 ### Specs
 

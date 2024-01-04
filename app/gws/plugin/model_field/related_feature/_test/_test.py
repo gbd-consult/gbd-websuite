@@ -1,5 +1,5 @@
 import gws
-import gws.lib.test.util as u
+import gws.test.util as u
 
 
 @u.fixture(scope='module')

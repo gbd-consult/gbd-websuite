@@ -44,17 +44,17 @@ def warning(msg):
 
 
 def info(msg):
-    cprint('', msg)
+    cprint('cyan', msg)
 
 
 ##
 
 def run(cmd):
     cmd = re.sub(r'\s+', ' ', cmd.strip())
-    cprint('cyan', cmd)
+    info(f'> {cmd}')
     res = subprocess.run(cmd, shell=True, capture_output=False)
     if res.returncode:
-        fatal(f'FAILED {cmd!r} (code {res.returncode})')
+        fatal(f'COMMAND FAILED, code {res.returncode}')
 
 
 def find_dirs(dirname):

@@ -1,7 +1,7 @@
 import time
 import gws
 import gws.lib.osx
-import gws.lib.test as test
+import gws.test.util as u
 from gws.base.auth import method, provider, user
 
 
@@ -23,11 +23,8 @@ class MockProvider(provider.Object):
             return user.create(user.AuthorizedUser, self, 'user1', ['role1'], {'displayName': 'USER_1'})
 
 
-@test.fixture(scope='module')
+@u.fixture(scope='module')
 def auth():
-    test.register_ext(gws.ext.object.authProvider.mock, MockProvider)
-    test.register_ext(gws.ext.object.authMethod.foo, FooMethod)
-    test.register_ext(gws.ext.object.authMethod.bar, BarMethod)
 
     defaults = {
         'providers': [
@@ -47,7 +44,7 @@ def auth():
         'sessionLifeTime': 2,
     }
 
-    yield test.configure({'auth': defaults}, parse=False).application.auth
+    yield u.gws_configure('auth defaults').application.auth
 
 
 ##

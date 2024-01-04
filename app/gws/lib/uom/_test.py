@@ -1,6 +1,6 @@
 import gws
 import gws.lib.uom as uom
-import gws.lib.test as test
+import gws.test.util as u
 import random
 
 

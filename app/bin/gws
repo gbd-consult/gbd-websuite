@@ -9,7 +9,7 @@ export GWS_GID=${GWS_GID:-1000}
 PYTHON=python3
 
 MAIN_PY=$GWS_APP_DIR/bin/_gws.py
-TEST_PY=$GWS_APP_DIR/bin/_test.py
+TEST_PY=$GWS_APP_DIR/gws/test/container_runner.py
 
 XVFB=/usr/bin/Xvfb
 XVFBARGS='-dpi 96 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nolisten tcp'
