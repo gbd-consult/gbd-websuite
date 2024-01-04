@@ -117,7 +117,7 @@ def get(mt: str) -> t.Optional[str]:
 
     if ';' in mt:
         p = mt.partition(';')
-        s = _get_quick(p[1].strip())
+        s = _get_quick(p[0].strip())
         if s:
             return s
 
