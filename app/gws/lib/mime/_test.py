@@ -18,7 +18,7 @@ def test_get_path():
 
 
 def test_get_empty():
-    assert mime.get('') == mime.BIN
+    assert mime.get('') == None
 
 
 def test_for_path_common():
@@ -26,7 +26,7 @@ def test_for_path_common():
 
 
 def test_for_path_bin():
-    assert mime.for_path('') == None
+    assert mime.for_path('') == mime.BIN
 
 
 def test_for_path_guessed():
