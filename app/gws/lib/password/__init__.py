@@ -7,13 +7,29 @@ import random
 
 
 def compare(a: str, b: str) -> bool:
-    """Return a == b"""
+    """Return a == b
+
+        Args:
+            a: as String
+            b: as String
+
+        Return:
+            True if a equals b, False otherwise
+    """
 
     return hmac.compare_digest(a.encode('utf8'), b.encode('utf8'))
 
 
 def encode(password, algo='sha512'):
-    """Encode a password into a hash."""
+    """Encode a password into a hash.
+
+    Args:
+          password: String password.
+          algo: hashing algorithm. Default is SHA512.
+
+    Return:
+        Respective hash value in the format: $algorithm$Salt$hash
+    """
 
     salt = _random_string(8)
     h = _pbkdf2(password, salt, algo)
@@ -21,7 +37,15 @@ def encode(password, algo='sha512'):
 
 
 def check(password, encoded):
-    """Check if a password matches a hash."""
+    """Check if a password matches a hash.
+
+    Args:
+         password: String password.
+         encoded: Hash of the input password.
+
+    Returns:
+        Boolean True if password matches the hash, else False.
+    """
 
     try:
         _, algo, salt, hs = str(encoded).split('$')
