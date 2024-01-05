@@ -1,6 +1,4 @@
-"""Tests for the mime module."""
-import base64
-import hmac
+"""Tests for the password module."""
 
 import gws
 import gws.test.util as u
