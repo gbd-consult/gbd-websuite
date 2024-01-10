@@ -73,11 +73,19 @@ interface ErrorDialogData {
     errorDetails: string;
 }
 
+interface GeometryTextDialogData {
+    type: 'GeometryText';
+    shape: gws.api.base.shape.Props;
+    whenSaved: (shape: gws.api.base.shape.Props) => void;
+}
+
 type DialogData =
     SelectModelDialogData
     | SelectFeatureDialogData
     | DeleteFeatureDialogData
-    | ErrorDialogData;
+    | ErrorDialogData
+    | GeometryTextDialogData
+    ;
 
 
 interface ViewProps extends gws.types.ViewProps {
@@ -307,6 +315,8 @@ class Dialog extends gws.View<ViewProps> {
                 return <DeleteFeatureDialog {...this.props} />
             case 'Error':
                 return <ErrorDialog {...this.props} />
+            case 'GeometryText':
+                return <GeometryTextDialog {...this.props} />
         }
     }
 }
@@ -408,6 +418,113 @@ class ErrorDialog extends gws.View<ViewProps> {
             details={dd.errorDetails}
             whenClosed={() => cc.closeDialog()}
         />
+    }
+}
+
+class GeometryTextDialog extends gws.View<ViewProps> {
+    save() {
+        let dd = this.props.editDialogData as GeometryTextDialogData;
+        dd.whenSaved(dd.shape);
+    }
+
+    toWKT(shape: gws.api.base.shape.Props): string {
+        let cc = _master(this);
+        const wktFormat = new ol.format.WKT();
+        let geom = cc.map.shape2geom(shape);
+        return wktFormat.writeGeometry(geom);
+    }
+
+    updateShape(shape: gws.api.base.shape.Props) {
+        let cc = _master(this);
+        let dd = this.props.editDialogData as GeometryTextDialogData;
+
+        cc.update({
+            editDialogData: {...dd, shape}
+        });
+    }
+
+    updateFromWKT(wkt: string) {
+        let cc = _master(this);
+        const wktFormat = new ol.format.WKT();
+        let geom = wktFormat.readGeometry(wkt);
+        let shape = cc.map.geom2shape(geom);
+        this.updateShape(shape);
+    }
+
+    updatePointCoordinate(index: number, value: string) {
+        let n = parseFloat(value);
+        if (Number.isNaN(n)) {
+            return
+        }
+
+        let dd = this.props.editDialogData as GeometryTextDialogData;
+        let shape = {
+            crs: dd.shape.crs,
+            geometry: {
+                type: dd.shape.geometry.type,
+                coordinates: [...dd.shape.geometry.coordinates]
+            }
+        };
+        shape.geometry.coordinates[index] = n;
+        this.updateShape(shape);
+    }
+
+
+    render() {
+        let dd = this.props.editDialogData as GeometryTextDialogData;
+        let cc = _master(this);
+
+
+        let okButton = <gws.ui.Button
+            {...gws.lib.cls('editSaveButton', 'isActive')}
+            tooltip={this.__('editSave')}
+            whenTouched={() => this.save()}
+        />
+
+
+        let cancelButton = <gws.ui.Button
+            className="cmpButtonFormCancel"
+            whenTouched={() => cc.closeDialog()}
+        />;
+
+
+        return <gws.ui.Dialog
+            className="editGeometryTextDialog"
+            title={this.__('editGeometryTextTitle')}
+            whenClosed={() => cc.closeDialog()}
+            buttons={[okButton, cancelButton]}
+        >
+            <Form>
+                {dd.shape && dd.shape.geometry.type === 'Point' && <Row>
+                    <Cell>
+                        <gws.ui.TextInput
+                            label="X"
+                            value={dd.shape.geometry.coordinates[0]}
+                            whenChanged={v => this.updatePointCoordinate(0, v)}
+                            whenEntered={() => this.save()}
+                        />
+                    </Cell>
+                    <Cell>
+                        <gws.ui.TextInput
+                            label="Y"
+                            value={dd.shape.geometry.coordinates[1]}
+                            whenChanged={v => this.updatePointCoordinate(1, v)}
+                            whenEntered={() => this.save()}
+                        />
+                    </Cell>
+                </Row>}
+                <Row>
+                    <Cell flex>
+                        <gws.ui.TextArea
+                            label="WKT"
+                            value={this.toWKT(dd.shape)}
+                            whenChanged={v => this.updateFromWKT(v)}
+                            height={200}
+                        />
+                    </Cell>
+                </Row>
+            </Form>
+        </gws.ui.Dialog>;
     }
 }
 
@@ -1054,16 +1171,25 @@ export class FormTab extends gws.View<ViewProps> {
         let sf = es.sidebarSelectedFeature;
         let values = sf.currentAttributes();
         let widgets = [];
+        let geomWidget = null;
 
         for (let fld of sf.model.fields) {
-            widgets.push(cc.createWidget(
+            let w = cc.createWidget(
                 gws.types.ModelWidgetMode.form,
                 fld,
                 sf,
                 values,
                 this.whenWidgetChanged.bind(this),
                 this.whenWidgetEntered.bind(this),
-            ));
+            );
+            if (!w) {
+                continue;
+            }
+            if (fld.widgetProps.type === 'geometry' && !fld.widgetProps.isInline) {
+                geomWidget = w;
+                continue;
+            }
+            widgets.push(w);
         }
 
         let isDirty = sf.isNew || sf.isDirty;
@@ -1095,6 +1221,7 @@ export class FormTab extends gws.View<ViewProps> {
                     </VRow>
                     <VRow>
                         <Row>
+                            {geomWidget && <Cell>{geomWidget}</Cell>}
                             <Cell flex/>
                             <Cell spaced>
                                 <gws.ui.Button
@@ -1152,9 +1279,10 @@ export class GeometryWidgetHelper extends WidgetHelper {
     setProps(feature, field, props) {
         props.whenNewButtonTouched = () => this.whenNewButtonTouched(feature, field);
         props.whenEditButtonTouched = () => this.whenEditButtonTouched(feature, field);
+        props.whenEditTextButtonTouched = () => this.whenEditTextButtonTouched(feature, field);
     }
 
-    whenNewButtonTouched(feature, field: gws.types.IModelField) {
+    whenNewButtonTouched(feature: gws.types.IFeature, field: gws.types.IModelField) {
         let cc = _master(this);
         cc.updateEditState({
             drawModel: feature.model,
@@ -1163,10 +1291,26 @@ export class GeometryWidgetHelper extends WidgetHelper {
         cc.app.startTool('Tool.Edit.Draw');
     }
 
-    whenEditButtonTouched(feature, field: gws.types.IModelField) {
+    whenEditButtonTouched(feature: gws.types.IFeature, field: gws.types.IModelField) {
         let cc = _master(this);
         cc.zoomToFeature(feature);
         cc.app.startTool('Tool.Edit.Pointer');
+    }
+
+    whenEditTextButtonTouched(feature: gws.types.IFeature, field: gws.types.IModelField) {
+        let cc = _master(this);
+        cc.showDialog({
+            type: 'GeometryText',
+            shape: feature.getAttribute(field.name),
+            whenSaved: shape => this.whenEditTextSaved(feature, field, shape),
+        });
+    }
+
+    async whenEditTextSaved(feature: gws.types.IFeature, field: gws.types.IModelField, shape: gws.api.base.shape.Props) {
+        let cc = _master(this);
+        await cc.closeDialog();
+        feature.setShape(shape);
+        await cc.whenModifyEnded(feature);
     }
 }
 
@@ -1592,15 +1736,6 @@ export class Controller extends gws.Controller {
 
         this.app.whenChanged('mapViewState', () =>
             this.whenMapStateChanged());
-        //
-        // setTimeout(() => {
-        //     for (let m of this.models) {
-        //         this.selectModelInTableView(m)
-        //         return
-        //     }
-        //
-        //
-        // }, 1000)
     }
 
     get appOverlayView() {

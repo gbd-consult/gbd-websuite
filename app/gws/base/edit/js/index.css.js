@@ -157,6 +157,12 @@ module.exports = v => {
             },
         },
 
+        '.uiDialog.editGeometryTextDialog': {
+            [v.MEDIA('large+')]: {
+                ...v.CENTER_BOX(400, 500),
+            },
+        },
+
         '.uiDialog.editTableViewDialog': {
             [v.MEDIA('large+')]: {
                 ...v.BIG_BOX(),
