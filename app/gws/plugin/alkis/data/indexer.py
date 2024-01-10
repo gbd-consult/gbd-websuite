@@ -1179,8 +1179,8 @@ def _natkey(v):
     if not v:
         return []
     return [
-        int(a) if a else b.lower()
-        for a, b in re.findall(r'(\d+)|(\D+)', v.strip())
+        '{:080d}'.format(int(digits)) if digits else chars.lower()
+        for digits, chars in re.findall(r'(\d+)|(\D+)', v.strip())
     ]
 
 
