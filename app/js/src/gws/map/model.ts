@@ -159,12 +159,10 @@ export class Model implements types.IModel {
     }
 
     featureFromGeometry(geom: ol.geom.Geometry): types.IFeature {
-        let map = this.registry.app.map;
         return this.newFeature().setGeometry(geom);
     }
 
     featureFromOlFeature(oFeature: ol.Feature): types.IFeature {
-        let map = this.registry.app.map;
         return this.newFeature().setOlFeature(oFeature);
     }
 
