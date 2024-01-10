@@ -1182,12 +1182,9 @@ export class FormTab extends gws.View<ViewProps> {
                 this.whenWidgetChanged.bind(this),
                 this.whenWidgetEntered.bind(this),
             );
-            if (!w) {
-                continue;
-            }
-            if (fld.widgetProps.type === 'geometry' && !fld.widgetProps.isInline) {
+            if (w && fld.widgetProps.type === 'geometry' && !fld.widgetProps.isInline && !geomWidget) {
                 geomWidget = w;
-                continue;
+                w = null;
             }
             widgets.push(w);
         }
