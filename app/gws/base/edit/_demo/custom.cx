@@ -89,7 +89,7 @@ map.layers+ {
             name "description"
             type "text"
             title "Comments"
-            widget { type "textarea" height 150 }
+            widget { type "textarea" height 150 placeholder "Enter your comments" }
         }
 
         fields+ {

@@ -14,6 +14,7 @@ class FormView extends gws.View<Props> {
         return <gws.ui.TextArea
             height={this.props.widgetProps.height}
             disabled={this.props.widgetProps.readOnly}
+            placeholder={this.props.widgetProps.placeholder || ''}
             value={value}
             whenChanged={this.props.whenChanged}
         />

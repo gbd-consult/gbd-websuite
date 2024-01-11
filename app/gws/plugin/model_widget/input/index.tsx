@@ -2,7 +2,11 @@ import * as React from 'react';
 
 import * as gws from 'gws';
 
-class FormView extends gws.View<gws.types.ModelWidgetProps> {
+interface Props extends gws.types.ModelWidgetProps {
+    widgetProps: gws.api.plugin.model_widget.input.Props
+}
+
+class FormView extends gws.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name];
@@ -10,6 +14,7 @@ class FormView extends gws.View<gws.types.ModelWidgetProps> {
         return <gws.ui.TextInput
             disabled={this.props.widgetProps.readOnly}
             value={gws.lib.isEmpty(value) ? '' : String(value)}
+            placeholder={this.props.widgetProps.placeholder || ''}
             whenChanged={this.props.whenChanged}
             whenEntered={this.props.whenEntered}
         />
