@@ -7,12 +7,23 @@ gws.ext.new.modelWidget('geometry')
 
 
 class Config(gws.base.model.widget.Config):
-    pass
+    isInline: bool = False
+    """Display the geometry widget in the form."""
+    withText: bool = False
+    """Display the text geometry editor."""
 
 
 class Props(gws.base.model.widget.Props):
-    pass
+    isInline: bool
+    withText: bool
 
 
 class Object(gws.base.model.widget.Object):
     supportsTableView = False
+
+    def props(self, user):
+        return gws.merge(
+            super().props(user),
+            isInline=self.cfg('isInline', default=False),
+            withText=self.cfg('withText', default=False),
+        )

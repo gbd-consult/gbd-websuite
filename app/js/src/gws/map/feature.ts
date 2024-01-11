@@ -31,17 +31,16 @@ export class Feature implements types.IFeature {
         this.model = model;
         this.map = model.registry.app.map;
 
-        this.attributes = {}
-        this.category = ''
-        this.cssSelector = ''
-        this.views = {}
-
-        this.attributes[this.uidName] = lib.uniqId('_feature_');
+        this.attributes = {};
+        this.category = '';
+        this.cssSelector = '';
+        this.views = {};
+        this.createWithFeatures = [];
 
         this.uidName = this.model.uidName;
         this.geometryName = this.model.geometryName;
 
-        this.createWithFeatures = [];
+        this.attributes[this.uidName] = lib.uniqId('_feature_');
     }
 
     get uid() {

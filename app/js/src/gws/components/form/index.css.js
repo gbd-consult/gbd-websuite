@@ -87,22 +87,6 @@ module.exports = v => ({
         borderWidth: 0,
     },
 
-    '.cmpFormDrawGeometryButton': {
-        border: [1, 'solid', v.BORDER_COLOR],
-        ...v.ICON_SIZE('medium'),
-        ...v.SVG(__dirname + '/draw_black_24dp', v.TEXT_COLOR),
-        '&.isActive': {
-            ...v.SVG(__dirname + '/draw_black_24dp', v.FOCUS_COLOR),
-        }
-    },
-
-    '.cmpFormEditGeometryButton': {
-        border: [1, 'solid', v.BORDER_COLOR],
-        ...v.ICON_SIZE('medium'),
-        ...v.SVG(__dirname + '/cursor', v.TEXT_COLOR),
-    },
-
-
 
 
 

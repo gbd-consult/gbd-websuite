@@ -1,0 +1,53 @@
+uid "geometry_text"
+
+title "Geometry widget with Text editor"
+
+metadata.keywords [ "edit" "geometry" ]
+
+metadata.abstract """
+Geometry widget with the text editor enabled (`withText:true`).
+"""
+
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+client.options.sidebarActiveTab "Sidebar.Edit"
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
+}
+
+
+models+ {
+    type "postgres"
+    tableName "edit.poi"
+    title "POI (with text edtior)"
+    uid "model_poi_geometry_3"
+    sort+ { fieldName "name" }
+    isEditable true
+    permissions.edit "allow all"
+
+    fields+ { name "id" type "integer" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "name" type "text" title "Name" }
+
+    fields+ {
+        name "geom"
+        type "geometry"
+        title "Geometry"
+        widget { type "geometry" withText true }
+    }
+
+    templates+ { subject "feature.title" type "html" text "{{name}}" }
+    templates+ { subject "feature.label" type "html" text "{{name}}" }
+}
+
+map.layers+ {
+    title "POIs"
+    type "postgres"
+    tableName "edit.poi"
+    extent [ 431881, 6505964, 1076161, 6877804 ]
+}
+
+{demo_osm_background}

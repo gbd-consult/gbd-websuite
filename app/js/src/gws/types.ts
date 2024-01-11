@@ -399,6 +399,7 @@ export interface IFeature {
     setAttributes(attributes: Dict): IFeature;
     setOlFeature(oFeature: ol.Feature): IFeature;
     setGeometry(geom: ol.geom.Geometry): IFeature;
+    setShape(shape: api.base.shape.Props);
     setStyle(style: IStyle);
     setNew(f: boolean): IFeature;
     setSelected(f: boolean): IFeature;
