@@ -499,7 +499,7 @@ class GeometryTextDialog extends gws.View<ViewProps> {
                     <Cell>
                         <gws.ui.TextInput
                             label="X"
-                            value={dd.shape.geometry.coordinates[0]}
+                            value={cc.map.formatCoordinate(dd.shape.geometry.coordinates[0])}
                             whenChanged={v => this.updatePointCoordinate(0, v)}
                             whenEntered={() => this.save()}
                         />
@@ -507,7 +507,7 @@ class GeometryTextDialog extends gws.View<ViewProps> {
                     <Cell>
                         <gws.ui.TextInput
                             label="Y"
-                            value={dd.shape.geometry.coordinates[1]}
+                            value={cc.map.formatCoordinate(dd.shape.geometry.coordinates[1])}
                             whenChanged={v => this.updatePointCoordinate(1, v)}
                             whenEntered={() => this.save()}
                         />
