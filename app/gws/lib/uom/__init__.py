@@ -25,11 +25,27 @@ _number = int | float
 
 
 def scale_to_res(x: _number) -> float:
+    """Converts the scale to the user's resolution.
+
+    Args:
+        x: Scale.
+
+    Return:
+        Resolution in pixel.
+    """
     # return round(x * OGC_M_PER_PX, 4)
     return x * OGC_M_PER_PX
 
 
 def res_to_scale(x: _number) -> int:
+    """Converts the user's resolution to the scale.
+
+    Args:
+        x: Resolution in pixel per inch.
+
+    Return:
+        Scale.
+    """
     return int(x / OGC_M_PER_PX)
 
 
@@ -66,10 +82,27 @@ def res_to_scale(x: _number) -> int:
 ##
 
 def mm_to_px(x: _number, ppi: int) -> float:
+    """Converts millimetres to pixel.
+
+    Args:
+        x: Millimetres.
+        ppi: Pixels per inch.
+
+    Return:
+        Amount of pixels without unit."""
     return (x * ppi) / MM_PER_IN
 
 
 def to_px(xu: gws.Measurement, ppi: int) -> gws.Measurement:
+    """Converts the tuple measurement to amount of pixels.
+
+    Args:
+        xu: ``(value, unit)``.
+        ppi: Pixels per inch.
+
+    Return:
+        ``(amount of pixels, 'px')``.
+    """
     x, u = xu
     if u == gws.Uom.px:
         return xu
@@ -79,11 +112,29 @@ def to_px(xu: gws.Measurement, ppi: int) -> gws.Measurement:
 
 
 def size_mm_to_px(xy: gws.Size, ppi: int) -> gws.Size:
+    """Converts rectangle description in millimetres to pixels.
+
+    Args:
+        xy: ``(width, height)``.
+        ppi: Pixels per inch.
+
+    Return:
+        ``(width in pixels, height in pixels)``.
+    """
     x, y = xy
     return mm_to_px(x, ppi), mm_to_px(y, ppi)
 
 
 def msize_to_px(xyu: gws.MSize, ppi: int) -> gws.MSize:
+    """Converts rectangle description of any unit to pixels.
+
+    Args:
+        xyu: ``(width, height, unit)``.
+        ppi: Pixels per inch.
+
+    Return:
+        ``(converted width, converted height, 'px')``.
+    """
     x, y, u = xyu
     if u == gws.Uom.px:
         return xyu
@@ -95,10 +146,28 @@ def msize_to_px(xyu: gws.MSize, ppi: int) -> gws.MSize:
 ##
 
 def px_to_mm(x: _number, ppi: int) -> float:
+    """Converts pixel to millimetres.
+
+    Args:
+        x: Amount of pixels.
+        ppi: Pixel per inch.
+
+    Return:
+        Amount of millimetres.
+    """
     return (x / ppi) * MM_PER_IN
 
 
 def to_mm(xu: gws.Measurement, ppi: int) -> gws.Measurement:
+    """Converts the tuple measurement of any unit to millimetres.
+
+    Args:
+        xu: ``(value, unit)``.
+        ppi: Pixels per inch.
+
+    Return:
+        ``(amount of millimetres, 'mm')``.
+    """
     x, u = xu
     if u == gws.Uom.mm:
         return xu
@@ -108,11 +177,29 @@ def to_mm(xu: gws.Measurement, ppi: int) -> gws.Measurement:
 
 
 def size_px_to_mm(xy: gws.Size, ppi: int) -> gws.Size:
+    """Converts a rectangle description in pixel to millimetres.
+
+    Args:
+        xy: ``(width in pixel, height in pixel)``.
+        ppi: Pixel per inch
+
+    Return:
+        ``(width in millimetres, height in millimetres)``.
+    """
     x, y = xy
     return px_to_mm(x, ppi), px_to_mm(y, ppi)
 
 
 def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
+    """Converts the rectangle description of any unit to millimetres.
+
+    Args:
+        xyu: ``(width, height, unit)``.
+        ppi: Pixels per inch.
+
+    Return:
+        ``(converted width, converted height, 'mm')``.
+    """
     x, y, u = xyu
     if u == gws.Uom.mm:
         return xyu
@@ -125,6 +212,13 @@ def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
 
 
 def to_str(xu: gws.Measurement) -> str:
+    """Converts the tuple measurement to a string.
+
+    Args:
+        xu: ``(value, unit)``.
+
+    Return:
+        The input tuple as a string, like '5mm'."""
     x, u = xu
     sx = str(int(x)) if x.is_integer() else str(x)
     return sx + str(u)
@@ -154,6 +248,15 @@ _METRIC = {
 
 
 def parse(s: str, default_unit=None) -> gws.Measurement:
+    """Checks if a measurement fits the format ``'value unit'``.
+
+    Args:
+        s: Measurement to check.
+
+    Return:
+        ``(value, 'unit')``.
+        Raises an Error if the unit is missing, if the formatting is wrong or if the unit is invalid.
+    """
     if isinstance(s, (int, float)):
         if not default_unit:
             raise ValueError(f'missing unit: {s!r}')
@@ -184,7 +287,15 @@ _durations = {
 }
 
 
-def parse_duration(s):
+def parse_duration(s: str) -> int:
+    """converts weeks, days, hours or minutes to seconds.
+
+    Args:
+        s: Time of duration.
+
+    Return:
+        Input as seconds. Raises an error if the duration is invalid.
+    """
     if isinstance(s, int):
         return s
 
