@@ -8,7 +8,6 @@ import gws.base.legend
 import gws.base.shape
 import gws.base.template
 import gws.base.web
-import gws.gis.cache
 import gws.gis.crs
 import gws.gis.render
 import gws.lib.image
