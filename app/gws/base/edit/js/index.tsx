@@ -474,7 +474,6 @@ class GeometryTextDialog extends gws.View<ViewProps> {
         let dd = this.props.editDialogData as GeometryTextDialogData;
         let cc = _master(this);
 
-
         let okButton = <gws.ui.Button
             {...gws.lib.cls('editSaveButton', 'isActive')}
             tooltip={this.__('editSave')}
@@ -1027,13 +1026,41 @@ export class ListTab extends gws.View<ViewProps> {
         cc.selectFeatureInSidebar(feature);
     }
 
-    whenDrawButtonTouched() {
+    whenNewGeometryButtonTouched() {
         let cc = _master(this);
         cc.updateEditState({
             drawModel: cc.editState.sidebarSelectedModel,
             drawFeature: null,
         });
         cc.app.startTool('Tool.Edit.Draw')
+    }
+
+    whenNewPointGeometryTextButtonTouched() {
+        let cc = _master(this);
+        let shape = {
+            crs: cc.map.crs,
+            geometry: {
+                type: 'Point',
+                coordinates: [0, 0]
+            }
+        }
+        cc.showDialog({
+            type: 'GeometryText',
+            shape,
+            whenSaved: shape => this.whenNewPointGeometrySaved(shape),
+        });
+    }
+
+    async whenNewPointGeometrySaved(shape) {
+        let cc = _master(this);
+
+        let feature = await cc.createFeature(
+            cc.editState.sidebarSelectedModel,
+            null,
+            cc.map.shape2geom(shape)
+        )
+        cc.selectFeatureInSidebar(feature);
+        cc.closeDialog();
     }
 
     async componentDidMount() {
@@ -1047,8 +1074,18 @@ export class ListTab extends gws.View<ViewProps> {
         let es = this.props.editState;
         let model = es.sidebarSelectedModel;
         let features = cc.featureCache.getForModel(model);
-        let hasGeom = !gws.lib.isEmpty(model.geometryName);
         let searchText = es.featureListSearchText[model.uid] || '';
+
+        let hasGeom = false;
+        let hasGeomText = false;
+
+        for (let fld of model.fields) {
+            if (fld.name === model.geometryName) {
+                hasGeom = true;
+                hasGeomText = fld.widgetProps.type === 'geometry' && fld.widgetProps.withText;
+                break;
+            }
+        }
 
         return <sidebar.Tab className="editSidebar">
             <sidebar.TabHeader>
@@ -1083,10 +1120,15 @@ export class ListTab extends gws.View<ViewProps> {
                         whenTouched={() => this.whenTableViewButtonTouched()}
                     />}
                     <Cell flex/>
+                    {model.canCreate && hasGeomText && model.geometryType === gws.api.core.GeometryType.point && <sidebar.AuxButton
+                        {...gws.lib.cls('editNewPointGeometryText')}
+                        tooltip={this.__('editNewPointGeometryText')}
+                        whenTouched={() => this.whenNewPointGeometryTextButtonTouched()}
+                    />}
                     {model.canCreate && hasGeom && <sidebar.AuxButton
                         {...gws.lib.cls('editDrawAuxButton', this.props.appActiveTool === 'Tool.Edit.Draw' && 'isActive')}
                         tooltip={this.__('editDrawAuxButton')}
-                        whenTouched={() => this.whenDrawButtonTouched()}
+                        whenTouched={() => this.whenNewGeometryButtonTouched()}
                     />}
                     {model.canCreate && !hasGeom && <sidebar.AuxButton
                         {...gws.lib.cls('editNewAuxButton')}
