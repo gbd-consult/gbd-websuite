@@ -126,9 +126,11 @@ def test_msize_to_mm():
                 assert True
 
 
-# ISSUE when an int is used in the gws.Measurement parameter
+
 def test_to_str():
+    assert uom.to_str((1, gws.Uom.mm)) == '1mm'
     assert uom.to_str((1.0, gws.Uom.mm)) == '1mm'
+    assert uom.to_str((1.1, gws.Uom.m)) == '1.1m'
 
 
 def test_parse():
