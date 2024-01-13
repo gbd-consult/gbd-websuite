@@ -26,7 +26,7 @@ Deeper headings (with more dashes) create the section hierarchy.
         ## Subsection
             ### Sub-sub-section
 
-Heading levels are only used to create hierarchies, the final output rendering (`h1`, `h2` etc.) is determined by the section depth (the number of slashes in the sid) and the html split-level (see "options" below).
+Heading levels are only used to create hierarchies, the final output rendering (`h1`, `h2` etc.) is determined by the section depth (the number of slashes in the sid) and the file split-level (see "options" below).
 
 ### Section embedding
 
@@ -118,7 +118,7 @@ The result will be like this:
     ## Values :/docs/details/values        
         Something about values
 
-When Dog compiles your documentation, it starts with the section named `/` (root section) and recursively collects all embedded sections. Sections that are not embedded anywhere are formatted and generated, but won't become a part of the main documentation tree. 
+When Dog compiles your documentation, it starts with the section named `/` (root section) and recursively collects all embedded sections. Sections that are not embedded anywhere ("unbound sections") are ignored (with a warning). 
 
 ### More on Sids
 
@@ -390,48 +390,39 @@ A DB diagram consists of tables and arrows. A table is a name, followed by a lis
         city.id -< street.city_id  
     %end
 
-## API and options
+## Python API
 
 Dog provides the following API functions:
 
-    dog.build_html(options: dict) 
+```python
+dog.build_html(options: Options | dict) 
+```
 
 builds the HTML documentation.
 
-    dog.build_pdf(options: dict) 
+```python
+dog.build_pdf(options: Options | dict) 
+```
 
 builds the PDF documentation (requires [wkhtmltopdf](https://wkhtmltopdf.org/)).
 
-    dog.start_server(options: dict)
+```python
+dog.start_server(options: Options | dict)
+```
 
 starts a development server with live reload.
 
-Dog recognizes the following options:
+The `options` argument is either the object like below or a dictionary with the same keys and value types.
 
-| option            | type        | meaning                                          |
-|-------------------|-------------|--------------------------------------------------|
-| `assetPatterns`   | `list[str]` | shell patterns for asset files, e.g. `*jpg`      |
-| `debug`           | `bool`      | embed debug information in the output            |
-| `docPatterns`     | `List[str]` | shell patterns for doc files, e.g `*doc.md`      |
-| `excludeRegex`    | `str`       | regex to match file paths that should be ignored |
-| `extraAssets`     | `list[str]` | extra asset paths (e.g css, js)                  |
-| `htmlSplitLevel`  | `int`       | html split-level, see below                      |
-| `includeTemplate` | `str`       | path to a Jump included template, see below      |
-| `outputDir`       | `str`       | output directory                                 |
-| `pageTemplate`    | `str`       | path to a Jump page template, see below          |
-| `pdfOptions`      | `dict`      | arguments for the `wkhtmltopdf` tool             |
-| `rootDirs`        | `list[str]` | source directories                               |
-| `serverHost`      | `str`       | host name for the live server                    |
-| `serverPort`      | `int`       | port for the live server                         |
-| `staticDir`       | `str`       | where to store assets                            |
-| `subTitle`        | `str`       | documentation subtitle                           |
-| `title`           | `str`       | documentation title                              |
-| `verbose`         | `bool`      | verbose logging                                  |
-| `webRoot`         | `str`       | prefix all urls with this path                   |
+## Options
 
-### html split-level
+```python
+%include options.py 
+```
 
-This option indicates how Dog should write html files.
+### file split-level
+
+This option indicates how Dog should create output files.
 
 `0` means all documentation will be stored in a single file (`index.html`)
 

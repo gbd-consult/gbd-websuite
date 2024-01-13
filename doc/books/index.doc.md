@@ -23,3 +23,4 @@ Weitere Informationen finden sie unter:
 ## :/user-de
 ## :/admin-de
 ## :/dev-en
+## :/extra/*

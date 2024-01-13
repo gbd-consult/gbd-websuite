@@ -7,81 +7,73 @@ DOC_DIR = SELF_DIR
 APP_DIR = ROOT_DIR + '/app'
 BUILD_DIR = APP_DIR + '/__build'
 
-VERSION, _, _ = open(APP_DIR + '/VERSION').read().strip().rpartition('.')
+VERSION3 = open(APP_DIR + '/VERSION').read().strip()
+VERSION2 = VERSION3.rpartition('.')[0]
 
-OPTIONS = {
+# dog options (see lib/vendor/dog/options.py)
 
-    'docDir': DOC_DIR,
-    'appDir': APP_DIR,
-    'buildDir': BUILD_DIR,
+docRoots = [ROOT_DIR]
+docPatterns = ['*.doc.md']
+assetPatterns = ['*.svg', '*.png']
+excludeRegex = 'node_modules|___|__build'
 
-    # docs options (see lib/vendor/dog)
+debug = False
 
-    'rootDirs': [ROOT_DIR],
-    'docPatterns': ['*.doc.md'],
-    'assetPatterns': ['*.svg', '*.png'],
-    'excludeRegex': 'node_modules|___|__build',
+fileSplitLevel = 3
+pageTemplate = f'{DOC_DIR}/theme/page.cx.html'
+webRoot = f'/doc/{VERSION2}'
+staticDir = '_static'
+extraAssets = [
+    f'{DOC_DIR}/theme/theme.css',
+    f'{DOC_DIR}/theme/theme.js',
+    f'{DOC_DIR}/theme/theme_home.svg',
+    f'{DOC_DIR}/theme/theme_info.svg',
+    f'{DOC_DIR}/theme/theme_search.svg',
+    f'{DOC_DIR}/theme/theme_warning.svg',
+    f'{DOC_DIR}/theme/theme_arrow_prev.svg',
+    f'{DOC_DIR}/theme/theme_arrow_next.svg',
+    f'{DOC_DIR}/theme/theme_arrow_up.svg',
+]
 
-    'debug': False,
+includeTemplate = f'{DOC_DIR}/extra_commands.cx.html'
 
-    'htmlSplitLevel': 3,
-    'pageTemplate': f'{DOC_DIR}/theme/page.cx.html',
-    'webRoot': f'/doc/{VERSION}',
-    'staticDir': '_static',
-    'extraAssets': [
-        f'{DOC_DIR}/theme/theme.css',
-        f'{DOC_DIR}/theme/theme.js',
-        f'{DOC_DIR}/theme/theme_home.svg',
-        f'{DOC_DIR}/theme/theme_info.svg',
-        f'{DOC_DIR}/theme/theme_search.svg',
-        f'{DOC_DIR}/theme/theme_warning.svg',
-        f'{DOC_DIR}/theme/theme_arrow_prev.svg',
-        f'{DOC_DIR}/theme/theme_arrow_next.svg',
-        f'{DOC_DIR}/theme/theme_arrow_up.svg',
-    ],
+serverPort = 5500
+serverHost = '0.0.0.0'
 
-    'includeTemplate': f'{DOC_DIR}/extra_commands.cx.html',
+title = 'GBD WebSuite Dokumentation'
+subTitle = VERSION3
 
-    'serverPort': 5500,
-    'serverHost': '0.0.0.0',
+# wkhtmltopdf options
 
-    'title': 'GBD WebSuite Dokumentation',
-    'subTitle': VERSION,
-
-    # wkhtmltopdf options
-
-    'pdfOptions': {
-        'margin-bottom': 20,
-        'margin-left': 20,
-        'margin-right': 20,
-        'margin-top': 20,
-        'footer-font-size': 7,
-        'footer-left': 'GBD WebSuite Dokumentation :: ' + VERSION,
-        'footer-right': '[page]',
-        'footer-spacing': 5,
-        'footer-line': True,
-    },
-
-    # apidoc options (see make_api)
-
-    'apidocWebRoot': f'/apidoc/{VERSION}',
-
-    'pydoctorExclude': [
-        '___*',
-        '_plugins',
-        '__pycache__',
-        'vendor',
-        '*_test.py',
-    ],
-
-    'pydoctorExtraCss': f'{DOC_DIR}/theme/pydoctor_extra.css',
-
-    'pydoctorArgs': [
-        '--make-html',
-        '--project-name', 'GBD WebSuite',
-        '--project-version', VERSION,
-        '--docformat', 'google',
-        '--theme', 'readthedocs',
-        '--html-viewsource-base', 'https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws',
-    ]
+pdfOptions = {
+    'margin-bottom': 20,
+    'margin-left': 20,
+    'margin-right': 20,
+    'margin-top': 20,
+    'footer-font-size': 7,
+    'footer-right': '[page]',
+    'footer-spacing': 5,
 }
+
+# apidoc options (see make_api)
+
+apidocWebRoot = f'/apidoc/{VERSION2}'
+
+pydoctorExclude = [
+    '___*'
+    '_plugins'
+    '__pycache__'
+    'vendor'
+    '*_test.py'
+]
+
+pydoctorExtraCss = f'{DOC_DIR}/theme/pydoctor_extra.css'
+
+pydoctorArgs = [
+    '--make-html'
+    '--project-name', 'GBD WebSuite',
+    '--project-version', VERSION2,
+    '--docformat', 'google',
+    '--theme', 'readthedocs',
+    '--html-viewsource-base', 'https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws',
+]
