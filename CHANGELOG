@@ -1,3 +1,9 @@
+## Version 8.0.25
+
+- placeholders for edit widgets
+- wms cache CLI
+- options for custom documentation
+
 ## Version 8.0.24
 
 - geometry text widget
