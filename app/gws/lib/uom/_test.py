@@ -1,4 +1,4 @@
-import unittest
+"""Tests for the uom module."""
 
 import gws
 import gws.lib.uom as uom
@@ -126,9 +126,11 @@ def test_msize_to_mm():
                 assert True
 
 
-# ISSUE when an int is used in the gws.Measurement parameter
+
 def test_to_str():
+    assert uom.to_str((1, gws.Uom.mm)) == '1mm'
     assert uom.to_str((1.0, gws.Uom.mm)) == '1mm'
+    assert uom.to_str((1.1, gws.Uom.m)) == '1.1m'
 
 
 def test_parse():
@@ -145,11 +147,11 @@ def test_parse():
 
 
 def test_parse_errors():
-    with unittest.TestCase().assertRaises(ValueError) as missing_unit:
+    with u.raises(ValueError, match=f'missing unit:'):
         uom.parse(1)
-    with unittest.TestCase().assertRaises(ValueError) as invalid_format:
+    with u.raises(ValueError, match=f'invalid format:'):
         uom.parse('foo 1')
-    with unittest.TestCase().assertRaises(ValueError) as invalid_unit:
+    with u.raises(ValueError, match=f'invalid unit:'):
         uom.parse('1 bar')
 
 
@@ -162,5 +164,5 @@ def test_parse_duration():
 
 
 def test_parse_duration_errors():
-    with unittest.TestCase().assertRaises(ValueError) as invalid_duration:
-        uom.parse("1 foo")
+    with u.raises(ValueError, match=f'invalid duration'):
+        uom.parse_duration("1 foo")
