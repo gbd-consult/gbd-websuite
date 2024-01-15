@@ -29,6 +29,7 @@ class Config(gws.common.layer.ImageConfig):
     excludeLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to exclude
     flattenLayers: t.Optional[gws.common.layer.types.FlattenConfig]  #: flatten the layer hierarchy
     layerConfig: t.Optional[t.List[gws.common.layer.CustomConfig]]  #: custom configurations for specific layers
+    pixelBuffer: int = 256  #: pixel buffer for rendering
 
 
 class Object(gws.common.layer.Image):
@@ -44,6 +45,8 @@ class Object(gws.common.layer.Image):
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))
+
+        self.pixelBuffer = self.var('pixelBuffer', default=256)
 
         # by default, take the top-level layers as groups
         slf = self.var('rootLayers') or gws.gis.source.LayerFilter(level=1)
@@ -335,10 +338,10 @@ def _render_box(layer: Object, rv: t.MapRenderView, extra_params: dict = None):
         gws.p(extra_params)
 
     # boxes larger than that will be tiled in _box_request
-    size_threshold = 2500
+    max_tile_size = 2500
 
     if not rv.rotation:
-        return _box_request(layer, rv.bounds, rv.size_px[0], rv.size_px[1], extra_params, tile_size=size_threshold)
+        return _box_request(layer, rv.bounds, rv.size_px[0], rv.size_px[1], extra_params, tile_size=max_tile_size, pixel_buffer=layer.pixelBuffer)
 
     # rotation: render a circumsquare around the wanted extent
 
@@ -346,7 +349,7 @@ def _render_box(layer: Object, rv: t.MapRenderView, extra_params: dict = None):
     w, h = rv.size_px
     d = gws.gis.extent.diagonal((0, 0, w, h))
 
-    r = _box_request(layer, t.Bounds(crs=rv.bounds.crs, extent=circ), int(d), int(d), extra_params, tile_size=size_threshold)
+    r = _box_request(layer, t.Bounds(crs=rv.bounds.crs, extent=circ), int(d), int(d), extra_params, tile_size=max_tile_size, pixel_buffer=layer.pixelBuffer)
     if not r:
         return
 
@@ -368,7 +371,7 @@ def _render_box(layer: Object, rv: t.MapRenderView, extra_params: dict = None):
         return out.getvalue()
 
 
-def _box_request(layer: Object, bounds, width, height, params, tile_size):
+def _box_request(layer: Object, bounds, width, height, params, tile_size, pixel_buffer):
     if width < tile_size and height < tile_size:
         return _get_map_request(layer, bounds, width, height, params)
 
@@ -377,26 +380,33 @@ def _box_request(layer: Object, bounds, width, height, params, tile_size):
 
     ext = bounds.extent
 
-    bw = (ext[2] - ext[0]) * tile_size / width
-    bh = (ext[3] - ext[1]) * tile_size / height
+    resx = (ext[2] - ext[0]) / width
+    resy = (ext[3] - ext[1]) / height
+
+    bw = resx * tile_size
+    bh = resy * tile_size
 
     grid = []
 
     for ny in range(ycount):
         for nx in range(xcount):
+            cx = ext[0] + (nx * bw) + bw / 2
+            cy = ext[3] - (ny * bh) - bh / 2
             e = [
-                ext[0] + bw * nx,
-                ext[3] - bh * (ny + 1),
-                ext[0] + bw * (nx + 1),
-                ext[3] - bh * ny,
+                cx - bw / 2 - pixel_buffer * resx,
+                cy - bh / 2 - pixel_buffer * resx,
+                cx + bw / 2 + pixel_buffer * resx,
+                cy + bh / 2 + pixel_buffer * resx,
             ]
             bounds = t.Bounds(crs=bounds.crs, extent=e)
-            content = _get_map_request(layer, bounds, tile_size, tile_size, params)
+            req_size = tile_size + pixel_buffer * 2
+            content = _get_map_request(layer, bounds, req_size, req_size, params)
             grid.append([nx, ny, content])
 
     out = PIL.Image.new('RGBA', (tile_size * xcount, tile_size * ycount), (0, 0, 0, 0))
     for nx, ny, content in grid:
         img = PIL.Image.open(io.BytesIO(content))
+        img = img.crop((pixel_buffer, pixel_buffer, tile_size + pixel_buffer, tile_size + pixel_buffer))
         out.paste(img, (nx * tile_size, ny * tile_size))
 
     out = out.crop((0, 0, width, height))
