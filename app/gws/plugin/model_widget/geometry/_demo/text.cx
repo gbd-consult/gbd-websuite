@@ -23,8 +23,8 @@ map {
 models+ {
     type "postgres"
     tableName "edit.poi"
-    title "POI (with text edtior)"
-    uid "model_poi_geometry_3"
+    title "POI (default geometry)"
+    uid "model_geometry_3"
     sort+ { fieldName "name" }
     isEditable true
     permissions.edit "allow all"
@@ -43,11 +43,40 @@ models+ {
     templates+ { subject "feature.label" type "html" text "{{name}}" }
 }
 
+models+ {
+    type "postgres"
+    tableName "edit.district"
+    title "Districts (inline geometry)"
+    uid "model_geometry_4"
+    sort+ { fieldName "name" }
+    isEditable true
+    permissions.edit "allow all"
+
+    fields+ { name "sid" type "text" isPrimaryKey true permissions.edit "deny all" }
+    fields+ { name "name" type "text" title "Name" }
+
+    fields+ {
+        name "geom"
+        type "geometry"
+        title "Geometry"
+        widget { type "geometry" isInline true withText true }
+    }
+
+    templates+ { subject "feature.title" type "html" text "{{name}}" }
+    templates+ { subject "feature.label" type "html" text "{{name}}" }
+}
+
 map.layers+ {
     title "POIs"
     type "postgres"
     tableName "edit.poi"
     extent [ 431881, 6505964, 1076161, 6877804 ]
+}
+
+map.layers+ {
+    title "Districts"
+    type "postgres"
+    tableName "edit.district"
 }
 
 {demo_osm_background}

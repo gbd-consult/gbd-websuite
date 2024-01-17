@@ -127,6 +127,9 @@ module.exports = v => {
         '.editNewAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline')
         },
+        '.editNewPointGeometryText': {
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/fact_check_FILL0_wght400_GRAD0_opsz24')
+        },
         '.editRemoveAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/delete')
         },

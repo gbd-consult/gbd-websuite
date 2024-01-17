@@ -7,12 +7,14 @@ gws.ext.new.modelWidget('input')
 
 
 class Config(gws.base.model.widget.Config):
-    pass
+    placeholder: str = ''
+    """input box placeholder"""
 
 
 class Props(gws.base.model.widget.Props):
-    pass
+    placeholder: str
 
 
 class Object(gws.base.model.widget.Object):
-    pass
+    def props(self, user):
+        return gws.merge(super().props(user), placeholder=self.cfg('placeholder'))

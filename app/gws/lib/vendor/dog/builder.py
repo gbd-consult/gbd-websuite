@@ -8,6 +8,7 @@ import shutil
 import mimetypes
 
 from . import util, template, markdown
+from .options import Options
 
 
 class ParseNode(util.Data):
@@ -61,7 +62,7 @@ class Section(util.Data):
 
 
 class Builder:
-    options: util.Data
+    options: Options
     markdownParser: markdown.Markdown
     htmlGenerator: 'HTMLGenerator'
     docPaths: set[str]
@@ -70,10 +71,14 @@ class Builder:
     sectionNotFound: set[str]
     assetMap: dict[str, str]
 
-    def __init__(self, options):
-        self.options = util.to_data(options)
+    def __init__(self, opts: Options | dict):
+        self.options = Options()
+        if isinstance(opts, Options):
+            opts = vars(opts)
+        for k, v in opts.items():
+            setattr(self.options, k, v)
 
-        util.log.set_level('DEBUG' if options.verbose else 'INFO')
+        util.log.set_level('DEBUG' if self.options.debug else 'INFO')
 
         self.includeTemplate = ''
         if self.options.includeTemplate:
@@ -95,28 +100,43 @@ class Builder:
 
     def build_html(self, write=False):
         self.collect_and_parse()
+        if not self.sectionMap:
+            util.log.error('no sections, skip build_html')
+            return
         self.generate_html(write=write)
+        if write:
+            util.log.info(f'HTML created in {self.options.outputDir!r}')
 
     def build_pdf(self):
-        pdf_dir = '/tmp/dogpdf'
-        shutil.rmtree(pdf_dir, ignore_errors=True)
+        pdf_temp_dir = '/tmp/dog_pdf'
+        shutil.rmtree(pdf_temp_dir, ignore_errors=True)
 
-        old_opts = util.to_data(self.options)
+        pdf_opts = Options()
+        vars(pdf_opts).update(vars(self.options))
 
-        self.options.htmlSplitLevel = 0
-        self.options.outputDir = pdf_dir
-        self.options.webRoot = '.'
+        pdf_opts.fileSplitLevel = 0
+        pdf_opts.outputDir = pdf_temp_dir
+        pdf_opts.webRoot = '.'
+
+        if self.options.pdfPageTemplate:
+            pdf_opts.pageTemplate = self.options.pdfPageTemplate
+
+        old_opts = self.options
+        self.options = pdf_opts
 
         self.collect_and_parse()
+        if not self.sectionMap:
+            util.log.error('no sections, skip build_pdf')
+            return
         self.generate_html(write=True)
 
         self.options = old_opts
 
-        self.generate_pdf(
-            pdf_dir + '/index.html',
-            self.options.outputDir + '/index.pdf')
+        out_path = self.options.outputDir + '/index.pdf'
+        self.generate_pdf(pdf_temp_dir + '/index.html', out_path)
+        shutil.rmtree(pdf_temp_dir, ignore_errors=True)
 
-        shutil.rmtree(pdf_dir, ignore_errors=True)
+        util.log.info(f'PDF created in {out_path!r}')
 
     def dump(self):
         def _default(x):
@@ -131,7 +151,7 @@ class Builder:
     ##
 
     def collect_sources(self):
-        for dirname in self.options.rootDirs:
+        for dirname in self.options.docRoots:
             self.collect_sources_from_dir(dirname)
 
     def collect_sources_from_dir(self, dirname):
@@ -362,7 +382,7 @@ class Builder:
             for sec in self.parse_file(path):
                 prev = self.sectionMap.get(sec.sid)
                 if prev:
-                    util.log.warning(f'section {sec.sid!r} in {prev.sourcePath!r} redefined in {sec.sourcePath!r}')
+                    util.log.warning(f'section redefined {sec.sid!r} from {prev.sourcePath!r} in {sec.sourcePath!r}')
                 self.sectionMap[sec.sid] = sec
 
         root = self.sectionMap.get('/')
@@ -376,7 +396,7 @@ class Builder:
 
         for sec in self.sectionMap.values():
             if sec.sid not in new_map:
-                util.log.warning(f'section not linked: {sec.sid!r} in {sec.sourcePath!r}')
+                util.log.warning(f'unbound section {sec.sid!r} in {sec.sourcePath!r}')
                 continue
 
         self.sectionMap = new_map
@@ -391,7 +411,7 @@ class Builder:
     def make_tree(self, sec: Section, parent_sec: Section | None, new_map):
         if parent_sec:
             if sec.parentSid:
-                util.log.error(f'attempt to relink section {sec.sid!r} for {sec.parentSid!r} to {parent_sec.sid!r}')
+                util.log.warning(f'rebinding section {sec.sid!r} from {sec.parentSid!r} to {parent_sec.sid!r}')
             sec.parentSid = parent_sec.sid
 
         if sec.status == 'ok':
@@ -441,7 +461,7 @@ class Builder:
                 node.sids = sids
 
     def add_url_and_path(self, sec: Section):
-        sl = self.options.htmlSplitLevel or 0
+        sl = self.options.fileSplitLevel or 0
         parts = sec.sid.split('/')[1:]
 
         if sec.level == 0 or sl == 0:

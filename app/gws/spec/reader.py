@@ -220,13 +220,16 @@ def _read_enum(r: Reader, val, typ: core.Type):
 
 def _read_object(r: Reader, val, typ: core.Type):
     val = _ensure(val, dict)
+
     if r.case_insensitive:
         val = {k.lower(): v for k, v in val.items()}
+    else:
+        val = dict(val)
 
     res = {}
 
     for prop_name, prop_type_uid in typ.tProperties.items():
-        prop_val = val.get(prop_name.lower() if r.case_insensitive else prop_name)
+        prop_val = val.pop(prop_name.lower() if r.case_insensitive else prop_name, None)
         r.push((prop_name, prop_val, prop_type_uid))
         res[prop_name] = r.read2(prop_val, prop_type_uid)
         r.pop()
@@ -454,7 +457,7 @@ def _format_error_stack(stack):
     return f
 
 
-# 
+#
 
 _READERS = {
     'any': _read_any,

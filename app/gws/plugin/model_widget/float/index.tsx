@@ -17,6 +17,7 @@ class FormView extends gws.View<Props> {
             disabled={this.props.widgetProps.readOnly}
             locale={this.app.locale}
             value={gws.lib.isEmpty(value) ? null : Number(value)}
+            placeholder={this.props.widgetProps.placeholder || ''}
             whenChanged={this.props.whenChanged}
             whenEntered={this.props.whenEntered}
         />

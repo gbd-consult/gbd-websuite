@@ -1,14 +1,14 @@
 import livereload
 
 from . import builder, util
+from .options import Options
 
 
 class Server:
-    def __init__(self, options):
-        self.options = util.to_data(options)
+    def __init__(self, opts: Options | dict):
+        self.b = builder.Builder(opts)
         self.liveServer = None
-        self.liveScript = f'<script src="//{self.options.serverHost}:{self.options.serverPort}/livereload.js?port={self.options.serverPort}"></script>'
-        self.builder = builder.Builder(self.options)
+        self.liveScript = f'<script src="//{self.b.options.serverHost}:{self.b.options.serverPort}/livereload.js?port={self.b.options.serverPort}"></script>'
 
     def app(self, env, start_response):
 
@@ -16,7 +16,7 @@ class Server:
         if url.endswith('/'):
             url += 'index.html'
 
-        res = self.builder.content_for_url(url)
+        res = self.b.content_for_url(url)
         if not res:
             start_response('404 Not Found', [('Content-type', 'text/html')])
             return [b'Not Found']
@@ -38,7 +38,7 @@ class Server:
 
     def rebuild(self):
         util.time_start('rebuild')
-        self.builder.build_html(write=False)
+        self.b.build_html(write=False)
         util.time_end()
 
     def watch_docs(self, args=None):
@@ -54,16 +54,16 @@ class Server:
 
         self.liveServer = livereload.Server(self.app)
 
-        for root in self.options.rootDirs:
-            for p in self.options.docPatterns:
+        for root in self.b.options.docRoots:
+            for p in self.b.options.docPatterns:
                 path = root + '/**/' + p
                 self.liveServer.watch(path, self.watch_docs, delay=0.1)
                 util.log.info(f'watching {path}')
 
-        for path in self.builder.assetPaths:
+        for path in self.b.assetPaths:
             self.liveServer.watch(path, self.watch_assets, delay=0.1)
 
-        for path in self.builder.options.extraAssets:
+        for path in self.b.options.extraAssets:
             self.liveServer.watch(path, self.watch_assets, delay=0.1)
 
         try:
@@ -80,11 +80,11 @@ class Server:
 
         tornado.autoreload._reload_hooks = ListNoAppend()
 
-        util.log.info(f'http://{self.options.serverHost}:{self.options.serverPort}{self.options.webRoot}/')
+        util.log.info(f'http://{self.b.options.serverHost}:{self.b.options.serverPort}{self.b.options.webRoot}/')
 
         self.liveServer.serve(
-            host=self.options.serverHost,
-            port=self.options.serverPort,
+            host=self.b.options.serverHost,
+            port=self.b.options.serverPort,
             debug=True,
             restart_delay=1,
             open_url_delay=None,

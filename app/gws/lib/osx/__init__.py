@@ -174,6 +174,22 @@ def find_files(dirname, pattern=None, ext=None, deep=True):
             yield de.path
 
 
+def find_directories(dirname, pattern=None, deep=True):
+    de: os.DirEntry
+    for de in os.scandir(dirname):
+        if de.name.startswith('.'):
+            continue
+
+        if not de.is_dir():
+            continue
+
+        if pattern is None or re.search(pattern, de.path):
+            yield de.path
+
+        if deep:
+            yield from find_directories(de.path, pattern)
+
+
 _Path = str | bytes
 
 
