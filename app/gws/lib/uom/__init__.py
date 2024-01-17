@@ -89,12 +89,12 @@ def mm_to_px(x: _number, ppi: int) -> float:
         ppi: Pixels per inch.
 
     Returns:
-        Amount of pixels without unit."""
+        Amount of pixels."""
     return (x * ppi) / MM_PER_IN
 
 
 def to_px(xu: gws.Measurement, ppi: int) -> gws.Measurement:
-    """Converts the tuple measurement to amount of pixels.
+    """Converts a measurement to amount of pixels.
 
     Args:
         xu: A measurement to convert to pixels.
@@ -112,7 +112,7 @@ def to_px(xu: gws.Measurement, ppi: int) -> gws.Measurement:
 
 
 def size_mm_to_px(xy: gws.Size, ppi: int) -> gws.Size:
-    """Converts rectangle description in millimetres to pixels.
+    """Converts a rectangle description in millimetres to pixels.
 
     Args:
         xy: A rectangle measurements in mm.
@@ -126,7 +126,7 @@ def size_mm_to_px(xy: gws.Size, ppi: int) -> gws.Size:
 
 
 def msize_to_px(xyu: gws.MSize, ppi: int) -> gws.MSize:
-    """Converts rectangle description of any unit to pixels.
+    """Converts a rectangle description of any unit to pixels.
 
     Args:
         xyu: A rectangle measurements with its unit.
@@ -159,7 +159,7 @@ def px_to_mm(x: _number, ppi: int) -> float:
 
 
 def to_mm(xu: gws.Measurement, ppi: int) -> gws.Measurement:
-    """Converts the tuple measurement of any unit to millimetres.
+    """Converts a measurement of any unit to millimetres.
 
     Args:
         xu: A measurement to convert.
@@ -191,7 +191,7 @@ def size_px_to_mm(xy: gws.Size, ppi: int) -> gws.Size:
 
 
 def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
-    """Converts the rectangle description of any unit to millimetres.
+    """Converts a rectangle description of any unit to millimetres.
 
     Args:
         xyu: A rectangle measurements with its unit.
@@ -200,7 +200,7 @@ def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
     Returns:
         The rectangle measurements in millimetres.
     Raises:
-        ``ValueError`` if the unit is invalid
+        ``ValueError``: if the unit is invalid
     """
     x, y, u = xyu
     if u == gws.Uom.mm:
@@ -210,11 +210,8 @@ def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
     raise ValueError(f'invalid unit {u!r}')
 
 
-##
-
-
 def to_str(xu: gws.Measurement) -> str:
-    """Converts the tuple measurement to a string.
+    """Converts a to a string.
 
     Args:
         xu: A measurement to convert.
@@ -253,7 +250,7 @@ def parse(s: str | int | float, default_unit: gws.Uom = None) -> gws.Measurement
         A measurement.
 
     Raises:
-         ``ValueError`` if the unit is missing, if the formatting is wrong or if the unit is invalid.
+         ``ValueError``: if the unit is missing, if the formatting is wrong or if the unit is invalid.
     """
     if isinstance(s, (int, float)):
         if not default_unit:
@@ -286,7 +283,7 @@ _durations = {
 
 
 def parse_duration(s: str) -> int:
-    """converts weeks, days, hours or minutes to seconds.
+    """Converts weeks, days, hours or minutes to seconds.
 
     Args:
         s: Time of duration.
@@ -294,7 +291,7 @@ def parse_duration(s: str) -> int:
     Returns:
         Input as seconds.
     Raises:
-        ``ValueError`` if the duration is invalid.
+        ``ValueError``: if the duration is invalid.
     """
     if isinstance(s, int):
         return s

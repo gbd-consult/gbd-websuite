@@ -96,7 +96,7 @@ def get(mt: str) -> t.Optional[str]:
     """Return the normalized mime type.
 
     Args:
-        mt: mime type or content type
+        mt: Mime type or content type.
 
     Returns:
         The normalized mime type.
@@ -138,13 +138,13 @@ def _get_quick(mt):
 
 
 def for_path(path: str) -> str:
-    """Returns the mime type for a given path
+    """Returns the mime type for a given path.
 
     Args:
-        path: Path to mime type
+        path: Path to mime type.
 
     Returns:
-        The mime type or BIN if type is unknown
+        The mime type or ``BIN`` if type is unknown.
     """
     _, _, e = path.rpartition('.')
     if e in _common_extensions:
@@ -153,14 +153,14 @@ def for_path(path: str) -> str:
     return t or BIN
 
 
-def extension_for(mt) -> t.Optional[str]:
-    """Returns the extension of a given mime type
+def extension_for(mt: str) -> t.Optional[str]:
+    """Returns the extension of a given mime type.
 
     Args:
-        mt: mime type
+        mt: Mime type.
 
     Returns:
-        The mime type extension
+        The mime type extension.
     """
 
     for ext, rt in _common_extensions.items():

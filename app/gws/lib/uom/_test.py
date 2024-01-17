@@ -3,7 +3,6 @@
 import gws
 import gws.lib.uom as uom
 import gws.test.util as u
-import random
 
 
 def test_scale_to_res():

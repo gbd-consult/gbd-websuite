@@ -10,17 +10,15 @@ salt = 'hashtest'
 
 # known_hv from https://www.dcode.fr/pbkdf2-hash with sha512 alg, foo pw, hashtest salt, base 64 output
 # known URL safe hashvalue to foo
-hvKnown = 'MFyuRkTcnEZd9qB35nslGy/W3a7REHFzpYwYcCTtw1TxRZvqeHwNd0g1DA1DghfkN+OEAcGn32zparlum12UbA=='.replace('/',
-                                                                                                             '_').replace(
-    '+', '-')
+hvKnown = 'MFyuRkTcnEZd9qB35nslGy_W3a7REHFzpYwYcCTtw1TxRZvqeHwNd0g1DA1DghfkN-OEAcGn32zparlum12UbA=='
 
 
 def test_compare_true():
-    assert password.compare('foo', 'foo') == True
+    assert password.compare('foo', 'foo')
 
 
 def test_compare_false():
-    assert password.compare('foo', 'bar') == False
+    assert not password.compare('foo', 'bar')
 
 
 def test_encode():
@@ -32,8 +30,8 @@ def test_encode():
 def test_check_true():
     # create encode
     enc = '$'.join(['', 'sha512', salt, hvKnown])
-    assert password.check('foo', enc) == True
+    assert password.check('foo', enc)
 
 
 def test_check_false():
-    assert password.check('foo', '$sha512$hashtest$ThisIsJustSomethingDifferent') == False
+    assert not password.check('foo', '$sha512$hashtest$ThisIsJustSomethingDifferent')

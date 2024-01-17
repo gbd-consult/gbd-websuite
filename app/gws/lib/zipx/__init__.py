@@ -57,7 +57,6 @@ def unzip(path: str, target_dir: str, flat=False) -> int:
 
 
 def unzip_bytes(source: bytes, target_dir: str, flat=False) -> int:
-    """Unpack a zip archive in memory into a directory."""
     """Unpack a zip archive in memory into a directory.
 
     Args:

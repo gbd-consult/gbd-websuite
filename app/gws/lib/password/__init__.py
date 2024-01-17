@@ -7,28 +7,28 @@ import random
 
 
 def compare(a: str, b: str) -> bool:
-    """Return a == b
+    """Compares two Strings in a safe way to prevent timing attacks.
 
         Args:
-            a: as String
-            b: as String
+            a: 1st String.
+            b: 2nd String.
 
-        Return:
-            True if a equals b, False otherwise
+        Returns:
+            ``True`` if a equals b, ``False`` otherwise.
     """
 
     return hmac.compare_digest(a.encode('utf8'), b.encode('utf8'))
 
 
-def encode(password, algo='sha512'):
+def encode(password: str, algo: str = 'sha512') -> str:
     """Encode a password into a hash.
 
     Args:
           password: String password.
-          algo: hashing algorithm. Default is SHA512.
+          algo: Hashing algorithm. Default is SHA512.
 
-    Return:
-        Respective hash value in the format: $algorithm$Salt$hash
+    Returns:
+        Respective hash value in the format ``$algorithm$salt$hash``.
     """
 
     salt = _random_string(8)
@@ -36,15 +36,15 @@ def encode(password, algo='sha512'):
     return '$'.join(['', algo, salt, base64.urlsafe_b64encode(h).decode('utf8')])
 
 
-def check(password, encoded):
+def check(password: str, encoded: str) -> bool:
     """Check if a password matches a hash.
 
     Args:
-         password: String password.
-         encoded: Hash of the input password.
+         password: Password as a string.
+         encoded: Hash of the input password as a string.
 
     Returns:
-        Boolean True if password matches the hash, else False.
+        ``True`` if password matches the hash, else ``False``.
     """
 
     try:

@@ -18,7 +18,7 @@ def test_get_path():
 
 
 def test_get_empty():
-    assert mime.get('') == None
+    assert not mime.get('')
 
 
 def test_for_path_common():
@@ -38,7 +38,7 @@ def test_extension_for():
 
 
 def test_extension_for_empty():
-    assert mime.extension_for('') == None
+    assert not mime.extension_for('')
 
 
 def test_extension_for_guessed():
