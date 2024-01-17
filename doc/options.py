@@ -70,7 +70,7 @@ pydoctorExclude = [
 pydoctorExtraCss = f'{DOC_DIR}/theme/pydoctor_extra.css'
 
 pydoctorArgs = [
-    '--make-html'
+    '--make-html',
     '--project-name', 'GBD WebSuite',
     '--project-version', VERSION2,
     '--docformat', 'google',

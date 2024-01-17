@@ -2,11 +2,13 @@
 
 # tests
 
-PyYAML
+PyYAML==6.0
 requests
 
 # docs
 
-livereload
-mistune
-pydoctor
+livereload==2.6
+mistune==2
+pydoctor==23
+Pygments==2
+tornado<6.3
