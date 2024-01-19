@@ -12,90 +12,100 @@ class Error(gws.Error):
     pass
 
 
-def zip(path: str, *sources, flat=False) -> int:
+def zip(path: str, *sources: str, flat: bool = False) -> int:
     """Create a zip archive in a file.
 
     Args:
         path: Path to the zip archive.
-        sources: Sources to zip.
+        sources: Paths to the sources to zip.
         flat: If ``True`` base names are being kept in zip archive,
                 else whole paths are being kept in zip archive. Default is ``False``
 
-    Returns: The amount of files in the zip archive"""
+    Returns:
+        The amount of files in the zip archive.
+    """
 
     return _zip(path, sources, flat)
 
 
-def zip_to_bytes(*sources, flat=False) -> bytes:
+def zip_to_bytes(*sources: str, flat: bool = False) -> bytes:
     """Create a zip archive in memory.
 
     Args:
-        sources: Sources to zip.
+        sources: Paths to the sources to zip.
         flat: If ``True`` only base names will be returned,
                 else the whole paths will be returned. Default is ``False``.
 
-    Returns: The names of the file paths encoded in bytes."""
+    Returns:
+        The names of the file paths encoded in bytes.
+    """
 
     with io.BytesIO() as fp:
         cnt = _zip(fp, sources, flat)
         return fp.getvalue() if cnt else b''
 
 
-def unzip(path: str, target_dir: str, flat=False) -> int:
+def unzip(path: str, target_dir: str, flat: bool = False) -> int:
     """Unpack a zip archive into a directory.
 
     Args:
-        path: Path to the zip file.
+        path: Path to the zip archive.
         target_dir: Path to the target directory.
         flat: If ``True`` omit path and consider only base name of files in the zip archive,
                 else complete paths are considered of files in the zip archive. Default is ``False``.
 
-    Returns: The amount of unzipped files
+    Returns:
+        The amount of unzipped files.
     """
 
     return _unzip(path, target_dir, None, flat)
 
 
-def unzip_bytes(source: bytes, target_dir: str, flat=False) -> int:
+def unzip_bytes(source: bytes, target_dir: str, flat: bool = False) -> int:
     """Unpack a zip archive in memory into a directory.
 
     Args:
-        source: Path to the zip file.
+        source: Path to the zip archive.
         target_dir: Path to the target directory.
         flat: If ``True`` omit path and consider only base name of files in the zip archive,
                 else complete paths are considered of files in the zip archive. Default is ``False``.
 
-    Returns: The amount of unzipped files
+    Returns:
+        The amount of unzipped files.
     """
 
     with io.BytesIO(source) as fp:
         return _unzip(fp, target_dir, None, flat)
 
 
-def unzip_to_dict(path: str, flat=False) -> dict:
+def unzip_to_dict(path: str, flat: bool = False) -> dict:
     """Unpack a zip archive into a dict.
 
     Args:
-        path: Path to the zip file.
+        path: Path to the zip archive.
         flat: If ``True`` then the dictionary contains the base names of the unzipped files,
                 else it contains the whole path. Default is ``False``.
 
-    Returns: A dictionary containing all the file paths or base names"""
+    Returns:
+        A dictionary containing all the file paths or base names.
+    """
 
     dct = {}
     _unzip(path, None, dct, flat)
     return dct
 
 
-def unzip_bytes_to_dict(source: bytes, flat=False) -> dict:
+def unzip_bytes_to_dict(source: bytes, flat: bool = False) -> dict:
     """Unpack a zip archive in memory into a dict.
 
     Args:
-        source: Zip archive in bytes to unpack to a dictionary
+        source: Path to zip archive.
         flat: If ``True`` then the dictionary contains the base names of the unzipped files,
                 else it contains the whole path. Default is ``False``.
 
-    Returns: A dictionary containing all the file paths or base names"""
+    Returns:
+        A dictionary containing all the file paths or base names.
+    """
 
     with io.BytesIO(source) as fp:
         dct = {}
