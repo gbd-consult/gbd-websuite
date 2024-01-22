@@ -49,14 +49,14 @@ class Object(gws.Node):
             ls = []
             for la in e.layers:
                 title = gws.get(la, 'title', '?')
-                ls.append(f'{la.uid}: {title!r} type={la.extType}')
+                ls.append(f'{la.uid} ({la.extType} {title!r})')
             print(f'LAYER  :', ', '.join(ls))
 
             table = []
 
             for z, g in sorted(e.grids.items()):
                 table.append({
-                    'zoom': z,
+                    'level': z,
                     'scale': '1:' + str(round(gws.lib.uom.res_to_scale(g.res))),
                     'grid': f'{g.maxX} x {g.maxY}',
                     'total': g.totalTiles,
@@ -64,7 +64,7 @@ class Object(gws.Node):
                     '%%': int(100 * (g.cachedTiles / g.totalTiles)),
                 })
             print()
-            print(gws.lib.console.text_table(table, ['zoom', 'scale', 'grid', 'total', 'cached', '%%']))
+            print(gws.lib.console.text_table(table, ['level', 'scale', 'grid', 'total', 'cached', '%%']))
 
         if status.staleDirs:
             print()

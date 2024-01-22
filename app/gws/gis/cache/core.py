@@ -190,7 +190,7 @@ def _enum_entries(root: gws.IRoot, mpx_config, layer_uids=None):
                 w = bbox[2] - bbox[0]
                 h = bbox[3] - bbox[1]
                 ts = g['tile_size']
-                for z, res in enumerate(g['res']):
+                for z, res in enumerate(sorted(g['res'], reverse=True)):
                     maxx = max(math.ceil(w // res / ts[0]), 1)
                     maxy = max(math.ceil(h // res / ts[1]), 1)
                     e.grids[z] = Grid(
