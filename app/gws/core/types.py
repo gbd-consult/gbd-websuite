@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     import datetime
     import sqlalchemy
     import sqlalchemy.orm
+    import numpy.typing
 
 # ----------------------------------------------------------------------------------------------------------------------
 # custom types, used everywhere
@@ -822,6 +823,9 @@ class SourceLayer(Data):
     imageFormat: str
     resourceUrls: dict
 
+    sourceId: str
+    properties: dict
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # XML
@@ -1456,6 +1460,8 @@ class IImage(IObject, Protocol):
     def to_bytes(self, mime: Optional[str] = None) -> bytes: ...
 
     def to_path(self, path: str, mime: Optional[str] = None) -> str: ...
+
+    def to_array(self) -> 'numpy.typing.NDArray': ...
 
 
 class MapView(Data):

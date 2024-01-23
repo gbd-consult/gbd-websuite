@@ -1,6 +1,5 @@
 """GDAL wrapper."""
 
-import os
 import contextlib
 import datetime
 
@@ -18,25 +17,36 @@ class Error(gws.Error):
     pass
 
 
-def drivers():
+class DriverInfo(gws.Data):
+    index: int
+    name: str
+    longName: str
+    metaData: dict
+
+
+class _DriverInfoCache(gws.Data):
+    infos: list[DriverInfo]
+    extToName: dict
+    vectorNames: set[str]
+    rasterNames: set[str]
+
+
+def drivers() -> list[DriverInfo]:
     """Enumerate GDAL drivers."""
 
-    ls = []
-    for n in range(gdal.GetDriverCount()):
-        driver = gdal.GetDriver(n)
-        ls.append(driver.GetDescription())
-
-    return sorted(ls)
+    di = _fetch_driver_infos()
+    return di.infos
 
 
-def open(path, mode, driver=None, **opts) -> 'DataSet':
-    """Open a path and return a DataSet object.
+def open(path, mode, driver: str = '', as_raster: bool = False, as_vector: bool = False, **opts) -> 'DataSet':
+    """Open a path and return a  vector DataSet object.
 
     Args:
-        path: file path
+        path: File path.
         mode: 'r' (read), 'a' (update), 'w' (create for writing)
-        driver: driver name, if omitted, will be suggested from the path extension
-        opts: options for gdal.OpenEx/CreateDataSource
+        driver: Driver name, if omitted, will be suggested from the path extension.
+        type: 'raster' or 'vector'  for dual drivers, like Geopackage.
+        opts: Options for gdal.OpenEx/CreateDataSource.
 
     Returns:
         DataSet object.
@@ -45,26 +55,66 @@ def open(path, mode, driver=None, **opts) -> 'DataSet':
 
     gdal.UseExceptions()
 
+    drv = _driver_from_args(path, driver, as_raster=as_raster, as_vector=as_vector)
+
     if mode == 'w':
-        if not driver:
-            driver = _driver_name_from_extension(path.split('.')[-1])
-        if not driver:
-            raise Error(f'no driver found for {path!r}')
-        drv = ogr.GetDriverByName(driver)
-        if not drv:
-            raise Error(f'driver not found {driver!r}')
         gd = drv.CreateDataSource(path, **opts)
         if gd is None:
             raise Error(f'cannot create {path!r}')
         return DataSet(path, gd)
 
-    if not os.path.isfile(path):
+    if not gws.is_file(path):
         raise Error(f'file not found {path!r}')
 
     flags = gdal.OF_VERBOSE_ERROR + (gdal.OF_UPDATE if mode == 'a' else gdal.OF_READONLY)
+    if as_raster:
+        flags += gdal.OF_RASTER
+    if as_vector:
+        flags += gdal.OF_VECTOR
     gd = gdal.OpenEx(path, flags, **opts)
     if gd is None:
         raise Error(f'cannot open {path!r}')
+    return DataSet(path, gd)
+
+
+def open_image(image: gws.IImage, bounds: gws.Bounds) -> 'DataSet':
+    gdal.UseExceptions()
+
+    drv = gdal.GetDriverByName('MEM')
+    img_array = image.to_array()
+    band_count = img_array.shape[2]
+
+    gd = drv.Create('', img_array.shape[1], img_array.shape[0], band_count, gdal.GDT_Byte)
+    for band in range(band_count):
+        gd.GetRasterBand(band + 1).WriteArray(img_array[:, :, band])
+
+    ext = bounds.extent
+
+    src_res_x = (ext[2] - ext[0]) / gd.RasterXSize
+    src_res_y = (ext[1] - ext[3]) / gd.RasterYSize
+
+    src_transform = (
+        ext[0],
+        src_res_x,
+        0,
+        ext[3],
+        0,
+        src_res_y,
+    )
+
+    gd.SetGeoTransform(src_transform)
+    gd.SetSpatialRef(_srs(bounds.crs.srid))
+
+    return DataSet('', gd)
+
+
+def create_copy(path: str, ds: 'DataSet', driver: str = '', strict=False, **opts) -> 'DataSet':
+    gdal.UseExceptions()
+
+    drv = _driver_from_args(path, driver, as_raster=True)
+    gd = drv.CreateCopy(path, ds.gdDataset, 1 if strict else 0, **opts)
+    gd.SetMetadata(ds.gdDataset.GetMetadata())
+    gd.FlushCache()
     return DataSet(path, gd)
 
 
@@ -98,6 +148,7 @@ class DataSet:
             raise
 
     def close(self):
+        self.gdDataset.FlushCache()
         setattr(self, 'gdDataset', None)
 
     def create_layer(
@@ -150,14 +201,14 @@ class Layer:
 
     def describe(self) -> gws.DataSetDescription:
         desc = gws.DataSetDescription(
-            name=self.name,
+            columns=[],
+            columnMap={},
             fullName=self.name,
-            schema='',
-            columns={},
-            keyNames=[],
             geometryName='',
+            geometrySrid=0,
             geometryType='',
-            geometrySrid='',
+            name=self.name,
+            schema='',
         )
 
         cols = []
@@ -199,11 +250,8 @@ class Layer:
                 geometrySrid=int(crs.GetAuthorityCode(None)),
             ))
 
-        desc.columns = {c.name: c for c in cols}
-
-        for c in cols:
-            if c.isPrimaryKey:
-                desc.keyNames.append(c.name)
+        desc.columns = cols
+        desc.columnMap = {c.name: c for c in cols}
 
         for c in cols:
             # NB take the last geom
@@ -226,14 +274,11 @@ class Layer:
                         ogr.CreateGeometryFromWkt(
                             fd.shape.to_wkt(),
                             _srs(fd.shape.crs.srid)))
-                elif fd.wkt:
-                    # NB using default CRS
-                    gd_feature.SetGeometry(ogr.CreateGeometryFromWkt(fd.wkt))
 
             if fd.uid and isinstance(fd.uid, int):
                 gd_feature.SetFID(fd.uid)
 
-            for col in desc.columns.values():
+            for col in desc.columns:
                 if col.geometryType or col.isPrimaryKey:
                     continue
                 val = fd.attributes.get(col.name)
@@ -259,15 +304,15 @@ class Layer:
             gd_feature = self.gdLayer.GetNextFeature()
             if not gd_feature:
                 break
-            fds.append(self._feature_data(gd_feature, default_srid, encoding))
+            fds.append(self._feature_record(gd_feature, default_srid, encoding))
         return fds
 
     def get_one(self, fid: int, default_srid: int = 0, encoding: str = None) -> t.Optional[gws.FeatureRecord]:
         gd_feature = self.gdLayer.GetFeature(fid)
         if gd_feature:
-            return self._feature_data(gd_feature, default_srid, encoding)
+            return self._feature_record(gd_feature, default_srid, encoding)
 
-    def _feature_data(self, gd_feature, default_srid, encoding):
+    def _feature_record(self, gd_feature, default_srid, encoding):
         fd = gws.FeatureRecord(
             attributes={},
             shape=None,
@@ -297,21 +342,76 @@ class Layer:
 
 ##
 
-_ext_to_driver_name = {}
+
+def _driver_from_args(path, driver_name, as_raster=False, as_vector=False):
+    di = _fetch_driver_infos()
+
+    if not driver_name:
+        ext = path.split('.')[-1]
+        names = di.extToName.get(ext)
+        if not names:
+            raise Error(f'no default driver found for {path!r}')
+        if len(names) > 1:
+            raise Error(f'multiple drivers found for {path!r}')
+        driver_name = names[0]
+
+    is_vector = driver_name in di.vectorNames
+    is_raster = driver_name in di.rasterNames
+
+    if as_vector:
+        if not is_vector:
+            raise Error(f'driver {driver_name!r} is not vector')
+        return ogr.GetDriverByName(driver_name)
+
+    if as_raster:
+        if not is_raster:
+            raise Error(f'driver {driver_name!r} is not raster')
+        return gdal.GetDriverByName(driver_name)
+
+    # NB prefer raster drivers by default
+
+    if is_raster:
+        return gdal.GetDriverByName(driver_name)
+    if is_vector:
+        return ogr.GetDriverByName(driver_name)
+
+    raise Error(f'driver {driver_name!r} not found')
 
 
-def _driver_name_from_extension(s):
-    if not _ext_to_driver_name:
-        for n in range(gdal.GetDriverCount()):
-            drv = gdal.GetDriver(n)
-            name = drv.GetDescription()
-            exts = drv.GetMetadataItem(gdal.DMD_EXTENSIONS)
-            if exts:
-                # NB exts is a space delimited string
-                for e in exts.split():
-                    _ext_to_driver_name[e] = name
+_drv_cache: t.Optional[_DriverInfoCache] = None
 
-    return _ext_to_driver_name.get(s)
+
+def _fetch_driver_infos() -> _DriverInfoCache:
+    global _drv_cache
+
+    if _drv_cache:
+        return _drv_cache
+
+    _drv_cache = _DriverInfoCache(
+        infos=[],
+        extToName={},
+        vectorNames=set(),
+        rasterNames=set(),
+    )
+
+    for n in range(gdal.GetDriverCount()):
+        drv = gdal.GetDriver(n)
+        inf = DriverInfo(
+            index=n,
+            name=str(drv.ShortName),
+            longName=str(drv.LongName),
+            metaData=dict(drv.GetMetadata() or {})
+        )
+        _drv_cache.infos.append(inf)
+
+        for e in inf.metaData.get(gdal.DMD_EXTENSIONS, '').split():
+            _drv_cache.extToName.setdefault(e, []).append(inf.name)
+        if inf.metaData.get('DCAP_VECTOR') == 'YES':
+            _drv_cache.vectorNames.add(inf.name)
+        if inf.metaData.get('DCAP_RASTER') == 'YES':
+            _drv_cache.rasterNames.add(inf.name)
+
+    return _drv_cache
 
 
 _srs_cache = {}

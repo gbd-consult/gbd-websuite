@@ -1,1 +1,1 @@
-from . import provider, manager
+from . import provider, manager, model

@@ -1,4 +1,4 @@
-"""Convenice wrapper for sqlalchemy imports."""
+"""Convenience wrapper for sqlalchemy imports."""
 
 # noinspection PyUnresolvedReferences
 from sqlalchemy import *

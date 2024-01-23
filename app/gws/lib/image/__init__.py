@@ -7,6 +7,7 @@ import re
 import PIL.Image
 import PIL.ImageDraw
 import PIL.ImageFont
+import numpy as np
 
 import gws
 import gws.lib.mime
@@ -122,6 +123,9 @@ class Image(gws.IImage):
         with open(path, 'wb') as fp:
             self.img.save(fp, _mime_to_format(mime))
         return path
+
+    def to_array(self):
+        return np.array(self.img)
 
     def add_text(self, text, x=0, y=0, color=None):
         self.img = self.img.convert('RGBA')
