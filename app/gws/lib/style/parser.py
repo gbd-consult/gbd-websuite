@@ -7,12 +7,29 @@ from . import icon
 
 
 class Options(gws.Data):
+    """Options about an icon object"""
     trusted: bool
+    """Indicates whether icon is created by us or someone else."""
     strict: bool
+    """Indicates whether Exceptions should be raised."""
     imageDirs: list[str]
+    """Paths to directories in which parsing is allowed"""
 
 
 def parse_dict(d: dict, opts: Options) -> dict:
+    """Adds a dictionary describing style features to a default dictionary.
+
+    Args:
+        d: A dictionary with new features.
+        opts: Dictionary options.
+
+    Returns:
+        New dictionary of features.
+
+    Raises:
+        ``Exception``: If  an invalid css property or value is used.
+
+    """
     res = dict(_DEFAULTS)
 
     for key, val in d.items():
@@ -49,6 +66,16 @@ def parse_dict(d: dict, opts: Options) -> dict:
 # @TODO use a real CSS parser
 
 def parse_text(text: str, opts: Options) -> dict:
+    """Parses a text of features to a dict containing the new features.
+
+    Args:
+        text: Options String formatted like ``'a:b;c:d;...'``
+        opts: Text options.
+
+    Returns:
+        New dictionary of features.
+
+    """
     d = {}
     for r in text.split(';'):
         r = r.strip()
@@ -140,6 +167,7 @@ def _parse_color(val, opts):
     val = re.sub(r'\s+', '', str(val))
     if any(re.match(p, val) for p in _COLOR_PATTERNS):
         return val
+    raise ValueError
 
 
 def _parse_intlist(val, opts):
@@ -164,6 +192,7 @@ def _parse_unitintquad(val, opts):
         return [val[0], val[1], val[0], val[1]]
     if len(val) == 1:
         return [val[0], val[0], val[0], val[0]]
+    raise ValueError
 
 
 def _parse_enum_fn(cls):

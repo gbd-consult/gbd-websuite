@@ -14,17 +14,39 @@ class Error(gws.Error):
 
 
 class ParsedIcon(gws.Data):
+    """Svg data."""
     svg: gws.IXmlElement
+    """Structure and attributes of the svg."""
 
 
 def to_data_url(icon: ParsedIcon) -> str:
+    """Converts a svg to url.
+
+    Args:
+        icon: Svg object to convert.
+
+    Returns:
+        The url, or an empty string if ``icon`` is not a svg.
+
+    """
+
     if icon.svg:
         xml = icon.svg.to_string()
         return 'data:image/svg+xml;base64,' + base64.standard_b64encode(xml.encode('utf8')).decode('utf8')
     return ''
 
 
-def parse(val, opts):
+def parse(val: str, opts) -> t.Optional[ParsedIcon]:
+    """Parses an url or directory path to a svg.
+
+    Args:
+        val: An url or directory path containing a svg.
+        opts: Url or directory path options.
+
+    Returns:
+        The svg, if the url is trusted, or if the path is in a trusted directory.
+
+    """
     if not val:
         return
 
