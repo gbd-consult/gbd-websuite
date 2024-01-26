@@ -216,6 +216,12 @@ def parse_path(path: _Path) -> dict[str, str]:
     return d
 
 
+def file_name(path: _Path) -> str:
+    str_path = path if isinstance(path, str) else path.decode('utf8')
+    sp = os.path.split(str_path)
+    return sp[1]
+
+
 def abs_path(path: _Path, base: str) -> str:
     """Absolutize a relative path with respect to a base directory or file path"""
 

@@ -9,6 +9,7 @@ import gws.lib.metadata
 import gws.lib.net
 import gws.lib.mime
 import gws.gis.crs
+import gws.gis.bounds
 import gws.gis.source
 import gws.gis.extent
 import gws.lib.net
@@ -64,18 +65,13 @@ class Object(gws.Node, gws.IOwsProvider):
         self.sourceLayers = self.caps.sourceLayers
         self.version = self.caps.version
 
-        self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs')) or self.caps.projectCrs
+        self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs')) or self.caps.projectBounds.crs
         self.alwaysXY = False
+
+        self.bounds = self.caps.projectBounds
 
         self.directRender = set(self.cfg('directRender', default=[]))
         self.directSearch = set(self.cfg('directSearch', default=[]))
-
-        self.bounds = None
-        wms_extent = self.caps.properties.get('WMSExtent')
-        if wms_extent:
-            self.bounds = gws.Bounds(
-                extent=gws.gis.extent.from_list([float(v) for v in wms_extent]),
-                crs=self.caps.projectCrs)
 
     def configure_store(self):
         p = self.cfg('path')
@@ -355,15 +351,7 @@ class Object(gws.Node, gws.IOwsProvider):
 
         # @TODO support extra sql from ds['sql']
 
-        pg_provider = self._postgres_provider(gws.Config(
-            host=ds.get('host'),
-            port=ds.get('port'),
-            database=ds.get('dbname'),
-            username=ds.get('user'),
-            password=ds.get('password'),
-            serviceName=ds.get('service'),
-            options=ds.get('options'),
-        ))
+        pg_provider = self.postgres_provider_from_datasource(ds)
 
         return {
             'type': 'postgres',
@@ -372,16 +360,26 @@ class Object(gws.Node, gws.IOwsProvider):
             '_defaultProvider': pg_provider
         }
 
-    def _postgres_provider(self, cfg):
+    def postgres_provider_from_datasource(self, ds: dict) -> gws.plugin.postgres.provider.Object:
+        cfg = gws.Config(
+            host=ds.get('host'),
+            port=ds.get('port'),
+            database=ds.get('dbname'),
+            username=ds.get('user'),
+            password=ds.get('password'),
+            serviceName=ds.get('service'),
+            options=ds.get('options'),
+        )
         url = gws.plugin.postgres.provider.connection_url(cfg)
         mgr = self.root.app.databaseMgr
 
         for p in mgr.providers():
             if p.extType == 'postgres' and p.url == url:
-                return p
+                return t.cast(gws.plugin.postgres.provider.Object, p)
 
         gws.log.debug('creating an ad-hoc postgres provider for qgis')
-        return mgr.create_provider(cfg, type='postgres')
+        p = mgr.create_provider(cfg, type='postgres')
+        return t.cast(gws.plugin.postgres.provider.Object, p)
 
     _std_ows_params = {
         'bbox',

@@ -32,10 +32,11 @@ class PrintTemplate(gws.Data):
 class Caps(gws.Data):
     metadata: gws.Metadata
     printTemplates: list[PrintTemplate]
-    projectCrs: gws.ICrs
+    projectBounds: gws.Bounds
     properties: dict
     sourceLayers: list[gws.SourceLayer]
     version: str
+    visibilityPresets: dict[str, list[str]]
 
 
 def parse(xml: str) -> Caps:
@@ -47,49 +48,17 @@ def parse_element(root_el: gws.IXmlElement) -> Caps:
     caps = Caps()
 
     caps.version = root_el.get('version')
-    caps.properties = _properties(root_el)
+    caps.properties = parse_properties(root_el.find('properties'))
     caps.metadata = _project_metadata(root_el)
     caps.printTemplates = _print_templates(root_el)
-
-    caps.projectCrs = (
-            gws.gis.crs.get(root_el.textof('projectCrs/spatialrefsys/authid'))
-            or gws.gis.crs.WGS84)
+    caps.visibilityPresets = _visibility_presets(root_el)
+    caps.projectBounds = _project_bounds(root_el)
 
     layers_dct = _map_layers(root_el, caps.properties)
     root_group = _layer_tree(root_el.find('layer-tree-group'), layers_dct)
     caps.sourceLayers = gws.gis.source.check_layers(root_group.layers)
 
     return caps
-
-
-##
-
-def _properties(root_el: gws.IXmlElement):
-    el = root_el.find('properties')
-    if not el:
-        return {}
-    return _props(el)
-
-
-def _props(el):
-    # parse the nested `properties` structure into a flat dict
-    # each child of 'properties' is either a structure (without type=)
-    # or a value (with type=)
-
-    typ = el.get('type')
-    if not typ:
-        return gws.strip({c.tag: _props(c) for c in el})
-
-    if typ == 'QStringList':
-        return el.textlist('value')
-    if typ == 'QString':
-        return el.text
-    if typ == 'bool':
-        return el.text.lower() == 'true'
-    if typ == 'int':
-        return _parse_int(el.text)
-    if typ == 'double':
-        return _parse_float(el.text)
 
 
 ##
@@ -104,6 +73,50 @@ def _project_metadata(root_el) -> gws.Metadata:
 
     # @TODO supplementary metadata
     return md
+
+
+def _project_bounds(root_el) -> gws.Bounds:
+    """Parse the project bounds."""
+
+    """
+        The project's extent/CRS information can be found in the following places:
+    
+        <qgis
+            <projectCrs>
+                <spatialrefsys ....
+            ...    
+            <mapcanvas ...
+                <extent>
+                    <xmin>...
+                    <ymin>...
+                    <xmax>...
+                    <ymax>...
+                </extent>
+                <destinationsrs>
+                    <spatialrefsys .... (appears to match projectCrs above)
+            ...
+            <properties>
+                <WMSExtent...
+                    <value>...</value>
+                    <value>...</value>
+                    <value>...</value>
+                    <value>...</value>
+                </WMSExtent>
+
+    """
+
+    srid = root_el.textof('projectCrs/spatialrefsys/authid') or '4326'
+    crs = gws.gis.crs.get(srid)
+
+    # NB prefer WMSExtent if defined
+
+    extent = _extent_from_tag(root_el.find('properties/WMSExtent'))
+    if not extent:
+        extent = _extent_from_tag(root_el.find('mapcanvas/extent'))
+    if not extent:
+        extent = crs.extent
+
+    return gws.Bounds(crs=crs, extent=extent)
 
 
 def _layer_metadata(layer_el) -> gws.Metadata:
@@ -311,7 +324,7 @@ def _layout_element(item_el: gws.IXmlElement):
 ##
 
 
-def _map_layers(root_el: gws.IXmlElement, properties) -> dict[str, gws.SourceLayer]:
+def _map_layers(root_el: gws.IXmlElement, properties: dict) -> dict[str, gws.SourceLayer]:
     no_wms_layers = set(properties.get('WMSRestrictedLayers', []))
     use_layer_ids = properties.get('WMSUseLayerIDs', False)
 
@@ -336,7 +349,7 @@ def _map_layers(root_el: gws.IXmlElement, properties) -> dict[str, gws.SourceLay
 
         sl.title = title
         sl.name = name
-        # sl.metadata.set('name', name)
+        sl.sourceId = uid
 
         map_layers[uid] = sl
 
@@ -354,11 +367,9 @@ def _map_layer(layer_el: gws.IXmlElement):
     if crs:
         sl.supportedCrs.append(crs)
 
-    ext = layer_el.find('wgs84extent')
-    if ext:
-        extent = _extent_from_tag(ext)
-        if extent:
-            sl.wgsExtent = extent
+    extent = _extent_from_tag(layer_el.find('wgs84extent'))
+    if extent:
+        sl.wgsExtent = extent
 
     if layer_el.get('hasScaleBasedVisibilityFlag') == '1':
         # in qgis, maxScale < minScale
@@ -371,6 +382,8 @@ def _map_layer(layer_el: gws.IXmlElement):
 
     sl.opacity = _parse_float(layer_el.textof('layerOpacity') or '1')
     sl.isQueryable = layer_el.textof('flags/Identifiable') == '1'
+
+    sl.properties = parse_properties(layer_el.find('customproperties'))
 
     return sl
 
@@ -426,6 +439,38 @@ def _layer_datasource(layer_el: gws.IXmlElement) -> dict:
 
 
 ##
+
+def _visibility_presets(root_el: gws.IXmlElement):
+    """Parse the global ``visibility-presets`` block.
+
+    We're only interested in which layers are visible.
+
+    Overall structure::
+
+        <visibility-presets>
+            <visibility-preset .... name="...">
+                <layer id="..." visible="1" ... />
+                <layer id="..." visible="1" ... />
+            <visibility-preset .... name="...">
+                <layer id="..." visible="1" ... />
+                <layer id="..." visible="1" ... />
+
+    """
+
+    d = {}
+
+    for el in root_el.findall('visibility-presets/visibility-preset'):
+        ls = []
+        for la in el.findall('layer'):
+            if la.attr('visible') == '1':
+                ls.append(la.attr('id'))
+        d[el.attr('name')] = ls
+
+    return d
+
+
+##
+
 
 def parse_datasource(prov, text):
     ds = gws.to_lower_dict(_parse_datasource(text) or {})
@@ -589,6 +634,95 @@ def _datasource_space_delimited(text):
 ##
 
 
+def parse_properties(el: gws.IXmlElement):
+    """Parse qgis property blocks.
+
+    There are following forms:
+
+    Scalar property::
+
+        <WMSContactPhone type="QString">...
+
+    Dict::
+
+        <QFieldSync>
+            <dirsToCopy type="QString">...
+            <exportDirectoryProject type="QString">...
+        </QFieldSync>
+
+    Option map::
+
+        <data-defined-properties>
+            <Option type="Map">
+                <Option type="QString" name="..." value="..."/>
+                <Option name="properties"/>
+          </Option>
+        </data-defined-properties>
+
+
+    """
+
+    if not el:
+        return {}
+
+    _, val = _parse_property_tag(el)
+    return val
+
+
+def _parse_property_tag(el: gws.IXmlElement):
+    typ = el.get('type')
+    name = el.tag
+    is_opt = el.tag == 'Option'
+
+    if is_opt and el.attr('name'):
+        name = el.attr('name')
+
+    if not typ or typ == 'Map':
+        d = {}
+
+        for c in el:
+            k, v = _parse_property_tag(c)
+            if k:
+                d[k] = v
+
+        if len(d) == 1 and 'Option' in d:
+            return name, d['Option']
+
+        return name, d
+
+    if typ == 'List':
+        ls = []
+        for c in el:
+            _, v = _parse_property_tag(c)
+            ls.append(v)
+        return name, ls
+
+    if typ == 'QStringList':
+        val = [c.text for c in el.findall('value')]
+        return name, val
+
+    if typ == 'QString':
+        val = el.attr('value') if is_opt else el.text
+        return name, val
+
+    if typ == 'bool':
+        val = el.attr('value') if is_opt else el.text
+        return name, val.lower() == 'true'
+
+    if typ == 'int':
+        val = el.attr('value') if is_opt else el.text
+        return name, _parse_int(val)
+
+    if typ == 'double':
+        val = el.attr('value') if is_opt else el.text
+        return name, _parse_float(val)
+
+    return '', None
+
+
+##
+
+
 def _extent_from_atts(el):
     # <spatial dimensions="2" miny="0" maxz="0" maxx="0" crs="EPSG:25832" minx="0" minz="0" maxy="0"/>
 
@@ -607,13 +741,30 @@ def _extent_from_tag(el):
     #     <xmax>3</xmax>
     #     <ymax>4</ymax>
     # </wgs84extent>
+    #
+    # or
+    #
+    # <WMSExtent type="QStringList">
+    #   <value>1</value>
+    #   <value>2</value>
+    #   <value>3</value>
+    #   <value>4</value>
+    # </WMSExtent>
+    #
 
-    return gws.gis.extent.from_list([
-        el.textof('xmin'),
-        el.textof('ymin'),
-        el.textof('xmax'),
-        el.textof('ymax'),
-    ])
+    if not el:
+        return
+
+    if el.attr('type') == 'QStringList':
+        return gws.gis.extent.from_list([v.text for v in el.children()])
+
+    if el.find('xmin'):
+        return gws.gis.extent.from_list([
+            el.textof('xmin'),
+            el.textof('ymin'),
+            el.textof('xmax'),
+            el.textof('ymax'),
+        ])
 
 
 def _parse_msize(s):
