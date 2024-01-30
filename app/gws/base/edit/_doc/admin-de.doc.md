@@ -2,7 +2,7 @@
 
 Die GBD WebSuite enthält eine Digitalisierungsfunktion (``edit``), mit der die Nutzer beliebige Vektor-Objekte, im Client, zeichnen können und diese mit Attributen versehen können. Diese Objekte werden in einer Postgres-Tabelle gespeichert.
 
-Digitalisierung wird freigeschaltet indem Sie bei einem Postgres-Layer (siehe [Datenbanken](/admin-de/config/datenbanken)) eine ``edit`` Eigenschaft mit einem Zugriffsblock (siehe [Autorisierung](/admin-de/config/autorisierung)) konfigurieren. Den Rollen, die in diesem Zugriffsblock stehen, ist editieren des Layers erlaubt. Im folgenden Beispiel, ist der Layer für alle sichtbar (``all``), jedoch nur von der Rolle ``editor`` editierbar:
+Digitalisierung wird freigeschaltet indem Sie bei einem Postgres-Layer (siehe [Datenbanken](/admin-de/config/db)) eine ``edit`` Eigenschaft mit einem Zugriffsblock (siehe [Autorisierung](/admin-de/config/autorisierung)) konfigurieren. Den Rollen, die in diesem Zugriffsblock stehen, ist editieren des Layers erlaubt. Im folgenden Beispiel, ist der Layer für alle sichtbar (``all``), jedoch nur von der Rolle ``editor`` editierbar:
 
 ```javascript
 
