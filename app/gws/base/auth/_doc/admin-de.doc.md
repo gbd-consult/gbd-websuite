@@ -217,7 +217,7 @@ Im Browser wird zur Bearbeitung eines Login-Formulars eine Javascript Funktion b
 
 Die Definitionen der Funktionen ``gwsLogin`` und ``gwsLogout`` finder Sie unter https://github.com/gbd-consult/gbd-websuite/blob/master/client/src/gws-start.js. Sie können auch eigene Funktionen verwenden.
 
-Siehe auch [Vorlage](/admin-de/config/vorlagen) für Details über die Vorlagen-Sprache.
+Siehe auch [Vorlage](/admin-de/config/template) für Details über die Vorlagen-Sprache.
 
 ### basic
 
