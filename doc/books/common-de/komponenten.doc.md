@@ -10,6 +10,6 @@ Die GBD WebSuite integriert die Funktionalität verschiedener Open Source Softwa
 | [SQLAlchemy](https://www.sqlalchemy.org/)	| Python-SQL-Toolkit für das Arbeiten mit Datenbanken		|
 | [uWSGI](https://github.com/unbit/uwsgi)	| Application Server für dynamische Anfragen 			|
 | [Python](https://www.python.org/)		| Komponenten ("Aktionen") für Datenabfragen und -verarbeitung	|
-| [QGIS](https://qgis.org)			| Bereitstellen und Rendern von QGIS Projekten			|
+| [QGIS Server](https://qgis.org)		| Bereitstellen und Rendern von QGIS Projekten			|
 
-Im Rahmen einer Open Source basierten Geodateninfrastruktur wird die GBD WebSuite häufig zusammen mit QGIS als Desktop GIS, PostgreSQL/PostGIS als Datenbankserver und QField als mobile App eingesetzt. Das Zusammenspiel mit anderen Applikationen ist ebenfalls möglich.
+Im Rahmen einer Open Source basierten Geodateninfrastruktur (GDI) wird die GBD WebSuite häufig zusammen mit {title QGIS} als Desktop GIS, {title PostgreSQL/PostGIS} als Datenbankserver und {title QField} als mobile App eingesetzt. Das Zusammenspiel mit anderen Applikationen ist ebenfalls möglich.
