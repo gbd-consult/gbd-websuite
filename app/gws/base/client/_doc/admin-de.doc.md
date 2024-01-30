@@ -203,6 +203,31 @@ Sie können den Stil der integrierten Funktionen anpassen, z. B. Markierungen vo
 |``.gws.modAnnotateBox`` | Box-Markierung |
 |``.gws.modAnnotateCircle`` | Kreis-Markierung |
 
+
+Es besteht zudem die Möglichkeit den Stil einzelner von der WebSuite mitgelieferter HTML-Tags zu bearbeiten.
+Hierfür können Sie eigene CSS-Klassen definieren, welche dann die mitgelieferten Eigenschaften überschreiben.
+
+Solche CSS-Klassen können wie folgt ergänzt werden:
+
+ - in einer existierenden .css-Datei (in /data/web)
+ - in einer neuen .css-Datei, die dann im /data/web Verzeichnis hinterlegt wird und in der /data/assets/project.cx.html eingebunden werden muss
+ - direkt an der Stelle in einem ``` <style> ```-Tag hinterlegt:
+ ```css
+ <style>
+.myclass { color: red; }
+</style>
+<h1 class="myclass">test</h1>
+```
+
+ - Es ist ebenfalls möglich direkt an dem HTML-Element Inline Styles zu ergänzen:
+ ```css
+<h1 style="color: red;">test</h1>
+```
+
+Um zu sehen welche Werte bestimmten CSS Eigenschaften eines Elementes aktuell zugewiesen sind kann man sich im Browser Details zu einem Element anzeigen lassen. Dafür geht man per Rechtsklick auf das Element und wählt ``Untersuchen``.
+
+
+
 %info
- Unter [Styling](/admin-de/config/style) finden Sie eine Auflistung von CSS Eingenschaften.
+ Unter [Styling](/admin-de/config/style) finden Sie eine Auflistung von CSS Eigenschaften.
 %end
