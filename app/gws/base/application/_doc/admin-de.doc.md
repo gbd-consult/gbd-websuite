@@ -8,7 +8,7 @@ Die wichtigsten Teile der App-Konfiguration sind die folgenden Abschnitte, welch
 - Server Aktionen → [``Action``](/admin-de/config/server-aktionen)
 - Zugriffsrechte → [``auth``](/admin-de/config/autorisierung)
 - Client Optionen → [``client``](/admin-de/config/client)
-- Datenbankanbindung →[``database``](/admin-de/config/datenbanken)
+- Datenbankanbindung →[``database``](/admin-de/config/db)
 - Server-Helper → [``helpers``](/admin-de/config/helper)
 - Server Localen → [``locales``](/admin-de/config/intl)
 - globale Metadaten → [``metadata``](/admin-de/config/metadaten)

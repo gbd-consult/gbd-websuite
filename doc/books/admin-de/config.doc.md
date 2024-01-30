@@ -8,7 +8,7 @@ Application und System Konfiguration:
 /admin-de/config/applikation
 /admin-de/config/autorisierung
 /admin-de/config/client
-/admin-de/config/datenbanken
+/admin-de/config/db
 /admin-de/config/intl
 /admin-de/config/metadaten
 /admin-de/config/model

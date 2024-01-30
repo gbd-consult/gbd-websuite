@@ -37,7 +37,7 @@ Um diese Funktion zu nutzen, aktivieren Sie die Aktion ``dimension``. Wenn Sie d
 
 Mit dieser Konfiguration werden Bemaßungen an Konturen aus der Tabelle ``strassen`` einrasten, mit einer Toleranz von 20 Pixel.
 
-Zusätzlich müssen auch Client-Elemente ``Sidebar.Dimension`` und ``Toolbar.Dimension`` aktiviert werden, siehe [Client](/admin-d/client).
+Zusätzlich müssen auch Client-Elemente ``Sidebar.Dimension`` und ``Toolbar.Dimension`` aktiviert werden, siehe [Client](/admin-de/client).
 
 Wenn die Bemaßungen gespeichert werden sollen, muss auch die Datenablage freigeschaltet und konfiguriert werden, siehe [Datenablage](/admin-de/config/datenablage).
 
