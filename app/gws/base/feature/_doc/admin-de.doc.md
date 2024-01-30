@@ -67,7 +67,7 @@ Für die Validierungsregel kann eine Liste `validators` einem Attribut zugeordne
 
 ## Client-Vorlagen
 
-Sie können Vorlagen (siehe [Vorlagen](/admin-de/config/vorlagen)) Konfigurieren um die Features an verschiedenen Stellen im Client darzustellen. Die Vorlagen sind mit einem entsprechenden ``subject`` Wert zu versehen
+Sie können Vorlagen (siehe [Vorlagen](/admin-de/config/template)) Konfigurieren um die Features an verschiedenen Stellen im Client darzustellen. Die Vorlagen sind mit einem entsprechenden ``subject`` Wert zu versehen
 
 | ``subject`` | Funktion |
 |---|---|
@@ -80,4 +80,4 @@ Diese Vorlagen können für Layer (siehe [Layer](/admin-de/config/layer)) oder S
 
 ## XML Vorlagen
 
-Für WMS/WFS Dienste besteht die Möglichkeit, für bestimmte Features eine angepasste XML Präsentation zu konfigurieren. Dazu erstellen Sie in der Konfiguration der jeweiligen Dienstes eine Vorlage mit dem ``subject`` ``ows.GetFeatureInfo`` (siehe [OWS](/admin-de/config/ows)).
+Für WMS/WFS Dienste besteht die Möglichkeit, für bestimmte Features eine angepasste XML Präsentation zu konfigurieren. Dazu erstellen Sie in der Konfiguration der jeweiligen Dienstes eine Vorlage mit dem ``subject`` ``ows.GetFeatureInfo`` (siehe [OWS](/admin-de/plugin/ows)).

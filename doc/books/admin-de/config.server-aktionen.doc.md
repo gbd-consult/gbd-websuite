@@ -14,7 +14,7 @@ Hier ein kurzer Überblick über die unterstützten Aktionstypen und deren Clien
 | ``dimension`` |  Bemaßung-Funktion, siehe [Bemaßung](/admin-de/plugin/dimension) | [Bemaßung](/user-de/sidebar.bemassung) | [Bemaßung](/user-de/toolbar.bemassung) |
 | ``edit`` | Digitalisierung, siehe [Digitalisierung](/admin-de/plugin/edit) | [Digitalisieren](/user-de/sidebar.digitalisieren) | [Digitalisieren](/user-de/toolbar.digitalisieren) |
 | ``map`` | Render von Kartenbildern, siehe [Karten](/admin-de/config/karten) | [Layer](/user-de/sidebar.layer) | |
-| ``ows`` | OWS Dienste wie WMS, WMTS oder WFS, siehe [OWS](/admin-de/config/ows) | | |
+| ``ows`` | OWS Dienste wie WMS, WMTS oder WFS, siehe [OWS](/admin-de/plugin/ows) | | |
 | ``printer`` | Drucken, siehe [Drucken](/admin-de/config/drucken) | | [Drucken](/user-de/toolbar.drucken) |
 | ``project`` | Projektbeschreibung und Konfiguration für den Client, siehe [Projekte](/admin-de/config/projekte) |[Porjektübersicht](/user-de/sidebar.projektuebersicht) | |
 | ``search`` | allgemeine Such-Anfragen, siehe [Suche](/admin-de/config/suche) | [Suche](/user-de/sidebar.suche) | [Suche](/user-de/toolbar.suchen) & [Räumliche Suche](/user-de/toolbar.raeumliche-suche) |

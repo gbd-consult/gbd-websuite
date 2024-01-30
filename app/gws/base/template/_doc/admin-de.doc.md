@@ -6,7 +6,7 @@ Vorlagen werden an verschiedenen Stellen in der GBD WebSuite genutzt.
 - bei Projekten (siehe [Projekte](/admin-de/config/projekte)) für Project Infoboxen
 - bei Layern  für Layer Infoboxen und Features, siehe [Layer](/admin-de/config/layer) und [Feature](/admin-de/config/feature)
 - bei Suchprovidern für Features, siehe [Suche](/admin-de/config/suche)
-- bei OWS Diensten für XML Dokumente, siehe [OWS](/admin-de/config/ows)
+- bei OWS Diensten für XML Dokumente, siehe [OWS](/admin-de/plugin/ows)
 
 Eine Vorlage ist eine Text oder eine HTML-Datei mit externen Variablen, die in Klammern ``{...}`` eingeschlossen sind. Zusätzlich gibt es grundlegende Programmierkonstrukte (Bedingungen, Schleifen, Funktionen), mit denen die Vorlagenausgabe in Abhängigkeit von den Variablen geändert werden kann.
 

@@ -7,6 +7,6 @@ Helper sind allgemeine Tools, die in verschiedenen Bereichen des Servers Verwend
 | OPTION | BEDEUTUNG |
 |---|---|
 | ``csv`` | unterstützt CSV-Export Funktion, siehe [CVS](/admin-de/config/csv) |
-| ``xml`` | unterstützt die XML Vorlagen für OWS Dienste, siehe [OWS](/admin-de/config/ows) |
+| ``xml`` | unterstützt die XML Vorlagen für OWS Dienste, siehe [OWS](/admin-de/plugin/ows) |
 
 Helper sind nur in der App-Config konfigurierbar.

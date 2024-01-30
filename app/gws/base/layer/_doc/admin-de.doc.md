@@ -53,7 +53,7 @@ Bei einer Layerkonfiguration stehen viele Optionen zur Verfügung. Die wichtigst
 |``legend`` | Optionen für Legenden |
 |``meta`` | Layer-Metadaten [Metadaten](/admin-de/config/metadaten) |
 |``opacity`` | Transparenz als eine Fließkommazahl |
-|``ows`` |  Eigenschaften im Bezug auf OWS Dienste, siehe [OWS](/admin-de/config/ows) |
+|``ows`` |  Eigenschaften im Bezug auf OWS Dienste, siehe [OWS](/admin-de/plugin/ows) |
 |``search`` | Such-Provider, siehe [Suche](/admin-de/config/suche) |
 |``templates`` | Vorlagen |
 |``title`` | Layer-Titel |

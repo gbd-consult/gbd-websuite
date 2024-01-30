@@ -21,7 +21,7 @@ Bei [JSON](https://www.json.org) handelt es sich um ein gängiges Konfigurations
 [SLON](https://github.com/gebrkn/slon) ist  eine Alternative zu JSON, die die Strukturen in einer weiter vereinfachten Form darstellt. Bei diesem Format können Sie auch alle Befehle der Templating-Sprache verwenden (wie z.B. `@include` oder `@if`). Konfigdateien im SLON Format müssen eine Erweiterung `.cx` haben.
 
 %info
- Mehr über Templating-Sprache lesen Sie unter [Vorlagen](/admin-de/config/vorlagen).
+ Mehr über Templating-Sprache lesen Sie unter [Vorlagen](/admin-de/config/template).
 %end
 
 #### python
