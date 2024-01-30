@@ -1,16 +1,16 @@
 # Benutzerhandbuch :/user-de
 
-Willkommen im Benutzerhandbuch der GBD WebSuite, hier werden Sie alle Funktionen der Client-Oberfläche und deren Bedienung kennenlernen.
+Willkommen im Benutzerhandbuch der GBD WebSuite. Die einzelnen Kapitel der Dokumentation mit einer ausführlichen Hilfe können Sie über das Menü auf der linken Seite inklusive Suchfunktion oder über die untenstehende Auflistung erreichen. Als Anwender der GBD WebSuite nutzen Sie die Funktionalität über den GBD WebSuite Client. Grundsätzlich unterscheidet man hier drei Bereiche, wie in der Abbildung zu sehen:
 
-**Übersicht**
+![](client_overview.png){width=800px}
 
-![](client_overview.png)
-
-Die Navigation durch die Kapitel der Dokumentation ist über die Seitenleiste möglich, oder auch über die untenstehende Auflistung. Sie können alternativ auch die Suchfunktion verwenden, welche in der Seitenleiste oberhalb angeordnet ist. Eine ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren Verlauf dieser Dokumentation.
+   *  Die {title Seitenleiste} 
+   *  Die {title Werzeugleiste} stellt Funktionalität bereit, die aktiviert und deaktiviert werden kann. 
+   *  Die {title Infoleiste} 
 
 Im Folgenden eine Auflistung aller Bedienelemente der GBD WebSuite, mit einer Kurzbeschreibung der Funktion.
 
-**Werkzeugleiste**
+{title Bedienelemente der Werkzeugleiste}
 
 | Bedienelement                         | Funktion                   					| Bedeutung                          		        	|
 |---------------------------------------|---------------------------------------------------------------|---------------------------------------------------------------|
@@ -31,7 +31,7 @@ Im Folgenden eine Auflistung aller Bedienelemente der GBD WebSuite, mit einer Ku
 
 Mehr über die einzelnen Funktionen finden sie unter [Werkzeugleiste](/user-de/toolbar)
 
-**Seitenleiste**
+{title Bedienelemente der Seitenleiste}
 
 | Bedienelement                         | Funktion                   						| Bedeutung          			               	|
 |---------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------------|
@@ -51,7 +51,7 @@ Mehr über die einzelnen Funktionen finden sie unter [Werkzeugleiste](/user-de/t
 
 Mehr über die einzelnen Funktionen finden sie unter: [Seitenleiste](/user-de/sidebar)
 
-**Infoleiste**
+{title Bedienelemente der Infoleiste}
 
 | Bedienelement			| Funktion                              			|       Bedeutung             			|
 |-------------------------------|---------------------------------------------------------------|-----------------------------------------------|
