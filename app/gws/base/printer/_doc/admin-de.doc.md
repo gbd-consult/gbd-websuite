@@ -15,7 +15,7 @@ Zwei DPI-Werte werden in GWS auf besondere Weise bearbeitet:
 
 ### html
 
-Eine ``html`` Druckvorlage ist eine Vorlage (siehe [Vorlagen](/admin-de/config/vorlagen)),welche spezielle HTML-Tags enthält die beim drucken mit aktuellen Werten ersetzt werden. Es werden folgende Tags unterstützt:
+Eine ``html`` Druckvorlage ist eine Vorlage (siehe [Vorlagen](/admin-de/config/template)),welche spezielle HTML-Tags enthält die beim drucken mit aktuellen Werten ersetzt werden. Es werden folgende Tags unterstützt:
 
 | Tag | Bedeutung | Beispiel|
 |---|---|---|

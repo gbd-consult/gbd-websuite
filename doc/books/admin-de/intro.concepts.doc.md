@@ -66,7 +66,7 @@ Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Haupt
 Ein *Asset* ist dagegen ein Dokument, das dynamisch erzeugt wird, abhängig vom Kontext (eine *Vorlage*) oder nur berechtigten Nutzern zur Verfügung steht. Assets werden in einem speziellen Ordner platziert, der sowohl für eine Webseite als auch Projekt-abhängig konfiguriert werden kann.
 
 %info
- Mehr dazu in [App](/admin-de/config/applikation), [Vorlagen](/admin-de/config/vorlagen) und [Projekte](/admin-de/config/projekte).
+ Mehr dazu in [App](/admin-de/config/applikation), [Vorlagen](/admin-de/config/template) und [Projekte](/admin-de/config/projekte).
 %end
 
 ## Autorisierung

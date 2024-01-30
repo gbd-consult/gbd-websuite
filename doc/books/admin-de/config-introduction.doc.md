@@ -1,57 +1,54 @@
-## Grundlagen der Konfiguration :/admin-de/config-introduction
+## Konfiguration A-Z :/admin-de/config
 
-In diesem Kapitel finden Sie eine detaillierte Beschreibung der GBD WebSuite Konfiguration. 
+Application und System Konfiguration:
 
-Die GBD WebSuite Konfiguration besteht aus Applikations-Konfigurationsdatein [App](/admin-de/config/applikation) und optional mehrere Projekt-Konfigurationsdateien [Projekte](/admin-de/config/projekte). Die Struktur der Konfigurationsobjekte ist in [Referenz](/admin-de/reference) vollständig beschrieben.
-
-### Konfigurationsformate
-
-Die Konfirgurationen können in verschiedenen Sprachen geschrieben werden, nämlich JSON, YAML, SLON und Python. Sie können die Sprachen auch frei mischen, z.B. App-Konfig in Python und Projekt-Konfig in YAML.
-
-#### json
-
-Bei [JSON](https://www.json.org) handelt es sich um ein gängiges Konfigurations- und Datenaustauschformat. In dieser Dokumentation verwenden wir JSON für Code-Snippets und Beispiele. Dies ist auch unser Defaultformat: falls Sie keinen expliziten Konfigurationspfad mittels `GWS_CONFIG` bestimmen, wird eine JSON Datei `config.json` im "Data"-Verzeichnis geladen. JSON Konfigdateien müssen mit der Endung `.json` abgespeichert werden.
-
-#### yaml
-
-[YAML](https://yaml.org) ist eine Alternative zu JSON, die einfacher zu schreiben und lesen ist. Sie können Ihre Konfiguration in YAML schreiben, mit der gleichen Struktur wie JSON. YAML Konfigdateien müssen mit der Endung `.yaml` abgespeichert werden.
-
-#### slon
-
-[SLON](https://github.com/gebrkn/slon) ist  eine Alternative zu JSON, die die Strukturen in einer weiter vereinfachten Form darstellt. Bei diesem Format können Sie auch alle Befehle der Templating-Sprache verwenden (wie z.B. `@include` oder `@if`). Konfigdateien im SLON Format müssen eine Erweiterung `.cx` haben.
-
-%info
- Mehr über Templating-Sprache lesen Sie unter [Vorlagen](/admin-de/config/vorlagen).
+%toc
+/admin-de/config/server-aktionen
+/admin-de/plugin/alkis
+/admin-de/config/applikation
+/admin-de/config/autorisierung
+/admin-de/config/client
+/admin-de/config/db
+/admin-de/config/intl
+/admin-de/config/metadaten
+/admin-de/config/model
+/admin-de/config/server
+/admin-de/config/web
 %end
 
-#### python
+Konfiguration der Karten, Layer und Suchoptionen.
 
-Komplexe, sich wiederholende oder hochdynamische Konfigurationen können auch direkt in def Programmiersprache Python geschrieben werden. Die Python-Konfigurationsdatei muss eine Funktion `config()` enthalten, die einen Python `dict` zurückgibt. Beachten Sie, dass Ihr Konfigurationsmodul innerhalb des Containers ausgeführt wird und daher mit Python 3.6 kompatibel sein muss.
-
-### Struktur der Konfiguration
-
-Auf der obersten Ebene, ist die Konfiguration eine Schlüssel-Wert Struktur (*dict*), die Zeichenketten als Schlüssel und entweder die "primitiven" Werte (wie z.B. eine Zahl oder Zeichenkette) oder weitere Schlüssel-Wert Strukturen bzw. Listen (*arrays*) von Werten enthält.
-
-Einige Schlüssel-Wert Strukturen haben eine grundlegende Eigenschaft Typ (`type`), der angibt, zu welchem Typ die gegebene Struktur gehört. Diese Eigenschaft ist stets anzugeben.
-
-Eine weitere grundlegende Eigenschaft, def Identifikator (`uid`), ist dagegen Optional und ist nur dann anzugeben, wenn Sie auf die gegebene Struktur an weiteren Stellen der Konfiguration verweisen möchten. In anderen Fällen wird die `uid` aus dem Objekt-Titel bzw. Typ automatisch generiert.
-
-### Laden der Konfiguration
-
-Die Konfiguration beginnt mit der App-Konfigurationsdatei (`GWS_CONFIG` bzw `data/config.json`). Sobald diese Datei erfolgreich gelesen ist, werden die Projekte geladen. Die Projekte werden mit drei Optionen in der App-Konfig bestimmt:
-
-- `projects` (eine Liste von Projekten). Mit dieser Option werden Ihre Projekte direkt in der App-Konfig eingebunden.
-
-- `projectPaths` (eine Liste von Dateinamen). Mit dieser Option werden Projekte aus angegebenen Dateien gelesen, wobei jede Datei ein Projekt oder eine Liste von Projekten enthält
-
-- `projectDirs` (eine Liste von Ordnernamen). Mit dieser Option liest das System aus angegebenen Verzeichnissen alle Dateien die mit `.config.json`, `.config.yaml`, `.config.cx` oder `.config.py` enden und diese als Projekte konfiguriert.
-
-Diese Optionen können miteinander auch frei kombiniert werden.
-
-### Monitoring
-
-GWS Server enthält ein *Monitor* Modul, der das Dateisystem überwacht, die Änderungen in Ihren Projekten und Konfigurationen überprüft und ggf. einen Hot-Reload des Servers durchführt. Sie können Intervalle für diese Prüfungen konfigurieren, es wird empfohlen, das Monitorintervall auf mindestens 30 Sekunden einzustellen, da Dateisystemprüfungen ressourcenintensiv sind.
-
-%info
- Sie können Monitoring unter [Server](/admin-de/config/server) konfigurieren.
+%toc
+/admin-de/config/karten
+/admin-de/config/layer
+/admin-de/config/projekte
+/admin-de/plugin/dimension
+/admin-de/config/feature
+/admin-de/plugin/qgis
+/admin-de/config/cache
+/admin-de/config/suche
+/admin-de/config/metadaten
+/admin-de/plugin/ows
+/admin-de/config/dprocon
+/admin-de/config/gekos
 %end
+
+Optionen für die visuelle Präsentation von Karten und Sachdaten.
+
+%toc
+/admin-de/config/template
+/admin-de/config/style
+/admin-de/config/drucken
+/admin-de/config/csv
+/admin-de/config/bplan
+%end
+
+Optionen in Bezug auf Editieren von geografischen Objekten und Sachdaten.
+
+%toc
+/admin-de/plugin/edit
+/admin-de/plugin/tabedit
+/admin-de/config/datenablage
+%end
+
+### :/admin-de/config/*

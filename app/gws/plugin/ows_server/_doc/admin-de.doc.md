@@ -95,7 +95,7 @@ Die für einen Dienst notwendige XML Dokumente werden vom System automatisch ers
 | ``ows.GetRecords`` | CSW |
 | ``ows.GetRecordById`` | CSW |
 
-Die Vorlagen müssen in ``xml`` bzw ``text`` Format sein, siehe [Vorlagen](/admin-de/config/vorlagen) für mehr Info.
+Die Vorlagen müssen in ``xml`` bzw ``text`` Format sein, siehe [Vorlagen](/admin-de/config/template) für mehr Info.
 
 ## INSPIRE Support
 
