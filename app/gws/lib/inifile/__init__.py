@@ -5,6 +5,14 @@ import io
 
 
 def from_paths(*paths: str) -> dict:
+    """Merges the key-value pairs of .ini files into a dictionary.
+
+    Args:
+        paths: Paths to .ini files.
+
+    Returns:
+        Dictionary containing all the key-value pairs with the sections as prefixes.
+    """
     opts = {}
     cc = configparser.ConfigParser()
     cc.optionxform = str
@@ -20,6 +28,14 @@ def from_paths(*paths: str) -> dict:
 
 
 def to_string(d: dict) -> str:
+    """Converts key-value pairs in a dictionary to a string grouped in sections.
+
+    Args:
+        d: Key-value pairs.
+
+    Returns:
+        String formatted like .ini files.
+    """
     cc = configparser.ConfigParser()
 
     for k, v in d.items():

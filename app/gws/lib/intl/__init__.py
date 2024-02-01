@@ -11,6 +11,15 @@ import gws.types as t
 
 
 def locale(locale_uid: str) -> t.Optional[gws.Locale]:
+    """Creates a locale object with formatting information about date, time and numbers.
+
+    Args:
+        locale_uid: Id in the format `language_territory` ex. `de_DE`.
+
+    Returns:
+        Formatting information for that area.
+    """
+
     def f():
         if not locale_uid:
             return None
@@ -52,6 +61,15 @@ def locale(locale_uid: str) -> t.Optional[gws.Locale]:
 
 
 def bibliographic_name(language: str) -> str:
+    """Country abbreviation for a given language
+
+    Args:
+        language: 2 letter abbreviation for a language.
+
+    Returns:
+        ISO 3166-1 alpha-3 code for the language's country.
+    """
+
     def f():
         if not language:
             return ''
@@ -71,10 +89,21 @@ class DateTimeFormat(t.Enum):
 
 
 class DateFormatter:
+    """Used for date formatting"""
+
     def __init__(self, locale_uid):
         self.localeUid = locale_uid
 
     def format(self, fmt: DateTimeFormat, d=None):
+        """Formats the date with respect to the `locale_uid`.
+
+        Args:
+            fmt: Describes the length of the return.
+            d: Date, if none is given the current date will be used as default.
+
+        Returns:
+            The date in the locale format.
+        """
         if not d:
             d = datetime.datetime.now()
         elif isinstance(d, str):
@@ -101,10 +130,21 @@ class DateFormatter:
 
 
 class TimeFormatter:
+    """Used for Time formatting"""
+
     def __init__(self, locale_uid):
         self.localeUid = locale_uid
 
     def format(self, fmt: DateTimeFormat, d=None) -> str:
+        """Formats the time with respect to the `locale_uid`.
+
+        Args:
+            fmt: Describes the length of the return.
+            d: Time, if none is given the current time will be used as default.
+
+        Returns:
+            The time in the locale format.
+        """
         d = babel.dates.parse_time(d, self.localeUid) if d else datetime.datetime.now()
         if fmt == DateTimeFormat.iso:
             return d.isoformat()
@@ -135,10 +175,22 @@ class NumberFormat(t.Enum):
 
 
 class NumberFormatter:
+    """Used for number formatting"""
+
     def __init__(self, locale_uid):
         self.localeUid = locale_uid
 
     def format(self, fmt: NumberFormat, n, **kwargs) -> str:
+        """Formats the number with respect to the `locale_uid`.
+
+        Args:
+            fmt: Describes the format of the return.
+            n: Number.
+            kwargs: Passes the currency parameter forward.
+
+        Returns:
+            The number in the locale format.
+        """
         if fmt == NumberFormat.decimal:
             return babel.numbers.format_decimal(n, locale=self.localeUid, group_separator=False, **kwargs)
         if fmt == NumberFormat.grouped:
@@ -151,12 +203,36 @@ class NumberFormatter:
 
 
 def date_formatter(locale_uid) -> DateFormatter:
+    """Creates a `DateFormatter` if there is no other instance of that class to the same `locale_uid`.
+
+    Args:
+        locale_uid: Id in the format `language_territory` ex. `de_DE`.
+
+    Returns:
+        `DateFormatter` object.
+    """
     return gws.get_app_global(f'gws.lib.intl.date_formatter.{locale_uid}', lambda: DateFormatter(locale_uid))
 
 
 def time_formatter(locale_uid) -> TimeFormatter:
+    """Creates a `TimeFormatter` if there is no other instance of that class to the same `locale_uid`.
+
+        Args:
+            locale_uid: Id in the format `language_territory` ex. `de_DE`.
+
+        Returns:
+            `TimeFormatter` object.
+        """
     return gws.get_app_global(f'gws.lib.intl.time_formatter.{locale_uid}', lambda: TimeFormatter(locale_uid))
 
 
 def number_formatter(locale_uid) -> NumberFormatter:
+    """Creates a `NumberFormatter` if there is no other instance of that class to the same `locale_uid`.
+
+        Args:
+            locale_uid: Id in the format `language_territory` ex. `de_DE`.
+
+        Returns:
+            `NumberFormatter` object.
+        """
     return gws.get_app_global(f'gws.lib.intl.number_formatter.{locale_uid}', lambda: NumberFormatter(locale_uid))
