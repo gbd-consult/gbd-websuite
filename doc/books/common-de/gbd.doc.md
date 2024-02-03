@@ -8,6 +8,6 @@ Das Geoinformatikbüro Dassau ist seit seiner Gründung 2006 ein aktiver Bestand
 * Softwaredesign und -entwicklung
 * Wartung und Support
 
-Unsere Kernkompetenz liegt in der Software QGIS Desktop, QGIS Server, QField, GRASS GIS, PostgreSQL/PostGIS und der von uns entwickelten GBD WebSuite. Weitere Informationen finden Sie auf unserer [Website](https://www.gbd-consult.de).
+Unsere Kernkompetenz liegt in der Software QGIS Desktop, QGIS Server, QField, GRASS GIS, PostgreSQL/PostGIS und der von uns entwickelten GBD WebSuite. Weitere Informationen finden Sie auf unserer [Webseite](https://www.gbd-consult.de).
 
 
