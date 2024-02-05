@@ -16,7 +16,7 @@ Hier ein kurzer Überblick über die unterstützten Aktionstypen und deren Clien
 | ``map`` | Render von Kartenbildern, siehe [Karten](/admin-de/config/karten) | [Layer](/user-de/sidebar.layer) | |
 | ``ows`` | OWS Dienste wie WMS, WMTS oder WFS, siehe [OWS](/admin-de/plugin/ows) | | |
 | ``printer`` | Drucken, siehe [Drucken](/admin-de/config/drucken) | | [Drucken](/user-de/toolbar.drucken) |
-| ``project`` | Projektbeschreibung und Konfiguration für den Client, siehe [Projekte](/admin-de/config/projekte) |[Porjektübersicht](/user-de/sidebar.projektuebersicht) | |
+| ``project`` | Projektbeschreibung und Konfiguration für den Client, siehe [Projekte](/admin-de/config/projekte) |[Übersicht](/user-de/sidebar.uebersicht) | |
 | ``search`` | allgemeine Such-Anfragen, siehe [Suche](/admin-de/config/suche) | [Suche](/user-de/sidebar.suche) | [Suche](/user-de/toolbar.suchen) & [Räumliche Suche](/user-de/toolbar.raeumliche-suche) |
 | ``storage`` | Datenaustausch mit der Datenablage, siehe [Datenablage](/admin-de/config/datenablage) | [Markierungen](/user-de/sidebar.markierung) & [Bemaßung](/user-de/sidebar.bemassung) & [Auswahl](/user-de/sidebar.auswahl) | [Markieren](/user-de/toolbar.markieren-messen) & [Bemaßung](/user-de/toolbar.bemassung) & [Auswahl](/user-de/toolbar.auswahl) |
 | ``web`` | liefert Webseiten aus, siehe [Web-Server](/admin-de/config/web) | | |

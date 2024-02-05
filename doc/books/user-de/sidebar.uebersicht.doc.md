@@ -1,6 +1,6 @@
-# Projektübersicht :/user-de/sidebar.projektuebersicht
+# Übersicht :/user-de/sidebar.uebersicht
 
-Über das Menü ![](gbd-icon-projectoverview.svg) {title Projektübersicht} kann dem Nutzer allgemeine Informationen zum aktuellen Projekt zu vermitteln. Dazu gehört eine Übersichtskarte, welche den aktuellen Ausschnitt der Hauptkarte darstellt. Sie können den Rahmen in der Übersichtskarte verschieben, um den dargestellten Ausschnitt der Hauptkarte an eine andere Position zu bewegen.
+Über das Menü ![](gbd-icon-projectoverview.svg) {title Übersicht} kann dem Nutzer allgemeine Informationen zum aktuellen Projekt vermittelt werden. Mögliche Elemente sind eine Übersichtskarte, welche den aktuellen Ausschnitt der Hauptkarte darstellt. Sie können den Rahmen in der Übersichtskarte verschieben, um den dargestellten Ausschnitt der Hauptkarte an eine andere Position zu bewegen.
 
 ![](project_overview2.png)
 
