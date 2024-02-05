@@ -14,7 +14,7 @@ def locale(locale_uid: str) -> t.Optional[gws.Locale]:
     """Creates a locale object with formatting information about date, time and numbers.
 
     Args:
-        locale_uid: Id in the format `language_territory` ex. `de_DE`.
+        locale_uid: ID in the format `language_territory` e.g. `de_DE`, or `de`.
 
     Returns:
         Formatting information for that area.
@@ -25,6 +25,9 @@ def locale(locale_uid: str) -> t.Optional[gws.Locale]:
             return None
 
         locale_name = locale_uid.lower().strip().replace('-', '_')
+
+        if '_' not in locale_name:
+            locale_name = locale_name + '_zz'
 
         try:
             p = babel.Locale.parse(locale_name, resolve_likely_subtags=True)
@@ -82,6 +85,7 @@ def bibliographic_name(language: str) -> str:
 
 
 class DateTimeFormat(t.Enum):
+    """Enumeration indicating the length of the date/time format."""
     short = 'short'
     medium = 'medium'
     long = 'long'
@@ -130,7 +134,7 @@ class DateFormatter:
 
 
 class TimeFormatter:
-    """Used for Time formatting"""
+    """Used for time formatting"""
 
     def __init__(self, locale_uid):
         self.localeUid = locale_uid
@@ -168,6 +172,7 @@ class TimeFormatter:
 
 
 class NumberFormat(t.Enum):
+    """Enumeration indicating the length of the number format."""
     decimal = 'decimal'
     grouped = 'grouped'
     currency = 'currency'
@@ -206,7 +211,7 @@ def date_formatter(locale_uid) -> DateFormatter:
     """Creates a `DateFormatter` if there is no other instance of that class to the same `locale_uid`.
 
     Args:
-        locale_uid: Id in the format `language_territory` ex. `de_DE`.
+        locale_uid: ID in the format `language_territory` e.g. `de_DE`.
 
     Returns:
         `DateFormatter` object.
@@ -218,7 +223,7 @@ def time_formatter(locale_uid) -> TimeFormatter:
     """Creates a `TimeFormatter` if there is no other instance of that class to the same `locale_uid`.
 
         Args:
-            locale_uid: Id in the format `language_territory` ex. `de_DE`.
+            locale_uid: ID in the format `language_territory` e.g. `de_DE`.
 
         Returns:
             `TimeFormatter` object.

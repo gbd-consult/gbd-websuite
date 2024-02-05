@@ -5,10 +5,10 @@ import io
 
 
 def from_paths(*paths: str) -> dict:
-    """Merges the key-value pairs of .ini files into a dictionary.
+    """Merges the key-value pairs of `.ini` files into a dictionary.
 
     Args:
-        paths: Paths to .ini files.
+        paths: Paths to `.ini` files.
 
     Returns:
         Dictionary containing all the key-value pairs with the sections as prefixes.
@@ -34,7 +34,7 @@ def to_string(d: dict) -> str:
         d: Key-value pairs.
 
     Returns:
-        String formatted like .ini files.
+        String formatted like `.ini` files.
     """
     cc = configparser.ConfigParser()
 

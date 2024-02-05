@@ -25,9 +25,10 @@ de = {'id': 'de_DE',
       'numberGroup': '.'}
 
 
-# issues when 'de' is used as a parameter
 def test_locale():
+    assert intl.locale('de').__dict__ == de
     assert intl.locale('de-DE').__dict__ == de
+    assert intl.locale('de_DE').__dict__ == de
 
 
 def test_bibliographic_name():
@@ -56,7 +57,7 @@ def test_date_format():
 
 
 def test_time_format():
-    d = intl.time_formatter('de')
+    d = intl.time_formatter('de_DE')
     short = d.format(intl.DateTimeFormat.short)
     patterns = r'(([0-1]\d)|(2[0-3])):[0-5]\d'  # 15:40
     assert re.match(r'^' + patterns + r'$', short)
