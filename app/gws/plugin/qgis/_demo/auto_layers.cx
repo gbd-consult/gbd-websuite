@@ -51,6 +51,7 @@ map.layers+ {
         applyTo { names ["Bäckerei", "Kiosk", "Supermarkt"] }
         config {
             legend { type "qgis" options.layerfontcolor "red" }
+            opacity 0.3
         }
     }
 }
