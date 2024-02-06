@@ -36,7 +36,7 @@ Eine dynamische POST-Anfrage (z.B. Suche):
 Anhand vom `cmd` Parameter entscheidet der Server welche *Server Aktion* die Bearbeitung der Anfrage übernimmt. Falls die Aktion existiert und richtig konfiguriert ist,  wird die Anfrage zu dieser Aktion weitergeleitet. Die Aktion bearbeitet die Anfrage und stellt eine Antwort bereit, die abhängig von der Natur der Anfrage, in HTML, JSON oder PNG Format vorliegt. Intern sind die Aktionen die Python-Klassen, die für jeden Befehl (`cmd`) über eine Methode verfügen. Im obigen Beispiel (`cmd=mapHttpGetBox`) ist `map` die Aktion und `httpGetBox` die Methode, die diese Anfrage bearbeitet.
 
 %info
- Server Aktionen sind unter [Actions](/admin-de/config/server-aktionen) beschrieben.
+ Server Aktionen sind [hier](/admin-de/config/server-aktionen) beschrieben.
 %end
 
 ## Webseiten und Projekte
@@ -66,7 +66,7 @@ Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Haupt
 Ein *Asset* ist dagegen ein Dokument, das dynamisch erzeugt wird, abhängig vom Kontext (eine *Vorlage*) oder nur berechtigten Nutzern zur Verfügung steht. Assets werden in einem speziellen Ordner platziert, der sowohl für eine Webseite als auch Projekt-abhängig konfiguriert werden kann.
 
 %info
- Mehr dazu in [App](/admin-de/config/applikation), [Vorlagen](/admin-de/config/template) und [Projekte](/admin-de/config/projekte).
+ Mehr dazu in [Applikation](/admin-de/config/applikation), [Vorlagen](/admin-de/config/template) und [Projekte](/admin-de/config/projekte).
 %end
 
 ## Autorisierung
