@@ -15,7 +15,7 @@ Nahezu alle Funktionalität ist plugin-basiert. So können individuelle Anwendun
 {title GBD WebSuite als Kartenserver}
 
   *  kombiniert unterschiedlichste Quellen (Dateien, OGC Dienste und Datenbanken) in einer Karte
-  *  unterstützt das direkte Einbindung von QGIS Projekten (QGS-, QGZ-Format) auch aus PostgreSQL 
+  *  unterstützt das direkte Einbinden von QGIS Projekten (QGS-, QGZ-Format) auch aus PostgreSQL 
   *  bietet Cachen und Reprojizieren von Geodaten und das Resampling von Rasterdaten
   *  erlaubt das Editieren und Darstellen von Vektordaten (z.B. PostGIS, Shapefile, JSON)
   *  ermöglicht die Bereitstellung von OGC- und INSPIRE-Diensten (z.B. als WMS, WMTS, WFS)
