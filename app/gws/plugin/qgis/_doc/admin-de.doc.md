@@ -1,4 +1,4 @@
-# Qgis :/admin-de/plugin/qgis
+# QGIS :/admin-de/plugin/qgis
 
 ## Layer
 
@@ -6,7 +6,7 @@ Es gibt zwei Möglichkeiten, QGIS Projekte als Layer in Ihren Karten einzubinden
 
 ## qgis
 
-%reference_de 'gws.plugin.qgis.qgis_layer.Config'
+%reference_de 'gws.plugin.qgis.layer.Config'
 
 QGIS-Layer zeigen ganze QGIS-Projekte als einzelne Gruppe im GWS-Layerbaum an. Zusätzlich zu einem Layerfilter können Sie angeben, ob entfernte (z. B. WMS-) Layer direkt gerendert und / oder durchsucht werden sollen, oder den QGIS-Server verwenden:
 
@@ -24,7 +24,7 @@ Sie können auch die Struktur der Gruppe mit ``flattenLayers`` beinflüssen, ind
 
 ## qgisflat
 
-%reference_de 'gws.plugin.qgis.qgisflat_layer.Config'
+%reference_de 'gws.plugin.qgis.flatlayer.Config'
 
 ``qgisflat``-Layer zeigen einzelne Layer aus einem QGIS-Projekt als einzelnes flaches Bild an:
 
@@ -46,12 +46,12 @@ Für QGIS Layer können Sie unter ``legend.options`` einige visuelle Einstellung
 
 ## Druckvorlagen
 
-TODO! %reference_de 'gws.ext.template.qgis.Config'
+%reference_de 'gws.plugin.qgis.template.Config'
 
 Sie können QGIS Druckvorlagen ("Layouts") frei verwenden, auch für nicht-QGIS bzw. gemischte Karten. In der Vorlagen-Konfiguration muss den Pfad zu der QGIS Projektdatei angegeben werden, sowie Layout-Namen bzw Nummer. In dem Layout wird das ``Map`` Element mit der aktuellen GWS Karte ersetzt, zusätzlich können Sie in ``HTML-Frame`` Elements einige ``gws:`` Tags nutzen, wie z.B. ``<gws:legend>`` (siehe [Drucken](/admin-de/config/drucken)). Die vom Nutzer definierte Druck-Attribute können Sie mit dem QGIS Syntax ``[% @variable %]`` einfügen.
 
 %info
- Beachten Sie, dass der Hintergrund der Vorlage (unter "Seiteneigenschaften") transparent sein muss.
+ Beachten Sie, dass die Deckkraft des Hintergrunds der Druckvorlage auf 0% gesetzt sein muss (unter "Elementeigenschaften").
 %end
 
 ## Server Einstelligen

@@ -152,7 +152,7 @@ Es werden folgende Element-Tags unterstützt:
 |``Toolbar.Location`` | aktueller Standout |
 |``Toolbar.Print`` | Drucken |
 |``Toolbar.Select`` | Objekte auswählen |
-|``Toolbar.Snapshot`` | Screenshot |
+|``Toolbar.Screenshot`` | Screenshot |
 |``Toolbar.Tabedit`` | tabellarisches Editieren, siehe [Tabellarisches Editieren](/admin-de/plugin/tabedit) |
 
 *Popup-Menüs für Feature Objekte*
