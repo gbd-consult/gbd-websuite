@@ -14,25 +14,24 @@ import gws.lib.jsonx
 import gws.lib.osx
 import gws.lib.sa as sa
 import gws.plugin.model_field.file
-import gws.plugin.postgres
 import gws.plugin.qgis
 import gws.types as t
 
+GPKG_EXT = 'gpkg'
 
-class PackageConfig(gws.Config):
-    name: str
+
+class PackageConfig(gws.ConfigWithAccess):
     qgisProvider: gws.plugin.qgis.provider.Config
+    """QGis provider settings"""
     models: t.Optional[list[gws.ext.config.model]]
     """data models"""
 
 
 class Package(gws.Node):
-    name: str
     qgisProvider: gws.plugin.qgis.provider.Object
     models: list[gws.IDatabaseModel]
 
     def configure(self):
-        self.name = self.cfg('name')
         self.qgisProvider = self.create_child(gws.plugin.qgis.provider.Object, self.cfg('qgisProvider'))
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
 
@@ -41,28 +40,38 @@ class Package(gws.Node):
 
 class ExportOptions(gws.Data):
     baseDir: str
-    namePrefix: str
-    withData: bool
+    qgisFileName: str
+    dbFileName: str
     withBaseMap: bool
-    withMediaDirectories: bool
+    withData: bool
+    withMedia: bool
     withQgis: bool
-    withExtraFiles: bool
     storeDbInDCIM: bool
 
 
 class ImportOptions(gws.Data):
     baseDir: str
-    namePrefix: str
+    dbFileName: str
 
 
 def export_package(package: Package, project: gws.IProject, user: gws.IUser, opts: ExportOptions):
     """Write QField package files to a directory."""
+
+    gws.log.debug(f'qfield: export: {package=} {project=} {opts=}')
+
+    if not user.can_read(package):
+        raise gws.ForbiddenError(f'cannot read {package.uid=}')
 
     _Exporter().run(package, project, user, opts)
 
 
 def import_data_from_package(package: Package, project: gws.IProject, user: gws.IUser, opts: ImportOptions):
     """Read QField package files from a directory and update the database."""
+
+    gws.log.debug(f'qfield: import: {package=} {project=} {opts=}')
+
+    if not user.can_write(package):
+        raise gws.ForbiddenError(f'cannot write to {package.uid=}')
 
     _Importer().run(package, project, user, opts)
 
@@ -160,9 +169,9 @@ class _Exporter:
 
         self.sourceQgisProject = self.package.qgisProvider.qgis_project()
 
-        self.targetQgisPath = f'{self.opts.baseDir}/{self.opts.namePrefix}{self.package.name}.qgs'
+        self.targetQgisPath = f'{self.opts.baseDir}/{self.opts.qgisFileName or self.package.uid}.qgs'
 
-        db_path = f'{self.opts.namePrefix}{self.package.name}.gpkg'
+        db_path = f'{self.opts.dbFileName or self.package.uid}.{GPKG_EXT}'
         if self.opts.storeDbInDCIM:
             db_path = f'DCIM/{db_path}'
             gws.ensure_dir(f'{self.opts.baseDir}/DCIM')
@@ -179,8 +188,8 @@ class _Exporter:
                 le.dataSource = f'{le.devicePath}|layername={le.qgisId}'
                 le.dataProvider = f'ogr'
             if le.action == _LayerAction.baseMap:
-                le.localPath = f'{self.opts.baseDir}/{le.qgisId}.gpkg'
-                le.devicePath = f'./{le.qgisId}.gpkg'
+                le.localPath = f'{self.opts.baseDir}/{le.qgisId}.{GPKG_EXT}'
+                le.devicePath = f'./{le.qgisId}.{GPKG_EXT}'
                 le.dataSource = f'{le.devicePath}'
                 le.dataProvider = f'gdal'
 
@@ -197,7 +206,7 @@ class _Exporter:
                 if le.action == _LayerAction.baseMap:
                     self.write_base_map(le)
 
-        if self.opts.withMediaDirectories:
+        if self.opts.withMedia:
             for d in self.qfCaps.dirsToCopy:
                 if self.qfCaps.qgisPath:
                     rel_dir = gws.lib.osx.rel_path(d, self.qfCaps.qgisPath)
@@ -227,11 +236,12 @@ class _Exporter:
         records = []
 
         for feature in features:
-            feature.record = gws.FeatureRecord(attributes={}, meta={})
-            for fld in gp_fields:
-                fld.to_record(feature, mc)
-            feature.record.shape = feature.shape()
-            records.append(feature.record)
+            props = le.model.feature_to_props(feature, mc)
+            records.append(gws.FeatureRecord(
+                attributes={fld.name: props.attributes.get(fld.name) for fld in gp_fields},
+                shape=feature.shape(),
+                meta={}
+            ))
 
         with ds.transaction():
             fids = gp_layer.insert(records)
@@ -247,13 +257,13 @@ class _Exporter:
             for rec, fid in zip(records, fids):
                 le.fidToPkey[fid] = rec.attributes.get(le.model.uidName)
 
-        gws.log.debug(f'{self.opts.baseDir}: write_features: {self.package.name}::{le.qgisId!r} count={gp_layer.count()}')
+        gws.log.debug(f'{self.opts.baseDir}: write_features: {self.package.uid}::{le.qgisId!r} count={gp_layer.count()}')
 
     def write_base_map(self, le: _LayerEntry):
         bounds = self.package.qgisProvider.bounds
-        res = int(self.qfCaps.globalProps.get('baseMapMupp', 10))
+        resolution = int(self.qfCaps.globalProps.get('baseMapMupp', 10))
         w, h = gws.gis.extent.size(bounds.extent)
-        px_size = (w / res, h / res, gws.Uom.px)
+        px_size = (w / resolution, h / resolution, gws.Uom.px)
 
         flat_layer = t.cast(gws.ILayer, self.package.root.create_temporary(
             gws.ext.object.layer,
@@ -506,12 +516,15 @@ class _Importer:
         self.localDbPath = ''
         self.localImagePaths = []
 
+        db_name = f'{self.opts.dbFileName or self.package.uid}.{GPKG_EXT}'
+
         for path in gws.lib.osx.find_files(self.opts.baseDir):
-            if path.endswith(f'{self.opts.namePrefix}{self.package.name}.gpkg'):
+            if path.endswith(db_name):
                 self.localDbPath = path
             if path.lower().endswith(('.jpg', '.jpeg', '.png')):
                 self.localImagePaths.append(path)
 
+        gws.log.debug(f'{self.localDbPath=} {self.localImagePaths=}')
         self.qfCaps = _QfCapsParser().run(self.package)
 
         if self.localDbPath:
@@ -696,7 +709,7 @@ class _Importer:
 
             if eo.action in {_EditAction.update, _EditAction.geometryUpdate}:
                 mc = gws.ModelContext(user=self.user, op=gws.ModelOperation.update)
-                model = self.require_model(le.model.uid, self.user, gws.Access.write)
+                model = self.check_model(le, self.user, gws.Access.write)
                 feature = model.feature_from_props(gws.FeatureProps(attributes=eo.attributes), mc)
                 if not model.validate_feature(feature, mc):
                     gws.log.info(f'validation errors: {feature.errors}')
@@ -705,7 +718,7 @@ class _Importer:
 
             if eo.action == _EditAction.insert:
                 mc = gws.ModelContext(user=self.user, op=gws.ModelOperation.create)
-                model = self.require_model(le.model.uid, self.user, gws.Access.create)
+                model = self.check_model(le, self.user, gws.Access.create)
                 feature = model.feature_from_props(gws.FeatureProps(attributes=eo.attributes), mc)
                 if not model.validate_feature(feature, mc):
                     gws.log.info(f'validation errors: {feature.errors}')
@@ -714,15 +727,18 @@ class _Importer:
 
             if eo.action == _EditAction.delete:
                 mc = gws.ModelContext(user=self.user, op=gws.ModelOperation.delete)
-                model = self.require_model(le.model.uid, self.user, gws.Access.delete)
+                model = self.check_model(le, self.user, gws.Access.delete)
                 feature = model.feature_from_props(gws.FeatureProps(attributes=eo.attributes), mc)
                 model.delete_feature(feature, mc)
 
-    def require_model(self, model_uid, user: gws.IUser, access: gws.Access) -> gws.IModel:
-        model = t.cast(gws.IModel, user.acquire(model_uid, gws.ext.object.model, access))
-        if not model or not model.isEditable:
-            raise gws.ForbiddenError()
-        return model
+    def check_model(self, le: _LayerEntry, user: gws.IUser, access: gws.Access) -> gws.IModel:
+        if not le.model:
+            raise gws.ForbiddenError(f'{le.qgisId}: model: not found, {access=} {user=}')
+        if not le.model.isEditable:
+            raise gws.ForbiddenError(f'{le.qgisId}: model not editable, {access=} {user=}')
+        if not user.can(access, le.model):
+            raise gws.ForbiddenError(f'{le.qgisId}: model forbidden, {access=} {user=}')
+        return le.model
 
 
 class _QfCapsParser:
@@ -874,6 +890,8 @@ class _QfCapsParser:
             gws.Config(
                 uid=f'qfield_model_{table_name}',
                 type='postgres',
+                # NB: permissions are checked in the public export/import functions above
+                permissions=gws.Config(read=gws.PUBLIC, edit=gws.PUBLIC),
                 tableName=table_name,
                 isEditable=True,
                 _defaultProvider=pg,
