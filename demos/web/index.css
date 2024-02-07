@@ -169,6 +169,10 @@ body {
     padding-left: 2em;
 }
 
+.project-details-entry pre {
+    margin: 2em 0;
+}
+
 a.icon {
     display: inline-block;
 }

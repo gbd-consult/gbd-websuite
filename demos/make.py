@@ -67,10 +67,14 @@ def main(args):
         error_lines(config, exc.args[2])
         return cli.fatal(str(exc))
 
+    projects = config_dct.get('projects')
+    if not projects:
+        return cli.fatal('no demo projects found')
+
     # render abstracts
 
     markdown = mistune.create_markdown()
-    for prj in config_dct['projects']:
+    for prj in projects:
         text = prj.get('metadata', {}).get('abstract', '')
         if text:
             text = markdown(text)
@@ -84,7 +88,7 @@ def main(args):
     # check uids
 
     uids = set()
-    for prj in config_dct['projects']:
+    for prj in projects:
         uid = prj.get('uid')
         if not uid:
             cli.fatal(f'no uid for project {prj!r}')
