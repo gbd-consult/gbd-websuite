@@ -28,8 +28,8 @@ const _PREFIX_GEMEINDE = '@gemeinde';
 interface FormValues {
     bblatt?: string;
     eigentuemerControlInput?: string;
-    flaecheBis?: string;
-    flaecheVon?: string;
+    flaecheBis?: number;
+    flaecheVon?: number;
     gemarkungCode?: string;
     gemeindeCode?: string;
     hausnummer?: string;
@@ -449,14 +449,14 @@ class SearchForm extends gws.View<ViewProps> {
 
             <Row>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gws.ui.NumberInput
                         placeholder={cc.__('alkisAreaFrom')}
                         {...boundTo('flaecheVon')}
                         withClear
                     />
                 </Cell>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gws.ui.NumberInput
                         placeholder={cc.__('alkisAreaTo')}
                         {...boundTo('flaecheBis')}
                         withClear
