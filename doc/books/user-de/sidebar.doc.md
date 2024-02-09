@@ -8,7 +8,6 @@ Die Seitenleiste ![](baseline-menu-24px.svg) {title Menü} ermöglicht den Zugri
 |---------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------------|
 | ![](baseline-person-24px.svg)		| [Anmelden](/user-de/sidebar.anmelden)	 				| Benutzer an- und abmelden	 			|
 | ![](gbd-icon-auswahl-01.svg)        	| [Auswahl](/user-de/sidebar.auswahl)  					| Liste ausgewählter Objekte anzeigen    		|
-| ![](bplan.svg)          		| [Bauleitplanung](/user-de/sidebar.bauleitplanung)			| Daten der Bauleitplanung administrieren       	|
 | ![](gbd-icon-bemassung-02.svg)      	| [Bemaßung](/user-de/sidebar.bemassung)  				| Liste bemaßter Objekte anzeigen          		|
 | ![](sharp-edit-24px.svg) 		| [Editieren](/user-de/sidebar.digitalisieren) 				| Objekte digitalisieren und deren Attribute editieren	|
 | ![](gbd-icon-flurstuecksuche-01.svg) 	| [Flurstücksuche](/user-de/sidebar.flurstuecksuche)			| Beauskunftung zum Thema Liegenschaftskataster (ALKIS)	|
@@ -26,6 +25,7 @@ Die Seitenleiste ![](baseline-menu-24px.svg) {title Menü} ermöglicht den Zugri
 Elemente, die ab r8 über Modelle gelöst werden und kein eigenes Modul mehr sind
 | Symbol                                | Funktion                   						| Funktionsbeschreibung                         	|
 |---------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------------|
+| ![](bplan.svg)          		| [Bauleitplanung](/user-de/sidebar.bauleitplanung)			| Daten der Bauleitplanung administrieren       	|
 | ![](directions_black_24px.svg)	| [Location Manager](/user-de/sidebar.standort-manager) 	 	| Location Manager   
 | ![](person_search-24px.svg)     	| [Personen Informationen](/user-de/sidebar.personen-information)	| Liste der selektierten Objekte    			|
 %end
