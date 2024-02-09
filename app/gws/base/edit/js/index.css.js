@@ -74,20 +74,14 @@ module.exports = v => {
         },
         '.editSaveButton': {
             ...v.ROUND_OK_BUTTON(),
-            opacity: 0.3,
-            '&.isActive': {
-                opacity: 1,
-            }
+            opacity: 1,
         },
         '.editCancelButton': {
             ...v.ROUND_CLOSE_BUTTON(),
         },
         '.editResetButton': {
             ...v.ROUND_FORM_BUTTON('google:content/undo'),
-            opacity: 0.3,
-            '&.isActive': {
-                opacity: 1,
-            }
+            opacity: 1,
         },
         '.editDeleteButton': {
             ...v.ROUND_FORM_BUTTON('google:action/delete'),
