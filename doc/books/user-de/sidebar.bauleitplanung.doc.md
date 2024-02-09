@@ -1,3 +1,4 @@
+%comment
 # Bauleitplanung :/user-de/sidebar.bauleitplanung
 
 Das Menü ![](bplan.svg) {title Bauleitplanung} bietet die Möglichkeit, aufbereitete Bauleit- und Landschaftspläne zu administrieren, über die GBD WebSuite darzustellen und als OGC- und  INSPIRE-konforme Dienste bereit zu stellen. Das Modul unterstützt folgende Datensätze:
@@ -20,3 +21,4 @@ Unterstützt wird die Bereitstellung folgender INSPIRE Dienste:
 - INSPIRE konformer Web Mapping Service (WMS/WMTS)
 - Umsetzung INSPIRE konformer Web Feature Service (WFS)
 - Umsetzung INSPIRE konformer Web Coverage Service (WCS)
+%end
