@@ -1,3 +1,8 @@
+## Version 8.0.29
+
+- areas in ALKIS UI treated as numbers
+- UI fixes in the editor
+
 ## Version 8.0.28
 
 - autoLayers bug fixed
