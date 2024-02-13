@@ -30,8 +30,11 @@ Aktionen werden in ``api`` Blocks in der App- bzw Projektkonfigs konfiguriert. J
 | OPTION | BEDEUTUNG | Client Seitenleiste | Client Werkzeugleiste |
 |---|---|---|---|
 | ``asset`` | Verwaltung von dynamischen Assets, siehe [Web-Server](/admin-de/config/web) | | |
-| ``bplan`` | Verwaltung von Bauleitplänen, siehe [Bauleitplanung](/admin-de/config/bplan) |[Bauleitplanung](/user-de/sidebar.bauleitplanung) | |
 | ``dprocon`` | DPro-Con Anbindung, siehe [D-ProCon](/admin-de/config/dprocon) | |[D-ProCon](/user-de/toolbar.dprocon) |
 | ``fs`` | Schnittstelle für das virtuelle Dateisystem, mit der die Daten auf dem Server gespeichert werden können | | |
 | ``gekos`` | GekoS Anbindung, siehe [GekoS Integration](/admin-de/config/gekos) | | [GeKos](/user-de/toolbar.gekos) |
 | ``tabedit`` | Editieren von Sachdaten in einer tabellarischen Form, siehe [Tabellarisches Editieren](/admin-de/plugin/tabedit) | [Tabellen editieren](/user-de/sidebar.tabellen) | |
+
+%comment
+| ``bplan`` | Verwaltung von Bauleitplänen, siehe [Bauleitplanung](/admin-de/config/bplan) |[Bauleitplanung](/user-de/sidebar.bauleitplanung) | |
+%end

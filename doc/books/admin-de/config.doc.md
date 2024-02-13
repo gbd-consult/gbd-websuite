@@ -40,6 +40,9 @@ Optionen für die visuelle Präsentation von Karten und Sachdaten.
 /admin-de/config/style
 /admin-de/config/drucken
 /admin-de/config/csv
+%end
+
+%comment
 /admin-de/config/bplan
 %end
 
