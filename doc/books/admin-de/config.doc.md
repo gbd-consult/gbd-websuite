@@ -28,18 +28,21 @@ Konfiguration der Karten, Layer und Suchoptionen.
 /admin-de/config/cache
 /admin-de/config/suche
 /admin-de/config/metadaten
-/admin-de/config/ows
+/admin-de/plugin/ows
 /admin-de/config/dprocon
 /admin-de/config/gekos
 %end
 
-Options für die visuelle Präsentation von Karten und Sachdaten.
+Optionen für die visuelle Präsentation von Karten und Sachdaten.
 
 %toc
-/admin-de/config/vorlagen
+/admin-de/config/template
 /admin-de/config/style
 /admin-de/config/drucken
 /admin-de/config/csv
+%end
+
+%comment
 /admin-de/config/bplan
 %end
 
