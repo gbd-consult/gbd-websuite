@@ -22,6 +22,10 @@ Beim Auswählen eines Objekts in der Auswahlliste öffnet sich automatisch das I
 | ![](sharp-center_focus_weak-24px.svg)	| {button Hinzoomen}		| Auf das ausgewählte Objekt zoomen											|
 | ![](gbd-icon-markieren-messen-01.svg) | {button Markieren & Messen}	| Das ausgewählte Objekt an das Modul [Markieren & Messen](/user-de/sidebar.markierung) der Seitenleiste übergeben	|
 
+%info
+Eine Demo zum Thema {button Auswählen} befindet sich in der [GBD WebSuite Demo](https://gws-dev.gbd-consult.de/demo/select_tool) und der [dazugehörigen Konfiguration](https://github.com/gbd-consult/gbd-websuite/blob/master/app/gws/plugin/select_tool/_demo/select.cx).
+%end
+
 %comment
 | ![](gbd-icon-auswahl-01.svg)   	| {button Auswählen}		| Das ausgewählte Objekt auswählen		|
 %end

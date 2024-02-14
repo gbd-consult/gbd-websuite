@@ -15,7 +15,6 @@ Die Seitenleiste ![](baseline-menu-24px.svg) {title Menü} ermöglicht den Zugri
 | ![](gbd-icon-markieren-messen-01.svg)	| [Markierungen](/user-de/sidebar.markierung)    			| Liste von Messungen & Markierungen verwalten		|
 | ![](gbd-icon-projectoverview.svg)    	| [Übersicht](/user-de/sidebar.uebersicht)				| Allgemeine Projektinformationen anzeigen		|
 | ![](baseline-search-24px.svg)        	| [Suche](/user-de/sidebar.suche)  					| Inhalte suchen und als Ergebnis auflisten		|
-| ![](table_view_black_24px.svg)       	| [Tabellen editieren](/user-de/sidebar.tabellen)	 		| Attributtabelle eines Layers editieren   		|
 
 %info
 	Die Elemente in der Seitenleiste und ihre Reihenfolge können durch einen Administrator für Benutzer oder Benutzergruppen individuelle konfiguriert werden. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [UI-Konfiguration](/admin-de/config/client).
@@ -26,8 +25,9 @@ Elemente, die ab r8 über Modelle gelöst werden und kein eigenes Modul mehr sin
 | Symbol                                | Funktion                   						| Funktionsbeschreibung                         	|
 |---------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------------|
 | ![](bplan.svg)          		| [Bauleitplanung](/user-de/sidebar.bauleitplanung)			| Daten der Bauleitplanung administrieren       	|
-| ![](directions_black_24px.svg)	| [Location Manager](/user-de/sidebar.standort-manager) 	 	| Location Manager   
+| ![](directions_black_24px.svg)	| [Location Manager](/user-de/sidebar.standort-manager) 	 	| Location Manager   					|
 | ![](person_search-24px.svg)     	| [Personen Informationen](/user-de/sidebar.personen-information)	| Liste der selektierten Objekte    			|
+
 %end
 
 
