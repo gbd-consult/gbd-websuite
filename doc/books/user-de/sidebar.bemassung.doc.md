@@ -5,7 +5,7 @@ Das Menü ![](gbd-icon-bemassung-02.svg) {title Bemaßung} interagiert mit dem W
 
 Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet und können frei verschoben und textlich erweitert werden. Die Eingabe von Werten ist auch mit Nachkommastellen möglich, welche dann Zentimeter darstellen. Wenn Sie mit Hilfe des Werkzeuges ![](gbd-icon-bemassung-02.svg) {button Bemaßung} Objekte gezeichnet haben, werden diese in der Ablage dieses Menüs gelistet. Hier findet eine Auflistung aller gezeichneten Bemaßungen statt. Durch Klicken auf ![](sharp-center_focus_weak-24px.svg) {button Hinzoomen} wird auf das gewählte Objekt gezoomt. Durch Klicken auf ![](sharp-remove_circle_outline-24px.svg) {button Herausnehmen} wird dieses Objekt gelöscht.
 
-![](dimensions.png)
+![](dimensions.png){border=1}
 
 Am unteren Menüfensterrand befindet sich weitere Funktionalität für die Ablage der ausgewählten Objekte:
 
@@ -14,3 +14,7 @@ Am unteren Menüfensterrand befindet sich weitere Funktionalität für die Ablag
 | ![](ic_folder_open_24px.svg)		| {button Auswahl laden}	| Gespeicherte Auswahlliste laden 		|
 | ![](sharp-save-24px.svg)        	| {button Auswahl speichern}	| Auswahlliste speichern     			|
 | ![](sharp-delete_forever-24px.svg)   	| {button Auswahl löschen}	| Aktuelle Auswahlliste löschen			|
+
+%info
+Eine Demo zum Thema {button Bemaßung} befindet sich in der [GBD WebSuite Demo](https://gws-dev.gbd-consult.de/demo/dimension_tool) und der [dazugehörigen Konfiguration](https://github.com/gbd-consult/gbd-websuite/blob/master/app/gws/plugin/dimension/_demo/dimension.cx).
+%end
