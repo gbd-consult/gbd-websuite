@@ -36,7 +36,7 @@ class Object(gws.base.auth.method.Object):
             res.add_header('WWW-Authenticate', f'Basic realm={self.realm}, charset="UTF-8')
 
     def open_session(self, req):
-        credentials = _parse_header(req)
+        credentials = self._parse_header(req)
         if not credentials:
             return
         try:
@@ -49,30 +49,26 @@ class Object(gws.base.auth.method.Object):
     def close_session(self, req, res):
         pass
 
+    def _parse_header(self, req: gws.IWebRequester):
+        h = req.header('Authorization')
+        if not h:
+            return
 
-##
+        a = h.strip().split()
+        if len(a) != 2 or a[0].lower() != 'basic':
+            return
 
+        try:
+            b = gws.to_str(base64.decodebytes(gws.to_bytes(a[1])))
+        except ValueError:
+            return
 
-def _parse_header(req: gws.IWebRequester):
-    h = req.header('Authorization')
-    if not h:
-        return
+        c = b.split(':')
+        if len(c) != 2:
+            return
 
-    a = h.strip().split()
-    if len(a) != 2 or a[0].lower() != 'basic':
-        return
+        username = c[0].strip()
+        if not username:
+            return
 
-    try:
-        b = gws.to_str(base64.decodebytes(gws.to_bytes(a[1])))
-    except ValueError:
-        return
-
-    c = b.split(':')
-    if len(c) != 2:
-        return
-
-    username = c[0].strip()
-    if not username:
-        return
-
-    return gws.Data(username=username, password=c[1])
+        return gws.Data(username=username, password=c[1])

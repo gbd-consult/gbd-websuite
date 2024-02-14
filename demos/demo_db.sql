@@ -173,6 +173,9 @@ create table edit.person
 (
     id            int primary key generated always as identity,
     name          text not null,
+    login         text,
+    passwd        text,
+    token         text,
     description   text default null,
     poi_id        int,
     district_name text
@@ -2944,6 +2947,14 @@ values ('Mary', 1, 'Angermund'),
        ('Nancy', 12, 'Hellerhof'),
        ('Betty', 13, 'Mörsenbroich'),
        ('Margaret', 14, 'Unterrath');
+
+create extension if not exists pgcrypto;
+
+update edit.person
+set login=lower(name),
+    passwd=crypt(lower(name) || '123', gen_salt('bf', 8)),
+    token=substring(random()::text, 3, 5);
+
 
 
 insert into edit.water (name, geom)
