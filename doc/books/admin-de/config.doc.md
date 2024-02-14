@@ -46,7 +46,7 @@ Optionen für die visuelle Präsentation von Karten und Sachdaten.
 /admin-de/config/bplan
 %end
 
-Optionen in Bezug auf Editieren von geografischen Objekten und Sachdaten.
+Optionen in Bezug auf Auswählen und Editieren von geografischen Objekten und Sachdaten.
 
 %toc
 /admin-de/plugin/edit
