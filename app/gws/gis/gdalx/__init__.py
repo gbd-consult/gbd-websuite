@@ -166,7 +166,7 @@ class DataSet:
 
         gd_layer = self.gdDataset.CreateLayer(
             name,
-            geom_type=_GEOM_TO_OGR[geometry_type] if geometry_type else ogr.wkbUnknown,
+            geom_type=_GEOM_TO_OGR.get(geometry_type) or ogr.wkbUnknown,
             srs=_srs(crs.srid if crs else 3857) if geometry_type else None,
             options=opts,
         )

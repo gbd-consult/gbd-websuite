@@ -46,7 +46,7 @@ class ExportOptions(gws.Data):
     withData: bool
     withMedia: bool
     withQgis: bool
-    storeDbInDCIM: bool
+    withDbInDCIM: bool
 
 
 class ImportOptions(gws.Data):
@@ -172,7 +172,7 @@ class _Exporter:
         self.targetQgisPath = f'{self.opts.baseDir}/{self.opts.qgisFileName or self.package.uid}.qgs'
 
         db_path = f'{self.opts.dbFileName or self.package.uid}.{GPKG_EXT}'
-        if self.opts.storeDbInDCIM:
+        if self.opts.withDbInDCIM:
             db_path = f'DCIM/{db_path}'
             gws.ensure_dir(f'{self.opts.baseDir}/DCIM')
 

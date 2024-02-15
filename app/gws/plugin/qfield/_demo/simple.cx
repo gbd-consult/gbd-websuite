@@ -9,7 +9,7 @@ QGIS project with QField synchronization enabled.
 
 Test it like this:
 
-- download the [zip package](/_/qfieldExport/projectUid/qfield_demo_1/packageUid/my_project/qfield.zip)
+- download the [zip package](/_/qfieldDownload/projectUid/qfield_demo_1/packageUid/my_project/qfield.zip)
 
 - copy it to the Downloads folder on your device
 
@@ -20,7 +20,7 @@ Test it like this:
 - copy the file `my_project.gpkg` from the device and upload it, e.g. using `curl`:
 
 ```
-curl --data-binary "@my_project.gpkg" https://gws-dev.gbd-consult.de/_/qfieldImport/projectUid/qfield_demo_1/packageUid/my_project
+curl --data-binary "@my_project.gpkg" https://gws-dev.gbd-consult.de/_/qfieldUpload/projectUid/qfield_demo_1/packageUid/my_project
 ```
 
 - reload this page to see your changes
