@@ -306,10 +306,15 @@ export class MapManager implements types.IMapManager {
         }
 
         if ('centerX' in vs && 'centerY' in vs) {
-            p.center = this.oView.constrainCenter([
+            let ext = this.extent;
+            let xy = [
                 lib.asNumber(vs.centerX),
-                lib.asNumber(vs.centerY)
-            ]);
+                lib.asNumber(vs.centerY),
+            ];
+            p.center = [
+                lib.clamp(xy[0], Math.min(ext[0], ext[2]), Math.max(ext[0], ext[2])),
+                lib.clamp(xy[1], Math.min(ext[1], ext[3]), Math.max(ext[1], ext[3])),
+            ];
         }
 
         if ('angle' in vs) {
