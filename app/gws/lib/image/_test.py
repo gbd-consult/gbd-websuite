@@ -12,26 +12,6 @@ import PIL.Image
 import PIL.ImageDraw
 import PIL.ImageFont
 
-from skimage.metrics import structural_similarity as ssim
-
-
-def squared_error(x: float, y: float) -> float:
-    return (x - y) ** 2
-
-
-def mse(a: image.Image | gws.IImage, b: image.Image) -> float:
-    error = 0
-    x, y = a.size()
-    for i in range(int(x)):
-        for j in range(int(y)):
-            a_r, a_g, a_b, a_a = a.getpixel((i, j))
-            b_r, b_g, b_b, b_a = b.getpixel((i, j))
-            error += squared_error(a_r, b_r)
-            error += squared_error(a_g, b_g)
-            error += squared_error(a_b, b_b)
-            error += squared_error(a_a, b_a)
-    return error / (3 * x * y)
-
 
 # creates the images to compare with using PIL
 def test_create_images():
@@ -90,10 +70,7 @@ red = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAABhGl
 def test_from_size():
     img = image.from_size((50, 50), color=(255, 0, 0, 255))
     img2 = image.from_path('/tmp/red.png')
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
-    assert ssim(img, img2, win_size=3) == 1
+    assert u.image_similarity(img, img2) == 0
 
 
 def test_from_bytes():
@@ -101,10 +78,7 @@ def test_from_bytes():
     byt = file.read()
     img = image.from_bytes(byt)
     img2 = image.from_path('/tmp/red.png')
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
-    assert ssim(img, img2, win_size=3) == 1
+    assert u.image_similarity(img, img2) == 0
 
 
 def test_from_raw_data():
@@ -112,29 +86,20 @@ def test_from_raw_data():
     arr = img.to_array()
     arr = arr.tobytes()
     img2 = image.from_raw_data(arr, 'RGBA', (50, 50))
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
-    assert ssim(img, img2, win_size=3)
+    assert u.image_similarity(img, img2) == 0
 
 
 def test_from_path():
     img = image.from_path('/tmp/red.png')
     img2 = image.from_data_url(red)
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
-    assert ssim(img, img2, win_size=3) == 1
+    assert u.image_similarity(img, img2) == 0
 
 
 # https://i-converter.com/files/png-to-url used to get the url
 def test_from_data_url():
     img = image.from_data_url(red)
     img2 = image.from_path('/tmp/red.png')
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
-    assert ssim(img2, img, win_size=3) == 1
+    assert u.image_similarity(img, img2) == 0
 
 
 def test_from_data_url_exception():
@@ -163,21 +128,15 @@ def test_rotate():
     img = image.from_data_url(red)
     img = img.rotate(-15)
     img2 = image.from_path('/tmp/red-rotate.png')
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
     # sometimes not exactly 100% similar due to antialiasing when rotating
-    assert ssim(img2, img, win_size=3) == 1
+    assert u.image_similarity(img, img2) == 0
 
 
 def test_crop():
     img = image.from_data_url(red)
     img = img.crop((10, 10, 30, 30))
     img2 = image.from_path('/tmp/red-crop.png')
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
-    assert ssim(img2, img, win_size=3) == 1
+    assert u.image_similarity(img, img2) == 0
 
 
 def test_paste():
@@ -185,10 +144,7 @@ def test_paste():
     x = image.from_path('/tmp/x.png')
     img = img.paste(x, where=(12, 12))
     img2 = image.from_path('/tmp/red-paste.png')
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
-    assert ssim(img, img2, win_size=3) == 1
+    assert u.image_similarity(img, img2) == 0
 
 
 # not right
@@ -197,10 +153,7 @@ def test_compose_float():
     img2 = image.from_path('/tmp/x.png')
     img = img.compose(img2, opacity=0.5)
     img3 = image.from_path('/tmp/red-compose-float.png')
-    assert mse(img, img3) == 0
-    img = img.to_array()
-    img3 = img3.to_array()
-    assert ssim(img, img3, win_size=3) == 1
+    assert u.image_similarity(img, img3) == 0
 
 
 def test_compose_size_difference():
@@ -208,10 +161,7 @@ def test_compose_size_difference():
     img2 = image.from_path('/tmp/x.png')
     img = img.compose(img2)
     img3 = image.from_path('/tmp/red-compose-size-diff.png')
-    assert mse(img, img3) == 0
-    img = img.to_array()
-    img3 = img3.to_array()
-    assert ssim(img, img3, win_size=3) == 1
+    assert u.image_similarity(img, img3) == 0
 
 
 def test_compose():
@@ -219,10 +169,7 @@ def test_compose():
     img2 = image.from_path('/tmp/blue.png')
     img3 = image.from_path('/tmp/red-compose.png')
     img = img.compose(img2)
-    assert mse(img, img3) == 0
-    img = img.to_array()
-    img3 = img3.to_array()
-    assert ssim(img, img3, win_size=3) == 1
+    assert u.image_similarity(img, img3) == 0
 
 
 def test_to_bytes():
@@ -248,10 +195,7 @@ def test_add_text():
     img = image.from_data_url(red)
     img.add_text('FOOBAR', 10, 10, (0, 255, 0, 255))
     img2 = image.from_path('/tmp/red-text.png')
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
-    assert ssim(img, img2, win_size=3) == 1
+    assert u.image_similarity(img, img2) == 0
 
 
 # box is not drawn around all edges
@@ -259,10 +203,7 @@ def test_add_box():
     img = image.from_data_url(red)
     img = img.add_box((0, 255, 0, 255))
     img2 = image.from_path('/tmp/red-box.png')
-    assert mse(img, img2) == 0
-    img = img.to_array()
-    img2 = img2.to_array()
-    assert ssim(img2, img, win_size=3) == 1
+    assert u.image_similarity(img, img2) == 0
 
 
 def test_getpixel():

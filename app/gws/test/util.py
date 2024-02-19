@@ -23,6 +23,7 @@ import gws.lib.osx
 import gws.lib.net
 import gws.lib.sa as sa
 import gws.lib.password
+import gws.lib.image as image
 
 fixture = pytest.fixture
 raises = pytest.raises
@@ -281,3 +282,17 @@ def fxml(s):
 
 
 _comma = ','.join
+
+
+def image_similarity(a: image.Image | gws.IImage, b: image.Image) -> float:
+    error = 0
+    x, y = a.size()
+    for i in range(int(x)):
+        for j in range(int(y)):
+            a_r, a_g, a_b, a_a = a.getpixel((i, j))
+            b_r, b_g, b_b, b_a = b.getpixel((i, j))
+            error += (a_r - b_r) ** 2
+            error += (a_g - b_g) ** 2
+            error += (a_b - b_b) ** 2
+            error += (a_a - b_a) ** 2
+    return error / (3 * x * y)
