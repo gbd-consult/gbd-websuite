@@ -1200,7 +1200,7 @@ export class FormTab extends gws.View<ViewProps> {
         let es = cc.editState;
         let sf = es.sidebarSelectedFeature;
 
-        cc.updateEditState({formErrors: []});
+        cc.updateEditState({formErrors: null});
 
         for (let fld of sf.model.fields) {
             await cc.initWidget(fld);
@@ -1259,6 +1259,13 @@ export class FormTab extends gws.View<ViewProps> {
                             </Form>
                         </Cell>
                     </VRow>
+                    {es.formErrors && <VRow>
+                        <Row>
+                            <Cell flex>
+                                <gws.ui.Error text={this.__('editValidationErrorText')}/>
+                            </Cell>
+                        </Row>
+                    </VRow>}
                     <VRow>
                         <Row>
                             {geomWidget && <Cell>{geomWidget}</Cell>}
