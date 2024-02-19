@@ -1,3 +1,8 @@
+## Version 8.0.30
+
+- fixed map positioning when zooming in
+- error message on failed form validation
+
 ## Version 8.0.29
 
 - areas in ALKIS UI treated as numbers
