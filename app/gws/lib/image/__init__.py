@@ -282,7 +282,7 @@ class Image(gws.IImage):
         draw.rectangle((0, 0) + (x - 1, y - 1), outline=color)  # box goes around all edges
         return self
 
-    def _getpixel(self, xy: tuple[int, int]):
+    def getpixel(self, xy: tuple[int, int]):
         return self.img.getpixel(xy)
 
 

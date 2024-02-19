@@ -24,8 +24,8 @@ def mse(a: image.Image | gws.IImage, b: image.Image) -> float:
     x, y = a.size()
     for i in range(int(x)):
         for j in range(int(y)):
-            a_r, a_g, a_b, a_a = a._getpixel((i, j))
-            b_r, b_g, b_b, b_a = b._getpixel((i, j))
+            a_r, a_g, a_b, a_a = a.getpixel((i, j))
+            b_r, b_g, b_b, b_a = b.getpixel((i, j))
             error += squared_error(a_r, b_r)
             error += squared_error(a_g, b_g)
             error += squared_error(a_b, b_b)
@@ -113,7 +113,7 @@ def test_from_raw_data():
     arr = arr.tobytes()
     img2 = image.from_raw_data(arr, 'RGBA', (50, 50))
     assert mse(img, img2) == 0
-    img= img.to_array()
+    img = img.to_array()
     img2 = img2.to_array()
     assert ssim(img, img2, win_size=3)
 
@@ -263,3 +263,8 @@ def test_add_box():
     img = img.to_array()
     img2 = img2.to_array()
     assert ssim(img2, img, win_size=3) == 1
+
+
+def test_getpixel():
+    img = image.from_data_url(red)
+    assert img.getpixel((1, 1)) == (255, 0, 0, 255)
