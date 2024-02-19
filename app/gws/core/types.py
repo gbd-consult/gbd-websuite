@@ -868,7 +868,7 @@ class IXmlElement(Iterable):
     """Element name (tag without a namespace) in lower case."""
 
     caseInsensitive: bool
-    """Elemet is case-insensitive."""
+    """Element is case-insensitive."""
 
     def __len__(self) -> int: ...
 

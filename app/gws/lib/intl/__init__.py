@@ -87,9 +87,13 @@ def bibliographic_name(language: str) -> str:
 class DateTimeFormat(t.Enum):
     """Enumeration indicating the length of the date/time format."""
     short = 'short'
+    """Local short format."""
     medium = 'medium'
+    """Local medium format."""
     long = 'long'
+    """Local long format."""
     iso = 'iso'
+    """ISO 8601 format."""
 
 
 class DateFormatter:
@@ -118,18 +122,22 @@ class DateFormatter:
 
     @property
     def short(self):
+        """Returns the date in a short format with respect to the locale date format"""
         return self.format(DateTimeFormat.short)
 
     @property
     def medium(self):
+        """Returns the date in a medium format with respect to the locale date format"""
         return self.format(DateTimeFormat.medium)
 
     @property
     def long(self):
+        """Returns the date in a long format with respect to the locale date format"""
         return self.format(DateTimeFormat.long)
 
     @property
     def iso(self):
+        """Returns the time and date in the ISO 8601 format."""
         return self.format(DateTimeFormat.iso)
 
 
@@ -156,27 +164,35 @@ class TimeFormatter:
 
     @property
     def short(self):
+        """Returns the time in a short format with respect to the locale time format"""
         return self.format(DateTimeFormat.short)
 
     @property
     def medium(self):
+        """Returns the time in a medium format with respect to the locale time format"""
         return self.format(DateTimeFormat.medium)
 
     @property
     def long(self):
+        """Returns the time in a long format with respect to the locale time format"""
         return self.format(DateTimeFormat.long)
 
     @property
     def iso(self):
+        """Returns the time and date in the ISO 8601 format."""
         return self.format(DateTimeFormat.iso)
 
 
 class NumberFormat(t.Enum):
-    """Enumeration indicating the length of the number format."""
+    """Enumeration indicating the number format."""
     decimal = 'decimal'
+    """Locale decimal format."""
     grouped = 'grouped'
+    """Locale grouped format."""
     currency = 'currency'
+    """Locale currency format"""
     percent = 'percent'
+    """Locale percent format."""
 
 
 class NumberFormatter:
@@ -235,7 +251,7 @@ def number_formatter(locale_uid) -> NumberFormatter:
     """Creates a `NumberFormatter` if there is no other instance of that class to the same `locale_uid`.
 
         Args:
-            locale_uid: Id in the format `language_territory` ex. `de_DE`.
+            locale_uid: ID in the format `language_territory` e.g. `de_DE`.
 
         Returns:
             `NumberFormatter` object.

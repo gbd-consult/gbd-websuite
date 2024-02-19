@@ -5,25 +5,45 @@ import mimetypes
 import gws.types as t
 
 BIN = 'application/octet-stream'
+"""MIME-Type for files ending in .bin"""
 CSS = 'text/css'
+"""MIME-Type for files ending in .CSS"""
 CSV = 'text/csv'
+"""MIME-Type for files ending in .CSV"""
 GEOJSON = 'application/geojson'
+"""MIME-Type for files ending in .GEOJSON"""
 GIF = 'image/gif'
+"""MIME-Type for files ending in .GIF"""
 GML = 'application/gml+xml'
+"""MIME-Type for files ending in .GML"""
 GML2 = 'application/gml+xml; version=2'
+"""MIME-Type for files ending in .GML2"""
 GML3 = 'application/gml+xml; version=3'
+"""MIME-Type for files ending in .GML3"""
 GZIP = 'application/gzip'
+"""MIME-Type for files ending in .GZIP"""
 HTML = 'text/html'
+"""MIME-Type for files ending in .HTML"""
 JPEG = 'image/jpeg'
+"""MIME-Type for files ending in .JPEG"""
 JS = 'application/javascript'
+"""MIME-Type for files ending in .JS"""
 JSON = 'application/json'
+"""MIME-Type for files ending in .JSON"""
 PDF = 'application/pdf'
+"""MIME-Type for files ending in .PDF"""
 PNG = 'image/png'
+"""MIME-Type for files ending in .PNG"""
 SVG = 'image/svg+xml'
+"""MIME-Type for files ending in .SVG"""
 TTF = 'application/x-font-ttf'
+"""MIME-Type for files ending in .TTF"""
 TXT = 'text/plain'
+"""MIME-Type for files ending in .TXT"""
 XML = 'application/xml'
+"""MIME-Type for files ending in .XML"""
 ZIP = 'application/zip'
+"""MIME-Type for files ending in .ZIP"""
 
 _common = {
     BIN,
