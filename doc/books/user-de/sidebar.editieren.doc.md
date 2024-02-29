@@ -1,6 +1,6 @@
-# Editieren :/user-de/sidebar.digitalisieren
+# Editieren :/user-de/sidebar.editieren
 
-Über das Menü ![](sharp-edit-24px.svg) {title Editieren} können unterschiedliche Datentypen erstellt, bearbeitet und gelöscht werden. Dies umfasst das {button Abbilden komplexer Datenstrukturen und Beziehungen} zwischen Objekten. Die Eingabe von Informationen kann durch eine {button flexibele Validierung}, Standardwerte und Platzhalter unterstützt werden und findet über Formulare statt. Ergänzt werden können Objekte durch {button Bilder und Dokumente}, die über eine {button Dateiverwaltung} gemanaged werden können. 
+Über das Menü ![](sharp-edit-24px.svg) {title Editieren} können unterschiedliche Datentypen erstellt, bearbeitet und gelöscht werden. Dies umfasst das {button Abbilden komplexer Datenstrukturen und Beziehungen} zwischen Objekten. Die Eingabe von Informationen kann durch eine {button flexibele Validierung}, Standardwerte und Platzhalter unterstützt werden und findet über Formulare statt. Ergänzt werden können Objekte in der Karte durch {button Bilder und Dokumente}, die in einer {button Dateiverwaltung} gemanaged werden. 
 
 **Datentypen**
 
@@ -12,29 +12,39 @@
 
 **Komplexe Datenstrukturen und Beziehungen**
 
-In der GBD WebSuite können miteinander in Beziehung stehende Daten modelliert werden. Für diese Aufgabe wird {button SQLAlchemy} verwendet. Diese Bibliothek ermöglicht es, komplexe Datenmodelle zu erstellen und Datenbankoperationen effizient durchzuführen.
+In der GBD WebSuite können miteinander in Beziehung stehende Daten modelliert werden. Für diese Aufgabe wird {button SQLAlchemy} verwendet. Diese Bibliothek ermöglicht es, komplexe Datenmodelle zu erstellen und Datenbankoperationen effizient durchzuführen. Ein Beispiel für ein Datenmodell mit 1:M, M:1 und M:N Beziehungen findet sich in der folgenden Abbildung.
 
 ![](komplexe_beziehungen.png){border=1, width=1000px}
 
 **Flexible Validierung**
 
-Beim Editieren werden Daten in Formularfelder eingetragen. Beim Vermeiden von Fehlern unterstützt Datenvalidierung, indem geprüft wird, ob eine Kombination von Werten einer Reihe zulässiger Kombinationen angehört.
+Beim Editieren werden Daten in Formularfelder eingetragen. Um Fehler beim Eintragen zu vermeiden, können die Formularfelder konfiguriert werden. Es kann eine Datenvalidierung definiert werden, in der geprüft wird, ob eine Kombination von Werten einer Reihe zulässiger Kombinationen angehört. Desweiteren können Vorgabewerte und Platzhalter vorgegeben werden.
 
 ![](validierung_de.png){border=1, width=1000px}
 
 **Bilder und Dokumente**
 
+Jedem Objekt einer Karte können Bilder und Dokumente hinzugefügt werden. Diese werden in einer Dateiverwaltung gemanaged und als Vorschau beim Editieren im Formular angezeigt.
+
 ![](bilder_dokumente_de.png){border=1, width=1000px}
 
 ## Geometriedaten
 
-Geometriedaten (Punkte, Linien und Polygone) mit dazugehörigen Attributen können erstellt, bearbeitet und gelöscht werden. Unterstützt werden  
+Geometriedaten mit dazugehörigen Attributen können in der GBD WebSuite erstellt, bearbeitet und gelöscht werden. Das Modul {title Editieren} der Seitenleiste bietet einen Ablauf, den wir im Weiteren beschreiben. 
 
-![](digitalisieren1.png){border=1}
+**Datenlayer auswählen**
 
-Durch das erneute Klicken auf einen der angezeigten Layer (hier "Restaurants"), öffnet sich eine Liste mit den in diesem Layer enthaltenen Objekten.
+Mit einem Klick auf das Menü ![](sharp-edit-24px.svg) {title Editieren} öffnet sich eine Liste von Layern, die über die GBD WebSuite bearbeiten werden können. Im Bild sind der Polygon-Layer {button Districts} und der Punkt-Layer {button Points of interest} zu sehen. 
 
-![](digitalisieren2.png){border=1}
+![](digitalisieren1.png){border=1, width=1000px}
+
+Wenn man das Icon ![](database_24px.svg) {title Bearbeiten} links neben einem Layernamen anklickt, offnet sich eine neue Ebene, in der alle Objekte des Layers aufgelistet sind. In der nächsten Abbildung sind es die Stadtteile (Districts) der Stadt Düsseldorf.
+
+![](digitalisieren2.png){border=1, width=1000px}
+
+Wenn man das Icon ![](table_24px.svg) {title Attribittabelle öffnen} rechts neben einem Layernamen anklickt, offnet sich ein Dialog, der die Attribute aller Objekte des Layers auflistet sind. Je nach Konfiguration können die Felder bearbeitet werden können.
+
+![](digitalisieren4.png){border=1, width=1000px}
 
 Oberhalb der Objektliste befindet sich eine Suchleiste. Darüber können Sie nach Objekten in der Liste suchen. Mit einem Klicke auf den Button ![](sharp-center_focus_weak-24px.svg) {button Hinzoomen} kann auf das jeweilige Objekt in der Karte gezoomt werden.
 
@@ -47,7 +57,7 @@ Am unteren Menüfensterrand befindet sich weitere Funktionalität:table_24px.svg
 | ![](draw-black-24px.svg) 		| {button Neues Objekt zeichnen}		| Neues Objekt (Punkt, Linie oder Polygon) in der Karte zeichnen	    	|
 | ![](sharp-control_point-24px.svg)	| {button Neues Objekt über Formular erstellen}	| Neues Objekt mit/ohne Geometrie über ein Formular erstellen   	 	|
 
-Zum Auswählen eoesMit dem Symbol ![](draw-black-24px.svg) {button Neues Objekt zeichnen} kann ein Objekt im Kartenfenster ausgewählt werden. Dieses wird dann markiert mit seinen Stützpunkten dargestellt und die dazugehörigen Objekteigenschaften werden im Menüfenster angezeigt. Nun können die Geometrien und Attribute editiert werden. Folgende Möglichkeiten stehen zur Verfügung:
+Mit dem Symbol ![](draw-black-24px.svg) {button Neues Objekt zeichnen} kann ein Objekt im Kartenfenster ausgewählt werden. Dieses wird dann markiert mit seinen Stützpunkten dargestellt und die dazugehörigen Objekteigenschaften werden im Menüfenster angezeigt. Nun können die Geometrien und Attribute editiert werden. Folgende Möglichkeiten stehen zur Verfügung:
 
 **Vorhandene Geometrien editieren**
 
