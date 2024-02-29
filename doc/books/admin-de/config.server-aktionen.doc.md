@@ -12,7 +12,7 @@ Hier ein kurzer Überblick über die unterstützten Aktionstypen und deren Clien
 | ``annotate`` | vom Benutzer erstellte Markierungen | [Markierungen](/user-de/sidebar.markierung) | |
 | ``auth`` | Autorisierung-Anfragen, wie Login oder Logout, siehe [Autorisierung](/admin-de/config/autorisierung) | [Anmelden](/user-de/sidebar.anmelden) | |
 | ``dimension`` |  Bemaßung-Funktion, siehe [Bemaßung](/admin-de/plugin/dimension) | [Bemaßung](/user-de/sidebar.bemassung) | [Bemaßung](/user-de/toolbar.bemassung) |
-| ``edit`` | Digitalisierung, siehe [Digitalisierung](/admin-de/plugin/edit) | [Digitalisieren](/user-de/sidebar.digitalisieren) | [Digitalisieren](/user-de/toolbar.digitalisieren) |
+| ``edit`` | Digitalisierung, siehe [Editieren](/admin-de/plugin/edit) | [Editieren](/user-de/sidebar.editieren) | [Editieren](/user-de/toolbar.editieren) |
 | ``map`` | Render von Kartenbildern, siehe [Karten](/admin-de/config/karten) | [Layer](/user-de/sidebar.layer) | |
 | ``ows`` | OWS Dienste wie WMS, WMTS oder WFS, siehe [OWS](/admin-de/plugin/ows) | | |
 | ``printer`` | Drucken, siehe [Drucken](/admin-de/config/drucken) | | [Drucken](/user-de/toolbar.drucken) |

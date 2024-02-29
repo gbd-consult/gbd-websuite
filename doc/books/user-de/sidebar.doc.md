@@ -9,7 +9,7 @@ Die Seitenleiste ![](baseline-menu-24px.svg) {title Menü} ermöglicht den Zugri
 | ![](baseline-person-24px.svg)		| [Anmelden](/user-de/sidebar.anmelden)	 				| Benutzer an- und abmelden	 			|
 | ![](gbd-icon-auswahl-01.svg)        	| [Auswahl](/user-de/sidebar.auswahl)  					| Liste ausgewählter Objekte anzeigen    		|
 | ![](gbd-icon-bemassung-02.svg)      	| [Bemaßung](/user-de/sidebar.bemassung)  				| Liste bemaßter Objekte anzeigen          		|
-| ![](sharp-edit-24px.svg) 		| [Editieren](/user-de/sidebar.digitalisieren) 				| Objekte digitalisieren und deren Attribute editieren	|
+| ![](sharp-edit-24px.svg) 		| [Editieren](/user-de/sidebar.editieren) 				| Objekte digitalisieren und deren Attribute editieren	|
 | ![](gbd-icon-flurstuecksuche-01.svg) 	| [Flurstücksuche](/user-de/sidebar.flurstuecksuche)			| Beauskunftung zum Thema Liegenschaftskataster (ALKIS)	|
 | ![](baseline-layers-24px.svg)        	| [Layer](/user-de/sidebar.layer)       				| Layer anzeigen und einstellen				|
 | ![](gbd-icon-markieren-messen-01.svg)	| [Markierungen](/user-de/sidebar.markierung)    			| Liste von Messungen & Markierungen verwalten		|
