@@ -137,6 +137,4 @@ class Object:
         return self.xml_root().to_string()
 
     def caps(self) -> caps.Caps:
-        if not hasattr(self, '_caps'):
-            setattr(self, '_caps', caps.parse_element(self.xml_root()))
-        return getattr(self, '_caps')
+        return caps.parse_element(self.xml_root())

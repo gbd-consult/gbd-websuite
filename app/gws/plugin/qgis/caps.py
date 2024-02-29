@@ -514,14 +514,8 @@ def _parse_datasource(text):
     if text.startswith(('.', '/')):
         # path or path|options
         # used for Geojson, GPKG, e.g.
-        # ../rel/path/test.gpkg|layername=name
-        if '|' not in text:
-            return {'path': text}
-        path, opt = text.split('|', maxsplit=1)
-        if '=' not in opt:
-            return {'path': path, 'options': opt}
-        k, v = opt.split('=', maxsplit=1)
-        return {'path': path, k: v}
+        # ../rel/path/test.gpkg|layername=name|subset=... etc
+        return _datasource_pipe_delimited(text)
 
     return {'text': text}
 
@@ -627,6 +621,24 @@ def _datasource_space_delimited(text):
             # just param=val
             v, text = _cut(text, value_re)
             ds[key] = _value(v)
+
+    return ds
+
+
+def _datasource_pipe_delimited(text):
+    if '|' not in text:
+        return {'path': text}
+
+    path, rest = text.split('|', maxsplit=1)
+
+    if '=' not in rest:
+        return {'path': path, 'options': rest}
+
+    ds = {'path': path}
+
+    for p in rest.split('|'):
+        k, v = p.split('=', maxsplit=1)
+        ds[k] = v
 
     return ds
 
