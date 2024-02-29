@@ -57,7 +57,7 @@ class ImportOptions(gws.Data):
 def export_package(package: Package, project: gws.IProject, user: gws.IUser, opts: ExportOptions):
     """Write QField package files to a directory."""
 
-    gws.log.debug(f'qfield: export: {package=} {project=} {opts=}')
+    gws.log.debug(f'qfield: export: {package=} {project=} {opts=} {user=}')
 
     if not user.can_read(package):
         raise gws.ForbiddenError(f'cannot read {package.uid=}')
@@ -99,17 +99,22 @@ class _EditOperation(gws.Data):
     attributes: dict
 
 
-class _LayerEntry(gws.Data):
-    action: _LayerAction
+class _ModelEntry(gws.Data):
     gpId: int
-    qgisId: str
+    name: str
     model: gws.IDatabaseModel
     fidToPkey: dict
     columnIndex: dict
     editOperations: list[_EditOperation]
-    localPath: str
-    devicePath: str
+
+
+class _LayerEntry(gws.Data):
+    action: _LayerAction
+    qgisId: str
+    modelEntry: _ModelEntry
     readOnly: bool
+    sqlFilter: str
+    dataSourcePath: str
     dataSource: str
     dataProvider: str
     sourceLayer: gws.SourceLayer
@@ -118,6 +123,7 @@ class _LayerEntry(gws.Data):
 class _QfCaps(gws.Data):
     qgisPath: str
     layerMap: dict[str, _LayerEntry]
+    modelMap: dict[str, _ModelEntry]
     globalProps: dict
     dirsToCopy: list[str]
     baseMapLayerIds: list[str]
@@ -133,6 +139,7 @@ class _OfflineLog(gws.Data):
     log_layer_ids: list[dict]
     log_removed_features: list[dict]
     log_gws_columns: list[dict]
+    log_gws_tables: list[dict]
 
 
 _GP_ATTRIBUTE_TYPES = {
@@ -183,21 +190,21 @@ class _Exporter:
 
         for le in self.qfCaps.layerMap.values():
             if le.action == _LayerAction.edit:
-                le.localPath = self.localDbPath
-                le.devicePath = self.deviceDbPath
-                le.dataSource = f'{le.devicePath}|layername={le.qgisId}'
+                le.dataSourcePath = self.localDbPath
+                le.dataSource = f'{self.deviceDbPath}|layername={le.modelEntry.name}'
+                if le.sqlFilter:
+                    le.dataSource += f'|subset={le.sqlFilter}'
                 le.dataProvider = f'ogr'
             if le.action == _LayerAction.baseMap:
-                le.localPath = f'{self.opts.baseDir}/{le.qgisId}.{GPKG_EXT}'
-                le.devicePath = f'./{le.qgisId}.{GPKG_EXT}'
-                le.dataSource = f'{le.devicePath}'
+                file_name = f'{le.qgisId}.{GPKG_EXT}'
+                le.dataSourcePath = f'{self.opts.baseDir}/{file_name}'
+                le.dataSource = f'./{file_name}'
                 le.dataProvider = f'gdal'
 
         if self.opts.withData:
             with gws.gis.gdalx.open(self.localDbPath, 'w', as_vector=True) as ds:
-                for le in self.qfCaps.layerMap.values():
-                    if le.action == _LayerAction.edit:
-                        self.write_features(le, ds)
+                for me in self.qfCaps.modelMap.values():
+                    self.write_features(me, ds)
             self.write_offline_log()
 
         if self.opts.withBaseMap:
@@ -218,27 +225,27 @@ class _Exporter:
         if self.opts.withQgis:
             self.write_qgis_project()
 
-    def write_features(self, le: _LayerEntry, ds: gws.gis.gdalx.DataSet):
+    def write_features(self, me: _ModelEntry, ds: gws.gis.gdalx.DataSet):
         # see qgis/src/core/qgsofflineediting.cpp convertToOfflineLayer()
 
-        gp_fields = [fld for fld in le.model.fields if fld.attributeType in _GP_ATTRIBUTE_TYPES]
+        gp_fields = [f for f in me.model.fields if f.attributeType in _GP_ATTRIBUTE_TYPES]
 
         gp_layer = ds.create_layer(
-            le.qgisId,
-            columns={fld.name: fld.attributeType for fld in gp_fields},
-            geometry_type=le.model.geometryType,
-            crs=le.model.geometryCrs,
+            me.name,
+            columns={f.name: f.attributeType for f in gp_fields},
+            geometry_type=me.model.geometryType,
+            crs=me.model.geometryCrs,
             overwrite=True
         )
 
         mc = gws.ModelContext(user=self.user, project=self.project, op=gws.ModelOperation.read)
-        features = le.model.find_features(gws.SearchQuery(), mc)
+        features = me.model.find_features(gws.SearchQuery(), mc)
         records = []
 
         for feature in features:
-            props = le.model.feature_to_props(feature, mc)
+            props = me.model.feature_to_props(feature, mc)
             records.append(gws.FeatureRecord(
-                attributes={fld.name: props.attributes.get(fld.name) for fld in gp_fields},
+                attributes={f.name: props.attributes.get(f.name) for f in gp_fields},
                 shape=feature.shape(),
                 meta={}
             ))
@@ -246,18 +253,18 @@ class _Exporter:
         with ds.transaction():
             fids = gp_layer.insert(records)
 
-        le.columnIndex = {}
+        me.columnIndex = {}
         col_idx = 1  # column 0 == fid
-        for fld in gp_fields:
-            le.columnIndex[col_idx] = fld.name
+        for field in gp_fields:
+            me.columnIndex[col_idx] = field.name
             col_idx += 1
 
-        le.fidToPkey = {}
-        if le.model.uidName:
+        me.fidToPkey = {}
+        if me.model.uidName:
             for rec, fid in zip(records, fids):
-                le.fidToPkey[fid] = rec.attributes.get(le.model.uidName)
+                me.fidToPkey[fid] = rec.attributes.get(me.model.uidName)
 
-        gws.log.debug(f'{self.opts.baseDir}: write_features: {self.package.uid}::{le.qgisId!r} count={gp_layer.count()}')
+        gws.log.debug(f'{self.opts.baseDir}: write_features: {self.package.uid}::{me.name!r} count={gp_layer.count()}')
 
     def write_base_map(self, le: _LayerEntry):
         bounds = self.package.qgisProvider.bounds
@@ -292,34 +299,35 @@ class _Exporter:
         img = gws.lib.image.from_bytes(lro.content)
 
         src = gws.gis.gdalx.open_image(img, bounds)
-        gws.gis.gdalx.create_copy(le.localPath, src)
+        gws.gis.gdalx.create_copy(le.dataSourcePath, src)
 
     def write_offline_log(self):
-        editable_layers = [
-            le
-            for le in self.qfCaps.layerMap.values()
-            if le.action == _LayerAction.edit
-        ]
 
         ol = _OfflineLog()
 
         ol.log_fids = [
-            {'layer_id': le.gpId, 'offline_fid': fid, 'remote_fid': fid, 'remote_pk': str(pk)}
-            for le in editable_layers
-            for fid, pk in le.fidToPkey.items()
+            {'layer_id': me.gpId, 'offline_fid': fid, 'remote_fid': fid, 'remote_pk': str(pk)}
+            for me in self.qfCaps.modelMap.values()
+            for fid, pk in me.fidToPkey.items()
         ]
         ol.log_indices = [
             {'name': 'commit_no', 'last_index': 0},
-            {'name': 'layer_id', 'last_index': len(editable_layers)}
+            {'name': 'layer_id', 'last_index': len(self.qfCaps.modelMap)}
         ]
-        ol.log_layer_ids = [
-            {'id': le.gpId, 'qgis_id': le.qgisId}
-            for le in editable_layers
-        ]
-        ol.log_gws_columns = [
-            {'layer_id': le.gpId, 'attr': col_id, 'name': col_name}
-            for le in editable_layers
-            for col_id, col_name in le.columnIndex.items()
+
+        ol.log_layer_ids = []
+        for le in self.qfCaps.layerMap.values():
+            if le.action == _LayerAction.edit:
+                ol.log_layer_ids.append({'id': le.modelEntry.gpId, 'qgis_id': le.qgisId})
+
+        ol.log_gws_columns = []
+        for me in self.qfCaps.modelMap.values():
+            for col_id, col_name in me.columnIndex.items():
+                ol.log_gws_columns.append({'layer_id': me.gpId, 'attr': col_id, 'name': col_name})
+
+        ol.log_gws_tables = [
+            {'layer_id': me.gpId, 'name': me.name}
+            for me in self.qfCaps.modelMap.values()
         ]
 
         engine = sa.create_engine(f'sqlite:///{self.localDbPath}', echo=False, future=True)
@@ -329,7 +337,16 @@ class _Exporter:
     def write_qgis_project(self):
         root_el = self.sourceQgisProject.xml_root()
         _QqsXmlTransformer().run(self, root_el)
-        gws.write_file(self.targetQgisPath, root_el.to_string())
+        xml = root_el.to_string()
+        xml = self.replace_vars(xml)
+        gws.write_file(self.targetQgisPath, xml)
+
+    def replace_vars(self, s: str) -> str:
+        # @TODO render attributes as templates
+        s = s.replace('{user.authToken}', self.user.authToken)
+        s = s.replace('{user.loginName}', self.user.loginName)
+        s = s.replace('{user.displayName}', self.user.displayName)
+        return s
 
 
 class _QqsXmlTransformer:
@@ -531,104 +548,101 @@ class _Importer:
             self.import_features()
 
     def import_features(self):
-        updated_layers = self.read_updated_layers()
-        for le in updated_layers:
-            self.commit_edits(le)
+        updated_models = self.read_updated_models()
+        for me in updated_models:
+            self.commit_edits(me)
 
-    def read_updated_layers(self):
+    def read_updated_models(self) -> list[_ModelEntry]:
         engine = sa.create_engine(f'sqlite:///{self.localDbPath}', echo=False, future=True)
-        updated_layers = []
+        updated_models = []
 
         with engine.begin() as conn:
             ol = _read_offline_log(conn)
 
-        for rec in ol.log_layer_ids:
-            qgis_id = rec.get('qgis_id')
+        for rec in ol.log_gws_tables:
+            name = rec.get('name')
 
-            le = self.qfCaps.layerMap.get(qgis_id)
-            if not le:
-                gws.log.warning(f'offline layer {qgis_id!r}: not found')
-                continue
-            if le.action != _LayerAction.edit:
-                gws.log.warning(f'offline layer {qgis_id!r}: not editable')
+            me = self.qfCaps.modelMap.get(name)
+            if not me:
+                gws.log.warning(f'offline model {name!r}: not found')
                 continue
 
-            le.gpId = rec.get('id')
-            has_updates = self.read_offline_log_for_layer(le, ol)
+            me.gpId = rec.get('layer_id')
+            has_updates = self.read_offline_log_for_model(me, ol)
             if has_updates:
-                updated_layers.append(le)
+                updated_models.append(me)
 
         with gws.gis.gdalx.open(self.localDbPath, 'r', as_vector=True) as ds:
-            for le in updated_layers:
-                self.read_data_for_layer(le, ds)
+            for me in updated_models:
+                self.read_data_for_model(me, ds)
 
-        for le in updated_layers:
-            self.read_images_for_layer(le)
+        for me in updated_models:
+            self.read_images_for_model(me)
 
-        return updated_layers
+        return updated_models
 
-    def read_offline_log_for_layer(self, le: _LayerEntry, ol: _OfflineLog) -> bool:
+    def read_offline_log_for_model(self, me: _ModelEntry, ol: _OfflineLog) -> bool:
 
-        le.columnIndex = {}
+        me.columnIndex = {}
         for rec in ol.log_gws_columns:
-            if rec['layer_id'] == le.gpId:
-                le.columnIndex[rec.get('attr')] = rec.get('name')
+            if rec['layer_id'] == me.gpId:
+                me.columnIndex[rec.get('attr')] = rec.get('name')
 
-        le.fidToPkey = {}
+        me.fidToPkey = {}
         for rec in ol.log_fids:
-            if rec['layer_id'] == le.gpId:
-                le.fidToPkey[rec.get('offline_fid')] = rec.get('remote_pk')
+            if rec['layer_id'] == me.gpId:
+                me.fidToPkey[rec.get('offline_fid')] = rec.get('remote_pk')
 
-        le.editOperations = []
-        self.read_edit_operations_for_layer(le, ol)
+        me.editOperations = []
+        self.read_edit_operations_for_model(me, ol)
 
-        return len(le.editOperations) > 0
+        return len(me.editOperations) > 0
 
-    def read_edit_operations_for_layer(self, le: _LayerEntry, ol: _OfflineLog):
-        # NB the order is updates (sorted by commit_no) -> inserts -> deletes
+    def read_edit_operations_for_model(self, me: _ModelEntry, ol: _OfflineLog):
+        # NB the order is inserts -> updates (sorted by commit_no) -> deletes
+
+        for rec in ol.log_added_features:
+            if rec['layer_id'] == me.gpId:
+                fid = rec.get('fid')
+                me.editOperations.append(_EditOperation(action=_EditAction.insert, fid=fid))
 
         ops = {}
         for rec in ol.log_feature_updates:
-            if rec['layer_id'] == le.gpId:
+            if rec['layer_id'] == me.gpId:
                 fid = rec.get('fid')
-                pkey = le.fidToPkey.get(fid)
-                cname = le.columnIndex.get(rec.get('attr'))
+                pkey = me.fidToPkey.get(fid)
+                cname = me.columnIndex.get(rec.get('attr'))
                 if not pkey or not cname:
                     gws.log.warning(f'invalid update record {rec!r}')
                     continue
                 ops[pkey, cname] = _EditOperation(action=_EditAction.update, fid=fid, pkey=pkey, columnName=cname)
-        le.editOperations.extend(ops.values())
+        me.editOperations.extend(ops.values())
 
         ops = {}
         for rec in ol.log_geometry_updates:
-            if rec['layer_id'] == le.gpId:
+            if rec['layer_id'] == me.gpId:
                 fid = rec.get('fid')
-                pkey = le.fidToPkey.get(fid)
+                pkey = me.fidToPkey.get(fid)
                 if not pkey:
                     gws.log.warning(f'invalid update record {rec!r}')
                     continue
                 ops[pkey] = _EditOperation(action=_EditAction.geometryUpdate, fid=fid, pkey=pkey)
-        le.editOperations.extend(ops.values())
-
-        for rec in ol.log_added_features:
-            if rec['layer_id'] == le.gpId:
-                fid = rec.get('fid')
-                le.editOperations.append(_EditOperation(action=_EditAction.insert, fid=fid))
+        me.editOperations.extend(ops.values())
 
         for rec in ol.log_removed_features:
-            if rec['layer_id'] == le.gpId:
-                pkey = le.fidToPkey.get(rec.get('fid'))
+            if rec['layer_id'] == me.gpId:
+                pkey = me.fidToPkey.get(rec.get('fid'))
                 if not pkey:
                     gws.log.warning(f'invalid delete record {rec!r}')
                     continue
-                le.editOperations.append(_EditOperation(action=_EditAction.delete, pkey=pkey))
+                me.editOperations.append(_EditOperation(action=_EditAction.delete, pkey=pkey))
 
-    def read_data_for_layer(self, le: _LayerEntry, ds: gws.gis.gdalx.DataSet):
+    def read_data_for_model(self, me: _ModelEntry, ds: gws.gis.gdalx.DataSet):
 
-        gp_layer = ds.layer(le.gpId)
+        gp_layer = ds.layer(me.gpId)
 
-        for eo in le.editOperations:
-            eo.attributes = {le.model.uidName: eo.pkey}
+        for eo in me.editOperations:
+            eo.attributes = {me.model.uidName: eo.pkey}
 
             if eo.action == _EditAction.delete:
                 continue
@@ -643,43 +657,44 @@ class _Importer:
                 continue
 
             if eo.action == _EditAction.geometryUpdate:
-                if not le.model.geometryName:
+                if not me.model.geometryName:
                     gws.log.warning(f'{self.opts.baseDir}: operation {eo!r}: geometry not defined')
                     continue
                 if not feature_rec.shape:
                     gws.log.warning(f'{self.opts.baseDir}: operation {eo!r}: geometry not found')
                     continue
-                eo.attributes[le.model.geometryName] = feature_rec.shape
+                eo.attributes[me.model.geometryName] = feature_rec.shape
                 continue
 
             if eo.action == _EditAction.insert:
                 eo.attributes.update(feature_rec.attributes)
-                if le.model.geometryName and feature_rec.shape:
-                    eo.attributes[le.model.geometryName] = feature_rec.shape
+                if me.model.geometryName and feature_rec.shape:
+                    eo.attributes[me.model.geometryName] = feature_rec.shape
                 # remove primary key if it is null
-                if eo.attributes.get(le.model.uidName) is None:
-                    eo.attributes.pop(le.model.uidName, None)
+                if eo.attributes.get(me.model.uidName) is None:
+                    eo.attributes.pop(me.model.uidName, None)
                 continue
 
-    def read_images_for_layer(self, le: _LayerEntry):
+    def read_images_for_model(self, me: _ModelEntry):
         file_field_map = {}
 
-        for fld in le.model.fields:
-            if fld.extType == 'file':
-                file_field_map[t.cast(gws.plugin.model_field.file.Object, fld).cols.name.name] = fld
+        for field in me.model.fields:
+            if field.extType == 'file':
+                col_name = t.cast(gws.plugin.model_field.file.Object, field).cols.name.name
+                file_field_map[col_name] = field
 
         if not file_field_map:
             return
 
-        for eo in le.editOperations:
+        for eo in me.editOperations:
             eo.attributes = self.update_file_attributes(eo, file_field_map)
 
     def update_file_attributes(self, eo: _EditOperation, file_field_map):
         atts = {}
 
         for name, val in eo.attributes.items():
-            fld = file_field_map.get(name)
-            if not fld:
+            field = file_field_map.get(name)
+            if not field:
                 atts[name] = val
                 continue
 
@@ -688,7 +703,7 @@ class _Importer:
                 gws.log.warning(f'file not found: {val!r}')
                 continue
 
-            atts[fld.name] = fv
+            atts[field.name] = fv
 
         return atts
 
@@ -703,13 +718,13 @@ class _Importer:
                     size=gws.lib.osx.file_size(p),
                 )
 
-    def commit_edits(self, le: _LayerEntry):
-        for eo in le.editOperations:
-            gws.log.debug(f'edit: {self.localDbPath}: {le.qgisId=}: {eo}')
+    def commit_edits(self, me: _ModelEntry):
+        for eo in me.editOperations:
+            gws.log.debug(f'edit: {self.localDbPath}: {me.name=}: {eo}')
 
             if eo.action in {_EditAction.update, _EditAction.geometryUpdate}:
                 mc = gws.ModelContext(user=self.user, op=gws.ModelOperation.update)
-                model = self.check_model(le, self.user, gws.Access.write)
+                model = self.check_model(me, self.user, gws.Access.write)
                 feature = model.feature_from_props(gws.FeatureProps(attributes=eo.attributes), mc)
                 if not model.validate_feature(feature, mc):
                     gws.log.info(f'validation errors: {feature.errors}')
@@ -718,7 +733,7 @@ class _Importer:
 
             if eo.action == _EditAction.insert:
                 mc = gws.ModelContext(user=self.user, op=gws.ModelOperation.create)
-                model = self.check_model(le, self.user, gws.Access.create)
+                model = self.check_model(me, self.user, gws.Access.create)
                 feature = model.feature_from_props(gws.FeatureProps(attributes=eo.attributes), mc)
                 if not model.validate_feature(feature, mc):
                     gws.log.info(f'validation errors: {feature.errors}')
@@ -727,18 +742,18 @@ class _Importer:
 
             if eo.action == _EditAction.delete:
                 mc = gws.ModelContext(user=self.user, op=gws.ModelOperation.delete)
-                model = self.check_model(le, self.user, gws.Access.delete)
+                model = self.check_model(me, self.user, gws.Access.delete)
                 feature = model.feature_from_props(gws.FeatureProps(attributes=eo.attributes), mc)
                 model.delete_feature(feature, mc)
 
-    def check_model(self, le: _LayerEntry, user: gws.IUser, access: gws.Access) -> gws.IModel:
-        if not le.model:
-            raise gws.ForbiddenError(f'{le.qgisId}: model: not found, {access=} {user=}')
-        if not le.model.isEditable:
-            raise gws.ForbiddenError(f'{le.qgisId}: model not editable, {access=} {user=}')
-        if not user.can(access, le.model):
-            raise gws.ForbiddenError(f'{le.qgisId}: model forbidden, {access=} {user=}')
-        return le.model
+    def check_model(self, me: _ModelEntry, user: gws.IUser, access: gws.Access) -> gws.IModel:
+        if not me.model:
+            raise gws.ForbiddenError(f'{me.name}: model: not found, {access=} {user=}')
+        if not me.model.isEditable:
+            raise gws.ForbiddenError(f'{me.name}: model not editable, {access=} {user=}')
+        if not user.can(access, me.model):
+            raise gws.ForbiddenError(f'{me.name}: model forbidden, {access=} {user=}')
+        return me.model
 
 
 class _QfCapsParser:
@@ -750,7 +765,11 @@ class _QfCapsParser:
 
     def run(self, package: Package) -> _QfCaps:
         self.package = package
-        self.caps = _QfCaps(layerMap={}, globalProps={})
+        self.caps = _QfCaps(
+            layerMap={},
+            modelMap={},
+            globalProps={},
+        )
         self.qgisCaps = package.qgisProvider.qgis_project().caps()
 
         # for some reason, there are two of them
@@ -817,7 +836,6 @@ class _QfCapsParser:
         if bt == 'singleLayer':
             uid = self.caps.globalProps.get('baseMapLayer', '')
             if not uid:
-                gws.log.warning(f'base map layer {uid!r} not found')
                 return []
             return [uid]
 
@@ -861,42 +879,72 @@ class _QfCapsParser:
             gws.log.warning(f'layer {sl.sourceId!r}: no table name')
             return _LayerEntry(action=_LayerAction.remove)
 
-        model = self.model_for_table(sl)
+        me = self.model_entry_for_table(sl)
+        if not me:
+            gws.log.warning(f'layer {sl.sourceId!r}: no model')
+            return _LayerEntry(action=_LayerAction.remove)
 
-        if not read_only and not model.isEditable:
+        if not read_only and not me.model.isEditable:
             gws.log.warning(f'layer {sl.sourceId!r}: table {table_name!r} is not editable')
             return _LayerEntry(action=_LayerAction.remove)
 
         return _LayerEntry(
             action=_LayerAction.edit,
             readOnly=read_only,
-            model=model,
+            modelEntry=me,
+            sqlFilter=sl.dataSource.get('sql', ''),
         )
 
-    def model_for_table(self, sl: gws.SourceLayer):
+    def model_entry_for_table(self, sl: gws.SourceLayer) -> t.Optional[_ModelEntry]:
         table_name = sl.dataSource.get('table')
 
         for model in self.package.models:
-            if model.tableName == table_name:
-                return model
+            full_name = model.provider.join_table_name('', model.tableName)
+            if full_name == model.provider.join_table_name('', table_name):
+                name = self.model_name(full_name)
+                if name not in self.caps.modelMap:
+                    self.caps.modelMap[name] = self.model_entry(name, model)
+                return self.caps.modelMap[name]
 
-        pg = self.package.qgisProvider.postgres_provider_from_datasource(sl.dataSource)
-        if not pg.has_table(table_name):
+        pg_provider = self.package.qgisProvider.postgres_provider_from_datasource(sl.dataSource)
+        if not pg_provider.has_table(table_name):
             gws.log.warning(f'layer {sl.sourceId!r}: table {table_name!r} not found')
-            return _LayerEntry(action=_LayerAction.remove)
+            return
 
-        return self.package.root.create_shared(
-            gws.ext.object.model,
-            gws.Config(
-                uid=f'qfield_model_{table_name}',
-                type='postgres',
-                # NB: permissions are checked in the public export/import functions above
-                permissions=gws.Config(read=gws.PUBLIC, edit=gws.PUBLIC),
-                tableName=table_name,
-                isEditable=True,
-                _defaultProvider=pg,
+        name = self.model_name(table_name)
+        if name not in self.caps.modelMap:
+            model = self.package.root.create_shared(
+                gws.ext.object.model,
+                gws.Config(
+                    uid=f'qfield_model_{table_name}',
+                    type='postgres',
+                    # NB: permissions are checked in the public export/import functions above
+                    permissions=gws.Config(read=gws.PUBLIC, edit=gws.PUBLIC),
+                    tableName=table_name,
+                    isEditable=True,
+                    _defaultProvider=pg_provider,
+                )
             )
-        )
+            self.caps.modelMap[name] = self.model_entry(name, model)
+
+        return self.caps.modelMap[name]
+
+    def model_entry(self, name: str, model: gws.IDatabaseModel) -> _ModelEntry:
+        if name not in self.caps.modelMap:
+            self.caps.modelMap[name] = _ModelEntry(
+                gpId=len(self.caps.modelMap),
+                name=name,
+                model=model,
+                fidToPkey={},
+                columnIndex={},
+                editOperations=[],
+            )
+        return self.caps.modelMap[name]
+
+    def model_name(self, table_name):
+        if '.' not in table_name:
+            table_name = 'public.' + table_name
+        return 'qm_' + table_name.replace('.', '_')
 
 
 ##
@@ -950,9 +998,10 @@ def _offline_log_tables(meta: sa.MetaData) -> dict[str, sa.Table]:
         log_removed_features (layer_id INT, fid INT) 
     '''
 
-    # this is our extension
+    # our extensions
 
-    ddl += 'log_gws_columns (layer_id INT, attr INT, name TEXT)'
+    ddl += 'log_gws_columns (layer_id INT, attr INT, name TEXT)\n'
+    ddl += 'log_gws_tables (layer_id INT, name TEXT)\n'
 
     tables = {}
 

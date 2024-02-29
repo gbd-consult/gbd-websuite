@@ -116,7 +116,9 @@ class Object(gws.base.action.Object):
 
         core.export_package(package, project, req.user, opts)
         b = gws.lib.zipx.zip_to_bytes(base_dir)
-        gws.lib.osx.unlink(base_dir)
+
+        if not self.root.app.developer_option('qfield.keep_temp_dirs'):
+            gws.lib.osx.unlink(base_dir)
 
         return b
 
@@ -141,7 +143,9 @@ class Object(gws.base.action.Object):
         )
 
         core.import_data_from_package(package, project, req.user, opts)
-        gws.lib.osx.unlink(base_dir)
+
+        if not self.root.app.developer_option('qfield.keep_temp_dirs'):
+            gws.lib.osx.unlink(base_dir)
 
     def _get_package(self, uid: str, user: gws.IUser, access: gws.Access) -> core.Package:
         pkg = self.packages.get(uid)
