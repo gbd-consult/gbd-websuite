@@ -1,4 +1,4 @@
-"""Provider for the sql-based authorization.
+"""Base provider for the sql-based authorization.
 
 SQL-based authentication works by executing SELECT queries against a SQL provider.
 
@@ -66,9 +66,6 @@ import gws.base.auth
 import gws.base.database.provider
 import gws.lib.sa as sa
 import gws.types as t
-
-gws.ext.new.authProvider('sql')
-
 
 class Config(gws.base.auth.provider.Config):
     """SQL-based authorization provider"""

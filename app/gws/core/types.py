@@ -506,6 +506,7 @@ class IWebSite(INode, Protocol):
 
 class IUser(IObject, Protocol):
     attributes: dict[str, Any]
+    authToken: str
     displayName: str
     isGuest: bool
     localUid: str

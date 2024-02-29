@@ -58,6 +58,7 @@ class Object(gws.base.auth.method.Object):
         except gws.ForbiddenError as exc:
             raise gws.base.web.error.Forbidden() from exc
         if user:
+            user.authToken = credentials.get('token')
             return self.authMgr.sessionMgr.create(self, user)
 
     def close_session(self, req, res):

@@ -54,9 +54,11 @@ class Object(gws.Node, gws.IAuthManager):
 
     def enter_middleware(self, req):
         req.set_session(self.guestSession)
-        for m in self.methods:
-            sess = m.open_session(req)
+        for meth in self.methods:
+            gws.log.debug(f'trying method {meth}')
+            sess = meth.open_session(req)
             if sess:
+                gws.log.debug(f'ok method {meth}')
                 req.set_session(sess)
                 break
         gws.log.debug(f'session opened: user={req.session.user.uid!r} roles={req.session.user.roles}')
@@ -73,9 +75,10 @@ class Object(gws.Node, gws.IAuthManager):
         for prov in self.providers:
             if prov.allowedMethods and method.extType not in prov.allowedMethods:
                 continue
-            gws.log.debug(f'trying provider {prov.uid!r}')
+            gws.log.debug(f'trying provider {prov!r}')
             user = prov.authenticate(method, credentials)
             if user:
+                gws.log.debug(f'ok provider {prov!r}')
                 return user
 
     ##

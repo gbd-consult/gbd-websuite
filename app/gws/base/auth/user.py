@@ -108,6 +108,7 @@ class AdminUser(User):
 def to_dict(usr) -> dict:
     return dict(
         attributes=usr.attributes,
+        authToken=usr.authToken,
         displayName=usr.displayName,
         localUid=usr.localUid,
         loginName=usr.loginName,
@@ -128,6 +129,7 @@ def from_dict(provider: gws.IAuthProvider, d: dict) -> gws.IUser:
         usr = AuthorizedUser(provider, roles)
 
     usr.attributes = d.get('attributes', {})
+    usr.authToken = d.get('authToken', '')
     usr.displayName = d.get('displayName', '')
     usr.localUid = d.get('localUid', '')
     usr.loginName = d.get('loginName', '')
@@ -149,9 +151,10 @@ def init(provider: gws.IAuthProvider, **kwargs) -> gws.IUser:
         usr = AuthorizedUser(provider, roles)
 
     usr.attributes = _process_aliases(dict(kwargs.get('attributes', {})))
+    usr.authToken = kwargs.get('authToken') or ''
     usr.displayName = kwargs.get('displayName') or kwargs.get('loginName') or ''
     usr.localUid = kwargs.get('localUid') or kwargs.get('loginName') or ''
-    usr.loginName = kwargs.get('loginName')
+    usr.loginName = kwargs.get('loginName') or ''
     usr.uid = gws.join_uid(provider.uid, usr.localUid)
 
     if not usr.localUid:

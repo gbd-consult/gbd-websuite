@@ -26,6 +26,7 @@ class Object(gws.base.auth.method.Object):
     deletedSession: gws.base.auth.session.Object
 
     def configure(self):
+        self.uid = 'gws.plugin.auth_method.web'
         self.cookieName = self.cfg('cookieName', default=Config.cookieName)
         self.cookiePath = self.cfg('cookiePath', default=Config.cookiePath)
 
