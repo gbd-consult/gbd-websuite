@@ -1847,7 +1847,8 @@ export class Controller extends gws.Controller {
             return;
         }
 
-        let loaded = this.app.modelRegistry.featureFromProps(res.features[0]);
+        let loaded = await this.featureCache.loadOne(
+            this.app.modelRegistry.featureFromProps(res.features[0]));
 
         if (sf && sf.model === loaded.model && sf.uid === loaded.uid) {
             console.log('whenPointerDownAtCoordinate: same feature')
