@@ -46,7 +46,6 @@ class Object(gws.base.action.Object):
             for s in project.owsServices:
                 if s.uid == p.serviceUid:
                     return s
-            return
 
         for s in self.root.app.owsServices:
             if s.uid == p.serviceUid:

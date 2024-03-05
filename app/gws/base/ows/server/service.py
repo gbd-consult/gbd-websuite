@@ -76,7 +76,7 @@ class Object(gws.Node, gws.IOwsService):
     def configure_bounds(self):
         crs_list = [gws.gis.crs.require(s) for s in self.cfg('supportedCrs', default=[])]
         if not crs_list:
-            crs_list = [self.project.map.bounds.crs] if self.project else gws.gis.crs.WEBMERCATOR
+            crs_list = [self.project.map.bounds.crs] if self.project else [gws.gis.crs.WEBMERCATOR]
 
         p = self.cfg('extent')
         if p:
