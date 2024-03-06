@@ -1,3 +1,7 @@
+## Version 8.0.31
+
+- authorization support for OWS providers
+
 ## Version 8.0.30
 
 - fixed map positioning when zooming in
