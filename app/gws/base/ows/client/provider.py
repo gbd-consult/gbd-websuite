@@ -1,3 +1,5 @@
+import base64
+
 import gws
 import gws.gis.crs
 import gws.gis.source
@@ -25,6 +27,12 @@ class OperationConfig(gws.Config):
     verb: gws.OwsVerb
 
 
+class AuthorizationConfig(gws.Config):
+    type: str
+    username: str = ''
+    password: str = ''
+
+
 class Config(gws.Config):
     capsCacheMaxAge: gws.Duration = '1d'
     """max cache age for capabilities documents"""
@@ -36,6 +44,7 @@ class Config(gws.Config):
     """max concurrent requests to this source"""
     operations: t.Optional[list[OperationConfig]]
     """override operations reported in capabilities"""
+    authorization: t.Optional[AuthorizationConfig]
     url: gws.Url
     """service url"""
 
@@ -49,6 +58,9 @@ class Object(gws.Node, gws.IOwsProvider):
         self.sourceLayers = []
         self.url = self.cfg('url')
         self.version = ''
+
+        p = self.cfg('authorization')
+        self.authorization = gws.OwsAuthorization(p) if p else None
 
     def configure_operations(self, operations_from_caps):
         # add operations from the config, if any,
@@ -93,6 +105,7 @@ class Object(gws.Node, gws.IOwsProvider):
     def prepare_operation(self, op: gws.OwsOperation, method: gws.RequestMethod = None, params=None) -> request.Args:
         args = request.Args(
             method=method or gws.RequestMethod.GET,
+            headers={},
             params={},
             protocol=self.protocol,
             verb=op.verb,
@@ -118,6 +131,11 @@ class Object(gws.Node, gws.IOwsProvider):
         for name, vals in allowed.items():
             if name not in args.params:
                 args.params[name] = vals[0]
+
+        if self.authorization and self.authorization.type == 'basic':
+            b = base64.encodebytes(
+                gws.to_bytes(self.authorization.username) + b':' + gws.to_bytes(self.authorization.password))
+            args.headers['Authorization'] = 'Basic ' + gws.to_str(b).strip()
 
         return args
 

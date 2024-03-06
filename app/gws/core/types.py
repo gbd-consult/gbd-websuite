@@ -2205,6 +2205,12 @@ class OwsCapabilities(Data):
     version: str
 
 
+class OwsAuthorization(Data):
+    type: str
+    username: str
+    password: str
+
+
 class IOwsService(INode, Protocol):
     isRasterService: bool
     isVectorService: bool
@@ -2226,6 +2232,7 @@ class IOwsService(INode, Protocol):
 
 class IOwsProvider(INode, Protocol):
     alwaysXY: bool
+    authorization: Optional[OwsAuthorization]
     forceCrs: 'ICrs'
     maxRequests: int
     metadata: 'Metadata'
