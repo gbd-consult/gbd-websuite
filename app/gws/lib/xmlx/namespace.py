@@ -49,6 +49,13 @@ def find_by_xmlns(xmlns: str) -> t.Optional[gws.XmlNamespace]:
 
 
 def get(s: str) -> t.Optional[gws.XmlNamespace]:
+    """Locate the Namespace by a name.
+
+    Args:
+        s: A uid like ``gml3``, name like ``gml`` or an Uri like ``http://www.opengis.net/gml``.
+    Returns:
+        A Namespace.
+    """
     return _INDEX.uid.get(s) or _INDEX.xmlns.get(s) or _INDEX.uri.get(s)
 
 
@@ -89,6 +96,13 @@ def split_name(name: str) -> tuple[str, str, str]:
 
 
 def parse_name(name: str) -> tuple[t.Optional[gws.XmlNamespace], str]:
+    """Parses an XML name.
+
+    Args:
+        name: XML name.
+    Returns:
+        A tuple ``(xmlns|uri, proper name)``
+    """
     xmlns, uri, pname = split_name(name)
 
     if xmlns:
@@ -135,7 +149,7 @@ def unqualify_name(name: str) -> str:
 
 
 def unqualify_default(name: str, default_ns: gws.XmlNamespace) -> str:
-    """Removes the default namespace prefx.
+    """Removes the default namespace prefix.
 
     If the name contains the default namespace, remove it, otherwise return the name as is.
 
@@ -155,7 +169,13 @@ def unqualify_default(name: str, default_ns: gws.XmlNamespace) -> str:
 
 
 def clarkify_name(name: str) -> str:
-    """Returns an XML name in the Clark notation."""
+    """Returns an XML name in the Clark notation.
+
+    Args:
+        name: A XML name withe namespace prefix.
+    Returns:
+        The XML name in Clark notation.
+    """
 
     ns, pname = parse_name(name)
     if ns:
