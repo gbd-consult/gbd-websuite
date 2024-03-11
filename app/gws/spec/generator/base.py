@@ -67,7 +67,7 @@ SELF_DIR = os.path.dirname(__file__)
 # path to `/repository-root/app`
 APP_DIR = os.path.abspath(SELF_DIR + '/../../..')
 
-EXCLUDE_PATHS = ['___', '/vendor/', 'test', 'core/ext']
+EXCLUDE_PATHS = ['___', '/vendor/', 'test', 'core/ext', '__pycache__']
 
 FILE_KINDS = [
     ['.py', 'python'],
