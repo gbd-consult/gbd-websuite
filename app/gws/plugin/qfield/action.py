@@ -17,8 +17,6 @@ class Config(gws.ConfigWithAccess):
     """QField action."""
 
     packages: list[core.PackageConfig]
-    defaultProjectUid: str = ''
-    defaultPackageUid: str = ''
     withDbInDCIM: bool = False
     withSerialPrefix: bool = False
 
@@ -51,8 +49,6 @@ _SERIAL_PREFIX_END_DATE = '2033-01-01'
 
 class Object(gws.base.action.Object):
     packages: dict[str, core.Package]
-    defaultProjectUid: str
-    defaultPackageUid: str
     withDbInDCIM: bool
     withSerialPrefix: bool
 
@@ -61,8 +57,6 @@ class Object(gws.base.action.Object):
             p.uid: p
             for p in self.create_children(core.Package, self.cfg('packages'))
         }
-        self.defaultProjectUid = self.cfg('defaultProjectUid', default='')
-        self.defaultPackageUid = self.cfg('defaultPackageUid', default='')
         self.withDbInDCIM = self.cfg('withDbInDCIM', default=False)
         self.withSerialPrefix = self.cfg('withSerialPrefix', default=False)
 
@@ -89,48 +83,61 @@ class Object(gws.base.action.Object):
     ##
 
     def _do_download(self, req: gws.IWebRequester, p: DownloadRequest) -> bytes:
-        project = req.require_project(p.projectUid or self.defaultProjectUid)
-        package = self._get_package(
-            p.packageUid or self.defaultPackageUid,
-            req.user,
-            gws.Access.read
-        )
+        args = self.prepare_export(req, p)
+        self.exec_export(args)
+        return self.end_export(args)
+
+    def prepare_export(self, req: gws.IWebRequester, p: DownloadRequest) -> core.ExportArgs:
+        project = req.require_project(p.projectUid)
+        package = self._get_package(p.packageUid, req.user, gws.Access.read)
+        base_dir = gws.ensure_dir(f'{gws.VAR_DIR}/qfield/{gws.random_string(32)}')
 
         name_prefix = ''
         if self.withSerialPrefix:
-            mins = (gws.lib.date.to_timestamp(gws.lib.date.from_iso(_SERIAL_PREFIX_END_DATE)) - gws.lib.date.timestamp()) // 60
-            name_prefix = '{:06d}'.format(mins) + '_' + gws.lib.date.now().strftime('%d.%m.%y') + '_'
+            minutes = (gws.lib.date.to_timestamp(gws.lib.date.from_iso(_SERIAL_PREFIX_END_DATE)) - gws.lib.date.timestamp()) // 60
+            name_prefix = '{:06d}'.format(minutes) + '_' + gws.lib.date.now().strftime('%d.%m.%y') + '_'
 
-        base_dir = gws.ensure_dir(f'{gws.VAR_DIR}/qfield/{gws.random_string(32)}')
+        db_file_name = f'{name_prefix}{package.uid}.{core.GPKG_EXT}'
+        db_path = db_file_name
+        if self.withDbInDCIM:
+            db_path = f'DCIM/{db_file_name}'
+            gws.ensure_dir(f'{base_dir}/DCIM')
 
-        opts = core.ExportOptions(
+        return core.ExportArgs(
+            package=package,
+            project=project,
+            user=req.user,
             baseDir=base_dir,
             qgisFileName=f'{name_prefix}{package.uid}',
-            dbFileName=f'{name_prefix}{package.uid}',
-            withDbInDCIM=self.withDbInDCIM,
-            withData=not p.omitData,
-            withQgis=not p.omitData,
+            dbFileName=db_file_name,
+            dbPath=db_path,
             withBaseMap=not p.omitStatic,
+            withData=not p.omitData,
             withMedia=not p.omitStatic,
+            withQgis=not p.omitData,
         )
 
-        core.export_package(package, project, req.user, opts)
-        b = gws.lib.zipx.zip_to_bytes(base_dir)
+    def exec_export(self, args: core.ExportArgs):
+        core.Exporter().run(args)
+
+    def end_export(self, args: core.ExportArgs) -> bytes:
+        b = gws.lib.zipx.zip_to_bytes(args.baseDir)
 
         if not self.root.app.developer_option('qfield.keep_temp_dirs'):
-            gws.lib.osx.unlink(base_dir)
+            gws.lib.osx.unlink(args.baseDir)
 
         return b
 
+    ##
+
     def _do_upload(self, req: gws.IWebRequester, p: UploadRequest, data: bytes):
+        args = self.prepare_import(req, p, data)
+        self.exec_import(args)
+        return self.end_import(args)
 
-        project = req.require_project(p.projectUid or self.defaultProjectUid)
-        package = self._get_package(
-            p.packageUid or self.defaultPackageUid,
-            req.user,
-            gws.Access.write
-        )
-
+    def prepare_import(self, req: gws.IWebRequester, p: UploadRequest, data: bytes):
+        project = req.require_project(p.projectUid)
+        package = self._get_package(p.packageUid, req.user, gws.Access.write)
         base_dir = gws.ensure_dir(f'{gws.VAR_DIR}/qfield/{gws.random_string(32)}')
 
         if data.startswith(b'SQLite'):
@@ -138,17 +145,27 @@ class Object(gws.base.action.Object):
         else:
             gws.lib.zipx.unzip_bytes(data, base_dir, flat=True)
 
-        opts = core.ImportOptions(
+        db_file_name = f'{package.uid}.{core.GPKG_EXT}'
+
+        return core.ImportArgs(
+            package=package,
+            project=project,
+            user=req.user,
             baseDir=base_dir,
+            dbFileName=db_file_name,
         )
 
-        core.import_data_from_package(package, project, req.user, opts)
+    def exec_import(self, args: core.ImportArgs):
+        core.Importer().run(args)
 
+    def end_import(self, args: core.ImportArgs):
         if not self.root.app.developer_option('qfield.keep_temp_dirs'):
-            gws.lib.osx.unlink(base_dir)
+            gws.lib.osx.unlink(args.baseDir)
+
+    ##
 
     def _get_package(self, uid: str, user: gws.IUser, access: gws.Access) -> core.Package:
-        pkg = self.packages.get(uid)
+        pkg = self.packages.get(uid) if uid else gws.first(self.packages.values())
         if not pkg:
             raise gws.NotFoundError(f'package {uid} not found')
         if not user.can(access, pkg):
