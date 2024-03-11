@@ -11,6 +11,13 @@ class User(gws.Object, gws.IUser):
     isGuest = False
 
     def __init__(self, provider, roles):
+        self.attributes = {}
+        self.authToken = ''
+        self.displayName = ''
+        self.localUid = ''
+        self.loginName = ''
+        self.uid = ''
+
         self.provider = provider
         self.roles = roles
 
