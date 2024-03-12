@@ -5,6 +5,7 @@ and implements the `gws.core.types.IXmlElement` protocol.
 """
 
 import xml.etree.ElementTree
+from xml.etree.ElementTree import Element
 
 import gws
 import gws.types as t
@@ -13,9 +14,13 @@ from . import namespace, error
 
 
 class XElement(xml.etree.ElementTree.Element):
+    """Class represents XML elements."""
     caseInsensitive: bool
+    """Flag for case sensitivity."""
     name: str
+    """Name of the element."""
     lname: str
+    """Lowercase name."""
 
     def __init__(self, tag, attrib=None, **extra):
         super().__init__(tag, attrib or {}, **extra)
@@ -64,7 +69,11 @@ class XElement(xml.etree.ElementTree.Element):
 
     ##
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        """Creates a dictionary from an XElement object.
+
+        Returns:
+            A dict with the attributes `tag`, `attrib`, `text`, `tail`, `tail`, `children`."""
         return {
             'tag': self.tag,
             'attrib': self.attrib,
@@ -81,7 +90,20 @@ class XElement(xml.etree.ElementTree.Element):
             with_namespace_declarations=False,
             with_schema_locations=False,
             with_xml_declaration=False,
-    ):
+    ) -> str:
+        """Converts the XElement object to a string.
+
+        Args:
+            compact_whitespace: String will not contain any whitespaces outside of tags and elements.
+            remove_namespaces: String will not contain namespaces.
+            with_namespace_declarations: String will keep the namespace declarations.
+            with_schema_locations: String will keep the schema locations.
+            with_xml_declaration: String will keep the xml ddeclaration.
+
+        Returns:
+            A String containing the xml structure.
+        """
+
         def make_text(s):
             if s is None:
                 return ''
@@ -180,19 +202,44 @@ class XElement(xml.etree.ElementTree.Element):
 
     ##
 
-    def add(self, tag, attrib=None, **extra):
+    def add(self, tag: str, attrib: dict = None, **extra) -> 'XElement':
+        """Creates a new ``XElement and adds it as a child.
+
+        Args:
+            tag: XML tag.
+            attrib: XML attributes ``{key, value}``.
+
+        Returns:
+            A XElement.
+        """
         el = self.__class__(tag, attrib, **extra)
         el.caseInsensitive = self.caseInsensitive
         self.append(el)
         return el
 
-    def attr(self, key, default=None):
+    def attr(self, key: str, default=None) -> str:
+        """Finds the value for a given key in the ``XElement``.
+
+        Args:
+            key: Key of the attribute.
+            default: The default return.
+        Returns:
+            The vale of the key, If the key is not found the default is returned.
+        """
         return self.get(key, default)
 
-    def children(self):
+    def children(self) -> ['XElement']:
+        """Returns the children of the current ``XElement``."""
         return [c for c in self]
 
-    def findfirst(self, *paths):
+    def findfirst(self, *paths) -> Element:
+        """Returns the first element in the current element.
+        Args:
+            paths: Path as ``tag/tag2/tag3`` to the Element to search in.
+
+        Returns:
+            Returns the first found element
+            """
         if not paths:
             return self[0] if len(self) > 0 else None
         for path in paths:
@@ -200,17 +247,40 @@ class XElement(xml.etree.ElementTree.Element):
             if el is not None:
                 return el
 
-    def textof(self, *paths):
+    def textof(self, *paths) -> str:
+        """Returns the text of a given child-element.
+
+        Args:
+            paths: Path as ``tag/tag2/tag3`` to the Element.
+
+        Returns:
+            The text of the element.
+
+        """
         for path in paths:
             el = self.find(path)
             if el is not None and el.text:
                 return el.text
 
-    def textlist(self, *paths, deep=False):
+    def textlist(self, *paths, deep: bool = False) -> ['XElement']:
+        """Collects texts from child-elements.
+        Args:
+            paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
+            deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
+        Returns:
+            A list containing all the text from the child-elements.
+        """
         buf = self._collect_text(paths, deep)
         return [text for _, text in buf]
 
-    def textdict(self, *paths, deep=False):
+    def textdict(self, *paths, deep: bool = False) -> dict:
+        """Collects texts from child-elements.
+        Args:
+            paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
+            deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
+        Returns:
+            A dict containing all the text from the child-elements.
+        """
         buf = self._collect_text(paths, deep)
         return dict(buf)
 

@@ -11,11 +11,22 @@ from . import error, element, namespace
 
 def from_path(
         path: str,
-        case_insensitive=False,
-        compact_whitespace=False,
-        normalize_namespaces=False,
-        remove_namespaces=False,
+        case_insensitive: bool = False,
+        compact_whitespace: bool = False,
+        normalize_namespaces: bool = False,
+        remove_namespaces: bool = False,
 ) -> gws.IXmlElement:
+    """Creates an IXmlElement object from a .xlm file.
+        Args:
+            path: path to the .xml file.
+            case_insensitive: If true tags will be written in lowercase into the IXmlElement object.
+            compact_whitespace: If true all whitespaces and newlines are omitted.
+            normalize_namespaces:
+            remove_namespaces: Removes all occurrences of namespaces.
+
+        Returns:
+            The IXmlElement object.
+        """
     with open(path, 'rb') as fp:
         inp = fp.read()
     return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
@@ -23,11 +34,22 @@ def from_path(
 
 def from_string(
         inp: str | bytes,
-        case_insensitive=False,
-        compact_whitespace=False,
-        remove_namespaces=False,
-        normalize_namespaces=False,
+        case_insensitive: bool = False,
+        compact_whitespace: bool = False,
+        remove_namespaces: bool = False,
+        normalize_namespaces: bool = False,
 ) -> gws.IXmlElement:
+    """Creates an IXmlElement from a string or bytes.
+        Args:
+            inp: .xml file as a string or bytes.
+            case_insensitive: If true tags will be written in lowercase into the IXmlElement object.
+            compact_whitespace: If true all whitespaces and newlines are omitted.
+            normalize_namespaces:
+            remove_namespaces: Removes all occurrences of namespaces.
+
+        Returns:
+            The IXmlElement object.
+        """
     return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
 
 
@@ -55,7 +77,8 @@ class _ParserTarget:
         self.remove_namespaces = remove_namespaces
         self.normalize_namespaces = normalize_namespaces
 
-    def convert_name(self, s):
+    def convert_name(self, s: str) -> str:
+        """" """
         xmlns, uri, pname = namespace.split_name(s)
         pname = pname.lower() if self.case_insensitive else pname
         if not xmlns and not uri:
@@ -68,7 +91,14 @@ class _ParserTarget:
                 uri = ns.uri
         return '{' + uri + '}' + pname
 
-    def make(self, tag, attrib):
+    def make(self, tag: str, attrib: dict) -> gws.IXmlElement:
+        """Creates an ``IXmlElement``.
+        Args:
+            tag: The tag.
+            attrib: ``{key:value}``
+        Returns:
+            A ``IXmlElement.``
+        """
         attrib2 = {}
 
         if attrib:
@@ -99,7 +129,7 @@ class _ParserTarget:
 
     ##
 
-    def start(self, tag, attrib):
+    def start(self, tag: str, attrib: dict):
         self.flush()
         el = self.make(tag, attrib)
         if self.stack:
@@ -113,9 +143,13 @@ class _ParserTarget:
         self.stack.pop()
 
     def data(self, data):
+        """Adds data to the buffer.
+        Args:
+            data: data to add."""
         self.buf.append(data)
 
     def close(self):
+        """Returns root"""
         return self.root
 
 
