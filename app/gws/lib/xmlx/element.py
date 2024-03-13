@@ -43,18 +43,23 @@ class XElement(xml.etree.ElementTree.Element):
             yield self[i]
 
     def find(self, path, namespaces=None):
+        """Finds first matching element by tag name or path."""
         return super().find(self._convert_path(path), namespaces)
 
     def findtext(self, path, default=None, namespaces=None):
+        """Finds text for first matching element by name or path."""
         return super().findtext(self._convert_path(path), default, namespaces)
 
     def findall(self, path, namespaces=None):
+        """Finds all matching subelements by name or path."""
         return super().findall(self._convert_path(path), namespaces)
 
     def iterfind(self, path, namespaces=None):
+        """Returns an iterable of all matching subelements by name or path."""
         return super().iterfind(self._convert_path(path), namespaces)
 
     def get(self, key, default=None):
+        """Returns the value to a given key."""
         if self.caseInsensitive:
             key = key.lower()
         if key in self.attrib:
@@ -65,6 +70,7 @@ class XElement(xml.etree.ElementTree.Element):
         return default
 
     def iter(self, tag=None):
+        """Creates a tree iterator."""
         return super().iter(self._convert_path(tag))
 
     ##
@@ -73,7 +79,7 @@ class XElement(xml.etree.ElementTree.Element):
         """Creates a dictionary from an XElement object.
 
         Returns:
-            A dict with the attributes `tag`, `attrib`, `text`, `tail`, `tail`, `children`."""
+            A dict with the keys `tag`, `attrib`, `text`, `tail`, `tail`, `children`."""
         return {
             'tag': self.tag,
             'attrib': self.attrib,
@@ -238,7 +244,7 @@ class XElement(xml.etree.ElementTree.Element):
             paths: Path as ``tag/tag2/tag3`` to the Element to search in.
 
         Returns:
-            Returns the first found element
+            Returns the first found element.
             """
         if not paths:
             return self[0] if len(self) > 0 else None

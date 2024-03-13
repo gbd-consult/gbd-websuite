@@ -120,7 +120,7 @@ def parse_name(name: str) -> tuple[t.Optional[gws.XmlNamespace], str]:
     return None, pname
 
 
-def qualify_name(name: str, ns: gws.XmlNamespace, replace=False) -> str:
+def qualify_name(name: str, ns: gws.XmlNamespace, replace: bool = False) -> str:
     """Qualifies an XML name.
 
     If the name contains a namespace, return as is, otherwise, prepend the namespace.
@@ -416,7 +416,8 @@ class _Index:
 _INDEX = _Index()
 
 # fake namespace for 'xmlns:'
-_INDEX.uid[_XMLNS] = _INDEX.xmlns[_XMLNS] = gws.XmlNamespace(uid=_XMLNS, xmlns=_XMLNS, uri='', schemaLocation='', version='')
+_INDEX.uid[_XMLNS] = _INDEX.xmlns[_XMLNS] = gws.XmlNamespace(uid=_XMLNS, xmlns=_XMLNS, uri='', schemaLocation='',
+                                                             version='')
 
 
 def _load_known():
