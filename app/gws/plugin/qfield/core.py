@@ -86,6 +86,7 @@ class ModelEntry(gws.Data):
     fidToPkey: dict
     columnIndex: dict
     editOperations: list[EditOperation]
+    features: list[gws.IFeature]
 
 
 class LayerEntry(gws.Data):
@@ -226,7 +227,7 @@ class Exporter:
         )
 
         mc = gws.ModelContext(user=self.user, project=self.project, op=gws.ModelOperation.read)
-        features = me.model.find_features(gws.SearchQuery(), mc)
+        features = me.features or me.model.find_features(gws.SearchQuery(), mc)
         records = []
 
         for feature in features:
@@ -933,6 +934,7 @@ class QFieldCapsParser:
             fidToPkey={},
             columnIndex={},
             editOperations=[],
+            features=[],
         )
 
     def gp_name_for_model(self, table_name):

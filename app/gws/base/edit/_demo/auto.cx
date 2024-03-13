@@ -1,11 +1,11 @@
 uid "edit_auto"
 
-title "Automatic form"
+title "PostgreSQL mit automatischem Formular editieren"
 
-metadata.keywords [ "edit" ]
+metadata.keywords [ "Editieren" "PostgreSQL" ]
 
 metadata.abstract """
-Edit features from postgres tables, minimal configuration
+Minimale Konfiguration zum Editieren von Objekten aus einer PostgreSQL Tabelle.
 """
 
 actions+ { type "edit" }
@@ -20,7 +20,7 @@ map {
 }
 
 map.layers+ {
-    title "POIs"
+    title "Interessante Orte"
     type "postgres"
     tableName "edit.poi"
     models+ {
@@ -31,7 +31,7 @@ map.layers+ {
 }
 
 map.layers+ {
-    title "Districts"
+    title "Stadtteile Düsseldorf"
     type "postgres"
     tableName "edit.district"
     models+ {

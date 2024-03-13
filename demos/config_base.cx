@@ -17,7 +17,7 @@
     attribution { title "(c) Geoinformatikbüro Dassau GmbH" url "http://gbd-websuite.de" }
     fees "free"
     language "de"
-    license { title "GPL" url "https://www.gnu.org/licenses/gpl-3.0.en.html" }
+    license { title "AGPL" url "https://www.gnu.org/licenses/agpl-3.0.html" }
     contactAddress "Rethelstrasse 153"
     contactAddressType "postal"
     contactArea "NRW"
