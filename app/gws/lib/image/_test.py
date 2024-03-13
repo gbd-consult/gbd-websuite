@@ -1,8 +1,5 @@
 """Tests for the image module."""
-import math
 import os
-
-import scipy.io
 
 import gws
 import gws.test.util as u
