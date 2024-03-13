@@ -1,15 +1,15 @@
 uid "edit_types"
 
-title "Postgres types"
+title "Editieren und Darstellen unterschiedlicher PostgreSQL Datentypen"
 
-metadata.keywords [ "edit" "postgres" ]
+metadata.keywords [ "Editieren" "PostgreSQL" ]
 
 metadata.abstract """
-This demo shows how different postgres data types
-are presented on the client.
+Dieses Beispiel zeigt, wie unterschiedliche PostgreSQL Datentypen über den GBD WebSuite Client dargestellt werden.
 
-See [github](https://github.com/gbd-consult/gbd-websuite/blob/master/demos/demo_db.sql)
-for the definition of the table `pg_types` used in this demo.
+Über die [SQL-Anweisung in Github](https://github.com/gbd-consult/gbd-websuite/blob/master/demos/demo_db.sql) können Sie die Erstellung der in der Demo genutzten PostgreSQL Tabelle `pg_types` nachvollziehen.
+
+Dabei handelt es sich um das Thema "Baustellenmanagement" mit Tabellen kanalarbeiten (Polygon), sperrung (Punkt) und umleitung (Linie).
 """
 
 actions+ { type "edit" }
@@ -26,7 +26,7 @@ map {
 models+ {
     type "postgres"
     tableName "public.pg_types"
-    title "Postgres types"
+    title "PostgreSQL Datentypen"
     isEditable true
     permissions.edit 'allow all'
 }
