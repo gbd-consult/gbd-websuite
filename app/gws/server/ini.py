@@ -31,7 +31,6 @@ _uwsgi_params = """
 """
 
 PID_PATHS = {
-    'qgis': f'{gws.PIDS_DIR}/qgis.uwsgi.pid',
     'web': f'{gws.PIDS_DIR}/web.uwsgi.pid',
     'spool': f'{gws.PIDS_DIR}/spool.uwsgi.pid',
     'mapproxy': f'{gws.PIDS_DIR}/mapproxy.uwsgi.pid',
@@ -57,13 +56,6 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
         in_container = False
 
     rsyslogd_enabled = in_container
-
-    # as of ver 8, we try not to run qgis here
-    qgis_enabled = root.app.qgisVersion and root.app.cfg('server.qgis.host') == 'localhost'
-    qgis_port = root.app.cfg('server.qgis.port')
-    qgis_workers = root.app.cfg('server.qgis.workers')
-    qgis_threads = root.app.cfg('server.qgis.threads')
-    qgis_socket = f'{gws.TMP_DIR}/uwsgi.qgis.sock'
 
     web_enabled = root.app.cfg('server.web.enabled')
     web_workers = root.app.cfg('server.web.workers')
@@ -94,10 +86,8 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
     nginx_log = 'syslog:server=unix:/dev/log,nohostname,tag'
 
     nginx_main_log = f'{nginx_log}=NGINX_MAIN'
-    nginx_qgis_log = f'{nginx_log}=NGINX_QGIS'
     nginx_web_log = f'{nginx_log}=NGINX_WEB'
 
-    uwsgi_qgis_log = 'daemonize=true\nlogger=syslog:QGIS,local6'
     uwsgi_web_log = 'daemonize=true\nlogger=syslog:WEB,local6'
     uwsgi_mapproxy_log = 'daemonize=true\nlogger=syslog:MAPPROXY,local6'
     uwsgi_spool_log = 'daemonize=true\nlogger=syslog:SPOOL,local6'
@@ -111,14 +101,12 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
     DEFAULT_SPOOL_TIMEOUT = 300
 
     base_timeout = int(root.app.cfg('server.timeout', default=DEFAULT_BASE_TIMEOUT))
-    qgis_timeout = base_timeout + 10
-    qgis_front_timeout = qgis_timeout + 10
-    mapproxy_timeout = qgis_front_timeout + 10
+    mapproxy_timeout = base_timeout + 10
     web_timeout = mapproxy_timeout + 10
     web_front_timeout = web_timeout + 10
     spool_timeout = int(root.app.cfg('server.spool.timeout', default=DEFAULT_SPOOL_TIMEOUT))
 
-    gws.log.debug(f'TIMEOUTS: {[qgis_timeout, qgis_front_timeout, mapproxy_timeout, web_timeout, web_front_timeout, spool_timeout]}')
+    gws.log.debug(f'TIMEOUTS: {[mapproxy_timeout, web_timeout, web_front_timeout, spool_timeout]}')
 
     stdenv = '\n'.join(f'env = {k}={v}' for k, v in os.environ.items() if k.startswith('GWS_'))
 
@@ -155,79 +143,6 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
 
         path = _write(f'{configs_dir}/syslog.conf', syslog_conf)
         commands.append(f'rsyslogd -i {gws.PIDS_DIR}/rsyslogd.pid -f {path}')
-
-    # qgis
-    # ---------------------------------------------------------
-
-    if qgis_enabled:
-
-        qgis_server = gws.lib.importer.import_from_path('gws/plugin/qgis/server.py')
-
-        # partially inspired by
-        # https://github.com/elpaso/qgis2-server-vagrant/blob/master/docs/index.rst
-
-        # harakiri doesn't seem to work with worker-exec
-        # besides, it's a bad idea anyways, because killing them prematurely
-        # doesn't give them a chance to fully preload a project
-
-        srv = qgis_server.EXEC_PATH
-        ini = f"""
-            [uwsgi]
-            uid = {gws.UID}
-            gid = {gws.GID}
-            chmod-socket = 777
-            fastcgi-socket = {qgis_socket}
-            {uwsgi_qgis_log}
-            master = true
-            pidfile = {PID_PATHS['qgis']}
-            processes = {qgis_workers}
-            reload-mercy = {mercy}
-            threads = {qgis_threads}
-            vacuum = true
-            worker-exec = {srv}
-            worker-reload-mercy = {mercy}
-            {stdenv}
-        """
-
-        for k, v in qgis_server.environ(root).items():
-            ini += f'env = {k}={v}\n'
-
-        path = _write(f'{configs_dir}/uwsgi_qgis.ini', ini)
-        commands.append(f'uwsgi --ini {path}')
-
-        frontends.append(f"""
-            server {{
-                listen {qgis_port};
-
-                server_name qgis;
-                error_log {nginx_qgis_log} {nginx_log_level};
-                access_log {nginx_qgis_log};
-                rewrite_log {nginx_rewrite_log};
-
-                location / {{
-                    gzip off;
-                    fastcgi_pass unix:{qgis_socket};
-                    fastcgi_read_timeout {qgis_front_timeout};
-
-                    # add_header 'Access-Control-Allow-Origin' *;
-                    # add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
-
-                    # replace mapproxy forward params (e.g. LAYERS__gws) with their real names
-
-                    if ($args ~* (.*?)(?:\blayers=-?)(?:&|$)(.*) ) {{
-                        set $args $1$2;
-                    }}
-                    if ($args ~* (.*?)(?:\bdpi=-?)(?:&|$)(.*) ) {{
-                        set $args $1$2;
-                    }}
-                    if ($args ~* (.*?)(?:__gws)(.*)) {{
-                        set $args $1$2;
-                    }}
-
-                    include /etc/nginx/fastcgi_params;
-                }}
-            }}
-        """)
 
     # web
     # ---------------------------------------------------------

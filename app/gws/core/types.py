@@ -2337,7 +2337,6 @@ class IApplication(INode, Protocol):
     localeUids: list[str]
     metadata: 'Metadata'
     monitor: 'IMonitor'
-    qgisVersion: str
     version: str
     versionString: str
     defaultPrinter: 'IPrinter'
