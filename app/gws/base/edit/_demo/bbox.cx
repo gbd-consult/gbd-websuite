@@ -1,11 +1,13 @@
 uid "edit_bbox"
 
-title "bbox loading"
+title "PostgreSQL Daten des aktuellen Kartenausschnitts laden und editieren"
 
-metadata.keywords [ "edit" ]
+metadata.keywords [ "Editieren" "PostgreSQL" ]
 
 metadata.abstract """
-Using `loadingStrategy bbox` to edit only features in the map extent.
+Dieses Beispiel zeigt eine Konfiguration zum Editieren von Vektordaten (Punkte) aus einer PostgreSQL Tabelle, bei der nur die Daten geladen werden, die sich im aktuellen Kartenausschnitt befinden. 
+
+In der Konfiguration wird dazu die Option `loadingStrategy bbox` verwendet.
 """
 
 actions+ { type "edit" }
@@ -21,7 +23,7 @@ map {
 }
 
 map.layers+ {
-    title "POIs"
+    title "Interessante Orte"
     type "postgres"
     tableName "edit.poi"
     loadingStrategy "bbox"

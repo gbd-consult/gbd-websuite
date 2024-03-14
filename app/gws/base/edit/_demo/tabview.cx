@@ -1,11 +1,13 @@
 uid "edit_tabview"
 
-title "Table view"
+title "PostgreSQL Daten mit angepasster und automatischer Ansicht einer Attributtabelle editieren"
 
-metadata.keywords [ "edit" ]
+metadata.keywords [ "Editieren" ]
 
 metadata.abstract """
-Custom table view for a model.
+Dieses Beispiel zeigt für den Punktlayer "Kategorisierte Orte" eine automatisch konfigurierte Tabellenansicht zum Editieren und für den Punktlayer "Interessante Orte" eine angepasste Tabellenansicht, bei der Attribute über ein Auswahlmenü oder eine Kalenderfunktion editiert werden können.
+
+Klicken Sie zum Ausprobieren jeweils auf das Icon "Attributtabelle öffnen".
 """
 
 actions+ { type "edit" }
@@ -21,7 +23,7 @@ map {
 
 
 models+ {
-    title "Category (auto table view)"
+    title "Kategorisierte Orte (automatische Tabellenansicht)"
     type "postgres"
     tableName "edit.category"
     sort+ { fieldName "name_de" }
@@ -64,7 +66,7 @@ models+ {
 }
 
 models+ {
-    title "POI (custom table view)"
+    title "Interessante Orte (angepasste Tabellenansicht)"
     type "postgres"
     tableName "edit.poi"
     sort+ { fieldName "name" }

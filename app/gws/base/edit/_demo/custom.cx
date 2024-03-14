@@ -1,20 +1,17 @@
 uid "edit_custom"
 
-title "Custom model"
+title "Angepasstes Laden und Editieren von PostgreSQL Daten"
 
-metadata.keywords [ "edit" ]
+metadata.keywords [ "Editieren" ]
 
 metadata.abstract """
-This layer has a data model with a subset of the source columns
-and custom widgets.
+Dieses Beispiel zeigt eine angepasste Konfiguration zum Editieren einer Untermenge von Attributen eines Vektor Punktlayers aus einer PostgreSQL Tabelle mit einem angepassten Formular.
 
-With model templates one can customize feature lists (`feature.title`)
-and labels (`feature.label`).
+Über Templates können die Objektliste (`feature.title`) und Objektbeschreibungen (`feature.label`) angepasst werden.
 
-The `textSearch` option makes the feature list searchable.
+Mit der Option `textSearch` wird die Objektliste durchsuchbar.
 
-For this layer, the extent is defined explicitly
-to allow creating features outside of the computed extent.
+Die Ausdehnung (`extent`) des Punktlayers ist explizit definiert, um das Erstellen neuer Objekte außerhalb der automatisch berechneten Ausdehnung des Layers zu ermöglichen.
 """
 
 actions+ { type "edit" }
@@ -30,7 +27,7 @@ map {
 
 
 map.layers+ {
-    title "POIs"
+    title "Interessante Orte"
     type "postgres"
     tableName "edit.poi"
     extent [ 431881, 6505964, 1076161, 6877804 ]

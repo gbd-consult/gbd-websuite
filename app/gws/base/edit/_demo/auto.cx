@@ -1,11 +1,11 @@
 uid "edit_auto"
 
-title "PostgreSQL mit automatischem Formular editieren"
+title "PostgreSQL Daten mit automatischem Formular editieren"
 
 metadata.keywords [ "Editieren" "PostgreSQL" ]
 
 metadata.abstract """
-Minimale Konfiguration zum Editieren von Objekten aus einer PostgreSQL Tabelle.
+Dieses Beispiel zeigt eine einfache, minimale Konfiguration zum Editieren von Vektordaten (Punkte und Flächen) aus einer PostgreSQL Tabelle. Das Formular zum Editieren der Objekte wird automatisch erzeugt.
 """
 
 actions+ { type "edit" }

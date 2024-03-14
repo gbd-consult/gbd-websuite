@@ -1,11 +1,13 @@
 uid "edit_lazy"
 
-title "Lazy loading"
+title "Selektives Laden und Editieren von PostgreSQL Daten"
 
-metadata.keywords [ "edit" ]
+metadata.keywords [ "Editieren" ]
 
 metadata.abstract """
-Using `loadingStrategy lazy` to edit only features matching a keyword.
+Dieses Beispiel zeigt eine Konfiguration, bei der nur Objekte eines Vektor Punktlayers aus einer PostgreSQL Tabelle zum Editieren geladen werden, die mit einem zuvor angegebenen Suchbegriff übereinstimmen.
+
+In der Konfiguration wird das über die `loadingStrategy lazy` Option erreicht.
 """
 
 actions+ { type "edit" }
@@ -21,7 +23,7 @@ map {
 }
 
 map.layers+ {
-    title "POIs"
+    title "Interessante Orte"
     type "postgres"
     tableName "edit.poi"
     loadingStrategy "lazy"
