@@ -91,11 +91,11 @@ class XElement(xml.etree.ElementTree.Element):
 
     def to_string(
             self,
-            compact_whitespace=False,
-            remove_namespaces=False,
-            with_namespace_declarations=False,
-            with_schema_locations=False,
-            with_xml_declaration=False,
+            compact_whitespace: bool = False,
+            remove_namespaces: bool = False,
+            with_namespace_declarations: bool = False,
+            with_schema_locations: bool = False,
+            with_xml_declaration: bool = False,
     ) -> str:
         """Converts the XElement object to a string.
 
@@ -238,7 +238,7 @@ class XElement(xml.etree.ElementTree.Element):
         """Returns the children of the current ``XElement``."""
         return [c for c in self]
 
-    def findfirst(self, *paths) -> Element:
+    def findfirst(self, *paths:str) -> Element:
         """Returns the first element in the current element.
         Args:
             paths: Path as ``tag/tag2/tag3`` to the Element to search in.
@@ -253,7 +253,7 @@ class XElement(xml.etree.ElementTree.Element):
             if el is not None:
                 return el
 
-    def textof(self, *paths) -> str:
+    def textof(self, *paths:str) -> str:
         """Returns the text of a given child-element.
 
         Args:
@@ -268,7 +268,7 @@ class XElement(xml.etree.ElementTree.Element):
             if el is not None and el.text:
                 return el.text
 
-    def textlist(self, *paths, deep: bool = False) -> ['XElement']:
+    def textlist(self, *paths:str, deep: bool = False) -> ['XElement']:
         """Collects texts from child-elements.
         Args:
             paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
@@ -279,7 +279,7 @@ class XElement(xml.etree.ElementTree.Element):
         buf = self._collect_text(paths, deep)
         return [text for _, text in buf]
 
-    def textdict(self, *paths, deep: bool = False) -> dict:
+    def textdict(self, *paths:str, deep: bool = False) -> dict:
         """Collects texts from child-elements.
         Args:
             paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.

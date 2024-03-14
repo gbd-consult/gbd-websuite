@@ -78,7 +78,14 @@ class _ParserTarget:
         self.normalize_namespaces = normalize_namespaces
 
     def convert_name(self, s: str) -> str:
-        """" """
+        """"Converts a given XML-namespace or URI to a proper name.
+
+        Args:
+            s: XML-namespace or URI.
+
+        Returns:
+            ``{URI}properName``, if ``normalize_namespaces`` flag is True  ``{non-versionalized-URL}properName`` is returned, if ``remove_namespaces`` flag is True ``properName`` is returned.
+        """
         xmlns, uri, pname = namespace.split_name(s)
         pname = pname.lower() if self.case_insensitive else pname
         if not xmlns and not uri:
@@ -111,6 +118,7 @@ class _ParserTarget:
         return el
 
     def flush(self):
+        """Loads the buffer into the stack and clears the stack."""
         if not self.buf:
             return
 
@@ -130,6 +138,12 @@ class _ParserTarget:
     ##
 
     def start(self, tag: str, attrib: dict):
+        """Flushes the buffer and appends an element to the stack.
+
+        Args:
+            tag: Tag of the XML-element.
+            attrib: Attribute of the XML-element.
+        """
         self.flush()
         el = self.make(tag, attrib)
         if self.stack:
@@ -139,6 +153,7 @@ class _ParserTarget:
         self.stack.append(el)
 
     def end(self, tag):
+        """Flushes the buffer and pops the stack."""
         self.flush()
         self.stack.pop()
 
@@ -149,7 +164,7 @@ class _ParserTarget:
         self.buf.append(data)
 
     def close(self):
-        """Returns root"""
+        """Returns root."""
         return self.root
 
 
