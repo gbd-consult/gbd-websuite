@@ -1,3 +1,8 @@
+## Version 8.0.32
+
+- option to disable database connection pooling
+- fixed permission for alkis print template
+
 ## Version 8.0.31
 
 - authorization support for OWS providers
