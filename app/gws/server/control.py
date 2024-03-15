@@ -141,7 +141,7 @@ _FALLBACK_CONFIG = {
         'mapproxy': {'enabled': False},
         'monitor': {'enabled': False},
         'log': {'level': 'INFO'},
-        'qgis': {'enabled': False},
+        'qgis': {'host': 'qgis', 'port': 80},
         'spool': {'enabled': False},
         'web': {'enabled': True, 'workers': 1},
         'autoRun': '',

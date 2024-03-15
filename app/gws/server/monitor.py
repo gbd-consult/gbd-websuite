@@ -99,7 +99,6 @@ class Object(gws.Node, gws.IMonitor):
                 return False
 
         try:
-            control.reload_server('qgis')
             control.reload_server('mapproxy')
             control.reload_server('web')
             # reloading nginx in a spooler doesn't work properly,

@@ -1,3 +1,9 @@
+## Version 8.1.1
+
+- QField connection plugin
+- postgres authorization
+- token-based authorization
+
 ## Version 8.1.0
 
 - starting 8.1
