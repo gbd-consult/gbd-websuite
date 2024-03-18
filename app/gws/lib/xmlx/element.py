@@ -79,7 +79,7 @@ class XElement(xml.etree.ElementTree.Element):
         """Creates a dictionary from an XElement object.
 
         Returns:
-            A dict with the keys `tag`, `attrib`, `text`, `tail`, `tail`, `children`."""
+            A dict with the keys ``tag``, ``attrib``, ``text``, ``tail``, ``tail``, ``children``."""
         return {
             'tag': self.tag,
             'attrib': self.attrib,
@@ -209,7 +209,7 @@ class XElement(xml.etree.ElementTree.Element):
     ##
 
     def add(self, tag: str, attrib: dict = None, **extra) -> 'XElement':
-        """Creates a new ``XElement and adds it as a child.
+        """Creates a new ``XElement`` and adds it as a child.
 
         Args:
             tag: XML tag.

@@ -161,7 +161,6 @@ def test_from_string_decode_1():
 def test_from_string_decode_2():
     xml_decode = '<?xml version="1.0" encoding="iso-8859-1"?>\n' + xmlstr
     test = xmlx.parser.from_string(xml_decode)
-    print(type(xml_decode.encode('UTF-8')))
     assert test.to_string(with_xml_declaration=True, with_namespace_declarations=True) == ('''<?xml version="1.0" encoding="UTF-8"?><Root xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:gml="http://www.opengis.net/gml/3.2">
             <a>
                 <gml:a test="gml1"/>
