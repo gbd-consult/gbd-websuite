@@ -420,18 +420,19 @@ class QgisXmlTransformer:
                     <relation 
                         strength="Association" 
                         referencingLayer="..."
-                        layerId="LAYER_ID"
-                        referencedLayer="LAYER_ID" 
+                        layerId="..."
+                        referencedLayer="REF_ID" 
                         providerKey="<REPLACE THIS>"
                         dataSource="<REPLACE THIS>"
                     >
                     ...
             """
 
-            qid = el.get('referencedLayer')
-            le = self.ex.qfCaps.layerMap.get(el.get('id'))
+            ref_id = el.get('referencedLayer')
+
+            le = self.ex.qfCaps.layerMap.get(ref_id)
             if not le or le.action != LayerAction.edit:
-                gws.log.warning(f'layer not found {qid!r} in relation')
+                gws.log.warning(f'relation: referenced layer not found: {ref_id!r}')
                 continue
 
             if 'dataSource' in el.attrib:
@@ -446,7 +447,7 @@ class QgisXmlTransformer:
                 <config>
                   <Option type="Map">
                     ...
-                    <Option value="<LAYER ID>" name="ReferencedLayerId" type="QString"/>
+                    <Option value="<REF_ID>" name="ReferencedLayerId" type="QString"/>
                     <Option value="<REPLACE THIS>" name="ReferencedLayerDataSource" type="QString"/>
                     <Option value="<REPLACE THIS>" name="ReferencedLayerProviderKey" type="QString"/>
                     ...
@@ -455,18 +456,18 @@ class QgisXmlTransformer:
             if el.get('type') != 'RelationReference':
                 continue
 
-            qid = None
+            ref_id = None
             for opt in el.findall('.//Option'):
                 if opt.get('name') == 'ReferencedLayerId':
-                    qid = opt.get('value')
+                    ref_id = opt.get('value')
                     break
 
-            if not qid:
+            if not ref_id:
                 continue
 
-            le = self.ex.qfCaps.layerMap.get(el.get('id'))
+            le = self.ex.qfCaps.layerMap.get(ref_id)
             if not le or le.action != LayerAction.edit:
-                gws.log.warning(f'layer not found {qid!r} in editWidget')
+                gws.log.warning(f'editWidget: referenced layer not found: {ref_id!r}')
                 continue
 
             for opt in el.findall('.//Option'):
