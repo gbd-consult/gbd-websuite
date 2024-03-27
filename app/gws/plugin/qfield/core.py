@@ -820,6 +820,10 @@ class QFieldCapsParser:
         return dirs
 
     def base_map_layer_ids(self) -> list[str]:
+        f = self.caps.globalProps.get('createBaseMap')
+        if f != 1:
+            return []
+
         bt = self.caps.globalProps.get('baseMapType')
 
         if bt == 'mapTheme':
