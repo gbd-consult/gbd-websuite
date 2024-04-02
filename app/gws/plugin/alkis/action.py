@@ -39,12 +39,13 @@ class EigentuemerConfig(gws.ConfigWithAccess):
 class EigentuemerOptions(gws.Node):
     controlMode: bool
     controlRules: list[str]
-    logTable: str
+    logTableName: str
+    logTable: t.Optional[sa.Table]
 
     def configure(self):
         self.controlMode = self.cfg('controlMode')
         self.controlRules = self.cfg('controlRules', default=[])
-        self.logTable = self.cfg('logTable')
+        self.logTableName = self.cfg('logTable')
 
 
 class BuchungConfig(gws.ConfigWithAccess):
@@ -392,7 +393,10 @@ class Object(gws.base.action.Object):
         self.buchungsblattSearchOptions = self.cfg('buchungsblattSearchOptions', default=d)
 
         self.buchung = self.create_child(BuchungOptions, self.cfg('buchung'))
+
         self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer'))
+        if self.eigentuemer.logTableName:
+            self.eigentuemer.logTable = self.ix.provider.table(self.eigentuemer.logTableName)
 
         self.storage = self.create_child_if_configured(
             gws.base.storage.Object, self.cfg('storage'), categoryName='Alkis')
@@ -814,29 +818,9 @@ class Object(gws.base.action.Object):
         if not req.user.can_read(self.buchung):
             raise gws.ForbiddenError('cannot read buchung')
 
-    _eigentuemerLogTable = None
-
     def _log_eigentuemer_access(self, req: gws.IWebRequester, control_input: str, is_ok: bool, total=None, fs_uids=None):
-        if not self.eigentuemer.logTable:
+        if self.eigentuemer.logTable is None:
             return
-
-        if self._eigentuemerLogTable is None:
-            schema, name = self.ix.provider.split_table_name(self.eigentuemer.logTable)
-            self._eigentuemerLogTable = sa.Table(
-                name,
-                self.ix.saMeta,
-                sa.Column('id', sa.Integer, primary_key=True),
-                sa.Column('app_name', sa.Text),
-                sa.Column('date_time', sa.DateTime),
-                sa.Column('ip', sa.Text),
-                sa.Column('login', sa.Text),
-                sa.Column('user_name', sa.Text),
-                sa.Column('control_input', sa.Text),
-                sa.Column('control_result', sa.Integer),
-                sa.Column('fs_count', sa.Integer),
-                sa.Column('fs_ids', sa.Text),
-                schema=schema
-            )
 
         data = dict(
             app_name='gws',
@@ -851,7 +835,7 @@ class Object(gws.base.action.Object):
         )
 
         with self.ix.connect() as conn:
-            conn.execute(sa.insert(self._eigentuemerLogTable).values([data]))
+            conn.execute(sa.insert(self.eigentuemer.logTable).values([data]))
             conn.commit()
 
         gws.log.debug(f'_log_eigentuemer_access {is_ok=}')
