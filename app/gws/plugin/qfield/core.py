@@ -4,6 +4,7 @@ import shutil
 
 import gws
 import gws.base.database
+import gws.base.shape
 import gws.gis.crs
 import gws.gis.extent
 import gws.gis.gdalx
@@ -108,6 +109,8 @@ class QFieldCaps(gws.Data):
     globalProps: dict
     dirsToCopy: list[str]
     baseMapLayerIds: list[str]
+    areaOfInterest: t.Optional[gws.Bounds]
+    offlineCopyOnlyAoi: bool
 
 
 class OfflineLog(gws.Data):
@@ -227,7 +230,14 @@ class Exporter:
         )
 
         mc = gws.ModelContext(user=self.user, project=self.project, op=gws.ModelOperation.read)
-        features = me.features or me.model.find_features(gws.SearchQuery(), mc)
+
+        features = me.features
+        if not features:
+            q = gws.SearchQuery()
+            if self.qfCaps.offlineCopyOnlyAoi:
+                q.bounds = self.qfCaps.areaOfInterest or self.package.qgisProvider.bounds
+            features = me.model.find_features(q, mc)
+
         records = []
 
         for feature in features:
@@ -255,7 +265,7 @@ class Exporter:
         gws.log.debug(f'{self.args.baseDir}: write_features: {self.package.uid}::{me.gpName!r} count={gp_layer.count()}')
 
     def write_base_map_layer(self, le: LayerEntry):
-        bounds = self.package.qgisProvider.bounds
+        bounds = self.qfCaps.areaOfInterest or self.package.qgisProvider.bounds
         resolution = int(self.qfCaps.globalProps.get('baseMapMupp', 10))
         w, h = gws.gis.extent.size(bounds.extent)
         px_size = (w / resolution, h / resolution, gws.Uom.px)
@@ -787,6 +797,17 @@ class QFieldCapsParser:
                 le.gpId = len(self.caps.layerMap)
                 le.sourceLayer = sl
                 self.caps.layerMap[le.qgisId] = le
+
+        self.caps.offlineCopyOnlyAoi = self.caps.globalProps.get('offlineCopyOnlyAoi') == 1
+
+        aoi = self.caps.globalProps.get('areaOfInterest')
+        if aoi:
+            crs = self.caps.globalProps.get('areaOfInterestCrs')
+            sh = gws.base.shape.from_wkt(
+                aoi,
+                gws.gis.crs.get(crs) if crs else self.qgisCaps.projectBounds.crs
+            )
+            self.caps.areaOfInterest = sh.bounds()
 
         return self.caps
 
