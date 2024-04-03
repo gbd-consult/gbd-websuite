@@ -568,7 +568,7 @@ class Object(gws.Node):
         if q.bisHausnummer:
             if not has_strasse:
                 raise gws.BadRequestError(f'hausnummer without strasse')
-            where.append(indexlage.c.hausnummer < normalize_hausnummer(q.hausnummer))
+            where.append(indexlage.c.hausnummer < normalize_hausnummer(q.bisHausnummer))
 
         if q.hausnummerNotNull:
             if not has_strasse:

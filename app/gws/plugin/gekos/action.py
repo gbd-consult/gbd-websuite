@@ -89,9 +89,10 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('gekosGetXY')
     def get_xy(self, req: gws.IWebRequester, p: GetXyRequest) -> gws.ContentResponse:
-        act: alkis_action.Object = t.cast(
+
+        act = t.cast(
             alkis_action.Object,
-            gws.base.action.find(self.root, 'alkis', req.user, p.projectUid))
+            self.root.app.actionMgr.locate_action(req.require_project(p.projectUid), 'alkis', req.user))
 
         if not act:
             gws.log.error(f'gekos: alkis action not found, {p.projectUid=}')
