@@ -55,6 +55,9 @@ class Object(gws.Node, gws.IAuthManager):
     def enter_middleware(self, req):
         req.set_session(self.guestSession)
         for meth in self.methods:
+            if meth.secure and not req.isSecure:
+                gws.log.warning(f'insecure_context: ignore {meth}')
+                continue
             gws.log.debug(f'trying method {meth}')
             sess = meth.open_session(req)
             if sess:

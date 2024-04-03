@@ -42,10 +42,6 @@ class Object(gws.base.auth.method.Object):
         if not sid:
             return
 
-        if self.secure and not req.isSecure:
-            gws.log.debug(f'insecure context, {sid=} ignored')
-            return
-
         sess = self.authMgr.sessionMgr.get_valid(sid)
 
         if not sess:
@@ -82,7 +78,7 @@ class Object(gws.base.auth.method.Object):
             raise gws.base.web.error.Forbidden()
 
         if self.secure and not req.isSecure:
-            gws.log.debug(f'insecure context, login failed')
+            gws.log.warning(f'insecure_context: ignore login')
             raise gws.base.web.error.Forbidden()
 
         try:

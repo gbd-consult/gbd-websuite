@@ -97,7 +97,7 @@ actions+ { type "search" }
 actions+ { type "web" }
 
 auth {
-    methods+ { type "web" secure false }
+    methods+ { type "web" secure true }
     providers+ { type "file" path "/demos/users.json" }
     session { type "sqlite" }
 }
