@@ -1,3 +1,7 @@
+## Version 8.0.33
+
+- bugfixes in GekoS and alkis plugins
+
 ## Version 8.0.32
 
 - option to disable database connection pooling
