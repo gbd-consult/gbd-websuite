@@ -140,11 +140,13 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
         args = {
             'project': project,
             'projects': sorted(root.app.projects_for_user(req.user), key=lambda p: p.title.lower()),
-            'request': req,
+            'requester': req,
             'user': req.user,
-            'params': p,
+            'request': p,
+            'params': req.params,
             'response': res,
             'localeUid': locale_uid,
+            'app': root.app,
         }
 
         render_res = tpl.render(gws.TemplateRenderInput(args=args))
