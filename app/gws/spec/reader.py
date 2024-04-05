@@ -333,6 +333,8 @@ def _read_duration(r: Reader, val, typ: core.Type):
 
 def _read_filepath(r: Reader, val, typ: core.Type):
     path = gws.lib.osx.abs_path(val, r.path)
+    if not gws.lib.osx.is_abs_path(val):
+        gws.log.warning(f'relative path, assuming {path!r} for {val!r}')
     if not gws.is_file(path):
         raise core.ReadError(f'file not found: {path!r}, base {r.path!r}', val)
     return path
