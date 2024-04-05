@@ -110,4 +110,4 @@ class Object(gws.base.action.Object):
 
         return gws.ContentResponse(
             mime='text/plain',
-            content='{:.3f},{:.3f}'.format(lst[0].x, lst[0].y))
+            content='{:.3f};{:.3f}'.format(lst[0].x, lst[0].y))
