@@ -219,6 +219,8 @@ class Exporter:
     def write_features(self, me: ModelEntry, ds: gws.gis.gdalx.DataSet):
         # see qgis/src/core/qgsofflineediting.cpp convertToOfflineLayer()
 
+        gws.log.debug(f'{self.args.baseDir}: BEGIN write_features: {self.package.uid}::{me.gpName!r}')
+
         gp_fields = [f for f in me.model.fields if f.attributeType in _GP_ATTRIBUTE_TYPES]
 
         gp_layer = ds.create_layer(
@@ -262,7 +264,7 @@ class Exporter:
             for rec, fid in zip(records, fids):
                 me.fidToPkey[fid] = rec.attributes.get(me.model.uidName)
 
-        gws.log.debug(f'{self.args.baseDir}: write_features: {self.package.uid}::{me.gpName!r} count={gp_layer.count()}')
+        gws.log.debug(f'{self.args.baseDir}: END write_features: {self.package.uid}::{me.gpName!r} count={gp_layer.count()}')
 
     def write_base_map_layer(self, le: LayerEntry):
         bounds = self.qfCaps.areaOfInterest or self.package.qgisProvider.bounds
