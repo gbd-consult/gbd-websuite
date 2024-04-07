@@ -34,7 +34,9 @@ class Object(gws.Node, gws.IDatabaseManager):
     ##
 
     def create_provider(self, cfg, **kwargs):
-        return self.root.create_shared(gws.ext.object.databaseProvider, cfg, _defaultManager=self, **kwargs)
+        prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg, _defaultManager=self, **kwargs)
+        self.providerMap[prov.uid] = prov
+        return prov
 
     def providers(self):
         return list(self.providerMap.values())

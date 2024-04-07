@@ -377,7 +377,7 @@ class Object(gws.Node, gws.IOwsProvider):
             if p.extType == 'postgres' and p.url == url:
                 return t.cast(gws.plugin.postgres.provider.Object, p)
 
-        gws.log.debug('creating an ad-hoc postgres provider for qgis')
+        gws.log.debug(f'creating an ad-hoc postgres provider for qgis {url=}')
         p = mgr.create_provider(cfg, type='postgres')
         return t.cast(gws.plugin.postgres.provider.Object, p)
 
