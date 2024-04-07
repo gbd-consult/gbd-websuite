@@ -68,6 +68,10 @@ class Object(gws.ISpecRuntime):
 
         self._descCache = {}
 
+    def __getstate__(self):
+        self._descCache = {}
+        return vars(self)
+
     def get_type(self, key):
         return self.index.get(key)
 
