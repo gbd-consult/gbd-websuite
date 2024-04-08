@@ -156,7 +156,7 @@ class _Creator:
             return as_typename(tid)
 
         if typ.c == base.C.LITERAL:
-            return ' | '.join(as_literal(s) for s in typ.literalValues)
+            return r' \| '.join(as_literal(s) for s in typ.literalValues)
 
         return ''
 
