@@ -3,7 +3,7 @@
 set -e
 
 CWD=$(pwd)
-BASE=$(dirname $(realpath $BASH_SOURCE))
+BASE_DIR=$(dirname $(realpath $BASH_SOURCE))
 
 PYTHON="${PYTHON:-python3} -B"
 NODE=node
@@ -50,12 +50,12 @@ if [ "$COMMAND" == "" ]; then
     exit 1
 fi
 
-CLIENT_BUILDER=$BASE/app/js/helpers/index.js
-DOC_BUILDER=$BASE/doc/doc.py
-BUILD_DIR=$BASE/app/__build
-TEST_RUNNER=$BASE/app/gws/test/host_runner.py
+CLIENT_BUILDER=$BASE_DIR/app/js/helpers/index.js
+DOC_BUILDER=$BASE_DIR/doc/doc.py
+BUILD_DIR=$BASE_DIR/app/__build
+TEST_RUNNER=$BASE_DIR/app/gws/test/host_runner.py
 
-MAKE_SPEC="$PYTHON $BASE/app/gws/spec/spec.py $BUILD_DIR"
+MAKE_SPEC="$PYTHON $BASE_DIR/app/gws/spec/spec.py $BUILD_DIR"
 
 if [ "$1" == "-manifest" ]; then
   MAKE_SPEC="$MAKE_SPEC -manifest $2"
@@ -65,8 +65,8 @@ fi
 case $COMMAND in
   clean)
     rm -fr $BUILD_DIR
-    rm -frv $BASE/app/*.bundle.js
-    find $BASE/app -name '*.bundle.json' -exec rm -rfv {} \;
+    rm -fr $BASE_DIR/app/*.bundle.js
+    find $BASE_DIR/app -name '*.bundle.json' -exec rm -rf {} \;
     ;;
 
   client)
@@ -80,24 +80,24 @@ case $COMMAND in
     ;;
 
   demo-config)
-    $PYTHON $BASE/demos/make.py $@
+    $PYTHON $BASE_DIR/demos/make.py $@
     ;;
 
   doc)
     $MAKE_SPEC && $PYTHON $DOC_BUILDER build $@
     ;;
   doc-api)
-    $MAKE_SPEC && $PYTHON $DOC_BUILDER api $@
+    $MAKE_SPEC && bash $BASE_DIR/doc/api/make.sh $BASE_DIR $BUILD_DIR $@
     ;;
   doc-dev-server)
     $MAKE_SPEC && $PYTHON $DOC_BUILDER server $@
     ;;
 
   image)
-    $MAKE_SPEC && $PYTHON $BASE/install/image.py $@
+    $MAKE_SPEC && $PYTHON $BASE_DIR/install/image.py $@
     ;;
   package)
-    $MAKE_SPEC && $PYTHON $BASE/install/package.py $@
+    $MAKE_SPEC && $PYTHON $BASE_DIR/install/package.py $@
     ;;
   spec)
     $MAKE_SPEC $@
