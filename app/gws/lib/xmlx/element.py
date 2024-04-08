@@ -229,6 +229,7 @@ class XElement(xml.etree.ElementTree.Element):
         Args:
             key: Key of the attribute.
             default: The default return.
+
         Returns:
             The vale of the key, If the key is not found the default is returned.
         """
@@ -240,6 +241,7 @@ class XElement(xml.etree.ElementTree.Element):
 
     def findfirst(self, *paths:str) -> Element:
         """Returns the first element in the current element.
+
         Args:
             paths: Path as ``tag/tag2/tag3`` to the Element to search in.
 
@@ -270,9 +272,11 @@ class XElement(xml.etree.ElementTree.Element):
 
     def textlist(self, *paths:str, deep: bool = False) -> ['XElement']:
         """Collects texts from child-elements.
+
         Args:
             paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
             deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
+
         Returns:
             A list containing all the text from the child-elements.
         """
@@ -281,9 +285,11 @@ class XElement(xml.etree.ElementTree.Element):
 
     def textdict(self, *paths:str, deep: bool = False) -> dict:
         """Collects texts from child-elements.
+
         Args:
             paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
             deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
+
         Returns:
             A dict containing all the text from the child-elements.
         """

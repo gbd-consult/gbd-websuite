@@ -29,9 +29,7 @@ def test_nowait():
 
 
 def test_run():
-    assert 'nano' not in [i.name() for i in psutil.process_iter()]
-    osx.run_nowait('nano')
-    assert 'nano' in [i.name() for i in psutil.process_iter()]
+    assert osx.run('ls') == (0, b'__init__.py\n__pycache__\n_test.py\n')
 
 
 def test_unlink(tmp_path):
@@ -61,7 +59,7 @@ def test_chown(tmp_path):
     d.mkdir()
     p = d / 'foo.txt'
     p.write_text('test')
-    osx.chown(p, 1001, 1002)
+    osx.chown(p, user=1001, group=1002)
     uid = os.stat(p).st_uid
     gid = os.stat(p).st_gid
     assert uid == gid
@@ -113,6 +111,7 @@ def test_file_checksum(tmp_path):
 # def test_kill_pids():
 
 
+# not working
 def test_running_pids():
     for i in psutil.process_iter():
         assert i.name() in osx.running_pids().get(i.pid)

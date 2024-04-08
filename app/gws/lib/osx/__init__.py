@@ -21,6 +21,9 @@ class TimeoutError(Error):
     pass
 
 
+_Path = str | bytes
+
+
 def getenv(key: str, default: str = None) -> t.Optional[str]:
     """Returns the value for a given environment-variable.
 
@@ -29,24 +32,25 @@ def getenv(key: str, default: str = None) -> t.Optional[str]:
         default: The default return.
 
     Returns:
-        ``default`` if no key has been found, or the value for the environment-variable.
+        ``default`` if no key has been found, if there is such key then the value for the environment-variable is returned.
         """
     return os.getenv(key, default)
 
 
 def utime() -> float:
-    """Returns the time in seconds since the Epoch"""
+    """Returns the time in seconds since the Epoch."""
     return time.time()
 
 
-def run_nowait(cmd: str, **kwargs):
+def run_nowait(cmd: str, **kwargs) -> subprocess.Popen:
     """Run a process and return immediately.
 
     Args:
         cmd: A process to run.
         kwargs:
 
-    Returns: The output of the command.
+    Returns:
+        The output of the command.
     """
 
     args = {
@@ -61,8 +65,20 @@ def run_nowait(cmd: str, **kwargs):
 
 
 def run(cmd: str | list, input: str = None, echo: bool = False,
-        strict: bool = True, timeout: float = None, **kwargs):
-    """Run a process, return a tuple (rc, output)."""
+        strict: bool = True, timeout: float = None, **kwargs) -> tuple:
+    """Run a process, return a tuple (rc, output).
+
+    Args:
+        cmd: Command to run.
+        input:
+        echo:
+        strict:
+        timeout:
+        kwargs:
+
+    Returns:
+        ``(rc,output)``
+    """
 
     args = {
         'stdin': subprocess.PIPE if input else None,
@@ -95,14 +111,11 @@ def run(cmd: str | list, input: str = None, echo: bool = False,
     return rc, out
 
 
-def unlink(path):
+def unlink(path: _Path):
     """Deletes a given path.
 
     Args:
         path: Filepath.
-
-    Raises:
-        ``OSError`` if the path is no file or an incorrect path.
     """
     try:
         if os.path.isfile(path):
@@ -111,7 +124,7 @@ def unlink(path):
         pass
 
 
-def rename(src, dst):
+def rename(src: _Path, dst: _Path):
     """Moves and renames the source path according to the given destination.
 
     Args:
@@ -121,16 +134,13 @@ def rename(src, dst):
     os.replace(src, dst)
 
 
-def chown(path, user: int = None, group: int = None):
+def chown(path: _Path, user: int = None, group: int = None):
     """Changes the UID or GID for a given path.
 
     Args:
         path: Filepath.
         user: UID.
         group: GID.
-
-    Raises:
-        ``OSError`` if no ``user`` and no ``group`` parameter is given.
     """
     try:
         os.chown(path, user or gws.UID, group or gws.GID)
@@ -138,14 +148,11 @@ def chown(path, user: int = None, group: int = None):
         pass
 
 
-def file_mtime(path) -> float:
+def file_mtime(path: _Path) -> float:
     """Returns the time from epoch when the path was recently changed.
 
     Args:
         path: File-/directory-path.
-
-    Raises:
-          ``OSError`` if the given path is invalid.
 
     Returns:
         Time since epoch in seconds until most recent change in file.
@@ -156,17 +163,14 @@ def file_mtime(path) -> float:
         return -1
 
 
-def file_age(path) -> int:
+def file_age(path: _Path) -> int:
     """Returns the amount of seconds since the path has been changed.
 
     Args:
         path: Filepath.
 
-    Raises:
-        ``OSError`` if the given path is invalid.
-
     Returns:
-        Ammount of seconds since most recent change in file.
+        Amount of seconds since most recent change in file, if the path is invalid ``-1`` is returned.
     """
     try:
         return int(time.time() - os.stat(path).st_mtime)
@@ -174,7 +178,7 @@ def file_age(path) -> int:
         return -1
 
 
-def file_size(path) -> int:
+def file_size(path: _Path) -> int:
     """Returns the file size.
 
     Args:
@@ -189,7 +193,7 @@ def file_size(path) -> int:
         return -1
 
 
-def file_checksum(path) -> str:
+def file_checksum(path: _Path) -> str:
     """Reuturs the checksum of the file.
 
     Args:
@@ -205,14 +209,15 @@ def file_checksum(path) -> str:
         return ''
 
 
-def kill_pid(pid: int, sig_name='TERM'):
+def kill_pid(pid: int, sig_name='TERM') -> bool:
     """Kills a process.
 
     Args:
         pid: Process ID.
         sig_name:
 
-    Returns: ``True`` if the process with the given PID is killed or does not exist.``False `` if the process could not be killed.
+    Returns:
+        ``True`` if the process with the given PID is killed or does not exist.``False `` if the process could not be killed.
         """
     sig = getattr(signal, sig_name, None) or getattr(signal, 'SIG' + sig_name)
     try:
@@ -233,11 +238,11 @@ def running_pids() -> dict[int, str]:
     return d
 
 
-def process_rss_size(unit: str='m') -> float:
+def process_rss_size(unit: str = 'm') -> float:
     """Returns the Resident Set Size.
 
     Agrs:
-        unit: ``m``|``k``|``g``
+        unit: ``m`` | ``k`` | ``g``
 
     Returns:
         The Resident Set Size with the given unit.
@@ -252,7 +257,7 @@ def process_rss_size(unit: str='m') -> float:
     return n
 
 
-def find_files(dirname, pattern=None, ext=None, deep: bool=True):
+def find_files(dirname: _Path, pattern=None, ext=None, deep: bool = True):
     """Finds files in a given directory.
 
     Args:
@@ -262,7 +267,8 @@ def find_files(dirname, pattern=None, ext=None, deep: bool=True):
         deep: If true then searches through all subdirectories for files,
                 otherwise it returns the files only in the given directory.
 
-    Returns: A generator object.
+    Returns:
+        A generator object.
     """
     if not pattern and ext:
         if isinstance(ext, (list, tuple)):
@@ -282,7 +288,7 @@ def find_files(dirname, pattern=None, ext=None, deep: bool=True):
             yield de.path
 
 
-def find_directories(dirname, pattern=None, deep:bool=True):
+def find_directories(dirname: _Path, pattern=None, deep: bool = True):
     """Finds all directories in a given directory.
 
     Args:
@@ -291,7 +297,8 @@ def find_directories(dirname, pattern=None, deep:bool=True):
         deep: If true then searches through all subdirectories for directories,
                 otherwise it returns the directories only in the given directory.
 
-    Returns: A generator object.
+    Returns:
+        A generator object.
     """
     de: os.DirEntry
     for de in os.scandir(dirname):
@@ -306,9 +313,6 @@ def find_directories(dirname, pattern=None, deep:bool=True):
 
         if deep:
             yield from find_directories(de.path, pattern)
-
-
-_Path = str | bytes
 
 
 def parse_path(path: _Path) -> dict[str, str]:
@@ -346,6 +350,9 @@ def file_name(path: _Path) -> str:
 
     Args:
         path: Filepath.
+
+    Returns:
+        The filename.
     """
     str_path = path if isinstance(path, str) else path.decode('utf8')
     sp = os.path.split(str_path)
@@ -358,6 +365,9 @@ def abs_path(path: _Path, base: str) -> str:
     Args:
         path: A path.
         base: A path to the base.
+
+    Raises:
+        ``ValueError``: If base is empty
 
     Returns:
         The absolutized path.

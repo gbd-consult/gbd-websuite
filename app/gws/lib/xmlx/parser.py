@@ -17,16 +17,17 @@ def from_path(
         remove_namespaces: bool = False,
 ) -> gws.IXmlElement:
     """Creates an ``IXmlElement`` object from a .xlm file.
-        Args:
-            path: path to the .xml file.
-            case_insensitive: If true tags will be written in lowercase into the IXmlElement object.
-            compact_whitespace: If true all whitespaces and newlines are omitted.
-            normalize_namespaces:
-            remove_namespaces: Removes all occurrences of namespaces.
 
-        Returns:
-            The ``IXmlElement`` object.
-        """
+    Args:
+        path: Path to the .xml file.
+        case_insensitive: If true tags will be written in lowercase into the IXmlElement object.
+        compact_whitespace: If true all whitespaces and newlines are omitted.
+        normalize_namespaces:
+        remove_namespaces: Removes all occurrences of namespaces.
+
+    Returns:
+        The ``IXmlElement`` object.
+    """
     with open(path, 'rb') as fp:
         inp = fp.read()
     return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
@@ -40,16 +41,17 @@ def from_string(
         normalize_namespaces: bool = False,
 ) -> gws.IXmlElement:
     """Creates an ``IXmlElement`` from a string or bytes.
-        Args:
-            inp: .xml file as a string or bytes.
-            case_insensitive: If true tags will be written in lowercase into the IXmlElement object.
-            compact_whitespace: If true all whitespaces and newlines are omitted.
-            normalize_namespaces:
-            remove_namespaces: Removes all occurrences of namespaces.
 
-        Returns:
-            The ``IXmlElement`` object.
-        """
+    Args:
+        inp: .xml file as a string or bytes.
+        case_insensitive: If true tags will be written in lowercase into the IXmlElement object.
+        compact_whitespace: If true all whitespaces and newlines are omitted.
+        normalize_namespaces:
+        remove_namespaces: Removes all occurrences of namespaces.
+
+    Returns:
+        The ``IXmlElement`` object.
+    """
     return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
 
 
@@ -100,9 +102,11 @@ class _ParserTarget:
 
     def make(self, tag: str, attrib: dict) -> gws.IXmlElement:
         """Creates an ``IXmlElement``.
+
         Args:
             tag: The tag.
             attrib: ``{key:value}``
+
         Returns:
             A ``IXmlElement.``
         """
@@ -159,6 +163,7 @@ class _ParserTarget:
 
     def data(self, data):
         """Adds data to the buffer.
+
         Args:
             data: data to add."""
         self.buf.append(data)
