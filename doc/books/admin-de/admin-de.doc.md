@@ -1,17 +1,44 @@
 # Administrator Handbuch :/admin-de
 
-Dies ist die Dokumentation für GBD WebSuite Server Administratoren.
+Diese Abschnitte der Dokumentation behandeln die Installation und Konfiguration
+der GBD WebSuite.
 
-Weitere Informationen zum GBD WebSuite Projekt finden Sie unter https://gbd-websuite.de.
+<h2>Über dieses Handbuch</h2>
 
-## :/admin-de/intro
+%include snippets/liste-von-guides.md
 
-## :/admin-de/config-introduction
+- [**Beispiele**](https://gws-dev.gbd-websuite.de)  
+  Diverse Konfigurationbeispiele
 
-## :/admin-de/config
+- [**Themen**](/admin-de/guides/themen)  
+  Technische Dokumentation zu Themengebieten
 
-## :/admin-de/plugin
+- [**Konfigurationsreferenz**](/admin-de/reference)  
+  Automatisch generierte Referenz zur Struktur der Konfigurationdateien.
 
-## :/admin-de/reference
+- [**Kommandozeilenreferenz**](/admin-de/cli)  
+  Syntax für Befehle zur Applikationssteuerung
 
-## :/admin-de/cli
+## Guides :/admin-de/guides
+
+%include snippets/liste-von-guides.md
+
+### :/admin-de/guides/schnellstart
+### :/admin-de/guides/installation
+
+
+<h2>Über dieses Handbuch</h2>
+
+asdasd
+
+%# ## :/admin-de/intro
+
+%# ## :/admin-de/config-introduction
+
+%# ## :/admin-de/config
+
+%# ## :/admin-de/plugin
+
+%# ## :/admin-de/reference
+
+%# ## :/admin-de/cli
