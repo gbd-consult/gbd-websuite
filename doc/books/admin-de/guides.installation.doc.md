@@ -1,4 +1,4 @@
-# Installation :/admin-de/guides/installation
+# Installation :/admin-de/installation
 
 Dieser Guide behandelt die Installation der GBD WebSuite, nicht des unterliegenden Betriebssystems oder Docker.
 
@@ -336,6 +336,7 @@ docker compose -f docker-compose.yml down
 ```
 
 Um Befehle direkt an die Applikation innerhalb des Containers zu senden: 
+[Kommandozeilenreferenz](/admin-de/cli)
 
 ```
 $ docker exec gws gws -h

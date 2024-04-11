@@ -1,4 +1,18 @@
-# Schnellstart :/admin-de/guides/schnellstart
+# Schnellstart :/admin-de/schnellstart
+
+<!--
+    Schreibstil:
+    Aussagen über die GBD WebSuite als kurze, bündige Fakten.
+        z.B.  Die GBD WebSuite wird als Container ausgeliefert. 
+    Handlungsaufforderungen als imperativ, förmliche Anrede
+        z.B.  Erstellen Sie eine Datei mit dem Namen `docker-compose.yml`:
+    
+    Zielsetzung:
+    - So kurz und bündig wie möglich.
+    - Verweis auf Dokumentation benötigter Fremdsoftware.
+    - Führen des Benutzers durch minimal-Beispiel zum Starten der WebSuite und betrachten des mitgelieferten Demo-Projektes.
+    - Optional: Vorbereitung auf "Guide: Einfaches Projekt"
+-->
 
 %include snippets/release-info.md
 
