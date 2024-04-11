@@ -30,7 +30,7 @@ class Object(gws.base.action.Object):
     def info(self, req: gws.IWebRequester, p: gws.Request) -> InfoResponse:
         """Return the project configuration"""
 
-        project = req.require_project(p.projectUid)
+        project = req.user.require_project(p.projectUid)
 
         locale_uid = p.localeUid
         if locale_uid not in project.localeUids:

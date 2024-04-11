@@ -21,7 +21,6 @@ class Config(gws.base.auth.session_manager.Config):
 # @TODO proper locking
 
 class Object(gws.base.auth.session_manager.Object):
-    authMgr: gws.IAuthManager
     dbPath: str
     metaData: sa.MetaData
     engine: sa.Engine
@@ -30,7 +29,6 @@ class Object(gws.base.auth.session_manager.Object):
     def configure(self):
         _DEFAULT_STORE_PATH = gws.MISC_DIR + '/sessions8.sqlite'
         self.dbPath = self.cfg('path', default=_DEFAULT_STORE_PATH)
-        self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
 
     def activate(self):
         self.metaData = sa.MetaData()
@@ -67,13 +65,14 @@ class Object(gws.base.auth.session_manager.Object):
             sa.delete(self.table).where(self.table.c.updated < gws.lib.date.timestamp() - self.lifeTime))
 
     def create(self, method, user, data=None):
+        am = self.root.app.authMgr
         uid = gws.random_string(64)
 
         self._exec(sa.insert(self.table).values(
             uid=uid,
             method_uid=method.uid,
             user_uid=user.uid,
-            str_user=self.authMgr.serialize_user(user),
+            str_user=am.serialize_user(user),
             str_data=gws.lib.jsonx.to_string(data or {}),
             created=gws.lib.date.timestamp(),
             updated=gws.lib.date.timestamp(),
@@ -134,10 +133,11 @@ class Object(gws.base.auth.session_manager.Object):
     ##
 
     def _session(self, rec):
+        am = self.root.app.authMgr
         return gws.base.auth.session.Object(
             uid=rec['uid'],
-            method=self.authMgr.get_method(rec['method_uid']),
-            user=self.authMgr.unserialize_user(rec['str_user']),
+            method=am.get_method(rec['method_uid']),
+            user=am.unserialize_user(rec['str_user']),
             data=gws.lib.jsonx.from_string(rec['str_data']),
             created=gws.lib.date.from_timestamp(rec['created']),
             updated=gws.lib.date.from_timestamp(rec['updated']),

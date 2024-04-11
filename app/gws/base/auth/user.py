@@ -1,6 +1,8 @@
 import gws
 import gws.lib.jsonx
 
+import gws.types as t
+
 
 class Props(gws.Props):
     displayName: str
@@ -83,6 +85,12 @@ class User(gws.Object, gws.IUser):
         if obj and self.can(access, obj):
             return obj
 
+    def require_project(self, uid):
+        return t.cast(gws.IProject, self.require(uid, gws.ext.object.project))
+
+    def require_layer(self, uid):
+        return t.cast(gws.ILayer, self.require(uid, gws.ext.object.layer))
+
 
 class GuestUser(User):
     isGuest = True
@@ -129,7 +137,7 @@ def from_dict(provider: gws.IAuthProvider, d: dict) -> gws.IUser:
     roles = set(d.get('roles', []))
 
     if gws.ROLE_GUEST in roles:
-        return provider.authMgr.guestUser
+        return provider.root.app.authMgr.guestUser
     if gws.ROLE_ADMIN in roles:
         usr = AdminUser(provider, roles)
     else:
@@ -150,7 +158,7 @@ def init(provider: gws.IAuthProvider, **kwargs) -> gws.IUser:
     roles.add(gws.ROLE_ALL)
 
     if gws.ROLE_GUEST in roles:
-        return provider.authMgr.guestUser
+        return provider.root.app.authMgr.guestUser
     if gws.ROLE_ADMIN in roles:
         usr = AdminUser(provider, roles)
     else:

@@ -20,7 +20,7 @@ class Object(gws.Node, gws.IDatabaseManager):
             prov = self.create_provider(cfg)
             self.providerMap[prov.uid] = prov
 
-        self.root.app.register_middleware('db', self)
+        self.register_middleware('db')
 
     ##
 

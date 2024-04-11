@@ -31,18 +31,21 @@ class Object(gws.base.auth.method.Object):
         self.cookiePath = self.cfg('cookiePath', default=Config.cookiePath)
 
     def activate(self):
+        am = self.root.app.authMgr
         self.deletedSession = gws.base.auth.session.Object(
             uid=_DELETED_SESSION,
             method=self,
-            user=self.authMgr.guestUser,
+            user=am.guestUser,
         )
 
     def open_session(self, req):
+        am = self.root.app.authMgr
+
         sid = req.cookie(self.cookieName)
         if not sid:
             return
 
-        sess = self.authMgr.sessionMgr.get_valid(sid)
+        sess = am.sessionMgr.get_valid(sid)
 
         if not sess:
             gws.log.debug(f'open_session: {sid=} not found or invalid')
@@ -51,6 +54,8 @@ class Object(gws.base.auth.method.Object):
         return sess
 
     def close_session(self, req, res):
+        am = self.root.app.authMgr
+
         sess = getattr(req, 'session')
         if not sess:
             return
@@ -66,13 +71,15 @@ class Object(gws.base.auth.method.Object):
             gws.log.debug(f'session cookie={sess.uid!r}')
             res.set_cookie(
                 self.cookieName,
-                value=sess.uid,
+                sess.uid,
                 path=self.cookiePath,
                 secure=self.secure,
                 httponly=True)
-            self.authMgr.sessionMgr.save(sess)
+            am.sessionMgr.save(sess)
 
     def handle_login(self, req: gws.IWebRequester, credentials: gws.Data):
+        am = self.root.app.authMgr
+
         if not req.user.isGuest:
             gws.log.error('login while logged-in')
             raise gws.base.web.error.Forbidden()
@@ -82,18 +89,20 @@ class Object(gws.base.auth.method.Object):
             raise gws.base.web.error.Forbidden()
 
         try:
-            user = self.authMgr.authenticate(self, credentials)
+            user = am.authenticate(self, credentials)
         except gws.ForbiddenError as exc:
             raise gws.base.web.error.Forbidden() from exc
         if not user:
             raise gws.base.web.error.Forbidden()
 
-        sess = self.authMgr.sessionMgr.create(self, user)
+        sess = am.sessionMgr.create(self, user)
         req.set_session(sess)
 
         gws.log.info(f'LOGGED_IN: user={req.session.user.uid!r} roles={req.session.user.roles}')
 
     def handle_logout(self, req: gws.IWebRequester):
+        am = self.root.app.authMgr
+
         if req.user.isGuest:
             return
 
@@ -105,5 +114,5 @@ class Object(gws.base.auth.method.Object):
 
         gws.log.info(f'LOGGED_OUT: user={sess.user.uid!r}')
 
-        self.authMgr.sessionMgr.delete(sess)
+        am.sessionMgr.delete(sess)
         req.set_session(self.deletedSession)

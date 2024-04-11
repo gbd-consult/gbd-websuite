@@ -66,6 +66,12 @@ class Object(gws.ISpecRuntime):
         self.strings = gs['strings']
         self.chunks = gs['chunks']
 
+        self.appBundlePaths = []
+        for chunk in self.chunks:
+            path = chunk['bundleDir'] + '/' + gws.JS_BUNDLE
+            if path not in self.appBundlePaths:
+                self.appBundlePaths.append(path)
+
         self._descCache = {}
 
     def __getstate__(self):
@@ -180,19 +186,6 @@ class Object(gws.ISpecRuntime):
 
         return sorted(cmds, key=lambda c: (c.cmd1, c.cmd2))
 
-    def bundle_paths(self, category):
-        if category == 'vendor':
-            return [gws.APP_DIR + '/' + gws.JS_VENDOR_BUNDLE]
-        if category == 'util':
-            return [gws.APP_DIR + '/' + gws.JS_UTIL_BUNDLE]
-        if category == 'app':
-            paths = []
-            for chunk in self.chunks:
-                path = chunk['bundleDir'] + '/' + gws.JS_BUNDLE
-                if gws.is_file(path) and path not in paths:
-                    paths.append(path)
-            return paths
-
     def parse_classref(self, classref: gws.ClassRef) -> tuple[t.Optional[type], str, str]:
         ext_name = gws.ext.name(classref)
         if ext_name:
@@ -205,39 +198,3 @@ class Object(gws.ISpecRuntime):
             return classref, '', ''
 
         raise Error(f'invalid class reference {classref!r}')
-    ##
-
-    # def ext_type_list(self, category):
-    #     return [
-    #         spec.get('ext_type')
-    #         for spec in self.specs.values()
-    #         if spec.get('ext_category') == category
-    #     ]
-    #
-    # def parse_command(self, cmd_name, cmd_method, params, with_strict_mode=True):
-    #     name = cmd_method + '.' + cmd_name
-    #     if name not in self.specs:
-    #         return None
-    #
-    #     cmd_spec = self.specs[name]
-    #     p = gws.Request(self.read_value(params, cmd_spec['arg'], '', with_strict_mode, with_error_details=False))
-    #
-    #     return gws.ExtCommandDescriptor(
-    #         class_name=cmd_spec['class_name'],
-    #         cmd_action=cmd_spec['cmd_action'],
-    #         cmd_name=cmd_spec['cmd_name'],
-    #         function_name=cmd_spec['function_name'],
-    #         params=p or gws.Request(),
-    #     )
-    #
-    # def is_a(self, class_name, class_name_part):
-    #     for cnames in self.isa_map.values():
-    #         if class_name in cnames and class_name_part in cnames:
-    #             return True
-    #
-    # def real_class_names(self, class_name):
-    #     return [
-    #         name
-    #         for name, cnames in self.isa_map.items()
-    #         if class_name in cnames
-    #     ]

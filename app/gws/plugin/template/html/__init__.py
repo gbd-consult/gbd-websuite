@@ -166,11 +166,11 @@ class Object(gws.base.template.Object):
 
         if mime == gws.lib.mime.PDF:
             res_path = self.finalize_pdf(tri, html, args, main_engine)
-            return gws.ContentResponse(path=res_path)
+            return gws.ContentResponse(contentPath=res_path)
 
         if mime == gws.lib.mime.PNG:
             res_path = self.finalize_png(tri, html, args, main_engine)
-            return gws.ContentResponse(path=res_path)
+            return gws.ContentResponse(contentPath=res_path)
 
         raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')
 

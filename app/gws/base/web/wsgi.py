@@ -30,8 +30,8 @@ class Responder(gws.IWebResponder):
     def send_response(self, environ, start_response):
         return self._wz(environ, start_response)
 
-    def set_cookie(self, key, **kwargs):
-        self._wz.set_cookie(key, **kwargs)
+    def set_cookie(self, key, value, **kwargs):
+        self._wz.set_cookie(key, value, **kwargs)
 
     def delete_cookie(self, key, **kwargs):
         self._wz.delete_cookie(key, **kwargs)
@@ -39,8 +39,8 @@ class Responder(gws.IWebResponder):
     def add_header(self, key, value):
         self._wz.headers.add(key, value)
 
-    def set_status(self, value):
-        self._wz.status_code = int(value)
+    def set_status(self, status):
+        self._wz.status_code = int(status)
 
 
 class Requester(gws.IWebRequester):
@@ -78,11 +78,15 @@ class Requester(gws.IWebRequester):
         self.isApi = self.inputType is not None
 
         self.params: dict[str, t.Any] = {}
-        self.lowerParams: dict[str, t.Any] = {}
+        self._lowerParams: dict[str, t.Any] = {}
         self.command = ''
 
     def __repr__(self):
         return f'<Requester {self._wz}>'
+
+    def initialize(self):
+        self.command, self.params = self._parse_params()
+        self._lowerParams = {k.lower(): v for k, v in self.params.items()}
 
     def data(self):
         if not self.isPost:
@@ -115,10 +119,7 @@ class Requester(gws.IWebRequester):
         return self._wz.environ.get(key, default)
 
     def param(self, key, default=''):
-        return self.lowerParams.get(key.lower(), default)
-
-    def has_param(self, key):
-        return key.lower() in self.lowerParams
+        return self._lowerParams.get(key.lower(), default)
 
     def header(self, key, default=''):
         return self._wz.headers.get(key, default)
@@ -126,14 +127,7 @@ class Requester(gws.IWebRequester):
     def cookie(self, key, default=''):
         return self._wz.cookies.get(key, default)
 
-    def parse_input(self):
-        self.command, self.params = self._parse_params()
-        self.lowerParams = {k.lower(): v for k, v in self.params.items()}
-
     def content_responder(self, response):
-        if response.location:
-            return Responder(wz=werkzeug.utils.redirect(response.location, response.status or 302))
-
         args: dict = {
             'mimetype': response.mime,
             'status': response.status or 200,
@@ -141,27 +135,27 @@ class Requester(gws.IWebRequester):
             'direct_passthrough': False,
         }
 
-        aname = None
+        attach_name = None
 
         if response.attachmentName:
-            aname = response.attachmentName
+            attach_name = response.attachmentName
         elif response.asAttachment:
-            if response.path:
-                aname = os.path.basename(response.path)
+            if response.contentPath:
+                attach_name = os.path.basename(response.contentPath)
             elif response.mime:
                 ext = gws.lib.mime.extension_for(response.mime)
-                aname = 'download.' + ext
+                attach_name = 'download.' + ext
             else:
-                aname = 'download'
+                attach_name = 'download'
 
-        if aname:
-            args['headers']['Content-Disposition'] = f'attachment; filename="{aname}"'
-            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(aname)
+        if attach_name:
+            args['headers']['Content-Disposition'] = f'attachment; filename="{attach_name}"'
+            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(attach_name)
 
-        if response.path:
-            args['response'] = werkzeug.wsgi.wrap_file(self.environ, open(response.path, 'rb'))
-            args['headers']['Content-Length'] = str(os.path.getsize(response.path))
-            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(response.path)
+        if response.contentPath:
+            args['response'] = werkzeug.wsgi.wrap_file(self.environ, open(response.contentPath, 'rb'))
+            args['headers']['Content-Length'] = str(os.path.getsize(response.contentPath))
+            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(response.contentPath)
             args['direct_passthrough'] = True
         else:
             args['response'] = response.content
@@ -171,7 +165,13 @@ class Requester(gws.IWebRequester):
 
         return Responder(**args)
 
-    def struct_responder(self, response):
+    def redirect_responder(self, response):
+        wz = werkzeug.utils.redirect(response.location, response.status or 302)
+        if response.headers:
+            wz.headers.update(response.headers)
+        return Responder(wz=wz)
+
+    def api_responder(self, response):
         typ = self.outputType or 'json'
         return Responder(
             response=self._encode_struct(response, typ),
@@ -185,22 +185,10 @@ class Requester(gws.IWebRequester):
 
     ##
 
-    def url_for(self, path, **params):
-        return self.site.url_for(self, path, **params)
+    def url_for(self, path, **kwargs):
+        return self.site.url_for(self, path, **kwargs)
 
     ##
-
-    def require(self, uid, classref):
-        return self.user.require(uid, classref)
-
-    def require_project(self, uid):
-        return t.cast(gws.IProject, self.require(uid, gws.ext.object.project))
-
-    def require_layer(self, uid):
-        return t.cast(gws.ILayer, self.require(uid, gws.ext.object.layer))
-
-    def acquire(self, uid, classref):
-        return self.user.acquire(uid, classref)
 
     def set_session(self, sess):
         self.session = sess

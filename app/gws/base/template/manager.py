@@ -5,23 +5,23 @@ import gws.lib.mime
 
 
 class Object(gws.Node, gws.ITemplateManager):
-    def locate_template(self, *objects, user=None, subject=None, mime=None):
+    def find_template(self, *objects, user=None, subject=None, mime=None):
         mime = gws.lib.mime.get(mime) if mime else None
 
         for obj in objects:
             if not obj:
                 continue
-            p = self._locate(obj, user, subject, mime)
+            p = self._find(obj, user, subject, mime)
             if p:
-                gws.log.debug(f'locate_template: found {subject=} {obj=}')
+                gws.log.debug(f'find_template: found {subject=} {obj=}')
                 return p
 
-        p = self._locate(self.root.app, user, subject, mime)
+        p = self._find(self.root.app, user, subject, mime)
         if p:
-            gws.log.debug(f'locate_template: found {subject=} APP')
+            gws.log.debug(f'find_template: found {subject=} APP')
             return p
 
-    def _locate(self, obj, user, subject, mime):
+    def _find(self, obj, user, subject, mime):
         for tpl in getattr(obj, 'templates', []):
             if subject and tpl.subject != subject:
                 continue

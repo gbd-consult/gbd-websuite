@@ -63,7 +63,7 @@ class Object(gws.base.template.Object):
                 page_size=self.pageSize,
             )
             notify('end_print')
-            return gws.ContentResponse(path=res_path)
+            return gws.ContentResponse(contentPath=res_path)
 
         if tri.mimeOut == gws.lib.mime.PNG:
             res_path = gws.printtemp('map.png')
@@ -73,6 +73,6 @@ class Object(gws.base.template.Object):
                 page_size=self.pageSize,
             )
             notify('end_print')
-            return gws.ContentResponse(path=res_path)
+            return gws.ContentResponse(contentPath=res_path)
 
         raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')

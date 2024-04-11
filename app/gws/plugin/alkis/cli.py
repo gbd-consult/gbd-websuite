@@ -37,7 +37,7 @@ class Object(gws.Node):
                 return
         act = t.cast(
             action.Object,
-            root.app.actionMgr.locate_action(project, 'alkis', root.app.authMgr.systemUser)
+            root.app.actionMgr.find_action(project, 'alkis', root.app.authMgr.systemUser)
         )
         if not act:
             gws.log.error(f'action "alkis" not found')

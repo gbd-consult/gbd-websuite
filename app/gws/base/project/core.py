@@ -18,7 +18,7 @@ class Config(gws.ConfigWithAccess):
 
     actions: t.Optional[list[gws.ext.config.action]]
     """project-specific actions"""
-    assets: t.Optional[gws.base.web.site.DocumentRootConfig]
+    assets: t.Optional[gws.base.web.site.WebDocumentRootConfig]
     """project-specific assets options"""
     client: t.Optional[gws.base.client.Config]
     """project-specific gws client configuration"""
@@ -90,7 +90,7 @@ class Object(gws.Node, gws.IProject):
 
     def props(self, user):
         desc = None
-        tpl = self.root.app.templateMgr.locate_template(self, user=user, subject='project.description')
+        tpl = self.root.app.templateMgr.find_template(self, user=user, subject='project.description')
         if tpl:
             desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
 

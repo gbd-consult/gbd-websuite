@@ -58,10 +58,10 @@ def main2(args):
     try:
         fn, request = gws.base.action.prepare_cli_action(
             root,
-            command_category='cli',
+            command_category=gws.CommandCategory.cli,
             command_name=camelize(cmd1 + '-' + cmd2),
             params={camelize(key): val for key, val in args.items()},
-            read_options={'case_insensitive', 'convert_values'}
+            read_options={gws.SpecReadOption.caseInsensitive, gws.SpecReadOption.convertValues}
         )
     except gws.NotFoundError:
         cli.error('command not found, try "gws -h" for help')

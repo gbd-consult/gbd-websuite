@@ -443,7 +443,7 @@ class Object(gws.base.action.Object):
     def get_toponyms(self, req: gws.IWebRequester, p: GetToponymsRequest) -> GetToponymsResponse:
         """Return all Toponyms (Gemeinde/Gemarkung/Strasse) in the area"""
 
-        req.require_project(p.projectUid)
+        req.user.require_project(p.projectUid)
 
         gemeinde_dct = {}
         gemarkung_dct = {}
@@ -464,7 +464,7 @@ class Object(gws.base.action.Object):
     def find_adresse(self, req: gws.IWebRequester, p: FindAdresseRequest) -> FindAdresseResponse:
         """Perform an Adresse search."""
 
-        project = req.require_project(p.projectUid)
+        project = req.user.require_project(p.projectUid)
         crs = p.get('crs') or project.map.bounds.crs
 
         ad_list, query = self.find_adresse_objects(req, p)
@@ -475,9 +475,9 @@ class Object(gws.base.action.Object):
             )
 
         templates = [
-            self.root.app.templateMgr.locate_template(self, user=req.user, subject='adresse.title'),
-            self.root.app.templateMgr.locate_template(self, user=req.user, subject='adresse.teaser'),
-            self.root.app.templateMgr.locate_template(self, user=req.user, subject='adresse.label'),
+            self.root.app.templateMgr.find_template(self, user=req.user, subject='adresse.title'),
+            self.root.app.templateMgr.find_template(self, user=req.user, subject='adresse.teaser'),
+            self.root.app.templateMgr.find_template(self, user=req.user, subject='adresse.label'),
         ]
 
         fprops = []
@@ -500,7 +500,7 @@ class Object(gws.base.action.Object):
     def find_flurstueck(self, req: gws.IWebRequester, p: FindFlurstueckRequest) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""
 
-        project = req.require_project(p.projectUid)
+        project = req.user.require_project(p.projectUid)
         crs = p.get('crs') or project.map.bounds.crs
 
         fs_list, query = self.find_flurstueck_objects(req, p)
@@ -511,13 +511,13 @@ class Object(gws.base.action.Object):
             )
 
         templates = [
-            self.root.app.templateMgr.locate_template(self, user=req.user, subject='flurstueck.title'),
-            self.root.app.templateMgr.locate_template(self, user=req.user, subject='flurstueck.teaser'),
+            self.root.app.templateMgr.find_template(self, user=req.user, subject='flurstueck.title'),
+            self.root.app.templateMgr.find_template(self, user=req.user, subject='flurstueck.teaser'),
         ]
 
         if query.options.displayThemes:
             templates.append(
-                self.root.app.templateMgr.locate_template(self, req.user, subject='flurstueck.description'),
+                self.root.app.templateMgr.find_template(self, req.user, subject='flurstueck.description'),
             )
 
         args = dict(
@@ -567,7 +567,7 @@ class Object(gws.base.action.Object):
     def print_flurstueck(self, req: gws.IWebRequester, p: PrintFlurstueckRequest) -> gws.PrintJobResponse:
         """Print Flurstueck features"""
 
-        project = req.require_project(p.projectUid)
+        project = req.user.require_project(p.projectUid)
 
         find_request = p.findRequest
         find_request.projectUid = p.projectUid
@@ -581,7 +581,7 @@ class Object(gws.base.action.Object):
         crs = print_request.get('crs') or project.map.bounds.crs
 
         templates = [
-            self.root.app.templateMgr.locate_template(self, user=req.user, subject='flurstueck.label'),
+            self.root.app.templateMgr.find_template(self, user=req.user, subject='flurstueck.label'),
         ]
 
         base_map = print_request.maps[0]

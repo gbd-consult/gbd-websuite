@@ -13,5 +13,4 @@ class Object(gws.Node, gws.IAuthSessionManager):
     """Base session manager."""
 
     def configure(self):
-        self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
         self.lifeTime = self.cfg('lifeTime', default=int(Config.lifeTime))

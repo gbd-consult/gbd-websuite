@@ -9,7 +9,6 @@ class Object(gws.Node, gws.IAuthProvider):
     type = 'system'
 
     def configure(self):
-        self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
         self.uid = 'gws.base.auth.provider.system'
         self.allowedMethods = []
 

@@ -1,43 +1,43 @@
 import gws
 
 
-class Manager:
-    objects: dict[str, gws.IMiddleware]
+class Object(gws.Node, gws.IMiddlewareManager):
+    objectMap: dict[str, gws.INode]
     deps: dict[str, list[str]]
     names: list[str]
 
     def __init__(self):
-        self.objects = {}
+        self.objectMap = {}
         self.deps = {}
         self.names = []
         self.sorted = False
 
-    def register(self, name, obj, depends_on=None):
-        self.objects[name] = obj
+    def register(self, obj, name, depends_on=None):
+        self.objectMap[name] = obj
         self.deps[name] = depends_on
         self.sorted = False
 
-    def sorted_objects(self):
+    def objects(self):
         if not self.sorted:
             self._sort()
             self.sorted = True
-        return [(name, self.objects[name]) for name in self.names]
+        return [self.objectMap[name] for name in self.names]
 
     def _sort(self):
         self.names = []
         colors = {}
-        for name in self.objects:
+        for name in self.objectMap:
             self._sort_visit(name, colors, [])
 
     def _sort_visit(self, name, colors, stack):
-        stack += [name]
+        stack = stack + [name]
 
         if colors.get(name) == 2:
             return
         if colors.get(name) == 1:
             raise gws.Error('middleware: cyclic dependency: ' + '->'.join(stack))
 
-        if name not in self.objects:
+        if name not in self.objectMap:
             raise gws.Error('middleware: not found: ' + '->'.join(stack))
 
         colors[name] = 1

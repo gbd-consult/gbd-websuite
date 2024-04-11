@@ -8,13 +8,12 @@ from . import user as user_api
 class Config(gws.Config):
     """Auth provider config."""
 
-    allowedMethods: t.Optional[list[str]] 
+    allowedMethods: t.Optional[list[str]]
     """allowed authorization methods"""
 
 
 class Object(gws.Node, gws.IAuthProvider):
     def configure(self):
-        self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
         self.allowedMethods = self.cfg('allowedMethods', default=[])
 
     def authenticate(self, method, credentials):

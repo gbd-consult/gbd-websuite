@@ -75,15 +75,18 @@ class Object(gws.base.action.Object):
         mgr = t.cast(manager.Object, self.root.app.printerMgr)
         job = mgr.get_job(p.jobUid, req.user)
         if not job:
+            gws.log.error(f'printerResult {p.jobUid=} not found')
             raise gws.base.web.error.NotFound()
         if job.state != gws.JobState.complete:
+            gws.log.error(f'printerResult {p.jobUid=} wrong {job.state=}')
             raise gws.base.web.error.NotFound()
 
         res_path = mgr.result_path(job)
         if not res_path:
+            gws.log.error(f'printerResult {p.jobUid=} no res_path')
             raise gws.base.web.error.NotFound()
 
-        return gws.ContentResponse(path=res_path)
+        return gws.ContentResponse(contentPath=res_path)
 
     @gws.ext.command.cli('printerPrint')
     def print(self, p: CliParams):

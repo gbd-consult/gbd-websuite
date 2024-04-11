@@ -119,9 +119,9 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('mapDescribeLayer')
     def describe_layer(self, req: gws.IWebRequester, p: DescribeLayerRequest) -> DescribeLayerResponse:
-        project = req.require_project(p.projectUid)
-        layer = req.require_layer(p.layerUid)
-        tpl = self.root.app.templateMgr.locate_template(layer, project, user=req.user, subject='layer.description')
+        project = req.user.require_project(p.projectUid)
+        layer = req.user.require_layer(p.layerUid)
+        tpl = self.root.app.templateMgr.find_template(layer, project, user=req.user, subject='layer.description')
 
         if not tpl:
             return DescribeLayerResponse(content='')
@@ -153,7 +153,7 @@ class Object(gws.base.action.Object):
     ##
 
     def _get_box(self, req: gws.IWebRequester, p: GetBoxRequest):
-        layer = req.require_layer(p.layerUid)
+        layer = req.user.require_layer(p.layerUid)
         lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.box, user=req.user, extraParams={})
 
         if p.layers:
@@ -179,7 +179,7 @@ class Object(gws.base.action.Object):
         return self._error_pixel
 
     def _get_xyz(self, req: gws.IWebRequester, p: GetXyzRequest):
-        layer = req.require_layer(p.layerUid)
+        layer = req.user.require_layer(p.layerUid)
         lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.xyz, user=req.user, x=p.x, y=p.y, z=p.z)
         lro = None
 
@@ -208,7 +208,7 @@ class Object(gws.base.action.Object):
         return gws.lib.mime.PNG, content
 
     def _get_legend(self, req: gws.IWebRequester, p: GetLegendRequest):
-        layer = req.require_layer(p.layerUid)
+        layer = req.user.require_layer(p.layerUid)
         lro = layer.render_legend()
         content = gws.base.legend.output_to_bytes(lro)
         if content:
@@ -223,8 +223,8 @@ class Object(gws.base.action.Object):
         return ImageResponse(mime='image/png', content=gws.lib.image.PIXEL_PNG8)
 
     def _get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> list[gws.FeatureProps]:
-        layer = req.require_layer(p.layerUid)
-        project = layer.closest(gws.ext.object.project)
+        layer = req.user.require_layer(p.layerUid)
+        project = layer.find_closest(gws.ext.object.project)
 
         crs = gws.gis.crs.get(p.crs) or layer.mapCrs
 

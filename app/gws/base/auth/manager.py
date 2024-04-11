@@ -29,26 +29,26 @@ class Object(gws.Node, gws.IAuthManager):
     """Authorization manager."""
 
     def configure(self):
-        self.sessionMgr = self.create_child(gws.ext.object.authSessionManager, self.cfg('session'), type=_DEFAULT_SESSION_TYPE, _defaultManager=self)
+        self.sessionMgr = self.create_child(gws.ext.object.authSessionManager, self.cfg('session'), type=_DEFAULT_SESSION_TYPE)
 
-        self.providers = self.create_children(gws.ext.object.authProvider, self.cfg('providers'), _defaultManager=self)
+        self.providers = self.create_children(gws.ext.object.authProvider, self.cfg('providers'))
 
-        sys_provider = self.create_child(system_provider.Object, _defaultManager=self)
+        sys_provider = self.create_child(system_provider.Object)
         self.providers.append(sys_provider)
 
         self.guestUser = sys_provider.get_user('guest')
         self.systemUser = sys_provider.get_user('system')
 
-        self.methods = self.create_children(gws.ext.object.authMethod, self.cfg('methods'), _defaultManager=self)
+        self.methods = self.create_children(gws.ext.object.authMethod, self.cfg('methods'))
         if not self.methods:
             # if no methods configured, enable the Web method
-            self.methods.append(self.create_child(gws.ext.object.authMethod, type='web', _defaultManager=self))
+            self.methods.append(self.create_child(gws.ext.object.authMethod, type='web'))
 
-        self.mfa = self.create_children(gws.ext.object.authMfa, self.cfg('mfa'), _defaultManager=self)
+        self.mfa = self.create_children(gws.ext.object.authMfa, self.cfg('mfa'))
 
         self.guestSession = session.Object(uid='guest_session', method=None, user=self.guestUser)
 
-        self.root.app.register_middleware('auth', self, depends_on=['db'])
+        self.register_middleware('auth', depends_on=['db'])
 
     ##
 

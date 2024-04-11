@@ -17,6 +17,7 @@ and pass it along to authorization providers.
 import gws
 import gws.base.auth
 import gws.base.web
+
 import gws.types as t
 
 gws.ext.new.authMethod('token')
@@ -39,7 +40,7 @@ class Object(gws.base.auth.method.Object):
         self.uid = 'gws.plugin.auth_method.token'
         self.header = self.cfg('header')
         self.prefix = self.cfg('prefix', default='')
-        self.root.app.register_middleware(self.uid, self, depends_on=['auth'])
+        self.register_middleware(self.uid, depends_on=['auth'])
 
     ##
 
@@ -50,16 +51,17 @@ class Object(gws.base.auth.method.Object):
         pass
 
     def open_session(self, req):
+        am = self.root.app.authMgr
         credentials = self._parse_header(req)
         if not credentials:
             return
         try:
-            user = self.authMgr.authenticate(self, credentials)
+            user = am.authenticate(self, credentials)
         except gws.ForbiddenError as exc:
             raise gws.base.web.error.Forbidden() from exc
         if user:
             user.authToken = credentials.get('token')
-            return self.authMgr.sessionMgr.create(self, user)
+            return am.sessionMgr.create(self, user)
 
     def close_session(self, req, res):
         pass

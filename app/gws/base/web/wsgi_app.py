@@ -45,7 +45,7 @@ def handle_request(environ) -> gws.IWebResponder:
     req = gws.base.web.wsgi.Requester(root, environ, site)
 
     try:
-        req.parse_input()
+        req.initialize()
     except Exception as exc:
         return handle_error(req, exc)
 
@@ -62,10 +62,10 @@ def apply_middleware(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebRespond
     res = None
     done = []
 
-    for name, obj in root.app.middleware_objects():
+    for obj in root.app.middlewareMgr.objects():
         try:
             res = obj.enter_middleware(req)
-            done.append((name, obj))
+            done.append(obj)
         except Exception as exc:
             res = handle_error(req, exc)
 
@@ -78,7 +78,7 @@ def apply_middleware(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebRespond
         except Exception as exc:
             res = handle_error(req, exc)
 
-    for name, obj in reversed(done):
+    for obj in reversed(done):
         try:
             obj.exit_middleware(req, res)
         except Exception as exc:
@@ -128,7 +128,7 @@ def handle_http_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPExcept
     gws.log.warning(f'HTTPException: {exc.code} cause={exc.__cause__}')
 
     if req.isApi:
-        return req.struct_responder(gws.Response(
+        return req.api_responder(gws.Response(
             status=exc.code,
             error=gws.ResponseError(
                 code=exc.code,
@@ -143,7 +143,11 @@ def handle_http_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPExcept
     return req.content_responder(response)
 
 
-_relaxed_read_options = {'case_insensitive', 'convert_values', 'ignore_extra_props'}
+_relaxed_read_options = {
+    gws.SpecReadOption.caseInsensitive,
+    gws.SpecReadOption.convertValues,
+    gws.SpecReadOption.ignoreExtraProps,
+}
 
 
 def handle_action(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebResponder:
@@ -151,15 +155,15 @@ def handle_action(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebResponder:
         raise gws.base.web.error.NotFound()
 
     if req.isApi:
-        category = 'api'
+        category = gws.CommandCategory.api
         params = req.params
         read_options = None
     elif req.isGet:
-        category = 'get'
+        category = gws.CommandCategory.get
         params = req.params
         read_options = _relaxed_read_options
     elif req.isPost:
-        category = 'post'
+        category = gws.CommandCategory.post
         params = req.params
         read_options = _relaxed_read_options
     else:
@@ -183,4 +187,7 @@ def handle_action(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebResponder:
     if isinstance(response, gws.ContentResponse):
         return req.content_responder(response)
 
-    return req.struct_responder(response)
+    if isinstance(response, gws.RedirectResponse):
+        return req.redirect_responder(response)
+
+    return req.api_responder(response)

@@ -82,7 +82,7 @@ class Object(core.Object):
         view_names = view_names or ['label']
         templates = []
         for v in view_names:
-            tpl = self.root.app.templateMgr.locate_template(
+            tpl = self.root.app.templateMgr.find_template(
                 self, search.project, user=user, subject=f'feature.{v}')
             if tpl:
                 templates.append(tpl)

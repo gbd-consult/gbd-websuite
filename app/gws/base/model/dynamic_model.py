@@ -11,7 +11,7 @@ class Config(core.Config):
     pass
 
 
-class Object(core.Object):
+class Object(core.Object, gws.IModel):
     def configure(self):
         self.uidName = 'uid'
         self.geometryName = 'geometry'

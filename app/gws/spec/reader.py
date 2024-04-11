@@ -17,15 +17,15 @@ class Reader:
     def __init__(self, runtime, path, options):
         self.runtime = runtime
         self.path = path
+        
+        options = set(options or [])
 
-        options = options or ''
-
-        self.accept_extra_props = 'accept_extra_props' in options
-        self.case_insensitive = 'case_insensitive' in options
-        self.convert_values = 'convert_values' in options
-        self.ignore_extra_props = 'ignore_extra_props' in options
-        self.allow_skip_required = 'allow_skip_required' in options
-        self.verbose_errors = 'verbose_errors' in options
+        self.accept_extra_props = gws.SpecReadOption.acceptExtraProps in options
+        self.case_insensitive = gws.SpecReadOption.caseInsensitive in options
+        self.convert_values = gws.SpecReadOption.convertValues in options
+        self.ignore_extra_props = gws.SpecReadOption.ignoreExtraProps in options
+        self.allow_skip_required = gws.SpecReadOption.allowMissing in options
+        self.verbose_errors = gws.SpecReadOption.verboseErrors in options
 
         self.stack = None
         self.push = lambda _: ...
@@ -282,7 +282,7 @@ def _read_variant(r: Reader, val, typ: core.Type):
 
 # custom types
 
-def _read_acl_spec(r: Reader, val, typ: core.Type):
+def _read_acl_str(r: Reader, val, typ: core.Type):
     try:
         return gws.parse_acl(val)
     except ValueError:
@@ -485,7 +485,7 @@ _READERS = {
     core.C.CONFIG: _read_object,
     core.C.PROPS: _read_object,
 
-    'gws.core.types.AclSpec': _read_acl_spec,
+    'gws.core.types.AclStr': _read_acl_str,
     'gws.core.types.Color': _read_color,
     'gws.core.types.CrsName': _read_crs,
     'gws.core.types.Date': _read_date,

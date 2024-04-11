@@ -14,10 +14,10 @@ DEFAULT_THEME = 'light'
 
 def javascript(root: gws.IRoot, category: str, locale_uid: str = '') -> str:
     if category == 'vendor':
-        return gws.read_file(root.specs.bundle_paths('vendor')[0])
+        return gws.read_file(gws.APP_DIR + '/' + gws.JS_VENDOR_BUNDLE)
 
     if category == 'util':
-        return gws.read_file(root.specs.bundle_paths('util')[0])
+        return gws.read_file(gws.APP_DIR + '/' + gws.JS_UTIL_BUNDLE)
 
     if category == 'app':
         return _make_app_js(root, locale_uid)
@@ -33,16 +33,18 @@ def css(root: gws.IRoot, category: str, theme: str):
 ##
 
 def _load_app_bundles(root):
+
     def _load():
         bundles = {}
 
-        for path in root.specs.bundle_paths('app'):
-            gws.log.info(f'loading bundle {path!r}')
-            bundle = gws.lib.jsonx.from_path(path)
-            for key, val in bundle.items():
-                if key not in bundles:
-                    bundles[key] = ''
-                bundles[key] += val
+        for path in root.specs.appBundlePaths:
+            if gws.is_file(path):
+                gws.log.debug(f'bundle {path!r}: loading')
+                bundle = gws.lib.jsonx.from_path(path)
+                for key, val in bundle.items():
+                    if key not in bundles:
+                        bundles[key] = ''
+                    bundles[key] += val
 
         return bundles
 
@@ -54,6 +56,7 @@ def _load_app_bundles(root):
 
 def _make_app_js(root, locale_uid):
     bundles = _load_app_bundles(root)
+
     lang = locale_uid.split('_')[0]
     modules = bundles[BUNDLE_KEY_MODULES]
     strings = bundles.get(BUNDLE_KEY_STRINGS + '_' + lang) or bundles.get(BUNDLE_KEY_STRINGS + '_' + DEFAULT_LANG)

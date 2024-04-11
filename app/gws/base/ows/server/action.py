@@ -42,7 +42,7 @@ class Object(gws.base.action.Object):
 
     def _find_service(self, req, p) -> t.Optional[gws.IOwsService]:
         if p.projectUid:
-            project = req.require_project(p.projectUid)
+            project = req.user.require_project(p.projectUid)
             for s in project.owsServices:
                 if s.uid == p.serviceUid:
                     return s

@@ -170,7 +170,7 @@ class Object(gws.Node, gws.IModel):
     ##
 
     def props(self, user):
-        layer = t.cast(gws.ILayer, self.closest(gws.ext.object.layer))
+        layer = t.cast(gws.ILayer, self.find_closest(gws.ext.object.layer))
 
         return gws.Props(
             canCreate=user.can_create(self),

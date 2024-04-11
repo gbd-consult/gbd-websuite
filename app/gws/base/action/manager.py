@@ -4,7 +4,7 @@ import gws.spec
 
 def prepare_cli_action(
         root: gws.IRoot,
-        command_category: str,
+        command_category: gws.CommandCategory,
         command_name: str,
         params: dict,
         read_options=None,
@@ -59,10 +59,10 @@ class Object(gws.Node, gws.IActionManager):
                 raise gws.NotFoundError(f'project not found: {project_uid!r}')
             if not user.can_use(project):
                 raise gws.ForbiddenError(f'project forbidden: {project_uid!r}')
-            action = self._locate_by_ext_name(project, desc.owner.extName, user)
+            action = self._find_by_ext_name(project, desc.owner.extName, user)
 
         if not action:
-            action = self._locate_by_ext_name(self.root.app, desc.owner.extName, user)
+            action = self._find_by_ext_name(self.root.app, desc.owner.extName, user)
 
         if not action:
             raise gws.NotFoundError(f'action {desc.owner.extName!r}: not found')
@@ -70,23 +70,23 @@ class Object(gws.Node, gws.IActionManager):
         fn = getattr(action, desc.methodName)
         return fn, request
 
-    def locate_action(self, project, ext_type, user):
+    def find_action(self, project, ext_type, user):
         if project:
-            a = self._locate_by_ext_type(project, ext_type, user)
+            a = self._find_by_ext_type(project, ext_type, user)
             if a:
                 return a
-        return self._locate_by_ext_type(self.root.app, ext_type, user)
+        return self._find_by_ext_type(self.root.app, ext_type, user)
 
     # @TODO build indexes for this
 
-    def _locate_by_ext_name(self, obj, ext_name: str, user: gws.IUser):
+    def _find_by_ext_name(self, obj, ext_name: str, user: gws.IUser):
         for a in obj.actions:
             if a.extName == ext_name:
                 if not user.can_use(a):
                     raise gws.ForbiddenError(f'action {ext_name!r}: forbidden in {obj!r}')
                 return a
 
-    def _locate_by_ext_type(self, obj, ext_type: str, user: gws.IUser):
+    def _find_by_ext_type(self, obj, ext_type: str, user: gws.IUser):
         for a in obj.actions:
             if a.extType == ext_type:
                 if not user.can_use(a):

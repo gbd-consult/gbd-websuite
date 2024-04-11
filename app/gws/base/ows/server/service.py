@@ -59,7 +59,7 @@ class Object(gws.Node, gws.IOwsService):
     # Configuration
 
     def configure(self):
-        self.project = self.closest(gws.ext.object.project)
+        self.project = self.find_closest(gws.ext.object.project)
 
         self.updateSequence = self.cfg('updateSequence')
         self.withInspireMeta = self.cfg('withInspireMeta')
@@ -76,7 +76,7 @@ class Object(gws.Node, gws.IOwsService):
     def configure_bounds(self):
         crs_list = [gws.gis.crs.require(s) for s in self.cfg('supportedCrs', default=[])]
         if not crs_list:
-            crs_list = [self.project.map.bounds.crs] if self.project else gws.gis.crs.WEBMERCATOR
+            crs_list = [self.project.map.bounds.crs] if self.project else [gws.gis.crs.WEBMERCATOR]
 
         p = self.cfg('extent')
         if p:
@@ -130,7 +130,7 @@ class Object(gws.Node, gws.IOwsService):
         if not self.rootLayer:
             raise gws.Error(f'root layer {uid!r} not found')
 
-        prj = self.rootLayer.closest(gws.ext.object.project)
+        prj = self.rootLayer.find_closest(gws.ext.object.project)
         if not self.project:
             self.project = prj
             return
@@ -164,7 +164,7 @@ class Object(gws.Node, gws.IOwsService):
 
         p = rd.req.param('projectUid')
         if p:
-            project = rd.req.require_project(p)
+            project = rd.req.user.require_project(p)
             if self.project and project != self.project:
                 gws.log.debug(f'ows {self.uid=}: wrong project={p!r}')
                 raise gws.base.web.error.NotFound('Project not found')
@@ -172,7 +172,7 @@ class Object(gws.Node, gws.IOwsService):
 
         if self.project:
             # for in-project services, ensure the user can access the project
-            return rd.req.require_project(self.project.uid)
+            return rd.req.user.require_project(self.project.uid)
 
     def requested_version(self, rd: core.Request) -> str:
         s = util.one_of_params(rd, 'version', 'acceptversions')
@@ -222,7 +222,7 @@ class Object(gws.Node, gws.IOwsService):
                 gws.log.debug(f'no mimetype: {verb=} {format_name=}')
                 raise gws.base.web.error.BadRequest('Invalid FORMAT')
 
-        tpl = self.root.app.templateMgr.locate_template(self, user=rd.req.user, subject=f'ows.{verb}', mime=mime)
+        tpl = self.root.app.templateMgr.find_template(self, user=rd.req.user, subject=f'ows.{verb}', mime=mime)
         if not tpl:
             gws.log.debug(f'no template: {verb=} {format_name=}')
             raise gws.base.web.error.BadRequest('Unsupported FORMAT')
@@ -232,7 +232,7 @@ class Object(gws.Node, gws.IOwsService):
             request=rd,
             service=self,
             serviceUrl=rd.req.url_for(util.service_url_path(self, rd.project)),
-            url_for=rd.req.url_for,
+            url_for=rd.site.url_for,
             version=rd.version,
             **kwargs,
         )

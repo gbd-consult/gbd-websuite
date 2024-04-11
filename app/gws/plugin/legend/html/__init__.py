@@ -26,5 +26,5 @@ class Object(gws.base.legend.Object):
         res = self.template.render(gws.TemplateRenderInput(
             args=args,
             mimeOut=gws.lib.mime.PNG))
-        img = gws.lib.image.from_path(res.path)
+        img = gws.lib.image.from_path(res.contentPath)
         return gws.LegendRenderOutput(image=img, size=img.size())

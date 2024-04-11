@@ -5,7 +5,7 @@ from . import site
 
 _FALLBACK_SITE = gws.Config(
     host='*',
-    root=site.DocumentRootConfig(dir='/data/web'))
+    root=site.WebDocumentRootConfig(dir='/data/web'))
 
 
 class Config(gws.Config):
@@ -26,7 +26,7 @@ class Object(gws.Node, gws.IWebManager):
             cfgs = [gws.merge(c, ssl=True) for c in cfgs]
         self.sites = self.create_children(site.Object, cfgs)
 
-        self.root.app.register_middleware('cors', self)
+        self.register_middleware('cors')
 
     ##
 
@@ -43,21 +43,21 @@ class Object(gws.Node, gws.IWebManager):
         if not cors or res.status >= 400:
             return
 
-        p = cors.get('allowOrigin')
+        p = cors.allowOrigin
         if p:
             res.add_header('Access-Control-Allow-Origin', p)
 
-        p = cors.get('allowCredentials')
+        p = cors.allowCredentials
         if p:
             res.add_header('Access-Control-Allow-Credentials', 'true')
 
-        p = cors.get('allowHeaders')
+        p = cors.allowHeaders
         if p:
-            res.add_header('Access-Control-Allow-Headers', ', '.join(p))
+            res.add_header('Access-Control-Allow-Headers', p)
 
-        p = cors.get('allowMethods')
+        p = cors.allowMethods
         if p:
-            res.add_header('Access-Control-Allow-Methods', ', '.join(p))
+            res.add_header('Access-Control-Allow-Methods', p)
         else:
             res.add_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
@@ -74,4 +74,4 @@ class Object(gws.Node, gws.IWebManager):
                 return s
 
         # there must be a '*' site
-        raise ValueError('unknown host', host)
+        raise gws.Error('unknown host', host)

@@ -68,7 +68,7 @@ def layer_configs_from_args(tca: TreeConfigArgs) -> list[gws.Config]:
             tca.root.specs,
             cfg,
             'gws.ext.config.layer',
-            read_options={'accept_extra_props', 'allow_skip_required'}
+            read_options={gws.SpecReadOption.acceptExtraProps, gws.SpecReadOption.allowMissing}
         )
         for cfg in configs
     ]

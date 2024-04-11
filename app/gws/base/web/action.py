@@ -45,16 +45,21 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('webAsset')
     def api_asset(self, req: gws.IWebRequester, p: AssetRequest) -> AssetResponse:
         """Return an asset under the given path and project"""
-        r = _serve_path(self.root, req, p)
+        r = self._serve_path(req, p)
+        if r.contentPath:
+            r.content = gws.read_file_b(r.contentPath)
         return AssetResponse(content=r.content, mime=r.mime)
 
     @gws.ext.command.get('webAsset')
     def http_asset(self, req: gws.IWebRequester, p: AssetRequest) -> gws.ContentResponse:
-        return _serve_path(self.root, req, p)
+        r = self._serve_path(req, p)
+        return r
 
     @gws.ext.command.get('webDownload')
     def download(self, req: gws.IWebRequester, p) -> gws.ContentResponse:
-        return _serve_path(self.root, req, p, as_attachment=True)
+        r = self._serve_path(req, p)
+        r.asAttachment = True
+        return r
 
     @gws.ext.command.get('webFile')
     def file(self, req: gws.IWebRequester, p: FileRequest) -> gws.ContentResponse:
@@ -68,7 +73,7 @@ class Object(gws.base.action.Object):
         mc = gws.ModelContext(
             op=gws.ModelOperation.read,
             user=req.user,
-            project=req.require_project(p.projectUid),
+            project=req.user.require_project(p.projectUid),
             maxDepth=0,
         )
         res = fn(p.featureUid, p.preview, mc)
@@ -103,46 +108,61 @@ class Object(gws.base.action.Object):
                 mime=gws.lib.mime.CSS,
                 content=gws.base.client.bundles.css(self.root, 'app', theme))
 
+    def _serve_path(self, req: gws.IWebRequester, p: AssetRequest):
+        req_path = str(p.get('path') or '')
+        if not req_path:
+            raise gws.base.web.error.NotFound()
 
-def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_attachment=False):
-    spath = str(p.get('path') or '')
-    if not spath:
-        raise gws.base.web.error.NotFound()
+        site_assets = req.site.assetsRoot
 
-    site_assets = req.site.assetsRoot
+        project = None
+        project_assets = None
 
-    project = None
-    project_assets = None
+        project_uid = p.get('projectUid')
+        if project_uid:
+            project = req.user.require_project(project_uid)
+            project_assets = project.assetsRoot
 
-    project_uid = p.get('projectUid')
-    if project_uid:
-        project = req.require_project(project_uid)
-        project_assets = project.assetsRoot
+        real_path = None
 
-    rpath = None
+        if project_assets:
+            real_path = gws.lib.osx.abs_web_path(req_path, project_assets.dir)
+        if not real_path and site_assets:
+            real_path = gws.lib.osx.abs_web_path(req_path, site_assets.dir)
+        if not real_path:
+            raise gws.base.web.error.NotFound()
 
-    if project_assets:
-        rpath = gws.lib.osx.abs_web_path(spath, project_assets.dir)
-    if not rpath and site_assets:
-        rpath = gws.lib.osx.abs_web_path(spath, site_assets.dir)
-    if not rpath:
-        raise gws.base.web.error.NotFound()
+        locale_uid = p.localeUid
+        if project and locale_uid not in project.localeUids:
+            locale_uid = project.localeUids[0]
 
-    locale_uid = p.localeUid
-    if project and locale_uid not in project.localeUids:
-        locale_uid = project.localeUids[0]
+        tpl = self.root.app.templateMgr.template_from_path(real_path)
+        if tpl:
+            return self._serve_template(req, tpl, project, locale_uid)
 
-    tpl = root.app.templateMgr.template_from_path(rpath)
+        mime = gws.lib.mime.for_path(real_path)
 
-    if tpl:
+        if not _valid_mime_type(mime, project_assets, site_assets):
+            gws.log.error(f'invalid mime path={real_path!r} mime={mime!r}')
+            # NB: pretend the file doesn't exist
+            raise gws.base.web.error.NotFound()
+
+        gws.log.debug(f'serving {real_path!r} for {req_path!r}')
+        return gws.ContentResponse(contentPath=real_path, mime=mime)
+
+    def _serve_template(self, req: gws.IWebRequester, tpl: gws.ITemplate, project: gws.IProject, locale_uid: str):
         # give the template an empty response to manipulate (e.g. add 'location')
         res = gws.ContentResponse()
+
+        projects = [p for p in self.root.app.projects if req.user.can_use(p)]
+        projects.sort(key=lambda p: p.title.lower())
+
         args = {
             'project': project,
-            'projects': sorted(root.app.projects_for_user(req.user), key=lambda p: p.title.lower()),
-            'request': req,
+            'projects': projects,
+            'req': req,
             'user': req.user,
-            'params': p,
+            'params': req.params,
             'response': res,
             'localeUid': locale_uid,
         }
@@ -153,17 +173,6 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
             res = render_res
 
         return res
-
-    mime = gws.lib.mime.for_path(rpath)
-
-    if not _valid_mime_type(mime, project_assets, site_assets):
-        gws.log.error(f'invalid mime path={rpath!r} mime={mime!r}')
-        # NB: pretend the file doesn't exist
-        raise gws.base.web.error.NotFound()
-
-    gws.log.debug(f'serving {rpath!r} for {spath!r}')
-
-    return gws.ContentResponse(mime=mime, path=rpath, asAttachment=as_attachment)
 
 
 _DEFAULT_ALLOWED_MIME_TYPES = {

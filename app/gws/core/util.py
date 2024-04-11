@@ -14,10 +14,10 @@ import threading
 import time
 import urllib.parse
 
-import gws
-from . import const, log, types
+from typing import cast
+
+from . import const, log
 from .data import Data, is_data_object
-from gws.types import cast
 
 
 def exit(code: int = 255):
@@ -473,7 +473,7 @@ def to_lines(txt: str, comment: str = None) -> list[str]:
 
 ##
 
-def parse_acl(acl) -> types.Acl:
+def parse_acl(acl):
     """Parse an ACL config into an ACL.
 
     Args:
@@ -564,27 +564,43 @@ def is_dir(path):
 
 
 def read_file(path: str) -> str:
-    with open(path, 'rt', encoding='utf8') as fp:
-        return fp.read()
+    try:
+        with open(path, 'rt', encoding='utf8') as fp:
+            return fp.read()
+    except Exception as exc:
+        log.debug(f'error reading {path=} {exc=}')
+        raise
 
 
 def read_file_b(path: str) -> bytes:
-    with open(path, 'rb') as fp:
-        return fp.read()
+    try:
+        with open(path, 'rb') as fp:
+            return fp.read()
+    except Exception as exc:
+        log.debug(f'error reading {path=} {exc=}')
+        raise
 
 
 def write_file(path: str, s: str, user: int = None, group: int = None):
-    with open(path, 'wt', encoding='utf8') as fp:
-        fp.write(s)
-    _chown(path, user, group)
-    return path
+    try:
+        with open(path, 'wt', encoding='utf8') as fp:
+            fp.write(s)
+        _chown(path, user, group)
+        return path
+    except Exception as exc:
+        log.debug(f'error writing {path=} {exc=}')
+        raise
 
 
 def write_file_b(path: str, s: bytes, user: int = None, group: int = None):
-    with open(path, 'wb') as fp:
-        fp.write(s)
-    _chown(path, user, group)
-    return path
+    try:
+        with open(path, 'wb') as fp:
+            fp.write(s)
+        _chown(path, user, group)
+        return path
+    except Exception as exc:
+        log.debug(f'error writing {path=} {exc=}')
+        raise
 
 
 def dirname(path):
@@ -642,7 +658,7 @@ def printtemp(name: str) -> str:
     """Return a transient path name in the print directory."""
 
     name = str(os.getpid()) + '_' + random_string(64) + '_' + name
-    return gws.PRINT_DIR + '/' + name
+    return const.PRINT_DIR + '/' + name
 
 
 def random_string(size: int) -> str:

@@ -88,7 +88,7 @@ class Object(gws.base.action.Object):
         return self.end_export(args)
 
     def prepare_export(self, req: gws.IWebRequester, p: DownloadRequest) -> core.ExportArgs:
-        project = req.require_project(p.projectUid)
+        project = req.user.require_project(p.projectUid)
         package = self._get_package(p.packageUid, req.user, gws.Access.read)
         base_dir = gws.ensure_dir(f'{gws.VAR_DIR}/qfield/{gws.random_string(32)}')
 
@@ -136,7 +136,7 @@ class Object(gws.base.action.Object):
         return self.end_import(args)
 
     def prepare_import(self, req: gws.IWebRequester, p: UploadRequest, data: bytes):
-        project = req.require_project(p.projectUid)
+        project = req.user.require_project(p.projectUid)
         package = self._get_package(p.packageUid, req.user, gws.Access.write)
         base_dir = gws.ensure_dir(f'{gws.VAR_DIR}/qfield/{gws.random_string(32)}')
 

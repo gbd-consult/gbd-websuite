@@ -23,7 +23,7 @@ class Object(gws.base.auth.method.Object):
     def configure(self):
         self.uid = 'gws.plugin.auth_method.basic'
         self.realm = self.cfg('realm', default='Restricted Area')
-        self.root.app.register_middleware(self.uid, self, depends_on=['auth'])
+        self.register_middleware(self.uid, depends_on=['auth'])
 
     ##
 
@@ -33,18 +33,19 @@ class Object(gws.base.auth.method.Object):
     def exit_middleware(self, req, res):
         if res.status == 403 and req.isGet:
             res.set_status(401)
-            res.add_header('WWW-Authenticate', f'Basic realm={self.realm}, charset="UTF-8')
+            res.add_header('WWW-Authenticate', f'Basic realm={self.realm}, charset="UTF-8"')
 
     def open_session(self, req):
+        am = self.root.app.authMgr
         credentials = self._parse_header(req)
         if not credentials:
             return
         try:
-            user = self.authMgr.authenticate(self, credentials)
+            user = am.authenticate(self, credentials)
         except gws.ForbiddenError as exc:
             raise gws.base.web.error.Forbidden() from exc
         if user:
-            return self.authMgr.sessionMgr.create(self, user)
+            return am.sessionMgr.create(self, user)
 
     def close_session(self, req, res):
         pass

@@ -9,5 +9,4 @@ class Config(gws.Config):
 
 
 class Object(gws.Node, gws.IAuthMfa):
-    def configure(self):
-        self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
+    pass

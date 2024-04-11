@@ -95,7 +95,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('editGetModels')
     def get_models(self, req: gws.IWebRequester, p: GetModelsRequest) -> GetModelsResponse:
-        project = req.require_project(p.projectUid)
+        project = req.user.require_project(p.projectUid)
         models = self.root.app.modelMgr.editable_models(project, req.user)
         return GetModelsResponse(models=[gws.props(m, req.user) for m in models])
 
@@ -105,7 +105,7 @@ class Object(gws.base.action.Object):
             op=gws.ModelOperation.read,
             readMode=gws.ModelReadMode.list,
             user=req.user,
-            project=req.require_project(p.projectUid),
+            project=req.user.require_project(p.projectUid),
             maxDepth=1,
         )
 
@@ -137,7 +137,7 @@ class Object(gws.base.action.Object):
             op=gws.ModelOperation.read,
             readMode=gws.ModelReadMode.list,
             user=req.user,
-            project=req.require_project(p.projectUid),
+            project=req.user.require_project(p.projectUid),
             maxDepth=0,
         )
 
@@ -159,7 +159,7 @@ class Object(gws.base.action.Object):
             op=gws.ModelOperation.read,
             readMode=gws.ModelReadMode.form,
             user=req.user,
-            project=req.require_project(p.projectUid),
+            project=req.user.require_project(p.projectUid),
             maxDepth=1,
         )
 
@@ -176,7 +176,7 @@ class Object(gws.base.action.Object):
         mc = gws.ModelContext(
             op=gws.ModelOperation.create,
             user=req.user,
-            project=req.require_project(p.projectUid),
+            project=req.user.require_project(p.projectUid),
             maxDepth=1,
         )
 
@@ -198,7 +198,7 @@ class Object(gws.base.action.Object):
         mc = gws.ModelContext(
             op=gws.ModelOperation.create if is_new else gws.ModelOperation.update,
             user=req.user,
-            project=req.require_project(p.projectUid),
+            project=req.user.require_project(p.projectUid),
             maxDepth=1,
         )
 
@@ -220,7 +220,7 @@ class Object(gws.base.action.Object):
             op=gws.ModelOperation.read,
             readMode=gws.ModelReadMode.form,
             user=req.user,
-            project=req.require_project(p.projectUid),
+            project=req.user.require_project(p.projectUid),
             maxDepth=1,
         )
         features = feature.model.get_features([uid], mc)
@@ -235,7 +235,7 @@ class Object(gws.base.action.Object):
         mc = gws.ModelContext(
             op=gws.ModelOperation.delete,
             user=req.user,
-            project=req.require_project(p.projectUid),
+            project=req.user.require_project(p.projectUid),
         )
 
         feature = self.from_props(p.feature, gws.Access.delete, mc)
@@ -278,7 +278,7 @@ class Object(gws.base.action.Object):
 
         if model.uid not in template_map:
             template_map[model.uid] = gws.compact(
-                self.root.app.templateMgr.locate_template(
+                self.root.app.templateMgr.find_template(
                     model, model.parent, mc.project, user=mc.user, subject=f'feature.{v}')
                 for v in _LIST_VIEWS
             )

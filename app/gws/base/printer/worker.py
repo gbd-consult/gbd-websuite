@@ -111,9 +111,9 @@ class Object:
         return self.update_job(**args)
 
     def run(self):
-        resp = self.template.render(self.tri)
-        self.update_job(state=gws.JobState.complete, resultPath=resp.path)
-        return resp.path
+        res = self.template.render(self.tri)
+        self.update_job(state=gws.JobState.complete, resultPath=res.contentPath)
+        return res.contentPath
 
     def prepare_map(self, tri: gws.TemplateRenderInput, mp: gws.PrintMap) -> gws.MapRenderInput:
         planes = []

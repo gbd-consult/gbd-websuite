@@ -92,7 +92,7 @@ class Object(gws.base.template.Object):
         if not mro:
             # no map, just return the rendered qgis
             self.notify(tri, 'end_print')
-            return gws.ContentResponse(path=qgis_pdf_path)
+            return gws.ContentResponse(contentPath=qgis_pdf_path)
 
         # combine map and qgis
 
@@ -101,7 +101,7 @@ class Object(gws.base.template.Object):
         gws.lib.pdf.overlay(map_pdf_path, qgis_pdf_path, comb_path)
 
         self.notify(tri, 'end_print')
-        return gws.ContentResponse(path=comb_path)
+        return gws.ContentResponse(contentPath=comb_path)
 
     ##
 

@@ -84,6 +84,15 @@ class Node(Object, types.INode):
                 return obj
             obj = obj.parent
 
+    def enter_middleware(self, req):
+        pass
+
+    def exit_middleware(self, req, res):
+        return res
+
+    def register_middleware(self, name, depends_on=None):
+        self.root.app.middlewareMgr.register(self, name, depends_on)
+
 
 class Root(types.IRoot):
     def __init__(self):
@@ -310,9 +319,9 @@ def _make_props(obj, user: types.IUser):
         obj = vars(obj)
 
     if util.is_dict(obj):
-        return util.compact({k: _make_props(v, user) for k, v in obj.items()})
+        return util.compact({k: _make_props(v, user) for k, v in t.cast(dict, obj).items()})
 
     if util.is_list(obj):
-        return util.compact([_make_props(v, user) for v in obj])
+        return util.compact([_make_props(v, user) for v in t.cast(list, obj)])
 
     return None

@@ -60,7 +60,7 @@ class Object(gws.base.action.Object):
 
     def _get_features(self, req: gws.IWebRequester, p: Request) -> list[gws.FeatureProps]:
 
-        project = req.require_project(p.projectUid)
+        project = req.user.require_project(p.projectUid)
         search = gws.SearchQuery(project=project)
 
         if p.layerUids:
@@ -99,7 +99,7 @@ class Object(gws.base.action.Object):
 
         for res in results:
             templates = gws.compact(
-                self.root.app.templateMgr.locate_template(res.finder, res.layer, project, user=req.user, subject=f'feature.{v}')
+                self.root.app.templateMgr.find_template(res.finder, res.layer, project, user=req.user, subject=f'feature.{v}')
                 for v in p.views or _DEFAULT_VIEWS
             )
             res.feature.render_views(templates, user=req.user, project=project, layer=res.layer)

@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.action
+import gws.base.application.middleware
 import gws.base.auth
 import gws.base.client
 import gws.base.database
@@ -23,7 +24,6 @@ import gws.server
 import gws.server.monitor
 import gws.spec
 import gws.types as t
-from . import middleware
 
 _DEFAULT_LOCALE = ['en_CA']
 
@@ -129,15 +129,12 @@ class Config(gws.ConfigWithAccess):
 class Object(gws.Node, gws.IApplication):
     """Main Application object"""
 
-    projectMap: dict[str, gws.IProject]
     helperMap: dict[str, gws.INode]
 
-    _devopts: dict
+    _developerOptions: dict
 
     mpxUrl = ''
     mpxConfig = ''
-
-    middlewareMgr: middleware.Manager
 
     def configure(self):
         self._setenv('server.log.level', gws.env.GWS_LOG_LEVEL)
@@ -151,15 +148,15 @@ class Object(gws.Node, gws.IApplication):
         gws.log.info(self.versionString)
         gws.log.info('*' * 60)
 
-        self._devopts = self.cfg('developer') or {}
-        if self._devopts:
+        self._developerOptions = self.cfg('developer') or {}
+        if self._developerOptions:
             gws.log.warning('developer mode enabled')
 
         self.localeUids = self.cfg('locales') or _DEFAULT_LOCALE
         self.monitor = self.create_child(gws.server.monitor.Object, self.cfg('server.monitor'))
         self.metadata = gws.lib.metadata.from_config(self.cfg('metadata'))
 
-        self.middlewareMgr = middleware.Manager()
+        self.middlewareMgr = self.create_child(gws.base.application.middleware.Object)
 
         p = self.cfg('fonts')
         if p:
@@ -204,8 +201,7 @@ class Object(gws.Node, gws.IApplication):
 
         self.client = self.create_child(gws.base.client.Object, self.cfg('client'))
 
-        projects = self.create_children(gws.ext.object.project, self.cfg('projects'))
-        self.projectMap = {p.uid: p for p in projects}
+        self.projects = self.create_children(gws.ext.object.project, self.cfg('projects'))
 
     def post_configure(self):
         if self.cfg('server.mapproxy.enabled'):
@@ -222,17 +218,10 @@ class Object(gws.Node, gws.IApplication):
         if self.developer_option('server.auto_reload'):
             self.monitor.add_directory(gws.APP_DIR, r'\.py$')
 
-    def register_middleware(self, name, obj, depends_on=None):
-        self.middlewareMgr.register(name, obj, depends_on)
-
-    def middleware_objects(self):
-        return self.middlewareMgr.sorted_objects()
-
-    def projects_for_user(self, user):
-        return [p for p in self.projectMap.values() if user.can_use(p)]
-
     def project(self, uid):
-        return self.projectMap.get(uid)
+        for p in self.projects:
+            if p.uid == uid:
+                return p
 
     def helper(self, ext_type):
         if ext_type not in self.helperMap:
@@ -241,8 +230,8 @@ class Object(gws.Node, gws.IApplication):
             self.helperMap[ext_type] = p
         return self.helperMap.get(ext_type)
 
-    def developer_option(self, name):
-        return self._devopts.get(name)
+    def developer_option(self, key):
+        return self._developerOptions.get(key)
 
     def _setenv(self, key, val):
         if not val:

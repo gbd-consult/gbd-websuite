@@ -11,5 +11,4 @@ class Config(gws.Config):
 
 class Object(gws.Node, gws.IAuthMethod):
     def configure(self):
-        self.authMgr = t.cast(gws.IAuthManager, self.cfg('_defaultManager'))
         self.secure = self.cfg('secure')
