@@ -8,9 +8,9 @@ import gws.types as t
 
 
 def parse(text: str, default_crs: gws.ICrs = None, always_xy=False) -> list[gws.FeatureRecord]:
-    gws.time_start('featureinfo:parse')
+    gws.debug.time_start('featureinfo:parse')
     res = _parse(text, default_crs, always_xy)
-    gws.time_end()
+    gws.debug.time_end()
     return res
 
 
@@ -184,7 +184,6 @@ def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
             continue
 
         if el.name == 'inhalt':
-            gws.p(el[0])
             for attr_el in el[0]:
                 key = attr_el[0].text.strip()
                 val = attr_el[1].text.strip()

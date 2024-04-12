@@ -290,9 +290,9 @@ def http_request(url, **kwargs) -> HTTPResponse:
             gws.log.debug(f'HTTP_CACHED_{method}: url={url!r} path={cache_path!r} age={age}')
             return gws.unserialize_from_path(cache_path)
 
-    gws.time_start(f'HTTP_{method}={url!r}')
+    gws.debug.time_start(f'HTTP_{method}={url!r}')
     res = _http_request(method, url, kwargs)
-    gws.time_end()
+    gws.debug.time_end()
 
     if method == 'GET' and max_age and res.ok:
         gws.serialize_to_path(res, cache_path)

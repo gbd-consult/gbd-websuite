@@ -55,11 +55,11 @@ class Object(core.Object):
             gws.log.debug(f'render {self}: no features found')
             return
 
-        gws.time_start('render_svg:to_svg')
+        gws.debug.time_start('render_svg:to_svg')
         tags = []
         for f in features:
             tags.extend(f.to_svg(lri.view, f.views.get('label', ''), lri.style))
-        gws.time_end()
+        gws.debug.time_end()
 
         return tags
 

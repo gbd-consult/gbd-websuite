@@ -167,14 +167,14 @@ class Object(gws.base.action.Object):
             rotation=0
         )
 
-        gws.time_start(f'RENDER_BOX layer={p.layerUid} lri={lri!r}')
+        gws.debug.time_start(f'RENDER_BOX layer={p.layerUid} lri={lri!r}')
         try:
             lro = layer.render(lri)
             if lro and lro.content:
                 return gws.lib.mime.PNG, lro.content
         except:
             gws.log.exception()
-        gws.time_end()
+        gws.debug.time_end()
 
         return self._error_pixel
 
@@ -183,12 +183,12 @@ class Object(gws.base.action.Object):
         lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.xyz, user=req.user, x=p.x, y=p.y, z=p.z)
         lro = None
 
-        gws.time_start(f'RENDER_XYZ layer={p.layerUid} lri={lri!r}')
+        gws.debug.time_start(f'RENDER_XYZ layer={p.layerUid} lri={lri!r}')
         try:
             lro = layer.render(lri)
         except:
             gws.log.exception()
-        gws.time_end()
+        gws.debug.time_end()
 
         if not lro:
             return self._error_pixel

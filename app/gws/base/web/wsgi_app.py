@@ -50,9 +50,9 @@ def handle_request(environ) -> gws.IWebResponder:
         return handle_error(req, exc)
 
     gws.log.if_debug(_debug_repr, f'REQUEST_BEGIN {req.command}', req.params)
-    gws.time_start(f'REQUEST {req.command}')
+    gws.debug.time_start(f'REQUEST {req.command}')
     res = apply_middleware(root, req)
-    gws.time_end()
+    gws.debug.time_end()
     gws.log.if_debug(_debug_repr, f'REQUEST_END {req.command}', res)
 
     return res

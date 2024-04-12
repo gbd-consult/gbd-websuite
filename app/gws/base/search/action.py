@@ -92,7 +92,7 @@ class Object(gws.base.action.Object):
         if not results:
             return []
 
-        gws.time_start(f'SEARCH.FIND: formatting')
+        gws.debug.time_start(f'SEARCH.FIND: formatting')
 
         for res in results:
             res.feature.transform_to(search.bounds.crs)
@@ -104,7 +104,7 @@ class Object(gws.base.action.Object):
             )
             res.feature.render_views(templates, user=req.user, project=project, layer=res.layer)
 
-        gws.time_end()
+        gws.debug.time_end()
 
         propses = []
         mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=req.user)

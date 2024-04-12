@@ -43,10 +43,10 @@ class Object(gws.Node, gws.IDatabaseProvider):
             # but what if we only need a single table from a big schema?
             # @TODO add options for reflection
 
-            gws.time_start(f'AUTOLOAD {self.uid=} {schema=}')
+            gws.debug.time_start(f'AUTOLOAD {self.uid=} {schema=}')
             with self.connection() as conn:
                 md.reflect(conn, schema, resolve_fks=False, views=True)
-            gws.time_end()
+            gws.debug.time_end()
 
             return md
 
