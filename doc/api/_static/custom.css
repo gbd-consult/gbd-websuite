@@ -13,3 +13,37 @@ h1 a code.literal {
     background-color: transparent;
     padding: 0;
 }
+.logo img {
+    width: 100px;
+}
+
+h1 {
+    font-weight: 400;
+    font-size: 2.3em;
+}
+h2 {
+    font-weight: 400;
+    font-size: 1.6em;
+}
+h1 a code.literal {
+    background-color: transparent;
+    padding: 0;
+}
+div.sphinxsidebar h2,
+div.sphinxsidebar h3,
+div.sphinxsidebar h4 {
+    border: none;
+}
+
+dl.py > dt {
+    background-color: #f8f8f8;
+    padding: 0.5em;
+    border-left: 6px solid #f0f0f0;
+}
+
+code.literal {
+    padding: 0.1em 0.3em;
+}
+div.sphinxsidebarwrapper {
+    overflow-x: hidden;
+}

@@ -17,11 +17,26 @@ version = '.'.join(release.split('.')[:-1])
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-html_theme = 'furo'
+html_theme = 'sphinxdoc'
 html_static_path = ['_static']
 html_title = f"{project} {release}"
 html_logo = f"{BASE_DIR}/data/web/gws_logo.svg"
 html_css_files = ['custom.css']
+
+# https://www.sphinx-doc.org/en/master/usage/theming.html#builtin-themes
+
+html_theme_options = {
+    # 'nosidebar': False,
+    # 'sidebarwidth': False,
+    # 'body_min_width': False,
+    # 'body_max_width': False,
+    # 'navigation_with_keys': False,
+    # 'enable_search_shortcuts': False,
+    # 'globaltoc_collapse': False,
+    # 'globaltoc_includehidden': False,
+    # 'globaltoc_maxdepth': 1,
+}
+
 
 extensions = [
     'sphinx.ext.napoleon',
