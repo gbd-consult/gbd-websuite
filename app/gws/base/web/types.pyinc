@@ -1,0 +1,290 @@
+
+class RequestMethod(Enum):
+    """Web request method."""
+
+    GET = 'GET'
+    HEAD = 'HEAD'
+    POST = 'POST'
+    PUT = 'PUT'
+    DELETE = 'DELETE'
+    CONNECT = 'CONNECT'
+    OPTIONS = 'OPTIONS'
+    TRACE = 'TRACE'
+    PATCH = 'PATCH'
+
+
+class WebRequester:
+    """Web Requester object."""
+
+    environ: dict
+    """Request environment."""
+    method: RequestMethod
+    """Request method."""
+    root: 'Root'
+    """Object tree root."""
+    site: 'WebSite'
+    """Website the request is processed for."""
+    params: dict
+    """GET parameters."""
+    command: str
+    """Command name to execute."""
+
+    session: 'AuthSession'
+    """Current session."""
+    user: 'User'
+    """Current use."""
+
+    isApi: bool
+    """The request is an 'api' request."""
+    isGet: bool
+    """The request is a 'get' request."""
+    isPost: bool
+    """The request is a 'post' request."""
+    isSecure: bool
+    """The request is secure."""
+
+    def initialize(self):
+        """Initialize the Requester."""
+
+    def cookie(self, key: str, default: str = '') -> str:
+        """Get a cookie.
+
+        Args:
+            key: Cookie name.
+            default: Default value.
+
+        Returns:
+            A cookie value.
+        """
+
+    def header(self, key: str, default: str = '') -> str:
+        """Get a header.
+
+        Args:
+            key: Header name.
+            default: Default value.
+
+        Returns:
+            A header value.
+        """
+
+    def param(self, key: str, default: str = '') -> str:
+        """Get a GET parameter.
+
+        Args:
+            key: Parameter name.
+            default: Default value.
+
+        Returns:
+            A parameter value.
+        """
+
+    def env(self, key: str, default: str = '') -> str:
+        """Get an environment variable.
+
+        Args:
+            key: Variable name.
+            default: Default value.
+
+        Returns:
+            A variable value.
+        """
+
+    def data(self) -> Optional[bytes]:
+        """Get POST data.
+
+        Returns:
+            Data bytes or ``None`` if request is not a POST.
+        """
+
+    def text(self) -> Optional[str]:
+        """Get POST data as a text.
+
+        Returns:
+            Data string or ``None`` if request is not a POST.
+        """
+
+    def content_responder(self, response: ContentResponse) -> 'WebResponder':
+        """Return a Responder object for a content response.
+
+        Args:
+            response: Response object.
+
+        Returns:
+            A Responder.
+        """
+
+    def redirect_responder(self, response: RedirectResponse) -> 'WebResponder':
+        """Return a Responder object for a redirect response.
+
+        Args:
+            response: Response object.
+
+        Returns:
+            A Responder.
+        """
+
+    def api_responder(self, response: Response) -> 'WebResponder':
+        """Return a Responder object for an Api (structured) response.
+
+        Args:
+            response: Response object.
+
+        Returns:
+            A Responder.
+        """
+
+    def error_responder(self, exc: Exception) -> 'WebResponder':
+        """Return a Responder object for an Exception.
+
+        Args:
+            exc: An Exception.
+
+        Returns:
+            A Responder.
+        """
+
+    def url_for(self, request_path: str, **kwargs) -> str:
+        """Return a canonical Url for the given request path.
+
+        Args:
+            request_path: Request path.
+            **kwargs: Additional GET parameters.
+
+        Returns:
+            An URL.
+        """
+
+    def set_session(self, session: 'AuthSession'):
+        """Attach a session to the requester.
+
+        Args:
+            session: A Session object.
+        """
+
+
+class WebResponder:
+    """Web Responder object."""
+
+    status: int
+    """Response status."""
+
+    def send_response(self, environ: dict, start_response: Callable):
+        """Send the response to the client.
+
+        Args:
+            environ: WSGI environment.
+            start_response: WSGI ``start_response`` function.
+        """
+
+    def set_cookie(self, key: str, value: str, **kwargs):
+        """Set a cookie.
+
+        Args:
+            key: Cookie name.
+            value: Cookie value.
+            **kwargs: Cookie options.
+        """
+
+    def delete_cookie(self, key: str, **kwargs):
+        """Delete a cookie.
+
+        Args:
+            key: Cookie name.
+            **kwargs: Cookie options.
+        """
+
+    def set_status(self, status: int):
+        """Set the response status.
+
+        Args:
+            status: HTTP status code.
+        """
+
+    def add_header(self, key: str, value: str):
+        """Add a header.
+
+        Args:
+            key: Header name.
+            value: Header value.
+        """
+
+
+
+class WebDocumentRoot(Data):
+    """Web document root."""
+
+    dir: DirPath
+    """Local directory."""
+    allowMime: list[str]
+    """Allowed mime types."""
+    denyMime: list[str]
+    """Restricted mime types."""
+
+
+class WebRewriteRule(Data):
+    """Rewrite rule."""
+
+    pattern: Regex
+    """URL matching pattern."""
+    target: str
+    """Rule target, with dollar placeholders."""
+    options: dict
+    """Extra options."""
+    reversed: bool
+    """Reversed rewrite rule."""
+
+
+class WebCors(Data):
+    """CORS options."""
+
+    allowCredentials: bool
+    allowHeaders: str
+    allowMethods: str
+    allowOrigin: str
+
+
+class WebManager(Node):
+    """Web manager."""
+
+    sites: list['WebSite']
+    """Configured web sites."""
+
+    def site_from_environ(self, environ: dict) -> 'WebSite':
+        """Returns a site object for the given request environment.
+
+        Args:
+            environ: WSGI environment.
+
+        Returns:
+            A Site object.
+        """
+
+
+class WebSite(Node):
+    """Web site."""
+
+    assetsRoot: Optional[WebDocumentRoot]
+    """Root directory for assets."""
+    corsOptions: WebCors
+    """CORS options."""
+    errorPage: Optional['Template']
+    """Error page template."""
+    host: str
+    """Host name for this site."""
+    rewriteRules: list[WebRewriteRule]
+    """Rewrite rule."""
+    staticRoot: WebDocumentRoot
+    """Root directory for static files."""
+
+    def url_for(self, req: 'WebRequester', path: str, **kwargs) -> str:
+        """Rewrite a request path to an Url.
+
+        Args:
+            req: Web Requester.
+            path: Raw request path.
+            **kwargs: Extra GET params.
+
+        Returns:
+            A rewritten URL.
+        """

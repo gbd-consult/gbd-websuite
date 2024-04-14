@@ -9,7 +9,7 @@ class Config(gws.ConfigWithAccess):
     pass
 
 
-class Object(gws.Node, gws.IAction):
+class Object(gws.Action):
     """Generic action object, the parent of all action objects."""
 
     def props(self, user):

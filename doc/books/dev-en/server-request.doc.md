@@ -108,7 +108,7 @@ Here's a code snippet that illustrates the above concepts
         # request handler method for `hello`
         # all action handlers accept the request object and parameters structure
 
-        def api_hello(self, req: gws.IWebRequester, p: HelloParams) -> HelloResponse:
+        def api_hello(self, req: gws.WebRequester, p: HelloParams) -> HelloResponse:
 
             # check the params
 

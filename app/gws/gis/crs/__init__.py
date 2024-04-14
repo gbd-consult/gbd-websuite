@@ -12,7 +12,7 @@ import gws.types as t
 
 ##
 
-class Crs(gws.ICrs):
+class Object(gws.Crs):
     def __init__(self, **kwargs):
         vars(self).update(kwargs)
 
@@ -23,7 +23,7 @@ class Crs(gws.ICrs):
         return self.srid
 
     def __eq__(self, other):
-        return isinstance(other, Crs) and other.srid == self.srid
+        return isinstance(other, Object) and other.srid == self.srid
 
     def __repr__(self):
         return f'<crs:{self.srid}>'
@@ -52,7 +52,7 @@ class Crs(gws.ICrs):
 
 #
 
-WGS84 = Crs(
+WGS84 = Object(
     srid=4326,
     proj4text='+proj=longlat +datum=WGS84 +no_defs +type=crs',
     wkt='GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]',
@@ -75,7 +75,7 @@ WGS84 = Crs(
 
 WGS84_BOUNDS = gws.Bounds(crs=WGS84, extent=WGS84.extent)
 
-WEBMERCATOR = Crs(
+WEBMERCATOR = Object(
     srid=3857,
     proj4text='+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
     wkt='PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]',
@@ -116,20 +116,20 @@ class Error(gws.Error):
     pass
 
 
-def get(crs_name: gws.CrsName) -> t.Optional[gws.ICrs]:
+def get(crs_name: gws.CrsName) -> t.Optional[gws.Crs]:
     if not crs_name:
         return None
     return _get_crs(crs_name)
 
 
-def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, t.Optional[gws.ICrs]]:
+def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, t.Optional[gws.Crs]]:
     fmt, srid = _parse(crs_name)
     if not fmt:
         return gws.CrsFormat.none, None
     return fmt, _get_crs(srid)
 
 
-def require(crs_name: gws.CrsName) -> gws.ICrs:
+def require(crs_name: gws.CrsName) -> gws.Crs:
     crs = _get_crs(crs_name)
     if not crs:
         raise Error(f'invalid CRS {crs_name!r}')
@@ -139,7 +139,7 @@ def require(crs_name: gws.CrsName) -> gws.ICrs:
 ##
 
 
-def best_match(crs: gws.ICrs, supported_crs: list[gws.ICrs]) -> gws.ICrs:
+def best_match(crs: gws.Crs, supported_crs: list[gws.Crs]) -> gws.Crs:
     """Return a crs from the list that most closely matches the given crs.
 
     Args:
@@ -191,7 +191,7 @@ def _best_match(crs, supported_crs):
         return sup
 
 
-def best_bounds(crs: gws.ICrs, supported_bounds: list[gws.Bounds]) -> gws.Bounds:
+def best_bounds(crs: gws.Crs, supported_bounds: list[gws.Bounds]) -> gws.Bounds:
     """Return the best one from the list of supported bounds.
 
     Args:
@@ -209,11 +209,11 @@ def best_bounds(crs: gws.ICrs, supported_bounds: list[gws.Bounds]) -> gws.Bounds
 
 
 def best_axis(
-        crs: gws.ICrs,
+        crs: gws.Crs,
         protocol: gws.OwsProtocol = None,
         protocol_version: str = None,
         crs_format: gws.CrsFormat = None,
-        inverted_crs: t.Optional[list[gws.ICrs]] = None
+        inverted_crs: t.Optional[list[gws.Crs]] = None
 ) -> gws.Axis:
     """Return the 'best guess' axis under given circumstances.
 
@@ -313,7 +313,7 @@ def _transform_extent(ext, srid_from, srid_to):
 
 
 def _make_crs(srid, pp, au):
-    crs = Crs()
+    crs = Object()
 
     crs.srid = srid
 

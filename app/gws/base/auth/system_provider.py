@@ -4,7 +4,7 @@ import gws.types as t
 from . import user as user_module
 
 
-class Object(gws.Node, gws.IAuthProvider):
+class Object(gws.AuthProvider):
     users: dict
     type = 'system'
 
@@ -12,19 +12,19 @@ class Object(gws.Node, gws.IAuthProvider):
         self.uid = 'gws.base.auth.provider.system'
         self.allowedMethods = []
 
-        g = user_module.GuestUser(self, roles=[gws.ROLE_GUEST, gws.ROLE_ALL])
+        g = user_module.GuestUser(self, roles=[gws.c.ROLE_GUEST, gws.c.ROLE_ALL])
         g.attributes = {}
         g.displayName = ''
         g.localUid = 'guest'
         g.loginName = ''
-        g.uid = gws.join_uid(self.uid, g.localUid)
+        g.uid = gws.u.join_uid(self.uid, g.localUid)
 
         s = user_module.SystemUser(self, roles=[])
         s.attributes = {}
         s.displayName = ''
         s.localUid = 'system'
         s.loginName = ''
-        s.uid = gws.join_uid(self.uid, s.localUid)
+        s.uid = gws.u.join_uid(self.uid, s.localUid)
 
         self.users = {'guest': g, 'system': s}
 

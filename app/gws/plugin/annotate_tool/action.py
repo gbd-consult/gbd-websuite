@@ -31,14 +31,14 @@ class Object(gws.base.action.Object):
         self.labels = self.cfg('labels')
 
     def props(self, user):
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             storage=self.storage,
             labels=self.labels,
         )
 
     @gws.ext.command.api('annotateStorage')
-    def handle_storage(self, req: gws.IWebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
+    def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
         if not self.storage:
             raise gws.base.web.error.NotFound()
         return self.storage.handle_request(req, p)

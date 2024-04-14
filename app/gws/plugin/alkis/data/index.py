@@ -64,7 +64,7 @@ class Object(gws.Node):
     ALL_TABLES = TABLES_BASIC + TABLES_BUCHUNG + TABLES_EIGENTUEMER
 
     provider: gws.plugin.postgres.provider.Object
-    crs: gws.ICrs
+    crs: gws.Crs
     schema: str
     excludeGemarkung: set[str]
 
@@ -74,7 +74,7 @@ class Object(gws.Node):
     columnDct = {}
 
     def __getstate__(self):
-        return gws.omit(vars(self), 'saMeta')
+        return gws.u.omit(vars(self), 'saMeta')
 
     def configure(self):
         self.provider = gws.base.database.provider.get_for(self, ext_type='postgres')
@@ -391,7 +391,7 @@ class Object(gws.Node):
                     shape=gws.base.shape.from_xy(r['x'], r['y'], crs=self.crs),
                 )
 
-        return gws.compact(adresse_map.get(uid) for uid in lage_uids)
+        return gws.u.compact(adresse_map.get(uid) for uid in lage_uids)
 
     def find_flurstueck(self, q: dt.FlurstueckQuery) -> list[dt.Flurstueck]:
         qo = q.options or gws.Data()
@@ -705,7 +705,7 @@ class Object(gws.Node):
                 if pa.kind == dt.PART_BEWERTUNG and with_bewertung:
                     fs.bewertungList.append(pa)
 
-        return gws.compact(fs_map.get(uid) for uid in fs_uids)
+        return gws.u.compact(fs_map.get(uid) for uid in fs_uids)
 
 
 ##
@@ -863,7 +863,7 @@ def parse_fsnummer(s):
     m = re.match(_RE_FSNUMMER, s.strip())
     if not m:
         return None
-    return gws.compact(m.groupdict())
+    return gws.u.compact(m.groupdict())
 
 
 def text_search_clause(column, val, tso: gws.TextSearchOptions):

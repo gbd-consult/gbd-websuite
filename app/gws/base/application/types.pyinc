@@ -1,0 +1,68 @@
+class Monitor(Node):
+    """File Monitor facility."""
+
+    def add_directory(self, path: str, pattern: Regex):
+        """Add a directory to monitor.
+
+        Args:
+            path: Directory path.
+            pattern: Regex pattern for files to watch.
+        """
+
+    def add_file(self, path: str):
+        """Add a file to watch.
+
+        Args:
+            path: File path.
+        """
+
+    def start(self):
+        """Start the monitor."""
+
+
+class MiddlewareManager(Node):
+    def register(self, obj: Node, name: str, depends_on: Optional[list[str]] = None):
+        """Register an object as a middleware."""
+
+    def objects(self) -> list[Node]:
+        """Return a list of registered middleware objects."""
+
+
+class Application(Node):
+    """The main Application object."""
+
+    client: 'Client'
+    localeUids: list[str]
+    metadata: 'Metadata'
+    monitor: 'Monitor'
+    version: str
+    versionString: str
+    defaultPrinter: 'Printer'
+
+    actionMgr: 'ActionManager'
+    authMgr: 'AuthManager'
+    databaseMgr: 'DatabaseManager'
+    modelMgr: 'ModelManager'
+    printerMgr: 'PrinterManager'
+    searchMgr: 'SearchManager'
+    storageMgr: 'StorageManager'
+    templateMgr: 'TemplateManager'
+    webMgr: 'WebManager'
+    middlewareMgr: 'MiddlewareManager'
+
+    actions: list['Action']
+    projects: list['Project']
+    finders: list['Finder']
+    templates: list['Template']
+    printers: list['Printer']
+    models: list['Model']
+    owsServices: list['OwsService']
+
+    def project(self, uid: str) -> Optional['Project']:
+        """Get a Project object by its uid."""
+
+    def helper(self, ext_type: str) -> Optional['Node']:
+        """Get a Helper object by its extension type."""
+
+    def developer_option(self, key: str):
+        """Get a value of a developer option."""

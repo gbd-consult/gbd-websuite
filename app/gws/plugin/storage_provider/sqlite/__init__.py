@@ -14,7 +14,7 @@ class Config(gws.Config):
     """storage path"""
 
 
-class Object(gws.Node, gws.IStorageProvider):
+class Object(gws.StorageProvider):
     tableName = 'storage'
 
     dbPath: str
@@ -23,7 +23,7 @@ class Object(gws.Node, gws.IStorageProvider):
     table: sa.Table
 
     def configure(self):
-        _DEFAULT_STORE_PATH = gws.MISC_DIR + '/storage8.sqlite'
+        _DEFAULT_STORE_PATH = gws.c.MISC_DIR + '/storage8.sqlite'
         self.dbPath = self.cfg('path', default=_DEFAULT_STORE_PATH)
 
     def activate(self):
@@ -64,7 +64,7 @@ class Object(gws.Node, gws.IStorageProvider):
 
     def write(self, category, name, data, user_uid):
         rec = self.read(category, name)
-        tmp = gws.random_string(64)
+        tmp = gws.u.random_string(64)
 
         self._exec(sa.insert(self.table).values(
             category=category,

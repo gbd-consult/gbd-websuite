@@ -1,0 +1,97 @@
+"""Basic types.
+
+This module contains essential type definitions and utilities from the core GWS library.
+It should be imported in every gws module.
+"""
+
+from typing import (
+    TYPE_CHECKING,
+    TypeAlias,
+    cast,
+    Any,
+    Callable,
+    Iterable,
+    Iterator,
+    Literal,
+    Optional,
+    Protocol,
+)
+
+from collections.abc import (
+    Mapping,
+    Sequence,
+)
+
+from gws.types import Enum
+
+if TYPE_CHECKING:
+    import datetime
+    import sqlalchemy
+    import sqlalchemy.orm
+    import numpy.typing
+
+# mypy: disable-error-code="empty-body"
+
+
+from . import ext
+
+from .core import (
+    log,
+    debug,
+    env,
+    const as c,
+    util as u,
+)
+
+# @include core/_data.pyinc
+
+
+u.is_data_object = is_data_object
+u.to_data_object = to_data_object
+
+
+# @include core/_basic.pyinc
+# @include core/_access.pyinc
+# @include core/_error.pyinc
+
+# @include spec/types.pyinc
+
+# @include core/_tree.pyinc
+
+u.create_root = create_root
+u.make_props = make_props
+
+# @include lib/image/types.pyinc
+# @include lib/intl/types.pyinc
+# @include lib/job/types.pyinc
+# @include lib/metadata/types.pyinc
+# @include lib/style/types.pyinc
+# @include lib/xmlx/types.pyinc
+# @include lib/uom/types.pyinc
+
+# @include gis/crs/types.pyinc
+# @include gis/render/types.pyinc
+# @include gis/source/types.pyinc
+
+# @include base/feature/types.pyinc
+# @include base/shape/types.pyinc
+
+# @include base/action/types.pyinc
+# @include base/auth/types.pyinc
+
+# @include base/layer/types.pyinc
+# @include base/legend/types.pyinc
+# @include base/map/types.pyinc
+
+# @include base/model/types.pyinc
+# @include base/database/types.pyinc
+
+# @include base/ows/types.pyinc
+# @include base/printer/types.pyinc
+# @include base/project/types.pyinc
+# @include base/search/types.pyinc
+# @include base/storage/types.pyinc
+# @include base/template/types.pyinc
+# @include base/web/types.pyinc
+
+# @include base/application/types.pyinc

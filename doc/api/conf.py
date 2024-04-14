@@ -70,7 +70,7 @@ autoapi_dirs = [
 ]
 
 autoapi_root = f'py'
-autoapi_keep_files = False
+autoapi_keep_files = True
 
 autoapi_ignore = [
     '*___*',
@@ -78,6 +78,12 @@ autoapi_ignore = [
     '*wsgi_app*',
     '*_test*',
     '*_test/*',
+    '*_gws*',
+    '*config*',
+    '*gis*',
+    '*lib*',
+    '*plugin*',
+    '*test*',
 ]
 
 autoapi_template_dir = '_templates/_autoapi'
@@ -86,8 +92,13 @@ autoapi_add_toctree_entry = False
 
 autoapi_options = [
     'members',
+    # 'inherited-members',
     'undoc-members',
+    # 'private-members',
+    # 'special-members',
     'show-inheritance',
+    # 'show-inheritance-diagram',
+    # 'show-module-summary',
     'imported-members',
 ]
 

@@ -135,7 +135,7 @@ class Object(gws.Node):
     Finally, keep only keys which are members in the requested models.
     """
 
-    def export_as_csv(self, fs_list: list[dt.Flurstueck], groups: list[Group], user: gws.IUser):
+    def export_as_csv(self, fs_list: list[dt.Flurstueck], groups: list[Group], user: gws.User):
 
         field_names = []
 
@@ -165,7 +165,7 @@ class Object(gws.Node):
                 for fld in fields:
                     fld.from_record(feature, mc)
                 row = [feature.get(fld.name, '') for fld in fields]
-                h = gws.sha256(row)
+                h = gws.u.sha256(row)
                 if h not in row_hashes:
                     row_hashes.add(h)
                     writer.write_row(row)

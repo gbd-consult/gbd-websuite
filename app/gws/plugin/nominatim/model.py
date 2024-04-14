@@ -40,7 +40,7 @@ class Object(gws.base.model.dynamic_model.Object):
         self.loadingStrategy = gws.FeatureLoadingStrategy.all
 
     def props(self, user):
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             canCreate=False,
             canDelete=False,

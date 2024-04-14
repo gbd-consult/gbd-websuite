@@ -134,7 +134,7 @@ def _new(img: PIL.Image.Image):
     return Image(img)
 
 
-class Image(gws.IImage):
+class Image(gws.Image):
     """Class to convert, save and do basic manipulations on images."""
 
     def __init__(self, img: PIL.Image.Image):

@@ -26,7 +26,7 @@ class Object(gws.base.model.scalar_field.Object):
     supportsGeometrySearch = True
 
     geometryType: gws.GeometryType
-    geometryCrs: gws.ICrs
+    geometryCrs: gws.Crs
 
     def configure(self):
         setattr(self, 'geometryType', None)
@@ -66,7 +66,7 @@ class Object(gws.base.model.scalar_field.Object):
     ##
 
     def props(self, user):
-        return gws.merge(super().props(user), geometryType=self.geometryType)
+        return gws.u.merge(super().props(user), geometryType=self.geometryType)
 
     ##
 
@@ -109,17 +109,17 @@ class Object(gws.base.model.scalar_field.Object):
         return value.to_ewkb_hex()
 
     def python_to_prop(self, feature, value, mc):
-        return t.cast(gws.IShape, value).to_props()
+        return t.cast(gws.Shape, value).to_props()
 
     def _prop_to_shape(self, value):
         if isinstance(value, gws.base.shape.Shape):
             return value
-        if gws.is_data_object(value):
+        if gws.u.is_data_object(value):
             try:
                 return gws.base.shape.from_props(value)
             except gws.Error:
                 pass
-        if gws.is_dict(value):
+        if gws.u.is_dict(value):
             try:
                 return gws.base.shape.from_dict(value)
             except gws.Error:

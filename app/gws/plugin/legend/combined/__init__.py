@@ -26,7 +26,7 @@ class Object(gws.base.legend.Object):
         outputs = []
 
         for uid in self.layerUids:
-            layer = t.cast(gws.ILayer, self.root.get(uid, gws.ext.object.layer))
+            layer = t.cast(gws.Layer, self.root.get(uid, gws.ext.object.layer))
             if layer and layer.legend:
                 lro = layer.legend.render(args)
                 if lro:

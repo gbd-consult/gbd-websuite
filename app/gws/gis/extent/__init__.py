@@ -114,15 +114,15 @@ def intersect(a: gws.Extent, b: gws.Extent) -> bool:
     return a[0] <= b[2] and a[2] >= b[0] and a[1] <= b[3] and a[3] >= b[1]
 
 
-def transform(e: gws.Extent, crs_from: gws.ICrs, crs_to: gws.ICrs) -> gws.Extent:
+def transform(e: gws.Extent, crs_from: gws.Crs, crs_to: gws.Crs) -> gws.Extent:
     return crs_from.transform_extent(e, crs_to)
 
 
-def transform_from_wgs(e: gws.Extent, crs_to: gws.ICrs) -> gws.Extent:
+def transform_from_wgs(e: gws.Extent, crs_to: gws.Crs) -> gws.Extent:
     return gws.gis.crs.WGS84.transform_extent(e, crs_to)
 
 
-def transform_to_wgs(e: gws.Extent, crs_from: gws.ICrs) -> gws.Extent:
+def transform_to_wgs(e: gws.Extent, crs_from: gws.Crs) -> gws.Extent:
     return crs_from.transform_extent(e, gws.gis.crs.WGS84)
 
 

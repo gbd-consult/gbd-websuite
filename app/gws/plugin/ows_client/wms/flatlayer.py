@@ -30,7 +30,7 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.image.Object):
     provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
-    sourceCrs: gws.ICrs
+    sourceCrs: gws.Crs
 
     imageLayers: list[gws.SourceLayer]
     searchLayers: list[gws.SourceLayer]
@@ -77,7 +77,7 @@ class Object(gws.base.layer.image.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        blist = gws.compact(sl.wgsBounds for sl in self.imageLayers)
+        blist = gws.u.compact(sl.wgsBounds for sl in self.imageLayers)
         wgs_bounds = gws.gis.bounds.union(blist) if blist else gws.gis.crs.WGS84_BOUNDS
         self.bounds = gws.gis.bounds.transform(wgs_bounds, self.mapCrs)
         return True
@@ -104,7 +104,7 @@ class Object(gws.base.layer.image.Object):
     def configure_legend(self):
         if super().configure_legend():
             return True
-        urls = gws.compact(sl.legendUrl for sl in self.imageLayers)
+        urls = gws.u.compact(sl.legendUrl for sl in self.imageLayers)
         if urls:
             self.legend = self.create_child(gws.ext.object.legend, type='remote', urls=urls)
             return True
@@ -143,14 +143,14 @@ class Object(gws.base.layer.image.Object):
         op = self.provider.get_operation(gws.OwsVerb.GetMap)
         args = self.provider.prepare_operation(op)
 
-        req = gws.merge(
+        req = gws.u.merge(
             args.params,
             transparent=True,
             layers=','.join(layers),
             url=args.url,
         )
 
-        source_uid = mc.source(gws.compact({
+        source_uid = mc.source(gws.u.compact({
             'type': 'wms',
             'supported_srs': [self.sourceCrs.epsg],
             'concurrent_requests': self.provider.maxRequests,

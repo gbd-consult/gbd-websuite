@@ -1,0 +1,408 @@
+
+class User(Object):
+    """User object."""
+
+    attributes: dict
+    """Custom user attributes."""
+    authToken: str
+    """Token used for authorization."""
+    displayName: str
+    """User display name."""
+    isGuest: bool
+    """User is a Guest."""
+    localUid: str
+    """User uid within its authorization provider."""
+    loginName: str
+    """User login name."""
+    provider: 'AuthProvider'
+    """User authorization provider."""
+    roles: set[str]
+    """User roles."""
+    uid: str
+    """Global user uid."""
+
+    def acl_bit(self, access: 'Access', obj: 'Object') -> Optional[int]:
+        """Get the ACL bit for a specific object.
+
+        Args:
+            access: Access mode.
+            obj: Requested object.
+
+        Returns:
+            ``1`` or ``0`` if the user's permissions have the bit and ``None`` otherwise.
+        """
+
+    def can(self, access: Access, obj: 'Object', *context) -> bool:
+        """Check if the user can access an object.
+
+        Args:
+            access: Access mode.
+            obj: Requested object.
+            *context: Further objects to check.
+
+        Returns:
+            ``True`` is access is granted.
+        """
+
+    def can_create(self, obj: 'Object', *context) -> bool:
+        """Check if the user has "create" permission on an object."""
+
+    def can_delete(self, obj: 'Object', *context) -> bool:
+        """Check if the user has "delete" permission on an object."""
+
+    def can_read(self, obj: 'Object', *context) -> bool:
+        """Check if the user has "read" permission on an object."""
+
+    def can_use(self, obj: 'Object', *context) -> bool:
+        """Check if the user has "read" permission on an object."""
+
+    def can_write(self, obj: 'Object', *context) -> bool:
+        """Check if the user has "write" permission on an object."""
+
+    def can_edit(self, obj: 'Object', *context) -> bool:
+        """Check if the user has "edit" permissions on an object."""
+
+    def acquire(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Optional['Object']:
+        """Get a readable object by uid.
+
+        Args:
+            uid: Object uid.
+            classref: Class reference. If provided, ensures that the object matches the reference.
+            access: Access mode, assumed ``Access.read`` if omitted.
+
+        Returns:
+            A readable object or ``None`` if the object does not exists or user doesn't have a permission.
+        """
+
+    def require(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> 'Object':
+        """Get a readable object by uid and fail if not found.
+
+        Args:
+            uid: Object uid.
+            classref: Class reference. If provided, ensures that the object matches the reference.
+            access: Access mode, assumed ``Access.read`` if omitted.
+
+        Returns:
+            A readable object.
+
+        Raises:
+            ``NotFoundError`` if the object doesn't exist.
+            ``ForbiddenError`` if the user cannot read the object.
+        """
+
+    def require_project(self, uid: str = None) -> 'Project':
+        """Get a readable Project object.
+
+        Args:
+            uid: Project uid.
+
+        Returns:
+            A Project object.
+        """
+
+    def require_layer(self, uid = None) -> 'Layer':
+        """Get a readable Layer object.
+
+        Args:
+            uid: Layer uid.
+
+        Returns:
+            A Layer object.
+        """
+
+
+class AuthManager(Node):
+    """Authentication manager."""
+
+    guestSession: 'AuthSession'
+    """Preconfigured Guest session."""
+
+    guestUser: 'User'
+    """Preconfigured Guest user."""
+    systemUser: 'User'
+    """Preconfigured System user."""
+
+    providers: list['AuthProvider']
+    """Authentication providers."""
+    methods: list['AuthMethod']
+    """Authentication methods."""
+    mfa: list['AuthMfa']
+    """Authentication MFA handlers."""
+
+    sessionMgr: 'AuthSessionManager'
+    """Session manager."""
+
+    def authenticate(self, method: 'AuthMethod', credentials: Data) -> Optional['User']:
+        """Authenticate a user.
+
+        Args:
+            method: Authentication method.
+            credentials: Credentials object.
+
+        Returns:
+            An authenticated User or ``None`` if authentication failed.
+        """
+
+    def get_user(self, user_uid: str) -> Optional['User']:
+        """Get a User by its global uid.
+
+        Args:
+            user_uid: Global user uid.
+        Returns:
+            A User or ``None``.
+        """
+
+    def get_provider(self, uid: str) -> Optional['AuthProvider']:
+        """Get an authentication Provider by its uid.
+
+        Args:
+            uid: Uid.
+        Returns:
+            A Provider or ``None``.
+        """
+
+    def get_method(self, uid: str) -> Optional['AuthMethod']:
+        """Get an authentication Method by its uid.
+
+        Args:
+            uid: Uid.
+        Returns:
+            A Method or ``None``.
+        """
+
+    def get_mfa(self, uid: str) -> Optional['AuthMfa']:
+        """Get an authentication Provider by its uid.
+
+        Args:
+            uid: Uid.
+        Returns:
+            A Provider or ``None``.
+        """
+
+    def serialize_user(self, user: 'User') -> str:
+        """Return a string representation of a User.
+
+        Args:
+            user: A User object.
+
+        Returns:
+            A json string.
+        """
+
+    def unserialize_user(self, ser: str) -> Optional['User']:
+        """Restore a User object from a serialized representation.
+
+        Args:
+            ser: A json string.
+
+        Returns:
+            A User object.
+        """
+
+
+class AuthMethod(Node):
+    """Authentication Method."""
+
+    authMgr: 'AuthManager'
+
+
+    secure: bool
+    """Method is only allowed in a secure context."""
+
+    def open_session(self, req: 'WebRequester') -> Optional['AuthSession']:
+        """Attempt to open a Session for a Requester.
+
+        Args:
+            req: Requester object.
+
+        Returns:
+            A Session or ``None``.
+        """
+
+    def close_session(self, req: 'WebRequester', res: 'WebResponder') -> bool:
+        """Close a previously opened Session.
+
+        Args:
+            req: Requester object.
+            res: Responder object.
+
+        Returns:
+            True if the Session was successfully closed.
+        """
+
+
+class AuthMfa(Node):
+    """Authentication MFA handler."""
+
+    autoStart: bool
+    lifeTime: int
+    maxAttempts: int
+    maxRestarts: int
+
+    def start(self, user: 'User'): ...
+
+    def is_valid(self, user: 'User') -> bool: ...
+
+    def cancel(self, user: 'User'): ...
+
+    def verify(self, user: 'User', request: Data) -> bool: ...
+
+    def restart(self, user: 'User') -> bool: ...
+
+
+class AuthProvider(Node):
+    """Authentication Provider."""
+
+    allowedMethods: list[str]
+    """List of Method types allowed to be used with this Provider."""
+
+    def get_user(self, local_uid: str) -> Optional['User']:
+        """Get a User from its local uid.
+
+        Args:
+            local_uid: User local uid.
+
+        Returns:
+            A User or ``None``.
+        """
+
+    def authenticate(self, method: 'AuthMethod', credentials: Data) -> Optional['User']:
+        """Authenticate a user.
+
+        Args:
+            method: Authentication method.
+            credentials: Credentials object.
+
+        Returns:
+            An authenticated User or ``None`` if authentication failed.
+        """
+
+    def serialize_user(self, user: 'User') -> str:
+        """Return a string representation of a User.
+
+        Args:
+            user: A User object.
+
+        Returns:
+            A json string.
+        """
+
+    def unserialize_user(self, ser: str) -> Optional['User']:
+        """Restore a User object from a serialized representation.
+
+        Args:
+            ser: A json string.
+
+        Returns:
+            A User object.
+        """
+
+
+class AuthSession:
+    """Authentication session."""
+
+    uid: str
+    """Session uid."""
+    method: Optional['AuthMethod']
+    """Authentication method that created the session."""
+    user: 'User'
+    """Authorized User."""
+    data: dict
+    """Session data."""
+    created: 'datetime.datetime'
+    """Session create time."""
+    updated: 'datetime.datetime'
+    """Session update time."""
+    isChanged: bool
+    """Session has changed since the last update.."""
+
+    def get(self, key: str, default=None):
+        """Get a session data value.
+
+        Args:
+            key: Value name.
+            default: Default value.
+
+        Returns:
+            A value or the default.
+        """
+
+    def set(self, key: str, value):
+        """Set a session data value.
+
+        Args:
+            key: Value name.
+            value: A value.
+        """
+
+
+class AuthSessionManager(Node):
+    """Authentication session Manager."""
+
+    lifeTime: int
+    """Session lifetime in seconds."""
+
+    def create(self, method: 'AuthMethod', user: 'User', data: Optional[dict] = None) -> 'AuthSession':
+        """Create a new Session,
+
+        Args:
+            method: Auth Method that creates the Session.
+            user: 'User' for which the Session is created.
+            data: Session data.
+
+        Returns:
+            A new Session.
+        """
+
+    def delete(self, sess: 'AuthSession'):
+        """Delete a Session.
+
+        Args:
+            sess: Session object.
+        """
+
+    def delete_all(self):
+        """Delete all Sessions.
+        """
+
+    def get(self, uid: str) -> Optional['AuthSession']:
+        """Get Session by its uid.
+
+        Args:
+            uid: Session uid.
+
+        Returns:
+            A Session or ``None``.
+        """
+
+    def get_valid(self, uid: str) -> Optional['AuthSession']:
+        """Get a valid Session by its uid.
+
+        Args:
+            uid: Session uid.
+
+        Returns:
+            A Session or ``None`` if uid does not exists or the Session is not valid.
+        """
+
+    def get_all(self) -> list['AuthSession']:
+        """Get all sessions."""
+
+    def save(self, sess: 'AuthSession'):
+        """Save the Session state into a persistent storage.
+
+        Args:
+            sess: Session object.
+        """
+
+    def touch(self, sess: 'AuthSession'):
+        """Update the Session last activity timestamp.
+
+        Args:
+            sess: Session object.
+        """
+
+    def cleanup(self):
+        """Remove invalid Sessions from the storage.
+        """
+

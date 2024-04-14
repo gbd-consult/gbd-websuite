@@ -7,7 +7,7 @@ import gws.lib.osx
 
 from . import parser
 
-STORE_PATH = gws.CONFIG_DIR + '/config.pickle'
+STORE_PATH = gws.c.CONFIG_DIR + '/config.pickle'
 ROOT_NAME = 'gws_root_object'
 
 
@@ -18,7 +18,7 @@ def configure(
         before_init=None,
         fallback_config=None,
         with_spec_cache=True,
-) -> gws.IRoot:
+) -> gws.Root:
     """Configure the server"""
 
     def _print(a):
@@ -99,28 +99,28 @@ def configure(
     raise gws.ConfigurationError('configuration failed')
 
 
-def initialize(specs, parsed_config) -> gws.IRoot:
-    root_obj = gws.create_root_object(specs)
+def initialize(specs, parsed_config) -> gws.Root:
+    root_obj = gws.u.create_root(specs)
     root_obj.create_application(parsed_config)
     root_obj.post_initialize()
     return root_obj
 
 
-def activate(root_obj: gws.IRoot):
+def activate(root_obj: gws.Root):
     root_obj.activate()
-    return gws.set_app_global(ROOT_NAME, root_obj)
+    return gws.u.set_app_global(ROOT_NAME, root_obj)
 
 
 def deactivate():
-    return gws.delete_app_global(ROOT_NAME)
+    return gws.u.delete_app_global(ROOT_NAME)
 
 
-def store(root_obj: gws.IRoot, path=None) -> str:
+def store(root_obj: gws.Root, path=None) -> str:
     path = path or STORE_PATH
     gws.log.debug(f'writing config to {path!r}')
     try:
         gws.lib.jsonx.to_path(f'{path}.syspath.json', sys.path)
-        gws.serialize_to_path(root_obj, path)
+        gws.u.serialize_to_path(root_obj, path)
         return path
     except Exception as exc:
         raise gws.ConfigurationError('unable to store configuration') from exc
@@ -145,7 +145,7 @@ def _load(path) -> gws.Root:
     ts = gws.lib.osx.utime()
     ms = gws.lib.osx.process_rss_size()
 
-    root_obj = gws.unserialize_from_path(path)
+    root_obj = gws.u.unserialize_from_path(path)
 
     activate(root_obj)
 
@@ -162,7 +162,7 @@ def root() -> gws.Root:
     def _err():
         raise gws.Error('no configuration root found')
 
-    return gws.get_app_global(ROOT_NAME, _err)
+    return gws.u.get_app_global(ROOT_NAME, _err)
 
 
 _DEFAULT_CONFIG_PATHS = [
@@ -178,7 +178,7 @@ def real_config_path(config_path):
     if p:
         return p
     for p in _DEFAULT_CONFIG_PATHS:
-        if gws.is_file(p):
+        if gws.u.is_file(p):
             return p
 
 
@@ -192,5 +192,5 @@ def real_manifest_path(manifest_path):
     if p:
         return p
     for p in _DEFAULT_MANIFEST_PATHS:
-        if gws.is_file(p):
+        if gws.u.is_file(p):
             return p

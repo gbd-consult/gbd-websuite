@@ -9,7 +9,7 @@ import gws.types as t
 from . import core, worker
 
 
-class Object(gws.Node, gws.IPrinterManager):
+class Object(gws.PrinterManager):
     def printers_for_project(self, project, user):
         ls = [p for p in project.printers if user.can_use(p)]
         ls.extend(p for p in self.root.app.printers if user.can_use(p))
@@ -18,7 +18,7 @@ class Object(gws.Node, gws.IPrinterManager):
         return [self.root.app.defaultPrinter]
 
     def start_job(self, request, user):
-        request_path = gws.serialize_to_path(request, gws.printtemp('print.pickle'))
+        request_path = gws.u.serialize_to_path(request, gws.u.printtemp('print.pickle'))
 
         job = gws.lib.job.create(
             self.root,
@@ -77,5 +77,5 @@ class Object(gws.Node, gws.IPrinterManager):
             progress=_progress(),
             stepType=payload.get('stepType', ''),
             stepName=payload.get('stepName', ''),
-            url=gws.action_url_path('printerResult', jobUid=job.uid, projectUid=payload.get('projectUid')) + _url_path_suffix
+            url=gws.u.action_url_path('printerResult', jobUid=job.uid, projectUid=payload.get('projectUid')) + _url_path_suffix
         )

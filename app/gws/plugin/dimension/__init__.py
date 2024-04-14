@@ -33,7 +33,7 @@ class Object(gws.base.action.Object):
             gws.base.storage.Object, self.cfg('storage'), categoryName='Dimension')
 
     def props(self, user):
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             layerUids=self.cfg('layerUids') or [],
             pixelTolerance=self.cfg('pixelTolerance'),
@@ -41,7 +41,7 @@ class Object(gws.base.action.Object):
         )
 
     @gws.ext.command.api('dimensionStorage')
-    def handle_storage(self, req: gws.IWebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
+    def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
         if not self.storage:
             raise gws.NotFoundError()
         return self.storage.handle_request(req, p)

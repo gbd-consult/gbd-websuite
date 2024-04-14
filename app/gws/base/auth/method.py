@@ -9,6 +9,6 @@ class Config(gws.Config):
     """use only with SSL"""
 
 
-class Object(gws.Node, gws.IAuthMethod):
+class Object(gws.AuthMethod):
     def configure(self):
         self.secure = self.cfg('secure')

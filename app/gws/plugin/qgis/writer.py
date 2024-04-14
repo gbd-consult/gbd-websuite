@@ -58,7 +58,7 @@ def add_variables(source_text: str, d: dict) -> str:
     props.Variables.append(vvals)
 
     for k, v in sorted(vs.items()):
-        v = gws.to_str(v).replace('\n', ' ').strip()
+        v = gws.u.to_str(v).replace('\n', ' ').strip()
         if v:
             tag = bs.new_tag('value')
             tag.append(k)

@@ -56,7 +56,7 @@ class Adresse(Object):
 
     x: float
     y: float
-    shape: gws.IShape
+    shape: gws.Shape
 
 
 class FlurstueckRecord(Record):
@@ -117,7 +117,7 @@ class Flurstueck(Entity):
     geom: t.Any
     x: float
     y: float
-    shape: gws.IShape
+    shape: gws.Shape
 
 
 class BuchungsblattRecord(Record):
@@ -435,7 +435,7 @@ class FlurstueckQuery(gws.Data):
     personName: str
     personVorname: str
 
-    shape: gws.IShape
+    shape: gws.Shape
 
     uids: list[str]
 

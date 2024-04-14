@@ -32,14 +32,14 @@ def init():
         _STATE['inited'] = True
     except:
         gws.log.exception('UNABLE TO LOAD CONFIGURATION')
-        gws.exit(1)
+        gws.u.exit(1)
 
 
 def reload():
     _STATE['inited'] = False
 
 
-def handle_request(environ) -> gws.IWebResponder:
+def handle_request(environ) -> gws.WebResponder:
     root = gws.config.root()
     site = root.app.webMgr.site_from_environ(environ)
     req = gws.base.web.wsgi.Requester(root, environ, site)
@@ -58,7 +58,7 @@ def handle_request(environ) -> gws.IWebResponder:
     return res
 
 
-def apply_middleware(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebResponder:
+def apply_middleware(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
     res = None
     done = []
 
@@ -88,7 +88,7 @@ def apply_middleware(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebRespond
 
 
 def _debug_repr(prefix, s):
-    s = repr(gws.to_dict(s))
+    s = repr(gws.u.to_dict(s))
     m = 400
     n = len(s)
     if n <= m:
@@ -96,7 +96,7 @@ def _debug_repr(prefix, s):
     return prefix + ': ' + s[:m] + ' [...' + str(n - m) + ' more]'
 
 
-def handle_error(req: gws.IWebRequester, exc: Exception) -> gws.IWebResponder:
+def handle_error(req: gws.WebRequester, exc: Exception) -> gws.WebResponder:
     if isinstance(exc, gws.base.web.error.HTTPException):
         return handle_http_error(req, exc)
 
@@ -121,7 +121,7 @@ def handle_error(req: gws.IWebRequester, exc: Exception) -> gws.IWebResponder:
     return handle_http_error(req, gws.base.web.error.InternalServerError())
 
 
-def handle_http_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPException) -> gws.IWebResponder:
+def handle_http_error(req: gws.WebRequester, exc: gws.base.web.error.HTTPException) -> gws.WebResponder:
     #
     # @TODO: image errors
 
@@ -132,7 +132,7 @@ def handle_http_error(req: gws.IWebRequester, exc: gws.base.web.error.HTTPExcept
             status=exc.code,
             error=gws.ResponseError(
                 code=exc.code,
-                info=gws.get(exc, 'description', ''))))
+                info=gws.u.get(exc, 'description', ''))))
 
     if not req.site.errorPage:
         return req.error_responder(exc)
@@ -150,7 +150,7 @@ _relaxed_read_options = {
 }
 
 
-def handle_action(root: gws.IRoot, req: gws.IWebRequester) -> gws.IWebResponder:
+def handle_action(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
     if not req.command:
         raise gws.base.web.error.NotFound()
 

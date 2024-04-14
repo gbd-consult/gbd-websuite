@@ -3,7 +3,7 @@ import gws.spec
 
 
 def prepare_cli_action(
-        root: gws.IRoot,
+        root: gws.Root,
         command_category: gws.CommandCategory,
         command_name: str,
         params: dict,
@@ -25,7 +25,7 @@ def prepare_cli_action(
     return fn, request
 
 
-class Object(gws.Node, gws.IActionManager):
+class Object(gws.ActionManager):
 
     def actions_for_project(self, project, user):
         d = {}
@@ -79,14 +79,14 @@ class Object(gws.Node, gws.IActionManager):
 
     # @TODO build indexes for this
 
-    def _find_by_ext_name(self, obj, ext_name: str, user: gws.IUser):
+    def _find_by_ext_name(self, obj, ext_name: str, user: gws.User):
         for a in obj.actions:
             if a.extName == ext_name:
                 if not user.can_use(a):
                     raise gws.ForbiddenError(f'action {ext_name!r}: forbidden in {obj!r}')
                 return a
 
-    def _find_by_ext_type(self, obj, ext_type: str, user: gws.IUser):
+    def _find_by_ext_type(self, obj, ext_type: str, user: gws.User):
         for a in obj.actions:
             if a.extType == ext_type:
                 if not user.can_use(a):

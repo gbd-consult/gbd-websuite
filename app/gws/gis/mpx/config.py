@@ -6,7 +6,7 @@ import gws
 import gws.lib.osx
 import gws.types as t
 
-CONFIG_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
+CONFIG_PATH = gws.c.CONFIG_DIR + '/mapproxy.yaml'
 
 DEFAULT_CONFIG = {
     "services": {
@@ -54,9 +54,9 @@ class _Config:
                 'axis_order_en': ['EPSG:4326']
             },
             'cache': {
-                'base_dir': gws.MAPPROXY_CACHE_DIR,
-                'lock_dir': gws.ensure_dir(gws.TRANSIENT_DIR + '/mpx_locks_' + gws.random_string(16)),
-                'tile_lock_dir': gws.ensure_dir(gws.TRANSIENT_DIR + '/mpx_tile_locks_' + gws.random_string(16)),
+                'base_dir': gws.c.MAPPROXY_CACHE_DIR,
+                'lock_dir': gws.u.ensure_dir(gws.c.TRANSIENT_DIR + '/mpx_locks_' + gws.u.random_string(16)),
+                'tile_lock_dir': gws.u.ensure_dir(gws.c.TRANSIENT_DIR + '/mpx_tile_locks_' + gws.u.random_string(16)),
                 'concurrent_tile_creators': 1,
                 'max_tile_limit': 5000,
 
@@ -97,7 +97,7 @@ class _Config:
             if isinstance(v, tuple):
                 c[k] = list(v)
 
-        uid = kind + '_' + gws.sha256(c)
+        uid = kind + '_' + gws.u.sha256(c)
 
         # clients might add their hash params starting with '$'
         c = {
@@ -146,7 +146,7 @@ class _Config:
         return d
 
 
-def create(root: gws.IRoot):
+def create(root: gws.Root):
     mc = _Config()
 
     for layer in root.find_all(gws.ext.object.layer):
@@ -158,17 +158,17 @@ def create(root: gws.IRoot):
     if not cfg.get('layers'):
         return
 
-    crs: list[gws.ICrs] = []
+    crs: list[gws.Crs] = []
     for p in root.find_all(gws.ext.object.map):
-        crs.append(t.cast(gws.IMap, p).bounds.crs)
+        crs.append(t.cast(gws.Map, p).bounds.crs)
     for p in root.find_all(gws.ext.object.owsService):
-        crs.extend(gws.get(p, 'supported_crs', default=[]))
+        crs.extend(gws.u.get(p, 'supported_crs', default=[]))
     cfg['services']['wms']['srs'] = sorted(set(c.epsg for c in crs))
 
     return cfg
 
 
-def create_and_save(root: gws.IRoot):
+def create_and_save(root: gws.Root):
     cfg = create(root)
 
     if not cfg:
@@ -185,7 +185,7 @@ def create_and_save(root: gws.IRoot):
 
     # make sure the config is ok before starting the server!
     test_path = CONFIG_PATH + '.test.yaml'
-    gws.write_file(test_path, cfg_str)
+    gws.u.write_file(test_path, cfg_str)
 
     try:
         make_wsgi_app(test_path)
@@ -195,6 +195,6 @@ def create_and_save(root: gws.IRoot):
     gws.lib.osx.unlink(test_path)
 
     # write into the real config path
-    gws.write_file(CONFIG_PATH, cfg_str)
+    gws.u.write_file(CONFIG_PATH, cfg_str)
 
     return cfg

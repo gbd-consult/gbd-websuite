@@ -22,7 +22,7 @@ class Object(gws.base.model.widget.Object):
     supportsTableView = False
 
     def props(self, user):
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             isInline=self.cfg('isInline', default=False),
             withText=self.cfg('withText', default=False),

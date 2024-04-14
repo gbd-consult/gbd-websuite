@@ -40,7 +40,7 @@ class CliParams(gws.CliParams):
 class Object(gws.base.action.Object):
 
     @gws.ext.command.api('printerStart')
-    def start_print(self, req: gws.IWebRequester, p: gws.PrintRequest) -> gws.PrintJobResponse:
+    def start_print(self, req: gws.WebRequester, p: gws.PrintRequest) -> gws.PrintJobResponse:
         """Start a background print job"""
 
         mgr = t.cast(manager.Object, self.root.app.printerMgr)
@@ -48,7 +48,7 @@ class Object(gws.base.action.Object):
         return mgr.status(job)
 
     @gws.ext.command.api('printerStatus')
-    def get_status(self, req: gws.IWebRequester, p: JobRequest) -> gws.PrintJobResponse:
+    def get_status(self, req: gws.WebRequester, p: JobRequest) -> gws.PrintJobResponse:
         """Query the print job status"""
 
         mgr = t.cast(manager.Object, self.root.app.printerMgr)
@@ -58,7 +58,7 @@ class Object(gws.base.action.Object):
         return mgr.status(job)
 
     @gws.ext.command.api('printerCancel')
-    def cancel(self, req: gws.IWebRequester, p: JobRequest) -> gws.PrintJobResponse:
+    def cancel(self, req: gws.WebRequester, p: JobRequest) -> gws.PrintJobResponse:
         """Cancel a print job"""
 
         mgr = t.cast(manager.Object, self.root.app.printerMgr)
@@ -69,7 +69,7 @@ class Object(gws.base.action.Object):
         return mgr.status(job)
 
     @gws.ext.command.get('printerResult')
-    def get_result(self, req: gws.IWebRequester, p: JobRequest) -> gws.ContentResponse:
+    def get_result(self, req: gws.WebRequester, p: JobRequest) -> gws.ContentResponse:
         """Get the result of a print job as a byte stream"""
 
         mgr = t.cast(manager.Object, self.root.app.printerMgr)
@@ -101,5 +101,5 @@ class Object(gws.base.action.Object):
 
         mgr = t.cast(manager.Object, self.root.app.printerMgr)
         res_path = mgr.run_job(request, root.app.authMgr.systemUser)
-        res = gws.read_file_b(res_path)
-        gws.write_file_b(p.output, res)
+        res = gws.u.read_file_b(res_path)
+        gws.u.write_file_b(p.output, res)

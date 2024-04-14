@@ -25,7 +25,7 @@ class Config(gws.Config):
 _DEFAULT_SESSION_TYPE = 'sqlite'
 
 
-class Object(gws.Node, gws.IAuthManager):
+class Object(gws.AuthManager):
     """Authorization manager."""
 
     def configure(self):
@@ -87,19 +87,19 @@ class Object(gws.Node, gws.IAuthManager):
     ##
 
     def get_user(self, user_uid):
-        provider_uid, local_uid = gws.split_uid(user_uid)
+        provider_uid, local_uid = gws.u.split_uid(user_uid)
         prov = self.get_provider(provider_uid)
         if prov:
             return prov.get_user(local_uid)
 
     def get_provider(self, uid=None):
-        return t.cast(gws.IAuthProvider, self.root.get(uid))
+        return t.cast(gws.AuthProvider, self.root.get(uid))
 
     def get_method(self, uid=None, ext_type=None):
-        return t.cast(gws.IAuthMethod, self.root.get(uid))
+        return t.cast(gws.AuthMethod, self.root.get(uid))
 
     def get_mfa(self, uid=None, ext_type=None):
-        return t.cast(gws.IAuthMfa, self.root.get(uid))
+        return t.cast(gws.AuthMfa, self.root.get(uid))
 
     def serialize_user(self, user):
         return gws.lib.jsonx.to_string([user.provider.uid, user.provider.serialize_user(user)])

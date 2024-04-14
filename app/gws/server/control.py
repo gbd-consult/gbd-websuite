@@ -53,23 +53,23 @@ import gws.types as t
 from . import ini
 
 # see bin/gws
-SERVER_START_SCRIPT = f'{gws.VAR_DIR}/server.sh'
+SERVER_START_SCRIPT = f'{gws.c.VAR_DIR}/server.sh'
 
 
 def start(manifest_path=None, config_path=None):
     if server_is_running('web'):
         gws.log.error(f'server already running')
-        gws.exit(1)
+        gws.u.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=True)
-    ini.write_configs_and_start_script(root, gws.SERVER_DIR, SERVER_START_SCRIPT)
+    ini.write_configs_and_start_script(root, gws.c.SERVER_DIR, SERVER_START_SCRIPT)
 
 
 def reconfigure(manifest_path=None, config_path=None):
     if not server_is_running('web'):
         gws.log.error(f'server not running')
-        gws.exit(1)
+        gws.u.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=False)
-    ini.write_configs_and_start_script(root, gws.SERVER_DIR, SERVER_START_SCRIPT)
+    ini.write_configs_and_start_script(root, gws.c.SERVER_DIR, SERVER_START_SCRIPT)
     reload_all()
 
 
@@ -81,13 +81,13 @@ def configure_and_store(manifest_path=None, config_path=None, is_starting=False)
 
 def configure(manifest_path=None, config_path=None, is_starting=False):
     def _before_init(cfg):
-        autorun = gws.get(cfg, 'server.autoRun')
+        autorun = gws.u.get(cfg, 'server.autoRun')
         if autorun:
             gws.log.info(f'AUTORUN: {autorun!r}')
             cmds = shlex.split(autorun)
             gws.lib.osx.run(cmds, echo=True)
 
-        timezone = gws.get(cfg, 'server.timeZone')
+        timezone = gws.u.get(cfg, 'server.timeZone')
         if timezone:
             gws.lib.date.set_system_time_zone(timezone)
 
@@ -102,8 +102,8 @@ def configure(manifest_path=None, config_path=None, is_starting=False):
 ##
 
 def reload_all():
-    gws.lib.osx.run(['rm', '-fr', gws.TRANSIENT_DIR])
-    gws.ensure_system_dirs()
+    gws.lib.osx.run(['rm', '-fr', gws.c.TRANSIENT_DIR])
+    gws.u.ensure_system_dirs()
     for srv in ini.PID_PATHS:
         reload_server(srv)
     reload_nginx()
@@ -120,7 +120,7 @@ def reload_server(srv):
 
 def reload_nginx():
     gws.log.info(f'reloading nginx...')
-    gws.lib.osx.run(['nginx', '-c', gws.SERVER_DIR + '/nginx.conf', '-s', 'reload'])
+    gws.lib.osx.run(['nginx', '-c', gws.c.SERVER_DIR + '/nginx.conf', '-s', 'reload'])
 
 
 def server_is_running(srv):

@@ -1,0 +1,24 @@
+class Client(Node):
+    """GWS Client control object."""
+
+    options: dict
+    elements: list
+
+
+class Project(Node):
+    """Project object."""
+
+    assetsRoot: Optional['WebDocumentRoot']
+    client: 'Client'
+
+    localeUids: list[str]
+    map: 'Map'
+    metadata: 'Metadata'
+
+    actions: list['Action']
+    finders: list['Finder']
+    models: list['Model']
+    printers: list['Printer']
+    templates: list['Template']
+    owsServices: list['OwsService']
+

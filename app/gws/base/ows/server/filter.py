@@ -48,7 +48,7 @@ def from_fes_string(src: str) -> gws.SearchFilter:
     return from_fes_element(el)
 
 
-def from_fes_element(el: gws.IXmlElement) -> gws.SearchFilter:
+def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
     op = el.tag.lower()
 
     if op == 'filter':

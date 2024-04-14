@@ -71,7 +71,7 @@ class Object(gws.base.layer.image.Object):
         if self.provider.bounds:
             self.bounds = gws.gis.bounds.transform(self.provider.bounds, self.mapCrs)
             return True
-        blist = gws.compact(sl.wgsBounds for sl in self.sourceLayers)
+        blist = gws.u.compact(sl.wgsBounds for sl in self.sourceLayers)
         if blist:
             wgs_bounds = gws.gis.bounds.union(blist)
             self.bounds = gws.gis.bounds.transform(wgs_bounds, self.mapCrs)

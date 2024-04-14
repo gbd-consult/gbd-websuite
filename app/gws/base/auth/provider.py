@@ -12,7 +12,7 @@ class Config(gws.Config):
     """allowed authorization methods"""
 
 
-class Object(gws.Node, gws.IAuthProvider):
+class Object(gws.AuthProvider):
     def configure(self):
         self.allowedMethods = self.cfg('allowedMethods', default=[])
 

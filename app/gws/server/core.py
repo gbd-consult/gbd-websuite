@@ -64,14 +64,14 @@ class LogConfig(gws.Config):
 
 
 class Config(gws.Config):
-    """Server module configuation"""
+    """Server module configuration"""
 
     mapproxy: MapproxyConfig = {}  # type: ignore
     """bundled Mapproxy module"""
     monitor: MonitorConfig = {}  # type: ignore
-    """monitor configuation"""
+    """monitor configuration"""
     log: LogConfig = {}  # type: ignore
-    """logging configuation"""
+    """logging configuration"""
     qgis: QgisConfig = {}  # type: ignore
     """bundled Qgis module"""
     spool: SpoolConfig = {}  # type: ignore

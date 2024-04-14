@@ -33,7 +33,7 @@ def parse(xml: str, bottom_first: bool=False) -> gws.OwsCapabilities:
         version=caps_el.get('version'))
 
 
-def _layer(layer_el: gws.IXmlElement, parent: t.Optional[gws.SourceLayer] = None) -> gws.SourceLayer:
+def _layer(layer_el: gws.XmlElement, parent: t.Optional[gws.SourceLayer] = None) -> gws.SourceLayer:
     sl = gws.SourceLayer()
 
     sl.isQueryable = layer_el.get('queryable') == '1'

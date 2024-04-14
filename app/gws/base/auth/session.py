@@ -4,12 +4,12 @@ import gws
 import gws.types as t
 
 
-class Object(gws.Object, gws.IAuthSession):
+class Object(gws.AuthSession):
     def __init__(
             self,
             uid: str,
-            user: gws.IUser,
-            method: t.Optional[gws.IAuthMethod],
+            user: gws.User,
+            method: t.Optional[gws.AuthMethod],
             data: dict = None,
             created: datetime.datetime = None,
             updated: datetime.datetime = None,

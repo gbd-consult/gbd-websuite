@@ -69,10 +69,10 @@ class Config(gws.Config):
 
 
 class Object(gws.Node):
-    provider: gws.IDatabaseProvider
+    provider: gws.DatabaseProvider
     tableName: str
     position: PositionConfig
-    crs: gws.ICrs
+    crs: gws.Crs
 
     def configure(self):
         self.provider = gws.base.database.provider.get_for(self, ext_type='postgres')

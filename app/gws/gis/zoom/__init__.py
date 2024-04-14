@@ -125,19 +125,19 @@ def init_resolution(cfg, resolutions):
 
 
 def _explicit_resolutions(cfg):
-    ls = gws.get(cfg, 'resolutions')
+    ls = gws.u.get(cfg, 'resolutions')
     if ls:
         return ls
 
-    ls = gws.get(cfg, 'scales')
+    ls = gws.u.get(cfg, 'scales')
     if ls:
         return [units.scale_to_res(x) for x in ls]
 
 
 def _res_or_scale(cfg, r, s):
-    x = gws.get(cfg, r)
+    x = gws.u.get(cfg, r)
     if x:
         return x
-    x = gws.get(cfg, s)
+    x = gws.u.get(cfg, s)
     if x:
         return units.scale_to_res(x)

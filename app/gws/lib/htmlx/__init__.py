@@ -4,16 +4,16 @@ import gws.lib.uom
 import gws.types as t
 
 
-def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin: gws.MExtent = None) -> str:
+def render_to_pdf(html, out_path: str, page_size: gws.UomSize = None, page_margin: gws.UomExtent = None) -> str:
 
     mar = page_margin or (0, 0, 0, 0, gws.Uom.mm)
 
     # page sizes need to be in mm!
     psz = (210, 297, gws.Uom.mm)
     if page_size:
-        psz = gws.lib.uom.msize_to_mm(page_size, gws.lib.uom.PDF_DPI)
+        psz = gws.lib.uom.size_to_mm(page_size, gws.lib.uom.PDF_DPI)
 
-    gws.write_file(out_path + '.html', html)
+    gws.u.write_file(out_path + '.html', html)
 
     def f(x):
         return str(int(x))
@@ -40,7 +40,7 @@ def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin:
     return out_path
 
 
-def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin: list[int] = None) -> str:
+def render_to_png(html, out_path: str, page_size: gws.UomSize = None, page_margin: list[int] = None) -> str:
     if page_margin:
         mar = page_margin
         html = f"""
@@ -49,7 +49,7 @@ def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin:
             </body>
         """
 
-    gws.write_file(out_path + '.html', html)
+    gws.u.write_file(out_path + '.html', html)
 
     cmd = ['wkhtmltoimage']
 
@@ -58,7 +58,7 @@ def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin:
 
     if page_size:
         # page sizes need to be in px!
-        psz = gws.lib.uom.msize_to_px(page_size, gws.lib.uom.PDF_DPI)
+        psz = gws.lib.uom.size_to_px(page_size, gws.lib.uom.PDF_DPI)
         w, h, _ = psz
         cmd.extend([
             '--width', f(w),

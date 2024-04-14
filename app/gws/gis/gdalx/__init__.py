@@ -63,7 +63,7 @@ def open(path, mode, driver: str = '', as_raster: bool = False, as_vector: bool 
             raise Error(f'cannot create {path!r}')
         return DataSet(path, gd)
 
-    if not gws.is_file(path):
+    if not gws.u.is_file(path):
         raise Error(f'file not found {path!r}')
 
     flags = gdal.OF_VERBOSE_ERROR + (gdal.OF_UPDATE if mode == 'a' else gdal.OF_READONLY)
@@ -77,7 +77,7 @@ def open(path, mode, driver: str = '', as_raster: bool = False, as_vector: bool 
     return DataSet(path, gd)
 
 
-def open_image(image: gws.IImage, bounds: gws.Bounds) -> 'DataSet':
+def open_image(image: gws.Image, bounds: gws.Bounds) -> 'DataSet':
     gdal.UseExceptions()
 
     drv = gdal.GetDriverByName('MEM')
@@ -156,7 +156,7 @@ class DataSet:
             name: str,
             columns: dict[str, gws.AttributeType],
             geometry_type: gws.GeometryType = None,
-            crs: gws.ICrs = None,
+            crs: gws.Crs = None,
             overwrite=False,
             *options,
     ) -> 'Layer':

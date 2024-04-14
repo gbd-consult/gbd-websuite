@@ -17,7 +17,7 @@ class Config(gws.ConfigWithAccess):
     """provider-dependent legend options"""
 
 
-class Object(gws.Node, gws.ILegend):
+class Object(gws.Legend):
     """Generic legend object."""
 
     cacheMaxAge: int
@@ -33,7 +33,7 @@ def output_to_bytes(lro: gws.LegendRenderOutput) -> t.Optional[bytes]:
     return img.to_bytes() if img else None
 
 
-def output_to_image(lro: gws.LegendRenderOutput) -> t.Optional[gws.IImage]:
+def output_to_image(lro: gws.LegendRenderOutput) -> t.Optional[gws.Image]:
     if lro.image:
         return lro.image
     if lro.image_path:
@@ -44,7 +44,7 @@ def output_to_image(lro: gws.LegendRenderOutput) -> t.Optional[gws.IImage]:
 
 def output_to_image_path(lro: gws.LegendRenderOutput) -> t.Optional[str]:
     if lro.image:
-        img_path = gws.printtemp('legend.png')
+        img_path = gws.u.printtemp('legend.png')
         return lro.image.to_path(img_path, gws.lib.mime.PNG)
     if lro.image_path:
         return lro.image_path
@@ -53,21 +53,21 @@ def output_to_image_path(lro: gws.LegendRenderOutput) -> t.Optional[str]:
 
 
 def combine_outputs(lros: list[gws.LegendRenderOutput], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
-    imgs = gws.compact(output_to_image(lro) for lro in lros)
+    imgs = gws.u.compact(output_to_image(lro) for lro in lros)
     img = _combine_images(imgs, options)
     if not img:
         return None
     return gws.LegendRenderOutput(image=img, size=img.size())
 
 
-def _combine_images(images: list[gws.IImage], options: dict = None) -> t.Optional[gws.IImage]:
+def _combine_images(images: list[gws.Image], options: dict = None) -> t.Optional[gws.Image]:
     if not images:
         return None
     # @TODO other combination options
     return _combine_vertically(images)
 
 
-def _combine_vertically(images: list[gws.IImage]):
+def _combine_vertically(images: list[gws.Image]):
     ws = [img.size()[0] for img in images]
     hs = [img.size()[1] for img in images]
 

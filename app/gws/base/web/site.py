@@ -68,7 +68,7 @@ class Config(gws.Config):
     """document root location and options"""
 
 
-class Object(gws.Node, gws.IWebSite):
+class Object(gws.WebSite):
     canonicalHost: str
     ssl: bool
 

@@ -60,7 +60,7 @@ def locale(locale_uid: str) -> t.Optional[gws.Locale]:
 
         return lo
 
-    return gws.get_app_global(f'gws.lib.intl.locale.{locale_uid}', f)
+    return gws.u.get_app_global(f'gws.lib.intl.locale.{locale_uid}', f)
 
 
 def bibliographic_name(language: str) -> str:
@@ -81,7 +81,7 @@ def bibliographic_name(language: str) -> str:
             return ''
         return lang.alpha_3
 
-    return gws.get_app_global(f'gws.lib.intl.bibliographic_name.{language}', f)
+    return gws.u.get_app_global(f'gws.lib.intl.bibliographic_name.{language}', f)
 
 
 class DateTimeFormat(t.Enum):
@@ -232,7 +232,7 @@ def date_formatter(locale_uid) -> DateFormatter:
     Returns:
         `DateFormatter` object.
     """
-    return gws.get_app_global(f'gws.lib.intl.date_formatter.{locale_uid}', lambda: DateFormatter(locale_uid))
+    return gws.u.get_app_global(f'gws.lib.intl.date_formatter.{locale_uid}', lambda: DateFormatter(locale_uid))
 
 
 def time_formatter(locale_uid) -> TimeFormatter:
@@ -244,7 +244,7 @@ def time_formatter(locale_uid) -> TimeFormatter:
         Returns:
             `TimeFormatter` object.
         """
-    return gws.get_app_global(f'gws.lib.intl.time_formatter.{locale_uid}', lambda: TimeFormatter(locale_uid))
+    return gws.u.get_app_global(f'gws.lib.intl.time_formatter.{locale_uid}', lambda: TimeFormatter(locale_uid))
 
 
 def number_formatter(locale_uid) -> NumberFormatter:
@@ -256,4 +256,4 @@ def number_formatter(locale_uid) -> NumberFormatter:
         Returns:
             `NumberFormatter` object.
         """
-    return gws.get_app_global(f'gws.lib.intl.number_formatter.{locale_uid}', lambda: NumberFormatter(locale_uid))
+    return gws.u.get_app_global(f'gws.lib.intl.number_formatter.{locale_uid}', lambda: NumberFormatter(locale_uid))

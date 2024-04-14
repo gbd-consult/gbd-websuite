@@ -15,8 +15,8 @@ class PrematureTermination(Exception):
     pass
 
 
-def create(root: gws.IRoot, user: gws.IUser, worker: str, payload: dict = None) -> 'Object':
-    uid = gws.random_string(64)
+def create(root: gws.Root, user: gws.User, worker: str, payload: dict = None) -> 'Object':
+    uid = gws.u.random_string(64)
     gws.log.debug(f'JOB {uid}: creating: {worker=}  {user.uid=}')
     storage.create(uid)
     storage.update(
@@ -31,14 +31,14 @@ def create(root: gws.IRoot, user: gws.IUser, worker: str, payload: dict = None) 
     return get(root, uid)
 
 
-def run(root: gws.IRoot, uid):
+def run(root: gws.Root, uid):
     job = get(root, uid)
     if not job:
         raise gws.Error('invalid job_uid {uid!r}')
     job.run()
 
 
-def get(root: gws.IRoot, uid) -> t.Optional['Object']:
+def get(root: gws.Root, uid) -> t.Optional['Object']:
     rec = storage.find(uid)
     if rec:
         return Object(root, rec)
@@ -48,10 +48,10 @@ def remove(uid):
     storage.remove(uid)
 
 
-class Object(gws.IJob):
+class Object(gws.Job):
     worker: str
 
-    def __init__(self, root: gws.IRoot, rec):
+    def __init__(self, root: gws.Root, rec):
         self.root = root
 
         self.error = rec['error']
@@ -61,7 +61,7 @@ class Object(gws.IJob):
         self.user = self._get_user(rec)
         self.worker = rec['worker']
 
-    def _get_user(self, rec) -> gws.IUser:
+    def _get_user(self, rec) -> gws.User:
         auth = self.root.app.authMgr
         if rec.get('str_user'):
             user = auth.unserialize_user(rec.get('str_user'))

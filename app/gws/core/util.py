@@ -1,6 +1,8 @@
 """Core utilities
 
-Most common function which are needed everywhere. These function are exported in `gws` and can be used as gws.function().
+Most common function which are needed everywhere.
+
+This module is available as ``gws.u`` everywhere.
 """
 
 import hashlib
@@ -14,10 +16,17 @@ import threading
 import time
 import urllib.parse
 
-from typing import cast
-
+from typing import cast, Union
 from . import const, log
-from .data import Data, is_data_object
+
+class Data:
+    pass
+
+def is_data_object(x):
+    pass
+
+def to_data_object(x):
+    pass
 
 
 def exit(code: int = 255):
@@ -182,7 +191,7 @@ def first(it):
         return x
 
 
-def merge(*args, **kwargs) -> dict | Data:
+def merge(*args, **kwargs) -> Union[dict, 'Data']:
     """Create a new dict/Data object by merging values from dicts/Datas or kwargs.
     Latter vales overwrite former ones unless None.
 
@@ -421,18 +430,6 @@ def to_lower_dict(x) -> dict:
     return {k.lower(): v for k, v in x.items()}
 
 
-def to_data(x) -> Data:
-    """Convert a value to a Data. If the argument is a Data object, return it."""
-
-    if is_data_object(x):
-        return x
-    if is_dict(x):
-        return Data(x)
-    if x is None:
-        return Data()
-    raise ValueError(f'cannot convert {x!r} to Data')
-
-
 ##
 
 _UID_DE_TRANS = {
@@ -614,8 +611,8 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
         dir_path: Path to a directory.
         base_dir: Base directory.
         mode: Directory creation mode.
-        user: Directory user (defaults to gws.UID)
-        group: Directory group (defaults to gws.GID)
+        user: Directory user (defaults to gws.c.UID)
+        group: Directory group (defaults to gws.c.GID)
 
     Returns:
         The absolute path to the directory.
@@ -679,7 +676,7 @@ class _FormatMapDefault:
         return val if val is not None else self.default
 
 
-def format_map(fmt: str, x: dict | Data, default: str = '') -> str:
+def format_map(fmt: str, x: Union[dict, 'Data'], default: str = '') -> str:
     return fmt.format_map(_FormatMapDefault(x, default))
 
 

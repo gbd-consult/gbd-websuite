@@ -29,7 +29,7 @@ class Config(gws.Config):
 
 
 class TreeConfigArgs(gws.Data):
-    root: gws.IRoot
+    root: gws.Root
     source_layers: list[gws.SourceLayer]
     roots_slf: gws.gis.source.LayerFilter
     exclude_slf: gws.gis.source.LayerFilter
@@ -60,7 +60,7 @@ def layer_configs_from_args(tca: TreeConfigArgs) -> list[gws.Config]:
     roots = gws.gis.source.filter_layers(tca.source_layers, roots_slf)
 
     # make configs...
-    configs = gws.compact(_config(tca, sl, 0) for sl in roots)
+    configs = gws.u.compact(_config(tca, sl, 0) for sl in roots)
 
     # configs need to be reparsed so that defaults can be injected
     return [
@@ -79,7 +79,7 @@ def _config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
     if not cfg:
         return None
 
-    cfg = gws.merge(gws.to_dict(cfg), {
+    cfg = gws.u.merge(gws.u.to_dict(cfg), {
         'title': sl.title,
         'clientOptions': {
             'hidden': not sl.isVisible,
@@ -90,9 +90,9 @@ def _config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
 
     for cc in tca.auto_layers:
         if gws.gis.source.layer_matches(sl, cc.applyTo):
-            cfg = gws.deep_merge(cc.config, cfg)
+            cfg = gws.u.deep_merge(cc.config, cfg)
 
-    return gws.compact(cfg)
+    return gws.u.compact(cfg)
 
 
 def _base_config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
@@ -118,7 +118,7 @@ def _base_config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
         return tca.leaf_layer_maker(leaves)
 
     # ordinary group layer
-    layer_cfgs = gws.compact(_config(tca, sub, depth + 1) for sub in sl.layers)
+    layer_cfgs = gws.u.compact(_config(tca, sub, depth + 1) for sub in sl.layers)
     if not layer_cfgs:
         return None
     return {

@@ -30,7 +30,7 @@ class PackageConfig(gws.ConfigWithAccess):
 
 class Package(gws.Node):
     qgisProvider: gws.plugin.qgis.provider.Object
-    models: list[gws.IDatabaseModel]
+    models: list[gws.DatabaseModel]
 
     def configure(self):
         self.qgisProvider = self.create_child(gws.plugin.qgis.provider.Object, self.cfg('qgisProvider'))
@@ -39,8 +39,8 @@ class Package(gws.Node):
 
 class ExportArgs(gws.Data):
     package: Package
-    project: gws.IProject
-    user: gws.IUser
+    project: gws.Project
+    user: gws.User
     baseDir: str
     qgisFileName: str
     dbFileName: str
@@ -53,8 +53,8 @@ class ExportArgs(gws.Data):
 
 class ImportArgs(gws.Data):
     package: Package
-    project: gws.IProject
-    user: gws.IUser
+    project: gws.Project
+    user: gws.User
     baseDir: str
     dbFileName: str
 
@@ -83,11 +83,11 @@ class EditOperation(gws.Data):
 class ModelEntry(gws.Data):
     gpId: int
     gpName: str
-    model: gws.IDatabaseModel
+    model: gws.DatabaseModel
     fidToPkey: dict
     columnIndex: dict
     editOperations: list[EditOperation]
-    features: list[gws.IFeature]
+    features: list[gws.Feature]
 
 
 class LayerEntry(gws.Data):
@@ -139,8 +139,8 @@ _GP_ATTRIBUTE_TYPES = {
 
 class Exporter:
     package: Package
-    project: gws.IProject
-    user: gws.IUser
+    project: gws.Project
+    user: gws.User
     args: ExportArgs
 
     sourceQgisProject: gws.plugin.qgis.project.Object
@@ -272,7 +272,7 @@ class Exporter:
         w, h = gws.gis.extent.size(bounds.extent)
         px_size = (w / resolution, h / resolution, gws.Uom.px)
 
-        flat_layer = t.cast(gws.ILayer, self.package.root.create_temporary(
+        flat_layer = t.cast(gws.Layer, self.package.root.create_temporary(
             gws.ext.object.layer,
             type='qgisflat',
             _parentBounds=bounds,
@@ -339,7 +339,7 @@ class Exporter:
         QgisXmlTransformer().run(self, root_el)
         xml = root_el.to_string()
         xml = self.replace_vars(xml)
-        gws.write_file(self.targetQgisPath, xml)
+        gws.u.write_file(self.targetQgisPath, xml)
 
     def replace_vars(self, s: str) -> str:
         # @TODO render attributes as templates
@@ -351,10 +351,10 @@ class Exporter:
 
 class QgisXmlTransformer:
     ex: Exporter
-    root: gws.IXmlElement
-    remove: list[gws.IXmlElement]
+    root: gws.XmlElement
+    remove: list[gws.XmlElement]
 
-    def run(self, ex: Exporter, root_el: gws.IXmlElement):
+    def run(self, ex: Exporter, root_el: gws.XmlElement):
         self.ex = ex
         self.root = root_el
         self.remove = []
@@ -516,8 +516,8 @@ class QgisXmlTransformer:
 
 class Importer:
     package: Package
-    project: gws.IProject
-    user: gws.IUser
+    project: gws.Project
+    user: gws.User
     args: ImportArgs
 
     localDbPath: str
@@ -717,7 +717,7 @@ class Importer:
         for p in self.localImagePaths:
             if gws.lib.osx.file_name(p) == file_name:
                 return gws.plugin.model_field.file.FileValue(
-                    content=gws.read_file_b(p),
+                    content=gws.u.read_file_b(p),
                     name=file_name,
                     path=path,
                     size=gws.lib.osx.file_size(p),
@@ -755,7 +755,7 @@ class Importer:
                 feature = model.feature_from_props(gws.FeatureProps(attributes=eo.attributes), mc)
                 model.delete_feature(feature, mc)
 
-    def check_model(self, me: ModelEntry, user: gws.IUser, access: gws.Access) -> gws.IModel:
+    def check_model(self, me: ModelEntry, user: gws.User, access: gws.Access) -> gws.Model:
         if not me.model:
             raise gws.ForbiddenError(f'{me.gpName}: model: not found, {access=} {user=}')
         if not me.model.isEditable:
@@ -944,7 +944,7 @@ class QFieldCapsParser:
                     uid=f'qfield_model_{table_name}',
                     type='postgres',
                     # NB: permissions are checked in the public export/import functions above
-                    permissions=gws.Config(read=gws.PUBLIC, edit=gws.PUBLIC),
+                    permissions=gws.Config(read=gws.c.PUBLIC, edit=gws.c.PUBLIC),
                     tableName=table_name,
                     isEditable=True,
                     _defaultProvider=pg_provider,
@@ -954,7 +954,7 @@ class QFieldCapsParser:
 
         return self.caps.modelMap[gp_name]
 
-    def model_entry(self, gp_name: str, model: gws.IDatabaseModel) -> ModelEntry:
+    def model_entry(self, gp_name: str, model: gws.DatabaseModel) -> ModelEntry:
         return ModelEntry(
             gpId=len(self.caps.modelMap),
             gpName=gp_name,

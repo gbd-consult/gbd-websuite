@@ -36,4 +36,4 @@ class Object(gws.base.legend.Object):
                 gws.log.exception(f'render_legend: download failed url={url!r}')
 
         # NB even if there's only one image, it's not a bad idea to run it through the image converter
-        return gws.base.legend.combine_outputs(gws.compact(lros), self.options)
+        return gws.base.legend.combine_outputs(gws.u.compact(lros), self.options)

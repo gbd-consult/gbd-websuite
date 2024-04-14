@@ -77,9 +77,9 @@ class Object(gws.base.legend.Object):
             STYLE='',
             TRANSPARENT=True,
         )
-        opts = gws.to_upper_dict(self.cfg('options', default={}))
+        opts = gws.u.to_upper_dict(self.cfg('options', default={}))
         self.params = self.provider.server_params(
-            gws.merge(_DEFAULT_LEGEND_PARAMS, defaults, opts))
+            gws.u.merge(_DEFAULT_LEGEND_PARAMS, defaults, opts))
 
     ##
 

@@ -79,31 +79,34 @@ class command:
     class post(_methodTag): pass
 
 
-class new:
-    def action(*a): pass
-    def application(*a): pass
-    def authMethod(*a): pass
-    def authMfa(*a): pass
-    def authProvider(*a): pass
-    def authSessionManager(*a): pass
-    def cli(*a): pass
-    def databaseProvider(*a): pass
-    def finder(*a): pass
-    def helper(*a): pass
-    def layer(*a): pass
-    def legend(*a): pass
-    def map(*a): pass
-    def model(*a): pass
-    def modelField(*a): pass
-    def modelValidator(*a): pass
-    def modelValue(*a): pass
-    def modelWidget(*a): pass
-    def owsProvider(*a): pass
-    def owsService(*a): pass
-    def printer(*a): pass
-    def project(*a): pass
-    def storageProvider(*a): pass
-    def template(*a): pass
+class _new:
+    def action(self, *args): pass
+    def application(self, *args): pass
+    def authMethod(self, *args): pass
+    def authMfa(self, *args): pass
+    def authProvider(self, *args): pass
+    def authSessionManager(self, *args): pass
+    def cli(self, *args): pass
+    def databaseProvider(self, *args): pass
+    def finder(self, *args): pass
+    def helper(self, *args): pass
+    def layer(self, *args): pass
+    def legend(self, *args): pass
+    def map(self, *args): pass
+    def model(self, *args): pass
+    def modelField(self, *args): pass
+    def modelValidator(self, *args): pass
+    def modelValue(self, *args): pass
+    def modelWidget(self, *args): pass
+    def owsProvider(self, *args): pass
+    def owsService(self, *args): pass
+    def printer(self, *args): pass
+    def project(self, *args): pass
+    def storageProvider(self, *args): pass
+    def template(self, *args): pass
+
+
+new = _new()
 
 
 class object:

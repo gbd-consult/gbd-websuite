@@ -31,7 +31,7 @@ class Config(gws.ConfigWithAccess):
     """enable filter search"""
 
 
-class Object(gws.Node, gws.IFinder):
+class Object(gws.Finder):
     spatialContext: SpatialContext
 
     def configure(self):
@@ -78,7 +78,7 @@ class Object(gws.Node, gws.IFinder):
 
         return has_param
 
-    def context_shape(self, search: gws.SearchQuery) -> gws.IShape:
+    def context_shape(self, search: gws.SearchQuery) -> gws.Shape:
         if search.shape:
             return search.shape
         if self.spatialContext == SpatialContext.view and search.bounds:
@@ -91,6 +91,6 @@ class Object(gws.Node, gws.IFinder):
         if not model:
             gws.log.debug(f'no model for {user.uid=} in finder {self.uid!r}')
             return []
-        search = t.cast(gws.SearchQuery, gws.merge(search, shape=self.context_shape(search)))
+        search = t.cast(gws.SearchQuery, gws.u.merge(search, shape=self.context_shape(search)))
         mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=user)
         return model.find_features(search, mc)

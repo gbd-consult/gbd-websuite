@@ -11,7 +11,7 @@ class Error(gws.Error):
     pass
 
 
-def import_from_path(path, base_dir=gws.APP_DIR):
+def import_from_path(path, base_dir=gws.c.APP_DIR):
     abs_path = _abs_path(path, base_dir)
     if not os.path.isfile(abs_path):
         raise Error(f'{abs_path!r}: not found')

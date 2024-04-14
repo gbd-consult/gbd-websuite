@@ -31,13 +31,13 @@ _uwsgi_params = """
 """
 
 PID_PATHS = {
-    'web': f'{gws.PIDS_DIR}/web.uwsgi.pid',
-    'spool': f'{gws.PIDS_DIR}/spool.uwsgi.pid',
-    'mapproxy': f'{gws.PIDS_DIR}/mapproxy.uwsgi.pid',
+    'web': f'{gws.c.PIDS_DIR}/web.uwsgi.pid',
+    'spool': f'{gws.c.PIDS_DIR}/spool.uwsgi.pid',
+    'mapproxy': f'{gws.c.PIDS_DIR}/mapproxy.uwsgi.pid',
 }
 
 
-def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_path):
+def write_configs_and_start_script(root: gws.Root, configs_dir, start_script_path):
     for p in gws.lib.osx.find_files(configs_dir):
         gws.lib.osx.unlink(p)
 
@@ -60,20 +60,20 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
     web_enabled = root.app.cfg('server.web.enabled')
     web_workers = root.app.cfg('server.web.workers')
     web_threads = root.app.cfg('server.web.threads')
-    web_socket = f'{gws.TMP_DIR}/uwsgi.web.sock'
+    web_socket = f'{gws.c.TMP_DIR}/uwsgi.web.sock'
 
     spool_enabled = root.app.cfg('server.spool.enabled')
     spool_workers = root.app.cfg('server.spool.workers')
     spool_threads = root.app.cfg('server.spool.threads')
-    spool_socket = f'{gws.TMP_DIR}/uwsgi.spooler.sock'
-    spool_dir = gws.SPOOL_DIR
+    spool_socket = f'{gws.c.TMP_DIR}/uwsgi.spooler.sock'
+    spool_dir = gws.c.SPOOL_DIR
     spool_freq = root.app.cfg('server.spool.jobFrequency')
 
     mapproxy_enabled = root.app.cfg('server.mapproxy.enabled') and os.path.exists(gws.gis.mpx.config.CONFIG_PATH)
     mapproxy_port = root.app.cfg('server.mapproxy.port')
     mapproxy_workers = root.app.cfg('server.mapproxy.workers')
     mapproxy_threads = root.app.cfg('server.mapproxy.threads')
-    mapproxy_socket = f'{gws.TMP_DIR}/uwsgi.mapproxy.sock'
+    mapproxy_socket = f'{gws.c.TMP_DIR}/uwsgi.mapproxy.sock'
 
     nginx_log_level = 'info'
     if root.app.developer_option('nginx.log_level_debug'):
@@ -110,8 +110,8 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
 
     stdenv = '\n'.join(f'env = {k}={v}' for k, v in os.environ.items() if k.startswith('GWS_'))
 
-    # stdenv += f'\nenv = TMP={gws.TMP_DIR}'
-    # stdenv += f'\nenv = TEMP={gws.TMP_DIR}'
+    # stdenv += f'\nenv = TMP={gws.c.TMP_DIR}'
+    # stdenv += f'\nenv = TEMP={gws.c.TMP_DIR}'
 
     # rsyslogd
     # ---------------------------------------------------------
@@ -142,7 +142,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
         """
 
         path = _write(f'{configs_dir}/syslog.conf', syslog_conf)
-        commands.append(f'rsyslogd -i {gws.PIDS_DIR}/rsyslogd.pid -f {path}')
+        commands.append(f'rsyslogd -i {gws.c.PIDS_DIR}/rsyslogd.pid -f {path}')
 
     # web
     # ---------------------------------------------------------
@@ -150,8 +150,8 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
     if web_enabled:
         ini = f"""
             [uwsgi]
-            uid = {gws.UID}
-            gid = {gws.GID}
+            uid = {gws.c.UID}
+            gid = {gws.c.GID}
             buffer-size = 65535
             chmod-socket = 777
             die-on-term = true
@@ -162,14 +162,14 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
             pidfile = {PID_PATHS['web']}
             post-buffering = 65535
             processes = {web_workers}
-            pythonpath = {gws.APP_DIR}
+            pythonpath = {gws.c.APP_DIR}
             reload-mercy = {mercy}
             spooler-external = {spool_dir}
             threads = {web_threads}
             uwsgi-socket = {web_socket}
             vacuum = true
             worker-reload-mercy = {mercy}
-            wsgi-file = {gws.APP_DIR}/gws/base/web/wsgi_main.py
+            wsgi-file = {gws.c.APP_DIR}/gws/base/web/wsgi_main.py
             {stdenv}
         """
 
@@ -192,7 +192,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
                 }}
                 location = /favicon.ico {{
                     root /;
-                    try_files {d}$uri {gws.APP_DIR}/gws/base/web/favicon.ico =404;
+                    try_files {d}$uri {gws.c.APP_DIR}/gws/base/web/favicon.ico =404;
                 }}
             """
             # @TODO multisites
@@ -202,7 +202,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
         max_body_size = int(root.app.cfg('server.web.maxRequestLength', default=1))
 
         client_buffer_size = 4  # MB
-        client_tmp_dir = gws.ensure_dir(f'{gws.TMP_DIR}/nginx')
+        client_tmp_dir = gws.u.ensure_dir(f'{gws.c.TMP_DIR}/nginx')
 
         web_common = f"""
             error_log {nginx_web_log} {nginx_log_level};
@@ -219,7 +219,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
             {roots}
 
             location @cache {{
-                root {gws.FASTCACHE_DIR};
+                root {gws.c.FASTCACHE_DIR};
                 try_files $uri @app;
             }}
 
@@ -292,8 +292,8 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
     if mapproxy_enabled:
         ini = f"""
             [uwsgi]
-            uid = {gws.UID}
-            gid = {gws.GID}
+            uid = {gws.c.UID}
+            gid = {gws.c.GID}
             chmod-socket = 777
             die-on-term = true
             harakiri = {mapproxy_timeout}
@@ -305,14 +305,14 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
             pidfile = {PID_PATHS['mapproxy']}
             post-buffering = 65535
             processes = {mapproxy_workers}
-            pythonpath = {gws.APP_DIR}
+            pythonpath = {gws.c.APP_DIR}
             reload-mercy = {mercy}
             threads = {mapproxy_threads}
             uwsgi-socket = {mapproxy_socket}
             vacuum = true
             worker-reload-mercy = {mercy}
             wsgi-disable-file-wrapper = true
-            wsgi-file = {gws.APP_DIR}/gws/gis/mpx/wsgi_main.py
+            wsgi-file = {gws.c.APP_DIR}/gws/gis/mpx/wsgi_main.py
             {stdenv}
         """
 
@@ -325,8 +325,8 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
     if spool_enabled:
         ini = f"""
             [uwsgi]
-            uid = {gws.UID}
-            gid = {gws.GID}
+            uid = {gws.c.UID}
+            gid = {gws.c.GID}
             chmod-socket = 777
             die-on-term = true
             harakiri = {spool_timeout}
@@ -336,7 +336,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
             pidfile = {PID_PATHS['spool']}
             post-buffering = 65535
             processes = {spool_workers}
-            pythonpath = {gws.APP_DIR}
+            pythonpath = {gws.c.APP_DIR}
             reload-mercy = {mercy}
             spooler = {spool_dir}
             spooler-frequency = {spool_freq}
@@ -344,7 +344,7 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
             uwsgi-socket = {spool_socket}
             vacuum = true
             worker-reload-mercy = {mercy}
-            wsgi-file = {gws.APP_DIR}/gws/server/spool/wsgi_main.py
+            wsgi-file = {gws.c.APP_DIR}/gws/server/spool/wsgi_main.py
             {stdenv}
         """
 
@@ -358,14 +358,14 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
 
     # log_format: https://www.nginx.com/blog/using-nginx-logging-for-application-performance-monitoring/
 
-    u = pwd.getpwuid(gws.UID).pw_name
-    g = grp.getgrgid(gws.GID).gr_name
+    u = pwd.getpwuid(gws.c.UID).pw_name
+    g = grp.getgrgid(gws.c.GID).gr_name
 
     daemon = 'daemon off;' if in_container else ''
 
     nginx_conf = f"""
         worker_processes auto;
-        pid {gws.PIDS_DIR}/nginx.pid;
+        pid {gws.c.PIDS_DIR}/nginx.pid;
         user {u} {g};
 
         events {{

@@ -49,16 +49,16 @@ class Element(gws.Node):
         return gws.Data(tag=self.tag)
 
 
-class Object(gws.Node, gws.IClient):
+class Object(gws.Client):
     options: dict
     elements: list[Element]
 
     def configure(self):
-        app_client = gws.get(self.root.app, 'client')
+        app_client = gws.u.get(self.root.app, 'client')
 
         self.elements = self.create_children(Element, self._get_elements(app_client))
 
-        self.options = gws.merge(
+        self.options = gws.u.merge(
             app_client.options if app_client else {},
             self.cfg('options'))
 

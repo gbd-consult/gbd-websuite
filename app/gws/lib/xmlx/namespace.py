@@ -192,7 +192,7 @@ def clarkify_name(name: str) -> str:
 
 def declarations(
         default_ns: t.Optional[gws.XmlNamespace] = None,
-        for_element: gws.IXmlElement = None,
+        for_element: gws.XmlElement = None,
         extra_ns: t.Optional[list[gws.XmlNamespace]] = None,
         with_schema_locations: bool = False,
 ) -> dict:
@@ -243,7 +243,7 @@ def declarations(
     return dict(sorted(atts))
 
 
-def _collect_namespaces(el: gws.IXmlElement, uri_map):
+def _collect_namespaces(el: gws.XmlElement, uri_map):
     ns, _ = parse_name(el.tag)
     if ns:
         uri_map[ns.uri] = ns

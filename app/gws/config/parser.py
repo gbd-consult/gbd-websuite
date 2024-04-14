@@ -16,7 +16,7 @@ import gws.types as t
 CONFIG_PATH_PATTERN = r'\bconfig\.(py|json|yaml|cx)$'
 CONFIG_FUNCTION_NAME = 'config'
 
-def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', read_options=None):
+def parse(specs: gws.SpecRuntime, value, type_name: str, source_path='', read_options=None):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
@@ -41,7 +41,7 @@ def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', read_o
 class ConfigParser:
     """Read and parse the main config file"""
 
-    def __init__(self, specs: gws.ISpecRuntime):
+    def __init__(self, specs: gws.SpecRuntime):
         self.specs = specs
         self.errors = []
         self.paths = set()
@@ -147,7 +147,7 @@ class ConfigParser:
         runtime_errors = []
 
         def _error_handler(exc, path, line, env):
-            runtime_errors.append(_syntax_error(path, gws.read_file(path), repr(exc), line))
+            runtime_errors.append(_syntax_error(path, gws.u.read_file(path), repr(exc), line))
             return True
 
         def _loader(cur_path, p):
@@ -155,13 +155,13 @@ class ConfigParser:
                 d = os.path.dirname(cur_path)
                 p = os.path.abspath(os.path.join(d, p))
             paths.add(p)
-            return gws.read_file(p), p
+            return gws.u.read_file(p), p
 
         try:
             tpl = gws.lib.vendor.jump.compile_path(path, loader=_loader)
         except gws.lib.vendor.jump.CompileError as exc:
             self.errors.append(
-                _syntax_error(path, gws.read_file(exc.path), exc.message, exc.line, cause=exc))
+                _syntax_error(path, gws.u.read_file(exc.path), exc.message, exc.line, cause=exc))
             return
 
         src = gws.lib.vendor.jump.call(tpl, args={'true': True, 'false': False}, error=_error_handler)
@@ -198,7 +198,7 @@ def _syntax_error(path, src, message, line, context=10, cause=None):
 
 
 def _save_intermediate(path, txt, ext):
-    gws.write_file(f"{gws.CONFIG_DIR}/{gws.to_uid(path)}.parsed.{ext}", txt)
+    gws.u.write_file(f"{gws.c.CONFIG_DIR}/{gws.u.to_uid(path)}.parsed.{ext}", txt)
 
 
 def _as_flat_list(ls):

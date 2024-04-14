@@ -33,7 +33,7 @@ import gws.types as t
 #     uid: str
 #
 #
-# _UPLOAD_DIR = gws.TMP_DIR + '/uploads'
+# _UPLOAD_DIR = gws.c.TMP_DIR + '/uploads'
 #
 #
 # def upload_chunk(p: UploadChunkParams) -> UploadChunkResponse:
@@ -53,10 +53,10 @@ import gws.types as t
 #
 #
 # def save_chunk(uid: str, name: str, content: bytes, total_size: int, chunk_number: int, chunk_count: int) -> str:
-#     dir = gws.ensure_dir(_UPLOAD_DIR)
+#     dir = gws.u.ensure_dir(_UPLOAD_DIR)
 #
 #     if chunk_number == 1:
-#         uid = gws.random_string(64)
+#         uid = gws.u.random_string(64)
 #         status = gws.Data(
 #             name=name,
 #             total_size=total_size,
@@ -77,12 +77,12 @@ import gws.types as t
 #     if chunk_number < 1 or chunk_number > status.chunk_count:
 #         raise Error(f'upload {uid!r}: invalid chunk number')
 #
-#     gws.write_file_b(f'{dir}/{uid}.{chunk_number}', content)
+#     gws.u.write_file_b(f'{dir}/{uid}.{chunk_number}', content)
 #     return uid
 #
 #
 # def get(uid: str) -> UploadRecord:
-#     dir = gws.ensure_dir(_UPLOAD_DIR)
+#     dir = gws.u.ensure_dir(_UPLOAD_DIR)
 #
 #     try:
 #         status = gws.Data(gws.lib.jsonx.from_path(f'{dir}/{uid}.json'))
@@ -104,7 +104,7 @@ import gws.types as t
 #     if not all(os.path.isfile(c) for c in chunks):
 #         raise Error(f'upload {uid!r}: incomplete')
 #
-#     tmp_path = path + '.' + gws.random_string(6)
+#     tmp_path = path + '.' + gws.u.random_string(6)
 #
 #     with open(tmp_path, 'wb') as fp_all:
 #         for c in chunks:
@@ -129,7 +129,7 @@ import gws.types as t
 #
 #
 # def delete(uid: str):
-#     dir = gws.ensure_dir(_UPLOAD_DIR)
+#     dir = gws.u.ensure_dir(_UPLOAD_DIR)
 #
 #     for p in gws.lib.osx.find_files(dir):
 #         if p.startswith(uid + '.'):

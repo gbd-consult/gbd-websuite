@@ -15,7 +15,7 @@ class Error(gws.Error):
 
 class ParsedIcon(gws.Data):
     """Svg data."""
-    svg: gws.IXmlElement
+    svg: gws.XmlElement
     """Structure and attributes of the svg."""
 
 
@@ -81,7 +81,7 @@ def _get_bytes(val, opts) -> t.Optional[bytes]:
     for img_dir in opts.get('imageDirs', []):
         path = gws.lib.osx.abs_web_path(val, img_dir)
         if path:
-            return gws.read_file_b(path)
+            return gws.u.read_file_b(path)
 
     # network and aribtrary files only in the trusted mode
 
@@ -95,7 +95,7 @@ def _get_bytes(val, opts) -> t.Optional[bytes]:
             raise Error('network error', val) from exc
 
     try:
-        return gws.read_file_b(val)
+        return gws.u.read_file_b(val)
     except Exception as exc:
         raise Error('file error', val) from exc
 

@@ -6,18 +6,18 @@ import gws.types as t
 
 
 def new(
-        model: gws.IModel,
+        model: gws.Model,
         record: t.Optional[gws.FeatureRecord] = None,
         props: t.Optional[gws.FeatureProps] = None
-) -> gws.IFeature:
+) -> gws.Feature:
     f = Feature(model)
     f.record = record or gws.FeatureRecord(attributes={})
     f.props = props or gws.FeatureProps(attributes={})
     return f
 
 
-class Feature(gws.IFeature):
-    def __init__(self, model: gws.IModel):
+class Feature(gws.Feature):
+    def __init__(self, model: gws.Model):
         self.attributes = {}
         self.category = ''
         self.cssSelector = ''
@@ -58,7 +58,7 @@ class Feature(gws.IFeature):
 
     def render_views(self, templates, **kwargs):
         tri = gws.TemplateRenderInput(
-            args=gws.merge(
+            args=gws.u.merge(
                 self.attributes,
                 kwargs,
                 feature=self
@@ -68,7 +68,7 @@ class Feature(gws.IFeature):
             self.views[view_name] = tpl.render(tri).content
         return self
 
-    def transform_to(self, crs) -> gws.IFeature:
+    def transform_to(self, crs) -> gws.Feature:
         if self.shape():
             self.attributes[self.model.geometryName] = self.shape().transformed_to(crs)
         return self

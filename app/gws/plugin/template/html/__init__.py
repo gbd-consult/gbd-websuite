@@ -45,7 +45,7 @@ class Object(gws.base.template.Object):
         self.compile(engine)
 
         args = self.prepare_args(tri.args)
-        args['__renderUid'] = gws.random_string(8)
+        args['__renderUid'] = gws.u.random_string(8)
         html = engine.call(self.compiledFn, args=args, error=self.error_handler)
 
         res = self.finalize(tri, html, args, engine)
@@ -56,7 +56,7 @@ class Object(gws.base.template.Object):
     def compile(self, engine: 'Engine'):
 
         if self.path and (not self.text or gws.lib.osx.file_mtime(self.path) > self.compiledTime):
-            self.text = gws.read_file(self.path)
+            self.text = gws.u.read_file(self.path)
             self.compiledFn = None
 
         if self.root.app.developer_option('template.always_reload'):
@@ -65,8 +65,8 @@ class Object(gws.base.template.Object):
         if not self.compiledFn:
             gws.log.debug(f'compiling {self} {self.path=}')
             if self.root.app.developer_option('template.save_compiled'):
-                gws.write_file(
-                    gws.ensure_dir(f'{gws.VAR_DIR}/debug') + f'/compiled_template_{self.uid}',
+                gws.u.write_file(
+                    gws.u.ensure_dir(f'{gws.c.VAR_DIR}/debug') + f'/compiled_template_{self.uid}',
                     engine.translate(self.text, path=self.path)
                 )
 
@@ -131,13 +131,13 @@ class Object(gws.base.template.Object):
 
         layer_list = src.visibleLayers
         if layers:
-            layer_list = gws.compact(tri.user.acquire(la) for la in gws.to_list(layers))
+            layer_list = gws.u.compact(tri.user.acquire(la) for la in gws.u.to_list(layers))
 
         if not layer_list:
             gws.log.debug(f'no layers for a legend')
             return
 
-        legend = t.cast(gws.ILegend, self.root.create_temporary(
+        legend = t.cast(gws.Legend, self.root.create_temporary(
             gws.ext.object.legend,
             type='combined',
             layerUids=[la.uid for la in layer_list]))
@@ -175,7 +175,7 @@ class Object(gws.base.template.Object):
         raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')
 
     def finalize_pdf(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
-        content_pdf_path = gws.printtemp('content.pdf')
+        content_pdf_path = gws.u.printtemp('content.pdf')
 
         page_size = main_engine.pageSize or self.pageSize
         page_margin = main_engine.pageMargin or self.pageMargin
@@ -191,13 +191,13 @@ class Object(gws.base.template.Object):
         if not has_frame:
             return content_pdf_path
 
-        args = gws.merge(args, numpages=gws.lib.pdf.page_count(content_pdf_path))
+        args = gws.u.merge(args, numpages=gws.lib.pdf.page_count(content_pdf_path))
 
         frame_engine = Engine(self, tri)
         frame_text = self.frame_template(main_engine.header or '', main_engine.footer or '', page_size)
         frame_html = frame_engine.render(frame_text, args=args, error=self.error_handler)
 
-        frame_pdf_path = gws.printtemp('frame.pdf')
+        frame_pdf_path = gws.u.printtemp('frame.pdf')
 
         gws.lib.htmlx.render_to_pdf(
             self.decorate_html(frame_html),
@@ -206,13 +206,13 @@ class Object(gws.base.template.Object):
             page_margin=None,
         )
 
-        combined_pdf_path = gws.printtemp('combined.pdf')
+        combined_pdf_path = gws.u.printtemp('combined.pdf')
         gws.lib.pdf.overlay(frame_pdf_path, content_pdf_path, combined_pdf_path)
 
         return combined_pdf_path
 
     def finalize_png(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
-        out_png_path = gws.printtemp('out.png')
+        out_png_path = gws.u.printtemp('out.png')
 
         page_size = main_engine.pageSize or self.pageSize
         page_margin = main_engine.pageMargin or self.pageMargin
@@ -230,7 +230,7 @@ class Object(gws.base.template.Object):
 
     def decorate_html(self, html):
         if self.path:
-            d = gws.dirname(self.path)
+            d = gws.u.dirname(self.path)
             html = f'<base href="file://{d}/" />\n' + html
         html = '<meta charset="utf8" />\n' + html
         return html
@@ -262,7 +262,7 @@ class Object(gws.base.template.Object):
 
 class Engine(gws.lib.vendor.jump.Engine):
     pageMargin: list[int] = []
-    pageSize: gws.MSize = []
+    pageSize: gws.UomSize = []
     header: str = ''
     footer: str = ''
 

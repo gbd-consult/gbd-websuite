@@ -1,0 +1,16 @@
+class LegendRenderOutput(Data):
+    """Legend render output."""
+
+    html: str
+    image: 'Image'
+    image_path: str
+    size: Size
+    mime: str
+
+
+class Legend(Node):
+    """Legend object."""
+
+    def render(self, args: Optional[dict] = None) -> Optional[LegendRenderOutput]: ...
+
+

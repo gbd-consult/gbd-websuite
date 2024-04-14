@@ -114,9 +114,9 @@ class _Indexer:
         if not self.rr.withCache or not self.CACHE_KEY:
             return False
         cpath = self.rr.cacheDir + '/' + self.CACHE_KEY
-        if not gws.is_file(cpath):
+        if not gws.u.is_file(cpath):
             return False
-        om = gws.unserialize_from_path(cpath)
+        om = gws.u.unserialize_from_path(cpath)
         if not om:
             return False
         gws.log.info(f'ALKIS: use cache {self.CACHE_KEY!r}')
@@ -127,7 +127,7 @@ class _Indexer:
         if not self.rr.withCache or not self.CACHE_KEY:
             return
         cpath = self.rr.cacheDir + '/' + self.CACHE_KEY
-        gws.serialize_to_path(self.om, cpath)
+        gws.u.serialize_to_path(self.om, cpath)
         gws.log.info(f'ALKIS: store cache {self.CACHE_KEY!r}')
 
     def collect(self):
@@ -616,12 +616,12 @@ class _FsDataIndexer(_Indexer):
 
     def collect(self):
         for uid, axs in self.rr.read_grouped(gid.AX_Flurstueck):
-            recs = gws.compact(self.record(ax) for ax in axs)
+            recs = gws.u.compact(self.record(ax) for ax in axs)
             if recs:
                 self.om.Flurstueck.add(uid, recs)
 
         for uid, axs in self.rr.read_grouped(gid.AX_HistorischesFlurstueck):
-            recs = gws.compact(self.record(ax) for ax in axs)
+            recs = gws.u.compact(self.record(ax) for ax in axs)
             if not recs:
                 continue
             # For a historic FS, 'beginnt' is basically when the history beginnt
@@ -969,9 +969,9 @@ class _Runner:
         self.reader: dt.Reader = reader
 
         self.withCache = with_cache
-        self.cacheDir = gws.CACHE_DIR + '/alkis'
+        self.cacheDir = gws.c.CACHE_DIR + '/alkis'
         if self.withCache:
-            gws.ensure_dir(self.cacheDir)
+            gws.u.ensure_dir(self.cacheDir)
 
         self.place = _PlaceIndexer(self)
         self.lage = _LageIndexer(self)
@@ -1016,12 +1016,12 @@ class _Runner:
 
     def read_flat(self, cls):
         cpath = self.cacheDir + '/flat_' + cls.__name__
-        if self.withCache and gws.is_file(cpath):
-            return gws.unserialize_from_path(cpath)
+        if self.withCache and gws.u.is_file(cpath):
+            return gws.u.unserialize_from_path(cpath)
 
         rs = self._read_flat(cls)
         if self.withCache:
-            gws.serialize_to_path(rs, cpath)
+            gws.u.serialize_to_path(rs, cpath)
 
         return rs
 
@@ -1039,12 +1039,12 @@ class _Runner:
 
     def read_grouped(self, cls):
         cpath = self.cacheDir + '/grouped_' + cls.__name__
-        if self.withCache and gws.is_file(cpath):
-            return gws.unserialize_from_path(cpath)
+        if self.withCache and gws.u.is_file(cpath):
+            return gws.u.unserialize_from_path(cpath)
 
         rs = self._read_grouped(cls)
         if self.withCache:
-            gws.serialize_to_path(rs, cpath)
+            gws.u.serialize_to_path(rs, cpath)
 
         return rs
 
@@ -1070,7 +1070,7 @@ class _Runner:
             v = getattr(ax, a['name'], None)
             if isinstance(v, gid.Object):
                 v = self.object_prop_value(v)
-            if not gws.is_empty(v):
+            if not gws.u.is_empty(v):
                 props.append([a['title'], v])
 
         return props

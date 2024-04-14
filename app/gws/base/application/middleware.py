@@ -1,8 +1,8 @@
 import gws
 
 
-class Object(gws.Node, gws.IMiddlewareManager):
-    objectMap: dict[str, gws.INode]
+class Object(gws.MiddlewareManager):
+    objectMap: dict[str, gws.Node]
     deps: dict[str, list[str]]
     names: list[str]
 

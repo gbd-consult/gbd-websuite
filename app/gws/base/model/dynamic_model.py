@@ -11,7 +11,7 @@ class Config(core.Config):
     pass
 
 
-class Object(core.Object, gws.IModel):
+class Object(core.Object, gws.Model):
     def configure(self):
         self.uidName = 'uid'
         self.geometryName = 'geometry'
@@ -30,15 +30,15 @@ class Object(core.Object, gws.IModel):
 
         return feature
 
-    def feature_to_props(self, feature: gws.IFeature, mc):
+    def feature_to_props(self, feature: gws.Feature, mc):
         props = super().feature_to_props(feature, mc)
         props.attributes = dict(feature.attributes)
         if feature.shape():
             props.attributes[self.geometryName] = feature.shape().to_props()
         return props
 
-    def feature_from_record(self, record: gws.FeatureRecord, mc: gws.ModelContext) -> t.Optional[gws.IFeature]:
-        record = t.cast(gws.FeatureRecord, gws.to_data(record))
+    def feature_from_record(self, record: gws.FeatureRecord, mc: gws.ModelContext) -> t.Optional[gws.Feature]:
+        record = t.cast(gws.FeatureRecord, gws.u.to_data_object(record))
         feature = gws.base.feature.new(model=self, record=record)
         feature.attributes = record.attributes
         if record.uid and self.uidName:

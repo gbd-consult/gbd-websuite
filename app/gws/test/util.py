@@ -51,7 +51,7 @@ def gws_root():
     global _SPEC
     if _SPEC is None:
         _SPEC = gws.spec.runtime.create(work_dir() + '/MANIFEST.json', read_cache=False, write_cache=False)
-    return gws.create_root_object(_SPEC)
+    return gws.u.create_root(_SPEC)
 
 
 def gws_configure(config: str):
@@ -148,15 +148,15 @@ def pg_exec(sql: str, **kwargs):
 
 ##
 
-def model(root, name) -> gws.IModel:
+def model(root, name) -> gws.Model:
     return root.get(name)
 
 
-def db_model(root, name) -> gws.IDatabaseModel:
+def db_model(root, name) -> gws.DatabaseModel:
     return root.get(name)
 
 
-def feature(model, **atts) -> gws.IFeature:
+def feature(model, **atts) -> gws.Feature:
     f = gws.base.feature.new(model=model, record=gws.FeatureRecord(attributes=atts))
     f.attributes = atts
     return f
@@ -235,8 +235,8 @@ def make_users_json(lst):
 
 def write_file(path, text):
     pp = gws.lib.osx.parse_path(path)
-    if pp['dirname'].startswith(gws.TMP_DIR):
-        gws.ensure_dir(pp['dirname'])
+    if pp['dirname'].startswith(gws.c.TMP_DIR):
+        gws.u.ensure_dir(pp['dirname'])
     with open(path, 'wt', encoding='utf8') as fp:
         fp.write(text)
 
@@ -266,7 +266,7 @@ def sleep(n):
 
 
 def dict_of(x):
-    if gws.is_data_object(x):
+    if gws.u.is_data_object(x):
         # noinspection PyTypeChecker
         return dict(sorted(vars(x).items()))
     return x
@@ -284,7 +284,7 @@ def fxml(s):
 _comma = ','.join
 
 
-def image_similarity(a: image.Image | gws.IImage, b: image.Image) -> float:
+def image_similarity(a: image.Image | gws.Image, b: image.Image) -> float:
     error = 0
     x, y = a.size()
     for i in range(int(x)):

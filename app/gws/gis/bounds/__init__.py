@@ -7,7 +7,7 @@ import gws.gis.gml
 import gws.types as t
 
 
-def from_request_bbox(bbox: str, default_crs: gws.ICrs = None, always_xy=False) -> t.Optional[gws.Bounds]:
+def from_request_bbox(bbox: str, default_crs: gws.Crs = None, always_xy=False) -> t.Optional[gws.Bounds]:
     """Create Bounds from a KVP BBOX param.
 
     See OGC 06-121r9, 10.2.3 Bounding box KVP encoding.
@@ -41,7 +41,7 @@ def from_request_bbox(bbox: str, default_crs: gws.ICrs = None, always_xy=False) 
     return from_extent(extent, crs, always_xy)
 
 
-def from_extent(extent: gws.Extent, crs: gws.ICrs, always_xy=False) -> gws.Bounds:
+def from_extent(extent: gws.Extent, crs: gws.Crs, always_xy=False) -> gws.Bounds:
     """Create Bounds from an Extent.
 
     Args:
@@ -77,7 +77,7 @@ def intersect(b1: gws.Bounds, b2: gws.Bounds) -> bool:
     return gws.gis.extent.intersect(e1, e2)
 
 
-def transform(b: gws.Bounds, crs_to: gws.ICrs) -> gws.Bounds:
+def transform(b: gws.Bounds, crs_to: gws.Crs) -> gws.Bounds:
     if b.crs == crs_to:
         return b
     return gws.Bounds(

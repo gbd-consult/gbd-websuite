@@ -19,7 +19,7 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.vector.Object):
-    provider: gws.IDatabaseProvider
+    provider: gws.DatabaseProvider
     tableName: str
 
     def configure(self):

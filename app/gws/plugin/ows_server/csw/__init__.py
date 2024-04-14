@@ -36,35 +36,35 @@ class Object(gws.base.ows.server.service.Object):
 
     @property
     def default_templates(self):
-        base = gws.dirname(__file__) + '/templates'
+        base = gws.u.dirname(__file__) + '/templates'
         return [
             gws.Config(
                 type='py',
                 path=f'{base}/getCapabilities.py',
                 subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
-                access=gws.PUBLIC,
+                access=gws.c.PUBLIC,
             ),
             gws.Config(
                 type='py',
                 path=f'{base}/getRecords.py',
                 subject='ows.getRecords',
                 mimeTypes=['xml'],
-                access=gws.PUBLIC,
+                access=gws.c.PUBLIC,
             ),
             gws.Config(
                 type='py',
                 path=f'{base}/getRecordById.py',
                 subject='ows.GetRecordById',
                 mimeTypes=['xml'],
-                access=gws.PUBLIC,
+                access=gws.c.PUBLIC,
             ),
             gws.Config(
                 type='py',
                 path=f'{base}/record.py',
                 subject='ows.Record',
                 mimeTypes=['xml'],
-                access=gws.PUBLIC,
+                access=gws.c.PUBLIC,
             ),
         ]
 
@@ -94,7 +94,7 @@ class Object(gws.base.ows.server.service.Object):
 
     ##
 
-    def handle_request(self, req: gws.IWebRequester) -> gws.ContentResponse:
+    def handle_request(self, req: gws.WebRequester) -> gws.ContentResponse:
         rd = core.Request(req=req, project=None, service=self)
 
         if req.method == 'GET':
@@ -123,7 +123,7 @@ class Object(gws.base.ows.server.service.Object):
         })
 
     def handle_describerecord(self, rd: core.Request):
-        xml = gws.read_file(gws.dirname(__file__) + '/templates/describeRecord.xml')
+        xml = gws.u.read_file(gws.u.dirname(__file__) + '/templates/describeRecord.xml')
         return gws.ContentResponse(mime=gws.lib.mime.XML, content=xml)
 
     def handle_getrecords(self, rd: core.Request):
@@ -186,18 +186,18 @@ class Object(gws.base.ows.server.service.Object):
         self.records = {}
 
         for obj in self.root.find_all():
-            md: gws.lib.metadata.Metadata = gws.get(obj, 'metadata')
+            md: gws.lib.metadata.Metadata = gws.u.get(obj, 'metadata')
 
             if not md or not md.get('catalogUid'):
                 continue
 
-            cid = gws.to_uid(md.get('catalogUid'))
+            cid = gws.u.to_uid(md.get('catalogUid'))
 
             if md.get('metaLinks'):
                 gws.log.debug(f'csw: skip {cid}: has metalinks')
                 continue
 
-            if not gws.is_public_object(obj):
+            if not gws.u.is_public_object(obj):
                 gws.log.debug(f'csw: skip {cid}: not public')
                 continue
 
@@ -205,8 +205,8 @@ class Object(gws.base.ows.server.service.Object):
             md.set('catalogCitationUid', cid)
             md.set('metaLinks', [self._make_link(cid)])
 
-            extent = gws.get(obj, 'extent') or gws.get(obj, 'map.extent')
-            crs = gws.get(obj, 'crs') or gws.get(obj, 'map.crs')
+            extent = gws.u.get(obj, 'extent') or gws.u.get(obj, 'map.extent')
+            crs = gws.u.get(obj, 'crs') or gws.u.get(obj, 'map.crs')
             if extent and crs:
                 md.set('wgsExtent', gws.gis.extent.transform_to_4326(extent, crs))
                 md.set('crs', crs)
@@ -216,7 +216,7 @@ class Object(gws.base.ows.server.service.Object):
 
     def _make_link(self, cid):
         return gws.MetadataLink(
-            url=gws.action_url_path('owsService', serviceUid=self.uid, request='record', id=cid),
+            url=gws.u.action_url_path('owsService', serviceUid=self.uid, request='record', id=cid),
             format=gws.lib.mime.XML,
             type='TC211' if self.profile == 'ISO' else 'DCMI'
         )
@@ -225,13 +225,13 @@ class Object(gws.base.ows.server.service.Object):
         self.index = []
 
         for uid, md in self.records.items():
-            s = gws.get(md, 'title')
+            s = gws.u.get(md, 'title')
             if s:
                 self.index.append(['title', s, s.lower(), uid])
-            s = gws.get(md, 'abstract')
+            s = gws.u.get(md, 'abstract')
             if s:
                 self.index.append(['abstract', s, s.lower(), uid])
-            s = gws.get(md, 'keywords')
+            s = gws.u.get(md, 'keywords')
             if s:
                 for kw in s:
                     self.index.append(('subject', kw, kw.lower(), uid))

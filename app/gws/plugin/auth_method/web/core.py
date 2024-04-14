@@ -77,7 +77,7 @@ class Object(gws.base.auth.method.Object):
                 httponly=True)
             am.sessionMgr.save(sess)
 
-    def handle_login(self, req: gws.IWebRequester, credentials: gws.Data):
+    def handle_login(self, req: gws.WebRequester, credentials: gws.Data):
         am = self.root.app.authMgr
 
         if not req.user.isGuest:
@@ -100,7 +100,7 @@ class Object(gws.base.auth.method.Object):
 
         gws.log.info(f'LOGGED_IN: user={req.session.user.uid!r} roles={req.session.user.roles}')
 
-    def handle_logout(self, req: gws.IWebRequester):
+    def handle_logout(self, req: gws.WebRequester):
         am = self.root.app.authMgr
 
         if req.user.isGuest:

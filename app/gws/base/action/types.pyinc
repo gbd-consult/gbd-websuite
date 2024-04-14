@@ -1,0 +1,30 @@
+class ActionManager(Node):
+    """Action manager."""
+
+    def actions_for_project(self, project: 'Project', user: 'User') -> list['Action']:
+        """Get a list of actions for a Project, to which a User has access to."""
+
+    def find_action(self, project: Optional['Project'], ext_type: str, user: 'User') -> Optional['Action']:
+        """Locate an Action object.
+
+        Args:
+            project: Project to se
+            ext_type:
+            user:
+
+        Returns:
+
+        """
+
+    def prepare_action(
+            self,
+            command_category: CommandCategory,
+            command_name: str,
+            params: dict,
+            user: 'User',
+            read_options=None,
+    ) -> tuple[Callable, Request]: ...
+
+
+class Action(Node):
+    pass

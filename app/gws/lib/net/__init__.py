@@ -82,7 +82,7 @@ def parse_url(url: str, **kwargs) -> Url:
 
 
 def make_url(u: t.Optional[Url | dict] = None, **kwargs) -> str:
-    p = gws.merge({}, u, kwargs)
+    p = gws.u.merge({}, u, kwargs)
 
     s = ''
 
@@ -132,7 +132,7 @@ def make_qs(x) -> str:
     """
 
     p = []
-    items = x if isinstance(x, (list, tuple)) else gws.to_dict(x).items()
+    items = x if isinstance(x, (list, tuple)) else gws.u.to_dict(x).items()
 
     def _value(v):
         if isinstance(v, (bytes, bytearray)):
@@ -288,14 +288,14 @@ def http_request(url, **kwargs) -> HTTPResponse:
         age = gws.lib.osx.file_age(cache_path)
         if 0 <= age < max_age:
             gws.log.debug(f'HTTP_CACHED_{method}: url={url!r} path={cache_path!r} age={age}')
-            return gws.unserialize_from_path(cache_path)
+            return gws.u.unserialize_from_path(cache_path)
 
     gws.debug.time_start(f'HTTP_{method}={url!r}')
     res = _http_request(method, url, kwargs)
     gws.debug.time_end()
 
     if method == 'GET' and max_age and res.ok:
-        gws.serialize_to_path(res, cache_path)
+        gws.u.serialize_to_path(res, cache_path)
 
     return res
 
@@ -331,4 +331,4 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
 
 
 def _cache_path(url):
-    return gws.NET_CACHE_DIR + '/' + gws.sha256(url)
+    return gws.c.NET_CACHE_DIR + '/' + gws.u.sha256(url)

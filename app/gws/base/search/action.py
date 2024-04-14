@@ -19,7 +19,7 @@ class Config(gws.base.action.Config):
 
     limit: int = 1000
     """search results limit"""
-    tolerance: t.Optional[gws.Measurement]
+    tolerance: t.Optional[gws.UomValueStr]
     """default tolerance"""
 
 
@@ -45,26 +45,26 @@ class Response(gws.Response):
 
 class Object(gws.base.action.Object):
     limit = 0
-    tolerance: gws.Measurement
+    tolerance: gws.UomValue
 
     def configure(self):
         self.limit = self.cfg('limit')
         self.tolerance = self.cfg('tolerance') or _DEFAULT_TOLERANCE
 
     @gws.ext.command.api('searchFind')
-    def find(self, req: gws.IWebRequester, p: Request) -> Response:
+    def find(self, req: gws.WebRequester, p: Request) -> Response:
         """Perform a search"""
 
         propses = self._get_features(req, p)
         return Response(features=propses)
 
-    def _get_features(self, req: gws.IWebRequester, p: Request) -> list[gws.FeatureProps]:
+    def _get_features(self, req: gws.WebRequester, p: Request) -> list[gws.FeatureProps]:
 
         project = req.user.require_project(p.projectUid)
         search = gws.SearchQuery(project=project)
 
         if p.layerUids:
-            search.layers = gws.compact(req.acquire(uid, gws.ext.object.layer) for uid in p.layerUids)
+            search.layers = gws.u.compact(req.user.acquire(uid, gws.ext.object.layer) for uid in p.layerUids)
 
         search.bounds = project.map.bounds
         if p.extent:
@@ -98,7 +98,7 @@ class Object(gws.base.action.Object):
             res.feature.transform_to(search.bounds.crs)
 
         for res in results:
-            templates = gws.compact(
+            templates = gws.u.compact(
                 self.root.app.templateMgr.find_template(res.finder, res.layer, project, user=req.user, subject=f'feature.{v}')
                 for v in p.views or _DEFAULT_VIEWS
             )

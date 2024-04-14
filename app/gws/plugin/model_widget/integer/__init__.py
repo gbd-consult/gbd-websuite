@@ -20,4 +20,4 @@ class Props(gws.base.model.widget.Props):
 
 class Object(gws.base.model.widget.Object):
     def props(self, user):
-        return gws.merge(super().props(user), placeholder=self.cfg('placeholder'), step=self.cfg('step'))
+        return gws.u.merge(super().props(user), placeholder=self.cfg('placeholder'), step=self.cfg('step'))

@@ -1,0 +1,108 @@
+
+class MapView(Data):
+    """Map view."""
+
+    bounds: Bounds
+    center: Point
+    rotation: int
+    scale: int
+    mmSize: Size
+    pxSize: Size
+    dpi: int
+
+
+class MapRenderInputPlaneType(Enum):
+    """Map render input plane type."""
+
+    features = 'features'
+    image = 'image'
+    imageLayer = 'imageLayer'
+    svgLayer = 'svgLayer'
+    svgSoup = 'svgSoup'
+
+
+class MapRenderInputPlane(Data):
+    """Map render input plane."""
+
+    type: MapRenderInputPlaneType
+    features: list['Feature']
+    image: 'Image'
+    layer: 'Layer'
+    opacity: float
+    soupPoints: list[Point]
+    soupTags: list[Any]
+    styles: list['Style']
+    subLayers: list[str]
+
+
+class MapRenderInput(Data):
+    """Map render input."""
+
+    backgroundColor: int
+    bbox: Extent
+    center: Point
+    crs: 'Crs'
+    dpi: int
+    mapSize: UomSize
+    notify: Callable
+    planes: list['MapRenderInputPlane']
+    project: 'Project'
+    rotation: int
+    scale: int
+    user: 'User'
+    visibleLayers: Optional[list['Layer']]
+
+
+class MapRenderOutputPlaneType(Enum):
+    """Map render output plane type."""
+
+    image = 'image'
+    path = 'path'
+    svg = 'svg'
+
+
+class MapRenderOutputPlane(Data):
+    """Map render output plane."""
+
+    type: MapRenderOutputPlaneType
+    path: str
+    elements: list[XmlElement]
+    image: 'Image'
+
+
+class MapRenderOutput(Data):
+    """Map render output."""
+
+    planes: list['MapRenderOutputPlane']
+    view: MapView
+
+
+class LayerRenderInputType(Enum):
+    """Layer render input type."""
+
+    box = 'box'
+    xyz = 'xyz'
+    svg = 'svg'
+
+
+class LayerRenderInput(Data):
+    """Layer render input."""
+
+    boxBuffer: int
+    boxSize: int
+    extraParams: dict
+    project: 'Project'
+    style: 'Style'
+    type: LayerRenderInputType
+    user: 'User'
+    view: MapView
+    x: int
+    y: int
+    z: int
+
+
+class LayerRenderOutput(Data):
+    """Layer render output."""
+
+    content: bytes
+    tags: list[XmlElement]

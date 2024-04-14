@@ -39,7 +39,7 @@ def parse_dict(d: dict, opts: Options) -> dict:
         if k.startswith('__'):
             k = k[2:]
 
-        fn = gws.get(_ParseFunctions, k)
+        fn = gws.u.get(_ParseFunctions, k)
 
         if not fn:
             err = f'style: invalid css property {key!r}'

@@ -1,0 +1,126 @@
+
+
+class XmlNamespace(Data):
+    """XML namespace."""
+
+    uid: str
+    """Unique ID."""
+    xmlns: str
+    """Default prefix for this Namespace."""
+    uri: Url
+    """Namespace uri."""
+    schemaLocation: Url
+    """Namespace schema location."""
+    version: str
+    """Namespace version."""
+
+
+class XmlElement(Iterable):
+    """XML Element."""
+
+    tag: str
+    """Tag name, with an optional namespace in the Clark notation."""
+
+    text: Optional[str]
+    """Text before first subelement."""
+
+    tail: Optional[str]
+    """Text after this element's end tag."""
+
+    attrib: dict
+    """Dictionary of element attributes."""
+
+    name: str
+    """Element name (tag without a namespace)."""
+
+    lname: str
+    """Element name (tag without a namespace) in lower case."""
+
+    caseInsensitive: bool
+    """Element is case-insensitive."""
+
+    def __len__(self) -> int: ...
+
+    def __iter__(self) -> Iterator['XmlElement']: ...
+
+    def __getitem__(self, item: int) -> 'XmlElement': ...
+
+    def clear(self): ...
+
+    def get(self, key: str, default=None) -> Any: ...
+
+    def attr(self, key: str, default=None) -> Any: ...
+
+    def items(self) -> Iterable[Any]: ...
+
+    def keys(self) -> Iterable[str]: ...
+
+    def set(self, key: str, value: Any): ...
+
+    def append(self, subelement: 'XmlElement'): ...
+
+    def extend(self, subelements: Iterable['XmlElement']): ...
+
+    def insert(self, index: int, subelement: 'XmlElement'): ...
+
+    def find(self, path: str) -> Optional['XmlElement']:
+        """Finds first matching element by tag name or path."""
+
+    def findall(self, path: str) -> list['XmlElement']:
+        """Finds all matching subelements by name or path."""
+
+    def findtext(self, path: str, default: Optional[str] = None) -> str:
+        """Finds text for first matching element by name or path."""
+
+    def iter(self, tag: Optional[str] = None) -> Iterable['XmlElement']: ...
+
+    def iterfind(self, path: Optional[str] = None) -> Iterable['XmlElement']:
+        """Returns an iterable of all matching subelements by name or path."""
+
+    def itertext(self) -> Iterable[str]: ...
+
+    def remove(self, other: 'XmlElement'): ...
+
+    # extensions
+
+    def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'XmlElement': ...
+
+    def children(self) -> list['XmlElement']: ...
+
+    def findfirst(self, *paths) -> Optional['XmlElement']: ...
+
+    def textof(self, *paths) -> str: ...
+
+    def textlist(self, *paths, deep=False) -> list[str]: ...
+
+    def textdict(self, *paths, deep=False) -> dict[str, str]: ...
+
+    #
+
+    def to_string(
+            self,
+            compact_whitespace=False,
+            remove_namespaces=False,
+            with_namespace_declarations=False,
+            with_schema_locations=False,
+            with_xml_declaration=False,
+    ) -> str:
+        """Converts the Element object to a string.
+
+        Args:
+            compact_whitespace: Remove all whitespace outside of tags and elements.
+            remove_namespaces: Remove all namespace references.
+            with_namespace_declarations: Include the namespace declarations.
+            with_schema_locations: Include schema locations.
+            with_xml_declaration: Include the xml declaration.
+
+        Returns:
+            An XML string.
+        """
+
+    def to_dict(self) -> dict:
+        """Creates a dictionary from an XElement object.
+
+        Returns:
+            A dict with the keys ``tag``, ``attrib``, ``text``, ``tail``, ``tail``, ``children``.
+        """

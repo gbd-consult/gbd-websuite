@@ -23,12 +23,12 @@ def test_mm_to_px():
 
 def test_to_px():
     """
-        Test general conversion of Measurements to pixels
+        Test general conversion of UomValue to pixels
 
         In it's current state we test the ability to convert
         all supported units, not the correctness of these conversions.
 
-        #TODO: Create Tests for correctnes of conversions according to 
+        #TODO: Create Tests for correctness of conversions according to
         # whatever standards there are for a given unit.
     """
     # obj_uom = gws.core.types.Uom()
@@ -55,17 +55,17 @@ def test_size_mm_to_px():
     assert uom.size_mm_to_px(valuexy, ppi) == (uom.mm_to_px(valuex, ppi), uom.mm_to_px(valuey, ppi))
 
 
-def test_msize_to_px():
+def test_size_to_px():
     valuex = 1
     valuey = 2
     ppi = 123
     for unit in [name for name in dir(gws.Uom) if not name.startswith('_')]:
         match unit:
             case gws.Uom.mm:
-                assert uom.msize_to_px((valuex, valuey, gws.Uom.mm), ppi) == (
+                assert uom.size_to_px((valuex, valuey, gws.Uom.mm), ppi) == (
                     uom.mm_to_px(valuex, ppi), uom.mm_to_px(valuey, ppi), gws.Uom.px)
             case gws.Uom.px:
-                assert uom.msize_to_px((valuex, valuey, gws.Uom.px), ppi) == (valuex, valuey, gws.Uom.px)
+                assert uom.size_to_px((valuex, valuey, gws.Uom.px), ppi) == (valuex, valuey, gws.Uom.px)
             case _:
                 assert True
 
@@ -110,17 +110,17 @@ def test_size_to_px():
     assert uom.size_mm_to_px(valuexy, ppi) == (uom.mm_to_px(valuex, ppi), uom.mm_to_px(valuey, ppi))
 
 
-def test_msize_to_mm():
+def test_size_to_mm():
     valuex = 1
     valuey = 2
     ppi = 123
     for unit in [name for name in dir(gws.Uom) if not name.startswith('_')]:
         match unit:
             case gws.Uom.px:
-                assert uom.msize_to_mm((valuex, valuey, gws.Uom.px), ppi) == (
+                assert uom.size_to_mm((valuex, valuey, gws.Uom.px), ppi) == (
                     uom.px_to_mm(valuex, ppi), uom.px_to_mm(valuey, ppi), gws.Uom.mm)
             case gws.Uom.mm:
-                assert uom.msize_to_mm((valuex, valuey, gws.Uom.mm), ppi) == (valuex, valuey, gws.Uom.mm)
+                assert uom.size_to_mm((valuex, valuey, gws.Uom.mm), ppi) == (valuex, valuey, gws.Uom.mm)
             case _:
                 assert True
 

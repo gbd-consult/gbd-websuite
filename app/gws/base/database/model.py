@@ -25,8 +25,8 @@ class Config(gws.base.model.Config):
     """extra SQL filter"""
 
 
-class Object(gws.base.model.Object, gws.IDatabaseModel):
-    provider: gws.IDatabaseProvider
+class Object(gws.base.model.Object, gws.DatabaseModel):
+    provider: gws.DatabaseProvider
 
     def configure(self):
         self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
@@ -37,7 +37,7 @@ class Object(gws.base.model.Object, gws.IDatabaseModel):
         self.configure_model()
 
     def configure_provider(self):
-        self.provider = t.cast(gws.IDatabaseProvider, provider.get_for(self, ext_type=self.extType))
+        self.provider = t.cast(gws.DatabaseProvider, provider.get_for(self, ext_type=self.extType))
         return True
 
     ##

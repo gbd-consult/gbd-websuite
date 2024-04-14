@@ -122,7 +122,7 @@ class Object(related_field.Object):
         key = self.key_for_uid(self.model, self.rel.src.key, feature.uid(), mc)
         self.after_write(feature, key, mc)
 
-    def after_write(self, feature: gws.IFeature, key, mc: gws.ModelContext):
+    def after_write(self, feature: gws.Feature, key, mc: gws.ModelContext):
         if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
             return
 

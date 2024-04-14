@@ -20,7 +20,7 @@ class Config(gws.Config):
     """source grid"""
 
 
-class Object(gws.Node, gws.IProvider):
+class Object(gws.Node):
     url: gws.Url
     grid: t.Optional[gws.TileGrid]
     maxRequests: int
@@ -44,5 +44,5 @@ class Object(gws.Node, gws.IProvider):
 
 ##
 
-def get_for(obj: gws.INode) -> Object:
+def get_for(obj: gws.Node) -> Object:
     return t.cast(Object, gws.config.util.get_provider(Object, obj))

@@ -38,7 +38,7 @@ Pytest options:
 
 
 def main(args):
-    gws.ensure_system_dirs()
+    gws.u.ensure_system_dirs()
 
     wd = args.get('work_dir')
     u.OPTIONS = gws.lib.jsonx.from_path(f'{wd}/options.json')
@@ -79,7 +79,7 @@ def enum_files_for_test(only_pattern):
 
     regex = u.OPTIONS.get('pytest.python_files').replace('*', '.*')
 
-    files = list(gws.lib.osx.find_files(f'{gws.APP_DIR}/gws', regex))
+    files = list(gws.lib.osx.find_files(f'{gws.c.APP_DIR}/gws', regex))
     if only_pattern:
         files = [f for f in files if re.search(only_pattern, f)]
 

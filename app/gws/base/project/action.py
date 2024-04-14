@@ -27,7 +27,7 @@ class Object(gws.base.action.Object):
     """Project information action"""
 
     @gws.ext.command.api('projectInfo')
-    def info(self, req: gws.IWebRequester, p: gws.Request) -> InfoResponse:
+    def info(self, req: gws.WebRequester, p: gws.Request) -> InfoResponse:
         """Return the project configuration"""
 
         project = req.user.require_project(p.projectUid)
@@ -37,6 +37,6 @@ class Object(gws.base.action.Object):
             locale_uid = project.localeUids[0]
 
         return InfoResponse(
-            project=gws.props(project, req.user),
+            project=gws.u.make_props(project, req.user),
             locale=gws.lib.intl.locale(locale_uid),
-            user=None if req.user.isGuest else gws.props(req.user, req.user))
+            user=None if req.user.isGuest else gws.u.make_props(req.user, req.user))

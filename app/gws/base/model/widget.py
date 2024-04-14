@@ -13,7 +13,7 @@ class Config(gws.Config):
     readOnly: bool = False
 
 
-class Object(gws.Node, gws.IModelWidget):
+class Object(gws.ModelWidget):
     readOnly: bool
 
     def configure(self):

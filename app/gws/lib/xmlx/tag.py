@@ -40,7 +40,7 @@ import gws.types as t
 from . import element, error
 
 
-def tag(names: str, *args, **kwargs) -> gws.IXmlElement:
+def tag(names: str, *args, **kwargs) -> gws.XmlElement:
     """Build an XML element from arguments.
 
     Args:
@@ -74,7 +74,7 @@ def tag(names: str, *args, **kwargs) -> gws.IXmlElement:
     return first
 
 
-def _add(el: gws.IXmlElement, arg):
+def _add(el: gws.XmlElement, arg):
     if arg is None:
         return
 

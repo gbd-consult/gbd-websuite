@@ -7,7 +7,7 @@ import gws.lib.xmlx as xmlx
 import gws.types as t
 
 
-def parse(text: str, default_crs: gws.ICrs = None, always_xy=False) -> list[gws.FeatureRecord]:
+def parse(text: str, default_crs: gws.Crs = None, always_xy=False) -> list[gws.FeatureRecord]:
     gws.debug.time_start('featureinfo:parse')
     res = _parse(text, default_crs, always_xy)
     gws.debug.time_end()
@@ -42,7 +42,7 @@ def _parse(text, default_crs, always_xy):
 
 ##
 
-def _parse_msgmloutput(xml_el: gws.IXmlElement, default_crs, always_xy):
+def _parse_msgmloutput(xml_el: gws.XmlElement, default_crs, always_xy):
     # msGMLOutput (MapServer)
     #
     # <msGMLOutput
@@ -74,7 +74,7 @@ def _parse_msgmloutput(xml_el: gws.IXmlElement, default_crs, always_xy):
     return fds
 
 
-def _parse_featurecollection(xml_el: gws.IXmlElement, default_crs, always_xy):
+def _parse_featurecollection(xml_el: gws.XmlElement, default_crs, always_xy):
     # FeatureCollection (OGC)
     #
     # <FeatureCollection
@@ -100,7 +100,7 @@ def _parse_featurecollection(xml_el: gws.IXmlElement, default_crs, always_xy):
     return fds
 
 
-def _parse_getfeatureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
+def _parse_getfeatureinforesponse(xml_el: gws.XmlElement, default_crs, always_xy):
     # GetFeatureInfoResponse (geoserver/qgis)
     #
     # <GetFeatureInfoResponse>
@@ -136,7 +136,7 @@ def _parse_getfeatureinforesponse(xml_el: gws.IXmlElement, default_crs, always_x
     return fds
 
 
-def _parse_featureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
+def _parse_featureinforesponse(xml_el: gws.XmlElement, default_crs, always_xy):
     # FeatureInfoResponse (Arcgis)
     #
     # https://webhelp.esri.com/arcims/9.3/General/mergedProjects/wms_connect/wms_connector/get_featureinfo.htm
@@ -160,7 +160,7 @@ def _parse_featureinforesponse(xml_el: gws.IXmlElement, default_crs, always_xy):
     return fds
 
 
-def _parse_geobak(xml_el: gws.IXmlElement, default_crs, always_xy):
+def _parse_geobak(xml_el: gws.XmlElement, default_crs, always_xy):
     # GeoBAK (https://www.egovernment.sachsen.de/geodaten.html)
     #
     # <geobak_20:Sachdatenabfrage...

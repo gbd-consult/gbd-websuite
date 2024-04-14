@@ -17,9 +17,9 @@ MIN_DPI = gws.lib.uom.PDF_DPI
 # Map Views
 
 def map_view_from_center(
-        size: gws.MSize,
+        size: gws.UomSize,
         center: gws.Point,
-        crs: gws.ICrs,
+        crs: gws.Crs,
         dpi,
         scale,
         rotation=0,
@@ -28,9 +28,9 @@ def map_view_from_center(
 
 
 def map_view_from_bbox(
-        size: gws.MSize,
+        size: gws.UomSize,
         bbox: gws.Extent,
-        crs: gws.ICrs,
+        crs: gws.Crs,
         dpi,
         rotation=0,
 ) -> gws.MapView:
@@ -246,17 +246,17 @@ def _add_svg_elements(rd: _Renderer, elements, opacity):
 # Output
 
 
-def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.IXmlElement:
+def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.XmlElement:
     w, h = mro.view.mmSize
 
     css_size = f'left:0;top:0;width:{int(w)}mm;height:{int(h)}mm'
     css_abs = f'position:absolute;{css_size}'
 
-    tags: list[gws.IXmlElement] = []
+    tags: list[gws.XmlElement] = []
 
     for plane in mro.planes:
         if plane.type == gws.MapRenderOutputPlaneType.image:
-            img_path = plane.image.to_path(gws.printtemp('mro.png'))
+            img_path = plane.image.to_path(gws.u.printtemp('mro.png'))
             tags.append(xmlx.tag('img', {'style': css_abs, 'src': img_path}))
         if plane.type == gws.MapRenderOutputPlaneType.path:
             tags.append(xmlx.tag('img', {'style': css_abs, 'src': plane.path}))

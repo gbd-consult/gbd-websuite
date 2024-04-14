@@ -1,0 +1,197 @@
+Extent: TypeAlias = tuple[float, float, float, float]
+"""An array of 4 elements representing extent coordinates ``[min-x, min-y, max-x, max-y]``."""
+
+Point: TypeAlias = tuple[float, float]
+"""Point coordinates ``[x, y]``."""
+
+Size: TypeAlias = tuple[float, float]
+"""Size ``[width, height]``."""
+
+
+class Origin(Enum):
+    """Grid origin."""
+
+    nw = 'nw'
+    """north-west"""
+    sw = 'sw'
+    """south-west"""
+    ne = 'ne'
+    """north-east"""
+    se = 'se'
+    """south-east"""
+    lt = 'nw'
+    """left top"""
+    lb = 'sw'
+    """left bottom"""
+    rt = 'ne'
+    """right top"""
+    rb = 'se'
+    """right bottom"""
+
+
+FilePath: TypeAlias = str
+"""File path on the server."""
+
+DirPath: TypeAlias = str
+"""Directory path on the server."""
+
+Duration: TypeAlias = str
+"""Duration like ``1w 2d 3h 4m 5s`` or an integer number of seconds."""
+
+Color: TypeAlias = str
+"""CSS color name."""
+
+Regex: TypeAlias = str
+"""Regular expression, as used in Python."""
+
+FormatStr: TypeAlias = str
+"""Format string as used in Python."""
+
+DateStr: TypeAlias = str
+"""ISO date string like ``2019-01-30``."""
+
+DateTimeStr: TypeAlias = str
+"""ISO datetime string like ``2019-01-30 01:02:03``."""
+
+Url: TypeAlias = str
+"""URL."""
+
+ClassRef: TypeAlias = type | str
+"""Class reference, a type, and 'ext' object or a class name."""
+
+
+class Config(Data):
+    """Object configuration."""
+
+    uid: str = ''
+    """Unique ID."""
+
+
+class Props(Data):
+    """Object properties."""
+
+    uid: str = ''
+    """Unique ID."""
+
+
+class Request(Data):
+    """Command request."""
+
+    projectUid: Optional[str]
+    """Unique ID of the project."""
+    localeUid: Optional[str]
+    """Locale ID for this request."""
+
+
+class EmptyRequest(Data):
+    """Empty command request."""
+
+    pass
+
+
+class ResponseError(Data):
+    """Response error."""
+
+    code: Optional[int]
+    """Error code."""
+    info: Optional[str]
+    """Information about the error."""
+
+
+class Response(Data):
+    """Command response."""
+
+    error: Optional[ResponseError]
+    """Response error."""
+    status: int
+    """Response status or exit code."""
+
+
+class ContentResponse(Response):
+    """Web response with literal content."""
+
+    asAttachment: bool
+    """Serve the content as an attachment."""
+    attachmentName: str
+    """Name for the attachment."""
+    content: bytes | str
+    """Response content."""
+    contentPath: str
+    """Local path with the content."""
+    mime: str
+    """Response mime type."""
+    headers: dict
+    """Additional headers."""
+
+
+class RedirectResponse(Response):
+    """Web redirect response."""
+
+    location: str
+    """Redirect URL."""
+    headers: dict
+    """Additional headers."""
+
+
+class AttributeType(Enum):
+    """Feature attribute type."""
+
+    bool = 'bool'
+    bytes = 'bytes'
+    date = 'date'
+    datetime = 'datetime'
+    feature = 'feature'
+    featurelist = 'featurelist'
+    file = 'file'
+    float = 'float'
+    floatlist = 'floatlist'
+    geometry = 'geometry'
+    int = 'int'
+    intlist = 'intlist'
+    str = 'str'
+    strlist = 'strlist'
+    time = 'time'
+
+
+class GeometryType(Enum):
+    """Feature geometry type.
+
+    OGC and SQL/MM geometry types.
+
+    References:
+
+        OGC 06-103r4 (https://www.ogc.org/standards/sfa), https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.html
+    """
+
+    geometry = 'geometry'
+
+    point = 'point'
+    curve = 'curve'
+    surface = 'surface'
+
+    geometrycollection = 'geometrycollection'
+
+    linestring = 'linestring'
+    line = 'line'
+    linearring = 'linearring'
+
+    polygon = 'polygon'
+    triangle = 'triangle'
+
+    polyhedralsurface = 'polyhedralsurface'
+    tin = 'tin'
+
+    multipoint = 'multipoint'
+    multicurve = 'multicurve'
+    multilinestring = 'multilinestring'
+    multipolygon = 'multipolygon'
+    multisurface = 'multisurface'
+
+    circularstring = 'circularstring'
+    compoundcurve = 'compoundcurve'
+    curvepolygon = 'curvepolygon'
+
+
+class CliParams(Data):
+    """CLI params"""
+    pass

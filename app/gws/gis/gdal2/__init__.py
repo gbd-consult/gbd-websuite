@@ -12,7 +12,7 @@ import gws.types as t
 
 @contextlib.contextmanager
 def from_string(s, **opts):
-    fname = '/vsimem/' + gws.random_string(64)
+    fname = '/vsimem/' + gws.u.random_string(64)
     osgeo.gdal.FileFromMemBuffer(fname, s)
 
     ds = osgeo.gdal.OpenEx(fname, **opts)

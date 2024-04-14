@@ -8,5 +8,5 @@ class Config(gws.Config):
     pass
 
 
-class Object(gws.Node, gws.IAuthMfa):
+class Object(gws.AuthMfa):
     pass

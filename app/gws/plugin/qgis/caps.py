@@ -18,8 +18,8 @@ class PrintTemplateElement(gws.Data):
     type: str
     uuid: str
     attributes: dict
-    position: gws.MPoint
-    size: gws.MSize
+    position: gws.UomPoint
+    size: gws.UomSize
 
 
 class PrintTemplate(gws.Data):
@@ -44,7 +44,7 @@ def parse(xml: str) -> Caps:
     return parse_element(el)
 
 
-def parse_element(root_el: gws.IXmlElement) -> Caps:
+def parse_element(root_el: gws.XmlElement) -> Caps:
     caps = Caps()
 
     caps.version = root_el.get('version')
@@ -188,7 +188,7 @@ def _add_dict(dst, src, mapping):
             setattr(dst, dkey, src[skey])
 
 
-def _metadata(el: gws.IXmlElement, md: gws.Metadata):
+def _metadata(el: gws.XmlElement, md: gws.Metadata):
     # extract metadata from projectMetadata/resourceMetadata
 
     _add_dict(md, el.textdict(), _meta_mapping)
@@ -286,7 +286,7 @@ _LAYOUT_TYPES = {
 #      etc
 
 
-def _print_templates(root_el: gws.IXmlElement):
+def _print_templates(root_el: gws.XmlElement):
     templates = []
 
     for layout_el in root_el.findall('Layouts/Layout'):
@@ -299,16 +299,16 @@ def _print_templates(root_el: gws.IXmlElement):
 
         pc_el = layout_el.find('PageCollection')
         if pc_el:
-            tpl.elements.extend(gws.compact(_layout_element(c) for c in pc_el))
+            tpl.elements.extend(gws.u.compact(_layout_element(c) for c in pc_el))
 
-        tpl.elements.extend(gws.compact(_layout_element(c) for c in layout_el))
+        tpl.elements.extend(gws.u.compact(_layout_element(c) for c in layout_el))
 
         templates.append(tpl)
 
     return templates
 
 
-def _layout_element(item_el: gws.IXmlElement):
+def _layout_element(item_el: gws.XmlElement):
     type = _LAYOUT_TYPES.get(_parse_int(item_el.get('type')))
     uuid = item_el.get('uuid')
     if type and uuid:
@@ -324,7 +324,7 @@ def _layout_element(item_el: gws.IXmlElement):
 ##
 
 
-def _map_layers(root_el: gws.IXmlElement, properties: dict) -> dict[str, gws.SourceLayer]:
+def _map_layers(root_el: gws.XmlElement, properties: dict) -> dict[str, gws.SourceLayer]:
     no_wms_layers = set(properties.get('WMSRestrictedLayers', []))
     use_layer_ids = properties.get('WMSUseLayerIDs', False)
 
@@ -356,7 +356,7 @@ def _map_layers(root_el: gws.IXmlElement, properties: dict) -> dict[str, gws.Sou
     return map_layers
 
 
-def _map_layer(layer_el: gws.IXmlElement):
+def _map_layer(layer_el: gws.XmlElement):
     sl = gws.SourceLayer(
         supportedCrs=[],
     )
@@ -396,7 +396,7 @@ def _map_layer(layer_el: gws.IXmlElement):
 #         ...
 
 
-def _layer_tree(el: gws.IXmlElement, layers_dct):
+def _layer_tree(el: gws.XmlElement, layers_dct):
     visible = el.get('checked') != 'Qt::Unchecked'
     expanded = el.get('expanded') == '1'
 
@@ -414,7 +414,7 @@ def _layer_tree(el: gws.IXmlElement, layers_dct):
             isGroup=True,
             isQueryable=False,
             isImage=False,
-            layers=gws.compact(_layer_tree(c, layers_dct) for c in el)
+            layers=gws.u.compact(_layer_tree(c, layers_dct) for c in el)
         )
 
     if el.tag == 'layer-tree-layer':
@@ -427,7 +427,7 @@ def _layer_tree(el: gws.IXmlElement, layers_dct):
             return sl
 
 
-def _layer_datasource(layer_el: gws.IXmlElement) -> dict:
+def _layer_datasource(layer_el: gws.XmlElement) -> dict:
     prov = layer_el.textof('provider')
     ds_text = layer_el.textof('datasource')
 
@@ -440,7 +440,7 @@ def _layer_datasource(layer_el: gws.IXmlElement) -> dict:
 
 ##
 
-def _visibility_presets(root_el: gws.IXmlElement):
+def _visibility_presets(root_el: gws.XmlElement):
     """Parse the global ``visibility-presets`` block.
 
     We're only interested in which layers are visible.
@@ -473,7 +473,7 @@ def _visibility_presets(root_el: gws.IXmlElement):
 
 
 def parse_datasource(prov, text):
-    ds = gws.to_lower_dict(_parse_datasource(text) or {})
+    ds = gws.u.to_lower_dict(_parse_datasource(text) or {})
     ds['provider'] = (ds.get('provider') or prov).lower()
 
     if ds['provider'] == 'wms' and 'tilematrixset' in ds:
@@ -646,7 +646,7 @@ def _datasource_pipe_delimited(text):
 ##
 
 
-def parse_properties(el: gws.IXmlElement):
+def parse_properties(el: gws.XmlElement):
     """Parse qgis property blocks.
 
     There are following forms:
@@ -681,7 +681,7 @@ def parse_properties(el: gws.IXmlElement):
     return val
 
 
-def _parse_property_tag(el: gws.IXmlElement):
+def _parse_property_tag(el: gws.XmlElement):
     typ = el.get('type')
     name = el.tag
     is_opt = el.tag == 'Option'

@@ -1,0 +1,41 @@
+class TemplateRenderInput(Data):
+    """Template render input."""
+
+    args: dict
+    crs: 'Crs'
+    dpi: int
+    localeUid: str
+    maps: list[MapRenderInput]
+    mimeOut: str
+    notify: Callable
+    project: 'Project'
+    user: 'User'
+
+
+class TemplateQualityLevel(Data):
+    """Template quality level."""
+
+    name: str
+    dpi: int
+
+
+class Template(Node):
+    """Template object."""
+
+    mapSize: UomSize
+    mimeTypes: list[str]
+    pageMargin: UomExtent
+    pageSize: UomSize
+    subject: str
+    title: str
+
+    def render(self, tri: TemplateRenderInput) -> ContentResponse: ...
+
+
+class TemplateManager(Node):
+    """Template manager."""
+
+    def find_template(self, *objects, user: 'User' = None, subject: str = None, mime: str = None) -> Optional['Template']: ...
+
+    def template_from_path(self, path: str) -> Optional['Template']: ...
+

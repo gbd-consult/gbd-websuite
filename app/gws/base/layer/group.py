@@ -70,4 +70,4 @@ class Object(core.Object):
     ##
 
     def props(self, user):
-        return gws.merge(super().props(user), type='group')
+        return gws.u.merge(super().props(user), type='group')

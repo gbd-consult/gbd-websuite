@@ -26,7 +26,7 @@ class _ConnectionWrapper:
         self._conn = sqlite3.connect(self._database)
         self._conn.row_factory = sqlite3.Row
         # if os.path.isfile(self._database):
-        #     os.chown(self._database, gws.UID, gws.GID)
+        #     os.chown(self._database, gws.c.UID, gws.c.GID)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

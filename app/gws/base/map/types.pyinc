@@ -1,0 +1,12 @@
+class Map(Node):
+    """Map object."""
+
+    rootLayer: 'Layer'
+
+    bounds: Bounds
+    center: Point
+    coordinatePrecision: int
+    initResolution: float
+    resolutions: list[float]
+    title: str
+    wgsExtent: Extent

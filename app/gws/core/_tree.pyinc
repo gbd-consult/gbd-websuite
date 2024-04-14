@@ -1,0 +1,324 @@
+class Object:
+    """GWS object."""
+
+    permissions: dict[Access, Acl]
+    """Mapping from an access mode to a list of ACL tuples."""
+
+    def props(self, user: 'User') -> Props:
+        """Generate a ``Props`` struct for this object.
+
+        Args:
+            user: The user for which the props should be generated.
+        """
+
+    def __init__(self):
+        self.permissions = {}
+
+
+from .core import tree_impl
+
+tree_impl.Access = Access
+tree_impl.Error = Error
+tree_impl.ConfigurationError = ConfigurationError
+tree_impl.Data = Data
+tree_impl.Props = Props
+tree_impl.Object = Object
+
+Object.__repr__ = tree_impl.object_repr
+
+
+class Node(Object):
+    """Configurable GWS object."""
+
+    extName: str
+    """Full extension name like ``gws.ext.object.layer.wms``."""
+    extType: str
+    """Extension type like ``wms``."""
+
+    config: Config
+    """Configuration for this object."""
+    root: 'Root'
+    """Root object."""
+    parent: 'Node'
+    """Parent object."""
+    children: list['Node']
+    """Child objects."""
+    uid: str
+    """Unique ID."""
+
+    def initialize(self, config):
+        return tree_impl.node_initialize(self, config)
+
+    def pre_configure(self):
+        """Pre-configuration hook."""
+
+    def configure(self):
+        """Configuration hook."""
+
+    def post_configure(self):
+        """Post-configuration hook."""
+
+    def activate(self):
+        """Activation hook."""
+
+    def create_child(self, classref: ClassRef, config: Config = None, **kwargs):
+        """Create a child object.
+
+        Args:
+            classref: Class reference.
+            config: Configuration.
+            **kwargs: Additional configuration properties.
+
+        Returns:
+            A newly created object or ``None`` if the object cannot be initialized.
+        """
+        return tree_impl.node_create_child(self, classref, config, **kwargs)
+
+    def create_child_if_configured(self, classref: ClassRef, config=None, **kwargs):
+        """Create a child object if the configuration is not None.
+
+        Args:
+            classref: Class reference.
+            config: Configuration.
+            **kwargs: Additional configuration properties.
+
+        Returns:
+            A newly created object or ``None`` if the configuration is ``None`` or the object cannot be initialized.
+        """
+        return tree_impl.node_create_child_if_configured(self, classref, config, **kwargs)
+
+    def create_children(self, classref: ClassRef, configs: list[Config], **kwargs):
+        """Create a list of child objects from a list of configurations.
+
+        Args:
+            classref: Class reference.
+            configs: List of configurations.
+            **kwargs: Additional configuration properties.
+
+        Returns:
+            A list of newly created objects.
+        """
+        return tree_impl.node_create_children(self, classref, configs, **kwargs)
+
+    def cfg(self, key: str, default=None):
+        """Fetch a configuration property.
+
+        Args:
+            key: Property key. If it contains dots, fetch nested properties.
+            default: Default to return if the property is not found.
+
+        Returns:
+            A property value.
+        """
+        return tree_impl.node_cfg(self, key, default)
+
+    def find_all(self, classref: ClassRef):
+        """Find all children that match a specific class.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            A list of objects.
+        """
+        return tree_impl.node_find_all(self, classref)
+
+    def find_first(self, classref: ClassRef):
+        """Find the first child that matches a specific class.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            An object or ``None``.
+        """
+        return tree_impl.node_find_first(self, classref)
+
+    def find_closest(self, classref: ClassRef):
+        """Find the closest node ancestor that matches a specific class.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            An object or ``None``.
+        """
+
+        return tree_impl.node_find_closest(self, classref)
+
+    def find_ancestors(self, classref: ClassRef):
+        """Find node ancestors that match a specific class.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            A list of objects.
+        """
+        return tree_impl.node_find_ancestors(self, classref)
+
+    def find_descendants(self, classref: ClassRef):
+        """Find node descendants that match a specific class.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            A list of objects in the depth-first order.
+        """
+
+        return tree_impl.node_find_descendants(self, classref)
+
+    def enter_middleware(self, req: 'WebRequester') -> Optional['WebResponder']:
+        """Begin middleware processing.
+
+        Args:
+            req: Requester object.
+
+        Returns:
+            A Responder object or ``None``.
+        """
+
+    def exit_middleware(self, req: 'WebRequester', res: 'WebResponder'):
+        """Finish middleware processing.
+
+        Args:
+            req: Requester object.
+            res: Current responder object.
+        """
+
+    def register_middleware(self, name: str, depends_on: Optional[list[str]] = None):
+        """Register itself as a middleware handler.
+
+        Args:
+            name: Handler name.
+            depends_on: List of handler names this handler depends on.
+        """
+        return tree_impl.node_register_middleware(self, name, depends_on)
+
+
+class Root:
+    """Root node of the object tree."""
+
+    app: 'Application'
+    """Application object."""
+    specs: 'SpecRuntime'
+    """Specs runtime."""
+    configErrors: list
+    """List of configuration errors."""
+
+    nodes: list['Node']
+    uidMap: dict[str, 'Node']
+    uidCount: int
+    configStack: list['Node']
+
+    def __init__(self, specs: 'SpecRuntime'):
+        tree_impl.root_init(self, specs)
+
+    def initialize(self, obj, config):
+        return tree_impl.root_initialize(self, obj, config)
+
+    def post_initialize(self):
+        """Post-initialization hook."""
+        return tree_impl.root_post_initialize(self)
+
+    def activate(self):
+        return tree_impl.root_activate(self)
+
+    def find_all(self, classref: ClassRef):
+        """Find all objects that match a specific class.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            A list of objects.
+        """
+        return tree_impl.root_find_all(self, classref)
+
+    def find_first(self, classref: ClassRef):
+        """Find the first object that match a specific class.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            An object or ``None``.
+        """
+        return tree_impl.root_find_first(self, classref)
+
+    def get(self, uid: str = None, classref: Optional[ClassRef] = None):
+        """Get an object by its unique ID.
+
+        Args:
+            uid: Object uid.
+            classref: Class reference. If provided, ensures that the object matches the reference.
+
+        Returns:
+            An object or ``None``.
+        """
+        return tree_impl.root_get(self, uid, classref)
+
+    def object_count(self) -> int:
+        """Return the number of objects in the tree."""
+        return tree_impl.root_object_count(self)
+
+    def create(self, classref: ClassRef, parent: Optional['Node'] = None, config: Config = None, **kwargs):
+        """Create an object.
+
+        Args:
+            classref: Class reference.
+            parent: Parent object.
+            config: Configuration.
+            **kwargs: Additional configuration properties.
+
+        Returns:
+            A newly created object or ``None`` if the object cannot be initialized.
+        """
+        return tree_impl.root_create(self, classref, parent, config, **kwargs)
+
+    def create_shared(self, classref: ClassRef, config: Config = None, **kwargs):
+        """Create a shared object, attached directly to the root.
+
+        Args:
+            classref: Class reference.
+            config: Configuration.
+            **kwargs: Additional configuration properties.
+
+        Returns:
+            A newly created object or ``None`` if the object cannot be initialized.
+        """
+        return tree_impl.root_create_shared(self, classref, config, **kwargs)
+
+    def create_temporary(self, classref: ClassRef, config: Config = None, **kwargs):
+        """Create a temporary object, not attached to the tree.
+
+        Args:
+            classref: Class reference.
+            config: Configuration.
+            **kwargs: Additional configuration properties.
+
+        Returns:
+            A newly created object or ``None`` if the object cannot be initialized.
+        """
+        return tree_impl.root_create_temporary(self, classref, config, **kwargs)
+
+    def create_application(self, config: Config = None, **kwargs) -> 'Application':
+        """Create the Application object.
+
+        Args:
+            config: Configuration.
+            **kwargs: Additional configuration properties.
+
+        Returns:
+            The Application object.
+        """
+        return tree_impl.root_create_application(self, config, **kwargs)
+
+
+def create_root(specs: 'SpecRuntime') -> Root:
+    return Root(specs)
+
+
+def make_props(obj: Object, user: 'User', *context) -> Optional['Props']:
+    return tree_impl.make_props(obj, user, *context)

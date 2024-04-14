@@ -28,31 +28,31 @@ def packages_path(tmpdir_factory):
     base = str(tmpdir_factory.mktemp('importer'))
     files = {
         "/p1/__init__.py":
-            "gws.IMPORT_LOG.append('p1.init')",
+            "gws.MPORT_LOG.append('p1.init')",
         "/p1/mod.py":
-            "gws.IMPORT_LOG.append('p1.mod')",
+            "gws.MPORT_LOG.append('p1.mod')",
         "/p1/dot.py":
-            "gws.IMPORT_LOG.append('p1.dot'); from . import mod",
+            "gws.MPORT_LOG.append('p1.dot'); from . import mod",
         "/p2/deep/root/base/__init__.py":
-            "gws.IMPORT_LOG.append('p2.base.init')",
+            "gws.MPORT_LOG.append('p2.base.init')",
         "/p2/deep/root/base/sub/__init__.py":
-            "gws.IMPORT_LOG.append('p2.base.sub.init')",
+            "gws.MPORT_LOG.append('p2.base.sub.init')",
         "/p2/deep/root/base/sub/sub2/__init__.py":
-            "gws.IMPORT_LOG.append('p2.base.sub.sub2.init')",
+            "gws.MPORT_LOG.append('p2.base.sub.sub2.init')",
         "/p2/deep/root/base/sub/sub2/mod.py":
-            "gws.IMPORT_LOG.append('p2.base.sub.sub2.mod')",
+            "gws.MPORT_LOG.append('p2.base.sub.sub2.mod')",
         "/p3/mod.py":
-            "gws.IMPORT_LOG.append('p3.mod')",
+            "gws.MPORT_LOG.append('p3.mod')",
         "/p4/__init__.py":
-            "gws.IMPORT_LOG.append('p4.init'); from . import circular",
+            "gws.MPORT_LOG.append('p4.init'); from . import circular",
         "/p4/mod.py":
-            "gws.IMPORT_LOG.append('p4.mod')",
+            "gws.MPORT_LOG.append('p4.mod')",
         "/p4/circular.py":
-            "gws.IMPORT_LOG.append('p4.circular'); from . import mod",
+            "gws.MPORT_LOG.append('p4.circular'); from . import mod",
         "/p5/a/same_name/__init__.py":
-            "gws.IMPORT_LOG.append('p5.a.same_name.init')",
+            "gws.MPORT_LOG.append('p5.a.same_name.init')",
         "/p5/b/same_name/__init__.py":
-            "gws.IMPORT_LOG.append('p5.b.same_name.init')",
+            "gws.MPORT_LOG.append('p5.b.same_name.init')",
         "/p0/err.py":
             "syntax error",
     }
@@ -60,13 +60,13 @@ def packages_path(tmpdir_factory):
     for path, text in files.items():
         path = base + path
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        gws.write_file(path, 'import gws; ' + text)
+        gws.u.write_file(path, 'import gws; ' + text)
 
     yield base
 
 
 def test_app_module():
-    mod = importer.import_from_path(gws.APP_DIR + '/gws/lib/importer')
+    mod = importer.import_from_path(gws.c.APP_DIR + '/gws/lib/importer')
     assert mod.__name__ == 'gws.lib.importer'
 
 

@@ -30,47 +30,47 @@ _DEFAULT_LOCALE = ['en_CA']
 _DEFAULT_TEMPLATES = [
     gws.Config(
         type='html',
-        path=gws.dirname(__file__) + '/templates/project_description.cx.html',
+        path=gws.u.dirname(__file__) + '/templates/project_description.cx.html',
         subject='project.description',
-        access=gws.PUBLIC,
+        access=gws.c.PUBLIC,
         uid='default_template.project_description',
     ),
     gws.Config(
         type='html',
-        path=gws.dirname(__file__) + '/templates/layer_description.cx.html',
+        path=gws.u.dirname(__file__) + '/templates/layer_description.cx.html',
         subject='layer.description',
-        access=gws.PUBLIC,
+        access=gws.c.PUBLIC,
         uid='default_template.layer_description',
     ),
     gws.Config(
         type='html',
-        path=gws.dirname(__file__) + '/templates/feature_description.cx.html',
+        path=gws.u.dirname(__file__) + '/templates/feature_description.cx.html',
         subject='feature.description',
-        access=gws.PUBLIC,
+        access=gws.c.PUBLIC,
         uid='default_template.feature_description',
     ),
     gws.Config(
         type='html',
-        path=gws.dirname(__file__) + '/templates/feature_title.cx.html',
+        path=gws.u.dirname(__file__) + '/templates/feature_title.cx.html',
         subject='feature.title',
-        access=gws.PUBLIC,
+        access=gws.c.PUBLIC,
         uid='default_template.feature_title',
     ),
     gws.Config(
         type='html',
-        path=gws.dirname(__file__) + '/templates/feature_label.cx.html',
+        path=gws.u.dirname(__file__) + '/templates/feature_label.cx.html',
         subject='feature.label',
-        access=gws.PUBLIC,
+        access=gws.c.PUBLIC,
         uid='default_template.feature_label',
     ),
 ]
 
 _DEFAULT_PRINTER = gws.Config(
     uid='gws.base.application.default_printer',
-    access=gws.PUBLIC,
+    access=gws.c.PUBLIC,
     template=gws.Config(
         type='html',
-        path=gws.dirname(__file__) + '/templates/project_print.cx.html',
+        path=gws.u.dirname(__file__) + '/templates/project_print.cx.html',
         mapSize=(200, 180, gws.Uom.mm),
     ),
     qualityLevels=[{'dpi': 72}],
@@ -126,10 +126,10 @@ class Config(gws.ConfigWithAccess):
     """web server options"""
 
 
-class Object(gws.Node, gws.IApplication):
+class Object(gws.Application):
     """Main Application object"""
 
-    helperMap: dict[str, gws.INode]
+    helperMap: dict[str, gws.Node]
 
     _developerOptions: dict
 
@@ -216,7 +216,7 @@ class Object(gws.Node, gws.IApplication):
         for d in self.config.get('projectDirs', []):
             self.monitor.add_directory(d, gws.config.CONFIG_PATH_PATTERN)
         if self.developer_option('server.auto_reload'):
-            self.monitor.add_directory(gws.APP_DIR, r'\.py$')
+            self.monitor.add_directory(gws.c.APP_DIR, r'\.py$')
 
     def project(self, uid):
         for p in self.projects:

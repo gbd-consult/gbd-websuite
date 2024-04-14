@@ -30,7 +30,7 @@ class Config(gws.ConfigWithAccess):
     """root layer uid"""
     searchLimit: int = 100
     """max search limit"""
-    searchTolerance: int = 10
+    searchTolerance: gws.UomValueStr = '10px'
     """search pixel tolerance"""
     supportedCrs: t.Optional[list[gws.CrsName]]
     """supported CRS for this service"""
@@ -44,17 +44,17 @@ class Config(gws.ConfigWithAccess):
     """use strict params checking"""
 
 
-class Object(gws.Node, gws.IOwsService):
+class Object(gws.OwsService):
     """Baseclass for OWS services."""
 
-    project: t.Optional[gws.IProject]
-    rootLayer: t.Optional[gws.ILayer]
+    project: t.Optional[gws.Project]
+    rootLayer: t.Optional[gws.Layer]
 
     isRasterService = False
     isVectorService = False
 
     searchMaxLimit: int
-    searchTolerance: gws.Measurement
+    searchTolerance: gws.UomValue
 
     # Configuration
 
@@ -66,7 +66,7 @@ class Object(gws.Node, gws.IOwsService):
         self.withStrictParams = self.cfg('withStrictParams')
 
         self.searchMaxLimit = self.cfg('searchLimit')
-        self.searchTolerance = self.cfg('searchTolerance'), gws.Uom.px
+        self.searchTolerance = self.cfg('searchTolerance')
 
         self.configure_bounds()
         self.configure_templates()
@@ -140,11 +140,11 @@ class Object(gws.Node, gws.IOwsService):
 
     # Requests
 
-    def handle_request(self, req: gws.IWebRequester) -> gws.ContentResponse:
+    def handle_request(self, req: gws.WebRequester) -> gws.ContentResponse:
         rd = self.init_request(req)
         return self.dispatch_request(rd, req.param('request', ''))
 
-    def init_request(self, req: gws.IWebRequester) -> core.Request:
+    def init_request(self, req: gws.WebRequester) -> core.Request:
         rd = core.Request(req=req, service=self)
         rd.project = self.requested_project(rd)
         rd.version = self.requested_version(rd)
@@ -157,7 +157,7 @@ class Object(gws.Node, gws.IOwsService):
             raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
         return handler(rd)
 
-    def requested_project(self, rd: core.Request) -> t.Optional[gws.IProject]:
+    def requested_project(self, rd: core.Request) -> t.Optional[gws.Project]:
         # services can be configured globally (in which case, self.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (self.project != None)
@@ -180,14 +180,14 @@ class Object(gws.Node, gws.IOwsService):
             # the first supported version is the default
             return self.supportedVersions[0]
 
-        for v in gws.to_list(s):
+        for v in gws.u.to_list(s):
             for ver in self.supportedVersions:
                 if ver.startswith(v):
                     return ver
 
         raise gws.base.web.error.BadRequest('Unsupported service version')
 
-    def requested_crs(self, rd: core.Request) -> t.Optional[gws.ICrs]:
+    def requested_crs(self, rd: core.Request) -> t.Optional[gws.Crs]:
         s = util.one_of_params(rd, 'crs', 'srs', 'crsName', 'srsName')
         if s:
             crs = gws.gis.crs.get(s)

@@ -111,7 +111,7 @@ class Object(gws.base.auth.provider.Object):
     def _make_user(self, conn, user_dict):
         display_name = user_dict.get('displayName', '')
         if not display_name and self.cfg('displayNameFormat'):
-            display_name = gws.format_map(self.cfg('displayNameFormat'), user_dict)
+            display_name = gws.u.format_map(self.cfg('displayNameFormat'), user_dict)
 
         login = user_dict.get(self.loginAttribute)
         roles = self._roles_for_user(conn, user_dict)
@@ -181,7 +181,7 @@ def _as_dict(data):
             continue
         if not isinstance(v, list):
             v = [v]
-        v = [gws.to_str(s) for s in v]
+        v = [gws.u.to_str(s) for s in v]
         d[k] = v[0] if len(v) == 1 else v
 
     return d

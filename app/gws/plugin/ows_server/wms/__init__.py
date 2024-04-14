@@ -21,18 +21,18 @@ WMS_110 = '1.1.0'
 _DEFAULT_TEMPLATES = [
     gws.Config(
         type='py',
-        path=gws.dirname(__file__) + '/templates/getCapabilities.py',
+        path=gws.u.dirname(__file__) + '/templates/getCapabilities.py',
         subject='ows.GetCapabilities',
         mimeTypes=['xml'],
-        access=gws.PUBLIC,
+        access=gws.c.PUBLIC,
     ),
     # NB use the wfs template
     gws.Config(
         type='py',
-        path=gws.dirname(__file__) + '/../wfs/templates/getFeature.py',
+        path=gws.u.dirname(__file__) + '/../wfs/templates/getFeature.py',
         subject='ows.GetFeatureInfo',
         mimeTypes=['gml3', 'gml', 'xml'],
-        access=gws.PUBLIC,
+        access=gws.c.PUBLIC,
     )
 ]
 
@@ -114,7 +114,7 @@ class Object(server.service.Object):
         lct = server.util.layer_caps_tree(rd, self.rootLayer)
         lcs = self.requested_layer_caps(rd, lct)
 
-        legend = t.cast(gws.ILegend, self.root.create_temporary(
+        legend = t.cast(gws.Legend, self.root.create_temporary(
             gws.ext.object.legend,
             type='combined',
             layerUids=[lc.layer.uid for lc in lcs]))
@@ -178,7 +178,7 @@ class Object(server.service.Object):
         if not s:
             return lct.leaves
 
-        lcs = server.util.layer_caps_by_layer_name(lct, gws.to_list(s), with_ancestors=True)
+        lcs = server.util.layer_caps_by_layer_name(lct, gws.u.to_list(s), with_ancestors=True)
         if not lcs:
             raise gws.base.web.error.NotFound('Layer not found')
         return lcs

@@ -115,7 +115,7 @@ class _Creator:
     def namespace_entry(self, typ, template, **kwargs):
         ps = typ.name.split(DOT)
         ps.pop(0)
-        if ps[0] == self.CORE_NAME:
+        if len(ps) == 1:
             ns, name, qname = self.CORE_NAME, ps[-1], self.CORE_NAME + DOT + ps[-1]
         else:
             if self.CORE_NAME in ps:
@@ -151,7 +151,8 @@ class _Creator:
     def write_api(self):
 
         namespace_tpl = "export namespace $ns { \n $declarations \n }"
-        globs = self.format(namespace_tpl, ns=self.CORE_NAME, declarations=_nl2(self.namespaces.pop(self.CORE_NAME)))
+        globs = self.format(namespace_tpl, ns=self.CORE_NAME, declarations=_nl2(self.namespaces.pop(self.CORE_NAME, '')))
+        # globs = ''
         namespaces = _nl2([
             self.format(namespace_tpl, ns=ns, declarations=_nl2(d))
             for ns, d in sorted(self.namespaces.items())

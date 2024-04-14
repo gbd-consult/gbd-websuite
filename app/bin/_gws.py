@@ -20,7 +20,7 @@ def main(args):
 
 
 def main2(args):
-    gws.ensure_system_dirs()
+    gws.u.ensure_system_dirs()
 
     gws.log.set_level(gws.env.GWS_LOG_LEVEL or 'INFO')
     if args.pop('v', None) or args.pop('verbose', None):
@@ -53,7 +53,7 @@ def main2(args):
         cli.error('invalid arguments, try "gws -h" for help')
         return 1
 
-    root = gws.create_root_object(specs)
+    root = gws.u.create_root(specs)
 
     try:
         fn, request = gws.base.action.prepare_cli_action(
@@ -147,7 +147,7 @@ def real_manifest_path(manifest_path):
     if p:
         return p
     for p in _DEFAULT_MANIFEST_PATHS:
-        if gws.is_file(p):
+        if gws.u.is_file(p):
             return p
 
 

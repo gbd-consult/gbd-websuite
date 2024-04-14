@@ -38,7 +38,7 @@ class Object(gws.base.model.widget.Object):
             ListItem(value=it.value, text=it.text or str(it.value))
             for it in self.cfg('items', default=[])
         ]
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             items=items,
             withSearch=bool(self.cfg('withSearch'))

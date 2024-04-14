@@ -81,18 +81,18 @@ def test_number_format():
 
 
 def test_date_formatter():
-    gws.delete_app_global('gws.lib.intl.number_formatter.de-DE')
+    gws.u.delete_app_global('gws.lib.intl.number_formatter.de-DE')
     d = intl.date_formatter('de-DE')
     assert intl.date_formatter('de-DE') == d
 
 
 def test_time_formatter():
-    gws.delete_app_global('gws.lib.intl.number_formatter.en-GB')
+    gws.u.delete_app_global('gws.lib.intl.number_formatter.en-GB')
     t = intl.time_formatter('en-GB')
     assert intl.time_formatter('en-GB') == t
 
 
 def test_number_formatter():
-    gws.delete_app_global('gws.lib.intl.number_formatter.es-SP')
+    gws.u.delete_app_global('gws.lib.intl.number_formatter.es-SP')
     n = intl.number_formatter('es-SP')
     assert intl.number_formatter('es-SP') == n

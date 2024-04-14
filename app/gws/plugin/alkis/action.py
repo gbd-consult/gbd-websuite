@@ -230,7 +230,7 @@ class FindFlurstueckResult(gws.Data):
 
 
 class FindAdresseRequest(gws.Request):
-    crs: t.Optional[gws.ICrs]
+    crs: t.Optional[gws.Crs]
 
     gemarkung: t.Optional[str]
     gemarkungCode: t.Optional[str]
@@ -346,12 +346,12 @@ class Object(gws.base.action.Object):
     dataSchema: str
     excludeGemarkung: set[str]
 
-    model: gws.IModel
+    model: gws.Model
     ui: Ui
     limit: int
 
-    templates: list[gws.ITemplate]
-    printers: list[gws.IPrinter]
+    templates: list[gws.Template]
+    printers: list[gws.Printer]
 
     export: t.Optional[export.Object]
 
@@ -416,11 +416,11 @@ class Object(gws.base.action.Object):
         if self.ui.useExport:
             export_groups = [ExportGroupProps(title=g.title, index=g.index) for g in self._export_groups(user)]
 
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             exportGroups=export_groups,
             limit=self.limit,
-            printer=gws.first(p for p in self.printers if user.can_use(p)),
+            printer=gws.u.first(p for p in self.printers if user.can_use(p)),
             ui=self.ui,
             storage=self.storage,
             withBuchung=(
@@ -440,7 +440,7 @@ class Object(gws.base.action.Object):
         )
 
     @gws.ext.command.api('alkisGetToponyms')
-    def get_toponyms(self, req: gws.IWebRequester, p: GetToponymsRequest) -> GetToponymsResponse:
+    def get_toponyms(self, req: gws.WebRequester, p: GetToponymsRequest) -> GetToponymsResponse:
         """Return all Toponyms (Gemeinde/Gemarkung/Strasse) in the area"""
 
         req.user.require_project(p.projectUid)
@@ -461,7 +461,7 @@ class Object(gws.base.action.Object):
         )
 
     @gws.ext.command.api('alkisFindAdresse')
-    def find_adresse(self, req: gws.IWebRequester, p: FindAdresseRequest) -> FindAdresseResponse:
+    def find_adresse(self, req: gws.WebRequester, p: FindAdresseRequest) -> FindAdresseResponse:
         """Perform an Adresse search."""
 
         project = req.user.require_project(p.projectUid)
@@ -497,7 +497,7 @@ class Object(gws.base.action.Object):
         )
 
     @gws.ext.command.api('alkisFindFlurstueck')
-    def find_flurstueck(self, req: gws.IWebRequester, p: FindFlurstueckRequest) -> FindFlurstueckResponse:
+    def find_flurstueck(self, req: gws.WebRequester, p: FindFlurstueckRequest) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""
 
         project = req.user.require_project(p.projectUid)
@@ -544,7 +544,7 @@ class Object(gws.base.action.Object):
         )
 
     @gws.ext.command.api('alkisExportFlurstueck')
-    def export_flurstueck(self, req: gws.IWebRequester, p: ExportFlurstueckRequest) -> ExportFlurstueckResponse:
+    def export_flurstueck(self, req: gws.WebRequester, p: ExportFlurstueckRequest) -> ExportFlurstueckResponse:
         if not self.export:
             raise gws.NotFoundError()
 
@@ -564,7 +564,7 @@ class Object(gws.base.action.Object):
         return ExportFlurstueckResponse(content=csv_bytes, mime='text/csv')
 
     @gws.ext.command.api('alkisPrintFlurstueck')
-    def print_flurstueck(self, req: gws.IWebRequester, p: PrintFlurstueckRequest) -> gws.PrintJobResponse:
+    def print_flurstueck(self, req: gws.WebRequester, p: PrintFlurstueckRequest) -> gws.PrintJobResponse:
         """Print Flurstueck features"""
 
         project = req.user.require_project(p.projectUid)
@@ -618,14 +618,14 @@ class Object(gws.base.action.Object):
         return self.root.app.printerMgr.status(job)
 
     @gws.ext.command.api('alkisSelectionStorage')
-    def handle_storage(self, req: gws.IWebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
+    def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
         if not self.storage:
             raise gws.base.web.error.NotFound()
         return self.storage.handle_request(req, p)
 
     ##
 
-    def find_flurstueck_objects(self, req: gws.IWebRequester, p: FindFlurstueckRequest) -> tuple[list[dt.Flurstueck], dt.FlurstueckQuery]:
+    def find_flurstueck_objects(self, req: gws.WebRequester, p: FindFlurstueckRequest) -> tuple[list[dt.Flurstueck], dt.FlurstueckQuery]:
         query = self._prepare_flurstueck_query(req, p)
         fs_list = self.ix.find_flurstueck(query)
 
@@ -640,7 +640,7 @@ class Object(gws.base.action.Object):
 
         return fs_list, query
 
-    def find_adresse_objects(self, req: gws.IWebRequester, p: FindAdresseRequest) -> tuple[list[dt.Adresse], dt.AdresseQuery]:
+    def find_adresse_objects(self, req: gws.WebRequester, p: FindAdresseRequest) -> tuple[list[dt.Adresse], dt.AdresseQuery]:
         query = self._prepare_adresse_query(req, p)
         ad_list = self.ix.find_adresse(query)
         return ad_list, query
@@ -692,7 +692,7 @@ class Object(gws.base.action.Object):
         'strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnummer'
     ]
 
-    def _prepare_flurstueck_query(self, req: gws.IWebRequester, p: FindFlurstueckRequest) -> dt.FlurstueckQuery:
+    def _prepare_flurstueck_query(self, req: gws.WebRequester, p: FindFlurstueckRequest) -> dt.FlurstueckQuery:
         query = dt.FlurstueckQuery()
 
         for f in self.FLURSTUECK_QUERY_FIELDS:
@@ -743,7 +743,7 @@ class Object(gws.base.action.Object):
         query.options = options
         return query
 
-    def _prepare_adresse_query(self, req: gws.IWebRequester, p: FindAdresseRequest) -> dt.AdresseQuery:
+    def _prepare_adresse_query(self, req: gws.WebRequester, p: FindAdresseRequest) -> dt.AdresseQuery:
         query = dt.AdresseQuery()
 
         for f in self.ADRESSE_QUERY_FIELDS:
@@ -803,20 +803,20 @@ class Object(gws.base.action.Object):
 
         return groups
 
-    def _check_eigentuemer_access(self, req: gws.IWebRequester, control_input: str):
+    def _check_eigentuemer_access(self, req: gws.WebRequester, control_input: str):
         if not req.user.can_read(self.eigentuemer):
             raise gws.ForbiddenError('cannot read eigentuemer')
         if self.eigentuemer.controlMode and not self._check_eigentuemer_control_input(control_input):
             self._log_eigentuemer_access(req, is_ok=False, control_input=control_input)
             raise gws.ForbiddenError('eigentuemer control input failed')
 
-    def _check_buchung_access(self, req: gws.IWebRequester, control_input: str):
+    def _check_buchung_access(self, req: gws.WebRequester, control_input: str):
         if not req.user.can_read(self.buchung):
             raise gws.ForbiddenError('cannot read buchung')
 
     _eigentuemerLogTable = None
 
-    def _log_eigentuemer_access(self, req: gws.IWebRequester, control_input: str, is_ok: bool, total=None, fs_uids=None):
+    def _log_eigentuemer_access(self, req: gws.WebRequester, control_input: str, is_ok: bool, total=None, fs_uids=None):
         if not self.eigentuemer.logTable:
             return
 

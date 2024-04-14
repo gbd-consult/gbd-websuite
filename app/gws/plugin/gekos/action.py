@@ -80,7 +80,7 @@ _DEFAULT_TEMPLATES = [
 
 class Object(gws.base.action.Object):
     index: t.Optional[index.Object]
-    templates: list[gws.ITemplate]
+    templates: list[gws.Template]
 
     def configure(self):
         self.index = self.create_child_if_configured(index.Object, self.cfg('index'))
@@ -88,7 +88,7 @@ class Object(gws.base.action.Object):
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
 
     @gws.ext.command.get('gekosGetXY')
-    def get_xy(self, req: gws.IWebRequester, p: GetXyRequest) -> gws.ContentResponse:
+    def get_xy(self, req: gws.WebRequester, p: GetXyRequest) -> gws.ContentResponse:
         act: alkis_action.Object = t.cast(
             alkis_action.Object,
             gws.base.action.find(self.root, 'alkis', req.user, p.projectUid))

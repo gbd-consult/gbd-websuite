@@ -1,0 +1,118 @@
+class LayerDisplayMode(Enum):
+    """Layer display mode."""
+
+    box = 'box'
+    """Display a layer as one big image (WMS-alike)."""
+    tile = 'tile'
+    """Display a layer in a tile grid."""
+    client = 'client'
+    """Draw a layer in the client."""
+
+
+class LayerClientOptions(Data):
+    """Client options for a layer."""
+
+    expanded: bool
+    """A layer is expanded in the list view."""
+    unlisted: bool
+    """A layer is hidden in the list view."""
+    selected: bool
+    """A layer is initially selected."""
+    hidden: bool
+    """A layer is initially hidden."""
+    unfolded: bool
+    """A layer is not listed, but its children are."""
+    exclusive: bool
+    """Only one of this layer's children is visible at a time."""
+
+
+class TileGrid(Data):
+    """Tile grid."""
+
+    uid: str
+    bounds: Bounds
+    origin: Origin
+    resolutions: list[float]
+    tileSize: int
+
+
+class LayerCache(Data):
+    """Layer cache."""
+
+    maxAge: int
+    maxLevel: int
+    requestBuffer: int
+    requestTiles: int
+
+
+class FeatureLoadingStrategy(Enum):
+    """Loading strategy for features."""
+
+    all = 'all'
+    """Load all features."""
+    bbox = 'bbox'
+    """Load only features in the current map extent."""
+    lazy = 'lazy'
+    """Load features on demand."""
+
+
+class LayerOwsOptions(Data):
+    """Layer options for OWS services."""
+
+    enabled: bool
+    layerName: str
+    featureName: str
+    xmlNamespace: 'XmlNamespace'
+    geometryName: str
+
+
+class Layer(Node):
+    """Layer object."""
+
+    canRenderBox: bool
+    canRenderSvg: bool
+    canRenderXyz: bool
+
+    isEnabledForOws: bool
+    isGroup: bool
+    isSearchable: bool
+
+    hasLegend: bool
+
+    bounds: Bounds
+    wgsExtent: Extent
+    mapCrs: 'Crs'
+    clientOptions: LayerClientOptions
+    displayMode: LayerDisplayMode
+    loadingStrategy: FeatureLoadingStrategy
+    imageFormat: str
+    opacity: float
+    resolutions: list[float]
+    title: str
+
+    owsOptions: Optional['LayerOwsOptions']
+
+    grid: Optional[TileGrid]
+    cache: Optional[LayerCache]
+
+    metadata: 'Metadata'
+    legend: Optional['Legend']
+    legendUrl: str
+
+    finders: list['Finder']
+    templates: list['Template']
+    models: list['Model']
+
+    layers: list['Layer']
+
+    provider: 'Node'
+    sourceLayers: list['SourceLayer']
+
+    def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...
+
+    def get_features_for_view(self, search: 'SearchQuery', user: 'User', view_names: Optional[list[str]] = None) -> list['Feature']: ...
+
+    def render_legend(self, args: Optional[dict] = None) -> Optional['LegendRenderOutput']: ...
+
+    def url_path(self, kind: str) -> str: ...
+

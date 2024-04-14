@@ -10,7 +10,7 @@ import gws.lib.net
 import gws.types as t
 
 
-def service_operations(caps_el: gws.IXmlElement) -> list[gws.OwsOperation]:
+def service_operations(caps_el: gws.XmlElement) -> list[gws.OwsOperation]:
     # <ows:OperationsMetadata>
     #     <ows:Operation name="GetCapabilities">...
 
@@ -29,7 +29,7 @@ def service_operations(caps_el: gws.IXmlElement) -> list[gws.OwsOperation]:
     return []
 
 
-def _parse_operation(el: gws.IXmlElement) -> gws.OwsOperation:
+def _parse_operation(el: gws.XmlElement) -> gws.OwsOperation:
     op = gws.OwsOperation(verb=el.get('name') or el.tag)
 
     # @TODO Range
@@ -78,7 +78,7 @@ def _parse_operation(el: gws.IXmlElement) -> gws.OwsOperation:
 ##
 
 
-def service_metadata(caps_el: gws.IXmlElement) -> gws.Metadata:
+def service_metadata(caps_el: gws.XmlElement) -> gws.Metadata:
     # wms
     #
     #   <Capabilities
@@ -111,20 +111,20 @@ def service_metadata(caps_el: gws.IXmlElement) -> gws.Metadata:
     if link:
         md.serviceMetaLink = link
 
-    return gws.strip(md)
+    return gws.u.strip(md)
 
 
-def element_metadata(el: gws.IXmlElement) -> gws.Metadata:
+def element_metadata(el: gws.XmlElement) -> gws.Metadata:
     #   <whatever, e.g. Layer or FeatureType
     #       <Name...
     #       <Title...
 
     md = gws.Metadata()
     _element_metadata(el, md)
-    return gws.strip(md)
+    return gws.u.strip(md)
 
 
-def _element_metadata(el: gws.IXmlElement, md: gws.Metadata):
+def _element_metadata(el: gws.XmlElement, md: gws.Metadata):
     if not el:
         return
 
@@ -135,7 +135,7 @@ def _element_metadata(el: gws.IXmlElement, md: gws.Metadata):
     md.keywords = el.textlist('Keywords', 'KeywordList', deep=True)
     md.name = el.textof('Name', 'Identifier')
     md.title = el.textof('Title')
-    md.metaLinks = gws.compact(_parse_link(e) for e in el.findall('MetadataURL'))
+    md.metaLinks = gws.u.compact(_parse_link(e) for e in el.findall('MetadataURL'))
 
     e = el.find('AuthorityURL')
     if e:
@@ -176,7 +176,7 @@ _contact_mapping = [
 ]
 
 
-def _contact_metadata(el: gws.IXmlElement, md: gws.Metadata):
+def _contact_metadata(el: gws.XmlElement, md: gws.Metadata):
     if not el:
         return
 
@@ -189,7 +189,7 @@ def _contact_metadata(el: gws.IXmlElement, md: gws.Metadata):
 
 ##
 
-def wgs_bounds(layer_el: gws.IXmlElement) -> t.Optional[gws.Bounds]:
+def wgs_bounds(layer_el: gws.XmlElement) -> t.Optional[gws.Bounds]:
     """Read WGS bounding box from a Layer/FeatureType element.
 
     Extracts coordinates from ``EX_GeographicBoundingBox`` (WMS), ``WGS84BoundingBox`` (OWS)
@@ -210,7 +210,7 @@ def wgs_bounds(layer_el: gws.IXmlElement) -> t.Optional[gws.Bounds]:
             extent=gws.gis.extent.from_list(_parse_bbox(el)))
 
 
-def supported_crs(layer_el: gws.IXmlElement, extra_crs_ids: list[str] = None) -> list[gws.ICrs]:
+def supported_crs(layer_el: gws.XmlElement, extra_crs_ids: list[str] = None) -> list[gws.Crs]:
     """Enumerate supported CRS for a Layer/FeatureType element.
 
     For WMS, enumerates CRS/SRS and BoundingBox tags,
@@ -244,13 +244,13 @@ def supported_crs(layer_el: gws.IXmlElement, extra_crs_ids: list[str] = None) ->
 
     crsids.update(extra_crs_ids or [])
 
-    return gws.compact(gws.gis.crs.get(s) for s in crsids)
+    return gws.u.compact(gws.gis.crs.get(s) for s in crsids)
 
 
 ##
 
 
-def parse_style(el: gws.IXmlElement) -> gws.SourceStyle:
+def parse_style(el: gws.XmlElement) -> gws.SourceStyle:
     # <Style>
     #     <Name>default...
     #     <Title>...
@@ -297,7 +297,7 @@ def to_float_pair(s):
 ##
 
 
-def _parse_bbox(el: gws.IXmlElement):
+def _parse_bbox(el: gws.XmlElement):
     # note: bboxes are always converted to (x1, y1, x2, y2) with x1 < x2, y1 < y2
 
     # <BoundingBox/LatLonBoundingBox CRS="..." minx="0" miny="1" maxx="2" maxy="3"/>
@@ -343,7 +343,7 @@ def _parse_bbox(el: gws.IXmlElement):
         ]
 
 
-def _parse_url(el: gws.IXmlElement) -> str:
+def _parse_url(el: gws.XmlElement) -> str:
     def cleanup(s):
         return (s or '').strip(' ?&')
 
@@ -368,7 +368,7 @@ def _parse_url(el: gws.IXmlElement) -> str:
     return ''
 
 
-def _parse_link(el: gws.IXmlElement) -> t.Optional[gws.MetadataLink]:
+def _parse_link(el: gws.XmlElement) -> t.Optional[gws.MetadataLink]:
     # <MetadataURL type="...
     #       <Format...
     # 	    <OnlineResource...
@@ -376,7 +376,7 @@ def _parse_link(el: gws.IXmlElement) -> t.Optional[gws.MetadataLink]:
     if not el:
         return None
 
-    d = gws.strip({
+    d = gws.u.strip({
         'url': _parse_url(el),
         'type': el.get('type'),
         'format': el.textof('Format'),

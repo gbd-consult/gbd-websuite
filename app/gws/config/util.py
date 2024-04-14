@@ -5,27 +5,27 @@ import gws.gis.source
 import gws.types as t
 
 
-def configure_templates(obj: gws.INode, extra: t.Optional[list] = None) -> bool:
+def configure_templates(obj: gws.Node, extra: t.Optional[list] = None) -> bool:
     fn = _create_fn(obj, 'create_template', gws.ext.object.template)
     obj.templates = []
 
     p = obj.cfg('templates')
     if p:
-        obj.templates.extend(gws.compact(fn(c) for c in p))
+        obj.templates.extend(gws.u.compact(fn(c) for c in p))
 
     if extra:
-        obj.templates.extend(gws.compact(fn(c) for c in extra))
+        obj.templates.extend(gws.u.compact(fn(c) for c in extra))
 
     return len(obj.templates) > 0
 
 
-def configure_models(obj: gws.INode, with_default=False) -> bool:
+def configure_models(obj: gws.Node, with_default=False) -> bool:
     fn = _create_fn(obj, 'create_model', gws.ext.object.model)
     obj.models = []
 
     p = obj.cfg('models')
     if p:
-        obj.models = gws.compact(fn(c) for c in p)
+        obj.models = gws.u.compact(fn(c) for c in p)
         return True
 
     if with_default:
@@ -35,13 +35,13 @@ def configure_models(obj: gws.INode, with_default=False) -> bool:
     return False
 
 
-def configure_finders(obj: gws.INode, with_default=False) -> bool:
+def configure_finders(obj: gws.Node, with_default=False) -> bool:
     fn = _create_fn(obj, 'create_finder', gws.ext.object.finder)
     obj.finders = []
 
     p = obj.cfg('finders')
     if p:
-        obj.finders = gws.compact(fn(c) for c in p)
+        obj.finders = gws.u.compact(fn(c) for c in p)
         return True
 
     if with_default:
@@ -59,7 +59,7 @@ def _create_fn(obj, name: str, cls: type):
 
 
 def configure_source_layers(
-        obj: gws.INode,
+        obj: gws.Node,
         layers: list[gws.SourceLayer],
         is_group: bool = None,
         is_image: bool = None,
@@ -86,7 +86,7 @@ def configure_source_layers(
     return True
 
 
-def get_provider(cls: type, obj: gws.INode):
+def get_provider(cls: type, obj: gws.Node):
     p = obj.cfg('provider')
     if p:
         return obj.root.create_shared(cls, p)

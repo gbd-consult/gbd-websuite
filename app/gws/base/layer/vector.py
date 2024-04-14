@@ -18,10 +18,10 @@ class Object(core.Object):
     canRenderSvg = True
 
     geometryType: t.Optional[gws.GeometryType] = None
-    geometryCrs: t.Optional[gws.ICrs] = None
+    geometryCrs: t.Optional[gws.Crs] = None
 
     def props(self, user):
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             type='vector',
             url=self.url_path('features'),
@@ -37,9 +37,9 @@ class Object(core.Object):
         # if lri.type == 'box':
 
     #     fr = self.render_svg_fragment(view)
-    #     ts = gws.time_start('render_box:to_png')
+    #     ts = gws.debug.time_start('render_box:to_png')
     #     img = gws.lib.svg.fragment_to_image(fr, size=view.pxSize, format='png')
-    #     gws.time_end(ts)
+    #     gws.debug.time_end(ts)
     #     return img.to_bytes()
     #
 

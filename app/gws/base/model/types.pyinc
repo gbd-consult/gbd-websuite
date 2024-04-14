@@ -1,0 +1,206 @@
+class ModelValidationError(Data):
+    """Validation error."""
+
+    fieldName: str
+    message: str
+
+
+class ModelOperation(Enum):
+    """Model operation."""
+
+    read = 'read'
+    create = 'create'
+    update = 'update'
+    delete = 'delete'
+
+
+class ModelReadMode(Enum):
+    """Model reading mode."""
+
+    render = 'render'
+    search = 'search'
+    list = 'list'
+    form = 'form'
+
+
+class ModelDbSelect(Data):
+    """Database select statement."""
+
+    columns: list['sqlalchemy.Column']
+    geometryWhere: list
+    keywordWhere: list
+    where: list
+    order: list
+
+
+class ModelContext(Data):
+    """Model context."""
+
+    op: ModelOperation
+    readMode: ModelReadMode
+    user: 'User'
+    project: 'Project'
+    relDepth: int = 0
+    maxDepth: int = 0
+    search: 'SearchQuery'
+    dbSelect: ModelDbSelect
+    dbConnection: 'sqlalchemy.Connection'
+
+
+EmptyValue = object()
+"""Special value for empty fields."""
+
+ErrorValue = object()
+"""Special value for invalid fields."""
+
+
+class ModelWidget(Node):
+    """Model widget."""
+
+    supportsTableView: bool = True
+
+
+class ModelValidator(Node):
+    """Model Validator."""
+
+    message: str
+    ops: set[ModelOperation]
+
+    def validate(self, field: 'ModelField', feature: 'Feature', mc: ModelContext) -> bool: ...
+
+
+class ModelValue(Node):
+    """Model value."""
+
+    isDefault: bool
+    ops: set[ModelOperation]
+
+    def compute(self, field: 'ModelField', feature: 'Feature', mc: 'ModelContext'): ...
+
+
+class ModelField(Node):
+    """Model field."""
+
+    name: str
+    title: str
+
+    attributeType: AttributeType
+
+    widget: Optional['ModelWidget'] = None
+
+    values: list['ModelValue']
+    validators: list['ModelValidator']
+
+    isPrimaryKey: bool
+    isRequired: bool
+    isUnique: bool
+    isAuto: bool
+
+    supportsFilterSearch: bool = False
+    supportsGeometrySearch: bool = False
+    supportsKeywordSearch: bool = False
+
+    model: 'Model'
+
+    def before_select(self, mc: ModelContext): ...
+
+    def after_select(self, features: list['Feature'], mc: ModelContext): ...
+
+    def before_create(self, feature: 'Feature', mc: ModelContext): ...
+
+    def after_create(self, feature: 'Feature', mc: ModelContext): ...
+
+    def before_create_related(self, to_feature: 'Feature', mc: ModelContext): ...
+
+    def after_create_related(self, to_feature: 'Feature', mc: ModelContext): ...
+
+    def before_update(self, feature: 'Feature', mc: ModelContext): ...
+
+    def after_update(self, feature: 'Feature', mc: ModelContext): ...
+
+    def before_delete(self, feature: 'Feature', mc: ModelContext): ...
+
+    def after_delete(self, feature: 'Feature', mc: ModelContext): ...
+
+    def do_init(self, feature: 'Feature', mc: ModelContext): ...
+
+    def do_init_related(self, to_feature: 'Feature', mc: ModelContext): ...
+
+    def do_validate(self, feature: 'Feature', mc: ModelContext): ...
+
+    def from_props(self, feature: 'Feature', mc: ModelContext): ...
+
+    def to_props(self, feature: 'Feature', mc: ModelContext): ...
+
+    def from_record(self, feature: 'Feature', mc: ModelContext): ...
+
+    def to_record(self, feature: 'Feature', mc: ModelContext): ...
+
+    def related_models(self) -> list['Model']: ...
+
+    def find_relatable_features(self, search: 'SearchQuery', mc: ModelContext) -> list['Feature']: ...
+
+    def raw_to_python(self, feature: 'Feature', value, mc: ModelContext): ...
+
+    def prop_to_python(self, feature: 'Feature', value, mc: ModelContext): ...
+
+    def python_to_raw(self, feature: 'Feature', value, mc: ModelContext): ...
+
+    def python_to_prop(self, feature: 'Feature', value, mc: ModelContext): ...
+
+    def describe(self) -> Optional['ColumnDescription']: ...
+
+
+class Model(Node):
+    """Data Model."""
+
+    defaultSort: list['SearchSort']
+    fields: list['ModelField']
+    geometryCrs: Optional['Crs']
+    geometryName: str
+    geometryType: Optional[GeometryType]
+    isEditable: bool
+    loadingStrategy: 'FeatureLoadingStrategy'
+    title: str
+    uidName: str
+    withTableView: bool
+
+    def find_features(self, search: 'SearchQuery', mc: ModelContext) -> list['Feature']: ...
+
+    def get_features(self, uids: Iterable[str | int], mc: ModelContext) -> list['Feature']: ...
+
+    def init_feature(self, feature: 'Feature', mc: ModelContext): ...
+
+    def create_feature(self, feature: 'Feature', mc: ModelContext) -> FeatureUid: ...
+
+    def update_feature(self, feature: 'Feature', mc: ModelContext) -> FeatureUid: ...
+
+    def delete_feature(self, feature: 'Feature', mc: ModelContext) -> FeatureUid: ...
+
+    def validate_feature(self, feature: 'Feature', mc: ModelContext) -> bool: ...
+
+    def feature_from_props(self, props: 'FeatureProps', mc: ModelContext) -> 'Feature': ...
+
+    def feature_to_props(self, feature: 'Feature', mc: ModelContext) -> 'FeatureProps': ...
+
+    def feature_to_view_props(self, feature: 'Feature', mc: ModelContext) -> 'FeatureProps': ...
+
+    def describe(self) -> Optional['DataSetDescription']: ...
+
+    def field(self, name: str) -> Optional['ModelField']: ...
+
+    def related_models(self) -> list['Model']: ...
+
+
+class ModelManager(Node):
+    """Model manager."""
+
+    def get_model(self, uid: str, user: 'User' = None, access: Access = None) -> Optional['Model']: ...
+
+    def locate_model(self, *objects, user: 'User' = None, access: Access = None) -> Optional['Model']: ...
+
+    def editable_models(self, project: 'Project', user: 'User') -> list['Model']: ...
+
+    def default_model(self) -> 'Model': ...
+
+

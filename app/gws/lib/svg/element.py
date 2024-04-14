@@ -10,24 +10,24 @@ _SVG_TAG_ATTS = {
 }
 
 
-def fragment_to_element(fragment: list[gws.IXmlElement], atts: dict = None) -> gws.IXmlElement:
+def fragment_to_element(fragment: list[gws.XmlElement], atts: dict = None) -> gws.XmlElement:
     """Convert an SVG fragment to an SVG element."""
 
     fr = sorted(fragment, key=lambda el: el.attrib.get('z-index', 0))
     return xmlx.tag('svg', _SVG_TAG_ATTS, atts, *fr)
 
 
-def fragment_to_image(fragment: list[gws.IXmlElement], size: gws.Size, mime=gws.lib.mime.PNG) -> gws.lib.image.Image:
+def fragment_to_image(fragment: list[gws.XmlElement], size: gws.Size, mime=gws.lib.mime.PNG) -> gws.lib.image.Image:
     """Convert an SVG fragment to a raster image."""
 
     el = fragment_to_element(fragment)
     return gws.lib.image.from_svg(el.to_string(), size, mime)
 
 
-def sanitize_element(el: gws.IXmlElement) -> t.Optional[gws.IXmlElement]:
+def sanitize_element(el: gws.XmlElement) -> t.Optional[gws.XmlElement]:
     """Remove unsafe stuff from an SVG element."""
 
-    children = gws.compact(_sanitize(c) for c in el)
+    children = gws.u.compact(_sanitize(c) for c in el)
     if children:
         return xmlx.tag('svg', _sanitize_atts(el.attrib), *children)
 
@@ -136,12 +136,12 @@ _ALLOWED_ATTRIBUTES = {
 }
 
 
-def _sanitize(el: gws.IXmlElement) -> t.Optional[gws.IXmlElement]:
+def _sanitize(el: gws.XmlElement) -> t.Optional[gws.XmlElement]:
     if el.name in _ALLOWED_TAGS:
         return xmlx.tag(
             el.name,
             _sanitize_atts(el.attrib),
-            gws.compact(_sanitize(c) for c in el.children()))
+            gws.u.compact(_sanitize(c) for c in el.children()))
 
 
 def _sanitize_atts(atts: dict) -> dict:

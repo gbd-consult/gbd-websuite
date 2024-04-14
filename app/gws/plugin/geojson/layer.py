@@ -23,7 +23,7 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.vector.Object):
     path: str
     provider: provider.Object
-    features: list[gws.IFeature]
+    features: list[gws.Feature]
 
     def configure(self):
         self.configure_layer()

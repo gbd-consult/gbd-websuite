@@ -11,8 +11,8 @@ import gws.lib.uom as units
 import gws.types as t
 
 
-def worker(root: gws.IRoot, job: gws.lib.job.Object):
-    request = gws.unserialize_from_path(job.payload.get('requestPath'))
+def worker(root: gws.Root, job: gws.lib.job.Object):
+    request = gws.u.unserialize_from_path(job.payload.get('requestPath'))
     w = Object(root, job.uid, request, job.user)
     w.run()
 
@@ -22,18 +22,18 @@ _PAPER_COLOR = 'white'
 
 class Object:
     jobUid: str
-    user: gws.IUser
-    project: gws.IProject
+    user: gws.User
+    project: gws.Project
     tri: gws.TemplateRenderInput
-    printer: gws.IPrinter
-    template: gws.ITemplate
+    printer: gws.Printer
+    template: gws.Template
 
-    def __init__(self, root: gws.IRoot, job_uid: str, request: gws.PrintRequest, user: gws.IUser):
+    def __init__(self, root: gws.Root, job_uid: str, request: gws.PrintRequest, user: gws.User):
         self.jobUid = job_uid
         self.root = root
         self.user = user
 
-        self.project = t.cast(gws.IProject, self.user.require(request.projectUid, gws.ext.object.project))
+        self.project = t.cast(gws.Project, self.user.require(request.projectUid, gws.ext.object.project))
 
         self.page_count = 0
 
@@ -60,7 +60,7 @@ class Object:
 
         if request.type == 'template':
             # @TODO check dpi against configured qualityLevels
-            self.printer = t.cast(gws.IPrinter, self.user.require(request.printerUid, gws.ext.object.printer))
+            self.printer = t.cast(gws.Printer, self.user.require(request.printerUid, gws.ext.object.printer))
             self.template = self.printer.template
         else:
             mm = gws.lib.uom.size_px_to_mm(request.outputSize, gws.lib.uom.OGC_SCREEN_PPI)
@@ -82,7 +82,7 @@ class Object:
         )
 
         # @TODO read the args feature from the request
-        self.tri.args = gws.merge(request.args, extra)
+        self.tri.args = gws.u.merge(request.args, extra)
 
         num_steps = sum(len(mp.planes) for mp in self.tri.maps) + 1
 
@@ -95,7 +95,7 @@ class Object:
         }
 
         if event == 'begin_plane':
-            name = gws.get(details, 'layer.title')
+            name = gws.u.get(details, 'layer.title')
             args['progress'] = True
             args['stepName'] = name or ''
 
@@ -136,7 +136,7 @@ class Object:
                 if pp:
                     planes.append(pp)
 
-        layers = gws.compact(
+        layers = gws.u.compact(
             self.user.acquire(uid, gws.ext.object.layer)
             for uid in (mp.visibleLayers or []))
 
@@ -164,7 +164,7 @@ class Object:
                 return
 
         if plane.type == gws.PrintPlaneType.raster:
-            layer = t.cast(gws.ILayer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
+            layer = t.cast(gws.Layer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
             if not layer:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} not found')
                 return
@@ -179,7 +179,7 @@ class Object:
             )
 
         if plane.type == gws.PrintPlaneType.vector:
-            layer = t.cast(gws.ILayer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
+            layer = t.cast(gws.Layer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
             if not layer:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} not found')
                 return
@@ -268,7 +268,7 @@ class Object:
         if kwargs.pop('progress', None):
             kwargs['step'] = job.payload.get('step', 0) + 1
 
-        job.update(state=state, payload=gws.merge(job.payload, kwargs))
+        job.update(state=state, payload=gws.u.merge(job.payload, kwargs))
 
     def get_job(self) -> t.Optional[gws.lib.job.Object]:
         if not self.jobUid:

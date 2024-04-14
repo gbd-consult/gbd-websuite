@@ -88,7 +88,7 @@ class Object(gws.base.layer.image.Object):
         else:
             raise gws.Error(f'invalid grid origin {sg.origin!r}')
 
-        back_grid_uid = mc.grid(gws.compact({
+        back_grid_uid = mc.grid(gws.u.compact({
             'origin': origin,
             'srs': sg.bounds.crs.epsg,
             'bbox': sg.bounds.extent,
@@ -104,7 +104,7 @@ class Object(gws.base.layer.image.Object):
     def props(self, user):
         p = super().props(user)
         if self.displayMode == gws.LayerDisplayMode.client:
-            return gws.merge(p, type='xyz', url=self.provider.url)
+            return gws.u.merge(p, type='xyz', url=self.provider.url)
         return p
 
     def render(self, lri):

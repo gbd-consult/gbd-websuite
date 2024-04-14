@@ -1,0 +1,29 @@
+class StorageManager(Node):
+    """Storage manager."""
+
+    def provider(self, uid: str) -> Optional['StorageProvider']: ...
+
+    def first_provider(self) -> Optional['StorageProvider']: ...
+
+
+class StorageRecord(Data):
+    """Storage record."""
+
+    name: str
+    userUid: str
+    data: str
+    created: int
+    updated: int
+
+
+class StorageProvider(Node):
+    """Storage provider."""
+
+    def list_names(self, category: str) -> list[str]: ...
+
+    def read(self, category: str, name: str) -> Optional['StorageRecord']: ...
+
+    def write(self, category: str, name: str, data: str, user_uid: str): ...
+
+    def delete(self, category: str, name: str): ...
+

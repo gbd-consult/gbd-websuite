@@ -24,7 +24,7 @@ def init_parser(gen: base.Generator):
 def parse_path(gen: base.Generator, path: str, base_name: str, base_dir: str, parse_all=True):
     pp = None
 
-    base.log.debug(f'parsing {path!r}')
+    base.log.debug(f'parsing {path=}')
 
     try:
         # <base_dir>/a/b/__init__.py => <base_name>.a.b
@@ -468,6 +468,7 @@ class _PythonParser:
         kwargs['pos'] = self.pos
         kwargs['tModule'] = self.tModule
         typ = self.gen.new_type(c, **kwargs)
+        base.log.debug(f'added {typ.uid=} {typ=}')
         self.gen.types[typ.uid] = typ
         return typ
 

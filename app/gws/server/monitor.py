@@ -12,7 +12,7 @@ from . import control
 _LOCK_FILE = '/tmp/monitor.lock'
 
 
-class Object(gws.Node, gws.IMonitor):
+class Object(gws.Monitor):
     watchDirs: dict
     watchFiles: dict
     pathStats: dict
@@ -135,7 +135,7 @@ class Object(gws.Node, gws.IMonitor):
         for dirpath, pattern in self.watchDirs.items():
             if self._ignored(dirpath):
                 continue
-            if not gws.is_dir(dirpath):
+            if not gws.u.is_dir(dirpath):
                 continue
             for path in gws.lib.osx.find_files(dirpath, pattern):
                 if not self._ignored(path):

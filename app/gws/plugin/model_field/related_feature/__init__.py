@@ -114,7 +114,7 @@ class Object(related_field.Object):
     def before_update(self, feature, mc):
         self.before_write(feature, mc)
 
-    def before_write(self, feature: gws.IFeature, mc: gws.ModelContext):
+    def before_write(self, feature: gws.Feature, mc: gws.ModelContext):
         if not mc.user.can_write(self):
             return
 

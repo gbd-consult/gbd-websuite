@@ -94,13 +94,13 @@ class FeatureListResponse(gws.Response):
 class Object(gws.base.action.Object):
 
     @gws.ext.command.api('editGetModels')
-    def get_models(self, req: gws.IWebRequester, p: GetModelsRequest) -> GetModelsResponse:
+    def get_models(self, req: gws.WebRequester, p: GetModelsRequest) -> GetModelsResponse:
         project = req.user.require_project(p.projectUid)
         models = self.root.app.modelMgr.editable_models(project, req.user)
-        return GetModelsResponse(models=[gws.props(m, req.user) for m in models])
+        return GetModelsResponse(models=[gws.u.make_props(m, req.user) for m in models])
 
     @gws.ext.command.api('editGetFeatures')
-    def get_features(self, req: gws.IWebRequester, p: GetFeaturesRequest) -> FeatureListResponse:
+    def get_features(self, req: gws.WebRequester, p: GetFeaturesRequest) -> FeatureListResponse:
         mc = gws.ModelContext(
             op=gws.ModelOperation.read,
             readMode=gws.ModelReadMode.list,
@@ -132,7 +132,7 @@ class Object(gws.base.action.Object):
         return FeatureListResponse(features=propses)
 
     @gws.ext.command.api('editGetRelatableFeatures')
-    def get_relatable_features(self, req: gws.IWebRequester, p: GetRelatableFeaturesRequest) -> FeatureListResponse:
+    def get_relatable_features(self, req: gws.WebRequester, p: GetRelatableFeaturesRequest) -> FeatureListResponse:
         mc = gws.ModelContext(
             op=gws.ModelOperation.read,
             readMode=gws.ModelReadMode.list,
@@ -154,7 +154,7 @@ class Object(gws.base.action.Object):
         return FeatureListResponse(features=propses)
 
     @gws.ext.command.api('editGetFeature')
-    def get_feature(self, req: gws.IWebRequester, p: GetFeatureRequest) -> FeatureResponse:
+    def get_feature(self, req: gws.WebRequester, p: GetFeatureRequest) -> FeatureResponse:
         mc = gws.ModelContext(
             op=gws.ModelOperation.read,
             readMode=gws.ModelReadMode.form,
@@ -172,7 +172,7 @@ class Object(gws.base.action.Object):
         return FeatureResponse(feature=propses[0])
 
     @gws.ext.command.api('editInitFeature')
-    def init_feature(self, req: gws.IWebRequester, p: InitFeatureRequest) -> FeatureResponse:
+    def init_feature(self, req: gws.WebRequester, p: InitFeatureRequest) -> FeatureResponse:
         mc = gws.ModelContext(
             op=gws.ModelOperation.create,
             user=req.user,
@@ -192,7 +192,7 @@ class Object(gws.base.action.Object):
         return FeatureResponse(feature=propses[0])
 
     @gws.ext.command.api('editWriteFeature')
-    def write_feature(self, req: gws.IWebRequester, p: WriteFeatureRequest) -> WriteResponse:
+    def write_feature(self, req: gws.WebRequester, p: WriteFeatureRequest) -> WriteResponse:
         is_new = p.feature.isNew
 
         mc = gws.ModelContext(
@@ -231,7 +231,7 @@ class Object(gws.base.action.Object):
         return WriteResponse(validationErrors=[], feature=propses[0])
 
     @gws.ext.command.api('editDeleteFeature')
-    def delete_feature(self, req: gws.IWebRequester, p: DeleteFeatureRequest) -> gws.Response:
+    def delete_feature(self, req: gws.WebRequester, p: DeleteFeatureRequest) -> gws.Response:
         mc = gws.ModelContext(
             op=gws.ModelOperation.delete,
             user=req.user,
@@ -244,13 +244,13 @@ class Object(gws.base.action.Object):
 
     ##
 
-    def require_model(self, model_uid, user: gws.IUser, access: gws.Access) -> gws.IModel:
-        model = t.cast(gws.IModel, user.acquire(model_uid, gws.ext.object.model, access))
+    def require_model(self, model_uid, user: gws.User, access: gws.Access) -> gws.Model:
+        model = t.cast(gws.Model, user.acquire(model_uid, gws.ext.object.model, access))
         if not model or not model.isEditable:
             raise gws.ForbiddenError()
         return model
 
-    def require_field(self, model: gws.IModel, field_name: str, user: gws.IUser, access: gws.Access) -> gws.IModelField:
+    def require_field(self, model: gws.Model, field_name: str, user: gws.User, access: gws.Access) -> gws.ModelField:
         field = model.field(field_name)
         if not field or not user.can(access, field):
             raise gws.ForbiddenError()
@@ -263,7 +263,7 @@ class Object(gws.base.action.Object):
             raise gws.NotFoundError()
         return feature
 
-    def make_propses(self, features: list[gws.IFeature], mc: gws.ModelContext) -> list[gws.FeatureProps]:
+    def make_propses(self, features: list[gws.Feature], mc: gws.ModelContext) -> list[gws.FeatureProps]:
         propses = []
         template_map = {}
 
@@ -277,7 +277,7 @@ class Object(gws.base.action.Object):
         model = feature.model
 
         if model.uid not in template_map:
-            template_map[model.uid] = gws.compact(
+            template_map[model.uid] = gws.u.compact(
                 self.root.app.templateMgr.find_template(
                     model, model.parent, mc.project, user=mc.user, subject=f'feature.{v}')
                 for v in _LIST_VIEWS

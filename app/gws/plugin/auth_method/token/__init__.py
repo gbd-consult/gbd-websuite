@@ -66,7 +66,7 @@ class Object(gws.base.auth.method.Object):
     def close_session(self, req, res):
         pass
 
-    def _parse_header(self, req: gws.IWebRequester):
+    def _parse_header(self, req: gws.WebRequester):
         h = req.header(self.header)
         if not h:
             return

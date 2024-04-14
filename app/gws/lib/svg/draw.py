@@ -19,7 +19,7 @@ DEFAULT_MARKER_SIZE = 10
 DEFAULT_POINT_SIZE = 10
 
 
-def shape_to_fragment(shape: gws.IShape, view: gws.MapView, label: str = None, style: gws.IStyle = None) -> list[gws.IXmlElement]:
+def shape_to_fragment(shape: gws.Shape, view: gws.MapView, label: str = None, style: gws.Style = None) -> list[gws.XmlElement]:
     """Convert a shape to a list of XmlElements (a "fragment")."""
 
     if not shape:
@@ -55,7 +55,7 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, label: str = None, s
     marker_id = None
 
     if with_geometry and sv.marker:
-        marker_id = '_M' + gws.random_string(8)
+        marker_id = '_M' + gws.u.random_string(8)
         marker = _marker(marker_id, sv)
 
     atts: dict = {}
@@ -75,7 +75,7 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, label: str = None, s
             }
             icon = xmlx.tag(
                 icon_el.name,
-                gws.merge(icon_el.attrib, atts),
+                gws.u.merge(icon_el.attrib, atts),
                 *icon_el.children()
             )
 
@@ -91,10 +91,10 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, label: str = None, s
             atts['fill'] = 'none'
         body = _geometry(geom, atts)
 
-    return gws.compact([marker, body, icon, text])
+    return gws.u.compact([marker, body, icon, text])
 
 
-def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list[t.Any]) -> list[gws.IXmlElement]:
+def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list[t.Any]) -> list[gws.XmlElement]:
     """Convert an svg "soup" to a list of XmlElements (a "fragment").
 
     A soup has two components:
@@ -151,7 +151,7 @@ def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list[t.An
 # ----------------------------------------------------------------------------------------------------------------------
 # geometry
 
-def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict = None) -> gws.IXmlElement:
+def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict = None) -> gws.XmlElement:
     def _xy(xy):
         x, y = xy
         return f'{x} {y}'
@@ -223,7 +223,7 @@ def _geom_type(geom):
 
 # @TODO only type=circle is implemented
 
-def _marker(uid, sv: gws.StyleValues) -> gws.IXmlElement:
+def _marker(uid, sv: gws.StyleValues) -> gws.XmlElement:
     size = sv.marker_size or DEFAULT_MARKER_SIZE
     size2 = size // 2
 
@@ -267,7 +267,7 @@ def _is_label_visible(view: gws.MapView, sv: gws.StyleValues) -> bool:
     return True
 
 
-def _label(geom, label: str, sv: gws.StyleValues, extra_y_offset=0) -> gws.IXmlElement:
+def _label(geom, label: str, sv: gws.StyleValues, extra_y_offset=0) -> gws.XmlElement:
     xy = _label_position(geom, sv, extra_y_offset)
     return _label_text(xy[0], xy[1], label, sv)
 
@@ -286,7 +286,7 @@ def _label_position(geom, sv: gws.StyleValues, extra_y_offset=0) -> gws.Point:
     )
 
 
-def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.IXmlElement:
+def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.XmlElement:
     font_name = _font_name(sv)
     font_size = sv.label_font_size or DEFAULT_FONT_SIZE
     font = gws.lib.font.from_name(font_name, font_size)
@@ -375,11 +375,11 @@ def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.IXmlElement:
 # @TODO options for icon positioning
 
 
-def _parse_icon(icon, dpi) -> t.Optional[tuple[gws.IXmlElement, float, float]]:
+def _parse_icon(icon, dpi) -> t.Optional[tuple[gws.XmlElement, float, float]]:
     # see lib.style.icon
 
-    svg: t.Optional[gws.IXmlElement] = None
-    if gws.is_data_object(icon):
+    svg: t.Optional[gws.XmlElement] = None
+    if gws.u.is_data_object(icon):
         svg = icon.svg
     if not svg:
         return
@@ -428,7 +428,7 @@ def _add_font_atts(atts, sv, prefix=''):
     font_name = _font_name(sv, prefix)
     font_size = sv.get(prefix + 'font_size') or DEFAULT_FONT_SIZE
 
-    atts.update(gws.compact({
+    atts.update(gws.u.compact({
         'font-family': font_name.split('-')[0],
         'font-size': f'{font_size}px',
         'font-weight': sv.get(prefix + 'font_weight'),

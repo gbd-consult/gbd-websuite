@@ -46,7 +46,7 @@ class Object(gws.Node):
                 protocol=t.cast(gws.OwsProtocol, protocol.upper()),
                 verb=gws.OwsVerb.GetCapabilities))
         else:
-            xml = gws.read_file(p.src)
+            xml = gws.u.read_file(p.src)
 
         mod = gws.lib.importer.import_from_path(f'gws/plugin/ows_client/{protocol}/caps.py')
         res = mod.parse(xml)
@@ -54,7 +54,7 @@ class Object(gws.Node):
         js = gws.lib.jsonx.to_pretty_string(res, default=_caps_json)
 
         if p.out:
-            gws.write_file(p.out, js)
+            gws.u.write_file(p.out, js)
             gws.log.info(f'saved to {p.out!r}')
         else:
             print(js)

@@ -18,9 +18,9 @@ LoadError = core.LoadError
 
 
 def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'Object':
-    cache_path = gws.ensure_dir(gws.SPEC_DIR) + '/spec_' + gws.to_uid(manifest_path or '') + '.json'
+    cache_path = gws.u.ensure_dir(gws.c.SPEC_DIR) + '/spec_' + gws.u.to_uid(manifest_path or '') + '.json'
 
-    if read_cache and gws.is_file(cache_path):
+    if read_cache and gws.u.is_file(cache_path):
         try:
             gs = gws.lib.jsonx.from_path(cache_path)
             gws.log.debug(f'spec.create: loaded from {cache_path!r}')
@@ -48,7 +48,7 @@ def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'O
 ##
 
 
-class Object(gws.ISpecRuntime):
+class Object(gws.SpecRuntime):
     def __init__(self, gs):
         meta = gs['meta']
         self.manifest = gws.ApplicationManifest(meta['manifest'])
@@ -68,7 +68,7 @@ class Object(gws.ISpecRuntime):
 
         self.appBundlePaths = []
         for chunk in self.chunks:
-            path = chunk['bundleDir'] + '/' + gws.JS_BUNDLE
+            path = chunk['bundleDir'] + '/' + gws.c.JS_BUNDLE
             if path not in self.appBundlePaths:
                 self.appBundlePaths.append(path)
 
@@ -122,7 +122,7 @@ class Object(gws.ISpecRuntime):
 
         if not desc.classPtr:
             try:
-                mod = gws.lib.importer.import_from_path(desc.modPath, gws.APP_DIR)
+                mod = gws.lib.importer.import_from_path(desc.modPath, gws.c.APP_DIR)
             except gws.lib.importer.Error as exc:
                 raise LoadError(f'cannot load class {classref!r} from {desc.modPath!r}') from exc
             desc.classPtr = getattr(mod, desc.ident)

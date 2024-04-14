@@ -73,5 +73,5 @@ class Object(gws.base.ows.client.provider.Object):
 
 #
 
-def get_for(obj: gws.INode) -> Object:
+def get_for(obj: gws.Node) -> Object:
     return t.cast(Object, gws.config.util.get_provider(Object, obj))

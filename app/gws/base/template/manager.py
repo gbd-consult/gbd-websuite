@@ -4,7 +4,7 @@ import gws
 import gws.lib.mime
 
 
-class Object(gws.Node, gws.ITemplateManager):
+class Object(gws.TemplateManager):
     def find_template(self, *objects, user=None, subject=None, mime=None):
         mime = gws.lib.mime.get(mime) if mime else None
 
@@ -36,7 +36,7 @@ class Object(gws.Node, gws.ITemplateManager):
             if path.endswith(ext):
                 return self.root.create_shared(
                     gws.ext.object.template,
-                    gws.Config(uid=gws.sha256(path), type=typ, path=path)
+                    gws.Config(uid=gws.u.sha256(path), type=typ, path=path)
                 )
 
 

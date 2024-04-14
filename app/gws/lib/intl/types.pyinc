@@ -1,0 +1,21 @@
+class Locale(Data):
+    """Locale data."""
+
+    id: str
+    dateFormatLong: str
+    dateFormatMedium: str
+    dateFormatShort: str
+    dateUnits: str
+    """date unit names, e.g. 'YMD' for 'en', 'JMT' for 'de'"""
+    dayNamesLong: list[str]
+    dayNamesShort: list[str]
+    dayNamesNarrow: list[str]
+    firstWeekDay: int
+    language: str
+    languageName: str
+    monthNamesLong: list[str]
+    monthNamesShort: list[str]
+    monthNamesNarrow: list[str]
+    numberDecimal: str
+    numberGroup: str
+

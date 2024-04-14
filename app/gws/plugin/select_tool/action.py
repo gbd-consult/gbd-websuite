@@ -13,7 +13,7 @@ gws.ext.new.action('select')
 class Config(gws.base.action.Config):
     storage: t.Optional[gws.base.storage.Config]
     """storage configuration"""
-    tolerance: t.Optional[gws.Measurement]
+    tolerance: t.Optional[gws.UomValueStr]
     """click tolerance"""
 
 
@@ -24,7 +24,7 @@ class Props(gws.base.action.Props):
 
 class Object(gws.base.action.Object):
     storage: t.Optional[gws.base.storage.Object]
-    tolerance: t.Optional[gws.Measurement]
+    tolerance: t.Optional[gws.UomValue]
 
     def configure(self):
         self.storage = self.create_child_if_configured(
@@ -32,14 +32,14 @@ class Object(gws.base.action.Object):
         self.tolerance = self.cfg('tolerance')
 
     def props(self, user):
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             storage=self.storage,
             tolerance=gws.lib.uom.to_str(self.tolerance) if self.tolerance else None,
         )
 
     @gws.ext.command.api('selectStorage')
-    def handle_storage(self, req: gws.IWebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
+    def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
         if not self.storage:
             raise gws.base.web.error.NotFound()
         return self.storage.handle_request(req, p)

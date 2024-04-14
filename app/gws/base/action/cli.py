@@ -29,7 +29,7 @@ class Object(gws.Node):
     def profile(self, p: InvokeRequest):
         """Profile a web action."""
 
-        filename = f'{gws.VAR_DIR}/{p.cmd}.pstats'
+        filename = f'{gws.c.VAR_DIR}/{p.cmd}.pstats'
 
         cProfile.runctx(
             'self._invoke(p)',

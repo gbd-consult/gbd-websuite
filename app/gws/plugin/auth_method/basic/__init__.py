@@ -50,7 +50,7 @@ class Object(gws.base.auth.method.Object):
     def close_session(self, req, res):
         pass
 
-    def _parse_header(self, req: gws.IWebRequester):
+    def _parse_header(self, req: gws.WebRequester):
         h = req.header('Authorization')
         if not h:
             return
@@ -60,7 +60,7 @@ class Object(gws.base.auth.method.Object):
             return
 
         try:
-            b = gws.to_str(base64.decodebytes(gws.to_bytes(a[1])))
+            b = gws.u.to_str(base64.decodebytes(gws.u.to_bytes(a[1])))
         except ValueError:
             return
 

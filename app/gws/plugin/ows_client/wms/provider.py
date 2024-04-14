@@ -114,7 +114,7 @@ class Object(gws.base.ows.client.provider.Object):
         }
 
         if search.extraParams:
-            params = gws.merge(params, gws.to_upper_dict(search.extraParams))
+            params = gws.u.merge(params, gws.u.to_upper_dict(search.extraParams))
 
         op = self.get_operation(gws.OwsVerb.GetFeatureInfo)
         if not op:
@@ -144,5 +144,5 @@ class Object(gws.base.ows.client.provider.Object):
 ##
 
 
-def get_for(obj: gws.INode) -> Object:
+def get_for(obj: gws.Node) -> Object:
     return t.cast(Object, gws.config.util.get_provider(Object, obj))

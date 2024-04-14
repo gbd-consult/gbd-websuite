@@ -24,7 +24,7 @@ class Props(gws.base.model.widget.Props):
 
 class Object(gws.base.model.widget.Object):
     def props(self, user):
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             withNewButton=self.cfg('withNewButton', default=True),
             withLinkButton=self.cfg('withLinkButton', default=True),

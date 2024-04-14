@@ -17,27 +17,27 @@ class Config(gws.Config):
     """ssl configuration"""
 
 
-class Object(gws.Node, gws.IWebManager):
+class Object(gws.WebManager):
     def configure(self):
         cfgs = self.cfg('sites', default=[])
         if all(c.host != '*' for c in cfgs):
             cfgs.append(_FALLBACK_SITE)
         if self.cfg('ssl'):
-            cfgs = [gws.merge(c, ssl=True) for c in cfgs]
+            cfgs = [gws.u.merge(c, ssl=True) for c in cfgs]
         self.sites = self.create_children(site.Object, cfgs)
 
         self.register_middleware('cors')
 
     ##
 
-    def enter_middleware(self, req: gws.IWebRequester):
+    def enter_middleware(self, req: gws.WebRequester):
         cors = req.site.corsOptions
         if not cors:
             return
         if req.method == 'OPTIONS':
             return gws.ContentResponse(mime='text/plain', content='')
 
-    def exit_middleware(self, req: gws.IWebRequester, res: gws.IWebResponder):
+    def exit_middleware(self, req: gws.WebRequester, res: gws.WebResponder):
         cors = req.site.corsOptions
 
         if not cors or res.status >= 400:

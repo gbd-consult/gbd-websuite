@@ -1,0 +1,88 @@
+# basic data type
+
+class Data:
+    """Basic data object.
+
+    This object can be instantiated by passing one or or ``dict`` arguments
+    and/or keyword args. All dicts keys and keywords become attributes of the object.
+
+    Accessing an undefined attribute returns ``None`` and no error is raised,
+    unless the attribute name starts with an underscore.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.update(*args, **kwargs)
+
+    def __repr__(self):
+        return repr(vars(self))
+
+    def get(self, key, default=None):
+        """Get an attribute value.
+
+        Args:
+            key: Attribute name.
+            default: Default value, returned if the attribute is undefined.
+        """
+        return vars(self).get(key, default)
+
+    def set(self, key, val):
+        """Set an attribute value.
+
+        Args:
+            key: Attribute name.
+            val: Attribute value.
+        """
+        return setattr(self, key, val)
+
+    def update(self, *args, **kwargs):
+        """Update the object with keys and values from args and keywords.
+
+        Args:
+            *args: Dicts or Mappings.
+            kwargs: Keyword args.
+        """
+
+        d = {}
+        for a in args:
+            if isinstance(a, Mapping):
+                d.update(a)
+            elif isinstance(a, Data):
+                d.update(vars(a))
+        d.update(kwargs)
+        vars(self).update(d)
+
+
+# getattr needs to be defined out of class, otherwise IDEA accepts all attributes
+
+def _data_getattr(self, attr):
+    if attr.startswith('_'):
+        # do not use None fallback for special props
+        raise AttributeError(attr)
+    return None
+
+
+setattr(Data, '__getattr__', _data_getattr)
+
+
+def is_data_object(x):
+    """True if the argument is a ``Data`` object."""
+    return isinstance(x, Data)
+
+
+def to_data_object(x) -> 'Data':
+    """Convert a value to a ``Data`` object.
+
+    If the argument is already a ``Data`` object, simply return it.
+    If the argument is ``None``, an empty object is returned.
+
+    Args:
+        x: A Mapping or ``None``.
+    """
+
+    if is_data_object(x):
+        return x
+    if isinstance(x, Mapping):
+        return Data(x)
+    if x is None:
+        return Data()
+    raise ValueError(f'cannot convert {x!r} to Data')

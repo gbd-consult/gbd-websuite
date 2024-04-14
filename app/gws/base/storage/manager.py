@@ -11,8 +11,8 @@ class Config(gws.Config):
     """storage providers"""
 
 
-class Object(gws.Node, gws.IStorageManager):
-    providers: dict[str, gws.IStorageProvider]
+class Object(gws.StorageManager):
+    providers: dict[str, gws.StorageProvider]
 
     def configure(self):
         self.providers = {}

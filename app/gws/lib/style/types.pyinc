@@ -1,0 +1,70 @@
+class StyleValues(Data):
+    """CSS Style values."""
+
+    fill: Color
+
+    stroke: Color
+    stroke_dasharray: list[int]
+    stroke_dashoffset: int
+    stroke_linecap: Literal['butt', 'round', 'square']
+    stroke_linejoin: Literal['bevel', 'round', 'miter']
+    stroke_miterlimit: int
+    stroke_width: int
+
+    marker: Literal['circle', 'square', 'arrow', 'cross']
+    marker_fill: Color
+    marker_size: int
+    marker_stroke: Color
+    marker_stroke_dasharray: list[int]
+    marker_stroke_dashoffset: int
+    marker_stroke_linecap: Literal['butt', 'round', 'square']
+    marker_stroke_linejoin: Literal['bevel', 'round', 'miter']
+    marker_stroke_miterlimit: int
+    marker_stroke_width: int
+
+    with_geometry: Literal['all', 'none']
+    with_label: Literal['all', 'none']
+
+    label_align: Literal['left', 'right', 'center']
+    label_background: Color
+    label_fill: Color
+    label_font_family: str
+    label_font_size: int
+    label_font_style: Literal['normal', 'italic']
+    label_font_weight: Literal['normal', 'bold']
+    label_line_height: int
+    label_max_scale: int
+    label_min_scale: int
+    label_offset_x: int
+    label_offset_y: int
+    label_padding: list[int]
+    label_placement: Literal['start', 'end', 'middle']
+    label_stroke: Color
+    label_stroke_dasharray: list[int]
+    label_stroke_dashoffset: int
+    label_stroke_linecap: Literal['butt', 'round', 'square']
+    label_stroke_linejoin: Literal['bevel', 'round', 'miter']
+    label_stroke_miterlimit: int
+    label_stroke_width: int
+
+    point_size: int
+    icon: str
+
+    offset_x: int
+    offset_y: int
+
+
+class StyleProps(Props):
+    """CSS Style properties."""
+
+    cssSelector: Optional[str]
+    text: Optional[str]
+    values: Optional[dict]
+
+
+class Style:
+    """CSS Style object."""
+
+    cssSelector: str
+    text: str
+    values: StyleValues

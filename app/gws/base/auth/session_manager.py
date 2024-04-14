@@ -9,7 +9,7 @@ class Config(gws.Config):
     """session life time"""
 
 
-class Object(gws.Node, gws.IAuthSessionManager):
+class Object(gws.AuthSessionManager):
     """Base session manager."""
 
     def configure(self):

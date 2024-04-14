@@ -9,7 +9,7 @@ class Object(gws.base.search.finder.Object):
     """Generic OWS Finder."""
 
     supportsGeometrySearch = True
-    provider: gws.IOwsProvider
+    provider: gws.OwsProvider
     sourceLayers: list[gws.SourceLayer]
 
     def configure(self):

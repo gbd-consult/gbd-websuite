@@ -21,7 +21,7 @@ class Config(gws.base.action.Config):
 
 class Object(gws.base.action.Object):
     @gws.ext.command.get('owsService')
-    def service(self, req: gws.IWebRequester, p: ServiceRequest) -> gws.ContentResponse:
+    def service(self, req: gws.WebRequester, p: ServiceRequest) -> gws.ContentResponse:
 
         srv = self._find_service(req, p)
         if not srv:
@@ -40,7 +40,7 @@ class Object(gws.base.action.Object):
             gws.log.exception()
             return self._xml_error(gws.base.web.error.InternalServerError())
 
-    def _find_service(self, req, p) -> t.Optional[gws.IOwsService]:
+    def _find_service(self, req, p) -> t.Optional[gws.OwsService]:
         if p.projectUid:
             project = req.user.require_project(p.projectUid)
             for s in project.owsServices:
@@ -54,11 +54,11 @@ class Object(gws.base.action.Object):
 
     def _xml_error(self, exc: Exception):
         try:
-            status = int(gws.get(exc, 'code', 500))
+            status = int(gws.u.get(exc, 'code', 500))
         except Exception:
             status = 500
 
-        description = gws.get(exc, 'description') or f'Error {status}'
+        description = gws.u.get(exc, 'description') or f'Error {status}'
 
         xml = gws.lib.xmlx.tag(
             'ServiceExceptionReport',

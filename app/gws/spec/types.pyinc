@@ -1,0 +1,156 @@
+class ApplicationManifestPlugin(Data):
+    """Plugin description."""
+
+    path: DirPath
+    """Path to the plugin python module."""
+
+    name: str = ''
+    """Optional name, when omitted, the directory name will be used."""
+
+
+class ApplicationManifest(Data):
+    """Application manifest."""
+
+    excludePlugins: Optional[list[str]]
+    """Names of the core plugins that should be deactivated."""
+    plugins: Optional[list[ApplicationManifestPlugin]]
+    """Custom plugins."""
+    locales: list[str]
+    """Locale names supported by this application."""
+    withFallbackConfig: bool = False
+    """Use a minimal fallback configuration."""
+    withStrictConfig: bool = False
+    """Stop the application upon a configuration error."""
+
+
+class ExtObjectDescriptor(Data):
+    """Extension object descriptor."""
+
+    extName: str
+    """Full extension name like ``gws.ext.object.layer.wms``."""
+    extType: str
+    """Extension type like ``wms``."""
+    classPtr: type
+    """Class object."""
+    ident: str
+    """Identifier."""
+    modName: str
+    """Name of the module that contains the class."""
+    modPath: str
+    """Path to the module that contains the class."""
+
+
+class ExtCommandDescriptor(Data):
+    extName: str
+    """Full extension name like ``gws.ext.object.layer.wms``."""
+    extType: str
+    """Extension type like ``wms``."""
+    methodName: str
+    """Command method name."""
+    methodPtr: Callable
+    """Command method."""
+    request: 'Request'
+    """Request sent to the command."""
+    tArg: str
+    """Type of the command argument."""
+    tOwner: str
+    """Type of the command owner."""
+    owner: ExtObjectDescriptor
+    """Descriptor of the command owner."""
+
+
+class SpecReadOption(Enum):
+    """Read options."""
+
+    acceptExtraProps = 'acceptExtraProps'
+    """Accept extra object properties."""
+    allowMissing = 'allowMissing'
+    """Allow otherwise required properties to be missing."""
+    caseInsensitive = 'caseInsensitive'
+    """Case insensitive search for properties. """
+    convertValues = 'convertValues'
+    """Try to convert values to specified types."""
+    ignoreExtraProps = 'ignoreExtraProps'
+    """Silently ignore extra object properties."""
+    verboseErrors = 'verboseErrors'
+    """Provide verbose error messages."""
+
+
+class CommandCategory(Enum):
+    """Command category."""
+
+    api = 'api'
+    """API command."""
+    cli = 'cli'
+    """CLI command."""
+    get = 'get'
+    """Web GET command."""
+    post = 'post'
+    """Web POST command."""
+
+
+class SpecRuntime:
+    """Specification runtime."""
+
+    version: str
+    """Application version."""
+    manifest: ApplicationManifest
+    """Application manifest."""
+    appBundlePaths: list[str]
+    """List of client bundle paths."""
+
+    def read(self, value, type_name: str, path: str = '', options=Optional[set[SpecReadOption]]):
+        """Read a raw value according to a spec.
+
+         Args:
+             value: Raw value from config or request.
+             type_name: Object type name.
+             path: Config file path.
+             options: Read options.
+
+         Returns:
+             A parsed object.
+         """
+
+    def object_descriptor(self, type_name: str) -> Optional[ExtObjectDescriptor]:
+        """Get an object descriptor.
+
+         Args:
+             type_name: Object type name.
+
+         Returns:
+             A descriptor or ``None`` if the type is not found.
+         """
+
+    def command_descriptor(self, command_category: CommandCategory, command_name: str) -> Optional[ExtCommandDescriptor]:
+        """Get a command descriptor.
+
+         Args:
+             command_category: Command category.
+             command_name: Command name.
+
+         Returns:
+             A descriptor or ``None`` if the command is not found.
+         """
+
+    def get_class(self, classref: ClassRef, ext_type: Optional[str] = None) -> Optional[type]:
+        """Get a class object for a class reference.
+
+        Args:
+            classref: Class reference.
+            ext_type: Extension type.
+
+        Returns:
+            A class or ``None`` if the reference is not found.
+        """
+
+    def parse_classref(self, classref: ClassRef) -> tuple[Optional[type], str, str]:
+        """Parse a class reference.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            A tuple ``(class object, class name, extension name)``.
+        """
+

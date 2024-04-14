@@ -16,7 +16,7 @@ import gws.lib.svg
 import gws.types as t
 
 
-def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):
+def mapproxy_layer_config(layer: gws.Layer, mc, source_uid):
     mc.layer({
         'name': layer.uid + '_NOCACHE',
         'sources': [source_uid]
@@ -24,7 +24,7 @@ def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):
 
     tg = layer.grid
 
-    tg.uid = mc.grid(gws.compact({
+    tg.uid = mc.grid(gws.u.compact({
         'origin': tg.origin,
         'tile_size': [tg.tileSize, tg.tileSize],
         'res': tg.resolutions,
@@ -62,7 +62,7 @@ def mapproxy_layer_config(layer: gws.ILayer, mc, source_uid):
     })
 
 
-def mapproxy_back_cache_config(layer: gws.ILayer, mc, url, grid_uid):
+def mapproxy_back_cache_config(layer: gws.Layer, mc, url, grid_uid):
     source_uid = mc.source({
         'type': 'tile',
         'url': url,
@@ -70,7 +70,7 @@ def mapproxy_back_cache_config(layer: gws.ILayer, mc, url, grid_uid):
         'concurrent_requests': layer.cfg('maxRequests', default=0)
     })
 
-    return mc.cache(gws.compact({
+    return mc.cache(gws.u.compact({
         'sources': [source_uid],
         'grids': [grid_uid],
         'cache': {
@@ -90,7 +90,7 @@ _BOX_BUFFER = 200
 _GetBoxFn = t.Callable[[gws.Bounds, float, float], bytes]
 
 
-def mpx_raster_render(layer: gws.ILayer, lri: gws.LayerRenderInput):
+def mpx_raster_render(layer: gws.Layer, lri: gws.LayerRenderInput):
     if lri.type == gws.LayerRenderInputType.box:
 
         uid = layer.uid
@@ -119,7 +119,7 @@ def mpx_raster_render(layer: gws.ILayer, lri: gws.LayerRenderInput):
         return gws.LayerRenderOutput(content=content)
 
 
-def generic_render_box(layer: gws.ILayer, lri: gws.LayerRenderInput, get_box: _GetBoxFn) -> bytes:
+def generic_render_box(layer: gws.Layer, lri: gws.LayerRenderInput, get_box: _GetBoxFn) -> bytes:
     annotate = layer.root.app.developer_option('map.annotate_render')
 
     max_box_size = lri.boxSize or _BOX_SIZE
@@ -203,7 +203,7 @@ def _box_to_image(bounds: gws.Bounds, width: float, height: float, max_size: int
             _annotate_image(tile, f'{nx} {ny}')
         img.paste(tile, (nx * max_size, ny * max_size))
 
-    img.crop((0, 0, gws.to_rounded_int(width), gws.to_rounded_int(height)))
+    img.crop((0, 0, gws.u.to_rounded_int(width), gws.u.to_rounded_int(height)))
     return img
 
 

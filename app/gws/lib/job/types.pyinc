@@ -1,0 +1,33 @@
+class JobState(Enum):
+    """Background job state."""
+
+    init = 'init'
+    """The job is being created."""
+    open = 'open'
+    """The job is just created and waiting for start."""
+    running = 'running'
+    """The job is running."""
+    complete = 'complete'
+    """The job has been completed successfully."""
+    error = 'error'
+    """There was an error."""
+    cancel = 'cancel'
+    """The job was cancelled."""
+
+
+class Job:
+    """Background Job object."""
+
+    error: str
+    payload: dict
+    state: JobState
+    uid: str
+    user: 'User'
+
+    def run(self): ...
+
+    def update(self, payload: Optional[dict] = None, state: Optional[JobState] = None, error: Optional[str] = None): ...
+
+    def cancel(self): ...
+
+    def remove(self): ...

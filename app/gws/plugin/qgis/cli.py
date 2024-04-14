@@ -45,7 +45,7 @@ class Object(gws.Node):
         src = project.Store(type=project.StoreType.postgres, schema=p.schema, name=p.name)
         prj = project.from_store(root, src)
         if p.out:
-            gws.write_file(p.out, prj.text)
+            gws.u.write_file(p.out, prj.text)
         else:
             print(prj.text)
 
@@ -63,7 +63,7 @@ class Object(gws.Node):
     def caps(self, p: CapsParams):
         """Print the capabilities of a document in JSON format"""
 
-        xml = gws.read_file(p.path)
+        xml = gws.u.read_file(p.path)
 
         mod = gws.lib.importer.import_from_path(f'gws/plugin/qgis/caps.py')
         res = mod.parse(xml)
@@ -71,7 +71,7 @@ class Object(gws.Node):
         js = gws.lib.jsonx.to_pretty_string(res, default=_caps_json)
 
         if p.out:
-            gws.write_file(p.out, js)
+            gws.u.write_file(p.out, js)
             gws.log.info(f'saved to {p.out!r}')
         else:
             print(js)

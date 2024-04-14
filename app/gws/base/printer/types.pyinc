@@ -1,0 +1,107 @@
+class PrintPlaneType(Enum):
+    """Print plane type."""
+
+    bitmap = 'bitmap'
+    url = 'url'
+    features = 'features'
+    raster = 'raster'
+    vector = 'vector'
+    soup = 'soup'
+
+
+class PrintPlane(Data):
+    """Print plane."""
+
+    type: PrintPlaneType
+
+    opacity: Optional[float]
+    cssSelector: Optional[str]
+
+    bitmapData: Optional[bytes]
+    bitmapMode: Optional[str]
+    bitmapWidth: Optional[int]
+    bitmapHeight: Optional[int]
+
+    url: Optional[str]
+
+    features: Optional[list['FeatureProps']]
+
+    layerUid: Optional[str]
+    subLayers: Optional[list[str]]
+
+    soupPoints: Optional[list[Point]]
+    soupTags: Optional[list[Any]]
+
+
+class PrintMap(Data):
+    """Map properties for printing."""
+
+    backgroundColor: Optional[int]
+    bbox: Optional[Extent]
+    center: Optional[Point]
+    planes: list[PrintPlane]
+    rotation: Optional[int]
+    scale: int
+    styles: Optional[list['StyleProps']]
+    visibleLayers: Optional[list[str]]
+
+
+class PrintRequestType(Enum):
+    """Type of the print request."""
+
+    template = 'template'
+    map = 'map'
+
+
+class PrintRequest(Request):
+    """Print request."""
+
+    type: PrintRequestType
+
+    args: Optional[dict]
+    crs: Optional[CrsName]
+    outputFormat: Optional[str]
+    maps: Optional[list[PrintMap]]
+
+    printerUid: Optional[str]
+    dpi: Optional[int]
+    outputSize: Optional[Size]
+
+
+class PrintJobResponse(Response):
+    """Print job information response."""
+
+    jobUid: str
+    progress: int
+    state: 'JobState'
+    stepType: str
+    stepName: str
+    url: str
+
+
+class Printer(Node):
+    """Printer object."""
+
+    title: str
+    template: 'Template'
+    models: list['Model']
+    qualityLevels: list['TemplateQualityLevel']
+
+
+class PrinterManager(Node):
+    """Print Manager."""
+
+    def printers_for_project(self, project: 'Project', user: 'User') -> list['Printer']: ...
+
+    def start_job(self, request: PrintRequest, user: 'User') -> 'Job': ...
+
+    def get_job(self, uid: str, user: 'User') -> Optional['Job']: ...
+
+    def run_job(self, request: PrintRequest, user: 'User'): ...
+
+    def cancel_job(self, job: 'Job'): ...
+
+    def result_path(self, job: 'Job') -> str: ...
+
+    def status(self, job: 'Job') -> PrintJobResponse: ...
+

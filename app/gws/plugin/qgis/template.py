@@ -46,7 +46,7 @@ class Config(gws.base.template.Config):
     """qgis provider"""
     index: t.Optional[int]
     """template index"""
-    mapPosition: t.Optional[gws.MSize]
+    mapPosition: t.Optional[gws.UomSizeStr]
     """position for the main map"""
     cssPath: t.Optional[gws.FilePath]
     """css file"""
@@ -60,7 +60,7 @@ class _HtmlBlock(gws.Data):
 class Object(gws.base.template.Object):
     provider: provider.Object
     qgisTemplate: caps.PrintTemplate
-    mapPosition: gws.MSize
+    mapPosition: gws.UomSize
     cssPath: str
     htmlBlocks: dict[str, _HtmlBlock]
 
@@ -78,14 +78,14 @@ class Object(gws.base.template.Object):
         # render the map
 
         self.notify(tri, 'begin_map')
-        map_pdf_path = gws.printtemp('q.map.pdf')
+        map_pdf_path = gws.u.printtemp('q.map.pdf')
         mro = self._render_map(tri, map_pdf_path)
         self.notify(tri, 'end_map')
 
         # render qgis
 
         self.notify(tri, 'begin_page')
-        qgis_pdf_path = gws.printtemp('q.qgis.pdf')
+        qgis_pdf_path = gws.u.printtemp('q.qgis.pdf')
         self._render_qgis(tri, mro, qgis_pdf_path)
         self.notify(tri, 'end_page')
 
@@ -97,7 +97,7 @@ class Object(gws.base.template.Object):
         # combine map and qgis
 
         self.notify(tri, 'finalize_print')
-        comb_path = gws.printtemp('q.comb.pdf')
+        comb_path = gws.u.printtemp('q.comb.pdf')
         gws.lib.pdf.overlay(map_pdf_path, qgis_pdf_path, comb_path)
 
         self.notify(tri, 'end_print')
@@ -214,7 +214,7 @@ class Object(gws.base.template.Object):
         if mro:
             # NB we don't render the map here, but still need map0:xxxx for scale bars and arrows
             # NB the extent is mandatory!
-            params = gws.merge(params, {
+            params = gws.u.merge(params, {
                 'CRS': mro.view.bounds.crs.epsg,
                 'MAP0:EXTENT': mro.view.bounds.extent,
                 'MAP0:ROTATION': mro.view.rotation,
@@ -222,7 +222,7 @@ class Object(gws.base.template.Object):
             })
 
         res = self.provider.call_server(params)
-        gws.write_file_b(out_path, res.content)
+        gws.u.write_file_b(out_path, res.content)
 
     def _collect_html_blocks(self):
         self.htmlBlocks = {}
@@ -239,7 +239,7 @@ class Object(gws.base.template.Object):
                     attrName=attr,
                     template=self.root.create_shared(
                         gws.ext.object.template,
-                        uid='qgis_html_' + gws.sha256(text),
+                        uid='qgis_html_' + gws.u.sha256(text),
                         type='html',
                         text=text,
                     )

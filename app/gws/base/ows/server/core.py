@@ -9,18 +9,18 @@ class Error(gws.Error):
 class Request(gws.Data):
     alwaysXY: bool
     bounds: gws.Bounds
-    crs: gws.ICrs
+    crs: gws.Crs
     isSoap: bool = False
-    project: gws.IProject
-    req: gws.IWebRequester
-    service: gws.IOwsService
-    targetCrs: gws.ICrs
+    project: gws.Project
+    req: gws.WebRequester
+    service: gws.OwsService
+    targetCrs: gws.Crs
     version: str
-    xmlElement: t.Optional[gws.IXmlElement] = None
+    xmlElement: t.Optional[gws.XmlElement] = None
 
 
 class LayerCaps(gws.Data):
-    layer: gws.ILayer
+    layer: gws.Layer
 
     hasLegend: bool
     hasSearch: bool
@@ -39,7 +39,7 @@ class LayerCaps(gws.Data):
     children: list['LayerCaps']
     ancestors: list['LayerCaps']
 
-    model: t.Optional[gws.IModel]
+    model: t.Optional[gws.Model]
 
 
 class LayerCapsTree(gws.Data):
@@ -49,7 +49,7 @@ class LayerCapsTree(gws.Data):
 
 
 class FeatureCollectionMember(gws.Data):
-    feature: gws.IFeature
+    feature: gws.Feature
     options: gws.LayerOwsOptions
 
 

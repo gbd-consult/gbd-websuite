@@ -97,13 +97,13 @@ class Columns(t.Enum):
 
 
 class Object(gws.base.auth.provider.Object):
-    dbProvider: gws.IDatabaseProvider
+    dbProvider: gws.DatabaseProvider
     authorizationSql: str
     getUserSql: str
 
     def configure(self):
         self.uid = 'gws.base.auth.providers.sql'
-        self.dbProvider = t.cast(gws.IDatabaseProvider, gws.base.database.provider.get_for(self))
+        self.dbProvider = t.cast(gws.DatabaseProvider, gws.base.database.provider.get_for(self))
         self.authorizationSql = self.cfg('authorizationSql')
         self.getUserSql = self.cfg('getUserSql')
 
@@ -144,7 +144,7 @@ class Object(gws.base.auth.provider.Object):
             stmt = sa.text(sql)
             return [r._asdict() for r in conn.execute(stmt, params)]
 
-    def _make_user(self, rec: dict, validate: bool) -> gws.IUser:
+    def _make_user(self, rec: dict, validate: bool) -> gws.User:
         args = {
             'attributes': {}
         }
@@ -162,7 +162,7 @@ class Object(gws.base.auth.provider.Object):
             elif lk == Columns.uid:
                 args['localUid'] = str(v)
             elif lk == Columns.roles:
-                args['roles'] = gws.to_list(v)
+                args['roles'] = gws.u.to_list(v)
             elif lk == Columns.displayname:
                 args['displayName'] = v
             elif lk == Columns.login:

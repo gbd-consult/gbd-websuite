@@ -30,7 +30,7 @@ class Config(gws.ConfigWithAccess):
 
 ##
 
-class Object(gws.Node, gws.IModelField):
+class Object(gws.ModelField):
 
     def configure(self):
         self.model = self.cfg('_defaultModel')
@@ -117,7 +117,7 @@ class Object(gws.Node, gws.IModelField):
     def props(self, user):
         wp = None
         if self.widget:
-            wp = gws.props(self.widget, user, self)
+            wp = gws.u.make_props(self.widget, user, self)
             if not user.can_write(self):
                 wp.readOnly = True
 

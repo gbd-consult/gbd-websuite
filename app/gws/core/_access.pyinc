@@ -1,0 +1,42 @@
+
+Acl: TypeAlias = list[tuple[int, str]]
+"""Access Control list.
+
+A list of tuples ``(ACL bit, role-name)`` where ``ACL bit`` is ``1`` if the access is allowed and ``0`` otherwise.
+"""
+
+AclStr: TypeAlias = str
+"""A string of comma-separated pairs ``allow <role>`` or ``deny <role>``."""
+
+
+class Access(Enum):
+    """Access mode."""
+
+    read = 'read'
+    write = 'write'
+    create = 'create'
+    delete = 'delete'
+
+
+class PermissionsConfig:
+    """Permissions configuration."""
+
+    read: Optional[AclStr]
+    """Permission to read the object."""
+    write: Optional[AclStr]
+    """Permission to change the object."""
+    create: Optional[AclStr]
+    """Permission to create new objects."""
+    delete: Optional[AclStr]
+    """Permission to delete objects."""
+    edit: Optional[AclStr]
+    """A combination of read, write, create and delete."""
+
+
+class ConfigWithAccess(Config):
+    """Basic config with permissions."""
+
+    access: Optional[AclStr]
+    """Permission to read or use the object."""
+    permissions: Optional[PermissionsConfig]
+    """Additional permissions."""

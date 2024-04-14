@@ -24,7 +24,7 @@ def parse(xml: str) -> gws.OwsCapabilities:
         version=caps_el.get('version'))
 
 
-def _layer(layer_el: gws.IXmlElement, tms_dct):
+def _layer(layer_el: gws.XmlElement, tms_dct):
     # <Layer>
     #   <ows:Title>...
     #   <Style>...
@@ -66,7 +66,7 @@ def _layer(layer_el: gws.IXmlElement, tms_dct):
     return sl
 
 
-def _tile_matrix_set(tms_el: gws.IXmlElement):
+def _tile_matrix_set(tms_el: gws.XmlElement):
     # <TileMatrixSet>
     #   <ows:Identifier>...
     #   <ows:SupportedCRS>...
@@ -84,7 +84,7 @@ def _tile_matrix_set(tms_el: gws.IXmlElement):
     return tms
 
 
-def _tile_matrix(tm_el: gws.IXmlElement):
+def _tile_matrix(tm_el: gws.XmlElement):
     # <TileMatrix>
     #   <ows:Identifier>
     #   <ScaleDenominator>

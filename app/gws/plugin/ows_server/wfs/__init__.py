@@ -13,20 +13,20 @@ gws.ext.new.owsService('wfs')
 _DEFAULT_TEMPLATES = [
     gws.Config(
         type='py',
-        path=gws.dirname(__file__) + '/templates/getCapabilities.py',
+        path=gws.u.dirname(__file__) + '/templates/getCapabilities.py',
         subject='ows.GetCapabilities',
         mimeTypes=['xml'],
-        access=gws.PUBLIC,
+        access=gws.c.PUBLIC,
     ),
     gws.Config(
         type='py',
-        path=gws.dirname(__file__) + '/templates/describeFeatureType.py',
+        path=gws.u.dirname(__file__) + '/templates/describeFeatureType.py',
         subject='ows.DescribeFeatureType',
         mimeTypes=['xml'],
     ),
     gws.Config(
         type='py',
-        path=gws.dirname(__file__) + '/templates/getFeature.py',
+        path=gws.u.dirname(__file__) + '/templates/getFeature.py',
         subject='ows.GetFeatureInfo',
         mimeTypes=['xml', 'gml', 'gml3'],
     ),
@@ -147,7 +147,7 @@ class Object(server.service.Object):
                 raise gws.base.web.error.NotFound('No layers found')
             return lcs
 
-        lcs = server.util.layer_caps_by_feature_name(lct, gws.to_list(s))
+        lcs = server.util.layer_caps_by_feature_name(lct, gws.u.to_list(s))
         if not lcs:
             raise gws.base.web.error.NotFound('Layer not found')
         return lcs

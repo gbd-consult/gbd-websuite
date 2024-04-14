@@ -36,7 +36,7 @@ class Object(gws.Node):
         """Display the cache status."""
 
         root = gws.config.loader.load()
-        status = core.status(root, gws.to_list(p.layer))
+        status = core.status(root, gws.u.to_list(p.layer))
 
         for e in status.entries:
             print()
@@ -48,7 +48,7 @@ class Object(gws.Node):
 
             ls = []
             for la in e.layers:
-                title = gws.get(la, 'title', '?')
+                title = gws.u.get(la, 'title', '?')
                 ls.append(f'{la.uid}: {title!r} type={la.extType}')
             print(f'LAYER  :', ', '.join(ls))
 
@@ -88,10 +88,10 @@ class Object(gws.Node):
         """Remove active cache dirs."""
 
         root = gws.config.loader.load()
-        core.drop(root, gws.to_list(p.layer))
+        core.drop(root, gws.u.to_list(p.layer))
 
 #
-# _SEED_LOCKFILE = gws.CONFIG_DIR + '/mapproxy.seed.lock'
+# _SEED_LOCKFILE = gws.c.CONFIG_DIR + '/mapproxy.seed.lock'
 #
 #
 # @arg('--layers', help='comma separated list of layer IDs')

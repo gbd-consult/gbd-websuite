@@ -24,11 +24,11 @@ def from_args(**kwargs) -> gws.Metadata:
 
 
 def from_config(c: gws.Config) -> gws.Metadata:
-    return check(gws.Metadata(gws.to_dict(c)))
+    return check(gws.Metadata(gws.u.to_dict(c)))
 
 
 def from_props(p: gws.Props) -> gws.Metadata:
-    return check(gws.Metadata(gws.to_dict(p)))
+    return check(gws.Metadata(gws.u.to_dict(p)))
 
 
 def props(md: gws.Metadata) -> gws.Props:
@@ -87,8 +87,8 @@ def merge(*mds, extend_lists=False) -> gws.Metadata:
     for md in mds:
         if not md:
             continue
-        for key, val in gws.to_dict(md).items():
-            if gws.is_empty(val):
+        for key, val in gws.u.to_dict(md).items():
+            if gws.u.is_empty(val):
                 continue
             if extend_lists and key in _LIST_KEYS:
                 val = d.get(key, []) + val

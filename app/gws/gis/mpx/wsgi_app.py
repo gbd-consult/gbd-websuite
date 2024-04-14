@@ -3,7 +3,6 @@
 import yaml
 
 import gws
-import gws.core.error
 
 import mapproxy.wsgiapp
 import logging
@@ -33,10 +32,10 @@ mapproxy_app = make_wsgi_app(config.CONFIG_PATH)
 
 
 def init():
-    cfg = yaml.safe_load(gws.read_file(config.CONFIG_PATH))
-    gws.ensure_dir(cfg['globals']['cache']['base_dir'])
-    gws.ensure_dir(cfg['globals']['cache']['lock_dir'])
-    gws.ensure_dir(cfg['globals']['cache']['tile_lock_dir'])
+    cfg = yaml.safe_load(gws.u.read_file(config.CONFIG_PATH))
+    gws.u.ensure_dir(cfg['globals']['cache']['base_dir'])
+    gws.u.ensure_dir(cfg['globals']['cache']['lock_dir'])
+    gws.u.ensure_dir(cfg['globals']['cache']['tile_lock_dir'])
 
 
 def application(environ, start_response):

@@ -32,7 +32,7 @@ class Response(gws.Response):
 
 
 class Config(gws.ConfigWithAccess):
-    """Storage configuation"""
+    """Storage configuration"""
 
     providerUid: t.Optional[str]
     """storage provider uid"""
@@ -46,7 +46,7 @@ class Props(gws.Props):
 
 
 class Object(gws.Node):
-    provider: gws.IStorageProvider
+    provider: gws.StorageProvider
     categoryName: str
 
     def configure(self):
@@ -82,7 +82,7 @@ class Object(gws.Node):
             canCreate=user.can_create(self),
         )
 
-    def handle_request(self, req: gws.IWebRequester, p: Request) -> Response:
+    def handle_request(self, req: gws.WebRequester, p: Request) -> Response:
         state = self.get_state_for(req.user)
         data = None
 

@@ -26,7 +26,7 @@ def from_dict(d: dict, opts: parser.Options = None) -> 'Object':
 
     s = d.get('values')
     if s:
-        vals.update(parser.parse_dict(gws.to_dict(s), opts))
+        vals.update(parser.parse_dict(gws.u.to_dict(s), opts))
 
     return Object(
         d.get('cssSelector', ''),
@@ -47,7 +47,7 @@ def from_config(cfg: gws.Config, opts: parser.Options = None) -> 'Object':
 
         """
     return from_dict(
-        gws.to_dict(cfg),
+        gws.u.to_dict(cfg),
         opts or parser.Options(trusted=True, strict=True))
 
 
@@ -63,7 +63,7 @@ def from_props(props: gws.Props, opts: parser.Options = None) -> 'Object':
 
         """
     return from_dict(
-        gws.to_dict(props),
+        gws.u.to_dict(props),
         opts or parser.Options(trusted=False, strict=False))
 
 
@@ -89,7 +89,7 @@ class Props(gws.Props):
     """Style values"""
 
 
-class Object(gws.Object, gws.IStyle):
+class Object(gws.Style):
     def __init__(self, selector, text, values):
         self.cssSelector = selector
         self.text = text
@@ -105,5 +105,5 @@ class Object(gws.Object, gws.IStyle):
 
         return Props(
             cssSelector=self.cssSelector or '',
-            values=gws.merge(self.values, icon=ico),
+            values=gws.u.merge(self.values, icon=ico),
         )

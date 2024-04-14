@@ -74,15 +74,15 @@ def check_layers(layers: list[gws.SourceLayer], revert: bool = False) -> list[gw
     def walk(sl, parent_path, level):
         if not sl:
             return
-        sl.aUid = gws.to_uid(sl.name or sl.metadata.get('title'))
+        sl.aUid = gws.u.to_uid(sl.name or sl.metadata.get('title'))
         sl.aPath = parent_path + '/' + sl.aUid
         sl.aLevel = level
-        sl.layers = gws.compact(walk(c, sl.aPath, level + 1) for c in (sl.layers or []))
+        sl.layers = gws.u.compact(walk(c, sl.aPath, level + 1) for c in (sl.layers or []))
         if revert:
             sl.layers = list(reversed(sl.layers))
         return sl
 
-    ls = gws.compact(walk(sl, '', 1) for sl in layers)
+    ls = gws.u.compact(walk(sl, '', 1) for sl in layers)
     if revert:
         ls = list(reversed(ls))
     return ls
@@ -139,7 +139,7 @@ def filter_layers(
     return found
 
 
-def combined_crs_list(layers: list[gws.SourceLayer]) -> list[gws.ICrs]:
+def combined_crs_list(layers: list[gws.SourceLayer]) -> list[gws.Crs]:
     """Return an intersection of crs supported by each source layer."""
 
     cs: set = set()

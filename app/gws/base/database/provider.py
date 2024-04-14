@@ -13,13 +13,13 @@ class Config(gws.Config):
     """life time for schema caches"""
 
 
-class Object(gws.Node, gws.IDatabaseProvider):
+class Object(gws.DatabaseProvider):
     mgr: manager.Object
     saEngine: sa.Engine
     saMetaMap: dict[str, sa.MetaData]
 
     def __getstate__(self):
-        return gws.omit(vars(self), 'saMetaMap', 'saEngine')
+        return gws.u.omit(vars(self), 'saMetaMap', 'saEngine')
 
     def configure(self):
         self.mgr = self.cfg('_defaultManager')
@@ -54,7 +54,7 @@ class Object(gws.Node, gws.IDatabaseProvider):
         if not life_time:
             self.saMetaMap[schema] = _load()
         else:
-            self.saMetaMap[schema] = gws.get_cached_object(f'database_metadata_schema_{schema}', life_time, _load)
+            self.saMetaMap[schema] = gws.u.get_cached_object(f'database_metadata_schema_{schema}', life_time, _load)
 
     def connection(self) -> sa.Connection:
         return self.saEngine.connect()
@@ -217,7 +217,7 @@ class Object(gws.Node, gws.IDatabaseProvider):
         return desc
 
 
-def get_for(obj: gws.INode, uid: str = None, ext_type: str = None):
+def get_for(obj: gws.Node, uid: str = None, ext_type: str = None):
     mgr = obj.root.app.databaseMgr
 
     uid = uid or obj.cfg('dbUid')

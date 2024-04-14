@@ -45,7 +45,7 @@ def get(args: Args, **kwargs) -> gws.lib.net.HTTPResponse:
     if args.version:
         params['VERSION'] = args.version
     if args.params:
-        params.update(gws.to_upper_dict(args.params))
+        params.update(gws.u.to_upper_dict(args.params))
 
     return get_url(args.url, method=args.method or gws.RequestMethod.GET, params=params, **kwargs)
 

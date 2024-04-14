@@ -1,0 +1,99 @@
+
+class DatabaseModel(Model):
+    """Database-based data model."""
+
+    provider: 'DatabaseProvider'
+    sqlFilter: str
+    tableName: str
+
+    def table(self) -> 'sqlalchemy.Table': ...
+
+    def column(self, column_name: str) -> 'sqlalchemy.Column': ...
+
+    def uid_column(self) -> 'sqlalchemy.Column': ...
+
+    def connection(self) -> 'sqlalchemy.Connection': ...
+
+    def execute(self, sql: 'sqlalchemy.Executable', mc: ModelContext, parameters=None) -> 'sqlalchemy.CursorResult': ...
+
+
+class ColumnDescription(Data):
+    """Database column description."""
+
+    columnIndex: int
+    comment: str
+    default: str
+    geometrySrid: int
+    geometryType: GeometryType
+    isAutoincrement: bool
+    isNullable: bool
+    isPrimaryKey: bool
+    isUnique: bool
+    hasDefault: bool
+    name: str
+    nativeType: str
+    options: dict
+    type: AttributeType
+
+
+class RelationshipDescription(Data):
+    """Database relationship description."""
+
+    name: str
+    schema: str
+    fullName: str
+    foreignKeys: str
+    referredKeys: str
+
+
+class DataSetDescription(Data):
+    """GDAL Dataset description."""
+
+    columns: list[ColumnDescription]
+    columnMap: dict[str, ColumnDescription]
+    fullName: str
+    geometryName: str
+    geometrySrid: int
+    geometryType: GeometryType
+    name: str
+    schema: str
+
+
+class DatabaseManager(Node):
+    """Database manager."""
+
+    def create_provider(self, cfg: Config, **kwargs) -> 'DatabaseProvider': ...
+
+    def providers(self) -> list['DatabaseProvider']: ...
+
+    def provider(self, uid: str) -> Optional['DatabaseProvider']: ...
+
+    def first_provider(self, ext_type: str) -> Optional['DatabaseProvider']: ...
+
+
+class DatabaseProvider(Node):
+    """Database Provider."""
+
+    mgr: 'DatabaseManager'
+    url: str
+    models: list['DatabaseModel']
+
+    def connection(self) -> 'sqlalchemy.Connection': ...
+
+    def engine(self, **kwargs) -> 'sqlalchemy.Engine': ...
+
+    def split_table_name(self, table_name: str) -> tuple[str, str]: ...
+
+    def join_table_name(self, schema: str, name: str) -> str: ...
+
+    def table(self, table_name: str, **kwargs) -> 'sqlalchemy.Table': ...
+
+    def has_table(self, table_name: str) -> bool: ...
+
+    def column(self, table: 'sqlalchemy.Table', column_name: str) -> 'sqlalchemy.Column': ...
+
+    def has_column(self, table: 'sqlalchemy.Table', column_name: str) -> bool: ...
+
+    def describe(self, table_name: str) -> 'DataSetDescription': ...
+
+    def table_bounds(self, table_name) -> Optional[Bounds]: ...

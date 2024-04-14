@@ -12,7 +12,7 @@ import gws.gis.source
 class Object(gws.base.model.dynamic_model.Object):
     """Generic OWS Model."""
 
-    provider: gws.IOwsProvider
+    provider: gws.OwsProvider
     sourceLayers: list[gws.SourceLayer]
 
     def configure(self):
@@ -36,7 +36,7 @@ class Object(gws.base.model.dynamic_model.Object):
         ]
 
     def props(self, user):
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             canCreate=False,
             canDelete=False,

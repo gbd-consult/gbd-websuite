@@ -43,27 +43,27 @@ class Object(gws.base.action.Object):
     """Web action"""
 
     @gws.ext.command.api('webAsset')
-    def api_asset(self, req: gws.IWebRequester, p: AssetRequest) -> AssetResponse:
+    def api_asset(self, req: gws.WebRequester, p: AssetRequest) -> AssetResponse:
         """Return an asset under the given path and project"""
         r = self._serve_path(req, p)
         if r.contentPath:
-            r.content = gws.read_file_b(r.contentPath)
+            r.content = gws.u.read_file_b(r.contentPath)
         return AssetResponse(content=r.content, mime=r.mime)
 
     @gws.ext.command.get('webAsset')
-    def http_asset(self, req: gws.IWebRequester, p: AssetRequest) -> gws.ContentResponse:
+    def http_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
         r = self._serve_path(req, p)
         return r
 
     @gws.ext.command.get('webDownload')
-    def download(self, req: gws.IWebRequester, p) -> gws.ContentResponse:
+    def download(self, req: gws.WebRequester, p) -> gws.ContentResponse:
         r = self._serve_path(req, p)
         r.asAttachment = True
         return r
 
     @gws.ext.command.get('webFile')
-    def file(self, req: gws.IWebRequester, p: FileRequest) -> gws.ContentResponse:
-        model = t.cast(gws.IModel, req.user.acquire(p.modelUid, gws.ext.object.model, gws.Access.read))
+    def file(self, req: gws.WebRequester, p: FileRequest) -> gws.ContentResponse:
+        model = t.cast(gws.Model, req.user.acquire(p.modelUid, gws.ext.object.model, gws.Access.read))
         field = model.field(p.fieldName)
         if not field:
             raise gws.NotFoundError()
@@ -82,7 +82,7 @@ class Object(gws.base.action.Object):
         return res
 
     @gws.ext.command.get('webSystemAsset')
-    def sys_asset(self, req: gws.IWebRequester, p: AssetRequest) -> gws.ContentResponse:
+    def sys_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
         locale_uid = p.localeUid or self.root.app.localeUids[0]
 
         # eg. '8.0.0.light.css, 8.0.0.vendor.js etc
@@ -108,7 +108,7 @@ class Object(gws.base.action.Object):
                 mime=gws.lib.mime.CSS,
                 content=gws.base.client.bundles.css(self.root, 'app', theme))
 
-    def _serve_path(self, req: gws.IWebRequester, p: AssetRequest):
+    def _serve_path(self, req: gws.WebRequester, p: AssetRequest):
         req_path = str(p.get('path') or '')
         if not req_path:
             raise gws.base.web.error.NotFound()
@@ -150,7 +150,7 @@ class Object(gws.base.action.Object):
         gws.log.debug(f'serving {real_path!r} for {req_path!r}')
         return gws.ContentResponse(contentPath=real_path, mime=mime)
 
-    def _serve_template(self, req: gws.IWebRequester, tpl: gws.ITemplate, project: gws.IProject, locale_uid: str):
+    def _serve_template(self, req: gws.WebRequester, tpl: gws.Template, project: gws.Project, locale_uid: str):
         # give the template an empty response to manipulate (e.g. add 'location')
         res = gws.ContentResponse()
 
@@ -169,7 +169,7 @@ class Object(gws.base.action.Object):
 
         render_res = tpl.render(gws.TemplateRenderInput(args=args))
 
-        if gws.is_empty(res):
+        if gws.u.is_empty(res):
             res = render_res
 
         return res

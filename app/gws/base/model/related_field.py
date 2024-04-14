@@ -22,7 +22,7 @@ class Link(gws.Data):
 
 
 class RelRef(gws.Data):
-    model: gws.IDatabaseModel
+    model: gws.DatabaseModel
     table: sa.Table
     key: sa.Column
     uid: sa.Column
@@ -36,12 +36,12 @@ class Relationship(gws.Data):
     deleteCascade: bool = False
 
 
-class Object(gws.base.model.field.Object, gws.IModelField):
-    model: gws.IDatabaseModel
+class Object(gws.base.model.field.Object, gws.ModelField):
+    model: gws.DatabaseModel
     rel: Relationship
 
     def __getstate__(self):
-        return gws.omit(vars(self), 'rel')
+        return gws.u.omit(vars(self), 'rel')
 
     def post_configure(self):
         self.configure_relationship()
@@ -61,11 +61,11 @@ class Object(gws.base.model.field.Object, gws.IModelField):
                 self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='featureList')
                 return True
 
-    def get_model(self, uid: str) -> gws.IDatabaseModel:
+    def get_model(self, uid: str) -> gws.DatabaseModel:
         mod = self.root.get(uid)
         if not mod:
             raise gws.ConfigurationError(f'model {uid!r} not found')
-        return t.cast(gws.IDatabaseModel, mod)
+        return t.cast(gws.DatabaseModel, mod)
 
     def find_relatable_features(self, search, mc):
         return [
@@ -74,7 +74,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
             for f in to.model.find_features(search, mc)
         ]
 
-    def related_field(self, to: RelRef) -> t.Optional[gws.IModelField]:
+    def related_field(self, to: RelRef) -> t.Optional[gws.ModelField]:
         for fld in to.model.fields:
             rel2 = t.cast(Relationship, getattr(fld, 'rel', None))
             if not rel2:
@@ -115,7 +115,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
         res = []
 
         for v in value:
-            related = t.cast(gws.IFeature, v)
+            related = t.cast(gws.Feature, v)
             if related:
                 p = related.model.feature_to_props(related, mc2)
                 if p:
@@ -138,10 +138,10 @@ class Object(gws.base.model.field.Object, gws.IModelField):
 
         mc2 = mu.secondary_context(mc)
         res = []
-        to_model_map: dict[str, gws.IModel] = {to.model.uid: to.model for to in self.rel.tos}
+        to_model_map: dict[str, gws.Model] = {to.model.uid: to.model for to in self.rel.tos}
 
         for v in value:
-            rel_props = t.cast(gws.FeatureProps, gws.to_data(v))
+            rel_props = t.cast(gws.FeatureProps, gws.u.to_data_object(v))
             if rel_props:
                 to_model = to_model_map.get(rel_props.modelUid)
                 if to_model:
@@ -158,7 +158,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
 
     def key_for_uid(
             self,
-            model: gws.IDatabaseModel,
+            model: gws.DatabaseModel,
             key_column: sa.Column,
             uid: gws.FeatureUid,
             mc: gws.ModelContext
@@ -169,7 +169,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
 
     def update_key_for_uids(
             self,
-            model: gws.IDatabaseModel,
+            model: gws.DatabaseModel,
             key_column: sa.Column,
             uids: list[gws.FeatureUid],
             key: t.Any,
@@ -188,7 +188,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
     def uids_to_keys(
             self,
             mc: gws.ModelContext,
-            model: gws.IDatabaseModel,
+            model: gws.DatabaseModel,
             key_column: sa.Column,
             uids: t.Optional[t.Iterable[gws.FeatureUid]] = None,
             keys: t.Optional[t.Iterable[t.Any]] = None,
@@ -205,7 +205,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
 
     def uid_and_key_for_uids(
             self,
-            model: gws.IDatabaseModel,
+            model: gws.DatabaseModel,
             key_column: sa.Column,
             uids: t.Iterable[gws.FeatureUid],
             mc: gws.ModelContext
@@ -217,7 +217,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
 
     def uid_and_key_for_keys(
             self,
-            model: gws.IDatabaseModel,
+            model: gws.DatabaseModel,
             key_column: sa.Column,
             keys: t.Iterable[gws.FeatureUid],
             mc: gws.ModelContext
@@ -229,7 +229,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
 
     def update_uid_and_key(
             self,
-            model: gws.IDatabaseModel,
+            model: gws.DatabaseModel,
             key_column: sa.Column,
             uid_and_key: t.Iterable[tuple[gws.FeatureUid, gws.FeatureUid]],
             mc: gws.ModelContext
@@ -247,7 +247,7 @@ class Object(gws.base.model.field.Object, gws.IModelField):
 
     def drop_uid_and_key(
             self,
-            model: gws.IDatabaseModel,
+            model: gws.DatabaseModel,
             key_column: sa.Column,
             uids: t.Iterable[gws.FeatureUid],
             delete: bool,
@@ -277,10 +277,10 @@ class Object(gws.base.model.field.Object, gws.IModelField):
 
     def get_related(
             self,
-            model: gws.IDatabaseModel,
+            model: gws.DatabaseModel,
             uids: t.Iterable[gws.FeatureUid],
             mc: gws.ModelContext
-    ) -> list[gws.IFeature]:
+    ) -> list[gws.Feature]:
         return model.get_features(uids, mu.secondary_context(mc))
 
     def column_or_uid(self, model, cfg):

@@ -146,7 +146,7 @@ class Object(gws.base.layer.image.Object):
         else:
             raise gws.Error(f'invalid grid origin {source_grid.origin!r}')
 
-        source_grid_uid = mc.grid(gws.compact({
+        source_grid_uid = mc.grid(gws.u.compact({
             'origin': origin,
             'srs': source_grid.bounds.crs.epsg,
             'bbox': source_grid.bounds.extent,

@@ -9,13 +9,13 @@ import gws.types as t
 
 
 class Config(gws.Config):
-    mapSize: t.Optional[gws.MSize]
+    mapSize: t.Optional[gws.UomSizeStr]
     """map size"""
     mimeTypes: t.Optional[list[str]]
     """mime types this template can generate"""
-    pageSize: t.Optional[gws.MSize]
+    pageSize: t.Optional[gws.UomSizeStr]
     """page size"""
-    pageMargin: t.Optional[gws.MExtent]
+    pageMargin: t.Optional[gws.UomExtentStr]
     """page margin"""
     subject: str = ''
     """template purpose"""
@@ -33,7 +33,7 @@ DEFAULT_MAP_SIZE = (50, 50, gws.Uom.mm)
 DEFAULT_PAGE_SIZE = (210, 297, gws.Uom.mm)
 
 
-class Object(gws.Node, gws.ITemplate):
+class Object(gws.Template):
     def configure(self):
         self.title = self.cfg('title', default='')
         self.subject = self.cfg('subject', default='')
@@ -60,13 +60,13 @@ class Object(gws.Node, gws.ITemplate):
 
         extra = dict(
             gwsVersion=self.root.app.version,
-            gwsBaseUrl=gws.SERVER_ENDPOINT,
+            gwsBaseUrl=gws.c.SERVER_ENDPOINT,
             locale=gws.lib.intl.locale(locale_uid),
             date=gws.lib.intl.date_formatter(locale_uid),
             time=gws.lib.intl.time_formatter(locale_uid),
         )
 
-        return gws.merge(extra, args)
+        return gws.u.merge(extra, args)
 
     def notify(self, tri: gws.TemplateRenderInput, message: str):
         if tri.notify:

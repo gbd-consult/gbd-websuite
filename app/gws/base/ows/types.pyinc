@@ -1,0 +1,97 @@
+class OwsProtocol(Enum):
+    """Supported OWS protocol."""
+
+    WMS = 'WMS'
+    WMTS = 'WMTS'
+    WCS = 'WCS'
+    WFS = 'WFS'
+    CSW = 'CSW'
+
+
+class OwsVerb(Enum):
+    """OWS verb."""
+
+    CreateStoredQuery = 'CreateStoredQuery'
+    DescribeCoverage = 'DescribeCoverage'
+    DescribeFeatureType = 'DescribeFeatureType'
+    DescribeLayer = 'DescribeLayer'
+    DescribeRecord = 'DescribeRecord'
+    DescribeStoredQueries = 'DescribeStoredQueries'
+    DropStoredQuery = 'DropStoredQuery'
+    GetCapabilities = 'GetCapabilities'
+    GetFeature = 'GetFeature'
+    GetFeatureInfo = 'GetFeatureInfo'
+    GetFeatureWithLock = 'GetFeatureWithLock'
+    GetLegendGraphic = 'GetLegendGraphic'
+    GetMap = 'GetMap'
+    GetPrint = 'GetPrint'
+    GetPropertyValue = 'GetPropertyValue'
+    GetRecordById = 'GetRecordById'
+    GetRecords = 'GetRecords'
+    GetTile = 'GetTile'
+    ListStoredQueries = 'ListStoredQueries'
+    LockFeature = 'LockFeature'
+    Transaction = 'Transaction'
+
+
+class OwsOperation(Data):
+    """OWS operation."""
+
+    allowedParameters: dict[str, list[str]]
+    constraints: dict[str, list[str]]
+    formats: list[str]
+    params: dict[str, str]
+    postUrl: Url
+    preferredFormat: str
+    url: Url
+    verb: OwsVerb
+
+
+class OwsCapabilities(Data):
+    """OWS capabilities structure."""
+
+    metadata: 'Metadata'
+    operations: list['OwsOperation']
+    sourceLayers: list['SourceLayer']
+    tileMatrixSets: list['TileMatrixSet']
+    version: str
+
+
+class OwsService(Node):
+    """OWS Service."""
+
+    isRasterService: bool
+    isVectorService: bool
+
+    metadata: 'Metadata'
+    name: str
+    protocol: OwsProtocol
+    supportedBounds: list[Bounds]
+    supportedVersions: list[str]
+    supportedOperations: list['OwsOperation']
+    templates: list['Template']
+    updateSequence: str
+    version: str
+    withInspireMeta: bool
+    withStrictParams: bool
+
+    def handle_request(self, req: 'WebRequester') -> ContentResponse: ...
+
+
+class OwsProvider(Node):
+    """OWS services Provider."""
+
+    alwaysXY: bool
+    forceCrs: 'Crs'
+    maxRequests: int
+    metadata: 'Metadata'
+    operations: list['OwsOperation']
+    protocol: 'OwsProtocol'
+    sourceLayers: list['SourceLayer']
+    url: Url
+    version: str
+
+    def get_operation(self, verb: 'OwsVerb', method: Optional['RequestMethod'] = None) -> Optional['OwsOperation']: ...
+
+    def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer']) -> list['FeatureRecord']: ...
+

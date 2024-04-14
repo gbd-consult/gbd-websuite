@@ -58,7 +58,7 @@ class Props(gws.Props):
     uid: str
 
 
-class Object(gws.Node, gws.IProject):
+class Object(gws.Project):
     overviewMap: gws.base.map.Object
     title: str
 

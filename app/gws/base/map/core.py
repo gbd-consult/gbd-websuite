@@ -50,7 +50,7 @@ class _RootLayer(gws.base.layer.group.Object):
     parent: 'Object'
 
 
-class Object(gws.Node, gws.IMap):
+class Object(gws.Map):
     wrapX: bool
 
     def configure(self):

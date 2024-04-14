@@ -27,7 +27,7 @@ class Object(gws.base.auth.session_manager.Object):
     table: sa.Table
 
     def configure(self):
-        _DEFAULT_STORE_PATH = gws.MISC_DIR + '/sessions8.sqlite'
+        _DEFAULT_STORE_PATH = gws.c.MISC_DIR + '/sessions8.sqlite'
         self.dbPath = self.cfg('path', default=_DEFAULT_STORE_PATH)
 
     def activate(self):
@@ -47,7 +47,7 @@ class Object(gws.base.auth.session_manager.Object):
             sa.Column('updated', sa.Integer),
         )
 
-        if not gws.is_file(self.dbPath):
+        if not gws.u.is_file(self.dbPath):
             try:
                 self.metaData.create_all(self.engine, checkfirst=False)
             except sa.exc.SQLAlchemyError as exc:
@@ -66,7 +66,7 @@ class Object(gws.base.auth.session_manager.Object):
 
     def create(self, method, user, data=None):
         am = self.root.app.authMgr
-        uid = gws.random_string(64)
+        uid = gws.u.random_string(64)
 
         self._exec(sa.insert(self.table).values(
             uid=uid,

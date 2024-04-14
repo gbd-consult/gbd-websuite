@@ -41,16 +41,16 @@ class Object(gws.base.action.Object):
                 return t.cast(core.Object, m)
 
     @gws.ext.command.api('authCheck')
-    def check(self, req: gws.IWebRequester, p: gws.Request) -> Response:
+    def check(self, req: gws.WebRequester, p: gws.Request) -> Response:
         return self._response(req)
 
     @gws.ext.command.api('authLogin')
-    def login(self, req: gws.IWebRequester, p: LoginRequest) -> Response:
+    def login(self, req: gws.WebRequester, p: LoginRequest) -> Response:
         self.method.handle_login(req, p)
         return self._response(req)
 
     @gws.ext.command.api('authLogout')
-    def logout(self, req: gws.IWebRequester, p: gws.Request) -> Response:
+    def logout(self, req: gws.WebRequester, p: gws.Request) -> Response:
         self.method.handle_logout(req)
         return self._response(req)
 
@@ -58,5 +58,5 @@ class Object(gws.base.action.Object):
         user = req.user
         if user.isGuest:
             return Response(user=None)
-        res = Response(user=gws.props(user, user))
+        res = Response(user=gws.u.make_props(user, user))
         return res

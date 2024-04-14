@@ -143,7 +143,7 @@ def chown(path: _Path, user: int = None, group: int = None):
         group: GID.
     """
     try:
-        os.chown(path, user or gws.UID, group or gws.GID)
+        os.chown(path, user or gws.c.UID, group or gws.c.GID)
     except OSError:
         pass
 

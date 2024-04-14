@@ -9,7 +9,7 @@ class Props(gws.Props):
     attributes: dict
 
 
-class User(gws.Object, gws.IUser):
+class User(gws.User):
     isGuest = False
 
     def __init__(self, provider, roles):
@@ -55,7 +55,7 @@ class User(gws.Object, gws.IUser):
         while obj:
             bit = self.acl_bit(access, obj)
             if bit is not None:
-                return bit == gws.ALLOW
+                return bit == gws.c.ALLOW
             obj = context[ci] if ci < clen else getattr(obj, 'parent', None)
             ci += 1
 
@@ -63,14 +63,14 @@ class User(gws.Object, gws.IUser):
 
     def acl_bit(self, access, obj):
         if obj is self and access == gws.Access.read:
-            return gws.ALLOW
+            return gws.c.ALLOW
         acl = obj.permissions.get(access)
         if acl:
             for bit, role in acl:
                 if role in self.roles:
                     return bit
 
-    def require(self, uid, classref=None, access=None):
+    def require(self, uid=None, classref=None, access=None):
         access = access or gws.Access.read
         obj = self.provider.root.get(uid, classref)
         if not obj:
@@ -79,17 +79,17 @@ class User(gws.Object, gws.IUser):
             raise gws.ForbiddenError(f'required object {classref} {uid} forbidden')
         return obj
 
-    def acquire(self, uid, classref=None, access=None):
+    def acquire(self, uid=None, classref=None, access=None):
         access = access or gws.Access.read
         obj = self.provider.root.get(uid, classref)
         if obj and self.can(access, obj):
             return obj
 
-    def require_project(self, uid):
-        return t.cast(gws.IProject, self.require(uid, gws.ext.object.project))
+    def require_project(self, uid=None):
+        return t.cast(gws.Project, self.require(uid, gws.ext.object.project))
 
-    def require_layer(self, uid):
-        return t.cast(gws.ILayer, self.require(uid, gws.ext.object.layer))
+    def require_layer(self, uid=None):
+        return t.cast(gws.Layer, self.require(uid, gws.ext.object.layer))
 
 
 class GuestUser(User):
@@ -98,12 +98,12 @@ class GuestUser(User):
 
 class SystemUser(User):
     def acl_bit(self, access, obj):
-        return gws.ALLOW
+        return gws.c.ALLOW
 
 
 class NobodyUser(User):
     def acl_bit(self, access, obj):
-        return gws.DENY
+        return gws.c.DENY
 
 
 class AuthorizedUser(User):
@@ -112,7 +112,7 @@ class AuthorizedUser(User):
 
 class AdminUser(User):
     def acl_bit(self, access, obj):
-        return gws.ALLOW
+        return gws.c.ALLOW
 
 
 ##
@@ -133,12 +133,12 @@ def to_dict(usr) -> dict:
     )
 
 
-def from_dict(provider: gws.IAuthProvider, d: dict) -> gws.IUser:
+def from_dict(provider: gws.AuthProvider, d: dict) -> gws.User:
     roles = set(d.get('roles', []))
 
-    if gws.ROLE_GUEST in roles:
+    if gws.c.ROLE_GUEST in roles:
         return provider.root.app.authMgr.guestUser
-    if gws.ROLE_ADMIN in roles:
+    if gws.c.ROLE_ADMIN in roles:
         usr = AdminUser(provider, roles)
     else:
         usr = AuthorizedUser(provider, roles)
@@ -148,21 +148,21 @@ def from_dict(provider: gws.IAuthProvider, d: dict) -> gws.IUser:
     usr.displayName = d.get('displayName', '')
     usr.localUid = d.get('localUid', '')
     usr.loginName = d.get('loginName', '')
-    usr.uid = gws.join_uid(provider.uid, usr.localUid)
+    usr.uid = gws.u.join_uid(provider.uid, usr.localUid)
 
     return usr
 
 
-def init(provider: gws.IAuthProvider, **kwargs) -> gws.IUser:
+def init(provider: gws.AuthProvider, **kwargs) -> gws.User:
     roles = set(kwargs.get('roles', []))
-    roles.add(gws.ROLE_ALL)
+    roles.add(gws.c.ROLE_ALL)
 
-    if gws.ROLE_GUEST in roles:
+    if gws.c.ROLE_GUEST in roles:
         return provider.root.app.authMgr.guestUser
-    if gws.ROLE_ADMIN in roles:
+    if gws.c.ROLE_ADMIN in roles:
         usr = AdminUser(provider, roles)
     else:
-        roles.add(gws.ROLE_USER)
+        roles.add(gws.c.ROLE_USER)
         usr = AuthorizedUser(provider, roles)
 
     usr.attributes = _process_aliases(dict(kwargs.get('attributes', {})))
@@ -170,7 +170,7 @@ def init(provider: gws.IAuthProvider, **kwargs) -> gws.IUser:
     usr.displayName = kwargs.get('displayName') or kwargs.get('loginName') or ''
     usr.localUid = kwargs.get('localUid') or kwargs.get('loginName') or ''
     usr.loginName = kwargs.get('loginName') or ''
-    usr.uid = gws.join_uid(provider.uid, usr.localUid)
+    usr.uid = gws.u.join_uid(provider.uid, usr.localUid)
 
     if not usr.localUid:
         raise gws.Error(f'missing local uid for user', kwargs)

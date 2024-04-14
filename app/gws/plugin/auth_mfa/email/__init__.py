@@ -38,7 +38,7 @@ class Object(gws.base.auth.mfa.Object):
         pm = user.pendingMfa
         pm.attemptCount += 1
         obj = pyotp.TOTP(pm.secret)
-        return obj.verify(gws.get(request, 'otp'))
+        return obj.verify(gws.u.get(request, 'otp'))
 
     def restart(self, user):
         pm = user.pendingMfa

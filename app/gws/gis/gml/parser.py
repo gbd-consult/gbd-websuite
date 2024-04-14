@@ -26,7 +26,7 @@ _GEOMETRY_TAGS = {
 }
 
 
-def parse_envelope(el: gws.IXmlElement, default_crs: gws.ICrs = None, always_xy=False) -> gws.Bounds:
+def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy=False) -> gws.Bounds:
     """Parse a gml:Box/gml:Envelope element"""
 
     # GML2: <gml:Box><gml:coordinates>1,2 3,4
@@ -58,11 +58,11 @@ def parse_envelope(el: gws.IXmlElement, default_crs: gws.ICrs = None, always_xy=
     return gws.gis.bounds.from_extent(ext, crs, always_xy)
 
 
-def is_geometry_element(el: gws.IXmlElement):
+def is_geometry_element(el: gws.XmlElement):
     return el.lname in _GEOMETRY_TAGS
 
 
-def parse_shape(el: gws.IXmlElement, default_crs: gws.ICrs = None, always_xy=False) -> gws.IShape:
+def parse_shape(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy=False) -> gws.Shape:
     """Convert a GML geometry element to a Shape."""
 
     crs = gws.gis.crs.get(el.get('srsName')) or default_crs
@@ -73,7 +73,7 @@ def parse_shape(el: gws.IXmlElement, default_crs: gws.ICrs = None, always_xy=Fal
     return gws.base.shape.from_geojson(dct, crs, always_xy)
 
 
-def parse_geometry(el: gws.IXmlElement) -> dict:
+def parse_geometry(el: gws.XmlElement) -> dict:
     """Convert a GML geometry element to a geometry dict."""
 
     try:
@@ -84,7 +84,7 @@ def parse_geometry(el: gws.IXmlElement) -> dict:
 
 ##
 
-def _to_geom(el: gws.IXmlElement):
+def _to_geom(el: gws.XmlElement):
     if el.lname == 'point':
         # <gml:Point> pos/coordinates
         return {'type': 'Point', 'coordinates': _coords(el)[0]}
@@ -120,7 +120,7 @@ def _to_geom(el: gws.IXmlElement):
     raise Error(f'unknown GML geometry tag {el.name!r}')
 
 
-def _members(multi_el: gws.IXmlElement):
+def _members(multi_el: gws.XmlElement):
     ms = []
 
     for el in multi_el:

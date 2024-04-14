@@ -5,9 +5,9 @@ import gws.types as t
 from . import dynamic_model
 
 
-class Object(gws.Node, gws.IModelManager):
+class Object(gws.ModelManager):
     def get_model(self, uid, user=None, access=None):
-        model = t.cast(gws.IModel, self.root.get(uid, gws.ext.object.model))
+        model = t.cast(gws.Model, self.root.get(uid, gws.ext.object.model))
         if not model:
             return
         if user and access and not user.can(access, model):

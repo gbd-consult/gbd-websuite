@@ -37,7 +37,7 @@ class Config(gws.Config):
     """per-layer sql filters"""
 
 
-class Object(gws.Node, gws.IOwsProvider):
+class Object(gws.OwsProvider):
     store: project.Store
     printTemplates: list[caps.PrintTemplate]
     url: str
@@ -111,7 +111,7 @@ class Object(gws.Node, gws.IOwsProvider):
             SERVICE=gws.OwsProtocol.WMS,
             VERSION='1.3.0',
         )
-        return gws.merge(defaults, gws.to_upper_dict(params))
+        return gws.u.merge(defaults, gws.u.to_upper_dict(params))
 
     def call_server(self, params: dict, max_age=0) -> gws.lib.net.HTTPResponse:
         params = self.server_params(params)
@@ -121,19 +121,19 @@ class Object(gws.Node, gws.IOwsProvider):
 
     ##
 
-    def get_map(self, layer: gws.ILayer, bounds: gws.Bounds, width: float, height: float, params: dict) -> bytes:
+    def get_map(self, layer: gws.Layer, bounds: gws.Bounds, width: float, height: float, params: dict) -> bytes:
         defaults = dict(
             REQUEST=gws.OwsVerb.GetMap,
             BBOX=bounds.extent,
-            WIDTH=gws.to_rounded_int(width),
-            HEIGHT=gws.to_rounded_int(height),
+            WIDTH=gws.u.to_rounded_int(width),
+            HEIGHT=gws.u.to_rounded_int(height),
             CRS=bounds.crs.epsg,
             FORMAT=gws.lib.mime.PNG,
             TRANSPARENT='true',
             STYLES='',
         )
 
-        params = gws.merge(defaults, params)
+        params = gws.u.merge(defaults, params)
 
         res = self.call_server(params)
         if res.content_type.startswith('image/'):
@@ -193,7 +193,7 @@ class Object(gws.Node, gws.IOwsProvider):
         }
 
         if search.extraParams:
-            params = gws.merge(params, gws.to_upper_dict(search.extraParams))
+            params = gws.u.merge(params, gws.u.to_upper_dict(search.extraParams))
 
         res = self.call_server(params)
 
@@ -417,5 +417,5 @@ class Object(gws.Node, gws.IOwsProvider):
 ##
 
 
-def get_for(obj: gws.INode) -> Object:
+def get_for(obj: gws.Node) -> Object:
     return t.cast(Object, gws.config.util.get_provider(Object, obj))

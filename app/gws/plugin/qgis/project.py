@@ -35,7 +35,7 @@ _ZIP_EXT = '.qgz'
 _PRJ_TABLE = 'qgis_projects'
 
 
-def from_store(root: gws.IRoot, store: Store) -> 'Object':
+def from_store(root: gws.Root, store: Store) -> 'Object':
     if store.type == StoreType.file:
         return from_path(store.path)
     if store.type == StoreType.postgres:
@@ -45,8 +45,8 @@ def from_store(root: gws.IRoot, store: Store) -> 'Object':
 
 def from_path(path: str) -> 'Object':
     if path.endswith(_ZIP_EXT):
-        return _from_zipped_bytes(gws.read_file_b(path))
-    return from_string(gws.read_file(path))
+        return _from_zipped_bytes(gws.u.read_file_b(path))
+    return from_string(gws.u.read_file(path))
 
 
 def from_string(text: str) -> 'Object':
@@ -61,7 +61,7 @@ def _from_zipped_bytes(b: bytes) -> 'Object':
     raise Error(f'no qgis project')
 
 
-def _from_db(root: gws.IRoot, store: Store):
+def _from_db(root: gws.Root, store: Store):
     prov = gws.base.database.provider.get_for(root.app, store.dbUid, 'postgres')
     schema = store.get('schema') or 'public'
     tab = prov.table(f'{schema}.{_PRJ_TABLE}')
@@ -72,7 +72,7 @@ def _from_db(root: gws.IRoot, store: Store):
         raise Error(f'{store.projectName!r} not found')
 
 
-def _to_db(root: gws.IRoot, store: Store, content: bytes):
+def _to_db(root: gws.Root, store: Store, content: bytes):
     prov = gws.base.database.provider.get_for(root.app, store.dbUid, 'postgres')
     schema = store.get('schema') or 'public'
     tab = prov.table(f'{schema}.{_PRJ_TABLE}')
@@ -99,7 +99,7 @@ class Object:
 
     def __init__(self, text: str):
         self.text = text
-        self.sourceHash = gws.sha256(self.text)
+        self.sourceHash = gws.u.sha256(self.text)
 
         ver = self.xml_root().get('version', '').split('-')[0]
         if not ver.startswith('3'):
@@ -107,14 +107,14 @@ class Object:
         self.version = ver
 
     def __getstate__(self):
-        return gws.omit(vars(self), '_xml_root')
+        return gws.u.omit(vars(self), '_xml_root')
 
-    def xml_root(self) -> gws.IXmlElement:
+    def xml_root(self) -> gws.XmlElement:
         if not hasattr(self, '_xml_root'):
             setattr(self, '_xml_root', gws.lib.xmlx.from_string(self.text))
         return getattr(self, '_xml_root')
 
-    def to_store(self, root: gws.IRoot, store: Store):
+    def to_store(self, root: gws.Root, store: Store):
         if store.path:
             return self.to_path(store.path)
         if store.projectName:
@@ -129,9 +129,9 @@ class Object:
         if path.endswith(_ZIP_EXT):
             name = os.path.basename(path).replace(_ZIP_EXT, _PRJ_EXT)
             content = gws.lib.zipx.zip_to_bytes({name: src})
-            gws.write_file_b(path, content)
+            gws.u.write_file_b(path, content)
         else:
-            gws.write_file(path, src)
+            gws.u.write_file(path, src)
 
     def to_xml(self):
         return self.xml_root().to_string()

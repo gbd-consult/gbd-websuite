@@ -30,7 +30,7 @@ class Props(gws.Props):
     title: str
 
 
-class Object(gws.Node, gws.IPrinter):
+class Object(gws.Printer):
 
     def configure(self):
         gws.config.util.configure_models(self)

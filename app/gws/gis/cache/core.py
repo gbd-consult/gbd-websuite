@@ -32,7 +32,7 @@ class Grid(gws.Data):
 
 class Entry(gws.Data):
     uid: str
-    layers: list[gws.INode]
+    layers: list[gws.Node]
     mpxCache: dict
     grids: dict[int, Grid]
     config: dict
@@ -45,7 +45,7 @@ class Status(gws.Data):
     staleDirs: list[str]
 
 
-def status(root: gws.IRoot, layer_uids=None, with_counts=True) -> Status:
+def status(root: gws.Root, layer_uids=None, with_counts=True) -> Status:
     mpx_config = gws.gis.mpx.config.create(root)
 
     entries = []
@@ -55,7 +55,7 @@ def status(root: gws.IRoot, layer_uids=None, with_counts=True) -> Status:
     if entries and with_counts:
         _update_file_counts(entries)
 
-    all_dirs = list(gws.lib.osx.find_directories(gws.MAPPROXY_CACHE_DIR, deep=False))
+    all_dirs = list(gws.lib.osx.find_directories(gws.c.MAPPROXY_CACHE_DIR, deep=False))
     valid_dirs = set(e.dirname for e in entries)
 
     return Status(
@@ -64,19 +64,19 @@ def status(root: gws.IRoot, layer_uids=None, with_counts=True) -> Status:
     )
 
 
-def cleanup(root: gws.IRoot):
+def cleanup(root: gws.Root):
     s = status(root, with_counts=False)
     for d in s.staleDirs:
         _remove_dir(d)
 
 
-def drop(root: gws.IRoot, layer_uids=None):
+def drop(root: gws.Root, layer_uids=None):
     s = status(root, layer_uids=layer_uids, with_counts=False)
     for e in s.entries:
         _remove_dir(e.dirname)
 
 
-def seed(root: gws.IRoot, layer_uids=None, max_time=None, concurrency=1, levels=None):
+def seed(root: gws.Root, layer_uids=None, max_time=None, concurrency=1, levels=None):
     pass
 
 
@@ -103,7 +103,7 @@ def seed(root: gws.IRoot, layer_uids=None, max_time=None, concurrency=1, levels=
 #     if not seeds:
 #         return True
 #
-#     path = gws.CONFIG_DIR + '/mapproxy.seed.yaml'
+#     path = gws.c.CONFIG_DIR + '/mapproxy.seed.yaml'
 #     cfg = {
 #         'seeds': seeds
 #     }
@@ -113,7 +113,7 @@ def seed(root: gws.IRoot, layer_uids=None, max_time=None, concurrency=1, levels=
 #
 #     cmd = [
 #         '/usr/local/bin/mapproxy-seed',
-#         '-f', gws.CONFIG_DIR + '/mapproxy.yaml',
+#         '-f', gws.c.CONFIG_DIR + '/mapproxy.yaml',
 #         '-c', str(concurrency),
 #         path
 #     ]
@@ -128,19 +128,19 @@ def seed(root: gws.IRoot, layer_uids=None, max_time=None, concurrency=1, levels=
 
 
 def store_in_web_cache(url: str, img: bytes):
-    path = gws.FASTCACHE_DIR + url
+    path = gws.c.FASTCACHE_DIR + url
     dirname = os.path.dirname(path)
-    tmp = dirname + '/' + gws.random_string(64)
+    tmp = dirname + '/' + gws.u.random_string(64)
     try:
         os.makedirs(dirname, 0o755, exist_ok=True)
-        gws.write_file_b(tmp, img)
+        gws.u.write_file_b(tmp, img)
         os.rename(tmp, path)
     except OSError:
         gws.log.warning(f'store_in_web_cache FAILED path={path!r}')
 
 
 def _update_file_counts(entries: list[Entry]):
-    files = list(gws.lib.osx.find_files(gws.MAPPROXY_CACHE_DIR))
+    files = list(gws.lib.osx.find_files(gws.c.MAPPROXY_CACHE_DIR))
 
     for path in files:
         for e in entries:
@@ -156,7 +156,7 @@ def _update_file_counts(entries: list[Entry]):
                     g.cachedTiles += 1
 
 
-def _enum_entries(root: gws.IRoot, mpx_config, layer_uids=None):
+def _enum_entries(root: gws.Root, mpx_config, layer_uids=None):
     entries_map: dict[str, Entry] = {}
 
     for layer in root.find_all(gws.ext.object.layer):
@@ -165,7 +165,7 @@ def _enum_entries(root: gws.IRoot, mpx_config, layer_uids=None):
             continue
 
         for uid, mpx_cache in mpx_config['caches'].items():
-            if mpx_cache.get('disable_storage') or gws.get(layer, 'mpxCacheUid') != uid:
+            if mpx_cache.get('disable_storage') or gws.u.get(layer, 'mpxCacheUid') != uid:
                 continue
 
             if uid in entries_map:
@@ -181,7 +181,7 @@ def _enum_entries(root: gws.IRoot, mpx_config, layer_uids=None):
                 mpxCache=mpx_cache,
                 grids={},
                 config={},
-                dirname=f'{gws.MAPPROXY_CACHE_DIR}/{uid}_{crs}',
+                dirname=f'{gws.c.MAPPROXY_CACHE_DIR}/{uid}_{crs}',
             )
 
             for g in mpx_grids:

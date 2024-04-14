@@ -12,9 +12,9 @@ class TemplateArgs(gws.Data):
     featureCollection: server.core.FeatureCollection
     layerCapsTree: server.LayerCapsTree
     layerCapsList: list[server.LayerCaps]
-    project: t.Optional[gws.IProject]
+    project: t.Optional[gws.Project]
     request: server.Request
-    service: gws.IOwsService
+    service: gws.OwsService
     serviceUrl: str
     url_for: t.Callable
     version: str

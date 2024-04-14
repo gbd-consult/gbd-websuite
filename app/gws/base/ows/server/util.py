@@ -27,7 +27,7 @@ DEFAULT_OWS_XML_NAMESPACE = gws.XmlNamespace(
 # @TODO caps trees should be cached for public layers
 
 
-def layer_caps_tree(rd: core.Request, root_layer: t.Optional[gws.ILayer] = None) -> core.LayerCapsTree:
+def layer_caps_tree(rd: core.Request, root_layer: t.Optional[gws.Layer] = None) -> core.LayerCapsTree:
     lct = core.LayerCapsTree(root=None, roots=[], leaves=[])
 
     if root_layer:
@@ -42,7 +42,7 @@ def layer_caps_tree(rd: core.Request, root_layer: t.Optional[gws.ILayer] = None)
 def _collect_layer_caps(
         rd: core.Request,
         lct: core.LayerCapsTree,
-        layer: gws.ILayer,
+        layer: gws.Layer,
         parent_lc: t.Optional[core.LayerCaps] = None,
 ):
     if not rd.req.user.can_read(layer) or not layer.isEnabledForOws:
@@ -113,7 +113,7 @@ def _leaves(lct, fn, names, with_ancestors):
     seen = set()
     lcs = []
 
-    for name in gws.to_list(names):
+    for name in gws.u.to_list(names):
         if name in seen:
             continue
         seen.add(name)
@@ -177,8 +177,8 @@ def one_of_params(rd: core.Request, *names):
             return s
 
 
-def service_url_path(service: gws.IOwsService, project: t.Optional[gws.IProject] = None) -> str:
-    return gws.action_url_path('owsService', serviceUid=service.uid, projectUid=project.uid if project else None)
+def service_url_path(service: gws.OwsService, project: t.Optional[gws.Project] = None) -> str:
+    return gws.u.action_url_path('owsService', serviceUid=service.uid, projectUid=project.uid if project else None)
 
 
 def render_map_bbox(rd: core.Request, lcs: list[core.LayerCaps]) -> gws.ContentResponse:

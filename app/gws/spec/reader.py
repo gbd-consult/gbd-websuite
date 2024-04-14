@@ -17,7 +17,7 @@ class Reader:
     def __init__(self, runtime, path, options):
         self.runtime = runtime
         self.path = path
-        
+
         options = set(options or [])
 
         self.accept_extra_props = gws.SpecReadOption.acceptExtraProps in options
@@ -284,7 +284,7 @@ def _read_variant(r: Reader, val, typ: core.Type):
 
 def _read_acl_str(r: Reader, val, typ: core.Type):
     try:
-        return gws.parse_acl(val)
+        return gws.u.parse_acl(val)
     except ValueError:
         raise core.ReadError(f'invalid ACL', val)
 
@@ -319,7 +319,7 @@ def _read_datetime(r: Reader, val, typ: core.Type):
 
 def _read_dirpath(r: Reader, val, typ: core.Type):
     path = gws.lib.osx.abs_path(val, r.path)
-    if not gws.is_dir(path):
+    if not gws.u.is_dir(path):
         raise core.ReadError(f'directory not found: {path!r}, base {r.path!r}', val)
     return path
 
@@ -333,7 +333,7 @@ def _read_duration(r: Reader, val, typ: core.Type):
 
 def _read_filepath(r: Reader, val, typ: core.Type):
     path = gws.lib.osx.abs_path(val, r.path)
-    if not gws.is_file(path):
+    if not gws.u.is_file(path):
         raise core.ReadError(f'file not found: {path!r}, base {r.path!r}', val)
     return path
 
@@ -346,28 +346,38 @@ def _read_formatstr(r: Reader, val, typ: core.Type):
 def _read_metadata(r: Reader, val, typ: core.Type):
     rr = r.allow_skip_required
     r.allow_skip_required = True
-    res = gws.compact(_read_object(r, val, typ))
+    res = gws.u.compact(_read_object(r, val, typ))
     r.allow_skip_required = rr
     return res
 
 
-def _read_measurement(r: Reader, val, typ: core.Type):
+def _read_uom_value(r: Reader, val, typ: core.Type):
     try:
         return gws.lib.uom.parse(val)
     except ValueError as e:
-        raise core.ReadError(f'invalid measurement: {val!r}: {e!r}', val)
+        raise core.ReadError(f'invalid value: {val!r}: {e!r}', val)
 
 
-def _read_mpoint(r: Reader, val, typ: core.Type):
+def _read_uom_value_2(r: Reader, val, typ: core.Type):
     try:
-        ls = [gws.lib.uom.parse(s) for s in gws.to_list(val)]
-        if len(ls) != 2:
-            raise ValueError('point length must be 2')
-        a, u = ls[0]
-        b, _ = ls[1]
-        return a, b, u
+        ls = [gws.lib.uom.parse(s) for s in gws.u.to_list(val)]
+        u = set(p[1] for p in ls)
+        if len(ls) != 2 or len(u) != 1:
+            raise ValueError('invalid length or unit')
+        return tuple(p[0] for p in ls) + tuple(u)
     except ValueError as e:
         raise core.ReadError(f'invalid point: {val!r}: {e!r}', val)
+
+
+def _read_uom_value_4(r: Reader, val, typ: core.Type):
+    try:
+        ls = [gws.lib.uom.parse(s) for s in gws.u.to_list(val)]
+        u = set(p[1] for p in ls)
+        if len(ls) != 4 or len(u) != 1:
+            raise ValueError('invalid length or unit')
+        return tuple(p[0] for p in ls) + tuple(u)
+    except ValueError as e:
+        raise core.ReadError(f'invalid extent: {val!r}: {e!r}', val)
 
 
 def _read_regex(r: Reader, val, typ: core.Type):
@@ -393,7 +403,7 @@ def _ensure(val, cls):
         return val
     if cls == list and isinstance(val, tuple):
         return list(val)
-    if cls == dict and gws.is_data_object(val):
+    if cls == dict and gws.u.is_data_object(val):
         return vars(val)
     raise core.ReadError(f"wrong type: {_classname(type(val))!r}, expected: {_classname(cls)!r}", val)
 
@@ -485,19 +495,22 @@ _READERS = {
     core.C.CONFIG: _read_object,
     core.C.PROPS: _read_object,
 
-    'gws.core.types.AclStr': _read_acl_str,
-    'gws.core.types.Color': _read_color,
-    'gws.core.types.CrsName': _read_crs,
-    'gws.core.types.Date': _read_date,
-    'gws.core.types.DateTime': _read_datetime,
-    'gws.core.types.DirPath': _read_dirpath,
-    'gws.core.types.Duration': _read_duration,
-    'gws.core.types.FilePath': _read_filepath,
-    'gws.core.types.FormatStr': _read_formatstr,
-    'gws.core.types.Measurement': _read_measurement,
-    'gws.core.types.Metadata': _read_metadata,
-    'gws.core.types.MPoint': _read_mpoint,
-    'gws.core.types.MSize': _read_mpoint,
-    'gws.core.types.Regex': _read_regex,
-    'gws.core.types.Url': _read_url,
+    'gws.AclStr': _read_acl_str,
+    'gws.Color': _read_color,
+    'gws.CrsName': _read_crs,
+    'gws.DateStr': _read_date,
+    'gws.DateTimeStr': _read_datetime,
+    'gws.DirPath': _read_dirpath,
+    'gws.Duration': _read_duration,
+    'gws.FilePath': _read_filepath,
+    'gws.FormatStr': _read_formatstr,
+
+    'gws.UomValueStr': _read_uom_value,
+    'gws.UomPointStr': _read_uom_value_2,
+    'gws.UomSizeStr': _read_uom_value_2,
+    'gws.UomExtentStr': _read_uom_value_4,
+
+    'gws.Metadata': _read_metadata,
+    'gws.Regex': _read_regex,
+    'gws.Url': _read_url,
 }

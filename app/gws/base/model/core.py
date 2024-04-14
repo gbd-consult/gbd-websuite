@@ -58,7 +58,7 @@ class Props(gws.Props):
     uidName: t.Optional[str]
 
 
-class Object(gws.Node, gws.IModel):
+class Object(gws.Model):
     def configure(self):
         self.isEditable = self.cfg('isEditable', default=False)
         self.withTableView = self.cfg('withTableView', default=True)
@@ -170,7 +170,7 @@ class Object(gws.Node, gws.IModel):
     ##
 
     def props(self, user):
-        layer = t.cast(gws.ILayer, self.find_closest(gws.ext.object.layer))
+        layer = t.cast(gws.Layer, self.find_closest(gws.ext.object.layer))
 
         return gws.Props(
             canCreate=user.can_create(self),
@@ -248,7 +248,7 @@ class Object(gws.Node, gws.IModel):
     ##
 
     def feature_from_props(self, props, mc):
-        props = t.cast(gws.FeatureProps, gws.to_data(props))
+        props = t.cast(gws.FeatureProps, gws.u.to_data_object(props))
         feature = gws.base.feature.new(model=self, props=props)
         feature.cssSelector = props.cssSelector or ''
         feature.isNew = props.isNew or False

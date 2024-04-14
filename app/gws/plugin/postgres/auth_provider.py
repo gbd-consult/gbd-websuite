@@ -18,4 +18,4 @@ class Config(gws.base.auth.sql_provider.Config):
 
 class Object(gws.base.auth.sql_provider.Object):
     def configure(self):
-        self.dbProvider = t.cast(gws.IDatabaseProvider, gws.base.database.provider.get_for(self))
+        self.dbProvider = t.cast(gws.DatabaseProvider, gws.base.database.provider.get_for(self))

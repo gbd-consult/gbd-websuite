@@ -22,7 +22,7 @@ class Props(gws.base.model.widget.Props):
 
 class Object(feature_list.Object):
     def props(self, user):
-        return gws.merge(
+        return gws.u.merge(
             super().props(user),
             toFileField=self.cfg('toFileField'),
         )

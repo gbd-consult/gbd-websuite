@@ -15,14 +15,14 @@ import gws.types as t
 # @TODO support GML2
 # @TODO PostGis options 2 and 4 (https://postgis.net/docs/ST_AsGML.html)
 def shape_to_element(
-        shape: gws.IShape,
+        shape: gws.Shape,
         coordinate_precision: t.Optional[int] = None,
         always_xy=False,
         crs_format: gws.CrsFormat = gws.CrsFormat.urn,
         namespace: t.Optional[gws.XmlNamespace] = None,
         with_xmlns=True,
         with_inline_xmlns=False,
-) -> gws.IXmlElement:
+) -> gws.XmlElement:
     """Convert a Shape to a GML3 geometry element."""
 
     opts = gws.Data()

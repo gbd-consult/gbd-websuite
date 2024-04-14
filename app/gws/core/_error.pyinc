@@ -1,0 +1,36 @@
+"""App Error object"""
+
+class Error(Exception):
+    """GWS error."""
+    def __repr__(self):
+        return log.exception_backtrace(self)[0]
+
+
+class ConfigurationError(Error):
+    """GWS Configuration error."""
+    pass
+
+
+class NotFoundError(Error):
+    """Generic 'object not found' error."""
+    pass
+
+
+class ForbiddenError(Error):
+    """Generic 'forbidden' error."""
+    pass
+
+
+class BadRequestError(Error):
+    """Generic 'bad request' error."""
+    pass
+
+
+class ResponseTooLargeError(Error):
+    """Generic error when a response is too large."""
+    pass
+
+
+##
+
+

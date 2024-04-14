@@ -11,8 +11,8 @@ class Config(gws.Config):
     """database providers"""
 
 
-class Object(gws.Node, gws.IDatabaseManager):
-    providerMap: dict[str, gws.IDatabaseProvider]
+class Object(gws.DatabaseManager):
+    providerMap: dict[str, gws.DatabaseProvider]
 
     def configure(self):
         self.providerMap = {}
@@ -24,10 +24,10 @@ class Object(gws.Node, gws.IDatabaseManager):
 
     ##
 
-    def enter_middleware(self, req: gws.IWebRequester):
+    def enter_middleware(self, req: gws.WebRequester):
         pass
 
-    def exit_middleware(self, req: gws.IWebRequester, res: gws.IWebResponder):
+    def exit_middleware(self, req: gws.WebRequester, res: gws.WebResponder):
         # @TODO deinit providers
         pass
 

@@ -141,7 +141,7 @@ class _Writer:
             s = self.timeFormatter.format(gws.lib.intl.DateTimeFormat.short, val)
             return self._quote(s)
 
-        val = gws.to_str(val)
+        val = gws.u.to_str(val)
 
         if val and val.isdigit() and self.h.formulaHack:
             val = '=' + self._quote(val)
@@ -150,5 +150,5 @@ class _Writer:
 
     def _quote(self, val):
         q = self.h.quote
-        s = gws.to_str(val).replace(q, q + q)
+        s = gws.u.to_str(val).replace(q, q + q)
         return q + s + q

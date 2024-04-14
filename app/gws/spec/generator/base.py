@@ -39,12 +39,12 @@ BUILTIN_TYPES = [
 # those star-imported in gws/__init__.py
 GLOBAL_MODULES = [
     APP_NAME + '.core.const',
-    APP_NAME + '.core.data',
-    APP_NAME + '.core.tree',
-    APP_NAME + '.core.types',
+    # APP_NAME + '.core.data',
+    # APP_NAME + '.core.tree',
+    # APP_NAME + '.core.types',
     APP_NAME + '.core.util',
-    APP_NAME + '.core.error',
-    APP_NAME + '.core'
+    # APP_NAME + '.core.error',
+    # APP_NAME + '.core'
 ]
 
 DEFAULT_EXT_SUPERS = {

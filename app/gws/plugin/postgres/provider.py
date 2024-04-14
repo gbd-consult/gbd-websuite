@@ -85,7 +85,7 @@ def connection_url(cfg: gws.Config):
         'application_name': 'GWS',
     }
 
-    params = gws.merge(defaults, cfg.get('options'))
+    params = gws.u.merge(defaults, cfg.get('options'))
 
     p = cfg.get('host')
     if p:

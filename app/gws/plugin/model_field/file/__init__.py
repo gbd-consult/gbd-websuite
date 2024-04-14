@@ -57,7 +57,7 @@ class Object(gws.base.model.field.Object):
     cols: Cols
 
     def __getstate__(self):
-        return gws.omit(vars(self), 'cols')
+        return gws.u.omit(vars(self), 'cols')
 
     def post_configure(self):
         self.configure_columns()
@@ -144,8 +144,8 @@ class Object(gws.base.model.field.Object):
     def prop_to_python(self, feature, value, mc) -> FileValue:
         try:
             return FileValue(
-                content=gws.get(value, 'content'),
-                name=gws.get(value, 'name'),
+                content=gws.u.get(value, 'content'),
+                name=gws.u.get(value, 'name'),
             )
         except ValueError:
             return gws.ErrorValue
@@ -175,9 +175,9 @@ class Object(gws.base.model.field.Object):
         )
 
         if mime.startswith('image'):
-            p.previewUrl = gws.action_url_path('webFile', preview=1, **url_args) + '/' + name
+            p.previewUrl = gws.u.action_url_path('webFile', preview=1, **url_args) + '/' + name
 
-        p.downloadUrl = gws.action_url_path('webFile', **url_args) + '/' + name
+        p.downloadUrl = gws.u.action_url_path('webFile', **url_args) + '/' + name
 
         return p
 
@@ -192,7 +192,7 @@ class Object(gws.base.model.field.Object):
         return gws.lib.mime.TXT
 
     def handle_web_file_request(self, feature_uid: str, preview: bool, mc: gws.ModelContext) -> t.Optional[gws.ContentResponse]:
-        model = t.cast(gws.IDatabaseModel, self.model)
+        model = t.cast(gws.DatabaseModel, self.model)
 
         sql = sa.select(
             *self.select_columns(True, mc)

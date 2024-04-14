@@ -16,4 +16,4 @@ class Props(gws.base.model.widget.Props):
 
 class Object(gws.base.model.widget.Object):
     def props(self, user):
-        return gws.merge(super().props(user), withSearch=self.cfg('withSearch', default=False))
+        return gws.u.merge(super().props(user), withSearch=self.cfg('withSearch', default=False))

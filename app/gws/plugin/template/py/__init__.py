@@ -49,7 +49,7 @@ class Object(gws.base.template.Object):
         return res
 
     def compile(self):
-        text = gws.read_file(self.path)
+        text = gws.u.read_file(self.path)
         try:
             g = {}
             exec(text, g)

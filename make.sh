@@ -55,6 +55,7 @@ DOC_BUILDER=$BASE_DIR/doc/doc.py
 BUILD_DIR=$BASE_DIR/app/__build
 TEST_RUNNER=$BASE_DIR/app/gws/test/host_runner.py
 
+MAKE_INIT="$PYTHON $BASE_DIR/app/gws/_make_init.py"
 MAKE_SPEC="$PYTHON $BASE_DIR/app/gws/spec/spec.py $BUILD_DIR"
 
 if [ "$1" == "-manifest" ]; then
@@ -70,13 +71,13 @@ case $COMMAND in
     ;;
 
   client)
-    $MAKE_SPEC && $NODE $CLIENT_BUILDER production $@
+    $MAKE_INIT && $MAKE_SPEC && $NODE $CLIENT_BUILDER production $@
     ;;
   client-dev)
-    $MAKE_SPEC && $NODE $CLIENT_BUILDER dev $@
+    $MAKE_INIT && $MAKE_SPEC && $NODE $CLIENT_BUILDER dev $@
     ;;
   client-dev-server)
-    $MAKE_SPEC && $NODE $CLIENT_BUILDER dev-server $@
+    $MAKE_INIT && $MAKE_SPEC && $NODE $CLIENT_BUILDER dev-server $@
     ;;
 
   demo-config)
@@ -84,26 +85,26 @@ case $COMMAND in
     ;;
 
   doc)
-    $MAKE_SPEC && $PYTHON $DOC_BUILDER build $@
+    $MAKE_INIT && $MAKE_SPEC && $PYTHON $DOC_BUILDER build $@
     ;;
   doc-api)
-    $MAKE_SPEC && bash $BASE_DIR/doc/api/make.sh $BASE_DIR $BUILD_DIR $@
+    $MAKE_INIT && bash $BASE_DIR/doc/api/make.sh $BASE_DIR $BUILD_DIR $@
     ;;
   doc-dev-server)
-    $MAKE_SPEC && $PYTHON $DOC_BUILDER server $@
+    $MAKE_INIT && $MAKE_SPEC && $PYTHON $DOC_BUILDER server $@
     ;;
 
   image)
-    $MAKE_SPEC && $PYTHON $BASE_DIR/install/image.py $@
+    $MAKE_INIT && $MAKE_SPEC && $PYTHON $BASE_DIR/install/image.py $@
     ;;
   package)
-    $MAKE_SPEC && $PYTHON $BASE_DIR/install/package.py $@
+    $MAKE_INIT && $MAKE_SPEC && $PYTHON $BASE_DIR/install/package.py $@
     ;;
   spec)
-    $MAKE_SPEC $@
+    $MAKE_INIT && $MAKE_SPEC $@
     ;;
   test)
-    $PYTHON $TEST_RUNNER $@
+    $MAKE_INIT && $PYTHON $TEST_RUNNER $@
     ;;
 
   *)

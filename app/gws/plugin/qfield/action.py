@@ -61,36 +61,36 @@ class Object(gws.base.action.Object):
         self.withSerialPrefix = self.cfg('withSerialPrefix', default=False)
 
     @gws.ext.command.get('qfieldDownload')
-    def http_download(self, req: gws.IWebRequester, p: DownloadRequest) -> gws.ContentResponse:
+    def http_download(self, req: gws.WebRequester, p: DownloadRequest) -> gws.ContentResponse:
         b = self._do_download(req, p)
         return gws.ContentResponse(content=b, mime=gws.lib.mime.ZIP)
 
     @gws.ext.command.api('qfieldDownload')
-    def api_download(self, req: gws.IWebRequester, p: DownloadRequest) -> DownloadResponse:
+    def api_download(self, req: gws.WebRequester, p: DownloadRequest) -> DownloadResponse:
         b = self._do_download(req, p)
         return DownloadResponse(data=b)
 
     @gws.ext.command.post('qfieldUpload')
-    def http_upload(self, req: gws.IWebRequester, p: UploadRequest) -> gws.ContentResponse:
+    def http_upload(self, req: gws.WebRequester, p: UploadRequest) -> gws.ContentResponse:
         self._do_upload(req, p, req.data())
         return gws.ContentResponse(content='ok\n')
 
     @gws.ext.command.api('qfieldUpload')
-    def api_upload(self, req: gws.IWebRequester, p: UploadRequest) -> UploadResponse:
+    def api_upload(self, req: gws.WebRequester, p: UploadRequest) -> UploadResponse:
         self._do_upload(req, p, p.data)
         return UploadResponse()
 
     ##
 
-    def _do_download(self, req: gws.IWebRequester, p: DownloadRequest) -> bytes:
+    def _do_download(self, req: gws.WebRequester, p: DownloadRequest) -> bytes:
         args = self.prepare_export(req, p)
         self.exec_export(args)
         return self.end_export(args)
 
-    def prepare_export(self, req: gws.IWebRequester, p: DownloadRequest) -> core.ExportArgs:
+    def prepare_export(self, req: gws.WebRequester, p: DownloadRequest) -> core.ExportArgs:
         project = req.user.require_project(p.projectUid)
         package = self._get_package(p.packageUid, req.user, gws.Access.read)
-        base_dir = gws.ensure_dir(f'{gws.VAR_DIR}/qfield/{gws.random_string(32)}')
+        base_dir = gws.u.ensure_dir(f'{gws.c.VAR_DIR}/qfield/{gws.u.random_string(32)}')
 
         name_prefix = ''
         if self.withSerialPrefix:
@@ -101,7 +101,7 @@ class Object(gws.base.action.Object):
         db_path = db_file_name
         if self.withDbInDCIM:
             db_path = f'DCIM/{db_file_name}'
-            gws.ensure_dir(f'{base_dir}/DCIM')
+            gws.u.ensure_dir(f'{base_dir}/DCIM')
 
         return core.ExportArgs(
             package=package,
@@ -130,18 +130,18 @@ class Object(gws.base.action.Object):
 
     ##
 
-    def _do_upload(self, req: gws.IWebRequester, p: UploadRequest, data: bytes):
+    def _do_upload(self, req: gws.WebRequester, p: UploadRequest, data: bytes):
         args = self.prepare_import(req, p, data)
         self.exec_import(args)
         return self.end_import(args)
 
-    def prepare_import(self, req: gws.IWebRequester, p: UploadRequest, data: bytes):
+    def prepare_import(self, req: gws.WebRequester, p: UploadRequest, data: bytes):
         project = req.user.require_project(p.projectUid)
         package = self._get_package(p.packageUid, req.user, gws.Access.write)
-        base_dir = gws.ensure_dir(f'{gws.VAR_DIR}/qfield/{gws.random_string(32)}')
+        base_dir = gws.u.ensure_dir(f'{gws.c.VAR_DIR}/qfield/{gws.u.random_string(32)}')
 
         if data.startswith(b'SQLite'):
-            gws.write_file_b(f'{base_dir}/{package.uid}.{core.GPKG_EXT}', data)
+            gws.u.write_file_b(f'{base_dir}/{package.uid}.{core.GPKG_EXT}', data)
         else:
             gws.lib.zipx.unzip_bytes(data, base_dir, flat=True)
 
@@ -164,8 +164,8 @@ class Object(gws.base.action.Object):
 
     ##
 
-    def _get_package(self, uid: str, user: gws.IUser, access: gws.Access) -> core.Package:
-        pkg = self.packages.get(uid) if uid else gws.first(self.packages.values())
+    def _get_package(self, uid: str, user: gws.User, access: gws.Access) -> core.Package:
+        pkg = self.packages.get(uid) if uid else gws.u.first(self.packages.values())
         if not pkg:
             raise gws.NotFoundError(f'package {uid} not found')
         if not user.can(access, pkg):

@@ -15,7 +15,7 @@ def from_path(
         compact_whitespace: bool = False,
         normalize_namespaces: bool = False,
         remove_namespaces: bool = False,
-) -> gws.IXmlElement:
+) -> gws.XmlElement:
     """Creates an ``IXmlElement`` object from a .xlm file.
 
     Args:
@@ -39,7 +39,7 @@ def from_string(
         compact_whitespace: bool = False,
         remove_namespaces: bool = False,
         normalize_namespaces: bool = False,
-) -> gws.IXmlElement:
+) -> gws.XmlElement:
     """Creates an ``IXmlElement`` from a string or bytes.
 
     Args:
@@ -100,7 +100,7 @@ class _ParserTarget:
                 uri = ns.uri
         return '{' + uri + '}' + pname
 
-    def make(self, tag: str, attrib: dict) -> gws.IXmlElement:
+    def make(self, tag: str, attrib: dict) -> gws.XmlElement:
         """Creates an ``IXmlElement``.
 
         Args:

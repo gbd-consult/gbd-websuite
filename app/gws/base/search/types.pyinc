@@ -1,0 +1,109 @@
+class SearchSort(Data):
+    """Search sort specification."""
+
+    fieldName: str
+    reverse: bool
+
+
+class SearchOgcFilter(Data):
+    """Search filter."""
+
+    name: str
+    operator: str
+    shape: 'Shape'
+    subFilters: list['SearchOgcFilter']
+    value: str
+
+
+class SearchQuery(Data):
+    """Search query."""
+
+    access: Access
+    all: bool
+    bounds: Bounds
+    extraColumns: list
+    extraParams: dict
+    extraWhere: list
+    keyword: str
+    layers: list['Layer']
+    limit: int
+    ogcFilter: SearchOgcFilter
+    project: 'Project'
+    relDepth: int
+    resolution: float
+    shape: 'Shape'
+    sort: list[SearchSort]
+    tolerance: 'UomValue'
+    uids: list[str]
+
+
+class SearchResult(Data):
+    """Search result."""
+
+    feature: 'Feature'
+    layer: 'Layer'
+    finder: 'Finder'
+
+
+class TextSearchType(Enum):
+    """Text search type."""
+
+    exact = 'exact'
+    """Match the whole string."""
+    begin = 'begin'
+    """Match the beginning of the string."""
+    end = 'end'
+    """Match the end of the string."""
+    any = 'any'
+    """Match any substring."""
+    like = 'like'
+    """Use the percent sign as a placeholder."""
+
+
+class TextSearchOptions(Data):
+    """Text search options."""
+
+    type: TextSearchType
+    """Type of the search."""
+    minLength: int = 0
+    """Minimal pattern length."""
+    caseSensitive: bool = False
+    """Use the case sensitive search."""
+
+
+class SortOptions(Data):
+    """Sort options."""
+    fieldName: str
+    reverse: bool = False
+
+
+class SearchManager(Node):
+    """Search Manager."""
+
+    def run_search(self, search: 'SearchQuery', user: 'User') -> list['SearchResult']: ...
+
+
+class Finder(Node):
+    """Finder object."""
+
+    title: str
+
+    supportsFilterSearch: bool = False
+    supportsGeometrySearch: bool = False
+    supportsKeywordSearch: bool = False
+
+    withFilter: bool
+    withGeometry: bool
+    withKeyword: bool
+
+    templates: list['Template']
+    models: list['Model']
+
+    provider: 'Node'
+    sourceLayers: list['SourceLayer']
+
+    tolerance: 'UomValue'
+
+    def run(self, search: SearchQuery, user: 'User', layer: Optional['Layer'] = None) -> list['Feature']: ...
+
+    def can_run(self, search: SearchQuery, user: 'User') -> bool: ...

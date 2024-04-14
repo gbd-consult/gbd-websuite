@@ -14,9 +14,9 @@ class Props(field.Props):
     pass
 
 
-class Object(field.Object, gws.IModelField):
+class Object(field.Object, gws.ModelField):
     def before_select(self, mc):
-        model = t.cast(gws.IDatabaseModel, self.model)
+        model = t.cast(gws.DatabaseModel, self.model)
         mc.dbSelect.columns.append(model.column(self.name))
 
     def after_select(self, features, mc):
@@ -90,7 +90,7 @@ class Object(field.Object, gws.IModelField):
 
     def get_value(
             self,
-            feature: gws.IFeature,
+            feature: gws.Feature,
             source: dict,
             has_access: bool,
             convert_fn: t.Callable,

@@ -1,0 +1,121 @@
+CrsName: TypeAlias = int | str
+"""A CRS code like ``EPSG:3857`` or a SRID like ``3857``."""
+
+
+class CrsFormat(Enum):
+    """CRS name format."""
+
+    none = ''
+    crs = 'crs'
+    """Like ``crs84``."""
+    srid = 'srid'
+    """Like ``3857``."""
+    epsg = 'epsg'
+    """Like ``EPSG:3857``."""
+    url = 'url'
+    """Like ``http://www.opengis.net/gml/srs/epsg.xml#3857``."""
+    uri = 'uri'
+    """Like ``http://www.opengis.net/def/crs/epsg/0/3857``."""
+    urnx = 'urnx'
+    """Like ``urn:x-ogc:def:crs:EPSG:3857``."""
+    urn = 'urn'
+    """Like ``urn:ogc:def:crs:EPSG::3857``."""
+
+
+class Axis(Enum):
+    """Axis orientation."""
+
+    xy = 'xy'
+    yx = 'yx'
+
+
+class Bounds(Data):
+    """Geo-referenced extent."""
+
+    crs: 'Crs'
+    extent: Extent
+
+
+class Crs:
+    """Coordinate reference system."""
+
+    srid: int
+    """CRS SRID."""
+    axis: Axis
+    """Axis orientation."""
+    uom: Uom
+    """CRS unit."""
+    isGeographic: bool
+    """This CRS is geographic."""
+    isProjected: bool
+    """This CRS is projected."""
+    isYX: bool
+    """This CRS has a lat/lon axis."""
+    proj4text: str
+    """Proj4 definition."""
+    wkt: str
+    """WKT definition."""
+
+    epsg: str
+    """Name in the "epsg" format."""
+    urn: str
+    """Name in the "urn" format."""
+    urnx: str
+    """Name in the "urnx" format."""
+    url: str
+    """Name in the "url" format."""
+    uri: str
+    """Name in the "uri" format."""
+
+    name: str
+    """CRS name."""
+    base: int
+    """Base CRS code."""
+    datum: str
+    """Datum."""
+
+    wgsExtent: Extent
+    """CRS Extent in the WGS projection."""
+    extent: Extent
+    """CRS own Extent."""
+
+    def transform_extent(self, extent: Extent, crs_to: 'Crs') -> Extent:
+        """Transform an Extent from this CRS to another.
+
+        Args:
+            extent: Extent.
+            crs_to: Target CRS.
+
+        Returns:
+            A transformed Extent.
+        """
+
+    def transformer(self, crs_to: 'Crs') -> Callable:
+        """Create a transformer function to another CRS.
+
+        Args:
+            crs_to: Target CRS.
+
+        Returns:
+            A function.
+        """
+
+    def to_string(self, fmt: Optional['CrsFormat'] = None) -> str:
+        """Return a string representation of the CRS.
+
+        Args:
+            fmt: Format to use.
+
+        Returns:
+            A string.
+        """
+
+    def to_geojson(self) -> dict:
+        """Return a geojson representation of the CRS (as per GJ2008).
+
+        Returns:
+            A GeoJson dict.
+
+        References:
+            https://geojson.org/geojson-spec#named-crs
+        """

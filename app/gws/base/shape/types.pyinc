@@ -1,0 +1,126 @@
+class ShapeProps(Props):
+    """Shape properties."""
+
+    crs: str
+    geometry: dict
+
+
+class Shape(Object):
+    """Geo-referenced geometry."""
+
+    type: GeometryType
+    """Geometry type."""
+
+    crs: 'Crs'
+    """CRS of this shape."""
+
+    x: Optional[float]
+    """X-coordinate for Point geometries, None otherwise."""
+
+    y: Optional[float]
+    """Y-coordinate for Point geometries, None otherwise."""
+
+    # common props
+
+    def area(self) -> float:
+        """Computes the area of the geometry."""
+
+    def bounds(self) -> Bounds:
+        """Returns a Bounds object that bounds this shape."""
+
+    def centroid(self) -> 'Shape':
+        """Returns a centroid as a Point shape."""
+
+    # formats
+
+    def to_wkb(self) -> bytes:
+        """Returns a WKB representation of this shape as a binary string."""
+
+    def to_wkb_hex(self) -> str:
+        """Returns a WKB representation of this shape as a hex string."""
+
+    def to_ewkb(self) -> bytes:
+        """Returns an EWKB representation of this shape as a binary string."""
+
+    def to_ewkb_hex(self) -> str:
+        """Returns an EWKB representation of this shape as a hex string."""
+
+    def to_wkt(self) -> str:
+        """Returns a WKT representation of this shape."""
+
+    def to_ewkt(self) -> str:
+        """Returns an EWKT representation of this shape."""
+
+    def to_geojson(self, always_xy=False) -> dict:
+        """Returns a GeoJSON representation of this shape."""
+
+    def to_props(self) -> ShapeProps:
+        """Returns a GeoJSON representation of this shape."""
+
+    # predicates (https://shapely.readthedocs.io/en/stable/manual.html#predicates-and-relationships)
+
+    def is_empty(self) -> bool:
+        """Returns True if this shape is empty."""
+
+    def is_ring(self) -> bool:
+        """Returns True if this shape is a ring."""
+
+    def is_simple(self) -> bool:
+        """Returns True if this shape is 'simple'."""
+
+    def is_valid(self) -> bool:
+        """Returns True if this shape is valid."""
+
+    def equals(self, other: 'Shape') -> bool:
+        """Returns True if this shape is equal to the other."""
+
+    def contains(self, other: 'Shape') -> bool:
+        """Returns True if this shape contains the other."""
+
+    def covers(self, other: 'Shape') -> bool:
+        """Returns True if this shape covers the other."""
+
+    def covered_by(self, other: 'Shape') -> bool:
+        """Returns True if this shape is covered by the other."""
+
+    def crosses(self, other: 'Shape') -> bool:
+        """Returns True if this shape crosses the other."""
+
+    def disjoint(self, other: 'Shape') -> bool:
+        """Returns True if this shape does not intersect with the other."""
+
+    def intersects(self, other: 'Shape') -> bool:
+        """Returns True if this shape intersects with the other."""
+
+    def overlaps(self, other: 'Shape') -> bool:
+        """Returns True if this shape overlaps the other."""
+
+    def touches(self, other: 'Shape') -> bool:
+        """Returns True if this shape touches the other."""
+
+    def within(self, other: 'Shape') -> bool:
+        """Returns True if this shape is within the other."""
+
+    # set operations
+
+    def union(self, others: list['Shape']) -> 'Shape':
+        """Computes a union of this shape and other shapes."""
+
+    def intersection(self, *others: 'Shape') -> 'Shape':
+        """Computes an intersection of this shape and other shapes."""
+
+    # convertors
+
+    def to_multi(self) -> 'Shape':
+        """Converts a singly-geometry shape to a multi-geometry one."""
+
+    def to_type(self, new_type: 'GeometryType') -> 'Shape':
+        """Converts a geometry to another type."""
+
+    # misc
+
+    def tolerance_polygon(self, tolerance, quad_segs=None) -> 'Shape':
+        """Builds a buffer polygon around the shape."""
+
+    def transformed_to(self, crs: 'Crs') -> 'Shape':
+        """Returns this shape transformed to another CRS."""

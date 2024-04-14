@@ -124,4 +124,13 @@ def init_generator(gen) -> base.Generator:
                     chunk['paths'][kind].append(path)
                     break
 
+    gen.chunks.insert(
+        0,
+        dict(
+            name='gws',
+            sourceDir=gen.rootDir + '/gws',
+            bundleDir=gen.rootDir + '/gws',
+            paths={'python': [gen.rootDir + '/gws/__init__.py']}
+        ))
+
     return gen

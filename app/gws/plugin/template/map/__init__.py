@@ -56,7 +56,7 @@ class Object(gws.base.template.Object):
             return gws.ContentResponse(mime=gws.lib.mime.HTML, content=html)
 
         if tri.mimeOut == gws.lib.mime.PDF:
-            res_path = gws.printtemp('map.pdf')
+            res_path = gws.u.printtemp('map.pdf')
             gws.lib.htmlx.render_to_pdf(
                 html,
                 out_path=res_path,
@@ -66,7 +66,7 @@ class Object(gws.base.template.Object):
             return gws.ContentResponse(contentPath=res_path)
 
         if tri.mimeOut == gws.lib.mime.PNG:
-            res_path = gws.printtemp('map.png')
+            res_path = gws.u.printtemp('map.png')
             gws.lib.htmlx.render_to_png(
                 html,
                 out_path=res_path,

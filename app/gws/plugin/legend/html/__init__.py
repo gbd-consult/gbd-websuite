@@ -16,7 +16,7 @@ class Config(gws.base.legend.Config):
 
 
 class Object(gws.base.legend.Object):
-    template: gws.ITemplate
+    template: gws.Template
 
     def configure(self):
         self.template = self.create_child(gws.ext.object.template, self.cfg('template'))

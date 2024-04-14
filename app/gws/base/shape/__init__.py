@@ -24,7 +24,7 @@ class Error(gws.Error):
     pass
 
 
-def from_wkt(wkt: str, default_crs: gws.ICrs = None) -> gws.IShape:
+def from_wkt(wkt: str, default_crs: gws.Crs = None) -> gws.Shape:
     """Creates a shape object from a WKT string.
 
     Args:
@@ -49,7 +49,7 @@ def from_wkt(wkt: str, default_crs: gws.ICrs = None) -> gws.IShape:
     return Shape(shapely.wkt.loads(wkt), crs)
 
 
-def from_wkb(wkb: bytes, default_crs: gws.ICrs = None) -> gws.IShape:
+def from_wkb(wkb: bytes, default_crs: gws.Crs = None) -> gws.Shape:
     """Creates a shape object from a WKB byte string.
 
     Args:
@@ -63,7 +63,7 @@ def from_wkb(wkb: bytes, default_crs: gws.ICrs = None) -> gws.IShape:
     return _from_wkb(wkb, default_crs)
 
 
-def from_wkb_hex(wkb: str, default_crs: gws.ICrs = None) -> gws.IShape:
+def from_wkb_hex(wkb: str, default_crs: gws.Crs = None) -> gws.Shape:
     """Creates a shape object from a hex-encoded WKB string.
 
     Args:
@@ -104,7 +104,7 @@ def from_wkb_element(element: sa.geo.WKBElement, default_crs):
     return _from_wkb(wkb, crs or default_crs)
 
 
-def from_geojson(geojson: dict, crs: gws.ICrs, always_xy=False) -> gws.IShape:
+def from_geojson(geojson: dict, crs: gws.Crs, always_xy=False) -> gws.Shape:
     """Creates a shape object from a GeoJSON geometry dict.
 
     Parses a dict as a GeoJSON geometry object (https://www.rfc-editor.org/rfc/rfc7946#section-3.1).
@@ -126,7 +126,7 @@ def from_geojson(geojson: dict, crs: gws.ICrs, always_xy=False) -> gws.IShape:
     return Shape(geom, crs)
 
 
-def from_props(props: gws.Props) -> gws.IShape:
+def from_props(props: gws.Props) -> gws.Shape:
     """Creates a Shape from a properties object.
 
     Args:
@@ -142,7 +142,7 @@ def from_props(props: gws.Props) -> gws.IShape:
     return Shape(geom, crs)
 
 
-def from_dict(d: dict) -> gws.IShape:
+def from_dict(d: dict) -> gws.Shape:
     """Creates a Shape from a dictionary.
 
     Args:
@@ -158,7 +158,7 @@ def from_dict(d: dict) -> gws.IShape:
     return Shape(geom, crs)
 
 
-def from_extent(extent: gws.Extent, crs: gws.ICrs, always_xy=False) -> gws.IShape:
+def from_extent(extent: gws.Extent, crs: gws.Crs, always_xy=False) -> gws.Shape:
     """Creates a polygon Shape from an extent.
 
     Args:
@@ -176,7 +176,7 @@ def from_extent(extent: gws.Extent, crs: gws.ICrs, always_xy=False) -> gws.IShap
     return Shape(geom, crs)
 
 
-def from_bounds(bounds: gws.Bounds) -> gws.IShape:
+def from_bounds(bounds: gws.Bounds) -> gws.Shape:
     """Creates a polygon Shape from a Bounds object.
 
     Args:
@@ -189,7 +189,7 @@ def from_bounds(bounds: gws.Bounds) -> gws.IShape:
     return Shape(shapely.geometry.box(*bounds.extent), bounds.crs)
 
 
-def from_xy(x: float, y: float, crs: gws.ICrs) -> gws.IShape:
+def from_xy(x: float, y: float, crs: gws.Crs) -> gws.Shape:
     """Creates a point Shape from coordinates.
 
     Args:
@@ -238,10 +238,10 @@ class Props(gws.Props):
 ##
 
 
-class Shape(gws.IShape):
+class Shape(gws.Shape):
     geom: shapely.geometry.base.BaseGeometry
 
-    def __init__(self, geom, crs: gws.ICrs):
+    def __init__(self, geom, crs: gws.Crs):
         self.geom = geom
         self.crs = crs
         self.type = self.geom.geom_type.lower()

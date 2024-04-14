@@ -31,7 +31,7 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.vector.Object):
     provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
-    sourceCrs: gws.ICrs
+    sourceCrs: gws.Crs
 
     def configure(self):
         self.configure_layer()
@@ -66,7 +66,7 @@ class Object(gws.base.layer.vector.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        blist = gws.compact(sl.wgsBounds for sl in self.sourceLayers)
+        blist = gws.u.compact(sl.wgsBounds for sl in self.sourceLayers)
         wgs_bounds = gws.gis.bounds.union(blist) if blist else gws.gis.crs.WGS84_BOUNDS
         self.bounds = gws.gis.bounds.transform(wgs_bounds, self.mapCrs)
         return True

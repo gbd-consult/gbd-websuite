@@ -15,7 +15,7 @@ import gws.types as t
 from . import error
 
 
-class Responder(gws.IWebResponder):
+class Responder(gws.WebResponder):
     def __init__(self, **kwargs):
         if 'wz' in kwargs:
             self._wz = kwargs['wz']
@@ -43,13 +43,13 @@ class Responder(gws.IWebResponder):
         self._wz.status_code = int(status)
 
 
-class Requester(gws.IWebRequester):
+class Requester(gws.WebRequester):
     _struct_mime = {
         'json': 'application/json',
         'msgpack': 'application/msgpack',
     }
 
-    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite):
+    def __init__(self, root: gws.Root, environ: dict, site: gws.WebSite):
         self._wz = werkzeug.wrappers.Request(environ)
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
         self._wz.max_content_length = int(root.app.cfg('server.web.maxRequestLength', default=1)) * 1024 * 1024
@@ -95,7 +95,7 @@ class Requester(gws.IWebRequester):
         data = self._wz.get_data(as_text=False, parse_form_data=False)
 
         if self.root.app.developer_option('request.log_all'):
-            gws.write_file_b(gws.ensure_dir(f'{gws.VAR_DIR}/debug') + '/request_{gws.lib.date.timestamp_msec()}', data)
+            gws.u.write_file_b(gws.u.ensure_dir(f'{gws.c.VAR_DIR}/debug') + '/request_{gws.lib.date.timestamp_msec()}', data)
 
         if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
@@ -204,11 +204,11 @@ class Requester(gws.IWebRequester):
         path = self._wz.path
         path_parts = None
 
-        if path == gws.SERVER_ENDPOINT:
+        if path == gws.c.SERVER_ENDPOINT:
             # example.com/_
             # the cmd param is expected to be in the query string or json
             cmd = ''
-        elif path.startswith(gws.SERVER_ENDPOINT + '/'):
+        elif path.startswith(gws.c.SERVER_ENDPOINT + '/'):
             # example.com/_/someCommand
             # the cmd param is in the url
             # if 'cmd' is also in the query string or json, they must match!
@@ -242,7 +242,7 @@ class Requester(gws.IWebRequester):
         if typ == 'json':
             return gws.lib.jsonx.to_string(data, pretty=True)
         if typ == 'msgpack':
-            return umsgpack.dumps(data, default=gws.to_dict)
+            return umsgpack.dumps(data, default=gws.u.to_dict)
         raise ValueError('invalid struct type')
 
     def _decode_struct(self, typ):

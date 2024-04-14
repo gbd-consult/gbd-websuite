@@ -9,7 +9,7 @@ class Config(gws.Config):
     forUpdate: bool = True
 
 
-class Object(gws.Node, gws.IModelValue):
+class Object(gws.ModelValue):
     def configure(self):
         self.isDefault = self.cfg('isDefault', default=False)
 

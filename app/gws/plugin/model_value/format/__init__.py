@@ -21,4 +21,4 @@ class Object(gws.base.model.value.Object):
         self.format = self.cfg('format')
 
     def compute(self, field, feature, mc):
-        return gws.format_map(self.format, feature.attributes)
+        return gws.u.format_map(self.format, feature.attributes)

@@ -95,7 +95,7 @@ def mm_to_px(x: _number, ppi: int) -> float:
     return (x * ppi) / MM_PER_IN
 
 
-def to_px(xu: gws.Measurement, ppi: int) -> gws.Measurement:
+def to_px(xu: gws.UomValue, ppi: int) -> gws.UomValue:
     """Converts a measurement to amount of pixels.
 
     Args:
@@ -127,7 +127,7 @@ def size_mm_to_px(xy: gws.Size, ppi: int) -> gws.Size:
     return mm_to_px(x, ppi), mm_to_px(y, ppi)
 
 
-def msize_to_px(xyu: gws.MSize, ppi: int) -> gws.MSize:
+def size_to_px(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
     """Converts a rectangle description of any unit to pixels.
 
     Args:
@@ -160,7 +160,7 @@ def px_to_mm(x: _number, ppi: int) -> float:
     return (x / ppi) * MM_PER_IN
 
 
-def to_mm(xu: gws.Measurement, ppi: int) -> gws.Measurement:
+def to_mm(xu: gws.UomValue, ppi: int) -> gws.UomValue:
     """Converts a measurement of any unit to millimetres.
 
     Args:
@@ -192,7 +192,7 @@ def size_px_to_mm(xy: gws.Size, ppi: int) -> gws.Size:
     return px_to_mm(x, ppi), px_to_mm(y, ppi)
 
 
-def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
+def size_to_mm(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
     """Converts a rectangle description of any unit to millimetres.
 
     Args:
@@ -212,7 +212,7 @@ def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
     raise ValueError(f'invalid unit {u!r}')
 
 
-def to_str(xu: gws.Measurement) -> str:
+def to_str(xu: gws.UomValue) -> str:
     """Converts a to a string.
 
     Args:
@@ -241,7 +241,7 @@ _unit_re = re.compile(r'''(?x)
 ''')
 
 
-def parse(s: str | int | float, default_unit: gws.Uom = None) -> gws.Measurement:
+def parse(s: str | int | float, default_unit: gws.Uom = None) -> gws.UomValue:
     """Parse a measurement in the string or numeric form.
 
     Args:
@@ -259,7 +259,7 @@ def parse(s: str | int | float, default_unit: gws.Uom = None) -> gws.Measurement
             raise ValueError(f'missing unit: {s!r}')
         return s, default_unit
 
-    s = gws.to_str(s).strip()
+    s = gws.u.to_str(s).strip()
     m = _unit_re.match(s)
     if not m:
         raise ValueError(f'invalid format: {s!r}')
@@ -275,7 +275,7 @@ def parse(s: str | int | float, default_unit: gws.Uom = None) -> gws.Measurement
     return n, u
 
 
-_durations = {
+_DURATION_UNITS = {
     'w': 3600 * 24 * 7,
     'd': 3600 * 24,
     'h': 3600,
@@ -306,9 +306,9 @@ def parse_duration(s: str) -> int:
             p = int(n)
             continue
         v = v.strip()
-        if p is None or v not in _durations:
+        if p is None or v not in _DURATION_UNITS:
             raise ValueError('invalid duration', s)
-        r += p * _durations[v]
+        r += p * _DURATION_UNITS[v]
         p = None
 
     if p:

@@ -4,7 +4,7 @@ import gws
 import gws.types as t
 
 
-class Object(gws.Node, gws.ISearchManager):
+class Object(gws.SearchManager):
     def run_search(self, search, user):
         results: list[gws.SearchResult] = []
 
@@ -43,9 +43,9 @@ class Object(gws.Node, gws.ISearchManager):
     def _run(
             self,
             search: gws.SearchQuery,
-            user: gws.IUser,
-            finder: gws.IFinder,
-            layer: t.Optional[gws.ILayer],
+            user: gws.User,
+            finder: gws.Finder,
+            layer: t.Optional[gws.Layer],
             results,
     ):
         gws.log.debug(f'SEARCH_BEGIN: {finder=} {layer=}')
@@ -59,7 +59,7 @@ class Object(gws.Node, gws.ISearchManager):
             return
 
         try:
-            features: list[gws.IFeature] = finder.run(search, user, layer) or []
+            features: list[gws.Feature] = finder.run(search, user, layer) or []
         except:
             gws.log.exception('SEARCH_FAILED')
             return

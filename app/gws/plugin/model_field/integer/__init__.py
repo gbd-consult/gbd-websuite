@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.model.scalar_field
-from gws import IUser
+from gws import User
 
 gws.ext.new.modelField('integer')
 

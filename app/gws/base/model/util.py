@@ -52,7 +52,7 @@ def describe_from_feature_data(fd: gws.FeatureRecord) -> gws.DataSetDescription:
 
 
 def clone_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
-    return gws.ModelContext(gws.merge(mc, **kwargs))
+    return gws.ModelContext(gws.u.merge(mc, **kwargs))
 
 
 def secondary_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:

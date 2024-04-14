@@ -12,7 +12,7 @@ class Config(gws.Config):
     forUpdate: bool = True
 
 
-class Object(gws.Node, gws.IModelValidator):
+class Object(gws.ModelValidator):
     def configure(self):
         self.message = self.cfg('message', default=DEFAULT_MESSAGE_PREFIX + self.extType)
 

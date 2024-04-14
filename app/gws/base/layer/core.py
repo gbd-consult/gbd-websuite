@@ -149,8 +149,8 @@ class Props(gws.Props):
     url: str = ''
 
 
-class Object(gws.Node, gws.ILayer):
-    parent: gws.ILayer
+class Object(gws.Layer):
+    parent: gws.Layer
 
     clientOptions: gws.LayerClientOptions
     cssSelector: str
@@ -287,22 +287,22 @@ class Object(gws.Node, gws.ILayer):
         ls = []
 
         for cfg in layer_configs:
-            cfg = gws.merge(
+            cfg = gws.u.merge(
                 cfg,
                 _parentBounds=self.bounds,
                 _parentResolutions=self.resolutions,
             )
             ls.append(self.create_child(gws.ext.object.layer, cfg))
 
-        self.layers = gws.compact(ls)
+        self.layers = gws.u.compact(ls)
 
     def configure_ows(self):
         self.isEnabledForOws = self.cfg('withOws')
 
         p = self.cfg('ows') or gws.Data()
         self.owsOptions = gws.LayerOwsOptions(
-            layerName=p.layerName or gws.to_uid(self.title),
-            featureName=p.featureName or gws.to_uid(self.title),
+            layerName=p.layerName or gws.u.to_uid(self.title),
+            featureName=p.featureName or gws.u.to_uid(self.title),
             geometryName=p.geometryName or 'geometry',
             xmlNamespace=p.xmlNamespace,
         )
@@ -347,13 +347,13 @@ class Object(gws.Node, gws.ILayer):
     def url_path(self, kind):
         # layer urls, handled by the map action (base/map/action.py)
         if kind == 'box':
-            return gws.action_url_path('mapGetBox', layerUid=self.uid) + self._url_path_suffix
+            return gws.u.action_url_path('mapGetBox', layerUid=self.uid) + self._url_path_suffix
         if kind == 'tile':
-            return gws.action_url_path('mapGetXYZ', layerUid=self.uid) + '/z/{z}/x/{x}/y/{y}' + self._url_path_suffix
+            return gws.u.action_url_path('mapGetXYZ', layerUid=self.uid) + '/z/{z}/x/{x}/y/{y}' + self._url_path_suffix
         if kind == 'legend':
-            return gws.action_url_path('mapGetLegend', layerUid=self.uid) + self._url_path_suffix
+            return gws.u.action_url_path('mapGetLegend', layerUid=self.uid) + self._url_path_suffix
         if kind == 'features':
-            return gws.action_url_path('mapGetFeatures', layerUid=self.uid)
+            return gws.u.action_url_path('mapGetFeatures', layerUid=self.uid)
 
     def props(self, user):
         p = Props(
@@ -404,7 +404,7 @@ class Object(gws.Node, gws.ILayer):
             return out
 
         if not args:
-            return gws.get_server_global('legend_' + self.uid, _get)
+            return gws.u.get_server_global('legend_' + self.uid, _get)
 
         return self.legend.render(args)
 

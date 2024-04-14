@@ -22,7 +22,7 @@ def normalize(gen: base.Generator):
 def _add_global_aliases(gen):
     """Add globals aliases.
 
-     If we have `mod.GlobalName` and `mod.some.module.GlobalName`, and `mod.some.module` 
+     If we have `mod.GlobalName` and `mod.some.module.GlobalName`, and `mod.some.module`
      is in `GLOBAL_MODULES`, the former should an alias for the latter.
      """
 

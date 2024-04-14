@@ -1,0 +1,60 @@
+
+FeatureUid: TypeAlias = str
+"""Unique Feature id."""
+
+class FeatureRecord(Data):
+    """Raw data from a feature source."""
+
+    attributes: dict
+    meta: dict
+    uid: Optional[str]
+    shape: Optional['Shape']
+
+
+class FeatureProps(Props):
+    """Feature Proprieties."""
+
+    attributes: dict
+    cssSelector: str
+    errors: Optional[list['ModelValidationError']]
+    createWithFeatures: Optional[list['FeatureProps']]
+    isNew: bool
+    modelUid: str
+    uid: str
+    views: dict
+
+
+class Feature:
+    """Feature object."""
+
+    attributes: dict
+    category: str
+    cssSelector: str
+    errors: list['ModelValidationError']
+    isNew: bool
+    model: 'Model'
+    props: 'FeatureProps'
+    record: 'FeatureRecord'
+    views: dict
+    createWithFeatures: list['Feature']
+    insertedPrimaryKey: str
+
+    def get(self, name: str, default=None) -> Any: ...
+
+    def has(self, name: str) -> bool: ...
+
+    def set(self, name: str, value: Any) -> 'Feature': ...
+
+    def raw(self, name: str) -> Any: ...
+
+    def render_views(self, templates: list['Template'], **kwargs) -> 'Feature': ...
+
+    def shape(self) -> Optional['Shape']: ...
+
+    def to_geojson(self, user: 'User') -> dict: ...
+
+    def to_svg(self, view: 'MapView', label: Optional[str] = None, style: Optional['Style'] = None) -> list[XmlElement]: ...
+
+    def transform_to(self, crs: 'Crs') -> 'Feature': ...
+
+    def uid(self) -> FeatureUid: ...
