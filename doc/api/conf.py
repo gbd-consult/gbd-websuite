@@ -70,7 +70,7 @@ autoapi_dirs = [
 ]
 
 autoapi_root = f'py'
-autoapi_keep_files = True
+autoapi_keep_files = False
 
 autoapi_ignore = [
     '*___*',
@@ -79,11 +79,6 @@ autoapi_ignore = [
     '*_test*',
     '*_test/*',
     '*_gws*',
-    '*config*',
-    '*gis*',
-    '*lib*',
-    '*plugin*',
-    '*test*',
 ]
 
 autoapi_template_dir = '_templates/_autoapi'
