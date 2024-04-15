@@ -136,7 +136,6 @@ def to_data_object(x) -> 'Data':
     if x is None:
         return Data()
     raise ValueError(f'cannot convert {x!r} to Data')
-
 ################################################################################
 
 
@@ -347,7 +346,6 @@ class GeometryType(Enum):
 class CliParams(Data):
     """CLI params"""
     pass
-
 ################################################################################
 
 
@@ -396,7 +394,6 @@ class ConfigWithAccess(Config):
     """Permission to read or use the object."""
     permissions: Optional[PermissionsConfig]
     """Additional permissions."""
-
 ################################################################################
 
 
@@ -438,7 +435,6 @@ class ResponseTooLargeError(Error):
 
 
 ##
-
 ################################################################################
 
 
@@ -602,7 +598,6 @@ class SpecRuntime:
         Returns:
             A tuple ``(class object, class name, extension name)``.
         """
-
 ################################################################################
 
 
@@ -935,7 +930,6 @@ def create_root(specs: 'SpecRuntime') -> Root:
 
 def make_props(obj: Object, user: 'User', *context) -> Optional['Props']:
     return tree_impl.make_props(obj, user, *context)
-
 ################################################################################
 
 
@@ -980,7 +974,6 @@ class Image:
     def to_path(self, path: str, mime: Optional[str] = None) -> str: ...
 
     def to_array(self) -> 'numpy.typing.NDArray': ...
-
 ################################################################################
 
 
@@ -1008,7 +1001,6 @@ class Locale(Data):
     monthNamesNarrow: list[str]
     numberDecimal: str
     numberGroup: str
-
 ################################################################################
 
 
@@ -1049,7 +1041,6 @@ class Job:
     def cancel(self): ...
 
     def remove(self): ...
-
 ################################################################################
 
 
@@ -1166,7 +1157,6 @@ class Metadata(Data):
     metaLinks: Optional[list[MetadataLink]]
     serviceMetaLink: Optional[MetadataLink]
     extraLinks: Optional[list[MetadataLink]]
-
 ################################################################################
 
 
@@ -1244,7 +1234,6 @@ class Style:
     cssSelector: str
     text: str
     values: StyleValues
-
 ################################################################################
 
 
@@ -1376,7 +1365,6 @@ class XmlElement(Iterable):
         Returns:
             A dict with the keys ``tag``, ``attrib``, ``text``, ``tail``, ``tail``, ``children``.
         """
-
 ################################################################################
 
 
@@ -1458,7 +1446,6 @@ UomExtent: TypeAlias = tuple[float, float, float, float, Uom]
 
 UomExtentStr: TypeAlias = list[str]
 """Extent with a unit like ``["1mm", "2mm", "3mm", "4mm"]``."""
-
 ################################################################################
 
 
@@ -1588,7 +1575,6 @@ class Crs:
         References:
             https://geojson.org/geojson-spec#named-crs
         """
-
 ################################################################################
 
 
@@ -1703,7 +1689,6 @@ class LayerRenderOutput(Data):
 
     content: bytes
     tags: list[XmlElement]
-
 ################################################################################
 
 
@@ -1780,7 +1765,6 @@ class SourceLayer(Data):
 
     sourceId: str
     properties: dict
-
 ################################################################################
 
 
@@ -1848,7 +1832,6 @@ class Feature:
     def transform_to(self, crs: 'Crs') -> 'Feature': ...
 
     def uid(self) -> FeatureUid: ...
-
 ################################################################################
 
 
@@ -1982,7 +1965,6 @@ class Shape(Object):
 
     def transformed_to(self, crs: 'Crs') -> 'Shape':
         """Returns this shape transformed to another CRS."""
-
 ################################################################################
 
 
@@ -2021,7 +2003,6 @@ class ActionManager(Node):
 
 class Action(Node):
     pass
-
 ################################################################################
 
 
@@ -2435,7 +2416,6 @@ class AuthSessionManager(Node):
     def cleanup(self):
         """Remove invalid Sessions from the storage.
         """
-
 ################################################################################
 
 
@@ -2561,7 +2541,6 @@ class Layer(Node):
     def render_legend(self, args: Optional[dict] = None) -> Optional['LegendRenderOutput']: ...
 
     def url_path(self, kind: str) -> str: ...
-
 ################################################################################
 
 
@@ -2583,7 +2562,6 @@ class Legend(Node):
     """Legend object."""
 
     def render(self, args: Optional[dict] = None) -> Optional[LegendRenderOutput]: ...
-
 ################################################################################
 
 
@@ -2603,7 +2581,6 @@ class Map(Node):
     resolutions: list[float]
     title: str
     wgsExtent: Extent
-
 ################################################################################
 
 
@@ -2816,7 +2793,6 @@ class ModelManager(Node):
     def editable_models(self, project: 'Project', user: 'User') -> list['Model']: ...
 
     def default_model(self) -> 'Model': ...
-
 ################################################################################
 
 
@@ -2922,7 +2898,6 @@ class DatabaseProvider(Node):
     def describe(self, table_name: str) -> 'DataSetDescription': ...
 
     def table_bounds(self, table_name) -> Optional[Bounds]: ...
-
 ################################################################################
 
 
@@ -3027,7 +3002,6 @@ class OwsProvider(Node):
     def get_operation(self, verb: 'OwsVerb', method: Optional['RequestMethod'] = None) -> Optional['OwsOperation']: ...
 
     def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer']) -> list['FeatureRecord']: ...
-
 ################################################################################
 
 
@@ -3141,7 +3115,6 @@ class PrinterManager(Node):
     def result_path(self, job: 'Job') -> str: ...
 
     def status(self, job: 'Job') -> PrintJobResponse: ...
-
 ################################################################################
 
 
@@ -3172,7 +3145,6 @@ class Project(Node):
     printers: list['Printer']
     templates: list['Template']
     owsServices: list['OwsService']
-
 ################################################################################
 
 
@@ -3289,7 +3261,6 @@ class Finder(Node):
     def run(self, search: SearchQuery, user: 'User', layer: Optional['Layer'] = None) -> list['Feature']: ...
 
     def can_run(self, search: SearchQuery, user: 'User') -> bool: ...
-
 ################################################################################
 
 
@@ -3325,7 +3296,6 @@ class StorageProvider(Node):
     def write(self, category: str, name: str, data: str, user_uid: str): ...
 
     def delete(self, category: str, name: str): ...
-
 ################################################################################
 
 
@@ -3373,7 +3343,6 @@ class TemplateManager(Node):
     def find_template(self, *objects, user: 'User' = None, subject: str = None, mime: str = None) -> Optional['Template']: ...
 
     def template_from_path(self, path: str) -> Optional['Template']: ...
-
 ################################################################################
 
 
@@ -3670,7 +3639,6 @@ class WebSite(Node):
         Returns:
             A rewritten URL.
         """
-
 ################################################################################
 
 
@@ -3747,5 +3715,4 @@ class Application(Node):
 
     def developer_option(self, key: str):
         """Get a value of a developer option."""
-
 ################################################################################
