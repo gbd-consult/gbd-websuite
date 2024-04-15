@@ -55,7 +55,7 @@ DOC_BUILDER=$BASE_DIR/doc/doc.py
 BUILD_DIR=$BASE_DIR/app/__build
 TEST_RUNNER=$BASE_DIR/app/gws/test/host_runner.py
 
-MAKE_INIT="$PYTHON $BASE_DIR/app/gws/_make_init.py"
+MAKE_INIT="$PYTHON $BASE_DIR/app/_make_init.py"
 MAKE_SPEC="$PYTHON $BASE_DIR/app/gws/spec/spec.py $BUILD_DIR"
 
 if [ "$1" == "-manifest" ]; then
