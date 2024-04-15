@@ -1,3 +1,5 @@
+# gws core
+
 Babel==2.*
 GeoAlchemy2==0.*
 MapProxy==1.*
@@ -7,12 +9,29 @@ psycopg2-binary==2.*
 pycountry==22.*
 pypdf==3.*
 pyproj==3.*
-pytest==7.*
-pytest-clarity==1.*
 python-ldap==3.*
 PyYAML==6.*
 requests==2.*
 shapely==2.*
 SQLAlchemy==2.*
-uWSGI==2.*
+# NB something is broken in 2.0.25
+uWSGI==2.0.23
 Werkzeug==2.*
+
+# testing
+
+pytest==7.*
+pytest-clarity==1.*
+
+# documentation
+
+Sphinx==7.*
+sphinx-autoapi==3.*
+Pygments==2.*
+
+# NB no 3.0 yet
+mistune==2.*
+
+# NB see https://github.com/lepture/python-livereload/issues/270
+tornado==6.2
+livereload==2.6.3

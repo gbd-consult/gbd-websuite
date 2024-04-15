@@ -31,3 +31,7 @@ fonts-dejavu-core
 
 freetds-dev
 tdsodbc
+
+# documentation
+
+graphviz
