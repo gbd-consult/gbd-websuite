@@ -1,7 +1,7 @@
 import os
 import re
 
-GWS_DIR = os.path.dirname(__file__)
+GWS_DIR = os.path.join(os.path.dirname(__file__), 'gws')
 
 
 def make_ext():
