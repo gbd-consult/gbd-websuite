@@ -7,6 +7,9 @@ body, h1, h2, h3, h4, h5, h6, p, ol, ul {
     padding: 0;
     font-weight: normal;
 }
+p {
+    max-width: 50em;
+}
 
 ol, ul {
     list-style: none;
@@ -318,6 +321,23 @@ nav {
 
 #sidebar-toc li {
     font-size: 13px;
+}
+
+#sidebar-toc li a::before {
+    padding-right: 1em;
+    content: "\25AA";
+    display: inline-block; /*prevents text-decoration from a-tag on ::before element*/
+}
+#sidebar-toc li a:hover::before {
+    text-decoration: none!important;
+}
+
+#sidebar-toc li a:has(+ ul)::before {
+    content: "\25B8";
+}
+
+#sidebar-toc li a:has(+ ul.open)::before {
+    content: "\25BE";
 }
 
 #sidebar-toc a {
