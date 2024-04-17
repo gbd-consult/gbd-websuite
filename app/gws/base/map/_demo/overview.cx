@@ -16,7 +16,6 @@ for different page and map sizes.
 """
 
 client.addElements+ { tag "Sidebar.Overview" }
-client.options.sidebarActiveTab "Sidebar.Overview"
 
 overviewMap {
     extent [

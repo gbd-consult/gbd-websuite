@@ -11,7 +11,6 @@ The lens tool provides dynamic spatial search.
 client.addElements+ { tag "Sidebar.Search" }
 client.addElements+ { tag "Toolbar.Lens" }
 client.addElements+ { tag "Task.Lens" }
-client.options.sidebarActiveTab "Sidebar.Search"
 
 map {
     center {demo_point_duesseldorf_3857}

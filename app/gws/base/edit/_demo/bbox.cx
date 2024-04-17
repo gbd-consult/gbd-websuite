@@ -5,7 +5,7 @@ title "PostgreSQL Daten des aktuellen Kartenausschnitts laden und editieren"
 metadata.keywords [ "Editieren" "PostgreSQL" ]
 
 metadata.abstract """
-Dieses Beispiel zeigt eine Konfiguration zum Editieren von Vektordaten (Punkte) aus einer PostgreSQL Tabelle, bei der nur die Daten geladen werden, die sich im aktuellen Kartenausschnitt befinden. 
+Dieses Beispiel zeigt eine Konfiguration zum Editieren von Vektordaten (Punkte) aus einer PostgreSQL Tabelle, bei der nur die Daten geladen werden, die sich im aktuellen Kartenausschnitt befinden.
 
 In der Konfiguration wird dazu die Option `loadingStrategy bbox` verwendet.
 """
@@ -13,7 +13,7 @@ In der Konfiguration wird dazu die Option `loadingStrategy bbox` verwendet.
 actions+ { type "edit" }
 client.addElements+ { tag "Sidebar.Edit" }
 client.addElements+ { tag "Toolbar.Edit" }
-client.options.sidebarActiveTab "Sidebar.Edit"
+
 
 map {
     center {demo_point_duesseldorf_3857}

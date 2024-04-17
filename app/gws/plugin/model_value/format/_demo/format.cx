@@ -15,7 +15,7 @@ create a default value for `description`.
 actions+ { type "edit" }
 client.addElements+ { tag "Sidebar.Edit" }
 client.addElements+ { tag "Toolbar.Edit" }
-client.options.sidebarActiveTab "Sidebar.Edit"
+
 
 map {
     center {demo_point_duesseldorf_3857}

@@ -9,7 +9,7 @@ Full-text search with a `postgres` Finder.
 """
 
 client.addElements+ { tag "Sidebar.Search" }
-client.options.sidebarActiveTab "Sidebar.Search"
+
 
 actions+ { type "search" }
 

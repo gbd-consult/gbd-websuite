@@ -17,7 +17,7 @@ Die Ausdehnung (`extent`) des Punktlayers ist explizit definiert, um das Erstell
 actions+ { type "edit" }
 client.addElements+ { tag "Sidebar.Edit" }
 client.addElements+ { tag "Toolbar.Edit" }
-client.options.sidebarActiveTab "Sidebar.Edit"
+
 
 map {
     center {demo_point_duesseldorf_3857}

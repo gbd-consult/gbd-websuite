@@ -9,7 +9,7 @@ Full-text search, limited to the current map extent
 """
 
 client.addElements+ { tag "Sidebar.Search" }
-client.options.sidebarActiveTab "Sidebar.Search"
+
 
 actions+ { type "search" }
 
