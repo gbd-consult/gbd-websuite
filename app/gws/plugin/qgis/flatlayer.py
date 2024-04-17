@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws
 import gws.base.layer
 import gws.config.util
@@ -8,7 +10,6 @@ import gws.gis.source
 import gws.gis.zoom
 import gws.lib.metadata
 import gws.lib.osx
-import gws.types as t
 
 from . import provider
 
@@ -18,9 +19,9 @@ gws.ext.new.layer('qgisflat')
 class Config(gws.base.layer.Config):
     """Flat Qgis layer"""
 
-    provider: t.Optional[provider.Config]
+    provider: Optional[provider.Config]
     """qgis provider"""
-    sourceLayers: t.Optional[gws.gis.source.LayerFilter]
+    sourceLayers: Optional[gws.gis.source.LayerFilter]
     """source layers to use"""
 
 

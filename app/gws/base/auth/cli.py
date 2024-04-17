@@ -1,8 +1,9 @@
+from typing import Optional, cast
+
 import gws
 import gws.config
 import gws.lib.console
 import gws.lib.date
-import gws.types as t
 
 from . import manager
 
@@ -16,7 +17,7 @@ class Object(gws.Node):
         """Print currently active sessions"""
 
         root = gws.config.load()
-        auth = t.cast(manager.Object, root.app.auth)
+        auth = cast(manager.Object, root.app.auth)
 
         rs = [{
             'user': r['user_uid'],

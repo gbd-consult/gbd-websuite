@@ -1,18 +1,19 @@
 """WMTS provider"""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.layer
 import gws.base.ows.client
 import gws.config.util
 import gws.lib.uom
 import gws.lib.net
-import gws.types as t
 
 from . import caps
 
 
 class Config(gws.base.ows.client.provider.Config):
-    grid: t.Optional[gws.base.layer.GridConfig]
+    grid: Optional[gws.base.layer.GridConfig]
     """source grid"""
 
 
@@ -74,4 +75,4 @@ class Object(gws.base.ows.client.provider.Object):
 #
 
 def get_for(obj: gws.Node) -> Object:
-    return t.cast(Object, gws.config.util.get_provider(Object, obj))
+    return cast(Object, gws.config.util.get_provider(Object, obj))

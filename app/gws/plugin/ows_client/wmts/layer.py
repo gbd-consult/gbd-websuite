@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws
 import gws.base.layer
 import gws.config.util
@@ -6,7 +8,6 @@ import gws.gis.crs
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.uom as units
-import gws.types as t
 
 from . import provider
 
@@ -19,9 +20,9 @@ class Config(gws.base.layer.Config):
     """WMTS provider"""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
     """layer display mode"""
-    sourceLayers: t.Optional[gws.gis.source.LayerFilter]
+    sourceLayers: Optional[gws.gis.source.LayerFilter]
     """source layer filter"""
-    style: t.Optional[str]
+    style: Optional[str]
     """WMTS style name"""
 
 

@@ -1,11 +1,12 @@
 """Common configuration utilities."""
 
+from typing import Optional
+
 import gws
 import gws.gis.source
-import gws.types as t
 
 
-def configure_templates(obj: gws.Node, extra: t.Optional[list] = None) -> bool:
+def configure_templates(obj: gws.Node, extra: Optional[list] = None) -> bool:
     fn = _create_fn(obj, 'create_template', gws.ext.object.template)
     obj.templates = []
 

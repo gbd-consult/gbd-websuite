@@ -2,7 +2,6 @@
 
 import gws
 import gws.base.model.widget
-import gws.types as t
 
 gws.ext.new.modelWidget('textarea')
 

@@ -1,7 +1,8 @@
+from typing import Optional, cast
+
 import gws
 import gws.base.feature
 import gws.base.shape
-import gws.types as t
 from . import core
 
 gws.ext.new.model('default')
@@ -37,8 +38,8 @@ class Object(core.Object, gws.Model):
             props.attributes[self.geometryName] = feature.shape().to_props()
         return props
 
-    def feature_from_record(self, record: gws.FeatureRecord, mc: gws.ModelContext) -> t.Optional[gws.Feature]:
-        record = t.cast(gws.FeatureRecord, gws.u.to_data_object(record))
+    def feature_from_record(self, record: gws.FeatureRecord, mc: gws.ModelContext) -> Optional[gws.Feature]:
+        record = cast(gws.FeatureRecord, gws.u.to_data_object(record))
         feature = gws.base.feature.new(model=self, record=record)
         feature.attributes = record.attributes
         if record.uid and self.uidName:

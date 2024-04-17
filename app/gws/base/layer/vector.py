@@ -1,10 +1,11 @@
+from typing import Optional
+
 import gws
 import gws.base.model
 import gws.base.template
 import gws.gis.extent
 import gws.lib.style
 import gws.lib.svg
-import gws.types as t
 
 from . import core
 
@@ -17,8 +18,8 @@ class Object(core.Object):
     canRenderXyz = False
     canRenderSvg = True
 
-    geometryType: t.Optional[gws.GeometryType] = None
-    geometryCrs: t.Optional[gws.Crs] = None
+    geometryType: Optional[gws.GeometryType] = None
+    geometryCrs: Optional[gws.Crs] = None
 
     def props(self, user):
         return gws.u.merge(

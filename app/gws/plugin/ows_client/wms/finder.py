@@ -1,10 +1,11 @@
 """WMS Finder."""
 
+from typing import Optional
+
 import gws
 import gws.base.ows.client
 import gws.base.search
 import gws.gis.source
-import gws.types as t
 
 from . import provider
 
@@ -12,9 +13,9 @@ gws.ext.new.finder('wms')
 
 
 class Config(gws.base.search.finder.Config):
-    provider: t.Optional[provider.Config]
+    provider: Optional[provider.Config]
     """Provider configuration."""
-    sourceLayers: t.Optional[gws.gis.source.LayerFilter]
+    sourceLayers: Optional[gws.gis.source.LayerFilter]
     """Source layers to search for."""
 
 

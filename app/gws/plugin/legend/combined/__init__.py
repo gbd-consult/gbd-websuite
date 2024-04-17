@@ -1,9 +1,10 @@
+from typing import Optional, cast
+
 import gws
 import gws.lib.image
 import gws.lib.mime
 import gws.base.legend
 
-import gws.types as t
 
 
 gws.ext.new.legend('combined')
@@ -26,7 +27,7 @@ class Object(gws.base.legend.Object):
         outputs = []
 
         for uid in self.layerUids:
-            layer = t.cast(gws.Layer, self.root.get(uid, gws.ext.object.layer))
+            layer = cast(gws.Layer, self.root.get(uid, gws.ext.object.layer))
             if layer and layer.legend:
                 lro = layer.legend.render(args)
                 if lro:

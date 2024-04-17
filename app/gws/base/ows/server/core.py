@@ -1,5 +1,6 @@
+from typing import Optional
+
 import gws
-import gws.types as t
 
 
 class Error(gws.Error):
@@ -16,7 +17,7 @@ class Request(gws.Data):
     service: gws.OwsService
     targetCrs: gws.Crs
     version: str
-    xmlElement: t.Optional[gws.XmlElement] = None
+    xmlElement: Optional[gws.XmlElement] = None
 
 
 class LayerCaps(gws.Data):
@@ -39,11 +40,11 @@ class LayerCaps(gws.Data):
     children: list['LayerCaps']
     ancestors: list['LayerCaps']
 
-    model: t.Optional[gws.Model]
+    model: Optional[gws.Model]
 
 
 class LayerCapsTree(gws.Data):
-    root: t.Optional[LayerCaps]
+    root: Optional[LayerCaps]
     roots: list[LayerCaps]
     leaves: list[LayerCaps]
 

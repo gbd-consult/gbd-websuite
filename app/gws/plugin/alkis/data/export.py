@@ -1,8 +1,9 @@
+from typing import Optional, cast
+
 import gws
 import gws.base.model
 import gws.base.feature
 import gws.lib.csv
-import gws.types as t
 
 from . import types as dt
 
@@ -10,7 +11,7 @@ from . import types as dt
 class Config(gws.ConfigWithAccess):
     """CSV export configuration"""
 
-    models: t.Optional[list[gws.ext.config.model]]
+    models: Optional[list[gws.ext.config.model]]
     """export groups"""
 
 
@@ -151,7 +152,7 @@ class Object(gws.Node):
             if fld.name == name
         ]
 
-        csv_helper = t.cast(gws.lib.csv.Object, self.root.app.helper('csv'))
+        csv_helper = cast(gws.lib.csv.Object, self.root.app.helper('csv'))
         writer = csv_helper.writer()
 
         writer.write_headers([fld.title for fld in fields])

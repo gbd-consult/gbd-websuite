@@ -1,5 +1,7 @@
 """QGIS legend."""
 
+from typing import Optional
+
 import gws
 import gws.base.legend
 import gws.config.util
@@ -7,7 +9,6 @@ import gws.lib.mime
 import gws.gis.source
 import gws.lib.image
 
-import gws.types as t
 
 from . import provider
 
@@ -41,9 +42,9 @@ _DEFAULT_LEGEND_PARAMS = {
 class Config(gws.base.legend.Config):
     """Qgis legend"""
 
-    provider: t.Optional[provider.Config]
+    provider: Optional[provider.Config]
     """qgis provider"""
-    sourceLayers: t.Optional[gws.gis.source.LayerFilter]
+    sourceLayers: Optional[gws.gis.source.LayerFilter]
     """source layers to use"""
 
 

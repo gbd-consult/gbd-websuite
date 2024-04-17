@@ -1,7 +1,8 @@
 """Generic scalar field."""
 
+from typing import Callable, cast
+
 import gws
-import gws.types as t
 
 from . import field
 
@@ -16,7 +17,7 @@ class Props(field.Props):
 
 class Object(field.Object, gws.ModelField):
     def before_select(self, mc):
-        model = t.cast(gws.DatabaseModel, self.model)
+        model = cast(gws.DatabaseModel, self.model)
         mc.dbSelect.columns.append(model.column(self.name))
 
     def after_select(self, features, mc):
@@ -93,7 +94,7 @@ class Object(field.Object, gws.ModelField):
             feature: gws.Feature,
             source: dict,
             has_access: bool,
-            convert_fn: t.Callable,
+            convert_fn: Callable,
             mc: gws.ModelContext
     ):
         mv = self.model_value(mc)

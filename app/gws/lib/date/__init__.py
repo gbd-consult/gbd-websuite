@@ -1,10 +1,11 @@
+from typing import Optional
+
 import datetime
 import calendar
 import re
 import time
 
 import gws.lib.osx
-import gws.types as t
 
 
 def set_system_time_zone(tz):
@@ -80,7 +81,7 @@ def is_datetime(x) -> bool:
 
 # @TODO
 
-def parse(s) -> t.Optional[datetime.datetime]:
+def parse(s) -> Optional[datetime.datetime]:
     if not s:
         return None
     if isinstance(s, datetime.datetime):
@@ -104,7 +105,7 @@ _DMY_RE = r'''(?x)
 '''
 
 
-def from_dmy(s: str) -> t.Optional[datetime.datetime]:
+def from_dmy(s: str) -> Optional[datetime.datetime]:
     m = re.match(_DMY_RE, s)
     if not m:
         raise ValueError(f'invalid date {s!r}')
@@ -152,7 +153,7 @@ _ISO_DATE_RE = r'''(?x)
 '''
 
 
-def from_iso(s: str) -> t.Optional[datetime.datetime]:
+def from_iso(s: str) -> Optional[datetime.datetime]:
     m = re.match(_ISO_DATE_RE, s)
     if not m:
         raise ValueError(f'invalid date {s!r}')
@@ -193,7 +194,7 @@ _ISO_TIME_RE = r'''(?x)
 '''
 
 
-def parse_time(s: str) -> t.Optional[datetime.time]:
+def parse_time(s: str) -> Optional[datetime.time]:
     m = re.match(_ISO_TIME_RE, s)
     if not m:
         raise ValueError(f'invalid time {s!r}')

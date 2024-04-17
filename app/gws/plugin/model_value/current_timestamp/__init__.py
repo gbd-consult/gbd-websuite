@@ -3,7 +3,6 @@
 import gws
 import gws.base.model.value
 import gws.lib.date
-import gws.types as t
 
 gws.ext.new.modelValue('currentTimestamp')
 

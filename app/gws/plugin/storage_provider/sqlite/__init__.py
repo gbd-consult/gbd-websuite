@@ -1,8 +1,9 @@
+from typing import Optional
+
 import gws
 import gws.base.storage
 import gws.lib.date
 import gws.lib.sa as sa
-import gws.types as t
 
 gws.ext.new.storageProvider('sqlite')
 
@@ -10,7 +11,7 @@ gws.ext.new.storageProvider('sqlite')
 class Config(gws.Config):
     """Configuration for sqlite storage."""
 
-    path: t.Optional[str]
+    path: Optional[str]
     """storage path"""
 
 

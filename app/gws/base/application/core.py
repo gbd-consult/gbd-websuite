@@ -1,5 +1,7 @@
 """Core application object"""
 
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.base.application.middleware
@@ -23,7 +25,6 @@ import gws.lib.osx
 import gws.server
 import gws.server.monitor
 import gws.spec
-import gws.types as t
 
 _DEFAULT_LOCALE = ['en_CA']
 
@@ -80,49 +81,49 @@ _DEFAULT_PRINTER = gws.Config(
 class Config(gws.ConfigWithAccess):
     """Main application configuration"""
 
-    actions: t.Optional[list[gws.ext.config.action]]
+    actions: Optional[list[gws.ext.config.action]]
     """system-wide server actions"""
-    auth: t.Optional[gws.base.auth.manager.Config] = {}  # type: ignore
+    auth: Optional[gws.base.auth.manager.Config] = {}  # type: ignore
     """authorization methods and options"""
-    cache: t.Optional[gws.gis.cache.Config] = {}  # type: ignore
+    cache: Optional[gws.gis.cache.Config] = {}  # type: ignore
     """global cache configuration"""
-    client: t.Optional[gws.base.client.Config]
+    client: Optional[gws.base.client.Config]
     """gws client configuration"""
-    database: t.Optional[gws.base.database.manager.Config]
+    database: Optional[gws.base.database.manager.Config]
     """database configuration"""
-    developer: t.Optional[dict]
+    developer: Optional[dict]
     """developer options"""
-    finders: t.Optional[list[gws.ext.config.finder]]
+    finders: Optional[list[gws.ext.config.finder]]
     """global search providers"""
-    fonts: t.Optional[gws.lib.font.Config]
+    fonts: Optional[gws.lib.font.Config]
     """fonts configuration"""
-    helpers: t.Optional[list[gws.ext.config.helper]]
+    helpers: Optional[list[gws.ext.config.helper]]
     """helpers configurations"""
-    locales: t.Optional[list[str]]
+    locales: Optional[list[str]]
     """default locales for all projects"""
-    metadata: t.Optional[gws.Metadata]
+    metadata: Optional[gws.Metadata]
     """application metadata"""
-    models: t.Optional[list[gws.ext.config.model]]
+    models: Optional[list[gws.ext.config.model]]
     """global data models"""
-    owsServices: t.Optional[list[gws.ext.config.owsService]]
+    owsServices: Optional[list[gws.ext.config.owsService]]
     """OWS services configuration"""
-    plugins: t.Optional[list[dict]]
+    plugins: Optional[list[dict]]
     """configuration for plugins"""
-    projectDirs: t.Optional[list[gws.DirPath]]
+    projectDirs: Optional[list[gws.DirPath]]
     """directories with additional projects"""
-    projectPaths: t.Optional[list[gws.FilePath]]
+    projectPaths: Optional[list[gws.FilePath]]
     """additional project paths"""
-    printers: t.Optional[list[gws.ext.config.printer]]
+    printers: Optional[list[gws.ext.config.printer]]
     """print configurations"""
-    projects: t.Optional[list[gws.ext.config.project]]
+    projects: Optional[list[gws.ext.config.project]]
     """project configurations"""
-    server: t.Optional[gws.server.Config] = {}  # type: ignore
+    server: Optional[gws.server.Config] = {}  # type: ignore
     """server engine options"""
-    storage: t.Optional[gws.base.storage.manager.Config]
+    storage: Optional[gws.base.storage.manager.Config]
     """database configuration"""
-    templates: t.Optional[list[gws.ext.config.template]]
+    templates: Optional[list[gws.ext.config.template]]
     """default templates"""
-    web: t.Optional[gws.base.web.manager.Config]
+    web: Optional[gws.base.web.manager.Config]
     """web server options"""
 
 

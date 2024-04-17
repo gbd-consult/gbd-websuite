@@ -1,8 +1,9 @@
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.base.auth.user
 import gws.lib.intl
-import gws.types as t
 
 from . import core
 
@@ -20,7 +21,7 @@ class Props(gws.base.action.Props):
 class InfoResponse(gws.Response):
     project: gws.ext.props.project
     locale: gws.Locale
-    user: t.Optional[gws.base.auth.user.Props]
+    user: Optional[gws.base.auth.user.Props]
 
 
 class Object(gws.base.action.Object):

@@ -1,5 +1,7 @@
 """CX templates"""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.legend
 import gws.base.template
@@ -10,13 +12,12 @@ import gws.lib.mime
 import gws.lib.osx
 import gws.lib.pdf
 import gws.lib.vendor.jump
-import gws.types as t
 
 gws.ext.new.template('html')
 
 
 class Config(gws.base.template.Config):
-    path: t.Optional[gws.FilePath]
+    path: Optional[gws.FilePath]
     """path to a template file"""
     text: str = ''
     """template content"""
@@ -137,7 +138,7 @@ class Object(gws.base.template.Object):
             gws.log.debug(f'no layers for a legend')
             return
 
-        legend = t.cast(gws.Legend, self.root.create_temporary(
+        legend = cast(gws.Legend, self.root.create_temporary(
             gws.ext.object.legend,
             type='combined',
             layerUids=[la.uid for la in layer_list]))
@@ -266,7 +267,7 @@ class Engine(gws.lib.vendor.jump.Engine):
     header: str = ''
     footer: str = ''
 
-    def __init__(self, template: Object, tri: t.Optional[gws.TemplateRenderInput] = None):
+    def __init__(self, template: Object, tri: Optional[gws.TemplateRenderInput] = None):
         super().__init__()
         self.template = template
         self.tri = tri

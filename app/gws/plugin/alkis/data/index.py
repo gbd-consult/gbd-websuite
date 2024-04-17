@@ -1,3 +1,5 @@
+from typing import Optional
+
 import re
 import datetime
 
@@ -11,7 +13,6 @@ import gws.plugin.postgres.provider
 import gws.lib.sa as sa
 from gws.lib.console import ProgressIndicator
 
-import gws.types as t
 
 from . import types as dt
 
@@ -309,7 +310,7 @@ class Object(gws.Node):
             self,
             table_id: str,
             values: list[dict],
-            progress: t.Optional[ProgressIndicator] = None
+            progress: Optional[ProgressIndicator] = None
     ):
         tab = self.table(table_id)
         self.saMeta.create_all(self.provider.engine(), tables=[tab])

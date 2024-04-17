@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws
 import gws.base.feature
 import gws.base.model
@@ -5,7 +7,6 @@ import gws.base.template
 import gws.config.util
 import gws.lib.job
 import gws.lib.style
-import gws.types as t
 
 gws.ext.new.printer('default')
 
@@ -17,9 +18,9 @@ class Config(gws.Config):
     """Print template"""
     title: str = ''
     """Printer title"""
-    models: t.Optional[list[gws.ext.config.model]]
+    models: Optional[list[gws.ext.config.model]]
     """Data models"""
-    qualityLevels: t.Optional[list[gws.TemplateQualityLevel]]
+    qualityLevels: Optional[list[gws.TemplateQualityLevel]]
     """Quality levels supported by this printer"""
 
 

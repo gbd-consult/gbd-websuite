@@ -1,3 +1,5 @@
+from typing import Optional, cast
+
 import gws
 import gws.base.model
 import gws.gis.crs
@@ -8,7 +10,6 @@ import gws.lib.mime
 import gws.lib.osx
 import gws.lib.style
 import gws.lib.uom as units
-import gws.types as t
 
 
 def worker(root: gws.Root, job: gws.lib.job.Object):
@@ -33,7 +34,7 @@ class Object:
         self.root = root
         self.user = user
 
-        self.project = t.cast(gws.Project, self.user.require(request.projectUid, gws.ext.object.project))
+        self.project = cast(gws.Project, self.user.require(request.projectUid, gws.ext.object.project))
 
         self.page_count = 0
 
@@ -60,7 +61,7 @@ class Object:
 
         if request.type == 'template':
             # @TODO check dpi against configured qualityLevels
-            self.printer = t.cast(gws.Printer, self.user.require(request.printerUid, gws.ext.object.printer))
+            self.printer = cast(gws.Printer, self.user.require(request.printerUid, gws.ext.object.printer))
             self.template = self.printer.template
         else:
             mm = gws.lib.uom.size_px_to_mm(request.outputSize, gws.lib.uom.OGC_SCREEN_PPI)
@@ -155,7 +156,7 @@ class Object:
             visibleLayers=layers,
         )
 
-    def prepare_map_plane(self, n, plane: gws.PrintPlane, style_dct) -> t.Optional[gws.MapRenderInputPlane]:
+    def prepare_map_plane(self, n, plane: gws.PrintPlane, style_dct) -> Optional[gws.MapRenderInputPlane]:
         opacity = 1
         s = plane.get('opacity')
         if s is not None:
@@ -164,7 +165,7 @@ class Object:
                 return
 
         if plane.type == gws.PrintPlaneType.raster:
-            layer = t.cast(gws.Layer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
+            layer = cast(gws.Layer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
             if not layer:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} not found')
                 return
@@ -179,7 +180,7 @@ class Object:
             )
 
         if plane.type == gws.PrintPlaneType.vector:
-            layer = t.cast(gws.Layer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
+            layer = cast(gws.Layer, self.user.acquire(plane.layerUid, gws.ext.object.layer))
             if not layer:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: {plane.layerUid=} not found')
                 return
@@ -199,7 +200,7 @@ class Object:
             if plane.bitmapMode in ('RGBA', 'RGB'):
                 img = gws.lib.image.from_raw_data(
                     plane.bitmapData,
-                    t.cast(gws.lib.image.ImageMode, plane.bitmapMode),
+                    cast(gws.lib.image.ImageMode, plane.bitmapMode),
                     (plane.bitmapWidth, plane.bitmapHeight))
             if not img:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: bitmap error')
@@ -270,7 +271,7 @@ class Object:
 
         job.update(state=state, payload=gws.u.merge(job.payload, kwargs))
 
-    def get_job(self) -> t.Optional[gws.lib.job.Object]:
+    def get_job(self) -> Optional[gws.lib.job.Object]:
         if not self.jobUid:
             return None
 

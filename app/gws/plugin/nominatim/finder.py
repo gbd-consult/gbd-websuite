@@ -5,13 +5,14 @@ https://nominatim.org/release-docs/develop/api/Search/
 
 """
 
+from typing import Optional
+
 import gws
 import gws.base.search
 import gws.base.template
 import gws.config.util
 import gws.lib.net
 
-import gws.types as t
 
 gws.ext.new.finder('nominatim')
 
@@ -42,9 +43,9 @@ _DEFAULT_TEMPLATES = [
 class Config(gws.base.search.finder.Config):
     """Nominatim search"""
 
-    country: t.Optional[str]
+    country: Optional[str]
     """country to limit the search"""
-    language: t.Optional[str]
+    language: Optional[str]
     """language to return the results in"""
 
 

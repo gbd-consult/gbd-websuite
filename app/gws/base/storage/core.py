@@ -1,11 +1,12 @@
 """Storage object."""
 
+from typing import Optional
+
 import gws
 import gws.lib.jsonx
-import gws.types as t
 
 
-class Verb(t.Enum):
+class Verb(gws.Enum):
     read = 'read'
     write = 'write'
     list = 'list'
@@ -22,22 +23,22 @@ class State(gws.Data):
 
 class Request(gws.Request):
     verb: Verb
-    entryName: t.Optional[str]
-    entryData: t.Optional[dict]
+    entryName: Optional[str]
+    entryData: Optional[dict]
 
 
 class Response(gws.Response):
-    data: t.Optional[dict]
+    data: Optional[dict]
     state: State
 
 
 class Config(gws.ConfigWithAccess):
     """Storage configuration"""
 
-    providerUid: t.Optional[str]
+    providerUid: Optional[str]
     """storage provider uid"""
 
-    categoryName: t.Optional[str]
+    categoryName: Optional[str]
     """category name"""
 
 

@@ -1,8 +1,9 @@
+from typing import Optional
+
 import re
 
 import gws
 import gws.lib.net
-import gws.types as t
 
 
 class CorsConfig(gws.Config):
@@ -23,7 +24,7 @@ class RewriteRuleConfig(gws.Config):
     """expression to match the url against"""
     target: str
     """target url with placeholders"""
-    options: t.Optional[dict]
+    options: Optional[dict]
     """additional options"""
     reversed: bool = False
     """reversed rewrite rule"""
@@ -43,24 +44,24 @@ class WebDocumentRootConfig(gws.Config):
 
     dir: gws.DirPath
     """directory path"""
-    allowMime: t.Optional[list[str]]
+    allowMime: Optional[list[str]]
     """allowed mime types"""
-    denyMime: t.Optional[list[str]]
+    denyMime: Optional[list[str]]
     """disallowed mime types (from the standard list)"""
 
 
 class Config(gws.Config):
     """Site (virtual host) configuration"""
 
-    assets: t.Optional[WebDocumentRootConfig]
+    assets: Optional[WebDocumentRootConfig]
     """assets location and options"""
-    cors: t.Optional[CorsConfig]
+    cors: Optional[CorsConfig]
     """cors configuration"""
-    errorPage: t.Optional[gws.ext.config.template]
+    errorPage: Optional[gws.ext.config.template]
     """error page template"""
     host: str = '*'
     """host name"""
-    rewrite: t.Optional[list[RewriteRuleConfig]]
+    rewrite: Optional[list[RewriteRuleConfig]]
     """rewrite rules"""
     canonicalHost: str = ''
     """hostname for reversed rewriting"""

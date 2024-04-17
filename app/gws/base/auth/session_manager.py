@@ -1,7 +1,6 @@
 """Base session manager."""
 
 import gws
-import gws.types as t
 
 
 class Config(gws.Config):

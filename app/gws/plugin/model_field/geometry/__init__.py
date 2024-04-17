@@ -1,5 +1,7 @@
 """Geometry field."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.database.model
 import gws.base.model.scalar_field
@@ -7,14 +9,13 @@ import gws.base.shape
 import gws.gis.crs
 import gws.lib.sa as sa
 
-import gws.types as t
 
 gws.ext.new.modelField('geometry')
 
 
 class Config(gws.base.model.scalar_field.Config):
-    geometryType: t.Optional[gws.GeometryType]
-    crs: t.Optional[gws.CrsName]
+    geometryType: Optional[gws.GeometryType]
+    crs: Optional[gws.CrsName]
 
 
 class Props(gws.base.model.scalar_field.Props):
@@ -88,7 +89,7 @@ class Object(gws.base.model.scalar_field.Object):
         if shape:
             shape = shape.transformed_to(self.geometryCrs)
 
-            model = t.cast(gws.base.database.model.Object, self.model)
+            model = cast(gws.base.database.model.Object, self.model)
             col = model.column(self.name)
 
             mc.dbSelect.geometryWhere.append(sa.func.st_intersects(
@@ -109,7 +110,7 @@ class Object(gws.base.model.scalar_field.Object):
         return value.to_ewkb_hex()
 
     def python_to_prop(self, feature, value, mc):
-        return t.cast(gws.Shape, value).to_props()
+        return cast(gws.Shape, value).to_props()
 
     def _prop_to_shape(self, value):
         if isinstance(value, gws.base.shape.Shape):

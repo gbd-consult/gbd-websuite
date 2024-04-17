@@ -3,7 +3,6 @@
 import datetime
 
 import gws
-import gws.types as t
 
 _ATTR_TO_PY = {
     gws.AttributeType.bool: bool,

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.base.database
@@ -6,7 +8,6 @@ import gws.lib.date
 import gws.lib.zipx
 import gws.lib.osx
 import gws.lib.sa as sa
-import gws.types as t
 
 from . import core
 
@@ -26,7 +27,7 @@ class Props(gws.base.action.Props):
 
 
 class DownloadRequest(gws.Request):
-    packageUid: t.Optional[str]
+    packageUid: Optional[str]
     omitStatic: bool = False
     omitData: bool = False
 
@@ -36,8 +37,8 @@ class DownloadResponse(gws.Response):
 
 
 class UploadRequest(gws.Request):
-    packageUid: t.Optional[str]
-    data: t.Optional[bytes]
+    packageUid: Optional[str]
+    data: Optional[bytes]
 
 
 class UploadResponse(gws.Response):

@@ -4,7 +4,6 @@ import re
 import xml.etree.ElementTree
 
 import gws
-import gws.types as t
 
 from . import error, element, namespace
 

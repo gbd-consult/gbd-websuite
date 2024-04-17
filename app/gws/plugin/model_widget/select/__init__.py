@@ -1,25 +1,26 @@
 """Select widget."""
 
+from typing import Optional, Any
+
 import gws
 import gws.base.model.widget
-import gws.types as t
 
 gws.ext.new.modelWidget('select')
 
 
 # see also js/ui/select
 class ListItem(gws.Data):
-    value: t.Any
+    value: Any
     text: str
-    extraText: t.Optional[str]
-    level: t.Optional[int]
+    extraText: Optional[str]
+    level: Optional[int]
 
 
 class ListItemConfig(gws.Data):
-    value: t.Any
-    text: t.Optional[str]
-    extraText: t.Optional[str]
-    level: t.Optional[int]
+    value: Any
+    text: Optional[str]
+    extraText: Optional[str]
+    level: Optional[int]
 
 
 class Config(gws.base.model.widget.Config):

@@ -5,7 +5,6 @@ This value is computed by applying python `format` to feature attributes.
 
 import gws
 import gws.base.model.value
-import gws.types as t
 
 gws.ext.new.modelValue('format')
 

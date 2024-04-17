@@ -8,7 +8,6 @@ import osgeo.ogr
 import gws
 import gws.base.feature
 import gws.base.shape
-import gws.types as t
 
 @contextlib.contextmanager
 def from_string(s, **opts):

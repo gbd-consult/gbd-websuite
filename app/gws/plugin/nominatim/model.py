@@ -1,5 +1,7 @@
 """Nominatim model."""
 
+from typing import Optional
+
 import gws
 import gws.base.model
 import gws.base.feature
@@ -10,7 +12,6 @@ import gws.gis.source
 import gws.gis.crs
 import gws.gis.bounds
 
-import gws.types as t
 
 gws.ext.new.model('nominatim')
 
@@ -18,9 +19,9 @@ gws.ext.new.model('nominatim')
 class Config(gws.base.model.Config):
     """Nominatim model"""
 
-    country: t.Optional[str]
+    country: Optional[str]
     """country to limit the search"""
-    language: t.Optional[str]
+    language: Optional[str]
     """language to return the results in"""
 
 

@@ -1,3 +1,5 @@
+from typing import Callable
+
 import math
 
 import gws
@@ -13,7 +15,6 @@ import gws.lib.metadata
 import gws.lib.style
 import gws.lib.svg
 
-import gws.types as t
 
 
 def mapproxy_layer_config(layer: gws.Layer, mc, source_uid):
@@ -87,7 +88,7 @@ def mapproxy_back_cache_config(layer: gws.Layer, mc, url, grid_uid):
 _BOX_SIZE = 1000
 _BOX_BUFFER = 200
 
-_GetBoxFn = t.Callable[[gws.Bounds, float, float], bytes]
+_GetBoxFn = Callable[[gws.Bounds, float, float], bytes]
 
 
 def mpx_raster_render(layer: gws.Layer, lri: gws.LayerRenderInput):

@@ -1,14 +1,15 @@
+from typing import Optional
+
 import gws
 import gws.base.shape
 import gws.lib.style
 import gws.lib.svg
-import gws.types as t
 
 
 def new(
         model: gws.Model,
-        record: t.Optional[gws.FeatureRecord] = None,
-        props: t.Optional[gws.FeatureProps] = None
+        record: Optional[gws.FeatureRecord] = None,
+        props: Optional[gws.FeatureProps] = None
 ) -> gws.Feature:
     f = Feature(model)
     f.record = record or gws.FeatureRecord(attributes={})

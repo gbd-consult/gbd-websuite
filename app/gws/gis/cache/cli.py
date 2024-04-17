@@ -1,11 +1,12 @@
 """Command-line cache commands."""
 
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.lib.uom
 import gws.lib.console
 import gws.config
-import gws.types as t
 
 from . import core
 
@@ -13,12 +14,12 @@ gws.ext.new.cli('cache')
 
 
 class StatusParams(gws.CliParams):
-    layer: t.Optional[list[str]]
+    layer: Optional[list[str]]
     """list of layer IDs"""
 
 
 class DropParams(gws.CliParams):
-    layer: t.Optional[list[str]]
+    layer: Optional[list[str]]
     """list of layer IDs"""
 
 

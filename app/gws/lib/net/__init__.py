@@ -1,3 +1,5 @@
+from typing import Optional
+
 import cgi
 import re
 import requests
@@ -7,7 +9,6 @@ import certifi
 
 import gws
 import gws.lib.osx
-import gws.types as t
 
 
 ##
@@ -81,7 +82,7 @@ def parse_url(url: str, **kwargs) -> Url:
     return u
 
 
-def make_url(u: t.Optional[Url | dict] = None, **kwargs) -> str:
+def make_url(u: Optional[Url | dict] = None, **kwargs) -> str:
     p = gws.u.merge({}, u, kwargs)
 
     s = ''

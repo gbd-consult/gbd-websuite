@@ -1,5 +1,6 @@
+from typing import Optional
+
 import gws
-import gws.types as t
 
 
 class ElementConfig(gws.ConfigWithAccess):
@@ -16,13 +17,13 @@ class ElementConfig(gws.ConfigWithAccess):
 class Config(gws.ConfigWithAccess):
     """GWS client configuration"""
 
-    options: t.Optional[dict]
+    options: Optional[dict]
     """client options"""
-    elements: t.Optional[list[ElementConfig]]
+    elements: Optional[list[ElementConfig]]
     """client UI elements"""
-    addElements: t.Optional[list[ElementConfig]]
+    addElements: Optional[list[ElementConfig]]
     """add elements to the parent element list"""
-    removeElements: t.Optional[list[ElementConfig]]
+    removeElements: Optional[list[ElementConfig]]
     """remove elements from the parent element list"""
 
 
@@ -31,8 +32,8 @@ class ElementProps(gws.Data):
 
 
 class Props(gws.Data):
-    options: t.Optional[dict]
-    elements: t.Optional[list[ElementProps]]
+    options: Optional[dict]
+    elements: Optional[list[ElementProps]]
 
 
 class Element(gws.Node):

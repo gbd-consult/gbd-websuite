@@ -1,8 +1,9 @@
 """GeoJson model."""
 
+from typing import Optional
+
 import gws.base.model
 import gws.gis.source
-import gws.types as t
 
 from . import provider
 
@@ -12,7 +13,7 @@ gws.ext.new.model('geojson')
 # @TODO generally, vector models should be converted to sqlite/gpkg in order to support search
 
 class Config(gws.base.model.Config):
-    provider: t.Optional[provider.Config]
+    provider: Optional[provider.Config]
     """GeoJson provider"""
 
 

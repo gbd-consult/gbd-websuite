@@ -16,7 +16,6 @@ import gws.base.database.model
 import gws.base.model.related_field as related_field
 import gws.base.model.util as mu
 import gws.lib.sa as sa
-import gws.types as t
 
 gws.ext.new.modelField('relatedFeature')
 

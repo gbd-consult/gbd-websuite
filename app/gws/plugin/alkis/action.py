@@ -1,5 +1,7 @@
 """Backend for the Flurstückssuche (cadaster parlcels search) form."""
 
+from typing import Optional
+
 import os
 import re
 
@@ -17,7 +19,6 @@ import gws.lib.date
 import gws.lib.sa as sa
 import gws.lib.style
 
-import gws.types as t
 
 from .data import index, export
 from .data import types as dt
@@ -30,7 +31,7 @@ class EigentuemerConfig(gws.ConfigWithAccess):
 
     controlMode: bool = False
     """restricted mode enabled"""
-    controlRules: t.Optional[list[str]]
+    controlRules: Optional[list[str]]
     """regular expression for the restricted input control"""
     logTable: str = ''
     """data access protocol table name"""
@@ -56,7 +57,7 @@ class BuchungOptions(gws.Node):
     pass
 
 
-class GemarkungListMode(t.Enum):
+class GemarkungListMode(gws.Enum):
     none = 'none'
     """do not show the list"""
     plain = 'plain'
@@ -67,7 +68,7 @@ class GemarkungListMode(t.Enum):
     """a tree with level 1 = gemeinde and level 2 = gemarkung """
 
 
-class StrasseListMode(t.Enum):
+class StrasseListMode(gws.Enum):
     plain = 'plain'
     """just strasse"""
     withGemeinde = 'withGemeinde'
@@ -114,30 +115,30 @@ class Config(gws.ConfigWithAccess):
     """schema where ALKIS tables are stored"""
     indexSchema: str = 'gws8'
     """schema to store GWS internal indexes"""
-    excludeGemarkung: t.Optional[list[str]]
+    excludeGemarkung: Optional[list[str]]
     """Gemarkung (Administrative Unit) IDs to exclude from search"""
 
-    eigentuemer: t.Optional[EigentuemerConfig] = {}
+    eigentuemer: Optional[EigentuemerConfig] = {}
     """access to the Eigentümer (owner) information"""
-    buchung: t.Optional[BuchungConfig] = {}
+    buchung: Optional[BuchungConfig] = {}
     """access to the Grundbuch (register) information"""
     limit: int = 100
     """search results limit"""
-    templates: t.Optional[list[gws.ext.config.template]]
+    templates: Optional[list[gws.ext.config.template]]
     """templates for Flurstueck details"""
-    printers: t.Optional[list[gws.base.printer.Config]]
+    printers: Optional[list[gws.base.printer.Config]]
     """print configurations"""
-    ui: t.Optional[Ui] = {}
+    ui: Optional[Ui] = {}
     """ui options"""
 
-    strasseSearchOptions: t.Optional[gws.TextSearchOptions]
-    nameSearchOptions: t.Optional[gws.TextSearchOptions]
-    buchungsblattSearchOptions: t.Optional[gws.TextSearchOptions]
+    strasseSearchOptions: Optional[gws.TextSearchOptions]
+    nameSearchOptions: Optional[gws.TextSearchOptions]
+    buchungsblattSearchOptions: Optional[gws.TextSearchOptions]
 
-    storage: t.Optional[gws.base.storage.Config]
+    storage: Optional[gws.base.storage.Config]
     """storage configuration"""
 
-    export: t.Optional[export.Config]
+    export: Optional[export.Config]
     """csv export configuration"""
 
 
@@ -151,9 +152,9 @@ class ExportGroupProps(gws.Props):
 class Props(gws.base.action.Props):
     exportGroups: list[ExportGroupProps]
     limit: int
-    printer: t.Optional[gws.base.printer.Props]
+    printer: Optional[gws.base.printer.Props]
     ui: Ui
-    storage: t.Optional[gws.base.storage.Props]
+    storage: Optional[gws.base.storage.Props]
     withBuchung: bool
     withEigentuemer: bool
     withEigentuemerControl: bool
@@ -173,49 +174,49 @@ class GetToponymsResponse(gws.Response):
 
 
 class FindFlurstueckRequest(gws.Request):
-    flurnummer: t.Optional[str]
-    flurstuecksfolge: t.Optional[str]
-    zaehler: t.Optional[str]
-    nenner: t.Optional[str]
-    fsnummer: t.Optional[str]
+    flurnummer: Optional[str]
+    flurstuecksfolge: Optional[str]
+    zaehler: Optional[str]
+    nenner: Optional[str]
+    fsnummer: Optional[str]
 
-    flaecheBis: t.Optional[float]
-    flaecheVon: t.Optional[float]
+    flaecheBis: Optional[float]
+    flaecheVon: Optional[float]
 
-    gemarkung: t.Optional[str]
-    gemarkungCode: t.Optional[str]
-    gemeinde: t.Optional[str]
-    gemeindeCode: t.Optional[str]
-    kreis: t.Optional[str]
-    kreisCode: t.Optional[str]
-    land: t.Optional[str]
-    landCode: t.Optional[str]
-    regierungsbezirk: t.Optional[str]
-    regierungsbezirkCode: t.Optional[str]
+    gemarkung: Optional[str]
+    gemarkungCode: Optional[str]
+    gemeinde: Optional[str]
+    gemeindeCode: Optional[str]
+    kreis: Optional[str]
+    kreisCode: Optional[str]
+    land: Optional[str]
+    landCode: Optional[str]
+    regierungsbezirk: Optional[str]
+    regierungsbezirkCode: Optional[str]
 
-    strasse: t.Optional[str]
-    hausnummer: t.Optional[str]
+    strasse: Optional[str]
+    hausnummer: Optional[str]
 
-    bblatt: t.Optional[str]
+    bblatt: Optional[str]
 
-    personName: t.Optional[str]
-    personVorname: t.Optional[str]
+    personName: Optional[str]
+    personVorname: Optional[str]
 
-    combinedFlurstueckCode: t.Optional[str]
+    combinedFlurstueckCode: Optional[str]
 
-    shapes: t.Optional[list[gws.base.shape.Props]]
+    shapes: Optional[list[gws.base.shape.Props]]
 
-    uids: t.Optional[list[str]]
+    uids: Optional[list[str]]
 
-    crs: t.Optional[gws.CrsName]
-    eigentuemerControlInput: t.Optional[str]
-    limit: t.Optional[int]
+    crs: Optional[gws.CrsName]
+    eigentuemerControlInput: Optional[str]
+    limit: Optional[int]
 
-    wantEigentuemer: t.Optional[bool]
-    wantHistorySearch: t.Optional[bool]
-    wantHistoryDisplay: t.Optional[bool]
+    wantEigentuemer: Optional[bool]
+    wantHistorySearch: Optional[bool]
+    wantHistoryDisplay: Optional[bool]
 
-    displayThemes: t.Optional[list[dt.DisplayTheme]]
+    displayThemes: Optional[list[dt.DisplayTheme]]
 
 
 class FindFlurstueckResponse(gws.Response):
@@ -230,27 +231,27 @@ class FindFlurstueckResult(gws.Data):
 
 
 class FindAdresseRequest(gws.Request):
-    crs: t.Optional[gws.Crs]
+    crs: Optional[gws.Crs]
 
-    gemarkung: t.Optional[str]
-    gemarkungCode: t.Optional[str]
-    gemeinde: t.Optional[str]
-    gemeindeCode: t.Optional[str]
-    kreis: t.Optional[str]
-    kreisCode: t.Optional[str]
-    land: t.Optional[str]
-    landCode: t.Optional[str]
-    regierungsbezirk: t.Optional[str]
-    regierungsbezirkCode: t.Optional[str]
+    gemarkung: Optional[str]
+    gemarkungCode: Optional[str]
+    gemeinde: Optional[str]
+    gemeindeCode: Optional[str]
+    kreis: Optional[str]
+    kreisCode: Optional[str]
+    land: Optional[str]
+    landCode: Optional[str]
+    regierungsbezirk: Optional[str]
+    regierungsbezirkCode: Optional[str]
 
-    strasse: t.Optional[str]
-    hausnummer: t.Optional[str]
-    bisHausnummer: t.Optional[str]
-    hausnummerNotNull: t.Optional[bool]
+    strasse: Optional[str]
+    hausnummer: Optional[str]
+    bisHausnummer: Optional[str]
+    hausnummerNotNull: Optional[bool]
 
-    wantHistorySearch: t.Optional[bool]
+    wantHistorySearch: Optional[bool]
 
-    combinedAdresseCode: t.Optional[str]
+    combinedAdresseCode: Optional[str]
 
 
 class FindAdresseResponse(gws.Response):
@@ -353,13 +354,13 @@ class Object(gws.base.action.Object):
     templates: list[gws.Template]
     printers: list[gws.Printer]
 
-    export: t.Optional[export.Object]
+    export: Optional[export.Object]
 
     strasseSearchOptions: gws.TextSearchOptions
     nameSearchOptions: gws.TextSearchOptions
     buchungsblattSearchOptions: gws.TextSearchOptions
 
-    storage: t.Optional[gws.base.storage.Object]
+    storage: Optional[gws.base.storage.Object]
 
     def configure(self):
         provider = gws.base.database.provider.get_for(self, ext_type='postgres')

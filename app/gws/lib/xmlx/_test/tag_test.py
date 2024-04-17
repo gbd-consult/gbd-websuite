@@ -1,5 +1,4 @@
 import gws
-import gws.types as t
 import gws.test.util as u
 
 import gws.lib.xmlx as xmlx

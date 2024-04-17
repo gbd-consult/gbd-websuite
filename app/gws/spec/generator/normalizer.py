@@ -158,8 +158,8 @@ def _check_variants(gen):
     Given
 
         Foo: VariantStub { items ['Type1', 'Type2'] }
-        Type1 { type t.Literal['first'] }
-        Type2 { type t.Literal['second'] }
+        Type1 { type Literal['first'] }
+        Type2 { type Literal['second'] }
 
     we create a mapping { "type value" => "type name" }, e.g;
 

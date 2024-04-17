@@ -1,5 +1,6 @@
+from typing import Optional, Literal
+
 import gws
-import gws.types as t
 
 
 class ModuleConfig(gws.Config):
@@ -41,7 +42,7 @@ class MonitorConfig(gws.Config):
     """the module is enabled"""
     frequency: gws.Duration = '30'
     """filesystem changes check frequency"""
-    ignore: t.Optional[list[gws.Regex]]
+    ignore: Optional[list[gws.Regex]]
     """ignore paths that match these regexes"""
 
 
@@ -59,7 +60,7 @@ class LogConfig(gws.Config):
 
     path: str = ''
     """log path"""
-    level: t.Literal['ERROR', 'INFO', 'DEBUG'] = 'INFO'
+    level: Literal['ERROR', 'INFO', 'DEBUG'] = 'INFO'
     """logging level"""
 
 

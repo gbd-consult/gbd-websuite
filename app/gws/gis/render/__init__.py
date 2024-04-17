@@ -8,7 +8,6 @@ import gws.lib.image
 import gws.lib.svg
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
-import gws.types as t
 
 MAX_DPI = 1200
 MIN_DPI = gws.lib.uom.PDF_DPI

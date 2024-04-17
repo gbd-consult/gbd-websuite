@@ -1,8 +1,9 @@
+from typing import Optional
+
 import re
 
 import gws
 import gws.gis.extent
-import gws.types as t
 
 
 ##
@@ -12,19 +13,19 @@ class LayerFilter(gws.Data):
 
     level: int = 0
     """match only layers at this level"""
-    names: t.Optional[list[str]]
+    names: Optional[list[str]]
     """match these layer names (top-to-bottom order)"""
-    titles: t.Optional[list[str]]
+    titles: Optional[list[str]]
     """match these layer titles"""
     pattern: gws.Regex = ''
     """match layers whose full path matches a pattern"""
-    isGroup: t.Optional[bool]
+    isGroup: Optional[bool]
     """if true, match only group layers"""
-    isImage: t.Optional[bool]
+    isImage: Optional[bool]
     """if true, match only images layers"""
-    isQueryable: t.Optional[bool]
+    isQueryable: Optional[bool]
     """if true, match only queryable layers"""
-    isVisible: t.Optional[bool]
+    isVisible: Optional[bool]
     """if true, match only visible layers"""
 
 

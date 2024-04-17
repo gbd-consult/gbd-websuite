@@ -1,18 +1,19 @@
 """Annotate action."""
 
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.base.web
 import gws.base.storage
-import gws.types as t
 
 gws.ext.new.action('annotate')
 
 
 class Config(gws.base.action.Config):
-    storage: t.Optional[gws.base.storage.Config]
+    storage: Optional[gws.base.storage.Config]
     """storage configuration"""
-    labels: t.Optional[dict]
+    labels: Optional[dict]
     """default label templates"""
 
 
@@ -22,8 +23,8 @@ class Props(gws.base.action.Props):
 
 
 class Object(gws.base.action.Object):
-    storage: t.Optional[gws.base.storage.Object]
-    labels: t.Optional[dict]
+    storage: Optional[gws.base.storage.Object]
+    labels: Optional[dict]
 
     def configure(self):
         self.storage = self.create_child_if_configured(

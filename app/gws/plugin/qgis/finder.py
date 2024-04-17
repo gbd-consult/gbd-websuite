@@ -1,12 +1,13 @@
 """QGIS Server-based Finder."""
 
+from typing import Optional
+
 import gws
 import gws.base.model
 import gws.base.search
 import gws.base.ows.client
 import gws.config.util
 import gws.gis.source
-import gws.types as t
 
 from . import provider
 
@@ -14,9 +15,9 @@ gws.ext.new.finder('qgis')
 
 
 class Config(gws.base.search.finder.Config):
-    provider: t.Optional[provider.Config]
+    provider: Optional[provider.Config]
     """Provider configuration."""
-    sourceLayers: t.Optional[gws.gis.source.LayerFilter]
+    sourceLayers: Optional[gws.gis.source.LayerFilter]
     """Source layers to search for."""
 
 

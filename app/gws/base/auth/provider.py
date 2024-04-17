@@ -1,6 +1,7 @@
+from typing import Optional
+
 import gws
 import gws.lib.jsonx
-import gws.types as t
 
 from . import user as user_api
 
@@ -8,7 +9,7 @@ from . import user as user_api
 class Config(gws.Config):
     """Auth provider config."""
 
-    allowedMethods: t.Optional[list[str]]
+    allowedMethods: Optional[list[str]]
     """allowed authorization methods"""
 
 

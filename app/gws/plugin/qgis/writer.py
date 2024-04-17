@@ -3,7 +3,6 @@
 import bs4
 
 import gws
-import gws.types as t
 
 
 def add_variables(source_text: str, d: dict) -> str:

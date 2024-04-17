@@ -1,15 +1,16 @@
 """Command-line server commands."""
 
+from typing import Optional
+
 import gws
-import gws.types as t
 
 from . import control
 
 
 class Params(gws.CliParams):
-    config: t.Optional[str]
+    config: Optional[str]
     """configuration file"""
-    manifest: t.Optional[str]
+    manifest: Optional[str]
     """manifest file"""
 
 

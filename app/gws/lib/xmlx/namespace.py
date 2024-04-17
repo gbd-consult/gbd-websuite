@@ -3,15 +3,16 @@
 Manage XML namespaces.
 """
 
+from typing import Optional
+
 import re
 
 import gws
-import gws.types as t
 
 from . import error
 
 
-def find_by_uri(uri: str) -> t.Optional[gws.XmlNamespace]:
+def find_by_uri(uri: str) -> Optional[gws.XmlNamespace]:
     """Locate the Namespace by an Uri.
 
     If the Uri ends with a version number, and there is no namespace
@@ -36,7 +37,7 @@ def find_by_uri(uri: str) -> t.Optional[gws.XmlNamespace]:
             return ns
 
 
-def find_by_xmlns(xmlns: str) -> t.Optional[gws.XmlNamespace]:
+def find_by_xmlns(xmlns: str) -> Optional[gws.XmlNamespace]:
     """Locate the Namespace by a name.
 
     Args:
@@ -49,7 +50,7 @@ def find_by_xmlns(xmlns: str) -> t.Optional[gws.XmlNamespace]:
     return _INDEX.xmlns.get(xmlns)
 
 
-def get(s: str) -> t.Optional[gws.XmlNamespace]:
+def get(s: str) -> Optional[gws.XmlNamespace]:
     """Locate the Namespace by a name.
 
     Args:
@@ -98,7 +99,7 @@ def split_name(name: str) -> tuple[str, str, str]:
     return '', '', name
 
 
-def parse_name(name: str) -> tuple[t.Optional[gws.XmlNamespace], str]:
+def parse_name(name: str) -> tuple[Optional[gws.XmlNamespace], str]:
     """Parses an XML name.
 
     Args:
@@ -191,9 +192,9 @@ def clarkify_name(name: str) -> str:
 
 
 def declarations(
-        default_ns: t.Optional[gws.XmlNamespace] = None,
+        default_ns: Optional[gws.XmlNamespace] = None,
         for_element: gws.XmlElement = None,
-        extra_ns: t.Optional[list[gws.XmlNamespace]] = None,
+        extra_ns: Optional[list[gws.XmlNamespace]] = None,
         with_schema_locations: bool = False,
 ) -> dict:
     """Returns an xmlns declaration block as dictionary of attributes.

@@ -1,5 +1,7 @@
 """Qfield reader and writer."""
 
+from typing import Optional, cast
+
 import shutil
 
 import gws
@@ -16,7 +18,6 @@ import gws.lib.osx
 import gws.lib.sa as sa
 import gws.plugin.model_field.file
 import gws.plugin.qgis
-import gws.types as t
 
 GPKG_EXT = 'gpkg'
 
@@ -24,7 +25,7 @@ GPKG_EXT = 'gpkg'
 class PackageConfig(gws.ConfigWithAccess):
     qgisProvider: gws.plugin.qgis.provider.Config
     """QGis provider settings"""
-    models: t.Optional[list[gws.ext.config.model]]
+    models: Optional[list[gws.ext.config.model]]
     """data models"""
 
 
@@ -59,7 +60,7 @@ class ImportArgs(gws.Data):
     dbFileName: str
 
 
-class LayerAction(t.Enum):
+class LayerAction(gws.Enum):
     remove = 'remove'
     edit = 'edit'
     baseMap = 'baseMap'
@@ -109,7 +110,7 @@ class QFieldCaps(gws.Data):
     globalProps: dict
     dirsToCopy: list[str]
     baseMapLayerIds: list[str]
-    areaOfInterest: t.Optional[gws.Bounds]
+    areaOfInterest: Optional[gws.Bounds]
     offlineCopyOnlyAoi: bool
 
 
@@ -272,7 +273,7 @@ class Exporter:
         w, h = gws.gis.extent.size(bounds.extent)
         px_size = (w / resolution, h / resolution, gws.Uom.px)
 
-        flat_layer = t.cast(gws.Layer, self.package.root.create_temporary(
+        flat_layer = cast(gws.Layer, self.package.root.create_temporary(
             gws.ext.object.layer,
             type='qgisflat',
             _parentBounds=bounds,
@@ -685,7 +686,7 @@ class Importer:
 
         for field in me.model.fields:
             if field.extType == 'file':
-                col_name = t.cast(gws.plugin.model_field.file.Object, field).cols.name.name
+                col_name = cast(gws.plugin.model_field.file.Object, field).cols.name.name
                 file_field_map[col_name] = field
 
         if not file_field_map:
@@ -865,7 +866,7 @@ class QFieldCapsParser:
 
         return []
 
-    def layer_entry(self, sl: gws.SourceLayer) -> t.Optional[LayerEntry]:
+    def layer_entry(self, sl: gws.SourceLayer) -> Optional[LayerEntry]:
         qf_props = {}
 
         for k, v in sl.properties.items():
@@ -919,7 +920,7 @@ class QFieldCapsParser:
             sqlFilter=sl.dataSource.get('sql', ''),
         )
 
-    def model_entry_for_table(self, sl: gws.SourceLayer) -> t.Optional[ModelEntry]:
+    def model_entry_for_table(self, sl: gws.SourceLayer) -> Optional[ModelEntry]:
         table_name = sl.dataSource.get('table')
 
         for model in self.package.models:

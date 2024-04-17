@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws
 import gws.base.layer
 import gws.base.legend
@@ -11,7 +13,6 @@ import gws.gis.source
 import gws.gis.zoom
 import gws.gis.bounds
 import gws.gis.extent
-import gws.types as t
 
 from . import provider
 
@@ -21,9 +22,9 @@ gws.ext.new.layer('wmsflat')
 class Config(gws.base.layer.Config):
     """Flat WMS layer."""
 
-    provider: t.Optional[provider.Config]
+    provider: Optional[provider.Config]
     """WMS provider"""
-    sourceLayers: t.Optional[gws.gis.source.LayerFilter]
+    sourceLayers: Optional[gws.gis.source.LayerFilter]
     """source layers to use"""
 
 

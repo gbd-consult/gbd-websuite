@@ -1,3 +1,5 @@
+from typing import Optional, cast
+
 import gws
 import gws.base.web
 import gws.lib.date
@@ -6,14 +8,13 @@ import gws.lib.metadata
 import gws.lib.mime
 import gws.lib.xmlx as xmlx
 import gws.base.ows.server
-import gws.types as t
 
 from . import filter
 
 gws.ext.new.owsService('csw')
 
 
-class Profile(t.Enum):
+class Profile(gws.Enum):
     ISO = 'ISO'
     DCMI = 'DCMI'
 
@@ -164,7 +165,7 @@ class Object(gws.base.ows.server.service.Object):
         if not md:
             raise gws.base.web.error.NotFound()
 
-        return self.template_response(rd, t.cast(gws.OwsVerb, 'Record'), context={
+        return self.template_response(rd, cast(gws.OwsVerb, 'Record'), context={
             'record': md.values,
             'with_soap': False,
             'profile': self.profile,

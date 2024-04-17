@@ -25,6 +25,8 @@ therefore when invoking GetMap, our layer lists should be reversed.
 
 """
 
+from typing import Optional, cast
+
 import gws
 import gws.base.ows.client
 import gws.config.util
@@ -32,7 +34,6 @@ import gws.gis.crs
 import gws.gis.extent
 import gws.gis.source
 
-import gws.types as t
 
 from . import caps
 
@@ -145,4 +146,4 @@ class Object(gws.base.ows.client.provider.Object):
 
 
 def get_for(obj: gws.Node) -> Object:
-    return t.cast(Object, gws.config.util.get_provider(Object, obj))
+    return cast(Object, gws.config.util.get_provider(Object, obj))

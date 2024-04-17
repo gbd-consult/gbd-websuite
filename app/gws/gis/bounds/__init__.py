@@ -1,13 +1,14 @@
 """Utilities to work with Bounds objects."""
 
+from typing import Optional
+
 import gws
 import gws.gis.crs
 import gws.gis.extent
 import gws.gis.gml
-import gws.types as t
 
 
-def from_request_bbox(bbox: str, default_crs: gws.Crs = None, always_xy=False) -> t.Optional[gws.Bounds]:
+def from_request_bbox(bbox: str, default_crs: gws.Crs = None, always_xy=False) -> Optional[gws.Bounds]:
     """Create Bounds from a KVP BBOX param.
 
     See OGC 06-121r9, 10.2.3 Bounding box KVP encoding.

@@ -8,7 +8,6 @@ import gws.config
 import gws.gis.mpx.config
 import gws.lib.osx
 import gws.lib.importer
-import gws.types as t
 
 # https://uwsgi-docs.readthedocs.io/en/latest/Nginx.html
 # HTTPS is to ensure that the backend werkzeug can see secure requests

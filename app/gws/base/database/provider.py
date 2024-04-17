@@ -1,7 +1,8 @@
+from typing import Optional, cast
+
 import gws.lib.sa as sa
 
 import gws
-import gws.types as t
 
 from . import manager
 
@@ -163,7 +164,7 @@ class Object(gws.DatabaseProvider):
             schema=schema
         )
 
-        for n, c in enumerate(t.cast(list[sa.Column], table.columns)):
+        for n, c in enumerate(cast(list[sa.Column], table.columns)):
             col = gws.ColumnDescription(
                 columnIndex=n,
                 comment=str(c.comment or ''),

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.base.client
@@ -6,7 +8,6 @@ import gws.base.printer
 import gws.base.template
 import gws.base.web
 import gws.lib.metadata
-import gws.types as t
 
 gws.ext.new.project('default')
 
@@ -16,29 +17,29 @@ class Config(gws.ConfigWithAccess):
 
     type: str = 'default'
 
-    actions: t.Optional[list[gws.ext.config.action]]
+    actions: Optional[list[gws.ext.config.action]]
     """project-specific actions"""
-    assets: t.Optional[gws.base.web.site.WebDocumentRootConfig]
+    assets: Optional[gws.base.web.site.WebDocumentRootConfig]
     """project-specific assets options"""
-    client: t.Optional[gws.base.client.Config]
+    client: Optional[gws.base.client.Config]
     """project-specific gws client configuration"""
-    finders: t.Optional[list[gws.ext.config.finder]]
+    finders: Optional[list[gws.ext.config.finder]]
     """search providers"""
-    locales: t.Optional[list[str]]
+    locales: Optional[list[str]]
     """project locales"""
-    map: t.Optional[gws.base.map.Config]
+    map: Optional[gws.base.map.Config]
     """Map configuration"""
-    metadata: t.Optional[gws.Metadata]
+    metadata: Optional[gws.Metadata]
     """project metadata"""
-    models: t.Optional[list[gws.ext.config.model]]
+    models: Optional[list[gws.ext.config.model]]
     """data models"""
-    overviewMap: t.Optional[gws.base.map.Config]
+    overviewMap: Optional[gws.base.map.Config]
     """Overview map configuration"""
-    owsServices: t.Optional[list[gws.ext.config.owsService]]
+    owsServices: Optional[list[gws.ext.config.owsService]]
     """OWS services configuration"""
-    printers: t.Optional[list[gws.base.printer.Config]]
+    printers: Optional[list[gws.base.printer.Config]]
     """print configurations"""
-    templates: t.Optional[list[gws.ext.config.template]]
+    templates: Optional[list[gws.ext.config.template]]
     """project info templates"""
     title: str = ''
     """project title"""
@@ -46,7 +47,7 @@ class Config(gws.ConfigWithAccess):
 
 class Props(gws.Props):
     actions: list[gws.ext.props.action]
-    client: t.Optional[gws.base.client.Props]
+    client: Optional[gws.base.client.Props]
     description: str
     locales: list[str]
     map: gws.ext.props.map

@@ -1,7 +1,6 @@
 """Base model validator."""
 
 import gws
-import gws.types as t
 
 DEFAULT_MESSAGE_PREFIX = 'validationError_'
 

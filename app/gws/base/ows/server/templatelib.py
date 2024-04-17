@@ -1,22 +1,23 @@
 """Helper functions for OWS service templates."""
 
+from typing import Optional, Callable
+
 import gws
 import gws.base.ows.server as server
 import gws.lib.mime
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
-import gws.types as t
 
 
 class TemplateArgs(gws.Data):
     featureCollection: server.core.FeatureCollection
     layerCapsTree: server.LayerCapsTree
     layerCapsList: list[server.LayerCaps]
-    project: t.Optional[gws.Project]
+    project: Optional[gws.Project]
     request: server.Request
     service: gws.OwsService
     serviceUrl: str
-    url_for: t.Callable
+    url_for: Callable
     version: str
 
 

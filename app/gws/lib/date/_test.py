@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws.lib.date
 import datetime
 
@@ -16,20 +18,20 @@ def test_to_iso():
     """
     def to_iso_string(d: datetime.datetime, with_tz='+', sep='T') -> str:
 
-    TODO consider removing the sep='T' seperator option to enforce compliance 
-        with iso standard. more information here: 
+    TODO consider removing the sep='T' seperator option to enforce compliance
+        with iso standard. more information here:
         https://stackoverflow.com/questions/9531524/in-an-iso-8601-date-is-the-t-character-mandatory
-        seperator should always be 'T'. before revision 'T' could be omitted, 
+        seperator should always be 'T'. before revision 'T' could be omitted,
             but never replaced with a ' ' (space)
-    
-    TODO consider supporting basic and extended formats: 
+
+    TODO consider supporting basic and extended formats:
         basic: 20221021T121212Z or 20221021T121212+0000
         extended: 2022-10-21T12:12:12+0000 or 2022-10-21T12:12:12Z
-    
-    TODO consider with_tz as flag to enable or disable shortening of +0000 to Z 
+
+    TODO consider with_tz as flag to enable or disable shortening of +0000 to Z
         for zero meridian time/gmt. example: def to_iso_string(d, short_gmt=False)
 
-    NOTE pythons datetime.datetime.fromisoformat(date_string) is not correctly 
+    NOTE pythons datetime.datetime.fromisoformat(date_string) is not correctly
         handling all cases, especially the Z suffix or the +0000 without : for +hh:mm
         those are valid in iso, but fail in python builtin
 
@@ -64,19 +66,19 @@ def test_to_iso_local():
 
     dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
     assert gws.lib.date.to_iso_local_string(dt) in [
-        "2022-10-31T08:42:22+0100", 
+        "2022-10-31T08:42:22+0100",
         "2022-10-31T09:42:22+0200"
     ]
 
     # check for year change on tz difference
     dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59+09:00')
     assert gws.lib.date.to_iso_local_string(dt) in [
-        "2022-12-31T15:59:59+0100", 
+        "2022-12-31T15:59:59+0100",
         "2022-12-31T16:59:59+0200"
-    ] 
+    ]
     dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59-09:00')
     assert gws.lib.date.to_iso_local_string(dt) in [
-        "2023-01-01T09:59:59+0100", 
+        "2023-01-01T09:59:59+0100",
         "2023-01-01T10:59:59+0200"
     ]
 
@@ -147,7 +149,7 @@ def test_parse():
 
 def test_from_dmy():
     """
-    def from_dmy(s: str) -> t.Optional[datetime.datetime]:
+    def from_dmy(s: str) -> Optional[datetime.datetime]:
     """
 
     dt = datetime.datetime.fromisoformat('2022-12-31T00:00:00+00:00')
@@ -156,7 +158,7 @@ def test_from_dmy():
 
 def test_from_iso():
     """
-    def from_iso(s: str) -> t.Optional[datetime.datetime]:
+    def from_iso(s: str) -> Optional[datetime.datetime]:
     """
 
     assert gws.lib.date.from_iso("2022-12-12") == datetime.datetime.fromisoformat("2022-12-12T00:00:00+00:00")
@@ -216,4 +218,4 @@ def test_time_formatter():
     tm = datetime.time.fromisoformat("13:14:15")
     tmft = gws.lib.date.time_formatter("de_DE")
     #assert tmft.format('short',tm) == "13:14:15"
-    assert "INCONSISTENT BEHAVIOR BETWEEN DateFormatter and TimeFormatter: READ COMMENT" == False # fail test manually to continue testing 
+    assert "INCONSISTENT BEHAVIOR BETWEEN DateFormatter and TimeFormatter: READ COMMENT" == False # fail test manually to continue testing

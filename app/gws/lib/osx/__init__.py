@@ -1,5 +1,7 @@
 """Utilities for os/shell scripting"""
 
+from typing import Optional
+
 import hashlib
 import os
 import re
@@ -10,7 +12,6 @@ import time
 import psutil
 
 import gws
-import gws.types as t
 
 
 class Error(gws.Error):
@@ -24,7 +25,7 @@ class TimeoutError(Error):
 _Path = str | bytes
 
 
-def getenv(key: str, default: str = None) -> t.Optional[str]:
+def getenv(key: str, default: str = None) -> Optional[str]:
     """Returns the value for a given environment-variable.
 
     Args:
@@ -387,7 +388,7 @@ def abs_path(path: _Path, base: str) -> str:
     return os.path.abspath(os.path.join(base, str_path))
 
 
-def abs_web_path(path: str, basedir: str) -> t.Optional[str]:
+def abs_web_path(path: str, basedir: str) -> Optional[str]:
     """Return an absolute path in a base dir and ensure the path is correct.
 
     Args:

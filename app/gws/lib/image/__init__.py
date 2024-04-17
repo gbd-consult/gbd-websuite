@@ -1,5 +1,7 @@
 """Wrapper for PIL objects"""
 
+from typing import Optional, Literal, cast
+
 import base64
 import io
 import re
@@ -11,7 +13,6 @@ import numpy as np
 
 import gws
 import gws.lib.mime
-import gws.types as t
 
 
 class Error(gws.Error):
@@ -45,7 +46,7 @@ def from_bytes(r: bytes) -> 'Image':
         return _new(PIL.Image.open(buf))
 
 
-ImageMode = t.Literal[
+ImageMode = Literal[
     '1',
     'L',
     'P',
@@ -93,7 +94,7 @@ def from_path(path: str) -> 'Image':
 _DATA_URL_RE = r'data:image/(png|gif|jpeg|jpg);base64,'
 
 
-def from_data_url(url: str) -> t.Optional['Image']:
+def from_data_url(url: str) -> Optional['Image']:
     """Creates an image object from a URL.
 
     Args:
@@ -197,7 +198,7 @@ class Image(gws.Image):
         Returns:
             The image object with the other image placed inside.
         """
-        self.img.paste(t.cast('Image', other).img, where)
+        self.img.paste(cast('Image', other).img, where)
         return self
 
     def compose(self, other, opacity=1) -> 'Image':
@@ -210,7 +211,7 @@ class Image(gws.Image):
         Returns:
             The image object with the other image on top as an alpha composition.
         """
-        oth = t.cast('Image', other).img.convert('RGBA')
+        oth = cast('Image', other).img.convert('RGBA')
 
         if oth.size != self.img.size:
             oth = oth.resize(size=self.img.size, resample=PIL.Image.BICUBIC)

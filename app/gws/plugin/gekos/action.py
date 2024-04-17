@@ -1,5 +1,7 @@
 """Interface with GekoS-Bau software."""
 
+from typing import Optional, cast
+
 import gws
 import gws.gis.crs
 import gws.base.feature
@@ -9,7 +11,6 @@ import gws.base.database
 
 import gws.plugin.alkis.action as alkis_action
 
-import gws.types as t
 from . import index
 
 gws.ext.new.action('gekos')
@@ -47,8 +48,8 @@ gws.ext.new.action('gekos')
 
 
 class GetXyRequest(gws.Request):
-    fs: t.Optional[str]
-    ad: t.Optional[str]
+    fs: Optional[str]
+    ad: Optional[str]
 
 
 class GetFsResponse(gws.Response):
@@ -58,9 +59,9 @@ class GetFsResponse(gws.Response):
 class Config(gws.base.action.Config):
     """GekoS action"""
 
-    index: t.Optional[index.Config]
+    index: Optional[index.Config]
     """GekoS index configuration"""
-    templates: t.Optional[list[gws.ext.config.template]]
+    templates: Optional[list[gws.ext.config.template]]
     """feature templates"""
 
 
@@ -79,7 +80,7 @@ _DEFAULT_TEMPLATES = [
 
 
 class Object(gws.base.action.Object):
-    index: t.Optional[index.Object]
+    index: Optional[index.Object]
     templates: list[gws.Template]
 
     def configure(self):
@@ -89,7 +90,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('gekosGetXY')
     def get_xy(self, req: gws.WebRequester, p: GetXyRequest) -> gws.ContentResponse:
-        act: alkis_action.Object = t.cast(
+        act: alkis_action.Object = cast(
             alkis_action.Object,
             gws.base.action.find(self.root, 'alkis', req.user, p.projectUid))
 

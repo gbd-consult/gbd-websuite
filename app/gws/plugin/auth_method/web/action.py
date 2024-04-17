@@ -1,9 +1,10 @@
 """Check user logins and logouts."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.action
 import gws.base.auth.user
-import gws.types as t
 
 from . import core
 
@@ -28,7 +29,7 @@ class LoginRequest(gws.Request):
 
 
 class Object(gws.base.action.Object):
-    method: t.Optional[core.Object]
+    method: Optional[core.Object]
 
     def configure(self):
         self.method = self.configure_method()
@@ -38,7 +39,7 @@ class Object(gws.base.action.Object):
     def configure_method(self):
         for m in self.root.app.authMgr.methods:
             if m.extType == 'web':
-                return t.cast(core.Object, m)
+                return cast(core.Object, m)
 
     @gws.ext.command.api('authCheck')
     def check(self, req: gws.WebRequester, p: gws.Request) -> Response:

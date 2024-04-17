@@ -1,5 +1,7 @@
 """Parse and validate the main cfg and project configs"""
 
+from typing import Optional
+
 import os
 import yaml
 
@@ -11,7 +13,6 @@ import gws.lib.vendor.jump
 import gws.lib.vendor.slon
 import gws.spec.runtime
 
-import gws.types as t
 
 CONFIG_PATH_PATTERN = r'\bconfig\.(py|json|yaml|cx)$'
 CONFIG_FUNCTION_NAME = 'config'
@@ -46,13 +47,13 @@ class ConfigParser:
         self.errors = []
         self.paths = set()
 
-    def parse_main(self, config_path=None) -> t.Optional[gws.Config]:
+    def parse_main(self, config_path=None) -> Optional[gws.Config]:
         payload = self.read(config_path)
         if not payload:
             return None
         return self.parse_main_from_dict(payload, config_path)
 
-    def parse_main_from_dict(self, dct, config_path) -> t.Optional[gws.Config]:
+    def parse_main_from_dict(self, dct, config_path) -> Optional[gws.Config]:
         prj_dicts = []
 
         for prj_cfg in dct.pop('projects', []):

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import os
 
 import gws
@@ -5,17 +7,16 @@ import gws.base.model
 import gws.config.util
 import gws.lib.intl
 import gws.lib.mime
-import gws.types as t
 
 
 class Config(gws.Config):
-    mapSize: t.Optional[gws.UomSizeStr]
+    mapSize: Optional[gws.UomSizeStr]
     """map size"""
-    mimeTypes: t.Optional[list[str]]
+    mimeTypes: Optional[list[str]]
     """mime types this template can generate"""
-    pageSize: t.Optional[gws.UomSizeStr]
+    pageSize: Optional[gws.UomSizeStr]
     """page size"""
-    pageMargin: t.Optional[gws.UomExtentStr]
+    pageMargin: Optional[gws.UomExtentStr]
     """page margin"""
     subject: str = ''
     """template purpose"""
@@ -24,8 +25,8 @@ class Config(gws.Config):
 
 
 class Props(gws.Props):
-    mapSize: t.Optional[gws.Size]
-    pageSize: t.Optional[gws.Size]
+    mapSize: Optional[gws.Size]
+    pageSize: Optional[gws.Size]
     title: str
 
 

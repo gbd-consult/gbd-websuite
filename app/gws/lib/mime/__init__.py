@@ -1,8 +1,9 @@
 """Mime types."""
 
+from typing import Optional
+
 import mimetypes
 
-import gws.types as t
 
 BIN = 'application/octet-stream'
 """MIME-Type for files ending in .bin"""
@@ -112,7 +113,7 @@ _aliases = {
 }
 
 
-def get(mt: str) -> t.Optional[str]:
+def get(mt: str) -> Optional[str]:
     """Return the normalized mime type.
 
     Args:
@@ -173,7 +174,7 @@ def for_path(path: str) -> str:
     return t or BIN
 
 
-def extension_for(mt: str) -> t.Optional[str]:
+def extension_for(mt: str) -> Optional[str]:
     """Returns the extension of a given mime type.
 
     Args:

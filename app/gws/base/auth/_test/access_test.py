@@ -1,9 +1,10 @@
+from typing import Optional, cast
+
 import gws
-import gws.types as t
 
 from gws.base.auth import method, provider, user
 
-mock_provider = t.cast(gws.AuthProvider, gws.Data(uid='mock_provider'))
+mock_provider = cast(gws.AuthProvider, gws.Data(uid='mock_provider'))
 
 
 def test_access_direct():

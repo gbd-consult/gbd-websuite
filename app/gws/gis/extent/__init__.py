@@ -1,18 +1,19 @@
+from typing import Optional
+
 import math
 import re
 
 import gws
 import gws.gis.crs
-import gws.types as t
 
 
-def from_string(s: str) -> t.Optional[gws.Extent]:
+def from_string(s: str) -> Optional[gws.Extent]:
     """Create an extent from a comma-separated string "1000,2000,20000 40000" """
 
     return from_list(s.split(','))
 
 
-def from_list(ls: list[t.Any]) -> t.Optional[gws.Extent]:
+def from_list(ls: list) -> Optional[gws.Extent]:
     """Create an extent from a list of values"""
 
     return _check(ls)
@@ -31,7 +32,7 @@ def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
     )
 
 
-def from_box(box: str) -> t.Optional[gws.Extent]:
+def from_box(box: str) -> Optional[gws.Extent]:
     """Create an extent from a Postgis BOX(1000 2000,20000 40000)"""
 
     if not box:
@@ -130,7 +131,7 @@ def swap_xy(e: gws.Extent) -> gws.Extent:
     return e[1], e[0], e[3], e[2]
 
 
-def _check(ls: list[t.Any]) -> t.Optional[gws.Extent]:
+def _check(ls: list) -> Optional[gws.Extent]:
     if len(ls) != 4:
         return None
     try:

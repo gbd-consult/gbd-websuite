@@ -11,7 +11,6 @@ import gws.lib.metadata
 import gws.lib.net
 import gws.lib.xmlx
 
-import gws.types as t
 
 
 class PrintTemplateElement(gws.Data):

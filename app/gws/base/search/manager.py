@@ -1,7 +1,8 @@
 """Search manager."""
 
+from typing import Optional
+
 import gws
-import gws.types as t
 
 
 class Object(gws.SearchManager):
@@ -45,7 +46,7 @@ class Object(gws.SearchManager):
             search: gws.SearchQuery,
             user: gws.User,
             finder: gws.Finder,
-            layer: t.Optional[gws.Layer],
+            layer: Optional[gws.Layer],
             results,
     ):
         gws.log.debug(f'SEARCH_BEGIN: {finder=} {layer=}')
