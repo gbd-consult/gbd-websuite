@@ -47,7 +47,7 @@ der GBD WebSuite.
 ### :/admin-de/installation
 ### :/admin-de/konfigurationsgrundlagen
 ### :/admin-de/einfaches-projekt
-
+### :/admin-de/themen
 ### :/admin-de/reference
 ### :/admin-de/cli
 
