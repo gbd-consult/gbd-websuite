@@ -27,6 +27,12 @@ def load_pickle(path):
                 def __getattr__(self, item):
                     return '?' + item
 
+                def __call__(self, *args, **kwargs):
+                    pass
+
+                def __setitem__(self, *args, **kwargs):
+                    pass
+
             return T
 
     hash_map = {}
