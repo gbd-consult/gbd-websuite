@@ -21,7 +21,7 @@ _DEFAULT_TEMPLATES = [
         type='html',
         text='''
             <p class="head">{name|html}</p>
-            <p>{osm_class}, {osm_type}</p>
+            <p>{osm_class}: {osm_type}</p>
         '''
     ),
     gws.Config(
@@ -29,7 +29,7 @@ _DEFAULT_TEMPLATES = [
         type='html',
         text='''
             <p class="head">{name|html}</p>
-            <p class="head2">{osm_class}, {osm_type}</p>
+            <p class="head2">{osm_class}: {osm_type}</p>
             <p class="text2">{address_road} {address_building}
                 <br>{address_postcode} {address_city}
                 <br>{address_country}

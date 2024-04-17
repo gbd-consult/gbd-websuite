@@ -85,7 +85,7 @@ class Object(gws.base.model.dynamic_model.Object):
                 gws.FeatureRecord(uid=uid, shape=shape, attributes=self._normalize(rec)),
                 user))
 
-        return sorted(features, key=lambda f: (f.attr('name'), f.attr('osm_class'), f.attr('osm_type')))
+        return sorted(features, key=lambda f: (f.get('name'), f.get('osm_class'), f.get('osm_type')))
 
     def _query(self, params) -> list[dict]:
         try:
