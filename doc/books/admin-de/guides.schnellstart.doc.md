@@ -21,8 +21,7 @@ Die GBD WebSuite wird als Container ausgeliefert.
 Um einen Container zu starten benötigen Sie eine Container Runtime wie z.B. 
 [Docker](https://docker.com). 
 In diesem Beispiel verwenden wir Docker mit dem 
-Compose Plugin: [Docker Engine Installationsanleitung](https://docs.docker.com/engine/install/).
-
+Compose Plugin: [Docker Engine Installationsanleitung](https://docs.docker.com/engine/install/#supported-platforms).
 
 ## docker-compose.yml
 Erstellen Sie eine Datei mit dem Namen `docker-compose.yml` und dem folgenden 
