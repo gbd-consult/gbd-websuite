@@ -7,4 +7,4 @@ export {feature, sheet, list, file};
 export {Description} from './misc';
 export {Infobox} from './infobox';
 export {Form} from './form';
-
+export {SmallMap} from './smallmap';

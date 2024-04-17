@@ -2,7 +2,7 @@ import * as React from 'react';
 
 
 import * as gws from 'gws';
-import * as overview from 'gws/elements/overview';
+import * as components from 'gws/components';
 import * as toolbar from 'gws/elements/toolbar';
 import {FormField} from "gws/components/form";
 
@@ -207,7 +207,7 @@ class PreviewBox extends gws.View<ViewProps> {
 
         return <Row>
             <Cell flex>
-                <overview.SmallMap controller={this.props.controller} boxSize={[w, h]}/>
+                <components.SmallMap controller={this.props.controller} boxSize={[w, h]}/>
             </Cell>
         </Row>;
     }
