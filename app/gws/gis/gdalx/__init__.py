@@ -1,5 +1,7 @@
 """GDAL wrapper."""
 
+from typing import Optional, cast
+
 import contextlib
 import datetime
 
@@ -10,7 +12,6 @@ from osgeo import osr
 import gws
 import gws.base.shape
 import gws.gis.crs
-import gws.types as t
 
 
 class Error(gws.Error):
@@ -179,11 +180,11 @@ class DataSet:
         cnt = self.gdDataset.GetLayerCount()
         return [Layer(self.gdDataset.GetLayerByIndex(n)) for n in range(cnt)]
 
-    def layer(self, name) -> t.Optional['Layer']:
+    def layer(self, name) -> Optional['Layer']:
         gd_layer = self.gdDataset.GetLayer(name)
         return Layer(gd_layer) if gd_layer else None
 
-    def describe_layer(self, name) -> t.Optional[gws.DataSetDescription]:
+    def describe_layer(self, name) -> Optional[gws.DataSetDescription]:
         la = self.layer(name)
         if la:
             return la.describe()
@@ -307,7 +308,7 @@ class Layer:
             fds.append(self._feature_record(gd_feature, default_srid, encoding))
         return fds
 
-    def get_one(self, fid: int, default_srid: int = 0, encoding: str = None) -> t.Optional[gws.FeatureRecord]:
+    def get_one(self, fid: int, default_srid: int = 0, encoding: str = None) -> Optional[gws.FeatureRecord]:
         gd_feature = self.gdLayer.GetFeature(fid)
         if gd_feature:
             return self._feature_record(gd_feature, default_srid, encoding)
@@ -378,7 +379,7 @@ def _driver_from_args(path, driver_name, as_raster=False, as_vector=False):
     raise Error(f'driver {driver_name!r} not found')
 
 
-_drv_cache: t.Optional[_DriverInfoCache] = None
+_drv_cache: Optional[_DriverInfoCache] = None
 
 
 def _fetch_driver_infos() -> _DriverInfoCache:
@@ -460,7 +461,7 @@ def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str 
 
 def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding: str = None):
     if gtype in {ogr.OFTDate, ogr.OFTTime, ogr.OFTDateTime}:
-        v = t.cast(datetime.datetime, value).isoformat()
+        v = cast(datetime.datetime, value).isoformat()
         gd_feature.SetField(idx, v)
         return
 

@@ -1,5 +1,7 @@
 """SVG builders."""
 
+from typing import Optional, cast
+
 import base64
 import math
 import shapely
@@ -12,7 +14,6 @@ import gws.gis.render
 import gws.base.shape
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
-import gws.types as t
 
 DEFAULT_FONT_SIZE = 10
 DEFAULT_MARKER_SIZE = 10
@@ -25,7 +26,7 @@ def shape_to_fragment(shape: gws.Shape, view: gws.MapView, label: str = None, st
     if not shape:
         return []
 
-    geom = t.cast(gws.base.shape.Shape, shape).geom
+    geom = cast(gws.base.shape.Shape, shape).geom
     if geom.is_empty:
         return []
 
@@ -94,7 +95,7 @@ def shape_to_fragment(shape: gws.Shape, view: gws.MapView, label: str = None, st
     return gws.u.compact([marker, body, icon, text])
 
 
-def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list[t.Any]) -> list[gws.XmlElement]:
+def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list) -> list[gws.XmlElement]:
     """Convert an svg "soup" to a list of XmlElements (a "fragment").
 
     A soup has two components:
@@ -169,22 +170,22 @@ def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict = None) -> gw
     gt = _geom_type(geom)
 
     if gt == _TYPE_POINT:
-        g = t.cast(shapely.geometry.Point, geom)
+        g = cast(shapely.geometry.Point, geom)
         return xmlx.tag('circle', {'cx': int(g.x), 'cy': int(g.y)}, atts)
 
     if gt == _TYPE_LINESTRING:
-        g = t.cast(shapely.geometry.LineString, geom)
+        g = cast(shapely.geometry.LineString, geom)
         d = _lpath(g.coords)
         return xmlx.tag('path', {'d': d}, atts)
 
     if gt == _TYPE_POLYGON:
-        g = t.cast(shapely.geometry.Polygon, geom)
+        g = cast(shapely.geometry.Polygon, geom)
         d = ' '.join(_lpath(interior.coords) + ' z' for interior in g.interiors)
         d = _lpath(g.exterior.coords) + ' z ' + d
         return xmlx.tag('path', {'fill-rule': 'evenodd', 'd': d.strip()}, atts)
 
     if gt >= _TYPE_MULTIPOINT:
-        g = t.cast(shapely.geometry.base.BaseMultipartGeometry, geom)
+        g = cast(shapely.geometry.base.BaseMultipartGeometry, geom)
         return xmlx.tag('g', *[_geometry(p, atts) for p in g.geoms])
 
 
@@ -375,10 +376,10 @@ def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.XmlElement:
 # @TODO options for icon positioning
 
 
-def _parse_icon(icon, dpi) -> t.Optional[tuple[gws.XmlElement, float, float]]:
+def _parse_icon(icon, dpi) -> Optional[tuple[gws.XmlElement, float, float]]:
     # see lib.style.icon
 
-    svg: t.Optional[gws.XmlElement] = None
+    svg: Optional[gws.XmlElement] = None
     if gws.u.is_data_object(icon):
         svg = icon.svg
     if not svg:

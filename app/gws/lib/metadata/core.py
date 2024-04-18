@@ -1,6 +1,5 @@
 import gws
 import gws.lib.intl
-import gws.types as t
 
 from . import inspire
 

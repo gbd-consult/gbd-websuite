@@ -1,3 +1,5 @@
+from typing import Optional
+
 import math
 import re
 import warnings
@@ -7,7 +9,6 @@ import pyproj.exceptions
 import pyproj.transformer
 
 import gws
-import gws.types as t
 
 
 ##
@@ -116,13 +117,13 @@ class Error(gws.Error):
     pass
 
 
-def get(crs_name: gws.CrsName) -> t.Optional[gws.Crs]:
+def get(crs_name: gws.CrsName) -> Optional[gws.Crs]:
     if not crs_name:
         return None
     return _get_crs(crs_name)
 
 
-def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, t.Optional[gws.Crs]]:
+def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, Optional[gws.Crs]]:
     fmt, srid = _parse(crs_name)
     if not fmt:
         return gws.CrsFormat.none, None
@@ -213,7 +214,7 @@ def best_axis(
         protocol: gws.OwsProtocol = None,
         protocol_version: str = None,
         crs_format: gws.CrsFormat = None,
-        inverted_crs: t.Optional[list[gws.Crs]] = None
+        inverted_crs: Optional[list[gws.Crs]] = None
 ) -> gws.Axis:
     """Return the 'best guess' axis under given circumstances.
 
@@ -268,7 +269,7 @@ def _get_crs(crs_name):
     return _obj_cache[srid]
 
 
-def _pyproj_crs_object(srid) -> t.Optional[pyproj.crs.CRS]:
+def _pyproj_crs_object(srid) -> Optional[pyproj.crs.CRS]:
     if srid in _pyproj_cache:
         return _pyproj_cache[srid]
 

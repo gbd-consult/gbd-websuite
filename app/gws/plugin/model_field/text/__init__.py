@@ -1,17 +1,18 @@
 """Text field."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.database.model
 import gws.base.model.scalar_field
 import gws.lib.sa as sa
 
-import gws.types as t
 
 gws.ext.new.modelField('text')
 
 
 class Config(gws.base.model.scalar_field.Config):
-    textSearch: t.Optional[gws.TextSearchOptions]
+    textSearch: Optional[gws.TextSearchOptions]
 
 
 class Props(gws.base.model.scalar_field.Props):
@@ -20,7 +21,7 @@ class Props(gws.base.model.scalar_field.Props):
 
 class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.str
-    textSearch: t.Optional[gws.TextSearchOptions]
+    textSearch: Optional[gws.TextSearchOptions]
 
     def configure(self):
         self.textSearch = self.cfg('textSearch')
@@ -43,7 +44,7 @@ class Object(gws.base.model.scalar_field.Object):
         if not kw or not ts or (ts.minLength and len(kw) < ts.minLength):
             return
 
-        model = t.cast(gws.base.database.model.Object, self.model)
+        model = cast(gws.base.database.model.Object, self.model)
         col = sa.cast(model.column(self.name), sa.String)
 
         if ts.type == gws.TextSearchType.exact:

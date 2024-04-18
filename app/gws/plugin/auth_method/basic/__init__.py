@@ -1,11 +1,12 @@
 """HTTP Basic authorisation method."""
 
+from typing import Optional
+
 import base64
 
 import gws
 import gws.base.auth
 import gws.base.web
-import gws.types as t
 
 gws.ext.new.authMethod('basic')
 
@@ -13,7 +14,7 @@ gws.ext.new.authMethod('basic')
 class Config(gws.base.auth.method.Config):
     """HTTP-basic authorization options"""
 
-    realm: t.Optional[str]
+    realm: Optional[str]
     """authentication realm"""
 
 

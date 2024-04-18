@@ -1,8 +1,9 @@
+from typing import Optional, cast
+
 import gws
 import gws.spec.runtime
 import gws.test.util as u
 from gws.base.auth.user import User
-import gws.types as t
 
 
 class MockSpecs(gws.SpecRuntime):
@@ -10,7 +11,7 @@ class MockSpecs(gws.SpecRuntime):
         self.classes = classes
 
     def parse_classref(self, classref):
-        return gws.spec.runtime.Object.parse_classref(t.cast(gws.spec.runtime.Object, self), classref)
+        return gws.spec.runtime.Object.parse_classref(cast(gws.spec.runtime.Object, self), classref)
 
     def get_class(self, classref, ext_type=None):
         cls, name, ext_name = self.parse_classref(classref)

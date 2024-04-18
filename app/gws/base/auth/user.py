@@ -1,7 +1,8 @@
+from typing import Optional, cast
+
 import gws
 import gws.lib.jsonx
 
-import gws.types as t
 
 
 class Props(gws.Props):
@@ -86,10 +87,10 @@ class User(gws.User):
             return obj
 
     def require_project(self, uid=None):
-        return t.cast(gws.Project, self.require(uid, gws.ext.object.project))
+        return cast(gws.Project, self.require(uid, gws.ext.object.project))
 
     def require_layer(self, uid=None):
-        return t.cast(gws.Layer, self.require(uid, gws.ext.object.layer))
+        return cast(gws.Layer, self.require(uid, gws.ext.object.layer))
 
 
 class GuestUser(User):

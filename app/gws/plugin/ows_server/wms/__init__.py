@@ -1,3 +1,5 @@
+from typing import Optional, cast
+
 import gws
 import gws.base.legend
 import gws.base.ows.server as server
@@ -10,7 +12,6 @@ import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
 
-import gws.types as t
 
 gws.ext.new.owsService('wms')
 
@@ -114,7 +115,7 @@ class Object(server.service.Object):
         lct = server.util.layer_caps_tree(rd, self.rootLayer)
         lcs = self.requested_layer_caps(rd, lct)
 
-        legend = t.cast(gws.Legend, self.root.create_temporary(
+        legend = cast(gws.Legend, self.root.create_temporary(
             gws.ext.object.legend,
             type='combined',
             layerUids=[lc.layer.uid for lc in lcs]))

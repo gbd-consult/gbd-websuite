@@ -1,10 +1,11 @@
+from typing import Optional, cast
+
 import gws
 import gws.base.database
 import gws.base.model
 import gws.base.search
 import gws.config.util
 
-import gws.types as t
 
 from . import provider
 
@@ -14,7 +15,7 @@ gws.ext.new.finder('postgres')
 class Config(gws.base.search.finder.Config):
     """Database-based search"""
 
-    dbUid: t.Optional[str]
+    dbUid: Optional[str]
     """database provider uid"""
     tableName: str
     """sql table name"""
@@ -38,7 +39,7 @@ class Object(gws.base.search.finder.Object):
         self.supportsFilterSearch = True
 
     def configure_provider(self):
-        self.provider = t.cast(provider.Object, gws.base.database.provider.get_for(self, ext_type='postgres'))
+        self.provider = cast(provider.Object, gws.base.database.provider.get_for(self, ext_type='postgres'))
         return True
 
     def configure_models(self):

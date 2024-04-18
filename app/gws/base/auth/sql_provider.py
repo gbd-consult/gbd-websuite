@@ -59,18 +59,19 @@ Example configuration (assuming Postgres with ``pgcrypto``)::
 
 """
 
+from typing import Optional, cast
+
 import re
 
 import gws
 import gws.base.auth
 import gws.base.database.provider
 import gws.lib.sa as sa
-import gws.types as t
 
 class Config(gws.base.auth.provider.Config):
     """SQL-based authorization provider"""
 
-    dbUid: t.Optional[str]
+    dbUid: Optional[str]
     """Database provider uid"""
 
     authorizationSql: str
@@ -80,14 +81,14 @@ class Config(gws.base.auth.provider.Config):
     """User data SQL statement"""
 
 
-class Placeholders(t.Enum):
+class Placeholders(gws.Enum):
     username = 'username'
     password = 'password'
     token = 'token'
     uid = 'uid'
 
 
-class Columns(t.Enum):
+class Columns(gws.Enum):
     validuser = 'validuser'
     validpassword = 'validpassword'
     uid = 'uid'
@@ -103,7 +104,7 @@ class Object(gws.base.auth.provider.Object):
 
     def configure(self):
         self.uid = 'gws.base.auth.providers.sql'
-        self.dbProvider = t.cast(gws.DatabaseProvider, gws.base.database.provider.get_for(self))
+        self.dbProvider = cast(gws.DatabaseProvider, gws.base.database.provider.get_for(self))
         self.authorizationSql = self.cfg('authorizationSql')
         self.getUserSql = self.cfg('getUserSql')
 

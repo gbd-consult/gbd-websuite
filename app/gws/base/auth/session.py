@@ -1,7 +1,8 @@
+from typing import Optional
+
 import datetime
 
 import gws
-import gws.types as t
 
 
 class Object(gws.AuthSession):
@@ -9,7 +10,7 @@ class Object(gws.AuthSession):
             self,
             uid: str,
             user: gws.User,
-            method: t.Optional[gws.AuthMethod],
+            method: Optional[gws.AuthMethod],
             data: dict = None,
             created: datetime.datetime = None,
             updated: datetime.datetime = None,

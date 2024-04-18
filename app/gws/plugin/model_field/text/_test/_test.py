@@ -3,7 +3,6 @@ import gws.config
 import gws.base.feature
 import gws.lib.sa as sa
 import gws.test.util as u
-import gws.types as t
 
 
 @u.fixture(scope='module')

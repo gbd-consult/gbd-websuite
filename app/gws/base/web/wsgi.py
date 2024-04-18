@@ -1,3 +1,5 @@
+from typing import Any
+
 import gzip
 import io
 import os
@@ -10,7 +12,6 @@ import gws.lib.date
 import gws.lib.jsonx
 import gws.lib.mime
 import gws.lib.vendor.umsgpack as umsgpack
-import gws.types as t
 
 from . import error
 
@@ -77,8 +78,8 @@ class Requester(gws.WebRequester):
 
         self.isApi = self.inputType is not None
 
-        self.params: dict[str, t.Any] = {}
-        self._lowerParams: dict[str, t.Any] = {}
+        self.params: dict[str, Any] = {}
+        self._lowerParams: dict[str, Any] = {}
         self.command = ''
 
     def __repr__(self):

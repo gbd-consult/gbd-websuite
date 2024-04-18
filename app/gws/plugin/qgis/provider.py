@@ -1,5 +1,7 @@
 """QGIS provider."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.database
 import gws.base.ows.client
@@ -13,27 +15,26 @@ import gws.gis.bounds
 import gws.gis.source
 import gws.gis.extent
 import gws.lib.net
-import gws.types as t
 
 from . import caps, project
 
 
 class Config(gws.Config):
-    path: t.Optional[gws.FilePath]
+    path: Optional[gws.FilePath]
     """Qgis project file"""
-    dbUid: t.Optional[str]
+    dbUid: Optional[str]
     """Qgis project database"""
-    schema: t.Optional[str]
+    schema: Optional[str]
     """Qgis project schema"""
-    projectName: t.Optional[str]
+    projectName: Optional[str]
     """Qgis project name"""
-    directRender: t.Optional[list[str]]
+    directRender: Optional[list[str]]
     """QGIS data providers that should be rendered directly"""
-    directSearch: t.Optional[list[str]]
+    directSearch: Optional[list[str]]
     """QGIS data providers that should be searched directly"""
-    forceCrs: t.Optional[gws.CrsName]
+    forceCrs: Optional[gws.CrsName]
     """use this CRS for requests"""
-    sqlFilters: t.Optional[dict]
+    sqlFilters: Optional[dict]
     """per-layer sql filters"""
 
 
@@ -45,7 +46,7 @@ class Object(gws.OwsProvider):
     directRender: set[str]
     directSearch: set[str]
 
-    bounds: t.Optional[gws.Bounds]
+    bounds: Optional[gws.Bounds]
 
     caps: caps.Caps
 
@@ -375,11 +376,11 @@ class Object(gws.OwsProvider):
 
         for p in mgr.providers():
             if p.extType == 'postgres' and p.url == url:
-                return t.cast(gws.plugin.postgres.provider.Object, p)
+                return cast(gws.plugin.postgres.provider.Object, p)
 
         gws.log.debug(f'creating an ad-hoc postgres provider for qgis {url=}')
         p = mgr.create_provider(cfg, type='postgres')
-        return t.cast(gws.plugin.postgres.provider.Object, p)
+        return cast(gws.plugin.postgres.provider.Object, p)
 
     _std_ows_params = {
         'bbox',
@@ -418,4 +419,4 @@ class Object(gws.OwsProvider):
 
 
 def get_for(obj: gws.Node) -> Object:
-    return t.cast(Object, gws.config.util.get_provider(Object, obj))
+    return cast(Object, gws.config.util.get_provider(Object, obj))

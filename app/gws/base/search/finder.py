@@ -1,13 +1,14 @@
+from typing import Optional, cast
+
 import gws
 import gws.base.model
 import gws.base.template
 import gws.base.shape
 import gws.config.util
 import gws.lib.uom
-import gws.types as t
 
 
-class SpatialContext(t.Enum):
+class SpatialContext(gws.Enum):
     map = 'map'
     """search in the map extent"""
     view = 'view'
@@ -15,13 +16,13 @@ class SpatialContext(t.Enum):
 
 
 class Config(gws.ConfigWithAccess):
-    models: t.Optional[list[gws.ext.config.model]]
+    models: Optional[list[gws.ext.config.model]]
     """data models for features"""
-    spatialContext: t.Optional[SpatialContext] = SpatialContext.map
+    spatialContext: Optional[SpatialContext] = SpatialContext.map
     """spatial context for keyword searches"""
-    templates: t.Optional[list[gws.ext.config.template]]
+    templates: Optional[list[gws.ext.config.template]]
     """feature formatting templates"""
-    title: t.Optional[str]
+    title: Optional[str]
     """provider title"""
     withGeometry: bool = True
     """enable geometry search"""
@@ -91,6 +92,6 @@ class Object(gws.Finder):
         if not model:
             gws.log.debug(f'no model for {user.uid=} in finder {self.uid!r}')
             return []
-        search = t.cast(gws.SearchQuery, gws.u.merge(search, shape=self.context_shape(search)))
+        search = cast(gws.SearchQuery, gws.u.merge(search, shape=self.context_shape(search)))
         mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=user)
         return model.find_features(search, mc)

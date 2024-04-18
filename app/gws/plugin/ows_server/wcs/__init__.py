@@ -3,7 +3,6 @@ import gws.base.web
 import gws.gis.crs
 import gws.gis.bounds
 import gws.base.ows.server
-import gws.types as t
 
 
 gws.ext.new.owsService('wcs')

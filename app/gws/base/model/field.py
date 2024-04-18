@@ -1,5 +1,6 @@
+from typing import Optional
+
 import gws
-import gws.types as t
 
 
 class Props(gws.Props):
@@ -15,17 +16,17 @@ class Props(gws.Props):
 
 class Config(gws.ConfigWithAccess):
     name: str
-    title: t.Optional[str]
+    title: Optional[str]
 
-    isPrimaryKey: t.Optional[bool]
-    isRequired: t.Optional[bool]
-    isUnique: t.Optional[bool]
-    isAuto: t.Optional[bool]
+    isPrimaryKey: Optional[bool]
+    isRequired: Optional[bool]
+    isUnique: Optional[bool]
+    isAuto: Optional[bool]
 
-    values: t.Optional[list[gws.ext.config.modelValue]]
-    validators: t.Optional[list[gws.ext.config.modelValidator]]
+    values: Optional[list[gws.ext.config.modelValue]]
+    validators: Optional[list[gws.ext.config.modelValidator]]
 
-    widget: t.Optional[gws.ext.config.modelWidget]
+    widget: Optional[gws.ext.config.modelWidget]
 
 
 ##

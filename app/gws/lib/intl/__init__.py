@@ -1,5 +1,7 @@
 """Intl and localization tools."""
 
+from typing import Optional
+
 import datetime
 import babel
 import babel.dates
@@ -7,10 +9,9 @@ import babel.numbers
 import pycountry
 
 import gws
-import gws.types as t
 
 
-def locale(locale_uid: str) -> t.Optional[gws.Locale]:
+def locale(locale_uid: str) -> Optional[gws.Locale]:
     """Creates a locale object with formatting information about date, time and numbers.
 
     Args:
@@ -84,7 +85,7 @@ def bibliographic_name(language: str) -> str:
     return gws.u.get_app_global(f'gws.lib.intl.bibliographic_name.{language}', f)
 
 
-class DateTimeFormat(t.Enum):
+class DateTimeFormat(gws.Enum):
     """Enumeration indicating the length of the date/time format."""
     short = 'short'
     """Local short format."""
@@ -183,7 +184,7 @@ class TimeFormatter:
         return self.format(DateTimeFormat.iso)
 
 
-class NumberFormat(t.Enum):
+class NumberFormat(gws.Enum):
     """Enumeration indicating the number format."""
     decimal = 'decimal'
     """Locale decimal format."""

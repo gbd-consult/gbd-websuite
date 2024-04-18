@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws
 import gws.base.layer
 import gws.gis.crs
@@ -5,7 +7,6 @@ import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.zoom
 import gws.lib.uom as units
-import gws.types as t
 
 gws.ext.new.map('default')
 
@@ -13,15 +14,15 @@ gws.ext.new.map('default')
 class Config(gws.Config):
     """Map configuration"""
 
-    center: t.Optional[gws.Point]
+    center: Optional[gws.Point]
     """map center"""
-    coordinatePrecision: t.Optional[int]
+    coordinatePrecision: Optional[int]
     """precision for coordinates"""
-    crs: t.Optional[gws.CrsName] = 'EPSG:3857'
+    crs: Optional[gws.CrsName] = 'EPSG:3857'
     """crs for this map"""
-    extent: t.Optional[gws.Extent]
+    extent: Optional[gws.Extent]
     """map extent"""
-    extentBuffer: t.Optional[int]
+    extentBuffer: Optional[int]
     """extent buffer"""
     layers: list[gws.ext.config.layer]
     """collection of layers for this map"""
@@ -29,13 +30,13 @@ class Config(gws.Config):
     """map title"""
     wrapX: bool = False
     """wrap the world horizontally"""
-    zoom: t.Optional[gws.gis.zoom.Config]
+    zoom: Optional[gws.gis.zoom.Config]
     """map scales and resolutions"""
 
 
 class Props(gws.Data):
     crs: str
-    crsDef: t.Optional[str]
+    crsDef: Optional[str]
     coordinatePrecision: int
     extent: gws.Extent
     center: gws.Point

@@ -21,7 +21,7 @@ map layers are for view only, have no relevance for editing.
 actions+ { type "edit" }
 client.addElements+ { tag "Sidebar.Edit" }
 client.addElements+ { tag "Toolbar.Edit" }
-client.options.sidebarActiveTab "Sidebar.Edit"
+
 
 map {
     crs 25832

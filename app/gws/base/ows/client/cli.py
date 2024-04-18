@@ -1,12 +1,13 @@
 """CLI utilty for OWS services"""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.shape
 import gws.gis.crs
 import gws.lib.importer
 import gws.lib.jsonx
 
-import gws.types as t
 
 from . import request
 
@@ -43,7 +44,7 @@ class Object(gws.Node):
         if p.src.startswith(('http:', 'https:')):
             xml = request.get_text(request.Args(
                 url=p.src,
-                protocol=t.cast(gws.OwsProtocol, protocol.upper()),
+                protocol=cast(gws.OwsProtocol, protocol.upper()),
                 verb=gws.OwsVerb.GetCapabilities))
         else:
             xml = gws.u.read_file(p.src)

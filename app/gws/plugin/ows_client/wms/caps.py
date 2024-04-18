@@ -1,5 +1,7 @@
 """WMS Capabilities parser."""
 
+from typing import Optional
+
 import gws
 import gws.base.ows.client
 import gws.gis.crs
@@ -7,7 +9,6 @@ import gws.gis.source
 import gws.lib.xmlx as xmlx
 import gws.base.ows.client.parseutil as u
 
-import gws.types as t
 
 
 def parse(xml: str, bottom_first: bool=False) -> gws.OwsCapabilities:
@@ -33,7 +34,7 @@ def parse(xml: str, bottom_first: bool=False) -> gws.OwsCapabilities:
         version=caps_el.get('version'))
 
 
-def _layer(layer_el: gws.XmlElement, parent: t.Optional[gws.SourceLayer] = None) -> gws.SourceLayer:
+def _layer(layer_el: gws.XmlElement, parent: Optional[gws.SourceLayer] = None) -> gws.SourceLayer:
     sl = gws.SourceLayer()
 
     sl.isQueryable = layer_el.get('queryable') == '1'

@@ -3,8 +3,9 @@
 Used in the configuration to configure XML options and additional namespaces.
 """
 
+from typing import Optional
+
 import gws
-import gws.types as t
 
 from . import namespace
 
@@ -14,7 +15,7 @@ gws.ext.new.helper('xml')
 class Config(gws.Config):
     """XML settings"""
 
-    namespaces: t.Optional[list[gws.XmlNamespace]]
+    namespaces: Optional[list[gws.XmlNamespace]]
     """custom XML namespaces"""
 
 

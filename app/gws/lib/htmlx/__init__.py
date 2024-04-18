@@ -1,7 +1,6 @@
 import gws
 import gws.lib.osx
 import gws.lib.uom
-import gws.types as t
 
 
 def render_to_pdf(html, out_path: str, page_size: gws.UomSize = None, page_margin: gws.UomExtent = None) -> str:

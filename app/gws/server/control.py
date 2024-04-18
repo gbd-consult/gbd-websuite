@@ -48,7 +48,6 @@ import gws
 import gws.config
 import gws.lib.date
 import gws.lib.osx
-import gws.types as t
 
 from . import ini
 

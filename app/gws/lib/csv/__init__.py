@@ -1,11 +1,12 @@
 """Common csv writer helper."""
 
+from typing import Optional
+
 import decimal
 import datetime
 
 import gws
 import gws.lib.intl
-import gws.types as t
 
 gws.ext.new.helper('csv')
 
@@ -51,7 +52,7 @@ class Object(gws.Node):
         self.quoteAll = self.cfg('quoteAll')
         self.rowDelimiter = self.cfg('rowDelimiter', default='\n').replace('CR', '\r').replace('LF', '\n')
 
-    def writer(self, locale_uid: t.Optional[str] = None):
+    def writer(self, locale_uid: Optional[str] = None):
         """Creates a `_Writer` object.
 
         Args:

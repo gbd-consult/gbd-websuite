@@ -4,7 +4,6 @@ import gws
 import gws.config
 import gws.gis.bounds
 import gws.gis.source
-import gws.types as t
 
 from . import core
 

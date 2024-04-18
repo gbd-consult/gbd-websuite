@@ -120,12 +120,13 @@ client.elements+ { tag "Infobar.HomeLink" }
 client.elements+ { tag "Infobar.Help" }
 client.elements+ { tag "Infobar.About" }
 
+client.elements+ { tag "Sidebar.Project" }
 client.elements+ { tag "Sidebar.Overview" }
 client.elements+ { tag "Sidebar.Layers" }
 
 client.elements+ { tag "Task.Zoom" }
 
-client.options.sidebarActiveTab "Sidebar.Layers"
+client.options.sidebarActiveTab "Sidebar.Project"
 client.options.sidebarVisible true
 client.options.layersShowInactive true
 
@@ -151,4 +152,12 @@ web.sites+ {
         type "html"
         text "Error {{error}}"
     }
+}
+
+templates+ {
+    subject "project.description"
+    type "html"
+    path "/demos/project_description.cx.html"
+
+
 }

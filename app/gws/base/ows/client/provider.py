@@ -1,9 +1,10 @@
+from typing import Optional
+
 import gws
 import gws.gis.crs
 import gws.gis.source
 import gws.lib.net
 import gws.lib.mime
-import gws.types as t
 
 from . import request
 
@@ -19,8 +20,8 @@ _PREFER_XML_MIME = {gws.lib.mime.GML3, gws.lib.mime.GML, gws.lib.mime.XML}
 
 
 class OperationConfig(gws.Config):
-    formats: t.Optional[list[str]]
-    postUrl: t.Optional[gws.Url]
+    formats: Optional[list[str]]
+    postUrl: Optional[gws.Url]
     url: gws.Url
     verb: gws.OwsVerb
 
@@ -28,13 +29,13 @@ class OperationConfig(gws.Config):
 class Config(gws.Config):
     capsCacheMaxAge: gws.Duration = '1d'
     """max cache age for capabilities documents"""
-    forceCrs: t.Optional[gws.CrsName]
+    forceCrs: Optional[gws.CrsName]
     """use this CRS for requests"""
     alwaysXY: bool = False
     """force XY orientation for lat/lon projections"""
     maxRequests: int = 0
     """max concurrent requests to this source"""
-    operations: t.Optional[list[OperationConfig]]
+    operations: Optional[list[OperationConfig]]
     """override operations reported in capabilities"""
     url: gws.Url
     """service url"""
@@ -75,7 +76,7 @@ class Object(gws.OwsProvider):
         for op in self.operations:
             op.preferredFormat = self._preferred_format(op)
 
-    def _preferred_format(self, op: gws.OwsOperation) -> t.Optional[str]:
+    def _preferred_format(self, op: gws.OwsOperation) -> Optional[str]:
         mime = _PREFER_IMAGE_MIME if op.verb in _IMAGE_VERBS else _PREFER_XML_MIME
         for fmt in op.formats:
             if gws.lib.mime.get(fmt) in mime:

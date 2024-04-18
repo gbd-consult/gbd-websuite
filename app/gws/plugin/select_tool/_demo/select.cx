@@ -29,7 +29,7 @@ client.addElements+ { tag "Sidebar.Select" }
 client.addElements+ { tag "Toolbar.Select" }
 client.addElements+ { tag "Toolbar.Select.Draw" }
 client.addElements+ { tag "Task.Select" }
-client.options.sidebarActiveTab "Sidebar.Select"
+
 
 map {
     center {demo_point_duesseldorf_3857}

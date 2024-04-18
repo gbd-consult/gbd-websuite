@@ -1,9 +1,10 @@
 """Structures and utilities for tree layers."""
 
+from typing import Optional, Callable
+
 import gws
 import gws.gis.source
 import gws.config.parser
-import gws.types as t
 
 from . import core
 
@@ -18,13 +19,13 @@ class FlattenConfig(gws.Config):
 
 
 class Config(gws.Config):
-    rootLayers: t.Optional[gws.gis.source.LayerFilter]
+    rootLayers: Optional[gws.gis.source.LayerFilter]
     """source layers to use as roots"""
-    excludeLayers: t.Optional[gws.gis.source.LayerFilter]
+    excludeLayers: Optional[gws.gis.source.LayerFilter]
     """source layers to exclude"""
-    flattenLayers: t.Optional[FlattenConfig]
+    flattenLayers: Optional[FlattenConfig]
     """flatten the layer hierarchy"""
-    autoLayers: t.Optional[list[core.AutoLayersOptions]]
+    autoLayers: Optional[list[core.AutoLayersOptions]]
     """custom configurations for automatically created layers"""
 
 
@@ -35,10 +36,10 @@ class TreeConfigArgs(gws.Data):
     exclude_slf: gws.gis.source.LayerFilter
     flatten_config: FlattenConfig
     auto_layers: list[core.AutoLayersOptions]
-    leaf_layer_maker: t.Callable
+    leaf_layer_maker: Callable
 
 
-def layer_configs_from_layer(layer: core.Object, source_layers: list[gws.SourceLayer], leaf_layer_maker: t.Callable) -> list[gws.Config]:
+def layer_configs_from_layer(layer: core.Object, source_layers: list[gws.SourceLayer], leaf_layer_maker: Callable) -> list[gws.Config]:
     """Generate a config tree from a list of source layers and the main layer config."""
 
     return layer_configs_from_args(TreeConfigArgs(

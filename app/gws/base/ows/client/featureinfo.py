@@ -4,7 +4,6 @@ import gws
 import gws.base.shape
 import gws.gis.gml
 import gws.lib.xmlx as xmlx
-import gws.types as t
 
 
 def parse(text: str, default_crs: gws.Crs = None, always_xy=False) -> list[gws.FeatureRecord]:

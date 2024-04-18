@@ -1,3 +1,5 @@
+from typing import Optional, Iterable
+
 import re
 from typing import Generic, TypeVar
 
@@ -10,7 +12,6 @@ import gws.lib.osx
 from gws.lib.console import ProgressIndicator
 import gws.plugin.postgres.provider
 
-import gws.types as t
 
 from . import types as dt
 from . import index
@@ -46,7 +47,7 @@ class _ObjectDict(Generic[T]):
         self.d[o.uid] = o
         return o
 
-    def get(self, uid, default=None) -> t.Optional[T]:
+    def get(self, uid, default=None) -> Optional[T]:
         return self.d.get(uid, default)
 
     def get_many(self, uids) -> list[T]:
@@ -72,7 +73,7 @@ class _ObjectDict(Generic[T]):
 
         return self.get_many(uids)
 
-    def __iter__(self) -> t.Iterable[T]:
+    def __iter__(self) -> Iterable[T]:
         yield from self.d.values()
 
     def __len__(self):

@@ -1,5 +1,7 @@
 """Server utilities."""
 
+from typing import Optional
+
 import gws
 import gws.base.layer.core
 import gws.base.model
@@ -12,7 +14,6 @@ import gws.lib.image
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
 
-import gws.types as t
 
 from . import core
 
@@ -27,7 +28,7 @@ DEFAULT_OWS_XML_NAMESPACE = gws.XmlNamespace(
 # @TODO caps trees should be cached for public layers
 
 
-def layer_caps_tree(rd: core.Request, root_layer: t.Optional[gws.Layer] = None) -> core.LayerCapsTree:
+def layer_caps_tree(rd: core.Request, root_layer: Optional[gws.Layer] = None) -> core.LayerCapsTree:
     lct = core.LayerCapsTree(root=None, roots=[], leaves=[])
 
     if root_layer:
@@ -43,7 +44,7 @@ def _collect_layer_caps(
         rd: core.Request,
         lct: core.LayerCapsTree,
         layer: gws.Layer,
-        parent_lc: t.Optional[core.LayerCaps] = None,
+        parent_lc: Optional[core.LayerCaps] = None,
 ):
     if not rd.req.user.can_read(layer) or not layer.isEnabledForOws:
         return
@@ -98,11 +99,11 @@ def _collect_layer_caps(
     lc.model = rd.project.root.app.modelMgr.locate_model(layer, user=rd.req.user, access=gws.Access.read)
 
 
-def layer_caps_by_layer_name(lct: core.LayerCapsTree, names: t.Optional[str | list[str]] = None, with_ancestors=False) -> list[core.LayerCaps]:
+def layer_caps_by_layer_name(lct: core.LayerCapsTree, names: Optional[str | list[str]] = None, with_ancestors=False) -> list[core.LayerCaps]:
     return _leaves(lct, layer_name_matches, names, with_ancestors)
 
 
-def layer_caps_by_feature_name(lct: core.LayerCapsTree, names: t.Optional[str | list[str]] = None, with_ancestors=False) -> list[core.LayerCaps]:
+def layer_caps_by_feature_name(lct: core.LayerCapsTree, names: Optional[str | list[str]] = None, with_ancestors=False) -> list[core.LayerCaps]:
     return _leaves(lct, feature_name_matches, names, with_ancestors)
 
 
@@ -177,7 +178,7 @@ def one_of_params(rd: core.Request, *names):
             return s
 
 
-def service_url_path(service: gws.OwsService, project: t.Optional[gws.Project] = None) -> str:
+def service_url_path(service: gws.OwsService, project: Optional[gws.Project] = None) -> str:
     return gws.u.action_url_path('owsService', serviceUid=service.uid, projectUid=project.uid if project else None)
 
 

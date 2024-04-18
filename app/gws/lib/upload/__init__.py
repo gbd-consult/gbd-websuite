@@ -4,7 +4,6 @@
 # import shutil
 #
 # import gws
-import gws.types as t
 # import gws.lib.jsonx
 # import gws.lib.osx
 # import gws.base.web.error

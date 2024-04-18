@@ -1,9 +1,10 @@
 """QGIS Tree layer."""
 
+from typing import Optional
+
 import gws
 import gws.base.layer
 import gws.config.util
-import gws.types as t
 
 from . import provider
 
@@ -11,7 +12,7 @@ gws.ext.new.layer('qgis')
 
 
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
-    provider: t.Optional[provider.Config]
+    provider: Optional[provider.Config]
     """qgis provider"""
 
 

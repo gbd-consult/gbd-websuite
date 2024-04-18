@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws.lib.sa as sa
 
 import gws
@@ -6,7 +8,6 @@ import gws.lib.date
 import gws.lib.jsonx
 import gws.lib.osx
 
-import gws.types as t
 
 gws.ext.new.authSessionManager('sqlite')
 
@@ -14,7 +15,7 @@ gws.ext.new.authSessionManager('sqlite')
 class Config(gws.base.auth.session_manager.Config):
     """Configuration for sqlite sessions"""
 
-    path: t.Optional[str]
+    path: Optional[str]
     """session storage path"""
 
 

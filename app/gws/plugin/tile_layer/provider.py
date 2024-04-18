@@ -1,5 +1,7 @@
 """Tile provider."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.layer
 import gws.config.util
@@ -8,7 +10,6 @@ import gws.gis.extent
 import gws.gis.zoom
 import gws.lib.metadata
 import gws.lib.net
-import gws.types as t
 
 
 class Config(gws.Config):
@@ -16,13 +17,13 @@ class Config(gws.Config):
     """max concurrent requests to this source"""
     url: gws.Url
     """rest url with placeholders {x}, {y} and {z}"""
-    grid: t.Optional[gws.base.layer.GridConfig]
+    grid: Optional[gws.base.layer.GridConfig]
     """source grid"""
 
 
 class Object(gws.Node):
     url: gws.Url
-    grid: t.Optional[gws.TileGrid]
+    grid: Optional[gws.TileGrid]
     maxRequests: int
 
     def configure(self):
@@ -45,4 +46,4 @@ class Object(gws.Node):
 ##
 
 def get_for(obj: gws.Node) -> Object:
-    return t.cast(Object, gws.config.util.get_provider(Object, obj))
+    return cast(Object, gws.config.util.get_provider(Object, obj))

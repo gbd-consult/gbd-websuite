@@ -4,11 +4,12 @@ The Element class extends ``xml.etree.Element``
 and implements the `gws.core.types.IXmlElement` protocol.
 """
 
+from typing import Iterator
+
 import xml.etree.ElementTree
 from xml.etree.ElementTree import Element
 
 import gws
-import gws.types as t
 
 from . import namespace, error
 
@@ -37,7 +38,7 @@ class XElement(xml.etree.ElementTree.Element):
     def __bool__(self):
         return True
 
-    def __iter__(self) -> t.Iterator['XElement']:
+    def __iter__(self) -> Iterator['XElement']:
         # need this for typing of `for sub in elem` loops
         for i in range(len(self)):
             yield self[i]

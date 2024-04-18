@@ -1,5 +1,7 @@
 """Postgres database provider."""
 
+from typing import Optional
+
 import os
 
 import gws.base.database
@@ -8,7 +10,6 @@ import gws.gis.extent
 import gws.lib.net
 import gws.lib.sa as sa
 
-import gws.types as t
 
 gws.ext.new.databaseProvider('postgres')
 
@@ -16,19 +17,19 @@ gws.ext.new.databaseProvider('postgres')
 class Config(gws.base.database.provider.Config):
     """Postgres/Postgis database provider"""
 
-    database: t.Optional[str]
+    database: Optional[str]
     """database name"""
-    host: t.Optional[str]
+    host: Optional[str]
     """database host"""
     port: int = 5432
     """database port"""
-    username: t.Optional[str]
+    username: Optional[str]
     """username"""
-    password: t.Optional[str]
+    password: Optional[str]
     """password"""
-    serviceName: t.Optional[str]
+    serviceName: Optional[str]
     """service name from pg_services file"""
-    options: t.Optional[dict]
+    options: Optional[dict]
     """connection options"""
 
 

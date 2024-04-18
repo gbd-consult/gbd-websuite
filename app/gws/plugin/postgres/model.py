@@ -3,7 +3,6 @@
 import gws
 import gws.base.database.model
 import gws.base.feature
-import gws.types as t
 
 from . import provider
 

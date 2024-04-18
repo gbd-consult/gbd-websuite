@@ -1,5 +1,7 @@
 """OWS Service."""
 
+from typing import Optional
+
 import gws
 import gws.base.layer.core
 import gws.base.template
@@ -16,15 +18,14 @@ import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
 
-import gws.types as t
 
 from . import core, util
 
 
 class Config(gws.ConfigWithAccess):
-    extent: t.Optional[gws.Extent]
+    extent: Optional[gws.Extent]
     """service extent"""
-    metadata: t.Optional[gws.Metadata]
+    metadata: Optional[gws.Metadata]
     """service metadata"""
     rootLayerUid: str = ''
     """root layer uid"""
@@ -32,11 +33,11 @@ class Config(gws.ConfigWithAccess):
     """max search limit"""
     searchTolerance: gws.UomValueStr = '10px'
     """search pixel tolerance"""
-    supportedCrs: t.Optional[list[gws.CrsName]]
+    supportedCrs: Optional[list[gws.CrsName]]
     """supported CRS for this service"""
-    templates: t.Optional[list[gws.ext.config.template]]
+    templates: Optional[list[gws.ext.config.template]]
     """service XML templates"""
-    updateSequence: t.Optional[str]
+    updateSequence: Optional[str]
     """service update sequence"""
     withInspireMeta: bool = False
     """use INSPIRE Metadata"""
@@ -47,8 +48,8 @@ class Config(gws.ConfigWithAccess):
 class Object(gws.OwsService):
     """Baseclass for OWS services."""
 
-    project: t.Optional[gws.Project]
-    rootLayer: t.Optional[gws.Layer]
+    project: Optional[gws.Project]
+    rootLayer: Optional[gws.Layer]
 
     isRasterService = False
     isVectorService = False
@@ -157,7 +158,7 @@ class Object(gws.OwsService):
             raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
         return handler(rd)
 
-    def requested_project(self, rd: core.Request) -> t.Optional[gws.Project]:
+    def requested_project(self, rd: core.Request) -> Optional[gws.Project]:
         # services can be configured globally (in which case, self.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (self.project != None)
@@ -187,7 +188,7 @@ class Object(gws.OwsService):
 
         raise gws.base.web.error.BadRequest('Unsupported service version')
 
-    def requested_crs(self, rd: core.Request) -> t.Optional[gws.Crs]:
+    def requested_crs(self, rd: core.Request) -> Optional[gws.Crs]:
         s = util.one_of_params(rd, 'crs', 'srs', 'crsName', 'srsName')
         if s:
             crs = gws.gis.crs.get(s)

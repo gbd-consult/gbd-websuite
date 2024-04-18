@@ -6,7 +6,6 @@ import gws
 import gws.gis.bounds
 import gws.base.shape
 import gws.lib.xmlx as xmlx
-import gws.types as t
 
 
 class Error(gws.Error):

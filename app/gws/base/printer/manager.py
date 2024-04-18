@@ -4,7 +4,6 @@ import gws
 import gws.lib.job
 import gws.server.spool
 
-import gws.types as t
 
 from . import core, worker
 

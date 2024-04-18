@@ -1,7 +1,6 @@
 """Tests for the element module"""
 
 import gws
-import gws.types as t
 
 import gws.lib.xmlx as xmlx
 

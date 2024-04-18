@@ -1,10 +1,11 @@
+from typing import Optional, cast
+
 import yaml
 
 from mapproxy.wsgiapp import make_wsgi_app
 
 import gws
 import gws.lib.osx
-import gws.types as t
 
 CONFIG_PATH = gws.c.CONFIG_DIR + '/mapproxy.yaml'
 
@@ -160,7 +161,7 @@ def create(root: gws.Root):
 
     crs: list[gws.Crs] = []
     for p in root.find_all(gws.ext.object.map):
-        crs.append(t.cast(gws.Map, p).bounds.crs)
+        crs.append(cast(gws.Map, p).bounds.crs)
     for p in root.find_all(gws.ext.object.owsService):
         crs.extend(gws.u.get(p, 'supported_crs', default=[]))
     cfg['services']['wms']['srs'] = sorted(set(c.epsg for c in crs))

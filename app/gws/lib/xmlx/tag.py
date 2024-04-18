@@ -35,7 +35,6 @@ creates the following element: ::
 """
 
 import gws
-import gws.types as t
 
 from . import element, error
 

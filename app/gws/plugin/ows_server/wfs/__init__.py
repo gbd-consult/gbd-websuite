@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws
 import gws.base.ows.server as server
 import gws.base.shape
@@ -97,7 +99,7 @@ class Object(server.service.Object):
 
         self.set_crs_and_bounds(rd)
 
-        # flt: t.Optional[gws.SearchFilter] = None
+        # flt: Optional[gws.SearchFilter] = None
         # if rd.req.has_param('filter'):
         #     src = rd.req.param('filter')
         #     try:

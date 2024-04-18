@@ -1,5 +1,7 @@
 """LDAP authorization provider."""
 
+from typing import Optional
+
 import contextlib
 
 import ldap
@@ -9,7 +11,6 @@ import gws
 import gws.base.auth
 import gws.lib.net
 
-import gws.types as t
 
 gws.ext.new.authProvider('ldap')
 
@@ -19,9 +20,9 @@ class UserSpec(gws.Data):
 
     roles: list[str]
     """GWS role names"""
-    matches: t.Optional[str]
+    matches: Optional[str]
     """LDAP filter the account has to match"""
-    memberOf: t.Optional[str]
+    memberOf: Optional[str]
     """LDAP group the account has to be a member of"""
 
 
@@ -30,11 +31,11 @@ class Config(gws.base.auth.provider.Config):
 
     activeDirectory: bool = True
     """true if the LDAP server is ActiveDirectory"""
-    bindDN: t.Optional[str]
+    bindDN: Optional[str]
     """bind DN"""
-    bindPassword: t.Optional[str]
+    bindPassword: Optional[str]
     """bind password"""
-    displayNameFormat: t.Optional[gws.FormatStr]
+    displayNameFormat: Optional[gws.FormatStr]
     """format for user's display name"""
     users: list[UserSpec]
     """map LDAP filters to gws roles"""

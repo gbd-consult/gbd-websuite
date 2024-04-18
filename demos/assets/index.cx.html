@@ -111,25 +111,6 @@
 
 @import re
 
-<div id="project-details">
-    @for prj in projects
-    <div class="project-details-entry hidden" data-uid="{prj.uid}">
-        <h2>{prj.title | html}</h2>
-        {prj.metadata.abstract}
-        <h6>
-            <a
-                    href="https://github.com/gbd-consult/gbd-websuite/tree/master/{prj.metadata.authorityIdentifier}"
-                    target="_blank"
-                    title="view configuration"
-            >
-                        <span class="material-symbols-rounded">data_object</span>
-
-            </a>
-        </h6>
-    </div>
-    @end
-</div>
-
 <div id="demo-container"></div>
 
 

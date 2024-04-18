@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gws
 import gws.base.database
 import gws.base.layer
@@ -6,13 +8,12 @@ import gws.base.feature
 import gws.gis.crs
 import gws.base.shape
 import gws.config.util
-import gws.types as t
 
 
 class Config(gws.base.layer.Config):
     """Database layer"""
 
-    dbUid: t.Optional[str]
+    dbUid: Optional[str]
     """Database provider uid"""
     tableName: str
     """sql table name"""

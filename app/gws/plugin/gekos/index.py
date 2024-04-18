@@ -1,5 +1,7 @@
 """Qquery the Gekos-Online server."""
 
+from typing import Optional
+
 import math
 
 import gws
@@ -11,7 +13,6 @@ import gws.lib.net
 import gws.lib.sa as sa
 from gws.lib.console import ProgressIndicator
 
-import gws.types as t
 
 """
 Gekos-Online can be called with different "instance" parameters or no "instance" at all
@@ -58,11 +59,11 @@ class SourceConfig(gws.Config):
 class Config(gws.Config):
     crs: gws.CrsName
     """CRS for gekos data"""
-    dbUid: t.Optional[str]
+    dbUid: Optional[str]
     """Database provider uid"""
     sources: list[SourceConfig]
     """gek-online instance names"""
-    position: t.Optional[PositionConfig]
+    position: Optional[PositionConfig]
     """position correction for points"""
     tableName: str
     """sql table name"""

@@ -1,12 +1,13 @@
 """OWS server."""
 
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.base.web
 import gws.lib.mime
 import gws.lib.xmlx as xmlx
 
-import gws.types as t
 
 gws.ext.new.action('ows')
 
@@ -40,7 +41,7 @@ class Object(gws.base.action.Object):
             gws.log.exception()
             return self._xml_error(gws.base.web.error.InternalServerError())
 
-    def _find_service(self, req, p) -> t.Optional[gws.OwsService]:
+    def _find_service(self, req, p) -> Optional[gws.OwsService]:
         if p.projectUid:
             project = req.user.require_project(p.projectUid)
             for s in project.owsServices:

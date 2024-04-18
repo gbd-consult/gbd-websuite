@@ -1,10 +1,11 @@
 """Authorization and session manager."""
 
+from typing import Optional, cast
+
 import gws
 import gws.config
 import gws.lib.date
 import gws.lib.jsonx
-import gws.types as t
 
 from . import session, system_provider
 
@@ -12,13 +13,13 @@ from . import session, system_provider
 class Config(gws.Config):
     """Authentication and authorization options"""
 
-    methods: t.Optional[list[gws.ext.config.authMethod]]
+    methods: Optional[list[gws.ext.config.authMethod]]
     """authorization methods"""
-    providers: t.Optional[list[gws.ext.config.authProvider]]
+    providers: Optional[list[gws.ext.config.authProvider]]
     """authorization providers"""
-    mfa: t.Optional[list[gws.ext.config.authMfa]]
+    mfa: Optional[list[gws.ext.config.authMfa]]
     """authorization providers"""
-    session: t.Optional[gws.ext.config.authSessionManager]
+    session: Optional[gws.ext.config.authSessionManager]
     """session options"""
 
 
@@ -93,13 +94,13 @@ class Object(gws.AuthManager):
             return prov.get_user(local_uid)
 
     def get_provider(self, uid=None):
-        return t.cast(gws.AuthProvider, self.root.get(uid))
+        return cast(gws.AuthProvider, self.root.get(uid))
 
     def get_method(self, uid=None, ext_type=None):
-        return t.cast(gws.AuthMethod, self.root.get(uid))
+        return cast(gws.AuthMethod, self.root.get(uid))
 
     def get_mfa(self, uid=None, ext_type=None):
-        return t.cast(gws.AuthMfa, self.root.get(uid))
+        return cast(gws.AuthMfa, self.root.get(uid))
 
     def serialize_user(self, user):
         return gws.lib.jsonx.to_string([user.provider.uid, user.provider.serialize_user(user)])

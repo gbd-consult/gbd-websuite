@@ -1,12 +1,13 @@
 """Validate values according to specs"""
 
+from typing import Optional
+
 import re
 import sys
 
 import gws
 import gws.lib.jsonx
 import gws.lib.importer
-import gws.types as t
 
 from . import core, reader
 from .generator import generator
@@ -186,7 +187,7 @@ class Object(gws.SpecRuntime):
 
         return sorted(cmds, key=lambda c: (c.cmd1, c.cmd2))
 
-    def parse_classref(self, classref: gws.ClassRef) -> tuple[t.Optional[type], str, str]:
+    def parse_classref(self, classref: gws.ClassRef) -> tuple[Optional[type], str, str]:
         ext_name = gws.ext.name(classref)
         if ext_name:
             return None, '', ext_name

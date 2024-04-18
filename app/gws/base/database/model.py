@@ -1,5 +1,7 @@
 """Database-based models."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.feature
 import gws.base.model
@@ -7,7 +9,6 @@ import gws.base.model.field
 import gws.gis.crs
 import gws.lib.sa as sa
 
-import gws.types as t
 
 from . import provider
 
@@ -17,11 +18,11 @@ class Props(gws.base.model.Props):
 
 
 class Config(gws.base.model.Config):
-    dbUid: t.Optional[str]
+    dbUid: Optional[str]
     """db provider uid"""
-    tableName: t.Optional[str]
+    tableName: Optional[str]
     """table name for the model"""
-    sqlFilter: t.Optional[str]
+    sqlFilter: Optional[str]
     """extra SQL filter"""
 
 
@@ -37,7 +38,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
         self.configure_model()
 
     def configure_provider(self):
-        self.provider = t.cast(gws.DatabaseProvider, provider.get_for(self, ext_type=self.extType))
+        self.provider = cast(gws.DatabaseProvider, provider.get_for(self, ext_type=self.extType))
         return True
 
     ##
@@ -114,7 +115,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
         return features
 
-    def _make_select(self, mc: gws.ModelContext) -> t.Optional[sa.Select]:
+    def _make_select(self, mc: gws.ModelContext) -> Optional[sa.Select]:
 
         # @TODO this should happen on the field level
         sorts = mc.search.sort or self.defaultSort or []

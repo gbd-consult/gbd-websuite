@@ -1,8 +1,9 @@
+from typing import Optional
+
 import importlib
 
 import gws
 import gws.lib.jsonx
-import gws.types as t
 
 from . import storage
 
@@ -38,7 +39,7 @@ def run(root: gws.Root, uid):
     job.run()
 
 
-def get(root: gws.Root, uid) -> t.Optional['Object']:
+def get(root: gws.Root, uid) -> Optional['Object']:
     rec = storage.find(uid)
     if rec:
         return Object(root, rec)

@@ -9,7 +9,6 @@ import gws.lib.image
 import gws.lib.mime
 import gws.gis.render
 import gws.lib.uom as units
-import gws.types as t
 
 gws.ext.new.owsService('wmts')
 

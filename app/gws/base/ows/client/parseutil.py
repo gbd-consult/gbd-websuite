@@ -1,5 +1,7 @@
 """Parse utilities for OWS XML files."""
 
+from typing import Optional
+
 import re
 
 import gws
@@ -7,7 +9,6 @@ import gws.gis.crs
 import gws.gis.extent
 import gws.lib.net
 
-import gws.types as t
 
 
 def service_operations(caps_el: gws.XmlElement) -> list[gws.OwsOperation]:
@@ -189,7 +190,7 @@ def _contact_metadata(el: gws.XmlElement, md: gws.Metadata):
 
 ##
 
-def wgs_bounds(layer_el: gws.XmlElement) -> t.Optional[gws.Bounds]:
+def wgs_bounds(layer_el: gws.XmlElement) -> Optional[gws.Bounds]:
     """Read WGS bounding box from a Layer/FeatureType element.
 
     Extracts coordinates from ``EX_GeographicBoundingBox`` (WMS), ``WGS84BoundingBox`` (OWS)
@@ -270,7 +271,7 @@ def parse_style(el: gws.XmlElement) -> gws.SourceStyle:
     return st
 
 
-def default_style(styles: list[gws.SourceStyle]) -> t.Optional[gws.SourceStyle]:
+def default_style(styles: list[gws.SourceStyle]) -> Optional[gws.SourceStyle]:
     for s in styles:
         if s.isDefault:
             return s
@@ -368,7 +369,7 @@ def _parse_url(el: gws.XmlElement) -> str:
     return ''
 
 
-def _parse_link(el: gws.XmlElement) -> t.Optional[gws.MetadataLink]:
+def _parse_link(el: gws.XmlElement) -> Optional[gws.MetadataLink]:
     # <MetadataURL type="...
     #       <Format...
     # 	    <OnlineResource...

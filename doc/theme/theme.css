@@ -433,6 +433,14 @@ body.withSearch #sidebar-toc {
     font-size: 13px;
 }
 
+.demo {
+    border-bottom: 1px solid #bbdefb;
+    padding: 5px 0;
+    margin-bottom: 10px;
+    display: inline-block;
+    font-size: 13px;
+}
+
 .admonition_info {
     background-color: #e7fdea;
     background-image: url('theme_info.svg');

@@ -1,5 +1,6 @@
+from typing import Optional, Any
+
 import gws
-import gws.types as t
 
 
 class EnumPair:
@@ -114,7 +115,7 @@ class Flurstueck(Entity):
     festlegungList: list['Part']
     bewertungList: list['Part']
 
-    geom: t.Any
+    geom: Any
     x: float
     y: float
     shape: gws.Shape
@@ -373,7 +374,7 @@ class Place(Record):
 
 ##
 
-class DisplayTheme(t.Enum):
+class DisplayTheme(gws.Enum):
     lage = 'lage'
     gebaeude = 'gebaeude'
     nutzung = 'nutzung'
@@ -396,7 +397,7 @@ class FlurstueckQueryOptions(gws.Data):
     limit: int
     offset: int
     hardLimit: int
-    sort: t.Optional[list[gws.SortOptions]]
+    sort: Optional[list[gws.SortOptions]]
 
     displayThemes: list[DisplayTheme]
 
@@ -439,7 +440,7 @@ class FlurstueckQuery(gws.Data):
 
     uids: list[str]
 
-    options: t.Optional['FlurstueckQueryOptions']
+    options: Optional['FlurstueckQueryOptions']
 
 
 class AdresseQueryOptions(gws.Data):
@@ -448,7 +449,7 @@ class AdresseQueryOptions(gws.Data):
     limit: int
     offset: int
     hardLimit: int
-    sort: t.Optional[list[gws.SortOptions]]
+    sort: Optional[list[gws.SortOptions]]
 
     withHistorySearch: bool
 
@@ -470,16 +471,16 @@ class AdresseQuery(gws.Data):
     bisHausnummer: str
     hausnummerNotNull: bool
 
-    options: t.Optional['AdresseQueryOptions']
+    options: Optional['AdresseQueryOptions']
 
 
 ##
 
 class Reader:
-    def read_all(self, cls: type, table_name: t.Optional[str] = None, uids: t.Optional[list[str]] = None):
+    def read_all(self, cls: type, table_name: Optional[str] = None, uids: Optional[list[str]] = None):
         pass
 
-    def count(self, cls: type, table_name: t.Optional[str] = None) -> int:
+    def count(self, cls: type, table_name: Optional[str] = None) -> int:
         pass
 
 ##

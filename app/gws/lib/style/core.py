@@ -1,5 +1,6 @@
+from typing import Optional
+
 import gws
-import gws.types as t
 
 from . import parser, icon
 
@@ -73,19 +74,19 @@ def from_props(props: gws.Props, opts: parser.Options = None) -> 'Object':
 class Config(gws.Config):
     """Feature style"""
 
-    cssSelector: t.Optional[str]
+    cssSelector: Optional[str]
     """CSS selector"""
-    text: t.Optional[str]
+    text: Optional[str]
     """raw style content"""
-    values: t.Optional[dict]
+    values: Optional[dict]
     """style values"""
 
 
 class Props(gws.Props):
 
-    cssSelector: t.Optional[str]
+    cssSelector: Optional[str]
     """CSS selector"""
-    values: t.Optional[dict]
+    values: Optional[dict]
     """Style values"""
 
 

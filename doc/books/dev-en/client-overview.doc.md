@@ -75,7 +75,6 @@ The source code layout of the application is as follows:
         /plugin   - built-in plugins
         /server   - server-related functions
         /spec     - spec generator and runtime
-        /types    - typing
     
     /js     - the client app            
 
@@ -86,12 +85,12 @@ The source code layout of the application is as follows:
 
 In our python sources, we follow the [google style guide](https://google.github.io/styleguide/pyguide.html), especially regarding docstrings.
 
-All python code must have type annotations, as standard collections (as per [PEP 585](https://peps.python.org/pep-0585/)) and by importing `gws.types':
+All python code must have type annotations, for example:
 
 ```
-import gws.types as t
+from typing import Optional, Iterabel
 
-def spam(ham: int, eggs: t.Optional[list[float]]) -> dict[str, float]:
+def spam(ham: int, eggs: Optional[list[float]]) -> Iterable[float]:
     ....
 
 ```

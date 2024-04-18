@@ -1,9 +1,10 @@
 """Command-line GEKOS commands."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.action
 import gws.config
-import gws.types as t
 
 from . import action
 
@@ -11,7 +12,7 @@ gws.ext.new.cli('gekos')
 
 
 class CreateIndexParams(gws.CliParams):
-    projectUid: t.Optional[str]
+    projectUid: Optional[str]
     """project uid"""
 
 
@@ -22,5 +23,5 @@ class Object(gws.Node):
         """Create the GEKOS index."""
 
         root = gws.config.load()
-        act = t.cast(action.Object, gws.base.action.find(root, 'gekos', root.app.authMgr.systemUser, p.projectUid))
+        act = cast(action.Object, gws.base.action.find(root, 'gekos', root.app.authMgr.systemUser, p.projectUid))
         act.index.create()

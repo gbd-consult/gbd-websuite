@@ -1,9 +1,10 @@
 """Provide configuration for the client Dimension module."""
 
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.base.storage
-import gws.types as t
 
 gws.ext.new.action('dimension')
 
@@ -11,22 +12,22 @@ gws.ext.new.action('dimension')
 class Config(gws.base.action.Config):
     """Dimension action"""
 
-    layerUids: t.Optional[list[str]]
+    layerUids: Optional[list[str]]
     """snap layer uids"""
     pixelTolerance: int = 10
     """pixel tolerance"""
-    storage: t.Optional[gws.base.storage.Config]
+    storage: Optional[gws.base.storage.Config]
     """storage configuration"""
 
 
 class Props(gws.base.action.Props):
-    layerUids: t.Optional[list[str]]
+    layerUids: Optional[list[str]]
     pixelTolerance: int
     storage: gws.base.storage.Props
 
 
 class Object(gws.base.action.Object):
-    storage: t.Optional[gws.base.storage.Object]
+    storage: Optional[gws.base.storage.Object]
 
     def configure(self):
         self.storage = self.create_child_if_configured(

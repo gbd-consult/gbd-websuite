@@ -28,7 +28,7 @@ actions+ {
 
 client.addElements+ { tag "Sidebar.Dimension" }
 client.addElements+ { tag "Toolbar.Dimension" }
-client.options.sidebarActiveTab "Sidebar.Dimension"
+
 
 printers+ {
     template {

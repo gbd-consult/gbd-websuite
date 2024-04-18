@@ -1,5 +1,6 @@
+from typing import Optional
+
 import gws
-import gws.types as t
 
 from . import site
 
@@ -11,9 +12,9 @@ _FALLBACK_SITE = gws.Config(
 class Config(gws.Config):
     """Web server configuration"""
 
-    sites: t.Optional[list[site.Config]]
+    sites: Optional[list[site.Config]]
     """configured sites"""
-    ssl: t.Optional[site.SSLConfig]
+    ssl: Optional[site.SSLConfig]
     """ssl configuration"""
 
 

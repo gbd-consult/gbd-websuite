@@ -1,19 +1,20 @@
 """Select action."""
 
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.base.web
 import gws.base.storage
 import gws.lib.uom
-import gws.types as t
 
 gws.ext.new.action('select')
 
 
 class Config(gws.base.action.Config):
-    storage: t.Optional[gws.base.storage.Config]
+    storage: Optional[gws.base.storage.Config]
     """storage configuration"""
-    tolerance: t.Optional[gws.UomValueStr]
+    tolerance: Optional[gws.UomValueStr]
     """click tolerance"""
 
 
@@ -23,8 +24,8 @@ class Props(gws.base.action.Props):
 
 
 class Object(gws.base.action.Object):
-    storage: t.Optional[gws.base.storage.Object]
-    tolerance: t.Optional[gws.UomValue]
+    storage: Optional[gws.base.storage.Object]
+    tolerance: Optional[gws.UomValue]
 
     def configure(self):
         self.storage = self.create_child_if_configured(

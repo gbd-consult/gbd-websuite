@@ -22,7 +22,7 @@ from collections.abc import (
     Sequence,
 )
 
-from gws.types import Enum
+import enum
 
 if TYPE_CHECKING:
     import datetime
@@ -148,6 +148,21 @@ u.to_data_object = to_data_object
 ################################################################################
 # /core/_basic.pyinc
 
+
+class Enum(enum.Enum):
+    """Enumeration type.
+
+    Despite being declared as extending ``Enum`` (for IDE support), this class is actually just a simple object
+    and intended to be used as a collection of attributes. It doesn't provide any ``Enum``-specific utilities.
+
+    The rationale behind this is that we need ``Enum`` members (e.g. ``Color.RED``) to be scalars,
+    and not complex objects as in the standard ``Enum``.
+    """
+    pass
+
+
+# hack to make Enum a simple object
+globals()['Enum'] = type('Enum', (), {})
 
 Extent: TypeAlias = tuple[float, float, float, float]
 """An array of 4 elements representing extent coordinates ``[min-x, min-y, max-x, max-y]``."""

@@ -1,12 +1,13 @@
 """File field."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.database.model
 import gws.base.model.field
 import gws.lib.mime
 import gws.lib.osx
 import gws.lib.sa as sa
-import gws.types as t
 
 gws.ext.new.modelField('file')
 
@@ -22,9 +23,9 @@ class Props(gws.base.model.field.Props):
 
 
 class Cols(gws.Data):
-    content: t.Optional[sa.Column]
-    path: t.Optional[sa.Column]
-    name: t.Optional[sa.Column]
+    content: Optional[sa.Column]
+    path: Optional[sa.Column]
+    name: Optional[sa.Column]
 
 
 class FileInputProps(gws.Data):
@@ -66,7 +67,7 @@ class Object(gws.base.model.field.Object):
         self.configure_columns()
 
     def configure_columns(self):
-        model = t.cast(gws.base.database.model.Object, self.model)
+        model = cast(gws.base.database.model.Object, self.model)
 
         self.cols = Cols()
 
@@ -114,7 +115,7 @@ class Object(gws.base.model.field.Object):
 
         # @TODO store in the filesystem
 
-        fv = t.cast(FileValue, feature.get(self.name))
+        fv = cast(FileValue, feature.get(self.name))
         if fv:
             if self.cols.content is not None:
                 feature.record.attributes[self.cols.content.name] = fv.content
@@ -151,7 +152,7 @@ class Object(gws.base.model.field.Object):
             return gws.ErrorValue
 
     def python_to_prop(self, feature, value, mc) -> ServerFileProps:
-        fv = t.cast(FileValue, value)
+        fv = cast(FileValue, value)
 
         mime = self.get_mime_type(fv)
         ext = gws.lib.mime.extension_for(mime)
@@ -191,8 +192,8 @@ class Object(gws.base.model.field.Object):
         # @TODO guess mime from content?
         return gws.lib.mime.TXT
 
-    def handle_web_file_request(self, feature_uid: str, preview: bool, mc: gws.ModelContext) -> t.Optional[gws.ContentResponse]:
-        model = t.cast(gws.DatabaseModel, self.model)
+    def handle_web_file_request(self, feature_uid: str, preview: bool, mc: gws.ModelContext) -> Optional[gws.ContentResponse]:
+        model = cast(gws.DatabaseModel, self.model)
 
         sql = sa.select(
             *self.select_columns(True, mc)

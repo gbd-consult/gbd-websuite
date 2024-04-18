@@ -1,12 +1,13 @@
 """Search API."""
 
+from typing import Optional
+
 import gws
 import gws.base.action
 import gws.base.template
 import gws.base.feature
 import gws.base.shape
 import gws.lib.uom
-import gws.types as t
 
 gws.ext.new.action('search')
 
@@ -19,7 +20,7 @@ class Config(gws.base.action.Config):
 
     limit: int = 1000
     """search results limit"""
-    tolerance: t.Optional[gws.UomValueStr]
+    tolerance: Optional[gws.UomValueStr]
     """default tolerance"""
 
 
@@ -28,15 +29,15 @@ class Props(gws.base.action.Props):
 
 
 class Request(gws.Request):
-    crs: t.Optional[gws.CrsName]
-    extent: t.Optional[gws.Extent]
+    crs: Optional[gws.CrsName]
+    extent: Optional[gws.Extent]
     keyword: str = ''
     layerUids: list[str]
-    limit: t.Optional[int]
+    limit: Optional[int]
     resolution: float
-    shapes: t.Optional[list[gws.base.shape.Props]]
-    tolerance: t.Optional[str]
-    views: t.Optional[list[str]]
+    shapes: Optional[list[gws.base.shape.Props]]
+    tolerance: Optional[str]
+    views: Optional[list[str]]
 
 
 class Response(gws.Response):

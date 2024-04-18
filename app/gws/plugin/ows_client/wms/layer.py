@@ -2,7 +2,6 @@
 
 import gws
 import gws.base.layer
-import gws.types as t
 
 from . import provider
 

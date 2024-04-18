@@ -1,12 +1,13 @@
 """GeoJson provder."""
 
+from typing import Optional, cast
+
 import gws
 import gws.config.util
 import gws.gis.crs
 import gws.base.shape
 import gws.lib.jsonx
 
-import gws.types as t
 
 
 class Config(gws.Config):
@@ -55,4 +56,4 @@ class Object(gws.Node):
 
 
 def get_for(obj: gws.Node) -> Object:
-    return t.cast(Object, gws.config.util.get_provider(Object, obj))
+    return cast(Object, gws.config.util.get_provider(Object, obj))

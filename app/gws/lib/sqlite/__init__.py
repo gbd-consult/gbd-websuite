@@ -10,7 +10,6 @@ import sqlite3
 import time
 
 import gws
-import gws.types as t
 
 _LOCK_RETRY_ATTEMPTS = 10
 _LOCK_WAIT_TIME = 0.05

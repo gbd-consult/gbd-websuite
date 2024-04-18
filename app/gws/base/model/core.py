@@ -1,24 +1,24 @@
 """Base model."""
-from typing import Optional
+
+from typing import Optional, cast
 
 import gws
 import gws.base.feature
 import gws.base.shape
 import gws.config.util
-import gws.types as t
 
 
 class TableViewColumn(gws.Data):
     name: str
-    width: t.Optional[int]
+    width: Optional[int]
 
 
 class Config(gws.ConfigWithAccess):
     """Model configuration"""
 
-    fields: t.Optional[list[gws.ext.config.modelField]]
+    fields: Optional[list[gws.ext.config.modelField]]
     """model fields"""
-    loadingStrategy: t.Optional[gws.FeatureLoadingStrategy]
+    loadingStrategy: Optional[gws.FeatureLoadingStrategy]
     """loading strategy for features"""
     title: str = ''
     """model title"""
@@ -26,15 +26,15 @@ class Config(gws.ConfigWithAccess):
     """this model is editable"""
     withAutoFields: bool = False
     """autoload non-configured model fields from the source"""
-    excludeColumns: t.Optional[list[str]]
+    excludeColumns: Optional[list[str]]
     """exclude columns names from autoload"""
     withTableView: bool = True
     """enable table view for this model"""
-    tableViewColumns: t.Optional[list[TableViewColumn]]
+    tableViewColumns: Optional[list[TableViewColumn]]
     """fields to include in the table view"""
-    templates: t.Optional[list[gws.ext.config.template]]
+    templates: Optional[list[gws.ext.config.template]]
     """feature templates"""
-    sort: t.Optional[list[gws.SortOptions]]
+    sort: Optional[list[gws.SortOptions]]
     """default sorting"""
 
 
@@ -45,17 +45,17 @@ class Props(gws.Props):
     canWrite: bool
     isEditable: bool
     fields: list[gws.ext.props.modelField]
-    geometryCrs: t.Optional[str]
-    geometryName: t.Optional[str]
-    geometryType: t.Optional[gws.GeometryType]
-    layerUid: t.Optional[str]
+    geometryCrs: Optional[str]
+    geometryName: Optional[str]
+    geometryType: Optional[gws.GeometryType]
+    layerUid: Optional[str]
     loadingStrategy: gws.FeatureLoadingStrategy
     supportsGeometrySearch: bool
     supportsKeywordSearch: bool
     tableViewColumns: list[TableViewColumn]
     title: str
     uid: str
-    uidName: t.Optional[str]
+    uidName: Optional[str]
 
 
 class Object(gws.Model):
@@ -170,7 +170,7 @@ class Object(gws.Model):
     ##
 
     def props(self, user):
-        layer = t.cast(gws.Layer, self.find_closest(gws.ext.object.layer))
+        layer = cast(gws.Layer, self.find_closest(gws.ext.object.layer))
 
         return gws.Props(
             canCreate=user.can_create(self),
@@ -248,7 +248,7 @@ class Object(gws.Model):
     ##
 
     def feature_from_props(self, props, mc):
-        props = t.cast(gws.FeatureProps, gws.u.to_data_object(props))
+        props = cast(gws.FeatureProps, gws.u.to_data_object(props))
         feature = gws.base.feature.new(model=self, props=props)
         feature.cssSelector = props.cssSelector or ''
         feature.isNew = props.isNew or False

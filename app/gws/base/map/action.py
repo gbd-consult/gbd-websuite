@@ -1,5 +1,7 @@
 """Map related commands."""
 
+from typing import Optional
+
 import time
 
 import gws
@@ -17,7 +19,6 @@ import gws.lib.jsonx
 import gws.lib.mime
 import gws.gis.render
 import gws.lib.uom
-import gws.types as t
 
 gws.ext.new.action('map')
 
@@ -35,9 +36,9 @@ class GetBoxRequest(gws.Request):
     width: int
     height: int
     layerUid: str
-    crs: t.Optional[gws.CrsName]
-    dpi: t.Optional[int]
-    layers: t.Optional[list[str]]
+    crs: Optional[gws.CrsName]
+    dpi: Optional[int]
+    layers: Optional[list[str]]
 
 
 class GetXyzRequest(gws.Request):
@@ -65,13 +66,13 @@ class DescribeLayerResponse(gws.Request):
 
 
 class GetFeaturesRequest(gws.Request):
-    bbox: t.Optional[gws.Extent]
+    bbox: Optional[gws.Extent]
     layerUid: str
-    modelUid: t.Optional[str]
-    crs: t.Optional[gws.CrsName]
-    resolution: t.Optional[float]
+    modelUid: Optional[str]
+    crs: Optional[gws.CrsName]
+    resolution: Optional[float]
     limit: int = 0
-    views: t.Optional[list[str]]
+    views: Optional[list[str]]
 
 
 class GetFeaturesResponse(gws.Response):

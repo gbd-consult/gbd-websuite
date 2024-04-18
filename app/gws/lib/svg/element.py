@@ -1,8 +1,10 @@
 # sanitizer
+
+from typing import Optional
+
 import gws
 import gws.lib.xmlx as xmlx
 import gws.lib.mime
-import gws.types as t
 import gws.lib.image
 
 _SVG_TAG_ATTS = {
@@ -24,7 +26,7 @@ def fragment_to_image(fragment: list[gws.XmlElement], size: gws.Size, mime=gws.l
     return gws.lib.image.from_svg(el.to_string(), size, mime)
 
 
-def sanitize_element(el: gws.XmlElement) -> t.Optional[gws.XmlElement]:
+def sanitize_element(el: gws.XmlElement) -> Optional[gws.XmlElement]:
     """Remove unsafe stuff from an SVG element."""
 
     children = gws.u.compact(_sanitize(c) for c in el)
@@ -136,7 +138,7 @@ _ALLOWED_ATTRIBUTES = {
 }
 
 
-def _sanitize(el: gws.XmlElement) -> t.Optional[gws.XmlElement]:
+def _sanitize(el: gws.XmlElement) -> Optional[gws.XmlElement]:
     if el.name in _ALLOWED_TAGS:
         return xmlx.tag(
             el.name,

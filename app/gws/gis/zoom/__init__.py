@@ -1,7 +1,8 @@
+from typing import Optional
+
 import gws
 import gws.gis.extent
 import gws.lib.uom as units
-import gws.types as t
 
 # https://wiki.openstreetmap.org/wiki/Zoom_levels
 
@@ -33,24 +34,24 @@ OSM_RESOLUTIONS = list(reversed([units.scale_to_res(s) for s in OSM_SCALES]))
 class Config(gws.Config):
     """Zoom levels and resolutions"""
 
-    resolutions: t.Optional[list[float]]
+    resolutions: Optional[list[float]]
     """allowed resolutions"""
-    initResolution: t.Optional[float]
+    initResolution: Optional[float]
     """initial resolution"""
 
-    scales: t.Optional[list[float]]
+    scales: Optional[list[float]]
     """allowed scales"""
-    initScale: t.Optional[float]
+    initScale: Optional[float]
     """initial scale"""
 
-    minResolution: t.Optional[float]
+    minResolution: Optional[float]
     """minimal resolution"""
-    maxResolution: t.Optional[float]
+    maxResolution: Optional[float]
     """maximal resolution"""
 
-    minScale: t.Optional[float]
+    minScale: Optional[float]
     """minimal scale"""
-    maxScale: t.Optional[float]
+    maxScale: Optional[float]
     """maximal scale"""
 
 

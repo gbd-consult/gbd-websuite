@@ -16,7 +16,6 @@ This object is implemented as a "related_multi_feature_list" with a single targe
 import gws
 import gws.base.database.model
 import gws.base.model.related_field as related_field
-import gws.types as t
 
 from gws.plugin.model_field import related_multi_feature_list
 

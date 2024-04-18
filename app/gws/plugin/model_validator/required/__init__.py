@@ -2,7 +2,6 @@
 
 import gws
 import gws.base.model.validator
-import gws.types as t
 
 gws.ext.new.modelValidator('required')
 

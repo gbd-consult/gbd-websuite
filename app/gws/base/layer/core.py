@@ -1,4 +1,5 @@
 """Base layer object."""
+
 from typing import Optional
 
 import gws
@@ -17,7 +18,6 @@ import gws.lib.style
 import gws.lib.svg
 import gws.lib.xmlx
 
-import gws.types as t
 
 DEFAULT_TILE_SIZE = 256
 
@@ -29,24 +29,24 @@ class CacheConfig(gws.Config):
     """cache max. age"""
     maxLevel: int = 1
     """max. zoom level to cache"""
-    requestBuffer: t.Optional[int]
-    requestTiles: t.Optional[int]
+    requestBuffer: Optional[int]
+    requestTiles: Optional[int]
 
 
 class GridConfig(gws.Config):
     """Grid configuration for caches and tiled data"""
 
-    crs: t.Optional[gws.CrsName]
-    extent: t.Optional[gws.Extent]
-    origin: t.Optional[gws.Origin]
-    resolutions: t.Optional[list[float]]
-    tileSize: t.Optional[int]
+    crs: Optional[gws.CrsName]
+    extent: Optional[gws.Extent]
+    origin: Optional[gws.Origin]
+    resolutions: Optional[list[float]]
+    tileSize: Optional[int]
 
 
 class AutoLayersOptions(gws.ConfigWithAccess):
     """Configuration for automatic layers."""
 
-    applyTo: t.Optional[gws.gis.source.LayerFilter]
+    applyTo: Optional[gws.gis.source.LayerFilter]
     config: 'Config'
 
 
@@ -54,7 +54,7 @@ class OwsConfig(gws.Config):
     layerName: str = ''
     featureName: str = ''
     geometryName: str = ''
-    xmlNamespace: t.Optional[gws.XmlNamespace]
+    xmlNamespace: Optional[gws.XmlNamespace]
 
 
 class ClientOptions(gws.Data):
@@ -77,7 +77,7 @@ class ClientOptions(gws.Data):
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
-    cache: t.Optional[CacheConfig]
+    cache: Optional[CacheConfig]
     """cache configuration"""
     clientOptions: ClientOptions = {}
     """options for the layer display in the client"""
@@ -85,41 +85,41 @@ class Config(gws.ConfigWithAccess):
     """css selector for feature layers"""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.box
     """layer display mode"""
-    extent: t.Optional[gws.Extent]
+    extent: Optional[gws.Extent]
     """layer extent"""
-    extentBuffer: t.Optional[int]
+    extentBuffer: Optional[int]
     """extent buffer"""
-    finders: t.Optional[list[gws.ext.config.finder]]
+    finders: Optional[list[gws.ext.config.finder]]
     """search providers"""
-    grid: t.Optional[GridConfig]
+    grid: Optional[GridConfig]
     """client grid"""
     imageFormat: gws.ImageFormat = gws.ImageFormat.png8
     """image format"""
-    legend: t.Optional[gws.ext.config.legend]
+    legend: Optional[gws.ext.config.legend]
     """legend configuration"""
     loadingStrategy: gws.FeatureLoadingStrategy = gws.FeatureLoadingStrategy.all
     """feature loading strategy"""
-    metadata: t.Optional[gws.Metadata]
+    metadata: Optional[gws.Metadata]
     """layer metadata"""
-    models: t.Optional[list[gws.ext.config.model]]
+    models: Optional[list[gws.ext.config.model]]
     """data models"""
     opacity: float = 1
     """layer opacity"""
-    ows: t.Optional[OwsConfig]
+    ows: Optional[OwsConfig]
     """configuration for OWS services"""
-    templates: t.Optional[list[gws.ext.config.template]]
+    templates: Optional[list[gws.ext.config.template]]
     """layer templates"""
     title: str = ''
     """layer title"""
-    zoom: t.Optional[gws.gis.zoom.Config]
+    zoom: Optional[gws.gis.zoom.Config]
     """layer resolutions and scales"""
-    withSearch: t.Optional[bool] = True
+    withSearch: Optional[bool] = True
     """layer is searchable"""
-    withLegend: t.Optional[bool] = True
+    withLegend: Optional[bool] = True
     """layer has a legend"""
-    withCache: t.Optional[bool] = False
+    withCache: Optional[bool] = False
     """layer is cached"""
-    withOws: t.Optional[bool] = True
+    withOws: Optional[bool] = True
     """layer is enabled for OWS services"""
 
 
@@ -134,15 +134,15 @@ class Props(gws.Props):
     clientOptions: gws.LayerClientOptions
     cssSelector: str
     displayMode: str
-    extent: t.Optional[gws.Extent]
-    geometryType: t.Optional[gws.GeometryType]
+    extent: Optional[gws.Extent]
+    geometryType: Optional[gws.GeometryType]
     grid: GridProps
-    layers: t.Optional[list['Props']]
+    layers: Optional[list['Props']]
     loadingStrategy: gws.FeatureLoadingStrategy
     metadata: gws.lib.metadata.Props
-    model: t.Optional[gws.base.model.Props]
-    opacity: t.Optional[float]
-    resolutions: t.Optional[list[float]]
+    model: Optional[gws.base.model.Props]
+    opacity: Optional[float]
+    resolutions: Optional[list[float]]
     title: str = ''
     type: str
     uid: str
@@ -394,7 +394,7 @@ class Object(gws.Layer):
     def get_features_for_view(self, search, user, view_names= None):
         return []
 
-    def render_legend(self, args=None) -> t.Optional[gws.LegendRenderOutput]:
+    def render_legend(self, args=None) -> Optional[gws.LegendRenderOutput]:
 
         if not self.legend:
             return None

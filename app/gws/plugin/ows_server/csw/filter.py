@@ -2,7 +2,6 @@ import gws
 import gws.gis.crs
 import gws.gis.extent
 import gws.gis.bounds
-import gws.types as t
 
 
 class Filter:

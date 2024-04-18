@@ -1,5 +1,7 @@
 """Backend for vector edit operations."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.action
 import gws.base.feature
@@ -13,7 +15,6 @@ import gws.gis.render
 import gws.lib.image
 import gws.lib.jsonx
 import gws.lib.mime
-import gws.types as t
 
 gws.ext.new.action('edit')
 
@@ -42,20 +43,20 @@ class GetModelsResponse(gws.Response):
 
 class GetFeaturesRequest(gws.Request):
     modelUids: list[str]
-    crs: t.Optional[gws.CrsName]
-    extent: t.Optional[gws.Extent]
-    featureUids: t.Optional[list[str]]
-    keyword: t.Optional[str]
-    resolution: t.Optional[float]
-    shapes: t.Optional[list[gws.ShapeProps]]
-    tolerance: t.Optional[str]
+    crs: Optional[gws.CrsName]
+    extent: Optional[gws.Extent]
+    featureUids: Optional[list[str]]
+    keyword: Optional[str]
+    resolution: Optional[float]
+    shapes: Optional[list[gws.ShapeProps]]
+    tolerance: Optional[str]
 
 
 class GetRelatableFeaturesRequest(gws.Request):
     modelUid: str
     fieldName: str
-    extent: t.Optional[gws.Extent]
-    keyword: t.Optional[str]
+    extent: Optional[gws.Extent]
+    keyword: Optional[str]
 
 
 class GetFeatureRequest(gws.Request):
@@ -245,7 +246,7 @@ class Object(gws.base.action.Object):
     ##
 
     def require_model(self, model_uid, user: gws.User, access: gws.Access) -> gws.Model:
-        model = t.cast(gws.Model, user.acquire(model_uid, gws.ext.object.model, access))
+        model = cast(gws.Model, user.acquire(model_uid, gws.ext.object.model, access))
         if not model or not model.isEditable:
             raise gws.ForbiddenError()
         return model

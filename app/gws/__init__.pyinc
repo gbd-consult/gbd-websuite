@@ -22,7 +22,7 @@ from collections.abc import (
     Sequence,
 )
 
-from gws.types import Enum
+import enum
 
 if TYPE_CHECKING:
     import datetime

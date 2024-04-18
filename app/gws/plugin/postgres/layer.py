@@ -1,6 +1,5 @@
 import gws
 import gws.base.database.layer
-import gws.types as t
 
 from . import provider
 

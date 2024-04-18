@@ -1,3 +1,5 @@
+from typing import Optional
+
 import base64
 import re
 
@@ -6,7 +8,6 @@ import gws.lib.net
 import gws.lib.svg
 import gws.lib.osx
 import gws.lib.xmlx as xmlx
-import gws.types as t
 
 
 class Error(gws.Error):
@@ -36,7 +37,7 @@ def to_data_url(icon: ParsedIcon) -> str:
     return ''
 
 
-def parse(val: str, opts) -> t.Optional[ParsedIcon]:
+def parse(val: str, opts) -> Optional[ParsedIcon]:
     """Parses an url or directory path to a svg.
 
     Args:
@@ -72,7 +73,7 @@ def parse(val: str, opts) -> t.Optional[ParsedIcon]:
 ##
 
 
-def _get_bytes(val, opts) -> t.Optional[bytes]:
+def _get_bytes(val, opts) -> Optional[bytes]:
     if val.startswith('data:'):
         return _decode_data_url(val, opts)
 
@@ -108,7 +109,7 @@ _PREFIXES = [
 ]
 
 
-def _decode_data_url(val, trusted) -> t.Optional[bytes]:
+def _decode_data_url(val, trusted) -> Optional[bytes]:
     for pfx in _PREFIXES:
         if val.startswith(pfx):
             s = val[len(pfx):]

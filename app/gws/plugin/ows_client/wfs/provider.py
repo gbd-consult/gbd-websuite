@@ -1,5 +1,7 @@
 """WFS provider."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.ows.client
 import gws.base.shape
@@ -9,7 +11,6 @@ import gws.gis.crs
 import gws.gis.extent
 import gws.gis.source
 
-import gws.types as t
 
 from . import caps
 
@@ -26,7 +27,7 @@ from . import caps
 
 
 class Config(gws.base.ows.client.provider.Config):
-    extendedBbox: t.Optional[bool]
+    extendedBbox: Optional[bool]
     """whether to use extended bbox format (with CRS)"""
 
 
@@ -133,4 +134,4 @@ class Object(gws.base.ows.client.provider.Object):
 
 
 def get_for(obj) -> Object:
-    return t.cast(Object, gws.config.util.get_provider(Object, obj))
+    return cast(Object, gws.config.util.get_provider(Object, obj))

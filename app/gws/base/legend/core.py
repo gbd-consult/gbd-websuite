@@ -1,7 +1,8 @@
+from typing import Optional
+
 import gws
 import gws.lib.image
 import gws.lib.mime
-import gws.types as t
 
 
 class Props(gws.Props):
@@ -13,7 +14,7 @@ class Config(gws.ConfigWithAccess):
 
     cacheMaxAge: gws.Duration = '1d'
     """max cache age for remote legends"""
-    options: t.Optional[dict]
+    options: Optional[dict]
     """provider-dependent legend options"""
 
 
@@ -28,12 +29,12 @@ class Object(gws.Legend):
         self.cacheMaxAge = self.cfg('cacheMaxAge', default=3600 * 24)
 
 
-def output_to_bytes(lro: gws.LegendRenderOutput) -> t.Optional[bytes]:
+def output_to_bytes(lro: gws.LegendRenderOutput) -> Optional[bytes]:
     img = output_to_image(lro)
     return img.to_bytes() if img else None
 
 
-def output_to_image(lro: gws.LegendRenderOutput) -> t.Optional[gws.Image]:
+def output_to_image(lro: gws.LegendRenderOutput) -> Optional[gws.Image]:
     if lro.image:
         return lro.image
     if lro.image_path:
@@ -42,7 +43,7 @@ def output_to_image(lro: gws.LegendRenderOutput) -> t.Optional[gws.Image]:
         return None
 
 
-def output_to_image_path(lro: gws.LegendRenderOutput) -> t.Optional[str]:
+def output_to_image_path(lro: gws.LegendRenderOutput) -> Optional[str]:
     if lro.image:
         img_path = gws.u.printtemp('legend.png')
         return lro.image.to_path(img_path, gws.lib.mime.PNG)
@@ -52,7 +53,7 @@ def output_to_image_path(lro: gws.LegendRenderOutput) -> t.Optional[str]:
         return None
 
 
-def combine_outputs(lros: list[gws.LegendRenderOutput], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
+def combine_outputs(lros: list[gws.LegendRenderOutput], options: dict = None) -> Optional[gws.LegendRenderOutput]:
     imgs = gws.u.compact(output_to_image(lro) for lro in lros)
     img = _combine_images(imgs, options)
     if not img:
@@ -60,7 +61,7 @@ def combine_outputs(lros: list[gws.LegendRenderOutput], options: dict = None) ->
     return gws.LegendRenderOutput(image=img, size=img.size())
 
 
-def _combine_images(images: list[gws.Image], options: dict = None) -> t.Optional[gws.Image]:
+def _combine_images(images: list[gws.Image], options: dict = None) -> Optional[gws.Image]:
     if not images:
         return None
     # @TODO other combination options

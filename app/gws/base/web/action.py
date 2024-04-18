@@ -1,5 +1,7 @@
 """Serve dynamic assets."""
 
+from typing import Optional, cast
+
 import os
 import re
 
@@ -10,7 +12,6 @@ import gws.base.template
 import gws.base.web.error
 import gws.lib.mime
 import gws.lib.osx
-import gws.types as t
 
 gws.ext.new.action('web')
 
@@ -63,7 +64,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('webFile')
     def file(self, req: gws.WebRequester, p: FileRequest) -> gws.ContentResponse:
-        model = t.cast(gws.Model, req.user.acquire(p.modelUid, gws.ext.object.model, gws.Access.read))
+        model = cast(gws.Model, req.user.acquire(p.modelUid, gws.ext.object.model, gws.Access.read))
         field = model.field(p.fieldName)
         if not field:
             raise gws.NotFoundError()
@@ -197,7 +198,7 @@ _DEFAULT_ALLOWED_MIME_TYPES = {
 }
 
 
-def _valid_mime_type(mt, project_assets: t.Optional[gws.WebDocumentRoot], site_assets: t.Optional[gws.WebDocumentRoot]):
+def _valid_mime_type(mt, project_assets: Optional[gws.WebDocumentRoot], site_assets: Optional[gws.WebDocumentRoot]):
     if project_assets and project_assets.allowMime:
         return mt in project_assets.allowMime
     if site_assets and site_assets.allowMime:

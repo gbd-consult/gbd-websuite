@@ -1,5 +1,7 @@
 """Provides the printing API."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.action
 import gws.base.web
@@ -9,7 +11,6 @@ import gws.lib.jsonx
 import gws.lib.mime
 import gws.lib.style
 
-import gws.types as t
 
 from . import manager
 
@@ -29,7 +30,7 @@ class JobRequest(gws.Request):
 
 
 class CliParams(gws.CliParams):
-    project: t.Optional[str]
+    project: Optional[str]
     """project uid"""
     request: str
     """path to request.json"""
@@ -43,7 +44,7 @@ class Object(gws.base.action.Object):
     def start_print(self, req: gws.WebRequester, p: gws.PrintRequest) -> gws.PrintJobResponse:
         """Start a background print job"""
 
-        mgr = t.cast(manager.Object, self.root.app.printerMgr)
+        mgr = cast(manager.Object, self.root.app.printerMgr)
         job = mgr.start_job(p, req.user)
         return mgr.status(job)
 
@@ -51,7 +52,7 @@ class Object(gws.base.action.Object):
     def get_status(self, req: gws.WebRequester, p: JobRequest) -> gws.PrintJobResponse:
         """Query the print job status"""
 
-        mgr = t.cast(manager.Object, self.root.app.printerMgr)
+        mgr = cast(manager.Object, self.root.app.printerMgr)
         job = mgr.get_job(p.jobUid, req.user)
         if not job:
             raise gws.base.web.error.NotFound()
@@ -61,7 +62,7 @@ class Object(gws.base.action.Object):
     def cancel(self, req: gws.WebRequester, p: JobRequest) -> gws.PrintJobResponse:
         """Cancel a print job"""
 
-        mgr = t.cast(manager.Object, self.root.app.printerMgr)
+        mgr = cast(manager.Object, self.root.app.printerMgr)
         job = mgr.get_job(p.jobUid, req.user)
         if not job:
             raise gws.base.web.error.NotFound()
@@ -72,7 +73,7 @@ class Object(gws.base.action.Object):
     def get_result(self, req: gws.WebRequester, p: JobRequest) -> gws.ContentResponse:
         """Get the result of a print job as a byte stream"""
 
-        mgr = t.cast(manager.Object, self.root.app.printerMgr)
+        mgr = cast(manager.Object, self.root.app.printerMgr)
         job = mgr.get_job(p.jobUid, req.user)
         if not job:
             gws.log.error(f'printerResult {p.jobUid=} not found')
@@ -99,7 +100,7 @@ class Object(gws.base.action.Object):
             p.request,
         )
 
-        mgr = t.cast(manager.Object, self.root.app.printerMgr)
+        mgr = cast(manager.Object, self.root.app.printerMgr)
         res_path = mgr.run_job(request, root.app.authMgr.systemUser)
         res = gws.u.read_file_b(res_path)
         gws.u.write_file_b(p.output, res)

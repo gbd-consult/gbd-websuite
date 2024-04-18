@@ -25,6 +25,8 @@ Caveats/todos:
 - the position of the map in qgis is a couple of mm off when we combine, for better results, the map position/size in qgis must be integer
 
 """
+from typing import Optional
+
 
 import gws
 import gws.base.template
@@ -34,7 +36,6 @@ import gws.lib.htmlx
 import gws.lib.mime
 import gws.lib.pdf
 import gws.gis.render
-import gws.types as t
 
 from . import caps, project, provider
 
@@ -42,13 +43,13 @@ gws.ext.new.template('qgis')
 
 
 class Config(gws.base.template.Config):
-    provider: t.Optional[provider.Config]
+    provider: Optional[provider.Config]
     """qgis provider"""
-    index: t.Optional[int]
+    index: Optional[int]
     """template index"""
-    mapPosition: t.Optional[gws.UomSizeStr]
+    mapPosition: Optional[gws.UomSizeStr]
     """position for the main map"""
-    cssPath: t.Optional[gws.FilePath]
+    cssPath: Optional[gws.FilePath]
     """css file"""
 
 

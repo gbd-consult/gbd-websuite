@@ -5,9 +5,10 @@ which receives a dict with template arguments
 and is supposed return a `gws.ContentResponse` object.
 """
 
+from typing import Optional
+
 import gws
 import gws.base.template
-import gws.types as t
 
 gws.ext.new.template('py')
 
@@ -15,7 +16,7 @@ gws.ext.new.template('py')
 class Config(gws.base.template.Config):
     """Python template"""
 
-    path: t.Optional[gws.FilePath]
+    path: Optional[gws.FilePath]
     """path to a template file"""
 
 
