@@ -286,44 +286,48 @@ export class MapManager implements types.IMapManager {
     }
 
     protected prepareViewState(vs: any) {
-        let p: any = {};
-
+        let resolution = vs.resolution;
         if ('scale' in vs) {
-            vs.resolution = lib.scale2res(vs.scale);
+            resolution = lib.scale2res(vs.scale);
         }
 
-        if ('resolution' in vs) {
+        let centerX = vs.centerX;
+        let centerY = vs.centerY;
+        if ('center' in vs) {
+            centerX = vs.center[0];
+            centerY = vs.center[1];
+        }
+
+        let rotation = vs.rotation;
+        if ('angle' in vs) {
+            rotation = lib.deg2rad(lib.asNumber(vs.angle));
+        }
+
+        let p: any = {};
+
+        resolution = Number(resolution);
+        centerX = Number(centerX);
+        centerY = Number(centerY);
+        rotation = Number(rotation);
+
+        if (!Number.isNaN(resolution)) {
             p.resolution = lib.clamp(
-                lib.asNumber(vs.resolution),
+                resolution,
                 Math.min(...this.resolutions),
                 Math.max(...this.resolutions),
             );
         }
-
-        if ('center' in vs) {
-            vs.centerX = vs.center[0];
-            vs.centerY = vs.center[1];
-        }
-
-        if ('centerX' in vs && 'centerY' in vs) {
+        if (!Number.isNaN(centerX) && !Number.isNaN(centerY)) {
             let ext = this.extent;
-            let xy = [
-                lib.asNumber(vs.centerX),
-                lib.asNumber(vs.centerY),
-            ];
             p.center = [
-                lib.clamp(xy[0], Math.min(ext[0], ext[2]), Math.max(ext[0], ext[2])),
-                lib.clamp(xy[1], Math.min(ext[1], ext[3]), Math.max(ext[1], ext[3])),
+                lib.clamp(centerX, Math.min(ext[0], ext[2]), Math.max(ext[0], ext[2])),
+                lib.clamp(centerY, Math.min(ext[1], ext[3]), Math.max(ext[1], ext[3])),
             ];
         }
-
-        if ('angle' in vs) {
-            vs.rotation = lib.deg2rad(lib.asNumber(vs.angle));
-        }
-
-        if ('rotation' in vs) {
-            let r = lib.clamp(lib.asNumber(vs.rotation), 0, Math.PI * 2);
-            p.rotation = this.oView.constrainRotation(r);
+        if (!Number.isNaN(rotation)) {
+            p.rotation = this.oView.constrainRotation(
+                lib.clamp(rotation, 0, Math.PI * 2)
+            );
         }
 
         return p;
@@ -521,17 +525,22 @@ export class MapManager implements types.IMapManager {
 
         this.oView = this.oMap.getView();
 
-        let constrainCenter = (xy) => {
-            let size = this.oMap.getSize();
+        // OL4 doesn't support getConstraints, inject our 'constrainCenter' into a minimized private prop
+
+        this.oView['_gwsMapManager'] = this;
+
+        function constrainCenter(xy) {
+            let mm = this['_gwsMapManager']
+            let size = mm.oMap.getSize();
             if (!size)
                 return xy;
 
-            let res = this.oView.getResolution();
+            let res = mm.oView.getResolution();
             let ext = [
-                this.extent[0] + (size[0] / 2) * res,
-                this.extent[1] + (size[1] / 2) * res,
-                this.extent[2] - (size[0] / 2) * res,
-                this.extent[3] - (size[1] / 2) * res,
+                mm.extent[0] + (size[0] / 2) * res,
+                mm.extent[1] + (size[1] / 2) * res,
+                mm.extent[2] - (size[0] / 2) * res,
+                mm.extent[3] - (size[1] / 2) * res,
             ];
 
             let c = [
@@ -539,18 +548,17 @@ export class MapManager implements types.IMapManager {
                 lib.clamp(xy[1], Math.min(ext[1], ext[3]), Math.max(ext[1], ext[3])),
             ];
 
-            if (this.wrapX) {
+            if (mm.wrapX) {
                 c[0] = xy[0];
 
-                while (c[0] < this.extent[0])
-                    c[0] += (this.extent[2] - this.extent[0])
-                while (c[0] > this.extent[2])
-                    c[0] -= (this.extent[2] - this.extent[0])
+                while (c[0] < mm.extent[0])
+                    c[0] += (mm.extent[2] - mm.extent[0])
+                while (c[0] > mm.extent[2])
+                    c[0] -= (mm.extent[2] - mm.extent[0])
             }
             return c;
         }
 
-        // OL4 doesn't support getConstraints, inject our 'constrainCenter' into a minimized private prop
         let proto = Object.getPrototypeOf(this.oView);
         let cc = proto.constrainCenter;
         for (let p in proto) {
@@ -588,7 +596,6 @@ export class MapManager implements types.IMapManager {
 
     protected updateViewState() {
         if (this.connectedToStore) {
-
             let vs = this.viewState;
             this.update({
                 mapUpdateCount: ++this.updateCount,
