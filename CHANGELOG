@@ -1,3 +1,7 @@
+## Version 8.0.37
+
+- support for client environment variables
+
 ## Version 8.0.36
 
 - various client bugfixes
