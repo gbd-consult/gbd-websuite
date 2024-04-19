@@ -8,6 +8,7 @@ Dieser Guide behandelt die Installation der GBD WebSuite, nicht des unterliegend
 
 Dies ist ein möglichst umfangreiches Beispiel für eine `docker-compose.yml`. Es werden in den meisten Fällen keineswegs alle hier demonstrierten Einstellungsmöglichkeiten benötigt. Die einzelnen Optionen werden im Verlauf dieses Abschnitts näher erläutert. Auskommtierte Zeilen sind initiell optional.
 
+{file docker-compose.yml}
 ```yaml
 version: '3'
 

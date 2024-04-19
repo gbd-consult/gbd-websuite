@@ -26,6 +26,16 @@ Empfohlene vorbereitende Lektüre: [Konfigurationsgrundlagen](/admin-de/konfigur
 
 ## Verzeichnisstruktur
 
+Am Ende des [Schnellstart](/admin-de/schnellstart) Guides haben Sie in einem
+von Ihnen gewählten Verzeichnis eine Datei `docker-compose.yml` und die beiden 
+Verzeichnisse `data` sowie `gws-var` erstellt.
+
+In diesem Guide ist das `data`-Verzeichnis relevant. Für die GBD WebSuite ist 
+dieses Verzeichnis unter `/data` erreichbar, daher wird in diesem Guide auch 
+stets dieser Name für das Verzeichnis verwendet. Auch wenn es auf Ihrem Computer
+an einem anderen Pfad liegt, referenzieren Sie Dateien stets aus Sicht der WebSuite, 
+unter Verwendung eines absoluten Pfades, beginnend mit `/data`.
+
 Beginnend mit einem leeren `/data` Verzeichnis erstellen Sie dort folgende 
 Unterverzeichnisse:
 
@@ -37,10 +47,11 @@ Unterverzeichnisse:
 
 ## Einstiegspunkt
 
-Die erste Configdatei die von der GBD WebSuite gelesen wird ist `/data/config.cx`.
+Die erste Konfigurationsdatei die von der GBD WebSuite gelesen wird ist `/data/config.cx`.
 
 Erstellen Sie diese mit folgendem Inhalt:
 
+{file /data/config.cx}
 ```
 {
     actions [
@@ -93,6 +104,7 @@ folgenden Teil der URL.
 
 Übernehmen Sie zunächst die folgenden Regeln:
 
+{file /data/config/web.cx}
 ```
 web.sites+ {
     root "/data/web"
@@ -128,6 +140,7 @@ Die erste `rewrite` Regel sorgt dafür, dass diese URL den Inhalt der Datei
 
 Erstellen Sie diese Datei und hinterlegen den folgenden Inhalt:
 
+{file /data/assets/index.cx.html}
 ```html
 <h1>Meine GBD WebSuite Seite</h1>
 <h2>Projekte:</h2>
@@ -151,6 +164,7 @@ werden: `/data/assets/project.cx.html` bindet die
 [clientseitige Kartenapplikation](TODO LINK: client und server diagram?) 
 ein. 
 
+{file /data/assets/project.cx.html}
 ```html
 <!DOCTYPE html>
 <html>
@@ -192,6 +206,7 @@ Sie haben bereits eine Datei angelegt in der die Projektkonfiguration
 hinterlegt werden soll: `/data/config/projects/myproject.cx`
 
 Ergänzen Sie den folgenden Inhalt in der Projektkonfiguration:
+{file /data/config/projects/myproject.cx}
 ```
 {
     uid myproject
@@ -228,6 +243,8 @@ Dort soll eine Auswahl an Steuerelementen für den [Client](TODO LINK)
 getroffen werden die für alle Projekte gilt.
 
 Ergänzen Sie folgenden Inhalt:
+
+{file /data/config/client.cx}
 ```
 client.elements [
     { tag "Infobar.ZoomOut" }

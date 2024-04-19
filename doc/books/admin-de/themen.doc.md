@@ -1,6 +1,7 @@
 # Themen :/admin-de/themen
 
-## Auth & Auth (/admin-de/config/autorisierung)
+
+## Auth & Auth :/admin-de/config/autorisierung
 <!--
 - Preface: Authentication vs Authorization
 - Authentication: file, postgres, ldap(ldap could be own topic)
@@ -39,10 +40,7 @@
 - clientOptions
 - including in project.cx.html
 
-## PostgreSQL
-
-### db.provider
-### pg_service.conf
+## :/admin-de/themen/postgresql
 
 ## Editieren
 - edit layers
