@@ -131,13 +131,32 @@ export class MapManager implements types.IMapManager {
 
         this.changed();
 
-        if (this.connectedToStore)
+        if (this.connectedToStore) {
             this.app.whenChanged('appLocation', loc => {
                 let vs = this.decodeViewState(loc['map']);
                 vs = vs || this.defaultViewState;
                 console.log('vs from location', vs);
                 this.setViewState(vs, true);
             });
+
+            if (this.app.options.showLayers) {
+                for (let uid of this.app.options.showLayers) {
+                    let la = this.getLayer(uid);
+                    if (la) {
+                        this.setLayerChecked(la, true);
+                    }
+                }
+            }
+
+            if (this.app.options.hideLayers) {
+                for (let uid of this.app.options.hideLayers) {
+                    let la = this.getLayer(uid);
+                    if (la) {
+                        this.setLayerChecked(la, false);
+                    }
+                }
+            }
+        }
 
         return await true;
     }

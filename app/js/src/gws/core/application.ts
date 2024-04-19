@@ -65,10 +65,7 @@ export class Application implements types.IApplication {
         this.tags = this.options.tags;
         this.tags['Tool.Default'] = DefaultTool;
 
-        this.localeUid = this.options.locale || 'en_CA';
-        this.languageUid = this.localeUid.split('_')[0];
-
-        this.strings = this.options.strings;
+        this.strings = Object.assign({}, this.options.strings, this.options.customStrings || {});
 
         let url = this.options.serverUrl || '/_';
         this.server = new Server(this, url);
@@ -148,6 +145,7 @@ export class Application implements types.IApplication {
         this.project = res.project;
         this.locale = res.locale;
         this.localeUid = res.locale.id;
+        this.languageUid = this.localeUid.split('_')[0];
 
         this.modelRegistry = new model.ModelRegistry(this);
         for (let props of res.project.models)
@@ -162,8 +160,13 @@ export class Application implements types.IApplication {
         this.initialState.user = res.user;
 
         this.initialState.helpUrl = this.project.client.options.helpUrl || this.options.helpUrl;
-        this.initialState.helpUrlTarget = this.project.client.options.helpUrlTarget || this.options.helpUrlTarget;
-        this.initialState.homeUrl = this.project.client.options.homeUrl || this.options.homeUrl;
+        if (!this.options.helpUrl) {
+            let release = this.options.version.replace(/\.\d+$/, '');
+            this.options.helpUrl = `https://gbd-websuite.de/doc/${release}/user-${this.languageUid}`;
+        }
+
+        this.initialState.helpUrlTarget = this.project.client.options.helpUrlTarget || this.options.helpUrlTarget || 'blank';
+        this.initialState.homeUrl = this.project.client.options.homeUrl || this.options.homeUrl || '/';
 
         this.initialState.appActiveTool = 'Tool.Default';
 
