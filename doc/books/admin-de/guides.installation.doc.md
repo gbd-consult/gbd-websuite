@@ -8,6 +8,7 @@ Dieser Guide behandelt die Installation der GBD WebSuite, nicht des unterliegend
 
 Dies ist ein möglichst umfangreiches Beispiel für eine `docker-compose.yml`. Es werden in den meisten Fällen keineswegs alle hier demonstrierten Einstellungsmöglichkeiten benötigt. Die einzelnen Optionen werden im Verlauf dieses Abschnitts näher erläutert. Auskommtierte Zeilen sind initiell optional.
 
+{file docker-compose.yml}
 ```yaml
 version: '3'
 
@@ -199,7 +200,7 @@ Umgebungsvariablen überschreiben stets den Eintrag in der Konfiguration.
 #### qgis
 
 Eine Vollständige Liste von Umgebungsvariablen die zur Konfiguration des QGIS Servers verwendbar sind finden Sie hier:
-https://docs.qgis.org/3.34/en/docs/server_manual/config.html#environment-variables
+https://docs.qgis.org/latest/en/docs/server_manual/config.html#environment-variables
 
 Zusätzlich dazu kann die Variable `PGSERVICEFILE` ebenfalls direkt an den Container übergeben werden.
 

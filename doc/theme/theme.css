@@ -597,3 +597,15 @@ code.configref_missing_translation {
 .decoration_link {
     color: #0277bd;
 }
+
+/* provides a way to add a filename to the top of code blocks */
+.decoration_file {
+    position: relative;
+    margin: 0;
+    padding: 0 0.3em;
+    top: 1em;
+    border: 1px #ffd54f solid;
+    border-bottom: 0;
+    background-color: #ffe387;
+    font-family: monospace;
+}

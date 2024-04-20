@@ -21,13 +21,13 @@ Die GBD WebSuite wird als Container ausgeliefert.
 Um einen Container zu starten benötigen Sie eine Container Runtime wie z.B. 
 [Docker](https://docker.com). 
 In diesem Beispiel verwenden wir Docker mit dem 
-Compose Plugin: [Docker Engine Installationsanleitung](https://docs.docker.com/engine/install/).
-
+Compose Plugin: [Docker Engine Installationsanleitung](https://docs.docker.com/engine/install/#supported-platforms).
 
 ## docker-compose.yml
 Erstellen Sie eine Datei mit dem Namen `docker-compose.yml` und dem folgenden 
 Inhalt in einem beliebigen Verzeichnis:
 
+{file docker-compose.yml}
 ```yaml
 version: '3'
 
@@ -46,6 +46,9 @@ Container zu starten:
 
     docker compose -f docker-compose.yml up
 
+Abhängig von Ihrem Betriebssystem und User müssen Sie dies möglicherweise als 
+Administrator (auf Ubuntu z.B. mit `sudo`) tun, oder Ihrem Benutzer die benötigten
+Rechte geben (auf Ubuntu `sudo adduser <myuser> docker`).
 
 ## Betrachten im Browser
 Sobald der Download und der Startvorgang abgeschlossen sind, können Sie in ihrem 
@@ -62,6 +65,7 @@ aktuell die Logausgabe sehen STRG+C, oder schließen dieses.
 Um basierend auf diesem Schnellstart anzufangen mit der Konfiguration der GBD 
 WebSuite zu experimentieren, erweitern Sie die `docker-compose.yml` wie folgt:
 
+{file MYGWSDIRECTORY/docker-compose.yml}
 ```yaml
 version: '3'
 
@@ -96,10 +100,15 @@ unter Linux `/home/<myusername>/gwstest`.
 Stellen Sie sicher, dass die Verzeichnisse `data` und `gws-var` innerhalb des 
 gwstest Verzeichnisses existieren.
 
+Sollte Sie das erste Konfigurationsbeispiel gestartet & beendet haben müssen Sie 
+noch mit `docker rm gws` den dadurch erstellen Docker Container entfernen.
+
 Die GBD WebSuite wird dann zunächst nicht mehr funktionieren, da Sie das 
 Konfigurationsverzeichnis auf das so eben erstellte `gwstest/data` Verzeichnis 
 umgeleitet haben und dieses aktuell noch leer ist. Wie Sie dieses Verzeichnis 
-mit einer initiellen Konfiguration füllen können wird hier beschrieben: TODO LINK 
+mit einer initiellen Konfiguration füllen können wird hier beschrieben: 
+
+[**Guide: Einfaches Projekt**](/admin-de/einfaches-projekt)
 
 ----
 
