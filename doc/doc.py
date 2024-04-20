@@ -22,7 +22,6 @@ Commands:
 
     build  - generate docs
     server - start the dev server  
-    api    - generate api docs
 
 Options:
 
