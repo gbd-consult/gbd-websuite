@@ -114,7 +114,7 @@ class Builder:
         pdf_opts = Options()
         vars(pdf_opts).update(vars(self.options))
 
-        pdf_opts.fileSplitLevel = 0
+        pdf_opts.fileSplitLevel = {'/': 0}
         pdf_opts.outputDir = pdf_temp_dir
         pdf_opts.webRoot = '.'
 
@@ -403,7 +403,8 @@ class Builder:
 
         for sec in self.sectionMap.values():
             self.expand_toc_nodes(sec)
-            self.add_url_and_path(sec)
+
+        self.add_url_and_path(root, 0)
 
     def parse_file(self, path):
         return FileParser(self, path).sections()
@@ -460,25 +461,33 @@ class Builder:
                     sids.extend(s.sid for s in secs)
                 node.sids = sids
 
-    def add_url_and_path(self, sec: Section):
-        sl = self.options.fileSplitLevel or 0
+    def add_url_and_path(self, sec: Section, split_level):
+        if sec.sid in self.options.fileSplitLevel:
+            split_level = self.options.fileSplitLevel[sec.sid]
+
         parts = sec.sid.split('/')[1:]
 
-        if sec.level == 0 or sl == 0:
+        if sec.level == 0 or split_level == 0:
             path = 'index.html'
         else:
-            dirname = '/'.join(parts[:sl])
+            dirname = '/'.join(parts[:split_level])
             path = dirname + '/index.html'
 
-        sec.htmlId = '-'.join(parts[sl:])
+        sec.htmlId = '-'.join(parts[split_level:])
         sec.htmlPath = self.options.outputDir + '/' + path
         sec.htmlBaseUrl = self.options.webRoot + '/' + path
+
+        util.log.debug(f'path {sec.sid} -> {sec.htmlPath} ({split_level})')
 
         sec.htmlUrl = sec.htmlBaseUrl
         if sec.htmlId:
             sec.htmlUrl += '#' + sec.htmlId
 
-        sec.headLevel = max(1, sec.level - sl + 1)
+        sec.headLevel = max(1, sec.level - split_level + 1)
+
+        for sub in sec.subSids:
+            sub = self.sectionMap[sub]
+            self.add_url_and_path(sub, split_level)
 
     def make_sid(self, explicit_sid, parent_sid, prev_sid=None, text=None):
 

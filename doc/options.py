@@ -19,7 +19,10 @@ excludeRegex = 'node_modules|___|__build'
 
 debug = False
 
-fileSplitLevel = 3
+fileSplitLevel = {
+    '/': 3,
+    '/admin-de/reference': 2,
+}
 pageTemplate = f'{DOC_DIR}/theme/page.cx.html'
 webRoot = f'/doc/{VERSION2}'
 staticDir = '_static'

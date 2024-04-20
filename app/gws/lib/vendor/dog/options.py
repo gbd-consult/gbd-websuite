@@ -17,8 +17,8 @@ class Options:
     debug: bool = False
     """Debug/verbose mode."""
 
-    fileSplitLevel: int = 3
-    """Split level for output files."""
+    fileSplitLevel: dict = {}
+    """Split levels for output files."""
 
     pageTemplate: str = ''
     """Jump template for HTML pages."""
