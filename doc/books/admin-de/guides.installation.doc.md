@@ -200,7 +200,7 @@ Umgebungsvariablen überschreiben stets den Eintrag in der Konfiguration.
 #### qgis
 
 Eine Vollständige Liste von Umgebungsvariablen die zur Konfiguration des QGIS Servers verwendbar sind finden Sie hier:
-https://docs.qgis.org/3.34/en/docs/server_manual/config.html#environment-variables
+https://docs.qgis.org/latest/en/docs/server_manual/config.html#environment-variables
 
 Zusätzlich dazu kann die Variable `PGSERVICEFILE` ebenfalls direkt an den Container übergeben werden.
 

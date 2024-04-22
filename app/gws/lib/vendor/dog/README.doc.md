@@ -422,23 +422,68 @@ The `options` argument is either the object like below or a dictionary with the 
 
 ### file split-level
 
-This option indicates how Dog should create output files.
+A file split-level is a number that tells Dog how to create output files.
 
-`0` means all documentation will be stored in a single file (`index.html`)
+`0` (default) means all documentation will be stored in a single file (`index.html`).
 
-`1` means one file per level-one section:
+`1` means one file per a top-level section. All subsections of a top-level sections will be stored in the same file:
 
-    /foo  ->  /foo/index.html
-    /bar  ->  /bar/index.html
+    /a      ->  /a/index.html
+    /a/b    ->  /a/index.html
+    /a/b/c  ->  /a/index.html
+    /a/d    ->  /a/index.html 
+    
+    /x/y    ->  /x/index.html
+    /x/z    ->  /x/index.html
+    /x/z/w  ->  /x/index.html
 
-`2` creates separate files for level-one and level-two sections
+`2` will create separate files for level-one and level-two sections:
 
-    /foo      ->  /foo/index.html
-    /foo/bob  ->  /foo/bob/index.html
-    /foo/fob  ->  /foo/fob/index.html
-    /bar      ->  /bar/index.html
+    /a      ->  /a/index.html
+
+    /a/b    ->  /a/b/index.html
+    /a/b/c  ->  /a/b/index.html
+
+    /a/d    ->  /a/d/index.html 
+    
+    /x/y    ->  /x/y/index.html
+
+    /x/z    ->  /x/z/index.html
+    /x/z/w  ->  /x/z/index.html
 
 and so on.
+
+The option `fileSplitLevel` is a dictionary that maps sids to split-level values. A value applies to the section itself and its descendants by default.
+
+Thus, to define the default value for all sections, use the root sid `/`:
+
+    "fileSplitLevel": {
+        "/": 1,
+    }
+
+You can override the default for any subsection. For example, you can decide to split all content into second-level files,
+except for the section "x", which should all be stored in a single file. Then, this configuration:
+
+    "fileSplitLevel": {
+        "/": 2,
+        "/x": 1
+    }
+
+will result in the following file structure:
+
+    -- using the default level "2"
+
+    /a      ->  /a/index.html
+    /a/b    ->  /a/b/index.html
+    /a/b/c  ->  /a/b/index.html
+    /a/d    ->  /a/d/index.html 
+    
+    -- using the custom level "1"
+
+    /x/y    ->  /x/index.html
+    /x/z    ->  /x/index.html
+    /x/z/w  ->  /x/index.html
+
 
 ### include template
 
