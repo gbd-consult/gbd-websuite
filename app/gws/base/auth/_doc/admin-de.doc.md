@@ -1,13 +1,290 @@
-# Autorisierung :/admin-de/config/autorisierung
+# Auth & Auth:/admin-de/config/auth
 
-Eine Rolle in der GBD WebSuit wird mit einer einfachen Zeichenkette bezeichnet. Ein Nutzer, der sich mit den Zugangsdaten identifiziert, kann mehrere Rollen besitzen.
+**Authentifizierung**: Feststellung der Identität eines Benutzers.
 
-Zugangsreglungen
-----------------
+**Authorisierung**: Feststellung ob ein Benutzer eine bestimmte Aktion durchführen 
+darf.
 
-%reference_de 'gws.core.types.AccessConfig'
+## Authentifizierung
 
-In der Konfiguration können einige Typen von Objekten verknüpft sein mit Zugangsblock (``access``) Konfigurationen, wie z.B.
+Um mit Benutzern, Rollen und Berechtigungen in der GBD WebSuite arbeiten zu 
+können muss dieses Feature einmal in der Konfiguration generell aktiviert werden:
+
+{file /data/config.cx}
+```javascript
+actions+ { type auth }
+```
+
+### Methoden
+
+Ein Benutzer der auf eine beliebige Ressource der GBD WebSuite zuzugreifen 
+versucht ist zunächst einmal anonym. Um sich gegenüber der Applikation zu 
+Identifizieren unterstützt die GBD WebSuite zwei Verfahren über die der Benutzer
+eine nur Ihm bekannte Information mitschicken kann, durch die die GBD WebSuite 
+ihm eine hinterlegte Identität und die damit verbundenen Berechtigungen zuweisen 
+kann.
+
+#### Cookies / web
+
+Der Benutzer gibt auf einer Login Seite seinen Benutzernamen und sein Passwort ein.
+Die WebSuite überprüft diese und legt für den Benutzer in einer internen Datenbank 
+eine Session an. Die Session hat einen langen, nicht erratbaren Namen welcher in
+einem Cookie hinterlegt wird. Der Browser des Benutzers schickt diesen Cookie
+bei jeder Anfrage an die GBD WebSuite automatisch mit, wodurch der Benutzer 
+identifiziert werden kann.
+
+Solange Benutzer nur über einen Webbrowser mit der GBD WebSuite interagiert ist
+dies die beste und einzig nötige Authentifizierungsmethode.
+
+Um diese Methode zu verwenden sind folgende Einträge in der Konfiguration 
+vorzunehmen:
+
+{file /data/config.cx}
+```javascript
+{
+    actions+ { type auth }
+
+    auth.methods+ { 
+        type web 
+        secure false
+    }
+}
+```
+%reference_de 'gws.plugin.auth_method.web.core.Config'
+
+Ohne `secure false` zu setzen weigert sich die GBD WebSuite die Authentifizierung
+über unverschlüsselte Verbindungen durchzuführen.
+
+Sie können das Login Formular auf einer durch die GBD WebSuite bereitgestellten
+Web Seite einbinden:
+
+{file /data/assets/index.cx.html}
+```html
+...
+<script src="/_/webSystemAsset/path/util.js"></script>
+@if user.isGuest
+    <form onsubmit="gwsLogin(); return false" class="row">
+        <input id="gwsUsername" name="username" placeholder="Benutzername">
+        <input id="gwsPassword" name="password" type="password" placeholder="Passwort">
+        <button id="loginButton">Einloggen</button>
+    </form>
+
+    <div id="loginWait"></div>
+
+    <div id="loginErrorMessage">
+        Anmeldung fehlgeschlagen!
+    </div>
+@else
+    <button onclick="gwsLogout()">Ausloggen</button>
+@end
+...
+```
+
+#### basic
+
+Bei der Basic Authentifizierung wird bei jeder Anfrage Benutzername und Passwort
+mitgeschickt. Möchten Sie mit QGIS auf von der GBD WebSuite bereitgestellte, 
+zugriffsgeschützte OWS Dienste zugreifen benötigen Sie diese 
+Authentifizierungsmethode:
+
+{file /data/config.cx}
+```javascript
+{
+    actions+ { type auth }
+
+    auth.methods+ { 
+        type basic
+        secure false
+    }
+}
+```
+%reference_de 'gws.plugin.auth_method.basic.core.Config'
+
+
+### Provider
+
+Nachdem die GBD WebSuite die Zugangsdaten durch eine der oben beschriebenen 
+[Methoden](TODO LINK) erhalten hat, muss sie überprüfen ob diese Zugangsdaten 
+richtig sind, herausfinden zu welchem Benutzer diese gehören und Informationen 
+zu diesem Benutzer herausfinden, wie z.B. der Anzeigename oder die dem Benutzer 
+zugewiesenen Rollen.
+
+Diese Informationen kann die GBD WebSuite von einem Authentifizierungsprovider 
+beziehen. Es werden folgende Provider unterstützt:
+
+#### file
+
+Mit diesem Authentifizierungsprovider ist es möglich eine Liste von Benutzern in
+einer [JSON](https://www.json.org/json-de.html) Datei zu hinterlegen.
+
+Ergänzen Sie die Konfiguration für den Authentifizierungsprovider wie folgt:
+
+{file /data/config.cx}
+```javascript
+{
+    actions+ { type auth }
+
+    auth.methods+ { 
+        type web 
+        secure false
+    }
+
+    auth.providers+ {
+        type file
+        path "/data/users.json"
+    }
+}
+```
+
+Und hinterlegen Sie eine Liste mit Benutzerkonten in der angegebenen Datei:
+
+{file /data/users.json}
+```json
+[
+    {
+        "login": "user_login",
+        "password": "sha512_encoded_password",
+        "name": "display name for the user",
+        "roles": [ "role1", "role2", ...]
+    },
+    {
+        ...
+    }
+]
+```
+
+Um das Passwort nicht im Klartext in der Konfiguration zu hinterlegen wird ein 
+[Hashwert](https://de.wikipedia.org/wiki/Passwort#Speichern_von_Passwörtern) 
+verwendet. Sie können den in der Datei zu hinterlegenden Hashwert mittels eines 
+Kommandozeilenbefehls von der WebSuite erhalten: [`gws auth password`](TODO LINK KOMMANDOZEILENREFERENZ)
+
+#### ldap
+
+Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen 
+OpenLDAP-Server authentifizieren. Sie sollten mindestens eine URL des Servers und 
+ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuite Rollennamen 
+abzubilden. 
+
+Hier ist eine Beispielkonfiguration unter Verwendung des von 
+[forumsys.com](https://forumsys.com) bereitgestellten 
+[LDAP-Testservers](http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server):
+
+```javascript
+{
+    type ldap
+
+    url "ldap://ldap.forumsys.com:389/dc=example,dc=com?uid"
+
+    bindDN "cn=read-only-admin,dc=example,dc=com"
+    bindPassword "password"
+
+    users [
+
+        // LDAP-Benutzer "euler" hat Rollen "moderator" und "expert":
+        {
+            matches "(&(cn=euler))"
+            roles ["moderator" "expert"]
+        }
+
+        // alle Mitglieder der LDAP-Gruppe "mathematicians" haben die Rolle "member":
+        {
+            memberOf "mathematicians"
+            roles ["member"]
+        }
+    ]
+}
+```
+%reference_de 'gws.plugin.auth_provider.ldap.Config'
+
+#### postgres
+
+TODO
+
+## Authorisierung
+
+Nach der Authentifizierung wird überprüft ob der Benutzer authorisiert ist auf 
+die gewünschte Art mit der gewünschten Ressource zu interagieren.
+
+### Rollen
+
+Im Rahmen der Authentifizierung hat der Benutzer eine Liste von Rollen zugewiesen 
+bekommen. Es gibt ein paar vom System vorgegebene Rollen die ein Benutzer automatisch
+abhängig von seinem Authentifizierungsstatus erhält, und zusätzlich die Rollen die 
+laut Authentifizierungsprovider dem Benutzer zugewiesen werden.
+
+GWS Rollen sind Strings (Textfolgen) die mit einem lateinischen Buchstaben 
+beginnen, und nur Buchstaben, Ziffern und Unterstriche enthalten dürfen.
+Ebenfalls dürfen Sie die Rollen `guest`, `user` und `all` nicht selbst vergeben.
+
+
+#### vordefinierte Rollen
+
+| Rolle     | Bedeutung |
+|-----------|---|
+|``guest``  | nicht eingeloggter Benutzer |
+|``user``   | jeder eingeloggter Benutzer |
+|``all``    | alle Benutzer, eingeloggt und Gäste. Objekte, auf welche die Rolle ``all`` Zugriff hat sind öffentliche ("public") Objekte |
+|``admin``  | Diese Rolle kann durch den Authentifizierungsprovider zugewiesen werden, und erhält _immer_ Zugriff auf _alle_ Objekte. |
+
+
+### Zugriffsregeln
+
+Für einige Objekte in der Konfiguration können Regeln hinterlegt werden, anhand 
+derer entschieden wird ob und wie der Benutzer mit diesem interagieren kann.
+
+Das Hinterlegen von diesen Regeln findet auf zwei Arten statt:
+
+#### access
+
+Die meisten Objekte für die eine Zugriffskontrolle möglich ist, haben eine 
+Eigenschaft `access`:
+
+{file /data/config.cx}
+```javascript
+{
+    access "allow all"
+
+    project+ {
+        access "allow myrole, deny all"
+        uid myproject
+        title "Mein Projekt"
+    }
+}
+```
+%reference_de 'gws.AclStr'
+
+#### permissions
+
+%reference_de 'gws.PermissionsConfig'
+
+
+
+
+Über die Eigenschaft `access` für generellen Zugriff auf ein Objekt
+und über permissions.xxx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TODO Work In Progress SV, alles hier drüber ist soweit fertig.
 
 - Applikation
 - Server Aktion
@@ -21,19 +298,6 @@ Ein ``access`` Block ist eine Liste von Regeln. Jede Regel enthält die Eigensch
 
 Wenn ein Nutzer einen Zugriff auf ein Objekt erfragt, werden alle Regel für dieses Objekt überprüft. Falls eine der Rollen, die der Nutzer besitzt, explizit gefunden wird, ist der Zugriff anhand von ``type`` erlaubt oder verweigert. Ansonsten wird das übergeordnete Objekt geprüft. Falls es kein  übergeordnetes Objekt gibt, d.h. das Root-Objekt wird erreicht, wird der Zugriff verweigert.
 
-## Vordefinierte Rollen
-
-Es gibt einige vordefinierte Rollen, die in GWS eine besondere Bedeutung haben:
-
-|Rolle|Bedeutung|
-|---|---|
-|``guest`` | nicht eingeloggter Benutzer|
-|``user`` | jeder eingeloggter Benutzer|
-|``all`` | alle Benutzer, eingeloggt und Gäste. Objekte, auf welche die Rolle ``all`` Zugriff hat sind öffentliche ("public") Objekte|
-|``admin`` | Administrator. Benutzer die diese Rolle haben, erhalten automatisch Zugriff auf alle Objekte|
-
-
-Andernfalls können Sie beliebige Rollennamen verwenden, aber sie müssen gültige Bezeichnungen sein (d. h. mit einem lateinischen Buchstaben beginnen und nur Buchstaben, Ziffern und Unterstriche enthalten).
 
 ## Berechtigungsstrategien
 

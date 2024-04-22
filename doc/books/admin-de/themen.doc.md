@@ -1,8 +1,9 @@
 # Themen :/admin-de/themen
 
 
-## Auth & Auth :/admin-de/config/autorisierung
+## :/admin-de/config/auth
 <!--
+ In File: /gbd-websuite/app/gws/base/auth/_doc/admin-de.doc.md
 - Preface: Authentication vs Authorization
 - Authentication: file, postgres, ldap(ldap could be own topic)
 - Authorization: access, permissions
