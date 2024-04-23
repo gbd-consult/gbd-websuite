@@ -135,26 +135,17 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequester, p: AssetRequest, as_att
     tpl = root.app.templateMgr.template_from_path(rpath)
 
     if tpl:
-        # give the template an empty response to manipulate (e.g. add 'location')
-        res = gws.ContentResponse()
-        args = {
-            'project': project,
-            'projects': sorted(root.app.projects_for_user(req.user), key=lambda p: p.title.lower()),
-            'requester': req,
-            'user': req.user,
-            'request': p,
-            'params': req.params,
-            'response': res,
-            'localeUid': locale_uid,
-            'app': root.app,
-        }
+        args = dict(
+            project=project,
+            projects=sorted(root.app.projects_for_user(req.user), key=lambda p: p.title.lower()),
+            req=req,
+            user=req.user,
+            params=req.params,
+            localeUid=locale_uid,
+            app=root.app,
+        )
 
-        render_res = tpl.render(gws.TemplateRenderInput(args=args))
-
-        if gws.is_empty(res):
-            res = render_res
-
-        return res
+        return tpl.render(gws.TemplateRenderInput(args=args))
 
     mime = gws.lib.mime.for_path(rpath)
 
