@@ -164,7 +164,8 @@ def feature_collection(rd: core.Request, results: list[gws.SearchResult]) -> cor
         r.feature.transform_to(rd.targetCrs)
         fc.members.append(core.FeatureCollectionMember(
             feature=r.feature,
-            options=r.layer.owsOptions if r.layer else _DEFAULT_OWS_OPTIONS
+            layer=r.layer,
+            options=r.layer.owsOptions if r.layer else {}
         ))
 
     return fc

@@ -4,7 +4,7 @@ import gws.base.ows.server.templatelib as tpl
 
 
 def main(args: dict):
-    ta = args.get('owsArgs')
+    ta = tpl.TemplateArgs(args)
 
     if ta.version == '1.1.0':
         pass
@@ -13,7 +13,7 @@ def main(args: dict):
         pass
 
     elif ta.version == '1.3.0':
-        return tpl.to_xml(args, ('WMS_Capabilities', doc13(ta)))
+        return tpl.to_xml(ta, ('WMS_Capabilities', doc13(ta)))
 
 
 def doc13(ta: tpl.TemplateArgs):

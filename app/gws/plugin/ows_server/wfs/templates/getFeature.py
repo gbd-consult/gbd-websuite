@@ -8,8 +8,8 @@ import gws.gis.gml
 
 
 def main(args: dict):
-    ta = args.get('owsArgs')
-    return tpl.to_xml(args, ('wfs:FeatureCollection', feature_collection(ta)))
+    ta = tpl.TemplateArgs(args)
+    return tpl.to_xml(ta, ('wfs:FeatureCollection', feature_collection(ta)))
 
 
 def feature_collection(ta: tpl.TemplateArgs):

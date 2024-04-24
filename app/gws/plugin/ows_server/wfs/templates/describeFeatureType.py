@@ -4,8 +4,8 @@ import gws.lib.xmlx as xmlx
 
 
 def main(args: dict):
-    ta = args.get('owsArgs')
-    return tpl.to_xml(args, ('xsd:schema', schema(ta)))
+    ta = tpl.TemplateArgs(args)
+    return tpl.to_xml(ta, ('xsd:schema', schema(ta)))
 
 
 def schema(ta: tpl.TemplateArgs):
