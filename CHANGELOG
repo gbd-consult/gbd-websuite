@@ -1,3 +1,8 @@
+## Version 8.0.38
+
+- templates can now return responses directly
+- OWS service templating optimized
+
 ## Version 8.0.37
 
 - support for client environment variables
