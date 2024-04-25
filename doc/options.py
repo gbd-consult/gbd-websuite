@@ -21,7 +21,8 @@ debug = False
 
 fileSplitLevel = {
     '/': 3,
-    '/admin-de/reference': 2,
+    '/admin-de': 2,
+    '/admin-de/themen': 3,
 }
 pageTemplate = f'{DOC_DIR}/theme/page.cx.html'
 webRoot = f'/doc/{VERSION2}'
