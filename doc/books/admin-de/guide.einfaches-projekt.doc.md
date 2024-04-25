@@ -107,8 +107,8 @@ folgenden Teil der URL.
 {file /data/config/web.cx}
 ```
 web.sites+ {
-    root "/data/web"
-    assets "/data/assets"
+    root.dir "/data/web"
+    assets.dir "/data/assets"
     host "*"
 
     rewrite+ {
