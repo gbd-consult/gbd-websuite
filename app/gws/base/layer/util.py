@@ -195,7 +195,7 @@ def _box_to_image(bounds: gws.Bounds, width: float, height: float, max_size: int
             )
             bounds = gws.Bounds(crs=bounds.crs, extent=e)
             content = get_box(bounds, max_size + buf * 2, max_size + buf * 2)
-            gws.log.debug(f'_box_to_image (BIG): {nx=} {ny=} {len(content)=}')
+            gws.log.debug(f'_box_to_image (BIG): {nx=}/{xcount} {ny=}/{ycount} {len(content)=}')
             grid.append([nx, ny, content])
 
     img = gws.lib.image.from_size((max_size * xcount, max_size * ycount))

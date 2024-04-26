@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, cast
 
 import gws
+import gws.config
 import gws.base.action
 import gws.base.database
 import gws.lib.mime
@@ -30,6 +31,12 @@ class DownloadRequest(gws.Request):
     packageUid: Optional[str]
     omitStatic: bool = False
     omitData: bool = False
+
+
+class PackageParams(gws.CliParams):
+    projectUid: str
+    packageUid: str
+    out: str
 
 
 class DownloadResponse(gws.Response):
@@ -71,6 +78,20 @@ class Object(gws.base.action.Object):
         b = self._do_download(req, p)
         return DownloadResponse(data=b)
 
+    @gws.ext.command.cli('qfieldPackage')
+    def cli_package(self, p: PackageParams):
+        root = gws.config.load()
+        user = root.app.authMgr.systemUser
+        project = user.require_project(p.projectUid)
+        action = cast(Object, root.app.actionMgr.find_action(project, self.extType, user))
+        args = action.prepare_export(DownloadRequest(
+            projectUid=p.projectUid,
+            packageUid=p.packageUid,
+        ), user)
+        action.exec_export(args)
+        b = action.end_export(args)
+        gws.u.write_file_b(p.out, b)
+
     @gws.ext.command.post('qfieldUpload')
     def http_upload(self, req: gws.WebRequester, p: UploadRequest) -> gws.ContentResponse:
         self._do_upload(req, p, req.data())
@@ -84,13 +105,13 @@ class Object(gws.base.action.Object):
     ##
 
     def _do_download(self, req: gws.WebRequester, p: DownloadRequest) -> bytes:
-        args = self.prepare_export(req, p)
+        args = self.prepare_export(p, req.user)
         self.exec_export(args)
         return self.end_export(args)
 
-    def prepare_export(self, req: gws.WebRequester, p: DownloadRequest) -> core.ExportArgs:
-        project = req.user.require_project(p.projectUid)
-        package = self._get_package(p.packageUid, req.user, gws.Access.read)
+    def prepare_export(self, p: DownloadRequest, user: gws.User) -> core.ExportArgs:
+        project = user.require_project(p.projectUid)
+        package = self._get_package(p.packageUid, user, gws.Access.read)
         base_dir = gws.u.ensure_dir(f'{gws.c.VAR_DIR}/qfield/{gws.u.random_string(32)}')
 
         name_prefix = ''
@@ -107,7 +128,7 @@ class Object(gws.base.action.Object):
         return core.ExportArgs(
             package=package,
             project=project,
-            user=req.user,
+            user=user,
             baseDir=base_dir,
             qgisFileName=f'{name_prefix}{package.uid}',
             dbFileName=db_file_name,
@@ -132,13 +153,13 @@ class Object(gws.base.action.Object):
     ##
 
     def _do_upload(self, req: gws.WebRequester, p: UploadRequest, data: bytes):
-        args = self.prepare_import(req, p, data)
+        args = self.prepare_import(p, req.user, data)
         self.exec_import(args)
         return self.end_import(args)
 
-    def prepare_import(self, req: gws.WebRequester, p: UploadRequest, data: bytes):
-        project = req.user.require_project(p.projectUid)
-        package = self._get_package(p.packageUid, req.user, gws.Access.write)
+    def prepare_import(self, p: UploadRequest, user: gws.User, data: bytes):
+        project = user.require_project(p.projectUid)
+        package = self._get_package(p.packageUid, user, gws.Access.write)
         base_dir = gws.u.ensure_dir(f'{gws.c.VAR_DIR}/qfield/{gws.u.random_string(32)}')
 
         if data.startswith(b'SQLite'):
@@ -151,7 +172,7 @@ class Object(gws.base.action.Object):
         return core.ImportArgs(
             package=package,
             project=project,
-            user=req.user,
+            user=user,
             baseDir=base_dir,
             dbFileName=db_file_name,
         )

@@ -24,18 +24,22 @@ GPKG_EXT = 'gpkg'
 
 class PackageConfig(gws.ConfigWithAccess):
     qgisProvider: gws.plugin.qgis.provider.Config
-    """QGis provider settings"""
+    """QGis provider settings."""
     models: Optional[list[gws.ext.config.model]]
-    """data models"""
+    """Data models."""
+    mapCacheLifeTime: gws.Duration = 0
+    """Cache life time for base map layers."""
 
 
 class Package(gws.Node):
     qgisProvider: gws.plugin.qgis.provider.Object
     models: list[gws.DatabaseModel]
+    mapCacheLifeTime: int
 
     def configure(self):
         self.qgisProvider = self.create_child(gws.plugin.qgis.provider.Object, self.cfg('qgisProvider'))
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
+        self.mapCacheLifeTime = self.cfg('mapCacheLifeTime') or 0
 
 
 class ExportArgs(gws.Data):
@@ -97,6 +101,7 @@ class LayerEntry(gws.Data):
     modelEntry: ModelEntry
     readOnly: bool
     sqlFilter: str
+    dataSourceFileName: str
     dataSourcePath: str
     dataSource: str
     dataProvider: str
@@ -185,15 +190,16 @@ class Exporter:
 
         for le in self.qfCaps.layerMap.values():
             if le.action == LayerAction.edit:
+                le.dataSourceFileName = args.dbPath
                 le.dataSourcePath = self.localDbPath
                 le.dataSource = f'{self.deviceDbPath}|layername={le.modelEntry.gpName}'
                 if le.sqlFilter:
                     le.dataSource += f'|subset={le.sqlFilter}'
                 le.dataProvider = f'ogr'
             if le.action == LayerAction.baseMap:
-                file_name = f'{le.qgisId}.{GPKG_EXT}'
-                le.dataSourcePath = f'{self.args.baseDir}/{file_name}'
-                le.dataSource = f'./{file_name}'
+                le.dataSourceFileName = f'{le.qgisId}.{GPKG_EXT}'
+                le.dataSourcePath = f'{self.args.baseDir}/{le.dataSourceFileName}'
+                le.dataSource = f'./{le.dataSourceFileName}'
                 le.dataProvider = f'gdal'
 
     def write_data(self):
@@ -268,6 +274,14 @@ class Exporter:
         gws.log.debug(f'{self.args.baseDir}: END write_features: {self.package.uid}::{me.gpName!r} count={gp_layer.count()}')
 
     def write_base_map_layer(self, le: LayerEntry):
+        cache_path = gws.u.ensure_dir(gws.c.CACHE_DIR + '/qfield') + '/' + le.dataSourceFileName
+
+        if self.package.mapCacheLifeTime > 0:
+            if 0 < gws.lib.osx.file_age(cache_path) < self.package.mapCacheLifeTime:
+                gws.log.debug(f'base map {le.qgisId} cached')
+                shutil.copy(cache_path, le.dataSourcePath)
+                return
+
         bounds = self.qfCaps.areaOfInterest or self.package.qgisProvider.bounds
         resolution = int(self.qfCaps.globalProps.get('baseMapMupp', 10))
         w, h = gws.gis.extent.size(bounds.extent)
@@ -301,6 +315,9 @@ class Exporter:
 
         src = gws.gis.gdalx.open_image(img, bounds)
         gws.gis.gdalx.create_copy(le.dataSourcePath, src)
+
+        if self.package.mapCacheLifeTime > 0:
+            shutil.copy(le.dataSourcePath, cache_path)
 
     def write_offline_log(self):
 
