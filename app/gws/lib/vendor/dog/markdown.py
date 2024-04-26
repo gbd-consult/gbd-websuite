@@ -72,9 +72,9 @@ def link_attributes_plugin(md):
 
     def parser(inline, m, state):
         text = m.group(0)
-        attributes = _parse_attributes(text[1:-1])
-        if attributes:
-            return name, text, attributes
+        atts = parse_attributes(text[1:-1])
+        if atts:
+            return name, text, atts
         return 'text', text
 
     md.inline.register_rule(name, pattern, parser)
@@ -163,16 +163,46 @@ class Renderer:
         return Element(type='block_code', text=text, info=info)
 
     def block_code_render(self, el: Element):
+
+        lang = ''
+        atts = {}
+
+        lines = [s.rstrip() for s in el.text.split('\n')]
+        while lines and not lines[0]:
+            lines.pop(0)
+        while lines and not lines[-1]:
+            lines.pop()
+        text = '\n'.join(lines)
+
         if el.info:
-            try:
-                lexer = pygments.lexers.get_lexer_by_name(el.info, stripall=True)
-                formatter = pygments.formatters.html.HtmlFormatter(noclasses=True)
-                return pygments.highlight(el.text, lexer, formatter)
-            except pygments.util.ClassNotFound:
-                util.log.warning(f'pygments lexer {el.info!r} not found')
-                pass
-        c = escape(el.text.strip())
-        return f'<pre><code>{c}</code></pre>'
+            # 'javascript' or 'javascript title=...' or 'title=...'
+            m = re.match(r'^(\w+(?=(\s|$)))?(.*)$', el.info.strip())
+            if m:
+                lang = m.group(1)
+                atts = parse_attributes(m.group(3))
+
+        lang = lang or 'text'
+        try:
+            lexer = pygments.lexers.get_lexer_by_name(lang, stripall=True)
+        except pygments.util.ClassNotFound:
+            util.log.warning(f'pygments lexer {lang!r} not found')
+            lexer = pygments.lexers.get_lexer_by_name('text', stripall=True)
+
+        kwargs = dict(
+            noclasses=True,
+            nobackground=True,
+        )
+        if 'numbers' in atts:
+            kwargs['linenos'] = 'table'
+            kwargs['linenostart'] = atts['numbers']
+
+        formatter = pygments.formatters.html.HtmlFormatter(**kwargs)
+        html = pygments.highlight(text, lexer, formatter)
+
+        if 'title' in atts:
+            html = f'<p class="highlighttitle">{escape(atts["title"])}</p>' + html
+
+        return html
 
     def block_error_parse(self, children=None):
         return Element(type='block_error', children=children)
@@ -350,7 +380,7 @@ class Renderer:
 
     def table_render(self, el: Element):
         c = self.render_children(el)
-        return f'<table>{c}</table>\n'
+        return f'<table class="markdown-table">{c}</table>\n'
 
     def table_row_parse(self, children=None):
         return Element(type='table_row', children=children)
@@ -412,14 +442,14 @@ _ATTRIBUTE_RE = r'''(?x)
 '''
 
 
-def _parse_attributes(text):
+def parse_attributes(text):
     text = text.strip() + ' '
     res = {}
 
     while text:
         m = re.match(_ATTRIBUTE_RE, text)
         if not m:
-            return
+            return {}
 
         text = text[m.end():].lstrip()
 

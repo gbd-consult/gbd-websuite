@@ -7,9 +7,6 @@ body, h1, h2, h3, h4, h5, h6, p, ol, ul {
     padding: 0;
     font-weight: normal;
 }
-p {
-    max-width: 50em;
-}
 
 ol, ul {
     list-style: none;
@@ -42,9 +39,15 @@ main {
 }
 
 
-code, pre {
+code, pre, .highlighttitle {
     font-family: Menlo, Consolas, monospace;
     font-size: 13px;
+}
+
+pre {
+    line-height: 125%;
+    padding: 0;
+    margin: 0;
 }
 
 main code, main pre {
@@ -68,13 +71,36 @@ pre code {
     margin: 0;
 }
 
-pre {
-    background: #fff8e1;
+div.highlight {
+    background-color: #fff8e1;
     border: 1px solid #ffd54f;
     border-radius: 4px;
-    padding: 20px;
-    margin: 12px 0;
+    padding: 1em;
+    margin: 1em 0;
     overflow-x: auto;
+    position: relative;
+}
+
+p.highlighttitle {
+    margin: 1em 0 0 0;
+    display: inline-block;
+    font-weight: 600;
+    padding: 0.2em 0.8em;
+    background-color: #ffd54f;
+}
+
+p.highlighttitle + div.highlight {
+    margin-top: 0;
+    border-top-left-radius: 0;
+}
+
+table.highlighttable tr {
+    vertical-align: top;
+}
+
+div.linenodiv {
+    opacity: 0.4;
+    padding-right: 0.5em;
 }
 
 blockquote {
@@ -162,23 +188,23 @@ main li {
 
 }
 
-main table {
+table.markdown-table {
     font-size: 14px;
     border-collapse: collapse;
     margin: 24px;
 }
 
-main table th, main table td {
+table.markdown-table th, table.markdown-table td {
     margin: 0;
     padding: 12px;
     border: 1px solid #ddd;
 }
 
-main table tr:nth-child(even) {
+table.markdown-table tr:nth-child(even) {
     background: rgba(0, 0, 0, 0.04);
 }
 
-main table th {
+table.markdown-table th {
     font-weight: 600;
     text-align: left;
     background: rgba(0, 0, 0, 0.09);
@@ -277,6 +303,7 @@ nav {
     flex: 1;
     background: none;
     padding: 10px 10px 10px 35px;
+    outline: none;
 }
 
 #sidebar-search button {
@@ -323,22 +350,6 @@ nav {
     font-size: 13px;
 }
 
-#sidebar-toc li a::before {
-    padding-right: 1em;
-    content: "\25AA";
-    display: inline-block; /*prevents text-decoration from a-tag on ::before element*/
-}
-#sidebar-toc li a:hover::before {
-    text-decoration: none!important;
-}
-
-#sidebar-toc li a:has(+ ul)::before {
-    content: "\25B8";
-}
-
-#sidebar-toc li a:has(+ ul.open)::before {
-    content: "\25BE";
-}
 
 #sidebar-toc a {
     color: #eceff1;
@@ -356,26 +367,25 @@ nav {
     color: white;
 }
 
-#sidebar-toc ul li a {
+#sidebar-toc ul li span {
     padding-left: 20px;
 }
 
-#sidebar-toc ul ul li a {
+#sidebar-toc ul ul li span {
     padding-left: 40px;
 }
 
-#sidebar-toc ul ul ul li a {
+#sidebar-toc ul ul ul li span {
     padding-left: 60px;
 }
 
-#sidebar-toc ul ul ul ul li a {
+#sidebar-toc ul ul ul ul li span {
     padding-left: 80px;
 }
 
-#sidebar-toc ul ul ul ul ul li a {
+#sidebar-toc ul ul ul ul ul li span {
     padding-left: 100px;
 }
-
 
 #sidebar-toc ul ul li {
     background: #37474f;
@@ -403,17 +413,53 @@ nav {
     transition: all 0.5s ease;
 }
 
-#sidebar-toc ul.open {
+#sidebar-toc > ul {
+    display: block;
+    opacity: 1;
+}
+
+#sidebar-toc li.open > ul {
     opacity: 1;
     transition: all 0.5s ease;
     display: block;
 }
 
+#sidebar-toc li > span {
+    display: flex;
+    align-items: center;
+}
+
+#sidebar-toc li > span > a {
+    flex: 1;
+}
+
+#sidebar-toc li button {
+    border: none;
+    background-color: transparent;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    margin-right: 0.2em;
+    background-size: 16px 16px;
+    background-position: center center;
+    transition: all 0.5s ease;
+    cursor: pointer;
+}
+
+#sidebar-toc li.branch > span > button {
+    background-image: url('theme_toc_open.svg');
+}
+
+#sidebar-toc li.branch.open > span > button {
+    transform: rotate(90deg);
+}
+
+
 body.withSearch #sidebar-search-results {
     display: block;
 }
 
-body.withSearch #sidebar-toc {
+body.withSearch #sidebar-tocxx {
     display: none;
 }
 

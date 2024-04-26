@@ -110,8 +110,7 @@ wird eine Textdatei (`pg_service.conf`) hinterlegt, welche mindestens einen Dien
 definiert:
 
 
-{file /data/pg_service.conf}
-```
+```title="/data/pg_service.conf"
 [mein_dienst]
 host=db.example.com
 port=5432
@@ -140,8 +139,7 @@ ebenfalls die Variable `QGIS_SERVER_PROJECT_CACHE_STRATEGY` auf `periodic`
 gesetzt werden, damit Änderungen an den QGIS Projekten vom QGIS Server erkannt 
 werden.
 
-{file docker-compose.yml}
-```yaml
+```yaml title="docker-compose.yml"
 services:
   gws:
     ...
@@ -157,8 +155,7 @@ services:
 Die Konfiguration der `database.providers` für die GBD WebSuite kann ebenfalls 
 die Zugangsdaten aus der `/data/pg_service.conf` lesen:
 
-{file /data/config.cx}
-```javascript
+```javascript title="/data/config.cx"
 {
   database.providers+ {
     type postgres
@@ -202,8 +199,7 @@ Ist PostgreSQL auf dem Host System direkt installiert, so kann in der
 
 Wird in der `docker-compose.yml` der folgende Eintrag hinterlegt:
 
-{file docker-compose.yml}
-```yaml
+```yaml title="docker-compose.yml"
 services:
   gws:
     ...

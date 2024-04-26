@@ -17,7 +17,7 @@ Each section starts with a Markdown header, optionally followed by a colon and a
 
     # Introduction :/docs/developer/intro
 
-Deeper headings (with more dashes) create the section hierarchy.
+Deeper headings (with more #'s) create the section hierarchy.
 
     # First Top-Level Section
         ## Subsection 1
@@ -34,29 +34,29 @@ A heading with no title and only a sid means "find a section with this sid and p
 
 For example, assume we have files like this:
 
-`index.doc.md`:
+```title="index.doc.md"
 
-    # Our docs :/docs
-    
-    ## Welcome
-        Hi there
-    
-    ## :/docs/first
-    
-    ## More stuff
-        Some text
-    
-    ## :/docs/second
+# Our docs :/docs
 
-`first.doc.md`:
+## Welcome
+    Hi there
 
-    ## First Thing :/docs/first
-        Discussion of the first thing
+## :/docs/first
 
-`second.doc.md`:
+## More stuff
+    Some text
 
-    ## Second Thing :/docs/second
-        Discussion of the second thing
+## :/docs/second
+```
+
+```title="first.doc.md"
+## First Thing :/docs/first
+    Discussion of the first thing
+```
+```title="second.doc.md"
+## Second Thing :/docs/second
+    Discussion of the second thing
+```
 
 Then, the compiled documentation will be like:
 
@@ -76,30 +76,36 @@ Then, the compiled documentation will be like:
 
 An embedded section sid can contain a wildcard component `*`, in which case all matching sections are included and sorted alphabetically by their titles. For example, if we have these files:
 
-`one.doc.md`:
+```title="one.doc.md"
 
-    # Tags :/docs/details/tags    
-        Something about tags
+# Tags :/docs/details/tags    
+    Something about tags
 
-`two.doc.md`:
+```
 
-    # Attributes :/docs/details/attributes        
-        Something about attributes
+```title="two.doc.md"
 
-`three.doc.md`:
+# Attributes :/docs/details/attributes        
+    Something about attributes
 
-    # Values :/docs/details/values        
-        Something about values
+```
 
-`index.doc.md`:
+```title="three.doc.md"
 
-    # Our docs :/docs
+# Values :/docs/details/values        
+    Something about values
+```
 
-    ## Details
-        
-    Some details:
+```title="index.doc.md"
 
-    ## :/docs/details/*
+# Our docs :/docs
+
+## Details
+    
+Some details:
+
+## :/docs/details/*
+```
 
 The result will be like this:
 
@@ -227,20 +233,41 @@ Result:
 
 > Our markdown formatter is https://mistune.lepture.com
 
-### Syntax highlighting
+### Code blocks
 
-A fenced code block with a tag formats the content with [Pygments](https://pygments.org/):
+Fenced code blocks are formatted with [Pygments](https://pygments.org/):
 
     ```py
     
     print("Hi", 40 + 2)  # test
-    
     ```
 Result:
 
 ```py
 print("Hi", 40 + 2)  # test
 ```
+
+Additionally, you can add a title and line numbers to the block:
+
+    ```py title="Example 1" numbers=5
+    
+    print("Hi", 40 + 2)  # line 5
+    spam()
+    ham()
+    eggs()
+    ```
+
+Result:
+
+```py title="Example 1" numbers=5
+
+print("Hi", 40 + 2)  # line 5
+spam()
+ham()
+eggs()
+```
+
+
 
 ### Decorations
 

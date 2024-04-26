@@ -1,5 +1,6 @@
 let $ = sel => document.querySelector(sel);
 let $$ = sel => document.querySelectorAll(sel);
+let $new = tag => document.createElement(tag);
 
 function makeNavigation() {
     let toc = GLOBAL_TOC;
@@ -31,30 +32,42 @@ function makeNavigation() {
     div.appendChild(li.lastChild);
 }
 
+let toggleOpen = e => e.target.parentNode.parentNode.classList.toggle('open');
+
 function makeNavNode(toc, sid) {
     let node = toc[sid];
 
-    let a = document.createElement('a');
-    a.textContent = node.h;
-    a.href = node.u;
-
-    let li = document.createElement('li');
+    let li = $new('li');
     li.dataset['sid'] = sid;
-    li.appendChild(a);
 
-    if (node.active) {
-        li.className = 'active';
-    }
+    let span = $new('span');
+    li.appendChild(span);
+
+    let button = $new('button');
+    span.appendChild(button);
 
     let sub = node.s.map(subSid => makeNavNode(toc, subSid))
 
-    if (sub.length) {
-        let ul = document.createElement('ul');
+    if (node.active) {
+        li.classList.add('active');
+    }
+    if (node.open) {
+        li.classList.add('open');
+    }
+    if (sub.length > 0) {
+        li.classList.add('branch');
+        button.addEventListener('click', toggleOpen);
+    }
+
+    let a = $new('a');
+    a.textContent = node.h;
+    a.href = node.u;
+    span.appendChild(a);
+
+    if (sub.length > 0) {
+        let ul = $new('ul');
         for (let s of sub) {
             ul.appendChild(s);
-        }
-        if (node.open) {
-            ul.className = 'open';
         }
         li.appendChild(ul);
     }
@@ -124,7 +137,7 @@ function syncNavigation() {
 function addRefMarks() {
     for (let h of '123456') {
         $$('h' + h).forEach(el => {
-            let a = document.createElement('a')
+            let a = $new('a')
             a.className = 'header-link'
             a.href = el.getAttribute('data-url')
             a.innerHTML = '&para;'

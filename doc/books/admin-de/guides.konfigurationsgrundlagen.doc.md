@@ -70,7 +70,6 @@ weggelassen werden können.
 - Doppelpunkte zwischen `key "value"`-Paaren fallen weg.
 - Anführungszeichen um `strings` fallen weg, solange diese aus nur einem Wort bestehen.
 
-{file config.slon}
 ```javascript
 {
     access "allow all"
@@ -99,8 +98,7 @@ weggelassen werden können.
 - Weiterhin ermöglicht slon das Setzen von Werten in einem Objekt wie folgt: `object.key value`.
   Dies kann auch Eigenschaften in bereits existierenden Objekten ergänzen:
 
-{file config.slon}
-```javascript
+```javascript title="config.slon"
 ...
 layers [
     {
@@ -115,8 +113,7 @@ layers [
 
 - Schließlich kann mit `liste+ eintrag` ein Eintrag in eine Liste eingefügt werden.
 
-{file config.slon}
-```javascript
+```javascript title="config.slon"
 {
     access "allow all"
     actions+ { type web }
@@ -141,8 +138,7 @@ Aufteilen der Config auf mehrere Dateien.
 Zunächst sind die wichtigsten Veränderungen die jump zur Konfiguration bringt:
 #### @include
 
-{file config.cx}
-```javascript
+```javascript title="config.cx"
 {
     access "allow all"
     actions+ { type web }
@@ -165,8 +161,7 @@ dieser Datei.
 - Wird eine geschweifte Klammer ohne folgendes Leerzeichen/Zeilenumbruch 
   benötigt, muss diese wie im folgenden Beispiel gedoppelt werden
 
-{file /data/config/projects/myproject.cx}
-```javascript
+```javascript title="/data/config/projects/myproject.cx"
 {
     uid myproject
     title "Mein Testprojekt"

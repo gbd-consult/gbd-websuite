@@ -51,8 +51,7 @@ Die erste Konfigurationsdatei die von der GBD WebSuite gelesen wird ist `/data/c
 
 Erstellen Sie diese mit folgendem Inhalt:
 
-{file /data/config.cx}
-```
+```title="/data/config.cx"
 {
     actions [
         { type web }
@@ -104,8 +103,7 @@ folgenden Teil der URL.
 
 Übernehmen Sie zunächst die folgenden Regeln:
 
-{file /data/config/web.cx}
-```
+```title="/data/config/web.cx"
 web.sites+ {
     root.dir "/data/web"
     assets.dir "/data/assets"
@@ -140,8 +138,7 @@ Die erste `rewrite` Regel sorgt dafür, dass diese URL den Inhalt der Datei
 
 Erstellen Sie diese Datei und hinterlegen den folgenden Inhalt:
 
-{file /data/assets/index.cx.html}
-```html
+```html title="/data/assets/index.cx.html"
 <h1>Meine GBD WebSuite Seite</h1>
 <h2>Projekte:</h2>
 <ul>
@@ -164,8 +161,7 @@ werden: `/data/assets/project.cx.html` bindet die
 [clientseitige Kartenapplikation](TODO LINK: client und server diagram?) 
 ein. 
 
-{file /data/assets/project.cx.html}
-```html
+```html title="/data/assets/project.cx.html"
 <!DOCTYPE html>
 <html>
     <head>
@@ -206,8 +202,7 @@ Sie haben bereits eine Datei angelegt in der die Projektkonfiguration
 hinterlegt werden soll: `/data/config/projects/myproject.cx`
 
 Ergänzen Sie den folgenden Inhalt in der Projektkonfiguration:
-{file /data/config/projects/myproject.cx}
-```
+```title="/data/config/projects/myproject.cx"
 {
     uid myproject
     title "Mein Projekt"
@@ -244,8 +239,7 @@ getroffen werden die für alle Projekte gilt.
 
 Ergänzen Sie folgenden Inhalt:
 
-{file /data/config/client.cx}
-```
+```title="/data/config/client.cx"
 client.elements [
     { tag "Infobar.ZoomOut" }
     { tag "Infobar.ZoomIn" }

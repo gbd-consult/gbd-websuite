@@ -27,8 +27,7 @@ Compose Plugin: [Docker Engine Installationsanleitung](https://docs.docker.com/e
 Erstellen Sie eine Datei mit dem Namen `docker-compose.yml` und dem folgenden 
 Inhalt in einem beliebigen Verzeichnis:
 
-{file docker-compose.yml}
-```yaml
+```yaml title="docker-compose.yml"
 version: '3'
 
 services:
@@ -65,8 +64,7 @@ aktuell die Logausgabe sehen STRG+C, oder schließen dieses.
 Um basierend auf diesem Schnellstart anzufangen mit der Konfiguration der GBD 
 WebSuite zu experimentieren, erweitern Sie die `docker-compose.yml` wie folgt:
 
-{file MYGWSDIRECTORY/docker-compose.yml}
-```yaml
+```yaml title="MYGWSDIRECTORY/docker-compose.yml"
 version: '3'
 
 services:
