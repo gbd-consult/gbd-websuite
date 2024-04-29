@@ -494,6 +494,13 @@ def write_configs_and_start_script(root: gws.IRoot, configs_dir, start_script_pa
     """
 
     path = _write(f'{configs_dir}/nginx.conf', nginx_conf)
+
+    # temporary, until we have templates
+    p = '/data/nginx.conf'
+    if gws.is_file(p):
+        gws.log.info(f'using nginx config {p!r}')
+        path = p
+
     commands.append(f'exec nginx -c {path}')
 
     _write(start_script_path, '\n'.join(commands))

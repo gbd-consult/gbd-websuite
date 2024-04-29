@@ -3,7 +3,7 @@
 python3
 python3-pip
 xvfb
-nginx
+nginx-extras
 rsyslog
 
 # generic
