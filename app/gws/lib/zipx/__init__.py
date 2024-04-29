@@ -161,9 +161,13 @@ def _zip(target, sources, flat):
 
 def _unzip(source, target_dir, target_dict, flat):
     cnt = 0
+
     with zipfile.ZipFile(source, 'r') as zf:
-        for inf in zf.infolist():
-            fname = inf.filename
+        for zi in zf.infolist():
+            if zi.is_dir():
+                continue
+
+            fname = zi.filename
             base = os.path.basename(fname)
 
             if fname.startswith(('/', '.')) or '..' in fname or not base:
@@ -183,6 +187,7 @@ def _unzip(source, target_dir, target_dict, flat):
             with zf.open(fname) as src, open(dst, 'wb') as fp:
                 shutil.copyfileobj(src, fp)
                 cnt += 1
+
     return cnt
 
 
