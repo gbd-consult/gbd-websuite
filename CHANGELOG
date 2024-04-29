@@ -1,3 +1,8 @@
+## Version 8.0.39
+
+- extra nginx modules installed
+- WMS server attirbution displayed correctly
+
 ## Version 8.0.38
 
 - templates can now return responses directly
