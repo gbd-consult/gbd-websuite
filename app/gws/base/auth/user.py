@@ -17,6 +17,9 @@ class User(gws.Object, gws.IUser):
     def props(self, user):
         return Props(displayName=self.displayName, attributes=self.attributes)
 
+    def has_role(self, role):
+        return role in self.roles
+
     def can_use(self, obj, *context):
         return self.can(gws.Access.read, obj, *context)
 
