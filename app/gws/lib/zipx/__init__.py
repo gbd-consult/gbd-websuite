@@ -167,24 +167,25 @@ def _unzip(source, target_dir, target_dict, flat):
             if zi.is_dir():
                 continue
 
-            fname = zi.filename
-            base = os.path.basename(fname)
+            path = zi.filename
+            base = os.path.basename(path)
 
-            if fname.startswith(('/', '.')) or '..' in fname or not base:
-                raise Error(f'unzip: invalid file name: {fname!r}')
+            if path.startswith(('/', '.')) or '..' in path or not base:
+                gws.log.warning(f'unzip: invalid file name: {path!r}')
+                continue
 
             if target_dict is not None:
-                with zf.open(fname) as src:
-                    target_dict[base if flat else fname] = src.read()
+                with zf.open(path) as src:
+                    target_dict[base if flat else path] = src.read()
                 continue
 
             if flat:
                 dst = os.path.join(target_dir, base)
             else:
-                dst = os.path.join(target_dir, *fname.split('/'))
+                dst = os.path.join(target_dir, *path.split('/'))
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
 
-            with zf.open(fname) as src, open(dst, 'wb') as fp:
+            with zf.open(path) as src, open(dst, 'wb') as fp:
                 shutil.copyfileobj(src, fp)
                 cnt += 1
 
