@@ -7,14 +7,6 @@ darf.
 
 ## Authentifizierung
 
-Um mit Benutzern, Rollen und Berechtigungen in der GBD WebSuite arbeiten zu 
-können muss dieses Feature einmal in der Konfiguration generell aktiviert werden:
-
-{file /data/config.cx}
-```javascript
-actions+ { type auth }
-```
-
 ### Methoden
 
 Ein Benutzer der auf eine beliebige Ressource der GBD WebSuite zuzugreifen 
@@ -39,8 +31,7 @@ dies die beste und einzig nötige Authentifizierungsmethode.
 Um diese Methode zu verwenden sind folgende Einträge in der Konfiguration 
 vorzunehmen:
 
-{file /data/config.cx}
-```javascript
+```javascript title="/data/config.cx"
 {
     actions+ { type auth }
 
@@ -55,11 +46,13 @@ vorzunehmen:
 Ohne `secure false` zu setzen weigert sich die GBD WebSuite die Authentifizierung
 über unverschlüsselte Verbindungen durchzuführen.
 
+Die [Auth Action](TODO LINK) aktiviert die Login und Logout Endpunkt die vom 
+dem Formular angesprochen werden.
+
 Sie können das Login Formular auf einer durch die GBD WebSuite bereitgestellten
 Web Seite einbinden:
 
-{file /data/assets/index.cx.html}
-```html
+```html title="/data/assets/index.cx.html"
 ...
 <script src="/_/webSystemAsset/path/util.js"></script>
 @if user.isGuest
@@ -87,11 +80,8 @@ mitgeschickt. Möchten Sie mit QGIS auf von der GBD WebSuite bereitgestellte,
 zugriffsgeschützte OWS Dienste zugreifen benötigen Sie diese 
 Authentifizierungsmethode:
 
-{file /data/config.cx}
-```javascript
+```javascript title="/data/config.cx"
 {
-    actions+ { type auth }
-
     auth.methods+ { 
         type basic
         secure false
@@ -119,8 +109,7 @@ einer [JSON](https://www.json.org/json-de.html) Datei zu hinterlegen.
 
 Ergänzen Sie die Konfiguration für den Authentifizierungsprovider wie folgt:
 
-{file /data/config.cx}
-```javascript
+```javascript title="/data/config.cx"
 {
     actions+ { type auth }
 
@@ -138,8 +127,7 @@ Ergänzen Sie die Konfiguration für den Authentifizierungsprovider wie folgt:
 
 Und hinterlegen Sie eine Liste mit Benutzerkonten in der angegebenen Datei:
 
-{file /data/users.json}
-```json
+```json title="/data/users.json"
 [
     {
         "login": "user_login",
@@ -232,15 +220,22 @@ Ebenfalls dürfen Sie die Rollen `guest`, `user` und `all` nicht selbst vergeben
 Für einige Objekte in der Konfiguration können Regeln hinterlegt werden, anhand 
 derer entschieden wird ob und wie der Benutzer mit diesem interagieren kann.
 
+
 Das Hinterlegen von diesen Regeln findet auf zwei Arten statt:
 
 #### access
 
+%warn
+Die Eigenschaft `access` sollte nicht mehr verwendet werden. Verwenden Sie
+stattdessen `permissions.read`. Sind beide Eigenschaften gesetzt wird 
+`permissions.read` immer bevorzugt. `access` wird mit einem zukünftigen
+Release entfernt.
+%end
+
 Die meisten Objekte für die eine Zugriffskontrolle möglich ist, haben eine 
 Eigenschaft `access`:
 
-{file /data/config.cx}
-```javascript
+```javascript title="/data/config.cx"
 {
     access "allow all"
 
@@ -256,83 +251,66 @@ Eigenschaft `access`:
 #### permissions
 
 %reference_de 'gws.PermissionsConfig'
+%reference_de 'gws.AclStr'
 
 
+`permissions` definiert mit den Eigenschaften `read`, `write`, `update` und 
+`delete` die Berechtigungen von Rollen auf Objekte.
 
+Zusätzlich gibt es `permissions.edit` welches ermöglicht `write`, `update` und 
+`delete` in einem Befehl auf den gleichen Wert zu setzen.
 
-Über die Eigenschaft `access` für generellen Zugriff auf ein Objekt
-und über permissions.xxx
+#### ACL
 
+ACL Strings sind Zeichenketten die für die Eigenschaften des `permissions` 
+Blocks hinterlegbar sind.
 
+Sie enthalten eine kommaseparierte Liste von Zugriffsdirektiven bestehend aus
+`allow <rolle>` oder `deny <rolle>`.
 
+Die Direktiven werden sequentiell überprüft bis eine dem zugreifenden User
+zugewiesene Rolle gefunden wird.
 
+Dem Nutzer wird der Zugriff daraufhin entweder gewährt (`allow`) oder 
+verwährt (`deny`), und alle folgenden Direktiven werden ignoriert.
 
+Ist für ein Objekt keine Zugriffsregelung hinterlegt wird das übergeordnete 
+Objekt überprüft und die dort hinterlegten Regeln angewandt.
+Falls es kein  übergeordnetes Objekt gibt, d.h. das Root-Objekt wird erreicht, 
+wird der Zugriff verweigert.
 
+In diesem Beispiel wird allen Zugreifenden Anwendern das Lesen aller 
+untergeordneten Objekte erlaubt, und lediglich Usern mit der Rolle `schreibrolle`
+das editieren gestattet:
 
+```javascript
+{
+    permissions.read "allow all"
+    permissions.edit "allow schreibrolle, deny all"
+}
+```
 
+### Berechtigungsstrategien
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-TODO Work In Progress SV, alles hier drüber ist soweit fertig.
-
-- Applikation
-- Server Aktion
-- Projekt
-- Layer
-- Druckvorlage
-
-Zusätzlich definieren einige Aktionen interne ``access`` Blöcke für bestimmte Befehle.
-
-Ein ``access`` Block ist eine Liste von Regeln. Jede Regel enthält die Eigenschaften ``role`` (ein Name der Rolle auf die sich die Regel bezieht) und ``type``, welche ist entweder ``allow`` ("erlauben") oder ``deny`` ("verweigern").
-
-Wenn ein Nutzer einen Zugriff auf ein Objekt erfragt, werden alle Regel für dieses Objekt überprüft. Falls eine der Rollen, die der Nutzer besitzt, explizit gefunden wird, ist der Zugriff anhand von ``type`` erlaubt oder verweigert. Ansonsten wird das übergeordnete Objekt geprüft. Falls es kein  übergeordnetes Objekt gibt, d.h. das Root-Objekt wird erreicht, wird der Zugriff verweigert.
-
-
-## Berechtigungsstrategien
-
-### selektives ``deny``
+#### selektives ``deny``
 
 Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie in der App-Konfig ``allow`` an ``all`` vergeben:
 
-```javascript
-
-"app": {
-    "access": [
-        {
-            "role": "all",
-            "type": "allow"
-        }
-    ]
+```javascript title="/data/config.cx"
+{
+    permissions.read "allow all"
+    ...
 }
 ```
 
 Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen, benötigen Sie zwei Zugriffsregeln: eine, um eine bestimmte Rolle zuzulassen, und eine, um ``all`` zu verwehren: ::
 
-```javascript
-
-# project
+```javascript title="/data/config/projects/myproject.cx"
 { 
-    "access": [
-        {
-            "role": "member",
-            "type": "allow"
-        },
-        {
-            "role": "all",
-            "type": "deny"
-        }
-    ]
+    uid myproject
+    title "Mein Projekt"
+    permissions.read "allow leserolle, deny all"
+    ...
 }
 ```
 
@@ -340,156 +318,37 @@ Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen
 
 Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen:
 
-```javascript
-
-"app": {
-    "access": [
-        {
-            "role": "all",
-            "type": "deny"
-        }
-    ]
-}
-```
-
-und erlauben dann explizit den Zugriff auf bestimmte Objekte:
-
-```javascript
-
-#project
+```javascript title="/data/config.cx"
 {
-    "access": [
-        {
-            "role": "member",
-            "type": "allow"
-        }
-    ]
+    permissions.read "deny all"
+    permissions.edit "deny all"
+    ...
 }
 ```
 
-## Aktion ``auth``
+und dann explizit den Zugriff auf bestimmte Objekte zu erlauben:
 
-%reference_de 'gws.base.auth.manager.Config'
-
-Diese Aktion ist für die Bearbeitung der Zugangsdaten zuständig und muss freigeschaltet sein wenn Sie Logins verwenden. Wenn Sie die "deny all" Strategie folgen, achten Sie darauf, dass die ``auth`` Aktion für ``all`` zugänglich ist, andernfalls könnten sich Ihre Benutzer nicht einmal anmelden.
-
-## Autorisierungsanbieter
-
-Die Aufgabe eines Autorisierungsanbieters ist, die Zugangsdaten mit der Quelle zu vergleichen und bei der positiven Antwort, Benutzer Eigenschaften (Vollname, Rollen usw) zurückzugeben.
-
-### file
-
-%reference_de 'gws.plugin.auth_provider.file.Config'
-
-Der Dateianbieter verwendet eine einfache Json-Datei, um Zugangsdaten zu speichern. Der json ist nur ein Array von "user"-Objekten:
-
-```javascript
-[
-    {
-        "login": "user login",
-        "password": "sha512 encoded password",
-        "name": "display name for the user",
-        "roles": [ "role1", "role2", ...]
-    },
-    {
-        ...
-    }
-]
-```
-
-Der Name und der Speicherort der Datei ist Ihnen überlassen, geben Sie einfach ihren absoluten Pfad in der Konfiguration an.
-
-TODO! ^CLIREF auth.passwd
-
-Um das verschlüsselte Passwort zu generieren, verwenden Sie den Kommandozeilen-Befehl ``gws auth passwd``.
-
-### ldap
-
-TODO! %reference_de 'gws.ext.auth.provider.ldap.Config'
-
-Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuit Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys.com` bereitgestellten [LDAP-Testservers](http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server)
-
-```javascript
+```javascript title="/data/config/projects/myproject.cx"
 {
-    "type": "ldap",
-
-    ## das Format ist  "ldap://host:port/baseDN?searchAttribute":
-
-    "url": "ldap://ldap.forumsys.com:389/dc=example,dc=com?uid",
-
-    ## Anmeldeinformationen, um sich an den Server zu binden:
-
-    "bindDN": "cn=read-only-admin,dc=example,dc=com",
-    "bindPassword": "password",
-
-    ## Filter auf Rollen abbilden:
-
-    "users": [
-
-        ## LDAP-Benutzer "euler" hat Rollen "moderator" und "expert":
-
-        {
-            "matches": "(&(cn=euler))",
-            "roles": ["moderator", "expert"]
-        },
-
-        ## alle Mitglieder der LDAP-Gruppe "mathematicians" haben die Rolle "member":
-
-        {
-            "memberOf": "mathematicians",
-            "roles": ["member"]
-        }
-    ]
+    uid myproject
+    title "Mein Projekt"
+    permissions.read "allow leserolle"
+    permissions.edit "allow schreibrolle"
+    ...
 }
 ```
 
-## Autorisierungsmethoden
+%info
+Bestimmte Aktionen müssen unter umständen für alle Anwender verfügbar sein um 
+sich einloggen zu können, und bei dieser Strategie explizit mit 
+`permissions.read "allow all"` versehen werden. Für den Web-Formular basierten 
+Login wären dies die Aktion `auth`, sowie wahrscheinlich die Aktion `web` um das
+Login-Formular als Webseite darstellen zu können.
+%end
 
-Eine Autorisierungsmethode sorgt dafür, dass die Zugangsdaten vom Nutzer zu einem Anbieter weitergeleitet werden. Alle Methoden unterstützen die Option ``secure`` (Defaultwert ``true``), die angibt, dass diese Methode nur über SSL (sichere Verbindung) verfügbar ist. Falls Sie keine Autorisierungsmethode explizit konfigurieren, wird automatisch nur ``web`` freigeschaltet.
+### Sitzungen
 
-### web
-
-%reference_de 'gws.plugin.auth_method.web.action.Config'
-
-Sendet die Zugangsdaten als eine JSON-Struktur an den Server Endpunkt. Bei der positiven Prüfung setzt der Server ein Sitzungscookie, das bei weiteren Anfragen mitgesendet wird.
-
-Im Browser wird zur Bearbeitung eines Login-Formulars eine Javascript Funktion benötigt, die den Endpunkt mittels AJAX aufruft. Eine beispielhafte Vorlage des Formulars kann wie folgt aussehen: ::
-
-```html
-    @if user.isGuest
-        <!-- Login Formular für nicht-eingeloggte Nutzer -->
-
-        <form onsubmit="gwsLogin()">
-            <label>
-                Benutzername
-                <input type="text" id="gwsUsername" name="username"/>
-            </label>
-            <label>
-                Kennwort
-                <input type="password" id="gwsPassword" name="password"/>
-            </label>
-            <button type="submit">Einloggen</button>
-        </form>
-
-    @else
-        <!-- Logout Button für eingeloggte Nutzer -->
-
-        <button onclick="gwsLogout()">Ausloggen</button>
-
-    @end
-```
-
-Die Definitionen der Funktionen ``gwsLogin`` und ``gwsLogout`` finder Sie unter https://github.com/gbd-consult/gbd-websuite/blob/master/client/src/gws-start.js. Sie können auch eigene Funktionen verwenden.
-
-Siehe auch [Vorlage](/admin-de/config/template) für Details über die Vorlagen-Sprache.
-
-### basic
-
-%reference_de 'gws.plugin.auth_method.basic.Config'
-
-Mit dieser Methode werden die Zugangsdaten in HTTP Header mitgesendet. Diese Methode in vor allem für automatische Anmeldungen durch QGIS Plugins und geschützten OWS Dienste gedacht.
-
-## Sitzungen
+TODO dieser Abschnitt ist noch alt und muss überprüft werden.
 
 Sitzungen werden in einer Sqlite Tabelle gespeichert, die sich in einem persistenten Ordner innerhalb des ``var`` Ordners befindet. Dies bedeutet, dass die Sitzungen auch nach einem Neustart des Servers nicht unterbrochen werden.
 
