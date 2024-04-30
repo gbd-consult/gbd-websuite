@@ -207,6 +207,7 @@ class Object(gws.Node, gws.ILayer):
         self.configure_sources()
         self.configure_models()
         self.configure_bounds()
+        self.configure_extent_buffer()
         self.configure_resolutions()
         self.configure_grid()
         self.configure_legend()
@@ -224,6 +225,12 @@ class Object(gws.Node, gws.ILayer):
             self.bounds = gws.Bounds(
                 crs=self.mapCrs,
                 extent=gws.gis.extent.from_list(p))
+            return True
+
+    def configure_extent_buffer(self):
+        p = self.cfg('extentBuffer')
+        if p is not None:
+            self.bounds = gws.gis.bounds.buffer(self.bounds, p)
             return True
 
     def configure_cache(self):

@@ -83,3 +83,9 @@ def transform(b: gws.Bounds, crs_to: gws.ICrs) -> gws.Bounds:
     return gws.Bounds(
         crs=crs_to,
         extent=b.crs.transform_extent(b.extent, crs_to))
+
+
+def buffer(b: gws.Bounds, buf: int) -> gws.Bounds:
+    if buf == 0:
+        return b
+    return gws.Bounds(crs=b.crs, extent=gws.gis.extent.buffer(b.extent, buf))
