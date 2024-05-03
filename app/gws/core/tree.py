@@ -185,7 +185,7 @@ class Root(types.IRoot):
         obj.parent = parent
         obj.children = []
 
-        log.debug(f'configuring {obj!r} in ' + (repr(parent) if parent else '<root>'))
+        log.debug('configure: ' + ('.' * 4 * len(self._configStack)) + f'{obj!r} IN {parent or self !r}')
         ok = self.initialize(obj, config)
         if not ok:
             log.debug(f'FAILED {obj!r}')
