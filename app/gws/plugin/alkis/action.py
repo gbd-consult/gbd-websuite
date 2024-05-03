@@ -46,6 +46,7 @@ class EigentuemerOptions(gws.Node):
         self.controlMode = self.cfg('controlMode')
         self.controlRules = self.cfg('controlRules', default=[])
         self.logTableName = self.cfg('logTable')
+        self.logTable = None
 
 
 class BuchungConfig(gws.ConfigWithAccess):
