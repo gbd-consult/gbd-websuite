@@ -1,8 +1,17 @@
 import pypdf
 
 
-def overlay(a_path, b_path, out_path):
-    """Overlay two pdfs page-wise."""
+def overlay(a_path: str, b_path: str, out_path: str) -> str:
+    """Overlay two pdfs page-wise.
+
+    Args:
+        a_path: Path to pdf a.
+        b_path: Path to pdf b, which will be placed on top.
+        out_path: Path to the output pdf.
+
+    Returns:
+        Path to the output pdf.
+    """
 
     fa = open(a_path, 'rb')
     fb = open(b_path, 'rb')
@@ -33,8 +42,17 @@ def overlay(a_path, b_path, out_path):
     return out_path
 
 
-def concat(paths, out_path):
-    """Concatenate multiple pfds into one."""
+def concat(paths: [str], out_path: str) -> str:
+    """Concatenates multiple pdfs into one.
+    The order of the pages are the same as the order of the paths in the list.
+
+    Args:
+        paths: Paths to the pdfs.
+        out_path: Path to the output pdf.
+
+    Returns:
+        Path to the concatenated pdf.
+    """
 
     # only one path given - just return it
     if len(paths) == 1:
@@ -59,7 +77,15 @@ def concat(paths, out_path):
     return out_path
 
 
-def page_count(path):
+def page_count(path: str) -> int:
+    """Returns the amount of pages for a given pdf.
+
+    Args:
+        path: Path to the pdf.
+
+    Returns:
+        Amount of pages in the pdf.
+    """
     with open(path, 'rb') as fp:
         r = pypdf.PdfReader(fp)
         return len(r.pages)
