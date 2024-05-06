@@ -1,4 +1,4 @@
-# Auth & Auth:/admin-de/config/auth
+# Auth & Auth:/admin-de/themen/auth
 
 **Authentifizierung**: Feststellung der Identität eines Benutzers.
 

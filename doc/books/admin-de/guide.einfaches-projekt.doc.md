@@ -53,6 +53,8 @@ Erstellen Sie diese mit folgendem Inhalt:
 
 ```title="/data/config.cx"
 {
+    permissions.read "allow all"
+
     actions [
         { type web }
         { type map }
@@ -68,8 +70,12 @@ Erstellen Sie diese mit folgendem Inhalt:
     ]
 }
 ```
+In der ersten Zeile wird Anwendern genereller, lesender Zugriff auf alle
+Komponenten der WebSuite gestattet. Dies ist für diesen Guide nötig, da das
+Thema [Benutzerkonten und Berechtigungen](/admin-de/themen/auth) hier nicht
+näher behandelt wird.
 
-Zunächst werden drei *actions* ([web](),[map](),[project]()) aktiviert. 
+Danach werden drei *actions* ([web](),[map](),[project]()) aktiviert.
 Actions sind serverseitige Funktionsgruppen.
 
 Als nächstes werden die Dateien `web.cx` und `client.cx` inkludiert, gefolgt von 

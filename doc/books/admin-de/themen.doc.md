@@ -1,7 +1,7 @@
 # Themen :/admin-de/themen
 
 
-## :/admin-de/config/auth
+## :/admin-de/themen/auth
 <!--
  In File: /gbd-websuite/app/gws/base/auth/_doc/admin-de.doc.md
 - Preface: Authentication vs Authorization
