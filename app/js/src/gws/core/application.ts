@@ -160,9 +160,9 @@ export class Application implements types.IApplication {
         this.initialState.user = res.user;
 
         this.initialState.helpUrl = this.project.client.options.helpUrl || this.options.helpUrl;
-        if (!this.options.helpUrl) {
+        if (!this.initialState.helpUrl) {
             let release = this.options.version.replace(/\.\d+$/, '');
-            this.options.helpUrl = `https://gbd-websuite.de/doc/${release}/user-${this.languageUid}`;
+            this.initialState.helpUrl = `https://gbd-websuite.de/doc/${release}/user-${this.languageUid}`;
         }
 
         this.initialState.helpUrlTarget = this.project.client.options.helpUrlTarget || this.options.helpUrlTarget || 'blank';
