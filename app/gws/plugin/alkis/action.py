@@ -40,12 +40,14 @@ class EigentuemerConfig(gws.ConfigWithAccess):
 class EigentuemerOptions(gws.Node):
     controlMode: bool
     controlRules: list[str]
-    logTable: str
+    logTableName: str
+    logTable: Optional[sa.Table]
 
     def configure(self):
         self.controlMode = self.cfg('controlMode')
         self.controlRules = self.cfg('controlRules', default=[])
-        self.logTable = self.cfg('logTable')
+        self.logTableName = self.cfg('logTable')
+        self.logTable = None
 
 
 class BuchungConfig(gws.ConfigWithAccess):
@@ -393,7 +395,10 @@ class Object(gws.base.action.Object):
         self.buchungsblattSearchOptions = self.cfg('buchungsblattSearchOptions', default=d)
 
         self.buchung = self.create_child(BuchungOptions, self.cfg('buchung'))
+
         self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer'))
+        if self.eigentuemer.logTableName:
+            self.eigentuemer.logTable = self.ix.provider.table(self.eigentuemer.logTableName)
 
         self.storage = self.create_child_if_configured(
             gws.base.storage.Object, self.cfg('storage'), categoryName='Alkis')
@@ -815,10 +820,8 @@ class Object(gws.base.action.Object):
         if not req.user.can_read(self.buchung):
             raise gws.ForbiddenError('cannot read buchung')
 
-    _eigentuemerLogTable = None
-
     def _log_eigentuemer_access(self, req: gws.WebRequester, control_input: str, is_ok: bool, total=None, fs_uids=None):
-        if not self.eigentuemer.logTable:
+        if self.eigentuemer.logTable is None:
             return
 
         if self._eigentuemerLogTable is None:
@@ -852,7 +855,7 @@ class Object(gws.base.action.Object):
         )
 
         with self.ix.connect() as conn:
-            conn.execute(sa.insert(self._eigentuemerLogTable).values([data]))
+            conn.execute(sa.insert(self.eigentuemer.logTable).values([data]))
             conn.commit()
 
         gws.log.debug(f'_log_eigentuemer_access {is_ok=}')

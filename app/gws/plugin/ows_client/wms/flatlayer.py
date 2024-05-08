@@ -151,7 +151,7 @@ class Object(gws.base.layer.image.Object):
             url=args.url,
         )
 
-        source_uid = mc.source(gws.u.compact({
+        src = gws.u.compact({
             'type': 'wms',
             'supported_srs': [self.sourceCrs.epsg],
             'concurrent_requests': self.provider.maxRequests,
@@ -159,6 +159,11 @@ class Object(gws.base.layer.image.Object):
             'wms_opts': {
                 'version': self.provider.version,
             }
-        }))
+        })
+
+        if args.headers:
+            src['http'] = {'headers': args.headers}
+
+        source_uid = mc.source(src)
 
         gws.base.layer.util.mapproxy_layer_config(self, mc, source_uid)

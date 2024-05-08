@@ -57,7 +57,7 @@ class Object(gws.Node):
 
             for z, g in sorted(e.grids.items()):
                 table.append({
-                    'zoom': z,
+                    'level': z,
                     'scale': '1:' + str(round(gws.lib.uom.res_to_scale(g.res))),
                     'grid': f'{g.maxX} x {g.maxY}',
                     'total': g.totalTiles,
@@ -65,7 +65,7 @@ class Object(gws.Node):
                     '%%': int(100 * (g.cachedTiles / g.totalTiles)),
                 })
             print()
-            print(gws.lib.console.text_table(table, ['zoom', 'scale', 'grid', 'total', 'cached', '%%']))
+            print(gws.lib.console.text_table(table, ['level', 'scale', 'grid', 'total', 'cached', '%%']))
 
         if status.staleDirs:
             print()

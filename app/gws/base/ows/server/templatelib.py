@@ -221,8 +221,7 @@ def coord_m(n):
     return round(n, gws.lib.uom.DEFAULT_PRECISION[gws.Uom.m])
 
 
-def to_xml(args, tag):
-    ta: TemplateArgs = args.get('owsArgs')
+def to_xml(ta: TemplateArgs, tag):
     if ta.request.isSoap:
         tag = 'soap:Envelope', ('soap:Header', ''), ('soap:Body', tag)
 

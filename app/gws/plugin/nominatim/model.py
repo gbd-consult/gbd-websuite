@@ -71,7 +71,7 @@ class Object(gws.base.model.dynamic_model.Object):
 
         for rec in self._query(params):
             uid = rec.get('place_id') or rec.get('osm_id')
-            geom = rec.pop('geojson', None)
+            geom = rec.pop('geojson', {})
 
             if not geom:
                 gws.log.debug(f'SKIP {uid}: no geometry')
@@ -86,7 +86,7 @@ class Object(gws.base.model.dynamic_model.Object):
                 gws.FeatureRecord(uid=uid, shape=shape, attributes=self._normalize(rec)),
                 user))
 
-        return sorted(features, key=lambda f: (f.attr('name'), f.attr('osm_class'), f.attr('osm_type')))
+        return sorted(features, key=lambda f: (f.get('name'), f.get('osm_class'), f.get('osm_type')))
 
     def _query(self, params) -> list[dict]:
         try:

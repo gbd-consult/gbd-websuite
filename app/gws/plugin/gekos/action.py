@@ -90,19 +90,23 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('gekosGetXY')
     def get_xy(self, req: gws.WebRequester, p: GetXyRequest) -> gws.ContentResponse:
-        act: alkis_action.Object = cast(
-            alkis_action.Object,
-            gws.base.action.find(self.root, 'alkis', req.user, p.projectUid))
+        project = None
+        if p.projectUid:
+            project = req.user.require_project(p.projectUid)
 
-        if not act:
+        alkis = cast(
+            alkis_action.Object,
+            self.root.app.actionMgr.find_action(project, 'alkis', req.user)
+        )
+        if not alkis:
             gws.log.error(f'gekos: alkis action not found, {p.projectUid=}')
             return gws.ContentResponse(mime='text/plain', content='error:')
 
         lst = None
         if p.fs:
-            lst, _ = act.find_flurstueck_objects(req, alkis_action.FindFlurstueckRequest(combinedFlurstueckCode=p.fs))
+            lst, _ = alkis.find_flurstueck_objects(req, alkis_action.FindFlurstueckRequest(combinedFlurstueckCode=p.fs))
         elif p.ad:
-            lst, _ = act.find_adresse_objects(req, alkis_action.FindAdresseRequest(combinedAdresseCode=p.ad))
+            lst, _ = alkis.find_adresse_objects(req, alkis_action.FindAdresseRequest(combinedAdresseCode=p.ad))
 
         if not lst:
             gws.log.error(f'gekos: not found, {p.fs=} {p.ad=}')
@@ -110,4 +114,4 @@ class Object(gws.base.action.Object):
 
         return gws.ContentResponse(
             mime='text/plain',
-            content='{:.3f},{:.3f}'.format(lst[0].x, lst[0].y))
+            content='{:.3f};{:.3f}'.format(lst[0].x, lst[0].y))

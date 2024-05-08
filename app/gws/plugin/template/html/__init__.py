@@ -47,9 +47,10 @@ class Object(gws.base.template.Object):
 
         args = self.prepare_args(tri.args)
         args['__renderUid'] = gws.u.random_string(8)
-        html = engine.call(self.compiledFn, args=args, error=self.error_handler)
+        res = engine.call(self.compiledFn, args=args, error=self.error_handler)
 
-        res = self.finalize(tri, html, args, engine)
+        if not isinstance(res, gws.Response):
+            res = self.finalize(tri, res, args, engine)
 
         self.notify(tri, 'end_print')
         return res

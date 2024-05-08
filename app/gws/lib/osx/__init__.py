@@ -360,6 +360,10 @@ def file_name(path: _Path) -> str:
     return sp[1]
 
 
+def is_abs_path(path: _Path) -> bool:
+    return os.path.isabs(path)
+
+
 def abs_path(path: _Path, base: str) -> str:
     """Absolutize a relative path with respect to a base directory or file path.
 

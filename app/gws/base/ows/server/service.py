@@ -228,7 +228,7 @@ class Object(gws.OwsService):
             gws.log.debug(f'no template: {verb=} {format_name=}')
             raise gws.base.web.error.BadRequest('Unsupported FORMAT')
 
-        ta = gws.Data(
+        args = gws.Data(
             project=rd.project,
             request=rd,
             service=self,
@@ -238,4 +238,4 @@ class Object(gws.OwsService):
             **kwargs,
         )
 
-        return tpl.render(gws.TemplateRenderInput(args={'owsArgs': ta}))
+        return tpl.render(gws.TemplateRenderInput(args=args))

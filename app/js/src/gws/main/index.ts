@@ -20,8 +20,6 @@ export async function main(win, strings) {
     }
 
     let options = {
-        serverUrl: win['GWS_SERVER_URL'],
-        projectUid: win['GWS_PROJECT_UID'],
         cssBreakpoints: {
             // see css/lib/breakpoints.js
             xsmall: 0,
@@ -31,27 +29,21 @@ export async function main(win, strings) {
             xlarge: 1200,
         },
         strings,
-        locale: win['GWS_LOCALE'] || 'en_CA',
         tags,
-        helpUrl: '',
-        helpUrlTarget: 'blank',
-        homeUrl: '/',
         version: gws.api.VERSION,
         domNode,
+
+        helpUrlTarget: 'blank',
+        helpUrl: '',
+        homeUrl: '/',
+
+        projectUid: win['GWS_PROJECT_UID'],
+        serverUrl: win['GWS_SERVER_URL'],
         markFeatures: win['GWS_MARK_FEATURES'],
+        showLayers: win['GWS_SHOW_LAYERS'],
+        hideLayers: win['GWS_HIDE_LAYERS'],
+        customStrings: win['GWS_STRINGS'],
     };
-
-    // if (win['GWS_LABELS']) {
-    //     for (let loc in win['GWS_LABELS']) {
-    //         if (options.labels.hasOwnProperty(loc))
-    //             Object.assign(options.labels[loc], win['GWS_LABELS'][loc]);
-    //     }
-    // }
-    //
-    let release = options.version.replace(/\.\d+$/, '');
-    let lang = options.locale.split('_')[0];
-
-    options.helpUrl = `https://gbd-websuite.de/doc/${release}/user-${lang}`;
 
     let app = await gws.Application.create(options);
     if (app) {

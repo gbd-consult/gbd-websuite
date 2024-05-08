@@ -2935,6 +2935,12 @@ class OwsProtocol(Enum):
     CSW = 'CSW'
 
 
+class OwsAuthorization(Data):
+    type: str
+    username: str
+    password: str
+
+
 class OwsVerb(Enum):
     """OWS verb."""
 
@@ -3009,6 +3015,7 @@ class OwsProvider(Node):
     """OWS services Provider."""
 
     alwaysXY: bool
+    authorization: Optional['OwsAuthorization']
     forceCrs: 'Crs'
     maxRequests: int
     metadata: 'Metadata'

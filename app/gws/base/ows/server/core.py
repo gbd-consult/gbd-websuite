@@ -51,6 +51,7 @@ class LayerCapsTree(gws.Data):
 
 class FeatureCollectionMember(gws.Data):
     feature: gws.Feature
+    layer: Optional[gws.Layer]
     options: gws.LayerOwsOptions
 
 

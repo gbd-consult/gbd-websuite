@@ -91,7 +91,7 @@ def _config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
 
     for cc in tca.auto_layers:
         if gws.gis.source.layer_matches(sl, cc.applyTo):
-            cfg = gws.u.deep_merge(cc.config, cfg)
+            cfg = gws.u.deep_merge(cfg, cc.config)
 
     return gws.u.compact(cfg)
 

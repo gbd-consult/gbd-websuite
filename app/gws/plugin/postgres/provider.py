@@ -31,6 +31,8 @@ class Config(gws.base.database.provider.Config):
     """service name from pg_services file"""
     options: Optional[dict]
     """connection options"""
+    withPool: Optional[bool] = True
+    """enable connection pooling"""
 
 
 class Object(gws.base.database.provider.Object):
@@ -40,7 +42,8 @@ class Object(gws.base.database.provider.Object):
             raise gws.Error(f'"host/database" or "serviceName" are required')
 
     def engine(self, **kwargs):
-        # kwargs.setdefault('poolclass', sa.NullPool)
+        if not self.cfg('withPool'):
+            kwargs.setdefault('poolclass', sa.NullPool)
         # kwargs.setdefault('pool_pre_ping', True)
         kwargs.setdefault('echo', self.root.app.developer_option('db.engine_echo'))
         url = connection_url(self.config)

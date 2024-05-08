@@ -8,6 +8,12 @@ class OwsProtocol(Enum):
     CSW = 'CSW'
 
 
+class OwsAuthorization(Data):
+    type: str
+    username: str
+    password: str
+
+
 class OwsVerb(Enum):
     """OWS verb."""
 
@@ -82,6 +88,7 @@ class OwsProvider(Node):
     """OWS services Provider."""
 
     alwaysXY: bool
+    authorization: Optional['OwsAuthorization']
     forceCrs: 'Crs'
     maxRequests: int
     metadata: 'Metadata'
@@ -94,4 +101,3 @@ class OwsProvider(Node):
     def get_operation(self, verb: 'OwsVerb', method: Optional['RequestMethod'] = None) -> Optional['OwsOperation']: ...
 
     def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer']) -> list['FeatureRecord']: ...
-

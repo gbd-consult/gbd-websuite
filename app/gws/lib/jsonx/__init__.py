@@ -7,14 +7,14 @@ class Error(gws.Error):
     pass
 
 
-def from_path(path: str) -> dict:
+def from_path(path: str):
     """Converts a json file to a python dictionary.
 
     Args:
         path: Path to json file.
 
     Returns:
-        The json as a dictionary.
+        A Python object.
 
     Raises:
         ``Exception``: If the given json is incorrect.
@@ -28,17 +28,17 @@ def from_path(path: str) -> dict:
         raise Error() from exc
 
 
-def from_string(s: str) -> dict:
+def from_string(s: str):
     """Converts a json string to a python dictionary.
 
     Args:
         s: Json string.
 
     Returns:
-        The json as a dictionary.
+        A Python object.
 
     Raises:
-        ``Exception``: If the given json is incorrect.
+        ``Error``: If the given json is incorrect.
     """
 
     if not s.strip():

@@ -47,7 +47,7 @@ class AutoLayersOptions(gws.ConfigWithAccess):
     """Configuration for automatic layers."""
 
     applyTo: Optional[gws.gis.source.LayerFilter]
-    config: 'Config'
+    config: dict
 
 
 class OwsConfig(gws.Config):

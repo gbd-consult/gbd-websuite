@@ -31,12 +31,13 @@ class Object(gws.TemplateManager):
                 continue
             return tpl
 
-    def template_from_path(self, path):
+    def template_from_path(self, path, **kwargs):
         for ext, typ in _TYPES.items():
             if path.endswith(ext):
                 return self.root.create_shared(
                     gws.ext.object.template,
-                    gws.Config(uid=gws.u.sha256(path), type=typ, path=path)
+                    gws.Config(uid=gws.u.sha256(path), type=typ, path=path),
+                    **kwargs
                 )
 
 

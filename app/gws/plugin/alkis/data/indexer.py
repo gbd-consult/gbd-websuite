@@ -1029,6 +1029,7 @@ class _Runner:
     def _read_flat(self, cls):
         cnt = self.reader.count(cls)
         if cnt <= 0:
+            gws.log.warning(f'ALKIS: read {cls.__name__}: empty table')
             return []
 
         rs = []
@@ -1052,6 +1053,7 @@ class _Runner:
     def _read_grouped(self, cls):
         cnt = self.reader.count(cls)
         if cnt <= 0:
+            gws.log.warning(f'ALKIS: read {cls.__name__}: empty table')
             return []
 
         groups = {}

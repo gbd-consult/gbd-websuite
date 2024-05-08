@@ -1200,7 +1200,7 @@ export class FormTab extends gws.View<ViewProps> {
         let es = cc.editState;
         let sf = es.sidebarSelectedFeature;
 
-        cc.updateEditState({formErrors: []});
+        cc.updateEditState({formErrors: null});
 
         for (let fld of sf.model.fields) {
             await cc.initWidget(fld);
@@ -1231,7 +1231,8 @@ export class FormTab extends gws.View<ViewProps> {
             widgets.push(w);
         }
 
-        let isDirty = sf.isNew || sf.isDirty;
+        let canSave = sf.isNew || sf.isDirty;
+        let canDelete = !sf.isNew;
 
         return <sidebar.Tab className="editSidebar editSidebarFormTab">
             <sidebar.TabHeader>
@@ -1258,20 +1259,29 @@ export class FormTab extends gws.View<ViewProps> {
                             </Form>
                         </Cell>
                     </VRow>
+                    {es.formErrors && <VRow>
+                        <Row>
+                            <Cell flex>
+                                <gws.ui.Error text={this.__('editValidationErrorText')}/>
+                            </Cell>
+                        </Row>
+                    </VRow>}
                     <VRow>
                         <Row>
                             {geomWidget && <Cell>{geomWidget}</Cell>}
                             <Cell flex/>
                             <Cell spaced>
                                 <gws.ui.Button
-                                    {...gws.lib.cls('editSaveButton', isDirty && 'isActive')}
+                                    {...gws.lib.cls('editSaveButton')}
+                                    disabled={!canSave}
                                     tooltip={this.__('editSave')}
                                     whenTouched={() => this.whenSaveButtonTouched(sf)}
                                 />
                             </Cell>
                             <Cell spaced>
                                 <gws.ui.Button
-                                    {...gws.lib.cls('editResetButton', isDirty && 'isActive')}
+                                    {...gws.lib.cls('editResetButton')}
+                                    disabled={!canSave}
                                     tooltip={this.__('editReset')}
                                     whenTouched={() => this.whenResetButtonTouched(sf)}
                                 />
@@ -1286,6 +1296,7 @@ export class FormTab extends gws.View<ViewProps> {
                             <Cell spaced>
                                 <gws.ui.Button
                                     className="editDeleteButton"
+                                    disabled={!canDelete}
                                     tooltip={this.__('editDelete')}
                                     whenTouched={() => this.whenDeleteButtonTouched(sf)}
                                 />
@@ -1825,14 +1836,19 @@ export class Controller extends gws.Controller {
             resolution: this.map.viewState.resolution,
         });
 
+        let sf = this.editState.sidebarSelectedFeature;
+
         if (gws.lib.isEmpty(res.features)) {
-            this.unselectFeatures();
+            // only unselect if current feature is not new
+            if (sf && !sf.isNew) {
+                this.unselectFeatures();
+            }
             console.log('whenPointerDownAtCoordinate: no feature')
             return;
         }
 
-        let loaded = this.app.modelRegistry.featureFromProps(res.features[0]);
-        let sf = this.editState.sidebarSelectedFeature;
+        let loaded = await this.featureCache.loadOne(
+            this.app.modelRegistry.featureFromProps(res.features[0]));
 
         if (sf && sf.model === loaded.model && sf.uid === loaded.uid) {
             console.log('whenPointerDownAtCoordinate: same feature')

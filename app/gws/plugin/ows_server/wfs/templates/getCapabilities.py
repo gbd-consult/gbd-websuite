@@ -3,8 +3,8 @@ import gws.base.ows.server.templatelib as tpl
 
 
 def main(args: dict):
-    ta = args.get('owsArgs')
-    return tpl.to_xml(args, ('WFS_Capabilities', doc(ta)))
+    ta = tpl.TemplateArgs(args)
+    return tpl.to_xml(ta, ('WFS_Capabilities', doc(ta)))
 
 
 def doc(ta: tpl.TemplateArgs):

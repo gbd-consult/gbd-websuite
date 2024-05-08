@@ -8,6 +8,7 @@ _ows_error_strings = '<ServiceException', '<ServerException', '<ows:ExceptionRep
 
 class Args(gws.Data):
     method: gws.RequestMethod
+    headers: dict
     params: dict
     protocol: gws.OwsProtocol
     url: str
@@ -47,7 +48,7 @@ def get(args: Args, **kwargs) -> gws.lib.net.HTTPResponse:
     if args.params:
         params.update(gws.u.to_upper_dict(args.params))
 
-    return get_url(args.url, method=args.method or gws.RequestMethod.GET, params=params, **kwargs)
+    return get_url(args.url, method=args.method or gws.RequestMethod.GET, params=params, headers=args.headers, **kwargs)
 
 
 def get_text(args: Args, **kwargs) -> str:

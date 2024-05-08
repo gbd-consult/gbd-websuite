@@ -273,7 +273,7 @@ class ToolbarButton extends toolbar.Button {
     tool = 'Tool.Lens';
 
     get tooltip() {
-        return this.__('modToolbarButton');
+        return this.__('lensToolbarButton');
     }
 }
 
