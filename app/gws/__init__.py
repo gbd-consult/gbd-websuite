@@ -1272,7 +1272,11 @@ class XmlNamespace(Data):
 
 
 class XmlElement(Iterable):
-    """XML Element."""
+    """XML Element.
+
+
+    Extends ``ElementTree.Element`` (https://docs.python.org/3/library/xml.etree.elementtree.html#element-objects).
+    """
 
     tag: str
     """Tag name, with an optional namespace in the Clark notation."""
@@ -1289,7 +1293,7 @@ class XmlElement(Iterable):
     name: str
     """Element name (tag without a namespace)."""
 
-    lname: str
+    lcName: str
     """Element name (tag without a namespace) in lower case."""
 
     caseInsensitive: bool
@@ -1301,23 +1305,13 @@ class XmlElement(Iterable):
 
     def __getitem__(self, item: int) -> 'XmlElement': ...
 
-    def clear(self): ...
-
-    def get(self, key: str, default=None) -> Any: ...
+    def append(self, subelement: 'XmlElement'): ...
 
     def attr(self, key: str, default=None) -> Any: ...
 
-    def items(self) -> Iterable[Any]: ...
-
-    def keys(self) -> Iterable[str]: ...
-
-    def set(self, key: str, value: Any): ...
-
-    def append(self, subelement: 'XmlElement'): ...
+    def clear(self): ...
 
     def extend(self, subelements: Iterable['XmlElement']): ...
-
-    def insert(self, index: int, subelement: 'XmlElement'): ...
 
     def find(self, path: str) -> Optional['XmlElement']:
         """Finds first matching element by tag name or path."""
@@ -1328,6 +1322,12 @@ class XmlElement(Iterable):
     def findtext(self, path: str, default: Optional[str] = None) -> str:
         """Finds text for first matching element by name or path."""
 
+    def get(self, key: str, default=None) -> Any: ...
+
+    def insert(self, index: int, subelement: 'XmlElement'): ...
+
+    def items(self) -> Iterable[Any]: ...
+
     def iter(self, tag: Optional[str] = None) -> Iterable['XmlElement']: ...
 
     def iterfind(self, path: Optional[str] = None) -> Iterable['XmlElement']:
@@ -1335,7 +1335,11 @@ class XmlElement(Iterable):
 
     def itertext(self) -> Iterable[str]: ...
 
+    def keys(self) -> Iterable[str]: ...
+
     def remove(self, other: 'XmlElement'): ...
+
+    def set(self, key: str, value: Any): ...
 
     # extensions
 
@@ -1375,7 +1379,7 @@ class XmlElement(Iterable):
         """
 
     def to_dict(self) -> dict:
-        """Creates a dictionary from an XElement object.
+        """Creates a dictionary from an XmlElement object.
 
         Returns:
             A dict with the keys ``tag``, ``attrib``, ``text``, ``tail``, ``tail``, ``children``.

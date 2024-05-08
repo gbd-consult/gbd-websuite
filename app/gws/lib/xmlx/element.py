@@ -5,41 +5,31 @@ and implements the `gws.core.types.IXmlElement` protocol.
 """
 
 from typing import Iterator
-
 import xml.etree.ElementTree
-from xml.etree.ElementTree import Element
 
 import gws
 
 from . import namespace, error
 
 
-class XElement(xml.etree.ElementTree.Element):
-    """Class represents XML elements."""
-    caseInsensitive: bool
-    """Flag for case sensitivity."""
-    name: str
-    """Name of the element."""
-    lname: str
-    """Lowercase name."""
+class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
 
     def __init__(self, tag, attrib=None, **extra):
-        super().__init__(tag, attrib or {}, **extra)
+        xml.etree.ElementTree.Element.__init__(self, tag, attrib or {}, **extra)
 
         self.text = self.text or ''
         self.tail = self.tail or ''
 
         _, _, pname = namespace.split_name(tag)
         self.name = pname
-        self.lname = pname.lower()
+        self.lcName = pname.lower()
 
         self.caseInsensitive = False
 
     def __bool__(self):
         return True
 
-    def __iter__(self) -> Iterator['XElement']:
-        # need this for typing of `for sub in elem` loops
+    def __iter__(self) -> Iterator['XmlElementImpl']:
         for i in range(len(self)):
             yield self[i]
 
@@ -77,7 +67,7 @@ class XElement(xml.etree.ElementTree.Element):
     ##
 
     def to_dict(self) -> dict:
-        """Creates a dictionary from an XElement object.
+        """Creates a dictionary from an XmlElementImpl object.
 
         Returns:
             A dict with the keys ``tag``, ``attrib``, ``text``, ``tail``, ``tail``, ``children``."""
@@ -98,14 +88,14 @@ class XElement(xml.etree.ElementTree.Element):
             with_schema_locations: bool = False,
             with_xml_declaration: bool = False,
     ) -> str:
-        """Converts the XElement object to a string.
+        """Converts the XmlElement object to a string.
 
         Args:
             compact_whitespace: String will not contain any whitespaces outside of tags and elements.
             remove_namespaces: String will not contain namespaces.
             with_namespace_declarations: String will keep the namespace declarations.
             with_schema_locations: String will keep the schema locations.
-            with_xml_declaration: String will keep the xml ddeclaration.
+            with_xml_declaration: String will keep the xml declaration.
 
         Returns:
             A String containing the xml structure.
@@ -209,15 +199,15 @@ class XElement(xml.etree.ElementTree.Element):
 
     ##
 
-    def add(self, tag: str, attrib: dict = None, **extra) -> 'XElement':
-        """Creates a new ``XElement`` and adds it as a child.
+    def add(self, tag: str, attrib: dict = None, **extra) -> 'XmlElementImpl':
+        """Creates a new ``XmlElementImpl`` and adds it as a child.
 
         Args:
             tag: XML tag.
             attrib: XML attributes ``{key, value}``.
 
         Returns:
-            A XElement.
+            A XmlElementImpl.
         """
         el = self.__class__(tag, attrib, **extra)
         el.caseInsensitive = self.caseInsensitive
@@ -225,7 +215,7 @@ class XElement(xml.etree.ElementTree.Element):
         return el
 
     def attr(self, key: str, default=None) -> str:
-        """Finds the value for a given key in the ``XElement``.
+        """Finds the value for a given key in the ``XmlElementImpl``.
 
         Args:
             key: Key of the attribute.
@@ -236,11 +226,11 @@ class XElement(xml.etree.ElementTree.Element):
         """
         return self.get(key, default)
 
-    def children(self) -> ['XElement']:
-        """Returns the children of the current ``XElement``."""
+    def children(self) -> ['XmlElementImpl']:
+        """Returns the children of the current ``XmlElementImpl``."""
         return [c for c in self]
 
-    def findfirst(self, *paths:str) -> Element:
+    def findfirst(self, *paths:str) -> 'XmlElementImpl':
         """Returns the first element in the current element.
 
         Args:
@@ -271,7 +261,7 @@ class XElement(xml.etree.ElementTree.Element):
             if el is not None and el.text:
                 return el.text
 
-    def textlist(self, *paths:str, deep: bool = False) -> ['XElement']:
+    def textlist(self, *paths:str, deep: bool = False) -> ['XmlElementImpl']:
         """Collects texts from child-elements.
 
         Args:

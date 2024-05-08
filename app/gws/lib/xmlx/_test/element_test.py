@@ -250,7 +250,7 @@ def test_findfirst():
         </root>
     '''
     test = xmlx.parser.from_string(xml)
-    assert test.findfirst().__dict__ == {'caseInsensitive': False, 'lname': 'nested', 'name': 'nested'}
+    assert test.findfirst().__dict__ == {'caseInsensitive': False, 'lcName': 'nested', 'name': 'nested'}
 
 
 def test_textof():

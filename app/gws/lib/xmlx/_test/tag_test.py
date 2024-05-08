@@ -79,7 +79,7 @@ def test_with_default_namespace():
 
 
 def test_with_space():
-    el = xmlx.tag('1 2 3')
+    el = xmlx.tag('1 / 2 / 3')
     assert el.to_string() == u.fxml('''
                                     <1>
                                         <2>
@@ -101,7 +101,7 @@ def test_text_int():
 
 
 def test_append_tuple2():
-    el = xmlx.tag('root nested', ('foo', 2))
+    el = xmlx.tag('root/nested', ('foo', 2))
     assert el.to_string() == u.fxml('''
                                         <root>
                                             <nested>
@@ -114,7 +114,7 @@ def test_append_tuple2():
 
 
 def test_append_tuple():
-    el = xmlx.tag('root nested', ('foo', 'bar'))
+    el = xmlx.tag('root/nested', ('foo', 'bar'))
     assert el.to_string() == u.fxml('''
                                         <root>
                                             <nested>
@@ -160,7 +160,7 @@ def test_keywords():
 
 
 def test_tag():
-    el = xmlx.tag('geometry gml:Point',
+    el = xmlx.tag('geometry/gml:Point',
                   {'gml:id': 'xy'},
                   ['gml:coordinates', '12.345,56.789'],
                   srsName=3857)

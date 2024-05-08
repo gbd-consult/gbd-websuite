@@ -115,7 +115,7 @@ class _ParserTarget:
             for name, val in attrib.items():
                 attrib2[self.convert_name(name)] = val
 
-        el = element.XElement(self.convert_name(tag), attrib2)
+        el = element.XmlElementImpl(self.convert_name(tag), attrib2)
         el.caseInsensitive = self.case_insensitive
 
         return el

@@ -34,16 +34,18 @@ creates the following element: ::
 
 """
 
+import re
+
 import gws
 
 from . import element, error
 
 
-def tag(names: str, *args, **kwargs) -> gws.XmlElement:
+def tag(name: str, *args, **kwargs) -> gws.XmlElement:
     """Build an XML element from arguments.
 
     Args:
-        names: A tag name or names.
+        name: A tag name or names.
         *args: A collection of args.
         **kwargs: Additional attributes.
 
@@ -53,8 +55,8 @@ def tag(names: str, *args, **kwargs) -> gws.XmlElement:
 
     first = last = None
 
-    for name in names.split(' '):
-        el = element.XElement(name.strip())
+    for n in _split_name(name):
+        el = element.XmlElementImpl(n.strip())
         if not first:
             first = last = el
         else:
@@ -62,7 +64,7 @@ def tag(names: str, *args, **kwargs) -> gws.XmlElement:
             last = el
 
     if not first:
-        raise error.BuildError(f'invalid tag name: {names!r}')
+        raise error.BuildError(f'invalid tag name: {name!r}')
 
     for arg in args:
         _add(last, arg)
@@ -77,7 +79,7 @@ def _add(el: gws.XmlElement, arg):
     if arg is None:
         return
 
-    if isinstance(arg, element.XElement):
+    if isinstance(arg, element.XmlElementImpl):
         el.append(arg)
         return
 
@@ -125,3 +127,22 @@ def _add_list(el, ls):
         return
     for arg in ls:
         _add(el, arg)
+
+
+def _split_name(name):
+    if '{' not in name:
+        return [s.strip() for s in name.split('/')]
+
+    parts = []
+    ns = ''
+
+    for n, s in re.findall(r'({.+?})|([^/{}]+)', name):
+        if n:
+            ns = n
+        else:
+            s = s.strip()
+            if s:
+                parts.append(ns + s)
+                ns = ''
+
+    return parts

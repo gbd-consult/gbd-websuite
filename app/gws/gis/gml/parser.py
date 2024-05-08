@@ -39,15 +39,15 @@ def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy=Fa
     coords = None
 
     try:
-        if el.lname == 'box':
+        if el.lcName == 'box':
             coords = _coords(el)
 
-        elif el.lname == 'envelope':
+        elif el.lcName == 'envelope':
             coords = [None, None]
             for coord_el in el:
-                if coord_el.lname == 'lowercorner':
+                if coord_el.lcName == 'lowercorner':
                     coords[0] = _coords_pos(coord_el)[0]
-                if coord_el.lname == 'uppercorner':
+                if coord_el.lcName == 'uppercorner':
                     coords[1] = _coords_pos(coord_el)[0]
 
         ext = gws.gis.extent.from_points(*coords)
@@ -59,7 +59,7 @@ def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy=Fa
 
 
 def is_geometry_element(el: gws.XmlElement):
-    return el.lname in _GEOMETRY_TAGS
+    return el.lcName in _GEOMETRY_TAGS
 
 
 def parse_shape(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy=False) -> gws.Shape:
@@ -85,34 +85,34 @@ def parse_geometry(el: gws.XmlElement) -> dict:
 ##
 
 def _to_geom(el: gws.XmlElement):
-    if el.lname == 'point':
+    if el.lcName == 'point':
         # <gml:Point> pos/coordinates
         return {'type': 'Point', 'coordinates': _coords(el)[0]}
 
-    if el.lname in {'linestring', 'linearring', 'linestringsegment'}:
+    if el.lcName in {'linestring', 'linearring', 'linestringsegment'}:
         # <gml:LineString> posList/coordinates
         return {'type': 'LineString', 'coordinates': _coords(el)}
 
-    if el.lname == 'curve':
+    if el.lcName == 'curve':
         # GML3: <gml:Curve> <gml:segments> <gml:LineStringSegment>
         # NB we only take the first segment
         return _to_geom(el[0][0])
 
-    if el.lname == 'polygon':
+    if el.lcName == 'polygon':
         # GML2: <gml:Polygon> <gml:outerBoundaryIs> <gml:LinearRing> <gml:innerBoundaryIs> <gml:LinearRing>...
         # GML3: <gml:Polygon> <gml:exterior> <gml:LinearRing> <gml:interior> <gml:LinearRing>...
         return {'type': 'Polygon', 'coordinates': _rings(el)}
 
-    if el.lname == 'multipoint':
+    if el.lcName == 'multipoint':
         # <gml:MultiPoint> <gml:pointMember> <gml:Point>
         return {'type': 'MultiPoint', 'coordinates': [m['coordinates'] for m in _members(el)]}
 
-    if el.lname in {'multilinestring', 'multicurve'}:
+    if el.lcName in {'multilinestring', 'multicurve'}:
         # GML2: <gml:MultiLineString> <gml:lineStringMember> <gml:LineString>
         # GML3: <gml:MultiCurve> <gml:curveMember> <gml:Curve>
         return {'type': 'MultiLineString', 'coordinates': [m['coordinates'] for m in _members(el)]}
 
-    if el.lname in {'multipolygon', 'multisurface'}:
+    if el.lcName in {'multipolygon', 'multisurface'}:
         # GML2: <gml:MultiPolygon> <gml:polygonMember> <gml:Polygon>
         # GML3: <gml:MultiSurface> <gml:surfaceMember> <gml:Polygon>
         return {'type': 'MultiPolygon', 'coordinates': [m['coordinates'] for m in _members(el)]}
@@ -124,7 +124,7 @@ def _members(multi_el: gws.XmlElement):
     ms = []
 
     for el in multi_el:
-        if el.lname.endswith('member'):
+        if el.lcName.endswith('member'):
             ms.append(_to_geom(el[0]))
 
     return ms
@@ -134,12 +134,12 @@ def _rings(poly_el):
     rings = [None]
 
     for el in poly_el:
-        if el.lname in {'exterior', 'outerboundaryis'}:
+        if el.lcName in {'exterior', 'outerboundaryis'}:
             d = _to_geom(el[0])
             rings[0] = d['coordinates']
             continue
 
-        if el.lname in {'interior', 'innerboundaryis'}:
+        if el.lcName in {'interior', 'innerboundaryis'}:
             d = _to_geom(el[0])
             rings.append(d['coordinates'])
             continue
@@ -149,11 +149,11 @@ def _rings(poly_el):
 
 def _coords(any_el):
     for el in any_el:
-        if el.lname == 'coordinates':
+        if el.lcName == 'coordinates':
             return _coords_coordinates(el)
-        if el.lname == 'pos':
+        if el.lcName == 'pos':
             return _coords_pos(el)
-        if el.lname == 'poslist':
+        if el.lcName == 'poslist':
             return _coords_poslist(el)
 
 
