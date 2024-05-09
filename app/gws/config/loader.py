@@ -100,7 +100,7 @@ def configure(
 
 
 def initialize(specs, parsed_config) -> gws.Root:
-    root_obj = gws.u.create_root(specs)
+    root_obj = gws.create_root(specs)
     root_obj.create_application(parsed_config)
     root_obj.post_initialize()
     return root_obj

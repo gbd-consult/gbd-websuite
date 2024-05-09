@@ -30,7 +30,7 @@ class MockSpecs(gws.SpecRuntime):
 
 
 def _root(*classes):
-    return gws.u.create_root(MockSpecs(*classes))
+    return gws.create_root(MockSpecs(*classes))
 
 
 def _objects(*classes):
@@ -38,7 +38,7 @@ def _objects(*classes):
 
 
 def _nodes(*classes):
-    root = gws.u.create_root(MockSpecs(classes))
+    root = gws.create_root(MockSpecs(classes))
     return [root.create(cls) for cls in classes]
 
 
@@ -222,7 +222,7 @@ def test_auto_super_configure():
 #     b.parent = a
 #     c.parent = a
 #
-#     assert test.dict_of(gws.u.make_props(a, _user('X'))) == {'b': {'me': 'B'}, 'c': {'me': 'C'}}
+#     assert test.dict_of(gws.props_of(a, _user('X'))) == {'b': {'me': 'B'}, 'c': {'me': 'C'}}
 #
 #
 # def test_props_with_access():
@@ -246,7 +246,7 @@ def test_auto_super_configure():
 #     b.parent = a
 #     c.parent = a
 #
-#     assert test.dict_of(gws.u.make_props(a, _user('X'))) == {'c': {'me': 'C'}}
+#     assert test.dict_of(gws.props_of(a, _user('X'))) == {'c': {'me': 'C'}}
 #
 #
 # def test_props_with_implicit_access():
@@ -271,7 +271,7 @@ def test_auto_super_configure():
 #     a.access = _access('X allow')
 #     b.access = _access('X deny')
 #
-#     assert test.dict_of(gws.u.make_props(a, _user('X'))) == {'c': {'d': {'me': 'D'}}}
+#     assert test.dict_of(gws.props_of(a, _user('X'))) == {'c': {'d': {'me': 'D'}}}
 #
 #
 # #

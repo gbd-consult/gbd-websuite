@@ -285,7 +285,7 @@ def is_a(root, node, classref):
     return False
 
 
-def make_props(node, user, *context):
+def props_of(node, user, *context):
     if not user.can_use(node, *context):
         return None
     p = make_props2(node, user)

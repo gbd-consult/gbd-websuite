@@ -118,7 +118,7 @@ class Object(gws.ModelField):
     def props(self, user):
         wp = None
         if self.widget:
-            wp = gws.u.make_props(self.widget, user, self)
+            wp = gws.props_of(self.widget, user, self)
             if not user.can_write(self):
                 wp.readOnly = True
 

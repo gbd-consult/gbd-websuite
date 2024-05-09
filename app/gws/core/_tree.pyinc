@@ -320,5 +320,5 @@ def create_root(specs: 'SpecRuntime') -> Root:
     return Root(specs)
 
 
-def make_props(obj: Object, user: 'User', *context) -> Optional['Props']:
-    return tree_impl.make_props(obj, user, *context)
+def props_of(obj: Object, user: 'User', *context) -> Optional['Props']:
+    return tree_impl.props_of(obj, user, *context)

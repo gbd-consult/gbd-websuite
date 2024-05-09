@@ -53,7 +53,7 @@ def main2(args):
         cli.error('invalid arguments, try "gws -h" for help')
         return 1
 
-    root = gws.u.create_root(specs)
+    root = gws.create_root(specs)
 
     try:
         fn, request = gws.base.action.prepare_cli_action(

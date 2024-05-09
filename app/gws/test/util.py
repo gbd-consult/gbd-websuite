@@ -51,7 +51,7 @@ def gws_root():
     global _SPEC
     if _SPEC is None:
         _SPEC = gws.spec.runtime.create(work_dir() + '/MANIFEST.json', read_cache=False, write_cache=False)
-    return gws.u.create_root(_SPEC)
+    return gws.create_root(_SPEC)
 
 
 def gws_configure(config: str):

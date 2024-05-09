@@ -58,9 +58,6 @@ u.to_data_object = to_data_object
 
 # @include core/_tree.pyinc
 
-u.create_root = create_root
-u.make_props = make_props
-
 # @include lib/image/types.pyinc
 # @include lib/intl/types.pyinc
 # @include lib/job/types.pyinc

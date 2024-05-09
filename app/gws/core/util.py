@@ -19,13 +19,12 @@ import urllib.parse
 from typing import cast, Union
 from . import const, log
 
-class Data:
+
+def is_data_object(x) -> bool:
     pass
 
-def is_data_object(x):
-    pass
 
-def to_data_object(x):
+def to_data_object(x) -> bool:
     pass
 
 

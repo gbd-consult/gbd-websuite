@@ -59,5 +59,5 @@ class Object(gws.base.action.Object):
         user = req.user
         if user.isGuest:
             return Response(user=None)
-        res = Response(user=gws.u.make_props(user, user))
+        res = Response(user=gws.props_of(user, user))
         return res
