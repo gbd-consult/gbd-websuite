@@ -94,7 +94,7 @@ def _from_wkb(wkb: bytes, default_crs):
     return Shape(geom, crs)
 
 
-def from_wkb_element(element: sa.geo.WKBElement, default_crs):
+def from_wkb_element(element: sa.geo.WKBElement,  default_crs: gws.Crs = None):
     data = element.data
     if isinstance(data, str):
         wkb = bytes.fromhex(data)

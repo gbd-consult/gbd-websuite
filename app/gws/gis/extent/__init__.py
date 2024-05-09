@@ -87,6 +87,8 @@ def circumsquare(e: gws.Extent) -> gws.Extent:
 
 
 def buffer(e: gws.Extent, buf: int) -> gws.Extent:
+    if buf == 0:
+        return e
     e = _sort(e)
     return (
         e[0] - buf,

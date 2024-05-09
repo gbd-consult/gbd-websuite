@@ -118,7 +118,7 @@ class Object(gws.Model):
 
             typ = _DEFAULT_FIELD_TYPES.get(col.type)
             if not typ:
-                gws.log.warning(f'cannot find suitable field type for column {desc.fullName}.{col.name} ({col.type})')
+                # gws.log.warning(f'cannot find suitable field type for column {desc.fullName}.{col.name} ({col.type})')
                 continue
 
             cfg = gws.Config(

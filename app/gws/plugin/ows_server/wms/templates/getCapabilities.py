@@ -119,8 +119,8 @@ def layer13_content(ta: tpl.TemplateArgs, lc: server.LayerCaps):
 
     yield tpl.keywords(md)
 
-    if md.attribution:
-        yield 'Attribution/Title', md.attribution
+    if md.attribution and md.attribution.title:
+        yield 'Attribution/Title', md.attribution.title
 
     if md.authorityUrl:
         yield 'AuthorityURL', {'name': md.authorityName}, tpl.online_resource(md.authorityUrl)

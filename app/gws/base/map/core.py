@@ -62,7 +62,10 @@ class Object(gws.Map):
 
         p = self.cfg('extent')
         if p:
-            self.bounds = gws.Bounds(crs=crs, extent=gws.gis.extent.from_list(p))
+            self.bounds = gws.Bounds(
+                crs=crs,
+                extent=gws.gis.extent.buffer(gws.gis.extent.from_list(p), self.cfg('extentBuffer') or 0)
+            )
         else:
             self.bounds = gws.Bounds(crs=crs, extent=crs.extent)
 
