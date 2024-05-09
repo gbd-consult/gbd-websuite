@@ -115,7 +115,7 @@ class _Creator:
     def namespace_entry(self, typ, template, **kwargs):
         ps = typ.name.split(DOT)
         ps.pop(0)
-        if len(ps) == 1:
+        if ps[0] == self.CORE_NAME:
             ns, name, qname = self.CORE_NAME, ps[-1], self.CORE_NAME + DOT + ps[-1]
         else:
             if self.CORE_NAME in ps:
@@ -151,8 +151,7 @@ class _Creator:
     def write_api(self):
 
         namespace_tpl = "export namespace $ns { \n $declarations \n }"
-        globs = self.format(namespace_tpl, ns=self.CORE_NAME, declarations=_nl2(self.namespaces.pop(self.CORE_NAME, '')))
-        # globs = ''
+        globs = self.format(namespace_tpl, ns=self.CORE_NAME, declarations=_nl2(self.namespaces.pop(self.CORE_NAME)))
         namespaces = _nl2([
             self.format(namespace_tpl, ns=ns, declarations=_nl2(d))
             for ns, d in sorted(self.namespaces.items())
@@ -183,6 +182,7 @@ class _Creator:
             $namespaces
 
             export interface Api {
+                invoke(cmd: string, r: object, options?: any): Promise<any>;
                 $commands
             }
         """
@@ -190,7 +190,7 @@ class _Creator:
         return self.format(api_tpl, globs=globs, namespaces=namespaces, commands=commands)
 
     def write_stub(self):
-        command_tpl = """$name(p: $arg, options?: any): Promise<$ret> { \n return this._call("$name", p, options); \n }"""
+        command_tpl = """$name(r: $arg, options?: any): Promise<$ret> { \n return this.invoke("$name", r, options); \n }"""
         commands = [
             self.format(command_tpl, name=cc.cmdName, doc=cc.doc, arg=cc.arg, ret=cc.ret)
             for _, cc in sorted(self.commands.items())
@@ -198,7 +198,7 @@ class _Creator:
 
         stub_tpl = """
             export abstract class BaseServer implements Api {
-                abstract _call(cmd, p, options): Promise<any>;
+                abstract invoke(cmd, r, options): Promise<any>;
                 $commands
             }
         """

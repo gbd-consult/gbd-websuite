@@ -98,24 +98,24 @@ export class Server extends api.BaseServer {
         return this.commandCount + this.queue.length;
     }
 
-    async _call(cmd, params, options) {
-        params = params || {};
-        params.projectUid = params.projectUid || this.app.project.uid;
-        params.localeUid = params.localeUid || this.app.localeUid;
+    async invoke(cmd, request, options) {
+        request = request || {};
+        request.projectUid = request.projectUid || this.app.project.uid;
+        request.localeUid = request.localeUid || this.app.localeUid;
 
         this.commandCount++;
         this.whenChanged();
-        let res = await this._call2(cmd, params, options);
+        let res = await this._invoke2(cmd, request, options);
         this.commandCount--;
         this.whenChanged();
         return res;
     }
 
-    async _call2(cmd, params, options) {
+    async _invoke2(cmd, request, options) {
         let req: any = {
             url: this.url + '/' + cmd,
             method: 'POST',
-            data: params,
+            data: request,
             withCredentials: true
         };
 
