@@ -114,9 +114,9 @@ class _Creator:
 
     def namespace_entry(self, typ, template, **kwargs):
         ps = typ.name.split(DOT)
-        ps.pop(0)
-        if ps[0] == self.CORE_NAME:
-            ns, name, qname = self.CORE_NAME, ps[-1], self.CORE_NAME + DOT + ps[-1]
+        ps.pop(0)  # remove 'gws.'
+        if len(ps) == 1:
+            ns, name, qname = self.CORE_NAME, ps[-1], self.CORE_NAME + DOT + ps[0]
         else:
             if self.CORE_NAME in ps:
                 ps.remove(self.CORE_NAME)
