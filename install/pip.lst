@@ -1,6 +1,6 @@
 # gws core
 
-Babel==2.*
+Babel==2.14.*
 GeoAlchemy2==0.*
 MapProxy==1.*
 Pillow==9.*
