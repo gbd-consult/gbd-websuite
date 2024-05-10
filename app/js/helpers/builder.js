@@ -102,6 +102,9 @@ const DEV_INDEX_HTML_TEMPLATE = String.raw`
 
 <script>
 process = {env: {NODE_ENV: "development"}}
+</script>
+
+<script id="gwsOptions" type="application/json">
 __ENV__
 </script>
 
@@ -300,7 +303,7 @@ function startBrowserSync(bb) {
             return '';
         }
 
-        tplVars.ENV = `window['GWS_LOCALE']="${bb.locale}"; window['GWS_PROJECT_UID']="${m[1]}"`;
+        tplVars.ENV = JSON.stringify({projectUid: m[1]});
 
         tplVars.VENDORS = ''
         for (let vendor of bb.vendors)

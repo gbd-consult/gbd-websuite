@@ -2,20 +2,17 @@ import * as ReactDOM from 'react-dom';
 
 import * as gws from 'gws';
 
-
+const ID_OPTIONS = 'gwsOptions';
+const CLASS_CONTAINER = 'gws';
 
 export async function main(win, strings) {
-
     let tags = gws.getRegisteredTags()
 
-    let domNode;
-    let divs = document.getElementsByClassName('gws');
+    let domNode = document.querySelector('.' + CLASS_CONTAINER);
 
-    if (divs.length > 0) {
-        domNode = divs.item(0);
-    } else {
+    if (!domNode) {
         domNode = document.createElement('div');
-        domNode.className = 'gws';
+        domNode.className = CLASS_CONTAINER;
         document.body.appendChild(domNode);
     }
 
@@ -37,13 +34,29 @@ export async function main(win, strings) {
         helpUrl: '',
         homeUrl: '/',
 
-        projectUid: win['GWS_PROJECT_UID'],
-        serverUrl: win['GWS_SERVER_URL'],
-        markFeatures: win['GWS_MARK_FEATURES'],
-        showLayers: win['GWS_SHOW_LAYERS'],
-        hideLayers: win['GWS_HIDE_LAYERS'],
-        customStrings: win['GWS_STRINGS'],
+        projectUid: '',
+        serverUrl: '',
+        markFeatures: null,
+        showLayers: null,
+        hideLayers: null,
+        customStrings: null,
     };
+
+    // deprecated, using javascript script tag
+
+    options.projectUid = win['GWS_PROJECT_UID'];
+    options.serverUrl = win['GWS_SERVER_URL'];
+    options.markFeatures = win['GWS_MARK_FEATURES'];
+    options.showLayers = win['GWS_SHOW_LAYERS'];
+    options.hideLayers = win['GWS_HIDE_LAYERS'];
+    options.customStrings = win['GWS_STRINGS'];
+
+    // using json script tag
+
+    let optsScript = document.querySelector('#' + ID_OPTIONS);
+    if (optsScript) {
+        Object.assign(options, JSON.parse(optsScript.textContent));
+    }
 
     let app = await gws.Application.create(options);
     if (app) {

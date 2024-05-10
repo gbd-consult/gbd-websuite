@@ -2,11 +2,41 @@ body {
     background: #333;
 }
 
+.gws {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+h6 {
+    text-align: right;
+}
+
+.gws .cmpDescription p {
+    font-size: 14px;
+    line-height: 150%;
+}
+
+.gws .cmpDescription p.head {
+    font-size: 20px;
+}
+
+.gws .cmpDescription code {
+    font-size: 12px;
+    padding: 0.3em;
+    border-radius: 4px;
+    background-color: #c9d0e8;
+}
+
+
 @media (min-width: 576px) {
     .gws .modSidebar {
         left: -460px;
         width: 460px;
     }
+
     .gws .modSidebarOverflowPopup {
         left: 144px;
         right: auto;
@@ -55,25 +85,100 @@ body {
     --label-max-scale: 500000;
 }
 
-.point-red { --point-size: 10; fill: #b71c1c }
-.point-pink { --point-size: 10; fill: #880e4f }
-.point-purple { --point-size: 10; fill: #4a148c }
-.point-deepPurple { --point-size: 10; fill: #311b92 }
-.point-indigo { --point-size: 10; fill: #1a237e }
-.point-blue { --point-size: 10; fill: #0d47a1 }
-.point-lightBlue { --point-size: 10; fill: #01579b }
-.point-cyan { --point-size: 10; fill: #006064 }
-.point-teal { --point-size: 10; fill: #004d40 }
-.point-green { --point-size: 10; fill: #1b5e20 }
-.point-lightGreen { --point-size: 10; fill: #33691e }
-.point-lime { --point-size: 10; fill: #827717 }
-.point-yellow { --point-size: 10; fill: #f57f17 }
-.point-amber { --point-size: 10; fill: #ff6f00 }
-.point-orange { --point-size: 10; fill: #e65100 }
-.point-deepOrange { --point-size: 10; fill: #bf360c }
-.point-brown { --point-size: 10; fill: #3e2723 }
-.point-blueGrey { --point-size: 10; fill: #263238 }
-.point-grey { --point-size: 10; fill: #212121 }
+.point-red {
+    --point-size: 10;
+    fill: #b71c1c
+}
+
+.point-pink {
+    --point-size: 10;
+    fill: #880e4f
+}
+
+.point-purple {
+    --point-size: 10;
+    fill: #4a148c
+}
+
+.point-deepPurple {
+    --point-size: 10;
+    fill: #311b92
+}
+
+.point-indigo {
+    --point-size: 10;
+    fill: #1a237e
+}
+
+.point-blue {
+    --point-size: 10;
+    fill: #0d47a1
+}
+
+.point-lightBlue {
+    --point-size: 10;
+    fill: #01579b
+}
+
+.point-cyan {
+    --point-size: 10;
+    fill: #006064
+}
+
+.point-teal {
+    --point-size: 10;
+    fill: #004d40
+}
+
+.point-green {
+    --point-size: 10;
+    fill: #1b5e20
+}
+
+.point-lightGreen {
+    --point-size: 10;
+    fill: #33691e
+}
+
+.point-lime {
+    --point-size: 10;
+    fill: #827717
+}
+
+.point-yellow {
+    --point-size: 10;
+    fill: #f57f17
+}
+
+.point-amber {
+    --point-size: 10;
+    fill: #ff6f00
+}
+
+.point-orange {
+    --point-size: 10;
+    fill: #e65100
+}
+
+.point-deepOrange {
+    --point-size: 10;
+    fill: #bf360c
+}
+
+.point-brown {
+    --point-size: 10;
+    fill: #3e2723
+}
+
+.point-blueGrey {
+    --point-size: 10;
+    fill: #263238
+}
+
+.point-grey {
+    --point-size: 10;
+    fill: #212121
+}
 
 .ne_countries {
     fill: rgba(194, 139, 50, 0.44);

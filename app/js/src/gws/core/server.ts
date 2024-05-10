@@ -100,7 +100,7 @@ export class Server extends api.BaseServer {
 
     async invoke(cmd, request, options) {
         request = request || {};
-        request.projectUid = request.projectUid || this.app.project.uid;
+        request.projectUid = request.projectUid || this.app.project?.uid;
         request.localeUid = request.localeUid || this.app.localeUid;
 
         this.commandCount++;
