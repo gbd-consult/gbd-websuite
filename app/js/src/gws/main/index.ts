@@ -6,6 +6,11 @@ const ID_OPTIONS = 'gwsOptions';
 const CLASS_CONTAINER = 'gws';
 
 export async function main(win, strings) {
+    document.addEventListener('DOMContentLoaded', () => _main2(win, strings));
+}
+
+async function _main2(win, strings) {
+
     let tags = gws.getRegisteredTags()
 
     let domNode = document.querySelector('.' + CLASS_CONTAINER);
