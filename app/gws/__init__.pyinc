@@ -70,6 +70,8 @@ u.to_data_object = to_data_object
 # @include gis/render/types.pyinc
 # @include gis/source/types.pyinc
 
+# @include server/types.pyinc
+
 # @include base/feature/types.pyinc
 # @include base/shape/types.pyinc
 

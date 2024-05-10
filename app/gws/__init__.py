@@ -1786,6 +1786,41 @@ class SourceLayer(Data):
 
 
 ################################################################################
+# /server/types.pyinc
+
+
+class ServerManager(Node):
+    templates: list['Template']
+
+    def create_server_configs(self, target_dir: str, script_path: str):
+        """Create server configuration files."""
+
+
+class ServerMonitor(Node):
+    """File Monitor facility."""
+
+    def add_directory(self, path: str, pattern: 'Regex'):
+        """Add a directory to monitor.
+
+        Args:
+            path: Directory path.
+            pattern: Regex pattern for files to watch.
+        """
+
+    def add_file(self, path: str):
+        """Add a file to watch.
+
+        Args:
+            path: File path.
+        """
+
+    def start(self):
+        """Start the monitor."""
+################################################################################
+
+
+
+################################################################################
 # /base/feature/types.pyinc
 
 
@@ -3670,28 +3705,6 @@ class WebSite(Node):
 # /base/application/types.pyinc
 
 
-class Monitor(Node):
-    """File Monitor facility."""
-
-    def add_directory(self, path: str, pattern: Regex):
-        """Add a directory to monitor.
-
-        Args:
-            path: Directory path.
-            pattern: Regex pattern for files to watch.
-        """
-
-    def add_file(self, path: str):
-        """Add a file to watch.
-
-        Args:
-            path: File path.
-        """
-
-    def start(self):
-        """Start the monitor."""
-
-
 class MiddlewareManager(Node):
     def register(self, obj: Node, name: str, depends_on: Optional[list[str]] = None):
         """Register an object as a middleware."""
@@ -3706,7 +3719,7 @@ class Application(Node):
     client: 'Client'
     localeUids: list[str]
     metadata: 'Metadata'
-    monitor: 'Monitor'
+    monitor: 'ServerMonitor'
     version: str
     versionString: str
     defaultPrinter: 'Printer'
@@ -3719,6 +3732,7 @@ class Application(Node):
     searchMgr: 'SearchManager'
     storageMgr: 'StorageManager'
     templateMgr: 'TemplateManager'
+    serverMgr: 'ServerManager'
     webMgr: 'WebManager'
     middlewareMgr: 'MiddlewareManager'
 

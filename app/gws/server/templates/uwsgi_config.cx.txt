@@ -1,0 +1,61 @@
+@import gws
+
+[uwsgi]
+daemonize = true
+master = true
+uid = {gws.c.UID}
+gid = {gws.c.GID}
+chmod-socket = 777
+die-on-term = true
+pythonpath = {gws.c.APP_DIR}
+post-buffering = 65535
+threads = 0
+vacuum = true
+
+harakiri-verbose = true
+reload-mercy = 5
+worker-reload-mercy = 5
+
+
+@if uwsgi == 'web'
+    logger = syslog:WEB,local6
+    harakiri = {root.app.cfg('server.web.timeout')}
+    processes = {root.app.cfg('server.web.workers')}
+    pidfile = {webPid}
+    uwsgi-socket = {webSocket}
+    wsgi-file = {gws.c.APP_DIR}/gws/base/web/wsgi_main.py
+@end
+
+@if uwsgi == 'spool'
+    logger = syslog:SPOOL,local6
+    harakiri = {root.app.cfg('server.spool.timeout')}
+    processes = {root.app.cfg('server.spool.workers')}
+    pidfile = {spoolPid}
+    uwsgi-socket = {spoolSocket}
+    spooler = {gws.c.SPOOL_DIR}
+    spooler-frequency = {root.app.cfg('server.spool.jobFrequency')}
+    wsgi-file = {gws.c.APP_DIR}/gws/server/spool/wsgi_main.py
+@end
+
+@if uwsgi == 'mapproxy'
+    logger = syslog:MAPPROXY,local6
+    harakiri = {root.app.cfg('server.mapproxy.timeout')}
+    processes = {root.app.cfg('server.mapproxy.workers')}
+    pidfile = {mapproxyPid}
+    uwsgi-socket = {mapproxySocket}
+    wsgi-file = {gws.c.APP_DIR}/gws/gis/mpx/wsgi_main.py
+
+    @# see https://github.com/mapproxy/mapproxy/issues/282
+    wsgi-disable-file-wrapper = true
+
+    http-timeout = {root.app.cfg('server.mapproxy.timeout')}
+    http = :{root.app.cfg('server.mapproxy.port')}
+    http-to = {mapproxySocket}
+@end
+
+@for k, v in gwsEnv
+    env = {k}={v}
+@end
+
+env = TMP={gws.c.TMP_DIR}
+env = TEMP={gws.c.TMP_DIR}

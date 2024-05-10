@@ -12,7 +12,7 @@ from . import control
 _LOCK_FILE = '/tmp/monitor.lock'
 
 
-class Object(gws.Monitor):
+class Object(gws.ServerMonitor):
     watchDirs: dict
     watchFiles: dict
     pathStats: dict
@@ -88,7 +88,7 @@ class Object(gws.Monitor):
 
         # finally, reload ourselves
         gws.log.info(f'MONITOR: bye bye')
-        control.reload_server('spool')
+        control.reload_app('spool')
 
     def _reload(self, needs_reconfigure):
         if needs_reconfigure:
@@ -99,11 +99,8 @@ class Object(gws.Monitor):
                 return False
 
         try:
-            control.reload_server('mapproxy')
-            control.reload_server('web')
-            # reloading nginx in a spooler doesn't work properly,
-            # but actually it is not needed
-            # control.reload_nginx()
+            control.reload_app('mapproxy')
+            control.reload_app('web')
             return True
         except:
             gws.log.exception('MONITOR: reload error')

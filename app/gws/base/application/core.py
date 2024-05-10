@@ -22,7 +22,7 @@ import gws.lib.font
 import gws.lib.importer
 import gws.lib.metadata
 import gws.lib.osx
-import gws.server
+import gws.server.manager
 import gws.server.monitor
 import gws.spec
 
@@ -117,7 +117,7 @@ class Config(gws.ConfigWithAccess):
     """print configurations"""
     projects: Optional[list[gws.ext.config.project]]
     """project configurations"""
-    server: Optional[gws.server.Config] = {}  # type: ignore
+    server: Optional[gws.server.Config]
     """server engine options"""
     storage: Optional[gws.base.storage.manager.Config]
     """database configuration"""
@@ -138,9 +138,11 @@ class Object(gws.Application):
     mpxConfig = ''
 
     def configure(self):
-        self._setenv('server.log.level', gws.env.GWS_LOG_LEVEL)
-        self._setenv('server.web.workers', gws.env.GWS_WEB_WORKERS)
-        self._setenv('server.spool.workers', gws.env.GWS_SPOOL_WORKERS)
+        self.serverMgr = self.create_child(gws.server.manager.Object, self.cfg('server'))
+        # NB need defaults from the server
+        self.config.server = self.serverMgr.config
+
+        gws.log.set_level(self.cfg('server.log.level'))
 
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
@@ -153,8 +155,9 @@ class Object(gws.Application):
         if self._developerOptions:
             gws.log.warning('developer mode enabled')
 
+        self.monitor = self.create_child(gws.server.monitor.Object, self.serverMgr.cfg('monitor'))
+
         self.localeUids = self.cfg('locales') or _DEFAULT_LOCALE
-        self.monitor = self.create_child(gws.server.monitor.Object, self.cfg('server.monitor'))
         self.metadata = gws.lib.metadata.from_config(self.cfg('metadata'))
 
         self.middlewareMgr = self.create_child(gws.base.application.middleware.Object)
@@ -233,16 +236,3 @@ class Object(gws.Application):
 
     def developer_option(self, key):
         return self._developerOptions.get(key)
-
-    def _setenv(self, key, val):
-        if not val:
-            return
-        ks = key.split('.')
-        last = ks.pop()
-        cfg = self.config
-        for k in ks:
-            if not hasattr(cfg, k):
-                setattr(cfg, k, gws.Data())
-            cfg = getattr(cfg, k)
-        setattr(cfg, last, val)
-        gws.log.info(f'environment: {key!r}={val!r}')

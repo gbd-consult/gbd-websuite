@@ -49,26 +49,26 @@ import gws.config
 import gws.lib.date
 import gws.lib.osx
 
-from . import ini
+from . import manager
 
 # see bin/gws
-SERVER_START_SCRIPT = f'{gws.c.VAR_DIR}/server.sh'
+_SERVER_START_SCRIPT = f'{gws.c.VAR_DIR}/server.sh'
 
 
 def start(manifest_path=None, config_path=None):
-    if server_is_running('web'):
+    if app_is_running('web'):
         gws.log.error(f'server already running')
         gws.u.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=True)
-    ini.write_configs_and_start_script(root, gws.c.SERVER_DIR, SERVER_START_SCRIPT)
+    root.app.serverMgr.create_server_configs(gws.c.SERVER_DIR, _SERVER_START_SCRIPT)
 
 
 def reconfigure(manifest_path=None, config_path=None):
-    if not server_is_running('web'):
+    if not app_is_running('web'):
         gws.log.error(f'server not running')
         gws.u.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=False)
-    ini.write_configs_and_start_script(root, gws.c.SERVER_DIR, SERVER_START_SCRIPT)
+    root.app.serverMgr.create_server_configs(gws.c.SERVER_DIR, _SERVER_START_SCRIPT)
     reload_all()
 
 
@@ -103,18 +103,21 @@ def configure(manifest_path=None, config_path=None, is_starting=False):
 def reload_all():
     gws.lib.osx.run(['rm', '-fr', gws.c.TRANSIENT_DIR])
     gws.u.ensure_system_dirs()
-    for srv in ini.PID_PATHS:
-        reload_server(srv)
+
+    reload_app('spool')
+    reload_app('mapproxy')
+    reload_app('web')
+
     reload_nginx()
     return True
 
 
-def reload_server(srv):
-    if not server_is_running(srv):
+def reload_app(srv):
+    if not app_is_running(srv):
         gws.log.debug(f'reload: {srv=} not running')
         return
     gws.log.info(f'reloading {srv}...')
-    gws.lib.osx.run(['uwsgi', '--reload', ini.PID_PATHS[srv]])
+    gws.lib.osx.run(['uwsgi', '--reload', manager.PID_PATHS[srv]])
 
 
 def reload_nginx():
@@ -122,9 +125,9 @@ def reload_nginx():
     gws.lib.osx.run(['nginx', '-c', gws.c.SERVER_DIR + '/nginx.conf', '-s', 'reload'])
 
 
-def server_is_running(srv):
+def app_is_running(srv):
     try:
-        with open(ini.PID_PATHS[srv]) as fp:
+        with open(manager.PID_PATHS[srv]) as fp:
             pid = int(fp.read())
     except (FileNotFoundError, ValueError):
         pid = 0

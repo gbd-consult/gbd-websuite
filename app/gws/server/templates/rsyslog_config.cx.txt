@@ -1,0 +1,20 @@
+module(
+    load="imuxsock"
+    SysSock.UsePIDFromSystem="on"
+)
+
+template(name="gws" type="list") {
+    property(name="timestamp" dateFormat="mysql")
+    constant(value=" ")
+    property(name="syslogtag")
+    property(name="msg" spifno1stsp="on")
+    property(name="msg" droplastlf="on")
+    constant(value="\\n")
+}
+
+module(
+    load="builtin:omfile"
+    Template="gws"
+)
+
+*.* /dev/stdout
