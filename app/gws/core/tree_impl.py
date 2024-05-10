@@ -236,7 +236,7 @@ def create_node(self, classref, parent, config, temp=False):
     node.parent = parent
     node.children = []
 
-    log.debug(f'configuring {node!r} in ' + (repr(parent) if parent else '<root>'))
+    log.debug('configure: ' + ('.' * 4 * len(self.configStack)) + f'{node!r} IN {parent or self !r}')
     ok = self.initialize(node, config)
     if not ok:
         log.debug(f'FAILED {node!r}')
