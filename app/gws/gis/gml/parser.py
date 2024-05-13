@@ -26,8 +26,17 @@ _GEOMETRY_TAGS = {
 }
 
 
-def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy=False) -> gws.Bounds:
-    """Parse a gml:Box/gml:Envelope element"""
+def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: bool = False) -> gws.Bounds:
+    """Parse a gml:Box/gml:Envelope element
+
+    Args:
+        el: A xml-Element.
+        default_crs: A Crs object.
+        always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order.
+
+    Returns:
+          A Bounds object.
+    """
 
     # GML2: <gml:Box><gml:coordinates>1,2 3,4
     # GML3: <gml:Envelope srsDimension="2"><gml:lowerCorner>1 2  <gml:upperCorner>3 4
@@ -58,12 +67,30 @@ def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy=Fa
     return gws.gis.bounds.from_extent(ext, crs, always_xy)
 
 
-def is_geometry_element(el: gws.XmlElement):
+def is_geometry_element(el: gws.XmlElement) -> bool:
+    """Checks if the current element is a valid geometry type.
+
+    Args:
+        el: A GML element.
+
+    Returns:
+        ``True`` if the element is a geometry type.
+    """
+
     return el.lcName in _GEOMETRY_TAGS
 
 
-def parse_shape(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy=False) -> gws.Shape:
-    """Convert a GML geometry element to a Shape."""
+def parse_shape(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: bool = False) -> gws.Shape:
+    """Convert a GML geometry element to a Shape.
+
+    Args:
+        el: A GML element.
+        default_crs: A Crs object.
+        always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order.
+
+    Returns:
+        A GWS shape object.
+    """
 
     crs = gws.gis.crs.get(el.get('srsName')) or default_crs
     if not crs:
@@ -74,7 +101,14 @@ def parse_shape(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy=False
 
 
 def parse_geometry(el: gws.XmlElement) -> dict:
-    """Convert a GML geometry element to a geometry dict."""
+    """Convert a GML geometry element to a geometry dict.
+
+    Args:
+        el: A GML element.
+
+    Returns:
+        The GML geometry as a geometry dict.
+    """
 
     try:
         return _to_geom(el)

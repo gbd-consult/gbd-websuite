@@ -24,12 +24,26 @@ def shape_to_element(
         with_xmlns=True,
         with_inline_xmlns=False,
 ) -> gws.XmlElement:
-    """Convert a Shape to a GML3 geometry element."""
+    """Convert a Shape to a GML3 geometry element.
+
+    Args:
+        shape: A GWS shape object.
+        coordinate_precision: The amount of decimal places.
+        always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order.
+        crs_format: The crs format in the resulting GML element.
+        namespace: A XML namespace.
+        with_xmlns: If ``True`` then namespaces will be kept.
+        with_inline_xmlns: If ``True`` then the inline namespace is kept.
+
+    Returns:
+        A GML element.
+    """
 
     opts = gws.Data()
 
     opts.axis = gws.Axis.xy if always_xy else shape.crs.axis
-    opts.precision = gws.lib.uom.DEFAULT_PRECISION[shape.crs.uom] if coordinate_precision is None else coordinate_precision
+    opts.precision = gws.lib.uom.DEFAULT_PRECISION[
+        shape.crs.uom] if coordinate_precision is None else coordinate_precision
     opts.atts = {
         'srsName': shape.crs.to_string(crs_format),
     }
