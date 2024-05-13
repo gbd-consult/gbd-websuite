@@ -180,7 +180,7 @@ class Object(gws.SpecRuntime):
                     args.append(gws.Data(
                         name=name,
                         doc=strings.get(prop_type_uid) or self.strings['en'].get(prop_type_uid) or '',
-                        default=prop_typ.default,
+                        defaultValue=prop_typ.defaultValue,
                         hasDefault=prop_typ.hasDefault,
                     ))
             entry.args = sorted(args, key=lambda a: a.name)

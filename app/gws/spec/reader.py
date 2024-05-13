@@ -260,12 +260,12 @@ def _read_property(r: Reader, val, typ: core.Type):
             return None
         raise core.ReadError(f"required property missing: {typ.ident!r} for {typ.tOwner!r}", None)
 
-    if typ.default is None:
+    if typ.defaultValue is None:
         return None
 
     # the default, if given, must match the type
     # NB, for Data objects, default={} will create an object with defaults
-    return r.read2(typ.default, typ.tValue)
+    return r.read2(typ.defaultValue, typ.tValue)
 
 
 def _read_variant(r: Reader, val, typ: core.Type):

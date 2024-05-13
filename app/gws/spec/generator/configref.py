@@ -168,7 +168,7 @@ class _Creator:
             return ''
         if not typ.hasDefault:
             return ''
-        v = typ.default
+        v = typ.defaultValue
         if v is None or v == '':
             return ''
         return as_literal(v)

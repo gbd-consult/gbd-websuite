@@ -145,9 +145,9 @@ def _evaluate_defaults(gen):
     for typ in gen.types.values():
         val = getattr(typ, 'EVAL_DEFAULT', None)
         if val:
-            typ.default = _eval(typ, val)
+            typ.defaultValue = _eval(typ, val)
             typ.hasDefault = True
-            base.log.debug(f'evaluated {val!r} => {typ.default!r}')
+            base.log.debug(f'evaluated {val!r} => {typ.defaultValue!r}')
 
 
 def _check_variants(gen):
@@ -236,7 +236,7 @@ def _synthesize_ext_type_properties(gen):
                 ident=base.VARIANT_TAG,
                 name=t.name + DOT + base.VARIANT_TAG,
                 pos=t.pos,
-                default='default',
+                defaultValue='default',
                 hasDefault=True,
                 tValue=literal.uid,
                 tOwner=t.uid,
@@ -298,7 +298,7 @@ def _make_props(gen):
             if name in props:
                 # cannot weaken a required prop to optional
                 if p.hasDefault and not props[name].hasDefault:
-                    p.default = None
+                    p.defaultValue = None
                     p.hasDefault = False
 
             props[name] = p

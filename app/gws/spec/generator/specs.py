@@ -102,7 +102,7 @@ def _extract(gen, queue, out):
             continue
 
         if typ.c == base.C.PROPERTY:
-            out[typ.uid] = dict(tValue=typ.tValue, tOwner=typ.tOwner, default=typ.default, hasDefault=typ.hasDefault)
+            out[typ.uid] = dict(tValue=typ.tValue, tOwner=typ.tOwner, defaultValue=typ.defaultValue, hasDefault=typ.hasDefault)
             queue.append(typ.tValue)
             queue.append(typ.tOwner)
             continue

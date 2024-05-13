@@ -98,7 +98,7 @@ class Type:
     tMembers: dict[str, TypeId] = {}
     tProperties: dict[str, TypeId] = {}
 
-    default = None
+    defaultValue = None
     hasDefault: bool = False
 
     enumText: str = ''

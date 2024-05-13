@@ -260,13 +260,13 @@ class _PythonParser:
             ident=ident,
             tOwner=owner_typ.uid,
             tValue='any',
-            default=None,
+            defaultValue=None,
             hasDefault=False,
         )
 
         c, value = self.parse_const_value(node.value)
         if c == base.C.LITERAL:
-            typ.default = value
+            typ.defaultValue = value
             typ.hasDefault = True
         if c == base.C.EXPR:
             # see normalizer._evaluate_defaults
@@ -279,14 +279,14 @@ class _PythonParser:
         if not property_type:
             t = 'any'
             if typ.hasDefault:
-                t = type(typ.default).__name__
+                t = type(typ.defaultValue).__name__
             property_type = self.type_from_name(t)
 
         if property_type:
             if property_type.c == base.C.OPTIONAL:
                 typ.tValue = property_type.tTarget
                 if not typ.hasDefault:
-                    typ.default = None
+                    typ.defaultValue = None
                     typ.hasDefault = True
             else:
                 typ.tValue = property_type.uid
