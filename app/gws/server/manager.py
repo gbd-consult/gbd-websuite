@@ -1,3 +1,20 @@
+"""Configuration manager for embedded servers.
+
+This object creates configuration files for embedded servers and the server startup script.
+
+The configuration is template-based, there are following template subjects defined:
+
+- ``server.rsyslog_config`` - for the embedded ``rsyslogd`` daemon
+- ``server.uwsgi_config`` - for backend uWSGI servers (the ``uwsgi`` argument contains the specific backend name)
+- ``server.nginx_config`` - for the frontend NGINX proxy
+
+Each template receives a :obj:`TemplateArgs` object as arguments.
+
+By default, the Manager uses text-only templates from the ``templates`` directory.
+"""
+
+from typing import cast
+
 import grp
 import os
 import pwd
@@ -11,12 +28,37 @@ import gws.lib.osx
 
 from . import core
 
-PID_PATHS = {
-    'web': f'{gws.c.PIDS_DIR}/web.uwsgi.pid',
-    'spool': f'{gws.c.PIDS_DIR}/spool.uwsgi.pid',
-    'mapproxy': f'{gws.c.PIDS_DIR}/mapproxy.uwsgi.pid',
-    'nginx': f'{gws.c.PIDS_DIR}/nginx.pid',
-}
+
+class TemplateArgs(gws.Data):
+    """Arguments for configuration templates."""
+
+    root: gws.Root
+    """Root object."""
+    inContainer: bool
+    """True if we're running in a container."""
+    userName: str
+    """User name."""
+    groupName: str
+    """Group name."""
+    gwsEnv: dict
+    """A dict of GWS environment variables."""
+    mapproxyPid: str
+    """Mapproxy pid path."""
+    mapproxySocket: str
+    """Mapproxy socket path."""
+    nginxPid: str
+    """nginx pid path."""
+    spoolPid: str
+    """Spooler pid path."""
+    spoolSocket: str
+    """Spooler socket path."""
+    uwsgi: str
+    """uWSGI backend name."""
+    webPid: str
+    """Web server pid path."""
+    webSocket: str
+    """Web server socket path."""
+
 
 _DEFAULT_BASE_TIMEOUT = 60
 _DEFAULT_SPOOL_TIMEOUT = 300
@@ -32,46 +74,38 @@ _DEFAULT_TEMPLATES = [
 
 class Object(gws.ServerManager):
     def configure(self):
-        self.config = self.config or gws.Data()
-        self.configure_defaults()
         self.configure_environment()
         self.configure_templates()
 
-    def configure_defaults(self):
-        self.config.mapproxy = self.config.mapproxy or self.root.specs.read({}, 'gws.server.core.MapproxyConfig')
-        self.config.monitor = self.config.monitor or self.root.specs.read({}, 'gws.server.core.MonitorConfig')
-        self.config.log = self.config.log or self.root.specs.read({}, 'gws.server.core.LogConfig')
-        self.config.qgis = self.config.qgis or self.root.specs.read({}, 'gws.server.core.QgisConfig')
-        self.config.spool = self.config.spool or self.root.specs.read({}, 'gws.server.core.SpoolConfig')
-        self.config.web = self.config.web or self.root.specs.read({}, 'gws.server.core.WebConfig')
-
     def configure_environment(self):
+        """Overwrite config values from the environment."""
+
         p = gws.env.GWS_LOG_LEVEL
         if p:
-            self.config.log.level = p
+            cast(core.Config, self.config).log.level = p
         p = gws.env.GWS_WEB_WORKERS
         if p:
-            self.config.web.workers = int(p)
+            cast(core.Config, self.config).web.workers = int(p)
         p = gws.env.GWS_SPOOL_WORKERS
         if p:
-            self.config.spool.workers = int(p)
+            cast(core.Config, self.config).spool.workers = int(p)
 
     def configure_templates(self):
         gws.config.util.configure_templates(self, extra=_DEFAULT_TEMPLATES)
 
-    def create_server_configs(self, target_dir, script_path):
-        args = core.ConfigTemplateArgs(
+    def create_server_configs(self, target_dir, script_path, pid_paths):
+        args = TemplateArgs(
             root=self.root,
             inContainer=gws.u.is_file('/.dockerenv'),
             userName=pwd.getpwuid(gws.c.UID).pw_name,
             groupName=grp.getgrgid(gws.c.GID).gr_name,
             gwsEnv={k: v for k, v in sorted(os.environ.items()) if k.startswith('GWS_')},
-            mapproxyPid=PID_PATHS['mapproxy'],
+            mapproxyPid=pid_paths['mapproxy'],
             mapproxySocket=f'{gws.c.TMP_DIR}/mapproxy.uwsgi.sock',
-            nginxPid=PID_PATHS['nginx'],
-            spoolPid=PID_PATHS['spool'],
+            nginxPid=pid_paths['nginx'],
+            spoolPid=pid_paths['spool'],
             spoolSocket=f'{gws.c.TMP_DIR}/spool.uwsgi.sock',
-            webPid=PID_PATHS['web'],
+            webPid=pid_paths['web'],
             webSocket=f'{gws.c.TMP_DIR}/web.uwsgi.sock',
         )
 
@@ -101,7 +135,7 @@ class Object(gws.ServerManager):
 
         gws.u.write_file(script_path, '\n'.join(commands) + '\n')
 
-    def _create_config(self, subject: str, path: str, args: core.ConfigTemplateArgs) -> str:
+    def _create_config(self, subject: str, path: str, args: TemplateArgs) -> str:
         tpl = self.root.app.templateMgr.find_template(self, subject=subject)
         res = tpl.render(gws.TemplateRenderInput(args=args))
 

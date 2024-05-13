@@ -24,6 +24,8 @@ worker-reload-mercy = 5
     pidfile = {webPid}
     uwsgi-socket = {webSocket}
     wsgi-file = {gws.c.APP_DIR}/gws/base/web/wsgi_main.py
+
+    spooler-external = {gws.c.SPOOL_DIR}
 @end
 
 @if uwsgi == 'spool'
@@ -32,9 +34,11 @@ worker-reload-mercy = 5
     processes = {root.app.cfg('server.spool.workers')}
     pidfile = {spoolPid}
     uwsgi-socket = {spoolSocket}
+    wsgi-file = {gws.c.APP_DIR}/gws/server/spool/wsgi_main.py
+
+    master = true
     spooler = {gws.c.SPOOL_DIR}
     spooler-frequency = {root.app.cfg('server.spool.jobFrequency')}
-    wsgi-file = {gws.c.APP_DIR}/gws/server/spool/wsgi_main.py
 @end
 
 @if uwsgi == 'mapproxy'

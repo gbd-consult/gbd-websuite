@@ -1790,9 +1790,11 @@ class SourceLayer(Data):
 
 
 class ServerManager(Node):
+    """Server configuration manager."""
+
     templates: list['Template']
 
-    def create_server_configs(self, target_dir: str, script_path: str):
+    def create_server_configs(self, target_dir: str, script_path: str, pid_paths: dict):
         """Create server configuration files."""
 
 

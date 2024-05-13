@@ -1,38 +1,49 @@
+"""Configuration for embedded servers."""
+
 from typing import Optional, Literal
 
 import gws
 
 
-class ModuleConfig(gws.Config):
+class SpoolConfig(gws.Config):
+    """Spool server module"""
+
     enabled: bool = True
     """The module is enabled."""
     threads: int = 0
     """Number of threads for this module."""
     workers: int = 4
     """Number of processes for this module."""
-
-
-class SpoolConfig(ModuleConfig):
-    """Spool server module"""
-
     jobFrequency: gws.Duration = '3'
     """Background jobs checking frequency."""
     timeout: gws.Duration = '300'
     """Job timeout."""
 
 
-class WebConfig(ModuleConfig):
+class WebConfig(gws.Config):
     """Web server module"""
 
+    enabled: bool = True
+    """The module is enabled."""
+    threads: int = 0
+    """Number of threads for this module."""
+    workers: int = 4
+    """Number of processes for this module."""
     maxRequestLength: int = 10
     """Max request length in megabytes."""
     timeout: gws.Duration = '60'
     """Web server timeout."""
 
 
-class MapproxyConfig(ModuleConfig):
+class MapproxyConfig(gws.Config):
     """Mapproxy server module"""
 
+    enabled: bool = True
+    """The module is enabled."""
+    threads: int = 0
+    """Number of threads for this module."""
+    workers: int = 4
+    """Number of processes for this module."""
     host: str = 'localhost'
     """Host to run the module on."""
     port: int = 5000
@@ -71,17 +82,17 @@ class LogConfig(gws.Config):
 class Config(gws.Config):
     """Server module configuration"""
 
-    mapproxy: Optional[MapproxyConfig]
+    mapproxy: Optional[MapproxyConfig] = {}
     """Bundled Mapproxy module."""
-    monitor: Optional[MonitorConfig]
+    monitor: Optional[MonitorConfig] = {}
     """Monitor configuration."""
-    log: Optional[LogConfig]
+    log: Optional[LogConfig] = {}
     """Logging configuration."""
-    qgis: QgisConfig
+    qgis: Optional[QgisConfig] = {}
     """Qgis server configuration."""
-    spool: Optional[SpoolConfig]
+    spool: Optional[SpoolConfig] = {}
     """Spool server module."""
-    web: Optional[WebConfig]
+    web: Optional[WebConfig] = {}
     """Web server module."""
 
     templates: Optional[list[gws.ext.config.template]]
@@ -93,32 +104,3 @@ class Config(gws.Config):
     """Server timeout."""
     timeZone: str = 'UTC'
     """Timezone for this server."""
-
-
-class ConfigTemplateArgs(gws.Data):
-    """Arguments for configuration templates."""
-
-    root: gws.Root
-    """Root object."""
-    inContainer: bool
-    """True if we're running in a container."""
-    userName: str
-    """User name."""
-    groupName: str
-    """Group name."""
-    gwsEnv: dict
-    """A dict of GWS environment variables."""
-    mapproxyPid: str
-    """Mapproxy pid path."""
-    mapproxySocket: str
-    """Mapproxy socket path."""
-    nginxPid: str
-    """nginx pid path."""
-    spoolPid: str
-    """Spooler pid path."""
-    spoolSocket: str
-    """Spooler socket path."""
-    webPid: str
-    """Web server pid path."""
-    webSocket: str
-    """Web server socket path."""

@@ -16,14 +16,14 @@ Following workflows are supported:
     - store the config
     - write server configs
     - empty the TRANSIENT_DIR
-    - reload all uwsgis
+    - reload all backends
     - reload nginx
 
 3) Server reload. Can be called anytime, e.g. by the monitor
 
     - write server configs
     - empty the TRANSIENT_DIR
-    - reload all uwsgis
+    - reload all backends
     - reload nginx
 
 
@@ -54,13 +54,19 @@ from . import manager
 # see bin/gws
 _SERVER_START_SCRIPT = f'{gws.c.VAR_DIR}/server.sh'
 
+_PID_PATHS = {
+    'web': f'{gws.c.PIDS_DIR}/web.uwsgi.pid',
+    'spool': f'{gws.c.PIDS_DIR}/spool.uwsgi.pid',
+    'mapproxy': f'{gws.c.PIDS_DIR}/mapproxy.uwsgi.pid',
+    'nginx': f'{gws.c.PIDS_DIR}/nginx.pid',
+}
 
 def start(manifest_path=None, config_path=None):
     if app_is_running('web'):
         gws.log.error(f'server already running')
         gws.u.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=True)
-    root.app.serverMgr.create_server_configs(gws.c.SERVER_DIR, _SERVER_START_SCRIPT)
+    root.app.serverMgr.create_server_configs(gws.c.SERVER_DIR, _SERVER_START_SCRIPT, _PID_PATHS)
 
 
 def reconfigure(manifest_path=None, config_path=None):
@@ -68,7 +74,7 @@ def reconfigure(manifest_path=None, config_path=None):
         gws.log.error(f'server not running')
         gws.u.exit(1)
     root = configure_and_store(manifest_path, config_path, is_starting=False)
-    root.app.serverMgr.create_server_configs(gws.c.SERVER_DIR, _SERVER_START_SCRIPT)
+    root.app.serverMgr.create_server_configs(gws.c.SERVER_DIR, _SERVER_START_SCRIPT, _PID_PATHS)
     reload_all()
 
 
@@ -117,7 +123,7 @@ def reload_app(srv):
         gws.log.debug(f'reload: {srv=} not running')
         return
     gws.log.info(f'reloading {srv}...')
-    gws.lib.osx.run(['uwsgi', '--reload', manager.PID_PATHS[srv]])
+    gws.lib.osx.run(['uwsgi', '--reload', _PID_PATHS[srv]])
 
 
 def reload_nginx():
@@ -127,7 +133,7 @@ def reload_nginx():
 
 def app_is_running(srv):
     try:
-        with open(manager.PID_PATHS[srv]) as fp:
+        with open(_PID_PATHS[srv]) as fp:
             pid = int(fp.read())
     except (FileNotFoundError, ValueError):
         pid = 0

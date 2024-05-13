@@ -117,7 +117,7 @@ class Config(gws.ConfigWithAccess):
     """print configurations"""
     projects: Optional[list[gws.ext.config.project]]
     """project configurations"""
-    server: Optional[gws.server.Config]
+    server: Optional[gws.server.Config] = {}
     """server engine options"""
     storage: Optional[gws.base.storage.manager.Config]
     """database configuration"""
