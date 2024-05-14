@@ -3505,7 +3505,7 @@ class Template(Node):
     """Template title."""
 
     def render(self, tri: TemplateRenderInput) -> Response:
-        """Render a template and return the generated response."""
+        """Render the template and return the generated response."""
 
 
 class TemplateManager(Node):
