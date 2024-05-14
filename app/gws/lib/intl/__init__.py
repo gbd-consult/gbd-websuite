@@ -85,143 +85,97 @@ def bibliographic_name(language: str) -> str:
     return gws.u.get_app_global(f'gws.lib.intl.bibliographic_name.{language}', f)
 
 
-class DateTimeFormat(gws.Enum):
-    """Enumeration indicating the length of the date/time format."""
-    short = 'short'
-    """Local short format."""
-    medium = 'medium'
-    """Local medium format."""
-    long = 'long'
-    """Local long format."""
-    iso = 'iso'
-    """ISO 8601 format."""
-
-
 class DateFormatter:
-    """Used for date formatting"""
-
     def __init__(self, locale_uid):
         self.localeUid = locale_uid
 
-    def format(self, fmt: DateTimeFormat, d=None):
-        """Formats the date with respect to the `locale_uid`.
-
-        Args:
-            fmt: Describes the length of the return.
-            d: Date, if none is given the current date will be used as default.
-
-        Returns:
-            The date in the locale format.
-        """
-        if not d:
-            d = datetime.datetime.now()
-        elif isinstance(d, str):
-            d = babel.dates.parse_date(d, self.localeUid)
-        if fmt == DateTimeFormat.iso:
-            return d.isoformat()
-        return babel.dates.format_date(d, locale=self.localeUid, format=str(fmt))
+    def format(self, fmt: gws.DateTimeFormatType, date=None):
+        if not date:
+            date = datetime.datetime.now()
+        elif isinstance(date, str):
+            date = babel.dates.parse_date(date, self.localeUid)
+        if fmt == gws.DateTimeFormatType.iso:
+            return date.isoformat()
+        return babel.dates.format_date(date, locale=self.localeUid, format=str(fmt))
 
     @property
     def short(self):
         """Returns the date in a short format with respect to the locale date format"""
-        return self.format(DateTimeFormat.short)
+        return self.format(gws.DateTimeFormatType.short)
 
     @property
     def medium(self):
         """Returns the date in a medium format with respect to the locale date format"""
-        return self.format(DateTimeFormat.medium)
+        return self.format(gws.DateTimeFormatType.medium)
 
     @property
     def long(self):
         """Returns the date in a long format with respect to the locale date format"""
-        return self.format(DateTimeFormat.long)
+        return self.format(gws.DateTimeFormatType.long)
 
     @property
     def iso(self):
         """Returns the time and date in the ISO 8601 format."""
-        return self.format(DateTimeFormat.iso)
+        return self.format(gws.DateTimeFormatType.iso)
 
 
 class TimeFormatter:
-    """Used for time formatting"""
-
     def __init__(self, locale_uid):
         self.localeUid = locale_uid
 
-    def format(self, fmt: DateTimeFormat, d=None) -> str:
-        """Formats the time with respect to the `locale_uid`.
-
-        Args:
-            fmt: Describes the length of the return.
-            d: Time, if none is given the current time will be used as default.
-
-        Returns:
-            The time in the locale format.
-        """
-        d = babel.dates.parse_time(d, self.localeUid) if d else datetime.datetime.now()
-        if fmt == DateTimeFormat.iso:
-            return d.isoformat()
-        return babel.dates.format_time(d, locale=self.localeUid, format=str(fmt))
+    def format(self, fmt: gws.DateTimeFormatType, time=None) -> str:
+        time = babel.dates.parse_time(time, self.localeUid) if time else datetime.datetime.now()
+        if fmt == gws.DateTimeFormatType.iso:
+            return time.isoformat()
+        return babel.dates.format_time(time, locale=self.localeUid, format=str(fmt))
 
     @property
     def short(self):
         """Returns the time in a short format with respect to the locale time format"""
-        return self.format(DateTimeFormat.short)
+        return self.format(gws.DateTimeFormatType.short)
 
     @property
     def medium(self):
         """Returns the time in a medium format with respect to the locale time format"""
-        return self.format(DateTimeFormat.medium)
+        return self.format(gws.DateTimeFormatType.medium)
 
     @property
     def long(self):
         """Returns the time in a long format with respect to the locale time format"""
-        return self.format(DateTimeFormat.long)
+        return self.format(gws.DateTimeFormatType.long)
 
     @property
     def iso(self):
         """Returns the time and date in the ISO 8601 format."""
-        return self.format(DateTimeFormat.iso)
+        return self.format(gws.DateTimeFormatType.iso)
 
 
-class NumberFormat(gws.Enum):
-    """Enumeration indicating the number format."""
-    decimal = 'decimal'
-    """Locale decimal format."""
-    grouped = 'grouped'
-    """Locale grouped format."""
-    currency = 'currency'
-    """Locale currency format"""
-    percent = 'percent'
-    """Locale percent format."""
-
-
-class NumberFormatter:
-    """Used for number formatting"""
-
+class NumberFormatter(gws.NumberFormatter):
     def __init__(self, locale_uid):
         self.localeUid = locale_uid
 
-    def format(self, fmt: NumberFormat, n, **kwargs) -> str:
-        """Formats the number with respect to the `locale_uid`.
-
-        Args:
-            fmt: Describes the format of the return.
-            n: Number.
-            kwargs: Passes the currency parameter forward.
-
-        Returns:
-            The number in the locale format.
-        """
-        if fmt == NumberFormat.decimal:
-            return babel.numbers.format_decimal(n, locale=self.localeUid, group_separator=False, **kwargs)
-        if fmt == NumberFormat.grouped:
-            return babel.numbers.format_decimal(n, locale=self.localeUid, group_separator=True, **kwargs)
-        if fmt == NumberFormat.currency:
-            return babel.numbers.format_currency(n, locale=self.localeUid, **kwargs)
-        if fmt == NumberFormat.percent:
-            return babel.numbers.format_percent(n, locale=self.localeUid, **kwargs)
+    def format(self, fmt, n, *args, **kwargs):
+        if fmt == gws.NumberFormatType.decimal:
+            return babel.numbers.format_decimal(n, locale=self.localeUid, group_separator=False, *args, **kwargs)
+        if fmt == gws.NumberFormatType.grouped:
+            return babel.numbers.format_decimal(n, locale=self.localeUid, group_separator=True, *args, **kwargs)
+        if fmt == gws.NumberFormatType.currency:
+            return babel.numbers.format_currency(n, locale=self.localeUid, *args, **kwargs)
+        if fmt == gws.NumberFormatType.percent:
+            return babel.numbers.format_percent(n, locale=self.localeUid, *args, **kwargs)
         return str(n)
+
+    def decimal(self, n, *args, **kwargs):
+        return self.format(gws.NumberFormatType.decimal, n, *args, **kwargs)
+
+    def grouped(self, n, *args, **kwargs):
+        return self.format(gws.NumberFormatType.grouped, n, *args, **kwargs)
+
+    def currency(self, n, *args, **kwargs):
+        return self.format(gws.NumberFormatType.currency, n, *args, **kwargs)
+
+    def percent(self, n, *args, **kwargs):
+        return self.format(gws.NumberFormatType.percent, n, *args, **kwargs)
 
 
 def date_formatter(locale_uid) -> DateFormatter:

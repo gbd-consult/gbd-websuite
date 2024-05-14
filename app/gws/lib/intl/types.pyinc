@@ -19,3 +19,72 @@ class Locale(Data):
     numberDecimal: str
     numberGroup: str
 
+
+class DateTimeFormatType(Enum):
+    """Enumeration indicating the length of the date/time format."""
+    short = 'short'
+    """Local short format."""
+    medium = 'medium'
+    """Local medium format."""
+    long = 'long'
+    """Local long format."""
+    iso = 'iso'
+    """ISO 8601 format."""
+
+
+class NumberFormatType(Enum):
+    """Enumeration indicating the number format."""
+    decimal = 'decimal'
+    """Locale decimal format."""
+    grouped = 'grouped'
+    """Locale grouped format."""
+    currency = 'currency'
+    """Locale currency format"""
+    percent = 'percent'
+    """Locale percent format."""
+
+
+class DateFormatter:
+    """Used for date formatting"""
+
+    def format(self, fmt: DateTimeFormatType | str, date=None) -> str:
+        """Formats the date with respect to the locale.
+
+        Args:
+            fmt: Format type or a `strftime` format string
+            date: Date, if none is given the current date will be used as default.
+
+        Returns:
+            A formatted date string.
+        """
+
+
+class TimeFormatter:
+    """Used for date formatting"""
+
+    def format(self, fmt: DateTimeFormatType | str, time=None) -> str:
+        """Formats the time with respect to the locale.
+
+        Args:
+            fmt: Format type or a `strftime` format string
+            time: Date, if none is given the current time will be used as default.
+
+        Returns:
+            A formatted time string.
+        """
+
+
+class NumberFormatter:
+    """Used for number formatting"""
+
+    def format(self, fmt: NumberFormatType | str, n, *args, **kwargs) -> str:
+        """Formats the number with respect to the locale.
+
+        Args:
+            fmt: Format type or a python `format` string
+            n: Number.
+            kwargs: Passes the currency parameter forward.
+
+        Returns:
+            A formatted number.
+        """
