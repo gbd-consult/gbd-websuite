@@ -63,6 +63,9 @@ def shape_to_element(
 def _tag(geom, opts):
     typ = geom.geom_type
 
+    if hasattr(opts, 'ns'):
+        opts.ns = opts.ns or ''
+
     if typ == 'Point':
         return f'{opts.ns}Point', opts.atts, _pos(geom, opts, as_list=False)
 

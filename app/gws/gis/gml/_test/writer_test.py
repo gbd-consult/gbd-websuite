@@ -71,7 +71,6 @@ def test_shape_to_element_namespace():
                                                                          </wms:Point>""")
 
 
-# should the namespace be replaced with None?
 def test_shape_to_element_with_xmlns():
     gml = gws.lib.xmlx.from_string('''    <root xmlns:gml="http://www.opengis.net/gml">
                                                     <gml:Point srsName = "EPSG:3857">
