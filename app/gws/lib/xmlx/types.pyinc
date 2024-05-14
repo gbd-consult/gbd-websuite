@@ -48,12 +48,24 @@ class XmlElement(Iterable):
     def __getitem__(self, item: int) -> 'XmlElement': ...
 
     def append(self, subelement: 'XmlElement'): ...
+    """Adds the element subelement to the end of this element’s internal list of subelements."""
 
     def attr(self, key: str, default=None) -> Any: ...
+    """Finds the value for a given key in the ``XmlElementImpl``.
+
+    Args:
+        key: Key of the attribute.
+        default: The default return.
+
+    Returns:
+        The vale of the key, If the key is not found the default is returned.
+    """
 
     def clear(self): ...
+    """Resets an element."""
 
     def extend(self, subelements: Iterable['XmlElement']): ...
+    """Appends subelements from a sequence object with zero or more elements."""
 
     def find(self, path: str) -> Optional['XmlElement']:
         """Finds first matching element by tag name or path."""
@@ -65,37 +77,90 @@ class XmlElement(Iterable):
         """Finds text for first matching element by name or path."""
 
     def get(self, key: str, default=None) -> Any: ...
+    """Returns the value to a given key."""
 
     def insert(self, index: int, subelement: 'XmlElement'): ...
+    """Inserts subelement at the given position in this element."""
 
     def items(self) -> Iterable[Any]: ...
+    """Returns the element attributes as a sequence of (name, value) pairs."""
 
     def iter(self, tag: Optional[str] = None) -> Iterable['XmlElement']: ...
+    """Creates a tree iterator."""
 
     def iterfind(self, path: Optional[str] = None) -> Iterable['XmlElement']:
         """Returns an iterable of all matching subelements by name or path."""
 
     def itertext(self) -> Iterable[str]: ...
+    """Creates a text iterator and returns all inner text."""
 
     def keys(self) -> Iterable[str]: ...
+    """Returns the elements attribute names as a list."""
 
     def remove(self, other: 'XmlElement'): ...
+    """Removes the other element from the element."""
 
     def set(self, key: str, value: Any): ...
+    """Set the attribute key on the element to value."""
 
     # extensions
 
     def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'XmlElement': ...
+    """Creates a new ``XmlElementImpl`` and adds it as a child.
+
+    Args:
+        tag: XML tag.
+        attrib: XML attributes ``{key, value}``.
+
+    Returns:
+        A XmlElementImpl.
+    """
 
     def children(self) -> list['XmlElement']: ...
+    """Returns the children of the current ``XmlElementImpl``."""
 
     def findfirst(self, *paths) -> Optional['XmlElement']: ...
+    """Returns the first element in the current element.
+
+    Args:
+        paths: Path as ``tag/tag2/tag3`` to the Element to search in.
+
+    Returns:
+        Returns the first found element.
+    """
 
     def textof(self, *paths) -> str: ...
+    """Returns the text of a given child-element.
+
+    Args:
+        paths: Path as ``tag/tag2/tag3`` to the Element.
+
+    Returns:
+        The text of the element.
+
+    """
 
     def textlist(self, *paths, deep=False) -> list[str]: ...
+    """Collects texts from child-elements.
+
+    Args:
+        paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
+        deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
+
+    Returns:
+        A list containing all the text from the child-elements.
+    """
 
     def textdict(self, *paths, deep=False) -> dict[str, str]: ...
+    """Collects texts from child-elements.
+
+    Args:
+        paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
+        deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
+
+    Returns:
+        A dict containing all the text from the child-elements.
+    """
 
     #
 
