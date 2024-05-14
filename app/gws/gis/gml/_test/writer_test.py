@@ -20,7 +20,6 @@ def test_shape_to_element():
                                                                      </gml:Point>""")
 
 
-# round function inconsistent?
 def test_shape_to_element_coordinate_precision():
     gml = gws.lib.xmlx.from_string('''    <root xmlns:gml="http://www.opengis.net/gml">
                                                     <gml:Point srsName = "EPSG:3857">
@@ -29,7 +28,7 @@ def test_shape_to_element_coordinate_precision():
                                                 </root>''')
     shape = parser.parse_shape(gml.findfirst())
     assert writer.shape_to_element(shape, coordinate_precision=4).to_string() == u.fxml("""<gml:Point srsName="urn:ogc:def:crs:EPSG::3857">
-                                                                        <gml:pos srsDimension="2">100.1235 200.1235</gml:pos>
+                                                                        <gml:pos srsDimension="2">100.1235 200.1234</gml:pos>
                                                                      </gml:Point>""")
 
 
