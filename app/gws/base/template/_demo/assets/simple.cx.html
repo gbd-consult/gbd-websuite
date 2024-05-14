@@ -1,0 +1,124 @@
+<h3>Template arguments</h3>
+
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Expression</th>
+            <th>Result</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <code>{@quote}{app.version}{@end}</code>
+            </td>
+            <td>
+                {app.version}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{locale.language}{@end}</code>
+            </td>
+            <td>
+                {locale.language}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{locale.languageName}{@end}</code>
+            </td>
+            <td>
+                {locale.languageName}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{date.long}{@end}</code>
+            </td>
+            <td>
+                {date.long}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{date.short}{@end}</code>
+            </td>
+            <td>
+                {date.short}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{time.long}{@end}</code>
+            </td>
+            <td>
+                {time.long}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{time.short}{@end}</code>
+            </td>
+            <td>
+                {time.short}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{number.grouped(123456789)}{@end}</code>
+            </td>
+            <td>
+                {number.grouped(123456789)}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{number.currency(12.34, "EUR")}{@end}</code>
+            </td>
+            <td>
+                {number.currency(12.34, "EUR")}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{project.title}{@end}</code>
+            </td>
+            <td>
+                {project.title}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{project.metadata.keywords}{@end}</code>
+            </td>
+            <td>
+                {project.metadata.keywords}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{user.isGuest}{@end}</code>
+            </td>
+            <td>
+                {user.isGuest}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>{@quote}{user.displayName}{@end}</code>
+            </td>
+            <td>
+                {user.displayName}
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>All projects</h3>
+
+@for prj in projects
+    <a href="/project/{prj.uid}">{prj.title}</a> 
+    |
+@end
+

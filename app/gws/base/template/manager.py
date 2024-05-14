@@ -3,6 +3,15 @@
 import gws
 import gws.lib.mime
 
+# @TODO template types should be configurable
+
+TEMPLATE_TYPES = {
+    '.cx.html': 'html',
+    '.cx.csv': 'csv',
+    '.qgs': 'qgis',
+    '.cx.py': 'py',
+}
+
 
 class Object(gws.TemplateManager):
     def find_template(self, *objects, user=None, subject=None, mime=None):
@@ -32,20 +41,10 @@ class Object(gws.TemplateManager):
             return tpl
 
     def template_from_path(self, path, **kwargs):
-        for ext, typ in _TYPES.items():
+        for ext, typ in TEMPLATE_TYPES.items():
             if path.endswith(ext):
                 return self.root.create_shared(
                     gws.ext.object.template,
                     gws.Config(uid=gws.u.sha256(path), type=typ, path=path),
                     **kwargs
                 )
-
-
-# @TODO template types should be configurable
-
-_TYPES = {
-    '.cx.html': 'html',
-    '.cx.csv': 'csv',
-    '.qgs': 'qgis',
-    '.cx.xml': 'xml',
-}

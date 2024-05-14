@@ -1,7 +1,26 @@
+class TemplateArgs(Data):
+    """Template arguments."""
+
+    app: 'Application'
+    """Application object."""
+    gwsVersion: str
+    """GWS version."""
+    gwsBaseUrl: str
+    """GWS server base url."""
+    locale: 'Locale'
+    """Current locale."""
+    date: 'DateFormatter'
+    """Locale-dependent date formatter."""
+    time: 'TimeFormatter'
+    """Locale-dependent time formatter."""
+    number: 'NumberFormatter'
+    """Locale-dependent number formatter."""
+
+
 class TemplateRenderInput(Data):
     """Template render input."""
 
-    args: dict
+    args: dict | Data
     crs: 'Crs'
     dpi: int
     localeUid: str
@@ -23,13 +42,20 @@ class Template(Node):
     """Template object."""
 
     mapSize: UomSize
+    """Default map size for the template."""
     mimeTypes: list[str]
-    pageMargin: UomExtent
+    """MIME types the template can generate."""
     pageSize: UomSize
+    """Default page size for printing."""
+    pageMargin: UomExtent
+    """Default page margin for printing."""
     subject: str
+    """Template subject (category)."""
     title: str
+    """Template title."""
 
-    def render(self, tri: TemplateRenderInput) -> ContentResponse: ...
+    def render(self, tri: TemplateRenderInput) -> Response:
+        """Render the template and return the generated response."""
 
 
 class TemplateManager(Node):
@@ -38,4 +64,3 @@ class TemplateManager(Node):
     def find_template(self, *objects, user: 'User' = None, subject: str = None, mime: str = None) -> Optional['Template']: ...
 
     def template_from_path(self, path: str) -> Optional['Template']: ...
-

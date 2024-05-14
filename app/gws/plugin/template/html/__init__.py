@@ -1,4 +1,54 @@
-"""CX templates"""
+"""HTML template.
+
+This module handles templates written in the Jump language. Apart from html, this template can generate pdf (for printing) and image outputs.
+
+The arguments passed to a template can be accessed via the ``_ARGS`` object.
+
+If a template explicitly returns a :obj:`gws.Response` object, the generated text is ignored and the object is returned as a render result.
+Otherwise, the result of the rendering will be a :obj:`gws.ContentResponse` object with the generated content.
+
+This template supports the following extensions to Jump:
+
+The ``@page`` command, which sets parameters for the printed page::
+
+    @page (
+        width="<page width in mm>"
+        height="<page height in mm>"
+        margin="<page margins in mm>"
+    )
+
+The ``@map`` command, which renders the current map::
+
+    @map (
+        width="<width in mm>"
+        height="<height in mm>"
+        bbox="<optional, bounding box in projection units>"
+        center="<optional, center coordinates in projection units>"
+        scale="<optional, scale factor>"
+        rotation="<optional, rotation in degrees>"
+
+
+The ``@legend`` command, which renders the map legend::
+
+    @legend(
+        layers="<optional, space separated list of layer UIDs>"
+    )
+
+The ``@header`` and ``@footer`` block commands, which define headers and footers for multi-page printing::
+
+    @header
+        content
+    @end header
+
+    @footer
+        content
+    @end footer
+
+Headers and footers are separate sub-templates, which receive the same arguments as the main template and two additional arguments:
+
+- ``numpages`` - the total number of pages in the document
+- ``page`` - the current page number
+"""
 
 from typing import Optional, cast
 

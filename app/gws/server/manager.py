@@ -29,7 +29,7 @@ import gws.lib.osx
 from . import core
 
 
-class TemplateArgs(gws.Data):
+class TemplateArgs(gws.TemplateArgs):
     """Arguments for configuration templates."""
 
     root: gws.Root

@@ -55,19 +55,19 @@ class Object(gws.Template):
             uid=self.uid,
         )
 
-    def prepare_args(self, args: dict) -> dict:
+    def prepare_args(self, args):
         args = args or {}
         locale_uid = args.get('localeUid', 'en_CA')
+        args.setdefault('app', self.root.app)
+        args.setdefault('locale', gws.lib.intl.locale(locale_uid))
+        args.setdefault('date', gws.lib.intl.date_formatter(locale_uid))
+        args.setdefault('time', gws.lib.intl.time_formatter(locale_uid))
+        args.setdefault('number', gws.lib.intl.number_formatter(locale_uid))
+        # obsolete
+        args.setdefault('gwsVersion', self.root.app.version)
+        args.setdefault('gwsBaseUrl', gws.c.SERVER_ENDPOINT)
 
-        extra = dict(
-            gwsVersion=self.root.app.version,
-            gwsBaseUrl=gws.c.SERVER_ENDPOINT,
-            locale=gws.lib.intl.locale(locale_uid),
-            date=gws.lib.intl.date_formatter(locale_uid),
-            time=gws.lib.intl.time_formatter(locale_uid),
-        )
-
-        return gws.u.merge(extra, args)
+        return args
 
     def notify(self, tri: gws.TemplateRenderInput, message: str):
         if tri.notify:

@@ -1,4 +1,18 @@
-"""Serve dynamic assets."""
+"""Handle dynamic assets.
+
+An asset is a file located in a global or project-specific ``assets`` directory.
+
+In order to access a project asset, the user must have ``read`` permission for the project itself.
+
+When the Web application receives a ``webAsset`` request with a ``path`` argument, it first checks the project-specific assets directory,
+and then the global dir.
+
+If the file is found, and its name matches :obj:`gws.base.template.manager.TEMPLATE_TYPES`, a respective ``Template`` object is generated on the fly and rendered.
+The renderer is passed a :obj:`TemplateArgs` object as an argument.
+The :obj:`gws.Response` object returned from rendering is passed back to the user.
+
+If the file is not a template and matches the ``allowMime/denyMime`` filter, its content is returned to the user.
+"""
 
 from typing import Optional, cast
 
@@ -14,6 +28,23 @@ import gws.lib.mime
 import gws.lib.osx
 
 gws.ext.new.action('web')
+
+
+class TemplateArgs(gws.TemplateArgs):
+    """Asset template arguments."""
+
+    project: Optional[gws.Project]
+    """Current project."""
+    projects: list[gws.Project]
+    """List of user projects."""
+    req: gws.WebRequester
+    """Requester object."""
+    user: gws.User
+    """Current user."""
+    params: dict
+    """Request parameters."""
+    localeUid: str
+    """Locale uid"""
 
 
 class Config(gws.base.action.Config):
@@ -151,29 +182,20 @@ class Object(gws.base.action.Object):
         gws.log.debug(f'serving {real_path!r} for {req_path!r}')
         return gws.ContentResponse(contentPath=real_path, mime=mime)
 
-    def _serve_template(self, req: gws.WebRequester, tpl: gws.Template, project: gws.Project, locale_uid: str):
-        # give the template an empty response to manipulate (e.g. add 'location')
-        res = gws.ContentResponse()
-
+    def _serve_template(self, req: gws.WebRequester, tpl: gws.Template, project: Optional[gws.Project], locale_uid: str):
         projects = [p for p in self.root.app.projects if req.user.can_use(p)]
         projects.sort(key=lambda p: p.title.lower())
 
-        args = {
-            'project': project,
-            'projects': projects,
-            'req': req,
-            'user': req.user,
-            'params': req.params,
-            'response': res,
-            'localeUid': locale_uid,
-        }
+        args = TemplateArgs(
+            project=project,
+            projects=projects,
+            req=req,
+            user=req.user,
+            params=req.params,
+            localeUid=locale_uid,
+        )
 
-        render_res = tpl.render(gws.TemplateRenderInput(args=args))
-
-        if gws.u.is_empty(res):
-            res = render_res
-
-        return res
+        return tpl.render(gws.TemplateRenderInput(args=args))
 
 
 _DEFAULT_ALLOWED_MIME_TYPES = {

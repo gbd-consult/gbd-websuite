@@ -1,0 +1,31 @@
+uid "templates"
+
+title "Templates"
+
+metadata.keywords [ "template" ]
+
+metadata.abstract """
+Usage of different template types and template arguments.
+
+Template demos:
+
+- [Simple HTML template](/_/webAsset/projectUid/templates/path/simple.cx.html)
+- [HTML Template with conditional logic](/_/webAsset/projectUid/templates/path/logic.cx.html)
+- [Pure python template](/_/webAsset/projectUid/templates/path/python.cx.py)
+
+"""
+
+
+assets.dir "/gws-app/gws/base/template/_demo/assets"
+
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 35000
+    zoom.maxScale  1000000
+}
+
+{demo_osm_background}
+
+
+

@@ -1,8 +1,7 @@
 """Pure python templates.
 
-A template is a python module that has a function `main`,
-which receives a dict with template arguments
-and is supposed return a `gws.ContentResponse` object.
+A template is a python module. This module must provide a function called ``main``,
+which receives the arguments object and returns a :obj:`gws.Response` object.
 """
 
 from typing import Optional

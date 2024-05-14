@@ -66,6 +66,12 @@ class Data:
     def __repr__(self):
         return repr(vars(self))
 
+    def __getitem__(self, key):
+        return vars(self).get(key)
+
+    def __setitem__(self, key, value):
+        vars(self)[key] = value
+
     def get(self, key, default=None):
         """Get an attribute value.
 
@@ -75,6 +81,15 @@ class Data:
         """
         return vars(self).get(key, default)
 
+    def setdefault(self, key, val):
+        """Set an attribute value if not already set.
+
+        Args:
+            key: Attribute name.
+            val: Attribute value.
+        """
+        return vars(self).setdefault(key, val)
+
     def set(self, key, val):
         """Set an attribute value.
 
@@ -82,7 +97,7 @@ class Data:
             key: Attribute name.
             val: Attribute value.
         """
-        return setattr(self, key, val)
+        vars(self)[key] = val
 
     def update(self, *args, **kwargs):
         """Update the object with keys and values from args and keywords.
@@ -1013,6 +1028,76 @@ class Locale(Data):
     monthNamesNarrow: list[str]
     numberDecimal: str
     numberGroup: str
+
+
+class DateTimeFormatType(Enum):
+    """Enumeration indicating the length of the date/time format."""
+    short = 'short'
+    """Local short format."""
+    medium = 'medium'
+    """Local medium format."""
+    long = 'long'
+    """Local long format."""
+    iso = 'iso'
+    """ISO 8601 format."""
+
+
+class NumberFormatType(Enum):
+    """Enumeration indicating the number format."""
+    decimal = 'decimal'
+    """Locale decimal format."""
+    grouped = 'grouped'
+    """Locale grouped format."""
+    currency = 'currency'
+    """Locale currency format"""
+    percent = 'percent'
+    """Locale percent format."""
+
+
+class DateFormatter:
+    """Used for date formatting"""
+
+    def format(self, fmt: DateTimeFormatType | str, date=None) -> str:
+        """Formats the date with respect to the locale.
+
+        Args:
+            fmt: Format type or a `strftime` format string
+            date: Date, if none is given the current date will be used as default.
+
+        Returns:
+            A formatted date string.
+        """
+
+
+class TimeFormatter:
+    """Used for date formatting"""
+
+    def format(self, fmt: DateTimeFormatType | str, time=None) -> str:
+        """Formats the time with respect to the locale.
+
+        Args:
+            fmt: Format type or a `strftime` format string
+            time: Date, if none is given the current time will be used as default.
+
+        Returns:
+            A formatted time string.
+        """
+
+
+class NumberFormatter:
+    """Used for number formatting"""
+
+    def format(self, fmt: NumberFormatType | str, n, *args, **kwargs) -> str:
+        """Formats the number with respect to the locale.
+
+        Args:
+            fmt: Format type or a python `format` string
+            n: Number.
+            kwargs: Passes the currency parameter forward.
+
+        Returns:
+            A formatted number.
+        """
 ################################################################################
 
 
@@ -3363,10 +3448,29 @@ class StorageProvider(Node):
 # /base/template/types.pyinc
 
 
+class TemplateArgs(Data):
+    """Template arguments."""
+
+    app: 'Application'
+    """Application object."""
+    gwsVersion: str
+    """GWS version."""
+    gwsBaseUrl: str
+    """GWS server base url."""
+    locale: 'Locale'
+    """Current locale."""
+    date: 'DateFormatter'
+    """Locale-dependent date formatter."""
+    time: 'TimeFormatter'
+    """Locale-dependent time formatter."""
+    number: 'NumberFormatter'
+    """Locale-dependent number formatter."""
+
+
 class TemplateRenderInput(Data):
     """Template render input."""
 
-    args: dict
+    args: dict | Data
     crs: 'Crs'
     dpi: int
     localeUid: str
@@ -3388,13 +3492,20 @@ class Template(Node):
     """Template object."""
 
     mapSize: UomSize
+    """Default map size for the template."""
     mimeTypes: list[str]
-    pageMargin: UomExtent
+    """MIME types the template can generate."""
     pageSize: UomSize
+    """Default page size for printing."""
+    pageMargin: UomExtent
+    """Default page margin for printing."""
     subject: str
+    """Template subject (category)."""
     title: str
+    """Template title."""
 
-    def render(self, tri: TemplateRenderInput) -> ContentResponse: ...
+    def render(self, tri: TemplateRenderInput) -> Response:
+        """Render a template and return the generated response."""
 
 
 class TemplateManager(Node):
