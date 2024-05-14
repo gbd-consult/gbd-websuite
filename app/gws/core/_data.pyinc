@@ -16,6 +16,12 @@ class Data:
     def __repr__(self):
         return repr(vars(self))
 
+    def __getitem__(self, key):
+        return vars(self).get(key)
+
+    def __setitem__(self, key, value):
+        vars(self)[key] = value
+
     def get(self, key, default=None):
         """Get an attribute value.
 
@@ -25,6 +31,15 @@ class Data:
         """
         return vars(self).get(key, default)
 
+    def setdefault(self, key, val):
+        """Set an attribute value if not already set.
+
+        Args:
+            key: Attribute name.
+            val: Attribute value.
+        """
+        return vars(self).setdefault(key, val)
+
     def set(self, key, val):
         """Set an attribute value.
 
@@ -32,7 +47,7 @@ class Data:
             key: Attribute name.
             val: Attribute value.
         """
-        return setattr(self, key, val)
+        vars(self)[key] = val
 
     def update(self, *args, **kwargs):
         """Update the object with keys and values from args and keywords.
