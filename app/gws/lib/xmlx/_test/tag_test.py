@@ -99,7 +99,6 @@ def test_text_int():
     assert el.to_string() == u.fxml('<root>2</root>')
 
 
-
 def test_append_tuple2():
     el = xmlx.tag('root/nested', ('foo', 2))
     assert el.to_string() == u.fxml('''
@@ -170,4 +169,18 @@ def test_tag():
                                                 <gml:coordinates>12.345,56.789</gml:coordinates>
                                             </gml:Point>
                                         </geometry>
+                                    ''')
+
+
+def test_tag_uri():
+    el = xmlx.tag('{http://www.opengis.net/cat/csw}foo/nested',
+                  {'gml:id': 'xy'},
+                  ['gml:coordinates', '12.345,56.789'],
+                  srsName=3857)
+    assert el.to_string() == u.fxml('''
+                                        <csw:foo>
+                                            <nested gml:id="xy" srsName="3857">
+                                                <gml:coordinates>12.345,56.789</gml:coordinates>
+                                            </nested>
+                                        </csw:foo>
                                     ''')
