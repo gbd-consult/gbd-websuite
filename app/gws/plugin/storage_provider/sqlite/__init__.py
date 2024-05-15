@@ -2,7 +2,6 @@ from typing import Optional
 
 import gws
 import gws.base.storage
-import gws.lib.date
 import gws.lib.sa as sa
 
 gws.ext.new.storageProvider('sqlite')
@@ -72,8 +71,8 @@ class Object(gws.StorageProvider):
             name=tmp if rec else name,
             user_uid=user_uid,
             data=data,
-            created=rec.created if rec else gws.lib.date.timestamp(),
-            updated=gws.lib.date.timestamp()
+            created=rec.created if rec else gws.u.stime(),
+            updated=gws.u.stime()
         ))
 
         if rec:

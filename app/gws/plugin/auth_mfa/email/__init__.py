@@ -3,7 +3,6 @@
 import pyotp
 
 import gws
-import gws.lib.date
 import gws.base.auth.mfa
 
 gws.ext.new.authMfa('email')
@@ -22,7 +21,7 @@ class Object(gws.base.auth.mfa.Object):
 
     def start(self, user):
         pm = user.pendingMfa
-        pm.timeStarted = gws.lib.date.timestamp()
+        pm.timeStarted = gws.u.stime()
         pm.attemptCount = 0
         pm.restartCount = 0
         pm.secret = pm.secret or pyotp.random_base32()
@@ -31,7 +30,7 @@ class Object(gws.base.auth.mfa.Object):
 
     def is_valid(self, user):
         pm = user.pendingMfa
-        td = pm.timeStarted - gws.lib.date.timestamp()
+        td = pm.timeStarted - gws.u.stime()
         return True
 
     def verify(self, user, request):

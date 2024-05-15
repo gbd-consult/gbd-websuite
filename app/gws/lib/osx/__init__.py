@@ -40,11 +40,6 @@ def getenv(key: str, default: str = None) -> Optional[str]:
     return os.getenv(key, default)
 
 
-def utime() -> float:
-    """Returns the time in seconds since the Epoch."""
-    return time.time()
-
-
 def run_nowait(cmd: str, **kwargs) -> subprocess.Popen:
     """Run a process and return immediately.
 

@@ -116,7 +116,7 @@ class Object(gws.base.action.Object):
 
         name_prefix = ''
         if self.withSerialPrefix:
-            minutes = (gws.lib.date.to_timestamp(gws.lib.date.from_iso(_SERIAL_PREFIX_END_DATE)) - gws.lib.date.timestamp()) // 60
+            minutes = (gws.lib.date.to_timestamp(gws.lib.date.from_iso(_SERIAL_PREFIX_END_DATE)) - gws.u.stime()) // 60
             name_prefix = '{:06d}'.format(minutes) + '_' + gws.lib.date.now().strftime('%d.%m.%y') + '_'
 
         db_file_name = f'{name_prefix}{package.uid}.{core.GPKG_EXT}'

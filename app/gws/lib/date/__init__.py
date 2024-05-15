@@ -59,18 +59,6 @@ def from_timestamp(ts) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
 
 
-def utime() -> float:
-    return time.time()
-
-
-def timestamp() -> int:
-    return int(time.time())
-
-
-def timestamp_msec() -> int:
-    return int(time.time() * 1000)
-
-
 def is_date(x) -> bool:
     return isinstance(x, datetime.date)
 

@@ -63,7 +63,7 @@ class Object(gws.base.auth.session_manager.Object):
 
     def cleanup(self):
         self._exec(
-            sa.delete(self.table).where(self.table.c.updated < gws.lib.date.timestamp() - self.lifeTime))
+            sa.delete(self.table).where(self.table.c.updated < gws.u.stime() - self.lifeTime))
 
     def create(self, method, user, data=None):
         am = self.root.app.authMgr
@@ -75,8 +75,8 @@ class Object(gws.base.auth.session_manager.Object):
             user_uid=user.uid,
             str_user=am.serialize_user(user),
             str_data=gws.lib.jsonx.to_string(data or {}),
-            created=gws.lib.date.timestamp(),
-            updated=gws.lib.date.timestamp(),
+            created=gws.u.stime(),
+            updated=gws.u.stime(),
         ))
 
         return self.get(uid)
@@ -99,7 +99,7 @@ class Object(gws.base.auth.session_manager.Object):
             sa
             .select(self.table)
             .where(self.table.c.uid == uid)
-            .where(self.table.c.updated >= gws.lib.date.timestamp() - self.lifeTime))
+            .where(self.table.c.updated >= gws.u.stime() - self.lifeTime))
 
         with self.engine.begin() as conn:
             for rec in conn.execute(stmt).mappings().all():
@@ -120,7 +120,7 @@ class Object(gws.base.auth.session_manager.Object):
         self._exec(
             sa.update(self.table).where(self.table.c.uid == sess.uid).values(
                 str_data=gws.lib.jsonx.to_string(sess.data or {}),
-                updated=gws.lib.date.timestamp()))
+                updated=gws.u.stime()))
 
         sess.isChanged = False
 
@@ -129,7 +129,7 @@ class Object(gws.base.auth.session_manager.Object):
             return self.save(sess)
 
         self._exec(sa.update(self.table).where(self.table.c.uid == sess.uid).values(
-            updated=gws.lib.date.timestamp()))
+            updated=gws.u.stime()))
 
     ##
 

@@ -904,3 +904,20 @@ def action_url_path(name: str, **kwargs) -> str:
     if ls:
         path += '/' + '/'.join(ls)
     return path
+
+
+##
+
+def utime() -> float:
+    """Unix time as a float number."""
+    return time.time()
+
+
+def stime() -> int:
+    """Unix time as an integer number of seconds."""
+    return int(time.time())
+
+
+def mstime() -> int:
+    """Unix time as an integer number of milliseconds."""
+    return int(time.time() * 1000)

@@ -56,7 +56,6 @@ import gws
 import gws.base.legend
 import gws.base.template
 import gws.gis.render
-import gws.lib.date
 import gws.lib.htmlx
 import gws.lib.mime
 import gws.lib.osx
@@ -123,7 +122,7 @@ class Object(gws.base.template.Object):
                 )
 
             self.compiledFn = engine.compile(self.text, path=self.path)
-            self.compiledTime = gws.lib.date.utime()
+            self.compiledTime = gws.u.utime()
 
     def error_handler(self, exc, path, line, env):
         rid = env.ARGS.get('__renderUid', '?')

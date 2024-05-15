@@ -36,7 +36,7 @@ def configure(
     errpfx = 'CONFIGURATION ERROR: '
     root_obj = None
 
-    ts = gws.lib.osx.utime()
+    ts = gws.u.stime()
     ms = gws.lib.osx.process_rss_size()
 
     manifest_path = real_manifest_path(manifest_path)
@@ -80,9 +80,9 @@ def configure(
             gws.log.error(errpfx + ('-' * 60))
 
     if root_obj:
-        info = '{:d} objects, time: {:.2f} s., memory: {:.2f} MB'.format(
+        info = '{:d} objects, time: {:d} s., memory: {:.2f} MB'.format(
             root_obj.object_count(),
-            gws.lib.osx.utime() - ts,
+            gws.u.stime() - ts,
             gws.lib.osx.process_rss_size() - ms,
         )
         if not errors:
@@ -142,16 +142,16 @@ def _load(path) -> gws.Root:
             sys.path.insert(0, p)
             gws.log.debug(f'path {p!r} added to sys.path')
 
-    ts = gws.lib.osx.utime()
+    ts = gws.u.stime()
     ms = gws.lib.osx.process_rss_size()
 
     root_obj = gws.u.unserialize_from_path(path)
 
     activate(root_obj)
 
-    gws.log.info('configuration ok, {:d} objects, time: {:.2f} s., memory: {:.2f} MB'.format(
+    gws.log.info('configuration ok, {:d} objects, time: {:d} s., memory: {:.2f} MB'.format(
         root_obj.object_count(),
-        gws.lib.osx.utime() - ts,
+        gws.u.stime() - ts,
         gws.lib.osx.process_rss_size() - ms,
     ))
 
