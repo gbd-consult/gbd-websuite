@@ -7,6 +7,8 @@ import os
 import re
 import signal
 import subprocess
+import shutil
+import shlex
 import time
 
 import psutil
@@ -65,20 +67,19 @@ def run_nowait(cmd: str, **kwargs) -> subprocess.Popen:
     return subprocess.Popen(cmd, **args)
 
 
-def run(cmd: str | list, input: str = None, echo: bool = False,
-        strict: bool = True, timeout: float = None, **kwargs) -> tuple:
-    """Run a process, return a tuple (rc, output).
+def run(cmd: str | list, input: str = None, echo: bool = False, strict: bool = True, timeout: float = None, **kwargs) -> str:
+    """Run an external command.
 
     Args:
         cmd: Command to run.
-        input:
-        echo:
-        strict:
-        timeout:
-        kwargs:
+        input: Input data.
+        echo: Echo the output instead of capturing it.
+        strict: Raise an error on a non-zero exit code.
+        timeout: Timeout.
+        kwargs: Arguments to pass to ``subprocess.Popen``.
 
     Returns:
-        ``(rc,output)``
+        The command output.
     """
 
     args = {
@@ -89,30 +90,30 @@ def run(cmd: str | list, input: str = None, echo: bool = False,
     }
     args.update(kwargs)
 
-    scmd = cmd
-    if isinstance(cmd, list):
-        scmd = ' '.join(str(s) for s in cmd)
+    if isinstance(cmd, str):
+        cmd = shlex.split(cmd)
 
-    gws.log.debug(f'RUN: {scmd}')
+    gws.log.debug(f'RUN: {cmd=}')
 
     try:
         p = subprocess.Popen(cmd, **args)
         out, _ = p.communicate(input, timeout)
         rc = p.returncode
-    except subprocess.TimeoutExpired:
-        raise TimeoutError(f'command timed out', scmd)
+    except subprocess.TimeoutExpired as exc:
+        raise TimeoutError(f'run: command timed out', repr(cmd)) from exc
     except Exception as exc:
-        raise Error(f'command failed', scmd) from exc
+        raise Error(f'run: failure', repr(cmd)) from exc
+
+    if rc:
+        gws.log.debug(f'RUN_FAILED: {cmd=} {rc=} {out=}')
 
     if rc and strict:
-        gws.log.debug(f'OUT: {out}')
-        gws.log.debug(f'RC:  {rc}')
-        raise Error(f'non-zero exit', cmd)
+        raise Error(f'run: non-zero exit', repr(cmd))
 
-    return rc, out
+    return _to_str(out or '')
 
 
-def unlink(path: _Path):
+def unlink(path: _Path) -> bool:
     """Deletes a given path.
 
     Args:
@@ -121,21 +122,29 @@ def unlink(path: _Path):
     try:
         if os.path.isfile(path):
             os.unlink(path)
-    except OSError:
-        pass
+        return True
+    except OSError as exc:
+        gws.log.warning(f'OSError: unlink: {exc}')
+        return False
 
 
-def rename(src: _Path, dst: _Path):
+def rename(src: _Path, dst: _Path) -> bool:
     """Moves and renames the source path according to the given destination.
 
     Args:
         src: Path to source.
         dst: Destination.
     """
-    os.replace(src, dst)
+
+    try:
+        os.replace(src, dst)
+        return True
+    except OSError as exc:
+        gws.log.warning(f'OSError: rename: {exc}')
+        return False
 
 
-def chown(path: _Path, user: int = None, group: int = None):
+def chown(path: _Path, user: int = None, group: int = None) -> bool:
     """Changes the UID or GID for a given path.
 
     Args:
@@ -145,8 +154,43 @@ def chown(path: _Path, user: int = None, group: int = None):
     """
     try:
         os.chown(path, user or gws.c.UID, group or gws.c.GID)
-    except OSError:
-        pass
+        return True
+    except OSError as exc:
+        gws.log.warning(f'OSError: chown: {exc}')
+        return False
+
+
+def mkdir(path: _Path, mode: int = 0o755, user: int = None, group: int = None) -> bool:
+    """Check a (possibly nested) directory.
+
+    Args:
+        path: Path to a directory.
+        mode: Directory creation mode.
+        user: Directory user (defaults to gws.c.UID)
+        group: Directory group (defaults to gws.c.GID)
+    """
+
+    try:
+        os.makedirs(path, mode, exist_ok=True)
+        return chown(path, user, group)
+    except OSError as exc:
+        gws.log.warning(f'OSError: mkdir: {exc}')
+        return False
+
+
+def rmdir(path: _Path) -> bool:
+    """Remove a directory or a directory tree.
+
+    Args:
+        path: Path to a directory. Can be non-empty
+    """
+
+    try:
+        shutil.rmtree(path)
+        return True
+    except OSError as exc:
+        gws.log.warning(f'OSError: rmdir: {exc}')
+        return False
 
 
 def file_mtime(path: _Path) -> float:
@@ -160,7 +204,8 @@ def file_mtime(path: _Path) -> float:
     """
     try:
         return os.stat(path).st_mtime
-    except OSError:
+    except OSError as exc:
+        gws.log.warning(f'OSError: file_mtime: {exc}')
         return -1
 
 
@@ -175,7 +220,8 @@ def file_age(path: _Path) -> int:
     """
     try:
         return int(time.time() - os.stat(path).st_mtime)
-    except OSError:
+    except OSError as exc:
+        gws.log.warning(f'OSError: file_age: {exc}')
         return -1
 
 
@@ -190,12 +236,13 @@ def file_size(path: _Path) -> int:
     """
     try:
         return os.stat(path).st_size
-    except OSError:
+    except OSError as exc:
+        gws.log.warning(f'OSError: file_size: {exc}')
         return -1
 
 
 def file_checksum(path: _Path) -> str:
-    """Reuturs the checksum of the file.
+    """Returns the checksum of the file.
 
     Args:
         path: Filepath.
@@ -206,7 +253,8 @@ def file_checksum(path: _Path) -> str:
     try:
         with open(path, 'rb') as fp:
             return hashlib.sha256(fp.read()).hexdigest()
-    except OSError:
+    except OSError as exc:
+        gws.log.warning(f'OSError: file_checksum: {exc}')
         return ''
 
 
@@ -242,7 +290,7 @@ def running_pids() -> dict[int, str]:
 def process_rss_size(unit: str = 'm') -> float:
     """Returns the Resident Set Size.
 
-    Agrs:
+    Args:
         unit: ``m`` | ``k`` | ``g``
 
     Returns:
@@ -326,7 +374,7 @@ def parse_path(path: _Path) -> dict[str, str]:
         A dict(path,dirname,filename,name,extension).
     """
 
-    str_path = path if isinstance(path, str) else path.decode('utf8')
+    str_path = _to_str(path)
     sp = os.path.split(str_path)
 
     d = {
@@ -355,8 +403,8 @@ def file_name(path: _Path) -> str:
     Returns:
         The filename.
     """
-    str_path = path if isinstance(path, str) else path.decode('utf8')
-    sp = os.path.split(str_path)
+
+    sp = os.path.split(_to_str(path))
     return sp[1]
 
 
@@ -364,7 +412,7 @@ def is_abs_path(path: _Path) -> bool:
     return os.path.isabs(path)
 
 
-def abs_path(path: _Path, base: str) -> str:
+def abs_path(path: _Path, base: _Path) -> str:
     """Absolutize a relative path with respect to a base directory or file path.
 
     Args:
@@ -375,10 +423,10 @@ def abs_path(path: _Path, base: str) -> str:
         ``ValueError``: If base is empty
 
     Returns:
-        The absolutized path.
+        The absolute path.
     """
 
-    str_path = path if isinstance(path, str) else path.decode('utf8')
+    str_path = _to_str(path)
 
     if os.path.isabs(str_path):
         return str_path
@@ -389,7 +437,7 @@ def abs_path(path: _Path, base: str) -> str:
     if os.path.isfile(base):
         base = os.path.dirname(base)
 
-    return os.path.abspath(os.path.join(base, str_path))
+    return os.path.abspath(os.path.join(_to_str(base), str_path))
 
 
 def abs_web_path(path: str, basedir: str) -> Optional[str]:
@@ -400,7 +448,7 @@ def abs_web_path(path: str, basedir: str) -> Optional[str]:
         basedir: Path to base directory.
 
     Returns:
-        Absolutized path with respect to base directory.
+        Absolute path with respect to base directory.
     """
 
     _dir_re = r'^[A-Za-z0-9_-]+$'
@@ -417,11 +465,11 @@ def abs_web_path(path: str, basedir: str) -> Optional[str]:
     fname = dirs.pop()
 
     if not all(re.match(_dir_re, p) for p in dirs):
-        gws.log.error(f'abs_web_path: invalid dirname in path={path!r}')
+        gws.log.warning(f'abs_web_path: invalid dirname in path={path!r}')
         return
 
     if not re.match(_fil_re, fname):
-        gws.log.error(f'abs_web_path: invalid filename in path={path!r}')
+        gws.log.warning(f'abs_web_path: invalid filename in path={path!r}')
         return
 
     p = basedir
@@ -430,13 +478,13 @@ def abs_web_path(path: str, basedir: str) -> Optional[str]:
     p += '/' + fname
 
     if not os.path.isfile(p):
-        gws.log.error(f'abs_web_path: not a file path={path!r}')
+        gws.log.warning(f'abs_web_path: not a file path={path!r}')
         return
 
     return p
 
 
-def rel_path(path: _Path, base: str) -> str:
+def rel_path(path: _Path, base: _Path) -> str:
     """Relativize an absolute path with respect to a base directory or file path.
 
     Args:
@@ -453,4 +501,12 @@ def rel_path(path: _Path, base: str) -> str:
 
     str_path = path if isinstance(path, str) else path.decode('utf8')
 
-    return os.path.relpath(str_path, base)
+    return os.path.relpath(_to_str(path), _to_str(base))
+
+
+def _to_str(p: _Path) -> str:
+    return p if isinstance(p, str) else p.decode('utf8')
+
+
+def _to_bytes(p: _Path) -> bytes:
+    return p if isinstance(p, bytes) else p.encode('utf8')

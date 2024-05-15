@@ -89,8 +89,7 @@ def configure(manifest_path=None, config_path=None, is_starting=False):
         autorun = gws.u.get(cfg, 'server.autoRun')
         if autorun:
             gws.log.info(f'AUTORUN: {autorun!r}')
-            cmds = shlex.split(autorun)
-            gws.lib.osx.run(cmds, echo=True)
+            gws.lib.osx.run(autorun, echo=True)
 
         timezone = gws.u.get(cfg, 'server.timeZone')
         if timezone:

@@ -35,7 +35,7 @@ def render_to_pdf(html, out_path: str, page_size: gws.UomSize = None, page_margi
         out_path,
     ]
 
-    gws.lib.osx.run(cmd, echo=False)
+    gws.lib.osx.run(cmd)
     return out_path
 
 
@@ -75,5 +75,5 @@ def render_to_png(html, out_path: str, page_size: gws.UomSize = None, page_margi
         out_path,
     ])
 
-    gws.lib.osx.run(cmd, echo=False)
+    gws.lib.osx.run(cmd)
     return out_path

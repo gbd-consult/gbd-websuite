@@ -114,6 +114,6 @@ def page_count(path: str) -> int:
 #     ]
 #
 #     gws.log.debug(repr(cmd))
-#     gws.lib.osx.run(cmd, echo=False)
+#     gws.lib.osx.run(cmd)
 #
 #     return out_path
