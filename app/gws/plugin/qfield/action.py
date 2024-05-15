@@ -146,7 +146,7 @@ class Object(gws.base.action.Object):
         b = gws.lib.zipx.zip_to_bytes(args.baseDir)
 
         if not self.root.app.developer_option('qfield.keep_temp_dirs'):
-            gws.lib.osx.unlink(args.baseDir)
+            gws.lib.osx.rmdir(args.baseDir)
 
         return b
 
@@ -182,7 +182,7 @@ class Object(gws.base.action.Object):
 
     def end_import(self, args: core.ImportArgs):
         if not self.root.app.developer_option('qfield.keep_temp_dirs'):
-            gws.lib.osx.unlink(args.baseDir)
+            gws.lib.osx.rmdir(args.baseDir)
 
     ##
 
