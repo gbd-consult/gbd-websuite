@@ -405,6 +405,8 @@ class Access(Enum):
 class PermissionsConfig:
     """Permissions configuration."""
 
+    all: Optional[AclStr]
+    """All permissions."""
     read: Optional[AclStr]
     """Permission to read the object."""
     write: Optional[AclStr]

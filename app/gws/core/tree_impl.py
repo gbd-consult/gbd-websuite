@@ -222,8 +222,10 @@ def configure_permissions(self):
         for k, v in vars(p).items():
             a = u.parse_acl(v)
             if a:
-                if k == 'edit':
-                    perms[Access.write] = perms[Access.create] = perms[Access.delete] = a
+                if k == 'all':
+                    perms[Access.read] = perms[Access.write] = perms[Access.create] = perms[Access.delete] = a
+                elif k == 'edit':
+                    perms[Access.read] = perms[Access.write] = perms[Access.create] = perms[Access.delete] = a
                 else:
                     perms[k] = a
 
