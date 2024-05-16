@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <title><% options.title %> - <% options.subTitle %></title>
     <link rel="stylesheet" href="<% options.webRoot %>/_static/theme.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="<% options.webRoot %>/_static/theme.js"></script>
     <script src="<% options.webRoot %>/_static/_global_toc.js"></script>
     <script src="<% options.webRoot %>/_static/_search_index.js"></script>
@@ -13,14 +14,14 @@
 <body>
     <aside>
         <div id="sidebar">
-            <div id="sidebar-header">
-                <div id="sidebar-title">
+            <a id="sidebar-header" href="<% home %>">
+                <span id="sidebar-header-title">
                     <% title %>
-                </div>
-                <div id="sidebar-subtitle">
+                </span>
+                <span id="sidebar-header-subtitle">
                     <% subTitle %>
-                </div>
-            </div>
+                </span>
+            </a>
             <div id="sidebar-search">
                 <div id="sidebar-search-box">
                     <input>
@@ -30,6 +31,9 @@
             <div id="sidebar-content">
                 <div id="sidebar-search-results">
                 </div>
+                <div id="sidebar-search-not-found">
+                    keine Ergebnisse gefunden
+                </div>
                 <div id="sidebar-toc">
                 </div>
             </div>
@@ -38,6 +42,8 @@
             </div>
         </div>
     </aside>
+
+    <div id="sidebar-toggle"></div>
 
     <main>
         <nav>

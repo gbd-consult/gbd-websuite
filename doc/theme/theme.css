@@ -2,6 +2,10 @@
     box-sizing: border-box;
 }
 
+html {
+    font-size: 15px;
+}
+
 body, h1, h2, h3, h4, h5, h6, p, ol, ul {
     margin: 0;
     padding: 0;
@@ -18,30 +22,75 @@ img {
 }
 
 body {
-    font-size: 16px;
+    font-size: 1rem;
     font-family: "Helvetica Neue", Arial, sans-serif;
-    background: #fcfcfc;
+    background-color: #fcfcfc;
     color: #263238;
     line-height: 1.5;
 }
 
-aside {
+body aside {
     background-color: #263238;
     position: fixed;
-    left: 0;
+    left: -100%;
     top: 0;
-    width: 300px;
+    width: 100%;
     height: 100%;
+    transition: left 0.2s ease-out;
+    overflow-x: hidden;
 }
 
-main {
-    padding: 20px 60px 20px 340px;
+body main {
+    background-color: #fcfcfc;
+    padding: 1rem;
+    margin-left: 0;
+    overflow-x: hidden;
 }
 
+body.mobile-sidebar aside {
+    left: 0;
+}
+
+body.mobile-sidebar main {
+}
+
+body #sidebar-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 2rem;
+    height: 2rem;
+    background-color: #084865;
+    background-image: url('theme_menu.svg');
+    background-position: center center;
+    background-size: 70%;
+    background-repeat: no-repeat;
+    border-radius: 4px;
+    z-index: 4;
+}
+
+body.mobile-sidebar #sidebar-toggle {
+    background-image: url('theme_close.svg');
+}
+
+@media screen and (min-width: 768px) {
+    body aside {
+        left: 0;
+        width: 22rem;
+    }
+    body main {
+        margin-left: 22rem;
+        padding: 2rem;
+
+    }
+    #sidebar-toggle {
+        display: none;
+    }
+}
 
 code, pre, .highlighttitle {
     font-family: Menlo, Consolas, monospace;
-    font-size: 13px;
+    font-size: 0.9rem;
 }
 
 pre {
@@ -78,7 +127,6 @@ div.highlight {
     padding: 1em;
     margin: 1em 0;
     overflow-x: auto;
-    position: relative;
 }
 
 p.highlighttitle {
@@ -120,7 +168,7 @@ main a {
 
 main a.header-link {
     opacity: 0;
-    font-size: 16px;
+    font-size: 1rem;
     padding: 0 0 0 10px;
     transition: all 0.5s ease;
 }
@@ -189,14 +237,14 @@ main li {
 }
 
 table.markdown-table {
-    font-size: 14px;
+    font-size: 0.9rem;
     border-collapse: collapse;
-    margin: 24px;
+    margin: 1.5rem;
 }
 
 table.markdown-table th, table.markdown-table td {
     margin: 0;
-    padding: 12px;
+    padding: 0.9rem;
     border: 1px solid #ddd;
 }
 
@@ -220,34 +268,35 @@ figure {
 figcaption {
     display: table-caption;
     caption-side: bottom;
-    font-size: 12px;
+    font-size: 0.8rem;
     font-weight: bold;
     font-style: italic;
     text-align: center;
 }
 
 nav {
-    padding: 15px 0 20px 0;
-    margin-bottom: 25px;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
     border-bottom: 1px solid #ccc;
     display: flex;
+    align-items: center;
 }
 
 #nav-breadcrumbs {
-    font-size: 14px;
+    font-size: 0.8rem;
     flex: 1;
 }
 
 #nav-breadcrumbs-home img {
-    width: 16px;
-    height: 16px;
+    width: 1rem;
+    height: 1rem;
     vertical-align: text-top;
 }
 
 #nav-arrows a {
     display: inline-block;
-    width: 24px;
-    height: 24px;
+    width: 1.3rem;
+    height: 1.3rem;
     opacity: 0.7;
 }
 
@@ -262,19 +311,37 @@ nav {
 }
 
 #sidebar-header {
-    background: #0086c9;
-    padding: 10px;
+    display: block;
+    background-color: #0086c9;
+    padding: 1rem 0.5rem 1rem 0.5rem;
     color: white;
     text-align: center;
+    text-decoration: none;
 }
 
-#sidebar-title {
-    font-size: 16px;
-    padding: 10px 0;
+
+@media screen and (min-width: 768px) {
+    #sidebar-header {
+        background-color: #0086c9;
+        background-image: url('gws_logo.svg');
+        background-position: center 1rem;
+        background-repeat: no-repeat;
+        background-size: 5rem 5rem;
+        padding: 7rem 0.5rem 1rem 0.5rem;
+        color: white;
+        text-align: center;
+    }
 }
 
-#sidebar-subtitle {
-    font-size: 14px;
+#sidebar-header-title {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+#sidebar-header-subtitle {
+    display: block;
+    font-size: 0.9rem;
 }
 
 #sidebar-content {
@@ -284,8 +351,8 @@ nav {
 }
 
 #sidebar-search {
-    padding: 20px;
-    background: #0f638d;
+    padding: 1rem;
+    background: #145b86;
 }
 
 #sidebar-search-box {
@@ -293,8 +360,8 @@ nav {
     background-image: url('theme_search.svg');
     background-position: 8px center;
     background-repeat: no-repeat;
-    background-size: 20px 20px;
-    border-radius: 20px;
+    background-size: 1.2rem 1.2rem;
+    border-radius: 18px;
     display: flex;
 }
 
@@ -309,25 +376,33 @@ nav {
 #sidebar-search button {
     border: 0;
     background: none;
-    width: 40px;
+    width: 3rem;
     color: #78909c;
-    font-size: 21px;
+    font-size: 1.3rem;
 }
 
-#sidebar-search-results {
+#sidebar-search-results, #sidebar-search-not-found {
     display: none;
-    background: #0f638d;
-    padding: 0 0 20px 0;
+    background: #145b86;
+    padding-bottom: 0.5rem;
+    border-bottom: 8px solid #0b354f;
+}
+
+#sidebar-search-not-found {
+    text-align: center;
+    color: #eceff1;
+    font-size: 0.9rem;
+    font-style: italic;
 }
 
 #sidebar-search-results ul {
-    font-size: 13px;
-    padding: 0 20px;
+    font-size: 0.9rem;
+    padding: 0 1rem;
 }
 
 #sidebar-search-results li {
-    font-size: 13px;
-    padding: 5px 0;
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
 }
 
 #sidebar-search-results a {
@@ -340,51 +415,55 @@ nav {
 #sidebar-search-results a:hover {
     text-decoration: underline;
 }
-
+body.with-search-found #sidebar-search-results {
+    display: block;
+}
+body.with-search-not-found #sidebar-search-not-found {
+    display: block;
+}
 
 #sidebar-toc {
     padding: 8px 0;
 }
 
 #sidebar-toc li {
-    font-size: 13px;
+    font-size: 0.9rem;
 }
-
 
 #sidebar-toc a {
     color: #eceff1;
     text-decoration: none;
     display: inline-block;
-    padding: 8px 0;
+    padding: 0.6rem 0;
 }
 
 #sidebar-toc a:hover {
     text-decoration: underline;
 }
 
-#sidebar-toc li.active > a {
+#sidebar-toc li.active > span > a {
     font-weight: 900;
     color: white;
 }
 
 #sidebar-toc ul li span {
-    padding-left: 20px;
+    padding-left: 1rem;
 }
 
 #sidebar-toc ul ul li span {
-    padding-left: 40px;
+    padding-left: 2rem;
 }
 
 #sidebar-toc ul ul ul li span {
-    padding-left: 60px;
+    padding-left: 3rem;
 }
 
 #sidebar-toc ul ul ul ul li span {
-    padding-left: 80px;
+    padding-left: 4rem;
 }
 
 #sidebar-toc ul ul ul ul ul li span {
-    padding-left: 100px;
+    padding-left: 5rem;
 }
 
 #sidebar-toc ul ul li {
@@ -436,13 +515,14 @@ nav {
 #sidebar-toc li button {
     border: none;
     background-color: transparent;
-    width: 20px;
-    height: 20px;
+    width: 1.8rem;
+    height: 1.8rem;
     padding: 0;
-    margin-right: 0.2em;
-    background-size: 16px 16px;
+    margin-right: 0;
+    background-size: 60%;
     background-position: center center;
-    transition: all 0.5s ease;
+    background-repeat: no-repeat;
+    transition: transform 0.5s ease;
     cursor: pointer;
 }
 
@@ -454,29 +534,19 @@ nav {
     transform: rotate(90deg);
 }
 
-
-body.withSearch #sidebar-search-results {
-    display: block;
-}
-
-body.withSearch #sidebar-tocxx {
-    display: none;
-}
-
 #sidebar-footer {
     background: black;
     color: #736d6d;
     padding: 10px;
-    font-size: 10px;
+    font-size: 0.6rem;
 }
-
 
 .reference {
     border-bottom: 1px solid #bbdefb;
     padding: 5px 0;
     margin-bottom: 10px;
     display: inline-block;
-    font-size: 13px;
+    font-size: 0.9rem;
 }
 
 .demo {
@@ -484,7 +554,7 @@ body.withSearch #sidebar-tocxx {
     padding: 5px 0;
     margin-bottom: 10px;
     display: inline-block;
-    font-size: 13px;
+    font-size: 0.9rem;
 }
 
 .admonition_info {
@@ -511,28 +581,6 @@ body.withSearch #sidebar-tocxx {
     color: #b71c1c;
     margin: 12px 0;
     padding: 20px 20px 20px 70px;
-}
-
-@media print {
-    body {
-        background: white;
-    }
-
-    nav {
-        display: none
-    }
-
-    aside {
-        display: none
-    }
-
-    main {
-        padding: 20px 60px 20px 60px;
-    }
-
-    h1, h2, h3 {
-        page-break-before: always;
-    }
 }
 
 code.configref_literal {
@@ -611,7 +659,7 @@ code.configref_missing_translation {
     border: 1px solid #9f866a;
     color: #333;
     display: inline-block;
-    font-size: 12px;
+    font-size: 0.9rem;
     font-weight: 600;
     margin: 0 3px;
     padding: 0 6px;
@@ -623,7 +671,7 @@ code.configref_missing_translation {
     border: 1px solid #04121c;
     color: #333;
     display: inline-block;
-    font-size: 12px;
+    font-size: 0.9rem;
     margin: 0 3px;
     padding: 0 6px;
 }
@@ -634,7 +682,7 @@ code.configref_missing_translation {
     border: 1px solid #7fbbe3;
     color: #333;
     display: inline-block;
-    font-size: 12px;
+    font-size: 0.9rem;
     font-weight: 600;
     margin: 0 3px;
     padding: 0 6px;
@@ -644,14 +692,30 @@ code.configref_missing_translation {
     color: #0277bd;
 }
 
-/* provides a way to add a filename to the top of code blocks */
-.decoration_file {
-    position: relative;
-    margin: 0;
-    padding: 0 0.3em;
-    top: 1em;
-    border: 1px #ffd54f solid;
-    border-bottom: 0;
-    background-color: #ffe387;
-    font-family: monospace;
+@media print {
+    html {
+        font-size: 11pt;
+    }
+    body {
+        background: white;
+    }
+
+    nav {
+        display: none
+    }
+
+    aside {
+        display: none
+    }
+
+    main {
+        padding: 10mm;
+    }
+
+    h1, h2, h3 {
+        page-break-before: always;
+    }
+    #sidebar-toggle {
+        display: none;
+    }
 }

@@ -343,6 +343,11 @@ class Builder:
         fn = m.group(1)
         if fn.endswith(self.GLOBAL_TOC_SCRIPT):
             return 'application/javascript', self.generate_global_toc()
+        if fn.endswith(self.SEARCH_INDEX_SCRIPT):
+            attr = '_CACHED_SEARCH_INDEX'
+            if not hasattr(self, attr):
+                setattr(self, attr, self.generate_search_index())
+            return 'application/javascript', getattr(self, attr)
 
         for path, fname in self.assetMap.items():
             if fname == fn:
@@ -710,6 +715,11 @@ class HTMLGenerator:
 
         self.content = {}
 
+        home_url = ''
+        sec = self.b.get_section('/')
+        if sec:
+            home_url = sec.htmlUrl
+
         for path, buf in self.buffers.items():
             self.content[path] = template.call(self.b, tpl, {
                 'path': path,
@@ -717,6 +727,7 @@ class HTMLGenerator:
                 'subTitle': self.b.options.subTitle,
                 'main': ''.join(buf.html),
                 'breadcrumbs': self.get_breadcrumbs(buf.sids[0]),
+                'home': home_url,
                 'builder': self.b,
                 'options': self.b.options,
             })

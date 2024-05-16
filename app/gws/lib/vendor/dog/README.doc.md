@@ -523,6 +523,7 @@ A page template is a Jump template which is rendered for each html page. This te
 | argument      | meaning                                      |
 |---------------|----------------------------------------------|
 | `breadcrumbs` | array of tuples `(section-url,section-head)` |
+| `home`        | url of the documentation home page           |
 | `main`        | main html content for this page              |
 | `options`     | options object as defined above              |
 | `path`        | html path for this page                      |

@@ -39,6 +39,9 @@ extraAssets = [
     f'{DOC_DIR}/theme/theme_arrow_up.svg',
     f'{DOC_DIR}/theme/theme_toc_open.svg',
     f'{DOC_DIR}/theme/theme_toc_dot.svg',
+    f'{DOC_DIR}/theme/theme_menu.svg',
+    f'{DOC_DIR}/theme/theme_close.svg',
+    f'{ROOT_DIR}/data/web/gws_logo.svg',
 ]
 
 includeTemplate = f'{DOC_DIR}/extra_commands.cx.html'
@@ -46,7 +49,7 @@ includeTemplate = f'{DOC_DIR}/extra_commands.cx.html'
 serverPort = 5500
 serverHost = '0.0.0.0'
 
-title = 'GBD WebSuite Dokumentation'
+title = 'GBD WebSuite'
 subTitle = VERSION3
 
 # wkhtmltopdf options
@@ -60,26 +63,3 @@ pdfOptions = {
     'footer-right': '[page]',
     'footer-spacing': 5,
 }
-
-# apidoc options (see make_api)
-
-apidocWebRoot = f'/apidoc/{VERSION2}'
-
-pydoctorExclude = [
-    '___*'
-    '_plugins'
-    '__pycache__'
-    'vendor'
-    '*_test.py'
-]
-
-pydoctorExtraCss = f'{DOC_DIR}/theme/pydoctor_extra.css'
-
-pydoctorArgs = [
-    '--make-html',
-    '--project-name', 'GBD WebSuite',
-    '--project-version', VERSION2,
-    '--docformat', 'google',
-    '--theme', 'readthedocs',
-    '--html-viewsource-base', 'https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws',
-]

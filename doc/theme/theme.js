@@ -11,6 +11,7 @@ function makeNavigation() {
     }
 
     let u = location.pathname + location.hash;
+    u = u.split('?')[0];
 
     for (let [sid, node] of Object.entries(toc)) {
         if (node.u === u) {
@@ -170,23 +171,30 @@ function searchRun(evt) {
 function searchReset() {
     clearTimeout(searchTimer);
     $('#sidebar-search input').value = '';
-    $('body').classList.remove('withSearch');
+    $('body').classList.remove('with-search-found', 'with-search-not-found');
+    $('#sidebar-search-results').innerHTML = '';
 }
 
 function searchExec(val) {
     if (val.trim().length === 0) {
-        $('body').classList.remove('withSearch');
+        searchReset();
         return;
     }
 
-    $('body').classList.add('withSearch');
-
     let secs = searchFindSections(val);
     let html = '';
+
     if (secs) {
+        $('body').classList.add('with-search-found');
+        $('body').classList.remove('with-search-not-found');
         val = encodeURIComponent(val);
         html = '<ul>' + secs.map(sec => `<li><a href="${sec.u}?search=${val}">${sec.h}</a></li>`).join('') + '</ul>';
+    } else {
+        $('body').classList.remove('with-search-found');
+        $('body').classList.add('with-search-not-found');
+        html = '';
     }
+
     $('#sidebar-search-results').innerHTML = html;
 }
 
@@ -226,15 +234,16 @@ function searchFindSections(val) {
 //
 
 function main() {
+    $('#sidebar-toggle').addEventListener('click', () => {
+        document.body.classList.toggle('mobile-sidebar')
+    });
     makeNavigation();
-    window.addEventListener('popstate', makeNavigation);
+    window.addEventListener('popstate', () => {
+        makeNavigation();
+        document.body.classList.remove('mobile-sidebar')
+    });
     searchInit();
     addRefMarks();
 }
 
 window.addEventListener('load', main);
-
-
-
-
-
