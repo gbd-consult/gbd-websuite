@@ -11,9 +11,10 @@ def from_string(s: str) -> Optional[gws.Extent]:
     """Create an extent from a comma-separated string "1000,2000,20000 40000".
 
     Args:
-        s: ``x-min,y-min,x-max,y-max``
+        s: ``"x-min,y-min,x-max,y-max"``
 
-    Returns: An extent.
+    Returns:
+        An extent.
     """
 
     return from_list(s.split(','))
@@ -21,32 +22,38 @@ def from_string(s: str) -> Optional[gws.Extent]:
 
 def from_list(ls: list) -> Optional[gws.Extent]:
     """Create an extent from a list of values.
+
     Args:
         ls: ``[x-min,y-min,x-max,y-max]``
 
-    Returns: An extent."""
+    Returns:
+        An extent."""
 
     return _check(ls)
 
 
 def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
     """Create an extent from two points.
+
         Args:
             a:``(x-min,y-min)``
             b:``(x-max,y-max)``
 
-        Returns: An extent."""
+        Returns:
+            An extent."""
 
     return _check([a[0], a[1], b[0], b[1]])
 
 
 def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
     """Create an extent with certain size from a center-point.
+
         Args:
             xy: Center-point ``(x,y)``
-            size: Extend's size.
+            size: Extent's size.
 
-        Returns: An Extent."""
+        Returns:
+            An Extent."""
 
     return (
         xy[0] - size[0] / 2,
@@ -59,9 +66,11 @@ def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
 def from_box(box: str) -> Optional[gws.Extent]:
     """Create an extent from a Postgis BOX(1000 2000,20000 40000).
 
-    Args: Postgis BOX.
+    Args:
+        box: Postgis BOX.
 
-    Returns: An extent."""
+    Returns:
+        An extent."""
 
     if not box:
         return None
@@ -85,7 +94,8 @@ def constrain(a: gws.Extent, b: gws.Extent) -> gws.Extent:
         a: An extent.
         b: An extent.
 
-    Returns: An extent.
+    Returns:
+        An extent.
     """
 
     a = _sort(a)
@@ -136,7 +146,8 @@ def buffer(e: gws.Extent, buf: int) -> gws.Extent:
         e: An extent.
         buf: Buffer between e and the output. If buf is positive the returned extent will be bigger.
 
-    Returns: An extent.
+    Returns:
+        An extent.
     """
 
     if buf == 0:
@@ -156,7 +167,8 @@ def union(exts: list[gws.Extent]) -> gws.Extent:
     Args:
         exts: Extents.
 
-    Returns: An Extent.
+    Returns:
+        An Extent.
     """
 
     ext = exts[0]
@@ -187,7 +199,8 @@ def transform(e: gws.Extent, crs_from: gws.Crs, crs_to: gws.Crs) -> gws.Extent:
         crs_from: Input crs.
         crs_to: Output crs.
 
-    Returns: The transformed extent.
+    Returns:
+        The transformed extent.
     """
 
     return crs_from.transform_extent(e, crs_to)
@@ -200,7 +213,8 @@ def transform_from_wgs(e: gws.Extent, crs_to: gws.Crs) -> gws.Extent:
         e: An extent.
         crs_to: Output crs.
 
-    Returns: The transformed extent.
+    Returns:
+        The transformed extent.
     """
 
     return gws.gis.crs.WGS84.transform_extent(e, crs_to)
@@ -213,7 +227,8 @@ def transform_to_wgs(e: gws.Extent, crs_from: gws.Crs) -> gws.Extent:
         e: An extent.
         crs_from: Input crs.
 
-    Returns: The WGS84 extent.
+    Returns:
+        The WGS84 extent.
     """
 
     return crs_from.transform_extent(e, gws.gis.crs.WGS84)

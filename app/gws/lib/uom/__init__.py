@@ -201,7 +201,7 @@ def size_to_mm(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
     Returns:
         The rectangle measurements in millimetres.
     Raises:
-        ``ValueError``: if the unit is invalid
+        ``ValueError``: if the unit is invalid.
     """
     x, y, u = xyu
     if u == gws.Uom.mm:

@@ -18,11 +18,11 @@ import gws.lib.uom
 def shape_to_element(
         shape: gws.Shape,
         coordinate_precision: Optional[int] = None,
-        always_xy=False,
+        always_xy: bool = False,
         crs_format: gws.CrsFormat = gws.CrsFormat.urn,
         namespace: Optional[gws.XmlNamespace] = None,
-        with_xmlns=True,
-        with_inline_xmlns=False,
+        with_xmlns: bool = True,
+        with_inline_xmlns: bool = False,
 ) -> gws.XmlElement:
     """Convert a Shape to a GML3 geometry element.
 
@@ -33,7 +33,7 @@ def shape_to_element(
         crs_format: The crs format in the resulting GML element.
         namespace: A XML namespace.
         with_xmlns: If ``True`` then namespaces will be kept.
-        with_inline_xmlns: If ``True`` then the inline namespace is kept.
+        with_inline_xmlns: If ``True`` then the inline namespace will be kept.
 
     Returns:
         A GML element.

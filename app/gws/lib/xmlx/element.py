@@ -238,7 +238,7 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
 
         Returns:
             Returns the first found element.
-            """
+        """
         if not paths:
             return self[0] if len(self) > 0 else None
         for path in paths:
