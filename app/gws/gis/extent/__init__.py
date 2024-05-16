@@ -8,22 +8,46 @@ import gws.gis.crs
 
 
 def from_string(s: str) -> Optional[gws.Extent]:
-    """Create an extent from a comma-separated string "1000,2000,20000 40000" """
+    """Create an extent from a comma-separated string "1000,2000,20000 40000".
+
+    Args:
+        s: ``x-min,y-min,x-max,y-max``
+
+    Returns: An extent.
+    """
 
     return from_list(s.split(','))
 
 
 def from_list(ls: list) -> Optional[gws.Extent]:
-    """Create an extent from a list of values"""
+    """Create an extent from a list of values.
+    Args:
+        ls: ``[x-min,y-min,x-max,y-max]``
+
+    Returns: An extent."""
 
     return _check(ls)
 
 
 def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
+    """Create an extent from two points.
+        Args:
+            a:``(x-min,y-min)``
+            b:``(x-max,y-max)``
+
+        Returns: An extent."""
+
     return _check([a[0], a[1], b[0], b[1]])
 
 
 def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
+    """Create an extent with certain size from a center-point.
+        Args:
+            xy: Center-point ``(x,y)``
+            size: Extend's size.
+
+        Returns: An Extent."""
+
     return (
         xy[0] - size[0] / 2,
         xy[1] - size[1] / 2,
@@ -33,7 +57,11 @@ def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
 
 
 def from_box(box: str) -> Optional[gws.Extent]:
-    """Create an extent from a Postgis BOX(1000 2000,20000 40000)"""
+    """Create an extent from a Postgis BOX(1000 2000,20000 40000).
+
+    Args: Postgis BOX.
+
+    Returns: An extent."""
 
     if not box:
         return None
@@ -51,6 +79,15 @@ def from_box(box: str) -> Optional[gws.Extent]:
 #
 
 def constrain(a: gws.Extent, b: gws.Extent) -> gws.Extent:
+    """Creates an extends that is in extend a and in extend b.
+
+    Args:
+        a: An extent.
+        b: An extent.
+
+    Returns: An extent.
+    """
+
     a = _sort(a)
     b = _sort(b)
     return (
@@ -62,6 +99,8 @@ def constrain(a: gws.Extent, b: gws.Extent) -> gws.Extent:
 
 
 def center(e: gws.Extent) -> gws.Point:
+    """The center-point of the extent"""
+
     return (
         e[0] + (e[2] - e[0]) / 2,
         e[1] + (e[3] - e[1]) / 2,
@@ -69,6 +108,8 @@ def center(e: gws.Extent) -> gws.Point:
 
 
 def size(e: gws.Extent) -> gws.Size:
+    """The size of the extent ``(width,height)"""
+
     return (
         e[2] - e[0],
         e[3] - e[1],
@@ -76,6 +117,8 @@ def size(e: gws.Extent) -> gws.Size:
 
 
 def diagonal(e: gws.Extent) -> float:
+    """The length of the diagonal"""
+
     return math.sqrt((e[2] - e[0]) ** 2 + (e[3] - e[1]) ** 2)
 
 
@@ -87,6 +130,15 @@ def circumsquare(e: gws.Extent) -> gws.Extent:
 
 
 def buffer(e: gws.Extent, buf: int) -> gws.Extent:
+    """Creates an extent with buffer to another extent.
+
+    Args:
+        e: An extent.
+        buf: Buffer between e and the output. If buf is positive the returned extent will be bigger.
+
+    Returns: An extent.
+    """
+
     if buf == 0:
         return e
     e = _sort(e)
@@ -99,6 +151,14 @@ def buffer(e: gws.Extent, buf: int) -> gws.Extent:
 
 
 def union(exts: list[gws.Extent]) -> gws.Extent:
+    """Creates the smallest extent that contains all the given extents.
+
+    Args:
+        exts: Extents.
+
+    Returns: An Extent.
+    """
+
     ext = exts[0]
     for e in exts:
         e = _sort(e)
@@ -112,24 +172,55 @@ def union(exts: list[gws.Extent]) -> gws.Extent:
 
 
 def intersect(a: gws.Extent, b: gws.Extent) -> bool:
+    """Returns ``True`` if the extents are intersecting, otherwise ``False``."""
+
     a = _sort(a)
     b = _sort(b)
     return a[0] <= b[2] and a[2] >= b[0] and a[1] <= b[3] and a[3] >= b[1]
 
 
 def transform(e: gws.Extent, crs_from: gws.Crs, crs_to: gws.Crs) -> gws.Extent:
+    """Transforms the extent to a different coordinate reference system.
+
+    Args:
+        e: An extent.
+        crs_from: Input crs.
+        crs_to: Output crs.
+
+    Returns: The transformed extent.
+    """
+
     return crs_from.transform_extent(e, crs_to)
 
 
 def transform_from_wgs(e: gws.Extent, crs_to: gws.Crs) -> gws.Extent:
+    """Transforms the extent in WGS84 to a different coordinate reference system.
+
+    Args:
+        e: An extent.
+        crs_to: Output crs.
+
+    Returns: The transformed extent.
+    """
+
     return gws.gis.crs.WGS84.transform_extent(e, crs_to)
 
 
 def transform_to_wgs(e: gws.Extent, crs_from: gws.Crs) -> gws.Extent:
+    """Transforms the extent to WGS84.
+
+    Args:
+        e: An extent.
+        crs_from: Input crs.
+
+    Returns: The WGS84 extent.
+    """
+
     return crs_from.transform_extent(e, gws.gis.crs.WGS84)
 
 
 def swap_xy(e: gws.Extent) -> gws.Extent:
+    """Swaps the x and y values of the extent"""
     return e[1], e[0], e[3], e[2]
 
 
