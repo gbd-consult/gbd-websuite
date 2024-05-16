@@ -57,18 +57,24 @@ def test_from_box_empty():
     assert not extent.from_box('')
 
 
-def test_constrain():
-    a = (300, 400, 700, 800)
-    b = (100, 200, 500, 600)
-    assert extent.constrain(a, b) == (300, 400, 500, 600)
+def test_intersection():
+    a = (100, 100, 300, 300)
+    b = (200, 200, 400, 400)
+    c = (200, 100, 400, 300)
+    exts = [a, b, c]
+    assert extent.intersection(exts) == (200, 200, 300, 300)
 
 
-# given non overlapping extends
-# the resulting Extent does not follow Extends definition with x-min > x-max and y-min > y-max
-def test_constrain_no_overlap():
-    a = (100, 200, 300, 400)
-    b = (500, 600, 700, 800)
-    assert extent.constrain(a, b) == (300, 400, 500, 600)
+def test_intersection_empty():
+    a = (100, 100, 300, 300)
+    b = (200, 200, 400, 400)
+    c = (500, 600, 700, 700)
+    exts = [a, b, c]
+    assert not extent.intersection(exts)
+
+
+def test_intersection_empty_list():
+    assert not extent.intersection([])
 
 
 def test_center():
@@ -109,6 +115,12 @@ def test_union_empty():
 def test_intersect():
     a = (300, 400, 700, 800)
     b = (100, 200, 500, 600)
+    assert extent.intersect(a, b)
+
+
+def test_intersect_inf():
+    a = (1, 2, 3, 4)
+    b = (-math.inf, -math.inf, math.inf, math.inf)
     assert extent.intersect(a, b)
 
 

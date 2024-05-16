@@ -87,25 +87,33 @@ def from_box(box: str) -> Optional[gws.Extent]:
 
 #
 
-def constrain(a: gws.Extent, b: gws.Extent) -> gws.Extent:
-    """Creates an extends that is in extend a and in extend b.
+def intersection(exts: list[gws.Extent]) -> Optional[gws.Extent]:
+    """Creates an extent that is the intersection of all given extents.
 
     Args:
-        a: An extent.
-        b: An extent.
+        exts: Extents.
 
     Returns:
         An extent.
     """
 
-    a = _sort(a)
-    b = _sort(b)
-    return (
-        max(a[0], b[0]),
-        max(a[1], b[1]),
-        min(a[2], b[2]),
-        min(a[3], b[3]),
-    )
+    if not exts:
+        return
+
+    _intersect = (-math.inf, -math.inf, math.inf, math.inf)
+
+    for ext in exts:
+        _sort(ext)
+        if intersect(_intersect,ext):
+            _intersect = (
+                max(_intersect[0], ext[0]),
+                max(_intersect[1], ext[1]),
+                min(_intersect[2], ext[2]),
+                min(_intersect[3], ext[3]),
+            )
+        else:
+            return
+    return _intersect
 
 
 def center(e: gws.Extent) -> gws.Point:
