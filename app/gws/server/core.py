@@ -11,13 +11,13 @@ class SpoolConfig(gws.Config):
     enabled: bool = True
     """The module is enabled."""
     threads: int = 0
-    """Number of threads for this module."""
+    """Number of threads for this module. (deprecated: 8.0)"""
     workers: int = 4
     """Number of processes for this module."""
     jobFrequency: gws.Duration = '3'
     """Background jobs checking frequency."""
     timeout: gws.Duration = '300'
-    """Job timeout."""
+    """Job timeout. (added: 8.1)"""
 
 
 class WebConfig(gws.Config):
@@ -26,13 +26,13 @@ class WebConfig(gws.Config):
     enabled: bool = True
     """The module is enabled."""
     threads: int = 0
-    """Number of threads for this module."""
+    """Number of threads for this module. (deprecated: 8.0)"""
     workers: int = 4
     """Number of processes for this module."""
     maxRequestLength: int = 10
     """Max request length in megabytes."""
     timeout: gws.Duration = '60'
-    """Web server timeout."""
+    """Web server timeout. (added: 8.1)"""
 
 
 class MapproxyConfig(gws.Config):
@@ -41,7 +41,7 @@ class MapproxyConfig(gws.Config):
     enabled: bool = True
     """The module is enabled."""
     threads: int = 0
-    """Number of threads for this module."""
+    """Number of threads for this module. (deprecated: 8.0)"""
     workers: int = 4
     """Number of processes for this module."""
     host: str = 'localhost'
@@ -62,12 +62,26 @@ class MonitorConfig(gws.Config):
 
 
 class QgisConfig(gws.Config):
-    """QGIS server config"""
+    """External QGIS server configuration."""
 
     host: str = 'qgis'
     """Host where the qgis server runs."""
     port: int = 80
     """Port number."""
+    """max concurrent requests to this server"""
+
+    debug: int = 0
+    """QGIS_DEBUG (env. variable) (deprecated: 8.0)"""
+    serverLogLevel: int = 2
+    """QGIS_SERVER_LOG_LEVEL (env. variable) (deprecated: 8.0)"""
+    serverCacheSize: int = 10000000
+    """QGIS_SERVER_CACHE_SIZE (env. variable) (deprecated: 8.0)"""
+    maxCacheLayers: int = 4000
+    """MAX_CACHE_LAYERS (env. variable) (deprecated: 8.0)"""
+    searchPathsForSVG: Optional[list[gws.DirPath]]
+    """searchPathsForSVG (ini setting) (deprecated: 8.0)"""
+    legend: Optional[dict]
+    """default legend settings (deprecated: 8.0)"""
 
 
 class LogConfig(gws.Config):
@@ -101,6 +115,6 @@ class Config(gws.Config):
     autoRun: str = ''
     """Shell command to run before server start."""
     timeout: gws.Duration = '60'
-    """Server timeout."""
+    """Server timeout. (deprecated: 8.1)"""
     timeZone: str = 'UTC'
     """Timezone for this server."""

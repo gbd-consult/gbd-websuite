@@ -15,14 +15,4 @@
 | `access`{.configref_required}          | erforderliche Eigenschaft               | `"test" (required)`                                                      |
 | `hello`{.configref_literal}            | literaler Wert                          | `"hello"`                                                                |
 
-**Konfiguration**
-
-Das primäre Konfigurationsobjekt ist [](gws.base.application.core.Config).
-
-**Konfigurationsobjekte**
-
-%toc
-/admin-de/reference/*
-%end
-
 %include ../../../app/__build/configref.de.html

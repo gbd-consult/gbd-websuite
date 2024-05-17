@@ -35,19 +35,19 @@ class AuthorizationConfig(gws.Config):
 
 class Config(gws.Config):
     capsCacheMaxAge: gws.Duration = '1d'
-    """max cache age for capabilities documents"""
+    """Max cache age for capabilities documents."""
     forceCrs: Optional[gws.CrsName]
-    """use this CRS for requests"""
+    """Use this CRS for requests."""
     alwaysXY: bool = False
-    """force XY orientation for lat/lon projections"""
+    """Force XY orientation for lat/lon projections."""
     maxRequests: int = 0
-    """max concurrent requests to this source"""
+    """Max concurrent requests to this source."""
     operations: Optional[list[OperationConfig]]
-    """override operations reported in capabilities"""
+    """Override operations reported in capabilities."""
     authorization: Optional[AuthorizationConfig]
-    """service authorization"""
+    """Service authorization. (added: 8.1)"""
     url: gws.Url
-    """service url"""
+    """Service url."""
 
 
 class Object(gws.OwsProvider):

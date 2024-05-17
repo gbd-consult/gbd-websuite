@@ -1,5 +1,7 @@
 """Generate configuration references."""
 
+import re
+
 from . import base
 
 STRINGS = {}
@@ -14,6 +16,11 @@ STRINGS['en'] = {
     'tag_struct': 'struct',
     'tag_enum': 'enumeration',
     'tag_type': 'type',
+
+    'label_added': 'added',
+    'label_deprecated': 'deprecated',
+    'label_changed': 'changed',
+
 }
 
 STRINGS['de'] = {
@@ -26,9 +33,15 @@ STRINGS['de'] = {
     'tag_struct': 'struct',
     'tag_enum': 'enumeration',
     'tag_type': 'type',
+
+    'label_added': 'neu',
+    'label_deprecated': 'veraltet',
+    'label_changed': 'geändert',
 }
 
-LIST_FORMAT = '**[** {} **]**'
+LIST_FORMAT = '**[**{}**]**'
+
+LABELS = 'added|deprecated|changed'
 
 
 def create(gen: base.Generator, lang: str):
@@ -60,7 +73,7 @@ class _Creator:
             done.add(tid)
             self.process(tid)
 
-        res = self.html.pop((0, start_tid))
+        res = self.html.pop(start_tid.lower())
         res += nl(v for _, v in sorted(self.html.items()))
         return res
 
@@ -68,17 +81,17 @@ class _Creator:
         typ = self.gen.types[tid]
 
         if typ.c == base.C.CLASS:
-            self.html[0, tid] = nl(self.process_class(tid))
+            self.html[tid.lower()] = nl(self.process_class(tid))
 
         if typ.c == base.C.ENUM:
-            self.html[1, tid] = nl(self.process_enum(tid))
+            self.html[tid.lower()] = nl(self.process_enum(tid))
 
         if typ.c == base.C.TYPE:
             target = self.gen.types[typ.tTarget]
             if target.c == base.C.VARIANT:
-                self.html[2, tid] = nl(self.process_variant(tid))
+                self.html[tid.lower()] = nl(self.process_variant(tid))
             else:
-                self.html[3, tid] = nl(self.process_type(tid))
+                self.html[tid.lower()] = nl(self.process_type(tid))
 
         if typ.c == base.C.LIST:
             self.process(typ.tItem)
@@ -173,28 +186,44 @@ class _Creator:
             return ''
         return as_literal(v)
 
-    def raw_docstring(self, tid, enum_value=None):
+    def docstring(self, tid, enum_value=None):
+        missing_translation = ''
+
+        # get the original (spec) docstring
+        typ = self.gen.types[tid]
+        spec_text = first_line(typ.enumDocs.get(enum_value) if enum_value else typ.doc)
+
+        # try the translated (from strings) docstring
         key = tid
         if enum_value:
             key += '.' + enum_value
-        s = self.gen.strings[self.lang].get(key)
-        if s:
-            return s
-        if self.lang != 'en':
-            base.log.debug(f'missing {self.lang} translation for {key!r}')
-            s = self.gen.strings['en'].get(key)
-            return f'{s}  `{key}`{{.configref_missing_translation}}'
-        typ = self.gen.types[tid]
-        if enum_value:
-            return typ.enumDocs[enum_value]
-        return typ.doc
+        local_text = self.gen.strings[self.lang].get(key)
 
-    def docstring(self, tid, enum_value=None):
-        ds = self.raw_docstring(tid, enum_value)
-        ds = ds.strip().split('\n')[0]
-        # ds = escape(ds)
-        # ds = re.sub(r'`+(.+?)`+', r'`\1`', ds)
-        return ds
+        if not local_text and self.lang != 'en':
+            # translation missing: use the english docstring and warn
+            base.log.debug(f'missing {self.lang} translation for {key!r}')
+            missing_translation = f'`{key}`{{.configref_missing_translation}}'
+            local_text = self.gen.strings['en'].get(key)
+
+        local_text = first_line(local_text) or spec_text
+
+        # process a label, like "foobar (added: 8.1)"
+        # it might be missing in a translation, but present in the original (spec) docstring
+        text, label = self.extract_label(local_text)
+        if not label and spec_text != local_text:
+            _, label = self.extract_label(spec_text)
+
+        return text + label + missing_translation
+
+    def extract_label(self, text):
+        m = re.match(fr'(.+?)\(({LABELS}):\s*([\d.]+)\)$', text)
+        if not m:
+            return text, ''
+        kind = m.group(2).strip()
+        name = self.strings[f'label_{kind}']
+        version = m.group(3)
+        label = f'`{name}: {version}`{{.configref_label_{kind}}}'
+        return m.group(1).strip(), label
 
 
 def as_literal(s):
@@ -231,6 +260,10 @@ def subhead(category, text):
 
 def link(target, text):
     return f'[{text}](../{target})'
+
+
+def first_line(s):
+    return (s or '').strip().split('\n')[0].strip()
 
 
 def table(heads, rows):

@@ -88,7 +88,7 @@ Authentifizierungsmethode:
     }
 }
 ```
-%reference_de 'gws.plugin.auth_method.basic.core.Config'
+%reference_de 'gws.plugin.auth_method.basic.Config'
 
 
 ### Provider
