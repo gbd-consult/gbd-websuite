@@ -151,12 +151,16 @@ function addRefMarks() {
 
 let searchTimer = 0;
 
+
+function searchSave(text) {
+    sessionStorage.setItem('savedSearch', text);
+}
+
 function searchInit() {
     $('#sidebar-search input').addEventListener('input', searchRun);
     $('#sidebar-search button').addEventListener('click', searchReset);
 
-    let params = new URLSearchParams('?' + document.location.href.split('?')[1]);
-    let val = params && params.get('search');
+    let val = sessionStorage.getItem('savedSearch');
     if (val) {
         $('#sidebar-search input').value = val;
         searchExec(val);
@@ -171,15 +175,20 @@ function searchRun(evt) {
 function searchReset() {
     clearTimeout(searchTimer);
     $('#sidebar-search input').value = '';
+    searchSave('');
     $('body').classList.remove('with-search-found', 'with-search-not-found');
     $('#sidebar-search-results').innerHTML = '';
 }
 
 function searchExec(val) {
-    if (val.trim().length === 0) {
+    val = val.trim();
+
+    if (val.length === 0) {
         searchReset();
         return;
     }
+
+    searchSave(val);
 
     let secs = searchFindSections(val);
     let html = '';
@@ -188,7 +197,7 @@ function searchExec(val) {
         $('body').classList.add('with-search-found');
         $('body').classList.remove('with-search-not-found');
         val = encodeURIComponent(val);
-        html = '<ul>' + secs.map(sec => `<li><a href="${sec.u}?search=${val}">${sec.h}</a></li>`).join('') + '</ul>';
+        html = '<ul>' + secs.map(sec => `<li><a href="${sec.u}">${sec.h}</a></li>`).join('') + '</ul>';
     } else {
         $('body').classList.remove('with-search-found');
         $('body').classList.add('with-search-not-found');

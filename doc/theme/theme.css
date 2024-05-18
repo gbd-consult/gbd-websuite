@@ -88,7 +88,7 @@ body.mobile-sidebar #sidebar-toggle {
     }
 }
 
-code, pre, .highlighttitle {
+code, pre {
     font-family: Menlo, Consolas, monospace;
     font-size: 0.9rem;
 }
@@ -130,11 +130,13 @@ div.highlight {
 }
 
 p.highlighttitle {
-    margin: 1em 0 0 0;
-    display: inline-block;
-    font-weight: 600;
-    padding: 0.2em 0.8em;
     background-color: #ffd54f;
+    display: inline-block;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 1em 0 0 0;
+    padding: 0.2em 0.8em;
 }
 
 p.highlighttitle + div.highlight {
