@@ -23,7 +23,7 @@ gws.ext.new.authMethod('token')
 
 
 class Config(gws.base.auth.method.Config):
-    """HTTP-token authorization options (added: 8.1)"""
+    """HTTP-token authorization options (added in 8.1)"""
 
     header: str
     """HTTP header name"""

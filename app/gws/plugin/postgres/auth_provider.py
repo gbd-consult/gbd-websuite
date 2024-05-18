@@ -14,7 +14,7 @@ gws.ext.new.authProvider('postgres')
 
 
 class Config(gws.base.auth.sql_provider.Config):
-    """Postgres authorization provider (added: 8.1)"""
+    """Postgres authorization provider (added in 8.1)"""
     pass
 
 

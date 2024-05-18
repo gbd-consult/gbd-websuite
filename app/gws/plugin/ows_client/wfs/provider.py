@@ -33,7 +33,7 @@ from . import caps
 
 class Config(gws.base.ows.client.provider.Config):
     withBboxCrs: Optional[bool]
-    """Add CRS to bbox request parameters. (added: 8.1)"""
+    """Add CRS to bbox request parameters. (added in 8.1)"""
 
 
 class Object(gws.base.ows.client.provider.Object):

@@ -423,7 +423,7 @@ class ConfigWithAccess(Config):
     """Basic config with permissions."""
 
     access: Optional[AclStr]
-    """Permission to read or use the object. (deprecated: 8.0)"""
+    """Permission to read or use the object. (deprecated in 8.0)"""
     permissions: Optional[PermissionsConfig]
     """Access permissions."""
 ################################################################################

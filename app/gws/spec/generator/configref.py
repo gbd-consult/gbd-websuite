@@ -207,7 +207,7 @@ class _Creator:
 
         local_text = first_line(local_text) or spec_text
 
-        # process a label, like "foobar (added: 8.1)"
+        # process a label, like "foobar (added in 8.1)"
         # it might be missing in a translation, but present in the original (spec) docstring
         text, label = self.extract_label(local_text)
         if not label and spec_text != local_text:
@@ -216,7 +216,7 @@ class _Creator:
         return text + label + missing_translation
 
     def extract_label(self, text):
-        m = re.match(fr'(.+?)\(({LABELS}):\s*([\d.]+)\)$', text)
+        m = re.match(fr'(.+?)\(({LABELS}) in (\d[\d.]+)\)$', text)
         if not m:
             return text, ''
         kind = m.group(2).strip()
