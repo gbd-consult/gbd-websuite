@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Iterable
 
 import re
 
@@ -62,7 +62,7 @@ def layer_matches(sl: gws.SourceLayer, f: LayerFilter) -> bool:
     return True
 
 
-def check_layers(layers: list[gws.SourceLayer], revert: bool = False) -> list[gws.SourceLayer]:
+def check_layers(layers: Iterable[gws.SourceLayer], revert: bool = False) -> list[gws.SourceLayer]:
     """Insert our properties in the source layer tree.
 
     Also remove empty layers.

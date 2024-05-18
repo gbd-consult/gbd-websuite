@@ -70,8 +70,8 @@ def _parse_operation(el: gws.XmlElement) -> gws.OwsOperation:
     op.url, op.params = gws.lib.net.extract_params(u)
 
     op.formats = el.textlist('Format')
-    if 'outputFormat' in op.allowedParameters:
-        op.formats.extend(op.allowedParameters['outputFormat'])
+    if 'OUTPUTFORMAT' in op.allowedParameters:
+        op.formats.extend(op.allowedParameters['OUTPUTFORMAT'])
 
     return op
 

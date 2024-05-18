@@ -190,6 +190,12 @@ def first(it):
         return x
 
 
+def first_not_none(*args):
+    for a in args:
+        if a is not None:
+            return a
+
+
 def merge(*args, **kwargs) -> Union[dict, 'Data']:
     """Create a new dict/Data object by merging values from dicts/Datas or kwargs.
     Latter vales overwrite former ones unless None.

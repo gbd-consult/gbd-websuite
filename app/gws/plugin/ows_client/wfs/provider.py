@@ -1,4 +1,16 @@
-"""WFS provider."""
+"""WFS provider.
+
+References:
+
+- wfs 1.0.0: http://portal.opengeospatial.org/files/?artifact_id=7176 Sec 13.7.3
+- wfs 1.1.0: http://portal.opengeospatial.org/files/?artifact_id=8339 Sec 14.7.3
+- wfs 2.0.0: http://docs.opengeospatial.org/is/09-025r2/09-025r2.html Sec 11.1.3
+
+See also:
+
+- https://docs.geoserver.org/latest/en/user/services/wfs/reference.html
+
+"""
 
 from typing import Optional, cast
 
@@ -15,25 +27,19 @@ import gws.gis.source
 from . import caps
 
 """
-    References
-
-    wfs 1.0.0: http://portal.opengeospatial.org/files/?artifact_id=7176 Sec 13.7.3
-    wfs 1.1.0: http://portal.opengeospatial.org/files/?artifact_id=8339 Sec 14.7.3
-    wfs 2.0.0: http://docs.opengeospatial.org/is/09-025r2/09-025r2.html Sec 11.1.3
-
-    see also https://docs.geoserver.org/latest/en/user/services/wfs/reference.html
 
 """
 
 
 class Config(gws.base.ows.client.provider.Config):
-    extendedBbox: Optional[bool]
-    """whether to use extended bbox format (with CRS)"""
+    withBboxCrs: Optional[bool]
+    """Add CRS to bbox request parameters. (added: 8.1)"""
 
 
 class Object(gws.base.ows.client.provider.Object):
     protocol = gws.OwsProtocol.WFS
-    extendedBbox: bool
+    withBboxCrs: bool
+    isWfs2: bool
 
     def configure(self):
         cc = caps.parse(self.get_capabilities())
@@ -41,15 +47,14 @@ class Object(gws.base.ows.client.provider.Object):
         self.metadata = cc.metadata
         self.sourceLayers = cc.sourceLayers
         self.version = cc.version
+        self.isWfs2 = self.version >= '2'
 
-        self.operations.extend(cc.operations)
+        self.configure_operations(cc.operations)
 
-        # use extended bbox (with crs) for wfs 2 by default
-        # see als comments in qgis/qgswfsfeatureiterator.cpp buildURL
-        p = self.cfg('extendedBbox')
-        if p is None:
-            p = self.version >= '2'
-        self.extendedBbox = p
+        # use bbox with crs for wfs 2 by default
+        # see also comments in qgis/qgswfsfeatureiterator.cpp buildURL
+        p = self.cfg('withBboxCrs')
+        self.withBboxCrs = self.isWfs2 if p is None else p
 
     DEFAULT_GET_FEATURE_LIMIT = 100
 
@@ -84,15 +89,15 @@ class Object(gws.base.ows.client.provider.Object):
             bbox = gws.gis.extent.swap_xy(bbox)
         bbox = ','.join(str(k) for k in bbox)
 
-        srs = request_crs.to_string(gws.CrsFormat.urn)
-        if self.extendedBbox:
+        srs = request_crs.urn
+        if self.withBboxCrs:
             bbox += ',' + srs
 
         params = {
             'BBOX': bbox,
-            'COUNT' if self.version >= '2' else 'MAXFEATURES': search.limit or self.DEFAULT_GET_FEATURE_LIMIT,
+            'COUNT' if self.isWfs2 else 'MAXFEATURES': search.limit or self.DEFAULT_GET_FEATURE_LIMIT,
             'SRSNAME': srs,
-            'TYPENAMES' if self.version >= '2' else 'TYPENAME': [sl.name for sl in source_layers],
+            'TYPENAMES' if self.isWfs2 else 'TYPENAME': [sl.name for sl in source_layers],
             'VERSION': self.version,
         }
 
@@ -103,27 +108,30 @@ class Object(gws.base.ows.client.provider.Object):
         if not op:
             return []
 
+        if op.preferredFormat:
+            params.setdefault('OUTPUTFORMAT', op.preferredFormat)
+
         args = self.prepare_operation(op, params=params)
         text = gws.base.ows.client.request.get_text(args)
 
-        fdata = gws.base.ows.client.featureinfo.parse(text, default_crs=request_crs, always_xy=self.alwaysXY)
+        records = gws.base.ows.client.featureinfo.parse(text, default_crs=request_crs, always_xy=self.alwaysXY)
 
-        if fdata is None:
+        if records is None:
             gws.log.debug(f'get_features: NOT_PARSED params={params!r}')
             return []
 
-        gws.log.debug(f'get_features: FOUND={len(fdata)} params={params!r}')
+        gws.log.debug(f'get_features: FOUND={len(records)} params={params!r}')
 
-        for fd in fdata:
-            if fd.shape:
-                fd.shape = fd.shape.transformed_to(bounds.crs)
+        for rec in records:
+            if rec.shape:
+                rec.shape = rec.shape.transformed_to(bounds.crs)
 
         if not search_shape:
-            return fdata
+            return records
 
         filtered = [
-            fd for fd in fdata
-            if not fd.shape or fd.shape.intersects(search_shape)
+            rec for rec in records
+            if not rec.shape or rec.shape.intersects(search_shape)
         ]
 
         gws.log.debug(f'get_features: FILTERED={len(filtered)}')

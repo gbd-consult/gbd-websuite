@@ -8,16 +8,19 @@ import gws.lib.xmlx as xmlx
 
 def parse(text: str, default_crs: gws.Crs = None, always_xy=False) -> list[gws.FeatureRecord]:
     gws.debug.time_start('featureinfo:parse')
-    res = _parse(text, default_crs, always_xy)
+    res = _parse(text.strip(), default_crs, always_xy)
     gws.debug.time_end()
     return res
 
 
 def _parse(text, default_crs, always_xy):
-    try:
-        xml_el = xmlx.from_string(text, case_insensitive=True, normalize_namespaces=True)
-    except xmlx.Error:
-        xml_el = None
+    xml_el = None
+
+    if text.startswith('<'):
+        try:
+            xml_el = xmlx.from_string(text, case_insensitive=True, normalize_namespaces=True)
+        except xmlx.Error as exc:
+            gws.log.error(f'XML parse error: {exc}')
 
     if xml_el:
         fn = _XML_FORMATS.get(xml_el.name)

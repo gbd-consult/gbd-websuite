@@ -15,25 +15,37 @@ _IMAGE_VERBS = {
     gws.OwsVerb.GetTile,
 }
 
-_PREFER_IMAGE_MIME = {gws.lib.mime.PNG}
-
-_PREFER_XML_MIME = {gws.lib.mime.GML3, gws.lib.mime.GML, gws.lib.mime.XML}
+_PREFER_IMAGE_MIME = [gws.lib.mime.PNG, gws.lib.mime.JPEG]
+_PREFER_XML_MIME = [gws.lib.mime.GML3, gws.lib.mime.GML, gws.lib.mime.XML]
 
 
 class OperationConfig(gws.Config):
-    formats: Optional[list[str]]
-    postUrl: Optional[gws.Url]
-    url: gws.Url
+    """Custom OWS operation."""
     verb: gws.OwsVerb
+    """OWS verb."""
+    formats: Optional[list[str]]
+    """Supported formats."""
+    params: Optional[dict]
+    """Operation parameters (added: 8.1)."""
+    postUrl: Optional[gws.Url]
+    """URL for POST requests."""
+    url: Optional[gws.Url]
+    """URL for GET requests."""
 
 
 class AuthorizationConfig(gws.Config):
+    """Service authorization (added: 8.1)."""
     type: str
+    """Authorization type (only "basic" is supported)."""
     username: str = ''
+    """User name."""
     password: str = ''
+    """Password."""
 
 
 class Config(gws.Config):
+    """OWS provider configuration."""
+
     capsCacheMaxAge: gws.Duration = '1d'
     """Max cache age for capabilities documents."""
     forceCrs: Optional[gws.CrsName]
@@ -64,37 +76,49 @@ class Object(gws.OwsProvider):
         self.authorization = gws.OwsAuthorization(p) if p else None
 
     def configure_operations(self, operations_from_caps):
-        # add operations from the config, if any,
-        # then add operations from the caps
-        # so that configured ops take precedence
-
-        self.operations = []
-
-        for cfg in self.cfg('operations', default=[]):
-            self.operations.append(gws.OwsOperation(
-                formats=cfg.get('formats', []),
-                params={},
-                postUrl=cfg.get('postUrl'),
-                url=cfg.get('url'),
-                verb=cfg.get('verb'),
-            ))
-
-        verbs = set(op.verb for op in self.operations)
+        d = {}
 
         for op in operations_from_caps:
-            if op.verb not in verbs:
-                self.operations.append(op)
+            d[op.verb] = op
+
+        for cfg in (self.cfg('operations') or []):
+            # add an operation from the config, borrowing missing attributes from a caps op
+            verb = cfg.get('verb')
+            caps_op = d.get(verb, {})
+            d[verb] = gws.OwsOperation(
+                verb=verb,
+                formats=gws.u.first_not_none(cfg.get('formats'), caps_op.get('formats'), []),
+                params=gws.u.first_not_none(cfg.get('params'), caps_op.get('params'), {}),
+                postUrl=gws.u.first_not_none(cfg.get('postUrl'), caps_op.get('postUrl'), ''),
+                url=gws.u.first_not_none(cfg.get('url'), caps_op.get('url'), '')
+            )
+
+        self.operations = list(d.values())
 
         for op in self.operations:
             op.preferredFormat = self._preferred_format(op)
 
     def _preferred_format(self, op: gws.OwsOperation) -> Optional[str]:
-        mime = _PREFER_IMAGE_MIME if op.verb in _IMAGE_VERBS else _PREFER_XML_MIME
+        prefer_fmts = _PREFER_IMAGE_MIME if op.verb in _IMAGE_VERBS else _PREFER_XML_MIME
+
+        if not op.formats:
+            return prefer_fmts[0]
+
+        # select the "best" (leftmost in the preferred list) format
+
+        best_pos = 999
+        best_fmt = ''
+
         for fmt in op.formats:
-            if gws.lib.mime.get(fmt) in mime:
-                return fmt
-        for fmt in op.formats:
-            return fmt
+            canon_fmt = gws.lib.mime.get(fmt)
+            if not canon_fmt or canon_fmt not in prefer_fmts:
+                continue
+            pos = prefer_fmts.index(canon_fmt)
+            if pos < best_pos:
+                best_pos = pos
+                best_fmt = fmt
+
+        return best_fmt or op.formats[0]
 
     def get_operation(self, verb, method=None):
         for op in self.operations:
@@ -128,10 +152,6 @@ class Object(gws.OwsProvider):
                 if name in allowed and val not in allowed[name]:
                     raise gws.Error(f'invalid parameter value {val!r} for {name!r}')
                 args.params[name] = val
-
-        for name, vals in allowed.items():
-            if name not in args.params:
-                args.params[name] = vals[0]
 
         if self.authorization and self.authorization.type == 'basic':
             b = base64.encodebytes(
