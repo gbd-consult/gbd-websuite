@@ -26,7 +26,7 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.image.Object):
-    provider: provider.Object
+    serviceProvider: provider.Object
     sqlFilters: dict
     imageLayers: list[gws.SourceLayer]
     searchLayers: list[gws.SourceLayer]
@@ -36,8 +36,7 @@ class Object(gws.base.layer.image.Object):
         self.configure_layer()
 
     def configure_provider(self):
-        self.provider = provider.get_for(self)
-        return True
+        return gws.config.util.configure_service_provider_for(self, provider.Object)
 
     def configure_sources(self):
         if super().configure_sources():
@@ -49,7 +48,7 @@ class Object(gws.base.layer.image.Object):
     def configure_source_layers(self):
         return gws.config.util.configure_source_layers_for(
             self,
-            self.provider.sourceLayers,
+            self.serviceProvider.sourceLayers,
             is_image=True,
             is_visible=True
         )
@@ -62,15 +61,15 @@ class Object(gws.base.layer.image.Object):
             gws.ext.object.model,
             cfg,
             type='qgis',
-            _defaultProvider=self.provider,
+            _defaultProvider=self.serviceProvider,
             _defaultSourceLayers=self.searchLayers
         )
 
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        if self.provider.bounds:
-            self.bounds = gws.gis.bounds.transform(self.provider.bounds, self.mapCrs)
+        if self.serviceProvider.bounds:
+            self.bounds = gws.gis.bounds.transform(self.serviceProvider.bounds, self.mapCrs)
             return True
         blist = gws.u.compact(sl.wgsBounds for sl in self.sourceLayers)
         if blist:
@@ -104,7 +103,7 @@ class Object(gws.base.layer.image.Object):
             gws.ext.object.legend,
             self.cfg('legend'),
             type='qgis',
-            _defaultProvider=self.provider,
+            _defaultProvider=self.serviceProvider,
             _defaultSourceLayers=self.imageLayers,
         )
         return True
@@ -131,7 +130,7 @@ class Object(gws.base.layer.image.Object):
             gws.ext.object.finder,
             cfg,
             type='qgis',
-            _defaultProvider=self.provider,
+            _defaultProvider=self.serviceProvider,
             _defaultSourceLayers=self.searchLayers
         )
 
@@ -164,7 +163,7 @@ class Object(gws.base.layer.image.Object):
             params['FILTER'] = ';'.join(filters)
 
         def get_box(bounds, width, height):
-            return self.provider.get_map(self, bounds, width, height, params)
+            return self.serviceProvider.get_map(self, bounds, width, height, params)
 
         content = gws.base.layer.util.generic_render_box(self, lri, get_box)
         return gws.LayerRenderOutput(content=content)

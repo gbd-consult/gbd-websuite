@@ -368,7 +368,7 @@ class Object(gws.base.action.Object):
     storage: Optional[gws.base.storage.Object]
 
     def configure(self):
-        gws.config.util.configure_database_provider_for(self, ext_type='postgres', required=True)
+        gws.config.util.configure_database_provider_for(self, ext_type='postgres')
         self.ix = self.root.create_shared(
             index.Object,
             _defaultProvider=self.dbProvider,
@@ -400,7 +400,7 @@ class Object(gws.base.action.Object):
 
         self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer'))
         if self.eigentuemer.logTableName:
-            self.eigentuemer.logTable = self.ix.provider.table(self.eigentuemer.logTableName)
+            self.eigentuemer.logTable = self.ix.dbProvider.table(self.eigentuemer.logTableName)
 
         self.storage = self.create_child_if_configured(
             gws.base.storage.Object, self.cfg('storage'), categoryName='Alkis')
@@ -826,7 +826,7 @@ class Object(gws.base.action.Object):
             return
 
         if self._eigentuemerLogTable is None:
-            schema, name = self.ix.provider.split_table_name(self.eigentuemer.logTable)
+            schema, name = self.ix.dbProvider.split_table_name(self.eigentuemer.logTable)
             self._eigentuemerLogTable = sa.Table(
                 name,
                 self.ix.saMeta,

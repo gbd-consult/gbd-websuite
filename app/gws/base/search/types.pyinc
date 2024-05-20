@@ -98,8 +98,6 @@ class Finder(Node):
 
     templates: list['Template']
     models: list['Model']
-
-    provider: 'Node'
     sourceLayers: list['SourceLayer']
 
     tolerance: 'UomValue'

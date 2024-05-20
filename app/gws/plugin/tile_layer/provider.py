@@ -41,9 +41,3 @@ class Object(gws.Node):
         self.grid.resolutions = (
                 p.resolutions or
                 gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize))
-
-
-##
-
-def get_for(obj: gws.Node) -> Object:
-    return cast(Object, gws.config.util.get_provider(Object, obj))

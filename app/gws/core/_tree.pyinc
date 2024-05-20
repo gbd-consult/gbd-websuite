@@ -17,12 +17,12 @@ class Object:
 
 from .core import tree_impl
 
-tree_impl.Access = Access
-tree_impl.Error = Error
-tree_impl.ConfigurationError = ConfigurationError
-tree_impl.Data = Data
-tree_impl.Props = Props
-tree_impl.Object = Object
+setattr(tree_impl, 'Access', Access)
+setattr(tree_impl, 'Error', Error)
+setattr(tree_impl, 'ConfigurationError', ConfigurationError)
+setattr(tree_impl, 'Data', Data)
+setattr(tree_impl, 'Props', Props)
+setattr(tree_impl, 'Object', Object)
 
 Object.__repr__ = tree_impl.object_repr
 

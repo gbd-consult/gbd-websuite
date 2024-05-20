@@ -63,7 +63,7 @@ class Object(gws.base.auth.provider.Object):
         _ = atts.pop('password', '')
         roles = atts.pop('roles', [])
 
-        return gws.base.auth.user.init(
+        return gws.base.auth.user.from_args(
             provider=self,
             displayName=atts.pop('name', login),
             localUid=login,

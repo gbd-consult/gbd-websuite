@@ -103,7 +103,7 @@ class Object(gws.AuthManager):
         return cast(gws.AuthMfa, self.root.get(uid))
 
     def serialize_user(self, user):
-        return gws.lib.jsonx.to_string([user.provider.uid, user.provider.serialize_user(user)])
+        return gws.lib.jsonx.to_string([user.authProvider.uid, user.authProvider.serialize_user(user)])
 
     def unserialize_user(self, data):
         provider_uid, ds = gws.lib.jsonx.from_string(data)

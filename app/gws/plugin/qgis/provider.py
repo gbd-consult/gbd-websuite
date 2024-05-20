@@ -413,10 +413,3 @@ class Object(gws.OwsProvider):
 
         p = {k: v for k, v in params.items() if k.lower() not in self._std_ows_params}
         return gws.lib.net.add_params(url, p)
-
-
-##
-
-
-def get_for(obj: gws.Node) -> Object:
-    return cast(Object, gws.config.util.get_provider(Object, obj))

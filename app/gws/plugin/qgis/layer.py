@@ -17,15 +17,15 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
 
 
 class Object(gws.base.layer.group.Object):
-    provider: provider.Object
+    serviceProvider: provider.Object
 
     def configure_group(self):
-        self.provider = provider.get_for(self)
+        gws.config.util.configure_service_provider_for(self, provider.Object)
 
         configs = gws.base.layer.tree.layer_configs_from_layer(
             self,
-            self.provider.sourceLayers,
-            self.provider.leaf_config,
+            self.serviceProvider.sourceLayers,
+            self.serviceProvider.leaf_config,
         )
 
         self.configure_group_layers(configs)
@@ -33,5 +33,5 @@ class Object(gws.base.layer.group.Object):
     def configure_metadata(self):
         if super().configure_metadata():
             return True
-        self.metadata = self.provider.metadata
+        self.metadata = self.serviceProvider.metadata
         return True

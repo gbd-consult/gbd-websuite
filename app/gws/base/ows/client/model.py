@@ -12,7 +12,7 @@ import gws.gis.source
 class Object(gws.base.model.dynamic_model.Object):
     """Generic OWS Model."""
 
-    provider: gws.OwsProvider
+    serviceProvider: gws.OwsProvider
     sourceLayers: list[gws.SourceLayer]
 
     def configure(self):
@@ -25,14 +25,14 @@ class Object(gws.base.model.dynamic_model.Object):
         self.configure_source_layers()
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers, is_queryable=True)
+        return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers, is_queryable=True)
 
     def find_features(self, search, mc):
         if not self.sourceLayers:
             return []
         return [
             self.feature_from_record(r, mc)
-            for r in self.provider.get_features(search, self.sourceLayers)
+            for r in self.serviceProvider.get_features(search, self.sourceLayers)
         ]
 
     def props(self, user):

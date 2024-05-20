@@ -3,6 +3,7 @@
 from typing import Optional
 
 import gws.base.model
+import gws.config.util
 import gws.gis.source
 
 from . import provider
@@ -20,7 +21,7 @@ class Config(gws.base.model.Config):
 class Object(gws.base.model.dynamic_model.Object):
     """GeoJson Model."""
 
-    provider: provider.Object
+    serviceProvider: provider.Object
 
     def configure(self):
         self.uidName = 'id'
@@ -28,12 +29,10 @@ class Object(gws.base.model.dynamic_model.Object):
         self.configure_model()
 
     def configure_provider(self):
-        self.provider = provider.get_for(self)
-
-    ##
+        return gws.config.util.configure_service_provider_for(self, provider.Object)
 
     def find_features(self, search, user, **kwargs):
         return [
             self.feature_from_record(rec, user)
-            for rec in self.provider.get_records()
+            for rec in self.serviceProvider.get_records()
         ]

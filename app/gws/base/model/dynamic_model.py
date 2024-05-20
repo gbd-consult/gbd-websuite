@@ -12,7 +12,7 @@ class Config(core.Config):
     pass
 
 
-class Object(core.Object, gws.Model):
+class Object(core.Object):
     def configure(self):
         self.uidName = 'uid'
         self.geometryName = 'geometry'

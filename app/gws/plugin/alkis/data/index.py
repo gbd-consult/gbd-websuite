@@ -79,7 +79,7 @@ class Object(gws.Node):
         return gws.u.omit(vars(self), 'saMeta')
 
     def configure(self):
-        gws.config.util.configure_database_provider_for(self, ext_type='postgres', required=True)
+        gws.config.util.configure_database_provider_for(self, ext_type='postgres')
         self.crs = gws.gis.crs.get(self.cfg('crs'))
         self.schema = self.cfg('schema', default='public')
         self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))

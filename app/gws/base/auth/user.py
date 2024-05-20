@@ -14,6 +14,8 @@ class User(gws.User):
     isGuest = False
 
     def __init__(self, provider, roles):
+        super().__init__()
+
         self.attributes = {}
         self.authToken = ''
         self.displayName = ''
@@ -21,7 +23,7 @@ class User(gws.User):
         self.loginName = ''
         self.uid = ''
 
-        self.provider = provider
+        self.authProvider = provider
         self.roles = roles
 
     def props(self, user):
@@ -76,7 +78,7 @@ class User(gws.User):
 
     def require(self, uid=None, classref=None, access=None):
         access = access or gws.Access.read
-        obj = self.provider.root.get(uid, classref)
+        obj = self.authProvider.root.get(uid, classref)
         if not obj:
             raise gws.NotFoundError(f'required object {classref} {uid} not found')
         if not self.can(access, obj):
@@ -85,7 +87,7 @@ class User(gws.User):
 
     def acquire(self, uid=None, classref=None, access=None):
         access = access or gws.Access.read
-        obj = self.provider.root.get(uid, classref)
+        obj = self.authProvider.root.get(uid, classref)
         if obj and self.can(access, obj):
             return obj
 
@@ -131,7 +133,7 @@ def to_dict(usr) -> dict:
         displayName=usr.displayName,
         localUid=usr.localUid,
         loginName=usr.loginName,
-        providerUid=usr.provider.uid,
+        providerUid=usr.authProvider.uid,
         roles=list(usr.roles),
         uid=usr.uid,
     )
@@ -157,7 +159,7 @@ def from_dict(provider: gws.AuthProvider, d: dict) -> gws.User:
     return usr
 
 
-def init(provider: gws.AuthProvider, **kwargs) -> gws.User:
+def from_args(provider: gws.AuthProvider, **kwargs) -> gws.User:
     roles = set(kwargs.get('roles', []))
     roles.add(gws.c.ROLE_ALL)
 

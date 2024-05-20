@@ -29,7 +29,7 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.image.Object):
-    provider: provider.Object
+    serviceProvider: provider.Object
     sourceLayers: list[gws.SourceLayer]
     sourceCrs: gws.Crs
 
@@ -40,10 +40,7 @@ class Object(gws.base.layer.image.Object):
         self.configure_layer()
 
     def configure_provider(self):
-        self.provider = provider.get_for(self)
-        if not self.provider:
-            raise gws.Error(f'layer {self!r}: no provider found')
-        return True
+        return gws.config.util.configure_service_provider_for(self, provider.Object)
 
     def configure_sources(self):
         if super().configure_sources():
@@ -51,17 +48,17 @@ class Object(gws.base.layer.image.Object):
 
         self.configure_source_layers()
         if not self.sourceLayers:
-            raise gws.Error(f'layer {self!r}: no source layers found for {self.provider.url!r}')
+            raise gws.Error(f'layer {self!r}: no source layers found for {self.serviceProvider.url!r}')
 
         self.imageLayers = gws.gis.source.filter_layers(self.sourceLayers, is_image=True)
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)
 
-        self.sourceCrs = self.provider.forceCrs or gws.gis.crs.best_match(
+        self.sourceCrs = self.serviceProvider.forceCrs or gws.gis.crs.best_match(
             self.mapCrs,
             gws.gis.source.combined_crs_list(self.sourceLayers))
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
+        return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers)
 
     def configure_models(self):
         return gws.config.util.configure_models_for(self, with_default=True)
@@ -71,7 +68,7 @@ class Object(gws.base.layer.image.Object):
             gws.ext.object.model,
             cfg,
             type='wms',
-            _defaultProvider=self.provider,
+            _defaultProvider=self.serviceProvider,
             _defaultSourceLayers=self.sourceLayers
         )
 
@@ -129,7 +126,7 @@ class Object(gws.base.layer.image.Object):
             gws.ext.object.finder,
             cfg,
             type='wms',
-            _defaultProvider=self.provider,
+            _defaultProvider=self.serviceProvider,
             _defaultSourceLayers=self.searchLayers
         )
 
@@ -141,8 +138,8 @@ class Object(gws.base.layer.image.Object):
     def mapproxy_config(self, mc, options=None):
         # NB reversed: see the note in plugin/ows_client/wms/provider.py
         layers = reversed([sl.name for sl in self.imageLayers])
-        op = self.provider.get_operation(gws.OwsVerb.GetMap)
-        args = self.provider.prepare_operation(op)
+        op = self.serviceProvider.get_operation(gws.OwsVerb.GetMap)
+        args = self.serviceProvider.prepare_operation(op)
 
         req = gws.u.merge(
             args.params,
@@ -154,10 +151,10 @@ class Object(gws.base.layer.image.Object):
         src = gws.u.compact({
             'type': 'wms',
             'supported_srs': [self.sourceCrs.epsg],
-            'concurrent_requests': self.provider.maxRequests,
+            'concurrent_requests': self.serviceProvider.maxRequests,
             'req': req,
             'wms_opts': {
-                'version': self.provider.version,
+                'version': self.serviceProvider.version,
             }
         })
 

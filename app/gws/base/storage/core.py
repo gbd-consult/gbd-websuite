@@ -47,7 +47,7 @@ class Props(gws.Props):
 
 
 class Object(gws.Node):
-    provider: gws.StorageProvider
+    storageProvider: gws.StorageProvider
     categoryName: str
 
     def configure(self):
@@ -55,18 +55,9 @@ class Object(gws.Node):
         self.categoryName = self.cfg('categoryName')
 
     def configure_provider(self):
-        mgr = self.root.app.storageMgr
-
-        uid = self.cfg('providerUid')
-        if uid:
-            self.provider = mgr.provider(uid)
-            if not self.provider:
-                raise gws.Error(f'storage provider {uid!r} not found')
-            return True
-
-        self.provider = mgr.first_provider()
-        if not self.provider:
-            raise gws.Error(f'no storage providers configured')
+        self.storageProvider = self.root.app.storageMgr.find_provider(self.cfg('providerUid'))
+        if not self.storageProvider:
+            raise gws.Error(f'storage provider not found')
         return True
 
     def props(self, user):
@@ -76,7 +67,7 @@ class Object(gws.Node):
 
     def get_state_for(self, user):
         return State(
-            names=self.provider.list_names(self.categoryName) if user.can_read(self) else [],
+            names=self.storageProvider.list_names(self.categoryName) if user.can_read(self) else [],
             canRead=user.can_read(self),
             canWrite=user.can_write(self),
             canDelete=user.can_delete(self),
@@ -95,7 +86,7 @@ class Object(gws.Node):
         if p.verb == Verb.read:
             if not state.canRead or not p.entryName:
                 raise gws.ForbiddenError()
-            rec = self.provider.read(self.categoryName, p.entryName)
+            rec = self.storageProvider.read(self.categoryName, p.entryName)
             if rec:
                 data = gws.lib.jsonx.from_string(rec.data)
 
@@ -108,11 +99,11 @@ class Object(gws.Node):
                 raise gws.ForbiddenError()
 
             d = gws.lib.jsonx.to_string(p.entryData)
-            self.provider.write(self.categoryName, p.entryName, d, req.user.uid)
+            self.storageProvider.write(self.categoryName, p.entryName, d, req.user.uid)
 
         if p.verb == Verb.delete:
             if not state.canDelete or not p.entryName:
                 raise gws.ForbiddenError()
-            self.provider.delete(self.categoryName, p.entryName)
+            self.storageProvider.delete(self.categoryName, p.entryName)
 
         return Response(data=data, state=self.get_state_for(req.user))

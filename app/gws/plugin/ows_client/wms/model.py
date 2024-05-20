@@ -5,6 +5,7 @@ from typing import Optional
 import gws
 import gws.base.model
 import gws.base.ows.client
+import gws.config.util
 import gws.gis.source
 
 from . import provider
@@ -20,7 +21,7 @@ class Config(gws.base.model.Config):
 
 
 class Object(gws.base.ows.client.model.Object):
-    provider: provider.Object
+    serviceProvider: provider.Object
 
     def configure_provider(self):
-        self.provider = provider.get_for(self)
+        return gws.config.util.configure_service_provider_for(self, provider.Object)

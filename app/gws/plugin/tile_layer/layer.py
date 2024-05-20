@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.layer
+import gws.config.util
 import gws.gis.bounds
 import gws.gis.crs
 import gws.gis.zoom
@@ -29,14 +30,13 @@ _GRID_DEFAULTS = gws.TileGrid(
 
 
 class Object(gws.base.layer.image.Object):
-    provider: provider.Object
+    serviceProvider: provider.Object
 
     def configure(self):
         self.configure_layer()
 
     def configure_provider(self):
-        self.provider = provider.get_for(self)
-        return True
+        return gws.config.util.configure_service_provider_for(self, provider.Object)
 
     #
     # reprojecting the world doesn't make sense, just use the map extent here
@@ -45,7 +45,7 @@ class Object(gws.base.layer.image.Object):
     # def configure_bounds(self):
     #     if super().configure_bounds():
     #         return True
-    #     self.bounds = gws.gis.bounds.transform(self.provider.grid.bounds, self.mapCrs)
+    #     self.bounds = gws.gis.bounds.transform(self.serviceProvider.grid.bounds, self.mapCrs)
     #     return True
 
     def configure_grid(self):
@@ -58,8 +58,8 @@ class Object(gws.base.layer.image.Object):
 
         if p.extent:
             extent = p.extent
-        elif self.bounds.crs == self.provider.grid.bounds.crs:
-            extent = self.provider.grid.bounds.extent
+        elif self.bounds.crs == self.serviceProvider.grid.bounds.crs:
+            extent = self.serviceProvider.grid.bounds.extent
         else:
             extent = self.parentBounds.extent
         self.grid.bounds = gws.Bounds(crs=self.bounds.crs, extent=extent)
@@ -74,12 +74,12 @@ class Object(gws.base.layer.image.Object):
             return
 
         # we use {x} like in Ol, mapproxy wants %(x)s
-        url = self.provider.url
+        url = self.serviceProvider.url
         url = url.replace('{x}', '%(x)s')
         url = url.replace('{y}', '%(y)s')
         url = url.replace('{z}', '%(z)s')
 
-        sg = self.provider.grid
+        sg = self.serviceProvider.grid
 
         if sg.origin == gws.Origin.nw:
             origin = 'nw'
@@ -104,7 +104,7 @@ class Object(gws.base.layer.image.Object):
     def props(self, user):
         p = super().props(user)
         if self.displayMode == gws.LayerDisplayMode.client:
-            return gws.u.merge(p, type='xyz', url=self.provider.url)
+            return gws.u.merge(p, type='xyz', url=self.serviceProvider.url)
         return p
 
     def render(self, lri):

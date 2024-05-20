@@ -117,7 +117,7 @@ class Object(gws.base.auth.provider.Object):
         login = user_dict.get(self.loginAttribute)
         roles = self._roles_for_user(conn, user_dict)
 
-        return gws.base.auth.user.init(
+        return gws.base.auth.user.from_args(
             provider=self,
             displayName=display_name,
             localUid=login,

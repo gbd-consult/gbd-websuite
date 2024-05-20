@@ -26,7 +26,7 @@ def run(ix: index.Object, data_schema: str, with_force=False, with_cache=False):
     elif ix.status().complete:
         return
 
-    rdr = norbit6.Object(ix.provider, schema=data_schema)
+    rdr = norbit6.Object(ix.dbProvider, schema=data_schema)
     rr = _Runner(ix, rdr, with_cache)
     rr.run()
 

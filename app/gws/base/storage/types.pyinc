@@ -1,9 +1,12 @@
 class StorageManager(Node):
     """Storage manager."""
 
-    def provider(self, uid: str) -> Optional['StorageProvider']: ...
+    providers: list['StorageProvider']
 
-    def first_provider(self) -> Optional['StorageProvider']: ...
+    def create_provider(self, cfg: Config, **kwargs) -> 'StorageProvider': ...
+
+    def find_provider(self, uid: Optional[str] = None) -> Optional['StorageProvider']: ...
+
 
 
 class StorageRecord(Data):

@@ -23,12 +23,7 @@ import gws.gis.crs
 import gws.gis.extent
 import gws.gis.source
 
-
 from . import caps
-
-"""
-
-"""
 
 
 class Config(gws.base.ows.client.provider.Config):
@@ -136,10 +131,3 @@ class Object(gws.base.ows.client.provider.Object):
 
         gws.log.debug(f'get_features: FILTERED={len(filtered)}')
         return filtered
-
-
-##
-
-
-def get_for(obj) -> Object:
-    return cast(Object, gws.config.util.get_provider(Object, obj))

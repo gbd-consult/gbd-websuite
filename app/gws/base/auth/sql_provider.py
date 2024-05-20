@@ -185,4 +185,4 @@ class Object(gws.base.auth.provider.Object):
         if validate and not valid_password:
             raise gws.ForbiddenError(f'invalid password')
 
-        return gws.base.auth.user.init(provider=self, **args)
+        return gws.base.auth.user.from_args(provider=self, **args)

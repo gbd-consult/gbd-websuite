@@ -12,4 +12,4 @@ class Config(gws.base.database.layer.Config):
 
 
 class Object(gws.base.database.layer.Object):
-    provider: provider.Object
+    dbProvider: provider.Object

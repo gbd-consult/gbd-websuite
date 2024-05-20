@@ -50,10 +50,3 @@ class Object(gws.Node):
             records.append(rec)
 
         return records
-
-
-##
-
-
-def get_for(obj: gws.Node) -> Object:
-    return cast(Object, gws.config.util.get_provider(Object, obj))

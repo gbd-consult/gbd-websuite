@@ -140,10 +140,3 @@ class Object(gws.base.ows.client.provider.Object):
                 fd.shape = fd.shape.transformed_to(shape.crs)
 
         return fdata
-
-
-##
-
-
-def get_for(obj: gws.Node) -> Object:
-    return cast(Object, gws.config.util.get_provider(Object, obj))

@@ -2,6 +2,9 @@
 class User(Object):
     """User object."""
 
+    authProvider: 'AuthProvider'
+    """User authorization provider."""
+
     attributes: dict
     """Custom user attributes."""
     authToken: str
@@ -14,8 +17,6 @@ class User(Object):
     """User uid within its authorization provider."""
     loginName: str
     """User login name."""
-    provider: 'AuthProvider'
-    """User authorization provider."""
     roles: set[str]
     """User roles."""
     uid: str

@@ -657,12 +657,12 @@ class Object:
 
 from .core import tree_impl
 
-tree_impl.Access = Access
-tree_impl.Error = Error
-tree_impl.ConfigurationError = ConfigurationError
-tree_impl.Data = Data
-tree_impl.Props = Props
-tree_impl.Object = Object
+setattr(tree_impl, 'Access', Access)
+setattr(tree_impl, 'Error', Error)
+setattr(tree_impl, 'ConfigurationError', ConfigurationError)
+setattr(tree_impl, 'Data', Data)
+setattr(tree_impl, 'Props', Props)
+setattr(tree_impl, 'Object', Object)
 
 Object.__repr__ = tree_impl.object_repr
 
@@ -2229,6 +2229,9 @@ class Action(Node):
 class User(Object):
     """User object."""
 
+    authProvider: 'AuthProvider'
+    """User authorization provider."""
+
     attributes: dict
     """Custom user attributes."""
     authToken: str
@@ -2241,8 +2244,6 @@ class User(Object):
     """User uid within its authorization provider."""
     loginName: str
     """User login name."""
-    provider: 'AuthProvider'
-    """User authorization provider."""
     roles: set[str]
     """User roles."""
     uid: str
@@ -3473,8 +3474,6 @@ class Finder(Node):
 
     templates: list['Template']
     models: list['Model']
-
-    provider: 'Node'
     sourceLayers: list['SourceLayer']
 
     tolerance: 'UomValue'
@@ -3492,9 +3491,12 @@ class Finder(Node):
 class StorageManager(Node):
     """Storage manager."""
 
-    def provider(self, uid: str) -> Optional['StorageProvider']: ...
+    providers: list['StorageProvider']
 
-    def first_provider(self) -> Optional['StorageProvider']: ...
+    def create_provider(self, cfg: Config, **kwargs) -> 'StorageProvider': ...
+
+    def find_provider(self, uid: Optional[str] = None) -> Optional['StorageProvider']: ...
+
 
 
 class StorageRecord(Data):

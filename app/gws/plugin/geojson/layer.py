@@ -22,25 +22,24 @@ class Config(gws.base.layer.Config):
 
 class Object(gws.base.layer.vector.Object):
     path: str
-    provider: provider.Object
+    serviceProvider: provider.Object
     features: list[gws.Feature]
 
     def configure(self):
         self.configure_layer()
-        for rec in self.provider.get_records():
+        for rec in self.serviceProvider.get_records():
             if rec.shape:
                 self.geometryType = rec.shape.type
                 self.geometryCrs = rec.shape.crs
                 break
 
     def configure_provider(self):
-        self.provider = provider.get_for(self)
-        return True
+        return gws.config.util.configure_service_provider_for(self, provider.Object)
 
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        recs = self.provider.get_records()
+        recs = self.serviceProvider.get_records()
         if recs:
             bs = [rec.shape.bounds() for rec in recs if rec.shape]
             if bs:
@@ -55,5 +54,5 @@ class Object(gws.base.layer.vector.Object):
             gws.ext.object.model,
             cfg,
             type=self.extType,
-            _defaultProvider=self.provider
+            _defaultProvider=self.serviceProvider
         )

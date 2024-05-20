@@ -70,9 +70,3 @@ class Object(gws.base.ows.client.provider.Object):
 
         # {} should not be encoded
         return url.replace('%7B', '{').replace('%7D', '}')
-
-
-#
-
-def get_for(obj: gws.Node) -> Object:
-    return cast(Object, gws.config.util.get_provider(Object, obj))

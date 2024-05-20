@@ -49,7 +49,7 @@ class Config(gws.base.legend.Config):
 
 
 class Object(gws.base.legend.Object):
-    provider: provider.Object
+    serviceProvider: provider.Object
     sourceLayers: list[gws.SourceLayer]
     params: dict
 
@@ -59,13 +59,13 @@ class Object(gws.base.legend.Object):
         self.configure_params()
 
     def configure_provider(self):
-        self.provider = provider.get_for(self)
+        return gws.config.util.configure_service_provider_for(self, provider.Object)
 
     def configure_sources(self):
         self.configure_source_layers()
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
+        return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers)
 
     def configure_params(self):
         defaults = dict(
@@ -79,12 +79,12 @@ class Object(gws.base.legend.Object):
             TRANSPARENT=True,
         )
         opts = gws.u.to_upper_dict(self.cfg('options', default={}))
-        self.params = self.provider.server_params(
+        self.params = self.serviceProvider.server_params(
             gws.u.merge(_DEFAULT_LEGEND_PARAMS, defaults, opts))
 
     ##
 
     def render(self, args=None):
-        res = self.provider.call_server(self.params, max_age=self.cacheMaxAge)
+        res = self.serviceProvider.call_server(self.params, max_age=self.cacheMaxAge)
         img = gws.lib.image.from_bytes(res.content)
         return gws.LegendRenderOutput(image=img, size=img.size())

@@ -27,7 +27,7 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.image.Object):
-    provider: provider.Object
+    serviceProvider: provider.Object
     sourceLayers: list[gws.SourceLayer]
 
     activeLayer: gws.SourceLayer
@@ -38,8 +38,7 @@ class Object(gws.base.layer.image.Object):
         self.configure_layer()
 
     def configure_provider(self):
-        self.provider = provider.get_for(self)
-        return True
+        return gws.config.util.configure_service_provider_for(self, provider.Object)
 
     def configure_sources(self):
         if super().configure_sources():
@@ -51,15 +50,15 @@ class Object(gws.base.layer.image.Object):
         self.configure_style()
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers, is_image=True)
+        return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers, is_image=True)
 
     def configure_tms(self):
-        crs = self.provider.forceCrs
+        crs = self.serviceProvider.forceCrs
         if not crs:
             crs = gws.gis.crs.best_match(self.mapCrs, [tms.crs for tms in self.activeLayer.tileMatrixSets])
         tms_list = [tms for tms in self.activeLayer.tileMatrixSets if tms.crs == crs]
         if not tms_list:
-            raise gws.Error(f'no TMS for {crs} in {self.provider.url}')
+            raise gws.Error(f'no TMS for {crs} in {self.serviceProvider.url}')
         self.activeTms = tms_list[0]
 
     def configure_style(self):
@@ -126,11 +125,11 @@ class Object(gws.base.layer.image.Object):
     def configure_metadata(self):
         if super().configure_metadata():
             return True
-        self.metadata = self.provider.metadata
+        self.metadata = self.serviceProvider.metadata
         return True
 
     def mapproxy_config(self, mc):
-        url = self.provider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle)
+        url = self.serviceProvider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle)
 
         # mapproxy encoding
 
@@ -138,7 +137,7 @@ class Object(gws.base.layer.image.Object):
         url = url.replace('{TileCol}', '%(x)d')
         url = url.replace('{TileRow}', '%(y)d')
 
-        source_grid = self.provider.grid_for_tms(self.activeTms)
+        source_grid = self.serviceProvider.grid_for_tms(self.activeTms)
 
         if source_grid.origin == gws.Origin.nw:
             origin = 'nw'
@@ -162,4 +161,3 @@ class Object(gws.base.layer.image.Object):
 
     def render(self, lri):
         return gws.base.layer.util.mpx_raster_render(self, lri)
-

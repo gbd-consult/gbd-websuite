@@ -11,17 +11,27 @@ class Config(gws.Config):
 
 
 class Object(gws.StorageManager):
-    providers: dict[str, gws.StorageProvider]
-
     def configure(self):
-        self.providers = {}
-        for p in self.cfg('providers', default=[]):
-            prov = self.create_child(gws.ext.object.storageProvider, p)
-            self.providers[prov.uid] = prov
+        self.providers = []
 
-    def provider(self, uid):
-        return self.providers.get(uid)
+        for cfg in self.cfg('providers', default=[]):
+            self.create_provider(cfg)
 
-    def first_provider(self):
-        for prov in self.providers.values():
-            return prov
+    def create_provider(self, cfg, **kwargs):
+        prov = self.root.create_shared(gws.ext.object.storageProvider, cfg, **kwargs)
+
+        # replace a provider with the same uid
+        m = {p.uid: p for p in self.providers}
+        m[prov.uid] = prov
+        self.providers = list(m.values())
+
+        return prov
+
+    def find_provider(self, uid=None):
+        if uid:
+            for p in self.providers:
+                if p.uid == uid:
+                    return p
+
+        elif self.providers:
+            return self.providers[0]

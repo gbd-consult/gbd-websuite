@@ -87,23 +87,21 @@ def configure_source_layers_for(
     return True
 
 
-def get_provider(cls: type, obj: gws.Node):
+def configure_service_provider_for(obj: gws.Node, cls: type) -> bool:
     p = obj.cfg('provider')
     if p:
-        return obj.root.create_shared(cls, p)
+        obj.serviceProvider = obj.root.create_shared(cls, p)
+        return True
 
     p = obj.cfg('_defaultProvider')
     if p and isinstance(p, cls):
-        return p
+        obj.serviceProvider = p
+        return True
 
-    raise gws.Error(f'no provider found for {obj!r}')
+    raise gws.Error(f'no provider {cls!r} found for {obj!r}')
 
 
-def configure_database_provider_for(
-        obj: gws.Node,
-        ext_type: Optional[str] = None,
-        required: bool = None,
-):
+def configure_database_provider_for(obj: gws.Node, ext_type: Optional[str] = None) -> bool:
     mgr = obj.root.app.databaseMgr
 
     uid = obj.cfg('dbUid')
@@ -126,7 +124,4 @@ def configure_database_provider_for(
             obj.dbProvider = p
             return True
 
-    if required:
-        raise gws.Error(f'no database providers of type {ext_type!r} configured')
-
-    return False
+    raise gws.Error(f'no database providers of type {ext_type!r} configured')

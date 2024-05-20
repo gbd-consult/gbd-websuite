@@ -77,7 +77,7 @@ class Object(gws.Node):
     crs: gws.Crs
 
     def configure(self):
-        gws.config.util.configure_database_provider_for(self, ext_type='postgres', required=True)
+        gws.config.util.configure_database_provider_for(self, ext_type='postgres')
         self.tableName = self.cfg('tableName')
         self.crs = gws.gis.crs.get(self.cfg('crs'))
         self.position = self.cfg('position')
@@ -202,11 +202,11 @@ class Object(gws.Node):
             sa.Column('wkb_geometry', sa.geo.Geometry(geometry_type='POINT', srid=self.crs.srid), index=True),
         ]
 
-        schema, name = self.provider.split_table_name(self.tableName)
+        schema, name = self.dbProvider.split_table_name(self.tableName)
         sa_meta = sa.MetaData(schema=schema)
         table = sa.Table(name, sa_meta, *columns, schema=schema)
 
-        with self.provider.engine().connect() as conn:
+        with self.dbProvider.engine().connect() as conn:
             table.drop(conn, checkfirst=True)
             table.create(conn)
             conn.commit()
