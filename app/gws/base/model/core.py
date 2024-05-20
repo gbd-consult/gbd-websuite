@@ -165,7 +165,7 @@ class Object(gws.Model):
         return False
 
     def configure_templates(self):
-        return gws.config.util.configure_templates(self)
+        return gws.config.util.configure_templates_for(self)
 
     ##
 

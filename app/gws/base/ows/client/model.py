@@ -25,7 +25,7 @@ class Object(gws.base.model.dynamic_model.Object):
         self.configure_source_layers()
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers, is_queryable=True)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers, is_queryable=True)
 
     def find_features(self, search, mc):
         if not self.sourceLayers:

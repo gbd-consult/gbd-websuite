@@ -47,7 +47,7 @@ class Object(gws.base.layer.image.Object):
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers(
+        return gws.config.util.configure_source_layers_for(
             self,
             self.provider.sourceLayers,
             is_image=True,
@@ -55,7 +55,7 @@ class Object(gws.base.layer.image.Object):
         )
 
     def configure_models(self):
-        return gws.config.util.configure_models(self, with_default=True)
+        return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
         return self.create_child(
@@ -117,7 +117,7 @@ class Object(gws.base.layer.image.Object):
             return True
 
     def configure_templates(self):
-        return gws.config.util.configure_templates(self)
+        return gws.config.util.configure_templates_for(self)
 
     def configure_search(self):
         if super().configure_search():

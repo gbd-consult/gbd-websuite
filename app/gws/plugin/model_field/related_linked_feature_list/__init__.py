@@ -44,7 +44,7 @@ class Object(related_field.Object):
 
     def configure_relationship(self):
         to_mod = self.get_model(self.cfg('toModel'))
-        link_tab = self.model.provider.table(self.cfg('linkTableName'))
+        link_tab = self.model.dbProvider.table(self.cfg('linkTableName'))
 
         self.rel = related_field.Relationship(
             src=related_field.RelRef(
@@ -63,8 +63,8 @@ class Object(related_field.Object):
             ],
             link=related_field.Link(
                 table=link_tab,
-                fromKey=self.model.provider.column(link_tab, self.cfg('linkFromColumn')),
-                toKey=self.model.provider.column(link_tab, self.cfg('linkToColumn')),
+                fromKey=self.model.dbProvider.column(link_tab, self.cfg('linkFromColumn')),
+                toKey=self.model.dbProvider.column(link_tab, self.cfg('linkToColumn')),
             )
         )
         self.rel.to = self.rel.tos[0]

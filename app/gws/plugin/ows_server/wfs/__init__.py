@@ -57,7 +57,7 @@ class Object(server.service.Object):
     isVectorService = True
 
     def configure_templates(self):
-        return gws.config.util.configure_templates(self, extra=_DEFAULT_TEMPLATES)
+        return gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
 
     def configure_metadata(self):
         super().configure_metadata()

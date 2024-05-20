@@ -2,7 +2,7 @@
 class DatabaseModel(Model):
     """Database-based data model."""
 
-    provider: 'DatabaseProvider'
+    dbProvider: 'DatabaseProvider'
     sqlFilter: str
     tableName: str
 
@@ -62,13 +62,12 @@ class DataSetDescription(Data):
 class DatabaseManager(Node):
     """Database manager."""
 
+    providers: list['DatabaseProvider']
+
     def create_provider(self, cfg: Config, **kwargs) -> 'DatabaseProvider': ...
 
-    def providers(self) -> list['DatabaseProvider']: ...
+    def find_provider(self, uid: Optional[str] = None, ext_type: Optional[str] = None) -> Optional['DatabaseProvider']: ...
 
-    def provider(self, uid: str) -> Optional['DatabaseProvider']: ...
-
-    def first_provider(self, ext_type: str) -> Optional['DatabaseProvider']: ...
 
 
 class DatabaseProvider(Node):

@@ -51,7 +51,7 @@ class Object(gws.base.layer.image.Object):
         self.configure_style()
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers, is_image=True)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers, is_image=True)
 
     def configure_tms(self):
         crs = self.provider.forceCrs

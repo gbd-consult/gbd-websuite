@@ -6,9 +6,6 @@ import gws.base.model
 import gws.base.search
 import gws.config.util
 
-
-from . import provider
-
 gws.ext.new.finder('postgres')
 
 
@@ -22,7 +19,7 @@ class Config(gws.base.search.finder.Config):
 
 
 class Object(gws.base.search.finder.Object):
-    provider: provider.Object
+    dbProvider: gws.DatabaseProvider
     tableName: str
 
     def configure(self):
@@ -39,18 +36,17 @@ class Object(gws.base.search.finder.Object):
         self.supportsFilterSearch = True
 
     def configure_provider(self):
-        self.provider = cast(provider.Object, gws.base.database.provider.get_for(self, ext_type='postgres'))
-        return True
+        return gws.config.util.configure_database_provider_for(self)
 
     def configure_models(self):
-        return gws.config.util.configure_models(self, with_default=True)
+        return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
         return self.create_child(
             gws.ext.object.model,
             cfg,
             type=self.extType,
-            _defaultProvider=self.provider,
+            _defaultProvider=self.dbProvider,
             _defaultTableName=self.tableName
         )
 

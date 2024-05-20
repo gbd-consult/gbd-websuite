@@ -27,10 +27,10 @@ class Object(gws.base.search.finder.Object):
             raise gws.Error(f'no queryable layers found in {self.provider}')
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers, is_queryable=True)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers, is_queryable=True)
 
     def configure_models(self):
-        return gws.config.util.configure_models(self, with_default=True)
+        return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
         return self.create_child(

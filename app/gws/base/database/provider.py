@@ -15,7 +15,6 @@ class Config(gws.Config):
 
 
 class Object(gws.DatabaseProvider):
-    mgr: manager.Object
     saEngine: sa.Engine
     saMetaMap: dict[str, sa.MetaData]
 
@@ -23,9 +22,7 @@ class Object(gws.DatabaseProvider):
         return gws.u.omit(vars(self), 'saMetaMap', 'saEngine')
 
     def configure(self):
-        self.mgr = self.cfg('_defaultManager')
         self.models = []
-
         self.saEngine = self.engine()
         self.saMetaMap = {}
 
@@ -216,23 +213,3 @@ class Object(gws.DatabaseProvider):
                 break
 
         return desc
-
-
-def get_for(obj: gws.Node, uid: str = None, ext_type: str = None):
-    mgr = obj.root.app.databaseMgr
-
-    uid = uid or obj.cfg('dbUid')
-    if uid:
-        p = mgr.provider(uid)
-        if not p:
-            raise gws.Error(f'database provider {uid!r} not found')
-        return p
-
-    if obj.cfg('_defaultProvider'):
-        return obj.cfg('_defaultProvider')
-
-    ext_type = ext_type or obj.extType
-    p = mgr.first_provider(ext_type)
-    if not p:
-        raise gws.Error(f'no database providers of type {ext_type!r} found')
-    return p

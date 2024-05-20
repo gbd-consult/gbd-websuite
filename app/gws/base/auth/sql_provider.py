@@ -66,7 +66,9 @@ import re
 import gws
 import gws.base.auth
 import gws.base.database.provider
+import gws.config.util
 import gws.lib.sa as sa
+
 
 class Config(gws.base.auth.provider.Config):
     """SQL-based authorization provider"""
@@ -104,9 +106,12 @@ class Object(gws.base.auth.provider.Object):
 
     def configure(self):
         self.uid = 'gws.base.auth.providers.sql'
-        self.dbProvider = cast(gws.DatabaseProvider, gws.base.database.provider.get_for(self))
+        self.configure_provider()
         self.authorizationSql = self.cfg('authorizationSql')
         self.getUserSql = self.cfg('getUserSql')
+
+    def configure_provider(self):
+        return gws.config.util.configure_database_provider_for(self)
 
     def authenticate(self, method, credentials):
         params = {

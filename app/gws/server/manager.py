@@ -91,7 +91,7 @@ class Object(gws.ServerManager):
             cast(core.Config, self.config).spool.workers = int(p)
 
     def configure_templates(self):
-        gws.config.util.configure_templates(self, extra=_DEFAULT_TEMPLATES)
+        gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
 
     def create_server_configs(self, target_dir, script_path, pid_paths):
         args = TemplateArgs(

@@ -112,6 +112,17 @@ class Node(Object):
         """
         return tree_impl.node_cfg(self, key, default)
 
+    def is_a(self, classref: ClassRef):
+        """Check if a the node matches the class reference.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            A boolean.
+        """
+        return tree_impl.is_a(self.root, self, classref)
+
     def find_all(self, classref: ClassRef):
         """Find all children that match a specific class.
 

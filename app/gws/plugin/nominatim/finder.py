@@ -57,10 +57,10 @@ class Object(gws.base.search.finder.Object):
         self.configure_templates()
 
     def configure_templates(self):
-        return gws.config.util.configure_templates(self, extra=_DEFAULT_TEMPLATES)
+        return gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
 
     def configure_models(self):
-        return gws.config.util.configure_models(self, with_default=True)
+        return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
         return self.create_child(

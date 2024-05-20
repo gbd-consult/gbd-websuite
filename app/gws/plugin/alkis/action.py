@@ -15,6 +15,7 @@ import gws.base.shape
 import gws.base.storage
 import gws.base.template
 import gws.base.web
+import gws.config.util
 import gws.lib.date
 import gws.lib.sa as sa
 import gws.lib.style
@@ -340,6 +341,8 @@ class Model(gws.base.model.dynamic_model.Object):
 
 
 class Object(gws.base.action.Object):
+    dbProvider: gws.DatabaseProvider
+
     ix: index.Object
     ixStatus: index.Status
 
@@ -365,11 +368,10 @@ class Object(gws.base.action.Object):
     storage: Optional[gws.base.storage.Object]
 
     def configure(self):
-        provider = gws.base.database.provider.get_for(self, ext_type='postgres')
-
+        gws.config.util.configure_database_provider_for(self, ext_type='postgres', required=True)
         self.ix = self.root.create_shared(
             index.Object,
-            _defaultProvider=provider,
+            _defaultProvider=self.dbProvider,
             crs=self.cfg('crs'),
             schema=self.cfg('indexSchema'),
             excludeGemarkung=self.cfg('excludeGemarkung'),
@@ -407,7 +409,7 @@ class Object(gws.base.action.Object):
         if p:
             self.export = self.create_child(export.Object, p)
         elif self.ui.useExport:
-            self.export = self.create_child(export.Object, {})
+            self.export = self.create_child(export.Object)
         else:
             self.export = None
 
@@ -442,7 +444,6 @@ class Object(gws.base.action.Object):
                     and user.can_read(self.eigentuemer)
                     and self.eigentuemer.controlMode
             ),
-            # withFlurnummer=self.provider.has_flurnummer,
         )
 
     @gws.ext.command.api('alkisGetToponyms')

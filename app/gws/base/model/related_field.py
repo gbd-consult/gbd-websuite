@@ -37,7 +37,7 @@ class Relationship(gws.Data):
     deleteCascade: bool = False
 
 
-class Object(gws.base.model.field.Object, gws.ModelField):
+class Object(gws.base.model.field.Object):
     model: gws.DatabaseModel
     rel: Relationship
 

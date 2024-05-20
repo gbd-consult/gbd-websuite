@@ -1,5 +1,7 @@
 """Core database utilities."""
 
+from typing import cast
+
 import gws
 import gws.gis.crs
 
@@ -12,13 +14,11 @@ class Config(gws.Config):
 
 
 class Object(gws.DatabaseManager):
-    providerMap: dict[str, gws.DatabaseProvider]
-
     def configure(self):
-        self.providerMap = {}
+        self.providers = []
+
         for cfg in self.cfg('providers', default=[]):
-            prov = self.create_provider(cfg)
-            self.providerMap[prov.uid] = prov
+            self.create_provider(cfg)
 
         self.register_middleware('db')
 
@@ -34,17 +34,25 @@ class Object(gws.DatabaseManager):
     ##
 
     def create_provider(self, cfg, **kwargs):
-        prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg, _defaultManager=self, **kwargs)
-        self.providerMap[prov.uid] = prov
+        prov = self.root.create_shared(gws.ext.object.databaseProvider, cfg, **kwargs)
+
+        # replace a provider with the same uid
+        m = {p.uid: p for p in self.providers}
+        m[prov.uid] = prov
+        self.providers = list(m.values())
+
         return prov
 
-    def providers(self):
-        return list(self.providerMap.values())
+    def find_provider(self, uid=None, ext_type=None):
+        if uid:
+            for p in self.providers:
+                if p.uid == uid and (not ext_type or p.extType == ext_type):
+                    return p
 
-    def provider(self, uid):
-        return self.providerMap.get(uid)
+        elif ext_type:
+            for p in self.providers:
+                if p.extType == ext_type:
+                    return p
 
-    def first_provider(self, ext_type: str):
-        for prov in self.providerMap.values():
-            if prov.extType == ext_type:
-                return prov
+        elif self.providers:
+            return self.providers[0]

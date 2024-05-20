@@ -105,7 +105,6 @@ class Layer(Node):
 
     layers: list['Layer']
 
-    provider: 'Node'
     sourceLayers: list['SourceLayer']
 
     def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...

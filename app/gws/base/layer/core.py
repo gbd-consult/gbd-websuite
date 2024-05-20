@@ -259,7 +259,7 @@ class Object(gws.Layer):
             return True
 
     def configure_models(self):
-        return gws.config.util.configure_models(self)
+        return gws.config.util.configure_models_for(self)
 
     def configure_provider(self):
         pass
@@ -275,13 +275,13 @@ class Object(gws.Layer):
     def configure_search(self):
         if not self.cfg('withSearch'):
             return True
-        return gws.config.util.configure_finders(self)
+        return gws.config.util.configure_finders_for(self)
 
     def configure_sources(self):
         pass
 
     def configure_templates(self):
-        return gws.config.util.configure_templates(self)
+        return gws.config.util.configure_templates_for(self)
 
     def configure_group_layers(self, layer_configs):
         ls = []

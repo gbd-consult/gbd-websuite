@@ -49,10 +49,10 @@ class Object(gws.Finder):
     ##
 
     def configure_models(self):
-        return gws.config.util.configure_models(self)
+        return gws.config.util.configure_models_for(self)
 
     def configure_templates(self):
-        return gws.config.util.configure_templates(self)
+        return gws.config.util.configure_templates_for(self)
 
     ##
 

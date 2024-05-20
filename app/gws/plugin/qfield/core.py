@@ -941,8 +941,8 @@ class QFieldCapsParser:
         table_name = sl.dataSource.get('table')
 
         for model in self.package.models:
-            full_name = model.provider.join_table_name('', model.tableName)
-            if full_name == model.provider.join_table_name('', table_name):
+            full_name = model.dbProvider.join_table_name('', model.tableName)
+            if full_name == model.dbProvider.join_table_name('', table_name):
                 gp_name = self.gp_name_for_model(full_name)
                 if gp_name not in self.caps.modelMap:
                     self.caps.modelMap[gp_name] = self.model_entry(gp_name, model)

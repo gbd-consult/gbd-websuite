@@ -3,19 +3,18 @@
 from typing import Callable, cast
 
 import gws
+import gws.base.model.field
 
-from . import field
 
-
-class Config(field.Config):
+class Config(gws.base.model.field.Config):
     pass
 
 
-class Props(field.Props):
+class Props(gws.base.model.field.Props):
     pass
 
 
-class Object(field.Object, gws.ModelField):
+class Object(gws.base.model.field.Object):
     def before_select(self, mc):
         model = cast(gws.DatabaseModel, self.model)
         mc.dbSelect.columns.append(model.column(self.name))

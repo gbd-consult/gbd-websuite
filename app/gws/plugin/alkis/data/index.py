@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 import gws
 import gws.base.shape
 import gws.base.database
+import gws.config.util
 import gws.gis.crs
 import gws.plugin.postgres.provider
 import gws.lib.sa as sa
@@ -64,7 +65,7 @@ class Object(gws.Node):
 
     ALL_TABLES = TABLES_BASIC + TABLES_BUCHUNG + TABLES_EIGENTUEMER
 
-    provider: gws.plugin.postgres.provider.Object
+    dbProvider: gws.plugin.postgres.provider.Object
     crs: gws.Crs
     schema: str
     excludeGemarkung: set[str]
@@ -78,7 +79,7 @@ class Object(gws.Node):
         return gws.u.omit(vars(self), 'saMeta')
 
     def configure(self):
-        self.provider = gws.base.database.provider.get_for(self, ext_type='postgres')
+        gws.config.util.configure_database_provider_for(self, ext_type='postgres', required=True)
         self.crs = gws.gis.crs.get(self.cfg('crs'))
         self.schema = self.cfg('schema', default='public')
         self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
@@ -238,7 +239,7 @@ class Object(gws.Node):
         }
 
     def connect(self):
-        return self.provider.engine().connect()
+        return self.dbProvider.engine().connect()
 
     ##
 
@@ -313,7 +314,7 @@ class Object(gws.Node):
             progress: Optional[ProgressIndicator] = None
     ):
         tab = self.table(table_id)
-        self.saMeta.create_all(self.provider.engine(), tables=[tab])
+        self.saMeta.create_all(self.dbProvider.engine(), tables=[tab])
 
         with self.connect() as conn:
             for i in range(0, len(values), self.INSERT_SIZE):

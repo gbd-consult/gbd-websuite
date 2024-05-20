@@ -34,7 +34,7 @@ class Props(gws.Props):
 class Object(gws.Printer):
 
     def configure(self):
-        gws.config.util.configure_models(self)
+        gws.config.util.configure_models_for(self)
         self.template = self.create_child(gws.ext.object.template, self.cfg('template'))
         self.qualityLevels = self.cfg('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
         self.title = self.cfg('title') or self.template.title or ''

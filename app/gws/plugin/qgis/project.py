@@ -4,6 +4,7 @@ import os
 
 import gws
 import gws.base.database
+import gws.config.util
 import gws.lib.jsonx
 import gws.lib.date
 import gws.lib.xmlx
@@ -62,7 +63,7 @@ def _from_zipped_bytes(b: bytes) -> 'Object':
 
 
 def _from_db(root: gws.Root, store: Store):
-    prov = gws.base.database.provider.get_for(root.app, store.dbUid, 'postgres')
+    prov = root.app.databaseMgr.find_provider(ext_type='postgres', uid=store.dbUid)
     schema = store.get('schema') or 'public'
     tab = prov.table(f'{schema}.{_PRJ_TABLE}')
 
@@ -73,7 +74,7 @@ def _from_db(root: gws.Root, store: Store):
 
 
 def _to_db(root: gws.Root, store: Store, content: bytes):
-    prov = gws.base.database.provider.get_for(root.app, store.dbUid, 'postgres')
+    prov = root.app.databaseMgr.find_provider(ext_type='postgres', uid=store.dbUid)
     schema = store.get('schema') or 'public'
     tab = prov.table(f'{schema}.{_PRJ_TABLE}')
 

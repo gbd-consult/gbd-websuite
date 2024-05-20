@@ -91,7 +91,7 @@ class Object(gws.OwsService):
         return True
 
     def configure_templates(self):
-        return gws.config.util.configure_templates(self)
+        return gws.config.util.configure_templates_for(self)
 
     def configure_operations(self):
         fs = {}

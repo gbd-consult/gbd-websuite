@@ -65,7 +65,7 @@ class Object(gws.base.legend.Object):
         self.configure_source_layers()
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
 
     def configure_params(self):
         defaults = dict(

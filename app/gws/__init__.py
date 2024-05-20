@@ -752,6 +752,17 @@ class Node(Object):
         """
         return tree_impl.node_cfg(self, key, default)
 
+    def is_a(self, classref: ClassRef):
+        """Check if a the node matches the class reference.
+
+        Args:
+            classref: Class reference.
+
+        Returns:
+            A boolean.
+        """
+        return tree_impl.is_a(self.root, self, classref)
+
     def find_all(self, classref: ClassRef):
         """Find all children that match a specific class.
 
@@ -2736,7 +2747,6 @@ class Layer(Node):
 
     layers: list['Layer']
 
-    provider: 'Node'
     sourceLayers: list['SourceLayer']
 
     def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...
@@ -3008,7 +3018,7 @@ class ModelManager(Node):
 class DatabaseModel(Model):
     """Database-based data model."""
 
-    provider: 'DatabaseProvider'
+    dbProvider: 'DatabaseProvider'
     sqlFilter: str
     tableName: str
 
@@ -3068,13 +3078,12 @@ class DataSetDescription(Data):
 class DatabaseManager(Node):
     """Database manager."""
 
+    providers: list['DatabaseProvider']
+
     def create_provider(self, cfg: Config, **kwargs) -> 'DatabaseProvider': ...
 
-    def providers(self) -> list['DatabaseProvider']: ...
+    def find_provider(self, uid: Optional[str] = None, ext_type: Optional[str] = None) -> Optional['DatabaseProvider']: ...
 
-    def provider(self, uid: str) -> Optional['DatabaseProvider']: ...
-
-    def first_provider(self, ext_type: str) -> Optional['DatabaseProvider']: ...
 
 
 class DatabaseProvider(Node):

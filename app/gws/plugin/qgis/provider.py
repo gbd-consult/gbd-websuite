@@ -103,7 +103,7 @@ class Object(gws.OwsProvider):
         if self.store.type == project.StoreType.file:
             return self.store.path
         if self.store.type == project.StoreType.postgres:
-            prov = gws.base.database.provider.get_for(self, self.store.dbUid, 'postgres')
+            prov = self.root.app.databaseMgr.find_provider(ext_type='postgres', uid=self.store.dbUid)
             return gws.lib.net.add_params(prov.url, schema=self.store.schema, project=self.store.projectName)
 
     def server_params(self, params: dict) -> dict:
@@ -374,7 +374,7 @@ class Object(gws.OwsProvider):
         url = gws.plugin.postgres.provider.connection_url(cfg)
         mgr = self.root.app.databaseMgr
 
-        for p in mgr.providers():
+        for p in mgr.providers:
             if p.extType == 'postgres' and p.url == url:
                 return cast(gws.plugin.postgres.provider.Object, p)
 

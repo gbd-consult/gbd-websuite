@@ -50,10 +50,10 @@ class Object(gws.base.layer.vector.Object):
         return True
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers(self, self.provider.sourceLayers)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
 
     def configure_models(self):
-        return gws.config.util.configure_models(self, with_default=True)
+        return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
         return self.create_child(

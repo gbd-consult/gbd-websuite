@@ -6,11 +6,9 @@ import gws
 import gws.base.feature
 import gws.base.model
 import gws.base.model.field
+import gws.config.util
 import gws.gis.crs
 import gws.lib.sa as sa
-
-
-from . import provider
 
 
 class Props(gws.base.model.Props):
@@ -27,8 +25,6 @@ class Config(gws.base.model.Config):
 
 
 class Object(gws.base.model.Object, gws.DatabaseModel):
-    provider: gws.DatabaseProvider
-
     def configure(self):
         self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
         if not self.tableName:
@@ -38,29 +34,28 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
         self.configure_model()
 
     def configure_provider(self):
-        self.provider = cast(gws.DatabaseProvider, provider.get_for(self, ext_type=self.extType))
-        return True
+        return gws.config.util.configure_database_provider_for(self)
 
     ##
 
     def describe(self):
-        return self.provider.describe(self.tableName)
+        return self.dbProvider.describe(self.tableName)
 
     def table(self):
-        return self.provider.table(self.tableName)
+        return self.dbProvider.table(self.tableName)
 
     def column(self, column_name):
-        return self.provider.column(self.table(), column_name)
+        return self.dbProvider.column(self.table(), column_name)
 
     def uid_column(self):
         if not self.uidName:
             raise gws.Error(f'no primary key found for table {self.tableName!r}')
-        if not self.provider.has_column(self.table(), self.uidName):
+        if not self.dbProvider.has_column(self.table(), self.uidName):
             raise gws.Error(f'invalid primary key {self.uidName!r} for table {self.tableName!r}')
-        return self.provider.column(self.table(), self.uidName)
+        return self.dbProvider.column(self.table(), self.uidName)
 
     def connection(self):
-        return self.provider.connection()
+        return self.dbProvider.connection()
 
     def _context_connection(self, mc):
         return _ContextConnection(self, mc)

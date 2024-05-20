@@ -1,12 +1,12 @@
 """Common configuration utilities."""
 
-from typing import Optional
+from typing import Optional, cast
 
 import gws
 import gws.gis.source
 
 
-def configure_templates(obj: gws.Node, extra: Optional[list] = None) -> bool:
+def configure_templates_for(obj: gws.Node, extra: Optional[list] = None) -> bool:
     fn = _create_fn(obj, 'create_template', gws.ext.object.template)
     obj.templates = []
 
@@ -20,7 +20,7 @@ def configure_templates(obj: gws.Node, extra: Optional[list] = None) -> bool:
     return len(obj.templates) > 0
 
 
-def configure_models(obj: gws.Node, with_default=False) -> bool:
+def configure_models_for(obj: gws.Node, with_default=False) -> bool:
     fn = _create_fn(obj, 'create_model', gws.ext.object.model)
     obj.models = []
 
@@ -36,7 +36,7 @@ def configure_models(obj: gws.Node, with_default=False) -> bool:
     return False
 
 
-def configure_finders(obj: gws.Node, with_default=False) -> bool:
+def configure_finders_for(obj: gws.Node, with_default=False) -> bool:
     fn = _create_fn(obj, 'create_finder', gws.ext.object.finder)
     obj.finders = []
 
@@ -59,7 +59,7 @@ def _create_fn(obj, name: str, cls: type):
     return lambda c: obj.create_child(cls, c)
 
 
-def configure_source_layers(
+def configure_source_layers_for(
         obj: gws.Node,
         layers: list[gws.SourceLayer],
         is_group: bool = None,
@@ -97,3 +97,36 @@ def get_provider(cls: type, obj: gws.Node):
         return p
 
     raise gws.Error(f'no provider found for {obj!r}')
+
+
+def configure_database_provider_for(
+        obj: gws.Node,
+        ext_type: Optional[str] = None,
+        required: bool = None,
+):
+    mgr = obj.root.app.databaseMgr
+
+    uid = obj.cfg('dbUid')
+    if uid:
+        p = mgr.find_provider(uid=uid)
+        if p:
+            obj.dbProvider = p
+            return True
+        raise gws.Error(f'database provider {uid!r} not found')
+
+    p = obj.cfg('_defaultProvider')
+    if p:
+        obj.dbProvider = p
+        return True
+
+    ext_type = ext_type or obj.extType
+    if ext_type:
+        p = mgr.find_provider(ext_type=ext_type)
+        if p:
+            obj.dbProvider = p
+            return True
+
+    if required:
+        raise gws.Error(f'no database providers of type {ext_type!r} configured')
+
+    return False

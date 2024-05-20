@@ -23,7 +23,7 @@ class Object(dt.Reader):
     }
 
     def __init__(self, provider: gws.plugin.postgres.provider.Object, schema='public'):
-        self.provider = provider
+        self.dbProvider = provider
         self.schema = schema
 
         self.readers = {}
@@ -68,7 +68,7 @@ class Object(dt.Reader):
     def count(self, cls, table_name=None):
         try:
             sql = f"SELECT COUNT(*) FROM {self.schema}.{table_name or cls.__name__.lower()}"
-            with self.provider.engine().connect() as conn:
+            with self.dbProvider.engine().connect() as conn:
                 rs = conn.execute(sa.text(sql))
                 for row in rs:
                     return row[0]
@@ -83,7 +83,7 @@ class Object(dt.Reader):
         else:
             sel = sa.text(sql)
 
-        with self.provider.engine().connect() as conn:
+        with self.dbProvider.engine().connect() as conn:
             for row in conn.execution_options(stream_results=True).execute(sel):
                 r = row._mapping
                 o = self.as_struct(cls, '', r)
