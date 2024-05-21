@@ -89,7 +89,7 @@ class Object(gws.base.model.dynamic_model.Object):
 
     def _query(self, params) -> list[dict]:
         try:
-            res = gws.lib.net.http_request(self.serviceUrl, params=params)
+            res = gws.lib.net.http_request(self.serviceUrl, params=params, headers={'User-Agent': 'GBD WebSuite (https://gbd-websuite.de)'})
             return gws.lib.jsonx.from_string(res.text)
         except gws.lib.net.Error as e:
             gws.log.error('nominatim request error', e)
