@@ -1,3 +1,7 @@
+## Version 8.0.42
+
+- added User-Agent header for Nominatim requests
+
 ## Version 8.0.41
 
 - minor client bugs fixed
