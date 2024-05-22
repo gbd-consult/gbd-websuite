@@ -21,6 +21,7 @@ debug = False
 
 fileSplitLevel = {
     '/': 3,
+    '/user-de': 2,
     '/admin-de': 2,
     '/admin-de/themen': 3,
 }
