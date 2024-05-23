@@ -1,12 +1,14 @@
 # Auswahl :/user-de/sidebar.auswahl
 
-Das Menü ![](gbd-icon-auswahl-01.svg) {title Auswahl} der Seitenleiste interagiert mit dem Werkzeug {button Auswählen}. Es wird automatisch aktiviert, wenn dass Werkzeug aktiviert wird und listet dann alle in der Karte selektierten Objekte im Bereich Auswahl dieses Menüs. 
+![](auswahl1.png){border=1}
 
-![](auswahl.png){border=1}
+Das Menü ![](gbd-icon-auswahl-01.svg) {title Auswahl} der Seitenleiste interagiert mit dem [Werkzeug Auswählen](/doc/8.1/user-de/toolbar.auswahl/index.html). Es wird automatisch aktiviert, wenn Sie mit dem Werkzeug Objekte in der Karte auswählen und listet diese dann im Bereich Auswahl dieses Menüs. 
 
-Links neben jedem Objekt in der Auswahl kann mit der Funktion ![](sharp-center_focus_weak-24px.svg) {button Hinzoomen} auf das Objekt in der Karte gezoomt werden. Rechts neben jedem Objekt in der Auswahl kann mit der Funktion ![](sharp-remove_circle_outline-24px.svg) {button Herausnehmen} das Objekt aus der Auswahl entfernt werden.
+![](auswahl2.png){border=1}
 
-Am unteren Rand im Bereich Auswahl befindet sich weitere Funktionalität für die Ablage der ausgewählten Objekte:
+Links neben jedem Objekt in der Auswahl kann mit der Funktion ![](sharp-center_focus_weak-24px.svg) {button Hinzoomen} auf das ausgewählte Objekt in der Karte gezoomt werden. Rechts neben jedem ausgewählten Objekt in der Auswahl kann mit der Funktion ![](sharp-remove_circle_outline-24px.svg) {button Herausnehmen} das Objekt aus der Auswahl entfernt werden.
+
+Am unteren Rand im Bereich Auswahl befindet sich je nach Konfiguration weitere Funktionalität für die Ablage der ausgewählten Objekte:
 
 | Symbol                                | Funktion                	| Funktionsbeschreibung                         |
 |---------------------------------------|-------------------------------|-----------------------------------------------|
@@ -14,18 +16,11 @@ Am unteren Rand im Bereich Auswahl befindet sich weitere Funktionalität für di
 | ![](sharp-save-24px.svg)        	| {button Auswahl speichern}	| Auswahlliste speichern     			|
 | ![](sharp-delete_forever-24px.svg)   	| {button Auswahl löschen}	| Aktuelle Auswahlliste löschen			|
 
-
-Beim Auswählen eines Objekts in der Auswahlliste öffnet sich automatisch das Informationsfenster mit den Objekteigenschaften. Im unteren Bereich findet sich das Menü ![](round-settings-24px.svg) {button Aufgaben}, hinter dem weitere interaktive Funktionalität zur Verfügung steht:
-
-| Symbol                                | Funktion                	| Funktionsbeschreibung                         									|
-|---------------------------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| ![](sharp-center_focus_weak-24px.svg)	| {button Hinzoomen}		| Auf das ausgewählte Objekt zoomen											|
-| ![](gbd-icon-markieren-messen-01.svg) | {button Markieren & Messen}	| Das ausgewählte Objekt an das Modul [Markieren & Messen](/user-de/sidebar.markierung) der Seitenleiste übergeben	|
+%demo 'select_tool'
 
 %info
-Eine Demo zum Thema {button Auswählen} befindet sich in der [GBD WebSuite Demo](https://gws-dev.gbd-consult.de/demo/select_tool) und der [dazugehörigen Konfiguration](https://github.com/gbd-consult/gbd-websuite/blob/master/app/gws/plugin/select_tool/_demo/select.cx).
+
+Weitere Informationen zur [Konfiguration einer Auswahl](/doc/8.1/admin-de/themen/auswahl/index.html) finden Sie im Administrator Handbuch.
+
 %end
 
-%comment
-| ![](gbd-icon-auswahl-01.svg)   	| {button Auswählen}		| Das ausgewählte Objekt auswählen		|
-%end

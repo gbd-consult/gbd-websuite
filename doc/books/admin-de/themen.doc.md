@@ -1,5 +1,16 @@
 # Themen :/admin-de/themen
 
+## Abfrage
+<!--
+- info
+- spatial info
+-->
+
+## Auswahl
+<!--
+- select
+- mouseover select 
+-->
 
 ## :/admin-de/themen/auth
 <!--
@@ -9,14 +20,31 @@
 - Authorization: access, permissions
 -->
 
-## Projekte
-<!--
-- uids, metadata and usage in assets/index.cx.html
-- project-level templates
+## Bemaßung
 
-- inclusion via projects vs projectDirs vs projectPaths
-- overriding global configuration for assets, actions, client.xxx, ...
+## Client
+<!--
+- client elements
+- clientOptions
+- including in project.cx.html
 -->
+
+## Drucken
+<!--
+- templates
+    - html, map, py, qgis
+- link to models
+- qualityLevels
+-->
+
+## Editieren
+<!--
+- edit layers
+    - link to styling
+- link to models
+    - attr. table
+-->
+
 
 ## Karten
 <!--
@@ -46,51 +74,15 @@
 - clientOptions, autoLayers
 -->
 
-## Client
-<!--
-- client elements
-- clientOptions
-- including in project.cx.html
--->
-
 ## :/admin-de/themen/postgresql
 
-## Editieren
-<!--
-- edit layers
-    - link to styling
-- link to models
-    - attr. table
--->
 
 ## Models
 <!--
 - (maybe include in editing?)
 -->
 
-## Suche
-<!--
-- nominatim
-- postgres
-- qgis
-- wfs
-- wms
--->
-
-## Drucken
-<!--
-- templates
-    - html, map, py, qgis
-- link to models
-- qualityLevels
--->
-
 ## OWS Dienste bereitstellen
-
-## Templates
-<!--
-- maybe include in various places? general templating? single vs double curly braces?
--->
 
 ## Plugins
 <!--
@@ -104,7 +96,39 @@
 ### annotate
 ### dimension
 
-----------
+
+## Projekte
+<!--
+- uids, metadata and usage in assets/index.cx.html
+- project-level templates
+- inclusion via projects vs projectDirs vs projectPaths
+- overriding global configuration for assets, actions, client.xxx, ...
+-->
+
+
+## Suche
+
+
+### Nominatim
+
+
+### postgres
+
+
+### qgis
+
+
+### wfs
+
+
+### wms
+
+
+## Templates
+<!--
+- maybe include in various places? general templating? single vs double curly braces?
+-->
+
 
 <!--
 - qgis server specific things?

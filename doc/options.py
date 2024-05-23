@@ -22,6 +22,7 @@ debug = False
 fileSplitLevel = {
     '/': 3,
     '/user-de': 2,
+    '/user-de/sidebar.editieren': 3,
     '/admin-de': 2,
     '/admin-de/themen': 3,
 }

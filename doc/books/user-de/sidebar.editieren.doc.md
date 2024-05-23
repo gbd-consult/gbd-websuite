@@ -1,6 +1,8 @@
 # Editieren :/user-de/sidebar.editieren
 
-Über das Menü ![](sharp-edit-24px.svg) {title Editieren} können unterschiedliche Datentypen erstellt, bearbeitet und gelöscht werden. Dies umfasst das {button Abbilden komplexer Datenstrukturen und Beziehungen} zwischen Objekten. Die Eingabe von Informationen kann durch eine {button flexibele Validierung}, Standardwerte und Platzhalter unterstützt werden und findet über Formulare statt. Ergänzt werden können Objekte in der Karte durch {button Bilder und Dokumente}, die in einer {button Dateiverwaltung} gemanaged werden. 
+![](editing.png){border=1}
+
+Über das Menü ![](sharp-edit-24px.svg) {title Editieren} können unterschiedliche Datentypen erstellt, bearbeitet und gelöscht werden. Dies umfasst das Abbilden komplexer Datenstrukturen und Beziehungen zwischen Objekten. Die Eingabe von Informationen kann durch eine {button flexibele Validierung}, Standardwerte und Platzhalter unterstützt werden und findet über Formulare statt. Ergänzt werden können Objekte in der Karte durch {button Bilder und Dokumente}, die in einer {button Dateiverwaltung} gemanaged werden. 
 
 **Datentypen**
 
