@@ -34,6 +34,7 @@ Subpackages
 
 {% endif %}
 {% endblock %}
+
 {% block submodules %}
 {% set visible_submodules = obj.submodules|selectattr("display")|list %}
 {% if visible_submodules %}
@@ -50,6 +51,7 @@ Submodules
 
 {% endif %}
 {% endblock %}
+
 {% block content %}
 {% if obj.all is not none %}
 {% set visible_children = obj.children|selectattr("short_name", "in", obj.all)|list %}
@@ -65,6 +67,7 @@ Submodules
 {% set visible_classes = visible_children|selectattr("type", "equalto", "class")|list %}
 {% set visible_functions = visible_children|selectattr("type", "equalto", "function")|list %}
 {% set visible_attributes = visible_children|selectattr("type", "equalto", "data")|list %}
+
 {% if "show-module-summary" in autoapi_options and (visible_classes or visible_functions) %}
 {% block classes scoped %}
 {% if visible_classes %}
@@ -111,7 +114,8 @@ Attributes
 {% endif %}
 {% endblock %}
 {% endif %}
-{% for obj_item in visible_children %}
+
+{% for obj_item in visible_children|sort(attribute="name") %}
 {{ obj_item.render()|indent(0) }}
 {% endfor %}
 {% endif %}
