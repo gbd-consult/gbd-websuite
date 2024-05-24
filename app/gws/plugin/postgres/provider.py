@@ -10,7 +10,6 @@ import gws.gis.extent
 import gws.lib.net
 import gws.lib.sa as sa
 
-
 gws.ext.new.databaseProvider('postgres')
 
 
@@ -18,41 +17,53 @@ class Config(gws.base.database.provider.Config):
     """Postgres/Postgis database provider"""
 
     database: Optional[str]
-    """database name"""
+    """Database name."""
     host: Optional[str]
-    """database host"""
+    """Database host."""
     port: int = 5432
-    """database port"""
+    """Database port."""
     username: Optional[str]
-    """username"""
+    """Username."""
     password: Optional[str]
-    """password"""
+    """Password."""
     serviceName: Optional[str]
-    """service name from pg_services file"""
+    """Service name from pg_services file."""
     options: Optional[dict]
-    """connection options"""
-    withPool: Optional[bool] = True
-    """enable connection pooling"""
+    """Libpq connection options."""
+    pool: Optional[dict]
+    """Options for connection pooling."""
 
 
 class Object(gws.base.database.provider.Object):
     def configure(self):
         self.url = connection_url(self.config)
         if not self.url:
-            raise gws.Error(f'"host/database" or "serviceName" are required')
+            raise sa.Error(f'"host/database" or "serviceName" are required')
 
     def engine(self, **kwargs):
-        if not self.cfg('withPool'):
+        pool = self.cfg('pool') or {}
+        p = pool.get('disabled')
+        if p is True:
             kwargs.setdefault('poolclass', sa.NullPool)
-        # kwargs.setdefault('pool_pre_ping', True)
-        kwargs.setdefault('echo', self.root.app.developer_option('db.engine_echo'))
+        p = pool.get('pre_ping')
+        if p is True:
+            kwargs.setdefault('pool_pre_ping', True)
+        p = pool.get('size')
+        if isinstance(p, int):
+            kwargs.setdefault('pool_size', p)
+        p = pool.get('recycle')
+        if isinstance(p, int):
+            kwargs.setdefault('pool_recycle', p)
+        p = pool.get('timeout')
+        if isinstance(p, int):
+            kwargs.setdefault('pool_timeout', p)
+
+        if self.root.app.developer_option('db.engine_echo'):
+            kwargs.setdefault('echo', True)
+            kwargs.setdefault('echo_pool', True)
+
         url = connection_url(self.config)
         return sa.create_engine(url, **kwargs)
-
-    def qualified_table_name(self, table_name):
-        if '.' in table_name:
-            return table_name
-        return 'public.' + table_name
 
     def split_table_name(self, table_name):
         if '.' in table_name:
@@ -66,17 +77,17 @@ class Object(gws.base.database.provider.Object):
         schema, name2 = self.split_table_name(name)
         return schema + '.' + name2
 
-    def table_bounds(self, table_name):
-        desc = self.describe(table_name)
+    def table_bounds(self, table):
+        desc = self.describe(table)
         if not desc.geometryName:
             return
-        tab = self.table(table_name)
 
-        sel = sa.select(sa.func.ST_Extent(tab.columns.get(desc.geometryName)))
-        with self.connection() as conn:
-            box = conn.execute(sel).scalar_one()
-            if box:
-                return gws.Bounds(extent=gws.gis.extent.from_box(box), crs=gws.gis.crs.get(desc.geometrySrid))
+        tab = self.table(table)
+        sql = sa.select(sa.func.ST_Extent(tab.columns.get(desc.geometryName)))
+        with self.connect() as conn:
+            box = conn.execute(sql).scalar_one()
+        if box:
+            return gws.Bounds(extent=gws.gis.extent.from_box(box), crs=gws.gis.crs.get(desc.geometrySrid))
 
 
 ##
@@ -107,7 +118,7 @@ def connection_url(cfg: gws.Config):
     if p:
         s = os.getenv('PGSERVICEFILE')
         if not s or not os.path.isfile(s):
-            raise gws.Error(f'PGSERVICEFILE {s!r} not found')
+            raise sa.Error(f'PGSERVICEFILE {s!r} not found')
 
         params['service'] = p
 

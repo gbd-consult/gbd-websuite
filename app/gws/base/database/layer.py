@@ -20,6 +20,7 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.vector.Object):
+    db: gws.DatabaseProvider
     tableName: str
 
     def configure(self):
@@ -30,7 +31,7 @@ class Object(gws.base.layer.vector.Object):
 
     def configure_sources(self):
         self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
-        desc = self.dbProvider.describe(self.tableName)
+        desc = self.db.describe(self.tableName)
         if not desc:
             raise gws.Error(f'table {self.tableName!r} not found or not readable')
         self.geometryType = desc.geometryType
@@ -45,14 +46,14 @@ class Object(gws.base.layer.vector.Object):
             gws.ext.object.model,
             cfg,
             type=self.extType,
-            _defaultProvider=self.dbProvider,
+            _defaultDb=self.db,
             _defaultTableName=self.tableName
         )
 
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        b = self.dbProvider.table_bounds(self.tableName)
+        b = self.db.table_bounds(self.tableName)
         if b:
             self.bounds = gws.gis.bounds.transform(b, self.mapCrs)
             return True
@@ -68,6 +69,6 @@ class Object(gws.base.layer.vector.Object):
             gws.ext.object.finder,
             cfg,
             type=self.extType,
-            _defaultProvider=self.dbProvider,
+            _defaultDb=self.db,
             _defaultTableName=self.tableName
         )

@@ -26,7 +26,7 @@ def run(ix: index.Object, data_schema: str, with_force=False, with_cache=False):
     elif ix.status().complete:
         return
 
-    rdr = norbit6.Object(ix.dbProvider, schema=data_schema)
+    rdr = norbit6.Object(ix.db, schema=data_schema)
     rr = _Runner(ix, rdr, with_cache)
     rr.run()
 
@@ -984,31 +984,32 @@ class _Runner:
         self.initMemory = gws.lib.osx.process_rss_size()
 
     def run(self):
-        with ProgressIndicator(f'ALKIS: indexing'):
-            self.place.load_or_collect()
-            self.memory_info()
+        with self.ix.db.connect() as conn:
+            with ProgressIndicator(f'ALKIS: indexing'):
+                self.place.load_or_collect()
+                self.memory_info()
 
-            self.buchung.load_or_collect()
-            self.memory_info()
+                self.buchung.load_or_collect()
+                self.memory_info()
 
-            self.lage.load_or_collect()
-            self.memory_info()
+                self.lage.load_or_collect()
+                self.memory_info()
 
-            self.fsdata.load_or_collect()
-            self.memory_info()
+                self.fsdata.load_or_collect()
+                self.memory_info()
 
-            self.part.load_or_collect()
-            self.memory_info()
+                self.part.load_or_collect()
+                self.memory_info()
 
-            self.fsindex.collect()
-            self.memory_info()
+                self.fsindex.collect()
+                self.memory_info()
 
-            self.place.write()
-            self.buchung.write()
-            self.lage.write()
-            self.fsdata.write()
-            self.part.write()
-            self.fsindex.write()
+                self.place.write()
+                self.buchung.write()
+                self.lage.write()
+                self.fsdata.write()
+                self.part.write()
+                self.fsindex.write()
 
     def memory_info(self):
         v = gws.lib.osx.process_rss_size() - self.initMemory

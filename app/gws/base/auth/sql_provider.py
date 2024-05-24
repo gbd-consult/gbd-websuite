@@ -100,7 +100,7 @@ class Columns(gws.Enum):
 
 
 class Object(gws.base.auth.provider.Object):
-    dbProvider: gws.DatabaseProvider
+    db: gws.DatabaseProvider
     authorizationSql: str
     getUserSql: str
 
@@ -145,10 +145,8 @@ class Object(gws.base.auth.provider.Object):
 
     def _get_records(self, sql: str, params: dict) -> list[dict]:
         sql = re.sub(r'{(\w+)}', r':\1', sql)
-
-        with self.dbProvider.connection() as conn:
-            stmt = sa.text(sql)
-            return [r._asdict() for r in conn.execute(stmt, params)]
+        with self.db.connect() as conn:
+            return [gws.u.to_dict(r) for r in conn.execute(sa.text(sql), params)]
 
     def _make_user(self, rec: dict, validate: bool) -> gws.User:
         args = {

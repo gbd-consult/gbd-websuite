@@ -71,7 +71,7 @@ class Config(gws.Config):
 
 
 class Object(gws.Node):
-    dbProvider: gws.DatabaseProvider
+    db: gws.DatabaseProvider
     tableName: str
     position: PositionConfig
     crs: gws.Crs
@@ -202,11 +202,11 @@ class Object(gws.Node):
             sa.Column('wkb_geometry', sa.geo.Geometry(geometry_type='POINT', srid=self.crs.srid), index=True),
         ]
 
-        schema, name = self.dbProvider.split_table_name(self.tableName)
+        schema, name = self.db.split_table_name(self.tableName)
         sa_meta = sa.MetaData(schema=schema)
         table = sa.Table(name, sa_meta, *columns, schema=schema)
 
-        with self.dbProvider.engine().connect() as conn:
+        with self.db.connect() as conn:
             table.drop(conn, checkfirst=True)
             table.create(conn)
             conn.commit()

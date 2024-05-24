@@ -352,13 +352,13 @@ class Object(gws.OwsProvider):
 
         # @TODO support extra sql from ds['sql']
 
-        pg_provider = self.postgres_provider_from_datasource(ds)
+        db = self.postgres_provider_from_datasource(ds)
 
         return {
             'type': 'postgres',
             'tableName': table_name,
             'models': [{'type': 'postgres'}],
-            '_defaultProvider': pg_provider
+            '_defaultDb': db
         }
 
     def postgres_provider_from_datasource(self, ds: dict) -> gws.plugin.postgres.provider.Object:

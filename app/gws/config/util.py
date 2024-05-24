@@ -108,20 +108,20 @@ def configure_database_provider_for(obj: gws.Node, ext_type: Optional[str] = Non
     if uid:
         p = mgr.find_provider(uid=uid)
         if p:
-            obj.dbProvider = p
+            obj.db = p
             return True
         raise gws.Error(f'database provider {uid!r} not found')
 
-    p = obj.cfg('_defaultProvider')
+    p = obj.cfg('_defaultDb')
     if p:
-        obj.dbProvider = p
+        obj.db = p
         return True
 
     ext_type = ext_type or obj.extType
     if ext_type:
         p = mgr.find_provider(ext_type=ext_type)
         if p:
-            obj.dbProvider = p
+            obj.db = p
             return True
 
     raise gws.Error(f'no database providers of type {ext_type!r} configured')

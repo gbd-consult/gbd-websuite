@@ -105,8 +105,9 @@ class Object(related_field.Object):
             )
 
             r_to_uids = {}
-            for r, u in self.model.execute(sql, mc):
-                r_to_uids.setdefault(str(r), []).append(str(u))
+            with self.model.db.connect() as conn:
+                for r, u in conn.execute(sql):
+                    r_to_uids.setdefault(str(r), []).append(str(u))
 
             for to_feature in to.model.get_features(r_to_uids, mu.secondary_context(mc)):
                 for uid in r_to_uids.get(to_feature.uid(), []):
@@ -140,7 +141,8 @@ class Object(related_field.Object):
             ins_uids = new_uids - cur_uids
             if ins_uids:
                 sql = sa.update(to.table).values({to.key.name: key}).where(to.uid.in_(ins_uids))
-                to.model.execute(sql, mc)
+                with to.model.db.connect() as conn:
+                    conn.execute(sql)
 
             self.drop_links(to, cur_uids - new_uids, mc)
 
@@ -165,7 +167,8 @@ class Object(related_field.Object):
 
     def to_uids_for_key(self, to: related_field.RelRef, key, mc):
         sql = sa.select(to.uid).where(to.key.__eq__(key))
-        return set(str(u[0]) for u in to.model.execute(sql, mc))
+        with to.model.db.connect() as conn:
+            return set(str(u[0]) for u in conn.execute(sql))
 
     def drop_links(self, to: related_field.RelRef, to_uids, mc):
         if not to_uids:
@@ -174,4 +177,5 @@ class Object(related_field.Object):
             sql = sa.delete(to.table).where(to.uid.in_(to_uids))
         else:
             sql = sa.update(to.table).values({to.key.name: None}).where(to.uid.in_(to_uids))
-        to.model.execute(sql, mc)
+        with to.model.db.connect() as conn:
+            conn.execute(sql)

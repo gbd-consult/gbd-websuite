@@ -165,7 +165,8 @@ class Object(gws.base.model.field.Object):
             mc: gws.ModelContext
     ):
         sql = sa.select(key_column).where(model.uid_column().__eq__(uid))
-        rs = list(self.model.execute(sql, mc))
+        with model.db.connect() as conn:
+            rs = list(conn.execute(sql))
         return rs[0][0] if rs else None
 
     def update_key_for_uids(
@@ -184,7 +185,8 @@ class Object(gws.base.model.field.Object):
         }).where(
             model.uid_column().in_(uids)
         )
-        self.model.execute(sql, mc)
+        with model.db.connect() as conn:
+            conn.execute(sql)
 
     def uids_to_keys(
             self,
@@ -202,7 +204,8 @@ class Object(gws.base.model.field.Object):
             keys = set(v for v in keys if v is not None)
             sql = sa.select(model.uid_column(), key_column).where(key_column.in_(keys))
 
-        return {str(uid): key for uid, key in self.model.execute(sql, mc)}
+        with model.db.connect() as conn:
+            return {str(uid): key for uid, key in conn.execute(sql)}
 
     def uid_and_key_for_uids(
             self,
@@ -214,7 +217,8 @@ class Object(gws.base.model.field.Object):
 
         vs = set(v for v in uids if v is not None)
         sql = sa.select(model.uid_column(), key_column).where(model.uid_column().in_(vs))
-        return set((uid, key) for uid, key in self.model.execute(sql, mc))
+        with model.db.connect() as conn:
+            return set((uid, key) for uid, key in conn.execute(sql))
 
     def uid_and_key_for_keys(
             self,
@@ -226,7 +230,8 @@ class Object(gws.base.model.field.Object):
 
         vs = set(v for v in keys if v is not None)
         sql = sa.select(model.uid_column(), key_column).where(key_column.in_(vs))
-        return set((uid, key) for uid, key in self.model.execute(sql, mc))
+        with model.db.connect() as conn:
+            return set((uid, key) for uid, key in conn.execute(sql))
 
     def update_uid_and_key(
             self,
@@ -236,15 +241,16 @@ class Object(gws.base.model.field.Object):
             mc: gws.ModelContext
     ):
 
-        for uid, key in uid_and_key:
-            sql = sa.update(
-                model.table()
-            ).values({
-                key_column: key
-            }).where(
-                model.uid_column().__eq__(uid)
-            )
-            self.model.execute(sql, mc)
+        with model.db.connect() as conn:
+            for uid, key in uid_and_key:
+                sql = sa.update(
+                    model.table()
+                ).values({
+                    key_column: key
+                }).where(
+                    model.uid_column().__eq__(uid)
+                )
+                conn.execute(sql)
 
     def drop_uid_and_key(
             self,
@@ -274,7 +280,8 @@ class Object(gws.base.model.field.Object):
                 model.uid_column().in_(vs)
             )
 
-        self.model.execute(sql, mc)
+        with model.db.connect() as conn:
+            conn.execute(sql)
 
     def get_related(
             self,

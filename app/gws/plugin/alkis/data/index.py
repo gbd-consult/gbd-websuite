@@ -65,7 +65,7 @@ class Object(gws.Node):
 
     ALL_TABLES = TABLES_BASIC + TABLES_BUCHUNG + TABLES_EIGENTUEMER
 
-    dbProvider: gws.plugin.postgres.provider.Object
+    db: gws.plugin.postgres.provider.Object
     crs: gws.Crs
     schema: str
     excludeGemarkung: set[str]
@@ -238,9 +238,6 @@ class Object(gws.Node):
             ],
         }
 
-    def connect(self):
-        return self.dbProvider.engine().connect()
-
     ##
 
     def table(self, table_id: str) -> sa.Table:
@@ -255,23 +252,15 @@ class Object(gws.Node):
         return self.tables[table_id]
 
     def table_size(self, table_id) -> int:
-        with self.connect() as conn:
-            sizes = self._table_size_map(conn, [table_id])
-            return sizes.get(table_id, 0)
+        sizes = self._table_size_map([table_id])
+        return sizes.get(table_id, 0)
 
-    def _table_size_map(self, conn, table_ids):
+    def _table_size_map(self, table_ids):
         d = {}
 
-        for table_id in table_ids:
-            tab = self.table(table_id)
-            sel = sa.select(sa.func.count()).select_from(tab)
-            try:
-                for r in conn.execute(sel):
-                    d[table_id] = r[0]
-            except sa.exc.ProgrammingError:
-                d[table_id] = 0
-            finally:
-                conn.rollback()
+        with self.db.connect() as conn:
+            for table_id in table_ids:
+                d[table_id] = self.db.count(self.table(table_id))
 
         return d
 
@@ -279,24 +268,23 @@ class Object(gws.Node):
         return self.table_size(table_id) > 0
 
     def status(self) -> Status:
-        with self.connect() as conn:
-            sizes = self._table_size_map(conn, self.ALL_TABLES)
-            s = Status(
-                basic=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_BASIC),
-                buchung=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_BUCHUNG),
-                eigentuemer=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_EIGENTUEMER),
-            )
-            s.complete = s.basic and s.buchung and s.eigentuemer
-            gws.log.debug(f'ALKIS: table sizes {sizes!r}')
+        sizes = self._table_size_map(self.ALL_TABLES)
+        s = Status(
+            basic=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_BASIC),
+            buchung=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_BUCHUNG),
+            eigentuemer=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_EIGENTUEMER),
+        )
+        s.complete = s.basic and s.buchung and s.eigentuemer
+        gws.log.debug(f'ALKIS: table sizes {sizes!r}')
         return s
 
     def drop_table(self, table_id: str):
-        with self.connect() as conn:
+        with self.db.connect() as conn:
             self._drop_table(conn, table_id)
             conn.commit()
 
     def drop(self):
-        with self.connect() as conn:
+        with self.db.connect() as conn:
             for table_id in self.ALL_TABLES:
                 self._drop_table(conn, table_id)
             conn.commit()
@@ -314,9 +302,9 @@ class Object(gws.Node):
             progress: Optional[ProgressIndicator] = None
     ):
         tab = self.table(table_id)
-        self.saMeta.create_all(self.dbProvider.engine(), tables=[tab])
+        self.saMeta.create_all(self.db.engine(), tables=[tab])
 
-        with self.connect() as conn:
+        with self.db.connect() as conn:
             for i in range(0, len(values), self.INSERT_SIZE):
                 vals = values[i:i + self.INSERT_SIZE]
                 conn.execute(sa.insert(tab).values(vals))
@@ -344,8 +332,8 @@ class Object(gws.Node):
 
         self._strasseList = []
 
-        with self.connect() as conn:
-            for r in conn.execute(sa.select(*cols).group_by(*cols)).mappings().all():
+        with self.db.connect() as conn:
+            for r in conn.execute(sa.select(*cols).group_by(*cols)):
                 self._strasseList.append(dt.Strasse(
                     gemeinde=dt.EnumPair(r.gemeindecode, r.gemeinde),
                     gemarkung=dt.EnumPair(r.gemarkungcode, r.gemarkung),
@@ -363,7 +351,7 @@ class Object(gws.Node):
         lage_uids = []
         adresse_map = {}
 
-        with self.connect() as conn:
+        with self.db.connect() as conn:
             for r in conn.execute(sel):
                 lage_uids.append(r[0])
 
@@ -377,7 +365,7 @@ class Object(gws.Node):
 
             sel = indexlage.select().where(indexlage.c.lageuid.in_(lage_uids))
 
-            for r in conn.execute(sel).mappings():
+            for r in conn.execute(sel):
                 uid = r['lageuid']
                 adresse_map[uid] = dt.Adresse(
                     uid=uid,
@@ -401,7 +389,7 @@ class Object(gws.Node):
 
         fs_uids = []
 
-        with self.connect() as conn:
+        with self.db.connect() as conn:
             for r in conn.execute(sel):
                 uid = r[0].partition('_')[0]
                 if uid not in fs_uids:
@@ -612,7 +600,7 @@ class Object(gws.Node):
         return sel
 
     def load_flurstueck(self, fs_uids: list[str], qo: dt.FlurstueckQueryOptions) -> list[dt.Flurstueck]:
-        with self.connect() as conn:
+        with self.db.connect() as conn:
             return self._load_flurstueck(conn, fs_uids, qo)
 
     def _load_flurstueck(self, conn, fs_uids, qo: dt.FlurstueckQueryOptions):

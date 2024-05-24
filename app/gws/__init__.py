@@ -10,11 +10,13 @@ from typing import (
     cast,
     Any,
     Callable,
+    ContextManager,
     Iterable,
     Iterator,
     Literal,
     Optional,
     Protocol,
+    Union,
 )
 
 from collections.abc import (
@@ -416,7 +418,7 @@ class PermissionsConfig:
     delete: Optional[AclStr]
     """Permission to delete objects."""
     edit: Optional[AclStr]
-    """A combination of read, write, create and delete."""
+    """A combination of write, create and delete."""
 
 
 class ConfigWithAccess(Config):
@@ -3019,7 +3021,7 @@ class ModelManager(Node):
 class DatabaseModel(Model):
     """Database-based data model."""
 
-    dbProvider: 'DatabaseProvider'
+    db: 'DatabaseProvider'
     sqlFilter: str
     tableName: str
 
@@ -3029,9 +3031,7 @@ class DatabaseModel(Model):
 
     def uid_column(self) -> 'sqlalchemy.Column': ...
 
-    def connection(self) -> 'sqlalchemy.Connection': ...
 
-    def execute(self, sql: 'sqlalchemy.Executable', mc: ModelContext, parameters=None) -> 'sqlalchemy.CursorResult': ...
 
 
 class ColumnDescription(Data):
@@ -3064,7 +3064,7 @@ class RelationshipDescription(Data):
 
 
 class DataSetDescription(Data):
-    """GDAL Dataset description."""
+    """Description of a database Table or a GDAL Dataset."""
 
     columns: list[ColumnDescription]
     columnMap: dict[str, ColumnDescription]
@@ -3086,33 +3086,64 @@ class DatabaseManager(Node):
     def find_provider(self, uid: Optional[str] = None, ext_type: Optional[str] = None) -> Optional['DatabaseProvider']: ...
 
 
+DatabaseTableAlike: TypeAlias = Union['sqlalchemy.Table', str]
+"""SA ``Table`` object or a string table name."""
+
 
 class DatabaseProvider(Node):
-    """Database Provider."""
+    """Database Provider.
 
-    mgr: 'DatabaseManager'
+    A database Provider wraps SQLAlchemy ``Engine`` and ``Connection`` objects
+    and provides common db functionality.
+    """
+
     url: str
-    models: list['DatabaseModel']
+    """Connection url."""
 
-    def connection(self) -> 'sqlalchemy.Connection': ...
+    def column(self, table: DatabaseTableAlike, column_name: str) -> 'sqlalchemy.Column':
+        """SA ``Column`` object for a specific column."""
 
-    def engine(self, **kwargs) -> 'sqlalchemy.Engine': ...
+    def connect(self) -> ContextManager['sqlalchemy.Connection']:
+        """Context manager for a SA ``Connection``.
 
-    def split_table_name(self, table_name: str) -> tuple[str, str]: ...
+        Context calls to this method can be nested. An inner call is a no-op, as no new connection is created.
+        Only the outermost connection is closed upon exit::
 
-    def join_table_name(self, schema: str, name: str) -> str: ...
+            with db.connect():
+                ...
+                with db.connect(): # no-op
+                    ...
+                # connection remains open
+                ...
+            # connection closed
+        """
 
-    def table(self, table_name: str, **kwargs) -> 'sqlalchemy.Table': ...
+    def describe(self, table: DatabaseTableAlike) -> 'DataSetDescription':
+        """Describe a table."""
 
-    def has_table(self, table_name: str) -> bool: ...
+    def count(self, table: DatabaseTableAlike) -> int:
+        """Return table record count or 0 if the table does not exist."""
 
-    def column(self, table: 'sqlalchemy.Table', column_name: str) -> 'sqlalchemy.Column': ...
+    def engine(self, **kwargs) -> 'sqlalchemy.Engine':
+        """SA ``Engine`` object for this provider."""
 
-    def has_column(self, table: 'sqlalchemy.Table', column_name: str) -> bool: ...
+    def has_column(self, table: DatabaseTableAlike, column_name: str) -> bool:
+        """Check if a specific column exists."""
 
-    def describe(self, table_name: str) -> 'DataSetDescription': ...
+    def has_table(self, table_name: str) -> bool:
+        """Check if a specific table exists."""
 
-    def table_bounds(self, table_name) -> Optional[Bounds]: ...
+    def join_table_name(self, schema: str, name: str) -> str:
+        """Create a full table name from the schema and table names."""
+
+    def split_table_name(self, table_name: str) -> tuple[str, str]:
+        """Split a full table name into the schema and table names."""
+
+    def table(self, table_name: str, **kwargs) -> 'sqlalchemy.Table':
+        """SA ``Table`` object for a specific table."""
+
+    def table_bounds(self, table: DatabaseTableAlike) -> Optional[Bounds]:
+        """Compute a bounding box for the table primary geometry."""
 ################################################################################
 
 

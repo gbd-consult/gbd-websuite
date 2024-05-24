@@ -79,7 +79,8 @@ class Object(related_field.Object):
 
     def uids_for_key(self, rel: related_field.RelRef, key, mc):
         sql = sa.select(rel.uid).where(rel.key.__eq__(key))
-        return set(str(u) for u in rel.model.execute(sql, mc))
+        with rel.model.db.connect() as conn:
+            return set(str(u) for u in conn.execute(sql))
 
     def after_select(self, features, mc):
         if not mc.user.can_read(self) or mc.relDepth >= mc.maxDepth:
@@ -99,8 +100,9 @@ class Object(related_field.Object):
         )
 
         r_to_uids = {}
-        for r, u in self.model.execute(sql, mc):
-            r_to_uids.setdefault(str(r), []).append(str(u))
+        with self.model.db.connect() as conn:
+            for r, u in conn.execute(sql):
+                r_to_uids.setdefault(str(r), []).append(str(u))
 
         for to_feature in self.rel.to.model.get_features(r_to_uids, mu.secondary_context(mc)):
             for uid in r_to_uids.get(to_feature.uid(), []):

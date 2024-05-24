@@ -201,12 +201,12 @@ class Object(gws.base.model.field.Object):
             model.uid_column().__eq__(feature_uid)
         )
 
-        rs = list(model.execute(sql, mc))
+        rs = list(conn.execute(sql))
         if not rs:
             return
 
         for row in rs:
-            fv = self.load_value(row._asdict(), mc)
+            fv = self.load_value(gws.u.to_dict(row), mc)
             return gws.ContentResponse(
                 asAttachment=not preview,
                 attachmentName=fv.name,

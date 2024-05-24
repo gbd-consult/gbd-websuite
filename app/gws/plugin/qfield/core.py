@@ -941,15 +941,15 @@ class QFieldCapsParser:
         table_name = sl.dataSource.get('table')
 
         for model in self.package.models:
-            full_name = model.dbProvider.join_table_name('', model.tableName)
-            if full_name == model.dbProvider.join_table_name('', table_name):
+            full_name = model.db.join_table_name('', model.tableName)
+            if full_name == model.db.join_table_name('', table_name):
                 gp_name = self.gp_name_for_model(full_name)
                 if gp_name not in self.caps.modelMap:
                     self.caps.modelMap[gp_name] = self.model_entry(gp_name, model)
                 return self.caps.modelMap[gp_name]
 
-        pg_provider = self.package.qgisProvider.postgres_provider_from_datasource(sl.dataSource)
-        if not pg_provider.has_table(table_name):
+        db = self.package.qgisProvider.postgres_provider_from_datasource(sl.dataSource)
+        if not db.has_table(table_name):
             gws.log.warning(f'layer {sl.sourceId!r}: table {table_name!r} not found')
             return
 
@@ -965,7 +965,7 @@ class QFieldCapsParser:
                     permissions=gws.Config(read=gws.c.PUBLIC, edit=gws.c.PUBLIC),
                     tableName=table_name,
                     isEditable=True,
-                    _defaultProvider=pg_provider,
+                    _defaultDb=db,
                 )
             )
             self.caps.modelMap[gp_name] = self.model_entry(gp_name, model)
@@ -1017,7 +1017,7 @@ def _read_offline_log(conn: sa.Connection) -> OfflineLog:
 
     for name, tab in tables.items():
         sel = sa.select(tab)
-        setattr(ol, name, [r._asdict() for r in conn.execute(sel)])
+        setattr(ol, name, [gws.u.to_dict(r) for r in conn.execute(sel)])
 
     by_commit = lambda r: r['commit_no']
 

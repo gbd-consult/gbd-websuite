@@ -43,7 +43,8 @@ def work_dir():
 
 _SPEC = None
 _CONFIG_DEFAULTS = '''
-    database.providers+ { type "postgres" serviceName "gws_test_postgres" } 
+    database.providers+ { uid "GWS_TEST_POSTGRES_PROVIDER" type "postgres" serviceName "gws_test_postgres"  schemaCacheLifeTime 0 }
+    server.log.level "INFO" 
 '''
 
 
@@ -122,6 +123,12 @@ def pg_create(table_name, col_defs):
     conn.commit()
 
 
+def pg_clear(table_name):
+    conn = pg_connect()
+    conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
+    conn.commit()
+
+
 def pg_insert(table_name, row_dicts):
     conn = pg_connect()
     conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
@@ -136,6 +143,12 @@ def pg_insert(table_name, row_dicts):
 def pg_rows(sql: str) -> list[tuple]:
     conn = pg_connect()
     return [tuple(r) for r in conn.execute(sa.text(sql))]
+
+
+def pg_content(sql_or_table_name: str) -> list[tuple]:
+    if not sql_or_table_name.lower().startswith('select'):
+        sql_or_table_name = f'SELECT * FROM {sql_or_table_name}'
+    return pg_rows(sql_or_table_name)
 
 
 def pg_exec(sql: str, **kwargs):

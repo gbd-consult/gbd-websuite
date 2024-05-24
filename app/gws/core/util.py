@@ -420,6 +420,9 @@ def to_dict(x) -> dict:
     if x is None:
         return {}
     try:
+        f = getattr(x, '_asdict', None)
+        if f:
+            return f()
         return vars(x)
     except TypeError:
         raise ValueError(f'cannot convert {x!r} to dict')

@@ -10,11 +10,13 @@ from typing import (
     cast,
     Any,
     Callable,
+    ContextManager,
     Iterable,
     Iterator,
     Literal,
     Optional,
     Protocol,
+    Union,
 )
 
 from collections.abc import (

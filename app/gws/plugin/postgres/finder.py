@@ -19,7 +19,7 @@ class Config(gws.base.search.finder.Config):
 
 
 class Object(gws.base.search.finder.Object):
-    dbProvider: gws.DatabaseProvider
+    db: gws.DatabaseProvider
     tableName: str
 
     def configure(self):
@@ -46,7 +46,7 @@ class Object(gws.base.search.finder.Object):
             gws.ext.object.model,
             cfg,
             type=self.extType,
-            _defaultProvider=self.dbProvider,
+            _defaultDb=self.db,
             _defaultTableName=self.tableName
         )
 

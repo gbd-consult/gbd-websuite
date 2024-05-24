@@ -286,6 +286,25 @@ def service_qgis(options):
     }
 
 
+_POSTGRESQL_CONF = """
+listen_addresses = '*'
+max_wal_size = 1GB
+min_wal_size = 80MB
+log_timezone = 'Etc/UTC'
+datestyle = 'iso, mdy'
+timezone = 'Etc/UTC'
+default_text_search_config = 'pg_catalog.english'
+
+logging_collector = 0
+log_line_prefix = '%t %c %a %r '
+log_statement = 'all'
+log_connections = 1
+log_disconnections = 0
+log_duration = 0
+log_hostname = 0
+"""
+
+
 def service_postgres(options):
     # https://github.com/docker-library/docs/blob/master/postgres/README.md
 
@@ -300,12 +319,16 @@ def service_postgres(options):
         ],
     }
 
+    wd = options.get('runner.work_dir')
+    write_file(f'{wd}/postgresql.conf', _POSTGRESQL_CONF)
+    cfg['volumes'] = [
+        f"{wd}/postgresql.conf:/var/lib/postgresql/data/postgresql.conf",
+    ]
+
     dd = options.get('service.postgres.data_dir')
     if dd:
         make_dir(dd)
-        cfg['volumes'] = [
-            f"{dd}:/var/lib/postgresql/data",
-        ]
+        cfg['volumes'].append(f"{dd}:/var/lib/postgresql/data")
 
     return cfg
 

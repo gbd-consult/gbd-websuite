@@ -44,7 +44,7 @@ class Object(related_field.Object):
 
     def configure_relationship(self):
         to_mod = self.get_model(self.cfg('toModel'))
-        link_tab = self.model.dbProvider.table(self.cfg('linkTableName'))
+        link_tab = self.model.db.table(self.cfg('linkTableName'))
 
         self.rel = related_field.Relationship(
             src=related_field.RelRef(
@@ -63,8 +63,8 @@ class Object(related_field.Object):
             ],
             link=related_field.Link(
                 table=link_tab,
-                fromKey=self.model.dbProvider.column(link_tab, self.cfg('linkFromColumn')),
-                toKey=self.model.dbProvider.column(link_tab, self.cfg('linkToColumn')),
+                fromKey=self.model.db.column(link_tab, self.cfg('linkFromColumn')),
+                toKey=self.model.db.column(link_tab, self.cfg('linkToColumn')),
             )
         )
         self.rel.to = self.rel.tos[0]
@@ -94,8 +94,9 @@ class Object(related_field.Object):
         )
 
         r_to_uids = {}
-        for r, u in self.model.execute(sql, mc):
-            r_to_uids.setdefault(str(r), []).append(str(u))
+        with self.model.db.connect() as conn:
+            for r, u in conn.execute(sql):
+                r_to_uids.setdefault(str(r), []).append(str(u))
 
         for to_feature in self.rel.to.model.get_features(r_to_uids, mu.secondary_context(mc)):
             for uid in r_to_uids.get(to_feature.uid(), []):
@@ -135,7 +136,8 @@ class Object(related_field.Object):
         )
 
         sql = sa.select(self.rel.to.uid, self.rel.to.key).where(self.rel.to.uid.in_(to_uids))
-        r_uid_to_key = {str(u): k for u, k in self.rel.to.model.execute(sql, mc)}
+        with self.rel.to.model.db.connect() as conn:
+            r_uid_to_key = {str(u): k for u, k in conn.execute(sql)}
 
         new_links = set()
 
@@ -147,13 +149,14 @@ class Object(related_field.Object):
         self.delete_links(cur_links - new_links, mc)
 
     def get_links(self, left_keys, mc):
-        sel = sa.select(
+        sql = sa.select(
             self.rel.link.fromKey,
             self.rel.link.toKey,
         ).where(
             self.rel.link.fromKey.in_(left_keys)
         )
-        return set((lk, rk) for lk, rk in self.model.execute(sel, mc))
+        with self.model.db.connect() as conn:
+            return set((lk, rk) for lk, rk in conn.execute(sql))
 
     def create_links(self, links, mc):
         sql = sa.insert(self.rel.link.table)
@@ -165,14 +168,16 @@ class Object(related_field.Object):
             for lk, rk in links
         ]
         if values:
-            self.model.execute(sql, mc, values)
+            with self.model.db.connect() as conn:
+                conn.execute(sql, values)
 
     def delete_links(self, links, mc):
-        for lk, rk in links:
-            sql = sa.delete(
-                self.rel.link.table
-            ).where(
-                self.rel.link.fromKey.__eq__(lk),
-                self.rel.link.toKey.__eq__(rk)
-            )
-            self.model.execute(sql, mc)
+        with self.model.db.connect() as conn:
+            for lk, rk in links:
+                sql = sa.delete(
+                    self.rel.link.table
+                ).where(
+                    self.rel.link.fromKey.__eq__(lk),
+                    self.rel.link.toKey.__eq__(rk)
+                )
+                conn.execute(sql)

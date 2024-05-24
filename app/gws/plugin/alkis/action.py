@@ -341,7 +341,7 @@ class Model(gws.base.model.dynamic_model.Object):
 
 
 class Object(gws.base.action.Object):
-    dbProvider: gws.DatabaseProvider
+    db: gws.DatabaseProvider
 
     ix: index.Object
     ixStatus: index.Status
@@ -371,7 +371,7 @@ class Object(gws.base.action.Object):
         gws.config.util.configure_database_provider_for(self, ext_type='postgres')
         self.ix = self.root.create_shared(
             index.Object,
-            _defaultProvider=self.dbProvider,
+            _defaultDb=self.db,
             crs=self.cfg('crs'),
             schema=self.cfg('indexSchema'),
             excludeGemarkung=self.cfg('excludeGemarkung'),
@@ -400,7 +400,7 @@ class Object(gws.base.action.Object):
 
         self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer'))
         if self.eigentuemer.logTableName:
-            self.eigentuemer.logTable = self.ix.dbProvider.table(self.eigentuemer.logTableName)
+            self.eigentuemer.logTable = self.ix.db.table(self.eigentuemer.logTableName)
 
         self.storage = self.create_child_if_configured(
             gws.base.storage.Object, self.cfg('storage'), categoryName='Alkis')
@@ -837,7 +837,7 @@ class Object(gws.base.action.Object):
             fs_ids=','.join(fs_uids or []),
         )
 
-        with self.ix.connect() as conn:
+        with self.ix.db.connect() as conn:
             conn.execute(sa.insert(self.eigentuemer.logTable).values([data]))
             conn.commit()
 

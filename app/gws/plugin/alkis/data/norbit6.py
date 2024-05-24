@@ -1,6 +1,7 @@
 """Read data from Norbit plugin tables (GeoInfoDok 6)."""
 
 import gws
+import gws.base.database
 import gws.lib.date
 import gws.lib.sa as sa
 import gws.plugin.postgres.provider
@@ -23,7 +24,7 @@ class Object(dt.Reader):
     }
 
     def __init__(self, provider: gws.plugin.postgres.provider.Object, schema='public'):
-        self.dbProvider = provider
+        self.db = provider
         self.schema = schema
 
         self.readers = {}
@@ -66,26 +67,27 @@ class Object(dt.Reader):
     ##
 
     def count(self, cls, table_name=None):
-        try:
-            sql = f"SELECT COUNT(*) FROM {self.schema}.{table_name or cls.__name__.lower()}"
-            with self.dbProvider.engine().connect() as conn:
-                rs = conn.execute(sa.text(sql))
-                for row in rs:
-                    return row[0]
-        except sa.exc.ProgrammingError:
-            return 0
+        # NB not using db.count to avoid schema introspection
+        sql = f"SELECT COUNT(*) FROM {self.schema}.{table_name or cls.__name__.lower()}"
+        with self.db.connect() as conn:
+            try:
+                rs = list(conn.execute(sa.text(sql)))
+                return rs[0][0]
+            except sa.Error:
+                conn.rollback()
+                return 0
 
     def read_all(self, cls, table_name=None, uids=None):
         sql = f"SELECT * FROM {self.schema}.{table_name or cls.__name__.lower()}"
         if uids:
             sql += ' WHERE gml_id IN (:uids)'
-            sel = sa.text(sql).bindparams(uids=uids)
+            sql = sa.text(sql).bindparams(uids=uids)
         else:
-            sel = sa.text(sql)
+            sql = sa.text(sql)
 
-        with self.dbProvider.engine().connect() as conn:
-            for row in conn.execution_options(stream_results=True).execute(sel):
-                r = row._mapping
+        with self.db.connect() as conn:
+            for row in conn.execute(sql, execution_options={'stream_results': True}):
+                r = gws.u.to_dict(row)
                 o = self.as_struct(cls, '', r)
                 o.identifikator = r.get('gml_id')
                 o.geom = r.get('wkb_geometry', '')

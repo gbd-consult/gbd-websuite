@@ -63,27 +63,27 @@ def _from_zipped_bytes(b: bytes) -> 'Object':
 
 
 def _from_db(root: gws.Root, store: Store):
-    prov = root.app.databaseMgr.find_provider(ext_type='postgres', uid=store.dbUid)
+    db = root.app.databaseMgr.find_provider(ext_type='postgres', uid=store.dbUid)
     schema = store.get('schema') or 'public'
-    tab = prov.table(f'{schema}.{_PRJ_TABLE}')
+    tab = db.table(f'{schema}.{_PRJ_TABLE}')
 
-    with prov.connection() as conn:
+    with db.connect() as conn:
         for row in conn.execute(sa.select(tab.c.content).where(tab.c.name.__eq__(store.projectName))):
             return _from_zipped_bytes(row[0])
         raise Error(f'{store.projectName!r} not found')
 
 
 def _to_db(root: gws.Root, store: Store, content: bytes):
-    prov = root.app.databaseMgr.find_provider(ext_type='postgres', uid=store.dbUid)
+    db = root.app.databaseMgr.find_provider(ext_type='postgres', uid=store.dbUid)
     schema = store.get('schema') or 'public'
-    tab = prov.table(f'{schema}.{_PRJ_TABLE}')
+    tab = db.table(f'{schema}.{_PRJ_TABLE}')
 
     metadata = {
         'last_modified_time': gws.lib.date.now_iso(),
         'last_modified_user': 'GWS',
     }
 
-    with prov.connection() as conn:
+    with db.connect() as conn:
         conn.execute(tab.delete().where(tab.c.name.__eq__(store.projectName + '.bak')))
         conn.execute(tab.update().values(name=store.projectName + '.bak').where(tab.c.name.__eq__(store.projectName)))
         conn.execute(tab.insert().values(

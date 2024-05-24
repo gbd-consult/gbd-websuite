@@ -39,39 +39,20 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
     ##
 
     def describe(self):
-        return self.dbProvider.describe(self.tableName)
+        return self.db.describe(self.tableName)
 
     def table(self):
-        return self.dbProvider.table(self.tableName)
+        return self.db.table(self.tableName)
 
     def column(self, column_name):
-        return self.dbProvider.column(self.table(), column_name)
+        return self.db.column(self.table(), column_name)
 
     def uid_column(self):
         if not self.uidName:
             raise gws.Error(f'no primary key found for table {self.tableName!r}')
-        if not self.dbProvider.has_column(self.table(), self.uidName):
+        if not self.db.has_column(self.table(), self.uidName):
             raise gws.Error(f'invalid primary key {self.uidName!r} for table {self.tableName!r}')
-        return self.dbProvider.column(self.table(), self.uidName)
-
-    def connection(self):
-        return self.dbProvider.connection()
-
-    def _context_connection(self, mc):
-        return _ContextConnection(self, mc)
-
-    def execute(self, sql, mc, parameters=None) -> sa.CursorResult:
-        with self._context_connection(mc):
-            try:
-                return mc.dbConnection.execute(sql, parameters or [])
-            except sa.exc.SQLAlchemyError as exc:
-                gws.log.debug(f'SQLAlchemyError: {exc=}')
-                gws.log.debug(f'SQLAlchemyError: sql={str(sql)!r}')
-                raise
-
-    def commit(self, mc) -> sa.CursorResult:
-        with self._context_connection(mc):
-            return mc.dbConnection.commit()
+        return self.db.column(self.table(), self.uidName)
 
     ##
 
@@ -88,7 +69,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             where=[]
         )
 
-        with self._context_connection(mc):
+        with self.db.connect() as conn:
             for fld in self.fields:
                 fld.before_select(mc)
 
@@ -99,10 +80,10 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
             features = []
 
-            for row in self.execute(sql, mc):
+            for row in conn.execute(sql):
                 features.append(gws.base.feature.new(
                     model=self,
-                    record=gws.FeatureRecord(attributes=row._asdict())
+                    record=gws.FeatureRecord(attributes=gws.u.to_dict(row))
                 ))
 
             for fld in self.fields:
@@ -184,7 +165,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             if from_feature.model not in related_models:
                 related_models.append(from_feature.model)
 
-        with self._context_connection(mc):
+        with self.db.connect() as conn:
             for m in related_models:
                 for fld in m.fields:
                     fld.before_create_related(feature, mc)
@@ -193,7 +174,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
                 fld.before_create(feature, mc)
 
             sql = sa.insert(self.table())
-            rs = self.execute(sql, mc, feature.record.attributes)
+            rs = conn.execute(sql, feature.record.attributes)
             feature.insertedPrimaryKey = rs.inserted_primary_key[0]
 
             for fld in self.fields:
@@ -203,7 +184,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
                 for fld in m.fields:
                     fld.after_create_related(feature, mc)
 
-            self.commit(mc)
+            conn.commit()
 
         return feature.insertedPrimaryKey
 
@@ -213,7 +194,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
         feature.record = gws.FeatureRecord(attributes={}, meta={})
 
-        with self._context_connection(mc):
+        with self.db.connect() as conn:
             for fld in self.fields:
                 fld.before_update(feature, mc)
 
@@ -225,12 +206,12 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             ).values(
                 feature.record.attributes
             )
-            self.execute(sql, mc)
+            conn.execute(sql)
 
             for fld in self.fields:
                 fld.after_update(feature, mc)
 
-            self.commit(mc)
+            conn.commit()
 
         return feature.uid()
 
@@ -238,7 +219,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
         if not mc.user.can_delete(self):
             raise gws.ForbiddenError()
 
-        with self._context_connection(mc):
+        with self.db.connect() as conn:
             for fld in self.fields:
                 fld.before_delete(feature, mc)
 
@@ -246,27 +227,11 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
                 self.uid_column().__eq__(feature.uid())
             )
 
-            self.execute(sql, mc)
+            conn.execute(sql)
 
             for fld in self.fields:
                 fld.after_delete(feature, mc)
 
-            self.commit(mc)
+            conn.commit()
 
         return feature.uid()
-
-
-class _ContextConnection:
-    def __init__(self, model: Object, mc: gws.ModelContext):
-        self.mc = mc
-        self.isTop = self.mc.dbConnection is None
-        if self.isTop:
-            self.mc.dbConnection = model.connection()
-
-    def __enter__(self) -> sa.Connection:
-        return self.mc.dbConnection
-
-    def __exit__(self, typ, value, traceback):
-        if self.isTop:
-            self.mc.dbConnection.close()
-            self.mc.dbConnection = None

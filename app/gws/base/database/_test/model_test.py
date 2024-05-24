@@ -5,32 +5,15 @@ import gws.lib.sa as sa
 import gws.test.util as u
 
 
-def test_database_is_up():
-    res = u.pg_connect().execute(sa.text('select 42'))
-    assert res.scalar_one() == 42
-
-
 ##
 
 
 @u.fixture(scope='module')
 def gws_root():
-    u.pg_create_table(
-        'plain',
-        {'id': 'int primary key', 'str1': 'text'},
-        {'id': 1, 'str1': '11'},
-        {'id': 2, 'str1': '22'},
-        {'id': 3, 'str1': '33'},
-        {'id': 4, 'str1': '44'},
-    )
-    u.pg_create_table(
-        'serial_id',
-        {'id': 'serial primary key', 'str1': 'text', 'str2': 'text'},
-    )
+    u.pg_create('plain', {'id': 'int primary key', 'a': 'text', 'b': 'text', 'c': 'text'})
+    u.pg_create('serial_id', {'id': 'serial primary key', 'a': 'text'})
 
     cfg = '''
-        database.providers+ { type "postgres" serviceName "gws_test_postgres" } 
-        
         models+ { 
             uid "PLAIN" type "postgres" tableName "plain" 
         }
@@ -44,14 +27,22 @@ def gws_root():
 
 ##
 
-def test_find_by_ids(gws_root):
+def test_get_features(gws_root):
     mc = gws.ModelContext(
         user=u.gws_system_user(),
         op=gws.ModelOperation.read,
     )
-    mm = u.model(gws_root, 'PLAIN')
-    fs = mm.find_features(gws.SearchQuery(uids=[2, 3]), mc)
-    assert u.model_feature_atts(fs, 'str1') == ['22', '33']
+    mo = u.model(gws_root, 'PLAIN')
+
+    u.pg_insert('plain', [
+        dict(id=1, a='11'),
+        dict(id=2, a='22'),
+        dict(id=3, a='33'),
+        dict(id=4, a='44'),
+    ])
+
+    fs = mo.get_features([2, 3], mc)
+    assert [f.get('a') for f in fs] == ['22', '33']
 
 
 ##
@@ -60,27 +51,35 @@ def test_create_with_explicit_pk(gws_root):
     mc = gws.ModelContext(
         user=u.gws_system_user(),
     )
-    mm = u.model(gws_root, 'PLAIN')
-    f1 = [
-        u.feature(mm, {'id': 15, 'str1': 'aa'}),
-        u.feature(mm, {'id': 17, 'str1': 'bb'}),
-        u.feature(mm, {'id': 19, 'str1': 'cc'}),
+    mo = u.model(gws_root, 'PLAIN')
+
+    u.pg_clear('plain')
+
+    mo.create_feature(u.feature(mo, id=15, a='aa'), mc)
+    mo.create_feature(u.feature(mo, id=16, a='bb'), mc)
+    mo.create_feature(u.feature(mo, id=17, a='cc'), mc)
+
+    assert u.pg_content('select id, a from plain') == [
+        (15, 'aa'),
+        (16, 'bb'),
+        (17, 'cc'),
     ]
-    f2 = mm.create_features(f1, mc)
-    assert u.model_feature_atts(f2, 'id') == [15, 17, 19]
-    assert u.model_feature_atts(f2, 'str1') == ['aa', 'bb', 'cc']
 
 
 def test_create_with_auto_pk(gws_root):
     mc = gws.ModelContext(
         user=u.gws_system_user(),
     )
-    mm = u.model(gws_root, 'SERIAL_ID')
-    f1 = [
-        u.feature(mm, {'str1': '11', 'str2': '21'}),
-        u.feature(mm, {'str1': '12', 'str2': '22'}),
-        u.feature(mm, {'str1': '13', 'str2': '23'}),
+    mo = u.model(gws_root, 'SERIAL_ID')
+
+    u.pg_clear('serial_id')
+
+    mo.create_feature(u.feature(mo, a='aa'), mc)
+    mo.create_feature(u.feature(mo, a='bb'), mc)
+    mo.create_feature(u.feature(mo, a='cc'), mc)
+
+    assert u.pg_content('serial_id') == [
+        (1, 'aa'),
+        (2, 'bb'),
+        (3, 'cc'),
     ]
-    f2 = mm.create_features(f1, mc)
-    assert u.model_feature_atts(f2, 'id') == [1, 2, 3]
-    assert u.model_feature_atts(f2, 'str1') == ['11', '12', '13']
