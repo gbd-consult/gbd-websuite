@@ -825,24 +825,6 @@ class Object(gws.base.action.Object):
         if self.eigentuemer.logTable is None:
             return
 
-        if self._eigentuemerLogTable is None:
-            schema, name = self.ix.dbProvider.split_table_name(self.eigentuemer.logTable)
-            self._eigentuemerLogTable = sa.Table(
-                name,
-                self.ix.saMeta,
-                sa.Column('id', sa.Integer, primary_key=True),
-                sa.Column('app_name', sa.Text),
-                sa.Column('date_time', sa.DateTime),
-                sa.Column('ip', sa.Text),
-                sa.Column('login', sa.Text),
-                sa.Column('user_name', sa.Text),
-                sa.Column('control_input', sa.Text),
-                sa.Column('control_result', sa.Integer),
-                sa.Column('fs_count', sa.Integer),
-                sa.Column('fs_ids', sa.Text),
-                schema=schema
-            )
-
         data = dict(
             app_name='gws',
             date_time=gws.lib.date.now_iso(),
