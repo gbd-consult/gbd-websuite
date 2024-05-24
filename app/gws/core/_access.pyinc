@@ -32,7 +32,7 @@ class PermissionsConfig:
     delete: Optional[AclStr]
     """Permission to delete objects."""
     edit: Optional[AclStr]
-    """A combination of read, write, create and delete."""
+    """A combination of write, create and delete."""
 
 
 class ConfigWithAccess(Config):

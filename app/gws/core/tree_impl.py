@@ -225,7 +225,7 @@ def configure_permissions(self):
                 if k == 'all':
                     perms[Access.read] = perms[Access.write] = perms[Access.create] = perms[Access.delete] = a
                 elif k == 'edit':
-                    perms[Access.read] = perms[Access.write] = perms[Access.create] = perms[Access.delete] = a
+                    perms[Access.write] = perms[Access.create] = perms[Access.delete] = a
                 else:
                     perms[k] = a
 
