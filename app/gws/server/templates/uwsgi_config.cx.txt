@@ -16,6 +16,7 @@ harakiri-verbose = true
 reload-mercy = 5
 worker-reload-mercy = 5
 
+lazy-apps = true
 
 @if uwsgi == 'web'
     logger = syslog:WEB,local6
