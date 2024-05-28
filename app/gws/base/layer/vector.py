@@ -65,7 +65,7 @@ class Object(core.Object):
         return tags
 
     def get_features_for_view(self, search, user, view_names=None):
-        model = self.root.app.modelMgr.locate_model(self, user=user, access=gws.Access.read)
+        model = self.root.app.modelMgr.find_model(self, user=user, access=gws.Access.read)
         if not model:
             return []
 
