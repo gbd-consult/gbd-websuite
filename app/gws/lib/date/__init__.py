@@ -67,6 +67,10 @@ def is_datetime(x) -> bool:
     return isinstance(x, datetime.datetime)
 
 
+def is_date_or_datetime(x) -> bool:
+    return isinstance(x, (datetime.datetime, datetime.date))
+
+
 # @TODO
 
 def parse(s) -> Optional[datetime.datetime]:
