@@ -95,6 +95,7 @@ actions+ { type "printer" }
 actions+ { type "project" }
 actions+ { type "search" }
 actions+ { type "web" }
+actions+ { type "ows" }
 
 auth {
     methods+ { type "web" secure true }
