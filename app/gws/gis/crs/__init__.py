@@ -29,6 +29,11 @@ class Object(gws.Crs):
     def __repr__(self):
         return f'<crs:{self.srid}>'
 
+    def axis_for_format(self, fmt):
+        if not self.isYX:
+            return self.axis
+        return _AXIS_FOR_FORMAT.get(fmt, self.axis)
+
     def transform_extent(self, ext, crs_to):
         if crs_to == self:
             return ext
@@ -407,16 +412,16 @@ Projections can be referenced by:
 # https://docs.geoserver.org/stable/en/user/services/wfs/webadmin.html#gml
 """
 
-_formats = {
-    gws.CrsFormat.srid: '%d',
-    gws.CrsFormat.epsg: 'EPSG:%d',
-    gws.CrsFormat.url: 'http://www.opengis.net/gml/srs/epsg.xml#%d',
-    gws.CrsFormat.uri: 'http://www.opengis.net/def/crs/epsg/0/%d',
-    gws.CrsFormat.urnx: 'urn:x-ogc:def:crs:EPSG:%d',
-    gws.CrsFormat.urn: 'urn:ogc:def:crs:EPSG::%d',
+_WRITE_FORMATS = {
+    gws.CrsFormat.srid: '{:d}',
+    gws.CrsFormat.epsg: 'EPSG:{:d}',
+    gws.CrsFormat.url: 'http://www.opengis.net/gml/srs/epsg.xml#{:d}',
+    gws.CrsFormat.uri: 'http://www.opengis.net/def/crs/epsg/0/{:d}',
+    gws.CrsFormat.urnx: 'urn:x-ogc:def:crs:EPSG:{:d}',
+    gws.CrsFormat.urn: 'urn:ogc:def:crs:EPSG::{:d}',
 }
 
-_parse_formats = {
+_PARSE_FORMATS = {
     gws.CrsFormat.srid: r'^(\d+)$',
     gws.CrsFormat.epsg: r'^epsg:(\d+)$',
     gws.CrsFormat.url: r'^http://www.opengis.net/gml/srs/epsg.xml#(\d+)$',
@@ -435,6 +440,21 @@ _aliases = {
     'epsg:900913': 3857,
     'epsg:102100': 3857,
     'epsg:102113': 3857,
+}
+
+# https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
+# EPSG:4326                                    longitude/latitude
+# http://www.opengis.net/gml/srs/epsg.xml#xxxx longitude/latitude
+# urn:x-ogc:def:crs:EPSG:xxxx                  latitude/longitude
+# urn:ogc:def:crs:EPSG::4326                   latitude/longitude
+
+_AXIS_FOR_FORMAT = {
+    gws.CrsFormat.srid: gws.Axis.xy,
+    gws.CrsFormat.epsg: gws.Axis.xy,
+    gws.CrsFormat.url: gws.Axis.xy,
+    gws.CrsFormat.uri: gws.Axis.xy,
+    gws.CrsFormat.urnx: gws.Axis.yx,
+    gws.CrsFormat.urn: gws.Axis.yx,
 }
 
 
@@ -456,7 +476,7 @@ def _parse(crs_name):
             if isinstance(crs_name, int):
                 return gws.CrsFormat.epsg, int(crs_name)
 
-        for fmt, r in _parse_formats.items():
+        for fmt, r in _PARSE_FORMATS.items():
             m = re.match(r, crs_name)
             if m:
                 return fmt, int(m.group(1))
@@ -465,7 +485,7 @@ def _parse(crs_name):
 
 
 def _unparse(srid, fmt):
-    return _formats[fmt] % srid
+    return _WRITE_FORMATS[fmt].format(srid)
 
 
 ##

@@ -79,6 +79,13 @@ class Crs:
     extent: Extent
     """CRS own Extent."""
 
+    def axis_for_format(self, fmt: 'CrsFormat') -> Axis:
+        """Get the axis depending on the string format.
+
+        We adhere to the GeoServer convention here:
+        https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
+        """
+
     def transform_extent(self, extent: Extent, crs_to: 'Crs') -> Extent:
         """Transform an Extent from this CRS to another.
 
