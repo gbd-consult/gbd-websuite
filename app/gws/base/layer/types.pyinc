@@ -59,7 +59,6 @@ class FeatureLoadingStrategy(Enum):
 class LayerOwsOptions(Data):
     """Layer options for OWS services."""
 
-    enabled: bool
     layerName: str
     featureName: str
     xmlNamespace: 'XmlNamespace'
@@ -90,7 +89,7 @@ class Layer(Node):
     resolutions: list[float]
     title: str
 
-    owsOptions: Optional['LayerOwsOptions']
+    owsOptions: 'LayerOwsOptions'
 
     grid: Optional[TileGrid]
     cache: Optional[LayerCache]

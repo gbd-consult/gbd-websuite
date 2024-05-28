@@ -7,6 +7,7 @@ import gws.base.legend
 import gws.base.model
 import gws.base.search
 import gws.base.template
+import gws.base.xml
 import gws.config.util
 import gws.gis.bounds
 import gws.gis.crs
@@ -17,7 +18,6 @@ import gws.lib.metadata
 import gws.lib.style
 import gws.lib.svg
 import gws.lib.xmlx
-
 
 DEFAULT_TILE_SIZE = 256
 
@@ -54,7 +54,9 @@ class OwsConfig(gws.Config):
     layerName: str = ''
     featureName: str = ''
     geometryName: str = ''
-    xmlNamespace: Optional[gws.XmlNamespace]
+    xmlNamespace: Optional[gws.base.xml.NamespaceConfig]
+    allowedServices: Optional[list[str]]
+    deniedServices: Optional[list[str]]
 
 
 class ClientOptions(gws.Data):
@@ -196,7 +198,7 @@ class Object(gws.Layer):
 
         self.grid = None
         self.cache = None
-        self.owsOptions = None
+        self.owsOptions = gws.LayerOwsOptions()
 
         setattr(self, 'provider', None)
         self.sourceLayers = []
@@ -297,15 +299,17 @@ class Object(gws.Layer):
         self.layers = gws.u.compact(ls)
 
     def configure_ows(self):
-        self.isEnabledForOws = self.cfg('withOws')
+        self.isEnabledForOws = self.cfg('withOws', default=True)
 
         p = self.cfg('ows') or gws.Data()
         self.owsOptions = gws.LayerOwsOptions(
             layerName=p.layerName or gws.u.to_uid(self.title),
             featureName=p.featureName or gws.u.to_uid(self.title),
-            geometryName=p.geometryName or 'geometry',
-            xmlNamespace=p.xmlNamespace,
+            geometryName=p.geometryName or '',
+            xmlNamespace=None,
         )
+        if p.xmlNamespace:
+            self.owsOptions.xmlNamespace = self.root.app.xmlMgr.add_namespace(p.xmlNamespace)
 
     ##
 
@@ -391,7 +395,7 @@ class Object(gws.Layer):
     def render(self, lri):
         pass
 
-    def get_features_for_view(self, search, user, view_names= None):
+    def get_features_for_view(self, search, user, view_names=None):
         return []
 
     def render_legend(self, args=None) -> Optional[gws.LegendRenderOutput]:
