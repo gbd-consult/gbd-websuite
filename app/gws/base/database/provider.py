@@ -182,7 +182,7 @@ class Object(gws.DatabaseProvider):
     def describe(self, table):
         sa_table = self._sa_table(table)
         if sa_table is None:
-            return
+            raise sa.Error(f'table {table!r} not found')
 
         schema, name = self.split_table_name(sa_table.name)
 
