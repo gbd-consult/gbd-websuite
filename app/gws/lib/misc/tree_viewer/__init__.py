@@ -5,6 +5,7 @@ import json
 import os
 import pickle
 import sys
+import re
 
 
 def load_pickle(path):
@@ -107,33 +108,74 @@ def load_pickle(path):
 path = sys.argv[1]
 obj_list = load_pickle(path)
 
+try:
+    mode = sys.argv[2]
+except:
+    mode = 'json'
+
 path = json.dumps(path)
 data = json.dumps(obj_list, indent=4, sort_keys=True).replace('</script>', '<\\/script>')
 
-cdir = os.path.dirname(__file__)
+if mode == 'html':
+    cdir = os.path.dirname(__file__)
 
-with open(cdir + '/css.css') as fp:
-    css = f'<style>\n{fp.read()}\n</style>'
-with open(cdir + '/js.js') as fp:
-    js = f'<script>\n{fp.read()}\n</script>'
+    with open(cdir + '/css.css') as fp:
+        css = f'<style>\n{fp.read()}\n</style>'
+    with open(cdir + '/js.js') as fp:
+        js = f'<script>\n{fp.read()}\n</script>'
 
-# for debugging
-# css = f'<link rel="stylesheet" href="{cdir}/css.css">'
-# js = f'<script src="{cdir}/js.js"></script>'
+    # for debugging
+    # css = f'<link rel="stylesheet" href="{cdir}/css.css">'
+    # js = f'<script src="{cdir}/js.js"></script>'
 
-content = f"""
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-{css}
-</head>
-<body>
-<script>PATH={path}</script>
-<script>DATA={data}</script>
-{js}
-</body>
-</html>
-"""
+    content = f"""<!doctype html>
+        <html>
+            <head>
+                <meta charset="utf-8">
+                {css}
+            </head>
+            <body>
+                <script>PATH={path}</script>
+                <script>DATA={data}</script>
+                {js}
+            </body>
+        </html>
+    """
 
-print(content)
+    print(content)
+
+if mode == 'json':
+    print(data)
+
+if mode == 'bounds':
+    obj_map = {d['$']: d for d in obj_list}
+
+    for d in obj_list:
+        b = d.get('wgsExtent')
+        if not b:
+            continue
+        x1, y1, x2, y2 = b
+        feature = {
+            "type": "Feature",
+            "properties": {
+                "id": d['$'],
+                "name": d.get('name') or d.get('title') or '',
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [[x1, y1], [x1, y2], [x2, y2], [x2, y1], [x1, y1]]
+                ]
+            }
+        }
+        file_name = re.sub(
+            r'\W+',
+            '_',
+            feature['properties']['name'] + '_' + feature['properties']['id'],
+        )
+        fc = {
+            "type": "FeatureCollection",
+            "features": [feature],
+        }
+        with open(f'{file_name}.geojson', 'w') as fp:
+            json.dump(fc, fp, indent=4)
