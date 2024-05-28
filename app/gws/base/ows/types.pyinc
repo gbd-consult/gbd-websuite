@@ -67,21 +67,35 @@ class OwsService(Node):
     """OWS Service."""
 
     isRasterService: bool
+    """Service provides raster services."""
     isVectorService: bool
+    """Service provides vector services."""
 
+    alwaysXY: bool
+    """Force lon/lat order for geographic projections."""
     metadata: 'Metadata'
+    """Service metadata."""
     name: str
+    """Service name."""
     protocol: OwsProtocol
+    """Supported protocol."""
     supportedBounds: list[Bounds]
+    """Supported bounds."""
     supportedVersions: list[str]
+    """Supported versions."""
     supportedOperations: list['OwsOperation']
+    """Supported operations."""
     templates: list['Template']
+    """Service templates."""
     updateSequence: str
-    version: str
+    """Service update sequence."""
     withInspireMeta: bool
+    """Include INSPIRE metadata."""
     withStrictParams: bool
+    """Strict parameter checking."""
 
-    def handle_request(self, req: 'WebRequester') -> ContentResponse: ...
+    def handle_request(self, req: 'WebRequester') -> ContentResponse:
+        """Handle a service request."""
 
 
 class OwsProvider(Node):
@@ -89,6 +103,7 @@ class OwsProvider(Node):
 
     alwaysXY: bool
     authorization: Optional['OwsAuthorization']
+    bounds: Optional[Bounds]
     forceCrs: 'Crs'
     maxRequests: int
     metadata: 'Metadata'
@@ -97,6 +112,7 @@ class OwsProvider(Node):
     sourceLayers: list['SourceLayer']
     url: Url
     version: str
+    wgsExtent: Optional[Extent]
 
     def get_operation(self, verb: 'OwsVerb', method: Optional['RequestMethod'] = None) -> Optional['OwsOperation']: ...
 

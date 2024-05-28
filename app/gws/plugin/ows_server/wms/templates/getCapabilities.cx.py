@@ -3,9 +3,7 @@ import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 
 
-def main(args: dict):
-    ta = tpl.TemplateArgs(args)
-
+def main(ta: server.TemplateArgs):
     if ta.version == '1.1.0':
         pass
 
@@ -16,7 +14,7 @@ def main(args: dict):
         return tpl.to_xml(ta, ('WMS_Capabilities', doc13(ta)))
 
 
-def doc13(ta: tpl.TemplateArgs):
+def doc13(ta: server.TemplateArgs):
     yield {
         'version': ta.version,
         'updateSequence': ta.service.updateSequence,
@@ -26,7 +24,7 @@ def doc13(ta: tpl.TemplateArgs):
     yield 'Capability', caps_13(ta)
 
 
-def service_meta(ta: tpl.TemplateArgs):
+def service_meta(ta: server.TemplateArgs):
     md = ta.service.metadata
 
     yield 'Name', md.name
@@ -65,7 +63,7 @@ def service_meta(ta: tpl.TemplateArgs):
     yield meta_links(ta, md)
 
 
-def meta_links(ta: tpl.TemplateArgs, md: gws.Metadata):
+def meta_links(ta: server.TemplateArgs, md: gws.Metadata):
     if md.metaLinks:
         for ml in md.metaLinks:
             yield (
@@ -74,7 +72,7 @@ def meta_links(ta: tpl.TemplateArgs, md: gws.Metadata):
                 tpl.online_resource(ta.url_for(ml.url)))
 
 
-def service_misc(ta: tpl.TemplateArgs):
+def service_misc(ta: server.TemplateArgs):
     # s = ta.service.layer_limit
     # if s:
     #     yield ('LayerLimit', s)
@@ -86,7 +84,7 @@ def service_misc(ta: tpl.TemplateArgs):
     pass
 
 
-def caps_13(ta: tpl.TemplateArgs):
+def caps_13(ta: server.TemplateArgs):
     yield 'Request', request_caps(ta)
 
     yield 'Exception/Format', 'XML'
@@ -97,22 +95,22 @@ def caps_13(ta: tpl.TemplateArgs):
     yield layer13(ta, ta.layerCapsTree.root)
 
 
-def request_caps(ta: tpl.TemplateArgs):
+def request_caps(ta: server.TemplateArgs):
     url = tpl.dcp_service_url(ta)
 
     for op in ta.service.supportedOperations:
         yield op.verb, [('Format', f) for f in op.formats], url
 
 
-def layer13(ta: tpl.TemplateArgs, lc: server.LayerCaps):
+def layer13(ta: server.TemplateArgs, lc: server.LayerCaps):
     return 'Layer', {'queryable': 1 if lc.hasSearch else 0}, layer13_content(ta, lc)
 
 
-def layer13_content(ta: tpl.TemplateArgs, lc: server.LayerCaps):
+def layer13_content(ta: server.TemplateArgs, lc: server.LayerCaps):
     md = lc.layer.metadata
 
     yield 'Name', lc.layerName
-    yield 'Title', lc.layer.title
+    yield 'Title', lc.title
 
     if md.abstract:
         yield 'Abstract', md.abstract

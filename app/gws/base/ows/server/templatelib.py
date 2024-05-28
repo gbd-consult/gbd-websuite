@@ -3,27 +3,18 @@
 from typing import Optional, Callable
 
 import gws
-import gws.base.ows.server as server
+import gws.gis.gml
+import gws.lib.date
 import gws.lib.mime
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
 
-
-class TemplateArgs(gws.Data):
-    featureCollection: server.core.FeatureCollection
-    layerCapsTree: server.LayerCapsTree
-    layerCapsList: list[server.LayerCaps]
-    project: Optional[gws.Project]
-    request: server.Request
-    service: gws.OwsService
-    serviceUrl: str
-    url_for: Callable
-    version: str
+from . import core
 
 
 # OGC 06-121r9 Table 34
 # Ordered sequence of two double values in decimal degrees, with longitude before latitude
-def ows_wgs84_bounding_box(lc: server.LayerCaps):
+def ows_wgs84_bounding_box(lc: core.LayerCaps):
     return (
         'ows:WGS84BoundingBox',
         ('ows:LowerCorner', coord_dms(lc.layer.wgsExtent[0]), ' ', coord_dms(lc.layer.wgsExtent[1])),
@@ -32,7 +23,7 @@ def ows_wgs84_bounding_box(lc: server.LayerCaps):
 
 
 # OGC 06-121r3 sec 7.4.4
-def ows_service_identification(ta: TemplateArgs):
+def ows_service_identification(ta: core.TemplateArgs):
     md = ta.service.metadata
 
     return (
@@ -48,7 +39,7 @@ def ows_service_identification(ta: TemplateArgs):
 
 
 # OGC 06-121r3 sec 7.4.5
-def ows_service_provider(ta: TemplateArgs):
+def ows_service_provider(ta: core.TemplateArgs):
     md = ta.service.metadata
 
     return (
@@ -86,7 +77,7 @@ def ows_service_provider(ta: TemplateArgs):
 # OGC 06-121r3 11.2:
 # A URL prefix is defined as a string including... mandatory question mark
 
-def ows_service_url(ta: TemplateArgs, get=True, post=False):
+def ows_service_url(ta: core.TemplateArgs, get=True, post=False):
     if get:
         yield 'ows:DCP/ows:HTTP/ows:Get', {'xlink:type': 'simple', 'xlink:href': ta.serviceUrl + '?'}
     if post:
@@ -101,7 +92,7 @@ def online_resource(url):
     return 'OnlineResource', {'xlink:type': 'simple', 'xlink:href': url}
 
 
-def dcp_service_url(ta: TemplateArgs):
+def dcp_service_url(ta: core.TemplateArgs):
     # OGC 01-068r3, 6.2.2
     # The URL prefix shall end in either a '?' (in the absence of additional server-specific parameters) or a '&'.
     # OGC 06-042, 6.3.3
@@ -109,7 +100,7 @@ def dcp_service_url(ta: TemplateArgs):
     return 'DCPType/HTTP/Get', online_resource(ta.serviceUrl + '?')
 
 
-def legend_url(ta: TemplateArgs, lc: server.LayerCaps):
+def legend_url(ta: core.TemplateArgs, lc: core.LayerCaps):
     _, _, name = xmlx.namespace.split_name(lc.layerQname)
     return (
         'LegendURL',
@@ -143,7 +134,7 @@ def _keywords(md: gws.Metadata, container_name, tag_name):
         return container_name, kws
 
 
-def lon_lat_envelope(lc: server.LayerCaps):
+def lon_lat_envelope(lc: core.LayerCaps):
     return (
         'lonLatEnvelope',
         {'srsName': 'urn:ogc:def:crs:OGC:1.3:CRS84'},
@@ -152,12 +143,65 @@ def lon_lat_envelope(lc: server.LayerCaps):
     )
 
 
+def wfs_feature_collection(ta: core.TemplateArgs):
+    fc = ta.featureCollection
+
+    if ta.gmlVersion == 2:
+        ns = xmlx.namespace.get('gml2')
+    elif ta.gmlVersion == 3:
+        ns = xmlx.namespace.get('gml3')
+    else:
+        raise gws.Error('missing gmlVersion')
+
+    tag = ['wfs:FeatureCollection', {
+        'timeStamp': fc.timestamp,
+        'numberMatched': fc.numMatched,
+        'numberReturned': fc.numReturned,
+    }, []]
+
+    for m in fc.members:
+        name = m.layerCaps.featureQname if m.layerCaps else 'wfs:feature'
+        tag[-1].append([
+            f'wfs:member/{name}',
+            {'gml:id': m.feature.uid()},
+            _wfs_feature_collection_member(ta, m)
+        ])
+
+    return tag
+
+
+def _wfs_feature_collection_member(ta: core.TemplateArgs, m: core.FeatureCollectionMember):
+    tags = []
+    geom_name = m.layerCaps.geometryName if m.layerCaps else 'geometry'
+
+    for name, value in sorted(m.feature.attributes.items()):
+        if name != geom_name:
+            if m.layerCaps:
+                name = xmlx.namespace.qualify_name(name, m.layerCaps.xmlNamespace)
+            if value is None:
+                value = ''
+            elif gws.lib.date.is_date_or_datetime(value):
+                value = value.isoformat()
+            else:
+                value = str(value)
+            tags.append([name, value])
+
+    shape = m.feature.shape()
+    if shape:
+        el = gws.gis.gml.shape_to_element(shape, version=ta.gmlVersion, always_xy=ta.sr.alwaysXY, with_inline_xmlns=True)
+        if m.layerCaps:
+            geom_name = xmlx.namespace.qualify_name(geom_name, m.layerCaps.xmlNamespace)
+        tags.append([geom_name, el])
+
+    return tags
+
+
 # http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd
 # Scenario 2: Mandatory (where appropriate) metadata elements not mapped to standard capabilities,
 # plus mandatory language parameters,
 # plus OPTIONAL MetadataUrl pointing to an INSPIRE Compliant ISO metadata document
 
-def inspire_extended_capabilities(ta: TemplateArgs):
+def inspire_extended_capabilities(ta: core.TemplateArgs):
     md = ta.service.metadata
     return [
         (
@@ -221,13 +265,13 @@ def coord_m(n):
     return round(n, gws.lib.uom.DEFAULT_PRECISION[gws.Uom.m])
 
 
-def to_xml(ta: TemplateArgs, tag):
-    if ta.request.isSoap:
+def to_xml(ta: core.TemplateArgs, tag, extra_namespaces: Optional[list[gws.XmlNamespace]] = None):
+    if ta.sr.isSoap:
         tag = 'soap:Envelope', ('soap:Header', ''), ('soap:Body', tag)
 
     el = xmlx.tag(*tag)
     xml = el.to_string(
-        el,
+        extra_namespaces=extra_namespaces,
         with_xml_declaration=True,
         with_namespace_declarations=True,
         with_schema_locations=True

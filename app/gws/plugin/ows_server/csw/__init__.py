@@ -41,28 +41,28 @@ class Object(gws.base.ows.server.service.Object):
         return [
             gws.Config(
                 type='py',
-                path=f'{base}/getCapabilities.py',
+                path=f'{base}/getCapabilities.cx.py',
                 subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
                 access=gws.c.PUBLIC,
             ),
             gws.Config(
                 type='py',
-                path=f'{base}/getRecords.py',
+                path=f'{base}/getRecords.cx.py',
                 subject='ows.getRecords',
                 mimeTypes=['xml'],
                 access=gws.c.PUBLIC,
             ),
             gws.Config(
                 type='py',
-                path=f'{base}/getRecordById.py',
+                path=f'{base}/getRecordById.cx.py',
                 subject='ows.GetRecordById',
                 mimeTypes=['xml'],
                 access=gws.c.PUBLIC,
             ),
             gws.Config(
                 type='py',
-                path=f'{base}/record.py',
+                path=f'{base}/record.cx.py',
                 subject='ows.Record',
                 mimeTypes=['xml'],
                 access=gws.c.PUBLIC,

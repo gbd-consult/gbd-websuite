@@ -1,7 +1,8 @@
 from .core import (
     LayerCaps,
     LayerCapsTree,
-    Request,
+    ServiceRequest,
+    TemplateArgs,
     FeatureCollection,
     FeatureCollectionMember,
 )

@@ -2,35 +2,24 @@ import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 
 
-def main(args: dict):
-    ta = tpl.TemplateArgs(args)
+def main(ta: server.TemplateArgs):
     return tpl.to_xml(ta, ('WFS_Capabilities', doc(ta)))
 
 
-def doc(ta: tpl.TemplateArgs):
+def doc(ta: server.TemplateArgs):
     yield {
         'version': ta.version,
         'xmlns': 'wfs',
     }
 
-    # for lc in ta.layerCapsList:
-    #     pfx, _ = tpl.split_name(lc.featureQname)
-    #     yield {'xmlns:' + pfx: ''}
-
     yield tpl.ows_service_identification(ta)
     yield tpl.ows_service_provider(ta)
-
     yield 'ows:OperationsMetadata', operations(ta)
-
-    yield (
-        'FeatureTypeList',
-        [('FeatureType', feature_type(ta, lc)) for lc in ta.layerCapsList]
-    )
-
+    yield 'FeatureTypeList', feature_type_list(ta)
     yield 'fes:Filter_Capabilities', filters(ta)
 
 
-def operations(ta: tpl.TemplateArgs, default_count=1000):
+def operations(ta: server.TemplateArgs, default_count=1000):
     versions = [tpl.ows_value(v) for v in ta.service.supportedVersions]
 
     yield (
@@ -84,7 +73,12 @@ def operations(ta: tpl.TemplateArgs, default_count=1000):
         yield 'ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)
 
 
-def feature_type(ta: tpl.TemplateArgs, lc: server.LayerCaps):
+def feature_type_list(ta: server.TemplateArgs):
+    for lc in ta.layerCapsList:
+        yield ['FeatureType', feature_type(ta, lc)]
+
+
+def feature_type(ta: server.TemplateArgs, lc: server.LayerCaps):
     yield 'Name', lc.featureQname
     yield 'Title', lc.layer.title
     yield 'Abstract', lc.layer.metadata.abstract
@@ -102,7 +96,7 @@ def feature_type(ta: tpl.TemplateArgs, lc: server.LayerCaps):
             yield 'MetadataURL', {'xlink:href': ta.url_for(ml.url)}
 
 
-def filters(ta: tpl.TemplateArgs):
+def filters(ta: server.TemplateArgs):
     yield (
         'fes:Conformance',
         constraint('fes:ImplementsAdHocQuery', 'TRUE'),
@@ -133,4 +127,4 @@ def filters(ta: tpl.TemplateArgs):
 
 def constraint(name, value):
     ns, n = name.split(':')
-    return ns + ':Constraint', {'name': n}, ('ows:NoValues',), ('ows:DefaultValue', value)
+    return ns + ':Constraint', {'name': n}, ['ows:NoValues'], ['ows:DefaultValue', value]

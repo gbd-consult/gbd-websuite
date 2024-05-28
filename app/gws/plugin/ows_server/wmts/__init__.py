@@ -35,7 +35,7 @@ class Object(gws.base.ows.server.service.Object):
         return [
             gws.Config(
                 type='py',
-                path=gws.u.dirname(__file__) + '/templates/getCapabilities.py',
+                path=gws.u.dirname(__file__) + '/templates/getCapabilities.cx.py',
                 subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
                 access=gws.c.PUBLIC,

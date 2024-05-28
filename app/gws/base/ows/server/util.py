@@ -1,6 +1,6 @@
 """Server utilities."""
 
-from typing import Optional
+from typing import Optional, cast
 
 import gws
 import gws.base.layer.core
@@ -14,46 +14,36 @@ import gws.lib.image
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
 
-
 from . import core
-
-DEFAULT_OWS_XML_NAMESPACE = gws.XmlNamespace(
-    xmlns='gws',
-    uri='http://gbd-websuite.de',
-    schemaLocation='',
-    version=''
-)
 
 
 # @TODO caps trees should be cached for public layers
 
 
-def layer_caps_tree(rd: core.Request, root_layer: Optional[gws.Layer] = None) -> core.LayerCapsTree:
+def layer_caps_tree(sr: core.ServiceRequest, root_layer: Optional[gws.Layer] = None) -> core.LayerCapsTree:
     lct = core.LayerCapsTree(root=None, roots=[], leaves=[])
 
     if root_layer:
-        _collect_layer_caps(rd, lct, root_layer)
-    elif rd.project:
-        r = rd.project.map.rootLayer
-        if r.layers:
-            _collect_layer_caps(rd, lct, r.layers[0])
+        _collect_layer_caps(sr, lct, root_layer)
+    elif sr.project:
+        _collect_layer_caps(sr, lct, sr.project.map.rootLayer)
     return lct
 
 
 def _collect_layer_caps(
-        rd: core.Request,
+        sr: core.ServiceRequest,
         lct: core.LayerCapsTree,
         layer: gws.Layer,
         parent_lc: Optional[core.LayerCaps] = None,
 ):
-    if not rd.req.user.can_read(layer) or not layer.isEnabledForOws:
+    if not sr.req.user.can_read(layer) or not layer.isEnabledForOws:
         return
 
-    lc = core.LayerCaps(ancestors=[], children=[])
+    lc = layer_caps_for_layer(layer, sr.req.user, [b.crs for b in sr.service.supportedBounds])
 
     if layer.isGroup:
         for la in layer.layers:
-            _collect_layer_caps(rd, lct, la, lc)
+            _collect_layer_caps(sr, lct, la, lc)
         if not lc.children:
             return
     else:
@@ -65,21 +55,36 @@ def _collect_layer_caps(
     else:
         lct.roots.append(lc)
 
+
+def layer_caps_for_layer(layer: gws.Layer, user: gws.User, supported_crs: Optional[list[gws.Crs]] = None) -> core.LayerCaps:
+    lc = core.LayerCaps(ancestors=[], children=[])
+
     lc.layer = layer
     lc.title = layer.title
+    lc.model = layer.root.app.modelMgr.find_model(layer, user=user, access=gws.Access.read)
 
     opts = layer.owsOptions
 
-    lc.layerQname = lc.layerName = xmlx.namespace.unqualify_name(opts.layerName)
-    lc.featureQname = lc.featureName = xmlx.namespace.unqualify_name(opts.featureName)
-    lc.geometryQname = lc.geometryName = xmlx.namespace.unqualify_name(opts.geometryName)
+    geom_name = opts.geometryName
+    if not geom_name and lc.model:
+        geom_name = lc.model.geometryName
+    if not geom_name:
+        geom_name = 'geometry'
 
-    ns = opts.xmlNamespace
-    if ns:
-        gws.lib.xmlx.namespace.register(ns)
-        lc.layerQname = xmlx.namespace.qualify_name(opts.layerName, ns)
-        lc.featureQname = xmlx.namespace.qualify_name(opts.featureName, ns)
-        lc.geometryQname = xmlx.namespace.qualify_name(opts.geometryName, ns)
+    lc.layerName = xmlx.namespace.unqualify_name(opts.layerName)
+    lc.featureName = xmlx.namespace.unqualify_name(opts.featureName)
+    lc.geometryName = xmlx.namespace.unqualify_name(geom_name)
+
+    lc.xmlNamespace = opts.xmlNamespace
+
+    if lc.xmlNamespace:
+        lc.layerQname = xmlx.namespace.qualify_name(lc.layerName, lc.xmlNamespace)
+        lc.featureQname = xmlx.namespace.qualify_name(lc.featureName, lc.xmlNamespace)
+        lc.geometryQname = xmlx.namespace.qualify_name(lc.geometryName, lc.xmlNamespace)
+    else:
+        lc.layerQname = lc.layerName
+        lc.featureQname = lc.featureName
+        lc.geometryQname = lc.geometryName
 
     lc.hasLegend = layer.hasLegend or any(c.hasLegend for c in lc.children)
     lc.hasSearch = layer.isSearchable or any(c.hasSearch for c in lc.children)
@@ -88,15 +93,18 @@ def _collect_layer_caps(
     lc.minScale = int(min(scales))
     lc.maxScale = int(max(scales))
 
-    lc.bounds = [
-        gws.Bounds(
-            crs=b.crs,
-            extent=gws.gis.extent.transform_from_wgs(layer.wgsExtent, b.crs)
-        )
-        for b in rd.service.supportedBounds
-    ]
+    if supported_crs:
+        lc.bounds = [
+            gws.Bounds(
+                crs=crs,
+                extent=gws.gis.extent.transform_from_wgs(layer.wgsExtent, crs)
+            )
+            for crs in supported_crs
+        ]
+    else:
+        lc.bounds = []
 
-    lc.model = rd.project.root.app.modelMgr.locate_model(layer, user=rd.req.user, access=gws.Access.read)
+    return lc
 
 
 def layer_caps_by_layer_name(lct: core.LayerCapsTree, names: Optional[str | list[str]] = None, with_ancestors=False) -> list[core.LayerCaps]:
@@ -143,7 +151,7 @@ def feature_name_matches(lc: core.LayerCaps, name: str) -> bool:
 
 ##
 
-def empty_feature_collection(rd: core.Request, results: list[gws.SearchResult]) -> core.FeatureCollection:
+def empty_feature_collection(sr: core.ServiceRequest, results: list[gws.SearchResult]) -> core.FeatureCollection:
     return core.FeatureCollection(
         members=[],
         timestamp=gws.lib.date.now_iso(with_tz=False),
@@ -152,7 +160,7 @@ def empty_feature_collection(rd: core.Request, results: list[gws.SearchResult]) 
     )
 
 
-def feature_collection(rd: core.Request, results: list[gws.SearchResult]) -> core.FeatureCollection:
+def feature_collection(sr: core.ServiceRequest, lcs: list[core.LayerCaps], results: list[gws.SearchResult]) -> core.FeatureCollection:
     fc = core.FeatureCollection(
         members=[],
         timestamp=gws.lib.date.now_iso(with_tz=False),
@@ -162,19 +170,25 @@ def feature_collection(rd: core.Request, results: list[gws.SearchResult]) -> cor
     )
 
     for r in results:
-        r.feature.transform_to(rd.targetCrs)
+        r.feature.transform_to(sr.targetCrs)
         fc.members.append(core.FeatureCollectionMember(
             feature=r.feature,
             layer=r.layer,
-            options=r.layer.owsOptions if r.layer else {}
+            layerCaps=_caps_for_layer(lcs, r.layer)
         ))
 
     return fc
 
 
-def one_of_params(rd: core.Request, *names):
+def _caps_for_layer(lcs: list[core.LayerCaps], layer: gws.Layer):
+    for lc in lcs:
+        if lc.layer == layer:
+            return lc
+
+
+def one_of_params(sr: core.ServiceRequest, *names):
     for name in names:
-        s = rd.req.param(name)
+        s = sr.req.param(name)
         if s:
             return s
 
@@ -183,15 +197,15 @@ def service_url_path(service: gws.OwsService, project: Optional[gws.Project] = N
     return gws.u.action_url_path('owsService', serviceUid=service.uid, projectUid=project.uid if project else None)
 
 
-def render_map_bbox(rd: core.Request, lcs: list[core.LayerCaps]) -> gws.ContentResponse:
+def render_map_bbox(sr: core.ServiceRequest, lcs: list[core.LayerCaps]) -> gws.ContentResponse:
     # @TODO image formats
 
     try:
-        px_width = int(rd.req.param('width'))
+        px_width = int(sr.req.param('width'))
     except:
         px_width = 0
     try:
-        px_height = int(rd.req.param('height'))
+        px_height = int(sr.req.param('height'))
     except:
         px_height = 0
 
@@ -201,7 +215,7 @@ def render_map_bbox(rd: core.Request, lcs: list[core.LayerCaps]) -> gws.ContentR
         raise gws.base.web.error.BadRequest(f'invalid HEIGHT')
 
     transparent = False
-    s = rd.req.param('transparent', '').lower()
+    s = sr.req.param('transparent', '').lower()
     if s == 'true':
         transparent = True
     elif s == 'false':
@@ -216,12 +230,12 @@ def render_map_bbox(rd: core.Request, lcs: list[core.LayerCaps]) -> gws.ContentR
 
     mri = gws.MapRenderInput(
         backgroundColor=None if transparent else 0,
-        bbox=rd.bounds.extent,
-        crs=rd.bounds.crs,
+        bbox=sr.bounds.extent,
+        crs=sr.bounds.crs,
         mapSize=(px_width, px_height, gws.Uom.px),
         planes=planes,
-        project=rd.project,
-        user=rd.req.user,
+        project=sr.project,
+        user=sr.req.user,
     )
 
     mro = gws.gis.render.render_map(mri)
@@ -232,3 +246,90 @@ def render_map_bbox(rd: core.Request, lcs: list[core.LayerCaps]) -> gws.ContentR
         content = gws.lib.image.PIXEL_PNG8
 
     return gws.ContentResponse(mime=gws.lib.mime.PNG, content=content)
+
+
+def xml_schema(lcs: list[core.LayerCaps]) -> gws.XmlElement:
+    ns = None
+
+    for lc in lcs:
+        if not lc.xmlNamespace:
+            gws.log.debug(f'xml_schema: skip {lc.layer.uid}: no xmlns')
+            continue
+        if not ns:
+            ns = lc.xmlNamespace
+            continue
+        if lc.xmlNamespace.xmlns != ns.xmlns:
+            gws.log.debug(f'xml_schema: skip {lc.layer.uid}: wrong xmlns')
+            continue
+
+    if not ns:
+        raise gws.NotFoundError('xml_schema: no xmlns found')
+
+    tag = [
+        'xsd:schema',
+        {
+            f'xmlns:{ns.xmlns}': ns.uri,
+            'targetNamespace': ns.uri,
+            'elementFormDefault': 'qualified',
+        }
+    ]
+
+    if ns.extendsGml:
+        gml = gws.lib.xmlx.namespace.get('gml3')
+        tag.append(['xsd:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}])
+
+    for lc in lcs:
+        elements = []
+        for f in lc.model.fields:
+            # if user.can_read(f):
+            if 1:
+                typ = _ATTR_TO_XSD.get(f.attributeType)
+                if typ:
+                    elements.append(['xsd:element', {
+                        'maxOccurs': '1',
+                        'minOccurs': '0',
+                        'nillable': 'false' if f.isRequired else 'true',
+                        'name': f.name,
+                        'type': typ,
+                    }])
+
+        type_name = f'{lc.featureName}Type'
+
+        type_def = ['xsd:complexContent']
+        if ns.extendsGml:
+            type_def.append(['xsd:extension', {'base': 'gml:AbstractFeatureType'}])
+        type_def.append(['xsd:sequence', elements])
+
+        atts = {
+            'name': f'{lc.featureQname}',
+            'type': type_name,
+        }
+        if ns.extendsGml:
+            atts['substitutionGroup'] = 'gml:AbstractFeature'
+
+        tag.append(['xsd:complexType', {'name': type_name}, type_def])
+        tag.append(['xsd:element', atts])
+
+    return gws.lib.xmlx.tag(*tag)
+
+
+# map attributes types to XSD
+# https://www.w3.org/TR/xmlschema11-2/#built-in-primitive-datatypes
+
+_ATTR_TO_XSD = {
+    gws.AttributeType.bool: 'xsd:boolean',
+    gws.AttributeType.bytes: 'xsd:hexBinary',
+    gws.AttributeType.date: 'xsd:date',
+    gws.AttributeType.datetime: 'xsd:dateTime',
+    gws.AttributeType.feature: '',
+    gws.AttributeType.featurelist: '',
+    gws.AttributeType.file: '',
+    gws.AttributeType.float: 'xsd:float',
+    gws.AttributeType.floatlist: '',
+    gws.AttributeType.geometry: 'gml:GeometryPropertyType',
+    gws.AttributeType.int: 'xsd:decimal',
+    gws.AttributeType.intlist: '',
+    gws.AttributeType.str: 'xsd:string',
+    gws.AttributeType.strlist: '',
+    gws.AttributeType.time: 'xsd:time',
+}

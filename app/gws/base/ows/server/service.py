@@ -1,6 +1,6 @@
 """OWS Service."""
 
-from typing import Optional
+from typing import Optional, Callable, cast
 
 import gws
 import gws.base.layer.core
@@ -17,7 +17,6 @@ import gws.lib.date
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
-
 
 from . import core, util
 
@@ -57,7 +56,31 @@ class Object(gws.OwsService):
     searchMaxLimit: int
     searchTolerance: gws.UomValue
 
-    # Configuration
+    handlers: dict[gws.OwsVerb, Callable]
+
+    OWS_VERBS = [
+        gws.OwsVerb.CreateStoredQuery,
+        gws.OwsVerb.DescribeCoverage,
+        gws.OwsVerb.DescribeFeatureType,
+        gws.OwsVerb.DescribeLayer,
+        gws.OwsVerb.DescribeRecord,
+        gws.OwsVerb.DescribeStoredQueries,
+        gws.OwsVerb.DropStoredQuery,
+        gws.OwsVerb.GetCapabilities,
+        gws.OwsVerb.GetFeature,
+        gws.OwsVerb.GetFeatureInfo,
+        gws.OwsVerb.GetFeatureWithLock,
+        gws.OwsVerb.GetLegendGraphic,
+        gws.OwsVerb.GetMap,
+        gws.OwsVerb.GetPrint,
+        gws.OwsVerb.GetPropertyValue,
+        gws.OwsVerb.GetRecordById,
+        gws.OwsVerb.GetRecords,
+        gws.OwsVerb.GetTile,
+        gws.OwsVerb.ListStoredQueries,
+        gws.OwsVerb.LockFeature,
+        gws.OwsVerb.Transaction,
+    ]
 
     def configure(self):
         self.project = self.find_closest(gws.ext.object.project)
@@ -73,6 +96,8 @@ class Object(gws.OwsService):
         self.configure_templates()
         self.configure_operations()
         self.configure_metadata()
+
+        self.handlers = {}
 
     def configure_bounds(self):
         crs_list = [gws.gis.crs.require(s) for s in self.cfg('supportedCrs', default=[])]
@@ -142,30 +167,34 @@ class Object(gws.OwsService):
     # Requests
 
     def handle_request(self, req: gws.WebRequester) -> gws.ContentResponse:
-        rd = self.init_request(req)
-        return self.dispatch_request(rd, req.param('request', ''))
+        sr = self.init_service_request(req)
+        return self.dispatch_service_request(sr)
 
-    def init_request(self, req: gws.WebRequester) -> core.Request:
-        rd = core.Request(req=req, service=self)
-        rd.project = self.requested_project(rd)
-        rd.version = self.requested_version(rd)
-        return rd
+    ##
 
-    def dispatch_request(self, rd: core.Request, verb: str):
-        handler = getattr(self, 'handle_' + verb.lower(), None)
-        if not handler:
-            gws.log.debug(f'ows {self.uid=}: {verb=} not found')
-            raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
-        return handler(rd)
+    def init_service_request(self, req: gws.WebRequester) -> core.ServiceRequest:
+        sr = core.ServiceRequest(req=req, service=self)
+        sr.alwaysXY = False
+        sr.project = self.requested_project(sr)
+        sr.isSoap = False
+        sr.verb = self.requested_verb(sr)
+        sr.version = self.requested_version(sr)
 
-    def requested_project(self, rd: core.Request) -> Optional[gws.Project]:
+        # OGC 06-042, 7.2.3.5
+        s = sr.req.param('updatesequence')
+        if s and self.updateSequence and s >= self.updateSequence:
+            raise gws.base.web.error.BadRequest('Wrong update sequence')
+
+        return sr
+
+    def requested_project(self, sr: core.ServiceRequest) -> Optional[gws.Project]:
         # services can be configured globally (in which case, self.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (self.project != None)
 
-        p = rd.req.param('projectUid')
+        p = sr.req.param('projectUid')
         if p:
-            project = rd.req.user.require_project(p)
+            project = sr.req.user.require_project(p)
             if self.project and project != self.project:
                 gws.log.debug(f'ows {self.uid=}: wrong project={p!r}')
                 raise gws.base.web.error.NotFound('Project not found')
@@ -173,10 +202,10 @@ class Object(gws.OwsService):
 
         if self.project:
             # for in-project services, ensure the user can access the project
-            return rd.req.user.require_project(self.project.uid)
+            return sr.req.user.require_project(self.project.uid)
 
-    def requested_version(self, rd: core.Request) -> str:
-        s = util.one_of_params(rd, 'version', 'acceptversions')
+    def requested_version(self, sr: core.ServiceRequest) -> str:
+        s = util.one_of_params(sr, 'version', 'acceptversions')
         if not s:
             # the first supported version is the default
             return self.supportedVersions[0]
@@ -188,54 +217,66 @@ class Object(gws.OwsService):
 
         raise gws.base.web.error.BadRequest('Unsupported service version')
 
-    def requested_crs(self, rd: core.Request) -> Optional[gws.Crs]:
-        s = util.one_of_params(rd, 'crs', 'srs', 'crsName', 'srsName')
+    def requested_verb(self, sr: core.ServiceRequest) -> gws.OwsVerb:
+        s = util.one_of_params(sr, 'request') or ''
+
+        for verb in self.OWS_VERBS:
+            if verb.lower() == s.lower():
+                return verb
+
+        raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
+
+    def requested_crs(self, sr: core.ServiceRequest, *param_names) -> Optional[gws.Crs]:
+        s = util.one_of_params(sr, *param_names)
         if s:
             crs = gws.gis.crs.get(s)
             if not crs:
                 raise gws.base.web.error.BadRequest('Invalid CRS')
             if all(crs != b.crs for b in self.supportedBounds):
-                raise gws.base.web.error.BadRequest('Invalid CRS')
+                raise gws.base.web.error.BadRequest('Unsupported CRS')
             return crs
 
-    def requested_bounds(self, rd: core.Request) -> gws.Bounds:
+    def requested_bounds(self, sr: core.ServiceRequest, *param_names) -> gws.Bounds:
         # OGC 06-042, 7.2.3.5
         # OGC 00-028, 6.2.8.2.3
 
-        bounds = gws.gis.bounds.from_request_bbox(
-            rd.req.param('bbox'),
-            default_crs=rd.crs,
-            always_xy=rd.alwaysXY)
+        s = util.one_of_params(sr, *param_names)
+        if s:
+            bounds = gws.gis.bounds.from_request_bbox(s, default_crs=sr.crs, always_xy=sr.alwaysXY)
+            if not bounds:
+                raise gws.base.web.error.BadRequest('Invalid BBOX')
+            return gws.gis.bounds.transform(bounds, sr.crs)
 
-        if not bounds:
-            raise gws.base.web.error.BadRequest('Invalid BBOX')
+    ##
 
-        return gws.gis.bounds.transform(bounds, rd.crs)
+    def dispatch_service_request(self, sr: core.ServiceRequest):
+        handler = self.handlers.get(sr.verb)
+        if not handler:
+            raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
+        return handler(sr)
 
-    # Rendering and responses
-
-    def template_response(self, rd: core.Request, verb: gws.OwsVerb, format_name: str = '', **kwargs) -> gws.ContentResponse:
+    def template_response(self, sr: core.ServiceRequest, **kwargs) -> gws.ContentResponse:
         mime = None
+        format = kwargs.pop('format', '')
 
-        if format_name:
-            mime = gws.lib.mime.get(format_name)
+        if format:
+            mime = gws.lib.mime.get(format)
             if not mime:
-                gws.log.debug(f'no mimetype: {verb=} {format_name=}')
+                gws.log.debug(f'no mimetype: {sr.verb=} {format=}')
                 raise gws.base.web.error.BadRequest('Invalid FORMAT')
 
-        tpl = self.root.app.templateMgr.find_template(self, user=rd.req.user, subject=f'ows.{verb}', mime=mime)
+        tpl = self.root.app.templateMgr.find_template(self, user=sr.req.user, subject=f'ows.{sr.verb}', mime=mime)
         if not tpl:
-            gws.log.debug(f'no template: {verb=} {format_name=}')
+            gws.log.debug(f'no template: {sr.verb=} {format=}')
             raise gws.base.web.error.BadRequest('Unsupported FORMAT')
 
-        args = gws.Data(
-            project=rd.project,
-            request=rd,
+        args = core.TemplateArgs(
+            sr=sr,
             service=self,
-            serviceUrl=rd.req.url_for(util.service_url_path(self, rd.project)),
-            url_for=rd.site.url_for,
-            version=rd.version,
+            serviceUrl=sr.req.url_for(util.service_url_path(self, sr.project)),
+            url_for=sr.req.url_for,
+            version=sr.version,
             **kwargs,
         )
 
-        return tpl.render(gws.TemplateRenderInput(args=args))
+        return cast(gws.ContentResponse, tpl.render(gws.TemplateRenderInput(args=args)))

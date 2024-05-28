@@ -1,4 +1,4 @@
-uid "wms_service_qgis"
+uid "server_wms_qgis"
 
 title "WMS service from QGIS"
 
@@ -7,12 +7,14 @@ metadata.keywords [ "wms" "ows-service" "qgis" ]
 metadata.abstract """
 `WMS` service with qgis layers
 
-[Service URL](/_/owsService/serviceUid/service_001/projectUid/wms_service_qgis?request=GetCapabilities)
+[Service URL](/_/owsService/serviceUid/server_wms_qgis_service/projectUid/server_wms_qgis?request=GetCapabilities)
 """
 
 owsServices+ {
     type "wms"
-    uid "service_001"
+    uid "server_wms_qgis_service"
+        supportedCrs [4326]
+
     metadata {
         abstract "QGIS-based WMS service"
         keywords ["test" "wms" "qgis" "demo"]
@@ -22,36 +24,9 @@ owsServices+ {
     }
 }
 
-actions+ {
-    type "ows"
-}
-
-map {
-    extent [
-        {demo_point_duesseldorf_3857[0] - 20000}
-        {demo_point_duesseldorf_3857[1] - 20000}
-        {demo_point_duesseldorf_3857[0] + 20000}
-        {demo_point_duesseldorf_3857[1] + 20000}
-    ]
-    zoom.initScale 30000
-    zoom.minScale  1000
-    zoom.maxScale  1000000
-}
-
 map.layers+ {
     title "Düsseldorf"
-    type "group"
-
-    layers+ {
-        title "Points of interest"
-        type "qgis"
-        provider { path "/demos/poi_districts_postgres.qgs" directSearch ["postgres"] }
-        rootLayers.names [ "Points of interest" ]
-    }
-    layers+ {
-        title "Districts"
-        type "qgis"
-        provider { path "/demos/poi_districts_postgres.qgs" directSearch ["postgres"] }
-        rootLayers.names [ "Districts" ]
-    }
+    type "qgis"
+    provider.path "/demos/poi_districts_postgres.qgs"
+    provider.directSearch ["postgres"]
 }
