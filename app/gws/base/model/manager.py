@@ -15,15 +15,15 @@ class Object(gws.ModelManager):
             return
         return model
 
-    def locate_model(self, *objects, user=None, access=None):
+    def find_model(self, *objects, user=None, access=None):
         for obj in objects:
             if not obj:
                 continue
-            p = self._locate(obj, user, access)
+            p = self._find(obj, user, access)
             if p:
                 return p
 
-    def _locate(self, obj, user, access):
+    def _find(self, obj, user, access):
         for model in getattr(obj, 'models', []):
             if user and access and not user.can(access, model):
                 continue
