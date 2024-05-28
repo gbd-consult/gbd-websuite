@@ -41,7 +41,10 @@ class Object(gws.Template):
 
         self.mimeTypes = []
         for p in self.cfg('mimeTypes', default=[]):
-            self.mimeTypes.append(gws.lib.mime.get(p))
+            m = gws.lib.mime.get(p)
+            if not m:
+                raise gws.ConfigurationError(f'invalid mime type {p!r}')
+            self.mimeTypes.append(m)
 
         self.mapSize = self.cfg('mapSize') or DEFAULT_MAP_SIZE
         self.pageSize = self.cfg('pageSize') or DEFAULT_PAGE_SIZE
