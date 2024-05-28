@@ -40,7 +40,7 @@ class Object(gws.Printer):
         self.title = self.cfg('title') or self.template.title or ''
 
     def props(self, user):
-        model = self.root.app.modelMgr.locate_model(self, user=user, access=gws.Access.write)
+        model = self.root.app.modelMgr.find_model(self, user=user, access=gws.Access.write)
         return Props(
             uid=self.uid,
             template=self.template,

@@ -88,7 +88,7 @@ class Object(gws.Finder):
             return gws.base.shape.from_bounds(search.project.map.bounds)
 
     def run(self, search, user, layer=None):
-        model = self.root.app.modelMgr.locate_model(self, layer, user=user, access=gws.Access.read)
+        model = self.root.app.modelMgr.find_model(self, layer, user=user, access=gws.Access.read)
         if not model:
             gws.log.debug(f'no model for {user.uid=} in finder {self.uid!r}')
             return []
