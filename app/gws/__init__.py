@@ -1366,6 +1366,8 @@ class XmlNamespace(Data):
     """Namespace schema location."""
     version: str
     """Namespace version."""
+    extendsGml: bool
+    """Namespace schema extends the GML3 schema."""
 
 
 class XmlElement(Iterable):
@@ -1402,25 +1404,25 @@ class XmlElement(Iterable):
 
     def __getitem__(self, item: int) -> 'XmlElement': ...
 
-    def append(self, subelement: 'XmlElement'): ...
-    """Adds the element subelement to the end of this element’s internal list of subelements."""
+    def append(self, subelement: 'XmlElement'):
+        """Adds the element subelement to the end of this element’s internal list of subelements."""
 
-    def attr(self, key: str, default=None) -> Any: ...
-    """Finds the value for a given key in the ``XmlElementImpl``.
+    def attr(self, key: str, default=None):
+        """Finds the value for a given key in the ``XmlElementImpl``.
 
-    Args:
-        key: Key of the attribute.
-        default: The default return.
+        Args:
+            key: Key of the attribute.
+            default: The default return.
 
-    Returns:
-        The vale of the key, If the key is not found the default is returned.
-    """
+        Returns:
+            The vale of the key, If the key is not found the default is returned.
+        """
 
-    def clear(self): ...
-    """Resets an element."""
+    def clear(self):
+        """Resets an element."""
 
-    def extend(self, subelements: Iterable['XmlElement']): ...
-    """Appends subelements from a sequence object with zero or more elements."""
+    def extend(self, subelements: Iterable['XmlElement']):
+        """Appends subelements from a sequence object with zero or more elements."""
 
     def find(self, path: str) -> Optional['XmlElement']:
         """Finds first matching element by tag name or path."""
@@ -1431,105 +1433,104 @@ class XmlElement(Iterable):
     def findtext(self, path: str, default: Optional[str] = None) -> str:
         """Finds text for first matching element by name or path."""
 
-    def get(self, key: str, default=None) -> Any: ...
-    """Returns the value to a given key."""
+    def get(self, key: str, default=None):
+        """Returns the value to a given key."""
 
-    def insert(self, index: int, subelement: 'XmlElement'): ...
-    """Inserts subelement at the given position in this element."""
+    def insert(self, index: int, subelement: 'XmlElement'):
+        """Inserts subelement at the given position in this element."""
 
-    def items(self) -> Iterable[Any]: ...
-    """Returns the element attributes as a sequence of (name, value) pairs."""
+    def items(self) -> Iterable[tuple[str, Any]]:
+        """Returns the element attributes as a sequence of (name, value) pairs."""
 
-    def iter(self, tag: Optional[str] = None) -> Iterable['XmlElement']: ...
-    """Creates a tree iterator."""
+    def iter(self, tag: Optional[str] = None) -> Iterable['XmlElement']:
+        """Creates a tree iterator."""
 
     def iterfind(self, path: Optional[str] = None) -> Iterable['XmlElement']:
         """Returns an iterable of all matching subelements by name or path."""
 
-    def itertext(self) -> Iterable[str]: ...
-    """Creates a text iterator and returns all inner text."""
+    def itertext(self) -> Iterable[str]:
+        """Creates a text iterator and returns all inner text."""
 
-    def keys(self) -> Iterable[str]: ...
-    """Returns the elements attribute names as a list."""
+    def keys(self) -> Iterable[str]:
+        """Returns the elements attribute names as a list."""
 
-    def remove(self, other: 'XmlElement'): ...
-    """Removes the other element from the element."""
+    def remove(self, other: 'XmlElement'):
+        """Removes the other element from the element."""
 
-    def set(self, key: str, value: Any): ...
-    """Set the attribute key on the element to value."""
+    def set(self, key: str, value: Any):
+        """Set the attribute key on the element to value."""
 
     # extensions
 
-    def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'XmlElement': ...
-    """Creates a new ``XmlElementImpl`` and adds it as a child.
+    def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'XmlElement':
+        """Creates a new ``XmlElementImpl`` and adds it as a child.
 
-    Args:
-        tag: XML tag.
-        attrib: XML attributes ``{key, value}``.
+        Args:
+            tag: XML tag.
+            attrib: XML attributes ``{key, value}``.
 
-    Returns:
-        A XmlElementImpl.
-    """
+        Returns:
+            A XmlElementImpl.
+        """
 
-    def children(self) -> list['XmlElement']: ...
-    """Returns the children of the current ``XmlElementImpl``."""
+    def children(self) -> list['XmlElement']:
+        """Returns the children of the current ``XmlElementImpl``."""
 
-    def findfirst(self, *paths) -> Optional['XmlElement']: ...
-    """Returns the first element in the current element.
+    def findfirst(self, *paths) -> Optional['XmlElement']:
+        """Returns the first element in the current element.
 
-    Args:
-        paths: Path as ``tag/tag2/tag3`` to the Element to search in.
+        Args:
+            paths: Path as ``tag/tag2/tag3`` to the Element to search in.
 
-    Returns:
-        Returns the first found element.
-    """
+        Returns:
+            Returns the first found element.
+        """
 
-    def textof(self, *paths) -> str: ...
-    """Returns the text of a given child-element.
+    def textof(self, *paths) -> str:
+        """Returns the text of a given child-element.
 
-    Args:
-        paths: Path as ``tag/tag2/tag3`` to the Element.
+        Args:
+            paths: Path as ``tag/tag2/tag3`` to the Element.
 
-    Returns:
-        The text of the element.
+        Returns:
+            The text of the element.
+        """
 
-    """
+    def textlist(self, *paths, deep=False) -> list[str]:
+        """Collects texts from child-elements.
 
-    def textlist(self, *paths, deep=False) -> list[str]: ...
-    """Collects texts from child-elements.
+        Args:
+            paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
+            deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
 
-    Args:
-        paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
-        deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
+        Returns:
+            A list containing all the text from the child-elements.
+        """
 
-    Returns:
-        A list containing all the text from the child-elements.
-    """
+    def textdict(self, *paths, deep=False) -> dict[str, str]:
+        """Collects texts from child-elements.
 
-    def textdict(self, *paths, deep=False) -> dict[str, str]: ...
-    """Collects texts from child-elements.
+        Args:
+            paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
+            deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
 
-    Args:
-        paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
-        deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
-
-    Returns:
-        A dict containing all the text from the child-elements.
-    """
-
-    #
+        Returns:
+            A dict containing all the text from the child-elements.
+        """
 
     def to_string(
             self,
-            compact_whitespace=False,
-            remove_namespaces=False,
-            with_namespace_declarations=False,
-            with_schema_locations=False,
-            with_xml_declaration=False,
+            extra_namespaces: Optional[list[XmlNamespace]] = None,
+            compact_whitespace: bool = False,
+            remove_namespaces: bool = False,
+            with_namespace_declarations: bool = False,
+            with_schema_locations: bool = False,
+            with_xml_declaration: bool = False,
     ) -> str:
         """Converts the Element object to a string.
 
         Args:
+            extra_namespaces: Extra namespaces to add to the document.
             compact_whitespace: Remove all whitespace outside of tags and elements.
             remove_namespaces: Remove all namespace references.
             with_namespace_declarations: Include the namespace declarations.
@@ -1541,11 +1542,7 @@ class XmlElement(Iterable):
         """
 
     def to_dict(self) -> dict:
-        """Creates a dictionary from an XmlElement object.
-
-        Returns:
-            A dict with the keys ``tag``, ``attrib``, ``text``, ``tail``, ``tail``, ``children``.
-        """
+        """Creates a dictionary from an XmlElement object."""
 ################################################################################
 
 
@@ -1715,6 +1712,13 @@ class Crs:
     """CRS Extent in the WGS projection."""
     extent: Extent
     """CRS own Extent."""
+
+    def axis_for_format(self, fmt: 'CrsFormat') -> Axis:
+        """Get the axis depending on the string format.
+
+        We adhere to the GeoServer convention here:
+        https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
+        """
 
     def transform_extent(self, extent: Extent, crs_to: 'Crs') -> Extent:
         """Transform an Extent from this CRS to another.
@@ -2704,7 +2708,6 @@ class FeatureLoadingStrategy(Enum):
 class LayerOwsOptions(Data):
     """Layer options for OWS services."""
 
-    enabled: bool
     layerName: str
     featureName: str
     xmlNamespace: 'XmlNamespace'
@@ -2735,7 +2738,7 @@ class Layer(Node):
     resolutions: list[float]
     title: str
 
-    owsOptions: Optional['LayerOwsOptions']
+    owsOptions: 'LayerOwsOptions'
 
     grid: Optional[TileGrid]
     cache: Optional[LayerCache]
@@ -3006,7 +3009,7 @@ class ModelManager(Node):
 
     def get_model(self, uid: str, user: 'User' = None, access: Access = None) -> Optional['Model']: ...
 
-    def locate_model(self, *objects, user: 'User' = None, access: Access = None) -> Optional['Model']: ...
+    def find_model(self, *objects, user: 'User' = None, access: Access = None) -> Optional['Model']: ...
 
     def editable_models(self, project: 'Project', user: 'User') -> list['Model']: ...
 
@@ -3221,21 +3224,35 @@ class OwsService(Node):
     """OWS Service."""
 
     isRasterService: bool
+    """Service provides raster services."""
     isVectorService: bool
+    """Service provides vector services."""
 
+    alwaysXY: bool
+    """Force lon/lat order for geographic projections."""
     metadata: 'Metadata'
+    """Service metadata."""
     name: str
+    """Service name."""
     protocol: OwsProtocol
+    """Supported protocol."""
     supportedBounds: list[Bounds]
+    """Supported bounds."""
     supportedVersions: list[str]
+    """Supported versions."""
     supportedOperations: list['OwsOperation']
+    """Supported operations."""
     templates: list['Template']
+    """Service templates."""
     updateSequence: str
-    version: str
+    """Service update sequence."""
     withInspireMeta: bool
+    """Include INSPIRE metadata."""
     withStrictParams: bool
+    """Strict parameter checking."""
 
-    def handle_request(self, req: 'WebRequester') -> ContentResponse: ...
+    def handle_request(self, req: 'WebRequester') -> ContentResponse:
+        """Handle a service request."""
 
 
 class OwsProvider(Node):
@@ -3243,6 +3260,7 @@ class OwsProvider(Node):
 
     alwaysXY: bool
     authorization: Optional['OwsAuthorization']
+    bounds: Optional[Bounds]
     forceCrs: 'Crs'
     maxRequests: int
     metadata: 'Metadata'
@@ -3251,6 +3269,7 @@ class OwsProvider(Node):
     sourceLayers: list['SourceLayer']
     url: Url
     version: str
+    wgsExtent: Optional[Extent]
 
     def get_operation(self, verb: 'OwsVerb', method: Optional['RequestMethod'] = None) -> Optional['OwsOperation']: ...
 
@@ -3841,7 +3860,6 @@ class WebResponder:
         """
 
 
-
 class WebDocumentRoot(Data):
     """Web document root."""
 
@@ -3922,6 +3940,18 @@ class WebSite(Node):
 ################################################################################
 
 
+################################################################################
+# /base/xml/types.pyinc
+
+
+class XmlManager(Node):
+    """XML namespaces and options manager."""
+
+    def add_namespace(self, cfg: Config) -> XmlNamespace:
+        """Create and register a custom namespace."""
+################################################################################
+
+
 
 ################################################################################
 # /base/application/types.pyinc
@@ -3957,6 +3987,7 @@ class Application(Node):
     serverMgr: 'ServerManager'
     webMgr: 'WebManager'
     middlewareMgr: 'MiddlewareManager'
+    xmlMgr: 'XmlManager'
 
     actions: list['Action']
     projects: list['Project']
