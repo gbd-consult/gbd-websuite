@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, cast
 
 import gws
 import gws.base.action
@@ -80,7 +80,7 @@ class Object(gws.Project):
         self.localeUids = self.cfg('locales') or self.root.app.localeUids
 
         self.actions = self.create_children(gws.ext.object.action, self.cfg('actions'))
-        self.map = self.create_child_if_configured(gws.ext.object.map, self.cfg('map'))
+        self.map = self.create_child_if_configured(gws.ext.object.map, self.cfg('map'), _defaultTitle=self.title)
         self.overviewMap = self.create_child_if_configured(gws.base.map.Object, self.cfg('overviewMap'))
         self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
@@ -93,7 +93,7 @@ class Object(gws.Project):
         desc = None
         tpl = self.root.app.templateMgr.find_template(self, user=user, subject='project.description')
         if tpl:
-            desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
+            desc = cast(gws.ContentResponse, tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user)))
 
         return gws.Props(
             actions=self.root.app.actionMgr.actions_for_project(self, user),
