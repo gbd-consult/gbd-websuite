@@ -4,47 +4,29 @@ from typing import Optional
 
 import mimetypes
 
-
 BIN = 'application/octet-stream'
-"""MIME-Type for files ending in .bin"""
 CSS = 'text/css'
-"""MIME-Type for files ending in .CSS"""
 CSV = 'text/csv'
-"""MIME-Type for files ending in .CSV"""
 GEOJSON = 'application/geojson'
-"""MIME-Type for files ending in .GEOJSON"""
 GIF = 'image/gif'
-"""MIME-Type for files ending in .GIF"""
 GML = 'application/gml+xml'
-"""MIME-Type for files ending in .GML"""
-GML2 = 'application/gml+xml; version=2'
-"""MIME-Type for files ending in .GML2"""
-GML3 = 'application/gml+xml; version=3'
-"""MIME-Type for files ending in .GML3"""
+GML2 = 'application/gml+xml;version=2'
+GML3 = 'application/gml+xml;version=3'
 GZIP = 'application/gzip'
-"""MIME-Type for files ending in .GZIP"""
 HTML = 'text/html'
-"""MIME-Type for files ending in .HTML"""
 JPEG = 'image/jpeg'
-"""MIME-Type for files ending in .JPEG"""
 JS = 'application/javascript'
-"""MIME-Type for files ending in .JS"""
 JSON = 'application/json'
-"""MIME-Type for files ending in .JSON"""
 PDF = 'application/pdf'
-"""MIME-Type for files ending in .PDF"""
 PNG = 'image/png'
-"""MIME-Type for files ending in .PNG"""
 SVG = 'image/svg+xml'
-"""MIME-Type for files ending in .SVG"""
 TTF = 'application/x-font-ttf'
-"""MIME-Type for files ending in .TTF"""
 TXT = 'text/plain'
-"""MIME-Type for files ending in .TXT"""
 XML = 'application/xml'
-"""MIME-Type for files ending in .XML"""
 ZIP = 'application/zip'
-"""MIME-Type for files ending in .ZIP"""
+DOC = 'application/msword'
+XLS = 'application/vnd.ms-excel'
+PPT = 'application/vnd.ms-powerpoint'
 
 _common = {
     BIN,
@@ -53,6 +35,7 @@ _common = {
     GEOJSON,
     GIF,
     GML,
+    GML2,
     GML3,
     GZIP,
     HTML,
@@ -66,6 +49,9 @@ _common = {
     TXT,
     XML,
     ZIP,
+    DOC,
+    XLS,
+    PPT,
 }
 
 _common_extensions = {
@@ -87,9 +73,9 @@ _common_extensions = {
     'xml': XML,
     'zip': ZIP,
 
-    'doc': 'application/msword',
-    'xls': 'application/vnd.ms-excel',
-    'ppt': 'application/vnd.ms-powerpoint',
+    'doc': DOC,
+    'xls': XLS,
+    'ppt': PPT,
 }
 
 _aliases = {
@@ -97,8 +83,8 @@ _aliases = {
     'application/vnd.ogc.gml': GML,
     'application/vnd.ogc.gml/3.1.1': GML3,
     'application/gml:3': GML3,
-    'application/xml; subtype=gml/2': GML2,
-    'application/xml; subtype=gml/3': GML3,
+    'application/xml;subtype=gml/2': GML2,
+    'application/xml;subtype=gml/3': GML3,
 
     'application/html': HTML,
     'application/x-gzip': GZIP,
@@ -107,9 +93,9 @@ _aliases = {
     'text/xhmtl': HTML,
     'text/xml': XML,
 
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'application/msword',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': DOC,
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': XLS,
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': PPT,
 }
 
 
@@ -126,7 +112,7 @@ def get(mt: str) -> Optional[str]:
     if not mt:
         return None
 
-    mt = mt.lower()
+    mt = mt.strip().replace(' ', '').lower()
 
     s = _get_quick(mt)
     if s:
