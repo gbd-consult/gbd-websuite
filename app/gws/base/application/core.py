@@ -15,6 +15,7 @@ import gws.base.search
 import gws.base.storage
 import gws.base.template
 import gws.base.web
+import gws.base.xml
 import gws.config
 import gws.gis.cache
 import gws.gis.mpx.config
@@ -176,6 +177,7 @@ class Object(gws.Application):
         self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.cfg('database'))
         self.storageMgr = self.create_child(gws.base.storage.manager.Object, self.cfg('storage'))
         self.authMgr = self.create_child(gws.base.auth.manager.Object, self.cfg('auth'))
+        self.xmlMgr = self.create_child(gws.base.xml.manager.Object, gws.Config())
 
         helpers = self.create_children(gws.ext.object.helper, self.cfg('helpers'))
         self.helperMap = {p.extType: p for p in helpers}

@@ -4,7 +4,6 @@ The Element class extends ``xml.etree.Element``
 and implements the `gws.core.types.IXmlElement` protocol.
 """
 
-from typing import Iterator
 import xml.etree.ElementTree
 
 import gws
@@ -29,28 +28,23 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
     def __bool__(self):
         return True
 
-    def __iter__(self) -> Iterator['XmlElementImpl']:
+    def __iter__(self):
         for i in range(len(self)):
             yield self[i]
 
     def find(self, path, namespaces=None):
-        """Finds first matching element by tag name or path."""
         return super().find(self._convert_path(path), namespaces)
 
     def findtext(self, path, default=None, namespaces=None):
-        """Finds text for first matching element by name or path."""
         return super().findtext(self._convert_path(path), default, namespaces)
 
     def findall(self, path, namespaces=None):
-        """Finds all matching subelements by name or path."""
         return super().findall(self._convert_path(path), namespaces)
 
     def iterfind(self, path, namespaces=None):
-        """Returns an iterable of all matching subelements by name or path."""
         return super().iterfind(self._convert_path(path), namespaces)
 
     def get(self, key, default=None):
-        """Returns the value to a given key."""
         if self.caseInsensitive:
             key = key.lower()
         if key in self.attrib:
@@ -61,16 +55,11 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
         return default
 
     def iter(self, tag=None):
-        """Creates a tree iterator."""
         return super().iter(self._convert_path(tag))
 
     ##
 
-    def to_dict(self) -> dict:
-        """Creates a dictionary from an XmlElementImpl object.
-
-        Returns:
-            A dict with the keys ``tag``, ``attrib``, ``text``, ``tail``, ``tail``, ``children``."""
+    def to_dict(self):
         return {
             'tag': self.tag,
             'attrib': self.attrib,
@@ -82,24 +71,13 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
 
     def to_string(
             self,
-            compact_whitespace: bool = False,
-            remove_namespaces: bool = False,
-            with_namespace_declarations: bool = False,
-            with_schema_locations: bool = False,
-            with_xml_declaration: bool = False,
-    ) -> str:
-        """Converts the XmlElement object to a string.
-
-        Args:
-            compact_whitespace: String will not contain any whitespaces outside of tags and elements.
-            remove_namespaces: String will not contain namespaces.
-            with_namespace_declarations: String will keep the namespace declarations.
-            with_schema_locations: String will keep the schema locations.
-            with_xml_declaration: String will keep the xml declaration.
-
-        Returns:
-            A String containing the xml structure.
-        """
+            extra_namespaces=None,
+            compact_whitespace=False,
+            remove_namespaces=False,
+            with_namespace_declarations=False,
+            with_schema_locations=False,
+            with_xml_declaration=False,
+    ):
 
         def make_text(s):
             if s is None:
@@ -138,7 +116,7 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
                 return pname
             return ns.xmlns + ':' + pname
 
-        def to_str(el, with_xmlns):
+        def to_str(el, extra_atts=None):
 
             atts = {}
 
@@ -147,12 +125,8 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
                     continue
                 atts[make_name(key)] = make_attr(val)
 
-            if with_xmlns:
-                atts.update(
-                    namespace.declarations(
-                        for_element=el,
-                        default_ns=default_ns,
-                        with_schema_locations=with_schema_locations))
+            if extra_atts:
+                atts.update(extra_atts)
 
             open_pos = len(buf)
             buf.append('')
@@ -162,7 +136,7 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
                 buf.append(s)
 
             for ch in el:
-                to_str(ch, False)
+                to_str(ch)
 
             open_tag = make_name(el.tag)
             close_tag = open_tag
@@ -190,7 +164,16 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
             if not default_ns:
                 raise error.NamespaceError(f'unknown namespace {xmlns!r}')
 
-        to_str(self, with_namespace_declarations)
+        extra_atts = None
+        if with_namespace_declarations:
+            extra_atts = namespace.declarations(
+                for_element=self,
+                default_ns=default_ns,
+                with_schema_locations=with_schema_locations,
+                extra_ns=extra_namespaces,
+            )
+
+        to_str(self, extra_atts)
 
         if with_xml_declaration:
             buf[0] = _XML_DECL
@@ -199,46 +182,19 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
 
     ##
 
-    def add(self, tag: str, attrib: dict = None, **extra) -> 'XmlElementImpl':
-        """Creates a new ``XmlElementImpl`` and adds it as a child.
-
-        Args:
-            tag: XML tag.
-            attrib: XML attributes ``{key, value}``.
-
-        Returns:
-            A XmlElementImpl.
-        """
+    def add(self, tag, attrib=None, **extra):
         el = self.__class__(tag, attrib, **extra)
         el.caseInsensitive = self.caseInsensitive
         self.append(el)
         return el
 
-    def attr(self, key: str, default=None) -> str:
-        """Finds the value for a given key in the ``XmlElementImpl``.
-
-        Args:
-            key: Key of the attribute.
-            default: The default return.
-
-        Returns:
-            The vale of the key, If the key is not found the default is returned.
-        """
+    def attr(self, key, default=None):
         return self.get(key, default)
 
-    def children(self) -> ['XmlElementImpl']:
-        """Returns the children of the current ``XmlElementImpl``."""
+    def children(self):
         return [c for c in self]
 
-    def findfirst(self, *paths:str) -> 'XmlElementImpl':
-        """Returns the first element in the current element.
-
-        Args:
-            paths: Path as ``tag/tag2/tag3`` to the Element to search in.
-
-        Returns:
-            Returns the first found element.
-        """
+    def findfirst(self, *paths):
         if not paths:
             return self[0] if len(self) > 0 else None
         for path in paths:
@@ -246,44 +202,17 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
             if el is not None:
                 return el
 
-    def textof(self, *paths:str) -> str:
-        """Returns the text of a given child-element.
-
-        Args:
-            paths: Path as ``tag/tag2/tag3`` to the Element.
-
-        Returns:
-            The text of the element.
-
-        """
+    def textof(self, *paths):
         for path in paths:
             el = self.find(path)
             if el is not None and el.text:
                 return el.text
 
-    def textlist(self, *paths:str, deep: bool = False) -> ['XmlElementImpl']:
-        """Collects texts from child-elements.
-
-        Args:
-            paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
-            deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
-
-        Returns:
-            A list containing all the text from the child-elements.
-        """
+    def textlist(self, *paths, deep=False):
         buf = self._collect_text(paths, deep)
         return [text for _, text in buf]
 
-    def textdict(self, *paths:str, deep: bool = False) -> dict:
-        """Collects texts from child-elements.
-
-        Args:
-            paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
-            deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
-
-        Returns:
-            A dict containing all the text from the child-elements.
-        """
+    def textdict(self, *paths, deep=False):
         buf = self._collect_text(paths, deep)
         return dict(buf)
 

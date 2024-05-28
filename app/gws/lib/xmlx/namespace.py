@@ -136,7 +136,7 @@ def qualify_name(name: str, ns: gws.XmlNamespace, replace: bool = False) -> str:
         replace: If true, replace the existing namespace.
 
     Returns:
-        A quailified name.
+        A qualified name.
     """
 
     ns2, pname = parse_name(name)
@@ -424,8 +424,7 @@ class _Index:
 _INDEX = _Index()
 
 # fake namespace for 'xmlns:'
-_INDEX.uid[_XMLNS] = _INDEX.xmlns[_XMLNS] = gws.XmlNamespace(uid=_XMLNS, xmlns=_XMLNS, uri='', schemaLocation='',
-                                                             version='')
+_INDEX.uid[_XMLNS] = _INDEX.xmlns[_XMLNS] = gws.XmlNamespace(uid=_XMLNS, xmlns=_XMLNS, uri='', schemaLocation='', version='')
 
 
 def _load_known():
