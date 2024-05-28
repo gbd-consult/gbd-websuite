@@ -55,7 +55,7 @@ class Object(gws.Map):
     wrapX: bool
 
     def configure(self):
-        self.title = self.cfg('title') or ''
+        self.title = self.cfg('title') or self.cfg('_defaultTitle') or ''
 
         p = self.cfg('crs')
         crs = gws.gis.crs.require(p) if p else gws.gis.crs.WEBMERCATOR
@@ -90,6 +90,7 @@ class Object(gws.Map):
         self.rootLayer = self.create_child(
             gws.ext.object.layer,
             type='group',
+            title=self.title,
             layers=self.cfg('layers'),
             _parentBounds=self.bounds,
             _parentResolutions=self.resolutions,
