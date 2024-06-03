@@ -26,9 +26,42 @@ class Image:
 
     def rotate(self, angle: int, **kwargs) -> 'Image': ...
 
-    def to_bytes(self, mime: Optional[str] = None) -> bytes: ...
+    def to_bytes(self, mime: Optional[str] = None, options: Optional[dict] = None) -> bytes:
+        """Converts the image object to bytes.
 
-    def to_path(self, path: str, mime: Optional[str] = None) -> str: ...
+        The ``options`` dict can contain any PIL save option, prefixed with the format name,
+        for example, to pass a ``compress_level`` for png, provide ``png_compress_level``.
+
+        See https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html
+        for possible save options.
+
+        An additional option ``png_mode`` can be ``1``, ``L`` or ``P``
+        (see https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes).
+        If provided, the image is converted to that mode before saving.
+
+        An additional option ``jpeg_background`` sets the color
+        to replace the alpha channel with (default is white).
+
+        Args:
+            mime: The mime type.
+            options: A dict of options.
+
+        Returns:
+            The image as bytes.
+        """
+
+    def to_path(self, path: str, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
+        """Saves the image object at a given path.
+
+        Args:
+            path: Image's path location.
+            mime: The mime type.
+            options: A dict of options.
+
+        Returns:
+            The path to the image.
+        """
+
 
     def to_array(self) -> 'numpy.typing.NDArray': ...
 

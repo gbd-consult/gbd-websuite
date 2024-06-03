@@ -1,3 +1,7 @@
+"""WFS GetCapabilities template.
+"""
+
+import gws
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 
@@ -19,31 +23,16 @@ def doc(ta: server.TemplateArgs):
     yield 'fes:Filter_Capabilities', filters(ta)
 
 
-def operations(ta: server.TemplateArgs, default_count=1000):
+def operations(ta: server.TemplateArgs):
     versions = [tpl.ows_value(v) for v in ta.service.supportedVersions]
 
-    yield (
-        'ows:Operation',
-        {'name': 'GetCapabilities'},
-        tpl.ows_service_url(ta),
-        ('ows:Parameter', {'name': 'AcceptVersions'}, ('ows:AllowedValues', versions)),
-        ('ows:Parameter', {'name': 'AcceptFormats'}, ('ows:AllowedValues', tpl.ows_value('text/xml')))
-    )
-
-    yield (
-        'ows:Operation',
-        {'name': 'DescribeFeatureType'},
-        tpl.ows_service_url(ta),
-        ('ows:Parameter', {'name': 'OutputFormat'}, ('ows:AllowedValues', tpl.ows_value('text/xml; subtype=gml/3.2.1')))
-    )
-
-    yield (
-        'ows:Operation',
-        {'name': 'GetFeature'},
-        tpl.ows_service_url(ta, get=True, post=True),
-        ('ows:Parameter', {'name': 'OutputFormat'}, ('ows:AllowedValues', tpl.ows_value('text/xml; subtype=gml/3.2.1'))),
-        ('ows:Parameter', {'name': 'ResultType'}, ('ows:AllowedValues', tpl.ows_value('results'), tpl.ows_value('hits')))
-    )
+    for op in ta.service.supportedOperations:
+        yield (
+            'ows:Operation',
+            {'name': op.verb},
+            tpl.ows_service_url(ta),
+            operation_params(ta, op)
+        )
 
     yield 'ows:Parameter', {'name': 'version'}, ('ows:AllowedValues', versions)
 
@@ -57,20 +46,34 @@ def operations(ta: server.TemplateArgs, default_count=1000):
         constraint('ows:SOAPEncoding', 'FALSE'),
         constraint('ows:ImplementsInheritance', 'FALSE'),
         constraint('ows:ImplementsRemoteResolve', 'FALSE'),
-        constraint('ows:ImplementsResultPaging', 'FALSE'),
+        constraint('ows:ImplementsResultPaging', 'TRUE'),
         constraint('ows:ImplementsStandardJoins', 'FALSE'),
         constraint('ows:ImplementsSpatialJoins', 'FALSE'),
         constraint('ows:ImplementsTemporalJoins', 'FALSE'),
         constraint('ows:ImplementsFeatureVersioning', 'FALSE'),
         constraint('ows:ManageStoredQueries', 'FALSE'),
 
-        constraint('ows:CountDefault', default_count),
+        constraint('ows:CountDefault', ta.service.maxFeatureCount),
     )
 
     yield 'ows:Constraint', {'name': 'QueryExpressions'}, ('ows:AllowedValues', tpl.ows_value('wfs:Query'))
 
     if ta.service.withInspireMeta:
         yield 'ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)
+
+
+def operation_params(ta, op):
+    versions = [tpl.ows_value(v) for v in ta.service.supportedVersions]
+    formats = [tpl.ows_value(f) for f in op.formats]
+
+    if op.verb == gws.OwsVerb.GetCapabilities:
+        yield 'ows:Parameter', {'name': 'acceptVersions'}, ('ows:AllowedValues', versions)
+        yield 'ows:Parameter', {'name': 'acceptFormats'}, ('ows:AllowedValues', formats)
+    if op.verb == gws.OwsVerb.DescribeFeatureType:
+        yield 'ows:Parameter', {'name': 'outputFormat'}, ('ows:AllowedValues', formats)
+    if op.verb == gws.OwsVerb.GetFeature:
+        yield 'ows:Parameter', {'name': 'outputFormat'}, ('ows:AllowedValues', formats)
+        yield 'ows:Parameter', {'name': 'resultType'}, ('ows:AllowedValues', tpl.ows_value('results'), tpl.ows_value('hits'))
 
 
 def feature_type_list(ta: server.TemplateArgs):

@@ -118,6 +118,9 @@ class Requester(gws.WebRequester):
     def env(self, key, default=''):
         return self._wz.environ.get(key, default)
 
+    def has_param(self, key):
+        return key.lower() in self._lowerParams
+
     def param(self, key, default=''):
         return self._lowerParams.get(key.lower(), default)
 

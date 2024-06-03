@@ -162,3 +162,5 @@ templates+ {
 
 
 }
+
+server.web.timeout 600

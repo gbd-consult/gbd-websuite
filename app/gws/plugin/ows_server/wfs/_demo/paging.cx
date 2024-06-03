@@ -1,0 +1,32 @@
+uid "server_wfs_paging"
+
+title "WFS service with paging"
+
+metadata.keywords [ "wfs" "ows-service" ]
+
+metadata.abstract """
+`WFS` service with lots of features. Supports `startIndex` parameter to fetch features in pages.
+
+[Service URL](/_/owsService/serviceUid/server_wfs_paging_service/projectUid/server_wfs_paging?request=GetCapabilities)
+"""
+
+owsServices+ {
+    type "wfs"
+    uid "server_wfs_paging_service"
+    metadata {
+        abstract "WFS service with paging"
+        keywords ["test" "wfs" "demo"]
+        name "SIMPLE_WFS"
+        title "Simple WFS"
+        {demo_metadata}
+    }
+}
+
+map.layers+ {
+    title "Points"
+    type "postgres"
+    tableName "public.many_points"
+    ows.xmlNamespace {
+        xmlns "test"
+    }
+}

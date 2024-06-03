@@ -22,28 +22,6 @@ owsServices+ {
     }
 }
 
-map {
-    extent [
-        {demo_point_duesseldorf_3857[0] - 20000}
-        {demo_point_duesseldorf_3857[1] - 20000}
-        {demo_point_duesseldorf_3857[0] + 20000}
-        {demo_point_duesseldorf_3857[1] + 20000}
-    ]
-    zoom.initScale 30000
-    zoom.minScale  1000
-    zoom.maxScale  1000000
-}
-
-map.layers+ {
-    title "POIs"
-    type "postgres"
-    tableName "edit.poi"
-
-    ows.xmlNamespace {
-        xmlns "test"
-        version "1"
-    }
-}
 map.layers+ {
     title "Districts"
     type "postgres"
@@ -51,6 +29,5 @@ map.layers+ {
 
     ows.xmlNamespace {
         xmlns "test"
-        version "1"
     }
 }

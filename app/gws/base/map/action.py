@@ -83,7 +83,7 @@ _GET_FEATURES_LIMIT = 10000
 
 
 class Object(gws.base.action.Object):
-    _error_pixel = gws.lib.mime.PNG, gws.lib.image.PIXEL_PNG8
+    _empty_pixel = gws.lib.mime.PNG, gws.lib.image.empty_pixel()
 
     @gws.ext.command.api('mapGetBox')
     def api_get_box(self, req: gws.WebRequester, p: GetBoxRequest) -> ImageResponse:
@@ -177,7 +177,7 @@ class Object(gws.base.action.Object):
             gws.log.exception()
         gws.debug.time_end()
 
-        return self._error_pixel
+        return self._empty_pixel
 
     def _get_xyz(self, req: gws.WebRequester, p: GetXyzRequest):
         layer = req.user.require_layer(p.layerUid)
@@ -192,7 +192,7 @@ class Object(gws.base.action.Object):
         gws.debug.time_end()
 
         if not lro:
-            return self._error_pixel
+            return self._empty_pixel
 
         content = lro.content
 
@@ -214,14 +214,14 @@ class Object(gws.base.action.Object):
         content = gws.base.legend.output_to_bytes(lro)
         if content:
             return lro.mime, content
-        return self._error_pixel
+        return self._empty_pixel
 
     def _image_response(self, lro: gws.LayerRenderOutput) -> ImageResponse:
         # @TODO content-dependent mime type
         # @TODO in-image errors
         if lro and lro.content:
             return ImageResponse(mime='image/png', content=lro.content)
-        return ImageResponse(mime='image/png', content=gws.lib.image.PIXEL_PNG8)
+        return ImageResponse(mime='image/png', content=gws.lib.image.empty_pixel())
 
     def _get_features(self, req: gws.WebRequester, p: GetFeaturesRequest) -> list[gws.FeatureProps]:
         layer = req.user.require_layer(p.layerUid)

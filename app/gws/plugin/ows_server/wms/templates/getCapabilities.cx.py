@@ -1,37 +1,41 @@
+from typing import cast
 import gws
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
+import gws.lib.uom
+import gws.gis.extent
+import gws.plugin.ows_server.wms
 
 
 def main(ta: server.TemplateArgs):
-    if ta.version == '1.1.0':
-        pass
+    if ta.intVersion == 110:
+        return tpl.to_xml(ta, ('WMT_MS_Capabilities', doc(ta)))
 
-    elif ta.version == '1.1.1':
-        pass
+    elif ta.intVersion == 111:
+        return tpl.to_xml(ta, ('WMT_MS_Capabilities', doc(ta)))
 
-    elif ta.version == '1.3.0':
-        return tpl.to_xml(ta, ('WMS_Capabilities', doc13(ta)))
+    elif ta.intVersion == 130:
+        return tpl.to_xml(ta, ('WMS_Capabilities', doc(ta)))
 
 
-def doc13(ta: server.TemplateArgs):
+def doc(ta):
     yield {
         'version': ta.version,
         'updateSequence': ta.service.updateSequence,
-        'xmlns': 'wms',
     }
-    yield 'Service', service_meta(ta), service_misc(ta)
-    yield 'Capability', caps_13(ta)
+    if ta.intVersion == 130:
+        yield {'xmlns': 'wms'}
+
+    yield 'Service', service_meta(ta)
+    yield 'Capability', caps(ta)
 
 
-def service_meta(ta: server.TemplateArgs):
+def service_meta(ta):
     md = ta.service.metadata
 
     yield 'Name', md.name
     yield 'Title', md.title
-
-    if md.abstract:
-        yield 'Abstract', md.abstract
+    yield 'Abstract', md.abstract
 
     yield tpl.keywords(md)
     yield tpl.online_resource(ta.serviceUrl)
@@ -60,65 +64,61 @@ def service_meta(ta: server.TemplateArgs):
     if md.accessConstraints:
         yield 'AccessConstraints', md.accessConstraints[0].title
 
+    s = cast(gws.plugin.ows_server.wms.Object, ta.service).layerLimit
+    if s:
+        yield 'LayerLimit', s
+
+    s = cast(gws.plugin.ows_server.wms.Object, ta.service).maxPixelSize
+    if s:
+        yield 'MaxWidth', s
+        yield 'MaxHeight', s
+
     yield meta_links(ta, md)
 
 
-def meta_links(ta: server.TemplateArgs, md: gws.Metadata):
-    if md.metaLinks:
-        for ml in md.metaLinks:
-            yield (
-                'MetadataURL', {'type': ml.type},
-                ('Format', ml.format),
-                tpl.online_resource(ta.url_for(ml.url)))
-
-
-def service_misc(ta: server.TemplateArgs):
-    # s = ta.service.layer_limit
-    # if s:
-    #     yield ('LayerLimit', s)
-    #
-    # s = ta.service.get('max_size')
-    # if s:
-    #     yield ('MaxWidth', s[0])
-    #     yield ('MaxHeight', s[1])
-    pass
-
-
-def caps_13(ta: server.TemplateArgs):
+def caps(ta):
     yield 'Request', request_caps(ta)
 
     yield 'Exception/Format', 'XML'
 
     if ta.service.withInspireMeta:
-        yield 'inspire_vs:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)
+        if ta.intVersion == 130:
+            yield 'inspire_vs:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)
+        else:
+            yield 'VendorSpecificCapabilities/inspire_vs:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)
 
-    yield layer13(ta, ta.layerCapsTree.root)
+    yield layer(ta, ta.layerCapsList[0])
 
 
-def request_caps(ta: server.TemplateArgs):
+def request_caps(ta):
     url = tpl.dcp_service_url(ta)
 
     for op in ta.service.supportedOperations:
-        yield op.verb, [('Format', f) for f in op.formats], url
+        verb = op.verb
+        if ta.intVersion == 130 and verb == gws.OwsVerb.GetLegendGraphic:
+            verb = 'sld:GetLegendGraphic'
+        yield verb, [('Format', f) for f in op.formats], url
 
 
-def layer13(ta: server.TemplateArgs, lc: server.LayerCaps):
-    return 'Layer', {'queryable': 1 if lc.hasSearch else 0}, layer13_content(ta, lc)
+def layer(ta, lc: server.LayerCaps):
+    return 'Layer', {'queryable': 1 if lc.hasSearch else 0}, layer_content(ta, lc)
 
 
-def layer13_content(ta: server.TemplateArgs, lc: server.LayerCaps):
+def layer_content(ta, lc: server.LayerCaps):
     md = lc.layer.metadata
 
     yield 'Name', lc.layerName
     yield 'Title', lc.title
-
-    if md.abstract:
-        yield 'Abstract', md.abstract
+    yield 'Abstract', md.abstract
 
     yield tpl.keywords(md)
 
-    if md.attribution and md.attribution.title:
-        yield 'Attribution/Title', md.attribution.title
+    if md.attribution:
+        yield (
+            'Attribution',
+            ('Title', md.attribution.title),
+            tpl.online_resource(md.attribution.url) if md.attribution.url else None
+        )
 
     if md.authorityUrl:
         yield 'AuthorityURL', {'name': md.authorityName}, tpl.online_resource(md.authorityUrl)
@@ -128,38 +128,75 @@ def layer13_content(ta: server.TemplateArgs, lc: server.LayerCaps):
 
     yield meta_links(ta, md)
 
-    for b in lc.bounds:
-        yield 'CRS', b.crs.epsg
+    wext = lc.layer.wgsExtent
 
-    yield (
-        'EX_GeographicBoundingBox',
-        ('westBoundLongitude', tpl.coord_dms(lc.layer.wgsExtent[0])),
-        ('eastBoundLongitude', tpl.coord_dms(lc.layer.wgsExtent[2])),
-        ('southBoundLatitude', tpl.coord_dms(lc.layer.wgsExtent[1])),
-        ('northBoundLatitude', tpl.coord_dms(lc.layer.wgsExtent[3])),
-    )
+    if ta.intVersion == 130:
+        for b in lc.bounds:
+            yield 'CRS', b.crs.epsg
+
+        yield (
+            'EX_GeographicBoundingBox',
+            ('westBoundLongitude', tpl.coord_dms(wext[0])),
+            ('southBoundLatitude', tpl.coord_dms(wext[1])),
+            ('eastBoundLongitude', tpl.coord_dms(wext[2])),
+            ('northBoundLatitude', tpl.coord_dms(wext[3])),
+        )
+
+    else:
+        for b in lc.bounds:
+            yield 'SRS', b.crs.epsg
+
+        # OGC 01-068r3, 6.5.6
+        # When the SRS is a Platte Carrée projection of longitude and latitude coordinates,
+        # X refers to the longitudinal axis and Y to the latitudinal axis.
+        yield (
+            'LatLonBoundingBox', {
+                'minx': wext[0],
+                'miny': wext[1],
+                'maxx': wext[2],
+                'maxy': wext[3]
+            }
+        )
 
     for b in lc.bounds:
-        if b.crs.isGeographic:
-            minx, miny, maxx, maxy = b.extent[1], b.extent[0], b.extent[3], b.extent[2]
-            f = tpl.coord_dms
-        else:
-            minx, miny, maxx, maxy = b.extent[0], b.extent[1], b.extent[2], b.extent[3]
-            f = tpl.coord_m
+        bext = b.extent
+        if b.crs.isYX and ta.intVersion == 130:
+            bext = gws.gis.extent.swap_xy(bext)
+        fn = tpl.coord_dms if b.crs.isGeographic else tpl.coord_m
         yield ('BoundingBox', {
             'CRS': b.crs.epsg,
-            'minx': f(minx),
-            'miny': f(miny),
-            'maxx': f(maxx),
-            'maxy': f(maxy),
+            'minx': fn(bext[0]),
+            'miny': fn(bext[1]),
+            'maxx': fn(bext[2]),
+            'maxy': fn(bext[3]),
         })
 
     if lc.hasLegend:
         yield 'Style', ('Name', 'default'), ('Title', 'default'), tpl.legend_url(ta, lc)
 
     if not lc.children:
-        yield 'MinScaleDenominator', lc.minScale
-        yield 'MaxScaleDenominator', lc.maxScale
+        if ta.intVersion == 130:
+            yield 'MinScaleDenominator', lc.minScale
+            yield 'MaxScaleDenominator', lc.maxScale
+        else:
+            # OGC 01-068r3, 7.1.4.5.8
+            # the diagonal with 1 meter per pixel
+            diag = (2 ** 0.5) * gws.lib.uom.OGC_M_PER_PX
+            yield 'ScaleHint', {
+                'min': lc.minScale * diag,
+                'max': lc.maxScale * diag,
+            }
 
-    for c in reversed(lc.children):
-        yield layer13(ta, c)
+    for c in lc.children:
+        yield layer(ta, c)
+
+
+def meta_links(ta, md: gws.Metadata):
+    if md.metaLinks:
+        for ml in md.metaLinks:
+            yield (
+                'MetadataURL',
+                {'type': ml.type},
+                ('Format', ml.format),
+                tpl.online_resource(ta.url_for(ml.url))
+            )

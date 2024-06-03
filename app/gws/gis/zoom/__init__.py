@@ -4,31 +4,33 @@ import gws
 import gws.gis.extent
 import gws.lib.uom as units
 
-# https://wiki.openstreetmap.org/wiki/Zoom_levels
-
 OSM_SCALES = [
-    150000000,
-    70000000,
-    35000000,
-    15000000,
-    10000000,
-    4000000,
-    2000000,
-    1000000,
-    500000,
-    250000,
-    150000,
-    70000,
-    35000,
-    15000,
-    8000,
-    4000,
-    2000,
-    1000,
+    500_000_000,
+    250_000_000,
+    150_000_000,
+    70_000_000,
+    35_000_000,
+    15_000_000,
+    10_000_000,
+    4_000_000,
+    2_000_000,
+    1_000_000,
+    500_000,
+    250_000,
+    150_000,
+    70_000,
+    35_000,
+    15_000,
+    8_000,
+    4_000,
+    2_000,
+    1_000,
     500,
 ]
+"""Scales corresponding to OSM zoom levels. (https://wiki.openstreetmap.org/wiki/Zoom_levels)"""
 
 OSM_RESOLUTIONS = list(reversed([units.scale_to_res(s) for s in OSM_SCALES]))
+"""Resolutions corresponding to OSM zoom levels."""
 
 
 class Config(gws.Config):
@@ -63,20 +65,15 @@ def resolutions_from_config(cfg, parent_resolutions: list[float] = None) -> list
     rmin = _res_or_scale(cfg, 'minResolution', 'minScale')
     rmax = _res_or_scale(cfg, 'maxResolution', 'maxScale')
 
-    res = _explicit_resolutions(cfg) or parent_resolutions
-    if not res:
-        res = list(OSM_RESOLUTIONS)
-        if rmax and rmax > max(res):
-            res.append(rmax)
-        if rmin and rmin < min(res):
-            res.append(rmin)
+    res = _explicit_resolutions(cfg) or parent_resolutions or list(OSM_RESOLUTIONS)
+    if rmax and rmax < max(res):
+        res = [r for r in res if r < rmax]
+        res.append(rmax)
+    if rmin and rmin > min(res):
+        res = [r for r in res if r > rmin]
+        res.append(rmin)
 
-    if rmin:
-        res = [r for r in res if r >= rmin]
-    if rmax:
-        res = [r for r in res if r <= rmax]
-
-    return sorted(res)
+    return sorted(set(res))
 
 
 def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolutions: list[float]) -> list[float]:

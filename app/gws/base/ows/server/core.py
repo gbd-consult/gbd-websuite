@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Optional
 
 import gws
 
@@ -7,24 +7,11 @@ class Error(gws.Error):
     pass
 
 
-class ServiceRequest(gws.Data):
-    alwaysXY: bool
-    bounds: gws.Bounds
-    crs: gws.Crs
-    isSoap: bool = False
-    project: Optional[gws.Project]
-    req: gws.WebRequester
-    service: gws.OwsService
-    targetCrs: gws.Crs
-    verb: gws.OwsVerb
-    version: str
-    xmlElement: Optional[gws.XmlElement]
-
-
 class LayerCaps(gws.Data):
     layer: gws.Layer
     title: str
 
+    isGroup: bool
     hasLegend: bool
     hasSearch: bool
 
@@ -40,16 +27,10 @@ class LayerCaps(gws.Data):
     bounds: list[gws.Bounds]
 
     children: list['LayerCaps']
-    ancestors: list['LayerCaps']
+    leaves: list['LayerCaps']
 
     model: Optional[gws.Model]
     xmlNamespace: Optional[gws.XmlNamespace]
-
-
-class LayerCapsTree(gws.Data):
-    root: Optional[LayerCaps]
-    roots: list[LayerCaps]
-    leaves: list[LayerCaps]
 
 
 class FeatureCollectionMember(gws.Data):
@@ -60,20 +41,7 @@ class FeatureCollectionMember(gws.Data):
 
 class FeatureCollection(gws.Data):
     members: list[FeatureCollectionMember]
+    values: list
     timestamp: str
     numMatched: int
     numReturned: int
-
-
-class TemplateArgs(gws.TemplateArgs):
-    """Arguments for service templates."""
-
-    featureCollection: FeatureCollection
-    layerCapsTree: LayerCapsTree
-    layerCapsList: list[LayerCaps]
-    sr: ServiceRequest
-    service: gws.OwsService
-    serviceUrl: str
-    url_for: Callable
-    gmlVersion: int
-    version: str

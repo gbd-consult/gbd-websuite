@@ -1,3 +1,6 @@
+from typing import Optional
+
+import gws
 import werkzeug.exceptions
 
 BadRequest = werkzeug.exceptions.BadRequest
@@ -31,3 +34,30 @@ GatewayTimeout = werkzeug.exceptions.GatewayTimeout
 HTTPVersionNotSupported = werkzeug.exceptions.HTTPVersionNotSupported
 
 HTTPException = werkzeug.exceptions.HTTPException
+
+
+def from_exception(exc: Exception) -> HTTPException:
+    """Convert generic errors to http errors."""
+
+    if isinstance(exc, HTTPException):
+        return exc
+
+    e = None
+
+    if isinstance(exc, gws.NotFoundError):
+        e = NotFound()
+    elif isinstance(exc, gws.ForbiddenError):
+        e = Forbidden()
+    elif isinstance(exc, gws.BadRequestError):
+        e = BadRequest()
+    elif isinstance(exc, gws.ResponseTooLargeError):
+        e = Conflict()
+
+    if e:
+        gws.log.info(f'HTTPException: {e.code} cause={exc}')
+    else:
+        gws.log.exception()
+        e = InternalServerError()
+
+    e.__cause__ = exc
+    return e

@@ -42,34 +42,16 @@ def from_bytes(r: bytes) -> 'Image':
     Returns:
         An image object.
     """
-    with io.BytesIO(r) as buf:
-        return _new(PIL.Image.open(buf))
+    with io.BytesIO(r) as fp:
+        return _new(PIL.Image.open(fp))
 
 
-ImageMode = Literal[
-    '1',
-    'L',
-    'P',
-    'RGB',
-    'RGBA',
-    'CMYK',
-    'YCbCr',
-    'LAB',
-    'HSV',
-    'I',
-    'F',
-]
-"""Our accepted image modes."""
-
-
-def from_raw_data(r: bytes, mode: ImageMode, size: gws.Size) -> 'Image':
+def from_raw_data(r: bytes, mode: str, size: gws.Size) -> 'Image':
     """Creates an image object in a given mode from raw pixel data in arrays.
 
     Args:
         r: Bytes encoding an image in arrays of pixels.
-
-        mode: The mode encoding the pixels.
-
+        mode: PIL image mode.
         size: `(width, height)`
 
     Returns:
@@ -223,32 +205,40 @@ class Image(gws.Image):
         self.img = PIL.Image.alpha_composite(self.img, oth)
         return self
 
-    def to_bytes(self, mime=None) -> bytes:
-        """Converts the image object to bytes.
+    def to_bytes(self, mime=None, options=None) -> bytes:
+        with io.BytesIO() as fp:
+            self._save(fp, mime, options or {})
+            return fp.getvalue()
 
-        Args:
-            mime: The mime type.
-
-        Returns:
-            The image as bytes.
-        """
-        with io.BytesIO() as buf:
-            self.img.save(buf, _mime_to_format(mime))
-            return buf.getvalue()
-
-    def to_path(self, path, mime=None) -> str:
-        """Saves the image object at a given path.
-
-        Args:
-            path: Image's path location.
-
-            mime: The mime type.
-        Returns:
-            The path to the image.
-        """
+    def to_path(self, path, mime=None, options=None) -> str:
         with open(path, 'wb') as fp:
-            self.img.save(fp, _mime_to_format(mime))
+            self._save(fp, mime, options or {})
         return path
+
+    def _save(self, fp, mime: str, options: dict):
+        fmt = _mime_to_format(mime)
+        pfx = fmt.lower() + '_'
+        opts = {
+            k[len(pfx):]: v
+            for k, v in options.items()
+            if k.startswith(pfx)
+        }
+
+        img = self.img
+
+        if fmt == 'PNG':
+            mode = opts.pop('mode', '')
+            if mode in '1LP':
+                img = img.convert(mode, palette=PIL.Image.ADAPTIVE)
+
+        if fmt == 'JPEG':
+            background = opts.pop('background', '#FFFFFF')
+            if self.img.mode == 'RGBA':
+                img = PIL.Image.new('RGBA', self.img.size, background)
+                img.alpha_composite(self.img)
+                img = img.convert('RGB')
+
+        img.save(fp, fmt, **opts)
 
     def to_array(self):
         """Converts the image to an array.
@@ -300,17 +290,18 @@ class Image(gws.Image):
         return self.img.getpixel(xy)
 
 
-_mime_to_format_tr = {
+_MIME_TO_FORMAT = {
     gws.lib.mime.PNG: 'PNG',
     gws.lib.mime.JPEG: 'JPEG',
     gws.lib.mime.GIF: 'GIF',
+    gws.lib.mime.WEBP: 'WEBP',
 }
 
 
 def _mime_to_format(mime):
     if not mime:
         return 'PNG'
-    return _mime_to_format_tr.get(mime, None) or mime.upper()
+    return _MIME_TO_FORMAT.get(mime, None) or mime.upper()
 
 
 def _int_size(size: gws.Size) -> tuple[int, int]:
@@ -318,15 +309,26 @@ def _int_size(size: gws.Size) -> tuple[int, int]:
     return int(w), int(h)
 
 
-# empty images
+_PIXELS = {}
+_ERROR_COLOR = '#ffa1b4'
 
-PIXEL_PNG8 = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x03\x00\x00\x00(\xcb4\xbb\x00\x00\x00\x06PLTE\xff\xff\xff\x00\x00\x00U\xc2\xd3~\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\x0cIDATx\xdab`\x00\x080\x00\x00\x02\x00\x01OmY\xe1\x00\x00\x00\x00IEND\xaeB`\x82'
-"""1x1 empty image in png8 format"""
-PIXEL_PNG24 = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x10IDATx\xdab\xf8\xff\xff?\x03@\x80\x01\x00\x08\xfc\x02\xfe\xdb\xa2M\x16\x00\x00\x00\x00IEND\xaeB`\x82'
-"""1x1 empty image in png24 format"""
-PIXEL_JPEG_BLACK = b'\xff\xd8\xff\xdb\x00C\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\xff\xdb\x00C\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x03\x01\x11\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0b\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xc4\x00\x14\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xc4\x00\x14\x11\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00?\x00?\xf0\x7f\xff\xd9'
-"""1x1 empty image in jpeg format"""
-PIXEL_JPEG_WHITE = b'\xff\xd8\xff\xdb\x00C\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\xff\xdb\x00C\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x03\x01\x11\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xc4\x00\x14\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xc4\x00\x14\x11\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00?\x00\x7f\x00\xff\xd9'
-"""1x1 empty image in jpeg format"""
-PIXEL_GIF = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
-"""1x1 empty image in gif format"""
+
+def empty_pixel(mime: str = None):
+    return pixel(mime, '#ffffff' if mime == gws.lib.mime.JPEG else None)
+
+
+def error_pixel(mime: str = None):
+    return pixel(mime, _ERROR_COLOR)
+
+
+def pixel(mime, color):
+    fmt = _mime_to_format(mime)
+    key = fmt, str(color)
+
+    if key not in _PIXELS:
+        img = PIL.Image.new('RGBA' if color is None else 'RGB', (1, 1), color)
+        with io.BytesIO() as fp:
+            img.save(fp, fmt)
+            _PIXELS[key] = fp.getvalue()
+
+    return _PIXELS[key]

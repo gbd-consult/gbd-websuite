@@ -18,69 +18,42 @@ import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
 
-from . import core, util
+from . import core, request
 
 
 class Config(gws.ConfigWithAccess):
     extent: Optional[gws.Extent]
-    """service extent"""
+    """Service extent."""
     metadata: Optional[gws.Metadata]
-    """service metadata"""
+    """Service metadata."""
     rootLayerUid: str = ''
-    """root layer uid"""
-    searchLimit: int = 100
-    """max search limit"""
+    """Root layer uid."""
+    maxFeatureCount: int = 10000
+    """Max number of features per page."""
+    defaultFeatureCount: int = 1000
+    """Default number of features per page."""
     searchTolerance: gws.UomValueStr = '10px'
-    """search pixel tolerance"""
+    """Search pixel tolerance."""
     supportedCrs: Optional[list[gws.CrsName]]
-    """supported CRS for this service"""
+    """Supported CRS for this service."""
     templates: Optional[list[gws.ext.config.template]]
-    """service XML templates"""
+    """Service XML templates."""
+    imageFormats: Optional[list[str]]
+    """Supported image formats."""
+    imageOptions: Optional[dict]
+    """Image options."""
     updateSequence: Optional[str]
-    """service update sequence"""
+    """Service update sequence."""
     withInspireMeta: bool = False
-    """use INSPIRE Metadata"""
+    """Use INSPIRE Metadata."""
     withStrictParams: bool = False
-    """use strict params checking"""
+    """Use strict params checking."""
 
 
 class Object(gws.OwsService):
     """Baseclass for OWS services."""
 
-    project: Optional[gws.Project]
-    rootLayer: Optional[gws.Layer]
-
-    isRasterService = False
-    isVectorService = False
-
-    searchMaxLimit: int
-    searchTolerance: gws.UomValue
-
     handlers: dict[gws.OwsVerb, Callable]
-
-    OWS_VERBS = [
-        gws.OwsVerb.CreateStoredQuery,
-        gws.OwsVerb.DescribeCoverage,
-        gws.OwsVerb.DescribeFeatureType,
-        gws.OwsVerb.DescribeLayer,
-        gws.OwsVerb.DescribeRecord,
-        gws.OwsVerb.DescribeStoredQueries,
-        gws.OwsVerb.DropStoredQuery,
-        gws.OwsVerb.GetCapabilities,
-        gws.OwsVerb.GetFeature,
-        gws.OwsVerb.GetFeatureInfo,
-        gws.OwsVerb.GetFeatureWithLock,
-        gws.OwsVerb.GetLegendGraphic,
-        gws.OwsVerb.GetMap,
-        gws.OwsVerb.GetPrint,
-        gws.OwsVerb.GetPropertyValue,
-        gws.OwsVerb.GetRecordById,
-        gws.OwsVerb.GetRecords,
-        gws.OwsVerb.GetTile,
-        gws.OwsVerb.ListStoredQueries,
-        gws.OwsVerb.LockFeature,
-        gws.OwsVerb.Transaction,
-    ]
 
     def configure(self):
         self.project = self.find_closest(gws.ext.object.project)
@@ -89,8 +62,12 @@ class Object(gws.OwsService):
         self.withInspireMeta = self.cfg('withInspireMeta')
         self.withStrictParams = self.cfg('withStrictParams')
 
-        self.searchMaxLimit = self.cfg('searchLimit')
+        self.maxFeatureCount = self.cfg('maxFeatureCount')
+        self.defaultFeatureCount = self.cfg('defaultFeatureCount')
         self.searchTolerance = self.cfg('searchTolerance')
+
+        self.imageFormats = self.cfg('imageFormats') or [gws.lib.mime.PNG, gws.lib.mime.JPEG]
+        self.imageOptions = self.cfg('imageOptions') or {}
 
         self.configure_bounds()
         self.configure_templates()
@@ -119,19 +96,14 @@ class Object(gws.OwsService):
         return gws.config.util.configure_templates_for(self)
 
     def configure_operations(self):
-        fs = {}
+        pass
 
+    def template_formats(self, verb: gws.OwsVerb):
+        fs = []
         for tpl in self.templates:
-            for mime in tpl.mimeTypes:
-                s = tpl.subject.split('.')
-                fs.setdefault(s[-1], set()).add(mime)
-
-        self.supportedOperations = [
-            gws.OwsOperation(formats=sorted(formats), verb=verb)
-            for verb, formats in fs.items()
-        ]
-
-        return True
+            if tpl.subject == f'ows.{verb}':
+                fs.extend(tpl.mimeTypes)
+        return sorted(set(fs))
 
     def configure_metadata(self):
         self.metadata = gws.lib.metadata.merge(
@@ -164,118 +136,48 @@ class Object(gws.OwsService):
         if self.project != prj:
             raise gws.Error(f'root layer {uid!r} does not belong to {self.project!r}')
 
-    # Requests
+    ##
+
+    def url_path(self) -> str:
+        return gws.u.action_url_path('owsService', serviceUid=self.uid)
+
+    ##
+
+    def init_request(self, req: gws.WebRequester) -> request.Object:
+        return request.Object(self, req)
 
     def handle_request(self, req: gws.WebRequester) -> gws.ContentResponse:
-        sr = self.init_service_request(req)
-        return self.dispatch_service_request(sr)
+        sr = self.init_request(req)
+        return self.dispatch_request(sr)
 
-    ##
-
-    def init_service_request(self, req: gws.WebRequester) -> core.ServiceRequest:
-        sr = core.ServiceRequest(req=req, service=self)
-        sr.alwaysXY = False
-        sr.project = self.requested_project(sr)
-        sr.isSoap = False
-        sr.verb = self.requested_verb(sr)
-        sr.version = self.requested_version(sr)
-
-        # OGC 06-042, 7.2.3.5
-        s = sr.req.param('updatesequence')
-        if s and self.updateSequence and s >= self.updateSequence:
-            raise gws.base.web.error.BadRequest('Wrong update sequence')
-
-        return sr
-
-    def requested_project(self, sr: core.ServiceRequest) -> Optional[gws.Project]:
-        # services can be configured globally (in which case, self.project == None)
-        # and applied to multiple projects with the projectUid param
-        # or, configured just for a single project (self.project != None)
-
-        p = sr.req.param('projectUid')
-        if p:
-            project = sr.req.user.require_project(p)
-            if self.project and project != self.project:
-                gws.log.debug(f'ows {self.uid=}: wrong project={p!r}')
-                raise gws.base.web.error.NotFound('Project not found')
-            return project
-
-        if self.project:
-            # for in-project services, ensure the user can access the project
-            return sr.req.user.require_project(self.project.uid)
-
-    def requested_version(self, sr: core.ServiceRequest) -> str:
-        s = util.one_of_params(sr, 'version', 'acceptversions')
-        if not s:
-            # the first supported version is the default
-            return self.supportedVersions[0]
-
-        for v in gws.u.to_list(s):
-            for ver in self.supportedVersions:
-                if ver.startswith(v):
-                    return ver
-
-        raise gws.base.web.error.BadRequest('Unsupported service version')
-
-    def requested_verb(self, sr: core.ServiceRequest) -> gws.OwsVerb:
-        s = util.one_of_params(sr, 'request') or ''
-
-        for verb in self.OWS_VERBS:
-            if verb.lower() == s.lower():
-                return verb
-
-        raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
-
-    def requested_crs(self, sr: core.ServiceRequest, *param_names) -> Optional[gws.Crs]:
-        s = util.one_of_params(sr, *param_names)
-        if s:
-            crs = gws.gis.crs.get(s)
-            if not crs:
-                raise gws.base.web.error.BadRequest('Invalid CRS')
-            if all(crs != b.crs for b in self.supportedBounds):
-                raise gws.base.web.error.BadRequest('Unsupported CRS')
-            return crs
-
-    def requested_bounds(self, sr: core.ServiceRequest, *param_names) -> gws.Bounds:
-        # OGC 06-042, 7.2.3.5
-        # OGC 00-028, 6.2.8.2.3
-
-        s = util.one_of_params(sr, *param_names)
-        if s:
-            bounds = gws.gis.bounds.from_request_bbox(s, default_crs=sr.crs, always_xy=sr.alwaysXY)
-            if not bounds:
-                raise gws.base.web.error.BadRequest('Invalid BBOX')
-            return gws.gis.bounds.transform(bounds, sr.crs)
-
-    ##
-
-    def dispatch_service_request(self, sr: core.ServiceRequest):
+    def dispatch_request(self, sr: request.Object):
         handler = self.handlers.get(sr.verb)
         if not handler:
             raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
         return handler(sr)
 
-    def template_response(self, sr: core.ServiceRequest, **kwargs) -> gws.ContentResponse:
+    def template_response(self, sr: request.Object, **kwargs) -> gws.ContentResponse:
         mime = None
-        format = kwargs.pop('format', '')
+        fmt = kwargs.pop('format', '')
 
-        if format:
-            mime = gws.lib.mime.get(format)
+        if fmt:
+            mime = gws.lib.mime.get(fmt)
             if not mime:
-                gws.log.debug(f'no mimetype: {sr.verb=} {format=}')
-                raise gws.base.web.error.BadRequest('Invalid FORMAT')
+                gws.log.debug(f'no mimetype: {sr.verb=} {fmt=}')
+                raise gws.base.web.error.BadRequest('Invalid FORMAT parameter')
 
         tpl = self.root.app.templateMgr.find_template(self, user=sr.req.user, subject=f'ows.{sr.verb}', mime=mime)
         if not tpl:
-            gws.log.debug(f'no template: {sr.verb=} {format=}')
+            gws.log.debug(f'no template: {sr.verb=} {fmt=}')
             raise gws.base.web.error.BadRequest('Unsupported FORMAT')
 
-        args = core.TemplateArgs(
+        args = request.TemplateArgs(
             sr=sr,
             service=self,
-            serviceUrl=sr.req.url_for(util.service_url_path(self, sr.project)),
+            serviceUrl=self.url_path(),
             url_for=sr.req.url_for,
             version=sr.version,
+            intVersion=int(sr.version.replace('.', '')),
             **kwargs,
         )
 

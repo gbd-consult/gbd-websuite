@@ -200,7 +200,7 @@ class Object:
             if plane.bitmapMode in ('RGBA', 'RGB'):
                 img = gws.lib.image.from_raw_data(
                     plane.bitmapData,
-                    cast(gws.lib.image.ImageMode, plane.bitmapMode),
+                    plane.bitmapMode,
                     (plane.bitmapWidth, plane.bitmapHeight))
             if not img:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: bitmap error')

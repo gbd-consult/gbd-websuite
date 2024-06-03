@@ -22,21 +22,12 @@ owsServices+ {
     }
 }
 
-actions+ {
-    type "ows"
-}
-
-map {
-    extent [
-        {demo_point_duesseldorf_3857[0] - 20000}
-        {demo_point_duesseldorf_3857[1] - 20000}
-        {demo_point_duesseldorf_3857[0] + 20000}
-        {demo_point_duesseldorf_3857[1] + 20000}
-    ]
-    zoom.initScale 30000
-    zoom.minScale  1000
-    zoom.maxScale  1000000
-}
+map.extent [
+    {demo_point_duesseldorf_3857[0] - 30000}
+    {demo_point_duesseldorf_3857[1] - 30000}
+    {demo_point_duesseldorf_3857[0] + 30000}
+    {demo_point_duesseldorf_3857[1] + 30000}
+]
 
 map.layers+ {
     title "Open Street Map"

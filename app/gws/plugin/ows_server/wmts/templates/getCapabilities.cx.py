@@ -1,63 +1,67 @@
-import gws.lib.xmlx as xmlx
+import gws
+import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 
 
-def main(ARGS):
-    def layer(lc):
-        yield 'ows:Title', lc.title
+def main(ta: server.TemplateArgs):
+    return tpl.to_xml(ta, ('Capabilities', doc(ta)))
 
-        if lc.meta.abstract:
-            yield 'ows:Abstract', lc.meta.abstract
 
-        yield tpl.ows_wgs84_bounding_box(lc)
+def doc(ta):
+    yield tpl.ows_service_identification(ta)
+    yield tpl.ows_service_provider(ta)
 
-        yield 'ows:Identifier', lc.layer_pname
+    yield (
+        'ows:OperationsMetadata',
+        ('ows:Operation', {'name': 'GetCapabilities'}, tpl.ows_service_url(ta)),
+        ('ows:Operation', {'name': 'GetTile'}, tpl.ows_service_url(ta)),
+        ('ows:Operation', {'name': 'GetLegendGraphic'}, tpl.ows_service_url(ta))
+    )
 
-        if lc.has_legend:
-            yield (
-                'Style',
-                ('ows:Identifier', 'default'),
-                ('ows:Title', 'default'),
-                tpl.legendUrl(ARGS, lc))
+    yield 'Contents', contents(ta)
 
-        yield 'Format', 'image/png'
 
-        for tms in ARGS.tileMatrixSets:
-            yield 'TileMatrixSetLink TileMatrixSet', tms.uid
+def contents(ta: server.TemplateArgs):
+    for lc in ta.layerCapsList:
+        yield 'Layer', layer(ta, lc)
+    for tms in ta.tileMatrixSets:
+        yield 'TileMatrixSet', matrix_set(ta, tms)
 
-    def matrix_set(tms):
-        yield 'ows:Identifier', tms.uid
-        yield 'ows:SupportedCRS', tms.crs.epsg
 
-        for tm in tms.matrices:
-            yield (
-                'TileMatrix',
-                ('ows:Identifier', tm.uid),
-                ('ScaleDenominator', tm.scale),
-                ('TopLeftCorner', tm.x, ' ', tm.y),
-                ('TileWidth', tm.tileWidth),
-                ('TileHeight', tm.tileHeight),
-                ('MatrixWidth', tm.width),
-                ('MatrixHeight', tm.height),
-            )
+def layer(ta: server.TemplateArgs, lc: server.LayerCaps):
+    yield 'ows:Title', lc.title
 
-    def contents():
-        for lc in ARGS.layer_caps_list:
-            yield 'Layer', layer(lc)
-        for tms in ARGS.tileMatrixSets:
-            yield 'TileMatrixSet', matrix_set(tms)
+    yield 'ows:Abstract', lc.layer.metadata.abstract
 
-    def doc():
-        yield {'xmlns': 'wmts', 'version': ARGS.version}
+    yield tpl.ows_wgs84_bounding_box(lc)
 
-        yield tpl.ows_service_identification(ARGS)
-        yield tpl.ows_service_provider(ARGS)
+    yield 'ows:Identifier', lc.layerName
 
+    if lc.hasLegend:
         yield (
-            'ows:OperationsMetadata',
-            ('ows:Operation', {'name': 'GetCapabilities'}, tpl.ows_service_url(ARGS)),
-            ('ows:Operation', {'name': 'GetTile'}, tpl.ows_service_url(ARGS)))
+            'Style',
+            ('ows:Identifier', 'default'),
+            ('ows:Title', 'default'),
+            tpl.legend_url(ta, lc))
 
-        yield 'Contents', contents()
+    yield 'Format', 'image/png'
 
-    return tpl.to_xml(ARGS, ('Capabilities', doc()))
+    for tms in ta.tileMatrixSets:
+        yield 'TileMatrixSetLink/TileMatrixSet', tms.uid
+
+
+def matrix_set(ta: server.TemplateArgs, tms: gws.TileMatrixSet):
+    yield 'ows:Identifier', tms.uid
+    yield 'ows:SupportedCRS', tms.crs.epsg
+
+    for tm in tms.matrices:
+        yield (
+            'TileMatrix',
+            ('ows:Identifier', tm.uid),
+            ('ScaleDenominator', tm.scale),
+            ('TopLeftCorner', tm.x, ' ', tm.y),
+            ('TileWidth', tm.tileWidth),
+            ('TileHeight', tm.tileHeight),
+            ('MatrixWidth', tm.width),
+            ('MatrixHeight', tm.height),
+        )

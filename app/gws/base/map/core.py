@@ -6,7 +6,6 @@ import gws.gis.crs
 import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.zoom
-import gws.lib.uom as units
 
 gws.ext.new.map('default')
 

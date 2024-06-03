@@ -16,18 +16,6 @@ class Object(gws.SearchManager):
                     if len(results) > search.limit:
                         return results[:search.limit]
 
-            # # searching ancestors is unnecessary, the client sends the whole tree path anyways
-            # for layer in search.layers:
-            #     for ancestor in layer.ancestors():
-            #         if ancestor.uid in used_layer_ids:
-            #             continue
-            #         used_layer_ids.add(ancestor.uid)
-            #         gws.log.debug(f'SEARCH_ANCESTOR {ancestor=} {layer=}')
-            #         for finder in ancestor.finders:
-            #             _run(search, user, finder, ancestor, results)
-            #             if len(results) > search.limit:
-            #                 return results[:search.limit]
-
         if search.project:
             for finder in search.project.finders:
                 self._run(search, user, finder, None, results)

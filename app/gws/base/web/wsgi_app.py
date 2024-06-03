@@ -1,5 +1,7 @@
 """web application root"""
 
+from typing import cast
+
 import gws
 import gws.base.action
 import gws.base.web
@@ -97,35 +99,13 @@ def _debug_repr(prefix, s):
 
 
 def handle_error(req: gws.WebRequester, exc: Exception) -> gws.WebResponder:
-    if isinstance(exc, gws.base.web.error.HTTPException):
-        return handle_http_error(req, exc)
-
-    web_exc = None
-
-    # convert our generic errors to http errors
-
-    if isinstance(exc, gws.NotFoundError):
-        web_exc = gws.base.web.error.NotFound()
-    elif isinstance(exc, gws.ForbiddenError):
-        web_exc = gws.base.web.error.Forbidden()
-    elif isinstance(exc, gws.BadRequestError):
-        web_exc = gws.base.web.error.BadRequest()
-    elif isinstance(exc, gws.ResponseTooLargeError):
-        web_exc = gws.base.web.error.Conflict()
-
-    if web_exc:
-        web_exc.__cause__ = exc
-        return handle_http_error(req, web_exc)
-
-    gws.log.exception()
-    return handle_http_error(req, gws.base.web.error.InternalServerError())
+    web_exc = gws.base.web.error.from_exception(exc)
+    return handle_http_error(req, web_exc)
 
 
 def handle_http_error(req: gws.WebRequester, exc: gws.base.web.error.HTTPException) -> gws.WebResponder:
     #
     # @TODO: image errors
-
-    gws.log.warning(f'HTTPException: {exc.code} cause={exc.__cause__}')
 
     if req.isApi:
         return req.api_responder(gws.Response(
@@ -140,7 +120,7 @@ def handle_http_error(req: gws.WebRequester, exc: gws.base.web.error.HTTPExcepti
     args = {'request': req, 'error': exc.code}
     response = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
     response.status = exc.code
-    return req.content_responder(response)
+    return req.content_responder(cast(gws.ContentResponse, response))
 
 
 _relaxed_read_options = {

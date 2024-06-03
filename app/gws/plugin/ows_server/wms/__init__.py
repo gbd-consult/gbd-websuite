@@ -1,4 +1,23 @@
-from typing import Optional, cast
+"""WMS Service.
+
+Implements WMS 1.1.x and 1.3.0.
+
+Does not support SLD extensions except ``GetLegendGraphic``, for which only ``LAYERS`` is supported.
+
+References:
+    - OGC 01-068r3 (https://portal.ogc.org/files/?artifact_id=1081)
+    - OGC 06-042 (https://portal.ogc.org/files/?artifact_id=14416)
+    - https://mapserver.org/ogc/wms_server.html
+    - https://docs.geoserver.org/latest/en/user/services/wms/reference.html
+"""
+
+# @TODO strict mode
+#
+# OGC 06-042 7.2.4.7.2
+# A server shall issue a service exception (code="LayerNotQueryable") if GetFeatureInfo is requested on a Layer that is not queryable.
+
+# OGC 06-042 7.2.4.6.3
+# A server shall throw a service exception (code="LayerNotDefined") if an invalid layer is requested.
 
 import gws
 import gws.base.legend
@@ -7,36 +26,31 @@ import gws.base.shape
 import gws.base.web
 import gws.config.util
 import gws.gis.bounds
+import gws.gis.extent
 import gws.gis.crs
+import gws.gis.render
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
+import gws.lib.uom
 
 gws.ext.new.owsService('wms')
 
-WMS_130 = '1.3.0'
-WMS_111 = '1.1.1'
-WMS_110 = '1.1.0'
+_cdir = gws.u.dirname(__file__)
 
 _DEFAULT_TEMPLATES = [
     gws.Config(
         type='py',
-        path=gws.u.dirname(__file__) + '/templates/getCapabilities.cx.py',
+        path=f'{_cdir}/templates/getCapabilities.cx.py',
         subject='ows.GetCapabilities',
         mimeTypes=[gws.lib.mime.XML],
-        access=gws.c.PUBLIC,
     ),
     # NB use the wfs template with GML2 (qgis doesn't understand GML3 for WMS)
     gws.Config(
         type='py',
-        path=gws.u.dirname(__file__) + '/../wfs/templates/getFeature2.cx.py',
+        path=f'{_cdir}/../wfs/templates/getFeature2.cx.py',
         subject='ows.GetFeatureInfo',
-        mimeTypes=[
-            gws.lib.mime.GML2,
-            gws.lib.mime.GML,
-            gws.lib.mime.XML,
-        ],
-        access=gws.c.PUBLIC,
+        mimeTypes=[gws.lib.mime.GML2, gws.lib.mime.GML, gws.lib.mime.XML],
     )
 ]
 
@@ -54,14 +68,24 @@ _DEFAULT_METADATA = gws.Metadata(
 
 class Config(server.service.Config):
     """WMS Service configuration"""
-    pass
+
+    layerLimit: int = 0
+    """WMS LayerLimit value."""
+    maxPixelSize: int = 0
+    """WMS MaxWidth/MaxHeight value."""
 
 
 class Object(server.service.Object):
     protocol = gws.OwsProtocol.WMS
-    supportedVersions = [WMS_130, WMS_111, WMS_110]
-
+    supportedVersions = ['1.3.0', '1.1.1', '1.1.0']
     isRasterService = True
+
+    layerLimit: int = 0
+    maxPixelSize: int = 0
+
+    def configure(self):
+        self.layerLimit = self.cfg('layerLimit') or 0
+        self.maxPixelSize = self.cfg('layerLimit') or 0
 
     def configure_templates(self):
         return gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
@@ -71,130 +95,184 @@ class Object(server.service.Object):
         self.metadata = gws.lib.metadata.merge(_DEFAULT_METADATA, self.metadata)
 
     def configure_operations(self):
-        super().configure_operations()
-
-        self.supportedOperations.append(gws.OwsOperation(
-            verb=gws.OwsVerb.GetMap, formats=[gws.lib.mime.PNG],
-        ))
-        self.supportedOperations.append(gws.OwsOperation(
-            verb=gws.OwsVerb.GetLegendGraphic, formats=[gws.lib.mime.PNG],
-        ))
+        self.supportedOperations = [
+            gws.OwsOperation(verb=gws.OwsVerb.GetCapabilities, formats=self.template_formats(gws.OwsVerb.GetCapabilities)),
+            gws.OwsOperation(verb=gws.OwsVerb.GetFeatureInfo, formats=self.template_formats(gws.OwsVerb.GetFeatureInfo)),
+            gws.OwsOperation(verb=gws.OwsVerb.GetMap, formats=self.imageFormats),
+            gws.OwsOperation(verb=gws.OwsVerb.GetLegendGraphic, formats=self.imageFormats),
+        ]
 
     ##
 
     def activate(self):
         self.handlers = {
-            gws.OwsVerb.GetCapabilities: self.handle_getcapabilities,
-            gws.OwsVerb.GetMap: self.handle_getmap,
-            gws.OwsVerb.GetLegendGraphic: self.handle_getlegendgraphic,
-            gws.OwsVerb.GetFeatureInfo: self.handle_getfeatureinfo,
+            gws.OwsVerb.GetCapabilities: self.handle_get_capabilities,
+            gws.OwsVerb.GetFeatureInfo: self.handle_get_feature_info,
+            gws.OwsVerb.GetLegendGraphic: self.handle_get_legend_graphic,
+            gws.OwsVerb.GetMap: self.handle_get_map,
         }
 
     ##
 
-    def init_service_request(self, req):
-        sr = super().init_service_request(req)
+    def init_request(self, req):
+        sr = super().init_request(req)
 
-        sr.crs = self.requested_crs(sr, 'crs', 'srs') or sr.project.map.bounds.crs
+        sr.crs = sr.get_crs('crs,srs') or sr.project.map.bounds.crs
         sr.targetCrs = sr.crs
-        sr.alwaysXY = sr.version < WMS_130
-        sr.bounds = self.requested_bounds(sr, 'bbox')
-
-        if sr.verb in {gws.OwsVerb.GetMap, gws.OwsVerb.GetFeatureInfo} and not sr.bounds:
-            raise gws.base.web.error.BadRequest('Invalid BBOX')
+        sr.alwaysXY = sr.version < '1.3'
+        sr.bounds = sr.get_bounds('bbox')
 
         return sr
 
-    def requested_layer_caps(self, sr: server.ServiceRequest, lct: server.LayerCapsTree):
-        s = server.util.one_of_params(sr, 'layer', 'layers')
-        if not s:
-            return lct.leaves
+    def layer_is_suitable(self, layer: gws.Layer):
+        return layer.isGroup or layer.canRenderBox
 
-        lcs = server.util.layer_caps_by_layer_name(lct, gws.u.to_list(s), with_ancestors=True)
+    def requested_layer_caps(self, sr: server.request.Object, param_name: str, bottom_first=True) -> list[server.LayerCaps]:
+        # Order for GetMap is bottom-first:
+        #
+        # OGC 06-042 7.3.3.3
+        # A WMS shall render the requested layers by drawing the leftmost in the list bottommost, the next one over that, and so on.
+        #
+        # @TODO: Assuming this holds for GetLegendGraphic and QUERY_LAYERS as well
+
+        lcs = []
+
+        for name in sr.list_param(param_name):
+            for lc in sr.layerCapsList:
+                if not server.layer_caps.layer_name_matches(lc, name):
+                    continue
+                if lc.isGroup:
+                    lcs.extend(reversed(lc.leaves) if bottom_first else lc.leaves)
+                else:
+                    lcs.append(lc)
+
+        if self.layerLimit and len(lcs) > self.layerLimit:
+            raise gws.base.web.error.BadRequest('Too many layers')
         if not lcs:
             raise gws.base.web.error.NotFound('Layer not found')
-        return lcs
+
+        return gws.u.uniq(reversed(lcs) if bottom_first else lcs)
 
     ##
 
-    def handle_getcapabilities(self, sr: server.ServiceRequest):
-        lct = server.util.layer_caps_tree(sr, self.rootLayer)
-        if len(lct.roots) == 0:
-            gws.log.warning(f'ows {self.uid=}: no root found')
-            raise gws.base.web.error.NotFound()
-        lct.root = lct.roots[0]
+    def handle_get_capabilities(self, sr: server.request.Object):
+        return self.template_response(
+            sr,
+            format=sr.string_param('format', default=''),
+            layerCapsList=sr.layerCapsList,
+        )
+
+    def handle_get_map(self, sr: server.request.Object):
+        return self.render_map(sr)
+
+    def handle_get_legend_graphic(self, sr: server.request.Object):
+        # @TODO currently only support 'layer'
+
+        lcs = self.requested_layer_caps(sr, 'layer,layers')
+        return sr.render_legend(lcs)
+
+    def handle_get_feature_info(self, sr: server.request.Object):
+        self.prepare_for_render(sr)
+
+        lcs = self.requested_layer_caps(sr, 'query_layers')
+        lcs = [lc for lc in lcs if lc.hasSearch]
+        if not lcs:
+            raise gws.base.web.error.NotFound('Layer not found')
+
+        fc = self.get_features(sr, lcs)
 
         return self.template_response(
             sr,
-            format=sr.req.param('format') or gws.lib.mime.XML,
-            layerCapsTree=lct,
+            format=sr.string_param('info_format', default=''),
+            featureCollection=fc,
         )
 
-    # @TODO merge with map/action
+    def get_features(self, sr, lcs):
 
-    def handle_getmap(self, sr: server.ServiceRequest):
-        lct = server.util.layer_caps_tree(sr, self.rootLayer)
-        lcs = self.requested_layer_caps(sr, lct)
+        lcs = self.visible_layer_caps(sr, lcs)
+        if not lcs:
+            return sr.feature_collection(lcs, 0, [])
 
-        return server.util.render_map_bbox(sr, lcs)
+        x = sr.int_param('x,i')
+        y = sr.int_param('y,j')
 
-    def handle_getlegendgraphic(self, sr: server.ServiceRequest):
-        # https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html
-        # @TODO currently only support 'layer'
-
-        lct = server.util.layer_caps_tree(sr, self.rootLayer)
-        lcs = self.requested_layer_caps(sr, lct)
-
-        legend = cast(gws.Legend, self.root.create_temporary(
-            gws.ext.object.legend,
-            type='combined',
-            layerUids=[lc.layer.uid for lc in lcs]))
-
-        content = None
-
-        lro = legend.render()
-        if lro:
-            content = gws.base.legend.output_to_bytes(lro)
-
-        return gws.ContentResponse(
-            mime=gws.lib.mime.PNG,
-            content=content or gws.lib.image.PIXEL_PNG8
-        )
-
-    def handle_getfeatureinfo(self, sr: server.ServiceRequest):
-        lct = server.util.layer_caps_tree(sr, self.rootLayer)
-        lcs = self.requested_layer_caps(sr, lct)
-
-        try:
-            px_width = int(sr.req.param('width'))
-            px_height = int(sr.req.param('height'))
-            limit = int(sr.req.param('feature_count', '1'))
-            x = int(sr.req.param('i') or sr.req.param('x'))
-            y = int(sr.req.param('j') or sr.req.param('y'))
-        except:
-            raise gws.base.web.error.BadRequest('Invalid parameter')
-
-        bbox = sr.bounds.extent
-        xres = (bbox[2] - bbox[0]) / px_width
-        yres = (bbox[3] - bbox[1]) / px_height
-        x = bbox[0] + (x * xres)
-        y = bbox[3] - (y * yres)
+        x = sr.bounds.extent[0] + (x * sr.xResolution)
+        y = sr.bounds.extent[3] - (y * sr.yResolution)
 
         point = gws.base.shape.from_xy(x, y, sr.crs)
 
         search = gws.SearchQuery(
             project=sr.project,
             layers=[lc.layer for lc in lcs],
-            limit=min(limit, self.searchMaxLimit),
-            resolution=xres,
+            limit=sr.get_feature_count('feature_count'),
+            resolution=sr.xResolution,
             shape=point,
             tolerance=self.searchTolerance,
         )
 
         results = self.root.app.searchMgr.run_search(search, sr.req.user)
+        return sr.feature_collection(lcs, len(results), results)
 
-        return self.template_response(
-            sr,
-            format=sr.req.param('info_format'),
-            featureCollection=server.util.feature_collection(sr, lcs, results)
+    def render_map(self, sr: server.request.Object):
+        self.prepare_for_render(sr)
+
+        lcs = self.requested_layer_caps(sr, 'layer,layers')
+        if not lcs:
+            raise gws.base.web.error.NotFound('Layer not found')
+
+        fmt = sr.string_param('format', default=self.imageFormats[0])
+        if fmt and fmt not in self.imageFormats:
+            raise gws.base.web.error.BadRequest('Invalid FORMAT')
+
+        lcs = self.visible_layer_caps(sr, lcs)
+        if not lcs:
+            return gws.ContentResponse(
+                mime=fmt,
+                content=gws.lib.image.empty_pixel(fmt)
+            )
+
+        s = sr.string_param('transparent', values={'true', 'false'}, default='true')
+        transparent = (s == 'true')
+
+        planes = [
+            gws.MapRenderInputPlane(
+                type=gws.MapRenderInputPlaneType.imageLayer,
+                layer=lc.layer
+            )
+            for lc in lcs
+        ]
+
+        mri = gws.MapRenderInput(
+            backgroundColor=None if transparent else 0,
+            bbox=sr.bounds.extent,
+            crs=sr.bounds.crs,
+            mapSize=(sr.pxWidth, sr.pxHeight, gws.Uom.px),
+            planes=planes,
+            project=self.project,
+            user=sr.req.user,
         )
+
+        mro = gws.gis.render.render_map(mri)
+
+        return gws.ContentResponse(
+            mime=fmt,
+            content=mro.planes[0].image.to_bytes(fmt, self.imageOptions)
+        )
+
+    def prepare_for_render(self, sr: server.request.Object):
+        if not sr.bounds:
+            raise gws.base.web.error.BadRequest('Missing BBOX parameter')
+
+        sr.pxWidth = sr.int_param('width')
+        sr.pxHeight = sr.int_param('height')
+        w, h = gws.gis.extent.size(sr.bounds.extent)
+        sr.xResolution = w / sr.pxWidth
+        sr.yResolution = h / sr.pxHeight
+
+        gws.log.debug(f'prepare_for_render: px={sr.pxWidth}x{sr.pxHeight} res={sr.xResolution} {gws.lib.uom.res_to_scale(sr.xResolution)}')
+
+    def visible_layer_caps(self, sr, lcs: list[server.LayerCaps]) -> list[server.LayerCaps]:
+        return [
+            lc for lc in lcs
+            if min(lc.layer.resolutions) <= sr.xResolution <= max(lc.layer.resolutions)
+        ]

@@ -27,6 +27,8 @@ ZIP = 'application/zip'
 DOC = 'application/msword'
 XLS = 'application/vnd.ms-excel'
 PPT = 'application/vnd.ms-powerpoint'
+WEBP = 'image/webp'
+
 
 _common = {
     BIN,

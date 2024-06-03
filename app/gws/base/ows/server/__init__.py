@@ -1,9 +1,7 @@
 from .core import (
     LayerCaps,
-    LayerCapsTree,
-    ServiceRequest,
-    TemplateArgs,
     FeatureCollection,
     FeatureCollectionMember,
 )
-from . import service, util
+from . import service, layer_caps, request
+from .request import TemplateArgs

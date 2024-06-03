@@ -1011,9 +1011,42 @@ class Image:
 
     def rotate(self, angle: int, **kwargs) -> 'Image': ...
 
-    def to_bytes(self, mime: Optional[str] = None) -> bytes: ...
+    def to_bytes(self, mime: Optional[str] = None, options: Optional[dict] = None) -> bytes:
+        """Converts the image object to bytes.
 
-    def to_path(self, path: str, mime: Optional[str] = None) -> str: ...
+        The ``options`` dict can contain any PIL save option, prefixed with the format name,
+        for example, to pass a ``compress_level`` for png, provide ``png_compress_level``.
+
+        See https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html
+        for possible save options.
+
+        An additional option ``png_mode`` can be ``1``, ``L`` or ``P``
+        (see https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes).
+        If provided, the image is converted to that mode before saving.
+
+        An additional option ``jpeg_background`` sets the color
+        to replace the alpha channel with (default is white).
+
+        Args:
+            mime: The mime type.
+            options: A dict of options.
+
+        Returns:
+            The image as bytes.
+        """
+
+    def to_path(self, path: str, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
+        """Saves the image object at a given path.
+
+        Args:
+            path: Image's path location.
+            mime: The mime type.
+            options: A dict of options.
+
+        Returns:
+            The path to the image.
+        """
+
 
     def to_array(self) -> 'numpy.typing.NDArray': ...
 ################################################################################
@@ -3155,6 +3188,9 @@ class DatabaseProvider(Node):
 # /base/ows/types.pyinc
 
 
+import gws
+
+
 class OwsProtocol(Enum):
     """Supported OWS protocol."""
 
@@ -3234,8 +3270,18 @@ class OwsService(Node):
     """Service metadata."""
     name: str
     """Service name."""
+    project: Optional['Project']
+    """Project this service is configured for."""
+    rootLayer: Optional['Layer']
+    """Root layer of the service."""
     protocol: OwsProtocol
     """Supported protocol."""
+    defaultFeatureCount: int
+    """Default limit of features per page."""
+    maxFeatureCount: int
+    """Max limit of features per page."""
+    searchTolerance: UomValue
+    """Default tolerance for spatial search."""
     supportedBounds: list[Bounds]
     """Supported bounds."""
     supportedVersions: list[str]
@@ -3244,6 +3290,10 @@ class OwsService(Node):
     """Supported operations."""
     templates: list['Template']
     """Service templates."""
+    imageFormats: list[str]
+    """Supported image formats."""
+    imageOptions: dict
+    """Image options."""
     updateSequence: str
     """Service update sequence."""
     withInspireMeta: bool
@@ -3253,6 +3303,9 @@ class OwsService(Node):
 
     def handle_request(self, req: 'WebRequester') -> ContentResponse:
         """Handle a service request."""
+
+    def layer_is_suitable(self, layer: 'Layer') -> bool:
+        """True if layer can be used in this service."""
 
 
 class OwsProvider(Node):
@@ -3718,6 +3771,13 @@ class WebRequester:
             A header value.
         """
 
+    def has_param(self, key: str) -> bool:
+        """Check if a GET parameter exists.
+
+        Args:
+            key: Parameter name.
+        """
+
     def param(self, key: str, default: str = '') -> str:
         """Get a GET parameter.
 
@@ -3858,6 +3918,7 @@ class WebResponder:
             key: Header name.
             value: Header value.
         """
+
 
 
 class WebDocumentRoot(Data):

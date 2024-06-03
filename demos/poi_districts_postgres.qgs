@@ -22,7 +22,7 @@
     <customproperties>
       <Option/>
     </customproperties>
-    <layer-tree-layer name="Points of interest" expanded="0" providerKey="postgres" checked="Qt::Checked" legend_exp="" source="service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;poi_small&quot; (geom)" patch_size="-1,-1" legend_split_behavior="0" id="poi_6bf838c6_861a_4a61_aa64_9c15084e70ae">
+    <layer-tree-layer name="Points of interest" expanded="0" providerKey="postgres" checked="Qt::Checked" legend_exp="" source="service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;poi&quot; (geom)" patch_size="-1,-1" legend_split_behavior="0" id="poi_6bf838c6_861a_4a61_aa64_9c15084e70ae">
       <customproperties>
         <Option/>
       </customproperties>
@@ -655,7 +655,7 @@
         <ymax>51.28740079907975513</ymax>
       </wgs84extent>
       <id>poi_6bf838c6_861a_4a61_aa64_9c15084e70ae</id>
-      <datasource>service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table="edit"."poi_small" (geom)</datasource>
+      <datasource>service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table="edit"."poi" (geom)</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2122,7 +2122,7 @@ def my_form_open(dialog, layer, feature):
       </spatialrefsys>
     </CoordinateCustomCrs>
   </ProjectDisplaySettings>
-  <ProjectGpsSettings destinationLayerSource="service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;poi_small&quot; (geom)" autoCommitFeatures="0" destinationFollowsActiveLayer="1" destinationLayerName="Points of interest" autoAddTrackVertices="0" destinationLayerProvider="postgres" destinationLayer="poi_6bf838c6_861a_4a61_aa64_9c15084e70ae">
+  <ProjectGpsSettings destinationLayerSource="service='DEVDEMOS' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table=&quot;edit&quot;.&quot;poi&quot; (geom)" autoCommitFeatures="0" destinationFollowsActiveLayer="1" destinationLayerName="Points of interest" autoAddTrackVertices="0" destinationLayerProvider="postgres" destinationLayer="poi_6bf838c6_861a_4a61_aa64_9c15084e70ae">
     <timeStampFields/>
   </ProjectGpsSettings>
 </qgis>

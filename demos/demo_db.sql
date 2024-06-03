@@ -3276,3 +3276,16 @@ create table public.pg_geom_types
     g_tin                geometry(Tin, 3857),
     g_triangle           geometry(Triangle, 3857)
 );
+
+drop table if exists public.many_points;
+
+create table public.many_points
+(
+    pk    integer primary key,
+    label text,
+    geom  geometry(Point, 3857)
+);
+
+insert into public.many_points (pk) select generate_series(1, 12345);
+update public.many_points set geom=st_makepoint(pk / 100, pk % 100);
+update public.many_points set label=st_x(geom)::text || '/' || st_y(geom)::text;

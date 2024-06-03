@@ -68,6 +68,13 @@ class WebRequester:
             A header value.
         """
 
+    def has_param(self, key: str) -> bool:
+        """Check if a GET parameter exists.
+
+        Args:
+            key: Parameter name.
+        """
+
     def param(self, key: str, default: str = '') -> str:
         """Get a GET parameter.
 

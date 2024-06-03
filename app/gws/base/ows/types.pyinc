@@ -1,3 +1,6 @@
+import gws
+
+
 class OwsProtocol(Enum):
     """Supported OWS protocol."""
 
@@ -77,8 +80,18 @@ class OwsService(Node):
     """Service metadata."""
     name: str
     """Service name."""
+    project: Optional['Project']
+    """Project this service is configured for."""
+    rootLayer: Optional['Layer']
+    """Root layer of the service."""
     protocol: OwsProtocol
     """Supported protocol."""
+    defaultFeatureCount: int
+    """Default limit of features per page."""
+    maxFeatureCount: int
+    """Max limit of features per page."""
+    searchTolerance: UomValue
+    """Default tolerance for spatial search."""
     supportedBounds: list[Bounds]
     """Supported bounds."""
     supportedVersions: list[str]
@@ -87,6 +100,10 @@ class OwsService(Node):
     """Supported operations."""
     templates: list['Template']
     """Service templates."""
+    imageFormats: list[str]
+    """Supported image formats."""
+    imageOptions: dict
+    """Image options."""
     updateSequence: str
     """Service update sequence."""
     withInspireMeta: bool
@@ -96,6 +113,9 @@ class OwsService(Node):
 
     def handle_request(self, req: 'WebRequester') -> ContentResponse:
         """Handle a service request."""
+
+    def layer_is_suitable(self, layer: 'Layer') -> bool:
+        """True if layer can be used in this service."""
 
 
 class OwsProvider(Node):

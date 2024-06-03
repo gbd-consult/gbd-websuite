@@ -13,7 +13,6 @@ metadata.abstract """
 owsServices+ {
     type "wms"
     uid "server_wms_qgis_service"
-        supportedCrs [4326]
 
     metadata {
         abstract "QGIS-based WMS service"

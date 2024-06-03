@@ -1,8 +1,16 @@
-import math
+"""WMTS Service.
+
+Implements WMTS 1.0.0.
+This implementation only supports ``GET`` requests with ``KVP`` encoding.
+
+References:
+    - OGC 07-057r7 (https://portal.ogc.org/files/?artifact_id=35326)
+"""
 
 import gws
-import gws.base.web.error
-import gws.base.ows.server
+import gws.config.util
+import gws.base.ows.server as server
+import gws.base.web
 import gws.gis.crs
 import gws.gis.extent
 import gws.lib.image
@@ -13,89 +21,111 @@ import gws.lib.uom as units
 gws.ext.new.owsService('wmts')
 
 
-class Config(gws.base.ows.server.service.Config):
+class Config(server.service.Config):
     """WMTS Service configuration"""
     pass
 
 
-class Object(gws.base.ows.server.service.Object):
+_DEFAULT_TEMPLATES = [
+    gws.Config(
+        type='py',
+        path=gws.u.dirname(__file__) + '/templates/getCapabilities.cx.py',
+        subject='ows.GetCapabilities',
+        mimeTypes=[gws.lib.mime.XML],
+        access=gws.c.PUBLIC,
+    ),
+]
+
+_DEFAULT_METADATA = gws.Metadata(
+    inspireDegreeOfConformity='notEvaluated',
+    inspireMandatoryKeyword='infoMapAccessService',
+    inspireResourceType='service',
+    inspireSpatialDataServiceType='view',
+    isoScope='dataset',
+    isoSpatialRepresentationType='vector',
+)
+
+
+class Object(server.service.Object):
     protocol = gws.OwsProtocol.WMTS
     supportedVersions = ['1.0.0']
-    is_raster_ows = True
+    isRasterService = True
 
     tileMatrixSets: list[gws.TileMatrixSet]
 
-    @property
-    def service_link(self):
-        if self.project:
-            return gws.Data(url=self.url_path(self.project), scheme='OGC:WMTS', function='search')
-
-    @property
-    def default_templates(self):
-        return [
-            gws.Config(
-                type='py',
-                path=gws.u.dirname(__file__) + '/templates/getCapabilities.cx.py',
-                subject='ows.GetCapabilities',
-                mimeTypes=['xml'],
-                access=gws.c.PUBLIC,
-            ),
-        ]
-
-    @property
-    def default_metadata(self):
-        return gws.Data(
-            inspireDegreeOfConformity='notEvaluated',
-            inspireMandatoryKeyword='infoMapAccessService',
-            inspireResourceType='service',
-            inspireSpatialDataServiceType='view',
-            isoScope='dataset',
-            isoSpatialRepresentationType='vector',
-        )
-
-    ##
-
     def configure(self):
-        # @TODO more crs
+        gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
+
         # @TODO different matrix sets per layer
         self.tileMatrixSets = [
             # see https://docs.opengeospatial.org/is/13-082r2/13-082r2.html#29
             gws.TileMatrixSet(
-                uid='EPSG_3857',
-                crs=gws.gis.crs.get3857(),
-                matrices=self._tile_matrices(gws.gis.crs.CRS_3857_EXTENT, 0, 16),
+                uid=f'TMS_{b.crs.srid}',
+                crs=b.crs,
+                matrices=self._tile_matrices(b.extent, 0, 16),
             )
+            for b in self.supportedBounds
         ]
+
+    def configure_operations(self):
+        self.supportedOperations = [
+            gws.OwsOperation(verb=gws.OwsVerb.GetCapabilities, formats=self.template_formats(gws.OwsVerb.GetCapabilities)),
+            gws.OwsOperation(verb=gws.OwsVerb.GetLegendGraphic, formats=self.imageFormats),
+            gws.OwsOperation(verb=gws.OwsVerb.GetTile, formats=self.imageFormats),
+        ]
+
+    def activate(self):
+        self.handlers = {
+            gws.OwsVerb.GetCapabilities: self.handle_get_capabilities,
+            gws.OwsVerb.GetLegendGraphic: self.handle_get_legend_graphic,
+            gws.OwsVerb.GetTile: self.handle_get_tile,
+        }
 
     ##
 
-    def handle_getcapabilities(self, rd: core.Request):
-        tree = self.layer_caps_tree(rd)
-        return self.template_response(rd, gws.OwsVerb.GetCapabilities, context={
-            'layer_caps_list': tree.leaves,
-            'version': self.request_version(rd),
-            'tileMatrixSets': self.tileMatrixSets
-        })
+    def layer_is_suitable(self, layer: gws.Layer):
+        return layer.canRenderBox
 
-    def handle_gettile(self, rd: core.Request):
-        try:
-            matrix_set_uid = rd.req.param('TILEMATRIXSET')
-            matrix_uid = rd.req.param('TILEMATRIX')
-            row = int(rd.req.param('TILEROW'))
-            col = int(rd.req.param('TILECOL'))
-        except Exception:
-            raise gws.base.web.error.BadRequest()
+    def requested_layer_caps(self, sr: server.request.Object):
+        lcs = []
 
-        lcs = self.layer_caps_list_from_request(rd, ['layer'], self.SCOPE_LEAF)
+        for name in sr.list_param('layer'):
+            for lc in sr.layerCapsList:
+                if not server.layer_caps.layer_name_matches(lc, name):
+                    continue
+                if lc.isGroup:
+                    lcs.extend(lc.leaves)
+                else:
+                    lcs.append(lc)
+
         if not lcs:
-            raise gws.base.web.error.NotFound()
+            raise gws.base.web.error.NotFound('Layer not found')
+
+        return gws.u.uniq(lcs)
+
+    ##
+
+    def handle_get_capabilities(self, sr: server.request.Object):
+        return self.template_response(
+            sr,
+            format=sr.string_param('format', default=''),
+            layerCapsList=sr.layerCapsList,
+            tileMatrixSets=self.tileMatrixSets,
+        )
+
+    def handle_get_tile(self, sr: server.request.Object):
+        lcs = self.requested_layer_caps(sr)
+        if len(lcs) != 1:
+            raise gws.base.web.error.BadRequest(f'Invalid LAYER parameter')
+
+        matrix_set_uid = sr.string_param('tileMatrixSet')
+        matrix_uid = sr.string_param('tileMatrix')
+        row = sr.int_param('tileRow')
+        col = sr.int_param('tileCol')
 
         bounds = self._bounds_for_tile(matrix_set_uid, matrix_uid, row, col)
         if not bounds:
             raise gws.base.web.error.BadRequest()
-
-        # crs = rd.project.map.crs
-        # bbox = gws.gis.extent.transform(bbox, tm_crs, crs)
 
         mri = gws.MapRenderInput(
             backgroundColor=None,
@@ -123,12 +153,9 @@ class Object(gws.base.ows.server.service.Object):
 
         return gws.ContentResponse(mime=gws.lib.mime.PNG, content=content)
 
-    def handle_getlegendgraphic(self, rd: core.Request):
-        lcs = self.layer_caps_list_from_request(rd, ['layer', 'layers'], self.SCOPE_LEAF)
-        if not lcs:
-            raise gws.base.web.error.NotFound('No layers found')
-        out = gws.gis.legend.render(gws.Legend(layers=[lc.layer for lc in lcs if lc.has_legend]))
-        return gws.ContentResponse(mime=gws.lib.mime.PNG, content=gws.gis.legend.to_bytes(out) or gws.lib.image.PIXEL_PNG8)
+    def handle_get_legend_graphic(self, sr: server.request.Object):
+        lcs = self.requested_layer_caps(sr)
+        return sr.render_legend(lcs)
 
     ##
 
@@ -171,7 +198,7 @@ class Object(gws.base.ows.server.service.Object):
             size = 1 << z
             res = w / (tile_size * size)
             ms.append(gws.TileMatrix(
-                uid='%02d' % z,
+                uid=f'{z:02d}',
                 scale=gws.lib.uom.res_to_scale(res),
                 x=extent[0],
                 y=extent[1],

@@ -4,17 +4,19 @@ import gws
 
 MM_PER_IN = 25.4
 """Conversion factor from inch to millimetre"""
+
 PT_PER_IN = 72
 """Conversion factor from inch to points"""
-# OGC's 1px = 0.28mm
-# OGC 06-042, 7.2.4.6.9
 
 OGC_M_PER_PX = 0.00028
-"""Open Geospatial Consortium standard conversion factor pixel to metre"""
+"""OGC meter per pixel (OGC 06-042, 7.2.4.6.9: 1px = 0.28mm)."""
+
 OGC_SCREEN_PPI = MM_PER_IN / (OGC_M_PER_PX * 1000)  # 90.71
 """Pixel per inch on screen using the Open Geospatial Consortium standard"""
+
 PDF_DPI = 96
 """Dots per inch in a pdf file"""
+
 # 1 centimeter precision
 
 DEFAULT_PRECISION = {

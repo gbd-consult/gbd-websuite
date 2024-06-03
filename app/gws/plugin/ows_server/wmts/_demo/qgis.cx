@@ -1,0 +1,37 @@
+uid "server_wmts_qgis"
+
+title "WMTS service"
+
+metadata.keywords [ "wmts" "ows-service" ]
+
+metadata.abstract """
+Simple `WMTS` service from a qgis project.
+
+[Service URL](/_/owsService/serviceUid/server_wmts_qgis_service?request=GetCapabilities)
+"""
+
+owsServices+ {
+    type "wmts"
+    uid "server_wmts_qgis_service"
+    supportedCrs [ 3857 25832 25833 ]
+    metadata {
+        abstract "Simple WMTS service"
+        keywords ["test" "wmts" "demo"]
+        name "SIMPLE_WMTS"
+        title "Simple WMTS"
+        {demo_metadata}
+    }
+}
+
+map.extent [
+    {demo_point_duesseldorf_3857[0] - 30000}
+    {demo_point_duesseldorf_3857[1] - 30000}
+    {demo_point_duesseldorf_3857[0] + 30000}
+    {demo_point_duesseldorf_3857[1] + 30000}
+]
+
+map.layers+ {
+    title "Düsseldorf"
+    type "qgis"
+    provider.path "/demos/poi_districts_postgres.qgs"
+}

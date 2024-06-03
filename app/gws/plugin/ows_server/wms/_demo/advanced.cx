@@ -1,0 +1,83 @@
+uid "service_wms_advanced_demo"
+
+title "Advanced WMS service"
+
+metadata.keywords [ "wms" "ows-service" "qgis" ]
+
+metadata.abstract """
+Advanced `WMS` service, supporting
+
+- multiple qgis layers
+- extenal WMS layers
+- difference scale ranges per layer
+- different CRS
+- HTML templates
+
+[Service URL](/_/owsService/serviceUid/service_wms_advanced?request=GetCapabilities)
+"""
+
+owsServices+ {
+    type "wms"
+    uid "service_wms_advanced"
+    supportedCrs [ 3857 25832 ]
+    imageFormats [ 'image/png' 'image/jpeg' ]
+    imageOptions {
+        png_mode '1'
+        jpeg_quality 3
+        jpeg_background '#ff0000'
+    }
+
+    metadata {
+        abstract "Advanced WMS service"
+        keywords ["test" "wms" "qgis" "demo"]
+        name "ADVANCED_WMS"
+        title "Advanced WMS"
+        {demo_metadata}
+    }
+}
+
+map.extent [
+    {demo_point_duesseldorf_3857[0] - 30000}
+    {demo_point_duesseldorf_3857[1] - 30000}
+    {demo_point_duesseldorf_3857[0] + 30000}
+    {demo_point_duesseldorf_3857[1] + 30000}
+]
+
+map.zoom { minScale 500 maxScale 400000 }
+
+map.layers+ {
+    title "Points of interest"
+    type "qgisflat"
+    provider.path "/demos/poi_districts_postgres.qgs"
+    sourceLayers.names [ "Points of interest" ]
+    zoom { maxScale 50000 }
+    finders+ {
+        type "postgres"
+        tableName "edit.poi_small"
+    }
+}
+
+map.layers+ {
+    title "Districts"
+    type "qgisflat"
+    provider.path "/demos/poi_districts_postgres.qgs"
+    sourceLayers.names [ "Districts" ]
+    zoom { minScale 50000 }
+    finders+ {
+        type "postgres"
+        tableName "edit.district"
+    }
+}
+
+map.layers+ {
+    type "wmsflat"
+    title "NRW Gemarkungen"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_gemarkungen_fluren"
+    sourceLayers.names [ "nw_gemarkungen_fluren_gemarkungen" ]
+    zoom { minScale 10000 }
+    metadata.attribution {
+        title "© Geobasis NRW"
+        url "http://www.geobasis.nrw.de"
+    }
+}
+
