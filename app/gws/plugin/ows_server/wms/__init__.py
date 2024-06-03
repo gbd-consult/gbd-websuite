@@ -3,12 +3,6 @@
 Implements WMS 1.1.x and 1.3.0.
 
 Does not support SLD extensions except ``GetLegendGraphic``, for which only ``LAYERS`` is supported.
-
-References:
-    - OGC 01-068r3 (https://portal.ogc.org/files/?artifact_id=1081)
-    - OGC 06-042 (https://portal.ogc.org/files/?artifact_id=14416)
-    - https://mapserver.org/ogc/wms_server.html
-    - https://docs.geoserver.org/latest/en/user/services/wms/reference.html
 """
 
 # @TODO strict mode
@@ -147,9 +141,9 @@ class Object(server.service.Object):
                     lcs.append(lc)
 
         if self.layerLimit and len(lcs) > self.layerLimit:
-            raise gws.base.web.error.BadRequest('Too many layers')
+            raise server.error.InvalidParameterValue('LAYER')
         if not lcs:
-            raise gws.base.web.error.NotFound('Layer not found')
+            raise server.error.LayerNotDefined()
 
         return gws.u.uniq(reversed(lcs) if bottom_first else lcs)
 
@@ -158,7 +152,7 @@ class Object(server.service.Object):
     def handle_get_capabilities(self, sr: server.request.Object):
         return self.template_response(
             sr,
-            format=sr.string_param('format', default=''),
+            format=sr.string_param('FORMAT', default=''),
             layerCapsList=sr.layerCapsList,
         )
 
@@ -177,13 +171,13 @@ class Object(server.service.Object):
         lcs = self.requested_layer_caps(sr, 'query_layers')
         lcs = [lc for lc in lcs if lc.hasSearch]
         if not lcs:
-            raise gws.base.web.error.NotFound('Layer not found')
+            raise server.error.LayerNotDefined()
 
         fc = self.get_features(sr, lcs)
 
         return self.template_response(
             sr,
-            format=sr.string_param('info_format', default=''),
+            format=sr.string_param('INFO_FORMAT', default=''),
             featureCollection=fc,
         )
 
@@ -193,8 +187,10 @@ class Object(server.service.Object):
         if not lcs:
             return sr.feature_collection(lcs, 0, [])
 
-        x = sr.int_param('x,i')
-        y = sr.int_param('y,j')
+        # @TODO validate and raise InvalidPoint
+
+        x = sr.int_param('X,I')
+        y = sr.int_param('Y,J')
 
         x = sr.bounds.extent[0] + (x * sr.xResolution)
         y = sr.bounds.extent[3] - (y * sr.yResolution)
@@ -204,7 +200,7 @@ class Object(server.service.Object):
         search = gws.SearchQuery(
             project=sr.project,
             layers=[lc.layer for lc in lcs],
-            limit=sr.get_feature_count('feature_count'),
+            limit=sr.get_feature_count('FEATURE_COUNT'),
             resolution=sr.xResolution,
             shape=point,
             tolerance=self.searchTolerance,
@@ -216,13 +212,13 @@ class Object(server.service.Object):
     def render_map(self, sr: server.request.Object):
         self.prepare_for_render(sr)
 
-        lcs = self.requested_layer_caps(sr, 'layer,layers')
+        lcs = self.requested_layer_caps(sr, 'LAYER,LAYERS')
         if not lcs:
-            raise gws.base.web.error.NotFound('Layer not found')
+            raise server.error.LayerNotDefined()
 
-        fmt = sr.string_param('format', default=self.imageFormats[0])
+        fmt = sr.string_param('FORMAT', default=self.imageFormats[0])
         if fmt and fmt not in self.imageFormats:
-            raise gws.base.web.error.BadRequest('Invalid FORMAT')
+            raise server.error.InvalidFormat()
 
         lcs = self.visible_layer_caps(sr, lcs)
         if not lcs:
@@ -231,7 +227,7 @@ class Object(server.service.Object):
                 content=gws.lib.image.empty_pixel(fmt)
             )
 
-        s = sr.string_param('transparent', values={'true', 'false'}, default='true')
+        s = sr.string_param('TRANSPARENT', values={'true', 'false'}, default='true')
         transparent = (s == 'true')
 
         planes = [
@@ -261,15 +257,22 @@ class Object(server.service.Object):
 
     def prepare_for_render(self, sr: server.request.Object):
         if not sr.bounds:
-            raise gws.base.web.error.BadRequest('Missing BBOX parameter')
+            raise server.error.MissingParameterValue('BBOX')
 
-        sr.pxWidth = sr.int_param('width')
-        sr.pxHeight = sr.int_param('height')
+        sr.pxWidth = sr.int_param('WIDTH')
+        sr.pxHeight = sr.int_param('HEIGHT')
         w, h = gws.gis.extent.size(sr.bounds.extent)
-        sr.xResolution = w / sr.pxWidth
-        sr.yResolution = h / sr.pxHeight
 
-        gws.log.debug(f'prepare_for_render: px={sr.pxWidth}x{sr.pxHeight} res={sr.xResolution} {gws.lib.uom.res_to_scale(sr.xResolution)}')
+        dpi = sr.int_param('DPI', default=0) or sr.int_param('MAP_RESOLUTION', default=0)
+        if dpi:
+            # honor the dpi setting - compute the scale with "their" dpi and convert to "our" resolution
+            sr.xResolution = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * w / sr.pxWidth, dpi))
+            sr.yResolution = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * h / sr.pxHeight, dpi))
+        else:
+            sr.xResolution = w / sr.pxWidth
+            sr.yResolution = h / sr.pxHeight
+
+        gws.log.debug(f'prepare_for_render: {w=} px={sr.pxWidth}x{sr.pxHeight} {dpi=} res={sr.xResolution} 1:{gws.lib.uom.res_to_scale(sr.xResolution)}')
 
     def visible_layer_caps(self, sr, lcs: list[server.LayerCaps]) -> list[server.LayerCaps]:
         return [

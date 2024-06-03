@@ -1,4 +1,4 @@
-uid "server_wms_qgis"
+uid "service_wms_qgis_demo"
 
 title "WMS service from QGIS"
 
@@ -7,12 +7,12 @@ metadata.keywords [ "wms" "ows-service" "qgis" ]
 metadata.abstract """
 `WMS` service with qgis layers
 
-[Service URL](/_/owsService/serviceUid/server_wms_qgis_service/projectUid/server_wms_qgis?request=GetCapabilities)
+[Service URL](/_/owsService/serviceUid/service_wms_qgis?request=GetCapabilities)
 """
 
 owsServices+ {
     type "wms"
-    uid "server_wms_qgis_service"
+    uid "service_wms_qgis"
 
     metadata {
         abstract "QGIS-based WMS service"

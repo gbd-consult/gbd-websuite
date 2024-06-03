@@ -22,9 +22,9 @@ owsServices+ {
     supportedCrs [ 3857 25832 ]
     imageFormats [ 'image/png' 'image/jpeg' ]
     imageOptions {
-        png_mode '1'
-        jpeg_quality 3
-        jpeg_background '#ff0000'
+        png_mode 'P'
+        jpeg_quality 30
+        jpeg_background 'magenta'
     }
 
     metadata {
@@ -71,10 +71,10 @@ map.layers+ {
 
 map.layers+ {
     type "wmsflat"
-    title "NRW Gemarkungen"
-    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_gemarkungen_fluren"
-    sourceLayers.names [ "nw_gemarkungen_fluren_gemarkungen" ]
-    zoom { minScale 10000 }
+    title "NRW Flurstücke"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+    sourceLayers.names [ "adv_alkis_flurstuecke" ]
+    zoom { maxScale 5000 }
     metadata.attribution {
         title "© Geobasis NRW"
         url "http://www.geobasis.nrw.de"

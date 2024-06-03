@@ -93,7 +93,7 @@ def mm_to_px(x: _number, ppi: int) -> float:
 
     Returns:
         Amount of pixels."""
-    return (x * ppi) / MM_PER_IN
+    return x * (ppi / MM_PER_IN)
 
 
 def to_px(xu: gws.UomValue, ppi: int) -> gws.UomValue:
@@ -148,6 +148,7 @@ def size_to_px(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
 
 ##
 
+
 def px_to_mm(x: _number, ppi: int) -> float:
     """Converts pixel to millimetres.
 
@@ -158,7 +159,7 @@ def px_to_mm(x: _number, ppi: int) -> float:
     Returns:
         Amount of millimetres.
     """
-    return (x / ppi) * MM_PER_IN
+    return x * (MM_PER_IN / ppi)
 
 
 def to_mm(xu: gws.UomValue, ppi: int) -> gws.UomValue:

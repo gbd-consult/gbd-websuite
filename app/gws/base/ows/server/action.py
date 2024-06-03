@@ -8,7 +8,7 @@ import gws.base.web
 import gws.lib.mime
 import gws.lib.xmlx
 
-from . import layer_caps
+from . import layer_caps, error
 
 gws.ext.new.action('ows')
 
@@ -26,12 +26,22 @@ class Config(gws.base.action.Config):
 
 
 class Object(gws.base.action.Object):
+    image_verbs = {
+        gws.OwsVerb.GetMap,
+        gws.OwsVerb.GetTile,
+        gws.OwsVerb.GetLegendGraphic,
+    }
+
     @gws.ext.command.get('owsService')
     def get_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:
         try:
             return self._get_service(req, p)
         except Exception as exc:
-            return self._xml_error(exc)
+            err = error.from_exception(exc)
+            verb = req.param('REQUEST')
+            if verb in self.image_verbs:
+                return err.to_image()
+            return err.to_xml()
 
     def _get_service(self, req, p):
         srv = cast(gws.OwsService, req.user.require(p.serviceUid, gws.ext.object.owsService))
@@ -42,7 +52,7 @@ class Object(gws.base.action.Object):
         try:
             return self._get_schema(req, p)
         except Exception as exc:
-            return self._xml_error(exc)
+            return error.from_exception(exc).to_xml()
 
     def _get_schema(self, req, p):
         ns = gws.lib.xmlx.namespace.find_by_xmlns(p.namespace)
@@ -63,16 +73,4 @@ class Object(gws.base.action.Object):
         return gws.ContentResponse(
             mime=gws.lib.mime.XML,
             content=xml.to_string(with_xml_declaration=True, with_namespace_declarations=True, with_schema_locations=True)
-        )
-
-    def _xml_error(self, exc: Exception):
-        web_exc = gws.base.web.error.from_exception(exc)
-        xml = gws.lib.xmlx.tag('ServiceExceptionReport/ServiceException', {'code': web_exc.code}, web_exc.description)
-
-        # @TODO status, check OGC 17-007r1
-
-        return gws.ContentResponse(
-            mime=gws.lib.mime.XML,
-            content=xml.to_string(with_xml_declaration=True),
-            status=200,
         )

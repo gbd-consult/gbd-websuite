@@ -18,7 +18,7 @@ import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
 
-from . import core, request
+from . import request, error
 
 
 class Config(gws.ConfigWithAccess):
@@ -126,7 +126,7 @@ class Object(gws.OwsService):
 
         self.rootLayer = self.root.get(uid, gws.ext.object.layer)
         if not self.rootLayer:
-            raise gws.Error(f'root layer {uid!r} not found')
+            raise gws.NotFoundError(f'root layer {uid!r} not found')
 
         prj = self.rootLayer.find_closest(gws.ext.object.project)
         if not self.project:
@@ -134,7 +134,7 @@ class Object(gws.OwsService):
             return
 
         if self.project != prj:
-            raise gws.Error(f'root layer {uid!r} does not belong to {self.project!r}')
+            raise gws.NotFoundError(f'root layer {uid!r} does not belong to {self.project!r}')
 
     ##
 
@@ -153,7 +153,7 @@ class Object(gws.OwsService):
     def dispatch_request(self, sr: request.Object):
         handler = self.handlers.get(sr.verb)
         if not handler:
-            raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
+            raise error.OperationNotSupported()
         return handler(sr)
 
     def template_response(self, sr: request.Object, **kwargs) -> gws.ContentResponse:
@@ -164,12 +164,12 @@ class Object(gws.OwsService):
             mime = gws.lib.mime.get(fmt)
             if not mime:
                 gws.log.debug(f'no mimetype: {sr.verb=} {fmt=}')
-                raise gws.base.web.error.BadRequest('Invalid FORMAT parameter')
+                raise error.InvalidFormat()
 
         tpl = self.root.app.templateMgr.find_template(self, user=sr.req.user, subject=f'ows.{sr.verb}', mime=mime)
         if not tpl:
             gws.log.debug(f'no template: {sr.verb=} {fmt=}')
-            raise gws.base.web.error.BadRequest('Unsupported FORMAT')
+            raise error.InvalidFormat()
 
         args = request.TemplateArgs(
             sr=sr,

@@ -1,4 +1,4 @@
-uid "server_wmts_qgis"
+uid "service_wmts_qgis_demo"
 
 title "WMTS service"
 
@@ -7,12 +7,12 @@ metadata.keywords [ "wmts" "ows-service" ]
 metadata.abstract """
 Simple `WMTS` service from a qgis project.
 
-[Service URL](/_/owsService/serviceUid/server_wmts_qgis_service?request=GetCapabilities)
+[Service URL](/_/owsService/serviceUid/service_wmts_qgis?request=GetCapabilities)
 """
 
 owsServices+ {
     type "wmts"
-    uid "server_wmts_qgis_service"
+    uid "service_wmts_qgis"
     supportedCrs [ 3857 25832 25833 ]
     metadata {
         abstract "Simple WMTS service"

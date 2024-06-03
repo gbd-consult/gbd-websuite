@@ -95,8 +95,7 @@ def map_view_transformer(view: gws.MapView):
         x, y = rotate(x, y)
         return int(x), int(y)
 
-    # (x_map*1000)/scale MM * (dpi/MM_PER_IN) PX/MM => PX
-    m2px = (1000.0 / view.scale) * (view.dpi / gws.lib.uom.MM_PER_IN)
+    m2px = 1000.0 * gws.lib.uom.mm_to_px(1 / view.scale, view.dpi)
 
     ext = view.bounds.extent
 
@@ -177,7 +176,7 @@ def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
         lro = plane.layer.render(gws.LayerRenderInput(
             type=gws.LayerRenderInputType.box,
             view=rd.rasterView,
-            extra_params=extra_params,
+            extraParams=extra_params,
             user=rd.mri.user,
         ))
         if lro:

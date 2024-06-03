@@ -1,4 +1,4 @@
-uid "server_wfs_paging"
+uid "service_wfs_paging_demo"
 
 title "WFS service with paging"
 
@@ -7,12 +7,12 @@ metadata.keywords [ "wfs" "ows-service" ]
 metadata.abstract """
 `WFS` service with lots of features. Supports `startIndex` parameter to fetch features in pages.
 
-[Service URL](/_/owsService/serviceUid/server_wfs_paging_service/projectUid/server_wfs_paging?request=GetCapabilities)
+[Service URL](/_/owsService/serviceUid/service_wfs_paging?request=GetCapabilities)
 """
 
 owsServices+ {
     type "wfs"
-    uid "server_wfs_paging_service"
+    uid "service_wfs_paging"
     metadata {
         abstract "WFS service with paging"
         keywords ["test" "wfs" "demo"]

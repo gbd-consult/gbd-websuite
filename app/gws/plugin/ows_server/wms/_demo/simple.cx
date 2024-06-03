@@ -1,4 +1,4 @@
-uid "server_wms_simple"
+uid "service_wms_simple_demo"
 
 title "WMS Service"
 
@@ -7,12 +7,12 @@ metadata.keywords [ "wms" "ows-service" ]
 metadata.abstract """
 Simple `WMS` service, provides a single OSM layer.
 
-[Service URL](/_/owsService/serviceUid/server_wms_simple_service/projectUid/server_wms_simple?request=GetCapabilities)
+[Service URL](/_/owsService/serviceUid/service_wms_simple?request=GetCapabilities)
 """
 
 owsServices+ {
     type "wms"
-    uid "server_wms_simple_service"
+    uid "service_wms_simple"
     metadata {
         abstract "Simple WMS service"
         keywords ["test" "wms" "demo"]

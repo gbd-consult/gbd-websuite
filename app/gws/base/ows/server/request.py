@@ -16,7 +16,7 @@ import gws.gis.crs
 import gws.lib.image
 import gws.lib.uom
 
-from . import core, layer_caps
+from . import core, layer_caps, error
 
 OWS_VERBS = [
     gws.OwsVerb.CreateStoredQuery,
@@ -88,9 +88,12 @@ class Object:
         self.yResolution = 0
 
         # OGC 06-042, 7.2.3.5
-        s = self.string_param('updatesequence', default='')
-        if s and self.service.updateSequence and s >= self.service.updateSequence:
-            raise gws.base.web.error.BadRequest('Invalid update sequence')
+        if self.service.updateSequence:
+            s = self.string_param('UPDATESEQUENCE', default='')
+            if s == self.service.updateSequence:
+                raise error.CurrentUpdateSequence()
+            if s > self.service.updateSequence:
+                raise error.InvalidUpdateSequence()
 
     def get_layer_caps(self) -> list[core.LayerCaps]:
         key = gws.u.sha256([self.service.uid, self.project.uid, sorted(self.req.user.roles)])
@@ -154,7 +157,7 @@ class Object:
         raise gws.NotFoundError(f'project not found for {self.service}')
 
     def get_version(self) -> str:
-        s = self.string_param('version,acceptVersions', default='')
+        s = self.string_param('VERSION,ACCEPTVERSIONS', default='')
         if not s:
             # the first supported version is the default
             return self.service.supportedVersions[0]
@@ -164,17 +167,17 @@ class Object:
                 if ver.startswith(v):
                     return ver
 
-        raise gws.base.web.error.BadRequest('Unsupported service version')
+        raise error.VersionNegotiationFailed()
 
     def get_verb(self) -> gws.OwsVerb:
-        s = self.string_param('request', default='')
+        s = self.string_param('REQUEST', default='')
         if not s:
-            raise gws.base.web.error.BadRequest('Missing REQUEST parameter')
+            raise error.MissingParameterValue('REQUEST')
 
         for verb in OWS_VERBS:
             if verb.lower() == s.lower():
                 return verb
-        raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
+        raise error.InvalidParameterValue('REQUEST')
 
     def get_crs(self, name: str) -> Optional[gws.Crs]:
         s = self.string_param(name, default='')
@@ -183,27 +186,27 @@ class Object:
 
         crs = gws.gis.crs.get(s)
         if not crs:
-            raise gws.base.web.error.BadRequest(f'Invalid CRS')
+            raise error.InvalidCRS()
 
         for b in self.service.supportedBounds:
             if crs == b.crs:
                 return crs
 
-        raise gws.base.web.error.BadRequest('Unsupported CRS')
+        raise error.InvalidCRS()
 
     def get_bounds(self, name: str) -> Optional[gws.Bounds]:
         # OGC 06-042, 7.2.3.5
         # OGC 00-028, 6.2.8.2.3
 
-        s = self.string_param(name, default='')
-        if not s:
+        p, val = self._get_param(name, '')
+        if not val:
             return
 
-        bounds = gws.gis.bounds.from_request_bbox(s, default_crs=self.crs, always_xy=self.alwaysXY)
+        bounds = gws.gis.bounds.from_request_bbox(val, default_crs=self.crs, always_xy=self.alwaysXY)
         if bounds:
             return gws.gis.bounds.transform(bounds, self.crs)
 
-        raise gws.base.web.error.BadRequest(f'Invalid bounds')
+        raise error.InvalidParameterValue(p)
 
     def get_feature_count(self, name: str) -> int:
         s = self.int_param(name, default=0)
@@ -211,44 +214,38 @@ class Object:
             return self.service.defaultFeatureCount
         return min(self.service.maxFeatureCount, s)
 
-    def string_param(self, name: str, values: Optional[set[str]] = None, default: Optional[str] = None) -> str:
-        names = gws.u.to_list(name)
+    def _get_param(self, name, default):
+        names = gws.u.to_list(name.upper())
 
-        for n in gws.u.to_list(names):
+        for n in names:
             if not self.req.has_param(n):
                 continue
             val = self.req.param(n)
-            if values:
-                val = val.lower()
-                if val not in values:
-                    raise gws.base.web.error.BadRequest(f'Invalid {n.upper()} parameter')
-            return val
+            return n, val
 
         if default is not None:
-            return default
+            return '', default
 
-        raise gws.base.web.error.BadRequest(f'Missing {names[0].upper()} parameter')
+        raise error.MissingParameterValue(names[0])
+
+    def string_param(self, name: str, values: Optional[set[str]] = None, default: Optional[str] = None) -> str:
+        p, val = self._get_param(name, default)
+        if values:
+            val = val.lower()
+            if val not in values:
+                raise error.InvalidParameterValue(p)
+        return val
 
     def list_param(self, name: str) -> list[str]:
-        s = self.string_param(name, default='')
-        return gws.u.to_list(s)
+        _, val = self._get_param(name, '')
+        return gws.u.to_list(val)
 
     def int_param(self, name: str, default: Optional[int] = None) -> int:
-        names = gws.u.to_list(name)
-
-        for n in gws.u.to_list(names):
-            if not self.req.has_param(n):
-                continue
-            val = self.req.param(n)
-            try:
-                return int(val)
-            except ValueError:
-                raise gws.base.web.error.BadRequest(f'Invalid {n.upper()} parameter')
-
-        if default is not None:
-            return default
-
-        raise gws.base.web.error.BadRequest(f'Missing {names[0].upper()} parameter')
+        p, val = self._get_param(name, default)
+        try:
+            return int(val)
+        except ValueError:
+            raise error.InvalidParameterValue(p)
 
     ##
 
