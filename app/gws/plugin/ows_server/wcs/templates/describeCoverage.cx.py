@@ -55,7 +55,7 @@ def main(ARGS):
     ##
 
     if ARGS.version.startswith('1'):
-        return tpl.to_xml(ARGS, ('CoverageDescription', doc1()))
+        return tpl.to_xml_response(ARGS, ('CoverageDescription', doc1()))
 
     if ARGS.version.startswith('2'):
-        return tpl.to_xml(ARGS, ('CoverageDescriptions', doc2()))
+        return tpl.to_xml_response(ARGS, ('CoverageDescriptions', doc2()))

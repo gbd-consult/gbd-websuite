@@ -1,4 +1,4 @@
-"""OWS server."""
+"""OWS server action."""
 
 from typing import Optional, cast
 
@@ -8,7 +8,7 @@ import gws.base.web
 import gws.lib.mime
 import gws.lib.xmlx
 
-from . import layer_caps, error
+from . import core, layer_caps, error
 
 gws.ext.new.action('ows')
 
@@ -26,51 +26,47 @@ class Config(gws.base.action.Config):
 
 
 class Object(gws.base.action.Object):
-    image_verbs = {
-        gws.OwsVerb.GetMap,
-        gws.OwsVerb.GetTile,
-        gws.OwsVerb.GetLegendGraphic,
-    }
-
     @gws.ext.command.get('owsService')
     def get_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:
+        srv = cast(gws.OwsService, req.user.require(p.serviceUid, gws.ext.object.owsService))
         try:
-            return self._get_service(req, p)
+            return srv.handle_request(req)
         except Exception as exc:
             err = error.from_exception(exc)
             verb = req.param('REQUEST')
-            if verb in self.image_verbs:
-                return err.to_image()
-            return err.to_xml()
+            if verb in core.IMAGE_VERBS:
+                return err.to_image_response()
+            return err.to_xml_response('ows' if srv.isOwsCommon else 'ogc')
 
-    def _get_service(self, req, p):
-        srv = cast(gws.OwsService, req.user.require(p.serviceUid, gws.ext.object.owsService))
-        return srv.handle_request(req)
-
-    @gws.ext.command.get('owsXmlSchema')
+    @gws.ext.command.get('owsXml')
     def get_schema(self, req: gws.WebRequester, p: GetSchemaRequest) -> gws.ContentResponse:
         try:
-            return self._get_schema(req, p)
+            content = self._make_schema(req, p)
         except Exception as exc:
-            return error.from_exception(exc).to_xml()
+            return error.from_exception(exc).to_xml_response()
+        return gws.ContentResponse(mime=gws.lib.mime.XML, content=content)
 
-    def _get_schema(self, req, p):
-        ns = gws.lib.xmlx.namespace.find_by_xmlns(p.namespace)
+    def _make_schema(self, req, p) -> str:
+        s = p.namespace
+        if s.endswith('.xsd'):
+            s = s[:-4]
+        ns = gws.lib.xmlx.namespace.find_by_xmlns(s)
         if not ns:
             raise gws.NotFoundError(f'namespace not found: {p.namespace=}')
 
         lcs = []
 
         for p in self.root.find_all(gws.ext.object.layer):
-            la = cast(gws.Layer, p)
-            if req.user.can_read(la) and la.owsOptions.xmlNamespace and la.owsOptions.xmlNamespace.xmlns == ns.xmlns:
-                lcs.append(layer_caps.for_layer(la, req.user))
+            layer = cast(gws.Layer, p)
+            if req.user.can_read(layer) and layer.ows.xmlNamespace and layer.ows.xmlNamespace.xmlns == ns.xmlns:
+                lcs.append(layer_caps.for_layer(layer, req.user))
 
         xml = layer_caps.xml_schema(lcs, req.user)
         if not xml:
             raise gws.NotFoundError(f'cannot create schema: {p.namespace=}')
 
-        return gws.ContentResponse(
-            mime=gws.lib.mime.XML,
-            content=xml.to_string(with_xml_declaration=True, with_namespace_declarations=True, with_schema_locations=True)
+        return xml.to_string(
+            with_xml_declaration=True,
+            with_namespace_declarations=True,
+            with_schema_locations=True
         )

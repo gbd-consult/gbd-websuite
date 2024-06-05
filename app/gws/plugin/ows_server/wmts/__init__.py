@@ -50,6 +50,7 @@ class Object(server.service.Object):
     protocol = gws.OwsProtocol.WMTS
     supportedVersions = ['1.0.0']
     isRasterService = True
+    isOwsCommon = True
 
     tileMatrixSets: list[gws.TileMatrixSet]
 
@@ -62,53 +63,66 @@ class Object(server.service.Object):
             gws.TileMatrixSet(
                 uid=f'TMS_{b.crs.srid}',
                 crs=b.crs,
-                matrices=self._tile_matrices(b.extent, 0, 16),
+                matrices=self.make_tile_matrices(b.extent, 0, 16),
             )
             for b in self.supportedBounds
         ]
 
     def configure_operations(self):
         self.supportedOperations = [
-            gws.OwsOperation(verb=gws.OwsVerb.GetCapabilities, formats=self.template_formats(gws.OwsVerb.GetCapabilities)),
-            gws.OwsOperation(verb=gws.OwsVerb.GetLegendGraphic, formats=self.imageFormats),
-            gws.OwsOperation(verb=gws.OwsVerb.GetTile, formats=self.imageFormats),
+            gws.OwsOperation(
+                verb=gws.OwsVerb.GetCapabilities,
+                formats=self.available_formats(gws.OwsVerb.GetCapabilities),
+                handlerName='handle_get_capabilities',
+            ),
+            gws.OwsOperation(
+                verb=gws.OwsVerb.GetLegendGraphic,
+                formats=self.available_formats(gws.OwsVerb.GetLegendGraphic),
+                handlerName='handle_get_legend_graphic',
+            ),
+            gws.OwsOperation(
+                verb=gws.OwsVerb.GetTile,
+                formats=self.available_formats(gws.OwsVerb.GetTile),
+                handlerName='handle_get_tile',
+            ),
         ]
 
-    def activate(self):
-        self.handlers = {
-            gws.OwsVerb.GetCapabilities: self.handle_get_capabilities,
-            gws.OwsVerb.GetLegendGraphic: self.handle_get_legend_graphic,
-            gws.OwsVerb.GetTile: self.handle_get_tile,
-        }
+    def make_tile_matrices(self, extent, min_zoom, max_zoom, tile_size=256):
+        ms = []
+
+        # north origin
+        extent = extent[0], extent[3], extent[2], extent[1]
+
+        w, h = gws.gis.extent.size(extent)
+
+        for z in range(min_zoom, max_zoom + 1):
+            size = 1 << z
+            res = w / (tile_size * size)
+            ms.append(gws.TileMatrix(
+                uid=f'{z:02d}',
+                scale=gws.lib.uom.res_to_scale(res),
+                x=extent[0],
+                y=extent[1],
+                tileWidth=tile_size,
+                tileHeight=tile_size,
+                width=size,
+                height=size,
+                extent=extent,
+            ))
+
+        return ms
 
     ##
 
     def layer_is_suitable(self, layer: gws.Layer):
         return layer.canRenderBox
 
-    def requested_layer_caps(self, sr: server.request.Object):
-        lcs = []
-
-        for name in sr.list_param('layer'):
-            for lc in sr.layerCapsList:
-                if not server.layer_caps.layer_name_matches(lc, name):
-                    continue
-                if lc.isGroup:
-                    lcs.extend(lc.leaves)
-                else:
-                    lcs.append(lc)
-
-        if not lcs:
-            raise gws.base.web.error.NotFound('Layer not found')
-
-        return gws.u.uniq(lcs)
-
     ##
 
     def handle_get_capabilities(self, sr: server.request.Object):
         return self.template_response(
             sr,
-            format=sr.string_param('format', default=''),
+            sr.requested_format('FORMAT'),
             layerCapsList=sr.layerCapsList,
             tileMatrixSets=self.tileMatrixSets,
         )
@@ -116,16 +130,18 @@ class Object(server.service.Object):
     def handle_get_tile(self, sr: server.request.Object):
         lcs = self.requested_layer_caps(sr)
         if len(lcs) != 1:
-            raise gws.base.web.error.BadRequest(f'Invalid LAYER parameter')
+            raise server.error.InvalidParameterValue('LAYER')
 
-        matrix_set_uid = sr.string_param('tileMatrixSet')
-        matrix_uid = sr.string_param('tileMatrix')
-        row = sr.int_param('tileRow')
-        col = sr.int_param('tileCol')
+        matrix_set_uid = sr.string_param('TILEMATRIXSET')
+        matrix_uid = sr.string_param('TILEMATRIX')
+        row = sr.int_param('TILEROW')
+        col = sr.int_param('TILECOL')
 
-        bounds = self._bounds_for_tile(matrix_set_uid, matrix_uid, row, col)
+        bounds = self.bounds_for_tile(matrix_set_uid, matrix_uid, row, col)
         if not bounds:
-            raise gws.base.web.error.BadRequest()
+            raise server.error.TileOutOfRange()
+
+        mime = sr.requested_format('FORMAT')
 
         mri = gws.MapRenderInput(
             backgroundColor=None,
@@ -140,26 +156,34 @@ class Object(server.service.Object):
 
         mro = gws.gis.render.render_map(mri)
 
-        if mro.planes and mro.planes[0].image:
-            content = mro.planes[0].image.to_bytes()
-        else:
-            content = gws.lib.image.PIXEL_PNG8
-
         if self.root.app.developer_option('ows.annotate_wmts'):
-            img = gws.lib.image.from_bytes(content)
             e = bounds.extent
             text = f"{matrix_uid} {row} {col}\n{e[0]}\n{e[1]}\n{e[2]}\n{e[3]}"
-            content = img.add_text(text, x=10, y=10).add_box().to_bytes()
+            mro.planes[0].image = mro.planes[0].image.add_text(text, x=10, y=10).add_box()
 
-        return gws.ContentResponse(mime=gws.lib.mime.PNG, content=content)
+        return self.image_response(sr, mro.planes[0].image, mime)
 
     def handle_get_legend_graphic(self, sr: server.request.Object):
         lcs = self.requested_layer_caps(sr)
-        return sr.render_legend(lcs)
+        return self.render_legend(sr, lcs, sr.requested_format('FORMAT'))
 
     ##
 
-    def _bounds_for_tile(self, matrix_set_uid, matrix_uid, row, col):
+    def requested_layer_caps(self, sr: server.request.Object):
+        lcs = []
+
+        for name in sr.list_param('LAYER'):
+            for lc in sr.layerCapsList:
+                if not server.layer_caps.layer_name_matches(lc, name):
+                    continue
+                lcs.append(lc)
+
+        if not lcs:
+            raise server.error.LayerNotDefined()
+
+        return gws.u.uniq(lcs)
+
+    def bounds_for_tile(self, matrix_set_uid, matrix_uid, row, col):
         tms = None
         tm = None
 
@@ -185,28 +209,3 @@ class Object(server.service.Object):
 
         bbox = x, y - span, x + span, y
         return gws.Bounds(crs=tms.crs, extent=bbox)
-
-    def _tile_matrices(self, extent, min_zoom, max_zoom, tile_size=256):
-        ms = []
-
-        # north origin
-        extent = extent[0], extent[3], extent[2], extent[1]
-
-        w, h = gws.gis.extent.size(extent)
-
-        for z in range(min_zoom, max_zoom + 1):
-            size = 1 << z
-            res = w / (tile_size * size)
-            ms.append(gws.TileMatrix(
-                uid=f'{z:02d}',
-                scale=gws.lib.uom.res_to_scale(res),
-                x=extent[0],
-                y=extent[1],
-                tileWidth=tile_size,
-                tileHeight=tile_size,
-                width=size,
-                height=size,
-                extent=extent,
-            ))
-
-        return ms

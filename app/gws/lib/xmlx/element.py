@@ -1,8 +1,4 @@
-"""XML Element.
-
-The Element class extends ``xml.etree.Element``
-and implements the `gws.core.types.IXmlElement` protocol.
-"""
+"""XmlElement implementation."""
 
 import xml.etree.ElementTree
 

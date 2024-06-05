@@ -57,4 +57,4 @@ def main(ARGS):
         )
 
     if ARGS.profile == 'ISO':
-        return tpl.to_xml(ARGS, ('Capabilities', doc_iso()))
+        return tpl.to_xml_response(ARGS, ('Capabilities', doc_iso()))

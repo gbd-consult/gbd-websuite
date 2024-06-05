@@ -1,47 +1,47 @@
 """Utilities to deal with LayerCaps objects."""
 
-from typing import Optional, Callable
+from typing import Optional
 
 import gws
-import gws.lib.xmlx as xmlx
-import gws.lib.uom
 import gws.gis.extent
+import gws.lib.uom
+import gws.lib.xmlx as xmlx
 
 from . import core
 
 
 def for_layer(layer: gws.Layer, user: gws.User, service: Optional[gws.OwsService] = None) -> core.LayerCaps:
+    """Create ``LayerCaps`` for a layer."""
+
     lc = core.LayerCaps(leaves=[], children=[])
 
     lc.layer = layer
     lc.title = layer.title
-    lc.model = layer.root.app.modelMgr.find_model(layer, user=user, access=gws.Access.read)
+    lc.model = layer.root.app.modelMgr.find_model(layer.ows, layer, user=user, access=gws.Access.read)
 
-    opts = layer.owsOptions
-
-    geom_name = opts.geometryName
+    geom_name = layer.ows.geometryName
     if not geom_name and lc.model:
         geom_name = lc.model.geometryName
     if not geom_name:
         geom_name = 'geometry'
 
-    lc.layerName = xmlx.namespace.unqualify_name(opts.layerName)
-    lc.featureName = xmlx.namespace.unqualify_name(opts.featureName)
-    lc.geometryName = xmlx.namespace.unqualify_name(geom_name)
+    lc.layerName = layer.ows.layerName
+    lc.featureName = layer.ows.featureName
+    lc.geometryName = geom_name
 
-    lc.xmlNamespace = opts.xmlNamespace
+    lc.xmlNamespace = layer.ows.xmlNamespace
 
     if lc.xmlNamespace:
-        lc.layerQname = xmlx.namespace.qualify_name(lc.layerName, lc.xmlNamespace)
-        lc.featureQname = xmlx.namespace.qualify_name(lc.featureName, lc.xmlNamespace)
-        lc.geometryQname = xmlx.namespace.qualify_name(lc.geometryName, lc.xmlNamespace)
+        lc.layerNameQ = xmlx.namespace.qualify_name(lc.layerName, lc.xmlNamespace)
+        lc.featureNameQ = xmlx.namespace.qualify_name(lc.featureName, lc.xmlNamespace)
+        lc.geometryNameQ = xmlx.namespace.qualify_name(lc.geometryName, lc.xmlNamespace)
     else:
-        lc.layerQname = lc.layerName
-        lc.featureQname = lc.featureName
-        lc.geometryQname = lc.geometryName
+        lc.layerNameQ = lc.layerName
+        lc.featureNameQ = lc.featureName
+        lc.geometryNameQ = lc.geometryName
 
     lc.hasLegend = layer.hasLegend
-    lc.hasSearch = layer.isSearchable
+    lc.isSearchable = layer.isSearchable
 
     scales = [gws.lib.uom.res_to_scale(r) for r in layer.resolutions]
     lc.minScale = int(min(scales))
@@ -61,25 +61,34 @@ def for_layer(layer: gws.Layer, user: gws.User, service: Optional[gws.OwsService
 
 
 def layer_name_matches(lc: core.LayerCaps, name: str) -> bool:
+    """Check if the layer name in the caps matches the given name."""
+
     if ':' in name:
-        return name == lc.layerQname
+        return name == lc.layerNameQ
     else:
         return name == lc.layerName
 
 
 def feature_name_matches(lc: core.LayerCaps, name: str) -> bool:
+    """Check if the feature name in the caps matches the given name."""
+
     if ':' in name:
-        return name == lc.featureQname
+        return name == lc.featureNameQ
     else:
         return name == lc.featureName
 
 
 def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
+    """Create an ad-hoc XML Schema for a list of `LayerCaps`."""
+
     ns = None
 
     for lc in lcs:
         if not lc.xmlNamespace:
             gws.log.debug(f'xml_schema: skip {lc.layer.uid}: no xmlns')
+            continue
+        if not lc.model:
+            gws.log.debug(f'xml_schema: skip {lc.layer.uid}: no model')
             continue
         if not ns:
             ns = lc.xmlNamespace
@@ -126,7 +135,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
         type_def.append(['xsd:sequence', elements])
 
         atts = {
-            'name': lc.featureQname,
+            'name': lc.featureNameQ,
             'type': type_name,
         }
         if ns.extendsGml:

@@ -49,6 +49,7 @@ class OwsOperation(Data):
     allowedParameters: dict[str, list[str]]
     constraints: dict[str, list[str]]
     formats: list[str]
+    handlerName: str
     params: dict[str, str]
     postUrl: Url
     preferredFormat: str
@@ -66,13 +67,22 @@ class OwsCapabilities(Data):
     version: str
 
 
+class OwsImageFormat(Data):
+    mimeTypes: list[str]
+    """Mime types for this format."""
+    options: dict
+    """Image options."""
+
+
 class OwsService(Node):
     """OWS Service."""
 
-    isRasterService: bool
+    isRasterService: bool = False
     """Service provides raster services."""
-    isVectorService: bool
+    isVectorService: bool = False
     """Service provides vector services."""
+    isOwsCommon: bool = False
+    """Conforms to OGC Web Services Common Standard."""
 
     alwaysXY: bool
     """Force lon/lat order for geographic projections."""
@@ -100,10 +110,8 @@ class OwsService(Node):
     """Supported operations."""
     templates: list['Template']
     """Service templates."""
-    imageFormats: list[str]
+    imageFormats: list[OwsImageFormat]
     """Supported image formats."""
-    imageOptions: dict
-    """Image options."""
     updateSequence: str
     """Service update sequence."""
     withInspireMeta: bool

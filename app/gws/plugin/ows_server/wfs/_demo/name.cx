@@ -1,0 +1,30 @@
+uid "service_wfs_name_demo"
+
+title "WFS service with custom feature name"
+
+metadata.keywords [ "wfs" "ows-service" ]
+
+metadata.abstract """
+`WFS` service with a custom feature name.
+
+[Service URL](/_/owsService/serviceUid/service_wfs_name?request=GetCapabilities)
+"""
+
+owsServices+ {
+    type "wfs"
+    uid "service_wfs_name"
+    metadata {
+        abstract "WFS service with name"
+        keywords ["test" "wfs" "demo"]
+        name "NAME_WFS"
+        title "WFS with custom name"
+        {demo_metadata}
+    }
+}
+
+map.layers+ {
+    title "Points"
+    type "postgres"
+    tableName "edit.poi"
+    ows.featureName "demo:customFeatureName"
+}

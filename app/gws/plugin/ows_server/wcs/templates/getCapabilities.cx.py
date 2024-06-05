@@ -91,7 +91,7 @@ def main(ARGS):
     ##
 
     if ARGS.version.startswith('1'):
-        return tpl.to_xml(ARGS, ('WCS_Capabilities', doc1()))
+        return tpl.to_xml_response(ARGS, ('WCS_Capabilities', doc1()))
 
     if ARGS.version.startswith('2'):
-        return tpl.to_xml(ARGS, ('Capabilities', doc2()))
+        return tpl.to_xml_response(ARGS, ('Capabilities', doc2()))

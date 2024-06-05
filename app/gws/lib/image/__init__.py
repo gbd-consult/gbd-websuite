@@ -87,7 +87,7 @@ def from_data_url(url: str) -> Optional['Image']:
     """
     m = re.match(_DATA_URL_RE, url)
     if not m:
-        raise gws.Error(f'invalid data url')
+        raise Error(f'invalid data url')
     r = base64.standard_b64decode(url[m.end():])
     return from_bytes(r)
 
@@ -123,76 +123,31 @@ class Image(gws.Image):
     def __init__(self, img: PIL.Image.Image):
         self.img: PIL.Image.Image = img
 
-    def size(self) -> gws.Size:
-        """The image's size.
+    def mode(self) -> str:
+        return self.img.mode
 
-        Returns:
-            Length and width of the image.
-        """
+    def size(self) -> gws.Size:
         return self.img.size
 
     def resize(self, size, **kwargs) -> 'Image':
-        """Resizes the image and scales it to fit the new size.
-
-        Args:
-            size: `(width, height)`
-
-        Returns:
-            The resized image object.
-        """
         kwargs.setdefault('resample', PIL.Image.BICUBIC)
         self.img = self.img.resize(_int_size(size), **kwargs)
         return self
 
     def rotate(self, angle, **kwargs) -> 'Image':
-        """Rotates the image.
-
-        Args:
-            angle: Angle to rotate the image.
-
-        Returns:
-            The rotated image object.
-        """
         kwargs.setdefault('resample', PIL.Image.BICUBIC)
         self.img = self.img.rotate(angle, **kwargs)
         return self
 
     def crop(self, box) -> 'Image':
-        """Crops the image with respect to the given box.
-
-        Args:
-            box: `(width, height)`
-
-        Returns:
-            The cropped image object.
-        """
         self.img = self.img.crop(box)
         return self
 
     def paste(self, other, where=None) -> 'Image':
-        """Pastes an image to a specific location.
-
-        Args:
-            other: Image that will be placed.
-
-            where: `(x-coord, y-coord)` indicating where the upper left corer should be pasted.
-
-        Returns:
-            The image object with the other image placed inside.
-        """
         self.img.paste(cast('Image', other).img, where)
         return self
 
     def compose(self, other, opacity=1) -> 'Image':
-        """Places other image on top of the current image.
-
-        Args:
-            other: Image to place on top.
-            opacity: other image's opacity.
-
-        Returns:
-            The image object with the other image on top as an alpha composition.
-        """
         oth = cast('Image', other).img.convert('RGBA')
 
         if oth.size != self.img.size:
@@ -207,62 +162,35 @@ class Image(gws.Image):
 
     def to_bytes(self, mime=None, options=None) -> bytes:
         with io.BytesIO() as fp:
-            self._save(fp, mime, options or {})
+            self._save(fp, mime, options)
             return fp.getvalue()
 
     def to_path(self, path, mime=None, options=None) -> str:
         with open(path, 'wb') as fp:
-            self._save(fp, mime, options or {})
+            self._save(fp, mime, options)
         return path
 
     def _save(self, fp, mime: str, options: dict):
         fmt = _mime_to_format(mime)
-        pfx = fmt.lower() + '_'
-        opts = {
-            k[len(pfx):]: v
-            for k, v in options.items()
-            if k.startswith(pfx)
-        }
-
+        opts = dict(options or {})
         img = self.img
 
-        if fmt == 'PNG':
-            mode = opts.pop('mode', '')
-            if mode in '1LP':
-                img = img.convert(mode, palette=PIL.Image.ADAPTIVE)
-
-        if fmt == 'JPEG':
+        if self.img.mode == 'RGBA' and fmt == 'JPEG':
             background = opts.pop('background', '#FFFFFF')
-            if self.img.mode == 'RGBA':
-                img = PIL.Image.new('RGBA', self.img.size, background)
-                img.alpha_composite(self.img)
-                img = img.convert('RGB')
+            img = PIL.Image.new('RGBA', self.img.size, background)
+            img.alpha_composite(self.img)
+            img = img.convert('RGB')
+
+        mode = opts.pop('mode', '')
+        if mode and self.img.mode != mode:
+            img = img.convert(mode, palette=PIL.Image.ADAPTIVE)
 
         img.save(fp, fmt, **opts)
 
     def to_array(self):
-        """Converts the image to an array.
-
-        Returns:
-            The image as an array. For each row each entry contains the pixel information.
-        """
         return np.array(self.img)
 
     def add_text(self, text, x=0, y=0, color=None) -> 'Image':
-        """Adds text to an image object.
-
-        Args:
-            text: Text to be displayed.
-
-            x: x-coordinate.
-
-            y: y-coordinate.
-
-            color: Color of the text.
-
-        Returns:
-            The image object with the text displayed.
-        """
         self.img = self.img.convert('RGBA')
         draw = PIL.ImageDraw.Draw(self.img)
         font = PIL.ImageFont.load_default()
@@ -271,14 +199,6 @@ class Image(gws.Image):
         return self
 
     def add_box(self, color=None) -> 'Image':
-        """Creates a 1 pixel wide box on the image's edge.
-
-        Args:
-            color: Color of the box's lines.
-
-        Returns:
-            The image with a box around the edges.
-        """
         self.img = self.img.convert('RGBA')
         draw = PIL.ImageDraw.Draw(self.img)
         color = color or (0, 0, 0, 255)
@@ -301,7 +221,13 @@ _MIME_TO_FORMAT = {
 def _mime_to_format(mime):
     if not mime:
         return 'PNG'
-    return _MIME_TO_FORMAT.get(mime, None) or mime.upper()
+    m = mime.split(';')[0].strip()
+    if m in _MIME_TO_FORMAT:
+        return _MIME_TO_FORMAT[m]
+    m = m.split('/')
+    if len(m) == 2 and m[0] == 'image':
+        return m[1].upper()
+    raise Error(f'unknown mime type {mime!r}')
 
 
 def _int_size(size: gws.Size) -> tuple[int, int]:
@@ -313,15 +239,15 @@ _PIXELS = {}
 _ERROR_COLOR = '#ffa1b4'
 
 
-def empty_pixel(mime: str = None):
+def empty_pixel(mime: str = None) -> bytes:
     return pixel(mime, '#ffffff' if mime == gws.lib.mime.JPEG else None)
 
 
-def error_pixel(mime: str = None):
+def error_pixel(mime: str = None) -> bytes:
     return pixel(mime, _ERROR_COLOR)
 
 
-def pixel(mime, color):
+def pixel(mime, color) -> bytes:
     fmt = _mime_to_format(mime)
     key = fmt, str(color)
 

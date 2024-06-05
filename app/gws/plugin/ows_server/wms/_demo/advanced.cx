@@ -9,9 +9,10 @@ Advanced `WMS` service, supporting
 
 - multiple qgis layers
 - extenal WMS layers
-- difference scale ranges per layer
-- different CRS
+- different scale ranges per layer
+- multiple CRS
 - HTML templates
+- multiple image formats
 
 [Service URL](/_/owsService/serviceUid/service_wms_advanced?request=GetCapabilities)
 """
@@ -19,13 +20,8 @@ Advanced `WMS` service, supporting
 owsServices+ {
     type "wms"
     uid "service_wms_advanced"
+
     supportedCrs [ 3857 25832 ]
-    imageFormats [ 'image/png' 'image/jpeg' ]
-    imageOptions {
-        png_mode 'P'
-        jpeg_quality 30
-        jpeg_background 'magenta'
-    }
 
     metadata {
         abstract "Advanced WMS service"
@@ -33,6 +29,30 @@ owsServices+ {
         name "ADVANCED_WMS"
         title "Advanced WMS"
         {demo_metadata}
+    }
+
+    imageFormats+ {
+        mimeTypes [ "image/png" "image/png; mode=32bit" ]
+        options { mode "RGBA" }
+    }
+    imageFormats+ {
+        mimeTypes [ "image/png; mode=8bit" ]
+        options { mode "P" }
+    }
+    imageFormats+ {
+        mimeTypes [ "image/jpeg" "image/jpeg; quality=high" ]
+        options { quality 50 background "cyan" }
+    }
+    imageFormats+ {
+        mimeTypes [ "image/jpeg; quality=low" ]
+        options { quality 10 background "yellow" }
+    }
+
+    templates+ {
+        subject "ows.GetFeatureInfo"
+        type "html"
+        path "feature_info.cx.html"
+        mimeTypes [ "html" ]
     }
 }
 
@@ -53,19 +73,7 @@ map.layers+ {
     zoom { maxScale 50000 }
     finders+ {
         type "postgres"
-        tableName "edit.poi_small"
-    }
-}
-
-map.layers+ {
-    title "Districts"
-    type "qgisflat"
-    provider.path "/demos/poi_districts_postgres.qgs"
-    sourceLayers.names [ "Districts" ]
-    zoom { minScale 50000 }
-    finders+ {
-        type "postgres"
-        tableName "edit.district"
+        tableName "edit.poi"
     }
 }
 
@@ -81,3 +89,28 @@ map.layers+ {
     }
 }
 
+
+map.layers+ {
+    title "Districts"
+    type "qgisflat"
+    provider.path "/demos/poi_districts_postgres.qgs"
+    sourceLayers.names [ "Districts" ]
+    zoom { minScale 50000 }
+    finders+ {
+        type "postgres"
+        tableName "edit.district"
+    }
+}
+
+
+map.layers+ {
+    type "wmsflat"
+    title "NRW DOP"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_dop"
+    sourceLayers.names [ "nw_dop_rgb" ]
+    zoom { maxScale 5000 }
+    metadata.attribution {
+        title "© Geobasis NRW"
+        url "http://www.geobasis.nrw.de"
+    }
+}

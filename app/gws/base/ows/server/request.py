@@ -1,6 +1,6 @@
 """Service Request object."""
 
-from typing import Optional, Callable, cast
+from typing import Optional, Callable
 
 import gws
 import gws.base.layer.core
@@ -17,30 +17,6 @@ import gws.lib.image
 import gws.lib.uom
 
 from . import core, layer_caps, error
-
-OWS_VERBS = [
-    gws.OwsVerb.CreateStoredQuery,
-    gws.OwsVerb.DescribeCoverage,
-    gws.OwsVerb.DescribeFeatureType,
-    gws.OwsVerb.DescribeLayer,
-    gws.OwsVerb.DescribeRecord,
-    gws.OwsVerb.DescribeStoredQueries,
-    gws.OwsVerb.DropStoredQuery,
-    gws.OwsVerb.GetCapabilities,
-    gws.OwsVerb.GetFeature,
-    gws.OwsVerb.GetFeatureInfo,
-    gws.OwsVerb.GetFeatureWithLock,
-    gws.OwsVerb.GetLegendGraphic,
-    gws.OwsVerb.GetMap,
-    gws.OwsVerb.GetPrint,
-    gws.OwsVerb.GetPropertyValue,
-    gws.OwsVerb.GetRecordById,
-    gws.OwsVerb.GetRecords,
-    gws.OwsVerb.GetTile,
-    gws.OwsVerb.ListStoredQueries,
-    gws.OwsVerb.LockFeature,
-    gws.OwsVerb.Transaction,
-]
 
 
 class TemplateArgs(gws.TemplateArgs):
@@ -64,24 +40,27 @@ class Object:
     crs: gws.Crs
     isSoap: bool = False
     layerCapsList: list[core.LayerCaps]
+    operation: gws.OwsOperation
     project: gws.Project
     req: gws.WebRequester
     service: gws.OwsService
     targetCrs: gws.Crs
-    verb: gws.OwsVerb
     version: str
     xmlElement: Optional[gws.XmlElement]
 
     def __init__(self, service: gws.OwsService, req: gws.WebRequester):
-        self.req = req
         self.service = service
-        self.alwaysXY = False
-        self.project = self.get_project()
-        self.isSoap = False
-        self.verb = self.get_verb()
-        self.version = self.get_version()
-        self.layerCapsList = self.get_layer_caps()
+        self.req = req
+        self.project = self.requested_project()
 
+        self.operation = self.requested_operation('REQUEST')
+        self.version = self.requested_version('VERSION,ACCEPTVERSIONS')
+
+        cache_key = 'layer_caps_' + gws.u.sha256([self.service.uid, self.project.uid, sorted(self.req.user.roles)])
+        self.layerCapsList = gws.u.get_app_global(cache_key, self.enum_layer_caps)
+
+        self.alwaysXY = False
+        self.isSoap = False
         self.pxWidth = 0
         self.pxHeight = 0
         self.xResolution = 0
@@ -90,44 +69,39 @@ class Object:
         # OGC 06-042, 7.2.3.5
         if self.service.updateSequence:
             s = self.string_param('UPDATESEQUENCE', default='')
-            if s == self.service.updateSequence:
+            if s and s == self.service.updateSequence:
                 raise error.CurrentUpdateSequence()
-            if s > self.service.updateSequence:
+            if s and s > self.service.updateSequence:
                 raise error.InvalidUpdateSequence()
-
-    def get_layer_caps(self) -> list[core.LayerCaps]:
-        key = gws.u.sha256([self.service.uid, self.project.uid, sorted(self.req.user.roles)])
-        return gws.u.get_app_global(key, self.enum_layer_caps)
 
     def enum_layer_caps(self):
         lcs = []
-        self.collect_layer_caps(
-            self.service.rootLayer or self.project.map.rootLayer,
-            lcs,
-            []
-        )
+        root_layer = self.service.rootLayer or self.project.map.rootLayer
+        self._enum_layer_caps(root_layer, lcs, [])
         return lcs
 
-    def collect_layer_caps(self, layer: gws.Layer, lcs: list[core.LayerCaps], stack: list[core.LayerCaps]):
+    def _enum_layer_caps(self, layer: gws.Layer, lcs: list[core.LayerCaps], stack: list[core.LayerCaps]):
         if not self.req.user.can_read(layer) or not layer.isEnabledForOws:
             return
 
-        can_use = self.service.layer_is_suitable(layer)
-        if not can_use and not layer.isGroup:
+        is_suitable = self.service.layer_is_suitable(layer)
+        if not is_suitable and not layer.isGroup:
             return
 
         lc = layer_caps.for_layer(layer, self.req.user, self.service)
 
+        # NB groups must be inspected even if not 'suitable'
         if layer.isGroup:
             lc.isGroup = True
             n = len(lcs)
             for sub_layer in layer.layers:
-                self.collect_layer_caps(sub_layer, lcs, stack + [lc])
+                self._enum_layer_caps(sub_layer, lcs, stack + [lc])
             if not lc.children:
+                # no empty groups
                 return
-            if can_use:
+            if is_suitable:
                 lc.hasLegend = any(c.hasLegend for c in lc.children)
-                lc.hasSearch = any(c.hasSearch for c in lc.children)
+                lc.isSearchable = any(c.isSearchable for c in lc.children)
                 lcs.insert(n, lc)
         else:
             lc.isGroup = False
@@ -138,7 +112,9 @@ class Object:
         if stack:
             stack[-1].children.append(lc)
 
-    def get_project(self) -> gws.Project:
+    ##
+
+    def requested_project(self) -> gws.Project:
         # services can be configured globally (in which case, service.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (service.project != None)
@@ -156,35 +132,61 @@ class Object:
 
         raise gws.NotFoundError(f'project not found for {self.service}')
 
-    def get_version(self) -> str:
-        s = self.string_param('VERSION,ACCEPTVERSIONS', default='')
-        if not s:
+    def requested_version(self, param_names: str) -> str:
+        p, val = self._get_param(param_names, default='')
+        if not val:
             # the first supported version is the default
             return self.service.supportedVersions[0]
 
-        for v in gws.u.to_list(s):
+        for v in gws.u.to_list(val):
             for ver in self.service.supportedVersions:
                 if ver.startswith(v):
                     return ver
 
         raise error.VersionNegotiationFailed()
 
-    def get_verb(self) -> gws.OwsVerb:
-        s = self.string_param('REQUEST', default='')
-        if not s:
-            raise error.MissingParameterValue('REQUEST')
+    _param2verb = {
+        'createstoredquery': gws.OwsVerb.CreateStoredQuery,
+        'describecoverage': gws.OwsVerb.DescribeCoverage,
+        'describefeaturetype': gws.OwsVerb.DescribeFeatureType,
+        'describelayer': gws.OwsVerb.DescribeLayer,
+        'describerecord': gws.OwsVerb.DescribeRecord,
+        'describestoredqueries': gws.OwsVerb.DescribeStoredQueries,
+        'dropstoredquery': gws.OwsVerb.DropStoredQuery,
+        'getcapabilities': gws.OwsVerb.GetCapabilities,
+        'getfeature': gws.OwsVerb.GetFeature,
+        'getfeatureinfo': gws.OwsVerb.GetFeatureInfo,
+        'getfeaturewithlock': gws.OwsVerb.GetFeatureWithLock,
+        'getlegendgraphic': gws.OwsVerb.GetLegendGraphic,
+        'getmap': gws.OwsVerb.GetMap,
+        'getprint': gws.OwsVerb.GetPrint,
+        'getpropertyvalue': gws.OwsVerb.GetPropertyValue,
+        'getrecordbyid': gws.OwsVerb.GetRecordById,
+        'getrecords': gws.OwsVerb.GetRecords,
+        'gettile': gws.OwsVerb.GetTile,
+        'liststoredqueries': gws.OwsVerb.ListStoredQueries,
+        'lockfeature': gws.OwsVerb.LockFeature,
+        'transaction': gws.OwsVerb.Transaction,
+    }
 
-        for verb in OWS_VERBS:
-            if verb.lower() == s.lower():
-                return verb
-        raise error.InvalidParameterValue('REQUEST')
+    def requested_operation(self, param_names: str) -> gws.OwsOperation:
+        p, val = self._get_param(param_names, default=None)
+        verb = self._param2verb.get(val.lower())
+        if not verb:
+            raise error.InvalidParameterValue(p)
 
-    def get_crs(self, name: str) -> Optional[gws.Crs]:
-        s = self.string_param(name, default='')
-        if not s:
+        for op in self.service.supportedOperations:
+            if op.verb == verb:
+                return op
+
+        raise error.OperationNotSupported()
+
+    def requested_crs(self, param_names: str) -> Optional[gws.Crs]:
+        _, val = self._get_param(param_names, default='')
+        if not val:
             return
 
-        crs = gws.gis.crs.get(s)
+        crs = gws.gis.crs.get(val)
         if not crs:
             raise error.InvalidCRS()
 
@@ -194,11 +196,11 @@ class Object:
 
         raise error.InvalidCRS()
 
-    def get_bounds(self, name: str) -> Optional[gws.Bounds]:
+    def requested_bounds(self, param_names: str) -> Optional[gws.Bounds]:
         # OGC 06-042, 7.2.3.5
         # OGC 00-028, 6.2.8.2.3
 
-        p, val = self._get_param(name, '')
+        p, val = self._get_param(param_names, '')
         if not val:
             return
 
@@ -208,80 +210,50 @@ class Object:
 
         raise error.InvalidParameterValue(p)
 
-    def get_feature_count(self, name: str) -> int:
-        s = self.int_param(name, default=0)
+    def requested_format(self, param_names: str) -> str:
+        s = self.string_param(param_names, default='').strip()
+        if s:
+            # NB our mime types do not contain spaces
+            return ''.join(s.split())
+        return ''
+
+    def requested_feature_count(self, param_names: str) -> int:
+        s = self.int_param(param_names, default=0)
         if s <= 0:
             return self.service.defaultFeatureCount
         return min(self.service.maxFeatureCount, s)
 
-    def _get_param(self, name, default):
-        names = gws.u.to_list(name.upper())
+    ##
 
-        for n in names:
-            if not self.req.has_param(n):
+    def _get_param(self, param_names, default):
+        names = gws.u.to_list(param_names.upper())
+
+        for p in names:
+            if not self.req.has_param(p):
                 continue
-            val = self.req.param(n)
-            return n, val
+            val = self.req.param(p)
+            return p, val
 
         if default is not None:
             return '', default
 
         raise error.MissingParameterValue(names[0])
 
-    def string_param(self, name: str, values: Optional[set[str]] = None, default: Optional[str] = None) -> str:
-        p, val = self._get_param(name, default)
+    def string_param(self, param_names: str, values: Optional[set[str]] = None, default: Optional[str] = None) -> str:
+        p, val = self._get_param(param_names, default)
         if values:
             val = val.lower()
             if val not in values:
                 raise error.InvalidParameterValue(p)
         return val
 
-    def list_param(self, name: str) -> list[str]:
-        _, val = self._get_param(name, '')
+    def list_param(self, param_names: str) -> list[str]:
+        _, val = self._get_param(param_names, '')
         return gws.u.to_list(val)
 
-    def int_param(self, name: str, default: Optional[int] = None) -> int:
-        p, val = self._get_param(name, default)
+    def int_param(self, param_names: str, default: Optional[int] = None) -> int:
+        p, val = self._get_param(param_names, default)
         try:
             return int(val)
         except ValueError:
             raise error.InvalidParameterValue(p)
-
-    ##
-
-    def feature_collection(self, lcs: list[core.LayerCaps], hits: int, results: list[gws.SearchResult]) -> core.FeatureCollection:
-        fc = core.FeatureCollection(
-            members=[],
-            timestamp=gws.lib.date.now_iso(with_tz=False),
-            numMatched=hits,
-            numReturned=len(results),
-        )
-
-        lcs_map = {id(lc.layer): lc for lc in lcs}
-
-        for r in results:
-            r.feature.transform_to(self.targetCrs)
-            fc.members.append(core.FeatureCollectionMember(
-                feature=r.feature,
-                layer=r.layer,
-                layerCaps=lcs_map.get(id(r.layer)) if r.layer else None
-            ))
-
-        return fc
-
-    def render_legend(self, lcs: list[core.LayerCaps]) -> gws.ContentResponse:
-        legend = cast(gws.Legend, self.service.root.create_temporary(
-            gws.ext.object.legend,
-            type='combined',
-            layerUids=[lc.layer.uid for lc in lcs]))
-
-        content = None
-
-        lro = legend.render()
-        if lro:
-            content = gws.base.legend.output_to_bytes(lro)
-
-        return gws.ContentResponse(
-            mime=gws.lib.mime.PNG,
-            content=content or gws.lib.image.empty_pixel()
-        )

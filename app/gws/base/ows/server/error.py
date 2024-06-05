@@ -1,3 +1,8 @@
+"""OWS-specific errors.
+
+Each error class corresponds to an OWS error code, as defined in OGC standards.
+"""
+
 import gws
 import gws.lib.xmlx
 import gws.lib.image
@@ -5,23 +10,31 @@ import gws.lib.mime
 
 
 class Error(gws.Error):
+    """OWS error."""
+
     def __init__(self, *args):
         super().__init__(*args)
         self.code = self.__class__.__name__
         self.locator = self.args[0] if len(self.args) > 0 else ''
         self.message = self.args[1] if len(self.args) > 1 else ''
-        self.status = _STATUS.get(self.code, 500)
+        # NB assume it's the user's fault by default
+        self.status = _STATUS.get(self.code, 400)
 
-    def to_xml(self, mode='ows') -> gws.ContentResponse:
+    def to_xml_response(self, xmlns='ows') -> gws.ContentResponse:
+        """Returns an XML response for this error.
 
-        if mode == 'ows':
+        Args:
+            xmlns: XML namespace to use (``ogc`` or ``ows``).
+        """
+
+        if xmlns == 'ows':
             # OWS ExceptionReport, as per OGC 06-121r9, 8.5
             xml = gws.lib.xmlx.tag(
                 'ExceptionReport', {'xmlns': 'ows'},
                 ('Exception', {'exceptionCode': self.code, 'locator': self.locator}, self.message)
             )
 
-        elif mode == 'ogc':
+        elif xmlns == 'ogc':
             # OGC ServiceExceptionReport, as per OGC 06-042, H.2
             xml = gws.lib.xmlx.tag(
                 'ServiceExceptionReport', {'xmlns': 'ogc'},
@@ -29,18 +42,24 @@ class Error(gws.Error):
             )
 
         else:
-            raise gws.Error(f'invalid {mode=}')
+            raise gws.Error(f'invalid {xmlns=}')
 
         return gws.ContentResponse(
             status=self.status,
             mime=gws.lib.mime.XML,
             content=xml.to_string(
                 with_namespace_declarations=True,
-                with_schema_locations=True,
+                with_schema_locations=False,
             )
         )
 
-    def to_image(self, mime='image/png') -> gws.ContentResponse:
+    def to_image_response(self, mime='image/png') -> gws.ContentResponse:
+        """Returns an image response for this error.
+
+        Args:
+            mime: Image mime type.
+        """
+
         return gws.ContentResponse(
             status=self.status,
             mime=mime,
@@ -49,6 +68,8 @@ class Error(gws.Error):
 
 
 def from_exception(exc: Exception) -> Error:
+    """Convert an Exception to the OWS Error."""
+
     if isinstance(exc, Error):
         return exc
 

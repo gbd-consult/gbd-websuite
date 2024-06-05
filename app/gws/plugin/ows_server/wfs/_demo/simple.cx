@@ -5,7 +5,7 @@ title "WFS service"
 metadata.keywords [ "wfs" "ows-service" ]
 
 metadata.abstract """
-Simple `WFS` service, provides a single Postgres layer.
+Simple `WFS` service, provides two Postgres layers.
 
 [Service URL](/_/owsService/serviceUid/service_wfs_simple?request=GetCapabilities)
 """
@@ -26,8 +26,12 @@ map.layers+ {
     title "Districts"
     type "postgres"
     tableName "edit.district"
+    ows.xmlns "demo"
+}
 
-    ows.xmlNamespace {
-        xmlns "test"
-    }
+map.layers+ {
+    title "POI"
+    type "postgres"
+    tableName "edit.poi"
+    ows.xmlns "demo"
 }

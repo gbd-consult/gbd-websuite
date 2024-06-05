@@ -3,7 +3,7 @@ import gws.base.ows.server.templatelib as tpl
 
 
 def main(ARGS):
-    return tpl.to_xml(ARGS, (
+    return tpl.to_xml_response(ARGS, (
         'csw:GetRecordByIdResponse',
         {'version': ARGS.version},
         rec.record(ARGS, ARGS.record)

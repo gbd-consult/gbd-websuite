@@ -4,7 +4,7 @@ import gws.base.ows.server.templatelib as tpl
 
 
 def main(ta: server.TemplateArgs):
-    return tpl.to_xml(ta, ('Capabilities', doc(ta)))
+    return tpl.to_xml_response(ta, ('Capabilities', doc(ta)))
 
 
 def doc(ta):

@@ -15,18 +15,16 @@ def from_path(
         normalize_namespaces: bool = False,
         remove_namespaces: bool = False,
 ) -> gws.XmlElement:
-    """Creates an ``IXmlElement`` object from a .xlm file.
+    """Creates an ``XmlElement`` object from a .xml file.
 
     Args:
         path: Path to the .xml file.
-        case_insensitive: If true tags will be written in lowercase into the IXmlElement object.
+        case_insensitive: If true tags will be written in lowercase into the XmlElement.
         compact_whitespace: If true all whitespaces and newlines are omitted.
         normalize_namespaces:
         remove_namespaces: Removes all occurrences of namespaces.
-
-    Returns:
-        The ``IXmlElement`` object.
     """
+
     with open(path, 'rb') as fp:
         inp = fp.read()
     return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
@@ -39,18 +37,16 @@ def from_string(
         remove_namespaces: bool = False,
         normalize_namespaces: bool = False,
 ) -> gws.XmlElement:
-    """Creates an ``IXmlElement`` from a string or bytes.
+    """Creates an ``XmlElement`` from a string or bytes.
 
     Args:
         inp: .xml file as a string or bytes.
-        case_insensitive: If true tags will be written in lowercase into the IXmlElement object.
+        case_insensitive: If true tags will be written in lowercase into the XmlElement.
         compact_whitespace: If true all whitespaces and newlines are omitted.
         normalize_namespaces:
         remove_namespaces: Removes all occurrences of namespaces.
-
-    Returns:
-        The ``IXmlElement`` object.
     """
+
     return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
 
 
@@ -85,7 +81,9 @@ class _ParserTarget:
             s: XML-namespace or URI.
 
         Returns:
-            ``{URI}properName``, if ``normalize_namespaces`` flag is True  ``{non-versionalized-URL}properName`` is returned, if ``remove_namespaces`` flag is True ``properName`` is returned.
+            ``{URI}properName``
+            if ``normalize_namespaces`` flag is True, ``{non-versionalized-URL}properName`` is returned,
+            if ``remove_namespaces`` flag is True ``properName`` is returned.
         """
         xmlns, uri, pname = namespace.split_name(s)
         pname = pname.lower() if self.case_insensitive else pname
@@ -100,14 +98,11 @@ class _ParserTarget:
         return '{' + uri + '}' + pname
 
     def make(self, tag: str, attrib: dict) -> gws.XmlElement:
-        """Creates an ``IXmlElement``.
+        """Creates an Element.
 
         Args:
             tag: The tag.
             attrib: ``{key:value}``
-
-        Returns:
-            A ``IXmlElement.``
         """
         attrib2 = {}
 

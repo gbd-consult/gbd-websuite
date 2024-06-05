@@ -15,8 +15,6 @@ TEMPLATE_TYPES = {
 
 class Object(gws.TemplateManager):
     def find_template(self, *objects, user=None, subject=None, mime=None):
-        mime = gws.lib.mime.get(mime) if mime else None
-
         for obj in objects:
             if not obj:
                 continue

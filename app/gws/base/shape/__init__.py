@@ -242,11 +242,15 @@ class Shape(gws.Shape):
     geom: shapely.geometry.base.BaseGeometry
 
     def __init__(self, geom, crs: gws.Crs):
+        super().__init__()
         self.geom = geom
         self.crs = crs
         self.type = self.geom.geom_type.lower()
         self.x = getattr(self.geom, 'x', None)
         self.y = getattr(self.geom, 'y', None)
+
+    def __str__(self):
+        return '{Geometry:' + self.geom.geom_type.upper() + '}'
 
     def area(self):
         return getattr(self.geom, 'area', 0)

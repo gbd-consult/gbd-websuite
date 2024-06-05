@@ -82,9 +82,10 @@ def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_
 
     for sl in source_layers:
         sr = sl.scaleRange
-        if sr:
-            smin.append(sr[0])
-            smax.append(sr[1])
+        if not sr:
+            return parent_resolutions
+        smin.append(sr[0])
+        smax.append(sr[1])
 
     if not smin:
         return parent_resolutions

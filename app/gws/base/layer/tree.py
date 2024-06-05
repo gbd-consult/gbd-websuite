@@ -6,7 +6,7 @@ import gws
 import gws.gis.source
 import gws.config.parser
 
-from . import core
+from . import core, base
 
 
 class FlattenConfig(gws.Config):
@@ -39,7 +39,7 @@ class TreeConfigArgs(gws.Data):
     leaf_layer_maker: Callable
 
 
-def layer_configs_from_layer(layer: core.Object, source_layers: list[gws.SourceLayer], leaf_layer_maker: Callable) -> list[gws.Config]:
+def layer_configs_from_layer(layer: base.Object, source_layers: list[gws.SourceLayer], leaf_layer_maker: Callable) -> list[gws.Config]:
     """Generate a config tree from a list of source layers and the main layer config."""
 
     return layer_configs_from_args(TreeConfigArgs(

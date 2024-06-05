@@ -5,23 +5,23 @@ import gws.config
 import gws.gis.bounds
 import gws.gis.source
 
-from . import core
+from . import core, base
 
 gws.ext.new.layer('group')
 
 
-class Config(core.Config):
+class Config(base.Config):
     """Group layer"""
 
     layers: list[gws.ext.config.layer]
     """layers in this group"""
 
 
-class Props(core.Props):
+class Props(base.Props):
     layers: list[gws.ext.props.layer]
 
 
-class Object(core.Object):
+class Object(base.Object):
     isGroup = True
 
     def configure(self):

@@ -41,9 +41,33 @@ dl.py > dt {
     border-left: 6px solid #f0f0f0;
 }
 
+dl.field-list > dt {
+    font-size: 0.8em;
+    padding-left: 0;
+}
+
+code {
+    border: none;
+    font-size: 1em;
+    color: #bd4ea4;
+    background: none;
+}
 code.literal {
-    padding: 0.1em 0.3em;
+    padding: 0;
+}
+div.body {
+    max-width: none;
 }
 div.sphinxsidebarwrapper {
     overflow-x: hidden;
+}
+.field-list ul {
+    padding-left: 0;
+    list-style: none;
+}
+.field-odd strong {
+    font-family: 'Consolas', 'Menlo', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+    font-weight: 600;
+    color: #bd4ea4;
+
 }

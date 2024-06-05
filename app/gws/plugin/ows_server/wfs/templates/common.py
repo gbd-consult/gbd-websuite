@@ -9,7 +9,7 @@ def feature_collection(ta: server.TemplateArgs):
     return (
         'wfs:FeatureCollection', feature_collection_attributes(ta), [
             (
-                f'wfs:member/{m.layerCaps.featureQname if m.layerCaps else "wfs:feature"}',
+                f'wfs:member/{m.layerCaps.featureNameQ if m.layerCaps else "wfs:feature"}',
                 {'gml:id': m.feature.uid()},
                 feature_collection_member(ta, m)
             )

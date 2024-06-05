@@ -83,49 +83,51 @@ class Config(gws.ConfigWithAccess):
     """Main application configuration"""
 
     actions: Optional[list[gws.ext.config.action]]
-    """system-wide server actions"""
+    """System-wide server actions."""
     auth: Optional[gws.base.auth.manager.Config] = {}  # type: ignore
-    """authorization methods and options"""
+    """Authorization methods and options."""
     cache: Optional[gws.gis.cache.Config] = {}  # type: ignore
-    """global cache configuration"""
+    """Global cache configuration."""
     client: Optional[gws.base.client.Config]
-    """gws client configuration"""
+    """Gws client configuration."""
     database: Optional[gws.base.database.manager.Config]
-    """database configuration"""
+    """Database configuration."""
     developer: Optional[dict]
-    """developer options"""
+    """Developer options."""
     finders: Optional[list[gws.ext.config.finder]]
-    """global search providers"""
+    """Global search providers."""
     fonts: Optional[gws.lib.font.Config]
-    """fonts configuration"""
+    """Fonts configuration."""
     helpers: Optional[list[gws.ext.config.helper]]
-    """helpers configurations"""
+    """Helpers configurations."""
     locales: Optional[list[str]]
-    """default locales for all projects"""
+    """Default locales for all projects."""
     metadata: Optional[gws.Metadata]
-    """application metadata"""
+    """Application metadata."""
     models: Optional[list[gws.ext.config.model]]
-    """global data models"""
+    """Global data models."""
     owsServices: Optional[list[gws.ext.config.owsService]]
-    """OWS services configuration"""
+    """OWS services configuration."""
     plugins: Optional[list[dict]]
-    """configuration for plugins"""
+    """Configuration for plugins."""
     projectDirs: Optional[list[gws.DirPath]]
-    """directories with additional projects"""
+    """Directories with additional projects."""
     projectPaths: Optional[list[gws.FilePath]]
-    """additional project paths"""
+    """Additional project paths."""
     printers: Optional[list[gws.ext.config.printer]]
-    """print configurations"""
+    """Print configurations."""
     projects: Optional[list[gws.ext.config.project]]
-    """project configurations"""
+    """Project configurations."""
     server: Optional[gws.server.Config] = {}
-    """server engine options"""
+    """Server engine options."""
     storage: Optional[gws.base.storage.manager.Config]
-    """database configuration"""
+    """Database configuration."""
     templates: Optional[list[gws.ext.config.template]]
-    """default templates"""
+    """Default templates."""
     web: Optional[gws.base.web.manager.Config]
-    """web server options"""
+    """Web server options."""
+    xml: Optional[gws.base.xml.manager.Config]
+    """Configuration for xml. (added in 8.1)"""
 
 
 class Object(gws.Application):
@@ -177,7 +179,7 @@ class Object(gws.Application):
         self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.cfg('database'))
         self.storageMgr = self.create_child(gws.base.storage.manager.Object, self.cfg('storage'))
         self.authMgr = self.create_child(gws.base.auth.manager.Object, self.cfg('auth'))
-        self.xmlMgr = self.create_child(gws.base.xml.manager.Object, gws.Config())
+        self.xmlMgr = self.create_child(gws.base.xml.manager.Object, self.cfg('xml'))
 
         helpers = self.create_children(gws.ext.object.helper, self.cfg('helpers'))
         self.helperMap = {p.extType: p for p in helpers}

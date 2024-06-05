@@ -7,7 +7,7 @@ import gws.base.ows.server.templatelib as tpl
 
 
 def main(ta: server.TemplateArgs):
-    return tpl.to_xml(ta, ('WFS_Capabilities', doc(ta)))
+    return tpl.to_xml_response(ta, ('WFS_Capabilities', doc(ta)))
 
 
 def doc(ta: server.TemplateArgs):
@@ -82,7 +82,7 @@ def feature_type_list(ta: server.TemplateArgs):
 
 
 def feature_type(ta: server.TemplateArgs, lc: server.LayerCaps):
-    yield 'Name', lc.featureQname
+    yield 'Name', lc.featureNameQ
     yield 'Title', lc.layer.title
     yield 'Abstract', lc.layer.metadata.abstract
 

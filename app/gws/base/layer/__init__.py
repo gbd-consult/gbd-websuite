@@ -1,8 +1,12 @@
+"""Base Layer object."""
+
 from .core import (
-    Config,
-    Object,
-    Props,
     CacheConfig,
     GridConfig,
+)
+from .base import (
+    Object,
+    Config,
+    Props,
 )
 from . import group, tree, util, image, vector

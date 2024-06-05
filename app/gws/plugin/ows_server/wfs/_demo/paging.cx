@@ -16,8 +16,8 @@ owsServices+ {
     metadata {
         abstract "WFS service with paging"
         keywords ["test" "wfs" "demo"]
-        name "SIMPLE_WFS"
-        title "Simple WFS"
+        name "PAGING_WFS"
+        title "Paging WFS"
         {demo_metadata}
     }
 }
@@ -26,7 +26,5 @@ map.layers+ {
     title "Points"
     type "postgres"
     tableName "public.many_points"
-    ows.xmlNamespace {
-        xmlns "test"
-    }
+    ows.xmlns "demo"
 }

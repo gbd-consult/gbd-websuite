@@ -3,4 +3,4 @@ import gws.base.ows.server.templatelib as tpl
 
 
 def main(ARGS):
-    return tpl.to_xml(ARGS, rec.record(ARGS, ARGS.record))
+    return tpl.to_xml_response(ARGS, rec.record(ARGS, ARGS.record))

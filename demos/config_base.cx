@@ -163,4 +163,10 @@ templates+ {
 
 }
 
+xml.namespaces+ {
+    xmlns "demo"
+    uri "https://gws-dev.gbd-consult.de/_/owsXml/namespace/demo"
+    schemaLocation "https://gws-dev.gbd-consult.de/_/owsXml/namespace/demo.xsd"
+}
+
 server.web.timeout 600

@@ -12,7 +12,7 @@ import gws.plugin.ows_server.wfs
 
 
 def main(ta: server.TemplateArgs):
-    return tpl.to_xml(
+    return tpl.to_xml_response(
         ta,
         ('wfs:DescribeStoredQueriesResponse', doc(ta)),
         extra_namespaces=[lc.xmlNamespace for lc in ta.layerCapsList]
@@ -20,7 +20,7 @@ def main(ta: server.TemplateArgs):
 
 
 def doc(ta):
-    types = ' '.join(lc.featureQname for lc in ta.layerCapsList)
+    types = ' '.join(lc.featureNameQ for lc in ta.layerCapsList)
     yield (
         'wfs:StoredQueryDescription',
         {'id': gws.plugin.ows_server.wfs.STORED_QUERY_GET_FEATURE_BY_ID},

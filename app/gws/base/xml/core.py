@@ -1,15 +1,14 @@
-from typing import Optional
 import gws
 
 
 class NamespaceConfig(gws.Config):
-    """XML Namespace configuration."""
+    """XML Namespace configuration. (added in 8.1)"""
 
     xmlns: str
     """Default prefix for this Namespace."""
-    uri: Optional[gws.Url]
+    uri: gws.Url
     """Namespace uri."""
-    schemaLocation: Optional[gws.Url]
+    schemaLocation: gws.Url
     """Namespace schema location."""
     version: str = ''
     """Namespace version."""

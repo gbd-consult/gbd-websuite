@@ -1,6 +1,6 @@
 """XML namespace manager.
 
-Manage XML namespaces.
+Maintains a registry of XML namespaces (well-known and custom).
 """
 
 from typing import Optional
@@ -106,7 +106,7 @@ def parse_name(name: str) -> tuple[Optional[gws.XmlNamespace], str]:
         name: XML name.
 
     Returns:
-        A tuple ``(xmlns|uri, proper name)``
+        A tuple ``(XmlNamespace, proper name)``
     """
     xmlns, uri, pname = split_name(name)
 
@@ -179,7 +179,7 @@ def clarkify_name(name: str) -> str:
     """Returns an XML name in the Clark notation.
 
     Args:
-        name: A XML name withe namespace prefix.
+        name: A qualified XML name.
 
     Returns:
         The XML name in Clark notation.

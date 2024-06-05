@@ -26,7 +26,7 @@ class OperationConfig(gws.Config):
     formats: Optional[list[str]]
     """Supported formats."""
     params: Optional[dict]
-    """Operation parameters (added in 8.1)."""
+    """Operation parameters. (added in 8.1)"""
     postUrl: Optional[gws.Url]
     """URL for POST requests."""
     url: Optional[gws.Url]
@@ -34,7 +34,7 @@ class OperationConfig(gws.Config):
 
 
 class AuthorizationConfig(gws.Config):
-    """Service authorization (added in 8.1)."""
+    """Service authorization. (added in 8.1)"""
     type: str
     """Authorization type (only "basic" is supported)."""
     username: str = ''

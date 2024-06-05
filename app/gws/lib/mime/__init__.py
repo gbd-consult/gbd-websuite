@@ -92,7 +92,7 @@ _aliases = {
     'application/x-gzip': GZIP,
     'application/x-pdf': PDF,
     'image/jpg': JPEG,
-    'text/xhmtl': HTML,
+    'text/xhtml': HTML,
     'text/xml': XML,
 
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': DOC,

@@ -1,9 +1,9 @@
 """Base image layer."""
 
-from . import core
+from . import base
 
 
-class Object(core.Object):
+class Object(base.Object):
     """Base image layer"""
 
     canRenderBox = True

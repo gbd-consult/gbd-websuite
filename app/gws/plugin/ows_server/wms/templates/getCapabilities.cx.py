@@ -9,13 +9,13 @@ import gws.plugin.ows_server.wms
 
 def main(ta: server.TemplateArgs):
     if ta.intVersion == 110:
-        return tpl.to_xml(ta, ('WMT_MS_Capabilities', doc(ta)))
+        return tpl.to_xml_response(ta, ('WMT_MS_Capabilities', doc(ta)))
 
     elif ta.intVersion == 111:
-        return tpl.to_xml(ta, ('WMT_MS_Capabilities', doc(ta)))
+        return tpl.to_xml_response(ta, ('WMT_MS_Capabilities', doc(ta)))
 
     elif ta.intVersion == 130:
-        return tpl.to_xml(ta, ('WMS_Capabilities', doc(ta)))
+        return tpl.to_xml_response(ta, ('WMS_Capabilities', doc(ta)))
 
 
 def doc(ta):
@@ -97,11 +97,12 @@ def request_caps(ta):
         verb = op.verb
         if ta.intVersion == 130 and verb == gws.OwsVerb.GetLegendGraphic:
             verb = 'sld:GetLegendGraphic'
-        yield verb, [('Format', f) for f in op.formats], url
+        # NB QGIS wants a space after ';'
+        yield verb, [('Format', f.replace(';', '; ')) for f in op.formats], url
 
 
 def layer(ta, lc: server.LayerCaps):
-    return 'Layer', {'queryable': 1 if lc.hasSearch else 0}, layer_content(ta, lc)
+    return 'Layer', {'queryable': 1 if lc.isSearchable else 0}, layer_content(ta, lc)
 
 
 def layer_content(ta, lc: server.LayerCaps):

@@ -8,7 +8,7 @@ import gws.plugin.ows_server.wfs.templates.common as common
 
 def main(ta: server.TemplateArgs):
     ta.gmlVersion = 3
-    return tpl.to_xml(
+    return tpl.to_xml_response(
         ta,
         common.value_collection(ta),
         extra_namespaces=[xmlx.namespace.get('gml3')]

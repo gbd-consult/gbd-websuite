@@ -1,0 +1,15 @@
+@for member in featureCollection.members
+    <table border="1" cellspacing="0" cellpadding="5" bgcolor="white">
+        <tr>
+            <td colspan="2">
+                <strong>{member.layer.title}</strong>
+            </td>
+        </tr>
+        @for name, val in member.feature.attributes
+            <tr>
+                <th>{name}</th>
+                <td>{val | html}</td>
+            </tr>
+        @end
+    </table>
+@end

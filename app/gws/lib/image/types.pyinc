@@ -10,37 +10,111 @@ class ImageFormat(Enum):
 class Image:
     """Image object."""
 
-    def size(self) -> Size: ...
+    def size(self) -> Size:
+        """Get the image size.
 
-    def add_box(self, color=None) -> 'Image': ...
+        Returns:
+            A tuple ``(width, height)``.
+        """
 
-    def add_text(self, text: str, x=0, y=0, color=None) -> 'Image': ...
+    def mode(self) -> str:
+        """Get the image mode.
 
-    def compose(self, other: 'Image', opacity=1) -> 'Image': ...
+        Returns:
+            PIL image mode.
+        """
 
-    def crop(self, box) -> 'Image': ...
+    def add_box(self, color=None) -> 'Image':
+        """Creates a 1 pixel wide box on the image's edge.
 
-    def paste(self, other: 'Image', where=None) -> 'Image': ...
+        Args:
+            color: Color of the box's lines.
 
-    def resize(self, size: Size, **kwargs) -> 'Image': ...
+        Returns:
+            The image with a box around the edges.
+        """
 
-    def rotate(self, angle: int, **kwargs) -> 'Image': ...
+    def add_text(self, text: str, x=0, y=0, color=None) -> 'Image':
+        """Adds text to an image object.
+
+        Args:
+            text: Text to be displayed.
+
+            x: x-coordinate.
+
+            y: y-coordinate.
+
+            color: Color of the text.
+
+        Returns:
+            The image object with the text displayed.
+        """
+
+    def compose(self, other: 'Image', opacity=1) -> 'Image':
+        """Places other image on top of the current image.
+
+        Args:
+            other: Image to place on top.
+            opacity: other image's opacity.
+
+        Returns:
+            The image object with the other image on top as an alpha composition.
+        """
+
+    def crop(self, box) -> 'Image':
+        """Crops the image with respect to the given box.
+
+        Args:
+            box: `(width, height)`
+
+        Returns:
+            The cropped image object.
+        """
+
+    def paste(self, other: 'Image', where=None) -> 'Image':
+        """Pastes an image to a specific location.
+
+        Args:
+            other: Image that will be placed.
+
+            where: `(x-coord, y-coord)` indicating where the upper left corer should be pasted.
+
+        Returns:
+            The image object with the other image placed inside.
+        """
+
+    def resize(self, size: Size, **kwargs) -> 'Image':
+        """Resizes the image and scales it to fit the new size.
+
+        Args:
+            size: `(width, height)`
+
+        Returns:
+            The resized image object.
+        """
+
+    def rotate(self, angle: int, **kwargs) -> 'Image':
+        """Rotates the image.
+
+        Args:
+            angle: Angle to rotate the image.
+
+        Returns:
+            The rotated image object.
+        """
 
     def to_bytes(self, mime: Optional[str] = None, options: Optional[dict] = None) -> bytes:
         """Converts the image object to bytes.
 
-        The ``options`` dict can contain any PIL save option, prefixed with the format name,
-        for example, to pass a ``compress_level`` for png, provide ``png_compress_level``.
+        The ``options`` dict can contain any PIL save option
+        (see https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html).
 
-        See https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html
-        for possible save options.
-
-        An additional option ``png_mode`` can be ``1``, ``L`` or ``P``
+        An additional option ``mode`` is the image mode
         (see https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes).
         If provided, the image is converted to that mode before saving.
 
-        An additional option ``jpeg_background`` sets the color
-        to replace the alpha channel with (default is white).
+        An additional option ``background`` sets the color to replace the alpha channel with
+        when converting from RGBA to RGB (default is white).
 
         Args:
             mime: The mime type.
@@ -62,6 +136,9 @@ class Image:
             The path to the image.
         """
 
+    def to_array(self) -> 'numpy.typing.NDArray':
+        """Converts the image to an array.
 
-    def to_array(self) -> 'numpy.typing.NDArray': ...
-
+        Returns:
+            The image as an array. For each row each entry contains the pixel information.
+        """

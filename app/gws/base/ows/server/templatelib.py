@@ -101,7 +101,7 @@ def dcp_service_url(ta: request.TemplateArgs):
 
 
 def legend_url(ta: request.TemplateArgs, lc: core.LayerCaps):
-    _, _, name = xmlx.namespace.split_name(lc.layerQname)
+    _, _, name = xmlx.namespace.split_name(lc.layerNameQ)
     return (
         'LegendURL',
         ('Format', 'image/png'),
@@ -212,7 +212,7 @@ def coord_m(n):
     return round(n, gws.lib.uom.DEFAULT_PRECISION[gws.Uom.m])
 
 
-def to_xml(ta: request.TemplateArgs, tag, extra_namespaces: Optional[list[gws.XmlNamespace]] = None):
+def to_xml_response(ta: request.TemplateArgs, tag, extra_namespaces: Optional[list[gws.XmlNamespace]] = None) -> gws.ContentResponse:
     if ta.sr.isSoap:
         tag = 'soap:Envelope', ('soap:Header', ''), ('soap:Body', tag)
 
