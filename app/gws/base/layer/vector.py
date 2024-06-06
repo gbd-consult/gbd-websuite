@@ -7,10 +7,10 @@ import gws.gis.extent
 import gws.lib.style
 import gws.lib.svg
 
-from . import base
+from . import core
 
 
-class Object(base.Object):
+class Object(core.Object):
     """Base vector layer"""
 
     # @TODO rasterize vector layers
