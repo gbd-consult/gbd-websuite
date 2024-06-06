@@ -16,12 +16,11 @@ harakiri-verbose = true
 reload-mercy = 5
 worker-reload-mercy = 5
 
-lazy-apps = true
-
 @if uwsgi == 'web'
     logger = syslog:WEB,local6
     harakiri = {root.app.cfg('server.web.timeout')}
     processes = {root.app.cfg('server.web.workers')}
+    lazy-apps = true
     pidfile = {webPid}
     uwsgi-socket = {webSocket}
     wsgi-file = {gws.c.APP_DIR}/gws/base/web/wsgi_main.py
@@ -37,7 +36,6 @@ lazy-apps = true
     uwsgi-socket = {spoolSocket}
     wsgi-file = {gws.c.APP_DIR}/gws/server/spool/wsgi_main.py
 
-    master = true
     spooler = {gws.c.SPOOL_DIR}
     spooler-frequency = {root.app.cfg('server.spool.jobFrequency')}
 @end

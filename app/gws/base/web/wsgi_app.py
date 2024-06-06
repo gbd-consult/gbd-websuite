@@ -39,6 +39,7 @@ def init():
 
 def reload():
     _STATE['inited'] = False
+    init()
 
 
 def handle_request(environ) -> gws.WebResponder:
