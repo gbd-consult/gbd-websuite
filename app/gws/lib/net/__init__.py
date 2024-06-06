@@ -304,6 +304,8 @@ def http_request(url, **kwargs) -> HTTPResponse:
 _DEFAULT_CONNECT_TIMEOUT = 60
 _DEFAULT_READ_TIMEOUT = 60
 
+_USER_AGENT = f'GBD WebSuite (https://gbd-websuite.de)'
+
 
 def _http_request(method, url, kwargs) -> HTTPResponse:
     kwargs['stream'] = False
@@ -315,6 +317,10 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
     if isinstance(timeout, (int, float)):
         timeout = int(timeout), int(timeout)
     kwargs['timeout'] = timeout
+
+    if 'headers' not in kwargs:
+        kwargs['headers'] = {}
+    kwargs['headers'].setdefault('User-Agent', _USER_AGENT)
 
     try:
         res = requests.request(method, url, **kwargs)
