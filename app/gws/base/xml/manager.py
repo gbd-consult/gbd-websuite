@@ -21,7 +21,7 @@ class Object(gws.Node):
 
     def configure(self):
         self.namespaces = []
-        for c in self.cfg('namespaces'):
+        for c in self.cfg('namespaces', default=[]):
             self.add_namespace(c)
 
     def add_namespace(self, cfg: core.NamespaceConfig) -> gws.XmlNamespace:
