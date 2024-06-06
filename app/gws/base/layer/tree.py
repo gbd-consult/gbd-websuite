@@ -6,7 +6,7 @@ import gws
 import gws.gis.source
 import gws.config.parser
 
-from . import core, obj
+from . import core
 
 
 class FlattenConfig(gws.Config):
