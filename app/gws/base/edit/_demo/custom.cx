@@ -98,7 +98,7 @@ map.layers+ {
         templates+ {
             subject "feature.title"
             type "html"
-            text "{{name}} {{id}}"
+            text "{{name}}"
         }
 
         templates+ {

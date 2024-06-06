@@ -99,6 +99,7 @@ actions+ { type "ows" }
 
 auth {
     methods+ { type "web" secure true }
+    methods+ { type "basic" secure true }
     providers+ { type "file" path "/demos/users.json" }
     session { type "sqlite" }
 }
@@ -137,7 +138,11 @@ web.sites+ {
     host "*"
     rewrite [
         {
-            pattern "^/project/([a-z0-9_.-]+)(/@.*)?$"
+            pattern "^/project/([a-z0-9_.-]+)/([a-z][a-z])"
+            target "/_/webAsset/projectUid/$1/path/project.cx.html/localeUid/$2"
+        }
+        {
+            pattern "^/project/([a-z0-9_.-]+)"
             target "/_/webAsset/projectUid/$1/path/project.cx.html"
         }
         {

@@ -1,0 +1,43 @@
+uid "service_wms_auth_demo"
+
+title "WMS service with authorization"
+
+metadata.keywords [ "wms" "ows-service" "qgis" "auth" ]
+
+metadata.abstract """
+This WMS service is only allowed for authorized users.
+
+[Service URL](/_/owsService/serviceUid/service_wms_auth?request=GetCapabilities)
+
+"""
+
+owsServices+ {
+    type "wms"
+    uid "service_wms_auth"
+    permissions.use "allow user,deny all"
+}
+
+map.extent [
+    {demo_point_duesseldorf_3857[0] - 30000}
+    {demo_point_duesseldorf_3857[1] - 30000}
+    {demo_point_duesseldorf_3857[0] + 30000}
+    {demo_point_duesseldorf_3857[1] + 30000}
+]
+
+map.zoom { minScale 500 maxScale 400000 }
+
+map.layers+ {
+    title "Points of interest"
+    type "qgisflat"
+    provider.path "/demos/poi_districts_postgres.qgs"
+    sourceLayers.names [ "Points of interest" ]
+    finders+ { type "postgres" tableName "edit.poi" }
+}
+
+map.layers+ {
+    title "Districts"
+    type "qgisflat"
+    provider.path "/demos/poi_districts_postgres.qgs"
+    sourceLayers.names [ "Districts" ]
+    finders+ { type "postgres" tableName "edit.district" }
+}

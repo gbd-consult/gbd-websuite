@@ -1,0 +1,42 @@
+uid "wms_testbed"
+
+title "WMS Test Bed"
+
+metadata.keywords [ "wms" "ows" ]
+
+metadata.abstract """
+Testing diverse WMS Services
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 4_000_000
+    @# SELECT ST_EXTENT(ST_TRANSFORM(geom, 3857)) FROM ne_10m_admin_0_countries WHERE name='Germany'
+    extent [ 651496 5986440 1672247 7374556 ]
+}
+
+map.layers+ {
+    type "wms"
+    title "NRW ALKIS"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+    metadata.attribution.title "© Geobasis NRW"
+    clientOptions.hidden true
+}
+
+map.layers+ {
+    type "wms"
+    title "WMS HE Karten"
+    provider.url "https://www.gds-srv.hessen.de/cgi-bin/lika-services/ogc-free-maps.ows"
+    metadata.attribution.title "© Hessische Verwaltung für Bodenmanagement und Geoinformation"
+    clientOptions.hidden true
+}
+
+map.layers+ {
+    type "wms"
+    title "BKG Verwaltungsgebiete"
+    provider.url "https://sgx.geodatenzentrum.de/wms_vg5000_0101"
+    metadata.attribution.title "© GeoBasis-DE / BKG (2024)"
+    excludeLayers.titles [ "Verwaltungsgemeinschaft"  "Gemeinde" ]
+}
+
+{demo_osm_background}

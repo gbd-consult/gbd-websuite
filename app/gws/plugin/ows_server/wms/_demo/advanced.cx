@@ -71,10 +71,7 @@ map.layers+ {
     provider.path "/demos/poi_districts_postgres.qgs"
     sourceLayers.names [ "Points of interest" ]
     zoom { maxScale 50000 }
-    finders+ {
-        type "postgres"
-        tableName "edit.poi"
-    }
+    finders+ { type "postgres" tableName "edit.poi" }
 }
 
 map.layers+ {
@@ -96,10 +93,7 @@ map.layers+ {
     provider.path "/demos/poi_districts_postgres.qgs"
     sourceLayers.names [ "Districts" ]
     zoom { minScale 50000 }
-    finders+ {
-        type "postgres"
-        tableName "edit.district"
-    }
+    finders+ { type "postgres" tableName "edit.district" }
 }
 
 
