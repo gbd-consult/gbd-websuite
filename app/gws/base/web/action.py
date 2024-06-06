@@ -23,7 +23,6 @@ import gws
 import gws.base.action
 import gws.base.client.bundles
 import gws.base.template
-import gws.base.web.error
 import gws.lib.mime
 import gws.lib.osx
 
@@ -143,7 +142,7 @@ class Object(gws.base.action.Object):
     def _serve_path(self, req: gws.WebRequester, p: AssetRequest):
         req_path = str(p.get('path') or '')
         if not req_path:
-            raise gws.base.web.error.NotFound()
+            raise gws.NotFoundError('no path provided')
 
         site_assets = req.site.assetsRoot
 
@@ -162,7 +161,7 @@ class Object(gws.base.action.Object):
         if not real_path and site_assets:
             real_path = gws.lib.osx.abs_web_path(req_path, site_assets.dir)
         if not real_path:
-            raise gws.base.web.error.NotFound()
+            raise gws.NotFoundError(f'no real path for {req_path=}')
 
         locale_uid = p.localeUid
         if project and locale_uid not in project.localeUids:
@@ -175,9 +174,8 @@ class Object(gws.base.action.Object):
         mime = gws.lib.mime.for_path(real_path)
 
         if not _valid_mime_type(mime, project_assets, site_assets):
-            gws.log.error(f'invalid mime path={real_path!r} mime={mime!r}')
             # NB: pretend the file doesn't exist
-            raise gws.base.web.error.NotFound()
+            raise gws.NotFoundError(f'invalid mime path={real_path!r} mime={mime!r}')
 
         gws.log.debug(f'serving {real_path!r} for {req_path!r}')
         return gws.ContentResponse(contentPath=real_path, mime=mime)

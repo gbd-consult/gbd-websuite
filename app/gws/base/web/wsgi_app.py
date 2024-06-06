@@ -133,7 +133,7 @@ _relaxed_read_options = {
 
 def handle_action(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
     if not req.command:
-        raise gws.base.web.error.NotFound()
+        raise gws.NotFoundError('no command provided')
 
     if req.isApi:
         category = gws.CommandCategory.api
@@ -162,8 +162,7 @@ def handle_action(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
     response = fn(req, request)
 
     if response is None:
-        gws.log.error(f'action not handled {category!r}:{req.command!r}')
-        raise gws.base.web.error.NotFound()
+        raise gws.NotFoundError(f'action not handled {category!r}:{req.command!r}')
 
     if isinstance(response, gws.ContentResponse):
         return req.content_responder(response)

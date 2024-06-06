@@ -81,19 +81,14 @@ class Object(gws.base.auth.method.Object):
         am = self.root.app.authMgr
 
         if not req.user.isGuest:
-            gws.log.error('login while logged-in')
-            raise gws.base.web.error.Forbidden()
+            raise gws.ForbiddenError('login while logged-in')
 
         if self.secure and not req.isSecure:
-            gws.log.warning(f'insecure_context: ignore login')
-            raise gws.base.web.error.Forbidden()
+            raise gws.ForbiddenError('insecure_context, ignore login')
 
-        try:
-            user = am.authenticate(self, credentials)
-        except gws.ForbiddenError as exc:
-            raise gws.base.web.error.Forbidden() from exc
+        user = am.authenticate(self, credentials)
         if not user:
-            raise gws.base.web.error.Forbidden()
+            raise gws.ForbiddenError('no user found')
 
         sess = am.sessionMgr.create(self, user)
         req.set_session(sess)
@@ -109,8 +104,7 @@ class Object(gws.base.auth.method.Object):
         sess = req.session
 
         if req.session.method != self:
-            gws.log.error(f'wrong method for logout: {sess.method!r}')
-            raise gws.base.web.error.Forbidden()
+            raise gws.ForbiddenError(f'wrong method for logout: {sess.method!r}')
 
         gws.log.info(f'LOGGED_OUT: user={sess.user.uid!r}')
 

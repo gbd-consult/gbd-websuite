@@ -219,8 +219,7 @@ class Requester(gws.WebRequester):
             cmd = path_parts[2]
             path_parts = path_parts[3:]
         else:
-            gws.log.error(f'invalid request path: {path!r}')
-            raise error.NotFound()
+            raise error.NotFound(f'invalid request path: {path!r}')
 
         if self.inputType:
             params = self._decode_struct(self.inputType)

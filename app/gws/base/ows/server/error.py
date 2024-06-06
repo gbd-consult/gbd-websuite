@@ -83,7 +83,7 @@ def from_exception(exc: Exception) -> Error:
         e = BadRequest()
 
     if e:
-        gws.log.info(f'OWS Exception: {e.code} cause={exc}')
+        gws.log.warning(f'OWS Exception: {e.code} cause={exc!r}')
     else:
         gws.log.exception()
         e = NoApplicableCode('', 'Internal Server Error')

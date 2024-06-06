@@ -41,10 +41,7 @@ class Object(gws.base.auth.method.Object):
         credentials = self._parse_header(req)
         if not credentials:
             return
-        try:
-            user = am.authenticate(self, credentials)
-        except gws.ForbiddenError as exc:
-            raise gws.base.web.error.Forbidden() from exc
+        user = am.authenticate(self, credentials)
         if user:
             return am.sessionMgr.create(self, user)
 

@@ -627,7 +627,7 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('alkisSelectionStorage')
     def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
         if not self.storage:
-            raise gws.base.web.error.NotFound()
+            raise gws.NotFoundError('no storage configured')
         return self.storage.handle_request(req, p)
 
     ##

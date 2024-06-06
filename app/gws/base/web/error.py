@@ -54,7 +54,7 @@ def from_exception(exc: Exception) -> HTTPException:
         e = Conflict()
 
     if e:
-        gws.log.info(f'HTTPException: {e.code} cause={exc}')
+        gws.log.warning(f'HTTPException: {e.code} cause={exc!r}')
     else:
         gws.log.exception()
         e = InternalServerError()
