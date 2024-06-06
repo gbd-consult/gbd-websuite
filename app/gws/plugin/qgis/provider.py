@@ -69,8 +69,23 @@ class Object(gws.OwsProvider):
         self.bounds = self.caps.projectBounds
         self.wgsExtent = gws.gis.bounds.transform(self.bounds, gws.gis.crs.WGS84).extent
 
-        self.directRender = set(self.cfg('directRender', default=[]))
-        self.directSearch = set(self.cfg('directSearch', default=[]))
+        self.directRender = self._direct_formats('directRender', {'wms', 'wmts', 'xyz'})
+        self.directSearch = self._direct_formats('directSearch', {'wms', 'wfs', 'postgres'})
+
+    def _direct_formats(self, opt, allowed):
+        p = self.cfg(opt)
+        if not p:
+            return set()
+
+        res = set()
+
+        for s in p:
+            s = s.lower()
+            if s not in allowed:
+                raise gws.ConfigurationError(f'{opt} not supported for {s!r}')
+            res.add(s)
+
+        return res
 
     def configure_store(self):
         p = self.cfg('path')
@@ -217,143 +232,135 @@ class Object(gws.OwsProvider):
     ##
 
     def leaf_config(self, source_layers):
-        base = {
+        simple_cfg = {
             'type': 'qgisflat',
             '_defaultProvider': self,
             '_defaultSourceLayers': source_layers,
         }
 
         if len(source_layers) > 1 or source_layers[0].isGroup:
-            return base
+            return simple_cfg
 
         ds = source_layers[0].dataSource
-        if not ds:
-            return base
+        if not ds or not ds.get('provider'):
+            return simple_cfg
 
-        prov = ds.get('provider')
+        render = self._leaf_render_config(ds)
+        search = self._leaf_search_config(ds)
 
-        if prov in self.directRender:
-            cfg = None
-            if prov == 'wms':
-                cfg = self._leaf_direct_render_wms(ds)
-            elif prov == 'wmts':
-                cfg = self._leaf_direct_render_wmts(ds)
-            elif prov == 'xyz':
-                cfg = self._leaf_direct_render_xyz(ds)
-            else:
-                gws.log.warning(f'directRender not supported for {prov!r}')
-            if cfg:
-                base.update(cfg)
+        cfg = {}
+        cfg.update(render or {})
+        cfg.update(search or {})
 
-        if prov in self.directSearch:
-            cfg = None
-            if prov == 'wms':
-                cfg = self._leaf_direct_search_wms(ds)
-            elif prov == 'wfs':
-                cfg = self._leaf_direct_search_wfs(ds)
-            elif prov == 'postgres':
-                cfg = self._leaf_direct_search_postgres(ds)
-            else:
-                gws.log.warning(f'directSearch not supported for {prov!r}')
-            if cfg:
-                base.update(cfg)
+        if not cfg.get('type'):
+            cfg.update(simple_cfg)
 
-        return base
-
-    def _leaf_direct_render_wms(self, ds):
-        layers = ds.get('layers')
-        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
-        if not layers or not url:
-            return
-        return {
-            'type': 'wmsflat',
-            'sourceLayers': {'names': layers},
-            'display': 'tile',
-            'provider': {'url': url},
-        }
-
-    def _leaf_direct_render_wmts(self, ds):
-        layers = ds.get('layers')
-        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
-        if not layers or not url:
-            return
-        cfg = {
-            'type': 'wmts',
-            'sourceLayer': layers[0],
-            'provider': {'url': url},
-        }
-        p = ds.get('styles')
-        if p:
-            cfg['style'] = p[0]
         return cfg
 
-    def _leaf_direct_render_xyz(self, ds):
+    def _leaf_render_config(self, ds):
+        prov = ds.get('provider')
+        if prov not in self.directRender:
+            return
+
         url = self._leaf_service_url(ds.get('url'), ds.get('params'))
         if not url:
             return
-        return {
-            'type': 'tile',
-            'provider': {'url': url},
-        }
 
-    def _leaf_direct_search_wms(self, ds):
-        layers = ds.get('layers')
-        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
-        if not layers or not url:
-            return
-        finder = {
-            'type': 'wms',
-            'sourceLayers': {'names': layers},
-            'provider': {'url': url}
-        }
-        return {'finders': [finder]}
+        if prov == 'wms':
+            layers = ds.get('layers')
+            if not layers:
+                return
+            return {
+                'type': 'wmsflat',
+                'sourceLayers': {'names': layers},
+                'display': 'tile',
+                'provider': {'url': url},
+            }
 
-    def _leaf_direct_search_wfs(self, ds):
-        url = self._leaf_service_url(ds.get('url'), ds.get('params'))
-        if not url:
-            return
-        finder = {
-            'type': 'wfs',
-            'provider': {'url': url},
-        }
-        p = ds.get('typename')
-        if p:
-            finder['sourceLayers'] = {'names': [p]}
-        p = ds.get('srsname')
-        if p:
-            finder['forceCrs'] = p
-        p = ds.get('ignoreaxisorientation')
-        if p == '1':
-            finder['alwaysXY'] = True
-        p = ds.get('invertaxisorientation')
-        if p == '1':
-            # NB assuming this might be only '1' for lat-lon projections
-            finder['alwaysXY'] = True
+        if prov == 'wmts':
+            layers = ds.get('layers')
+            if not layers:
+                return
+            cfg = {
+                'type': 'wmts',
+                'sourceLayers': {'names': layers},
+                'display': 'tile',
+                'provider': {'url': url},
+            }
+            p = ds.get('styles')
+            if p:
+                cfg['style'] = p[0]
+            return cfg
 
-        return {'finders': [finder]}
+        if prov == 'xyz':
+            return {
+                'type': 'tile',
+                'provider': {'url': url},
+            }
 
-    def _leaf_direct_search_postgres(self, ds):
-        table_name = ds.get('table')
-
-        # 'table' can also be a select statement, in which case it might be enclosed in parens
-        if not table_name or table_name.startswith('(') or table_name.upper().startswith('SELECT '):
+    def _leaf_search_config(self, ds):
+        prov = ds.get('provider')
+        if prov not in self.directSearch:
             return
 
-        # @TODO support extra sql from ds['sql']
+        if prov == 'wms':
+            url = self._leaf_service_url(ds.get('url'), ds.get('params'))
+            layers = ds.get('layers')
+            if not url or not layers:
+                return
+            finder = {
+                'type': 'wms',
+                'provider': {'url': url},
+                'sourceLayers': {'names': layers},
+            }
+            return {'finders': [finder]}
 
-        db = self.postgres_provider_from_datasource(ds)
+        if prov == 'wfs':
+            url = self._leaf_service_url(ds.get('url'), ds.get('params'))
+            if not url:
+                return
+            finder = {
+                'type': 'wfs',
+                'provider': {'url': url},
+            }
+            p = ds.get('typename')
+            if p:
+                finder['sourceLayers'] = {'names': [p]}
+            p = ds.get('srsname')
+            if p:
+                finder['forceCrs'] = p
+            p = ds.get('ignoreaxisorientation')
+            if p == '1':
+                finder['alwaysXY'] = True
+            p = ds.get('invertaxisorientation')
+            if p == '1':
+                # NB assuming this might be only '1' for lat-lon projections
+                finder['alwaysXY'] = True
 
-        model = {
-            'type': 'postgres',
-            'tableName': table_name,
-            '_defaultDb': db
-        }
-        finder = {
-            'type': 'postgres',
-            'tableName': table_name,
-            '_defaultDb': db
-        }
-        return {'models': [model], 'finders': [finder]}
+            return {'finders': [finder]}
+
+        if prov == 'postgres':
+            table_name = ds.get('table')
+
+            # 'table' can also be a select statement, in which case it might be enclosed in parens
+            if not table_name or table_name.startswith('(') or table_name.upper().startswith('SELECT '):
+                return
+
+            # @TODO support extra sql from ds['sql']
+
+            db = self.postgres_provider_from_datasource(ds)
+
+            model = {
+                'type': 'postgres',
+                'tableName': table_name,
+                '_defaultDb': db
+            }
+            finder = {
+                'type': 'postgres',
+                'tableName': table_name,
+                '_defaultDb': db
+            }
+            return {'models': [model], 'finders': [finder]}
 
     def postgres_provider_from_datasource(self, ds: dict) -> gws.plugin.postgres.provider.Object:
         cfg = gws.Config(
