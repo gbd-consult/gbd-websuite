@@ -16,7 +16,7 @@ _DEFAULT_UID = 'en_CA'  # English with metric units
 def get_default_locale():
     """Returns the default locale object (``en_CA``)."""
 
-    return _get_locale_by_uid(_DEFAULT_UID)
+    return get_locale(_DEFAULT_UID, fallback=False)
 
 
 def get_locale(name: str, allowed: list[str] = None, fallback: bool = True) -> gws.Locale:
@@ -83,9 +83,9 @@ def _get_locale_by_uid(uid):
         lg = pycountry.languages.get(alpha_2=lo.language)
         if not lg:
             raise ValueError(f'unknown language {lo.language}')
-        lo.language3 = lg.alpha_3
-        lo.languageBib = lg.bibliographic
-        lo.languageNameEn = lg.name
+        lo.language3 = getattr(lg, 'alpha_3', '')
+        lo.languageBib = getattr(lg, 'bibliographic', lo.language3)
+        lo.languageNameEn = getattr(lg, 'name', lo.languageName)
 
         lo.territory = p.territory
         lo.territoryName = p.territory_name
@@ -115,7 +115,8 @@ def _get_locale_by_uid(uid):
 
     try:
         return gws.u.get_app_global(f'gws.lib.intl.locale.{uid}', _get)
-    except (ValueError, babel.UnknownLocaleError):
+    except (AttributeError, ValueError, babel.UnknownLocaleError):
+        gws.log.exception()
         return None
 
 
