@@ -82,7 +82,7 @@
 
 access "allow all"
 
-locales+ "de_DE"
+locales [ "de_DE" "en_US" ]
 
 storage.providers+ {
     uid "common_storage"

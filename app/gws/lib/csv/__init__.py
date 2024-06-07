@@ -52,30 +52,28 @@ class Object(gws.Node):
         self.quoteAll = self.cfg('quoteAll')
         self.rowDelimiter = self.cfg('rowDelimiter', default='\n').replace('CR', '\r').replace('LF', '\n')
 
-    def writer(self, locale_uid: Optional[str] = None):
+    def writer(self, locale: gws.Locale):
         """Creates a `_Writer` object.
 
         Args:
-            locale_uid: Identifier for the local place.
+            locale: Locale to use.
 
         Returns:
             A `_Writer` object.
         """
 
-        if not locale_uid and self.root.app.localeUids:
-            locale_uid = self.root.app.localeUids[0]
-        return _Writer(self, locale_uid)
+        return _Writer(self, locale)
 
 
 class _Writer:
-    def __init__(self, helper, locale_uid):
+    def __init__(self, helper, locale: gws.Locale):
         self.h: Object = helper
         self.rows = []
         self.headers = ''
-        locale_uid = locale_uid or 'en_CA'
-        self.numberFormatter = gws.lib.intl.NumberFormatter(locale_uid)
-        self.dateFormatter = gws.lib.intl.DateFormatter(locale_uid)
-        self.timeFormatter = gws.lib.intl.TimeFormatter(locale_uid)
+        f = gws.lib.intl.get_formatters(locale)
+        self.dateFormatter = f[0]
+        self.timeFormatter = f[1]
+        self.numberFormatter = f[2]
 
     def write_headers(self, headers: list[str]):
         """Writes headers into the header attribute.
@@ -127,7 +125,7 @@ class _Writer:
             return self._quote('')
 
         if isinstance(val, (float, decimal.Decimal)):
-            s = self.numberFormatter.format(gws.lib.intl.NumberFormat.decimal, val)
+            s = self.numberFormatter.decimal(val)
             return self._quote(s) if self.h.quoteAll else s
 
         if isinstance(val, int):
@@ -135,11 +133,11 @@ class _Writer:
             return self._quote(s) if self.h.quoteAll else s
 
         if isinstance(val, (datetime.datetime, datetime.date)):
-            s = self.dateFormatter.format(gws.lib.intl.DateTimeFormat.short, val)
+            s = self.dateFormatter.short(val)
             return self._quote(s)
 
         if isinstance(val, datetime.time):
-            s = self.timeFormatter.format(gws.lib.intl.DateTimeFormat.short, val)
+            s = self.timeFormatter.short(val)
             return self._quote(s)
 
         val = gws.u.to_str(val)

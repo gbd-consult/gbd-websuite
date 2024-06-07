@@ -144,7 +144,7 @@ export class Application implements types.IApplication {
 
         this.project = res.project;
         this.locale = res.locale;
-        this.localeUid = res.locale.id;
+        this.localeUid = res.locale.uid;
         this.languageUid = this.localeUid.split('_')[0];
 
         this.modelRegistry = new model.ModelRegistry(this);

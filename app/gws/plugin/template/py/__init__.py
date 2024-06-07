@@ -36,7 +36,7 @@ class Object(gws.base.template.Object):
     def render(self, tri):
         self.notify(tri, 'begin_print')
 
-        args = self.prepare_args(tri.args)
+        args = self.prepare_args(tri)
         entrypoint = self.compile()
 
         try:

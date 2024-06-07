@@ -2,22 +2,21 @@
 
 from typing import Optional
 
-import time
-
 import gws
 import gws.base.action
-import gws.base.model
+import gws.base.feature
 import gws.base.layer
-import gws.base.template
 import gws.base.legend
+import gws.base.model
+import gws.base.template
+import gws.gis.bounds
 import gws.gis.cache
 import gws.gis.crs
-import gws.gis.bounds
-import gws.base.feature
+import gws.gis.render
 import gws.lib.image
+import gws.lib.intl
 import gws.lib.jsonx
 import gws.lib.mime
-import gws.gis.render
 import gws.lib.uom
 
 gws.ext.new.action('map')
@@ -129,8 +128,9 @@ class Object(gws.base.action.Object):
 
         res = tpl.render(gws.TemplateRenderInput(
             args={'layer': layer},
-            localeUid=p.localeUid,
+            locale=gws.lib.intl.get_locale(p.localeUid, project.localeUids),
             user=req.user))
+
         return DescribeLayerResponse(content=res.content)
 
     @gws.ext.command.api('mapGetFeatures')

@@ -12,7 +12,7 @@ DEFAULT_LANG = 'de'
 DEFAULT_THEME = 'light'
 
 
-def javascript(root: gws.Root, category: str, locale_uid: str = '') -> str:
+def javascript(root: gws.Root, category: str, locale: gws.Locale) -> str:
     if category == 'vendor':
         return gws.u.read_file(gws.c.APP_DIR + '/' + gws.c.JS_VENDOR_BUNDLE)
 
@@ -20,7 +20,7 @@ def javascript(root: gws.Root, category: str, locale_uid: str = '') -> str:
         return gws.u.read_file(gws.c.APP_DIR + '/' + gws.c.JS_UTIL_BUNDLE)
 
     if category == 'app':
-        return _make_app_js(root, locale_uid)
+        return _make_app_js(root, locale)
 
 
 def css(root: gws.Root, category: str, theme: str):
@@ -54,12 +54,11 @@ def _load_app_bundles(root):
     return gws.u.get_server_global('APP_BUNDLES', _load)
 
 
-def _make_app_js(root, locale_uid):
+def _make_app_js(root, locale):
     bundles = _load_app_bundles(root)
 
-    lang = locale_uid.split('_')[0]
     modules = bundles[BUNDLE_KEY_MODULES]
-    strings = bundles.get(BUNDLE_KEY_STRINGS + '_' + lang) or bundles.get(BUNDLE_KEY_STRINGS + '_' + DEFAULT_LANG)
+    strings = bundles.get(BUNDLE_KEY_STRINGS + '_' + locale.language) or bundles.get(BUNDLE_KEY_STRINGS + '_' + DEFAULT_LANG)
 
     js = bundles[BUNDLE_KEY_TEMPLATE]
     js = js.replace('__MODULES__', modules)

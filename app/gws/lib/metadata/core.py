@@ -70,7 +70,7 @@ def check(md: gws.Metadata) -> gws.Metadata:
 
     p = md.language
     if p:
-        md.language3 = gws.lib.intl.bibliographic_name(language=p)
+        md.language3 = gws.lib.intl.get_locale(p).language3
 
     p = md.inspireTheme
     if p:

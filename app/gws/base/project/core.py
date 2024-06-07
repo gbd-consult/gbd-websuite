@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import Optional
 
 import gws
 import gws.base.action
@@ -93,7 +93,7 @@ class Object(gws.Project):
         desc = None
         tpl = self.root.app.templateMgr.find_template(self, user=user, subject='project.description')
         if tpl:
-            desc = cast(gws.ContentResponse, tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user)))
+            desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
 
         return gws.Props(
             actions=self.root.app.actionMgr.actions_for_project(self, user),

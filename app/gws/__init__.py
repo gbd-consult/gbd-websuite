@@ -1139,7 +1139,7 @@ class Image:
 class Locale(Data):
     """Locale data."""
 
-    id: str
+    uid: str
     dateFormatLong: str
     dateFormatMedium: str
     dateFormatShort: str
@@ -1149,8 +1149,20 @@ class Locale(Data):
     dayNamesShort: list[str]
     dayNamesNarrow: list[str]
     firstWeekDay: int
+
     language: str
+    """Language code: ``de``"""
+    language3: str
+    """ISO 3166-1 alpha-3 language code: ``deu``."""
+    languageBib: str
+    """Bibliographic language code.."""
     languageName: str
+    """Native language name: ``Deutsch``."""
+    languageNameEn: str
+    """English language name: ``German``."""
+
+    territory: str
+    territoryName: str
     monthNamesLong: list[str]
     monthNamesShort: list[str]
     monthNamesNarrow: list[str]
@@ -1158,7 +1170,7 @@ class Locale(Data):
     numberGroup: str
 
 
-class DateTimeFormatType(Enum):
+class DateTimeFormat(Enum):
     """Enumeration indicating the length of the date/time format."""
     short = 'short'
     """Local short format."""
@@ -1170,7 +1182,7 @@ class DateTimeFormatType(Enum):
     """ISO 8601 format."""
 
 
-class NumberFormatType(Enum):
+class NumberFormat(Enum):
     """Enumeration indicating the number format."""
     decimal = 'decimal'
     """Locale decimal format."""
@@ -1183,10 +1195,10 @@ class NumberFormatType(Enum):
 
 
 class DateFormatter:
-    """Used for date formatting"""
+    """Locale-aware date formatter."""
 
-    def format(self, fmt: DateTimeFormatType | str, date=None) -> str:
-        """Formats the date with respect to the locale.
+    def format(self, fmt: DateTimeFormat | str, date: Optional[Union['datetime.date', str]] = None) -> str:
+        """Formats the date.
 
         Args:
             fmt: Format type or a `strftime` format string
@@ -1196,26 +1208,50 @@ class DateFormatter:
             A formatted date string.
         """
 
+    def short(self, date=None) -> str:
+        """Returns the date in the short format ``11.12.13``."""
+
+    def medium(self, date=None) -> str:
+        """Returns the date in the medium format ``11.12.2013``."""
+
+    def long(self, date=None) -> str:
+        """Returns the date in the medium format ``11. Dezember 2013``."""
+
+    def iso(self, date=None) -> str:
+        """Returns the date in the ISO 8601 format ``2013-12-11``."""
+
 
 class TimeFormatter:
-    """Used for date formatting"""
+    """Locale-aware time formatter."""
 
-    def format(self, fmt: DateTimeFormatType | str, time=None) -> str:
-        """Formats the time with respect to the locale.
+    def format(self, fmt: DateTimeFormat | str, time: Optional[Union['datetime.time', str]] = None) -> str:
+        """Formats the time.
 
         Args:
             fmt: Format type or a `strftime` format string
-            time: Date, if none is given the current time will be used as default.
+            time: Time, if none is given the current time will be used as default.
 
         Returns:
             A formatted time string.
         """
 
+    def short(self, time=None) -> str:
+        """Returns the time in the short format ``11:22``."""
+
+    def medium(self, time=None) -> str:
+        """Returns the time in the medium format ``11:22:33``."""
+
+    def long(self, time=None) -> str:
+        """Returns the time in the medium format ``11:22:33``."""
+
+    def iso(self, time=None) -> str:
+        """Returns the time and date in the ISO 8601 format."""
+
 
 class NumberFormatter:
-    """Used for number formatting"""
+    """Locale-aware number formatter."""
 
-    def format(self, fmt: NumberFormatType | str, n, *args, **kwargs) -> str:
+    def format(self, fmt: NumberFormat | str, n, *args, **kwargs) -> str:
         """Formats the number with respect to the locale.
 
         Args:
@@ -1226,6 +1262,18 @@ class NumberFormatter:
         Returns:
             A formatted number.
         """
+
+    def decimal(self, n, *args, **kwargs) -> str:
+        """Returns formatted decimal value."""
+
+    def grouped(self, n, *args, **kwargs) -> str:
+        """Returns formatted decimal value with group separators."""
+
+    def currency(self, n, currency: str, *args, **kwargs) -> str:
+        """Returns formatted currency value."""
+
+    def percent(self, n, *args, **kwargs) -> str:
+        """Returns formatted percent value."""
 ################################################################################
 
 
@@ -3729,17 +3777,17 @@ class TemplateArgs(Data):
     app: 'Application'
     """Application object."""
     gwsVersion: str
-    """GWS version."""
+    """GWS version. (deprecated in 8.1)"""
     gwsBaseUrl: str
-    """GWS server base url."""
+    """GWS server base url. (deprecated in 8.1)"""
     locale: 'Locale'
     """Current locale."""
     date: 'DateFormatter'
-    """Locale-dependent date formatter."""
+    """Locale-aware date formatter."""
     time: 'TimeFormatter'
-    """Locale-dependent time formatter."""
+    """Locale-aware time formatter."""
     number: 'NumberFormatter'
-    """Locale-dependent number formatter."""
+    """Locale-aware number formatter."""
 
 
 class TemplateRenderInput(Data):
@@ -3748,7 +3796,7 @@ class TemplateRenderInput(Data):
     args: dict | Data
     crs: 'Crs'
     dpi: int
-    localeUid: str
+    locale: 'Locale'
     maps: list[MapRenderInput]
     mimeOut: str
     notify: Callable
@@ -3779,7 +3827,7 @@ class Template(Node):
     title: str
     """Template title."""
 
-    def render(self, tri: TemplateRenderInput) -> Response:
+    def render(self, tri: TemplateRenderInput) -> ContentResponse:
         """Render the template and return the generated response."""
 
 

@@ -5,11 +5,12 @@ import gws.base.model
 import gws.gis.crs
 import gws.gis.render
 import gws.lib.image
+import gws.lib.intl
 import gws.lib.job
 import gws.lib.mime
 import gws.lib.osx
 import gws.lib.style
-import gws.lib.uom as units
+import gws.lib.uom
 
 
 def worker(root: gws.Root, job: gws.lib.job.Object):
@@ -52,9 +53,7 @@ class Object:
         else:
             raise gws.Error(f'invalid outputFormat {fmt!r}')
 
-        s = request.localeUid or ''
-        self.tri.localeUid = s if s in self.project.localeUids else self.project.localeUids[0]
-
+        self.tri.locale = gws.lib.intl.get_locale(request.localeUid, self.tri.project.localeUids)
         self.tri.crs = gws.gis.crs.get(request.crs) or self.project.map.bounds.crs
         self.tri.maps = [self.prepare_map(self.tri, m) for m in (request.maps or [])]
         self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(request.dpi, gws.lib.uom.OGC_SCREEN_PPI)))
@@ -74,7 +73,6 @@ class Object:
         extra = dict(
             project=self.project,
             user=self.user,
-            localeUid=self.tri.localeUid,
             scale=self.tri.maps[0].scale if self.tri.maps else 0,
             rotation=self.tri.maps[0].rotation if self.tri.maps else 0,
             dpi=self.tri.dpi,

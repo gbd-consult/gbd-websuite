@@ -44,8 +44,7 @@ class Object(gws.base.template.Object):
         engine = Engine()
         self.compile(engine)
 
-        args = self.prepare_args(tri.args)
-        args['__renderUid'] = gws.u.random_string(8)
+        args = self.prepare_args(tri)
         res = engine.call(self.compiledFn, args=args, error=self.error_handler)
 
         if not isinstance(res, gws.Response):
@@ -75,16 +74,14 @@ class Object(gws.base.template.Object):
             self.compiledTime = gws.u.utime()
 
     def error_handler(self, exc, path, line, env):
-        rid = env.ARGS.get('__renderUid', '?')
-
         if self.root.app.developer_option('template.raise_errors'):
-            gws.log.error(f'TEMPLATE_ERROR: {self}/{rid}: {exc} IN {path}:{line}')
+            gws.log.error(f'TEMPLATE_ERROR: {self}: {exc} IN {path}:{line}')
             for k, v in sorted(getattr(env, 'ARGS', {}).items()):
-                gws.log.error(f'TEMPLATE_ERROR: {self}/{rid}: ARGS {k}={v!r}')
-            gws.log.error(f'TEMPLATE_ERROR: {self}/{rid}: stop')
+                gws.log.error(f'TEMPLATE_ERROR: {self}: ARGS {k}={v!r}')
+            gws.log.error(f'TEMPLATE_ERROR: {self}: stop')
             return False
 
-        gws.log.warning(f'TEMPLATE_ERROR: {self}/{rid}: {exc} IN {path}:{line}')
+        gws.log.warning(f'TEMPLATE_ERROR: {self}: {exc} IN {path}:{line}')
         return True
 
     ##

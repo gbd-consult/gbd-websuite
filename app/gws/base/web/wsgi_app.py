@@ -119,9 +119,9 @@ def handle_http_error(req: gws.WebRequester, exc: gws.base.web.error.HTTPExcepti
         return req.error_responder(exc)
 
     args = {'request': req, 'error': exc.code}
-    response = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
-    response.status = exc.code
-    return req.content_responder(cast(gws.ContentResponse, response))
+    res = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
+    res.status = exc.code
+    return req.content_responder(res)
 
 
 _relaxed_read_options = {

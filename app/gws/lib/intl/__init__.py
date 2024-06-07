@@ -1,7 +1,5 @@
 """Intl and localization tools."""
 
-from typing import Optional
-
 import datetime
 import babel
 import babel.dates
@@ -10,35 +8,87 @@ import pycountry
 
 import gws
 
+_DEFAULT_UID = 'en_CA'  # English with metric units
 
-def locale(locale_uid: str) -> Optional[gws.Locale]:
-    """Creates a locale object with formatting information about date, time and numbers.
+
+# NB in the following code, `name` is a locale or language name (`de` or `de_DE`), `uid` is strictly a uid (`de_DE`)
+
+def get_default_locale():
+    """Returns the default locale object (``en_CA``)."""
+
+    return _get_locale_by_uid(_DEFAULT_UID)
+
+
+def get_locale(name: str, allowed: list[str] = None, fallback: bool = True) -> gws.Locale:
+    """Locates a Locale object by locale name.
+
+    If the name is invalid, and ``fallback`` is ``True``, return the first ``allowed`` locale,
+    or the default locale. Otherwise, raise an exception.
 
     Args:
-        locale_uid: ID in the format `language_territory` e.g. `de_DE`, or `de`.
-
-    Returns:
-        Formatting information for that area.
+        name: Language or locale name like ``de`` or ``de_DE``.
+        allowed: A list of allowed locale uids.
+        fallback: Fall back to the default locale.
     """
 
-    def f():
-        if not locale_uid:
-            return None
+    lo = _get_locale_by_name(name, allowed)
+    if lo:
+        return lo
 
-        locale_name = locale_uid.lower().strip().replace('-', '_')
+    if not fallback:
+        raise gws.Error(f'locale {name!r} not found')
 
-        if '_' not in locale_name:
-            locale_name = locale_name + '_zz'
+    if allowed:
+        lo = _get_locale_by_uid(allowed[0])
+        if lo:
+            return lo
 
-        try:
-            p = babel.Locale.parse(locale_name, resolve_likely_subtags=True)
-        except (ValueError, babel.UnknownLocaleError):
-            return None
+    return get_default_locale()
+
+
+def _get_locale_by_name(name, allowed):
+    if not name:
+        return
+
+    name = name.strip().replace('-', '_')
+
+    if '_' in name:
+        # name is a uid
+        if allowed and name not in allowed:
+            return
+        return _get_locale_by_uid(name)
+
+    # just a lang name, try to find an allowed locale for this lang
+    if allowed:
+        for uid in allowed:
+            if uid.startswith(name):
+                return _get_locale_by_uid(uid)
+
+    # try to get a generic locale
+    return _get_locale_by_uid(name + '_zz')
+
+
+def _get_locale_by_uid(uid):
+    def _get():
+        p = babel.Locale.parse(uid, resolve_likely_subtags=True)
 
         lo = gws.Locale()
 
         # @TODO script etc
-        lo.id = p.language + '_' + p.territory
+        lo.uid = p.language + '_' + p.territory
+
+        lo.language = p.language
+        lo.languageName = p.language_name
+
+        lg = pycountry.languages.get(alpha_2=lo.language)
+        if not lg:
+            raise ValueError(f'unknown language {lo.language}')
+        lo.language3 = lg.alpha_3
+        lo.languageBib = lg.bibliographic
+        lo.languageNameEn = lg.name
+
+        lo.territory = p.territory
+        lo.territoryName = p.territory_name
 
         lo.dateFormatLong = str(p.date_formats['long'])
         lo.dateFormatMedium = str(p.date_formats['medium'])
@@ -47,168 +97,129 @@ def locale(locale_uid: str) -> Optional[gws.Locale]:
                 p.unit_display_names['duration-year']['narrow'] +
                 p.unit_display_names['duration-month']['narrow'] +
                 p.unit_display_names['duration-day']['narrow'])
+
         lo.dayNamesLong = list(p.days['format']['wide'].values())
         lo.dayNamesNarrow = list(p.days['format']['narrow'].values())
         lo.dayNamesShort = list(p.days['format']['abbreviated'].values())
+
         lo.firstWeekDay = p.first_week_day
-        lo.language = p.language
-        lo.languageName = p.language_name
+
         lo.monthNamesLong = list(p.months['format']['wide'].values())
         lo.monthNamesNarrow = list(p.months['format']['narrow'].values())
         lo.monthNamesShort = list(p.months['format']['abbreviated'].values())
+
         lo.numberDecimal = p.number_symbols['latn']['decimal']
         lo.numberGroup = p.number_symbols['latn']['group']
 
         return lo
 
-    return gws.u.get_app_global(f'gws.lib.intl.locale.{locale_uid}', f)
+    try:
+        return gws.u.get_app_global(f'gws.lib.intl.locale.{uid}', _get)
+    except (ValueError, babel.UnknownLocaleError):
+        return None
 
 
-def bibliographic_name(language: str) -> str:
-    """Country abbreviation for a given language
-
-    Args:
-        language: 2 letter abbreviation for a language.
-
-    Returns:
-        ISO 3166-1 alpha-3 code for the language's country.
-    """
-
-    def f():
-        if not language:
-            return ''
-        lang = pycountry.languages.get(alpha_2=language.lower())
-        if not lang:
-            return ''
-        return lang.alpha_3
-
-    return gws.u.get_app_global(f'gws.lib.intl.bibliographic_name.{language}', f)
+##
 
 
-class DateFormatter:
-    def __init__(self, locale_uid):
-        self.localeUid = locale_uid
+class _FnStr:
+    """Allow a property to act both as a method and as a string."""
 
-    def format(self, fmt: gws.DateTimeFormatType, date=None):
+    def __init__(self, method, arg):
+        self.method = method
+        self.arg = arg
+
+    def __str__(self):
+        return self.method(self.arg)
+
+    def __call__(self, a=None):
+        return self.method(self.arg, a)
+
+
+# @TODO support RFC 2822
+
+class DateFormatter(gws.DateFormatter):
+    def __init__(self, locale: gws.Locale):
+        self.locale = locale
+        self.short = _FnStr(self.format, gws.DateTimeFormat.short)
+        self.medium = _FnStr(self.format, gws.DateTimeFormat.medium)
+        self.long = _FnStr(self.format, gws.DateTimeFormat.long)
+        self.iso = _FnStr(self.format, gws.DateTimeFormat.iso)
+
+    def format(self, fmt: gws.DateTimeFormat, date=None):
         if not date:
-            date = datetime.datetime.now()
+            date = datetime.datetime.now().date()
         elif isinstance(date, str):
-            date = babel.dates.parse_date(date, self.localeUid)
-        if fmt == gws.DateTimeFormatType.iso:
+            date = babel.dates.parse_date(date, self.locale.uid)
+        else:
+            raise gws.Error(f'invalid {date=}')
+        if fmt == gws.DateTimeFormat.iso:
             return date.isoformat()
-        return babel.dates.format_date(date, locale=self.localeUid, format=str(fmt))
-
-    @property
-    def short(self):
-        """Returns the date in a short format with respect to the locale date format"""
-        return self.format(gws.DateTimeFormatType.short)
-
-    @property
-    def medium(self):
-        """Returns the date in a medium format with respect to the locale date format"""
-        return self.format(gws.DateTimeFormatType.medium)
-
-    @property
-    def long(self):
-        """Returns the date in a long format with respect to the locale date format"""
-        return self.format(gws.DateTimeFormatType.long)
-
-    @property
-    def iso(self):
-        """Returns the time and date in the ISO 8601 format."""
-        return self.format(gws.DateTimeFormatType.iso)
+        return babel.dates.format_date(date, locale=self.locale.uid, format=str(fmt))
 
 
-class TimeFormatter:
-    def __init__(self, locale_uid):
-        self.localeUid = locale_uid
+class TimeFormatter(gws.TimeFormatter):
+    def __init__(self, locale: gws.Locale):
+        self.locale = locale
+        self.short = _FnStr(self.format, gws.DateTimeFormat.short)
+        self.medium = _FnStr(self.format, gws.DateTimeFormat.medium)
+        self.long = _FnStr(self.format, gws.DateTimeFormat.long)
+        self.iso = _FnStr(self.format, gws.DateTimeFormat.iso)
 
-    def format(self, fmt: gws.DateTimeFormatType, time=None) -> str:
-        time = babel.dates.parse_time(time, self.localeUid) if time else datetime.datetime.now()
-        if fmt == gws.DateTimeFormatType.iso:
+    def format(self, fmt: gws.DateTimeFormat, time=None) -> str:
+        if not time:
+            time = datetime.datetime.now().time()
+        elif isinstance(time, str):
+            time = babel.dates.parse_time(time, self.locale.uid)
+        else:
+            raise gws.Error(f'invalid {time=}')
+        if fmt == gws.DateTimeFormat.iso:
             return time.isoformat()
-        return babel.dates.format_time(time, locale=self.localeUid, format=str(fmt))
+        return babel.dates.format_time(time, locale=self.locale.uid, format=str(fmt))
 
-    @property
-    def short(self):
-        """Returns the time in a short format with respect to the locale time format"""
-        return self.format(gws.DateTimeFormatType.short)
 
-    @property
-    def medium(self):
-        """Returns the time in a medium format with respect to the locale time format"""
-        return self.format(gws.DateTimeFormatType.medium)
-
-    @property
-    def long(self):
-        """Returns the time in a long format with respect to the locale time format"""
-        return self.format(gws.DateTimeFormatType.long)
-
-    @property
-    def iso(self):
-        """Returns the time and date in the ISO 8601 format."""
-        return self.format(gws.DateTimeFormatType.iso)
-
+# @TODO scientific, compact...
 
 class NumberFormatter(gws.NumberFormatter):
-    def __init__(self, locale_uid):
-        self.localeUid = locale_uid
+    def __init__(self, locale: gws.Locale):
+        self.locale = locale
+        self.fns = {
+            gws.NumberFormat.decimal: self.decimal,
+            gws.NumberFormat.grouped: self.grouped,
+            gws.NumberFormat.currency: self.currency,
+            gws.NumberFormat.percent: self.percent,
+        }
 
     def format(self, fmt, n, *args, **kwargs):
-        if fmt == gws.NumberFormatType.decimal:
-            return babel.numbers.format_decimal(n, locale=self.localeUid, group_separator=False, *args, **kwargs)
-        if fmt == gws.NumberFormatType.grouped:
-            return babel.numbers.format_decimal(n, locale=self.localeUid, group_separator=True, *args, **kwargs)
-        if fmt == gws.NumberFormatType.currency:
-            return babel.numbers.format_currency(n, locale=self.localeUid, *args, **kwargs)
-        if fmt == gws.NumberFormatType.percent:
-            return babel.numbers.format_percent(n, locale=self.localeUid, *args, **kwargs)
-        return str(n)
+        fn = self.fns.get(fmt)
+        if not fn:
+            return str(n)
+        return fn(n, *args, **kwargs)
 
     def decimal(self, n, *args, **kwargs):
-        return self.format(gws.NumberFormatType.decimal, n, *args, **kwargs)
+        return babel.numbers.format_decimal(n, locale=self.locale.uid, group_separator=False, *args, **kwargs)
 
     def grouped(self, n, *args, **kwargs):
-        return self.format(gws.NumberFormatType.grouped, n, *args, **kwargs)
+        return babel.numbers.format_decimal(n, locale=self.locale.uid, group_separator=True, *args, **kwargs)
 
-    def currency(self, n, *args, **kwargs):
-        return self.format(gws.NumberFormatType.currency, n, *args, **kwargs)
+    def currency(self, n, currency, *args, **kwargs):
+        return babel.numbers.format_currency(n, currency=currency, locale=self.locale.uid, *args, **kwargs)
 
     def percent(self, n, *args, **kwargs):
-        return self.format(gws.NumberFormatType.percent, n, *args, **kwargs)
+        return babel.numbers.format_percent(n, locale=self.locale.uid, *args, **kwargs)
 
 
-def date_formatter(locale_uid) -> DateFormatter:
-    """Creates a `DateFormatter` if there is no other instance of that class to the same `locale_uid`.
-
-    Args:
-        locale_uid: ID in the format `language_territory` e.g. `de_DE`.
-
-    Returns:
-        `DateFormatter` object.
-    """
-    return gws.u.get_app_global(f'gws.lib.intl.date_formatter.{locale_uid}', lambda: DateFormatter(locale_uid))
+##
 
 
-def time_formatter(locale_uid) -> TimeFormatter:
-    """Creates a `TimeFormatter` if there is no other instance of that class to the same `locale_uid`.
+def get_formatters(locale: gws.Locale) -> tuple[DateFormatter, TimeFormatter, NumberFormatter]:
+    """Return a tuple of locale-aware formatters."""
 
-        Args:
-            locale_uid: ID in the format `language_territory` e.g. `de_DE`.
+    def _get():
+        return (
+            DateFormatter(locale),
+            TimeFormatter(locale),
+            NumberFormatter(locale),
+        )
 
-        Returns:
-            `TimeFormatter` object.
-        """
-    return gws.u.get_app_global(f'gws.lib.intl.time_formatter.{locale_uid}', lambda: TimeFormatter(locale_uid))
-
-
-def number_formatter(locale_uid) -> NumberFormatter:
-    """Creates a `NumberFormatter` if there is no other instance of that class to the same `locale_uid`.
-
-        Args:
-            locale_uid: ID in the format `language_territory` e.g. `de_DE`.
-
-        Returns:
-            `NumberFormatter` object.
-        """
-    return gws.u.get_app_global(f'gws.lib.intl.number_formatter.{locale_uid}', lambda: NumberFormatter(locale_uid))
+    return gws.u.get_app_global(f'gws.lib.intl.formatters.{locale.uid}', _get)

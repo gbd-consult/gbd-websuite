@@ -58,14 +58,18 @@ class Object(gws.Template):
             uid=self.uid,
         )
 
-    def prepare_args(self, args):
-        args = args or {}
-        locale_uid = args.get('localeUid', 'en_CA')
+    def prepare_args(self, tri: gws.TemplateRenderInput):
+        args = tri.args or {}
         args.setdefault('app', self.root.app)
-        args.setdefault('locale', gws.lib.intl.locale(locale_uid))
-        args.setdefault('date', gws.lib.intl.date_formatter(locale_uid))
-        args.setdefault('time', gws.lib.intl.time_formatter(locale_uid))
-        args.setdefault('number', gws.lib.intl.number_formatter(locale_uid))
+
+        locale = args.get('locale') or tri.locale or gws.lib.intl.get_default_locale()
+        f = gws.lib.intl.get_formatters(locale)
+
+        args.setdefault('locale', locale)
+        args.setdefault('date', f[0])
+        args.setdefault('time', f[1])
+        args.setdefault('number', f[2])
+
         # obsolete
         args.setdefault('gwsVersion', self.root.app.version)
         args.setdefault('gwsBaseUrl', gws.c.SERVER_ENDPOINT)

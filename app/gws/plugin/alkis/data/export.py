@@ -4,6 +4,7 @@ import gws
 import gws.base.model
 import gws.base.feature
 import gws.lib.csv
+import gws.lib.intl
 
 from . import types as dt
 
@@ -153,7 +154,7 @@ class Object(gws.Node):
         ]
 
         csv_helper = cast(gws.lib.csv.Object, self.root.app.helper('csv'))
-        writer = csv_helper.writer()
+        writer = csv_helper.writer(gws.lib.intl.get_locale('de_DE'))
 
         writer.write_headers([fld.title for fld in fields])
         mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=user)

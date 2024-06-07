@@ -25,6 +25,7 @@ import gws.base.client.bundles
 import gws.base.template
 import gws.lib.mime
 import gws.lib.osx
+import gws.lib.intl
 
 gws.ext.new.action('web')
 
@@ -42,8 +43,8 @@ class TemplateArgs(gws.TemplateArgs):
     """Current user."""
     params: dict
     """Request parameters."""
-    localeUid: str
-    """Locale uid"""
+    locale: gws.Locale
+    """Locale object."""
 
 
 class Config(gws.base.action.Config):
@@ -114,24 +115,24 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('webSystemAsset')
     def sys_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
-        locale_uid = p.localeUid or self.root.app.localeUids[0]
+        locale = gws.lib.intl.get_locale(p.localeUid, self.root.app.localeUids)
 
         # eg. '8.0.0.light.css, 8.0.0.vendor.js etc
 
         if p.path.endswith('vendor.js'):
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
-                content=gws.base.client.bundles.javascript(self.root, 'vendor', locale_uid))
+                content=gws.base.client.bundles.javascript(self.root, 'vendor', locale))
 
         if p.path.endswith('util.js'):
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
-                content=gws.base.client.bundles.javascript(self.root, 'util', locale_uid))
+                content=gws.base.client.bundles.javascript(self.root, 'util', locale))
 
         if p.path.endswith('app.js'):
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
-                content=gws.base.client.bundles.javascript(self.root, 'app', locale_uid))
+                content=gws.base.client.bundles.javascript(self.root, 'app', locale))
 
         if p.path.endswith('.css'):
             theme = p.path.split('.')[-2]
@@ -163,13 +164,10 @@ class Object(gws.base.action.Object):
         if not real_path:
             raise gws.NotFoundError(f'no real path for {req_path=}')
 
-        locale_uid = p.localeUid
-        if project and locale_uid not in project.localeUids:
-            locale_uid = project.localeUids[0]
-
         tpl = self.root.app.templateMgr.template_from_path(real_path)
         if tpl:
-            return self._serve_template(req, tpl, project, locale_uid)
+            locale = gws.lib.intl.get_locale(p.localeUid, project.localeUids if project else self.root.app.localeUids)
+            return self._serve_template(req, tpl, project, locale)
 
         mime = gws.lib.mime.for_path(real_path)
 
@@ -180,7 +178,7 @@ class Object(gws.base.action.Object):
         gws.log.debug(f'serving {real_path!r} for {req_path!r}')
         return gws.ContentResponse(contentPath=real_path, mime=mime)
 
-    def _serve_template(self, req: gws.WebRequester, tpl: gws.Template, project: Optional[gws.Project], locale_uid: str):
+    def _serve_template(self, req: gws.WebRequester, tpl: gws.Template, project: Optional[gws.Project], locale: gws.Locale):
         projects = [p for p in self.root.app.projects if req.user.can_use(p)]
         projects.sort(key=lambda p: p.title.lower())
 
@@ -190,10 +188,9 @@ class Object(gws.base.action.Object):
             req=req,
             user=req.user,
             params=req.params,
-            localeUid=locale_uid,
         )
 
-        return tpl.render(gws.TemplateRenderInput(args=args))
+        return tpl.render(gws.TemplateRenderInput(args=args, locale=locale))
 
 
 _DEFAULT_ALLOWED_MIME_TYPES = {

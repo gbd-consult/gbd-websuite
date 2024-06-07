@@ -1,6 +1,6 @@
 """OWS Service."""
 
-from typing import Optional, Callable, cast
+from typing import Optional, cast
 
 import gws
 import gws.base.legend
@@ -17,7 +17,6 @@ import gws.lib.date
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
-
 from . import core, request, error
 
 
@@ -195,7 +194,7 @@ class Object(gws.OwsService):
             **kwargs,
         )
 
-        return cast(gws.ContentResponse, tpl.render(gws.TemplateRenderInput(args=args)))
+        return tpl.render(gws.TemplateRenderInput(args=args))
 
     def image_response(self, sr: request.Object, img: Optional[gws.Image], mime: str) -> gws.ContentResponse:
         ifmt = self.find_image_format(mime)

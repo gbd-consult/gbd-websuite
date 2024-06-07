@@ -4,17 +4,17 @@ class TemplateArgs(Data):
     app: 'Application'
     """Application object."""
     gwsVersion: str
-    """GWS version."""
+    """GWS version. (deprecated in 8.1)"""
     gwsBaseUrl: str
-    """GWS server base url."""
+    """GWS server base url. (deprecated in 8.1)"""
     locale: 'Locale'
     """Current locale."""
     date: 'DateFormatter'
-    """Locale-dependent date formatter."""
+    """Locale-aware date formatter."""
     time: 'TimeFormatter'
-    """Locale-dependent time formatter."""
+    """Locale-aware time formatter."""
     number: 'NumberFormatter'
-    """Locale-dependent number formatter."""
+    """Locale-aware number formatter."""
 
 
 class TemplateRenderInput(Data):
@@ -23,7 +23,7 @@ class TemplateRenderInput(Data):
     args: dict | Data
     crs: 'Crs'
     dpi: int
-    localeUid: str
+    locale: 'Locale'
     maps: list[MapRenderInput]
     mimeOut: str
     notify: Callable
@@ -54,7 +54,7 @@ class Template(Node):
     title: str
     """Template title."""
 
-    def render(self, tri: TemplateRenderInput) -> Response:
+    def render(self, tri: TemplateRenderInput) -> ContentResponse:
         """Render the template and return the generated response."""
 
 

@@ -11,11 +11,12 @@
     <link rel="stylesheet" href="/project.css?r={time.time()}"/>
     <script id="gwsOptions" type="application/json">
         {
-            "projectUid": "{project.uid}"
+            "projectUid": "{project.uid}",
+            "localeUid": "{locale.uid}"
         }
     </script>
     <script src="/_/webSystemAsset/path/{app.version}.vendor.js"></script>
-    <script src="/_/webSystemAsset/path/{app.version}.app.js"></script>
+    <script src="/_/webSystemAsset/localeUid/{locale.uid}/path/{app.version}.app.js"></script>
 </head>
 <body>
 </body>

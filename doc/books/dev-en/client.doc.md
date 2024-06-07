@@ -58,6 +58,24 @@ It is also recommended to set the character set ('utf8') and to disable viewport
 </head>
 ```
 
+### Using locales
+
+In multi-language configurations, to display the client in a specific locale, the `localeUid` parameter
+must be added to both the options block and the Application bundle URL:
+
+```html title="Example:"
+...
+<script id="gwsOptions" type="application/json">
+    {
+        "projectUid": "my_project",
+        "showLayers": ["someLayer"],
+        "localeUid": "en_US"
+    }
+</script>
+...
+<script src="/_/webSystemAsset/localeUid/en_US/path/app.js"></script>
+```
+
 ### Container element
 
 The client is rendered inside a container element, usually a `div`. This element must have a class name `gws`. If no
@@ -97,8 +115,9 @@ to `"application/json"` and an `id` of `"gwsOptions"`. The following options are
 
 | Name            | Type             | Role                                                           |
 |-----------------|------------------|----------------------------------------------------------------|
-| `projectUid`    | `string`         | ID of the project that should be loaded in the client          |
-| `serverUrl`     | `string`         | A custom URL of the GWS server                                 |
+| `projectUid`    | `string`         | ID of the project that should be loaded in the client.         |
+| `localeUid`     | `string`         | Locale ID like `de_DE` or `en_US`.                             |
+| `serverUrl`     | `string`         | A custom URL of the GWS server.                                |
 | `markFeatures`  | `Array<Feature>` | Features that should be highlighted upon loading the client.   |
 | `showLayers`    | `Array<string>`  | IDs of project layers that should be set visible upon loading. |
 | `hideLayers`    | `Array<string>`  | IDs of project layers that should be set hidden upon loading.  |
