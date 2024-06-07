@@ -14,7 +14,7 @@ This WMS service is only allowed for authorized users.
 owsServices+ {
     type "wms"
     uid "service_wms_auth"
-    permissions.use "allow user,deny all"
+    permissions.read "allow user,deny all"
 }
 
 map.extent [

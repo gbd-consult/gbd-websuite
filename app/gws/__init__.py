@@ -411,8 +411,6 @@ class PermissionsConfig:
     """All permissions."""
     read: Optional[AclStr]
     """Permission to read the object."""
-    use: Optional[AclStr]
-    """Permission to use the object."""
     write: Optional[AclStr]
     """Permission to change the object."""
     create: Optional[AclStr]
