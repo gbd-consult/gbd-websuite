@@ -28,8 +28,13 @@ class Config(gws.base.action.Config):
 class Object(gws.base.action.Object):
     @gws.ext.command.get('owsService')
     def get_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:
-        srv = cast(gws.OwsService, req.user.require(p.serviceUid, gws.ext.object.owsService))
+        srv = cast(gws.OwsService, self.root.get(p.serviceUid, gws.ext.object.owsService))
+        if not srv:
+            raise gws.NotFoundError(f'{p.serviceUid=} not found')
+
         try:
+            if not req.user.can_use(srv):
+                raise gws.ForbiddenError(f'{p.serviceUid=} forbidden')
             return srv.handle_request(req)
         except Exception as exc:
             err = error.from_exception(exc)
