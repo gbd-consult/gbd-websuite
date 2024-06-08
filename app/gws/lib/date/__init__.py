@@ -1,89 +1,122 @@
+import datetime as dt
+import re
+import zoneinfo
 from typing import Optional
 
-import datetime
-import calendar
-import re
-import time
+import pendulum
+import pendulum.parsing
 
 import gws.lib.osx
 
+_ZONES = {
+    '': zoneinfo.ZoneInfo('UTC'),
+    'utc': zoneinfo.ZoneInfo('UTC'),
+    'UTC': zoneinfo.ZoneInfo('UTC'),
+}
 
-def set_system_time_zone(tz):
-    if not tz:
+
+# System time zone
+
+def set_system_time_zone(tz: str = 'UTC'):
+    zi = _get_zi(tz)
+
+    if zi == _get_system_zi():
         return
-    if tz != 'UTC' and not re.match(r'^(\w+)/(\w+)$', tz):
-        raise ValueError('invald timezone', tz)
-    gws.lib.osx.run(['ln', '-fs', f'/usr/share/zoneinfo/{tz}', '/etc/localtime'])
+
+    gws.lib.osx.run(['ln', '-fs', f'/usr/share/zoneinfo/{zi}', '/etc/localtime'])
+
+    _ZONES['local'] = zi
 
 
-def to_iso_string(d: datetime.datetime, with_tz='+', sep='T') -> str:
-    fmt = f'%Y-%m-%d{sep}%H:%M:%S'
-    if with_tz:
-        fmt += '%z'
-    s = d.strftime(fmt)
-    if with_tz == 'Z' and s.endswith('+0000'):
-        s = s[:-5] + 'Z'
-    return s
+def get_system_time_zone():
+    if not _ZONES.get('local'):
+        _ZONES['local'] = _get_system_zi()
+    return _ZONES['local']
 
 
-def to_iso_date_string(d: datetime.datetime) -> str:
-    fmt = '%Y-%m-%d'
-    return d.strftime(fmt)
+def _get_system_zi():
+    d = dt.datetime.now().astimezone()
+    return zoneinfo.ZoneInfo(str(d.tzinfo))
 
 
-def to_iso_local_string(d: datetime.datetime, with_tz='+', sep='T') -> str:
-    return to_iso_string(d.astimezone(), with_tz, sep)
+def _set_default_zi(d: dt.datetime | dt.time, tz: str):
+    zi = d.tzinfo
+    if not zi:
+        return d.replace(tzinfo=_get_zi(tz))
+    if not isinstance(zi, zoneinfo.ZoneInfo):
+        return d.replace(tzinfo=zoneinfo.ZoneInfo(str(zi)))
+    return d
 
 
-def to_timestamp(d: datetime.datetime) -> int:
-    return int(calendar.timegm(d.timetuple()))
+def _get_zi(tz: str) -> zoneinfo.ZoneInfo:
+    if tz in _ZONES:
+        return _ZONES[tz]
+    if tz.lower() == 'local':
+        return get_system_time_zone()
+    try:
+        return zoneinfo.ZoneInfo(tz)
+    except zoneinfo.ZoneInfoNotFoundError as exc:
+        raise ValueError(f'invalid time zone {tz!r}') from exc
 
 
-def to_int_string(d: datetime.datetime) -> str:
-    return d.strftime("%Y%m%d%H%M%S")
+# Constructors
 
 
-def now() -> datetime.datetime:
-    return datetime.datetime.now(datetime.timezone.utc)
+def make_datetime(year, month=None, day=None, hour=0, minute=0, second=0, microsecond=0, tz: str = 'UTC') -> dt.datetime:
+    return dt.datetime(year, month, day, hour, minute, second, microsecond, tzinfo=_get_zi(tz))
 
 
-def now_iso(with_tz='+', sep='T') -> str:
-    return to_iso_string(now(), with_tz, sep)
+def make_date(year, month=None, day=None) -> dt.date:
+    return dt.date(year, month, day)
 
 
-def to_utc(d: datetime.datetime) -> datetime.datetime:
-    return d.astimezone(datetime.timezone.utc)
+def now(tz: str = 'UTC') -> dt.datetime:
+    return dt.datetime.now(_get_zi(tz))
 
 
-def from_timestamp(ts) -> datetime.datetime:
-    return datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
+def now_local() -> dt.datetime:
+    return now('local')
 
 
-def is_date(x) -> bool:
-    return isinstance(x, datetime.date)
-
-
-def is_datetime(x) -> bool:
-    return isinstance(x, datetime.datetime)
-
-
-def is_date_or_datetime(x) -> bool:
-    return isinstance(x, (datetime.datetime, datetime.date))
-
-
-# @TODO
-
-def parse(s) -> Optional[datetime.datetime]:
+def parse(s, tz: str = 'UTC') -> Optional[dt.date]:
     if not s:
         return None
-    if isinstance(s, datetime.datetime):
-        return s
-    s = str(s)
-    if re.match(r'^\d{4}', s):
-        return from_iso(s)
-    if re.match(r'^\d{1,2}', s):
-        return from_dmy(s)
-    return None
+
+    if isinstance(s, dt.datetime):
+        return _set_default_zi(s, tz)
+
+    try:
+        return from_iso_string(s, tz)
+    except ValueError:
+        pass
+    try:
+        return from_dmy_string(s)
+    except ValueError:
+        pass
+    try:
+        return from_string(s, tz)
+    except ValueError:
+        pass
+
+
+def from_string(s: str, tz: str = 'UTC') -> dt.datetime:
+    try:
+        d = pendulum.parse(s)
+    except pendulum.parsing.exceptions.ParserError as exc:
+        raise ValueError(f'invalid date {s!r}') from exc
+    return _set_default_zi(d, tz)
+
+
+def from_iso_string(s: str, tz: str = 'UTC') -> dt.date:
+    try:
+        d = dt.datetime.fromisoformat(s)
+    except ValueError as exc:
+        raise ValueError(f'invalid date {s!r}') from exc
+
+    if len(s) == 10:
+        return dt.date(d.year, d.month, d.day)
+
+    return _set_default_zi(d, tz)
 
 
 _DMY_RE = r'''(?x)
@@ -97,110 +130,185 @@ _DMY_RE = r'''(?x)
 '''
 
 
-def from_dmy(s: str) -> Optional[datetime.datetime]:
+def from_dmy_string(s: str) -> dt.date:
     m = re.match(_DMY_RE, s)
     if not m:
         raise ValueError(f'invalid date {s!r}')
-    g = m.groupdict()
-    return datetime.datetime(
-        int(g['Y']),
-        int(g['m']),
-        int(g['d']),
-        0, 0, 0,
-        tzinfo=datetime.timezone.utc
-    )
-
-
-_ISO_DATE_RE = r'''(?x)
-    ^
-
-    # date
-    (?P<Y> \d{4}) - (?P<m> \d{1,2}) - (?P<d> \d{1,2})
-
-    # time?
-    (
-        # separator
-        [ T]
-
-        # time
-        (?P<H> \d{1,2}) : (?P<M> \d{1,2}) : (?P<S> \d{1,2})
-
-        # fraction?
-        (
-            \.
-            (?P<f> \d+)
-        )?
-
-        # time zone?
-        (
-            Z
-            |
-            (
-                (?P<zsign> [+-]) (?P<zh> \d{2}) :? (?P<zm> \d{2})
-            )
-        )?
-
-    )?
-    $
-'''
-
-
-def from_iso(s: str) -> Optional[datetime.datetime]:
-    m = re.match(_ISO_DATE_RE, s)
-    if not m:
-        raise ValueError(f'invalid date {s!r}')
 
     g = m.groupdict()
-    tz = datetime.timezone.utc
 
-    if g['zsign']:
-        sec = int(g['zh']) * 3600 + int(g['zm']) * 60
-        if g['zsign'] == '-':
-            sec = -sec
-        tz = datetime.timezone(datetime.timedelta(seconds=sec))
+    try:
+        return dt.date(int(g['Y']), int(g['m']), int(g['d']))
+    except ValueError as exc:
+        raise ValueError(f'invalid date {s!r}') from exc
 
-    return datetime.datetime(
-        int(g['Y']),
-        int(g['m']),
-        int(g['d']),
-        int(g['H'] or 0),
-        int(g['M'] or 0),
-        int(g['S'] or 0),
-        int(g['f'] or 0),
-        tz
+
+def from_timestamp(ts: float, tz: str = 'UTC') -> dt.datetime:
+    return dt.datetime.fromtimestamp(ts, tz=_get_zi(tz))
+
+
+# Formatters
+
+def to_iso_string(d: dt.date, with_tz='+', sep='T') -> str:
+    if isinstance(d, dt.datetime):
+        fmt = f'%Y-%m-%d{sep}%H:%M:%S'
+        if with_tz:
+            fmt += '%z'
+        s = d.strftime(fmt)
+        if with_tz == 'Z' and s.endswith('+0000'):
+            s = s[:-5] + 'Z'
+        return s
+
+    return to_iso_date_string(d)
+
+
+def to_iso_date_string(d: dt.date) -> str:
+    fmt = '%Y-%m-%d'
+    return d.strftime(fmt)
+
+
+def to_int_string(d: dt.datetime) -> str:
+    return d.strftime("%Y%m%d%H%M%S")
+
+
+# Converters
+
+def to_timestamp(d: dt.datetime) -> int:
+    return int(d.timestamp())
+
+
+def to_utc(d: dt.datetime) -> dt.datetime:
+    return d.astimezone(_get_zi('UTC'))
+
+
+def to_local(d: dt.datetime) -> dt.datetime:
+    return d.astimezone(get_system_time_zone())
+
+
+def to_time_zone(d: dt.datetime, tz: str) -> dt.datetime:
+    return d.astimezone(_get_zi(tz))
+
+
+def to_datetime(d: dt.date, tz: str = 'UTC') -> dt.datetime:
+    return dt.datetime(d.year, d.month, d.day, tzinfo=_get_zi(tz))
+
+
+def to_date(d: dt.date) -> dt.date:
+    return dt.date(d.year, d.month, d.day)
+
+
+# Predicates
+
+def is_date(x) -> bool:
+    return isinstance(x, dt.date)
+
+
+def is_datetime(x) -> bool:
+    return isinstance(x, dt.datetime)
+
+
+# Arithmetic
+
+def add(
+        d: dt.datetime,
+        years=0, months=0, days=0, weeks=0, hours=0, minutes=0, seconds=0, microseconds=0
+) -> dt.datetime:
+    d = pendulum.helpers.add_duration(
+        d,
+        years=years, months=months, days=days,
+        weeks=weeks, hours=hours, minutes=minutes, seconds=seconds, microseconds=microseconds
     )
+    return d
 
 
-_ISO_TIME_RE = r'''(?x)
-    ^
-    (?P<H> \d{1,2}) 
-    (
-        \s* : \s* 
-        (?P<M> \d{1,2}) 
-        (
-            \s* : \s* 
-            (?P<S> \d{1,2} )
-        )?
-    )?
-    $
-'''
+class Diff:
+    years: int
+    months: int
+    weeks: int
+    days: int
+    hours: int
+    minutes: int
+    seconds: int
+    microseconds: int
+
+    def __repr__(self):
+        return repr(vars(self))
 
 
-def parse_time(s: str) -> Optional[datetime.time]:
-    m = re.match(_ISO_TIME_RE, s)
-    if not m:
-        raise ValueError(f'invalid time {s!r}')
-    g = m.groupdict()
-    return datetime.time(
-        int(g['H'] or 0),
-        int(g['M'] or 0),
-        int(g['S'] or 0)
-    )
+def relative_difference(dt1: dt.datetime, dt2: dt.datetime) -> Diff:
+    iv = pendulum.Interval(dt1, dt2, absolute=False)
+    df = Diff()
+
+    df.years = iv.years
+    df.months = iv.months
+    df.weeks = iv.weeks
+    df.days = iv.remaining_days
+    df.hours = iv.hours
+    df.minutes = iv.minutes
+    df.seconds = iv.remaining_seconds
+    df.microseconds = iv.microseconds
+
+    return df
 
 
-def to_iso_time_string(tt: datetime.time) -> str:
-    return '{:02d}:{:02d}:{:02d}'.format(
-        tt.hour,
-        tt.minute,
-        tt.second
-    )
+def absolute_difference(dt1: dt.datetime, dt2: dt.datetime) -> Diff:
+    iv = pendulum.Interval(dt1, dt2, absolute=False)
+    df = Diff()
+
+    df.years = iv.in_years()
+    df.months = iv.in_months()
+    df.weeks = iv.in_weeks()
+    df.days = iv.in_days()
+    df.hours = iv.in_hours()
+    df.minutes = iv.in_minutes()
+    df.seconds = iv.in_seconds()
+    df.microseconds = df.seconds * 1_000_000
+
+    return df
+
+
+_TRUNC_KEYS = ['month', 'day', 'hour', 'minute', 'second', 'microsecond']
+
+
+# https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TRUNC
+
+def trunc(d: dt.datetime, year=None, month=None, day=None, hour=None, minute=None, second=None) -> dt.datetime:
+    args = [d.year, 1, 1, 0, 0, 0, 0]
+    i = 1
+
+    for k in _TRUNC_KEYS:
+        if k == key:
+            break
+        args[i] = getattr(d, k)
+        i += 1
+
+    dt2 = dt.datetime(*args, tzinfo=d.tzinfo)
+    return _set_default_zi(dt2, 'UTC')
+
+
+# Time
+
+def parse_time(s, tz: str = 'UTC') -> Optional[dt.time]:
+    if isinstance(s, dt.datetime):
+        return _set_default_zi(s.timetz(), tz)
+    if isinstance(s, dt.time):
+        return _set_default_zi(s, tz)
+    try:
+        return time_from_iso_string(str(s), tz)
+    except ValueError:
+        pass
+
+
+def time_from_iso_string(s: str, tz: str = 'UTC') -> dt.time:
+    d = dt.time.fromisoformat(s)
+    return _set_default_zi(d, tz)
+
+
+def time_to_iso_string(d: dt.time, with_tz='+') -> str:
+    fmt = '%H:%M:%S'
+    if with_tz:
+        fmt += '%z'
+    s = d.strftime(fmt)
+    if with_tz == 'Z' and s.endswith('+0000'):
+        s = s[:-5] + 'Z'
+    return s

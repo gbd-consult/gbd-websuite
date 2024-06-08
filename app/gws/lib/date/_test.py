@@ -1,16 +1,17 @@
 from typing import Optional
 
-import gws.lib.date
+import gws.lib.date as dt
 import datetime
+
 
 def test_set_system_time_zone():
     def cat(fn):
         with open(fn, 'rb') as fp:
             return fp.read()
 
-    gws.lib.date.set_system_time_zone('America/Detroit')
+    dt.set_system_time_zone('America/Detroit')
     assert cat('/usr/share/zoneinfo/America/Detroit') == cat('/etc/localtime')
-    gws.lib.date.set_system_time_zone('Europe/Berlin')
+    dt.set_system_time_zone('Europe/Berlin')
     assert cat('/usr/share/zoneinfo/Europe/Berlin') == cat('/etc/localtime')
 
 
@@ -36,12 +37,12 @@ def test_to_iso():
         those are valid in iso, but fail in python builtin
 
     """
-    dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
-    assert gws.lib.date.to_iso_string(dt) == "2022-10-31T16:42:22+0900"
-    assert gws.lib.date.to_iso_string(dt, sep='#') == "2022-10-31#16:42:22+0900"
-    dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+00:00')
-    assert gws.lib.date.to_iso_string(dt, with_tz='+') == "2022-10-31T16:42:22+0000"
-    assert gws.lib.date.to_iso_string(dt, with_tz='Z', sep='#') == "2022-10-31#16:42:22Z"
+    d = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
+    assert dt.to_iso_string(d) == "2022-10-31T16:42:22+0900"
+    assert dt.to_iso_string(d, sep='#') == "2022-10-31#16:42:22+0900"
+    d = datetime.datetime.fromisoformat('2022-10-31T16:42:22+00:00')
+    assert dt.to_iso_string(d, with_tz='+') == "2022-10-31T16:42:22+0000"
+    assert dt.to_iso_string(d, with_tz='Z', sep='#') == "2022-10-31#16:42:22Z"
 
 
 def test_to_iso_date_string():
@@ -49,12 +50,12 @@ def test_to_iso_date_string():
     def to_iso_date_string(d: datetime.datetime) -> str:
     """
 
-    dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
-    assert gws.lib.date.to_iso_date_string(dt) == "2022-10-31"
-    dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59+09:00')
-    assert gws.lib.date.to_iso_date_string(dt) == "2022-12-31"
-    dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59-09:00')
-    assert gws.lib.date.to_iso_date_string(dt) == "2022-12-31"
+    d = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
+    assert dt.to_iso_date_string(d) == "2022-10-31"
+    d = datetime.datetime.fromisoformat('2022-12-31T23:59:59+09:00')
+    assert dt.to_iso_date_string(d) == "2022-12-31"
+    d = datetime.datetime.fromisoformat('2022-12-31T23:59:59-09:00')
+    assert dt.to_iso_date_string(d) == "2022-12-31"
 
 
 def test_to_iso_local():
@@ -62,22 +63,22 @@ def test_to_iso_local():
     def to_iso_local_string(d: datetime.datetime, with_tz='+', sep='T') -> str:
     """
 
-    gws.lib.date.set_system_time_zone('Europe/Berlin')
+    dt.set_system_time_zone('Europe/Berlin')
 
-    dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
-    assert gws.lib.date.to_iso_local_string(dt) in [
+    d = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
+    assert dt.to_iso_local_string(d) in [
         "2022-10-31T08:42:22+0100",
         "2022-10-31T09:42:22+0200"
     ]
 
     # check for year change on tz difference
-    dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59+09:00')
-    assert gws.lib.date.to_iso_local_string(dt) in [
+    d = datetime.datetime.fromisoformat('2022-12-31T23:59:59+09:00')
+    assert dt.to_iso_local_string(d) in [
         "2022-12-31T15:59:59+0100",
         "2022-12-31T16:59:59+0200"
     ]
-    dt = datetime.datetime.fromisoformat('2022-12-31T23:59:59-09:00')
-    assert gws.lib.date.to_iso_local_string(dt) in [
+    d = datetime.datetime.fromisoformat('2022-12-31T23:59:59-09:00')
+    assert dt.to_iso_local_string(d) in [
         "2023-01-01T09:59:59+0100",
         "2023-01-01T10:59:59+0200"
     ]
@@ -104,25 +105,25 @@ def test_timestamp_msec():
 
 
 def test_to_utc():
-    dt = datetime.datetime.fromisoformat("2022-12-12T13:12:12+01:00")
+    d = datetime.datetime.fromisoformat("2022-12-12T13:12:12+01:00")
     dt_with_tz = datetime.datetime.fromisoformat("2022-12-12T12:12:12+00:00")
-    assert dt.astimezone(datetime.timezone.utc) == dt_with_tz
+    assert d.astimezone(datetime.timezone.utc) == dt_with_tz
 
 
 def test_from_timestamp():
-    dt = datetime.datetime.now(tz=datetime.timezone.utc)
-    ts = dt.timestamp()
-    assert gws.lib.date.from_timestamp(ts) == dt
+    d = datetime.datetime.now(tz=datetime.timezone.utc)
+    ts = d.timestamp()
+    assert dt.from_timestamp(ts) == d
 
 
 def test_is_date():
-    assert gws.lib.date.is_date(datetime.date.today())
-    assert not gws.lib.date.is_date("not date")
+    assert dt.is_date(datetime.date.today())
+    assert not dt.is_date("not date")
 
 
 def test_is_datetime():
-    assert gws.lib.date.is_datetime(datetime.datetime.now())
-    assert not gws.lib.date.is_datetime("not datetime")
+    assert dt.is_datetime(datetime.datetime.now())
+    assert not dt.is_datetime("not datetime")
 
 
 def test_parse():
@@ -130,21 +131,21 @@ def test_parse():
     def parse(s):
     """
 
-    assert gws.lib.date.parse(0) == None
+    assert dt.parse(0) == None
 
-    dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+00:00')
-    assert gws.lib.date.parse(dt) == dt
+    d = datetime.datetime.fromisoformat('2022-10-31T16:42:22+00:00')
+    assert dt.parse(d) == d
 
-    assert gws.lib.date.parse(20221212) == None
-    assert gws.lib.date.parse("20221212") == None
+    assert dt.parse(20221212) == None
+    assert dt.parse("20221212") == None
 
-    dt = datetime.datetime.fromisoformat('2022-10-31T16:42:22+00:00')
-    assert not gws.lib.date.parse("2022-10-31") == dt
+    d = datetime.datetime.fromisoformat('2022-10-31T16:42:22+00:00')
+    assert not dt.parse("2022-10-31") == d
 
     # these two should definitely have the same result
-    dt = datetime.datetime.fromisoformat('2022-10-31T00:00:00+00:00')
-    assert gws.lib.date.parse("2022-10-31") == dt
-    assert gws.lib.date.parse("31.10.2022") == dt
+    d = datetime.datetime.fromisoformat('2022-10-31T00:00:00+00:00')
+    assert dt.parse("2022-10-31") == d
+    assert dt.parse("31.10.2022") == d
 
 
 def test_from_dmy():
@@ -152,8 +153,8 @@ def test_from_dmy():
     def from_dmy(s: str) -> Optional[datetime.datetime]:
     """
 
-    dt = datetime.datetime.fromisoformat('2022-12-31T00:00:00+00:00')
-    assert gws.lib.date.from_dmy("31.12.2022") == dt
+    d = datetime.datetime.fromisoformat('2022-12-31T00:00:00+00:00')
+    assert dt.from_dmy("31.12.2022") == d
 
 
 def test_from_iso():
@@ -161,61 +162,60 @@ def test_from_iso():
     def from_iso(s: str) -> Optional[datetime.datetime]:
     """
 
-    assert gws.lib.date.from_iso("2022-12-12") == datetime.datetime.fromisoformat("2022-12-12T00:00:00+00:00")
-    assert gws.lib.date.from_iso("2022-12-12T00:00:00Z") == datetime.datetime.fromisoformat("2022-12-12T00:00:00+00:00")
-    assert gws.lib.date.from_iso("2022-12-12T00:00:00+0000") == datetime.datetime.fromisoformat("2022-12-12T00:00:00+00:00")
+    assert dt.from_iso_string("2022-12-12") == datetime.datetime.fromisoformat("2022-12-12T00:00:00+00:00")
+    assert dt.from_iso_string("2022-12-12T00:00:00Z") == datetime.datetime.fromisoformat("2022-12-12T00:00:00+00:00")
+    assert dt.from_iso_string("2022-12-12T00:00:00+0000") == datetime.datetime.fromisoformat("2022-12-12T00:00:00+00:00")
 
 
 def test_date_formatter():
-    dfmt = gws.lib.date.date_formatter("de_DE")
-    assert dfmt and type(dfmt) == gws.lib.date.DateFormatter
+    dfmt = dt.date_formatter("de_DE")
+    assert dfmt and type(dfmt) == dt.DateFormatter
 
-    dt = datetime.datetime.fromisoformat("2022-12-13T14:15:16+00:00")
+    d = datetime.datetime.fromisoformat("2022-12-13T14:15:16+00:00")
 
-    dfmt = gws.lib.date.date_formatter("de_DE")
-    assert dfmt.format('short',dt) == "13.12.22"
-    assert dfmt.format('medium',dt) == "13.12.2022"
-    assert dfmt.format('long',dt) == "13. Dezember 2022"
+    dfmt = dt.date_formatter("de_DE")
+    assert dfmt.format('short', d) == "13.12.22"
+    assert dfmt.format('medium', d) == "13.12.2022"
+    assert dfmt.format('long', d) == "13. Dezember 2022"
 
-    dfmt = gws.lib.date.date_formatter("en_US")
-    assert dfmt.format('short',dt) == "12/13/22"
-    assert dfmt.format('medium',dt) == "Dec 13, 2022"
-    assert dfmt.format('long',dt) == "December 13, 2022"
+    dfmt = dt.date_formatter("en_US")
+    assert dfmt.format('short', d) == "12/13/22"
+    assert dfmt.format('medium', d) == "Dec 13, 2022"
+    assert dfmt.format('long', d) == "December 13, 2022"
 
-    dfmt = gws.lib.date.date_formatter("en_GB")
-    assert dfmt.format('short',dt) == "13/12/2022"
-    assert dfmt.format('medium',dt) == "13 Dec 2022"
-    assert dfmt.format('long',dt) == "13 December 2022"
+    dfmt = dt.date_formatter("en_GB")
+    assert dfmt.format('short', d) == "13/12/2022"
+    assert dfmt.format('medium', d) == "13 Dec 2022"
+    assert dfmt.format('long', d) == "13 December 2022"
 
 
 def test_time_formatter():
     """
-    TODO gws.lib.date.TimeFormatter.format() behavior differs from DateFormatter.format()
+    TODO dt.TimeFormatter.format() behavior differs from DateFormatter.format()
 
     """
-    tfmt = gws.lib.date.time_formatter("de_DE")
-    assert tfmt and type(tfmt) == gws.lib.date.TimeFormatter
-
+    tfmt = dt.time_formatter("de_DE")
+    assert tfmt and type(tfmt) == dt.TimeFormatter
 
     tm = "13:14:15"
 
-    tmft = gws.lib.date.time_formatter("de_DE")
-    assert tmft.format('short',tm) == "13:14"
-    assert tmft.format('medium',tm) == "13:14:15"
-    assert tmft.format('long',tm) == "13:14:15 UTC"
+    tmft = dt.time_formatter("de_DE")
+    assert tmft.format('short', tm) == "13:14"
+    assert tmft.format('medium', tm) == "13:14:15"
+    assert tmft.format('long', tm) == "13:14:15 UTC"
 
-    tmft = gws.lib.date.time_formatter("en_US")
-    assert tmft.format('short',tm) == "1:14 PM"
-    assert tmft.format('medium',tm) == "1:14:15 PM"
-    assert tmft.format('long',tm) == "1:14:15 PM UTC"
+    tmft = dt.time_formatter("en_US")
+    assert tmft.format('short', tm) == "1:14 PM"
+    assert tmft.format('medium', tm) == "1:14:15 PM"
+    assert tmft.format('long', tm) == "1:14:15 PM UTC"
 
-    tmft = gws.lib.date.time_formatter("en_GB")
-    assert tmft.format('short',tm) == "13:14"
-    assert tmft.format('medium',tm) == "13:14:15"
-    assert tmft.format('long',tm) == "13:14:15 UTC"
+    tmft = dt.time_formatter("en_GB")
+    assert tmft.format('short', tm) == "13:14"
+    assert tmft.format('medium', tm) == "13:14:15"
+    assert tmft.format('long', tm) == "13:14:15 UTC"
 
     # this should work because the date equivalence works with DateFormatter
     tm = datetime.time.fromisoformat("13:14:15")
-    tmft = gws.lib.date.time_formatter("de_DE")
-    #assert tmft.format('short',tm) == "13:14:15"
-    assert "INCONSISTENT BEHAVIOR BETWEEN DateFormatter and TimeFormatter: READ COMMENT" == False # fail test manually to continue testing
+    tmft = dt.time_formatter("de_DE")
+    # assert tmft.format('short',tm) == "13:14:15"
+    assert "INCONSISTENT BEHAVIOR BETWEEN DateFormatter and TimeFormatter: READ COMMENT" == False  # fail test manually to continue testing
