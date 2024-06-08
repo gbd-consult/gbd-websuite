@@ -4,14 +4,14 @@ import gws.lib.date as dt
 import datetime
 
 
-def test_set_system_time_zone():
+def test_set_local_time_zone():
     def cat(fn):
         with open(fn, 'rb') as fp:
             return fp.read()
 
-    dt.set_system_time_zone('America/Detroit')
+    dt.set_local_time_zone('America/Detroit')
     assert cat('/usr/share/zoneinfo/America/Detroit') == cat('/etc/localtime')
-    dt.set_system_time_zone('Europe/Berlin')
+    dt.set_local_time_zone('Europe/Berlin')
     assert cat('/usr/share/zoneinfo/Europe/Berlin') == cat('/etc/localtime')
 
 
@@ -63,7 +63,7 @@ def test_to_iso_local():
     def to_iso_local_string(d: datetime.datetime, with_tz='+', sep='T') -> str:
     """
 
-    dt.set_system_time_zone('Europe/Berlin')
+    dt.set_local_time_zone('Europe/Berlin')
 
     d = datetime.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
     assert dt.to_iso_local_string(d) in [
