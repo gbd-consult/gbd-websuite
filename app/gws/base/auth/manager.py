@@ -4,7 +4,6 @@ from typing import Optional, cast
 
 import gws
 import gws.config
-import gws.lib.date
 import gws.lib.jsonx
 
 from . import session, system_provider

@@ -9,7 +9,6 @@ import gws.base.model
 import gws.base.web
 import gws.gis.extent
 import gws.gis.render
-import gws.lib.date
 import gws.lib.mime
 import gws.gis.bounds
 import gws.gis.crs

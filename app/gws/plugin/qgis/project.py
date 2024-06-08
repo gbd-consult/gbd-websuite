@@ -6,7 +6,7 @@ import gws
 import gws.base.database
 import gws.config.util
 import gws.lib.jsonx
-import gws.lib.date
+import gws.lib.datetime
 import gws.lib.xmlx
 import gws.lib.zipx
 import gws.lib.sa as sa
@@ -79,7 +79,7 @@ def _to_db(root: gws.Root, store: Store, content: bytes):
     tab = db.table(f'{schema}.{_PRJ_TABLE}')
 
     metadata = {
-        'last_modified_time': gws.lib.date.now_iso(),
+        'last_modified_time': gws.lib.datetime.now(),
         'last_modified_user': 'GWS',
     }
 

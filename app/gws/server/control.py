@@ -46,7 +46,7 @@ import time
 
 import gws
 import gws.config
-import gws.lib.date
+import gws.lib.datetime
 import gws.lib.osx
 
 from . import manager
@@ -93,7 +93,7 @@ def configure(manifest_path=None, config_path=None, is_starting=False):
 
         timezone = gws.u.get(cfg, 'server.timeZone')
         if timezone:
-            gws.lib.date.set_system_time_zone(timezone)
+            gws.lib.datetime.set_system_time_zone(timezone)
 
     return gws.config.configure(
         manifest_path=manifest_path,

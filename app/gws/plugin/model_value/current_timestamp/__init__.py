@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.model.value
-import gws.lib.date
+import gws.lib.datetime
 
 gws.ext.new.modelValue('currentTimestamp')
 
@@ -13,4 +13,4 @@ class Config(gws.base.model.value.Config):
 
 class Object(gws.base.model.value.Object):
     def compute(self, field, feature, mc):
-        return gws.lib.date.now()
+        return gws.lib.datetime.now()

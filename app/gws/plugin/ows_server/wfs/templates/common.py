@@ -1,7 +1,7 @@
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 import gws.lib.xmlx as xmlx
-import gws.lib.date
+import gws.lib.datetime
 import gws.gis.gml
 
 
@@ -48,8 +48,8 @@ def feature_collection_member(ta: server.TemplateArgs, m: server.FeatureCollecti
 def format_value(ta, val):
     if val is None:
         return ''
-    if gws.lib.date.is_date_or_datetime(val):
-        return val.isoformat()
+    if gws.lib.datetime.is_date(val):
+        return gws.lib.datetime.to_iso_string(val)
     if isinstance(val, gws.Shape):
         # NB Qgis wants inline gml xmlns for adhoc schemas
         return gws.gis.gml.shape_to_element(

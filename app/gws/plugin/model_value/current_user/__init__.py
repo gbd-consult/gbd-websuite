@@ -11,7 +11,6 @@ If no ``format`` is configured, user's ``loginName`` is returned.
 
 import gws
 import gws.base.model.value
-import gws.lib.date
 
 gws.ext.new.modelValue('currentUser')
 

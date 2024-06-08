@@ -3,7 +3,7 @@ from typing import Optional, cast
 import gws
 import gws.config
 import gws.lib.console
-import gws.lib.date
+import gws.lib.datetime
 
 from . import manager
 
@@ -21,8 +21,8 @@ class Object(gws.Node):
 
         rs = [{
             'user': r['user_uid'],
-            'login': gws.lib.date.to_iso_local_string(gws.lib.date.from_timestamp(r['created'])),
-            'activity': gws.lib.date.to_iso_local_string(gws.lib.date.from_timestamp(r['updated'])),
+            'login': gws.lib.datetime.to_iso_string(gws.lib.datetime.from_timestamp(r['created'], tz='local')),
+            'activity': gws.lib.datetime.to_iso_string(gws.lib.datetime.from_timestamp(r['updated'], tz='local')),
             'duration': r['updated'] - r['created']
         } for r in auth.stored_session_records()]
 
@@ -44,7 +44,7 @@ class Object(gws.Node):
 # import gws.base.auth.session
 # import gws.config.loader
 # import gws.lib.clihelpers
-# import gws.lib.date as dt
+# import gws.lib.datetime as dt
 # import gws.lib.password
 #
 # COMMAND = 'auth'

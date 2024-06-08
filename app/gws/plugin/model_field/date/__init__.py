@@ -7,7 +7,7 @@ specific locale conversions are left to the client.
 
 import gws
 import gws.base.model.scalar_field
-import gws.lib.date
+import gws.lib.datetime
 
 gws.ext.new.modelField('date')
 
@@ -29,11 +29,11 @@ class Object(gws.base.model.scalar_field.Object):
             return True
 
     def prop_to_py(self, val):
-        d = gws.lib.date.parse(val)
+        d = gws.lib.datetime.parse(val)
         return d.date() if d else gws.ErrorValue
 
     def py_to_db(self, val):
-        return gws.lib.date.to_iso_date_string(val)
+        return gws.lib.datetime.to_iso_date_string(val)
 
     def py_to_prop(self, val):
-        return gws.lib.date.to_iso_date_string(val)
+        return gws.lib.datetime.to_iso_date_string(val)

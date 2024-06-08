@@ -4,7 +4,7 @@ import re
 
 import gws
 import gws.gis.crs
-import gws.lib.date
+import gws.lib.datetime
 import gws.lib.osx
 import gws.lib.uom
 
@@ -303,18 +303,16 @@ def _read_crs(r: Reader, val, typ: core.Type):
 
 def _read_date(r: Reader, val, typ: core.Type):
     try:
-        d = gws.lib.date.from_iso(str(val))
+        return gws.lib.datetime.from_string(str(val))
     except ValueError:
         raise core.ReadError(f'invalid date: {val!r}', val)
-    return gws.lib.date.to_iso_date_string(d)
 
 
 def _read_datetime(r: Reader, val, typ: core.Type):
     try:
-        d = gws.lib.date.from_iso(str(val))
+        return gws.lib.datetime.from_iso_string(str(val))
     except ValueError:
         raise core.ReadError(f'invalid date: {val!r}', val)
-    return gws.lib.date.to_iso_string(d)
 
 
 def _read_dirpath(r: Reader, val, typ: core.Type):
@@ -326,7 +324,7 @@ def _read_dirpath(r: Reader, val, typ: core.Type):
 
 def _read_duration(r: Reader, val, typ: core.Type):
     try:
-        return gws.lib.uom.parse_duration(val)
+        return gws.lib.datetime.parse_duration(val)
     except ValueError:
         raise core.ReadError(f'invalid duration: {val!r}', val)
 

@@ -13,7 +13,7 @@ import gws.gis.extent
 import gws.gis.gml
 import gws.gis.render
 import gws.gis.source
-import gws.lib.date
+import gws.lib.datetime
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
@@ -231,7 +231,7 @@ class Object(gws.OwsService):
     def feature_collection(self, sr: request.Object, lcs: list[core.LayerCaps], hits: int, results: list[gws.SearchResult]) -> core.FeatureCollection:
         fc = core.FeatureCollection(
             members=[],
-            timestamp=gws.lib.date.now_iso(with_tz=False),
+            timestamp=gws.lib.datetime.now(),
             numMatched=hits,
             numReturned=len(results),
         )
