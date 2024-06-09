@@ -1,9 +1,9 @@
-"""Validator for required values."""
+"""Validator for non-empty values."""
 
 import gws
 import gws.base.model.validator
 
-gws.ext.new.modelValidator('required')
+gws.ext.new.modelValidator('notEmpty')
 
 
 class Config(gws.base.model.validator.Config):

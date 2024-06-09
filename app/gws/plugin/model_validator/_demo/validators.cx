@@ -1,0 +1,145 @@
+uid "validators"
+
+title "Validators"
+
+metadata.keywords [ "edit" "forms" "validation" ]
+
+metadata.abstract """
+Shows different validator objects.
+"""
+
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
+}
+
+
+models+ {
+    type "postgres"
+    title "Things"
+    uid "model_validators_demo"
+    tableName "edit.thing"
+    sort+ { fieldName "title" }
+    isEditable true
+    permissions.edit "allow all"
+
+    fields+ {
+        name "id"
+        type "integer"
+        title "Identifier"
+        isPrimaryKey true
+        isRequired true
+        permissions.edit "deny all"
+        widget { type "input" }
+    }
+
+    fields+ {
+        name "title"
+        type "text"
+        title "This field cannot be empty"
+        widget { type "input" }
+        isRequired true
+    }
+
+    fields+ {
+        name "message"
+        type "text"
+        title "Use regex to limit the length (min: 5, max: 50)"
+        widget { type "textarea" }
+        validators+ {
+            type "regex"
+            regex "^.{{5,50}}$"
+        }
+    }
+
+    fields+ {
+        name "code"
+        type "text"
+        title "Regex format (1-2 digits + 3 letters)"
+        widget { type "input" }
+        validators+ {
+            type "regex"
+            regex "^(?i)[0-9][0-9]?[a-z][a-z][a-z]$"
+        }
+    }
+
+    fields+ {
+        name "date1"
+        type "date"
+        title "Static date validator (min: 1.1.2024, max: 1.1.2025)"
+        widget { type "date" }
+        validators+ {
+            type "dateRange"
+            min { type "static" value "2024-01-01" }
+            max { type "static" value "2025-01-01" }
+        }
+    }
+
+    fields+ {
+        name "date2"
+        type "date"
+        title "Dynamic date validator (min: today, max: end of month)"
+        widget { type "date" }
+        validators+ {
+            type "dateRange"
+            min { type "expression" text "date.today()" }
+            max { type "expression" text "date.end_of_month()" }
+        }
+    }
+
+    fields+ {
+        name "int1"
+        type "integer"
+        title "Number range validator (min: 100, max: 200)"
+        widget { type "integer" }
+        validators+ {
+            type "numberRange"
+            min { type "static" value 100}
+            max { type "static" value 200}
+        }
+    }
+
+    fields+ {
+        name "int2"
+        type "integer"
+        title "Two range validators (100-200) with different error messages"
+        widget { type "integer" }
+        validators+ {
+            type "numberRange"
+            min { type "static" value 100}
+            message "Too small!"
+        }
+        validators+ {
+            type "numberRange"
+            max { type "static" value 200}
+            message "Too big!"
+        }
+    }
+
+    fields+ {
+        name "int3"
+        type "integer"
+        title "Some number"
+        widget { type "integer" }
+    }
+
+    fields+ {
+        name "int4"
+        type "integer"
+        title "Depends on another: should be at least 'Some number' + 10"
+        widget { type "integer" }
+        validators+ {
+            type "numberRange"
+            min { type "expression" text "feature.get('int3', 0) + 10"}
+        }
+    }
+
+}
+
+{demo_osm_background}

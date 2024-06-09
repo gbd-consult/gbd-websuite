@@ -24,8 +24,8 @@ class Object(gws.base.model.scalar_field.Object):
             self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='float')
             return True
 
-    def prop_to_py(self, val):
+    def prop_to_python(self, feature, value, mc):
         try:
-            return float(val)
+            return float(value)
         except ValueError:
             return gws.ErrorValue

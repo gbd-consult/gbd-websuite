@@ -32,6 +32,8 @@ class Config(gws.ConfigWithAccess):
 ##
 
 class Object(gws.ModelField):
+    notEmptyValidator: gws.ModelValidator
+    formatValidator: gws.ModelValidator
 
     def configure(self):
         self.model = self.cfg('_defaultModel')
@@ -81,29 +83,27 @@ class Object(gws.ModelField):
             return True
 
     def configure_validators(self):
-        p = self.cfg('validators')
-        if p:
-            self.validators = self.create_children(gws.ext.object.modelValidator, p)
-            return True
+        vd_not_empty = None
+        vd_format = None
 
-    def configure_widget(self):
-        p = self.cfg('widget')
-        if p:
-            self.widget = self.create_child(gws.ext.object.modelWidget, p)
-            return True
+        for p in self.cfg('validators', default=[]):
+            vd = self.create_validator(p)
+            if vd.extType == 'notEmpty':
+                vd_not_empty = vd
+            elif vd.extType == 'format':
+                vd_format = vd
+            else:
+                self.validators.append(vd)
 
-    def post_configure(self):
-        if self.isRequired:
-            vd = self.root.create_shared(
-                gws.ext.object.modelValidator,
-                type='required',
-                uid='gws.base.model.field.default_validator_required',
-                forCreate=True,
-                forUpdate=True,
-            )
-            self.validators.append(vd)
+        self.notEmptyValidator = vd_not_empty or self.root.create_shared(
+            gws.ext.object.modelValidator,
+            type='notEmpty',
+            uid='gws.base.model.field.default_validator_notEmpty',
+            forCreate=True,
+            forUpdate=True,
+        )
 
-        vd = self.root.create_shared(
+        self.formatValidator = vd_format or self.root.create_shared(
             gws.ext.object.modelValidator,
             type='format',
             uid='gws.base.model.field.default_validator_format',
@@ -111,7 +111,16 @@ class Object(gws.ModelField):
             forUpdate=True,
         )
 
-        self.validators.append(vd)
+        return True
+
+    def create_validator(self, cfg):
+        return self.create_child(gws.ext.object.modelValidator, cfg)
+
+    def configure_widget(self):
+        p = self.cfg('widget')
+        if p:
+            self.widget = self.create_child(gws.ext.object.modelWidget, p)
+            return True
 
     ##
 
@@ -139,13 +148,40 @@ class Object(gws.ModelField):
     ##
 
     def do_validate(self, feature, mc):
-        for vd in self.validators:
-            if mc.op in vd.ops and not vd.validate(self, feature, mc):
+
+        # apply the 'notEmpty' validator and exit immediately if it fails
+        # (no error message if field is not required)
+
+        ok = self.notEmptyValidator.validate(self, feature, mc)
+        if not ok:
+            if self.isRequired:
                 feature.errors.append(gws.ModelValidationError(
                     fieldName=self.name,
-                    message=vd.message,
+                    message=self.notEmptyValidator.message,
                 ))
-                break
+            return
+
+        # apply the 'format' validator
+
+        ok = self.formatValidator.validate(self, feature, mc)
+        if not ok:
+            feature.errors.append(gws.ModelValidationError(
+                fieldName=self.name,
+                message=self.formatValidator.message,
+            ))
+            return
+
+        # apply others
+
+        for vd in self.validators:
+            if mc.op in vd.ops:
+                ok = vd.validate(self, feature, mc)
+                if not ok:
+                    feature.errors.append(gws.ModelValidationError(
+                        fieldName=self.name,
+                        message=vd.message,
+                    ))
+                    return
 
     def related_models(self):
         return []
@@ -153,16 +189,16 @@ class Object(gws.ModelField):
     def find_relatable_features(self, search, mc):
         return []
 
-    def raw_to_python(self, feature, value, mc: gws.ModelContext):
+    def raw_to_python(self, feature, value, mc):
         return value
 
-    def prop_to_python(self, feature, value, mc: gws.ModelContext):
+    def prop_to_python(self, feature, value, mc):
         return value
 
-    def python_to_raw(self, feature, value, mc: gws.ModelContext):
+    def python_to_raw(self, feature, value, mc):
         return value
 
-    def python_to_prop(self, feature, value, mc: gws.ModelContext):
+    def python_to_prop(self, feature, value, mc):
         return value
 
     ##
