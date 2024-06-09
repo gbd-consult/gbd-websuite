@@ -8,7 +8,7 @@
 #
 # import gws
 # import gws.base.web
-# import gws.lib.datetime
+# import gws.lib.datetimex
 # import gws.gis.extent
 # import gws.lib.metadata
 # import gws.lib.mime
@@ -137,7 +137,7 @@
 #         records = self._find_records(rd)
 #
 #         results = {
-#             'timestamp': gws.lib.datetime.now(),
+#             'timestamp': gws.lib.datetimex.now(),
 #             'next': 0,
 #             'count_total': len(records),
 #             'count_return': len(records),

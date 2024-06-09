@@ -16,7 +16,7 @@ import gws.base.storage
 import gws.base.template
 import gws.base.web
 import gws.config.util
-import gws.lib.datetime
+import gws.lib.datetimex
 import gws.lib.sa as sa
 import gws.lib.style
 
@@ -827,7 +827,7 @@ class Object(gws.base.action.Object):
 
         data = dict(
             app_name='gws',
-            date_time=gws.lib.datetime.now(),
+            date_time=gws.lib.datetimex.now(),
             ip=req.env('REMOTE_ADDR', ''),
             login=req.user.uid,
             user_name=req.user.displayName,

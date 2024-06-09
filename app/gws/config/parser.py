@@ -8,14 +8,15 @@ import yaml
 import gws
 import gws.lib.jsonx
 import gws.lib.osx
+import gws.lib.datetimex
 import gws.lib.importer
 import gws.lib.vendor.jump
 import gws.lib.vendor.slon
 import gws.spec.runtime
 
-
 CONFIG_PATH_PATTERN = r'\bconfig\.(py|json|yaml|cx)$'
 CONFIG_FUNCTION_NAME = 'config'
+
 
 def parse(specs: gws.SpecRuntime, value, type_name: str, source_path='', read_options=None):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
@@ -55,6 +56,10 @@ class ConfigParser:
 
     def parse_main_from_dict(self, dct, config_path) -> Optional[gws.Config]:
         prj_dicts = []
+
+        # the timezone must be set before everything else
+        tz = dct.get('server', {}).get('timeZone', '')
+        gws.lib.datetimex.configure_local_time_zone(tz)
 
         for prj_cfg in dct.pop('projects', []):
             for prj_dict in _as_flat_list(prj_cfg):

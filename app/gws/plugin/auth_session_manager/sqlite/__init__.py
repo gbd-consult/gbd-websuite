@@ -4,7 +4,7 @@ import gws.lib.sa as sa
 
 import gws
 import gws.base.auth
-import gws.lib.datetime
+import gws.lib.datetimex
 import gws.lib.jsonx
 import gws.lib.osx
 
@@ -140,8 +140,8 @@ class Object(gws.base.auth.session_manager.Object):
             method=am.get_method(rec['method_uid']),
             user=am.unserialize_user(rec['str_user']),
             data=gws.lib.jsonx.from_string(rec['str_data']),
-            created=gws.lib.datetime.from_timestamp(rec['created']),
-            updated=gws.lib.datetime.from_timestamp(rec['updated']),
+            created=gws.lib.datetimex.from_timestamp(rec['created']),
+            updated=gws.lib.datetimex.from_timestamp(rec['updated']),
         )
 
     def _exec(self, stmt):

@@ -11,10 +11,6 @@ import pendulum.parsing
 import gws
 import gws.lib.osx
 
-datetime = dt.datetime
-date = dt.date
-time = dt.time
-
 _TZ_CACHE = {
     'utc': zoneinfo.ZoneInfo('UTC'),
     'UTC': zoneinfo.ZoneInfo('UTC'),
@@ -64,7 +60,7 @@ def _local_time_zone():
 
     try:
         return zoneinfo.ZoneInfo(m.group(1))
-    except zoneinfo.ZoneInfoNotFoundError as exc:
+    except zoneinfo.ZoneInfoNotFoundError:
         gws.log.warning(f'time zone: {a!r}={p!r} not found, assuming UTC')
         return _TZ_CACHE['UTC']
 
@@ -105,7 +101,7 @@ def _unpend(p: pendulum.DateTime) -> dt.datetime:
         p.minute,
         p.second,
         p.microsecond,
-        tzinfo=p.tzinfo,
+        tzinfo=time_zone(str(p.tzinfo)),
         fold=p.fold,
     )
 
@@ -257,12 +253,11 @@ def add(
         d: Optional[dt.datetime] = None,
         years=0, months=0, days=0, weeks=0, hours=0, minutes=0, seconds=0, microseconds=0
 ) -> dt.datetime:
-    d = pendulum.helpers.add_duration(
+    return pendulum.helpers.add_duration(
         (d or now()),
         years=years, months=months, days=days,
         weeks=weeks, hours=hours, minutes=minutes, seconds=seconds, microseconds=microseconds
     )
-    return _und
 
 
 class Diff:

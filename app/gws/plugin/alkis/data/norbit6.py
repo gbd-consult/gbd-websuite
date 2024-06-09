@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.database
-import gws.lib.datetime
+import gws.lib.datetimex
 import gws.lib.sa as sa
 import gws.plugin.postgres.provider
 
@@ -232,7 +232,7 @@ def _datetime(v):
     if not v:
         return None
     if isinstance(v, str):
-        return gws.lib.datetime.from_iso_string(v)
+        return gws.lib.datetimex.from_iso_string(v)
     return v
 
 

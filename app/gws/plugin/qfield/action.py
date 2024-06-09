@@ -5,7 +5,7 @@ import gws.config
 import gws.base.action
 import gws.base.database
 import gws.lib.mime
-import gws.lib.datetime
+import gws.lib.datetimex
 import gws.lib.zipx
 import gws.lib.osx
 import gws.lib.sa as sa
@@ -116,8 +116,8 @@ class Object(gws.base.action.Object):
 
         name_prefix = ''
         if self.withSerialPrefix:
-            minutes = (gws.lib.datetime.to_timestamp(gws.lib.datetime.from_iso_string(_SERIAL_PREFIX_END_DATE)) - gws.u.stime()) // 60
-            name_prefix = '{:06d}'.format(minutes) + '_' + gws.lib.datetime.now().strftime('%d.%m.%y') + '_'
+            minutes = (gws.lib.datetimex.to_timestamp(gws.lib.datetimex.from_iso_string(_SERIAL_PREFIX_END_DATE)) - gws.u.stime()) // 60
+            name_prefix = '{:06d}'.format(minutes) + '_' + gws.lib.datetimex.now().strftime('%d.%m.%y') + '_'
 
         db_file_name = f'{name_prefix}{package.uid}.{core.GPKG_EXT}'
         db_path = db_file_name
