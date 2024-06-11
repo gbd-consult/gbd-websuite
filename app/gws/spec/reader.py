@@ -303,14 +303,14 @@ def _read_crs(r: Reader, val, typ: core.Type):
 
 def _read_date(r: Reader, val, typ: core.Type):
     try:
-        return gws.lib.datetimex.from_string(str(val), tz='local')
+        return gws.lib.datetimex.from_string(str(val))
     except ValueError:
         raise core.ReadError(f'invalid date: {val!r}', val)
 
 
 def _read_datetime(r: Reader, val, typ: core.Type):
     try:
-        return gws.lib.datetimex.from_iso_string(str(val), tz='local')
+        return gws.lib.datetimex.from_iso_string(str(val))
     except ValueError:
         raise core.ReadError(f'invalid date: {val!r}', val)
 

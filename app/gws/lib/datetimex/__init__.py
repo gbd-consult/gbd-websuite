@@ -1,3 +1,23 @@
+"""Date and time utilities.
+
+These utilities are wrappers around the `datetime` module,
+some functions also use `pendulum` (https://pendulum.eustace.io/),
+however we work strictly with stock ``datetime.datetime`` and ``.time`` objects here.
+
+"Naive" datetime objects are not supported. All objects constructed in this module
+have the ``tzinfo`` attribute. When constructing an object (e.g. from a string),
+the default time zone must be passed in as a zoneinfo string (like ``Europe/Berlin``).
+An empty string (default) means the local time zone.
+
+It is an error to pass a naive object as an argument.
+
+When running in a docker container, there are several ways to set up the local time zone:
+
+- by setting the config variable ``server.timeZone`` (see `gws.config.parser`)
+- by setting the ``TZ`` environment variable
+- mounting a host zone info file to ``/etc/localtime``
+"""
+
 from typing import Optional
 
 import datetime as dt
@@ -11,58 +31,66 @@ import pendulum.parsing
 import gws
 import gws.lib.osx
 
-_TZ_CACHE = {
+_ZI_CACHE = {
     'utc': zoneinfo.ZoneInfo('UTC'),
     'UTC': zoneinfo.ZoneInfo('UTC'),
     'Etc/UTC': zoneinfo.ZoneInfo('UTC'),
 }
 
 
-# System time zone
-
-def configure_local_time_zone(tz: str):
-    tz = tz or os.environ.get('TZ')
-    if tz:
-        set_local_time_zone(tz)
-    li = local_time_zone()
-    gws.log.info(f'local time zone is "{li}"')
-
+# Time zones
 
 def set_local_time_zone(tz: str):
     zi = time_zone(tz)
-    if zi == _local_time_zone():
+    if zi == _zone_info_from_localtime():
         return
-    if os.getuid() == 0:
-        gws.lib.osx.run(['ln', '-fs', f'/usr/share/zoneinfo/{zi}', '/etc/localtime'])
+    _set_localtime_from_zone_info(zi)
+
+
+def time_zone(tz: str = '') -> zoneinfo.ZoneInfo:
+    if tz in _ZI_CACHE:
+        return _ZI_CACHE[tz]
+
+    if not tz:
+        _ZI_CACHE[''] = _zone_info_from_localtime()
+        return _ZI_CACHE['']
+
+    return _zone_info_from_string(tz)
+
+
+def _set_localtime_from_zone_info(zi):
+    if os.getuid() != 0:
+        gws.log.warning('time zone: cannot set timezone, must be root')
         return
-    gws.log.warning('time zone: cannot set timezone, must be root')
+    gws.lib.osx.run(['ln', '-fs', f'/usr/share/zoneinfo/{zi}', '/etc/localtime'])
 
 
-def local_time_zone():
-    if not _TZ_CACHE.get('local'):
-        _TZ_CACHE[''] = _TZ_CACHE['local'] = _local_time_zone()
-    return _TZ_CACHE['local']
-
-
-def _local_time_zone():
+def _zone_info_from_localtime():
     a = '/etc/localtime'
 
     try:
         p = os.readlink(a)
     except FileNotFoundError:
         gws.log.warning(f'time zone: {a!r} not found, assuming UTC')
-        return _TZ_CACHE['UTC']
+        return _ZI_CACHE['UTC']
 
     m = re.search(f'zoneinfo/(.+)$', p)
     if not m:
         gws.log.warning(f'time zone: {a!r}={p!r} invalid, assuming UTC')
-        return _TZ_CACHE['UTC']
+        return _ZI_CACHE['UTC']
 
     try:
         return zoneinfo.ZoneInfo(m.group(1))
     except zoneinfo.ZoneInfoNotFoundError:
         gws.log.warning(f'time zone: {a!r}={p!r} not found, assuming UTC')
-        return _TZ_CACHE['UTC']
+        return _ZI_CACHE['UTC']
+
+
+def _zone_info_from_string(tz):
+    try:
+        return zoneinfo.ZoneInfo(tz)
+    except zoneinfo.ZoneInfoNotFoundError as exc:
+        raise ValueError(f'invalid time zone {tz!r}') from exc
 
 
 def _set_default_tzinfo(d: dt.datetime | dt.time, tz: str):
@@ -74,43 +102,17 @@ def _set_default_tzinfo(d: dt.datetime | dt.time, tz: str):
     return d
 
 
-def time_zone(tz: str) -> zoneinfo.ZoneInfo:
-    if tz in _TZ_CACHE:
-        return _TZ_CACHE[tz]
-    if not tz or tz.lower() == 'local':
-        return local_time_zone()
-    try:
-        return zoneinfo.ZoneInfo(tz)
-    except zoneinfo.ZoneInfoNotFoundError as exc:
-        raise ValueError(f'invalid time zone {tz!r}') from exc
+# init from the env variable right now
 
-
-# pendulum.DateTime <-> python datetime
-
-
-def _pend(d: dt.datetime) -> pendulum.DateTime:
-    return pendulum.instance(d or now())
-
-
-def _unpend(p: pendulum.DateTime) -> dt.datetime:
-    return dt.datetime(
-        p.year,
-        p.month,
-        p.day,
-        p.hour,
-        p.minute,
-        p.second,
-        p.microsecond,
-        tzinfo=time_zone(str(p.tzinfo)),
-        fold=p.fold,
-    )
+if 'TZ' in os.environ:
+    _set_localtime_from_zone_info(_zone_info_from_string(os.environ['TZ']))
 
 
 # Constructors
 
 
-def new(year, month, day, hour=0, minute=0, second=0, microsecond=0, tz: str = '') -> dt.datetime:
-    return dt.datetime(year, month, day, hour, minute, second, microsecond, tzinfo=time_zone(tz))
+def new(year, month, day, hour=0, minute=0, second=0, microsecond=0, fold=0, tz: str = '') -> dt.datetime:
+    return dt.datetime(year, month, day, hour, minute, second, microsecond, fold=fold, tzinfo=time_zone(tz))
 
 
 def now(tz: str = '') -> dt.datetime:
@@ -193,40 +195,40 @@ def to_iso_string(d: Optional[dt.datetime] = None, with_tz='+', sep='T') -> str:
     fmt = f'%Y-%m-%d{sep}%H:%M:%S'
     if with_tz:
         fmt += '%z'
-    s = (d or now()).strftime(fmt)
+    s = _check(d).strftime(fmt)
     if with_tz == 'Z' and s.endswith('+0000'):
         s = s[:-5] + 'Z'
     return s
 
 
 def to_iso_date_string(d: Optional[dt.datetime] = None) -> str:
-    return (d or now()).strftime('%Y-%m-%d')
+    return _check(d).strftime('%Y-%m-%d')
 
 
 def to_int_string(d: Optional[dt.datetime] = None) -> str:
-    return (d or now()).strftime("%Y%m%d%H%M%S")
+    return _check(d).strftime("%Y%m%d%H%M%S")
 
 
 # Converters
 
 def to_timestamp(d: Optional[dt.datetime] = None) -> int:
-    return int((d or now()).timestamp())
+    return int(_check(d).timestamp())
 
 
 def to_millis(d: Optional[dt.datetime] = None) -> int:
-    return int((d or now()).timestamp() * 1000)
+    return int(_check(d).timestamp() * 1000)
 
 
 def to_utc(d: Optional[dt.datetime] = None) -> dt.datetime:
-    return (d or now()).astimezone(time_zone('UTC'))
+    return _check(d).astimezone(time_zone('UTC'))
 
 
 def to_local(d: Optional[dt.datetime] = None) -> dt.datetime:
-    return (d or now()).astimezone(local_time_zone())
+    return _check(d).astimezone(time_zone(''))
 
 
 def to_time_zone(tz: str, d: Optional[dt.datetime] = None) -> dt.datetime:
-    return (d or now()).astimezone(time_zone(tz))
+    return _check(d).astimezone(time_zone(tz))
 
 
 # Predicates
@@ -240,11 +242,11 @@ def is_datetime(x) -> bool:
 
 
 def is_utc(d: dt.datetime) -> bool:
-    return d.tzinfo == _TZ_CACHE['UTC']
+    return d.tzinfo == _ZI_CACHE['UTC']
 
 
 def is_local(d: dt.datetime) -> bool:
-    return d.tzinfo == local_time_zone()
+    return d.tzinfo == time_zone('')
 
 
 # Arithmetic
@@ -254,9 +256,10 @@ def add(
         years=0, months=0, days=0, weeks=0, hours=0, minutes=0, seconds=0, microseconds=0
 ) -> dt.datetime:
     return pendulum.helpers.add_duration(
-        (d or now()),
+        _check(d),
         years=years, months=months, days=days,
-        weeks=weeks, hours=hours, minutes=minutes, seconds=seconds, microseconds=microseconds
+        weeks=weeks, hours=hours, minutes=minutes,
+        seconds=seconds, microseconds=microseconds
     )
 
 
@@ -275,7 +278,7 @@ class Diff:
 
 
 def difference(d1: dt.datetime, d2: Optional[dt.datetime] = None) -> Diff:
-    iv = pendulum.Interval(d1, (d2 or now()), absolute=False)
+    iv = pendulum.Interval(_check(d1), _check(d2), absolute=False)
     df = Diff()
 
     df.years = iv.years
@@ -291,7 +294,7 @@ def difference(d1: dt.datetime, d2: Optional[dt.datetime] = None) -> Diff:
 
 
 def total_difference(d1: dt.datetime, d2: Optional[dt.datetime] = None) -> Diff:
-    iv = pendulum.Interval(d1, (d2 or now()), absolute=False)
+    iv = pendulum.Interval(_check(d1), _check(d2), absolute=False)
     df = Diff()
 
     df.years = iv.in_years()
@@ -365,8 +368,8 @@ def prev(day: int | str, d: Optional[dt.datetime] = None, keep_time=False) -> dt
 
 # Time
 
-def new_time(hour=0, minute=0, second=0, microsecond=0, tz: str = '') -> dt.time:
-    return dt.time(hour, minute, second, microsecond, tzinfo=time_zone(tz))
+def new_time(hour=0, minute=0, second=0, microsecond=0, fold=0, tz: str = '') -> dt.time:
+    return dt.time(hour, minute, second, microsecond, fold=fold, tzinfo=time_zone(tz))
 
 
 def parse_time(s, tz: str = '') -> Optional[dt.time]:
@@ -381,15 +384,15 @@ def parse_time(s, tz: str = '') -> Optional[dt.time]:
 
 
 def time_from_iso_string(s: str, tz: str = '') -> dt.time:
-    d = dt.time.fromisoformat(s)
-    return _set_default_tzinfo(d, tz)
+    t = dt.time.fromisoformat(s)
+    return _set_default_tzinfo(t, tz)
 
 
 def time_to_iso_string(t: Optional[dt.time] = None, with_tz='+') -> str:
     fmt = '%H:%M:%S'
     if with_tz:
         fmt += '%z'
-    s = (t or now().timetz()).strftime(fmt)
+    s = _check_time(t).strftime(fmt)
     if with_tz == 'Z' and s.endswith('+0000'):
         s = s[:-5] + 'Z'
     return s
@@ -437,3 +440,46 @@ def parse_duration(s: str) -> int:
         r += p
 
     return r
+
+
+##
+
+def _check(d: dt.datetime | None) -> dt.datetime:
+    if d is None:
+        return now()
+    if isinstance(d, dt.datetime):
+        if not d.tzinfo:
+            raise ValueError('naive datetime detected')
+        return d
+    raise ValueError('invalid datetime value')
+
+
+def _check_time(t: dt.time | None) -> dt.time:
+    if t is None:
+        return now().timetz()
+    if isinstance(t, dt.time):
+        if not t.tzinfo:
+            raise ValueError('naive time detected')
+        return t
+    raise ValueError('invalid time value')
+
+
+# pendulum.DateTime <-> python datetime
+
+
+def _pend(d: dt.datetime | None) -> pendulum.DateTime:
+    return pendulum.instance(_check(d))
+
+
+def _unpend(p: pendulum.DateTime) -> dt.datetime:
+    return dt.datetime(
+        p.year,
+        p.month,
+        p.day,
+        p.hour,
+        p.minute,
+        p.second,
+        p.microsecond,
+        tzinfo=time_zone(str(p.tzinfo)),
+        fold=p.fold,
+    )

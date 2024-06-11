@@ -59,7 +59,9 @@ class ConfigParser:
 
         # the timezone must be set before everything else
         tz = dct.get('server', {}).get('timeZone', '')
-        gws.lib.datetimex.configure_local_time_zone(tz)
+        if tz:
+            gws.lib.datetimex.set_local_time_zone(tz)
+        gws.log.info(f'local time zone is "{gws.lib.datetimex.time_zone()}"')
 
         for prj_cfg in dct.pop('projects', []):
             for prj_dict in _as_flat_list(prj_cfg):

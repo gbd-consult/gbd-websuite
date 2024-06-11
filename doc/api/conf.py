@@ -23,6 +23,8 @@ html_title = f"{project} {release}"
 html_logo = f"{BASE_DIR}/data/web/gws_logo.svg"
 html_css_files = ['custom.css']
 
+default_role = 'any'
+
 # https://www.sphinx-doc.org/en/master/usage/theming.html#builtin-themes
 
 html_theme_options = {
