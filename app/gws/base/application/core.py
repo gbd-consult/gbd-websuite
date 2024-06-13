@@ -150,9 +150,10 @@ class Object(gws.Application):
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
 
-        gws.log.info('*' * 60)
-        gws.log.info(self.versionString)
-        gws.log.info('*' * 60)
+        if not gws.env.GWS_IN_TEST:
+            gws.log.info('*' * 60)
+            gws.log.info(self.versionString)
+            gws.log.info('*' * 60)
 
         self._developerOptions = self.cfg('developer') or {}
         if self._developerOptions:

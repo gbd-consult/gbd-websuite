@@ -3,10 +3,10 @@ import gws.test.util as u
 
 
 @u.fixture(scope='module')
-def gws_root():
-    u.pg_create('a', {'id': 'int primary key', 'ka': 'int', 'sa': 'text'})
-    u.pg_create('b', {'id': 'int primary key', 'kb': 'int', 'sb': 'text'})
-    u.pg_create('x', {'xa': 'int', 'xb': 'int'})
+def root():
+    u.pg.create('a', {'id': 'int primary key', 'ka': 'int', 'sa': 'text'})
+    u.pg.create('b', {'id': 'int primary key', 'kb': 'int', 'sb': 'text'})
+    u.pg.create('x', {'xa': 'int', 'xb': 'int'})
 
     cfg = '''
         models+ { 
@@ -35,23 +35,23 @@ def gws_root():
         
     '''
 
-    yield u.gws_configure(cfg)
+    yield u.gws_root(cfg)
 
 
-def test_find_depth(gws_root):
+def test_find_depth(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('a', [
+    u.pg.insert('a', [
         {'id': 1, 'ka': 11, 'sa': 'a1'},
         {'id': 2, 'ka': 22, 'sa': 'a2'},
         {'id': 3, 'ka': 33, 'sa': 'a3'},
     ])
-    u.pg_insert('b', [
+    u.pg.insert('b', [
         {'id': 4, 'kb': 400, 'sb': 'b4'},
         {'id': 5, 'kb': 500, 'sb': 'b5'},
         {'id': 6, 'kb': 600, 'sb': 'b6'},
     ])
-    u.pg_insert('x', [
+    u.pg.insert('x', [
         {'xa': 11, 'xb': 400},
         {'xa': 11, 'xb': 500},
         {'xa': 11, 'xb': 600},
@@ -59,7 +59,7 @@ def test_find_depth(gws_root):
         {'xa': 22, 'xb': 500},
     ])
 
-    ma = u.model(gws_root, 'A')
+    ma = u.cast(gws.Model, root.get('A'))
     fs = ma.get_features([1, 2, 3], mc)
 
     assert [f.get('sa') for f in fs] == ['a1', 'a2', 'a3']
@@ -69,28 +69,28 @@ def test_find_depth(gws_root):
     assert [c.get('sb') for c in fs[2].get('linked')] == []
 
 
-def test_update(gws_root):
+def test_update(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('a', [
+    u.pg.insert('a', [
         {'id': 1, 'ka': 11, 'sa': 'a1'},
         {'id': 2, 'ka': 22, 'sa': 'a2'},
         {'id': 3, 'ka': 33, 'sa': 'a3'},
     ])
-    u.pg_insert('b', [
+    u.pg.insert('b', [
         {'id': 4, 'kb': 400, 'sb': 'b4'},
         {'id': 5, 'kb': 500, 'sb': 'b5'},
         {'id': 6, 'kb': 600, 'sb': 'b6'},
     ])
-    u.pg_insert('x', [
+    u.pg.insert('x', [
         {'xa': 11, 'xb': 400},
         {'xa': 11, 'xb': 500},
         {'xa': 22, 'xb': 400},
         {'xa': 22, 'xb': 500},
     ])
 
-    ma = u.model(gws_root, 'A')
-    mb = u.model(gws_root, 'B')
+    ma = u.cast(gws.Model, root.get('A'))
+    mb = u.cast(gws.Model, root.get('B'))
 
     f = u.feature(ma, id=1, linked=[
         u.feature(mb, id=4),
@@ -99,7 +99,7 @@ def test_update(gws_root):
 
     ma.update_feature(f, mc)
 
-    assert u.pg_rows('SELECT xa,xb FROM x ORDER BY xa,xb') == [
+    assert u.pg.rows('SELECT xa,xb FROM x ORDER BY xa,xb') == [
         (11, 400),
         (11, 600),
         (22, 400),
@@ -107,26 +107,26 @@ def test_update(gws_root):
     ]
 
 
-def test_create(gws_root):
+def test_create(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('a', [
+    u.pg.insert('a', [
         {'id': 1, 'ka': 11, 'sa': 'a1'},
         {'id': 2, 'ka': 22, 'sa': 'a2'},
         {'id': 3, 'ka': 33, 'sa': 'a3'},
     ])
-    u.pg_insert('b', [
+    u.pg.insert('b', [
         {'id': 4, 'kb': 400, 'sb': 'b4'},
         {'id': 5, 'kb': 500, 'sb': 'b5'},
         {'id': 6, 'kb': 600, 'sb': 'b6'},
     ])
-    u.pg_insert('x', [
+    u.pg.insert('x', [
         {'xa': 11, 'xb': 400},
         {'xa': 22, 'xb': 500},
     ])
 
-    ma = u.model(gws_root, 'A')
-    mb = u.model(gws_root, 'B')
+    ma = u.cast(gws.Model, root.get('A'))
+    mb = u.cast(gws.Model, root.get('B'))
 
     f = u.feature(ma, id=9, ka=99, linked=[
         u.feature(mb, id=4),
@@ -135,7 +135,7 @@ def test_create(gws_root):
 
     ma.create_feature(f, mc)
 
-    assert u.pg_rows('SELECT xa,xb FROM x ORDER BY xa,xb') == [
+    assert u.pg.rows('SELECT xa,xb FROM x ORDER BY xa,xb') == [
         (11, 400),
         (22, 500),
         (99, 400),
@@ -143,25 +143,25 @@ def test_create(gws_root):
     ]
 
 
-def test_create_related(gws_root):
+def test_create_related(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('a', [
+    u.pg.insert('a', [
         {'id': 1, 'ka': 11, 'sa': 'a1'},
         {'id': 2, 'ka': 22, 'sa': 'a2'},
         {'id': 3, 'ka': 33, 'sa': 'a3'},
     ])
-    u.pg_insert('b', [
+    u.pg.insert('b', [
         {'id': 4, 'kb': 400, 'sb': 'b4'},
         {'id': 5, 'kb': 500, 'sb': 'b5'},
     ])
-    u.pg_insert('x', [
+    u.pg.insert('x', [
         {'xa': 11, 'xb': 400},
         {'xa': 11, 'xb': 500},
     ])
 
-    ma = u.model(gws_root, 'A')
-    mb = u.model(gws_root, 'B')
+    ma = u.cast(gws.Model, root.get('A'))
+    mb = u.cast(gws.Model, root.get('B'))
 
     b_f = u.feature(mb, id=9, kb=999)
     b_f.createWithFeatures = [
@@ -171,7 +171,7 @@ def test_create_related(gws_root):
 
     mb.create_feature(b_f, mc)
 
-    assert u.pg_rows('SELECT xa,xb FROM x ORDER BY xa,xb') == [
+    assert u.pg.rows('SELECT xa,xb FROM x ORDER BY xa,xb') == [
         (11, 400),
         (11, 500),
         (11, 999),

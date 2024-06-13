@@ -35,3 +35,7 @@ tdsodbc
 # documentation
 
 graphviz
+
+# wkhtmltox requirement
+
+xfonts-75dpi

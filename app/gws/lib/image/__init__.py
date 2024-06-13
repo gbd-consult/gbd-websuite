@@ -123,31 +123,31 @@ class Image(gws.Image):
     def __init__(self, img: PIL.Image.Image):
         self.img: PIL.Image.Image = img
 
-    def mode(self) -> str:
+    def mode(self):
         return self.img.mode
 
-    def size(self) -> gws.Size:
+    def size(self):
         return self.img.size
 
-    def resize(self, size, **kwargs) -> 'Image':
+    def resize(self, size, **kwargs):
         kwargs.setdefault('resample', PIL.Image.BICUBIC)
         self.img = self.img.resize(_int_size(size), **kwargs)
         return self
 
-    def rotate(self, angle, **kwargs) -> 'Image':
+    def rotate(self, angle, **kwargs):
         kwargs.setdefault('resample', PIL.Image.BICUBIC)
         self.img = self.img.rotate(angle, **kwargs)
         return self
 
-    def crop(self, box) -> 'Image':
+    def crop(self, box):
         self.img = self.img.crop(box)
         return self
 
-    def paste(self, other, where=None) -> 'Image':
+    def paste(self, other, where=None):
         self.img.paste(cast('Image', other).img, where)
         return self
 
-    def compose(self, other, opacity=1) -> 'Image':
+    def compose(self, other, opacity=1):
         oth = cast('Image', other).img.convert('RGBA')
 
         if oth.size != self.img.size:
@@ -160,12 +160,12 @@ class Image(gws.Image):
         self.img = PIL.Image.alpha_composite(self.img, oth)
         return self
 
-    def to_bytes(self, mime=None, options=None) -> bytes:
+    def to_bytes(self, mime=None, options=None):
         with io.BytesIO() as fp:
             self._save(fp, mime, options)
             return fp.getvalue()
 
-    def to_path(self, path, mime=None, options=None) -> str:
+    def to_path(self, path, mime=None, options=None):
         with open(path, 'wb') as fp:
             self._save(fp, mime, options)
         return path
@@ -190,7 +190,7 @@ class Image(gws.Image):
     def to_array(self):
         return np.array(self.img)
 
-    def add_text(self, text, x=0, y=0, color=None) -> 'Image':
+    def add_text(self, text, x=0, y=0, color=None):
         self.img = self.img.convert('RGBA')
         draw = PIL.ImageDraw.Draw(self.img)
         font = PIL.ImageFont.load_default()
@@ -198,7 +198,7 @@ class Image(gws.Image):
         draw.multiline_text((x, y), text, font=font, fill=color)
         return self
 
-    def add_box(self, color=None) -> 'Image':
+    def add_box(self, color=None):
         self.img = self.img.convert('RGBA')
         draw = PIL.ImageDraw.Draw(self.img)
         color = color or (0, 0, 0, 255)
@@ -206,8 +206,18 @@ class Image(gws.Image):
         draw.rectangle((0, 0) + (x - 1, y - 1), outline=color)  # box goes around all edges
         return self
 
-    def getpixel(self, xy: tuple[int, int]):
-        return self.img.getpixel(xy)
+    def compare_to(self, other):
+        error = 0
+        x, y = self.size()
+        for i in range(int(x)):
+            for j in range(int(y)):
+                a_r, a_g, a_b, a_a = self.img.getpixel((i, j))
+                b_r, b_g, b_b, b_a = cast(Image, other).img.getpixel((i, j))
+                error += (a_r - b_r) ** 2
+                error += (a_g - b_g) ** 2
+                error += (a_b - b_b) ** 2
+                error += (a_a - b_a) ** 2
+        return error / (3 * x * y)
 
 
 _MIME_TO_FORMAT = {
@@ -230,7 +240,7 @@ def _mime_to_format(mime):
     raise Error(f'unknown mime type {mime!r}')
 
 
-def _int_size(size: gws.Size) -> tuple[int, int]:
+def _int_size(size: gws.Size):
     w, h = size
     return int(w), int(h)
 
@@ -239,15 +249,15 @@ _PIXELS = {}
 _ERROR_COLOR = '#ffa1b4'
 
 
-def empty_pixel(mime: str = None) -> bytes:
+def empty_pixel(mime: str = None):
     return pixel(mime, '#ffffff' if mime == gws.lib.mime.JPEG else None)
 
 
-def error_pixel(mime: str = None) -> bytes:
+def error_pixel(mime: str = None):
     return pixel(mime, _ERROR_COLOR)
 
 
-def pixel(mime, color) -> bytes:
+def pixel(mime, color):
     fmt = _mime_to_format(mime)
     key = fmt, str(color)
 

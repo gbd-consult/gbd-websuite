@@ -142,3 +142,13 @@ class Image:
         Returns:
             The image as an array. For each row each entry contains the pixel information.
         """
+
+    def compare_to(self, other: 'Image') -> float:
+        """Compare this image to another one.
+
+        @TODO describe the alogrithm
+
+        Returns:
+            The similarity factor as a float (the more, the different).
+            '0' means images are equal.
+        """

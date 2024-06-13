@@ -19,13 +19,18 @@ LoadError = core.LoadError
 
 
 def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'Object':
+    gs = get_spec(manifest_path, read_cache, write_cache)
+    return Object(gs)
+
+
+def get_spec(manifest_path: str = None, read_cache=False, write_cache=False) -> dict:
     cache_path = gws.u.ensure_dir(gws.c.SPEC_DIR) + '/spec_' + gws.u.to_uid(manifest_path or '') + '.json'
 
     if read_cache and gws.u.is_file(cache_path):
         try:
             gs = gws.lib.jsonx.from_path(cache_path)
             gws.log.debug(f'spec.create: loaded from {cache_path!r}')
-            return Object(gs)
+            return gs
         except gws.lib.jsonx.Error:
             gws.log.exception(f'spec.create: load failed')
 
@@ -43,7 +48,7 @@ def create(manifest_path: str = None, read_cache=False, write_cache=False) -> 'O
         except gws.lib.jsonx.Error:
             gws.log.exception(f'spec.create: store failed')
 
-    return Object(gs)
+    return gs
 
 
 ##
@@ -104,6 +109,19 @@ class Object(gws.SpecRuntime):
         )
 
         return self._descCache[name]
+
+    def register_object(self, ext_name, obj_type, cls):
+        ext_name = gws.ext.name(ext_name)
+        setattr(cls, 'extName', ext_name)
+        setattr(cls, 'extType', obj_type)
+        self._descCache[ext_name + '.' + obj_type] = gws.ExtObjectDescriptor(
+            extName=ext_name,
+            extType=obj_type,
+            ident=cls.__name__,
+            modName='',
+            modPath='',
+            classPtr=cls
+        )
 
     def get_class(self, classref, ext_type=None):
         cls, real_name, ext_name = self.parse_classref(classref)

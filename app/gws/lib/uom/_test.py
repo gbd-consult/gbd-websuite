@@ -154,14 +154,3 @@ def test_parse_errors():
         uom.parse('1 bar')
 
 
-def test_parse_duration():
-    assert uom.parse_duration('1 w') == 3600 * 24 * 7
-    assert uom.parse_duration('1 d') == 3600 * 24
-    assert uom.parse_duration('1 h') == 3600
-    assert uom.parse_duration('1 m') == 60
-    assert uom.parse_duration('1 s') == 1
-
-
-def test_parse_duration_errors():
-    with u.raises(ValueError, match=f'invalid duration'):
-        uom.parse_duration("1 foo")

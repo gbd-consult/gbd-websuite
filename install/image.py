@@ -175,6 +175,10 @@ class Builder:
 
         __(f'RUN pip3 install --no-cache-dir {pips}')
 
+        # this lib causes problems, it should be optional in pendulum
+        # see https://github.com/sdispater/pendulum/issues?q=time-machine
+        __(f'RUN pip3 uninstall -y time_machine')
+
         __(f'COPY {self.wkhtmltopdf_package} /{self.wkhtmltopdf_package}')
         __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /{self.wkhtmltopdf_package}')
 
@@ -188,6 +192,9 @@ class Builder:
         __(f'COPY {self.skip_cache}app /gws-app')
         if self.datadir:
             __(f'COPY --chown={self.gws_user_name}:{self.gws_user_name} {self.skip_cache}data /data')
+
+        # GWS_IN_CONTAINER relies on this (should be there, but just in case)
+        __(f'RUN touch /.dockerenv')
 
         __('ENV QT_SELECT=5')
         __('ENV LANG=C.UTF-8')

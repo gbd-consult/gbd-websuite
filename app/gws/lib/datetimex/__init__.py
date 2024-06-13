@@ -31,20 +31,35 @@ import pendulum.parsing
 import gws
 import gws.lib.osx
 
+
+class Error(gws.Error):
+    pass
+
+
+UTC = zoneinfo.ZoneInfo('UTC')
+
 _ZI_CACHE = {
-    'utc': zoneinfo.ZoneInfo('UTC'),
-    'UTC': zoneinfo.ZoneInfo('UTC'),
-    'Etc/UTC': zoneinfo.ZoneInfo('UTC'),
+    'utc': UTC,
+    'UTC': UTC,
+    'Etc/UTC': UTC,
 }
+
+_ZI_ALL = set(zoneinfo.available_timezones())
 
 
 # Time zones
 
 def set_local_time_zone(tz: str):
-    zi = time_zone(tz)
-    if zi == _zone_info_from_localtime():
+    new_zi = time_zone(tz)
+    cur_zi = _zone_info_from_localtime()
+
+    gws.log.debug(f'set_local_time_zone: cur={cur_zi} new={new_zi}')
+
+    if new_zi == cur_zi:
         return
-    _set_localtime_from_zone_info(zi)
+    _set_localtime_from_zone_info(new_zi)
+
+    gws.log.debug(f'set_local_time_zone: cur={_zone_info_from_localtime()}')
 
 
 def time_zone(tz: str = '') -> zoneinfo.ZoneInfo:
@@ -72,40 +87,46 @@ def _zone_info_from_localtime():
         p = os.readlink(a)
     except FileNotFoundError:
         gws.log.warning(f'time zone: {a!r} not found, assuming UTC')
-        return _ZI_CACHE['UTC']
+        return UTC
 
-    m = re.search(f'zoneinfo/(.+)$', p)
+    m = re.search(r'zoneinfo/(.+)$', p)
     if not m:
         gws.log.warning(f'time zone: {a!r}={p!r} invalid, assuming UTC')
-        return _ZI_CACHE['UTC']
+        return UTC
 
     try:
         return zoneinfo.ZoneInfo(m.group(1))
     except zoneinfo.ZoneInfoNotFoundError:
         gws.log.warning(f'time zone: {a!r}={p!r} not found, assuming UTC')
-        return _ZI_CACHE['UTC']
+        return UTC
 
 
 def _zone_info_from_string(tz):
+    if tz not in _ZI_ALL:
+        raise Error(f'invalid time zone {tz!r}')
     try:
         return zoneinfo.ZoneInfo(tz)
     except zoneinfo.ZoneInfoNotFoundError as exc:
-        raise ValueError(f'invalid time zone {tz!r}') from exc
+        raise Error(f'invalid time zone {tz!r}') from exc
 
 
-def _set_default_tzinfo(d: dt.datetime | dt.time, tz: str):
-    zi = d.tzinfo
-    if not zi:
-        return d.replace(tzinfo=time_zone(tz))
-    if not isinstance(zi, zoneinfo.ZoneInfo):
-        return d.replace(tzinfo=zoneinfo.ZoneInfo(str(zi)))
-    return d
+def _zone_info_from_tzinfo(tzinfo: dt.tzinfo):
+    if type(tzinfo) is zoneinfo.ZoneInfo:
+        return tzinfo
+    s = str(tzinfo)
+    if s == '+0:0':
+        return UTC
+    try:
+        return _zone_info_from_string(s)
+    except Error:
+        pass
 
 
 # init from the env variable right now
 
 if 'TZ' in os.environ:
-    _set_localtime_from_zone_info(_zone_info_from_string(os.environ['TZ']))
+    _set_localtime_from_zone_info(
+        _zone_info_from_string(os.environ['TZ']))
 
 
 # Constructors
@@ -136,53 +157,23 @@ def parse(s, tz: str = '') -> Optional[dt.datetime]:
         return None
 
     if isinstance(s, dt.datetime):
-        return _set_default_tzinfo(s, tz)
+        return _ensure_tzinfo(s, tz)
 
     if isinstance(s, dt.date):
         return dt.datetime(s.year, s.month, s.day, tzinfo=time_zone(tz))
 
     try:
         return from_string(s, tz)
-    except ValueError:
+    except Error:
         pass
 
 
 def from_string(s: str, tz: str = '') -> dt.datetime:
-    try:
-        p = pendulum.parse(s)
-    except pendulum.parsing.exceptions.ParserError as exc:
-        raise ValueError(f'invalid date {s!r}') from exc
-    return _set_default_tzinfo(_unpend(p), tz)
+    return _pend_parse(s, tz, iso_only=False)
 
 
 def from_iso_string(s: str, tz: str = '') -> dt.datetime:
-    try:
-        d = dt.datetime.fromisoformat(s)
-    except ValueError as exc:
-        raise ValueError(f'invalid date {s!r}') from exc
-    return _set_default_tzinfo(d, tz)
-
-
-_DMY_RE = r'''(?x)
-    ^
-        (?P<d> \d{1,2})
-        [./\s]
-        (?P<m> \d{1,2})
-        [./\s]
-        (?P<Y> \d{2,4})
-    $
-'''
-
-
-def from_dmy_string(s: str, tz: str = '') -> dt.datetime:
-    m = re.match(_DMY_RE, s)
-    if not m:
-        raise ValueError(f'invalid date {s!r}')
-    g = m.groupdict()
-    try:
-        return dt.datetime(int(g['Y']), int(g['m']), int(g['d']), tzinfo=time_zone(tz))
-    except ValueError as exc:
-        raise ValueError(f'invalid date {s!r}') from exc
+    return _pend_parse(s, tz, iso_only=True)
 
 
 def from_timestamp(ts: float, tz: str = '') -> dt.datetime:
@@ -205,7 +196,7 @@ def to_iso_date_string(d: Optional[dt.datetime] = None) -> str:
     return _check(d).strftime('%Y-%m-%d')
 
 
-def to_int_string(d: Optional[dt.datetime] = None) -> str:
+def to_basic_string(d: Optional[dt.datetime] = None) -> str:
     return _check(d).strftime("%Y%m%d%H%M%S")
 
 
@@ -242,11 +233,11 @@ def is_datetime(x) -> bool:
 
 
 def is_utc(d: dt.datetime) -> bool:
-    return d.tzinfo == _ZI_CACHE['UTC']
+    return _zone_info_from_tzinfo(_check(d).tzinfo) == time_zone('utc')
 
 
 def is_local(d: dt.datetime) -> bool:
-    return d.tzinfo == time_zone('')
+    return _zone_info_from_tzinfo(_check(d).tzinfo) == time_zone('')
 
 
 # Arithmetic
@@ -374,18 +365,17 @@ def new_time(hour=0, minute=0, second=0, microsecond=0, fold=0, tz: str = '') ->
 
 def parse_time(s, tz: str = '') -> Optional[dt.time]:
     if isinstance(s, dt.datetime):
-        return _set_default_tzinfo(s.timetz(), tz)
+        return _ensure_tzinfo(s.timetz(), tz)
     if isinstance(s, dt.time):
-        return _set_default_tzinfo(s, tz)
+        return _ensure_tzinfo(s, tz)
     try:
         return time_from_iso_string(str(s), tz)
-    except ValueError:
+    except Error:
         pass
 
 
 def time_from_iso_string(s: str, tz: str = '') -> dt.time:
-    t = dt.time.fromisoformat(s)
-    return _set_default_tzinfo(t, tz)
+    return _pend_parse_time(s, tz, iso_only=True)
 
 
 def time_to_iso_string(t: Optional[dt.time] = None, with_tz='+') -> str:
@@ -432,7 +422,7 @@ def parse_duration(s: str) -> int:
             continue
         v = v.strip()
         if p is None or v not in _DURATION_UNITS:
-            raise ValueError('invalid duration', s)
+            raise Error('invalid duration', s)
         r += p * _DURATION_UNITS[v]
         p = None
 
@@ -449,9 +439,9 @@ def _check(d: dt.datetime | None) -> dt.datetime:
         return now()
     if isinstance(d, dt.datetime):
         if not d.tzinfo:
-            raise ValueError('naive datetime detected')
+            raise Error('naive datetime detected')
         return d
-    raise ValueError('invalid datetime value')
+    raise Error('invalid datetime value')
 
 
 def _check_time(t: dt.time | None) -> dt.time:
@@ -459,13 +449,12 @@ def _check_time(t: dt.time | None) -> dt.time:
         return now().timetz()
     if isinstance(t, dt.time):
         if not t.tzinfo:
-            raise ValueError('naive time detected')
+            raise Error('naive time detected')
         return t
-    raise ValueError('invalid time value')
+    raise Error('invalid time value')
 
 
 # pendulum.DateTime <-> python datetime
-
 
 def _pend(d: dt.datetime | None) -> pendulum.DateTime:
     return pendulum.instance(_check(d))
@@ -480,6 +469,58 @@ def _unpend(p: pendulum.DateTime) -> dt.datetime:
         p.minute,
         p.second,
         p.microsecond,
-        tzinfo=time_zone(str(p.tzinfo)),
+        tzinfo=p.tzinfo,
         fold=p.fold,
     )
+
+
+# NB using private APIs
+
+
+def _pend_parse(s, tz, iso_only):
+    try:
+        if iso_only:
+            d = pendulum.parsing.parse_iso8601(s, tz=time_zone(tz))
+        else:
+            # do not normalize
+            d = pendulum.parsing._parse(s)
+    except (ValueError, pendulum.parsing.ParserError) as exc:
+        raise Error(f'invalid date {s!r}') from exc
+
+    if isinstance(d, dt.datetime):
+        return _ensure_tzinfo(d, tz)
+    if isinstance(d, dt.date):
+        return new(d.year, d.month, d.day, tz=tz)
+
+    # times and durations not accepted
+    raise Error(f'invalid date {s!r}')
+
+
+def _pend_parse_time(s, tz, iso_only):
+    try:
+        if iso_only:
+            d = pendulum.parsing.parse_iso8601(s, tz=time_zone(tz))
+        else:
+            # do not normalize
+            d = pendulum.parsing._parse(s)
+    except (ValueError, pendulum.parsing.ParserError) as exc:
+        raise Error(f'invalid time {s!r}') from exc
+
+    if isinstance(d, dt.time):
+        return _ensure_tzinfo(d, tz)
+
+    # times and durations not accepted
+    raise Error(f'invalid date {s!r}')
+
+
+def _ensure_tzinfo(d: dt.datetime | dt.time, tz: str):
+    if not d.tzinfo:
+        return d.replace(tzinfo=time_zone(tz))
+
+    # try to convert 'their' tzinfo (might be an unnamed dt.timezone or pendulum.FixedTimezone) to zoneinfo
+    zi = _zone_info_from_tzinfo(d.tzinfo)
+    if zi:
+        return d.replace(tzinfo=zi)
+
+    # failing that, keep existing tzinfo
+    return d

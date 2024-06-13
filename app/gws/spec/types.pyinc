@@ -133,6 +133,9 @@ class SpecRuntime:
              A descriptor or ``None`` if the command is not found.
          """
 
+    def register_object(self, ext_name: ClassRef, obj_type: str, cls: type):
+        """Dynamically register an extension object."""
+
     def get_class(self, classref: ClassRef, ext_type: Optional[str] = None) -> Optional[type]:
         """Get a class object for a class reference.
 

@@ -330,10 +330,10 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
         gws.log.error(f'HTTP_FAILED_{method}: ({res.status_code!r}) url={url!r}')
         return HTTPResponse(ok=False, url=url, res=res)
     except requests.Timeout as exc:
-        gws.log.exception(f'HTTP_FAILED_{method}: (timeout) url={url!r}')
+        gws.log.error(f'HTTP_FAILED_{method}: (timeout) url={url!r}')
         return HTTPResponse(ok=False, url=url, text=repr(exc))
     except requests.RequestException as exc:
-        gws.log.exception(f'HTTP_FAILED_{method}: ({exc!r}) url={url!r}')
+        gws.log.error(f'HTTP_FAILED_{method}: ({exc!r}) url={url!r}')
         return HTTPResponse(ok=False, url=url, text=repr(exc))
 
 

@@ -3,10 +3,10 @@ import gws.test.util as u
 
 
 @u.fixture(scope='module')
-def gws_root():
-    u.pg_create('parent', {'id': 'int primary key', 'k': 'int', 'pp': 'text'})
-    u.pg_create('parent_auto', {'id': 'int primary key generated always as identity', 'k': 'int', 'pp': 'text'})
-    u.pg_create('child', {'id': 'int primary key', 'cc': 'text', 'parent_k': 'int'})
+def root():
+    u.pg.create('parent', {'id': 'int primary key', 'k': 'int', 'pp': 'text'})
+    u.pg.create('parent_auto', {'id': 'int primary key generated always as identity', 'k': 'int', 'pp': 'text'})
+    u.pg.create('child', {'id': 'int primary key', 'cc': 'text', 'parent_k': 'int'})
 
     cfg = '''
         models+ { 
@@ -44,18 +44,18 @@ def gws_root():
         }
     '''
 
-    yield u.gws_configure(cfg)
+    yield u.gws_root(cfg)
 
 
-def test_find_depth(gws_root):
+def test_find_depth(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('parent', [
+    u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
         {'id': 2, 'k': 22, 'pp': 'p2'},
         {'id': 3, 'k': 33, 'pp': 'p3'},
     ])
-    u.pg_insert('child', [
+    u.pg.insert('child', [
         {'id': 4, 'cc': 'a4', 'parent_k': 11},
         {'id': 5, 'cc': 'a5', 'parent_k': 22},
         {'id': 6, 'cc': 'a6', 'parent_k': 11},
@@ -63,7 +63,7 @@ def test_find_depth(gws_root):
         {'id': 8, 'cc': 'a8', 'parent_k': 99},
     ])
 
-    parent = u.db_model(gws_root, 'PARENT')
+    parent = u.cast(gws.Model, root.get('PARENT'))
     fs = parent.get_features([1, 2, 3], mc)
 
     assert [f.get('pp') for f in fs] == ['p1', 'p2', 'p3']
@@ -73,23 +73,23 @@ def test_find_depth(gws_root):
     assert [c.get('cc') for c in fs[2].get('children')] == []
 
 
-def test_update(gws_root):
+def test_update(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('parent', [
+    u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
         {'id': 2, 'k': 22, 'pp': 'p2'},
         {'id': 3, 'k': 33, 'pp': 'p3'},
     ])
-    u.pg_insert('child', [
+    u.pg.insert('child', [
         {'id': 4, 'cc': 'a4', 'parent_k': 11},
         {'id': 5, 'cc': 'a5', 'parent_k': 22},
         {'id': 6, 'cc': 'a6', 'parent_k': 11},
         {'id': 7, 'cc': 'a7', 'parent_k': 33},
     ])
 
-    parent = u.db_model(gws_root, 'PARENT')
-    child = u.db_model(gws_root, 'CHILD')
+    parent = u.cast(gws.Model, root.get('PARENT'))
+    child = u.cast(gws.Model, root.get('CHILD'))
 
     f = u.feature(parent, id=1, children=[
         u.feature(child, id=4),
@@ -98,29 +98,29 @@ def test_update(gws_root):
 
     parent.update_feature(f, mc)
 
-    rows = u.pg_rows('SELECT id, parent_k FROM child ORDER BY id')
+    rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
     assert rows == [
         (4, 11), (5, 11), (6, None), (7, 33)
     ]
 
 
-def test_create(gws_root):
+def test_create(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('parent', [
+    u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
         {'id': 2, 'k': 22, 'pp': 'p2'},
         {'id': 3, 'k': 33, 'pp': 'p3'},
     ])
-    u.pg_insert('child', [
+    u.pg.insert('child', [
         {'id': 4, 'cc': 'a4', 'parent_k': 11},
         {'id': 5, 'cc': 'a5', 'parent_k': 22},
         {'id': 6, 'cc': 'a6', 'parent_k': 11},
         {'id': 7, 'cc': 'a7', 'parent_k': 33},
     ])
 
-    parent = u.db_model(gws_root, 'PARENT')
-    child = u.db_model(gws_root, 'CHILD')
+    parent = u.cast(gws.Model, root.get('PARENT'))
+    child = u.cast(gws.Model, root.get('CHILD'))
 
     f = u.feature(parent, id=999, k=99, children=[
         u.feature(child, id=4),
@@ -130,24 +130,24 @@ def test_create(gws_root):
 
     parent.create_feature(f, mc)
 
-    rows = u.pg_rows('SELECT id, parent_k FROM child ORDER BY id')
+    rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
     assert rows == [
         (4, 99), (5, 99), (6, 99), (7, 33)
     ]
 
 
-def test_create_auto(gws_root):
+def test_create_auto(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('child', [
+    u.pg.insert('child', [
         {'id': 4, 'cc': 'a4', 'parent_k': 11},
         {'id': 5, 'cc': 'a5', 'parent_k': 22},
         {'id': 6, 'cc': 'a6', 'parent_k': 11},
         {'id': 7, 'cc': 'a7', 'parent_k': 33},
     ])
 
-    parent_auto = u.db_model(gws_root, 'PARENT_AUTO')
-    child = u.db_model(gws_root, 'CHILD')
+    parent_auto = u.cast(gws.Model, root.get('PARENT_AUTO'))
+    child = u.cast(gws.Model, root.get('CHILD'))
 
     f = u.feature(parent_auto, k=99, children=[
         u.feature(child, id=4),
@@ -157,56 +157,56 @@ def test_create_auto(gws_root):
 
     parent_auto.create_feature(f, mc)
 
-    rows = u.pg_rows('SELECT id, parent_k FROM child ORDER BY id')
+    rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
     assert rows == [
         (4, 99), (5, 99), (6, 99), (7, 33)
     ]
 
 
-def test_delete(gws_root):
+def test_delete(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('parent', [
+    u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
         {'id': 2, 'k': 22, 'pp': 'p2'},
     ])
-    u.pg_insert('child', [
+    u.pg.insert('child', [
         {'id': 4, 'cc': 'a4', 'parent_k': 11},
         {'id': 5, 'cc': 'a5', 'parent_k': 22},
         {'id': 6, 'cc': 'a6', 'parent_k': 11},
         {'id': 7, 'cc': 'a7', 'parent_k': 33},
     ])
 
-    parent = u.db_model(gws_root, 'PARENT')
+    parent = u.cast(gws.Model, root.get('PARENT'))
 
     f = u.feature(parent, id=1)
     parent.delete_feature(f, mc)
 
-    rows = u.pg_rows('SELECT id, parent_k FROM child ORDER BY id')
+    rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
     assert rows == [
         (4, None), (5, 22), (6, None), (7, 33),
     ]
 
 
-def test_create_related(gws_root):
+def test_create_related(root: gws.Root):
     mc = u.gws_model_context(maxDepth=1)
 
-    u.pg_insert('parent', [
+    u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
     ])
-    u.pg_insert('child', [
+    u.pg.insert('child', [
         {'id': 4, 'cc': 'a4', 'parent_k': 11},
         {'id': 5, 'cc': 'a5', 'parent_k': 22},
     ])
 
-    parent = u.db_model(gws_root, 'PARENT')
-    child = u.db_model(gws_root, 'CHILD')
+    parent = u.cast(gws.Model, root.get('PARENT'))
+    child = u.cast(gws.Model, root.get('CHILD'))
 
     child_f = u.feature(child, id=101)
     child_f.createWithFeatures = [u.feature(parent, id=1)]
     child.create_feature(child_f, mc)
 
-    rows = u.pg_rows('SELECT id, parent_k FROM child ORDER BY id')
+    rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
     assert rows == [
         (4, 11), (5, 22), (101, 11)
     ]

@@ -7,7 +7,6 @@ import subprocess
 
 SCRIPT_NAME = ''
 
-
 _COLOR = {
     'black': '\x1b[30m',
     'red': '\x1b[31m',
@@ -55,6 +54,17 @@ def run(cmd):
     res = subprocess.run(cmd, shell=True, capture_output=False)
     if res.returncode:
         fatal(f'COMMAND FAILED, code {res.returncode}')
+
+
+def exec(cmd):
+    try:
+        return (
+            subprocess
+            .run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            .stdout.decode('utf8').strip()
+        )
+    except Exception as exc:
+        return f'> {cmd} FAILED: {exc}'
 
 
 def find_dirs(dirname):

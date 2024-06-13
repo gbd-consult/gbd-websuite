@@ -188,3 +188,15 @@ class XmlElement(Iterable):
 
     def to_dict(self) -> dict:
         """Creates a dictionary from an XmlElement object."""
+
+    def to_list(
+            self,
+            fold_tags: bool = True,
+            remove_namespaces: bool = False,
+    ) -> list:
+        """Parse an XML element into a list of arguments.
+
+        Args:
+            fold_tags: If true, folds nested tag names into ``parent/child`` names.
+            remove_namespaces: If true, removes all namespaces.
+        """

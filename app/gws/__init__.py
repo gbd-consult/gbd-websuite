@@ -612,6 +612,9 @@ class SpecRuntime:
              A descriptor or ``None`` if the command is not found.
          """
 
+    def register_object(self, ext_name: ClassRef, obj_type: str, cls: type):
+        """Dynamically register an extension object."""
+
     def get_class(self, classref: ClassRef, ext_type: Optional[str] = None) -> Optional[type]:
         """Get a class object for a class reference.
 
@@ -1126,6 +1129,16 @@ class Image:
 
         Returns:
             The image as an array. For each row each entry contains the pixel information.
+        """
+
+    def compare_to(self, other: 'Image') -> float:
+        """Compare this image to another one.
+
+        @TODO describe the alogrithm
+
+        Returns:
+            The similarity factor as a float (the more, the different).
+            '0' means images are equal.
         """
 ################################################################################
 
@@ -1702,6 +1715,18 @@ class XmlElement(Iterable):
 
     def to_dict(self) -> dict:
         """Creates a dictionary from an XmlElement object."""
+
+    def to_list(
+            self,
+            fold_tags: bool = True,
+            remove_namespaces: bool = False,
+    ) -> list:
+        """Parse an XML element into a list of arguments.
+
+        Args:
+            fold_tags: If true, folds nested tag names into ``parent/child`` names.
+            remove_namespaces: If true, removes all namespaces.
+        """
 ################################################################################
 
 

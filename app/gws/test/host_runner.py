@@ -36,8 +36,8 @@ options:
 
     --ini <path>          - path to the local 'ini' file (can also be passed in the GWS_TEST_INI env var)
     --manifest <manifest> - path to MANIFEST.json
-    --only <regex>        - only run filenames matching the pattern 
-    --verbose             - enable debug logging
+    -o, --only <regex>    - only run filenames matching the pattern 
+    -v, --verbose         - enable debug logging
     
 Pytest options:
     see https://docs.pytest.org/latest/reference.html#command-line-flags
@@ -177,10 +177,7 @@ def make_pg_service_conf(options):
 
 def make_pytest_ini(options):
     wd = options.get('runner.work_dir')
-
-    ini = {
-        'pytest.cache_dir': '/pytest_cache'
-    }
+    ini = {}
     for k, v in options.items():
         if k.startswith('pytest.'):
             ini[k] = v
@@ -256,11 +253,19 @@ def clear_dir(d):
 ##
 
 def service_gws(options):
+    wd = options.get('runner.work_dir')
+
     make_dir(options.get('service.gws.data_dir'))
     make_dir(options.get('service.gws.var_dir'))
 
+    tz = options.get('service.gws.time_zone')
+    if tz:
+        command = f'bash -c "ln -fs /usr/share/zoneinfo/{tz} /etc/localtime && sleep infinity" '
+    else:
+        command = 'sleep infinity'
+
     return {
-        'command': 'sleep infinity',
+        'command': command,
         'ports': [
             f"{options.get('service.gws.http_expose_port')}:80",
             f"{options.get('service.gws.mpx_expose_port')}:5000",
@@ -334,17 +339,20 @@ def service_postgres(options):
 
 
 def service_mockserver(options):
-    wd = options.get('runner.work_dir')
-
-    server_app = 'mockserver.py'
-    write_file(f'{wd}/{server_app}', read_file(f'{APP_DIR}/gws/test/{server_app}'))
-
     return {
         # NB use the gws image
         'image': options.get('service.gws.image'),
-        'command': f'python3 {wd}/{server_app}',
+        'command': f'python3 /gws-app/gws/test/mockserver.py',
         'ports': [
             f"{options.get('service.mockserver.expose_port')}:80",
+        ],
+        'environment': {
+            'PYTHONPATH': '/gws-app'
+        },
+        'volumes': [
+            f"{APP_DIR}:/gws-app",
+            f"{options.get('service.gws.data_dir')}:/data",
+            f"{options.get('service.gws.var_dir')}:/gws-var",
         ],
     }
 

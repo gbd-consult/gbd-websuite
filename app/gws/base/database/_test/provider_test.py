@@ -9,8 +9,8 @@ import gws.test.util as u
 
 
 @u.fixture(scope='module')
-def gws_root():
-    u.pg_create('plain', {'id': 'int primary key', 'a': 'text', 'b': 'text', 'c': 'text'})
+def root():
+    u.pg.create('plain', {'id': 'int primary key', 'a': 'text', 'b': 'text', 'c': 'text'})
     cfg = '''
         models+ { 
             uid "PLAIN" type "postgres" tableName "plain" 
@@ -20,12 +20,12 @@ def gws_root():
         }
     '''
 
-    yield u.gws_configure(cfg)
+    yield u.gws_root(cfg)
 
 
 ##
 
-def test_error(gws_root):
+def test_error(root: gws.Root):
     db = gws_root.get('GWS_TEST_POSTGRES_PROVIDER')
 
     err = ''
@@ -45,7 +45,7 @@ def test_error(gws_root):
     assert 'UndefinedTable' in err
 
 
-def test_error_rollback(gws_root):
+def test_error_rollback(root: gws.Root):
     db = gws_root.get('GWS_TEST_POSTGRES_PROVIDER')
 
     err = ''
@@ -62,7 +62,7 @@ def test_error_rollback(gws_root):
     assert 'UndefinedTable' in err
 
 
-def test_error_no_rollback(gws_root):
+def test_error_no_rollback(root: gws.Root):
     db = gws_root.get('GWS_TEST_POSTGRES_PROVIDER')
 
     err = ''

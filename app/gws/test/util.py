@@ -1,32 +1,34 @@
 """Test utilities."""
 
-import inspect
-import io
-import json
-import os
-import shutil
-import time
-import re
-import configparser
+import typing
+from typing import Optional
 
 import pytest
+import requests
 
 import gws
-import gws.base.feature
-import gws.lib.vendor.slon
-import gws.spec.runtime
-import gws.base.web.wsgi_app
 import gws.base.auth
+import gws.base.feature
 import gws.config
-import gws.lib.jsonx
-import gws.lib.osx
+import gws.lib.cli
 import gws.lib.net
 import gws.lib.sa as sa
-import gws.lib.password
-import gws.lib.image as image
+import gws.lib.vendor.slon
+import gws.spec.runtime
+import gws.test.mocks
+
+##
+
+mocks = gws.test.mocks
 
 fixture = pytest.fixture
 raises = pytest.raises
+
+cast = typing.cast
+
+exec = gws.lib.cli.exec
+
+##
 
 OPTIONS = {}
 
@@ -41,34 +43,57 @@ def work_dir():
 
 ##
 
-_SPEC = None
-_CONFIG_DEFAULTS = '''
-    database.providers+ { uid "GWS_TEST_POSTGRES_PROVIDER" type "postgres" serviceName "gws_test_postgres"  schemaCacheLifeTime 0 }
-    server.log.level "INFO" 
-'''
+
+def _config_defaults():
+    return f'''
+        database.providers+ {{ 
+            uid "GWS_TEST_POSTGRES_PROVIDER" 
+            type "postgres" 
+            host     {OPTIONS['service.postgres.host']!r}
+            port     {OPTIONS['service.postgres.port']!r}
+            username {OPTIONS['service.postgres.user']!r}
+            password {OPTIONS['service.postgres.password']!r}
+            database {OPTIONS['service.postgres.database']!r}
+            schemaCacheLifeTime 0 
+        }}
+        server.log.level "INFO" 
+    '''
 
 
-def gws_root():
-    global _SPEC
-    if _SPEC is None:
-        _SPEC = gws.spec.runtime.create(work_dir() + '/MANIFEST.json', read_cache=False, write_cache=False)
-    return gws.create_root(_SPEC)
+def _to_data(x):
+    if isinstance(x, gws.Data):
+        for k, v in vars(x).items():
+            setattr(x, k, _to_data(v))
+        return x
+    if isinstance(x, dict):
+        d = gws.Data()
+        for k, v in x.items():
+            setattr(d, k, _to_data(v))
+        return d
+    if isinstance(x, list):
+        return [_to_data(y) for y in x]
+    if isinstance(x, tuple):
+        return tuple(_to_data(y) for y in x)
+    return x
 
 
-def gws_configure(config: str):
-    wd = work_dir()
+_GWS_SPEC_DICT = None
 
-    config = _CONFIG_DEFAULTS + '\n' + config
-    dct = gws.lib.vendor.slon.parse(config, as_object=True)
 
-    gws.lib.jsonx.to_path(f'{wd}/config.json', dct, pretty=True)
-    root = gws.config.configure(
-        manifest_path=f'{wd}/MANIFEST.json',
-        config_path=f'{wd}/config.json',
-        with_spec_cache=False
-    )
-    gws.config.activate(root)
-    return root
+def gws_specs() -> gws.SpecRuntime:
+    global _GWS_SPEC_DICT
+    if _GWS_SPEC_DICT is None:
+        _GWS_SPEC_DICT = gws.spec.runtime.get_spec(work_dir() + '/MANIFEST.json', read_cache=False, write_cache=False)
+    return gws.spec.runtime.Object(_GWS_SPEC_DICT)
+
+
+def gws_root(config: str = '', specs: gws.SpecRuntime = None):
+    print('')
+    config = _config_defaults() + '\n' + config
+    parsed_config = _to_data(gws.lib.vendor.slon.parse(config, as_object=True))
+    specs = mocks.register(specs or gws_specs())
+    root = gws.config.initialize(specs, parsed_config)
+    return gws.config.activate(root)
 
 
 def gws_system_user():
@@ -83,90 +108,83 @@ def gws_model_context(**kwargs):
 
 ##
 
+class pg:
+    saEngine: Optional[sa.Engine] = None
+    saConn: Optional[sa.Connection] = None
+
+    @classmethod
+    def connect(cls):
+        # kwargs.setdefault('pool_pre_ping', True)
+        # kwargs.setdefault('echo', self.root.app.developer_option('db.engine_echo'))
+
+        if not cls.saEngine:
+            url = gws.lib.net.make_url(
+                scheme='postgresql',
+                username=OPTIONS['service.postgres.user'],
+                password=OPTIONS['service.postgres.password'],
+                hostname=OPTIONS['service.postgres.host'],
+                port=OPTIONS['service.postgres.port'],
+                path=OPTIONS['service.postgres.database'],
+            )
+            cls.saEngine = sa.create_engine(url)
+
+        if not cls.saConn:
+            cls.saConn = cls.saEngine.connect()
+
+        return cls.saConn
+
+    @classmethod
+    def close(cls):
+        if cls.saConn:
+            cls.saConn.close()
+            cls.saConn = None
+
+    @classmethod
+    def create(cls, table_name: str, col_defs: dict):
+        conn = cls.connect()
+        conn.execute(sa.text(f'DROP TABLE IF EXISTS {table_name} CASCADE'))
+        ddl = _comma(f'{k} {v}' for k, v in col_defs.items())
+        conn.execute(sa.text(f'CREATE TABLE {table_name} ( {ddl} )'))
+        conn.commit()
+
+    @classmethod
+    def clear(cls, table_name: str):
+        conn = cls.connect()
+        conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
+        conn.commit()
+
+    @classmethod
+    def insert(cls, table_name: str, row_dicts: list[dict]):
+        conn = cls.connect()
+        conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
+        if row_dicts:
+            names = _comma(k for k in row_dicts[0])
+            values = _comma(':' + k for k in row_dicts[0])
+            ins = sa.text(f'INSERT INTO {table_name} ( {names} ) VALUES( {values} )')
+            conn.execute(ins, row_dicts)
+        conn.commit()
+
+    @classmethod
+    def rows(cls, sql: str) -> list[tuple]:
+        conn = cls.connect()
+        return [tuple(r) for r in conn.execute(sa.text(sql))]
+
+    @classmethod
+    def content(cls, sql_or_table_name: str) -> list[tuple]:
+        if not sql_or_table_name.lower().startswith('select'):
+            sql_or_table_name = f'SELECT * FROM {sql_or_table_name}'
+        return cls.rows(sql_or_table_name)
+
+    @classmethod
+    def exec(cls, sql: str, **kwargs):
+        conn = cls.connect()
+        for s in sql.split(';'):
+            if s.strip():
+                conn.execute(sa.text(s.strip()), kwargs)
+        conn.commit()
+
 
 ##
-
-_PG_ENGINE = None
-_PG_CONN = None
-
-
-def pg_connect():
-    # kwargs.setdefault('pool_pre_ping', True)
-    # kwargs.setdefault('echo', self.root.app.developer_option('db.engine_echo'))
-
-    global _PG_ENGINE, _PG_CONN
-
-    if _PG_ENGINE is None:
-        params = {
-            'application_name': 'gws_test',
-            'service': option('service.postgres.name'),
-        }
-        url = gws.lib.net.make_url(
-            scheme='postgresql',
-            hostname='',
-            path='',
-            params=params,
-        )
-        _PG_ENGINE = sa.create_engine(url)
-
-    if _PG_CONN is None:
-        _PG_CONN = _PG_ENGINE.connect()
-
-    return _PG_CONN
-
-
-def pg_create(table_name, col_defs):
-    conn = pg_connect()
-    conn.execute(sa.text(f'DROP TABLE IF EXISTS {table_name} CASCADE'))
-    ddl = _comma(f'{k} {v}' for k, v in col_defs.items())
-    conn.execute(sa.text(f'CREATE TABLE {table_name} ( {ddl} )'))
-    conn.commit()
-
-
-def pg_clear(table_name):
-    conn = pg_connect()
-    conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
-    conn.commit()
-
-
-def pg_insert(table_name, row_dicts):
-    conn = pg_connect()
-    conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
-    if row_dicts:
-        names = _comma(k for k in row_dicts[0])
-        values = _comma(':' + k for k in row_dicts[0])
-        ins = sa.text(f'INSERT INTO {table_name} ( {names} ) VALUES( {values} )')
-        conn.execute(ins, row_dicts)
-    conn.commit()
-
-
-def pg_rows(sql: str) -> list[tuple]:
-    conn = pg_connect()
-    return [tuple(r) for r in conn.execute(sa.text(sql))]
-
-
-def pg_content(sql_or_table_name: str) -> list[tuple]:
-    if not sql_or_table_name.lower().startswith('select'):
-        sql_or_table_name = f'SELECT * FROM {sql_or_table_name}'
-    return pg_rows(sql_or_table_name)
-
-
-def pg_exec(sql: str, **kwargs):
-    conn = pg_connect()
-    for s in sql.split(';'):
-        if s.strip():
-            conn.execute(sa.text(s.strip()), kwargs)
-    conn.commit()
-
-
-##
-
-def model(root, name) -> gws.Model:
-    return root.get(name)
-
-
-def db_model(root, name) -> gws.DatabaseModel:
-    return root.get(name)
 
 
 def feature(model, **atts) -> gws.Feature:
@@ -178,134 +196,31 @@ def feature(model, **atts) -> gws.Feature:
 ##
 
 
-def mockserver_add_snippet(text):
-    mockserver_invoke('/__add', data=text)
+class mockserver:
+    @classmethod
+    def add(cls, text):
+        cls.post('__add', data=text)
 
+    @classmethod
+    def set(cls, text):
+        cls.post('__set', data=text)
 
-def mockserver_clear():
-    mockserver_invoke('/__del', data='')
+    @classmethod
+    def reset(cls):
+        cls.post('__del')
 
+    @classmethod
+    def post(cls, verb, data=''):
+        requests.post(cls.url(verb), data=data)
 
-def mockserver_invoke(url_path, params: dict = None, data: str | bytes | dict = None) -> str | bytes | dict | None:
-    host = option('service.mockserver.name')
-    args = {}
-    if data is not None:
-        args['method'] = 'POST'
-        if isinstance(data, dict):
-            args['data'] = gws.lib.jsonx.to_string(data).encode('utf8')
-            args['headers'] = {'content-type': 'application/json'}
-        elif isinstance(data, str):
-            args['data'] = data.encode('utf8')
-        else:
-            args['data'] = data
-    else:
-        args['method'] = 'GET'
-        args['params'] = params
-
-    url = gws.lib.net.make_url(
-        scheme='http',
-        hostname=option('service.mockserver.host'),
-        port=option('service.mockserver.port'),
-        path=url_path
-    )
-    res = gws.lib.net.http_request(url, **args)
-    if not res.ok:
-        return
-
-    ct = res.content_type
-    if ct == 'application/octet-stream' or ct.startswith('image/'):
-        return res.content
-    if ct == 'application/json':
-        return gws.lib.jsonx.from_string(res.text)
-    return res.text
-
-
-##
-
-
-def setup():
-    pass
-
-
-def teardown():
-    gws.lib.osx.unlink(glob.SESSION_STORE_PATH)
-    gws.base.web.wsgi_app.reload()
-    gws.config.deactivate()
-    mockserv.command('reset')
-
-
-def make_users_json(lst):
-    path = '/tmp/gws_test_users.json'
-    if lst is None:
-        gws.lib.osx.unlink(path)
-        return None
-
-    for v in lst:
-        v['password'] = gws.lib.password.encode(v['password'])
-    gws.lib.jsonx.to_path(path, lst)
-    return path
-
-
-def write_file(path, text):
-    pp = gws.lib.osx.parse_path(path)
-    if pp['dirname'].startswith(gws.c.TMP_DIR):
-        gws.u.ensure_dir(pp['dirname'])
-    with open(path, 'wt', encoding='utf8') as fp:
-        fp.write(text)
-
-
-def read_file(path):
-    with open(path, 'rt', encoding='utf8') as fp:
-        return fp.read()
-
-
-def write_file_if_changed(path, text):
-    curr = read_file(path)
-    if text != curr:
-        write_file(path, text)
-
-
-def copy_file(path, dir):
-    shutil.copy(path, dir)
-
-
-def rel_path(path):
-    f = inspect.stack(2)[1].filename
-    return os.path.join(os.path.dirname(f), path)
-
-
-def sleep(n):
-    time.sleep(n)
-
-
-def dict_of(x):
-    if gws.u.is_data_object(x):
-        # noinspection PyTypeChecker
-        return dict(sorted(vars(x).items()))
-    return x
-
-
-def fxml(s):
-    s = s.strip()
-    s = re.sub(r'>\s+<', '><', s)
-    s = re.sub(r'\s*>\s*', '>', s)
-    s = re.sub(r'\s*<\s*', '<', s)
-    s = re.sub(r'\s+', ' ', s)
-    return s
+    @classmethod
+    def url(cls, path=''):
+        h = OPTIONS.get('service.mockserver.host')
+        p = OPTIONS.get('service.mockserver.port')
+        u = f'http://{h}:{p}'
+        if path:
+            u += '/' + path
+        return u
 
 
 _comma = ','.join
-
-
-def image_similarity(a: image.Image | gws.Image, b: image.Image) -> float:
-    error = 0
-    x, y = a.size()
-    for i in range(int(x)):
-        for j in range(int(y)):
-            a_r, a_g, a_b, a_a = a.getpixel((i, j))
-            b_r, b_g, b_b, b_a = b.getpixel((i, j))
-            error += (a_r - b_r) ** 2
-            error += (a_g - b_g) ** 2
-            error += (a_b - b_b) ** 2
-            error += (a_a - b_a) ** 2
-    return error / (3 * x * y)

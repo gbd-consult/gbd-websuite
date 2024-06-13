@@ -927,6 +927,11 @@ def stime() -> int:
     return int(time.time())
 
 
+def sleep(n: float):
+    """Sleep for n seconds."""
+    time.sleep(n)
+
+
 def mstime() -> int:
     """Unix time as an integer number of milliseconds."""
     return int(time.time() * 1000)

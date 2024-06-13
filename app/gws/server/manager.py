@@ -96,7 +96,7 @@ class Object(gws.ServerManager):
     def create_server_configs(self, target_dir, script_path, pid_paths):
         args = TemplateArgs(
             root=self.root,
-            inContainer=gws.u.is_file('/.dockerenv'),
+            inContainer=gws.c.env.GWS_IN_CONTAINER,
             userName=pwd.getpwuid(gws.c.UID).pw_name,
             groupName=grp.getgrgid(gws.c.GID).gr_name,
             gwsEnv={k: v for k, v in sorted(os.environ.items()) if k.startswith('GWS_')},

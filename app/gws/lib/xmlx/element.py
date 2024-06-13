@@ -4,7 +4,7 @@ import xml.etree.ElementTree
 
 import gws
 
-from . import namespace, error
+from . import namespace, serializer
 
 
 class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
@@ -62,8 +62,14 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
             'text': self.text,
             'tail': self.tail,
             'children': [c.to_dict() for c in self.children()]
-
         }
+
+    def to_list(self, fold_tags=True, remove_namespaces=False):
+        return serializer.to_list(
+            self,
+            fold_tags=fold_tags,
+            remove_namespaces=remove_namespaces,
+        )
 
     def to_string(
             self,
@@ -74,107 +80,15 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
             with_schema_locations=False,
             with_xml_declaration=False,
     ):
-
-        def make_text(s):
-            if s is None:
-                return ''
-            if isinstance(s, (int, float, bool)):
-                return str(s).lower()
-            if not isinstance(s, str):
-                s = str(s)
-            if compact_whitespace:
-                s = ' '.join(s.strip().split())
-            s = s.replace("&", "&amp;")
-            s = s.replace(">", "&gt;")
-            s = s.replace("<", "&lt;")
-            return s
-
-        def make_attr(s):
-            if s is None:
-                return ''
-            if isinstance(s, (int, float, bool)):
-                return str(s).lower()
-            if not isinstance(s, str):
-                s = str(s)
-            s = s.replace("&", "&amp;")
-            s = s.replace('"', "&quot;")
-            s = s.replace(">", "&gt;")
-            s = s.replace("<", "&lt;")
-            return s
-
-        def make_name(name):
-            if remove_namespaces:
-                return namespace.unqualify_name(name)
-            ns, pname = namespace.parse_name(name)
-            if not ns:
-                return name
-            if ns and default_ns and ns.uri == default_ns.uri:
-                return pname
-            return ns.xmlns + ':' + pname
-
-        def to_str(el, extra_atts=None):
-
-            atts = {}
-
-            for key, val in el.attrib.items():
-                if val is None:
-                    continue
-                atts[make_name(key)] = make_attr(val)
-
-            if extra_atts:
-                atts.update(extra_atts)
-
-            open_pos = len(buf)
-            buf.append('')
-
-            s = make_text(el.text)
-            if s:
-                buf.append(s)
-
-            for ch in el:
-                to_str(ch)
-
-            open_tag = make_name(el.tag)
-            close_tag = open_tag
-            if atts:
-                open_tag += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
-
-            if len(buf) > open_pos + 1:
-                buf[open_pos] = f'<{open_tag}>'
-                buf.append(f'</{close_tag}>')
-            else:
-                buf[open_pos] += f'<{open_tag}/>'
-
-            s = make_text(el.tail)
-            if s:
-                buf.append(s)
-
-        ##
-
-        buf = ['']
-
-        default_ns = None
-        xmlns = self.get('xmlns')
-        if xmlns:
-            default_ns = namespace.get(xmlns)
-            if not default_ns:
-                raise error.NamespaceError(f'unknown namespace {xmlns!r}')
-
-        extra_atts = None
-        if with_namespace_declarations:
-            extra_atts = namespace.declarations(
-                for_element=self,
-                default_ns=default_ns,
-                with_schema_locations=with_schema_locations,
-                extra_ns=extra_namespaces,
-            )
-
-        to_str(self, extra_atts)
-
-        if with_xml_declaration:
-            buf[0] = _XML_DECL
-
-        return ''.join(buf)
+        return serializer.to_string(
+            self,
+            extra_namespaces=extra_namespaces,
+            compact_whitespace=compact_whitespace,
+            remove_namespaces=remove_namespaces,
+            with_namespace_declarations=with_namespace_declarations,
+            with_schema_locations=with_schema_locations,
+            with_xml_declaration=with_xml_declaration,
+        )
 
     ##
 
@@ -245,5 +159,3 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
             key = key.lower()
         return key
 
-
-_XML_DECL = '<?xml version="1.0" encoding="UTF-8"?>'

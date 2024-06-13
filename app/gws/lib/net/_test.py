@@ -1,10 +1,11 @@
-import gws.lib.net
+import gws
+import gws.lib.net as net
 import gws.test.util as u
 
 
 def test_parse_url():
     url = 'http://foo.bar:1234/path/to/file.ext?lower=AA%2FBB%3ACC&UPPER=DDD#hash'
-    p = gws.lib.net.parse_url(url)
+    p = net.parse_url(url)
     r = {
         'fragment': 'hash',
         'hostname': 'foo.bar',
@@ -39,75 +40,111 @@ def test_make_url():
         'scheme': 'http',
         'username': 'USER',
     }
-    p = gws.lib.net.make_url(r)
+    p = net.make_url(r)
     assert p == 'http://USER:PASS@foo.bar:1234/path/to/file.ext?p1=AA%20A&p2=BB%26B#hash'
 
 
 def test_request_ok():
-    test.mockserv.poke('ok', {'text': 'hello'})
-    res = gws.lib.net.http_request(test.mockserv.url('ok'))
-    assert (res.ok, res.status_code, res.text) == (True, 200, 'hello')
+    u.mockserver.set(rf'''
+        if path == '/ok':
+            return end('HELLO')
+    ''')
+    res = net.http_request(u.mockserver.url('ok'))
+    assert (res.ok, res.status_code, res.text) == (True, 200, 'HELLO')
 
 
 def test_request_redirect_ok():
-    test.mockserv.poke('redirect', {'status_code': 301, 'headers': {'location': test.mockserv.url('ok')}})
-    res = gws.lib.net.http_request(test.mockserv.url('redirect'))
-    assert (res.ok, res.status_code, res.text) == (True, 200, 'hello')
+    target_url = u.mockserver.url('ok')
+    u.mockserver.set(rf'''
+        if path == '/ok':
+            return end('HELLO')
+        if path == '/redir':
+            return end('', status=301, location={target_url!r})
+    ''')
+    res = net.http_request(u.mockserver.url('redir'))
+    assert (res.ok, res.status_code, res.text) == (True, 200, 'HELLO')
 
 
 def test_request_404():
-    res = gws.lib.net.http_request(test.mockserv.url('NOT_FOUND'))
+    res = net.http_request(u.mockserver.url('NOT_FOUND'))
     assert (res.ok, res.status_code) == (False, 404)
 
 
 def test_request_timeout():
-    test.mockserv.poke('timeout', {'delay_time': 2})
-    res = gws.lib.net.http_request(test.mockserv.url('timeout'), timeout=1)
+    u.mockserver.set(rf'''
+        if path == '/timeout':
+            gws.u.sleep(3)
+            return end('')
+    ''')
+
+    res = net.http_request(u.mockserver.url('timeout'), timeout=1)
     assert (res.ok, res.status_code) == (False, 0)
-    res = gws.lib.net.http_request(test.mockserv.url('timeout'), timeout=5)
+
+    res = net.http_request(u.mockserver.url('timeout'), timeout=100)
     assert (res.ok, res.status_code) == (True, 200)
 
 
 def test_request_connection_error():
-    res = gws.lib.net.http_request('255.255.255.255')
+    res = net.http_request('255.255.255.255')
     assert (res.ok, res.status_code) == (False, 0)
 
 
 def test_request_valid_response_cached():
-    test.mockserv.poke('ok', {'text': 'ORIGINAL'})
-    res = gws.lib.net.http_request(test.mockserv.url('ok'), max_age=3)
+    u.mockserver.set(rf'''
+        if path == '/ok':
+            return end('ORIGINAL')
+    ''')
+
+    res = net.http_request(u.mockserver.url('ok'), max_age=3)
     assert res.text == 'ORIGINAL'
 
-    test.mockserv.poke('ok', {'text': 'UPDATED'})
+    u.mockserver.set(rf'''
+        if path == '/ok':
+            return end('UPDATED')
+    ''')
 
-    res = gws.lib.net.http_request(test.mockserv.url('ok'), max_age=3)
+    res = net.http_request(u.mockserver.url('ok'), max_age=3)
     assert res.text == 'ORIGINAL'
 
-    res = gws.lib.net.http_request(test.mockserv.url('ok'))
+    res = net.http_request(u.mockserver.url('ok'))
     assert res.text == 'UPDATED'
 
 
 def test_request_cache_expiration():
-    test.mockserv.poke('ok', {'text': 'ORIGINAL'})
-    res = gws.lib.net.http_request(test.mockserv.url('ok'), max_age=3)
+    u.mockserver.set(rf'''
+        if path == '/ok':
+            return end('ORIGINAL')
+    ''')
+    res = net.http_request(u.mockserver.url('ok'), max_age=3)
     assert res.text == 'ORIGINAL'
 
-    test.mockserv.poke('ok', {'text': 'UPDATED'})
+    u.mockserver.set(rf'''
+        if path == '/ok':
+            return end('UPDATED')
+    ''')
 
-    res = gws.lib.net.http_request(test.mockserv.url('ok'), max_age=3)
+    res = net.http_request(u.mockserver.url('ok'), max_age=3)
     assert res.text == 'ORIGINAL'
 
-    test.sleep(4)
+    gws.u.sleep(4)
 
-    res = gws.lib.net.http_request(test.mockserv.url('ok'), max_age=3)
+    res = net.http_request(u.mockserver.url('ok'), max_age=3)
     assert res.text == 'UPDATED'
 
 
 def test_request_invalid_response_not_cached():
-    test.mockserv.poke('bad', {'status_code': 400, 'text': 'ORIGINAL'})
-    res = gws.lib.net.http_request(test.mockserv.url('bad'), max_age=10)
+    u.mockserver.set(rf'''
+        if path == '/bad':
+            return end('ORIGINAL', 400)
+    ''')
+
+    res = net.http_request(u.mockserver.url('bad'), max_age=10)
     assert res.text == 'ORIGINAL'
 
-    test.mockserv.poke('bad', {'status_code': 400, 'text': 'UPDATED'})
-    res = gws.lib.net.http_request(test.mockserv.url('ok'), max_age=10)
+    u.mockserver.set(rf'''
+        if path == '/bad':
+            return end('UPDATED', 400)
+    ''')
+
+    res = net.http_request(u.mockserver.url('bad'), max_age=10)
     assert res.text == 'UPDATED'

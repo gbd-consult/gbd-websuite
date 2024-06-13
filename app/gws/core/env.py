@@ -6,31 +6,37 @@ These variables, if set, override corresponding configuration values.
 import os
 
 GWS_APP_DIR = os.getenv('GWS_APP_DIR')
-"""application directory"""
+"""Application directory."""
 
 GWS_VAR_DIR = os.getenv('GWS_VAR_DIR')
-"""var data directory"""
+"""Var data directory."""
 
 GWS_TMP_DIR = os.getenv('GWS_TMP_DIR')
-"""temporary directory"""
+"""Temporary directory."""
 
 GWS_UID = os.getenv('GWS_UID')
-"""server user uid"""
+"""Server user uid."""
 
 GWS_GID = os.getenv('GWS_GID')
-"""server user group id"""
+"""Server user group id."""
 
 GWS_CONFIG = os.getenv('GWS_CONFIG')
-"""path to the config file"""
+"""Path to the config file."""
 
 GWS_MANIFEST = os.getenv('GWS_MANIFEST')
-"""path to the manifest file"""
+"""Path to the manifest file."""
 
 GWS_LOG_LEVEL = os.getenv('GWS_LOG_LEVEL')
-"""log level"""
+"""Log level."""
 
 GWS_WEB_WORKERS = os.getenv('GWS_WEB_WORKERS')
-"""number of web workers to start"""
+"""Number of web workers to start."""
 
 GWS_SPOOL_WORKERS = os.getenv('GWS_SPOOL_WORKERS')
-"""number of spool workers to start"""
+"""Number of spool workers to start."""
+
+GWS_IN_CONTAINER = os.path.isfile('/.dockerenv')
+"""True if we're running in a container."""
+
+GWS_IN_TEST = (os.getenv('GWS_IN_TEST') == '1') or (os.getenv('PYTEST_CURRENT_TEST') is not None)
+"""True if we're running tests."""

@@ -67,7 +67,7 @@ red = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAABhGl
 def test_from_size():
     img = image.from_size((50, 50), color=(255, 0, 0, 255))
     img2 = image.from_path('/tmp/red.png')
-    assert u.image_similarity(img, img2) == 0
+    assert img.compare_to(img2) == 0
 
 
 def test_from_bytes():
@@ -75,7 +75,7 @@ def test_from_bytes():
     byt = file.read()
     img = image.from_bytes(byt)
     img2 = image.from_path('/tmp/red.png')
-    assert u.image_similarity(img, img2) == 0
+    assert img.compare_to(img2) == 0
 
 
 def test_from_raw_data():
@@ -83,20 +83,20 @@ def test_from_raw_data():
     arr = img.to_array()
     arr = arr.tobytes()
     img2 = image.from_raw_data(arr, 'RGBA', (50, 50))
-    assert u.image_similarity(img, img2) == 0
+    assert img.compare_to(img2) == 0
 
 
 def test_from_path():
     img = image.from_path('/tmp/red.png')
     img2 = image.from_data_url(red)
-    assert u.image_similarity(img, img2) == 0
+    assert img.compare_to(img2) == 0
 
 
 # https://i-converter.com/files/png-to-url used to get the url
 def test_from_data_url():
     img = image.from_data_url(red)
     img2 = image.from_path('/tmp/red.png')
-    assert u.image_similarity(img, img2) == 0
+    assert img.compare_to(img2) == 0
 
 
 def test_from_data_url_exception():
@@ -126,14 +126,14 @@ def test_rotate():
     img = img.rotate(-15)
     img2 = image.from_path('/tmp/red-rotate.png')
     # sometimes not exactly 100% similar due to antialiasing when rotating
-    assert u.image_similarity(img, img2) == 0
+    assert img.compare_to(img2) == 0
 
 
 def test_crop():
     img = image.from_data_url(red)
     img = img.crop((10, 10, 30, 30))
     img2 = image.from_path('/tmp/red-crop.png')
-    assert u.image_similarity(img, img2) == 0
+    assert img.compare_to(img2) == 0
 
 
 def test_paste():
@@ -141,7 +141,7 @@ def test_paste():
     x = image.from_path('/tmp/x.png')
     img = img.paste(x, where=(12, 12))
     img2 = image.from_path('/tmp/red-paste.png')
-    assert u.image_similarity(img, img2) == 0
+    assert img.compare_to(img2) == 0
 
 
 # not right
@@ -150,7 +150,7 @@ def test_compose_float():
     img2 = image.from_path('/tmp/x.png')
     img = img.compose(img2, opacity=0.5)
     img3 = image.from_path('/tmp/red-compose-float.png')
-    assert u.image_similarity(img, img3) == 0
+    assert img.compare_to(img3) == 0
 
 
 def test_compose_size_difference():
@@ -158,7 +158,7 @@ def test_compose_size_difference():
     img2 = image.from_path('/tmp/x.png')
     img = img.compose(img2)
     img3 = image.from_path('/tmp/red-compose-size-diff.png')
-    assert u.image_similarity(img, img3) == 0
+    assert img.compare_to(img3) == 0
 
 
 def test_compose():
@@ -166,7 +166,7 @@ def test_compose():
     img2 = image.from_path('/tmp/blue.png')
     img3 = image.from_path('/tmp/red-compose.png')
     img = img.compose(img2)
-    assert u.image_similarity(img, img3) == 0
+    assert img.compare_to(img3) == 0
 
 
 def test_to_bytes():
@@ -174,7 +174,7 @@ def test_to_bytes():
     img.to_path('/tmp/img.png')
     file = open('/tmp/img.png', 'rb')
     byt = file.read()
-    assert img.to_bytes('png') == byt
+    assert img.to_bytes('image/png') == byt
 
 
 def test_to_path():
@@ -192,7 +192,7 @@ def test_add_text():
     img = image.from_data_url(red)
     img.add_text('FOOBAR', 10, 10, (0, 255, 0, 255))
     img2 = image.from_path('/tmp/red-text.png')
-    assert u.image_similarity(img, img2) == 0
+    assert img.compare_to(img2) == 0
 
 
 # box is not drawn around all edges
@@ -200,9 +200,4 @@ def test_add_box():
     img = image.from_data_url(red)
     img = img.add_box((0, 255, 0, 255))
     img2 = image.from_path('/tmp/red-box.png')
-    assert u.image_similarity(img, img2) == 0
-
-
-def test_getpixel():
-    img = image.from_data_url(red)
-    assert img.getpixel((1, 1)) == (255, 0, 0, 255)
+    assert img.compare_to(img2) == 0

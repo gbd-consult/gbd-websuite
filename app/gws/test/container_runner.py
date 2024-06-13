@@ -3,6 +3,9 @@
 Container test runner. Assumes tests are configured on the host with ``host_runner configure``.
 
 """
+import os
+
+os.environ['GWS_IN_TEST'] = '1'
 
 import time
 import re
@@ -27,9 +30,9 @@ GWS in-container test runner
 
 Options:
 
-    --work_dir <path>     - path to the local 'ini' file 
-    --only <regex>        - only run filenames matching the pattern 
-    --verbose             - enable debug logging
+    -w, --work_dir <path>     - path to the work dir (see the `runner.work_dir` ini option)
+    -o, --only <regex>        - only run filenames matching the pattern 
+    -v, --verbose             - enable debug logging
     
 Pytest options:
     see https://docs.pytest.org/latest/reference.html#command-line-flags
@@ -40,9 +43,16 @@ Pytest options:
 def main(args):
     gws.u.ensure_system_dirs()
 
-    wd = args.get('work_dir')
+    wd = args.get('work_dir') or args.get('w')
     u.OPTIONS = gws.lib.jsonx.from_path(f'{wd}/options.json')
     u.OPTIONS['runner.work_dir'] = wd
+
+    if not gws.env.GWS_IN_CONTAINER:
+        for k, v in u.OPTIONS.items():
+            if k.endswith('.host'):
+                u.OPTIONS[k] = 'localhost'
+            if k.endswith('.port'):
+                u.OPTIONS[k] = u.OPTIONS[k.replace('.port', '.expose_port')]
 
     pytest_args = [
         f'--config-file={wd}/pytest.ini',
@@ -52,10 +62,11 @@ def main(args):
     pytest_args.extend(args.get('_rest', []))
 
     gws.log.set_level('INFO')
+
     if args.get('verbose') or args.get('v'):
         gws.log.set_level('DEBUG')
         pytest_args.append('--tb=native')
-        pytest_args.append('--verbose')
+        pytest_args.append('-vv')
 
     files = enum_files_for_test(args.get('only') or args.get('o'))
     if not files:
@@ -68,7 +79,7 @@ def main(args):
         return
 
     cli.info('pytest ' + ' '.join(pytest_args))
-    pytest.main(pytest_args)
+    pytest.main(pytest_args, plugins=['gws.test.util'])
 
 
 ##
@@ -123,17 +134,10 @@ def health_check():
 
 def health_check_service_postgres():
     try:
-        conn = psycopg2.connect(
-            host=u.OPTIONS['service.postgres.host'],
-            port=u.OPTIONS['service.postgres.port'],
-            user=u.OPTIONS['service.postgres.user'],
-            password=u.OPTIONS['service.postgres.password'],
-            database=u.OPTIONS['service.postgres.database'],
-            connect_timeout=1
-        )
+        r = u.pg.rows('select 1')
+        u.pg.close()
     except psycopg2.Error as exc:
         return repr(exc)
-    conn.close()
 
 
 def health_check_service_qgis():
