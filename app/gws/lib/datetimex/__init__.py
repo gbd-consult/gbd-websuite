@@ -2,14 +2,17 @@
 
 These utilities are wrappers around the `datetime` module,
 some functions also use `pendulum` (https://pendulum.eustace.io/),
-however we work strictly with stock ``datetime.datetime`` and ``.time`` objects here.
+however all functions here return strictly stock ``datetime.datetime`` or ``datetime.time`` objects.
+``date`` objects are silently promoted to ``datetime`` with time set to midnight UTC.
 
 "Naive" datetime objects are not supported. All objects constructed in this module
 have the ``tzinfo`` attribute. When constructing an object (e.g. from a string),
 the default time zone must be passed in as a zoneinfo string (like ``Europe/Berlin``).
-An empty string (default) means the local time zone.
 
-It is an error to pass a naive object as an argument.
+An empty string (default) means the local time zone. Alias names like ``CEST`` are not supported.
+
+It is an error to pass a naive object as an argument to any function here,
+except for `parse` and `parse_time`, which set their tzinfo to the given default.
 
 When running in a docker container, there are several ways to set up the local time zone:
 
@@ -152,7 +155,7 @@ def today_utc() -> dt.datetime:
     return now_utc().replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-def parse(s, tz: str = '') -> Optional[dt.datetime]:
+def parse(s: str | dt.datetime | dt.date | None, tz: str = '') -> Optional[dt.datetime]:
     if not s:
         return None
 
@@ -160,7 +163,7 @@ def parse(s, tz: str = '') -> Optional[dt.datetime]:
         return _ensure_tzinfo(s, tz)
 
     if isinstance(s, dt.date):
-        return dt.datetime(s.year, s.month, s.day, tzinfo=time_zone(tz))
+        return new(s.year, s.month, s.day, tz=tz)
 
     try:
         return from_string(s, tz)
@@ -363,7 +366,9 @@ def new_time(hour=0, minute=0, second=0, microsecond=0, fold=0, tz: str = '') ->
     return dt.time(hour, minute, second, microsecond, fold=fold, tzinfo=time_zone(tz))
 
 
-def parse_time(s, tz: str = '') -> Optional[dt.time]:
+def parse_time(s: str | dt.datetime | dt.time | None, tz: str = '') -> Optional[dt.time]:
+    if not s:
+        return
     if isinstance(s, dt.datetime):
         return _ensure_tzinfo(s.timetz(), tz)
     if isinstance(s, dt.time):
@@ -441,6 +446,9 @@ def _check(d: dt.datetime | None) -> dt.datetime:
         if not d.tzinfo:
             raise Error('naive datetime detected')
         return d
+    if isinstance(d, dt.date):
+        # NB promote date to midnight UTC
+        return new(d.year, d.month, d.day, tz='utc')
     raise Error('invalid datetime value')
 
 
@@ -509,8 +517,8 @@ def _pend_parse_time(s, tz, iso_only):
     if isinstance(d, dt.time):
         return _ensure_tzinfo(d, tz)
 
-    # times and durations not accepted
-    raise Error(f'invalid date {s!r}')
+    # dates and durations not accepted
+    raise Error(f'invalid time {s!r}')
 
 
 def _ensure_tzinfo(d: dt.datetime | dt.time, tz: str):

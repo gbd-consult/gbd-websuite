@@ -312,6 +312,8 @@ gco              |                  |       | www.isotc211.org/2005/gco         
 gmd              |                  |       | www.isotc211.org/2005/gmd                     | schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd
 gmx              |                  |       | www.isotc211.org/2005/gmx                     | schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd
 srv              |                  |       | www.isotc211.org/2005/srv                     | schemas.opengis.net/iso/19139/20070417/srv/1.0/srv.xsd
+
+ms               |                  |       | http://mapserver.gis.umn.edu/mapserver        | 
  
 inspire_dls      |                  | 1.0   | inspire.ec.europa.eu/schemas/inspire_dls      | inspire.ec.europa.eu/schemas/inspire_dls/1.0/inspire_dls.xsd
 inspire_ds       |                  | 1.0   | inspire.ec.europa.eu/schemas/inspire_ds       | inspire.ec.europa.eu/schemas/inspire_ds/1.0/inspire_ds.xsd

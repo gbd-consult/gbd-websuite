@@ -4,7 +4,8 @@ from . import namespace, error
 
 
 class _SerializerState:
-    extra_namespaces: list[gws.XmlNamespace] = []
+    extra_namespaces: list[gws.XmlNamespace]
+
     compact_whitespace = False
     remove_namespaces = False
     fold_tags = False
@@ -12,35 +13,34 @@ class _SerializerState:
     with_schema_locations = False
     with_xml_declaration = False
 
-    buf: list[str] = []
-    defaultNamespace: Optional[gws.XmlNamespace] = None
+    buf: list[str]
+    defaultNamespace: Optional[gws.XmlNamespace]
 
 
-def to_string(el: gws.XmlElement, **kwargs):
+def _state(kwargs):
     ser = _SerializerState()
 
     ser.extra_namespaces = kwargs.get('extra_namespaces', [])
+
     ser.compact_whitespace = kwargs.get('compact_whitespace', False)
+    ser.fold_tags = kwargs.get('fold_tags', False)
     ser.remove_namespaces = kwargs.get('remove_namespaces', False)
     ser.with_namespace_declarations = kwargs.get('with_namespace_declarations', False)
     ser.with_schema_locations = kwargs.get('with_schema_locations', False)
     ser.with_xml_declaration = kwargs.get('with_xml_declaration', False)
 
-    return _to_string(ser, el)
+    ser.buf = []
+    ser.defaultNamespace = []
 
-
-def to_list(el: gws.XmlElement, **kwargs):
-    ser = _SerializerState()
-
-    ser.remove_namespaces = kwargs.get('remove_namespaces', False)
-    ser.fold_tags = kwargs.get('fold_tags', False)
-
-    return _to_list(ser, el)
+    return ser
 
 
 ##
 
-def _to_string(ser: _SerializerState, el: gws.XmlElement):
+
+def to_string(el: gws.XmlElement, **kwargs):
+    ser = _state(kwargs)
+
     _set_default_namespace(ser, el)
 
     extra_atts = None
@@ -53,21 +53,21 @@ def _to_string(ser: _SerializerState, el: gws.XmlElement):
             extra_ns=ser.extra_namespaces,
         )
 
-    _to_string2(ser, el, extra_atts)
-
     if ser.with_xml_declaration:
-        ser.buf[0] = _XML_DECL
+        ser.buf.append(_XML_DECL)
+
+    _to_string(ser, el, extra_atts)
 
     return ''.join(ser.buf)
 
 
-def _to_string2(ser: _SerializerState, el: gws.XmlElement, extra_atts=None):
+def _to_string(ser: _SerializerState, el: gws.XmlElement, extra_atts=None):
     atts = {}
 
     for key, val in el.attrib.items():
         if val is None:
             continue
-        atts[_make_name(ser, key)] = _make_value(ser, val)
+        atts[_make_name(ser, key)] = _value_to_string(ser, val)
 
     if extra_atts:
         atts.update(extra_atts)
@@ -75,12 +75,12 @@ def _to_string2(ser: _SerializerState, el: gws.XmlElement, extra_atts=None):
     open_pos = len(ser.buf)
     ser.buf.append('')
 
-    s = _make_text(ser, el.text)
+    s = _text_to_string(ser, el.text)
     if s:
         ser.buf.append(s)
 
     for c in el:
-        _to_string2(ser, c)
+        _to_string(ser, c)
 
     open_tag = _make_name(ser, el.tag)
     close_tag = open_tag
@@ -93,39 +93,37 @@ def _to_string2(ser: _SerializerState, el: gws.XmlElement, extra_atts=None):
     else:
         ser.buf[open_pos] += f'<{open_tag}/>'
 
-    s = _make_text(ser, el.tail)
+    s = _text_to_string(ser, el.tail)
     if s:
         ser.buf.append(s)
 
 
 ##
 
-def _to_list(ser, el):
+def to_list(el: gws.XmlElement, **kwargs):
+    ser = _state(kwargs)
+
     _set_default_namespace(ser, el)
 
-    args = [_make_name(ser, el.tag)]
+    return _to_list(ser, el)
 
-    if el.attrib:
-        args.append({
-            _make_name(ser, k): v
-            for k, v in el.attrib.items()
-        })
 
-    if el.text:
-        s = el.text.strip()
-        if s:
-            args.append(s)
+def _to_list(ser, el):
+    name = _make_name(ser, el.tag)
+    attr = {_make_name(ser, k): v for k, v in el.attrib.items()}
+    text = (el.text or '').strip()
+    tail = (el.tail or '').strip()
 
-    children = [_to_list(ser, c) for c in el]
+    sub = [_to_list(ser, c) for c in el]
 
-    if ser.fold_tags and len(args) == 1 and len(children) == 1:
+    if ser.fold_tags and len(sub) == 1 and (not attr and not text and not tail):
         # single wrapper tag, create 'tag/subtag
-        ls = children[0]
-        ls[0] = args[0] + '/' + ls[0]
-        return ls
+        inner = sub[0]
+        inner[0] = name + '/' + inner[0]
+        return inner
 
-    args.extend(children)
-    return args
+    res = [name, attr, text, sub, tail]
+    return [x for x in res if x]
 
 
 ##
@@ -139,7 +137,7 @@ def _set_default_namespace(ser, el):
         ser.defaultNamespace = ns
 
 
-def _make_text(ser, s):
+def _text_to_string(ser, s):
     if s is None:
         return ''
     if isinstance(s, (int, float, bool)):
@@ -154,7 +152,7 @@ def _make_text(ser, s):
     return s
 
 
-def _make_value(ser, s):
+def _value_to_string(ser, s):
     if s is None:
         return ''
     if isinstance(s, (int, float, bool)):

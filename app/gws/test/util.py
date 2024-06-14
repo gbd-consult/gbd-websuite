@@ -2,6 +2,7 @@
 
 import typing
 from typing import Optional
+import re
 
 import pytest
 import requests
@@ -221,6 +222,19 @@ class mockserver:
         if path:
             u += '/' + path
         return u
+
+
+##
+
+def fxml(s):
+    s = re.sub(r'\s+', ' ', s.strip())
+    return (
+        s
+        .replace(' <', '<')
+        .replace('< ', '<')
+        .replace(' >', '>')
+        .replace('> ', '>')
+    )
 
 
 _comma = ','.join
