@@ -3893,10 +3893,6 @@ class WebRequester:
     """Object tree root."""
     site: 'WebSite'
     """Website the request is processed for."""
-    params: dict
-    """GET parameters."""
-    command: str
-    """Command name to execute."""
 
     session: 'AuthSession'
     """Current session."""
@@ -3912,8 +3908,14 @@ class WebRequester:
     isSecure: bool
     """The request is secure."""
 
-    def initialize(self):
-        """Initialize the Requester."""
+    def params(self) -> dict:
+        """GET parameters."""
+
+    def struct(self) -> dict:
+        """Structured JSON payload."""
+
+    def command(self) -> str:
+        """Command name to execute."""
 
     def cookie(self, key: str, default: str = '') -> str:
         """Get a cookie.
@@ -4084,7 +4086,6 @@ class WebResponder:
             key: Header name.
             value: Header value.
         """
-
 
 
 class WebDocumentRoot(Data):

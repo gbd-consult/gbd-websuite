@@ -7,13 +7,11 @@ def root():
     cfg = '''
         auth {
             providers+ {
-                type 'provider1'
-                allowedMethods ['method1']
+                type 'mockAuthProvider1'
+                allowedMethods ['mockAuthMethod1']
             }
-            methods+ { type 'method1' }
-            methods+ { type 'method2' }
-            
-            session.lifeTime 2
+            methods+ { type 'mockAuthMethod1' }
+            methods+ { type 'mockAuthMethod2' }
         }
     '''
 
@@ -25,26 +23,27 @@ def root():
 
 def test_authenticate(root: gws.Root):
     am = root.app.authMgr
-    u0 = u.mocks.USERS[0]
-    u1 = am.authenticate(am.methods[0], gws.Data(login=u0['login'], password=u0['password']))
-    assert u1.displayName == u0['displayName']
+    u.mock.add_user('me', 'foo', displayName='123')
+    usr = am.authenticate(am.methods[0], gws.Data(username='me', password='foo'))
+    assert usr.displayName == '123'
 
 
 def test_authenticate_with_bad_login_fails(root: gws.Root):
     am = root.app.authMgr
-    u1 = am.authenticate(am.methods[0], gws.Data(login='BAD'))
-    assert u1 is None
+    u.mock.add_user('me', 'foo')
+    usr = am.authenticate(am.methods[0], gws.Data(username='BAD', password='foo'))
+    assert usr is None
 
 
 def test_authenticate_with_wrong_method_fails(root: gws.Root):
     am = root.app.authMgr
-    u0 = u.mocks.USERS[0]
-    u1 = am.authenticate(am.methods[1], gws.Data(login=u0['login'], password=u0['password']))
-    assert u1 is None
+    u.mock.add_user('me', 'foo')
+    usr = am.authenticate(am.methods[1], gws.Data(username='me', password='foo'))
+    assert usr is None
 
 
 def test_get_user(root: gws.Root):
     am = root.app.authMgr
-    u0 = u.mocks.USERS[0]
-    u1 = am.authenticate(am.methods[0], gws.Data(login=u0['login'], password=u0['password']))
-    assert am.get_user(u1.uid).displayName == u0['displayName']
+    u.mock.add_user('me', 'foo', displayName='890')
+    usr = am.authenticate(am.methods[0], gws.Data(username='me', password='foo'))
+    assert am.get_user(usr.uid).displayName == '890'

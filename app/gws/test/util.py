@@ -1,26 +1,31 @@
 """Test utilities."""
 
+import re
 import typing
 from typing import Optional
-import re
 
 import pytest
 import requests
+import werkzeug.test
 
 import gws
 import gws.base.auth
 import gws.base.feature
+import gws.base.shape
+import gws.base.web.wsgi_app
 import gws.config
+import gws.gis.crs
 import gws.lib.cli
+import gws.lib.jsonx
 import gws.lib.net
 import gws.lib.sa as sa
 import gws.lib.vendor.slon
 import gws.spec.runtime
-import gws.test.mocks
+import gws.test.mock
 
 ##
 
-mocks = gws.test.mocks
+mock = gws.test.mock
 
 fixture = pytest.fixture
 raises = pytest.raises
@@ -92,7 +97,7 @@ def gws_root(config: str = '', specs: gws.SpecRuntime = None):
     print('')
     config = _config_defaults() + '\n' + config
     parsed_config = _to_data(gws.lib.vendor.slon.parse(config, as_object=True))
-    specs = mocks.register(specs or gws_specs())
+    specs = mock.register(specs or gws_specs())
     root = gws.config.initialize(specs, parsed_config)
     return gws.config.activate(root)
 
@@ -101,10 +106,46 @@ def gws_system_user():
     return gws.base.auth.user.SystemUser(None, roles=[])
 
 
-def gws_model_context(**kwargs):
-    kwargs.setdefault('op', gws.ModelOperation.read)
-    kwargs.setdefault('user', gws_system_user())
-    return gws.ModelContext(**kwargs)
+##
+
+# ref: https://werkzeug.palletsprojects.com/en/3.0.x/test/
+
+class TestResponse(werkzeug.test.TestResponse):
+    cookies: dict[str, werkzeug.test.Cookie]
+
+
+def _wz_request(root, **kwargs):
+    cli = werkzeug.test.Client(gws.base.web.wsgi_app.make_application(root))
+
+    cookies = cast(list[werkzeug.test.Cookie], kwargs.pop('cookies', []))
+    for c in cookies:
+        cli.set_cookie(
+            key=c.key,
+            value=c.value,
+            max_age=c.max_age,
+            expires=c.expires,
+            path=c.path,
+            domain=c.domain,
+            secure=c.secure,
+            httponly=c.http_only,
+        )
+
+    res = cli.open(**kwargs)
+
+    # for some reason, responses do not include cookies, work around this
+    res.cookies = {c.key: c for c in (cli._cookies or {}).values()}
+    return res
+
+
+def get_request(root, url, **kwargs) -> TestResponse:
+    url = re.sub(r'\s+', '', url.strip())
+    url = '/' + url.strip('/')
+    return _wz_request(root, method='GET', path=url, **kwargs)
+
+
+def api_request(root, cmd, req=None, **kwargs) -> TestResponse:
+    path = '/_/' + (cmd or '')
+    return _wz_request(root, method='POST', path=path, json=req or {}, **kwargs)
 
 
 ##
@@ -192,6 +233,17 @@ def feature(model, **atts) -> gws.Feature:
     f = gws.base.feature.new(model=model, record=gws.FeatureRecord(attributes=atts))
     f.attributes = atts
     return f
+
+
+def ewkb(wkt: str, srid=3857):
+    shape = gws.base.shape.from_wkt(wkt, default_crs=gws.gis.crs.get(srid))
+    return shape.to_ewkb()
+
+
+def model_context(**kwargs):
+    kwargs.setdefault('op', gws.ModelOperation.read)
+    kwargs.setdefault('user', gws_system_user())
+    return gws.ModelContext(**kwargs)
 
 
 ##

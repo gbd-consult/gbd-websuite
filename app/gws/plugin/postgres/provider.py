@@ -86,8 +86,9 @@ class Object(gws.base.database.provider.Object):
         sql = sa.select(sa.func.ST_Extent(tab.columns.get(desc.geometryName)))
         with self.connect() as conn:
             box = conn.execute(sql).scalar_one()
-        if box:
-            return gws.Bounds(extent=gws.gis.extent.from_box(box), crs=gws.gis.crs.get(desc.geometrySrid))
+        extent = gws.gis.extent.from_box(box)
+        if extent:
+            return gws.Bounds(extent=extent, crs=gws.gis.crs.get(desc.geometrySrid))
 
 
 ##

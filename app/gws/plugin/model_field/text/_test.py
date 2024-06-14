@@ -48,25 +48,25 @@ def root():
 def test_no_search_no_results(root: gws.Root):
     mm = u.cast(gws.Model, root.get('NO_SEARCH'))
 
-    fs = mm.find_features(gws.SearchQuery(keyword='abc'), u.gws_model_context())
+    fs = mm.find_features(gws.SearchQuery(keyword='abc'), u.model_context())
     assert [f.get('a') for f in fs] == []
 
 
 def test_exact_search(root: gws.Root):
     mm = u.cast(gws.Model, root.get('EXACT_1'))
 
-    fs = mm.find_features(gws.SearchQuery(keyword='abc'), u.gws_model_context())
+    fs = mm.find_features(gws.SearchQuery(keyword='abc'), u.model_context())
     assert [f.get('a') for f in fs] == []
 
-    fs = mm.find_features(gws.SearchQuery(keyword='abc 1'), u.gws_model_context())
+    fs = mm.find_features(gws.SearchQuery(keyword='abc 1'), u.model_context())
     assert [f.get('a') for f in fs] == ['abc 1']
 
 
 def test_any_search(root: gws.Root):
     mm = u.cast(gws.Model, root.get('ANY_1'))
 
-    fs = mm.find_features(gws.SearchQuery(keyword='boo'), u.gws_model_context())
+    fs = mm.find_features(gws.SearchQuery(keyword='boo'), u.model_context())
     assert [f.get('a') for f in fs] == []
 
-    fs = mm.find_features(gws.SearchQuery(keyword='abc'), u.gws_model_context())
+    fs = mm.find_features(gws.SearchQuery(keyword='abc'), u.model_context())
     assert [f.get('a') for f in fs] == ['abc 1', 'abc 3']

@@ -7,10 +7,10 @@ def root():
     cfg = '''
         auth {
             providers+ {
-                type 'provider1'
-                allowedMethods ['method1']
+                type 'mockAuthProvider1'
+                allowedMethods ['mockAuthMethod1']
             }
-            methods+ { type 'method1' }
+            methods+ { type 'mockAuthMethod1' }
             session {
                 type "sqlite"
                 lifeTime 2
@@ -26,8 +26,8 @@ def root():
 def _auth(root) -> tuple[gws.AuthManager, gws.AuthSessionManager, gws.User]:
     am = root.app.authMgr
     se = am.sessionMgr
-    u0 = u.mocks.USERS[0]
-    usr = am.authenticate(am.methods[0], gws.Data(login=u0['login'], password=u0['password']))
+    u.mock.add_user('me', 'foo')
+    usr = am.authenticate(am.methods[0], gws.Data(username='me', password='foo'))
     return am, se, usr
 
 
@@ -66,11 +66,15 @@ def test_session_expiration(root: gws.Root):
     dead = se.create(am.methods[0], usr)
     live = se.create(am.methods[0], usr)
 
-    u.sleep(1)
+    gws.u.sleep(1)
+
     se.touch(live)
-    u.sleep(1)
+
+    gws.u.sleep(1)
+
     se.touch(live)
-    u.sleep(1)
+
+    gws.u.sleep(1)
 
     dead2 = se.get_valid(dead.uid)
     live2 = se.get_valid(live.uid)

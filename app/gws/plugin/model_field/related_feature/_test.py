@@ -47,7 +47,7 @@ def root():
 
 
 def test_find_no_depth(root: gws.Root):
-    mc = u.gws_model_context(maxDepth=0)
+    mc = u.model_context(maxDepth=0)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -68,7 +68,7 @@ def test_find_no_depth(root: gws.Root):
 
 
 def test_find_depth(root: gws.Root):
-    mc = u.gws_model_context(maxDepth=1)
+    mc = u.model_context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -92,7 +92,7 @@ def test_find_depth(root: gws.Root):
 
 
 def test_update(root: gws.Root):
-    mc = u.gws_model_context(maxDepth=1)
+    mc = u.model_context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -129,7 +129,7 @@ def test_update(root: gws.Root):
 
 
 def test_create(root: gws.Root):
-    mc = u.gws_model_context(maxDepth=1)
+    mc = u.model_context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -157,7 +157,7 @@ def test_create(root: gws.Root):
 
 
 def test_create_auto(root: gws.Root):
-    mc = u.gws_model_context(maxDepth=1)
+    mc = u.model_context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -182,7 +182,7 @@ def test_create_auto(root: gws.Root):
 
 
 def test_create_related(root: gws.Root):
-    mc = u.gws_model_context(maxDepth=1)
+    mc = u.model_context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},

@@ -32,7 +32,7 @@ def test_get_features(root: gws.Root):
         user=u.gws_system_user(),
         op=gws.ModelOperation.read,
     )
-    mo = cast(gws.Model, root.get('PLAIN'))
+    mo = u.cast(gws.Model, root.get('PLAIN'))
 
     u.pg.insert('plain', [
         dict(id=1, a='11'),
@@ -51,7 +51,7 @@ def test_create_with_explicit_pk(root: gws.Root):
     mc = gws.ModelContext(
         user=u.gws_system_user(),
     )
-    mo = cast(gws.Model, root.get('PLAIN'))
+    mo = u.cast(gws.Model, root.get('PLAIN'))
 
     u.pg.clear('plain')
 
@@ -70,7 +70,7 @@ def test_create_with_auto_pk(root: gws.Root):
     mc = gws.ModelContext(
         user=u.gws_system_user(),
     )
-    mo = cast(gws.Model, root.get('SERIAL_ID'))
+    mo = u.cast(gws.Model, root.get('SERIAL_ID'))
 
     u.pg.clear('serial_id')
 
