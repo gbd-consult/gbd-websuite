@@ -8,6 +8,8 @@ metadata.abstract """
 `WMS` service with qgis layers
 
 [Service URL](/_/owsService/serviceUid/service_wms_qgis?request=GetCapabilities)
+
+[Demo QGIS Project](/ows_services.qgs)
 """
 
 owsServices+ {

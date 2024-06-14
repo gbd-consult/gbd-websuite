@@ -10,7 +10,6 @@ import gws.gis.extent
 import gws.lib.net
 
 
-
 def service_operations(caps_el: gws.XmlElement) -> list[gws.OwsOperation]:
     # <ows:OperationsMetadata>
     #     <ows:Operation name="GetCapabilities">...
@@ -370,13 +369,17 @@ def _parse_url(el: gws.XmlElement) -> str:
 
 
 def _parse_link(el: gws.XmlElement) -> Optional[gws.MetadataLink]:
-    # <MetadataURL type="...
-    #       <Format...
-    # 	    <OnlineResource...
-
     if not el:
         return None
 
+    # see base/ows/server/templatelib.py
+    # regarding different MetadataURL formats
+
+    # simple
+    if el.get('href'):
+        return gws.MetadataLink(url=el.get('href'))
+
+    # nested
     d = gws.u.strip({
         'url': _parse_url(el),
         'type': el.get('type'),

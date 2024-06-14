@@ -8,6 +8,8 @@ metadata.abstract """
 `WFS` service with lots of features. Supports `startIndex` parameter to fetch features in pages.
 
 [Service URL](/_/owsService/serviceUid/service_wfs_paging?request=GetCapabilities)
+
+[Demo QGIS Project](/ows_services.qgs)
 """
 
 owsServices+ {

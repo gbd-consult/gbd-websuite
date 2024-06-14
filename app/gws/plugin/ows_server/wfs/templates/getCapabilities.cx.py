@@ -93,10 +93,7 @@ def feature_type(ta: server.TemplateArgs, lc: server.LayerCaps):
             yield 'OtherCRS', b.crs.urn
 
     yield tpl.ows_wgs84_bounding_box(lc)
-
-    if lc.layer.metadata.metaLinks:
-        for ml in lc.layer.metadata.metaLinks:
-            yield 'MetadataURL', {'xlink:href': ta.url_for(ml.url)}
+    yield tpl.meta_links_simple(ta, lc.layer.metadata)
 
 
 def filters(ta: server.TemplateArgs):

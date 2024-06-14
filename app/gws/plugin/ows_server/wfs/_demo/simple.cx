@@ -8,6 +8,8 @@ metadata.abstract """
 Simple `WFS` service, provides two Postgres layers.
 
 [Service URL](/_/owsService/serviceUid/service_wfs_simple?request=GetCapabilities)
+
+[Demo QGIS Project](/ows_services.qgs)
 """
 
 owsServices+ {

@@ -163,7 +163,7 @@ class Object(server.service.Object):
         return sr
 
     def layer_is_suitable(self, layer: gws.Layer):
-        return layer.isSearchable and layer.ows.xmlNamespace
+        return not layer.isGroup and layer.isSearchable and layer.ows.xmlNamespace
 
     ##
 

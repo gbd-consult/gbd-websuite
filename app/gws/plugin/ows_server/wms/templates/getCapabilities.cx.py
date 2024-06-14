@@ -73,7 +73,7 @@ def service_meta(ta):
         yield 'MaxWidth', s
         yield 'MaxHeight', s
 
-    yield meta_links(ta, md)
+    yield tpl.meta_links_nested(ta, md)
 
 
 def caps(ta):
@@ -127,7 +127,7 @@ def layer_content(ta, lc: server.LayerCaps):
     if md.authorityIdentifier:
         yield 'Identifier', {'authority': md.authorityName}, md.authorityIdentifier
 
-    yield meta_links(ta, md)
+    yield tpl.meta_links_nested(ta, md)
 
     wext = lc.layer.wgsExtent
 
@@ -190,14 +190,3 @@ def layer_content(ta, lc: server.LayerCaps):
 
     for c in lc.children:
         yield layer(ta, c)
-
-
-def meta_links(ta, md: gws.Metadata):
-    if md.metaLinks:
-        for ml in md.metaLinks:
-            yield (
-                'MetadataURL',
-                {'type': ml.type},
-                ('Format', ml.format),
-                tpl.online_resource(ta.url_for(ml.url))
-            )

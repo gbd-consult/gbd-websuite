@@ -115,7 +115,7 @@ class Object(server.service.Object):
     ##
 
     def layer_is_suitable(self, layer: gws.Layer):
-        return layer.canRenderBox
+        return not layer.isGroup and layer.canRenderBox
 
     ##
 

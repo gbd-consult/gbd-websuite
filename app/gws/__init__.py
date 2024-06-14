@@ -1335,6 +1335,7 @@ class Job:
 class MetadataLink(Data):
     """Link metadata."""
 
+    about: Optional[str]
     description: Optional[str]
     format: Optional[str]
     formatVersion: Optional[str]

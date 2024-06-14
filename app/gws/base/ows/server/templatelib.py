@@ -91,11 +91,12 @@ def online_resource(url):
     return 'OnlineResource', {'xlink:type': 'simple', 'xlink:href': url}
 
 
+# OGC 01-068r3, 6.2.2
+# The URL prefix shall end in either a '?' (in the absence of additional server-specific parameters) or a '&'.
+# OGC 06-042, 6.3.3
+# A URL prefix is defined... as a string including... mandatory question mark
+
 def dcp_service_url(ta: request.TemplateArgs):
-    # OGC 01-068r3, 6.2.2
-    # The URL prefix shall end in either a '?' (in the absence of additional server-specific parameters) or a '&'.
-    # OGC 06-042, 6.3.3
-    # A URL prefix is defined... as a string including... mandatory question mark
     return 'DCPType/HTTP/Get', online_resource(ta.serviceUrl + '?')
 
 
@@ -140,6 +141,39 @@ def lon_lat_envelope(lc: core.LayerCaps):
         ('gml:pos', coord_dms(lc.layer.wgsExtent[0]), ' ', coord_dms(lc.layer.wgsExtent[1])),
         ('gml:pos', coord_dms(lc.layer.wgsExtent[2]), ' ', coord_dms(lc.layer.wgsExtent[3])),
     )
+
+
+# Nested format (WFS 1, WMS):
+# OGC 06-042  7.2.4.6.11
+# The "type" attribute indicates the standard... The enclosed <Format> element... etc
+
+def meta_links_nested(ta: request.TemplateArgs, md: gws.Metadata):
+    if md.metaLinks:
+        for ml in md.metaLinks:
+            yield meta_url_nested(ta, ml, 'MetadataURL')
+
+
+def meta_url_nested(ta: request.TemplateArgs, ml: gws.MetadataLink, name: str):
+    if ml:
+        yield name, {'type': ml.type}, ('Format', ml.format), online_resource(ta.url_for(ml.url))
+
+
+# Simple format (WFS 2)
+# OGC 09-025r1 Table 11
+# The xlink:href element shall be used to reference any metadata.
+# The optional about attribute may be used to reference the aspect of the element which includes
+# this wfs:MetadataURL element that this metadata provides more information about.
+# (whatever that means)
+
+def meta_links_simple(ta: request.TemplateArgs, md: gws.Metadata):
+    if md.metaLinks:
+        for ml in md.metaLinks:
+            yield meta_url_simple(ta, ml, 'MetadataURL')
+
+
+def meta_url_simple(ta: request.TemplateArgs, ml: gws.MetadataLink, name: str):
+    if ml:
+        yield name, {'xlink:href': ta.url_for(ml.url), 'about': ml.about}
 
 
 # http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd

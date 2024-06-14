@@ -1,25 +1,26 @@
-uid "service_wms_simple_demo"
+uid "service_wmts_simple_demo"
 
-title "Simple WMS Service"
+title "Simple WMTS service"
 
-metadata.keywords [ "wms" "ows-service" ]
+metadata.keywords [ "wmts" "ows-service" ]
 
 metadata.abstract """
-Simple `WMS` service, provides a single OSM layer.
+Simple `WMTS` service.
 
-[Service URL](/_/owsService/serviceUid/service_wms_simple?request=GetCapabilities)
+[Service URL](/_/owsService/serviceUid/service_wmts_simple?request=GetCapabilities)
 
 [Demo QGIS Project](/ows_services.qgs)
 """
 
 owsServices+ {
-    type "wms"
-    uid "service_wms_simple"
+    type "wmts"
+    uid "service_wmts_simple"
+    supportedCrs [ 3857 25832 25833 ]
     metadata {
-        abstract "Simple WMS service"
-        keywords ["test" "wms" "demo"]
-        name "SIMPLE_WMS"
-        title "Simple WMS"
+        abstract "Simple WMTS service"
+        keywords ["test" "wmts" "demo"]
+        name "WMTS_SIMPLE"
+        title "Simple WMTS"
         {demo_metadata}
     }
 }
