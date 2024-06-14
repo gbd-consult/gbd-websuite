@@ -16,13 +16,17 @@ _STATE = {
 def application(environ, start_response):
     if not _STATE['inited']:
         init()
-    responder = handle_request(environ)
+    root = gws.config.root()
+    responder = handle_request(root, environ)
     return responder.send_response(environ, start_response)
 
 
-def initialized_application(environ, start_response):
-    responder = handle_request(environ)
-    return responder.send_response(environ, start_response)
+def make_application(root):
+    def fn(environ, start_response):
+        responder = handle_request(root, environ)
+        return responder.send_response(environ, start_response)
+
+    return fn
 
 
 def init():
@@ -42,21 +46,20 @@ def reload():
     init()
 
 
-def handle_request(environ) -> gws.WebResponder:
-    root = gws.config.root()
+def handle_request(root: gws.Root, environ) -> gws.WebResponder:
     site = root.app.webMgr.site_from_environ(environ)
     req = gws.base.web.wsgi.Requester(root, environ, site)
 
     try:
-        req.initialize()
+        _ = req.params()  # enforce parsing
     except Exception as exc:
         return handle_error(req, exc)
 
-    gws.log.if_debug(_debug_repr, f'REQUEST_BEGIN {req.command}', req.params)
-    gws.debug.time_start(f'REQUEST {req.command}')
+    gws.log.if_debug(_debug_repr, f'REQUEST_BEGIN {req.command()}', req.params() or req.struct())
+    gws.debug.time_start(f'REQUEST {req.command()}')
     res = apply_middleware(root, req)
     gws.debug.time_end()
-    gws.log.if_debug(_debug_repr, f'REQUEST_END {req.command}', res)
+    gws.log.if_debug(_debug_repr, f'REQUEST_END {req.command()}', res)
 
     return res
 
@@ -132,20 +135,20 @@ _relaxed_read_options = {
 
 
 def handle_action(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
-    if not req.command:
+    if not req.command():
         raise gws.NotFoundError('no command provided')
 
     if req.isApi:
         category = gws.CommandCategory.api
-        params = req.params
+        params = req.struct()
         read_options = None
     elif req.isGet:
         category = gws.CommandCategory.get
-        params = req.params
+        params = req.params()
         read_options = _relaxed_read_options
     elif req.isPost:
         category = gws.CommandCategory.post
-        params = req.params
+        params = req.params()
         read_options = _relaxed_read_options
     else:
         # @TODO: add HEAD
@@ -153,7 +156,7 @@ def handle_action(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
 
     fn, request = root.app.actionMgr.prepare_action(
         category,
-        req.command,
+        req.command(),
         params,
         req.user,
         read_options
@@ -162,7 +165,7 @@ def handle_action(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
     response = fn(req, request)
 
     if response is None:
-        raise gws.NotFoundError(f'action not handled {category!r}:{req.command!r}')
+        raise gws.NotFoundError(f'action not handled {category!r}:{req.command()!r}')
 
     if isinstance(response, gws.ContentResponse):
         return req.content_responder(response)

@@ -187,7 +187,7 @@ class Object(gws.base.action.Object):
             projects=projects,
             req=req,
             user=req.user,
-            params=req.params,
+            params=req.params(),
         )
 
         return tpl.render(gws.TemplateRenderInput(args=args, locale=locale))

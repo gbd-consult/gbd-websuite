@@ -49,8 +49,12 @@ class Requester(gws.WebRequester):
         'msgpack': 'application/msgpack',
     }
 
-    def __init__(self, root: gws.Root, environ: dict, site: gws.WebSite):
-        self._wz = werkzeug.wrappers.Request(environ)
+    def __init__(self, root: gws.Root, environ: dict, site: gws.WebSite, **kwargs):
+        if 'wz' in kwargs:
+            self._wz = kwargs['wz']
+        else:
+            self._wz = werkzeug.wrappers.Request(environ)
+
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
         self._wz.max_content_length = int(root.app.cfg('server.web.maxRequestLength', default=1)) * 1024 * 1024
 
@@ -77,16 +81,26 @@ class Requester(gws.WebRequester):
 
         self.isApi = self.inputType is not None
 
-        self.params: dict[str, Any] = {}
-        self._lowerParams: dict[str, Any] = {}
-        self.command = ''
+        self._parsed_params = {}
+        self._parsed_params_lc = {}
+        self._parsed_struct = {}
+        self._parsed_command = ''
+        self._parsed = False
 
     def __repr__(self):
         return f'<Requester {self._wz}>'
 
-    def initialize(self):
-        self.command, self.params = self._parse_params()
-        self._lowerParams = {k.lower(): v for k, v in self.params.items()}
+    def params(self):
+        self._parse()
+        return self._parsed_params
+
+    def struct(self):
+        self._parse()
+        return self._parsed_struct
+
+    def command(self):
+        self._parse()
+        return self._parsed_command
 
     def data(self):
         if not self.isPost:
@@ -119,10 +133,11 @@ class Requester(gws.WebRequester):
         return self._wz.environ.get(key, default)
 
     def has_param(self, key):
-        return key.lower() in self._lowerParams
+        self._parse()
+        return key.lower() in self._parsed_params_lc
 
     def param(self, key, default=''):
-        return self._lowerParams.get(key.lower(), default)
+        return self._parsed_params_lc.get(key.lower(), default)
 
     def header(self, key, default=''):
         return self._wz.headers.get(key, default)
@@ -199,7 +214,12 @@ class Requester(gws.WebRequester):
 
     ##
 
-    def _parse_params(self):
+    _cmd_param_name = 'cmd'
+
+    def _parse(self):
+        if self._parsed:
+            return
+
         # the server only understands requests to /_ or /_/commandName
         # GET params can be given as query string or encoded in the path
         # like _/commandName/param1/value1/param2/value2 etc
@@ -214,7 +234,6 @@ class Requester(gws.WebRequester):
         elif path.startswith(gws.c.SERVER_ENDPOINT + '/'):
             # example.com/_/someCommand
             # the cmd param is in the url
-            # if 'cmd' is also in the query string or json, they must match!
             path_parts = path.split('/')
             cmd = path_parts[2]
             path_parts = path_parts[3:]
@@ -222,15 +241,18 @@ class Requester(gws.WebRequester):
             raise error.NotFound(f'invalid request path: {path!r}')
 
         if self.inputType:
-            params = self._decode_struct(self.inputType)
+            self._parsed_struct = self._decode_struct(self.inputType)
+            self._parsed_command = cmd or self._parsed_struct.pop(self._cmd_param_name, '')
         else:
-            params = dict(self._wz.args)
+            d = dict(self._wz.args)
             if path_parts:
                 for n in range(1, len(path_parts), 2):
-                    params[path_parts[n - 1]] = path_parts[n]
+                    d[path_parts[n - 1]] = path_parts[n]
+            self._parsed_command = cmd or d.pop(self._cmd_param_name, '')
+            self._parsed_params = d
+            self._parsed_params_lc = {k.lower(): v for k, v in d.items()}
 
-        cmd = cmd or params.get('cmd', '')
-        return cmd, params
+        self._parsed = True
 
     def _struct_type(self, header):
         if header:
