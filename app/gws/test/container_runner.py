@@ -61,12 +61,12 @@ def main(args):
     ]
     pytest_args.extend(args.get('_rest', []))
 
-    gws.log.set_level('INFO')
-
     if args.get('verbose') or args.get('v'):
         gws.log.set_level('DEBUG')
         pytest_args.append('--tb=native')
         pytest_args.append('-vv')
+    else:
+        gws.log.set_level('CRITICAL')
 
     files = enum_files_for_test(args.get('only') or args.get('o'))
     if not files:
@@ -96,10 +96,10 @@ def enum_files_for_test(only_pattern):
 
     # sort files semantically
 
-    _sort_order = ['/core/', '/lib/', '/base/', '/plugin/']
+    _sort_order = '/core/ /lib/ /gis/ /test/ /base/ /plugin/'
 
     def _sort_key(path):
-        for n, s in enumerate(_sort_order):
+        for n, s in enumerate(_sort_order.split()):
             if s in path:
                 return n, path
         return 99, path

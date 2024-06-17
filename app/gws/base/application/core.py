@@ -145,7 +145,9 @@ class Object(gws.Application):
         # NB need defaults from the server
         self.config.server = self.serverMgr.config
 
-        gws.log.set_level(self.cfg('server.log.level'))
+        p = self.cfg('server.log.level')
+        if p:
+            gws.log.set_level(p)
 
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'

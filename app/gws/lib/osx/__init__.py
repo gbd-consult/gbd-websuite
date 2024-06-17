@@ -40,7 +40,7 @@ def getenv(key: str, default: str = None) -> Optional[str]:
     return os.getenv(key, default)
 
 
-def run_nowait(cmd: str, **kwargs) -> subprocess.Popen:
+def run_nowait(cmd: str | list, **kwargs) -> subprocess.Popen:
     """Run a process and return immediately.
 
     Args:

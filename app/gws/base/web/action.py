@@ -115,7 +115,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('webSystemAsset')
     def sys_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
-        locale = gws.lib.intl.get_locale(p.localeUid, self.root.app.localeUids)
+        locale = gws.lib.intl.locale(p.localeUid, self.root.app.localeUids)
 
         # eg. '8.0.0.light.css, 8.0.0.vendor.js etc
 
@@ -166,7 +166,7 @@ class Object(gws.base.action.Object):
 
         tpl = self.root.app.templateMgr.template_from_path(real_path)
         if tpl:
-            locale = gws.lib.intl.get_locale(p.localeUid, project.localeUids if project else self.root.app.localeUids)
+            locale = gws.lib.intl.locale(p.localeUid, project.localeUids if project else self.root.app.localeUids)
             return self._serve_template(req, tpl, project, locale)
 
         mime = gws.lib.mime.for_path(real_path)

@@ -148,10 +148,8 @@ def test_unzip_bytes_to_dict():
 def test_end():
     os.remove('/test/dir1/f3.txt')
     os.remove('/test/dir1/f4.txt')
-    print(os.listdir('/test/dir1'))
     os.remove('/test/f1.txt')
     os.remove('/test/f2.txt')
     os.rmdir('/test/dir0')
     os.rmdir('/test/dir1')
-    print(os.listdir('/test'))
     os.rmdir('/test')

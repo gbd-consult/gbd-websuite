@@ -30,6 +30,8 @@ mock = gws.test.mock
 fixture = pytest.fixture
 raises = pytest.raises
 
+monkey_patch = pytest.MonkeyPatch.context
+
 cast = typing.cast
 
 exec = gws.lib.cli.exec
@@ -62,7 +64,6 @@ def _config_defaults():
             database {OPTIONS['service.postgres.database']!r}
             schemaCacheLifeTime 0 
         }}
-        server.log.level "INFO" 
     '''
 
 
@@ -94,8 +95,12 @@ def gws_specs() -> gws.SpecRuntime:
 
 
 def gws_root(config: str = '', specs: gws.SpecRuntime = None):
-    print('')
-    config = _config_defaults() + '\n' + config
+    config = '\n'.join([
+        f'server.log.level {gws.log.get_level()}',
+        _config_defaults(),
+        config or '',
+        ''
+    ])
     parsed_config = _to_data(gws.lib.vendor.slon.parse(config, as_object=True))
     specs = mock.register(specs or gws_specs())
     root = gws.config.initialize(specs, parsed_config)
@@ -104,6 +109,10 @@ def gws_root(config: str = '', specs: gws.SpecRuntime = None):
 
 def gws_system_user():
     return gws.base.auth.user.SystemUser(None, roles=[])
+
+
+def get_db(root):
+    return root.get('GWS_TEST_POSTGRES_PROVIDER')
 
 
 ##

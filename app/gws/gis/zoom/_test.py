@@ -8,25 +8,7 @@ import gws.gis.crs
 
 def test_resolutions_from_config_empty_cnfg():
     cnfg = zoom.Config()
-    assert zoom.resolutions_from_config(cnfg) == [0.13999999999999999,
-                                                  0.27999999999999997,
-                                                  0.5599999999999999,
-                                                  1.1199999999999999,
-                                                  2.2399999999999998,
-                                                  4.199999999999999,
-                                                  9.799999999999999,
-                                                  19.599999999999998,
-                                                  41.99999999999999,
-                                                  70.0,
-                                                  140.0,
-                                                  280.0,
-                                                  560.0,
-                                                  1120.0,
-                                                  2799.9999999999995,
-                                                  4200.0,
-                                                  9800.0,
-                                                  19600.0,
-                                                  41999.99999999999]
+    assert zoom.resolutions_from_config(cnfg) == zoom.OSM_RESOLUTIONS
 
 
 def test_resolutions_from_config():

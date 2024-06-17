@@ -1,94 +1,89 @@
 """Tests for the writer module"""
 
 import gws
-import gws.test.util as u
-
+import gws.base.shape
+import gws.gis.crs
 import gws.gis.gml.writer as writer
-import gws.gis.gml.parser as parser
 import gws.lib.xmlx
+import gws.test.util as u
 
 
 def test_shape_to_element():
-    gml = gws.lib.xmlx.from_string('''    <root xmlns:gml="http://www.opengis.net/gml">
-                                                    <gml:Point srsName = "EPSG:3857">
-                                                        <gml:coordinates>100.12345,200.12345</gml:coordinates>
-                                                    </gml:Point>
-                                                </root>''')
-    shape = parser.parse_shape(gml.findfirst())
-    assert writer.shape_to_element(shape).to_string() == u.fxml("""<gml:Point srsName="urn:ogc:def:crs:EPSG::3857">
-                                                                        <gml:pos srsDimension="2">100.12 200.12</gml:pos>
-                                                                     </gml:Point>""")
+    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.gis.crs.WEBMERCATOR)
 
-
-def test_shape_to_element_coordinate_precision():
-    gml = gws.lib.xmlx.from_string('''    <root xmlns:gml="http://www.opengis.net/gml">
-                                                    <gml:Point srsName = "EPSG:3857">
-                                                        <gml:coordinates>100.12345,200.12345</gml:coordinates>
-                                                    </gml:Point>
-                                                </root>''')
-    shape = parser.parse_shape(gml.findfirst())
-    assert writer.shape_to_element(shape, coordinate_precision=4).to_string() == u.fxml("""<gml:Point srsName="urn:ogc:def:crs:EPSG::3857">
-                                                                        <gml:pos srsDimension="2">100.1235 200.1234</gml:pos>
-                                                                     </gml:Point>""")
-
-
-def test_shape_to_element_xy():
-    gml = gws.lib.xmlx.from_string('''    <root xmlns:gml="http://www.opengis.net/gml">
-                                                    <gml:Point srsName="EPSG:4326">
-                                                        <gml:coordinates>100.12345,200.12345</gml:coordinates>
-                                                    </gml:Point>
-                                                </root>''')
-    shape = parser.parse_shape(gml.findfirst())
-    assert writer.shape_to_element(shape, always_xy=True).to_string() == u.fxml("""<gml:Point srsName="urn:ogc:def:crs:EPSG::4326">
-                                                                        <gml:pos srsDimension="2">200.12345 100.12345</gml:pos>
-                                                                     </gml:Point>""")
+    xml = writer.shape_to_element(p).to_string()
+    assert xml == u.fxml("""
+        <gml:Point srsName="urn:ogc:def:crs:EPSG::3857">
+            <gml:pos srsDimension="2">12.35 5.68</gml:pos>
+        </gml:Point>
+    """)
 
 
 def test_shape_to_element_crs_format():
-    gml = gws.lib.xmlx.from_string('''    <root xmlns:gml="http://www.opengis.net/gml">
-                                                       <gml:Point srsName = "EPSG:3857">
-                                                           <gml:coordinates>100.12345,200.12345</gml:coordinates>
-                                                       </gml:Point>
-                                                   </root>''')
-    shape = parser.parse_shape(gml.findfirst())
-    crs_format = gws.CrsFormat.epsg
-    assert writer.shape_to_element(shape, crs_format=crs_format).to_string() == u.fxml("""<gml:Point srsName="EPSG:3857">
-                                                                           <gml:pos srsDimension="2">100.12 200.12</gml:pos>
-                                                                        </gml:Point>""")
+    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.gis.crs.WEBMERCATOR)
+
+    xml = writer.shape_to_element(p, crs_format=gws.CrsFormat.epsg).to_string()
+    assert xml == u.fxml("""
+        <gml:Point srsName="EPSG:3857">
+            <gml:pos srsDimension="2">12.35 5.68</gml:pos>
+        </gml:Point>
+    """)
+
+
+def test_shape_to_element_coordinate_precision():
+    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.gis.crs.WEBMERCATOR)
+    xml = writer.shape_to_element(p, coordinate_precision=4).to_string()
+    assert xml == u.fxml("""
+        <gml:Point srsName="urn:ogc:def:crs:EPSG::3857">
+            <gml:pos srsDimension="2">12.3457 5.6789</gml:pos>
+        </gml:Point>
+    """)
+
+
+def test_shape_to_element_xy():
+    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.gis.crs.WGS84)
+
+    xml = writer.shape_to_element(p, always_xy=True).to_string()
+    assert xml == u.fxml("""
+        <gml:Point srsName="urn:ogc:def:crs:EPSG::4326">
+            <gml:pos srsDimension="2">12.34567 5.6789</gml:pos>
+        </gml:Point>
+    """)
+
+    xml = writer.shape_to_element(p, always_xy=False).to_string()
+    assert xml == u.fxml("""
+        <gml:Point srsName="urn:ogc:def:crs:EPSG::4326">
+            <gml:pos srsDimension="2">5.6789 12.34567</gml:pos>
+        </gml:Point>
+    """)
 
 
 def test_shape_to_element_namespace():
-    gml = gws.lib.xmlx.from_string('''    <root xmlns:gml="http://www.opengis.net/gml">
-                                                        <gml:Point srsName = "EPSG:3857">
-                                                            <gml:coordinates>100.12345,200.12345</gml:coordinates>
-                                                        </gml:Point>
-                                                    </root>''')
-    shape = parser.parse_shape(gml.findfirst())
+    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.gis.crs.WEBMERCATOR)
     ns = gws.lib.xmlx.namespace.get('wms')
-    assert writer.shape_to_element(shape, namespace=ns).to_string() == u.fxml("""<wms:Point srsName="urn:ogc:def:crs:EPSG::3857">
-                                                                            <wms:pos srsDimension="2">100.12 200.12</wms:pos>
-                                                                         </wms:Point>""")
+    xml = writer.shape_to_element(p, namespace=ns).to_string()
+    assert xml == u.fxml("""
+        <wms:Point srsName="urn:ogc:def:crs:EPSG::3857">
+            <wms:pos srsDimension="2">12.35 5.68</wms:pos>
+        </wms:Point>
+    """)
 
 
 def test_shape_to_element_with_xmlns():
-    gml = gws.lib.xmlx.from_string('''    <root xmlns:gml="http://www.opengis.net/gml">
-                                                    <gml:Point srsName = "EPSG:3857">
-                                                        <gml:coordinates>100.12345,200.12345</gml:coordinates>
-                                                    </gml:Point>
-                                                </root>''')
-    shape = parser.parse_shape(gml.findfirst())
-    assert writer.shape_to_element(shape, with_xmlns=False).to_string() == u.fxml("""<Point srsName="urn:ogc:def:crs:EPSG::3857">
-                                                                        <pos srsDimension="2">100.12 200.12</pos>
-                                                                     </Point>""")
+    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.gis.crs.WEBMERCATOR)
+    xml = writer.shape_to_element(p, with_xmlns=False).to_string()
+    assert xml == u.fxml("""
+        <Point srsName="urn:ogc:def:crs:EPSG::3857">
+            <pos srsDimension="2">12.35 5.68</pos>
+        </Point>
+    """)
 
 
 def test_shape_to_element_with_inline_xmlns():
-    gml = gws.lib.xmlx.from_string('''    <root xmlns:gml="http://www.opengis.net/gml">
-                                                    <gml:Point srsName = "EPSG:3857">
-                                                        <gml:coordinates>100.12345,200.12345</gml:coordinates>
-                                                    </gml:Point>
-                                                </root>''')
-    shape = parser.parse_shape(gml.findfirst())
-    assert writer.shape_to_element(shape, with_inline_xmlns=True).to_string() == u.fxml("""<gml:Point srsName="urn:ogc:def:crs:EPSG::3857" xmlns:gml="http://www.opengis.net/gml">
-                                                                        <gml:pos srsDimension="2">100.12 200.12</gml:pos>
-                                                                     </gml:Point>""")
+    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.gis.crs.WEBMERCATOR)
+    xml = writer.shape_to_element(p, with_inline_xmlns=True).to_string()
+    assert xml == u.fxml("""
+        <gml:Point srsName="urn:ogc:def:crs:EPSG::3857" xmlns:gml="http://www.opengis.net/gml">
+            <gml:pos srsDimension="2" xmlns:gml="http://www.opengis.net/gml">12.35 5.68</gml:pos>
+        </gml:Point>
+    """)

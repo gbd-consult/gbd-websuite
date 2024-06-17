@@ -2,14 +2,16 @@
 
 These utilities are wrappers around the `datetime` module,
 some functions also use `pendulum` (https://pendulum.eustace.io/),
-however all functions here return strictly stock ``datetime.datetime`` or ``datetime.time`` objects.
+however all functions here return strictly stock ``datetime.datetime`` objects.
+
 ``date`` objects are silently promoted to ``datetime`` with time set to midnight UTC.
+``time`` objects are silently promoted to ``datetime`` with the today's date set.
 
 "Naive" datetime objects are not supported. All objects constructed in this module
 have the ``tzinfo`` attribute. When constructing an object (e.g. from a string),
 the default time zone must be passed in as a zoneinfo string (like ``Europe/Berlin``).
 
-An empty string (default) means the local time zone. Alias names like ``CEST`` are not supported.
+An empty zoneinfo string (default) means the local time zone. Alias names like ``CEST`` are not supported.
 
 It is an error to pass a naive object as an argument to any function here,
 except for `parse` and `parse_time`, which set their tzinfo to the given default.
@@ -24,8 +26,9 @@ When running in a docker container, there are several ways to set up the local t
 from typing import Optional
 
 import datetime as dt
-import re
+import contextlib
 import os
+import re
 import zoneinfo
 
 import pendulum
@@ -140,11 +143,11 @@ def new(year, month, day, hour=0, minute=0, second=0, microsecond=0, fold=0, tz:
 
 
 def now(tz: str = '') -> dt.datetime:
-    return dt.datetime.now(time_zone(tz))
+    return _now(time_zone(tz))
 
 
 def now_utc() -> dt.datetime:
-    return dt.datetime.now(time_zone('UTC'))
+    return _now(time_zone('UTC'))
 
 
 def today(tz: str = '') -> dt.datetime:
@@ -171,12 +174,29 @@ def parse(s: str | dt.datetime | dt.date | None, tz: str = '') -> Optional[dt.da
         pass
 
 
+def parse_time(s: str | dt.time | None, tz: str = '') -> Optional[dt.datetime]:
+    if not s:
+        return
+
+    if isinstance(s, dt.time):
+        return _time_to_datetime(s, tz)
+
+    try:
+        return from_iso_time_string(str(s), tz)
+    except Error:
+        pass
+
+
 def from_string(s: str, tz: str = '') -> dt.datetime:
     return _pend_parse(s, tz, iso_only=False)
 
 
 def from_iso_string(s: str, tz: str = '') -> dt.datetime:
     return _pend_parse(s, tz, iso_only=True)
+
+
+def from_iso_time_string(s: str, tz: str = '') -> dt.datetime:
+    return _pend_parse_time(s, tz, iso_only=True)
 
 
 def from_timestamp(ts: float, tz: str = '') -> dt.datetime:
@@ -201,6 +221,20 @@ def to_iso_date_string(d: Optional[dt.datetime] = None) -> str:
 
 def to_basic_string(d: Optional[dt.datetime] = None) -> str:
     return _check(d).strftime("%Y%m%d%H%M%S")
+
+
+def to_iso_time_string(d: Optional[dt.datetime] = None, with_tz='+') -> str:
+    fmt = '%H:%M:%S'
+    if with_tz:
+        fmt += '%z'
+    s = _check(d).strftime(fmt)
+    if with_tz == 'Z' and s.endswith('+0000'):
+        s = s[:-5] + 'Z'
+    return s
+
+
+def to_string(fmt: str, d: Optional[dt.datetime] = None) -> str:
+    return _check(d).strftime(fmt)
 
 
 # Converters
@@ -360,39 +394,6 @@ def prev(day: int | str, d: Optional[dt.datetime] = None, keep_time=False) -> dt
     return _unpend(_pend(d).previous(_WD[day], keep_time))
 
 
-# Time
-
-def new_time(hour=0, minute=0, second=0, microsecond=0, fold=0, tz: str = '') -> dt.time:
-    return dt.time(hour, minute, second, microsecond, fold=fold, tzinfo=time_zone(tz))
-
-
-def parse_time(s: str | dt.datetime | dt.time | None, tz: str = '') -> Optional[dt.time]:
-    if not s:
-        return
-    if isinstance(s, dt.datetime):
-        return _ensure_tzinfo(s.timetz(), tz)
-    if isinstance(s, dt.time):
-        return _ensure_tzinfo(s, tz)
-    try:
-        return time_from_iso_string(str(s), tz)
-    except Error:
-        pass
-
-
-def time_from_iso_string(s: str, tz: str = '') -> dt.time:
-    return _pend_parse_time(s, tz, iso_only=True)
-
-
-def time_to_iso_string(t: Optional[dt.time] = None, with_tz='+') -> str:
-    fmt = '%H:%M:%S'
-    if with_tz:
-        fmt += '%z'
-    s = _check_time(t).strftime(fmt)
-    if with_tz == 'Z' and s.endswith('+0000'):
-        s = s[:-5] + 'Z'
-    return s
-
-
 # Duration
 
 _DURATION_UNITS = {
@@ -439,16 +440,48 @@ def parse_duration(s: str) -> int:
 
 ##
 
-def _check(d: dt.datetime | None) -> dt.datetime:
+# for testing
+
+_MOCK_NOW = None
+
+
+@contextlib.contextmanager
+def mock_now(d):
+    global _MOCK_NOW
+    _MOCK_NOW = d
+    yield
+    _MOCK_NOW = None
+
+
+def _now(tz):
+    return _MOCK_NOW or dt.datetime.now(tz=tz)
+
+
+def _time_to_datetime(t: dt.time, tz: str = '') -> dt.datetime:
+    # promote time to today's time
+    t = _ensure_tzinfo(t, tz)
+    d = _now(tz=t.tzinfo)
+    return dt.datetime(d.year, d.month, d.day, t.hour, t.minute, t.second, t.microsecond, t.tzinfo, fold=t.fold)
+
+
+def _date_to_datetime(d: dt.date, tz: str = '') -> dt.datetime:
+    # promote date to midnight UTC
+    return new(d.year, d.month, d.day, tz=tz)
+
+
+def _check(d: dt.datetime | dt.date | dt.time | None) -> dt.datetime:
     if d is None:
         return now()
     if isinstance(d, dt.datetime):
         if not d.tzinfo:
             raise Error('naive datetime detected')
         return d
+
     if isinstance(d, dt.date):
-        # NB promote date to midnight UTC
-        return new(d.year, d.month, d.day, tz='utc')
+        _date_to_datetime(d)
+    if isinstance(d, dt.time):
+        _time_to_datetime(d)
+
     raise Error('invalid datetime value')
 
 
@@ -507,7 +540,7 @@ def _pend_parse(s, tz, iso_only):
 def _pend_parse_time(s, tz, iso_only):
     try:
         if iso_only:
-            d = pendulum.parsing.parse_iso8601(s, tz=time_zone(tz))
+            d = pendulum.parsing.parse_iso8601(s)
         else:
             # do not normalize
             d = pendulum.parsing._parse(s)
@@ -515,7 +548,7 @@ def _pend_parse_time(s, tz, iso_only):
         raise Error(f'invalid time {s!r}') from exc
 
     if isinstance(d, dt.time):
-        return _ensure_tzinfo(d, tz)
+        return _time_to_datetime(_ensure_tzinfo(d, tz))
 
     # dates and durations not accepted
     raise Error(f'invalid time {s!r}')

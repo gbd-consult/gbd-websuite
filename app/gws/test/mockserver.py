@@ -139,6 +139,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             exec(code, ctx)
         except Exception as exc:
             writeln(f'[mockserver] SNIPPET ERROR: {exc!r}')
+            return self.end('Internal Server Error', 500)
 
     def end(self, content, status=200, **headers):
         hs = {k.lower(): v for k, v in headers.items()}

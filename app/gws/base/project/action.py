@@ -35,5 +35,5 @@ class Object(gws.base.action.Object):
 
         return InfoResponse(
             project=gws.props_of(project, req.user),
-            locale=gws.lib.intl.get_locale(p.localeUid, project.localeUids),
+            locale=gws.lib.intl.locale(p.localeUid, project.localeUids),
             user=None if req.user.isGuest else gws.props_of(req.user, req.user))

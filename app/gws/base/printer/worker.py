@@ -53,7 +53,7 @@ class Object:
         else:
             raise gws.Error(f'invalid outputFormat {fmt!r}')
 
-        self.tri.locale = gws.lib.intl.get_locale(request.localeUid, self.tri.project.localeUids)
+        self.tri.locale = gws.lib.intl.locale(request.localeUid, self.tri.project.localeUids)
         self.tri.crs = gws.gis.crs.get(request.crs) or self.project.map.bounds.crs
         self.tri.maps = [self.prepare_map(self.tri, m) for m in (request.maps or [])]
         self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(request.dpi, gws.lib.uom.OGC_SCREEN_PPI)))

@@ -119,6 +119,14 @@ def test_parse_duration_errors():
         dx.parse_duration('1 foo')
 
 
+def test_parse_time():
+    with dx.mock_now(dx.new(2023, 3, 26, 0, 0, 0, tz='Europe/Berlin')):
+        d = dx.parse_time('01:02:03', tz='Europe/Berlin')
+        assert dx.to_iso_string(d) == '2023-03-26T01:02:03+0100'
+        d = dx.parse_time('03:04:05', tz='Europe/Berlin')
+        assert dx.to_iso_string(d) == '2023-03-26T03:04:05+0200'
+
+
 def test_to_iso_string():
     d = dt.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
     assert dx.to_iso_string(d) == '2022-10-31T16:42:22+0900'

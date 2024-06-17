@@ -62,8 +62,8 @@ class Object(gws.Template):
         args = tri.args or {}
         args.setdefault('app', self.root.app)
 
-        locale = args.get('locale') or tri.locale or gws.lib.intl.get_default_locale()
-        f = gws.lib.intl.get_formatters(locale)
+        locale = args.get('locale') or tri.locale or gws.lib.intl.default_locale()
+        f = gws.lib.intl.formatters(locale)
 
         args.setdefault('locale', locale)
         args.setdefault('date', f[0])

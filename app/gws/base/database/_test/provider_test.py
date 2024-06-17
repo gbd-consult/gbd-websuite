@@ -1,11 +1,6 @@
-import os
-import gws.config
 import gws.base.database
 import gws.lib.sa as sa
 import gws.test.util as u
-
-
-##
 
 
 @u.fixture(scope='module')
@@ -26,7 +21,7 @@ def root():
 ##
 
 def test_error(root: gws.Root):
-    db = gws_root.get('GWS_TEST_POSTGRES_PROVIDER')
+    db = u.get_db(root)
 
     err = ''
     with db.connect() as conn:
@@ -46,7 +41,7 @@ def test_error(root: gws.Root):
 
 
 def test_error_rollback(root: gws.Root):
-    db = gws_root.get('GWS_TEST_POSTGRES_PROVIDER')
+    db = u.get_db(root)
 
     err = ''
     with db.connect() as conn:
@@ -63,7 +58,7 @@ def test_error_rollback(root: gws.Root):
 
 
 def test_error_no_rollback(root: gws.Root):
-    db = gws_root.get('GWS_TEST_POSTGRES_PROVIDER')
+    db = u.get_db(root)
 
     err = ''
     with db.connect() as conn:
@@ -78,3 +73,51 @@ def test_error_no_rollback(root: gws.Root):
             # ERROR:  current transaction is aborted...
             err = 'FAILED'
     assert 'FAILED' in err
+
+
+def test_nested_connections(root: gws.Root):
+    db = u.get_db(root)
+    db_name = u.option('service.postgres.database')
+
+    def _num_conn(c):
+        return (
+            c.execute(
+                sa.text(f"SELECT numbackends FROM pg_stat_database WHERE datname='{db_name}' "))
+        ).scalar_one()
+
+    with db.connect() as c1:
+        n1 = _num_conn(c1)
+        with db.connect() as c2:
+            n2 = _num_conn(c2)
+            with db.connect() as c3:
+                n3 = _num_conn(c3)
+
+    assert n1 == n2 == n3
+
+
+def test_nested_connection_opens_once(root: gws.Root):
+    db = u.get_db(root)
+
+    log = []
+
+    class MockConn:
+        def __init__(self):
+            log.append('OPEN')
+
+        def execute(self, s):
+            log.append(f'EXEC {s}')
+
+        def close(self):
+            log.append('CLOSE')
+
+    with u.monkey_patch() as mp:
+        mp.setattr(sa.Engine, 'connect', lambda *args: MockConn())
+
+        with db.connect() as conn:
+            conn.execute('1')
+            with db.connect() as conn:
+                conn.execute('2')
+                with db.connect() as conn:
+                    conn.execute('3')
+
+    assert log == ['OPEN', 'EXEC 1', 'EXEC 2', 'EXEC 3', 'CLOSE']

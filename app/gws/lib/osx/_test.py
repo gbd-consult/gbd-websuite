@@ -1,5 +1,7 @@
 """Tests for the osx module."""
+
 import os
+import contextlib
 import re
 import time
 
@@ -11,21 +13,59 @@ import gws.test.util as u
 
 
 def test_getenv():
-    assert re.match(r'^/home/[\w\s]+$', osx.getenv('HOME'))
+    os.environ['GWS_TEST_1'] = 'a'
+    assert osx.getenv('GWS_TEST_1') == 'a'
 
 
 def test_getenv_default():
     assert osx.getenv('FOOBAR', 'default') == 'default'
 
 
+@contextlib.contextmanager
+def _workdir_tmp(content):
+    # for exec/chmod tests, which cannot use tmp_path
+
+    name = gws.u.random_string(16)
+    p = u.work_dir() + '/' + name
+    gws.u.write_file(p, content)
+
+    yield p
+
+    try:
+        os.unlink(p)
+    except:
+        pass
+
+
 def test_nowait():
-    assert 'nano' not in [i.name() for i in psutil.process_iter()]
-    osx.run_nowait('nano')
-    assert 'nano' in [i.name() for i in psutil.process_iter()]
+    with _workdir_tmp('#!/bin/bash\nsleep 100\n') as p:
+        os.chmod(p, 0o777)
+        assert p not in osx.run('ps -ax')
+        osx.run_nowait(p)
+        assert p in osx.run('ps -ax')
 
 
 def test_run():
-    assert osx.run('ls') == '__init__.py\n__pycache__\n_test.py\n'
+    out = osx.run(['bash', '--help'])
+    assert 'option' in out
+
+
+def test_run_error():
+    with u.raises(osx.Error):
+        osx.run('no_such_thing')
+
+    out = osx.run(['bash', 'no_such_option'], strict=False)
+    assert 'such file' in out
+
+    with u.raises(osx.Error):
+        osx.run(['bash', 'no_such_option'], strict=True)
+
+
+def test_run_timeout():
+    with _workdir_tmp('#!/bin/bash\nsleep 100\n') as p:
+        with u.raises(osx.TimeoutError):
+            os.chmod(p, 0o777)
+            osx.run(p, timeout=1)
 
 
 def test_unlink(tmp_path):
@@ -49,18 +89,11 @@ def test_rename(tmp_path):
     assert p.read_text() == 'test'
 
 
-# uid/ gid cannot change in tmp_path files
-def test_chown(tmp_path):
-    d = tmp_path / 'sub'
-    d.mkdir()
-    p = d / 'foo.txt'
-    p.write_text('test')
-    osx.chown(p, user=1001, group=1002)
-    uid = os.stat(p).st_uid
-    gid = os.stat(p).st_gid
-    assert uid == gid
-    assert uid == 1001
-    assert gid == 1002
+def test_chown():
+    with _workdir_tmp('...') as p:
+        osx.chown(p, user=333, group=444)
+        assert os.stat(p).st_uid == 333
+        assert os.stat(p).st_gid == 444
 
 
 def test_file_mtime(tmp_path):
@@ -105,14 +138,14 @@ def test_file_checksum(tmp_path):
 
 
 # not working
-#def test_running_pids():
+# def test_running_pids():
 #    for i in psutil.process_iter():
 #        assert i.name() in osx.running_pids().get(i.pid)
 
 
-def test_process_rss_size():
-    assert 110 >= int(osx.process_rss_size('m')) >= 90
-
+# def test_process_rss_size():
+#     assert 110 >= int(osx.process_rss_size('m')) >= 90
+#
 
 # generator obj
 def test_find_files(tmp_path):

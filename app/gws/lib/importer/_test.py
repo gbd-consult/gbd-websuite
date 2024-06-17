@@ -28,31 +28,31 @@ def packages_path(tmpdir_factory):
     base = str(tmpdir_factory.mktemp('importer'))
     files = {
         "/p1/__init__.py":
-            "gws.MPORT_LOG.append('p1.init')",
+            "gws.IMPORT_LOG.append('p1.init')",
         "/p1/mod.py":
-            "gws.MPORT_LOG.append('p1.mod')",
+            "gws.IMPORT_LOG.append('p1.mod')",
         "/p1/dot.py":
-            "gws.MPORT_LOG.append('p1.dot'); from . import mod",
+            "gws.IMPORT_LOG.append('p1.dot'); from . import mod",
         "/p2/deep/root/base/__init__.py":
-            "gws.MPORT_LOG.append('p2.base.init')",
+            "gws.IMPORT_LOG.append('p2.base.init')",
         "/p2/deep/root/base/sub/__init__.py":
-            "gws.MPORT_LOG.append('p2.base.sub.init')",
+            "gws.IMPORT_LOG.append('p2.base.sub.init')",
         "/p2/deep/root/base/sub/sub2/__init__.py":
-            "gws.MPORT_LOG.append('p2.base.sub.sub2.init')",
+            "gws.IMPORT_LOG.append('p2.base.sub.sub2.init')",
         "/p2/deep/root/base/sub/sub2/mod.py":
-            "gws.MPORT_LOG.append('p2.base.sub.sub2.mod')",
+            "gws.IMPORT_LOG.append('p2.base.sub.sub2.mod')",
         "/p3/mod.py":
-            "gws.MPORT_LOG.append('p3.mod')",
+            "gws.IMPORT_LOG.append('p3.mod')",
         "/p4/__init__.py":
-            "gws.MPORT_LOG.append('p4.init'); from . import circular",
+            "gws.IMPORT_LOG.append('p4.init'); from . import circular",
         "/p4/mod.py":
-            "gws.MPORT_LOG.append('p4.mod')",
+            "gws.IMPORT_LOG.append('p4.mod')",
         "/p4/circular.py":
-            "gws.MPORT_LOG.append('p4.circular'); from . import mod",
+            "gws.IMPORT_LOG.append('p4.circular'); from . import mod",
         "/p5/a/same_name/__init__.py":
-            "gws.MPORT_LOG.append('p5.a.same_name.init')",
+            "gws.IMPORT_LOG.append('p5.a.same_name.init')",
         "/p5/b/same_name/__init__.py":
-            "gws.MPORT_LOG.append('p5.b.same_name.init')",
+            "gws.IMPORT_LOG.append('p5.b.same_name.init')",
         "/p0/err.py":
             "syntax error",
     }

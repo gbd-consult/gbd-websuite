@@ -128,7 +128,7 @@ class Object(gws.base.action.Object):
 
         res = tpl.render(gws.TemplateRenderInput(
             args={'layer': layer},
-            locale=gws.lib.intl.get_locale(p.localeUid, project.localeUids),
+            locale=gws.lib.intl.locale(p.localeUid, project.localeUids),
             user=req.user))
 
         return DescribeLayerResponse(content=res.content)

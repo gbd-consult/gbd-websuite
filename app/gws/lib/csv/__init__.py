@@ -70,7 +70,7 @@ class _Writer:
         self.h: Object = helper
         self.rows = []
         self.headers = ''
-        f = gws.lib.intl.get_formatters(locale)
+        f = gws.lib.intl.formatters(locale)
         self.dateFormatter = f[0]
         self.timeFormatter = f[1]
         self.numberFormatter = f[2]

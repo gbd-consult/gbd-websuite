@@ -24,6 +24,14 @@ def set_level(level: int | str):
         _current_level = getattr(Level, level.upper())
 
 
+def get_level() -> str:
+    global _current_level
+    for k, n in vars(Level).items():
+        if n == _current_level:
+            return k
+    return 'ALL'
+
+
 def log(level: int, msg: str, *args, **kwargs):
     _raw(level, msg, args, kwargs)
 
