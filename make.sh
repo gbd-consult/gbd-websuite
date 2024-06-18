@@ -53,7 +53,7 @@ fi
 CLIENT_BUILDER=$BASE_DIR/app/js/helpers/index.js
 DOC_BUILDER=$BASE_DIR/doc/doc.py
 BUILD_DIR=$BASE_DIR/app/__build
-TEST_RUNNER=$BASE_DIR/app/gws/test/host_runner.py
+TEST_RUNNER=$BASE_DIR/app/gws/test/test.py
 
 MAKE_INIT="$PYTHON $BASE_DIR/app/_make_init.py"
 MAKE_SPEC="$PYTHON $BASE_DIR/app/gws/spec/spec.py $BUILD_DIR"

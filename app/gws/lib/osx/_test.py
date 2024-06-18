@@ -1,13 +1,9 @@
 """Tests for the osx module."""
 
 import os
-import contextlib
 import re
 import time
 
-import psutil
-
-import gws
 import gws.lib.osx as osx
 import gws.test.util as u
 
@@ -21,24 +17,8 @@ def test_getenv_default():
     assert osx.getenv('FOOBAR', 'default') == 'default'
 
 
-@contextlib.contextmanager
-def _workdir_tmp(content):
-    # for exec/chmod tests, which cannot use tmp_path
-
-    name = gws.u.random_string(16)
-    p = u.work_dir() + '/' + name
-    gws.u.write_file(p, content)
-
-    yield p
-
-    try:
-        os.unlink(p)
-    except:
-        pass
-
-
 def test_nowait():
-    with _workdir_tmp('#!/bin/bash\nsleep 100\n') as p:
+    with u.temp_file_in_base_dir('#!/bin/bash\nsleep 100\n') as p:
         os.chmod(p, 0o777)
         assert p not in osx.run('ps -ax')
         osx.run_nowait(p)
@@ -54,15 +34,15 @@ def test_run_error():
     with u.raises(osx.Error):
         osx.run('no_such_thing')
 
-    out = osx.run(['bash', 'no_such_option'], strict=False)
+    out = osx.run(['bash', 'NO_SUCH_FILE'], strict=False)
     assert 'such file' in out
 
     with u.raises(osx.Error):
-        osx.run(['bash', 'no_such_option'], strict=True)
+        osx.run(['bash', 'NO_SUCH_FILE'], strict=True)
 
 
 def test_run_timeout():
-    with _workdir_tmp('#!/bin/bash\nsleep 100\n') as p:
+    with u.temp_file_in_base_dir('#!/bin/bash\nsleep 100\n') as p:
         with u.raises(osx.TimeoutError):
             os.chmod(p, 0o777)
             osx.run(p, timeout=1)
@@ -90,7 +70,7 @@ def test_rename(tmp_path):
 
 
 def test_chown():
-    with _workdir_tmp('...') as p:
+    with u.temp_file_in_base_dir('...') as p:
         osx.chown(p, user=333, group=444)
         assert os.stat(p).st_uid == 333
         assert os.stat(p).st_gid == 444

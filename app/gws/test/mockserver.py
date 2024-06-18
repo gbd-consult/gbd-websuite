@@ -6,17 +6,7 @@ and acts as a mock for our http-related functionality.
 This server does almost nothing by default, but the client can "extend" it by providing "snippets".
 A snippet is a Python code fragment, which is injected directly into the request handler.
 
-The following variables are available to snippets ::
-
-    remote_host - remote host
-    remote_port - remote port
-    path        - url path
-    method      - GET/POST
-    body        - raw request body (bytes)
-    text        - body decoded as utf8
-    json        - body decoded as json
-    query       - query string key => value dict, e.g. {'a': '1', 'b': '2'}
-    query2      - query string key => [values] dict, e.g. {'a': ['1'], 'b': ['2']}
+The properties of the request handler (like ``path``) are available as variables in snippets.
 
 With ``return end(content, status, **headers)`` the snippet can return an HTTP response to the client.
 
@@ -35,13 +25,13 @@ Example of use::
     # set up a snippet
 
     requests.post('http://mock-server/__add', data=r'''
-        if path == '/say-hello':
+        if path == '/say-hello' and query.get('x') == 'y':
             return end('HELLO')
     ''')
 
     # invoke it
 
-    res = requests.get('http://mock-server/say-hello')
+    res = requests.get('http://mock-server/say-hello?x=y')
     assert res.text == 'HELLO'
 
 The mockserver runs in a GWS container, so all gws modules are available for import.
@@ -59,27 +49,33 @@ import gws
 _SNIPPETS = []
 
 
-def writeln(s):
-    sys.stdout.write(s + '\n')
-    sys.stdout.flush()
-
-
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-    protocol_version = 'HTTP/1.1'
-    method: str
     body: bytes
-    text: str
+    """Raw request body."""
     json: dict
-    query: dict
+    """Request body decoded as json."""
+    method: str
+    """GET, POST etc."""
+    path: str
+    """Url path part."""
+    protocol_version = 'HTTP/1.1'
+    """Protocol version."""
     query2: dict
+    """Query string as a key => [values] dict, e.g. ``{'a': ['1', '2'], ...etc}`` """
+    query: dict
+    """Query string as a key => value dict, e.g. ``{'a': '1', 'b': '2', ...etc}`` """
     remote_host: str
+    """Remote host."""
     remote_port: int
+    """Remote post."""
+    text: str
+    """Request body decoded as utf8."""
 
     def handle_one_request(self):
         try:
             return super().handle_one_request()
         except Exception as exc:
-            writeln(f'[mockserver] SERVER ERROR: {exc!r}')
+            _writeln(f'[mockserver] SERVER ERROR: {exc!r}')
 
     def do_GET(self):
         self.method = 'GET'
@@ -94,14 +90,14 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.prepare(self.rfile.read(content_length))
 
         if self.path == '/__add':
-            _SNIPPETS.insert(0, dedent(self.text))
+            _SNIPPETS.insert(0, _dedent(self.text))
             return self.end('ok')
         if self.path == '/__del':
             _SNIPPETS[::] = []
             return self.end('ok')
         if self.path == '/__set':
             _SNIPPETS[::] = []
-            _SNIPPETS.insert(0, dedent(self.text))
+            _SNIPPETS.insert(0, _dedent(self.text))
             return self.end('ok')
 
         return self.run_snippets()
@@ -130,15 +126,15 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def run_snippets(self):
         code = '\n'.join([
             'def F():',
-            indent('\n'.join(_SNIPPETS)),
-            indent('return end("?", 404)'),
+            _indent('\n'.join(_SNIPPETS)),
+            _indent('return end("?", 404)'),
             'F()'
         ])
         ctx = {**vars(self), 'end': self.end, 'gws': gws}
         try:
             exec(code, ctx)
         except Exception as exc:
-            writeln(f'[mockserver] SNIPPET ERROR: {exc!r}')
+            _writeln(f'[mockserver] SNIPPET ERROR: {exc!r}')
             return self.end('Internal Server Error', 500)
 
     def end(self, content, status=200, **headers):
@@ -168,7 +164,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
 
-def dedent(s):
+def _dedent(s):
     ls = [p.rstrip() for p in s.split('\n')]
     ind = 1e20
 
@@ -180,9 +176,14 @@ def dedent(s):
     return '\n'.join(ln[ind:] for ln in ls)
 
 
-def indent(s):
+def _indent(s):
     ind = ' ' * 4
     return '\n'.join(ind + ln for ln in s.split('\n'))
+
+
+def _writeln(s):
+    sys.stdout.write(s + '\n')
+    sys.stdout.flush()
 
 
 def main():
@@ -190,8 +191,8 @@ def main():
     port = 80
 
     httpd = http.server.ThreadingHTTPServer((host, port), HTTPRequestHandler)
-    signal.signal(signal.SIGTERM, httpd.shutdown)
-    writeln(f'[mockserver] started on {host}:{port}')
+    signal.signal(signal.SIGTERM, lambda x, y: httpd.shutdown())
+    _writeln(f'[mockserver] started on {host}:{port}')
     httpd.serve_forever()
 
 

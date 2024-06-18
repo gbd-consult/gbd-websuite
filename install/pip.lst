@@ -23,6 +23,7 @@ Werkzeug==2.*
 
 pytest==7.*
 pytest-clarity==1.*
+coverage==7.*
 
 # documentation
 

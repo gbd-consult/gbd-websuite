@@ -1,5 +1,7 @@
 """Test utilities."""
 
+import contextlib
+import os
 import re
 import typing
 from typing import Optional
@@ -45,10 +47,6 @@ def option(name, default=None):
     return OPTIONS.get(name, default)
 
 
-def work_dir():
-    return option('runner.work_dir')
-
-
 ##
 
 
@@ -89,8 +87,15 @@ _GWS_SPEC_DICT = None
 
 def gws_specs() -> gws.SpecRuntime:
     global _GWS_SPEC_DICT
+
     if _GWS_SPEC_DICT is None:
-        _GWS_SPEC_DICT = gws.spec.runtime.get_spec(work_dir() + '/MANIFEST.json', read_cache=False, write_cache=False)
+        base = option('BASE_DIR')
+        _GWS_SPEC_DICT = gws.spec.runtime.get_spec(
+            f'{base}/config/MANIFEST.json',
+            read_cache=False,
+            write_cache=False
+        )
+
     return gws.spec.runtime.Object(_GWS_SPEC_DICT)
 
 
@@ -296,6 +301,41 @@ def fxml(s):
         .replace(' >', '>')
         .replace('> ', '>')
     )
+
+
+##
+
+def ensure_dir(path, clear=False):
+    def _clear(d):
+        for de in os.scandir(d):
+            if de.is_dir():
+                _clear(de.path)
+                os.rmdir(de.path)
+            else:
+                os.unlink(de.path)
+
+    os.makedirs(path, exist_ok=True)
+    if clear:
+        _clear(path)
+
+
+@contextlib.contextmanager
+def temp_file_in_base_dir(content):
+    # for exec/chmod tests, which cannot use tmp_path
+
+    base = option('BASE_DIR')
+    d = f'{base}/tmp'
+    ensure_dir(d)
+
+    p = d + '/' + gws.u.random_string(16)
+    gws.u.write_file(p, content)
+
+    yield p
+
+    try:
+        os.unlink(p)
+    except:
+        pass
 
 
 _comma = ','.join

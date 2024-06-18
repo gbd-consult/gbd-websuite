@@ -9,32 +9,15 @@ export GWS_GID=${GWS_GID:-1000}
 PYTHON=python3
 
 MAIN_PY=$GWS_APP_DIR/bin/_gws.py
-TEST_PY=$GWS_APP_DIR/gws/test/container_runner.py
 
 XVFB=/usr/bin/Xvfb
 XVFBARGS='-dpi 96 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nolisten tcp'
 
 SERVER_START_SCRIPT=$GWS_VAR_DIR/server.sh
 
-QGIS_EXE=/usr/bin/qgis_mapserv.fcgi
-
 export LC_ALL=C.UTF-8
 export PYTHONPATH=$GWS_APP_DIR
 export PYTHONDONTWRITEBYTECODE=1
-
-ensure_xvfb() {
-    export DISPLAY=:99
-    export XDG_RUNTIME_DIR=$GWS_TMP_DIR/xdg
-
-    mkdir -p $XDG_RUNTIME_DIR
-    chown $GWS_UID:$GWS_GID $XDG_RUNTIME_DIR
-
-    until start-stop-daemon --status --exec $XVFB; do
-        echo 'waiting for xvfb...'
-        start-stop-daemon --start --background --exec $XVFB --oknodo -- $DISPLAY $XVFBARGS
-        sleep 0.5
-    done
-}
 
 remove_temp_dir() {
   rm -fr $GWS_TMP_DIR/*
@@ -62,22 +45,14 @@ if [ "$1 $2" == "server start" ]; then
     remove_temp_dir
     ensure_temp_dir
 
-    [ -f $QGIS_EXE ] && ensure_xvfb
-
     rm -f $SERVER_START_SCRIPT
 
     $PYTHON $MAIN_PY "$@"
 
     [ $? -eq 0 ] || exit $?
 
-    chmod 700 $SERVER_START_SCRIPT && exec $SERVER_START_SCRIPT
-    exit 0
-fi
-
-if [ "$1" == "test" ]; then
-    shift
-    $PYTHON $TEST_PY "$@"
-    exit $?
+    chmod 700 $SERVER_START_SCRIPT
+    exec $SERVER_START_SCRIPT
 fi
 
 if [ "$1" == "-p" ]; then

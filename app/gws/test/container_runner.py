@@ -1,6 +1,6 @@
 """Test runner (container).
 
-Container test runner. Assumes tests are configured on the host with ``host_runner configure``.
+Container test runner. Assumes tests are configured on the host with ``test/test.py configure``.
 
 """
 import os
@@ -30,9 +30,9 @@ GWS in-container test runner
 
 Options:
 
-    -w, --work_dir <path>     - path to the work dir (see the `runner.work_dir` ini option)
-    -o, --only <regex>        - only run filenames matching the pattern 
-    -v, --verbose             - enable debug logging
+    -b, --base <path>     - path to the base dir (see `runner.base_dir` in `test.ini`)
+    -o, --only <regex>    - only run filenames matching the pattern 
+    -v, --verbose         - enable debug logging
     
 Pytest options:
     see https://docs.pytest.org/latest/reference.html#command-line-flags
@@ -43,9 +43,9 @@ Pytest options:
 def main(args):
     gws.u.ensure_system_dirs()
 
-    wd = args.get('work_dir') or args.get('w')
-    u.OPTIONS = gws.lib.jsonx.from_path(f'{wd}/options.json')
-    u.OPTIONS['runner.work_dir'] = wd
+    base = args.get('base') or args.get('b')
+    u.OPTIONS = gws.lib.jsonx.from_path(f'{base}/config/options.json')
+    u.OPTIONS['BASE_DIR'] = base
 
     if not gws.env.GWS_IN_CONTAINER:
         for k, v in u.OPTIONS.items():
@@ -55,7 +55,7 @@ def main(args):
                 u.OPTIONS[k] = u.OPTIONS[k.replace('.port', '.expose_port')]
 
     pytest_args = [
-        f'--config-file={wd}/pytest.ini',
+        f'--config-file={base}/config/pytest.ini',
         f'--rootdir=/gws-app',
         f'--ignore-glob=__build',
     ]
@@ -123,7 +123,9 @@ def health_check():
                 fn = globals().get(f'health_check_service_{s}')
                 err = fn() if fn else None
                 if err:
-                    cli.info(f'waiting for {s!r}: {err}')
+                    cli.warning(f'service {s!r}: waiting: {err}')
+                else:
+                    cli.info(f'service {s!r}: ok')
                 status[s] = not err
         if all(status.values()):
             return True
