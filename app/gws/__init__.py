@@ -2944,7 +2944,7 @@ class Layer(Node):
 
     def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...
 
-    def get_features_for_view(self, search: 'SearchQuery', user: 'User', view_names: Optional[list[str]] = None) -> list['Feature']: ...
+    def find_features(self, search: 'SearchQuery', user: 'User') -> list['Feature']: ...
 
     def render_legend(self, args: Optional[dict] = None) -> Optional['LegendRenderOutput']: ...
 
@@ -3017,13 +3017,19 @@ class ModelOperation(Enum):
     delete = 'delete'
 
 
-class ModelReadMode(Enum):
-    """Model reading mode."""
+class ModelReadTarget(Enum):
+    """Target for the read operation."""
 
-    render = 'render'
-    search = 'search'
+    map = 'map'
+    """The feature is to be drawn on a map."""
+    searchResults = 'searchResults'
+    """The feature is to be displayed in the search results list."""
     list = 'list'
-    form = 'form'
+    """The feature is to be displayed in a list view."""
+    editList = 'editList'
+    """The feature is to be displayed in an editable list view."""
+    editForm = 'editForm'
+    """The feature is to be displayed in an edit form ."""
 
 
 class ModelDbSelect(Data):
@@ -3040,7 +3046,7 @@ class ModelContext(Data):
     """Model context."""
 
     op: ModelOperation
-    readMode: ModelReadMode
+    target: ModelReadTarget
     user: 'User'
     project: 'Project'
     relDepth: int = 0
@@ -3858,7 +3864,7 @@ class Template(Node):
 class TemplateManager(Node):
     """Template manager."""
 
-    def find_template(self, *objects, user: 'User' = None, subject: str = None, mime: str = None) -> Optional['Template']: ...
+    def find_template(self, subject: str, where: list[Node], user: 'User' = None, mime: str = None) -> Optional['Template']: ...
 
     def template_from_path(self, path: str) -> Optional['Template']: ...
 ################################################################################

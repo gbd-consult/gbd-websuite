@@ -136,7 +136,7 @@ class Object(gws.ServerManager):
         gws.u.write_file(script_path, '\n'.join(commands) + '\n')
 
     def _create_config(self, subject: str, path: str, args: TemplateArgs) -> str:
-        tpl = self.root.app.templateMgr.find_template(self, subject=subject)
+        tpl = self.root.app.templateMgr.find_template(subject, where=[self])
         res = tpl.render(gws.TemplateRenderInput(args=args))
 
         lines = []

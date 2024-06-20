@@ -13,8 +13,8 @@ The value of the field is the parent feature.
 
 import gws
 import gws.base.database.model
+import gws.base.model
 import gws.base.model.related_field as related_field
-import gws.base.model.util as mu
 import gws.lib.sa as sa
 
 gws.ext.new.modelField('relatedFeature')
@@ -63,7 +63,7 @@ class Object(related_field.Object):
         key = feature.record.attributes.get(self.rel.src.key.name)
         if key:
             to_uids = self.uids_for_key(self.rel.to, key, mc)
-            to_features = self.rel.to.model.get_features(to_uids, mu.secondary_context(mc))
+            to_features = self.rel.to.model.get_features(to_uids, gws.base.model.context_from(mc))
             if to_features:
                 feature.attributes[self.name] = to_features[0]
 
@@ -104,7 +104,7 @@ class Object(related_field.Object):
             for r, u in conn.execute(sql):
                 r_to_uids.setdefault(str(r), []).append(str(u))
 
-        for to_feature in self.rel.to.model.get_features(r_to_uids, mu.secondary_context(mc)):
+        for to_feature in self.rel.to.model.get_features(r_to_uids, gws.base.model.context_from(mc)):
             for uid in r_to_uids.get(to_feature.uid(), []):
                 feature = uid_to_f.get(uid)
                 feature.set(self.name, to_feature)

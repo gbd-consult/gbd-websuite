@@ -14,6 +14,7 @@ import json
 APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../..')
 sys.path.insert(0, APP_DIR)
 
+import gws
 import gws.lib.cli as cli
 import gws.lib.inifile as inifile
 
@@ -57,7 +58,7 @@ OPTIONS = {}
 def main(args):
     cmd = args.get(1)
 
-    ini_path = args.get('ini') or os.environ.get('GWS_TEST_INI')
+    ini_path = args.get('ini') or gws.env.GWS_TEST_INI
     OPTIONS.update(load_options(ini_path))
 
     OPTIONS.update(dict(
@@ -72,7 +73,7 @@ def main(args):
 
     OPTIONS['APP_DIR'] = APP_DIR
 
-    p = OPTIONS.get('runner.base_dir')
+    p = OPTIONS.get('runner.base_dir') or gws.env.GWS_TEST_DIR
     if not os.path.isabs(p):
         p = os.path.realpath(os.path.join(APP_DIR, p))
     OPTIONS['BASE_DIR'] = p

@@ -20,7 +20,6 @@ import gws.lib.datetimex
 import gws.lib.sa as sa
 import gws.lib.style
 
-
 from .data import index, export
 from .data import types as dt
 
@@ -482,13 +481,13 @@ class Object(gws.base.action.Object):
             )
 
         templates = [
-            self.root.app.templateMgr.find_template(self, user=req.user, subject='adresse.title'),
-            self.root.app.templateMgr.find_template(self, user=req.user, subject='adresse.teaser'),
-            self.root.app.templateMgr.find_template(self, user=req.user, subject='adresse.label'),
+            self.root.app.templateMgr.find_template('adresse.title', where=[self], user=req.user),
+            self.root.app.templateMgr.find_template('adresse.teaser', where=[self], user=req.user),
+            self.root.app.templateMgr.find_template('adresse.label', where=[self], user=req.user),
         ]
 
         fprops = []
-        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
+        mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.map, user=req.user)
 
         for ad in ad_list:
             f = gws.base.feature.new(model=self.model)
@@ -518,13 +517,13 @@ class Object(gws.base.action.Object):
             )
 
         templates = [
-            self.root.app.templateMgr.find_template(self, user=req.user, subject='flurstueck.title'),
-            self.root.app.templateMgr.find_template(self, user=req.user, subject='flurstueck.teaser'),
+            self.root.app.templateMgr.find_template('flurstueck.title', where=[self], user=req.user),
+            self.root.app.templateMgr.find_template('flurstueck.teaser', where=[self], user=req.user),
         ]
 
         if query.options.displayThemes:
             templates.append(
-                self.root.app.templateMgr.find_template(self, req.user, subject='flurstueck.description'),
+                self.root.app.templateMgr.find_template('flurstueck.description', where=[self], user=req.user),
             )
 
         args = dict(
@@ -532,8 +531,8 @@ class Object(gws.base.action.Object):
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
         )
 
-        fprops = []
-        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
+        ps = []
+        mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.map, user=req.user)
 
         for fs in fs_list:
             f = gws.base.feature.new(model=self.model)
@@ -541,12 +540,10 @@ class Object(gws.base.action.Object):
             f.transform_to(crs)
             f.render_views(templates, user=req.user, **args)
             f.attributes.pop('fs')
-            fprops.append(self.model.feature_to_view_props(f, mc))
-
-        fprops.sort(key=lambda p: p.views['title'])
+            ps.append(self.model.feature_to_view_props(f, mc))
 
         return FindFlurstueckResponse(
-            features=fprops,
+            features=sorted(ps, key=lambda p: p.views['title']),
             total=len(fs_list),
         )
 
@@ -594,7 +591,7 @@ class Object(gws.base.action.Object):
         base_map = print_request.maps[0]
         fs_maps = []
 
-        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
+        mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.map, user=req.user)
 
         for fs in fs_list:
             f = gws.base.feature.new(model=self.model)

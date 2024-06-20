@@ -3,6 +3,7 @@
 from typing import Optional
 
 import gws
+import gws.base.model
 import gws.base.action
 import gws.base.template
 import gws.base.feature
@@ -56,8 +57,7 @@ class Object(gws.base.action.Object):
     def find(self, req: gws.WebRequester, p: Request) -> Response:
         """Perform a search"""
 
-        propses = self._get_features(req, p)
-        return Response(features=propses)
+        return Response(features=self._get_features(req, p))
 
     def _get_features(self, req: gws.WebRequester, p: Request) -> list[gws.FeatureProps]:
 
@@ -93,25 +93,18 @@ class Object(gws.base.action.Object):
         if not results:
             return []
 
-        gws.debug.time_start(f'SEARCH.FIND: formatting')
-
-        for res in results:
-            res.feature.transform_to(search.bounds.crs)
+        mc = gws.ModelContext(
+            op=gws.ModelOperation.read,
+            target=gws.ModelReadTarget.searchResults,
+            project=project,
+            user=req.user
+        )
 
         for res in results:
             templates = gws.u.compact(
-                self.root.app.templateMgr.find_template(res.finder, res.layer, project, user=req.user, subject=f'feature.{v}')
+                self.root.app.templateMgr.find_template(f'feature.{v}', where=[res.finder, res.layer, project], user=req.user)
                 for v in p.views or _DEFAULT_VIEWS
             )
             res.feature.render_views(templates, user=req.user, project=project, layer=res.layer)
 
-        gws.debug.time_end()
-
-        propses = []
-        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=req.user)
-
-        for res in results:
-            p = res.feature.model.feature_to_view_props(res.feature, mc)
-            propses.append(p)
-
-        return propses
+        return [res.feature.model.feature_to_view_props(res.feature, mc) for res in results]

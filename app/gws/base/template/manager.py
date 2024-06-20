@@ -14,23 +14,23 @@ TEMPLATE_TYPES = {
 
 
 class Object(gws.TemplateManager):
-    def find_template(self, *objects, user=None, subject=None, mime=None):
-        for obj in objects:
+    def find_template(self, subject, where, user=None, mime=None):
+        for obj in where:
             if not obj:
                 continue
-            p = self._find(obj, user, subject, mime)
+            p = self._find(subject, obj, user, mime)
             if p:
                 gws.log.debug(f'find_template: found {subject=} {obj=}')
                 return p
 
-        p = self._find(self.root.app, user, subject, mime)
+        p = self._find(subject, self.root.app, user, mime)
         if p:
             gws.log.debug(f'find_template: found {subject=} APP')
             return p
 
-    def _find(self, obj, user, subject, mime):
+    def _find(self, subject, obj, user, mime):
         for tpl in getattr(obj, 'templates', []):
-            if subject and tpl.subject != subject:
+            if tpl.subject != subject:
                 continue
             if user and not user.can_use(tpl):
                 continue

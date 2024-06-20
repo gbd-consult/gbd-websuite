@@ -91,7 +91,7 @@ class Object(gws.Project):
 
     def props(self, user):
         desc = None
-        tpl = self.root.app.templateMgr.find_template(self, user=user, subject='project.description')
+        tpl = self.root.app.templateMgr.find_template('project.description', where=[self], user=user)
         if tpl:
             desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
 

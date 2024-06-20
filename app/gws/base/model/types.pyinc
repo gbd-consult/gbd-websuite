@@ -14,13 +14,19 @@ class ModelOperation(Enum):
     delete = 'delete'
 
 
-class ModelReadMode(Enum):
-    """Model reading mode."""
+class ModelReadTarget(Enum):
+    """Target for the read operation."""
 
-    render = 'render'
-    search = 'search'
+    map = 'map'
+    """The feature is to be drawn on a map."""
+    searchResults = 'searchResults'
+    """The feature is to be displayed in the search results list."""
     list = 'list'
-    form = 'form'
+    """The feature is to be displayed in a list view."""
+    editList = 'editList'
+    """The feature is to be displayed in an editable list view."""
+    editForm = 'editForm'
+    """The feature is to be displayed in an edit form ."""
 
 
 class ModelDbSelect(Data):
@@ -37,7 +43,7 @@ class ModelContext(Data):
     """Model context."""
 
     op: ModelOperation
-    readMode: ModelReadMode
+    target: ModelReadTarget
     user: 'User'
     project: 'Project'
     relDepth: int = 0
@@ -202,5 +208,3 @@ class ModelManager(Node):
     def editable_models(self, project: 'Project', user: 'User') -> list['Model']: ...
 
     def default_model(self) -> 'Model': ...
-
-

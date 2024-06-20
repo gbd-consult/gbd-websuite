@@ -1,8 +1,10 @@
 """Model utilities."""
 
+from typing import Iterable
 import datetime
 
 import gws
+import gws.base.feature
 
 _ATTR_TO_PY = {
     gws.AttributeType.bool: bool,
@@ -22,7 +24,27 @@ _ATTR_TO_PY = {
 }
 
 
-def describe_from_feature_data(fd: gws.FeatureRecord) -> gws.DataSetDescription:
+def iter_features(features: list[gws.Feature], mc: gws.ModelContext) -> Iterable[gws.Feature]:
+    for f in features:
+        yield f
+
+        if mc.relDepth >= mc.maxDepth:
+            continue
+
+        sub = []
+
+        for val in f.attributes.values():
+            if isinstance(val, gws.base.feature.Feature):
+                sub.append(val)
+            elif isinstance(val, list):
+                for v in val:
+                    if isinstance(v, gws.base.feature.Feature):
+                        sub.append(val)
+
+        yield from iter_features(sub, context_from(mc))
+
+
+def describe_from_record(fd: gws.FeatureRecord) -> gws.DataSetDescription:
     py_to_attr = {str(v): k for k, v in _ATTR_TO_PY.items()}
 
     desc = gws.DataSetDescription(columns=[])
@@ -50,11 +72,5 @@ def describe_from_feature_data(fd: gws.FeatureRecord) -> gws.DataSetDescription:
     return desc
 
 
-def clone_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
-    return gws.ModelContext(gws.u.merge(mc, **kwargs))
-
-
-def secondary_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
-    mc2 = clone_context(mc, **kwargs)
-    mc2.relDepth = mc.relDepth + 1
-    return mc2
+def context_from(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
+    return gws.ModelContext(gws.u.merge(mc, kwargs, relDepth=mc.relDepth + 1))

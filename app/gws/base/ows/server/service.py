@@ -179,7 +179,7 @@ class Object(gws.OwsService):
         return fn(sr)
 
     def template_response(self, sr: request.Object, mime: str = '', **kwargs) -> gws.ContentResponse:
-        tpl = self.root.app.templateMgr.find_template(self, sr.project, user=sr.req.user, subject=f'ows.{sr.operation.verb}', mime=mime)
+        tpl = self.root.app.templateMgr.find_template(f'ows.{sr.operation.verb}', where=[self, sr.project], user=sr.req.user)
         if not tpl:
             gws.log.debug(f'no template: {sr.operation.verb=} {mime=}')
             raise error.InvalidFormat()

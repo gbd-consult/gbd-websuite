@@ -157,7 +157,7 @@ class Object(gws.Node):
         writer = csv_helper.writer(gws.lib.intl.locale('de_DE'))
 
         writer.write_headers([fld.title for fld in fields])
-        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=user)
+        mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.searchResults, user=user)
 
         for fs in fs_list:
             row_hashes = set()

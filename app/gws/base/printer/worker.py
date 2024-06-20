@@ -224,7 +224,7 @@ class Object:
             model = self.root.app.modelMgr.default_model()
             used_styles = {}
 
-            mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=self.user)
+            mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.map, user=self.user)
             features = []
 
             for props in plane.features:

@@ -121,7 +121,7 @@ class Object(gws.base.action.Object):
     def describe_layer(self, req: gws.WebRequester, p: DescribeLayerRequest) -> DescribeLayerResponse:
         project = req.user.require_project(p.projectUid)
         layer = req.user.require_layer(p.layerUid)
-        tpl = self.root.app.templateMgr.find_template(layer, project, user=req.user, subject='layer.description')
+        tpl = self.root.app.templateMgr.find_template('layer.description', where=[layer, project], user=req.user)
 
         if not tpl:
             return DescribeLayerResponse(content='')
@@ -240,10 +240,19 @@ class Object(gws.base.action.Object):
             limit=_GET_FEATURES_LIMIT
         )
 
-        features = layer.get_features_for_view(search, req.user)
+        features = layer.find_features(search, req.user)
         if not features:
             return []
 
-        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.render, user=req.user)
-        model = features[0].model
-        return [model.feature_to_view_props(f, mc) for f in features]
+        tpl = self.root.app.templateMgr.find_template(f'feature.label', where=[layer, project], user=req.user)
+        if tpl:
+            for feature in features:
+                feature.render_views([tpl], project=project, layer=self, user=req.user)
+
+        mc = gws.ModelContext(
+            op=gws.ModelOperation.read,
+            target=gws.ModelReadTarget.map,
+            user=req.user
+        )
+
+        return [f.model.feature_to_view_props(f, mc) for f in features]

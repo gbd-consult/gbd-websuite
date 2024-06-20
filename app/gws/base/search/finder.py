@@ -93,5 +93,5 @@ class Object(gws.Finder):
             gws.log.debug(f'no model for {user.uid=} in finder {self.uid!r}')
             return []
         search = cast(gws.SearchQuery, gws.u.merge(search, shape=self.context_shape(search)))
-        mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=user)
+        mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.searchResults, user=user)
         return model.find_features(search, mc)

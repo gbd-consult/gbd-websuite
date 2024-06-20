@@ -3,16 +3,16 @@
 from typing import Optional, Iterable, Any, cast
 
 import gws
-import gws.base.model.util as mu
-import gws.base.model.field
 import gws.lib.sa as sa
 
+from . import field
 
-class Config(gws.base.model.field.Config):
+
+class Config(field.Config):
     pass
 
 
-class Props(gws.base.model.field.Props):
+class Props(field.Props):
     pass
 
 
@@ -37,7 +37,7 @@ class Relationship(gws.Data):
     deleteCascade: bool = False
 
 
-class Object(gws.base.model.field.Object):
+class Object(field.Object):
     model: gws.DatabaseModel
     rel: Relationship
 
@@ -112,7 +112,7 @@ class Object(gws.base.model.field.Object):
         if not isinstance(value, list):
             value = [value]
 
-        mc2 = mu.secondary_context(mc)
+        mc2 = gws.base.model.context_from(mc)
         res = []
 
         for v in value:
@@ -137,7 +137,7 @@ class Object(gws.base.model.field.Object):
         if not isinstance(value, list):
             value = [value]
 
-        mc2 = mu.secondary_context(mc)
+        mc2 = gws.base.model.context_from(mc)
         res = []
         to_model_map: dict[str, gws.Model] = {to.model.uid: to.model for to in self.rel.tos}
 
@@ -289,7 +289,7 @@ class Object(gws.base.model.field.Object):
             uids: Iterable[gws.FeatureUid],
             mc: gws.ModelContext
     ) -> list[gws.Feature]:
-        return model.get_features(uids, mu.secondary_context(mc))
+        return model.get_features(uids, gws.base.model.context_from(mc))
 
     def column_or_uid(self, model, cfg):
         return model.column(cfg) if cfg else model.uid_column()

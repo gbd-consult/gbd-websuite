@@ -18,12 +18,14 @@ map.layers+ {
     title "POIs"
     type "postgres"
     tableName "edit.poi"
+    templates+ { subject "feature.label" type "html" text "{{name}}" }
 }
 
 map.layers+ {
     title "Districts"
     type "postgres"
     tableName "edit.district"
+    templates+ { subject "feature.label" type "html" text "{{name}}" }
 }
 
 {demo_osm_background}

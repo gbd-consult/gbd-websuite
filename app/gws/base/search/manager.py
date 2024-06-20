@@ -59,6 +59,9 @@ class Object(gws.SearchManager):
             elif not feature.category and layer and layer.title:
                 feature.category = layer.title
 
+            if search.bounds:
+                feature.transform_to(search.bounds.crs)
+
             results.append(gws.SearchResult(feature=feature, layer=layer, finder=finder))
             if len(results) > search.limit:
                 break

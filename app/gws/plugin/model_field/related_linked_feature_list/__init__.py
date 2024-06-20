@@ -12,8 +12,7 @@ Represents an M:N relationship between two models via a link table ("associative
 
 import gws
 import gws.base.database.model
-import gws.base.model.util as mu
-import gws.base.model.field
+import gws.base.model
 import gws.base.model.related_field as related_field
 import gws.lib.sa as sa
 
@@ -98,7 +97,7 @@ class Object(related_field.Object):
             for r, u in conn.execute(sql):
                 r_to_uids.setdefault(str(r), []).append(str(u))
 
-        for to_feature in self.rel.to.model.get_features(r_to_uids, mu.secondary_context(mc)):
+        for to_feature in self.rel.to.model.get_features(r_to_uids, gws.base.model.context_from(mc)):
             for uid in r_to_uids.get(to_feature.uid(), []):
                 feature = uid_to_f.get(uid)
                 feature.get(self.name).append(to_feature)

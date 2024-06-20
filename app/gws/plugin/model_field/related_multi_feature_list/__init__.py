@@ -26,7 +26,7 @@ Represents a 1:M relationship betweens a "parent" and multiple "child" tables ::
 
 import gws
 import gws.base.database.model
-import gws.base.model.util as mu
+import gws.base.model
 import gws.base.model.related_field as related_field
 import gws.lib.sa as sa
 
@@ -109,7 +109,7 @@ class Object(related_field.Object):
                 for r, u in conn.execute(sql):
                     r_to_uids.setdefault(str(r), []).append(str(u))
 
-            for to_feature in to.model.get_features(r_to_uids, mu.secondary_context(mc)):
+            for to_feature in to.model.get_features(r_to_uids, gws.base.model.context_from(mc)):
                 for uid in r_to_uids.get(to_feature.uid(), []):
                     feature = uid_to_f.get(uid)
                     feature.get(self.name).append(to_feature)

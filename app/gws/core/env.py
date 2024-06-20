@@ -40,3 +40,9 @@ GWS_IN_CONTAINER = os.path.isfile('/.dockerenv')
 
 GWS_IN_TEST = (os.getenv('GWS_IN_TEST') == '1') or (os.getenv('PYTEST_CURRENT_TEST') is not None)
 """True if we're running tests."""
+
+GWS_TEST_INI = os.getenv('GWS_TEST_INI')
+"""Location of the test.ini file."""
+
+GWS_TEST_DIR = os.getenv('GWS_TEST_DIR')
+"""Test base directory."""

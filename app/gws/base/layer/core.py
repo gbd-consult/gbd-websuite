@@ -375,7 +375,7 @@ class Object(gws.Layer):
     def render(self, lri):
         pass
 
-    def get_features_for_view(self, search, user, view_names=None):
+    def find_features(self, search, user):
         return []
 
     def render_legend(self, args=None) -> Optional[gws.LegendRenderOutput]:
