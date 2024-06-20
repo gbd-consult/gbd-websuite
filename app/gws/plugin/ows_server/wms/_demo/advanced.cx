@@ -1,20 +1,28 @@
 uid "service_wms_advanced_demo"
 
-title "Advanced WMS service"
+title "Erweiterte WMS Dienste"
 
 metadata.keywords [ "wms" "ows-service" "qgis" ]
 
 metadata.abstract """
-Advanced `WMS` service, supporting
+Dieses Beispiel zeigt erweiterte Einstellungsmöglichkeiten für die Bereitstellung von WMS Diensten über die GBD WebSuite mit Unterstützung für
 
-- multiple qgis layers
-- extenal WMS layers
-- different scale ranges per layer
-- multiple CRS
-- HTML templates
-- multiple image formats
+- mehrere QGIS Layer
+- externe WMS Layer
+- unterschiedliche Maßstabsbereiche pro Layer
+- mehrere Koordinatenbezugsysteme
+- HTML-Vorlagen 
+- mehrere Bildformate
 
-[Service URL](/_/owsService/serviceUid/service_wms_advanced?request=GetCapabilities)
+Beim Laden des WMS Dienstes in einer externen Applikation wie QGIS finden sich folgende Layer
+
+- Im Maßstab >= 1:50.000 wird der Layer Stadtteile `Districts` aus einem QGIS Projekt mit weiteren Layern bereitgestellt. 
+- Im Maßstab <= 1:50.000 wird der Layer `Points of interest` bereitgestellt. 
+- Im Maßstab <= 1:5.000 werden einzelne Layer des WMS Dienste `wms_nw_alkis` und `wms_nw_dop` des Bundeslandes NRW kaskadiert bereitgestellt. 
+- Alle Dienste, außer den Orthophotos `wms_nw_dop` sind abfragbar, auch im HTML-Format
+- Alle Dienste können in den Koordinatenbezugsystemen EPSG:3857 oder EPSG:25832 abgefragt werden 
+
+Detailinformationen sowie die Service URL finden sich in den [WMS_Capabilities](/_/owsService/serviceUid/service_wms_advanced?request=GetCapabilities)
 
 [Demo QGIS Project](/ows_services.qgs)
 """
