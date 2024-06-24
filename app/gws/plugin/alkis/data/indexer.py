@@ -61,15 +61,7 @@ class _ObjectDict(Generic[T]):
         return list(res.values())
 
     def get_from_ptr(self, obj: dt.Entity, attr):
-        uids = []
-
-        for r in obj.recs:
-            v = _pop(r, attr)
-            if isinstance(v, list):
-                uids.extend(v)
-            elif isinstance(v, str):
-                uids.append(v)
-
+        uids = _pluck(obj.recs, attr)
         return self.get_many(uids)
 
     def __iter__(self) -> t.Iterable[T]:
@@ -113,22 +105,22 @@ class _Indexer:
     def load_cache(self):
         if not self.rr.withCache or not self.CACHE_KEY:
             return False
-        cpath = self.rr.cacheDir + '/' + self.CACHE_KEY
+        cpath = self.rr.cacheDir + '/table_' + self.CACHE_KEY
         if not gws.is_file(cpath):
             return False
         om = gws.unserialize_from_path(cpath)
         if not om:
             return False
-        gws.log.info(f'ALKIS: use cache {self.CACHE_KEY!r}')
+        gws.log.info(f'ALKIS: use cache {cpath!r}')
         self.om = om
         return True
 
     def store_cache(self):
         if not self.rr.withCache or not self.CACHE_KEY:
             return
-        cpath = self.rr.cacheDir + '/' + self.CACHE_KEY
+        cpath = self.rr.cacheDir + '/table_' + self.CACHE_KEY
         gws.serialize_to_path(self.om, cpath)
-        gws.log.info(f'ALKIS: store cache {self.CACHE_KEY!r}')
+        gws.log.info(f'ALKIS: store cache {cpath!r}')
 
     def collect(self):
         pass
@@ -275,6 +267,22 @@ class _LageIndexer(_Indexer):
                     )
                     for ax in axs
                 ])
+
+        # use the PTO (art=HNR) geometry for lage coordinates
+        # PTO.dientZurDarstellungVon -> lage.uid
+
+        for pto in self.rr.read_flat(gid.AP_PTO):
+            if pto.lebenszeitintervall.endet is not None:
+                continue
+            art = _pop(pto, 'art') or ''
+            if art.upper() != 'HNR':
+                continue
+
+            uids = _pluck([pto], 'dientZurDarstellungVon')
+            geom = _geom_of(pto)
+            for la in self.om.Lage.get_many(uids):
+                la.x = geom.centroid.x
+                la.y = geom.centroid.y
 
         atts = _attributes(gid.METADATA['AX_Gebaeude'], dt.Gebaeude.PROP_KEYS)
 
@@ -922,8 +930,8 @@ class _FsIndexIndexer(_Indexer):
                     strasse=la_r.strasse,
                     strasse_t=index.strasse_key(la_r.strasse),
                     hausnummer=la_r.hausnummer,
-                    x=r.x,
-                    y=r.y,
+                    x=la.x or r.x,
+                    y=la.y or r.y,
                 ))
 
         for bu in fs.buchungList:
@@ -1017,10 +1025,12 @@ class _Runner:
     def read_flat(self, cls):
         cpath = self.cacheDir + '/flat_' + cls.__name__
         if self.withCache and gws.is_file(cpath):
+            gws.log.info(f'ALKIS: use cache {cpath!r}')
             return gws.unserialize_from_path(cpath)
 
         rs = self._read_flat(cls)
         if self.withCache:
+            gws.log.info(f'ALKIS: store cache {cpath!r}')
             gws.serialize_to_path(rs, cpath)
 
         return rs
@@ -1041,10 +1051,12 @@ class _Runner:
     def read_grouped(self, cls):
         cpath = self.cacheDir + '/grouped_' + cls.__name__
         if self.withCache and gws.is_file(cpath):
+            gws.log.info(f'ALKIS: use cache {cpath!r}')
             return gws.unserialize_from_path(cpath)
 
         rs = self._read_grouped(cls)
         if self.withCache:
+            gws.log.info(f'ALKIS: store cache {cpath!r}')
             gws.serialize_to_path(rs, cpath)
 
         return rs
@@ -1146,6 +1158,19 @@ def _pop(obj, attr):
     except AttributeError:
         pass
     return v
+
+
+def _pluck(recs, attr):
+    values = []
+
+    for r in recs:
+        v = _pop(r, attr)
+        if isinstance(v, list):
+            values.extend(v)
+        elif isinstance(v, str):
+            values.append(v)
+
+    return values
 
 
 def _sortkey_beginnt(o):
