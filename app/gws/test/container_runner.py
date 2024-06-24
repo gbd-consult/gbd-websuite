@@ -44,7 +44,7 @@ def main(args):
     gws.u.ensure_system_dirs()
 
     base = args.get('base') or args.get('b') or gws.env.GWS_TEST_DIR
-    u.OPTIONS = gws.lib.jsonx.from_path(f'{base}/config/options.json')
+    u.OPTIONS = gws.lib.jsonx.from_path(f'{base}/config/OPTIONS.json')
     u.OPTIONS['BASE_DIR'] = base
 
     if not gws.env.GWS_IN_CONTAINER:
