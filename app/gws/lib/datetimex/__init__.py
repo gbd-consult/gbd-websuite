@@ -147,7 +147,24 @@ def now(tz: str = '') -> dt.datetime:
 
 
 def now_utc() -> dt.datetime:
-    return _now(time_zone('UTC'))
+    return _now(UTC)
+
+
+# for testing
+
+_MOCK_NOW = None
+
+
+@contextlib.contextmanager
+def mock_now(d):
+    global _MOCK_NOW
+    _MOCK_NOW = d
+    yield
+    _MOCK_NOW = None
+
+
+def _now(tzinfo):
+    return _MOCK_NOW or dt.datetime.now(tz=tzinfo)
 
 
 def today(tz: str = '') -> dt.datetime:
@@ -179,7 +196,7 @@ def parse_time(s: str | dt.time | None, tz: str = '') -> Optional[dt.datetime]:
         return
 
     if isinstance(s, dt.time):
-        return _time_to_datetime(s, tz)
+        return _datetime(_ensure_tzinfo(s, tz))
 
     try:
         return from_iso_time_string(str(s), tz)
@@ -188,75 +205,75 @@ def parse_time(s: str | dt.time | None, tz: str = '') -> Optional[dt.datetime]:
 
 
 def from_string(s: str, tz: str = '') -> dt.datetime:
-    return _pend_parse(s, tz, iso_only=False)
+    return _pend_parse_datetime(s, tz, iso_only=False)
 
 
 def from_iso_string(s: str, tz: str = '') -> dt.datetime:
-    return _pend_parse(s, tz, iso_only=True)
+    return _pend_parse_datetime(s, tz, iso_only=True)
 
 
 def from_iso_time_string(s: str, tz: str = '') -> dt.datetime:
     return _pend_parse_time(s, tz, iso_only=True)
 
 
-def from_timestamp(ts: float, tz: str = '') -> dt.datetime:
-    return dt.datetime.fromtimestamp(ts, tz=time_zone(tz))
+def from_timestamp(n: float, tz: str = '') -> dt.datetime:
+    return dt.datetime.fromtimestamp(n, tz=time_zone(tz))
 
 
 # Formatters
 
-def to_iso_string(d: Optional[dt.datetime] = None, with_tz='+', sep='T') -> str:
+def to_iso_string(d: Optional[dt.date] = None, with_tz='+', sep='T') -> str:
     fmt = f'%Y-%m-%d{sep}%H:%M:%S'
     if with_tz:
         fmt += '%z'
-    s = _check(d).strftime(fmt)
+    s = _datetime(d).strftime(fmt)
     if with_tz == 'Z' and s.endswith('+0000'):
         s = s[:-5] + 'Z'
     return s
 
 
-def to_iso_date_string(d: Optional[dt.datetime] = None) -> str:
-    return _check(d).strftime('%Y-%m-%d')
+def to_iso_date_string(d: Optional[dt.date] = None) -> str:
+    return _datetime(d).strftime('%Y-%m-%d')
 
 
-def to_basic_string(d: Optional[dt.datetime] = None) -> str:
-    return _check(d).strftime("%Y%m%d%H%M%S")
+def to_basic_string(d: Optional[dt.date] = None) -> str:
+    return _datetime(d).strftime("%Y%m%d%H%M%S")
 
 
-def to_iso_time_string(d: Optional[dt.datetime] = None, with_tz='+') -> str:
+def to_iso_time_string(d: Optional[dt.date] = None, with_tz='+') -> str:
     fmt = '%H:%M:%S'
     if with_tz:
         fmt += '%z'
-    s = _check(d).strftime(fmt)
+    s = _datetime(d).strftime(fmt)
     if with_tz == 'Z' and s.endswith('+0000'):
         s = s[:-5] + 'Z'
     return s
 
 
-def to_string(fmt: str, d: Optional[dt.datetime] = None) -> str:
-    return _check(d).strftime(fmt)
+def to_string(fmt: str, d: Optional[dt.date] = None) -> str:
+    return _datetime(d).strftime(fmt)
 
 
 # Converters
 
-def to_timestamp(d: Optional[dt.datetime] = None) -> int:
-    return int(_check(d).timestamp())
+def to_timestamp(d: Optional[dt.date] = None) -> int:
+    return int(_datetime(d).timestamp())
 
 
-def to_millis(d: Optional[dt.datetime] = None) -> int:
-    return int(_check(d).timestamp() * 1000)
+def to_millis(d: Optional[dt.date] = None) -> int:
+    return int(_datetime(d).timestamp() * 1000)
 
 
-def to_utc(d: Optional[dt.datetime] = None) -> dt.datetime:
-    return _check(d).astimezone(time_zone('UTC'))
+def to_utc(d: Optional[dt.date] = None) -> dt.datetime:
+    return _datetime(d).astimezone(time_zone('UTC'))
 
 
-def to_local(d: Optional[dt.datetime] = None) -> dt.datetime:
-    return _check(d).astimezone(time_zone(''))
+def to_local(d: Optional[dt.date] = None) -> dt.datetime:
+    return _datetime(d).astimezone(time_zone(''))
 
 
-def to_time_zone(tz: str, d: Optional[dt.datetime] = None) -> dt.datetime:
-    return _check(d).astimezone(time_zone(tz))
+def to_time_zone(tz: str, d: Optional[dt.date] = None) -> dt.datetime:
+    return _datetime(d).astimezone(time_zone(tz))
 
 
 # Predicates
@@ -270,21 +287,21 @@ def is_datetime(x) -> bool:
 
 
 def is_utc(d: dt.datetime) -> bool:
-    return _zone_info_from_tzinfo(_check(d).tzinfo) == time_zone('utc')
+    return _zone_info_from_tzinfo(_datetime(d).tzinfo) == UTC
 
 
 def is_local(d: dt.datetime) -> bool:
-    return _zone_info_from_tzinfo(_check(d).tzinfo) == time_zone('')
+    return _zone_info_from_tzinfo(_datetime(d).tzinfo) == time_zone('')
 
 
 # Arithmetic
 
 def add(
-        d: Optional[dt.datetime] = None,
+        d: Optional[dt.date] = None,
         years=0, months=0, days=0, weeks=0, hours=0, minutes=0, seconds=0, microseconds=0
 ) -> dt.datetime:
     return pendulum.helpers.add_duration(
-        _check(d),
+        _datetime(d),
         years=years, months=months, days=days,
         weeks=weeks, hours=hours, minutes=minutes,
         seconds=seconds, microseconds=microseconds
@@ -305,8 +322,8 @@ class Diff:
         return repr(vars(self))
 
 
-def difference(d1: dt.datetime, d2: Optional[dt.datetime] = None) -> Diff:
-    iv = pendulum.Interval(_check(d1), _check(d2), absolute=False)
+def difference(d1: dt.date, d2: Optional[dt.date] = None) -> Diff:
+    iv = pendulum.Interval(_datetime(d1), _datetime(d2), absolute=False)
     df = Diff()
 
     df.years = iv.years
@@ -321,8 +338,8 @@ def difference(d1: dt.datetime, d2: Optional[dt.datetime] = None) -> Diff:
     return df
 
 
-def total_difference(d1: dt.datetime, d2: Optional[dt.datetime] = None) -> Diff:
-    iv = pendulum.Interval(_check(d1), _check(d2), absolute=False)
+def total_difference(d1: dt.date, d2: Optional[dt.date] = None) -> Diff:
+    iv = pendulum.Interval(_datetime(d1), _datetime(d2), absolute=False)
     df = Diff()
 
     df.years = iv.in_years()
@@ -341,29 +358,29 @@ def total_difference(d1: dt.datetime, d2: Optional[dt.datetime] = None) -> Diff:
 
 # @formatter:off
 
-def start_of_second(d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).start_of('second'))
-def start_of_minute(d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).start_of('minute'))
-def start_of_hour  (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).start_of('hour'))
-def start_of_day   (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).start_of('day'))
-def start_of_week  (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).start_of('week'))
-def start_of_month (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).start_of('month'))
-def start_of_year  (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).start_of('year'))
+def start_of_second(d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).start_of('second'))
+def start_of_minute(d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).start_of('minute'))
+def start_of_hour  (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).start_of('hour'))
+def start_of_day   (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).start_of('day'))
+def start_of_week  (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).start_of('week'))
+def start_of_month (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).start_of('month'))
+def start_of_year  (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).start_of('year'))
 
 
-def end_of_second(d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).end_of('second'))
-def end_of_minute(d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).end_of('minute'))
-def end_of_hour  (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).end_of('hour'))
-def end_of_day   (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).end_of('day'))
-def end_of_week  (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).end_of('week'))
-def end_of_month (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).end_of('month'))
-def end_of_year  (d: Optional[dt.datetime] = None) -> dt.datetime: return _unpend(_pend(d).end_of('year'))
+def end_of_second(d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).end_of('second'))
+def end_of_minute(d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).end_of('minute'))
+def end_of_hour  (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).end_of('hour'))
+def end_of_day   (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).end_of('day'))
+def end_of_week  (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).end_of('week'))
+def end_of_month (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).end_of('month'))
+def end_of_year  (d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).end_of('year'))
 
 
-def day_of_week   (d: Optional[dt.datetime] = None) -> int: return _pend(d).day_of_week
-def day_of_year   (d: Optional[dt.datetime] = None) -> int: return _pend(d).day_of_year
-def week_of_month (d: Optional[dt.datetime] = None) -> int: return _pend(d).week_of_month
-def week_of_year  (d: Optional[dt.datetime] = None) -> int: return _pend(d).week_of_year
-def days_in_month (d: Optional[dt.datetime] = None) -> int: return _pend(d).days_in_month
+def day_of_week   (d: Optional[dt.date] = None) -> int: return _pend(d).day_of_week
+def day_of_year   (d: Optional[dt.date] = None) -> int: return _pend(d).day_of_year
+def week_of_month (d: Optional[dt.date] = None) -> int: return _pend(d).week_of_month
+def week_of_year  (d: Optional[dt.date] = None) -> int: return _pend(d).week_of_year
+def days_in_month (d: Optional[dt.date] = None) -> int: return _pend(d).days_in_month
 
 
 # @formatter:on
@@ -386,11 +403,11 @@ _WD = {
 }
 
 
-def next(day: int | str, d: Optional[dt.datetime] = None, keep_time=False) -> dt.datetime:
+def next(day: int | str, d: Optional[dt.date] = None, keep_time=False) -> dt.datetime:
     return _unpend(_pend(d).next(_WD[day], keep_time))
 
 
-def prev(day: int | str, d: Optional[dt.datetime] = None, keep_time=False) -> dt.datetime:
+def prev(day: int | str, d: Optional[dt.date] = None, keep_time=False) -> dt.datetime:
     return _unpend(_pend(d).previous(_WD[day], keep_time))
 
 
@@ -440,65 +457,50 @@ def parse_duration(s: str) -> int:
 
 ##
 
-# for testing
+# conversions
 
-_MOCK_NOW = None
+def _datetime(d: dt.date | dt.time | None) -> dt.datetime:
+    # ensure a valid datetime object
 
-
-@contextlib.contextmanager
-def mock_now(d):
-    global _MOCK_NOW
-    _MOCK_NOW = d
-    yield
-    _MOCK_NOW = None
-
-
-def _now(tz):
-    return _MOCK_NOW or dt.datetime.now(tz=tz)
-
-
-def _time_to_datetime(t: dt.time, tz: str = '') -> dt.datetime:
-    # promote time to today's time
-    t = _ensure_tzinfo(t, tz)
-    d = _now(tz=t.tzinfo)
-    return dt.datetime(d.year, d.month, d.day, t.hour, t.minute, t.second, t.microsecond, t.tzinfo, fold=t.fold)
-
-
-def _date_to_datetime(d: dt.date, tz: str = '') -> dt.datetime:
-    # promote date to midnight UTC
-    return new(d.year, d.month, d.day, tz=tz)
-
-
-def _check(d: dt.datetime | dt.date | dt.time | None) -> dt.datetime:
     if d is None:
         return now()
+
     if isinstance(d, dt.datetime):
         if not d.tzinfo:
             raise Error('naive datetime detected')
         return d
 
     if isinstance(d, dt.date):
-        _date_to_datetime(d)
+        # promote date to midnight UTC
+        return dt.datetime(d.year, d.month, d.day, tzinfo=UTC)
+
     if isinstance(d, dt.time):
-        _time_to_datetime(d)
+        # promote time to today's time
+        n = _now(d.tzinfo)
+        return dt.datetime(n.year, n.month, n.day, d.hour, d.minute, d.second, d.microsecond, d.tzinfo, fold=d.fold)
 
-    raise Error('invalid datetime value')
+    raise Error(f'invalid datetime value {d!r}')
 
 
-def _check_time(t: dt.time | None) -> dt.time:
-    if t is None:
-        return now().timetz()
-    if isinstance(t, dt.time):
-        if not t.tzinfo:
-            raise Error('naive time detected')
-        return t
-    raise Error('invalid time value')
+def _ensure_tzinfo(d: dt.datetime | dt.time, tz: str):
+    # attach tzinfo if not set
+
+    if not d.tzinfo:
+        return d.replace(tzinfo=time_zone(tz))
+
+    # try to convert 'their' tzinfo (might be an unnamed dt.timezone or pendulum.FixedTimezone) to zoneinfo
+    zi = _zone_info_from_tzinfo(d.tzinfo)
+    if zi:
+        return d.replace(tzinfo=zi)
+
+    # failing that, keep existing tzinfo
+    return d
 
 
 # pendulum.DateTime <-> python datetime
 
 def _pend(d: dt.datetime | None) -> pendulum.DateTime:
-    return pendulum.instance(_check(d))
+    return pendulum.instance(_datetime(d))
 
 
 def _unpend(p: pendulum.DateTime) -> dt.datetime:
@@ -518,10 +520,10 @@ def _unpend(p: pendulum.DateTime) -> dt.datetime:
 # NB using private APIs
 
 
-def _pend_parse(s, tz, iso_only):
+def _pend_parse_datetime(s, tz, iso_only):
     try:
         if iso_only:
-            d = pendulum.parsing.parse_iso8601(s, tz=time_zone(tz))
+            d = pendulum.parsing.parse_iso8601(s)
         else:
             # do not normalize
             d = pendulum.parsing._parse(s)
@@ -548,20 +550,7 @@ def _pend_parse_time(s, tz, iso_only):
         raise Error(f'invalid time {s!r}') from exc
 
     if isinstance(d, dt.time):
-        return _time_to_datetime(_ensure_tzinfo(d, tz))
+        return _datetime(_ensure_tzinfo(d, tz))
 
     # dates and durations not accepted
     raise Error(f'invalid time {s!r}')
-
-
-def _ensure_tzinfo(d: dt.datetime | dt.time, tz: str):
-    if not d.tzinfo:
-        return d.replace(tzinfo=time_zone(tz))
-
-    # try to convert 'their' tzinfo (might be an unnamed dt.timezone or pendulum.FixedTimezone) to zoneinfo
-    zi = _zone_info_from_tzinfo(d.tzinfo)
-    if zi:
-        return d.replace(tzinfo=zi)
-
-    # failing that, keep existing tzinfo
-    return d
