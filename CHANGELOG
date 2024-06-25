@@ -1,3 +1,8 @@
+## Version 8.1.6
+
+- more testing
+- fixed broken client map positioning
+
 ## Version 8.1.5
 
 - accurate time zone handling for dates
