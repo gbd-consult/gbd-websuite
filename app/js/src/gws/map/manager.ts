@@ -578,13 +578,15 @@ export class MapManager implements types.IMapManager {
             return c;
         }
 
-        let proto = Object.getPrototypeOf(this.oView);
-        let cc = proto.constrainCenter;
-        for (let p in proto) {
-            if (proto[p] === cc) {
-                proto[p] = constrainCenter;
-            }
-        }
+        // @TODO this doesn't work properly
+        //
+        // let proto = Object.getPrototypeOf(this.oView);
+        // let cc = proto.constrainCenter;
+        // for (let p in proto) {
+        //     if (proto[p] === cc) {
+        //         proto[p] = constrainCenter;
+        //     }
+        // }
     }
 
     protected initLayers() {
