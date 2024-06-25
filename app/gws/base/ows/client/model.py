@@ -9,7 +9,7 @@ import gws.gis.extent
 import gws.gis.source
 
 
-class Object(gws.base.model.dynamic_model.Object):
+class Object(gws.base.model.default_model.Object):
     """Generic OWS Model."""
 
     serviceProvider: gws.OwsProvider

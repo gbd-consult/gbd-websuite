@@ -14,8 +14,8 @@ class Config(core.Config):
 
 class Object(core.Object):
     def configure(self):
-        self.uidName = 'uid'
-        self.geometryName = 'geometry'
+        self.uidName = core.DEFAULT_UID_NAME
+        self.geometryName = core.DEFAULT_GEOMETRY_NAME
         self.loadingStrategy = gws.FeatureLoadingStrategy.all
 
         self.configure_fields()

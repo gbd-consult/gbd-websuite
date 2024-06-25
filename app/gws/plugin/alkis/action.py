@@ -332,7 +332,7 @@ _DEFAULT_PRINTER = gws.Config(
 
 ##
 
-class Model(gws.base.model.dynamic_model.Object):
+class Model(gws.base.model.default_model.Object):
     def configure(self):
         self.uidName = 'uid'
         self.geometryName = 'geometry'

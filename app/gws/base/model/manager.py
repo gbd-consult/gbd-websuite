@@ -3,7 +3,7 @@
 from typing import Optional, cast
 
 import gws
-from . import dynamic_model
+from . import default_model
 
 
 class Object(gws.ModelManager):
@@ -60,4 +60,4 @@ class Object(gws.ModelManager):
         return sorted(res.values(), key=lambda m: m.title)
 
     def default_model(self):
-        return self.root.create_shared(dynamic_model.Object, uid='gws.base.core.dynamic_model.Object')
+        return self.root.create_shared(default_model.Object, uid='gws.base.core.default_model.Object')

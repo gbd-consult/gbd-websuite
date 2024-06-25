@@ -7,6 +7,9 @@ import gws.base.feature
 import gws.base.shape
 import gws.config.util
 
+DEFAULT_UID_NAME = 'uid'
+DEFAULT_GEOMETRY_NAME = 'geometry'
+
 
 class TableViewColumn(gws.Data):
     name: str
@@ -281,9 +284,9 @@ class Object(gws.Model):
         a = {}
 
         if self.uidName:
-            a[self.uidName] = props.attributes.get(self.uidName)
+            a[DEFAULT_UID_NAME] = props.attributes.get(self.uidName)
         if self.geometryName:
-            a[self.geometryName] = props.attributes.get(self.geometryName)
+            a[DEFAULT_GEOMETRY_NAME] = props.attributes.get(self.geometryName)
 
         props.attributes = a
         props.modelUid = ''

@@ -140,7 +140,7 @@ For example, here's an implementation of the ``update`` operation::
 
 from .core import Config, Object, Props
 
-from . import manager, dynamic_model, util, field, related_field
+from . import manager, default_model, util, field, related_field
 
 from .util import (
     iter_features,
