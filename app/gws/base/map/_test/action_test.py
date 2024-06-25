@@ -44,9 +44,9 @@ def test_get_features(root: gws.Root):
     res = u.http.get(root, '/_/mapGetFeatures/layerUid/LAYER')
     fs = res.json['features']
 
-    assert fs[0]['attributes'] == {'id': 1, 'g': {'crs': 'EPSG:3857', 'geometry': {'type': 'Point', 'coordinates': [10.0, 100.0]}}}
-    assert fs[1]['attributes'] == {'id': 2, 'g': {'crs': 'EPSG:3857', 'geometry': {'type': 'Point', 'coordinates': [20.0, 200.0]}}}
-    assert fs[2]['attributes'] == {'id': 3, 'g': {'crs': 'EPSG:3857', 'geometry': {'type': 'Point', 'coordinates': [30.0, 300.0]}}}
+    assert fs[0]['attributes'] == {'uid': 1, 'geometry': {'crs': 'EPSG:3857', 'geometry': {'type': 'Point', 'coordinates': [10.0, 100.0]}}}
+    assert fs[1]['attributes'] == {'uid': 2, 'geometry': {'crs': 'EPSG:3857', 'geometry': {'type': 'Point', 'coordinates': [20.0, 200.0]}}}
+    assert fs[2]['attributes'] == {'uid': 3, 'geometry': {'crs': 'EPSG:3857', 'geometry': {'type': 'Point', 'coordinates': [30.0, 300.0]}}}
 
     assert fs[0]['views']['label'] == '--1/a11--'
     assert fs[1]['views']['label'] == '--2/a22--'

@@ -138,7 +138,7 @@ def health_check_service_postgres():
     try:
         r = u.pg.rows('select 1')
         u.pg.close()
-    except psycopg2.Error as exc:
+    except Exception as exc:
         return repr(exc)
 
 
