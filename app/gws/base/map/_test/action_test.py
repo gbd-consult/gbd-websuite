@@ -41,7 +41,7 @@ def root():
 
 
 def test_get_features(root: gws.Root):
-    res = u.get_request(root, '/_/mapGetFeatures/layerUid/LAYER')
+    res = u.http.get(root, '/_/mapGetFeatures/layerUid/LAYER')
     fs = res.json['features']
 
     assert fs[0]['attributes'] == {'id': 1, 'g': {'crs': 'EPSG:3857', 'geometry': {'type': 'Point', 'coordinates': [10.0, 100.0]}}}

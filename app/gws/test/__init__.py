@@ -9,10 +9,17 @@ There are two ways to run the tests:
 - automatically, with ``make.sh test go``. This configures the docker-compose environment for testing, runs tests, and shuts down.
 - manually, where you first start the environment with ``make.sh test start`` and then invoke tests with ``make.sh test run``.
 
-
 In the latter case, it's convenient to start the compose environment in the foreground and invoke ``test run`` in another shell.
 
 When testing manually, you can also select specific tests with the ``--only`` option and provide additional pytest options. See ``make.sh test -h`` for details.
+
+User/group
+----------
+
+On Linux systems, the user running the tests (you) must be able to run ``docker``. Use ``sudo usermod -aG docker $USER`` to add yourself to the ``docker`` group.
+See https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
+
+By default, test containers use your uid/gid to run processes (like the postgres server), you can override this with ``runner.uid`` and ``runner.gid`` options.
 
 
 Configuration
@@ -20,7 +27,7 @@ Configuration
 
 On your machine, you need a dedicated directory where the tester stores its stuff ("base_dir").
 
-The configuration is in "test.ini" in the application root directory. If you need custom options (e.g., a custom base directory path), create a secondary "ini" file with your overrides and pass it as ``make.sh test --ini myconfig.ini``.
+The configuration is in the file "test.ini" in the application root directory. If you need custom options (e.g., a custom base directory path), create a secondary "ini" file with your overrides and pass it as ``make.sh test --ini myconfig.ini``.
 
 Writing tests
 -------------

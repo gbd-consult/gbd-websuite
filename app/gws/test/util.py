@@ -129,11 +129,11 @@ class TestResponse(werkzeug.test.TestResponse):
 
 
 def _wz_request(root, **kwargs):
-    cli = werkzeug.test.Client(gws.base.web.wsgi_app.make_application(root))
+    client = werkzeug.test.Client(gws.base.web.wsgi_app.make_application(root))
 
     cookies = cast(list[werkzeug.test.Cookie], kwargs.pop('cookies', []))
     for c in cookies:
-        cli.set_cookie(
+        client.set_cookie(
             key=c.key,
             value=c.value,
             max_age=c.max_age,
@@ -144,22 +144,26 @@ def _wz_request(root, **kwargs):
             httponly=c.http_only,
         )
 
-    res = cli.open(**kwargs)
+    res = client.open(**kwargs)
 
     # for some reason, responses do not include cookies, work around this
-    res.cookies = {c.key: c for c in (cli._cookies or {}).values()}
+    res.cookies = {c.key: c for c in (client._cookies or {}).values()}
     return res
 
 
-def get_request(root, url, **kwargs) -> TestResponse:
-    url = re.sub(r'\s+', '', url.strip())
-    url = '/' + url.strip('/')
-    return _wz_request(root, method='GET', path=url, **kwargs)
+class http:
+    @classmethod
+    def get(cls, root, url, **kwargs) -> TestResponse:
+        url = re.sub(r'\s+', '', url.strip())
+        url = '/' + url.strip('/')
+        return _wz_request(root, method='GET', path=url, **kwargs)
 
-
-def api_request(root, cmd, req=None, **kwargs) -> TestResponse:
-    path = '/_/' + (cmd or '')
-    return _wz_request(root, method='POST', path=path, json=req or {}, **kwargs)
+    @classmethod
+    def api(cls, root, cmd, request=None, **kwargs) -> TestResponse:
+        path = gws.c.SERVER_ENDPOINT
+        if cmd:
+            path += '/' + cmd
+        return _wz_request(root, method='POST', path=path, json=request or {}, **kwargs)
 
 
 ##

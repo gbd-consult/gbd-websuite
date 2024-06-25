@@ -43,25 +43,25 @@ def root():
 
 
 def test_get_models(root: gws.Root):
-    res = u.api_request(root, 'editGetModels', dict(projectUid='A'))
+    res = u.http.api(root, 'editGetModels', dict(projectUid='A'))
     ms = res.json['models']
     assert ms[0]['uid'] == 'MODEL_PLAIN'
     assert len(ms[0]['fields']) == 3
 
 
 def test_get_feature(root: gws.Root):
-    res = u.api_request(root, 'editGetFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', featureUid='2'))
+    res = u.http.api(root, 'editGetFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', featureUid='2'))
     props = res.json['feature']
     assert props['attributes']['id'] == 2
     assert props['attributes']['name'] == 'a22'
 
 
 def test_write_feature(root: gws.Root):
-    res = u.api_request(root, 'editGetFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', featureUid='2'))
+    res = u.http.api(root, 'editGetFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', featureUid='2'))
     props = res.json['feature']
     props['attributes']['name'] = 'a22-new'
 
-    res = u.api_request(root, 'editWriteFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', feature=props))
+    res = u.http.api(root, 'editWriteFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', feature=props))
     assert res.status_code == 200
 
     assert u.pg.rows('SELECT id,name FROM plain ORDER BY id') == [
@@ -72,12 +72,12 @@ def test_write_feature(root: gws.Root):
 
 
 def test_create_feature(root: gws.Root):
-    res = u.api_request(root, 'editGetFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', featureUid='2'))
+    res = u.http.api(root, 'editGetFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', featureUid='2'))
     props = res.json['feature']
     props['attributes'] = {'id': 777, 'name': 'NEW_NAME'}
     props['isNew'] = True
 
-    res = u.api_request(root, 'editWriteFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', feature=props))
+    res = u.http.api(root, 'editWriteFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', feature=props))
     assert res.status_code == 200
 
     assert u.pg.rows('SELECT id,name FROM plain WHERE id=777') == [
@@ -86,10 +86,10 @@ def test_create_feature(root: gws.Root):
 
 
 def test_delete_feature(root: gws.Root):
-    res = u.api_request(root, 'editGetFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', featureUid='2'))
+    res = u.http.api(root, 'editGetFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', featureUid='2'))
     props = res.json['feature']
 
-    res = u.api_request(root, 'editDeleteFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', feature=props))
+    res = u.http.api(root, 'editDeleteFeature', dict(projectUid='A', modelUid='MODEL_PLAIN', feature=props))
     assert res.status_code == 200
 
     assert u.pg.rows('SELECT id,name FROM plain WHERE id=2') == []

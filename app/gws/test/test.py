@@ -58,11 +58,15 @@ OPTIONS = {}
 def main(args):
     cmd = args.get(1)
 
-    ini_path = args.get('ini') or gws.env.GWS_TEST_INI
-    OPTIONS.update(load_options(ini_path))
+    ini_paths = [APP_DIR + '/test.ini']
+    custom_ini = args.get('ini') or gws.env.GWS_TEST_INI
+    if custom_ini:
+        ini_paths.append(custom_ini)
+    cli.info(f'using configs: {ini_paths}')
+    OPTIONS.update(inifile.from_paths(*ini_paths))
 
     OPTIONS.update(dict(
-        arg_ini=ini_path,
+        arg_ini=custom_ini,
         arg_manifest=args.get('manifest'),
         arg_detach=args.get('d') or args.get('detach'),
         arg_coverage=args.get('c') or args.get('coverage'),
@@ -78,24 +82,27 @@ def main(args):
         p = os.path.realpath(os.path.join(APP_DIR, p))
     OPTIONS['BASE_DIR'] = p
 
+    OPTIONS['runner.uid'] = int(OPTIONS.get('runner.uid') or os.getuid())
+    OPTIONS['runner.gid'] = int(OPTIONS.get('runner.gid') or os.getgid())
+
     if cmd == 'go':
         OPTIONS['arg_coverage'] = True
         OPTIONS['arg_detach'] = True
-        compose_stop()
+        docker_compose_stop()
         configure()
-        compose_start()
+        docker_compose_start()
         run()
-        compose_stop()
+        docker_compose_stop()
         return 0
 
     if cmd == 'start':
-        compose_stop()
+        docker_compose_stop()
         configure()
-        compose_start()
+        docker_compose_start(with_exec=True)
         return 0
 
     if cmd == 'stop':
-        compose_stop()
+        docker_compose_stop()
         return 0
 
     if cmd == 'run':
@@ -112,13 +119,10 @@ def configure():
     base = OPTIONS['BASE_DIR']
 
     ensure_dir(f'{base}/config', clear=True)
+    ensure_dir(f'{base}/coverage', clear=True)
     ensure_dir(f'{base}/data')
     ensure_dir(f'{base}/gws-var')
-    ensure_dir(f'{base}/postgres')
     ensure_dir(f'{base}/pytest_cache')
-
-    ensure_dir(f'{base}/coverage', clear=True)
-
     ensure_dir(f'{base}/tmp', clear=True)
 
     manifest_text = '{}'
@@ -137,47 +141,34 @@ def configure():
 
 def run():
     base = OPTIONS['BASE_DIR']
+    coverage_ini = f'{base}/config/coverage.ini'
 
-    run_args = []
-
-    if OPTIONS['arg_only']:
-        run_args.append(f'--only ' + OPTIONS['arg_only'])
-    if OPTIONS['arg_verbose']:
-        run_args.append(f'--verbose')
-    if OPTIONS['arg_pytest']:
-        run_args.append('-')
-        run_args.extend(OPTIONS['arg_pytest'])
-
-    docker_exec = f'''
-        {OPTIONS.get('runner.docker')}
-        exec
-        {OPTIONS.get('runner.docker_exec_options', '')}
-        c_gws
-    '''
-
-    prog = 'python3'
-    cov_ini = f'{base}/config/coverage.ini'
+    args = []
 
     if OPTIONS['arg_coverage']:
-        prog = f'coverage run --rcfile={cov_ini}'
+        args.append(f'coverage run --rcfile={coverage_ini}')
+    else:
+        args.append('python3')
 
-    run_cmd = f'''
-        {docker_exec} 
-        {prog}
-        /gws-app/gws/test/container_runner.py
-        --base {OPTIONS['BASE_DIR']}
-        {' '.join(run_args)}
-    '''
+    args.append('/gws-app/gws/test/container_runner.py')
+    args.append('--base')
+    args.append(base)
 
-    cli.run(run_cmd)
+    if OPTIONS['arg_only']:
+        args.append('--only')
+        args.append(OPTIONS['arg_only'])
+    if OPTIONS['arg_verbose']:
+        args.append(f'--verbose')
+    if OPTIONS['arg_pytest']:
+        args.append('-')
+        args.extend(OPTIONS['arg_pytest'])
+
+    docker_exec('c_gws', args)
 
     if OPTIONS['arg_coverage']:
         ensure_dir(f'{base}/coverage', clear=True)
-        html_cmd = f'''
-            {docker_exec}  
-            coverage html --rcfile={cov_ini}
-        '''
-        cli.run(html_cmd)
+        args = [f'coverage html --rcfile={coverage_ini}']
+        docker_exec('c_gws', args)
 
 
 ##
@@ -200,21 +191,19 @@ def make_docker_compose_yml():
 
         srv.setdefault('image', OPTIONS.get(f'service.{s}.image'))
         srv.setdefault('extra_hosts', []).append(f"{OPTIONS.get('runner.docker_host_name')}:host-gateway")
-        srv.setdefault('container_name', f'c_{s}')
 
-        vols = [
+        std_vols = [
             f'{base}:{base}',
             f'{APP_DIR}:/gws-app',
             f'{base}/data:/data',
             f'{base}/gws-var:/gws-var',
         ]
-        srv.setdefault('volumes', []).extend(vols)
+        srv.setdefault('volumes', []).extend(std_vols)
 
         srv.setdefault('tmpfs', []).append('/tmp')
         srv.setdefault('stop_grace_period', '1s')
 
-        srv.setdefault('environment', {})
-        srv['environment'].update(OPTIONS.get('environment', {}))
+        srv['environment'] = make_env()
 
         service_configs[s] = srv
 
@@ -266,77 +255,47 @@ def make_coverage_ini():
     return inifile.to_string(ini)
 
 
-def compose_start():
-    base = OPTIONS['BASE_DIR']
-    d = '--detach' if OPTIONS['arg_detach'] else ''
-    cli.run(f'''{OPTIONS.get('runner.docker_compose')} --file {base}/config/docker-compose.yml up {d}''')
-
-
-def compose_stop():
-    base = OPTIONS['BASE_DIR']
-    try:
-        cli.run(f'''{OPTIONS.get('runner.docker_compose')} --file {base}/config/docker-compose.yml down''')
-    except:
-        pass
-
-
-##
-
-def read_file(path):
-    with open(path, 'rt', encoding='utf8') as fp:
-        return fp.read()
-
-
-def write_file(path, s):
-    with open(path, 'wt', encoding='utf8') as fp:
-        fp.write(s)
-
-
-def load_options(local_ini):
-    inis = [APP_DIR + '/test.ini']
-    if local_ini:
-        inis.append(local_ini)
-
-    cli.info(f'using configs: {inis}')
-    OPTIONS = inifile.from_paths(*inis)
-
+def make_env():
     env = {
         'PYTHONPATH': '/gws-app',
+        'GWS_UID': OPTIONS.get('runner.uid'),
+        'GWS_GID': OPTIONS.get('runner.gid'),
+        'GWS_TIMEZONE': OPTIONS.get('service.gws.time_zone', 'UTC'),
+        'POSTGRES_DB': OPTIONS.get('service.postgres.database'),
+        'POSTGRES_PASSWORD': OPTIONS.get('service.postgres.password'),
+        'POSTGRES_USER': OPTIONS.get('service.postgres.user'),
     }
+
     for k, v in OPTIONS.items():
         sec, _, name = k.partition('.')
         if sec == 'environment':
             env[name] = v
-    OPTIONS['environment'] = env
 
-    return OPTIONS
-
-
-def ensure_dir(path, clear=False):
-    def _clear(d):
-        for de in os.scandir(d):
-            if de.is_dir():
-                _clear(de.path)
-                os.rmdir(de.path)
-            else:
-                os.unlink(de.path)
-
-    os.makedirs(path, exist_ok=True)
-    if clear:
-        _clear(path)
+    return env
 
 
 ##
 
+_GWS_ENTRYPOINT = """
+#!/usr/bin/env bash
+
+groupadd --gid $GWS_GID g_$GWS_GID
+useradd  --create-home --uid $GWS_UID --gid $GWS_GID u_$GWS_UID
+
+ln -fs /usr/share/zoneinfo/$GWS_TIMEZONE /etc/localtime
+
+sleep infinity
+"""
+
+
 def service_gws():
-    tz = OPTIONS.get('service.gws.time_zone')
-    if tz:
-        command = f'bash -c "ln -fs /usr/share/zoneinfo/{tz} /etc/localtime && sleep infinity" '
-    else:
-        command = 'sleep infinity'
+    base = OPTIONS['BASE_DIR']
+
+    ep = write_exec(f'{base}/config/gws_entrypoint', _GWS_ENTRYPOINT)
 
     return dict(
-        command=command,
+        container_name='c_gws',
+        entrypoint=ep,
         ports=[
             f"{OPTIONS.get('service.gws.http_expose_port')}:80",
             f"{OPTIONS.get('service.gws.mpx_expose_port')}:5000",
@@ -346,6 +305,7 @@ def service_gws():
 
 def service_qgis():
     return dict(
+        container_name='c_qgis',
         command=f'/bin/sh /qgis-start.sh',
         ports=[
             f"{OPTIONS.get('service.qgis.expose_port')}:80",
@@ -371,26 +331,44 @@ log_duration = 1
 log_hostname = 0
 """
 
+_POSTGRESQL_ENTRYPOINT = """
+#!/usr/bin/env bash
+
+# delete existing and create our own postgres user
+groupdel -f postgres
+userdel -f postgres
+groupadd --gid $GWS_GID postgres
+useradd --create-home --uid $GWS_UID --gid $GWS_GID postgres
+
+# invoke the original postgres entry point
+docker-entrypoint.sh postgres --config_file=/etc/postgresql/postgresql.conf
+"""
+
 
 def service_postgres():
     # https://github.com/docker-library/docs/blob/master/postgres/README.md
+    # https://github.com/postgis/docker-postgis
+
+    # the entrypoint business is because
+    # - 'postgres' uid should match host uid (or whatever is configured in test.ini)
+    # - we need a custom config file
 
     base = OPTIONS['BASE_DIR']
-    write_file(f'{base}/postgres/postgresql.conf', _POSTGRESQL_CONF)
+
+    ep = write_exec(f'{base}/config/postgres_entrypoint', _POSTGRESQL_ENTRYPOINT)
+    cf = write_file(f'{base}/config/postgresql.conf', _POSTGRESQL_CONF)
 
     ensure_dir(f'{base}/postgres')
 
     return dict(
-        environment={
-            'POSTGRES_DB': OPTIONS.get('service.postgres.database'),
-            'POSTGRES_PASSWORD': OPTIONS.get('service.postgres.password'),
-            'POSTGRES_USER': OPTIONS.get('service.postgres.user'),
-        },
+        container_name='c_postgres',
+        entrypoint=ep,
         ports=[
             f"{OPTIONS.get('service.postgres.expose_port')}:5432",
         ],
         volumes=[
-            f"{base}/postgres:/var/lib/postgresql/data"
+            f"{base}/postgres:/var/lib/postgresql/data",
+            f"{cf}:/etc/postgresql/postgresql.conf",
         ]
     )
 
@@ -398,12 +376,81 @@ def service_postgres():
 def service_mockserver():
     return dict(
         # NB use the gws image
+        container_name='c_mockserver',
         image=OPTIONS.get('service.gws.image'),
         command=f'python3 /gws-app/gws/test/mockserver.py',
         ports=[
             f"{OPTIONS.get('service.mockserver.expose_port')}:80",
         ],
     )
+
+
+##
+
+def docker_compose_start(with_exec=False):
+    dc = OPTIONS['BASE_DIR'] + '/config/docker-compose.yml'
+
+    cmd = ['docker', 'compose', '--file', dc, 'up']
+    if OPTIONS['arg_detach']:
+        cmd.append('--detach')
+
+    if with_exec:
+        return os.execvp('docker', cmd)
+
+    cli.run(cmd)
+
+
+def docker_compose_stop():
+    dc = OPTIONS['BASE_DIR'] + '/config/docker-compose.yml'
+    try:
+        cli.run(f'docker compose --file {dc} down')
+    except:
+        pass
+
+
+def docker_exec(container, args):
+    cmd = [
+        'docker exec',
+        OPTIONS.get('runner.docker_exec_options', ''),
+        container,
+    ]
+    cmd.extend(args)
+    cli.run(cmd)
+
+
+def read_file(path):
+    with open(path, 'rt', encoding='utf8') as fp:
+        return fp.read()
+
+
+def write_file(path, s):
+    with open(path, 'wt', encoding='utf8') as fp:
+        fp.write(s)
+    return path
+
+
+def write_exec(path, s):
+    with open(path, 'wt', encoding='utf8') as fp:
+        fp.write(s.strip() + '\n')
+    os.chmod(path, 0o777)
+    return path
+
+
+def ensure_dir(path, clear=False):
+    def _clear(d):
+        for de in os.scandir(d):
+            if de.is_dir():
+                _clear(de.path)
+                os.rmdir(de.path)
+            else:
+                os.unlink(de.path)
+
+    os.makedirs(path, exist_ok=True)
+    if clear:
+        _clear(path)
+
+
+##
 
 
 if __name__ == '__main__':

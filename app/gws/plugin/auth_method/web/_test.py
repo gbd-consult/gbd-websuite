@@ -34,14 +34,14 @@ def root():
 
 
 def _login(root, username, password):
-    return u.api_request(root, 'authLogin', {'username': username, 'password': password})
+    return u.http.api(root, 'authLogin', {'username': username, 'password': password})
 
 
 def _get_project(root, project_uid, cookie):
     if cookie is None:
-        return u.api_request(root, 'projectInfo', {'projectUid': project_uid})
+        return u.http.api(root, 'projectInfo', {'projectUid': project_uid})
     else:
-        return u.api_request(root, 'projectInfo', {'projectUid': project_uid}, cookies=[cookie])
+        return u.http.api(root, 'projectInfo', {'projectUid': project_uid}, cookies=[cookie])
 
 
 #

@@ -49,6 +49,8 @@ def info(msg):
 ##
 
 def run(cmd):
+    if isinstance(cmd, list):
+        cmd = ' '.join(cmd)
     cmd = re.sub(r'\s+', ' ', cmd.strip())
     info(f'> {cmd}')
     res = subprocess.run(cmd, shell=True, capture_output=False)
