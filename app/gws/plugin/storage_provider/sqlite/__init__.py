@@ -2,7 +2,7 @@ from typing import Optional
 
 import gws
 import gws.base.storage
-import gws.lib.sa as sa
+import gws.lib.sqlitex
 
 gws.ext.new.storageProvider('sqlite')
 
@@ -14,59 +14,42 @@ class Config(gws.Config):
     """storage path"""
 
 
-class Object(gws.StorageProvider):
-    tableName = 'storage'
+_DEFAULT_DB_PATH = gws.c.MISC_DIR + '/' + 'storage8.sqlite'
+_TABLE = 'storage'
 
+_INIT_DDL = f'''
+    CREATE TABLE IF NOT EXISTS {_TABLE} (
+        category    TEXT NOT NULL,
+        name        TEXT NOT NULL,
+        user_uid    TEXT,
+        data        TEXT,
+        created     INTEGER,
+        updated     INTEGER,
+        PRIMARY KEY (category, name)
+    )
+'''
+
+
+class Object(gws.StorageProvider):
     dbPath: str
-    metaData: sa.MetaData
-    engine: sa.Engine
-    table: sa.Table
 
     def configure(self):
-        _DEFAULT_STORE_PATH = gws.c.MISC_DIR + '/storage8.sqlite'
-        self.dbPath = self.cfg('path', default=_DEFAULT_STORE_PATH)
-
-    def activate(self):
-        self.metaData = sa.MetaData()
-        self.engine = sa.create_engine(f'sqlite:///{self.dbPath}')
-
-        self.table = sa.Table(
-            'storage',
-            self.metaData,
-            sa.Column('category', sa.String, primary_key=True),
-            sa.Column('name', sa.String, primary_key=True),
-            sa.Column('user_uid', sa.String),
-            sa.Column('data', sa.String),
-            sa.Column('created', sa.Integer),
-            sa.Column('updated', sa.Integer),
-        )
-
-        try:
-            self.metaData.create_all(self.engine, checkfirst=True)
-        except Exception as exc:
-            raise gws.Error(f'cannot open {self.dbPath!r}') from exc
+        self.dbPath = self.cfg('path', default=_DEFAULT_DB_PATH)
 
     def list_names(self, category):
-        stmt = sa.select(self.table.c.name).where(self.table.c.category == category)
-        return sorted(self._exec(stmt).scalars().all())
+        rs = self._db().select(f'SELECT name FROM {_TABLE} WHERE category=:category', category=category)
+        return sorted(rec['name'] for rec in rs)
 
     def read(self, category, name):
-        stmt = sa.select(self.table).where(self.table.c.category == category).where(self.table.c.name == name)
-        for rec in self._exec(stmt).mappings().all():
-            return gws.StorageRecord(
-                category=rec['category'],
-                name=rec['name'],
-                userUid=rec['user_uid'],
-                data=rec['data'],
-                created=rec['created'],
-                updated=rec['updated'],
-            )
+        rs = self._db().select(f'SELECT * FROM {_TABLE} WHERE category=:category AND name=:name', category=category, name=name)
+        for rec in rs:
+            return gws.StorageRecord(**rec)
 
     def write(self, category, name, data, user_uid):
         rec = self.read(category, name)
         tmp = gws.u.random_string(64)
 
-        self._exec(sa.insert(self.table).values(
+        self._db().insert(_TABLE, dict(
             category=category,
             name=tmp if rec else name,
             user_uid=user_uid,
@@ -77,17 +60,19 @@ class Object(gws.StorageProvider):
 
         if rec:
             self.delete(category, name)
-            self._exec(
-                sa.update(self.table)
-                .where(self.table.c.name == tmp)
-                .values(name=name))
+            self._db().execute(f'UPDATE {_TABLE} SET name=:name WHERE name=:tmp', name=name, tmp=tmp)
 
     def delete(self, category, name):
-        self._exec(
-            sa.delete(self.table)
-            .where(self.table.c.category == category)
-            .where(self.table.c.name == name))
+        self._db().execute(
+            f'DELETE FROM {_TABLE} WHERE category=:category AND name=:name',
+            category=category, name=name
+        )
 
-    def _exec(self, stmt):
-        with self.engine.begin() as conn:
-            return conn.execute(stmt)
+    ##
+
+    _sqlitex: gws.lib.sqlitex.Object
+
+    def _db(self):
+        if getattr(self, '_sqlitex', None) is None:
+            self._sqlitex = gws.lib.sqlitex.Object(self.dbPath, _INIT_DDL)
+        return self._sqlitex

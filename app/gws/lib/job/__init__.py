@@ -4,8 +4,7 @@ import importlib
 
 import gws
 import gws.lib.jsonx
-
-from . import storage
+import gws.lib.sqlitex
 
 
 class Error(gws.Error):
@@ -16,38 +15,65 @@ class PrematureTermination(Exception):
     pass
 
 
+_DB_PATH = gws.c.PRINT_DIR + '/jobs81.sqlite'
+
+_TABLE = 'job'
+
+_INIT_DDL = f'''
+    CREATE TABLE IF NOT EXISTS {_TABLE} (
+        uid      TEXT NOT NULL PRIMARY KEY,
+        user_uid TEXT NOT NULL,
+        str_user TEXT NOT NULL,
+        worker   TEXT NOT NULL,
+        payload  TEXT NOT NULL,
+        state    TEXT NOT NULL,
+        error    TEXT NOT NULL,
+        created  INTEGER NOT NULL,
+        updated  INTEGER NOT NULL
+    )            
+'''
+
+
 def create(root: gws.Root, user: gws.User, worker: str, payload: dict = None) -> 'Object':
     uid = gws.u.random_string(64)
     gws.log.debug(f'JOB {uid}: creating: {worker=}  {user.uid=}')
-    storage.create(uid)
-    storage.update(
-        uid,
+
+    _db().insert(_TABLE, dict(
+        uid=uid,
         user_uid=user.uid,
         str_user=root.app.authMgr.serialize_user(user),
         worker=worker,
         payload=gws.lib.jsonx.to_string(payload or {}),
         state=gws.JobState.open,
         error='',
-    )
-    return get(root, uid)
+        created=gws.u.stime(),
+        updated=gws.u.stime()
+    ))
+
+    job = get(root, uid)
+    if not job:
+        raise gws.Error(f'error creating job {uid=}')
+    return job
 
 
 def run(root: gws.Root, uid):
     job = get(root, uid)
     if not job:
-        raise gws.Error('invalid job_uid {uid!r}')
+        raise gws.Error(f'invalid job {uid=}')
     job.run()
 
 
 def get(root: gws.Root, uid) -> Optional['Object']:
-    rec = storage.find(uid)
-    if rec:
-        return Object(root, rec)
+    rs = _db().select(f'SELECT * FROM {_TABLE} WHERE uid=:uid', uid=uid)
+    if rs:
+        return Object(root, rs[0])
 
 
 def remove(uid):
-    storage.remove(uid)
+    _db().execute(f'DELETE FROM {_TABLE} WHERE uid=:uid', uid=uid)
 
+
+##
 
 class Object(gws.Job):
     worker: str
@@ -92,7 +118,9 @@ class Object(gws.Job):
             self.update(state=gws.JobState.error, error=repr(exc))
 
     def update(self, payload=None, state=None, error=None):
-        rec = {}
+        rec = {
+            'updated': gws.u.stime(),
+        }
 
         if payload is not None:
             rec['payload'] = gws.lib.jsonx.to_string(payload)
@@ -101,11 +129,28 @@ class Object(gws.Job):
         if error:
             rec['error'] = error
 
-        storage.update(self.uid, **rec)
+        vals = ','.join(f'{k}=:{k}' for k in rec)
+
+        _db().execute(f'UPDATE {_TABLE} SET {vals} WHERE uid=:uid', uid=self.uid, **rec)
+
         gws.log.debug(f'JOB {self.uid}: update: {rec=}')
 
     def cancel(self):
         self.update(state=gws.JobState.cancel)
 
     def remove(self):
-        storage.remove(self.uid)
+        _db().execute(f'DELETE FROM {_TABLE} WHERE uid=:uid', uid=self.uid)
+
+
+##
+
+
+_sqlitex: Optional[gws.lib.sqlitex.Object] = None
+
+
+def _db() -> gws.lib.sqlitex.Object:
+    global _sqlitex
+
+    if _sqlitex is None:
+        _sqlitex = gws.lib.sqlitex.Object(_DB_PATH, _INIT_DDL)
+    return _sqlitex

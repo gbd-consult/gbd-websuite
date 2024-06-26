@@ -17,7 +17,7 @@ import gws.base.shape
 import gws.base.web.wsgi_app
 import gws.config
 import gws.gis.crs
-import gws.lib.cli
+import gws.lib.cli as cli
 import gws.lib.jsonx
 import gws.lib.net
 import gws.lib.sa as sa
@@ -99,7 +99,7 @@ def gws_specs() -> gws.SpecRuntime:
     return gws.spec.runtime.Object(_GWS_SPEC_DICT)
 
 
-def gws_root(config: str = '', specs: gws.SpecRuntime = None):
+def gws_root(config: str = '', specs: gws.SpecRuntime = None, activate=True):
     config = '\n'.join([
         f'server.log.level {gws.log.get_level()}',
         _config_defaults(),
@@ -109,7 +109,10 @@ def gws_root(config: str = '', specs: gws.SpecRuntime = None):
     parsed_config = _to_data(gws.lib.vendor.slon.parse(config, as_object=True))
     specs = mock.register(specs or gws_specs())
     root = gws.config.initialize(specs, parsed_config)
-    return gws.config.activate(root)
+    if not activate:
+        return root
+    root = gws.config.activate(root)
+    return root
 
 
 def gws_system_user():
@@ -323,6 +326,11 @@ def ensure_dir(path, clear=False):
         _clear(path)
 
 
+def path_in_base_dir(path):
+    base = option('BASE_DIR')
+    return f'{base}/{path}'
+
+
 @contextlib.contextmanager
 def temp_file_in_base_dir(content):
     # for exec/chmod tests, which cannot use tmp_path
@@ -333,9 +341,7 @@ def temp_file_in_base_dir(content):
 
     p = d + '/' + gws.u.random_string(16)
     gws.u.write_file(p, content)
-
     yield p
-
     try:
         os.unlink(p)
     except:
