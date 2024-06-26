@@ -82,5 +82,5 @@ class Object:
 
     def _engine(self):
         if getattr(self, 'saEngine', None) is None:
-            self.saEngine = sa.create_engine(f'sqlite:///{self.dbPath}', poolclass=sa.NullPool, echo=True)
+            self.saEngine = sa.create_engine(f'sqlite:///{self.dbPath}', poolclass=sa.NullPool, echo=False)
         return self.saEngine
