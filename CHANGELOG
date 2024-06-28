@@ -1,6 +1,10 @@
+## Version 8.0.44
+
+- fixed broken client map positioning
+
 ## Version 8.0.43
 
-- Use "house number" geometry in the alkis geocoder
+- use "house number" geometry in the alkis geocoder
 
 ## Version 8.0.42
 
