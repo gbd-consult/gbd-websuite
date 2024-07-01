@@ -119,7 +119,6 @@ def configure():
     base = OPTIONS['BASE_DIR']
 
     ensure_dir(f'{base}/config', clear=True)
-    ensure_dir(f'{base}/coverage', clear=True)
     ensure_dir(f'{base}/data')
     ensure_dir(f'{base}/gws-var')
     ensure_dir(f'{base}/pytest_cache')
@@ -166,8 +165,11 @@ def run():
     docker_exec('c_gws', args)
 
     if OPTIONS['arg_coverage']:
+        uid = OPTIONS.get('runner.uid')
+        gid = OPTIONS.get('runner.gid')
+
         ensure_dir(f'{base}/coverage', clear=True)
-        args = [f'coverage html --rcfile={coverage_ini}']
+        args = [f'coverage html --rcfile={coverage_ini} && chown -R {uid}:{gid} {base}/coverage']
         docker_exec('c_gws', args)
 
 
