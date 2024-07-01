@@ -169,8 +169,8 @@ def run():
         gid = OPTIONS.get('runner.gid')
 
         ensure_dir(f'{base}/coverage', clear=True)
-        args = [f'coverage html --rcfile={coverage_ini} && chown -R {uid}:{gid} {base}/coverage']
-        docker_exec('c_gws', args)
+        docker_exec('c_gws', [f'coverage html --rcfile={coverage_ini}'])
+        docker_exec('c_gws', [f'chown -R {uid}:{gid} {base}/coverage'])
 
 
 ##
