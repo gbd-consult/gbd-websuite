@@ -3,10 +3,9 @@
 This wrapper accepts a database path and optionally an "init" DDL statement.
 It executes queries given in a text form.
 
-Error recovery:
+Failed queries are repeated up to 3 times to work around transient errors, like the DB being locked.
 
-- if a query fails and there's no table in the database, the "init" DDL is executed, and the query is repeated.
-- If the database happens to be locked, it waits for a while and then attempts to repeat the query.
+If the error message is "no such table", the wrapper runs the  "init" DDL before repeating.
 
 """
 
@@ -46,9 +45,15 @@ class Object:
 
     ##
 
+    _MAX_ERRORS = 3
+    _SLEEP_TIME = 0.1
+
     def _exec2(self, is_select, stmt, params):
+        err_cnt = 0
+
         while True:
             sa_exc = None
+
             try:
                 with self._engine().connect() as conn:
                     if is_select:
@@ -61,10 +66,8 @@ class Object:
 
             # @TODO using strings for error checking, is there a better way?
 
-            s = str(sa_exc)
-
-            if 'no such table' in s and self.initDdl:
-                gws.log.warning(f'sqlitex: error={s}, running init...')
+            if 'no such table' in str(sa_exc) and self.initDdl:
+                gws.log.warning(f'sqlitex: error={sa_exc}, running init...')
                 try:
                     with self._engine().connect() as conn:
                         conn.execute(sa.text(self.initDdl))
@@ -73,9 +76,15 @@ class Object:
                 except sa.Error as exc:
                     sa_exc = exc
 
-            if 'database is locked' in s:
-                gws.log.warning(f'sqlitex: error={s}, waiting...')
-                gws.u.sleep(0.1)
+            if 'database is locked' in str(sa_exc):
+                gws.log.warning(f'sqlitex: locked, waiting...')
+                gws.u.sleep(self._SLEEP_TIME)
+                continue
+
+            err_cnt += 1
+            if err_cnt < self._MAX_ERRORS:
+                gws.log.warning(f'sqlitex: error={sa_exc}, waiting...')
+                gws.u.sleep(self._SLEEP_TIME)
                 continue
 
             raise gws.Error('sqlitex error') from sa_exc
