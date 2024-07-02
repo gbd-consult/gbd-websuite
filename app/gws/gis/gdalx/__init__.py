@@ -3,7 +3,6 @@
 from typing import Optional, cast
 
 import contextlib
-import datetime
 
 from osgeo import gdal
 from osgeo import ogr
@@ -12,6 +11,7 @@ from osgeo import osr
 import gws
 import gws.base.shape
 import gws.gis.crs
+import gws.lib.datetimex as datetimex
 
 
 class Error(gws.Error):
@@ -23,6 +23,11 @@ class DriverInfo(gws.Data):
     name: str
     longName: str
     metaData: dict
+
+
+class DriverVariant(gws.Enum):
+    raster = 'raster'
+    vector = 'vector'
 
 
 class _DriverInfoCache(gws.Data):
@@ -39,14 +44,24 @@ def drivers() -> list[DriverInfo]:
     return di.infos
 
 
-def open(path, mode, driver: str = '', as_raster: bool = False, as_vector: bool = False, **opts) -> 'DataSet':
-    """Open a path and return a  vector DataSet object.
+def open(
+        path: str,
+        mode: str,
+        driver: str = '',
+        variant: Optional[DriverVariant] = None,
+        encoding: str | None = 'utf8',
+        default_crs: Optional[gws.Crs] = None,
+        **opts
+) -> 'DataSet':
+    """Open a path and return a DataSet object.
 
     Args:
         path: File path.
         mode: 'r' (read), 'a' (update), 'w' (create for writing)
         driver: Driver name, if omitted, will be suggested from the path extension.
-        type: 'raster' or 'vector'  for dual drivers, like Geopackage.
+        variant: 'raster' or 'vector'  for dual drivers, like Geopackage.
+        encoding: If not None, strings will be automatically decoded.
+        default_crs: Default CRS for geometries.
         opts: Options for gdal.OpenEx/CreateDataSource.
 
     Returns:
@@ -56,26 +71,26 @@ def open(path, mode, driver: str = '', as_raster: bool = False, as_vector: bool 
 
     gdal.UseExceptions()
 
-    drv = _driver_from_args(path, driver, as_raster=as_raster, as_vector=as_vector)
+    drv = _driver_from_args(path, driver, variant)
 
     if mode == 'w':
         gd = drv.CreateDataSource(path, **opts)
         if gd is None:
             raise Error(f'cannot create {path!r}')
-        return DataSet(path, gd)
+        return DataSet(path, gd, encoding, default_crs)
 
     if not gws.u.is_file(path):
         raise Error(f'file not found {path!r}')
 
     flags = gdal.OF_VERBOSE_ERROR + (gdal.OF_UPDATE if mode == 'a' else gdal.OF_READONLY)
-    if as_raster:
+    if variant == DriverVariant.raster:
         flags += gdal.OF_RASTER
-    if as_vector:
+    if variant == DriverVariant.vector:
         flags += gdal.OF_VECTOR
     gd = gdal.OpenEx(path, flags, **opts)
     if gd is None:
         raise Error(f'cannot open {path!r}')
-    return DataSet(path, gd)
+    return DataSet(path, gd, encoding, default_crs)
 
 
 def open_image(image: gws.Image, bounds: gws.Bounds) -> 'DataSet':
@@ -104,7 +119,7 @@ def open_image(image: gws.Image, bounds: gws.Bounds) -> 'DataSet':
     )
 
     gd.SetGeoTransform(src_transform)
-    gd.SetSpatialRef(_srs(bounds.crs.srid))
+    gd.SetSpatialRef(_srs_from_srid(bounds.crs.srid))
 
     return DataSet('', gd)
 
@@ -112,7 +127,7 @@ def open_image(image: gws.Image, bounds: gws.Bounds) -> 'DataSet':
 def create_copy(path: str, ds: 'DataSet', driver: str = '', strict=False, **opts) -> 'DataSet':
     gdal.UseExceptions()
 
-    drv = _driver_from_args(path, driver, as_raster=True)
+    drv = _driver_from_args(path, driver, variant=DriverVariant.raster)
     gd = drv.CreateCopy(path, ds.gdDataset, 1 if strict else 0, **opts)
     gd.SetMetadata(ds.gdDataset.GetMetadata())
     gd.FlushCache()
@@ -124,12 +139,16 @@ class DataSet:
     gdDriver: gdal.Driver
     path: str
     driverName: str
+    defaultCrs: gws.Crs | None
+    encoding: str | None
 
-    def __init__(self, path: str, gd: gdal.Dataset):
+    def __init__(self, path, gd, encoding='utf8', default_crs=None):
         self.path = path
         self.gdDataset = gd
         self.gdDriver = self.gdDataset.GetDriver()
         self.driverName = self.gdDriver.GetDescription()
+        self.encoding = encoding
+        self.defaultCrs = default_crs
 
     def __enter__(self):
         return self
@@ -165,40 +184,49 @@ class DataSet:
         if overwrite:
             opts.append('OVERWRITE=YES')
 
+        geom_type = ogr.wkbUnknown
+        srs = None
+
+        if geometry_type:
+            geom_type = _GEOM_TO_OGR.get(geometry_type)
+            crs = crs or self.defaultCrs
+            if not crs:
+                raise Error(f'no crs set for create_layer')
+            srs = _srs_from_srid(crs.srid)
+
         gd_layer = self.gdDataset.CreateLayer(
             name,
-            geom_type=_GEOM_TO_OGR.get(geometry_type) or ogr.wkbUnknown,
-            srs=_srs(crs.srid if crs else 3857) if geometry_type else None,
+            geom_type=geom_type,
+            srs=srs,
             options=opts,
         )
         for col_name, col_type in columns.items():
             gd_layer.CreateField(ogr.FieldDefn(col_name, _ATTR_TO_OGR[col_type]))
 
-        return Layer(gd_layer)
+        return Layer(self, gd_layer)
 
     def layers(self):
         cnt = self.gdDataset.GetLayerCount()
-        return [Layer(self.gdDataset.GetLayerByIndex(n)) for n in range(cnt)]
+        return [Layer(self, self.gdDataset.GetLayerByIndex(n)) for n in range(cnt)]
 
-    def layer(self, name) -> Optional['Layer']:
-        gd_layer = self.gdDataset.GetLayer(name)
-        return Layer(gd_layer) if gd_layer else None
-
-    def describe_layer(self, name) -> Optional[gws.DataSetDescription]:
-        la = self.layer(name)
-        if la:
-            return la.describe()
+    def layer(self, name_or_index: str | int) -> Optional['Layer']:
+        gd_layer = self.gdDataset.GetLayer(name_or_index)
+        return Layer(self, gd_layer) if gd_layer else None
 
 
 class Layer:
     name: str
     gdLayer: ogr.Layer
-    gdLayerDefn: ogr.FeatureDefn
+    gdDefn: ogr.FeatureDefn
+    encoding: str | None
+    defaultCrs: gws.Crs | None
 
-    def __init__(self, gd_layer):
+    def __init__(self, ds: DataSet, gd_layer: ogr.Layer):
         self.gdLayer = gd_layer
-        self.gdLayerDefn = self.gdLayer.GetLayerDefn()
-        self.name = self.gdLayerDefn.GetName()
+        self.gdDefn = self.gdLayer.GetLayerDefn()
+        self.name = self.gdDefn.GetName()
+        self.encoding = ds.encoding
+        self.defaultCrs = ds.defaultCrs
 
     def describe(self) -> gws.DataSetDescription:
         desc = gws.DataSetDescription(
@@ -224,8 +252,8 @@ class Layer:
                 columnIndex=0,
             ))
 
-        for i in range(self.gdLayerDefn.GetFieldCount()):
-            fdef: ogr.FieldDefn = self.gdLayerDefn.GetFieldDefn(i)
+        for i in range(self.gdDefn.GetFieldCount()):
+            fdef: ogr.FieldDefn = self.gdDefn.GetFieldDefn(i)
             typ = fdef.GetType()
             if typ not in _OGR_TO_ATTR:
                 continue
@@ -236,8 +264,8 @@ class Layer:
                 columnIndex=i,
             ))
 
-        for i in range(self.gdLayerDefn.GetGeomFieldCount()):
-            fdef: ogr.GeomFieldDefn = self.gdLayerDefn.GetGeomFieldDefn(i)
+        for i in range(self.gdDefn.GetGeomFieldCount()):
+            fdef: ogr.GeomFieldDefn = self.gdDefn.GetGeomFieldDefn(i)
             crs: osr.SpatialReference = fdef.GetSpatialRef()
             typ = fdef.GetType()
             if typ not in _OGR_TO_GEOM:
@@ -263,30 +291,30 @@ class Layer:
 
         return desc
 
-    def insert(self, fds: list[gws.FeatureRecord], encoding: str = None) -> list[int]:
+    def insert(self, records: list[gws.FeatureRecord]) -> list[int]:
         desc = self.describe()
         fids = []
 
-        for fd in fds:
-            gd_feature = ogr.Feature(self.gdLayerDefn)
-            if desc.geometryType:
-                if fd.shape:
-                    gd_feature.SetGeometry(
-                        ogr.CreateGeometryFromWkt(
-                            fd.shape.to_wkt(),
-                            _srs(fd.shape.crs.srid)))
+        for rec in records:
+            gd_feature = ogr.Feature(self.gdDefn)
+            if desc.geometryType and rec.shape:
+                gd_feature.SetGeometry(
+                    ogr.CreateGeometryFromWkt(
+                        rec.shape.to_wkt(),
+                        _srs_from_srid(rec.shape.crs.srid)
+                    ))
 
-            if fd.uid and isinstance(fd.uid, int):
-                gd_feature.SetFID(fd.uid)
+            if rec.uid and isinstance(rec.uid, int):
+                gd_feature.SetFID(rec.uid)
 
             for col in desc.columns:
                 if col.geometryType or col.isPrimaryKey:
                     continue
-                val = fd.attributes.get(col.name)
+                val = rec.attributes.get(col.name)
                 if val is None:
                     continue
                 try:
-                    _attr_to_ogr(gd_feature, int(col.nativeType), col.columnIndex, val, encoding)
+                    _attr_to_ogr(gd_feature, int(col.nativeType), col.columnIndex, val, self.encoding)
                 except Exception as exc:
                     raise Error(f'field {col.name!r} cannot be set (value={val!r})') from exc
 
@@ -298,23 +326,26 @@ class Layer:
     def count(self, force=False):
         return self.gdLayer.GetFeatureCount(force=1 if force else 0)
 
-    def get_all(self, default_srid: int = 0, encoding: str = None) -> list[gws.FeatureRecord]:
-        fds = []
+    def get_all(self) -> list[gws.FeatureRecord]:
+        records = []
+
         self.gdLayer.ResetReading()
+
         while True:
             gd_feature = self.gdLayer.GetNextFeature()
             if not gd_feature:
                 break
-            fds.append(self._feature_record(gd_feature, default_srid, encoding))
-        return fds
+            records.append(self._feature_record(gd_feature))
 
-    def get_one(self, fid: int, default_srid: int = 0, encoding: str = None) -> Optional[gws.FeatureRecord]:
+        return records
+
+    def get(self, fid: int) -> Optional[gws.FeatureRecord]:
         gd_feature = self.gdLayer.GetFeature(fid)
         if gd_feature:
-            return self._feature_record(gd_feature, default_srid, encoding)
+            return self._feature_record(gd_feature)
 
-    def _feature_record(self, gd_feature, default_srid, encoding):
-        fd = gws.FeatureRecord(
+    def _feature_record(self, gd_feature):
+        rec = gws.FeatureRecord(
             attributes={},
             shape=None,
             meta={'layerName': self.name},
@@ -324,8 +355,8 @@ class Layer:
         for i in range(gd_feature.GetFieldCount()):
             gd_field_defn: ogr.FieldDefn = gd_feature.GetFieldDefnRef(i)
             name = gd_field_defn.GetName()
-            val = _attr_from_ogr(gd_feature, gd_field_defn.type, i, encoding)
-            fd.attributes[name] = val
+            val = _attr_from_ogr(gd_feature, gd_field_defn.type, i, self.encoding)
+            rec.attributes[name] = val
 
         cnt = gd_feature.GetGeomFieldCount()
         if cnt > 0:
@@ -334,17 +365,23 @@ class Layer:
             gd_geom_defn = gd_feature.GetGeomFieldRef(cnt - 1)
             if gd_geom_defn:
                 srs = gd_geom_defn.GetSpatialReference()
-                srid = srs.GetAuthorityCode(None) if srs else default_srid
+                if srs:
+                    srid = srs.GetAuthorityCode(None)
+                    crs = gws.gis.crs.get(srid)
+                else:
+                    crs = self.defaultCrs
+                if not crs:
+                    raise Error('no crs set when reading features')
                 wkt = gd_geom_defn.ExportToWkt()
-                fd.shape = gws.base.shape.from_wkt(wkt, gws.gis.crs.get(srid))
+                rec.shape = gws.base.shape.from_wkt(wkt, crs)
 
-        return fd
+        return rec
 
 
 ##
 
 
-def _driver_from_args(path, driver_name, as_raster=False, as_vector=False):
+def _driver_from_args(path, driver_name, variant):
     di = _fetch_driver_infos()
 
     if not driver_name:
@@ -359,15 +396,15 @@ def _driver_from_args(path, driver_name, as_raster=False, as_vector=False):
     is_vector = driver_name in di.vectorNames
     is_raster = driver_name in di.rasterNames
 
-    if as_vector:
-        if not is_vector:
-            raise Error(f'driver {driver_name!r} is not vector')
-        return ogr.GetDriverByName(driver_name)
-
-    if as_raster:
+    if variant == DriverVariant.raster:
         if not is_raster:
             raise Error(f'driver {driver_name!r} is not raster')
         return gdal.GetDriverByName(driver_name)
+
+    if variant == DriverVariant.vector:
+        if not is_vector:
+            raise Error(f'driver {driver_name!r} is not vector')
+        return ogr.GetDriverByName(driver_name)
 
     # NB prefer raster drivers by default
 
@@ -379,16 +416,16 @@ def _driver_from_args(path, driver_name, as_raster=False, as_vector=False):
     raise Error(f'driver {driver_name!r} not found')
 
 
-_drv_cache: Optional[_DriverInfoCache] = None
+_di_cache: Optional[_DriverInfoCache] = None
 
 
 def _fetch_driver_infos() -> _DriverInfoCache:
-    global _drv_cache
+    global _di_cache
 
-    if _drv_cache:
-        return _drv_cache
+    if _di_cache:
+        return _di_cache
 
-    _drv_cache = _DriverInfoCache(
+    _di_cache = _DriverInfoCache(
         infos=[],
         extToName={},
         vectorNames=set(),
@@ -403,22 +440,22 @@ def _fetch_driver_infos() -> _DriverInfoCache:
             longName=str(drv.LongName),
             metaData=dict(drv.GetMetadata() or {})
         )
-        _drv_cache.infos.append(inf)
+        _di_cache.infos.append(inf)
 
         for e in inf.metaData.get(gdal.DMD_EXTENSIONS, '').split():
-            _drv_cache.extToName.setdefault(e, []).append(inf.name)
+            _di_cache.extToName.setdefault(e, []).append(inf.name)
         if inf.metaData.get('DCAP_VECTOR') == 'YES':
-            _drv_cache.vectorNames.add(inf.name)
+            _di_cache.vectorNames.add(inf.name)
         if inf.metaData.get('DCAP_RASTER') == 'YES':
-            _drv_cache.rasterNames.add(inf.name)
+            _di_cache.rasterNames.add(inf.name)
 
-    return _drv_cache
+    return _di_cache
 
 
 _srs_cache = {}
 
 
-def _srs(srid):
+def _srs_from_srid(srid):
     if srid not in _srs_cache:
         _srs_cache[srid] = osr.SpatialReference()
         _srs_cache[srid].ImportFromEPSG(srid)
@@ -440,8 +477,9 @@ def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str 
         # GetFieldAsDateTime (int i, int *pnYear, int *pnMonth, int *pnDay, int *pnHour, int *pnMinute, float *pfSecond, int *pnTZFlag)
         #
         v = gd_feature.GetFieldAsDateTime(idx)
+        sec, msec = str(v[5]).split('.')
         try:
-            return datetime.datetime(v[0], v[1], v[2], v[3], v[4], int(v[5]))
+            return datetimex.new(v[0], v[1], v[2], v[3], v[4], int(sec), int(msec), tz=_tzflag_to_tz(v[6]))
         except ValueError:
             return
 
@@ -459,12 +497,27 @@ def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str 
         return gd_feature.GetFieldAsBinary(idx)
 
 
-def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding: str = None):
-    if gtype in {ogr.OFTDate, ogr.OFTTime, ogr.OFTDateTime}:
-        v = cast(datetime.datetime, value).isoformat()
-        gd_feature.SetField(idx, v)
-        return
+def _tzflag_to_tz(tzflag):
+    # see gdal/ogr/ogrutils.cpp OGRGetISO8601DateTime
 
+    if tzflag == 0 or tzflag == 1:
+        return ''
+    if tzflag == 100:
+        return 'utc'
+    if tzflag % 4 != 0:
+        # @TODO
+        raise Error(f'unsupported timezone {tzflag=}')
+    hrs = (100 - tzflag) // 4
+    return f'GMT{hrs:+}'
+
+
+def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding: str = None):
+    if gtype == ogr.OFTDate:
+        return gd_feature.SetField(idx, datetimex.to_iso_date_string(value))
+    if gtype == ogr.OFTTime:
+        return gd_feature.SetField(idx, datetimex.to_iso_time_string(value))
+    if gtype == ogr.OFTDateTime:
+        return gd_feature.SetField(idx, datetimex.to_iso_string(value))
     if gtype == ogr.OFSTBoolean:
         return gd_feature.SetField(idx, bool(value))
     if gtype in {ogr.OFTInteger, ogr.OFTInteger64}:

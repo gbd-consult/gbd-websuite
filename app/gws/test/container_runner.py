@@ -9,15 +9,13 @@ os.environ['GWS_IN_TEST'] = '1'
 
 import time
 import re
-import urllib.request
+import requests
 
-import psycopg2
 import pytest
 
 import gws
 import gws.lib.cli as cli
 import gws.lib.jsonx
-import gws.lib.net
 import gws.lib.osx
 import gws.spec.runtime
 import gws.test.util as u
@@ -47,7 +45,10 @@ def main(args):
     u.OPTIONS = gws.lib.jsonx.from_path(f'{base}/config/OPTIONS.json')
     u.OPTIONS['BASE_DIR'] = base
 
+    u.ensure_dir(u.OPTIONS['BASE_DIR'] + '/tmp', clear=True)
+
     if not gws.env.GWS_IN_CONTAINER:
+        # if we are not in a container, use 'localhost:exposed_port' for all services
         for k, v in u.OPTIONS.items():
             if k.endswith('.host'):
                 u.OPTIONS[k] = 'localhost'
@@ -153,10 +154,10 @@ def health_check_service_mockserver():
 def http_ping(host, port):
     url = f'http://{host}:{port}'
     try:
-        with urllib.request.urlopen(url) as res:
-            if res.status == 200:
-                return
-            return f'http status={res.status}'
+        res = requests.get(url)
+        if res.status_code == 200:
+            return
+        return f'http status={res.status_code}'
     except Exception as exc:
         return repr(exc)
 

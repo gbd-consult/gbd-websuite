@@ -203,7 +203,7 @@ class Exporter:
                 le.dataProvider = f'gdal'
 
     def write_data(self):
-        with gws.gis.gdalx.open(self.localDbPath, 'w', as_vector=True) as ds:
+        with gws.gis.gdalx.open(self.localDbPath, 'w', variant=gws.gis.gdalx.DriverVariant.vector) as ds:
             for me in self.qfCaps.modelMap.values():
                 self.write_features(me, ds)
         self.write_offline_log()
@@ -596,7 +596,7 @@ class Importer:
                 self.updatedModels.append(me)
 
     def read_features(self):
-        with gws.gis.gdalx.open(self.localDbPath, 'r', as_vector=True) as ds:
+        with gws.gis.gdalx.open(self.localDbPath, 'r', variant=gws.gis.gdalx.DriverVariant.vector) as ds:
             for me in self.updatedModels:
                 self.read_features_for_model(me, ds)
 
@@ -670,7 +670,7 @@ class Importer:
             if eo.action == EditAction.delete:
                 continue
 
-            feature_rec = gp_layer.get_one(eo.fid, encoding='utf8')
+            feature_rec = gp_layer.get(eo.fid)
             if not feature_rec:
                 gws.log.warning(f'{self.args.baseDir}: operation {eo!r}: fid not found')
                 continue

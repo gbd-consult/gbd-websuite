@@ -312,18 +312,21 @@ def fxml(s):
 
 ##
 
-def ensure_dir(path, clear=False):
-    def _clear(d):
-        for de in os.scandir(d):
-            if de.is_dir():
-                _clear(de.path)
-                os.rmdir(de.path)
-            else:
-                os.unlink(de.path)
+def unlink(path):
+    if os.path.isfile(path):
+        os.unlink(path)
+        return
+    if os.path.isdir(path):
+        for de in os.scandir(path):
+            unlink(de.path)
+        os.rmdir(path)
 
+
+def ensure_dir(path, clear=False):
     os.makedirs(path, exist_ok=True)
     if clear:
-        _clear(path)
+        for de in os.scandir(path):
+            unlink(de.path)
 
 
 def path_in_base_dir(path):
@@ -332,7 +335,7 @@ def path_in_base_dir(path):
 
 
 @contextlib.contextmanager
-def temp_file_in_base_dir(content):
+def temp_file_in_base_dir(content='', keep=False):
     # for exec/chmod tests, which cannot use tmp_path
 
     base = option('BASE_DIR')
@@ -342,10 +345,21 @@ def temp_file_in_base_dir(content):
     p = d + '/' + gws.u.random_string(16)
     gws.u.write_file(p, content)
     yield p
-    try:
-        os.unlink(p)
-    except:
-        pass
+
+    if not keep:
+        unlink(p)
+
+
+@contextlib.contextmanager
+def temp_dir_in_base_dir(keep=False):
+    base = option('BASE_DIR')
+
+    d = f'{base}/tmp/' + gws.u.random_string(16)
+    ensure_dir(d, clear=True)
+    yield d
+
+    if not keep:
+        unlink(d)
 
 
 _comma = ','.join
