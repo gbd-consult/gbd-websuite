@@ -5,6 +5,7 @@ import * as util from '../util';
 
 interface TouchableProps {
     className?: string;
+    title?: string;
     whenTouched?: (e: React.MouseEvent) => void;
 }
 
@@ -12,6 +13,7 @@ export class Touchable extends base.Pure<TouchableProps> {
     render() {
         return <div
             className={util.className('uiTouchable', this.props.className)}
+            title={this.props.title || ''}
             onClick={this.props.whenTouched}
         >{this.props.children}</div>;
     }
