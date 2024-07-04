@@ -151,9 +151,44 @@ _ISO_DATE_RE = r'''(?x)
     $
 '''
 
+_ISO_DATE_BASIC_RE = r'''(?x)
+    ^
+
+    # date
+    (?P<Y> \d{4}) (?P<m> \d{2}) (?P<d> \d{2})
+
+    # time?
+    (
+        # separator
+        [T]
+
+        # time
+        (?P<H> \d{2}) (?P<M> \d{2}) (?P<S> \d{2})
+
+        # fraction?
+        (
+            \.
+            (?P<f> \d+)
+        )?
+
+        # time zone?
+        (
+            Z
+            |
+            (
+                (?P<zsign> [+-]) (?P<zh> \d{2}) :? (?P<zm> \d{2})
+            )
+        )?
+
+    )?
+    $
+'''
+
 
 def from_iso(s: str) -> t.Optional[datetime.datetime]:
-    m = re.match(_ISO_DATE_RE, s)
+    s = s.strip()
+
+    m = re.match(_ISO_DATE_RE, s) or re.match(_ISO_DATE_BASIC_RE, s)
     if not m:
         raise ValueError(f'invalid date {s!r}')
 
