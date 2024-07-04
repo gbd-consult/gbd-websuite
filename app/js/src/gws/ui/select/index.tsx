@@ -478,6 +478,8 @@ class ListBoxItem extends base.Pure<ListBoxItemProps> {
             </React.Fragment>
             : this.props.item.text;
 
+        let title = this.props.item.text + (extra ? ' ' + extra : '');
+
         return <div
             className={cls}
             ref={this.props.selected ? this.props.selectedRef : null}
@@ -485,6 +487,7 @@ class ListBoxItem extends base.Pure<ListBoxItemProps> {
             {this.props.leftButton && <Cell>{this.props.leftButton(this.props.item)}</Cell>}
             <Cell flex className='uiListItemText'>
                 <Touchable
+                    title={title}
                     whenTouched={e => this.props.whenSelected(this.props.item.value)}
                 >{text}</Touchable>
             </Cell>
