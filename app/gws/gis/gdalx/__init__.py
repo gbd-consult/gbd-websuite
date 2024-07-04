@@ -49,7 +49,7 @@ def open(
         mode: str,
         driver: str = '',
         variant: Optional[DriverVariant] = None,
-        encoding: str | None = 'utf8',
+        encoding: str = 'utf8',
         default_crs: Optional[gws.Crs] = None,
         **opts
 ) -> 'DataSet':
@@ -61,7 +61,7 @@ def open(
         driver: Driver name, if omitted, will be suggested from the path extension.
         variant: 'raster' or 'vector'  for dual drivers, like Geopackage.
         encoding: If not None, strings will be automatically decoded.
-        default_crs: Default CRS for geometries.
+        default_crs: Default CRS for geometries (fallback to Webmercator).
         opts: Options for gdal.OpenEx/CreateDataSource.
 
     Returns:
@@ -72,6 +72,7 @@ def open(
     gdal.UseExceptions()
 
     drv = _driver_from_args(path, driver, variant)
+    default_crs = default_crs or gws.gis.crs.WEBMERCATOR
 
     if mode == 'w':
         gd = drv.CreateDataSource(path, **opts)
@@ -139,16 +140,16 @@ class DataSet:
     gdDriver: gdal.Driver
     path: str
     driverName: str
-    defaultCrs: gws.Crs | None
-    encoding: str | None
+    defaultCrs: gws.Crs
+    encoding: str
 
-    def __init__(self, path, gd, encoding='utf8', default_crs=None):
+    def __init__(self, path, gd, encoding='utf8', default_crs: Optional[gws.Crs] = None):
         self.path = path
         self.gdDataset = gd
         self.gdDriver = self.gdDataset.GetDriver()
         self.driverName = self.gdDriver.GetDescription()
         self.encoding = encoding
-        self.defaultCrs = default_crs
+        self.defaultCrs = default_crs or gws.gis.crs.WEBMERCATOR
 
     def __enter__(self):
         return self
@@ -190,8 +191,6 @@ class DataSet:
         if geometry_type:
             geom_type = _GEOM_TO_OGR.get(geometry_type)
             crs = crs or self.defaultCrs
-            if not crs:
-                raise Error(f'no crs set for create_layer')
             srs = _srs_from_srid(crs.srid)
 
         gd_layer = self.gdDataset.CreateLayer(
@@ -218,8 +217,8 @@ class Layer:
     name: str
     gdLayer: ogr.Layer
     gdDefn: ogr.FeatureDefn
-    encoding: str | None
-    defaultCrs: gws.Crs | None
+    encoding: str
+    defaultCrs: gws.Crs
 
     def __init__(self, ds: DataSet, gd_layer: ogr.Layer):
         self.gdLayer = gd_layer
@@ -370,8 +369,6 @@ class Layer:
                     crs = gws.gis.crs.get(srid)
                 else:
                     crs = self.defaultCrs
-                if not crs:
-                    raise Error('no crs set when reading features')
                 wkt = gd_geom_defn.ExportToWkt()
                 rec.shape = gws.base.shape.from_wkt(wkt, crs)
 
@@ -511,7 +508,7 @@ def _tzflag_to_tz(tzflag):
     return f'GMT{hrs:+}'
 
 
-def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding: str = None):
+def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding):
     if gtype == ogr.OFTDate:
         return gd_feature.SetField(idx, datetimex.to_iso_date_string(value))
     if gtype == ogr.OFTTime:
