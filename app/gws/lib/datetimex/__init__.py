@@ -186,7 +186,7 @@ def parse(s: str | dt.datetime | dt.date | None, tz: str = '') -> Optional[dt.da
         return new(s.year, s.month, s.day, tz=tz)
 
     try:
-        return from_string(s, tz)
+        return from_string(str(s), tz)
     except Error:
         pass
 
@@ -205,15 +205,15 @@ def parse_time(s: str | dt.time | None, tz: str = '') -> Optional[dt.datetime]:
 
 
 def from_string(s: str, tz: str = '') -> dt.datetime:
-    return _pend_parse_datetime(s, tz, iso_only=False)
+    return _pend_parse_datetime(s.strip(), tz, iso_only=False)
 
 
 def from_iso_string(s: str, tz: str = '') -> dt.datetime:
-    return _pend_parse_datetime(s, tz, iso_only=True)
+    return _pend_parse_datetime(s.strip(), tz, iso_only=True)
 
 
 def from_iso_time_string(s: str, tz: str = '') -> dt.datetime:
-    return _pend_parse_time(s, tz, iso_only=True)
+    return _pend_parse_time(s.strip(), tz, iso_only=True)
 
 
 def from_timestamp(n: float, tz: str = '') -> dt.datetime:

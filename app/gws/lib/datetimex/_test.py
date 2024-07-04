@@ -97,6 +97,18 @@ def test_parse():
     e = dt.datetime(2000, 1, 1, tzinfo=dx.time_zone(''))
     assert d.isoformat() == e.isoformat()
 
+    # iso basic
+
+    d = dx.parse('20120630T180000Z')
+    e = dt.datetime(2012, 6, 30, 18, tzinfo=dx.UTC)
+    assert d.isoformat() == e.isoformat()
+
+    # whitespace
+
+    d = dx.parse('    20120630T180000Z     ')
+    e = dt.datetime(2012, 6, 30, 18, tzinfo=dx.UTC)
+    assert d.isoformat() == e.isoformat()
+
     # not supported
 
     d = dx.parse('10:11:12')
