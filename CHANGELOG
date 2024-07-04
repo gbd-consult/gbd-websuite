@@ -1,3 +1,8 @@
+## Version 8.0.45
+
+- support for "basic" ISO dates
+- tooltips for drop-down list items
+
 ## Version 8.0.44
 
 - fixed broken client map positioning
