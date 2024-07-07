@@ -315,7 +315,7 @@ class Layer:
                 try:
                     _attr_to_ogr(gd_feature, int(col.nativeType), col.columnIndex, val, self.encoding)
                 except Exception as exc:
-                    raise Error(f'field {col.name!r} cannot be set (value={val!r})') from exc
+                    raise Error(f'field cannot be set: {col.name=} {val=}') from exc
 
             self.gdLayer.CreateFeature(gd_feature)
             fids.append(gd_feature.GetFID())
