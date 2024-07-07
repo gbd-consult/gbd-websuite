@@ -250,9 +250,8 @@ class Exporter:
         records = []
 
         for feature in features:
-            props = me.model.feature_to_props(feature, mc)
             records.append(gws.FeatureRecord(
-                attributes={f.name: props.attributes.get(f.name) for f in gp_fields},
+                attributes={f.name: feature.get(f.name) for f in gp_fields},
                 shape=feature.shape(),
                 meta={}
             ))
