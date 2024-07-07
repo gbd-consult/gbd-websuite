@@ -5,16 +5,15 @@ some functions also use `pendulum` (https://pendulum.eustace.io/),
 however all functions here return strictly stock ``datetime.datetime`` objects.
 
 ``date`` objects are silently promoted to ``datetime`` with time set to midnight UTC.
-``time`` objects are silently promoted to ``datetime`` with the today's date set.
+``time`` objects are silently promoted to ``datetime`` in the local timezone with the today's date.
 
-"Naive" datetime objects are not supported. All objects constructed in this module
-have the ``tzinfo`` attribute. When constructing an object (e.g. from a string),
-the default time zone must be passed in as a zoneinfo string (like ``Europe/Berlin``).
+This module always returns timezone-aware objects.
 
-An empty zoneinfo string (default) means the local time zone. Alias names like ``CEST`` are not supported.
+When constructing an object (e.g. from a string), the default time zone should be passed
+as a zoneinfo string (like ``Europe/Berlin``). An empty zoneinfo string (default) means the local time zone.
+Alias names like ``CEST`` are not supported.
 
-It is an error to pass a naive object as an argument to any function here,
-except for `parse` and `parse_time`, which set their tzinfo to the given default.
+Naive datetime arguments are assumed to be in the local time zone.
 
 When running in a docker container, there are several ways to set up the local time zone:
 
@@ -466,9 +465,11 @@ def _datetime(d: dt.date | dt.time | None) -> dt.datetime:
         return now()
 
     if isinstance(d, dt.datetime):
-        if not d.tzinfo:
-            raise Error('naive datetime detected')
-        return d
+        # if a value is a naive datetime, assume the local tz
+        # see https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-DATETIME-INPUT-TIME-STAMPS:
+        # > Conversions between timestamp without time zone and timestamp with time zone normally assume
+        # > that the timestamp without time zone value should be taken or given as timezone local time.
+        return _ensure_tzinfo(d, tz='')
 
     if isinstance(d, dt.date):
         # promote date to midnight UTC

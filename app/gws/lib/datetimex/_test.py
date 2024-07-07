@@ -149,6 +149,14 @@ def test_to_iso_string():
     assert dx.to_iso_string(d, with_tz='Z', sep='#') == '2022-10-31#16:42:22Z'
 
 
+def test_naive_to_iso_string():
+    n = dt.datetime(2022, 10, 31, 11, 22, 33)
+    d = dt.datetime(2022, 10, 31, 11, 22, 33, tzinfo=dx.time_zone(''))
+
+    assert dx.to_iso_string(n) == dx.to_iso_string(d)
+
+
+
 def test_to_iso_date_string():
     d = dt.datetime.fromisoformat('2022-10-31T16:42:22+09:00')
     assert dx.to_iso_date_string(d) == '2022-10-31'
