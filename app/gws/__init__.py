@@ -802,7 +802,7 @@ class Node(Object):
 
         return tree_impl.node_find_closest(self, classref)
 
-    def find_ancestors(self, classref: ClassRef):
+    def find_ancestors(self, classref: Optional[ClassRef] = None):
         """Find node ancestors that match a specific class.
 
         Args:
@@ -813,7 +813,7 @@ class Node(Object):
         """
         return tree_impl.node_find_ancestors(self, classref)
 
-    def find_descendants(self, classref: ClassRef):
+    def find_descendants(self, classref: Optional[ClassRef] = None):
         """Find node descendants that match a specific class.
 
         Args:

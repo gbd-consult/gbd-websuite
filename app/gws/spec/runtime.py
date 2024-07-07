@@ -110,13 +110,16 @@ class Object(gws.SpecRuntime):
 
         return self._descCache[name]
 
-    def register_object(self, ext_name, obj_type, cls):
-        ext_name = gws.ext.name(ext_name)
+    def register_object(self, classref, ext_type, cls):
+        _, _, ext_name = self.parse_classref(classref)
+        if not ext_name:
+            raise Error(f'invalid class reference {classref!r}')
+        ext_name += '.' + ext_type
         setattr(cls, 'extName', ext_name)
-        setattr(cls, 'extType', obj_type)
-        self._descCache[ext_name + '.' + obj_type] = gws.ExtObjectDescriptor(
+        setattr(cls, 'extType', ext_type)
+        self._descCache[ext_name] = gws.ExtObjectDescriptor(
             extName=ext_name,
-            extType=obj_type,
+            extType=ext_type,
             ident=cls.__name__,
             modName='',
             modPath='',
@@ -206,7 +209,7 @@ class Object(gws.SpecRuntime):
         return sorted(cmds, key=lambda c: (c.cmd1, c.cmd2))
 
     def parse_classref(self, classref: gws.ClassRef) -> tuple[Optional[type], str, str]:
-        ext_name = gws.ext.name(classref)
+        ext_name = gws.ext.name_for(classref)
         if ext_name:
             return None, '', ext_name
 

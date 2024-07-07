@@ -99,13 +99,11 @@ def gws_specs() -> gws.SpecRuntime:
     return gws.spec.runtime.Object(_GWS_SPEC_DICT)
 
 
-def gws_root(config: str = '', specs: gws.SpecRuntime = None, activate=True):
-    config = '\n'.join([
-        f'server.log.level {gws.log.get_level()}',
-        _config_defaults(),
-        config or '',
-        ''
-    ])
+def gws_root(config: str = '', specs: gws.SpecRuntime = None, activate=True, defaults=True):
+    config = config or ''
+    if defaults:
+        config = _config_defaults() + '\n' + config
+    config = f'server.log.level {gws.log.get_level()}\n' + config
     parsed_config = _to_data(gws.lib.vendor.slon.parse(config, as_object=True))
     specs = mock.register(specs or gws_specs())
     root = gws.config.initialize(specs, parsed_config)
@@ -245,6 +243,26 @@ class pg:
             if s.strip():
                 conn.execute(sa.text(s.strip()), kwargs)
         conn.commit()
+
+
+##
+
+class log:
+    _buf = []
+
+    @classmethod
+    def write(cls, s):
+        cls._buf.append(s)
+
+    @classmethod
+    def reset(cls):
+        cls._buf = []
+
+    @classmethod
+    def get(cls):
+        r = cls._buf
+        cls._buf = []
+        return r
 
 
 ##

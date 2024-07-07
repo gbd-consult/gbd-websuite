@@ -70,11 +70,30 @@ def node_find_closest(self, classref):
 
 
 def node_find_ancestors(self, classref):
-    pass
+    ls = []
+    node = self.parent
+
+    while True:
+        if not node or node is self.root:
+            break
+        if not classref or is_a(self.root, node, classref):
+            ls.append(node)
+        node = node.parent
+
+    return ls
 
 
 def node_find_descendants(self, classref):
-    pass
+    ls = []
+
+    def _walk(n):
+        for cn in n.children:
+            if not classref or is_a(self.root, cn, classref):
+                ls.append(cn)
+            _walk(cn)
+
+    _walk(self)
+    return ls
 
 
 def node_register_middleware(self, name: str, depends_on):

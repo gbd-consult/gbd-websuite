@@ -1,22 +1,6 @@
 """Dummy decorators to support extension typing."""""
 
 
-# @formatter:off
-# flake8: noqa
-
-class _tag:
-    extName = ''
-
-    def __init__(self, typ):
-        self.extName = self.extName + '.' + typ
-        self.extType = typ
-
-    def __call__(self, cls):
-        setattr(cls, 'extName', self.extName)
-        setattr(cls, 'extType', self.extType)
-        return cls
-
-
 class _classTag:
     extName = ''
 
@@ -35,11 +19,14 @@ class _methodTag:
         return target
 
 
-def name(obj):
+def name_for(obj: str | type) -> str | None:
     if isinstance(obj, str) and obj.startswith('gws.ext.'):
-        return name
+        return obj
     if isinstance(obj, type) and issubclass(obj, _classTag):
         return obj.extName
+
+
+# @formatter:off
 
 ##
 
