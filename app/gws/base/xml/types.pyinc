@@ -1,6 +1,0 @@
-
-class XmlManager(Node):
-    """XML namespaces and options manager."""
-
-    def add_namespace(self, cfg: Config) -> XmlNamespace:
-        """Create and register a custom namespace."""

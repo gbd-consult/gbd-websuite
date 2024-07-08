@@ -87,6 +87,7 @@ SYSTEM_CHUNKS = [
     [APP_NAME + '.gis', '/gws/gis'],
     [APP_NAME + '.lib', '/gws/lib'],
     [APP_NAME + '.server', '/gws/server'],
+    [APP_NAME + '.helper', '/gws/helper'],
 
 ]
 

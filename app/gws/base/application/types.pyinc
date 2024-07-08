@@ -28,7 +28,6 @@ class Application(Node):
     serverMgr: 'ServerManager'
     webMgr: 'WebManager'
     middlewareMgr: 'MiddlewareManager'
-    xmlMgr: 'XmlManager'
 
     actions: list['Action']
     projects: list['Project']

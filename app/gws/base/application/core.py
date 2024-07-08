@@ -15,7 +15,6 @@ import gws.base.search
 import gws.base.storage
 import gws.base.template
 import gws.base.web
-import gws.base.xml
 import gws.config
 import gws.gis.cache
 import gws.gis.mpx.config
@@ -126,14 +125,12 @@ class Config(gws.ConfigWithAccess):
     """Default templates."""
     web: Optional[gws.base.web.manager.Config]
     """Web server options."""
-    xml: Optional[gws.base.xml.manager.Config]
-    """Configuration for xml. (added in 8.1)"""
 
 
 class Object(gws.Application):
     """Main Application object"""
 
-    helperMap: dict[str, gws.Node]
+    _helperMap: dict[str, gws.Node]
 
     _developerOptions: dict
 
@@ -182,10 +179,9 @@ class Object(gws.Application):
         self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.cfg('database'))
         self.storageMgr = self.create_child(gws.base.storage.manager.Object, self.cfg('storage'))
         self.authMgr = self.create_child(gws.base.auth.manager.Object, self.cfg('auth'))
-        self.xmlMgr = self.create_child(gws.base.xml.manager.Object, self.cfg('xml'))
 
         helpers = self.create_children(gws.ext.object.helper, self.cfg('helpers'))
-        self.helperMap = {p.extType: p for p in helpers}
+        self._helperMap = {p.extType: p for p in helpers}
 
         # @TODO default API
         self.actionMgr = self.create_child(gws.base.action.manager.Object)
@@ -235,11 +231,11 @@ class Object(gws.Application):
                 return p
 
     def helper(self, ext_type):
-        if ext_type not in self.helperMap:
+        if ext_type not in self._helperMap:
             p = self.create_child(gws.ext.object.helper, type=ext_type)
             gws.log.info(f'created helper {ext_type!r}')
-            self.helperMap[ext_type] = p
-        return self.helperMap.get(ext_type)
+            self._helperMap[ext_type] = p
+        return self._helperMap.get(ext_type)
 
     def developer_option(self, key):
         return self._developerOptions.get(key)

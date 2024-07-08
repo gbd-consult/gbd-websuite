@@ -2,8 +2,8 @@
 
 import gws
 import gws.test.util as u
-import gws.lib.csv as csv
 import gws.lib.intl as intl
+import gws.helper.csv as csv
 
 
 def test_configure():

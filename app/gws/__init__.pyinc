@@ -94,6 +94,5 @@ u.to_data_object = to_data_object
 # @include base/storage/types.pyinc
 # @include base/template/types.pyinc
 # @include base/web/types.pyinc
-# @include base/xml/types.pyinc
 
 # @include base/application/types.pyinc

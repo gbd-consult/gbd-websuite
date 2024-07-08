@@ -4174,18 +4174,6 @@ class WebSite(Node):
 ################################################################################
 
 
-################################################################################
-# /base/xml/types.pyinc
-
-
-class XmlManager(Node):
-    """XML namespaces and options manager."""
-
-    def add_namespace(self, cfg: Config) -> XmlNamespace:
-        """Create and register a custom namespace."""
-################################################################################
-
-
 
 ################################################################################
 # /base/application/types.pyinc
@@ -4221,7 +4209,6 @@ class Application(Node):
     serverMgr: 'ServerManager'
     webMgr: 'WebManager'
     middlewareMgr: 'MiddlewareManager'
-    xmlMgr: 'XmlManager'
 
     actions: list['Action']
     projects: list['Project']
