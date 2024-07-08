@@ -58,6 +58,16 @@ class Config(gws.Config):
 
 
 def resolutions_from_config(cfg, parent_resolutions: list[float] = None) -> list[float]:
+    """Loads resolution from a config.
+
+    Args:
+        cfg: A config.
+        parent_resolutions: List of parent resolutions.
+
+    Returns:
+        A list of resolutions.
+    """
+
     # see also https://mapproxy.org/docs/1.11.0/configuration.html#res and below
 
     # @TODO deal with scales separately
@@ -76,7 +86,18 @@ def resolutions_from_config(cfg, parent_resolutions: list[float] = None) -> list
     return sorted(set(res))
 
 
-def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolutions: list[float]) -> list[float]:
+def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolutions: list[float]) -> list[
+    float]:
+    """Loads resolution from a source layers.
+
+    Args:
+        source_layers: Source layers.
+        parent_resolutions: List of parent resolutions.
+
+    Returns:
+        A list of resolutions.
+    """
+
     smin = []
     smax = []
 
@@ -109,6 +130,16 @@ def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_
 
 
 def resolutions_from_bounds(b: gws.Bounds, tile_size: int) -> list[float]:
+    """Loads resolutions from bounds.
+
+    Args:
+        b: Bounds object.
+        tile_size: The tile size.
+
+    Returns:
+        A list of resolutions.
+    """
+
     siz = gws.gis.extent.size(b.extent)
     res = []
     for z in range(20):
@@ -116,7 +147,13 @@ def resolutions_from_bounds(b: gws.Bounds, tile_size: int) -> list[float]:
     return res
 
 
-def init_resolution(cfg, resolutions):
+def init_resolution(cfg, resolutions: list) -> float:
+    """Returns the initial resolution.
+
+    Args:
+        cfg: A config.
+        resolutions: List of Resolutions.
+        """
     init = _res_or_scale(cfg, 'initResolution', 'initScale')
     if not init:
         return resolutions[len(resolutions) >> 1]

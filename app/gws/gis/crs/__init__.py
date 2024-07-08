@@ -123,12 +123,14 @@ class Error(gws.Error):
 
 
 def get(crs_name: gws.CrsName) -> Optional[gws.Crs]:
+    """Returns the CRS for a given CRS-code or SRID."""
     if not crs_name:
         return None
     return _get_crs(crs_name)
 
 
 def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, Optional[gws.Crs]]:
+    """Parses a CRS to a tuple of CRS-format and the CRS itself."""
     fmt, srid = _parse(crs_name)
     if not fmt:
         return gws.CrsFormat.none, None
@@ -136,6 +138,7 @@ def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, Optional[gws.Crs]]:
 
 
 def require(crs_name: gws.CrsName) -> gws.Crs:
+    """Raises an error if no correct CRS is given."""
     crs = _get_crs(crs_name)
     if not crs:
         raise Error(f'invalid CRS {crs_name!r}')
@@ -202,7 +205,7 @@ def best_bounds(crs: gws.Crs, supported_bounds: list[gws.Bounds]) -> gws.Bounds:
 
     Args:
         crs: target CRS
-        supported_bounds:
+        supported_bounds: Bounds list
 
     Returns:
         A Bounds object
