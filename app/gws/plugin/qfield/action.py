@@ -3,12 +3,10 @@ from typing import Optional, cast
 import gws
 import gws.config
 import gws.base.action
-import gws.base.database
 import gws.lib.mime
 import gws.lib.datetimex
 import gws.lib.zipx
 import gws.lib.osx
-import gws.lib.sa as sa
 
 from . import core
 
@@ -35,8 +33,11 @@ class DownloadRequest(gws.Request):
 
 class PackageParams(gws.CliParams):
     projectUid: str
+    """Project uid."""
     packageUid: str
+    """Package uid."""
     out: str
+    """Output filename."""
 
 
 class DownloadResponse(gws.Response):
@@ -80,14 +81,18 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.cli('qfieldPackage')
     def cli_package(self, p: PackageParams):
+        """Create a package for QField."""
+
         root = gws.config.load()
         user = root.app.authMgr.systemUser
-        project = user.require_project(p.projectUid)
-        action = cast(Object, root.app.actionMgr.find_action(project, self.extType, user))
+        action = cast(Object, root.find_first(self.__class__))
+
         args = action.prepare_export(DownloadRequest(
             projectUid=p.projectUid,
             packageUid=p.packageUid,
         ), user)
+        args.package.mapCacheLifeTime = 0
+
         action.exec_export(args)
         b = action.end_export(args)
         gws.u.write_file_b(p.out, b)

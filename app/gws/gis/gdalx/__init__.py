@@ -474,9 +474,9 @@ def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str 
         # GetFieldAsDateTime (int i, int *pnYear, int *pnMonth, int *pnDay, int *pnHour, int *pnMinute, float *pfSecond, int *pnTZFlag)
         #
         v = gd_feature.GetFieldAsDateTime(idx)
-        sec, msec = str(v[5]).split('.')
+        sec, fsec = divmod(v[5], 1)
         try:
-            return datetimex.new(v[0], v[1], v[2], v[3], v[4], int(sec), int(msec), tz=_tzflag_to_tz(v[6]))
+            return datetimex.new(v[0], v[1], v[2], v[3], v[4], int(sec), int(fsec * 1e6), tz=_tzflag_to_tz(v[6]))
         except ValueError:
             return
 
