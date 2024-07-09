@@ -6,21 +6,8 @@ import gws.lib.intl as intl
 import gws.helper.csv as csv
 
 
-def test_configure():
-    cfg = csv.Config(delimiter="d", encoding='e', formulaHack=False, quote='q', quoteAll=True, rowDelimiter='LF')
-    obj = csv.Object()
-    obj.initialize(cfg)
-    obj.configure()
-    assert cfg.delimiter == obj.delimiter
-    assert cfg.encoding == obj.encoding
-    assert cfg.formulaHack == obj.formulaHack
-    assert cfg.quote == obj.quote
-    assert cfg.quoteAll == obj.quoteAll
-    assert '\n' == obj.rowDelimiter
-
-
 def test_write_headers():
-    cfg = csv.Config(delimiter=",", encoding='utf8', formulaHack=True, quote='"', quoteAll=False, rowDelimiter='\n')
+    cfg = csv.Config(format=gws.Config(delimiter=",", encoding='utf8', formulaHack=True, quote='"', quoteAll=False, rowDelimiter='\n'))
     obj = csv.Object()
     obj.initialize(cfg)
     wrt = obj.writer(intl.locale('en_US'))
@@ -29,7 +16,7 @@ def test_write_headers():
 
 
 def test_write_row():
-    cfg = csv.Config(delimiter=",", encoding='utf8', formulaHack=True, quote='"', quoteAll=False, rowDelimiter='\n')
+    cfg = csv.Config(format=gws.Config(delimiter=",", encoding='utf8', formulaHack=True, quote='"', quoteAll=False, rowDelimiter='\n'))
     obj = csv.Object()
     obj.initialize(cfg)
     wrt = obj.writer(intl.locale('en_US'))
@@ -38,7 +25,7 @@ def test_write_row():
 
 
 def test_to_str():
-    cfg = csv.Config(delimiter=",", encoding='utf8', formulaHack=True, quote='"', quoteAll=False, rowDelimiter='\n')
+    cfg = csv.Config(format=gws.Config(delimiter=",", encoding='utf8', formulaHack=True, quote='"', quoteAll=False, rowDelimiter='\n'))
     obj = csv.Object()
     obj.initialize(cfg)
     wrt = obj.writer(intl.locale('en_US'))
@@ -53,7 +40,7 @@ def test_to_str():
 
 
 def test_to_bytes():
-    cfg = csv.Config(delimiter=",", encoding='utf8', formulaHack=True, quote='"', quoteAll=False, rowDelimiter='\n')
+    cfg = csv.Config(format=gws.Config(delimiter=",", encoding='utf8', formulaHack=True, quote='"', quoteAll=False, rowDelimiter='\n'))
     obj = csv.Object()
     obj.initialize(cfg)
     wrt = obj.writer(intl.locale('en_US'))

@@ -3,7 +3,7 @@ from typing import Optional, cast
 import gws
 import gws.base.model
 import gws.base.feature
-import gws.lib.csv
+import gws.helper.csv
 import gws.lib.intl
 
 from . import types as dt
@@ -153,7 +153,7 @@ class Object(gws.Node):
             if fld.name == name
         ]
 
-        csv_helper = cast(gws.lib.csv.Object, self.root.app.helper('csv'))
+        csv_helper = cast(gws.helper.csv.Object, self.root.app.helper('csv'))
         writer = csv_helper.writer(gws.lib.intl.locale('de_DE'))
 
         writer.write_headers([fld.title for fld in fields])
