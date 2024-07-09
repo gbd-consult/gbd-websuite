@@ -34,6 +34,9 @@ def load_pickle(path):
                 def __setitem__(self, *args, **kwargs):
                     pass
 
+                def _unpickle(self, *args):
+                    pass
+
             return T
 
     hash_map = {}
