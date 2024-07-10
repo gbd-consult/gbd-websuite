@@ -1,4 +1,5 @@
-export {TextInputBox, TextInput, PasswordInput, TextArea} from './input';
+export {TextInputBox, TextInput, TextArea} from './input';
+export {PasswordInputBox, PasswordInput} from './password';
 export {DateInput} from './date';
 export {FileInput} from './file';
 export {NumberInputBox, NumberInput, Slider} from './number';

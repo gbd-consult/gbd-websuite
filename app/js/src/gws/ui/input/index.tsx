@@ -64,14 +64,6 @@ export class TextInput extends base.Control<TextInputProps> {
     }
 }
 
-export class PasswordInput extends TextInput {
-    render() {
-        return <base.Content of={this} withClass="uiInput">
-            <TextInputBox {...this.props} type='password'/>
-        </base.Content>
-    }
-}
-
 //
 
 const DEFAULT_TEXTAREA_HEIGHT = 80;
