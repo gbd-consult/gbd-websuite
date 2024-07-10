@@ -39,9 +39,9 @@ def iter_features(features: list[gws.Feature], mc: gws.ModelContext) -> Iterable
             elif isinstance(val, list):
                 for v in val:
                     if isinstance(v, gws.base.feature.Feature):
-                        sub.append(val)
+                        sub.append(v)
 
-        yield from iter_features(sub, context_from(mc))
+        yield from iter_features(sub, secondary_context(mc))
 
 
 def describe_from_record(fd: gws.FeatureRecord) -> gws.DataSetDescription:
@@ -72,5 +72,5 @@ def describe_from_record(fd: gws.FeatureRecord) -> gws.DataSetDescription:
     return desc
 
 
-def context_from(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
+def secondary_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
     return gws.ModelContext(gws.u.merge(mc, kwargs, relDepth=mc.relDepth + 1))

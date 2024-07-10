@@ -109,7 +109,7 @@ class Object(related_field.Object):
                 for r, u in conn.execute(sql):
                     r_to_uids.setdefault(str(r), []).append(str(u))
 
-            for to_feature in to.model.get_features(r_to_uids, gws.base.model.context_from(mc)):
+            for to_feature in to.model.get_features(r_to_uids, gws.base.model.secondary_context(mc)):
                 for uid in r_to_uids.get(to_feature.uid(), []):
                     feature = uid_to_f.get(uid)
                     feature.get(self.name).append(to_feature)

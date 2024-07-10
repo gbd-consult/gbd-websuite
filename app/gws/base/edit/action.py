@@ -275,15 +275,16 @@ class Object(gws.base.action.Object):
         template_map = {}
 
         for f in gws.base.model.iter_features(features, mc):
-
-            model = f.model
-            if model.uid not in template_map:
-                template_map[model.uid] = gws.u.compact(
-                    model.root.app.templateMgr.find_template(f'feature.{v}', [model, model.parent, mc.project], user=mc.user)
+            if f.model.uid not in template_map:
+                template_map[f.model.uid] = gws.u.compact(
+                    f.model.root.app.templateMgr.find_template(
+                        f'feature.{v}',
+                        [f.model, f.model.parent, mc.project], user=mc.user
+                    )
                     for v in _LIST_VIEWS
                 )
 
-            f.render_views(template_map[model.uid], user=mc.user, project=mc.project)
+            f.render_views(template_map[f.model.uid], user=mc.user, project=mc.project)
             if mc.project.map:
                 f.transform_to(mc.project.map.bounds.crs)
 

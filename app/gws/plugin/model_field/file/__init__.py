@@ -54,6 +54,8 @@ class FileValue(gws.Data):
 
 
 class Object(gws.base.model.field.Object):
+    model: gws.DatabaseModel
+
     attributeType = gws.AttributeType.file
     cols: Cols
 
@@ -201,7 +203,8 @@ class Object(gws.base.model.field.Object):
             model.uid_column().__eq__(feature_uid)
         )
 
-        rs = list(conn.execute(sql))
+        with self.model.db.connect() as conn:
+            rs = list(conn.execute(sql))
         if not rs:
             return
 

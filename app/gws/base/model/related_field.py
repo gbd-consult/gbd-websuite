@@ -112,7 +112,7 @@ class Object(field.Object):
         if not isinstance(value, list):
             value = [value]
 
-        mc2 = gws.base.model.context_from(mc)
+        mc2 = gws.base.model.secondary_context(mc)
         res = []
 
         for v in value:
@@ -137,7 +137,7 @@ class Object(field.Object):
         if not isinstance(value, list):
             value = [value]
 
-        mc2 = gws.base.model.context_from(mc)
+        mc2 = gws.base.model.secondary_context(mc)
         res = []
         to_model_map: dict[str, gws.Model] = {to.model.uid: to.model for to in self.rel.tos}
 
@@ -289,7 +289,7 @@ class Object(field.Object):
             uids: Iterable[gws.FeatureUid],
             mc: gws.ModelContext
     ) -> list[gws.Feature]:
-        return model.get_features(uids, gws.base.model.context_from(mc))
+        return model.get_features(uids, gws.base.model.secondary_context(mc))
 
     def column_or_uid(self, model, cfg):
         return model.column(cfg) if cfg else model.uid_column()
