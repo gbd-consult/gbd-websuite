@@ -3305,3 +3305,23 @@ create table public.many_points
 insert into public.many_points (pk) select generate_series(1, 12345);
 update public.many_points set geom=st_makepoint(pk / 100, pk % 100);
 update public.many_points set label=st_x(geom)::text || '/' || st_y(geom)::text;
+
+create table edit.nutzer
+(
+    id            int primary key generated always as identity,
+    vorname       text not null,
+    nachname      text not null,
+    email         text,
+    passwd        text,
+    comment       text default null
+);
+
+insert into edit.nutzer(nachname, vorname, email)
+values
+    ('Heine', 'Heinrich', 'Heine@example.com'),
+    ('Hesse', 'Herman', 'Hesse@example.com'),
+    ('Brecht', 'Bertolt', 'Brecht@example.com'),
+    ('Kafka', 'Franz', 'Kafka@example.com'),
+    ('Schiller', 'Friedrich', 'Schiller@example.com'),
+    ('von Goethe', 'Johann Wolfgang', 'Goethe@example.com')
+;

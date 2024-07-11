@@ -1,0 +1,83 @@
+uid "edit_users"
+
+title "Einfache Nutzerverwaltung mit Modellen"
+
+metadata.keywords [ "Editieren" ]
+
+metadata.abstract """
+"""
+
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+
+client.options.sidebarActiveTab "Sidebar.Edit"
+
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
+}
+
+
+models+ {
+    type "postgres"
+    tableName "edit.nutzer"
+    uid "model_edit_nutzer"
+    title "Nutzer"
+    sort+ { fieldName "nachname" }
+    isEditable true
+    permissions.edit "allow all"
+
+    fields+ {
+        name "id"
+        type "integer"
+        title "Identifier"
+        isPrimaryKey true
+        isRequired true
+        permissions.edit "deny all"
+        widget { type "input" }
+    }
+
+    fields+ {
+        name "vorname"
+        type "text"
+        title "Vorname"
+        isRequired true
+        widget { type "input" }
+    }
+
+    fields+ {
+        name "nachname"
+        type "text"
+        title "Nachname"
+        isRequired true
+        widget { type "input" }
+        textSearch { type "any" }
+    }
+
+    fields+ {
+        name "email"
+        type "text"
+        title "Email"
+        isRequired true
+        widget { type "input" }
+    }
+
+    fields+ {
+        name "comment"
+        type "text"
+        title "Anmerkungen"
+        widget { type "textarea" height 150 }
+    }
+
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{nachname}}, {{vorname}}"
+    }
+}
+
+
+{demo_osm_background}
