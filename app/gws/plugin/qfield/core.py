@@ -203,7 +203,7 @@ class Exporter:
                 le.dataProvider = f'gdal'
 
     def write_data(self):
-        with gws.gis.gdalx.open(self.localDbPath, 'w', variant=gws.gis.gdalx.DriverVariant.vector) as ds:
+        with gws.gis.gdalx.open_vector(self.localDbPath, 'w') as ds:
             for me in self.qfCaps.modelMap.values():
                 self.write_features(me, ds)
         self.write_offline_log()
@@ -223,7 +223,7 @@ class Exporter:
                 rel_dir = d.split('/')[-1]
             shutil.copytree(d, f'{self.args.baseDir}/{rel_dir}')
 
-    def write_features(self, me: ModelEntry, ds: gws.gis.gdalx.DataSet):
+    def write_features(self, me: ModelEntry, ds: gws.gis.gdalx.VectorDataSet):
         # see qgis/src/core/qgsofflineediting.cpp convertToOfflineLayer()
 
         gws.log.debug(f'{self.args.baseDir}: BEGIN write_features: {self.package.uid}::{me.gpName!r}')
@@ -312,8 +312,8 @@ class Exporter:
         lro = flat_layer.render(lri)
         img = gws.lib.image.from_bytes(lro.content)
 
-        src = gws.gis.gdalx.open_image(img, bounds)
-        gws.gis.gdalx.create_copy(le.dataSourcePath, src)
+        with gws.gis.gdalx.open_from_image(img, bounds) as src:
+            src.create_copy(le.dataSourcePath)
 
         if self.package.mapCacheLifeTime > 0:
             shutil.copy(le.dataSourcePath, cache_path)
@@ -595,7 +595,7 @@ class Importer:
                 self.updatedModels.append(me)
 
     def read_features(self):
-        with gws.gis.gdalx.open(self.localDbPath, 'r', variant=gws.gis.gdalx.DriverVariant.vector) as ds:
+        with gws.gis.gdalx.open_vector(self.localDbPath) as ds:
             for me in self.updatedModels:
                 self.read_features_for_model(me, ds)
 
@@ -659,7 +659,7 @@ class Importer:
                     continue
                 me.editOperations.append(EditOperation(action=EditAction.delete, pkey=pkey))
 
-    def read_features_for_model(self, me: ModelEntry, ds: gws.gis.gdalx.DataSet):
+    def read_features_for_model(self, me: ModelEntry, ds: gws.gis.gdalx.VectorDataSet):
 
         gp_layer = ds.layer(me.gpId)
 

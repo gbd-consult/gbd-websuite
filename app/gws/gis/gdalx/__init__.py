@@ -1,4 +1,4 @@
-"""GDAL wrapper."""
+"""GDAL/OGR wrapper."""
 
 from typing import Optional, cast
 
@@ -25,11 +25,6 @@ class DriverInfo(gws.Data):
     metaData: dict
 
 
-class DriverVariant(gws.Enum):
-    raster = 'raster'
-    vector = 'vector'
-
-
 class _DriverInfoCache(gws.Data):
     infos: list[DriverInfo]
     extToName: dict
@@ -44,22 +39,40 @@ def drivers() -> list[DriverInfo]:
     return di.infos
 
 
-def open(
+def open_raster(
         path: str,
-        mode: str,
+        mode: str = 'r',
         driver: str = '',
-        variant: Optional[DriverVariant] = None,
-        encoding: str = 'utf8',
         default_crs: Optional[gws.Crs] = None,
         **opts
-) -> 'DataSet':
-    """Open a path and return a DataSet object.
+) -> 'RasterDataSet':
+    """Create a raster DataSet from a path.
 
     Args:
         path: File path.
-        mode: 'r' (read), 'a' (update), 'w' (create for writing)
+        mode: 'r' (=read), 'a' (=update), 'w' (=create/write)
         driver: Driver name, if omitted, will be suggested from the path extension.
-        variant: 'raster' or 'vector'  for dual drivers, like Geopackage.
+        default_crs: Default CRS for geometries (fallback to Webmercator).
+        opts: Options for gdal.OpenEx/CreateDataSource.
+    """
+
+    return _open(path, mode, driver, None, default_crs, opts, True)
+
+
+def open_vector(
+        path: str,
+        mode: str = 'r',
+        driver: str = '',
+        encoding: str = 'utf8',
+        default_crs: Optional[gws.Crs] = None,
+        **opts
+) -> 'VectorDataSet':
+    """Create a vector DataSet from a path.
+
+    Args:
+        path: File path.
+        mode: 'r' (=read), 'a' (=update), 'w' (=create/write)
+        driver: Driver name, if omitted, will be suggested from the path extension.
         encoding: If not None, strings will be automatically decoded.
         default_crs: Default CRS for geometries (fallback to Webmercator).
         opts: Options for gdal.OpenEx/CreateDataSource.
@@ -69,32 +82,58 @@ def open(
 
     """
 
+    return _open(path, mode, driver, encoding, default_crs, opts, False)
+
+
+def _open(path, mode, driver, encoding, default_crs, opts, need_raster):
+    if not mode:
+        mode = 'r'
+    if mode not in 'rwa':
+        raise Error(f'invalid open mode {mode!r}')
+
     gdal.UseExceptions()
 
-    drv = _driver_from_args(path, driver, variant)
+    drv = _driver_from_args(path, driver, need_raster)
     default_crs = default_crs or gws.gis.crs.WEBMERCATOR
 
     if mode == 'w':
         gd = drv.CreateDataSource(path, **opts)
         if gd is None:
             raise Error(f'cannot create {path!r}')
-        return DataSet(path, gd, encoding, default_crs)
+        if need_raster:
+            return RasterDataSet(path, gd, encoding, default_crs)
+        return VectorDataSet(path, gd, encoding, default_crs)
 
     if not gws.u.is_file(path):
         raise Error(f'file not found {path!r}')
 
-    flags = gdal.OF_VERBOSE_ERROR + (gdal.OF_UPDATE if mode == 'a' else gdal.OF_READONLY)
-    if variant == DriverVariant.raster:
+    flags = gdal.OF_VERBOSE_ERROR
+    if mode == 'r':
+        flags += gdal.OF_READONLY
+    if mode == 'a':
+        flags += gdal.OF_UPDATE
+    if need_raster:
         flags += gdal.OF_RASTER
-    if variant == DriverVariant.vector:
+    else:
         flags += gdal.OF_VECTOR
+
     gd = gdal.OpenEx(path, flags, **opts)
     if gd is None:
         raise Error(f'cannot open {path!r}')
-    return DataSet(path, gd, encoding, default_crs)
+
+    if need_raster:
+        return RasterDataSet(path, gd, encoding, default_crs)
+    return VectorDataSet(path, gd, encoding, default_crs)
 
 
-def open_image(image: gws.Image, bounds: gws.Bounds) -> 'DataSet':
+def open_from_image(image: gws.Image, bounds: gws.Bounds) -> 'RasterDataSet':
+    """Create an in-memory Dataset from an Image.
+
+    Args:
+        image: Image object
+        bounds: geographic bounds
+    """
+
     gdal.UseExceptions()
 
     drv = gdal.GetDriverByName('MEM')
@@ -122,20 +161,12 @@ def open_image(image: gws.Image, bounds: gws.Bounds) -> 'DataSet':
     gd.SetGeoTransform(src_transform)
     gd.SetSpatialRef(_srs_from_srid(bounds.crs.srid))
 
-    return DataSet('', gd)
+    return RasterDataSet('', gd)
 
 
-def create_copy(path: str, ds: 'DataSet', driver: str = '', strict=False, **opts) -> 'DataSet':
-    gdal.UseExceptions()
+##
 
-    drv = _driver_from_args(path, driver, variant=DriverVariant.raster)
-    gd = drv.CreateCopy(path, ds.gdDataset, 1 if strict else 0, **opts)
-    gd.SetMetadata(ds.gdDataset.GetMetadata())
-    gd.FlushCache()
-    return DataSet(path, gd)
-
-
-class DataSet:
+class _DataSet:
     gdDataset: gdal.Dataset
     gdDriver: gdal.Driver
     path: str
@@ -143,9 +174,9 @@ class DataSet:
     defaultCrs: gws.Crs
     encoding: str
 
-    def __init__(self, path, gd, encoding='utf8', default_crs: Optional[gws.Crs] = None):
+    def __init__(self, path, gd_dataset, encoding='utf8', default_crs: Optional[gws.Crs] = None):
         self.path = path
-        self.gdDataset = gd
+        self.gdDataset = gd_dataset
         self.gdDriver = self.gdDataset.GetDriver()
         self.driverName = self.gdDriver.GetDescription()
         self.encoding = encoding
@@ -158,6 +189,25 @@ class DataSet:
         self.close()
         return False
 
+    def close(self):
+        self.gdDataset.FlushCache()
+        setattr(self, 'gdDataset', None)
+
+
+class RasterDataSet(_DataSet):
+    def create_copy(self, path: str, driver: str = '', strict=False, **opts):
+        """Create a copy of a DataSet."""
+
+        gdal.UseExceptions()
+
+        drv = _driver_from_args(path, driver, need_raster=True)
+        gd = drv.CreateCopy(path, self.gdDataset, 1 if strict else 0, **opts)
+        gd.SetMetadata(self.gdDataset.GetMetadata())
+        gd.FlushCache()
+        gd = None
+
+
+class VectorDataSet(_DataSet):
     @contextlib.contextmanager
     def transaction(self):
         self.gdDataset.StartTransaction()
@@ -168,10 +218,6 @@ class DataSet:
             self.gdDataset.RollbackTransaction()
             raise
 
-    def close(self):
-        self.gdDataset.FlushCache()
-        setattr(self, 'gdDataset', None)
-
     def create_layer(
             self,
             name: str,
@@ -180,7 +226,7 @@ class DataSet:
             crs: gws.Crs = None,
             overwrite=False,
             *options,
-    ) -> 'Layer':
+    ) -> 'VectorLayer':
         opts = list(options)
         if overwrite:
             opts.append('OVERWRITE=YES')
@@ -202,25 +248,25 @@ class DataSet:
         for col_name, col_type in columns.items():
             gd_layer.CreateField(ogr.FieldDefn(col_name, _ATTR_TO_OGR[col_type]))
 
-        return Layer(self, gd_layer)
+        return VectorLayer(self, gd_layer)
 
-    def layers(self):
+    def layers(self) -> list['VectorLayer']:
         cnt = self.gdDataset.GetLayerCount()
-        return [Layer(self, self.gdDataset.GetLayerByIndex(n)) for n in range(cnt)]
+        return [VectorLayer(self, self.gdDataset.GetLayerByIndex(n)) for n in range(cnt)]
 
-    def layer(self, name_or_index: str | int) -> Optional['Layer']:
+    def layer(self, name_or_index: str | int) -> Optional['VectorLayer']:
         gd_layer = self.gdDataset.GetLayer(name_or_index)
-        return Layer(self, gd_layer) if gd_layer else None
+        return VectorLayer(self, gd_layer) if gd_layer else None
 
 
-class Layer:
+class VectorLayer:
     name: str
     gdLayer: ogr.Layer
     gdDefn: ogr.FeatureDefn
     encoding: str
     defaultCrs: gws.Crs
 
-    def __init__(self, ds: DataSet, gd_layer: ogr.Layer):
+    def __init__(self, ds: VectorDataSet, gd_layer: ogr.Layer):
         self.gdLayer = gd_layer
         self.gdDefn = self.gdLayer.GetLayerDefn()
         self.name = self.gdDefn.GetName()
@@ -378,7 +424,7 @@ class Layer:
 ##
 
 
-def _driver_from_args(path, driver_name, variant):
+def _driver_from_args(path, driver_name, need_raster):
     di = _fetch_driver_infos()
 
     if not driver_name:
@@ -387,30 +433,20 @@ def _driver_from_args(path, driver_name, variant):
         if not names:
             raise Error(f'no default driver found for {path!r}')
         if len(names) > 1:
-            raise Error(f'multiple drivers found for {path!r}')
+            raise Error(f'multiple drivers found for {path!r}: {names}')
         driver_name = names[0]
 
     is_vector = driver_name in di.vectorNames
     is_raster = driver_name in di.rasterNames
 
-    if variant == DriverVariant.raster:
+    if need_raster:
         if not is_raster:
             raise Error(f'driver {driver_name!r} is not raster')
         return gdal.GetDriverByName(driver_name)
 
-    if variant == DriverVariant.vector:
-        if not is_vector:
-            raise Error(f'driver {driver_name!r} is not vector')
-        return ogr.GetDriverByName(driver_name)
-
-    # NB prefer raster drivers by default
-
-    if is_raster:
-        return gdal.GetDriverByName(driver_name)
-    if is_vector:
-        return ogr.GetDriverByName(driver_name)
-
-    raise Error(f'driver {driver_name!r} not found')
+    if not is_vector:
+        raise Error(f'driver {driver_name!r} is not vector')
+    return ogr.GetDriverByName(driver_name)
 
 
 _di_cache: Optional[_DriverInfoCache] = None

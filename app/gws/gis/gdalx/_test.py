@@ -32,7 +32,7 @@ def test_shp():
         recs_a.append(rec)
 
     with u.temp_dir_in_base_dir() as d:
-        with gdalx.open(f'{d}/shape.shp', 'w') as ds:
+        with gdalx.open_vector(f'{d}/shape.shp', 'w') as ds:
             la = ds.create_layer(
                 '',
                 cols,
@@ -41,7 +41,7 @@ def test_shp():
             )
             la.insert(recs_a)
 
-        with gdalx.open(f'{d}/shape.shp', 'r') as ds:
+        with gdalx.open_vector(f'{d}/shape.shp', 'r') as ds:
             la = ds.layer(0)
             recs_b = la.get_all()
 
