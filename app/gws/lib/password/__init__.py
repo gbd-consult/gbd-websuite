@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import random
+import string
 
 
 def compare(a: str, b: str) -> bool:
@@ -55,6 +56,72 @@ def check(password: str, encoded: str) -> bool:
         return False
 
     return hmac.compare_digest(h1, h2)
+
+
+class SymbolGroup:
+    def __init__(self, s, min_len, max_len):
+        self.chars = s
+        self.max = max_len
+        self.min = min_len
+        self.count = 0
+
+
+def generate(
+        min_len: int = 16,
+        max_len: int = 16,
+        min_lower: int = 0,
+        max_lower: int = 255,
+        min_upper: int = 0,
+        max_upper: int = 255,
+        min_digit: int = 0,
+        max_digit: int = 255,
+        min_punct: int = 0,
+        max_punct: int = 255,
+) -> str:
+    """Generate a random password."""
+
+    groups = [
+        SymbolGroup(string.ascii_lowercase, min_lower, max_lower),
+        SymbolGroup(string.ascii_uppercase, min_upper, max_upper),
+        SymbolGroup(string.digits, min_digit, max_digit),
+        SymbolGroup(string.punctuation, min_punct, max_punct),
+    ]
+    return generate_with_groups(groups, min_len, max_len)
+
+
+def generate_with_groups(
+        groups: list[SymbolGroup],
+        min_len: int = 16,
+        max_len: int = 16,
+) -> str:
+    """Generate a random password from a list of `SymbolGroup` objects."""
+
+    r = random.SystemRandom()
+    p = []
+
+    for g in groups:
+        p.extend(r.choices(g.chars, k=g.min))
+        g.count = g.min
+
+    if len(p) > max_len:
+        raise ValueError('invalid parameters')
+
+    size = r.randint(max(min_len, len(p)), max_len)
+
+    while len(p) < size:
+        sel = ''.join(g.chars for g in groups if g.count < g.max)
+        if not sel:
+            raise ValueError('invalid parameters')
+        c = r.choice(sel)
+        for g in groups:
+            if c in g.chars:
+                g.count += 1
+                break
+        p.append(c)
+
+    r.shuffle(p)
+
+    return ''.join(p)
 
 
 ##
