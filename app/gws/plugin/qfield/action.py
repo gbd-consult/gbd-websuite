@@ -14,7 +14,7 @@ gws.ext.new.action('qfield')
 
 
 class Config(gws.ConfigWithAccess):
-    """QField action."""
+    """QField action. (added in 8.1)"""
 
     packages: list[core.PackageConfig]
     withDbInDCIM: bool = False

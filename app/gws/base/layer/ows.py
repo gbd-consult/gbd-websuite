@@ -8,13 +8,22 @@ import gws.config.util
 
 
 class Config(gws.Config):
+    """Layer OWS configuration."""
+
     allowedServices: Optional[list[str]]
+    """Service UIDs which can use this layer. (added in 8.1)"""
     deniedServices: Optional[list[str]]
+    """Service UIDs which can not use this layer. (added in 8.1)"""
     featureName: str = ''
+    """Name for features in this layer."""
     geometryName: str = ''
+    """Name for geometries in this layer."""
     layerName: str = ''
+    """Name for this layer in WMS services."""
     xmlns: Optional[str]
+    """XML namespace prefix. (added in 8.1)"""
     models: Optional[list[gws.ext.config.model]]
+    """OWS-specific models. (added in 8.1)"""
 
 
 class Object(gws.LayerOws):

@@ -7,6 +7,7 @@ gws.ext.new.modelValidator('notEmpty')
 
 
 class Config(gws.base.model.validator.Config):
+    """Validator for non-empty values. (added in 8.1)"""
     pass
 
 

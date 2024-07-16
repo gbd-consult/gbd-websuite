@@ -7,6 +7,8 @@ import gws.lib.net
 
 
 class CorsConfig(gws.Config):
+    """CORS configuration."""
+
     allowCredentials: bool = False
     """Access-Control-Allow-Credentials header."""
     allowHeaders: str = ''
@@ -20,53 +22,55 @@ class CorsConfig(gws.Config):
 
 
 class RewriteRuleConfig(gws.Config):
+    """Rewrite rule configuration."""
+
     pattern: gws.Regex
-    """expression to match the url against"""
+    """Expression to match the url against."""
     target: str
-    """target url with placeholders"""
+    """Target url with placeholders."""
     options: Optional[dict]
-    """additional options"""
+    """Additional options."""
     reversed: bool = False
-    """reversed rewrite rule"""
+    """Reversed rewrite rule."""
 
 
 class SSLConfig(gws.Config):
-    """SSL configuration"""
+    """SSL configuration."""
 
     crt: gws.FilePath
-    """crt bundle location"""
+    """Crt bundle location."""
     key: gws.FilePath
-    """key file location"""
+    """Key file location."""
 
 
 class WebDocumentRootConfig(gws.Config):
-    """Base directory for assets"""
+    """Web-accessible directory."""
 
     dir: gws.DirPath
-    """directory path"""
+    """Directory path."""
     allowMime: Optional[list[str]]
-    """allowed mime types"""
+    """Allowed mime types."""
     denyMime: Optional[list[str]]
-    """disallowed mime types (from the standard list)"""
+    """Disallowed mime types (from the standard list)."""
 
 
 class Config(gws.Config):
     """Site (virtual host) configuration"""
 
     assets: Optional[WebDocumentRootConfig]
-    """assets location and options"""
+    """Root directory for assets."""
     cors: Optional[CorsConfig]
-    """cors configuration"""
+    """Cors configuration."""
     errorPage: Optional[gws.ext.config.template]
-    """error page template"""
+    """Error page template."""
     host: str = '*'
-    """host name"""
+    """Host name."""
     rewrite: Optional[list[RewriteRuleConfig]]
-    """rewrite rules"""
+    """Rewrite rules."""
     canonicalHost: str = ''
-    """hostname for reversed rewriting"""
+    """Hostname for reversed URL rewriting."""
     root: WebDocumentRootConfig
-    """document root location and options"""
+    """Root directory for static documents."""
 
 
 class Object(gws.WebSite):

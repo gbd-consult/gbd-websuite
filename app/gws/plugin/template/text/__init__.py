@@ -1,4 +1,8 @@
-"""CX text-only templates"""
+"""CX text-only templates.
+
+This template is based on Jump, like html templates,
+but doesn't support custom commands and non-text outputs.
+"""
 
 from typing import Optional
 
@@ -16,6 +20,8 @@ gws.ext.new.template('text')
 
 
 class Config(gws.base.template.Config):
+    """Text-only template. (added in 8.1)"""
+
     path: Optional[gws.FilePath]
     """Path to a template file."""
     text: str = ''
