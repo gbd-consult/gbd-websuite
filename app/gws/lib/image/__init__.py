@@ -14,6 +14,10 @@ import numpy as np
 import gws
 import gws.lib.mime
 
+# https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.open
+# max 10k x 10k RGBA
+PIL.Image.MAX_IMAGE_PIXELS = 10_000 * 10_000 * 4
+
 
 class Error(gws.Error):
     pass
