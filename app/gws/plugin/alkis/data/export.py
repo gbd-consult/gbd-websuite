@@ -157,7 +157,8 @@ class Object(gws.Node):
         writer.write_headers([fld.title for fld in fields])
         mc = gws.ModelContext(op=gws.ModelOperation.read, readMode=gws.ModelReadMode.search, user=user)
 
-        for fs in fs_list:
+        for n, fs in enumerate(fs_list, 1):
+            gws.log.debug(f'export {n}/{len(fs_list)} {fs.uid=}')
             row_hashes = set()
             for atts in _flatten(fs):
                 rec = gws.FeatureRecord(attributes=atts)
@@ -187,6 +188,9 @@ def _flatten(obj):
 
         if isinstance(o, (dt.Object, dt.EnumPair)):
             for k, v in vars(o).items():
+                if k == 'fsUids':
+                    # exclude, it's basically the same as flurstueckskennzeichenList
+                    continue
                 if k == 'props':
                     # the 'props' element, which is a list of key-value pairs
                     # requires a special treatment
