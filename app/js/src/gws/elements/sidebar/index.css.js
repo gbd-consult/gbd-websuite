@@ -21,6 +21,29 @@ module.exports = v => ({
         }
     },
 
+    '.modSidebarResizeHandle': {
+        flexShrink: 0,
+        height: '100%',
+        width: '4px',
+        backgroundColor: v.SIDEBAR_AUX_TOOLBAR_BACKGROUND,
+        cursor: 'ew-resize'
+    },
+
+    '.modSidebarResizeHandle:hover:not(.isResizing)': {
+        backgroundColor: v.COLOR.blueGrey100
+    },
+
+    '.modSidebarResizeHandle.isResizing': {
+        backgroundColor: v.COLOR.blueGrey300
+    },
+
+    '.modSidebarLeftContainer': {
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'row',
+        overflow: 'hidden'
+    },
+
     '.modSidebarHeaderButton': {
         marginLeft: v.UNIT2,
         ...v.TRANSITION('all'),
