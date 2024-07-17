@@ -7,7 +7,9 @@ interface SidebarProps extends gws.types.ViewProps {
     sidebarActiveTab: string;
     sidebarVisible: boolean;
     sidebarOverflowExpanded: boolean;
-    sidebarSize: number;
+    sidebarResizable: boolean;
+    resizing: boolean;
+    sidebarWidth: number;
     sidebarHiddenItems: object;
 }
 
@@ -15,7 +17,9 @@ const SidebarStoreKeys = [
     'sidebarActiveTab',
     'sidebarVisible',
     'sidebarOverflowExpanded',
-    'sidebarSize',
+    'sidebarResizable',
+    'resizing',
+    'sidebarWidth',
     'sidebarHiddenItems',
 ];
 
@@ -108,15 +112,12 @@ class PopupHeaderButton extends gws.View<ButtonProps> {
 
 class Header extends gws.View<SidebarProps> {
     render() {
-        let size = this.props.sidebarSize || 999;
+        let numTabs = this.props.controller.visibleTabs;
 
         let expanded = this.props.sidebarOverflowExpanded,
-            items = this.props.controller.children;
-
-        items = items.filter(it => !(this.props.sidebarHiddenItems || {})[it.tag]);
-
-        let front = items.slice(0, size),
-            rest = items.slice(size);
+            items = this.props.controller.children,
+            front = items.slice(0, numTabs),
+            rest = items.slice(numTabs)
 
         return <div className="modSidebarHeader">
             <Row>
@@ -142,12 +143,11 @@ class Header extends gws.View<SidebarProps> {
 class SidebarOverflowView extends gws.View<SidebarProps> {
 
     render() {
-        let size = this.props.sidebarSize || 999;
+        let numTabs = this.props.controller.visibleTabs;
 
         let expanded = this.props.sidebarOverflowExpanded,
             items = this.props.controller.children,
-            front = items.slice(0, size),
-            rest = items.slice(size);
+            rest = items.slice(numTabs);
 
         if (rest.length === 0 || !expanded)
             return null;
@@ -156,7 +156,6 @@ class SidebarOverflowView extends gws.View<SidebarProps> {
             className="modSidebarOverflowPopup"
             whenClosed={() => this.props.controller.update({
                 sidebarOverflowExpanded: false
-
             })}
         >
             {rest.map(it =>
@@ -182,11 +181,27 @@ class SidebarView extends gws.View<SidebarProps> {
     render() {
         return <React.Fragment>
             {!this.props.sidebarVisible && <OpenButton {...this.props}/>}
-            <div {...gws.lib.cls('modSidebar', this.props.sidebarVisible && 'isVisible')}>
+            <div {...gws.lib.cls('modSidebar', this.props.sidebarVisible && 'isVisible')}
+                style={{ width: this.props.controller.width }}
+            >
                 <Header {...this.props} />
-                <Body {...this.props} />
+                <div {...gws.lib.cls('modSidebarLeftContainer')}>
+                    <Body {...this.props} />
+                    {this.props.controller.resizable &&
+                        <SidebarResizeHandle {...this.props} />
+                    }
+                </div>
             </div>
         </React.Fragment>
+    }
+}
+
+class SidebarResizeHandle extends gws.View<SidebarProps> {
+    render() {
+        return <div {...gws.lib.cls('modSidebarResizeHandle', this.props.resizing && 'isResizing')}
+                onMouseDown={ e => this.props.controller.resizeEvent(e) }
+                >
+                </div>
     }
 }
 
@@ -200,11 +215,85 @@ class SidebarController extends gws.Controller {
 
         this.app.whenCalled('setSidebarActiveTab', args => this.setActiveTab(args.tab));
 
+        this.update({ resizing : false });
+
         if (this.getValue('appMediaWidth') === 'xsmall') {
             this.setVisible(false)
         }
+    }
 
+    get resizable() : boolean {
+        return !(this.getValue('appMediaWidth') === 'xsmall')
+            && this.getValue('sidebarResizable')
+            || false
+    }
 
+    get resizing() : boolean {
+        return this.getValue('resizing') || false
+    }
+
+    setResizing(r : boolean) {
+        this.update({ resizing: r })
+    }
+
+    get width() : any {
+        if( this.getValue('appMediaWidth') === 'xsmall' ) {
+            return '100%'
+        }
+        return this.getValue('sidebarWidth') || 300;
+    }
+
+    setWidth(w: number) {
+        this.update({ sidebarWidth: w })
+    }
+
+    resizeEvent(e) {
+        e.preventDefault();
+        this.setResizing(true);
+
+        let onMove = e => {
+            e.preventDefault();
+            if( this.resizing ) {
+                let newWidth = e.clientX+2;
+                if( 300 < newWidth && newWidth < window.innerWidth * 0.9 ) {
+                    this.setWidth(newWidth);
+                }
+            }
+        };
+
+        let onMoveEnd = e => {
+            e.preventDefault();
+            this.setResizing(false);
+            document.onmousemove = (window as any).old_onmousemove;
+            document.onmouseup   = (window as any).old_onmouseup;
+        };
+
+        (window as any).old_onmousemove = document.onmousemove;
+        (window as any).old_onmouseup   = document.onmouseup;
+        document.onmousemove = onMove;
+        document.onmouseup   = onMoveEnd;
+    }
+
+    get visibleTabs() : number {
+        let w = this.width
+        let clientWidth = document.getElementsByClassName('gws')[0].clientWidth
+        if (typeof w == 'string' && w.indexOf('%')) {
+            w = (Number(w.replace(/[0-9]/g, '')) / 100) * clientWidth
+        }
+        let leftPad = 8,
+            hideSidebarButtonWidth = 40,
+            sidebarPageButtonWidth = 48,
+            rightPad = 16,
+            sidebarHandleWidth = 20;
+
+        let spaceAvailable = w - (leftPad+hideSidebarButtonWidth+rightPad+sidebarHandleWidth)
+        let tabs = Math.floor(spaceAvailable / sidebarPageButtonWidth)
+
+        if( tabs != this.children.length ) {
+            tabs = Math.min(tabs - 1, this.children.length)
+        }
+
+        return tabs
     }
 
     setActiveTab(tab) {
