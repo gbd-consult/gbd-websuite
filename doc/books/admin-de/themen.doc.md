@@ -29,8 +29,9 @@
 - including in project.cx.html
 -->
 
-## Drucken
+## :/admin-de/themen/printer
 <!--
+ In File: /gbd-websuite/app/gws/base/printer/_doc/admin-de.doc.md
 - templates
     - html, map, py, qgis
 - link to models

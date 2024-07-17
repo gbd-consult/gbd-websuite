@@ -1,4 +1,4 @@
-# Drucken :/admin-de/config/drucken
+# Drucken :/admin-de/themen/printer
 
 Ein Projekt in der GBD WebSuite kann eine oder mehrere Druckvorlagen bereitstellen. Bei mehreren Vorlagen wird dem Nutzer im Client ein Menü angezeigt, wo die Vorlage und ggf. die Qualitätsstufe gewählt werden kann.
 
