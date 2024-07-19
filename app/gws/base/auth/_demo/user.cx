@@ -1,0 +1,27 @@
+uid "auth_user"
+
+title "User tab"
+
+metadata.keywords [ "auth" ]
+
+metadata.abstract """
+This demo shows the "User" tab in the client.
+
+You can use login name **demo1** for a simple password-based login,
+or **demo_mfa** for the multi-factor authorization.
+
+The password for all logins is **demo**.
+
+To obtain the MFA code, configure your mobile Authenticator app with the setup key **HE4DONRVGQZTEMJQ**,
+or use [the TOTP generator](/asset/totp).
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
+}
+
+client.addElements+ { tag "Sidebar.User" }
+
+{demo_osm_background}

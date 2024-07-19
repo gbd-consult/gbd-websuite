@@ -4,27 +4,39 @@ import * as sidebar from 'gws/elements/sidebar';
 
 const {Form, Row, Cell} = gws.ui.Layout;
 
-interface AuthProps extends gws.types.ViewProps {
+interface MfaProps {
+    code: string;
+    message: string;
+    canRestart: boolean;
+    error: boolean;
+}
+
+interface ViewProps extends gws.types.ViewProps {
     controller: SidebarUserTab;
+
+    authLoading: boolean;
     authUsername: string;
     authPassword: string;
     authError: boolean;
-    user: gws.types.IUser,
+    authMfa: MfaProps | null;
+    user: gws.types.IUser | null;
 }
 
 const StoreKeys = [
+    'authLoading',
     'authUsername',
     'authPassword',
     'authError',
+    'authMfa',
 ];
 
 
-class UserInfo extends gws.View<AuthProps> {
+class UserInfo extends gws.View<ViewProps> {
     render() {
         return <Form>
             <Row>
                 <Cell flex>
-                    <div className="modUserUserName">{this.props.user.displayName}</div>
+                    <div className="userUserName">{this.props.user.displayName}</div>
                 </Cell>
             </Row>
             <Row>
@@ -32,8 +44,8 @@ class UserInfo extends gws.View<AuthProps> {
                 <Cell>
                     <gws.ui.Button
                         primary
-                        whenTouched={() => this.props.controller.doLogout()}
-                        label={this.__('modUserLogoutButton')}
+                        whenTouched={() => this.props.controller.whenLogoutFormSubmitted()}
+                        label={this.__('userLogoutButton')}
                     />
                 </Cell>
             </Row>
@@ -42,15 +54,15 @@ class UserInfo extends gws.View<AuthProps> {
 
 }
 
-class LoginForm extends gws.View<AuthProps> {
+class LoginForm extends gws.View<ViewProps> {
     render() {
-        let submit = () => this.props.controller.doLogin();
+        let submit = () => this.props.controller.whenLoginFormSubmitted();
 
         return <Form>
             <Row>
                 <Cell flex>
                     <gws.ui.TextInput
-                        label={this.__('modUserLoginUsername')}
+                        label={this.__('userLoginUsername')}
                         value={this.props.authUsername}
                         whenChanged={v => this.props.controller.update({authUsername: v})}
                         whenEntered={submit}
@@ -61,7 +73,7 @@ class LoginForm extends gws.View<AuthProps> {
             <Row>
                 <Cell flex>
                     <gws.ui.PasswordInput
-                        label={this.__('modUserLoginPassword')}
+                        label={this.__('userLoginPassword')}
                         value={this.props.authPassword}
                         whenChanged={v => this.props.controller.update({authPassword: v})}
                         whenEntered={submit}
@@ -75,14 +87,14 @@ class LoginForm extends gws.View<AuthProps> {
                     <gws.ui.Button
                         primary
                         whenTouched={submit}
-                        label={this.__('modUserLoginButton')}
+                        label={this.__('userLoginButton')}
                     />
                 </Cell>
             </Row>
 
             {this.props.authError && <Row>
                 <Cell flex>
-                    <gws.ui.Error text={this.__('modUserError')}/>
+                    <gws.ui.Error text={this.__('userError')}/>
                 </Cell>
             </Row>}
 
@@ -90,20 +102,80 @@ class LoginForm extends gws.View<AuthProps> {
     }
 }
 
-class SidebarTab extends gws.View<AuthProps> {
+class MfaForm extends gws.View<ViewProps> {
     render() {
+        let submit = () => this.props.controller.whenMfaFormSubmitted();
+        let restart = () => this.props.controller.whenMfaRestartButtonTouched();
+        let update = (v) => this.props.controller.update({authMfa: {...mfa, code: v}})
+
+        let mfa = this.props.authMfa;
+
+        return <Form>
+            <Row>
+                <Cell flex>
+                    <gws.ui.HtmlBlock content={mfa.message}/>
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex>
+                    <gws.ui.TextInput
+                        value={mfa.code}
+                        whenChanged={update}
+                        whenEntered={submit}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex/>
+                <Cell>
+                    <gws.ui.Button
+                        primary
+                        whenTouched={submit}
+                        label={this.__('userMfaVerifyButton')}
+                    />
+                </Cell>
+                {mfa.canRestart && <Cell>
+                    <gws.ui.Button
+                        whenTouched={restart}
+                        label={this.__('userMfaRestartButton')}
+                    />
+                </Cell>}
+            </Row>
+            {mfa.error && <Row>
+                <Cell flex>
+                    <gws.ui.Error text={this.__('userMfaError')}/>
+                </Cell>
+            </Row>}
+        </Form>;
+    }
+}
+
+
+class SidebarTab extends gws.View<ViewProps> {
+    render() {
+        let title = '', body;
+
+        if (0 && this.props.authLoading) {
+            title = '';
+            body = <gws.ui.Loader/>;
+        } else if (this.props.authMfa) {
+            title = this.__('userMfaTitle');
+            body = <MfaForm {...this.props}/>;
+        } else if (this.props.user) {
+            title = this.__('userInfoTitle');
+            body = <UserInfo {...this.props}/>
+        } else {
+            title = this.__('userLoginTitle');
+            body = <LoginForm {...this.props}/>;
+        }
+
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.props.user
-                        ? this.__('modUserInfoTitle')
-                        : this.__('modUserLoginTitle')
-                    }/>
+                <gws.ui.Title content={title}/>
             </sidebar.TabHeader>
             <sidebar.TabBody>
-                {this.props.user
-                    ? <UserInfo {...this.props}/>
-                    : <LoginForm {...this.props}/>
-                }
+                {body}
+                {this.props.authLoading && <gws.ui.Loader/>}
             </sidebar.TabBody>
         </sidebar.Tab>
     }
@@ -111,36 +183,115 @@ class SidebarTab extends gws.View<AuthProps> {
 
 class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
 
-    iconClass = 'modUserSidebarIcon';
+    iconClass = 'userSidebarIcon';
 
     get tooltip() {
-        return this.__('modUserSidebarTitle');
+        return this.__('userSidebarTitle');
     }
 
     get tabView() {
-        console.log(this.getValue('user'))
         return this.createElement(
             this.connect(SidebarTab, StoreKeys),
             {user: this.getValue('user')}
         );
     }
 
-    async doLogin() {
+    async whenLoginFormSubmitted() {
+        this.update({
+            authLoading: true,
+        });
+
         let res = await this.app.server.authLogin({
             username: this.getValue('authUsername') as string,
             password: this.getValue('authPassword') as string,
         });
 
-        if (res.error)
-            this.update({authError: true});
-        else
-            this.app.reload();
+        if (res.error) {
+            return this.setError();
+        }
+
+        if (res.mfaState) {
+            return this.setMfa(res, false);
+        }
+
+        this.whenLoggedIn(res.user);
     }
 
-    async doLogout() {
+    async whenMfaFormSubmitted() {
+        this.update({
+            authLoading: true,
+        });
+
+        let mfa = this.getValue('authMfa') as MfaProps;
+        let res = await this.app.server.authMfaVerify({
+            payload: {code: mfa.code},
+        });
+
+        if (res.error) {
+            return this.setError();
+        }
+
+        if (res.mfaState === gws.api.core.AuthMultiFactorState.retry) {
+            return this.setMfa(res, true);
+        }
+
+        if (res.mfaState === gws.api.core.AuthMultiFactorState.ok) {
+            this.whenLoggedIn(res.user);
+            return;
+        }
+
+        this.setError();
+    }
+
+    async whenMfaRestartButtonTouched() {
+        this.update({
+            authLoading: true,
+        });
+
+        let mfa = this.getValue('authMfa') as MfaProps;
+        let res = await this.app.server.authMfaRestart({});
+
+        if (res.error) {
+            return this.setError();
+        }
+
+        return this.setMfa(res, false);
+    }
+
+    async whenLogoutFormSubmitted() {
         await this.app.server.authLogout({});
+        this.whenLoggedOut()
+    }
+
+    whenLoggedIn(user) {
+        this.app.reload();
+    }
+
+    whenLoggedOut() {
         // @TODO control where to redirect in backend
         this.app.navigate('/');
+    }
+
+    setError() {
+        this.update({
+            authLoading: false,
+            authError: true,
+            authMfa: null,
+            user: null,
+        });
+    }
+
+    setMfa(res: gws.api.plugin.auth_method.web.LoginResponse, error: boolean) {
+        this.update({
+            authLoading: false,
+            authError: false,
+            authMfa: {
+                code: '',
+                message: res.mfaMessage,
+                canRestart: res.mfaCanRestart,
+                error,
+            },
+        });
     }
 
 

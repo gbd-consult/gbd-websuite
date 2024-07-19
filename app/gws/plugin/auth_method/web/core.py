@@ -1,5 +1,7 @@
 """Web authorisation method."""
 
+from typing import Optional, cast
+
 import gws
 import gws.base.auth
 import gws.base.web
@@ -16,6 +18,34 @@ class Config(gws.base.auth.method.Config):
     """cookie path"""
 
 
+##
+
+class UserResponse(gws.Response):
+    user: Optional[gws.base.auth.user.Props]
+
+
+class LogoutResponse(gws.Response):
+    pass
+
+
+class LoginRequest(gws.Request):
+    username: str
+    password: str
+
+
+class LoginResponse(gws.Response):
+    user: Optional[gws.base.auth.user.Props]
+    mfaState: Optional[gws.AuthMultiFactorState]
+    mfaMessage: str = ''
+    mfaCanRestart: bool = False
+
+
+class MfaVerifyRequest(gws.Request):
+    payload: dict
+
+
+##
+
 _DELETED_SESSION = 'web:deleted'
 
 
@@ -26,7 +56,7 @@ class Object(gws.base.auth.method.Object):
     deletedSession: gws.base.auth.session.Object
 
     def configure(self):
-        self.uid = 'gws.plugin.auth_method.web'
+        self.uid = 'gws.plugin.self.web'
         self.cookieName = self.cfg('cookieName', default=Config.cookieName)
         self.cookiePath = self.cfg('cookiePath', default=Config.cookiePath)
 
@@ -77,36 +107,137 @@ class Object(gws.base.auth.method.Object):
                 httponly=True)
             am.sessionMgr.save(sess)
 
-    def handle_login(self, req: gws.WebRequester, credentials: gws.Data):
-        am = self.root.app.authMgr
-
+    def handle_login(self, req: gws.WebRequester, p: LoginRequest) -> LoginResponse:
         if not req.user.isGuest:
-            raise gws.ForbiddenError('login while logged-in')
+            raise gws.ForbiddenError(f'login: already logged-in {req.user.uid=}')
 
         if self.secure and not req.isSecure:
-            raise gws.ForbiddenError('insecure_context, ignore login')
+            raise gws.ForbiddenError('login: insecure_context, ignored')
 
-        user = am.authenticate(self, credentials)
+        user = self.root.app.authMgr.authenticate(self, p)
         if not user:
-            raise gws.ForbiddenError('no user found')
+            raise gws.ForbiddenError('login: user not found')
 
-        sess = am.sessionMgr.create(self, user)
-        req.set_session(sess)
+        if user.mfaUid:
+            mfa = self._mfa_start(req, user)
+            gws.log.info(f'LOGGED_IN (MFA pending): {user.uid=} {user.roles=}')
+            return self._mfa_response(mfa)
 
-        gws.log.info(f'LOGGED_IN: user={req.session.user.uid!r} roles={req.session.user.roles}')
+        self._finalize_login(req, user)
+        return LoginResponse(user=gws.props_of(user, user))
+
+    def handle_mfa_verify(self, req: gws.WebRequester, p: MfaVerifyRequest) -> LoginResponse:
+        try:
+            mfa = self._mfa_verify(req, p.payload)
+        except gws.ForbiddenError:
+            self._delete_session(req)
+            raise
+
+        if mfa.state == gws.AuthMultiFactorState.ok:
+            self._finalize_login(req, mfa.user)
+            return self._mfa_response(mfa)
+
+        if mfa.state == gws.AuthMultiFactorState.retry:
+            return self._mfa_response(mfa)
+
+        self._delete_session(req)
+        raise gws.ForbiddenError(f'MFA: verify failed {mfa.state=}')
+
+    def handle_mfa_restart(self, req: gws.WebRequester, p: gws.Request) -> LoginResponse:
+        try:
+            mfa = self._mfa_restart(req)
+        except gws.ForbiddenError:
+            self._delete_session(req)
+            raise
+
+        return self._mfa_response(mfa)
 
     def handle_logout(self, req: gws.WebRequester):
-        am = self.root.app.authMgr
-
         if req.user.isGuest:
+            self._delete_session(req)
             return
 
-        sess = req.session
-
         if req.session.method != self:
-            raise gws.ForbiddenError(f'wrong method for logout: {sess.method!r}')
+            raise gws.ForbiddenError(f'wrong method for logout: {req.session.method!r}')
 
-        gws.log.info(f'LOGGED_OUT: user={sess.user.uid!r}')
+        self._delete_session(req)
 
-        am.sessionMgr.delete(sess)
+        gws.log.info(f'LOGGED_OUT: user={req.user.uid!r}')
+
+    ##
+
+    def _delete_session(self, req: gws.WebRequester):
+        am = self.root.app.authMgr
+        am.sessionMgr.delete(req.session)
         req.set_session(self.deletedSession)
+
+    def _finalize_login(self, req: gws.WebRequester, user: gws.User):
+        self._delete_session(req)
+        am = self.root.app.authMgr
+        req.set_session(am.sessionMgr.create(self, user))
+        gws.log.info(f'LOGGED_IN: {user.uid=} {user.roles=}')
+
+    ##
+
+    def _mfa_start(self, req: gws.WebRequester, user: gws.User) -> gws.AuthMultiFactorTransaction:
+        am = self.root.app.authMgr
+
+        adapter = am.get_mf_adapter(user.mfaUid)
+        if not adapter:
+            raise gws.ForbiddenError(f'MFA: {user.mfaUid=} unknown')
+
+        mfa = adapter.start(user)
+        if not mfa:
+            raise gws.ForbiddenError(f'MFA: {user.mfaUid=} start failed')
+
+        req.set_session(am.sessionMgr.create(self, am.guestUser))
+
+        self._mfa_store(req, mfa)
+        return mfa
+
+    def _mfa_verify(self, req: gws.WebRequester, payload: dict) -> gws.AuthMultiFactorTransaction:
+        mfa = self._mfa_load(req)
+        mfa = mfa.adapter.verify(mfa, payload)
+
+        self._mfa_store(req, mfa)
+        return mfa
+
+    def _mfa_restart(self, req: gws.WebRequester) -> gws.AuthMultiFactorTransaction:
+        mfa = self._mfa_load(req)
+        mfa = mfa.adapter.restart(mfa)
+        if not mfa:
+            raise gws.ForbiddenError(f'MFA: restart failed')
+
+        self._mfa_store(req, mfa)
+        return mfa
+
+    def _mfa_store(self, req: gws.WebRequester, mfa: gws.AuthMultiFactorTransaction):
+        am = self.root.app.authMgr
+
+        sess_mfa = gws.u.merge({}, mfa)
+        sess_mfa['user'] = am.serialize_user(mfa.user)
+        sess_mfa['adapter'] = mfa.adapter.uid
+        req.session.set('AuthMultiFactorTransaction', sess_mfa)
+
+    def _mfa_load(self, req: gws.WebRequester) -> gws.AuthMultiFactorTransaction:
+        am = self.root.app.authMgr
+
+        sess_mfa = req.session.get('AuthMultiFactorTransaction')
+        if not sess_mfa:
+            raise gws.ForbiddenError(f'MFA: transaction not found')
+
+        mfa = gws.AuthMultiFactorTransaction(sess_mfa)
+        mfa.adapter = am.get_mf_adapter(sess_mfa['adapter'])
+        mfa.user = am.unserialize_user(sess_mfa['user'])
+
+        if not mfa.adapter.check_state(mfa):
+            raise gws.ForbiddenError(f'MFA: invalid transaction in session')
+
+        return mfa
+
+    def _mfa_response(self, mfa: gws.AuthMultiFactorTransaction) -> LoginResponse:
+        return LoginResponse(
+            mfaState=mfa.state,
+            mfaMessage=mfa.message,
+            mfaCanRestart=mfa.adapter.check_restart(mfa),
+        )

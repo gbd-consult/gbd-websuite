@@ -9,13 +9,12 @@ at least the following columns:
 
 - ``validuser`` (bool) - mandatory, should be "true" if the user is allowed to log in
 - ``validpassword`` (bool) - mandatory, should be "true" if the password is valid
-- ``uid`` - mandatory, user id
-- ``roles`` - optional, comma-separated list of roles
-- ``displayname`` - optional, user's display name
-- ``login`` - optional, user's login name
+- ``uid`` (str) - user id
+- ``roles``(str) - comma-separated list of roles
 
-If more columns are returned, they become attributes of the User object and
-can be used for templating.
+Column names are case-insensitive.
+
+Other columns, if given, are converted to respective `gws.User` properties.
 
 The "getUser" query receives user ID as a parameter and should return a record for this user.
 
@@ -90,22 +89,12 @@ class Placeholders(gws.Enum):
     uid = 'uid'
 
 
-class Columns(gws.Enum):
-    validuser = 'validuser'
-    validpassword = 'validpassword'
-    uid = 'uid'
-    roles = 'roles'
-    displayname = 'displayname'
-    login = 'login'
-
-
 class Object(gws.base.auth.provider.Object):
     db: gws.DatabaseProvider
     authorizationSql: str
     getUserSql: str
 
     def configure(self):
-        self.uid = 'gws.base.auth.providers.sql'
         self.configure_provider()
         self.authorizationSql = self.cfg('authorizationSql')
         self.getUserSql = self.cfg('getUserSql')
@@ -149,9 +138,7 @@ class Object(gws.base.auth.provider.Object):
             return [gws.u.to_dict(r) for r in conn.execute(sa.text(sql), params)]
 
     def _make_user(self, rec: dict, validate: bool) -> gws.User:
-        args = {
-            'attributes': {}
-        }
+        user_rec = {}
 
         valid_user = False
         valid_password = False
@@ -159,22 +146,16 @@ class Object(gws.base.auth.provider.Object):
         for k, v in rec.items():
             lk = k.lower()
 
-            if lk == Columns.validuser:
+            if lk == 'validuser':
                 valid_user = bool(v)
-            elif lk == Columns.validpassword:
+            elif lk == 'validpassword':
                 valid_password = bool(v)
-            elif lk == Columns.uid:
-                args['localUid'] = str(v)
-            elif lk == Columns.roles:
-                args['roles'] = gws.u.to_list(v)
-            elif lk == Columns.displayname:
-                args['displayName'] = v
-            elif lk == Columns.login:
-                args['loginName'] = v
+            elif lk == 'uid':
+                user_rec['localUid'] = str(v)
             else:
-                args['attributes'][k] = v
+                user_rec[k] = v
 
-        if 'localUid' not in args:
+        if 'localUid' not in user_rec:
             raise gws.ForbiddenError('no uid returned')
 
         if validate and not valid_user:
@@ -183,4 +164,4 @@ class Object(gws.base.auth.provider.Object):
         if validate and not valid_password:
             raise gws.ForbiddenError(f'invalid password')
 
-        return gws.base.auth.user.from_args(provider=self, **args)
+        return gws.base.auth.user.from_record(self, user_rec)

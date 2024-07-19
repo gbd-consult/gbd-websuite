@@ -1,4 +1,25 @@
-"""LDAP authorization provider."""
+"""LDAP authorization provider.
+
+Accepts an LDAP URL in the following form::
+
+    ldap://host:port/baseDN?searchAttribute
+
+which is a subset of the rfc2255 schema.
+
+Optionally, a bind dn and a password can be provided. This dn must have search permissions for the directory.
+
+The authorization workflow with the (login, password) credentials is as follows:
+
+- connect to the LDAP server, using the bind dn if provided
+- search for the dn matching ``searchAttribute = credentials.login``
+- attempt to login with that dn and ``credentials.password``
+- iterate the ``users`` configs to determine roles for the user
+
+
+References:
+    https://datatracker.ietf.org/doc/html/rfc2255
+
+"""
 
 from typing import Optional
 
@@ -30,19 +51,19 @@ class Config(gws.base.auth.provider.Config):
     """LDAP authorization provider"""
 
     activeDirectory: bool = True
-    """true if the LDAP server is ActiveDirectory"""
+    """True if the LDAP server is ActiveDirectory."""
     bindDN: Optional[str]
-    """bind DN"""
+    """Bind DN."""
     bindPassword: Optional[str]
-    """bind password"""
+    """Bind password."""
     displayNameFormat: Optional[gws.FormatStr]
-    """format for user's display name"""
+    """Format for user's display name."""
     users: list[UserSpec]
-    """map LDAP filters to gws roles"""
+    """Map LDAP filters to gws roles."""
     timeout: gws.Duration = 30
-    """LDAP server timeout"""
+    """LDAP server timeout."""
     url: str
-    """LDAP server url like "ldap://host:port/baseDN?searchAttribute" """
+    """LDAP server url."""
 
 
 class Object(gws.base.auth.provider.Object):
@@ -52,9 +73,6 @@ class Object(gws.base.auth.provider.Object):
     timeout: int
 
     def configure(self):
-
-        # the URL is a simplified form of https://httpd.apache.org/docs/2.4/mod/mod_authnz_ldap.html#authldapurl
-
         p = gws.lib.net.parse_url(self.cfg('url'))
 
         self.serverUrl = 'ldap://' + p.netloc
@@ -83,23 +101,23 @@ class Object(gws.base.auth.provider.Object):
             if len(users) > 1:
                 raise gws.ForbiddenError(f'multiple entries for {username!r}')
 
-            user_dict = users[0]
+            rec = users[0]
 
             # check for AD disabled accounts
-            uac = str(user_dict.get('userAccountControl', ''))
+            uac = str(rec.get('userAccountControl', ''))
             if uac and uac.isdigit():
                 if int(uac) & _MS_ACCOUNTDISABLE:
                     raise gws.ForbiddenError('ACCOUNTDISABLE flag set')
 
             try:
-                conn.simple_bind_s(user_dict['dn'], password)
+                conn.simple_bind_s(rec['dn'], password)
             except ldap.INVALID_CREDENTIALS:
                 raise gws.ForbiddenError(f'wrong password for {username!r}')
             except ldap.LDAPError as exc:
                 gws.log.exception()
                 raise gws.ForbiddenError(f'LDAP error {exc!r}')
 
-            return self._make_user(conn, user_dict)
+            return self._make_user(conn, rec)
 
     def get_user(self, local_uid):
         with self._connection() as conn:
@@ -109,25 +127,20 @@ class Object(gws.base.auth.provider.Object):
 
     ##
 
-    def _make_user(self, conn, user_dict):
-        display_name = user_dict.get('displayName', '')
-        if not display_name and self.cfg('displayNameFormat'):
-            display_name = gws.u.format_map(self.cfg('displayNameFormat'), user_dict)
+    def _make_user(self, conn, rec):
+        user_rec = dict(rec)
+        user_rec['roles'] = self._roles_for_user(conn, rec)
 
-        login = user_dict.get(self.loginAttribute)
-        roles = self._roles_for_user(conn, user_dict)
+        if not user_rec.get('displayName') and self.cfg('displayNameFormat'):
+            user_rec['displayName'] = gws.u.format_map(self.cfg('displayNameFormat'), rec)
 
-        return gws.base.auth.user.from_args(
-            provider=self,
-            displayName=display_name,
-            localUid=login,
-            loginName=login,
-            roles=roles,
-            attributes=user_dict,
-        )
+        login = user_rec.pop(self.loginAttribute, '')
+        user_rec['localUid'] = user_rec['loginName'] = login
 
-    def _roles_for_user(self, conn, user_dict):
-        user_dn = user_dict['dn']
+        return gws.base.auth.user.from_record(self, user_rec)
+
+    def _roles_for_user(self, conn, rec):
+        user_dn = rec['dn']
         roles = set()
 
         for u in self.cfg('users'):

@@ -1,4 +1,12 @@
-"""Provider for the file-based authorization"""
+"""Provider for the file-based authorization.
+
+This provider works with a local JSON file, which is expected to contain
+a list of user "records" (dicts).
+
+A record is required to contain fields ``login`` and ``password`` (hashed as per `gws.lib.password.encode`).
+
+Other fields, if given, are converted to respective `gws.User` properties.
+"""
 
 import getpass
 
@@ -22,7 +30,6 @@ class Object(gws.base.auth.provider.Object):
     db: list[dict]
 
     def configure(self):
-        self.uid = 'gws.base.auth.providers.file'
         self.path = self.cfg('path')
         self.db = gws.lib.jsonx.from_path(self.path)
 
@@ -57,20 +64,15 @@ class Object(gws.base.auth.provider.Object):
             if rec['login'] == local_uid:
                 return self._make_user(rec)
 
-    def _make_user(self, rec):
-        atts = dict(rec)
-        login = atts.pop('login')
-        _ = atts.pop('password', '')
-        roles = atts.pop('roles', [])
+    def _make_user(self, rec: dict):
+        user_rec = dict(rec)
 
-        return gws.base.auth.user.from_args(
-            provider=self,
-            displayName=atts.pop('name', login),
-            localUid=login,
-            loginName=login,
-            roles=roles,
-            attributes=atts,
-        )
+        login = user_rec.pop('login', '')
+        user_rec['localUid'] = user_rec['loginName'] = login
+        user_rec['displayName'] = user_rec.pop('name', login)
+        user_rec.pop('password', '')
+
+        return gws.base.auth.user.from_record(self, user_rec)
 
     @gws.ext.command.cli('authPassword')
     def passwd(self, p: gws.EmptyRequest):

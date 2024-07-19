@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+@import gws
+@import gws.lib.otp
+
+@code
+    if _ARGS.req.param('generate'):
+        secret = _ARGS.req.param('secret')
+        try:
+            totp = gws.lib.otp.new_totp(secret, gws.u.stime())
+        except Exception as exc:
+            totp = repr(exc)
+        base32 = gws.lib.otp.base32_encode(secret)
+        return gws.Response(totp=totp, base32=base32)
+@end
+
+<html>
+<head>
+    <title>TOTP generator</title>
+    <meta charset="UTF-8"/>
+
+    <script>
+        async function generate() {
+            let res = await window.fetch('?generate=1&secret=' + document.querySelector('#secret_input').value);
+            let js = await res.json();
+            document.querySelector('#totp_output').value = js.totp;
+            document.querySelector('#base32_secret').value = js.base32;
+        }
+        setInterval(generate, 10 * 1000)
+    </script>
+
+    <style>
+        body {
+            font-family: Roboto, Arial, sans-serif;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+        }
+        div {
+            width: 500px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            padding: 20px;
+        }
+        input, button, p {
+            box-sizing: border-box;
+            display: block;
+            width: 100%;
+            margin: 10px 0 20px 0;
+            padding: 10px;
+        }
+        label { font-weight: 600; }
+        button { font-weight: 600; }
+        #totp_output {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: 5px;
+        }
+    </style>
+
+</head>
+
+<body onload="generate()">
+    <div>
+        <label>User secret:</label>
+        <input id="secret_input" value="9876543210" oninput="generate()">
+        <label>Base32 secret:</label>
+        <input id="base32_secret" readonly>
+        <button onclick="generate()">generate TOTP</button>
+        <input id="totp_output" readonly>
+    </div>
+</body>
+</html>

@@ -101,6 +101,7 @@ auth {
     methods+ { type "web" secure true }
     methods+ { type "basic" secure true }
     providers+ { type "file" path "/demos/users.json" }
+    mfa+ { type "totp" uid "AUTH_MFA_TOTP" }
     session { type "sqlite" }
 }
 
@@ -144,6 +145,10 @@ web.sites+ {
         {
             pattern "^/project/([a-z0-9_.-]+)"
             target "/_/webAsset/projectUid/$1/path/project.cx.html"
+        }
+        {
+            pattern "^/asset/([a-z0-9_.-]+)"
+            target "/_/webAsset/path/$1.cx.html"
         }
         {
             pattern "^/$"

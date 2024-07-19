@@ -30,5 +30,15 @@
         "roles": [
             "groupB"
         ]
+    },
+    {
+        "login": "demo_mfa",
+        "name": "Demo User with MFA",
+        "mfaUid": "AUTH_MFA_TOTP",
+        "mfaSecret": "9876543210",
+        "password": "$sha512$3IuG8xQm$Nw-lUcWvTGURG5zkXfCRyptG7uj4GXNqpfT2-d-KnWs-V5ZElKNWOOhjG-0aj6PD5q8Z1fGA8Cx6a84jSEwwGA==",
+        "roles": [
+            "groupB"
+        ]
     }
 ]

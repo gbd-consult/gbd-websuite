@@ -11,6 +11,11 @@ def root():
         auth.providers+ {
             type mockAuthProvider1
         }
+        auth.mfa+ {
+            type mockAuthMfaAdapter1
+            uid "MFA_1"
+            maxVerifyAttempts 3
+        }
         auth.methods+ {
             type web
             secure False
@@ -120,4 +125,63 @@ def test_request_with_expired_cookie_fails(root: gws.Root):
     gws.u.sleep(ttl + 1)
 
     res = _get_project(root, 'one', cookie)
+    assert res.status_code == 403
+
+
+def test_mfa_ok(root: gws.Root):
+    u.mock.add_user('one', 'foo', roles=['role1'], mfaUid='MFA_1')
+
+    res = _login(root, 'one', 'foo')
+    cookie = res.cookies.get('AUTH_COOKIE')
+
+    # no login yet
+    assert _get_project(root, 'one', cookie).status_code == 403
+
+    res = u.http.api(root, 'authMfaVerify', {'payload': {'code': u.mock.AuthMfaAdapter1.VALID_CODE}}, cookies=[cookie])
+    assert res.status_code == 200
+    cookie = res.cookies.get('AUTH_COOKIE')
+
+    # logged in!
+    assert _get_project(root, 'one', cookie).status_code == 200
+
+
+def test_mfa_retry(root: gws.Root):
+    u.mock.add_user('one', 'foo', roles=['role1'], mfaUid='MFA_1')
+
+    res = _login(root, 'one', 'foo')
+    cookie = res.cookies.get('AUTH_COOKIE')
+
+    res = u.http.api(root, 'authMfaVerify', {'payload': {'code': 'BAD_1'}}, cookies=[cookie])
+    assert res.status_code == 200
+    cookie = res.cookies.get('AUTH_COOKIE')
+    assert _get_project(root, 'one', cookie).status_code == 403
+
+    res = u.http.api(root, 'authMfaVerify', {'payload': {'code': 'BAD_2'}}, cookies=[cookie])
+    assert res.status_code == 200
+    cookie = res.cookies.get('AUTH_COOKIE')
+    assert _get_project(root, 'one', cookie).status_code == 403
+
+    res = u.http.api(root, 'authMfaVerify', {'payload': {'code': u.mock.AuthMfaAdapter1.VALID_CODE}}, cookies=[cookie])
+    assert res.status_code == 200
+    cookie = res.cookies.get('AUTH_COOKIE')
+    assert _get_project(root, 'one', cookie).status_code == 200
+
+
+def test_mfa_fail(root: gws.Root):
+    u.mock.add_user('one', 'foo', roles=['role1'], mfaUid='MFA_1')
+
+    res = _login(root, 'one', 'foo')
+    cookie = res.cookies.get('AUTH_COOKIE')
+
+    res = u.http.api(root, 'authMfaVerify', {'payload': {'code': 'BAD_1'}}, cookies=[cookie])
+    assert res.status_code == 200
+    cookie = res.cookies.get('AUTH_COOKIE')
+    assert _get_project(root, 'one', cookie).status_code == 403
+
+    res = u.http.api(root, 'authMfaVerify', {'payload': {'code': 'BAD_2'}}, cookies=[cookie])
+    assert res.status_code == 200
+    cookie = res.cookies.get('AUTH_COOKIE')
+    assert _get_project(root, 'one', cookie).status_code == 403
+
+    res = u.http.api(root, 'authMfaVerify', {'payload': {'code': 'BAD_3'}}, cookies=[cookie])
     assert res.status_code == 403

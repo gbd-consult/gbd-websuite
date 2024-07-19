@@ -4,10 +4,20 @@ import gws
 import gws.lib.jsonx
 
 
-
 class Props(gws.Props):
     displayName: str
     attributes: dict
+
+
+_FIELDS = {
+    'authToken',
+    'displayName',
+    'email',
+    'localUid',
+    'loginName',
+    'mfaSecret',
+    'mfaUid',
+}
 
 
 class User(gws.User):
@@ -16,15 +26,15 @@ class User(gws.User):
     def __init__(self, provider, roles):
         super().__init__()
 
+        self.authProvider = provider
+
         self.attributes = {}
-        self.authToken = ''
-        self.displayName = ''
-        self.localUid = ''
-        self.loginName = ''
+        self.data = {}
+        self.roles = roles
         self.uid = ''
 
-        self.authProvider = provider
-        self.roles = roles
+        for f in _FIELDS:
+            setattr(self, f, '')
 
     def props(self, user):
         return Props(displayName=self.displayName, attributes=self.attributes)
@@ -127,16 +137,17 @@ class AdminUser(User):
 ##
 
 def to_dict(usr) -> dict:
-    return dict(
-        attributes=usr.attributes,
-        authToken=usr.authToken,
-        displayName=usr.displayName,
-        localUid=usr.localUid,
-        loginName=usr.loginName,
-        providerUid=usr.authProvider.uid,
-        roles=list(usr.roles),
-        uid=usr.uid,
-    )
+    d = {}
+
+    d['attributes'] = usr.attributes or {}
+    d['data'] = usr.data or {}
+    d['roles'] = list(usr.roles)
+    d['uid'] = usr.uid
+
+    for f in _FIELDS:
+        d[f] = getattr(usr, f, '')
+
+    return d
 
 
 def from_dict(provider: gws.AuthProvider, d: dict) -> gws.User:
@@ -144,42 +155,72 @@ def from_dict(provider: gws.AuthProvider, d: dict) -> gws.User:
 
     if gws.c.ROLE_GUEST in roles:
         return provider.root.app.authMgr.guestUser
+
     if gws.c.ROLE_ADMIN in roles:
         usr = AdminUser(provider, roles)
     else:
         usr = AuthorizedUser(provider, roles)
 
+    for f in _FIELDS:
+        setattr(usr, f, d.get(f, ''))
+
     usr.attributes = d.get('attributes', {})
-    usr.authToken = d.get('authToken', '')
-    usr.displayName = d.get('displayName', '')
-    usr.localUid = d.get('localUid', '')
-    usr.loginName = d.get('loginName', '')
+    usr.data = d.get('data', {})
+    usr.roles = roles
     usr.uid = gws.u.join_uid(provider.uid, usr.localUid)
 
     return usr
 
 
-def from_args(provider: gws.AuthProvider, **kwargs) -> gws.User:
-    roles = set(kwargs.get('roles', []))
+def from_record(provider: gws.AuthProvider, user_rec: dict) -> gws.User:
+    """Create a User from a raw record as returned from a provider.
+
+    A provider can return an arbitrary dict of values. Entries whose keys are
+    in the `_FIELDS` list (case-insensitively), are copied to the newly
+    created `User` object.
+
+    Entries ``roles`` and ``attributes`` are copied as well,
+    other entries are stored in the user's ``data`` dict.
+    """
+
+    data = dict(user_rec)
+
+    roles = set(data.pop('roles', []))
     roles.add(gws.c.ROLE_ALL)
 
     if gws.c.ROLE_GUEST in roles:
         return provider.root.app.authMgr.guestUser
+
     if gws.c.ROLE_ADMIN in roles:
         usr = AdminUser(provider, roles)
     else:
         roles.add(gws.c.ROLE_USER)
         usr = AuthorizedUser(provider, roles)
 
-    usr.attributes = _process_aliases(dict(kwargs.get('attributes', {})))
-    usr.authToken = kwargs.get('authToken') or ''
-    usr.displayName = kwargs.get('displayName') or kwargs.get('loginName') or ''
-    usr.localUid = kwargs.get('localUid') or kwargs.get('loginName') or ''
-    usr.loginName = kwargs.get('loginName') or ''
-    usr.uid = gws.u.join_uid(provider.uid, usr.localUid)
+    for f in _FIELDS:
+        if f in data:
+            setattr(usr, f, data.pop(f))
+            continue
+        if f.lower() in data:
+            setattr(usr, f, data.pop(f.lower()))
+            continue
 
+    usr.attributes = data.pop('attributes', {})
+    usr.data = _process_aliases(data)
+
+    if not usr.loginName and 'login' in usr.data:
+        usr.loginName = usr.data['login']
+
+    if not usr.email and 'email' in usr.data:
+        usr.email = usr.data['email']
+
+    usr.localUid = usr.localUid or usr.loginName
     if not usr.localUid:
-        raise gws.Error(f'missing local uid for user', kwargs)
+        raise gws.Error(f'missing local uid for user')
+
+    usr.displayName = usr.displayName or usr.loginName
+
+    usr.uid = gws.u.join_uid(provider.uid, usr.localUid)
 
     return usr
 
@@ -198,13 +239,14 @@ _ALIASES = [
 
     # non-standard
     ('login', 'userPrincipalName'),
+    ('mail', 'email'),
 ]
 
 
-def _process_aliases(atts):
+def _process_aliases(r):
     for a, b in _ALIASES:
-        if a in atts:
-            atts[b] = atts[a]
-        elif b in atts:
-            atts[a] = atts[b]
-    return atts
+        if a in r:
+            r[b] = r[a]
+        elif b in r:
+            r[a] = r[b]
+    return r

@@ -16,7 +16,7 @@ class Config(gws.Config):
     """authorization methods"""
     providers: Optional[list[gws.ext.config.authProvider]]
     """authorization providers"""
-    mfa: Optional[list[gws.ext.config.authMfa]]
+    mfa: Optional[list[gws.ext.config.authMultiFactorAdapter]]
     """authorization providers"""
     session: Optional[gws.ext.config.authSessionManager]
     """session options"""
@@ -44,7 +44,7 @@ class Object(gws.AuthManager):
             # if no methods configured, enable the Web method
             self.methods.append(self.create_child(gws.ext.object.authMethod, type='web'))
 
-        self.mfa = self.create_children(gws.ext.object.authMfa, self.cfg('mfa'))
+        self.mfAdapters = self.create_children(gws.ext.object.authMultiFactorAdapter, self.cfg('mfa'))
 
         self.guestSession = session.Object(uid='guest_session', method=None, user=self.guestUser)
 
@@ -98,8 +98,8 @@ class Object(gws.AuthManager):
     def get_method(self, uid=None, ext_type=None):
         return cast(gws.AuthMethod, self.root.get(uid))
 
-    def get_mfa(self, uid=None, ext_type=None):
-        return cast(gws.AuthMfa, self.root.get(uid))
+    def get_mf_adapter(self, uid=None, ext_type=None):
+        return cast(gws.AuthMultiFactorAdapter, self.root.get(uid))
 
     def serialize_user(self, user):
         return gws.lib.jsonx.to_string([user.authProvider.uid, user.authProvider.serialize_user(user)])

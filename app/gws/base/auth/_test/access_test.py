@@ -6,7 +6,7 @@ import gws.test.util as u
 from gws.base.auth import method, provider, user
 
 mock_provider = cast(gws.AuthProvider, gws.Data(uid='mock_provider'))
-mock_user = user.from_args(mock_provider, localUid='mock', roles=['a', 'b'])
+mock_user = user.from_record(mock_provider, dict(localUid='mock', roles=['a', 'b']))
 
 root = u.gws_root()
 
