@@ -2420,25 +2420,35 @@ class Action(Node):
 class User(Object):
     """User object."""
 
+    isGuest: bool
+    """User is a Guest."""
+
     authProvider: 'AuthProvider'
     """User authorization provider."""
 
     attributes: dict
-    """Custom user attributes."""
-    authToken: str
-    """Token used for authorization."""
-    displayName: str
-    """User display name."""
-    isGuest: bool
-    """User is a Guest."""
-    localUid: str
-    """User uid within its authorization provider."""
-    loginName: str
-    """User login name."""
+    """Public user attributes."""
+    data: dict
+    """Private user data."""
     roles: set[str]
     """User roles."""
     uid: str
     """Global user uid."""
+
+    authToken: str
+    """Token used for authorization."""
+    displayName: str
+    """User display name."""
+    email: str
+    """User email."""
+    localUid: str
+    """User uid within its authorization provider."""
+    loginName: str
+    """User login name."""
+    mfaUid: str
+    """MFA adapter uid."""
+    mfaSecret: str
+    """MFA secret."""
 
     def acl_bit(self, access: 'Access', obj: 'Object') -> Optional[int]:
         """Get the ACL bit for a specific object.
@@ -2519,7 +2529,7 @@ class User(Object):
             A Project object.
         """
 
-    def require_layer(self, uid = None) -> 'Layer':
+    def require_layer(self, uid=None) -> 'Layer':
         """Get a readable Layer object.
 
         Args:
@@ -2545,7 +2555,7 @@ class AuthManager(Node):
     """Authentication providers."""
     methods: list['AuthMethod']
     """Authentication methods."""
-    mfa: list['AuthMfa']
+    mfAdapters: list['AuthMultiFactorAdapter']
     """Authentication MFA handlers."""
 
     sessionMgr: 'AuthSessionManager'
@@ -2589,7 +2599,7 @@ class AuthManager(Node):
             A Method or ``None``.
         """
 
-    def get_mfa(self, uid: str) -> Optional['AuthMfa']:
+    def get_mf_adapter(self, uid: str) -> Optional['AuthMultiFactorAdapter']:
         """Get an authentication Provider by its uid.
 
         Args:
@@ -2624,7 +2634,6 @@ class AuthMethod(Node):
 
     authMgr: 'AuthManager'
 
-
     secure: bool
     """Method is only allowed in a secure context."""
 
@@ -2650,23 +2659,53 @@ class AuthMethod(Node):
         """
 
 
-class AuthMfa(Node):
-    """Authentication MFA handler."""
+class AuthMultiFactorState(Enum):
+    open = 'open'
+    ok = 'ok'
+    retry = 'retry'
+    failed = 'failed'
 
-    autoStart: bool
+
+class AuthMultiFactorTransaction(Data):
+    state: AuthMultiFactorState
+    restartCount: int
+    verifyCount: int
+    secret: str
+    startTime: int
+    generateTime: int
+    message: str
+    adapter: 'AuthMultiFactorAdapter'
+    user: 'User'
+
+
+class AuthMultiFactorAdapter(Node):
+    """Multi-factor authentication adapter."""
+
+    message: str
     lifeTime: int
-    maxAttempts: int
     maxRestarts: int
+    maxVerifyAttempts: int
 
-    def start(self, user: 'User'): ...
+    def start(self, user: 'User') -> Optional[AuthMultiFactorTransaction]:
+        """Initialize an MFA transaction for the user."""
 
-    def is_valid(self, user: 'User') -> bool: ...
+    def check_state(self, mfa: AuthMultiFactorTransaction) -> bool:
+        """Check if the MFA transaction is valid."""
 
-    def cancel(self, user: 'User'): ...
+    def verify(self, mfa: AuthMultiFactorTransaction, payload: dict) -> AuthMultiFactorTransaction:
+        """Verify a payload."""
 
-    def verify(self, user: 'User', request: Data) -> bool: ...
+    def check_payload(self, mfa: AuthMultiFactorTransaction, payload: dict) -> bool:
+        """Check if the payload is valid."""
 
-    def restart(self, user: 'User') -> bool: ...
+    def cancel(self, mfa: AuthMultiFactorTransaction):
+        """Cancel the transaction."""
+
+    def check_restart(self, mfa: AuthMultiFactorTransaction) -> bool:
+        """Check if the transaction can be restarted."""
+
+    def restart(self, mfa: AuthMultiFactorTransaction) -> Optional[AuthMultiFactorTransaction]:
+        """Restart the transaction."""
 
 
 class AuthProvider(Node):

@@ -36,7 +36,14 @@ class AuthProvider1(gws.base.auth.provider.Object):
     def get_user(self, local_uid):
         for ud in _USER_DATA.values():
             if ud['localUid'] == local_uid:
-                return gws.base.auth.user.from_args(self, **ud)
+                return gws.base.auth.user.from_record(self, ud)
+
+
+class AuthMfaAdapter1(gws.base.auth.mfa.Object):
+    VALID_CODE = 'yes'
+
+    def check_payload(self, mfa, payload):
+        return payload['code'] == self.VALID_CODE
 
 
 ##
@@ -45,4 +52,5 @@ def register(specs: gws.SpecRuntime):
     specs.register_object(gws.ext.object.authMethod, 'mockAuthMethod1', AuthMethod1)
     specs.register_object(gws.ext.object.authMethod, 'mockAuthMethod2', AuthMethod2)
     specs.register_object(gws.ext.object.authProvider, 'mockAuthProvider1', AuthProvider1)
+    specs.register_object(gws.ext.object.authMultiFactorAdapter, 'mockAuthMfaAdapter1', AuthMfaAdapter1)
     return specs

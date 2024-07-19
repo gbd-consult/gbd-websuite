@@ -35,7 +35,7 @@ TYPES = [
     "action",
     "application",
     "authMethod",
-    "authMfa",
+    "authMultiFactorAdapter",
     "authProvider",
     "authSessionManager",
     "cli",
@@ -70,7 +70,7 @@ class _new:
     def action(self, *args): pass
     def application(self, *args): pass
     def authMethod(self, *args): pass
-    def authMfa(self, *args): pass
+    def authMultiFactorAdapter(self, *args): pass
     def authProvider(self, *args): pass
     def authSessionManager(self, *args): pass
     def cli(self, *args): pass
@@ -100,7 +100,7 @@ class object:
     class action (_classTag): extName = 'gws.ext.object.action'
     class application (_classTag): extName = 'gws.ext.object.application'
     class authMethod (_classTag): extName = 'gws.ext.object.authMethod'
-    class authMfa (_classTag): extName = 'gws.ext.object.authMfa'
+    class authMultiFactorAdapter (_classTag): extName = 'gws.ext.object.authMultiFactorAdapter'
     class authProvider (_classTag): extName = 'gws.ext.object.authProvider'
     class authSessionManager (_classTag): extName = 'gws.ext.object.authSessionManager'
     class cli (_classTag): extName = 'gws.ext.object.cli'
@@ -127,7 +127,7 @@ class config:
     class action (_classTag): extName = 'gws.ext.config.action'
     class application (_classTag): extName = 'gws.ext.config.application'
     class authMethod (_classTag): extName = 'gws.ext.config.authMethod'
-    class authMfa (_classTag): extName = 'gws.ext.config.authMfa'
+    class authMultiFactorAdapter (_classTag): extName = 'gws.ext.config.authMultiFactorAdapter'
     class authProvider (_classTag): extName = 'gws.ext.config.authProvider'
     class authSessionManager (_classTag): extName = 'gws.ext.config.authSessionManager'
     class cli (_classTag): extName = 'gws.ext.config.cli'
@@ -154,7 +154,7 @@ class props:
     class action (_classTag): extName = 'gws.ext.props.action'
     class application (_classTag): extName = 'gws.ext.props.application'
     class authMethod (_classTag): extName = 'gws.ext.props.authMethod'
-    class authMfa (_classTag): extName = 'gws.ext.props.authMfa'
+    class authMultiFactorAdapter (_classTag): extName = 'gws.ext.props.authMultiFactorAdapter'
     class authProvider (_classTag): extName = 'gws.ext.props.authProvider'
     class authSessionManager (_classTag): extName = 'gws.ext.props.authSessionManager'
     class cli (_classTag): extName = 'gws.ext.props.cli'

@@ -1,7 +1,7 @@
 action
 application
 authMethod
-authMfa
+authMultiFactorAdapter
 authProvider
 authSessionManager
 cli
