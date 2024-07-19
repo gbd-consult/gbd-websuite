@@ -1,3 +1,10 @@
+## Version 8.1.9
+
+- multi-factor authentication
+- user attributes are no longer published by default
+- removed hardcoded UIDs for authentication providers
+- client sidebar is now resizable
+
 ## Version 8.1.8
 
 - multi-image builds
