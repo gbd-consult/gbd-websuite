@@ -26,7 +26,8 @@ def javascript(root: gws.Root, category: str, locale: gws.Locale) -> str:
 def css(root: gws.Root, category: str, theme: str):
     if category == 'app':
         bundles = _load_app_bundles(root)
-        return bundles.get(BUNDLE_KEY_CSS + '_' + theme) or bundles.get(BUNDLE_KEY_CSS + '_' + DEFAULT_THEME)
+        theme = theme or DEFAULT_THEME
+        return bundles.get(BUNDLE_KEY_CSS + '_' + theme)
     return ''
 
 

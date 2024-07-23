@@ -117,28 +117,36 @@ class Object(gws.base.action.Object):
     def sys_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
         locale = gws.lib.intl.locale(p.localeUid, self.root.app.localeUids)
 
-        # eg. '8.0.0.light.css, 8.0.0.vendor.js etc
+        # only accept '8.0.0.vendor.js' etc or simply 'vendor.js'
+        path = p.path
+        if path.startswith(self.root.app.version):
+            path = path[len(self.root.app.version) + 1:]
 
-        if p.path.endswith('vendor.js'):
+        if path == 'vendor.js':
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
                 content=gws.base.client.bundles.javascript(self.root, 'vendor', locale))
 
-        if p.path.endswith('util.js'):
+        if path == 'util.js':
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
                 content=gws.base.client.bundles.javascript(self.root, 'util', locale))
 
-        if p.path.endswith('app.js'):
+        if path == 'app.js':
             return gws.ContentResponse(
                 mime=gws.lib.mime.JS,
                 content=gws.base.client.bundles.javascript(self.root, 'app', locale))
 
-        if p.path.endswith('.css'):
-            theme = p.path.split('.')[-2]
-            return gws.ContentResponse(
-                mime=gws.lib.mime.CSS,
-                content=gws.base.client.bundles.css(self.root, 'app', theme))
+        if path.endswith('.css'):
+            s = path.split('.')
+            if len(s) != 2:
+                raise gws.NotFoundError(f'invalid css request: {p.path=}')
+            content = gws.base.client.bundles.css(self.root, 'app', s[0])
+            if not content:
+                raise gws.NotFoundError(f'invalid css request: {p.path=}')
+            return gws.ContentResponse(mime=gws.lib.mime.CSS, content=content)
+
+        raise gws.NotFoundError(f'invalid system asset: {p.path=}')
 
     def _serve_path(self, req: gws.WebRequester, p: AssetRequest):
         req_path = str(p.get('path') or '')
