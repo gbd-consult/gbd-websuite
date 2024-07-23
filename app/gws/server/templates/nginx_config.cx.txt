@@ -7,9 +7,7 @@
     @let LOG_LEVEL = 'debug'
 @end
 
-@let SSL_CRT = root.app.cfg('web.ssl.crt')
-@let SSL_KEY = root.app.cfg('web.ssl.key')
-@let SSL_HSTS = root.app.cfg('web.ssl.hsts')
+@let SITE = root.app.webMgr.sites[0]
 
 @let UWSGI_PARAMS
     uwsgi_param QUERY_STRING $query_string;
@@ -41,6 +39,47 @@
     @# gzip_comp_level 6;
     @# gzip_buffers 16 8k;
     @# gzip_http_version 1.1;
+@end
+
+@let CORS
+    @with SITE.corsOptions as c
+        @with c.allowOrigin as h
+            add_header Access-Control-Allow-Origin "{h}";
+        @end
+
+        @with c.allowCredentials
+            add_header Access-Control-Allow-Credentials "true";
+        @end
+
+        @with c.allowHeaders as h
+            add_header Access-Control-Allow-Headers "{h}";
+        @end
+
+        @with c.allowMethods as h
+            add_header Access-Control-Allow-Methods "{h}";
+        @else
+            add_header Access-Control-Allow-Methods "POST, OPTIONS";
+        @end
+    @end
+@end
+
+@let SECURITY
+    @# https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+    @with SITE.contentSecurityPolicy as h
+        add_header Content-Security-Policy "{h}" always;
+    @end
+
+    @# https://developer.mozilla.org/en-US/docs/Web/HTTP/Permissions_Policy
+    @with SITE.permissionsPolicy as h
+        add_header Permissions-Policy "{h}" always;
+    @end
+
+    @# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    @# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+    add_header X-Content-Type-Options "nosniff" always;
+    @# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+    add_header X-Frame-Options "SAMEORIGIN" always;
 @end
 
 @let WEB
@@ -86,6 +125,15 @@
     }
 @end
 
+@let NO_TOKENS
+    server_tokens off;
+    more_set_headers 'Server: ';
+@end
+
+@#
+
+load_module modules/ngx_http_headers_more_filter_module.so;
+
 worker_processes auto;
 pid {nginxPid};
 user {userName} {groupName};
@@ -126,11 +174,15 @@ http {
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
     ssl_prefer_server_ciphers on;
 
+    @let SSL_CRT = root.app.cfg('web.ssl.crt')
+    @let SSL_KEY = root.app.cfg('web.ssl.key')
+
     @if SSL_CRT
         server {
             listen 80 default_server;
-            server_name gws;
-            return 301 https://$host$request_uri;
+            return 444;
+
+            {NO_TOKENS}
         }
 
         server {
@@ -140,11 +192,14 @@ http {
             ssl_certificate     {SSL_CRT};
             ssl_certificate_key {SSL_KEY};
 
-            @if SSL_HSTS
-                add_header Strict-Transport-Security "max-age={SSL_HSTS}; includeSubdomains";
+            @# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+            @with root.app.cfg('web.ssl.hsts') as hsts
+                add_header Strict-Transport-Security "max-age={hsts}; includeSubdomains";
             @end
 
             {GZIP}
+            {SECURITY}
+            {NO_TOKENS}
             {WEB}
         }
     @else
@@ -153,6 +208,8 @@ http {
             server_name gws;
 
             {GZIP}
+            {SECURITY}
+            {NO_TOKENS}
             {WEB}
         }
     @end

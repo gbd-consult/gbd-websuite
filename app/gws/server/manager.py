@@ -18,6 +18,7 @@ from typing import cast
 import grp
 import os
 import pwd
+import re
 
 import gws
 import gws.base.web
@@ -130,21 +131,36 @@ class Object(gws.ServerManager):
             path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_spool.ini', args)
             commands.append(f'uwsgi --ini {path}')
 
-        path = self._create_config('server.nginx_config', f'{target_dir}/nginx.conf', args)
+        path = self._create_config('server.nginx_config', f'{target_dir}/nginx.conf', args, True)
         commands.append(f'exec nginx -c {path}')
 
         gws.u.write_file(script_path, '\n'.join(commands) + '\n')
 
-    def _create_config(self, subject: str, path: str, args: TemplateArgs) -> str:
+    def _create_config(self, subject: str, path: str, args: TemplateArgs, is_nginx=False) -> str:
         tpl = self.root.app.templateMgr.find_template(subject, where=[self])
         res = tpl.render(gws.TemplateRenderInput(args=args))
 
-        lines = []
-        for s in str(res.content).strip().split('\n'):
-            s = s.strip()
-            if s:
-                lines.append(s)
-        text = '\n'.join(lines) + '\n'
+        text = str(res.content)
+        if is_nginx:
+            text = re.sub(r'\s*{\s*', ' {\n', text)
+            text = re.sub(r'\s*}\s*', '\n}\n', text)
 
+        lines = []
+        indent = 0
+
+        for line in text.split('\n'):
+            line = re.sub(r'\s+', ' ', line.strip())
+            if not line:
+                continue
+            if is_nginx:
+                if line == '}':
+                    indent -= 1
+                lines.append((' ' * (indent * 4)) + line)
+                if '{' in line:
+                    indent += 1
+            else:
+                lines.append(line)
+
+        text = '\n'.join(lines) + '\n'
         gws.u.write_file(path, text)
         return path

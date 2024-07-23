@@ -41,6 +41,8 @@ class SSLConfig(gws.Config):
     """Crt bundle location."""
     key: gws.FilePath
     """Key file location."""
+    hsts: gws.Duration = "1y"
+    """HSTS max age."""
 
 
 class WebDocumentRootConfig(gws.Config):
@@ -61,6 +63,10 @@ class Config(gws.Config):
     """Root directory for assets."""
     cors: Optional[CorsConfig]
     """Cors configuration."""
+    contentSecurityPolicy: str = "default-src 'self'; img-src * data: blob:"
+    """Content Security Policy for this site."""
+    permissionsPolicy: str = "geolocation=(self), camera=(), microphone=()"
+    """Content Security Policy for this site."""
     errorPage: Optional[gws.ext.config.template]
     """Error page template."""
     host: str = '*'
@@ -76,6 +82,8 @@ class Config(gws.Config):
 class Object(gws.WebSite):
     canonicalHost: str
     ssl: bool
+    contentSecurityPolicy: str
+    permissionsPolicy: str
 
     def configure(self):
 
@@ -97,6 +105,9 @@ class Object(gws.WebSite):
 
         self.errorPage = self.create_child_if_configured(gws.ext.object.template, self.cfg('errorPage'))
         self.corsOptions = self.cfg('cors')
+
+        self.contentSecurityPolicy = self.cfg('contentSecurityPolicy')
+        self.permissionsPolicy = self.cfg('permissionsPolicy')
 
     def url_for(self, req, path, **params):
         if gws.lib.net.is_abs_url(path):
