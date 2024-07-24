@@ -47,18 +47,28 @@ def text_table(data, header=None, delim=' | '):
     if not data:
         return ''
 
+    is_dict = isinstance(data[0], dict)
+
     print_header = header is not None
     if header is None or header == 'auto':
-        header = sorted(data[0].keys())
+        header = data[0].keys() if is_dict else list(range(len(data[0])))
 
     widths = [len(h) if print_header else 1 for h in header]
+
+    def get(d, h):
+        if is_dict:
+            return d.get(h, '')
+        try:
+            return d[h]
+        except IndexError:
+            return ''
 
     for d in data:
         widths = [
             max(a, b)
             for a, b in zip(
                 widths,
-                [len(str(d.get(h, ''))) for h in header]
+                [len(str(get(d, h))) for h in header]
             )
         ]
 
@@ -75,6 +85,6 @@ def text_table(data, header=None, delim=' | '):
         rows.append('-' * len(hdr))
 
     for d in data:
-        rows.append(delim.join(field(n, d.get(h, '')) for n, h in enumerate(header)))
+        rows.append(delim.join(field(n, get(d, h)) for n, h in enumerate(header)))
 
     return '\n'.join(rows)
