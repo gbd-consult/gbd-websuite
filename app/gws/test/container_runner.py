@@ -39,6 +39,9 @@ Pytest options:
 
 
 def main(args):
+    version = cli.read_file(gws.c.APP_DIR + '/VERSION')
+    cli.info(f'GWS version {version}')
+
     gws.u.ensure_system_dirs()
 
     base = args.get('base') or args.get('b') or gws.env.GWS_TEST_DIR
