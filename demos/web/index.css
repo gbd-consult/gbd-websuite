@@ -123,9 +123,6 @@ body {
 .project-list-entry a.frame-link {
     flex: 1
 }
-.project-list-entry .material-symbols-rounded {
-    font-size: 15px;
-}
 
 #project-details {
     position: fixed;
@@ -273,4 +270,31 @@ mark {
 mark.selected {
     background: #ff8100;
 
+}
+
+.material-symbols-rounded {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.material-symbols-rounded.open_in_new {
+    background-image: url('/icons/open_in_new.svg')
+}
+.material-symbols-rounded.home {
+    background-image: url('/icons/home.svg')
+}
+.material-symbols-rounded.arrow_circle_down {
+    background-image: url('/icons/arrow_circle_down.svg')
+}
+.material-symbols-rounded.arrow_circle_up {
+    background-image: url('/icons/arrow_circle_up.svg')
+}
+.material-symbols-rounded.smartphone {
+    background-image: url('/icons/smartphone.svg')
+}
+.material-symbols-rounded.person {
+    background-image: url('/icons/person.svg')
 }
