@@ -1,4 +1,4 @@
-"""Docker builder for GWS and QGIS images."""
+"""Docker builder for GWS images."""
 
 import os
 import sys
@@ -91,11 +91,7 @@ class Base:
 
         self.app_version = cli.read_file(f'{self.gws_dir}/app/VERSION')
         self.app_short_version = self.app_version.rpartition('.')[0]
-
         self.app_image_name = args.get('name') or f'{self.vendor}/gws-{self.arch}:{self.app_version}'
-
-        self.base_version = cli.read_file(f'{self.this_dir}/BASE_VERSION')
-        self.base_image_name = f'{self.vendor}/gws-base-{self.arch}:{self.base_version}'
 
         self.datadir = args.get('datadir') or f'{self.gws_dir}/data'
         self.context_dir = f'{self.build_dir}/{self.app_version}_{self.arch}'
@@ -129,7 +125,7 @@ class Builder(Base):
             cli.info(f'build prepared in {self.context_dir!r}')
             return 0
 
-        if self.cmd == 'app':
+        if self.cmd == 'build':
             self.build_image(self.app_image_name)
 
             if self.args.get('push'):
@@ -310,8 +306,8 @@ class Scanner(Base):
 
         cmd = f'''
             docker run
-            --volume {cache_path}:/root/.cache/
-            --volume /var/run/docker.sock:/var/run/docker.sock
+            --mount type=bind,src={cache_path},dst=/root/.cache/
+            --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
             {self.TRIVY_IMAGE}
             image
             --format {report_format}
@@ -335,7 +331,7 @@ class Scanner(Base):
 
 def main(args):
     cmd = args.get(1)
-    if cmd in {'prepare', 'app', 'base'}:
+    if cmd in {'prepare', 'build'}:
         return Builder(cmd, args).main()
     if cmd in {'scan', 'sbom'}:
         return Scanner(cmd, args).main()
