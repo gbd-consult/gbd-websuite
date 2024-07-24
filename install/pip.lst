@@ -4,7 +4,7 @@ Babel==2.14.*
 GeoAlchemy2==0.*
 MapProxy==1.*
 pendulum==3.*
-Pillow==9.*
+Pillow==10.*
 psutil==5.*
 psycopg2-binary==2.*
 pycountry==22.*
@@ -17,7 +17,7 @@ shapely==2.*
 SQLAlchemy==2.*
 # NB something is broken in 2.0.25
 uWSGI==2.0.23
-Werkzeug==2.*
+Werkzeug==3.*
 
 # testing
 
@@ -35,5 +35,5 @@ Pygments==2.*
 mistune==2.*
 
 # NB see https://github.com/lepture/python-livereload/issues/270
-tornado==6.2
-livereload==2.6.3
+tornado==6.*
+livereload==2.*
