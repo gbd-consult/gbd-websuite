@@ -148,6 +148,7 @@ class DateFormatter(gws.DateFormatter):
         self.iso = _FnStr(self.format, gws.DateTimeFormat.iso)
 
     def format(self, fmt: gws.DateTimeFormat, date=None):
+        date = date or gws.lib.datetimex.now()
         d = gws.lib.datetimex.parse(date)
         if not d:
             raise gws.Error(f'invalid {date=}')
@@ -165,6 +166,7 @@ class TimeFormatter(gws.TimeFormatter):
         self.iso = _FnStr(self.format, gws.DateTimeFormat.iso)
 
     def format(self, fmt: gws.DateTimeFormat, date=None) -> str:
+        date = date or gws.lib.datetimex.now()
         d = gws.lib.datetimex.parse(date) or gws.lib.datetimex.parse_time(date)
         if not d:
             raise gws.Error(f'invalid {date=}')

@@ -41,7 +41,7 @@ class SSLConfig(gws.Config):
     """Crt bundle location."""
     key: gws.FilePath
     """Key file location."""
-    hsts: gws.Duration = "1y"
+    hsts: gws.Duration = "365d"
     """HSTS max age."""
 
 
