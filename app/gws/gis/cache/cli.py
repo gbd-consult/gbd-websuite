@@ -5,7 +5,7 @@ from typing import Optional
 import gws
 import gws.base.action
 import gws.lib.uom
-import gws.lib.console
+import gws.lib.cli as cli
 import gws.config
 
 from . import core
@@ -40,18 +40,17 @@ class Object(gws.Node):
         status = core.status(root, gws.u.to_list(p.layer))
 
         for e in status.entries:
-            print()
-            print('=' * 80)
-            print()
+            cli.info('')
+            cli.info('=' * 80)
 
-            print('CACHE  :', e.uid)
-            print('DIR    :', e.dirname)
+            cli.info(f'CACHE  {e.uid}')
+            cli.info(f'DIR    {e.dirname}')
 
             ls = []
             for la in e.layers:
                 title = gws.u.get(la, 'title', '?')
                 ls.append(f'{la.uid}: {title!r} type={la.extType}')
-            print(f'LAYER  :', ', '.join(ls))
+            cli.info(f'LAYER  : {_comma(ls)}')
 
             table = []
 
@@ -64,18 +63,15 @@ class Object(gws.Node):
                     'cached': g.cachedTiles,
                     '%%': int(100 * (g.cachedTiles / g.totalTiles)),
                 })
-            print()
-            print(gws.lib.console.text_table(table, ['level', 'scale', 'grid', 'total', 'cached', '%%']))
+            cli.info('')
+            cli.info(cli.text_table(table, ['level', 'scale', 'grid', 'total', 'cached', '%%']))
 
         if status.staleDirs:
-            print()
-            print('=' * 80)
-            print()
-            print(f'{len(status.staleDirs)} STALE CACHES ("gws cache cleanup" to remove):')
+            cli.info('')
+            cli.info('=' * 80)
+            cli.info(f'{len(status.staleDirs)} STALE CACHES ("gws cache cleanup" to remove):')
             for d in status.staleDirs:
-                print(f'    {d}')
-
-        print()
+                cli.info(f'    {d}')
 
     @gws.ext.command.cli('cacheCleanup')
     def do_cleanup(self, p: gws.CliParams):
@@ -90,6 +86,9 @@ class Object(gws.Node):
 
         root = gws.config.loader.load()
         core.drop(root, gws.u.to_list(p.layer))
+
+
+_comma = ','.join
 
 #
 # _SEED_LOCKFILE = gws.c.CONFIG_DIR + '/mapproxy.seed.lock'
@@ -108,7 +107,7 @@ class Object(gws.Node):
 #     st = gws.gis.cache.status(root, layers)
 #
 #     if not st:
-#         print('no cached layers found')
+#         cli.info('no cached layers found')
 #         return
 #
 #     if levels:
@@ -116,17 +115,17 @@ class Object(gws.Node):
 #
 #     with gws.lib.misc.lock(_SEED_LOCKFILE) as ok:
 #         if not ok:
-#             print('seed already running')
+#             cli.info('seed already running')
 #             return
 #
 #         max_time = root.app.cfg('seeding.maxTime')
 #         concurrency = root.app.cfg('seeding.concurrency')
 #         ts = time.time()
 #
-#         print(f'\nSTART SEEDING (maxTime={max_time} concurrency={concurrency}), ^C ANYTIME TO CANCEL...\n')
+#         cli.info(f'\nSTART SEEDING (maxTime={max_time} concurrency={concurrency}), ^C ANYTIME TO CANCEL...\n')
 #         done = gws.gis.cache.seed(root, layers, max_time, concurrency, levels)
-#         print('=' * 40)
-#         print('TIME: %.1f sec' % (time.time() - ts))
-#         print(f'SEEDING COMPLETE' if done else 'SEEDING INCOMPLETE, PLEASE TRY AGAIN')
+#         cli.info('=' * 40)
+#         cli.info('TIME: %.1f sec' % (time.time() - ts))
+#         cli.info(f'SEEDING COMPLETE' if done else 'SEEDING INCOMPLETE, PLEASE TRY AGAIN')
 #
 #

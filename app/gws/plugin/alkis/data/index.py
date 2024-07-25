@@ -12,7 +12,7 @@ import gws.config.util
 import gws.gis.crs
 import gws.plugin.postgres.provider
 import gws.lib.sa as sa
-from gws.lib.console import ProgressIndicator
+from gws.lib.cli import ProgressIndicator
 
 
 from . import types as dt

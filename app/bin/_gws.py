@@ -42,11 +42,11 @@ def main2(args):
     cmd2 = args.pop(2, '')
 
     if not cmd1:
-        print_usage(specs, None, None)
+        print_usage(specs, None)
         return 0
 
     if args.pop('h', None) or args.pop('help', None):
-        print_usage(specs, cmd1, cmd2)
+        print_usage(specs, cmd1)
         return 0
 
     if not cmd2 or args.get(3):
@@ -80,7 +80,7 @@ def main2(args):
     return 0
 
 
-def print_usage(specs, cmd1, cmd2):
+def print_usage(specs, cmd1):
     tab = ' ' * 4
     me = 'gws'
 
@@ -88,23 +88,14 @@ def print_usage(specs, cmd1, cmd2):
         s = f'GWS version {specs.version}'
         cli.info('\n' + s + '\n' + ('~' * len(s)) + '\n')
 
-    def columns(lines, align='<'):
-        col1, col2 = zip(*lines)
-        maxlen = max(len(a) for a in col1)
-        return '\n'.join(f'{a:{align}{maxlen}s}{b}' for a, b in zip(col1, col2))
-
-    def options(cmd):
-        opts = []
-        for a in cmd.args:
-            if not a.hasDefault:
-                opts.append([f'{tab}{tab}-{a.name}', f'{tab}<{a.doc}> (required)'])
-        for a in cmd.args:
-            if a.hasDefault:
-                opts.append([f'{tab}{tab}-{a.name}', f'{tab}<{a.doc}>'])
-        if opts:
-            cli.info(f'{tab}Options:')
-            cli.info(columns(opts, align='<'))
-            cli.info('')
+    def type_name(t):
+        if t == 'bool':
+            return ''
+        if ',' in t:
+            t = t.split(',')
+            if t[0] == 'LIST':
+                return '<' + t[1] + ',' + t[1] + '...>'
+        return '<' + t + '>'
 
     banner()
 
@@ -112,15 +103,28 @@ def print_usage(specs, cmd1, cmd2):
 
     # gws -h
     if not cmd1 or all(c.cmd1 != cmd1 for c in cs):
-        cli.info(columns([f'{tab}{me} {c.cmd1} {c.cmd2}', ' - ' + c.doc] for c in cs))
+        rows = [
+            [f'{me} {c.cmd1} {c.cmd2}', f'- {c.doc}']
+            for c in cs
+        ]
+        cli.info(cli.text_table(rows, delim=tab))
         cli.info(f'\nTry "{me} <command> -h" for more info.\n')
         return
 
     # gws command -h
     for c in cs:
         if c.cmd1 == cmd1:
-            cli.info(f'{me} {c.cmd1} {c.cmd2} - {c.doc}\n')
-            options(c)
+            cli.info(f'{me} {c.cmd1} {c.cmd2}')
+            cli.info(f'{tab}{c.doc}')
+
+            opts = []
+            for a in c.args:
+                doc = a.doc + ('' if a.hasDefault else ' (required)')
+                opts.append([f'{tab}', f'-{a.name}', f'{type_name(a.type)}', f'- {doc}'])
+            if opts:
+                cli.info(f'{tab}Options:')
+                cli.info(cli.text_table(opts, delim=tab))
+            cli.info('')
 
 
 def camelize(p):

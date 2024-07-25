@@ -9,7 +9,6 @@ import json
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../app'))
 
 import gws.lib.cli as cli
-import gws.lib.console
 
 USAGE = """
 GWS Image Builder
@@ -286,13 +285,37 @@ class Scanner(Base):
                 ])
 
         rows.sort()
-        text = gws.lib.console.text_table([r[1:] for r in rows])
-        self.write(text)
-        return 0
+
+        text = cli.text_table([r[1:] for r in rows]) + '\n'
+
+        path = self.args.get('out')
+        if path:
+            cli.write_file(path, text)
+            return 0
+
+        cli.info('')
+        cli.info(f'CVE REPORT FOR {self.app_image_name}')
+        cli.info('')
+
+        for ln in text.split('\n'):
+            if ln.startswith('MEDIUM'):
+                cli.warning(ln)
+            elif ln.startswith('LOW'):
+                cli.info(ln)
+            else:
+                cli.error(ln)
+
+        return
 
     def do_sbom(self):
         text = self.run_trivy(self.app_image_name, 'spdx-json')
-        self.write(text)
+
+        path = self.args.get('out')
+        if path:
+            cli.write_file(path, text)
+            return 0
+
+        print(text)
         return 0
 
     def run_trivy(self, image_name, report_format):
@@ -318,13 +341,6 @@ class Scanner(Base):
         cli.run(cmd)
 
         return cli.read_file(out)
-
-    def write(self, text):
-        path = self.args.get('out')
-        if path:
-            cli.write_file(path, text)
-        else:
-            print(f'\n{text}\n')
 
 
 ###

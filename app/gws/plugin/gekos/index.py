@@ -12,7 +12,6 @@ import gws.gis.crs
 import gws.lib.xmlx
 import gws.lib.net
 import gws.lib.sa as sa
-from gws.lib.console import ProgressIndicator
 
 
 """

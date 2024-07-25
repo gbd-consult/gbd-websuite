@@ -9,7 +9,7 @@ import shapely.wkb
 
 import gws
 import gws.lib.osx
-from gws.lib.console import ProgressIndicator
+from gws.lib.cli import ProgressIndicator
 import gws.plugin.postgres.provider
 
 

@@ -200,6 +200,7 @@ class Object(gws.SpecRuntime):
                     prop_typ = self.get_type(prop_type_uid)
                     args.append(gws.Data(
                         name=name,
+                        type=prop_typ.tValue,
                         doc=strings.get(prop_type_uid) or self.strings['en'].get(prop_type_uid) or '',
                         defaultValue=prop_typ.defaultValue,
                         hasDefault=prop_typ.hasDefault,
