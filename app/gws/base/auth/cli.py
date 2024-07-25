@@ -2,119 +2,75 @@ from typing import Optional, cast
 
 import gws
 import gws.config
-import gws.lib.console
-import gws.lib.datetimex
+import gws.lib.datetimex as dtx
+import gws.lib.cli as cli
 
 from . import manager
 
 gws.ext.new.cli('auth')
 
 
+class RemoveParams(gws.CliParams):
+    older: Optional[int]
+    """Remove sessions older than N seconds."""
+    uid: Optional[list[str]]
+    """Remove specific sessions."""
+    all: Optional[bool]
+    """Remove all sessions."""
+
+
 class Object(gws.Node):
 
     @gws.ext.command.cli('authSessions')
     def sessions(self, p: gws.EmptyRequest):
-        """Print currently active sessions"""
+        """Show active authorization sessions"""
 
         root = gws.config.load()
-        auth = cast(manager.Object, root.app.auth)
+        sm = root.app.authMgr.sessionMgr
 
-        rs = [{
-            'user': r['user_uid'],
-            'login': gws.lib.datetimex.to_iso_string(gws.lib.datetimex.from_timestamp(r['created'], tz='local')),
-            'activity': gws.lib.datetimex.to_iso_string(gws.lib.datetimex.from_timestamp(r['updated'], tz='local')),
-            'duration': r['updated'] - r['created']
-        } for r in auth.stored_session_records()]
+        rows = []
 
-        print(f'{len(rs)} active sessions\n')
-        print(gws.lib.console.text_table(rs, header=('user', 'login', 'activity', 'duration')))
-        print('\n')
+        for s in sm.get_all():
+            dc = dtx.total_difference(s.created).seconds
+            du = dtx.total_difference(s.updated).seconds
+            rows.append((du, dict(
+                uid=s.uid,
+                user=s.user.loginName,
+                auth=s.method.extType,
+                started=dtx.to_iso_string(s.created, sep=' ') + f' ({dc} sec)',
+                updated=dtx.to_iso_string(s.updated, sep=' ') + f' ({du} sec)',
+            )))
 
-# class Object(gws.Node):
-#
-#     @gws.ext.command()
-#     def test(self, login=None, password=None):
-#         pass
-#
-# import getpass
-#
-# from argh import arg
-#
-# import gws.base.auth
-# import gws.base.auth.session
-# import gws.config.loader
-# import gws.lib.clihelpers
-# import gws.lib.datetimex as dt
-# import gws.lib.password
-#
-# COMMAND = 'auth'
-#
-#
-# @arg('--login', help='login')
-# @arg('--password', help='password')
-# def test(login=None, password=None):
-#     """Interactively test a login"""
-#
-#     login = login or input('Username: ')
-#     password = password or getpass.getpass('Password: ')
-#
-#     auth = gws.config.loader.load().application.auth
-#
-#     try:
-#         user = auth.authenticate(auth.get_method('web'), login, password)
-#     except gws.base.auth.error.WrongPassword:
-#         print('wrong password!')
-#         return
-#
-#     if user is None:
-#         print('login not found!')
-#         return
-#
-#     print('logged in!')
-#     print(f'User display name: {user.displayName}')
-#     print(f'Roles: {user.roles}')
-#
-#
-# @arg('--path', help='where to store the password')
-# def passwd(path=None):
-#     """Encode a password for the authorization file"""
-#
-#     while True:
-#         p1 = getpass.getpass('Password: ')
-#         p2 = getpass.getpass('Repeat  : ')
-#
-#         if p1 != p2:
-#             print('passwords do not match')
-#             continue
-#
-#         p = gws.lib.password.encode(p1)
-#         if path:
-#             with open(path, 'wt') as fp:
-#                 fp.write(p + '\n')
-#         else:
-#             print(p)
-#         break
-#
-#
-# def clear():
-#     """Logout all users and remove all active sessions"""
-#
-#     auth = gws.config.loader.load().application.auth
-#     auth.delete_stored_sessions()
-#
-#
-# def sessions():
-#     """Print currently active sessions"""
-#
-#     auth = gws.config.loader.load().application.auth
-#
-#     rs = [{
-#         'user': r['user_uid'],
-#         'login': dt.to_iso_local_string(dt.from_timestamp(r['created'])),
-#         'activity': dt.to_iso_local_string(dt.from_timestamp(r['updated'])),
-#         'duration': r['updated'] - r['created']
-#     } for r in auth.stored_session_records()]
-#
-#     print(f'{len(rs)} active sessions\n')
-#     print(gws.lib.clihelpers.text_table(rs, header=('user', 'login', 'activity', 'duration')))
-#     print('\n')
+        # oldest first
+        rows.sort(key=lambda r: -r[0])
+
+        cli.info('')
+        cli.info(f'Active sessions: {len(rows)}')
+        cli.info(cli.text_table([r[1] for r in rows], header='auto'))
+
+    @gws.ext.command.cli('authSessrem')
+    def sessrem(self, p: RemoveParams):
+        """Remove authorization sessions."""
+
+        root = gws.config.load()
+        sm = root.app.authMgr.sessionMgr
+
+        n = 0
+
+        for s in sm.get_all():
+            du = dtx.total_difference(s.updated).seconds
+            if p.all:
+                sm.delete(s)
+                n += 1
+                continue
+            if p.older and du > p.older:
+                sm.delete(s)
+                n += 1
+                continue
+            if p.uid and s.uid in p.uid:
+                sm.delete(s)
+                n += 1
+                continue
+
+        cli.info('')
+        cli.info(f'Removed sessions: {n}')
