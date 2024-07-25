@@ -197,4 +197,14 @@ function onLoad() {
         evt.preventDefault();
     });
 
+    $('#button-login-submit').addEventListener('click', evt => {
+        gwsLogin()
+        evt.preventDefault();
+    });
+
+    $('#button-logout-submit').addEventListener('click', evt => {
+        gwsLogout()
+        evt.preventDefault();
+    });
+
 }
