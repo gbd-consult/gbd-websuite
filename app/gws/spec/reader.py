@@ -105,6 +105,8 @@ def _read_float(r: Reader, val, typ: core.Type):
 
 
 def _read_int(r: Reader, val, typ: core.Type):
+    if isinstance(val, bool):
+        raise core.ReadError('must be an integer', val)
     if not r.convert_values:
         return _ensure(val, int)
     try:
