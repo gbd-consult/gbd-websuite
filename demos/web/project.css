@@ -189,3 +189,9 @@ h6 {
     stroke: rgb(6, 92, 185);
     stroke-width: 1px;
 }
+
+.edit_wasser {
+    fill: rgba(95, 126, 227, 0.44);
+    stroke: rgb(26, 82, 141);
+    stroke-width: 4px;
+}

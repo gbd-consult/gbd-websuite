@@ -1,0 +1,43 @@
+uid "edit_multipolygon"
+
+title "PostgreSQL Daten mit Multi-Polygon Geometrien"
+
+metadata.keywords [ "Editieren" "PostgreSQL" ]
+
+metadata.abstract """
+"""
+
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "Wasser"
+    type "postgres"
+    tableName "edit.water"
+    cssSelector ".edit_wasser"
+    models+ {
+        type "postgres"
+        isEditable true
+        permissions.edit 'allow all'
+    }
+    templates+ {
+        subject "feature.title"
+        type "text"
+        text "{{name}}"
+    }
+    templates+ {
+        subject "feature.label"
+        type "text"
+        text "{{name}}"
+    }
+}
+
+{demo_osm_background}
