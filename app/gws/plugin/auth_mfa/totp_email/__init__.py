@@ -34,8 +34,9 @@ class Object(gws.base.auth.mfa.Object):
         self.generate_and_send(mfa)
         return mfa
 
-    def check_payload(self, mfa, payload):
-        return self.check_totp(mfa, payload['code'])
+    def verify(self, mfa, payload):
+        ok = self.check_totp(mfa, payload['code'])
+        return self.verify_attempt(mfa, ok)
 
     ##
 

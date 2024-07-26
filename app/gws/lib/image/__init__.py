@@ -11,6 +11,8 @@ import PIL.ImageDraw
 import PIL.ImageFont
 import numpy as np
 
+import qrcode
+
 import gws
 import gws.lib.mime
 
@@ -113,6 +115,50 @@ def from_svg(xmlstr: str, size: gws.Size, mime=None) -> 'Image':
     raise NotImplemented
 
 
+def qr_code(
+        data: str,
+        level='M',
+        scale=4,
+        border=True,
+        color='black',
+        background='white',
+) -> 'Image':
+    """Creates an Image with a QR code for the given data.
+
+    Args:
+        data: Data to encode.
+        level: Error correction level, one of L M Q H.
+        scale: Box size in pixels.
+        border: Include a quiet zone of 4 boxes.
+        color: Foreground color.
+        background: Background color.
+
+    References:
+        - https://github.com/lincolnloop/python-qrcode/blob/main/README.rst#advanced-usage
+
+    """
+
+    ec_map = {
+        'L': qrcode.constants.ERROR_CORRECT_L,
+        'M': qrcode.constants.ERROR_CORRECT_M,
+        'Q': qrcode.constants.ERROR_CORRECT_Q,
+        'H': qrcode.constants.ERROR_CORRECT_H,
+    }
+
+    qr = qrcode.main.QRCode(
+        version=None,
+        error_correction=ec_map[level],
+        box_size=scale,
+        border=4 if border else 0,
+    )
+
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color=color, back_color=background)
+    return _new(img)
+
+
 def _new(img: PIL.Image.Image):
     try:
         img.load()
@@ -168,6 +214,14 @@ class Image(gws.Image):
         with io.BytesIO() as fp:
             self._save(fp, mime, options)
             return fp.getvalue()
+
+    def to_base64(self, mime=None, options=None):
+        b = base64.standard_b64encode(self.to_bytes(mime, options))
+        return b.decode('ascii')
+
+    def to_data_url(self, mime=None, options=None):
+        mime = mime or gws.lib.mime.PNG
+        return f'data:{mime};base64,' + self.to_base64(mime, options)
 
     def to_path(self, path, mime=None, options=None):
         with open(path, 'wb') as fp:

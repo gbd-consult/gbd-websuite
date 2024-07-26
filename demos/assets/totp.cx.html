@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 
+@import time
+
 @import gws
 @import gws.lib.otp
+@import gws.lib.image
 
 @code
     if _ARGS.req.param('generate'):
@@ -10,64 +13,29 @@
             totp = gws.lib.otp.new_totp(secret, gws.u.stime())
         except Exception as exc:
             totp = repr(exc)
-        base32 = gws.lib.otp.base32_encode(secret)
-        return gws.Response(totp=totp, base32=base32)
+        url = gws.lib.otp.key_uri('totp', secret, issuer_name='GWS Demo', account_name='Test')
+        return gws.Response(
+            totp=totp,
+            base32=gws.lib.otp.base32_encode(secret),
+            image=gws.lib.image.qr_code(url).to_data_url(),
+        )
 @end
 
 <html>
 <head>
     <title>TOTP generator</title>
     <meta charset="UTF-8"/>
-
-    <script>
-        async function generate() {
-            let res = await window.fetch('?generate=1&secret=' + document.querySelector('#secret_input').value);
-            let js = await res.json();
-            document.querySelector('#totp_output').value = js.totp;
-            document.querySelector('#base32_secret').value = js.base32;
-        }
-        setInterval(generate, 10 * 1000)
-    </script>
-
-    <style>
-        body {
-            font-family: Roboto, Arial, sans-serif;
-            font-size: 14px;
-            display: flex;
-            justify-content: center;
-        }
-        div {
-            width: 500px;
-            margin: 20px auto;
-            border: 1px solid #ccc;
-            padding: 20px;
-        }
-        input, button, p {
-            box-sizing: border-box;
-            display: block;
-            width: 100%;
-            margin: 10px 0 20px 0;
-            padding: 10px;
-        }
-        label { font-weight: 600; }
-        button { font-weight: 600; }
-        #totp_output {
-            text-align: center;
-            font-size: 36px;
-            font-weight: 600;
-            letter-spacing: 5px;
-        }
-    </style>
-
+    <link rel="stylesheet" href="/totp.css?r={time.time()}"/>
+    <script src="/totp.js?r={time.time()}"></script>
 </head>
 
-<body onload="generate()">
+<body>
     <div>
         <label>User secret:</label>
-        <input id="secret_input" value="9876543210" oninput="generate()">
-        <label>Base32 secret:</label>
-        <input id="base32_secret" readonly>
-        <button onclick="generate()">generate TOTP</button>
+        <input id="secret_input" value="9876543210">
+        <img id="qr_code">
+        <p id="base32_secret"></p>
+        <button id="reload_button">reload</button>
         <input id="totp_output" readonly>
     </div>
 </body>

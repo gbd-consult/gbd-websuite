@@ -12,8 +12,7 @@ or **demo_mfa** for the multi-factor authorization.
 
 The password for all logins is **demo**.
 
-To obtain the MFA code, configure your mobile Authenticator app with the setup key **HE4DONRVGQZTEMJQ**,
-or use [the TOTP generator](/asset/totp).
+To configure and obtain the MFA one-time code use [the TOTP generator](/asset/totp).
 """
 
 map {

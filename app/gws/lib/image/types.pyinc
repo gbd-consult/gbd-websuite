@@ -124,6 +124,12 @@ class Image:
             The image as bytes.
         """
 
+    def to_base64(self, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
+        """Return the image content as a base64 encoded string."""
+
+    def to_data_url(self, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
+        """Return the image content as a base64-based data url."""
+
     def to_path(self, path: str, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
         """Saves the image object at a given path.
 

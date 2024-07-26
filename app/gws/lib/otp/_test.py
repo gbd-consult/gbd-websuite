@@ -135,13 +135,16 @@ def test_totp():
 
     for ts in [59, 1111111109, 1111111111, 1234567890, 2000000000, 20000000000]:
         key = bytes.fromhex(seed)
-        a = otp.new_totp(key, ts, 0, 30, 8, 'sha1')
+        opts = otp.Options(start=0, step=30, length=8, algo='sha1')
+        a = otp.new_totp(key, ts, opts)
         assert a == r.pop(0)
 
         key = bytes.fromhex(seed32)
-        a = otp.new_totp(key, ts, 0, 30, 8, 'sha256')
+        opts = otp.Options(start=0, step=30, length=8, algo='sha256')
+        a = otp.new_totp(key, ts, opts)
         assert a == r.pop(0)
 
         key = bytes.fromhex(seed64)
-        a = otp.new_totp(key, ts, 0, 30, 8, 'sha512')
+        opts = otp.Options(start=0, step=30, length=8, algo='sha512')
+        a = otp.new_totp(key, ts, opts)
         assert a == r.pop(0)

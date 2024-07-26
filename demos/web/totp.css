@@ -1,0 +1,35 @@
+body {
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+}
+
+div {
+    width: 300px;
+    margin: 20px auto;
+    border: 1px solid #ccc;
+    padding: 20px;
+    text-align: center;
+}
+
+input, button, p {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    margin: 10px 0 20px 0;
+    padding: 10px;
+}
+
+label { font-weight: 600; }
+
+button { font-weight: 600; }
+
+p { font-size: 11px }
+
+#totp_output {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 5px;
+}

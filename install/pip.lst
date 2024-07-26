@@ -18,6 +18,7 @@ SQLAlchemy==2.*
 # NB something is broken in 2.0.25
 uWSGI==2.0.23
 Werkzeug==3.*
+qrcode==7.*
 
 # testing
 

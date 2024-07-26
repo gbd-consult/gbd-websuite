@@ -1,5 +1,3 @@
-window.addEventListener('load', onLoad);
-
 let $ = (sel, parent) => (parent || document).querySelector(sel);
 let $$ = (sel, parent) => [...(parent || document).querySelectorAll(sel)];
 
@@ -148,7 +146,7 @@ function updateFromLocation() {
     update()
 }
 
-function onLoad() {
+window.addEventListener('load', () => {
 
     updateFromLocation();
 
@@ -207,4 +205,6 @@ function onLoad() {
         evt.preventDefault();
     });
 
-}
+});
+
+

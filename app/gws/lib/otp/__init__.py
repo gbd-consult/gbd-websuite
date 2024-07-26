@@ -5,23 +5,107 @@ References:
     https://datatracker.ietf.org/doc/html/rfc6238
 """
 
+from typing import Optional
+
 import base64
 import hashlib
 import hmac
 import random
 
+import gws
+import gws.lib.net
 
-def new_hotp(secret: str | bytes, counter: int, length: int = 6, algo: str = 'sha1') -> str:
+
+class Options(gws.Data):
+    start: int
+    step: int
+    length: int
+    tolerance: int
+    algo: str
+
+
+DEFAULTS = Options(
+    start=0,
+    step=30,
+    length=6,
+    tolerance=1,
+    algo='sha1',
+)
+
+
+def new_hotp(secret: str | bytes, counter: int, options: Optional[Options] = None) -> str:
     """Generate a new HOTP value as per rfc4226 section 5.3."""
 
-    return _raw_otp(_to_bytes(secret), counter, length, algo)
+    return _raw_otp(_to_bytes(secret), counter, gws.u.merge(DEFAULTS, options))
 
 
-def new_totp(secret: str | bytes, timestamp: int, start: int = 0, step: int = 30, length: int = 6, algo: str = 'sha1') -> str:
+def new_totp(secret: str | bytes, timestamp: int, options: Optional[Options] = None) -> str:
     """Generate a new TOTP value as per rfc6238 section 4.2."""
 
-    counter = (timestamp - start) // step
-    return _raw_otp(_to_bytes(secret), counter, length, algo)
+    options = gws.u.merge(DEFAULTS, options)
+    counter = (timestamp - options.start) // options.step
+    return _raw_otp(_to_bytes(secret), counter, options)
+
+
+def check_totp(input: str, secret: str, timestamp: int, options: Optional[Options] = None) -> bool:
+    """Check if the input TOTP is valid.
+
+    Compares the input against several TOTPs within the tolerance window
+    ``(timestamp-step*tolerance...timestamp+step*tolerance)``.
+    """
+
+    options = gws.u.merge(DEFAULTS, options)
+
+    if len(input) != options.length:
+        return False
+
+    for window in range(-options.tolerance, options.tolerance + 1):
+        ts = timestamp + options.step * window
+        counter = (ts - options.start) // options.step
+        totp = _raw_otp(_to_bytes(secret), counter, options)
+        gws.log.debug(f'check_totp {timestamp=} {totp=} {input=} {window=}')
+        if input == totp:
+            return True
+
+    return False
+
+
+def key_uri(
+        method: str,
+        secret: str,
+        issuer_name: str,
+        account_name: str,
+        counter: Optional[int] = None,
+        options: Optional[Options] = None
+) -> str:
+    """Create a key uri for auth apps.
+
+    Reference:
+        https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+    """
+
+    params = {
+        'secret': base32_encode(secret),
+        'issuer': issuer_name,
+    }
+
+    options = gws.u.merge(DEFAULTS, options)
+
+    if options.algo != DEFAULTS.algo:
+        params['algorithm'] = options.algo
+    if options.length != DEFAULTS.length:
+        params['digits'] = options.length
+    if options.step != DEFAULTS.step:
+        params['period'] = options.step
+    if counter is not None:
+        params['counter'] = counter
+
+    return 'otpauth://{}/{}:{}?{}'.format(
+        method,
+        gws.lib.net.quote_param(issuer_name),
+        gws.lib.net.quote_param(account_name),
+        gws.lib.net.make_qs(params)
+    )
 
 
 def base32_decode(s: str) -> bytes:
@@ -45,7 +129,7 @@ def random_base32_string(length: int = 32) -> str:
 
 ##
 
-def _raw_otp(key: bytes, counter: int, length: int, algo: str) -> str:
+def _raw_otp(key: bytes, counter: int, options: Options) -> str:
     # https://www.rfc-editor.org/rfc/rfc4226#section-5.3
     #
     # Step 1: Generate an HMAC-SHA-1 value
@@ -66,17 +150,23 @@ def _raw_otp(key: bytes, counter: int, length: int, algo: str) -> str:
 
     c = counter.to_bytes(8, byteorder='big')
 
-    digestmod = getattr(hashlib, algo.lower())
+    digestmod = getattr(hashlib, options.algo.lower())
     hs = hmac.new(key, c, digestmod).digest()
 
     offset = hs[-1] & 0xf
     p = hs[offset:offset + 4]
     snum = int.from_bytes(p, byteorder='big', signed=False) & 0x7fffffff
 
-    d = snum % (10 ** length)
+    d = snum % (10 ** options.length)
 
-    return f'{d:0{length}d}'
+    return f'{d:0{options.length}d}'
 
 
 def _to_bytes(s):
     return s.encode('utf8') if isinstance(s, str) else s
+
+
+def _option(options, key, default):
+    if not options:
+        return default
+    return getattr(options, key, default)

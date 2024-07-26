@@ -30,18 +30,6 @@ class Object(gws.base.auth.mfa.Object):
 
         return mfa
 
-    def check_payload(self, mfa, payload):
-        return self.check_totp(mfa, payload['code'])
-
-    def key_uri(self, user: gws.User, issuer_name: str, account_name: str = '') -> str:
-        """Create a key uri for auth apps."""
-
-        if not user.mfaSecret:
-            raise gws.Error(f'{user.uid=}: no secret')
-
-        return self.generic_key_uri(
-            method='totp',
-            secret=user.mfaSecret,
-            issuer_name=issuer_name,
-            account_name=account_name or user.loginName,
-        )
+    def verify(self, mfa, payload):
+        ok = self.check_totp(mfa, payload['code'])
+        return self.verify_attempt(mfa, ok)

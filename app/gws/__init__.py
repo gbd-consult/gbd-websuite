@@ -1112,6 +1112,12 @@ class Image:
             The image as bytes.
         """
 
+    def to_base64(self, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
+        """Return the image content as a base64 encoded string."""
+
+    def to_data_url(self, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
+        """Return the image content as a base64-based data url."""
+
     def to_path(self, path: str, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
         """Saves the image object at a given path.
 
@@ -2689,17 +2695,14 @@ class AuthMultiFactorAdapter(Node):
     def start(self, user: 'User') -> Optional[AuthMultiFactorTransaction]:
         """Initialize an MFA transaction for the user."""
 
-    def check_state(self, mfa: AuthMultiFactorTransaction) -> bool:
-        """Check if the MFA transaction is valid."""
-
     def verify(self, mfa: AuthMultiFactorTransaction, payload: dict) -> AuthMultiFactorTransaction:
         """Verify a payload."""
 
-    def check_payload(self, mfa: AuthMultiFactorTransaction, payload: dict) -> bool:
-        """Check if the payload is valid."""
-
     def cancel(self, mfa: AuthMultiFactorTransaction):
         """Cancel the transaction."""
+
+    def check_state(self, mfa: AuthMultiFactorTransaction) -> bool:
+        """Check if the MFA transaction is valid."""
 
     def check_restart(self, mfa: AuthMultiFactorTransaction) -> bool:
         """Check if the transaction can be restarted."""
