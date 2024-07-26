@@ -49,6 +49,8 @@ class TemplateArgs(gws.TemplateArgs):
     """Mapproxy socket path."""
     nginxPid: str
     """nginx pid path."""
+    serverDir: str
+    """Absolute path to app/server directory."""
     spoolPid: str
     """Spooler pid path."""
     spoolSocket: str
@@ -64,12 +66,12 @@ class TemplateArgs(gws.TemplateArgs):
 _DEFAULT_BASE_TIMEOUT = 60
 _DEFAULT_SPOOL_TIMEOUT = 300
 
-_DIR = gws.u.dirname(__file__)
+_SERVER_DIR = gws.u.dirname(__file__)
 
 _DEFAULT_TEMPLATES = [
-    gws.Config(type='text', subject='server.rsyslog_config', path=f'{_DIR}/templates/rsyslog_config.cx.txt'),
-    gws.Config(type='text', subject='server.nginx_config', path=f'{_DIR}/templates/nginx_config.cx.txt'),
-    gws.Config(type='text', subject='server.uwsgi_config', path=f'{_DIR}/templates/uwsgi_config.cx.txt'),
+    gws.Config(type='text', subject='server.rsyslog_config', path=f'{_SERVER_DIR}/templates/rsyslog_config.cx.txt'),
+    gws.Config(type='text', subject='server.nginx_config', path=f'{_SERVER_DIR}/templates/nginx_config.cx.txt'),
+    gws.Config(type='text', subject='server.uwsgi_config', path=f'{_SERVER_DIR}/templates/uwsgi_config.cx.txt'),
 ]
 
 
@@ -104,6 +106,7 @@ class Object(gws.ServerManager):
             mapproxyPid=pid_paths['mapproxy'],
             mapproxySocket=f'{gws.c.TMP_DIR}/mapproxy.uwsgi.sock',
             nginxPid=pid_paths['nginx'],
+            serverDir=_SERVER_DIR,
             spoolPid=pid_paths['spool'],
             spoolSocket=f'{gws.c.TMP_DIR}/spool.uwsgi.sock',
             webPid=pid_paths['web'],
