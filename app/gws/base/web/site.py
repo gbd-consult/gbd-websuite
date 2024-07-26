@@ -42,7 +42,7 @@ class SSLConfig(gws.Config):
     key: gws.FilePath
     """Key file location."""
     hsts: gws.Duration = "365d"
-    """HSTS max age."""
+    """HSTS max age. (added in 8.1)"""
 
 
 class WebDocumentRootConfig(gws.Config):
@@ -64,9 +64,9 @@ class Config(gws.Config):
     cors: Optional[CorsConfig]
     """Cors configuration."""
     contentSecurityPolicy: str = "default-src 'self'; img-src * data: blob:"
-    """Content Security Policy for this site."""
+    """Content Security Policy for this site. (added in 8.1)"""
     permissionsPolicy: str = "geolocation=(self), camera=(), microphone=()"
-    """Content Security Policy for this site."""
+    """Permissions Policy for this site. (added in 8.1)"""
     errorPage: Optional[gws.ext.config.template]
     """Error page template."""
     host: str = '*'
