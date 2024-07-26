@@ -1,14 +1,14 @@
 # Drucken :/admin-de/themen/printer
 
-Ein Projekt in der GBD WebSuite kann eine oder mehrere Druckvorlagen bereitstellen. Bei mehreren Vorlagen wird dem Nutzer im Client ein Menü angezeigt, wo die Vorlage und ggf. die Qualitätsstufe gewählt werden kann.
+Ein Projekt in der GBD WebSuite kann eine oder mehrere Druckvorlagen bereitstellen. Bei mehreren Vorlagen wird dem Nutzer im Client ein Menü angezeigt, in dem die Vorlage und ggf. die Qualitätsstufe gewählt werden kann.
 
 ## Qualitätsstufen
 
-Für jede Vorlage können Sie eine Liste der Qualitätsstufen konfigurieren. Eine Qualitätsstufe ist ein DPI-Wert mit einem Namen. Beachten Sie, dass das Drucken mit hohen DPI-Werten viel Speicherplatz benötigt und nicht mit allen Quellen möglich ist. Das Drucken einer A3-Karte mit 300 DPI wird nicht immer funktionieren.
+Für jede Vorlage können Sie eine Liste der Qualitätsstufen konfigurieren. Eine Qualitätsstufe ist ein DPI-Wert mit einem Namen. Beachten Sie, dass das Drucken mit hohen DPI-Werten viel Speicherplatz benötigt und nicht mit allen Quellen möglich ist. Das Drucken einer A3-Karte mit 300 DPI wird beispielsweise nicht immer funktionieren.
 
 Zwei DPI-Werte werden in GWS auf besondere Weise bearbeitet:
 
-- bei dem DPI Wert ``0`` wird  die Karte als Bitmap-Bild (*Screenshot*) gedruckt. Diese Methode bietet niedrige Qualität an, ist jedoch sehr schnell.
+- bei dem DPI Wert ``0`` wird  die Karte als Bitmap-Bild (*Screenshot*) gedruckt. Diese Methode bietet zwar eine niedrigere Qualität an, ist jedoch sehr schnell.
 - bei jedem DPI Wert größer als ``0`` und kleiner als ``90`` werden die Rasterlayer als Screenshots gedruckt, die Vektoren aber in der voller Auflösung. Verwenden Sie diese Methode wenn die Vektoren (wie z.B. Markierungen) wichtig sind, die Hintergrundkarte aber nur zur Orientierung dient.
 
 ## Druckvorlagen
@@ -41,13 +41,13 @@ Eine ``html`` Druckvorlage kann z.B. wie folgt aussehen:
     <p>Erstellt am {date.short} vom Nutzer {user.displayName}</p>
 ```
 
-### qgis
+### QGIS
 
 Die QGIS Druckvorlagen sind unter [QGIS](/admin-de/plugin/qgis) beschrieben.
 
 ## Attribute
 
-Wenn Sie von Nutzer editierbare Attribute auf dem Ausdruck benötigen, können Sie diese mit einem Datenmodell (``dataModel``) in der Vorlagenkonfiguration definieren. Die Attribute dieses Models sind vom Nutzer editierbar und sind in einer ``html`` Vorlage als Variablen verfügbar. Zum Beispiel, wenn Sie eine Druckvorlage wie folgt definieren:
+Wenn Sie von Nutzern editierbare Attribute auf dem Ausdruck benötigen, können Sie diese mit einem Datenmodell (``dataModel``) in der Vorlagenkonfiguration definieren. Die Attribute dieses Models sind dann in einer ``html`` Vorlage als Variablen verfügbar. Wenn Sie beispielsweise eine Druckvorlage wie folgt definieren:
 
 ```javascript
 
@@ -71,6 +71,6 @@ Wenn Sie von Nutzer editierbare Attribute auf dem Ausdruck benötigen, können S
 }
 ```
 
-wird dem Nutzer beim Drucken ein Formular mit den Feldern "Überschrift" und "Ort" gezeigt, wobei Sie in Ihrer Vorlage die Variablen ``{title}`` und ``{ort}`` an beliebigen Stellen nutzen können. Für QGIS Vorlage können Sie auch QGIS Syntax ``[% @title %]`` nutzen.
+wird dem Nutzer beim Drucken ein Formular mit den Feldern "Überschrift" und "Ort" gezeigt, wobei Sie in Ihrer Vorlage die Variablen ``{title}`` und ``{ort}`` an beliebigen Stellen nutzen können. Für QGIS Vorlagen können Sie auch die QGIS Syntax ``[% @title %]`` nutzen.
 
-Für mehr Info on Datenmodelle siehe [Feature](/admin-de/config/feature).
+Für mehr Infos zu Datenmodellen siehe [Modelle](/admin-de/config/models).

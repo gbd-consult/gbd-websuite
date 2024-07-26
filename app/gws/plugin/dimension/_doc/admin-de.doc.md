@@ -4,11 +4,11 @@
 
 Mit der Funktion Bemaßung (``dimension``) kann der Nutzer im Client Bemaßungen zeichnen, die optional an bestimmte Vektor-Objekte einrasten.
 
-Um diese Funktion zu nutzen, aktivieren Sie die Aktion ``dimension``. Wenn Sie das Einrasten benötigen, legen Sie einen Vektor-Layer an (z.B. ``postgres``) und fügen Sie dessen ``uid`` unter ``layers`` ein. Ein Beispiel:
+Um diese Funktion zu nutzen, aktivieren Sie die Aktion ``dimension``. Wenn Sie das Einrasten benötigen, legen Sie einen Vektor-Layer an (z.B. ``postgres``) und fügen Sie diesen ``uid`` unter ``layers`` ein. Ein Beispiel:
 
 ```javascript
 
-## in einer Projekt-Konfiguration
+## In einer Projekt-Konfiguration
 
 "uid": "my_projekt",
 
