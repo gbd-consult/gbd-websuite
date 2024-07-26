@@ -719,7 +719,7 @@ def serialize(o: dt.Object) -> dict:
             return f'${r.code}${r.text}'
 
         if isinstance(r, dt.Object):
-            return {k: encode(v) for k, v in vars(r).items()}
+            return {k: encode(v) for k, v in sorted(vars(r).items())}
 
         raise ValueError(f'unserializable object type: {r!r}')
 

@@ -212,6 +212,8 @@ class LageRecord(Record):
 class Lage(Entity):
     recs: list['LageRecord']
     gebaeudeList: list['Gebaeude']
+    x: float
+    y: float
 
 
 class GebaeudeRecord(Record):
