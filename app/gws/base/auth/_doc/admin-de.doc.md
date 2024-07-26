@@ -1,8 +1,8 @@
-# Auth & Auth:/admin-de/themen/auth
+# Auth & Aut:/admin-de/themen/auth
 
 **Authentifizierung**: Feststellung der Identität eines Benutzers.
 
-**Authorisierung**: Feststellung ob ein Benutzer eine bestimmte Aktion durchführen 
+**Autorisierung**: Feststellung ob ein Benutzer eine bestimmte Aktion durchführen 
 darf.
 
 ## Authentifizierung
@@ -188,9 +188,9 @@ Hier ist eine Beispielkonfiguration unter Verwendung des von
 
 TODO
 
-## Authorisierung
+## Autorisierung
 
-Nach der Authentifizierung wird überprüft ob der Benutzer authorisiert ist auf 
+Nach der Authentifizierung wird überprüft ob der Benutzer autorisiert ist auf 
 die gewünschte Art mit der gewünschten Ressource zu interagieren.
 
 ### Rollen

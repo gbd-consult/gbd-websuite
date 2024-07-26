@@ -231,3 +231,19 @@ Um zu sehen welche Werte bestimmten CSS Eigenschaften eines Elementes aktuell zu
 %info
  Unter [Styling](/admin-de/config/style) finden Sie eine Auflistung von CSS Eigenschaften.
 %end
+
+
+
+ <!-- Dieser Teil muss noch zugeordnet werden -->
+## Client-Vorlagen mit Features/Modellen konfigurieren
+
+Sie können Vorlagen (siehe [Vorlagen](/admin-de/config/template)) Konfigurieren um Features bzw. [Modelle](/admin-de/config/models) an verschiedenen Stellen im Client darzustellen. Die Vorlagen sind mit einem entsprechenden ``subject`` Wert zu versehen
+
+| ``subject`` | Funktion |
+|---|---|
+|``feature.title`` | Feature-Titel |
+|``feature.teaser`` | Kurzbeschreibung des Features, erscheint in der Autocomplete-Box beim Suchen |
+|``feature.description`` | detaillierte Beschreibung, erscheint in der Info-Box |
+|``feature.label`` | Kartenbeschriftung für das Feature |
+
+Diese Vorlagen können für Layer (siehe [Layer](/admin-de/config/layer)) oder Suchprovider (siehe [Suche](/admin-de/config/suche)) konfiguriert werden.

@@ -20,9 +20,9 @@
 - Authorization: access, permissions
 -->
 
-## Bemaßung
+## :/admin-de/plugin/dimension
 
-## Client
+## :/admin-de/config/client
 <!--
 - client elements
 - clientOptions
@@ -38,7 +38,7 @@
 - qualityLevels
 -->
 
-## Editieren
+## :/admin-de/themen/edit
 <!--
 - edit layers
     - link to styling
@@ -78,7 +78,7 @@
 ## :/admin-de/themen/postgresql
 
 
-## Models
+## :/admin-de/config/models
 <!--
 - (maybe include in editing?)
 -->
@@ -125,7 +125,7 @@
 ### wms
 
 
-## Templates
+## :/admin-de/config/template
 <!--
 - maybe include in various places? general templating? single vs double curly braces?
 -->

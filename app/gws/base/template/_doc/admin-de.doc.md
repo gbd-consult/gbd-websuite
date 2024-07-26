@@ -45,6 +45,9 @@ Text-Vorlagen enthalten Befehle der Vorlagen-Sprache, ansonsten werden alle Zeic
 
 XML Vorlagen werden intern für OWS Diensten benutzt. In XML Vorlagen werden zusätzliche Vorlagen-Befehle unterstützt, ``@t`` und ``@tag`` die entsprechend finale bzw container XML-Tags erzeugen. Sie https://github.com/gbd-consult/gbd-websuite/blob/master/app/gws/ext/ows/service/wms/templates/getCapabilities.1.3.cx für ein Beispiel der XML Vorlage für die GetCapabilties Operation.
 
+Für WMS/WFS Dienste besteht die Möglichkeit, für bestimmte Features eine angepasste XML Präsentation zu konfigurieren. Dazu erstellen Sie in der Konfiguration der jeweiligen Dienstes eine Vorlage mit dem ``subject`` ``ows.GetFeatureInfo`` (siehe [OWS](/admin-de/plugin/ows)).
+
+
 ### :/admin-de/config/template/type/map
 
 ### :/admin-de/config/template/type/py

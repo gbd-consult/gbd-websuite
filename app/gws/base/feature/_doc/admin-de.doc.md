@@ -1,19 +1,19 @@
-# Features :/admin-de/config/feature
+# Modelle :/admin-de/config/models
 
-Die GBD WebSuite enthält Werkzeuge mit denen die Features, aus verschiedenen Quellen, einheitlich strukturiert und dargestellt werden können.
+Die GBD WebSuite enthält Werkzeuge mit denen die Features aus verschiedenen Quellen, einheitlich strukturiert und dargestellt werden können.
 
 Datenmodelle
 ------------
 
 %reference_de 'gws.base.model.Config'
 
-Ein *Datenmodel* (`dataModel`) beschreibt wie Attributen eines Quell-Features transformiert werden müssen. Für jedes Attribut eines GBD WebSuite-Features können Sie eine Regel anlegen, mit der Sie für dieses Attribut folgendes definieren:
+Ein *Datenmodell* (`dataModel`) beschreibt wie Attribute eines Quell-Features transformiert werden müssen. Für jedes Attribut eines GBD WebSuite-Features können Sie eine Regel anlegen, mit der Sie für dieses Attribut folgendes definieren:
 
 - eine Bezeichnung (`name`)
 - einen Titel (`title`)
-- einen Wert. Das kann Quell-Feature Attribut sein (`source`) oder einen festen Wert (`value`) oder eine Formatierungs-String mit `{...}` Platzhaltern, die mit Attributen der Quell-Feature ersetzt werden.
+- einen Wert. Das kann ein Quell-Feature Attribut sein (`source`), ein fester Wert (`value`) oder eine Formatierungs-String mit `{...}` Platzhaltern, die mit Attributen der Quell-Feature ersetzt werden.
 
-Zum Beispiel, wenn eine Postgres Tabelle `user` die Spalten `first_name`, `last_name` und `age` enthält, können Sie so transformieren:
+Zum Beispiel, wenn eine Postgres-Tabelle `user` die Spalten `first_name`, `last_name` und `age` enthält, können Sie diese so transformieren:
 
     "dataModel": {
         "rules": [
@@ -23,9 +23,8 @@ Zum Beispiel, wenn eine Postgres Tabelle `user` die Spalten `first_name`, `last_
         ]
     }
 
-Außerdem können Sie angeben welche Attribute editierbar (`editable`) sind. Wenn Sie eine Editierfunktion verwenden (s. ^digitize und ^tabedit), werden nur editierbare Attribute eines Feature für Editieren freigeschaltet.
 
-Seit der Version 7, besteht die Möglichkeit, den Attributen spezielle Editoren bzw Validierungsregel zuzuordnen. Ein Editor kann mit `editor` konfiguriert werden:
+Seit der Version 7, besteht die Möglichkeit, den Attributen spezielle Editoren bzw. Validierungsregel zuzuordnen. Ein Editor kann mit `editor` konfiguriert werden:
 
     "dataModel": {
         "rules": [
@@ -43,7 +42,7 @@ Seit der Version 7, besteht die Möglichkeit, den Attributen spezielle Editoren 
             }
             ...
 
-Wenn kein Editor konfiguriert ist, wird vom Server einen am besten geeigneten Typ gewählt.
+Wenn kein spezifischer Editor konfiguriert ist, wird vom Server ein am besten geeigneter Typ gewählt.
 
 Für die Validierungsregel kann eine Liste `validators` einem Attribut zugeordnet werden:
 
@@ -64,20 +63,3 @@ Für die Validierungsregel kann eine Liste `validators` einem Attribut zugeordne
                 ]
             },
             ...
-
-## Client-Vorlagen
-
-Sie können Vorlagen (siehe [Vorlagen](/admin-de/config/template)) Konfigurieren um die Features an verschiedenen Stellen im Client darzustellen. Die Vorlagen sind mit einem entsprechenden ``subject`` Wert zu versehen
-
-| ``subject`` | Funktion |
-|---|---|
-|``feature.title`` | Feature-Titel |
-|``feature.teaser`` | Kurzbeschreibung des Features, erscheint in der Autocomplete-Box beim Suchen |
-|``feature.description`` | detaillierte Beschreibung, erscheint in der Info-Box |
-|``feature.label`` | Kartenbeschriftung für das Feature |
-
-Diese Vorlagen können für Layer (siehe [Layer](/admin-de/config/layer)) oder Suchprovider (siehe [Suche](/admin-de/config/suche)) konfiguriert werden.
-
-## XML Vorlagen
-
-Für WMS/WFS Dienste besteht die Möglichkeit, für bestimmte Features eine angepasste XML Präsentation zu konfigurieren. Dazu erstellen Sie in der Konfiguration der jeweiligen Dienstes eine Vorlage mit dem ``subject`` ``ows.GetFeatureInfo`` (siehe [OWS](/admin-de/plugin/ows)).
