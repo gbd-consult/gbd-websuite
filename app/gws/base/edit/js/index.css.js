@@ -58,15 +58,15 @@ module.exports = v => {
 
 
         '.editModelButton': {
-            ...v.LIST_BUTTON(__dirname + '/database_FILL1_wght400_GRAD0_opsz24')
+            ...v.LIST_BUTTON(__dirname + '/img/database_FILL1_wght400_GRAD0_opsz24')
         },
 
         '.editTableViewButton': {
-            ...v.LIST_BUTTON(__dirname + '/table_FILL1_wght400_GRAD0_opsz24')
+            ...v.LIST_BUTTON(__dirname + '/img/table_FILL1_wght400_GRAD0_opsz24')
         },
 
         '.editModifyAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/cursor')
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/img/cursor')
         },
 
         '.editEndButton': {
@@ -89,7 +89,7 @@ module.exports = v => {
 
         },
         '.editOpenFormButton': {
-            ...v.ROUND_FORM_BUTTON(__dirname + '/subject_FILL1_wght400_GRAD0_opsz24'),
+            ...v.ROUND_FORM_BUTTON(__dirname + '/img/subject_FILL1_wght400_GRAD0_opsz24'),
 
         },
 
@@ -104,11 +104,11 @@ module.exports = v => {
 
 
         '.editModelListAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/database_FILL1_wght400_GRAD0_opsz24')
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/img/database_FILL1_wght400_GRAD0_opsz24')
         },
 
         '.editTableViewAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/table_FILL1_wght400_GRAD0_opsz24')
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/img/table_FILL1_wght400_GRAD0_opsz24')
         },
 
         '.editCloseFeatureAuxButton': {
@@ -116,13 +116,13 @@ module.exports = v => {
         },
 
         '.editDrawAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/draw_black_24dp')
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/img/draw_black_24dp')
         },
         '.editNewAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline')
         },
         '.editNewPointGeometryText': {
-            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/fact_check_FILL0_wght400_GRAD0_opsz24')
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/img/fact_check_FILL0_wght400_GRAD0_opsz24')
         },
         '.editRemoveAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/delete')
