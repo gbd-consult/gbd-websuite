@@ -36,7 +36,7 @@ export class FeatureCache {
         let cc = this.master();
         let searchText = cc.getFeatureListSearchText(field.uid);
 
-        let request: gws.api.base.edit.action.GetRelatableFeaturesRequest = {
+        let request: gws.api.base.edit.GetRelatableFeaturesRequest = {
             modelUid: field.model.uid,
             fieldName: field.name,
             keyword: searchText || '',
@@ -52,7 +52,7 @@ export class FeatureCache {
         let cc = this.master();
         let ls = model.loadingStrategy;
 
-        let request: gws.api.base.edit.action.GetFeaturesRequest = {
+        let request: gws.api.base.edit.GetFeaturesRequest = {
             modelUids: [model.uid],
             keyword: searchText || '',
         }
