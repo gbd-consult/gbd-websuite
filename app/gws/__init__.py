@@ -2710,6 +2710,9 @@ class AuthMultiFactorAdapter(Node):
     def restart(self, mfa: AuthMultiFactorTransaction) -> Optional[AuthMultiFactorTransaction]:
         """Restart the transaction."""
 
+    def key_uri(self, secret: str | bytes, issuer_name: str, account_name: str) -> Optional[str]:
+        """Generate a key uri for this adapter."""
+
 
 class AuthProvider(Node):
     """Authentication Provider."""
@@ -3386,6 +3389,12 @@ class DatabaseProvider(Node):
 
     def table_bounds(self, table: DatabaseTableAlike) -> Optional[Bounds]:
         """Compute a bounding box for the table primary geometry."""
+
+    def select_text(self, sql: str, **kwargs) -> list[dict]:
+        """Execute a textual SELECT statement and return a list of record dicts."""
+
+    def execute_text(self, sql: str, **kwargs) -> 'sqlalchemy.CursorResult':
+        """Execute a textual DML statement and return a result."""
 ################################################################################
 
 

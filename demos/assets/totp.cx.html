@@ -13,7 +13,7 @@
             totp = gws.lib.otp.new_totp(secret, gws.u.stime())
         except Exception as exc:
             totp = repr(exc)
-        url = gws.lib.otp.key_uri('totp', secret, issuer_name='GWS Demo', account_name='Test')
+        url = gws.lib.otp.totp_key_uri(secret, issuer_name='GWS Demo', account_name='Test')
         return gws.Response(
             totp=totp,
             base32=gws.lib.otp.base32_encode(secret),

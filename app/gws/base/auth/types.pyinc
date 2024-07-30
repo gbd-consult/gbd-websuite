@@ -285,6 +285,9 @@ class AuthMultiFactorAdapter(Node):
     def restart(self, mfa: AuthMultiFactorTransaction) -> Optional[AuthMultiFactorTransaction]:
         """Restart the transaction."""
 
+    def key_uri(self, secret: str | bytes, issuer_name: str, account_name: str) -> Optional[str]:
+        """Generate a key uri for this adapter."""
+
 
 class AuthProvider(Node):
     """Authentication Provider."""

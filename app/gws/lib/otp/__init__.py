@@ -70,9 +70,28 @@ def check_totp(input: str, secret: str, timestamp: int, options: Optional[Option
     return False
 
 
-def key_uri(
+def totp_key_uri(
+        secret: str | bytes,
+        issuer_name: str,
+        account_name: str,
+        options: Optional[Options] = None
+) -> str:
+    return _key_uri('totp', secret, issuer_name, account_name, None, options)
+
+
+def hotp_key_uri(
+        secret: str | bytes,
+        issuer_name: str,
+        account_name: str,
+        counter: Optional[int] = None,
+        options: Optional[Options] = None
+) -> str:
+    return _key_uri('totp', secret, issuer_name, account_name, counter, options)
+
+
+def _key_uri(
         method: str,
-        secret: str,
+        secret: str | bytes,
         issuer_name: str,
         account_name: str,
         counter: Optional[int] = None,
@@ -116,15 +135,20 @@ def base32_encode(s: str | bytes) -> str:
     return base64.b32encode(_to_bytes(s)).decode('ascii')
 
 
-def random_base32_string(length: int = 32) -> str:
+def random_base32_secret(length: int = 32) -> str:
     """Generate a random base32 string."""
 
-    if (length & 7) != 0:
+    return base32_encode(random_secret(length))
+
+
+def random_secret(base32_length: int = 32) -> bytes:
+    """Generate a random secret that fits into base32_length."""
+
+    if (base32_length & 7) != 0:
         raise ValueError('invalid length')
 
     r = random.SystemRandom()
-    b = r.randbytes((length >> 3) * 5)
-    return base32_encode(b)
+    return r.randbytes((base32_length >> 3) * 5)
 
 
 ##

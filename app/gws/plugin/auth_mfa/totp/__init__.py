@@ -33,3 +33,6 @@ class Object(gws.base.auth.mfa.Object):
     def verify(self, mfa, payload):
         ok = self.check_totp(mfa, payload['code'])
         return self.verify_attempt(mfa, ok)
+
+    def key_uri(self, secret, issuer_name, account_name):
+        return gws.lib.otp.totp_key_uri(secret, issuer_name, account_name, self.otpOptions)
