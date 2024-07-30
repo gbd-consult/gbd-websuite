@@ -115,9 +115,12 @@ class Header extends gws.View<SidebarProps> {
         let numTabs = this.props.controller.visibleTabs;
 
         let expanded = this.props.sidebarOverflowExpanded,
-            items = this.props.controller.children,
-            front = items.slice(0, numTabs),
-            rest = items.slice(numTabs)
+            items = this.props.controller.children;
+
+        items = items.filter(it => !(this.props.sidebarHiddenItems || {})[it.tag]);
+
+        let front = items.slice(0, numTabs),
+            rest = items.slice(numTabs);
 
         return <div className="modSidebarHeader">
             <Row>
