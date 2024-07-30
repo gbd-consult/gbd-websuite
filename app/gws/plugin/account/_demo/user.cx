@@ -1,0 +1,21 @@
+uid "user_account"
+
+title "Accont User Interface"
+
+metadata.keywords [ "auth" "user" ]
+
+metadata.abstract """
+Accont User Interface
+"""
+
+access "allow all"
+
+actions+ {
+    type "account"
+    permissions.read "allow all"
+}
+
+client.addElements+ { tag "Account.Dialog" }
+
+
+{demo_osm_background}

@@ -1,0 +1,54 @@
+helpers+ {
+    type "account"
+
+    loginColumn "login"
+
+    mfaIssuer "GWS Demo"
+    mfa [
+        { mfaUid ""               title "No MFA" }
+        { mfaUid "AUTH_MFA_TOTP"  title "Multi-factor authentication with an App" }
+        { mfaUid "AUTH_MFA_EMAIL" title "Multi-factor authentication by email" }
+    ]
+
+    onboardingUrl '/project/user_account'
+
+    models+ {
+        permissions.edit "allow all"
+        isEditable true
+        type "postgres"
+        tableName "edit.nutzer"
+        fields+ {
+            name "id"
+            type "integer"
+            title "Identifier"
+            isPrimaryKey true
+            isRequired true
+        }
+        fields+ { name "username" type "text" }
+        fields+ { name "email" type "text" }
+        fields+ { name "vorname" type "text" }
+        fields+ { name "nachname" type "text" }
+        fields+ { name "kommentar" type "text" }
+
+        templates+ { subject "feature.title" type "text" text "{{nachname}}, {{vorname}}" }
+    }
+    templates+ {
+        subject "onboarding.emailSubject"
+        type "text"
+        text "onboarding"
+    }
+    templates+ {
+        subject "onboarding.emailBody"
+        type "text"
+        text """
+        Hi {{account.vorname}} {{account.nachname}}!
+
+        Your onboarding url:
+
+        {{url}}
+
+        """
+    }
+
+}
+

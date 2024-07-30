@@ -1,0 +1,36 @@
+uid "account_admin"
+
+title "Account Admin"
+
+metadata.keywords [ "auth" "user" ]
+
+metadata.abstract """
+Account Admin
+"""
+
+access "allow all"
+
+actions+ {
+    type "accountadmin"
+@#    permissions.read "allow user, deny all"
+    permissions.read "allow all"
+}
+
+client.addElements+ { tag "Sidebar.AccountAdmin" }
+
+actions+ { type "edit" }
+client.addElements+ { tag "Sidebar.Edit" }
+client.addElements+ { tag "Toolbar.Edit" }
+map.layers+ {
+    title "Interessante Orte"
+    type "postgres"
+    tableName "edit.poi"
+    models+ {
+        type "postgres"
+        isEditable true
+        permissions.edit 'allow all'
+    }
+}
+
+
+{demo_osm_background}
