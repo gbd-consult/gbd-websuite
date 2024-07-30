@@ -177,11 +177,12 @@ class Object(gws.Application):
         # - finally, projects
 
         self.databaseMgr = self.create_child(gws.base.database.manager.Object, self.cfg('database'))
-        self.storageMgr = self.create_child(gws.base.storage.manager.Object, self.cfg('storage'))
-        self.authMgr = self.create_child(gws.base.auth.manager.Object, self.cfg('auth'))
 
         helpers = self.create_children(gws.ext.object.helper, self.cfg('helpers'))
         self._helperMap = {p.extType: p for p in helpers}
+
+        self.storageMgr = self.create_child(gws.base.storage.manager.Object, self.cfg('storage'))
+        self.authMgr = self.create_child(gws.base.auth.manager.Object, self.cfg('auth'))
 
         # @TODO default API
         self.actionMgr = self.create_child(gws.base.action.manager.Object)
