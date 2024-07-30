@@ -117,6 +117,27 @@ class Object(gws.DatabaseProvider):
         sa_table = self._sa_table(table)
         return sa_table is not None and column_name in sa_table.columns
 
+    def select_text(self, sql, **kwargs):
+        with self.connect() as conn:
+            try:
+                return [
+                    gws.u.to_dict(r)
+                    for r in conn.execute(sa.text(sql), kwargs)
+                ]
+            except sa.Error:
+                conn.rollback()
+                raise
+
+    def execute_text(self, sql, **kwargs):
+        with self.connect() as conn:
+            try:
+                res = conn.execute(sa.text(sql), kwargs)
+                conn.commit()
+                return res
+            except sa.Error:
+                conn.rollback()
+                raise
+
     SA_TO_ATTR = {
         # common: sqlalchemy.sql.sqltypes
 
