@@ -135,20 +135,15 @@ def base32_encode(s: str | bytes) -> str:
     return base64.b32encode(_to_bytes(s)).decode('ascii')
 
 
-def random_base32_secret(length: int = 32) -> str:
-    """Generate a random base32 string."""
-
-    return base32_encode(random_secret(length))
-
-
-def random_secret(base32_length: int = 32) -> bytes:
-    """Generate a random secret that fits into base32_length."""
+def random_secret(base32_length: int = 32) -> str:
+    """Generate a random printable secret that fits into base32_length."""
 
     if (base32_length & 7) != 0:
         raise ValueError('invalid length')
 
+    size = (base32_length >> 3) * 5
     r = random.SystemRandom()
-    return r.randbytes((base32_length >> 3) * 5)
+    return ''.join(chr(r.randint(0x21, 0x7f)) for _ in range(size))
 
 
 ##
