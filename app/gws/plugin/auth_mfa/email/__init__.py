@@ -12,7 +12,7 @@ import gws.base.auth
 import gws.helper.email
 import gws.lib.otp
 
-gws.ext.new.authMultiFactorAdapter('totp_email')
+gws.ext.new.authMultiFactorAdapter('email')
 
 
 class Config(gws.base.auth.mfa.Config):
@@ -28,7 +28,7 @@ class Object(gws.base.auth.mfa.Object):
 
     def start(self, user):
         if not user.email:
-            gws.log.warning(f'totp_email: cannot start, {user.uid=}: no email')
+            gws.log.warning(f'email: cannot start, {user.uid=}: no email')
             return
         mfa = super().start(user)
         self.generate_and_send(mfa)
@@ -42,7 +42,7 @@ class Object(gws.base.auth.mfa.Object):
 
     def generate_and_send(self, mfa: gws.AuthMultiFactorTransaction):
         # NB regenerate secret on each attempt
-        mfa.secret = gws.u.random_string(32)
+        mfa.secret = gws.lib.otp.random_secret()
 
         args = {
             'user': mfa.user,
