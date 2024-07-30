@@ -13,7 +13,7 @@ export abstract class SidebarView extends gws.View<types.ViewProps> {
     abstract master(): Controller;
 
     render() {
-        let es = this.props.editState;
+        let es = this.master().editState;
 
         if (es.isWaiting)
             return <gws.ui.Loader/>;

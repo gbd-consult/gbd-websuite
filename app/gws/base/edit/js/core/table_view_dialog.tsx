@@ -248,7 +248,7 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
 
     componentDidUpdate(prevProps) {
         let cc = this.master();
-        let pos = this.props.editState.tableViewTouchPos;
+        let pos = cc.editState.tableViewTouchPos;
 
         if (pos && this.tableRef.current) {
             cc.updateEditState({tableViewTouchPos: null})
@@ -403,10 +403,9 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
         let sf = cc.editState.tableViewSelectedFeature;
 
         return <gws.ui.Dialog
-            {...gws.lib.cls('editTableViewDialog', this.props.editTableViewDialogZoomed && 'isZoomed')}
+            {...gws.lib.cls('editTableViewDialog', 'isZoomed')}
             title={model.title}
             whenClosed={() => this.closeDialog()}
-            // whenZoomed={() => this.props.controller.update({editTableViewDialogZoomed: !this.props.editTableViewDialogZoomed})}
             footer={this.dialogFooter(sf)}
         >
             {this.renderTable()}

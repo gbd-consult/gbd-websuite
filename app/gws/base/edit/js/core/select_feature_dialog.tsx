@@ -12,13 +12,13 @@ export class SelectFeatureDialog extends gws.View<types.ViewProps> {
 
     async componentDidMount() {
         let cc = this.master();
-        let dd = this.props.editDialogData as types.SelectFeatureDialogData;
+        let dd = cc.editState.dialogData as types.SelectFeatureDialogData;
         await cc.featureCache.updateForModel(dd.model);
     }
 
     render() {
         let cc = this.master();
-        let dd = this.props.editDialogData as types.SelectFeatureDialogData;
+        let dd = cc.editState.dialogData as types.SelectFeatureDialogData;
         let searchText = cc.getFeatureListSearchText(dd.model.uid)
         let features = cc.featureCache.getForModel(dd.model);
 

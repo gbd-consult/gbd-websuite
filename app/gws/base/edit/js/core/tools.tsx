@@ -75,7 +75,7 @@ export abstract class PointerTool extends gws.Tool {
     start() {
         let cc = this.master();
 
-        this.setFeature(cc.getEditState().sidebarSelectedFeature);
+        this.setFeature(cc.editState.sidebarSelectedFeature);
 
         let ixPointer = new ol.interaction.Pointer({
             handleEvent: evt => this.whenPointerDown(evt)
@@ -122,7 +122,7 @@ export abstract class DrawTool extends draw.Tool {
     }
 
     enabledShapes() {
-        let model = this.master().getEditState().drawModel;
+        let model = this.master().editState.drawModel;
         if (!model)
             return null;
         return ENABLED_SHAPES_BY_TYPE[model.geometryType.toUpperCase()];

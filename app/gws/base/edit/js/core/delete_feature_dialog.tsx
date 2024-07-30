@@ -10,8 +10,8 @@ export class DeleteFeatureDialog extends gws.View<types.ViewProps> {
     }
 
     render() {
-        let dd = this.props.editDialogData as types.DeleteFeatureDialogData;
         let cc = this.master();
+        let dd = cc.editState.dialogData as types.DeleteFeatureDialogData;
 
         return <gws.ui.Confirm
             title={this.__('editDeleteFeatureTitle')}

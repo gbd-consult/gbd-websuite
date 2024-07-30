@@ -1,11 +1,11 @@
 """Backend for vector edit operations."""
 
-from typing import Optional
+from typing import Optional, cast
 
 import gws
 import gws.base.action
-import gws.lib.mime
-from . import core
+
+from . import api, helper
 
 gws.ext.new.action('edit')
 
@@ -19,31 +19,36 @@ class Props(gws.base.action.Props):
     pass
 
 
-class Object(core.Action):
+class Object(gws.base.action.Object):
+    h: helper.Object
+
+    def configure(self):
+        self.h = cast(helper.Object, self.root.app.helper('edit'))
+
     @gws.ext.command.api('editGetModels')
-    def edit_get_models(self, req: gws.WebRequester, p: core.GetModelsRequest) -> core.GetModelsResponse:
-        return self.get_models_response(req, p)
+    def api_get_models(self, req: gws.WebRequester, p: api.GetModelsRequest) -> api.GetModelsResponse:
+        return self.h.get_models_response(req, p, self.h.get_models(req, p))
 
     @gws.ext.command.api('editGetFeatures')
-    def edit_get_features(self, req: gws.WebRequester, p: core.GetFeaturesRequest) -> core.FeatureListResponse:
-        return self.get_features_response(req, p)
+    def api_get_features(self, req: gws.WebRequester, p: api.GetFeaturesRequest) -> api.GetFeaturesResponse:
+        return self.h.get_features_response(req, p, self.h.get_features(req, p))
 
     @gws.ext.command.api('editGetRelatableFeatures')
-    def edit_get_relatable_features(self, req: gws.WebRequester, p: core.GetRelatableFeaturesRequest) -> core.FeatureListResponse:
-        return self.get_relatable_features_response(req, p)
+    def api_get_relatable_features(self, req: gws.WebRequester, p: api.GetRelatableFeaturesRequest) -> api.GetRelatableFeaturesResponse:
+        return self.h.get_relatable_features_response(req, p, self.h.get_relatable_features(req, p))
 
     @gws.ext.command.api('editGetFeature')
-    def edit_get_feature(self, req: gws.WebRequester, p: core.GetFeatureRequest) -> core.FeatureResponse:
-        return self.get_feature_response(req, p)
+    def api_get_feature(self, req: gws.WebRequester, p: api.GetFeatureRequest) -> api.GetFeatureResponse:
+        return self.h.get_feature_response(req, p, self.h.get_feature(req, p))
 
     @gws.ext.command.api('editInitFeature')
-    def edit_init_feature(self, req: gws.WebRequester, p: core.InitFeatureRequest) -> core.FeatureResponse:
-        return self.init_feature_response(req, p)
+    def api_init_feature(self, req: gws.WebRequester, p: api.InitFeatureRequest) -> api.InitFeatureResponse:
+        return self.h.init_feature_response(req, p, self.h.init_feature(req, p))
 
     @gws.ext.command.api('editWriteFeature')
-    def edit_write_feature(self, req: gws.WebRequester, p: core.WriteFeatureRequest) -> core.WriteResponse:
-        return self.write_feature_response(req, p)
+    def api_write_feature(self, req: gws.WebRequester, p: api.WriteFeatureRequest) -> api.WriteFeatureResponse:
+        return self.h.write_feature_response(req, p, self.h.write_feature(req, p))
 
     @gws.ext.command.api('editDeleteFeature')
-    def edit_delete_feature(self, req: gws.WebRequester, p: core.DeleteFeatureRequest) -> gws.Response:
-        return self.delete_feature_response(req, p)
+    def api_delete_feature(self, req: gws.WebRequester, p: api.DeleteFeatureRequest) -> api.DeleteFeatureResponse:
+        return self.h.delete_feature_response(req, p, self.h.delete_feature(req, p))

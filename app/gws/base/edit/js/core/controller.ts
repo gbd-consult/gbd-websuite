@@ -13,15 +13,7 @@ import {FeatureListWidgetHelper} from './feature_list_widget_helper';
 import {FeatureSelectWidgetHelper} from './feature_select_widget_helper';
 import {FeatureSuggestWidgetHelper} from './feature_suggest_widget_helper';
 import {FeatureCache} from './feature_cache';
-import {Dialog} from './dialog';
 
-
-export const StoreKeys = [
-    'editState',
-    'editDialogData',
-    'editTableViewDialogZoomed',
-    'appActiveTool',
-];
 
 export class Controller extends gws.Controller {
     serviceLayer: ServiceLayer;
@@ -48,46 +40,33 @@ export class Controller extends gws.Controller {
             featureCache: {},
         });
 
-        this.setup = this.app.actionProps('edit');
+        this.setup = this.serverActionProps();
         if (!this.setup) {
-            this.updateObject('sidebarHiddenItems', {'Sidebar.Edit': true});
-            this.updateObject('toolbarHiddenItems', {'Toolbar.Edit': true});
+            this.hideControls();
             return;
         }
 
 
-        let res = await this.app.server.editGetModels({});
+        let res = await this.serverGetModels({});
         if (!res.error) {
             for (let props of res.models) {
                 this.models.push(this.app.modelRegistry.addModel(props));
             }
         }
 
-        if (gws.lib.isEmpty(this.models)) {
-            this.updateObject('sidebarHiddenItems', {'Sidebar.Edit': true});
-            this.updateObject('toolbarHiddenItems', {'Toolbar.Edit': true});
+        if (!this.hasModels()) {
+            this.hideControls();
             return;
         }
-
-        this.serviceLayer = this.map.addServiceLayer(new ServiceLayer(this.map, {
-            uid: '_edit',
-        }));
-        // this.serviceLayer.controller = this;
-
-        this.app.whenCalled('editModel', args => {
-            this.selectModelInSidebar(args.model);
-            this.update({
-                sidebarActiveTab: 'Sidebar.Edit',
-            });
-        });
-
-        this.app.whenChanged('mapViewState', () =>
-            this.whenMapStateChanged());
     }
 
-    get appOverlayView() {
-        return this.createElement(
-            this.connect(Dialog, StoreKeys));
+    hideControls() {
+        this.updateObject('sidebarHiddenItems', {'Sidebar.Edit': true});
+        this.updateObject('toolbarHiddenItems', {'Toolbar.Edit': true});
+    }
+
+    hasModels() {
+        return !gws.lib.isEmpty(this.models)
     }
 
     //
@@ -127,7 +106,7 @@ export class Controller extends gws.Controller {
         else
             models = this.models.filter(m => !m.layer || !m.layer.hidden);
 
-        let res = await this.app.server.editGetFeatures({
+        let res = await this.serverGetFeatures({
             shapes: [this.map.geom2shape(pt)],
             modelUids: models.map(m => m.uid),
             resolution: this.map.viewState.resolution,
@@ -268,13 +247,13 @@ export class Controller extends gws.Controller {
     //
 
     showDialog(dd: types.DialogData) {
-        this.update({editDialogData: dd})
+        this.updateEditState({dialogData: dd})
     }
 
     async closeDialog() {
         this.updateEditState({isWaiting: true});
         await gws.lib.sleep(2);
-        this.update({editDialogData: null});
+        this.updateEditState({dialogData: null});
         this.updateEditState({isWaiting: false});
     }
 
@@ -454,7 +433,7 @@ export class Controller extends gws.Controller {
         let featureToWrite = feature.clone();
         featureToWrite.attributes = attsToWrite;
 
-        let res = await this.app.server.editWriteFeature({
+        let res = await this.serverWriteFeature({
             modelUid: model.uid,
             feature: featureToWrite.getProps(1),
         }, {binaryRequest: true});
@@ -483,7 +462,12 @@ export class Controller extends gws.Controller {
         return true;
     }
 
-    async createFeature(model: gws.types.IModel, attributes?: object, geometry?: ol.geom.Geometry): Promise<gws.types.IFeature> {
+    async createFeature(
+        model: gws.types.IModel,
+        attributes?: object,
+        geometry?: ol.geom.Geometry,
+        withFeature?: gws.types.IFeature,
+    ): Promise<gws.types.IFeature> {
         attributes = attributes || {};
 
         if (geometry) {
@@ -491,22 +475,29 @@ export class Controller extends gws.Controller {
         }
 
         let featureToInit = model.featureWithAttributes(attributes);
-        featureToInit.isNew = true;
 
-        let res = await this.app.server.editInitFeature({
+        featureToInit.isNew = true;
+        if (withFeature) {
+            featureToInit.createWithFeatures = [withFeature];
+        }
+
+        let res = await this.serverInitFeature({
             modelUid: model.uid,
             feature: featureToInit.getProps(1),
         });
 
-        let newFeature = model.featureFromProps(res.feature);
+        let newFeature = this.app.modelRegistry.featureFromProps(res.feature);
         newFeature.isNew = true;
+        if (withFeature) {
+            newFeature.createWithFeatures = [withFeature];
+        }
 
         return newFeature;
     }
 
     async deleteFeature(feature: gws.types.IFeature) {
 
-        let res = await this.app.server.editDeleteFeature({
+        let res = await this.serverDeleteFeature({
             modelUid: feature.model.uid,
             feature: feature.getProps()
         });
@@ -555,13 +546,8 @@ export class Controller extends gws.Controller {
         return es.featureListSearchText[key] || '';
     }
 
-    getEditState(): types.EditState {
-        return this.getValue('editState') || {};
-
-    }
-
     get editState(): types.EditState {
-        return this.getValue('editState') || {};
+        return this.getValue(this.editStateKey()) || {};
     }
 
     updateEditState(es: Partial<types.EditState> = null) {
@@ -570,7 +556,9 @@ export class Controller extends gws.Controller {
             ...(es || {})
         }
 
-        this.update({editState})
+        this.update({
+            [this.editStateKey()]: editState
+        })
 
         if (this.serviceLayer) {
 
@@ -583,9 +571,48 @@ export class Controller extends gws.Controller {
                 f.redraw()
             }
         }
-
-
     }
 
+    //
+
+    actionName() {
+        return 'edit';
+    }
+
+    editStateKey() {
+        return this.actionName() + 'State'
+    }
+
+    serverActionProps() {
+        return this.app.actionProps(this.actionName());
+    }
+
+    serverDeleteFeature(p, options?) {
+        return this.app.server[this.actionName() + 'DeleteFeature'](p, options)
+    }
+
+    serverGetFeature(p, options?) {
+        return this.app.server[this.actionName() + 'GetFeature'](p, options)
+    }
+
+    serverGetFeatures(p, options?) {
+        return this.app.server[this.actionName() + 'GetFeatures'](p, options)
+    }
+
+    serverGetModels(p, options?) {
+        return this.app.server[this.actionName() + 'GetModels'](p, options)
+    }
+
+    serverGetRelatableFeatures(p, options?) {
+        return this.app.server[this.actionName() + 'GetRelatableFeatures'](p, options)
+    }
+
+    serverInitFeature(p, options?) {
+        return this.app.server[this.actionName() + 'InitFeature'](p, options)
+    }
+
+    serverWriteFeature(p, options?) {
+        return this.app.server[this.actionName() + 'WriteFeature'](p, options)
+    }
 
 }

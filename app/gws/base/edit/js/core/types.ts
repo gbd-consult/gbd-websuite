@@ -9,39 +9,11 @@ export interface TableViewRow {
 }
 
 
-export interface EditState {
-    sidebarSelectedModel?: gws.types.IModel;
-    sidebarSelectedFeature?: gws.types.IFeature;
-    tableViewSelectedModel?: gws.types.IModel;
-    tableViewSelectedFeature?: gws.types.IFeature;
-    tableViewRows: Array<TableViewRow>;
-    tableViewTouchPos?: Array<number>;
-    tableViewLoading: boolean;
-    formErrors?: object;
-    serverError?: string;
-    drawModel?: gws.types.IModel;
-    drawFeature?: gws.types.IFeature;
-    featureHistory: Array<gws.types.IFeature>;
-    featureListSearchText: { [modelUid: string]: string };
-    featureCache: { [key: string]: Array<gws.types.IFeature> },
-    isWaiting: boolean,
-}
-
 export interface ViewProps extends gws.types.ViewProps {
     controller: Controller;
-    editState: EditState;
-    editDialogData?: DialogData;
-    editTableViewDialogZoomed: boolean;
+    editUpdateCount: number;
     appActiveTool: string;
 }
-
-export const StoreKeys = [
-    'editState',
-    'editDialogData',
-    'editTableViewDialogZoomed',
-    'appActiveTool',
-];
-
 
 export interface SelectModelDialogData {
     type: 'SelectModel';
@@ -82,6 +54,24 @@ export type DialogData =
     | GeometryTextDialogData
     ;
 
+export interface EditState {
+    sidebarSelectedModel?: gws.types.IModel;
+    sidebarSelectedFeature?: gws.types.IFeature;
+    tableViewSelectedModel?: gws.types.IModel;
+    tableViewSelectedFeature?: gws.types.IFeature;
+    tableViewRows: Array<TableViewRow>;
+    tableViewTouchPos?: Array<number>;
+    tableViewLoading: boolean;
+    formErrors?: object;
+    serverError?: string;
+    drawModel?: gws.types.IModel;
+    drawFeature?: gws.types.IFeature;
+    featureHistory: Array<gws.types.IFeature>;
+    featureListSearchText: { [modelUid: string]: string };
+    featureCache: { [key: string]: Array<gws.types.IFeature> };
+    isWaiting: boolean;
+    dialogData?: DialogData;
+}
 
 export interface FeatureListProps extends gws.types.ViewProps {
     features: Array<gws.types.IFeature>;

@@ -93,7 +93,7 @@ export class ListTab extends gws.View<types.ViewProps> {
 
     render() {
         let cc = this.master();
-        let es = this.props.editState;
+        let es = this.master().editState;
         let model = es.sidebarSelectedModel;
         let features = cc.featureCache.getForModel(model);
         let searchText = es.featureListSearchText[model.uid] || '';

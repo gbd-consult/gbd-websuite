@@ -5,6 +5,10 @@ import * as core from './core';
 
 const MASTER = 'Shared.Edit';
 
+export const StoreKeys = [
+    'editState',
+    'appActiveTool',
+];
 
 class PointerTool extends core.PointerTool {
     master() {
@@ -33,7 +37,7 @@ export class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
 
     get tabView() {
         return this.createElement(
-            this.connect(SidebarView, core.types.StoreKeys)
+            this.connect(SidebarView, StoreKeys)
         );
     }
 }
@@ -52,7 +56,31 @@ class Controller extends core.Controller {
 
     async init() {
         await super.init();
-        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Edit'});
+        this.serviceLayer = this.map.addServiceLayer(new core.ServiceLayer(this.map, {
+            uid: '_edit',
+        }));
+        // this.serviceLayer.controller = this;
+
+        this.app.whenCalled('editModel', args => {
+            this.selectModelInSidebar(args.model);
+            this.update({
+                sidebarActiveTab: 'Sidebar.Edit',
+            });
+        });
+
+        this.app.whenChanged('mapViewState', () => {
+            this.whenMapStateChanged()
+        });
+
+    }
+
+    get appOverlayView() {
+        return this.createElement(
+            this.connect(core.Dialog, StoreKeys));
+    }
+
+    actionName() {
+        return 'edit'
     }
 }
 

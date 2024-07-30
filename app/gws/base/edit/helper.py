@@ -1,5 +1,3 @@
-"""Backend for vector edit operations."""
-
 from typing import Optional, cast
 
 import gws
@@ -17,88 +15,28 @@ import gws.lib.image
 import gws.lib.jsonx
 import gws.lib.mime
 
+from . import api
+
+gws.ext.new.helper('edit')
+
 LIST_VIEWS = ['title', 'label']
 DEFAULT_TOLERANCE = 10, gws.Uom.px
 
 
-class GetModelsRequest(gws.Request):
-    pass
+class Object(gws.Node):
 
-
-class GetModelsResponse(gws.Response):
-    models: list[gws.ext.props.model]
-
-
-class GetFeaturesRequest(gws.Request):
-    modelUids: list[str]
-    crs: Optional[gws.CrsName]
-    extent: Optional[gws.Extent]
-    featureUids: Optional[list[str]]
-    keyword: Optional[str]
-    resolution: Optional[float]
-    shapes: Optional[list[gws.ShapeProps]]
-    tolerance: Optional[str]
-
-
-class GetRelatableFeaturesRequest(gws.Request):
-    modelUid: str
-    fieldName: str
-    extent: Optional[gws.Extent]
-    keyword: Optional[str]
-
-
-class GetFeatureRequest(gws.Request):
-    modelUid: str
-    featureUid: str
-
-
-class InitFeatureRequest(gws.Request):
-    modelUid: str
-    feature: gws.FeatureProps
-
-
-class WriteFeatureRequest(gws.Request):
-    modelUid: str
-    feature: gws.FeatureProps
-
-
-class DeleteFeatureRequest(gws.Request):
-    modelUid: str
-    feature: gws.FeatureProps
-
-
-class FeatureResponse(gws.Response):
-    feature: gws.FeatureProps
-
-
-class WriteResponse(gws.Response):
-    validationErrors: list[gws.ModelValidationError]
-    feature: gws.FeatureProps
-
-
-class FeatureListResponse(gws.Response):
-    features: list[gws.FeatureProps]
-
-
-class Action(gws.base.action.Object):
-
-    def get_models_response(self, req: gws.WebRequester, p: GetModelsRequest) -> GetModelsResponse:
-        return GetModelsResponse(
-            models=[gws.props_of(m, req.user) for m in self.get_models(req, p)]
-        )
-
-    def get_models(self, req: gws.WebRequester, p: GetModelsRequest) -> list[gws.Model]:
+    def get_models(self, req: gws.WebRequester, p: api.GetModelsRequest) -> list[gws.Model]:
         project = req.user.require_project(p.projectUid)
         return self.root.app.modelMgr.editable_models(project, req.user)
 
+    def get_models_response(self, req: gws.WebRequester, p: gws.Request, models: list[gws.Model]) -> api.GetModelsResponse:
+        return api.GetModelsResponse(
+            models=[gws.props_of(m, req.user) for m in models]
+        )
+
     ##
 
-    def get_features_response(self, req: gws.WebRequester, p: GetFeaturesRequest) -> FeatureListResponse:
-        fs = self.get_features(req, p)
-        mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editList)
-        return FeatureListResponse(features=self.feature_list_to_props(fs, mc))
-
-    def get_features(self, req: gws.WebRequester, p: GetFeaturesRequest) -> list[gws.Feature]:
+    def get_features(self, req: gws.WebRequester, p: api.GetFeaturesRequest) -> list[gws.Feature]:
         mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editList)
 
         search = gws.SearchQuery(project=mc.project, tolerance=DEFAULT_TOLERANCE)
@@ -122,14 +60,13 @@ class Action(gws.base.action.Object):
 
         return fs
 
+    def get_features_response(self, req: gws.WebRequester, p: gws.Request, features: list[gws.Feature]) -> api.GetFeaturesResponse:
+        mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editList)
+        return api.GetFeaturesResponse(features=self.feature_list_to_props(features, mc))
+
     ##
 
-    def get_relatable_features_response(self, req: gws.WebRequester, p: GetRelatableFeaturesRequest) -> FeatureListResponse:
-        fs = self.get_relatable_features(req, p)
-        mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editList)
-        return FeatureListResponse(features=self.feature_list_to_props(fs, mc))
-
-    def get_relatable_features(self, req: gws.WebRequester, p: GetRelatableFeaturesRequest) -> list[gws.Feature]:
+    def get_relatable_features(self, req: gws.WebRequester, p: api.GetRelatableFeaturesRequest) -> list[gws.Feature]:
         mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editList, max_depth=0)
 
         model = self.require_model(p.modelUid, req.user, gws.Access.read)
@@ -138,32 +75,28 @@ class Action(gws.base.action.Object):
 
         return field.find_relatable_features(search, mc)
 
+    def get_relatable_features_response(self, req: gws.WebRequester, p: gws.Request, features: list[gws.Feature]) -> api.GetRelatableFeaturesResponse:
+        mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editList)
+        return api.GetRelatableFeaturesResponse(features=self.feature_list_to_props(features, mc))
+
     ##
 
-    def get_feature_response(self, req: gws.WebRequester, p: GetFeatureRequest) -> FeatureResponse:
-        f = self.get_feature(req, p)
-        if not f:
-            raise gws.NotFoundError()
+    def get_feature(self, req: gws.WebRequester, p: api.GetFeatureRequest) -> Optional[gws.Feature]:
         mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editForm)
-        return FeatureResponse(feature=self.feature_to_props(f, mc))
-
-    def get_feature(self, req: gws.WebRequester, p: GetFeatureRequest) -> Optional[gws.Feature]:
-        mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editForm)
-
         model = self.require_model(p.modelUid, req.user, gws.Access.read)
-
         fs = model.get_features([p.featureUid], mc)
         if fs:
             return fs[0]
 
+    def get_feature_response(self, req: gws.WebRequester, p: gws.Request, feature: Optional[gws.Feature]) -> api.GetFeatureResponse:
+        if not feature:
+            raise gws.NotFoundError()
+        mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editForm)
+        return api.GetFeatureResponse(feature=self.feature_to_props(feature, mc))
+
     ##
 
-    def init_feature_response(self, req: gws.WebRequester, p: InitFeatureRequest) -> FeatureResponse:
-        f = self.init_feature(req, p)
-        mc = self.model_context(req, p, gws.ModelOperation.create)
-        return FeatureResponse(feature=self.feature_to_props(f, mc))
-
-    def init_feature(self, req: gws.WebRequester, p: InitFeatureRequest) -> gws.Feature:
+    def init_feature(self, req: gws.WebRequester, p: api.InitFeatureRequest) -> gws.Feature:
         mc = self.model_context(req, p, gws.ModelOperation.create)
 
         f = self.feature_from_props(p.feature, gws.Access.create, mc)
@@ -175,22 +108,15 @@ class Action(gws.base.action.Object):
         f.model.init_feature(f, mc)
         return f
 
+    def init_feature_response(self, req: gws.WebRequester, p: gws.Request, feature: Optional[gws.Feature]) -> api.InitFeatureResponse:
+        if not feature:
+            raise gws.NotFoundError()
+        mc = self.model_context(req, p, gws.ModelOperation.create)
+        return api.InitFeatureResponse(feature=self.feature_to_props(feature, mc))
+
     ##
 
-    def write_feature_response(self, req: gws.WebRequester, p: WriteFeatureRequest) -> WriteResponse:
-        f = self.write_feature(req, p)
-        if not f:
-            raise gws.NotFoundError()
-        if f.errors:
-            return WriteResponse(validationErrors=f.errors)
-
-        mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editForm)
-        return WriteResponse(
-            feature=self.feature_to_props(f, mc),
-            validationErrors=[]
-        )
-
-    def write_feature(self, req: gws.WebRequester, p: WriteFeatureRequest) -> Optional[gws.Feature]:
+    def write_feature(self, req: gws.WebRequester, p: api.WriteFeatureRequest) -> Optional[gws.Feature]:
         is_new = p.feature.isNew
         mc = self.model_context(req, p, gws.ModelOperation.create if is_new else gws.ModelOperation.update)
 
@@ -215,16 +141,29 @@ class Action(gws.base.action.Object):
 
         return f_created[0]
 
+    def write_feature_response(self, req: gws.WebRequester, p: api.WriteFeatureRequest, feature: Optional[gws.Feature]) -> api.WriteFeatureResponse:
+        if not feature:
+            raise gws.NotFoundError()
+        if feature.errors:
+            return api.WriteFeatureResponse(validationErrors=feature.errors)
+
+        mc = self.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editForm)
+        return api.WriteFeatureResponse(
+            feature=self.feature_to_props(feature, mc),
+            validationErrors=[]
+        )
+
     ##
 
-    def delete_feature_response(self, req: gws.WebRequester, p: DeleteFeatureRequest) -> gws.Response:
-        self.delete_feature(req, p)
-        return gws.Response()
-
-    def delete_feature(self, req: gws.WebRequester, p: DeleteFeatureRequest):
+    def delete_feature(self, req: gws.WebRequester, p: api.DeleteFeatureRequest) -> Optional[gws.Feature]:
         mc = self.model_context(req, p, gws.ModelOperation.delete)
         f = self.feature_from_props(p.feature, gws.Access.delete, mc)
-        f.model.delete_feature(f, mc)
+        if f:
+            f.model.delete_feature(f, mc)
+        return f
+
+    def delete_feature_response(self, req: gws.WebRequester, p: api.DeleteFeatureRequest, feature: Optional[gws.Feature]) -> api.DeleteFeatureResponse:
+        return api.DeleteFeatureResponse()
 
     ##
 
@@ -270,7 +209,7 @@ class Action(gws.base.action.Object):
         ps = self.feature_list_to_props([feature], mc)
         return ps[0]
 
-    def model_context(self, req, p, op, target: Optional[gws.ModelReadTarget] = None, max_depth=1):
+    def model_context(self, req: gws.WebRequester, p: gws.Request, op, target: Optional[gws.ModelReadTarget] = None, max_depth=1):
         return gws.ModelContext(
             op=op,
             target=target,

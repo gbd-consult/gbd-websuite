@@ -13,8 +13,8 @@ export class SelectModelDialog extends gws.View<types.ViewProps> {
     }
 
     render() {
-        let dd = this.props.editDialogData as types.SelectModelDialogData;
         let cc = this.master();
+        let dd = cc.editState.dialogData as types.SelectModelDialogData;
 
         let cancelButton = <gws.ui.Button
             className="cmpButtonFormCancel"

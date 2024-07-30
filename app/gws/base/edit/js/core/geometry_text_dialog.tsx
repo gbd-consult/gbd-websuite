@@ -14,7 +14,8 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
     }
 
     save() {
-        let dd = this.props.editDialogData as types.GeometryTextDialogData;
+        let cc = this.master();
+        let dd = cc.editState.dialogData as types.GeometryTextDialogData;
         dd.whenSaved(dd.shape);
     }
 
@@ -27,10 +28,10 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
 
     updateShape(shape: gws.api.base.shape.Props) {
         let cc = this.master();
-        let dd = this.props.editDialogData as types.GeometryTextDialogData;
+        let dd = cc.editState.dialogData as types.GeometryTextDialogData;
 
-        cc.update({
-            editDialogData: {...dd, shape}
+        cc.updateEditState({
+            dialogData: {...dd, shape}
         });
     }
 
@@ -48,7 +49,8 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
             return
         }
 
-        let dd = this.props.editDialogData as types.GeometryTextDialogData;
+        let cc = this.master();
+        let dd = cc.editState.dialogData as types.GeometryTextDialogData;
         let shape = {
             crs: dd.shape.crs,
             geometry: {
@@ -62,8 +64,8 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
 
 
     render() {
-        let dd = this.props.editDialogData as types.GeometryTextDialogData;
         let cc = this.master();
+        let dd = cc.editState.dialogData as types.GeometryTextDialogData;
 
         let okButton = <gws.ui.Button
             {...gws.lib.cls('editSaveButton', 'isActive')}

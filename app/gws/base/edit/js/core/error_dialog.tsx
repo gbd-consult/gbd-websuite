@@ -9,8 +9,8 @@ export class ErrorDialog extends gws.View<types.ViewProps> {
         return this.props.controller as Controller;
     }
     render() {
-        let dd = this.props.editDialogData as types.ErrorDialogData;
         let cc = this.master();
+        let dd = cc.editState.dialogData as types.ErrorDialogData;
 
         return <gws.ui.Alert
             title={'Fehler'}

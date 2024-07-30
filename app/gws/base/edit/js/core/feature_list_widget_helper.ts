@@ -55,18 +55,7 @@ export class FeatureListWidgetHelper {
     async whenModelForNewSelected(feature, field: gws.types.IModelField, model: gws.types.IModel) {
         let cc = this.master();
 
-        let initFeature = model.featureWithAttributes({})
-        initFeature.createWithFeatures = [feature]
-
-        let res = await this.controller.app.server.editInitFeature({
-            modelUid: model.uid,
-            feature: initFeature.getProps(1),
-        });
-
-        let newFeature = cc.app.modelRegistry.featureFromProps(res.feature);
-        newFeature.isNew = true;
-        newFeature.createWithFeatures = [feature]
-
+        let newFeature = await cc.createFeature(model, null, null, feature);
         cc.pushFeature(feature);
         cc.selectFeatureInSidebar(newFeature);
         await cc.closeDialog();

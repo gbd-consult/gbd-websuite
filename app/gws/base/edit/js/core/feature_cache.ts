@@ -36,13 +36,13 @@ export class FeatureCache {
         let cc = this.master();
         let searchText = cc.getFeatureListSearchText(field.uid);
 
-        let request: gws.api.base.edit.GetRelatableFeaturesRequest = {
+        let res = await cc.serverGetRelatableFeatures({
             modelUid: field.model.uid,
             fieldName: field.name,
             keyword: searchText || '',
             extent: cc.map.bbox,
-        }
-        let res = await cc.app.server.editGetRelatableFeatures(request);
+
+        });
         let features = cc.app.modelRegistry.featureListFromProps(res.features);
         let key = 'field:' + field.uid;
         this.checkAndStore(key, features);
@@ -52,7 +52,7 @@ export class FeatureCache {
         let cc = this.master();
         let ls = model.loadingStrategy;
 
-        let request: gws.api.base.edit.GetFeaturesRequest = {
+        let request = {
             modelUids: [model.uid],
             keyword: searchText || '',
         }
@@ -61,17 +61,17 @@ export class FeatureCache {
             return [];
         }
         if (ls === gws.api.core.FeatureLoadingStrategy.bbox) {
-            request.extent = cc.map.bbox;
+            request['extent'] = cc.map.bbox;
         }
 
-        let res = await cc.app.server.editGetFeatures(request);
+        let res = await cc.serverGetFeatures(request);
         return model.featureListFromProps(res.features);
     }
 
     async loadOne(feature: gws.types.IFeature) {
         let cc = this.master();
 
-        let res = await cc.app.server.editGetFeature({
+        let res = await cc.serverGetFeature({
             modelUid: feature.model.uid,
             featureUid: feature.uid,
         });

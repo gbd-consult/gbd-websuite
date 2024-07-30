@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as gws from 'gws';
 
 import * as types from './types';
+import type {Controller} from './controller';
 
 import {TableViewDialog} from './table_view_dialog';
 import {SelectModelDialog} from './select_model_dialog';
@@ -13,14 +14,19 @@ import {ErrorDialog} from './error_dialog';
 
 
 export class Dialog extends gws.View<types.ViewProps> {
+    master() {
+        return this.props.controller as Controller;
+    }
 
     render() {
-        let model = this.props.editState.tableViewSelectedModel;
+        let cc = this.master();
+
+        let model = cc.editState.tableViewSelectedModel;
         if (model) {
             return <TableViewDialog {...this.props} />
         }
 
-        let dd = this.props.editDialogData;
+        let dd = cc.editState.dialogData;
         if (!dd || !dd.type) {
             return null;
         }
