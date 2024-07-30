@@ -3279,22 +3279,36 @@ insert into public.many_points (pk) select generate_series(1, 12345);
 update public.many_points set geom=st_makepoint(pk / 100, pk % 100);
 update public.many_points set label=st_x(geom)::text || '/' || st_y(geom)::text;
 
+drop table edit.nutzer;
+
 create table edit.nutzer
 (
-    id            int primary key generated always as identity,
-    vorname       text not null,
-    nachname      text not null,
-    email         text,
-    passwd        text,
-    comment       text default null
+    id              int primary key generated always as identity,
+    username        text,
+    email           text not null,
+    status          int default 0,
+
+    password        text,
+    mfauid          text,
+    mfasecret       text,
+
+    tc         text,
+    tctime     int,
+    tccategory text,
+
+    vorname         text not null,
+    nachname        text not null,
+    kommentar       text
+
 );
 
-insert into edit.nutzer(nachname, vorname, email)
+insert into edit.nutzer(login, nachname, vorname, email)
 values
-    ('Heine', 'Heinrich', 'Heine@example.com'),
-    ('Hesse', 'Herman', 'Hesse@example.com'),
-    ('Brecht', 'Bertolt', 'Brecht@example.com'),
-    ('Kafka', 'Franz', 'Kafka@example.com'),
-    ('Schiller', 'Friedrich', 'Schiller@example.com'),
-    ('von Goethe', 'Johann Wolfgang', 'Goethe@example.com')
+    ('heine', 'Heine', 'Heinrich', 'Heine@example.com'),
+    ('hesse', 'Hesse', 'Herman', 'Hesse@example.com'),
+    ('brecht', 'Brecht', 'Bertolt', 'Brecht@example.com'),
+    ('kafka', 'Kafka', 'Franz', 'Kafka@example.com'),
+    ('schiller', 'Schiller', 'Friedrich', 'Schiller@example.com'),
+    ('goethe', 'von Goethe', 'Johann Wolfgang', 'Goethe@example.com')
 ;
+select * from edit.nutzer

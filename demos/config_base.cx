@@ -102,6 +102,7 @@ auth {
     methods+ { type "basic" secure true }
     providers+ { type "file" path "/demos/users.json" }
     mfa+ { type "totp" uid "AUTH_MFA_TOTP" }
+    mfa+ { type "email" uid "AUTH_MFA_EMAIL" }
     session { type "sqlite" }
 }
 
