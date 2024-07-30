@@ -43,15 +43,21 @@ def main(args):
     if args.get('include'):
         config += '\n@include ' + args.get('include') + '\n'
 
-    # include projects
+    # include global configs and projects
 
     only = args.get('only')
-    project_paths = list(cli.find_files(APP_DIR, r'_demo/.+?\.cx$'))
-    for path in project_paths:
-        if not only or re.search(only, path):
-            prj = read_config_file(path)
-            prj += f"""\nmetadata.authorityIdentifier "/app{path.replace(APP_DIR, '')}" """
-            config += '\nprojects+ {\n' + prj + '\n}\n'
+    cx_paths = list(cli.find_files(APP_DIR, r'_demo/.+?\.cx$'))
+    for path in cx_paths:
+        if path.endswith('global.cx'):
+            cfg = read_config_file(path)
+            config += f'\n{cfg}\n'
+        elif not only or re.search(only, path):
+            cfg = read_config_file(path)
+            config += f'''
+                projects+ {{ \n{cfg}
+                    metadata.authorityIdentifier "/app{path.replace(APP_DIR, '')}"
+                }}
+            '''
 
     # parse config
 
@@ -135,7 +141,7 @@ RE_ASSET = r'''(?x)
 def read_config_file(path):
     text = cli.read_file(path)
     text = relocate_assets(text, path)
-    return text + '\n\n'
+    return text
 
 
 def relocate_assets(text, path):
