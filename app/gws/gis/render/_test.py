@@ -112,3 +112,29 @@ def test_render_map_px_center():
         "'mmSize': (52.916666666666664, 52.916666666666664), 'center': (150, 150), "
         "'scale': 100, 'bounds': {'crs': <crs:4326>, 'extent': (147.35416666666666, "
         '147.35416666666666, 152.64583333333334, 152.64583333333334)}}}')
+
+
+def test_output_to_html_element():
+    p1 = gws.MapRenderOutputPlane()
+    p2 = gws.MapRenderOutputPlane()
+    p3 = gws.MapRenderOutputPlane()
+
+    mv = gws.MapView(mmSize=(200, 200))
+    mro = gws.MapRenderOutput(view=mv, planes=[p1, p2, p3])
+
+    assert render.output_to_html_element(mro).to_string() == u.fxml('<div '
+                                                                    'style="position:relative;overflow:hidden;left:0;top:0;width:200mm;height:200mm">'
+                                                                    '<img/></div>')
+
+
+def test_output_to_html_string():
+    p1 = gws.MapRenderOutputPlane()
+    p2 = gws.MapRenderOutputPlane()
+    p3 = gws.MapRenderOutputPlane()
+
+    mv = gws.MapView(mmSize=(200, 200))
+    mro = gws.MapRenderOutput(view=mv, planes=[p1, p2, p3])
+
+    assert render.output_to_html_string(mro) == u.fxml('<div '
+                                                       'style="position:relative;overflow:hidden;left:0;top:0;width:200mm;height:200mm">'
+                                                       '<img/></div>')
