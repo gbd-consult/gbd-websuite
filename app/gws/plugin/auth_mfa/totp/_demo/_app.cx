@@ -1,0 +1,4 @@
+auth.mfa+ {
+    type "totp"
+    uid "AUTH_MFA_TOTP"
+}

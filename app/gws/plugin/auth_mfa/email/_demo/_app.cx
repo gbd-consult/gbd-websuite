@@ -1,0 +1,25 @@
+auth.mfa+ {
+    type "email"
+    uid "AUTH_MFA_EMAIL"
+
+    templates+ {
+        type "text"
+        subject "email.subject"
+        text "Multi-Faktor Code"
+    }
+
+    templates+ {
+        type "text"
+        subject "email.body"
+        text """
+        Hallo {{user.displayName}}.
+
+        Ihr Multi-Faktor Code lautet:
+
+        {{otp}}
+
+        Beste Grüße,
+        GWS Demos
+        """
+    }
+}

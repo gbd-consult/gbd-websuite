@@ -121,9 +121,10 @@ class Object(gws.base.edit.helper.Object):
         return [self.adminModel]
 
     def write_feature(self, req, p):
+        is_new = p.feature.isNew
         f = super().write_feature(req, p)
 
-        if f and not f.errors and f.isNew:
+        if f and not f.errors and is_new:
             account = self.get_account_by_id(f.uid())
             self.reset(account)
 
