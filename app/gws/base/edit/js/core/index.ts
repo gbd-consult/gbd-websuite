@@ -1,7 +1,10 @@
 import * as types from './types';
 import * as options from './options';
+import * as form_tab from './form_tab';
+import * as list_tab from './list_tab';
+import * as models_tab from './models_tab';
 
-export {types, options};
+export {types, options, form_tab, list_tab, models_tab};
 
 export {Controller} from './controller';
 
@@ -25,8 +28,5 @@ export {FeatureSelectWidgetHelper} from './feature_select_widget_helper';
 export {FeatureSuggestWidgetHelper} from './feature_suggest_widget_helper';
 export {GeometryWidgetHelper} from './geometry_widget_helper';
 
-export {FormTab} from './form_tab';
-export {ListTab} from './list_tab';
-export {ModelsTab} from './models_tab';
 
 export {SidebarView} from './sidebar_view';

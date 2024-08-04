@@ -195,6 +195,8 @@ export class Controller extends gws.Controller {
         this.app.stopTool('Tool.Edit.Draw');
     }
 
+    //
+
     async initWidget(field: gws.types.IModelField) {
         let controller = this.widgetControllerForField(field);
         if (!controller)
@@ -205,7 +207,6 @@ export class Controller extends gws.Controller {
             await this.widgetHelpers[p.type].init(field);
         }
     }
-
 
     createWidget(
         mode: gws.types.ModelWidgetMode,
@@ -241,6 +242,87 @@ export class Controller extends gws.Controller {
         }
 
         return controller[mode + 'View'](props)
+    }
+
+    formWidgets(feature, values) {
+        let widgets = [];
+
+        for (let fld of feature.model.fields) {
+            if (fld.widgetProps.type === 'geometry' && !fld.widgetProps.isInline) {
+                continue;
+            }
+            let w = this.createWidget(
+                gws.types.ModelWidgetMode.form,
+                fld,
+                feature,
+                values,
+                this.whenWidgetChanged.bind(this),
+                this.whenWidgetEntered.bind(this),
+            );
+            if (w) {
+                widgets.push(w);
+            }
+        }
+
+        return widgets;
+    }
+
+    geometryButtonWidget(feature, values) {
+        for (let fld of feature.model.fields) {
+            if (fld.widgetProps.type === 'geometry' && !fld.widgetProps.isInline) {
+                return this.createWidget(
+                    gws.types.ModelWidgetMode.form,
+                    fld,
+                    feature,
+                    values,
+                    this.whenWidgetChanged.bind(this),
+                    this.whenWidgetEntered.bind(this),
+                );
+            }
+        }
+    }
+
+    async whenFeatureFormSaveButtonTouched(feature: gws.types.IFeature) {
+        let ok = await this.saveFeatureInSidebar(feature);
+        if (ok) {
+            await this.closeForm();
+        }
+    }
+
+    whenFeatureFormDeleteButtonTouched(feature: gws.types.IFeature) {
+        this.showDialog({
+            type: 'DeleteFeature',
+            feature,
+            whenConfirmed: () => this.whenFeatureFormDeleteConfirmed(feature),
+        })
+    }
+
+    async whenFeatureFormDeleteConfirmed(feature: gws.types.IFeature) {
+        let ok = await this.deleteFeature(feature);
+        if (ok) {
+            await this.closeDialog();
+            await this.closeForm();
+        }
+    }
+
+    whenFeatureFormResetButtonTouched(feature: gws.types.IFeature) {
+        feature.resetEdits();
+        this.updateEditState();
+    }
+
+    async whenFeatureFormCancelButtonTouched() {
+        await this.closeForm();
+    }
+
+    whenWidgetChanged(feature: gws.types.IFeature, field: gws.types.IModelField, value: any) {
+        feature.editAttribute(field.name, value);
+        this.updateEditState();
+    }
+
+    whenWidgetEntered(feature: gws.types.IFeature, field: gws.types.IModelField, value: any) {
+        feature.editAttribute(field.name, value);
+        this.updateEditState();
+        this.whenFeatureFormSaveButtonTouched(feature);
     }
 
 
