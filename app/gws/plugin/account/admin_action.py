@@ -24,6 +24,17 @@ class Props(gws.base.action.Props):
     pass
 
 
+##
+
+
+class ResetRequest(gws.Request):
+    featureUid: str
+
+
+class ResetResponse(gws.Response):
+    feature: gws.FeatureProps
+
+
 class Object(gws.base.action.Object):
     h: helper.Object
 
@@ -57,3 +68,15 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('accountadminDeleteFeature')
     def api_delete_feature(self, req: gws.WebRequester, p: api.DeleteFeatureRequest) -> api.DeleteFeatureResponse:
         return self.h.delete_feature_response(req, p, self.h.delete_feature(req, p))
+
+    @gws.ext.command.api('accountadminReset')
+    def api_reset(self, req: gws.WebRequester, p: ResetRequest) -> ResetResponse:
+        uid = p.featureUid
+        account = self.h.get_account_by_id(uid)
+        if not account:
+            raise gws.NotFoundError()
+        self.h.reset(account)
+
+        mc = self.h.model_context(req, p, gws.ModelOperation.read, gws.ModelReadTarget.editForm)
+        fs = self.h.adminModel.get_features([self.h.get_uid(account)], mc)
+        return ResetResponse(feature=self.h.feature_to_props(fs[0], mc))

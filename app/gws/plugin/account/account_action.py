@@ -44,8 +44,10 @@ class OnboardingSavePasswordRequest(gws.Request):
 
 class OnboardingSavePasswordResponse(gws.Response):
     tc: str
+    ok: bool
     complete: bool
-    mfa: list[MfaProps]
+    completionUrl: str
+    mfaList: list[MfaProps]
 
 
 class OnboardingSaveMfaRequest(gws.Request):
@@ -55,6 +57,7 @@ class OnboardingSaveMfaRequest(gws.Request):
 
 class OnboardingSaveMfaResponse(gws.Response):
     complete: bool
+    completionUrl: str
 
 
 class Object(gws.base.action.Object):
@@ -75,36 +78,46 @@ class Object(gws.base.action.Object):
     def onboarding_save_password(self, req: gws.WebRequester, p: OnboardingSavePasswordRequest) -> OnboardingSavePasswordResponse:
         account = self.get_account_by_tc(p.tc, core.Category.onboarding, core.Status.onboarding)
 
-        if account.get('email') != p.email:
-            raise gws.ForbiddenError(f'invalid email')
-
         p1 = p.password1
         p2 = p.password2
 
-        if p1 != p2:
-            raise gws.ForbiddenError(f'passwords do not match')
-        if not self.h.validate_password(p1):
-            raise gws.ForbiddenError(f'invalid password')
+        if account.get('email') != p.email or p1 != p2 or not self.h.validate_password(p1):
+            return OnboardingSavePasswordResponse(
+                ok=False,
+                tc=self.h.generate_tc(account, core.Category.onboarding),
+            )
 
         self.h.set_password(account, p1)
 
         mfa = self.h.mfa_options(account)
         if not mfa:
-            return OnboardingSavePasswordResponse(complete=True)
+            self.h.delete_tc(account)
+            return OnboardingSavePasswordResponse(
+                ok=True,
+                complete=True,
+                completionUrl=self.h.onboardingCompletionUrl,
+            )
 
         mfa_secret = self.h.generate_mfa_secret(account)
 
         return OnboardingSavePasswordResponse(
+            ok=True,
             complete=False,
+            mfaList=self.mfa_props(account, mfa_secret),
             tc=self.h.generate_tc(account, core.Category.onboarding),
-            mfa=self.mfa_props(account, mfa_secret),
         )
 
     @gws.ext.command.api('accountOnboardingSaveMfa')
     def onboarding_save_mfa(self, req: gws.WebRequester, p: OnboardingSaveMfaRequest) -> OnboardingSaveMfaResponse:
         account = self.get_account_by_tc(p.tc, core.Category.onboarding, core.Status.onboarding)
+
         self.h.set_mfa(account, p.mfaIndex)
-        return OnboardingSaveMfaResponse(complete=True)
+
+        self.h.delete_tc(account)
+        return OnboardingSaveMfaResponse(
+            complete=True,
+            completionUrl=self.h.onboardingCompletionUrl,
+        )
 
     ##
 

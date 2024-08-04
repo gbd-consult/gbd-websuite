@@ -1,5 +1,10 @@
 import * as React from 'react';
 import * as gws from 'gws';
+
+let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
+
+
+import * as sidebar from 'gws/elements/sidebar';
 import * as edit from '../../../base/edit/js/core';
 
 const MASTER = 'Shared.AccountAdmin';
@@ -7,6 +12,66 @@ const MASTER = 'Shared.AccountAdmin';
 const StoreKeys = [
     'accountadminState',
 ];
+
+class FormButtons extends edit.form_tab.FormButtons {
+    master() {
+        return this.props.controller as Controller;
+    }
+
+    buttons() {
+        let cc = this.master();
+        let es = cc.editState;
+        let sf = es.sidebarSelectedFeature;
+
+        let b = super.buttons();
+        let last = b.pop();
+        b.push(
+            <Cell spaced>
+                <gws.ui.Button
+                    {...gws.lib.cls('accountResetButton')}
+                    tooltip={this.__('accountReset')}
+                    whenTouched={() => cc.whenAccountResetButtonTouched(sf)}
+                />
+            </Cell>,
+            last,
+        );
+        return b;
+    }
+}
+
+export class FormTab extends gws.View<edit.types.ViewProps> {
+    master() {
+        return this.props.controller as Controller;
+    }
+
+    async componentDidMount() {
+        let cc = this.master();
+        let es = cc.editState;
+        let sf = es.sidebarSelectedFeature;
+
+        cc.updateEditState({formErrors: null});
+
+        for (let fld of sf.model.fields) {
+            await cc.initWidget(fld);
+        }
+    }
+
+    render() {
+        return <sidebar.Tab className="editSidebar editSidebarFormTab">
+            <sidebar.TabHeader>
+                <edit.form_tab.FormHeader {...this.props}/>
+            </sidebar.TabHeader>
+            <sidebar.TabBody>
+                <edit.form_tab.FormFields {...this.props}/>
+                <edit.form_tab.FormError {...this.props}/>
+                <FormButtons {...this.props}/>
+            </sidebar.TabBody>
+        </sidebar.Tab>
+    }
+
+}
+
+
 
 class SidebarView extends edit.SidebarView {
     master() {
@@ -24,9 +89,9 @@ class SidebarView extends edit.SidebarView {
             return <gws.ui.Loader/>;
 
         if (es.sidebarSelectedFeature)
-            return <edit.FormTab {...this.props} controller={this.master()}/>;
+            return <FormTab {...this.props} controller={this.master()}/>;
 
-        return <edit.ListTab {...this.props} controller={this.master()}/>;
+        return <edit.list_tab.ListTab {...this.props} controller={this.master()}/>;
     }
 }
 
@@ -68,9 +133,12 @@ class Controller extends edit.Controller {
         this.updateObject('sidebarHiddenItems', {'Sidebar.AccountAdmin': true});
     }
 
-    //
+    async whenAccountResetButtonTouched(feature: gws.types.IFeature) {
+        let res = await this.app.server.accountadminReset({
+            featureUid: feature.uid,
+        });
 
-
+    }
 }
 
 

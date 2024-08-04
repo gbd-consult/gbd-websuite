@@ -1,11 +1,11 @@
 uid "user_account"
 
-title "Accont User Interface"
+title "Accont Interface"
 
 metadata.keywords [ "auth" "user" ]
 
 metadata.abstract """
-Accont User Interface
+Simple project to show the Accont UI
 """
 
 access "allow all"
@@ -15,7 +15,13 @@ actions+ {
     permissions.read "allow all"
 }
 
+client.addElements+ { tag "Sidebar.User" }
 client.addElements+ { tag "Account.Dialog" }
 
+map {
+    crs 3857
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+}
 
 {demo_osm_background}

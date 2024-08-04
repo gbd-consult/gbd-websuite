@@ -9,13 +9,14 @@ const MASTER = 'Shared.Account';
 
 class AccountState {
     page: string;
+    completionUrl: string;
     tc: string;
     onboardingEmail: string;
     newPassword1: string;
     newPassword2: string;
-    mfa: Array<gws.api.plugin.account.account_action.MfaProps>
+    mfaList: Array<gws.api.plugin.account.account_action.MfaProps>
     mfaIndex: number
-    error: string;
+    errorText: string;
 }
 
 interface ViewProps extends gws.types.ViewProps {
@@ -29,60 +30,97 @@ const StoreKeys = [
 ];
 
 class PageOnboardingPassword extends gws.View<ViewProps> {
-    render() {
+    renderForm() {
         let cc = this.props.controller;
-        let es = this.props.accountState;
 
         return <Form>
             <Row>
                 <Cell flex>
+                    <gws.ui.TextBlock content={this.__('accountOnboardingPasswordText')}/>
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex>
                     <gws.ui.TextInput
-                        label={this.__('onboardingEmail')}
-                        value={es.onboardingEmail}
+                        label={this.__('accountOnboardingEmail')}
+                        value={cc.accountState.onboardingEmail}
                         whenChanged={v => cc.whenOnboardingEmailChanged(v)}
-                        whenEntered={() => cc.whenSubmitted()}
+                        whenEntered={() => cc.whenOnboardingPasswordConfirmed()}
                     />
                 </Cell>
             </Row>
             <Row>
                 <Cell flex>
                     <gws.ui.PasswordInput
-                        label={this.__('newPassword1')}
-                        value={es.newPassword1}
+                        label={this.__('accountNewPassword1')}
+                        value={cc.accountState.newPassword1}
                         withShow
                         whenChanged={v => cc.whenNewPasswordChanged(v, 'newPassword1')}
-                        whenEntered={() => cc.whenSubmitted()}
+                        whenEntered={() => cc.whenOnboardingPasswordConfirmed()}
                     />
                 </Cell>
             </Row>
             <Row>
                 <Cell flex>
                     <gws.ui.PasswordInput
-                        label={this.__('newPassword2')}
-                        value={es.newPassword2}
+                        label={this.__('accountNewPassword2')}
+                        value={cc.accountState.newPassword2}
                         withShow
                         whenChanged={v => cc.whenNewPasswordChanged(v, 'newPassword2')}
-                        whenEntered={() => cc.whenSubmitted()}
+                        whenEntered={() => cc.whenOnboardingPasswordConfirmed()}
                     />
                 </Cell>
             </Row>
-            {es.error && <Row>
+            {cc.accountState.errorText && <Row>
                 <Cell flex>
-                    <gws.ui.Error text={es.error}/>
+                    <gws.ui.Error text={cc.accountState.errorText}/>
                 </Cell>
             </Row>}
         </Form>
     }
+
+    render() {
+        let cc = this.props.controller;
+        let buttonEnabled = true;
+
+        if (gws.lib.isEmpty(cc.accountState.onboardingEmail)) {
+            buttonEnabled = false;
+        } else {
+            buttonEnabled = cc.validateNewPassword() === '';
+        }
+
+        let okButton = <gws.ui.Button
+            {...gws.lib.cls('editSaveButton', 'isActive')}
+            tooltip={this.__('accountSave')}
+            disabled={!buttonEnabled}
+            whenTouched={() => cc.whenOnboardingPasswordConfirmed()}
+        />
+
+        return <gws.ui.Dialog
+            className="accountDialog"
+            title={this.__('accountOnboardingTitle')}
+            buttons={[okButton]}
+        >
+            {this.renderForm()}
+        </gws.ui.Dialog>;
+    }
+
 }
 
 class PageOnboardingMfa extends gws.View<ViewProps> {
-    render() {
+    renderForm() {
         let cc = this.props.controller;
-        let es = this.props.accountState;
-
         let rows = [];
 
-        for (let mfa of es.mfa) {
+        rows.push(
+            <Row>
+                <Cell flex>
+                    <gws.ui.Text content={this.__('accountOnboardingMfaText')}/>
+                </Cell>
+            </Row>
+        )
+
+        for (let mfa of cc.accountState.mfaList) {
             rows.push(
                 <Row>
                     <Cell flex>
@@ -90,8 +128,8 @@ class PageOnboardingMfa extends gws.View<ViewProps> {
                             type="radio"
                             label={mfa.title}
                             inline
-                            value={es.mfaIndex === mfa.index}
-                            whenChanged={v => cc.whenMfaSelected(mfa.index)}
+                            value={cc.accountState.mfaIndex === mfa.index}
+                            whenChanged={v => cc.whenMfaChanged(mfa.index)}
                         />
                     </Cell>
                 </Row>
@@ -111,41 +149,69 @@ class PageOnboardingMfa extends gws.View<ViewProps> {
             {rows}
         </Form>
     }
+
+    render() {
+        let cc = this.props.controller;
+        let buttonEnabled = !!cc.accountState.mfaIndex;
+
+        let okButton = <gws.ui.Button
+            {...gws.lib.cls('editSaveButton', 'isActive')}
+            tooltip={this.__('accountSave')}
+            disabled={!buttonEnabled}
+            whenTouched={() => cc.whenOnboardingMfaConfirmed()}
+        />
+
+        return <gws.ui.Dialog
+            className="accountDialog"
+            title={this.__('accountOnboardingTitle')}
+            buttons={[okButton]}
+        >
+            {this.renderForm()}
+        </gws.ui.Dialog>;
+    }
 }
 
 class PageOnboardingComplete extends gws.View<ViewProps> {
     render() {
-        return <Form>
-            <Row>
-                <Cell flex>
-                    <gws.ui.TextBlock
-                        content={this.__('textOnboardingComplete')}
-                    />
-                </Cell>
-            </Row>
-        </Form>
+        let cc = this.props.controller;
+
+        let okButton = <gws.ui.Button
+            {...gws.lib.cls('editSaveButton', 'isActive')}
+            whenTouched={() => cc.whenOnboardingCompleteConfirmed()}
+        />
+
+        return <gws.ui.Dialog
+            className="accountDialog"
+            title={this.__('accountOnboardingTitle')}
+            buttons={[okButton]}
+        >
+            <gws.ui.Info text={this.__('accountOnboardingComplete')}/>
+        </gws.ui.Dialog>;
     }
 }
 
 class PageFatalError extends gws.View<ViewProps> {
     render() {
+        let cc = this.props.controller;
         let es = this.props.accountState;
 
-        return <Form>
-            {es.error && <Row>
-                <Cell flex>
-                    <gws.ui.Error text={es.error}/>
-                </Cell>
-            </Row>}
-        </Form>
+        return <gws.ui.Alert
+            title={this.__('accountError')}
+            error={es.errorText}
+            whenClosed={() => cc.closeDialog()}
+        />
     }
 }
 
 //
 
-class DialogContent extends gws.View<ViewProps> {
+class Dialog extends gws.View<ViewProps> {
     render() {
         let es = this.props.accountState;
+
+        if (!es.page) {
+            return null
+        }
 
         switch (es.page) {
             case 'OnboardingPassword':
@@ -158,35 +224,7 @@ class DialogContent extends gws.View<ViewProps> {
                 return <PageFatalError {...this.props}/>
         }
     }
-}
 
-class Dialog extends gws.View<ViewProps> {
-    render() {
-        let cc = this.props.controller;
-        let es = this.props.accountState;
-
-        if (!es.page) {
-            return null
-        }
-
-        let title = cc.dialogTitle[es.page];
-
-        let okButton = <gws.ui.Button
-            {...gws.lib.cls('editSaveButton', 'isActive')}
-            tooltip={this.__('editSave')}
-            disabled={!cc.canSubmit()}
-            whenTouched={() => cc.whenSubmitted()}
-        />
-
-        return <gws.ui.Dialog
-            className="accountDialog"
-            title={title}
-            buttons={[okButton]}
-            whenClosed={() => cc.closeDialog()}
-        >
-            <DialogContent {...this.props}/>
-        </gws.ui.Dialog>;
-    }
 
 }
 
@@ -194,7 +232,6 @@ class Dialog extends gws.View<ViewProps> {
 
 class Controller extends gws.Controller {
     uid = MASTER;
-    dialogTitle: object
 
     async init() {
         await super.init();
@@ -202,13 +239,6 @@ class Controller extends gws.Controller {
         this.updateState({
             page: '',
         });
-
-        this.dialogTitle = {
-            'OnboardingPassword': this.__('titleOnboardingPassword'),
-            'OnboardingMfa': this.__('titleOnboardingMfa'),
-            'OnboardingComplete': this.__('titleOnboardingComplete'),
-            'FatalError': this.__('titleFatalError'),
-        }
 
         this.app.whenLoaded(() => this.whenAppLoaded());
     }
@@ -233,13 +263,18 @@ class Controller extends gws.Controller {
         let res = await this.app.server.accountOnboardingStart({tc: tc})
 
         if (res.error) {
-            return this.updateState({
-                page: 'FatalError',
-            });
+            return this.showOnboardingError();
         }
         this.updateState({
             page: 'OnboardingPassword',
             tc: res.tc,
+        });
+    }
+
+    showOnboardingError() {
+        return this.updateState({
+            page: 'FatalError',
+            errorText: this.__('accountOnboardingError'),
         });
     }
 
@@ -254,7 +289,7 @@ class Controller extends gws.Controller {
             [key]: v.trim()
         });
         this.updateState({
-            error: this.validateNewPassword()
+            errorText: this.validateNewPassword()
         })
     }
 
@@ -263,89 +298,88 @@ class Controller extends gws.Controller {
         let p1 = es.newPassword1;
         let p2 = es.newPassword2;
 
-        if (gws.lib.isEmpty(p1) || gws.lib.isEmpty(p2)) {
-            return this.__('errorEmptyPassword')
+        if (gws.lib.isEmpty(p1)) {
+            return this.__('accountErrorEmptyPassword')
         }
         if (p1 !== p2) {
-            return this.__('errorPasswordsDontMatch')
+            return this.__('accountErrorPasswordsDontMatch')
         }
         return '';
     }
 
-    whenMfaSelected(index) {
+    whenMfaChanged(index) {
         this.updateState({
             mfaIndex: index
         })
     }
 
-    async whenSubmitted() {
-        if (!this.canSubmit()) {
-            return;
-        }
+    //
 
+    async whenOnboardingPasswordConfirmed() {
         let es = this.accountState;
 
-        switch (es.page) {
-            case 'OnboardingPassword': {
-                let res = await this.app.server.accountOnboardingSavePassword({
-                    tc: es.tc,
-                    email: es.onboardingEmail,
-                    password1: es.newPassword1,
-                    password2: es.newPassword2,
-                })
-                if (res.error) {
-                    return this.updateState({
-                        error: this.__('serverError'),
-                    });
-                }
-                if (res.complete) {
-                    return this.updateState({
-                        page: 'OnboardingComplete'
-                    })
-                }
-                return this.updateState({
-                    page: 'OnboardingMfa',
-                    tc: res.tc,
-                    mfa: res.mfa,
-                })
-            }
-            case 'OnboardingMfa': {
-                let res = await this.app.server.accountOnboardingSaveMfa({
-                    tc: es.tc,
-                    mfaIndex: es.mfaIndex,
-                })
-                if (res.error) {
-                    return this.updateState({
-                        error: this.__('serverError'),
-                    });
-                }
-                if (res.complete) {
-                    return this.updateState({
-                        page: 'OnboardingComplete'
-                    })
-                }
-            }
+        if (gws.lib.isEmpty(es.onboardingEmail)) {
+            return this.updateState({errorText: this.__('accountErrorEmptyEmail')})
         }
+
+        let err = this.validateNewPassword();
+        if (err) {
+            return this.updateState({errorText: err})
+        }
+
+        let res = await this.app.server.accountOnboardingSavePassword({
+            tc: es.tc,
+            email: es.onboardingEmail,
+            password1: es.newPassword1,
+            password2: es.newPassword2,
+        })
+        if (res.error) {
+            return this.showOnboardingError()
+        }
+        if (res.complete) {
+            return this.updateState({
+                page: 'OnboardingComplete',
+                completionUrl: res.completionUrl,
+            })
+        }
+        if (!res.ok) {
+            return this.updateState({
+                errorText: this.__('accountOnboardingError'),
+                tc: res.tc,
+            })
+        }
+        return this.updateState({
+            page: 'OnboardingMfa',
+            tc: res.tc,
+            mfaList: res.mfaList,
+        })
+    }
+
+    async whenOnboardingMfaConfirmed() {
+        let es = this.accountState;
+
+        let res = await this.app.server.accountOnboardingSaveMfa({
+            tc: es.tc,
+            mfaIndex: es.mfaIndex,
+        })
+        if (res.error) {
+            return this.showOnboardingError()
+        }
+        if (res.complete) {
+            return this.updateState({
+                page: 'OnboardingComplete',
+                completionUrl: res.completionUrl,
+            })
+        }
+
+    }
+
+    async whenOnboardingCompleteConfirmed() {
+        let es = this.accountState;
+        this.app.navigate(es.completionUrl);
     }
 
     //
-
-    canSubmit() {
-        let es = this.accountState;
-
-        switch (es.page) {
-            case 'OnboardingPassword':
-                if (gws.lib.isEmpty(es.onboardingEmail)) {
-                    return false;
-                }
-                return this.validateNewPassword() === ''
-            case 'OnboardingMfa':
-                return !!es.mfaIndex;
-        }
-
-        return true
-    }
-
 
     closeDialog() {
         this.updateState({page: ''});

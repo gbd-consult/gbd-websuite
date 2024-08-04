@@ -1,7 +1,7 @@
 helpers+ {
     type "account"
 
-    loginColumn "login"
+    usernameColumn "login"
 
     mfaIssuer "GWS Demo"
     mfa [
@@ -12,7 +12,7 @@ helpers+ {
 
     onboardingUrl '/project/user_account'
 
-    models+ {
+    adminModel {
         permissions.edit "allow all"
         isEditable true
         type "postgres"
@@ -24,8 +24,15 @@ helpers+ {
             isPrimaryKey true
             isRequired true
         }
-        fields+ { name "username" type "text" }
+        fields+ { name "login" type "text" }
         fields+ { name "email" type "text" }
+        fields+ { name "status" type "integer"
+            widget { type "select" items [
+                { value 0   text "neu" }
+                { value 1   text "onboarding" }
+                { value 10  text "aktiv" }
+            ] }
+        }
         fields+ { name "vorname" type "text" }
         fields+ { name "nachname" type "text" }
         fields+ { name "kommentar" type "text" }

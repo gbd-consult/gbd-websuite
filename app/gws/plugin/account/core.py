@@ -3,10 +3,7 @@ import gws
 
 class Category:
     onboarding = 'onboarding'
-    onboardingFatalError = 'onboardingFatalError'
-    onboardingPasswordForm = 'onboardingPasswordForm'
-    onboardingMfaForm = 'onboardingMfaForm'
-    onboardingComplete = 'onboardingComplete'
+    resetPassword = 'resetPassword'
 
 
 class Status(gws.Enum):
