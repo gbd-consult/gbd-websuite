@@ -3284,7 +3284,7 @@ drop table edit.nutzer;
 create table edit.nutzer
 (
     id              int primary key generated always as identity,
-    username        text,
+    login        text,
     email           text not null,
     status          int default 0,
 
