@@ -1,3 +1,10 @@
+## Version 8.1.11
+
+- account plugin
+- editor module cleanup
+- CLI commands for sessions
+- QR-code generator for MFA
+
 ## Version 8.1.10
 
 - configurable HTTP security headers
