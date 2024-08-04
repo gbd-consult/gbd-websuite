@@ -3,7 +3,7 @@
 import gws
 import gws.test.util as u
 import gws.lib.intl as intl
-import gws.helper.csv as csv
+import gws.plugin.csv_helper as csv
 
 
 def test_write_headers():

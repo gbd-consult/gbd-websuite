@@ -9,7 +9,7 @@ from typing import Optional, cast
 
 import gws
 import gws.base.auth
-import gws.helper.email
+import gws.plugin.email_helper
 import gws.lib.otp
 
 gws.ext.new.authMultiFactorAdapter('email')
@@ -48,14 +48,14 @@ class Object(gws.base.auth.mfa.Object):
             'user': mfa.user,
             'otp': self.generate_totp(mfa),
         }
-        message = gws.helper.email.Message(
+        message = gws.plugin.email_helper.Message(
             subject=self.render_template('email.subject', args),
             mailTo=mfa.user.email,
             text=self.render_template('email.body', args, mime='text/plain'),
             html=self.render_template('email.body', args, mime='text/html'),
         )
 
-        email_helper = cast(gws.helper.email.Object, self.root.app.helper('email'))
+        email_helper = cast(gws.plugin.email_helper.Object, self.root.app.helper('email'))
         email_helper.send_mail(message)
 
     def render_template(self, subject, args, mime=None):

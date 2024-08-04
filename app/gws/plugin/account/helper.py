@@ -3,7 +3,7 @@ from typing import Optional, cast
 import gws
 import gws.base.edit.helper
 import gws.config.util
-import gws.helper.email
+import gws.plugin.email_helper
 import gws.lib.image
 import gws.lib.net
 import gws.lib.otp
@@ -380,14 +380,14 @@ class Object(gws.base.edit.helper.Object):
         args = args or {}
         args['account'] = account
 
-        message = gws.helper.email.Message(
+        message = gws.plugin.email_helper.Message(
             subject=self.render_template(f'{category}.emailSubject', args),
             mailTo=email,
             text=self.render_template(f'{category}.emailBody', args, mime='text/plain'),
             html=self.render_template(f'{category}.emailBody', args, mime='text/html'),
         )
 
-        email_helper = cast(gws.helper.email.Object, self.root.app.helper('email'))
+        email_helper = cast(gws.plugin.email_helper, self.root.app.helper('email'))
         email_helper.send_mail(message)
 
     def render_template(self, subject, args, mime=None):
