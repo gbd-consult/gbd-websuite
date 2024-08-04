@@ -103,7 +103,7 @@ class Object(gws.Node):
             mode=p.mode or SmtpMode.ssl,
             host=p.host,
             login=p.login,
-            password=p.passsword,
+            password=p.password,
             timeout=p.timeout,
         )
         self.smtp.port = p.port or _DEFAULT_PORT.get(self.smtp.mode)
