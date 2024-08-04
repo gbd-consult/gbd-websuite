@@ -152,10 +152,10 @@ class Object(gws.base.auth.method.Object):
 
         return self._mfa_response(mfa)
 
-    def handle_logout(self, req: gws.WebRequester) -> gws.Response:
+    def handle_logout(self, req: gws.WebRequester) -> LogoutResponse:
         if req.user.isGuest:
             self._delete_session(req)
-            return gws.Response()
+            return LogoutResponse()
 
         if req.session.method != self:
             raise gws.ForbiddenError(f'wrong method for logout: {req.session.method!r}')
@@ -163,7 +163,7 @@ class Object(gws.base.auth.method.Object):
         self._delete_session(req)
 
         gws.log.info(f'LOGGED_OUT: user={req.user.uid!r}')
-        return gws.Response()
+        return LogoutResponse()
 
     ##
 

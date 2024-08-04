@@ -42,8 +42,9 @@ class AuthProvider1(gws.base.auth.provider.Object):
 class AuthMfaAdapter1(gws.base.auth.mfa.Object):
     VALID_CODE = 'yes'
 
-    def check_payload(self, mfa, payload):
-        return payload['code'] == self.VALID_CODE
+    def verify(self, mfa, payload):
+        ok = payload['code'] == self.VALID_CODE
+        return self.verify_attempt(mfa, ok)
 
 
 ##
