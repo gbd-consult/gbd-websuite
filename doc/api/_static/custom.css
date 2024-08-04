@@ -48,12 +48,14 @@ dl.field-list > dt {
 
 code {
     border: none;
-    font-size: 1em;
-    color: #bd4ea4;
-    background: none;
+    font-size: 0.9em;
+    color: #252525;
+    background-color: #f0f0f0;
+    display: inline-block;
 }
 code.literal {
-    padding: 0;
+    padding: 0 5px;
+    border-radius: 5px;
 }
 div.body {
     max-width: none;
