@@ -110,17 +110,29 @@ class PopupHeaderButton extends gws.View<ButtonProps> {
 
 }
 
+function _getItems(props: SidebarProps) {
+    let numTabs = props.controller.visibleTabs;
+
+    let items = [],
+        hidden = props.sidebarHiddenItems || {};
+
+    for (let it of props.controller.children) {
+        if (!hidden[it.tag]) {
+            items.push(it);
+        }
+    }
+
+    let front = items.slice(0, numTabs),
+        rest = items.slice(numTabs);
+
+    return [front, rest];
+}
+
+
 class Header extends gws.View<SidebarProps> {
     render() {
-        let numTabs = this.props.controller.visibleTabs;
-
-        let expanded = this.props.sidebarOverflowExpanded,
-            items = this.props.controller.children;
-
-        items = items.filter(it => !(this.props.sidebarHiddenItems || {})[it.tag]);
-
-        let front = items.slice(0, numTabs),
-            rest = items.slice(numTabs);
+        let expanded = this.props.sidebarOverflowExpanded;
+        let [front, rest] = _getItems(this.props);
 
         return <div className="modSidebarHeader">
             <Row>
@@ -146,11 +158,8 @@ class Header extends gws.View<SidebarProps> {
 class SidebarOverflowView extends gws.View<SidebarProps> {
 
     render() {
-        let numTabs = this.props.controller.visibleTabs;
-
-        let expanded = this.props.sidebarOverflowExpanded,
-            items = this.props.controller.children,
-            rest = items.slice(numTabs);
+        let expanded = this.props.sidebarOverflowExpanded;
+        let [front, rest] = _getItems(this.props);
 
         if (rest.length === 0 || !expanded)
             return null;
