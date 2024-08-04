@@ -1,0 +1,14 @@
+auth.methods+ { type "web" secure true }
+auth.methods+ { type "basic" secure true }
+
+auth.providers+ { type "file" path "/demos/users.json" }
+
+auth.mfa+ { type "totp" uid "AUTH_MFA_TOTP" }
+auth.mfa+ { type "email" uid "AUTH_MFA_EMAIL" }
+
+auth.session { type "sqlite" }
+
+actions+ {
+    type "auth"
+    permissions.read "allow all"
+}

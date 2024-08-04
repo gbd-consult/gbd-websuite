@@ -1,5 +1,13 @@
 [
     {
+        "login": "admin",
+        "name": "Admin",
+        "password": "$sha512$4kK1QKtD$o-7I7UEYlSi3Nza23rdtwjHQV5uigChZ8xyXywwvi206GBgLx1tODn38KE0upNQc-Jns4X0AzGhzzGICB-je2Q==",
+        "roles": [
+            "admin"
+        ]
+    },
+    {
         "login": "demo1",
         "name": "Demo User 1",
         "password": "$sha512$3IuG8xQm$Nw-lUcWvTGURG5zkXfCRyptG7uj4GXNqpfT2-d-KnWs-V5ZElKNWOOhjG-0aj6PD5q8Z1fGA8Cx6a84jSEwwGA==",

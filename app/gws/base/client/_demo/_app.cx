@@ -1,0 +1,26 @@
+client.elements+ { tag "Toolbar.Identify.Click" }
+client.elements+ { tag "Toolbar.Print" }
+
+client.elements+ { tag "Decoration.ScaleRuler" }
+client.elements+ { tag "Decoration.Attribution" }
+
+client.elements+ { tag "Infobar.ZoomOut" }
+client.elements+ { tag "Infobar.ZoomIn" }
+client.elements+ { tag "Infobar.ZoomReset" }
+client.elements+ { tag "Infobar.Position" }
+client.elements+ { tag "Infobar.Scale" }
+client.elements+ { tag "Infobar.Loader" }
+client.elements+ { tag "Infobar.Spacer" }
+client.elements+ { tag "Infobar.HomeLink" }
+client.elements+ { tag "Infobar.Help" }
+client.elements+ { tag "Infobar.About" }
+
+client.elements+ { tag "Sidebar.Project" }
+client.elements+ { tag "Sidebar.Overview" }
+client.elements+ { tag "Sidebar.Layers" }
+
+client.elements+ { tag "Task.Zoom" }
+
+client.options.sidebarActiveTab "Sidebar.Project"
+client.options.sidebarVisible true
+client.options.layersShowInactive true

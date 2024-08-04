@@ -1,0 +1,2 @@
+permissions.read "allow all"
+locales [ "de_DE" "en_US" ]

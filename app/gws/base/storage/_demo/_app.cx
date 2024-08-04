@@ -1,0 +1,4 @@
+storage.providers+ {
+    uid "common_storage"
+    type "sqlite"
+}

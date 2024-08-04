@@ -36,28 +36,38 @@ Options:
 def main(args):
     # basic config - from this dir
 
-    config = read_config_file(THIS_DIR + '/config_base.cx')
+    main_cfg = [
+        read_config_file(THIS_DIR + '/config_base.cx')
+    ]
+    projects_cfg = []
+
+    only = args.get('only')
+    cx_paths = list(cli.find_files(APP_DIR, r'_demo/.+?\.cx$'))
+
+    # include configs from app subdirectories
+
+    for path in cx_paths:
+        if path.endswith('/_app.cx'):
+            # application config
+            main_cfg.append(read_config_file(path))
+            continue
+
+        if not only or re.search(only, path):
+            # project configuration
+            cfg = read_config_file(path)
+            projects_cfg.append(f'''
+                projects+ {{ 
+                    {cfg}
+                    metadata.authorityIdentifier "app{path.replace(APP_DIR, '')}"
+                }}
+            ''')
+
+    config = '\n'.join(main_cfg) + '\n' + '\n'.join(projects_cfg)
 
     # extra include
 
     if args.get('include'):
         config += '\n@include ' + args.get('include') + '\n'
-
-    # include global configs and projects
-
-    only = args.get('only')
-    cx_paths = list(cli.find_files(APP_DIR, r'_demo/.+?\.cx$'))
-    for path in cx_paths:
-        if path.endswith('global.cx'):
-            cfg = read_config_file(path)
-            config += f'\n{cfg}\n'
-        elif not only or re.search(only, path):
-            cfg = read_config_file(path)
-            config += f'''
-                projects+ {{ \n{cfg}
-                    metadata.authorityIdentifier "/app{path.replace(APP_DIR, '')}"
-                }}
-            '''
 
     # parse config
 

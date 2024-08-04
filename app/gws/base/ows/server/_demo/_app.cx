@@ -1,0 +1,2 @@
+server.web.timeout 600
+server.timeZone "Europe/Berlin"

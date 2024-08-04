@@ -1,0 +1,7 @@
+actions+ { type "project" }
+
+templates+ {
+    subject "project.description"
+    type "html"
+    path "/demos/project_description.cx.html"
+}
