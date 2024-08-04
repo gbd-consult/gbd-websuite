@@ -7,13 +7,13 @@ import gws.config.util
 import gws.base.action
 import gws.lib.mime
 
-from . import core, error, helper
+from . import core, helper
 
 gws.ext.new.action('account')
 
 
 class Config(gws.base.action.Config):
-    """Public Account action."""
+    """User Account action. (added in 8.1)"""
     pass
 
 
@@ -91,7 +91,7 @@ class Object(gws.base.action.Object):
 
         mfa = self.h.mfa_options(account)
         if not mfa:
-            self.h.delete_tc(account)
+            self.h.clear_tc(account)
             return OnboardingSavePasswordResponse(
                 ok=True,
                 complete=True,
@@ -112,8 +112,8 @@ class Object(gws.base.action.Object):
         account = self.get_account_by_tc(p.tc, core.Category.onboarding, core.Status.onboarding)
 
         self.h.set_mfa(account, p.mfaIndex)
+        self.h.clear_tc(account)
 
-        self.h.delete_tc(account)
         return OnboardingSaveMfaResponse(
             complete=True,
             completionUrl=self.h.onboardingCompletionUrl,
@@ -122,12 +122,14 @@ class Object(gws.base.action.Object):
     ##
 
     def get_account_by_tc(self, tc, category, expected_status):
-        account = self.h.get_account_by_tc(tc, category)
+        try:
+            account = self.h.get_account_by_tc(tc, category, expected_status)
+        except helper.Error as exc:
+            raise gws.ForbiddenError() from exc
+
         if not account:
             raise gws.ForbiddenError(f'account: {tc=} not found')
-        status = account.get('status')
-        if status != expected_status:
-            raise gws.ForbiddenError(f'account: {tc=} {expected_status=} {status=}')
+
         return account
 
     def mfa_props(self, account: dict, mfa_secret):

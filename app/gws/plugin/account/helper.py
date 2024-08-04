@@ -1,28 +1,14 @@
 from typing import Optional, cast
 
 import gws
-import gws.base.action
-import gws.base.edit.api as api
 import gws.base.edit.helper
-import gws.base.feature
-import gws.base.layer
-import gws.base.legend
-import gws.base.model
-import gws.base.shape
-import gws.base.template
-import gws.base.web
 import gws.config.util
-import gws.gis.crs
-import gws.gis.render
 import gws.helper.email
 import gws.lib.image
-import gws.lib.otp
 import gws.lib.net
-import gws.lib.jsonx
-import gws.lib.mime
-import gws.lib.password
+import gws.lib.otp
 
-from . import core, error
+from . import core
 
 gws.ext.new.helper('account')
 
@@ -33,30 +19,43 @@ class MfaConfig:
 
 
 class Config(gws.Config):
-    """Account helper."""
+    """Account helper. (added in 8.1)"""
 
     adminModel: gws.ext.config.model
-    """Admin adminModel for accounts."""
+    """Edit model for account administration."""
+    userModel: Optional[gws.ext.config.model]
+    """Edit model for end-users accounts."""
     templates: list[gws.ext.config.template]
     """Templates"""
 
     usernameColumn: str = 'email'
+    """Column used as 'login'."""
 
     passwordCreateSql: Optional[str]
+    """SQL expression for computing password hashes."""
     passwordVerifySql: Optional[str]
+    """SQL expression for verifying password hashes."""
 
     tcLifeTime: gws.Duration = 3600
-    """Life time for temp codes."""
+    """Life time for temporary codes."""
 
     mfa: Optional[list[MfaConfig]]
-    """Multi-factor authentication methods."""
+    """Multi-factor authentication methods the user can choose from."""
     mfaIssuer: str = ''
-    """Issuer name for MFA key URL."""
+    """Issuer name for Multi-factor key uris (qr codes)."""
 
     onboardingUrl: str
     """URL for email onboarding."""
     onboardingCompletionUrl: str = ''
     """URL to redirect after onboarding."""
+
+
+##
+
+
+class Error(gws.Error):
+    """Account-related error."""
+    pass
 
 
 ##
@@ -74,6 +73,7 @@ _DEFAULT_PASSWORD_VERIFY_SQL = "crypt( {password}, {passwordColumn} )"
 
 class Object(gws.base.edit.helper.Object):
     adminModel: gws.DatabaseModel
+    userModel: gws.DatabaseModel
     templates: list[gws.Template]
 
     mfaIssuer: str
@@ -87,16 +87,21 @@ class Object(gws.base.edit.helper.Object):
 
     def configure(self):
         self.configure_templates()
+
         self.adminModel = cast(gws.DatabaseModel, self.create_child(gws.ext.object.model, self.cfg('adminModel')))
 
         self.mfaIssuer = self.cfg('mfaIssuer')
         self.mfaOptions = []
+
         self.onboardingUrl = self.cfg('onboardingUrl')
         self.onboardingCompletionUrl = self.cfg('onboardingCompletionUrl') or self.onboardingUrl
+
         self.passwordCreateSql = self.cfg('passwordCreateSql', default=_DEFAULT_PASSWORD_CREATE_SQL)
         self.passwordVerifySql = self.cfg('passwordVerifySql', default=_DEFAULT_PASSWORD_VERIFY_SQL)
+
         self.tcLifeTime = self.cfg('tcLifeTime', default=3600)
-        self.usernameColumn = self.cfg('usernameColumn')
+
+        self.usernameColumn = self.cfg('usernameColumn', default=core.Columns.email)
 
     def configure_templates(self):
         return gws.config.util.configure_templates_for(self)
@@ -128,13 +133,13 @@ class Object(gws.base.edit.helper.Object):
 
     def get_account_by_id(self, uid: str) -> Optional[dict]:
         sql = f'''
-            SELECT * FROM {self.adminModel.tableName} 
+            SELECT * FROM {self.adminModel.tableName}
             WHERE {self.adminModel.uidName}=:uid
         '''
         rs = self.adminModel.db.select_text(sql, uid=uid)
         return rs[0] if rs else None
 
-    def get_account_by_credentials(self, credentials: gws.Data) -> Optional[dict]:
+    def get_account_by_credentials(self, credentials: gws.Data, expected_status: Optional[core.Status] = None) -> Optional[dict]:
         expr = self.passwordVerifySql
         expr = expr.replace('{password}', ':password')
         expr = expr.replace('{passwordColumn}', core.Columns.password)
@@ -143,14 +148,13 @@ class Object(gws.base.edit.helper.Object):
         password = credentials.get('password')
 
         sql = f'''
-            SELECT 
+            SELECT
                 {self.adminModel.uidName},
                 ( {core.Columns.password} = {expr} ) AS validpassword
-            FROM 
+            FROM
                 {self.adminModel.tableName}
             WHERE
                 {self.usernameColumn} = :username
-             
         '''
         rs = self.adminModel.db.select_text(sql, username=username, password=password)
 
@@ -159,22 +163,29 @@ class Object(gws.base.edit.helper.Object):
             return
 
         if len(rs) > 1:
-            raise error.MultipleEntriesFound(f'get_account_by_credentials: multiple entries for {username=}')
+            raise Error(f'get_account_by_credentials: multiple entries for {username=}')
 
         r = rs[0]
+
         if not r.get('validpassword'):
-            raise error.WrongPassword(f'get_account_by_credentials: {username=} wrong password')
+            raise Error(f'get_account_by_credentials: {username=} wrong password')
+
+        if expected_status:
+            status = r.get(core.Columns.status)
+            if status != expected_status:
+                raise Error(f'get_account_by_credentials: {username=} wrong {status=} {expected_status=}')
 
         return self.get_account_by_id(self.get_uid(r))
 
-    def get_account_by_tc(self, tc: str, category: str) -> Optional[dict]:
+    def get_account_by_tc(self, tc: str, category: str, expected_status: Optional[core.Status] = None) -> Optional[dict]:
         sql = f'''
-            SELECT 
+            SELECT
                 {self.adminModel.uidName},
                 {core.Columns.tcTime},
-                {core.Columns.tcCategory}
-            FROM 
-                {self.adminModel.tableName} 
+                {core.Columns.tcCategory},
+                {core.Columns.status}
+            FROM
+                {self.adminModel.tableName}
             WHERE
                 {core.Columns.tc} = :tc
         '''
@@ -187,7 +198,7 @@ class Object(gws.base.edit.helper.Object):
         self.invalidate_tc(tc)
 
         if len(rs) > 1:
-            raise error.MultipleEntriesFound(f'get_account_by_tc: {tc=} multiple entries')
+            raise Error(f'get_account_by_tc: {tc=} multiple entries')
 
         r = rs[0]
 
@@ -198,6 +209,12 @@ class Object(gws.base.edit.helper.Object):
         if gws.u.stime() - r.get(core.Columns.tcTime, 0) > self.tcLifeTime:
             gws.log.warning(f'get_account_by_tc: {category=} {tc=} expired')
             return
+
+        if expected_status:
+            status = r.get(core.Columns.status)
+            if status != expected_status:
+                gws.log.warning(f'get_account_by_tc: {category=} {tc=} wrong {status=} {expected_status=}')
+                return
 
         return self.get_account_by_id(self.get_uid(r))
 
@@ -234,7 +251,7 @@ class Object(gws.base.edit.helper.Object):
                 break
 
         if mfa_uid is None:
-            raise error.InvalidMfaIndex(f'{mfa_option_index=} not found')
+            raise Error(f'{mfa_option_index=} not found')
 
         sql = f'''
             UPDATE {self.adminModel.tableName}
@@ -302,7 +319,7 @@ class Object(gws.base.edit.helper.Object):
 
     def send_onboarding_email(self, account: dict):
         tc = self.generate_tc(account, core.Category.onboarding)
-        url = self.onboardingUrl + '?onboarding=' + tc
+        url = gws.lib.net.add_params(self.onboardingUrl, onboarding=tc)
         self.send_mail(account, core.Category.onboarding, {'url': url})
 
     def generate_tc(self, account: dict, category: str) -> str:
@@ -321,7 +338,7 @@ class Object(gws.base.edit.helper.Object):
 
         return tc
 
-    def delete_tc(self, account: dict):
+    def clear_tc(self, account: dict):
         sql = f'''
             UPDATE {self.adminModel.tableName}
             SET
@@ -354,17 +371,16 @@ class Object(gws.base.edit.helper.Object):
         return gws.u.random_string(32)
 
     def send_mail(self, account: dict, category: str, args: Optional[dict] = None):
-        email = account.get('email')
+        email = account.get(core.Columns.email)
         if not email:
-            uid = self.get_uid(account)
-            raise error.NoEmail(f'{uid=} has no email')
+            raise Error(f'account {self.get_uid(account)}: no email')
 
         args = args or {}
         args['account'] = account
 
         message = gws.helper.email.Message(
             subject=self.render_template(f'{category}.emailSubject', args),
-            mailTo=account.get('email'),
+            mailTo=email,
             text=self.render_template(f'{category}.emailBody', args, mime='text/plain'),
             html=self.render_template(f'{category}.emailBody', args, mime='text/html'),
         )

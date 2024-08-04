@@ -14,7 +14,7 @@ gws.ext.new.action('accountadmin')
 
 
 class Config(gws.base.action.Config):
-    """Account Admin action"""
+    """Account Admin action. (added in 8.1)"""
 
     models: Optional[list[gws.ext.config.model]]
     """Account data models."""

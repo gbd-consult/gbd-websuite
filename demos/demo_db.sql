@@ -3284,17 +3284,17 @@ drop table edit.nutzer;
 create table edit.nutzer
 (
     id              int primary key generated always as identity,
-    login        text,
-    email           text not null,
+    login           text unique,
+    email           text not null unique,
     status          int default 0,
 
     password        text,
     mfauid          text,
     mfasecret       text,
 
-    tc         text,
-    tctime     int,
-    tccategory text,
+    tc              text,
+    tctime          int,
+    tccategory      text,
 
     vorname         text not null,
     nachname        text not null,
@@ -3311,4 +3311,3 @@ values
     ('schiller', 'Schiller', 'Friedrich', 'Schiller@example.com'),
     ('goethe', 'von Goethe', 'Johann Wolfgang', 'Goethe@example.com')
 ;
-select * from edit.nutzer
