@@ -44,18 +44,6 @@ export class FormTab extends gws.View<edit.types.ViewProps> {
         return this.props.controller as Controller;
     }
 
-    async componentDidMount() {
-        let cc = this.master();
-        let es = cc.editState;
-        let sf = es.sidebarSelectedFeature;
-
-        cc.updateEditState({formErrors: null});
-
-        for (let fld of sf.model.fields) {
-            await cc.initWidget(fld);
-        }
-    }
-
     render() {
         return <sidebar.Tab className="editSidebar editSidebarFormTab">
             <sidebar.TabHeader>
@@ -68,10 +56,7 @@ export class FormTab extends gws.View<edit.types.ViewProps> {
             </sidebar.TabBody>
         </sidebar.Tab>
     }
-
 }
-
-
 
 class SidebarView extends edit.SidebarView {
     master() {
@@ -117,7 +102,6 @@ class Controller extends edit.Controller {
         if (!gws.lib.isEmpty(this.models)) {
             this.selectModelInSidebar(this.models[0])
         }
-        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.AccountAdmin'});
     }
 
     actionName() {
@@ -137,7 +121,8 @@ class Controller extends edit.Controller {
         let res = await this.app.server.accountadminReset({
             featureUid: feature.uid,
         });
-
+        this.featureCache.clear();
+        await this.closeForm();
     }
 }
 

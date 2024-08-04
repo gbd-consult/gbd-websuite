@@ -90,21 +90,21 @@ class Object(gws.base.action.Object):
         self.h.set_password(account, p1)
 
         mfa = self.h.mfa_options(account)
-        if not mfa:
-            self.h.clear_tc(account)
+        if mfa:
+            mfa_secret = self.h.generate_mfa_secret(account)
             return OnboardingSavePasswordResponse(
                 ok=True,
-                complete=True,
-                completionUrl=self.h.onboardingCompletionUrl,
+                complete=False,
+                mfaList=self.mfa_props(account, mfa_secret),
+                tc=self.h.generate_tc(account, core.Category.onboarding),
             )
 
-        mfa_secret = self.h.generate_mfa_secret(account)
-
+        self.h.set_status(account, core.Status.active)
+        self.h.clear_tc(account)
         return OnboardingSavePasswordResponse(
             ok=True,
-            complete=False,
-            mfaList=self.mfa_props(account, mfa_secret),
-            tc=self.h.generate_tc(account, core.Category.onboarding),
+            complete=True,
+            completionUrl=self.h.onboardingCompletionUrl,
         )
 
     @gws.ext.command.api('accountOnboardingSaveMfa')
@@ -112,6 +112,7 @@ class Object(gws.base.action.Object):
         account = self.get_account_by_tc(p.tc, core.Category.onboarding, core.Status.onboarding)
 
         self.h.set_mfa(account, p.mfaIndex)
+        self.h.set_status(account, core.Status.active)
         self.h.clear_tc(account)
 
         return OnboardingSaveMfaResponse(

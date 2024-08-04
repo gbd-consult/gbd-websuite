@@ -12,10 +12,10 @@ access "allow all"
 
 actions+ {
     type "accountadmin"
-@#    permissions.read "allow user, deny all"
-    permissions.read "allow all"
+    permissions.read "allow admin, deny all"
 }
 
 client.addElements+ { tag "Sidebar.AccountAdmin" }
+client.addElements+ { tag "Sidebar.User" }
 
 {demo_osm_background}

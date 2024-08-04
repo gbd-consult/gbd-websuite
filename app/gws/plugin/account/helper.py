@@ -150,7 +150,8 @@ class Object(gws.base.edit.helper.Object):
         sql = f'''
             SELECT
                 {self.adminModel.uidName},
-                ( {core.Columns.password} = {expr} ) AS validpassword
+                ( {core.Columns.password} = {expr} ) AS validpassword,
+                {core.Columns.status}
             FROM
                 {self.adminModel.tableName}
             WHERE
