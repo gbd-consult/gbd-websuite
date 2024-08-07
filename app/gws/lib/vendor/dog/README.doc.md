@@ -285,11 +285,11 @@ Result:
 
 Attributes can be set on links and images, similarly to [Pandoc](https://pandoc.org/MANUAL.html#extension-link_attributes):
 
-    > Some image ![](theme_info.svg){.someclass .otherclass width=3em height=20px border=1}
+    > Some image ![](gws_logo.svg){.someclass .otherclass width=3em height=20px border=1}
 
 Result:
 
-> Some image ![](theme_info.svg){.someclass .otherclass width=3em height=20px border=1}
+> Some image ![](gws_logo.svg){.someclass .otherclass width=3em height=20px border=1}
 
 `width` and `height` accept arbitrary CSS units. This extension currently works for inline elements only.
 
