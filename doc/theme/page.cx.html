@@ -15,6 +15,9 @@
     <aside>
         <div id="sidebar">
             <a id="sidebar-header" href="<% home %>">
+                %with options.brandLogo
+                    <img id="sidebar-logo" src="<% options.webRoot %>/_static/<% options.brandLogo %>"/>
+                %end
                 <span id="sidebar-header-title">
                     <% title %>
                 </span>
@@ -38,7 +41,7 @@
                 </div>
             </div>
             <div id="sidebar-footer">
-                &copy; <a href="https://gbd-consult.de" style="color:grey; text-decoration:none" target="_blank">Geoinformatikbüro Dassau GmbH 2006–2024</a>
+                <a href="<% options.brandURL %>" style="color:grey; text-decoration:none" target="_blank"><% options.brandText %></a>
             </div>
         </div>
     </aside>
@@ -47,22 +50,19 @@
 
     <main>
         <nav>
-            <div id="nav-breadcrumbs">
-                %for url, head in breadcrumbs index i length total
-                    %if i == 1
-                        <a href="<% url %>" id="nav-breadcrumbs-home"><img src="<% options.webRoot %>/_static/theme_home.svg"></a>
-                    %elif i == total
-                        &raquo; <% head %>
-                    %else
-                        &raquo; <a href="<% url %>"><% head %></a>
-                    %end
+            %for url, title in breadcrumbs index i length total
+                %if i == 1
+                    <a href="<% url %>" class="nav-icon" id="nav-breadcrumbs-home"></a>
+                %elif i == total
+                    <span>&raquo;</span><span><% title %></span>
+                %else
+                    <span>&raquo;</span><span><a href="<% url %>"><% title %></a></span>
                 %end
-            </div>
-            <div id="nav-arrows">
-                <a id="nav-arrow-prev"><img src="<% options.webRoot %>/_static/theme_arrow_prev.svg"></a>
-                <a id="nav-arrow-up"><img src="<% options.webRoot %>/_static/theme_arrow_up.svg"></a>
-                <a id="nav-arrow-next"><img src="<% options.webRoot %>/_static/theme_arrow_next.svg"></a>
-            </div>
+            %end
+            <span class="nav-flex"></span>
+            <a class="nav-icon" id="nav-arrow-prev"></a>
+            <a class="nav-icon" id="nav-arrow-up"></a>
+            <a class="nav-icon" id="nav-arrow-next"></a>
         </nav>
         <% main %>
     </main>

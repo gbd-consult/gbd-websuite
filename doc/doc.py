@@ -39,18 +39,17 @@ Options:
         
     -v
         verbose logging
-        
-    -
 """
 
 
 def main(args):
-    opts = dict(vars(options))
-    opts['debug'] = args.get('v')
+    opts = {k: v for k, v in vars(options).items() if not k.startswith('_')}
 
     s = args.get('opt')
     if s:
-        opts.update(json.loads(dog.util.read_file(s)))
+        _add_opts(opts, s)
+
+    opts['debug'] = args.get('v')
 
     cmd = args.get(1)
 
@@ -67,7 +66,7 @@ def main(args):
             out_dir = opts['BUILD_DIR'] + '/apidoc/' + opts['VERSION2']
 
     opts['outputDir'] = out_dir
-    mkdir(opts['outputDir'])
+    _mkdir(opts['outputDir'])
 
     if cmd == 'build':
         dog.build_html(opts)
@@ -82,9 +81,25 @@ def main(args):
     cli.fatal('invalid arguments, try doc.py -h for help')
 
 
-def mkdir(d):
+def _mkdir(d):
     dog.util.run(['rm', '-fr', d])
     dog.util.run(['mkdir', '-p', d])
+
+
+def _add_opts(opts, path):
+    dirname = os.path.dirname(os.path.abspath(path))
+    d = json.loads(dog.util.read_file(path))
+
+    for k, v in d.items():
+        if k == 'docRoots':
+            opts['docRoots'] = []
+            opts['docRoots'].extend(os.path.abspath(os.path.join(dirname, p)) for p in v)
+            continue
+        if k == 'extraAssets':
+            opts['extraAssets'] = opts.get('extraAssets', [])
+            opts['extraAssets'].extend(os.path.abspath(os.path.join(dirname, p)) for p in v)
+            continue
+        opts[k] = v
 
 
 if __name__ == '__main__':

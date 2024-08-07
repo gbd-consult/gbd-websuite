@@ -32,19 +32,12 @@ staticDir = '_static'
 extraAssets = [
     f'{DOC_DIR}/theme/theme.css',
     f'{DOC_DIR}/theme/theme.js',
-    f'{DOC_DIR}/theme/theme_home.svg',
-    f'{DOC_DIR}/theme/theme_info.svg',
-    f'{DOC_DIR}/theme/theme_search.svg',
-    f'{DOC_DIR}/theme/theme_warning.svg',
-    f'{DOC_DIR}/theme/theme_arrow_prev.svg',
-    f'{DOC_DIR}/theme/theme_arrow_next.svg',
-    f'{DOC_DIR}/theme/theme_arrow_up.svg',
-    f'{DOC_DIR}/theme/theme_toc_open.svg',
-    f'{DOC_DIR}/theme/theme_toc_dot.svg',
-    f'{DOC_DIR}/theme/theme_menu.svg',
-    f'{DOC_DIR}/theme/theme_close.svg',
     f'{ROOT_DIR}/data/web/gws_logo.svg',
 ]
+
+brandLogo = "gws_logo.svg"
+brandURL = "https://gbd-consult.de"
+brandText = "&copy; Geoinformatikbüro Dassau GmbH 2006–2024"
 
 includeTemplate = f'{DOC_DIR}/extra_commands.cx.html'
 

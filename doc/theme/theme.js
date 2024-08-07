@@ -80,28 +80,34 @@ function setActiveNavNode(toc, sid) {
     let node = toc[sid];
     let parent =  toc[node.p];
 
-    $('#nav-arrow-prev').href = $('#nav-arrow-up').href = $('#nav-arrow-next').href = '#';
-    $('#nav-arrow-prev').className = $('#nav-arrow-up').className = $('#nav-arrow-next').className = 'disabled';
+    let arrows = [
+        $('#nav-arrow-up'),
+        $('#nav-arrow-prev'),
+        $('#nav-arrow-next'),
+    ];
+
+    arrows.forEach(a => a.href = '#');
+    arrows.forEach(a => a.classList.add('disabled'));
 
     if (!parent) {
         return;
     }
 
-    $('#nav-arrow-up').href = parent.u;
-    $('#nav-arrow-up').className = '';
+    arrows[0].href = parent.u;
+    arrows[0].classList.remove('disabled');
 
     let i = parent.s.indexOf(sid);
 
     let prev = toc[parent.s[i - 1]];
     if (prev) {
-        $('#nav-arrow-prev').href = prev.u;
-        $('#nav-arrow-prev').className = '';
+        arrows[1].href = prev.u;
+        arrows[1].classList.remove('disabled');
     }
 
     let next = toc[parent.s[i + 1]];
     if (next) {
-        $('#nav-arrow-next').href = next.u;
-        $('#nav-arrow-next').className = '';
+        arrows[2].href = next.u;
+        arrows[2].classList.remove('disabled');
     }
 
     node.active = true;
