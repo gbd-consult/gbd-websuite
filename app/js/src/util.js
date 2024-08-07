@@ -1,32 +1,25 @@
 // GWS utilities
 // Version __VERSION__
 
-function _gwsPostRequest(cmd, params, onSuccess, onFailure) {
-    let data = params || {};
+window.addEventListener("load", function (evt) {
+    let frmLogin = document.getElementById('gwsLoginForm');
+    if (frmLogin) {
+        frmLogin.addEventListener('submit', function(evt) {
+            gwsLogin();
+            evt.preventDefault();
+            return false;
+        })
+    }
 
-    let xhr = new XMLHttpRequest()
-    xhr.open('POST', '/_/' + cmd, true)
-    xhr.withCredentials = true;
-    xhr.setRequestHeader('Content-type', 'application/json');
-
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            let res = xhr.responseText || '';
-            try {
-                res = JSON.parse(xhr.responseText)
-            } catch (exc) {
-                res = {'text': res}
-            }
-            if (xhr.status === 200) {
-                onSuccess(xhr.status, res);
-            } else {
-                onFailure(xhr.status, res);
-            }
-        }
-    };
-
-    xhr.send(JSON.stringify(data))
-}
+    let frmLogout = document.getElementById('gwsLogoutForm');
+    if (frmLogout) {
+        frmLogout.addEventListener('submit', function(evt) {
+            gwsLogout();
+            evt.preventDefault();
+            return false;
+        })
+    }
+});
 
 function gwsLogin(onSuccess, onFailure) {
     let cls = document.body.classList;
@@ -62,4 +55,31 @@ function gwsLogout(onSuccess, onFailure) {
     onFailure = onFailure || (() => 0);
 
     _gwsPostRequest('authLogout', {}, onSuccess, onFailure);
+}
+
+function _gwsPostRequest(cmd, params, onSuccess, onFailure) {
+    let data = params || {};
+
+    let xhr = new XMLHttpRequest()
+    xhr.open('POST', '/_/' + cmd, true)
+    xhr.withCredentials = true;
+    xhr.setRequestHeader('Content-type', 'application/json');
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            let res = xhr.responseText || '';
+            try {
+                res = JSON.parse(xhr.responseText)
+            } catch (exc) {
+                res = {'text': res}
+            }
+            if (xhr.status === 200) {
+                onSuccess(xhr.status, res);
+            } else {
+                onFailure(xhr.status, res);
+            }
+        }
+    };
+
+    xhr.send(JSON.stringify(data))
 }
