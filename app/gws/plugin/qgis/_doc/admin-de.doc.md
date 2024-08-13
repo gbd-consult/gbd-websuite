@@ -2,7 +2,7 @@
 
 ## Layer
 
-Es gibt zwei Möglichkeiten, QGIS Projekte als Layer in Ihren Karten einzubinden: ``qgis`` und ``qgisflat`` Layer. Sie können diese Layers frei mit anderen Layertypen mischen.
+Es gibt zwei Möglichkeiten, QGIS Projekte als Layer in Ihren Karten einzubinden: ``qgis`` und ``qgisflat`` Layer. Sie können diese Layer frei mit anderen Layertypen mischen.
 
 ## qgis
 
@@ -20,7 +20,7 @@ QGIS-Layer zeigen ganze QGIS-Projekte als einzelne Gruppe im GWS-Layerbaum an. Z
 }
 ```
 
-Sie können auch die Struktur der Gruppe mit ``flattenLayers`` beinflüssen, indem Sie z.B. nur die Layers bis Tiefe 2 Zeigen und tiefere Layers flach darstellen.
+Sie können auch die Struktur der Gruppe mit ``flattenLayers`` beinflussen, indem Sie sich z.B. nur die Layer bis zur Tiefe 2 anzeigen lassen und alle tieferen Layer flach darstellen.
 
 ## qgisflat
 
@@ -48,13 +48,13 @@ Für QGIS Layer können Sie unter ``legend.options`` einige visuelle Einstellung
 
 %reference_de 'gws.plugin.qgis.template.Config'
 
-Sie können QGIS Druckvorlagen ("Layouts") frei verwenden, auch für nicht-QGIS bzw. gemischte Karten. In der Vorlagen-Konfiguration muss den Pfad zu der QGIS Projektdatei angegeben werden, sowie Layout-Namen bzw Nummer. In dem Layout wird das ``Map`` Element mit der aktuellen GWS Karte ersetzt, zusätzlich können Sie in ``HTML-Frame`` Elements einige ``gws:`` Tags nutzen, wie z.B. ``<gws:legend>`` (siehe [Drucken](/admin-de/config/drucken)). Die vom Nutzer definierte Druck-Attribute können Sie mit dem QGIS Syntax ``[% @variable %]`` einfügen.
+Sie können QGIS Druckvorlagen ("Layouts") frei verwenden, auch für nicht-QGIS bzw. gemischte Karten. In der Vorlagen-Konfiguration muss dabei der Pfad zu der QGIS Projektdatei, sowie Layout-Namen bzw Nummer angegeben werden. In dem Layout wird das ``Map`` Element mit der aktuellen GWS Karte ersetzt, zusätzlich können Sie in ``HTML-Frame`` Elements einige ``gws:`` Tags nutzen, wie z.B. ``<gws:legend>`` (siehe [Drucken](/admin-de/themen/printer)). Die vom Nutzer definierte Druck-Attribute können Sie mit dem QGIS Syntax ``[% @variable %]`` einfügen.
 
 %info
  Beachten Sie, dass die Deckkraft des Hintergrunds der Druckvorlage auf 0% gesetzt sein muss (unter "Elementeigenschaften").
 %end
 
-## Server Einstelligen
+## Server Einstellungen
 
 %reference_de 'gws.server.core.QgisConfig'
 
@@ -66,4 +66,4 @@ In der Serverkonfiguration (siehe [Server](/admin-de/config/server)) gibt es ein
 | ``serverCacheSize`` | ``QGIS_SERVER_CACHE_SIZE`` |
 | ``serverLogLevel`` | ``QGIS_SERVER_LOG_LEVEL`` |
 
-Die Option ``searchPathsForSVG`` zeigt an, wo der Server SVG-Bilder in QGIS-Karten und Druckvorlagen findet. Wenn Sie nicht standardmäßige Bilder verwenden, fügen Sie einfach einen Verzeichnispfad für sie zu dieser Einstellung hinzu.
+Die Option ``searchPathsForSVG`` zeigt an, wo der Server SVG-Bilder in QGIS-Karten und Druckvorlagen findet. Wenn Sie nicht standardmäßige Bilder verwenden, fügen Sie einfach einen Verzeichnispfad für diese zu der Einstellung hinzu.

@@ -6,21 +6,21 @@ Die GBD WebSuite kann als OWS (OGC Web Services) Server fungieren. Sie können d
 
 %reference_de 'gws.plugin.ows_service.action.Config'
 
-Die Dienste werden freigeschaltet indem Sie die Aktion ``ows`` global oder in einem Projekt konfigurieren. Diese Aktion besitzt eine Liste von Diensten (``service``), wo Sie die konkrete Dienste konfigurieren.
+Die Dienste werden freigeschaltet indem Sie die Aktion ``ows`` global oder in einem Projekt konfigurieren. Diese Aktion besitzt eine Liste von Diensten (``service``), mit der Sie die konkreten Dienste konfigurieren.
 
-Für alle OWS Dienste muss aus den Projekt-Layern ein "root" Layer ausgewählt sein. Sie können diesen Layer explizit mit der ``root`` Eigenschaft konfigurieren, ansonste wird der erste Layer, auf der obersten Ebene genommen.
+Für alle OWS Dienste muss aus den Projekt-Layern ein "root" Layer ausgewählt sein. Sie können diesen Layer explizit mit der ``root`` Eigenschaft konfigurieren. Alternativ wird der erste Layer (der auf der obersten Ebene gelegene) gewählt.
 
 ## Unterstützte Dienste
 
 Derzeit sind folgende Dienste implementiert:
 
-### wms
+### WMS
 
 %reference_de 'gws.ext.ows.service.wms.Config'
 
 Der WMS-Dienst ist vollständig gemäß der Eigenschaften der Version ``1.1.0``, ``1.1.1`` und ``1.3.0`` implementiert.
 
-### wfs
+### WFS
 
 %reference_de 'gws.plugin.ows_service.wfs.Config'
 
@@ -34,13 +34,13 @@ Der WFS-Dienst ist gemäß der Eigenschaften der Version ``2.0`` implementiert. 
  In der Zukunft, planen wir das "Basic WFS" Profil sowie WFS 3.0 umzusetzen.
 %end
 
-### wcs
+### WCS
 
 %reference_de 'gws.plugin.ows_service.wcs.Config'
 
 Es werden WCS Versionen ``1.0.0`` und ``2.0.1`` unterstützt.
 
-### wmts
+### WMTS
 
 %reference_de 'gws.plugin.ows_service.wmts.Config'
 
@@ -50,7 +50,7 @@ Es wird WMTS Version ``1.0.0`` unterstützt.
 
 %reference_de 'gws.plugin.ows_service.csw.Config'
 
-Die GBD WebSuite enthält eine Basis-Implementation von einem CSW Dienst. Dieser Dienst kann nur in der App-Konfig konfiguriert werden. Derzeit sind folgende Operationen implementiert:
+Die GBD WebSuite enthält eine Basis-Implementation eines CSW Dienstes. Dieser Dienst kann nur in der App-Konfig konfiguriert werden. Derzeit sind folgende Operationen implementiert:
 
 - ``GetCapabilities``
 - ``DescribeRecord``
@@ -59,13 +59,13 @@ Die GBD WebSuite enthält eine Basis-Implementation von einem CSW Dienst. Dieser
 
 Sie können auch zwischen Metadata-Profilen ``iso`` (ISO 19139) oder ``dcmi`` (Dublin Core) wählen.
 
-CSW Dienst ist für alle OWS und ISO Metadaten zuständig. Sobald Sie den Dienst aktivieren, werden alle im System vorhandene Metadaten gesammelt und als CSW Einträge (``record``) dargestellt. Jedes Objekt bekommt automatisch eine ``MetadataURL``, die auf die entsprechende CSW Seite zeigt, sofern Sie unter ``meta.url`` nicht anderes angeben.
+Der CSW Dienst ist für alle OWS und ISO Metadaten zuständig. Sobald Sie den Dienst aktivieren, werden alle im System vorhandene Metadaten gesammelt und als CSW Einträge (``record``) dargestellt. Jedes Objekt bekommt automatisch eine ``MetadataURL``, die auf die entsprechende CSW Seite zeigt, sofern Sie unter ``meta.url`` nichts anderes angeben.
 
 ## Layer-Konfiguration
 
 %reference_de 'gws.plugin.ows_service.core.LayerConfig'
 
-Zusätzlich zur der Aktion Konfiguration, können Sie bei jedem Layer definieren, ob dieser Layer überhaupt für OWS Dienste berücksichtigt wird (``enabled``), wenn ja, für welche (``enabledServices``) und welchen Namen der Layer selbst (``name``) und die Features, die sich auf diesem Layer befinden (``featureName``) haben.
+Sie können bei jedem Layer mit ``enabled`` definieren, ob dieser für OWS Dienste berücksichtigt werden soll. Mit ``enabledServices`` legen Sie eine engere Auswahl an OWS Diensten fest, in denen der Layer gezeigt werden soll. Sie können weiter den Namen der Layer ``name`` und die Features, die sich auf dem Layer befinden ``featureName`` definieren.
 
 Externe WMS/WFS Layer werden automatisch "kaskadiert".
 
@@ -79,7 +79,7 @@ Sie können diese URL in eine schönere Form mit URL-Rewriting umschreiben, z.B.
 
     https://example.com/my_wms_service/meinprojekt
 
-Damit Ihre in Capabilities Dokumenten angegebene URLs auch "schön" aussehen, müssen Sie auch reversierte Rewriting (``reversedRewrite``) konfigurieren. Siehe [Web-Server](/admin-de/config/web) für Details.
+Damit Ihre in Capabilities Dokumenten angegebene URLs auch "schön" aussehen, müssen Sie auch das ``reversedRewrite`` konfigurieren. Siehe [Web-Server](/admin-de/config/web) für Details.
 
 ## Vorlagen
 
@@ -95,7 +95,7 @@ Die für einen Dienst notwendige XML Dokumente werden vom System automatisch ers
 | ``ows.GetRecords`` | CSW |
 | ``ows.GetRecordById`` | CSW |
 
-Die Vorlagen müssen in ``xml`` bzw ``text`` Format sein, siehe [Vorlagen](/admin-de/config/template) für mehr Info.
+Die Vorlagen müssen in ``xml`` bzw ``text`` Format sein, siehe [Vorlagen](/admin-de/config/template) für mehr Infos.
 
 ## INSPIRE Support
 

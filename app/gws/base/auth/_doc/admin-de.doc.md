@@ -12,7 +12,7 @@ darf.
 Ein Benutzer der auf eine beliebige Ressource der GBD WebSuite zuzugreifen 
 versucht ist zunächst einmal anonym. Um sich gegenüber der Applikation zu 
 Identifizieren unterstützt die GBD WebSuite zwei Verfahren über die der Benutzer
-eine nur Ihm bekannte Information mitschicken kann, durch die die GBD WebSuite 
+eine nur ihm bekannte Information mitschicken kann, durch die die GBD WebSuite 
 ihm eine hinterlegte Identität und die damit verbundenen Berechtigungen zuweisen 
 kann.
 
@@ -25,7 +25,7 @@ einem Cookie hinterlegt wird. Der Browser des Benutzers schickt diesen Cookie
 bei jeder Anfrage an die GBD WebSuite automatisch mit, wodurch der Benutzer 
 identifiziert werden kann.
 
-Solange Benutzer nur über einen Webbrowser mit der GBD WebSuite interagiert ist
+Solange Benutzer nur über einen Webbrowser mit der GBD WebSuite interagiert, ist
 dies die beste und einzig nötige Authentifizierungsmethode.
 
 Um diese Methode zu verwenden sind folgende Einträge in der Konfiguration 
@@ -43,8 +43,7 @@ vorzunehmen:
 ```
 %reference_de 'gws.plugin.auth_method.web.core.Config'
 
-Ohne `secure false` zu setzen weigert sich die GBD WebSuite die Authentifizierung
-über unverschlüsselte Verbindungen durchzuführen.
+Wenn nicht `secure false` gesetzt wird, verweigert die GBD WebSuite die Authentifizierung über unverschlüsselte Verbindungen. 
 
 Die [Auth Action](TODO LINK) aktiviert die Login und Logout Endpunkt die vom 
 dem Formular angesprochen werden.

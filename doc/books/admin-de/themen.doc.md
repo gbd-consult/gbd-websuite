@@ -56,6 +56,7 @@
 
 ## Layer
 
+
 ### Raster-Layers
 <!--
 - qgis,qgisflat,tile,wms,wmsflat,wmts
@@ -75,15 +76,13 @@
 - clientOptions, autoLayers
 -->
 
-## :/admin-de/themen/postgresql
-
-
 ## :/admin-de/config/models
 <!--
 - (maybe include in editing?)
 -->
 
-## OWS Dienste bereitstellen
+## :/admin-de/plugin/ows
+
 
 ## Plugins
 <!--
@@ -92,10 +91,18 @@
 
 ### alkis
 ### gekos
+### :/admin-de/plugin/qgis
+
+<!--
+QGIS Client Einstellungen
+-->
 ### qfield
 ### select <--- is this useful on it's own?
 ### annotate
 ### dimension
+
+## :/admin-de/themen/postgresql
+
 
 
 ## Projekte
@@ -106,6 +113,17 @@
 - overriding global configuration for assets, actions, client.xxx, ...
 -->
 
+## :/admin-de/config/server
+<!--
+- qgis server specific things?
+- fonts?
+- server stuff:
+    - developer options
+    - helpers? maybe include in other topics, as csv and xml helpers are weird topics on their own.
+    - storage (maybe include in other topics where applicable)
+    - web.*
+    - server.*
+-->
 
 ## Suche
 
@@ -116,7 +134,7 @@
 ### postgres
 
 
-### qgis
+
 
 
 ### wfs
@@ -131,13 +149,3 @@
 -->
 
 
-<!--
-- qgis server specific things?
-- fonts?
-- server stuff:
-    - developer options
-    - helpers? maybe include in other topics, as csv and xml helpers are weird topics on their own.
-    - storage (maybe include in other topics where applicable)
-    - web.*
-    - server.*
--->
