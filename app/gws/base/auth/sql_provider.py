@@ -152,6 +152,8 @@ class Object(gws.base.auth.provider.Object):
                 valid_password = bool(v)
             elif lk == 'uid':
                 user_rec['localUid'] = str(v)
+            elif lk == 'roles':
+                user_rec['roles'] = set(map(str.strip, v.split(',')))
             else:
                 user_rec[k] = v
 
