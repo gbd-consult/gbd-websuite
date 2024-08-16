@@ -142,36 +142,28 @@ def run():
     base = OPTIONS['BASE_DIR']
     coverage_ini = f'{base}/config/coverage.ini'
 
-    args = []
+    cmd = ''
 
     if OPTIONS['arg_coverage']:
-        args.append(f'coverage run --rcfile={coverage_ini}')
+        cmd += f'coverage run --rcfile={coverage_ini}'
     else:
-        args.append('python3')
+        cmd += 'python3'
 
-    args.append('/gws-app/gws/test/container_runner.py')
-    args.append('--base')
-    args.append(base)
+    cmd += f' /gws-app/gws/test/container_runner.py --base {base}'
 
     if OPTIONS['arg_only']:
-        args.append('--only')
-        args.append(OPTIONS['arg_only'])
+        cmd += f' --only ' + OPTIONS['arg_only']
     if OPTIONS['arg_verbose']:
-        args.append(f'--verbose')
+        cmd += ' --verbose '
     if OPTIONS['arg_pytest']:
-        args.append('-')
-        args.extend(OPTIONS['arg_pytest'])
+        cmd += ' - ' + ' '.join(OPTIONS['arg_pytest'])
 
-    docker_exec('c_gws', args)
+    docker_exec('c_gws', cmd)
 
     if OPTIONS['arg_coverage']:
-        uid = OPTIONS.get('runner.uid')
-        gid = OPTIONS.get('runner.gid')
-
         ensure_dir(f'{base}/coverage', clear=True)
-        docker_exec('c_gws', [f'coverage html --rcfile={coverage_ini}'])
-        docker_exec('c_gws', [f'chown -R {uid}:{gid} {base}/coverage'])
-        docker_exec('c_gws', [f'coverage report --rcfile={coverage_ini} --sort=cover > {base}/coverage/report.txt'])
+        docker_exec('c_gws', f'coverage html --rcfile={coverage_ini}')
+        docker_exec('c_gws', f'coverage report --rcfile={coverage_ini} --sort=cover > {base}/coverage/report.txt')
 
 
 ##
@@ -411,14 +403,12 @@ def docker_compose_stop():
         pass
 
 
-def docker_exec(container, args):
-    cmd = [
-        'docker exec',
-        OPTIONS.get('runner.docker_exec_options', ''),
-        container,
-    ]
-    cmd.extend(args)
-    cli.run(cmd)
+def docker_exec(container, cmd):
+    opts = OPTIONS.get('runner.docker_exec_options', '')
+    uid = OPTIONS.get('runner.uid')
+    gid = OPTIONS.get('runner.gid')
+
+    cli.run(f'docker exec --user {uid}:{gid} {opts} {container} {cmd}')
 
 
 def read_file(path):
