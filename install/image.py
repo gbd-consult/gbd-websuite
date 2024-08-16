@@ -66,10 +66,6 @@ class Base:
 
     arch = 'amd64'
 
-    gws_user_uid = 1000
-    gws_user_gid = 1000
-    gws_user_name = 'gws'
-
     vendor = 'gbdconsult'
     description = 'GWS Server'
 
@@ -204,16 +200,9 @@ class Builder(Base):
             ln -s /usr/bin/python3 /usr/bin/python
         '''))
 
-        __('RUN ' + self.commands(f'''
-            groupadd -g {self.gws_user_gid} {self.gws_user_name}
-            useradd -M -u {self.gws_user_uid} -g {self.gws_user_gid} {self.gws_user_name}
-            mkdir -p /gws-var
-            chown -R {self.gws_user_name}:{self.gws_user_name} /gws-var
-        '''))
-
         __(f'COPY {self.skip_cache}app /gws-app')
         if self.datadir:
-            __(f'COPY --chown={self.gws_user_name}:{self.gws_user_name} {self.skip_cache}data /data')
+            __(f'COPY {self.skip_cache}data /data')
 
         # GWS_IN_CONTAINER relies on this (should be there, but just in case)
         __(f'RUN touch /.dockerenv')

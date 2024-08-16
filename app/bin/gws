@@ -5,6 +5,10 @@ export GWS_VAR_DIR=${GWS_VAR_DIR:-/gws-var}
 export GWS_TMP_DIR=${GWS_TMP_DIR:-/tmp/gws}
 export GWS_UID=${GWS_UID:-1000}
 export GWS_GID=${GWS_GID:-1000}
+export GWS_USER=${GWS_USER:-gws}
+
+groupadd --gid $GWS_GID $GWS_USER
+useradd  --uid $GWS_UID --gid $GWS_GID $GWS_USER
 
 PYTHON=python3
 
