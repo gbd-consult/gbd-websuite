@@ -153,7 +153,7 @@ class Object(gws.base.auth.provider.Object):
             elif lk == 'uid':
                 user_rec['localUid'] = str(v)
             elif lk == 'roles':
-                user_rec['roles'] = set(map(str.strip, v.split(',')))
+                user_rec['roles'] = gws.u.to_list(v)
             else:
                 user_rec[k] = v
 
