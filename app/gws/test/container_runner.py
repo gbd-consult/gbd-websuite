@@ -83,7 +83,7 @@ def main(args):
         return
 
     cli.info('pytest ' + ' '.join(pytest_args))
-    pytest.main(pytest_args, plugins=['gws.test.util'])
+    return pytest.main(pytest_args, plugins=['gws.test.util'])
 
 
 ##

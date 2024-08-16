@@ -21,6 +21,7 @@ GWS Doc Builder
 Commands:
 
     build  - generate docs
+    api    - generate API docs
     server - start the dev server  
 
 Options:
@@ -76,6 +77,23 @@ def main(args):
 
     if cmd == 'server':
         dog.start_server(opts)
+        return 0
+
+    if cmd == 'api':
+        cache_dir = opts['BUILD_DIR'] + '/apidoc_cache/.doctrees'
+        if args.pop('no-cache', None):
+            _mkdir(cache_dir)
+        verbosity = '' if opts['debug'] else '-Q'
+        cmd = f'''
+            sphinx-build
+            -b html 
+            -j auto 
+            -d {cache_dir}
+            {verbosity}
+            {options.ROOT_DIR}/doc/api 
+            {opts['outputDir']}
+        '''
+        dog.util.run(cmd.strip().split())
         return 0
 
     cli.fatal('invalid arguments, try doc.py -h for help')

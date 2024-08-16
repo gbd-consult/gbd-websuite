@@ -22,20 +22,20 @@ USAGE = """
 GWS test runner
 ~~~~~~~~~~~~~~~
 
-    python3 test.py <command> <options>
+    python3 test.py <command> <options> - <pytest options>
 
 Commands:
 
-    test.py go [--ini <path>] [--manifest <manifest>]
+    test.py go
         - start the test environment, run tests and stop
 
-    test.py start [--ini <path>] [--manifest <manifest>] [-d | --detach] 
+    test.py start
         - start the compose test environment
 
     test.py stop
         - stop the compose test environment
         
-    test.py run [-c] [-o <regex>] [-v] - [pytest options]  
+    test.py run
         - run tests in a started environment
         
 Options:
@@ -171,6 +171,7 @@ def run():
         ensure_dir(f'{base}/coverage', clear=True)
         docker_exec('c_gws', [f'coverage html --rcfile={coverage_ini}'])
         docker_exec('c_gws', [f'chown -R {uid}:{gid} {base}/coverage'])
+        docker_exec('c_gws', [f'coverage report --rcfile={coverage_ini} --sort=cover > {base}/coverage/report.txt'])
 
 
 ##

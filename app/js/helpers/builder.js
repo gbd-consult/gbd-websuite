@@ -151,6 +151,8 @@ module.exports.Builder = class {
             return;
         }
 
+        logInfo('using ' + process.execPath + ' ' + process.version)
+
         this.options = require(path.join(JS_DIR, 'options.js'));
         this.specs = require(path.join(SPEC_DIR, 'specs.json')); // see spec/generator/main
 

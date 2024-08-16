@@ -3,7 +3,7 @@
 import os
 import sys
 
-BASE_DIR = os.getenv('BASE_DIR')
+BASE_DIR = os.path.abspath(os.path.dirname(__file__) + '/../..')
 
 project = 'GBD WebSuite'
 author = 'Geoinformatikbüro Dassau GmbH'

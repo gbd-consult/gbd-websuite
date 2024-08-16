@@ -5,8 +5,8 @@ set -e
 CWD=$(pwd)
 BASE_DIR=$(dirname $(realpath $BASH_SOURCE))
 
-PYTHON="${PYTHON:-python3} -B"
-NODE=node
+PYTHON="${GWS_PYTHON:-python3} -B"
+NODE="${GWS_NODE:-node}"
 
 
 USAGE() {
@@ -88,7 +88,7 @@ case $COMMAND in
     $MAKE_INIT && $MAKE_SPEC && $PYTHON $DOC_BUILDER build $@
     ;;
   doc-api)
-    $MAKE_INIT && bash $BASE_DIR/doc/api/make.sh $BASE_DIR $BUILD_DIR $@
+    $MAKE_INIT && $MAKE_SPEC && $PYTHON $DOC_BUILDER api $@
     ;;
   doc-dev-server)
     $MAKE_INIT && $MAKE_SPEC && $PYTHON $DOC_BUILDER server $@
