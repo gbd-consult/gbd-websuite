@@ -58,3 +58,5 @@ pdfOptions = {
     'footer-right': '[page]',
     'footer-spacing': 5,
 }
+
+del os

@@ -38,17 +38,28 @@ Options:
     -manifest <path>
         path to MANIFEST.json
         
+    -D<option-name>=<option-value>
+        override an option
+        
     -v
         verbose logging
 """
 
 
 def main(args):
-    opts = {k: v for k, v in vars(options).items() if not k.startswith('_')}
+    opts = {
+        k: v
+        for k, v in vars(options).items()
+        if not k.startswith('_')
+    }
 
     s = args.get('opt')
     if s:
         _add_opts(opts, s)
+
+    for k, v in args.items():
+        if str(k).startswith('D'):
+            opts[k[1:]] = v
 
     opts['debug'] = args.get('v')
 
