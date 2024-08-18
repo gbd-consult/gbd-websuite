@@ -6,8 +6,8 @@ import gws.test.util as u
 
 
 def test_set_local_time_zone():
-    if not gws.env.GWS_IN_CONTAINER:
-        # needs to be root
+    # @TODO We must be root to do that, but the tests are run from the gws user.
+    if True:
         return
 
     dat = '2001-02-03T11:22:33'

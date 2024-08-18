@@ -80,8 +80,7 @@ def time_zone(tz: str = '') -> zoneinfo.ZoneInfo:
 
 def _set_localtime_from_zone_info(zi):
     if os.getuid() != 0:
-        gws.log.warning('time zone: cannot set timezone, must be root')
-        return
+        raise Error('cannot set timezone, must be root')
     gws.lib.osx.run(['ln', '-fs', f'/usr/share/zoneinfo/{zi}', '/etc/localtime'])
 
 
