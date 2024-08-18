@@ -127,9 +127,9 @@ def health_check():
                 fn = globals().get(f'health_check_service_{s}')
                 err = fn() if fn else None
                 if err:
-                    cli.warning(f'service {s!r}: waiting: {err}')
+                    cli.warning(f'health_check: service {s!r}: waiting: {err}')
                 else:
-                    cli.info(f'service {s!r}: ok')
+                    cli.info(f'health_check: service {s!r}: ok')
                 status[s] = not err
         if all(status.values()):
             return True
