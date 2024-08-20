@@ -408,7 +408,15 @@ def docker_exec(container, cmd):
     uid = OPTIONS.get('runner.uid')
     gid = OPTIONS.get('runner.gid')
 
-    cli.run(f'docker exec --user {uid}:{gid} {opts} {container} {cmd}')
+    cli.run(f'''
+        docker exec 
+        --user {uid}:{gid}
+        --env PYTHONPYCACHEPREFIX=/tmp
+        --env PYTHONDONTWRITEBYTECODE=1
+        {opts} 
+        {container} 
+        {cmd}
+    ''')
 
 
 def read_file(path):
