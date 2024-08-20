@@ -2,6 +2,21 @@
 
 Developer documentation for the GWS client.
 
+## util script :util
+
+The util script, accessible via `/_/webSystemAsset/path/util.js` provides helpers for non-React html pages (standalone templates). 
+
+Currently, it handles only GWS login/logout functionality. On page load, it looks for a form with an ID `gwsLoginForm` or `gwsLogoutForm` and 
+supplies it with a `submit` event handler, which takes care of the data exchange with the GWS API.
+
+The login form must contain input fields with IDs `gwsUsername` and `gwsPassword`.
+
+During login, the script adds `gwsLoginProgress` class name to the `body` element, and if the login has failed, `gwsLoginError`.
+This can be used in css to show/hide progress and error indicators.
+
+On success, both login and logout reload the current page by default.
+
+
 ## HTML template for the client :template
 
 The GWS client requires a specially constructed HTML template. This template can be static or dynamic (an "asset"), and
@@ -13,7 +28,7 @@ The template should contain the following elements:
 - Client options, as a JSON object.
 - Client vendor bundle, `/_/webSystemAsset/path/vendor.js`.
 - Client application bundle, `/_/webSystemAsset/path/app.js`.
-- Optionally, an HTML container element.
+- Optionally, an HTML container element. If present, must have the class name `gws`.
 
 ```html title="Example:"
 
@@ -80,20 +95,17 @@ must be added to both the options block and the Application bundle URL:
 
 The client is rendered inside a container element, usually a `div`. This element must have a class name `gws`. If no
 such element exists in the template, it will be created automatically. You can mix the container with other HTML content
-and style it as you see fit.
+and style it as you see fit, for example:
 
-```html title="Example:"
+```css title="CSS:"
+.gws {
+    width: 800px;
+    height: 600px;
+    box-shadow: 10px 0 5px #c0c0c0;
+}
+```
 
-<style>
-    .gws {
-        width: 800px;
-        height: 600px;
-        box-shadow: 10px 0 5px #c0c0c0;
-    }
-</style>
-
-...
-
+```html title="HTML:"
 <h3>Düsseldorf</h3>
 
 <figure>
