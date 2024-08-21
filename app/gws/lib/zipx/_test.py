@@ -13,13 +13,13 @@ def test_zip(tmp_path):
     d.mkdir()
     z = d / 'zip'
     z2 = d / 'zip2'
-    f = d / 'f1txt'
+    f = d / 'f1.txt'
     f.write_text('foobar')
 
     ret = zipx.zip(str(z), str(f), flat=False)
     ret2 = zipx.zip(str(z2), str(f), flat=True)
     assert zipfile.is_zipfile(z)
-    assert os.listdir(tmp_path).sort() == ['zip', 'zip2', 'f1.txt'].sort()
+    assert sorted(os.listdir(d)) == sorted(['zip', 'zip2', 'f1.txt'])
     assert ret == 1
     assert ret2 == 1
     assert zipx.unzip_to_dict(str(z)) != zipx.unzip_to_dict(str(z2))
@@ -50,7 +50,7 @@ def test_zip_dir(tmp_path):
     f2.write_text('bar')
 
     ret = zipx.zip(str(z), str(dr))
-    assert os.listdir(str(d)).sort() == ['zip', 'dir1'].sort()
+    assert sorted(os.listdir(str(d))) == sorted(['zip', 'dir'])
     assert ret == 2
 
 
@@ -64,7 +64,7 @@ def test_zip_dir_empty(tmp_path):
     dr.mkdir()
 
     ret = zipx.zip(str(z), str(dr))
-    assert os.listdir(str(d)).sort() == ['zip', 'dir'].sort()
+    assert sorted(os.listdir(str(d))) == sorted(['dir'])
     assert ret == 0
 
 
@@ -82,7 +82,7 @@ def test_zip_to_bytes(tmp_path):
     os.remove(str(f))
     os.remove(str(f2))
     zipx.unzip_bytes(ret, str(d), flat=True)
-    assert os.listdir(str(d)).sort() == ['f2.txt', 'f1.txt'].sort()
+    assert sorted(os.listdir(str(d))) == sorted(['f2.txt', 'f1.txt'])
 
 
 # test zip_to_bytes with no src
@@ -92,6 +92,7 @@ def test_zip_to_bytes_empty(tmp_path):
 
     ret = zipx.zip_to_bytes()
     assert not os.listdir(str(d))
+    assert not sorted(os.listdir(d))
     assert ret == b''
 
 
@@ -112,7 +113,7 @@ def test_zip_to_bytes_dir(tmp_path):
     ret = zipx.zip_to_bytes(str(dr), flat=False)
     # assert ret = 'someByteString'
     zipx.unzip_bytes(ret, str(d), flat=True)
-    assert os.listdir(str(d)).sort() == ['f1.txt', 'f2.txt', 'dir'].sort()
+    assert sorted(os.listdir(str(d))) == sorted(['f1.txt', 'f2.txt', 'dir'])
 
 
 # test zip_to_bytes with empty dir
@@ -124,6 +125,7 @@ def test_zip_to_bytes_dir_empty(tmp_path):
     dr.mkdir()
 
     ret = zipx.zip_to_bytes(str(dr))
+    assert sorted(os.listdir(d)) == sorted(['dir'])
     assert ret == b''
 
 
@@ -144,7 +146,7 @@ def test_unzip(tmp_path):
     os.remove(str(f2))
     ret = zipx.unzip(str(z), str(d), flat=False)
     os.remove(str(z))
-    assert os.listdir(str(d)).sort() == ['f2.txt', 'f1.txt', 'dir'].sort()
+    assert sorted(os.listdir(str(d))) == sorted(['f2.txt', 'f1.txt'])
     assert ret == 2
 
 
@@ -165,7 +167,7 @@ def test_unzip_name(tmp_path):
     os.remove(str(f2))
     ret = zipx.unzip(str(z), str(d), flat=True)
     os.remove(str(z))
-    assert os.listdir(str(d)).sort() == ['f2.txt', 'f1.txt'].sort()
+    assert sorted(os.listdir(str(d))) == sorted(['f2.txt', 'f1.txt'])
     assert ret == 2
 
 
@@ -185,7 +187,7 @@ def test_unzip_bytes(tmp_path):
     os.remove(str(f2))
     ret = zipx.unzip_bytes(z, str(d), flat=True)
     assert ret == 2
-    assert os.listdir(str(d)) == ['f1.txt', 'f2.txt']
+    assert sorted(os.listdir(str(d))) == sorted(['f1.txt', 'f2.txt'])
 
 
 def test_unzip_to_dict(tmp_path):
@@ -203,9 +205,8 @@ def test_unzip_to_dict(tmp_path):
     os.remove(str(f))
     os.remove(str(f2))
     ret = zipx.unzip_to_dict(str(z), flat=True)
-    os.remove(str(z))
     assert ret == {'f1.txt': b'foo', 'f2.txt': b'bar'}
-    assert not os.listdir(str(d))
+    assert sorted(os.listdir(str(d))) == sorted(['zip'])
 
 
 def test_unzip_bytes_to_dict(tmp_path):
@@ -219,6 +220,7 @@ def test_unzip_bytes_to_dict(tmp_path):
     byt = zipx.zip_to_bytes(str(f))
     ret = zipx.unzip_bytes_to_dict(byt)
     zipx.zip(str(z), str(f))
+    os.remove(str(f))
     ret2 = zipx.unzip_to_dict(str(z))
-    os.remove(str(z))
     assert ret == ret2
+    assert sorted(os.listdir(d)) == ['zip']
