@@ -35,14 +35,14 @@ Options:
     -builddir <dir>
         directory to store Dockerfile and assets, defaults to $GWS_BUILD_DIR
 
+    -trivydir <dir>
+        directory to store Trivy cache, defaults to $GWS_TRIVY_DIR
+
     -datadir <dir>
         data directory to copy to "/data" in the image, defaults to "gbd-websuite/data"
 
     -latest
         tag the app image as a release version (8.1.x => 8.1)
-
-    -manifest <path>
-        path to MANIFEST.json
 
     -name <name>
         custom image name 
@@ -58,8 +58,8 @@ Options:
 
 Examples:
 
-    python3 image.py app -arch arm64 -name my-test-image -datadir my_project/data
-    python3 image.py scan -name my-test-image
+    python3 image.py build -arch arm64 -name my-test-image -datadir my_project/data
+    python3 image.py scan  -name my-test-image
 """
 
 
@@ -87,16 +87,11 @@ class Base:
         self.skip_cache = '_skip_cache_' + str(time.time()).replace('.', '') + '_'
         self.os_image_name = f'ubuntu:{self.ubuntu_version}'
 
-        self.build_dir = args.get('builddir') or os.getenv('GWS_BUILD_DIR')
-        if not self.build_dir:
-            raise ValueError('builddir not set')
-
         self.app_version = cli.read_file(f'{self.gws_dir}/app/VERSION')
         self.app_short_version = self.app_version.rpartition('.')[0]
         self.app_image_name = args.get('name') or f'{self.vendor}/gws-{self.arch}:{self.app_version}'
 
         self.datadir = args.get('datadir') or f'{self.gws_dir}/data'
-        self.context_dir = f'{self.build_dir}/{self.app_version}_{self.arch}'
 
         self.apts = self.lines(cli.read_file(f'{self.this_dir}/apt.lst'))
         self.pips = self.lines(cli.read_file(f'{self.this_dir}/pip.lst'))
@@ -120,6 +115,15 @@ class Base:
 
 
 class Builder(Base):
+    def __init__(self, cmd, args):
+        super().__init__(cmd, args)
+
+        self.build_dir = args.get('builddir') or os.getenv('GWS_BUILD_DIR')
+        if not self.build_dir:
+            raise ValueError('builddir not set')
+
+        self.context_dir = f'{self.build_dir}/{self.app_version}_{self.arch}'
+
     def main(self):
         self.prepare()
 
@@ -251,6 +255,13 @@ class Scanner(Base):
     TRIVY_IMAGE = 'aquasec/trivy'
     SEVERITY = 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'
 
+    def __init__(self, cmd, args):
+        super().__init__(cmd, args)
+
+        self.trivy_dir = args.get('trivydir') or os.getenv('GWS_TRIVY_DIR')
+        if not self.trivy_dir:
+            raise ValueError('trivydir not set')
+
     def main(self):
         if self.cmd == 'scan':
             cli.info(f'SCANNING {self.app_image_name}')
@@ -298,10 +309,10 @@ class Scanner(Base):
         for ln in text.split('\n'):
             if ln.startswith('MEDIUM'):
                 cli.warning(ln)
-            elif ln.startswith('LOW'):
-                cli.info(ln)
-            else:
+            elif ln.startswith('HIGH'):
                 cli.error(ln)
+            else:
+                cli.info(ln)
 
         return
 
@@ -317,39 +328,31 @@ class Scanner(Base):
         return 0
 
     def run_trivy(self, image_name, report_format):
-        cache_dir = self.build_dir + '/trivy'
-        if not os.path.isdir(cache_dir):
-            os.makedirs(cache_dir, exist_ok=True)
+
+        if not os.path.isdir(self.trivy_dir):
+            os.makedirs(self.trivy_dir, exist_ok=True)
 
         out = '__out.json'
         try:
-            os.unlink(f'{cache_dir}/{out}')
+            os.unlink(f'{self.trivy_dir}/{out}')
         except OSError:
             pass
 
-        uid = os.getuid()
-        gid = os.getgid()
-
         cmd = f'''
             docker run
-            --rm 
-            --entrypoint "" 
-            --user {uid}:{gid} 
-            --mount type=bind,src={cache_dir},dst=/.cache
+            --mount type=bind,src={self.trivy_dir},dst=/root/.cache/
             --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
             {self.TRIVY_IMAGE}
-            trivy
-            --cache-dir=/.cache
             image
             --format {report_format}
             --scanners vuln
-            --output /.cache/{out}
+            --output /root/.cache/{out}      
             {image_name}
         '''
 
         cli.run(cmd)
 
-        return cli.read_file(f'{cache_dir}/{out}')
+        return cli.read_file(f'{self.trivy_dir}/{out}')
 
 
 ###
