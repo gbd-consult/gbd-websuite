@@ -317,17 +317,23 @@ class Scanner(Base):
         return 0
 
     def run_trivy(self, image_name, report_format):
-        cache_path = self.build_dir + '/trivy'
+        cache_dir = self.build_dir + '/trivy'
+        if not os.path.isdir(cache_dir):
+            os.makedirs(cache_dir, exist_ok=True)
 
-        out = f'{cache_path}/__trivy.json'
+        out = f'{cache_dir}/__trivy.json'
         try:
             os.unlink(out)
         except OSError:
             pass
 
+        uid = os.getuid()
+        gid = os.getgid()
+
         cmd = f'''
             docker run
-            --mount type=bind,src={cache_path},dst=/root/.cache/
+            --user {uid}:{gid}
+            --mount type=bind,src={cache_dir},dst=/root/.cache/
             --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
             {self.TRIVY_IMAGE}
             image
