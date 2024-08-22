@@ -334,7 +334,7 @@ class Scanner(Base):
             docker run
             --rm 
             --entrypoint "" 
-            --user ${uid}:${gid} 
+            --user {uid}:{gid} 
             --mount type=bind,src={cache_dir},dst=/.cache
             --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
             {self.TRIVY_IMAGE}
