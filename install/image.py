@@ -321,9 +321,9 @@ class Scanner(Base):
         if not os.path.isdir(cache_dir):
             os.makedirs(cache_dir, exist_ok=True)
 
-        out = f'{cache_dir}/__trivy.json'
+        out = '__out.json'
         try:
-            os.unlink(out)
+            os.unlink(f'{cache_dir}/{out}')
         except OSError:
             pass
 
@@ -332,19 +332,24 @@ class Scanner(Base):
 
         cmd = f'''
             docker run
-            --user {uid}:{gid}
-            --mount type=bind,src={cache_dir},dst=/root/.cache/
+            --rm 
+            --entrypoint "" 
+            --user ${uid}:${gid} 
+            --mount type=bind,src={cache_dir},dst=/.cache
             --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
             {self.TRIVY_IMAGE}
+            trivy
+            --cache-dir=/.cache
             image
             --format {report_format}
             --scanners vuln
-            --output /root/.cache/__trivy.json      
+            --output /.cache/{out}
             {image_name}
         '''
+
         cli.run(cmd)
 
-        return cli.read_file(out)
+        return cli.read_file(f'{cache_dir}/{out}')
 
 
 ###
