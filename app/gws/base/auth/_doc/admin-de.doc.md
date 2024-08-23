@@ -45,8 +45,13 @@ vorzunehmen:
 
 Wenn nicht `secure false` gesetzt wird, verweigert die GBD WebSuite die Authentifizierung über unverschlüsselte Verbindungen. 
 
+Die Auth Action aktiviert die Login und Logout Endpunkt die vom 
+dem Formular angesprochen werden.
+
+<!--
 Die [Auth Action](TODO LINK) aktiviert die Login und Logout Endpunkt die vom 
 dem Formular angesprochen werden.
+ -->
 
 Sie können das Login Formular auf einer durch die GBD WebSuite bereitgestellten
 Web Seite einbinden:
@@ -93,7 +98,7 @@ Authentifizierungsmethode:
 ### Provider
 
 Nachdem die GBD WebSuite die Zugangsdaten durch eine der oben beschriebenen 
-[Methoden](TODO LINK) erhalten hat, muss sie überprüfen ob diese Zugangsdaten 
+[Methoden](https://gbd-websuite.de/doc/8.1/admin-de/themen/auth/index.html#authentifizierung-methoden) erhalten hat, muss sie überprüfen ob diese Zugangsdaten 
 richtig sind, herausfinden zu welchem Benutzer diese gehören und Informationen 
 zu diesem Benutzer herausfinden, wie z.B. der Anzeigename oder die dem Benutzer 
 zugewiesenen Rollen.
@@ -143,7 +148,7 @@ Und hinterlegen Sie eine Liste mit Benutzerkonten in der angegebenen Datei:
 Um das Passwort nicht im Klartext in der Konfiguration zu hinterlegen wird ein 
 [Hashwert](https://de.wikipedia.org/wiki/Passwort#Speichern_von_Passwörtern) 
 verwendet. Sie können den in der Datei zu hinterlegenden Hashwert mittels eines 
-Kommandozeilenbefehls von der WebSuite erhalten: [`gws auth password`](TODO LINK KOMMANDOZEILENREFERENZ)
+Kommandozeilenbefehls von der WebSuite erhalten: `gws auth password` <!-- (TODO LINK KOMMANDOZEILENREFERENZ) -->
 
 #### ldap
 
@@ -204,7 +209,7 @@ beginnen, und nur Buchstaben, Ziffern und Unterstriche enthalten dürfen.
 Ebenfalls dürfen Sie die Rollen `guest`, `user` und `all` nicht selbst vergeben.
 
 
-#### vordefinierte Rollen
+#### Vordefinierte Rollen
 
 | Rolle     | Bedeutung |
 |-----------|---|
@@ -313,7 +318,7 @@ Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen
 }
 ```
 
-### selektives ``allow``
+#### selektives ``allow``
 
 Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen:
 
@@ -347,12 +352,10 @@ Login-Formular als Webseite darstellen zu können.
 
 ### Sitzungen
 
-TODO dieser Abschnitt ist noch alt und muss überprüft werden.
+%reference_de 'gws.plugin.auth_session_manager.sqlite.Config'
 
 Sitzungen werden in einer Sqlite Tabelle gespeichert, die sich in einem persistenten Ordner innerhalb des ``var`` Ordners befindet. Dies bedeutet, dass die Sitzungen auch nach einem Neustart des Servers nicht unterbrochen werden.
 
-Sie können die Lebenszeit einer Sitzung mit der Option ``sessionLifeTime`` steuern.
-
-TODO! ^CLIREF auth.sessions
+Sie können die Lebenszeit einer Sitzung mit der Option ``lifeTime`` steuern.
 
 Mit dem Kommandozeilen-Befehl ``gws auth sessions`` können Sie die aktiven Sitzungen auflisten.
