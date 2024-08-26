@@ -11,8 +11,8 @@ import sys
 import yaml
 import json
 
-APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../..')
-sys.path.insert(0, APP_DIR)
+LOCAL_APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../..')
+sys.path.insert(0, LOCAL_APP_DIR)
 
 import gws
 import gws.lib.cli as cli
@@ -42,8 +42,9 @@ Options:
     --ini <path>          - path to the local 'ini' file (can also be passed in the GWS_TEST_INI env var)
     --manifest <manifest> - path to MANIFEST.json
     
-    -d, --detach          - run docker compose in the background
     -c, --coverage        - produce a coverage report
+    -d, --detach          - run docker compose in the background
+    -l, --local           - mount the local copy of the application in the test container   
     -o, --only <regex>    - only run filenames matching the pattern 
     -v, --verbose         - enable debug logging
         
@@ -58,7 +59,7 @@ OPTIONS = {}
 def main(args):
     cmd = args.get(1)
 
-    ini_paths = [APP_DIR + '/test.ini']
+    ini_paths = [LOCAL_APP_DIR + '/test.ini']
     custom_ini = args.get('ini') or gws.env.GWS_TEST_INI
     if custom_ini:
         ini_paths.append(custom_ini)
@@ -67,19 +68,21 @@ def main(args):
 
     OPTIONS.update(dict(
         arg_ini=custom_ini,
-        arg_manifest=args.get('manifest'),
-        arg_detach=args.get('d') or args.get('detach'),
+        arg_pytest=args.get('_rest'),
+
         arg_coverage=args.get('c') or args.get('coverage'),
+        arg_detach=args.get('d') or args.get('detach'),
+        arg_local=args.get('l') or args.get('local'),
+        arg_manifest=args.get('manifest'),
         arg_only=args.get('o') or args.get('only'),
         arg_verbose=args.get('v') or args.get('verbose'),
-        arg_pytest=args.get('_rest'),
     ))
 
-    OPTIONS['APP_DIR'] = APP_DIR
+    OPTIONS['LOCAL_APP_DIR'] = LOCAL_APP_DIR
 
     p = OPTIONS.get('runner.base_dir') or gws.env.GWS_TEST_DIR
     if not os.path.isabs(p):
-        p = os.path.realpath(os.path.join(APP_DIR, p))
+        p = os.path.realpath(os.path.join(LOCAL_APP_DIR, p))
     OPTIONS['BASE_DIR'] = p
 
     OPTIONS['runner.uid'] = int(OPTIONS.get('runner.uid') or os.getuid())
@@ -189,10 +192,12 @@ def make_docker_compose_yml():
 
         std_vols = [
             f'{base}:{base}',
-            f'{APP_DIR}:/gws-app',
             f'{base}/data:/data',
             f'{base}/gws-var:/gws-var',
         ]
+        if OPTIONS['arg_local']:
+            std_vols.append(f'{LOCAL_APP_DIR}:/gws-app')
+
         srv.setdefault('volumes', []).extend(std_vols)
 
         srv.setdefault('tmpfs', []).append('/tmp')
@@ -253,6 +258,8 @@ def make_coverage_ini():
 def make_env():
     env = {
         'PYTHONPATH': '/gws-app',
+        'PYTHONPYCACHEPREFIX': '/tmp',
+        'PYTHONDONTWRITEBYTECODE': '1',
         'GWS_UID': OPTIONS.get('runner.uid'),
         'GWS_GID': OPTIONS.get('runner.gid'),
         'GWS_TIMEZONE': OPTIONS.get('service.gws.time_zone', 'UTC'),
@@ -383,9 +390,13 @@ def service_mockserver():
 ##
 
 def docker_compose_start(with_exec=False):
-    dc = OPTIONS['BASE_DIR'] + '/config/docker-compose.yml'
-
-    cmd = ['docker', 'compose', '--file', dc, 'up']
+    cmd = [
+        'docker',
+        'compose',
+        '--file',
+        OPTIONS['BASE_DIR'] + '/config/docker-compose.yml',
+        'up'
+    ]
     if OPTIONS['arg_detach']:
         cmd.append('--detach')
 
@@ -396,9 +407,16 @@ def docker_compose_start(with_exec=False):
 
 
 def docker_compose_stop():
-    dc = OPTIONS['BASE_DIR'] + '/config/docker-compose.yml'
+    cmd = [
+        'docker',
+        'compose',
+        '--file',
+        OPTIONS['BASE_DIR'] + '/config/docker-compose.yml',
+        'down'
+    ]
+
     try:
-        cli.run(f'docker compose --file {dc} down')
+        cli.run(cmd)
     except:
         pass
 

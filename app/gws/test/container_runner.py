@@ -41,6 +41,8 @@ Pytest options:
 def main(args):
     version = cli.read_file(gws.c.APP_DIR + '/VERSION')
     cli.info(f'GWS version {version}')
+    if not os.path.isfile('/gws-app/.dockerenv'):
+        cli.warning(f'GWS local application mounted')
 
     gws.u.ensure_system_dirs()
 

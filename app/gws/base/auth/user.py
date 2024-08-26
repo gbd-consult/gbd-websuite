@@ -185,7 +185,7 @@ def from_record(provider: gws.AuthProvider, user_rec: dict) -> gws.User:
 
     data = dict(user_rec)
 
-    roles = set(data.pop('roles', []))
+    roles = set(gws.u.to_list(data.pop('roles', [])))
     roles.add(gws.c.ROLE_ALL)
 
     if gws.c.ROLE_GUEST in roles:
