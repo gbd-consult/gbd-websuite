@@ -227,7 +227,7 @@ class Builder(Base):
         return '\n'.join(df) + '\n'
 
     def build_image(self, image_name):
-        cli.run(f'docker pull {self.os_image_name}')
+        cli.run(f'docker pull --platform=linux/{self.arch} {self.os_image_name}')
 
         cli.run(f'''
             docker build 
