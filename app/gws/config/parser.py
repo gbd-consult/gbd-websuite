@@ -14,7 +14,7 @@ import gws.lib.vendor.jump
 import gws.lib.vendor.slon
 import gws.spec.runtime
 
-CONFIG_PATH_PATTERN = r'\bconfig\.(py|json|yaml|cx)$'
+CONFIG_PATH_PATTERN = r'\.(py|json|yaml|cx)$'
 CONFIG_FUNCTION_NAME = 'config'
 
 
