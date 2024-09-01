@@ -28,6 +28,8 @@ class Config(gws.Config):
     """Qgis project schema"""
     projectName: Optional[str]
     """Qgis project name"""
+    defaultLegendOptions: Optional[dict]
+    """Default options for qgis legends. (added in 8.1)"""
     directRender: Optional[list[str]]
     """QGIS data providers that should be rendered directly"""
     directSearch: Optional[list[str]]
@@ -44,6 +46,8 @@ class Object(gws.OwsProvider):
 
     directRender: set[str]
     directSearch: set[str]
+
+    defaultLegendOptions: dict
 
     caps: caps.Caps
 
@@ -71,6 +75,8 @@ class Object(gws.OwsProvider):
 
         self.directRender = self._direct_formats('directRender', {'wms', 'wmts', 'xyz'})
         self.directSearch = self._direct_formats('directSearch', {'wms', 'wfs', 'postgres'})
+
+        self.defaultLegendOptions = self.cfg('defaultLegendOptions', default={})
 
     def _direct_formats(self, opt, allowed):
         p = self.cfg(opt)

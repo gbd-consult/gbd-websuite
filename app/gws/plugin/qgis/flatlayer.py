@@ -99,10 +99,13 @@ class Object(gws.base.layer.image.Object):
         # cannot use super() here, because the config must be extended with defaults
         if not self.cfg('withLegend'):
             return True
+        cc = self.cfg('legend')
+        options = gws.u.merge(self.serviceProvider.defaultLegendOptions, cc.options if cc else {})
         self.legend = self.create_child(
             gws.ext.object.legend,
-            self.cfg('legend'),
+            cc,
             type='qgis',
+            options=options,
             _defaultProvider=self.serviceProvider,
             _defaultSourceLayers=self.imageLayers,
         )
