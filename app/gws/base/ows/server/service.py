@@ -163,7 +163,10 @@ class Object(gws.OwsService):
     ##
 
     def url_path(self) -> str:
-        return gws.u.action_url_path('owsService', serviceUid=self.uid)
+        if self.project:
+            return gws.u.action_url_path('owsService', serviceUid=self.uid, projectUid=self.project.uid)
+        else:
+            return gws.u.action_url_path('owsService', serviceUid=self.uid)
 
     ##
 
