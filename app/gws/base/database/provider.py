@@ -111,7 +111,7 @@ class Object(gws.DatabaseProvider):
         try:
             return sa_table.columns[column_name]
         except KeyError:
-            raise sa.Error(f'column {table!r}.{column_name!r} not found')
+            raise sa.Error(f'column {str(table)}.{column_name!r} not found')
 
     def has_column(self, table, column_name):
         sa_table = self._sa_table(table)

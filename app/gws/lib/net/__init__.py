@@ -329,12 +329,15 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
             return HTTPResponse(ok=True, url=url, res=res)
         gws.log.error(f'HTTP_FAILED_{method}: ({res.status_code!r}) url={url!r}')
         return HTTPResponse(ok=False, url=url, res=res)
+    except requests.ConnectionError as exc:
+        gws.log.error(f'HTTP_FAILED_{method}: (ConnectionError) url={url!r}')
+        return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=900)
     except requests.Timeout as exc:
-        gws.log.error(f'HTTP_FAILED_{method}: (timeout) url={url!r}')
-        return HTTPResponse(ok=False, url=url, text=repr(exc))
+        gws.log.error(f'HTTP_FAILED_{method}: (Timeout) url={url!r}')
+        return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=901)
     except requests.RequestException as exc:
-        gws.log.error(f'HTTP_FAILED_{method}: ({exc!r}) url={url!r}')
-        return HTTPResponse(ok=False, url=url, text=repr(exc))
+        gws.log.error(f'HTTP_FAILED_{method}: (Generic: {exc!r}) url={url!r}')
+        return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=999)
 
 
 def _cache_path(url):
