@@ -1,14 +1,22 @@
 """Cache management."""
 
-import datetime
 import math
 import os
 import re
+
+import yaml
 
 import gws
 import gws.config
 import gws.gis.mpx.config
 import gws.lib.osx
+import gws.lib.lock
+import gws.lib.datetimex as datetimex
+
+DEFAULT_MAX_TIME = 600
+DEFAULT_CONCURRENCY = 1
+DEFAULT_MAX_AGE = 7 * 24 * 3600
+DEFAULT_MAX_LEVEL = 3
 
 
 class Config(gws.Config):
@@ -32,7 +40,7 @@ class Grid(gws.Data):
 
 class Entry(gws.Data):
     uid: str
-    layers: list[gws.Node]
+    layers: list[gws.Layer]
     mpxCache: dict
     grids: dict[int, Grid]
     config: dict
@@ -75,56 +83,78 @@ def drop(root: gws.Root, layer_uids=None):
     for e in s.entries:
         _remove_dir(e.dirname)
 
+PIXEL_PNG8 = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x03\x00\x00\x00(\xcb4\xbb\x00\x00\x00\x06PLTE\xff\xff\xff\x00\x00\x00U\xc2\xd3~\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\x0cIDATx\xdab`\x00\x080\x00\x00\x02\x00\x01OmY\xe1\x00\x00\x00\x00IEND\xaeB`\x82'
 
-def seed(root: gws.Root, layer_uids=None, max_time=None, concurrency=1, levels=None):
-    pass
+def seed(root: gws.Root, entries: list[Entry], levels: list[int]):
+    # https://mapproxy.github.io/mapproxy/latest/seed.html#seeds
+    seeds = {}
 
+    for e in entries:
+        cache_uid = e.uid
 
-#     mpx_config = gws.gis.mpx.config.create(root)
-#     entries = _entries(root, mpx_config, layer_uids)
-#
-#
-#     seeds = {}
-#
-#     for layer, cc in _cached_layers(root, mpx_config, layer_uids):
-#         seeds[cc['uid']] =
-#
-#     ts = datetime.datetime.now() - datetime.timedelta(seconds=layer.cache.maxAge)
-#
-#     return {
-#         'caches': [cc['name']],
-#         'grids': cc['grids'],
-#         'levels': levels or list(range(layer.cache.maxLevel)),
-#         'refresh_before': {
-#             'time': ts.strftime("%Y-%m-%dT%H:%M:%S")
-#         }
-#     }
-#
-#     if not seeds:
-#         return True
-#
-#     path = gws.c.CONFIG_DIR + '/mapproxy.seed.yaml'
-#     cfg = {
-#         'seeds': seeds
-#     }
-#
-#     with open(path, 'wt') as fp:
-#         fp.write(yaml.dump(cfg))
-#
-#     cmd = [
-#         '/usr/local/bin/mapproxy-seed',
-#         '-f', gws.c.CONFIG_DIR + '/mapproxy.yaml',
-#         '-c', str(concurrency),
-#         path
-#     ]
-#     try:
-#         gws.lib.osx.run(cmd, echo=True, timeout=max_time)
-#     except gws.lib.osx.TimeoutError:
-#         return False
-#     except KeyboardInterrupt:
-#         return False
-#
-#     return True
+        c = e.layers[0].cache or gws.Data()
+        max_age = c.get('maxAge') or DEFAULT_MAX_AGE
+        max_level = c.get('maxLevel') or DEFAULT_MAX_LEVEL
+
+        seeds[cache_uid] = dict(
+            caches=[cache_uid],
+            # grids=e.mpxCache['grids'],
+            levels=levels or range(max_level + 1),
+            refresh_before={
+                'time': datetimex.to_iso_string(datetimex.to_utc(datetimex.add(seconds=-max_age)), with_tz=''),
+            }
+        )
+
+    if not seeds:
+        gws.log.info('no layers to seed')
+        return
+
+    lock_path = gws.c.CONFIG_DIR + '/mapproxy.seed.lock'
+
+    with gws.lib.lock.SoftFileLock(lock_path) as ok:
+        if not ok:
+            gws.log.info('seeding already running')
+            return
+
+        mpx_config = gws.gis.mpx.config.create(root)
+        mpx_config_path = gws.c.CONFIG_DIR + '/mapproxy.seed.main.yml'
+        gws.u.write_file(mpx_config_path, yaml.dump(mpx_config))
+
+        seed_config_path = gws.c.CONFIG_DIR + '/mapproxy.seed.yml'
+        gws.u.write_file(seed_config_path, yaml.dump(dict(seeds=seeds)))
+
+        max_time = root.app.cfg('cache.seedingMaxTime', default=DEFAULT_MAX_TIME)
+        concurrency = root.app.cfg('cache.seedingConcurrency', default=DEFAULT_CONCURRENCY)
+
+        # monkeypatch mapproxy to simply store an empty image in case of error
+        empty_pixel_path = gws.c.CONFIG_DIR + '/mapproxy.seed.empty.png'
+        gws.u.write_file_b(empty_pixel_path, PIXEL_PNG8)
+        py = '/usr/local/lib/python3.10/dist-packages/mapproxy/client/http.py'
+        s = gws.u.read_file(py)
+        s = re.sub(r"raise HTTPClientError\('response is not an image.+", f'return ImageSource({empty_pixel_path!r})', s)
+        gws.u.write_file(py, s)
+
+        ts = gws.u.stime()
+        gws.log.info(f'START SEEDING jobs={len(seeds)} {max_time=} {concurrency=}')
+        gws.log.info(f'^C ANYTIME TO STOP...')
+
+        cmd = f'''
+            /usr/local/bin/mapproxy-seed
+            -f {mpx_config_path}
+            -c {concurrency}
+            {seed_config_path}
+        '''
+        res = False
+        try:
+            gws.lib.osx.run(cmd, echo=True, timeout=max_time or DEFAULT_MAX_TIME)
+            res = True
+        except gws.lib.osx.TimeoutError:
+            pass
+        except KeyboardInterrupt:
+            pass
+
+        gws.log.info(f'TIME: {gws.u.stime() - ts} sec')
+        gws.log.info(f'SEEDING COMPLETE' if res else 'SEEDING INCOMPLETE, PLEASE TRY AGAIN')
 
 
 def store_in_web_cache(url: str, img: bytes):

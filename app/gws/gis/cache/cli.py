@@ -87,45 +87,19 @@ class Object(gws.Node):
         root = gws.config.loader.load()
         core.drop(root, gws.u.to_list(p.layer))
 
+    @gws.ext.command.cli('cacheSeed')
+    def do_seed(self, p: SeedParams):
+        """Seed cache for layers."""
+
+        root = gws.config.loader.load()
+        status = core.status(root, gws.u.to_list(p.layer))
+
+        levels = []
+        if p.levels:
+            levels = [int(x) for x in gws.u.to_list(p.levels)]
+
+        core.seed(root, status.entries, levels)
+
 
 _comma = ','.join
 
-#
-# _SEED_LOCKFILE = gws.c.CONFIG_DIR + '/mapproxy.seed.lock'
-#
-#
-# @arg('--layers', help='comma separated list of layer IDs')
-# @arg('--levels', help='zoom levels to build the cache for')
-# def seed(layers=None, levels=None):
-#     """Start the cache seeding process"""
-#
-#     root = gws.config.loader.load()
-#
-#     if layers:
-#         layers = _as_list(layers)
-#
-#     st = gws.gis.cache.status(root, layers)
-#
-#     if not st:
-#         cli.info('no cached layers found')
-#         return
-#
-#     if levels:
-#         levels = [int(x) for x in _as_list(levels)]
-#
-#     with gws.lib.misc.lock(_SEED_LOCKFILE) as ok:
-#         if not ok:
-#             cli.info('seed already running')
-#             return
-#
-#         max_time = root.app.cfg('seeding.maxTime')
-#         concurrency = root.app.cfg('seeding.concurrency')
-#         ts = time.time()
-#
-#         cli.info(f'\nSTART SEEDING (maxTime={max_time} concurrency={concurrency}), ^C ANYTIME TO CANCEL...\n')
-#         done = gws.gis.cache.seed(root, layers, max_time, concurrency, levels)
-#         cli.info('=' * 40)
-#         cli.info('TIME: %.1f sec' % (time.time() - ts))
-#         cli.info(f'SEEDING COMPLETE' if done else 'SEEDING INCOMPLETE, PLEASE TRY AGAIN')
-#
-#
