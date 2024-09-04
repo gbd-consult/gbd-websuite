@@ -7,8 +7,8 @@ export GWS_UID=${GWS_UID:-1000}
 export GWS_GID=${GWS_GID:-1000}
 export GWS_USER=${GWS_USER:-gws}
 
-groupadd --gid $GWS_GID $GWS_USER
-useradd  --uid $GWS_UID --gid $GWS_GID $GWS_USER
+groupadd --gid $GWS_GID $GWS_USER                   >/dev/null 2>&1
+useradd  --uid $GWS_UID --gid $GWS_GID $GWS_USER    >/dev/null 2>&1
 
 PYTHON=python3
 

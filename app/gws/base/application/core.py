@@ -83,9 +83,9 @@ class Config(gws.ConfigWithAccess):
 
     actions: Optional[list[gws.ext.config.action]]
     """System-wide server actions."""
-    auth: Optional[gws.base.auth.manager.Config] = {}  # type: ignore
+    auth: Optional[gws.base.auth.manager.Config]
     """Authorization methods and options."""
-    cache: Optional[gws.gis.cache.Config] = {}  # type: ignore
+    cache: Optional[gws.gis.cache.Config]
     """Global cache configuration."""
     client: Optional[gws.base.client.Config]
     """Gws client configuration."""
@@ -117,7 +117,7 @@ class Config(gws.ConfigWithAccess):
     """Print configurations."""
     projects: Optional[list[gws.ext.config.project]]
     """Project configurations."""
-    server: Optional[gws.server.Config] = {}
+    server: Optional[gws.server.Config]
     """Server engine options."""
     storage: Optional[gws.base.storage.manager.Config]
     """Database configuration."""
