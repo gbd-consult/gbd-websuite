@@ -1,3 +1,8 @@
+## Version 8.1.14
+
+- support for constraint-based postgis columns
+- cache seeding utility
+
 ## Version 8.1.13
 
 - support for virtual model fields
