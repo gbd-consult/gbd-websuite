@@ -1,11 +1,32 @@
 uid "account_admin"
 
-title "Account Admin"
+title "Benutzerverwaltung mittels PostgreSQL Tabelle und Formular"
 
 metadata.keywords [ "auth" "user" ]
 
 metadata.abstract """
-Account Admin
+Dieses Beispiel zeigt eine Konfiguration zur Benutzerverwaltung der GBD WebSuite über eine PostgreSQL Tabelle mit einem angepassten Formular.
+
+Folgende Funktionalität kann hiermit verwaltet werden:
+
+- Users können selber registrieren
+- Passwort Hash Algo (md5, pgcrypto usw)
+- ggf Passwort Stärke Regel
+- MFA Regel - welche Multi-Faktor-Authentisierung können bzw. müssen User verwenden
+
+Standard CRUD Funktionen für die PostgreSQL Tabelle mit zumindest diesen Spalten im Formular
+
+- Real Name, (Vorname, Name)
+- Email
+- GBD WebSuite Rollen
+- Aktiv ja/nein
+- MFA Uid - aktuell gewählte MFA
+
+Nicht direkt editierbar ist:
+
+- Passwort (Hash)
+- MFA Secret
+- One-time Code (OTC)
 """
 
 access "allow all"
