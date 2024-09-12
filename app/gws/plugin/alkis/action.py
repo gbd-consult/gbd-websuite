@@ -585,7 +585,7 @@ class Object(gws.base.action.Object):
         crs = print_request.get('crs') or project.map.bounds.crs
 
         templates = [
-            self.root.app.templateMgr.find_template(self, user=req.user, subject='flurstueck.label'),
+            self.root.app.templateMgr.find_template('flurstueck.label', where=[self], user=req.user),
         ]
 
         base_map = print_request.maps[0]
