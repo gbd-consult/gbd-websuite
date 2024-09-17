@@ -18,6 +18,7 @@
 
     'gebaeude.title': 'Gebäudenachweis',
     'gebaeude': 'Gebäude',
+    'gebaeude.gebaeudekennzeichen': 'Kennzeichen',
     'gebaeude.amtlicheFlaeche': 'Grundfläche (amtlich)',
     'gebaeude.geomFlaeche': 'Grundfläche (geometrisch)',
 
@@ -111,7 +112,7 @@
     <p class="alkisFsH4">{s}</p>
 @end
 
-@box section content, is_historic=False  
+@box section content, is_historic=False
     <div {'class="alkisFsHistoric"' if is_historic else ''}>
     {content}
     </div>

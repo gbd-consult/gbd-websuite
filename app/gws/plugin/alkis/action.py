@@ -349,7 +349,6 @@ class Object(gws.base.action.Object):
     eigentuemer: EigentuemerOptions
 
     dataSchema: str
-    excludeGemarkung: set[str]
 
     model: gws.Model
     ui: Ui
@@ -382,7 +381,6 @@ class Object(gws.base.action.Object):
         self.ui = self.cfg('ui')
 
         self.dataSchema = self.cfg('dataSchema')
-        self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
 
         p = self.cfg('templates', default=[]) + _DEFAULT_TEMPLATES
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]

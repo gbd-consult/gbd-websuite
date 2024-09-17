@@ -195,6 +195,8 @@ class _PlaceIndexer(_Indexer):
         # @TODO map Gemarkung to Gemeinde (see https://de.wikipedia.org/wiki/Liste_der_Gemarkungen_in_Nordrhein-Westfalen etc)
 
         for ax in self.rr.read_flat(gid.AX_Gemarkung):
+            if str(ax.schluessel.gemarkungsnummer) in self.ix.excludeGemarkung:
+                continue
             o = ax.schluessel
             self.add('gemarkung', ax, o, land=self.get_land(o))
 
@@ -615,6 +617,14 @@ class _PartIndexer(_Indexer):
 class _FsDataIndexer(_Indexer):
     CACHE_KEY = index.TABLE_FLURSTUECK
 
+    def __init__(self, runner: '_Runner'):
+        super().__init__(runner)
+        self.counts = {
+            'ok': 0,
+            'no_geometry': 0,
+            'excluded': 0,
+        }
+
     def collect(self):
         for uid, axs in self.rr.read_grouped(gid.AX_Flurstueck):
             recs = gws.u.compact(self.record(ax) for ax in axs)
@@ -669,21 +679,21 @@ class _FsDataIndexer(_Indexer):
         if self.rr.place.is_empty(r.gemarkung) or self.rr.place.is_empty(r.gemeinde):
             # exclude Flurstücke that refer to Gemeinde/Gemarkung
             # which do not exist in the reference AX tables
-            return None
-
-        if r.gemarkung.code in self.ix.excludeGemarkung:
+            self.counts['excluded'] += 1
             return None
 
         # geometry
 
         geom = _geom_of(r)
         if not geom:
+            self.counts['no_geometry'] += 1
             return None
 
         r.geomFlaeche = round(geom.area, 2)
         r.x = round(geom.centroid.x, 2)
         r.y = round(geom.centroid.y, 2)
 
+        self.counts['ok'] += 1
         return r
 
     def process_lage(self, fs: dt.Flurstueck):
@@ -996,6 +1006,7 @@ class _Runner:
                 self.memory_info()
 
                 self.fsdata.load_or_collect()
+                gws.log.info(f'ALKIS: fs counts: {self.fsdata.counts}')
                 self.memory_info()
 
                 self.part.load_or_collect()
