@@ -259,9 +259,7 @@ export class Controller extends gws.Controller {
                 this.whenWidgetChanged.bind(this),
                 this.whenWidgetEntered.bind(this),
             );
-            if (w) {
-                widgets.push(w);
-            }
+            widgets.push(w);
         }
 
         return widgets;
@@ -285,7 +283,12 @@ export class Controller extends gws.Controller {
     async whenFeatureFormSaveButtonTouched(feature: gws.types.IFeature) {
         let ok = await this.saveFeatureInSidebar(feature);
         if (ok) {
-            await this.closeForm();
+            if (feature.model.clientOptions.keepFormOpen) {
+                feature.resetEdits();
+                await this.featureCache.updateForModel(feature.model);
+            } else {
+                await this.closeForm();
+            }
         }
     }
 

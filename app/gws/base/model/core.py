@@ -16,6 +16,13 @@ class TableViewColumn(gws.Data):
     width: Optional[int]
 
 
+class ClientOptions(gws.Data):
+    """Client options for a model"""
+
+    keepFormOpen: bool = False
+    """Keep the edit form open after save"""
+
+
 class Config(gws.ConfigWithAccess):
     """Model configuration"""
 
@@ -39,9 +46,12 @@ class Config(gws.ConfigWithAccess):
     """feature templates"""
     sort: Optional[list[gws.SortOptions]]
     """default sorting"""
+    clientOptions: Optional[ClientOptions]
+    """Client options for a model. (added in 8.1)"""
 
 
 class Props(gws.Props):
+    clientOptions: gws.ModelClientOptions
     canCreate: bool
     canDelete: bool
     canRead: bool
@@ -72,6 +82,7 @@ class Object(gws.Model):
         self.uidName = ''
         self.loadingStrategy = self.cfg('loadingStrategy')
         self.title = self.cfg('title')
+        self.clientOptions = self.cfg('clientOptions') or gws.Data()
 
     def post_configure(self):
         if self.isEditable and not self.uidName:
@@ -176,6 +187,7 @@ class Object(gws.Model):
         layer = cast(gws.Layer, self.find_closest(gws.ext.object.layer))
 
         return gws.Props(
+            clientOptions=self.clientOptions,
             canCreate=user.can_create(self),
             canDelete=user.can_delete(self),
             canRead=user.can_read(self),

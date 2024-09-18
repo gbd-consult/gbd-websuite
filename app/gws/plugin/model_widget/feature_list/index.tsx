@@ -125,6 +125,13 @@ class FormView extends gws.View<Props> {
             />
         ;
 
+        if (this.props.disabled) {
+            return <gws.ui.Row className="cmpFormListDisabledMessage">
+                    {this.__('editDisabledUntilSave')}
+                </gws.ui.Row>
+
+        }
+
         return <div className="cmpFormList">
             {list}
             <gws.ui.Row className="cmpFormListToolbar">

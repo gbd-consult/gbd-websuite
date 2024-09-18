@@ -3046,6 +3046,11 @@ class Map(Node):
 # /base/model/types.pyinc
 
 
+class ModelClientOptions(Data):
+    """Client options for a model"""
+
+    keepFormOpen: Optional[bool]
+
 class ModelValidationError(Data):
     """Validation error."""
 
@@ -3208,6 +3213,7 @@ class ModelField(Node):
 class Model(Node):
     """Data Model."""
 
+    clientOptions: ModelClientOptions
     defaultSort: list['SearchSort']
     fields: list['ModelField']
     geometryCrs: Optional['Crs']

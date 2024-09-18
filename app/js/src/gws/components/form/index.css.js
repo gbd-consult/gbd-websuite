@@ -74,6 +74,7 @@ module.exports = v => ({
             },
         },
 
+
         '.cmpFormListNewButton': {...v.SVG('google:content/add_circle_outline', v.SIDEBAR_AUX_BUTTON_COLOR)},
         '.cmpFormListEditButton': {...v.SVG('google:image/edit', v.SIDEBAR_AUX_BUTTON_COLOR)},
         '.cmpFormListDeleteButton': {...v.SVG('google:action/delete_forever', v.SIDEBAR_AUX_BUTTON_COLOR)},
@@ -87,7 +88,10 @@ module.exports = v => ({
         borderWidth: 0,
     },
 
-
-
+    '.cmpFormListDisabledMessage': {
+        padding: v.UNIT2,
+        color: v.DISABLED_COLOR,
+        fontStyle: 'italic'
+    },
 
 });

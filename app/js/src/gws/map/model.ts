@@ -15,6 +15,7 @@ export class ModelRegistry implements types.IModelRegistry {
         this.app = app;
         this.index = {};
         this.addModel({
+            clientOptions: {},
             canCreate: false,
             canDelete: false,
             canRead: false,
@@ -77,6 +78,7 @@ interface FeatureMap {
 }
 
 export class Model implements types.IModel {
+    clientOptions: api.core.ModelClientOptions;
     canCreate: boolean;
     canDelete: boolean;
     canRead: boolean;
@@ -104,6 +106,7 @@ export class Model implements types.IModel {
         this.registry = registry;
         this.featureMap = {};
 
+        this.clientOptions = props.clientOptions || {};
         this.canCreate = props.canCreate;
         this.canDelete = props.canDelete;
         this.canRead = props.canRead;
