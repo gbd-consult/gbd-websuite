@@ -9,9 +9,10 @@ module.exports = v => ({
         flexDirection: 'column',
         zIndex: 3,
         ...v.SHADOW,
-        ...v.TRANSITION('left', 'padding-bottom'),
+        ...v.TRANSITION('transform', 'padding-bottom'),
 
-        left: '-150%',
+        left: 0,
+        transform: 'translateX(-100%)',
         width: '100%',
         bottom: v.INFOBAR_HEIGHT,
 
@@ -76,6 +77,7 @@ module.exports = v => ({
 
     '.modSidebar.isVisible': {
         left: 0,
+        transform: 'translateX(0%)',
     },
 
     '.modSidebarHeader': {
