@@ -411,7 +411,9 @@ class Object(gws.base.action.Object):
             self.export = None
 
     def activate(self):
-        self.ixStatus = self.ix.status()
+        def _load():
+            return self.ix.status()
+        self.ixStatus = gws.u.get_server_global('gws.plugin.alkis.action.ixStatus', _load)
 
     def props(self, user):
         if not self.ixStatus.basic:
