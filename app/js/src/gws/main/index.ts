@@ -50,4 +50,5 @@ export async function main(win, strings) {
         window['DEBUG_APP'] = app;
         ReactDOM.render(app.rootController.defaultView, domNode);
     }
+    win['gwsGetApplication'] = (uid=null) => app;
 }
