@@ -120,9 +120,9 @@ class Config(gws.ConfigWithAccess):
     excludeGemarkung: Optional[list[str]]
     """Gemarkung (Administrative Unit) IDs to exclude from search"""
 
-    eigentuemer: Optional[EigentuemerConfig] = {}
+    eigentuemer: Optional[EigentuemerConfig]
     """access to the Eigentümer (owner) information"""
-    buchung: Optional[BuchungConfig] = {}
+    buchung: Optional[BuchungConfig]
     """access to the Grundbuch (register) information"""
     limit: int = 100
     """search results limit"""
@@ -393,9 +393,11 @@ class Object(gws.base.action.Object):
         self.nameSearchOptions = self.cfg('nameSearchOptions', default=d)
         self.buchungsblattSearchOptions = self.cfg('buchungsblattSearchOptions', default=d)
 
-        self.buchung = self.create_child(BuchungOptions, self.cfg('buchung'))
+        deny_all = gws.Config(access='deny all')
 
-        self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer'))
+        self.buchung = self.create_child(BuchungOptions, self.cfg('buchung', default=deny_all))
+
+        self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer', default=deny_all))
         if self.eigentuemer.logTableName:
             self.eigentuemer.logTable = self.ix.db.table(self.eigentuemer.logTableName)
 
