@@ -29,7 +29,9 @@ def root():
     '''
 
     conn = u.pg.connect()
-    conn.execute(sa.text(ddl))
+    for d in ddl.split(';'):
+        conn.execute(sa.text(d))
+        conn.commit()
 
     cfg = f'''
         models+ {{ 
