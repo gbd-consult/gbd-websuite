@@ -107,6 +107,10 @@ def gws_root(config: str = '', specs: gws.SpecRuntime = None, activate=True, def
     parsed_config = _to_data(gws.lib.vendor.slon.parse(config, as_object=True))
     specs = mock.register(specs or gws_specs())
     root = gws.config.initialize(specs, parsed_config)
+    if root.configErrors:
+        for err in root.configErrors:
+            gws.log.error(f'CONFIGURATION ERROR: {err}')
+        raise gws.ConfigurationError('config failed')
     if not activate:
         return root
     root = gws.config.activate(root)
@@ -268,10 +272,14 @@ class log:
 ##
 
 
-def feature(model, **atts) -> gws.Feature:
+def feature_from_dict(model, atts) -> gws.Feature:
     f = gws.base.feature.new(model=model, record=gws.FeatureRecord(attributes=atts))
     f.attributes = atts
     return f
+
+
+def feature(model, **atts) -> gws.Feature:
+    return feature_from_dict(model, atts)
 
 
 def ewkb(wkt: str, srid=3857):
