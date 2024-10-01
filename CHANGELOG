@@ -1,3 +1,8 @@
+## Version 8.1.16
+
+- person search disabled in ALKIS by default
+- support for database identifiers with special characters
+
 ## Version 8.1.15
 
 - client options for models
