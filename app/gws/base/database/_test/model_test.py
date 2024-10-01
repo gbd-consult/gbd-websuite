@@ -7,19 +7,40 @@ import gws.test.util as u
 
 ##
 
+_weird_names = [
+    'Weird.Schema.. ""äöü"" !',
+    'Weird.Table..  ""äöü"" !',
+    'Weird.Column.. ""äöü"" !',
+]
 
 @u.fixture(scope='module')
 def root():
     u.pg.create('plain', {'id': 'int primary key', 'a': 'text', 'b': 'text', 'c': 'text'})
     u.pg.create('serial_id', {'id': 'serial primary key', 'a': 'text'})
 
-    cfg = '''
-        models+ { 
+    ws, wt, wc = _weird_names
+    ddl = f'''
+        drop schema if exists "{ws}" cascade;
+        create schema "{ws}";
+        create table "{ws}"."{wt}" (
+            id integer primary key,
+            "{wc}" text
+        )
+    '''
+
+    conn = u.pg.connect()
+    conn.execute(sa.text(ddl))
+
+    cfg = f'''
+        models+ {{ 
             uid "PLAIN" type "postgres" tableName "plain" 
-        }
-        models+ { 
+        }}
+        models+ {{
             uid "SERIAL_ID" type "postgres" tableName "serial_id"
-        }
+        }}
+        models+ {{
+            uid "WEIRD" type "postgres" tableName ' "{ws}"."{wt}" '
+        }}
     '''
 
     yield u.gws_root(cfg)
@@ -82,4 +103,25 @@ def test_create_with_auto_pk(root: gws.Root):
         (1, 'aa'),
         (2, 'bb'),
         (3, 'cc'),
+    ]
+
+def test_weird_names(root: gws.Root):
+    mc = gws.ModelContext(
+        user=u.gws_system_user(),
+    )
+    mo = u.cast(gws.Model, root.get('WEIRD'))
+
+    ws, wt, wc = _weird_names
+    wc_noquot = wc.replace('""', '"')
+
+    u.pg.clear(f'"{ws}"."{wt}"')
+
+    mo.create_feature(u.feature_from_dict(mo, {'id': 15, wc_noquot: 'aa'}), mc)
+    mo.create_feature(u.feature_from_dict(mo, {'id': 16, wc_noquot: 'bb'}), mc)
+    mo.create_feature(u.feature_from_dict(mo, {'id': 17, wc_noquot: 'cc'}), mc)
+
+    assert u.pg.content(f'select id, "{wc}" from "{ws}"."{wt}"') == [
+        (15, 'aa'),
+        (16, 'bb'),
+        (17, 'cc'),
     ]

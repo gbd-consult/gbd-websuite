@@ -3,6 +3,7 @@
 from typing import Optional
 
 import os
+import re
 
 import gws.base.database
 import gws.gis.crs
@@ -65,11 +66,38 @@ class Object(gws.base.database.provider.Object):
         url = connection_url(self.config)
         return sa.create_engine(url, **kwargs)
 
+    _RE_TABLE_NAME = r'''(?x) 
+        ^
+        (
+            ( " (?P<a1> ([^"] | "")+ ) " )
+            |
+            (?P<a2> [^".\s]+ )
+        )
+        (
+            \.
+            (
+                ( " (?P<b1> ([^"] | "")+ ) " )
+                |
+                (?P<b2> [^".\s]+ )
+            )
+        )?
+        $
+    '''
+
+    _DEFAULT_SCHEMA = 'public'
+
     def split_table_name(self, table_name):
-        if '.' in table_name:
-            schema, _, name = table_name.partition('.')
-            return schema, name
-        return 'public', table_name
+        m = re.match(self._RE_TABLE_NAME, table_name.strip())
+        if not m:
+            raise ValueError(f'invalid table name {table_name!r}')
+
+        d = m.groupdict()
+        s = d['a1'] or d['a2']
+        t = d['b1'] or d['b2']
+        if not t:
+            s, t = self._DEFAULT_SCHEMA, s
+
+        return s.replace('""', '"'), t.replace('""', '"')
 
     def join_table_name(self, schema, name):
         if schema:

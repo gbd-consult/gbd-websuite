@@ -104,7 +104,9 @@ class Object(gws.DatabaseProvider):
             return tab_or_name
         schema, name = self.split_table_name(tab_or_name)
         self.reflect_schema(schema)
-        return self.saMetaMap[schema].tables.get(self.join_table_name(schema, name))
+        # see _get_table_key in sqlalchemy/sql/schema.py
+        table_key = schema + '.' + name
+        return self.saMetaMap[schema].tables.get(table_key)
 
     def column(self, table, column_name):
         sa_table = self._sa_table(table)
@@ -205,7 +207,8 @@ class Object(gws.DatabaseProvider):
         if sa_table is None:
             raise sa.Error(f'table {table!r} not found')
 
-        schema, name = self.split_table_name(sa_table.name)
+        schema = sa_table.schema
+        name = sa_table.name
 
         desc = gws.DataSetDescription(
             columns=[],
