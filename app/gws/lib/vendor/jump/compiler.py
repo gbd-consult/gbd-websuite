@@ -566,7 +566,7 @@ class Node:
                 ]
 
             else:
-                # small function            
+                # small function
 
                 res = tr.var()
                 code = [
@@ -811,16 +811,16 @@ class Node:
 
         def emit(self, tr: 'Translator'):
             """
-        
+
                 if A
                     aaa
                 elif B
                     bbb
                 else
                     ccc
-        
+
             is compiled to
-        
+
                 done = False
                 if not done:
                     x = A
@@ -837,8 +837,8 @@ class Node:
                     if x:
                         done = True
                         ccc
-        
-        
+
+
             """
 
             done = tr.var()
@@ -2284,7 +2284,7 @@ class Compiler:
 
 
 def _dedent(lines):
-    ind = 1e20
+    ind = 100_000
     for ln in lines:
         n = len(ln.lstrip())
         if n > 0:

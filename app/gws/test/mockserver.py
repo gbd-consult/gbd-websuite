@@ -166,7 +166,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 def _dedent(s):
     ls = [p.rstrip() for p in s.split('\n')]
-    ind = 1e20
+    ind = 100_000
 
     for ln in ls:
         n = len(ln.lstrip())
