@@ -120,9 +120,9 @@ class Config(gws.ConfigWithAccess):
     excludeGemarkung: Optional[list[str]]
     """Gemarkung (Administrative Unit) IDs to exclude from search"""
 
-    eigentuemer: Optional[EigentuemerConfig] = {}
+    eigentuemer: Optional[EigentuemerConfig]
     """access to the Eigentümer (owner) information"""
-    buchung: Optional[BuchungConfig] = {}
+    buchung: Optional[BuchungConfig]
     """access to the Grundbuch (register) information"""
     limit: int = 100
     """search results limit"""
@@ -349,7 +349,6 @@ class Object(gws.base.action.Object):
     eigentuemer: EigentuemerOptions
 
     dataSchema: str
-    excludeGemarkung: set[str]
 
     model: gws.Model
     ui: Ui
@@ -382,7 +381,6 @@ class Object(gws.base.action.Object):
         self.ui = self.cfg('ui')
 
         self.dataSchema = self.cfg('dataSchema')
-        self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
 
         p = self.cfg('templates', default=[]) + _DEFAULT_TEMPLATES
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
@@ -395,9 +393,11 @@ class Object(gws.base.action.Object):
         self.nameSearchOptions = self.cfg('nameSearchOptions', default=d)
         self.buchungsblattSearchOptions = self.cfg('buchungsblattSearchOptions', default=d)
 
-        self.buchung = self.create_child(BuchungOptions, self.cfg('buchung'))
+        deny_all = gws.Config(access='deny all')
 
-        self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer'))
+        self.buchung = self.create_child(BuchungOptions, self.cfg('buchung', default=deny_all))
+
+        self.eigentuemer = self.create_child(EigentuemerOptions, self.cfg('eigentuemer', default=deny_all))
         if self.eigentuemer.logTableName:
             self.eigentuemer.logTable = self.ix.db.table(self.eigentuemer.logTableName)
 
@@ -413,7 +413,9 @@ class Object(gws.base.action.Object):
             self.export = None
 
     def activate(self):
-        self.ixStatus = self.ix.status()
+        def _load():
+            return self.ix.status()
+        self.ixStatus = gws.u.get_server_global('gws.plugin.alkis.action.ixStatus', _load)
 
     def props(self, user):
         if not self.ixStatus.basic:
@@ -585,7 +587,7 @@ class Object(gws.base.action.Object):
         crs = print_request.get('crs') or project.map.bounds.crs
 
         templates = [
-            self.root.app.templateMgr.find_template(self, user=req.user, subject='flurstueck.label'),
+            self.root.app.templateMgr.find_template('flurstueck.label', where=[self], user=req.user),
         ]
 
         base_map = print_request.maps[0]

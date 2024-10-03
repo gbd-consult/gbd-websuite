@@ -305,8 +305,8 @@ def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.XmlElement:
     _add_paint_atts(atts, sv, 'label_')
 
     lines = label.split('\n')
-    _, em_height = font.getsize('MMM')
-    metrics = [font.getsize(s) for s in lines]
+    _, em_height = _font_size(font, 'MMM')
+    metrics = [_font_size(font, s) for s in lines]
 
     line_height = sv.label_line_height or 1
     padding = sv.label_padding or [0, 0, 0, 0]
@@ -442,6 +442,11 @@ def _font_name(sv, prefix=''):
     if w == 'bold':
         return _DEFAULT_FONT + '-Bold'
     return _DEFAULT_FONT
+
+
+def _font_size(font, text):
+    bb = font.getbbox(text)
+    return bb[2] - bb[0], bb[3] - bb[1]
 
 
 # ----------------------------------------------------------------------------------------------------------------------

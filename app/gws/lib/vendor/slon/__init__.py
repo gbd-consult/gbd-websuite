@@ -103,7 +103,7 @@ _CMAP = {
     ':': _P_PUNCT | _P_KEY_DELIM,
     '#': _P_PUNCT,
     '/': _P_PUNCT,
-    
+
     _SLASH: _P_PUNCT,
     _SQ: _P_PUNCT,
     _DQ: _P_PUNCT,
@@ -349,7 +349,7 @@ def _double3(b, start, backtick):
 
 
 def _dedent(s):
-    indent = 1e20
+    indent = 100_000
     lines = [ln.rstrip() for ln in s.split(_EOL)]
 
     if lines and not lines[0]:

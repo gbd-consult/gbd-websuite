@@ -9,7 +9,7 @@ import mistune
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../app')
-sys.path.append(APP_DIR)
+sys.path.insert(0, APP_DIR)
 
 import gws.lib.cli as cli
 import gws.lib.vendor.jump

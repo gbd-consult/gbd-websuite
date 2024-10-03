@@ -1,0 +1,38 @@
+uid "qgis_dynamic_legend"
+
+title "QGIS Dynamic Legend"
+
+metadata.keywords [ "qgis" "print" ]
+
+metadata.abstract """
+Use a dynamic legend from a QGIS Project
+"""
+
+printers+ {
+    template {
+        type "qgis"
+        provider.path "/demos/poi_geojson_dynamic_legend.qgs"
+    }
+}
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 250000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "Düsseldorf"
+    type "qgisflat"
+    provider.path "/demos/poi_geojson_dynamic_legend.qgs"
+}
+
+map.layers+ {
+    title "DOP"
+    type "wmts"
+    withCache true
+    provider.url "https://www.wmts.nrw.de/geobasis/wmts_nw_dop"
+    metadata.attribution.title "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+}
+
+{demo_osm_background}

@@ -196,7 +196,7 @@ def _error(exc, source_path, source_lineno, env):
 
 def _dedent(text):
     lines = text.split('\n')
-    ind = 1e20
+    ind = 100_000
     for ln in lines:
         n = len(ln.lstrip())
         if n > 0:

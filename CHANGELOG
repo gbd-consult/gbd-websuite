@@ -1,3 +1,15 @@
+## Version 8.1.16
+
+- person search disabled in ALKIS by default
+- support for database identifiers with special characters
+
+## Version 8.1.15
+
+- client options for models
+- disable editing for dependent models for new objects
+- fixed ALKIS Gemarkung exclusion
+- ALKIS css fixes
+
 ## Version 8.1.14
 
 - support for constraint-based postgis columns

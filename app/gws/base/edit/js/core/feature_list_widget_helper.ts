@@ -16,6 +16,7 @@ export class FeatureListWidgetHelper {
     }
 
     setProps(feature, field: gws.types.IModelField, props) {
+        props.disabled = feature.isNew;
         props.whenNewButtonTouched = () => this.whenNewButtonTouched(feature, field);
         props.whenLinkButtonTouched = () => this.whenLinkButtonTouched(feature, field);
         props.whenEditButtonTouched = r => this.whenEditButtonTouched(feature, field, r);
