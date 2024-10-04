@@ -32,7 +32,7 @@ version: '3'
 
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.0
+        image: gbdconsult/gws-amd64:8.1
         container_name: gws
         ports:
             - 3333:80
@@ -69,7 +69,7 @@ version: '3'
 
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.0
+        image: gbdconsult/gws-amd64:8.1
         container_name: gws
         volumes:
             - MYGWSDIRECTORY/data:/data
@@ -79,7 +79,7 @@ services:
         tmpfs:
             - /tmp
     qgis:
-        image: gbdconsult/qgis-amd64:8.0
+        image: gbdconsult/gbd-qgis-server-amd64:3.34
         container_name: qgis
         volumes:
             - MYGWSDIRECTORY/data:/data
