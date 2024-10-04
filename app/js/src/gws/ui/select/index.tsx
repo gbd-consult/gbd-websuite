@@ -13,10 +13,31 @@ export interface ListItem {
     level?: number;
 }
 
+// from gws API
+
+enum TextSearchType {
+    any = "any",
+    begin = "begin",
+    end = "end",
+    exact = "exact",
+    like = "like",
+}
+
+/// Text search options.
+interface TextSearchOptions {
+    /// Type of the search.
+    type: TextSearchType
+    /// Minimal pattern length.
+    minLength?: number
+    /// Use the case sensitive search.
+    caseSensitive?: boolean
+}
+
+//
+
 interface SearchMode {
-    anySubstring?: boolean;
-    withExtra?: boolean;
-    caseSensitive?: boolean;
+    opts?: TextSearchOptions;
+    extraText?: string;
 }
 
 const DEFAULT_MAX_DISPLAY_ITEMS = 500;
@@ -288,7 +309,6 @@ export class Suggest extends base.Control<SuggestProps> {
 }
 
 
-
 //
 
 interface ListProps extends base.InputProps<string> {
@@ -539,24 +559,66 @@ function itemMatches(it: ListItem, text: string, mode?: SearchMode): boolean {
         return false;
     }
 
-    if (mode && mode.withExtra && it.extraText) {
-        // extra search separated by two spaces
-        let m = text.match(/(.+?)\s{2,}(\S+)$/);
-        if (m) {
-            return textMatches(it.text, m[1], mode) && textMatches(it.extraText, m[2], mode);
-        }
+    mode = mode || defaultSearchMode()
+
+    if (!it.extraText) {
+        return textMatches(it.text, text, mode);
     }
 
-    return textMatches(it.text, text, mode);
+    switch (mode.extraText) {
+        case 'join':
+            return textMatches(it.text + ' ' + it.extraText, text, mode);
+        case 'ignore':
+            return textMatches(it.text, text, mode);
+        case 'separate':
+            // extra search separated by two spaces
+            let m = text.match(/(.+?)\s{2,}(\S+)$/);
+            if (m) {
+                return textMatches(it.text, m[1], mode) && textMatches(it.extraText, m[2], mode);
+            } else {
+                return textMatches(it.text, text, mode);
+            }
+    }
 }
 
 function textMatches(src: string, text: string, mode?: SearchMode): boolean {
-    if (!(mode && mode.caseSensitive)) {
+    if (src.length < mode.opts.minLength) {
+        return false;
+    }
+
+    if (!mode.opts.caseSensitive) {
         src = src.toLowerCase();
         text = text.toLowerCase();
     }
-    if (mode && mode.anySubstring) {
-        return src.includes(text);
+
+    switch(mode.opts.type) {
+        case TextSearchType.any:
+            return src.includes(text);
+        case TextSearchType.begin:
+            return src.startsWith(text);
+        case TextSearchType.end:
+            return src.endsWith(text);
+        case TextSearchType.exact:
+            return src === text;
+        case TextSearchType.like: {
+            let re = escapeRegExp(text);
+            re = re.replace(/%/g, '(.+?)')
+            return new RegExp(re).test(src);
+        }
     }
-    return src.startsWith(text);
+}
+
+function defaultSearchMode(): SearchMode {
+    return {
+        opts: {
+            type: TextSearchType.any,
+            caseSensitive: false,
+            minLength: 0,
+        },
+        extraText: 'ignore'
+    }
+}
+
+function escapeRegExp(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
