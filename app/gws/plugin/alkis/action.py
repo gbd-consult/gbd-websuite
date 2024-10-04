@@ -157,6 +157,9 @@ class Props(gws.base.action.Props):
     printer: Optional[gws.base.printer.Props]
     ui: Ui
     storage: Optional[gws.base.storage.Props]
+    strasseSearchOptions: Optional[gws.TextSearchOptions]
+    nameSearchOptions: Optional[gws.TextSearchOptions]
+    buchungsblattSearchOptions: Optional[gws.TextSearchOptions]
     withBuchung: bool
     withEigentuemer: bool
     withEigentuemerControl: bool
@@ -425,7 +428,7 @@ class Object(gws.base.action.Object):
         if self.ui.useExport:
             export_groups = [ExportGroupProps(title=g.title, index=g.index) for g in self._export_groups(user)]
 
-        return gws.u.merge(
+        ps = gws.u.merge(
             super().props(user),
             exportGroups=export_groups,
             limit=self.limit,
@@ -446,6 +449,14 @@ class Object(gws.base.action.Object):
                     and self.eigentuemer.controlMode
             ),
         )
+
+        ps.strasseSearchOptions = self.strasseSearchOptions
+        if ps.withBuchung:
+            ps.buchungsblattSearchOptions = self.buchungsblattSearchOptions
+        if ps.withEigentuemer:
+            ps.nameSearchOptions = self.nameSearchOptions
+
+        return ps
 
     @gws.ext.command.api('alkisGetToponyms')
     def get_toponyms(self, req: gws.WebRequester, p: GetToponymsRequest) -> GetToponymsResponse:
