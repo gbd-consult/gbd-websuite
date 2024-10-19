@@ -14,7 +14,6 @@ import gws.plugin.postgres.provider
 import gws.lib.sa as sa
 from gws.lib.cli import ProgressIndicator
 
-
 from . import types as dt
 
 TABLE_PLACE = 'place'
@@ -314,6 +313,25 @@ class Object(gws.Node):
 
     ##
 
+    _defaultLand: dt.EnumPair = None
+
+    def default_land(self):
+        if self._defaultLand:
+            return self._defaultLand
+
+        with self.db.connect() as conn:
+            sel = (
+                sa
+                .select(self.table(TABLE_PLACE))
+                .where(sa.text("data->>'kind' = 'gemarkung'"))
+                .limit(1)
+            )
+            for r in conn.execute(sel):
+                p = unserialize(r.data)
+                self._defaultLand = p.land
+                gws.log.debug(f'ALKIS: defaultLand={vars(self._defaultLand)}')
+                return self._defaultLand
+
     _strasseList: list[dt.Strasse] = []
 
     def strasse_list(self) -> list[dt.Strasse]:
@@ -576,13 +594,24 @@ class Object(gws.Node):
 
     def _make_places_where(self, q: dt.FlurstueckQuery | dt.AdresseQuery, table: sa.Table):
         where = []
+        land_code = ''
 
         for f in 'land', 'regierungsbezirk', 'kreis', 'gemarkung', 'gemeinde':
             val = getattr(q, f, None)
             if val is not None:
                 where.append(getattr(table.c, f.lower() + '_t') == text_key(val))
+
             val = getattr(q, f + 'Code', None)
             if val is not None:
+                if f == 'land':
+                    land_code = val
+                elif f == 'gemarkung' and len(val) <= 4:
+                    if not land_code:
+                        land = self.default_land()
+                        if land:
+                            land_code = land.code
+                    val = land_code + val
+
                 where.append(getattr(table.c, f.lower() + 'code') == val)
 
         return where
