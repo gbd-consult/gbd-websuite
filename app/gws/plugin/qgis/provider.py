@@ -39,7 +39,7 @@ class Config(gws.Config):
     sqlFilters: Optional[dict]
     """per-layer sql filters"""
     extentBuffer: Optional[int]
-    """Extent buffer for automatically computed bounds."""
+    """Extent buffer for automatically computed bounds. (added in 8.1)"""
 
 
 class Object(gws.OwsProvider):

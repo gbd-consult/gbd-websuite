@@ -84,7 +84,7 @@ class Config(gws.ConfigWithAccess):
     extent: Optional[gws.Extent]
     """Layer extent."""
     zoomExtent: Optional[gws.Extent]
-    """Layer zoom extent."""
+    """Layer zoom extent. (added in 8.1)"""
     extentBuffer: Optional[int]
     """Extent buffer."""
     finders: Optional[list[gws.ext.config.finder]]
