@@ -115,6 +115,7 @@ export interface ILayer {
     title: string;
     attributes: Dict;
     extent: ol.Extent;
+    zoomExtent: ol.Extent;
 
     opacity: number;
     computedOpacity: number;

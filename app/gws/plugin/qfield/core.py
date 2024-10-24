@@ -824,7 +824,7 @@ class QFieldCapsParser:
             crs = self.caps.globalProps.get('areaOfInterestCrs')
             sh = gws.base.shape.from_wkt(
                 aoi,
-                gws.gis.crs.get(crs) if crs else self.qgisCaps.projectBounds.crs
+                gws.gis.crs.get(crs) if crs else self.qgisCaps.projectCrs
             )
             self.caps.areaOfInterest = sh.bounds()
 

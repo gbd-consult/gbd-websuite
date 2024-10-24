@@ -3,7 +3,9 @@ from typing import Optional, Iterable
 import re
 
 import gws
+import gws.gis.bounds
 import gws.gis.extent
+import gws.gis.crs
 
 
 ##
@@ -154,3 +156,10 @@ def combined_crs_list(layers: list[gws.SourceLayer]) -> list[gws.Crs]:
             cs = cs.intersection(sl.supportedCrs)
 
     return list(cs)
+
+
+def combined_bounds(layers: list[gws.SourceLayer], crs: gws.Crs) -> Optional[gws.Bounds]:
+    bs = gws.u.compact(sl.wgsExtent for sl in layers)
+    if bs:
+        b = gws.Bounds(extent=gws.gis.extent.union(bs), crs=gws.gis.crs.WGS84)
+        return gws.gis.bounds.transform(b, crs)

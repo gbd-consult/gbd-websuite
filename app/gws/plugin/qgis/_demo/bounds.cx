@@ -1,0 +1,25 @@
+uid "qgis_bounds"
+
+title "QGIS bounds"
+
+metadata.keywords [ "qgis" ]
+
+metadata.abstract """
+Show automatic QGIS layer bounds
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 30000
+    zoom.maxScale  100000
+}
+
+map.layers+ {
+    uid "qqq"
+    title "Düsseldorf"
+    type "qgis"
+    provider.path "/demos/poi_local.qgs"
+    provider.extentBuffer 5000
+}
+
+{demo_osm_background}

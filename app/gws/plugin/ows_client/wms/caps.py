@@ -52,12 +52,12 @@ def _layer(layer_el: gws.XmlElement, parent: Optional[gws.SourceLayer] = None) -
     if smax:
         sl.scaleRange = [u.to_int(smin), u.to_int(smax)]
 
-    wgs_bounds = u.wgs_bounds(layer_el)
+    wgs_extent = u.wgs_extent(layer_el)
     crs_list = u.supported_crs(layer_el)
 
     if not parent:
         sl.supportedCrs = crs_list or [gws.gis.crs.WGS84]
-        sl.wgsBounds = wgs_bounds or gws.gis.crs.WGS84_BOUNDS
+        sl.wgsExtent = wgs_extent
 
     else:
         # OGC 06-042, 7.2.4.8 Inheritance of layer properties
@@ -75,7 +75,7 @@ def _layer(layer_el: gws.XmlElement, parent: Optional[gws.SourceLayer] = None) -
                 sl.supportedCrs.append(crs)
 
         # EX_GeographicBoundingBox -> replace
-        sl.wgsBounds = wgs_bounds or parent.wgsBounds
+        sl.wgsExtent = wgs_extent or parent.wgsExtent
 
         # Dimension -> replace
         # @TODO

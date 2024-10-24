@@ -38,6 +38,8 @@ class Config(gws.Config):
     """use this CRS for requests"""
     sqlFilters: Optional[dict]
     """per-layer sql filters"""
+    extentBuffer: Optional[int]
+    """Extent buffer for automatically computed bounds."""
 
 
 class Object(gws.OwsProvider):
@@ -67,11 +69,16 @@ class Object(gws.OwsProvider):
         self.sourceLayers = self.caps.sourceLayers
         self.version = self.caps.version
 
-        self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs')) or self.caps.projectBounds.crs
+        self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs')) or self.caps.projectCrs
         self.alwaysXY = False
 
-        self.bounds = self.caps.projectBounds
-        self.wgsExtent = gws.gis.bounds.transform(self.bounds, gws.gis.crs.WGS84).extent
+        if self.caps.projectBounds:
+            self.bounds = gws.gis.bounds.transform(self.caps.projectBounds, self.forceCrs)
+        else:
+            b = gws.gis.source.combined_bounds(self.sourceLayers, self.forceCrs)
+            self.bounds = gws.gis.bounds.buffer(b, self.cfg('extentBuffer') or 0)
+
+        self.wgsExtent = gws.gis.bounds.wgs_extent(self.bounds)
 
         self.directRender = self._direct_formats('directRender', {'wms', 'wmts', 'xyz'})
         self.directSearch = self._direct_formats('directSearch', {'wms', 'wfs', 'postgres'})

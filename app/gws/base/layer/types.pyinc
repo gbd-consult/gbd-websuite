@@ -82,6 +82,7 @@ class Layer(Node):
     hasLegend: bool
 
     bounds: Bounds
+    zoomBounds: Bounds
     wgsExtent: Extent
     mapCrs: 'Crs'
     clientOptions: LayerClientOptions

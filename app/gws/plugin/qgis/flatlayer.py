@@ -68,15 +68,16 @@ class Object(gws.base.layer.image.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        if self.serviceProvider.bounds:
-            self.bounds = gws.gis.bounds.transform(self.serviceProvider.bounds, self.mapCrs)
+        self.bounds = gws.gis.bounds.transform(self.serviceProvider.bounds, self.mapCrs)
+        return True
+
+    def configure_zoom_bounds(self):
+        if super().configure_zoom_bounds():
             return True
-        blist = gws.u.compact(sl.wgsBounds for sl in self.sourceLayers)
-        if blist:
-            wgs_bounds = gws.gis.bounds.union(blist)
-            self.bounds = gws.gis.bounds.transform(wgs_bounds, self.mapCrs)
+        b = gws.gis.source.combined_bounds(self.sourceLayers, self.mapCrs)
+        if b:
+            self.zoomBounds = b
             return True
-        return False
 
     def configure_resolutions(self):
         if super().configure_resolutions():

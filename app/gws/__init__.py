@@ -1903,6 +1903,8 @@ class Crs:
     """CRS Extent in the WGS projection."""
     extent: Extent
     """CRS own Extent."""
+    bounds: Bounds
+    """CRS own Bounds."""
 
     def axis_for_format(self, fmt: 'CrsFormat') -> Axis:
         """Get the axis depending on the string format.
@@ -2114,7 +2116,7 @@ class SourceLayer(Data):
     metadata: 'Metadata'
 
     supportedCrs: list['Crs']
-    wgsBounds: Bounds
+    wgsExtent: Extent
 
     isExpanded: bool
     isGroup: bool
@@ -2961,6 +2963,7 @@ class Layer(Node):
     hasLegend: bool
 
     bounds: Bounds
+    zoomBounds: Bounds
     wgsExtent: Extent
     mapCrs: 'Crs'
     clientOptions: LayerClientOptions

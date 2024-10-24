@@ -152,8 +152,8 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
 
         let f = {
             zoom() {
-                console.log('ZOOM_TO_LAYER', layer.uid, layer.extent);
-                map.setViewExtent(layer.extent, true, ZOOM_EXTENT_PADDING);
+                console.log('ZOOM_TO_LAYER', layer.uid, layer.extent, layer.zoomExtent);
+                map.setViewExtent(layer.zoomExtent, true, ZOOM_EXTENT_PADDING);
             },
             show() {
                 map.hideAllLayers();

@@ -55,6 +55,10 @@ class MarkerController extends gws.Controller {
                 this.showBbox(bbox.split(',').map(Number), z)
             }
 
+            let extents = this.app.urlParams['extents'];
+            if (extents) {
+                this.showLayerExtents(extents);
+            }
         });
     }
 
@@ -118,6 +122,44 @@ class MarkerController extends gws.Controller {
             infoboxContent: <components.Infobox controller={this}><p>{extent.join(', ')}</p>
             </components.Infobox>
         })
+    }
+
+    showLayerExtents(arg) {
+        // the argument is layerTitle[,inner,zoom]
+
+        let args = arg.split(',')
+        let startLayer = null;
+        this.map.walk(this.map.root, la => {
+            if (la.title === args[0]) {
+                startLayer = la
+            }
+        });
+        if (!startLayer) {
+            console.log('MARKER: showLayerExtents: not found', args)
+            return;
+        }
+
+        let extents = [];
+        let isZoom = args[2] === 'zoom';
+
+        this.map.walk(startLayer, la => {
+            extents.push(isZoom ? la.zoomExtent : la.extent)
+        });
+
+        if (args[1] === 'inner') {
+            extents.shift();
+        } else {
+            extents = [extents[0]];
+        }
+
+        let features = [];
+        for (let e of extents) {
+            let geom = ol.geom.Polygon.fromExtent(e);
+            features.push(this.makeFeature(geom))
+        }
+
+        this.show({features, mode: 'draw'});
+
     }
 
     show(content) {

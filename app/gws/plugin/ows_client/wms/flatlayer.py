@@ -75,9 +75,7 @@ class Object(gws.base.layer.image.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        blist = gws.u.compact(sl.wgsBounds for sl in self.imageLayers)
-        wgs_bounds = gws.gis.bounds.union(blist) if blist else gws.gis.crs.WGS84_BOUNDS
-        self.bounds = gws.gis.bounds.transform(wgs_bounds, self.mapCrs)
+        self.bounds = gws.gis.source.combined_bounds(self.imageLayers, self.mapCrs) or self.mapCrs.bounds
         return True
 
     def configure_resolutions(self):

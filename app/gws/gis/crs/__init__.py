@@ -79,7 +79,7 @@ WGS84 = Object(
     extent=(-180, -90, 180, 90),
 )
 
-WGS84_BOUNDS = gws.Bounds(crs=WGS84, extent=WGS84.extent)
+WGS84.bounds = gws.Bounds(crs=WGS84, extent=WGS84.extent)
 
 WEBMERCATOR = Object(
     srid=3857,
@@ -107,7 +107,7 @@ WEBMERCATOR = Object(
     )
 )
 
-WEBMERCATOR_BOUNDS = gws.Bounds(crs=WEBMERCATOR, extent=WEBMERCATOR.extent)
+WEBMERCATOR.bounds = gws.Bounds(crs=WEBMERCATOR, extent=WEBMERCATOR.extent)
 
 WEBMERCATOR_RADIUS = 6378137
 WEBMERCATOR_SQUARE = (
