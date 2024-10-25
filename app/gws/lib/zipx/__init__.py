@@ -12,12 +12,12 @@ class Error(gws.Error):
     pass
 
 
-def zip(path: str, *sources: str, flat: bool = False) -> int:
+def zip_to_path(path: str, *sources, flat: bool = False) -> int:
     """Create a zip archive in a file.
 
     Args:
         path: Path to the zip archive.
-        sources: Paths to the sources to zip.
+        sources: Paths or dicts to zip.
         flat: If ``True`` base names are being kept in zip archive,
                 else whole paths are being kept in zip archive. Default is ``False``
 
@@ -28,11 +28,11 @@ def zip(path: str, *sources: str, flat: bool = False) -> int:
     return _zip(path, sources, flat)
 
 
-def zip_to_bytes(*sources: str, flat: bool = False) -> bytes:
+def zip_to_bytes(*sources, flat: bool = False) -> bytes:
     """Create a zip archive in memory.
 
     Args:
-        sources: Paths to the sources to zip.
+        sources: Paths or dicts to zip.
         flat: If ``True`` only base names will be returned,
                 else the whole paths will be returned. Default is ``False``.
 
@@ -45,7 +45,7 @@ def zip_to_bytes(*sources: str, flat: bool = False) -> bytes:
         return fp.getvalue() if cnt else b''
 
 
-def unzip(path: str, target_dir: str, flat: bool = False) -> int:
+def unzip_path(path: str, target_dir: str, flat: bool = False) -> int:
     """Unpack a zip archive into a directory.
 
     Args:
@@ -78,7 +78,7 @@ def unzip_bytes(source: bytes, target_dir: str, flat: bool = False) -> int:
         return _unzip(fp, target_dir, None, flat)
 
 
-def unzip_to_dict(path: str, flat: bool = False) -> dict:
+def unzip_path_to_dict(path: str, flat: bool = False) -> dict:
     """Unpack a zip archive into a dict.
 
     Args:
