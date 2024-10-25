@@ -379,6 +379,7 @@ def _make_crs(srid, pp, au):
         crs.wgsExtent = WGS84.wgsExtent
 
     crs.extent = _transform_extent(crs.wgsExtent, WGS84.srid, srid)
+    crs.bounds = gws.Bounds(extent=crs.extent, crs=crs)
 
     return crs
 
