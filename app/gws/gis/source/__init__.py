@@ -83,6 +83,12 @@ def check_layers(layers: Iterable[gws.SourceLayer], revert: bool = False) -> lis
         sl.layers = gws.u.compact(walk(c, sl.aPath, level + 1) for c in (sl.layers or []))
         if revert:
             sl.layers = list(reversed(sl.layers))
+
+        if not sl.wgsExtent and sl.layers:
+            exts = gws.u.compact(c.wgsExtent for c in sl.layers)
+            if exts:
+                sl.wgsExtent = gws.gis.extent.union(exts)
+
         return sl
 
     ls = gws.u.compact(walk(sl, '', 1) for sl in layers)
