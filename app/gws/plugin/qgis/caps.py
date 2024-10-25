@@ -35,6 +35,7 @@ class Caps(gws.Data):
     printTemplates: list[PrintTemplate]
     projectCrs: gws.Crs
     projectBounds: Optional[gws.Bounds]
+    projectCanvasBounds: Optional[gws.Bounds]
     properties: dict
     sourceLayers: list[gws.SourceLayer]
     version: str
@@ -59,7 +60,17 @@ def parse_element(root_el: gws.XmlElement) -> Caps:
     caps.projectCrs = gws.gis.crs.get(srid)
     if not caps.projectCrs:
         raise gws.Error(f'invalid CRS in qgis project')
-    caps.projectBounds = _project_bounds(root_el, caps.projectCrs)
+
+    ext = _extent_from_tag(root_el.find('properties/WMSExtent'))
+    if ext:
+        caps.projectBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
+
+    ext = _extent_from_tag(root_el.find('properties/WMSExtent'))
+    if ext:
+        caps.projectBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
+    ext = _extent_from_tag(root_el.find('mapcanvas/extent'))
+    if ext:
+        caps.projectCanvasBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
 
     layers_dct = _map_layers(root_el, caps)
     root_group = _layer_tree(root_el.find('layer-tree-group'), layers_dct)
@@ -80,23 +91,6 @@ def _project_metadata(root_el) -> gws.Metadata:
 
     # @TODO supplementary metadata
     return md
-
-
-def _project_bounds(root_el, project_crs: gws.Crs):
-    # the project extent can be defined in Project->QGIS Server->Advertised extent
-    #     <properties>
-    #         <WMSExtent...
-    #             <value>...</value>
-    #             <value>...</value>
-    #             <value>...</value>
-    #             <value>...</value>
-    #         </WMSExtent>
-
-    # NB not using map canvas extent because it's volatile and can be changed accidentally
-
-    ext = _extent_from_tag(root_el.find('properties/WMSExtent'))
-    if ext:
-        return gws.gis.bounds.from_extent(ext, project_crs)
 
 
 _meta_mapping = [
@@ -266,39 +260,21 @@ def _map_layers(root_el: gws.XmlElement, caps: Caps) -> dict[str, gws.SourceLaye
     no_wms_layers = set(caps.properties.get('WMSRestrictedLayers', []))
     use_layer_ids = caps.properties.get('WMSUseLayerIDs', False)
 
-    map_layers = {}
+    layers_dct = {}
 
     for el in root_el.findall('projectlayers/maplayer'):
-        sl = _map_layer(el)
+        sl = _map_layer(el, caps, use_layer_ids)
         if not sl:
             continue
-
-        title = sl.metadata.get('title')
-
         # no_wms_layers always contains titles, not ids (=names)
-        if title in no_wms_layers:
+        if sl.title in no_wms_layers:
             continue
+        layers_dct[sl.sourceId] = sl
 
-        uid = el.textof('id')
-        if use_layer_ids:
-            name = uid
-        else:
-            name = el.textof('shortname') or el.textof('layername')
-
-        sl.title = title
-        sl.name = name
-        sl.sourceId = uid
-
-        ext = _map_layer_wgs_extent(el, caps.projectCrs)
-        if ext:
-            sl.wgsExtent = ext
-
-        map_layers[uid] = sl
-
-    return map_layers
+    return layers_dct
 
 
-def _map_layer(layer_el: gws.XmlElement):
+def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws.SourceLayer:
     sl = gws.SourceLayer(
         supportedCrs=[],
     )
@@ -316,12 +292,24 @@ def _map_layer(layer_el: gws.XmlElement):
         if z > a:
             sl.scaleRange = [a, z]
 
-    sl.dataSource = _layer_datasource(layer_el)
-
+    sl.dataSource = _map_layer_datasource(layer_el)
     sl.opacity = _parse_float(layer_el.textof('layerOpacity') or '1')
     sl.isQueryable = layer_el.textof('flags/Identifiable') == '1'
-
     sl.properties = parse_properties(layer_el.find('customproperties'))
+
+    uid = layer_el.textof('id')
+    if use_layer_ids:
+        layer_name = uid
+    else:
+        layer_name = layer_el.textof('shortname') or layer_el.textof('layername')
+
+    sl.title = sl.metadata.get('title')
+    sl.name = layer_name
+    sl.sourceId = uid
+
+    ext = _map_layer_wgs_extent(layer_el, caps.projectCrs)
+    if ext:
+        sl.wgsExtent = ext
 
     return sl
 
@@ -359,6 +347,17 @@ def _map_layer_metadata(layer_el) -> gws.Metadata:
             ))
 
     return md
+
+
+def _map_layer_datasource(layer_el: gws.XmlElement) -> dict:
+    prov = layer_el.textof('provider')
+    ds_text = layer_el.textof('datasource')
+
+    if ds_text:
+        return parse_datasource((prov or '').lower(), ds_text)
+    if prov:
+        return {'provider': prov.lower()}
+    return {}
 
 
 def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
@@ -425,17 +424,6 @@ def _layer_tree(el: gws.XmlElement, layers_dct):
             sl.isGroup = False
             sl.isImage = True
             return sl
-
-
-def _layer_datasource(layer_el: gws.XmlElement) -> dict:
-    prov = layer_el.textof('provider')
-    ds_text = layer_el.textof('datasource')
-
-    if ds_text:
-        return parse_datasource((prov or '').lower(), ds_text)
-    if prov:
-        return {'provider': prov.lower()}
-    return {}
 
 
 ##

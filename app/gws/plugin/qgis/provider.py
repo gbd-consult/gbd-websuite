@@ -10,6 +10,7 @@ import gws.plugin.postgres.provider
 import gws.lib.metadata
 import gws.lib.net
 import gws.lib.mime
+import gws.lib.osx
 import gws.gis.crs
 import gws.gis.bounds
 import gws.gis.source
@@ -40,6 +41,8 @@ class Config(gws.Config):
     """per-layer sql filters"""
     extentBuffer: Optional[int]
     """Extent buffer for automatically computed bounds. (added in 8.1)"""
+    useCanvasExtent: Optional[bool]
+    """Use canvas extent as project extent. (added in 8.1)"""
 
 
 class Object(gws.OwsProvider):
@@ -72,18 +75,29 @@ class Object(gws.OwsProvider):
         self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs')) or self.caps.projectCrs
         self.alwaysXY = False
 
-        if self.caps.projectBounds:
-            self.bounds = gws.gis.bounds.transform(self.caps.projectBounds, self.forceCrs)
-        else:
-            b = gws.gis.source.combined_bounds(self.sourceLayers, self.forceCrs)
-            self.bounds = gws.gis.bounds.buffer(b, self.cfg('extentBuffer') or 0)
-
+        self.bounds = self._project_bounds()
         self.wgsExtent = gws.gis.bounds.wgs_extent(self.bounds)
 
         self.directRender = self._direct_formats('directRender', {'wms', 'wmts', 'xyz'})
         self.directSearch = self._direct_formats('directSearch', {'wms', 'wfs', 'postgres'})
 
         self.defaultLegendOptions = self.cfg('defaultLegendOptions', default={})
+
+    def _project_bounds(self):
+        # explicit WMS extent?
+        if self.caps.projectBounds:
+            return gws.gis.bounds.transform(self.caps.projectBounds, self.forceCrs)
+
+        # canvas extent?
+        if self.cfg('useCanvasExtent') and self.caps.projectCanvasBounds:
+            return gws.gis.bounds.transform(self.caps.projectCanvasBounds, self.forceCrs)
+
+        # combined data extents + buffer
+        b = gws.gis.source.combined_bounds(self.sourceLayers, self.forceCrs)
+        if b:
+            return gws.gis.bounds.buffer(b, self.cfg('extentBuffer') or 0)
+
+        return self.forceCrs.bounds
 
     def _direct_formats(self, opt, allowed):
         p = self.cfg(opt)
@@ -103,8 +117,10 @@ class Object(gws.OwsProvider):
     def configure_store(self):
         p = self.cfg('path')
         if p:
+            pp = gws.lib.osx.parse_path(p)
             self.store = project.Store(
                 type=project.StoreType.file,
+                projectName=pp['name'],
                 path=p,
             )
             return
@@ -118,7 +134,7 @@ class Object(gws.OwsProvider):
             )
             return
         # @TODO gpkg, etc
-        raise gws.Error('cannot load qgis project ("path" or "projectName" must be specified)')
+        raise gws.ConfigurationError('cannot load qgis project ("path" or "projectName" must be specified)')
 
     ##
 
