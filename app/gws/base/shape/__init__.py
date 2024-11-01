@@ -291,16 +291,16 @@ class Shape(gws.Shape):
             geometry=shapely.geometry.mapping(self.geom))
 
     def is_empty(self):
-        return self.geom.is_empty()
+        return self.geom.is_empty
 
     def is_ring(self):
-        return self.geom.is_ring()
+        return self.geom.is_ring
 
     def is_simple(self):
-        return self.geom.is_simple()
+        return self.geom.is_simple
 
     def is_valid(self):
-        return self.geom.is_valid()
+        return self.geom.is_valid
 
     def equals(self, other):
         return self._binary_predicate(other, 'equals')
@@ -381,7 +381,7 @@ class Shape(gws.Shape):
             return self.to_multi()
         raise Error(f'cannot convert {self.type!r} to {new_type!r}')
 
-    def tolerance_polygon(self, tolerance, quad_segs=None):
+    def tolerance_polygon(self, tolerance=None, quad_segs=None):
         is_poly = self.type in (gws.GeometryType.polygon, gws.GeometryType.multipolygon)
 
         if not tolerance and is_poly:

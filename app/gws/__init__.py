@@ -2375,7 +2375,7 @@ class Shape(Object):
 
     # misc
 
-    def tolerance_polygon(self, tolerance, quad_segs=None) -> 'Shape':
+    def tolerance_polygon(self, tolerance=None, quad_segs=None) -> 'Shape':
         """Builds a buffer polygon around the shape."""
 
     def transformed_to(self, crs: 'Crs') -> 'Shape':
