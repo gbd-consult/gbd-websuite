@@ -24,6 +24,7 @@ map {
     extent [ 447705, 6478918, 1023665, 6813238 ]
     zoom.initScale 1000000
     zoom.maxScale  1000000
+    zoom.minScale  2000
 }
 
 {demo_osm_background}
