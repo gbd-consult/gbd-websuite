@@ -256,6 +256,13 @@ def is_valid(e: gws.Extent) -> bool:
     return True
 
 
+def is_valid_wgs(e: gws.Extent) -> bool:
+    if not is_valid(e):
+        return False
+    w = gws.gis.crs.WGS84.extent
+    return e[0] >= w[0] and e[1] >= w[1] and e[2] <= w[2] and e[3] <= w[3]
+
+
 def _check(ls: list) -> Optional[gws.Extent]:
     if len(ls) != 4:
         return None

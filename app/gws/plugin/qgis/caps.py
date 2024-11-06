@@ -368,21 +368,26 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
         crs = gws.gis.crs.get(el.get('crs'))
         if ext and crs:
             ext = gws.gis.extent.transform(ext, crs, gws.gis.crs.WGS84)
-            if gws.gis.extent.is_valid(ext):
+            if gws.gis.extent.is_valid_wgs(ext):
                 gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: spatial: {ext}")
                 return ext
 
     # extent in <maplayer>/<wgs84extent>
-    ext = _extent_from_tag(layer_el.find('wgs84extent'))
-    if gws.gis.extent.is_valid(ext):
-        gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: wgs84extent: {ext}")
-        return ext
+    el = layer_el.find('wgs84extent')
+    if el:
+        ext = _extent_from_tag(el)
+        if gws.gis.extent.is_valid_wgs(ext):
+            gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: wgs84extent: {ext}")
+            return ext
 
     # extent in <maplayer>/<extent>, assume the project CRS
-    ext = _extent_from_tag(layer_el.find('extent'))
-    if gws.gis.extent.is_valid(ext):
-        gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: extent: {ext}")
-        return gws.gis.bounds.wgs_extent(gws.Bounds(extent=ext, crs=project_crs))
+    el = layer_el.find('extent')
+    if el:
+        ext = _extent_from_tag(el)
+        ext = gws.gis.extent.transform(ext, project_crs, gws.gis.crs.WGS84)
+        if gws.gis.extent.is_valid_wgs(ext):
+            gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: extent: {ext}")
+            return ext
 
     gws.log.warning(f"_map_layer_wgs_extent: {layer_el.textof('id')}: NOT FOUND")
 
@@ -725,6 +730,9 @@ def _parse_property_tag(el: gws.XmlElement):
 
 def _extent_from_atts(el):
     # <spatial dimensions="2" miny="0" maxz="0" maxx="0" crs="EPSG:25832" minx="0" minz="0" maxy="0"/>
+
+    if not el:
+        return
 
     return gws.gis.extent.from_list([
         el.get('minx'),
