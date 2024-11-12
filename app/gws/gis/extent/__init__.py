@@ -273,7 +273,7 @@ def _check(ls: list) -> Optional[gws.Extent]:
     if not all(math.isfinite(p) for p in e):
         return None
     e = _sort(e)
-    if e[0] >= e[2] or e[1] >= e[3]:
+    if e[0] > e[2] or e[1] > e[3]:
         return None
     return e
 
