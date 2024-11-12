@@ -169,3 +169,16 @@ def test_transform_from_wgs():
 
 def test_swap_xy():
     assert extent.swap_xy((2, 1, 4, 3)) == (1, 2, 3, 4)
+
+
+def test_is_valid():
+    assert extent.is_valid([1,1,2,2])
+    assert extent.is_valid([1.123,1.123,2.123,2.123])
+    assert extent.is_valid([1,1,1,1])
+    assert not extent.is_valid([2.2,1,1])
+    assert not extent.is_valid([1,2,3,4,5])
+    assert not extent.is_valid([])
+    assert not extent.is_valid([1,2])
+    assert not extent.is_valid(None)
+    assert not extent.is_valid([1,2,3,math.inf])
+    assert not extent.is_valid([float("nan")] * 4)
