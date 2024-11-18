@@ -251,7 +251,7 @@ def is_valid(e: gws.Extent) -> bool:
         return False
     if not all(math.isfinite(p) for p in e):
         return False
-    if e[0] > e[2] or e[1] > e[3]:
+    if e[0] >= e[2] or e[1] >= e[3]:
         return False
     return True
 
