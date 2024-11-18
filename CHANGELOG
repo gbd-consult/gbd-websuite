@@ -1,3 +1,7 @@
+## Version 8.1.18
+
+- support for single-point qgis layers
+
 ## Version 8.1.17
 
 - improved QGIS parsing
