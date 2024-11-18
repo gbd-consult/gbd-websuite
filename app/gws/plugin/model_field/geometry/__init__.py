@@ -34,6 +34,9 @@ class Object(gws.base.model.scalar_field.Object):
         setattr(self, 'geometryCrs', None)
         self.configure_geometry_type()
         self.configure_geometry_crs()
+        if not self.geometryCrs:
+            tab = getattr(self.model, 'tableName', '')
+            raise gws.ConfigurationError(f'unknown CRS for {tab!r}.{self.name!r}')
 
     def configure_geometry_type(self):
         s = self.cfg('geometryType')
@@ -47,7 +50,7 @@ class Object(gws.base.model.scalar_field.Object):
             return True
 
     def configure_geometry_crs(self):
-        s = self.cfg('geometryCrs')
+        s = self.cfg('crs')
         if s:
             self.geometryCrs = gws.gis.crs.get(s)
             return True

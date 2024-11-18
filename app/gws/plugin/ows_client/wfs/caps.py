@@ -27,6 +27,6 @@ def _feature_type(type_el):
     sl.metadata = u.element_metadata(type_el)
     sl.isQueryable = True
     sl.supportedCrs = u.supported_crs(type_el) or [gws.gis.crs.WGS84]
-    sl.wgsBounds = u.wgs_bounds(type_el) or gws.gis.crs.WGS84_BOUNDS
+    sl.wgsExtent = u.wgs_extent(type_el) or gws.gis.crs.WGS84.extent
 
     return sl

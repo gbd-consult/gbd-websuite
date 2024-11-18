@@ -1,13 +1,14 @@
 """Generic scalar field."""
 
-from typing import Callable, cast
+from typing import Optional, Callable, cast
 
 import gws
 import gws.base.model.field
 
 
 class Config(gws.base.model.field.Config):
-    pass
+    isVirtual: Optional[bool]
+    """The field is not stored in the DB. (added in 8.1)"""
 
 
 class Props(gws.base.model.field.Props):
@@ -15,7 +16,14 @@ class Props(gws.base.model.field.Props):
 
 
 class Object(gws.base.model.field.Object):
+    isVirtual: bool
+
+    def configure(self):
+        self.isVirtual = self.cfg('isVirtual', default=False)
+
     def before_select(self, mc):
+        if self.isVirtual:
+            return
         model = cast(gws.DatabaseModel, self.model)
         mc.dbSelect.columns.append(model.column(self.name))
 
@@ -26,10 +34,14 @@ class Object(gws.base.model.field.Object):
     def before_create(self, feature, mc):
         if self.isAuto:
             return
+        if self.isVirtual:
+            return
         self.to_record(feature, mc)
 
     def before_update(self, feature, mc):
         if self.isAuto:
+            return
+        if self.isVirtual:
             return
         self.to_record(feature, mc)
 

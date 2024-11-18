@@ -1,6 +1,6 @@
 """Base layer object."""
 
-from typing import Optional
+from typing import Optional, cast
 
 import gws
 import gws.base.model
@@ -83,6 +83,8 @@ class Config(gws.ConfigWithAccess):
     """Layer display mode."""
     extent: Optional[gws.Extent]
     """Layer extent."""
+    zoomExtent: Optional[gws.Extent]
+    """Layer zoom extent. (added in 8.1)"""
     extentBuffer: Optional[int]
     """Extent buffer."""
     finders: Optional[list[gws.ext.config.finder]]
@@ -124,6 +126,7 @@ class Props(gws.Props):
     cssSelector: str
     displayMode: str
     extent: Optional[gws.Extent]
+    zoomExtent: Optional[gws.Extent]
     geometryType: Optional[gws.GeometryType]
     grid: GridProps
     layers: Optional[list['Props']]
@@ -171,6 +174,7 @@ class Object(gws.Layer):
         self.mapCrs = self.parentBounds.crs
 
         self.bounds = self.parentBounds
+        self.zoomBounds = cast(gws.Bounds, None)
         self.resolutions = self.parentResolutions
 
         self.templates = []
@@ -196,6 +200,7 @@ class Object(gws.Layer):
         self.configure_sources()
         self.configure_models()
         self.configure_bounds()
+        self.configure_zoom_bounds()
         self.configure_resolutions()
         self.configure_grid()
         self.configure_legend()
@@ -211,6 +216,14 @@ class Object(gws.Layer):
         p = self.cfg('extent')
         if p:
             self.bounds = gws.Bounds(
+                crs=self.mapCrs,
+                extent=gws.gis.extent.from_list(p))
+            return True
+
+    def configure_zoom_bounds(self):
+        p = self.cfg('zoomExtent')
+        if p:
+            self.zoomBounds = gws.Bounds(
                 crs=self.mapCrs,
                 extent=gws.gis.extent.from_list(p))
             return True
@@ -299,10 +312,11 @@ class Object(gws.Layer):
             raise gws.Error(f'layer {self!r}: invalid CRS {self.bounds.crs}')
 
         if not gws.gis.bounds.intersect(self.bounds, self.parentBounds):
-            gws.log.warning(f'layer {self!r}: bounds outside of the parent bounds')
+            gws.log.warning(f'layer {self!r}: bounds outside of the parent bounds b={self.bounds.extent} parent={self.parentBounds.extent}')
             self.bounds = gws.gis.bounds.copy(self.parentBounds)
 
         self.wgsExtent = gws.gis.bounds.transform(self.bounds, gws.gis.crs.WGS84).extent
+        self.zoomBounds = self.zoomBounds or self.bounds
 
         if self.legend:
             self.legendUrl = self.url_path('legend')
@@ -345,6 +359,7 @@ class Object(gws.Layer):
             cssSelector=self.cssSelector,
             displayMode=self.displayMode,
             extent=self.bounds.extent,
+            zoomExtent=self.zoomBounds.extent,
             layers=self.layers,
             loadingStrategy=self.loadingStrategy,
             metadata=gws.lib.metadata.props(self.metadata),

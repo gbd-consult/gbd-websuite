@@ -79,7 +79,7 @@ def _to_db(root: gws.Root, store: Store, content: bytes):
     tab = db.table(f'{schema}.{_PRJ_TABLE}')
 
     metadata = {
-        'last_modified_time': gws.lib.datetimex.now(),
+        'last_modified_time': gws.lib.datetimex.to_iso_string(),
         'last_modified_user': 'GWS',
     }
 
@@ -116,9 +116,9 @@ class Object:
         return getattr(self, '_xml_root')
 
     def to_store(self, root: gws.Root, store: Store):
-        if store.path:
+        if store.type == StoreType.file:
             return self.to_path(store.path)
-        if store.projectName:
+        if store.type == StoreType.postgres:
             src = self.to_xml()
             name = store.projectName + _PRJ_EXT
             content = gws.lib.zipx.zip_to_bytes({name: src})

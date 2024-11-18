@@ -119,7 +119,7 @@ def unlink(path: _Path) -> bool:
             os.unlink(path)
         return True
     except OSError as exc:
-        gws.log.warning(f'OSError: unlink: {exc}')
+        gws.log.debug(f'OSError: unlink: {exc}')
         return False
 
 
@@ -200,7 +200,7 @@ def file_mtime(path: _Path) -> float:
     try:
         return os.stat(path).st_mtime
     except OSError as exc:
-        gws.log.warning(f'OSError: file_mtime: {exc}')
+        gws.log.debug(f'OSError: file_mtime: {exc}')
         return -1
 
 
@@ -216,7 +216,7 @@ def file_age(path: _Path) -> int:
     try:
         return int(time.time() - os.stat(path).st_mtime)
     except OSError as exc:
-        gws.log.warning(f'OSError: file_age: {exc}')
+        gws.log.debug(f'OSError: file_age: {exc}')
         return -1
 
 
@@ -232,7 +232,7 @@ def file_size(path: _Path) -> int:
     try:
         return os.stat(path).st_size
     except OSError as exc:
-        gws.log.warning(f'OSError: file_size: {exc}')
+        gws.log.debug(f'OSError: file_size: {exc}')
         return -1
 
 
@@ -249,7 +249,7 @@ def file_checksum(path: _Path) -> str:
         with open(path, 'rb') as fp:
             return hashlib.sha256(fp.read()).hexdigest()
     except OSError as exc:
-        gws.log.warning(f'OSError: file_checksum: {exc}')
+        gws.log.debug(f'OSError: file_checksum: {exc}')
         return ''
 
 

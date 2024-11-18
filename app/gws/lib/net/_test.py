@@ -78,7 +78,7 @@ def test_request_timeout():
     ''')
 
     res = net.http_request(u.mockserver.url('timeout'), timeout=1)
-    assert (res.ok, res.status_code) == (False, 0)
+    assert (res.ok, res.status_code) == (False, 901)
 
     res = net.http_request(u.mockserver.url('timeout'), timeout=100)
     assert (res.ok, res.status_code) == (True, 200)
@@ -86,7 +86,7 @@ def test_request_timeout():
 
 def test_request_connection_error():
     res = net.http_request('255.255.255.255')
-    assert (res.ok, res.status_code) == (False, 0)
+    assert (res.ok, res.status_code) == (False, 999)
 
 
 def test_request_valid_response_cached():

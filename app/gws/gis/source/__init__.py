@@ -3,7 +3,9 @@ from typing import Optional, Iterable
 import re
 
 import gws
+import gws.gis.bounds
 import gws.gis.extent
+import gws.gis.crs
 
 
 ##
@@ -81,6 +83,12 @@ def check_layers(layers: Iterable[gws.SourceLayer], revert: bool = False) -> lis
         sl.layers = gws.u.compact(walk(c, sl.aPath, level + 1) for c in (sl.layers or []))
         if revert:
             sl.layers = list(reversed(sl.layers))
+
+        if not sl.wgsExtent and sl.layers:
+            exts = gws.u.compact(c.wgsExtent for c in sl.layers)
+            if exts:
+                sl.wgsExtent = gws.gis.extent.union(exts)
+
         return sl
 
     ls = gws.u.compact(walk(sl, '', 1) for sl in layers)
@@ -154,3 +162,10 @@ def combined_crs_list(layers: list[gws.SourceLayer]) -> list[gws.Crs]:
             cs = cs.intersection(sl.supportedCrs)
 
     return list(cs)
+
+
+def combined_bounds(layers: list[gws.SourceLayer], crs: gws.Crs) -> Optional[gws.Bounds]:
+    bs = gws.u.compact(sl.wgsExtent for sl in layers)
+    if bs:
+        b = gws.Bounds(extent=gws.gis.extent.union(bs), crs=gws.gis.crs.WGS84)
+        return gws.gis.bounds.transform(b, crs)

@@ -55,7 +55,7 @@ export class FormButtons extends gws.View<types.ViewProps> {
         let canDelete = !sf.isNew;
 
         return [
-            <Cell spaced>
+            <Cell key={1} spaced>
                 <gws.ui.Button
                     {...gws.lib.cls('editSaveButton')}
                     disabled={!canSave}
@@ -63,7 +63,7 @@ export class FormButtons extends gws.View<types.ViewProps> {
                     whenTouched={() => cc.whenFeatureFormSaveButtonTouched(sf)}
                 />
             </Cell>,
-            <Cell spaced>
+            <Cell key={2} spaced>
                 <gws.ui.Button
                     {...gws.lib.cls('editResetButton')}
                     disabled={!canSave}
@@ -71,14 +71,14 @@ export class FormButtons extends gws.View<types.ViewProps> {
                     whenTouched={() => cc.whenFeatureFormResetButtonTouched(sf)}
                 />
             </Cell>,
-            <Cell spaced>
+            <Cell key={3} spaced>
                 <gws.ui.Button
                     {...gws.lib.cls('editCancelButton')}
                     tooltip={this.__('editCancel')}
                     whenTouched={() => cc.whenFeatureFormCancelButtonTouched()}
                 />
             </Cell>,
-            <Cell spaced>
+            <Cell key={4} spaced>
                 <gws.ui.Button
                     className="editDeleteButton"
                     disabled={!canDelete}

@@ -40,7 +40,7 @@ class SourceLayer(Data):
     metadata: 'Metadata'
 
     supportedCrs: list['Crs']
-    wgsBounds: Bounds
+    wgsExtent: Extent
 
     isExpanded: bool
     isGroup: bool

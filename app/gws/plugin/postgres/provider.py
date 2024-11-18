@@ -3,6 +3,7 @@
 from typing import Optional
 
 import os
+import re
 
 import gws.base.database
 import gws.gis.crs
@@ -65,11 +66,38 @@ class Object(gws.base.database.provider.Object):
         url = connection_url(self.config)
         return sa.create_engine(url, **kwargs)
 
+    _RE_TABLE_NAME = r'''(?x) 
+        ^
+        (
+            ( " (?P<a1> ([^"] | "")+ ) " )
+            |
+            (?P<a2> [^".]+ )
+        )
+        (
+            \.
+            (
+                ( " (?P<b1> ([^"] | "")+ ) " )
+                |
+                (?P<b2> [^".]+ )
+            )
+        )?
+        $
+    '''
+
+    _DEFAULT_SCHEMA = 'public'
+
     def split_table_name(self, table_name):
-        if '.' in table_name:
-            schema, _, name = table_name.partition('.')
-            return schema, name
-        return 'public', table_name
+        m = re.match(self._RE_TABLE_NAME, table_name.strip())
+        if not m:
+            raise ValueError(f'invalid table name {table_name!r}')
+
+        d = m.groupdict()
+        s = d['a1'] or d['a2']
+        t = d['b1'] or d['b2']
+        if not t:
+            s, t = self._DEFAULT_SCHEMA, s
+
+        return s.replace('""', '"'), t.replace('""', '"')
 
     def join_table_name(self, schema, name):
         if schema:
@@ -89,6 +117,67 @@ class Object(gws.base.database.provider.Object):
         extent = gws.gis.extent.from_box(box)
         if extent:
             return gws.Bounds(extent=extent, crs=gws.gis.crs.get(desc.geometrySrid))
+
+    def describe_column(self, table, column_name):
+        col = super().describe_column(table, column_name)
+
+        if col.nativeType == 'ARRAY':
+            sa_col = self.column(table, column_name)
+            it = getattr(sa_col.type, 'item_type', None)
+            ia = self.SA_TO_ATTR.get(type(it).__name__.upper())
+            if ia == gws.AttributeType.str:
+                col.type = gws.AttributeType.strlist
+            elif ia == gws.AttributeType.int:
+                col.type = gws.AttributeType.intlist
+            elif ia == gws.AttributeType.float:
+                col.type = gws.AttributeType.floatlist
+            else:
+                col.type = self.UNKNOWN_ARRAY_TYPE
+            return col
+
+        if col.nativeType == 'GEOMETRY':
+            typ, srid = self._get_geom_type_and_srid(table, column_name)
+            col.type = gws.AttributeType.geometry
+            col.geometryType = self.SA_TO_GEOM.get(typ, gws.GeometryType.geometry)
+            col.geometrySrid = srid
+            return col
+
+        return col
+
+    def _get_geom_type_and_srid(self, table, column_name):
+        sa_table = self.table(table)
+        sa_col = self.column(table, column_name)
+
+        typ = getattr(sa_col.type, 'geometry_type', '').upper()
+        srid = getattr(sa_col.type, 'srid', 0)
+
+        if typ != 'GEOMETRY' and srid > 0:
+            return typ, srid
+
+        # not a typmod, possibly constraint-based. Query "geometry_columns"...
+
+        gcs = getattr(self, '_geometry_columns_cache', None)
+        if not gcs:
+            gcs = self.select_text(f'''
+                SELECT  
+                    f_table_schema,
+                    f_table_name,
+                    f_geometry_column,
+                    type,
+                    srid
+                FROM public.geometry_columns
+            ''')
+            setattr(self, '_geometry_columns_cache', gcs)
+
+        for gc in gcs:
+            if (
+                    gc['f_table_schema'] == sa_table.schema
+                    and gc['f_table_name'] == sa_table.name
+                    and gc['f_geometry_column'] == sa_col.name
+            ):
+                return gc['type'], gc['srid']
+
+        return 'GEOMETRY', -1
 
 
 ##

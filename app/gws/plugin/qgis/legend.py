@@ -87,4 +87,4 @@ class Object(gws.base.legend.Object):
     def render(self, args=None):
         res = self.serviceProvider.call_server(self.params, max_age=self.cacheMaxAge)
         img = gws.lib.image.from_bytes(res.content)
-        return gws.LegendRenderOutput(image=img, size=img.size())
+        return gws.LegendRenderOutput(image=img, size=img.size(), mime=gws.lib.mime.PNG)

@@ -3311,3 +3311,63 @@ values
     ('schiller', 'Schiller', 'Friedrich', 'Schiller@example.com'),
     ('goethe', 'von Goethe', 'Johann Wolfgang', 'Goethe@example.com')
 ;
+
+drop schema if exists poi_local cascade;
+create schema poi_local;
+
+-- sids = '011,012,013,014,015,016,021,022,023,031,032,033,034,035,036,037,038,041,042,043,044,051,052,053,054,055,056,061,062,063,064,071,072,073,074,075,081,082,083,084,091,092,093,094,095,096,097,098,101,102'
+-- for sid in sids.split(','):
+--     print(f"CREATE TABLE poi_local.p_9_{sid} AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '{sid}';")
+
+CREATE TABLE poi_local.p_9_011 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '011';
+CREATE TABLE poi_local.p_9_012 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '012';
+CREATE TABLE poi_local.p_9_013 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '013';
+CREATE TABLE poi_local.p_9_014 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '014';
+CREATE TABLE poi_local.p_9_015 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '015';
+CREATE TABLE poi_local.p_9_016 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '016';
+CREATE TABLE poi_local.p_9_021 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '021';
+CREATE TABLE poi_local.p_9_022 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '022';
+CREATE TABLE poi_local.p_9_023 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '023';
+CREATE TABLE poi_local.p_9_031 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '031';
+CREATE TABLE poi_local.p_9_032 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '032';
+CREATE TABLE poi_local.p_9_033 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '033';
+CREATE TABLE poi_local.p_9_034 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '034';
+CREATE TABLE poi_local.p_9_035 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '035';
+CREATE TABLE poi_local.p_9_036 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '036';
+CREATE TABLE poi_local.p_9_037 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '037';
+CREATE TABLE poi_local.p_9_038 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '038';
+CREATE TABLE poi_local.p_9_041 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '041';
+CREATE TABLE poi_local.p_9_042 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '042';
+CREATE TABLE poi_local.p_9_043 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '043';
+CREATE TABLE poi_local.p_9_044 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '044';
+CREATE TABLE poi_local.p_9_051 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '051';
+CREATE TABLE poi_local.p_9_052 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '052';
+CREATE TABLE poi_local.p_9_053 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '053';
+CREATE TABLE poi_local.p_9_054 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '054';
+CREATE TABLE poi_local.p_9_055 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '055';
+CREATE TABLE poi_local.p_9_056 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '056';
+CREATE TABLE poi_local.p_9_061 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '061';
+CREATE TABLE poi_local.p_9_062 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '062';
+CREATE TABLE poi_local.p_9_063 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '063';
+CREATE TABLE poi_local.p_9_064 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '064';
+CREATE TABLE poi_local.p_9_071 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '071';
+CREATE TABLE poi_local.p_9_072 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '072';
+CREATE TABLE poi_local.p_9_073 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '073';
+CREATE TABLE poi_local.p_9_074 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '074';
+CREATE TABLE poi_local.p_9_075 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '075';
+CREATE TABLE poi_local.p_9_081 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '081';
+CREATE TABLE poi_local.p_9_082 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '082';
+CREATE TABLE poi_local.p_9_083 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '083';
+CREATE TABLE poi_local.p_9_084 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '084';
+CREATE TABLE poi_local.p_9_091 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '091';
+CREATE TABLE poi_local.p_9_092 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '092';
+CREATE TABLE poi_local.p_9_093 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '093';
+CREATE TABLE poi_local.p_9_094 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '094';
+CREATE TABLE poi_local.p_9_095 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '095';
+CREATE TABLE poi_local.p_9_096 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '096';
+CREATE TABLE poi_local.p_9_097 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '097';
+CREATE TABLE poi_local.p_9_098 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '098';
+CREATE TABLE poi_local.p_9_101 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '101';
+CREATE TABLE poi_local.p_9_102 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '102';
+
+CREATE TABLE poi_local.single_point AS SELECT p.* FROM edit.poi p WHERE p.id=691;

@@ -13,7 +13,7 @@ import gws.lib.uom
 gws.ext.new.action('search')
 
 _DEFAULT_VIEWS = ['title', 'teaser', 'description']
-_DEFAULT_TOLERANCE = 10, gws.Uom.px
+_DEFAULT_TOLERANCE = 50, gws.Uom.px
 
 
 class Config(gws.base.action.Config):

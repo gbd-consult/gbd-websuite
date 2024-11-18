@@ -115,6 +115,7 @@ export interface ILayer {
     title: string;
     attributes: Dict;
     extent: ol.Extent;
+    zoomExtent: ol.Extent;
 
     opacity: number;
     computedOpacity: number;
@@ -460,6 +461,7 @@ export interface TableViewColumn {
 
 
 export interface IModel {
+    clientOptions: api.core.ModelClientOptions;
     canCreate: boolean;
     canDelete: boolean;
     canRead: boolean;
@@ -527,6 +529,7 @@ export interface ModelWidgetProps {
     field: IModelField;
     widgetProps: api.ext.props.modelWidget;
     values: Dict;
+    disabled?: boolean;
     whenChanged?: (value: any) => void;
     whenEntered?: (value: any) => void;
 }

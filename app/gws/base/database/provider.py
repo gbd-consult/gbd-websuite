@@ -34,7 +34,7 @@ class Object(gws.DatabaseProvider):
         self.saConnection = None
         self.saConnectionCount = 0
 
-    def autoload(self, schema: str):
+    def reflect_schema(self, schema: str):
         if schema in self.saMetaMap:
             return
 
@@ -62,7 +62,7 @@ class Object(gws.DatabaseProvider):
     def connect(self):
         if self.saConnection is None:
             self.saConnection = self.saEngine.connect()
-            gws.log.debug(f'db connection opened: {self.saConnection}')
+            # gws.log.debug(f'db connection opened: {self.saConnection}')
             self.saConnectionCount = 1
         else:
             self.saConnectionCount += 1
@@ -73,7 +73,7 @@ class Object(gws.DatabaseProvider):
             self.saConnectionCount -= 1
             if self.saConnectionCount == 0:
                 self.saConnection.close()
-                gws.log.debug(f'db connection closed: {self.saConnection}')
+                # gws.log.debug(f'db connection closed: {self.saConnection}')
                 self.saConnection = None
 
     def table(self, table_name, **kwargs):
@@ -103,15 +103,17 @@ class Object(gws.DatabaseProvider):
         if isinstance(tab_or_name, sa.Table):
             return tab_or_name
         schema, name = self.split_table_name(tab_or_name)
-        self.autoload(schema)
-        return self.saMetaMap[schema].tables.get(self.join_table_name(schema, name))
+        self.reflect_schema(schema)
+        # see _get_table_key in sqlalchemy/sql/schema.py
+        table_key = schema + '.' + name
+        return self.saMetaMap[schema].tables.get(table_key)
 
     def column(self, table, column_name):
         sa_table = self._sa_table(table)
         try:
             return sa_table.columns[column_name]
         except KeyError:
-            raise sa.Error(f'column {table!r}.{column_name!r} not found')
+            raise sa.Error(f'column {str(table)}.{column_name!r} not found')
 
     def has_column(self, table, column_name):
         sa_table = self._sa_table(table)
@@ -205,7 +207,8 @@ class Object(gws.DatabaseProvider):
         if sa_table is None:
             raise sa.Error(f'table {table!r} not found')
 
-        schema, name = self.split_table_name(sa_table.name)
+        schema = sa_table.schema
+        name = sa_table.name
 
         desc = gws.DataSetDescription(
             columns=[],
@@ -218,47 +221,9 @@ class Object(gws.DatabaseProvider):
             schema=schema
         )
 
-        for n, c in enumerate(cast(list[sa.Column], sa_table.columns)):
-            col = gws.ColumnDescription(
-                columnIndex=n,
-                comment=str(c.comment or ''),
-                default=c.default,
-                geometrySrid=0,
-                geometryType='',
-                isAutoincrement=bool(c.autoincrement),
-                isNullable=bool(c.nullable),
-                isPrimaryKey=bool(c.primary_key),
-                isUnique=bool(c.unique),
-                hasDefault=c.server_default is not None,
-                name=str(c.name),
-                nativeType='',
-                type='',
-            )
-
-            col.nativeType = type(c.type).__name__.upper()
-
-            if col.nativeType == 'ARRAY':
-                it = getattr(c.type, 'item_type', None)
-                ia = self.SA_TO_ATTR.get(type(it).__name__.upper())
-                if ia == gws.AttributeType.str:
-                    col.type = gws.AttributeType.strlist
-                elif ia == gws.AttributeType.int:
-                    col.type = gws.AttributeType.intlist
-                elif ia == gws.AttributeType.float:
-                    col.type = gws.AttributeType.floatlist
-                else:
-                    col.type = self.UNKNOWN_ARRAY_TYPE
-
-            elif col.nativeType == 'GEOMETRY':
-                gt = getattr(c.type, 'geometry_type', '').upper()
-                ga = self.SA_TO_GEOM.get(gt, gws.GeometryType.geometry)
-                col.type = gws.AttributeType.geometry
-                col.geometryType = ga
-                col.geometrySrid = getattr(c.type, 'srid', 0)
-
-            else:
-                col.type = self.SA_TO_ATTR.get(col.nativeType, self.UNKNOWN_TYPE)
-
+        for n, sa_col in enumerate(cast(list[sa.Column], sa_table.columns)):
+            col = self.describe_column(table, sa_col.name)
+            col.columnIndex = n
             desc.columns.append(col)
             desc.columnMap[col.name] = col
 
@@ -270,3 +235,27 @@ class Object(gws.DatabaseProvider):
                 break
 
         return desc
+
+    def describe_column(self, table, column_name) -> gws.ColumnDescription:
+        sa_col = self.column(table, column_name)
+
+        col = gws.ColumnDescription(
+            columnIndex=0,
+            comment=str(sa_col.comment or ''),
+            default=sa_col.default,
+            geometrySrid=0,
+            geometryType='',
+            isAutoincrement=bool(sa_col.autoincrement),
+            isNullable=bool(sa_col.nullable),
+            isPrimaryKey=bool(sa_col.primary_key),
+            isUnique=bool(sa_col.unique),
+            hasDefault=sa_col.server_default is not None,
+            name=str(sa_col.name),
+            nativeType='',
+            type='',
+        )
+
+        col.nativeType = type(sa_col.type).__name__.upper()
+        col.type = self.SA_TO_ATTR.get(col.nativeType, self.UNKNOWN_TYPE)
+
+        return col

@@ -2,6 +2,7 @@
 
 import gws
 import gws.lib.image
+import gws.lib.mime
 import gws.base.legend
 
 
@@ -23,4 +24,4 @@ class Object(gws.base.legend.Object):
 
     def render(self, args=None):
         img = gws.lib.image.from_path(self.path)
-        return gws.LegendRenderOutput(image=img, size=img.size())
+        return gws.LegendRenderOutput(image=img, size=img.size(), mime=gws.lib.mime.for_path(self.path))

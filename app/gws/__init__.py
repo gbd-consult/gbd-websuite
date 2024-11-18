@@ -1903,6 +1903,8 @@ class Crs:
     """CRS Extent in the WGS projection."""
     extent: Extent
     """CRS own Extent."""
+    bounds: Bounds
+    """CRS own Bounds."""
 
     def axis_for_format(self, fmt: 'CrsFormat') -> Axis:
         """Get the axis depending on the string format.
@@ -2114,7 +2116,7 @@ class SourceLayer(Data):
     metadata: 'Metadata'
 
     supportedCrs: list['Crs']
-    wgsBounds: Bounds
+    wgsExtent: Extent
 
     isExpanded: bool
     isGroup: bool
@@ -2373,7 +2375,7 @@ class Shape(Object):
 
     # misc
 
-    def tolerance_polygon(self, tolerance, quad_segs=None) -> 'Shape':
+    def tolerance_polygon(self, tolerance=None, quad_segs=None) -> 'Shape':
         """Builds a buffer polygon around the shape."""
 
     def transformed_to(self, crs: 'Crs') -> 'Shape':
@@ -2961,6 +2963,7 @@ class Layer(Node):
     hasLegend: bool
 
     bounds: Bounds
+    zoomBounds: Bounds
     wgsExtent: Extent
     mapCrs: 'Crs'
     clientOptions: LayerClientOptions
@@ -3045,6 +3048,11 @@ class Map(Node):
 ################################################################################
 # /base/model/types.pyinc
 
+
+class ModelClientOptions(Data):
+    """Client options for a model"""
+
+    keepFormOpen: Optional[bool]
 
 class ModelValidationError(Data):
     """Validation error."""
@@ -3208,6 +3216,7 @@ class ModelField(Node):
 class Model(Node):
     """Data Model."""
 
+    clientOptions: ModelClientOptions
     defaultSort: list['SearchSort']
     fields: list['ModelField']
     geometryCrs: Optional['Crs']

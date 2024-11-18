@@ -42,6 +42,12 @@ class Object(core.Object):
         self.bounds = gws.gis.bounds.union([la.bounds for la in self.layers])
         return True
 
+    def configure_zoom_bounds(self):
+        if super().configure_zoom_bounds():
+            return True
+        self.zoomBounds = gws.gis.bounds.union([(la.zoomBounds or la.bounds) for la in self.layers])
+        return True
+
     def configure_resolutions(self):
         if super().configure_resolutions():
             return True

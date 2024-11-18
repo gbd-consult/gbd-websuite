@@ -100,20 +100,19 @@ def intersection(exts: list[gws.Extent]) -> Optional[gws.Extent]:
     if not exts:
         return
 
-    _intersect = (-math.inf, -math.inf, math.inf, math.inf)
+    res = (-math.inf, -math.inf, math.inf, math.inf)
 
     for ext in exts:
         _sort(ext)
-        if intersect(_intersect,ext):
-            _intersect = (
-                max(_intersect[0], ext[0]),
-                max(_intersect[1], ext[1]),
-                min(_intersect[2], ext[2]),
-                min(_intersect[3], ext[3]),
-            )
-        else:
+        if not intersect(res, ext):
             return
-    return _intersect
+        res = (
+            max(res[0], ext[0]),
+            max(res[1], ext[1]),
+            min(res[2], ext[2]),
+            min(res[3], ext[3]),
+        )
+    return res
 
 
 def center(e: gws.Extent) -> gws.Point:
@@ -245,6 +244,23 @@ def transform_to_wgs(e: gws.Extent, crs_from: gws.Crs) -> gws.Extent:
 def swap_xy(e: gws.Extent) -> gws.Extent:
     """Swaps the x and y values of the extent"""
     return e[1], e[0], e[3], e[2]
+
+
+def is_valid(e: gws.Extent) -> bool:
+    if not e or len(e) != 4:
+        return False
+    if not all(math.isfinite(p) for p in e):
+        return False
+    if e[0] >= e[2] or e[1] >= e[3]:
+        return False
+    return True
+
+
+def is_valid_wgs(e: gws.Extent) -> bool:
+    if not is_valid(e):
+        return False
+    w = gws.gis.crs.WGS84.extent
+    return e[0] >= w[0] and e[1] >= w[1] and e[2] <= w[2] and e[3] <= w[3]
 
 
 def _check(ls: list) -> Optional[gws.Extent]:

@@ -1,4 +1,6 @@
-"""CLI utilty for qgis"""
+"""CLI utility for qgis"""
+
+import re
 
 import gws
 import gws.config
@@ -11,64 +13,38 @@ from . import project
 
 
 class CapsParams(gws.CliParams):
-    path: str
-    """path to a qgis file"""
+    src: str
+    """Source path or postgres address `postgres:<dbUid>/<schema>/<projectName>`"""
     out: str = ''
-    """output filename"""
+    """Output filename"""
 
 
-class DbreadParams(gws.CliParams):
-    schema: str = ''
-    """database schema"""
-    name: str
-    """project name"""
-    out: str = ''
-    """output filename"""
-
-
-class DbwriteParams(gws.CliParams):
-    schema: str = ''
-    """database schema"""
-    name: str
-    """project name"""
-    path: str
-    """project filename"""
+class CopyParams(gws.CliParams):
+    src: str
+    """Source path or postgres address `postgres:<dbUid>/<schema>/<projectName>`"""
+    dst: str
+    """Source path or postgres address `postgres:<dbUid>/<schema>/<projectName>`"""
 
 
 class Object(gws.Node):
 
-    @gws.ext.command.cli('qgisDbread')
-    def db_read(self, p: DbreadParams):
-        """Copy a project from the db to a local file."""
+    @gws.ext.command.cli('qgisCopy')
+    def do_copy(self, p: CopyParams):
+        """Copy a qgis project."""
 
         root = gws.config.load()
-        src = project.Store(type=project.StoreType.postgres, schema=p.schema, name=p.name)
-        prj = project.from_store(root, src)
-        if p.out:
-            gws.u.write_file(p.out, prj.text)
-        else:
-            print(prj.text)
-
-    @gws.ext.command.cli('qgisDbwrite')
-    def db_write(self, p: DbwriteParams):
-        """Copy a project from a local file to the db."""
-
-        root = gws.config.load()
-        src = project.Store(type=project.StoreType.file, path=p.path)
-        prj = project.from_store(root, src)
-        dst = project.Store(type=project.StoreType.postgres, schema=p.schema, name=p.name)
-        prj.to_store(root, src)
+        src_prj = project.from_store(root, _addr_to_store(p.src))
+        src_prj.to_store(root, _addr_to_store(p.dst))
 
     @gws.ext.command.cli('qgisCaps')
-    def caps(self, p: CapsParams):
+    def do_caps(self, p: CapsParams):
         """Print the capabilities of a document in JSON format"""
 
-        xml = gws.u.read_file(p.path)
+        root = gws.config.load()
+        src_prj = project.from_store(root, _addr_to_store(p.src))
+        caps = src_prj.caps()
 
-        mod = gws.lib.importer.import_from_path(f'gws/plugin/qgis/caps.py')
-        res = mod.parse(xml)
-
-        js = gws.lib.jsonx.to_pretty_string(res, default=_caps_json)
+        js = gws.lib.jsonx.to_pretty_string(caps, default=_caps_json)
 
         if p.out:
             gws.u.write_file(p.out, js)
@@ -77,8 +53,26 @@ class Object(gws.Node):
             print(js)
 
 
+def _addr_to_store(addr):
+    m = re.match(r'^postgres:(.*?)/(.*?)/(.+?)$', addr)
+    if m:
+        return project.Store(
+            type=project.StoreType.postgres,
+            dbUid=m.group(1),
+            schema=m.group(2),
+            projectName=m.group(3)
+        )
+    m = re.match(r'^(/.+)$', addr)
+    if m:
+        return project.Store(
+            type=project.StoreType.file,
+            path=m.group(1),
+        )
+    raise ValueError('invalid path or postgres address')
+
+
 def _caps_json(x):
-    if isinstance(x, gws.gis.crs.Crs):
+    if isinstance(x, gws.Crs):
         return x.epsg
     if isinstance(x, gws.base.shape.Shape):
         return x.to_geojson()

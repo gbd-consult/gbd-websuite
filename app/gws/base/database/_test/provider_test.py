@@ -5,17 +5,7 @@ import gws.test.util as u
 
 @u.fixture(scope='module')
 def root():
-    u.pg.create('plain', {'id': 'int primary key', 'a': 'text', 'b': 'text', 'c': 'text'})
-    cfg = '''
-        models+ { 
-            uid "PLAIN" type "postgres" tableName "plain" 
-        }
-        models+ { 
-            uid "SERIAL_ID" type "postgres" tableName "serial_id"
-        }
-    '''
-
-    yield u.gws_root(cfg)
+    yield u.gws_root()
 
 
 ##

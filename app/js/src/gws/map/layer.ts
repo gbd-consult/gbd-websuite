@@ -32,6 +32,7 @@ export class Layer implements types.ILayer {
     minResolution = 0;
     maxResolution = 1e20;
     extent: ol.Extent;
+    zoomExtent: ol.Extent;
 
     opacity: number;
     computedOpacity: number;
@@ -96,6 +97,7 @@ export class Layer implements types.ILayer {
 
         this.resolutions = props.resolutions || this.map.resolutions;
         this.extent = props.extent || this.map.extent;
+        this.zoomExtent = props.zoomExtent || this.extent;
         this.opacity = props.opacity || 1;
 
         this.minResolution = Math.min(...this.resolutions);

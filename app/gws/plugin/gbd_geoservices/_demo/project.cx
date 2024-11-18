@@ -1,0 +1,30 @@
+uid "geoservices_search"
+
+title "GBD Geoservices"
+
+metadata.keywords [ "search" ]
+
+metadata.abstract """
+Full-text search with [GBD Geoservices](https://geoservices.gbd-consult.de)
+"""
+
+client.addElements+ { tag "Sidebar.Search" }
+
+
+actions+ { type "search" }
+
+finders+ {
+    type "gbd_geoservices"
+    apiKey "my_key"
+    spatialContext "map"
+}
+
+map {
+    center {demo_point_duesseldorf_3857}
+    extent [ 447705, 6478918, 1023665, 6813238 ]
+    zoom.initScale 1000000
+    zoom.maxScale  1000000
+    zoom.minScale  2000
+}
+
+{demo_osm_background}

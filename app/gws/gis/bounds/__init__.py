@@ -106,16 +106,21 @@ def transform(b: gws.Bounds, crs_to: gws.Crs) -> gws.Bounds:
         extent=b.crs.transform_extent(b.extent, crs_to))
 
 
-def buffer(b: gws.Bounds, buf: int) -> gws.Bounds:
+def wgs_extent(b: gws.Bounds) -> Optional[gws.Extent]:
+    ext = gws.gis.extent.transform(b.extent, b.crs, gws.gis.crs.WGS84)
+    return ext if gws.gis.extent.is_valid(ext) else None
+
+
+def buffer(b: gws.Bounds, buf_size: int) -> gws.Bounds:
     """Creates a bounds object with buffer to another bounds object.
 
     Args:
         b: A Bounds object.
-        buf: Buffer between b and the output. If buf is positive the returned bounds object will be bigger.
+        buf_size: Buffer between b and the output. If buf is positive the returned bounds object will be bigger.
 
     Returns:
         A bounds object.
     """
-    if buf == 0:
+    if buf_size == 0:
         return b
-    return gws.Bounds(crs=b.crs, extent=gws.gis.extent.buffer(b.extent, buf))
+    return gws.Bounds(crs=b.crs, extent=gws.gis.extent.buffer(b.extent, buf_size))

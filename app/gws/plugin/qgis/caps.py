@@ -1,16 +1,18 @@
 """QGIS project xml parser."""
 
+from typing import Optional
+
 import math
 import re
 
 import gws
+import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.crs
 import gws.gis.source
 import gws.lib.metadata
 import gws.lib.net
 import gws.lib.xmlx
-
 
 
 class PrintTemplateElement(gws.Data):
@@ -31,7 +33,9 @@ class PrintTemplate(gws.Data):
 class Caps(gws.Data):
     metadata: gws.Metadata
     printTemplates: list[PrintTemplate]
-    projectBounds: gws.Bounds
+    projectCrs: gws.Crs
+    projectBounds: Optional[gws.Bounds]
+    projectCanvasBounds: Optional[gws.Bounds]
     properties: dict
     sourceLayers: list[gws.SourceLayer]
     version: str
@@ -51,9 +55,24 @@ def parse_element(root_el: gws.XmlElement) -> Caps:
     caps.metadata = _project_metadata(root_el)
     caps.printTemplates = _print_templates(root_el)
     caps.visibilityPresets = _visibility_presets(root_el)
-    caps.projectBounds = _project_bounds(root_el)
 
-    layers_dct = _map_layers(root_el, caps.properties)
+    srid = root_el.textof('projectCrs/spatialrefsys/authid') or '4326'
+    caps.projectCrs = gws.gis.crs.get(srid)
+    if not caps.projectCrs:
+        raise gws.Error(f'invalid CRS in qgis project')
+
+    ext = _extent_from_tag(root_el.find('properties/WMSExtent'))
+    if ext:
+        caps.projectBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
+
+    ext = _extent_from_tag(root_el.find('properties/WMSExtent'))
+    if ext:
+        caps.projectBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
+    ext = _extent_from_tag(root_el.find('mapcanvas/extent'))
+    if ext:
+        caps.projectCanvasBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
+
+    layers_dct = _map_layers(root_el, caps)
     root_group = _layer_tree(root_el.find('layer-tree-group'), layers_dct)
     caps.sourceLayers = gws.gis.source.check_layers(root_group.layers)
 
@@ -71,85 +90,6 @@ def _project_metadata(root_el) -> gws.Metadata:
         _metadata(el, md)
 
     # @TODO supplementary metadata
-    return md
-
-
-def _project_bounds(root_el) -> gws.Bounds:
-    """Parse the project bounds."""
-
-    """
-        The project's extent/CRS information can be found in the following places:
-    
-        <qgis
-            <projectCrs>
-                <spatialrefsys ....
-            ...    
-            <mapcanvas ...
-                <extent>
-                    <xmin>...
-                    <ymin>...
-                    <xmax>...
-                    <ymax>...
-                </extent>
-                <destinationsrs>
-                    <spatialrefsys .... (appears to match projectCrs above)
-            ...
-            <properties>
-                <WMSExtent...
-                    <value>...</value>
-                    <value>...</value>
-                    <value>...</value>
-                    <value>...</value>
-                </WMSExtent>
-
-    """
-
-    srid = root_el.textof('projectCrs/spatialrefsys/authid') or '4326'
-    crs = gws.gis.crs.get(srid)
-
-    # NB prefer WMSExtent if defined
-
-    extent = _extent_from_tag(root_el.find('properties/WMSExtent'))
-    if not extent:
-        extent = _extent_from_tag(root_el.find('mapcanvas/extent'))
-    if not extent:
-        extent = crs.extent
-
-    return gws.Bounds(crs=crs, extent=extent)
-
-
-def _layer_metadata(layer_el) -> gws.Metadata:
-    # Layer metadata is either Layer->Properties->Metadata (stored in maplayer/resourceMetadata),
-    # or Layer->Properties->QGIS Server (stored directly under maplayer/abstract, maplayer/keywordList and so on.
-
-    md = gws.Metadata()
-
-    el = layer_el.find('resourceMetadata')
-    if el:
-        _metadata(el, md)
-
-    # fill in missing props from direct metadata
-
-    d = layer_el.textdict()
-
-    md.title = md.title or d.get('title') or d.get('shortname') or d.get('layername')
-    md.abstract = md.abstract or d.get('abstract')
-
-    if not md.attribution and d.get('attribution'):
-        md.attribution = gws.MetadataAttribution(title=d.get('attribution'))
-
-    if not md.keywords:
-        md.keywords = layer_el.textlist('keywordList/value')
-
-    if not md.metaLinks:
-        md.metaLinks = []
-        for e in layer_el.findall('metadataUrls/metadataUrl'):
-            md.metaLinks.append(gws.MetadataLink(
-                type=e.get('type'),
-                format=e.get('format'),
-                title=e.text,
-            ))
-
     return md
 
 
@@ -229,13 +169,6 @@ def _metadata(el: gws.XmlElement, md: gws.Metadata):
     for e in el.findall('license'):
         md.license = gws.MetadataLicense(name=e.text)
         break
-
-    e = el.find('extent/spatial')
-    if e:
-        extent = _extent_from_atts(e)
-        crs = gws.gis.crs.get(e.get('crs'))
-        if extent and crs:
-            md.bounds = gws.Bounds(extent=extent, crs=crs)
 
     e = el.find('extent/temporal')
     if e:
@@ -323,52 +256,34 @@ def _layout_element(item_el: gws.XmlElement):
 ##
 
 
-def _map_layers(root_el: gws.XmlElement, properties: dict) -> dict[str, gws.SourceLayer]:
-    no_wms_layers = set(properties.get('WMSRestrictedLayers', []))
-    use_layer_ids = properties.get('WMSUseLayerIDs', False)
+def _map_layers(root_el: gws.XmlElement, caps: Caps) -> dict[str, gws.SourceLayer]:
+    no_wms_layers = set(caps.properties.get('WMSRestrictedLayers', []))
+    use_layer_ids = caps.properties.get('WMSUseLayerIDs', False)
 
-    map_layers = {}
+    layers_dct = {}
 
     for el in root_el.findall('projectlayers/maplayer'):
-        sl = _map_layer(el)
+        sl = _map_layer(el, caps, use_layer_ids)
         if not sl:
             continue
-
-        title = sl.metadata.get('title')
-
         # no_wms_layers always contains titles, not ids (=names)
-        if title in no_wms_layers:
+        if sl.title in no_wms_layers:
             continue
+        layers_dct[sl.sourceId] = sl
 
-        uid = el.textof('id')
-        if use_layer_ids:
-            name = uid
-        else:
-            name = el.textof('shortname') or el.textof('layername')
-
-        sl.title = title
-        sl.name = name
-        sl.sourceId = uid
-
-        map_layers[uid] = sl
-
-    return map_layers
+    return layers_dct
 
 
-def _map_layer(layer_el: gws.XmlElement):
+def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws.SourceLayer:
     sl = gws.SourceLayer(
         supportedCrs=[],
     )
 
-    sl.metadata = _layer_metadata(layer_el)
+    sl.metadata = _map_layer_metadata(layer_el)
 
     crs = gws.gis.crs.get(layer_el.textof('srs/spatialrefsys/authid'))
     if crs:
         sl.supportedCrs.append(crs)
-
-    extent = _extent_from_tag(layer_el.find('wgs84extent'))
-    if extent:
-        sl.wgsExtent = extent
 
     if layer_el.get('hasScaleBasedVisibilityFlag') == '1':
         # in qgis, maxScale < minScale
@@ -377,14 +292,105 @@ def _map_layer(layer_el: gws.XmlElement):
         if z > a:
             sl.scaleRange = [a, z]
 
-    sl.dataSource = _layer_datasource(layer_el)
-
+    sl.dataSource = _map_layer_datasource(layer_el)
     sl.opacity = _parse_float(layer_el.textof('layerOpacity') or '1')
     sl.isQueryable = layer_el.textof('flags/Identifiable') == '1'
-
     sl.properties = parse_properties(layer_el.find('customproperties'))
 
+    uid = layer_el.textof('id')
+    if use_layer_ids:
+        layer_name = uid
+    else:
+        layer_name = layer_el.textof('shortname') or layer_el.textof('layername')
+
+    sl.title = sl.metadata.get('title')
+    sl.name = layer_name
+    sl.sourceId = uid
+
+    ext = _map_layer_wgs_extent(layer_el, caps.projectCrs)
+    if ext:
+        sl.wgsExtent = ext
+
     return sl
+
+
+def _map_layer_metadata(layer_el) -> gws.Metadata:
+    # Layer metadata is either Layer->Properties->Metadata (stored in maplayer/resourceMetadata),
+    # or Layer->Properties->QGIS Server (stored directly under maplayer/abstract, maplayer/keywordList and so on.
+
+    md = gws.Metadata()
+
+    el = layer_el.find('resourceMetadata')
+    if el:
+        _metadata(el, md)
+
+    # fill in missing props from direct metadata
+
+    d = layer_el.textdict()
+
+    md.title = md.title or d.get('title') or d.get('shortname') or d.get('layername')
+    md.abstract = md.abstract or d.get('abstract')
+
+    if not md.attribution and d.get('attribution'):
+        md.attribution = gws.MetadataAttribution(title=d.get('attribution'))
+
+    if not md.keywords:
+        md.keywords = layer_el.textlist('keywordList/value')
+
+    if not md.metaLinks:
+        md.metaLinks = []
+        for e in layer_el.findall('metadataUrls/metadataUrl'):
+            md.metaLinks.append(gws.MetadataLink(
+                type=e.get('type'),
+                format=e.get('format'),
+                title=e.text,
+            ))
+
+    return md
+
+
+def _map_layer_datasource(layer_el: gws.XmlElement) -> dict:
+    prov = layer_el.textof('provider')
+    ds_text = layer_el.textof('datasource')
+
+    if ds_text:
+        return parse_datasource((prov or '').lower(), ds_text)
+    if prov:
+        return {'provider': prov.lower()}
+    return {}
+
+
+def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
+    # extent explicitly defined in metadata (Layer Props -> Metadata -> Extent)
+    el = layer_el.find('resourceMetadata/extent/spatial')
+    if el:
+        ext = _extent_from_tag(el)
+        crs = gws.gis.crs.get(el.get('crs'))
+        if ext and crs:
+            ext = gws.gis.extent.transform(ext, crs, gws.gis.crs.WGS84)
+            if gws.gis.extent.is_valid_wgs(ext):
+                gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: spatial: {ext}")
+                return ext
+
+    # extent in <maplayer>/<wgs84extent>
+    el = layer_el.find('wgs84extent')
+    if el:
+        ext = _extent_from_tag(el)
+        if gws.gis.extent.is_valid_wgs(ext):
+            gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: wgs84extent: {ext}")
+            return ext
+
+    # extent in <maplayer>/<extent>, assume the project CRS
+    el = layer_el.find('extent')
+    if el:
+        ext = _extent_from_tag(el)
+        if ext:
+            ext = gws.gis.extent.transform(ext, project_crs, gws.gis.crs.WGS84)
+            if gws.gis.extent.is_valid_wgs(ext):
+                gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: extent: {ext}")
+                return ext
+
+    gws.log.warning(f"_map_layer_wgs_extent: {layer_el.textof('id')}: NOT FOUND")
 
 
 # layer trees:
@@ -424,17 +430,6 @@ def _layer_tree(el: gws.XmlElement, layers_dct):
             sl.isGroup = False
             sl.isImage = True
             return sl
-
-
-def _layer_datasource(layer_el: gws.XmlElement) -> dict:
-    prov = layer_el.textof('provider')
-    ds_text = layer_el.textof('datasource')
-
-    if ds_text:
-        return parse_datasource((prov or '').lower(), ds_text)
-    if prov:
-        return {'provider': prov.lower()}
-    return {}
 
 
 ##
@@ -734,27 +729,20 @@ def _parse_property_tag(el: gws.XmlElement):
 ##
 
 
-def _extent_from_atts(el):
+def _extent_from_tag(el: gws.XmlElement):
+
+    if not el:
+        return
+
     # <spatial dimensions="2" miny="0" maxz="0" maxx="0" crs="EPSG:25832" minx="0" minz="0" maxy="0"/>
+    if el.get('minx'):
+        return _extent_from_list([
+            el.get('minx'),
+            el.get('miny'),
+            el.get('maxx'),
+            el.get('maxy'),
+        ])
 
-    return gws.gis.extent.from_list([
-        el.get('minx'),
-        el.get('miny'),
-        el.get('maxx'),
-        el.get('maxy'),
-    ])
-
-
-def _extent_from_tag(el):
-    # <wgs84extent>
-    #     <xmin>1</xmin>
-    #     <ymin>2</ymin>
-    #     <xmax>3</xmax>
-    #     <ymax>4</ymax>
-    # </wgs84extent>
-    #
-    # or
-    #
     # <WMSExtent type="QStringList">
     #   <value>1</value>
     #   <value>2</value>
@@ -762,20 +750,51 @@ def _extent_from_tag(el):
     #   <value>4</value>
     # </WMSExtent>
     #
+    if el.get('type') == 'QStringList':
+        return _extent_from_list([
+            v.text for v in el.children()
+        ])
 
-    if not el:
-        return
-
-    if el.attr('type') == 'QStringList':
-        return gws.gis.extent.from_list([v.text for v in el.children()])
+    # <wgs84extent>
+    #     <xmin>1</xmin>
+    #     <ymin>2</ymin>
+    #     <xmax>3</xmax>
+    #     <ymax>4</ymax>
+    # </wgs84extent>
 
     if el.find('xmin'):
-        return gws.gis.extent.from_list([
+        return _extent_from_list([
             el.textof('xmin'),
             el.textof('ymin'),
             el.textof('xmax'),
             el.textof('ymax'),
         ])
+
+
+def _extent_from_list(ls):
+    if len(ls) != 4:
+        return
+    try:
+        e = [float(p) for p in ls]
+    except ValueError:
+        return
+    if not all(math.isfinite(p) for p in e):
+        return
+    e = [
+        min(e[0], e[2]),
+        min(e[1], e[3]),
+        max(e[0], e[2]),
+        max(e[1], e[3]),
+    ]
+    # for single-point extents, add 0.0001 (~10 m)
+    c = 0.0001
+    if e[0] == e[2]:
+        e[0] -= c
+        e[2] += c
+    if e[1] == e[3]:
+        e[1] -= c
+        e[3] += c
+    return gws.Extent(e)
 
 
 def _parse_msize(s):

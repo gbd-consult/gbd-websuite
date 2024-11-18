@@ -366,11 +366,9 @@ class SearchForm extends gws.View<ViewProps> {
             gemarkungListValue = _PREFIX_GEMEINDE + ':' + form.gemeindeCode;
 
         let strasseSearchMode = {
-            anySubstring: true, //setup.ui.strasseSearchMode === gws.api.plugin.alkis.UiStrasseSearchMode.any,
-            withExtra: true,
-            caseSensitive: false,
+            opts: cc.setup.strasseSearchOptions,
+            extraText: 'separate',
         }
-
 
         return <Form>
             {nameShowMode && <Row>

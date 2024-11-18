@@ -189,7 +189,7 @@ def _contact_metadata(el: gws.XmlElement, md: gws.Metadata):
 
 ##
 
-def wgs_bounds(layer_el: gws.XmlElement) -> Optional[gws.Bounds]:
+def wgs_extent(layer_el: gws.XmlElement) -> Optional[gws.Extent]:
     """Read WGS bounding box from a Layer/FeatureType element.
 
     Extracts coordinates from ``EX_GeographicBoundingBox`` (WMS), ``WGS84BoundingBox`` (OWS)
@@ -198,16 +198,11 @@ def wgs_bounds(layer_el: gws.XmlElement) -> Optional[gws.Bounds]:
 
     Args:
         layer_el: 'Layer' or 'FeatureType' element.
-
-    Returns:
-        WGS ``Bounds`` object.
     """
 
     el = layer_el.findfirst('EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
     if el:
-        return gws.Bounds(
-            crs=gws.gis.crs.WGS84,
-            extent=gws.gis.extent.from_list(_parse_bbox(el)))
+        return gws.gis.extent.from_list(_parse_bbox(el))
 
 
 def supported_crs(layer_el: gws.XmlElement, extra_crs_ids: list[str] = None) -> list[gws.Crs]:
