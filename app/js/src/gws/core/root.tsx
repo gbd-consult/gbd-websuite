@@ -18,6 +18,7 @@ class RootView extends View<RootViewProps> {
 
 interface AppViewProps extends ViewProps {
     controller: RootController;
+    appExtraViewState: string;
     whenMounted: () => void;
 }
 
@@ -32,10 +33,23 @@ class AppView extends View<AppViewProps> {
             <React.Fragment key={cc.uid + name}>{cc[name]}</React.Fragment>
         );
 
+        let cls = '';
+        if (this.props.appExtraViewState === 'max') {
+            cls = 'withExtraMax'
+        }
+        if (this.props.appExtraViewState === 'min') {
+            cls = 'withExtraMin'
+        }
+
         return <div>
-            <div className="gwsMap"/>
-            <div className="gwsMapOverlay">{views('mapOverlayView')}</div>
-            {views('defaultView')}
+            <div className={'gwsMapArea ' + cls}>
+                <div className="gwsMap"/>
+                <div className="gwsMapOverlay">{views('mapOverlayView')}</div>
+                {views('defaultView')}
+            </div>
+            <div className={'gwsExtraArea ' + cls}>
+                {views('extraView')}
+            </div>
             <div className="gwsAppOverlay">{views('appOverlayView')}</div>
         </div>
     }
@@ -46,7 +60,7 @@ export class RootController extends Controller {
     appClasses = [];
 
     get appView() {
-        return this.createElement(this.connect(AppView), {
+        return this.createElement(this.connect(AppView, ['appExtraViewState']), {
             children: this.children,
             whenMounted: () => this.app.mounted()
         });
@@ -63,6 +77,16 @@ export class RootController extends Controller {
         this.app.whenChanged('altbarVisible', v => this.setClass(v, 'withAltbar'));
         this.app.whenChanged('printerState', v => this.setClass(v, 'withPrintPreview'));
         this.app.whenChanged('appActiveTool', v => this.setClass(v !== 'Tool.Default', 'withToolbox'));
+
+        this.app.whenChanged('appExtraViewState', v => {
+            let node = this.app.domNode.querySelector('.gwsMap');
+            this.app.map['setTargetDomNode'](node);
+
+
+            }
+
+
+        );
     }
 
     protected setClass(yes, cls) {
@@ -71,7 +95,6 @@ export class RootController extends Controller {
             this.appClasses.push(cls);
         this.app.domNode.className = this.appClasses.join(' ');
     }
-
 
 
 }

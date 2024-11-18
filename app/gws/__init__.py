@@ -2198,6 +2198,7 @@ class FeatureRecord(Data):
     meta: dict
     uid: Optional[str]
     shape: Optional['Shape']
+    ewkt: str
 
 
 class FeatureProps(Props):

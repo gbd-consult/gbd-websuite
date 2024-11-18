@@ -64,8 +64,8 @@ Examples:
 
 
 class Base:
-    ubuntu_name = 'jammy'
-    ubuntu_version = '22.04'
+    ubuntu_name = 'noble'
+    ubuntu_version = '24.04'
 
     arch = 'amd64'
 
@@ -99,8 +99,8 @@ class Base:
         self.exclude_file = f'{self.gws_dir}/.package_exclude'
 
         # see https://github.com/wkhtmltopdf/packaging/releases
-        self.wkhtmltopdf_package = f'wkhtmltox_0.12.6.1-2.{self.ubuntu_name}_{self.arch}.deb'
-        self.wkhtmltopdf_url = f'https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/{self.wkhtmltopdf_package}'
+        # self.wkhtmltopdf_package = f'wkhtmltox_0.12.6.1-2.{self.ubuntu_name}_{self.arch}.deb'
+        # self.wkhtmltopdf_url = f'https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/{self.wkhtmltopdf_package}'
 
     def lines(self, text):
         ls = []
@@ -156,8 +156,8 @@ class Builder(Base):
 
         os.chdir(self.context_dir)
 
-        if not os.path.isfile(self.wkhtmltopdf_package):
-            cli.run(f"curl -sL '{self.wkhtmltopdf_url}' -o {self.wkhtmltopdf_package}")
+        # if not os.path.isfile(self.wkhtmltopdf_package):
+        #     cli.run(f"curl -sL '{self.wkhtmltopdf_url}' -o {self.wkhtmltopdf_package}")
 
         cli.run(f'bash {self.gws_dir}/make.sh package . && mv app {self.skip_cache}app')
         if self.datadir:
@@ -196,14 +196,14 @@ class Builder(Base):
             apt-get -y purge --auto-remove
         '''))
 
-        __(f'RUN pip3 install --disable-pip-version-check --no-cache-dir --no-compile {pips}')
+        __(f'RUN pip3 install --break-system-packages --disable-pip-version-check --no-cache-dir --no-compile {pips}')
 
         # this lib causes problems, it should be optional in pendulum
         # see https://github.com/sdispater/pendulum/issues?q=time-machine
-        __(f'RUN pip3 uninstall -y time_machine')
+        __(f'RUN pip3 uninstall --break-system-packages -y time_machine')
 
-        __(f'COPY {self.wkhtmltopdf_package} /{self.wkhtmltopdf_package}')
-        __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /{self.wkhtmltopdf_package}')
+        # __(f'COPY {self.wkhtmltopdf_package} /{self.wkhtmltopdf_package}')
+        # __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /{self.wkhtmltopdf_package}')
 
         __('RUN ' + self.commands(f'''
             rm -f /usr/bin/python

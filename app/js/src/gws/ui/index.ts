@@ -8,7 +8,7 @@ export {Select, Suggest, List, ListItem} from './select';
 export {ColorPicker} from './color';
 export {Row, Cell, Form, Divider, Layout, Group} from './layout';
 export {Progress, Loader} from './progress';
-export {Table, TableCell} from './table';
+export {Table, TableCell, TableCellEx} from './table';
 export {Toggle} from './toggle';
 export {Dialog, Alert, Confirm, Panel, Popup} from './dialog';
 export {Error, Info, Title, Text, Link, TextBlock, HtmlBlock} from './text';

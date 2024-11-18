@@ -290,7 +290,10 @@ export class MapManager implements types.IMapManager {
 
     setTargetDomNode(node) {
         this.oMap.setTarget(node);
-        this.changed();
+        setTimeout(() => {
+            this.oMap.updateSize();
+            this.changed();
+        }, 1);
     }
 
     //

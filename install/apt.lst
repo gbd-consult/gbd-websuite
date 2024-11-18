@@ -8,9 +8,9 @@ rsyslog
 
 # generic
 
-libgeos-c1v5
-libproj22
-libgdal30
+libgeos-c1t64
+libproj25
+libgdal34t64
 python3-gdal
 gdal-bin
 
@@ -36,6 +36,13 @@ tdsodbc
 
 graphviz
 
-# wkhtmltox requirement
+# wkhtmltopdf
 
 xfonts-75dpi
+wkhtmltopdf
+
+# mapserver
+
+cgi-mapserver
+mapserver-bin
+python3-mapscript

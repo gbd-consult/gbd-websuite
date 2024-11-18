@@ -11,6 +11,34 @@ module.exports = v => ({
         fontSize: v.NORMAL_FONT_SIZE,
     },
 
+    '.gwsMapArea': {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: '50%',
+        '&.withExtraMax': {
+            display: 'none',
+        },
+        '&.withExtraMin': {
+            bottom: v.UNIT * 10,
+        },
+    },
+    '.gwsExtraArea': {
+        position: 'absolute',
+        left: 0,
+        top: '50%',
+        right: 0,
+        bottom: 0,
+        '&.withExtraMax': {
+            top: 0,
+        },
+        '&.withExtraMin': {
+            top: `calc(100% - ${v.UNIT * 10}px)`,
+        },
+    },
+
+
 
     '*': {
         boxSizing: 'border-box',
@@ -34,6 +62,7 @@ module.exports = v => ({
         backgroundColor: v.COLOR.mapBackground,
         backgroundImage: v.IMAGE(__dirname + '/map-background.png'),
     },
+
 
     '.appFatalError': {
         position: 'absolute',

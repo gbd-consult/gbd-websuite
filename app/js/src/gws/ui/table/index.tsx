@@ -22,6 +22,11 @@ interface TableCellProps {
     className?: string;
 }
 
+interface TableCellExProps {
+    align?: 'left' | 'right' | 'center',
+    className?: string;
+}
+
 
 export class TableCell extends base.Pure<TableCellProps> {
     render() {
@@ -31,6 +36,17 @@ export class TableCell extends base.Pure<TableCellProps> {
             this.props.align === 'right' && 'uiAlignRight',
         )
         return <div className={cls} onClick={this.props.whenTouched}>{this.props.content}</div>;
+    }
+}
+
+export class TableCellEx extends base.Pure<TableCellExProps> {
+    render() {
+        let cls = util.className(
+            'uiTableCell', this.props.className,
+            this.props.align === 'center' && 'uiAlignCenter',
+            this.props.align === 'right' && 'uiAlignRight',
+        )
+        return <div className={cls}>{this.props.children}</div>;
     }
 }
 
