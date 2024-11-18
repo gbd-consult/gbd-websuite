@@ -364,7 +364,7 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     # extent explicitly defined in metadata (Layer Props -> Metadata -> Extent)
     el = layer_el.find('resourceMetadata/extent/spatial')
     if el:
-        ext = _extent_from_atts(el)
+        ext = _extent_from_tag(el)
         crs = gws.gis.crs.get(el.get('crs'))
         if ext and crs:
             ext = gws.gis.extent.transform(ext, crs, gws.gis.crs.WGS84)
@@ -384,10 +384,11 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     el = layer_el.find('extent')
     if el:
         ext = _extent_from_tag(el)
-        ext = gws.gis.extent.transform(ext, project_crs, gws.gis.crs.WGS84)
-        if gws.gis.extent.is_valid_wgs(ext):
-            gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: extent: {ext}")
-            return ext
+        if ext:
+            ext = gws.gis.extent.transform(ext, project_crs, gws.gis.crs.WGS84)
+            if gws.gis.extent.is_valid_wgs(ext):
+                gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: extent: {ext}")
+                return ext
 
     gws.log.warning(f"_map_layer_wgs_extent: {layer_el.textof('id')}: NOT FOUND")
 
@@ -728,30 +729,20 @@ def _parse_property_tag(el: gws.XmlElement):
 ##
 
 
-def _extent_from_atts(el):
-    # <spatial dimensions="2" miny="0" maxz="0" maxx="0" crs="EPSG:25832" minx="0" minz="0" maxy="0"/>
+def _extent_from_tag(el: gws.XmlElement):
 
     if not el:
         return
 
-    return gws.gis.extent.from_list([
-        el.get('minx'),
-        el.get('miny'),
-        el.get('maxx'),
-        el.get('maxy'),
-    ])
+    # <spatial dimensions="2" miny="0" maxz="0" maxx="0" crs="EPSG:25832" minx="0" minz="0" maxy="0"/>
+    if el.get('minx'):
+        return _extent_from_list([
+            el.get('minx'),
+            el.get('miny'),
+            el.get('maxx'),
+            el.get('maxy'),
+        ])
 
-
-def _extent_from_tag(el):
-    # <wgs84extent>
-    #     <xmin>1</xmin>
-    #     <ymin>2</ymin>
-    #     <xmax>3</xmax>
-    #     <ymax>4</ymax>
-    # </wgs84extent>
-    #
-    # or
-    #
     # <WMSExtent type="QStringList">
     #   <value>1</value>
     #   <value>2</value>
@@ -759,20 +750,51 @@ def _extent_from_tag(el):
     #   <value>4</value>
     # </WMSExtent>
     #
+    if el.get('type') == 'QStringList':
+        return _extent_from_list([
+            v.text for v in el.children()
+        ])
 
-    if not el:
-        return
-
-    if el.attr('type') == 'QStringList':
-        return gws.gis.extent.from_list([v.text for v in el.children()])
+    # <wgs84extent>
+    #     <xmin>1</xmin>
+    #     <ymin>2</ymin>
+    #     <xmax>3</xmax>
+    #     <ymax>4</ymax>
+    # </wgs84extent>
 
     if el.find('xmin'):
-        return gws.gis.extent.from_list([
+        return _extent_from_list([
             el.textof('xmin'),
             el.textof('ymin'),
             el.textof('xmax'),
             el.textof('ymax'),
         ])
+
+
+def _extent_from_list(ls):
+    if len(ls) != 4:
+        return
+    try:
+        e = [float(p) for p in ls]
+    except ValueError:
+        return
+    if not all(math.isfinite(p) for p in e):
+        return
+    e = [
+        min(e[0], e[2]),
+        min(e[1], e[3]),
+        max(e[0], e[2]),
+        max(e[1], e[3]),
+    ]
+    # for single-point extents, add 0.0001 (~10 m)
+    c = 0.0001
+    if e[0] == e[2]:
+        e[0] -= c
+        e[2] += c
+    if e[1] == e[3]:
+        e[1] -= c
+        e[3] += c
+    return gws.Extent(e)
 
 
 def _parse_msize(s):
