@@ -16,6 +16,20 @@ module.exports = v => ({
         left: 0,
         top: 0,
         right: 0,
+        bottom: 0,
+    },
+    '.gwsExtraArea': {
+        display: 'none',
+    },
+
+    // two-pane layout mode
+
+    /*
+    '.gwsMapArea': {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        right: 0,
         bottom: '50%',
         '&.withExtraMax': {
             display: 'none',
@@ -37,8 +51,7 @@ module.exports = v => ({
             top: `calc(100% - ${v.UNIT * 10}px)`,
         },
     },
-
-
+     */
 
     '*': {
         boxSizing: 'border-box',
