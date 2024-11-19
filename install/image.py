@@ -98,10 +98,6 @@ class Base:
 
         self.exclude_file = f'{self.gws_dir}/.package_exclude'
 
-        # see https://github.com/wkhtmltopdf/packaging/releases
-        # self.wkhtmltopdf_package = f'wkhtmltox_0.12.6.1-2.{self.ubuntu_name}_{self.arch}.deb'
-        # self.wkhtmltopdf_url = f'https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/{self.wkhtmltopdf_package}'
-
     def lines(self, text):
         ls = []
         for s in text.strip().splitlines():
@@ -156,10 +152,10 @@ class Builder(Base):
 
         os.chdir(self.context_dir)
 
-        # if not os.path.isfile(self.wkhtmltopdf_package):
-        #     cli.run(f"curl -sL '{self.wkhtmltopdf_url}' -o {self.wkhtmltopdf_package}")
+        cli.run(f'bash {self.gws_dir}/make.sh package .')
+        cli.run(f'git --git-dir={self.gws_dir}/.git rev-parse  HEAD > app/REV')
+        cli.run(f'mv app {self.skip_cache}app')
 
-        cli.run(f'bash {self.gws_dir}/make.sh package . && mv app {self.skip_cache}app')
         if self.datadir:
             cli.run(f'mkdir {self.skip_cache}data')
             cli.run(f'rsync -a --exclude-from {self.exclude_file} {self.datadir}/* {self.skip_cache}data')
@@ -189,21 +185,21 @@ class Builder(Base):
             apt -y update
         '''))
 
-        __(f'RUN apt -y install {apts}')
-
         __('RUN ' + self.commands(f'''
+            apt -y install {apts}        
             apt-get -y clean
             apt-get -y purge --auto-remove
         '''))
 
-        __(f'RUN pip3 install --break-system-packages --disable-pip-version-check --no-cache-dir --no-compile {pips}')
+        __('ENV VIRTUAL_ENV=/opt/venv')
+        __('RUN python3 -m venv $VIRTUAL_ENV')
+        __('ENV PATH="$VIRTUAL_ENV/bin:$PATH"')
+
+        __(f'RUN pip3 install --disable-pip-version-check --no-cache-dir --no-compile {pips}')
 
         # this lib causes problems, it should be optional in pendulum
         # see https://github.com/sdispater/pendulum/issues?q=time-machine
-        __(f'RUN pip3 uninstall --break-system-packages -y time_machine')
-
-        # __(f'COPY {self.wkhtmltopdf_package} /{self.wkhtmltopdf_package}')
-        # __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /{self.wkhtmltopdf_package}')
+        __(f'RUN pip3 uninstall -y time_machine')
 
         __('RUN ' + self.commands(f'''
             rm -f /usr/bin/python
@@ -363,7 +359,7 @@ def main(args):
         return Builder(cmd, args).main()
     if cmd in {'scan', 'sbom'}:
         return Scanner(cmd, args).main()
-    raise ValueError(f'invalid command {cmd!r}')
+    cli.fatal(f'invalid command {cmd!r}')
 
 
 if __name__ == '__main__':
