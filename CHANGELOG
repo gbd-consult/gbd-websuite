@@ -1,3 +1,8 @@
+## Version 8.1.19
+
+- improved error reporting for stale authorization sessions
+- correctly load owner data in ALKIS
+
 ## Version 8.1.18
 
 - support for single-point qgis layers
