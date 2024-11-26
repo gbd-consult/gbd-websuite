@@ -4,6 +4,8 @@ import gws
 import gws.base.auth
 import gws.base.web.wsgi
 import gws.lib.net
+import gws.lib.jsonx
+import gws.base.auth.user as user_api
 
 
 class AuthMethod1(gws.base.auth.method.Object):
@@ -41,6 +43,11 @@ class AuthProvider1(gws.base.auth.provider.Object):
         for ud in _USER_DATA.values():
             if ud['localUid'] == local_uid:
                 return gws.base.auth.user.from_record(self, ud)
+
+    def unserialize_user(self, data):
+        d = gws.lib.jsonx.from_string(data)
+        _, local_uid = gws.u.split_uid(d['uid'])
+        return self.get_user(local_uid)
 
 
 class AuthMfaAdapter1(gws.base.auth.mfa.Object):
