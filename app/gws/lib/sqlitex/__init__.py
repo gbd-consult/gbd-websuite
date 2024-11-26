@@ -67,7 +67,7 @@ class Object:
             # @TODO using strings for error checking, is there a better way?
 
             if 'no such table' in str(sa_exc) and self.initDdl:
-                gws.log.warning(f'sqlitex: error={sa_exc}, running init...')
+                gws.log.warning(f'sqlitex: {self.dbPath}: error={sa_exc}, running init...')
                 try:
                     with self._engine().connect() as conn:
                         conn.execute(sa.text(self.initDdl))
@@ -77,17 +77,17 @@ class Object:
                     sa_exc = exc
 
             if 'database is locked' in str(sa_exc):
-                gws.log.warning(f'sqlitex: locked, waiting...')
+                gws.log.warning(f'sqlitex: {self.dbPath}: locked, waiting...')
                 gws.u.sleep(self._SLEEP_TIME)
                 continue
 
             err_cnt += 1
             if err_cnt < self._MAX_ERRORS:
-                gws.log.warning(f'sqlitex: error={sa_exc}, waiting...')
+                gws.log.warning(f'sqlitex: {self.dbPath}: error={sa_exc}, waiting...')
                 gws.u.sleep(self._SLEEP_TIME)
                 continue
 
-            raise gws.Error('sqlitex error') from sa_exc
+            raise gws.Error(f'sqlitex: {self.dbPath}: fatal error') from sa_exc
 
     def _engine(self):
         if getattr(self, 'saEngine', None) is None:

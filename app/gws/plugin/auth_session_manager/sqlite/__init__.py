@@ -17,7 +17,6 @@ class Config(gws.base.auth.session_manager.Config):
     """session storage path"""
 
 
-_DEFAULT_DB_PATH = gws.c.MISC_DIR + '/' + 'sessions81.sqlite'
 _TABLE = 'sessions81'
 
 _INIT_DDL = f'''
@@ -37,7 +36,7 @@ class Object(gws.base.auth.session_manager.Object):
     dbPath: str
 
     def configure(self):
-        self.dbPath = self.cfg('path', default=_DEFAULT_DB_PATH)
+        self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/sessions81.sqlite')
 
     ##
 
