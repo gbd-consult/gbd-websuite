@@ -53,18 +53,32 @@ class Object(gws.AuthManager):
     ##
 
     def enter_middleware(self, req):
-        req.set_session(self.guestSession)
+        sess = self._try_open_session(req) or self.guestSession
+        req.set_session(sess)
+        gws.log.debug(f'session opened: user={req.session.user.uid!r} roles={req.session.user.roles}')
+
+    def _try_open_session(self, req):
         for meth in self.methods:
             if meth.secure and not req.isSecure:
-                gws.log.warning(f'insecure_context: ignore {meth}')
+                gws.log.warning(f'open_session: {meth=}: insecure_context, ignore')
                 continue
-            gws.log.debug(f'trying method {meth}')
+
             sess = meth.open_session(req)
-            if sess:
-                gws.log.debug(f'ok method {meth}')
-                req.set_session(sess)
-                break
-        gws.log.debug(f'session opened: user={req.session.user.uid!r} roles={req.session.user.roles}')
+            if not sess:
+                continue
+
+            if not sess.user:
+                gws.log.warning(f'open_session: {meth=}: {sess.uid=} user not found')
+                self.sessionMgr.delete(sess)
+                return
+
+            if not sess.method or sess.method.uid != meth.uid:
+                gws.log.warning(f'open_session: {meth=}: {sess.uid=} wrong method {sess.method=}')
+                self.sessionMgr.delete(sess)
+                return
+
+            gws.log.debug(f'open_session: {meth=}: ok')
+            return sess
 
     def exit_middleware(self, req, res):
         sess = req.session
@@ -89,17 +103,22 @@ class Object(gws.AuthManager):
     def get_user(self, user_uid):
         provider_uid, local_uid = gws.u.split_uid(user_uid)
         prov = self.get_provider(provider_uid)
-        if prov:
-            return prov.get_user(local_uid)
+        return prov.get_user(local_uid) if prov else None
 
-    def get_provider(self, uid=None):
-        return cast(gws.AuthProvider, self.root.get(uid))
+    def get_provider(self, uid):
+        for obj in self.providers:
+            if obj.uid == uid:
+                return obj
 
     def get_method(self, uid=None, ext_type=None):
-        return cast(gws.AuthMethod, self.root.get(uid))
+        for obj in self.methods:
+            if obj.uid == uid:
+                return obj
 
     def get_mf_adapter(self, uid=None, ext_type=None):
-        return cast(gws.AuthMultiFactorAdapter, self.root.get(uid))
+        for obj in self.mfAdapters:
+            if obj.uid == uid:
+                return obj
 
     def serialize_user(self, user):
         return gws.lib.jsonx.to_string([user.authProvider.uid, user.authProvider.serialize_user(user)])

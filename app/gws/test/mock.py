@@ -27,6 +27,10 @@ def add_user(name, password='', roles=None, **kwargs):
     }
 
 
+def delete_user(name):
+    _USER_DATA.pop(name, None)
+
+
 class AuthProvider1(gws.base.auth.provider.Object):
     def authenticate(self, method, credentials):
         for ud in _USER_DATA.values():
