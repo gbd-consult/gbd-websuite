@@ -757,6 +757,11 @@ class Object(gws.base.action.Object):
             self._check_buchung_access(req, p.eigentuemerControlInput)
             options.withBuchung = True
 
+        # "eigentuemer" implies "buchung"
+        if want_eigentuemer and not want_buchung:
+            options.withBuchung = True
+            options.displayThemes.append(dt.DisplayTheme.buchung)
+
         query.options = options
         return query
 
