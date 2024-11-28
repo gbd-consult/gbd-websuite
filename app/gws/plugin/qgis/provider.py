@@ -237,6 +237,7 @@ class Object(gws.OwsProvider):
             'FEATURE_COUNT': search.limit or 100,
             'INFO_FORMAT': 'text/xml',
             'REQUEST': gws.OwsVerb.GetFeatureInfo,
+            'WITH_GEOMETRY': 'true',
         }
 
         if search.extraParams:
