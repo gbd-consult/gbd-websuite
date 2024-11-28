@@ -1,3 +1,7 @@
+## Version 8.1.20
+
+- geometry support for qgis-based search
+
 ## Version 8.1.19
 
 - improved error reporting for stale authorization sessions
