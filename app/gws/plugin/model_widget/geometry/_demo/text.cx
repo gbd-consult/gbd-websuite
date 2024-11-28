@@ -1,10 +1,16 @@
 uid "geometry_text"
 
-title "Geometry widget with Text editor"
+title "Geometrien mit Texteditor erfassen und bearbeiten"
 
 metadata.keywords [ "edit" "geometry" ]
 
 metadata.abstract """
+Dieses Beispiel zeigt, wie in der GBD WebSuite Geometrien mit einem Texteditor erfasst und bearbeitet werden können.
+Die Geometrien werden dabei direkt in der Datenbank gespeichert.
+Für den Texteditor kein ein Widget an zwei Stellen eingesetzt werden. Für den Layer "Districts" kann die Geometrie eines Objektes nach dem Zeichnen über das "Geometrie als Text bearbeiten" Widget bearbeitet werden.
+Für den Layer "POI" kann man ein neues Objekt auch direkt per Texteditor erstellen. Dafür kann das "Geometrie als Text erfassen" Widget am unteren Rand der Sidebar genutzt werden.
+
+
 Geometry widget with the text editor enabled (`withText:true`).
 """
 
