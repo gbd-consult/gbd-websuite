@@ -67,13 +67,6 @@ class OwsCapabilities(Data):
     version: str
 
 
-class OwsImageFormat(Data):
-    mimeTypes: list[str]
-    """Mime types for this format."""
-    options: dict
-    """Image options."""
-
-
 class OwsService(Node):
     """OWS Service."""
 
@@ -110,7 +103,7 @@ class OwsService(Node):
     """Supported operations."""
     templates: list['Template']
     """Service templates."""
-    imageFormats: list[OwsImageFormat]
+    imageFormats: list[ImageFormat]
     """Supported image formats."""
     updateSequence: str
     """Service update sequence."""

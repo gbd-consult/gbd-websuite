@@ -11,6 +11,7 @@ import gws.gis.extent
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.metadata
+import gws.lib.mime
 import gws.lib.xmlx
 
 from . import ows
@@ -91,7 +92,7 @@ class Config(gws.ConfigWithAccess):
     """Search providers."""
     grid: Optional[GridConfig]
     """Client grid."""
-    imageFormat: gws.ImageFormat = gws.ImageFormat.png8
+    imageFormat: Optional[gws.ImageFormatConfig]
     """Image format."""
     legend: Optional[gws.ext.config.legend]
     """Legend configuration."""
@@ -141,6 +142,8 @@ class Props(gws.Props):
     url: str = ''
 
 
+_DEFAULT_IMAGE_FORMAT = gws.ImageFormatConfig(mimeTypes=['image/png'], options={'mode': 'P'})
+
 class Object(gws.Layer):
     parent: gws.Layer
 
@@ -165,9 +168,11 @@ class Object(gws.Layer):
         self.cssSelector = self.cfg('cssSelector')
         self.displayMode = self.cfg('display')
         self.loadingStrategy = self.cfg('loadingStrategy')
-        self.imageFormat = self.cfg('imageFormat')
         self.opacity = self.cfg('opacity')
         self.title = self.cfg('title')
+
+        p = self.cfg('imageFormat') or _DEFAULT_IMAGE_FORMAT
+        self.imageFormat = gws.ImageFormat(mimeTypes=p.mimeTypes, options=p.options or {})
 
         self.parentBounds = self.cfg('_parentBounds')
         self.parentResolutions = self.cfg('_parentResolutions')
@@ -340,16 +345,18 @@ class Object(gws.Layer):
             ls.extend(la.descendants())
         return ls
 
-    _url_path_suffix = '/gws.png'
 
     def url_path(self, kind):
+        ext = gws.lib.mime.extension_for(self.imageFormat.mimeTypes[0])
+        url_path_suffix = '/gws.' + ext
+
         # layer urls, handled by the map action (base/map/action.py)
         if kind == 'box':
-            return gws.u.action_url_path('mapGetBox', layerUid=self.uid) + self._url_path_suffix
+            return gws.u.action_url_path('mapGetBox', layerUid=self.uid) + url_path_suffix
         if kind == 'tile':
-            return gws.u.action_url_path('mapGetXYZ', layerUid=self.uid) + '/z/{z}/x/{x}/y/{y}' + self._url_path_suffix
+            return gws.u.action_url_path('mapGetXYZ', layerUid=self.uid) + '/z/{z}/x/{x}/y/{y}' + url_path_suffix
         if kind == 'legend':
-            return gws.u.action_url_path('mapGetLegend', layerUid=self.uid) + self._url_path_suffix
+            return gws.u.action_url_path('mapGetLegend', layerUid=self.uid) + url_path_suffix
         if kind == 'features':
             return gws.u.action_url_path('mapGetFeatures', layerUid=self.uid)
 

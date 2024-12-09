@@ -986,13 +986,22 @@ def props_of(obj: Object, user: 'User', *context) -> Optional['Props']:
 # /lib/image/types.pyinc
 
 
-class ImageFormat(Enum):
+class ImageFormatConfig(Config):
+    """Image format configuration. (added in 8.1)"""
+
+    mimeTypes: list[str]
+    """Mime types for this format."""
+    options: Optional[dict]
+    """Image options."""
+
+
+class ImageFormat(Data):
     """Image format"""
 
-    png8 = 'png8'
-    """png 8-bit"""
-    png24 = 'png24'
-    """png 24-bit"""
+    mimeTypes: list[str]
+    """Mime types for this format."""
+    options: dict
+    """Image options."""
 
 
 class Image:
@@ -2970,7 +2979,7 @@ class Layer(Node):
     clientOptions: LayerClientOptions
     displayMode: LayerDisplayMode
     loadingStrategy: FeatureLoadingStrategy
-    imageFormat: str
+    imageFormat: ImageFormat
     opacity: float
     resolutions: list[float]
     title: str
@@ -3482,13 +3491,6 @@ class OwsCapabilities(Data):
     version: str
 
 
-class OwsImageFormat(Data):
-    mimeTypes: list[str]
-    """Mime types for this format."""
-    options: dict
-    """Image options."""
-
-
 class OwsService(Node):
     """OWS Service."""
 
@@ -3525,7 +3527,7 @@ class OwsService(Node):
     """Supported operations."""
     templates: list['Template']
     """Service templates."""
-    imageFormats: list[OwsImageFormat]
+    imageFormats: list[ImageFormat]
     """Supported image formats."""
     updateSequence: str
     """Service update sequence."""

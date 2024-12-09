@@ -1,16 +1,14 @@
 """Wrapper for PIL objects"""
 
-from typing import Optional, Literal, cast
-
 import base64
 import io
 import re
+from typing import Optional, cast
 
 import PIL.Image
 import PIL.ImageDraw
 import PIL.ImageFont
 import numpy as np
-
 import qrcode
 
 import gws
@@ -180,12 +178,12 @@ class Image(gws.Image):
         return self.img.size
 
     def resize(self, size, **kwargs):
-        kwargs.setdefault('resample', PIL.Image.BICUBIC)
+        kwargs.setdefault('resample', PIL.Image.Resampling.BICUBIC)
         self.img = self.img.resize(_int_size(size), **kwargs)
         return self
 
     def rotate(self, angle, **kwargs):
-        kwargs.setdefault('resample', PIL.Image.BICUBIC)
+        kwargs.setdefault('resample', PIL.Image.Resampling.BICUBIC)
         self.img = self.img.rotate(angle, **kwargs)
         return self
 
@@ -201,7 +199,7 @@ class Image(gws.Image):
         oth = cast('Image', other).img.convert('RGBA')
 
         if oth.size != self.img.size:
-            oth = oth.resize(size=self.img.size, resample=PIL.Image.BICUBIC)
+            oth = oth.resize(size=self.img.size, resample=PIL.Image.Resampling.BICUBIC)
 
         if opacity < 1:
             alpha = oth.getchannel('A').point(lambda x: int(x * opacity))
@@ -241,7 +239,7 @@ class Image(gws.Image):
 
         mode = opts.pop('mode', '')
         if mode and self.img.mode != mode:
-            img = img.convert(mode, palette=PIL.Image.ADAPTIVE)
+            img = img.convert(mode, palette=PIL.Image.Palette.ADAPTIVE)
 
         img.save(fp, fmt, **opts)
 
@@ -261,7 +259,7 @@ class Image(gws.Image):
         draw = PIL.ImageDraw.Draw(self.img)
         color = color or (0, 0, 0, 255)
         x, y = self.img.size
-        draw.rectangle((0, 0) + (x - 1, y - 1), outline=color)  # box goes around all edges
+        draw.rectangle((0, 0) + (x - 1, y - 1), outline=color)
         return self
 
     def compare_to(self, other):

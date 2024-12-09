@@ -88,7 +88,7 @@ class Layer(Node):
     clientOptions: LayerClientOptions
     displayMode: LayerDisplayMode
     loadingStrategy: FeatureLoadingStrategy
-    imageFormat: str
+    imageFormat: ImageFormat
     opacity: float
     resolutions: list[float]
     title: str

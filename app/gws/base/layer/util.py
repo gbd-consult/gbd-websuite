@@ -44,7 +44,7 @@ def mapproxy_layer_config(layer: gws.Layer, mc, source_uid):
         'meta_buffer': 0,
         'disable_storage': True,
         'minimize_meta_requests': True,
-        'format': layer.imageFormat,
+        'format': 'png8',
     }
 
     cache = getattr(layer, 'cache', None)
@@ -79,7 +79,7 @@ def mapproxy_back_cache_config(layer: gws.Layer, mc, url, grid_uid):
             'directory_layout': 'mp'
         },
         'disable_storage': True,
-        'format': layer.imageFormat,
+        'format': 'png8',
     }))
 
 

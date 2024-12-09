@@ -20,21 +20,12 @@ import gws.lib.mime
 from . import core, request, error
 
 
-class ImageFormatConfig:
-    """Image format configuration. (added in 8.1)"""
-
-    mimeTypes: list[str]
-    """Mime types for this format."""
-    options: Optional[dict]
-    """Image options."""
-
-
 class Config(gws.ConfigWithAccess):
     defaultFeatureCount: int = 1000
     """Default number of features per page."""
     extent: Optional[gws.Extent]
     """Service extent."""
-    imageFormats: Optional[list[ImageFormatConfig]]
+    imageFormats: Optional[list[gws.ImageFormatConfig]]
     """Supported image formats. (added in 8.1)"""
     maxFeatureCount: int = 10000
     """Max number of features per page. (added in 8.1)"""
@@ -83,15 +74,15 @@ class Object(gws.OwsService):
         if p:
             self.imageFormats = []
             for cfg in p:
-                self.imageFormats.append(gws.OwsImageFormat(
+                self.imageFormats.append(gws.ImageFormat(
                     mimeTypes=[s.replace(' ', '') for s in cfg.get('mimeTypes', [])],
                     options=cfg.get('options') or {}
                 ))
             return
 
         self.imageFormats = [
-            gws.OwsImageFormat(mimeTypes=[gws.lib.mime.PNG], options={}),
-            gws.OwsImageFormat(mimeTypes=[gws.lib.mime.JPEG], options={}),
+            gws.ImageFormat(mimeTypes=[gws.lib.mime.PNG], options={}),
+            gws.ImageFormat(mimeTypes=[gws.lib.mime.JPEG], options={}),
         ]
 
     def configure_bounds(self):
@@ -206,7 +197,7 @@ class Object(gws.OwsService):
         content = img.to_bytes(mime, ifmt.options) if img else gws.lib.image.empty_pixel(mime)
         return gws.ContentResponse(mime=mime, content=content)
 
-    def find_image_format(self, mime: str) -> gws.OwsImageFormat:
+    def find_image_format(self, mime: str) -> gws.ImageFormat:
         if not mime:
             return self.imageFormats[0]
         for f in self.imageFormats:
