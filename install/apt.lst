@@ -13,7 +13,7 @@ rsyslog
 libgeos-c1t64
 libproj25
 libgdal34t64
-python3-gdal
+libgdal-dev
 gdal-bin
 
 tzdata
@@ -42,8 +42,16 @@ graphviz
 xfonts-75dpi
 wkhtmltopdf
 
-# mapserver
+# bundled mapserver
 
-cgi-mapserver
-mapserver-bin
-python3-mapscript
+libcairo2
+libcurl3-gnutls
+libfreetype6
+libfribidi0
+libgif7
+libharfbuzz0b
+libjpeg8
+libpng16-16
+libpq5
+libprotobuf-c1
+libxml2

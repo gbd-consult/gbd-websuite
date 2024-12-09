@@ -69,6 +69,8 @@ class Base:
 
     arch = 'amd64'
 
+    mapserver_version = '8.2.2'
+
     vendor = 'gbdconsult'
     description = 'GWS Server'
 
@@ -84,8 +86,12 @@ class Base:
         elif args.get('arm'):
             self.arch = 'arm64'
 
-        self.skip_cache = '_skip_cache_' + str(time.time()).replace('.', '') + '_'
+        self.skip_cache_mark = '_skip_cache_' + str(time.time()).replace('.', '') + '_'
         self.os_image_name = f'ubuntu:{self.ubuntu_version}'
+
+        self.with_docker_cache = True
+        if args.get('no-cache') or args.get('nc'):
+            self.with_docker_cache = False
 
         self.app_version = cli.read_file(f'{self.gws_dir}/app/VERSION')
         self.app_short_version = self.app_version.rpartition('.')[0]
@@ -154,13 +160,18 @@ class Builder(Base):
 
         cli.run(f'bash {self.gws_dir}/make.sh package .')
         cli.run(f'git --git-dir={self.gws_dir}/.git rev-parse  HEAD > app/REV')
-        cli.run(f'mv app {self.skip_cache}app')
+        cli.run(f'mv app {self.skip_cache_mark}app')
 
         if self.datadir:
-            cli.run(f'mkdir {self.skip_cache}data')
-            cli.run(f'rsync -a --exclude-from {self.exclude_file} {self.datadir}/* {self.skip_cache}data')
+            cli.run(f'mkdir {self.skip_cache_mark}data')
+            cli.run(f'rsync -a --exclude-from {self.exclude_file} {self.datadir}/* {self.skip_cache_mark}data')
 
         cli.write_file(f'Dockerfile', self.dockerfile())
+
+        # download our compiled mapserver, see /install/mapserver
+        cli.run(f'curl -o gbd-mapserver.tar.gz https://files.gbd-websuite.de/gbd-mapserver-{self.mapserver_version}-{self.arch}-Release.tar.gz')
+        cli.run('tar -xzf gbd-mapserver.tar.gz')
+
 
     def dockerfile(self):
         df = []
@@ -187,28 +198,29 @@ class Builder(Base):
 
         __('RUN ' + self.commands(f'''
             apt -y install {apts}        
-            apt-get -y clean
-            apt-get -y purge --auto-remove
+            apt -y clean
+            apt -y purge --auto-remove
         '''))
 
         __('ENV VIRTUAL_ENV=/opt/venv')
         __('RUN python3 -m venv $VIRTUAL_ENV')
         __('ENV PATH="$VIRTUAL_ENV/bin:$PATH"')
 
-        __(f'RUN pip3 install --disable-pip-version-check --no-cache-dir --no-compile {pips}')
+        pip_opts = '--disable-pip-version-check --no-cache-dir --no-compile'
+
+        __(f'RUN pip3 install {pip_opts} {pips}')
 
         # this lib causes problems, it should be optional in pendulum
         # see https://github.com/sdispater/pendulum/issues?q=time-machine
         __(f'RUN pip3 uninstall -y time_machine')
 
-        __('RUN ' + self.commands(f'''
-            rm -f /usr/bin/python
-            ln -s /usr/bin/python3 /usr/bin/python
-        '''))
+        # mapserver, install from the downloaded compiled package
+        __(f'COPY gbd-mapserver /MS')
+        __(f'RUN  mv /MS/bin/* /usr/bin && mv /MS/lib/* /usr/lib && pip3 install {pip_opts} /MS/*whl && rm -fr /MS')
 
-        __(f'COPY {self.skip_cache}app /gws-app')
+        __(f'COPY {self.skip_cache_mark}app /gws-app')
         if self.datadir:
-            __(f'COPY {self.skip_cache}data /data')
+            __(f'COPY {self.skip_cache_mark}data /data')
 
         __('RUN touch /.dockerenv')
         __('RUN touch /gws-app/.dockerenv')
@@ -231,7 +243,7 @@ class Builder(Base):
                 --progress plain 
                 --file {self.context_dir}/Dockerfile 
                 --tag {image_name} 
-                {'--no-cache' if self.args.get('no-cache') else ''} 
+                {'' if self.with_docker_cache else '--no-cache'} 
                 {self.context_dir}
         ''')
 

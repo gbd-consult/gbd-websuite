@@ -15,10 +15,14 @@ PyYAML==6.*
 requests==2.*
 shapely==2.*
 SQLAlchemy==2.*
-# NB something is broken in 2.0.25
-uWSGI==2.0.23
 Werkzeug==3.*
 qrcode==7.*
+
+# NB something is broken in 2.0.25
+uWSGI==2.0.23
+
+# use the OS version
+GDAL==3.8.4
 
 # testing
 
