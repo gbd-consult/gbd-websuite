@@ -1,0 +1,36 @@
+uid "raster_layer_dir"
+
+title "Raster layer"
+
+metadata.keywords [ "raster" ]
+
+metadata.abstract """
+`raster` layers display georeferenced raster images.
+"""
+
+map {
+    crs 25832
+    center {demo_point_duesseldorf_25832}
+    zoom.initScale 150000
+}
+
+@# https://open.nrw/dataset/karte-der-erdbebenzonen-und-geologischen-untergrundklassen-der-bundesrepublik-deutschland-nordr
+
+map.layers+ {
+    type "raster"
+    title "Erdbebenzonenkarte"
+    display "box"
+    clientOptions.hidden true
+    provider { type "file" pathPattern "/gws-extern/erdbebenzonenkarte/*.jpg" }
+    metadata.attribution.title "© Geobasis NRW"
+}
+
+map.layers+ {
+    type "raster"
+    title "DOP"
+    display "tile"
+    provider { type "file" pathPattern "/gws-extern/dop/*.jp2" }
+    metadata.attribution.title "© Geobasis NRW"
+}
+
+{demo_osm_background}

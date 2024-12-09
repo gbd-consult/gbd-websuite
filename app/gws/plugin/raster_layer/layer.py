@@ -1,59 +1,112 @@
 """Raster image layer."""
 
+from typing import Optional
+
+import fnmatch
+
 import gws
+import gws.base.shape
 import gws.base.layer
 import gws.lib.image
-import gws.config.util
+import gws.lib.osx
 import gws.gis.bounds
 import gws.gis.crs
 import gws.gis.zoom
-import gws.gis.mapse
+import gws.gis.ms
 import gws.gis.gdalx
 
 gws.ext.new.layer('raster')
 
 
+class ProviderConfig(gws.Config):
+    """Raster data provider."""
+    type: str
+    """Type"""
+    paths: Optional[list[gws.FilePath]]
+    """List of image file paths."""
+    pathPattern: Optional[str]
+    """Glob pattern for image file paths."""
+
+
 class Config(gws.base.layer.Config):
     """Raster layer"""
-    paths: list[gws.FilePath]
-    """paths"""
-    display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
-    """layer display mode"""
+    provider: ProviderConfig
+    """Raster provider"""
 
-
-# _GRID_DEFAULTS = gws.TileGrid(
-#     bounds=gws.Bounds(
-#         crs=gws.gis.crs.WEBMERCATOR,
-#         extent=gws.gis.crs.WEBMERCATOR_SQUARE,
-#     ),
-#     origin=gws.Origin.nw,
-#     tileSize=256,
-# )
 
 class ImageEntry(gws.Data):
     path: str
     bounds: gws.Bounds
 
 
+class Provider(gws.Data):
+    paths: list[str]
+    dirname: str
+    pattern: str
+
+
 class Object(gws.base.layer.image.Object):
+    tileIndexPath: str
     entries: list[ImageEntry]
 
     def configure(self):
-        self.entries = []
+        self.configure_layer()
 
-        for path in self.cfg('paths'):
-            with gws.gis.gdalx.open_raster(path) as gd:
-                self.entries.append(ImageEntry(
-                    path=path,
-                    bounds=gd.bounds()
-                ))
+    def configure_provider(self):
+        p = self.cfg('provider')
 
+        paths = []
+        if p.paths:
+            paths = p.paths
+        elif p.pathPattern:
+            v = gws.lib.osx.parse_path(p.pathPattern)
+            paths = sorted(gws.lib.osx.find_files(v['dirname'], fnmatch.translate(v['filename'])))
+
+        self.entries = self._enum_images(paths)
         if not self.entries:
             raise gws.ConfigurationError('no images found')
-        for e in self.entries:
-            gws.log.debug(f'entry {e.path!r} {e.bounds.extent} crs={e.bounds.crs.srid}')
 
-        self.configure_layer()
+        self.tileIndexPath = self._make_tile_index()
+
+    def _enum_images(self, paths):
+        entries = []
+
+        for path in paths:
+            try:
+                with gws.gis.gdalx.open_raster(path) as gd:
+                    entries.append(ImageEntry(
+                        path=path,
+                        bounds=gd.bounds()
+                    ))
+            except gws.gis.gdalx.Error as exc:
+                gws.log.warning(f'invalid image: {path!r} ({exc})')
+
+        return entries
+
+    def _make_tile_index(self):
+        idx_name = f'tile_index_{self.uid}'
+        idx_path = f'{gws.c.OBJECT_CACHE_DIR}/{idx_name}.shp'
+
+        records = []
+
+        for e in self.entries:
+            records.append(gws.FeatureRecord(
+                attributes={'location': e.path},
+                shape=gws.base.shape.from_bounds(e.bounds).transformed_to(self.mapCrs)
+            ))
+
+        with gws.gis.gdalx.open_vector(idx_path, 'w') as ds:
+            la = ds.create_layer(
+                name=idx_name,
+                columns={'location': gws.AttributeType.str},
+                geometry_type=gws.GeometryType.polygon,
+                crs=self.mapCrs,
+            )
+            la.insert(records)
+            ds.gdDataset.ExecuteSQL(f'CREATE SPATIAL INDEX ON {idx_name}')
+
+        gws.log.debug(f'tile_index: layer {self.uid} created {idx_path=}')
+        return idx_path
 
     def configure_bounds(self):
         if super().configure_bounds():
@@ -68,14 +121,8 @@ class Object(gws.base.layer.image.Object):
         self.grid = gws.TileGrid(
             origin=p.origin or gws.Origin.nw,
             tileSize=p.tileSize or 256,
+            bounds=self.bounds,
         )
-
-        # if p.extent:
-        #     extent = p.extent
-        # else:
-        #     extent = self.parentBounds.extent
-        # self.grid.bounds = gws.Bounds(crs=self.bounds.crs, extent=extent)
-        self.grid.bounds = self.bounds
 
         if p.resolutions:
             self.grid.resolutions = p.resolutions
@@ -84,24 +131,25 @@ class Object(gws.base.layer.image.Object):
 
     ##
 
-    def props(self, user):
-        p = super().props(user)
-        if self.displayMode == gws.LayerDisplayMode.client:
-            pass
-        return p
-
     def render(self, lri):
+        ts = gws.u.mstime()
+
+        ms_map = gws.gis.ms.map_from_bounds(self.bounds)
+
+        ms_map.add_raster_layer(gws.gis.ms.RasterLayerOptions(
+            tileIndex=self.tileIndexPath,
+            crs=self.entries[0].bounds.crs,
+        ))
+
         if lri.type == gws.LayerRenderInputType.box:
-            pass
+            def get_box(bounds, width, height):
+                img = ms_map.draw(bounds, (width, height))
+                return img.to_bytes()
+
+            content = gws.base.layer.util.generic_render_box(self, lri, get_box)
+            return gws.LayerRenderOutput(content=content)
 
         if lri.type == gws.LayerRenderInputType.xyz:
-            m = gws.gis.mapse.map_from_bounds(self.bounds)
-            for e in self.entries:
-                m.add_raster_layer(gws.gis.mapse.RasterLayerOptions(
-                    path=e.path,
-                    crs=e.bounds.crs,
-                ))
-
             ext = self.bounds.extent
             w = (ext[2] - ext[0]) / (1 << lri.z)
 
@@ -111,14 +159,16 @@ class Object(gws.base.layer.image.Object):
             y0 = ext[3] - (lri.y + 1) * w
             y1 = y0 + w
 
-            img = m.draw(
+            img = ms_map.draw(
                 gws.gis.bounds.from_extent((x0, y0, x1, y1), crs=self.bounds.crs),
                 (self.grid.tileSize, self.grid.tileSize)
             )
 
             if self.root.app.developer_option('map.annotate_render'):
-                text = f'{lri.z} : {lri.x} / {lri.y}\nUID={self.uid}'
+                ts = gws.u.mstime() - ts
+                text = f'{lri.z} : {lri.x} / {lri.y}\nUID={self.uid}\n{ts}ms'
                 img.add_text(text, x=5, y=5).add_box()
-                content = img.to_bytes()
 
-            return gws.LayerRenderOutput(content=img.to_bytes())
+            content = img.to_bytes(self.imageFormat.mimeTypes[0], self.imageFormat.options)
+
+            return gws.LayerRenderOutput(content=content)
