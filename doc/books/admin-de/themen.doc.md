@@ -6,8 +6,9 @@
 - spatial info
 -->
 
-## Auswahl
+## :/admin-de/plugin/auswahl
 <!--
+ In File: /gbd-websuite/app/gws/plugin/select_tool/_doc/admin_de.doc.md
 - select
 - mouseover select 
 -->

@@ -20,7 +20,7 @@ Am unteren Rand im Bereich Auswahl befindet sich je nach Konfiguration weitere F
 
 %info
 
-Weitere Informationen zur [Konfiguration einer Auswahl](/doc/8.1/admin-de/themen/auswahl/index.html) finden Sie im Administrator Handbuch.
+Weitere Informationen zur [Konfiguration einer Auswahl](/doc/8.2/admin-de/plugin/auswahl/index.html) finden Sie im Administrator Handbuch.
 
 %end
 
