@@ -65,7 +65,7 @@ models+ {
         widget { type "input" }
         validators+ {
             type "regex"
-            regex "^(?i)[0-9][0-9]?[a-z][a-z][a-z]$"
+            regex "(?i)^[0-9][0-9]?[a-z][a-z][a-z]$"
         }
     }
 
