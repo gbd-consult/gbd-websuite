@@ -108,6 +108,17 @@ def test_request_with_wrong_cookie_fails(root: gws.Root):
     assert _get_project(root, 'one', cookie).status_code == 403
 
 
+def test_request_with_wrong_cookie_user_fails(root: gws.Root):
+    u.mock.add_user('one', 'foo', roles=['role1'])
+
+    res = _login(root, 'one', 'foo')
+    cookie = res.cookies.get('AUTH_COOKIE')
+
+    assert _get_project(root, 'one', cookie).status_code == 200
+    u.mock.delete_user('one')
+    assert _get_project(root, 'one', cookie).status_code == 403
+
+
 def test_request_with_expired_cookie_fails(root: gws.Root):
     u.mock.add_user('one', 'foo', roles=['role1'])
 

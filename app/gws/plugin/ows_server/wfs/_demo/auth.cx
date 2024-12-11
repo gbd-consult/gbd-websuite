@@ -1,0 +1,33 @@
+uid "service_wfs_auth_demo"
+
+title "WFS service with authorization"
+
+metadata.keywords [ "wfs" "ows-service" "auth" ]
+
+metadata.abstract """
+This WFS service is only allowed for authorized users.
+
+[Service URL](/_/owsService/serviceUid/service_wfs_auth?request=GetCapabilities)
+
+[Demo QGIS Project](/ows_services.qgs)
+"""
+
+owsServices+ {
+    type "wfs"
+    uid "service_wfs_auth"
+    permissions.read "allow user,deny all"
+}
+
+map.layers+ {
+    title "Districts"
+    type "postgres"
+    tableName "edit.district"
+    ows.xmlns "demo"
+}
+
+map.layers+ {
+    title "POI"
+    type "postgres"
+    tableName "edit.poi"
+    ows.xmlns "demo"
+}

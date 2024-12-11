@@ -288,6 +288,9 @@ class VectorDataSet(_DataSet):
 
         if geometry_type:
             geom_type = _GEOM_TO_OGR.get(geometry_type)
+            if not geom_type:
+                gws.log.warning(f'gdal: unsupported {geometry_type=}')
+                geom_type = ogr.wkbUnknown
             crs = crs or self.dso.defaultCrs
             srs = _srs_from_srid(crs.srid)
 
@@ -613,6 +616,10 @@ def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding)
         return gd_feature.SetField(idx, [float(x) for x in value])
 
     return gd_feature.SetField(idx, value)
+
+
+def is_attribute_supported(typ):
+    return typ in _ATTR_TO_OGR
 
 
 _ATTR_TO_OGR = {

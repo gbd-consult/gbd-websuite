@@ -1,0 +1,4 @@
+actions+ {
+    type "ows"
+    permissions.read "allow all"
+}
