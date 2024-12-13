@@ -40,7 +40,6 @@ graphviz
 # wkhtmltopdf
 
 xfonts-75dpi
-wkhtmltopdf
 
 # bundled mapserver
 

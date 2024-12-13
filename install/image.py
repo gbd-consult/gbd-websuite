@@ -104,6 +104,13 @@ class Base:
 
         self.exclude_file = f'{self.gws_dir}/.package_exclude'
 
+        # wkhtmltopdf, see https://github.com/wkhtmltopdf/packaging/releases
+        # we need the 'patched' version, which is not available as an OS package
+        # there's no "noble" release, but "jammy" appears to work well
+        self.wkhtmltopdf_release = f'0.12.6.1-2'
+        self.wkhtmltopdf_package = f'wkhtmltox_{self.wkhtmltopdf_release}.jammy_{self.arch}.deb'
+        self.wkhtmltopdf_url = f'https://github.com/wkhtmltopdf/packaging/releases/download/{self.wkhtmltopdf_release}/{self.wkhtmltopdf_package}'
+
     def lines(self, text):
         ls = []
         for s in text.strip().splitlines():
@@ -158,19 +165,26 @@ class Builder(Base):
 
         os.chdir(self.context_dir)
 
+        # download wkhtmltopdf
+        if not os.path.isfile(self.wkhtmltopdf_package):
+            cli.run(f"curl -sL '{self.wkhtmltopdf_url}' -o {self.wkhtmltopdf_package}")
+
+        # download our compiled mapserver, see /install/mapserver
+        if not os.path.isdir('gbd-mapserver'):
+            cli.run(f'curl -sL -o gbd-mapserver.tar.gz https://files.gbd-websuite.de/gbd-mapserver-{self.mapserver_version}-{self.arch}-Release.tar.gz')
+            cli.run('tar -xzf gbd-mapserver.tar.gz')
+
         cli.run(f'bash {self.gws_dir}/make.sh package .')
-        cli.run(f'git --git-dir={self.gws_dir}/.git rev-parse  HEAD > app/REV')
         cli.run(f'mv app {self.skip_cache_mark}app')
 
         if self.datadir:
             cli.run(f'mkdir {self.skip_cache_mark}data')
             cli.run(f'rsync -a --exclude-from {self.exclude_file} {self.datadir}/* {self.skip_cache_mark}data')
 
-        cli.write_file(f'Dockerfile', self.dockerfile())
+        cli.run(f'git --git-dir={self.gws_dir}/.git rev-parse  HEAD > rev')
+        cli.write_file('GWS_IMAGE_VERSION', self.app_version.strip() + '.' + cli.read_file('rev').strip())
 
-        # download our compiled mapserver, see /install/mapserver
-        cli.run(f'curl -o gbd-mapserver.tar.gz https://files.gbd-websuite.de/gbd-mapserver-{self.mapserver_version}-{self.arch}-Release.tar.gz')
-        cli.run('tar -xzf gbd-mapserver.tar.gz')
+        cli.write_file(f'Dockerfile', self.dockerfile())
 
 
     def dockerfile(self):
@@ -214,6 +228,9 @@ class Builder(Base):
         # see https://github.com/sdispater/pendulum/issues?q=time-machine
         __(f'RUN pip3 uninstall -y time_machine')
 
+        __(f'COPY {self.wkhtmltopdf_package} /{self.wkhtmltopdf_package}')
+        __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /{self.wkhtmltopdf_package}')
+
         # mapserver, install from the downloaded compiled package
         __(f'COPY gbd-mapserver /MS')
         __(f'RUN  mv /MS/bin/* /usr/bin && mv /MS/lib/* /usr/lib && pip3 install {pip_opts} /MS/*whl && rm -fr /MS')
@@ -221,6 +238,7 @@ class Builder(Base):
         __(f'COPY {self.skip_cache_mark}app /gws-app')
         if self.datadir:
             __(f'COPY {self.skip_cache_mark}data /data')
+        __(f'COPY GWS_IMAGE_VERSION /')
 
         __('RUN touch /.dockerenv')
         __('RUN touch /gws-app/.dockerenv')
