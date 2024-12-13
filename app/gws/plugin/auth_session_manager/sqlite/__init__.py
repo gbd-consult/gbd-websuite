@@ -17,38 +17,24 @@ class Config(gws.base.auth.session_manager.Config):
     """session storage path"""
 
 
-_TABLE = 'sessions81'
-
-_INIT_DDL = f'''
-    CREATE TABLE IF NOT EXISTS {_TABLE} (
-        uid          TEXT NOT NULL PRIMARY KEY,
-        method_uid   TEXT NOT NULL,
-        user_uid     TEXT NOT NULL,
-        str_user     TEXT NOT NULL,
-        str_data     TEXT NOT NULL,
-        created      INTEGER NOT NULL,
-        updated      INTEGER NOT NULL
-    )
-'''
-
-
 class Object(gws.base.auth.session_manager.Object):
     dbPath: str
+    table = 'sessions'
 
     def configure(self):
-        self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/sessions81.sqlite')
+        self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/sessions82.sqlite')
 
     ##
 
     def cleanup(self):
         last_time = gws.u.stime() - self.lifeTime
-        self._db().execute(f'DELETE FROM {_TABLE} WHERE updated < :last_time', last_time=last_time)
+        self._db().execute(f'DELETE FROM {self.table} WHERE updated < :last_time', last_time=last_time)
 
     def create(self, method, user, data=None):
         am = self.root.app.authMgr
         uid = gws.u.random_string(64)
 
-        self._db().insert(_TABLE, dict(
+        self._db().insert(self.table, dict(
             uid=uid,
             method_uid=method.uid,
             user_uid=user.uid,
@@ -61,19 +47,19 @@ class Object(gws.base.auth.session_manager.Object):
         return self.get(uid)
 
     def delete(self, sess):
-        self._db().execute(f'DELETE FROM {_TABLE} WHERE uid=:uid', uid=sess.uid)
+        self._db().execute(f'DELETE FROM {self.table} WHERE uid=:uid', uid=sess.uid)
 
     def delete_all(self):
-        self._db().execute(f'DELETE FROM {_TABLE}')
+        self._db().execute(f'DELETE FROM {self.table}')
 
     def get(self, uid):
-        rs = self._db().select(f'SELECT * FROM {_TABLE} WHERE uid=:uid', uid=uid)
+        rs = self._db().select(f'SELECT * FROM {self.table} WHERE uid=:uid', uid=uid)
         if len(rs) == 1:
             return self._session(rs[0])
 
     def get_valid(self, uid):
         last_time = gws.u.stime() - self.lifeTime
-        rs = self._db().select(f'SELECT * FROM {_TABLE} WHERE uid=:uid', uid=uid)
+        rs = self._db().select(f'SELECT * FROM {self.table} WHERE uid=:uid', uid=uid)
         if len(rs) == 1:
             rec = gws.u.to_dict(rs[0])
             if rec['updated'] >= last_time:
@@ -82,7 +68,7 @@ class Object(gws.base.auth.session_manager.Object):
     def get_all(self):
         return [
             self._session(rec)
-            for rec in self._db().select(f'SELECT * FROM {_TABLE}')
+            for rec in self._db().select(f'SELECT * FROM {self.table}')
         ]
 
     def save(self, sess):
@@ -90,7 +76,7 @@ class Object(gws.base.auth.session_manager.Object):
             return
 
         self._db().execute(
-            f'UPDATE {_TABLE} SET str_data=:str_data, updated=:updated WHERE uid=:uid',
+            f'UPDATE {self.table} SET str_data=:str_data, updated=:updated WHERE uid=:uid',
             str_data=gws.lib.jsonx.to_string(sess.data or {}),
             updated=gws.u.stime(),
             uid=sess.uid
@@ -103,7 +89,7 @@ class Object(gws.base.auth.session_manager.Object):
             return self.save(sess)
 
         self._db().execute(
-            f'UPDATE {_TABLE} SET updated=:updated WHERE uid=:uid',
+            f'UPDATE {self.table} SET updated=:updated WHERE uid=:uid',
             updated=gws.u.stime(),
             uid=sess.uid
         )
@@ -122,9 +108,22 @@ class Object(gws.base.auth.session_manager.Object):
             updated=gws.lib.datetimex.from_timestamp(r['updated']),
         )
 
+    ##
+
     _sqlitex: gws.lib.sqlitex.Object
 
     def _db(self):
         if getattr(self, '_sqlitex', None) is None:
-            self._sqlitex = gws.lib.sqlitex.Object(self.dbPath, _INIT_DDL)
+            ddl = f'''
+                CREATE TABLE IF NOT EXISTS {self.table} (
+                    uid          TEXT NOT NULL PRIMARY KEY,
+                    method_uid   TEXT NOT NULL,
+                    user_uid     TEXT NOT NULL,
+                    str_user     TEXT NOT NULL,
+                    str_data     TEXT NOT NULL,
+                    created      INTEGER NOT NULL,
+                    updated      INTEGER NOT NULL
+                )
+            '''
+            self._sqlitex = gws.lib.sqlitex.Object(self.dbPath, ddl)
         return self._sqlitex

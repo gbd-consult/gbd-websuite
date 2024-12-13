@@ -41,14 +41,12 @@ class Object(gws.base.template.Object):
         )
 
         notify('begin_print')
-        notify('begin_page')
         notify('begin_map')
 
         mro = gws.gis.render.render_map(mri)
         html = gws.gis.render.output_to_html_string(mro, wrap='fixed')
 
         notify('end_map')
-        notify('end_page')
         notify('finalize_print')
 
         if not tri.mimeOut or tri.mimeOut == gws.lib.mime.HTML:
@@ -56,7 +54,7 @@ class Object(gws.base.template.Object):
             return gws.ContentResponse(mime=gws.lib.mime.HTML, content=html)
 
         if tri.mimeOut == gws.lib.mime.PDF:
-            res_path = gws.u.printtemp('map.pdf')
+            res_path = gws.u.ephemeral_path('map.pdf')
             gws.lib.htmlx.render_to_pdf(
                 html,
                 out_path=res_path,
@@ -66,7 +64,7 @@ class Object(gws.base.template.Object):
             return gws.ContentResponse(contentPath=res_path)
 
         if tri.mimeOut == gws.lib.mime.PNG:
-            res_path = gws.u.printtemp('map.png')
+            res_path = gws.u.ephemeral_path('map.png')
             gws.lib.htmlx.render_to_png(
                 html,
                 out_path=res_path,

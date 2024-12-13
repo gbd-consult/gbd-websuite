@@ -1304,46 +1304,6 @@ class NumberFormatter:
 
 
 ################################################################################
-# /lib/job/types.pyinc
-
-
-class JobState(Enum):
-    """Background job state."""
-
-    init = 'init'
-    """The job is being created."""
-    open = 'open'
-    """The job is just created and waiting for start."""
-    running = 'running'
-    """The job is running."""
-    complete = 'complete'
-    """The job has been completed successfully."""
-    error = 'error'
-    """There was an error."""
-    cancel = 'cancel'
-    """The job was cancelled."""
-
-
-class Job:
-    """Background Job object."""
-
-    error: str
-    payload: dict
-    state: JobState
-    uid: str
-    user: 'User'
-
-    def run(self): ...
-
-    def update(self, payload: Optional[dict] = None, state: Optional[JobState] = None, error: Optional[str] = None): ...
-
-    def cancel(self): ...
-
-    def remove(self): ...
-################################################################################
-
-
-################################################################################
 # /lib/metadata/types.pyinc
 
 
@@ -3419,6 +3379,75 @@ class DatabaseProvider(Node):
 
 
 ################################################################################
+# /base/job/types.pyinc
+
+
+class JobTerminated(Exception):
+    pass
+
+
+class JobState(Enum):
+    """Background job state."""
+
+    init = 'init'
+    """The job is being created."""
+    open = 'open'
+    """The job is just created and waiting for start."""
+    running = 'running'
+    """The job is running."""
+    complete = 'complete'
+    """The job has been completed successfully."""
+    error = 'error'
+    """There was an error."""
+    cancel = 'cancel'
+    """The job was cancelled."""
+
+
+class Job(Data):
+    """Background job data."""
+
+    uid: str
+    state: JobState
+    error: str
+    payload: Data
+    user: 'User'
+    worker: str
+
+
+class JobRequest(Request):
+    jobUid: str
+
+
+class JobResponse(Response):
+    jobUid: str
+    state: JobState
+    progress: int
+    stepName: str
+    resultUrl: str
+
+
+class JobManager(Node):
+    """Job Manager."""
+
+    def create_job(self, user: User, worker: str, payload: Data = None) -> Job: ...
+
+    def get_job(self, job_uid: str) -> Optional[Job]: ...
+
+    def get_job_for(self, job_uid: str, user: User) -> Optional[Job]: ...
+
+    def update_job(self, job: Job, state: JobState = None, error: str = None, payload: Data = None) -> Optional[Job]: ...
+
+    def run_job(self, job: Job) -> Optional[Job]: ...
+
+    def cancel_job(self, job: Job) -> Optional[Job]: ...
+
+    def remove_job(self, job: Job): ...
+
+    def job_response(self, job: Job) -> Optional[JobResponse]: ...
+################################################################################
+
+
+################################################################################
 # /base/ows/types.pyinc
 
 
@@ -3639,17 +3668,6 @@ class PrintRequest(Request):
     outputSize: Optional[Size]
 
 
-class PrintJobResponse(Response):
-    """Print job information response."""
-
-    jobUid: str
-    progress: int
-    state: 'JobState'
-    stepType: str
-    stepName: str
-    url: str
-
-
 class Printer(Node):
     """Printer object."""
 
@@ -3666,15 +3684,12 @@ class PrinterManager(Node):
 
     def start_job(self, request: PrintRequest, user: 'User') -> 'Job': ...
 
-    def get_job(self, uid: str, user: 'User') -> Optional['Job']: ...
-
-    def run_job(self, request: PrintRequest, user: 'User'): ...
+    def exec_print(self, request: PrintRequest, user: 'User'): ...
 
     def cancel_job(self, job: 'Job'): ...
 
-    def result_path(self, job: 'Job') -> str: ...
 
-    def status(self, job: 'Job') -> PrintJobResponse: ...
+    def job_response(self, job: 'Job') -> 'JobResponse': ...
 ################################################################################
 
 
@@ -4264,14 +4279,15 @@ class Application(Node):
     actionMgr: 'ActionManager'
     authMgr: 'AuthManager'
     databaseMgr: 'DatabaseManager'
+    jobMgr: 'JobManager'
+    middlewareMgr: 'MiddlewareManager'
     modelMgr: 'ModelManager'
     printerMgr: 'PrinterManager'
     searchMgr: 'SearchManager'
+    serverMgr: 'ServerManager'
     storageMgr: 'StorageManager'
     templateMgr: 'TemplateManager'
-    serverMgr: 'ServerManager'
     webMgr: 'WebManager'
-    middlewareMgr: 'MiddlewareManager'
 
     actions: list['Action']
     projects: list['Project']

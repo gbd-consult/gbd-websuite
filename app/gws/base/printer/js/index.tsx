@@ -26,7 +26,7 @@ interface ViewProps extends gws.types.ViewProps {
     controller: Controller;
     printerDialogZoomed: boolean;
     printerFormValues: object;
-    printerJob?: gws.api.core.PrintJobResponse;
+    printerJob?: gws.api.core.JobResponse;
     printerMode: 'screenshot' | 'print';
     printerScreenshotDpi: number;
     printerScreenshotHeight: number;
@@ -358,7 +358,7 @@ class Dialog extends gws.View<ViewProps> {
             return <gws.ui.Dialog
                 {...gws.lib.cls('printerResultDialog')}
                 whenClosed={stop}
-                frame={job.url}
+                frame={job.resultUrl}
             />;
             // return <gws.ui.Dialog
             //     {...gws.lib.cls('printerResultDialog', this.props.printerDialogZoomed && 'isZoomed')}
@@ -655,7 +655,7 @@ class Controller extends gws.Controller {
 
         if (job) {
             this.update({
-                printerJob: await this.app.server.printerStatus({jobUid: job.jobUid}),
+                printerJob: await this.app.server.printerJobInfo({jobUid: job.jobUid}),
             });
         }
     }
@@ -663,7 +663,7 @@ class Controller extends gws.Controller {
     protected async sendCancel(jobUid) {
         if (jobUid) {
             console.log('SEND CANCEL');
-            await this.app.server.printerCancel({jobUid});
+            await this.app.server.printerCancelJob({jobUid});
         }
     }
 

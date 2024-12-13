@@ -1,156 +1,173 @@
+"""Job manager."""
+
 from typing import Optional
 
-import importlib
-
 import gws
+import gws.lib.importer
 import gws.lib.jsonx
 import gws.lib.sqlitex
 
 
-class Error(gws.Error):
-    pass
+class Object(gws.JobManager):
+    dbPath: str
+    table = 'jobs'
 
+    def configure(self):
+        self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/jobs82.sqlite')
 
-class PrematureTermination(Exception):
-    pass
+    def create_job(self, user, worker, payload=None):
+        job_uid = gws.u.random_string(64)
+        gws.log.debug(f'JOB {job_uid}: creating: {worker=}  {user.uid=}')
 
+        self._db().insert(self.table, dict(
+            uid=job_uid,
+            user_uid=user.uid,
+            str_user=self.root.app.authMgr.serialize_user(user),
+            state=gws.JobState.open,
+            worker=worker,
+            payload=gws.lib.jsonx.to_string(payload or {}),
+            error='',
+            created=gws.u.stime(),
+            updated=gws.u.stime()
+        ))
 
-_DB_PATH = gws.c.PRINT_DIR + '/jobs81.sqlite'
+        return self.get_job(job_uid)
 
-_TABLE = 'job'
-
-_INIT_DDL = f'''
-    CREATE TABLE IF NOT EXISTS {_TABLE} (
-        uid      TEXT NOT NULL PRIMARY KEY,
-        user_uid TEXT NOT NULL,
-        str_user TEXT NOT NULL,
-        worker   TEXT NOT NULL,
-        payload  TEXT NOT NULL,
-        state    TEXT NOT NULL,
-        error    TEXT NOT NULL,
-        created  INTEGER NOT NULL,
-        updated  INTEGER NOT NULL
-    )            
-'''
-
-
-def create(root: gws.Root, user: gws.User, worker: str, payload: dict = None) -> 'Object':
-    uid = gws.u.random_string(64)
-    gws.log.debug(f'JOB {uid}: creating: {worker=}  {user.uid=}')
-
-    _db().insert(_TABLE, dict(
-        uid=uid,
-        user_uid=user.uid,
-        str_user=root.app.authMgr.serialize_user(user),
-        worker=worker,
-        payload=gws.lib.jsonx.to_string(payload or {}),
-        state=gws.JobState.open,
-        error='',
-        created=gws.u.stime(),
-        updated=gws.u.stime()
-    ))
-
-    job = get(root, uid)
-    if not job:
-        raise gws.Error(f'error creating job {uid=}')
-    return job
-
-
-def run(root: gws.Root, uid):
-    job = get(root, uid)
-    if not job:
-        raise gws.Error(f'invalid job {uid=}')
-    job.run()
-
-
-def get(root: gws.Root, uid) -> Optional['Object']:
-    rs = _db().select(f'SELECT * FROM {_TABLE} WHERE uid=:uid', uid=uid)
-    if rs:
-        return Object(root, rs[0])
-
-
-def remove(uid):
-    _db().execute(f'DELETE FROM {_TABLE} WHERE uid=:uid', uid=uid)
-
-
-##
-
-class Object(gws.Job):
-    worker: str
-
-    def __init__(self, root: gws.Root, rec):
-        self.root = root
-
-        self.error = rec['error']
-        self.payload = gws.lib.jsonx.from_string(rec['payload'])
-        self.state = rec['state']
-        self.uid = rec['uid']
-        self.user = self._get_user(rec)
-        self.worker = rec['worker']
-
-    def _get_user(self, rec) -> gws.User:
-        auth = self.root.app.authMgr
-        if rec.get('str_user'):
-            user = auth.unserialize_user(rec.get('str_user'))
-            if user:
-                return user
-        return auth.guestUser
-
-    def run(self):
-        if self.state != gws.JobState.open:
-            gws.log.error(f'JOB {self.uid}: invalid state for run={self.state!r}')
+    def get_job(self, job_uid: str) -> Optional[gws.Job]:
+        rs = self._db().select(f'SELECT * FROM {self.table} WHERE uid=:uid', uid=job_uid)
+        if not rs:
             return
 
-        # @TODO lock
-        self.update(state=gws.JobState.running)
+        rec = rs[0]
+
+        user = None
+        if rec.get('str_user'):
+            user = self.root.app.authMgr.unserialize_user(rec.get('str_user'))
+
+        return gws.Job(
+            uid=rec['uid'],
+            state=rec['state'],
+            error=rec['error'],
+            payload=gws.Data(gws.lib.jsonx.from_string(rec['payload'] or '{}')),
+            user=user or self.root.app.authMgr.guestUser,
+            worker=rec['worker'],
+        )
+
+    def get_job_for(self, job_uid: str, user: gws.User) -> Optional[gws.Job]:
+        job = self.get_job(job_uid)
+        if not job:
+            gws.log.error(f'JOB {job_uid}: not found')
+            return
+        if job.user.uid != user.uid:
+            gws.log.error(f'JOB {job_uid}: wrong user (job={job.user.uid!r} user={user.uid!r})')
+            return
+        return job
+
+    def update_job(self, job: gws.Job, state=None, error=None, payload=None) -> Optional[gws.Job]:
+        cur_job = self.get_job(job.uid)
+        if not cur_job:
+            gws.log.error(f'JOB {job.uid} update: not found')
+            return
+
+        params = {}
+        if state is not None:
+            params['state'] = state
+        if error is not None:
+            params['error'] = error
+        if payload is not None:
+            params['payload'] = gws.lib.jsonx.to_string(gws.u.merge(cur_job.payload, payload))
+        params['updated'] = gws.u.stime()
+
+        vals = ','.join(f'{k}=:{k}' for k in params)
+        self._db().execute(
+            f'UPDATE {self.table} SET {vals} WHERE uid=:uid',
+            uid=job.uid, **params
+        )
+
+        gws.log.debug(f'JOB {job.uid} update: {params=}')
+        return self.get_job(job.uid)
+
+    def run_job(self, job: gws.Job):
+        job_uid = job.uid
+        tmp = gws.u.random_string(64)
+
+        self._db().execute(
+            f'UPDATE {self.table} SET state=:tmp WHERE uid=:uid AND state=:state',
+            uid=job_uid, tmp=tmp, state=gws.JobState.open
+        )
+
+        job = self.get_job(job_uid)
+        if not job:
+            raise gws.Error(f'JOB {job_uid}: not found')
+        if job.state != tmp:
+            raise gws.Error(f'JOB {job_uid}: invalid state={job.state!r}')
+
+        self._db().execute(
+            f'UPDATE {self.table} SET state=:new_state WHERE uid=:uid',
+            uid=job.uid, new_state=gws.JobState.running
+        )
+
+        job = self.get_job(job_uid)
 
         try:
-            mod_name, _, fn_name = self.worker.rpartition('.')
-            mod = importlib.import_module(mod_name)
+            mod_path, _, fn_name = job.worker.rpartition('.')
+            mod = gws.lib.importer.import_from_path(mod_path)
             fn = getattr(mod, fn_name)
-            fn(self.root, self)
-        except PrematureTermination as exc:
-            gws.log.error(f'JOB {self.uid}: PrematureTermination: {exc.args[0]!r}')
-            self.update(state=gws.JobState.error)
+            fn(self.root, job)
+        except gws.JobTerminated as exc:
+            gws.log.error(f'JOB {job_uid}: JobTerminated: {exc.args[0]!r}')
+            self.update_job(job, state=gws.JobState.error)
         except Exception as exc:
-            gws.log.error(f'JOB {self.uid}: FAILED')
+            gws.log.error(f'JOB {job_uid}: FAILED {exc=}')
             gws.log.exception()
-            self.update(state=gws.JobState.error, error=repr(exc))
+            self.update_job(job, state=gws.JobState.error, error=repr(exc))
 
-    def update(self, payload=None, state=None, error=None):
-        rec = {
-            'updated': gws.u.stime(),
-        }
+        return self.get_job(job_uid)
 
-        if payload is not None:
-            rec['payload'] = gws.lib.jsonx.to_string(payload)
-        if state:
-            rec['state'] = state
-        if error:
-            rec['error'] = error
+    def cancel_job(self, job: gws.Job) -> Optional[gws.Job]:
+        return self.update_job(job, state=gws.JobState.cancel)
 
-        vals = ','.join(f'{k}=:{k}' for k in rec)
+    def remove_job(self, job: gws.Job):
+        self._db().execute(f'DELETE FROM {self.table} WHERE uid=:uid', uid=job.uid)
 
-        _db().execute(f'UPDATE {_TABLE} SET {vals} WHERE uid=:uid', uid=self.uid, **rec)
+    def job_response(self, job):
 
-        gws.log.debug(f'JOB {self.uid}: update: {rec=}')
+        def _progress():
+            if job.state == gws.JobState.complete:
+                return 100
+            if job.state != gws.JobState.running:
+                return 0
+            step_count = job.payload.get('stepCount', 0)
+            if not step_count:
+                return 0
+            step = job.payload.get('step', 0)
+            return int(min(100.0, step * 100.0 / step_count))
 
-    def cancel(self):
-        self.update(state=gws.JobState.cancel)
+        return gws.JobResponse(
+            jobUid=job.uid,
+            state=job.state,
+            progress=_progress(),
+            stepName=job.payload.get('stepName', ''),
+        )
 
-    def remove(self):
-        _db().execute(f'DELETE FROM {_TABLE} WHERE uid=:uid', uid=self.uid)
+    ##
 
+    _sqlitex: gws.lib.sqlitex.Object
 
-##
-
-
-_sqlitex: Optional[gws.lib.sqlitex.Object] = None
-
-
-def _db() -> gws.lib.sqlitex.Object:
-    global _sqlitex
-
-    if _sqlitex is None:
-        _sqlitex = gws.lib.sqlitex.Object(_DB_PATH, _INIT_DDL)
-    return _sqlitex
+    def _db(self):
+        if getattr(self, '_sqlitex', None) is None:
+            ddl = f'''
+                CREATE TABLE IF NOT EXISTS {self.table} (
+                    uid      TEXT NOT NULL PRIMARY KEY,
+                    user_uid TEXT NOT NULL,
+                    str_user TEXT NOT NULL,
+                    worker   TEXT NOT NULL,
+                    state    TEXT NOT NULL,
+                    error    TEXT NOT NULL,
+                    payload  TEXT NOT NULL,
+                    created  INTEGER NOT NULL,
+                    updated  INTEGER NOT NULL
+                )
+            '''
+            self._sqlitex = gws.lib.sqlitex.Object(self.dbPath, ddl)
+        return self._sqlitex

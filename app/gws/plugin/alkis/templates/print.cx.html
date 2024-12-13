@@ -3,7 +3,7 @@
 @page width="210" height="297" margin="10 10 30 10"
 
 @footer
-    <table border="0" cellspacing="0" cellpadding="10" width="100%">
+    <table border="0" cellspacing="0" cellpadding="10" width="100%"><tr>
         <td style="text-align: left; font-size:9pt">
             {date.medium}
         </td>
@@ -27,13 +27,13 @@
         @map number=n-1 width="185" height="220"
     </div>
 
-    <div class="br"></div>
+    @pagebreak
 
     <div class="alkisFs">
         @flurstueck fs
     </div>
 
     @if n < total
-        <div class="br"></div>
+        @pagebreak
     @end
 @end

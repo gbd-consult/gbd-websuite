@@ -27,12 +27,12 @@ Caveats/todos:
 """
 from typing import Optional
 
-
 import gws
 import gws.base.template
 import gws.config.util
 import gws.plugin.template.html
 import gws.lib.htmlx
+import gws.lib.osx
 import gws.lib.mime
 import gws.lib.pdf
 import gws.gis.render
@@ -82,16 +82,14 @@ class Object(gws.base.template.Object):
         # render the map
 
         self.notify(tri, 'begin_map')
-        map_pdf_path = gws.u.printtemp('q.map.pdf')
+        map_pdf_path = gws.u.ephemeral_path('q.map.pdf')
         mro = self._render_map(tri, map_pdf_path)
         self.notify(tri, 'end_map')
 
         # render qgis
 
-        self.notify(tri, 'begin_page')
-        qgis_pdf_path = gws.u.printtemp('q.qgis.pdf')
+        qgis_pdf_path = gws.u.ephemeral_path('q.qgis.pdf')
         self._render_qgis(tri, mro, qgis_pdf_path)
-        self.notify(tri, 'end_page')
 
         if not mro:
             # no map, just return the rendered qgis
@@ -101,7 +99,7 @@ class Object(gws.base.template.Object):
         # combine map and qgis
 
         self.notify(tri, 'finalize_print')
-        comb_path = gws.u.printtemp('q.comb.pdf')
+        comb_path = gws.u.ephemeral_path('q.comb.pdf')
         gws.lib.pdf.overlay(map_pdf_path, qgis_pdf_path, comb_path)
 
         self.notify(tri, 'end_print')
@@ -204,16 +202,20 @@ class Object(gws.base.template.Object):
             'FORMAT': 'pdf',
             'TEMPLATE': self.qgisTemplate.title,
             'TRANSPARENT': 'true',
+            'MAP': self.serviceProvider.server_project_path(),
         }
 
         qgis_project = self.serviceProvider.qgis_project()
         changed = self._render_html_blocks(tri, qgis_project)
+        project_copy_path = ''
 
         if changed:
             # we have html templates, create a copy of the project
-            new_project_path = out_path + '.qgs'
-            qgis_project.to_path(new_project_path)
-            params['MAP'] = new_project_path
+            # NB it must be in a shared dir, so that qgis container can access it
+            # NB since we relocate the project, all assets must be absolute
+            project_copy_path = gws.c.QGIS_DIR + '/' + gws.u.random_string(64) + '.qgs'
+            qgis_project.to_path(project_copy_path)
+            params['MAP'] = project_copy_path
 
         if mro:
             # NB we don't render the map here, but still need map0:xxxx for scale bars and arrows
@@ -227,6 +229,9 @@ class Object(gws.base.template.Object):
 
         res = self.serviceProvider.call_server(params)
         gws.u.write_file_b(out_path, res.content)
+
+        if project_copy_path:
+            gws.lib.osx.unlink(project_copy_path)
 
     def _collect_html_blocks(self):
         self.htmlBlocks = {}

@@ -62,7 +62,6 @@ u.to_data_object = to_data_object
 
 # @include lib/image/types.pyinc
 # @include lib/intl/types.pyinc
-# @include lib/job/types.pyinc
 # @include lib/metadata/types.pyinc
 # @include lib/style/types.pyinc
 # @include lib/xmlx/types.pyinc
@@ -87,6 +86,7 @@ u.to_data_object = to_data_object
 # @include base/model/types.pyinc
 # @include base/database/types.pyinc
 
+# @include base/job/types.pyinc
 # @include base/ows/types.pyinc
 # @include base/printer/types.pyinc
 # @include base/project/types.pyinc

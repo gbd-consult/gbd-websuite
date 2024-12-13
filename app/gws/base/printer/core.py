@@ -5,7 +5,6 @@ import gws.base.feature
 import gws.base.model
 import gws.base.template
 import gws.config.util
-import gws.lib.job
 import gws.lib.style
 
 gws.ext.new.printer('default')

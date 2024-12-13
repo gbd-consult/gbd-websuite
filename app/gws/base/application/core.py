@@ -8,6 +8,7 @@ import gws.base.application.middleware
 import gws.base.auth
 import gws.base.client
 import gws.base.database
+import gws.base.job
 import gws.base.model
 import gws.base.printer
 import gws.base.project
@@ -149,6 +150,9 @@ class Object(gws.Application):
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
 
+        if gws.u.is_file('/GWS_IMAGE_VERSION'):
+            self.versionString += ' (Image ' + gws.u.read_file('/GWS_IMAGE_VERSION') + ')'
+
         if not gws.env.GWS_IN_TEST:
             gws.log.info('*' * 60)
             gws.log.info(self.versionString)
@@ -200,6 +204,8 @@ class Object(gws.Application):
         self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
         for cfg in _DEFAULT_TEMPLATES:
             self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
+
+        self.jobMgr = self.create_child(gws.base.job.manager.Object)
 
         self.printerMgr = self.create_child(gws.base.printer.manager.Object)
         self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))

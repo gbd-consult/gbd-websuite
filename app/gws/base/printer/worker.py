@@ -6,14 +6,13 @@ import gws.gis.crs
 import gws.gis.render
 import gws.lib.image
 import gws.lib.intl
-import gws.lib.job
 import gws.lib.mime
 import gws.lib.osx
 import gws.lib.style
 import gws.lib.uom
 
 
-def worker(root: gws.Root, job: gws.lib.job.Object):
+def main(root: gws.Root, job: gws.Job):
     request = gws.u.unserialize_from_path(job.payload.get('requestPath'))
     w = Object(root, job.uid, request, job.user)
     w.run()
@@ -29,15 +28,18 @@ class Object:
     tri: gws.TemplateRenderInput
     printer: gws.Printer
     template: gws.Template
+    request: gws.PrintRequest
+    tmpDir: str
 
     def __init__(self, root: gws.Root, job_uid: str, request: gws.PrintRequest, user: gws.User):
         self.jobUid = job_uid
         self.root = root
         self.user = user
+        self.request = request
+        self.page_number = 0
 
-        self.project = cast(gws.Project, self.user.require(request.projectUid, gws.ext.object.project))
-
-        self.page_count = 0
+    def prepare(self):
+        self.project = cast(gws.Project, self.user.require(self.request.projectUid, gws.ext.object.project))
 
         self.tri = gws.TemplateRenderInput(
             project=self.project,
@@ -45,7 +47,7 @@ class Object:
             notify=self.notify,
         )
 
-        fmt = request.outputFormat or 'pdf'
+        fmt = self.request.outputFormat or 'pdf'
         if fmt.lower() == 'pdf' or fmt == gws.lib.mime.PDF:
             self.tri.mimeOut = gws.lib.mime.PDF
         elif fmt.lower() == 'png' or fmt == gws.lib.mime.PNG:
@@ -53,17 +55,17 @@ class Object:
         else:
             raise gws.Error(f'invalid outputFormat {fmt!r}')
 
-        self.tri.locale = gws.lib.intl.locale(request.localeUid, self.tri.project.localeUids)
-        self.tri.crs = gws.gis.crs.get(request.crs) or self.project.map.bounds.crs
-        self.tri.maps = [self.prepare_map(self.tri, m) for m in (request.maps or [])]
-        self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(request.dpi, gws.lib.uom.OGC_SCREEN_PPI)))
+        self.tri.locale = gws.lib.intl.locale(self.request.localeUid, self.tri.project.localeUids)
+        self.tri.crs = gws.gis.crs.get(self.request.crs) or self.project.map.bounds.crs
+        self.tri.maps = [self.prepare_map(self.tri, m) for m in (self.request.maps or [])]
+        self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(self.request.dpi, gws.lib.uom.OGC_SCREEN_PPI)))
 
-        if request.type == 'template':
+        if self.request.type == 'template':
             # @TODO check dpi against configured qualityLevels
-            self.printer = cast(gws.Printer, self.user.require(request.printerUid, gws.ext.object.printer))
+            self.printer = cast(gws.Printer, self.user.require(self.request.printerUid, gws.ext.object.printer))
             self.template = self.printer.template
         else:
-            mm = gws.lib.uom.size_px_to_mm(request.outputSize, gws.lib.uom.OGC_SCREEN_PPI)
+            mm = gws.lib.uom.size_px_to_mm(self.request.outputSize, gws.lib.uom.OGC_SCREEN_PPI)
             px = gws.lib.uom.size_mm_to_px(mm, self.tri.dpi)
             self.template = self.root.create_temporary(
                 gws.ext.object.template,
@@ -81,37 +83,36 @@ class Object:
         )
 
         # @TODO read the args feature from the request
-        self.tri.args = gws.u.merge(request.args, extra)
+        self.tri.args = gws.u.merge(self.request.args, extra)
 
-        num_steps = sum(len(mp.planes) for mp in self.tri.maps) + 1
-
-        self.update_job(state=gws.JobState.running, numSteps=num_steps)
+        n = sum(len(mp.planes) for mp in self.tri.maps) + 1
+        self.update_job(state=gws.JobState.running, payload=gws.Data(stepCount=n, step=0))
 
     def notify(self, event, details=None):
         gws.log.debug(f'JOB {self.jobUid}: print.worker.notify {event=} {details=}')
-        args = {
-            'stepType': event,
-        }
+
+        job = self.get_job()
+        if not job:
+            return
 
         if event == 'begin_plane':
             name = gws.u.get(details, 'layer.title')
-            args['progress'] = True
-            args['stepName'] = name or ''
+            self.update_job(payload=gws.Data(step=job.payload.get('step', 0) + 1, stepName=name or ''))
+            return
 
-        elif event == 'finalize_print':
-            args['progress'] = True
-            return self.update_job(inc=True)
+        if event == 'finalize_print':
+            self.update_job(payload=gws.Data(step=job.payload.get('step', 0) + 1))
+            return
 
-        elif event == 'begin_page':
-            self.page_count += 1
-            args['step'] = 0
-            args['stepName'] = str(self.page_count)
-
-        return self.update_job(**args)
+        if event == 'page_break':
+            self.page_number += 1
+            self.update_job(payload=gws.Data(stepName=str(self.page_number)))
+            return
 
     def run(self):
+        self.prepare()
         res = self.template.render(self.tri)
-        self.update_job(state=gws.JobState.complete, resultPath=res.contentPath)
+        self.update_job(state=gws.JobState.complete, payload=gws.Data(contentPath=res.contentPath))
         return res.contentPath
 
     def prepare_map(self, tri: gws.TemplateRenderInput, mp: gws.PrintMap) -> gws.MapRenderInput:
@@ -257,29 +258,27 @@ class Object:
 
         raise gws.Error(f'invalid plane type {plane.type!r}')
 
-    def update_job(self, **kwargs):
-        job = self.get_job()
-        if not job:
-            return
-
-        state = kwargs.pop('state', None)
-
-        if kwargs.pop('progress', None):
-            kwargs['step'] = job.payload.get('step', 0) + 1
-
-        job.update(state=state, payload=gws.u.merge(job.payload, kwargs))
-
-    def get_job(self) -> Optional[gws.lib.job.Object]:
+    def get_job(self) -> Optional[gws.Job]:
         if not self.jobUid:
             return None
 
-        job = gws.lib.job.get(self.root, self.jobUid)
+        job = self.root.app.jobMgr.get_job(self.jobUid)
 
         if not job:
-            raise gws.lib.job.PrematureTermination('JOB_NOT_FOUND')
+            raise gws.JobTerminated('JOB_NOT_FOUND')
         if job.user.uid != self.user.uid:
-            raise gws.lib.job.PrematureTermination('WRONG_USER {job.user.uid}')
+            raise gws.JobTerminated('WRONG_USER {job.user.uid}')
         if job.state != gws.JobState.running:
-            raise gws.lib.job.PrematureTermination(f'JOB_WRONG_STATE={job.state!r}')
+            raise gws.JobTerminated(f'JOB_WRONG_STATE={job.state!r}')
 
         return job
+
+    def update_job(self, state: gws.JobState = None, error: str = None, payload: gws.Data = None):
+        job = self.get_job()
+        if job:
+            self.root.app.jobMgr.update_job(
+                job,
+                state=state,
+                error=error,
+                payload=payload
+            )

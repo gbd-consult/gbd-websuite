@@ -1,5 +1,4 @@
 import gws
-import gws.lib.job
 import gws.server.uwsgi_module
 
 # from uwsgi
@@ -16,7 +15,7 @@ def is_active():
         return False
 
 
-def add(job):
+def add(job: gws.Job):
     uwsgi = gws.server.uwsgi_module.load()
     gws.log.info(f'SPOOLING {job.uid!r}')
     d = {b'job_uid': gws.u.to_bytes(job.uid)}
@@ -26,5 +25,8 @@ def add(job):
 def run(root: gws.Root, env: dict):
     job_uid = env.get(b'job_uid')
     if not job_uid:
-        raise ValueError('no job_uid found')
-    gws.lib.job.run(root, gws.u.to_str(job_uid))
+        raise ValueError('JOB: no "job_uid"')
+    job = root.app.jobMgr.get_job(gws.u.to_str(job_uid))
+    if not job:
+        raise ValueError(f'JOB {job_uid} not found')
+    root.app.jobMgr.run_job(job)

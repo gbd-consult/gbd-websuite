@@ -19,7 +19,7 @@ OBJECT_CACHE_DIR = f'{CACHE_DIR}/object'
 CONFIG_DIR = f'{VAR_DIR}/config'
 MISC_DIR = f'{VAR_DIR}/misc'
 SERVER_DIR = f'{VAR_DIR}/server'
-PRINT_DIR = f'{VAR_DIR}/print'
+QGIS_DIR = f'{VAR_DIR}/qgis'
 
 FASTCACHE_DIR = f'{TMP_DIR}/fastcache'
 PIDS_DIR = f'{TMP_DIR}/pids'
@@ -29,6 +29,7 @@ SPEC_DIR = f'{TMP_DIR}/spec'
 TRANSIENT_DIR = f'{TMP_DIR}/transient'
 LOCKS_DIR = f'{TRANSIENT_DIR}/locks'
 GLOBALS_DIR = f'{TRANSIENT_DIR}/globals'
+EPHEMERAL_DIR = f'{TRANSIENT_DIR}/ephemeral'
 
 ALL_DIRS = [
     CACHE_DIR,
@@ -39,7 +40,7 @@ ALL_DIRS = [
     CONFIG_DIR,
     MISC_DIR,
     SERVER_DIR,
-    PRINT_DIR,
+    QGIS_DIR,
     FASTCACHE_DIR,
     PIDS_DIR,
     SPOOL_DIR,
@@ -47,6 +48,7 @@ ALL_DIRS = [
     TRANSIENT_DIR,
     LOCKS_DIR,
     GLOBALS_DIR,
+    EPHEMERAL_DIR,
 ]
 
 SERVER_ENDPOINT = '/_'

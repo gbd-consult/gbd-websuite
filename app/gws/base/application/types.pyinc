@@ -20,14 +20,15 @@ class Application(Node):
     actionMgr: 'ActionManager'
     authMgr: 'AuthManager'
     databaseMgr: 'DatabaseManager'
+    jobMgr: 'JobManager'
+    middlewareMgr: 'MiddlewareManager'
     modelMgr: 'ModelManager'
     printerMgr: 'PrinterManager'
     searchMgr: 'SearchManager'
+    serverMgr: 'ServerManager'
     storageMgr: 'StorageManager'
     templateMgr: 'TemplateManager'
-    serverMgr: 'ServerManager'
     webMgr: 'WebManager'
-    middlewareMgr: 'MiddlewareManager'
 
     actions: list['Action']
     projects: list['Project']

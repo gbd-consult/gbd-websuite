@@ -48,6 +48,9 @@ Headers and footers are separate sub-templates, which receive the same arguments
 
 - ``numpages`` - the total number of pages in the document
 - ``page`` - the current page number
+
+The ``@pagebreak`` command, which renders a page break.
+
 """
 
 from typing import Optional, cast
@@ -198,6 +201,10 @@ class Object(gws.base.template.Object):
         img_path = gws.base.legend.output_to_image_path(lro)
         return f'<img src="{img_path}"/>'
 
+    def render_page_break(self, tri: gws.TemplateRenderInput):
+        self.notify(tri, 'page_break')
+        return '<div style="page-break-after: always"></div>'
+
     ##
 
     def finalize(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
@@ -223,7 +230,7 @@ class Object(gws.base.template.Object):
         raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')
 
     def finalize_pdf(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
-        content_pdf_path = gws.u.printtemp('content.pdf')
+        content_pdf_path = gws.u.ephemeral_path('content.pdf')
 
         page_size = main_engine.pageSize or self.pageSize
         page_margin = main_engine.pageMargin or self.pageMargin
@@ -245,7 +252,7 @@ class Object(gws.base.template.Object):
         frame_text = self.frame_template(main_engine.header or '', main_engine.footer or '', page_size)
         frame_html = frame_engine.render(frame_text, args=args, error=self.error_handler)
 
-        frame_pdf_path = gws.u.printtemp('frame.pdf')
+        frame_pdf_path = gws.u.ephemeral_path('frame.pdf')
 
         gws.lib.htmlx.render_to_pdf(
             self.decorate_html(frame_html),
@@ -254,13 +261,13 @@ class Object(gws.base.template.Object):
             page_margin=None,
         )
 
-        combined_pdf_path = gws.u.printtemp('combined.pdf')
+        combined_pdf_path = gws.u.ephemeral_path('combined.pdf')
         gws.lib.pdf.overlay(frame_pdf_path, content_pdf_path, combined_pdf_path)
 
         return combined_pdf_path
 
     def finalize_png(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
-        out_png_path = gws.u.printtemp('out.png')
+        out_png_path = gws.u.ephemeral_path('out.png')
 
         page_size = main_engine.pageSize or self.pageSize
         page_margin = main_engine.pageMargin or self.pageMargin
@@ -295,7 +302,7 @@ class Object(gws.base.template.Object):
                 </style>
                 <body>
                     @for page in range(1, numpages + 1)
-                        <table class="FRAME_TABLE" border=0 cellspacing=0 cellpadding=0>
+                        <table class="FRAME_TABLE" border="1" cellspacing="0" cellpadding="0">
                             <tr class="FRAME_TR" valign="top"><td class="FRAME_TD">{header}</td></tr>
                             <tr class="FRAME_TR" valign="bottom"><td class="FRAME_TD">{footer}</td></tr>
                         </table>
@@ -348,6 +355,11 @@ class Engine(gws.lib.vendor.jump.Engine):
             index=_scalar(kw, 'number', int, 0),
             layers=kw.get('layers'),
         )
+
+    def def_pagebreak(self, **kw):
+        if not self.tri:
+            return
+        return self.template.render_page_break(self.tri)
 
     def mbox_header(self, text):
         self.header = text

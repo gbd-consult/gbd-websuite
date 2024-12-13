@@ -254,7 +254,7 @@ def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.Xml
 
     for plane in mro.planes:
         if plane.type == gws.MapRenderOutputPlaneType.image:
-            img_path = plane.image.to_path(gws.u.printtemp('mro.png'))
+            img_path = plane.image.to_path(gws.u.ephemeral_path('mro.png'))
             tags.append(xmlx.tag('img', {'style': css_abs, 'src': img_path}))
         if plane.type == gws.MapRenderOutputPlaneType.path:
             tags.append(xmlx.tag('img', {'style': css_abs, 'src': plane.path}))

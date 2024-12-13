@@ -17,6 +17,7 @@ import time
 import urllib.parse
 
 from typing import cast, Union
+
 from . import const, log
 
 
@@ -659,11 +660,42 @@ def _chown(path, user, group):
         pass
 
 
-def printtemp(name: str) -> str:
-    """Return a transient path name in the print directory."""
+_ephemeral_state = dict(
+    last_check_time=0,
+    check_interval=20 * 30,
+    max_age=20 * 30,
+)
+
+
+def ephemeral_path(name: str) -> str:
+    """Return an ephemeral path name."""
+
+    if stime() > _ephemeral_state['last_check_time'] + _ephemeral_state['check_interval']:
+        _ephemeral_cleanup()
 
     name = str(os.getpid()) + '_' + random_string(64) + '_' + name
-    return const.PRINT_DIR + '/' + name
+    return const.EPHEMERAL_DIR + '/' + name
+
+
+def _ephemeral_cleanup():
+    """Remove ephemeral paths older than max age."""
+
+    cnt = 0
+    ts = stime()
+
+    for de in os.scandir(const.EPHEMERAL_DIR):
+        age = int(ts - de.stat().st_mtime)
+        if age > _ephemeral_state['max_age']:
+            try:
+                os.unlink(de.path)
+                cnt += 1
+            except OSError:
+                pass
+
+    _ephemeral_state['last_check_time'] = ts
+
+    if cnt > 0:
+        log.debug(f'_ephemeral_cleanup: {cnt}')
 
 
 def random_string(size: int) -> str:

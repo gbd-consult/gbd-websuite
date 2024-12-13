@@ -68,17 +68,6 @@ class PrintRequest(Request):
     outputSize: Optional[Size]
 
 
-class PrintJobResponse(Response):
-    """Print job information response."""
-
-    jobUid: str
-    progress: int
-    state: 'JobState'
-    stepType: str
-    stepName: str
-    url: str
-
-
 class Printer(Node):
     """Printer object."""
 
@@ -95,13 +84,9 @@ class PrinterManager(Node):
 
     def start_job(self, request: PrintRequest, user: 'User') -> 'Job': ...
 
-    def get_job(self, uid: str, user: 'User') -> Optional['Job']: ...
-
-    def run_job(self, request: PrintRequest, user: 'User'): ...
+    def exec_print(self, request: PrintRequest, user: 'User'): ...
 
     def cancel_job(self, job: 'Job'): ...
 
-    def result_path(self, job: 'Job') -> str: ...
 
-    def status(self, job: 'Job') -> PrintJobResponse: ...
-
+    def job_response(self, job: 'Job') -> 'JobResponse': ...

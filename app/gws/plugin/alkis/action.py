@@ -389,7 +389,7 @@ class Object(gws.base.action.Object):
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
 
         self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
-        self.printers.append(self.root.create_shared(gws.ext.object.printer, _DEFAULT_PRINTER))
+        self.printers.append(self.create_child(gws.ext.object.printer, _DEFAULT_PRINTER))
 
         d = gws.TextSearchOptions(type='exact')
         self.strasseSearchOptions = self.cfg('strasseSearchOptions', default=d)
@@ -419,6 +419,7 @@ class Object(gws.base.action.Object):
         def _load():
             return self.ix.status()
         self.ixStatus = gws.u.get_server_global('gws.plugin.alkis.action.ixStatus', _load)
+        gws.log.debug(f'{self.ixStatus=}')
 
     def props(self, user):
         if not self.ixStatus.basic:
@@ -581,7 +582,7 @@ class Object(gws.base.action.Object):
         return ExportFlurstueckResponse(content=csv_bytes, mime='text/csv')
 
     @gws.ext.command.api('alkisPrintFlurstueck')
-    def print_flurstueck(self, req: gws.WebRequester, p: PrintFlurstueckRequest) -> gws.PrintJobResponse:
+    def print_flurstueck(self, req: gws.WebRequester, p: PrintFlurstueckRequest) -> gws.JobResponse:
         """Print Flurstueck features"""
 
         project = req.user.require_project(p.projectUid)
@@ -631,8 +632,9 @@ class Object(gws.base.action.Object):
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
         )
 
-        job = self.root.app.printerMgr.start_job(print_request, req.user)
-        return self.root.app.printerMgr.status(job)
+        mgr = self.root.app.printerMgr
+        job = mgr.start_job(print_request, req.user)
+        return mgr.job_response(job)
 
     @gws.ext.command.api('alkisSelectionStorage')
     def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
@@ -856,7 +858,7 @@ class Object(gws.base.action.Object):
             conn.execute(sa.insert(self.eigentuemer.logTable).values([data]))
             conn.commit()
 
-        gws.log.debug(f'_log_eigentuemer_access {is_ok=}')
+        gws.log.debug(f'alkis: _log_eigentuemer_access {is_ok=}')
 
     def _check_eigentuemer_control_input(self, control_input):
         if not self.eigentuemer.controlRules:

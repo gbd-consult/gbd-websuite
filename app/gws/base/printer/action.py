@@ -6,11 +6,9 @@ import gws
 import gws.base.action
 import gws.base.web
 import gws.config
-import gws.lib.job
 import gws.lib.jsonx
 import gws.lib.mime
 import gws.lib.style
-
 
 from . import manager
 
@@ -41,46 +39,44 @@ class CliParams(gws.CliParams):
 class Object(gws.base.action.Object):
 
     @gws.ext.command.api('printerStart')
-    def start_print(self, req: gws.WebRequester, p: gws.PrintRequest) -> gws.PrintJobResponse:
+    def printer_start(self, req: gws.WebRequester, p: gws.PrintRequest) -> gws.JobResponse:
         """Start a background print job"""
 
-        job = self.root.app.printerMgr.start_job(p, req.user)
-        return self.root.app.printerMgr.status(job)
+        mgr = self.root.app.printerMgr
+        job = mgr.start_job(p, req.user)
+        return mgr.job_response(job)
 
-    @gws.ext.command.api('printerStatus')
-    def get_status(self, req: gws.WebRequester, p: JobRequest) -> gws.PrintJobResponse:
+    @gws.ext.command.api('printerJobInfo')
+    def printer_job_info(self, req: gws.WebRequester, p: JobRequest) -> gws.JobResponse:
         """Query the print job status"""
 
-        job = self.root.app.printerMgr.get_job(p.jobUid, req.user)
-        if not job:
-            raise gws.NotFoundError(f'{p.jobUid=} not found')
-        return self.root.app.printerMgr.status(job)
+        mgr = self.root.app.printerMgr
+        job = self._get_job(req, p)
+        return mgr.job_response(job)
 
-    @gws.ext.command.api('printerCancel')
-    def cancel(self, req: gws.WebRequester, p: JobRequest) -> gws.PrintJobResponse:
+    @gws.ext.command.api('printerCancelJob')
+    def printer_cancel_job(self, req: gws.WebRequester, p: JobRequest) -> gws.JobResponse:
         """Cancel a print job"""
 
-        job = self.root.app.printerMgr.get_job(p.jobUid, req.user)
-        if not job:
-            raise gws.NotFoundError(f'{p.jobUid=} not found')
-        self.root.app.printerMgr.cancel_job(job)
-        return self.root.app.printerMgr.status(job)
+        mgr = self.root.app.printerMgr
+        job = self._get_job(req, p)
+        job = mgr.cancel_job(job)
+        return mgr.job_response(job)
+
 
     @gws.ext.command.get('printerResult')
-    def get_result(self, req: gws.WebRequester, p: JobRequest) -> gws.ContentResponse:
-        """Get the result of a print job as a byte stream"""
+    def printer_result(self, req: gws.WebRequester, p: JobRequest) -> gws.ContentResponse:
+        """Get the result of a print job as bytes."""
 
-        job = self.root.app.printerMgr.get_job(p.jobUid, req.user)
-        if not job:
-            raise gws.NotFoundError(f'printerResult {p.jobUid=} not found')
+        job = self._get_job(req, p)
         if job.state != gws.JobState.complete:
             raise gws.NotFoundError(f'printerResult {p.jobUid=} wrong {job.state=}')
 
-        res_path = self.root.app.printerMgr.result_path(job)
-        if not res_path:
+        cp = job.payload.get('contentPath')
+        if not cp:
             raise gws.NotFoundError(f'printerResult {p.jobUid=} no res_path')
 
-        return gws.ContentResponse(contentPath=res_path)
+        return gws.ContentResponse(contentPath=cp)
 
     @gws.ext.command.cli('printerPrint')
     def print(self, p: CliParams):
@@ -93,6 +89,15 @@ class Object(gws.base.action.Object):
             p.request,
         )
 
-        res_path = root.app.printerMgr.run_job(request, root.app.authMgr.systemUser)
-        res = gws.u.read_file_b(res_path)
-        gws.u.write_file_b(p.output, res)
+        mgr = root.app.printerMgr
+        res_path = mgr.exec_print(request, root.app.authMgr.systemUser)
+        gws.u.write_file_b(p.output, gws.u.read_file_b(res_path))
+
+
+    ##
+
+    def _get_job(self, req: gws.WebRequester, p: JobRequest):
+        job = self.root.app.jobMgr.get_job_for(p.jobUid, req.user)
+        if not job:
+            raise gws.NotFoundError(f'{p.jobUid=} not found')
+        return job
