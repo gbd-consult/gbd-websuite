@@ -3,72 +3,109 @@ class DatabaseModel(Model):
     """Database-based data model."""
 
     db: 'DatabaseProvider'
+    """Database provider."""
     sqlFilter: str
+    """Literal SQL condition applied when selecting rows."""
     tableName: str
+    """Table name associated with this model."""
 
-    def table(self) -> 'sqlalchemy.Table': ...
+    def table(self) -> 'sqlalchemy.Table':
+        """Return the SQLAlchemy Table object for this database model."""
 
-    def column(self, column_name: str) -> 'sqlalchemy.Column': ...
+    def column(self, column_name: str) -> 'sqlalchemy.Column':
+        """Retrieve the SQLAlchemy Column object for the given column name."""
 
-    def uid_column(self) -> 'sqlalchemy.Column': ...
-
-
+    def uid_column(self) -> 'sqlalchemy.Column':
+        """Return the SQLAlchemy Column object representing the unique identifier column."""
 
 
 class ColumnDescription(Data):
-    """Database column description."""
+    """Description of a dataset column."""
 
     columnIndex: int
+    """The index of the column within the table."""
     comment: str
+    """Column comment or description provided in the database metadata."""
     default: str
+    """The default value assigned to the column, if any."""
     geometrySrid: int
+    """The Spatial Reference Identifier (SRID) for geometry columns."""
     geometryType: GeometryType
+    """The type of geometry stored in the column (e.g., Point, Polygon)."""
     isAutoincrement: bool
+    """Indicates if the column is auto-incremented."""
     isNullable: bool
+    """Specifies if the column permits NULL values."""
     isPrimaryKey: bool
+    """Specifies if the column is part of the primary key."""
     isUnique: bool
+    """Indicates if the column has a unique constraint."""
     hasDefault: bool
+    """Indicates if the column has a database-defined default value."""
+    isIndexed: bool
+    """Indicates if the column has an index."""
     name: str
+    """The name of the column."""
     nativeType: str
+    """The database-specific data type of the column."""
     options: dict
+    """Additional options or configurations for the column, if any."""
     type: AttributeType
-
-
-class RelationshipDescription(Data):
-    """Database relationship description."""
-
-    name: str
-    schema: str
-    fullName: str
-    foreignKeys: str
-    referredKeys: str
+    """The abstract type of the column used in higher-level processing."""
 
 
 class DataSetDescription(Data):
-    """Description of a database Table or a GDAL Dataset."""
+    """Description of a dataset, like a DB table or a GDAL data set."""
 
     columns: list[ColumnDescription]
+    """A list of column descriptions."""
     columnMap: dict[str, ColumnDescription]
+    """A dictionary mapping column names to their descriptions."""
     fullName: str
+    """The full name of the dataset, including schema if applicable."""
     geometryName: str
+    """The name of the geometry column, if any."""
     geometrySrid: int
+    """The Spatial Reference Identifier (SRID) for the geometry."""
     geometryType: GeometryType
+    """The type of geometry stored in the dataset."""
     name: str
+    """The name of the dataset or table."""
     schema: str
+    """The schema to which the dataset belongs."""
 
 
 class DatabaseManager(Node):
     """Database manager."""
 
     providers: list['DatabaseProvider']
+    """A list of database providers managed by this DatabaseManager."""
 
-    def create_provider(self, cfg: Config, **kwargs) -> 'DatabaseProvider': ...
+    def create_provider(self, cfg: Config, **kwargs) -> 'DatabaseProvider':
+        """Create and return a DatabaseProvider instance based on the given configuration.
 
-    def find_provider(self, uid: Optional[str] = None, ext_type: Optional[str] = None) -> Optional['DatabaseProvider']: ...
+        Args:
+            cfg: The configuration object for the database provider.
+            **kwargs: Additional keyword arguments to customize the provider creation.
+
+        Returns:
+            DatabaseProvider: A new database provider instance.
+        """
+
+    def find_provider(self, uid: Optional[str] = None, ext_type: Optional[str] = None) -> Optional['DatabaseProvider']:
+        """Find and return a DatabaseProvider that matches the given UID and/or extension type.
+
+        Args:
+            uid: The unique identifier of the database provider to find.
+            ext_type: The type of the database provider to find.
+
+        Returns:
+            The matching database provider if found, otherwise None.
+        """
 
 
 DatabaseTableAlike: TypeAlias = Union['sqlalchemy.Table', str]
-"""SA ``Table`` object or a string table name."""
+"""An SQLAlchemy ``Table`` object or a string table name."""
 
 
 class DatabaseProvider(Node):
@@ -82,7 +119,7 @@ class DatabaseProvider(Node):
     """Connection url."""
 
     def column(self, table: DatabaseTableAlike, column_name: str) -> 'sqlalchemy.Column':
-        """SA ``Column`` object for a specific column."""
+        """SQLAlchemy ``Column`` object for a specific column."""
 
     def connect(self) -> ContextManager['sqlalchemy.Connection']:
         """Context manager for a SA ``Connection``.

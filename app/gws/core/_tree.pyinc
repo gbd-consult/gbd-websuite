@@ -1,5 +1,5 @@
 class Object:
-    """GWS object."""
+    """Basic GWS object."""
 
     permissions: dict[Access, Acl]
     """Mapping from an access mode to a list of ACL tuples."""
@@ -28,7 +28,7 @@ Object.__repr__ = tree_impl.object_repr
 
 
 class Node(Object):
-    """Configurable GWS object."""
+    """GWS object tree node."""
 
     extName: str
     """Full extension name like ``gws.ext.object.layer.wms``."""

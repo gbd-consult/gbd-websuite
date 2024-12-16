@@ -6,6 +6,7 @@ import traceback
 
 
 class Level:
+    """Log level."""
     CRITICAL = 50
     ERROR = 40
     WARN = 30

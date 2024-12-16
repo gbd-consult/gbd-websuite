@@ -438,7 +438,7 @@ class ConfigWithAccess(Config):
 """App Error object"""
 
 class Error(Exception):
-    """GWS error."""
+    """Generic GWS error."""
     def __repr__(self):
         return log.exception_backtrace(self)[0]
 
@@ -466,9 +466,6 @@ class BadRequestError(Error):
 class ResponseTooLargeError(Error):
     """Generic error when a response is too large."""
     pass
-
-
-##
 ################################################################################
 
 
@@ -644,7 +641,7 @@ class SpecRuntime:
 
 
 class Object:
-    """GWS object."""
+    """Basic GWS object."""
 
     permissions: dict[Access, Acl]
     """Mapping from an access mode to a list of ACL tuples."""
@@ -673,7 +670,7 @@ Object.__repr__ = tree_impl.object_repr
 
 
 class Node(Object):
-    """Configurable GWS object."""
+    """GWS object tree node."""
 
     extName: str
     """Full extension name like ``gws.ext.object.layer.wms``."""
@@ -2362,18 +2359,28 @@ class ActionManager(Node):
     """Action manager."""
 
     def actions_for_project(self, project: 'Project', user: 'User') -> list['Action']:
-        """Get a list of actions for a Project, to which a User has access to."""
-
-    def find_action(self, project: Optional['Project'], ext_type: str, user: 'User') -> Optional['Action']:
-        """Locate an Action object.
+        """
+        Get a list of actions for a project, to which a user has access to.
 
         Args:
-            project: Project to se
-            ext_type:
-            user:
+            project: The project requiring actions.
+            user: The user for whom the actions are retrieved.
 
         Returns:
+            A list of accessible actions.
+        """
 
+    def find_action(self, project: Optional['Project'], ext_type: str, user: 'User') -> Optional['Action']:
+        """
+        Locate an Action object.
+
+        Args:
+            project: If provided, find the action for that project; otherwise, search globally.
+            ext_type: The extension type to search for.
+            user: Locate actions only for this user.
+
+        Returns:
+            The located action object, or None if no match is found.
         """
 
     def prepare_action(
@@ -2382,12 +2389,25 @@ class ActionManager(Node):
             command_name: str,
             params: dict,
             user: 'User',
-            read_options=None,
-    ) -> tuple[Callable, Request]: ...
+            read_options: Optional[set[SpecReadOption]]=None,
+    ) -> tuple[Callable, Request]:
+        """
+        Prepare an action to be executed based on the provided parameters.
+
+        Args:
+            command_category: The category of the command to execute.
+            command_name: The name of the command to execute.
+            params: Additional parameters required for the action.
+            user: The user initiating the action.
+            read_options: Read options for parsing parameters.
+
+        Returns:
+            A tuple containing the callable to execute and the associated request object.
+        """
 
 
 class Action(Node):
-    pass
+    """Base Action class."""
 ################################################################################
 
 
@@ -2610,8 +2630,6 @@ class AuthManager(Node):
 class AuthMethod(Node):
     """Authentication Method."""
 
-    authMgr: 'AuthManager'
-
     secure: bool
     """Method is only allowed in a secure context."""
 
@@ -2638,22 +2656,38 @@ class AuthMethod(Node):
 
 
 class AuthMultiFactorState(Enum):
+    """State of a multifactor authorization transaction."""
     open = 'open'
+    """Transaction opened."""
     ok = 'ok'
+    """Transaction completed successfully."""
     retry = 'retry'
+    """Authorization has to be retried."""
     failed = 'failed'
+    """Authorization failed."""
 
 
 class AuthMultiFactorTransaction(Data):
+    """Multifactor authorization transaction."""
+
     state: AuthMultiFactorState
+    """The current state of the authorization transaction."""
     restartCount: int
+    """The number of times the transaction has been restarted."""
     verifyCount: int
+    """The number of verification attempts made."""
     secret: str
+    """The secret associated with this transaction."""
     startTime: int
+    """The timestamp when the transaction started."""
     generateTime: int
+    """The timestamp when the code was last generated."""
     message: str
+    """A message associated with the transaction."""
     adapter: 'AuthMultiFactorAdapter'
+    """The MFA adapter handling this transaction."""
     user: 'User'
+    """The user associated with this transaction."""
 
 
 class AuthMultiFactorAdapter(Node):
@@ -3256,62 +3290,89 @@ class DatabaseModel(Model):
     def uid_column(self) -> 'sqlalchemy.Column': ...
 
 
-
-
 class ColumnDescription(Data):
-    """Database column description."""
-
     columnIndex: int
+    """The index of the column within the table."""
     comment: str
+    """Column comment or description provided in the database metadata."""
     default: str
+    """The default value assigned to the column, if any."""
     geometrySrid: int
+    """The Spatial Reference Identifier (SRID) for geometry columns."""
     geometryType: GeometryType
+    """The type of geometry stored in the column (e.g., Point, Polygon)."""
     isAutoincrement: bool
+    """Indicates if the column is auto-incremented."""
     isNullable: bool
+    """Specifies if the column permits NULL values."""
     isPrimaryKey: bool
+    """Specifies if the column is part of the primary key."""
     isUnique: bool
+    """Indicates if the column has a unique constraint."""
     hasDefault: bool
+    """Indicates if the column has a database-defined default value."""
+    isIndexed: bool
+    """Indicates if the column has an index."""
     name: str
+    """The name of the column."""
     nativeType: str
+    """The database-specific data type of the column."""
     options: dict
+    """Additional options or configurations for the column, if any."""
     type: AttributeType
-
-
-class RelationshipDescription(Data):
-    """Database relationship description."""
-
-    name: str
-    schema: str
-    fullName: str
-    foreignKeys: str
-    referredKeys: str
+    """The abstract type of the column used in higher-level processing."""
 
 
 class DataSetDescription(Data):
-    """Description of a database Table or a GDAL Dataset."""
-
     columns: list[ColumnDescription]
+    """A list of column descriptions."""
     columnMap: dict[str, ColumnDescription]
+    """A dictionary mapping column names to their descriptions."""
     fullName: str
+    """The full name of the dataset, including schema if applicable."""
     geometryName: str
+    """The name of the geometry column, if any."""
     geometrySrid: int
+    """The Spatial Reference Identifier (SRID) for the geometry."""
     geometryType: GeometryType
+    """The type of geometry stored in the dataset."""
     name: str
+    """The name of the dataset or table."""
     schema: str
+    """The schema to which the dataset belongs."""
 
 
 class DatabaseManager(Node):
     """Database manager."""
 
     providers: list['DatabaseProvider']
+    """A list of database providers managed by this DatabaseManager."""
 
-    def create_provider(self, cfg: Config, **kwargs) -> 'DatabaseProvider': ...
+    def create_provider(self, cfg: Config, **kwargs) -> 'DatabaseProvider':
+        """Create and return a DatabaseProvider instance based on the given configuration.
 
-    def find_provider(self, uid: Optional[str] = None, ext_type: Optional[str] = None) -> Optional['DatabaseProvider']: ...
+        Args:
+            cfg: The configuration object for the database provider.
+            **kwargs: Additional keyword arguments to customize the provider creation.
+
+        Returns:
+            DatabaseProvider: A new database provider instance.
+        """
+
+    def find_provider(self, uid: Optional[str] = None, ext_type: Optional[str] = None) -> Optional['DatabaseProvider']:
+        """Find and return a DatabaseProvider that matches the given UID and/or extension type.
+
+        Args:
+            uid: The unique identifier of the database provider to find.
+            ext_type: The type of the database provider to find.
+
+        Returns:
+            The matching database provider if found, otherwise None.
+        """
 
 
 DatabaseTableAlike: TypeAlias = Union['sqlalchemy.Table', str]
-"""SA ``Table`` object or a string table name."""
+"""An SQLAlchemy ``Table`` object or a string table name."""
 
 
 class DatabaseProvider(Node):
@@ -3325,7 +3386,7 @@ class DatabaseProvider(Node):
     """Connection url."""
 
     def column(self, table: DatabaseTableAlike, column_name: str) -> 'sqlalchemy.Column':
-        """SA ``Column`` object for a specific column."""
+        """SQLAlchemy ``Column`` object for a specific column."""
 
     def connect(self) -> ContextManager['sqlalchemy.Connection']:
         """Context manager for a SA ``Connection``.
@@ -4258,6 +4319,8 @@ class WebSite(Node):
 
 
 class MiddlewareManager(Node):
+    """Manage middleware and their dependencies."""
+
     def register(self, obj: Node, name: str, depends_on: Optional[list[str]] = None):
         """Register an object as a middleware."""
 
@@ -4266,36 +4329,85 @@ class MiddlewareManager(Node):
 
 
 class Application(Node):
-    """The main Application object."""
+    """Main Application object."""
 
     client: 'Client'
+    """Represents the client object associated with the application."""
+
     localeUids: list[str]
+    """List of locale identifiers."""
+
     metadata: 'Metadata'
+    """Metadata for the application."""
+
     monitor: 'ServerMonitor'
+    """Server monitor object."""
+
     version: str
+    """Application version as a string."""
+
     versionString: str
+    """Full version string for display purposes."""
+
     defaultPrinter: 'Printer'
+    """Default printer object."""
 
     actionMgr: 'ActionManager'
+    """Manager for application actions."""
+
     authMgr: 'AuthManager'
+    """Manager for authentication operations."""
+
     databaseMgr: 'DatabaseManager'
+    """Manager for database operations."""
+
     jobMgr: 'JobManager'
+    """Manager for handling jobs."""
+
     middlewareMgr: 'MiddlewareManager'
+    """Manager for middleware and dependencies."""
+
     modelMgr: 'ModelManager'
+    """Manager for model operations."""
+
     printerMgr: 'PrinterManager'
+    """Manager for printers."""
+
     searchMgr: 'SearchManager'
+    """Manager for search functionality."""
+
     serverMgr: 'ServerManager'
+    """Manager for server operations."""
+
     storageMgr: 'StorageManager'
+    """Manager for storage operations."""
+
     templateMgr: 'TemplateManager'
+    """Manager for templates."""
+
     webMgr: 'WebManager'
+    """Manager for web operations."""
 
     actions: list['Action']
+    """List of defined application actions."""
+
     projects: list['Project']
+    """List of configured projects."""
+
     finders: list['Finder']
+    """List of finder objects."""
+
     templates: list['Template']
+    """List of global templates."""
+
     printers: list['Printer']
+    """List of global printer objects."""
+
     models: list['Model']
+    """List of global models."""
+
     owsServices: list['OwsService']
+    """List of OWS services."""
 
     def project(self, uid: str) -> Optional['Project']:
         """Get a Project object by its uid."""

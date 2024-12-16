@@ -46,7 +46,7 @@ class Object(gws.Node):
         req = gws.base.web.wsgi.Requester(root, environ, site)
 
         fn, request = root.app.actionMgr.prepare_action(
-            'api',
+            gws.CommandCategory.api,
             p.cmd,
             gws.lib.vendor.slon.parse(p.params),
             req.user

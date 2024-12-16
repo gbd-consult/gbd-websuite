@@ -2,18 +2,28 @@ class ActionManager(Node):
     """Action manager."""
 
     def actions_for_project(self, project: 'Project', user: 'User') -> list['Action']:
-        """Get a list of actions for a Project, to which a User has access to."""
-
-    def find_action(self, project: Optional['Project'], ext_type: str, user: 'User') -> Optional['Action']:
-        """Locate an Action object.
+        """
+        Get a list of actions for a project, to which a user has access to.
 
         Args:
-            project: Project to se
-            ext_type:
-            user:
+            project: The project requiring actions.
+            user: The user for whom the actions are retrieved.
 
         Returns:
+            A list of accessible actions.
+        """
 
+    def find_action(self, project: Optional['Project'], ext_type: str, user: 'User') -> Optional['Action']:
+        """
+        Locate an Action object.
+
+        Args:
+            project: If provided, find the action for that project; otherwise, search globally.
+            ext_type: The extension type to search for.
+            user: Locate actions only for this user.
+
+        Returns:
+            The located action object, or None if no match is found.
         """
 
     def prepare_action(
@@ -22,9 +32,22 @@ class ActionManager(Node):
             command_name: str,
             params: dict,
             user: 'User',
-            read_options=None,
-    ) -> tuple[Callable, Request]: ...
+            read_options: Optional[set[SpecReadOption]]=None,
+    ) -> tuple[Callable, Request]:
+        """
+        Prepare an action to be executed based on the provided parameters.
+
+        Args:
+            command_category: The category of the command to execute.
+            command_name: The name of the command to execute.
+            params: Additional parameters required for the action.
+            user: The user initiating the action.
+            read_options: Read options for parsing parameters.
+
+        Returns:
+            A tuple containing the callable to execute and the associated request object.
+        """
 
 
 class Action(Node):
-    pass
+    """Base Action class."""

@@ -213,8 +213,6 @@ class AuthManager(Node):
 class AuthMethod(Node):
     """Authentication Method."""
 
-    authMgr: 'AuthManager'
-
     secure: bool
     """Method is only allowed in a secure context."""
 
@@ -241,22 +239,38 @@ class AuthMethod(Node):
 
 
 class AuthMultiFactorState(Enum):
+    """State of a multifactor authorization transaction."""
     open = 'open'
+    """Transaction opened."""
     ok = 'ok'
+    """Transaction completed successfully."""
     retry = 'retry'
+    """Authorization has to be retried."""
     failed = 'failed'
+    """Authorization failed."""
 
 
 class AuthMultiFactorTransaction(Data):
+    """Multifactor authorization transaction."""
+
     state: AuthMultiFactorState
+    """The current state of the authorization transaction."""
     restartCount: int
+    """The number of times the transaction has been restarted."""
     verifyCount: int
+    """The number of verification attempts made."""
     secret: str
+    """The secret associated with this transaction."""
     startTime: int
+    """The timestamp when the transaction started."""
     generateTime: int
+    """The timestamp when the code was last generated."""
     message: str
+    """A message associated with the transaction."""
     adapter: 'AuthMultiFactorAdapter'
+    """The MFA adapter handling this transaction."""
     user: 'User'
+    """The user associated with this transaction."""
 
 
 class AuthMultiFactorAdapter(Node):

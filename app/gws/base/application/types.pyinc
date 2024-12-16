@@ -1,4 +1,6 @@
 class MiddlewareManager(Node):
+    """Manage middleware and their dependencies."""
+
     def register(self, obj: Node, name: str, depends_on: Optional[list[str]] = None):
         """Register an object as a middleware."""
 
@@ -7,36 +9,85 @@ class MiddlewareManager(Node):
 
 
 class Application(Node):
-    """The main Application object."""
+    """Main Application object."""
 
     client: 'Client'
+    """Represents the client object associated with the application."""
+
     localeUids: list[str]
+    """List of locale identifiers."""
+
     metadata: 'Metadata'
+    """Metadata for the application."""
+
     monitor: 'ServerMonitor'
+    """Server monitor object."""
+
     version: str
+    """Application version as a string."""
+
     versionString: str
+    """Full version string for display purposes."""
+
     defaultPrinter: 'Printer'
+    """Default printer object."""
 
     actionMgr: 'ActionManager'
+    """Manager for application actions."""
+
     authMgr: 'AuthManager'
+    """Manager for authentication operations."""
+
     databaseMgr: 'DatabaseManager'
+    """Manager for database operations."""
+
     jobMgr: 'JobManager'
+    """Manager for handling jobs."""
+
     middlewareMgr: 'MiddlewareManager'
+    """Manager for middleware and dependencies."""
+
     modelMgr: 'ModelManager'
+    """Manager for model operations."""
+
     printerMgr: 'PrinterManager'
+    """Manager for printers."""
+
     searchMgr: 'SearchManager'
+    """Manager for search functionality."""
+
     serverMgr: 'ServerManager'
+    """Manager for server operations."""
+
     storageMgr: 'StorageManager'
+    """Manager for storage operations."""
+
     templateMgr: 'TemplateManager'
+    """Manager for templates."""
+
     webMgr: 'WebManager'
+    """Manager for web operations."""
 
     actions: list['Action']
+    """List of defined application actions."""
+
     projects: list['Project']
+    """List of configured projects."""
+
     finders: list['Finder']
+    """List of finder objects."""
+
     templates: list['Template']
+    """List of global templates."""
+
     printers: list['Printer']
+    """List of global printer objects."""
+
     models: list['Model']
+    """List of global models."""
+
     owsServices: list['OwsService']
+    """List of OWS services."""
 
     def project(self, uid: str) -> Optional['Project']:
         """Get a Project object by its uid."""

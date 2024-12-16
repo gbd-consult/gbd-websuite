@@ -1,7 +1,7 @@
 """App Error object"""
 
 class Error(Exception):
-    """GWS error."""
+    """Generic GWS error."""
     def __repr__(self):
         return log.exception_backtrace(self)[0]
 
@@ -29,8 +29,3 @@ class BadRequestError(Error):
 class ResponseTooLargeError(Error):
     """Generic error when a response is too large."""
     pass
-
-
-##
-
-

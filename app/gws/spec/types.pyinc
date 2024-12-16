@@ -41,6 +41,11 @@ class ExtObjectDescriptor(Data):
 
 
 class ExtCommandDescriptor(Data):
+    """
+    Represents a command descriptor for an extension.
+
+    Contains attributes to describe and handle a specific extension command.
+    """
     extName: str
     """Full extension name like ``gws.ext.object.layer.wms``."""
     extType: str
@@ -60,7 +65,7 @@ class ExtCommandDescriptor(Data):
 
 
 class SpecReadOption(Enum):
-    """Read options."""
+    """Options for structured reading based on Specs."""
 
     acceptExtraProps = 'acceptExtraProps'
     """Accept extra object properties."""
@@ -156,4 +161,3 @@ class SpecRuntime:
         Returns:
             A tuple ``(class object, class name, extension name)``.
         """
-

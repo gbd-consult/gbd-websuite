@@ -1,3 +1,5 @@
+"""Internal implementations of ``gws.Node`` and ``gws.Root`` methods."""
+
 from . import (
     const as c,
     util as u,
