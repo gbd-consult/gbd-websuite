@@ -41,7 +41,7 @@ class Object(gws.WebManager):
     def exit_middleware(self, req: gws.WebRequester, res: gws.WebResponder):
         cors = req.site.corsOptions
 
-        if not cors or res.status >= 400:
+        if not cors:
             return
 
         p = cors.allowOrigin

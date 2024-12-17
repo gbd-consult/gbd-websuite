@@ -30,8 +30,4 @@ web.sites+ {
         type "html"
         text "Error {{error}}"
     }
-    cors {
-        allowOrigin "*"
-        allowMethods "*"
-    }
 }
