@@ -1,3 +1,8 @@
+## Version 8.1.22
+
+- improved WFS and XML schema outputs
+- support for GeoJSON output in WFS
+
 ## Version 8.1.21
 
 - minor bugfixes
