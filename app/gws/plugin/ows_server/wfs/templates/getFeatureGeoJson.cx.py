@@ -13,12 +13,14 @@ def main(ta: server.TemplateArgs):
     for m in ta.featureCollection.members:
         f = dict(type='Feature', properties={})
         for name, val in sorted(m.feature.attributes.items()):
-            if gws.u.is_atom(val):
+            if name == m.feature.model.uidName:
+                f['id'] = val
+            elif gws.u.is_atom(val):
                 f['properties'][name] = val
             elif dx.is_date(val):
                 f['properties'][name] = dx.to_iso_string(val)
         if m.feature.shape():
-            f['geometry'] = m.feature.shape().transformed_to(gws.gis.crs.WGS84).to_geojson()
+            f['geometry'] = m.feature.shape().to_geojson()
         fc['features'].append(f)
 
     return gws.ContentResponse(
