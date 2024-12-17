@@ -7,7 +7,7 @@ import mimetypes
 BIN = 'application/octet-stream'
 CSS = 'text/css'
 CSV = 'text/csv'
-GEOJSON = 'application/geojson'
+GEOJSON = 'application/geo+json'
 GIF = 'image/gif'
 GML = 'application/gml+xml'
 GML2 = 'application/gml+xml;version=2'
