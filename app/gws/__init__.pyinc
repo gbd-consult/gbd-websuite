@@ -67,7 +67,7 @@ u.to_data_object = to_data_object
 # @include lib/xmlx/types.pyinc
 # @include lib/uom/types.pyinc
 
-# @include gis/crs/types.pyinc
+# @include lib/crs/types.pyinc
 # @include gis/render/types.pyinc
 # @include gis/source/types.pyinc
 

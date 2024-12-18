@@ -1791,7 +1791,7 @@ UomExtentStr: TypeAlias = list[str]
 
 
 ################################################################################
-# /gis/crs/types.pyinc
+# /lib/crs/types.pyinc
 
 
 CrsName: TypeAlias = int | str
