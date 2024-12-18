@@ -1,6 +1,7 @@
 import axios, {Canceler, ResponseType} from 'axios';
 import * as msgpack from '@ygoe/msgpack';
-import * as api from './api';
+
+import * as _gc from './_gc';
 
 function errorResponse(err) {
     console.log('AXIOS ERROR', err);
@@ -77,7 +78,7 @@ class QueuedRequest {
 
 const MSGPACK_MIME = 'application/msgpack';
 
-export class Server extends api.BaseServer {
+export class Server extends _gc.BaseServer {
     url: string;
     whenChanged: () => void;
     commandCount = 0;

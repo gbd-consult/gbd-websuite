@@ -1,7 +1,7 @@
 import * as ol from 'openlayers';
 
+import * as _gc from '../core/_gc';
 import * as types from '../types';
-import * as api from '../core/api';
 import * as lib from '../lib';
 
 
@@ -94,7 +94,7 @@ export class Feature implements types.IFeature {
         return this.redraw();
     }
 
-    setShape(shape: api.base.shape.Props) {
+    setShape(shape: _gc.gws.base.shape.Props) {
         this.oFeature = this.ensureOlFeature();
         this.attributes[this.geometryName] = shape;
         this.updateOlFeatureFromShape(shape);

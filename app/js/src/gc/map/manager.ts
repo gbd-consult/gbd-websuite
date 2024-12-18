@@ -1,8 +1,8 @@
 import * as ol from 'openlayers';
 import * as proj4 from 'proj4';
 
+import * as _gc from '../core/_gc';
 import * as types from '../types';
-import * as api from '../core/api';
 import * as lib from '../lib';
 
 import * as layer from './layer';
@@ -54,7 +54,7 @@ export class MapManager implements types.IMapManager {
     protected updateCount = 0;
     protected intrStack = [];
     protected standardInteractions = {};
-    protected props: api.base.map.Props;
+    protected props: _gc.gws.base.map.Props;
 
     // @TODO this should be 'viewExtent' actually
     get bbox() {
@@ -599,7 +599,7 @@ export class MapManager implements types.IMapManager {
         this.computeOpacities();
     }
 
-    protected initLayer(props: api.base.layer.Props, parent = null): types.ILayer {
+    protected initLayer(props: _gc.gws.base.layer.Props, parent = null): types.ILayer {
         let cls = layerTypes[props.type];
         if (!cls)
             throw new Error('unknown layer type: ' + props.type);
@@ -781,12 +781,12 @@ export class MapManager implements types.IMapManager {
     //
 
 
-    readFeature(props: api.core.FeatureProps): types.IFeature {
+    readFeature(props: _gc.gws.FeatureProps): types.IFeature {
         return this._readFeature(props);
 
     }
 
-    readFeatures(propsList: Array<api.core.FeatureProps>): Array<types.IFeature> {
+    readFeatures(propsList: Array<_gc.gws.FeatureProps>): Array<types.IFeature> {
         return propsList.map(props => this._readFeature(props));
     }
 
@@ -866,7 +866,7 @@ export class MapManager implements types.IMapManager {
     async searchForFeatures(args) {
 
         let ls = this.searchLayers();
-        let params: api.base.search.action.Request = {
+        let params: _gc.gws.base.search.action.Request = {
             extent: this.bbox,
             keyword: args.keyword || '',
             layerUids: lib.compact(ls.map(la => la.uid)),
@@ -908,10 +908,10 @@ export class MapManager implements types.IMapManager {
         return lib.uniq(layers);
     }
 
-    protected async printPlanes(boxRect, dpi): Promise<Array<api.core.PrintPlane>> {
+    protected async printPlanes(boxRect, dpi): Promise<Array<_gc.gws.PrintPlane>> {
         let _this = this;
 
-        function makeBitmap2(): api.core.PrintPlane {
+        function makeBitmap2(): _gc.gws.PrintPlane {
             let canvas = _this.oMap.getViewport().firstChild as HTMLCanvasElement;
 
             let rc = canvas.getBoundingClientRect(),
@@ -924,7 +924,7 @@ export class MapManager implements types.IMapManager {
 
             if (USE_RAW_BITMAPS_FOR_PRINT) {
                 return {
-                    type: api.core.PrintPlaneType.bitmap,
+                    type: _gc.gws.PrintPlaneType.bitmap,
                     bitmapMode: 'RGBA',
                     bitmapData: imgData.data,
                     bitmapWidth: imgData.width,
@@ -940,12 +940,12 @@ export class MapManager implements types.IMapManager {
             cnv2.getContext('2d').putImageData(imgData, 0, 0);
 
             return {
-                type: api.core.PrintPlaneType.url,
+                type: _gc.gws.PrintPlaneType.url,
                 url: cnv2.toDataURL()
             };
         }
 
-        async function makeBitmap(layers): Promise<api.core.PrintPlane> {
+        async function makeBitmap(layers): Promise<_gc.gws.PrintPlane> {
             let hidden = [];
 
             _this.walk(_this.root, la => {
@@ -955,7 +955,7 @@ export class MapManager implements types.IMapManager {
                 }
             });
 
-            let bmp: api.core.PrintPlane;
+            let bmp: _gc.gws.PrintPlane;
 
             await lib.delay(200, () => {
                 console.time('creating_bitmap');
@@ -985,7 +985,7 @@ export class MapManager implements types.IMapManager {
         // collect printItems or bitmaps for layers, group sequential bitmaps together
 
         interface PrintItemOrBitmap {
-            pi?: api.core.PrintPlane
+            pi?: _gc.gws.PrintPlane
             bmpLayers?: Array<types.ILayer>
         }
 
@@ -1012,7 +1012,7 @@ export class MapManager implements types.IMapManager {
             }
         });
 
-        let res: Array<api.core.PrintPlane> = [];
+        let res: Array<_gc.gws.PrintPlane> = [];
 
         for (let item of items) {
             if (item.pi) {
@@ -1025,7 +1025,7 @@ export class MapManager implements types.IMapManager {
         return res;
     }
 
-    async printParams(boxRect, dpi): Promise<api.core.PrintMap> {
+    async printParams(boxRect, dpi): Promise<_gc.gws.PrintMap> {
         let vs = this.viewState,
             visibleLayers = [];
 

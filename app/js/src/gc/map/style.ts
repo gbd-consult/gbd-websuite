@@ -1,7 +1,9 @@
+
 import * as ol from 'openlayers';
+
+import * as _gc from '../core/_gc';
 import * as types from '../types';
 import * as lib from '../lib';
-import * as api from '../core/api';
 
 export const DEFAULT_VALUES: types.Dict = {
     with_label: 'none',
@@ -92,7 +94,7 @@ export class StyleManager implements types.IStyleManager {
         }
 
         if (typeof arg === 'object') {
-            let props = arg as api.core.StyleProps;
+            let props = arg as _gc.gws.StyleProps;
 
             if (props.cssSelector) {
                 return this.getFromSelector(props.cssSelector);
@@ -125,13 +127,13 @@ export class StyleManager implements types.IStyleManager {
         });
     }
 
-    loadFromProps(props: api.core.StyleProps) {
+    loadFromProps(props: _gc.gws.StyleProps) {
         this.styles[props.cssSelector] = new Style(props.cssSelector, props.values);
         return this.styles[props.cssSelector];
     }
 
-    get props(): Array<api.core.StyleProps> {
-        let ps: Array<api.core.StyleProps> = [];
+    get props(): Array<_gc.gws.StyleProps> {
+        let ps: Array<_gc.gws.StyleProps> = [];
 
         for (let [_, style] of lib.entries(this.styles)) {
             ps.push(style.props);

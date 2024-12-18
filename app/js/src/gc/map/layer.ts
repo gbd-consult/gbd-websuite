@@ -1,8 +1,8 @@
 import * as ol from 'openlayers';
 
+import * as _gc from '../core/_gc';
 import * as types from '../types';
 import * as lib from '../lib';
-import * as api from '../core/api';
 
 const DEFAULT_TILE_TRANSITION = 700;
 
@@ -12,7 +12,7 @@ export class Layer implements types.ILayer {
     title = '';
     attributes = {};
 
-    props: api.base.layer.Props;
+    props: _gc.gws.base.layer.Props;
 
     parent: types.ILayer = null;
     children = [];
@@ -83,7 +83,7 @@ export class Layer implements types.ILayer {
         return String(this.uid)[0] === '_';
     }
 
-    constructor(map: types.IMapManager, props: api.base.layer.Props) {
+    constructor(map: types.IMapManager, props: _gc.gws.base.layer.Props) {
         this.map = map;
         this.props = props;
 
@@ -147,9 +147,9 @@ abstract class OlBackedLayer<T extends ol.layer.Layer> extends Layer {
 
     abstract createOLayer(): T;
 
-    get printPlane(): api.core.PrintPlane {
+    get printPlane(): _gc.gws.PrintPlane {
         return {
-            type: api.core.PrintPlaneType.raster,
+            type: _gc.gws.PrintPlaneType.raster,
             opacity: this.computedOpacity,
             layerUid: this.uid,
         }
@@ -274,7 +274,7 @@ export class TreeLayer extends OlBackedLayer<ol.layer.Image> {
             return null;
 
         return {
-            type: api.core.PrintPlaneType.raster,
+            type: _gc.gws.PrintPlaneType.raster,
             opacity: this.computedOpacity,
             layerUid: this.uid,
             subLayers: ls,
@@ -335,7 +335,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
     geometryType: string = '';
     cssSelector: string = '';
     fMap: FeatureMap = {};
-    loadingStrategy: api.core.FeatureLoadingStrategy;
+    loadingStrategy: _gc.gws.FeatureLoadingStrategy;
 
     lastBbox: string;
     loadState: string;
@@ -362,7 +362,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         this.lastBbox = '';
     }
 
-    get printPlane(): api.core.PrintPlane {
+    get printPlane(): _gc.gws.PrintPlane {
         let fs = lib.compact(this.features.map(f => f.getProps()));
 
         if (fs.length === 0)
@@ -371,7 +371,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         let style = this.map.style.findFirst([this.cssSelector], this.geometryType);
 
         return {
-            type: this.props.url ? api.core.PrintPlaneType.vector : api.core.PrintPlaneType.features,
+            type: this.props.url ? _gc.gws.PrintPlaneType.vector : _gc.gws.PrintPlaneType.features,
             opacity: this.computedOpacity,
             features: this.props.url ? [] : fs,
             cssSelector: style ? style.cssSelector : '',
@@ -408,7 +408,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         if (!this.props.url)
             return;
 
-        if (this.loadingStrategy === api.core.FeatureLoadingStrategy.bbox) {
+        if (this.loadingStrategy === _gc.gws.FeatureLoadingStrategy.bbox) {
             let bbox = String(this.map.bbox);
             if (this.lastBbox === bbox) {
                 return;
@@ -421,7 +421,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
             this.loader();
         }
 
-        if (this.loadingStrategy === api.core.FeatureLoadingStrategy.all) {
+        if (this.loadingStrategy === _gc.gws.FeatureLoadingStrategy.all) {
             if (this.loadState === 'all_loading' || this.loadState === 'all_loaded')
                 return;
             console.log('Vector:load', this.uid, this.loadingStrategy, 'first load');
@@ -439,7 +439,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
         url += '?resolution=' + encodeURIComponent(String(this.map.viewState.resolution));
         let bbox = this.map.bbox;
 
-        if (this.loadingStrategy === api.core.FeatureLoadingStrategy.bbox) {
+        if (this.loadingStrategy === _gc.gws.FeatureLoadingStrategy.bbox) {
             url += '&bbox=' + encodeURIComponent(bbox.join(','));
         }
 
@@ -460,7 +460,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
             return;
         }
 
-        if (this.loadingStrategy === api.core.FeatureLoadingStrategy.all)
+        if (this.loadingStrategy === _gc.gws.FeatureLoadingStrategy.all)
             this.loadState = 'all_loaded';
 
 
