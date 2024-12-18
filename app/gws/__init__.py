@@ -425,7 +425,7 @@ class ConfigWithAccess(Config):
     """Basic config with permissions."""
 
     access: Optional[AclStr]
-    """Permission to read or use the object. (deprecated in 8.0)"""
+    """Permission to read or use the object."""
     permissions: Optional[PermissionsConfig]
     """Access permissions."""
 ################################################################################
@@ -517,6 +517,11 @@ class ExtObjectDescriptor(Data):
 
 
 class ExtCommandDescriptor(Data):
+    """
+    Represents a command descriptor for an extension.
+
+    Contains attributes to describe and handle a specific extension command.
+    """
     extName: str
     """Full extension name like ``gws.ext.object.layer.wms``."""
     extType: str
@@ -536,7 +541,7 @@ class ExtCommandDescriptor(Data):
 
 
 class SpecReadOption(Enum):
-    """Read options."""
+    """Options for structured reading based on Specs."""
 
     acceptExtraProps = 'acceptExtraProps'
     """Accept extra object properties."""
@@ -3280,17 +3285,25 @@ class DatabaseModel(Model):
     """Database-based data model."""
 
     db: 'DatabaseProvider'
+    """Database provider."""
     sqlFilter: str
+    """Literal SQL condition applied when selecting rows."""
     tableName: str
+    """Table name associated with this model."""
 
-    def table(self) -> 'sqlalchemy.Table': ...
+    def table(self) -> 'sqlalchemy.Table':
+        """Return the SQLAlchemy Table object for this database model."""
 
-    def column(self, column_name: str) -> 'sqlalchemy.Column': ...
+    def column(self, column_name: str) -> 'sqlalchemy.Column':
+        """Retrieve the SQLAlchemy Column object for the given column name."""
 
-    def uid_column(self) -> 'sqlalchemy.Column': ...
+    def uid_column(self) -> 'sqlalchemy.Column':
+        """Return the SQLAlchemy Column object representing the unique identifier column."""
 
 
 class ColumnDescription(Data):
+    """Description of a dataset column."""
+
     columnIndex: int
     """The index of the column within the table."""
     comment: str
@@ -3324,6 +3337,8 @@ class ColumnDescription(Data):
 
 
 class DataSetDescription(Data):
+    """Description of a dataset, like a DB table or a GDAL data set."""
+
     columns: list[ColumnDescription]
     """A list of column descriptions."""
     columnMap: dict[str, ColumnDescription]
