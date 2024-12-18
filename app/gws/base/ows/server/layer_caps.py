@@ -103,7 +103,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
     tag = [
         'xsd:schema',
         {
-            f'xmlns:{ns.xmlns}': ns.uri,
+            f'xmlns': ns.uri,
             'targetNamespace': ns.uri,
             'elementFormDefault': 'qualified',
         }
@@ -117,25 +117,30 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
         elements = []
         for f in lc.model.fields:
             if user.can_read(f):
-                typ = _ATTR_TO_XSD.get(f.attributeType)
+                if f.attributeType == gws.AttributeType.geometry:
+                    typ = _GEOM_TO_XSD.get(gws.u.get(f, 'geometryType'))
+                else:
+                    typ = _ATTR_TO_XSD.get(f.attributeType)
+
                 if typ:
                     elements.append(['xsd:element', {
                         'maxOccurs': '1',
                         'minOccurs': '0',
                         'nillable': 'false' if f.isRequired else 'true',
                         'name': f.name,
-                        'type': typ,
+                        'type': xmlx.namespace.unqualify_name(typ),
                     }])
 
         type_name = f'{lc.featureName}Type'
 
         type_def = ['xsd:complexContent']
         if ns.extendsGml:
-            type_def.append(['xsd:extension', {'base': 'gml:AbstractFeatureType'}])
-        type_def.append(['xsd:sequence', elements])
+            type_def.append(['xsd:extension', {'base': 'gml:AbstractFeatureType'}, ['xsd:sequence', elements]])
+        else:
+            type_def.append(['xsd:sequence', elements])
 
         atts = {
-            'name': lc.featureNameQ,
+            'name': lc.featureName,
             'type': type_name,
         }
         if ns.extendsGml:
@@ -166,4 +171,18 @@ _ATTR_TO_XSD = {
     gws.AttributeType.str: 'xsd:string',
     gws.AttributeType.strlist: '',
     gws.AttributeType.time: 'xsd:time',
+}
+
+_GEOM_TO_XSD = {
+    gws.GeometryType.point: 'gml:PointPropertyType',
+    gws.GeometryType.linestring: 'gml.LineStringPropertyType',
+    gws.GeometryType.polygon: 'gml:PolygonPropertyType',
+    gws.GeometryType.multipoint: 'gml:MultiPointPropertyType',
+    gws.GeometryType.multilinestring: 'gml:MultiLineStringPropertyType',
+    gws.GeometryType.multipolygon: 'gml:MultiPolygonPropertyType',
+    gws.GeometryType.multicurve: 'gml:MultiCurvePropertyType',
+    gws.GeometryType.multisurface: 'gml:MultiSurfacePropertyType',
+    gws.GeometryType.linearring: 'gml:LinearRingPropertyType',
+    gws.GeometryType.tin: 'gml:TinPropertyType',
+    gws.GeometryType.surface: 'gml:SurfacePropertyType',
 }

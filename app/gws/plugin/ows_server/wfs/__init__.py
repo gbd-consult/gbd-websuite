@@ -60,6 +60,13 @@ _DEFAULT_TEMPLATES = [
     ),
     gws.Config(
         type='py',
+        path=f'{_cdir}/templates/getFeatureGeoJson.cx.py',
+        subject='ows.GetFeature',
+        access=gws.c.PUBLIC,
+        mimeTypes=[gws.lib.mime.JSON, gws.lib.mime.GEOJSON],
+    ),
+    gws.Config(
+        type='py',
         path=f'{_cdir}/templates/getFeature2.cx.py',
         subject='ows.GetFeature',
         mimeTypes=[gws.lib.mime.GML2],
@@ -170,7 +177,7 @@ class Object(server.service.Object):
     def handle_get_capabilities(self, sr: server.request.Object):
         return self.template_response(
             sr,
-            sr.requested_format('FORMAT'),
+            sr.requested_format('OUTPUTFORMAT'),
             layerCapsList=sr.layerCapsList,
         )
 
@@ -188,7 +195,7 @@ class Object(server.service.Object):
 
         return self.template_response(
             sr,
-            sr.requested_format('FORMAT'),
+            sr.requested_format('OUTPUTFORMAT'),
             layerCapsList=sr.layerCapsList,
         )
 
@@ -208,7 +215,7 @@ class Object(server.service.Object):
         fc = self.get_features(sr)
         return self.template_response(
             sr,
-            sr.requested_format('FORMAT'),
+            sr.requested_format('OUTPUTFORMAT'),
             featureCollection=fc
         )
 
@@ -218,7 +225,7 @@ class Object(server.service.Object):
         fc.values = [m.feature.get(value_ref) for m in fc.members]
         return self.template_response(
             sr,
-            sr.requested_format('FORMAT'),
+            sr.requested_format('OUTPUTFORMAT'),
             featureCollection=fc
         )
 

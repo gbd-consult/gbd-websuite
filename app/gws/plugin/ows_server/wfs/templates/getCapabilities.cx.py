@@ -11,10 +11,14 @@ def main(ta: server.TemplateArgs):
 
 
 def doc(ta: server.TemplateArgs):
-    yield {
+    d = {
         'version': ta.version,
         'xmlns': 'wfs',
     }
+    for lc in ta.layerCapsList:
+        if lc.xmlNamespace:
+            d[f'xmlns:{lc.xmlNamespace.xmlns}'] = lc.xmlNamespace.uri
+    yield d
 
     yield tpl.ows_service_identification(ta)
     yield tpl.ows_service_provider(ta)
