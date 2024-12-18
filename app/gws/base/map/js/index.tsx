@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+import * as sidebar from 'gc/elements/sidebar';
+import * as components from 'gc/components';
 
-let {Form, Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gc.ui.Layout;
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
     mapUpdateCount: number;
     mapEditScale: number;
@@ -16,7 +16,7 @@ interface ViewProps extends gws.types.ViewProps {
 
 }
 
-class SidebarBody extends gws.View<ViewProps> {
+class SidebarBody extends gc.View<ViewProps> {
 
 
     submit() {
@@ -36,8 +36,8 @@ class SidebarBody extends gws.View<ViewProps> {
         let ext = map.viewExtent.map(coord).join(', ');
 
         let res = map.resolutions,
-            maxScale = Math.max(...res.map(gws.lib.res2scale)),
-            minScale = Math.min(...res.map(gws.lib.res2scale));
+            maxScale = Math.max(...res.map(gc.lib.res2scale)),
+            minScale = Math.min(...res.map(gc.lib.res2scale));
 
         let bind = k => ({
             whenChanged: v => this.props.controller.update({[k]: v}),
@@ -49,27 +49,27 @@ class SidebarBody extends gws.View<ViewProps> {
             <Row>
                 <Cell flex>
                     <Form tabular>
-                        <gws.ui.TextInput
+                        <gc.ui.TextInput
                             label={this.__('overviewProjection')}
                             value={map.projection.getCode()}
                             readOnly
                         />
-                        <gws.ui.TextInput
+                        <gc.ui.TextInput
                             label={this.__('overviewExtent')}
                             value={ext}
                             readOnly
                         />
-                        <gws.ui.TextInput
+                        <gc.ui.TextInput
                             label={this.__('overviewCenterX')}
                             value={coord(this.props.mapEditCenterX)}
                             {...bind('mapEditCenterX')}
                         />
-                        <gws.ui.TextInput
+                        <gc.ui.TextInput
                             label={this.__('overviewCenterY')}
                             value={coord(this.props.mapEditCenterY)}
                             {...bind('mapEditCenterY')}
                         />
-                        <gws.ui.NumberInput
+                        <gc.ui.NumberInput
                             minValue={minScale}
                             maxValue={maxScale}
                             step={1000}
@@ -77,7 +77,7 @@ class SidebarBody extends gws.View<ViewProps> {
                             value={this.props.mapEditScale}
                             {...bind('mapEditScale')}
                         />
-                        <gws.ui.NumberInput
+                        <gc.ui.NumberInput
                             minValue={0}
                             maxValue={359}
                             step={5}
@@ -92,7 +92,7 @@ class SidebarBody extends gws.View<ViewProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.Button
+                    <gc.ui.Button
                         primary
                         whenTouched={() => this.submit()}
                         label={this.__('overviewUpdateButton')}
@@ -106,7 +106,7 @@ class SidebarBody extends gws.View<ViewProps> {
         return <sidebar.Tab>
 
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('overviewSidebarTitle')}/>
+                <gc.ui.Title content={this.__('overviewSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -118,7 +118,7 @@ class SidebarBody extends gws.View<ViewProps> {
     }
 }
 
-class Controller extends gws.Controller implements gws.types.ISidebarItem {
+class Controller extends gc.Controller implements gc.types.ISidebarItem {
     iconClass = 'overviewSidebarIcon';
 
     async init() {
@@ -155,7 +155,7 @@ class Controller extends gws.Controller implements gws.types.ISidebarItem {
 
 }
 
-gws.registerTags({
+gc.registerTags({
     'Sidebar.Overview': Controller
 });
 

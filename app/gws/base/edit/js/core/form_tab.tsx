@@ -1,14 +1,14 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+import * as sidebar from 'gc/elements/sidebar';
+import * as components from 'gc/components';
 import * as types from './types';
 import type {Controller} from './controller';
 
-let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
+let {Form, Row, Cell, VBox, VRow} = gc.ui.Layout;
 
-export class FormFields extends gws.View<types.ViewProps> {
+export class FormFields extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }
@@ -41,7 +41,7 @@ export class FormFields extends gws.View<types.ViewProps> {
     }
 }
 
-export class FormButtons extends gws.View<types.ViewProps> {
+export class FormButtons extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }
@@ -56,30 +56,30 @@ export class FormButtons extends gws.View<types.ViewProps> {
 
         return [
             <Cell key={1} spaced>
-                <gws.ui.Button
-                    {...gws.lib.cls('editSaveButton')}
+                <gc.ui.Button
+                    {...gc.lib.cls('editSaveButton')}
                     disabled={!canSave}
                     tooltip={this.__('editSave')}
                     whenTouched={() => cc.whenFeatureFormSaveButtonTouched(sf)}
                 />
             </Cell>,
             <Cell key={2} spaced>
-                <gws.ui.Button
-                    {...gws.lib.cls('editResetButton')}
+                <gc.ui.Button
+                    {...gc.lib.cls('editResetButton')}
                     disabled={!canSave}
                     tooltip={this.__('editReset')}
                     whenTouched={() => cc.whenFeatureFormResetButtonTouched(sf)}
                 />
             </Cell>,
             <Cell key={3} spaced>
-                <gws.ui.Button
-                    {...gws.lib.cls('editCancelButton')}
+                <gc.ui.Button
+                    {...gc.lib.cls('editCancelButton')}
                     tooltip={this.__('editCancel')}
                     whenTouched={() => cc.whenFeatureFormCancelButtonTouched()}
                 />
             </Cell>,
             <Cell key={4} spaced>
-                <gws.ui.Button
+                <gc.ui.Button
                     className="editDeleteButton"
                     disabled={!canDelete}
                     tooltip={this.__('editDelete')}
@@ -113,7 +113,7 @@ export class FormButtons extends gws.View<types.ViewProps> {
     }
 }
 
-export class FormError extends gws.View<types.ViewProps> {
+export class FormError extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }
@@ -128,14 +128,14 @@ export class FormError extends gws.View<types.ViewProps> {
 
         return <VRow>
             <Cell flex>
-                <gws.ui.Error text={this.__('editValidationErrorText')}/>
+                <gc.ui.Error text={this.__('editValidationErrorText')}/>
             </Cell>
         </VRow>
 
     }
 }
 
-export class FormHeader extends gws.View<types.ViewProps> {
+export class FormHeader extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }
@@ -147,14 +147,14 @@ export class FormHeader extends gws.View<types.ViewProps> {
 
         return <Row>
             <Cell flex>
-                <gws.ui.Title content={sf.views.title}/>
+                <gc.ui.Title content={sf.views.title}/>
             </Cell>
         </Row>
     }
 }
 
 
-export class FormTab extends gws.View<types.ViewProps> {
+export class FormTab extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }

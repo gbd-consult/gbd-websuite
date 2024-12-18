@@ -1,13 +1,13 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
 import * as types from './types';
 import type {Controller} from './controller';
 
-let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
+let {Form, Row, Cell, VBox, VRow} = gc.ui.Layout;
 
 
-export class SelectModelDialog extends gws.View<types.ViewProps> {
+export class SelectModelDialog extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }
@@ -16,7 +16,7 @@ export class SelectModelDialog extends gws.View<types.ViewProps> {
         let cc = this.master();
         let dd = cc.editState.dialogData as types.SelectModelDialogData;
 
-        let cancelButton = <gws.ui.Button
+        let cancelButton = <gc.ui.Button
             className="cmpButtonFormCancel"
             whenTouched={() => cc.closeDialog()}
         />;
@@ -26,7 +26,7 @@ export class SelectModelDialog extends gws.View<types.ViewProps> {
             text: model.title,
         }));
 
-        return <gws.ui.Dialog
+        return <gc.ui.Dialog
             className="editSelectModelDialog"
             title={this.__('editSelectModelTitle')}
             whenClosed={() => cc.closeDialog()}
@@ -35,7 +35,7 @@ export class SelectModelDialog extends gws.View<types.ViewProps> {
             <Form>
                 <Row>
                     <Cell flex>
-                        <gws.ui.List
+                        <gc.ui.List
                             items={items}
                             value={null}
                             whenChanged={v => dd.whenSelected(cc.app.modelRegistry.getModel(v))}
@@ -43,7 +43,7 @@ export class SelectModelDialog extends gws.View<types.ViewProps> {
                     </Cell>
                 </Row>
             </Form>
-        </gws.ui.Dialog>;
+        </gc.ui.Dialog>;
     }
 }
 

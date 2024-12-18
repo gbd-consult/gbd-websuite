@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+import * as components from 'gc/components';
 import * as types from './types';
 
-let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
+let {Form, Row, Cell, VBox, VRow} = gc.ui.Layout;
 
-export class FeatureList extends gws.View<types.FeatureListProps> {
+export class FeatureList extends gc.View<types.FeatureListProps> {
     render() {
         let zoomTo = f => this.props.controller.update({
             marker: {
@@ -33,10 +33,10 @@ export class FeatureList extends gws.View<types.FeatureListProps> {
                 <div className="modSearchBox">
                     <Row>
                         <Cell>
-                            <gws.ui.Button className='searchIcon'/>
+                            <gc.ui.Button className='searchIcon'/>
                         </Cell>
                         <Cell flex>
-                            <gws.ui.TextInput
+                            <gc.ui.TextInput
                                 placeholder={this.__('editSearchPlaceholder')}
                                 withClear={true}
                                 value={this.props.searchText}
@@ -50,7 +50,7 @@ export class FeatureList extends gws.View<types.FeatureListProps> {
                 <components.feature.List
                     controller={this.props.controller}
                     features={this.props.features}
-                    content={f => <gws.ui.Link
+                    content={f => <gc.ui.Link
                         content={f.views.title}
                         whenTouched={() => this.props.whenFeatureTouched(f)}
                     />}

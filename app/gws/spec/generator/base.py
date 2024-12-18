@@ -81,14 +81,14 @@ FILE_KINDS = [
 PLUGIN_DIR = '/gws/plugin'
 
 SYSTEM_CHUNKS = [
-    [APP_NAME + '', '/js/src/gws'],
-    [APP_NAME + '.core', '/gws/core'],
-    [APP_NAME + '.base', '/gws/base'],
-    [APP_NAME + '.gis', '/gws/gis'],
-    [APP_NAME + '.lib', '/gws/lib'],
-    [APP_NAME + '.server', '/gws/server'],
-    [APP_NAME + '.helper', '/gws/helper'],
-
+    [CLIENT_NAME, '/js/src/gc'],
+    [f'{APP_NAME}', '/js/src/gws'],
+    [f'{APP_NAME}.core', '/gws/core'],
+    [f'{APP_NAME}.base', '/gws/base'],
+    [f'{APP_NAME}.gis', '/gws/gis'],
+    [f'{APP_NAME}.lib', '/gws/lib'],
+    [f'{APP_NAME}.server', '/gws/server'],
+    [f'{APP_NAME}.helper', '/gws/helper'],
 ]
 
 

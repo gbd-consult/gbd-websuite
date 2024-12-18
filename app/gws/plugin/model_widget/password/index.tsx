@@ -1,19 +1,20 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
+;
 
-interface Props extends gws.types.ModelWidgetProps {
-    widgetProps: gws.api.plugin.model_widget.password.Props
+interface Props extends gc.types.ModelWidgetProps {
+    widgetProps: gc.gws.plugin.model_widget.password.Props
 }
 
-class FormView extends gws.View<Props> {
+class FormView extends gc.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name];
 
-        return <gws.ui.PasswordInput
+        return <gc.ui.PasswordInput
             disabled={this.props.widgetProps.readOnly}
-            value={gws.lib.isEmpty(value) ? '' : String(value)}
+            value={gc.lib.isEmpty(value) ? '' : String(value)}
             placeholder={this.props.widgetProps.placeholder || ''}
             withShow={this.props.widgetProps.withShow}
             whenChanged={this.props.whenChanged}
@@ -22,16 +23,16 @@ class FormView extends gws.View<Props> {
     }
 }
 
-class CellView extends gws.View<gws.types.ModelWidgetProps> {
+class CellView extends gc.View<gc.types.ModelWidgetProps> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name] || '';
 
-        return <gws.ui.TableCell content={String(value)}/>;
+        return <gc.ui.TableCell content={String(value)}/>;
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     cellView(props) {
         return this.createElement(CellView, props)
     }
@@ -45,6 +46,6 @@ class Controller extends gws.Controller {
     }
 }
 
-gws.registerTags({
+gc.registerTags({
     'ModelWidget.password': Controller,
 })

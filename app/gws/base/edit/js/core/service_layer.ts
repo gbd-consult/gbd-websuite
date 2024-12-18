@@ -1,6 +1,6 @@
-import * as gws from 'gws';
+import * as gc from 'gc';
 
-export class ServiceLayer extends gws.map.layer.FeatureLayer {
+export class ServiceLayer extends gc.map.layer.FeatureLayer {
     // controller: Controller;
     cssSelector = '.editFeature'
 

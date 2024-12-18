@@ -1,17 +1,17 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+import * as sidebar from 'gc/elements/sidebar';
+import * as components from 'gc/components';
 
-let {Form, Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gc.ui.Layout;
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: LayersSidebar;
     mapUpdateCount: number;
-    mapSelectedLayer?: gws.types.ILayer;
+    mapSelectedLayer?: gc.types.ILayer;
     modLayersOpacityVisible: boolean;
-    layer?: gws.types.ILayer;
+    layer?: gc.types.ILayer;
 }
 
 const StoreKeys = [
@@ -21,36 +21,36 @@ const StoreKeys = [
     'layersShowInactive',
 ];
 
-class LayersTreeTitle extends gws.View<ViewProps> {
+class LayersTreeTitle extends gc.View<ViewProps> {
     render() {
         let click = async () => {
             this.props.controller.map.deselectAllLayers();
             await this.props.controller.map.selectLayer(this.props.layer);
         };
 
-        return <gws.ui.Touchable
+        return <gc.ui.Touchable
             className="modLayersTreeTitle"
             whenTouched={click}
-        >{this.props.layer.title}</gws.ui.Touchable>
+        >{this.props.layer.title}</gc.ui.Touchable>
 
     }
 }
 
-class LayersCheckButton extends gws.View<ViewProps> {
+class LayersCheckButton extends gc.View<ViewProps> {
     render() {
         let layer = this.props.layer,
             isExclusive = layer.parent && layer.parent.exclusive,
             isChecked = layer.checked,
-            isGroup = !gws.lib.isEmpty(layer.children);
+            isGroup = !gc.lib.isEmpty(layer.children);
 
         if (!layer.inResolution) {
-            return <gws.ui.Button
+            return <gc.ui.Button
                 className='modLayersCheckButton isInactive'
                 tooltip={this.__('modLayersCheckButton')}
             />;
         }
 
-        let cls = gws.lib.cls(
+        let cls = gc.lib.cls(
             'modLayersCheckButton',
             layer.hidden && 'isHidden',
             isExclusive && 'isExclusive',
@@ -58,7 +58,7 @@ class LayersCheckButton extends gws.View<ViewProps> {
             isGroup && 'isGroup',
         );
 
-        return <gws.ui.Button
+        return <gc.ui.Button
             {...cls}
             tooltip={this.__('modLayersCheckButton')}
             whenTouched={() => this.props.controller.map.setLayerChecked(layer, !(!layer.hidden && layer.checked))}
@@ -66,13 +66,13 @@ class LayersCheckButton extends gws.View<ViewProps> {
     }
 }
 
-class LayersExpandButton extends gws.View<ViewProps> {
+class LayersExpandButton extends gc.View<ViewProps> {
     render() {
         let layer = this.props.layer,
             cls = layer.expanded ? 'modLayersCollapseButton' : 'modLayersExpandButton',
             fn = () => this.props.controller.map.setLayerExpanded(layer, !layer.expanded);
 
-        return <gws.ui.Button
+        return <gc.ui.Button
             className={cls}
             tooltip={this.__('modLayersExpandButton')}
             whenTouched={fn}
@@ -80,16 +80,16 @@ class LayersExpandButton extends gws.View<ViewProps> {
     }
 }
 
-class LayersLeafButton extends gws.View<ViewProps> {
+class LayersLeafButton extends gc.View<ViewProps> {
     render() {
-        return <gws.ui.Button
+        return <gc.ui.Button
             className='modLayersLeafButton'
             tooltip={this.__('modLayersLeafButton')}
         />;
     }
 }
 
-let _layerTree = (layer: gws.types.ILayer, props) => {
+let _layerTree = (layer: gc.types.ILayer, props) => {
     let cc = [];
 
     layer.children.forEach(la => {
@@ -106,12 +106,12 @@ let _layerTree = (layer: gws.types.ILayer, props) => {
     return cc.length ? cc : null;
 };
 
-class LayersTreeNode extends gws.View<ViewProps> {
+class LayersTreeNode extends gc.View<ViewProps> {
     render() {
 
         let layer = this.props.layer,
             children = _layerTree(layer, this.props),
-            cls = gws.lib.cls(
+            cls = gc.lib.cls(
                 'modLayersTreeRow',
                 (layer.hidden || !layer.inResolution) && 'isHidden',
                 layer.selected && 'isSelected',
@@ -140,7 +140,7 @@ class LayersTreeNode extends gws.View<ViewProps> {
 
 const ZOOM_EXTENT_PADDING = 50;
 
-class LayerSidebarDetails extends gws.View<ViewProps> {
+class LayerSidebarDetails extends gc.View<ViewProps> {
     render() {
         let layer = this.props.layer,
             cc = this.props.controller,
@@ -189,7 +189,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                             {this.__('modLayersOpacity')}
                         </Cell>
                         <Cell flex>
-                            <gws.ui.Slider
+                            <gc.ui.Slider
                                 value={Math.floor(100 * this.props.layer.opacity)}
                                 minValue={0}
                                 maxValue={100}
@@ -198,7 +198,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                             />
                         </Cell>
                         <Cell width={50}>
-                            <gws.ui.NumberInput
+                            <gc.ui.NumberInput
                                 value={Math.floor(100 * this.props.layer.opacity)}
                                 minValue={0}
                                 maxValue={100}
@@ -235,14 +235,14 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
     }
 }
 
-class LayersSidebarView extends gws.View<ViewProps> {
+class LayersSidebarView extends gc.View<ViewProps> {
     render() {
         let sel = this.props.mapSelectedLayer;
 
         return <sidebar.Tab>
 
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('modLayersSidebarTitle')}/>
+                <gc.ui.Title content={this.__('modLayersSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -256,7 +256,7 @@ class LayersSidebarView extends gws.View<ViewProps> {
     }
 }
 
-class LayersSidebar extends gws.Controller implements gws.types.ISidebarItem {
+class LayersSidebar extends gc.Controller implements gc.types.ISidebarItem {
     iconClass = 'modLayersSidebar';
 
     get tooltip() {
@@ -271,7 +271,7 @@ class LayersSidebar extends gws.Controller implements gws.types.ISidebarItem {
     }
 }
 
-gws.registerTags({
+gc.registerTags({
     'Sidebar.Layers': LayersSidebar
 });
 

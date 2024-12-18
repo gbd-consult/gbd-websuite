@@ -116,6 +116,8 @@ __VENDORS__
 </html>
 `;
 
+const CLIENT_NAME = 'gc';
+
 const JS_BUNDLE_FUNCTION = String.raw`
 function (modules, strings) {
     let M = {}, S = {}, require = name => M[name];
@@ -131,7 +133,7 @@ function (modules, strings) {
         S[s[0] || ""] = s[1] || "";
     }
 
-    require("gws/main").main(window, S);
+    require("${CLIENT_NAME}/main").main(window, S);
 }
 `;
 

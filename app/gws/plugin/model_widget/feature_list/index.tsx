@@ -1,30 +1,30 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+import * as components from 'gc/components';
 
-let {Cell} = gws.ui;
+let {Cell} = gc.ui;
 
 
-interface Props extends gws.types.ModelWidgetProps {
+interface Props extends gc.types.ModelWidgetProps {
     whenNewButtonTouched?: () => void;
     whenLinkButtonTouched?: () => void;
-    whenEditButtonTouched?: (feature?: gws.types.IFeature) => void;
-    whenUnlinkButtonTouched?: (feature?: gws.types.IFeature) => void;
-    whenDeleteButtonTouched?: (feature?: gws.types.IFeature) => void;
+    whenEditButtonTouched?: (feature?: gc.types.IFeature) => void;
+    whenUnlinkButtonTouched?: (feature?: gc.types.IFeature) => void;
+    whenDeleteButtonTouched?: (feature?: gc.types.IFeature) => void;
 }
 
 interface ListProps extends Props {
-    selectedFeature?: gws.types.IFeature;
-    whenTouched?: (feature: gws.types.IFeature) => void;
+    selectedFeature?: gc.types.IFeature;
+    whenTouched?: (feature: gc.types.IFeature) => void;
     withZoom?: boolean;
 }
 
-class FormView extends gws.View<Props> {
+class FormView extends gc.View<Props> {
     buttons(sf) {
         return <React.Fragment>
             {this.props.widgetProps['withNewButton'] && this.props.whenNewButtonTouched && <Cell>
-                <gws.ui.Button
+                <gc.ui.Button
                     className='cmpFormListNewButton'
                     tooltip={this.__('widgetFeatureListNewObject')}
                     whenTouched={this.props.whenNewButtonTouched}
@@ -32,7 +32,7 @@ class FormView extends gws.View<Props> {
             </Cell>}
 
             {this.props.widgetProps['withLinkButton'] && this.props.whenLinkButtonTouched && <Cell>
-                <gws.ui.Button
+                <gc.ui.Button
                     className='cmpFormListLinkButton'
                     tooltip={this.__('widgetFeatureListLinkObject')}
                     whenTouched={this.props.whenLinkButtonTouched}
@@ -40,7 +40,7 @@ class FormView extends gws.View<Props> {
             </Cell>}
 
             {this.props.widgetProps['withEditButton'] && this.props.whenEditButtonTouched && <Cell>
-                <gws.ui.Button
+                <gc.ui.Button
                     className='cmpFormListEditButton'
                     tooltip={this.__('widgetFeatureListEditObject')}
                     disabled={!sf}
@@ -49,7 +49,7 @@ class FormView extends gws.View<Props> {
             </Cell>}
 
             {this.props.widgetProps['withUnlinkButton'] && this.props.whenUnlinkButtonTouched && <Cell>
-                <gws.ui.Button
+                <gc.ui.Button
                     className='cmpFormListUnlinkButton'
                     tooltip={this.__('widgetFeatureListUnlinkObject')}
                     disabled={!sf}
@@ -58,7 +58,7 @@ class FormView extends gws.View<Props> {
             </Cell>}
 
             {this.props.widgetProps['withDeleteButton'] && this.props.whenDeleteButtonTouched && <Cell>
-                <gws.ui.Button
+                <gc.ui.Button
                     className='cmpFormListDeleteButton'
                     tooltip={this.__('widgetFeatureListDeleteObject')}
                     disabled={!sf}
@@ -69,7 +69,7 @@ class FormView extends gws.View<Props> {
             {this.props.widgetProps['toFileField'] && <Cell flex/>}
 
             {this.props.widgetProps['toFileField'] && <Cell>
-                <gws.ui.Button
+                <gc.ui.Button
                     className='cmpFormFileDownloadButton'
                     tooltip={this.__('widgetFeatureListFileDownload')}
                     disabled={!sf}
@@ -93,7 +93,7 @@ class FormView extends gws.View<Props> {
         }
     }
 
-    selectFeature(feature: gws.types.IFeature) {
+    selectFeature(feature: gc.types.IFeature) {
         let cc = this.props.controller;
         let uid = this.props.widgetProps.uid;
 
@@ -102,10 +102,10 @@ class FormView extends gws.View<Props> {
         });
     }
 
-    download(feature: gws.types.IFeature) {
-        let fp = feature.getAttribute(this.props.widgetProps['toFileField']) as gws.types.ServerFileProps;
+    download(feature: gc.types.IFeature) {
+        let fp = feature.getAttribute(this.props.widgetProps['toFileField']) as gc.types.ServerFileProps;
         let u = fp.downloadUrl || '';
-        gws.lib.downloadUrl(u, u.split('/').pop())
+        gc.lib.downloadUrl(u, u.split('/').pop())
     }
 
     render() {
@@ -126,22 +126,22 @@ class FormView extends gws.View<Props> {
         ;
 
         if (this.props.disabled) {
-            return <gws.ui.Row className="cmpFormListDisabledMessage">
+            return <gc.ui.Row className="cmpFormListDisabledMessage">
                     {this.__('editDisabledUntilSave')}
-                </gws.ui.Row>
+                </gc.ui.Row>
 
         }
 
         return <div className="cmpFormList">
             {list}
-            <gws.ui.Row className="cmpFormListToolbar">
+            <gc.ui.Row className="cmpFormListToolbar">
                 {this.buttons(sf)}
-            </gws.ui.Row>
+            </gc.ui.Row>
         </div>
     }
 }
 
-class CellView extends gws.View<Props> {
+class CellView extends gc.View<Props> {
     render() {
 
         let field = this.props.field;
@@ -166,7 +166,7 @@ class CellView extends gws.View<Props> {
     }
 }
 
-class FeatureList extends gws.View<ListProps> {
+class FeatureList extends gc.View<ListProps> {
     render() {
         let cc = this.props.controller;
         let field = this.props.field;
@@ -196,7 +196,7 @@ class FeatureList extends gws.View<ListProps> {
         return <components.feature.List
             controller={this.props.controller}
             features={features}
-            content={f => <gws.ui.Link
+            content={f => <gc.ui.Link
                 content={f.views.title}
                 whenTouched={() => touched(f)}
             />}
@@ -207,7 +207,7 @@ class FeatureList extends gws.View<ListProps> {
     }
 }
 
-class FileList extends gws.View<ListProps> {
+class FileList extends gc.View<ListProps> {
     render() {
         let field = this.props.field;
         let features = this.props.values[field.name] || [];
@@ -215,7 +215,7 @@ class FileList extends gws.View<ListProps> {
         let touched = this.props.whenTouched || (f => null);
 
         for (let f of features) {
-            let fp = f.getAttribute(this.props.widgetProps['toFileField']) as gws.types.ServerFileProps;
+            let fp = f.getAttribute(this.props.widgetProps['toFileField']) as gc.types.ServerFileProps;
             items.push({
                 feature: f,
                 label: f.views.title,
@@ -234,7 +234,7 @@ class FileList extends gws.View<ListProps> {
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     cellView(props) {
         return this.createElement(CellView, props)
     }
@@ -250,7 +250,7 @@ class Controller extends gws.Controller {
 }
 
 
-gws.registerTags({
+gc.registerTags({
     'ModelWidget.featureList': Controller,
     'ModelWidget.fileList': Controller,
 })

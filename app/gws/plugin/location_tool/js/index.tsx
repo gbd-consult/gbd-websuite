@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from 'gws';
-import * as toolbar from 'gws/elements/toolbar';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+import * as toolbar from 'gc/elements/toolbar';
+import * as components from 'gc/components';
 
 const MASTER = 'Shared.Location';
 
@@ -15,12 +15,12 @@ function _master(obj: any) {
 }
 
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
     locationError: string | null;
 }
 
-class ErrorDialog extends gws.View<ViewProps> {
+class ErrorDialog extends gc.View<ViewProps> {
 
     render() {
         if (!this.props.locationError)
@@ -28,7 +28,7 @@ class ErrorDialog extends gws.View<ViewProps> {
 
         let close = () => this.props.controller.update({locationError: null});
 
-        return <gws.ui.Alert
+        return <gc.ui.Alert
             title={this.props.controller.__('appError')}
             error={this.props.locationError}
             whenClosed={close}
@@ -55,7 +55,7 @@ class ToolbarButton extends toolbar.Button {
 
 
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     uid = MASTER;
 
     get appOverlayView() {
@@ -125,7 +125,7 @@ class Controller extends gws.Controller {
 }
 
 
-gws.registerTags({
+gc.registerTags({
     [MASTER]: Controller,
     'Toolbar.Location': ToolbarButton,
 });

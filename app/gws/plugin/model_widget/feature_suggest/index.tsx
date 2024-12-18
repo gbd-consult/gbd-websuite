@@ -1,14 +1,14 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
 
-interface Props extends gws.types.ModelWidgetProps {
-    features: Array<gws.types.IFeature>;
+interface Props extends gc.types.ModelWidgetProps {
+    features: Array<gc.types.IFeature>;
     searchText: string;
     whenSearchChanged: (val: string) => void;
 }
 
-class FormView extends gws.View<Props> {
+class FormView extends gc.View<Props> {
     render() {
         let field = this.props.field;
         let feature = this.props.values[field.name];
@@ -22,7 +22,7 @@ class FormView extends gws.View<Props> {
             fmap[f.uid] = f;
             items.push({text: f.views.title, value: String(f.uid)})
         }
-        return <gws.ui.Suggest
+        return <gc.ui.Suggest
             value={feature ? String(feature.uid) : null}
             items={items}
             text={this.props.searchText}
@@ -31,16 +31,16 @@ class FormView extends gws.View<Props> {
         />;
     }
 }
-class CellView extends gws.View<Props> {
+class CellView extends gc.View<Props> {
     render() {
         let field = this.props.field;
         let feature = this.props.values[field.name];
         let text = feature ? feature.views.title : '';
-        return <gws.ui.TableCell content={text}/>;
+        return <gc.ui.TableCell content={text}/>;
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     cellView(props) {
         return this.createElement(CellView, props)
     }
@@ -55,6 +55,6 @@ class Controller extends gws.Controller {
 }
 
 
-gws.registerTags({
+gc.registerTags({
     'ModelWidget.featureSuggest': Controller,
 })

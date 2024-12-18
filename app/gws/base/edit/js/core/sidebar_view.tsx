@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
 
 import * as types from './types';
 import type {Controller} from './controller';
@@ -9,14 +9,14 @@ import {ListTab} from './list_tab';
 import {ModelsTab} from './models_tab';
 
 
-export abstract class SidebarView extends gws.View<types.ViewProps> {
+export abstract class SidebarView extends gc.View<types.ViewProps> {
     abstract master(): Controller;
 
     render() {
         let es = this.master().editState;
 
         if (es.isWaiting)
-            return <gws.ui.Loader/>;
+            return <gc.ui.Loader/>;
 
         if (es.sidebarSelectedFeature)
             return <FormTab {...this.props} controller={this.master()} />;

@@ -1,7 +1,7 @@
 import * as ol from 'openlayers';
 
-import * as gws from 'gws';
-import * as draw from 'gws/elements/draw';
+import * as gc from 'gc';
+import * as draw from 'gc/elements/draw';
 import type {Controller} from './controller';
 
 
@@ -17,7 +17,7 @@ const ENABLED_SHAPES_BY_TYPE = {
 };
 
 
-export abstract class PointerTool extends gws.Tool {
+export abstract class PointerTool extends gc.Tool {
     oFeatureCollection: ol.Collection<ol.Feature>;
     snap: boolean = true;
 
@@ -30,7 +30,7 @@ export abstract class PointerTool extends gws.Tool {
         })
     }
 
-    setFeature(feature?: gws.types.IFeature) {
+    setFeature(feature?: gc.types.IFeature) {
         if (!this.oFeatureCollection)
             this.oFeatureCollection = new ol.Collection<ol.Feature>();
 

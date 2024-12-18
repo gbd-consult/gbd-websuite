@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
 
 import * as types from './types';
 import * as options from './options';
@@ -15,10 +15,10 @@ import {FeatureSuggestWidgetHelper} from './feature_suggest_widget_helper';
 import {FeatureCache} from './feature_cache';
 
 
-export class Controller extends gws.Controller {
+export class Controller extends gc.Controller {
     serviceLayer: ServiceLayer;
-    models: Array<gws.types.IModel>
-    setup: gws.api.base.edit.action.Props;
+    models: Array<gc.types.IModel>
+    setup: gc.gws.base.edit.action.Props;
 
     widgetHelpers: { [key: string]: types.WidgetHelper } = {
         'geometry': new GeometryWidgetHelper(this),
@@ -66,7 +66,7 @@ export class Controller extends gws.Controller {
     }
 
     hasModels() {
-        return !gws.lib.isEmpty(this.models)
+        return !gc.lib.isEmpty(this.models)
     }
 
     //
@@ -78,14 +78,14 @@ export class Controller extends gws.Controller {
         if (!model)
             return;
 
-        if (model.loadingStrategy == gws.api.core.FeatureLoadingStrategy.bbox) {
+        if (model.loadingStrategy == gc.gws.FeatureLoadingStrategy.bbox) {
             await this.featureCache.updateForModel(model);
         }
     }
 
     searchTimer = 0
 
-    async whenFeatureListSearchChanged(model: gws.types.IModel, val: string) {
+    async whenFeatureListSearchChanged(model: gc.types.IModel, val: string) {
         this.updateFeatureListSearchText(model.uid, val);
         clearTimeout(this.searchTimer);
         this.searchTimer = Number(setTimeout(
@@ -114,7 +114,7 @@ export class Controller extends gws.Controller {
 
         let sf = this.editState.sidebarSelectedFeature;
 
-        if (gws.lib.isEmpty(res.features)) {
+        if (gc.lib.isEmpty(res.features)) {
             // only unselect if current feature is not new
             if (sf && !sf.isNew) {
                 this.unselectFeatures();
@@ -141,7 +141,7 @@ export class Controller extends gws.Controller {
     _geometrySaveTimer = 0;
 
 
-    async whenModifyEnded(feature: gws.types.IFeature) {
+    async whenModifyEnded(feature: gc.types.IFeature) {
         let save = async () => {
             if (feature.isNew) {
                 return;
@@ -197,7 +197,7 @@ export class Controller extends gws.Controller {
 
     //
 
-    async initWidget(field: gws.types.IModelField) {
+    async initWidget(field: gc.types.IModelField) {
         let controller = this.widgetControllerForField(field);
         if (!controller)
             return;
@@ -209,10 +209,10 @@ export class Controller extends gws.Controller {
     }
 
     createWidget(
-        mode: gws.types.ModelWidgetMode,
-        field: gws.types.IModelField,
-        feature: gws.types.IFeature,
-        values: gws.types.Dict,
+        mode: gc.types.ModelWidgetMode,
+        field: gc.types.IModelField,
+        feature: gc.types.IFeature,
+        values: gc.types.Dict,
         whenChanged,
         whenEntered,
     ): React.ReactElement | null {
@@ -227,7 +227,7 @@ export class Controller extends gws.Controller {
             return null;
         }
 
-        let props: gws.types.Dict = {
+        let props: gc.types.Dict = {
             controller,
             feature,
             field,
@@ -252,7 +252,7 @@ export class Controller extends gws.Controller {
                 continue;
             }
             let w = this.createWidget(
-                gws.types.ModelWidgetMode.form,
+                gc.types.ModelWidgetMode.form,
                 fld,
                 feature,
                 values,
@@ -269,7 +269,7 @@ export class Controller extends gws.Controller {
         for (let fld of feature.model.fields) {
             if (fld.widgetProps.type === 'geometry' && !fld.widgetProps.isInline) {
                 return this.createWidget(
-                    gws.types.ModelWidgetMode.form,
+                    gc.types.ModelWidgetMode.form,
                     fld,
                     feature,
                     values,
@@ -280,7 +280,7 @@ export class Controller extends gws.Controller {
         }
     }
 
-    async whenFeatureFormSaveButtonTouched(feature: gws.types.IFeature) {
+    async whenFeatureFormSaveButtonTouched(feature: gc.types.IFeature) {
         let ok = await this.saveFeatureInSidebar(feature);
         if (ok) {
             if (feature.model.clientOptions.keepFormOpen) {
@@ -292,7 +292,7 @@ export class Controller extends gws.Controller {
         }
     }
 
-    whenFeatureFormDeleteButtonTouched(feature: gws.types.IFeature) {
+    whenFeatureFormDeleteButtonTouched(feature: gc.types.IFeature) {
         this.showDialog({
             type: 'DeleteFeature',
             feature,
@@ -300,7 +300,7 @@ export class Controller extends gws.Controller {
         })
     }
 
-    async whenFeatureFormDeleteConfirmed(feature: gws.types.IFeature) {
+    async whenFeatureFormDeleteConfirmed(feature: gc.types.IFeature) {
         let ok = await this.deleteFeature(feature);
         if (ok) {
             await this.closeDialog();
@@ -308,7 +308,7 @@ export class Controller extends gws.Controller {
         }
     }
 
-    whenFeatureFormResetButtonTouched(feature: gws.types.IFeature) {
+    whenFeatureFormResetButtonTouched(feature: gc.types.IFeature) {
         feature.resetEdits();
         this.updateEditState();
     }
@@ -317,12 +317,12 @@ export class Controller extends gws.Controller {
         await this.closeForm();
     }
 
-    whenWidgetChanged(feature: gws.types.IFeature, field: gws.types.IModelField, value: any) {
+    whenWidgetChanged(feature: gc.types.IFeature, field: gc.types.IModelField, value: any) {
         feature.editAttribute(field.name, value);
         this.updateEditState();
     }
 
-    whenWidgetEntered(feature: gws.types.IFeature, field: gws.types.IModelField, value: any) {
+    whenWidgetEntered(feature: gc.types.IFeature, field: gc.types.IModelField, value: any) {
         feature.editAttribute(field.name, value);
         this.updateEditState();
         this.whenFeatureFormSaveButtonTouched(feature);
@@ -337,14 +337,14 @@ export class Controller extends gws.Controller {
 
     async closeDialog() {
         this.updateEditState({isWaiting: true});
-        await gws.lib.sleep(2);
+        await gc.lib.sleep(2);
         this.updateEditState({dialogData: null});
         this.updateEditState({isWaiting: false});
     }
 
     async closeForm() {
         this.updateEditState({isWaiting: true});
-        await gws.lib.sleep(2);
+        await gc.lib.sleep(2);
 
         let ok = await this.popFeature();
 
@@ -361,12 +361,12 @@ export class Controller extends gws.Controller {
 
     //
 
-    selectModelInSidebar(model: gws.types.IModel) {
+    selectModelInSidebar(model: gc.types.IModel) {
         this.updateEditState({sidebarSelectedModel: model});
         this.featureCache.drop(model.uid);
     }
 
-    selectModelInTableView(model: gws.types.IModel) {
+    selectModelInTableView(model: gc.types.IModel) {
         this.updateEditState({tableViewSelectedModel: model});
         this.featureCache.drop(model.uid);
     }
@@ -379,7 +379,7 @@ export class Controller extends gws.Controller {
         this.featureCache.clear();
     }
 
-    selectFeatureInSidebar(feature: gws.types.IFeature) {
+    selectFeatureInSidebar(feature: gc.types.IFeature) {
         this.updateEditState({sidebarSelectedFeature: feature});
         if (feature.geometry) {
             this.app.startTool('Tool.Edit.Pointer');
@@ -394,7 +394,7 @@ export class Controller extends gws.Controller {
         })
     }
 
-    pushFeature(feature: gws.types.IFeature) {
+    pushFeature(feature: gc.types.IFeature) {
         let hist = this.removeFeature(this.editState.featureHistory, feature);
         this.updateEditState({
             featureHistory: [...hist, feature],
@@ -445,7 +445,7 @@ export class Controller extends gws.Controller {
         })
     }
 
-    widgetControllerForField(field: gws.types.IModelField): gws.types.IModelWidget | null {
+    widgetControllerForField(field: gc.types.IModelField): gc.types.IModelWidget | null {
         let p = field.widgetProps;
         if (!p)
             return null;
@@ -454,7 +454,7 @@ export class Controller extends gws.Controller {
         return (
             this.app.controllerByTag(tag) ||
             this.app.createControllerFromConfig(this, {tag})
-        ) as gws.types.IModelWidget;
+        ) as gc.types.IModelWidget;
     }
 
 
@@ -467,13 +467,13 @@ export class Controller extends gws.Controller {
         return this.app.modelRegistry.getModel(modelUid)
     }
 
-    removeFeature(flist: Array<gws.types.IFeature>, feature: gws.types.IFeature) {
+    removeFeature(flist: Array<gc.types.IFeature>, feature: gc.types.IFeature) {
         return (flist || []).filter(f => f.model !== feature.model || f.uid !== feature.uid);
     }
 
     //
 
-    async saveFeatureInSidebar(feature: gws.types.IFeature) {
+    async saveFeatureInSidebar(feature: gc.types.IFeature) {
         let ok = await this.saveFeature(feature, feature.model.fields)
 
         if (!ok && this.editState.serverError) {
@@ -495,7 +495,7 @@ export class Controller extends gws.Controller {
         return true
     }
 
-    async saveFeature(feature: gws.types.IFeature, fields: Array<gws.types.IModelField>) {
+    async saveFeature(feature: gc.types.IFeature, fields: Array<gc.types.IModelField>) {
         this.updateEditState({
             serverError: '',
             formErrors: null,
@@ -508,7 +508,7 @@ export class Controller extends gws.Controller {
 
         for (let field of fields) {
             let v = atts[field.name]
-            if (!gws.lib.isEmpty(v))
+            if (!gc.lib.isEmpty(v))
                 attsToWrite[field.name] = await this.serializeValue(field, v);
         }
 
@@ -536,7 +536,7 @@ export class Controller extends gws.Controller {
             formErrors[e.fieldName] = msg;
         }
 
-        if (!gws.lib.isEmpty(formErrors)) {
+        if (!gc.lib.isEmpty(formErrors)) {
             this.updateEditState({formErrors});
             return false
         }
@@ -548,11 +548,11 @@ export class Controller extends gws.Controller {
     }
 
     async createFeature(
-        model: gws.types.IModel,
+        model: gc.types.IModel,
         attributes?: object,
         geometry?: ol.geom.Geometry,
-        withFeature?: gws.types.IFeature,
-    ): Promise<gws.types.IFeature> {
+        withFeature?: gc.types.IFeature,
+    ): Promise<gc.types.IFeature> {
         attributes = attributes || {};
 
         if (geometry) {
@@ -580,7 +580,7 @@ export class Controller extends gws.Controller {
         return newFeature;
     }
 
-    async deleteFeature(feature: gws.types.IFeature) {
+    async deleteFeature(feature: gc.types.IFeature) {
 
         let res = await this.serverDeleteFeature({
             modelUid: feature.model.uid,
@@ -602,11 +602,11 @@ export class Controller extends gws.Controller {
         return true;
     }
 
-    async serializeValue(field: gws.types.IModelField, val) {
-        if (field.attributeType === gws.api.core.AttributeType.file) {
+    async serializeValue(field: gc.types.IModelField, val) {
+        if (field.attributeType === gc.gws.AttributeType.file) {
             if (val instanceof FileList) {
-                let content: Uint8Array = await gws.lib.readFile(val[0]);
-                return {name: val[0].name, content} as gws.types.ClientFileProps
+                let content: Uint8Array = await gc.lib.readFile(val[0]);
+                return {name: val[0].name, content} as gc.types.ClientFileProps
             }
             return null
         }

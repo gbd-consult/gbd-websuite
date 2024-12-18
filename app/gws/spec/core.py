@@ -60,6 +60,8 @@ EXT_OBJECT_CLASS = 'Object'
 EXT_CONFIG_CLASS = 'Config'
 EXT_PROPS_CLASS = 'Props'
 
+CLIENT_NAME = 'gc'
+
 TypeId = str
 
 # tag property name for Variant types

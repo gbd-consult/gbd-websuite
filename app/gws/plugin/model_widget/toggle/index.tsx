@@ -1,39 +1,40 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
+;
 
-interface Props extends gws.types.ModelWidgetProps {
-    widgetProps: gws.api.plugin.model_widget.toggle.Props
+interface Props extends gc.types.ModelWidgetProps {
+    widgetProps: gc.gws.plugin.model_widget.toggle.Props
 }
 
 
-class FormView extends gws.View<Props> {
+class FormView extends gc.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name];
-        return <gws.ui.Toggle
+        return <gc.ui.Toggle
             disabled={this.props.widgetProps.readOnly}
-            value={gws.lib.isEmpty(value) ? null : Boolean(value)}
+            value={gc.lib.isEmpty(value) ? null : Boolean(value)}
             whenChanged={this.props.whenChanged}
             type={this.props.widgetProps.kind}
         />
     }
 }
 
-class CellView extends gws.View<Props> {
+class CellView extends gc.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name];
 
         if (value) {
-            return <gws.ui.TableCell content="✔" />
+            return <gc.ui.TableCell content="✔" />
         }
 
         return null
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     cellView(props) {
         return this.createElement(CellView, props)
     }
@@ -51,6 +52,6 @@ class Controller extends gws.Controller {
 
 
 
-gws.registerTags({
+gc.registerTags({
     'ModelWidget.toggle': Controller,
 })

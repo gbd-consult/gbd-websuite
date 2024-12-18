@@ -1,17 +1,18 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
+;
 
-interface Props extends gws.types.ModelWidgetProps {
-    widgetProps: gws.api.plugin.model_widget.select.Props
+interface Props extends gc.types.ModelWidgetProps {
+    widgetProps: gc.gws.plugin.model_widget.select.Props
 }
 
 
-class FormView extends gws.View<Props> {
+class FormView extends gc.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name];
-        return <gws.ui.Select
+        return <gc.ui.Select
             disabled={this.props.widgetProps.readOnly}
             value={value}
             items={this.props.widgetProps.items}
@@ -21,7 +22,7 @@ class FormView extends gws.View<Props> {
     }
 }
 
-class CellView extends gws.View<Props> {
+class CellView extends gc.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name];
@@ -31,11 +32,11 @@ class CellView extends gws.View<Props> {
             if (it.value === value)
                 text = it.text
 
-        return <gws.ui.TableCell content={text}/>;
+        return <gc.ui.TableCell content={text}/>;
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     cellView(props) {
         return this.createElement(CellView, props)
     }
@@ -49,6 +50,6 @@ class Controller extends gws.Controller {
     }
 }
 
-gws.registerTags({
+gc.registerTags({
     'ModelWidget.select': Controller,
 })

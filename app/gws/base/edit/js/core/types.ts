@@ -1,6 +1,7 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
+
 import type {Controller} from './controller';
 
 export interface TableViewRow {
@@ -9,7 +10,7 @@ export interface TableViewRow {
 }
 
 
-export interface ViewProps extends gws.types.ViewProps {
+export interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
     editUpdateCount: number;
     appActiveTool: string;
@@ -17,20 +18,20 @@ export interface ViewProps extends gws.types.ViewProps {
 
 export interface SelectModelDialogData {
     type: 'SelectModel';
-    models: Array<gws.types.IModel>;
-    whenSelected: (model: gws.types.IModel) => void;
+    models: Array<gc.types.IModel>;
+    whenSelected: (model: gc.types.IModel) => void;
 }
 
 export interface SelectFeatureDialogData {
     type: 'SelectFeature';
-    model: gws.types.IModel;
-    field: gws.types.IModelField;
-    whenFeatureTouched: (f: gws.types.IFeature) => void;
+    model: gc.types.IModel;
+    field: gc.types.IModelField;
+    whenFeatureTouched: (f: gc.types.IFeature) => void;
 }
 
 export interface DeleteFeatureDialogData {
     type: 'DeleteFeature';
-    feature: gws.types.IFeature;
+    feature: gc.types.IFeature;
     whenConfirmed: () => void;
 }
 
@@ -42,8 +43,8 @@ export interface ErrorDialogData {
 
 export interface GeometryTextDialogData {
     type: 'GeometryText';
-    shape: gws.api.base.shape.Props;
-    whenSaved: (shape: gws.api.base.shape.Props) => void;
+    shape: gc.gws.base.shape.Props;
+    whenSaved: (shape: gc.gws.base.shape.Props) => void;
 }
 
 export type DialogData =
@@ -55,27 +56,27 @@ export type DialogData =
     ;
 
 export interface EditState {
-    sidebarSelectedModel?: gws.types.IModel;
-    sidebarSelectedFeature?: gws.types.IFeature;
-    tableViewSelectedModel?: gws.types.IModel;
-    tableViewSelectedFeature?: gws.types.IFeature;
+    sidebarSelectedModel?: gc.types.IModel;
+    sidebarSelectedFeature?: gc.types.IFeature;
+    tableViewSelectedModel?: gc.types.IModel;
+    tableViewSelectedFeature?: gc.types.IFeature;
     tableViewRows: Array<TableViewRow>;
     tableViewTouchPos?: Array<number>;
     tableViewLoading: boolean;
     formErrors?: object;
     serverError?: string;
-    drawModel?: gws.types.IModel;
-    drawFeature?: gws.types.IFeature;
-    featureHistory: Array<gws.types.IFeature>;
+    drawModel?: gc.types.IModel;
+    drawFeature?: gc.types.IFeature;
+    featureHistory: Array<gc.types.IFeature>;
     featureListSearchText: { [modelUid: string]: string };
-    featureCache: { [key: string]: Array<gws.types.IFeature> };
+    featureCache: { [key: string]: Array<gc.types.IFeature> };
     isWaiting: boolean;
     dialogData?: DialogData;
 }
 
-export interface FeatureListProps extends gws.types.ViewProps {
-    features: Array<gws.types.IFeature>;
-    whenFeatureTouched: (f: gws.types.IFeature) => void;
+export interface FeatureListProps extends gc.types.ViewProps {
+    features: Array<gc.types.IFeature>;
+    whenFeatureTouched: (f: gc.types.IFeature) => void;
     withSearch: boolean;
     whenSearchChanged: (val: string) => void;
     searchText: string;
@@ -83,7 +84,7 @@ export interface FeatureListProps extends gws.types.ViewProps {
 
 
 export interface WidgetHelper {
-    init(field: gws.types.IModelField): Promise<void>;
+    init(field: gc.types.IModelField): Promise<void>;
 
-    setProps(feature: gws.types.IFeature, field: gws.types.IModelField, props: gws.types.Dict);
+    setProps(feature: gc.types.IFeature, field: gc.types.IModelField, props: gc.types.Dict);
 }

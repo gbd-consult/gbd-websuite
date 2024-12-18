@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
 
 import * as types from './types';
 import type {Controller} from './controller';
@@ -13,7 +13,7 @@ import {GeometryTextDialog} from './geometry_text_dialog';
 import {ErrorDialog} from './error_dialog';
 
 
-export class Dialog extends gws.View<types.ViewProps> {
+export class Dialog extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }

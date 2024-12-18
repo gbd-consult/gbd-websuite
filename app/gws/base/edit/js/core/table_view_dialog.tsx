@@ -1,13 +1,13 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
 import * as types from './types';
 import type {Controller} from './controller';
 
-let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
+let {Form, Row, Cell, VBox, VRow} = gc.ui.Layout;
 
 
-export class TableViewDialog extends gws.View<types.ViewProps> {
+export class TableViewDialog extends gc.View<types.ViewProps> {
     tableRef: React.RefObject<any>;
 
     constructor(props) {
@@ -51,13 +51,13 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
     }
 
 
-    makeRow(feature: gws.types.IFeature): types.TableViewRow {
+    makeRow(feature: gc.types.IFeature): types.TableViewRow {
         let cc = this.master();
         let cells = [];
         let values = feature.attributes;
         for (let col of feature.model.tableViewColumns) {
             cells.push(cc.createWidget(
-                gws.types.ModelWidgetMode.cell,
+                gc.types.ModelWidgetMode.cell,
                 col.field,
                 feature,
                 values,
@@ -68,7 +68,7 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
         return {cells, featureUid: feature.uid}
     }
 
-    makeSelectedRow(feature: gws.types.IFeature): types.TableViewRow {
+    makeSelectedRow(feature: gc.types.IFeature): types.TableViewRow {
         let cc = this.master();
         let values = feature.currentAttributes()
         let errors = cc.editState.formErrors || {}
@@ -77,7 +77,7 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
         for (let col of feature.model.tableViewColumns) {
             let err = errors[col.field.name]
             let widget = cc.createWidget(
-                gws.types.ModelWidgetMode.activeCell,
+                gc.types.ModelWidgetMode.activeCell,
                 col.field,
                 feature,
                 values,
@@ -86,7 +86,7 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
             )
             cells.push(<React.Fragment>
                 {widget}
-                <div {...gws.lib.cls('editTableError', err && 'isActive')}>
+                <div {...gc.lib.cls('editTableError', err && 'isActive')}>
                     {err || ' '}
                 </div>
             </React.Fragment>)
@@ -155,13 +155,13 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
         })
     }
 
-    whenWidgetChanged(feature: gws.types.IFeature, field: gws.types.IModelField, value: any) {
+    whenWidgetChanged(feature: gc.types.IFeature, field: gc.types.IModelField, value: any) {
         let cc = this.master();
         feature.editAttribute(field.name, value);
         cc.updateEditState();
     }
 
-    async whenWidgetEntered(feature: gws.types.IFeature, field: gws.types.IModelField, value: any) {
+    async whenWidgetEntered(feature: gc.types.IFeature, field: gc.types.IModelField, value: any) {
         let cc = this.master();
         let es = cc.editState;
         let model = es.tableViewSelectedModel;
@@ -290,36 +290,36 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
         if (sf) {
 
             buttons = [
-                <gws.ui.Button
-                    {...gws.lib.cls('editSaveButton', sf.isDirty && 'isActive')}
+                <gc.ui.Button
+                    {...gc.lib.cls('editSaveButton', sf.isDirty && 'isActive')}
                     tooltip={this.__('editSave')}
                     whenTouched={() => this.whenSaveButtonTouched(sf)}
                 />,
-                <gws.ui.Button
-                    {...gws.lib.cls('editResetButton', sf.isDirty && 'isActive')}
+                <gc.ui.Button
+                    {...gc.lib.cls('editResetButton', sf.isDirty && 'isActive')}
                     tooltip={this.__('editReset')}
                     whenTouched={() => this.whenResetButtonTouched(sf)}
                 />,
-                <gws.ui.Button
-                    {...gws.lib.cls('editOpenFormButton')}
+                <gc.ui.Button
+                    {...gc.lib.cls('editOpenFormButton')}
                     tooltip={this.__('editOpenForm')}
                     whenTouched={() => this.whenOpenFormButtonTouched(sf)}
                 />,
-                <gws.ui.Button
-                    {...gws.lib.cls('editCancelButton')}
+                <gc.ui.Button
+                    {...gc.lib.cls('editCancelButton')}
                     tooltip={this.__('editCancel')}
                     whenTouched={() => this.whenCancelButtonTouched(sf)}
                 />,
-                // <gws.ui.Button
-                //     {...gws.lib.cls('editDeleteButton')}
+                // <gc.ui.Button
+                //     {...gc.lib.cls('editDeleteButton')}
                 //     tooltip={this.__('editDelete')}
                 //     whenTouched={() => this.whenDeleteButtonTouched(sf)}
                 // />,
             ]
         } else {
             buttons = [
-                <gws.ui.Button
-                    {...gws.lib.cls('editNewButton')}
+                <gc.ui.Button
+                    {...gc.lib.cls('editNewButton')}
                     tooltip={this.__('editNew')}
                     whenTouched={() => this.whenNewButtonTouched()}
                 />,
@@ -329,13 +329,13 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
         return <Row>
             {pager}
             <Cell>
-                {error && <gws.ui.Error text={error}/>}
+                {error && <gc.ui.Error text={error}/>}
             </Cell>
             <Cell flex/>
             {
                 cc.editState.tableViewLoading
                     ? <Cell>
-                        <gws.ui.Loader/>
+                        <gc.ui.Loader/>
                     </Cell>
                     : buttons.map((b, n) => <Cell key={n}>{b}</Cell>)
             }
@@ -349,7 +349,7 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
 
         let savedRows = cc.editState.tableViewRows;
 
-        if (gws.lib.isEmpty(savedRows)) {
+        if (gc.lib.isEmpty(savedRows)) {
             return null;
         }
 
@@ -361,7 +361,7 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
 
         for (let col of model.tableViewColumns) {
             headerRow.push(col.field.title)
-            filterRow.push(<gws.ui.TextInput value={''} withClear={true}/>)
+            filterRow.push(<gc.ui.TextInput value={''} withClear={true}/>)
         }
 
         let rows = savedRows;
@@ -384,7 +384,7 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
             widths.push(col.width);
         }
 
-        return <gws.ui.Table
+        return <gc.ui.Table
             tableRef={this.tableRef}
             rows={rows.map(r => r.cells)}
             selectedIndex={selectedIndex}
@@ -402,13 +402,13 @@ export class TableViewDialog extends gws.View<types.ViewProps> {
         let model = cc.editState.tableViewSelectedModel;
         let sf = cc.editState.tableViewSelectedFeature;
 
-        return <gws.ui.Dialog
-            {...gws.lib.cls('editTableViewDialog', 'isZoomed')}
+        return <gc.ui.Dialog
+            {...gc.lib.cls('editTableViewDialog', 'isZoomed')}
             title={model.title}
             whenClosed={() => this.closeDialog()}
             footer={this.dialogFooter(sf)}
         >
             {this.renderTable()}
-        </gws.ui.Dialog>;
+        </gc.ui.Dialog>;
     }
 }

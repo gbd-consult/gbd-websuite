@@ -1,4 +1,5 @@
-import * as gws from 'gws';
+import * as gc from 'gc';
+
 import type {Controller} from './controller';
 
 export class FeatureCache {
@@ -12,7 +13,7 @@ export class FeatureCache {
         return this.controller as Controller;
     }
 
-    getForModel(model: gws.types.IModel): Array<gws.types.IFeature> {
+    getForModel(model: gc.types.IModel): Array<gc.types.IFeature> {
         let cc = this.master();
         let es = cc.editState;
         let key = 'model:' + model.uid
@@ -32,7 +33,7 @@ export class FeatureCache {
         return this.get(key);
     }
 
-    async updateRelatableForField(field: gws.types.IModelField) {
+    async updateRelatableForField(field: gc.types.IModelField) {
         let cc = this.master();
         let searchText = cc.getFeatureListSearchText(field.uid);
 
@@ -57,10 +58,10 @@ export class FeatureCache {
             keyword: searchText || '',
         }
 
-        if (ls === gws.api.core.FeatureLoadingStrategy.lazy && !searchText) {
+        if (ls === gc.gws.FeatureLoadingStrategy.lazy && !searchText) {
             return [];
         }
-        if (ls === gws.api.core.FeatureLoadingStrategy.bbox) {
+        if (ls === gc.gws.FeatureLoadingStrategy.bbox) {
             request['extent'] = cc.map.bbox;
         }
 
@@ -68,7 +69,7 @@ export class FeatureCache {
         return model.featureListFromProps(res.features);
     }
 
-    async loadOne(feature: gws.types.IFeature) {
+    async loadOne(feature: gc.types.IFeature) {
         let cc = this.master();
 
         let res = await cc.serverGetFeature({
@@ -79,7 +80,7 @@ export class FeatureCache {
         return cc.app.modelRegistry.featureFromProps(res.feature);
     }
 
-    checkAndStore(key: string, features: Array<gws.types.IFeature>) {
+    checkAndStore(key: string, features: Array<gc.types.IFeature>) {
         let cc = this.master();
 
         let fmap = new Map();
@@ -128,7 +129,7 @@ export class FeatureCache {
         });
     }
 
-    get(key: string): Array<gws.types.IFeature> {
+    get(key: string): Array<gc.types.IFeature> {
         let cc = this.master();
 
         let es = cc.editState;

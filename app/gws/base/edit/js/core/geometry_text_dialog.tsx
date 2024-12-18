@@ -1,14 +1,15 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
+;
 import * as types from './types';
 import type {Controller} from './controller';
 
-let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
+let {Form, Row, Cell, VBox, VRow} = gc.ui.Layout;
 
 
-export class GeometryTextDialog extends gws.View<types.ViewProps> {
+export class GeometryTextDialog extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }
@@ -19,14 +20,14 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
         dd.whenSaved(dd.shape);
     }
 
-    toWKT(shape: gws.api.base.shape.Props): string {
+    toWKT(shape: gc.gws.base.shape.Props): string {
         let cc = this.master();
         const wktFormat = new ol.format.WKT();
         let geom = cc.map.shape2geom(shape);
         return wktFormat.writeGeometry(geom);
     }
 
-    updateShape(shape: gws.api.base.shape.Props) {
+    updateShape(shape: gc.gws.base.shape.Props) {
         let cc = this.master();
         let dd = cc.editState.dialogData as types.GeometryTextDialogData;
 
@@ -67,20 +68,20 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
         let cc = this.master();
         let dd = cc.editState.dialogData as types.GeometryTextDialogData;
 
-        let okButton = <gws.ui.Button
-            {...gws.lib.cls('editSaveButton', 'isActive')}
+        let okButton = <gc.ui.Button
+            {...gc.lib.cls('editSaveButton', 'isActive')}
             tooltip={this.__('editSave')}
             whenTouched={() => this.save()}
         />
 
 
-        let cancelButton = <gws.ui.Button
+        let cancelButton = <gc.ui.Button
             className="cmpButtonFormCancel"
             whenTouched={() => cc.closeDialog()}
         />;
 
 
-        return <gws.ui.Dialog
+        return <gc.ui.Dialog
             className="editGeometryTextDialog"
             title={this.__('editGeometryTextTitle')}
             whenClosed={() => cc.closeDialog()}
@@ -89,7 +90,7 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
             <Form>
                 {dd.shape && dd.shape.geometry.type === 'Point' && <Row>
                     <Cell>
-                        <gws.ui.TextInput
+                        <gc.ui.TextInput
                             label="X"
                             value={cc.map.formatCoordinate(dd.shape.geometry.coordinates[0])}
                             whenChanged={v => this.updatePointCoordinate(0, v)}
@@ -97,7 +98,7 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
                         />
                     </Cell>
                     <Cell>
-                        <gws.ui.TextInput
+                        <gc.ui.TextInput
                             label="Y"
                             value={cc.map.formatCoordinate(dd.shape.geometry.coordinates[1])}
                             whenChanged={v => this.updatePointCoordinate(1, v)}
@@ -107,7 +108,7 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
                 </Row>}
                 <Row>
                     <Cell flex>
-                        <gws.ui.TextArea
+                        <gc.ui.TextArea
                             label="WKT"
                             value={this.toWKT(dd.shape)}
                             whenChanged={v => this.updateFromWKT(v)}
@@ -116,6 +117,6 @@ export class GeometryTextDialog extends gws.View<types.ViewProps> {
                     </Cell>
                 </Row>
             </Form>
-        </gws.ui.Dialog>;
+        </gc.ui.Dialog>;
     }
 }

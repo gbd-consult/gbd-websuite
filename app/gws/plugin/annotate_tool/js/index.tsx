@@ -1,24 +1,25 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from 'gws';
-import * as measure from 'gws/map/measure';
-import * as template from 'gws/map/template';
-import * as style from 'gws/map/style';
-import * as styler from 'gws/elements/styler';
-import * as draw from 'gws/elements/draw';
-import * as modify from 'gws/elements/modify';
-import * as storage from 'gws/elements/storage';
-import * as sidebar from 'gws/elements/sidebar';
-import * as toolbar from 'gws/elements/toolbar';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+;
+import * as measure from 'gc/map/measure';
+import * as template from 'gc/map/template';
+import * as style from 'gc/map/style';
+import * as styler from 'gc/elements/styler';
+import * as draw from 'gc/elements/draw';
+import * as modify from 'gc/elements/modify';
+import * as storage from 'gc/elements/storage';
+import * as sidebar from 'gc/elements/sidebar';
+import * as toolbar from 'gc/elements/toolbar';
+import * as components from 'gc/components';
 
 
 const MASTER = 'Shared.Annotate';
 
-let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as Controller;
+let _master = (cc: gc.types.IController) => cc.app.controller(MASTER) as Controller;
 
-let {Form, Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gc.ui.Layout;
 
 const defaultLabelTemplates = {
     Point: '{xy}',
@@ -38,13 +39,13 @@ interface FormData {
     shapeType: string
 }
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
-    annotateCurrentStyle: gws.types.IStyle;
+    annotateCurrentStyle: gc.types.IStyle;
     annotateFeatureCount: number;
     annotateFeatures: Array<Feature>;
     annotateFormData: FormData;
-    annotateLabelTemplates: gws.types.Dict;
+    annotateLabelTemplates: gc.types.Dict;
     annotateSelectedFeature: Feature;
     annotateTab: string;
     appActiveTool: string;
@@ -82,7 +83,7 @@ const StoreKeys = [
 //
 // }
 
-class Feature extends gws.map.Feature {
+class Feature extends gc.map.Feature {
     get formData(): FormData {
         return {
             shapeType: this.attributes.shapeType,
@@ -156,7 +157,7 @@ class Feature extends gws.map.Feature {
 }
 
 
-class Layer extends gws.map.layer.FeatureLayer {
+class Layer extends gc.map.layer.FeatureLayer {
 }
 
 class DrawTool extends draw.Tool {
@@ -208,7 +209,7 @@ class ModifyTool extends modify.Tool {
     }
 }
 
-class FeatureForm extends gws.View<ViewProps> {
+class FeatureForm extends gc.View<ViewProps> {
 
     get defaultPlaceholders() {
         let pcb = ['Polygon', 'Circle', 'Box'];
@@ -293,13 +294,13 @@ class FeatureForm extends gws.View<ViewProps> {
         let form = [];
 
         if (['Point', 'Box', 'Circle'].includes(st)) {
-            form.push(<gws.ui.NumberInput
+            form.push(<gc.ui.NumberInput
                 step={1}
                 locale={this.props.controller.app.locale}
                 label={this.__('annotateX')}
                 {...bind('x')}
             />);
-            form.push(<gws.ui.NumberInput
+            form.push(<gc.ui.NumberInput
                 step={1}
                 locale={this.props.controller.app.locale}
                 label={this.__('annotateY')}
@@ -308,13 +309,13 @@ class FeatureForm extends gws.View<ViewProps> {
         }
 
         if (st === 'Box') {
-            form.push(<gws.ui.NumberInput
+            form.push(<gc.ui.NumberInput
                 step={1}
                 locale={this.props.controller.app.locale}
                 label={this.__('annotateWidth')}
                 {...bind('width')}
             />)
-            form.push(<gws.ui.NumberInput
+            form.push(<gc.ui.NumberInput
                 step={1}
                 locale={this.props.controller.app.locale}
                 label={this.__('annotateHeight')}
@@ -323,7 +324,7 @@ class FeatureForm extends gws.View<ViewProps> {
         }
 
         if (st === 'Circle') {
-            form.push(<gws.ui.NumberInput
+            form.push(<gc.ui.NumberInput
                 step={1}
                 locale={this.props.controller.app.locale}
                 label={this.__('annotateRadius')}
@@ -331,13 +332,13 @@ class FeatureForm extends gws.View<ViewProps> {
             />);
         }
 
-        form.push(<gws.ui.TextArea
+        form.push(<gc.ui.TextArea
             focusRef={labelEditorRef}
             label={this.__('annotateLabelEdit')}
             {...bind('labelTemplate')}
         />);
 
-        form.push(<gws.ui.Select
+        form.push(<gc.ui.Select
             label={this.__('annotatePlaceholder')}
             value=''
             items={placeholders}
@@ -350,28 +351,28 @@ class FeatureForm extends gws.View<ViewProps> {
                 <Row>
                     <Cell flex/>
                     {/*<Cell>*/}
-                    {/*    <gws.ui.Button*/}
+                    {/*    <gc.ui.Button*/}
                     {/*        className="cmpButtonFormOk"*/}
                     {/*        tooltip={this.props.controller.__('annotateSaveButton')}*/}
                     {/*        whenTouched={submit}*/}
                     {/*    />*/}
                     {/*</Cell>*/}
                     <Cell spaced>
-                        <gws.ui.Button
+                        <gc.ui.Button
                             className="annotateStyleButton"
                             tooltip={this.__('annotateStyleButton')}
                             whenTouched={() => cc.update({annotateTab: 'style'})}
                         />
                     </Cell>
                     <Cell spaced>
-                        <gws.ui.Button
-                            {...gws.lib.cls('annotateCancelButton')}
+                        <gc.ui.Button
+                            {...gc.lib.cls('annotateCancelButton')}
                             tooltip={this.__('annotateCancelButton')}
                             whenTouched={() => cc.whenFeatureFormClosed()}
                         />
                     </Cell>
                     <Cell spaced>
-                        <gws.ui.Button
+                        <gc.ui.Button
                             className="annotateRemoveButton"
                             tooltip={this.__('annotateRemoveButton')}
                             whenTouched={() => cc.whenFeatureRemoveButtonTouched(selectedFeature)}
@@ -383,7 +384,7 @@ class FeatureForm extends gws.View<ViewProps> {
     }
 }
 
-class FeatureTabFooter extends gws.View<ViewProps> {
+class FeatureTabFooter extends gc.View<ViewProps> {
     render() {
         let cc = _master(this.props.controller),
             selectedFeature = this.props.annotateSelectedFeature,
@@ -393,14 +394,14 @@ class FeatureTabFooter extends gws.View<ViewProps> {
             <sidebar.AuxToolbar>
                 <Cell>
                     <sidebar.AuxButton
-                        {...gws.lib.cls('annotateFormAuxButton', tab === 'form' && 'isActive')}
+                        {...gc.lib.cls('annotateFormAuxButton', tab === 'form' && 'isActive')}
                         whenTouched={() => cc.update({annotateTab: 'form'})}
                         tooltip={cc.__('annotateFormAuxButton')}
                     />
                 </Cell>
                 <Cell>
                     <sidebar.AuxButton
-                        {...gws.lib.cls('annotateStyleAuxButton', tab === 'style' && 'isActive')}
+                        {...gc.lib.cls('annotateStyleAuxButton', tab === 'style' && 'isActive')}
                         whenTouched={() => cc.update({annotateTab: 'style'})}
                         tooltip={cc.__('annotateStyleAuxButton')}
                     />
@@ -418,11 +419,11 @@ class FeatureTabFooter extends gws.View<ViewProps> {
     }
 }
 
-class FeatureFormTab extends gws.View<ViewProps> {
+class FeatureFormTab extends gc.View<ViewProps> {
     render() {
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('annotateSidebarDetailsTitle')}/>
+                <gc.ui.Title content={this.__('annotateSidebarDetailsTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -434,14 +435,14 @@ class FeatureFormTab extends gws.View<ViewProps> {
     }
 }
 
-class FeatureStyleTab extends gws.View<ViewProps> {
+class FeatureStyleTab extends gc.View<ViewProps> {
     render() {
         let cc = _master(this.props.controller),
             sc = cc.app.controller('Shared.Style') as styler.Controller;
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('annotateSidebarDetailsTitle')}/>
+                <gc.ui.Title content={this.__('annotateSidebarDetailsTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -454,7 +455,7 @@ class FeatureStyleTab extends gws.View<ViewProps> {
 
 }
 
-class ListTab extends gws.View<ViewProps> {
+class ListTab extends gc.View<ViewProps> {
     render() {
         let cc = _master(this.props.controller),
             selectedFeature = this.props.annotateSelectedFeature,
@@ -462,7 +463,7 @@ class ListTab extends gws.View<ViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('annotateSidebarTitle')}/>
+                <gc.ui.Title content={this.__('annotateSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -472,7 +473,7 @@ class ListTab extends gws.View<ViewProps> {
                         features={this.props.annotateFeatures || []}
                         isSelected={f => f === selectedFeature}
 
-                        content={(f: Feature) => <gws.ui.Link
+                        content={(f: Feature) => <gc.ui.Link
                             whenTouched={() => cc.whenFeatureNameTouched(f)}
                             content={f.views.label || '...'}
                         />}
@@ -493,13 +494,13 @@ class ListTab extends gws.View<ViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <sidebar.AuxButton
-                        {...gws.lib.cls('annotateEditAuxButton', this.props.appActiveTool === 'Tool.Annotate.Modify' && 'isActive')}
+                        {...gc.lib.cls('annotateEditAuxButton', this.props.appActiveTool === 'Tool.Annotate.Modify' && 'isActive')}
                         tooltip={this.__('annotateEditAuxButton')}
                         disabled={!hasFeatures}
                         whenTouched={() => cc.app.startTool('Tool.Annotate.Modify')}
                     />
                     <sidebar.AuxButton
-                        {...gws.lib.cls('annotateAddAuxButton')}
+                        {...gc.lib.cls('annotateAddAuxButton')}
                         tooltip={this.props.controller.__('annotateAddAuxButton')}
                         whenTouched={() => cc.app.toggleTool('Tool.Annotate.Draw')}
                     />
@@ -518,7 +519,7 @@ class ListTab extends gws.View<ViewProps> {
 
 }
 
-class SidebarView extends gws.View<ViewProps> {
+class SidebarView extends gc.View<ViewProps> {
     render() {
         if (!this.props.annotateSelectedFeature) {
             return <ListTab {...this.props}/>;
@@ -530,7 +531,7 @@ class SidebarView extends gws.View<ViewProps> {
     }
 }
 
-class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
+class Sidebar extends gc.Controller implements gc.types.ISidebarItem {
 
     iconClass = 'annotateSidebarIcon';
 
@@ -555,7 +556,7 @@ class DrawToolbarButton extends toolbar.Button {
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     uid = MASTER;
     layer: Layer;
     drawFeature?: Feature = null;
@@ -563,7 +564,7 @@ class Controller extends gws.Controller {
     async init() {
         await super.init();
 
-        let setup = (this.app.actionProps('annotate') || {}) as gws.api.plugin.annotate_tool.action.Props;
+        let setup = (this.app.actionProps('annotate') || {}) as gc.gws.plugin.annotate_tool.action.Props;
 
         this.layer = this.map.addServiceLayer(new Layer(this.map, {
             uid: '_annotate',
@@ -664,7 +665,7 @@ class Controller extends gws.Controller {
         // this.selectFeature(f);
     }
 
-    createNewFeatureFromFeature(src: gws.types.IFeature) {
+    createNewFeatureFromFeature(src: gc.types.IFeature) {
         if (!src || !src.geometry)
             return;
 
@@ -711,7 +712,7 @@ class Controller extends gws.Controller {
         let f = new Feature(this.app.modelRegistry.defaultModel());
 
         f.setAttributes({
-            uid: gws.lib.uniqId('annotate'),
+            uid: gc.lib.uniqId('annotate'),
             shapeType,
             labelTemplate,
         });
@@ -720,7 +721,7 @@ class Controller extends gws.Controller {
     }
 
     cloneStyle(currStyle) {
-        let uid = gws.lib.uniqId('annotateStyle');
+        let uid = gc.lib.uniqId('annotateStyle');
         let newStyle = this.map.style.copy(currStyle, '.' + uid);
         this.createFocusStyle(newStyle);
         return newStyle;
@@ -833,7 +834,7 @@ class Controller extends gws.Controller {
 
 }
 
-gws.registerTags({
+gc.registerTags({
     [MASTER]: Controller,
     'Sidebar.Annotate': Sidebar,
     'Toolbar.Annotate.Draw': DrawToolbarButton,

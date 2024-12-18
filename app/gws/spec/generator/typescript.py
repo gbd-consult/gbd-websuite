@@ -114,7 +114,7 @@ class _Creator:
 
     def namespace_entry(self, typ, template, **kwargs):
         ps = typ.name.split(DOT)
-        ps.pop(0)  # remove 'gws.'
+        # ps.pop(0)  # remove 'gws.'
         if len(ps) == 1:
             ns, name, qname = self.CORE_NAME, ps[-1], self.CORE_NAME + DOT + ps[0]
         else:
@@ -151,7 +151,7 @@ class _Creator:
     def write_api(self):
 
         namespace_tpl = "export namespace $ns { \n $declarations \n }"
-        globs = self.format(namespace_tpl, ns=self.CORE_NAME, declarations=_nl2(self.namespaces.pop(self.CORE_NAME)))
+        globs = self.format(namespace_tpl, ns='gws', declarations=_nl2(self.namespaces.pop('gws')))
         namespaces = _nl2([
             self.format(namespace_tpl, ns=ns, declarations=_nl2(d))
             for ns, d in sorted(self.namespaces.items())
@@ -170,7 +170,7 @@ class _Creator:
              *
              */
 
-            export const VERSION = '$VERSION';
+            export const GWS_VERSION = '$VERSION';
 
             type _int = number;
             type _float = number;

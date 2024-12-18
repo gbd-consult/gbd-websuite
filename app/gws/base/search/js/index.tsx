@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+import * as sidebar from 'gc/elements/sidebar';
+import * as components from 'gc/components';
 
 const MASTER = 'Shared.Search';
 
@@ -13,13 +13,13 @@ function _master(obj: any) {
         return obj.props.controller.app.controller(MASTER) as SearchController;
 }
 
-let {Row, Cell} = gws.ui.Layout;
+let {Row, Cell} = gc.ui.Layout;
 
 const SEARCH_DEBOUNCE = 1000;
 
-interface SearchViewProps extends gws.types.ViewProps {
+interface SearchViewProps extends gc.types.ViewProps {
     searchInput: string;
-    searchResults: Array<gws.types.IFeature>;
+    searchResults: Array<gc.types.IFeature>;
     searchWaiting: boolean;
     searchFailed: boolean;
 }
@@ -31,7 +31,7 @@ const SearchStoreKeys = [
     'searchFailed',
 ];
 
-class SearchResults extends gws.View<SearchViewProps> {
+class SearchResults extends gc.View<SearchViewProps> {
     render() {
         let cc = _master(this);
 
@@ -60,14 +60,14 @@ class SearchResults extends gws.View<SearchViewProps> {
 
         let content = f => {
             if (f.views.teaser)
-                return <gws.ui.TextBlock
+                return <gc.ui.TextBlock
                     className="searchResultsTeaser"
                     withHTML
                     whenTouched={() => cc.whenFeatureTouched(f)}
                     content={f.views.teaser}
                 />
             if (f.views.title)
-                return <gws.ui.Link
+                return <gc.ui.Link
                     whenTouched={() => cc.whenFeatureTouched(f)}
                     content={f.views.title}
                 />
@@ -84,15 +84,15 @@ class SearchResults extends gws.View<SearchViewProps> {
     }
 }
 
-class SearchBox extends gws.View<SearchViewProps> {
+class SearchBox extends gc.View<SearchViewProps> {
     sideButton() {
         if (this.props.searchWaiting)
-            return <gws.ui.Button
+            return <gc.ui.Button
                 className="searchWaitButton"
             />;
 
         if (this.props.searchInput)
-            return <gws.ui.Button
+            return <gc.ui.Button
                 className="searchClearButton"
                 tooltip={this.__('searchClearButton')}
                 whenTouched={() => _master(this).whenClearButtonTouched()}
@@ -103,10 +103,10 @@ class SearchBox extends gws.View<SearchViewProps> {
         return <div className="searchBox">
             <Row>
                 <Cell>
-                    <gws.ui.Button className='searchIcon'/>
+                    <gc.ui.Button className='searchIcon'/>
                 </Cell>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gc.ui.TextInput
                         value={this.props.searchInput}
                         placeholder={this.__('searchPlaceholder')}
                         whenChanged={val => _master(this).whenSearchChanged(val)}
@@ -118,7 +118,7 @@ class SearchBox extends gws.View<SearchViewProps> {
     }
 }
 
-class SearchSidebarView extends gws.View<SearchViewProps> {
+class SearchSidebarView extends gc.View<SearchViewProps> {
     render() {
         return <sidebar.Tab className="searchSidebar">
 
@@ -133,7 +133,7 @@ class SearchSidebarView extends gws.View<SearchViewProps> {
     }
 }
 
-class SearchAltbarView extends gws.View<SearchViewProps> {
+class SearchAltbarView extends gc.View<SearchViewProps> {
     render() {
         return <React.Fragment>
             <div className="searchAltbar">
@@ -146,14 +146,14 @@ class SearchAltbarView extends gws.View<SearchViewProps> {
     }
 }
 
-class SearchAltbar extends gws.Controller {
+class SearchAltbar extends gc.Controller {
     get defaultView() {
         return this.createElement(
             this.connect(SearchAltbarView, SearchStoreKeys));
     }
 }
 
-class SearchSidebar extends gws.Controller implements gws.types.ISidebarItem {
+class SearchSidebar extends gc.Controller implements gc.types.ISidebarItem {
     iconClass = 'searchSidebarIcon';
 
     get tooltip() {
@@ -166,7 +166,7 @@ class SearchSidebar extends gws.Controller implements gws.types.ISidebarItem {
     }
 }
 
-class SearchController extends gws.Controller {
+class SearchController extends gc.Controller {
     uid = MASTER;
     timer = null;
 
@@ -237,7 +237,7 @@ class SearchController extends gws.Controller {
 
 }
 
-gws.registerTags({
+gc.registerTags({
     [MASTER]: SearchController,
     'Sidebar.Search': SearchSidebar,
     'Altbar.Search': SearchAltbar,

@@ -1,8 +1,10 @@
 import * as React from 'react';
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
 
-const {Form, Row, Cell} = gws.ui.Layout;
+import * as gc from 'gc';
+;
+import * as sidebar from 'gc/elements/sidebar';
+
+const {Form, Row, Cell} = gc.ui.Layout;
 
 interface MfaProps {
     code: string;
@@ -11,7 +13,7 @@ interface MfaProps {
     error: boolean;
 }
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: SidebarUserTab;
 
     authLoading: boolean;
@@ -19,7 +21,7 @@ interface ViewProps extends gws.types.ViewProps {
     authPassword: string;
     authError: boolean;
     authMfa: MfaProps | null;
-    user: gws.types.IUser | null;
+    user: gc.types.IUser | null;
 }
 
 const StoreKeys = [
@@ -31,7 +33,7 @@ const StoreKeys = [
 ];
 
 
-class UserInfo extends gws.View<ViewProps> {
+class UserInfo extends gc.View<ViewProps> {
     render() {
         return <Form>
             <Row>
@@ -42,7 +44,7 @@ class UserInfo extends gws.View<ViewProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.Button
+                    <gc.ui.Button
                         primary
                         whenTouched={() => this.props.controller.whenLogoutFormSubmitted()}
                         label={this.__('userLogoutButton')}
@@ -54,14 +56,14 @@ class UserInfo extends gws.View<ViewProps> {
 
 }
 
-class LoginForm extends gws.View<ViewProps> {
+class LoginForm extends gc.View<ViewProps> {
     render() {
         let submit = () => this.props.controller.whenLoginFormSubmitted();
 
         return <Form>
             <Row>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gc.ui.TextInput
                         label={this.__('userLoginUsername')}
                         value={this.props.authUsername}
                         whenChanged={v => this.props.controller.update({authUsername: v})}
@@ -72,7 +74,7 @@ class LoginForm extends gws.View<ViewProps> {
 
             <Row>
                 <Cell flex>
-                    <gws.ui.PasswordInput
+                    <gc.ui.PasswordInput
                         label={this.__('userLoginPassword')}
                         value={this.props.authPassword}
                         whenChanged={v => this.props.controller.update({authPassword: v})}
@@ -84,7 +86,7 @@ class LoginForm extends gws.View<ViewProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.Button
+                    <gc.ui.Button
                         primary
                         whenTouched={submit}
                         label={this.__('userLoginButton')}
@@ -94,7 +96,7 @@ class LoginForm extends gws.View<ViewProps> {
 
             {this.props.authError && <Row>
                 <Cell flex>
-                    <gws.ui.Error text={this.__('userError')}/>
+                    <gc.ui.Error text={this.__('userError')}/>
                 </Cell>
             </Row>}
 
@@ -102,7 +104,7 @@ class LoginForm extends gws.View<ViewProps> {
     }
 }
 
-class MfaForm extends gws.View<ViewProps> {
+class MfaForm extends gc.View<ViewProps> {
     render() {
         let submit = () => this.props.controller.whenMfaFormSubmitted();
         let restart = () => this.props.controller.whenMfaRestartButtonTouched();
@@ -113,12 +115,12 @@ class MfaForm extends gws.View<ViewProps> {
         return <Form>
             <Row>
                 <Cell flex>
-                    <gws.ui.HtmlBlock content={mfa.message}/>
+                    <gc.ui.HtmlBlock content={mfa.message}/>
                 </Cell>
             </Row>
             <Row>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gc.ui.TextInput
                         value={mfa.code}
                         whenChanged={update}
                         whenEntered={submit}
@@ -128,14 +130,14 @@ class MfaForm extends gws.View<ViewProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.Button
+                    <gc.ui.Button
                         primary
                         whenTouched={submit}
                         label={this.__('userMfaVerifyButton')}
                     />
                 </Cell>
                 {mfa.canRestart && <Cell>
-                    <gws.ui.Button
+                    <gc.ui.Button
                         whenTouched={restart}
                         label={this.__('userMfaRestartButton')}
                     />
@@ -143,7 +145,7 @@ class MfaForm extends gws.View<ViewProps> {
             </Row>
             {mfa.error && <Row>
                 <Cell flex>
-                    <gws.ui.Error text={this.__('userMfaError')}/>
+                    <gc.ui.Error text={this.__('userMfaError')}/>
                 </Cell>
             </Row>}
         </Form>;
@@ -151,13 +153,13 @@ class MfaForm extends gws.View<ViewProps> {
 }
 
 
-class SidebarTab extends gws.View<ViewProps> {
+class SidebarTab extends gc.View<ViewProps> {
     render() {
         let title = '', body;
 
         if (0 && this.props.authLoading) {
             title = '';
-            body = <gws.ui.Loader/>;
+            body = <gc.ui.Loader/>;
         } else if (this.props.authMfa) {
             title = this.__('userMfaTitle');
             body = <MfaForm {...this.props}/>;
@@ -171,17 +173,17 @@ class SidebarTab extends gws.View<ViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={title}/>
+                <gc.ui.Title content={title}/>
             </sidebar.TabHeader>
             <sidebar.TabBody>
                 {body}
-                {this.props.authLoading && <gws.ui.Loader/>}
+                {this.props.authLoading && <gc.ui.Loader/>}
             </sidebar.TabBody>
         </sidebar.Tab>
     }
 }
 
-class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
+class SidebarUserTab extends gc.Controller implements gc.types.ISidebarItem {
 
     iconClass = 'userSidebarIcon';
 
@@ -231,11 +233,11 @@ class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
             return this.setError();
         }
 
-        if (res.mfaState === gws.api.core.AuthMultiFactorState.retry) {
+        if (res.mfaState === gc.gws.AuthMultiFactorState.retry) {
             return this.setMfa(res, true);
         }
 
-        if (res.mfaState === gws.api.core.AuthMultiFactorState.ok) {
+        if (res.mfaState === gc.gws.AuthMultiFactorState.ok) {
             this.whenLoggedIn(res.user);
             return;
         }
@@ -281,7 +283,7 @@ class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
         });
     }
 
-    setMfa(res: gws.api.plugin.auth_method.web.LoginResponse, error: boolean) {
+    setMfa(res: gc.gws.plugin.auth_method.web.LoginResponse, error: boolean) {
         this.update({
             authLoading: false,
             authError: false,
@@ -297,6 +299,6 @@ class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
 
 }
 
-gws.registerTags({
+gc.registerTags({
     'Sidebar.User': SidebarUserTab,
 });

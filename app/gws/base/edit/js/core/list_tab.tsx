@@ -1,19 +1,20 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
+import * as gc from 'gc';
+;
+import * as sidebar from 'gc/elements/sidebar';
 import * as types from './types';
 import {FeatureList} from './feature_list';
 import type {Controller} from './controller';
 
-let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
+let {Form, Row, Cell, VBox, VRow} = gc.ui.Layout;
 
-export class ListTab extends gws.View<types.ViewProps> {
+export class ListTab extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }
 
-    async whenFeatureTouched(feature: gws.types.IFeature) {
+    async whenFeatureTouched(feature: gc.types.IFeature) {
         let cc = this.master();
         let loaded = await cc.featureCache.loadOne(feature);
         if (loaded) {
@@ -113,7 +114,7 @@ export class ListTab extends gws.View<types.ViewProps> {
             <sidebar.TabHeader>
                 <Row>
                     <Cell>
-                        <gws.ui.Title content={model.title}/>
+                        <gc.ui.Title content={model.title}/>
                     </Cell>
                 </Row>
             </sidebar.TabHeader>
@@ -132,28 +133,28 @@ export class ListTab extends gws.View<types.ViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <sidebar.AuxButton
-                        {...gws.lib.cls('editModelListAuxButton')}
+                        {...gc.lib.cls('editModelListAuxButton')}
                         tooltip={this.__('editModelListAuxButton')}
                         whenTouched={() => this.whenModelsButtonTouched()}
                     />
                     {model.hasTableView && <sidebar.AuxButton
-                        {...gws.lib.cls('editTableViewAuxButton')}
+                        {...gc.lib.cls('editTableViewAuxButton')}
                         tooltip={this.__('editTableViewAuxButton')}
                         whenTouched={() => this.whenTableViewButtonTouched()}
                     />}
                     <Cell flex/>
-                    {model.canCreate && hasGeomText && model.geometryType === gws.api.core.GeometryType.point && <sidebar.AuxButton
-                        {...gws.lib.cls('editNewPointGeometryText')}
+                    {model.canCreate && hasGeomText && model.geometryType === gc.gws.GeometryType.point && <sidebar.AuxButton
+                        {...gc.lib.cls('editNewPointGeometryText')}
                         tooltip={this.__('editNewPointGeometryText')}
                         whenTouched={() => this.whenNewPointGeometryTextButtonTouched()}
                     />}
                     {model.canCreate && hasGeom && <sidebar.AuxButton
-                        {...gws.lib.cls('editDrawAuxButton', this.props.appActiveTool === 'Tool.Edit.Draw' && 'isActive')}
+                        {...gc.lib.cls('editDrawAuxButton', this.props.appActiveTool === 'Tool.Edit.Draw' && 'isActive')}
                         tooltip={this.__('editDrawAuxButton')}
                         whenTouched={() => this.whenNewGeometryButtonTouched()}
                     />}
                     {model.canCreate && !hasGeom && <sidebar.AuxButton
-                        {...gws.lib.cls('editNewAuxButton')}
+                        {...gc.lib.cls('editNewAuxButton')}
                         tooltip={this.__('editNewAuxButton')}
                         whenTouched={() => this.whenNewButtonTouched()}
                     />}

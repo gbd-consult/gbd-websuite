@@ -1,8 +1,9 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
+;
 
-let {Form, Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gc.ui.Layout;
 
 
 const MASTER = 'Shared.Account';
@@ -14,12 +15,12 @@ class AccountState {
     onboardingEmail: string;
     newPassword1: string;
     newPassword2: string;
-    mfaList: Array<gws.api.plugin.account.account_action.MfaProps>
+    mfaList: Array<gc.gws.plugin.account.account_action.MfaProps>
     mfaIndex: number
     errorText: string;
 }
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
     accountState: AccountState;
 }
@@ -29,19 +30,19 @@ const StoreKeys = [
     'accountState',
 ];
 
-class PageOnboardingPassword extends gws.View<ViewProps> {
+class PageOnboardingPassword extends gc.View<ViewProps> {
     renderForm() {
         let cc = this.props.controller;
 
         return <Form>
             <Row>
                 <Cell flex>
-                    <gws.ui.TextBlock content={this.__('accountOnboardingPasswordText')}/>
+                    <gc.ui.TextBlock content={this.__('accountOnboardingPasswordText')}/>
                 </Cell>
             </Row>
             <Row>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gc.ui.TextInput
                         label={this.__('accountOnboardingEmail')}
                         value={cc.accountState.onboardingEmail}
                         whenChanged={v => cc.whenOnboardingEmailChanged(v)}
@@ -51,7 +52,7 @@ class PageOnboardingPassword extends gws.View<ViewProps> {
             </Row>
             <Row>
                 <Cell flex>
-                    <gws.ui.PasswordInput
+                    <gc.ui.PasswordInput
                         label={this.__('accountNewPassword1')}
                         value={cc.accountState.newPassword1}
                         withShow
@@ -62,7 +63,7 @@ class PageOnboardingPassword extends gws.View<ViewProps> {
             </Row>
             <Row>
                 <Cell flex>
-                    <gws.ui.PasswordInput
+                    <gc.ui.PasswordInput
                         label={this.__('accountNewPassword2')}
                         value={cc.accountState.newPassword2}
                         withShow
@@ -73,7 +74,7 @@ class PageOnboardingPassword extends gws.View<ViewProps> {
             </Row>
             {cc.accountState.errorText && <Row>
                 <Cell flex>
-                    <gws.ui.Error text={cc.accountState.errorText}/>
+                    <gc.ui.Error text={cc.accountState.errorText}/>
                 </Cell>
             </Row>}
         </Form>
@@ -83,31 +84,31 @@ class PageOnboardingPassword extends gws.View<ViewProps> {
         let cc = this.props.controller;
         let buttonEnabled = true;
 
-        if (gws.lib.isEmpty(cc.accountState.onboardingEmail)) {
+        if (gc.lib.isEmpty(cc.accountState.onboardingEmail)) {
             buttonEnabled = false;
         } else {
             buttonEnabled = cc.validateNewPassword() === '';
         }
 
-        let okButton = <gws.ui.Button
-            {...gws.lib.cls('editSaveButton', 'isActive')}
+        let okButton = <gc.ui.Button
+            {...gc.lib.cls('editSaveButton', 'isActive')}
             tooltip={this.__('accountSave')}
             disabled={!buttonEnabled}
             whenTouched={() => cc.whenOnboardingPasswordConfirmed()}
         />
 
-        return <gws.ui.Dialog
+        return <gc.ui.Dialog
             className="accountDialog"
             title={this.__('accountOnboardingTitle')}
             buttons={[okButton]}
         >
             {this.renderForm()}
-        </gws.ui.Dialog>;
+        </gc.ui.Dialog>;
     }
 
 }
 
-class PageOnboardingMfa extends gws.View<ViewProps> {
+class PageOnboardingMfa extends gc.View<ViewProps> {
     renderForm() {
         let cc = this.props.controller;
         let rows = [];
@@ -115,7 +116,7 @@ class PageOnboardingMfa extends gws.View<ViewProps> {
         rows.push(
             <Row>
                 <Cell flex>
-                    <gws.ui.Text content={this.__('accountOnboardingMfaText')}/>
+                    <gc.ui.Text content={this.__('accountOnboardingMfaText')}/>
                 </Cell>
             </Row>
         )
@@ -124,7 +125,7 @@ class PageOnboardingMfa extends gws.View<ViewProps> {
             rows.push(
                 <Row>
                     <Cell flex>
-                        <gws.ui.Toggle
+                        <gc.ui.Toggle
                             type="radio"
                             label={mfa.title}
                             inline
@@ -154,48 +155,48 @@ class PageOnboardingMfa extends gws.View<ViewProps> {
         let cc = this.props.controller;
         let buttonEnabled = !!cc.accountState.mfaIndex;
 
-        let okButton = <gws.ui.Button
-            {...gws.lib.cls('editSaveButton', 'isActive')}
+        let okButton = <gc.ui.Button
+            {...gc.lib.cls('editSaveButton', 'isActive')}
             tooltip={this.__('accountSave')}
             disabled={!buttonEnabled}
             whenTouched={() => cc.whenOnboardingMfaConfirmed()}
         />
 
-        return <gws.ui.Dialog
+        return <gc.ui.Dialog
             className="accountDialog"
             title={this.__('accountOnboardingTitle')}
             buttons={[okButton]}
         >
             {this.renderForm()}
-        </gws.ui.Dialog>;
+        </gc.ui.Dialog>;
     }
 }
 
-class PageOnboardingComplete extends gws.View<ViewProps> {
+class PageOnboardingComplete extends gc.View<ViewProps> {
     render() {
         let cc = this.props.controller;
 
-        let okButton = <gws.ui.Button
-            {...gws.lib.cls('editSaveButton', 'isActive')}
+        let okButton = <gc.ui.Button
+            {...gc.lib.cls('editSaveButton', 'isActive')}
             whenTouched={() => cc.whenOnboardingCompleteConfirmed()}
         />
 
-        return <gws.ui.Dialog
+        return <gc.ui.Dialog
             className="accountDialog"
             title={this.__('accountOnboardingTitle')}
             buttons={[okButton]}
         >
-            <gws.ui.Info text={this.__('accountOnboardingComplete')}/>
-        </gws.ui.Dialog>;
+            <gc.ui.Info text={this.__('accountOnboardingComplete')}/>
+        </gc.ui.Dialog>;
     }
 }
 
-class PageFatalError extends gws.View<ViewProps> {
+class PageFatalError extends gc.View<ViewProps> {
     render() {
         let cc = this.props.controller;
         let es = this.props.accountState;
 
-        return <gws.ui.Alert
+        return <gc.ui.Alert
             title={this.__('accountError')}
             error={es.errorText}
             whenClosed={() => cc.closeDialog()}
@@ -205,7 +206,7 @@ class PageFatalError extends gws.View<ViewProps> {
 
 //
 
-class Dialog extends gws.View<ViewProps> {
+class Dialog extends gc.View<ViewProps> {
     render() {
         let es = this.props.accountState;
 
@@ -230,7 +231,7 @@ class Dialog extends gws.View<ViewProps> {
 
 //
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     uid = MASTER;
 
     async init() {
@@ -298,7 +299,7 @@ class Controller extends gws.Controller {
         let p1 = es.newPassword1;
         let p2 = es.newPassword2;
 
-        if (gws.lib.isEmpty(p1)) {
+        if (gc.lib.isEmpty(p1)) {
             return this.__('accountErrorEmptyPassword')
         }
         if (p1 !== p2) {
@@ -318,7 +319,7 @@ class Controller extends gws.Controller {
     async whenOnboardingPasswordConfirmed() {
         let es = this.accountState;
 
-        if (gws.lib.isEmpty(es.onboardingEmail)) {
+        if (gc.lib.isEmpty(es.onboardingEmail)) {
             return this.updateState({errorText: this.__('accountErrorEmptyEmail')})
         }
 
@@ -402,7 +403,7 @@ class Controller extends gws.Controller {
 }
 
 
-gws.registerTags({
+gc.registerTags({
     [MASTER]: Controller,
     'Account.Dialog': Dialog,
 });

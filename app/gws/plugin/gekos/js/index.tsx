@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as toolbar from 'gws/elements/toolbar';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+import * as toolbar from 'gc/elements/toolbar';
+import * as components from 'gc/components';
 
-let {Form, Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gc.ui.Layout;
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
     gekosX: string;
     gekosY: string;
@@ -19,7 +19,7 @@ const StoreKeys = [
     'gekosDialogActive',
 ];
 
-class GekosTool extends gws.Tool {
+class GekosTool extends gc.Tool {
     start() {
         this.map.prependInteractions([
             this.map.pointerInteraction({
@@ -38,7 +38,7 @@ class GekosTool extends gws.Tool {
 
 }
 
-class GekosDialog extends gws.View<ViewProps> {
+class GekosDialog extends gc.View<ViewProps> {
 
     render() {
         if (!this.props.gekosDialogActive)
@@ -49,35 +49,35 @@ class GekosDialog extends gws.View<ViewProps> {
         let close = () => cc.update({gekosDialogActive: false});
 
         let buttons = [
-            <gws.ui.Button className="cmpButtonFormOk" whenTouched={() => cc.navigateToGekos()}/>,
-            <gws.ui.Button className="cmpButtonFormCancel" whenTouched={close}/>
+            <gc.ui.Button className="cmpButtonFormOk" whenTouched={() => cc.navigateToGekos()}/>,
+            <gc.ui.Button className="cmpButtonFormCancel" whenTouched={close}/>
         ];
 
-        return <gws.ui.Dialog
+        return <gc.ui.Dialog
             className="gekosDialog"
             title={this.__('gekosConfirm')}
             whenClosed={close}
             buttons={buttons}
         >
             <Form tabular>
-                <gws.ui.TextInput
+                <gc.ui.TextInput
                     label="X"
                     value={cc.getValue('gekosX')}
                     whenChanged={v => cc.update({gekosX: v})}
                     whenEntered={v => cc.navigateToGekos()}
                 />
-                <gws.ui.TextInput
+                <gc.ui.TextInput
                     label="Y"
                     value={cc.getValue('gekosY')}
                     whenChanged={v => cc.update({gekosY: v})}
                     whenEntered={v => cc.navigateToGekos()}
                 />
             </Form>
-        </gws.ui.Dialog>;
+        </gc.ui.Dialog>;
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     gekosUrl: string;
 
     async init() {
@@ -129,7 +129,7 @@ class ToolbarButton extends toolbar.Button {
 
 }
 
-gws.registerTags({
+gc.registerTags({
     'Shared.Gekos': Controller,
     'Toolbar.Gekos': ToolbarButton,
     'Tool.Gekos': GekosTool,

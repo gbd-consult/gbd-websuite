@@ -1,10 +1,10 @@
 import * as React from 'react';
-import * as gws from 'gws';
+import * as gc from 'gc';
 
-let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
+let {Form, Row, Cell, VBox, VRow} = gc.ui.Layout;
 
 
-import * as sidebar from 'gws/elements/sidebar';
+import * as sidebar from 'gc/elements/sidebar';
 import * as edit from '../../../base/edit/js/core';
 
 const MASTER = 'Shared.AccountAdmin';
@@ -27,8 +27,8 @@ class FormButtons extends edit.form_tab.FormButtons {
         let last = b.pop();
         b.push(
             <Cell spaced>
-                <gws.ui.Button
-                    {...gws.lib.cls('accountResetButton')}
+                <gc.ui.Button
+                    {...gc.lib.cls('accountResetButton')}
                     tooltip={this.__('accountReset')}
                     whenTouched={() => cc.whenAccountResetButtonTouched(sf)}
                 />
@@ -39,7 +39,7 @@ class FormButtons extends edit.form_tab.FormButtons {
     }
 }
 
-export class FormTab extends gws.View<edit.types.ViewProps> {
+export class FormTab extends gc.View<edit.types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }
@@ -71,7 +71,7 @@ class SidebarView extends edit.SidebarView {
         let es = this.master().editState;
 
         if (es.isWaiting)
-            return <gws.ui.Loader/>;
+            return <gc.ui.Loader/>;
 
         if (es.sidebarSelectedFeature)
             return <FormTab {...this.props} controller={this.master()}/>;
@@ -80,7 +80,7 @@ class SidebarView extends edit.SidebarView {
     }
 }
 
-class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
+class Sidebar extends gc.Controller implements gc.types.ISidebarItem {
     iconClass = 'accountadminSidebarIcon';
 
     get tooltip() {
@@ -99,7 +99,7 @@ class Controller extends edit.Controller {
 
     async init() {
         await super.init();
-        if (!gws.lib.isEmpty(this.models)) {
+        if (!gc.lib.isEmpty(this.models)) {
             this.selectModelInSidebar(this.models[0])
         }
     }
@@ -117,7 +117,7 @@ class Controller extends edit.Controller {
         this.updateObject('sidebarHiddenItems', {'Sidebar.AccountAdmin': true});
     }
 
-    async whenAccountResetButtonTouched(feature: gws.types.IFeature) {
+    async whenAccountResetButtonTouched(feature: gc.types.IFeature) {
         let res = await this.app.server.accountadminReset({
             featureUid: feature.uid,
         });
@@ -127,7 +127,7 @@ class Controller extends edit.Controller {
 }
 
 
-gws.registerTags({
+gc.registerTags({
     [MASTER]: Controller,
     'Sidebar.AccountAdmin': Sidebar,
 });

@@ -1,4 +1,4 @@
-import * as gws from 'gws';
+import * as gc from 'gc';
 import type {Controller} from './controller';
 
 export class FeatureListWidgetHelper {
@@ -12,10 +12,10 @@ export class FeatureListWidgetHelper {
         return this.controller as Controller;
     }
 
-    async init(field: gws.types.IModelField) {
+    async init(field: gc.types.IModelField) {
     }
 
-    setProps(feature, field: gws.types.IModelField, props) {
+    setProps(feature, field: gc.types.IModelField, props) {
         props.disabled = feature.isNew;
         props.whenNewButtonTouched = () => this.whenNewButtonTouched(feature, field);
         props.whenLinkButtonTouched = () => this.whenLinkButtonTouched(feature, field);
@@ -24,7 +24,7 @@ export class FeatureListWidgetHelper {
         // props.whenDeleteButtonTouched = r => this.whenDeleteButtonTouched(field, r);
     }
 
-    async whenNewButtonTouched(feature, field: gws.types.IModelField) {
+    async whenNewButtonTouched(feature, field: gc.types.IModelField) {
         let cc = this.master();
         let relatedModels = field.relatedModels();
 
@@ -38,7 +38,7 @@ export class FeatureListWidgetHelper {
         });
     }
 
-    async whenLinkButtonTouched(feature, field: gws.types.IModelField) {
+    async whenLinkButtonTouched(feature, field: gc.types.IModelField) {
         let cc = this.master();
         let relatedModels = field.relatedModels();
 
@@ -53,7 +53,7 @@ export class FeatureListWidgetHelper {
     }
 
 
-    async whenModelForNewSelected(feature, field: gws.types.IModelField, model: gws.types.IModel) {
+    async whenModelForNewSelected(feature, field: gc.types.IModelField, model: gc.types.IModel) {
         let cc = this.master();
 
         let newFeature = await cc.createFeature(model, null, null, feature);
@@ -63,7 +63,7 @@ export class FeatureListWidgetHelper {
     }
 
 
-    async whenModelForLinkSelected(feature, field: gws.types.IModelField, model: gws.types.IModel) {
+    async whenModelForLinkSelected(feature, field: gc.types.IModelField, model: gc.types.IModel) {
         let cc = this.master();
 
         await cc.featureCache.updateForModel(model);
@@ -77,7 +77,7 @@ export class FeatureListWidgetHelper {
 
     }
 
-    whenLinkedFeatureSelected(feature, field: gws.types.IModelField, relatedFeature: gws.types.IFeature) {
+    whenLinkedFeatureSelected(feature, field: gc.types.IModelField, relatedFeature: gc.types.IFeature) {
         let cc = this.master();
 
         field.addRelatedFeature(feature, relatedFeature);
@@ -86,7 +86,7 @@ export class FeatureListWidgetHelper {
         cc.updateEditState();
     }
 
-    whenUnlinkButtonTouched(feature, field: gws.types.IModelField, relatedFeature: gws.types.IFeature) {
+    whenUnlinkButtonTouched(feature, field: gc.types.IModelField, relatedFeature: gc.types.IFeature) {
         let cc = this.master();
 
         field.removeRelatedFeature(feature, relatedFeature);
@@ -96,13 +96,13 @@ export class FeatureListWidgetHelper {
     }
 
 
-    async whenEditButtonTouched(feature, field: gws.types.IModelField, relatedFeature: gws.types.IFeature) {
+    async whenEditButtonTouched(feature, field: gc.types.IModelField, relatedFeature: gc.types.IFeature) {
         let cc = this.master();
 
         let loaded = await cc.featureCache.loadOne(relatedFeature);
         if (loaded) {
             cc.updateEditState({isWaiting: true, sidebarSelectedFeature: null});
-            gws.lib.nextTick(() => {
+            gc.lib.nextTick(() => {
                 cc.updateEditState({isWaiting: false});
                 cc.pushFeature(feature);
                 cc.selectFeatureInSidebar(loaded);
@@ -111,7 +111,7 @@ export class FeatureListWidgetHelper {
         }
     }
 
-    whenDeleteButtonTouched(feature, field: gws.types.IModelField, relatedFeature: gws.types.IFeature) {
+    whenDeleteButtonTouched(feature, field: gc.types.IModelField, relatedFeature: gc.types.IFeature) {
         let cc = this.master();
 
         cc.showDialog({
@@ -121,7 +121,7 @@ export class FeatureListWidgetHelper {
         })
     }
 
-    async whenDeleteConfirmed(feature, field: gws.types.IModelField, relatedFeature: gws.types.IFeature) {
+    async whenDeleteConfirmed(feature, field: gc.types.IModelField, relatedFeature: gc.types.IFeature) {
         let cc = this.master();
 
         let ok = await cc.deleteFeature(relatedFeature);

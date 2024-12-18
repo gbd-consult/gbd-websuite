@@ -1,22 +1,23 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
-import * as toolbar from 'gws/elements/toolbar';
-import * as components from 'gws/components';
-import * as storage from 'gws/elements/storage';
+import * as gc from 'gc';
+;
+import * as sidebar from 'gc/elements/sidebar';
+import * as toolbar from 'gc/elements/toolbar';
+import * as components from 'gc/components';
+import * as storage from 'gc/elements/storage';
 
-let {Form, Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gc.ui.Layout;
 
 const MASTER = 'Shared.Select';
 
 
-let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as SelectController;
+let _master = (cc: gc.types.IController) => cc.app.controller(MASTER) as SelectController;
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: SelectController;
-    selectFeatures: Array<gws.types.IFeature>;
+    selectFeatures: Array<gc.types.IFeature>;
     selectShapeType: string;
     selectSelectedFormat: string;
     selectFormatDialogParams: object;
@@ -30,7 +31,7 @@ const StoreKeys = [
 ];
 
 
-class SelectTool extends gws.Tool {
+class SelectTool extends gc.Tool {
 
     async run(evt: ol.MapBrowserPointerEvent) {
         let toggle = !evt.originalEvent['altKey'];
@@ -51,7 +52,7 @@ class SelectTool extends gws.Tool {
 
 }
 
-export class SelectDrawTool extends gws.Tool {
+export class SelectDrawTool extends gc.Tool {
 
     ixDraw: ol.interaction.Draw;
     drawState: string = '';
@@ -113,16 +114,16 @@ export class SelectDrawTool extends gws.Tool {
     }
 }
 
-class SelectSidebarView extends gws.View<ViewProps> {
+class SelectSidebarView extends gc.View<ViewProps> {
     render() {
 
         let cc = _master(this.props.controller);
 
-        let hasSelection = !gws.lib.isEmpty(this.props.selectFeatures);
+        let hasSelection = !gc.lib.isEmpty(this.props.selectFeatures);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('selectSidebarTitle')}/>
+                <gc.ui.Title content={this.__('selectSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -131,7 +132,7 @@ class SelectSidebarView extends gws.View<ViewProps> {
                         controller={this.props.controller}
                         features={this.props.selectFeatures}
 
-                        content={(f) => <gws.ui.Link
+                        content={(f) => <gc.ui.Link
                             whenTouched={() => cc.focusFeature(f)}
                             content={cc.featureTitle(f)}
                         />}
@@ -172,7 +173,7 @@ class SelectSidebarView extends gws.View<ViewProps> {
     }
 }
 
-class SelectSidebar extends gws.Controller implements gws.types.ISidebarItem {
+class SelectSidebar extends gc.Controller implements gc.types.ISidebarItem {
     iconClass = 'selectSidebarIcon';
 
     get tooltip() {
@@ -207,9 +208,9 @@ class SelectDrawToolbarButton extends toolbar.Button {
 
 }
 
-class SelectController extends gws.Controller {
+class SelectController extends gc.Controller {
     uid = MASTER;
-    layer: gws.types.IFeatureLayer;
+    layer: gc.types.IFeatureLayer;
     tolerance: string = '';
 
     async init() {
@@ -220,7 +221,7 @@ class SelectController extends gws.Controller {
             this.addFeature(args.feature);
         });
 
-        let setup = this.app.actionProps('select') as gws.api.plugin.select_tool.action.Props;
+        let setup = this.app.actionProps('select') as gc.gws.plugin.select_tool.action.Props;
         if (setup) {
             this.tolerance = setup.tolerance || '';
             this.updateObject('storageState', {
@@ -232,16 +233,16 @@ class SelectController extends gws.Controller {
     async doSelect(geometry: ol.geom.Geometry, toggle: boolean) {
         let features = await this.map.searchForFeatures({geometry, tolerance: this.tolerance});
 
-        if (gws.lib.isEmpty(features))
+        if (gc.lib.isEmpty(features))
             return;
 
         features.forEach(f => this.addFeature(f, toggle));
     }
 
-    addFeature(feature: gws.types.IFeature, toggle = false) {
+    addFeature(feature: gc.types.IFeature, toggle = false) {
 
         if (!this.layer) {
-            this.layer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
+            this.layer = this.map.addServiceLayer(new gc.map.layer.FeatureLayer(this.map, {
                 uid: '_select',
                 cssSelector: '.selectFeature',
             }));
@@ -266,7 +267,7 @@ class SelectController extends gws.Controller {
         });
     }
 
-    featureTitle(feature: gws.types.IFeature) {
+    featureTitle(feature: gc.types.IFeature) {
         if (feature.views.title)
             return feature.views.title;
         if (feature.views.category)
@@ -314,7 +315,7 @@ class SelectController extends gws.Controller {
     }
 
     storageGetData() {
-        let fs = (this.getValue("selectFeatures") || []) as Array<gws.types.IFeature>;
+        let fs = (this.getValue("selectFeatures") || []) as Array<gc.types.IFeature>;
         return {
             features: fs.map(f => f.getProps())
         }
@@ -328,7 +329,7 @@ class SelectController extends gws.Controller {
 
 }
 
-gws.registerTags({
+gc.registerTags({
     [MASTER]: SelectController,
     'Toolbar.Select': SelectToolbarButton,
     'Toolbar.Select.Draw': SelectDrawToolbarButton,

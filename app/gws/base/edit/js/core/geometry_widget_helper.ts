@@ -1,4 +1,5 @@
-import * as gws from 'gws';
+import * as gc from 'gc';
+
 import type {Controller} from './controller';
 
 export class GeometryWidgetHelper {
@@ -12,7 +13,7 @@ export class GeometryWidgetHelper {
         return this.controller as Controller;
     }
 
-    async init(field: gws.types.IModelField) {
+    async init(field: gc.types.IModelField) {
     }
 
 
@@ -22,7 +23,7 @@ export class GeometryWidgetHelper {
         props.whenEditTextButtonTouched = () => this.whenEditTextButtonTouched(feature, field);
     }
 
-    whenNewButtonTouched(feature: gws.types.IFeature, field: gws.types.IModelField) {
+    whenNewButtonTouched(feature: gc.types.IFeature, field: gc.types.IModelField) {
         let cc = this.master();
         cc.updateEditState({
             drawModel: feature.model,
@@ -31,13 +32,13 @@ export class GeometryWidgetHelper {
         cc.app.startTool('Tool.Edit.Draw');
     }
 
-    whenEditButtonTouched(feature: gws.types.IFeature, field: gws.types.IModelField) {
+    whenEditButtonTouched(feature: gc.types.IFeature, field: gc.types.IModelField) {
         let cc = this.master();
         cc.zoomToFeature(feature);
         cc.app.startTool('Tool.Edit.Pointer');
     }
 
-    whenEditTextButtonTouched(feature: gws.types.IFeature, field: gws.types.IModelField) {
+    whenEditTextButtonTouched(feature: gc.types.IFeature, field: gc.types.IModelField) {
         let cc = this.master();
         cc.showDialog({
             type: 'GeometryText',
@@ -46,7 +47,7 @@ export class GeometryWidgetHelper {
         });
     }
 
-    async whenEditTextSaved(feature: gws.types.IFeature, field: gws.types.IModelField, shape: gws.api.base.shape.Props) {
+    async whenEditTextSaved(feature: gc.types.IFeature, field: gc.types.IModelField, shape: gc.gws.base.shape.Props) {
         let cc = this.master();
         await cc.closeDialog();
         feature.setShape(shape);

@@ -1,24 +1,24 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+import * as sidebar from 'gc/elements/sidebar';
+import * as components from 'gc/components';
 import * as types from './types';
 import type {Controller} from './controller';
 
-let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
+let {Form, Row, Cell, VBox, VRow} = gc.ui.Layout;
 
 
-export class ModelsTab extends gws.View<types.ViewProps> {
+export class ModelsTab extends gc.View<types.ViewProps> {
     master() {
         return this.props.controller as Controller;
     }
 
-    async whenItemTouched(model: gws.types.IModel) {
+    async whenItemTouched(model: gc.types.IModel) {
         this.master().selectModelInSidebar(model)
     }
 
-    async whenRightButtonTouched(model: gws.types.IModel) {
+    async whenRightButtonTouched(model: gc.types.IModel) {
         this.master().selectModelInTableView(model)
     }
 
@@ -28,7 +28,7 @@ export class ModelsTab extends gws.View<types.ViewProps> {
 
         items.sort((a, b) => a.title.localeCompare(b.title));
 
-        if (gws.lib.isEmpty(items)) {
+        if (gc.lib.isEmpty(items)) {
             return <sidebar.EmptyTab>
                 {this.__('editNoLayer')}
             </sidebar.EmptyTab>;
@@ -38,7 +38,7 @@ export class ModelsTab extends gws.View<types.ViewProps> {
             <sidebar.TabHeader>
                 <Row>
                     <Cell>
-                        <gws.ui.Title content={this.__('editTitle')}/>
+                        <gc.ui.Title content={this.__('editTitle')}/>
                     </Cell>
                 </Row>
             </sidebar.TabHeader>
@@ -49,7 +49,7 @@ export class ModelsTab extends gws.View<types.ViewProps> {
                         <components.list.List
                             controller={this.props.controller}
                             items={items}
-                            content={model => <gws.ui.Link
+                            content={model => <gc.ui.Link
                                 whenTouched={() => this.whenItemTouched(model)}
                                 content={model.title}
                             />}

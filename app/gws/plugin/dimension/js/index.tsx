@@ -1,27 +1,28 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from 'gws';
-import * as measure from 'gws/map/measure';
+import * as gc from 'gc';
+;
+import * as measure from 'gc/map/measure';
 
-import * as sidebar from 'gws/elements/sidebar';
-import * as toolbar from 'gws/elements/toolbar';
-import * as toolbox from 'gws/elements/toolbox';
-import * as components from 'gws/components';
-import {FormField} from "gws/components/form";
-import * as storage from 'gws/elements/storage';
+import * as sidebar from 'gc/elements/sidebar';
+import * as toolbar from 'gc/elements/toolbar';
+import * as toolbox from 'gc/elements/toolbox';
+import * as components from 'gc/components';
+import {FormField} from 'gc/components/form';
+import * as storage from 'gc/elements/storage';
 
 
-let {Form, Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gc.ui.Layout;
 
 const MASTER = 'Shared.Dimension';
 
-let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as Controller;
+let _master = (cc: gc.types.IController) => cc.app.controller(MASTER) as Controller;
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
     dimensionSelectedElement: Element;
-    dimensionFormValues: gws.types.Dict;
+    dimensionFormValues: gc.types.Dict;
 }
 
 const StoreKeys = [
@@ -274,12 +275,12 @@ class Model {
     elements: Array<Element>;
     draftCoordinates: Array<ol.Coordinate>;
     draftType: string;
-    map: gws.types.IMapManager;
+    map: gc.types.IMapManager;
     pixelTolerance = 20;
     index = 0;
     isInteractive: boolean;
     svgDefs: string;
-    styles: { [k: string]: gws.types.IStyle };
+    styles: { [k: string]: gc.types.IStyle };
 
     constructor(map) {
         this.map = map;
@@ -388,7 +389,7 @@ class Model {
     }
 
     addPoint(coordinate) {
-        let p = gws.lib.find(this.points, q => q.coordinate[0] === coordinate[0] && q.coordinate[1] === coordinate[1]);
+        let p = gc.lib.find(this.points, q => q.coordinate[0] === coordinate[0] && q.coordinate[1] === coordinate[1]);
         if (p)
             return p;
         p = new Point(this, coordinate);
@@ -450,7 +451,7 @@ class Model {
 
         if (element[1]) {
 
-            atts = gws.lib.entries(element[1]).map(([key, val]) => {
+            atts = gc.lib.entries(element[1]).map(([key, val]) => {
 
                 if (Array.isArray(val)) {
                     switch (val[0]) {
@@ -625,19 +626,19 @@ class Model {
         </svg>`;
     }
 
-    printPlane(): gws.api.core.PrintPlane {
+    printPlane(): gc.gws.PrintPlane {
         let soup = {points: [], tags: [], styles: []};
 
         this.createDefsTag(soup);
         this.elements.map(e => e.createTag(soup));
 
-        let styles = gws.lib.entries(this.styles).map(([name, s]) => ({
+        let styles = gc.lib.entries(this.styles).map(([name, s]) => ({
             values: s.values,
             name,
         }));
 
         return {
-            type: gws.api.core.PrintPlaneType.soup,
+            type: gc.gws.PrintPlaneType.soup,
             soupPoints: soup.points,
             soupTags: soup.tags,
         }
@@ -645,10 +646,10 @@ class Model {
 
 }
 
-class Layer extends gws.map.layer.FeatureLayer {
+class Layer extends gc.map.layer.FeatureLayer {
     master: Controller;
 
-    get printPlane(): gws.api.core.PrintPlane {
+    get printPlane(): gc.gws.PrintPlane {
         if (this.master.model.empty)
             return null;
         return this.master.model.printPlane()
@@ -656,7 +657,7 @@ class Layer extends gws.map.layer.FeatureLayer {
 
 }
 
-abstract class Tool extends gws.Tool {
+abstract class Tool extends gc.Tool {
 
     get layer(): Layer {
         return _master(this).layer;
@@ -672,17 +673,17 @@ abstract class Tool extends gws.Tool {
         let at = this.getValue('appActiveTool');
 
         let buttons = [
-            <gws.ui.Button
-                {...gws.lib.cls('dimensionModifyButton', at === 'Tool.Dimension.Modify' && 'isActive')}
+            <gc.ui.Button
+                {...gc.lib.cls('dimensionModifyButton', at === 'Tool.Dimension.Modify' && 'isActive')}
                 tooltip={this.__('dimensionModifyButton')}
                 whenTouched={() => master.startModify()}
             />,
-            <gws.ui.Button
-                {...gws.lib.cls('dimensionLineButton', at === 'Tool.Dimension.Line' && 'isActive')}
+            <gc.ui.Button
+                {...gc.lib.cls('dimensionLineButton', at === 'Tool.Dimension.Line' && 'isActive')}
                 tooltip={this.__('dimensionLineButton')}
                 whenTouched={() => master.startDraw('Line')}
             />,
-            <gws.ui.Button
+            <gc.ui.Button
                 className="dimensionRemoveButton"
                 tooltip={this.__('dimensionRemoveButton')}
                 whenTouched={() => master.removePoints()}
@@ -818,7 +819,7 @@ class ModifyTool extends Tool {
 
         if (e.type === 'dblclick') {
             if (this.point && this.point.isControl) {
-                let element = gws.lib.find(this.model.elements, e => e.controlPoint === this.point);
+                let element = gc.lib.find(this.model.elements, e => e.controlPoint === this.point);
                 _master(this).selectElement(element);
             }
             return false;
@@ -841,7 +842,7 @@ class ElementList extends components.list.List<Element> {
 
 }
 
-class SidebarView extends gws.View<ViewProps> {
+class SidebarView extends gc.View<ViewProps> {
     render() {
         if (!this.props.dimensionSelectedElement) {
             return <ListTab {...this.props}/>;
@@ -851,12 +852,12 @@ class SidebarView extends gws.View<ViewProps> {
 }
 
 
-class ListTab extends gws.View<ViewProps> {
+class ListTab extends gc.View<ViewProps> {
     render() {
         let cc = _master(this.props.controller),
             model = cc.model;
 
-        let hasElements = !gws.lib.isEmpty(cc.model.elements);
+        let hasElements = !gc.lib.isEmpty(cc.model.elements);
 
         let zoom = (e: Element, mode) => {
             let f = cc.app.modelRegistry.defaultModel().featureFromGeometry(
@@ -882,7 +883,7 @@ class ListTab extends gws.View<ViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('dimensionSidebarTitle')}/>
+                <gc.ui.Title content={this.__('dimensionSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -894,7 +895,7 @@ class ListTab extends gws.View<ViewProps> {
 
                             isSelected={e => e.hasSelectedPoints()}
 
-                            content={e => <gws.ui.Link
+                            content={e => <gc.ui.Link
                                 whenTouched={() => focus(e)}
                                 content={e.label}
                             />}
@@ -936,7 +937,7 @@ class ListTab extends gws.View<ViewProps> {
 }
 
 
-class FormTab extends gws.View<ViewProps> {
+class FormTab extends gc.View<ViewProps> {
     render() {
 
         let cc = _master(this.props.controller),
@@ -976,14 +977,14 @@ class FormTab extends gws.View<ViewProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.Button
+                    <gc.ui.Button
                         className="cmpButtonFormOk"
                         tooltip={this.props.controller.__('dimensionSaveAuxButton')}
                         whenTouched={() => cc.whenEditOkButtonTouched()}
                     />
                 </Cell>
                 <Cell>
-                    <gws.ui.Button
+                    <gc.ui.Button
                         className="cmpButtonFormCancel"
                         whenTouched={() => {
                             cc.selectElement(null);
@@ -995,7 +996,7 @@ class FormTab extends gws.View<ViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('dimensionSidebarTitle')}/>
+                <gc.ui.Title content={this.__('dimensionSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -1006,7 +1007,7 @@ class FormTab extends gws.View<ViewProps> {
     }
 }
 
-class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
+class Sidebar extends gc.Controller implements gc.types.ISidebarItem {
     iconClass = 'dimensionSidebarIcon';
 
     get tooltip() {
@@ -1031,11 +1032,11 @@ class ToolbarButton extends toolbar.Button {
 
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     uid = MASTER;
     layer: Layer;
     oOverlay: ol.Overlay;
-    setup: gws.api.plugin.dimension.Props;
+    setup: gc.gws.plugin.dimension.Props;
     model: Model;
     targetUpdateCount = 0;
     snapUpdateCount = 0;
@@ -1096,7 +1097,7 @@ class Controller extends gws.Controller {
         if (this.snapFeatures && this.setup.layerUids) {
             this.snapFeatures.clear();
             this.setup.layerUids.forEach(uid => {
-                let la = (this.map.getLayer(uid) as gws.types.IFeatureLayer);
+                let la = (this.map.getLayer(uid) as gc.types.IFeatureLayer);
                 if (la && la.features)
                     this.snapFeatures.extend(la.features.map(f => f.oFeature));
             });
@@ -1156,16 +1157,16 @@ class Controller extends gws.Controller {
         this.model.changed();
     }
 
-    createWidget(field: gws.types.IModelField, values: gws.types.Dict): React.ReactElement | null {
+    createWidget(field: gc.types.IModelField, values: gc.types.Dict): React.ReactElement | null {
         let p = field.widgetProps;
 
         if (!p)
             return null;
 
         let tag = 'ModelWidget.' + p.type;
-        let controller = (this.app.controllerByTag(tag) || this.app.createControllerFromConfig(this, {tag})) as gws.types.IModelWidget;
+        let controller = (this.app.controllerByTag(tag) || this.app.createControllerFromConfig(this, {tag})) as gc.types.IModelWidget;
 
-        let props: gws.types.Dict = {
+        let props: gc.types.Dict = {
             controller,
             field,
             widgetProps: field.widgetProps,
@@ -1176,7 +1177,7 @@ class Controller extends gws.Controller {
         return controller.formView(props)
     }
 
-    whenWidgetChanged(field: gws.types.IModelField, value) {
+    whenWidgetChanged(field: gc.types.IModelField, value) {
         let fd = this.getValue('dimensionFormValues') || {};
         this.update({
             dimensionFormValues: {
@@ -1186,7 +1187,7 @@ class Controller extends gws.Controller {
         })
     }
 
-    whenWidgetEntered(field: gws.types.IModelField, value) {
+    whenWidgetEntered(field: gc.types.IModelField, value) {
         this.whenEditOkButtonTouched()
     }
 
@@ -1214,7 +1215,7 @@ class Controller extends gws.Controller {
 }
 
 
-gws.registerTags({
+gc.registerTags({
     [MASTER]: Controller,
 
     'Sidebar.Dimension': Sidebar,

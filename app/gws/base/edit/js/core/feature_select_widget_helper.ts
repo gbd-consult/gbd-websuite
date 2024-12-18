@@ -1,4 +1,4 @@
-import * as gws from 'gws';
+import * as gc from 'gc';
 import type {Controller} from './controller';
 
 export class FeatureSelectWidgetHelper {

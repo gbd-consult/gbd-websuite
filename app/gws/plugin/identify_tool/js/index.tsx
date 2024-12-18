@@ -1,12 +1,12 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from 'gws';
-import * as components from 'gws/components';
-import * as toolbar from 'gws/elements/toolbar';
-import * as toolbox from 'gws/elements/toolbox';
+import * as gc from 'gc';
+import * as components from 'gc/components';
+import * as toolbar from 'gc/elements/toolbar';
+import * as toolbox from 'gc/elements/toolbox';
 
-abstract class IdentifyTool extends gws.Tool {
+abstract class IdentifyTool extends gc.Tool {
     abstract hoverMode;
 
     async run(evt) {
@@ -78,7 +78,7 @@ class IdentifyHoverTool extends IdentifyTool {
 
 }
 
-class IdentifyController extends gws.Controller {
+class IdentifyController extends gc.Controller {
 }
 
 class IdentifyClickToolbarButton extends toolbar.Button {
@@ -100,7 +100,7 @@ class IdentifyHoverToolbarButton extends toolbar.Button {
     }
 }
 
-gws.registerTags({
+gc.registerTags({
     'Shared.Identify': IdentifyController,
     'Toolbar.Identify.Click': IdentifyClickToolbarButton,
     'Toolbar.Identify.Hover': IdentifyHoverToolbarButton,

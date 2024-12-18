@@ -1,20 +1,21 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as components from 'gws/components';
+import * as gc from 'gc';
+;
+import * as components from 'gc/components';
 
-const {Form, Row, Cell} = gws.ui.Layout;
+const {Form, Row, Cell} = gc.ui.Layout;
 
-interface Props extends gws.types.ModelWidgetProps {
-    widgetProps: gws.api.plugin.model_widget.file.Props
+interface Props extends gc.types.ModelWidgetProps {
+    widgetProps: gc.gws.plugin.model_widget.file.Props
 }
 
 
 
-class FormView extends gws.View<gws.types.ModelWidgetProps> {
-    download(fp: gws.types.ServerFileProps) {
+class FormView extends gc.View<gc.types.ModelWidgetProps> {
+    download(fp: gc.types.ServerFileProps) {
         let u = fp.downloadUrl || '';
-        gws.lib.downloadUrl(u, u.split('/').pop())
+        gc.lib.downloadUrl(u, u.split('/').pop())
     }
 
 
@@ -22,7 +23,7 @@ class FormView extends gws.View<gws.types.ModelWidgetProps> {
         let field = this.props.field;
         let cc = this.props.controller;
         let value = this.props.values[field.name];
-        let fp = this.props.feature.getAttribute(field.name) as gws.types.ServerFileProps;
+        let fp = this.props.feature.getAttribute(field.name) as gc.types.ServerFileProps;
 
         return <div className="cmpFormList">
             {fp && <components.file.File
@@ -35,7 +36,7 @@ class FormView extends gws.View<gws.types.ModelWidgetProps> {
             />}
             <Row className="cmpFormListToolbar">
                 <Cell>
-                    <gws.ui.FileInput
+                    <gc.ui.FileInput
                         // accept={editor.accept}
                         value={value}
                         whenChanged={this.props.whenChanged}
@@ -44,7 +45,7 @@ class FormView extends gws.View<gws.types.ModelWidgetProps> {
                 </Cell>
                 <Cell flex/>
                 {fp && <Cell>
-                    <gws.ui.Button
+                    <gc.ui.Button
                         className='cmpFormFileDownloadButton'
                         disabled={!fp.downloadUrl}
                         whenTouched={() => this.download(fp)}
@@ -56,12 +57,12 @@ class FormView extends gws.View<gws.types.ModelWidgetProps> {
     }
 }
 
-class CellView extends gws.View<gws.types.ModelWidgetProps> {
+class CellView extends gc.View<gc.types.ModelWidgetProps> {
     render() {
         let field = this.props.field;
         let cc = this.props.controller;
         let value = this.props.values[field.name];
-        let fp = this.props.feature.getAttribute(field.name) as gws.types.ServerFileProps;
+        let fp = this.props.feature.getAttribute(field.name) as gc.types.ServerFileProps;
 
         return <div className="cmpFormList">
             {fp && <components.file.File
@@ -76,7 +77,7 @@ class CellView extends gws.View<gws.types.ModelWidgetProps> {
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     cellView(props) {
         return this.createElement(CellView, props)
     }
@@ -90,6 +91,6 @@ class Controller extends gws.Controller {
     }
 }
 
-gws.registerTags({
+gc.registerTags({
     'ModelWidget.file': Controller,
 })

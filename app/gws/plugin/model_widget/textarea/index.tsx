@@ -1,17 +1,18 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
+import * as gc from 'gc';
+;
 
-interface Props extends gws.types.ModelWidgetProps {
-    widgetProps: gws.api.plugin.model_widget.textarea.Props
+interface Props extends gc.types.ModelWidgetProps {
+    widgetProps: gc.gws.plugin.model_widget.textarea.Props
 }
 
 
-class FormView extends gws.View<Props> {
+class FormView extends gc.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name];
-        return <gws.ui.TextArea
+        return <gc.ui.TextArea
             height={this.props.widgetProps.height}
             disabled={this.props.widgetProps.readOnly}
             placeholder={this.props.widgetProps.placeholder || ''}
@@ -21,15 +22,15 @@ class FormView extends gws.View<Props> {
     }
 }
 
-class CellView extends gws.View<Props> {
+class CellView extends gc.View<Props> {
     render() {
         let field = this.props.field;
         let value = this.props.values[field.name] || '';
-        return <gws.ui.TableCell content={value}/>;
+        return <gc.ui.TableCell content={value}/>;
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     cellView(props) {
         return this.createElement(CellView, props)
     }
@@ -43,6 +44,6 @@ class Controller extends gws.Controller {
     }
 }
 
-gws.registerTags({
+gc.registerTags({
     'ModelWidget.textarea': Controller,
 })

@@ -1,5 +1,5 @@
-import * as gws from 'gws';
-import * as toolbar from 'gws/elements/toolbar';
+import * as gc from 'gc';
+import * as toolbar from 'gc/elements/toolbar';
 
 import * as core from './core';
 
@@ -28,7 +28,7 @@ export class SidebarView extends core.SidebarView {
     }
 }
 
-export class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
+export class Sidebar extends gc.Controller implements gc.types.ISidebarItem {
     iconClass = 'editSidebarIcon';
 
     get tooltip() {
@@ -85,7 +85,7 @@ class Controller extends core.Controller {
 }
 
 
-gws.registerTags({
+gc.registerTags({
     [MASTER]: Controller,
     'Sidebar.Edit': Sidebar,
     'Tool.Edit.Pointer': PointerTool,

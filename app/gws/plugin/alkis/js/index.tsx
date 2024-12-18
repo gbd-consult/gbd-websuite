@@ -1,15 +1,16 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
-import * as components from 'gws/components';
-import * as lens from 'gws/elements/lens';
-import * as storage from 'gws/elements/storage';
+import * as gc from 'gc';
+;
+import * as sidebar from 'gc/elements/sidebar';
+import * as components from 'gc/components';
+import * as lens from 'gc/elements/lens';
+import * as storage from 'gc/elements/storage';
 
 const MASTER = 'Shared.Alkis';
 
-let {Form, Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gc.ui.Layout;
 
 function _master(obj: any) {
     if (obj.app)
@@ -35,7 +36,7 @@ interface FormValues {
     hausnummer?: string;
     personName?: string;
     personVorname?: string;
-    shapes?: Array<gws.api.base.shape.Props>;
+    shapes?: Array<gc.gws.base.shape.Props>;
     strasseCode?: string;
     fsnummer?: string;
     wantEigentuemer?: boolean;
@@ -65,11 +66,11 @@ interface Toponyms {
     gemeinden: Array<Gemeinde>;
     gemarkungen: Array<Gemarkung>;
     strassen: Array<Strasse>;
-    gemarkungIndex: gws.types.Dict,
-    gemeindeIndex: gws.types.Dict,
+    gemarkungIndex: gc.types.Dict,
+    gemeindeIndex: gc.types.Dict,
 }
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
 
     alkisTab: TabName;
@@ -78,24 +79,24 @@ interface ViewProps extends gws.types.ViewProps {
     alkisFsError: string;
 
     alkisFsExportGroupIndexes: Array<number>;
-    alkisFsExportFeatures: Array<gws.types.IFeature>;
+    alkisFsExportFeatures: Array<gc.types.IFeature>;
 
     alkisFsFormValues: FormValues;
 
-    alkisFsGemarkungListItems: Array<gws.ui.ListItem>;
-    alkisFsStrasseListItems: Array<gws.ui.ListItem>;
+    alkisFsGemarkungListItems: Array<gc.ui.ListItem>;
+    alkisFsStrasseListItems: Array<gc.ui.ListItem>;
 
-    alkisFsResults: Array<gws.types.IFeature>;
+    alkisFsResults: Array<gc.types.IFeature>;
     alkisFsResultCount: number;
 
-    alkisFsDetailsFeature: gws.types.IFeature;
+    alkisFsDetailsFeature: gc.types.IFeature;
     alkisFsDetailsText: string;
 
-    alkisFsSelection: Array<gws.types.IFeature>;
+    alkisFsSelection: Array<gc.types.IFeature>;
 
     appActiveTool: string;
 
-    features?: Array<gws.types.IFeature>;
+    features?: Array<gc.types.IFeature>;
     showSelection: boolean;
 
 }
@@ -124,11 +125,11 @@ const StoreKeys = [
     'appActiveTool',
 ];
 
-function featureIn(fs: Array<gws.types.IFeature>, f: gws.types.IFeature) {
+function featureIn(fs: Array<gc.types.IFeature>, f: gc.types.IFeature) {
     return fs.some(g => g.uid === f.uid);
 }
 
-class ExportAuxButton extends gws.View<ViewProps> {
+class ExportAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -142,7 +143,7 @@ class ExportAuxButton extends gws.View<ViewProps> {
     }
 }
 
-class PrintAuxButton extends gws.View<ViewProps> {
+class PrintAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -156,7 +157,7 @@ class PrintAuxButton extends gws.View<ViewProps> {
     }
 }
 
-class HighlightAuxButton extends gws.View<ViewProps> {
+class HighlightAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -170,7 +171,7 @@ class HighlightAuxButton extends gws.View<ViewProps> {
     }
 }
 
-class SelectAuxButton extends gws.View<ViewProps> {
+class SelectAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -184,7 +185,7 @@ class SelectAuxButton extends gws.View<ViewProps> {
     }
 }
 
-class ToggleAuxButton extends gws.View<ViewProps> {
+class ToggleAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -208,31 +209,31 @@ class ToggleAuxButton extends gws.View<ViewProps> {
     }
 }
 
-class FormAuxButton extends gws.View<ViewProps> {
+class FormAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
         return <sidebar.AuxButton
-            {...gws.lib.cls('alkisFormAuxButton', this.props.alkisTab === 'form' && 'isActive')}
+            {...gc.lib.cls('alkisFormAuxButton', this.props.alkisTab === 'form' && 'isActive')}
             whenTouched={() => cc.goTo('form')}
             tooltip={cc.__('alkisGotoForm')}
         />
     }
 }
 
-class ListAuxButton extends gws.View<ViewProps> {
+class ListAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
         return <sidebar.AuxButton
-            {...gws.lib.cls('alkisListAuxButton', this.props.alkisTab === 'list' && 'isActive')}
+            {...gc.lib.cls('alkisListAuxButton', this.props.alkisTab === 'list' && 'isActive')}
             whenTouched={() => cc.goTo('list')}
             tooltip={cc.__('alkisGotoList')}
         />
     }
 }
 
-class SelectionAuxButton extends gws.View<ViewProps> {
+class SelectionAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -242,7 +243,7 @@ class SelectionAuxButton extends gws.View<ViewProps> {
         let sel = this.props.alkisFsSelection || [];
 
         return <sidebar.AuxButton
-            {...gws.lib.cls('alkisSelectionAuxButton', this.props.alkisTab === 'selection' && 'isActive')}
+            {...gc.lib.cls('alkisSelectionAuxButton', this.props.alkisTab === 'selection' && 'isActive')}
             badge={sel.length ? String(sel.length) : null}
             whenTouched={() => cc.goTo('selection')}
             tooltip={cc.__('alkisGotoSelection')}
@@ -250,7 +251,7 @@ class SelectionAuxButton extends gws.View<ViewProps> {
     }
 }
 
-class ClearAuxButton extends gws.View<ViewProps> {
+class ClearAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -265,7 +266,7 @@ class ClearAuxButton extends gws.View<ViewProps> {
     }
 }
 
-class ResetAuxButton extends gws.View<ViewProps> {
+class ResetAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -277,7 +278,7 @@ class ResetAuxButton extends gws.View<ViewProps> {
     }
 }
 
-class Navigation extends gws.View<ViewProps> {
+class Navigation extends gc.View<ViewProps> {
     render() {
         return <React.Fragment>
             <FormAuxButton {...this.props}/>
@@ -287,36 +288,36 @@ class Navigation extends gws.View<ViewProps> {
     }
 }
 
-class LoaderTab extends gws.View<ViewProps> {
+class LoaderTab extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={cc.__('alkisFormTitle')}/>
+                <gc.ui.Title content={cc.__('alkisFormTitle')}/>
             </sidebar.TabHeader>
             <sidebar.TabBody>
                 <div className="alkisLoading">
                     {cc.__('alkisLoading')}
-                    <gws.ui.Loader/>
+                    <gc.ui.Loader/>
                 </div>
             </sidebar.TabBody>
         </sidebar.Tab>
     }
 }
 
-class MessageTab extends gws.View<MessageViewProps> {
+class MessageTab extends gc.View<MessageViewProps> {
     render() {
         let cc = _master(this);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={cc.__('alkisFormTitle')}/>
+                <gc.ui.Title content={cc.__('alkisFormTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.EmptyTabBody>
-                {this.props.error && <gws.ui.Error text={this.props.error}/>}
-                {this.props.message && <gws.ui.Text content={this.props.message}/>}
+                {this.props.error && <gc.ui.Error text={this.props.error}/>}
+                {this.props.message && <gc.ui.Text content={this.props.message}/>}
                 {this.props.withFormLink && <a onClick={() => cc.goTo('form')}>
                     {cc.__('alkisBackToForm')}
                 </a>}
@@ -332,7 +333,7 @@ class MessageTab extends gws.View<MessageViewProps> {
     }
 }
 
-class SearchForm extends gws.View<ViewProps> {
+class SearchForm extends gc.View<ViewProps> {
 
     render() {
         let cc = _master(this),
@@ -373,7 +374,7 @@ class SearchForm extends gws.View<ViewProps> {
         return <Form>
             {nameShowMode && <Row>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gc.ui.TextInput
                         placeholder={cc.__('alkisVorname')}
                         disabled={nameShowMode === 'disabled'}
                         {...boundTo('personVorname')}
@@ -384,7 +385,7 @@ class SearchForm extends gws.View<ViewProps> {
 
             {nameShowMode && <Row>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gc.ui.TextInput
                         placeholder={cc.__('alkisNachname')}
                         disabled={nameShowMode === 'disabled'}
                         {...boundTo('personName')}
@@ -394,11 +395,11 @@ class SearchForm extends gws.View<ViewProps> {
             </Row>}
 
 
-            {gemarkungListMode !== gws.api.plugin.alkis.action.GemarkungListMode.none && <Row>
+            {gemarkungListMode !== gc.gws.plugin.alkis.action.GemarkungListMode.none && <Row>
                 <Cell flex>
-                    <gws.ui.Select
+                    <gc.ui.Select
                         placeholder={
-                            gemarkungListMode === gws.api.plugin.alkis.action.GemarkungListMode.tree
+                            gemarkungListMode === gc.gws.plugin.alkis.action.GemarkungListMode.tree
                                 ? cc.__('alkisGemeindeGemarkung')
                                 : cc.__('alkisGemarkung')
                         }
@@ -413,7 +414,7 @@ class SearchForm extends gws.View<ViewProps> {
 
             <Row>
                 <Cell flex>
-                    <gws.ui.Select
+                    <gc.ui.Select
                         placeholder={cc.__('alkisStrasse')}
                         items={this.props.alkisFsStrasseListItems}
                         {...boundTo('strasseCode')}
@@ -423,7 +424,7 @@ class SearchForm extends gws.View<ViewProps> {
                     />
                 </Cell>
                 <Cell width={90}>
-                    <gws.ui.TextInput
+                    <gc.ui.TextInput
                         placeholder={cc.__('alkisNr')}
                         {...boundTo('hausnummer')}
                         withClear
@@ -433,7 +434,7 @@ class SearchForm extends gws.View<ViewProps> {
 
             <Row>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gc.ui.TextInput
                         placeholder={
                             setup.withFlurnummer
                                 ? cc.__('alkisVnumFlur')
@@ -447,14 +448,14 @@ class SearchForm extends gws.View<ViewProps> {
 
             <Row>
                 <Cell flex>
-                    <gws.ui.NumberInput
+                    <gc.ui.NumberInput
                         placeholder={cc.__('alkisAreaFrom')}
                         {...boundTo('flaecheVon')}
                         withClear
                     />
                 </Cell>
                 <Cell flex>
-                    <gws.ui.NumberInput
+                    <gc.ui.NumberInput
                         placeholder={cc.__('alkisAreaTo')}
                         {...boundTo('flaecheBis')}
                         withClear
@@ -464,7 +465,7 @@ class SearchForm extends gws.View<ViewProps> {
 
             {setup.withBuchung && <Row>
                 <Cell flex>
-                    <gws.ui.TextInput
+                    <gc.ui.TextInput
                         placeholder={cc.__('alkisBblatt')}
                         {...boundTo('bblatt')}
                         withClear
@@ -474,7 +475,7 @@ class SearchForm extends gws.View<ViewProps> {
 
             {setup.withEigentuemerControl && <Row className='alkisControlToggle'>
                 <Cell flex>
-                    <gws.ui.Toggle
+                    <gc.ui.Toggle
                         type="checkbox"
                         {...boundTo('wantEigentuemer')}
                         label={cc.__('alkisWantEigentuemer')}
@@ -485,7 +486,7 @@ class SearchForm extends gws.View<ViewProps> {
 
             {setup.withEigentuemerControl && form.wantEigentuemer && <Row>
                 <Cell flex>
-                    <gws.ui.TextArea
+                    <gc.ui.TextArea
                         {...boundTo('eigentuemerControlInput')}
                         placeholder={cc.__('alkisControlInput')}
                     />
@@ -494,7 +495,7 @@ class SearchForm extends gws.View<ViewProps> {
 
             {setup.ui.useHistory && <Row>
                 <Cell flex>
-                    <gws.ui.Toggle
+                    <gc.ui.Toggle
                         type="checkbox"
                         {...boundTo('wantHistorySearch')}
                         label={cc.__('alkisWantHistorySearch')}
@@ -505,7 +506,7 @@ class SearchForm extends gws.View<ViewProps> {
 
             {setup.ui.useHistory && <Row>
                 <Cell flex>
-                    <gws.ui.Toggle
+                    <gc.ui.Toggle
                         type="checkbox"
                         {...boundTo('wantHistoryDisplay')}
                         label={cc.__('alkisWantHistoryDisplay')}
@@ -518,36 +519,36 @@ class SearchForm extends gws.View<ViewProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.Button
-                        {...gws.lib.cls('alkisSearchSubmitButton')}
+                    <gc.ui.Button
+                        {...gc.lib.cls('alkisSearchSubmitButton')}
                         tooltip={cc.__('alkisSubmitButton')}
                         whenTouched={() => cc.formSearch()}
                     />
                 </Cell>
                 {setup.ui.searchSelection && <Cell>
-                    <gws.ui.Button
-                        {...gws.lib.cls('alkisSearchSelectionButton')}
+                    <gc.ui.Button
+                        {...gc.lib.cls('alkisSearchSelectionButton')}
                         tooltip={cc.__('alkisSelectionSearchButton')}
                         whenTouched={() => cc.selectionSearch()}
                     />
                 </Cell>}
                 {setup.ui.searchSpatial && <Cell>
-                    <gws.ui.Button
-                        {...gws.lib.cls('alkisSearchLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
+                    <gc.ui.Button
+                        {...gc.lib.cls('alkisSearchLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
                         tooltip={cc.__('alkisLensButton')}
                         whenTouched={() => cc.startLens()}
                     />
                 </Cell>}
                 {setup.ui.usePick && <Cell>
-                    <gws.ui.Button
-                        {...gws.lib.cls('alkisPickButton', this.props.appActiveTool === 'Tool.Alkis.Pick' && 'isActive')}
+                    <gc.ui.Button
+                        {...gc.lib.cls('alkisPickButton', this.props.appActiveTool === 'Tool.Alkis.Pick' && 'isActive')}
                         tooltip={cc.__('alkisPickButton')}
                         whenTouched={() => cc.startPick()}
                     />
                 </Cell>}
                 <Cell>
-                    <gws.ui.Button
-                        {...gws.lib.cls('alkisSearchResetButton')}
+                    <gc.ui.Button
+                        {...gc.lib.cls('alkisSearchResetButton')}
                         tooltip={cc.__('alkisResetButton')}
                         whenTouched={() => cc.reset()}
                     />
@@ -557,13 +558,13 @@ class SearchForm extends gws.View<ViewProps> {
     }
 }
 
-class FormTab extends gws.View<ViewProps> {
+class FormTab extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={cc.__('alkisFormTitle')}/>
+                <gc.ui.Title content={cc.__('alkisFormTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -581,7 +582,7 @@ class FormTab extends gws.View<ViewProps> {
     }
 }
 
-class FeatureList extends gws.View<ViewProps> {
+class FeatureList extends gc.View<ViewProps> {
 
     render() {
         let cc = _master(this);
@@ -601,7 +602,7 @@ class FeatureList extends gws.View<ViewProps> {
         if (!cc.setup.ui.useSelect)
             rightButton = null;
 
-        let content = f => <gws.ui.Link
+        let content = f => <gc.ui.Link
             whenTouched={() => cc.showDetails(f)}
             content={f.views.teaser}
         />;
@@ -619,7 +620,7 @@ class FeatureList extends gws.View<ViewProps> {
 
 }
 
-class ListTab extends gws.View<ViewProps> {
+class ListTab extends gc.View<ViewProps> {
     title() {
         let cc = _master(this);
 
@@ -643,7 +644,7 @@ class ListTab extends gws.View<ViewProps> {
         let cc = _master(this);
         let features = this.props.alkisFsResults;
 
-        if (gws.lib.isEmpty(features)) {
+        if (gc.lib.isEmpty(features)) {
             return <MessageTab
                 {...this.props}
                 message={cc.__('alkisNotFound')}
@@ -653,7 +654,7 @@ class ListTab extends gws.View<ViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.title()}/>
+                <gc.ui.Title content={this.title()}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -674,15 +675,15 @@ class ListTab extends gws.View<ViewProps> {
     }
 }
 
-class SelectionTab extends gws.View<ViewProps> {
+class SelectionTab extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
         let features = this.props.alkisFsSelection;
-        let hasFeatures = !gws.lib.isEmpty(features);
+        let hasFeatures = !gc.lib.isEmpty(features);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={cc.__('alkisSelectionTitle')}/>
+                <gc.ui.Title content={cc.__('alkisSelectionTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -712,7 +713,7 @@ class SelectionTab extends gws.View<ViewProps> {
     }
 }
 
-class DetailsTab extends gws.View<ViewProps> {
+class DetailsTab extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
         let feature = this.props.alkisFsDetailsFeature;
@@ -720,7 +721,7 @@ class DetailsTab extends gws.View<ViewProps> {
         return <sidebar.Tab>
 
             <sidebar.TabHeader>
-                <gws.ui.Title content={cc.__('alkisInfoTitle')}/>
+                <gc.ui.Title content={cc.__('alkisInfoTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -748,7 +749,7 @@ class DetailsTab extends gws.View<ViewProps> {
     }
 }
 
-class ExportTab extends gws.View<ViewProps> {
+class ExportTab extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -761,15 +762,15 @@ class ExportTab extends gws.View<ViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={cc.__('alkisExportTitle')}/>
+                <gc.ui.Title content={cc.__('alkisExportTitle')}/>
             </sidebar.TabHeader>
             <sidebar.TabBody>
                 <div className="alkisFsDetailsTabContent">
                     <Form>
                         <Row>
                             <Cell flex>
-                                <gws.ui.Group vertical>
-                                    {allGroups.map(g => <gws.ui.Toggle
+                                <gc.ui.Group vertical>
+                                    {allGroups.map(g => <gc.ui.Toggle
                                             key={g.index}
                                             type="checkbox"
                                             inline
@@ -778,13 +779,13 @@ class ExportTab extends gws.View<ViewProps> {
                                             whenChanged={value => changed(g.index, value)}
                                         />
                                     )}
-                                </gws.ui.Group>
+                                </gc.ui.Group>
                             </Cell>
                         </Row>
                         <Row>
                             <Cell flex/>
                             <Cell width={120}>
-                                <gws.ui.Button
+                                <gc.ui.Button
                                     primary
                                     whenTouched={() => cc.submitExport()}
                                     label={cc.__('alkisExportButton')}
@@ -804,7 +805,7 @@ class ExportTab extends gws.View<ViewProps> {
     }
 }
 
-class SidebarView extends gws.View<ViewProps> {
+class SidebarView extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
@@ -836,7 +837,7 @@ class SidebarView extends gws.View<ViewProps> {
     }
 }
 
-class Sidebar extends gws.Controller implements gws.types.ISidebarItem {
+class Sidebar extends gc.Controller implements gc.types.ISidebarItem {
     iconClass = 'alkisSidebarIcon';
 
     get tooltip() {
@@ -868,7 +869,7 @@ class LensTool extends lens.Tool {
     }
 }
 
-class PickTool extends gws.Tool {
+class PickTool extends gc.Tool {
     start() {
         let cc = _master(this);
 
@@ -884,11 +885,11 @@ class PickTool extends gws.Tool {
     }
 }
 
-class Controller extends gws.Controller {
+class Controller extends gc.Controller {
     uid = MASTER;
     history: Array<string>;
-    selectionLayer: gws.types.IFeatureLayer;
-    setup: gws.api.plugin.alkis.action.Props;
+    selectionLayer: gc.types.IFeatureLayer;
+    setup: gc.gws.plugin.alkis.action.Props;
     toponyms: Toponyms;
 
     async init() {
@@ -987,12 +988,12 @@ class Controller extends gws.Controller {
         return t;
     }
 
-    gemarkungListItems(): Array<gws.ui.ListItem> {
+    gemarkungListItems(): Array<gc.ui.ListItem> {
         let items = [];
 
         switch (this.setup.ui.gemarkungListMode) {
 
-            case gws.api.plugin.alkis.action.GemarkungListMode.plain:
+            case gc.gws.plugin.alkis.action.GemarkungListMode.plain:
                 for (let g of this.toponyms.gemarkungen) {
                     items.push({
                         text: g.name,
@@ -1001,7 +1002,7 @@ class Controller extends gws.Controller {
                 }
                 break;
 
-            case gws.api.plugin.alkis.action.GemarkungListMode.combined:
+            case gc.gws.plugin.alkis.action.GemarkungListMode.combined:
                 for (let g of this.toponyms.gemarkungen) {
                     items.push({
                         text: g.name,
@@ -1011,7 +1012,7 @@ class Controller extends gws.Controller {
                 }
                 break;
 
-            case gws.api.plugin.alkis.action.GemarkungListMode.tree:
+            case gc.gws.plugin.alkis.action.GemarkungListMode.tree:
                 for (let gd of this.toponyms.gemeinden) {
                     items.push({
                         text: gd.name,
@@ -1034,7 +1035,7 @@ class Controller extends gws.Controller {
         return items;
     }
 
-    strasseListItems(strassen: Array<Strasse>): Array<gws.ui.ListItem> {
+    strasseListItems(strassen: Array<Strasse>): Array<gc.ui.ListItem> {
         let strasseCounts = {}, ls = [];
 
         for (let s of strassen) {
@@ -1043,7 +1044,7 @@ class Controller extends gws.Controller {
 
         switch (this.setup.ui.strasseListMode) {
 
-            case gws.api.plugin.alkis.action.StrasseListMode.plain:
+            case gc.gws.plugin.alkis.action.StrasseListMode.plain:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.code,
@@ -1051,7 +1052,7 @@ class Controller extends gws.Controller {
                 }));
                 break;
 
-            case gws.api.plugin.alkis.action.StrasseListMode.withGemarkung:
+            case gc.gws.plugin.alkis.action.StrasseListMode.withGemarkung:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.code,
@@ -1059,7 +1060,7 @@ class Controller extends gws.Controller {
                 }));
                 break;
 
-            case gws.api.plugin.alkis.action.StrasseListMode.withGemarkungIfRepeated:
+            case gc.gws.plugin.alkis.action.StrasseListMode.withGemarkungIfRepeated:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.code,
@@ -1069,7 +1070,7 @@ class Controller extends gws.Controller {
                 }));
                 break;
 
-            case gws.api.plugin.alkis.action.StrasseListMode.withGemeinde:
+            case gc.gws.plugin.alkis.action.StrasseListMode.withGemeinde:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.code,
@@ -1077,7 +1078,7 @@ class Controller extends gws.Controller {
                 }));
                 break;
 
-            case gws.api.plugin.alkis.action.StrasseListMode.withGemeindeIfRepeated:
+            case gc.gws.plugin.alkis.action.StrasseListMode.withGemeindeIfRepeated:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.code,
@@ -1129,14 +1130,14 @@ class Controller extends gws.Controller {
     }
 
     selectionGeometries() {
-        let sel = this.getValue('selectFeatures') as Array<gws.types.IFeature>;
+        let sel = this.getValue('selectFeatures') as Array<gc.types.IFeature>;
 
         if (sel)
             return sel.map(f => f.geometry);
 
         let m = this.getValue('marker');
         if (m && m.features) {
-            let gs = gws.lib.compact(m.features.map((f: gws.types.IFeature) => f.geometry));
+            let gs = gc.lib.compact(m.features.map((f: gc.types.IFeature) => f.geometry));
             if (gs.length > 0) {
                 return gs
             }
@@ -1210,10 +1211,10 @@ class Controller extends gws.Controller {
         this.update({alkisFsLoading: false});
     }
 
-    fsSearchRequest(): gws.api.plugin.alkis.action.FindFlurstueckRequest {
+    fsSearchRequest(): gc.gws.plugin.alkis.action.FindFlurstueckRequest {
         let req = {...this.getValue('alkisFsFormValues')};
 
-        if (!gws.lib.isEmpty(req.strasseCode)) {
+        if (!gc.lib.isEmpty(req.strasseCode)) {
             let strasse = this.toponyms.strassen[Number(req.strasseCode)];
             if (strasse) {
                 req.gemarkungCode = strasse.gemarkungCode;
@@ -1226,20 +1227,20 @@ class Controller extends gws.Controller {
     }
 
 
-    fsDetailsRequest(fs: Array<gws.types.IFeature>): gws.api.plugin.alkis.action.FindFlurstueckRequest {
+    fsDetailsRequest(fs: Array<gc.types.IFeature>): gc.gws.plugin.alkis.action.FindFlurstueckRequest {
         let form = this.getValue('alkisFsFormValues');
 
         let displayThemes = [
-            gws.api.plugin.alkis.data.types.DisplayTheme.lage,
-            gws.api.plugin.alkis.data.types.DisplayTheme.gebaeude,
-            gws.api.plugin.alkis.data.types.DisplayTheme.nutzung,
+            gc.gws.plugin.alkis.data.types.DisplayTheme.lage,
+            gc.gws.plugin.alkis.data.types.DisplayTheme.gebaeude,
+            gc.gws.plugin.alkis.data.types.DisplayTheme.nutzung,
         ]
 
         if (this.setup.withBuchung)
-            displayThemes.push(gws.api.plugin.alkis.data.types.DisplayTheme.buchung)
+            displayThemes.push(gc.gws.plugin.alkis.data.types.DisplayTheme.buchung)
 
         if (this.setup.withEigentuemer && (!this.setup.withEigentuemerControl || form.wantEigentuemer))
-            displayThemes.push(gws.api.plugin.alkis.data.types.DisplayTheme.eigentuemer)
+            displayThemes.push(gc.gws.plugin.alkis.data.types.DisplayTheme.eigentuemer)
 
         return {
             displayThemes,
@@ -1250,7 +1251,7 @@ class Controller extends gws.Controller {
         }
     }
 
-    async showDetails(f: gws.types.IFeature, highlight = true) {
+    async showDetails(f: gc.types.IFeature, highlight = true) {
         let res = await this.app.server.alkisFindFlurstueck(this.fsDetailsRequest([f]));
         if (res.error) {
             return this.showError(res);
@@ -1270,10 +1271,10 @@ class Controller extends gws.Controller {
         }
     }
 
-    async startPrint(fs: Array<gws.types.IFeature>) {
+    async startPrint(fs: Array<gc.types.IFeature>) {
 
         this.update({
-            printJob: {state: gws.api.core.JobState.init},
+            printJob: {state: gc.gws.JobState.init},
             marker: null,
         });
 
@@ -1284,8 +1285,8 @@ class Controller extends gws.Controller {
         let mapParams = await this.map.printParams(null, dpi);
         mapParams.planes = mapParams.planes.filter(p => p.layerUid !== '_alkisSelectLayer');
 
-        let printRequest: gws.api.core.PrintRequest = {
-            type: gws.api.core.PrintRequestType.template,
+        let printRequest: gc.gws.PrintRequest = {
+            type: gc.gws.PrintRequestType.template,
             printerUid: this.setup.printer.uid,
             dpi,
             maps: [mapParams]
@@ -1303,7 +1304,7 @@ class Controller extends gws.Controller {
         });
     }
 
-    highlightMany(fs: Array<gws.types.IFeature>) {
+    highlightMany(fs: Array<gc.types.IFeature>) {
         this.update({
             marker: {
                 features: fs,
@@ -1312,7 +1313,7 @@ class Controller extends gws.Controller {
         })
     }
 
-    highlight(f: gws.types.IFeature) {
+    highlight(f: gc.types.IFeature) {
         this.update({
             marker: {
                 features: [f],
@@ -1321,15 +1322,15 @@ class Controller extends gws.Controller {
         })
     }
 
-    isSelected(f: gws.types.IFeature) {
+    isSelected(f: gc.types.IFeature) {
         let sel = this.getValue('alkisFsSelection') || [];
         return sel.length && featureIn(sel, f);
 
     }
 
-    select(fs: Array<gws.types.IFeature>) {
+    select(fs: Array<gc.types.IFeature>) {
         if (!this.selectionLayer) {
-            this.selectionLayer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
+            this.selectionLayer = this.map.addServiceLayer(new gc.map.layer.FeatureLayer(this.map, {
                 uid: '_alkisSelectLayer',
                 cssSelector: '.alkisSelectFeature',
             }));
@@ -1351,7 +1352,7 @@ class Controller extends gws.Controller {
         this.selectionLayer.addFeatures(this.getValue('alkisFsSelection'));
     }
 
-    unselect(fs: Array<gws.types.IFeature>) {
+    unselect(fs: Array<gc.types.IFeature>) {
         let sel = this.getValue('alkisFsSelection') || [];
 
         this.update({
@@ -1422,7 +1423,7 @@ class Controller extends gws.Controller {
         this.goTo('form')
     }
 
-    async startExport(fs: Array<gws.types.IFeature>) {
+    async startExport(fs: Array<gc.types.IFeature>) {
         this.update({
             alkisFsExportFeatures: fs
         });
@@ -1430,7 +1431,7 @@ class Controller extends gws.Controller {
     }
 
     async submitExport() {
-        let fs: Array<gws.types.IFeature> = this.getValue('alkisFsExportFeatures');
+        let fs: Array<gc.types.IFeature> = this.getValue('alkisFsExportFeatures');
 
         let q = {
             findRequest: this.fsDetailsRequest(fs),
@@ -1441,7 +1442,7 @@ class Controller extends gws.Controller {
         if (res.error) {
             return;
         }
-        gws.lib.downloadContent(res.content, res.mime, EXPORT_PATH)
+        gc.lib.downloadContent(res.content, res.mime, EXPORT_PATH)
     }
 
     showError(res) {
@@ -1484,7 +1485,7 @@ class Controller extends gws.Controller {
     }
 }
 
-gws.registerTags({
+gc.registerTags({
     [MASTER]: Controller,
     'Sidebar.Alkis': Sidebar,
     'Tool.Alkis.Lens': LensTool,

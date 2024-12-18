@@ -1,14 +1,14 @@
 import * as React from 'react';
 
-import * as gws from 'gws';
-import * as sidebar from 'gws/elements/sidebar';
+import * as gc from 'gc';
+import * as sidebar from 'gc/elements/sidebar';
 
-interface ViewProps extends gws.types.ViewProps {
+interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
 
 }
 
-class SidebarBody extends gws.View<ViewProps> {
+class SidebarBody extends gc.View<ViewProps> {
 
     render() {
         let desc = this.props.controller.app.project.description;
@@ -16,17 +16,17 @@ class SidebarBody extends gws.View<ViewProps> {
         return <sidebar.Tab>
 
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('projectSidebarTitle')}/>
+                <gc.ui.Title content={this.__('projectSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <gws.ui.TextBlock className="cmpDescription" withHTML content={desc}/>
+                <gc.ui.TextBlock className="cmpDescription" withHTML content={desc}/>
             </sidebar.TabBody>
         </sidebar.Tab>
     }
 }
 
-class Controller extends gws.Controller implements gws.types.ISidebarItem {
+class Controller extends gc.Controller implements gc.types.ISidebarItem {
     iconClass = 'projectSidebarIcon';
 
     get tooltip() {
@@ -41,7 +41,7 @@ class Controller extends gws.Controller implements gws.types.ISidebarItem {
 
 }
 
-gws.registerTags({
+gc.registerTags({
     'Sidebar.Project': Controller
 });
 
