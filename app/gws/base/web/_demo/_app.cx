@@ -25,6 +25,10 @@ web.sites+ {
             pattern "^/(demo|tag)"
             target "/_/webAsset/path/index.cx.html"
         }
+        {
+            pattern "^/config/([a-z0-9_.-]+)"
+            target "/_/webAsset/path/config.cx.html/prj/$1"
+        }
     ]
     errorPage {
         type "html"
