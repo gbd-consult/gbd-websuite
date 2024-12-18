@@ -2,7 +2,7 @@
 
 import gws
 import gws.test.util as u
-import gws.gis.crs as crs
+import gws.lib.crs as crs
 
 
 def test_get_no_name():

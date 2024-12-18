@@ -3,7 +3,7 @@ import gws
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 import gws.lib.uom
-import gws.gis.extent
+import gws.lib.extent
 import gws.plugin.ows_server.wms
 
 
@@ -162,7 +162,7 @@ def layer_content(ta, lc: server.LayerCaps):
     for b in lc.bounds:
         bext = b.extent
         if b.crs.isYX and ta.intVersion == 130:
-            bext = gws.gis.extent.swap_xy(bext)
+            bext = gws.lib.extent.swap_xy(bext)
         fn = tpl.coord_dms if b.crs.isGeographic else tpl.coord_m
         yield ('BoundingBox', {
             'CRS': b.crs.epsg,

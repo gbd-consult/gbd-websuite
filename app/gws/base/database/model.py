@@ -7,7 +7,7 @@ import gws.base.feature
 import gws.base.model
 import gws.base.model.field
 import gws.config.util
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.sa as sa
 
 

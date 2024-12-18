@@ -6,8 +6,8 @@
 
 # import gws
 # import gws.base.web
-# import gws.gis.crs
-# import gws.gis.bounds
+# import gws.lib.crs
+# import gws.lib.bounds
 # import gws.base.ows.server
 #
 #
@@ -83,12 +83,12 @@
 #         request_crs = rd.project.map.crs
 #         p = rd.req.param('srsName')
 #         if p:
-#             crs = gws.gis.crs.get(p)
+#             crs = gws.lib.crs.get(p)
 #             if not crs:
 #                 raise gws.base.web.error.BadRequest('Invalid CRS')
 #             request_crs = crs
 #
-#         bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
+#         bounds = gws.lib.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
 #         if not bounds:
 #             raise gws.base.web.error.BadRequest('Invalid BBOX')
 #

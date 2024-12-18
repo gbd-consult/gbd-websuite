@@ -3,9 +3,9 @@ from typing import Optional
 import gws
 import gws.base.layer
 import gws.config.util
-import gws.gis.crs
-import gws.gis.bounds
-import gws.gis.extent
+import gws.lib.crs
+import gws.lib.bounds
+import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.metadata
@@ -68,7 +68,7 @@ class Object(gws.base.layer.image.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        self.bounds = gws.gis.bounds.transform(self.serviceProvider.bounds, self.mapCrs)
+        self.bounds = gws.lib.bounds.transform(self.serviceProvider.bounds, self.mapCrs)
         return True
 
     def configure_zoom_bounds(self):

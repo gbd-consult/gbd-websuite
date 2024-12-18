@@ -13,7 +13,7 @@ import shapely.wkb
 import shapely.wkt
 
 import gws
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.sa as sa
 
 _TOLERANCE_QUAD_SEGS = 6
@@ -39,7 +39,7 @@ def from_wkt(wkt: str, default_crs: gws.Crs = None) -> gws.Shape:
         # EWKT
         c = wkt.index(';')
         srid = wkt[len('SRID='):c]
-        crs = gws.gis.crs.get(int(srid))
+        crs = gws.lib.crs.get(int(srid))
         wkt = wkt[c + 1:]
     elif default_crs:
         crs = default_crs
@@ -84,7 +84,7 @@ def _from_wkb(wkb: bytes, default_crs):
     header = struct.unpack('<cLL' if byte_order == 1 else '>cLL', wkb[:9])
 
     if header[1] & 0x20000000:
-        crs = gws.gis.crs.get(header[2])
+        crs = gws.lib.crs.get(header[2])
     elif default_crs:
         crs = default_crs
     else:
@@ -100,7 +100,7 @@ def from_wkb_element(element: sa.geo.WKBElement,  default_crs: gws.Crs = None):
         wkb = bytes.fromhex(data)
     else:
         wkb = bytes(data)
-    crs = gws.gis.crs.get(element.srid)
+    crs = gws.lib.crs.get(element.srid)
     return _from_wkb(wkb, crs or default_crs)
 
 
@@ -135,7 +135,7 @@ def from_props(props: gws.Props) -> gws.Shape:
         A Shape object.
     """
 
-    crs = gws.gis.crs.get(props.get('crs'))
+    crs = gws.lib.crs.get(props.get('crs'))
     if not crs:
         raise Error('missing or invalid crs')
     geom = _shapely_shape(props.get('geometry'))
@@ -151,7 +151,7 @@ def from_dict(d: dict) -> gws.Shape:
         A Shape object.
     """
 
-    crs = gws.gis.crs.get(d.get('crs'))
+    crs = gws.lib.crs.get(d.get('crs'))
     if not crs:
         raise Error('missing or invalid crs')
     geom = _shapely_shape(d.get('geometry'))

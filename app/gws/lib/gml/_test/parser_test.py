@@ -1,8 +1,8 @@
 """Tests for the parser module"""
 
 import gws
-import gws.gis.crs
-import gws.gis.gml.parser as parser
+import gws.lib.crs
+import gws.lib.gml.parser as parser
 import gws.test.util as u
 import gws.lib.xmlx
 
@@ -14,7 +14,7 @@ def test_parse_envelope_default_crs():
                                                 <gml:coordinates>1,2 3,4</gml:coordinates>
                                             </gml:Box>
                                         </root>''')
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
 
     bounds = gws.Bounds(crs=crs, extent=(2.0, 1.0, 4.0, 3.0))
     assert crs == parser.parse_envelope(box.findfirst(), crs, False).crs
@@ -27,8 +27,8 @@ def test_parse_envelope():
                                                 <gml:coordinates>1,2 3,4</gml:coordinates>
                                             </gml:Box>
                                         </root>''')
-    crs = gws.gis.crs.WEBMERCATOR
-    crs_def = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WEBMERCATOR
+    crs_def = gws.lib.crs.WGS84
 
     bounds = gws.Bounds(crs=crs_def, extent=(2.0, 1.0, 4.0, 3.0))
     assert crs == parser.parse_envelope(box.findfirst()).crs
@@ -42,7 +42,7 @@ def test_parse_envelope_always_xy():
                                                 <gml:upperCorner>3 4 </gml:upperCorner>
                                             </gml:Envelope>
                                         </root>''')
-    crs_def = gws.gis.crs.WGS84
+    crs_def = gws.lib.crs.WGS84
 
     bounds = gws.Bounds(crs=crs_def, extent=(2.0, 1.0, 4.0, 3.0))
     assert crs_def == parser.parse_envelope(box.findfirst(), crs_def).crs
@@ -56,8 +56,8 @@ def test_parse_envelope_gml3():
                                                 <gml:upperCorner>3 4 </gml:upperCorner>
                                             </gml:Envelope>
                                         </root>''')
-    crs = gws.gis.crs.WEBMERCATOR
-    crs_def = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WEBMERCATOR
+    crs_def = gws.lib.crs.WGS84
 
     bounds = gws.Bounds(crs=crs_def, extent=(2.0, 1.0, 4.0, 3.0))
     assert crs == parser.parse_envelope(box.findfirst()).crs
@@ -128,7 +128,7 @@ def test_parse_shape_default_crs():
                                                     <gml:coordinates>100,200</gml:coordinates>
                                                 </gml:Point>
                                             </root>''')
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
     assert parser.parse_shape(shape.findfirst(), crs).to_wkt() == 'POINT (200.0000000000000000 100.0000000000000000)'
 
 
@@ -138,7 +138,7 @@ def test_parse_shape_xy():
                                                         <gml:coordinates>100,200</gml:coordinates>
                                                     </gml:Point>
                                                 </root>''')
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
     assert parser.parse_shape(shape.findfirst(), crs,
                               always_xy=True).to_wkt() == 'POINT (100.0000000000000000 200.0000000000000000)'
 

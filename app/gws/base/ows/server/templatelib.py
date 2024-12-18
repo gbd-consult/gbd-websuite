@@ -3,7 +3,7 @@
 from typing import Optional, Callable
 
 import gws
-import gws.gis.gml
+import gws.lib.gml
 import gws.lib.mime
 import gws.lib.uom
 import gws.lib.xmlx as xmlx

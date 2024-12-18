@@ -3,9 +3,9 @@ import math
 
 import gws
 import gws.test.util as u
-import gws.gis.extent as extent
+import gws.lib.extent as extent
 
-import gws.gis.crs as crs
+import gws.lib.crs as crs
 
 
 def test_from_string():

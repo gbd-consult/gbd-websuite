@@ -3,7 +3,7 @@
 import re
 
 import gws
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.datetimex
 import gws.lib.osx
 import gws.lib.uom
@@ -297,7 +297,7 @@ def _read_color(r: Reader, val, typ: core.Type):
 
 
 def _read_crs(r: Reader, val, typ: core.Type):
-    crs = gws.gis.crs.get(val)
+    crs = gws.lib.crs.get(val)
     if not crs:
         raise core.ReadError(f'invalid crs: {val!r}', val)
     return crs.srid

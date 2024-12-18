@@ -3,7 +3,7 @@
 import re
 
 import gws
-import gws.gis.bounds
+import gws.lib.bounds
 import gws.base.shape
 import gws.lib.xmlx as xmlx
 
@@ -81,7 +81,7 @@ def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
     if op == 'bbox':
         v = el.first('Envelope')
         if v:
-            bounds = gws.gis.bounds.from_gml_envelope_element()
+            bounds = gws.lib.bounds.from_gml_envelope_element()
             f.shape = gws.base.shape.from_bounds(bounds)
             return f
 

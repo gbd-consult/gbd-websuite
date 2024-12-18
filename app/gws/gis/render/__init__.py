@@ -3,7 +3,7 @@
 import math
 
 import gws
-import gws.gis.extent
+import gws.lib.extent
 import gws.lib.image
 import gws.lib.svg
 import gws.lib.uom
@@ -52,8 +52,8 @@ def _map_view(bbox, center, crs, dpi, rotation, scale, size):
 
     if bbox:
         view.bounds = gws.Bounds(crs=crs, extent=bbox)
-        view.center = gws.gis.extent.center(bbox)
-        bw, bh = gws.gis.extent.size(bbox)
+        view.center = gws.lib.extent.center(bbox)
+        bw, bh = gws.lib.extent.size(bbox)
         view.scale = gws.lib.uom.res_to_scale(bw / view.pxSize[0])
         return view
 
@@ -64,7 +64,7 @@ def _map_view(bbox, center, crs, dpi, rotation, scale, size):
         # @TODO assuming projection units are 'm'
         projection_units_per_mm = scale / 1000.0
         size = view.mmSize[0] * projection_units_per_mm, view.mmSize[1] * projection_units_per_mm
-        bbox = gws.gis.extent.from_center(center, size)
+        bbox = gws.lib.extent.from_center(center, size)
         view.bounds = gws.Bounds(crs=crs, extent=bbox)
         return view
 
@@ -102,7 +102,7 @@ def map_view_transformer(view: gws.MapView):
     if not view.rotation:
         return translate_int
 
-    ox, oy = translate(*gws.gis.extent.center(ext))
+    ox, oy = translate(*gws.lib.extent.center(ext))
     cosa = math.cos(math.radians(view.rotation))
     sina = math.sin(math.radians(view.rotation))
 

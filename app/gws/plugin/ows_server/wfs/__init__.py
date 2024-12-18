@@ -33,8 +33,8 @@ import gws.base.ows.server as server
 import gws.base.shape
 import gws.base.web
 import gws.config.util
-import gws.gis.bounds
-import gws.gis.crs
+import gws.lib.bounds
+import gws.lib.crs
 import gws.lib.metadata
 import gws.lib.mime
 
@@ -164,7 +164,7 @@ class Object(server.service.Object):
         sr.alwaysXY = False
         sr.bounds = (
             sr.requested_bounds('BBOX') if sr.req.has_param('BBOX')
-            else gws.gis.bounds.transform(sr.project.map.bounds, sr.crs)
+            else gws.lib.bounds.transform(sr.project.map.bounds, sr.crs)
         )
 
         return sr

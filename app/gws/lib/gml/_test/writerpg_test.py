@@ -4,7 +4,7 @@ import re
 
 import gws
 import gws.base.shape
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.sa as sa
 import gws.lib.xmlx
 import gws.test.util as u
@@ -53,8 +53,8 @@ def test_with_postgis(root: gws.Root):
                 for rec in conn.execute(sa.text(sql)):
                     postgis_xml = rec[0]
 
-                shape = gws.base.shape.from_wkt(wkt, gws.gis.crs.WGS84)
-                el = gws.gis.gml.shape_to_element(
+                shape = gws.base.shape.from_wkt(wkt, gws.lib.crs.WGS84)
+                el = gws.lib.gml.shape_to_element(
                     shape,
                     version=version,
                     coordinate_precision=0,

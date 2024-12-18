@@ -19,9 +19,9 @@ import gws.base.ows.server as server
 import gws.base.shape
 import gws.base.web
 import gws.config.util
-import gws.gis.bounds
-import gws.gis.extent
-import gws.gis.crs
+import gws.lib.bounds
+import gws.lib.extent
+import gws.lib.crs
 import gws.gis.render
 import gws.lib.image
 import gws.lib.metadata
@@ -262,7 +262,7 @@ class Object(server.service.Object):
 
         sr.pxWidth = sr.int_param('WIDTH')
         sr.pxHeight = sr.int_param('HEIGHT')
-        w, h = gws.gis.extent.size(sr.bounds.extent)
+        w, h = gws.lib.extent.size(sr.bounds.extent)
 
         dpi = sr.int_param('DPI', default=0) or sr.int_param('MAP_RESOLUTION', default=0)
         if dpi:

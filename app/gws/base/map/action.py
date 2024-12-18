@@ -9,9 +9,9 @@ import gws.base.layer
 import gws.base.legend
 import gws.base.model
 import gws.base.template
-import gws.gis.bounds
+import gws.lib.bounds
 import gws.gis.cache
-import gws.gis.crs
+import gws.lib.crs
 import gws.gis.render
 import gws.lib.image
 import gws.lib.intl
@@ -161,7 +161,7 @@ class Object(gws.base.action.Object):
             lri.extraParams['layers'] = p.layers
 
         lri.view = gws.gis.render.map_view_from_bbox(
-            crs=gws.gis.crs.get(p.crs) or layer.mapCrs,
+            crs=gws.lib.crs.get(p.crs) or layer.mapCrs,
             bbox=p.bbox,
             size=(p.width, p.height, gws.Uom.px),
             dpi=gws.lib.uom.OGC_SCREEN_PPI,
@@ -227,11 +227,11 @@ class Object(gws.base.action.Object):
         layer = req.user.require_layer(p.layerUid)
         project = layer.find_closest(gws.ext.object.project)
 
-        crs = gws.gis.crs.get(p.crs) or layer.mapCrs
+        crs = gws.lib.crs.get(p.crs) or layer.mapCrs
 
         bounds = layer.bounds
         if p.bbox:
-            bounds = gws.gis.bounds.from_extent(p.bbox, crs)
+            bounds = gws.lib.bounds.from_extent(p.bbox, crs)
 
         search = gws.SearchQuery(
             bounds=bounds,

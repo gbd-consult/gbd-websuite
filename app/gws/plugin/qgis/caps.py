@@ -6,9 +6,9 @@ import math
 import re
 
 import gws
-import gws.gis.bounds
-import gws.gis.extent
-import gws.gis.crs
+import gws.lib.bounds
+import gws.lib.extent
+import gws.lib.crs
 import gws.gis.source
 import gws.lib.metadata
 import gws.lib.net
@@ -57,20 +57,20 @@ def parse_element(root_el: gws.XmlElement) -> Caps:
     caps.visibilityPresets = _visibility_presets(root_el)
 
     srid = root_el.textof('projectCrs/spatialrefsys/authid') or '4326'
-    caps.projectCrs = gws.gis.crs.get(srid)
+    caps.projectCrs = gws.lib.crs.get(srid)
     if not caps.projectCrs:
         raise gws.Error(f'invalid CRS in qgis project')
 
     ext = _extent_from_tag(root_el.find('properties/WMSExtent'))
     if ext:
-        caps.projectBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
+        caps.projectBounds = gws.lib.bounds.from_extent(ext, caps.projectCrs)
 
     ext = _extent_from_tag(root_el.find('properties/WMSExtent'))
     if ext:
-        caps.projectBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
+        caps.projectBounds = gws.lib.bounds.from_extent(ext, caps.projectCrs)
     ext = _extent_from_tag(root_el.find('mapcanvas/extent'))
     if ext:
-        caps.projectCanvasBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
+        caps.projectCanvasBounds = gws.lib.bounds.from_extent(ext, caps.projectCrs)
 
     layers_dct = _map_layers(root_el, caps)
     root_group = _layer_tree(root_el.find('layer-tree-group'), layers_dct)
@@ -281,7 +281,7 @@ def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws
 
     sl.metadata = _map_layer_metadata(layer_el)
 
-    crs = gws.gis.crs.get(layer_el.textof('srs/spatialrefsys/authid'))
+    crs = gws.lib.crs.get(layer_el.textof('srs/spatialrefsys/authid'))
     if crs:
         sl.supportedCrs.append(crs)
 
@@ -365,10 +365,10 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     el = layer_el.find('resourceMetadata/extent/spatial')
     if el:
         ext = _extent_from_tag(el)
-        crs = gws.gis.crs.get(el.get('crs'))
+        crs = gws.lib.crs.get(el.get('crs'))
         if ext and crs:
-            ext = gws.gis.extent.transform(ext, crs, gws.gis.crs.WGS84)
-            if gws.gis.extent.is_valid_wgs(ext):
+            ext = gws.lib.extent.transform(ext, crs, gws.lib.crs.WGS84)
+            if gws.lib.extent.is_valid_wgs(ext):
                 gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: spatial: {ext}")
                 return ext
 
@@ -376,7 +376,7 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     el = layer_el.find('wgs84extent')
     if el:
         ext = _extent_from_tag(el)
-        if gws.gis.extent.is_valid_wgs(ext):
+        if gws.lib.extent.is_valid_wgs(ext):
             gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: wgs84extent: {ext}")
             return ext
 
@@ -385,8 +385,8 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     if el:
         ext = _extent_from_tag(el)
         if ext:
-            ext = gws.gis.extent.transform(ext, project_crs, gws.gis.crs.WGS84)
-            if gws.gis.extent.is_valid_wgs(ext):
+            ext = gws.lib.extent.transform(ext, project_crs, gws.lib.crs.WGS84)
+            if gws.lib.extent.is_valid_wgs(ext):
                 gws.log.debug(f"_map_layer_wgs_extent: {layer_el.textof('id')}: extent: {ext}")
                 return ext
 

@@ -2,9 +2,9 @@
 
 import gws
 import gws.base.shape
-import gws.gis.bounds
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.bounds
+import gws.lib.crs
+import gws.lib.extent
 
 
 class Error(gws.Error):
@@ -41,7 +41,7 @@ def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: b
     # GML2: <gml:Box><gml:coordinates>1,2 3,4
     # GML3: <gml:Envelope srsDimension="2"><gml:lowerCorner>1 2  <gml:upperCorner>3 4
 
-    crs = gws.gis.crs.get(el.get('srsName')) or default_crs
+    crs = gws.lib.crs.get(el.get('srsName')) or default_crs
     if not crs:
         raise Error('no CRS declared for envelope')
 
@@ -59,12 +59,12 @@ def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: b
                 if coord_el.lcName == 'uppercorner':
                     coords[1] = _coords_pos(coord_el)[0]
 
-        ext = gws.gis.extent.from_points(*coords)
+        ext = gws.lib.extent.from_points(*coords)
 
     except Exception as exc:
         raise Error('envelope parse error') from exc
 
-    return gws.gis.bounds.from_extent(ext, crs, always_xy)
+    return gws.lib.bounds.from_extent(ext, crs, always_xy)
 
 
 def is_geometry_element(el: gws.XmlElement) -> bool:
@@ -92,7 +92,7 @@ def parse_shape(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: bool
         A GWS shape object.
     """
 
-    crs = gws.gis.crs.get(el.get('srsName')) or default_crs
+    crs = gws.lib.crs.get(el.get('srsName')) or default_crs
     if not crs:
         raise Error('no CRS declared')
 

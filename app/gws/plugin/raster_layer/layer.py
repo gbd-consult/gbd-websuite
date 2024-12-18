@@ -9,8 +9,8 @@ import gws.base.shape
 import gws.base.layer
 import gws.lib.image
 import gws.lib.osx
-import gws.gis.bounds
-import gws.gis.crs
+import gws.lib.bounds
+import gws.lib.crs
 import gws.gis.zoom
 import gws.gis.ms
 import gws.gis.gdalx
@@ -111,8 +111,8 @@ class Object(gws.base.layer.image.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        b = gws.gis.bounds.union([e.bounds for e in self.entries])
-        self.bounds = gws.gis.bounds.transform(b, self.parentBounds.crs)
+        b = gws.lib.bounds.union([e.bounds for e in self.entries])
+        self.bounds = gws.lib.bounds.transform(b, self.parentBounds.crs)
         return True
 
     def configure_grid(self):
@@ -160,7 +160,7 @@ class Object(gws.base.layer.image.Object):
             y1 = y0 + w
 
             img = ms_map.draw(
-                gws.gis.bounds.from_extent((x0, y0, x1, y1), crs=self.bounds.crs),
+                gws.lib.bounds.from_extent((x0, y0, x1, y1), crs=self.bounds.crs),
                 (self.grid.tileSize, self.grid.tileSize)
             )
 

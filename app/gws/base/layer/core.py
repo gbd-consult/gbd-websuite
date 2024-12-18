@@ -5,9 +5,9 @@ from typing import Optional, cast
 import gws
 import gws.base.model
 import gws.config.util
-import gws.gis.bounds
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.bounds
+import gws.lib.crs
+import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.metadata
@@ -222,7 +222,7 @@ class Object(gws.Layer):
         if p:
             self.bounds = gws.Bounds(
                 crs=self.mapCrs,
-                extent=gws.gis.extent.from_list(p))
+                extent=gws.lib.extent.from_list(p))
             return True
 
     def configure_zoom_bounds(self):
@@ -230,7 +230,7 @@ class Object(gws.Layer):
         if p:
             self.zoomBounds = gws.Bounds(
                 crs=self.mapCrs,
-                extent=gws.gis.extent.from_list(p))
+                extent=gws.lib.extent.from_list(p))
             return True
 
     def configure_cache(self):
@@ -316,11 +316,11 @@ class Object(gws.Layer):
         if self.bounds.crs != self.mapCrs:
             raise gws.Error(f'layer {self!r}: invalid CRS {self.bounds.crs}')
 
-        if not gws.gis.bounds.intersect(self.bounds, self.parentBounds):
+        if not gws.lib.bounds.intersect(self.bounds, self.parentBounds):
             gws.log.warning(f'layer {self!r}: bounds outside of the parent bounds b={self.bounds.extent} parent={self.parentBounds.extent}')
-            self.bounds = gws.gis.bounds.copy(self.parentBounds)
+            self.bounds = gws.lib.bounds.copy(self.parentBounds)
 
-        self.wgsExtent = gws.gis.bounds.transform(self.bounds, gws.gis.crs.WGS84).extent
+        self.wgsExtent = gws.lib.bounds.transform(self.bounds, gws.lib.crs.WGS84).extent
         self.zoomBounds = self.zoomBounds or self.bounds
 
         if self.legend:

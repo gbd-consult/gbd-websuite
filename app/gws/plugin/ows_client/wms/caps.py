@@ -4,7 +4,7 @@ from typing import Optional
 
 import gws
 import gws.base.ows.client
-import gws.gis.crs
+import gws.lib.crs
 import gws.gis.source
 import gws.lib.xmlx as xmlx
 import gws.base.ows.client.parseutil as u
@@ -56,7 +56,7 @@ def _layer(layer_el: gws.XmlElement, parent: Optional[gws.SourceLayer] = None) -
     crs_list = u.supported_crs(layer_el)
 
     if not parent:
-        sl.supportedCrs = crs_list or [gws.gis.crs.WGS84]
+        sl.supportedCrs = crs_list or [gws.lib.crs.WGS84]
         sl.wgsExtent = wgs_extent
 
     else:

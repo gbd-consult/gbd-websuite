@@ -18,9 +18,9 @@ import gws
 import gws.base.ows.client
 import gws.base.shape
 import gws.config.util
-import gws.gis.bounds
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.bounds
+import gws.lib.crs
+import gws.lib.extent
 import gws.gis.source
 
 from . import caps
@@ -77,11 +77,11 @@ class Object(gws.base.ows.client.provider.Object):
             search_shape = search.shape.tolerance_polygon(geometry_tolerance)
             bounds = search_shape.bounds()
 
-        request_crs = self.forceCrs or gws.gis.crs.WGS84
+        request_crs = self.forceCrs or gws.lib.crs.WGS84
 
-        bbox = gws.gis.bounds.transform(bounds, request_crs).extent
+        bbox = gws.lib.bounds.transform(bounds, request_crs).extent
         if request_crs.isYX and not self.alwaysXY:
-            bbox = gws.gis.extent.swap_xy(bbox)
+            bbox = gws.lib.extent.swap_xy(bbox)
         bbox = ','.join(str(k) for k in bbox)
 
         srs = request_crs.urn

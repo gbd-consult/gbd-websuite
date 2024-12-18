@@ -30,8 +30,8 @@ from typing import Optional, cast
 import gws
 import gws.base.ows.client
 import gws.config.util
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.crs
+import gws.lib.extent
 import gws.gis.source
 
 
@@ -66,7 +66,7 @@ class Object(gws.base.ows.client.provider.Object):
 
         request_crs = self.forceCrs
         if not request_crs:
-            request_crs = gws.gis.crs.best_match(
+            request_crs = gws.lib.crs.best_match(
                 shape.crs,
                 gws.gis.source.combined_crs_list(source_layers))
 
@@ -92,11 +92,11 @@ class Object(gws.base.ows.client.provider.Object):
             shape.y + (size / 2),
         )
 
-        bbox = gws.gis.extent.transform(bbox, shape.crs, request_crs)
+        bbox = gws.lib.extent.transform(bbox, shape.crs, request_crs)
 
         always_xy = self.alwaysXY or not v3
         if request_crs.isYX and not always_xy:
-            bbox = gws.gis.extent.swap_xy(bbox)
+            bbox = gws.lib.extent.swap_xy(bbox)
 
         layer_names = [sl.name for sl in source_layers]
 

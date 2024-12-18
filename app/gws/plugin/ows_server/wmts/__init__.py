@@ -11,8 +11,8 @@ import gws
 import gws.config.util
 import gws.base.ows.server as server
 import gws.base.web
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.crs
+import gws.lib.extent
 import gws.lib.image
 import gws.lib.mime
 import gws.gis.render
@@ -93,7 +93,7 @@ class Object(server.service.Object):
         # north origin
         extent = extent[0], extent[3], extent[2], extent[1]
 
-        w, h = gws.gis.extent.size(extent)
+        w, h = gws.lib.extent.size(extent)
 
         for z in range(min_zoom, max_zoom + 1):
             size = 1 << z
@@ -201,7 +201,7 @@ class Object(server.service.Object):
         if not tm:
             return
 
-        w, h = gws.gis.extent.size(tm.extent)
+        w, h = gws.lib.extent.size(tm.extent)
         span = w / tm.width
 
         x = tm.x + col * span

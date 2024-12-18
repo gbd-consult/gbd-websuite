@@ -4,7 +4,7 @@ import math
 import re
 
 import gws
-import gws.gis.crs
+import gws.lib.crs
 
 
 def from_string(s: str) -> Optional[gws.Extent]:
@@ -224,7 +224,7 @@ def transform_from_wgs(e: gws.Extent, crs_to: gws.Crs) -> gws.Extent:
         The transformed extent.
     """
 
-    return gws.gis.crs.WGS84.transform_extent(e, crs_to)
+    return gws.lib.crs.WGS84.transform_extent(e, crs_to)
 
 
 def transform_to_wgs(e: gws.Extent, crs_from: gws.Crs) -> gws.Extent:
@@ -238,7 +238,7 @@ def transform_to_wgs(e: gws.Extent, crs_from: gws.Crs) -> gws.Extent:
         The WGS84 extent.
     """
 
-    return crs_from.transform_extent(e, gws.gis.crs.WGS84)
+    return crs_from.transform_extent(e, gws.lib.crs.WGS84)
 
 
 def swap_xy(e: gws.Extent) -> gws.Extent:
@@ -259,7 +259,7 @@ def is_valid(e: gws.Extent) -> bool:
 def is_valid_wgs(e: gws.Extent) -> bool:
     if not is_valid(e):
         return False
-    w = gws.gis.crs.WGS84.extent
+    w = gws.lib.crs.WGS84.extent
     return e[0] >= w[0] and e[1] >= w[1] and e[2] <= w[2] and e[3] <= w[3]
 
 

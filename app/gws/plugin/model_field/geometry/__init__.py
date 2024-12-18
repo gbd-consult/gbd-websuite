@@ -6,7 +6,7 @@ import gws
 import gws.base.database.model
 import gws.base.model.scalar_field
 import gws.base.shape
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.sa as sa
 
 
@@ -52,12 +52,12 @@ class Object(gws.base.model.scalar_field.Object):
     def configure_geometry_crs(self):
         s = self.cfg('crs')
         if s:
-            self.geometryCrs = gws.gis.crs.get(s)
+            self.geometryCrs = gws.lib.crs.get(s)
             return True
 
         col = self.describe()
         if col and col.geometrySrid:
-            crs = gws.gis.crs.get(col.geometrySrid)
+            crs = gws.lib.crs.get(col.geometrySrid)
             if crs:
                 self.geometryCrs = crs
                 return True

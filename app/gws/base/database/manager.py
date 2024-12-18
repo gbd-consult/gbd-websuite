@@ -3,7 +3,7 @@
 from typing import cast
 
 import gws
-import gws.gis.crs
+import gws.lib.crs
 
 
 class Config(gws.Config):

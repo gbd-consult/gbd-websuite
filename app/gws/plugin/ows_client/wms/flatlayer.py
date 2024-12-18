@@ -8,11 +8,11 @@ import gws.base.search
 import gws.base.template
 import gws.config.util
 import gws.lib.metadata
-import gws.gis.crs
+import gws.lib.crs
 import gws.gis.source
 import gws.gis.zoom
-import gws.gis.bounds
-import gws.gis.extent
+import gws.lib.bounds
+import gws.lib.extent
 
 from . import provider
 
@@ -53,7 +53,7 @@ class Object(gws.base.layer.image.Object):
         self.imageLayers = gws.gis.source.filter_layers(self.sourceLayers, is_image=True)
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)
 
-        self.sourceCrs = self.serviceProvider.forceCrs or gws.gis.crs.best_match(
+        self.sourceCrs = self.serviceProvider.forceCrs or gws.lib.crs.best_match(
             self.mapCrs,
             gws.gis.source.combined_crs_list(self.sourceLayers))
 

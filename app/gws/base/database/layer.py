@@ -3,9 +3,9 @@ from typing import Optional
 import gws
 import gws.base.database
 import gws.base.layer
-import gws.gis.bounds
+import gws.lib.bounds
 import gws.base.feature
-import gws.gis.crs
+import gws.lib.crs
 import gws.base.shape
 import gws.config.util
 
@@ -35,7 +35,7 @@ class Object(gws.base.layer.vector.Object):
         if not desc:
             raise gws.Error(f'table {self.tableName!r} not found or not readable')
         self.geometryType = desc.geometryType
-        self.geometryCrs = gws.gis.crs.get(desc.geometrySrid)
+        self.geometryCrs = gws.lib.crs.get(desc.geometrySrid)
         return True
 
     def configure_models(self):
@@ -55,7 +55,7 @@ class Object(gws.base.layer.vector.Object):
             return True
         b = self.db.table_bounds(self.tableName)
         if b:
-            self.bounds = gws.gis.bounds.transform(b, self.mapCrs)
+            self.bounds = gws.lib.bounds.transform(b, self.mapCrs)
             return True
 
     def configure_search(self):

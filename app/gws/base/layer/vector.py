@@ -3,7 +3,7 @@ from typing import Optional
 import gws
 import gws.base.model
 import gws.base.template
-import gws.gis.extent
+import gws.lib.extent
 import gws.lib.style
 import gws.lib.svg
 
@@ -47,7 +47,7 @@ class Object(core.Object):
     def render_svg_fragment(self, lri: gws.LayerRenderInput):
         bounds = lri.view.bounds
         if lri.view.rotation:
-            bounds = gws.Bounds(crs=lri.view.bounds.crs, extent=gws.gis.extent.circumsquare(bounds.extent))
+            bounds = gws.Bounds(crs=lri.view.bounds.crs, extent=gws.lib.extent.circumsquare(bounds.extent))
 
         search = gws.SearchQuery(bounds=bounds)
         features = self.find_features(search, lri.user)

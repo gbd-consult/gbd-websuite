@@ -5,8 +5,8 @@ import math
 import gws
 import gws.base.model
 import gws.base.search
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.crs
+import gws.lib.extent
 import gws.gis.mpx
 import gws.gis.source
 import gws.gis.zoom
@@ -142,8 +142,8 @@ def generic_render_box(layer: gws.Layer, lri: gws.LayerRenderInput, get_box: _Ge
 
     # rotation: render a circumsquare around the wanted extent
 
-    circ = gws.gis.extent.circumsquare(lri.view.bounds.extent)
-    d = gws.gis.extent.diagonal((0, 0, w, h))
+    circ = gws.lib.extent.circumsquare(lri.view.bounds.extent)
+    d = gws.lib.extent.diagonal((0, 0, w, h))
     b = gws.Bounds(crs=lri.view.bounds.crs, extent=circ)
 
     img = _box_to_image(b, d, d, max_box_size, box_buffer, annotate, get_box)

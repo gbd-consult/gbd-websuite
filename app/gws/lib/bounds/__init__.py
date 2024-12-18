@@ -3,9 +3,9 @@
 from typing import Optional
 
 import gws
-import gws.gis.crs
-import gws.gis.extent
-import gws.gis.gml
+import gws.lib.crs
+import gws.lib.extent
+import gws.lib.gml
 
 
 def from_request_bbox(bbox: str, default_crs: gws.Crs = None, always_xy=False) -> Optional[gws.Bounds]:
@@ -30,12 +30,12 @@ def from_request_bbox(bbox: str, default_crs: gws.Crs = None, always_xy=False) -
     # x,y,x,y,crs
     ls = bbox.split(',')
     if len(ls) == 5:
-        crs = gws.gis.crs.get(ls.pop())
+        crs = gws.lib.crs.get(ls.pop())
 
     if not crs:
         return None
 
-    extent = gws.gis.extent.from_list(ls)
+    extent = gws.lib.extent.from_list(ls)
     if not extent:
         return None
 
@@ -55,7 +55,7 @@ def from_extent(extent: gws.Extent, crs: gws.Crs, always_xy=False) -> gws.Bounds
     """
 
     if crs.isYX and not always_xy:
-        extent = gws.gis.extent.swap_xy(extent)
+        extent = gws.lib.extent.swap_xy(extent)
 
     return gws.Bounds(crs=crs, extent=extent)
 
@@ -76,17 +76,17 @@ def union(bs: list[gws.Bounds]) -> gws.Bounds:
     """
 
     crs = bs[0].crs
-    exts = [gws.gis.extent.transform(b.extent, b.crs, crs) for b in bs]
+    exts = [gws.lib.extent.transform(b.extent, b.crs, crs) for b in bs]
     return gws.Bounds(
         crs=crs,
-        extent=gws.gis.extent.union(exts))
+        extent=gws.lib.extent.union(exts))
 
 
 def intersect(b1: gws.Bounds, b2: gws.Bounds) -> bool:
     """Returns ``True`` if the bounds are intersecting, otherwise ``False``."""
     e1 = b1.extent
-    e2 = gws.gis.extent.transform(b2.extent, crs_from=b2.crs, crs_to=b1.crs)
-    return gws.gis.extent.intersect(e1, e2)
+    e2 = gws.lib.extent.transform(b2.extent, crs_from=b2.crs, crs_to=b1.crs)
+    return gws.lib.extent.intersect(e1, e2)
 
 
 def transform(b: gws.Bounds, crs_to: gws.Crs) -> gws.Bounds:
@@ -107,8 +107,8 @@ def transform(b: gws.Bounds, crs_to: gws.Crs) -> gws.Bounds:
 
 
 def wgs_extent(b: gws.Bounds) -> Optional[gws.Extent]:
-    ext = gws.gis.extent.transform(b.extent, b.crs, gws.gis.crs.WGS84)
-    return ext if gws.gis.extent.is_valid(ext) else None
+    ext = gws.lib.extent.transform(b.extent, b.crs, gws.lib.crs.WGS84)
+    return ext if gws.lib.extent.is_valid(ext) else None
 
 
 def buffer(b: gws.Bounds, buf_size: int) -> gws.Bounds:
@@ -123,4 +123,4 @@ def buffer(b: gws.Bounds, buf_size: int) -> gws.Bounds:
     """
     if buf_size == 0:
         return b
-    return gws.Bounds(crs=b.crs, extent=gws.gis.extent.buffer(b.extent, buf_size))
+    return gws.Bounds(crs=b.crs, extent=gws.lib.extent.buffer(b.extent, buf_size))

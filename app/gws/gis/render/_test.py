@@ -3,14 +3,14 @@
 import gws
 import gws.test.util as u
 import gws.gis.render as render
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.image
 
 
 def test_map_view_from_center():
     size = (400.0, 400.0, gws.Uom.px)
     center = (100.0, 500.0)
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
     dpi = 1000
     rotation = 0
     assert render.map_view_from_center(size, center, crs, dpi, rotation).dpi == 1000
@@ -26,7 +26,7 @@ def test_map_view_from_center():
 def test_map_view_from_bbox():
     size = (400.0, 400.0, gws.Uom.px)
     bbox = (100.0, 100.0, 500.0, 500.0)
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
     dpi = 1000
     rotation = 0
     assert render.map_view_from_bbox(size, bbox, crs, dpi, rotation).dpi == 1000
@@ -43,7 +43,7 @@ def test_map_view_from_bbox():
 def test_map_view_transformer():
     size = (400.0, 400.0, gws.Uom.px)
     bbox = (100.0, 100.0, 500.0, 500.0)
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
     dpi = 1000
     rotation = 0
     mv = render.map_view_from_bbox(size, bbox, crs, dpi, rotation)
@@ -54,7 +54,7 @@ def test_map_view_transformer():
 def test_map_view_transformer_rotated():
     size = (400.0, 400.0, gws.Uom.px)
     bbox = (100.0, 100.0, 500.0, 500.0)
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
     dpi = 1000
     rotation = 45
     mv = render.map_view_from_bbox(size, bbox, crs, dpi, rotation)
@@ -73,7 +73,7 @@ def test_render_map_mm_bbox():
     mri = gws.MapRenderInput(
         backgroundColor=0,
         bbox=(100, 100, 300, 300),
-        crs=gws.gis.crs.WGS84,
+        crs=gws.lib.crs.WGS84,
         dpi=1000,
         mapSize=(200, 200, gws.Uom.mm),
         # notify = print('callable'),
@@ -99,7 +99,7 @@ def test_render_map_px_center():
     mri = gws.MapRenderInput(
         backgroundColor=0,
         center=(150, 150),
-        crs=gws.gis.crs.WGS84,
+        crs=gws.lib.crs.WGS84,
         dpi=1000,
         mapSize=(200, 200, gws.Uom.px),
         # notify = print('callable'),

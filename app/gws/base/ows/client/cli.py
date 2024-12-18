@@ -4,7 +4,7 @@ from typing import Optional, cast
 
 import gws
 import gws.base.shape
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.importer
 import gws.lib.jsonx
 
@@ -62,7 +62,7 @@ class Object(gws.Node):
 
 
 def _caps_json(x):
-    if isinstance(x, gws.gis.crs.Crs):
+    if isinstance(x, gws.lib.crs.Crs):
         return x.epsg
     if isinstance(x, gws.base.shape.Shape):
         return x.to_geojson()

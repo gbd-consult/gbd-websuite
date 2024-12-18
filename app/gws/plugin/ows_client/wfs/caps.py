@@ -1,6 +1,6 @@
 import gws
 import gws.base.ows.client
-import gws.gis.crs
+import gws.lib.crs
 import gws.base.ows.client.parseutil as u
 import gws.gis.source
 import gws.lib.xmlx as xmlx
@@ -26,7 +26,7 @@ def _feature_type(type_el):
     sl.title = type_el.textof('Title') or xmlx.namespace.unqualify_name(sl.name)
     sl.metadata = u.element_metadata(type_el)
     sl.isQueryable = True
-    sl.supportedCrs = u.supported_crs(type_el) or [gws.gis.crs.WGS84]
-    sl.wgsExtent = u.wgs_extent(type_el) or gws.gis.crs.WGS84.extent
+    sl.supportedCrs = u.supported_crs(type_el) or [gws.lib.crs.WGS84]
+    sl.wgsExtent = u.wgs_extent(type_el) or gws.lib.crs.WGS84.extent
 
     return sl

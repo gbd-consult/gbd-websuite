@@ -3,7 +3,7 @@
 import gws
 import gws.test.util as u
 import gws.gis.zoom as zoom
-import gws.gis.crs
+import gws.lib.crs
 
 
 def test_resolutions_from_config_empty_cnfg():
@@ -59,7 +59,7 @@ def test_resolutions_from_source_layers_empty():
 
 
 def test_resolutions_from_bounds():
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
     extent = (200, 200, 400, 400)
     bounds = gws.Bounds(crs=crs, extent=extent)
     assert zoom.resolutions_from_bounds(bounds, 3) == [66.66666666666667,
@@ -85,7 +85,7 @@ def test_resolutions_from_bounds():
 
 
 def test_resolutions_from_bounds_zero():
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
     extent = (200, 200, 400, 400)
     bounds = gws.Bounds(crs=crs, extent=extent)
     with u.raises(Exception):
@@ -93,7 +93,7 @@ def test_resolutions_from_bounds_zero():
 
 
 def test_resolutions_from_bounds_negative():
-    crs = gws.gis.crs.WGS84
+    crs = gws.lib.crs.WGS84
     extent = (200, 200, 400, 400)
     bounds = gws.Bounds(crs=crs, extent=extent)
     assert zoom.resolutions_from_bounds(bounds, -3) == [-66.66666666666667,

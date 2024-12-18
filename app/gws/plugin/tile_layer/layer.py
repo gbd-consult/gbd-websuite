@@ -3,8 +3,8 @@
 import gws
 import gws.base.layer
 import gws.config.util
-import gws.gis.bounds
-import gws.gis.crs
+import gws.lib.bounds
+import gws.lib.crs
 import gws.gis.zoom
 from . import provider
 
@@ -21,8 +21,8 @@ class Config(gws.base.layer.Config):
 
 _GRID_DEFAULTS = gws.TileGrid(
     bounds=gws.Bounds(
-        crs=gws.gis.crs.WEBMERCATOR,
-        extent=gws.gis.crs.WEBMERCATOR_SQUARE,
+        crs=gws.lib.crs.WEBMERCATOR,
+        extent=gws.lib.crs.WEBMERCATOR_SQUARE,
     ),
     origin=gws.Origin.nw,
     tileSize=256,
@@ -45,7 +45,7 @@ class Object(gws.base.layer.image.Object):
     # def configure_bounds(self):
     #     if super().configure_bounds():
     #         return True
-    #     self.bounds = gws.gis.bounds.transform(self.serviceProvider.grid.bounds, self.mapCrs)
+    #     self.bounds = gws.lib.bounds.transform(self.serviceProvider.grid.bounds, self.mapCrs)
     #     return True
 
     def configure_grid(self):

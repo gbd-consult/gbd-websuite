@@ -7,10 +7,10 @@ import gws.base.legend
 import gws.base.template
 import gws.base.web
 import gws.config.util
-import gws.gis.bounds
-import gws.gis.crs
-import gws.gis.extent
-import gws.gis.gml
+import gws.lib.bounds
+import gws.lib.crs
+import gws.lib.extent
+import gws.lib.gml
 import gws.gis.render
 import gws.gis.source
 import gws.lib.datetimex
@@ -86,19 +86,19 @@ class Object(gws.OwsService):
         ]
 
     def configure_bounds(self):
-        crs_list = [gws.gis.crs.require(s) for s in self.cfg('supportedCrs', default=[])]
+        crs_list = [gws.lib.crs.require(s) for s in self.cfg('supportedCrs', default=[])]
         if not crs_list:
-            crs_list = [self.project.map.bounds.crs] if self.project else [gws.gis.crs.WEBMERCATOR]
+            crs_list = [self.project.map.bounds.crs] if self.project else [gws.lib.crs.WEBMERCATOR]
 
         p = self.cfg('extent')
         if p:
-            bounds = gws.Bounds(crs=crs_list[0], extent=gws.gis.extent.from_list(p))
+            bounds = gws.Bounds(crs=crs_list[0], extent=gws.lib.extent.from_list(p))
         elif self.project:
             bounds = self.project.map.bounds
         else:
             bounds = gws.Bounds(crs=crs_list[0], extent=crs_list[0].extent)
 
-        self.supportedBounds = [gws.gis.bounds.transform(bounds, crs) for crs in crs_list]
+        self.supportedBounds = [gws.lib.bounds.transform(bounds, crs) for crs in crs_list]
         return True
 
     def configure_templates(self):

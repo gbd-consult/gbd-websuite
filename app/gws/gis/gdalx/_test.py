@@ -7,7 +7,7 @@ import gws.test.util as u
 import gws.gis.gdalx as gdalx
 import gws.base.shape
 import gws.lib.datetimex as datetimex
-import gws.gis.crs
+import gws.lib.crs
 
 
 def test_shp():
@@ -28,7 +28,7 @@ def test_shp():
             c_int=i,
             c_str=f'{i}-{i}-{i}',
         )
-        rec.shape = gws.base.shape.from_xy(i * 1000, i * 2000, gws.gis.crs.get(25833))
+        rec.shape = gws.base.shape.from_xy(i * 1000, i * 2000, gws.lib.crs.get(25833))
         recs_a.append(rec)
 
     with u.temp_dir_in_base_dir() as d:
@@ -37,7 +37,7 @@ def test_shp():
                 '',
                 cols,
                 gws.GeometryType.point,
-                gws.gis.crs.get(25833)
+                gws.lib.crs.get(25833)
             )
             la.insert(recs_a)
 

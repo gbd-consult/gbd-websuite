@@ -2,7 +2,7 @@
 
 import gws
 import gws.config
-import gws.gis.bounds
+import gws.lib.bounds
 import gws.gis.source
 
 from . import core
@@ -39,13 +39,13 @@ class Object(core.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        self.bounds = gws.gis.bounds.union([la.bounds for la in self.layers])
+        self.bounds = gws.lib.bounds.union([la.bounds for la in self.layers])
         return True
 
     def configure_zoom_bounds(self):
         if super().configure_zoom_bounds():
             return True
-        self.zoomBounds = gws.gis.bounds.union([(la.zoomBounds or la.bounds) for la in self.layers])
+        self.zoomBounds = gws.lib.bounds.union([(la.zoomBounds or la.bounds) for la in self.layers])
         return True
 
     def configure_resolutions(self):

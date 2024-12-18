@@ -3,7 +3,7 @@
 from typing import Optional
 
 import gws
-import gws.gis.extent
+import gws.lib.extent
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
 
@@ -52,7 +52,7 @@ def for_layer(layer: gws.Layer, user: gws.User, service: Optional[gws.OwsService
         lc.bounds = [
             gws.Bounds(
                 crs=b.crs,
-                extent=gws.gis.extent.transform_from_wgs(layer.wgsExtent, b.crs)
+                extent=gws.lib.extent.transform_from_wgs(layer.wgsExtent, b.crs)
             )
             for b in service.supportedBounds
         ]

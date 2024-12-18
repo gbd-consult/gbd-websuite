@@ -7,11 +7,11 @@ import gws.base.layer.core
 import gws.base.legend
 import gws.base.model
 import gws.base.web
-import gws.gis.extent
+import gws.lib.extent
 import gws.gis.render
 import gws.lib.mime
-import gws.gis.bounds
-import gws.gis.crs
+import gws.lib.bounds
+import gws.lib.crs
 import gws.lib.image
 import gws.lib.uom
 
@@ -185,7 +185,7 @@ class Object:
         if not val:
             return
 
-        crs = gws.gis.crs.get(val)
+        crs = gws.lib.crs.get(val)
         if not crs:
             raise error.InvalidCRS()
 
@@ -203,9 +203,9 @@ class Object:
         if not val:
             return
 
-        bounds = gws.gis.bounds.from_request_bbox(val, default_crs=self.crs, always_xy=self.alwaysXY)
+        bounds = gws.lib.bounds.from_request_bbox(val, default_crs=self.crs, always_xy=self.alwaysXY)
         if bounds:
-            return gws.gis.bounds.transform(bounds, self.crs)
+            return gws.lib.bounds.transform(bounds, self.crs)
 
         raise error.InvalidParameterValue(p)
 

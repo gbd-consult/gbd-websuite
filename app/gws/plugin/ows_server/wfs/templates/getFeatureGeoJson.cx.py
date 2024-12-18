@@ -1,7 +1,7 @@
 """WFS GetFeature template with GeoJSON."""
 
 import gws.base.ows.server as server
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.datetimex as dx
 import gws.lib.jsonx
 import gws.lib.mime

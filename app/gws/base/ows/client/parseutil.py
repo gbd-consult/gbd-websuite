@@ -5,8 +5,8 @@ from typing import Optional
 import re
 
 import gws
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.crs
+import gws.lib.extent
 import gws.lib.net
 
 
@@ -202,7 +202,7 @@ def wgs_extent(layer_el: gws.XmlElement) -> Optional[gws.Extent]:
 
     el = layer_el.findfirst('EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
     if el:
-        return gws.gis.extent.from_list(_parse_bbox(el))
+        return gws.lib.extent.from_list(_parse_bbox(el))
 
 
 def supported_crs(layer_el: gws.XmlElement, extra_crs_ids: list[str] = None) -> list[gws.Crs]:
@@ -239,7 +239,7 @@ def supported_crs(layer_el: gws.XmlElement, extra_crs_ids: list[str] = None) -> 
 
     crsids.update(extra_crs_ids or [])
 
-    return gws.u.compact(gws.gis.crs.get(s) for s in crsids)
+    return gws.u.compact(gws.lib.crs.get(s) for s in crsids)
 
 
 ##

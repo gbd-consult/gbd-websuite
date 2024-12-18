@@ -4,8 +4,8 @@ import gws
 import gws.base.layer
 import gws.base.shape
 import gws.config.util
-import gws.gis.bounds
-import gws.gis.crs
+import gws.lib.bounds
+import gws.lib.crs
 import gws.lib.jsonx
 
 from . import provider
@@ -43,7 +43,7 @@ class Object(gws.base.layer.vector.Object):
         if recs:
             bs = [rec.shape.bounds() for rec in recs if rec.shape]
             if bs:
-                self.bounds = gws.gis.bounds.transform(gws.gis.bounds.union(bs), self.mapCrs)
+                self.bounds = gws.lib.bounds.transform(gws.lib.bounds.union(bs), self.mapCrs)
                 return True
 
     def configure_models(self):

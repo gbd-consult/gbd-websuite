@@ -1,6 +1,6 @@
 import gws
 import gws.base.ows.client
-import gws.gis.crs
+import gws.lib.crs
 import gws.gis.source
 import gws.lib.uom as units
 import gws.lib.xmlx as xmlx
@@ -50,8 +50,8 @@ def _layer(layer_el: gws.XmlElement, tms_dct):
     wgs_extent = u.wgs_extent(layer_el)
     crs_list = u.supported_crs(layer_el, extra_crsids)
 
-    sl.supportedCrs = crs_list or [gws.gis.crs.WGS84]
-    sl.wgsExtent = wgs_extent or gws.gis.crs.WGS84.extent
+    sl.supportedCrs = crs_list or [gws.lib.crs.WGS84]
+    sl.wgsExtent = wgs_extent or gws.lib.crs.WGS84.extent
 
     sl.isImage = True
     sl.isVisible = True
@@ -76,7 +76,7 @@ def _tile_matrix_set(tms_el: gws.XmlElement):
     tms = gws.TileMatrixSet()
 
     tms.uid = tms_el.textof('Identifier')
-    tms.crs = gws.gis.crs.require(tms_el.textof('SupportedCRS'))
+    tms.crs = gws.lib.crs.require(tms_el.textof('SupportedCRS'))
     tms.matrices = sorted(
         [_tile_matrix(e) for e in tms_el.findall('TileMatrix')],
         key=lambda m: -m.scale)

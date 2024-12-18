@@ -2,7 +2,7 @@ import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 import gws.lib.xmlx as xmlx
 import gws.lib.datetimex
-import gws.gis.gml
+import gws.lib.gml
 
 
 def feature_collection(ta: server.TemplateArgs):
@@ -52,7 +52,7 @@ def format_value(ta, val):
         return gws.lib.datetimex.to_iso_string(val)
     if isinstance(val, gws.Shape):
         # NB Qgis wants inline gml xmlns for adhoc schemas
-        return gws.gis.gml.shape_to_element(
+        return gws.lib.gml.shape_to_element(
             val,
             version=ta.gmlVersion,
             always_xy=ta.sr.alwaysXY,

@@ -4,8 +4,8 @@ import gws
 import gws.base.feature
 import gws.base.model
 import gws.config.util
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.crs
+import gws.lib.extent
 import gws.gis.source
 
 

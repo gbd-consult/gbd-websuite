@@ -4,7 +4,7 @@ import gws
 import gws.test.util as u
 import gws.gis.source as source
 
-import gws.gis.crs as crs
+import gws.lib.crs as crs
 
 
 def test_layer_matches():

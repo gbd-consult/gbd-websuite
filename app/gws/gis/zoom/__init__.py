@@ -1,7 +1,7 @@
 from typing import Optional
 
 import gws
-import gws.gis.extent
+import gws.lib.extent
 import gws.lib.uom as units
 
 OSM_SCALES = [
@@ -140,7 +140,7 @@ def resolutions_from_bounds(b: gws.Bounds, tile_size: int) -> list[float]:
         A list of resolutions.
     """
 
-    siz = gws.gis.extent.size(b.extent)
+    siz = gws.lib.extent.size(b.extent)
     res = []
     for z in range(20):
         res.append(siz[0] / (tile_size * (1 << z)))

@@ -6,8 +6,8 @@ import os
 import re
 
 import gws.base.database
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.crs
+import gws.lib.extent
 import gws.lib.net
 import gws.lib.sa as sa
 
@@ -114,9 +114,9 @@ class Object(gws.base.database.provider.Object):
         sql = sa.select(sa.func.ST_Extent(tab.columns.get(desc.geometryName)))
         with self.connect() as conn:
             box = conn.execute(sql).scalar_one()
-        extent = gws.gis.extent.from_box(box)
+        extent = gws.lib.extent.from_box(box)
         if extent:
-            return gws.Bounds(extent=extent, crs=gws.gis.crs.get(desc.geometrySrid))
+            return gws.Bounds(extent=extent, crs=gws.lib.crs.get(desc.geometrySrid))
 
     def describe_column(self, table, column_name):
         col = super().describe_column(table, column_name)

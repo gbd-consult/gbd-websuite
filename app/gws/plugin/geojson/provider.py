@@ -4,7 +4,7 @@ from typing import Optional, cast
 
 import gws
 import gws.config.util
-import gws.gis.crs
+import gws.lib.crs
 import gws.base.shape
 import gws.lib.jsonx
 
@@ -34,10 +34,10 @@ class Object(gws.Node):
     def _load(self):
         js = gws.lib.jsonx.from_path(self.path)
 
-        crs = gws.gis.crs.WGS84
+        crs = gws.lib.crs.WGS84
         if 'crs' in js:
             # https://geojson.org/geojson-spec#named-crs
-            crs = gws.gis.crs.get(js['crs']['properties']['name'])
+            crs = gws.lib.crs.get(js['crs']['properties']['name'])
 
         records = []
 

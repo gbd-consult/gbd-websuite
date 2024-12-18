@@ -10,8 +10,8 @@ from osgeo import osr
 
 import gws
 import gws.base.shape
-import gws.gis.crs
-import gws.gis.bounds
+import gws.lib.crs
+import gws.lib.bounds
 import gws.lib.datetimex as datetimex
 
 
@@ -126,7 +126,7 @@ def _open(dso: _DataSetOptions, need_raster):
     gdal.UseExceptions()
 
     drv = _driver_from_args(dso.path, dso.driver, need_raster)
-    dso.default_crs = dso.default_crs or gws.gis.crs.WEBMERCATOR
+    dso.default_crs = dso.default_crs or gws.lib.crs.WEBMERCATOR
 
     if dso.mode == 'w':
         gd = drv.CreateDataSource(dso.path, **dso.gdalOpts)
@@ -226,7 +226,7 @@ class _DataSet:
         srid = sref.GetAuthorityCode(None)
         if not srid:
             return
-        return gws.gis.crs.get(srid)
+        return gws.lib.crs.get(srid)
 
 
 class RasterDataSet(_DataSet):
@@ -252,7 +252,7 @@ class RasterDataSet(_DataSet):
 
         # gws.log.debug(f'{crs.srid=} {crs.isYX=} {(x0, y0, x1, y1)}')
 
-        return gws.gis.bounds.from_extent(
+        return gws.lib.bounds.from_extent(
             (x0, y0, x1, y1),
             crs,
             always_xy=True
@@ -465,7 +465,7 @@ class VectorLayer:
                 if self.dso.geometryAsText:
                     rec.ewkt = f'SRID={srid};{wkt}'
                 else:
-                    rec.shape = gws.base.shape.from_wkt(wkt, gws.gis.crs.get(srid))
+                    rec.shape = gws.base.shape.from_wkt(wkt, gws.lib.crs.get(srid))
 
         return rec
 

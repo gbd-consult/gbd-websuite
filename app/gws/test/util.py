@@ -16,7 +16,7 @@ import gws.base.feature
 import gws.base.shape
 import gws.base.web.wsgi_app
 import gws.config
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.cli as cli
 import gws.lib.jsonx
 import gws.lib.net
@@ -283,7 +283,7 @@ def feature(model, **atts) -> gws.Feature:
 
 
 def ewkb(wkt: str, srid=3857):
-    shape = gws.base.shape.from_wkt(wkt, default_crs=gws.gis.crs.get(srid))
+    shape = gws.base.shape.from_wkt(wkt, default_crs=gws.lib.crs.get(srid))
     return shape.to_ewkb()
 
 

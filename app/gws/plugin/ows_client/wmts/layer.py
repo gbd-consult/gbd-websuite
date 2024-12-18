@@ -3,8 +3,8 @@ from typing import Optional
 import gws
 import gws.base.layer
 import gws.config.util
-import gws.gis.bounds
-import gws.gis.crs
+import gws.lib.bounds
+import gws.lib.crs
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.uom as units
@@ -55,7 +55,7 @@ class Object(gws.base.layer.image.Object):
     def configure_tms(self):
         crs = self.serviceProvider.forceCrs
         if not crs:
-            crs = gws.gis.crs.best_match(self.mapCrs, [tms.crs for tms in self.activeLayer.tileMatrixSets])
+            crs = gws.lib.crs.best_match(self.mapCrs, [tms.crs for tms in self.activeLayer.tileMatrixSets])
         tms_list = [tms for tms in self.activeLayer.tileMatrixSets if tms.crs == crs]
         if not tms_list:
             raise gws.Error(f'no TMS for {crs} in {self.serviceProvider.url}')
@@ -86,7 +86,7 @@ class Object(gws.base.layer.image.Object):
     #     if super().configure_bounds():
     #         return True
     #     src_bounds = gws.Bounds(crs=self.activeTms.crs, extent=self.activeTms.matrices[0].extent)
-    #     self.bounds = gws.gis.bounds.transform(src_bounds, self.mapCrs)
+    #     self.bounds = gws.lib.bounds.transform(src_bounds, self.mapCrs)
     #     return True
 
     def configure_resolutions(self):

@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.shape
-import gws.gis.gml
+import gws.lib.gml
 import gws.lib.xmlx as xmlx
 
 
@@ -218,13 +218,13 @@ def _fdata_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureRecord:
     for el in feature_el:
         if el.name == 'boundedby':
             # <gml:boundedBy directly under feature
-            bbox = gws.gis.gml.parse_envelope(el[0], default_crs, always_xy)
-        elif gws.gis.gml.is_geometry_element(el):
+            bbox = gws.lib.gml.parse_envelope(el[0], default_crs, always_xy)
+        elif gws.lib.gml.is_geometry_element(el):
             # <gml:Polygon etc directly under feature
-            fd.shape = gws.gis.gml.parse_shape(el, default_crs, always_xy)
-        elif len(el) == 1 and gws.gis.gml.is_geometry_element(el[0]):
+            fd.shape = gws.lib.gml.parse_shape(el, default_crs, always_xy)
+        elif len(el) == 1 and gws.lib.gml.is_geometry_element(el[0]):
             # <gml:Polygon etc in a wrapper tag
-            fd.shape = gws.gis.gml.parse_shape(el[0], default_crs, always_xy)
+            fd.shape = gws.lib.gml.parse_shape(el[0], default_crs, always_xy)
         elif len(el) > 0:
             # sub-feature
             sub = _fdata_from_gml(el, default_crs, always_xy)

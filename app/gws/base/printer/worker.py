@@ -2,7 +2,7 @@ from typing import Optional, cast
 
 import gws
 import gws.base.model
-import gws.gis.crs
+import gws.lib.crs
 import gws.gis.render
 import gws.lib.image
 import gws.lib.intl
@@ -56,7 +56,7 @@ class Object:
             raise gws.Error(f'invalid outputFormat {fmt!r}')
 
         self.tri.locale = gws.lib.intl.locale(self.request.localeUid, self.tri.project.localeUids)
-        self.tri.crs = gws.gis.crs.get(self.request.crs) or self.project.map.bounds.crs
+        self.tri.crs = gws.lib.crs.get(self.request.crs) or self.project.map.bounds.crs
         self.tri.maps = [self.prepare_map(self.tri, m) for m in (self.request.maps or [])]
         self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(self.request.dpi, gws.lib.uom.OGC_SCREEN_PPI)))
 

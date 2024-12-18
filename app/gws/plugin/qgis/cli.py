@@ -5,7 +5,7 @@ import re
 import gws
 import gws.config
 import gws.base.shape
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.importer
 import gws.lib.jsonx
 

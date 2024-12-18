@@ -9,7 +9,7 @@
 # import gws
 # import gws.base.web
 # import gws.lib.datetimex
-# import gws.gis.extent
+# import gws.lib.extent
 # import gws.lib.metadata
 # import gws.lib.mime
 # import gws.lib.xmlx as xmlx
@@ -215,7 +215,7 @@
 #             extent = gws.u.get(obj, 'extent') or gws.u.get(obj, 'map.extent')
 #             crs = gws.u.get(obj, 'crs') or gws.u.get(obj, 'map.crs')
 #             if extent and crs:
-#                 md.set('wgsExtent', gws.gis.extent.transform_to_4326(extent, crs))
+#                 md.set('wgsExtent', gws.lib.extent.transform_to_4326(extent, crs))
 #                 md.set('crs', crs)
 #                 # @TODO get boundingPolygonElement somehow
 #

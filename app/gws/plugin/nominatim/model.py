@@ -9,8 +9,8 @@ import gws.base.shape
 import gws.lib.net
 import gws.lib.jsonx
 import gws.gis.source
-import gws.gis.crs
-import gws.gis.bounds
+import gws.lib.crs
+import gws.lib.bounds
 
 
 gws.ext.new.model('nominatim')
@@ -65,7 +65,7 @@ class Object(gws.base.model.default_model.Object):
         if self.country:
             params['countrycodes'] = self.cfg('country')
 
-        params['viewbox'] = gws.gis.bounds.transform(search.shape.bounds(), gws.gis.crs.WGS84).extent
+        params['viewbox'] = gws.lib.bounds.transform(search.shape.bounds(), gws.lib.crs.WGS84).extent
 
         features = []
 
@@ -77,7 +77,7 @@ class Object(gws.base.model.default_model.Object):
                 gws.log.debug(f'SKIP {uid}: no geometry')
                 continue
 
-            shape = gws.base.shape.from_geojson(geom, gws.gis.crs.WGS84, always_xy=True).transformed_to(search.shape.crs)
+            shape = gws.base.shape.from_geojson(geom, gws.lib.crs.WGS84, always_xy=True).transformed_to(search.shape.crs)
             if not shape.intersects(search.shape):
                 gws.log.debug(f'SKIP {uid}: no intersection')
                 continue

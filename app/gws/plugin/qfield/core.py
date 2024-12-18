@@ -7,8 +7,8 @@ import shutil
 import gws
 import gws.base.database
 import gws.base.shape
-import gws.gis.crs
-import gws.gis.extent
+import gws.lib.crs
+import gws.lib.extent
 import gws.gis.gdalx
 import gws.gis.render
 import gws.gis.source
@@ -283,7 +283,7 @@ class Exporter:
 
         bounds = self.qfCaps.areaOfInterest or self.package.qgisProvider.bounds
         resolution = int(self.qfCaps.globalProps.get('baseMapMupp', 10))
-        w, h = gws.gis.extent.size(bounds.extent)
+        w, h = gws.lib.extent.size(bounds.extent)
         px_size = (w / resolution, h / resolution, gws.Uom.px)
 
         flat_layer = cast(gws.Layer, self.package.root.create_temporary(
@@ -824,7 +824,7 @@ class QFieldCapsParser:
             crs = self.caps.globalProps.get('areaOfInterestCrs')
             sh = gws.base.shape.from_wkt(
                 aoi,
-                gws.gis.crs.get(crs) if crs else self.qgisCaps.projectCrs
+                gws.lib.crs.get(crs) if crs else self.qgisCaps.projectCrs
             )
             self.caps.areaOfInterest = sh.bounds()
 

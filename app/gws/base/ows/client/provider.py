@@ -2,7 +2,7 @@ from typing import Optional
 import base64
 
 import gws
-import gws.gis.crs
+import gws.lib.crs
 import gws.gis.source
 import gws.lib.net
 import gws.lib.mime
@@ -65,7 +65,7 @@ class Config(gws.Config):
 class Object(gws.OwsProvider):
     def configure(self):
         self.alwaysXY = self.cfg('alwaysXY', default=False)
-        self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs'))
+        self.forceCrs = gws.lib.crs.get(self.cfg('forceCrs'))
         self.maxRequests = self.cfg('maxRequests')
         self.operations = []
         self.sourceLayers = []

@@ -8,7 +8,7 @@ import gws
 import gws.base.database
 import gws.base.shape
 import gws.config.util
-import gws.gis.crs
+import gws.lib.crs
 import gws.lib.xmlx
 import gws.lib.net
 import gws.lib.sa as sa
@@ -78,7 +78,7 @@ class Object(gws.Node):
     def configure(self):
         gws.config.util.configure_database_provider_for(self, ext_type='postgres')
         self.tableName = self.cfg('tableName')
-        self.crs = gws.gis.crs.get(self.cfg('crs'))
+        self.crs = gws.lib.crs.get(self.cfg('crs'))
         self.position = self.cfg('position')
 
     def create(self):

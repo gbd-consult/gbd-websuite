@@ -2,9 +2,9 @@ from typing import Optional
 
 import gws
 import gws.base.layer
-import gws.gis.crs
-import gws.gis.bounds
-import gws.gis.extent
+import gws.lib.crs
+import gws.lib.bounds
+import gws.lib.extent
 import gws.gis.zoom
 
 gws.ext.new.map('default')
@@ -57,19 +57,19 @@ class Object(gws.Map):
         self.title = self.cfg('title') or self.cfg('_defaultTitle') or ''
 
         p = self.cfg('crs')
-        crs = gws.gis.crs.require(p) if p else gws.gis.crs.WEBMERCATOR
+        crs = gws.lib.crs.require(p) if p else gws.lib.crs.WEBMERCATOR
 
         p = self.cfg('extent')
         if p:
             self.bounds = gws.Bounds(
                 crs=crs,
-                extent=gws.gis.extent.buffer(gws.gis.extent.from_list(p), self.cfg('extentBuffer') or 0)
+                extent=gws.lib.extent.buffer(gws.lib.extent.from_list(p), self.cfg('extentBuffer') or 0)
             )
         else:
             self.bounds = gws.Bounds(crs=crs, extent=crs.extent)
 
-        self.center = self.cfg('center') or gws.gis.extent.center(self.bounds.extent)
-        self.wgsExtent = gws.gis.extent.transform_to_wgs(self.bounds.extent, self.bounds.crs)
+        self.center = self.cfg('center') or gws.lib.extent.center(self.bounds.extent)
+        self.wgsExtent = gws.lib.extent.transform_to_wgs(self.bounds.extent, self.bounds.crs)
         self.wrapX = self.cfg('wrapX', default=False)
 
         p = self.cfg('zoom')

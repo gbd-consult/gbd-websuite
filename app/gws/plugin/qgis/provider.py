@@ -11,10 +11,10 @@ import gws.lib.metadata
 import gws.lib.net
 import gws.lib.mime
 import gws.lib.osx
-import gws.gis.crs
-import gws.gis.bounds
+import gws.lib.crs
+import gws.lib.bounds
 import gws.gis.source
-import gws.gis.extent
+import gws.lib.extent
 import gws.lib.net
 
 from . import caps, project
@@ -72,11 +72,11 @@ class Object(gws.OwsProvider):
         self.sourceLayers = self.caps.sourceLayers
         self.version = self.caps.version
 
-        self.forceCrs = gws.gis.crs.get(self.cfg('forceCrs')) or self.caps.projectCrs
+        self.forceCrs = gws.lib.crs.get(self.cfg('forceCrs')) or self.caps.projectCrs
         self.alwaysXY = False
 
         self.bounds = self._project_bounds()
-        self.wgsExtent = gws.gis.bounds.wgs_extent(self.bounds)
+        self.wgsExtent = gws.lib.bounds.wgs_extent(self.bounds)
 
         self.directRender = self._direct_formats('directRender', {'wms', 'wmts', 'xyz'})
         self.directSearch = self._direct_formats('directSearch', {'wms', 'wfs', 'postgres'})
@@ -86,16 +86,16 @@ class Object(gws.OwsProvider):
     def _project_bounds(self):
         # explicit WMS extent?
         if self.caps.projectBounds:
-            return gws.gis.bounds.transform(self.caps.projectBounds, self.forceCrs)
+            return gws.lib.bounds.transform(self.caps.projectBounds, self.forceCrs)
 
         # canvas extent?
         if self.cfg('useCanvasExtent') and self.caps.projectCanvasBounds:
-            return gws.gis.bounds.transform(self.caps.projectCanvasBounds, self.forceCrs)
+            return gws.lib.bounds.transform(self.caps.projectCanvasBounds, self.forceCrs)
 
         # combined data extents + buffer
         b = gws.gis.source.combined_bounds(self.sourceLayers, self.forceCrs)
         if b:
-            return gws.gis.bounds.buffer(b, self.cfg('extentBuffer') or 0)
+            return gws.lib.bounds.buffer(b, self.cfg('extentBuffer') or 0)
 
         return self.forceCrs.bounds
 
@@ -167,7 +167,7 @@ class Object(gws.OwsProvider):
     def get_map(self, layer: gws.Layer, bounds: gws.Bounds, width: float, height: float, params: dict) -> bytes:
         bbox = bounds.extent
         if bounds.crs.isYX and not self.alwaysXY:
-            bbox = gws.gis.extent.swap_xy(bbox)
+            bbox = gws.lib.extent.swap_xy(bbox)
 
         defaults = dict(
             REQUEST=gws.OwsVerb.GetMap,
@@ -194,7 +194,7 @@ class Object(gws.OwsProvider):
 
         request_crs = self.forceCrs
         if not request_crs:
-            request_crs = gws.gis.crs.best_match(
+            request_crs = gws.lib.crs.best_match(
                 shape.crs,
                 gws.gis.source.combined_crs_list(source_layers))
 
@@ -220,7 +220,7 @@ class Object(gws.OwsProvider):
             shape.y + (size / 2),
         )
 
-        bbox = gws.gis.extent.transform(bbox, shape.crs, request_crs)
+        bbox = gws.lib.extent.transform(bbox, shape.crs, request_crs)
 
         layer_names = [sl.name for sl in source_layers]
 

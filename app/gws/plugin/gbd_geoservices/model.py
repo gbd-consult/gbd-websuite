@@ -6,8 +6,8 @@ import gws
 import gws.base.feature
 import gws.base.model
 import gws.base.shape
-import gws.gis.bounds
-import gws.gis.crs
+import gws.lib.bounds
+import gws.lib.crs
 import gws.gis.source
 import gws.lib.jsonx
 import gws.lib.net
@@ -56,7 +56,7 @@ class Object(gws.base.model.default_model.Object):
                 geometry_tolerance = n * (search.resolution or 1) if u == 'px' else n
 
             search_shape = search.shape.tolerance_polygon(geometry_tolerance)
-            request['viewbox'] = gws.gis.bounds.wgs_extent(search_shape.bounds())
+            request['viewbox'] = gws.lib.bounds.wgs_extent(search_shape.bounds())
 
         kw = search.keyword or ''
         use_address = False
@@ -81,7 +81,7 @@ class Object(gws.base.model.default_model.Object):
                     k.replace(':', '_'): v
                     for k, v in sorted(f['properties'].items())
                 },
-                shape=gws.base.shape.from_geojson(f['geometry'], gws.gis.crs.WGS84, always_xy=True),
+                shape=gws.base.shape.from_geojson(f['geometry'], gws.lib.crs.WGS84, always_xy=True),
             )
             if search.shape and search.shape.type == gws.GeometryType.polygon and not rec['shape'].intersects(search.shape):
                 continue

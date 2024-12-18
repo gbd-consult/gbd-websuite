@@ -8,11 +8,11 @@ import gws.base.search
 import gws.base.template
 import gws.config.util
 import gws.lib.metadata
-import gws.gis.crs
+import gws.lib.crs
 import gws.gis.source
 import gws.gis.zoom
-import gws.gis.bounds
-import gws.gis.extent
+import gws.lib.bounds
+import gws.lib.extent
 
 
 from . import provider
