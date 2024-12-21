@@ -1,253 +1,243 @@
 """CSW service.
 
-@TODO to be implemented
+Basic implementation of the OGC Catalogue Service for the Web (CSW) standard.
+Only a small subset of features is supported.
 
+References:
+    - OpenGIS Catalogue Service Implementation Specification 2.0.2 (http://portal.opengeospatial.org/files/?artifact_id=20555)
 """
 
-# from typing import Optional, cast
-#
-# import gws
-# import gws.base.web
-# import gws.lib.datetimex
-# import gws.lib.extent
-# import gws.lib.metadata
-# import gws.lib.mime
-# import gws.lib.xmlx as xmlx
-# import gws.base.ows.server
-#
-# from . import filter
-#
-# gws.ext.new.owsService('csw')
-#
-#
-# class Profile(gws.Enum):
-#     ISO = 'ISO'
-#     DCMI = 'DCMI'
-#
-#
-# class Config(gws.base.ows.server.service.Config):
-#     """CSW Service configuration"""
-#     # @TODO no support for DCMI yet
-#     # profile: Profile = Profile.ISO
-#     """metadata profile"""
-#     pass
-#
-#
-# class Object(gws.base.ows.server.service.Object):
-#     protocol = gws.OwsProtocol.CSW
-#     supportedVersions = ['2.0.2']
-#
-#     records: dict[str, gws.Metadata]
-#     index: list
-#     profile: Profile
-#
-#     @property
-#     def default_templates(self):
-#         base = gws.u.dirname(__file__) + '/templates'
-#         return [
-#             gws.Config(
-#                 type='py',
-#                 path=f'{base}/getCapabilities.cx.py',
-#                 subject='ows.GetCapabilities',
-#                 mimeTypes=['xml'],
-#                 access=gws.c.PUBLIC,
-#             ),
-#             gws.Config(
-#                 type='py',
-#                 path=f'{base}/getRecords.cx.py',
-#                 subject='ows.getRecords',
-#                 mimeTypes=['xml'],
-#                 access=gws.c.PUBLIC,
-#             ),
-#             gws.Config(
-#                 type='py',
-#                 path=f'{base}/getRecordById.cx.py',
-#                 subject='ows.GetRecordById',
-#                 mimeTypes=['xml'],
-#                 access=gws.c.PUBLIC,
-#             ),
-#             gws.Config(
-#                 type='py',
-#                 path=f'{base}/record.cx.py',
-#                 subject='ows.Record',
-#                 mimeTypes=['xml'],
-#                 access=gws.c.PUBLIC,
-#             ),
-#         ]
-#
-#     @property
-#     def default_metadata(self):
-#         return gws.Data(
-#             inspireDegreeOfConformity='notEvaluated',
-#             inspireMandatoryKeyword='humanCatalogueViewer',
-#             inspireResourceType='service',
-#             inspireSpatialDataServiceType='discovery',
-#             isoScope='dataset',
-#             isoSpatialRepresentationType='vector',
-#         )
-#
-#     ##
-#
-#     def configure(self):
-#         self.records = {}
-#         self.index = []
-#         self.profile = Profile.ISO
-#
-#     def post_configure(self):
-#         self._collect_metadata()
-#         self._create_index()
-#         cnt = len(self.records)
-#         gws.log.info(f'CSW service configured with {cnt} records')
-#
-#     ##
-#
-#     def handle_request(self, req: gws.WebRequester) -> gws.ContentResponse:
-#         rd = core.Request(req=req, project=None, service=self)
-#
-#         if req.method == 'GET':
-#             return self.dispatch_request(rd, req.param('request', default='record'))
-#
-#         # CSW should accept POST'ed xml, which can be wrapped in a SOAP envelope
-#
-#         try:
-#             rd.xml_element = xmlx.from_string(req.text)
-#         except xmlx.Error:
-#             raise gws.base.web.error.BadRequest()
-#
-#         if rd.xml_element.name.lower() == 'envelope':
-#             rd.xml_is_soap = True
-#             try:
-#                 rd.xml_element = xmlx.first(xmlx.first('body'))
-#             except Exception:
-#                 raise gws.base.web.error.BadRequest()
-#
-#         return self.dispatch_request(rd, xmlx.unqualify_name(rd.xml_element.name.lower()))
-#
-#     def handle_getcapabilities(self, rd: core.Request):
-#         return self.template_response(rd, gws.OwsVerb.GetCapabilities, context={
-#             'profile': self.profile,
-#             'version': self.request_version(rd),
-#         })
-#
-#     def handle_describerecord(self, rd: core.Request):
-#         xml = gws.u.read_file(gws.u.dirname(__file__) + '/templates/describeRecord.xml')
-#         return gws.ContentResponse(mime=gws.lib.mime.XML, content=xml)
-#
-#     def handle_getrecords(self, rd: core.Request):
-#         records = self._find_records(rd)
-#
-#         results = {
-#             'timestamp': gws.lib.datetimex.now(),
-#             'next': 0,
-#             'count_total': len(records),
-#             'count_return': len(records),
-#         }
-#
-#         return self.template_response(rd, gws.OwsVerb.GetRecords, context={
-#             'records': [md.values for md in records],
-#             'results': results,
-#             'with_soap': rd.xml_is_soap,
-#             'profile': self.profile,
-#             'version': self.request_version(rd),
-#         })
-#
-#     def handle_getrecordbyid(self, rd: core.Request):
-#         md = self.records.get(rd.req.param('id'))
-#         if not md:
-#             raise gws.base.web.error.NotFound()
-#
-#         return self.template_response(rd, gws.OwsVerb.GetRecordById, context={
-#             'record': md.values,
-#             'with_soap': rd.xml_is_soap,
-#             'profile': self.profile,
-#             'version': self.request_version(rd),
-#         })
-#
-#     def handle_record(self, rd: core.Request):
-#         # Record is our internal method to return bare metadata without the GetRecordByIdResponse envelope
-#         # see _make_link below
-#
-#         md = self.records.get(rd.req.param('id'))
-#         if not md:
-#             raise gws.base.web.error.NotFound()
-#
-#         return self.template_response(rd, cast(gws.OwsVerb, 'Record'), context={
-#             'record': md.values,
-#             'with_soap': False,
-#             'profile': self.profile,
-#             'version': self.request_version(rd),
-#         })
-#
-#     ##
-#
-#     def _collect_metadata(self):
-#         # collect objects whose metadata should be published in the catalog
-#         #
-#         # - object should have `metadata`
-#         # - object must be public
-#         # - `metadata` should have `catalogUid`
-#         # - `metadata.metaLinks` should be empty
-#         #
-#         # `metadata.metaLinks[0]` will be set to our csw url
-#
-#         self.records = {}
-#
-#         for obj in self.root.find_all():
-#             md: gws.lib.metadata.Metadata = gws.u.get(obj, 'metadata')
-#
-#             if not md or not md.get('catalogUid'):
-#                 continue
-#
-#             cid = gws.u.to_uid(md.get('catalogUid'))
-#
-#             if md.get('metaLinks'):
-#                 gws.log.debug(f'csw: skip {cid}: has metalinks')
-#                 continue
-#
-#             if not gws.u.is_public_object(obj):
-#                 gws.log.debug(f'csw: skip {cid}: not public')
-#                 continue
-#
-#             md.set('catalogUid', cid)
-#             md.set('catalogCitationUid', cid)
-#             md.set('metaLinks', [self._make_link(cid)])
-#
-#             extent = gws.u.get(obj, 'extent') or gws.u.get(obj, 'map.extent')
-#             crs = gws.u.get(obj, 'crs') or gws.u.get(obj, 'map.crs')
-#             if extent and crs:
-#                 md.set('wgsExtent', gws.lib.extent.transform_to_4326(extent, crs))
-#                 md.set('crs', crs)
-#                 # @TODO get boundingPolygonElement somehow
-#
-#             self.records[cid] = md
-#
-#     def _make_link(self, cid):
-#         return gws.MetadataLink(
-#             url=gws.u.action_url_path('owsService', serviceUid=self.uid, request='record', id=cid),
-#             format=gws.lib.mime.XML,
-#             type='TC211' if self.profile == 'ISO' else 'DCMI'
-#         )
-#
-#     def _create_index(self):
-#         self.index = []
-#
-#         for uid, md in self.records.items():
-#             s = gws.u.get(md, 'title')
-#             if s:
-#                 self.index.append(['title', s, s.lower(), uid])
-#             s = gws.u.get(md, 'abstract')
-#             if s:
-#                 self.index.append(['abstract', s, s.lower(), uid])
-#             s = gws.u.get(md, 'keywords')
-#             if s:
-#                 for kw in s:
-#                     self.index.append(('subject', kw, kw.lower(), uid))
-#
-#     def _find_records(self, rd: core.Request):
-#         flt = None
-#         if rd.xml_element:
-#             flt = xmlx.first(xmlx.first('Query.Constraint.Filter'))
-#         if not flt:
-#             return self.records.values()
-#         f = filter.Filter(self.index)
-#         return f.apply(flt, self.records.values())
+import gws
+import gws.base.ows.server as server
+import gws.base.shape
+import gws.base.web
+import gws.config.util
+import gws.lib.extent
+import gws.lib.bounds
+import gws.lib.xmlx
+import gws.lib.datetimex
+import gws.lib.crs
+import gws.lib.metadata
+import gws.lib.mime
+import gws.base.search.filter
+
+gws.ext.new.owsService('csw')
+
+_cdir = gws.u.dirname(__file__)
+
+_DEFAULT_TEMPLATES_ISO = [
+    gws.Config(
+        type='py',
+        path=f'{_cdir}/templates/iso/getCapabilities.cx.py',
+        subject='ows.GetCapabilities',
+        mimeTypes=[gws.lib.mime.XML],
+    ),
+    gws.Config(
+        type='py',
+        path=f'{_cdir}/templates/iso/describeRecord.cx.py',
+        subject='ows.DescribeRecord',
+        mimeTypes=[gws.lib.mime.XML],
+    ),
+    gws.Config(
+        type='py',
+        path=f'{_cdir}/templates/iso/getRecords.cx.py',
+        subject='ows.GetRecords',
+        mimeTypes=[gws.lib.mime.XML],
+    ),
+]
+
+_DEFAULT_METADATA = gws.Metadata(
+    name='CSW',
+    inspireMandatoryKeyword='infoMapAccessService',
+    inspireResourceType='service',
+    inspireSpatialDataServiceType='view',
+    isoScope='dataset',
+    isoServiceFunction='download',
+    isoSpatialRepresentationType='vector',
+)
+
+
+class IndexEntry(gws.Data):
+    category: str
+    text: str
+    key: str
+
+
+class Profile(gws.Enum):
+    ISO = 'ISO'
+    DCMI = 'DCMI'
+
+
+class Config(gws.base.ows.server.service.Config):
+    """CSW Service configuration"""
+
+    # @TODO no support for DCMI yet
+    profile: Profile = Profile.ISO
+    """metadata profile"""
+
+
+class Object(gws.base.ows.server.service.Object):
+    protocol = gws.OwsProtocol.CSW
+    supportedVersions = ['2.0.2']
+
+    mdMap: dict[str, gws.Metadata]
+    index: list[IndexEntry]
+    profile: Profile
+
+    def configure(self):
+        self.mdMap = {}
+        self.profile = Profile.ISO
+
+    def configure_templates(self):
+        extra = _DEFAULT_TEMPLATES_ISO
+        return gws.config.util.configure_templates_for(self, extra=extra)
+
+    def configure_metadata(self):
+        super().configure_metadata()
+        self.metadata = gws.lib.metadata.merge(_DEFAULT_METADATA, self.metadata)
+
+    def configure_operations(self):
+        self.supportedOperations = [
+            gws.OwsOperation(
+                verb=gws.OwsVerb.GetCapabilities,
+                formats=[gws.lib.mime.XML],
+                handlerName='handle_get_capabilities',
+            ),
+            gws.OwsOperation(
+                verb=gws.OwsVerb.DescribeRecord,
+                formats=[gws.lib.mime.XML],
+                handlerName='handle_describe_record',
+            ),
+            gws.OwsOperation(
+                verb=gws.OwsVerb.GetRecords,
+                formats=[gws.lib.mime.XML],
+                handlerName='handle_get_records',
+            ),
+            gws.OwsOperation(
+                verb=gws.OwsVerb.GetRecordById,
+                formats=[gws.lib.mime.XML],
+                handlerName='handle_get_record_by_id',
+            ),
+        ]
+
+    def post_configure(self):
+        self._collect_metadata()
+        self._create_index()
+        gws.log.info(f'CSW: configured with {len(self.mdMap)} records')
+
+    ##
+
+    def parse_xml_request(self, xml):
+        params = {}
+
+        params['REQUEST'] = xml.name
+        return params
+
+    ##
+
+    def handle_get_capabilities(self, sr: server.request.Object):
+        return self.template_response(sr)
+
+    def handle_describe_record(self, sr: server.request.Object):
+        return self.template_response(sr)
+
+    def handle_get_records(self, sr: server.request.Object):
+        mds = self._find_mds(sr)
+
+        mdc = server.MetadataCollection(
+            members=mds,
+            numMatched=len(mds),
+            numReturned=len(mds),
+            timestamp=gws.lib.datetimex.to_iso_string(with_tz=None),
+        )
+
+        return self.template_response(
+            sr,
+            '',
+            metadataCollection=mdc,
+            next=0,
+        )
+
+    ##
+
+    def _collect_metadata(self):
+        # collect objects whose metadata should be published in the catalog
+        #
+        # - object should have `metadata`
+        # - object must be public
+        # - `metadata` should have `catalogUid`
+        # - `metadata.metaLinks` should be empty
+        #
+        # `metadata.metaLinks[0]` will be set to our csw url
+
+        self.mdMap = {}
+
+        for obj in self.root.find_all():
+            md: gws.Metadata = gws.u.get(obj, 'metadata')
+
+            if not md or not md.get('catalogUid'):
+                continue
+
+            cid = gws.u.to_uid(md.get('catalogUid'))
+
+            if md.get('metaLinks'):
+                gws.log.debug(f'CSW: skip {cid}: has metalinks')
+                continue
+
+            if not self.root.app.authMgr.is_public_object(obj):
+                gws.log.debug(f'CSW: skip {cid}: not public')
+                continue
+
+            md.set('catalogUid', cid)
+            md.set('catalogCitationUid', cid)
+            md.set('metaLinks', [self._make_link(cid)])
+
+            extent = gws.u.get(obj, 'extent') or gws.u.get(obj, 'map.extent')
+            crs = gws.u.get(obj, 'crs') or gws.u.get(obj, 'map.crs')
+            if extent and crs:
+                md.set('wgsExtent', gws.lib.extent.transform_to_wgs(extent, crs))
+                md.set('crs', crs)
+                # @TODO get boundingPolygonElement somehow
+
+            self.mdMap[cid] = md
+
+    def _create_index(self):
+        self.index = []
+
+        for uid, md in self.mdMap.items():
+            ie = IndexEntry(uid=uid)
+
+            if md.title:
+                ie.title = md.title
+            if md.abstract:
+                ie.abstract = md.abstract
+            if md.keywords:
+                ie.subject = md.keywords
+            if md.wgsExtent:
+                ie.shape = gws.base.shape.from_extent(md.wgsExtent, gws.lib.crs.WGS84)
+
+            self.index.append(ie)
+
+    def _make_link(self, cid):
+        return gws.MetadataLink(
+            url=gws.u.action_url_path('owsService', serviceUid=self.uid, request='record', id=cid),
+            format=gws.lib.mime.XML,
+            type='TC211' if self.profile == 'ISO' else 'DCMI'
+        )
+
+    def _find_mds(self, sr: server.request.Object):
+        flt_el = None
+        if sr.xmlElement:
+            flt_el = sr.xmlElement.findfirst('Query/Constraint/Filter')
+
+        if not flt_el:
+            return self.mdMap.values()
+
+        flt = gws.base.search.filter.from_fes_element(flt_el)
+        m = gws.base.search.filter.Matcher()
+
+        return [
+            md
+            for md in self.mdMap.values()
+            if m.matches(flt, md)
+        ]
