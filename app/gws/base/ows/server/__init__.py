@@ -87,6 +87,7 @@ from .core import (
     LayerCaps,
     FeatureCollection,
     FeatureCollectionMember,
+    MetadataCollection,
 )
 from . import service, layer_caps, request, error
 from .request import TemplateArgs

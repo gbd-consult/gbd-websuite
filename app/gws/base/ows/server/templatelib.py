@@ -229,11 +229,11 @@ def inspire_extended_capabilities(ta: request.TemplateArgs):
 
         (
             'inspire_common:SupportedLanguages',
-            ('inspire_common:DefaultLanguage/inspire_common:Language', md.language3),
-            ('inspire_common:SupportedLanguage/inspire_common:Language', md.language3),
+            ('inspire_common:DefaultLanguage/inspire_common:Language', md.languageBib),
+            ('inspire_common:SupportedLanguage/inspire_common:Language', md.languageBib),
         ),
 
-        ('inspire_common:ResponseLanguage/inspire_common:Language', md.language3)
+        ('inspire_common:ResponseLanguage/inspire_common:Language', md.languageBib)
     ]
 
 

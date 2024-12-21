@@ -22,6 +22,10 @@ class TemplateArgs(gws.TemplateArgs):
     """Arguments for service templates."""
 
     featureCollection: core.FeatureCollection
+    metadataCollection: core.MetadataCollection
+    operation: gws.OwsOperation
+    project: gws.Project
+    request: 'Object'
     layerCapsList: list[core.LayerCaps]
     sr: 'Object'
     service: gws.OwsService
@@ -37,6 +41,7 @@ class Object:
     alwaysXY: bool
     bounds: gws.Bounds
     crs: gws.Crs
+    params: dict
     isSoap: bool = False
     layerCapsList: list[core.LayerCaps]
     operation: gws.OwsOperation
@@ -47,10 +52,13 @@ class Object:
     version: str
     xmlElement: Optional[gws.XmlElement]
 
-    def __init__(self, service: gws.OwsService, req: gws.WebRequester):
+    def __init__(self, service: gws.OwsService, req: gws.WebRequester, params: dict, xml_element: gws.XmlElement = None, is_soap=False) -> None:
         self.service = service
         self.req = req
         self.project = self.requested_project()
+        self.params = gws.u.to_upper_dict(params)
+        self.xmlElement = xml_element
+        self.isSoap = is_soap
 
         self.operation = self.requested_operation('REQUEST')
         self.version = self.requested_version('VERSION,ACCEPTVERSIONS')
@@ -132,7 +140,7 @@ class Object:
         raise gws.NotFoundError(f'project not found for {self.service}')
 
     def requested_version(self, param_names: str) -> str:
-        p, val = self._get_param(param_names, default='')
+        p, val = self._get_param(param_names, '')
         if not val:
             # the first supported version is the default
             return self.service.supportedVersions[0]
@@ -169,19 +177,23 @@ class Object:
     }
 
     def requested_operation(self, param_names: str) -> gws.OwsOperation:
-        p, val = self._get_param(param_names, default=None)
-        verb = self._param2verb.get(val.lower())
+        _, val = self._get_param(param_names, '')
+        op = self.find_operation(val)
+        if op:
+            return op
+        raise error.OperationNotSupported(val)
+
+    def find_operation(self, param: str) -> Optional[gws.OwsOperation]:
+        verb = self._param2verb.get(param.lower())
         if not verb:
-            raise error.InvalidParameterValue(p)
+            return
 
         for op in self.service.supportedOperations:
             if op.verb == verb:
                 return op
 
-        raise error.OperationNotSupported()
-
     def requested_crs(self, param_names: str) -> Optional[gws.Crs]:
-        _, val = self._get_param(param_names, default='')
+        _, val = self._get_param(param_names, '')
         if not val:
             return
 
@@ -210,10 +222,10 @@ class Object:
         raise error.InvalidParameterValue(p)
 
     def requested_format(self, param_names: str) -> str:
-        s = self.string_param(param_names, default='').strip()
-        if s:
+        _, val = self._get_param(param_names, '')
+        if val:
             # NB our mime types do not contain spaces
-            return ''.join(s.split())
+            return ''.join(val.split())
         return ''
 
     def requested_feature_count(self, param_names: str) -> int:
@@ -228,9 +240,9 @@ class Object:
         names = gws.u.to_list(param_names.upper())
 
         for p in names:
-            if not self.req.has_param(p):
+            if p not in self.params:
                 continue
-            val = self.req.param(p)
+            val = self.params[p]
             return p, val
 
         if default is not None:

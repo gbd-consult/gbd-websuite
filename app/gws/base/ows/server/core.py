@@ -59,6 +59,16 @@ class FeatureCollection(gws.Data):
     numReturned: int
 
 
+class MetadataCollection(gws.Data):
+    """Metadata Collection."""
+
+    members: list[gws.Metadata]
+    timestamp: str
+    numMatched: int
+    numReturned: int
+    nextRecord: int
+
+
 IMAGE_VERBS = {
     gws.OwsVerb.GetMap,
     gws.OwsVerb.GetTile,

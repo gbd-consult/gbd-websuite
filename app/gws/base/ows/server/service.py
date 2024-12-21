@@ -7,17 +7,18 @@ import gws.base.legend
 import gws.base.template
 import gws.base.web
 import gws.config.util
-import gws.lib.bounds
-import gws.lib.crs
-import gws.lib.extent
-import gws.lib.gml
 import gws.gis.render
 import gws.gis.source
+import gws.lib.bounds
+import gws.lib.crs
 import gws.lib.datetimex
+import gws.lib.extent
+import gws.lib.gml
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
-from . import core, request, error
+import gws.lib.xmlx
+from . import core, error, request
 
 
 class Config(gws.ConfigWithAccess):
@@ -162,7 +163,33 @@ class Object(gws.OwsService):
     ##
 
     def init_request(self, req: gws.WebRequester) -> request.Object:
-        return request.Object(self, req)
+        if req.method == 'GET':
+            return request.Object(self, req, req.params())
+
+        if req.method == 'POST' and req.contentType == gws.lib.mime.XML:
+            try:
+                xml = gws.lib.xmlx.from_string(req.text(), remove_namespaces=True, case_insensitive=True)
+            except gws.lib.xmlx.Error:
+                raise gws.base.web.error.BadRequest()
+
+            is_soap = False
+            if xml.lcName == 'envelope':
+                is_soap = True
+                try:
+                    xml = xml.findfirst('body').findfirst()
+                except gws.lib.xmlx.Error:
+                    raise gws.base.web.error.BadRequest()
+
+            params = self.parse_xml_request(xml)
+            if not params:
+                raise gws.base.web.error.BadRequest()
+            return request.Object(self, req, params, xml_element=xml, is_soap=is_soap)
+
+        # @TODO support application/x-www-form-urlencoded
+        raise gws.base.web.error.BadRequest()
+
+    def parse_xml_request(self, xml: gws.XmlElement) -> Optional[dict]:
+        return {}
 
     def handle_request(self, req: gws.WebRequester) -> gws.ContentResponse:
         sr = self.init_request(req)

@@ -28,6 +28,13 @@ class Config(gws.base.action.Config):
 class Object(gws.base.action.Object):
     @gws.ext.command.get('owsService')
     def get_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:
+        return self._handle_service(req, p)
+
+    @gws.ext.command.post('owsService')
+    def post_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:
+        return self._handle_service(req, p)
+
+    def _handle_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:
         srv = cast(gws.OwsService, self.root.get(p.serviceUid, gws.ext.object.owsService))
         if not srv:
             raise gws.NotFoundError(f'{p.serviceUid=} not found')
