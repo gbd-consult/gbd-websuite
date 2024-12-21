@@ -71,6 +71,7 @@ def check(md: gws.Metadata) -> gws.Metadata:
     p = md.language
     if p:
         md.language3 = gws.lib.intl.locale(p).language3
+        md.languageBib = gws.lib.intl.locale(p).languageBib
 
     p = md.inspireTheme
     if p:

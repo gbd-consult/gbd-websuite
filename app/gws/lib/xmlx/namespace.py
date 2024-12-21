@@ -234,7 +234,7 @@ def declarations(
         atts.append((a, uri))
 
         if with_schema_locations and ns.schemaLocation:
-            schemas.append(ns.uri)
+            schemas.append(uri)
             schemas.append(ns.schemaLocation)
 
     if schemas:
@@ -278,16 +278,16 @@ xlink            |                  |       | www.w3.org/1999/xlink             
 rdf              |                  |       | www.w3.org/1999/02/22-rdf-syntax-ns           |
 soap             |                  |       | www.w3.org/2003/05/soap-envelope              | https://www.w3.org/2003/05/soap-envelope/
 
-csw              |                  | 2.0.2 | www.opengis.net/cat/csw                       | schemas.opengis.net/csw/2.0.2/csw.xsd
+csw              |                  | 2.0.2 | www.opengis.net/cat/csw                       | schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd
 fes              |                  | 2.0   | www.opengis.net/fes                           | schemas.opengis.net/filter/2.0/filterAll.xsd
 
 gml2             | gml              | 2.1   | www.opengis.net/gml                           | schemas.opengis.net/gml/2.1.2/gml.xsd
 gml3             | gml              | 3.2   | www.opengis.net/gml                           | schemas.opengis.net/gml/3.2.1/gml.xsd
-gml              | gml              | 3.2   | www.opengis.net/gml                           | schemas.opengis.net/gml/3.2.1/gml.xsd
+gml              | gml              |       | www.opengis.net/gml                           | schemas.opengis.net/gml/3.2.1/gml.xsd
 
 gmlcov           |                  | 1.0   | www.opengis.net/gmlcov                        | schemas.opengis.net/gmlcov/1.0/gmlcovAll.xsd
 ogc              |                  |       | www.opengis.net/ogc                           | schemas.opengis.net/filter/1.1.0/filter.xsd
-ows              |                  | 1.1   | www.opengis.net/ows                           | schemas.opengis.net/ows/1.0.0/owsAll.xsd
+ows              |                  |       | www.opengis.net/ows                           | schemas.opengis.net/ows/2.0/owsAll.xsd
 sld              |                  |       | www.opengis.net/sld                           | schemas.opengis.net/sld/1.1/sldAll.xsd
 swe              |                  | 2.0   | www.opengis.net/swe                           | schemas.opengis.net/sweCommon/2.0/swe.xsd
 wcs              |                  | 2.0   | www.opengis.net/wcs                           | schemas.opengis.net/wcs/1.0.0/wcsAll.xsd
@@ -437,7 +437,7 @@ def _load_known():
         uid, xmlns, version, uri, schema = [s.strip() for s in ln.split('|')]
         xmlns = xmlns or uid
         uri = 'http://' + uri
-        if schema:
+        if schema and not schema.startswith('http'):
             schema = 'http://' + schema
         register(gws.XmlNamespace(uid=uid, xmlns=xmlns, uri=uri, schemaLocation=schema, version=version))
 

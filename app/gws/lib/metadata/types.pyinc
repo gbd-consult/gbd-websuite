@@ -1,3 +1,6 @@
+import gws
+
+
 class MetadataLink(Data):
     """Link metadata."""
 
@@ -49,6 +52,7 @@ class Metadata(Data):
     image: Optional[str]
     keywords: Optional[list[str]]
     language3: Optional[str]
+    languageBib: Optional[str]
     language: Optional[str]
     languageName: Optional[str]
     license: Optional[MetadataLicense]
@@ -104,6 +108,10 @@ class Metadata(Data):
     isoSpatialRepresentationType: Optional[str]
     isoTopicCategories: Optional[list[str]]
     isoSpatialResolution: Optional[str]
+    isoTopicCategory: Optional[str]
+
+    wgsExtent: Optional[gws.Extent]
+    crs: Optional['gws.Crs']
 
     metaLinks: Optional[list[MetadataLink]]
     serviceMetaLink: Optional[MetadataLink]
