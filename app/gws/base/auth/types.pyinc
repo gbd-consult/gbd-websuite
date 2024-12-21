@@ -31,7 +31,7 @@ class User(Object):
     mfaSecret: str
     """MFA secret."""
 
-    def acl_bit(self, access: 'Access', obj: 'Object') -> Optional[int]:
+    def acl_bit(self, access: Access, obj: Object) -> Optional[int]:
         """Get the ACL bit for a specific object.
 
         Args:
@@ -42,7 +42,7 @@ class User(Object):
             ``1`` or ``0`` if the user's permissions have the bit and ``None`` otherwise.
         """
 
-    def can(self, access: Access, obj: 'Object', *context) -> bool:
+    def can(self, access: Access, obj: Object, *context) -> bool:
         """Check if the user can access an object.
 
         Args:
@@ -54,25 +54,25 @@ class User(Object):
             ``True`` is access is granted.
         """
 
-    def can_create(self, obj: 'Object', *context) -> bool:
+    def can_create(self, obj: Object, *context) -> bool:
         """Check if the user has "create" permission on an object."""
 
-    def can_delete(self, obj: 'Object', *context) -> bool:
+    def can_delete(self, obj: Object, *context) -> bool:
         """Check if the user has "delete" permission on an object."""
 
-    def can_read(self, obj: 'Object', *context) -> bool:
+    def can_read(self, obj: Object, *context) -> bool:
         """Check if the user has "read" permission on an object."""
 
-    def can_use(self, obj: 'Object', *context) -> bool:
+    def can_use(self, obj: Object, *context) -> bool:
         """Check if the user has "read" permission on an object."""
 
-    def can_write(self, obj: 'Object', *context) -> bool:
+    def can_write(self, obj: Object, *context) -> bool:
         """Check if the user has "write" permission on an object."""
 
-    def can_edit(self, obj: 'Object', *context) -> bool:
+    def can_edit(self, obj: Object, *context) -> bool:
         """Check if the user has "edit" permissions on an object."""
 
-    def acquire(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Optional['Object']:
+    def acquire(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Optional[Object]:
         """Get a readable object by uid.
 
         Args:
@@ -84,7 +84,7 @@ class User(Object):
             A readable object or ``None`` if the object does not exists or user doesn't have a permission.
         """
 
-    def require(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> 'Object':
+    def require(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Object:
         """Get a readable object by uid and fail if not found.
 
         Args:
@@ -180,14 +180,15 @@ class AuthManager(Node):
             A Method or ``None``.
         """
 
-    def get_mf_adapter(self, uid: str) -> Optional['AuthMultiFactorAdapter']:
-        """Get an authentication Provider by its uid.
+    def get_multi_factor_adapter(self, uid: str) -> Optional['AuthMultiFactorAdapter']:
+        """Get a Multi-Factor Adapter by its uid.
 
         Args:
-            uid: Uid.
+            uid: Adapter uid.
         Returns:
-            A Provider or ``None``.
+            A Multi-Factor Adapter or ``None`` if not found.
         """
+        return None
 
     def serialize_user(self, user: 'User') -> str:
         """Return a string representation of a User.
@@ -208,6 +209,9 @@ class AuthManager(Node):
         Returns:
             A User object.
         """
+
+    def is_public_object(self, obj: Object, *context) -> bool:
+        """Check if an object is public."""
 
 
 class AuthMethod(Node):

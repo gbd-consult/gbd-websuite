@@ -115,7 +115,7 @@ class Object(gws.AuthManager):
             if obj.uid == uid:
                 return obj
 
-    def get_mf_adapter(self, uid=None, ext_type=None):
+    def get_multi_factor_adapter(self, uid=None, ext_type=None):
         for obj in self.mfAdapters:
             if obj.uid == uid:
                 return obj
@@ -127,3 +127,6 @@ class Object(gws.AuthManager):
         provider_uid, ds = gws.lib.jsonx.from_string(data)
         prov = self.get_provider(provider_uid)
         return prov.unserialize_user(ds) if prov else None
+
+    def is_public_object(self, obj, *context):
+        return self.guestUser.can_read(obj, *context)

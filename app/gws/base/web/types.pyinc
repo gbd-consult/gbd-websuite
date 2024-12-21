@@ -19,6 +19,8 @@ class WebRequester:
     """Request environment."""
     method: RequestMethod
     """Request method."""
+    contentType: str
+    """Request content type."""
     root: 'Root'
     """Object tree root."""
     site: 'WebSite'

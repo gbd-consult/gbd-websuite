@@ -66,7 +66,7 @@ def node_find_closest(self, classref):
     while True:
         if not node or node is self.root:
             return
-        if is_a(self.root, node, classref):
+        if not classref or is_a(self.root, node, classref):
             return node
         node = node.parent
 
@@ -88,11 +88,11 @@ def node_find_ancestors(self, classref):
 def node_find_descendants(self, classref):
     ls = []
 
-    def _walk(n):
-        for cn in n.children:
-            if not classref or is_a(self.root, cn, classref):
-                ls.append(cn)
-            _walk(cn)
+    def _walk(node):
+        for child_node in node.children:
+            if not classref or is_a(self.root, child_node, classref):
+                ls.append(child_node)
+            _walk(child_node)
 
     _walk(self)
     return ls
@@ -275,19 +275,21 @@ def create_node(self, classref, parent, config, temp=False):
     return node
 
 
-def find_all_in(root, where, classref):
+def find_all_in(root, nodes, classref):
+    if not classref:
+        return nodes
     cls, name, ext_name = root.specs.parse_classref(classref)
     if cls:
-        return [node for node in where if isinstance(node, cls)]
+        return [node for node in nodes if isinstance(node, cls)]
     if name:
-        return [node for node in where if class_name(node) == name]
+        return [node for node in nodes if class_name(node) == name]
     if ext_name:
-        return [node for node in where if node.extName.startswith(ext_name)]
+        return [node for node in nodes if node.extName.startswith(ext_name)]
 
 
-def find_first_in(root, where, classref):
-    ls = find_all_in(root, where, classref)
-    return ls[0] if ls else None
+def find_first_in(root, nodes, classref):
+    found = find_all_in(root, nodes, classref)
+    return found[0] if found else None
 
 
 def get_or_generate_uid(self, config):

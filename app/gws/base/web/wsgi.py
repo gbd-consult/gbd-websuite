@@ -71,6 +71,8 @@ class Requester(gws.WebRequester):
         self.isPost = self.method == 'POST'
         self.isGet = self.method == 'GET'
 
+        self.contentType = gws.lib.mime.get(self.header('content-type')) or gws.lib.mime.BIN
+
         self.inputType = None
         if self.isPost:
             self.inputType = self._struct_type(self.header('content-type'))

@@ -123,7 +123,7 @@ class Node(Object):
         """
         return tree_impl.is_a(self.root, self, classref)
 
-    def find_all(self, classref: ClassRef):
+    def find_all(self, classref: Optional[ClassRef] = None):
         """Find all children that match a specific class.
 
         Args:
@@ -134,7 +134,7 @@ class Node(Object):
         """
         return tree_impl.node_find_all(self, classref)
 
-    def find_first(self, classref: ClassRef):
+    def find_first(self, classref: Optional[ClassRef] = None):
         """Find the first child that matches a specific class.
 
         Args:
@@ -145,7 +145,7 @@ class Node(Object):
         """
         return tree_impl.node_find_first(self, classref)
 
-    def find_closest(self, classref: ClassRef):
+    def find_closest(self, classref: Optional[ClassRef] = None):
         """Find the closest node ancestor that matches a specific class.
 
         Args:
@@ -236,7 +236,7 @@ class Root:
     def activate(self):
         return tree_impl.root_activate(self)
 
-    def find_all(self, classref: ClassRef):
+    def find_all(self, classref: Optional[ClassRef] = None):
         """Find all objects that match a specific class.
 
         Args:
@@ -247,7 +247,7 @@ class Root:
         """
         return tree_impl.root_find_all(self, classref)
 
-    def find_first(self, classref: ClassRef):
+    def find_first(self, classref: Optional[ClassRef] = None):
         """Find the first object that match a specific class.
 
         Args:
