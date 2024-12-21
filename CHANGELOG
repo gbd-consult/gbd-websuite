@@ -1,3 +1,9 @@
+## Version 8.2.3
+
+- CSW service
+- basic implementation of OGC filters
+- use a dedicated namespace for the Client
+
 ## Version 8.2.2
 
 - printing optimized
