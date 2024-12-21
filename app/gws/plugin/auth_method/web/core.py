@@ -183,7 +183,7 @@ class Object(gws.base.auth.method.Object):
     def _mfa_start(self, req: gws.WebRequester, user: gws.User) -> gws.AuthMultiFactorTransaction:
         am = self.root.app.authMgr
 
-        adapter = am.get_mf_adapter(user.mfaUid)
+        adapter = am.get_multi_factor_adapter(user.mfaUid)
         if not adapter:
             raise gws.ForbiddenError(f'MFA: {user.mfaUid=} unknown')
 
@@ -228,7 +228,7 @@ class Object(gws.base.auth.method.Object):
             raise gws.ForbiddenError(f'MFA: transaction not found')
 
         mfa = gws.AuthMultiFactorTransaction(sess_mfa)
-        mfa.adapter = am.get_mf_adapter(sess_mfa['adapter'])
+        mfa.adapter = am.get_multi_factor_adapter(sess_mfa['adapter'])
         mfa.user = am.unserialize_user(sess_mfa['user'])
 
         if not mfa.adapter.check_state(mfa):
