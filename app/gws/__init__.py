@@ -770,7 +770,7 @@ class Node(Object):
         """
         return tree_impl.is_a(self.root, self, classref)
 
-    def find_all(self, classref: ClassRef):
+    def find_all(self, classref: Optional[ClassRef] = None):
         """Find all children that match a specific class.
 
         Args:
@@ -781,7 +781,7 @@ class Node(Object):
         """
         return tree_impl.node_find_all(self, classref)
 
-    def find_first(self, classref: ClassRef):
+    def find_first(self, classref: Optional[ClassRef] = None):
         """Find the first child that matches a specific class.
 
         Args:
@@ -792,7 +792,7 @@ class Node(Object):
         """
         return tree_impl.node_find_first(self, classref)
 
-    def find_closest(self, classref: ClassRef):
+    def find_closest(self, classref: Optional[ClassRef] = None):
         """Find the closest node ancestor that matches a specific class.
 
         Args:
@@ -883,7 +883,7 @@ class Root:
     def activate(self):
         return tree_impl.root_activate(self)
 
-    def find_all(self, classref: ClassRef):
+    def find_all(self, classref: Optional[ClassRef] = None):
         """Find all objects that match a specific class.
 
         Args:
@@ -894,7 +894,7 @@ class Root:
         """
         return tree_impl.root_find_all(self, classref)
 
-    def find_first(self, classref: ClassRef):
+    def find_first(self, classref: Optional[ClassRef] = None):
         """Find the first object that match a specific class.
 
         Args:
@@ -1309,6 +1309,9 @@ class NumberFormatter:
 # /lib/metadata/types.pyinc
 
 
+import gws
+
+
 class MetadataLink(Data):
     """Link metadata."""
 
@@ -1360,6 +1363,7 @@ class Metadata(Data):
     image: Optional[str]
     keywords: Optional[list[str]]
     language3: Optional[str]
+    languageBib: Optional[str]
     language: Optional[str]
     languageName: Optional[str]
     license: Optional[MetadataLicense]
@@ -1415,6 +1419,10 @@ class Metadata(Data):
     isoSpatialRepresentationType: Optional[str]
     isoTopicCategories: Optional[list[str]]
     isoSpatialResolution: Optional[str]
+    isoTopicCategory: Optional[str]
+
+    wgsExtent: Optional[gws.Extent]
+    crs: Optional['gws.Crs']
 
     metaLinks: Optional[list[MetadataLink]]
     serviceMetaLink: Optional[MetadataLink]
@@ -2453,7 +2461,7 @@ class User(Object):
     mfaSecret: str
     """MFA secret."""
 
-    def acl_bit(self, access: 'Access', obj: 'Object') -> Optional[int]:
+    def acl_bit(self, access: Access, obj: Object) -> Optional[int]:
         """Get the ACL bit for a specific object.
 
         Args:
@@ -2464,7 +2472,7 @@ class User(Object):
             ``1`` or ``0`` if the user's permissions have the bit and ``None`` otherwise.
         """
 
-    def can(self, access: Access, obj: 'Object', *context) -> bool:
+    def can(self, access: Access, obj: Object, *context) -> bool:
         """Check if the user can access an object.
 
         Args:
@@ -2476,25 +2484,25 @@ class User(Object):
             ``True`` is access is granted.
         """
 
-    def can_create(self, obj: 'Object', *context) -> bool:
+    def can_create(self, obj: Object, *context) -> bool:
         """Check if the user has "create" permission on an object."""
 
-    def can_delete(self, obj: 'Object', *context) -> bool:
+    def can_delete(self, obj: Object, *context) -> bool:
         """Check if the user has "delete" permission on an object."""
 
-    def can_read(self, obj: 'Object', *context) -> bool:
+    def can_read(self, obj: Object, *context) -> bool:
         """Check if the user has "read" permission on an object."""
 
-    def can_use(self, obj: 'Object', *context) -> bool:
+    def can_use(self, obj: Object, *context) -> bool:
         """Check if the user has "read" permission on an object."""
 
-    def can_write(self, obj: 'Object', *context) -> bool:
+    def can_write(self, obj: Object, *context) -> bool:
         """Check if the user has "write" permission on an object."""
 
-    def can_edit(self, obj: 'Object', *context) -> bool:
+    def can_edit(self, obj: Object, *context) -> bool:
         """Check if the user has "edit" permissions on an object."""
 
-    def acquire(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Optional['Object']:
+    def acquire(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Optional[Object]:
         """Get a readable object by uid.
 
         Args:
@@ -2506,7 +2514,7 @@ class User(Object):
             A readable object or ``None`` if the object does not exists or user doesn't have a permission.
         """
 
-    def require(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> 'Object':
+    def require(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Object:
         """Get a readable object by uid and fail if not found.
 
         Args:
@@ -2602,14 +2610,15 @@ class AuthManager(Node):
             A Method or ``None``.
         """
 
-    def get_mf_adapter(self, uid: str) -> Optional['AuthMultiFactorAdapter']:
-        """Get an authentication Provider by its uid.
+    def get_multi_factor_adapter(self, uid: str) -> Optional['AuthMultiFactorAdapter']:
+        """Get a Multi-Factor Adapter by its uid.
 
         Args:
-            uid: Uid.
+            uid: Adapter uid.
         Returns:
-            A Provider or ``None``.
+            A Multi-Factor Adapter or ``None`` if not found.
         """
+        return None
 
     def serialize_user(self, user: 'User') -> str:
         """Return a string representation of a User.
@@ -2630,6 +2639,9 @@ class AuthManager(Node):
         Returns:
             A User object.
         """
+
+    def is_public_object(self, obj: Object, *context) -> bool:
+        """Check if an object is public."""
 
 
 class AuthMethod(Node):
@@ -3810,14 +3822,57 @@ class SearchSort(Data):
     reverse: bool
 
 
-class SearchOgcFilter(Data):
+class SearchFilterOperator(Enum):
+    """Search filter operator."""
+
+    And = 'And'
+    Or = 'Or'
+    Not = 'Not'
+
+    PropertyIsEqualTo = 'PropertyIsEqualTo'
+    PropertyIsNotEqualTo = 'PropertyIsNotEqualTo'
+    PropertyIsLessThan = 'PropertyIsLessThan'
+    PropertyIsGreaterThan = 'PropertyIsGreaterThan'
+    PropertyIsLessThanOrEqualTo = 'PropertyIsLessThanOrEqualTo'
+    PropertyIsGreaterThanOrEqualTo = 'PropertyIsGreaterThanOrEqualTo'
+    PropertyIsLike = 'PropertyIsLike'
+    PropertyIsNull = 'PropertyIsNull'
+    PropertyIsNil = 'PropertyIsNil'
+    PropertyIsBetween = 'PropertyIsBetween'
+
+    Equals = 'Equals'
+    Disjoint = 'Disjoint'
+    Touches = 'Touches'
+    Within = 'Within'
+    Overlaps = 'Overlaps'
+    Crosses = 'Crosses'
+    Intersects = 'Intersects'
+    Contains = 'Contains'
+    DWithin = 'DWithin'
+    Beyond = 'Beyond'
+    BBOX = 'BBOX'
+
+
+class SearchFilterMatchAction(Enum):
+    """Search filter match action."""
+    All = 'All'
+    Any = 'Any'
+    One = 'One'
+
+
+class SearchFilter(Data):
     """Search filter."""
 
-    name: str
-    operator: str
-    shape: 'Shape'
-    subFilters: list['SearchOgcFilter']
+    operator: SearchFilterOperator
+    property: str
     value: str
+    shape: 'Shape'
+    subFilters: list['SearchFilter']
+    matchCase: bool
+    matchAction: SearchFilterMatchAction
+    wildCard: str
+    singleChar: str
+    escapeChar: str
 
 
 class SearchQuery(Data):
@@ -3832,7 +3887,7 @@ class SearchQuery(Data):
     keyword: str
     layers: list['Layer']
     limit: int
-    ogcFilter: SearchOgcFilter
+    filter: SearchFilter
     project: 'Project'
     relDepth: int
     resolution: float
@@ -4049,6 +4104,8 @@ class WebRequester:
     """Request environment."""
     method: RequestMethod
     """Request method."""
+    contentType: str
+    """Request content type."""
     root: 'Root'
     """Object tree root."""
     site: 'WebSite'

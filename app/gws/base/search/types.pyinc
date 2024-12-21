@@ -5,14 +5,57 @@ class SearchSort(Data):
     reverse: bool
 
 
-class SearchOgcFilter(Data):
+class SearchFilterOperator(Enum):
+    """Search filter operator."""
+
+    And = 'And'
+    Or = 'Or'
+    Not = 'Not'
+
+    PropertyIsEqualTo = 'PropertyIsEqualTo'
+    PropertyIsNotEqualTo = 'PropertyIsNotEqualTo'
+    PropertyIsLessThan = 'PropertyIsLessThan'
+    PropertyIsGreaterThan = 'PropertyIsGreaterThan'
+    PropertyIsLessThanOrEqualTo = 'PropertyIsLessThanOrEqualTo'
+    PropertyIsGreaterThanOrEqualTo = 'PropertyIsGreaterThanOrEqualTo'
+    PropertyIsLike = 'PropertyIsLike'
+    PropertyIsNull = 'PropertyIsNull'
+    PropertyIsNil = 'PropertyIsNil'
+    PropertyIsBetween = 'PropertyIsBetween'
+
+    Equals = 'Equals'
+    Disjoint = 'Disjoint'
+    Touches = 'Touches'
+    Within = 'Within'
+    Overlaps = 'Overlaps'
+    Crosses = 'Crosses'
+    Intersects = 'Intersects'
+    Contains = 'Contains'
+    DWithin = 'DWithin'
+    Beyond = 'Beyond'
+    BBOX = 'BBOX'
+
+
+class SearchFilterMatchAction(Enum):
+    """Search filter match action."""
+    All = 'All'
+    Any = 'Any'
+    One = 'One'
+
+
+class SearchFilter(Data):
     """Search filter."""
 
-    name: str
-    operator: str
-    shape: 'Shape'
-    subFilters: list['SearchOgcFilter']
+    operator: SearchFilterOperator
+    property: str
     value: str
+    shape: 'Shape'
+    subFilters: list['SearchFilter']
+    matchCase: bool
+    matchAction: SearchFilterMatchAction
+    wildCard: str
+    singleChar: str
+    escapeChar: str
 
 
 class SearchQuery(Data):
@@ -27,7 +70,7 @@ class SearchQuery(Data):
     keyword: str
     layers: list['Layer']
     limit: int
-    ogcFilter: SearchOgcFilter
+    filter: SearchFilter
     project: 'Project'
     relDepth: int
     resolution: float

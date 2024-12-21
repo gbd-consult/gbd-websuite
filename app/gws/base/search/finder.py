@@ -71,9 +71,9 @@ class Object(gws.Finder):
                 return False
             has_param = True
 
-        if search.ogcFilter:
+        if search.filter:
             if not self.supportsFilterSearch or not self.withFilter:
-                gws.log.debug(f'can run: False: {self} {search.ogcFilter=} {self.supportsFilterSearch=} {self.withFilter=}')
+                gws.log.debug(f'can run: False: {self} {search.filter=} {self.supportsFilterSearch=} {self.withFilter=}')
                 return False
             has_param = True
 
