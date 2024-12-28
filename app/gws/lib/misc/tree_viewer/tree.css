@@ -1,0 +1,95 @@
+* {
+    box-sizing: border-box;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 12px;
+}
+#sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 30em;
+    display: flex;
+    flex-direction: column;
+}
+
+#main {
+    position: fixed;
+    left: 30em;
+    top: 0;
+    bottom: 0;
+    right: 0;
+}
+
+#sidebar-top {
+}
+
+#sidebar-body {
+    flex: 1;
+    overflow: auto;
+}
+
+
+/* ---------------------------------------------------------------------------------- */
+
+#sidebar-top {
+    padding: 1em 1em;
+}
+
+
+#sidebar-search-box {
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    border-radius: 9px;
+
+}
+
+#sidebar-search-box input {
+    font-size: 0.8em;
+    border: none;
+    background: none;
+    padding: 0.4em 0.8em;
+    outline: none;
+    flex: 1;
+}
+
+#sidebar-search-box button {
+    border: none;
+    background: none;
+    font-size: 15px;
+}
+
+#sidebar-body {
+    padding: 1em;
+}
+
+#sidebar-body a {
+    text-decoration: none;
+    padding: 0.2em 0;
+    display: block;
+}
+#sidebar-body a:hover {
+    text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+#main a {
+}
+#main a:hover {
+    text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+#sidebar {
+    background-color: #ebe5e5;
+}
+a {
+    color: #008af8;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}

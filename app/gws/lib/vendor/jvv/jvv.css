@@ -1,0 +1,288 @@
+.jvv * {
+    font-family: "JetBrains Mono NL", Monaco, Courier, monospace;
+    box-sizing: border-box;
+}
+
+.jvv {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.jvv-nav {
+    padding: 0.5em;
+    position: absolute;
+    top: 5px;
+    right: 20px;
+    z-index: 1;
+    border-radius: 12px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+}
+
+.jvv-content {
+    overflow: auto;
+    flex: 1;
+    position: relative;
+    padding-left: 2em;
+}
+
+.jvv-flex {
+    flex: 1;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+.jvv-search-box {
+    margin-right: 0.4em;
+    padding-right: 0.4em;
+    border-radius: 9px;
+    background: white;
+    display: flex;
+    align-items: center;
+}
+
+.jvv-search-input {
+    width: 15em;
+    font-size: 0.8em;
+    border: none;
+    background: none;
+    padding: 0.4em 0.8em;
+    outline: none;
+    color: #d50741;
+}
+
+.jvv-has-search-results .jvv-search-input {
+    color: #000;
+}
+
+.jvv-search-info {
+    font-size: 0.7em;
+    padding: 0 2em 0 0.4em;
+}
+
+.jvv-button.jvv-search-prev-button,
+.jvv-button.jvv-search-next-button,
+.jvv-search-info {
+    display: none;
+}
+
+.jvv-has-search-results .jvv-button.jvv-search-prev-button,
+.jvv-has-search-results .jvv-button.jvv-search-next-button,
+.jvv-has-search-results .jvv-search-info {
+    display: inline-block;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+.jvv-button {
+    display: inline-block;
+    background-color: transparent;
+    background-position: center;
+    background-size: 16px;
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    max-height: 20px;
+    max-width: 20px;
+    min-height: 20px;
+    min-width: 20px;
+    padding: 0 3px;
+}
+
+.jvv-button.jvv-search-reset-button {
+    background-size: 12px;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+.jvv-row {
+    display: block;
+    padding: 0.3em;
+    transition: background-color 1s ease;
+}
+
+.jvv-punct-row {
+    display: block;
+    padding: 0.3em;
+    transition: background-color 1s ease;
+}
+
+.jvv-row.jvv-object {
+    cursor: pointer;
+}
+
+.jvv-row.jvv-object:before {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 0.2em;
+    content: "";
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    cursor: pointer;
+    position: absolute;
+    left: 0.5em;
+    vertical-align: bottom;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+
+}
+
+.jvv-row.jvv-expanded.jvv-object:before {
+    transform: rotate(90deg);
+}
+
+.jvv-key:after {
+    content: attr(data-after);
+    font-size: 0.8em;
+}
+
+.jvv-key:before {
+    content: attr(data-before);
+    font-size: 0.8em;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+.jvv.jvv-locked .jvv-button {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.jvv.jvv-locked .jvv-row.jvv-object:before {
+    display: none;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+.jvv-object-body {
+    display: block;
+    padding-left: 2em;
+}
+
+.jvv-object-body > .jvv-object-body-inner {
+    display: none;
+}
+
+.jvv-object-body:before {
+    content: "...";
+    padding: 0 0.3em 0.3em 0.3em;
+    display: inline-block;
+    border-radius: 10px;
+    font-size: 0.8em;
+}
+
+.jvv-more {
+    padding: 0.1em 0.3em;
+    display: block;
+    width: auto;
+    font-size: 0.8em;
+    font-weight: 800;
+}
+
+.jvv-row.jvv-expanded + .jvv-object-body:before {
+    display: none;
+}
+
+.jvv-row.jvv-expanded + .jvv-object-body > .jvv-object-body-inner {
+    display: block;
+}
+
+
+/* ---------------------------------------------------------------------------------- */
+
+/* https://fonts.google.com/icons */
+
+.jvv-row.jvv-object:before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>');
+}
+
+.jvv-search-prev-button {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>');
+    transform: rotate(-90deg);
+}
+
+.jvv-search-next-button {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>');
+    transform: rotate(90deg);
+}
+
+.jvv-search-reset-button {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path fill="rgb(132,132,132)" d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>');
+}
+
+.jvv-collapse-all-button {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -960 960 960"><path d="m296-80-56-56 240-240 240 240-56 56-184-184L296-80Zm184-504L240-824l56-56 184 184 184-184 56 56-240 240Z"/></svg>');
+}
+
+.jvv-expand-all-button {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960"><path d="M480-80 240-320l57-57 183 183 183-183 57 57L480-80ZM298-584l-58-56 240-240 240 240-58 56-182-182-182 182Z"/></svg>');
+}
+
+.jvv-select-all-button {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M280-280v-400h400v400H280Zm80-80h240v-240H360v240ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm80-160h-80q0-33 23.5-56.5T200-840v80Zm80 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80q0 33-23.5 56.5T760-120Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80q33 0 56.5 23.5T840-760h-80Z"/></svg>');
+}
+
+
+/* ---------------------------------------------------------------------------------- */
+
+
+.jvv {
+    color: #938e8e;
+}
+
+.jvv-nav {
+    background-color: #ebe5e5;
+}
+
+.jvv-row:hover, .jvv-punct-row:hover {
+    background-color: #eae7e3;
+}
+
+.jvv-row.jvv-object:before {
+    background-color: transparent;
+}
+
+.jvv-row.jvv-object:hover:before {
+    background-color: #f6d9bb;
+}
+
+.jvv-object-body:before {
+    background-color: #f3ebeb;
+    color: #a9a4a4;
+}
+
+.jvv-more {
+    color: #464242;
+}
+
+.jvv-key {
+    color: #cc8312;
+}
+
+.jvv-key:before {
+    color: #bc9292;
+    font-weight: bold;
+}
+
+.jvv-key:after {
+    color: #bc9292;
+    font-weight: bold;
+}
+
+.jvv-punct {
+}
+
+
+/* @formatter:off */
+.jvv-value.jvv-type-array  { color: #000000;}
+.jvv-value.jvv-type-object  { color: #000000;}
+.jvv-value.jvv-type-bigint  { color: #08852f;}
+.jvv-value.jvv-type-number  { color: #08852f;}
+.jvv-value.jvv-type-boolean  { color: #64481a;}
+.jvv-value.jvv-type-string  { color: #182d91;}
+.jvv-value.jvv-type-special  { color: #878787;}
