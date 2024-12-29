@@ -17,6 +17,9 @@ async function init() {
 
     await sleep(100)
     drawObjectList(OBJ_LIST)
+
+    await sleep(100)
+    navigateFromHash()
 }
 
 //
@@ -60,22 +63,22 @@ function runSearch() {
         return
     }
 
-    let a = [], b = [];
+    let a = [], b = []
 
     for (let obj of OBJ_LIST) {
         let ref = obj.$.toLowerCase()
         let idx = OBJ_INDEX[obj.$]
 
         if (words.some(w => ref.includes(w))) {
-            a.push(obj);
-            continue;
+            a.push(obj)
+            continue
         }
         if (words.some(w => idx.includes(w))) {
-            b.push(obj);
+            b.push(obj)
         }
     }
 
-    drawObjectList(a.concat(b));
+    drawObjectList(a.concat(b))
 }
 
 function drawObjectList(ls) {
@@ -92,8 +95,12 @@ function drawObjectList(ls) {
 }
 
 function navigateFromHash() {
-    let ref = location.hash.slice(1)
-    navigateToObject(getObject(ref) || OBJ_LIST[0])
+    let obj = getObject(location.hash.slice(1))
+    if (obj) {
+        navigateToObject(obj)
+    } else {
+        $('#main').innerHTML = ''
+    }
 }
 
 function navigateToObject(obj) {
@@ -109,7 +116,7 @@ function getObject(ref) {
 }
 
 function getStrings(obj) {
-    let res = [];
+    let res = []
 
     JSON.stringify(obj, (key, value) => {
         if (typeof value === 'string' || typeof value === 'number') {
