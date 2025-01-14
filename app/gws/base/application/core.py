@@ -151,12 +151,12 @@ class Object(gws.Application):
         self.versionString = f'GWS version {self.version}'
 
         if gws.u.is_file('/GWS_IMAGE_VERSION'):
-            self.versionString += ' (Image ' + gws.u.read_file('/GWS_IMAGE_VERSION') + ')'
+            self.versionString += ' (image ' + gws.u.read_file('/GWS_IMAGE_VERSION') + ')'
 
         if not gws.env.GWS_IN_TEST:
-            gws.log.info('*' * 60)
+            gws.log.info('*' * 80)
             gws.log.info(self.versionString)
-            gws.log.info('*' * 60)
+            gws.log.info('*' * 80)
 
         self._developerOptions = self.cfg('developer') or {}
         if self._developerOptions:

@@ -68,7 +68,6 @@ class QgisConfig(gws.Config):
     """Host where the qgis server runs."""
     port: int = 80
     """Port number."""
-    """max concurrent requests to this server"""
 
     debug: int = 0
     """QGIS_DEBUG (env. variable) (deprecated in 8.0)"""

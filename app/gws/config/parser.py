@@ -18,7 +18,7 @@ CONFIG_PATH_PATTERN = r'\.(py|json|yaml|cx)$'
 CONFIG_FUNCTION_NAME = 'config'
 
 
-def parse(specs: gws.SpecRuntime, value, type_name: str, source_path='', read_options=None):
+def parse_value(specs: gws.SpecRuntime, value, type_name: str, source_path='', read_options=None):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
@@ -69,7 +69,7 @@ class ConfigParser:
 
         gws.log.info('parsing main configuration...')
         try:
-            app_cfg = parse(self.specs, dct, 'gws.base.application.core.Config', config_path)
+            app_cfg = parse_value(self.specs, dct, 'gws.base.application.core.Config', config_path)
         except gws.ConfigurationError as exc:
             self.errors.append(exc)
             return None
@@ -94,7 +94,7 @@ class ConfigParser:
             uid = prj_dict.get('uid') or prj_dict.get('title') or '?'
             gws.log.info(f'parsing project {uid!r}...')
             try:
-                prj_cfg = parse(self.specs, prj_dict, 'gws.ext.config.project', prj_path)
+                prj_cfg = parse_value(self.specs, prj_dict, 'gws.ext.config.project', prj_path)
             except gws.ConfigurationError as exc:
                 self.errors.append(exc)
                 continue
@@ -161,7 +161,7 @@ class ConfigParser:
         def _loader(cur_path, p):
             if not os.path.isabs(p):
                 d = os.path.dirname(cur_path)
-                p = os.path.abspath(os.path.join(d, p))
+                p = os.path.abspath(d + '/' + p)
             paths.add(p)
             return gws.u.read_file(p), p
 

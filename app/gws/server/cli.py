@@ -9,9 +9,22 @@ from . import control
 
 class Params(gws.CliParams):
     config: Optional[str]
-    """configuration file"""
+    """Configuration file."""
     manifest: Optional[str]
-    """manifest file"""
+    """Manifest file."""
+
+
+class ConfigTestParams(gws.CliParams):
+    config: Optional[str]
+    """Configuration file."""
+    manifest: Optional[str]
+    """Manifest file."""
+    dirs: Optional[str]
+    """Directories to watch for changes."""
+    watch: Optional[bool]
+    """Watch mode."""
+    parse: Optional[bool]
+    """Only parse the config."""
 
 
 gws.ext.new.cli('server')
@@ -44,7 +57,13 @@ class Object(gws.Node):
         control.configure_and_store(p.manifest, p.config)
 
     @gws.ext.command.cli('serverConfigtest')
-    def do_configtest(self, p: Params):
+    def do_configtest(self, p: ConfigTestParams):
         """Test the configuration."""
 
-        control.configure(p.manifest, p.config)
+        control.config_test(
+            p.manifest,
+            p.config,
+            p.dirs,
+            with_parse_only=p.parse,
+            with_watch=p.watch,
+        )

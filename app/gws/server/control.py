@@ -41,15 +41,15 @@ Following workflows are supported:
 
 """
 
-import shlex
 import time
+
+import watchdog.events
+import watchdog.observers
 
 import gws
 import gws.config
 import gws.lib.datetimex
 import gws.lib.osx
-
-from . import manager
 
 # see bin/gws
 _SERVER_START_SCRIPT = f'{gws.c.VAR_DIR}/server.sh'
@@ -60,6 +60,7 @@ _PID_PATHS = {
     'mapproxy': f'{gws.c.PIDS_DIR}/mapproxy.uwsgi.pid',
     'nginx': f'{gws.c.PIDS_DIR}/nginx.pid',
 }
+
 
 def start(manifest_path=None, config_path=None):
     if app_is_running('web'):
@@ -91,12 +92,74 @@ def configure(manifest_path=None, config_path=None, is_starting=False):
             gws.log.info(f'AUTORUN: {autorun!r}')
             gws.lib.osx.run(autorun, echo=True)
 
-    return gws.config.configure(
+    root = gws.config.configure(
         manifest_path=manifest_path,
         config_path=config_path,
         before_init=_before_init if is_starting else None,
         fallback_config=_FALLBACK_CONFIG,
     )
+    if not root:
+        raise gws.ConfigurationError('configuration failed')
+    return root
+
+
+def config_test(
+        manifest_path=None,
+        config_path=None,
+        dirs_to_watch=None,
+        with_parse_only=False,
+        with_watch=False
+):
+    def _action():
+        if with_parse_only:
+            gws.config.parse(manifest_path, config_path)
+        else:
+            gws.config.configure(manifest_path, config_path)
+        gws.log.info(f'')
+        gws.log.info(f'')
+        gws.log.info(f'')
+
+    _action()
+
+    if not with_watch:
+        return
+
+    status = {
+        'should_act': False,
+    }
+
+    watch_events = {
+        watchdog.events.EVENT_TYPE_MOVED,
+        watchdog.events.EVENT_TYPE_DELETED,
+        watchdog.events.EVENT_TYPE_CREATED,
+        watchdog.events.EVENT_TYPE_MODIFIED,
+    }
+
+    class WatchHandler(watchdog.events.FileSystemEventHandler):
+        def on_any_event(self, event):
+            if event.event_type not in watch_events:
+                return
+            gws.log.info(f'>>>>> WATCH {event.event_type} {event.src_path}')
+            status['should_act'] = True
+
+    handler = WatchHandler()
+    dirs = gws.u.to_list(dirs_to_watch or '/data')
+
+    observer = watchdog.observers.Observer()
+    for d in dirs:
+        observer.schedule(handler, d, recursive=True)
+    observer.start()
+
+    try:
+        while True:
+            time.sleep(1)
+            if status['should_act']:
+                status['should_act'] = False
+                _action()
+    except KeyboardInterrupt:
+        observer.stop()
+
+    observer.join()
 
 
 ##
@@ -139,16 +202,14 @@ def app_is_running(srv):
 ##
 
 
-_FALLBACK_CONFIG = {
-    'server': {
-        'mapproxy': {'enabled': False},
-        'monitor': {'enabled': False},
-        'log': {'level': 'INFO'},
-        'qgis': {'host': 'qgis', 'port': 80},
-        'spool': {'enabled': False},
-        'web': {'enabled': True, 'workers': 1},
-        'autoRun': '',
-        'timeout': 60,
-        'timeZone': 'UTC',
-    }
-}
+_FALLBACK_CONFIG = gws.Config(
+    server=gws.Config(
+        timeZone="Europe/Berlin",
+        mapproxy=gws.Config(enabled=False),
+        monitor=gws.Config(enabled=False),
+        log=gws.Config(level='INFO'),
+        qgis=gws.Config(host='qgis', port=80),
+        spool=gws.Config(enabled=False),
+        web=gws.Config(enabled=True, workers=1, timeout=60, maxRequestLength=10),
+    )
+)

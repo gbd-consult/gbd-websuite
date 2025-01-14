@@ -65,7 +65,7 @@ def layer_configs_from_args(tca: TreeConfigArgs) -> list[gws.Config]:
 
     # configs need to be reparsed so that defaults can be injected
     return [
-        gws.config.parser.parse(
+        gws.config.parser.parse_value(
             tca.root.specs,
             cfg,
             'gws.ext.config.layer',

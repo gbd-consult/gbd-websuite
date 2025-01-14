@@ -16,7 +16,7 @@ _STATE = {
 def application(environ, start_response):
     if not _STATE['inited']:
         init()
-    root = gws.config.root()
+    root = gws.config.get_root()
     responder = handle_request(root, environ)
     return responder.send_response(environ, start_response)
 

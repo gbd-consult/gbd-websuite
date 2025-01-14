@@ -11,7 +11,7 @@ def application(environ, start_response):
 
 def spooler(env):
     try:
-        runner.run(gws.config.root(), env)
+        runner.run(gws.config.get_root(), env)
     except:
         gws.log.exception()
 
