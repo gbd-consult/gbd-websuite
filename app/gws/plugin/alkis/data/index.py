@@ -384,6 +384,7 @@ class Object(gws.Node):
             sel = indexlage.select().where(indexlage.c.lageuid.in_(lage_uids))
 
             for r in conn.execute(sel):
+                r = gws.u.to_dict(r)
                 uid = r['lageuid']
                 adresse_map[uid] = dt.Adresse(
                     uid=uid,
