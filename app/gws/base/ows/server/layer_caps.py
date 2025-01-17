@@ -111,6 +111,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
 
     if ns.extendsGml:
         gml = xmlx.namespace.get('gml3')
+        tag[1][f'xmlns:{gml.xmlns}'] = gml.uri
         tag.append(['xsd:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}])
 
     for lc in lcs:
@@ -128,7 +129,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
                         'minOccurs': '0',
                         'nillable': 'false' if f.isRequired else 'true',
                         'name': f.name,
-                        'type': xmlx.namespace.unqualify_name(typ),
+                        'type': typ,
                     }])
 
         type_name = f'{lc.featureName}Type'
