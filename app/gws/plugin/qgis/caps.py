@@ -65,9 +65,6 @@ def parse_element(root_el: gws.XmlElement) -> Caps:
     if ext:
         caps.projectBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
 
-    ext = _extent_from_tag(root_el.find('properties/WMSExtent'))
-    if ext:
-        caps.projectBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
     ext = _extent_from_tag(root_el.find('mapcanvas/extent'))
     if ext:
         caps.projectCanvasBounds = gws.gis.bounds.from_extent(ext, caps.projectCrs)
@@ -779,6 +776,9 @@ def _extent_from_list(ls):
     except ValueError:
         return
     if not all(math.isfinite(p) for p in e):
+        return
+    # all coordinates = 0, consider invalid
+    if all(abs(p) < 0.0001 for p in e):
         return
     e = [
         min(e[0], e[2]),
