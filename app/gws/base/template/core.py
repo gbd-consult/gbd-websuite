@@ -62,7 +62,14 @@ class Object(gws.Template):
         args = tri.args or {}
         args.setdefault('app', self.root.app)
 
-        locale = args.get('locale') or tri.locale or gws.lib.intl.default_locale()
+        locale = args.get('locale') or tri.locale
+        if not locale:
+            ls = self.root.app.localeUids
+            if ls:
+                locale = gws.lib.intl.locale(ls[0], fallback=True)
+        if not locale:
+            locale =  gws.lib.intl.default_locale()
+
         f = gws.lib.intl.formatters(locale)
 
         args.setdefault('locale', locale)
