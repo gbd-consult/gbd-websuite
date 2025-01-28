@@ -1,4 +1,5 @@
 @import datetime
+@import decimal
 
 @with feature.category as s
     <p class="head">{s | html}</p>
@@ -12,7 +13,10 @@
         @return str(value)
     @end
     @if isinstance(value, float)
-        @return str(value)
+        @return number.decimal(value)
+    @end
+    @if isinstance(value, decimal.Decimal)
+        @return number.decimal(value)
     @end
     @if isinstance(value, str) and value != "NULL"
         @return value | html | nl2br | linkify(target="_blank", cut=30)
