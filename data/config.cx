@@ -17,6 +17,11 @@ web.sites+ {
     ]
 }
 
+server {
+    timeZone "Europe/Berlin"
+    log.level "DEBUG"
+    timeout 120
+}
 
 projects+ {
     title "Restaurants in Düsseldorf"
