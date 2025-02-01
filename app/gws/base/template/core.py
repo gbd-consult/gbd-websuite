@@ -9,7 +9,7 @@ import gws.lib.intl
 import gws.lib.mime
 
 
-class Config(gws.Config):
+class Config(gws.ConfigWithAccess):
     mapSize: Optional[gws.UomSizeStr]
     """map size"""
     mimeTypes: Optional[list[str]]
