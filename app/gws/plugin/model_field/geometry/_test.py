@@ -4,7 +4,7 @@ import gws.config
 import gws.base.feature
 import gws.base.shape
 import gws.test.util as u
-import gws.gis.crs
+import gws.lib.crs
 
 
 @u.fixture(scope='module')
@@ -34,13 +34,13 @@ def test_create_geometry(root: gws.Root):
 
     point = gws.Shape()
     point.type = gws.GeometryType.point
-    point.crs = gws.gis.crs.WGS84
+    point.crs = gws.lib.crs.WGS84
     point.x = 1
     point.y = 2
 
     point2 = gws.Shape()
     point2.type = gws.GeometryType.point
-    point2.crs = gws.gis.crs.WGS84
+    point2.crs = gws.lib.crs.WGS84
     point2.x = 2
     point2.y = 3
 
@@ -97,7 +97,7 @@ def test_update_geometry(root: gws.Root):
 
     point = gws.Shape()
     point.type = gws.GeometryType.point
-    point.crs = gws.gis.crs.WGS84
+    point.crs = gws.lib.crs.WGS84
     point.x = 3
     point.y = 4
 
