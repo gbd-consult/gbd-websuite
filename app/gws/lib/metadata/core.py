@@ -5,6 +5,7 @@ from . import inspire
 
 
 class Props(gws.Props):
+    """Represents metadata properties."""
     abstract: str
     attribution: str
     dateCreated: str
@@ -15,22 +16,59 @@ class Props(gws.Props):
 
 
 def from_dict(d: dict) -> gws.Metadata:
+    """Creates a Metadata object from a dictionary.
+
+    Args:
+        d: Dictionary containing metadata information.
+
+    Returns:
+        A gws.Metadata object.
+    """
     return check(gws.Metadata(d))
 
 
 def from_args(**kwargs) -> gws.Metadata:
+    """Creates a Metadata object from keyword arguments.
+
+    Returns:
+        A gws.Metadata object.
+    """
     return from_dict(kwargs)
 
 
 def from_config(c: gws.Config) -> gws.Metadata:
+    """Creates a Metadata object from a configuration.
+
+    Args:
+        c: Configuration object.
+
+    Returns:
+        A gws.Metadata object.
+    """
     return check(gws.Metadata(gws.u.to_dict(c)))
 
 
 def from_props(p: gws.Props) -> gws.Metadata:
+    """Creates a Metadata object from properties.
+
+    Args:
+        p: Properties object.
+
+    Returns:
+        A gws.Metadata object.
+    """
     return check(gws.Metadata(gws.u.to_dict(p)))
 
 
 def props(md: gws.Metadata) -> gws.Props:
+    """Extracts properties from a Metadata object.
+
+    Args:
+        md: A gws.Metadata object.
+
+    Returns:
+        A gws.Props object containing metadata properties.
+    """
     return gws.Props(
         abstract=md.abstract or '',
         attribution=md.attribution.title if md.attribution else '',
@@ -50,11 +88,31 @@ _LIST_KEYS = [
 
 
 def set_value(md: gws.Metadata, key: str, val) -> gws.Metadata:
+    """Sets a value for a given key in a Metadata object.
+
+    Args:
+        md: A gws.Metadata object.
+        key: The key to set.
+        val: The value to set.
+
+    Returns:
+        The updated gws.Metadata object.
+    """
     setattr(md, key, val)
     return check(md)
 
 
 def set_default(md: gws.Metadata, key: str, val) -> gws.Metadata:
+    """Sets a default value for a given key in a Metadata object if it doesn't exist.
+
+    Args:
+        md: A gws.Metadata object.
+        key: The key to check.
+        val: The default value to set.
+
+    Returns:
+        The updated gws.Metadata object.
+    """
     if hasattr(md, key):
         return md
     setattr(md, key, val)
@@ -62,6 +120,14 @@ def set_default(md: gws.Metadata, key: str, val) -> gws.Metadata:
 
 
 def check(md: gws.Metadata) -> gws.Metadata:
+    """Validates and normalizes a Metadata object.
+
+    Args:
+        md: A gws.Metadata object.
+
+    Returns:
+        A validated gws.Metadata object.
+    """
     for key in _LIST_KEYS:
         val = md.get(key) or []
         if not isinstance(val, list):
@@ -81,7 +147,16 @@ def check(md: gws.Metadata) -> gws.Metadata:
     return md
 
 
-def merge(*mds, extend_lists=False) -> gws.Metadata:
+def merge(*mds, extend_lists: bool = False) -> gws.Metadata:
+    """Merges multiple Metadata objects.
+
+    Args:
+        *mds: Metadata objects to merge.
+        extend_lists: Whether to extend list values instead of replacing them.
+
+    Returns:
+        A merged gws.Metadata object.
+    """
     d = {}
 
     for md in mds:
