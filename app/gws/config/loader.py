@@ -224,8 +224,9 @@ def store(root_obj: gws.Root, path=None) -> str:
 
 
 def load(path=None) -> gws.Root:
+    ui = gws.lib.osx.user_info()
     path = path or _DEFAULT_STORE_PATH
-    gws.log.debug(f'loading config from {path!r}')
+    gws.log.info(f"loading config from {path!r}, user {ui['pw_name']} ({ui['pw_uid']}:{ui['pw_gid']})")
     try:
         return _load(path)
     except Exception as exc:

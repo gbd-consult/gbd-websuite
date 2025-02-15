@@ -2,13 +2,15 @@
 
 from typing import Optional
 
+import grp
 import hashlib
 import os
+import pwd
 import re
+import shlex
+import shutil
 import signal
 import subprocess
-import shutil
-import shlex
 import time
 
 import psutil
@@ -299,6 +301,38 @@ def process_rss_size(unit: str = 'm') -> float:
     if unit == 'g':
         return n / 1e9
     return n
+
+
+def user_info(uid=None, gid=None) -> dict:
+    """Get user and group information.
+
+    Args:
+        uid: Optional user ID. Defaults to the current process's user ID.
+        gid: Optional group ID. Defaults to the user's primary group ID.
+
+    Returns:
+        A dictionary containing user and group information
+        (a combination of struct_passwd and struct_group).
+    """
+
+    uid = uid or os.getuid()
+    u = pwd.getpwuid(uid)
+
+    r = dict(
+        pw_name=u.pw_name,
+        pw_uid=u.pw_uid,
+        pw_gid=u.pw_gid,
+        pw_dir=u.pw_dir,
+        pw_shell=u.pw_shell,
+    )
+
+    gid = gid or r['pw_gid']
+    g = grp.getgrgid(gid)
+
+    r['gr_name'] = g.gr_name
+    r['gr_gid'] = g.gr_gid
+
+    return r
 
 
 def find_files(dirname: _Path, pattern=None, ext=None, deep: bool = True):

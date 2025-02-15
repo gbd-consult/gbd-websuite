@@ -3,25 +3,38 @@
 export GWS_APP_DIR=${GWS_APP_DIR:-/gws-app}
 export GWS_VAR_DIR=${GWS_VAR_DIR:-/gws-var}
 export GWS_TMP_DIR=${GWS_TMP_DIR:-/tmp/gws}
+
 export GWS_UID=${GWS_UID:-1000}
 export GWS_GID=${GWS_GID:-1000}
-export GWS_USER=${GWS_USER:-gws}
-
-groupadd --gid $GWS_GID $GWS_USER                   >/dev/null 2>&1
-useradd  --uid $GWS_UID --gid $GWS_GID $GWS_USER    >/dev/null 2>&1
-
-PYTHON=python3
-
-MAIN_PY=$GWS_APP_DIR/bin/_gws.py
-
-XVFB=/usr/bin/Xvfb
-XVFBARGS='-dpi 96 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nolisten tcp'
-
-SERVER_START_SCRIPT=$GWS_VAR_DIR/server.sh
 
 export LC_ALL=C.UTF-8
 export PYTHONPATH=$GWS_APP_DIR
 export PYTHONDONTWRITEBYTECODE=1
+
+PYTHON=python3
+MAIN_PY=$GWS_APP_DIR/bin/_gws.py
+SERVER_START_SCRIPT=$GWS_VAR_DIR/server.sh
+
+###########################################################################
+
+# ensure the run user exists and has a valid home dir
+
+if ! getent group $GWS_GID > /dev/null; then
+    groupadd -g GWS_GID gws
+fi
+
+if ! getent passwd $GWS_UID > /dev/null; then
+    useradd -u $GWS_UID -g $GWS_GID gws
+fi
+
+GWS_USER_NAME=$(getent passwd 1000 | cut -d: -f1)
+GWS_USER_HOME=$(getent passwd 1000 | cut -d: -f6)
+
+mkdir -p "$GWS_USER_HOME"
+chown $GWS_UID:$GWS_GID "$GWS_USER_HOME"
+chmod 750 "$GWS_USER_HOME"
+
+###########################################################################
 
 remove_temp_dir() {
   rm -fr $GWS_TMP_DIR/*
@@ -35,7 +48,7 @@ ensure_temp_dir() {
 
 ensure_var_dir() {
   mkdir -p $GWS_VAR_DIR
-  chown $GWS_UID:$GWS_GID $GWS_VAR_DIR
+  chown -R $GWS_UID:$GWS_GID $GWS_VAR_DIR
   chmod 750 $GWS_VAR_DIR
 }
 
@@ -43,6 +56,8 @@ ensure_var_dir() {
 
 ensure_temp_dir
 ensure_var_dir
+
+# docker entrypoint
 
 if [ "$1 $2" == "server start" ]; then
 
@@ -59,6 +74,8 @@ if [ "$1 $2" == "server start" ]; then
     exec $SERVER_START_SCRIPT
 fi
 
+# if the `-p` option is set, run a given script
+
 if [ "$1" == "-p" ]; then
     shift
     SCRIPT=$1
@@ -66,5 +83,7 @@ if [ "$1" == "-p" ]; then
     $PYTHON $SCRIPT "$@"
     exit $?
 fi
+
+# run a built-in command
 
 $PYTHON $MAIN_PY "$@"

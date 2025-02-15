@@ -15,9 +15,7 @@ By default, the Manager uses text-only templates from the ``templates`` director
 
 from typing import cast
 
-import grp
 import os
-import pwd
 import re
 
 import gws
@@ -97,11 +95,12 @@ class Object(gws.ServerManager):
         gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
 
     def create_server_configs(self, target_dir, script_path, pid_paths):
+        ui = gws.lib.osx.user_info(gws.c.UID, gws.c.GID)
         args = TemplateArgs(
             root=self.root,
             inContainer=gws.c.env.GWS_IN_CONTAINER,
-            userName=pwd.getpwuid(gws.c.UID).pw_name,
-            groupName=grp.getgrgid(gws.c.GID).gr_name,
+            userName=ui['pw_name'],
+            groupName=ui['gr_name'],
             gwsEnv={k: v for k, v in sorted(os.environ.items()) if k.startswith('GWS_')},
             mapproxyPid=pid_paths['mapproxy'],
             mapproxySocket=f'{gws.c.TMP_DIR}/mapproxy.uwsgi.sock',
@@ -114,6 +113,8 @@ class Object(gws.ServerManager):
         )
 
         commands = []
+
+        commands.append(f"export HOME={ui['pw_dir']}")
 
         if args.inContainer:
             path = self._create_config('server.rsyslog_config', f'{target_dir}/syslog.conf', args)
