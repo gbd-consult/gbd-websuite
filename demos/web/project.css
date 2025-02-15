@@ -10,6 +10,31 @@ body {
     bottom: 0;
 }
 
+.config {
+    padding: 20px;
+    font-family: Helvetica, Arial, sans-serif;
+}
+.config h1 {
+    font-size: 20px;
+    margin: 0;
+    padding: 0;
+    color: #c0c0c0;
+}
+
+.config pre {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #c0c0c0;
+    background-color: #0b121e;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.config a {
+    color: #c0c0c0;
+}
+
 h6 {
     text-align: right;
 }

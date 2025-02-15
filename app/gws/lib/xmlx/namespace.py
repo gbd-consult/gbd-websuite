@@ -282,8 +282,8 @@ csw              |                  | 2.0.2 | www.opengis.net/cat/csw           
 fes              |                  | 2.0   | www.opengis.net/fes                           | schemas.opengis.net/filter/2.0/filterAll.xsd
 
 gml2             | gml              | 2.1   | www.opengis.net/gml                           | schemas.opengis.net/gml/2.1.2/gml.xsd
-gml3             | gml              | 3.2   | www.opengis.net/gml                           | schemas.opengis.net/gml/3.2.1/gml.xsd
-gml              | gml              |       | www.opengis.net/gml                           | schemas.opengis.net/gml/3.2.1/gml.xsd
+gml3             | gml              | 3.2   | www.opengis.net/gml/3.2                       | schemas.opengis.net/gml/3.2.1/gml.xsd
+gml              | gml              | 3.2   | www.opengis.net/gml/3.2                       | schemas.opengis.net/gml/3.2.1/gml.xsd
 
 gmlcov           |                  | 1.0   | www.opengis.net/gmlcov                        | schemas.opengis.net/gmlcov/1.0/gmlcovAll.xsd
 ogc              |                  |       | www.opengis.net/ogc                           | schemas.opengis.net/filter/1.1.0/filter.xsd

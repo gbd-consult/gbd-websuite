@@ -65,9 +65,6 @@ def parse_element(root_el: gws.XmlElement) -> Caps:
     if ext:
         caps.projectBounds = gws.lib.bounds.from_extent(ext, caps.projectCrs)
 
-    ext = _extent_from_tag(root_el.find('properties/WMSExtent'))
-    if ext:
-        caps.projectBounds = gws.lib.bounds.from_extent(ext, caps.projectCrs)
     ext = _extent_from_tag(root_el.find('mapcanvas/extent'))
     if ext:
         caps.projectCanvasBounds = gws.lib.bounds.from_extent(ext, caps.projectCrs)
