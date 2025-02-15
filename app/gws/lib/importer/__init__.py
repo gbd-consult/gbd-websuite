@@ -8,20 +8,32 @@ import gws
 
 
 class Error(gws.Error):
+    """Custom error class for import-related exceptions."""
     pass
 
 
-def import_from_path(path, base_dir=gws.c.APP_DIR):
+def import_from_path(path: str, base_dir: str = gws.c.APP_DIR):
+    """Imports a module from a given file path.
+
+    Args:
+        path: The relative or absolute path to the module file.
+        base_dir: The base directory to resolve relative paths. Defaults to `gws.c.APP_DIR`.
+
+    Returns:
+        The imported module.
+
+    Raises:
+        Error: If the module file is not found or a base directory cannot be located.
+    """
     abs_path = _abs_path(path, base_dir)
     if not os.path.isfile(abs_path):
         raise Error(f'{abs_path!r}: not found')
 
     if abs_path.startswith(base_dir):
-        # our own module, import relatively to base_dir
+        # Our own module, import relatively to base_dir
         return _do_import(abs_path, base_dir)
 
-    # plugin module, import relatively to the bottom-most "namespace" dir (without __init__)
-
+    # Plugin module, import relative to the bottom-most "namespace" dir (without __init__)
     dirs = abs_path.strip('/').split('/')
     dirs.pop()
 
@@ -33,7 +45,16 @@ def import_from_path(path, base_dir=gws.c.APP_DIR):
     raise Error(f'{abs_path!r}: cannot locate a base directory')
 
 
-def _abs_path(path, base_dir):
+def _abs_path(path: str, base_dir: str) -> str:
+    """Converts a relative path to an absolute normalized path.
+
+    Args:
+        path: The input file path.
+        base_dir: The base directory for resolving relative paths.
+
+    Returns:
+        The absolute, normalized file path.
+    """
     if not os.path.isabs(path):
         path = os.path.join(base_dir, path)
     path = os.path.normpath(path)
@@ -42,7 +63,19 @@ def _abs_path(path, base_dir):
     return path
 
 
-def _do_import(abs_path, base_dir):
+def _do_import(abs_path: str, base_dir: str):
+    """Imports a module given its absolute path and base directory.
+
+    Args:
+        abs_path: The absolute path to the module file.
+        base_dir: The base directory for resolving module names.
+
+    Returns:
+        The imported module.
+
+    Raises:
+        Error: If the module import fails or an existing module is being overwritten.
+    """
     mod_name = _module_name(abs_path[len(base_dir):])
 
     if mod_name in sys.modules:
@@ -62,7 +95,15 @@ def _do_import(abs_path, base_dir):
         raise Error(f'{abs_path!r}: import failed') from exc
 
 
-def _module_name(path):
+def _module_name(path: str) -> str:
+    """Derives the module name from a given file path.
+
+    Args:
+        path: The file path of the module.
+
+    Returns:
+        The module name in dotted notation.
+    """
     parts = path.strip('/').split('/')
     if parts[-1] == '__init__.py':
         parts.pop()

@@ -388,14 +388,38 @@ THEMES = {
 }
 
 
-def theme_name(theme, language):
+def theme_name(theme: str, language: str) -> str | None:
+    """Retrieves the name of a theme in the specified language.
+
+        Args:
+            theme: The theme identifier.
+            language: The language code.
+
+        Returns:
+            The name of the theme in the given language.
+
+        Raises:
+            KeyError: If the theme or language is not found in THEMES.
+        """
     try:
         return THEMES[theme][language][0]
     except KeyError:
         pass
 
 
-def theme_definition(theme, language):
+def theme_definition(theme: str, language: str) -> str | None:
+    """Retrieves the definition of a theme in the specified language.
+
+        Args:
+            theme: The theme identifier.
+            language: The language code.
+
+        Returns:
+            The definition of the theme in the given language.
+
+        Raises:
+            KeyError: If the theme or language is not found in THEMES.
+        """
     try:
         return THEMES[theme][language][1]
     except KeyError:
