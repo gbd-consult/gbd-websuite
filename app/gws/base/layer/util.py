@@ -85,8 +85,8 @@ def mapproxy_back_cache_config(layer: gws.Layer, mc, url, grid_uid):
 
 ##
 
-_BOX_SIZE = 1000
-_BOX_BUFFER = 200
+_DEFAULT_BOX_SIZE = 1000
+_DEFAULT_BOX_BUFFER = 200
 
 _GetBoxFn = Callable[[gws.Bounds, float, float], bytes]
 
@@ -120,15 +120,15 @@ def mpx_raster_render(layer: gws.Layer, lri: gws.LayerRenderInput):
         return gws.LayerRenderOutput(content=content)
 
 
-def generic_render_box(layer: gws.Layer, lri: gws.LayerRenderInput, get_box: _GetBoxFn) -> bytes:
+def generic_render_box(layer: gws.Layer, lri: gws.LayerRenderInput, get_box: _GetBoxFn, box_size: int = 0, box_buffer: int = 0) -> bytes:
     annotate = layer.root.app.developer_option('map.annotate_render')
 
-    max_box_size = lri.boxSize or _BOX_SIZE
-    box_buffer = lri.boxBuffer or _BOX_BUFFER
+    box_size = box_size or _DEFAULT_BOX_SIZE
+    box_buffer = box_buffer or _DEFAULT_BOX_BUFFER
 
     w, h = lri.view.pxSize
 
-    if not lri.view.rotation and w < max_box_size and h < max_box_size:
+    if not lri.view.rotation and w < box_size and h < box_size:
         # fast path: no rotation, small box
         content = get_box(lri.view.bounds, w, h)
         if annotate:
@@ -137,7 +137,7 @@ def generic_render_box(layer: gws.Layer, lri: gws.LayerRenderInput, get_box: _Ge
 
     if not lri.view.rotation:
         # no rotation, big box
-        img = _box_to_image(lri.view.bounds, w, h, max_box_size, box_buffer, annotate, get_box)
+        img = _box_to_image(lri.view.bounds, w, h, box_size, box_buffer, annotate, get_box)
         return img.to_bytes()
 
     # rotation: render a circumsquare around the wanted extent
@@ -146,7 +146,7 @@ def generic_render_box(layer: gws.Layer, lri: gws.LayerRenderInput, get_box: _Ge
     d = gws.lib.extent.diagonal((0, 0, w, h))
     b = gws.Bounds(crs=lri.view.bounds.crs, extent=circ)
 
-    img = _box_to_image(b, d, d, max_box_size, box_buffer, annotate, get_box)
+    img = _box_to_image(b, d, d, box_size, box_buffer, annotate, get_box)
 
     # rotate the square (NB: PIL rotations are counter-clockwise)
     # and crop the square back to the wanted extent
@@ -161,7 +161,7 @@ def generic_render_box(layer: gws.Layer, lri: gws.LayerRenderInput, get_box: _Ge
     return img.to_bytes()
 
 
-def _box_to_image(bounds: gws.Bounds, width: float, height: float, max_size: int, buf: int, annotate: bool, get_box: _GetBoxFn) -> gws.lib.image.Image:
+def _box_to_image(bounds: gws.Bounds, width: float, height: float, max_size: int, buffer: int, annotate: bool, get_box: _GetBoxFn) -> gws.lib.image.Image:
 
     if width < max_size and height < max_size:
         content = get_box(bounds, width, height)
@@ -188,13 +188,13 @@ def _box_to_image(bounds: gws.Bounds, width: float, height: float, max_size: int
     for ny in range(ycount):
         for nx in range(xcount):
             e = (
-                ext[0] + ext_w * (nx + 0) - buf * xres,
-                ext[3] - ext_h * (ny + 1) - buf * yres,
-                ext[0] + ext_w * (nx + 1) + buf * xres,
-                ext[3] - ext_h * (ny + 0) + buf * yres,
+                ext[0] + ext_w * (nx + 0) - buffer * xres,
+                ext[3] - ext_h * (ny + 1) - buffer * yres,
+                ext[0] + ext_w * (nx + 1) + buffer * xres,
+                ext[3] - ext_h * (ny + 0) + buffer * yres,
             )
             bounds = gws.Bounds(crs=bounds.crs, extent=e)
-            content = get_box(bounds, max_size + buf * 2, max_size + buf * 2)
+            content = get_box(bounds, max_size + buffer * 2, max_size + buffer * 2)
             gws.log.debug(f'_box_to_image (BIG): {nx=}/{xcount} {ny=}/{ycount} {len(content)=}')
             grid.append([nx, ny, content])
 
@@ -202,7 +202,7 @@ def _box_to_image(bounds: gws.Bounds, width: float, height: float, max_size: int
 
     for nx, ny, content in grid:
         tile = gws.lib.image.from_bytes(content)
-        tile.crop((buf, buf, tile.size()[0] - buf, tile.size()[1] - buf))
+        tile.crop((buffer, buffer, tile.size()[0] - buffer, tile.size()[1] - buffer))
         if annotate:
             _annotate_image(tile, f'{nx} {ny}')
         img.paste(tile, (nx * max_size, ny * max_size))

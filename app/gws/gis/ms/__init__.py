@@ -8,11 +8,6 @@ def version():
     return mapscript.msGetVersion()
 
 
-def map_from_bounds(bounds: gws.Bounds) -> 'Map':
-    m = Map()
-    return m.init_from_bounds(bounds)
-
-
 class RasterLayerOptions(gws.Data):
     path: str
     tileIndex: str
@@ -29,35 +24,29 @@ class VectorLayerOptions(gws.Data):
     style: gws.StyleValues
 
 
+def new_map():
+    return Map()
+
+
 class Map:
     mapObj: mapscript.mapObj
-    layerCnt: int
 
     def __init__(self):
-        self.layerCnt = 0
-
-    def clone(self):
-        c = Map()
-        c.mapObj = self.mapObj.clone()
-        c.layerCnt = self.layerCnt
-        return c
-
-    def init_from_bounds(self, bounds: gws.Bounds) -> 'Map':
         self.mapObj = mapscript.mapObj()
-
-        self.mapObj.setProjection(f'init=epsg:{bounds.crs.srid}')
-
         # use PNG by default
         self.mapObj.setOutputFormat(mapscript.outputFormatObj('AGG/PNG'))
         self.mapObj.outputformat.transparent = mapscript.MS_TRUE
 
 
-        return self
+
+    def copy(self):
+        c = Map()
+        c.mapObj = self.mapObj.clone()
+        return c
 
     def add_raster_layer(self, opts: RasterLayerOptions) -> mapscript.layerObj:
         lo = mapscript.layerObj(self.mapObj)
 
-        self.layerCnt += 1
         lc = self.mapObj.numlayers
         lo.name = f'_gws_{lc}'
         lo.type = mapscript.MS_LAYER_RASTER
@@ -77,8 +66,8 @@ class Map:
     def add_vector_layer(self, opts: VectorLayerOptions) -> mapscript.layerObj:
         lo = mapscript.layerObj(self.mapObj)
 
-        self.layerCnt += 1
-        lo.name = f'_{self.layerCnt}'
+        lc = self.mapObj.numlayers
+        lo.name = f'_gws_{lc}'
 
         lo.type = _GEOM_TO_MS_LAYER[opts.geometryType]
         lo.status = mapscript.MS_ON
@@ -101,8 +90,12 @@ class Map:
     def draw(self, bounds: gws.Bounds, size: gws.Size) -> gws.lib.image.Image:
         self.mapObj.setExtent(*bounds.extent)
         self.mapObj.setSize(*size)
+        self.mapObj.setProjection(bounds.crs.epsg)
         im = self.mapObj.draw()
         return gws.lib.image.from_bytes(im.getBytes())
+
+    def to_string(self):
+        return self.mapObj.convertToString()
 
 
 _GEOM_TO_MS_LAYER = {

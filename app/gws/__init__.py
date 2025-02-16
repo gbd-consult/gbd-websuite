@@ -1903,6 +1903,15 @@ class Crs:
             A transformed Extent.
         """
 
+    def extent_width_in_meters(self, extent: Extent, use_haversine=False) -> float:
+        """Calculate the width of an extent in meters;
+
+        Args:
+            extent: Extent.
+            use_haversine: If true, use a simpler haversine calculations like in QGIS.
+        """
+
+
     def transformer(self, crs_to: 'Crs') -> Callable:
         """Create a transformer function to another CRS.
 
@@ -2028,8 +2037,6 @@ class LayerRenderInputType(Enum):
 class LayerRenderInput(Data):
     """Layer render input."""
 
-    boxBuffer: int
-    boxSize: int
     extraParams: dict
     project: 'Project'
     style: 'Style'
@@ -3656,7 +3663,7 @@ class OwsService(Node):
     def handle_request(self, req: 'WebRequester') -> ContentResponse:
         """Handle a service request."""
 
-    def layer_is_suitable(self, layer: 'Layer') -> bool:
+    def layer_is_compatible(self, layer: 'Layer') -> bool:
         """True if layer can be used in this service."""
 
 

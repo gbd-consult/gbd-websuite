@@ -87,9 +87,13 @@ class Object(gws.OwsService):
         ]
 
     def configure_bounds(self):
-        crs_list = [gws.lib.crs.require(s) for s in self.cfg('supportedCrs', default=[])]
-        if not crs_list:
-            crs_list = [self.project.map.bounds.crs] if self.project else [gws.lib.crs.WEBMERCATOR]
+        p = self.cfg('supportedCrs')
+        if p:
+            crs_list = [gws.lib.crs.require(s) for s in p]
+        elif self.project:
+            crs_list = [self.project.map.bounds.crs]
+        else:
+            crs_list = [gws.lib.crs.WEBMERCATOR, gws.lib.crs.WGS84]
 
         p = self.cfg('extent')
         if p:
@@ -154,9 +158,9 @@ class Object(gws.OwsService):
 
     ##
 
-    def url_path(self) -> str:
-        if self.project:
-            return gws.u.action_url_path('owsService', serviceUid=self.uid, projectUid=self.project.uid)
+    def url_path(self, sr: request.Object) -> str:
+        if sr.project:
+            return gws.u.action_url_path('owsService', serviceUid=self.uid, projectUid=sr.project.uid)
         else:
             return gws.u.action_url_path('owsService', serviceUid=self.uid)
 
@@ -213,7 +217,7 @@ class Object(gws.OwsService):
         args = request.TemplateArgs(
             sr=sr,
             service=self,
-            serviceUrl=sr.req.url_for(self.url_path()),
+            serviceUrl=sr.req.url_for(self.url_path(sr)),
             url_for=sr.req.url_for,
             version=sr.version,
             intVersion=int(sr.version.replace('.', '')),

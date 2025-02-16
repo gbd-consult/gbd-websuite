@@ -125,8 +125,8 @@ class Object(server.service.Object):
 
         return sr
 
-    def layer_is_suitable(self, layer: gws.Layer):
-        return layer.isGroup or layer.canRenderBox or layer.isSearchable
+    def layer_is_compatible(self, layer: gws.Layer):
+        return layer.isGroup or layer.canRenderBox
 
     ##
 
@@ -167,7 +167,7 @@ class Object(server.service.Object):
             backgroundColor=None if transparent else 0,
             bbox=sr.bounds.extent,
             crs=sr.bounds.crs,
-            mapSize=(sr.pxWidth, sr.pxHeight, gws.Uom.px),
+            mapSize=(sr.pxSize[0], sr.pxSize[1], gws.Uom.px),
             planes=planes,
             project=self.project,
             user=sr.req.user,
@@ -239,8 +239,8 @@ class Object(server.service.Object):
         x = sr.int_param('X,I')
         y = sr.int_param('Y,J')
 
-        x = sr.bounds.extent[0] + (x * sr.xResolution)
-        y = sr.bounds.extent[3] - (y * sr.yResolution)
+        x = sr.bounds.extent[0] + (x * sr.resolution)
+        y = sr.bounds.extent[3] - (y * sr.resolution)
 
         point = gws.base.shape.from_xy(x, y, sr.crs)
 
@@ -248,7 +248,7 @@ class Object(server.service.Object):
             project=sr.project,
             layers=[lc.layer for lc in lcs],
             limit=sr.requested_feature_count('FEATURE_COUNT'),
-            resolution=sr.xResolution,
+            resolution=sr.resolution,
             shape=point,
             tolerance=self.searchTolerance,
         )
@@ -260,23 +260,20 @@ class Object(server.service.Object):
         if not sr.bounds:
             raise server.error.MissingParameterValue('BBOX')
 
-        sr.pxWidth = sr.int_param('WIDTH')
-        sr.pxHeight = sr.int_param('HEIGHT')
-        w, h = gws.lib.extent.size(sr.bounds.extent)
-
+        sr.pxSize = sr.int_param('WIDTH'), sr.int_param('HEIGHT')
+        mw = gws.lib.bounds.width_in_meters(sr.bounds)
         dpi = sr.int_param('DPI', default=0) or sr.int_param('MAP_RESOLUTION', default=0)
+
         if dpi:
             # honor the dpi setting - compute the scale with "their" dpi and convert to "our" resolution
-            sr.xResolution = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * w / sr.pxWidth, dpi))
-            sr.yResolution = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * h / sr.pxHeight, dpi))
+            sr.resolution = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * mw / sr.pxSize[0], dpi))
         else:
-            sr.xResolution = w / sr.pxWidth
-            sr.yResolution = h / sr.pxHeight
+            sr.resolution = mw / sr.pxSize[0]
 
-        gws.log.debug(f'set_size_and_resolution: {w=} px={sr.pxWidth}x{sr.pxHeight} {dpi=} res={sr.xResolution} 1:{gws.lib.uom.res_to_scale(sr.xResolution)}')
+        gws.log.debug(f'set_size_and_resolution: {mw=} px={sr.pxSize} {dpi=} res={sr.resolution} 1:{gws.lib.uom.res_to_scale(sr.resolution)}')
 
     def visible_layer_caps(self, sr, lcs: list[server.LayerCaps]) -> list[server.LayerCaps]:
         return [
             lc for lc in lcs
-            if min(lc.layer.resolutions) <= sr.xResolution <= max(lc.layer.resolutions)
+            if min(lc.layer.resolutions) <= sr.resolution <= max(lc.layer.resolutions)
         ]

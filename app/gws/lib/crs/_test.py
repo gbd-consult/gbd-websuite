@@ -44,21 +44,6 @@ def test_best_match_not__list():
     assert crs.best_match(crs.WGS84, lst) == crs.get('3857')
 
 
-def test_best_bounds():
-    b1 = gws.Bounds(crs=crs.WEBMERCATOR, extent=(0.0, 1.0, 1.0, 0.0))
-    b2 = gws.Bounds(crs=crs.WGS84, extent=(0.0, 1.0, 1.0, 0.0))
-    lst = [b1, b2]
-    assert crs.best_bounds(crs.WGS84, lst) == b2
-
-
-def test_best_axis():
-    assert crs.best_axis(crs.WGS84) == 'xy'
-
-
-def test_best_axis_inverted():
-    assert crs.best_axis(crs.WGS84, inverted_crs=[crs.WGS84]) == 'yx'
-
-
 def test_axis_for_format():
     assert crs.WGS84.axis_for_format('EPSG') == 'yx'
 

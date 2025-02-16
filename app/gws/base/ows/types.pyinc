@@ -115,7 +115,7 @@ class OwsService(Node):
     def handle_request(self, req: 'WebRequester') -> ContentResponse:
         """Handle a service request."""
 
-    def layer_is_suitable(self, layer: 'Layer') -> bool:
+    def layer_is_compatible(self, layer: 'Layer') -> bool:
         """True if layer can be used in this service."""
 
 

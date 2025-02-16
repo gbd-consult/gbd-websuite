@@ -129,7 +129,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
                         'minOccurs': '0',
                         'nillable': 'false' if f.isRequired else 'true',
                         'name': f.name,
-                        'type': xmlx.namespace.unqualify_name(typ),
+                        'type': typ,
                     }])
 
         type_name = f'{lc.featureName}Type'

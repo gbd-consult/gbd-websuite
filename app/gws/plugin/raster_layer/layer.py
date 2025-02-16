@@ -70,16 +70,26 @@ class Object(gws.base.layer.image.Object):
 
     def _enum_images(self, paths):
         entries = []
+        srid = 0
 
         for path in paths:
             try:
                 with gws.gis.gdalx.open_raster(path) as gd:
+                    # all images must have the same crs
+                    crs = gd.crs()
+                    if not crs:
+                        gws.log.warning(f'invalid image: {path!r}: no CRS')
+                        continue
+                    if srid and crs.srid != srid:
+                        gws.log.warning(f'invalid image: {path!r}: srid={crs.srid}, expected {srid}')
+                        continue
+                    srid = crs.srid
                     entries.append(ImageEntry(
                         path=path,
                         bounds=gd.bounds()
                     ))
             except gws.gis.gdalx.Error as exc:
-                gws.log.warning(f'invalid image: {path!r} ({exc})')
+                gws.log.warning(f'invalid image: {path!r}: ({exc})')
 
         return entries
 
@@ -92,7 +102,7 @@ class Object(gws.base.layer.image.Object):
         for e in self.entries:
             records.append(gws.FeatureRecord(
                 attributes={'location': e.path},
-                shape=gws.base.shape.from_bounds(e.bounds).transformed_to(self.mapCrs)
+                shape=gws.base.shape.from_bounds(e.bounds)
             ))
 
         with gws.gis.gdalx.open_vector(idx_path, 'w') as ds:
@@ -131,10 +141,13 @@ class Object(gws.base.layer.image.Object):
 
     ##
 
+    # @TODO check memory usage
+    MAX_BOX_SIZE = 9000
+
     def render(self, lri):
         ts = gws.u.mstime()
 
-        ms_map = gws.gis.ms.map_from_bounds(self.bounds)
+        ms_map = gws.gis.ms.new_map()
 
         ms_map.add_raster_layer(gws.gis.ms.RasterLayerOptions(
             tileIndex=self.tileIndexPath,
@@ -146,7 +159,7 @@ class Object(gws.base.layer.image.Object):
                 img = ms_map.draw(bounds, (width, height))
                 return img.to_bytes()
 
-            content = gws.base.layer.util.generic_render_box(self, lri, get_box)
+            content = gws.base.layer.util.generic_render_box(self, lri, get_box, box_size=self.MAX_BOX_SIZE)
             return gws.LayerRenderOutput(content=content)
 
         if lri.type == gws.LayerRenderInputType.xyz:

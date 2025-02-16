@@ -42,6 +42,8 @@ class Object:
     bounds: gws.Bounds
     crs: gws.Crs
     params: dict
+    pxSize: gws.Size
+    resolution: float
     isSoap: bool = False
     layerCapsList: list[core.LayerCaps]
     operation: gws.OwsOperation
@@ -68,10 +70,8 @@ class Object:
 
         self.alwaysXY = False
         self.isSoap = False
-        self.pxWidth = 0
-        self.pxHeight = 0
-        self.xResolution = 0
-        self.yResolution = 0
+        self.pxSize = 0, 0
+        self.resolution = 0
 
         # OGC 06-042, 7.2.3.5
         if self.service.updateSequence:
@@ -91,13 +91,13 @@ class Object:
         if not self.req.user.can_read(layer) or not layer.isEnabledForOws:
             return
 
-        is_suitable = self.service.layer_is_suitable(layer)
-        if not is_suitable and not layer.isGroup:
+        is_compat = self.service.layer_is_compatible(layer)
+        if not is_compat and not layer.isGroup:
             return
 
         lc = layer_caps.for_layer(layer, self.req.user, self.service)
 
-        # NB groups must be inspected even if not 'suitable'
+        # NB groups must be inspected even if not 'compatible'
         if layer.isGroup:
             lc.isGroup = True
             n = len(lcs)
@@ -106,7 +106,7 @@ class Object:
             if not lc.children:
                 # no empty groups
                 return
-            if is_suitable:
+            if is_compat:
                 lc.hasLegend = any(c.hasLegend for c in lc.children)
                 lc.isSearchable = any(c.isSearchable for c in lc.children)
                 lcs.insert(n, lc)
@@ -130,14 +130,14 @@ class Object:
         if p:
             project = self.req.user.require_project(p)
             if self.service.project and project != self.service.project:
-                raise gws.NotFoundError(f'ows {self.service.uid=}: wrong project={p!r}')
+                raise gws.NotFoundError(f'ows {self.service.uid}: wrong project={p!r}')
             return project
 
         if self.service.project:
             # for in-project services, ensure the user can access the project
             return self.req.user.require_project(self.service.project.uid)
 
-        raise gws.NotFoundError(f'project not found for {self.service}')
+        raise gws.NotFoundError(f'ows {self.service.uid}: project not found')
 
     def requested_version(self, param_names: str) -> str:
         p, val = self._get_param(param_names, '')

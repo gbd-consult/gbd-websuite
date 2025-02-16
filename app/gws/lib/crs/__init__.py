@@ -43,6 +43,29 @@ class Object(gws.Crs):
         tr = _pyproj_transformer(self.srid, crs_to.srid)
         return tr.transform
 
+    def extent_width_in_meters(self, ext, use_haversine=False):
+        if self.isProjected:
+            if self.uom != gws.Uom.m:
+                # @TODO support non-meter crs
+                raise Error(f'unsupported unit: {self.uom}')
+            return ext[2] - ext[0]
+
+        if use_haversine:
+            # straight port from QGIS/src/core/qgsscalecalculator.cpp QgsScaleCalculator::calculateGeographicDistance
+            lat = (ext[3] + ext[1]) * 0.5
+            RADS = (4.0 * math.atan(1.0)) / 180.0
+            a = math.pow(math.cos(lat * RADS), 2)
+            c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
+            RA = 6378000
+            E = 0.0810820288
+            radius = RA * (1.0 - E * E) / math.pow(1.0 - E * E * math.sin(lat * RADS) * math.sin(lat * RADS), 1.5)
+            return (ext[2] - ext[0]) / 180.0 * radius * c
+
+        # compute pyproj geodetic distance along the middle latitude
+        g = pyproj.Geod(ellps='WGS84')
+        lat_avg = (ext[1] + ext[3]) / 2
+        return g.line_length([ext[0], ext[2]], [lat_avg, lat_avg])
+
     def to_string(self, fmt=None):
         return getattr(self, str(fmt or gws.CrsFormat.epsg).lower())
 
@@ -198,52 +221,6 @@ def _best_match(crs, supported_crs):
 
     for sup in supported_crs:
         return sup
-
-
-def best_bounds(crs: gws.Crs, supported_bounds: list[gws.Bounds]) -> gws.Bounds:
-    """Return the best one from the list of supported bounds.
-
-    Args:
-        crs: target CRS
-        supported_bounds: Bounds list
-
-    Returns:
-        A Bounds object
-    """
-
-    bst = best_match(crs, [b.crs for b in supported_bounds])
-    for b in supported_bounds:
-        if b.crs == bst:
-            return b
-
-
-def best_axis(
-        crs: gws.Crs,
-        protocol: gws.OwsProtocol = None,
-        protocol_version: str = None,
-        crs_format: gws.CrsFormat = None,
-        inverted_crs: Optional[list[gws.Crs]] = None
-) -> gws.Axis:
-    """Return the 'best guess' axis under given circumstances.
-
-    Args:
-        crs: target CRS
-        protocol: OWS protocol (WMS, WFS...)
-        protocol_version: protocol version
-        crs_format: the format the target_crs was obtained from
-        inverted_crs: user-provided list of CRSes known to have an inverted (YX) axis
-
-    Returns:
-        An axis
-    """
-
-    # @TODO some logic to guess the axis, based on crs, service protocol and version
-    # see https://docs.geoserver.org/latest/en/user/services/wfs/basics.html#wfs-basics-axis
-
-    if inverted_crs and crs in inverted_crs:
-        return gws.Axis.yx
-
-    return gws.Axis.xy
 
 
 ##

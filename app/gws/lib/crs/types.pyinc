@@ -99,6 +99,15 @@ class Crs:
             A transformed Extent.
         """
 
+    def extent_width_in_meters(self, extent: Extent, use_haversine=False) -> float:
+        """Calculate the width of an extent in meters;
+
+        Args:
+            extent: Extent.
+            use_haversine: If true, use a simpler haversine calculations like in QGIS.
+        """
+
+
     def transformer(self, crs_to: 'Crs') -> Callable:
         """Create a transformer function to another CRS.
 

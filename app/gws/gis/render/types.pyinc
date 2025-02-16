@@ -88,8 +88,6 @@ class LayerRenderInputType(Enum):
 class LayerRenderInput(Data):
     """Layer render input."""
 
-    boxBuffer: int
-    boxSize: int
     extraParams: dict
     project: 'Project'
     style: 'Style'
