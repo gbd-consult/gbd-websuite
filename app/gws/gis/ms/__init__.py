@@ -13,6 +13,7 @@ class RasterLayerOptions(gws.Data):
     tileIndex: str
     bounds: gws.Bounds
     crs: gws.Crs
+    processing: list[str]
 
 
 class VectorLayerOptions(gws.Data):
@@ -37,8 +38,6 @@ class Map:
         self.mapObj.setOutputFormat(mapscript.outputFormatObj('AGG/PNG'))
         self.mapObj.outputformat.transparent = mapscript.MS_TRUE
 
-
-
     def copy(self):
         c = Map()
         c.mapObj = self.mapObj.clone()
@@ -56,6 +55,10 @@ class Map:
             lo.data = opts.path
         if opts.tileIndex:
             lo.tileindex = opts.tileIndex
+
+        if opts.processing:
+            for p in opts.processing:
+                lo.addProcessing(p)
 
         lo.setProjection(f'init=epsg:{opts.crs.srid}')
 
@@ -88,11 +91,14 @@ class Map:
         return lo
 
     def draw(self, bounds: gws.Bounds, size: gws.Size) -> gws.lib.image.Image:
+        gws.debug.time_start(f'mapserver.draw {bounds=} {size=}')
         self.mapObj.setExtent(*bounds.extent)
         self.mapObj.setSize(*size)
         self.mapObj.setProjection(bounds.crs.epsg)
-        im = self.mapObj.draw()
-        return gws.lib.image.from_bytes(im.getBytes())
+        res = self.mapObj.draw()
+        img =  gws.lib.image.from_bytes(res.getBytes())
+        gws.debug.time_end()
+        return img
 
     def to_string(self):
         return self.mapObj.convertToString()

@@ -7,21 +7,23 @@ shift
 ARCH=$1
 shift
 
+HELP="
+make.sh <command> <version> [<arch>]
+    commands
+      - download = download the Mapserver release
+      - docker   = build the build image
+      - bash     = shell to a build container
+      - release  = build the release package
+      - debug    = build the debug package
+    version
+      Mapserver version like 8.2.2
+    arch
+      amd64 (default) or arm64
+"
+
 if [ -z "$CMD" ] || [ -z "$VERSION" ]; then
-    echo "
-    Usage: make.sh <command> <version> [<arch>]
-        commands
-            - download = download the Mapserver release
-            - docker   = build the build image
-            - bash     = shell to a build container
-            - release  = build the release package
-            - debug    = build the debug package
-        version
-            Mapserver version like 8.2.2
-        arch
-            amd64 (default) or arm64
-    "
-    exit
+    echo -e "$HELP"
+    exit 1
 fi
 
 if [ -z "$ARCH" ] ; then
@@ -45,7 +47,7 @@ OUT_DIR=$BUILD_DIR/out
 
 PKGNAME=gbd-mapserver
 
-set -ex
+set -e
 
 ##
 
@@ -156,9 +158,8 @@ download)
     rm -fr $SRC_DIR && mkdir -p $SRC_DIR
     cd $SRC_DIR
 
-    RDASH=${VERSION//./-}
     cd $SRC_DIR
-    curl -k -L -O "https://github.com/MapServer/MapServer/releases/download/rel-$RDASH/mapserver-$VERSION.tar.gz"
+    curl -k -L -O "https://download.osgeo.org/mapserver/mapserver-${VERSION}.tar.gz"
     tar -xzf mapserver-$VERSION.tar.gz
     ;;
 
@@ -192,4 +193,9 @@ debug-in-container)
     build_in_container Debug
     ;;
 
+*)
+    echo "invalid command: $CMD"
+    echo -e "$HELP"
+    exit
+    ;;
 esac

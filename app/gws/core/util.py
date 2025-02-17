@@ -967,3 +967,8 @@ def sleep(n: float):
 def mstime() -> int:
     """Unix time as an integer number of milliseconds."""
     return int(time.time() * 1000)
+
+
+def microtime() -> int:
+    """Unix time as an integer number of microseconds."""
+    return int(time.time() * 1000000)

@@ -69,7 +69,7 @@ class Base:
 
     arch = 'amd64'
 
-    mapserver_version = '8.2.2'
+    mapserver_version = '8.4.0'
 
     vendor = 'gbdconsult'
     description = 'GWS Server'
@@ -182,10 +182,9 @@ class Builder(Base):
             cli.run(f'rsync -a --exclude-from {self.exclude_file} {self.datadir}/* {self.skip_cache_mark}data')
 
         cli.run(f'git --git-dir={self.gws_dir}/.git rev-parse  HEAD > rev')
-        cli.write_file('GWS_IMAGE_VERSION', self.app_version.strip() + '.' + cli.read_file('rev').strip())
+        cli.write_file('GWS_REVISION', cli.read_file('rev').strip())
 
         cli.write_file(f'Dockerfile', self.dockerfile())
-
 
     def dockerfile(self):
         df = []
@@ -238,7 +237,7 @@ class Builder(Base):
         __(f'COPY {self.skip_cache_mark}app /gws-app')
         if self.datadir:
             __(f'COPY {self.skip_cache_mark}data /data')
-        __(f'COPY GWS_IMAGE_VERSION /')
+        __(f'COPY GWS_REVISION /')
 
         __('RUN touch /.dockerenv')
         __('RUN touch /gws-app/.dockerenv')

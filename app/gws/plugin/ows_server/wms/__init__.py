@@ -59,6 +59,8 @@ _DEFAULT_METADATA = gws.Metadata(
     isoSpatialRepresentationType='vector',
 )
 
+_DEFAULT_MAX_PIXEL_SIZE = 2048
+
 
 class Config(server.service.Config):
     """WMS Service configuration"""
@@ -80,7 +82,7 @@ class Object(server.service.Object):
 
     def configure(self):
         self.layerLimit = self.cfg('layerLimit') or 0
-        self.maxPixelSize = self.cfg('layerLimit') or 0
+        self.maxPixelSize = self.cfg('maxPixelSize') or _DEFAULT_MAX_PIXEL_SIZE
 
     def configure_templates(self):
         return gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
@@ -121,7 +123,6 @@ class Object(server.service.Object):
         sr.crs = sr.requested_crs('CRS,SRS') or sr.project.map.bounds.crs
         sr.targetCrs = sr.crs
         sr.alwaysXY = sr.version < '1.3'
-        sr.bounds = sr.requested_bounds('BBOX')
 
         return sr
 
@@ -179,15 +180,13 @@ class Object(server.service.Object):
 
     def handle_get_legend_graphic(self, sr: server.request.Object):
         # @TODO currently only support 'layer'
-
         lcs = self.requested_layer_caps(sr, 'LAYER,LAYERS', bottom_first=False)
         return self.render_legend(sr, lcs, sr.requested_format('FORMAT'))
 
     def handle_get_feature_info(self, sr: server.request.Object):
-        # @TODO top-first or bottom-first?
-
         self.set_size_and_resolution(sr)
 
+        # @TODO top-first or bottom-first?
         lcs = self.requested_layer_caps(sr, 'QUERY_LAYERS', bottom_first=False)
         lcs = [lc for lc in lcs if lc.isSearchable]
         if not lcs:
@@ -257,13 +256,20 @@ class Object(server.service.Object):
         return self.feature_collection(sr, lcs, len(results), results)
 
     def set_size_and_resolution(self, sr: server.request.Object):
+
+        sr.bounds = sr.requested_bounds('BBOX')
         if not sr.bounds:
             raise server.error.MissingParameterValue('BBOX')
 
         sr.pxSize = sr.int_param('WIDTH'), sr.int_param('HEIGHT')
-        mw = gws.lib.bounds.width_in_meters(sr.bounds)
-        dpi = sr.int_param('DPI', default=0) or sr.int_param('MAP_RESOLUTION', default=0)
+        if sr.pxSize[0] > self.maxPixelSize:
+            raise server.error.InvalidParameterValue('WIDTH')
+        if sr.pxSize[1] > self.maxPixelSize:
+            raise server.error.InvalidParameterValue('HEIGHT')
 
+        mw = gws.lib.bounds.width_in_meters(sr.bounds)
+
+        dpi = sr.int_param('DPI', default=0) or sr.int_param('MAP_RESOLUTION', default=0)
         if dpi:
             # honor the dpi setting - compute the scale with "their" dpi and convert to "our" resolution
             sr.resolution = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * mw / sr.pxSize[0], dpi))

@@ -150,8 +150,8 @@ class Object(gws.Application):
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
 
-        if gws.u.is_file('/GWS_IMAGE_VERSION'):
-            self.versionString += ' (image ' + gws.u.read_file('/GWS_IMAGE_VERSION') + ')'
+        if gws.u.is_file('/GWS_REVISION'):
+            self.versionString += ' (rev. ' + gws.u.read_file('/GWS_REVISION') + ')'
 
         if not gws.env.GWS_IN_TEST:
             gws.log.info('*' * 80)
