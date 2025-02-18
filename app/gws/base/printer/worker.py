@@ -13,7 +13,7 @@ import gws.lib.uom
 
 
 def main(root: gws.Root, job: gws.Job):
-    request = gws.u.unserialize_from_path(job.payload.get('requestPath'))
+    request = gws.u.unserialize_from_path(job.requestPath)
     w = Object(root, job.uid, request, job.user)
     w.run()
 
@@ -37,6 +37,12 @@ class Object:
         self.user = user
         self.request = request
         self.page_number = 0
+
+    def run(self):
+        self.prepare()
+        res = self.template.render(self.tri)
+        self.update_job(state=gws.JobState.complete, outputPath=res.contentPath)
+        return res.contentPath
 
     def prepare(self):
         self.project = cast(gws.Project, self.user.require(self.request.projectUid, gws.ext.object.project))
@@ -79,14 +85,13 @@ class Object:
             rotation=self.tri.maps[0].rotation if self.tri.maps else 0,
             dpi=self.tri.dpi,
             crs=self.tri.crs.srid,
-            templateRenderInput=self.tri,
         )
 
         # @TODO read the args feature from the request
         self.tri.args = gws.u.merge(self.request.args, extra)
 
         n = sum(len(mp.planes) for mp in self.tri.maps) + 1
-        self.update_job(state=gws.JobState.running, payload=gws.Data(stepCount=n, step=0))
+        self.update_job(numSteps=n)
 
     def notify(self, event, details=None):
         gws.log.debug(f'JOB {self.jobUid}: print.worker.notify {event=} {details=}')
@@ -97,23 +102,16 @@ class Object:
 
         if event == 'begin_plane':
             name = gws.u.get(details, 'layer.title')
-            self.update_job(payload=gws.Data(step=job.payload.get('step', 0) + 1, stepName=name or ''))
+            self.update_job(step=job.step + 1, stepName=name or '')
             return
 
         if event == 'finalize_print':
-            self.update_job(payload=gws.Data(step=job.payload.get('step', 0) + 1))
+            self.update_job(step=job.step + 1)
             return
 
         if event == 'page_break':
             self.page_number += 1
-            self.update_job(payload=gws.Data(stepName=str(self.page_number)))
             return
-
-    def run(self):
-        self.prepare()
-        res = self.template.render(self.tri)
-        self.update_job(state=gws.JobState.complete, payload=gws.Data(contentPath=res.contentPath))
-        return res.contentPath
 
     def prepare_map(self, tri: gws.TemplateRenderInput, mp: gws.PrintMap) -> gws.MapRenderInput:
         planes = []
@@ -273,12 +271,9 @@ class Object:
 
         return job
 
-    def update_job(self, state: gws.JobState = None, error: str = None, payload: gws.Data = None):
+    def update_job(self, **kwargs):
         job = self.get_job()
         if job:
-            self.root.app.jobMgr.update_job(
-                job,
-                state=state,
-                error=error,
-                payload=payload
-            )
+            for k, v in kwargs.items():
+                setattr(job, k, v)
+                self.root.app.jobMgr.save_job(job)

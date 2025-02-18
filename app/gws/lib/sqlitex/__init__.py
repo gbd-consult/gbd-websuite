@@ -10,6 +10,7 @@ If the error message is "no such table", the wrapper runs the  "init" DDL before
 """
 
 from typing import Optional
+
 import gws
 import gws.lib.sa as sa
 
@@ -23,7 +24,7 @@ class Object:
 
     def __init__(self, db_path: str, init_ddl: Optional[str] = ''):
         self.dbPath = db_path
-        self.initDdl = init_ddl
+        self.initDDL = init_ddl
 
     def execute(self, stmt: str, **params):
         """Execute a text DML statement and commit."""
@@ -31,7 +32,7 @@ class Object:
         self._exec2(False, stmt, params)
 
     def select(self, stmt: str, **params) -> list[dict]:
-        """Execute a text select statement and commit."""
+        """Execute a text select statement."""
 
         return self._exec2(True, stmt, params)
 
@@ -43,7 +44,18 @@ class Object:
 
         self._exec2(False, f'INSERT INTO {table_name} ({keys}) VALUES({vals})', rec)
 
-    ##
+    def update(self, table_name: str, rec: dict, uid):
+        """Update a record (dict) in a table."""
+
+        vals = ','.join(f'{k}=:{k}' for k in rec)
+        self._exec2(False, f'UPDATE {table_name} SET {vals} WHERE uid=:uid', {'uid': uid, **rec})
+
+    def delete(self, table_name: str, uid):
+        """Delete a record by uid from a table."""
+
+        self._exec2(False, f'DELETE FROM {table_name} WHERE uid=:uid', {'uid': uid})
+
+        ##
 
     _MAX_ERRORS = 3
     _SLEEP_TIME = 0.1
@@ -66,11 +78,11 @@ class Object:
 
             # @TODO using strings for error checking, is there a better way?
 
-            if 'no such table' in str(sa_exc) and self.initDdl:
+            if 'no such table' in str(sa_exc) and self.initDDL:
                 gws.log.warning(f'sqlitex: {self.dbPath}: error={sa_exc}, running init...')
                 try:
                     with self._engine().connect() as conn:
-                        conn.execute(sa.text(self.initDdl))
+                        conn.execute(sa.text(self.initDDL))
                         conn.commit()
                     continue
                 except sa.Error as exc:

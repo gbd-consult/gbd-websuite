@@ -359,14 +359,8 @@ class Dialog extends gc.View<ViewProps> {
             return <gc.ui.Dialog
                 {...gc.lib.cls('printerResultDialog')}
                 whenClosed={stop}
-                frame={job.resultUrl}
+                frame={job.outputUrl}
             />;
-            // return <gc.ui.Dialog
-            //     {...gc.lib.cls('printerResultDialog', this.props.printerDialogZoomed && 'isZoomed')}
-            //     whenClosed={stop}
-            //     whenZoomed={() => cc.update({printerDialogZoomed: !this.props.printerDialogZoomed})}
-            //     frame={job.url}
-            // />;
         }
 
         if (ps === 'error') {
@@ -656,7 +650,7 @@ class Controller extends gc.Controller {
 
         if (job) {
             this.update({
-                printerJob: await this.app.server.printerJobInfo({jobUid: job.jobUid}),
+                printerJob: await this.app.server.jobStatus({jobUid: job.jobUid}),
             });
         }
     }
@@ -664,7 +658,7 @@ class Controller extends gc.Controller {
     protected async sendCancel(jobUid) {
         if (jobUid) {
             console.log('SEND CANCEL');
-            await this.app.server.printerCancelJob({jobUid});
+            await this.app.server.jobCancel({jobUid});
         }
     }
 

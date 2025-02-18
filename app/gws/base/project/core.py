@@ -95,6 +95,11 @@ class Object(gws.Project):
         if tpl:
             desc = tpl.render(gws.TemplateRenderInput(args={'project': self}, user=user))
 
+        printers = [p for p in self.printers if user.can_use(p)]
+        printers.extend(p for p in self.root.app.printers if user.can_use(p))
+        if not printers:
+            printers = [self.root.app.defaultPrinter]
+
         return gws.Props(
             actions=self.root.app.actionMgr.actions_for_project(self, user),
             client=self.client or self.root.app.client,
@@ -103,7 +108,7 @@ class Object(gws.Project):
             metadata=gws.lib.metadata.props(self.metadata),
             models=[],
             overviewMap=self.overviewMap,
-            printers=self.root.app.printerMgr.printers_for_project(self, user),
+            printers=printers,
             title=self.title,
             uid=self.uid,
         )

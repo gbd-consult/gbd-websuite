@@ -633,8 +633,7 @@ class Object(gws.base.action.Object):
         )
 
         mgr = self.root.app.printerMgr
-        job = mgr.start_job(print_request, req.user)
-        return mgr.job_response(job)
+        return mgr.start_print_job(print_request, req.user)
 
     @gws.ext.command.api('alkisSelectionStorage')
     def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:

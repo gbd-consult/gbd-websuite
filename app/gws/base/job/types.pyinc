@@ -23,11 +23,17 @@ class Job(Data):
     """Background job data."""
 
     uid: str
-    state: JobState
-    error: str
-    payload: Data
     user: 'User'
     worker: str
+    state: JobState
+    error: str
+    numSteps: int
+    step: int
+    stepName: str
+    requestPath: str
+    outputPath: str
+    outputMime: str
+    extra: dict
 
 
 class JobRequest(Request):
@@ -39,19 +45,17 @@ class JobResponse(Response):
     state: JobState
     progress: int
     stepName: str
-    resultUrl: str
+    outputUrl: str
 
 
 class JobManager(Node):
     """Job Manager."""
 
-    def create_job(self, user: User, worker: str, payload: Data = None) -> Job: ...
+    def create_job(self, user: User, worker: str) -> Job: ...
 
-    def get_job(self, job_uid: str) -> Optional[Job]: ...
+    def get_job(self, job_uid: str, user: User = None) -> Optional[Job]: ...
 
-    def get_job_for(self, job_uid: str, user: User) -> Optional[Job]: ...
-
-    def update_job(self, job: Job, state: JobState = None, error: str = None, payload: Data = None) -> Optional[Job]: ...
+    def save_job(self, job: Job) -> Optional[Job]: ...
 
     def run_job(self, job: Job) -> Optional[Job]: ...
 
@@ -59,4 +63,6 @@ class JobManager(Node):
 
     def remove_job(self, job: Job): ...
 
-    def job_response(self, job: Job) -> Optional[JobResponse]: ...
+    def schedule_job(self, job: Job): ...
+
+    def status_response(self, job: Job) -> 'JobResponse': ...
