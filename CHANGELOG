@@ -1,3 +1,7 @@
+## Version 8.1.27
+
+- support QGIS sql filter
+
 ## Version 8.1.26
 
 - permissions confguration for templates
