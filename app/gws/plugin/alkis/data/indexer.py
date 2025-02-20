@@ -652,6 +652,28 @@ class _FsDataIndexer(_Indexer):
             self.process_gebaeude(fs)
             self.process_buchung(fs)
 
+        # check the 'nachfolgerFlurstueckskennzeichen' array
+        # and mark each referenced FS as a "vorgaenger" FS
+        # It is a M:N relation, therefore 'vorgaengerFlurstueckskennzeichen' is also an array
+
+        k_to_fs = {
+            fs.flurstueckskennzeichen: fs
+            for fs in self.om.Flurstueck
+        }
+        for fs in self.om.Flurstueck:
+            nf_keys = fs.recs[-1].nachfolgerFlurstueckskennzeichen
+            if not nf_keys:
+                continue
+            for nf_key in nf_keys:
+                nf_fs = k_to_fs.get(nf_key)
+                if not nf_fs:
+                    gws.log.warning(f'ALKIS: nachfolgerFlurstueck missing {fs.flurstueckskennzeichen!r}->{nf_key!r}')
+                    continue
+                if not nf_fs.recs[-1].vorgaengerFlurstueckskennzeichen:
+                    nf_fs.recs[-1].vorgaengerFlurstueckskennzeichen = []
+                nf_fs.recs[-1].vorgaengerFlurstueckskennzeichen.append(fs.flurstueckskennzeichen)
+
+
     def record(self, ax):
         r: dt.FlurstueckRecord = _from_ax(
             dt.FlurstueckRecord,

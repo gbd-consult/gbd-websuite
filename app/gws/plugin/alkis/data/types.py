@@ -86,7 +86,7 @@ class FlurstueckRecord(Record):
     zustaendigeStelle: list[EnumPair]
     zweifelhafterFlurstuecksnachweis: bool
     nachfolgerFlurstueckskennzeichen: list[str]
-
+    vorgaengerFlurstueckskennzeichen: list[str]
 
 class BuchungsstelleReference(Object):
     buchungsstelle: 'Buchungsstelle'

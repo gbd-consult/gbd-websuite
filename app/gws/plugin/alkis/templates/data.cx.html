@@ -12,6 +12,7 @@
     'flurstueck.gebaeudeAmtlicheFlaeche': 'Gesamtfläche (amtlich)',
     'flurstueck.gebaeudeGeomFlaeche': 'Gesamtfläche (geometrisch)',
     'flurstueck.nachfolgerFlurstueckskennzeichen': 'Nachfolger-Flurstückskennzeichen',
+    'flurstueck.vorgaengerFlurstueckskennzeichen': 'Vorgänger-Flurstückskennzeichen',
 
     'lage.title': 'Angaben zur Lage',
     'lage.adresse': 'Adresse',
@@ -130,6 +131,12 @@
     @end
 @end
 
+@def row_value_historic title, val
+    @if title != None and val != None
+        <tr class="alkisFsHistoric"><th>{title}</th><td>{val}</th></tr>
+    @end
+@end
+
 @def row_times obj
     @if withHistory
         <tr>
@@ -169,6 +176,8 @@
 @end
 
 @def fs_kennzeichen(k) = k.replace('_', '')
+
+@def fs_kennzeichen_list(ks) = ', '.join(ks).replace('_', '')
 
 @def records(obj) = obj.recs or []
 
@@ -304,8 +313,11 @@
                 @row_value h('flurstueck.nenner'), text(r.nenner, '-')
                 @row_value h('flurstueck.amtlicheFlaeche'), area(r.amtlicheFlaeche)
                 @row_value h('flurstueck.geomFlaeche'), area(r.geomFlaeche)
-                @for nf in r.nachfolgerFlurstueckskennzeichen
-                    @row_value h('flurstueck.nachfolgerFlurstueckskennzeichen'), nf.replace('_', '')
+                @with r.nachfolgerFlurstueckskennzeichen as lst
+                    @row_value h('flurstueck.nachfolgerFlurstueckskennzeichen'), fs_kennzeichen_list(lst)
+                @end
+                @with r.vorgaengerFlurstueckskennzeichen as lst
+                    @row_value_historic h('flurstueck.vorgaengerFlurstueckskennzeichen'), fs_kennzeichen_list(lst)
                 @end
                 @row_times r
             @end

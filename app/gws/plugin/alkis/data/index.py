@@ -274,7 +274,7 @@ class Object(gws.Node):
             eigentuemer=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_EIGENTUEMER),
         )
         s.complete = s.basic and s.buchung and s.eigentuemer
-        gws.log.debug(f'ALKIS: table sizes {sizes!r}')
+        gws.log.info(f'ALKIS: table sizes {sizes!r}')
         return s
 
     def drop_table(self, table_id: str):
@@ -634,19 +634,6 @@ class Object(gws.Node):
             return self._load_flurstueck(conn, fs_uids, qo)
 
     def _load_flurstueck(self, conn, fs_uids, qo: dt.FlurstueckQueryOptions):
-        def _check_history(objects):
-            if qo.withHistoryDisplay:
-                return objects
-            res = []
-            for o in objects:
-                if o.isHistoric:
-                    continue
-                o.recs = [r for r in o.recs if not r.isHistoric]
-                if not o.recs:
-                    continue
-                res.append(o)
-            return res
-
         with_lage = dt.DisplayTheme.lage in qo.displayThemes
         with_gebaeude = dt.DisplayTheme.gebaeude in qo.displayThemes
         with_nutzung = dt.DisplayTheme.nutzung in qo.displayThemes
@@ -658,6 +645,8 @@ class Object(gws.Node):
         tab = self.table(TABLE_FLURSTUECK)
         sel = sa.select(tab).where(tab.c.uid.in_(set(fs_uids)))
 
+        hd = qo.withHistoryDisplay
+
         fs_list = []
 
         for r in conn.execute(sel):
@@ -665,7 +654,7 @@ class Object(gws.Node):
             fs.geom = r.geom
             fs_list.append(fs)
 
-        fs_list = _check_history(fs_list)
+        fs_list = self._remove_historic(fs_list, hd)
         if not fs_list:
             return []
 
@@ -674,9 +663,9 @@ class Object(gws.Node):
         for fs in fs_map.values():
             fs.shape = gws.base.shape.from_wkb_element(fs.geom, default_crs=self.crs)
 
-            fs.lageList = _check_history(fs.lageList) if with_lage else []
-            fs.gebaeudeList = _check_history(fs.gebaeudeList) if with_gebaeude else []
-            fs.buchungList = _check_history(fs.buchungList) if with_buchung else []
+            fs.lageList = self._remove_historic(fs.lageList, hd) if with_lage else []
+            fs.gebaeudeList = self._remove_historic(fs.gebaeudeList, hd) if with_gebaeude else []
+            fs.buchungList = self._remove_historic(fs.buchungList, hd) if with_buchung else []
 
             fs.bewertungList = []
             fs.festlegungList = []
@@ -692,21 +681,21 @@ class Object(gws.Node):
             tab = self.table(TABLE_BUCHUNGSBLATT)
             sel = sa.select(tab).where(tab.c.uid.in_(bb_uids))
             bb_list = [unserialize(r.data) for r in conn.execute(sel)]
-            bb_list = _check_history(bb_list)
+            bb_list = self._remove_historic(bb_list, hd)
 
             for bb in bb_list:
-                bb.buchungsstelleList = _check_history(bb.buchungsstelleList)
-                bb.namensnummerList = _check_history(bb.namensnummerList) if with_eigentuemer else []
+                bb.buchungsstelleList = self._remove_historic(bb.buchungsstelleList, hd)
+                bb.namensnummerList = self._remove_historic(bb.namensnummerList, hd) if with_eigentuemer else []
                 for nn in bb.namensnummerList:
-                    nn.personList = _check_history(nn.personList)
+                    nn.personList = self._remove_historic(nn.personList, hd)
                     for pe in nn.personList:
-                        pe.anschriftList = _check_history(pe.anschriftList)
+                        pe.anschriftList = self._remove_historic(pe.anschriftList, hd)
 
             bb_map = {bb.uid: bb for bb in bb_list}
 
             for fs in fs_map.values():
                 for bu in fs.buchungList:
-                    bu.buchungsblatt = bb_map.get(bu.buchungsblattUid)
+                    bu.buchungsblatt = bb_map.get(bu.buchungsblattUid, hd)
 
         if with_nutzung or with_festlegung or with_bewertung:
             tab = self.table(TABLE_PART)
@@ -714,7 +703,7 @@ class Object(gws.Node):
             if not qo.withHistorySearch:
                 sel.where(~tab.c.parthistoric)
             pa_list = [unserialize(r.data) for r in conn.execute(sel)]
-            pa_list = _check_history(pa_list)
+            pa_list = self._remove_historic(pa_list, hd)
 
             for pa in pa_list:
                 fs = fs_map[pa.fs]
@@ -727,6 +716,31 @@ class Object(gws.Node):
 
         return gws.u.compact(fs_map.get(uid) for uid in fs_uids)
 
+    _historicKeys = [
+        'vorgaengerFlurstueckskennzeichen'
+    ]
+
+    def _remove_historic(self, objects, with_history_display: bool):
+        if with_history_display:
+            return objects
+
+        out = []
+
+        for o in objects:
+            if o.isHistoric:
+                continue
+
+            o.recs = [r for r in o.recs if not r.isHistoric]
+            if not o.recs:
+                continue
+
+            for r in o.recs:
+                for k in self._historicKeys:
+                    setattr(r, k, None)
+
+            out.append(o)
+
+        return out
 
 ##
 

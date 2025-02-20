@@ -127,7 +127,7 @@ module.exports = v => ({
     },
 
     '.alkisFsHistoric': {
-        'td, tr': {
+        'td, th': {
             background: v.COLOR.pink50,
         },
         'p': {
