@@ -279,6 +279,32 @@ class _LageIndexer(_Indexer):
                     for ax in axs
                 ])
 
+        # use the PTO (art=HNR) geometry for lage coordinates
+        # PTO.dientZurDarstellungVon -> lage.uid
+
+        for pto in self.rr.read_flat(gid.AP_PTO):
+            if pto.lebenszeitintervall.endet is not None:
+                continue
+            art = _pop(pto, 'art') or ''
+            if art.upper() != 'HNR':
+                continue
+
+            uids = _pop(pto, 'dientZurDarstellungVon')
+            if not uids or not isinstance(uids, list):
+                continue
+
+            geom = _geom_of(pto)
+            if not geom:
+                continue
+
+            x = geom.centroid.x
+            y = geom.centroid.y
+            for la in self.om.Lage.get_many(uids):
+                la.x = x
+                la.y = y
+
+        # read related Gebaeude records
+
         atts = _attributes(gid.METADATA['AX_Gebaeude'], dt.Gebaeude.PROP_KEYS)
 
         for uid, axs in self.rr.read_grouped(gid.AX_Gebaeude):
@@ -955,8 +981,8 @@ class _FsIndexIndexer(_Indexer):
                     strasse=la_r.strasse,
                     strasse_t=index.strasse_key(la_r.strasse),
                     hausnummer=la_r.hausnummer,
-                    x=r.x,
-                    y=r.y,
+                    x=la.x or r.x,
+                    y=la.y or r.y,
                 ))
 
         for bu in fs.buchungList:
