@@ -1,3 +1,12 @@
+## Version 8.2.4
+
+- support for SSL Postgres connections
+- better support for geographic CRS in raster OGC services
+- background jobs improved
+- watch mode for the configtest command
+- server configuration cleaned up
+- framework for periodic tasks
+
 ## Version 8.2.3
 
 - CSW service
