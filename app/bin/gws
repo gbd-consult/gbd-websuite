@@ -27,8 +27,8 @@ if ! getent passwd $GWS_UID > /dev/null; then
     useradd -u $GWS_UID -g $GWS_GID gws
 fi
 
-GWS_USER_NAME=$(getent passwd 1000 | cut -d: -f1)
-GWS_USER_HOME=$(getent passwd 1000 | cut -d: -f6)
+GWS_USER_NAME=$(getent passwd $GWS_UID | cut -d: -f1)
+GWS_USER_HOME=$(getent passwd $GWS_UID | cut -d: -f6)
 
 mkdir -p "$GWS_USER_HOME"
 chown $GWS_UID:$GWS_GID "$GWS_USER_HOME"
@@ -80,10 +80,9 @@ if [ "$1" == "-p" ]; then
     shift
     SCRIPT=$1
     shift
-    $PYTHON $SCRIPT "$@"
-    exit $?
+    exec $PYTHON $SCRIPT "$@"
 fi
 
 # run a built-in command
 
-$PYTHON $MAIN_PY "$@"
+exec $PYTHON $MAIN_PY "$@"
