@@ -48,7 +48,7 @@ class Object(gws.AuthManager):
 
         self.guestSession = session.Object(uid='guest_session', method=None, user=self.guestUser)
 
-        self.register_middleware('auth', depends_on=['db'])
+        self.root.app.middlewareMgr.register(self, 'auth', depends_on=['db'])
 
     ##
 

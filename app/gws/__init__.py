@@ -845,15 +845,6 @@ class Node(Object):
             res: Current responder object.
         """
 
-    def register_middleware(self, name: str, depends_on: Optional[list[str]] = None):
-        """Register itself as a middleware handler.
-
-        Args:
-            name: Handler name.
-            depends_on: List of handler names this handler depends on.
-        """
-        return tree_impl.node_register_middleware(self, name, depends_on)
-
     def periodic_task(self):
         """Periodic task hook."""
 

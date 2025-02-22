@@ -98,10 +98,6 @@ def node_find_descendants(self, classref):
     return ls
 
 
-def node_register_middleware(self, name: str, depends_on):
-    self.root.app.middlewareMgr.register(self, name, depends_on)
-
-
 ##
 
 

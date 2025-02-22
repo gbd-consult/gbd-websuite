@@ -27,7 +27,7 @@ class Object(gws.WebManager):
             cfgs = [gws.u.merge(c, ssl=True) for c in cfgs]
         self.sites = self.create_children(site.Object, cfgs)
 
-        self.register_middleware('cors')
+        self.root.app.middlewareMgr.register(self, 'cors')
 
     ##
 

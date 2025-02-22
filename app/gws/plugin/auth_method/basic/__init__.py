@@ -24,7 +24,7 @@ class Object(gws.base.auth.method.Object):
     def configure(self):
         self.uid = 'gws.plugin.auth_method.basic'
         self.realm = self.cfg('realm', default='Restricted Area')
-        self.register_middleware(self.uid, depends_on=['auth'])
+        self.root.app.middlewareMgr.register(self, self.uid, depends_on=['auth'])
 
     ##
 

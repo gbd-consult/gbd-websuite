@@ -20,9 +20,9 @@ class Object(gws.DatabaseManager):
         for cfg in self.cfg('providers', default=[]):
             self.create_provider(cfg)
 
-        self.register_middleware('db')
+        self.root.app.middlewareMgr.register(self, 'db')
 
-    ##
+        ##
 
     def enter_middleware(self, req: gws.WebRequester):
         pass

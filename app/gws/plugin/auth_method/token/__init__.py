@@ -39,15 +39,8 @@ class Object(gws.base.auth.method.Object):
         self.uid = 'gws.plugin.auth_method.token'
         self.header = self.cfg('header')
         self.prefix = self.cfg('prefix', default='')
-        self.register_middleware(self.uid, depends_on=['auth'])
 
     ##
-
-    def enter_middleware(self, req):
-        pass
-
-    def exit_middleware(self, req, res):
-        pass
 
     def open_session(self, req):
         am = self.root.app.authMgr
