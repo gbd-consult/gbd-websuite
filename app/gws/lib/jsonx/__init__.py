@@ -63,8 +63,7 @@ def to_path(path: str, x, pretty: bool = False, ensure_ascii: bool = True, defau
 
     s = to_string(x, pretty=pretty, ensure_ascii=ensure_ascii, default=default)
     try:
-        with open(path, 'wb') as fp:
-            fp.write(s.encode('utf8'))
+        gws.u.write_file_b(path, s.encode('utf8'))
     except Exception as exc:
         raise Error() from exc
 

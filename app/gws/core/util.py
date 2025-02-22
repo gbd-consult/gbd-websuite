@@ -591,7 +591,7 @@ def write_file(path: str, s: str, user: int = None, group: int = None):
     try:
         with open(path, 'wt', encoding='utf8') as fp:
             fp.write(s)
-        _chown(path, user, group)
+        chown_default(path, user, group)
         return path
     except Exception as exc:
         log.debug(f'error writing {path=} {exc=}')
@@ -602,7 +602,7 @@ def write_file_b(path: str, s: bytes, user: int = None, group: int = None):
     try:
         with open(path, 'wb') as fp:
             fp.write(s)
-        _chown(path, user, group)
+        chown_default(path, user, group)
         return path
     except Exception as exc:
         log.debug(f'error writing {path=} {exc=}')
@@ -644,7 +644,7 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
         if path and not os.path.isdir(path):
             os.mkdir(path, mode)
 
-    _chown(bpath, user, group)
+    chown_default(bpath, user, group)
     return bpath.decode('utf8')
 
 
@@ -653,7 +653,7 @@ def ensure_system_dirs():
         ensure_dir(d)
 
 
-def _chown(path, user, group):
+def chown_default(path, user=None, group=None):
     try:
         os.chown(path, user or const.UID, group or const.GID)
     except OSError:
@@ -799,6 +799,7 @@ def serialize_to_path(obj, path):
     with open(tmp, 'wb') as fp:
         pickle.dump(obj, fp)
     os.replace(tmp, path)
+    chown_default(path)
     return path
 
 
