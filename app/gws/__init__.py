@@ -854,6 +854,9 @@ class Node(Object):
         """
         return tree_impl.node_register_middleware(self, name, depends_on)
 
+    def periodic_task(self):
+        """Periodic task hook."""
+
 
 class Root:
     """Root node of the object tree."""
@@ -2149,19 +2152,34 @@ class ServerManager(Node):
 class ServerMonitor(Node):
     """File Monitor facility."""
 
-    def add_directory(self, path: str, pattern: 'Regex'):
-        """Add a directory to monitor.
+    def watch_directory(self, path: str, pattern: 'Regex', recursive=False):
+        """Add a directory to watch.
 
         Args:
             path: Directory path.
             pattern: Regex pattern for files to watch.
+            recursive: Watch subdirectories.
         """
 
-    def add_file(self, path: str):
+    def watch_file(self, path: str):
         """Add a file to watch.
 
         Args:
             path: File path.
+        """
+
+    def register_periodic_task(self, obj: Node):
+        """Register an object as a periodic task handler.
+
+        Args:
+            obj: A node with a ``periodic_task`` method.
+        """
+
+    def schedule_reload(self, with_reconfigure: bool = False):
+        """Schedule a system reload.
+
+        Args:
+            with_reconfigure: Reconfigure the server before reloading.
         """
 
     def start(self):

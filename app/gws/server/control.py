@@ -41,15 +41,11 @@ Following workflows are supported:
 
 """
 
-import time
-
-import watchdog.events
-import watchdog.observers
-
 import gws
 import gws.config
 import gws.lib.datetimex
 import gws.lib.osx
+import gws.lib.watcher
 
 # see bin/gws
 _SERVER_START_SCRIPT = f'{gws.c.VAR_DIR}/server.sh'
@@ -110,56 +106,30 @@ def config_test(
         with_parse_only=False,
         with_watch=False
 ):
-    def _action():
+
+    def _check(*args):
+        gws.log.info('=' * 80)
+        gws.log.info(f'TESTING CONFIGURATION...')
+        gws.log.info('=' * 80)
         if with_parse_only:
             gws.config.parse(manifest_path, config_path)
         else:
             gws.config.configure(manifest_path, config_path)
-        gws.log.info(f'')
-        gws.log.info(f'')
-        gws.log.info(f'')
 
-    _action()
+    _check()
 
     if not with_watch:
         return
 
-    status = {
-        'should_act': False,
-    }
-
-    watch_events = {
-        watchdog.events.EVENT_TYPE_MOVED,
-        watchdog.events.EVENT_TYPE_DELETED,
-        watchdog.events.EVENT_TYPE_CREATED,
-        watchdog.events.EVENT_TYPE_MODIFIED,
-    }
-
-    class WatchHandler(watchdog.events.FileSystemEventHandler):
-        def on_any_event(self, event):
-            if event.event_type not in watch_events:
-                return
-            gws.log.info(f'>>>>> WATCH {event.event_type} {event.src_path}')
-            status['should_act'] = True
-
-    handler = WatchHandler()
+    w = gws.lib.watcher.new(_check)
     dirs = gws.u.to_list(dirs_to_watch or '/data')
-
-    observer = watchdog.observers.Observer()
     for d in dirs:
-        observer.schedule(handler, d, recursive=True)
-    observer.start()
+        w.add_directory(d, recursive=True)
+    w.start()
 
-    try:
-        while True:
-            time.sleep(1)
-            if status['should_act']:
-                status['should_act'] = False
-                _action()
-    except KeyboardInterrupt:
-        observer.stop()
+    while True:
+        gws.u.sleep(3)
 
-    observer.join()
 
 
 ##

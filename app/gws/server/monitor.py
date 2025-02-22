@@ -1,160 +1,145 @@
 import os
-import re
 
 import gws
 import gws.config
 import gws.lib.lock
 import gws.lib.osx
+import gws.lib.watcher
 import gws.server.uwsgi_module
 
 from . import control
 
 _LOCK_FILE = '/tmp/monitor.lock'
-
+_RELOAD_FILE = '/tmp/monitor.reload'
+_RECONFIGURE_FILE = '/tmp/monitor.reconfigure'
+_TICK_FREQUENCY = 3
 
 class Object(gws.ServerMonitor):
-    watchDirs: dict
-    watchFiles: dict
-    pathStats: dict
-
+    watchPaths: set[str]
     enabled: bool
     frequency: int
-    ignore: list[str]
+    watcher: gws.lib.watcher.Watcher
+    dirs: list
+    files: list
+    tasks: list[gws.Node]
+    taskTime: int
 
     def configure(self):
         self.enabled = self.cfg('enabled', default=True)
         self.frequency = self.cfg('frequency', default=30)
-        self.ignore = self.cfg('ignore', default=[])
+        self.dirs = []
+        self.files = []
+        self.tasks = []
+        self.taskTime = 0
 
-        self.watchDirs = {}
-        self.watchFiles = {}
-        self.pathStats = {}
+    def watch_directory(self, dirname, pattern, recursive=False):
+        self.dirs.append((dirname, pattern, recursive))
 
-    def add_directory(self, path, pattern):
-        self.watchDirs[path] = pattern
+    def watch_file(self, path):
+        self.files.append(path)
 
-    def add_file(self, path):
-        self.watchFiles[path] = 1
+    def register_periodic_task(self, obj):
+        self.tasks.append(obj)
+
+    def schedule_reload(self, with_reconfigure=False):
+        gws.log.info(f'MONITOR: reload scheduled {with_reconfigure=}')
+        os.open(_RECONFIGURE_FILE if with_reconfigure else _RELOAD_FILE, os.O_CREAT | os.O_WRONLY)
 
     def start(self):
         if not self.enabled:
             gws.log.info(f'MONITOR: disabled')
             return
 
-        # @TODO: use file monitor
-        # actually, we should be using uwsgi.add_file_monitor here, however I keep having problems
-        # getting inotify working on docker-mounted volumes (is that possible at all)?
+        self._check_unlink(_LOCK_FILE)
+        self._check_unlink(_RELOAD_FILE)
+        self._check_unlink(_RECONFIGURE_FILE)
 
-        self._cleanup()
+        self.taskTime = gws.u.stime()
 
-        for s in self.watchDirs:
-            gws.log.info(f'MONITOR: watching directory {s!r}')
-        for s in self.watchFiles:
-            gws.log.info(f'MONITOR: watching file {s!r}')
+        def notify(evt, path):
+            os.open(_RECONFIGURE_FILE, os.O_CREAT | os.O_WRONLY)
 
-        try:
-            os.unlink(_LOCK_FILE)
-        except OSError:
-            pass
+        self.watcher = gws.lib.watcher.new(notify)
 
-        self._poll()
+        for d in self.dirs:
+            self.watcher.add_directory(*d)
+        for f in self.files:
+            self.watcher.add_file(f)
+
+        self.watcher.start()
 
         uwsgi = gws.server.uwsgi_module.load()
+        uwsgi.register_signal(42, 'worker2', self._tick)
+        uwsgi.add_timer(42, _TICK_FREQUENCY)
 
-        # only one worker is allowed to do that
-        uwsgi.register_signal(42, 'worker2', self._worker)
-        uwsgi.add_timer(42, self.frequency)
-        gws.log.info(f'MONITOR: started, frequency={self.frequency}')
+        gws.log.info(f'MONITOR: started')
 
-    def _worker(self, signo):
-        with gws.lib.lock.SoftFileLock(_LOCK_FILE) as ok:
-            if not ok:
-                return
+    def _tick(self, signo):
 
-            changed_paths = self._poll()
-            if not changed_paths:
-                return
+        do_reconfigure = self._check_unlink(_RECONFIGURE_FILE)
+        do_reload = self._check_unlink(_RELOAD_FILE)
+        do_tasks = gws.u.stime() - self.taskTime >= self.frequency
 
-            for path in changed_paths:
-                gws.log.info(f'MONITOR: changed {path!r}')
+        if not do_reconfigure and not do_reload and not do_tasks:
+            return
 
-            # @TODO: smarter reload
+        gws.log.debug(f'MONITOR: tick {do_reconfigure=} {do_reload=} {do_tasks=}')
 
-            needs_reconfigure = any(not path.endswith('.py') for path in changed_paths)
-            gws.log.info(f'MONITOR: begin reload {needs_reconfigure=}')
+        try:
+            os.open(_LOCK_FILE, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            gws.log.debug(f'MONITOR: locked')
+            return
 
-            if not self._reload(needs_reconfigure):
-                return
+        try:
+            if do_reconfigure:
+                self._reload(True)
+            elif do_reload:
+                self._reload(False)
+            elif do_tasks:
+                self._run_periodic_tasks()
+                self.taskTime = gws.u.stime()
+        finally:
+            self._check_unlink(_LOCK_FILE)
 
-        # finally, reload ourselves
+    def _reload(self, with_reconfigure):
+        gws.log.info(f'MONITOR: reloading...')
+
+        if not self._reload2(with_reconfigure):
+            return
+
+        # ok, reload ourselves
         gws.log.info(f'MONITOR: bye bye')
         control.reload_app('spool')
 
-    def _reload(self, needs_reconfigure):
-        if needs_reconfigure:
+    def _reload2(self, with_reconfigure):
+        if with_reconfigure:
             try:
                 control.configure_and_store()
-            except:
-                gws.log.exception('MONITOR: configuration error')
+            except Exception as exc:
+                gws.log.exception(f'MONITOR: configuration error {exc!r}')
                 return False
 
         try:
             control.reload_app('mapproxy')
             control.reload_app('web')
             return True
-        except:
-            gws.log.exception('MONITOR: reload error')
+        except Exception as exc:
+            gws.log.exception(f'MONITOR: reload error {exc!r}')
             return False
 
-    def _cleanup(self):
-        """Remove superfluous directory and file entries."""
+    def _run_periodic_tasks(self):
+        gws.log.info(f'MONITOR: periodic task')
 
-        ls = []
-        for d in sorted(self.watchDirs):
-            if d in ls or any(d.startswith(e + '/') for e in ls):
-                # if we watch /some/dir already, there's no need to watch /some/dir/subdir
-                continue
-            ls.append(d)
-        self.watchDirs = {d: self.watchDirs[d] for d in sorted(ls)}
+        for obj in self.tasks:
+            try:
+                obj.periodic_task()
+            except:
+                gws.log.exception(f'MONITOR: periodic task failed {obj}')
 
-        ls = []
-        for f in sorted(self.watchFiles):
-            if any(f.startswith(e + '/') for e in self.watchDirs):
-                # if we watch /some/dir already, there's no need to watch /some/dir/some.file
-                continue
-            ls.append(f)
-        self.watchFiles = {f: 1 for f in sorted(ls)}
-
-    def _poll(self):
-        new_stats = {}
-        changed_paths = []
-
-        for dirpath, pattern in self.watchDirs.items():
-            if self._ignored(dirpath):
-                continue
-            if not gws.u.is_dir(dirpath):
-                continue
-            for path in gws.lib.osx.find_files(dirpath, pattern):
-                if not self._ignored(path):
-                    new_stats[path] = self._stats(path)
-
-        for path, _ in self.watchFiles.items():
-            if path not in new_stats and not self._ignored(path):
-                new_stats[path] = self._stats(path)
-
-        for path in set(self.pathStats) | set(new_stats):
-            if self.pathStats.get(path) != new_stats.get(path):
-                changed_paths.append(path)
-
-        self.pathStats = new_stats
-        return changed_paths
-
-    def _stats(self, path):
+    def _check_unlink(self, path):
         try:
-            s = os.stat(path)
-            return s.st_size, s.st_mtime
-        except OSError:
-            return 0, 0
-
-    def _ignored(self, filename):
-        return self.ignore and any(re.search(p, filename) for p in self.ignore)
+            os.unlink(path)
+            return True
+        except FileNotFoundError:
+            return False

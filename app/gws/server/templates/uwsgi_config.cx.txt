@@ -16,6 +16,10 @@ harakiri-verbose = true
 reload-mercy = 5
 worker-reload-mercy = 5
 
+@if root.app.developer_option('server.auto_reload')
+    py-autoreload = 1
+@end
+
 @if uwsgi == 'web'
     logger = syslog:WEB,local6
     harakiri = {root.app.cfg('server.web.timeout')}

@@ -224,13 +224,11 @@ class Object(gws.Application):
 
         # NB these are populated in config.parser
         for p in self.config.get('configPaths', []):
-            self.monitor.add_file(p)
+            self.monitor.watch_file(p)
         for p in self.config.get('projectPaths', []):
-            self.monitor.add_file(p)
+            self.monitor.watch_file(p)
         for d in self.config.get('projectDirs', []):
-            self.monitor.add_directory(d, gws.config.CONFIG_PATH_PATTERN)
-        if self.developer_option('server.auto_reload'):
-            self.monitor.add_directory(gws.c.APP_DIR, r'\.py$')
+            self.monitor.watch_directory(d, gws.config.CONFIG_PATH_PATTERN)
 
     def project(self, uid):
         for p in self.projects:

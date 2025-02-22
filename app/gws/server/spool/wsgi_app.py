@@ -30,6 +30,8 @@ def init():
         gws.log.exception('UNABLE TO LOAD CONFIGURATION')
         gws.u.exit(1)
 
+    gws.server.uwsgi_module.load().spooler = spooler
+
     try:
         gws.log.set_level(root.app.cfg('server.log.level'))
         root.app.monitor.start()
@@ -37,4 +39,3 @@ def init():
         gws.log.exception('SPOOL INIT ERROR')
         gws.u.exit(1)
 
-    gws.server.uwsgi_module.load().spooler = spooler

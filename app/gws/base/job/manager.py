@@ -41,6 +41,10 @@ class Object(gws.JobManager):
 
     def configure(self):
         self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/jobs82.sqlite')
+        self.root.app.monitor.register_periodic_task(self)
+
+    def periodic_task(self):
+        gws.log.info(f'JOB: cleanup')
 
     def create_job(self, user, worker):
         job_uid = gws.u.random_string(64)

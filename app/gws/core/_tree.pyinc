@@ -207,6 +207,9 @@ class Node(Object):
         """
         return tree_impl.node_register_middleware(self, name, depends_on)
 
+    def periodic_task(self):
+        """Periodic task hook."""
+
 
 class Root:
     """Root node of the object tree."""
