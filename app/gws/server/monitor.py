@@ -14,6 +14,7 @@ _RELOAD_FILE = '/tmp/monitor.reload'
 _RECONFIGURE_FILE = '/tmp/monitor.reconfigure'
 _TICK_FREQUENCY = 3
 
+
 class Object(gws.ServerMonitor):
     watchPaths: set[str]
     enabled: bool
@@ -25,7 +26,6 @@ class Object(gws.ServerMonitor):
     taskTime: int
 
     def configure(self):
-        self.enabled = self.cfg('enabled', default=True)
         self.frequency = self.cfg('frequency', default=30)
         self.dirs = []
         self.files = []
@@ -46,8 +46,7 @@ class Object(gws.ServerMonitor):
         os.open(_RECONFIGURE_FILE if with_reconfigure else _RELOAD_FILE, os.O_CREAT | os.O_WRONLY)
 
     def start(self):
-        if not self.enabled:
-            gws.log.info(f'MONITOR: disabled')
+        if self.cfg('disabled'):
             return
 
         self._check_unlink(_LOCK_FILE)
@@ -56,17 +55,18 @@ class Object(gws.ServerMonitor):
 
         self.taskTime = gws.u.stime()
 
-        def notify(evt, path):
-            os.open(_RECONFIGURE_FILE, os.O_CREAT | os.O_WRONLY)
+        if not self.cfg('disableWatch'):
+            def notify(evt, path):
+                os.open(_RECONFIGURE_FILE, os.O_CREAT | os.O_WRONLY)
 
-        self.watcher = gws.lib.watcher.new(notify)
+            self.watcher = gws.lib.watcher.new(notify)
 
-        for d in self.dirs:
-            self.watcher.add_directory(*d)
-        for f in self.files:
-            self.watcher.add_file(f)
+            for d in self.dirs:
+                self.watcher.add_directory(*d)
+            for f in self.files:
+                self.watcher.add_file(f)
 
-        self.watcher.start()
+            self.watcher.start()
 
         uwsgi = gws.server.uwsgi_module.load()
         uwsgi.register_signal(42, 'worker2', self._tick)

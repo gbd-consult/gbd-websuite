@@ -75,21 +75,41 @@ _DEFAULT_TEMPLATES = [
 
 class Object(gws.ServerManager):
     def configure(self):
+        self.config = self._add_defaults(self.config, 'gws.server.core.Config')
+        self.config.log = self._add_defaults(self.config.log, 'gws.server.core.LogConfig')
+        self.config.mapproxy = self._add_defaults(self.config.mapproxy, 'gws.server.core.MapproxyConfig')
+        self.config.monitor = self._add_defaults(self.config.monitor, 'gws.server.core.MonitorConfig')
+        self.config.qgis = self._add_defaults(self.config.qgis, 'gws.server.core.QgisConfig')
+        self.config.spool = self._add_defaults(self.config.spool, 'gws.server.core.SpoolConfig')
+        self.config.web = self._add_defaults(self.config.web, 'gws.server.core.WebConfig')
+
+        self.config.mapproxy.disabled = core.is_disabled(self.config.mapproxy)
+        self.config.monitor.disabled = core.is_disabled(self.config.monitor)
+        self.config.spool.disabled = core.is_disabled(self.config.spool)
+        self.config.web.disabled = core.is_disabled(self.config.web)
+
         self.configure_environment()
         self.configure_templates()
+
+    def _add_defaults(self, value, type_name):
+        return gws.u.merge(
+            self.root.specs.read({}, type_name),
+            value
+        )
 
     def configure_environment(self):
         """Overwrite config values from the environment."""
 
+        cfg = cast(core.Config, self.config)
         p = gws.env.GWS_LOG_LEVEL
         if p:
-            cast(core.Config, self.config).log.level = p
+            cfg.log.level = p
         p = gws.env.GWS_WEB_WORKERS
         if p:
-            cast(core.Config, self.config).web.workers = int(p)
+            cfg.web.workers = int(p)
         p = gws.env.GWS_SPOOL_WORKERS
         if p:
-            cast(core.Config, self.config).spool.workers = int(p)
+            cfg.spool.workers = int(p)
 
     def configure_templates(self):
         gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
@@ -120,17 +140,17 @@ class Object(gws.ServerManager):
             path = self._create_config('server.rsyslog_config', f'{target_dir}/syslog.conf', args)
             commands.append(f'rsyslogd -i {gws.c.PIDS_DIR}/rsyslogd.pid -f {path}')
 
-        if self.cfg('web.enabled'):
+        if not self.cfg('web.disabled'):
             args.uwsgi = 'web'
             path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_web.ini', args)
             commands.append(f'uwsgi --ini {path}')
 
-        if self.cfg('mapproxy.enabled') and gws.u.is_file(gws.gis.mpx.config.CONFIG_PATH):
+        if not self.cfg('mapproxy.disabled') and gws.u.is_file(gws.gis.mpx.config.CONFIG_PATH):
             args.uwsgi = 'mapproxy'
             path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_mapproxy.ini', args)
             commands.append(f'uwsgi --ini {path}')
 
-        if self.cfg('spool.enabled'):
+        if not self.cfg('spool.disabled'):
             args.uwsgi = 'spool'
             path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_spool.ini', args)
             commands.append(f'uwsgi --ini {path}')

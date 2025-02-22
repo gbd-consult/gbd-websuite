@@ -165,8 +165,10 @@ def app_is_running(srv):
             pid = int(fp.read())
     except (FileNotFoundError, ValueError):
         pid = 0
+    if pid == 0:
+        return False
     gws.log.debug(f'found {pid=} for {srv=}')
-    return pid and pid in gws.lib.osx.running_pids()
+    return pid in gws.lib.osx.running_pids()
 
 
 ##
@@ -175,11 +177,11 @@ def app_is_running(srv):
 _FALLBACK_CONFIG = gws.Config(
     server=gws.Config(
         timeZone="Europe/Berlin",
-        mapproxy=gws.Config(enabled=False),
-        monitor=gws.Config(enabled=False),
+        mapproxy=gws.Config(disabled=True),
+        monitor=gws.Config(disabled=True),
         log=gws.Config(level='INFO'),
         qgis=gws.Config(host='qgis', port=80),
-        spool=gws.Config(enabled=False),
-        web=gws.Config(enabled=True, workers=1, timeout=60, maxRequestLength=10),
+        spool=gws.Config(disabled=True),
+        web=gws.Config(disabled=False, workers=1, timeout=60, maxRequestLength=10),
     )
 )

@@ -218,7 +218,7 @@ class Object(gws.Application):
         self.projects = self.create_children(gws.ext.object.project, self.cfg('projects'))
 
     def post_configure(self):
-        if self.cfg('server.mapproxy.enabled'):
+        if not self.cfg('server.mapproxy.disabled'):
             self.mpxUrl = f"http://{self.cfg('server.mapproxy.host')}:{self.cfg('server.mapproxy.port')}"
             self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
