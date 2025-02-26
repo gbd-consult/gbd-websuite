@@ -209,7 +209,7 @@ class Object(gws.Node):
                 writer.write_headers(keys)
             writer.write_row([row.get(k, '') for k in keys])
 
-        if fp:
+        if args.writePath:
             fp.close()
             return
 
@@ -237,19 +237,21 @@ class Object(gws.Node):
         return b
 
     def _export_dict(self, args: Args):
-        fc = {"type": "FeatureCollection", "features": []}
-
-        for row in self._iter_rows(args, with_geometry=True):
-            fc['features'].append(self._row_to_dict(row))
-
-        return fc
+        return dict(
+            type='FeatureCollection',
+            features=[
+                self._row_to_dict(row)
+                for row in self._iter_rows(args, with_geometry=True)
+            ]
+        )
 
     def _row_to_dict(self, row):
-        geom = None
         shape = row.pop('fs_shape', None)
-        if shape:
-            geom = cast(gws.Shape, shape).to_geojson()
-        return dict(type='Feature', properties=row, geometry=geom)
+        return dict(
+            type='Feature',
+            properties=row,
+            geometry=cast(gws.Shape, shape).to_geojson() if shape else None,
+        )
 
     def _iter_rows(self, args: Args, with_geometry=False):
         """Iterate over a Flurstueck list and yield flat rows (dicts).
