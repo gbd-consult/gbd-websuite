@@ -9,9 +9,9 @@ import shapely.wkb
 
 import gws
 import gws.lib.osx
+import gws.lib.datetimex as dtx
 from gws.lib.cli import ProgressIndicator
 import gws.plugin.postgres.provider
-
 
 from . import types as dt
 from . import index
@@ -150,7 +150,7 @@ class _PlaceIndexer(_Indexer):
     References: https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel
     """
 
-    CACHE_KEY = index.TABLE_PLACE
+    CACHE_KEY = 'obj_place'
 
     empty1 = dt.EnumPair(code='0', text='')
     empty2 = dt.EnumPair(code='00', text='')
@@ -261,7 +261,7 @@ class _PlaceIndexer(_Indexer):
 
 
 class _LageIndexer(_Indexer):
-    CACHE_KEY = index.TABLE_LAGE
+    CACHE_KEY = 'obj_lage'
 
     def collect(self):
         for ax in self.rr.read_flat(gid.AX_LagebezeichnungKatalogeintrag):
@@ -279,7 +279,33 @@ class _LageIndexer(_Indexer):
                     for ax in axs
                 ])
 
-        atts = _attributes(gid.METADATA['AX_Gebaeude'], dt.Gebaeude.PROP_KEYS)
+        # use the PTO (art=HNR) geometry for lage coordinates
+        # PTO.dientZurDarstellungVon -> lage.uid
+
+        for pto in self.rr.read_flat(gid.AP_PTO):
+            if pto.lebenszeitintervall.endet is not None:
+                continue
+            art = _pop(pto, 'art') or ''
+            if art.upper() != 'HNR':
+                continue
+
+            uids = _pop(pto, 'dientZurDarstellungVon')
+            if not uids or not isinstance(uids, list):
+                continue
+
+            geom = _geom_of(pto)
+            if not geom:
+                continue
+
+            x = geom.centroid.x
+            y = geom.centroid.y
+            for la in self.om.Lage.get_many(uids):
+                la.x = x
+                la.y = y
+
+        # read related Gebaeude records
+
+        atts = _meta_attributes(gid.METADATA['AX_Gebaeude'])
 
         for uid, axs in self.rr.read_grouped(gid.AX_Gebaeude):
             self.om.Gebaeude.add(uid, [
@@ -340,7 +366,7 @@ class _LageIndexer(_Indexer):
 
 
 class _BuchungIndexer(_Indexer):
-    CACHE_KEY = index.TABLE_BUCHUNGSBLATT
+    CACHE_KEY = 'obj_buchungsblatt'
 
     buchungsblattkennzeichenMap: dict[str, dt.Buchungsblatt] = {}
 
@@ -482,7 +508,7 @@ class _BuchungIndexer(_Indexer):
 
 
 class _PartIndexer(_Indexer):
-    CACHE_KEY = index.TABLE_PART
+    CACHE_KEY = 'obj_part'
     MIN_PART_AREA = 1
 
     parts: list[dt.Part] = []
@@ -531,7 +557,7 @@ class _PartIndexer(_Indexer):
 
     def collect_class(self, kind, cls):
         meta = gid.METADATA[cls.__name__]
-        atts = _attributes(meta, dt.Part.PROP_KEYS)
+        atts = _meta_attributes(meta)
 
         for uid, axs in self.rr.read_grouped(cls):
             pa = self.om.Part.add(uid, [
@@ -615,7 +641,7 @@ class _PartIndexer(_Indexer):
 
 
 class _FsDataIndexer(_Indexer):
-    CACHE_KEY = index.TABLE_FLURSTUECK
+    CACHE_KEY = 'obj_flurstueck'
 
     def __init__(self, runner: '_Runner'):
         super().__init__(runner)
@@ -651,6 +677,27 @@ class _FsDataIndexer(_Indexer):
             self.process_lage(fs)
             self.process_gebaeude(fs)
             self.process_buchung(fs)
+
+        # check the 'nachfolgerFlurstueckskennzeichen' array
+        # and mark each referenced FS as a "vorgaenger" FS
+        # It is a M:N relation, therefore 'vorgaengerFlurstueckskennzeichen' is also an array
+
+        knz_to_fs = {
+            fs.flurstueckskennzeichen: fs
+            for fs in self.om.Flurstueck
+        }
+        for fs in self.om.Flurstueck:
+            nfs = fs.recs[-1].nachfolgerFlurstueckskennzeichen
+            if not nfs:
+                continue
+            for nf_knz in nfs:
+                nf_fs = knz_to_fs.get(nf_knz)
+                if not nf_fs:
+                    gws.log.warning(f'ALKIS: nachfolgerFlurstueck missing {fs.flurstueckskennzeichen!r}->{nf_knz!r}')
+                    continue
+                if not nf_fs.recs[-1].vorgaengerFlurstueckskennzeichen:
+                    nf_fs.recs[-1].vorgaengerFlurstueckskennzeichen = []
+                nf_fs.recs[-1].vorgaengerFlurstueckskennzeichen.append(fs.flurstueckskennzeichen)
 
     def record(self, ax):
         r: dt.FlurstueckRecord = _from_ax(
@@ -933,8 +980,8 @@ class _FsIndexIndexer(_Indexer):
                     strasse=la_r.strasse,
                     strasse_t=index.strasse_key(la_r.strasse),
                     hausnummer=la_r.hausnummer,
-                    x=r.x,
-                    y=r.y,
+                    x=la.x or r.x,
+                    y=la.y or r.y,
                 ))
 
         for bu in fs.buchungList:
@@ -1079,30 +1126,19 @@ class _Runner:
         return list(groups.items())
 
     def props_from(self, ax, atts):
-        props = []
+        d = {}
 
         for a in atts:
             v = getattr(ax, a['name'], None)
             if isinstance(v, gid.Object):
-                v = self.object_prop_value(v)
+                # @TODO handle properties which are objects
+                continue
+            if dtx.is_date(v):
+                v = dtx.to_string('%d.%m.%Y', v)
             if not gws.u.is_empty(v):
-                props.append([a['title'], v])
+                d[a['name']] = v
 
-        return props
-
-    def object_prop_value(self, o):
-        return None
-        # @TODO handle properties which are objects
-        # gid.AX_Bundesland_Schluessel
-        # gid.AX_Dienststelle_Schluessel
-        # gid.AX_Gemarkung_Schluessel
-        # gid.AX_Gemeindekennzeichen
-        # gid.AX_Kreis_Schluessel
-        # gid.AX_Regierungsbezirk_Schluessel
-        # gid.AX_KennzifferGrabloch
-        # gid.AX_Lagebezeichnung
-        # gid.AX_Tagesabschnitt
-        # gid.AX_Verwaltungsgemeinschaft_Schluessel
+        return dt.Object(**d)
 
 
 def _from_ax(cls, ax, **kwargs):
@@ -1138,9 +1174,9 @@ def _anteil(ax):
         pass
 
 
-def _attributes(meta, keys):
+def _meta_attributes(meta):
     return sorted(
-        [a for a in meta['attributes'] if a['name'] in keys],
+        [a for a in meta['attributes'] if a['name'] in dt.PROPS],
         key=lambda a: a['title']
     )
 

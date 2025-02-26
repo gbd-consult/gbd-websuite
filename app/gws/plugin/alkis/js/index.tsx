@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gc from 'gc';
-;
+
 import * as sidebar from 'gc/elements/sidebar';
 import * as components from 'gc/components';
 import * as lens from 'gc/elements/lens';
@@ -105,7 +105,7 @@ interface MessageViewProps extends ViewProps {
     message?: string;
     error?: string;
     withFormLink?: boolean;
-};
+}
 
 const StoreKeys = [
     'alkisTab',

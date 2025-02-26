@@ -20,7 +20,7 @@ import gws.lib.datetimex
 import gws.lib.sa as sa
 import gws.lib.style
 
-from .data import index, export
+from .data import index, exporter
 from .data import types as dt
 
 gws.ext.new.action('alkis')
@@ -140,7 +140,7 @@ class Config(gws.ConfigWithAccess):
     storage: Optional[gws.base.storage.Config]
     """storage configuration"""
 
-    export: Optional[export.Config]
+    export: Optional[exporter.Config]
     """csv export configuration"""
 
 
@@ -346,12 +346,13 @@ class Object(gws.base.action.Object):
     db: gws.DatabaseProvider
 
     ix: index.Object
-    ixStatus: index.Status
+    ixStatus: dt.IndexStatus
 
     buchung: BuchungOptions
     eigentuemer: EigentuemerOptions
 
     dataSchema: str
+    indexSchema: str
 
     model: gws.Model
     ui: Ui
@@ -360,7 +361,7 @@ class Object(gws.base.action.Object):
     templates: list[gws.Template]
     printers: list[gws.Printer]
 
-    export: Optional[export.Object]
+    exporter: Optional[exporter.Object]
 
     strasseSearchOptions: gws.TextSearchOptions
     nameSearchOptions: gws.TextSearchOptions
@@ -370,20 +371,22 @@ class Object(gws.base.action.Object):
 
     def configure(self):
         gws.config.util.configure_database_provider_for(self, ext_type='postgres')
+
+        self.dataSchema = self.cfg('dataSchema')
+        self.indexSchema = self.cfg('indexSchema')
+
         self.ix = self.root.create_shared(
             index.Object,
             _defaultDb=self.db,
             crs=self.cfg('crs'),
-            schema=self.cfg('indexSchema'),
+            schema=self.indexSchema,
             excludeGemarkung=self.cfg('excludeGemarkung'),
-            uid='gws.plugin.alkis.data.index.' + self.cfg('indexSchema')
+            uid=f'gws.plugin.alkis.data.index.{self.indexSchema}'
         )
 
         self.limit = self.cfg('limit')
         self.model = self.create_child(Model)
         self.ui = self.cfg('ui')
-
-        self.dataSchema = self.cfg('dataSchema')
 
         p = self.cfg('templates', default=[]) + _DEFAULT_TEMPLATES
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
@@ -409,17 +412,17 @@ class Object(gws.base.action.Object):
 
         p = self.cfg('export')
         if p:
-            self.export = self.create_child(export.Object, p)
+            self.exporter = self.create_child(exporter.Object, p)
         elif self.ui.useExport:
-            self.export = self.create_child(export.Object)
+            self.exporter = self.create_child(exporter.Object)
         else:
-            self.export = None
+            self.exporter = None
 
     def activate(self):
         def _load():
             return self.ix.status()
+
         self.ixStatus = gws.u.get_server_global('gws.plugin.alkis.action.ixStatus', _load)
-        gws.log.debug(f'{self.ixStatus=}')
 
     def props(self, user):
         if not self.ixStatus.basic:
@@ -543,6 +546,7 @@ class Object(gws.base.action.Object):
         args = dict(
             withHistory=query.options.withHistoryDisplay,
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
+            PROPS=dt.PROPS,
         )
 
         ps = []
@@ -563,7 +567,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('alkisExportFlurstueck')
     def export_flurstueck(self, req: gws.WebRequester, p: ExportFlurstueckRequest) -> ExportFlurstueckResponse:
-        if not self.export:
+        if not self.exporter:
             raise gws.NotFoundError()
 
         groups = [g for g in self._export_groups(req.user) if g.index in p.groupIndexes]
@@ -577,7 +581,12 @@ class Object(gws.base.action.Object):
         if not fs_list:
             raise gws.NotFoundError()
 
-        csv_bytes = self.export.export_as_csv(fs_list, groups, req.user)
+        csv_bytes = self.exporter.run(exporter.Args(
+            format=exporter.Format.csv,
+            fs=fs_list,
+            groups=groups,
+            user=req.user
+        ))
 
         return ExportFlurstueckResponse(content=csv_bytes, mime='text/csv')
 
@@ -812,12 +821,12 @@ class Object(gws.base.action.Object):
     ##
 
     def _export_groups(self, user):
-        if not self.export:
+        if not self.exporter:
             return []
 
         groups = []
 
-        for g in self.export.groups:
+        for g in self.exporter.groups:
             if g.withBuchung and not user.can_read(self.buchung):
                 continue
             if g.withEigentuemer and not user.can_read(self.eigentuemer):

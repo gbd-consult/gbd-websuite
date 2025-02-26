@@ -86,6 +86,7 @@ class FlurstueckRecord(Record):
     zustaendigeStelle: list[EnumPair]
     zweifelhafterFlurstuecksnachweis: bool
     nachfolgerFlurstueckskennzeichen: list[str]
+    vorgaengerFlurstueckskennzeichen: list[str]
 
 
 class BuchungsstelleReference(Object):
@@ -218,31 +219,13 @@ class Lage(Entity):
 
 class GebaeudeRecord(Record):
     gebaeudekennzeichen: int
-    props: list[tuple]
+    props: 'GebaeudeProps'
     geom: str
     amtlicheFlaeche: float
     geomFlaeche: float
 
 
 class Gebaeude(Entity):
-    PROP_KEYS = {
-        'anzahlDerOberirdischenGeschosse',
-        'anzahlDerUnterirdischenGeschosse',
-        'baujahr',
-        'bauweise',
-        'dachart',
-        'dachform',
-        'dachgeschossausbau',
-        'gebaeudefunktion',
-        'geschossflaeche',
-        'hochhaus',
-        'lageZurErdoberflaeche',
-        'name',
-        'objekthoehe',
-        'weitereGebaeudefunktion',
-        'umbauterRaum',
-        'zustand',
-    }
     recs: list[GebaeudeRecord]
 
 
@@ -252,7 +235,7 @@ PART_FESTLEGUNG = 3
 
 
 class PartRecord(Record):
-    props: list[tuple]
+    props: 'PartProps'
     amtlicheFlaeche: float  # corrected
     geomFlaeche: float
     geom: str
@@ -272,76 +255,6 @@ class Part(Entity):
             'Öffentlich-rechtliche und sonstige Festlegungen',
             'gesetzliche_festlegungen_gebietseinheiten_kataloge/oeffentlich_rechtliche_und_sonstige_festlegungen'
         ],
-    }
-
-    PROP_KEYS = {
-        'abbaugut',
-        'ackerzahlOderGruenlandzahl',
-        'anzahlDerFahrstreifen',
-        'anzahlDerStreckengleise',
-        'art',
-        'artDerBebauung',
-        'artDerFestlegung',
-        'artDerGebietsgrenze',
-        'artDerVerbandsgemeinde',
-        'ausfuehrendeStelle',
-        'bahnkategorie',
-        'baublockbezeichnung',
-        'bedeutung',
-        'befestigung',
-        'besondereFahrstreifen',
-        'besondereFunktion',
-        'bezeichnung',
-        'bodenart',
-        'bodenzahlOderGruenlandgrundzahl',
-        'breiteDerFahrbahn',
-        'breiteDesGewaessers',
-        'breiteDesVerkehrsweges',
-        'datumAbgabe',
-        'datumAnordnung',
-        'datumBesitzeinweisung',
-        'datumrechtskraeftig',
-        'einwohnerzahl',
-        'elektrifizierung',
-        'entstehungsartOderKlimastufeWasserverhaeltnisse',
-        'fliessrichtung',
-        'foerdergut',
-        'funktion',
-        'gehoertZu',
-        'gemeindeflaeche',
-        'gewaesserkennziffer',
-        'hydrologischesMerkmal',
-        'jahreszahl',
-        'kennziffer',
-        'klassifizierung',
-        'kulturart',
-        'lagergut',
-        'landschaftstyp',
-        'markierung',
-        'merkmal',
-        'name',
-        'nummer',
-        'nummerDerBahnstrecke',
-        'nummerDerSchutzzone',
-        'nutzung',
-        'oberflaechenmaterial',
-        'primaerenergie',
-        'rechtszustand',
-        'schifffahrtskategorie',
-        'sonstigeAngaben',
-        'spurweite',
-        'tagesabschnittsnummer',
-        'tidemerkmal',
-        'vegetationsmerkmal',
-        'veraenderungOhneRuecksprache',
-        'verkehrsbedeutungInneroertlich',
-        'verkehrsbedeutungUeberoertlich',
-        'verwaltungsgemeinschaft',
-        'widmung',
-        'zone',
-        'zustand',
-        'zustandsstufeOderBodenstufe',
-        'zweitname',
     }
 
     recs: list['PartRecord']
@@ -375,6 +288,178 @@ class Place(Record):
 
 
 ##
+
+class GebaeudeProps(Object):
+    anzahlDerOberirdischenGeschosse: int
+    anzahlDerUnterirdischenGeschosse: int
+    art: EnumPair
+    bauart: EnumPair
+    baujahr: list[int]
+    bauweise: EnumPair
+    beschaffenheit: list[EnumPair]
+    dachart: str
+    dachform: EnumPair
+    dachgeschossausbau: EnumPair
+    durchfahrtshoehe: int
+    gebaeudefunktion: EnumPair
+    gebaeudekennzeichen: str
+    geschossflaeche: float
+    grundflaeche: float
+    hochhaus: bool
+    lageZurErdoberflaeche: EnumPair
+    name: list[str]
+    objekthoehe: int
+    punktkennung: str
+    sonstigeEigenschaft: list[str]
+    umbauterRaum: float
+    weitereGebaeudefunktion: list[EnumPair]
+    zustand: EnumPair
+
+
+class PartProps(Object):
+    abbaugut: EnumPair
+    ackerzahlOderGruenlandzahl: str
+    anzahlDerFahrstreifen: int
+    anzahlDerStreckengleise: EnumPair
+    art: EnumPair
+    artDerBebauung: EnumPair
+    artDerFestlegung: EnumPair
+    bahnkategorie: list[EnumPair]
+    bedeutung: list[EnumPair]
+    befestigung: EnumPair
+    besondereFahrstreifen: EnumPair
+    besondereFunktion: EnumPair
+    bodenart: EnumPair
+    bodenzahlOderGruenlandgrundzahl: str
+    breiteDerFahrbahn: int
+    breiteDesGewaessers: int
+    breiteDesVerkehrsweges: int
+    datumAbgabe: str
+    datumAnordnung: str
+    datumBesitzeinweisung: str
+    datumrechtskraeftig: str
+    elektrifizierung: EnumPair
+    entstehungsartOderKlimastufeWasserverhaeltnisse: list[EnumPair]
+    fahrbahntrennung: EnumPair
+    fliessrichtung: bool
+    foerdergut: EnumPair
+    funktion: EnumPair
+    gewaesserkennzahl: str
+    gewaesserkennziffer: str
+    hydrologischesMerkmal: EnumPair
+    identnummer: str
+    internationaleBedeutung: EnumPair
+    jahreszahl: int
+    klassifizierung: EnumPair
+    kulturart: EnumPair
+    lagergut: EnumPair
+    markierung: EnumPair
+    merkmal: EnumPair
+    nummer: str
+    nummerDerSchutzzone: str
+    nummerDesSchutzgebietes: str
+    oberflaechenmaterial: EnumPair
+    primaerenergie: EnumPair
+    rechtszustand: EnumPair
+    schifffahrtskategorie: EnumPair
+    sonstigeAngaben: list[EnumPair]
+    spurweite: EnumPair
+    tagesabschnittsnummer: str
+    tidemerkmal: EnumPair
+    vegetationsmerkmal: EnumPair
+    veraenderungOhneRuecksprache: bool
+    verkehrsbedeutungInneroertlich: EnumPair
+    verkehrsbedeutungUeberoertlich: EnumPair
+    widmung: EnumPair
+    zone: EnumPair
+    zustand: EnumPair
+    zustandsstufeOderBodenstufe: EnumPair
+
+
+PROPS = {
+    "abbaugut": "Abbaugut",
+    "ackerzahlOderGruenlandzahl": "Ackerzahl oder Grünlandzahl",
+    "anzahlDerFahrstreifen": "Anzahl der Fahrstreifen",
+    "anzahlDerOberirdischenGeschosse": "Anzahl der oberirdischen Geschosse",
+    "anzahlDerStreckengleise": "Anzahl der Streckengleise",
+    "anzahlDerUnterirdischenGeschosse": "Anzahl der unterirdischen Geschosse",
+    "art": "Art",
+    "artDerBebauung": "Art der Bebauung",
+    "artDerFestlegung": "Art der Festlegung",
+    "bahnkategorie": "Bahnkategorie",
+    "bauart": "Bauart",
+    "baujahr": "Baujahr",
+    "bauweise": "Bauweise",
+    "bedeutung": "Bedeutung",
+    "befestigung": "Befestigung",
+    "beschaffenheit": "Beschaffenheit",
+    "besondereFahrstreifen": "Besondere Fahrstreifen",
+    "besondereFunktion": "Besondere Funktion",
+    "bodenart": "Bodenart",
+    "bodenzahlOderGruenlandgrundzahl": "Bodenzahl oder Grünlandgrundzahl",
+    "breiteDerFahrbahn": "Breite der Fahrbahn",
+    "breiteDesGewaessers": "Breite des Gewässers",
+    "breiteDesVerkehrsweges": "Breite des Verkehrsweges",
+    "dachart": "Dachart",
+    "dachform": "Dachform",
+    "dachgeschossausbau": "Dachgeschossausbau",
+    "datumAbgabe": "Datum-Abgabe",
+    "datumAnordnung": "Datum-Anordnung",
+    "datumBesitzeinweisung": "Datum-Besitzeinweisung",
+    "datumrechtskraeftig": "Datum-rechtskräftig",
+    "durchfahrtshoehe": "Durchfahrtshöhe",
+    "elektrifizierung": "Elektrifizierung",
+    "entstehungsartOderKlimastufeWasserverhaeltnisse": "Entstehungsart oder Klimastufe/Wasserverhältnisse",
+    "fahrbahntrennung": "Fahrbahntrennung",
+    "fliessrichtung": "Fließrichtung",
+    "foerdergut": "Fördergut",
+    "funktion": "Funktion",
+    "gebaeudefunktion": "Gebäudefunktion",
+    "gebaeudekennzeichen": "Gebäudekennzeichen",
+    "geschossflaeche": "Geschossfläche",
+    "gewaesserkennzahl": "Gewässerkennzahl",
+    "gewaesserkennziffer": "Gewässerkennziffer",
+    "grundflaeche": "Grundfläche",
+    "hochhaus": "Hochhaus",
+    "hydrologischesMerkmal": "Hydrologisches Merkmal",
+    "identnummer": "Identnummer",
+    "internationaleBedeutung": "Internationale Bedeutung",
+    "jahreszahl": "Jahreszahl",
+    "klassifizierung": "Klassifizierung",
+    "kulturart": "Kulturart",
+    "lageZurErdoberflaeche": "Lage zur Erdoberfläche",
+    "lagergut": "Lagergut",
+    "markierung": "Markierung",
+    "merkmal": "Merkmal",
+    "name": "Name",
+    "nummer": "Nummer",
+    "nummerDerSchutzzone": "Nummer der Schutzzone",
+    "nummerDesSchutzgebietes": "Nummer des Schutzgebietes",
+    "oberflaechenmaterial": "Oberflächenmaterial",
+    "objekthoehe": "Objekthöhe",
+    "primaerenergie": "Primärenergie",
+    "punktkennung": "Punktkennung",
+    "rechtszustand": "Rechtszustand",
+    "schifffahrtskategorie": "Schifffahrtskategorie",
+    "sonstigeAngaben": "Sonstige Angaben",
+    "sonstigeEigenschaft": "Sonstige Eigenschaft",
+    "spurweite": "Spurweite",
+    "tagesabschnittsnummer": "Tagesabschnittsnummer",
+    "tidemerkmal": "Tidemerkmal",
+    "umbauterRaum": "Umbauter Raum",
+    "vegetationsmerkmal": "Vegetationsmerkmal",
+    "veraenderungOhneRuecksprache": "Veränderung ohne Rücksprache",
+    "verkehrsbedeutungInneroertlich": "Verkehrsbedeutung innerörtlich",
+    "verkehrsbedeutungUeberoertlich": "Verkehrsbedeutung überörtlich",
+    "weitereGebaeudefunktion": "Weitere Gebäudefunktion",
+    "widmung": "Widmung",
+    "zone": "Zone",
+    "zustand": "Zustand",
+    "zustandsstufeOderBodenstufe": "Zustandsstufe oder Bodenstufe",
+}
+
+##
+
 
 class DisplayTheme(gws.Enum):
     lage = 'lage'
@@ -474,6 +559,16 @@ class AdresseQuery(gws.Data):
     hausnummerNotNull: bool
 
     options: Optional['AdresseQueryOptions']
+
+
+class IndexStatus(gws.Data):
+    """Index status"""
+
+    complete: bool
+    basic: bool
+    eigentuemer: bool
+    buchung: bool
+    missing: bool
 
 
 ##
