@@ -94,7 +94,7 @@ def _from_wkb(wkb: bytes, default_crs):
     return Shape(geom, crs)
 
 
-def from_wkb_element(element: sa.geo.WKBElement,  default_crs: gws.Crs = None):
+def from_wkb_element(element: sa.geo.WKBElement, default_crs: gws.Crs = None):
     data = element.data
     if isinstance(data, str):
         wkb = bytes.fromhex(data)
@@ -279,11 +279,17 @@ class Shape(gws.Shape):
     def to_ewkt(self):
         return f'SRID={self.crs.srid};' + self.to_wkt()
 
-    def to_geojson(self, always_xy=False):
-        geom = self.geom
-        if self.crs.isYX and not always_xy:
-            geom = _swap_xy(geom)
-        return shapely.geometry.mapping(geom)
+    def to_geojson(self, keep_crs=False):
+        # see https://datatracker.ietf.org/doc/html/rfc7946#section-4
+        # convert to WGS lon,lat unless keep_crs is true
+        # coords order is always XY
+
+        if keep_crs or self.crs == gws.lib.crs.WGS84:
+            return shapely.geometry.mapping(self.geom)
+
+        tr = self.crs.transformer(gws.lib.crs.WGS84)
+        new_geom = shapely.ops.transform(tr, self.geom)
+        return shapely.geometry.mapping(new_geom)
 
     def to_props(self):
         return gws.ShapeProps(

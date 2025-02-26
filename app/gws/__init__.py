@@ -2236,8 +2236,6 @@ class Feature:
 
     def shape(self) -> Optional['Shape']: ...
 
-    def to_geojson(self, user: 'User') -> dict: ...
-
     def to_svg(self, view: 'MapView', label: Optional[str] = None, style: Optional['Style'] = None) -> list[XmlElement]: ...
 
     def transform_to(self, crs: 'Crs') -> 'Feature': ...
@@ -2303,8 +2301,12 @@ class Shape(Object):
     def to_ewkt(self) -> str:
         """Returns an EWKT representation of this shape."""
 
-    def to_geojson(self, always_xy=False) -> dict:
-        """Returns a GeoJSON representation of this shape."""
+    def to_geojson(self, keep_crs=False) -> dict:
+        """Returns a GeoJSON representation of this shape.
+
+        Args:
+            keep_crs: Keep the CRS in the GeoJSON output.
+        """
 
     def to_props(self) -> ShapeProps:
         """Returns a GeoJSON representation of this shape."""

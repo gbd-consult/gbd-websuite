@@ -62,7 +62,7 @@ class Object(gws.Node):
 
 
 def _caps_json(x):
-    if isinstance(x, gws.lib.crs.Crs):
+    if isinstance(x, gws.lib.crs.Object):
         return x.epsg
     if isinstance(x, gws.base.shape.Shape):
         return x.to_geojson()

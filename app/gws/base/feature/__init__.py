@@ -79,16 +79,3 @@ class Feature(gws.Feature):
             return []
         shape = self.shape().transformed_to(view.bounds.crs)
         return gws.lib.svg.shape_to_fragment(shape, view, label, style)
-
-    def to_geojson(self, user):
-        p = self.props(user)
-        d = {'type': 'Feature', 'properties': getattr(p, 'attributes', {})}
-        d['properties']['id'] = self.uid()
-
-        if self.model.geometryName:
-            shape = d['properties'].pop(self.model.geometryName, None)
-            if shape:
-                d['geometry'] = shape.to_geojson()
-                d['crs'] = shape.crs.to_geojson()
-
-        return d
