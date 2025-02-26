@@ -1,6 +1,6 @@
 """Common csv writer helper."""
 
-from typing import Optional
+from typing import BinaryIO
 
 import decimal
 import datetime
@@ -57,20 +57,23 @@ class Object(gws.Node):
             rowDelimiter=self.cfg('format.rowDelimiter', default='LF').replace('CR', '\r').replace('LF', '\n'),
         )
 
-    def writer(self, locale: gws.Locale):
+    def writer(self, locale: gws.Locale, stream_to: BinaryIO = None) -> '_Writer':
         """Creates a new csv Writer.
 
         Args:
             locale: Locale to use.
+            stream_to: Stream to write to.
         """
 
-        return _Writer(self, locale)
+        return _Writer(self, locale, stream_to)
 
 
 class _Writer:
-    def __init__(self, helper, locale: gws.Locale):
+    def __init__(self, helper, locale: gws.Locale, stream_to: BinaryIO = None):
         self.helper: Object = helper
         self.format = self.helper.format
+        self.stream_to = stream_to
+        self.eol = self.format.rowDelimiter.encode(self.format.encoding)
 
         self.rows = []
         self.headers = ''
@@ -88,6 +91,8 @@ class _Writer:
         """
 
         self.headers = self.format.delimiter.join(self._quote(s) for s in headers)
+        if self.stream_to:
+            self.stream_to.write(self.headers.encode(self.format.encoding) + self.eol)
         return self
 
     def write_row(self, row: list):
@@ -96,7 +101,12 @@ class _Writer:
         Args:
             row: Row entries.
         """
-        self.rows.append(self.format.delimiter.join(self._format(v) for v in row))
+
+        s = self.format.delimiter.join(self._format(v) for v in row)
+        if self.stream_to:
+            self.stream_to.write(s.encode(self.format.encoding) + self.eol)
+        else:
+            self.rows.append(s)
         return self
 
     def to_str(self):
