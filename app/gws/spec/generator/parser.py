@@ -414,6 +414,9 @@ class _PythonParser:
         if g.lower() == 'list':
             return self.add(base.C.LIST, tItem=param_typ.uid if param_typ else 'any')
 
+        if g.lower() == 'iterable':
+            return self.add(base.C.LIST, tItem=param_typ.uid if param_typ else 'any')
+
         if g.lower() == 'set':
             return self.add(base.C.SET, tItem=param_typ.uid if param_typ else 'any')
 
