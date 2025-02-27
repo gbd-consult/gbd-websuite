@@ -8,10 +8,12 @@ import gws.lib.svg
 
 def new(
         model: gws.Model,
+        attributes: Optional[dict] = None,
         record: Optional[gws.FeatureRecord] = None,
         props: Optional[gws.FeatureProps] = None
 ) -> gws.Feature:
     f = Feature(model)
+    f.attributes = attributes or {}
     f.record = record or gws.FeatureRecord(attributes={})
     f.props = props or gws.FeatureProps(attributes={})
     return f

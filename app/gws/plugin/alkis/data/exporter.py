@@ -3,7 +3,7 @@
 Export Flurstuecke to CSV or GeoJSON.
 """
 
-from typing import Optional, Iterable, cast
+from typing import Optional, Iterable, cast, Any
 
 import io
 
@@ -19,47 +19,13 @@ from gws.lib.cli import ProgressIndicator
 from . import types as dt
 
 
-class FieldConfig(gws.Config):
-    """Export field configuration."""
-
-    title: str
-    """Field title."""
-    key: str
-    """Flattened key name."""
-
-
 class GroupConfig(gws.Config):
     """Export group configuration."""
 
     title: str
     """Title to display in the ui"""
-    fields: list[FieldConfig]
+    fields: list[gws.ext.config.modelField]
     """Fields to export."""
-
-
-class Group(gws.Data):
-    index: int
-    title: str
-    withEigentuemer: bool
-    withBuchung: bool
-    keys: list[str]
-
-
-class Format(gws.Enum):
-    csv = 'csv'
-    geojson = 'geojson'
-    pydict = 'pydict'
-
-
-class Args(gws.Data):
-    """Export arguments."""
-
-    format: Format
-    fs: Iterable[dt.Flurstueck]
-    groups: Optional[list[Group]]
-    writePath: Optional[str]
-    user: gws.User
-    progress: Optional[ProgressIndicator]
 
 
 class Config(gws.ConfigWithAccess):
@@ -69,65 +35,89 @@ class Config(gws.ConfigWithAccess):
     """Export groups"""
 
 
+class Group(gws.Data):
+    index: int
+    title: str
+    withEigentuemer: bool
+    withBuchung: bool
+    fieldNames: list[str]
+    keys: set[str]
+
+
+class Format(gws.Enum):
+    csv = 'csv'
+    geojson = 'geojson'
+    pydict = 'pydict'
+
+
+class Args(gws.Data):
+    format: Format
+    fs: Iterable[dt.Flurstueck]
+    groups: Optional[list[Group]]
+    writePath: Optional[str]
+    user: gws.User
+    progress: Optional[ProgressIndicator]
+
+
 _DEFAULT_GROUPS = [
     gws.Config(
         title='Basisdaten',
         fields=[
-            gws.Config(key='fs_flurstueckskennzeichen', title='Flurstückskennzeichen'),
-            gws.Config(key='fs_recs_gemeinde_text', title='Gemeinde'),
-            gws.Config(key='fs_recs_gemarkung_code', title='Gemarkungsnummer'),
-            gws.Config(key='fs_recs_gemarkung_text', title='Gemarkung'),
-            gws.Config(key='fs_recs_flurnummer', title='Flurnummer'),
-            gws.Config(key='fs_recs_zaehler', title='Zähler'),
-            gws.Config(key='fs_recs_nenner', title='Nenner'),
-            gws.Config(key='fs_recs_flurstuecksfolge', title='Folge'),
-            gws.Config(key='fs_recs_amtlicheFlaeche', title='Fläche'),
-            gws.Config(key='fs_recs_x', title='X'),
-            gws.Config(key='fs_recs_y', title='Y'),
+            gws.Config(type='text', name='fs_flurstueckskennzeichen', title='Flurstückskennzeichen'),
+            gws.Config(type='text', name='fs_recs_gemeinde_text', title='Gemeinde'),
+            gws.Config(type='text', name='fs_recs_gemarkung_code', title='Gemarkungsnummer'),
+            gws.Config(type='text', name='fs_recs_gemarkung_text', title='Gemarkung'),
+            gws.Config(type='text', name='fs_recs_flurnummer', title='Flurnummer'),
+            gws.Config(type='text', name='fs_recs_zaehler', title='Zähler'),
+            gws.Config(type='text', name='fs_recs_nenner', title='Nenner'),
+            gws.Config(type='text', name='fs_recs_flurstuecksfolge', title='Folge'),
+            gws.Config(type='float', name='fs_recs_amtlicheFlaeche', title='Fläche'),
+            gws.Config(type='float', name='fs_recs_x', title='X'),
+            gws.Config(type='float', name='fs_recs_y', title='Y'),
         ]
     ),
     gws.Config(
         title='Lage',
         fields=[
-            gws.Config(key='fs_lageList_recs_strasse', title='FS Strasse'),
-            gws.Config(key='fs_lageList_recs_hausnummer', title='FS Hnr'),
+            gws.Config(type='text', name='fs_lageList_recs_strasse', title='FS Strasse'),
+            gws.Config(type='text', name='fs_lageList_recs_hausnummer', title='FS Hnr'),
         ]
     ),
     gws.Config(
         title='Gebäude',
         fields=[
-            gws.Config(key='fs_gebaeudeList_recs_geomFlaeche', title='Gebäude Fläche'),
-            gws.Config(key='fs_gebaeudeList_recs_props_gebaeudefunktion_text', title='Gebäude Funktion'),
+            gws.Config(type='float', name='fs_gebaeudeList_recs_geomFlaeche', title='Gebäude Fläche'),
+            gws.Config(type='text', name='fs_gebaeudeList_recs_props_gebaeudefunktion_text', title='Gebäude Funktion'),
         ]
     ),
     gws.Config(
         title='Buchungsblatt',
         fields=[
-            gws.Config(key='fs_buchungList_recs_buchungsstelle_recs_buchungsart_code', title='Buchungsart'),
-            gws.Config(key='fs_buchungList_buchungsblatt_recs_blattart_text', title='Blattart'),
-            gws.Config(key='fs_buchungList_buchungsblatt_recs_buchungsblattkennzeichen', title='Blattkennzeichen'),
-            gws.Config(key='fs_buchungList_buchungsblatt_recs_buchungsblattnummerMitBuchstabenerweiterung', title='Blattnummer'),
-            gws.Config(key='fs_buchungList_recs_buchungsstelle_laufendeNummer', title='Laufende Nummer'),
+            gws.Config(type='text', name='fs_buchungList_recs_buchungsstelle_recs_buchungsart_code', title='Buchungsart'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_recs_blattart_text', title='Blattart'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_recs_buchungsblattkennzeichen', title='Blattkennzeichen'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_recs_buchungsblattnummerMitBuchstabenerweiterung', title='Blattnummer'),
+            gws.Config(type='text', name='fs_buchungList_recs_buchungsstelle_laufendeNummer', title='Laufende Nummer'),
         ]
     ),
     gws.Config(
         title='Eigentümer',
         fields=[
-            gws.Config(key='fs_buchungList_buchungsblatt_namensnummerList_recs_anteil', title='Anteil'),
-            gws.Config(key='fs_buchungList_buchungsblatt_namensnummerList_personList_recs_vorname', title='Vorname'),
-            gws.Config(key='fs_buchungList_buchungsblatt_namensnummerList_personList_recs_nachnameOderFirma', title='Name'),
-            gws.Config(key='fs_buchungList_buchungsblatt_namensnummerList_personList_recs_geburtsdatum', title='Geburtsdatum'),
-            gws.Config(key='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_strasse', title='Strasse'),
-            gws.Config(key='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_hausnummer', title='Hnr'),
-            gws.Config(key='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_plz', title='PLZ'),
-            gws.Config(key='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_ort', title='Ort'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_recs_anteil', title='Anteil'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_recs_vorname', title='Vorname'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_recs_nachnameOderFirma', title='Name'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_recs_geburtsdatum', title='Geburtsdatum'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_strasse', title='Strasse'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_hausnummer', title='Hnr'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_plz', title='PLZ'),
+            gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_ort', title='Ort'),
         ]
     ),
     gws.Config(
         title='Nutzung',
         fields=[
-            gws.Config(key='fs_nutzungList_geomFlaeche', title='Nutzung Fläche'),
-            gws.Config(key='fs_nutzungList_name_text', title='Nutzung Typ'),
+            gws.Config(type='float', name='fs_nutzungList_geomFlaeche', title='Nutzung Fläche'),
+            gws.Config(type='text', name='fs_nutzungList_name_text', title='Nutzung Typ'),
         ]
     ),
 ]
@@ -148,42 +138,44 @@ class Object(gws.Node):
         flat_keys = get_flat_keys()
         field_configs = {}
 
-        _cls_to_type = {
-            int: 'integer',
-            float: 'float',
-            str: 'text',
-        }
-
-        p = self.cfg('groups') or _DEFAULT_GROUPS
-
-        for n, cfg in enumerate(p, 1):
-            keys = []
-
-            for f in cfg.fields:
-                cls = flat_keys.get(f.key)
-                if not cls:
-                    raise gws.ConfigurationError(f'invalid ALKIS export field {f.key!r}')
-
-                field_configs[f.key] = gws.Config(
-                    type=_cls_to_type.get(cls, 'text'),
-                    title=f.title,
-                    name=f.key,
-                )
-
-                keys.append(f.key)
-
-            self.groups.append(Group(
-                index=n,
+        for cfg in (self.cfg('groups') or _DEFAULT_GROUPS):
+            g = Group(
+                index=len(self.groups),
                 title=cfg.title,
-                keys=keys,
-                withEigentuemer=any('namensnummer' in f for f in keys),
-                withBuchung=any('buchung' in f for f in keys),
-            ))
+                fieldNames=[],
+                keys=set(),
+                withEigentuemer=False,
+                withBuchung=False
+            )
+            self.groups.append(g)
+
+            for fc in cfg.fields:
+                field_configs[fc.name] = fc
+                g.fieldNames.append(fc.name)
+                self._update_keys_from_field(fc, g.keys, flat_keys)
+
+            g.withEigentuemer = any('namensnummer' in k for k in g.keys)
+            g.withBuchung = any('buchung' in k for k in g.keys)
 
         self.model = self.create_child(
             Model,
             fields=list(field_configs.values())
         )
+
+    def _update_keys_from_field(self, fc, keys, flat_keys):
+        # extract export keys `fs_...` from a field config
+
+        # field name is a valid key - ok
+        if fc.name in flat_keys:
+            keys.add(fc.name)
+
+        # a pretty crude way to extract keys from dynamic values like `format` or `expression`
+        for val in (fc.values or []):
+            ref = val.format or val.text
+            if ref:
+                for k in flat_keys:
+                    if k in ref:
+                        keys.add(k)
 
     def run(self, args: Args):
         """Export a Flurstueck list to CSV or GeoJSON."""
@@ -201,13 +193,13 @@ class Object(gws.Node):
         fp = open(args.writePath, 'wb') if args.writePath else None
         writer = csv_helper.writer(gws.lib.intl.locale('de_DE'), stream_to=fp)
 
-        keys = []
+        header = []
 
         for row in self._iter_rows(args):
-            if not keys:
-                keys = list(row.keys())
-                writer.write_headers(keys)
-            writer.write_row([row.get(k, '') for k in keys])
+            if not header:
+                header = list(row.keys())
+                writer.write_headers(header)
+            writer.write_row([row.get(k, '') for k in header])
 
         if args.writePath:
             fp.close()
@@ -272,18 +264,18 @@ class Object(gws.Node):
         @TODO: with certain combinations of keys this can explode very quickly
         """
 
-        all_keys = []
+        all_keys = set()
+        field_names = []
 
         for g in args.groups:
-            for k in g.keys:
-                if k not in all_keys:
-                    all_keys.append(k)
+            all_keys.update(g.keys)
+            field_names.extend(g.fieldNames)
 
         fields = [
             fld
-            for key in all_keys
+            for fn in gws.u.uniq(field_names)
             for fld in self.model.fields
-            if fld.name == key
+            if fld.name == fn
         ]
 
         mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.searchResults, user=args.user)
@@ -294,14 +286,15 @@ class Object(gws.Node):
                 args.progress.update(1)
 
             for atts in _flatten(fs, all_keys):
-                rec = gws.FeatureRecord(attributes=atts)
-                feature = gws.base.feature.new(model=self.model, record=rec)
+                # create a 'raw' feature from attributes and convert it to a record
+                # so that dynamic fields can be computed
 
+                feature = gws.base.feature.new(model=self.model, attributes=atts)
                 for fld in fields:
-                    fld.from_record(feature, mc)
+                    fld.to_record(feature, mc)
 
                 row = {
-                    fld.title: feature.get(fld.name, '')
+                    fld.title: feature.record.attributes.get(fld.name, '')
                     for fld in fields
                 }
 
@@ -318,7 +311,7 @@ class Object(gws.Node):
 _EXCLUDE_KEYS = {'fsUids', 'childUids', 'parentUids'}
 
 
-def _flatten(fs, all_keys):
+def _flatten(fs, all_keys) -> list[dict[str, Any]]:
     def _flat(val, key, ds):
 
         if not any(k.startswith(key) for k in all_keys):
