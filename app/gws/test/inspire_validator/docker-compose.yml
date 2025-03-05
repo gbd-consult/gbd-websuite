@@ -1,0 +1,15 @@
+networks:
+  default:
+    name: gws_test_network
+
+services:
+  inspire-validator:
+    image: inspire-validator:2024.3
+    container_name: inspire-validator
+    ports:
+      - 8090:8090
+    volumes:
+      - /opt/gbd/inspire-validator/etf:/etf
+      - ./etf-config.properties:/etf/config/etf-config.properties
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

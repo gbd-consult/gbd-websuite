@@ -6,6 +6,7 @@ import sys
 import subprocess
 import time
 import math
+import traceback
 
 SCRIPT_NAME = ''
 
@@ -144,7 +145,13 @@ def main(name, main_fn, usage):
         print('\n' + usage.strip() + '\n')
         sys.exit(0)
 
-    sys.exit(main_fn(args))
+    try:
+        sys.exit(main_fn(args))
+    except KeyboardInterrupt:
+        pass
+    except Exception as exc:
+        error('INTERNAL ERROR')
+        error(traceback.format_exc())
 
 
 def text_table(data, header=None, delim=' | '):

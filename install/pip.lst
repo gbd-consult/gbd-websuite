@@ -2,6 +2,7 @@
 
 Babel==2.14.*
 GeoAlchemy2==0.*
+jq==1.*
 MapProxy==1.*
 pendulum==3.*
 Pillow==10.*
@@ -12,11 +13,12 @@ pypdf==3.*
 pyproj==3.*
 python-ldap==3.*
 PyYAML==6.*
+qrcode==7.*
 requests==2.*
 shapely==2.*
 SQLAlchemy==2.*
+watchdog==6.*
 Werkzeug==3.*
-qrcode==7.*
 
 # NB something is broken in 2.0.25
 uWSGI==2.0.23
@@ -42,5 +44,3 @@ mistune==2.*
 # NB see https://github.com/lepture/python-livereload/issues/270
 tornado==6.*
 livereload==2.*
-
-watchdog==6.*
