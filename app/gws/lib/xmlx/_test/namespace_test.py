@@ -33,9 +33,9 @@ def test_find_by_uri_versioned2():
                                                         'version': '3.2'}
 
 
-def test_find_by_xmlns():
+def test_get():
     xmlns = 'gml'
-    assert xmlx.namespace.find_by_xmlns(xmlns).__dict__ == {'uid': 'gml',
+    assert xmlx.namespace.get(xmlns).__dict__ == {'uid': 'gml',
                                                             'xmlns': 'gml',
                                                             'uri': 'http://www.opengis.net/gml',
                                                             'schemaLocation': 'http://schemas.opengis.net/gml/3.2.1/gml.xsd',
@@ -95,31 +95,31 @@ def test_split_name_else():
     assert xmlx.namespace.split_name(name) == ('', '', 'name')
 
 
-def test_parse_name_xmlns():
+def test_extract_xmlns():
     ns = 'gml:tag'
-    assert xmlx.namespace.parse_name(ns) == (xmlx.namespace.get('gml'), 'tag')
+    assert xmlx.namespace.extract(ns) == (xmlx.namespace.get('gml'), 'tag')
 
 
-def test_parse_name_uri():
+def test_extract_uri():
     uri = '{http://www.opengis.net/gml}tag'
-    assert xmlx.namespace.parse_name(uri) == (xmlx.namespace.get('http://www.opengis.net/gml'), 'tag')
+    assert xmlx.namespace.extract(uri) == (xmlx.namespace.get('http://www.opengis.net/gml'), 'tag')
 
 
-def test_parse_name_else():
+def test_extract_else():
     name = 'foo'
-    assert xmlx.namespace.parse_name(name) == (None, 'foo')
+    assert xmlx.namespace.extract(name) == (None, 'foo')
 
 
 # cant deal with clark notation
 def test_qualify_name():
     name = 'gml:foo'
-    ns = xmlx.namespace.find_by_xmlns('soap')
+    ns = xmlx.namespace.get('soap')
     assert xmlx.namespace.qualify_name(name, ns, replace=False) == 'gml:foo'
 
 
 def test_qualify_name_replace():
     name = 'gml:foo'
-    ns = xmlx.namespace.find_by_xmlns('soap')
+    ns = xmlx.namespace.get('soap')
     assert xmlx.namespace.qualify_name(name, ns, replace=True) == 'soap:foo'
 
 
@@ -141,13 +141,13 @@ def test_unqualify_default_uri():
 
 def test_unqualify_default_xmlx():
     name = 'gml:tag'
-    d_ns = xmlx.namespace.find_by_xmlns('gml')
+    d_ns = xmlx.namespace.get('gml')
     assert xmlx.namespace.unqualify_default(name, d_ns) == 'tag'
 
 
 def test_unqualify_default_else():
     name = 'gml:tag'
-    d_ns = xmlx.namespace.find_by_xmlns('soap')
+    d_ns = xmlx.namespace.get('soap')
     assert xmlx.namespace.unqualify_default(name, d_ns) == 'gml:tag'
 
 
@@ -166,12 +166,12 @@ def test_declarations_empty():
 
 
 def test_declarations_default():
-    d_ns = xmlx.namespace.find_by_xmlns('soap')
+    d_ns = xmlx.namespace.get('soap')
     assert xmlx.namespace.declarations(d_ns) == {'xmlns': 'http://www.w3.org/2003/05/soap-envelope'}
 
 
 def test_declarations_element():
-    d_ns = xmlx.namespace.find_by_xmlns('soap')
+    d_ns = xmlx.namespace.get('soap')
     xml_str = '''
                 <root 
                         xmlns:gml="http://www.opengis.net/gml"
@@ -188,14 +188,14 @@ def test_declarations_element():
 
 
 def test_declarations_extra():
-    d_ns = xmlx.namespace.find_by_xmlns('soap')
-    extra = [xmlx.namespace.find_by_xmlns('gml')]
+    d_ns = xmlx.namespace.get('soap')
+    extra = [xmlx.namespace.get('gml')]
     assert xmlx.namespace.declarations(d_ns,extra_ns=extra) == {'xmlns': 'http://www.w3.org/2003/05/soap-envelope',
                                                               'xmlns:gml': 'http://www.opengis.net/gml/3.2',}
 
 
 def test_declarations_schema():
-    d_ns = xmlx.namespace.find_by_xmlns('soap')
+    d_ns = xmlx.namespace.get('soap')
     assert xmlx.namespace.declarations(d_ns, with_schema_locations=True) == { 'xmlns': 'http://www.w3.org/2003/05/soap-envelope',
                                                                               'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
                                                                               'xsi:schemaLocation': 'http://www.w3.org/2003/05/soap-envelope http://https://www.w3.org/2003/05/soap-envelope/',}

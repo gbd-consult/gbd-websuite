@@ -1,180 +1,147 @@
-from typing import Optional
 import gws
 from . import namespace, error
 
 
-class _SerializerState:
-    extra_namespaces: list[gws.XmlNamespace]
+class Serializer:
+    def __init__(self, el: gws.XmlElement, **kwargs):
+        self.el = el
 
-    compact_whitespace = False
-    remove_namespaces = False
-    fold_tags = False
-    with_namespace_declarations = False
-    with_schema_locations = False
-    with_xml_declaration = False
+        self.extra_namespaces = kwargs.get('extra_namespaces', [])
+        self.xmlns_replacements = kwargs.get('xmlns_replacements', {})
 
-    buf: list[str]
-    defaultNamespace: Optional[gws.XmlNamespace]
+        self.compact_whitespace = kwargs.get('compact_whitespace', False)
+        self.fold_tags = kwargs.get('fold_tags', False)
+        self.remove_namespaces = kwargs.get('remove_namespaces', False)
+        self.with_namespace_declarations = kwargs.get('with_namespace_declarations', False)
+        self.with_schema_locations = kwargs.get('with_schema_locations', False)
+        self.with_xml_declaration = kwargs.get('with_xml_declaration', False)
 
+        self.default_namespace = None
 
-def _state(kwargs):
-    ser = _SerializerState()
+        xmlns = el.get('xmlns')
+        if xmlns:
+            ns = namespace.get(xmlns)
+            if not ns:
+                raise error.NamespaceError(f'unknown namespace {xmlns!r}')
+            self.default_namespace = ns
 
-    ser.extra_namespaces = kwargs.get('extra_namespaces', [])
+        self.buf = []
 
-    ser.compact_whitespace = kwargs.get('compact_whitespace', False)
-    ser.fold_tags = kwargs.get('fold_tags', False)
-    ser.remove_namespaces = kwargs.get('remove_namespaces', False)
-    ser.with_namespace_declarations = kwargs.get('with_namespace_declarations', False)
-    ser.with_schema_locations = kwargs.get('with_schema_locations', False)
-    ser.with_xml_declaration = kwargs.get('with_xml_declaration', False)
+    def to_string(self):
+        extra_atts = None
 
-    ser.buf = []
-    ser.defaultNamespace = []
+        if self.with_namespace_declarations:
+            extra_atts = namespace.declarations(
+                for_element=self.el,
+                default_namespace=self.default_namespace,
+                xmlns_replacements=self.xmlns_replacements,
+                extra_namespaces=self.extra_namespaces,
+                with_schema_locations=self.with_schema_locations,
+            )
 
-    return ser
+        if self.with_xml_declaration:
+            self.buf.append(_XML_DECL)
 
+        self._el_to_string(self.el, extra_atts)
 
-##
+        return ''.join(self.buf)
 
+    def to_list(self):
+        return self._el_to_list(self.el)
 
-def to_string(el: gws.XmlElement, **kwargs):
-    ser = _state(kwargs)
+    ##
 
-    _set_default_namespace(ser, el)
+    def _el_to_list(self, el):
+        name = self._make_name(el.tag)
+        attr = {self._make_name(k): v for k, v in el.attrib.items()}
+        text = (el.text or '').strip()
+        tail = (el.tail or '').strip()
 
-    extra_atts = None
+        sub = [self._el_to_list(c) for c in el]
 
-    if ser.with_namespace_declarations:
-        extra_atts = namespace.declarations(
-            for_element=el,
-            default_ns=ser.defaultNamespace,
-            with_schema_locations=ser.with_schema_locations,
-            extra_ns=ser.extra_namespaces,
-        )
+        if self.fold_tags and len(sub) == 1 and (not attr and not text and not tail):
+            # single wrapper tag, create 'tag/subtag
+            inner = sub[0]
+            inner[0] = name + '/' + inner[0]
+            return inner
 
-    if ser.with_xml_declaration:
-        ser.buf.append(_XML_DECL)
+        res = [name, attr, text, sub, tail]
+        return [x for x in res if x]
 
-    _to_string(ser, el, extra_atts)
+    def _el_to_string(self, el, extra_atts=None):
+        atts = {}
 
-    return ''.join(ser.buf)
+        for key, val in el.attrib.items():
+            if val is None:
+                continue
+            atts[self._make_name(key)] = self._value_to_string(val)
 
+        if extra_atts:
+            atts.update(extra_atts)
 
-def _to_string(ser: _SerializerState, el: gws.XmlElement, extra_atts=None):
-    atts = {}
+        open_pos = len(self.buf)
+        self.buf.append('')
 
-    for key, val in el.attrib.items():
-        if val is None:
-            continue
-        atts[_make_name(ser, key)] = _value_to_string(ser, val)
+        s = self._text_to_string(el.text)
+        if s:
+            self.buf.append(s)
 
-    if extra_atts:
-        atts.update(extra_atts)
+        for c in el:
+            self._el_to_string(c)
 
-    open_pos = len(ser.buf)
-    ser.buf.append('')
+        open_tag = self._make_name(el.tag)
+        close_tag = open_tag
+        if atts:
+            open_tag += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
 
-    s = _text_to_string(ser, el.text)
-    if s:
-        ser.buf.append(s)
+        if len(self.buf) > open_pos + 1:
+            self.buf[open_pos] = f'<{open_tag}>'
+            self.buf.append(f'</{close_tag}>')
+        else:
+            self.buf[open_pos] += f'<{open_tag}/>'
 
-    for c in el:
-        _to_string(ser, c)
+        s = self._text_to_string(el.tail)
+        if s:
+            self.buf.append(s)
 
-    open_tag = _make_name(ser, el.tag)
-    close_tag = open_tag
-    if atts:
-        open_tag += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
+    def _text_to_string(self, s):
+        if s is None:
+            return ''
+        if isinstance(s, (int, float, bool)):
+            return str(s).lower()
+        if not isinstance(s, str):
+            s = str(s)
+        if self.compact_whitespace:
+            s = ' '.join(s.strip().split())
+        s = s.replace("&", "&amp;")
+        s = s.replace(">", "&gt;")
+        s = s.replace("<", "&lt;")
+        return s
 
-    if len(ser.buf) > open_pos + 1:
-        ser.buf[open_pos] = f'<{open_tag}>'
-        ser.buf.append(f'</{close_tag}>')
-    else:
-        ser.buf[open_pos] += f'<{open_tag}/>'
+    def _value_to_string(self, s):
+        if s is None:
+            return ''
+        if isinstance(s, (int, float, bool)):
+            return str(s).lower()
+        if not isinstance(s, str):
+            s = str(s)
+        s = s.replace("&", "&amp;")
+        s = s.replace('"', "&quot;")
+        s = s.replace(">", "&gt;")
+        s = s.replace("<", "&lt;")
+        return s
 
-    s = _text_to_string(ser, el.tail)
-    if s:
-        ser.buf.append(s)
-
-
-##
-
-def to_list(el: gws.XmlElement, **kwargs):
-    ser = _state(kwargs)
-
-    _set_default_namespace(ser, el)
-
-    return _to_list(ser, el)
-
-
-def _to_list(ser, el):
-    name = _make_name(ser, el.tag)
-    attr = {_make_name(ser, k): v for k, v in el.attrib.items()}
-    text = (el.text or '').strip()
-    tail = (el.tail or '').strip()
-
-    sub = [_to_list(ser, c) for c in el]
-
-    if ser.fold_tags and len(sub) == 1 and (not attr and not text and not tail):
-        # single wrapper tag, create 'tag/subtag
-        inner = sub[0]
-        inner[0] = name + '/' + inner[0]
-        return inner
-
-    res = [name, attr, text, sub, tail]
-    return [x for x in res if x]
-
-
-##
-
-def _set_default_namespace(ser, el):
-    xmlns = el.get('xmlns')
-    if xmlns:
-        ns = namespace.get(xmlns)
+    def _make_name(self, name):
+        if self.remove_namespaces:
+            return namespace.unqualify_name(name)
+        ns, pname = namespace.extract(name)
         if not ns:
-            raise error.NamespaceError(f'unknown namespace {xmlns!r}')
-        ser.defaultNamespace = ns
-
-
-def _text_to_string(ser, s):
-    if s is None:
-        return ''
-    if isinstance(s, (int, float, bool)):
-        return str(s).lower()
-    if not isinstance(s, str):
-        s = str(s)
-    if ser.compact_whitespace:
-        s = ' '.join(s.strip().split())
-    s = s.replace("&", "&amp;")
-    s = s.replace(">", "&gt;")
-    s = s.replace("<", "&lt;")
-    return s
-
-
-def _value_to_string(ser, s):
-    if s is None:
-        return ''
-    if isinstance(s, (int, float, bool)):
-        return str(s).lower()
-    if not isinstance(s, str):
-        s = str(s)
-    s = s.replace("&", "&amp;")
-    s = s.replace('"', "&quot;")
-    s = s.replace(">", "&gt;")
-    s = s.replace("<", "&lt;")
-    return s
-
-
-def _make_name(ser, name):
-    if ser.remove_namespaces:
-        return namespace.unqualify_name(name)
-    ns, pname = namespace.parse_name(name)
-    if not ns:
-        return name
-    if ns and ser.defaultNamespace and ns.uri == ser.defaultNamespace.uri:
-        return pname
-    return ns.xmlns + ':' + pname
+            return name
+        if ns and self.default_namespace and ns.uid == self.default_namespace.uid:
+            return pname
+        if self.xmlns_replacements and ns.uid in self.xmlns_replacements:
+            return self.xmlns_replacements[ns.uid] + ':' + pname
+        return ns.xmlns + ':' + pname
 
 
 _XML_DECL = '<?xml version="1.0" encoding="UTF-8"?>'

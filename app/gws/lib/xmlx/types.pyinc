@@ -11,13 +11,14 @@ class XmlNamespace(Data):
     """Namespace schema location."""
     version: str
     """Namespace version."""
+    isDefault: bool
+    """Is this the default namespace for the given prefix."""
     extendsGml: bool
     """Namespace schema extends the GML3 schema."""
 
 
 class XmlElement(Iterable):
     """XML Element.
-
 
     Extends ``ElementTree.Element`` (https://docs.python.org/3/library/xml.etree.elementtree.html#element-objects).
     """
@@ -53,15 +54,7 @@ class XmlElement(Iterable):
         """Adds the element subelement to the end of this element’s internal list of subelements."""
 
     def attr(self, key: str, default=None):
-        """Finds the value for a given key in the ``XmlElementImpl``.
-
-        Args:
-            key: Key of the attribute.
-            default: The default return.
-
-        Returns:
-            The vale of the key, If the key is not found the default is returned.
-        """
+        """Gets the element attribute named key."""
 
     def clear(self):
         """Resets an element."""
@@ -79,7 +72,7 @@ class XmlElement(Iterable):
         """Finds text for first matching element by name or path."""
 
     def get(self, key: str, default=None):
-        """Returns the value to a given key."""
+        """Gets the element attribute named key."""
 
     def insert(self, index: int, subelement: 'XmlElement'):
         """Inserts subelement at the given position in this element."""
@@ -108,64 +101,48 @@ class XmlElement(Iterable):
     # extensions
 
     def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'XmlElement':
-        """Creates a new ``XmlElementImpl`` and adds it as a child.
+        """Creates a new element and adds it as a child.
 
         Args:
             tag: XML tag.
             attrib: XML attributes ``{key, value}``.
-
-        Returns:
-            A XmlElementImpl.
         """
 
     def children(self) -> list['XmlElement']:
-        """Returns the children of the current ``XmlElementImpl``."""
+        """Returns the children of the current element."""
 
     def findfirst(self, *paths) -> Optional['XmlElement']:
-        """Returns the first element in the current element.
-
-        Args:
-            paths: Path as ``tag/tag2/tag3`` to the Element to search in.
-
-        Returns:
-            Returns the first found element.
-        """
+        """Given a list of paths, returns the first matching element."""
 
     def textof(self, *paths) -> str:
-        """Returns the text of a given child-element.
-
-        Args:
-            paths: Path as ``tag/tag2/tag3`` to the Element.
-
-        Returns:
-            The text of the element.
-        """
+        """Given a list of paths, returns the text of the first matching element that has text."""
 
     def textlist(self, *paths, deep=False) -> list[str]:
-        """Collects texts from child-elements.
+        """Collects texts from child elements.
 
         Args:
-            paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
-            deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
+            paths: List of paths to search for.
+            deep: If ``False`` it only looks into direct children, otherwise search the entire subtree.
 
         Returns:
             A list containing all the text from the child-elements.
         """
 
     def textdict(self, *paths, deep=False) -> dict[str, str]:
-        """Collects texts from child-elements.
+        """Collects texts from child elements.
 
         Args:
-            paths: Path as ``tag/tag2/tag3`` to the Element to collect texts from.
-            deep: If ``False`` it only looks into direct children, otherwise it searches for texts in the complete children-tree.
+            paths: List of paths to search for.
+            deep: If ``False`` it only looks into direct children, otherwise search the entire subtree.
 
         Returns:
-            A dict containing all the text from the child-elements.
+            A dict tag name -> text.
         """
 
     def to_string(
             self,
             extra_namespaces: Optional[list[XmlNamespace]] = None,
+            xmlns_replacements: dict[str, str] = None,
             compact_whitespace: bool = False,
             remove_namespaces: bool = False,
             with_namespace_declarations: bool = False,
@@ -176,6 +153,7 @@ class XmlElement(Iterable):
 
         Args:
             extra_namespaces: Extra namespaces to add to the document.
+            xmlns_replacements: A mapping of namespace UIDs to custom namespace prefixes.
             compact_whitespace: Remove all whitespace outside of tags and elements.
             remove_namespaces: Remove all namespace references.
             with_namespace_declarations: Include the namespace declarations.
@@ -194,7 +172,7 @@ class XmlElement(Iterable):
             fold_tags: bool = True,
             remove_namespaces: bool = False,
     ) -> list:
-        """Parse an XML element into a list of arguments.
+        """Parse an XML element into a list of arguments (reverse of `gws.lib.xmlx.tag`).
 
         Args:
             fold_tags: If true, folds nested tag names into ``parent/child`` names.

@@ -15,7 +15,7 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
         self.text = self.text or ''
         self.tail = self.tail or ''
 
-        _, _, pname = namespace.split_name(tag)
+        pname = namespace.unqualify_name(tag)
         self.name = pname
         self.lcName = pname.lower()
 
@@ -65,30 +65,34 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
         }
 
     def to_list(self, fold_tags=True, remove_namespaces=False):
-        return serializer.to_list(
+        ser = serializer.Serializer(
             self,
             fold_tags=fold_tags,
             remove_namespaces=remove_namespaces,
         )
+        return ser.to_list()
 
     def to_string(
             self,
             extra_namespaces=None,
+            xmlns_replacements=None,
             compact_whitespace=False,
             remove_namespaces=False,
             with_namespace_declarations=False,
             with_schema_locations=False,
             with_xml_declaration=False,
     ):
-        return serializer.to_string(
+        ser = serializer.Serializer(
             self,
             extra_namespaces=extra_namespaces,
+            xmlns_replacements=xmlns_replacements,
             compact_whitespace=compact_whitespace,
             remove_namespaces=remove_namespaces,
             with_namespace_declarations=with_namespace_declarations,
             with_schema_locations=with_schema_locations,
             with_xml_declaration=with_xml_declaration,
         )
+        return ser.to_string()
 
     ##
 

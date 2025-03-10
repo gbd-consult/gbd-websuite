@@ -34,7 +34,7 @@ class Object(gws.LayerOws):
 
         p = self.cfg('xmlns')
         if p:
-            self.xmlNamespace, _ = gws.lib.xmlx.namespace.parse_name(p + ':test')
+            self.xmlNamespace, _ = gws.lib.xmlx.namespace.extract(p + ':test')
 
         self.layerName = self._configure_name('layerName') or self.cfg('_defaultName')
         self.featureName = self._configure_name('featureName') or self.cfg('_defaultName')
@@ -47,7 +47,7 @@ class Object(gws.LayerOws):
         p = self.cfg(key)
         if not p:
             return
-        ns, pname = gws.lib.xmlx.namespace.parse_name(p)
+        ns, pname = gws.lib.xmlx.namespace.extract(p)
         if ns:
             self.xmlNamespace = ns
         return pname
