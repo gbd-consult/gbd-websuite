@@ -101,7 +101,7 @@ def dcp_service_url(ta: request.TemplateArgs):
 
 
 def legend_url(ta: request.TemplateArgs, lc: core.LayerCaps):
-    _, _, name = xmlx.namespace.split_name(lc.layerNameQ)
+    name = xmlx.namespace.unqualify_name(lc.layerNameQ)
     return (
         'LegendURL',
         ('Format', 'image/png'),
@@ -252,6 +252,7 @@ def to_xml_response(ta: request.TemplateArgs, tag, extra_namespaces: Optional[li
     el = xmlx.tag(*tag)
     xml = el.to_string(
         extra_namespaces=extra_namespaces,
+        xmlns_replacements=ta.sr.xmlnsReplacements,
         with_xml_declaration=True,
         with_namespace_declarations=True,
         with_schema_locations=True

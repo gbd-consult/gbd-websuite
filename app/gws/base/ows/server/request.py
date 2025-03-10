@@ -1,6 +1,7 @@
 """Service Request object."""
 
 from typing import Optional, Callable
+import re
 
 import gws
 import gws.base.layer.core
@@ -14,6 +15,7 @@ import gws.lib.bounds
 import gws.lib.crs
 import gws.lib.image
 import gws.lib.uom
+import gws.lib.xmlx
 
 from . import core, layer_caps, error
 
@@ -53,6 +55,7 @@ class Object:
     targetCrs: gws.Crs
     version: str
     xmlElement: Optional[gws.XmlElement]
+    xmlnsReplacements: dict
 
     def __init__(self, service: gws.OwsService, req: gws.WebRequester, params: dict, xml_element: gws.XmlElement = None, is_soap=False) -> None:
         self.service = service
@@ -80,6 +83,8 @@ class Object:
                 raise error.CurrentUpdateSequence()
             if s and s > self.service.updateSequence:
                 raise error.InvalidUpdateSequence()
+
+        self.xmlnsReplacements = self.requested_xmlns_replacements()
 
     def enum_layer_caps(self):
         lcs = []
@@ -233,6 +238,27 @@ class Object:
         if s <= 0:
             return self.service.defaultFeatureCount
         return min(self.service.maxFeatureCount, s)
+
+    def requested_xmlns_replacements(self):
+        s = self.string_param('NAMESPACES', default='')
+        if not s:
+            return {}
+
+        # OGC 09-025r1, Table 7
+        # xmlns(xml,http://www.w3.org/XML/1998/namespace),xmlns(ns37,https://our-ns),xmlns(wfs ... etc
+
+        d = {}
+
+        for xmlns, uri in re.findall(r'xmlns\((.+?),(.+?)\)', s):
+            ns = gws.lib.xmlx.namespace.find_by_uri(uri)
+            if not ns:
+                gws.log.debug(f'namespace not found: {uri=}')
+                raise error.InvalidParameterValue('NAMESPACES')
+            if ns.xmlns == xmlns:
+                continue
+            d[ns.uid] = xmlns
+
+        return d
 
     ##
 

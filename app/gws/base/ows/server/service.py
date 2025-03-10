@@ -170,7 +170,7 @@ class Object(gws.OwsService):
         if req.method == 'GET':
             return request.Object(self, req, req.params())
 
-        if req.method == 'POST' and req.contentType == gws.lib.mime.XML:
+        if req.method == 'POST' and gws.lib.mime.get(req.contentType) == gws.lib.mime.XML:
             try:
                 xml = gws.lib.xmlx.from_string(req.text(), remove_namespaces=True, case_insensitive=True)
             except gws.lib.xmlx.Error:
@@ -196,8 +196,16 @@ class Object(gws.OwsService):
         return {}
 
     def handle_request(self, req: gws.WebRequester) -> gws.ContentResponse:
-        sr = self.init_request(req)
-        return self.dispatch_request(sr)
+        try:
+            sr = self.init_request(req)
+            return self.dispatch_request(sr)
+        except Exception as exc:
+            err = error.from_exception(exc)
+            # @TODO INIMAGE Exceptions
+            # verb = req.param('REQUEST')
+            # if verb in core.IMAGE_VERBS:
+            #     return err.to_image_response()
+            return err.to_xml_response('ows' if self.isOwsCommon else 'ogc')
 
     def dispatch_request(self, sr: request.Object):
         fn = getattr(self, sr.operation.handlerName)
@@ -211,8 +219,12 @@ class Object(gws.OwsService):
             mime=mime,
         )
         if not tpl:
+            # OGC 06-042, 7.2.3.1
+            # If the request specifies a format not supported by the server, the server shall respond with the default text/xml format.
             gws.log.debug(f'no template: {sr.operation.verb=} {mime=}')
-            raise error.InvalidFormat()
+            if mime == gws.lib.mime.XML:
+                raise error.InvalidFormat()
+            return self.template_response(sr, gws.lib.mime.XML, **kwargs)
 
         args = request.TemplateArgs(
             sr=sr,

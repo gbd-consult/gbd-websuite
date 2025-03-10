@@ -69,13 +69,21 @@ def layer_name_matches(lc: core.LayerCaps, name: str) -> bool:
         return name == lc.layerName
 
 
-def feature_name_matches(lc: core.LayerCaps, name: str) -> bool:
+def feature_name_matches(lc: core.LayerCaps, name: str, xmlns_replacements: dict) -> bool:
     """Check if the feature name in the caps matches the given name."""
 
-    if ':' in name:
-        return name == lc.featureNameQ
-    else:
+    if name == lc.featureNameQ:
+        return True
+
+    if ':' not in name:
         return name == lc.featureName
+
+    custom_xmlns, _, name = xmlx.namespace.split_name(name)
+    if name == lc.featureName:
+        if lc.xmlNamespace.uid in xmlns_replacements:
+            return xmlns_replacements[lc.xmlNamespace.uid] == custom_xmlns
+
+    return False
 
 
 def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:

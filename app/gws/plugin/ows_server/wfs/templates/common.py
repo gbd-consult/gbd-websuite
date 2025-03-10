@@ -1,5 +1,4 @@
 import gws.base.ows.server as server
-import gws.base.ows.server.templatelib as tpl
 import gws.lib.xmlx as xmlx
 import gws.lib.datetimex
 import gws.lib.gml

@@ -198,6 +198,7 @@ class Object(server.service.Object):
             sr,
             sr.requested_format('INFO_FORMAT'),
             featureCollection=fc,
+            mime=gws.lib.mime.GML,
         )
 
     ##
@@ -211,14 +212,18 @@ class Object(server.service.Object):
 
         lcs = []
 
-        for name in sr.list_param(param_name):
+        def add(name):
             for lc in sr.layerCapsList:
-                if not server.layer_caps.layer_name_matches(lc, name):
-                    continue
-                if lc.isGroup:
-                    lcs.extend(reversed(lc.leaves) if bottom_first else lc.leaves)
-                else:
-                    lcs.append(lc)
+                if server.layer_caps.layer_name_matches(lc, name):
+                    if lc.isGroup:
+                        lcs.extend(reversed(lc.leaves) if bottom_first else lc.leaves)
+                    else:
+                        lcs.append(lc)
+                    return True
+
+        for name in sr.list_param(param_name):
+            if not add(name):
+                raise server.error.LayerNotDefined(name)
 
         if self.layerLimit and len(lcs) > self.layerLimit:
             raise server.error.InvalidParameterValue('LAYER')

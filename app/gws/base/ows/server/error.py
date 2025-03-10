@@ -38,7 +38,7 @@ class Error(gws.Error):
             # OGC ServiceExceptionReport, as per OGC 06-042, H.2
             xml = gws.lib.xmlx.tag(
                 'ServiceExceptionReport', {'xmlns': 'ogc'},
-                ('ServiceException', {'exceptionCode': self.code, 'locator': self.locator}, self.message)
+                ('ServiceException', {'code': self.code}, self.message)
             )
 
         else:

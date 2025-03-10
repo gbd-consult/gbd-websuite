@@ -38,17 +38,9 @@ class Object(gws.base.action.Object):
         srv = cast(gws.OwsService, self.root.get(p.serviceUid, gws.ext.object.owsService))
         if not srv:
             raise gws.NotFoundError(f'{p.serviceUid=} not found')
-
-        try:
-            if not req.user.can_use(srv):
-                raise gws.ForbiddenError(f'{p.serviceUid=} forbidden')
-            return srv.handle_request(req)
-        except Exception as exc:
-            err = error.from_exception(exc)
-            verb = req.param('REQUEST')
-            if verb in core.IMAGE_VERBS:
-                return err.to_image_response()
-            return err.to_xml_response('ows' if srv.isOwsCommon else 'ogc')
+        if not req.user.can_use(srv):
+            raise gws.ForbiddenError(f'{p.serviceUid=} forbidden')
+        return srv.handle_request(req)
 
     @gws.ext.command.get('owsXml')
     def get_schema(self, req: gws.WebRequester, p: GetSchemaRequest) -> gws.ContentResponse:
@@ -62,7 +54,7 @@ class Object(gws.base.action.Object):
         s = p.namespace
         if s.endswith('.xsd'):
             s = s[:-4]
-        ns = gws.lib.xmlx.namespace.find_by_xmlns(s)
+        ns = gws.lib.xmlx.namespace.get(s)
         if not ns:
             raise gws.NotFoundError(f'namespace not found: {p.namespace=}')
 
