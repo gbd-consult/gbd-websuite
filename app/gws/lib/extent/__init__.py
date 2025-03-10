@@ -17,7 +17,7 @@ def from_string(s: str) -> Optional[gws.Extent]:
         An extent.
     """
 
-    return from_list(s.split(','))
+    return _from_string_list(s.split(','))
 
 
 def from_list(ls: list) -> Optional[gws.Extent]:
@@ -29,7 +29,7 @@ def from_list(ls: list) -> Optional[gws.Extent]:
     Returns:
         An extent."""
 
-    return _check(ls)
+    return _from_string_list(ls)
 
 
 def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
@@ -42,7 +42,12 @@ def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
         Returns:
             An extent."""
 
-    return _check([a[0], a[1], b[0], b[1]])
+    return (
+        min(a[0], b[0]),
+        min(a[1], b[1]),
+        max(a[0], b[0]),
+        max(a[1], b[1]),
+    )
 
 
 def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
@@ -79,10 +84,7 @@ def from_box(box: str) -> Optional[gws.Extent]:
     if not m:
         return None
 
-    a, b = m.group(1).split(',')
-    c, d = a.split(), b.split()
-
-    return _check([c[0], c[1], d[0], d[1]])
+    return _from_string_list(m.group(1).replace(',', ' ').split(' '))
 
 
 #
@@ -103,7 +105,6 @@ def intersection(exts: list[gws.Extent]) -> Optional[gws.Extent]:
     res = (-math.inf, -math.inf, math.inf, math.inf)
 
     for ext in exts:
-        _sort(ext)
         if not intersect(res, ext):
             return
         res = (
@@ -159,7 +160,6 @@ def buffer(e: gws.Extent, buf: int) -> gws.Extent:
 
     if buf == 0:
         return e
-    e = _sort(e)
     return (
         e[0] - buf,
         e[1] - buf,
@@ -180,7 +180,6 @@ def union(exts: list[gws.Extent]) -> gws.Extent:
 
     ext = exts[0]
     for e in exts:
-        e = _sort(e)
         ext = (
             min(ext[0], e[0]),
             min(ext[1], e[1]),
@@ -193,8 +192,6 @@ def union(exts: list[gws.Extent]) -> gws.Extent:
 def intersect(a: gws.Extent, b: gws.Extent) -> bool:
     """Returns ``True`` if the extents are intersecting, otherwise ``False``."""
 
-    a = _sort(a)
-    b = _sort(b)
     return a[0] <= b[2] and a[2] >= b[0] and a[1] <= b[3] and a[3] >= b[1]
 
 
@@ -263,7 +260,7 @@ def is_valid_wgs(e: gws.Extent) -> bool:
     return e[0] >= w[0] and e[1] >= w[1] and e[2] <= w[2] and e[3] <= w[3]
 
 
-def _check(ls: list) -> Optional[gws.Extent]:
+def _from_string_list(ls: list) -> Optional[gws.Extent]:
     if len(ls) != 4:
         return None
     try:
@@ -272,17 +269,6 @@ def _check(ls: list) -> Optional[gws.Extent]:
         return None
     if not all(math.isfinite(p) for p in e):
         return None
-    e = _sort(e)
     if e[0] >= e[2] or e[1] >= e[3]:
         return None
-    return e
-
-
-def _sort(e):
-    # our extents are always [minx, miny, maxx, maxy]
-    return (
-        min(e[0], e[2]),
-        min(e[1], e[3]),
-        max(e[0], e[2]),
-        max(e[1], e[3]),
-    )
+    return e[0], e[1], e[2], e[3]
