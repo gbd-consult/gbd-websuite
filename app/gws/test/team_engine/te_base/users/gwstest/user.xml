@@ -1,0 +1,11 @@
+<user>
+ <name>gwstest</name>
+ <roles>
+  <name>user</name>
+ </roles>
+ <password>sha1:64000:18:/L8qhVkiqT4V8Wb59nBjgCXzei280R9+:2QFcnG+DAhe7vgruCXIgXJ+A</password>
+ <email>info@gbd-consult.de</email>
+ <firstName>gwstest</firstName>
+ <lastName>gwstest</lastName>
+ <organization>gws</organization>
+</user>

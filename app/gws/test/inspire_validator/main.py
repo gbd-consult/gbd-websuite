@@ -1,9 +1,3 @@
-"""Run INSPIRE validator tests.
-
-Reference:
-    - https://inspire.ec.europa.eu/validator/swagger-ui.html
-"""
-
 import os
 import sys
 import re
@@ -24,19 +18,20 @@ GWS INSPIRE validator
 
 Commands:
 
-    iv.py dir
+    main.py dir
         - show available test suites
 
-    iv.py run <suite-filter> <url>
+    main.py run <suite-filter> <url>
         - run suites matching the filter against the given URL
 
 Options:
-    --host   - validator host (default: 127.0.0.1)
-    --port   - validator port (default: 8090)
-    --raw    - print raw output
-    --all    - report all tests
+    --host                - validator host (default: 127.0.0.1)
+    --port                - validator port (default: 8090)
+    --all                 - report all tests (default: only failed)
+    --save-parsed <path>  - save parsed output
+    --save-raw <path>     - save raw output
     
-The validator docker image must be started before running this script (see `inspire_validator/docker-compose.yml`).
+The validator docker container must be started before running this script (see `inspire_validator/docker-compose.yml`).
     
 """
 
@@ -46,7 +41,8 @@ OPTIONS = {}
 def main(args):
     OPTIONS['host'] = args.get('host', '127.0.0.1')
     OPTIONS['port'] = args.get('port', '8090')
-    OPTIONS['raw'] = args.get('raw', False)
+    OPTIONS['save-raw'] = args.get('save-raw', '')
+    OPTIONS['save-parsed'] = args.get('save-parsed', '')
     OPTIONS['all'] = args.get('all', False)
 
     cmd = args.get(1)
@@ -100,6 +96,12 @@ def _get_suites():
 
 
 def _run_tests(suite_uids, url):
+    cli.info(f'running suites {suite_uids}')
+    res = _invoke_tests(suite_uids, url)
+    return _save_and_report(res)
+
+
+def _invoke_tests(suite_uids, url):
     request = {
         "executableTestSuiteIds": suite_uids,
         "label": "test",
@@ -125,34 +127,84 @@ def _run_tests(suite_uids, url):
             cli.fatal(res['error'])
         status = jq.first('.EtfItemCollection.testRuns.TestRun.status', res)
         if status != 'UNDEFINED':
-            break
+            return res
         cli.info(f'test {uid}: waiting...')
         continue
 
-    results = list(_parse_test_results(res))
-    cnt_total = len(results)
-    failed = [r for r in results if not r['passed']]
-    ok = len(failed) == 0
+
+def _save_and_report(res):
+    if OPTIONS['save-raw']:
+        jsonx.to_path(OPTIONS['save-raw'], res, pretty=True)
+
+    results = _parse_test_results(res)
+    stats = f'TOTAL={len(results)}'
+
+    by_status = {}
+    for r in results:
+        by_status[r['status']] = by_status.get(r['status'], 0) + 1
+    for k, v in sorted(by_status.items()):
+        stats += f' {k}={v}'
 
     if not OPTIONS['all']:
-        results = failed
-    if OPTIONS['raw']:
-        print(jsonx.to_pretty_string(results))
-        return ok
+        results = [r for r in results if r['status'] != 'passed']
+
+    if OPTIONS['save-parsed']:
+        jsonx.to_path(OPTIONS['save-parsed'], results, pretty=True)
 
     cli.info(f'')
-    cli.info(f'test: {len(suite_uids)} suite(s), {cnt_total} tests, {len(failed)} failed')
+    cli.info(stats)
     cli.info(f'')
 
     for r in results:
-        fn = cli.info if r['passed'] else cli.error
-        labels = ' -> '.join(s.get('label') or '' for s in r['specs'])
-        desc = _unhtml(' '.join(s.get('description') or '' for s in r['specs']))
-        if r['message']:
-            desc = r['message'] + ' ' + desc
-        fn(('passed' if r['passed'] else 'FAILED') + ' ' + labels + ': ' + desc)
+        _report_result(r)
 
-    return ok
+    return by_status.get('passed', 0) == len(results)
+
+
+def _report_result(r):
+    fn = cli.error if r['status'] == 'FAILED' else cli.info
+
+    fn(r['id'])
+
+    msg = r['status']
+    if r['message']:
+        msg += ': ' + r['message']
+    fn(msg)
+
+    if r['specs']:
+        _report_expressions(r['specs'][0], fn)
+
+        for s in r['specs']:
+            label = s.get('label', 'UNKNOWN')
+            # desc = _unhtml(s.get('description', ''))
+            # if desc:
+            #     label += f' ({desc})'
+            fn('>> ' + label)
+
+    fn('')
+    fn('=' * 80)
+    fn('')
+
+
+def _report_expressions(s, fn):
+    q = s.get('expression', '')
+    if q:
+        fn('| ')
+        for ln in str(q).splitlines():
+            fn('| ' + ln)
+
+    q = s.get('statementForExecution', '')
+    if q and q != 'NOT_APPLICABLE':
+        fn('| ')
+        for ln in str(q).splitlines():
+            fn('| ' + ln)
+
+    q = s.get('expectedResult', '')
+    if q and q != 'NOT_APPLICABLE':
+        fn('| ')
+        fn('| EXPECTED=' + str(q))
+
+    fn('| ')
 
 
 def _parse_test_results(res):
@@ -161,48 +213,52 @@ def _parse_test_results(res):
     for msg in jq.all('.. | .LangTranslationTemplateCollection? | .[]?', res):
         all_messages[msg['name']] = jq.first('.translationTemplates.TranslationTemplate["$"]', msg)
     # the default is just silly
-    all_messages['TR.fallbackInfo'] = ''
+    all_messages['TR.fallbackInfo'] = '{INFO}'
 
     all_results = []
 
     for step in _get_list('.. | .TestStepResult?', res):
-        all_results.append(step)
         if 'testAssertionResults' in step:
             all_results.extend(_get_list('.. | .TestAssertionResult?', step))
+        else:
+            all_results.append(step)
 
-    for q in all_results:
-        messages = []
+    return [
+        _parse_single_result(q, res, all_messages)
+        for q in all_results
+    ]
 
-        for m in _get_list('.messages.message', q):
-            msg = all_messages.get(m['ref'], '')
-            for a in _get_list('.. | .argument?', m):
-                msg = msg.replace('{' + a['token'] + '}', str(a['$']))
-            messages.append(msg)
 
-        specs = []
-        ref = jq.first('. | .resultedFrom? | .ref', q)
+def _parse_single_result(q, res, all_messages):
+    r = dict(
+        id=q['id'],
+        status='passed' if q['status'].startswith('PASSED') else q['status'],
+        message='',
+        specs=[],
+    )
 
-        while ref:
-            spec = jq.first(f'.. | select(.id? == "{ref}")', res)
-            if not spec:
-                break
-            specs.insert(0, _pick(spec, 'id', 'label', 'description', 'statementForExecution', 'expression'))
-            ref = jq.first('. | .parent? | .ref', spec)
+    for m in _get_list('.messages.message', q):
+        msg = all_messages.get(m['ref'], '')
+        for a in _get_list('.. | .argument?', m):
+            msg = msg.replace('{' + a['token'] + '}', str(a['$']))
+        r['message'] += m['ref'] + ': ' + msg
 
-        ref = jq.first('. | .resultedFrom? | .href', q)
-        if ref:
-            specs.append({'label': ref})
+    ref = jq.first('. | .resultedFrom? | .href', q)
+    if ref:
+        r['specs'] = [dict(label=ref)]
 
-        yield dict(
-            id=q['id'],
-            passed='PASSED' in q['status'],
-            message=', '.join(messages),
-            specs=specs
-        )
+    ref = jq.first('. | .resultedFrom? | .ref', q)
+    while ref:
+        q = jq.first(f'.. | select(.id? == "{ref}")', res)
+        r['specs'].append(_pick(q, 'id', 'label', 'description', 'statementForExecution', 'expression', 'expectedResult'))
+        ref = jq.first('. | .parent? | .ref', q)
+
+    return r
 
 
 def _invoke(path, **kwargs):
     url = f'http://{OPTIONS["host"]}:{OPTIONS["port"]}/validator/v2/{path}'
+    cli.info(f'>> {url}')
     try:
         res = gws.lib.net.http_request(url, headers={'Accept': 'application/json'}, **kwargs)
         res.raise_if_failed()
@@ -227,7 +283,13 @@ def _get_list(q, where):
 
 
 def _pick(d, *keys):
-    return {k: d.get(k, '') for k in keys}
+    o = {}
+    for k in keys:
+        if k not in d or d[k] is None:
+            o[k] = ''
+        else:
+            o[k] = d[k]
+    return o
 
 
 def _unhtml(s):

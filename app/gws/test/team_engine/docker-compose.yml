@@ -1,0 +1,11 @@
+services:
+  teamengine:
+    image: ogccite/teamengine-production
+    container_name: teamengine
+    ports:
+      - 8080:8080
+    volumes:
+      - ./te_base/users:/usr/local/tomcat/te_base/users
+      - ./___COPY:/___COPY
+    extra_hosts:
+      - "mainhost:host-gateway"
