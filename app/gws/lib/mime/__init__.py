@@ -22,7 +22,7 @@ PNG = 'image/png'
 SVG = 'image/svg+xml'
 TTF = 'application/x-font-ttf'
 TXT = 'text/plain'
-XML = 'application/xml'
+XML = 'text/xml'
 ZIP = 'application/zip'
 DOC = 'application/msword'
 XLS = 'application/vnd.ms-excel'
@@ -93,7 +93,7 @@ _aliases = {
     'application/x-pdf': PDF,
     'image/jpg': JPEG,
     'text/xhtml': HTML,
-    'text/xml': XML,
+    'application/xml': XML,
 
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': DOC,
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': XLS,
