@@ -1,9 +1,32 @@
+"""Utility functions for MapProxy integration.
+
+This module provides utilities for annotating and decorating MapProxy images.
+"""
+
+from typing import Any, Dict, List, Tuple, Optional
 from PIL import ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
 
 # see https://mapproxy.org/docs/nightly/decorate_img.html
 
-def annotate(image, service, layers, environ, query_extent, **kw):
+def annotate(image: Any, service: str, layers: List[str], environ: Dict[str, Any], 
+             query_extent: Tuple[Any, Any], **kw: Any) -> ImageSource:
+    """Annotate a MapProxy image with request information.
+
+    This function is used as a callback for MapProxy's decorate_img middleware.
+    It adds text information about the request to the image.
+
+    Args:
+        image: The MapProxy image object to annotate.
+        service: The OWS service name (WMS, WMTS, etc.).
+        layers: List of requested layer names.
+        environ: The WSGI environment dictionary.
+        query_extent: A tuple containing SRS and coordinate information.
+        **kw: Additional keyword arguments.
+
+    Returns:
+        An ImageSource object with the annotated image.
+    """
     img = image.as_image().convert('RGBA')
 
     text = [
@@ -41,16 +64,31 @@ def annotate(image, service, layers, environ, query_extent, **kw):
 
 
 class AnnotationFilter(object):
-    """
-    Simple MapProxy decorate_img middleware.
+    """Simple MapProxy decorate_img middleware.
 
-    Annotates map images with information about the request.
+    This middleware annotates map images with information about the request.
+    It can be used to debug MapProxy requests by adding visual information
+    to the returned images.
     """
 
-    def __init__(self, app):
+    def __init__(self, app: Any) -> None:
+        """Initialize the filter with a WSGI application.
+
+        Args:
+            app: The WSGI application to wrap.
+        """
         self.app = app
 
-    def __call__(self, environ, start_response):
+    def __call__(self, environ: Dict[str, Any], start_response: Any) -> Any:
+        """WSGI application interface.
+
+        Args:
+            environ: The WSGI environment dictionary.
+            start_response: The WSGI start_response callable.
+
+        Returns:
+            The response from the wrapped application.
+        """
         # Add the callback to the WSGI environment
         environ['mapproxy.decorate_img'] = annotate
 

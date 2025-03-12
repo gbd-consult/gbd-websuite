@@ -1,4 +1,9 @@
-from typing import Optional, cast
+"""MapProxy configuration module for GWS.
+
+This module provides functions and classes to create and manage MapProxy configurations.
+"""
+
+from typing import Any, Dict, Generator, List, Optional, Tuple, cast
 
 import yaml
 
@@ -33,7 +38,14 @@ DEFAULT_CONFIG = {
 
 
 class _Config:
-    def __init__(self):
+    """Internal configuration builder for MapProxy.
+    
+    This class helps build a MapProxy configuration by collecting and organizing
+    configuration elements from GWS layers.
+    """
+    
+    def __init__(self) -> None:
+        """Initialize a new MapProxy configuration builder."""
         self.c = 0
 
         self.services = {
@@ -92,7 +104,16 @@ class _Config:
 
         self.cfg = {}
 
-    def _add(self, kind, c):
+    def _add(self, kind: str, c: Dict[str, Any]) -> str:
+        """Add a configuration element to the internal registry.
+        
+        Args:
+            kind: The type of configuration element ('source', 'grid', etc.).
+            c: The configuration dictionary.
+            
+        Returns:
+            A unique identifier for the added configuration element.
+        """
         # mpx doesn't like tuples
         for k, v in c.items():
             if isinstance(v, tuple):
@@ -110,26 +131,71 @@ class _Config:
         self.cfg[uid] = {'kind': kind, 'c': c}
         return uid
 
-    def _items(self, kind):
+    def _items(self, kind: str) -> Generator[Tuple[str, Dict[str, Any]], None, None]:
+        """Get all configuration elements of a specific kind.
+        
+        Args:
+            kind: The type of configuration element to retrieve.
+            
+        Yields:
+            Tuples of (uid, configuration) for each matching element.
+        """
         for k, v in self.cfg.items():
             if v['kind'] == kind:
                 yield k, v['c']
 
-    def cache(self, c):
+    def cache(self, c: Dict[str, Any]) -> str:
+        """Add a cache configuration.
+        
+        Args:
+            c: The cache configuration dictionary.
+            
+        Returns:
+            A unique identifier for the added cache configuration.
+        """
         return self._add('cache', c)
 
-    def source(self, c):
+    def source(self, c: Dict[str, Any]) -> str:
+        """Add a source configuration.
+        
+        Args:
+            c: The source configuration dictionary.
+            
+        Returns:
+            A unique identifier for the added source configuration.
+        """
         return self._add('source', c)
 
-    def grid(self, c):
+    def grid(self, c: Dict[str, Any]) -> str:
+        """Add a grid configuration.
+        
+        Args:
+            c: The grid configuration dictionary.
+            
+        Returns:
+            A unique identifier for the added grid configuration.
+        """
         # self._transform_extent(c)
         return self._add('grid', c)
 
-    def layer(self, c):
+    def layer(self, c: Dict[str, Any]) -> str:
+        """Add a layer configuration.
+        
+        Args:
+            c: The layer configuration dictionary.
+            
+        Returns:
+            A unique identifier for the added layer configuration.
+        """
         c['title'] = ''
         return self._add('layer', c)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert the configuration to a dictionary suitable for MapProxy.
+        
+        Returns:
+            A dictionary containing the complete MapProxy configuration.
+        """
         d = {
             'services': self.services,
             'globals': self.globals,
@@ -147,7 +213,19 @@ class _Config:
         return d
 
 
-def create(root: gws.Root):
+def create(root: gws.Root) -> Optional[Dict[str, Any]]:
+    """Create a MapProxy configuration from the GWS root object.
+    
+    This function collects configuration from all layers that provide
+    MapProxy configuration and builds a complete MapProxy configuration.
+    
+    Args:
+        root: The GWS root object.
+        
+    Returns:
+        A dictionary containing the complete MapProxy configuration,
+        or None if no layers provide MapProxy configuration.
+    """
     mc = _Config()
 
     for layer in root.find_all(gws.ext.object.layer):
@@ -157,7 +235,7 @@ def create(root: gws.Root):
 
     cfg = mc.to_dict()
     if not cfg.get('layers'):
-        return
+        return None
 
     crs: list[gws.Crs] = []
     for p in root.find_all(gws.ext.object.map):
@@ -169,7 +247,23 @@ def create(root: gws.Root):
     return cfg
 
 
-def create_and_save(root: gws.Root):
+def create_and_save(root: gws.Root) -> Optional[Dict[str, Any]]:
+    """Create a MapProxy configuration and save it to disk.
+    
+    This function creates a MapProxy configuration and saves it to the
+    configured path. It also validates the configuration by attempting
+    to load it with MapProxy.
+    
+    Args:
+        root: The GWS root object.
+        
+    Returns:
+        The created configuration dictionary, or None if no configuration
+        was created and force start is not enabled.
+        
+    Raises:
+        gws.Error: If the configuration is invalid.
+    """
     cfg = create(root)
 
     if not cfg:
@@ -180,7 +274,7 @@ def create_and_save(root: gws.Root):
         else:
             gws.log.warning('mapproxy: no configuration, not starting')
             gws.lib.osx.unlink(CONFIG_PATH)
-            return
+            return None
 
     cfg_str = yaml.dump(cfg)
 
