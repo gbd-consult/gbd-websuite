@@ -54,17 +54,26 @@ export class FormField extends React.PureComponent<FormFieldProps> {
 
 export class Form extends React.PureComponent<FormProps> {
     render() {
-        return <table className="cmpForm">
-            <tbody>
-            {this.props.model.fields.map((f, i) => <FormField
-                key={f.name}
-                field={f}
+        let rows = [];
+
+        for (let fld of this.props.model.fields) {
+            if (fld.widgetProps.type === 'geometry' && !fld.widgetProps.isInline) {
+                continue;
+            }
+            rows.push(<FormField
+                key={fld.name}
+                field={fld}
                 controller={this.props.controller}
                 feature={this.props.feature}
                 values={this.props.values}
-                widget={this.props.widgets[i]}
+                widget={this.props.widgets[rows.length]}
                 errors={this.props.errors}
-            />)}
+            />)
+        }
+
+        return <table className="cmpForm">
+            <tbody>
+            {rows}
             </tbody>
         </table>
     }
