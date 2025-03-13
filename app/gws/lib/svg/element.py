@@ -2,6 +2,9 @@
 
 from typing import Optional
 
+import re
+from typing import Optional, Dict, Pattern
+
 import gws
 import gws.lib.xmlx as xmlx
 import gws.lib.mime
@@ -68,73 +71,85 @@ _ALLOWED_TAGS = {
     'use',
 }
 
-_ALLOWED_ATTRIBUTES = {
-    'alignment-baseline',
-    'baseline-shift',
-    'clip',
-    'clip-path',
-    'clip-rule',
-    'color',
-    'color-interpolation',
-    'color-interpolation-filters',
-    'color-profile',
-    'color-rendering',
-    'cursor',
-    'd',
-    'direction',
-    'display',
-    'dominant-baseline',
-    'enable-background',
-    'fill',
-    'fill-opacity',
-    'fill-rule',
-    'filter',
-    'flood-color',
-    'flood-opacity',
-    'font-family',
-    'font-size',
-    'font-size-adjust',
-    'font-stretch',
-    'font-style',
-    'font-variant',
-    'font-weight',
-    'glyph-orientation-horizontal',
-    'glyph-orientation-vertical',
-    'image-rendering',
-    'kerning',
-    'letter-spacing',
-    'lighting-color',
-    'marker-end',
-    'marker-mid',
-    'marker-start',
-    'mask',
-    'opacity',
-    'overflow',
-    'pointer-events',
-    'shape-rendering',
-    'stop-color',
-    'stop-opacity',
-    'stroke',
-    'stroke-dasharray',
-    'stroke-dashoffset',
-    'stroke-linecap',
-    'stroke-linejoin',
-    'stroke-miterlimit',
-    'stroke-opacity',
-    'stroke-width',
-    'text-anchor',
-    'text-decoration',
-    'text-rendering',
-    'transform',
-    'transform-origin',
-    'unicode-bidi',
-    'vector-effect',
-    'visibility',
-    'word-spacing',
-    'writing-mode',
-    'width',
-    'height',
-    'viewBox',
+# Regex patterns for attribute validation
+_RE_COLOR = r'^(#[0-9A-Fa-f]{3,8}|(rgb|rgba|hsl|hsla)\([\d%,.\s]+\))$'
+_RE_NUMBER = r'^-?\d+(\.\d+)?(px|em|ex|pt|pc|cm|mm|in|%)?$'
+_RE_OPACITY = r'^(0(\.\d+)?|1(\.0+)?)$'
+_RE_PATH = r'^[mMlLhHvVcCsSqQtTaAzZ0-9\s,.-]+$'
+_RE_TRANSFORM = r'^(matrix|translate|scale|rotate|skewX|skewY)\([\d\s,.-]+\)( (matrix|translate|scale|rotate|skewX|skewY)\([\d\s,.-]+\))*$'
+_RE_VIEWBOX = r'^\d+(\.\d+)?\s+\d+(\.\d+)?\s+\d+(\.\d+)?\s+\d+(\.\d+)?$'
+_RE_TEXT = r'^[^<>]*$'
+_RE_FONT_FAMILY = r'^[^<>"\']*$'
+_RE_ANY = r'.*'
+
+# Dictionary of allowed attributes with their validation patterns
+_ALLOWED_ATTRIBUTES: Dict[str, Pattern] = {
+    'alignment-baseline': re.compile(_RE_TEXT),
+    'baseline-shift': re.compile(_RE_TEXT),
+    'clip': re.compile(_RE_TEXT),
+    'clip-path': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
+    'clip-rule': re.compile(r'^(nonzero|evenodd)$'),
+    'color': re.compile(_RE_COLOR),
+    'color-interpolation': re.compile(r'^(auto|sRGB|linearRGB)$'),
+    'color-interpolation-filters': re.compile(r'^(auto|sRGB|linearRGB)$'),
+    'color-profile': re.compile(_RE_TEXT),
+    'color-rendering': re.compile(r'^(auto|optimizeSpeed|optimizeQuality)$'),
+    'cursor': re.compile(_RE_TEXT),
+    'd': re.compile(_RE_PATH),
+    'direction': re.compile(r'^(ltr|rtl)$'),
+    'display': re.compile(r'^(inline|block|list-item|run-in|compact|marker|table|inline-table|table-row-group|table-header-group|table-footer-group|table-row|table-column-group|table-column|table-cell|table-caption|none)$'),
+    'dominant-baseline': re.compile(_RE_TEXT),
+    'enable-background': re.compile(_RE_TEXT),
+    'fill': re.compile(_RE_COLOR),
+    'fill-opacity': re.compile(_RE_OPACITY),
+    'fill-rule': re.compile(r'^(nonzero|evenodd)$'),
+    'filter': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
+    'flood-color': re.compile(_RE_COLOR),
+    'flood-opacity': re.compile(_RE_OPACITY),
+    'font-family': re.compile(_RE_FONT_FAMILY),
+    'font-size': re.compile(_RE_NUMBER),
+    'font-size-adjust': re.compile(_RE_NUMBER),
+    'font-stretch': re.compile(r'^(normal|wider|narrower|ultra-condensed|extra-condensed|condensed|semi-condensed|semi-expanded|expanded|extra-expanded|ultra-expanded)$'),
+    'font-style': re.compile(r'^(normal|italic|oblique)$'),
+    'font-variant': re.compile(r'^(normal|small-caps)$'),
+    'font-weight': re.compile(r'^(normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900)$'),
+    'glyph-orientation-horizontal': re.compile(_RE_NUMBER),
+    'glyph-orientation-vertical': re.compile(_RE_NUMBER),
+    'image-rendering': re.compile(r'^(auto|optimizeSpeed|optimizeQuality)$'),
+    'kerning': re.compile(_RE_TEXT),
+    'letter-spacing': re.compile(_RE_NUMBER),
+    'lighting-color': re.compile(_RE_COLOR),
+    'marker-end': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
+    'marker-mid': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
+    'marker-start': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
+    'mask': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
+    'opacity': re.compile(_RE_OPACITY),
+    'overflow': re.compile(r'^(visible|hidden|scroll|auto)$'),
+    'pointer-events': re.compile(r'^(visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none)$'),
+    'shape-rendering': re.compile(r'^(auto|optimizeSpeed|crispEdges|geometricPrecision)$'),
+    'stop-color': re.compile(_RE_COLOR),
+    'stop-opacity': re.compile(_RE_OPACITY),
+    'stroke': re.compile(_RE_COLOR),
+    'stroke-dasharray': re.compile(r'^(none|[\d\s,.]*)$'),
+    'stroke-dashoffset': re.compile(_RE_NUMBER),
+    'stroke-linecap': re.compile(r'^(butt|round|square)$'),
+    'stroke-linejoin': re.compile(r'^(miter|round|bevel)$'),
+    'stroke-miterlimit': re.compile(_RE_NUMBER),
+    'stroke-opacity': re.compile(_RE_OPACITY),
+    'stroke-width': re.compile(_RE_NUMBER),
+    'text-anchor': re.compile(r'^(start|middle|end)$'),
+    'text-decoration': re.compile(r'^(none|underline|overline|line-through|blink)$'),
+    'text-rendering': re.compile(r'^(auto|optimizeSpeed|optimizeLegibility|geometricPrecision)$'),
+    'transform': re.compile(_RE_TRANSFORM),
+    'transform-origin': re.compile(_RE_TEXT),
+    'unicode-bidi': re.compile(_RE_TEXT),
+    'vector-effect': re.compile(r'^(none|non-scaling-stroke)$'),
+    'visibility': re.compile(r'^(visible|hidden|collapse)$'),
+    'word-spacing': re.compile(_RE_NUMBER),
+    'writing-mode': re.compile(r'^(lr-tb|rl-tb|tb-rl|lr|rl|tb)$'),
+    'width': re.compile(_RE_NUMBER),
+    'height': re.compile(_RE_NUMBER),
+    'viewBox': re.compile(_RE_VIEWBOX),
 }
 
 
@@ -149,9 +164,16 @@ def _sanitize(el: gws.XmlElement) -> Optional[gws.XmlElement]:
 def _sanitize_atts(atts: dict) -> dict:
     res = {}
     for k, v in atts.items():
+        # Skip if attribute is not in allowed list
         if k not in _ALLOWED_ATTRIBUTES:
             continue
+        
+        # Skip URLs that could lead to XSS
         if v.strip().startswith(('http:', 'https:', 'data:')):
             continue
-        res[k] = v
+        
+        # Validate attribute value against its regex pattern
+        if _ALLOWED_ATTRIBUTES[k].match(v.strip()):
+            res[k] = v
+    
     return res
