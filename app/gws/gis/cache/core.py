@@ -54,6 +54,16 @@ class Status(gws.Data):
 
 
 def status(root: gws.Root, layer_uids=None, with_counts=True) -> Status:
+    """Retrieve cache status information.
+
+    Args:
+        root: Application root object.
+        layer_uids: Optional list of layer UIDs to filter by.
+        with_counts: Whether to include tile counts in the status.
+
+    Returns:
+        Status object containing cache entries and stale directories.
+    """
     mpx_config = gws.gis.mpx.config.create(root)
 
     entries = []
@@ -73,12 +83,29 @@ def status(root: gws.Root, layer_uids=None, with_counts=True) -> Status:
 
 
 def cleanup(root: gws.Root):
+    """Remove stale cache directories.
+
+    Args:
+        root: Application root object.
+
+    Returns:
+        None. Stale directories are removed from the filesystem.
+    """
     s = status(root, with_counts=False)
     for d in s.staleDirs:
         _remove_dir(d)
 
 
 def drop(root: gws.Root, layer_uids=None):
+    """Remove active cache directories.
+
+    Args:
+        root: Application root object.
+        layer_uids: Optional list of layer UIDs to filter by.
+
+    Returns:
+        None. Cache directories are removed from the filesystem.
+    """
     s = status(root, layer_uids=layer_uids, with_counts=False)
     for e in s.entries:
         _remove_dir(e.dirname)
@@ -86,6 +113,16 @@ def drop(root: gws.Root, layer_uids=None):
 PIXEL_PNG8 = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x03\x00\x00\x00(\xcb4\xbb\x00\x00\x00\x06PLTE\xff\xff\xff\x00\x00\x00U\xc2\xd3~\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\x0cIDATx\xdab`\x00\x080\x00\x00\x02\x00\x01OmY\xe1\x00\x00\x00\x00IEND\xaeB`\x82'
 
 def seed(root: gws.Root, entries: list[Entry], levels: list[int]):
+    """Generate and populate the cache for specified layers and zoom levels.
+
+    Args:
+        root: Application root object.
+        entries: List of cache entries to seed.
+        levels: List of zoom levels to generate cache for.
+
+    Returns:
+        None. Cache is populated with generated tiles.
+    """
     # https://mapproxy.github.io/mapproxy/latest/seed.html#seeds
     seeds = {}
 
@@ -158,6 +195,15 @@ def seed(root: gws.Root, entries: list[Entry], levels: list[int]):
 
 
 def store_in_web_cache(url: str, img: bytes):
+    """Store an image in the web cache.
+
+    Args:
+        url: URL path to use as the cache key.
+        img: Binary image data to store.
+
+    Returns:
+        None. Image is stored in the cache.
+    """
     path = gws.c.FASTCACHE_DIR + url
     dirname = os.path.dirname(path)
     tmp = dirname + '/' + gws.u.random_string(64)
@@ -170,6 +216,14 @@ def store_in_web_cache(url: str, img: bytes):
 
 
 def _update_file_counts(entries: list[Entry]):
+    """Update cached tile counts for each entry.
+
+    Args:
+        entries: List of cache entries to update.
+
+    Returns:
+        None. The entries are updated in-place.
+    """
     files = list(gws.lib.osx.find_files(gws.c.MAPPROXY_CACHE_DIR))
 
     for path in files:
@@ -186,7 +240,17 @@ def _update_file_counts(entries: list[Entry]):
                     g.cachedTiles += 1
 
 
-def _enum_entries(root: gws.Root, mpx_config, layer_uids=None):
+def _enum_entries(root: gws.Root, mpx_config: dict, layer_uids=None) -> list[Entry]:
+    """Enumerate cache entries based on layer configuration.
+
+    Args:
+        root: Application root object.
+        mpx_config: MapProxy configuration dictionary.
+        layer_uids: Optional list of layer UIDs to filter by.
+
+    Returns:
+        List of cache Entry objects.
+    """
     entries_map: dict[str, Entry] = {}
 
     for layer in root.find_all(gws.ext.object.layer):
@@ -237,7 +301,15 @@ def _enum_entries(root: gws.Root, mpx_config, layer_uids=None):
     return list(entries_map.values())
 
 
-def _remove_dir(dirname):
+def _remove_dir(dirname: str):
+    """Remove a directory and its contents.
+
+    Args:
+        dirname: Path to the directory to remove.
+
+    Returns:
+        None. The directory is removed from the filesystem.
+    """
     cmd = ['rm', '-fr', dirname]
     gws.lib.osx.run(cmd, echo=True)
     gws.log.info(f'removed {dirname}')

@@ -1,4 +1,4 @@
-"""Map render utilities"""
+"""Map render utilities."""
 
 import math
 
@@ -19,10 +19,23 @@ def map_view_from_center(
         size: gws.UomSize,
         center: gws.Point,
         crs: gws.Crs,
-        dpi,
-        scale,
-        rotation=0,
+        dpi: int,
+        scale: float,
+        rotation: float = 0,
 ) -> gws.MapView:
+    """Creates a map view based on a center point.
+
+    Args:
+        size: The map size in units.
+        center: The center point of the map.
+        crs: The coordinate reference system.
+        dpi: The resolution in dots per inch.
+        scale: The map scale.
+        rotation: The map rotation angle in degrees.
+
+    Returns:
+        A configured MapView instance.
+    """
     return _map_view(None, center, crs, dpi, rotation, scale, size)
 
 
@@ -30,13 +43,49 @@ def map_view_from_bbox(
         size: gws.UomSize,
         bbox: gws.Extent,
         crs: gws.Crs,
-        dpi,
-        rotation=0,
+        dpi: int,
+        rotation: float = 0,
 ) -> gws.MapView:
+    """Creates a map view based on a bounding box.
+
+    Args:
+        size: The map size in units.
+        bbox: The bounding box of the map.
+        crs: The coordinate reference system.
+        dpi: The resolution in dots per inch.
+        rotation: The map rotation angle in degrees.
+
+    Returns:
+        A configured MapView instance.
+    """
     return _map_view(bbox, None, crs, dpi, rotation, None, size)
 
+def _map_view(
+        bbox: gws.Extent | None,
+        center: gws.Point | None,
+        crs: gws.Crs,
+        dpi: int,
+        rotation: float,
+        scale: float | None,
+        size: gws.UomSize
+) -> gws.MapView:
+    """Creates a generic map view from either a bounding box or a center point.
 
-def _map_view(bbox, center, crs, dpi, rotation, scale, size):
+    Args:
+        bbox: The bounding box for the map view.
+        center: The center point for the map view.
+        crs: The coordinate reference system.
+        dpi: The resolution in dots per inch.
+        rotation: The rotation angle in degrees.
+        scale: The map scale (if using center-based view).
+        size: The size of the map.
+
+    Returns:
+        A MapView instance with computed properties.
+
+    Raises:
+        gws.Error: If neither center nor bbox is provided.
+    """
     view = gws.MapView(
         dpi=dpi,
         rotation=rotation,
@@ -72,7 +121,14 @@ def _map_view(bbox, center, crs, dpi, rotation, scale, size):
 
 
 def map_view_transformer(view: gws.MapView):
-    """Create a pixel transformer f(map_x, map_y) -> (pixel_x, pixel_y) for a view"""
+    """Creates a pixel transformer f(map_x, map_y) -> (pixel_x, pixel_y) for a view
+
+    Args:
+        view: The map view instance.
+
+    Returns:
+        A function that transforms map coordinates (x, y) into pixel coordinates.
+    """
 
     # @TODO cache the transformer
 
@@ -122,6 +178,14 @@ class _Renderer(gws.Data):
 
 
 def render_map(mri: gws.MapRenderInput) -> gws.MapRenderOutput:
+    """Renders a map based on input parameters.
+
+    Args:
+        mri: The map render input configuration.
+
+    Returns:
+        A MapRenderOutput instance containing rendered data.
+    """
     rd = _Renderer(
         mri=mri,
         mro=gws.MapRenderOutput(planes=[]),
@@ -245,6 +309,16 @@ def _add_svg_elements(rd: _Renderer, elements, opacity):
 
 
 def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.XmlElement:
+    """Converts a MapRenderOutput to an HTML element.
+
+    Args:
+        mro: The MapRenderOutput object to convert.
+        wrap: The CSS position value for the wrapper div. Must be one of
+            'relative', 'absolute', 'fixed', or None. Default is 'relative'.
+
+    Returns:
+        A gws.XmlElement representing a div containing the map output.
+    """
     w, h = mro.view.mmSize
 
     css_size = f'left:0;top:0;width:{int(w)}mm;height:{int(h)}mm'
@@ -271,5 +345,15 @@ def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.Xml
 
 
 def output_to_html_string(mro: gws.MapRenderOutput, wrap='relative') -> str:
+    """Converts a MapRenderOutput to an HTML string.
+
+    Args:
+        mro: The MapRenderOutput object to convert.
+        wrap: The CSS position value for the wrapper div. Must be one of
+            'relative', 'absolute', 'fixed', or None. Default is 'relative'.
+
+    Returns:
+        A string containing the HTML representation of the map output.
+    """
     div = output_to_html_element(mro, wrap)
     return div.to_string()
