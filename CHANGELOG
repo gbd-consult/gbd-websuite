@@ -1,3 +1,7 @@
+## Version 8.1.31
+
+- fixed timezone parsing in GDAL
+
 ## Version 8.1.30
 
 - geometry position in edit forms fixed
