@@ -11,6 +11,7 @@ from typing import (
     Any,
     Callable,
     ContextManager,
+    Generator,
     Iterable,
     Iterator,
     Literal,

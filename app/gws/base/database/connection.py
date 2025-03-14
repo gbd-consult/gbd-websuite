@@ -16,6 +16,12 @@ class Object(gws.DatabaseConnection):
     def rollback(self):
         return self.saConnection.rollback()
 
+    def execute(self, statement, params):
+        # temp
+        if isinstance(statement, str):
+            statement = sa.text(statement)
+        return self.saConnection.execute(statement, params)
+
     def exec(self, statement, **params):
         if isinstance(statement, str):
             statement = sa.text(statement)

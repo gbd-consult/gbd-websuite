@@ -11,6 +11,7 @@ from typing import (
     Any,
     Callable,
     ContextManager,
+    Generator,
     Iterable,
     Iterator,
     Literal,
@@ -3286,6 +3287,9 @@ class ModelManager(Node):
 # /base/database/types.pyinc
 
 
+import sqlalchemy
+
+
 class DatabaseModel(Model):
     """Database-based data model."""
 
@@ -3395,6 +3399,40 @@ DatabaseTableAlike: TypeAlias = Union['sqlalchemy.Table', str]
 """An SQLAlchemy ``Table`` object or a string table name."""
 
 
+class DatabaseConnection:
+    """Database connection.
+
+    Wraps ``sqlalchemy.Connection`` and provides some convenience methods.
+    """
+
+    saConnection: sqlalchemy.Connection
+    """The wrapped ``sqlalchemy.Connection`` object."""
+
+    def begin(self):
+        ...
+
+    def commit(self):
+        ...
+
+    def rollback(self):
+        ...
+
+    def execute(self, statement: sqlalchemy.Executable | str, params) -> sqlalchemy.CursorResult[Any]:
+        ...
+
+    def exec(self, statement: sqlalchemy.Executable | str, **params) -> sqlalchemy.CursorResult[Any]:
+        ...
+
+    def exec_commit(self, statement: sqlalchemy.Executable | str, **params) -> sqlalchemy.CursorResult[Any]:
+        ...
+
+    def fetch_all(self, statement: sqlalchemy.Executable | str, **params) -> list[dict]:
+        ...
+
+    def fetch_one(self, statement: sqlalchemy.Executable | str, **params) -> dict | None:
+        ...
+
+
 class DatabaseProvider(Node):
     """Database Provider.
 
@@ -3402,13 +3440,10 @@ class DatabaseProvider(Node):
     and provides common db functionality.
     """
 
-    url: str
-    """Connection url."""
-
     def column(self, table: DatabaseTableAlike, column_name: str) -> 'sqlalchemy.Column':
         """SQLAlchemy ``Column`` object for a specific column."""
 
-    def connect(self) -> ContextManager['sqlalchemy.Connection']:
+    def connect(self) -> Generator['DatabaseConnection', None, None]:
         """Context manager for a SA ``Connection``.
 
         Context calls to this method can be nested. An inner call is a no-op, as no new connection is created.
@@ -3428,6 +3463,12 @@ class DatabaseProvider(Node):
 
     def count(self, table: DatabaseTableAlike) -> int:
         """Return table record count or 0 if the table does not exist."""
+
+    def engine_options(self, **kwargs):
+        """Add defaults to the SA engine options."""
+
+    def url(self):
+        """Return the connection URL."""
 
     def engine(self, **kwargs) -> 'sqlalchemy.Engine':
         """SA ``Engine`` object for this provider."""

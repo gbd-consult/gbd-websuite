@@ -1,6 +1,8 @@
 from typing import Optional, cast
 import contextlib
 
+from . import connection
+
 import gws
 import gws.lib.sa as sa
 
@@ -10,6 +12,15 @@ class Config(gws.Config):
 
     schemaCacheLifeTime: gws.Duration = 3600
     """life time for schema caches"""
+    withPool: Optional[bool] = False
+    """Use connection pooling"""
+    pool: Optional[dict]
+    """Options for connection pooling."""
+
+
+class _Engine(sa.Engine):
+    def connect(self) -> gws.DatabaseConnection:
+        return connection.Object(self)
 
 
 class Object(gws.DatabaseProvider):
@@ -22,7 +33,7 @@ class Object(gws.DatabaseProvider):
         return gws.u.omit(vars(self), 'saMetaMap', 'saEngine', 'saConnection')
 
     def configure(self):
-        self.url = ''
+        # init a dummy engine just to check things
         self.saEngine = self.engine(poolclass=sa.NullPool)
         self.saMetaMap = {}
         self.saConnection = None
@@ -33,6 +44,33 @@ class Object(gws.DatabaseProvider):
         self.saMetaMap = {}
         self.saConnection = None
         self.saConnectionCount = 0
+
+    def engine(self, **kwargs):
+        return sa.create_engine(self.url(), **self.engine_options(**kwargs))
+
+    def engine_options(self, **kwargs):
+        pool = self.cfg('pool') or {}
+        p = pool.get('disabled')
+        if p is True:
+            kwargs.setdefault('poolclass', sa.NullPool)
+        p = pool.get('pre_ping')
+        if p is True:
+            kwargs.setdefault('pool_pre_ping', True)
+        p = pool.get('size')
+        if isinstance(p, int):
+            kwargs.setdefault('pool_size', p)
+        p = pool.get('recycle')
+        if isinstance(p, int):
+            kwargs.setdefault('pool_recycle', p)
+        p = pool.get('timeout')
+        if isinstance(p, int):
+            kwargs.setdefault('pool_timeout', p)
+
+        if self.root.app.developer_option('db.engine_echo'):
+            kwargs.setdefault('echo', True)
+            kwargs.setdefault('echo_pool', True)
+
+        return kwargs
 
     def reflect_schema(self, schema: str):
         if schema in self.saMetaMap:
@@ -68,7 +106,7 @@ class Object(gws.DatabaseProvider):
             self.saConnectionCount += 1
 
         try:
-            yield self.saConnection
+            yield connection.Object(self.saConnection)
         finally:
             self.saConnectionCount -= 1
             if self.saConnectionCount == 0:

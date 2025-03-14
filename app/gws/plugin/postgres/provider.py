@@ -31,40 +31,11 @@ class Config(gws.base.database.provider.Config):
     """Service name from pg_services file."""
     options: Optional[dict]
     """Libpq connection options."""
-    pool: Optional[dict]
-    """Options for connection pooling."""
 
 
 class Object(gws.base.database.provider.Object):
-    def configure(self):
-        self.url = connection_url(self.config)
-        if not self.url:
-            raise sa.Error(f'"host/database" or "serviceName" are required')
-
-    def engine(self, **kwargs):
-        pool = self.cfg('pool') or {}
-        p = pool.get('disabled')
-        if p is True:
-            kwargs.setdefault('poolclass', sa.NullPool)
-        p = pool.get('pre_ping')
-        if p is True:
-            kwargs.setdefault('pool_pre_ping', True)
-        p = pool.get('size')
-        if isinstance(p, int):
-            kwargs.setdefault('pool_size', p)
-        p = pool.get('recycle')
-        if isinstance(p, int):
-            kwargs.setdefault('pool_recycle', p)
-        p = pool.get('timeout')
-        if isinstance(p, int):
-            kwargs.setdefault('pool_timeout', p)
-
-        if self.root.app.developer_option('db.engine_echo'):
-            kwargs.setdefault('echo', True)
-            kwargs.setdefault('echo_pool', True)
-
-        url = connection_url(self.config)
-        return sa.create_engine(url, **kwargs)
+    def url(self):
+        return connection_url(self.config)
 
     _RE_TABLE_NAME = r'''(?x) 
         ^
