@@ -539,7 +539,7 @@ def _tzflag_to_tz(tzflag):
     if tzflag == 0 or tzflag == 1:
         return ''
     if tzflag == 100:
-        return 'utc'
+        return 'UTC'
     if tzflag % 4 != 0:
         # @TODO
         raise Error(f'unsupported timezone {tzflag=}')
