@@ -1,5 +1,5 @@
 
-import * as _gc from './_gc';
+import {gws} from 'gws';
 import * as types from '../types';
 
 import {StoreWrapper} from '../core/reduxa';
@@ -26,14 +26,14 @@ export class Application implements types.IApplication {
     overviewMap: MapManager;
     options: types.Dict;
     actions: types.Dict;
-    project: _gc.gws.base.project.Props;
+    project: gws.base.project.Props;
     server: Server;
     store: StoreWrapper;
     tags: types.Dict;
     urlParams: types.Dict;
     localeUid = '';
     languageUid = '';
-    locale: _gc.gws.Locale;
+    locale: gws.Locale;
     modelRegistry: types.IModelRegistry = null;
 
 

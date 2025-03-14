@@ -7,6 +7,7 @@ from gws.lib.cli import (
     find_dirs,
     read_file,
     write_file,
+    ensure_dir,
 )
 
 

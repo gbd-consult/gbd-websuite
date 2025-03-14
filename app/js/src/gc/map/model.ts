@@ -1,7 +1,7 @@
 import * as ol from "openlayers";
 
 
-import * as _gc from '../core/_gc';
+import {gws} from 'gws';
 import * as types from '../types';
 import * as feature from './feature';
 import * as lib from '../lib';
@@ -27,7 +27,7 @@ export class ModelRegistry implements types.IModelRegistry {
             fields: [],
             geometryName: 'geometry',
             uidName: 'uid',
-            loadingStrategy: _gc.gws.FeatureLoadingStrategy.all,
+            loadingStrategy: gws.FeatureLoadingStrategy.all,
             tableViewColumns: [],
             title: '',
             uid: '',
@@ -35,11 +35,11 @@ export class ModelRegistry implements types.IModelRegistry {
     }
 
 
-    readModel(props: _gc.gws.base.model.Props) {
+    readModel(props: gws.base.model.Props) {
         return new Model(this, props);
     }
 
-    addModel(props: _gc.gws.base.model.Props) {
+    addModel(props: gws.base.model.Props) {
         let m = new Model(this, props);
         this.index[m.uid] = m;
         return m;
@@ -79,7 +79,7 @@ interface FeatureMap {
 }
 
 export class Model implements types.IModel {
-    clientOptions: _gc.gws.ModelClientOptions;
+    clientOptions: gws.ModelClientOptions;
     canCreate: boolean;
     canDelete: boolean;
     canRead: boolean;
@@ -90,10 +90,10 @@ export class Model implements types.IModel {
     fields: Array<types.IModelField>;
     geometryCrs: string
     geometryName: string;
-    geometryType: _gc.gws.GeometryType
+    geometryType: gws.GeometryType
     uidName: string;
     layerUid: string;
-    loadingStrategy: _gc.gws.FeatureLoadingStrategy;
+    loadingStrategy: gws.FeatureLoadingStrategy;
     tableViewColumns: Array<types.TableViewColumn>;
     hasTableView: boolean;
     title: string;
@@ -103,7 +103,7 @@ export class Model implements types.IModel {
 
     registry: ModelRegistry;
 
-    constructor(registry, props: _gc.gws.base.model.Props) {
+    constructor(registry, props: gws.base.model.Props) {
         this.registry = registry;
         this.featureMap = {};
 
@@ -170,7 +170,7 @@ export class Model implements types.IModel {
         return this.newFeature().setOlFeature(oFeature);
     }
 
-    featureFromProps(props: _gc.gws.FeatureProps): types.IFeature {
+    featureFromProps(props: gws.FeatureProps): types.IFeature {
         let map = this.registry.app.map;
         let attributes = props.attributes || {};
 
@@ -189,7 +189,7 @@ export class Model implements types.IModel {
         return this.newFeature().setProps({...props, attributes});
     }
 
-    featureListFromProps(propsList: Array<_gc.gws.FeatureProps>): Array<types.IFeature> {
+    featureListFromProps(propsList: Array<gws.FeatureProps>): Array<types.IFeature> {
         return propsList.map(props => this.featureFromProps(props));
     }
 
@@ -226,7 +226,7 @@ export class Model implements types.IModel {
     }
 
 
-    featureProps(feature: types.IFeature, relDepth?: number): _gc.gws.FeatureProps {
+    featureProps(feature: types.IFeature, relDepth?: number): gws.FeatureProps {
         return {
             attributes: this.featureAttributes(feature, relDepth),
             cssSelector: feature.cssSelector,
@@ -240,15 +240,15 @@ export class Model implements types.IModel {
 }
 
 export class ModelField implements types.IModelField {
-    attributeType: _gc.gws.AttributeType;
-    geometryType: _gc.gws.GeometryType;
+    attributeType: gws.AttributeType;
+    geometryType: gws.GeometryType;
     name: string;
     title: string;
     type: string;
     uid: string;
 
     relatedModelUids: Array<string>;
-    widgetProps: _gc.gws.ext.props.modelWidget;
+    widgetProps: gws.ext.props.modelWidget;
 
     model: Model;
 
@@ -256,7 +256,7 @@ export class ModelField implements types.IModelField {
         this.model = model;
     }
 
-    setProps(props: _gc.gws.ext.props.modelField): ModelField {
+    setProps(props: gws.ext.props.modelField): ModelField {
         this.attributeType = props.attributeType;
         this.geometryType = props.geometryType;
         this.name = props.name;
@@ -274,11 +274,11 @@ export class ModelField implements types.IModelField {
 
     addRelatedFeature(targetFeature: IFeature, relatedFeature: IFeature) {
 
-        if (this.attributeType == _gc.gws.AttributeType.feature) {
+        if (this.attributeType == gws.AttributeType.feature) {
             targetFeature.editAttribute(this.name, relatedFeature);
         }
 
-        if (this.attributeType == _gc.gws.AttributeType.featurelist) {
+        if (this.attributeType == gws.AttributeType.featurelist) {
             let curList = targetFeature.currentAttributes()[this.name] || [];
             let newList = [];
             let added = false;
@@ -302,11 +302,11 @@ export class ModelField implements types.IModelField {
 
     removeRelatedFeature(targetFeature: IFeature, relatedFeature: IFeature) {
 
-        if (this.attributeType == _gc.gws.AttributeType.feature) {
+        if (this.attributeType == gws.AttributeType.feature) {
             targetFeature.editAttribute(this.name, null);
         }
 
-        if (this.attributeType == _gc.gws.AttributeType.featurelist) {
+        if (this.attributeType == gws.AttributeType.featurelist) {
             let curList = targetFeature.currentAttributes()[this.name] || [];
             let newList = [];
 

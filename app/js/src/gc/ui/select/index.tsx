@@ -13,7 +13,7 @@ export interface ListItem {
     level?: number;
 }
 
-// from _gc.gws.API
+// from gws.API
 
 enum TextSearchType {
     any = "any",

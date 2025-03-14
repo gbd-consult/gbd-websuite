@@ -1,6 +1,7 @@
 import * as ReactDOM from 'react-dom';
 
 import * as gc from 'gc';
+import {GWS_VERSION} from 'gws';
 
 
 const ID_OPTIONS = 'gwsOptions';
@@ -33,7 +34,7 @@ async function _main2(win, strings) {
         },
         strings,
         tags,
-        version: gc.GWS_VERSION,
+        version: GWS_VERSION,
         domNode,
 
         helpUrlTarget: 'blank',
@@ -69,5 +70,5 @@ async function _main2(win, strings) {
         window['DEBUG_APP'] = app;
         ReactDOM.render(app.rootController.defaultView, domNode);
     }
-    win['gwsGetApplication'] = (uid=null) => app;
+    win['gwsGetApplication'] = (uid = null) => app;
 }

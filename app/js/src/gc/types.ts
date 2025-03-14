@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as _gc from './core/_gc';
+import {gws, Api, BaseServer} from '../gws'
 import {ModelRegistry} from 'gc/map/model';
 
 export interface Dict {
@@ -22,7 +22,7 @@ export interface IStoreWrapper {
     wrap(element);
 }
 
-interface IServer extends _gc.Api {
+interface IServer extends Api {
     queueLoad(layerUid: string, url: string, responseType: string): Promise<any>;
     dequeueLoad(layerUid: string);
     requestCount: number;
@@ -35,13 +35,13 @@ export interface IApplication {
     style: IStyleManager;
     overviewMap: IMapManager;
     options: Dict;
-    project: _gc.gws.base.project.Props;
+    project: gws.base.project.Props;
     server: IServer;
     store: IStoreWrapper;
     tags: Dict;
     urlParams: Dict;
     localeUid: string;
-    locale: _gc.gws.Locale;
+    locale: gws.Locale;
     modelRegistry: IModelRegistry;
 
 
@@ -151,7 +151,7 @@ export interface ILayer {
     isSystem: boolean;
 
     oLayer?: ol.layer.Layer;
-    printPlane?: _gc.gws.PrintPlane;
+    printPlane?: gws.PrintPlane;
 
     show();
     hide();
@@ -188,7 +188,7 @@ export interface MapViewState {
 
 export type FeatureMode = 'normal' | 'selected' | 'edit';
 
-export type StyleArg = string | _gc.gws.StyleProps | IStyle;
+export type StyleArg = string | gws.StyleProps | IStyle;
 
 export type StyleNameMap = {[m in FeatureMode]: string};
 export type StyleMapArgs = {[m in FeatureMode]: StyleArg};
@@ -197,21 +197,21 @@ export type StyleMapArgs = {[m in FeatureMode]: StyleArg};
 
 export interface IStyleManager {
     names: Array<string>;
-    props: Array<_gc.gws.StyleProps>;
+    props: Array<gws.StyleProps>;
 
     add(s: IStyle) : IStyle;
     at(name: string): IStyle | null;
     copy(style: IStyle, name: string|null);
     findFirst(selectors: Array<string>, geometryType?: string, state?: string): IStyle | null;
     get(style: StyleArg): IStyle | null;
-    loadFromProps(props: _gc.gws.StyleProps): IStyle;
+    loadFromProps(props: gws.StyleProps): IStyle;
     whenStyleChanged(map: IMapManager, name?: string);
 }
 
 export interface IStyle {
     cssSelector: string;
     values: Dict;
-    props: _gc.gws.StyleProps;
+    props: gws.StyleProps;
     source: string;
     olFunction: ol.StyleFunction;
     apply(geom: ol.geom.Geometry, label: string, resolution: number): Array<ol.style.Style>;
@@ -261,7 +261,7 @@ export interface IFeatureSearchArgs {
 }
 
 export interface IBasicPrintParams {
-    planes: Array<_gc.gws.PrintPlane>,
+    planes: Array<gws.PrintPlane>,
     rotation: number,
     scale: number
 }
@@ -284,7 +284,7 @@ export interface IMapManager {
     viewState: MapViewState;
     wrapX: boolean;
 
-    init(props: _gc.gws.base.map.Props, appLoc: object);
+    init(props: gws.base.map.Props, appLoc: object);
     update(args: any);
     changed();
     forceUpdate();
@@ -341,13 +341,13 @@ export interface IMapManager {
     pointerInteraction(opts: IMapPointerInteractionOptions): ol.interaction.Pointer;
 
 
-    readFeature(props: _gc.gws.FeatureProps): IFeature;
-    readFeatures(propsList: Array<_gc.gws.FeatureProps>): Array<IFeature>;
+    readFeature(props: gws.FeatureProps): IFeature;
+    readFeatures(propsList: Array<gws.FeatureProps>): Array<IFeature>;
 
-    geom2shape(geom: ol.geom.Geometry): _gc.gws.base.shape.Props;
-    shape2geom(shape: _gc.gws.base.shape.Props): ol.geom.Geometry;
+    geom2shape(geom: ol.geom.Geometry): gws.base.shape.Props;
+    shape2geom(shape: gws.base.shape.Props): ol.geom.Geometry;
 
-    printParams(boxRect: ClientRect | null, dpi: number): Promise<_gc.gws.PrintMap>;
+    printParams(boxRect: ClientRect | null, dpi: number): Promise<gws.PrintMap>;
 
     searchForFeatures(args: IFeatureSearchArgs): Promise<Array<IFeature>>;
 
@@ -382,12 +382,12 @@ export interface IFeature {
     geometryName: string;
 
     geometry?: ol.geom.Geometry;
-    shape?: _gc.gws.base.shape.Props;
+    shape?: gws.base.shape.Props;
 
     createWithFeatures: Array<IFeature>;
 
-    getProps(depth?: number): _gc.gws.FeatureProps;
-    getMinimalProps(): _gc.gws.FeatureProps;
+    getProps(depth?: number): gws.FeatureProps;
+    getMinimalProps(): gws.FeatureProps;
     getAttribute(name: string, defaultValue?): any;
     getAttributeWithEdit(name: string, defaultValue?): any;
 
@@ -396,11 +396,11 @@ export interface IFeature {
     commitEdits();
     resetEdits();
 
-    setProps(props: _gc.gws.FeatureProps): IFeature;
+    setProps(props: gws.FeatureProps): IFeature;
     setAttributes(attributes: Dict): IFeature;
     setOlFeature(oFeature: ol.Feature): IFeature;
     setGeometry(geom: ol.geom.Geometry): IFeature;
-    setShape(shape: _gc.gws.base.shape.Props);
+    setShape(shape: gws.base.shape.Props);
     setStyle(style: IStyle);
     setNew(f: boolean): IFeature;
     setSelected(f: boolean): IFeature;
@@ -415,7 +415,7 @@ export interface IFeature {
 }
 
 export interface IMapFeatureArgs {
-    props?: _gc.gws.FeatureProps;
+    props?: gws.FeatureProps;
     geometry?: ol.geom.Geometry;
     oFeature?: ol.Feature;
     style?: StyleArg;
@@ -443,13 +443,13 @@ export interface ISidebarItem extends IController {
 }
 
 export interface IModelRegistry {
-    readModel(props: _gc.gws.base.model.Props): IModel;
-    addModel(props: _gc.gws.base.model.Props): IModel;
+    readModel(props: gws.base.model.Props): IModel;
+    addModel(props: gws.base.model.Props): IModel;
     getModel(uid: string): IModel|null;
     getModelForLayer(layer: ILayer): IModel|null;
     defaultModel(): IModel;
-    featureFromProps(props: _gc.gws.FeatureProps): IFeature;
-    featureListFromProps(propsList: Array<_gc.gws.FeatureProps>): Array<IFeature>;
+    featureFromProps(props: gws.FeatureProps): IFeature;
+    featureListFromProps(propsList: Array<gws.FeatureProps>): Array<IFeature>;
 
 }
 
@@ -461,7 +461,7 @@ export interface TableViewColumn {
 
 
 export interface IModel {
-    clientOptions: _gc.gws.ModelClientOptions;
+    clientOptions: gws.ModelClientOptions;
     canCreate: boolean;
     canDelete: boolean;
     canRead: boolean;
@@ -472,11 +472,11 @@ export interface IModel {
     fields: Array<IModelField>;
     geometryCrs: string
     geometryName: string;
-    geometryType: _gc.gws.GeometryType
+    geometryType: gws.GeometryType
     uidName: string;
     layer?: IFeatureLayer;
     layerUid: string;
-    loadingStrategy: _gc.gws.FeatureLoadingStrategy;
+    loadingStrategy: gws.FeatureLoadingStrategy;
     title: string;
     uid: string;
     tableViewColumns: Array<TableViewColumn>;
@@ -489,20 +489,20 @@ export interface IModel {
     featureWithAttributes(attributes: Dict): IFeature;
     featureFromGeometry(geom: ol.geom.Geometry): IFeature;
     featureFromOlFeature(oFeature: ol.Feature): IFeature;
-    featureFromProps(props: Partial<_gc.gws.FeatureProps>): IFeature;
-    featureListFromProps(propsList: Array<Partial<_gc.gws.FeatureProps>>): Array<IFeature>;
+    featureFromProps(props: Partial<gws.FeatureProps>): IFeature;
+    featureListFromProps(propsList: Array<Partial<gws.FeatureProps>>): Array<IFeature>;
 
-    featureProps(feature: IFeature, relDepth?: number): _gc.gws.FeatureProps;
+    featureProps(feature: IFeature, relDepth?: number): gws.FeatureProps;
 }
 
 export interface IModelField {
     uid: string;
     name: string;
     type: string;
-    attributeType: _gc.gws.AttributeType;
-    geometryType: _gc.gws.GeometryType;
+    attributeType: gws.AttributeType;
+    geometryType: gws.GeometryType;
     title: string;
-    widgetProps: _gc.gws.ext.props.modelWidget;
+    widgetProps: gws.ext.props.modelWidget;
     model: IModel;
     relatedModelUids: Array<string>;
 
@@ -527,7 +527,7 @@ export interface ModelWidgetProps {
     controller: IModelWidget;
     feature: IFeature;
     field: IModelField;
-    widgetProps: _gc.gws.ext.props.modelWidget;
+    widgetProps: gws.ext.props.modelWidget;
     values: Dict;
     disabled?: boolean;
     whenChanged?: (value: any) => void;

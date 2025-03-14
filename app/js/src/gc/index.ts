@@ -19,4 +19,4 @@ export function getRegisteredTags() {
     return registerTags.tags
 }
 
-export * from '@build/specs';
+export {gws} from 'gws';

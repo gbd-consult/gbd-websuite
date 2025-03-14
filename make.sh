@@ -37,6 +37,11 @@ Run 'make.sh <command> -h' for more info.
 EOF
 }
 
+CLIENT_BUILDER=$BASE_DIR/app/js/helpers/index.js
+DOC_BUILDER=$BASE_DIR/doc/doc.py
+BUILD_DIR=$BASE_DIR/app/__build
+TEST_RUNNER=$BASE_DIR/app/gws/test/test.py
+
 if [ "$1" == "" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
   USAGE
   exit
@@ -50,18 +55,26 @@ if [ "$COMMAND" == "" ]; then
     exit 1
 fi
 
-CLIENT_BUILDER=$BASE_DIR/app/js/helpers/index.js
-DOC_BUILDER=$BASE_DIR/doc/doc.py
-BUILD_DIR=$BASE_DIR/app/__build
-TEST_RUNNER=$BASE_DIR/app/gws/test/test.py
+MANIFEST=''
+MANIFEST_OPT=''
 
-MAKE_INIT="$PYTHON $BASE_DIR/app/_make_init.py"
-MAKE_SPEC="$PYTHON $BASE_DIR/app/gws/spec/spec.py $BUILD_DIR"
-
-if [ "$1" == "-manifest" ]; then
-  MAKE_SPEC="$MAKE_SPEC -manifest $2"
-  shift 2
+if [ "$1" == "--manifest" ] || [ "$1" == "-manifest" ] || [ "$1" == "-m" ]; then
+    MANIFEST=$2
+    shift 2
 fi
+
+if [ "$MANIFEST" == "" ]; then
+    MANIFEST=${GWS_MANIFEST:-}
+fi
+
+if [ "$MANIFEST" != "" ]; then
+    MANIFEST_OPT="--manifest $MANIFEST"
+fi
+
+codegen() {
+    $PYTHON $BASE_DIR/app/_make_init.py $MANIFEST_OPT
+    $PYTHON $BASE_DIR/app/gws/spec/spec.py $BUILD_DIR $MANIFEST_OPT
+}
 
 case $COMMAND in
   clean)
@@ -71,13 +84,13 @@ case $COMMAND in
     ;;
 
   client)
-    $MAKE_INIT && $MAKE_SPEC && $NODE $CLIENT_BUILDER production $@
+    codegen && $NODE $CLIENT_BUILDER production $@
     ;;
   client-dev)
-    $MAKE_INIT && $MAKE_SPEC && $NODE $CLIENT_BUILDER dev $@
+    codegen && $NODE $CLIENT_BUILDER dev $@
     ;;
   client-dev-server)
-    $MAKE_INIT && $MAKE_SPEC && $NODE $CLIENT_BUILDER dev-server $@
+    codegen && $NODE $CLIENT_BUILDER dev-server $@
     ;;
 
   demo-config)
@@ -85,26 +98,26 @@ case $COMMAND in
     ;;
 
   doc)
-    $MAKE_INIT && $MAKE_SPEC && $PYTHON $DOC_BUILDER build $@
+    codegen && $PYTHON $DOC_BUILDER build $@
     ;;
   doc-api)
-    $MAKE_INIT && $MAKE_SPEC && $PYTHON $DOC_BUILDER api $@
+    codegen && $PYTHON $DOC_BUILDER api $@
     ;;
   doc-dev-server)
-    $MAKE_INIT && $MAKE_SPEC && $PYTHON $DOC_BUILDER server $@
+    codegen && $PYTHON $DOC_BUILDER server $@
     ;;
 
   image)
-    $MAKE_INIT && $MAKE_SPEC && $PYTHON $BASE_DIR/install/image.py $@
+    codegen && $PYTHON $BASE_DIR/install/image.py $@
     ;;
   package)
-    $MAKE_INIT && $MAKE_SPEC && $PYTHON $BASE_DIR/install/package.py $@
+    codegen && $PYTHON $BASE_DIR/install/package.py $@
     ;;
   spec)
-    $MAKE_INIT && $MAKE_SPEC $@
+    codegen
     ;;
   test)
-    $MAKE_INIT && $PYTHON $TEST_RUNNER $@
+    codegen && $PYTHON $TEST_RUNNER $@
     ;;
 
   *)

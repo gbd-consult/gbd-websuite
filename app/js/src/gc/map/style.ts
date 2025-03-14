@@ -1,7 +1,7 @@
 
 import * as ol from 'openlayers';
 
-import * as _gc from '../core/_gc';
+import {gws} from 'gws';
 import * as types from '../types';
 import * as lib from '../lib';
 
@@ -94,7 +94,7 @@ export class StyleManager implements types.IStyleManager {
         }
 
         if (typeof arg === 'object') {
-            let props = arg as _gc.gws.StyleProps;
+            let props = arg as gws.StyleProps;
 
             if (props.cssSelector) {
                 return this.getFromSelector(props.cssSelector);
@@ -127,13 +127,13 @@ export class StyleManager implements types.IStyleManager {
         });
     }
 
-    loadFromProps(props: _gc.gws.StyleProps) {
+    loadFromProps(props: gws.StyleProps) {
         this.styles[props.cssSelector] = new Style(props.cssSelector, props.values);
         return this.styles[props.cssSelector];
     }
 
-    get props(): Array<_gc.gws.StyleProps> {
-        let ps: Array<_gc.gws.StyleProps> = [];
+    get props(): Array<gws.StyleProps> {
+        let ps: Array<gws.StyleProps> = [];
 
         for (let [_, style] of lib.entries(this.styles)) {
             ps.push(style.props);

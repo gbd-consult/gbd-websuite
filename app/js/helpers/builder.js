@@ -262,21 +262,6 @@ function initBuild(bb) {
             })
         }
     }
-
-    bb.chunks.push({
-        name: '@build',
-        sourceDir: SPEC_DIR,
-        bundleDir: bb.chunks[0].bundleDir,
-    })
-
-    bb.sources.push({
-        chunkName: '@build',
-        kind: 'ts',
-        path: path.join(SPEC_DIR, 'specs.ts'),
-        buildRoot: path.join(BUILD_ROOT, SPEC_DIR),
-    })
-
-
 }
 
 // dev server

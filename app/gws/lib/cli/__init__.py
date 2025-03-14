@@ -2,6 +2,7 @@
 
 import re
 import os
+import shutil
 import sys
 import subprocess
 import time
@@ -97,6 +98,13 @@ def find_files(dirname, pattern=None, deep=True):
             continue
         if de.is_file() and (pattern is None or re.search(pattern, de.path)):
             yield de.path
+
+
+def ensure_dir(path, clear=False):
+    os.makedirs(path, exist_ok=True)
+    if clear:
+        shutil.rmtree(path)
+    return path
 
 
 def read_file(path):

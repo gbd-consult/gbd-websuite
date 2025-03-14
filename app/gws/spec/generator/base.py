@@ -81,7 +81,7 @@ FILE_KINDS = [
 PLUGIN_DIR = '/gws/plugin'
 
 SYSTEM_CHUNKS = [
-    [CLIENT_NAME, '/js/src/gc'],
+    [CLIENT_NAME, f'/js/src/{CLIENT_NAME}'],
     [f'{APP_NAME}', '/js/src/gws'],
     [f'{APP_NAME}.core', '/gws/core'],
     [f'{APP_NAME}.base', '/gws/base'],

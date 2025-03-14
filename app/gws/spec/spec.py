@@ -40,7 +40,7 @@ def main(args):
     os.makedirs(out_dir, exist_ok=True)
 
     try:
-        generator.generate_and_store(
+        generator.generate_and_write(
             out_dir=out_dir,
             root_dir=args.get('root'),
             manifest_path=args.get('manifest'),

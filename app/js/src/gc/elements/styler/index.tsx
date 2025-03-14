@@ -75,8 +75,8 @@ class EditForm extends gc.View<ViewProps> {
             />,
         );
 
-        let noLabel = false // this.props.stylerValues.with_label !== _gc.gws.StyleLabelOption.all;
-        let noGeom = false // this.props.stylerValues.with_geometry !== _gc.gws.StyleGeometryOption.all;
+        let noLabel = false // this.props.stylerValues.with_label !== gws.StyleLabelOption.all;
+        let noGeom = false // this.props.stylerValues.with_geometry !== gws.StyleGeometryOption.all;
 
         return <gc.ui.Tabs
             active={cc.getValue('stylerActiveTab')}
