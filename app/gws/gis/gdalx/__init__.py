@@ -544,7 +544,7 @@ def _tzflag_to_tz(tzflag):
         # @TODO
         raise Error(f'unsupported timezone {tzflag=}')
     hrs = (100 - tzflag) // 4
-    return f'GMT{hrs:+}'
+    return f'Etc/GMT{hrs:+}'
 
 
 def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding):
