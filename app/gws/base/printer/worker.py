@@ -2,6 +2,7 @@ from typing import Optional, cast
 
 import gws
 import gws.base.model
+import gws.base.job
 import gws.lib.crs
 import gws.gis.render
 import gws.lib.image
@@ -11,37 +12,25 @@ import gws.lib.osx
 import gws.lib.style
 import gws.lib.uom
 
-
-def main(root: gws.Root, job: gws.Job):
-    request = gws.u.unserialize_from_path(job.requestPath)
-    w = Object(root, job.uid, request, job.user)
-    w.run()
-
-
 _PAPER_COLOR = 'white'
 
 
-class Object:
-    jobUid: str
-    user: gws.User
+class Object(gws.base.job.worker.Object):
     project: gws.Project
     tri: gws.TemplateRenderInput
     printer: gws.Printer
     template: gws.Template
-    request: gws.PrintRequest
     tmpDir: str
 
-    def __init__(self, root: gws.Root, job_uid: str, request: gws.PrintRequest, user: gws.User):
-        self.jobUid = job_uid
-        self.root = root
-        self.user = user
+    def __init__(self, root: gws.Root, user: gws.User, job: Optional[gws.Job], request: gws.PrintRequest):
+        super().__init__(root, user, job)
         self.request = request
         self.page_number = 0
 
     def run(self):
         self.prepare()
         res = self.template.render(self.tri)
-        self.update_job(state=gws.JobState.complete, outputPath=res.contentPath)
+        self.update_job(state=gws.JobState.complete, payload=dict(outputPath=res.contentPath))
         return res.contentPath
 
     def prepare(self):
@@ -94,8 +83,6 @@ class Object:
         self.update_job(numSteps=n)
 
     def notify(self, event, details=None):
-        gws.log.debug(f'JOB {self.jobUid}: print.worker.notify {event=} {details=}')
-
         job = self.get_job()
         if not job:
             return
@@ -255,25 +242,3 @@ class Object:
             )
 
         raise gws.Error(f'invalid plane type {plane.type!r}')
-
-    def get_job(self) -> Optional[gws.Job]:
-        if not self.jobUid:
-            return None
-
-        job = self.root.app.jobMgr.get_job(self.jobUid)
-
-        if not job:
-            raise gws.JobTerminated('JOB_NOT_FOUND')
-        if job.user.uid != self.user.uid:
-            raise gws.JobTerminated('WRONG_USER {job.user.uid}')
-        if job.state != gws.JobState.running:
-            raise gws.JobTerminated(f'JOB_WRONG_STATE={job.state!r}')
-
-        return job
-
-    def update_job(self, **kwargs):
-        job = self.get_job()
-        if job:
-            for k, v in kwargs.items():
-                setattr(job, k, v)
-                self.root.app.jobMgr.save_job(job)

@@ -4,39 +4,31 @@ import gws.lib.sa as sa
 
 
 class Object(gws.DatabaseConnection):
-    def __init__(self, conn):
-        self.saConnection = conn
+    def exec(self, sql, **params):
+        if isinstance(sql, str):
+            sql = sa.text(sql)
+        return self.execute(sql, params)
 
-    def begin(self):
-        return self.saConnection.begin()
-
-    def commit(self):
-        return self.saConnection.commit()
-
-    def rollback(self):
-        return self.saConnection.rollback()
-
-    def execute(self, statement, params):
-        # temp
-        if isinstance(statement, str):
-            statement = sa.text(statement)
-        return self.saConnection.execute(statement, params)
-
-    def exec(self, statement, **params):
-        if isinstance(statement, str):
-            statement = sa.text(statement)
-        return self.saConnection.execute(statement, params)
-
-    def exec_commit(self, statement, **params):
-        if isinstance(statement, str):
-            statement = sa.text(statement)
-        res = self.saConnection.execute(statement, params)
-        self.saConnection.commit()
+    def exec_commit(self, sql, **params):
+        if isinstance(sql, str):
+            sql = sa.text(sql)
+        res = self.execute(sql, params)
+        self.commit()
         return res
 
-    def fetch_all(self, statement, **params):
-        return [dict(r) for r in self.exec(statement, **params)]
+    def get_all(self, sql, **params):
+        return [r._asdict() for r in self.exec(sql, **params)]
 
-    def fetch_one(self, statement, **params):
-        rs = self.fetch_all(statement, **params)
-        return rs[0] if rs else None
+    def get_first(self, sql, **params):
+        res = self.exec(sql, **params)
+        r = res.first()
+        return r._asdict() if r else None
+
+    def get_scalars(self, sql, **params):
+        res = self.exec(sql, **params)
+        return res.scalars().all()
+
+    def get_scalar(self, sql, **params):
+        res = self.exec(sql, **params)
+        return res.scalar()
+

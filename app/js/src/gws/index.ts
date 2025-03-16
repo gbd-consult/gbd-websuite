@@ -194,7 +194,7 @@ export namespace gws {
     }
     
     ///
-    export interface JobResponse extends gws.Response {
+    export interface JobStatusResponse extends gws.Response {
         ///
         jobUid: string
         ///
@@ -204,7 +204,13 @@ export namespace gws {
         ///
         stepName: string
         ///
-        outputUrl: string
+        output: _dict
+    }
+    
+    ///
+    export interface JobRequest extends gws.Request {
+        ///
+        jobUid: string
     }
     
     /// Client options for a model
@@ -364,12 +370,6 @@ export namespace gws {
         crs: string
         ///
         geometry: _dict
-    }
-    
-    ///
-    export interface JobRequest extends gws.Request {
-        ///
-        jobUid: string
     }
     
     /// Axis orientation.
@@ -624,14 +624,6 @@ export namespace gws.base.edit.api {
     ///
     export interface DeleteFeatureResponse extends gws.Response {
         
-    }
-}
-
-export namespace gws.base.job.action {
-    ///
-    export interface Props extends gws.base.action.Props {
-        /// object type
-        type: "job"
     }
 }
 
@@ -1109,7 +1101,7 @@ export namespace gws.ext.props {
     export type modelField = gws.plugin.model_field.file.Props | gws.plugin.model_field.datetime.Props | gws.plugin.model_field.date.Props | gws.plugin.model_field.time.Props | gws.plugin.model_field.float.Props | gws.plugin.model_field.bool.Props | gws.plugin.model_field.related_linked_feature_list.Props | gws.plugin.model_field.integer.Props | gws.plugin.model_field.related_feature.Props | gws.plugin.model_field.geometry.Props | gws.plugin.model_field.text.Props | gws.plugin.model_field.related_feature_list.Props | gws.plugin.model_field.related_multi_feature_list.Props;
     
     ///
-    export type action = gws.base.web.action.Props | gws.base.printer.action.Props | gws.base.search.action.Props | gws.base.project.action.Props | gws.base.edit.action.Props | gws.base.map.action.Props | gws.base.job.action.Props | gws.plugin.qfield.action.Props | gws.plugin.alkis.action.Props | gws.plugin.auth_method.web.action.Props | gws.plugin.annotate_tool.action.Props | gws.plugin.account.account_action.Props | gws.plugin.account.admin_action.Props | gws.plugin.select_tool.action.Props | gws.plugin.dimension.Props;
+    export type action = gws.base.web.action.Props | gws.base.printer.action.Props | gws.base.search.action.Props | gws.base.project.action.Props | gws.base.edit.action.Props | gws.base.map.action.Props | gws.plugin.qfield.action.Props | gws.plugin.alkis.action.Props | gws.plugin.auth_method.web.action.Props | gws.plugin.annotate_tool.action.Props | gws.plugin.account.account_action.Props | gws.plugin.account.admin_action.Props | gws.plugin.select_tool.action.Props | gws.plugin.dimension.Props;
     
     ///
     export type map = gws.base.map.Props;
@@ -1956,7 +1948,7 @@ export interface Api {
     alkisGetToponyms (p: gws.plugin.alkis.action.GetToponymsRequest, options?: any): Promise<gws.plugin.alkis.action.GetToponymsResponse>;
     
     /// Print Flurstueck features
-    alkisPrintFlurstueck (p: gws.plugin.alkis.action.PrintFlurstueckRequest, options?: any): Promise<gws.JobResponse>;
+    alkisPrintFlurstueck (p: gws.plugin.alkis.action.PrintFlurstueckRequest, options?: any): Promise<gws.JobStatusResponse>;
     
     ///
     alkisSelectionStorage (p: gws.base.storage.Request, options?: any): Promise<gws.base.storage.Response>;
@@ -2004,12 +1996,6 @@ export interface Api {
     editWriteFeature (p: gws.base.edit.api.WriteFeatureRequest, options?: any): Promise<gws.base.edit.api.WriteFeatureResponse>;
     
     ///
-    jobCancel (p: gws.JobRequest, options?: any): Promise<gws.JobResponse>;
-    
-    ///
-    jobStatus (p: gws.JobRequest, options?: any): Promise<gws.JobResponse>;
-    
-    ///
     mapDescribeLayer (p: gws.base.map.action.DescribeLayerRequest, options?: any): Promise<gws.base.map.action.DescribeLayerResponse>;
     
     /// Get a part of the map inside a bounding box
@@ -2024,8 +2010,14 @@ export interface Api {
     /// Get an XYZ tile
     mapGetXYZ (p: gws.base.map.action.GetXyzRequest, options?: any): Promise<gws.base.map.action.ImageResponse>;
     
+    ///
+    printerCancel (p: gws.JobRequest, options?: any): Promise<gws.JobStatusResponse>;
+    
     /// Start a background print job
-    printerStart (p: gws.PrintRequest, options?: any): Promise<gws.JobResponse>;
+    printerStart (p: gws.PrintRequest, options?: any): Promise<gws.JobStatusResponse>;
+    
+    ///
+    printerStatus (p: gws.JobRequest, options?: any): Promise<gws.JobStatusResponse>;
     
     /// Return the project configuration
     projectInfo (p: gws.Request, options?: any): Promise<gws.base.project.action.InfoResponse>;
@@ -2093,7 +2085,7 @@ export abstract class BaseServer implements Api {
     alkisGetToponyms(r: gws.plugin.alkis.action.GetToponymsRequest, options?: any): Promise<gws.plugin.alkis.action.GetToponymsResponse> {
         return this.invoke("alkisGetToponyms", r, options);
     }
-    alkisPrintFlurstueck(r: gws.plugin.alkis.action.PrintFlurstueckRequest, options?: any): Promise<gws.JobResponse> {
+    alkisPrintFlurstueck(r: gws.plugin.alkis.action.PrintFlurstueckRequest, options?: any): Promise<gws.JobStatusResponse> {
         return this.invoke("alkisPrintFlurstueck", r, options);
     }
     alkisSelectionStorage(r: gws.base.storage.Request, options?: any): Promise<gws.base.storage.Response> {
@@ -2141,12 +2133,6 @@ export abstract class BaseServer implements Api {
     editWriteFeature(r: gws.base.edit.api.WriteFeatureRequest, options?: any): Promise<gws.base.edit.api.WriteFeatureResponse> {
         return this.invoke("editWriteFeature", r, options);
     }
-    jobCancel(r: gws.JobRequest, options?: any): Promise<gws.JobResponse> {
-        return this.invoke("jobCancel", r, options);
-    }
-    jobStatus(r: gws.JobRequest, options?: any): Promise<gws.JobResponse> {
-        return this.invoke("jobStatus", r, options);
-    }
     mapDescribeLayer(r: gws.base.map.action.DescribeLayerRequest, options?: any): Promise<gws.base.map.action.DescribeLayerResponse> {
         return this.invoke("mapDescribeLayer", r, options);
     }
@@ -2162,8 +2148,14 @@ export abstract class BaseServer implements Api {
     mapGetXYZ(r: gws.base.map.action.GetXyzRequest, options?: any): Promise<gws.base.map.action.ImageResponse> {
         return this.invoke("mapGetXYZ", r, options);
     }
-    printerStart(r: gws.PrintRequest, options?: any): Promise<gws.JobResponse> {
+    printerCancel(r: gws.JobRequest, options?: any): Promise<gws.JobStatusResponse> {
+        return this.invoke("printerCancel", r, options);
+    }
+    printerStart(r: gws.PrintRequest, options?: any): Promise<gws.JobStatusResponse> {
         return this.invoke("printerStart", r, options);
+    }
+    printerStatus(r: gws.JobRequest, options?: any): Promise<gws.JobStatusResponse> {
+        return this.invoke("printerStatus", r, options);
     }
     projectInfo(r: gws.Request, options?: any): Promise<gws.base.project.action.InfoResponse> {
         return this.invoke("projectInfo", r, options);

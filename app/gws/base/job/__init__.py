@@ -3,4 +3,4 @@
 Utilities to manage background jobs.
 """
 
-from . import manager
+from . import manager, worker

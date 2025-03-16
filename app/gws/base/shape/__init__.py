@@ -1,6 +1,6 @@
 """Shape object.
 
-The Shape object implements the IShape protocol (georefenced geometry).
+The Shape object represents a geo-referenced geometry.
 Internally, it holds a pointer to a Shapely geometry object and a Crs object.
 """
 

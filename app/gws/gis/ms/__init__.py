@@ -24,12 +24,13 @@ class RasterLayerOptions(gws.Data):
 
 class VectorLayerOptions(gws.Data):
     """Represents options for configuring a vector layer."""
-    type: str
     geometryType: gws.GeometryType
+    connectionType: str
     connectionString: str
     dataString: str
     crs: gws.Crs
     style: gws.StyleValues
+    config: str
 
 
 def new_map() -> 'Map':
@@ -110,22 +111,29 @@ class Map:
 
         lc = self.mapObj.numlayers
         lo.name = f'_gws_{lc}'
-
-        lo.type = _GEOM_TO_MS_LAYER[opts.geometryType]
         lo.status = mapscript.MS_ON
 
-        if opts.type == 'postgres':
-            lo.setConnectionType(mapscript.MS_POSTGIS, '')
-        else:
-            raise gws.Error(f'Invalid vector type {opts.type!r}')
+        if opts.geometryType:
+            lo.type = _GEOM_TO_MS_LAYER[opts.geometryType]
 
-        lo.connection = opts.connectionString
-        lo.data = opts.dataString
+        if opts.connectionType:
+            if opts.connectionType == 'postgres':
+                lo.setConnectionType(mapscript.MS_POSTGIS, '')
+            raise gws.Error(f'Invalid connectionType {opts.connectionType!r}')
 
-        lo.setProjection(f'init=epsg:{opts.crs.srid}')
+        if opts.connectionString:
+            lo.connection = opts.connectionString
+
+        if opts.dataString:
+            lo.data = opts.dataString
+
+        if opts.crs:
+            lo.setProjection(f'init=epsg:{opts.crs.srid}')
+
+        if opts.config:
+            lo.updateFromString(opts.config)
 
         self.mapObj.insertLayer(lo)
-
         return lo
 
     def draw(self, bounds: gws.Bounds, size: gws.Size) -> gws.lib.image.Image:

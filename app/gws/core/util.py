@@ -8,6 +8,7 @@ This module is available as ``gws.u`` everywhere.
 import hashlib
 import json
 import os
+import shutil
 import pickle
 import random
 import re
@@ -668,16 +669,22 @@ _ephemeral_state = dict(
 
 
 def ephemeral_path(name: str) -> str:
-    """Return an ephemeral path name."""
+    """Return a new ephemeral path name."""
 
-    if stime() > _ephemeral_state['last_check_time'] + _ephemeral_state['check_interval']:
-        _ephemeral_cleanup()
-
+    # if stime() > _ephemeral_state['last_check_time'] + _ephemeral_state['check_interval']:
+    #     _ephemeral_cleanup()
+    #
     name = str(os.getpid()) + '_' + random_string(64) + '_' + name
     return const.EPHEMERAL_DIR + '/' + name
 
 
-def _ephemeral_cleanup():
+def ephemeral_dir(name: str) -> str:
+    """Create and return an ephemeral directory."""
+
+    return ensure_dir(const.EPHEMERAL_DIR + '/' + name)
+
+
+def ephemeral_cleanup():
     """Remove ephemeral paths older than max age."""
 
     cnt = 0
@@ -687,7 +694,10 @@ def _ephemeral_cleanup():
         age = int(ts - de.stat().st_mtime)
         if age > _ephemeral_state['max_age']:
             try:
-                os.unlink(de.path)
+                if de.is_dir():
+                    shutil.rmtree(de.path)
+                else:
+                    os.unlink(de.path)
                 cnt += 1
             except OSError:
                 pass

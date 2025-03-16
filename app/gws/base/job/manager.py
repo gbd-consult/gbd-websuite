@@ -10,30 +10,22 @@ import gws.lib.mime
 import gws.server.spool
 
 
-class Request(gws.Request):
-    jobUid: str
-
-
 class Object(gws.JobManager):
     TABLE = 'jobs'
     DDL = f'''
         CREATE TABLE IF NOT EXISTS {TABLE} (
             uid           TEXT NOT NULL PRIMARY KEY,
-            user_uid      TEXT NOT NULL,
-            str_user      TEXT NOT NULL,
-            worker        TEXT NOT NULL,
+            userUid       TEXT DEFAULT '',
+            userStr       TEXT DEFAULT '',
+            worker        TEXT DEFAULT '',
             state         TEXT DEFAULT '',
             error         TEXT DEFAULT '',
             numSteps      INTEGER DEFAULT 0,
             step          INTEGER DEFAULT 0,
-            step_name     TEXT DEFAULT '',
             stepName      TEXT DEFAULT '',
-            requestPath   TEXT DEFAULT '',
-            outputPath    TEXT DEFAULT '',
-            outputMime    TEXT DEFAULT '',
-            extra         TEXT DEFAULT '',
-            created       INTEGER NOT NULL,
-            updated       INTEGER NOT NULL
+            payload       TEXT DEFAULT '',
+            created       INTEGER DEFAULT 0,
+            updated       INTEGER DEFAULT 0
         )
     '''
 
@@ -46,24 +38,25 @@ class Object(gws.JobManager):
     def periodic_task(self):
         gws.log.info(f'JOB: cleanup')
 
-    def create_job(self, user, worker):
+    def create_job(self, user, worker, payload=None):
         job_uid = gws.u.random_string(64)
         gws.log.debug(f'JOB {job_uid}: creating: {worker=}  {user.uid=}')
 
-        rec = dict(
+        self._db().insert(self.TABLE, dict(uid=job_uid))
+
+        self._write(job_uid, dict(
             uid=job_uid,
-            user_uid=user.uid,
-            str_user=self.root.app.authMgr.serialize_user(user),
+            userUid=user.uid,
+            userStr=self.root.app.authMgr.serialize_user(user),
             worker=worker,
             state=gws.JobState.open,
+            payload=payload,
             created=gws.u.stime(),
-            updated=gws.u.stime()
-        )
+        ))
 
-        self._db().insert(self.TABLE, rec)
         return self.get_job(job_uid)
 
-    def get_job(self, job_uid: str, user=None):
+    def get_job(self, job_uid: str, user=None, state=None):
         rs = self._db().select(f'SELECT * FROM {self.TABLE} WHERE uid=:uid', uid=job_uid)
         if not rs:
             gws.log.error(f'JOB {job_uid}: not found')
@@ -72,14 +65,17 @@ class Object(gws.JobManager):
         rec = rs[0]
 
         job_user = None
-        if rec.get('str_user'):
-            job_user = self.root.app.authMgr.unserialize_user(rec.get('str_user'))
+        if rec.get('userStr'):
+            job_user = self.root.app.authMgr.unserialize_user(rec.get('userStr'))
         if not job_user:
             job_user = self.root.app.authMgr.guestUser
 
         if user and job_user.uid != user.uid:
             gws.log.error(f'JOB {job_uid}: wrong user {job_user.uid=} {user.uid=}')
             return
+
+        if state and rec.get('state') != state:
+            gws.log.error(f'JOB {job_uid}: wrong state {rec.get("state")=} {state=}')
 
         return gws.Job(
             uid=rec['uid'],
@@ -90,31 +86,33 @@ class Object(gws.JobManager):
             numSteps=rec['numSteps'] or 0,
             step=rec['step'] or 0,
             stepName=rec['stepName'] or '',
-            requestPath=rec['requestPath'] or '',
-            outputPath=rec['outputPath'] or '',
-            outputMime=rec['outputMime'] or '',
-            extra=gws.lib.jsonx.from_string(rec['extra'] or '{}'),
+            payload=gws.lib.jsonx.from_string(rec['payload'] or '{}'),
         )
 
-    def save_job(self, job):
-        if not self.get_job(job.uid):
+    def save_job(self, job, **kwargs):
+        job = self.get_job(job.uid)
+        if not job:
             return
 
-        rec = dict(
+        d = dict(
             state=job.state,
             error=job.error,
             numSteps=job.numSteps,
             step=job.step,
             stepName=job.stepName,
-            requestPath=job.requestPath,
-            outputPath=job.outputPath,
-            outputMime=job.outputMime,
-            extra=gws.lib.jsonx.to_string(job.extra or {}),
-            updated=gws.u.stime(),
+            payload=job.payload,
         )
+        d.update(kwargs)
 
-        self._db().update(self.TABLE, rec, job.uid)
+        self._write(job.uid, d)
+
         return self.get_job(job.uid)
+
+    def _write(self, job_uid, rec):
+        rec['updated'] = gws.u.stime()
+        rec['payload'] = gws.lib.jsonx.to_string(rec.get('payload') or {})
+        gws.log.debug(f'JOB save: {job_uid}: {rec}')
+        self._db().update(self.TABLE, rec, job_uid)
 
     def schedule_job(self, job: gws.Job):
         if gws.server.spool.is_active():
@@ -127,8 +125,8 @@ class Object(gws.JobManager):
         tmp = gws.u.random_string(64)
 
         self._db().execute(
-            f'UPDATE {self.TABLE} SET state=:s WHERE uid=:uid AND state=:state',
-            uid=job_uid, s=tmp, state=gws.JobState.open
+            f'UPDATE {self.TABLE} SET state=:tmp WHERE uid=:uid AND state=:state',
+            uid=job_uid, tmp=tmp, state=gws.JobState.open
         )
 
         job = self.get_job(job_uid)
@@ -167,16 +165,31 @@ class Object(gws.JobManager):
     def remove_job(self, job: gws.Job):
         self._db().delete(self.TABLE, job.uid)
 
-    ##
+    def require_job(self, req, p):
+        job = self.root.app.jobMgr.get_job(p.jobUid, req.user)
+        if not job:
+            raise gws.NotFoundError(f'JOB {p.jobUid}: not found')
+        return job
 
-    def status_response(self, job):
-        return gws.JobResponse(
+    def handle_status_request(self, req, p):
+        job = self.require_job(req, p)
+        return self.job_status_response(job)
+
+    def handle_cancel_request(self, req, p):
+        job = self.require_job(req, p)
+        job = self.cancel_job(job)
+        return self.job_status_response(job)
+
+    def job_status_response(self, job, **kwargs):
+        d = dict(
             jobUid=job.uid,
             state=job.state,
-            progress=self._get_progress(job),
             stepName=job.stepName or '',
-            outputUrl=self._get_output_url(job),
+            progress=self._get_progress(job),
+            output={}
         )
+        d.update(kwargs)
+        return gws.JobStatusResponse(d)
 
     def _get_progress(self, job):
         if job.state == gws.JobState.complete:
@@ -186,12 +199,6 @@ class Object(gws.JobManager):
         if not job.numSteps:
             return 0
         return int(min(100.0, job.step * 100.0 / job.numSteps))
-
-    def _get_output_url(self, job):
-        if job.state != gws.JobState.complete:
-            return ''
-        ext = gws.lib.mime.extension_for(job.outputMime) or 'bin'
-        return gws.u.action_url_path('jobOutput', jobUid=job.uid) + '/gws.' + ext
 
     ##
 

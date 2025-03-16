@@ -30,32 +30,29 @@ class Job(Data):
     numSteps: int
     step: int
     stepName: str
-    requestPath: str
-    outputPath: str
-    outputMime: str
-    extra: dict
+    payload: dict
 
 
 class JobRequest(Request):
     jobUid: str
 
 
-class JobResponse(Response):
+class JobStatusResponse(Response):
     jobUid: str
     state: JobState
     progress: int
     stepName: str
-    outputUrl: str
+    output: dict
 
 
 class JobManager(Node):
     """Job Manager."""
 
-    def create_job(self, user: User, worker: str) -> Job: ...
+    def create_job(self, user: User, worker: str, payload: dict = None) -> Job: ...
 
-    def get_job(self, job_uid: str, user: User = None) -> Optional[Job]: ...
+    def get_job(self, job_uid: str, user: User = None, state: JobState = None) -> Optional[Job]: ...
 
-    def save_job(self, job: Job) -> Optional[Job]: ...
+    def save_job(self, job: Job, **kwargs) -> Optional[Job]: ...
 
     def run_job(self, job: Job) -> Optional[Job]: ...
 
@@ -65,4 +62,10 @@ class JobManager(Node):
 
     def schedule_job(self, job: Job): ...
 
-    def status_response(self, job: Job) -> 'JobResponse': ...
+    def require_job(self, req: 'WebRequester', p: JobRequest) -> Job: ...
+
+    def handle_status_request(self, req: 'WebRequester', p: JobRequest) -> JobStatusResponse: ...
+
+    def handle_cancel_request(self, req: 'WebRequester', p: JobRequest) -> JobStatusResponse: ...
+
+    def job_status_response(self, job: Job, **kwargs) -> 'JobStatusResponse': ...

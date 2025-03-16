@@ -125,7 +125,7 @@ def unlink(path: _Path) -> bool:
         return False
 
 
-def rename(src: _Path, dst: _Path) -> bool:
+def rename(src: _Path, dst: _Path):
     """Moves and renames the source path according to the given destination.
 
     Args:
@@ -133,15 +133,10 @@ def rename(src: _Path, dst: _Path) -> bool:
         dst: Destination.
     """
 
-    try:
-        os.replace(src, dst)
-        return True
-    except OSError as exc:
-        gws.log.warning(f'OSError: rename: {exc}')
-        return False
+    os.replace(src, dst)
 
 
-def chown(path: _Path, user: int = None, group: int = None) -> bool:
+def chown(path: _Path, user: int = None, group: int = None):
     """Changes the UID or GID for a given path.
 
     Args:
@@ -149,15 +144,23 @@ def chown(path: _Path, user: int = None, group: int = None) -> bool:
         user: UID.
         group: GID.
     """
-    try:
-        os.chown(path, user or gws.c.UID, group or gws.c.GID)
-        return True
-    except OSError as exc:
-        gws.log.warning(f'OSError: chown: {exc}')
-        return False
+    os.chown(path, user or gws.c.UID, group or gws.c.GID)
 
 
-def mkdir(path: _Path, mode: int = 0o755, user: int = None, group: int = None) -> bool:
+def copy(src: _Path, dst: _Path, user: int = None, group: int = None):
+    """Copy a file.
+
+    Args:
+        src: Source path.
+        dst: Destination path.
+        user: UID.
+        group: GID.
+    """
+    shutil.copyfile(src, dst)
+    os.chown(dst, user or gws.c.UID, group or gws.c.GID)
+
+
+def mkdir(path: _Path, mode: int = 0o755, user: int = None, group: int = None):
     """Check a (possibly nested) directory.
 
     Args:
@@ -167,12 +170,7 @@ def mkdir(path: _Path, mode: int = 0o755, user: int = None, group: int = None) -
         group: Directory group (defaults to gws.c.GID)
     """
 
-    try:
-        os.makedirs(path, mode, exist_ok=True)
-        return chown(path, user, group)
-    except OSError as exc:
-        gws.log.warning(f'OSError: mkdir: {exc}')
-        return False
+    os.makedirs(path, mode, exist_ok=True)
 
 
 def rmdir(path: _Path) -> bool:

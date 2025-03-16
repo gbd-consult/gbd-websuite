@@ -18,11 +18,6 @@ class Config(gws.Config):
     """Options for connection pooling."""
 
 
-class _Engine(sa.Engine):
-    def connect(self) -> gws.DatabaseConnection:
-        return connection.Object(self)
-
-
 class Object(gws.DatabaseProvider):
     saEngine: sa.Engine
     saMetaMap: dict[str, sa.MetaData]
@@ -46,7 +41,9 @@ class Object(gws.DatabaseProvider):
         self.saConnectionCount = 0
 
     def engine(self, **kwargs):
-        return sa.create_engine(self.url(), **self.engine_options(**kwargs))
+        eng = sa.create_engine(self.url(), **self.engine_options(**kwargs))
+        setattr(eng, '_connection_cls', connection.Object)
+        return eng
 
     def engine_options(self, **kwargs):
         pool = self.cfg('pool') or {}
@@ -106,7 +103,7 @@ class Object(gws.DatabaseProvider):
             self.saConnectionCount += 1
 
         try:
-            yield connection.Object(self.saConnection)
+            yield self.saConnection
         finally:
             self.saConnectionCount -= 1
             if self.saConnectionCount == 0:

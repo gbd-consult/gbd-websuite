@@ -160,7 +160,7 @@ class Object(gws.Application):
 
         self._developerOptions = self.cfg('developer') or {}
         if self._developerOptions:
-            gws.log.warning('developer mode enabled')
+            gws.log.warning(f'developer mode enabled: {self._developerOptions}')
 
         self.monitor = self.create_child(gws.server.monitor.Object, self.serverMgr.cfg('monitor'))
 

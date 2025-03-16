@@ -220,13 +220,8 @@ class _DataSet:
         setattr(self, 'gdDataset', None)
 
     def crs(self) -> Optional[gws.Crs]:
-        sref = self.gdDataset.GetSpatialRef()
-        if not sref:
-            return
-        srid = sref.GetAuthorityCode(None)
-        if not srid:
-            return
-        return gws.lib.crs.get(srid)
+        srid = _srid_from_srs(self.gdDataset.GetSpatialRef())
+        return gws.lib.crs.get(srid) if srid else None
 
 
 class RasterDataSet(_DataSet):
@@ -364,7 +359,6 @@ class VectorLayer:
 
         for i in range(self.gdDefn.GetGeomFieldCount()):
             fdef: ogr.GeomFieldDefn = self.gdDefn.GetGeomFieldDefn(i)
-            crs: osr.SpatialReference = fdef.GetSpatialRef()
             typ = fdef.GetType()
             cols.append(gws.ColumnDescription(
                 name=fdef.GetName() or 'geom',
@@ -372,7 +366,7 @@ class VectorLayer:
                 nativeType=typ,
                 columnIndex=i,
                 geometryType=_OGR_TO_GEOM.get(typ) or gws.GeometryType.geometry,
-                geometrySrid=int(crs.GetAuthorityCode(None)),
+                geometrySrid=_srid_from_srs(fdef.GetSpatialRef()) or self.dso.defaultCrs.srid,
             ))
 
         desc.columns = cols
@@ -459,8 +453,7 @@ class VectorLayer:
             # @TODO multigeometry support
             gd_geom_defn = gd_feature.GetGeomFieldRef(cnt - 1)
             if gd_geom_defn:
-                srs = gd_geom_defn.GetSpatialReference()
-                srid = srs.GetAuthorityCode(None) if srs else self.dso.defaultCrs.srid
+                srid = _srid_from_srs(gd_geom_defn.GetSpatialReference()) or self.dso.defaultCrs.srid
                 wkt = gd_geom_defn.ExportToWkt()
                 if self.dso.geometryAsText:
                     rec.ewkt = f'SRID={srid};{wkt}'
@@ -538,14 +531,35 @@ def _fetch_driver_infos() -> _DriverInfoCache:
     return _di_cache
 
 
-_srs_cache = {}
-
+_name_to_srid = {}
 
 def _srs_from_srid(srid):
-    if srid not in _srs_cache:
-        _srs_cache[srid] = osr.SpatialReference()
-        _srs_cache[srid].ImportFromEPSG(srid)
-    return _srs_cache[srid]
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(srid)
+    return srs
+
+def _srid_from_srs(srs):
+    if not srs:
+        return 0
+
+    name = srs.GetName()
+    if not name:
+        wkt = srs.ExportToWkt()
+        gws.log.warning(f'gdalx: no name for SRS {wkt!r}')
+        return 0
+
+    if name in _name_to_srid:
+        return _name_to_srid[name]
+
+    srid = srs.GetAuthorityCode(None)
+    if not srid:
+        wkt = srs.ExportToWkt()
+        gws.log.warning(f'gdalx: no srid for SRS {wkt!r}')
+        srid = 0
+
+    _name_to_srid[name] = srid
+    return srid
+
 
 
 def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str = 'utf8'):
@@ -589,12 +603,12 @@ def _tzflag_to_tz(tzflag):
     if tzflag == 0 or tzflag == 1:
         return ''
     if tzflag == 100:
-        return 'utc'
+        return 'UTC'
     if tzflag % 4 != 0:
         # @TODO
         raise Error(f'unsupported timezone {tzflag=}')
     hrs = (100 - tzflag) // 4
-    return f'GMT{hrs:+}'
+    return f'Etc/GMT{hrs:+}'
 
 
 def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding):

@@ -3399,26 +3399,11 @@ DatabaseTableAlike: TypeAlias = Union['sqlalchemy.Table', str]
 """An SQLAlchemy ``Table`` object or a string table name."""
 
 
-class DatabaseConnection:
+class DatabaseConnection(sqlalchemy.Connection):
     """Database connection.
 
-    Wraps ``sqlalchemy.Connection`` and provides some convenience methods.
+    Extends ``sqlalchemy.Connection`` and provides some convenience methods.
     """
-
-    saConnection: sqlalchemy.Connection
-    """The wrapped ``sqlalchemy.Connection`` object."""
-
-    def begin(self):
-        ...
-
-    def commit(self):
-        ...
-
-    def rollback(self):
-        ...
-
-    def execute(self, statement: sqlalchemy.Executable | str, params) -> sqlalchemy.CursorResult[Any]:
-        ...
 
     def exec(self, statement: sqlalchemy.Executable | str, **params) -> sqlalchemy.CursorResult[Any]:
         ...
@@ -3426,10 +3411,16 @@ class DatabaseConnection:
     def exec_commit(self, statement: sqlalchemy.Executable | str, **params) -> sqlalchemy.CursorResult[Any]:
         ...
 
-    def fetch_all(self, statement: sqlalchemy.Executable | str, **params) -> list[dict]:
+    def get_all(self, statement: sqlalchemy.Executable | str, **params) -> list[dict]:
         ...
 
-    def fetch_one(self, statement: sqlalchemy.Executable | str, **params) -> dict | None:
+    def get_first(self, statement: sqlalchemy.Executable | str, **params) -> dict | None:
+        ...
+
+    def get_scalars(self, statement: sqlalchemy.Executable | str, **params) -> list:
+        ...
+
+    def get_scalar(self, statement: sqlalchemy.Executable | str, **params) -> Any:
         ...
 
 
@@ -3536,32 +3527,29 @@ class Job(Data):
     numSteps: int
     step: int
     stepName: str
-    requestPath: str
-    outputPath: str
-    outputMime: str
-    extra: dict
+    payload: dict
 
 
 class JobRequest(Request):
     jobUid: str
 
 
-class JobResponse(Response):
+class JobStatusResponse(Response):
     jobUid: str
     state: JobState
     progress: int
     stepName: str
-    outputUrl: str
+    output: dict
 
 
 class JobManager(Node):
     """Job Manager."""
 
-    def create_job(self, user: User, worker: str) -> Job: ...
+    def create_job(self, user: User, worker: str, payload: dict = None) -> Job: ...
 
-    def get_job(self, job_uid: str, user: User = None) -> Optional[Job]: ...
+    def get_job(self, job_uid: str, user: User = None, state: JobState = None) -> Optional[Job]: ...
 
-    def save_job(self, job: Job) -> Optional[Job]: ...
+    def save_job(self, job: Job, **kwargs) -> Optional[Job]: ...
 
     def run_job(self, job: Job) -> Optional[Job]: ...
 
@@ -3571,7 +3559,13 @@ class JobManager(Node):
 
     def schedule_job(self, job: Job): ...
 
-    def status_response(self, job: Job) -> 'JobResponse': ...
+    def require_job(self, req: 'WebRequester', p: JobRequest) -> Job: ...
+
+    def handle_status_request(self, req: 'WebRequester', p: JobRequest) -> JobStatusResponse: ...
+
+    def handle_cancel_request(self, req: 'WebRequester', p: JobRequest) -> JobStatusResponse: ...
+
+    def job_status_response(self, job: Job, **kwargs) -> 'JobStatusResponse': ...
 ################################################################################
 
 
@@ -3808,7 +3802,7 @@ class Printer(Node):
 class PrinterManager(Node):
     """Print Manager."""
 
-    def start_print_job(self, request: PrintRequest, user: 'User') -> 'JobResponse': ...
+    def start_print_job(self, request: PrintRequest, user: 'User') -> 'JobStatusResponse': ...
 
     def exec_print(self, request: PrintRequest, user: 'User'): ...
 ################################################################################

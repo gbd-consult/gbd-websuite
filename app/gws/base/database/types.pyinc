@@ -110,26 +110,11 @@ DatabaseTableAlike: TypeAlias = Union['sqlalchemy.Table', str]
 """An SQLAlchemy ``Table`` object or a string table name."""
 
 
-class DatabaseConnection:
+class DatabaseConnection(sqlalchemy.Connection):
     """Database connection.
 
-    Wraps ``sqlalchemy.Connection`` and provides some convenience methods.
+    Extends ``sqlalchemy.Connection`` and provides some convenience methods.
     """
-
-    saConnection: sqlalchemy.Connection
-    """The wrapped ``sqlalchemy.Connection`` object."""
-
-    def begin(self):
-        ...
-
-    def commit(self):
-        ...
-
-    def rollback(self):
-        ...
-
-    def execute(self, statement: sqlalchemy.Executable | str, params) -> sqlalchemy.CursorResult[Any]:
-        ...
 
     def exec(self, statement: sqlalchemy.Executable | str, **params) -> sqlalchemy.CursorResult[Any]:
         ...
@@ -137,10 +122,16 @@ class DatabaseConnection:
     def exec_commit(self, statement: sqlalchemy.Executable | str, **params) -> sqlalchemy.CursorResult[Any]:
         ...
 
-    def fetch_all(self, statement: sqlalchemy.Executable | str, **params) -> list[dict]:
+    def get_all(self, statement: sqlalchemy.Executable | str, **params) -> list[dict]:
         ...
 
-    def fetch_one(self, statement: sqlalchemy.Executable | str, **params) -> dict | None:
+    def get_first(self, statement: sqlalchemy.Executable | str, **params) -> dict | None:
+        ...
+
+    def get_scalars(self, statement: sqlalchemy.Executable | str, **params) -> list:
+        ...
+
+    def get_scalar(self, statement: sqlalchemy.Executable | str, **params) -> Any:
         ...
 
 

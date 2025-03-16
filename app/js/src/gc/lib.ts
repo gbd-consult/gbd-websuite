@@ -209,7 +209,34 @@ export function uniqId(prefix) {
     return prefix + (Number(new Date()) - _startDate) + String(++_uniqId);
 }
 
-export function readFile(file: File): Promise<Uint8Array> {
+
+export async function uploadFile(file: File, chunkSize: number, step: Function): Promise<string> {
+    let buf: Uint8Array = await readFile(file);
+    let totalSize = buf.byteLength,
+        chunkCount = Math.ceil(totalSize / chunkSize),
+        uploadUid = '';
+
+    for (let chunkNumber = 0; chunkNumber < chunkCount; chunkNumber++) {
+        let req = {
+            uploadUid,
+            chunkCount,
+            totalSize,
+            fileName: file.name,
+            chunkNumber,
+            content: buf.slice(chunkSize * chunkNumber, chunkSize * (chunkNumber + 1)),
+        }
+        let res = await step(req);
+
+        if (res.error)
+            return null;
+
+        uploadUid = res.uploadUid;
+    }
+
+    return uploadUid;
+}
+
+export async function readFile(file: File): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
 
         let reader = new FileReader();

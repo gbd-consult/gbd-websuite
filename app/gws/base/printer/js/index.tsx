@@ -27,7 +27,7 @@ interface ViewProps extends gc.types.ViewProps {
     controller: Controller;
     printerDialogZoomed: boolean;
     printerFormValues: object;
-    printerJob?: gc.gws.JobResponse;
+    printerJob?: gc.gws.JobStatusResponse;
     printerMode: 'screenshot' | 'print';
     printerScreenshotDpi: number;
     printerScreenshotHeight: number;
@@ -359,7 +359,7 @@ class Dialog extends gc.View<ViewProps> {
             return <gc.ui.Dialog
                 {...gc.lib.cls('printerResultDialog')}
                 whenClosed={stop}
-                frame={job.outputUrl}
+                frame={job.output['url']}
             />;
         }
 
@@ -650,7 +650,7 @@ class Controller extends gc.Controller {
 
         if (job) {
             this.update({
-                printerJob: await this.app.server.jobStatus({jobUid: job.jobUid}),
+                printerJob: await this.app.server.printerStatus({jobUid: job.jobUid}),
             });
         }
     }
@@ -658,7 +658,7 @@ class Controller extends gc.Controller {
     protected async sendCancel(jobUid) {
         if (jobUid) {
             console.log('SEND CANCEL');
-            await this.app.server.jobCancel({jobUid});
+            await this.app.server.printerCancel({jobUid});
         }
     }
 

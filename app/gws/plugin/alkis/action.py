@@ -591,7 +591,7 @@ class Object(gws.base.action.Object):
         return ExportFlurstueckResponse(content=csv_bytes, mime='text/csv')
 
     @gws.ext.command.api('alkisPrintFlurstueck')
-    def print_flurstueck(self, req: gws.WebRequester, p: PrintFlurstueckRequest) -> gws.JobResponse:
+    def print_flurstueck(self, req: gws.WebRequester, p: PrintFlurstueckRequest) -> gws.JobStatusResponse:
         """Print Flurstueck features"""
 
         project = req.user.require_project(p.projectUid)
@@ -641,8 +641,7 @@ class Object(gws.base.action.Object):
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
         )
 
-        mgr = self.root.app.printerMgr
-        return mgr.start_print_job(print_request, req.user)
+        return self.root.app.printerMgr.start_print_job(print_request, req.user)
 
     @gws.ext.command.api('alkisSelectionStorage')
     def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
