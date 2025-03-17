@@ -287,7 +287,7 @@ class Response(Data):
 
     error: Optional[ResponseError]
     """Response error."""
-    status: int
+    httpStatus: int
     """Response status or exit code."""
 
 
@@ -3545,11 +3545,11 @@ class JobStatusResponse(Response):
 class JobManager(Node):
     """Job Manager."""
 
-    def create_job(self, user: User, worker: str, payload: dict = None) -> Job: ...
+    def create_job(self, user: User, worker: type, payload: dict = None) -> Job: ...
 
     def get_job(self, job_uid: str, user: User = None, state: JobState = None) -> Optional[Job]: ...
 
-    def save_job(self, job: Job, **kwargs) -> Optional[Job]: ...
+    def update_job(self, job: Job, **kwargs) -> Optional[Job]: ...
 
     def run_job(self, job: Job) -> Optional[Job]: ...
 
@@ -3804,7 +3804,7 @@ class PrinterManager(Node):
 
     def start_print_job(self, request: PrintRequest, user: 'User') -> 'JobStatusResponse': ...
 
-    def exec_print(self, request: PrintRequest, user: 'User'): ...
+    def exec_print(self, request: PrintRequest, out_path: str): ...
 ################################################################################
 
 
@@ -4099,6 +4099,8 @@ class Template(Node):
 
 class TemplateManager(Node):
     """Template manager."""
+
+    def find_templates(self, subjects: list[str], where: list[Node], user: 'User' = None, mime: str = None) -> list['Template']: ...
 
     def find_template(self, subject: str, where: list[Node], user: 'User' = None, mime: str = None) -> Optional['Template']: ...
 
