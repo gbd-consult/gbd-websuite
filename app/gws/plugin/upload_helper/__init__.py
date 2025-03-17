@@ -11,18 +11,19 @@ In your action, declare an endpoint with ``p: ChunkRequest` as a parameter. This
         return helper.handle_chunk_request(req, p)
         ...
 
-The client sends chunks to this endpoint, one by one. Each chunk contains the file name and total size. The first chunk has an empty ``uploadUid``, indicating a new upload. Subsequent chunks must provide a valid ``uploadUid``. The handler responds with an ``uploadUid`` and a flag indicating whether the upload is complete. Each chunk must have a serial number, starting from 0. Chunks can come in any order.
+The client sends chunks to this endpoint, one by one. Each chunk contains the file name and total size. The first chunk has an empty ``uploadUid``, indicating a new upload. Subsequent chunks must provide a valid ``uploadUid``. The handler responds with an ``uploadUid``. Each chunk must have a serial number, starting from 0. Chunks can come in any order.
 
 Once the client decides that the upload is complete, it proceeds with invoking some other endpoint of your action, mentioning the ``uploadUid`` returned by the first chunk. The endpoint should invoke ``get_upload`` to retrieve the final file. The file is stored in a temporary location and should be moved to a permanent location if necessary.
 
 
     @gws.ext.command.api('myProcessUploadedFile')
-    def do_upload(self, req, p: MyProcessRequest):
+    def do_process(self, req, p: MyProcessRequest):
         helper = self.root.app.helper('upload')
-        upload = helper.get_upload(p.uploadUid)
-        if not upload.path:
-            raise Error('upload not ready')
-        ...process `upload.path`
+        try:
+            upload = helper.get_upload(p.uploadUid)
+        except uh.Error:
+            ...upload not ready yet...
+        ...process(upload.path)
 
 
 
@@ -47,7 +48,6 @@ class ChunkRequest(gws.Request):
 
 class ChunkResponse(gws.Response):
     uploadUid: str
-    isComplete: bool
 
 
 class Upload(gws.Data):
@@ -57,8 +57,8 @@ class Upload(gws.Data):
     path: str
 
 
-class Status(gws.Data):
-    uploadUid: str
+class _Params(gws.Data):
+    uid: str
     fileName: str
     totalSize: int
     chunkCount: int
@@ -71,94 +71,92 @@ class Error(gws.Error):
 class Object(gws.Node):
     def handle_chunk_request(self, req: gws.WebRequester, p: ChunkRequest) -> ChunkResponse:
         try:
-            st = self._save_chunk(p)
-            return ChunkResponse(uploadUid=st.uploadUid, isComplete=self._is_complete(st))
+            ps = self._save_chunk(p)
+            return ChunkResponse(uploadUid=ps.uid)
         except Error as exc:
             gws.log.exception()
             raise gws.BadRequestError('upload_error') from exc
 
-    def _save_chunk(self, p: ChunkRequest) -> Status:
-        dd = self._base_dir()
-
-        if not p.uploadUid:
-            p.uploadUid = gws.u.random_string(64)
-            gws.lib.jsonx.to_path(f'{dd}/{p.uploadUid}.json', Status(
-                uploadUid=p.uploadUid,
-                fileName=p.fileName,
-                totalSize=p.totalSize,
-                chunkCount=p.chunkCount,
-            ))
-
-        # @TODO check if fixed params haven't been changed in subsequent chunks
-
-        st = self._get_status(p.uploadUid)
-        if p.chunkNumber < 0 or p.chunkNumber >= st.chunkCount:
-            raise Error(f'upload: {p.uploadUid!r} invalid chunk number')
-
-        with gws.u.server_lock(f'upload_{st.uploadUid}'):
-            gws.u.write_file_b(f'{dd}/{st.uploadUid}.{p.chunkNumber}', p.content)
-
-        return st
-
     def get_upload(self, uid: str) -> Upload:
-        dd = self._base_dir()
-        st = self._get_status(uid)
-        out_path = f'{dd}/{uid}.out'
+        ps = self._get_params(uid)
+        dd = self._base_dir(ps.uid)
+        out_path = f'{dd}/out'
         if not gws.u.is_file(out_path):
-            self._finalize(st, out_path)
-        return Upload(uploadUid=st.uploadUid, path=out_path, fileName=st.fileName)
+            with gws.u.server_lock(f'upload_{ps.uid}'):
+                self._finalize(ps, out_path)
+        return Upload(uploadUid=ps.uid, path=out_path, fileName=ps.fileName)
 
     ##
 
-    def _is_complete(self, st: Status):
-        dd = self._base_dir()
-        chunks = [f'{dd}/{st.uploadUid}.{n}' for n in range(0, st.chunkCount)]
-        return all(gws.u.is_file(c) for c in chunks)
+    def _save_chunk(self, p: ChunkRequest) -> _Params:
+        ps = self._get_params(p.uploadUid) if p.uploadUid else self._create_upload(p)
 
-    def _finalize(self, st: Status, out_path):
-        dd = self._base_dir()
+        if p.chunkNumber < 0 or p.chunkNumber >= ps.chunkCount:
+            raise Error(f'upload: {ps.uid!r} invalid chunk number')
 
-        chunks = [f'{dd}/{st.uploadUid}.{n}' for n in range(0, st.chunkCount)]
-        if not all(gws.u.is_file(c) for c in chunks):
-            raise Error(f'upload: {st.uploadUid!r} incomplete')
+        dd = self._base_dir(ps.uid)
 
-        with gws.u.server_lock(f'upload_{st.uploadUid}'):
-            chunks = [f'{dd}/{st.uploadUid}.{n}' for n in range(0, st.chunkCount)]
-            if not all(gws.u.is_file(c) for c in chunks):
-                raise Error(f'upload: {st.uploadUid!r} incomplete')
+        with gws.u.server_lock(f'upload_{ps.uid}'):
+            gws.u.write_file_b(f'{dd}/{p.chunkNumber}', p.content)
 
-            tmp_path = out_path + '.tmp'
-            with open(tmp_path, 'wb') as fp_all:
-                for c in chunks:
-                    try:
-                        with open(c, 'rb') as fp:
-                            shutil.copyfileobj(fp, fp_all)
-                    except (OSError, IOError) as exc:
-                        raise Error(f'upload: {st.uploadUid!r}: IO error') from exc
+        return ps
 
-            if gws.lib.osx.file_size(tmp_path) != st.totalSize:
-                raise Error(f'upload: {st.uploadUid!r}: invalid file size')
+    def _get_chunks(self, ps: _Params):
+        dd = self._base_dir(ps.uid)
+        chunks = [f'{dd}/{n}' for n in range(0, ps.chunkCount)]
+        complete = all(gws.u.is_file(c) for c in chunks)
+        return chunks, complete
 
-            # @TODO check checksums as well?
+    def _finalize(self, ps: _Params, out_path):
+        chunks, complete = self._get_chunks(ps)
+        if not complete:
+            raise Error(f'upload: {ps.uid!r} incomplete')
 
-            try:
-                gws.lib.osx.rename(tmp_path, out_path)
-            except OSError:
-                raise Error(f'upload: {st.uploadUid!r}: move error')
-
+        tmp_path = out_path + '.tmp'
+        with open(tmp_path, 'wb') as fp_all:
             for c in chunks:
-                gws.lib.osx.unlink(c)
+                try:
+                    with open(c, 'rb') as fp:
+                        shutil.copyfileobj(fp, fp_all)
+                except (OSError, IOError) as exc:
+                    raise Error(f'upload: {ps.uid!r}: IO error') from exc
 
-    def _get_status(self, uid):
-        dd = self._base_dir()
+        if gws.lib.osx.file_size(tmp_path) != ps.totalSize:
+            raise Error(f'upload: {ps.uid!r}: invalid file size')
 
+        # @TODO check checksums as well?
+
+        try:
+            gws.lib.osx.rename(tmp_path, out_path)
+        except OSError:
+            raise Error(f'upload: {ps.uid!r}: move error')
+
+        for c in chunks:
+            gws.lib.osx.unlink(c)
+
+    def _create_upload(self, p: ChunkRequest) -> _Params:
+        uid = gws.u.random_string(64)
+        dd = self._base_dir(uid)
+
+        gws.lib.jsonx.to_path(f'{dd}/s.json', _Params(
+            uid=uid,
+            fileName=p.fileName,
+            totalSize=p.totalSize,
+            chunkCount=p.chunkCount,
+        ))
+
+        return self._get_params(uid)
+
+    def _get_params(self, uid):
         if not uid.isalnum():
             raise Error(f'upload: {uid!r} invalid')
 
+        dd = self._base_dir(uid)
+
         try:
-            return Status(gws.lib.jsonx.from_path(f'{dd}/{uid}.json'))
+            return _Params(gws.lib.jsonx.from_path(f'{dd}/s.json'))
         except gws.lib.jsonx.Error as exc:
             raise Error(f'upload: {uid!r} not found') from exc
 
-    def _base_dir(self):
-        return gws.u.ephemeral_dir('uploads')
+    def _base_dir(self, uid):
+        return gws.u.ephemeral_dir(f'upload_{uid}')
