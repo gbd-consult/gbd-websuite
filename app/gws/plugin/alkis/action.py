@@ -236,7 +236,7 @@ class FindFlurstueckResult(gws.Data):
 
 
 class FindAdresseRequest(gws.Request):
-    crs: Optional[gws.Crs]
+    crs: Optional[gws.CrsName]
 
     gemarkung: Optional[str]
     gemarkungCode: Optional[str]
