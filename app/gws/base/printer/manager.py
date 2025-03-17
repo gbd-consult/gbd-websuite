@@ -2,6 +2,7 @@
 
 import gws
 import gws.lib.mime
+import gws.lib.osx
 
 from . import worker
 
@@ -12,7 +13,7 @@ class Object(gws.PrinterManager):
         mgr = self.root.app.jobMgr
         job = mgr.create_job(
             user,
-            __file__ + '._worker',
+            worker.Object,
             payload=dict(
                 requestPath=gws.u.serialize_to_path(
                     request,
@@ -24,12 +25,7 @@ class Object(gws.PrinterManager):
         job = mgr.schedule_job(job)
         return mgr.job_status_response(job)
 
-    def exec_print(self, user, p):
-        w = worker.Object(self.root, user, None, p)
-        return w.run()
-
-
-def _worker(root: gws.Root, job: gws.Job):
-    request = gws.u.unserialize_from_path(job.payload.get('requestPath'))
-    w = worker.Object(root, job.user, job, request)
-    w.run()
+    def exec_print(self, request, out_path):
+        w = worker.Object(self.root, self.root.app.authMgr.systemUser, job=None, request=request)
+        w.work()
+        gws.lib.osx.copy(w.contentPath, out_path)

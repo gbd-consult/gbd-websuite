@@ -1,6 +1,7 @@
 """Job manager."""
 
 from typing import Optional
+import sys
 
 import gws
 import gws.lib.importer
@@ -48,19 +49,30 @@ class Object(gws.JobManager):
             uid=job_uid,
             userUid=user.uid,
             userStr=self.root.app.authMgr.serialize_user(user),
-            worker=worker,
+            worker=sys.modules.get(worker.__module__).__file__ + '.' + worker.__name__,
             state=gws.JobState.open,
             payload=payload,
             created=gws.u.stime(),
         ))
 
-        return self.get_job(job_uid)
+        return self.get_job_or_fail(job_uid)
 
     def get_job(self, job_uid: str, user=None, state=None):
+        job, msg = self._get_job(job_uid, user, state)
+        if not job:
+            gws.log.error(msg)
+        return job
+
+    def get_job_or_fail(self, job_uid: str, user=None, state=None):
+        job, msg = self._get_job(job_uid, user, state)
+        if not job:
+            raise gws.Error(msg)
+        return job
+
+    def _get_job(self, job_uid: str, user=None, state=None):
         rs = self._db().select(f'SELECT * FROM {self.TABLE} WHERE uid=:uid', uid=job_uid)
         if not rs:
-            gws.log.error(f'JOB {job_uid}: not found')
-            return
+            return None, f'JOB {job_uid}: not found'
 
         rec = rs[0]
 
@@ -71,13 +83,12 @@ class Object(gws.JobManager):
             job_user = self.root.app.authMgr.guestUser
 
         if user and job_user.uid != user.uid:
-            gws.log.error(f'JOB {job_uid}: wrong user {job_user.uid=} {user.uid=}')
-            return
+            return None, f'JOB {job_uid}: wrong user {job_user.uid=} {user.uid=}'
 
         if state and rec.get('state') != state:
-            gws.log.error(f'JOB {job_uid}: wrong state {rec.get("state")=} {state=}')
+            return None, f'JOB {job_uid}: wrong state {rec.get("state")=} {state=}'
 
-        return gws.Job(
+        job = gws.Job(
             uid=rec['uid'],
             user=job_user,
             worker=rec['worker'],
@@ -88,25 +99,14 @@ class Object(gws.JobManager):
             stepName=rec['stepName'] or '',
             payload=gws.lib.jsonx.from_string(rec['payload'] or '{}'),
         )
+        return job, ''
 
-    def save_job(self, job, **kwargs):
+    def update_job(self, job, **kwargs):
         job = self.get_job(job.uid)
         if not job:
             return
-
-        d = dict(
-            state=job.state,
-            error=job.error,
-            numSteps=job.numSteps,
-            step=job.step,
-            stepName=job.stepName,
-            payload=job.payload,
-        )
-        d.update(kwargs)
-
-        self._write(job.uid, d)
-
-        return self.get_job(job.uid)
+        self._write(job.uid, kwargs)
+        return self.get_job_or_fail(job.uid)
 
     def _write(self, job_uid, rec):
         rec['updated'] = gws.u.stime()
@@ -115,6 +115,7 @@ class Object(gws.JobManager):
         self._db().update(self.TABLE, rec, job_uid)
 
     def schedule_job(self, job: gws.Job):
+        job = self.get_job_or_fail(job.uid, state=gws.JobState.open)
         if gws.server.spool.is_active():
             gws.server.spool.add(job)
             return job
@@ -122,45 +123,40 @@ class Object(gws.JobManager):
 
     def run_job(self, job: gws.Job):
         job_uid = job.uid
-        tmp = gws.u.random_string(64)
 
+        # atomically mark an 'open' job as 'running'
+
+        tmp = gws.u.random_string(64)
         self._db().execute(
             f'UPDATE {self.TABLE} SET state=:tmp WHERE uid=:uid AND state=:state',
             uid=job_uid, tmp=tmp, state=gws.JobState.open
         )
-
-        job = self.get_job(job_uid)
-        if job.state != tmp:
-            raise gws.Error(f'JOB {job_uid}: invalid state={job.state!r}')
-
+        job = self.get_job_or_fail(job_uid, state=tmp)
         self._db().execute(
             f'UPDATE {self.TABLE} SET state=:s WHERE uid=:uid',
             uid=job.uid, s=gws.JobState.running
         )
+        job = self.get_job_or_fail(job_uid, state=gws.JobState.running)
 
-        job = self.get_job(job_uid)
+        # now it's ours, let's run it
 
         try:
             mod_path, _, fn_name = job.worker.rpartition('.')
             mod = gws.lib.importer.import_from_path(mod_path)
-            worker_fn = getattr(mod, fn_name)
-            worker_fn(self.root, job)
+            worker_cls = getattr(mod, fn_name)
+            worker_cls.run(self.root, job)
         except gws.JobTerminated as exc:
             gws.log.error(f'JOB {job_uid}: JobTerminated: {exc.args[0]!r}')
-            job.state = gws.JobState.error
-            self.save_job(job)
+            self.update_job(job, state=gws.JobState.error)
         except Exception as exc:
             gws.log.error(f'JOB {job_uid}: FAILED {exc=}')
             gws.log.exception()
-            job.state = gws.JobState.error
-            job.error = repr(exc)
-            self.save_job(job)
+            self.update_job(job, state=gws.JobState.error, error=repr(exc))
 
         return self.get_job(job_uid)
 
     def cancel_job(self, job: gws.Job) -> Optional[gws.Job]:
-        job.state = gws.JobState.cancel
-        return self.save_job(job)
+        return self.update_job(job, state=gws.JobState.cancel)
 
     def remove_job(self, job: gws.Job):
         self._db().delete(self.TABLE, job.uid)

@@ -40,7 +40,7 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('printerStatus')
     def printer_status(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.JobStatusResponse:
         res = self.root.app.jobMgr.handle_status_request(req, p)
-        if res.status == gws.JobState.complete:
+        if res.state == gws.JobState.complete:
             res.output = {
                 'url': gws.u.action_url_path('printerOutput', jobUid=res.jobUid) + '/gws.pdf'
             }
@@ -73,5 +73,5 @@ class Object(gws.base.action.Object):
             path=p.request,
         )
 
-        res_path = root.app.printerMgr.exec_print(request, root.app.authMgr.systemUser)
-        gws.u.write_file_b(p.output, gws.u.read_file_b(res_path))
+        root.app.printerMgr.exec_print(request, p.output)
+

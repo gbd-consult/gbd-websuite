@@ -27,4 +27,4 @@ class Object:
     def update_job(self, **kwargs):
         job = self.get_job()
         if job:
-            self.root.app.jobMgr.save_job(job, **kwargs)
+            self.root.app.jobMgr.update_job(job, **kwargs)

@@ -21,17 +21,25 @@ class Object(gws.base.job.worker.Object):
     printer: gws.Printer
     template: gws.Template
     tmpDir: str
+    contentPath: str
+
+    @classmethod
+    def run(cls, root: gws.Root, job: gws.Job):
+        request = gws.u.unserialize_from_path(job.payload.get('requestPath'))
+        w = cls(root, job.user, job, request)
+        w.work()
 
     def __init__(self, root: gws.Root, user: gws.User, job: Optional[gws.Job], request: gws.PrintRequest):
         super().__init__(root, user, job)
         self.request = request
         self.page_number = 0
+        self.contentPath = ''
 
-    def run(self):
+    def work(self):
         self.prepare()
         res = self.template.render(self.tri)
-        self.update_job(state=gws.JobState.complete, payload=dict(outputPath=res.contentPath))
-        return res.contentPath
+        self.contentPath = res.contentPath
+        self.update_job(state=gws.JobState.complete, payload=dict(outputPath=self.contentPath))
 
     def prepare(self):
         self.project = cast(gws.Project, self.user.require(self.request.projectUid, gws.ext.object.project))
