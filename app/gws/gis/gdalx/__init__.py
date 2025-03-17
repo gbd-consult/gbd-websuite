@@ -82,7 +82,7 @@ def open_vector(
         path: str,
         mode: str = 'r',
         driver: str = '',
-        encoding: str = 'utf8',
+        encoding: Optional[str] = 'utf8',
         default_crs: Optional[gws.Crs] = None,
         geometry_as_text: bool = False,
         **opts
@@ -570,7 +570,7 @@ def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str 
         b = gd_feature.GetFieldAsBinary(idx)
         if encoding:
             return b.decode(encoding)
-        return b
+        return bytes(b)
 
     if gtype in {ogr.OFTDate, ogr.OFTTime, ogr.OFTDateTime}:
         # python GetFieldAsDateTime appears to use float seconds, as in
