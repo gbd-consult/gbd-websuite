@@ -118,7 +118,7 @@ class Response(Data):
 
     error: Optional[ResponseError]
     """Response error."""
-    status: int
+    httpStatus: int
     """Response status or exit code."""
 
 
