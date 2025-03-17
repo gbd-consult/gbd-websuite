@@ -23,16 +23,10 @@ class _Creator:
         self.tmp_names = {}
         self.object_names = {}
 
-    def run(self):
-        for typ in self.gen.types.values():
-            if typ.extName.startswith(base.EXT_COMMAND_API_PREFIX):
-                self.commands[typ.extName] = base.Data(
-                    cmdName=typ.extName.replace(base.EXT_COMMAND_API_PREFIX, ''),
-                    doc=typ.doc,
-                    arg=self.make(typ.tArgs[-1]),
-                    ret=self.make(typ.tReturn)
-                )
 
+    def run(self):
+        self.make_client_classes()
+        self.make_client_commands()
         return self.write()
 
     _builtins_map = {
@@ -44,6 +38,26 @@ class _Creator:
         'str': 'string',
         'dict': '_dict',
     }
+
+    def make_client_classes(self):
+        que = ['gws.Request', 'gws.Response', 'gws.Props']
+        while que:
+            uid = que.pop(0)
+            self.make(uid)
+            for typ in self.gen.types.values():
+                if typ.c == base.C.CLASS and uid in typ.tSupers:
+                    que.append(typ.uid)
+
+    def make_client_commands(self):
+        for typ in self.gen.types.values():
+            if typ.extName.startswith(base.EXT_COMMAND_API_PREFIX):
+                self.commands[typ.extName] = base.Data(
+                    cmdName=typ.extName.replace(base.EXT_COMMAND_API_PREFIX, ''),
+                    doc=typ.doc,
+                    arg=self.make(typ.tArgs[-1]),
+                    ret=self.make(typ.tReturn)
+                )
+
 
     def make(self, uid):
         if uid in self._builtins_map:
@@ -198,7 +212,7 @@ class _Creator:
 
         stub_tpl = """
             export abstract class BaseServer implements Api {
-                abstract invoke(cmd, r, options): Promise<any>;
+                abstract invoke(cmd: string, r: object, options?: any): Promise<any>;
                 $commands
             }
         """

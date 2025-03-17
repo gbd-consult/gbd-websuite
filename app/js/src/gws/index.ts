@@ -25,6 +25,34 @@ export namespace gws {
         localeUid?: string
     }
     
+    /// Response error.
+    export interface ResponseError extends gws.Data {
+        /// Error code.
+        code?: _int
+        /// Information about the error.
+        info?: string
+    }
+    
+    /// Command response.
+    export interface Response extends gws.Data {
+        /// Response error.
+        error?: gws.ResponseError
+        /// Response status or exit code.
+        httpStatus: _int
+    }
+    
+    /// Object properties.
+    export interface Props extends gws.Data {
+        /// Unique ID.
+        uid?: string
+    }
+    
+    ///
+    export interface JobRequest extends gws.Request {
+        ///
+        jobUid: string
+    }
+    
     /// Type of the print request.
     export enum PrintRequestType {
         map = "map",
@@ -56,12 +84,6 @@ export namespace gws {
         fieldName: string
         ///
         message: string
-    }
-    
-    /// Object properties.
-    export interface Props extends gws.Data {
-        /// Unique ID.
-        uid?: string
     }
     
     /// Feature Proprieties.
@@ -167,6 +189,38 @@ export namespace gws {
         outputSize?: gws.Size
     }
     
+    /// Shape properties.
+    export interface ShapeProps extends gws.Props {
+        ///
+        crs: string
+        ///
+        geometry: _dict
+    }
+    
+    /// Web response with literal content.
+    export interface ContentResponse extends gws.Response {
+        /// Serve the content as an attachment.
+        asAttachment: boolean
+        /// Name for the attachment.
+        attachmentName: string
+        /// Response content.
+        content: _bytes | string
+        /// Local path with the content.
+        contentPath: string
+        /// Response mime type.
+        mime: string
+        /// Additional headers.
+        headers: _dict
+    }
+    
+    /// Web redirect response.
+    export interface RedirectResponse extends gws.Response {
+        /// Redirect URL.
+        location: string
+        /// Additional headers.
+        headers: _dict
+    }
+    
     /// Background job state.
     export enum JobState {
         cancel = "cancel",
@@ -175,22 +229,6 @@ export namespace gws {
         init = "init",
         open = "open",
         running = "running",
-    }
-    
-    /// Response error.
-    export interface ResponseError extends gws.Data {
-        /// Error code.
-        code?: _int
-        /// Information about the error.
-        info?: string
-    }
-    
-    /// Command response.
-    export interface Response extends gws.Data {
-        /// Response error.
-        error?: gws.ResponseError
-        /// Response status or exit code.
-        status: _int
     }
     
     ///
@@ -205,12 +243,6 @@ export namespace gws {
         stepName: string
         ///
         output: _dict
-    }
-    
-    ///
-    export interface JobRequest extends gws.Request {
-        ///
-        jobUid: string
     }
     
     /// Client options for a model
@@ -364,97 +396,6 @@ export namespace gws {
         numberGroup: string
     }
     
-    /// Shape properties.
-    export interface ShapeProps extends gws.Props {
-        ///
-        crs: string
-        ///
-        geometry: _dict
-    }
-    
-    /// Axis orientation.
-    export enum Axis {
-        xy = "xy",
-        yx = "yx",
-    }
-    
-    /// Unit of measure.
-    export enum Uom {
-        ch = "ch",
-        cm = "cm",
-        deg = "deg",
-        dm = "dm",
-        fath = "fath",
-        ft = "ft",
-        grad = "grad",
-        inch = "in",
-        km = "km",
-        kmi = "kmi",
-        link = "link",
-        m = "m",
-        mi = "mi",
-        mm = "mm",
-        pt = "pt",
-        px = "px",
-        rad = "rad",
-        us_ch = "us-ch",
-        us_ft = "us-ft",
-        us_in = "us-in",
-        us_mi = "us-mi",
-        us_yd = "us-yd",
-        yd = "yd",
-    }
-    
-    /// Geo-referenced extent.
-    export interface Bounds extends gws.Data {
-        ///
-        crs: gws.Crs
-        ///
-        extent: gws.Extent
-    }
-    
-    /// Coordinate reference system.
-    export interface Crs {
-        /// CRS SRID.
-        srid: _int
-        /// Axis orientation.
-        axis: gws.Axis
-        /// CRS unit.
-        uom: gws.Uom
-        /// This CRS is geographic.
-        isGeographic: boolean
-        /// This CRS is projected.
-        isProjected: boolean
-        /// This CRS has a lat/lon axis.
-        isYX: boolean
-        /// Proj4 definition.
-        proj4text: string
-        /// WKT definition.
-        wkt: string
-        /// Name in the "epsg" format.
-        epsg: string
-        /// Name in the "urn" format.
-        urn: string
-        /// Name in the "urnx" format.
-        urnx: string
-        /// Name in the "url" format.
-        url: string
-        /// Name in the "uri" format.
-        uri: string
-        /// CRS name.
-        name: string
-        /// Base CRS code.
-        base: _int
-        /// Datum.
-        datum: string
-        /// CRS Extent in the WGS projection.
-        wgsExtent: gws.Extent
-        /// CRS own Extent.
-        extent: gws.Extent
-        /// CRS own Bounds.
-        bounds: gws.Bounds
-    }
-    
     /// State of a multifactor authorization transaction.
     export enum AuthMultiFactorState {
         failed = "failed",
@@ -469,6 +410,16 @@ export namespace gws.base.action {
     export interface Props extends gws.Props {
         ///
         type: string
+    }
+}
+
+export namespace gws.base.action.cli {
+    ///
+    export interface InvokeRequest extends gws.Request {
+        ///
+        cmd: string
+        ///
+        params: string
     }
 }
 
@@ -520,12 +471,6 @@ export namespace gws.base.edit.api {
     }
     
     ///
-    export interface GetModelsResponse extends gws.Response {
-        ///
-        models: Array<gws.ext.props.model>
-    }
-    
-    ///
     export interface GetFeaturesRequest extends gws.Request {
         ///
         modelUids: Array<string>
@@ -546,12 +491,6 @@ export namespace gws.base.edit.api {
     }
     
     ///
-    export interface GetFeaturesResponse extends gws.Response {
-        ///
-        features: Array<gws.FeatureProps>
-    }
-    
-    ///
     export interface GetRelatableFeaturesRequest extends gws.Request {
         ///
         modelUid: string
@@ -564,12 +503,6 @@ export namespace gws.base.edit.api {
     }
     
     ///
-    export interface GetRelatableFeaturesResponse extends gws.Response {
-        ///
-        features: Array<gws.FeatureProps>
-    }
-    
-    ///
     export interface GetFeatureRequest extends gws.Request {
         ///
         modelUid: string
@@ -578,21 +511,9 @@ export namespace gws.base.edit.api {
     }
     
     ///
-    export interface GetFeatureResponse extends gws.Response {
-        ///
-        feature: gws.FeatureProps
-    }
-    
-    ///
     export interface InitFeatureRequest extends gws.Request {
         ///
         modelUid: string
-        ///
-        feature: gws.FeatureProps
-    }
-    
-    ///
-    export interface InitFeatureResponse extends gws.Response {
         ///
         feature: gws.FeatureProps
     }
@@ -606,17 +527,47 @@ export namespace gws.base.edit.api {
     }
     
     ///
-    export interface WriteFeatureResponse extends gws.Response {
+    export interface DeleteFeatureRequest extends gws.Request {
         ///
-        validationErrors: Array<gws.ModelValidationError>
+        modelUid: string
         ///
         feature: gws.FeatureProps
     }
     
     ///
-    export interface DeleteFeatureRequest extends gws.Request {
+    export interface GetModelsResponse extends gws.Response {
         ///
-        modelUid: string
+        models: Array<gws.ext.props.model>
+    }
+    
+    ///
+    export interface GetFeaturesResponse extends gws.Response {
+        ///
+        features: Array<gws.FeatureProps>
+    }
+    
+    ///
+    export interface GetRelatableFeaturesResponse extends gws.Response {
+        ///
+        features: Array<gws.FeatureProps>
+    }
+    
+    ///
+    export interface GetFeatureResponse extends gws.Response {
+        ///
+        feature: gws.FeatureProps
+    }
+    
+    ///
+    export interface InitFeatureResponse extends gws.Response {
+        ///
+        feature: gws.FeatureProps
+    }
+    
+    ///
+    export interface WriteFeatureResponse extends gws.Response {
+        ///
+        validationErrors: Array<gws.ModelValidationError>
         ///
         feature: gws.FeatureProps
     }
@@ -679,6 +630,24 @@ export namespace gws.base.layer {
     }
 }
 
+export namespace gws.base.layer.group {
+    ///
+    export interface Props extends gws.base.layer.Props {
+        ///
+        layers: Array<gws.ext.props.layer>
+        /// object type
+        type: "group"
+    }
+}
+
+export namespace gws.base.legend {
+    ///
+    export interface Props extends gws.Props {
+        ///
+        type: string
+    }
+}
+
 export namespace gws.base.map {
     ///
     export interface Props extends gws.Data {
@@ -709,12 +678,6 @@ export namespace gws.base.map {
 
 export namespace gws.base.map.action {
     ///
-    export interface Props extends gws.base.action.Props {
-        /// object type
-        type: "map"
-    }
-    
-    ///
     export interface GetBoxRequest extends gws.Request {
         ///
         bbox: gws.Extent
@@ -730,14 +693,6 @@ export namespace gws.base.map.action {
         dpi?: _int
         ///
         layers?: Array<string>
-    }
-    
-    ///
-    export interface ImageResponse extends gws.Response {
-        ///
-        content: _bytes
-        ///
-        mime: string
     }
     
     ///
@@ -786,6 +741,20 @@ export namespace gws.base.map.action {
         limit?: _int
         ///
         views?: Array<string>
+    }
+    
+    ///
+    export interface Props extends gws.base.action.Props {
+        /// object type
+        type: "map"
+    }
+    
+    ///
+    export interface ImageResponse extends gws.Response {
+        ///
+        content: _bytes
+        ///
+        mime: string
     }
     
     ///
@@ -890,6 +859,20 @@ export namespace gws.base.model.widget {
         type: string
         ///
         readOnly: boolean
+    }
+}
+
+export namespace gws.base.ows.server.action {
+    ///
+    export interface GetServiceRequest extends gws.Request {
+        ///
+        serviceUid: string
+    }
+    
+    ///
+    export interface GetSchemaRequest extends gws.Request {
+        ///
+        namespace: string
     }
 }
 
@@ -1013,26 +996,6 @@ export namespace gws.base.shape {
 
 export namespace gws.base.storage {
     ///
-    export interface State extends gws.Data {
-        ///
-        names: Array<string>
-        ///
-        canRead: boolean
-        ///
-        canWrite: boolean
-        ///
-        canCreate: boolean
-        ///
-        canDelete: boolean
-    }
-    
-    ///
-    export interface Props extends gws.Props {
-        ///
-        state: gws.base.storage.State
-    }
-    
-    ///
     export enum Verb {
         delete = "delete",
         list = "list",
@@ -1051,9 +1014,29 @@ export namespace gws.base.storage {
     }
     
     ///
+    export interface State extends gws.Data {
+        ///
+        names: Array<string>
+        ///
+        canRead: boolean
+        ///
+        canWrite: boolean
+        ///
+        canCreate: boolean
+        ///
+        canDelete: boolean
+    }
+    
+    ///
     export interface Response extends gws.Response {
         ///
         data?: _dict
+        ///
+        state: gws.base.storage.State
+    }
+    
+    ///
+    export interface Props extends gws.Props {
         ///
         state: gws.base.storage.State
     }
@@ -1087,6 +1070,18 @@ export namespace gws.base.web.action {
     }
     
     ///
+    export interface FileRequest extends gws.Request {
+        ///
+        preview?: boolean
+        ///
+        modelUid: string
+        ///
+        fieldName: string
+        ///
+        featureUid: string
+    }
+    
+    ///
     export interface Props extends gws.base.action.Props {
         /// object type
         type: "web"
@@ -1111,6 +1106,9 @@ export namespace gws.ext.props {
     
     ///
     export type project = gws.base.project.Props;
+    
+    ///
+    export type layer = gws.base.layer.group.Props;
 }
 
 export namespace gws.lib.metadata {
@@ -1133,21 +1131,19 @@ export namespace gws.lib.metadata {
     }
 }
 
+export namespace gws.lib.style {
+    ///
+    export interface Props extends gws.Props {
+        /// CSS selector
+        cssSelector?: string
+        /// Style values
+        values?: _dict
+    }
+}
+
 export namespace gws.plugin.account.account_action {
     ///
-    export interface Props extends gws.base.action.Props {
-        /// object type
-        type: "account"
-    }
-    
-    ///
     export interface OnboardingStartRequest extends gws.Request {
-        ///
-        tc: string
-    }
-    
-    ///
-    export interface OnboardingStartResponse extends gws.Response {
         ///
         tc: string
     }
@@ -1162,6 +1158,26 @@ export namespace gws.plugin.account.account_action {
         password1: string
         ///
         password2: string
+    }
+    
+    ///
+    export interface OnboardingSaveMfaRequest extends gws.Request {
+        ///
+        tc: string
+        ///
+        mfaIndex?: _int
+    }
+    
+    ///
+    export interface Props extends gws.base.action.Props {
+        /// object type
+        type: "account"
+    }
+    
+    ///
+    export interface OnboardingStartResponse extends gws.Response {
+        ///
+        tc: string
     }
     
     ///
@@ -1189,14 +1205,6 @@ export namespace gws.plugin.account.account_action {
     }
     
     ///
-    export interface OnboardingSaveMfaRequest extends gws.Request {
-        ///
-        tc: string
-        ///
-        mfaIndex?: _int
-    }
-    
-    ///
     export interface OnboardingSaveMfaResponse extends gws.Response {
         ///
         complete: boolean
@@ -1207,15 +1215,15 @@ export namespace gws.plugin.account.account_action {
 
 export namespace gws.plugin.account.admin_action {
     ///
-    export interface Props extends gws.base.action.Props {
-        /// object type
-        type: "accountadmin"
-    }
-    
-    ///
     export interface ResetRequest extends gws.Request {
         ///
         featureUid: string
+    }
+    
+    ///
+    export interface Props extends gws.base.action.Props {
+        /// object type
+        type: "accountadmin"
     }
     
     ///
@@ -1226,6 +1234,135 @@ export namespace gws.plugin.account.admin_action {
 }
 
 export namespace gws.plugin.alkis.action {
+    ///
+    export interface GetToponymsRequest extends gws.Request {
+        
+    }
+    
+    ///
+    export interface FindFlurstueckRequest extends gws.Request {
+        ///
+        flurnummer?: string
+        ///
+        flurstuecksfolge?: string
+        ///
+        zaehler?: string
+        ///
+        nenner?: string
+        ///
+        fsnummer?: string
+        ///
+        flaecheBis?: _float
+        ///
+        flaecheVon?: _float
+        ///
+        gemarkung?: string
+        ///
+        gemarkungCode?: string
+        ///
+        gemeinde?: string
+        ///
+        gemeindeCode?: string
+        ///
+        kreis?: string
+        ///
+        kreisCode?: string
+        ///
+        land?: string
+        ///
+        landCode?: string
+        ///
+        regierungsbezirk?: string
+        ///
+        regierungsbezirkCode?: string
+        ///
+        strasse?: string
+        ///
+        hausnummer?: string
+        ///
+        bblatt?: string
+        ///
+        personName?: string
+        ///
+        personVorname?: string
+        ///
+        combinedFlurstueckCode?: string
+        ///
+        shapes?: Array<gws.base.shape.Props>
+        ///
+        uids?: Array<string>
+        ///
+        crs?: gws.CrsName
+        ///
+        eigentuemerControlInput?: string
+        ///
+        limit?: _int
+        ///
+        wantEigentuemer?: boolean
+        ///
+        wantHistorySearch?: boolean
+        ///
+        wantHistoryDisplay?: boolean
+        ///
+        displayThemes?: Array<gws.plugin.alkis.data.types.DisplayTheme>
+    }
+    
+    ///
+    export interface FindAdresseRequest extends gws.Request {
+        ///
+        crs?: gws.CrsName
+        ///
+        gemarkung?: string
+        ///
+        gemarkungCode?: string
+        ///
+        gemeinde?: string
+        ///
+        gemeindeCode?: string
+        ///
+        kreis?: string
+        ///
+        kreisCode?: string
+        ///
+        land?: string
+        ///
+        landCode?: string
+        ///
+        regierungsbezirk?: string
+        ///
+        regierungsbezirkCode?: string
+        ///
+        strasse?: string
+        ///
+        hausnummer?: string
+        ///
+        bisHausnummer?: string
+        ///
+        hausnummerNotNull?: boolean
+        ///
+        wantHistorySearch?: boolean
+        ///
+        combinedAdresseCode?: string
+    }
+    
+    ///
+    export interface PrintFlurstueckRequest extends gws.Request {
+        ///
+        findRequest: gws.plugin.alkis.action.FindFlurstueckRequest
+        ///
+        printRequest: gws.PrintRequest
+        ///
+        featureStyle: gws.StyleProps
+    }
+    
+    ///
+    export interface ExportFlurstueckRequest extends gws.Request {
+        ///
+        findRequest: gws.plugin.alkis.action.FindFlurstueckRequest
+        ///
+        groupIndexes: Array<_int>
+    }
+    
     ///
     export interface ExportGroupProps extends gws.Props {
         ///
@@ -1304,11 +1441,6 @@ export namespace gws.plugin.alkis.action {
     }
     
     ///
-    export interface GetToponymsRequest extends gws.Request {
-        
-    }
-    
-    ///
     export interface GetToponymsResponse extends gws.Response {
         ///
         gemeinde: Array<Array<string>>
@@ -1316,120 +1448,6 @@ export namespace gws.plugin.alkis.action {
         gemarkung: Array<Array<string>>
         ///
         strasse: Array<Array<string>>
-    }
-    
-    ///
-    export interface FindAdresseRequest extends gws.Request {
-        ///
-        crs?: gws.Crs
-        ///
-        gemarkung?: string
-        ///
-        gemarkungCode?: string
-        ///
-        gemeinde?: string
-        ///
-        gemeindeCode?: string
-        ///
-        kreis?: string
-        ///
-        kreisCode?: string
-        ///
-        land?: string
-        ///
-        landCode?: string
-        ///
-        regierungsbezirk?: string
-        ///
-        regierungsbezirkCode?: string
-        ///
-        strasse?: string
-        ///
-        hausnummer?: string
-        ///
-        bisHausnummer?: string
-        ///
-        hausnummerNotNull?: boolean
-        ///
-        wantHistorySearch?: boolean
-        ///
-        combinedAdresseCode?: string
-    }
-    
-    ///
-    export interface FindAdresseResponse extends gws.Response {
-        ///
-        features: Array<gws.FeatureProps>
-        ///
-        total: _int
-    }
-    
-    ///
-    export interface FindFlurstueckRequest extends gws.Request {
-        ///
-        flurnummer?: string
-        ///
-        flurstuecksfolge?: string
-        ///
-        zaehler?: string
-        ///
-        nenner?: string
-        ///
-        fsnummer?: string
-        ///
-        flaecheBis?: _float
-        ///
-        flaecheVon?: _float
-        ///
-        gemarkung?: string
-        ///
-        gemarkungCode?: string
-        ///
-        gemeinde?: string
-        ///
-        gemeindeCode?: string
-        ///
-        kreis?: string
-        ///
-        kreisCode?: string
-        ///
-        land?: string
-        ///
-        landCode?: string
-        ///
-        regierungsbezirk?: string
-        ///
-        regierungsbezirkCode?: string
-        ///
-        strasse?: string
-        ///
-        hausnummer?: string
-        ///
-        bblatt?: string
-        ///
-        personName?: string
-        ///
-        personVorname?: string
-        ///
-        combinedFlurstueckCode?: string
-        ///
-        shapes?: Array<gws.base.shape.Props>
-        ///
-        uids?: Array<string>
-        ///
-        crs?: gws.CrsName
-        ///
-        eigentuemerControlInput?: string
-        ///
-        limit?: _int
-        ///
-        wantEigentuemer?: boolean
-        ///
-        wantHistorySearch?: boolean
-        ///
-        wantHistoryDisplay?: boolean
-        ///
-        displayThemes?: Array<gws.plugin.alkis.data.types.DisplayTheme>
     }
     
     ///
@@ -1441,11 +1459,11 @@ export namespace gws.plugin.alkis.action {
     }
     
     ///
-    export interface ExportFlurstueckRequest extends gws.Request {
+    export interface FindAdresseResponse extends gws.Response {
         ///
-        findRequest: gws.plugin.alkis.action.FindFlurstueckRequest
+        features: Array<gws.FeatureProps>
         ///
-        groupIndexes: Array<_int>
+        total: _int
     }
     
     ///
@@ -1454,16 +1472,6 @@ export namespace gws.plugin.alkis.action {
         content: string
         ///
         mime: string
-    }
-    
-    ///
-    export interface PrintFlurstueckRequest extends gws.Request {
-        ///
-        findRequest: gws.plugin.alkis.action.FindFlurstueckRequest
-        ///
-        printRequest: gws.PrintRequest
-        ///
-        featureStyle: gws.StyleProps
     }
 }
 
@@ -1494,17 +1502,28 @@ export namespace gws.plugin.annotate_tool.action {
 
 export namespace gws.plugin.auth_method.web {
     ///
+    export interface LoginRequest extends gws.Request {
+        ///
+        username: string
+        ///
+        password: string
+    }
+    
+    ///
+    export interface MfaVerifyRequest extends gws.Request {
+        ///
+        payload: _dict
+    }
+    
+    ///
     export interface UserResponse extends gws.Response {
         ///
         user?: gws.base.auth.user.Props
     }
     
     ///
-    export interface LoginRequest extends gws.Request {
-        ///
-        username: string
-        ///
-        password: string
+    export interface LogoutResponse extends gws.Response {
+        
     }
     
     ///
@@ -1517,17 +1536,6 @@ export namespace gws.plugin.auth_method.web {
         mfaMessage?: string
         ///
         mfaCanRestart?: boolean
-    }
-    
-    ///
-    export interface MfaVerifyRequest extends gws.Request {
-        ///
-        payload: _dict
-    }
-    
-    ///
-    export interface LogoutResponse extends gws.Response {
-        
     }
 }
 
@@ -1550,6 +1558,22 @@ export namespace gws.plugin.dimension {
         pixelTolerance: _int
         ///
         storage: gws.base.storage.Props
+    }
+}
+
+export namespace gws.plugin.gekos.action {
+    ///
+    export interface GetXyRequest extends gws.Request {
+        ///
+        fs?: string
+        ///
+        ad?: string
+    }
+    
+    ///
+    export interface GetFsResponse extends gws.Response {
+        ///
+        feature: gws.FeatureProps
     }
 }
 
@@ -1853,12 +1877,6 @@ export namespace gws.plugin.postgres.model {
 
 export namespace gws.plugin.qfield.action {
     ///
-    export interface Props extends gws.base.action.Props {
-        /// object type
-        type: "qfield"
-    }
-    
-    ///
     export interface DownloadRequest extends gws.Request {
         ///
         packageUid?: string
@@ -1869,17 +1887,23 @@ export namespace gws.plugin.qfield.action {
     }
     
     ///
-    export interface DownloadResponse extends gws.Response {
-        ///
-        data: _bytes
-    }
-    
-    ///
     export interface UploadRequest extends gws.Request {
         ///
         packageUid?: string
         ///
         data?: _bytes
+    }
+    
+    ///
+    export interface Props extends gws.base.action.Props {
+        /// object type
+        type: "qfield"
+    }
+    
+    ///
+    export interface DownloadResponse extends gws.Response {
+        ///
+        data: _bytes
     }
     
     ///
@@ -1897,6 +1921,62 @@ export namespace gws.plugin.select_tool.action {
         storage: gws.base.storage.Props
         ///
         tolerance: string
+    }
+}
+
+export namespace gws.plugin.template.html {
+    ///
+    export interface Props extends gws.base.template.Props {
+        /// object type
+        type?: "html"
+    }
+}
+
+export namespace gws.plugin.template.map {
+    ///
+    export interface Props extends gws.base.template.Props {
+        /// object type
+        type?: "map"
+    }
+}
+
+export namespace gws.plugin.template.py {
+    ///
+    export interface Props extends gws.base.template.Props {
+        /// object type
+        type?: "py"
+    }
+}
+
+export namespace gws.plugin.template.text {
+    ///
+    export interface Props extends gws.base.template.Props {
+        /// object type
+        type?: "text"
+    }
+}
+
+export namespace gws.plugin.upload_helper {
+    ///
+    export interface ChunkRequest extends gws.Request {
+        ///
+        uploadUid?: string
+        ///
+        fileName: string
+        ///
+        totalSize: _int
+        ///
+        chunkNumber: _int
+        ///
+        chunkCount: _int
+        ///
+        content: _bytes
+    }
+    
+    ///
+    export interface ChunkResponse extends gws.Response {
+        ///
+        uploadUid: string
     }
 }
 
@@ -2039,7 +2119,7 @@ export interface Api {
 }
 
 export abstract class BaseServer implements Api {
-    abstract invoke(cmd, r, options): Promise<any>;
+    abstract invoke(cmd: string, r: object, options?: any): Promise<any>;
     accountOnboardingSaveMfa(r: gws.plugin.account.account_action.OnboardingSaveMfaRequest, options?: any): Promise<gws.plugin.account.account_action.OnboardingSaveMfaResponse> {
         return this.invoke("accountOnboardingSaveMfa", r, options);
     }
