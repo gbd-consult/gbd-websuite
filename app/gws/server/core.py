@@ -8,8 +8,6 @@ import gws
 class SpoolConfig(gws.Config):
     """Spool server module"""
 
-    disabled: bool = False
-    """The module is disabled. (added in 8.2)"""
     enabled: Optional[bool]
     """The module is enabled. (deprecated in 8.2)"""
     workers: int = 4
@@ -23,8 +21,6 @@ class SpoolConfig(gws.Config):
 class WebConfig(gws.Config):
     """Web server module"""
 
-    disabled: bool = False
-    """The module is disabled. (added in 8.2)"""
     enabled: Optional[bool]
     """The module is enabled. (deprecated in 8.2)"""
     workers: int = 4
@@ -38,8 +34,6 @@ class WebConfig(gws.Config):
 class MapproxyConfig(gws.Config):
     """Mapproxy server module"""
 
-    disabled: bool = False
-    """The module is disabled. (added in 8.2)"""
     enabled: Optional[bool]
     """The module is enabled. (deprecated in 8.2)"""
     workers: int = 4
@@ -53,8 +47,6 @@ class MapproxyConfig(gws.Config):
 
 
 class MonitorConfig(gws.Config):
-    disabled: bool = False
-    """The module is disabled. (added in 8.2)"""
     enabled: Optional[bool]
     """The module is enabled. (deprecated in 8.2)"""
     frequency: gws.Duration = '30'
@@ -99,22 +91,25 @@ class Config(gws.Config):
     web: Optional[WebConfig]
     """Web server module."""
 
+    withWeb: bool = True
+    """Enable the web server. (added in 8.2)"""
+    withSpool: bool = True
+    """Enable the spool server. (added in 8.2)"""
+    withMapproxy: bool = True
+    """Enable the mapproxy server. (added in 8.2)"""
+    withMonitor: bool = True
+    """Enable the monitor. (added in 8.2)"""
+
     templates: Optional[list[gws.ext.config.template]]
     """Configuration templates."""
 
     autoRun: str = ''
-    """Shell command to run before server start."""
+    """Shell command to run before the server start. (deprecated in 8.2)"""
+    preConfigure: str = ''
+    """Shell or python script to run before configuring the server. (added in 8.2)"""
+    postConfigure: str = ''
+    """Shell or python script to run run after the service has been configured. (added in 8.2)"""
     timeout: gws.Duration = '60'
     """Server timeout. (deprecated in 8.1)"""
     timeZone: str = 'Europe/Berlin'
     """Timezone for this server."""
-
-
-def is_disabled(cfg):
-    # old keys first
-    if gws.u.get(cfg, 'enabled') is True:
-        return False
-    if gws.u.get(cfg, 'enabled') is False:
-        return True
-    # new keys
-    return gws.u.get(cfg, 'disabled')

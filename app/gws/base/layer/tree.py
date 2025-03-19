@@ -64,15 +64,19 @@ def layer_configs_from_args(tca: TreeConfigArgs) -> list[gws.Config]:
     configs = gws.u.compact(_config(tca, sl, 0) for sl in roots)
 
     # configs need to be reparsed so that defaults can be injected
-    return [
-        gws.config.parser.parse_value(
-            tca.root.specs,
-            cfg,
-            'gws.ext.config.layer',
+    layer_configs = []
+
+    for c in configs:
+        pr = gws.config.parser.parse_config(
+            c,
+            as_type='gws.ext.config.layer',
+            specs=tca.root.specs,
             read_options={gws.SpecReadOption.acceptExtraProps, gws.SpecReadOption.allowMissing}
         )
-        for cfg in configs
-    ]
+        if pr.config:
+            layer_configs.append(pr.config)
+
+    return layer_configs
 
 
 def _config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):

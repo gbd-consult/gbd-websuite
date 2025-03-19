@@ -34,7 +34,8 @@ def init():
 
     try:
         gws.log.set_level(root.app.cfg('server.log.level'))
-        root.app.monitor.start()
+        if root.app.cfg('server.withMonitor'):
+            root.app.monitor.start()
     except:
         gws.log.exception('SPOOL INIT ERROR')
         gws.u.exit(1)

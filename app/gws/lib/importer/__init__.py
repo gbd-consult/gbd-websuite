@@ -12,6 +12,21 @@ class Error(gws.Error):
     pass
 
 
+def load_file(path: str) -> dict:
+    """Load a python file and return its globals."""
+
+    return load_string(gws.u.read_file(path), path)
+
+
+def load_string(text: str, path='') -> dict:
+    """Load a string as python code and return its globals."""
+
+    globs = {}
+    code = compile(text, path, 'exec')
+    exec(code, globs)
+    return globs
+
+
 def import_from_path(path: str, base_dir: str = gws.c.APP_DIR):
     """Imports a module from a given file path.
 

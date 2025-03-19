@@ -82,17 +82,11 @@ def configure_and_store(manifest_path=None, config_path=None, is_starting=False)
 
 
 def configure(manifest_path=None, config_path=None, is_starting=False):
-    def _before_init(cfg):
-        autorun = gws.u.get(cfg, 'server.autoRun')
-        if autorun:
-            gws.log.info(f'AUTORUN: {autorun!r}')
-            gws.lib.osx.run(autorun, echo=True)
-
     root = gws.config.configure(
         manifest_path=manifest_path,
         config_path=config_path,
-        before_init=_before_init if is_starting else None,
         fallback_config=_FALLBACK_CONFIG,
+        is_starting=is_starting,
     )
     if not root:
         raise gws.ConfigurationError('configuration failed')

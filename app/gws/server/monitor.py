@@ -46,8 +46,6 @@ class Object(gws.ServerMonitor):
         os.open(_RECONFIGURE_FILE if with_reconfigure else _RELOAD_FILE, os.O_CREAT | os.O_WRONLY)
 
     def start(self):
-        if self.cfg('disabled'):
-            return
 
         self._check_unlink(_LOCK_FILE)
         self._check_unlink(_RELOAD_FILE)

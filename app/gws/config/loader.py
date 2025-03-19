@@ -5,6 +5,7 @@ import gws
 import gws.spec.runtime
 import gws.lib.jsonx
 import gws.lib.osx
+import gws.lib.importer
 
 from . import parser
 
@@ -26,49 +27,65 @@ _DEFAULT_MANIFEST_PATHS = [
 ]
 
 
-class Configurer:
+class Object:
+    manifestPath: str
+    configPath: str
+    fallbackConfig: Optional[dict]
+    withSpecCache: bool
+    isStarting: bool
+
+    manifest: Optional[gws.ApplicationManifest]
+    config: Optional[gws.Config]
+    specs: Optional[gws.spec.runtime.Object]
+    root: Optional[gws.Root]
+
+    errors: list
+
     def __init__(
             self,
             manifest_path=None,
             config_path=None,
             config=None,
-            before_init=None,
             fallback_config=None,
             with_spec_cache=True,
+            is_starting=False,
     ):
-        self.manifest_path = real_manifest_path(manifest_path)
-        if self.manifest_path:
-            gws.log.info(f'using manifest {self.manifest_path!r}...')
+        self.manifestPath = real_manifest_path(manifest_path)
+        if self.manifestPath:
+            gws.log.info(f'using manifest {self.manifestPath!r}...')
+        self.configPath = real_config_path(config_path)
+        self.fallbackConfig = fallback_config
+        self.withSpecCache = with_spec_cache
+        self.isStarting = is_starting
 
-        self.config_path = real_config_path(config_path)
         self.config = config
-        self.before_init = before_init
-        self.fallback_config = fallback_config
-        self.with_spec_cache = with_spec_cache
+        self.specs = None
+        self.manifest = None
+        self.root = None
+
+        self.allConfigPaths = set([self.configPath])
 
         self.errors = []
-        self.start_time = gws.u.stime()
-        self.start_mem = gws.lib.osx.process_rss_size()
-
-        self.specs = None
-        self.root_obj = None
+        self.tm1 = _time_and_memory()
 
     def configure(self):
-        self.specs = self._init_specs()
+        self.specs = self._create_specs()
         if not self.specs:
             self._print_report(False)
             return
 
-        self.config = self._init_config()
+        self.manifest = self.specs.manifest
+
+        self.config = self._create_config()
         if self.config:
-            self.root_obj = self._init_root()
+            self._init_root_with_hooks()
 
-        if not self.root_obj and self.specs.manifest.withFallbackConfig and self.fallback_config:
+        if not self.root and self.specs.manifest.withFallbackConfig and self.fallbackConfig:
             gws.log.warning(f'using fallback config')
-            self.config = self.fallback_config
-            self.root_obj = self._init_root()
+            self.config = self.fallbackConfig
+            self.root = self._create_root()
 
-        if not self.root_obj:
+        if not self.root:
             self._print_report(False)
             return
 
@@ -77,15 +94,17 @@ class Configurer:
             return
 
         self._print_report(True)
-        return self.root_obj
+
+        self.root.app.config.configPaths = list(self.allConfigPaths)
+        return self.root
 
     def parse(self):
-        self.specs = self._init_specs()
+        self.specs = self._create_specs()
         if not self.specs:
             self._print_report(False)
             return
 
-        self.config = self._init_config()
+        self.config = self._create_config()
         if not self.config:
             self._print_report(False)
             return
@@ -95,41 +114,93 @@ class Configurer:
 
     ##
 
-    def _init_specs(self):
+    def _create_specs(self):
         try:
             return gws.spec.runtime.create(
-                manifest_path=self.manifest_path,
-                read_cache=self.with_spec_cache,
-                write_cache=self.with_spec_cache
+                manifest_path=self.manifestPath,
+                read_cache=self.withSpecCache,
+                write_cache=self.withSpecCache
             )
         except Exception as exc:
             gws.log.exception()
             self._error(exc)
 
-    def _init_config(self):
+    def _create_config(self):
         if self.config:
             return self.config
 
-        if not self.config_path:
+        if not self.configPath:
             self._error(gws.ConfigurationError('no configuration file found'))
             return
 
-        gws.log.info(f'using config {self.config_path!r}...')
-        p = parser.ConfigParser(self.specs)
-        config = p.parse_main(self.config_path)
-        for err in p.errors:
+        gws.log.info(f'using config {self.configPath!r}...')
+        pr = parser.parse_app_config_path(self.configPath, self.specs)
+        for err in pr.errors:
             self._error(err)
+        self.allConfigPaths.update(pr.paths)
 
-        return config
+        return pr.config
 
-    def _init_root(self):
-        if self.before_init:
-            self.before_init(self.config)
+    def _create_root(self):
         root = initialize(self.specs, self.config)
         if root:
             for err in root.configErrors:
                 self._error(err)
         return root
+
+    ##
+
+    def _init_root_with_hooks(self):
+        try:
+            self._pre_configure()
+        except Exception as exc:
+            gws.log.exception()
+            self._error(f'preConfigure failed: {exc!r}')
+            return
+
+        self.root = self._create_root()
+
+        try:
+            self._post_configure()
+        except Exception as exc:
+            gws.log.exception()
+            self._error(f'postConfigure failed: {exc!r}')
+            return
+
+    def _pre_configure(self):
+        # 'server.autoRun' bash script - only when starting
+        if self.isStarting:
+            autorun = gws.u.get(self.config, 'server.autoRun')
+            if autorun:
+                gws.log.info(f'running autorun: {autorun!r}')
+                gws.lib.osx.run(autorun, echo=True)
+
+        self._run_hook('preConfigure')
+        parser.save_debug(self.config, self.configPath, '.preconf.json')
+
+    def _post_configure(self):
+        self._run_hook('postConfigure')
+
+    def _run_hook(self, name):
+        path = gws.u.get(self.config, f'server.{name}')
+        if not path:
+            return
+
+        gws.log.info(f'running hook {name}: {path!r}')
+        self.allConfigPaths.add(path)
+
+        if path.endswith('.py'):
+            fn = gws.lib.importer.load_file(path).get('main')
+            fn(self)
+            return
+
+        if path.endswith('.sh'):
+            gws.lib.osx.run(f'bash {path}', echo=True)
+            return
+
+        raise gws.ConfigurationError(f'invalid {name} hook: {path!r}')
+
+    ##
 
     def _error(self, exc):
         self.errors.append(getattr(exc, 'args', repr(exc)))
@@ -143,11 +214,7 @@ class Configurer:
                 self._log(err)
                 gws.log.error(f'{_ERROR_PREFIX}: {"-" * 60}')
 
-        info = '{:d} objects, time: {:d} s., memory: {:.2f} MB'.format(
-            self.root_obj.object_count() if self.root_obj else 0,
-            gws.u.stime() - self.start_time,
-            gws.lib.osx.process_rss_size() - self.start_mem,
-        )
+        info = _info_string(self.root, self.tm1)
 
         if not ok:
             gws.log.error(f'configuration FAILED, {err_cnt} errors, {info}')
@@ -172,19 +239,19 @@ def configure(
         manifest_path=None,
         config_path=None,
         config=None,
-        before_init=None,
         fallback_config=None,
         with_spec_cache=True,
+        is_starting=False,
 ) -> Optional[gws.Root]:
     """Configure the server, return the Root object."""
 
-    cc = Configurer(
+    cc = Object(
         manifest_path,
         config_path,
         config,
-        before_init,
         fallback_config,
-        with_spec_cache
+        with_spec_cache,
+        is_starting,
     )
     return cc.configure()
 
@@ -192,32 +259,32 @@ def configure(
 def parse(manifest_path=None, config_path=None) -> Optional[gws.Config]:
     """Parse input configuration and return a config object. """
 
-    cc = Configurer(manifest_path, config_path)
+    cc = Object(manifest_path, config_path)
     return cc.parse()
 
 
 def initialize(specs: gws.spec.runtime.Object, config: gws.Config) -> gws.Root:
-    root_obj = gws.create_root(specs)
-    root_obj.create_application(config)
-    root_obj.post_initialize()
-    return root_obj
+    root = gws.create_root(specs)
+    root.create_application(config)
+    root.post_initialize()
+    return root
 
 
-def activate(root_obj: gws.Root):
-    root_obj.activate()
-    return gws.u.set_app_global(_ROOT_NAME, root_obj)
+def activate(root: gws.Root):
+    root.activate()
+    return gws.u.set_app_global(_ROOT_NAME, root)
 
 
 def deactivate():
     return gws.u.delete_app_global(_ROOT_NAME)
 
 
-def store(root_obj: gws.Root, path=None) -> str:
+def store(root: gws.Root, path=None) -> str:
     path = path or _DEFAULT_STORE_PATH
     gws.log.debug(f'writing config to {path!r}')
     try:
         gws.lib.jsonx.to_path(f'{path}.syspath.json', sys.path)
-        gws.u.serialize_to_path(root_obj, path)
+        gws.u.serialize_to_path(root, path)
         return path
     except Exception as exc:
         raise gws.ConfigurationError('unable to store configuration') from exc
@@ -240,20 +307,16 @@ def _load(path) -> gws.Root:
             sys.path.insert(0, p)
             gws.log.debug(f'path {p!r} added to sys.path')
 
-    ts = gws.u.stime()
-    ms = gws.lib.osx.process_rss_size()
+    tm1 = _time_and_memory()
 
-    root_obj = gws.u.unserialize_from_path(path)
+    root = gws.u.unserialize_from_path(path)
 
-    activate(root_obj)
+    activate(root)
 
-    gws.log.info('configuration ok, {:d} objects, time: {:d} s., memory: {:.2f} MB'.format(
-        root_obj.object_count(),
-        gws.u.stime() - ts,
-        gws.lib.osx.process_rss_size() - ms,
-    ))
+    info = _info_string(root, tm1)
+    gws.log.info(f'configuration loaded, {info}')
 
-    return root_obj
+    return root
 
 
 def get_root() -> gws.Root:
@@ -279,3 +342,16 @@ def real_manifest_path(manifest_path):
     for p in _DEFAULT_MANIFEST_PATHS:
         if gws.u.is_file(p):
             return p
+
+
+def _time_and_memory():
+    return gws.u.stime(), gws.lib.osx.process_rss_size()
+
+
+def _info_string(root, tm1):
+    tm2 = _time_and_memory()
+    return '{:d} objects, time: {:d} s., memory: {:.2f} MB'.format(
+        root.object_count() if root else 0,
+        tm2[0] - tm1[0],
+        tm2[1] - tm1[1],
+    )

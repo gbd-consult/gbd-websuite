@@ -83,10 +83,15 @@ class Object(gws.ServerManager):
         self.config.spool = self._add_defaults(self.config.spool, 'gws.server.core.SpoolConfig')
         self.config.web = self._add_defaults(self.config.web, 'gws.server.core.WebConfig')
 
-        self.config.mapproxy.disabled = core.is_disabled(self.config.mapproxy)
-        self.config.monitor.disabled = core.is_disabled(self.config.monitor)
-        self.config.spool.disabled = core.is_disabled(self.config.spool)
-        self.config.web.disabled = core.is_disabled(self.config.web)
+        # deprecated 'enabled' keys
+        if self.config.mapproxy.enabled is False:
+            self.config.withMapproxy = False
+        if self.config.spool.enabled is False:
+            self.config.withSpool = False
+        if self.config.web.enabled is False:
+            self.config.withWeb = False
+        if self.config.monitor.enabled is False:
+            self.config.withMonitor = False
 
         self.configure_environment()
         self.configure_templates()
@@ -140,17 +145,17 @@ class Object(gws.ServerManager):
             path = self._create_config('server.rsyslog_config', f'{target_dir}/syslog.conf', args)
             commands.append(f'rsyslogd -i {gws.c.PIDS_DIR}/rsyslogd.pid -f {path}')
 
-        if not self.cfg('web.disabled'):
+        if self.cfg('withWeb'):
             args.uwsgi = 'web'
             path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_web.ini', args)
             commands.append(f'uwsgi --ini {path}')
 
-        if not self.cfg('mapproxy.disabled') and gws.u.is_file(gws.gis.mpx.config.CONFIG_PATH):
+        if self.cfg('withMapproxy') and gws.u.is_file(gws.gis.mpx.config.CONFIG_PATH):
             args.uwsgi = 'mapproxy'
             path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_mapproxy.ini', args)
             commands.append(f'uwsgi --ini {path}')
 
-        if not self.cfg('spool.disabled'):
+        if self.cfg('withSpool'):
             args.uwsgi = 'spool'
             path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_spool.ini', args)
             commands.append(f'uwsgi --ini {path}')

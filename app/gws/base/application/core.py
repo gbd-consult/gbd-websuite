@@ -222,7 +222,8 @@ class Object(gws.Application):
             self.mpxUrl = f"http://{self.cfg('server.mapproxy.host')}:{self.cfg('server.mapproxy.port')}"
             self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
-        # NB these are populated in config.parser
+    def activate(self):
+        # NB `configPaths` are populated in config.loader
         for p in self.config.get('configPaths', []):
             self.monitor.watch_file(p)
         for p in self.config.get('projectPaths', []):
