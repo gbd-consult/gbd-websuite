@@ -3,7 +3,7 @@ import gws
 import gws.lib.sa as sa
 
 
-class Object(gws.DatabaseConnection):
+class Object(gws.DatabaseConnection, sa.Connection):
     def exec(self, sql, **params):
         if isinstance(sql, str):
             sql = sa.text(sql)

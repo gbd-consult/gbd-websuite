@@ -1,6 +1,3 @@
-import sqlalchemy
-
-
 class DatabaseModel(Model):
     """Database-based data model."""
 
@@ -110,28 +107,32 @@ DatabaseTableAlike: TypeAlias = Union['sqlalchemy.Table', str]
 """An SQLAlchemy ``Table`` object or a string table name."""
 
 
-class DatabaseConnection(sqlalchemy.Connection):
+DatabaseStmt: TypeAlias = Union['sqlalchemy.Executable', str]
+"""An Executable SQLAlchemy object or a string SQL statement."""
+
+
+class DatabaseConnection:
     """Database connection.
 
     Extends ``sqlalchemy.Connection`` and provides some convenience methods.
     """
 
-    def exec(self, statement: sqlalchemy.Executable | str, **params) -> sqlalchemy.CursorResult[Any]:
+    def exec(self, statement: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
         ...
 
-    def exec_commit(self, statement: sqlalchemy.Executable | str, **params) -> sqlalchemy.CursorResult[Any]:
+    def exec_commit(self, statement: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
         ...
 
-    def get_all(self, statement: sqlalchemy.Executable | str, **params) -> list[dict]:
+    def get_all(self, statement: 'DatabaseStmt', **params) -> list[dict]:
         ...
 
-    def get_first(self, statement: sqlalchemy.Executable | str, **params) -> dict | None:
+    def get_first(self, statement: 'DatabaseStmt', **params) -> dict | None:
         ...
 
-    def get_scalars(self, statement: sqlalchemy.Executable | str, **params) -> list:
+    def get_scalars(self, statement: 'DatabaseStmt', **params) -> list:
         ...
 
-    def get_scalar(self, statement: sqlalchemy.Executable | str, **params) -> Any:
+    def get_scalar(self, statement: 'DatabaseStmt', **params) -> Any:
         ...
 
 
