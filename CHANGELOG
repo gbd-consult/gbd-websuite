@@ -1,3 +1,7 @@
+## Version 8.1.32
+
+- ensure correct ownership of cache directories
+
 ## Version 8.1.31
 
 - fixed timezone parsing in GDAL
