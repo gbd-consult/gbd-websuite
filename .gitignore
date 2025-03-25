@@ -10,6 +10,7 @@
 .dmypy.json
 .DS_Store
 .idea
+.vscode
 .mypy_cache
 .pytest_cache
 /app/gws/spec/gen
