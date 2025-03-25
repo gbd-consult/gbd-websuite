@@ -153,6 +153,12 @@ def seed(root: gws.Root, entries: list[Entry], levels: list[int]):
         except KeyboardInterrupt:
             pass
 
+        try:
+            for p in gws.lib.osx.find_directories(gws.c.MAPPROXY_CACHE_DIR, deep=False):
+                gws.lib.osx.run(f'chown -R {gws.c.UID}:{gws.c.GID} {p}', echo=True)
+        except Exception as exc:
+            gws.log.error('failed to chown cache dir: {exc!r}')
+
         gws.log.info(f'TIME: {gws.u.stime() - ts} sec')
         gws.log.info(f'SEEDING COMPLETE' if res else 'SEEDING INCOMPLETE, PLEASE TRY AGAIN')
 
