@@ -387,6 +387,12 @@ class Shape(gws.Shape):
             return self.to_multi()
         raise Error(f'cannot convert {self.type!r} to {new_type!r}')
 
+    def to_2d(self):
+        geom = shapely.force_2d(self.geom)
+        if geom is self.geom:
+            return self
+        return Shape(geom, self.crs)
+
     def tolerance_polygon(self, tolerance=None, quad_segs=None):
         is_poly = self.type in (gws.GeometryType.polygon, gws.GeometryType.multipolygon)
 

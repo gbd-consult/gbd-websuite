@@ -2347,6 +2347,9 @@ class Shape(Object):
     def to_type(self, new_type: 'GeometryType') -> 'Shape':
         """Converts a geometry to another type."""
 
+    def to_2d(self) -> 'Shape':
+        """Converts a geometry to 2-dimensional."""
+
     # misc
 
     def tolerance_polygon(self, tolerance=None, quad_segs=None) -> 'Shape':
