@@ -30,7 +30,7 @@ _DEFAULT_MANIFEST_PATHS = [
 class Object:
     manifestPath: str
     configPath: str
-    fallbackConfig: Optional[dict]
+    fallbackConfig: Optional[gws.Config]
     withSpecCache: bool
     isStarting: bool
 
@@ -42,13 +42,13 @@ class Object:
     errors: list
 
     def __init__(
-            self,
-            manifest_path=None,
-            config_path=None,
-            config=None,
-            fallback_config=None,
-            with_spec_cache=True,
-            is_starting=False,
+        self,
+        manifest_path: str = '',
+        config_path: str = '',
+        config=None,
+        fallback_config=None,
+        with_spec_cache=True,
+        is_starting=False,
     ):
         self.manifestPath = real_manifest_path(manifest_path)
         if self.manifestPath:
@@ -115,6 +115,10 @@ class Object:
     ##
 
     def _create_specs(self):
+        if self.specs:
+            return self.specs
+        if not self.manifestPath:
+            self._error(gws.ConfigurationError('no manifest file found'))
         try:
             return gws.spec.runtime.create(
                 manifest_path=self.manifestPath,
@@ -236,12 +240,12 @@ class Object:
 
 
 def configure(
-        manifest_path=None,
-        config_path=None,
-        config=None,
-        fallback_config=None,
-        with_spec_cache=True,
-        is_starting=False,
+    manifest_path=None,
+    config_path=None,
+    config=None,
+    fallback_config=None,
+    with_spec_cache=True,
+    is_starting=False,
 ) -> Optional[gws.Root]:
     """Configure the server, return the Root object."""
 
@@ -326,22 +330,24 @@ def get_root() -> gws.Root:
     return gws.u.get_app_global(_ROOT_NAME, _err)
 
 
-def real_config_path(config_path):
+def real_config_path(config_path: str) -> str:
     p = config_path or gws.env.GWS_CONFIG
     if p:
         return p
     for p in _DEFAULT_CONFIG_PATHS:
         if gws.u.is_file(p):
             return p
+    return ''
 
 
-def real_manifest_path(manifest_path):
+def real_manifest_path(manifest_path: str) -> str:
     p = manifest_path or gws.env.GWS_MANIFEST
     if p:
         return p
     for p in _DEFAULT_MANIFEST_PATHS:
         if gws.u.is_file(p):
             return p
+    return ''
 
 
 def _time_and_memory():
