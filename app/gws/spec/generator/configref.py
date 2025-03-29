@@ -205,7 +205,7 @@ class _Creator:
             missing_translation = f'`{key}`{{.configref_missing_translation}}'
             local_text = self.gen.strings['en'].get(key)
 
-        local_text = first_line(local_text) or spec_text
+        local_text = local_text or spec_text
 
         # process a label, like "foobar (added in 8.1)"
         # it might be missing in a translation, but present in the original (spec) docstring

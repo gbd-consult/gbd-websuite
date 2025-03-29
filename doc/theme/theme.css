@@ -650,7 +650,7 @@ code.configref_missing_translation {
     margin: 0 3px;
     vertical-align: text-bottom;
     font-size: 0.7rem;
-    display: none;
+    /* display: none; */
 }
 
 code.configref_category,

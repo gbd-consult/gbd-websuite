@@ -1414,7 +1414,7 @@ class Metadata(Data):
     isoTopicCategory: Optional[str]
 
     wgsExtent: Optional[Extent]
-    crs: Optional['Crs']
+    crsName: Optional['CrsName']
 
     metaLinks: Optional[list[MetadataLink]]
     serviceMetaLink: Optional[MetadataLink]

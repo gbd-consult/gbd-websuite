@@ -4,34 +4,35 @@ from . import base, util
 
 
 def collect(gen: base.Generator):
-    dct = {}
+    strings_dct = {}
 
     for spec in gen.specs:
         typ = gen.types[spec['uid']]
         if not typ.name:
             continue
-        _add_string(dct, typ.name, typ.doc)
+        _add_string(strings_dct, 'en', typ.name, typ.doc)
         if typ.enumDocs:
             for k, v in typ.enumDocs.items():
-                _add_string(dct, typ.name + '.' + k, v)
+                _add_string(strings_dct, 'en', typ.name + '.' + k, v)
 
-    for path in util.find_files(gen.selfDir + '/..', pattern=r'/strings.+?\.ini$', deep=False):
+    for path in util.find_files(gen.rootDir, pattern=r'/strings(\..+)?\.ini$', deep=True):
         base.log.debug(f'parsing strings from {path!r}')
-        util.parse_ini(dct, util.read_file(path))
+        d = util.parse_ini(util.read_file(path))
+        for lang, strs in d.items():
+            for uid, text in strs.items():
+                _add_string(strings_dct, lang, uid, text)
 
-    return dct
+    return strings_dct
 
 
-def _add_string(dct, uid, doc):
+def _add_string(strings_dct, lang, uid, text):
     """Add a docstring to the dict.
 
-    The language is assumed en, unless the string starts with a [xx]
-    language code.
+    If the string starts with a [xx], override the given language.
     """
 
-    lang = 'en'
-    m = re.match(r'^\[(\w\w)](.+)$', doc)
+    m = re.match(r'^\[(\w\w)](.+)$', text)
     if m:
         lang = m.group(1)
-        doc = m.group(2).strip()
-    dct.setdefault(lang, {})[uid] = doc.replace('\\n', '\n')
+        text = m.group(2).strip()
+    strings_dct.setdefault(lang, {})[uid] = text.replace('\\n', '\n')

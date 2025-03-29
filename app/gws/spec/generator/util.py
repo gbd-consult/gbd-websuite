@@ -24,20 +24,27 @@ def write_json(path, obj):
     write_file(path, json.dumps(obj, default=_json, indent=4, sort_keys=True))
 
 
-def parse_ini(dct, text):
+def parse_ini(text):
+    dct = {}
     section = ''
+    key = ''
 
     for ln in text.strip().splitlines():
         ln = ln.strip()
-        if not ln or ln.startswith((';', '#', '//')):
+        if ln.startswith((';', '#', '//')):
             continue
-        if ln[0] == '[':
+        if ln.startswith('['):
             section = ln[1:-1].strip()
             continue
-        if '=' not in ln:
+        m = re.match(r'^([a-zA-Z0-9_.]+)\s*=(.*)', ln)
+        if m:
+            key = m.group(1).strip()
+            val = m.group(2)
+            dct.setdefault(section, {})[key] = val.strip().replace('\\n', '\n')
+        elif key:
+            dct[section][key] += '\n' + ln.strip()
+        elif ln:
             raise ValueError(f'invalid ini string {ln!r}')
-        key, _, val = ln.partition('=')
-        dct.setdefault(section, {})[key.strip()] = val.strip().replace('\\n', '\n')
 
     return dct
 

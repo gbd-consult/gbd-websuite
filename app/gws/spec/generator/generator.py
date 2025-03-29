@@ -24,7 +24,8 @@ def generate_and_write(root_dir=None, out_dir=None, manifest_path=None, debug=Fa
     gws_js_dir = util.ensure_dir(gen.rootDir + '/js/src/gws/')
     util.write_file(gws_js_dir + '/index.ts', gen.typescript)
 
-    util.write_file(gen.outDir + '/specs.strings.ini', util.make_ini(gen.strings))
+    util.write_json(gen.outDir + '/specs.strings.json', gen.strings)
+
     util.write_file(gen.outDir + '/configref.en.html', gen.configRef['en'])
     util.write_file(gen.outDir + '/configref.de.html', gen.configRef['de'])
 
