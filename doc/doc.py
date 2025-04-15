@@ -75,7 +75,7 @@ def main(args):
         if cmd in {'build', 'server'}:
             out_dir = opts['BUILD_DIR'] + '/doc/' + opts['VERSION2']
         if cmd == 'api':
-            out_dir = opts['BUILD_DIR'] + '/apidoc/' + opts['VERSION2']
+            out_dir = opts['BUILD_DIR'] + '/doc/' + opts['VERSION2'] + '/api'
 
     opts['outputDir'] = out_dir
     _mkdir(opts['outputDir'])
