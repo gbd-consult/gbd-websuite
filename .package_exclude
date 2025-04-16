@@ -14,7 +14,6 @@
 .pytest_cache
 ___*
 __pycache__
-_test
 ssl
 extern
 js/node_modules
