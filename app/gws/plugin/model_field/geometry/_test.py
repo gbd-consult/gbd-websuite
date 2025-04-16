@@ -1,5 +1,3 @@
-from pyexpat import features
-
 import gws.config
 import gws.base.feature
 import gws.base.shape
@@ -32,19 +30,10 @@ def test_create_geometry(root: gws.Root):
 
     model = u.cast(gws.Model, root.get('GEOMETRY_MODEL'))
 
-    point = gws.Shape()
-    point.type = gws.GeometryType.point
-    point.crs = gws.gis.crs.WGS84
-    point.x = 1
-    point.y = 2
+    point1 = gws.base.shape.from_xy(1, 2, gws.gis.crs.WGS84)
+    point2 = gws.base.shape.from_xy(2, 3, gws.gis.crs.WGS84)
 
-    point2 = gws.Shape()
-    point2.type = gws.GeometryType.point
-    point2.crs = gws.gis.crs.WGS84
-    point2.x = 2
-    point2.y = 3
-
-    f = u.feature(model, id=1, geom=point)
+    f = u.feature(model, id=1, geom=point1)
     model.create_feature(f, mc)
 
     f = u.feature(model, id=2, geom=point2)
@@ -95,11 +84,7 @@ def test_update_geometry(root: gws.Root):
     point2_wkb = '0101000000000000000000F03F0000000000000040'  # WKB for POINT(1 2)
     u.pg.insert('geometry_table', [{'id': 1, 'geom': point_wkb}, {'id': 2, 'geom': point2_wkb}])
 
-    point = gws.Shape()
-    point.type = gws.GeometryType.point
-    point.crs = gws.gis.crs.WGS84
-    point.x = 3
-    point.y = 4
+    point = gws.base.shape.from_xy(3, 4, gws.gis.crs.WGS84)
 
     f = u.feature(model, id=2, geom=point)
     model.update_feature(f, mc)

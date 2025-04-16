@@ -29,10 +29,8 @@ def test_create_date(root: gws.Root):
     f = u.feature(model, id=1, datetime=d)
     model.create_feature(f, mc)
 
-    iso = gws.lib.datetimex.to_iso_date_string(d)
-
     rows = u.pg.rows('SELECT id, datetime FROM test_table ORDER BY id')
-    assert rows == [(1, iso)]
+    assert rows == [(1, '2010-06-17 22:00:00+00')]
 
 def test_read_date(root: gws.Root):
     mc = u.model_context()

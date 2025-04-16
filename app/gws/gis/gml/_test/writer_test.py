@@ -83,7 +83,7 @@ def test_shape_to_element_with_inline_xmlns():
     p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.gis.crs.WEBMERCATOR)
     xml = writer.shape_to_element(p, with_inline_xmlns=True).to_string()
     assert xml == u.fxml("""
-        <gml:Point srsName="urn:ogc:def:crs:EPSG::3857" xmlns:gml="http://www.opengis.net/gml">
-            <gml:pos srsDimension="2" xmlns:gml="http://www.opengis.net/gml">12.35 5.68</gml:pos>
+        <gml:Point srsName="urn:ogc:def:crs:EPSG::3857" xmlns:gml="http://www.opengis.net/gml/3.2">
+            <gml:pos srsDimension="2" xmlns:gml="http://www.opengis.net/gml/3.2">12.35 5.68</gml:pos>
         </gml:Point>
     """)

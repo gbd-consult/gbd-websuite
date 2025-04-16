@@ -21,19 +21,19 @@ def test_iter():
 def test_find_with_namespaces():
     xml = '''
         <root 
-                xmlns:gml="http://www.opengis.net/gml"
+                xmlns:wmts="http://www.opengis.net/wmts"
                 xmlns:other="foobar"
         >
-            <gml:a test="gml1"/>
+            <wmts:a test="attr1"/>
             <a test="just"/>
             <other:a test="another"/>
-            <gml:a test="gml2"/>
+            <wmts:a test="attr2"/>
         </root>
     '''
     root = xmlx.from_string(xml)
 
-    atts = [a.get('test') for a in root.findall('gml:a', {'gml': 'http://www.opengis.net/gml'})]
-    assert atts == ['gml1', 'gml2']
+    atts = [a.get('test') for a in root.findall('wmts:a', {'wmts': 'http://www.opengis.net/wmts'})]
+    assert atts == ['attr1', 'attr2']
 
 
 def test_to_dict():
@@ -72,20 +72,19 @@ def test_to_dict():
 def test_to_string():
     xml = '''<?xml version="1.0" encoding="UTF-8"?>
             <root 
-                xmlns:gml="http://www.opengis.net/gml"
-                xmlns:gml3="http://www.opengis.net/gml/3.2"
+                xmlns:wmts="http://www.opengis.net/wmts"
             >
-            <gml:a test="gml1"/>
+            <wmts:a test="attr1"/>
             <a test="just"/>
-            <gml3:a test="gml2"/>
+            <wmts:a test="attr2"/>
                 <a>
                     <b/>
                 </a>
             </root>'''
     xml_str = '''<root>
-            <gml:a test="gml1"/>
+            <wmts:a test="attr1"/>
             <a test="just"/>
-            <gml:a test="gml2"/>
+            <wmts:a test="attr2"/>
                 <a>
                     <b/>
                 </a>
@@ -106,21 +105,20 @@ def test_to_string_compact_whitespace():
 
 def test_to_string_remove_namespaces():
     xml = '''<root 
-                xmlns:gml="http://www.opengis.net/gml"
-                xmlns:gml3="http://www.opengis.net/gml/3.2"
+                xmlns:wmts="http://www.opengis.net/wmts"
             >
-            <gml:a test="gml1"/>
+            <wmts:a test="attr1"/>
             <a test="just"/>
-            <gml3:a test="gml2"/>
+            <wmts:a test="attr2"/>
                 <a>
                     <b/>
                 </a>
             </root>'''
 
     xml_no_nspace = '''<root>
-            <a test="gml1"/>
+            <a test="attr1"/>
             <a test="just"/>
-            <a test="gml2"/>
+            <a test="attr2"/>
                 <a>
                     <b/>
                 </a>
@@ -131,21 +129,20 @@ def test_to_string_remove_namespaces():
 
 def test_to_string_with_namespace_declarations():
     xml = '''<root 
-                xmlns:gml="http://www.opengis.net/gml"
-                xmlns:gml3="http://www.opengis.net/gml/3.2"
+                xmlns:wmts="http://www.opengis.net/wmts"
             >
-            <gml:a test="gml1"/>
+            <wmts:a test="attr1"/>
             <a test="just"/>
-            <gml3:a test="gml2"/>
+            <wmts:a test="attr2"/>
                 <a>
                     <b/>
                 </a>
             </root>'''
 
-    xml_with_namespace_declarations = '''<root xmlns:gml="http://www.opengis.net/gml/3.2">
-            <gml:a test="gml1"/>
+    xml_with_namespace_declarations = '''<root xmlns:wmts="http://www.opengis.net/wmts/1.0">
+            <wmts:a test="attr1"/>
             <a test="just"/>
-            <gml:a test="gml2"/>
+            <wmts:a test="attr2"/>
                 <a>
                     <b/>
                 </a>
@@ -157,22 +154,22 @@ def test_to_string_with_namespace_declarations():
 
 def test_to_string_with_schema_locations():
     xml = '''<root
-            xmlns:gml="http://www.opengis.net/gml"
+            xmlns:wmts="http://www.opengis.net/wmts"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	        xsi:schemaLocation="test"
 	        >
-            <gml:a test="gml1"/>
+            <wmts:a test="attr1"/>
             <a test="just"/>
-            <a test="gml2"/>
+            <a test="attr2"/>
                 <a>
                     <b/>
                 </a>
             </root>'''
 
     xml_with_schema_locations = '''<root xsi:schemaLocation="test">
-            <gml:a test="gml1"/>
+            <wmts:a test="attr1"/>
             <a test="just"/>
-            <a test="gml2"/>
+            <a test="attr2"/>
                 <a>
                     <b/>
                 </a>
