@@ -1,11 +1,15 @@
 uid "legend_auto"
 
-title "Automatic legend"
+title "Automatische WMS Legende"
 
 metadata.keywords [ "legend" "wms" ]
 
 metadata.abstract """
-For OWS and QGIS layers, legends are configured automatically by default.
+Mit dieser Konfiguration wird am Beispiel eines Open Web Service (OWS) von Geobasis NRW automatisch die Legende für ausgewählte Layer des ALKIS Dienstes angezeigt.
+
+Klicken Sie dazu im Layerbereich der Seitenleiste auf den Layer ALKIS WMS NRW
+
+Bemerkung: Für Layer eines eingebundenen QGIS Projektes funktioniert es genauso.
 """
 
 map {
@@ -14,7 +18,7 @@ map {
 }
 
 map.layers+ {
-    title "NRW ALKIS"
+    title "NRW ALKIS WMS"
     type "wmsflat"
     provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
     sourceLayers.names [

@@ -15,7 +15,7 @@
 @end
 
 @let demo_metadata
-    attribution { title "(c) Geoinformatikbüro Dassau GmbH" url "http://gbd-websuite.de" }
+    attribution { title "(c) Geoinformatikbüro Dassau GmbH" url "https://gbd-websuite.de" }
     fees "free"
     language "de"
     license { title "AGPL" url "https://www.gnu.org/licenses/agpl-3.0.html" }
