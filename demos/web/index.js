@@ -27,16 +27,16 @@ function entryHasKeyword(pe, keywords) {
 
 function setFrame(url) {
     if (!url) {
-        $('#demo-container').innerHTML = '';
+        $('#main').innerHTML = $('#intro').innerHTML;
         return;
     }
 
-    let frame = $('#demo-container').querySelector('iframe');
+    let frame = $('#main').querySelector('iframe');
     if (frame && frame.src && frame.src.indexOf(url) >= 0) {
         return;
     }
 
-    $('#demo-container').innerHTML = `<iframe src="${url}"></iframe>`;
+    $('#main').innerHTML = `<iframe src="${url}"></iframe>`;
 }
 
 function scrollIntoView(el) {
@@ -155,6 +155,13 @@ window.addEventListener('load', () => {
         update();
     });
 
+    $('#button-clear-search').addEventListener('click', evt => {
+        state.searchValue = '';
+        $('#side-search input').value = '';
+        update();
+        evt.preventDefault();
+    });
+
     $('#project-list').addEventListener('click', evt => {
         let src = evt.target;
 
@@ -174,6 +181,11 @@ window.addEventListener('load', () => {
     window.addEventListener('popstate', evt => {
         updateFromLocation();
     })
+
+    $('#button-sidebar-toggle').addEventListener('click', evt => {
+        $('body').classList.toggle('with-sidebar-hidden');
+        evt.preventDefault();
+    });
 
     $('#button-mobile-view').addEventListener('click', evt => {
         $('body').classList.toggle('with-mobile-view');

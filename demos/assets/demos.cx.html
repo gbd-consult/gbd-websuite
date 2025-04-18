@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+@import re
+@import time
+
+
+<html>
+
+<head>
+    <title>GBD WebSuite Developer Demos</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/_/webSystemAsset/path/{app.version}.util.js"></script>
+    <link rel="stylesheet" href="/demos/index.css?r={time.time()}" />
+    <script src="/demos/index.js?r={time.time()}"></script>
+</head>
+
+<body class="{@if not user.isGuest}with-user{@end}">
+
+    <div id="main">
+    </div>
+
+    <div id="intro">
+        <div id="demo-intro">
+            <p>GBD WebSuite Demos</p>
+            <p>These are some examples of GWS features.</p>
+            <p>Click on the links in the right column to see the demos.</p>
+            <p>Click the <span class="icon open_in_new"></span> icon to open the demo in a new tab.
+            </p>
+        </div>
+    </div>
+
+    <div id="side">
+        <div id="side-search">
+            <div id="side-search-form">
+                <input placeholder="Suche">
+                <a href="#" id="button-clear-search" class="button" title="clear">
+                    <span class="icon close"></span>
+                </a>
+                </div>
+        </div>
+
+        <div id="project-list">
+            @for prj in projects
+            <div class="project-list-entry hidden" data-uid="{prj.uid}">
+                <p class="links">
+                    <a href="#" class="frame-link" data-uid="{prj.uid}">
+                        {prj.title | html}
+                    </a>
+                    <a href="/project/{prj.uid}" target="_blank" class="button" title="open fullscreen">
+                        <span class="icon open_in_new"></span>
+                    </a>
+                </p>
+                <p class="keywords">
+                    @for kw in sorted(prj.metadata.keywords)
+                    <mark>{kw}</mark>
+                    @end
+                </p>
+            </div>
+            @end
+        </div>
+        
+        <div id="side-toolbar">
+            <a href="#" id="button-prev-demo" class="toolbar-button" title="previous">
+                <span class="icon arrow_circle_up"></span>
+            </a>
+            <a href="#" id="button-next-demo" class="toolbar-button" title="next">
+                <span class="icon arrow_circle_down"></span>
+            </a>
+            <a href="#" id="button-mobile-view" class="toolbar-button" title="mobile view">
+                <span class="icon smartphone"></span>
+            </a>
+            <a href="#" id="button-login" class="toolbar-button" title="login">
+                <span class="icon person"></span>
+            </a>
+        </div>
+
+        <div id="login-box">
+
+            <div id="login-form">
+                <table>
+                    <tr>
+                        <td>Username</td>
+                        <td><input id="gwsUsername" name="username"></td>
+                    </tr>
+                    <tr>
+                        <td>Password</td>
+                        <td><input id="gwsPassword" name="password" type="password"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <small>
+                                There are two user groups: <b>groupA</b> and <b>groupB</b>,
+                                you can use logins <b>demo1</b> or <b>demo2</b> for the first group
+                                and <b>demo3</b> or <b>demo4</b> for the second.
+                                The password for all users is <b>demo</b>.
+                            </small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button id="button-login-submit">Log in</button>
+                        </td>
+                    </tr>
+                </table>
+                <p id="login-error">Invalid username or password</p>
+            </div>
+    
+            <div id="logout-form">
+                <table>
+                    <tr>
+                        <td>{user.displayName}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button id="button-logout-submit">Log out</button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    
+    </div>
+
+
+
+    <div id="side-toggle">
+        <a href="#" id="button-sidebar-toggle" title="sidebar on/off">
+            <span class="icon"></span>
+        </a>
+    </div>
+
+
+
+
+</body>
+
+</html>
