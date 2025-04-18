@@ -5,7 +5,9 @@ title "Static legend"
 metadata.keywords [ "legend" ]
 
 metadata.abstract """
-`static` legends are generated from local image files.
+Mit dieser Konfiguration wird am Beispiel eines OpenStreetMap (OSM) Open Web Service eine statische Legende auf Basis eines PNG Bildes angezeigt.
+
+Klicken Sie dazu im Layerbereich der Seitenleiste auf den Layer OpenStreetMap.
 """
 
 map {
@@ -15,7 +17,7 @@ map {
 }
 
 map.layers+ {
-    title "Open Street Map"
+    title "OpenStreetMap"
     type "tile"
     provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
     display "client"
@@ -24,5 +26,6 @@ map.layers+ {
         type "static"
         path "osm_legend.png"
     }
-
+    metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
 }
+
