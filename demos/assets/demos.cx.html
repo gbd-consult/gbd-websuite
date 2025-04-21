@@ -43,14 +43,14 @@
         <div id="project-list">
             @for prj in projects
             <div class="project-list-entry hidden" data-uid="{prj.uid}">
-                <p class="links">
+                <h3>
                     <a href="#" class="frame-link" data-uid="{prj.uid}">
                         {prj.title | html}
                     </a>
-                    <a href="/project/{prj.uid}" target="_blank" class="button" title="open fullscreen">
+                </h3>
+                <a href="/project/{prj.uid}" target="_blank" class="button" title="open fullscreen">
                         <span class="icon open_in_new"></span>
-                    </a>
-                </p>
+                </a>
                 <p class="keywords">
                     @for kw in sorted(prj.metadata.keywords)
                     <mark>{kw}</mark>

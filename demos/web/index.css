@@ -151,22 +151,22 @@ body {
 }
 
 .project-list-entry {
+    position: relative;
     margin-bottom: 1em;
     padding: 0.8em 0.8em 1.2em 0.8em;
     border-radius: 10px 0 0 10px;
-    background: #2b2f38;
+    background-color: #2b2f38;
+    transition: background-color 0.3s ease;
 }
 
 .project-list-entry.hidden {
     display: none;
 }
 
-.project-list-entry > .links  {
-    display: flex;
-    padding: 0 0 0.8em 0;
+.project-list-entry h3  {
+    padding: 0 0.8em 0.8em 0;
 }
-.project-list-entry a {
-    display: block;
+.project-list-entry h3 a {
     font-size: 0.9em;
     line-height: 1.2;
     font-weight: 500;
@@ -175,9 +175,14 @@ body {
     text-decoration: none;
     transition: color 0.3s ease;
 }
+.project-list-entry  a.button {
+    position: absolute;
+    right: 13px;
+    top: 10px;
+}
 
 .project-list-entry.selected {
-    background: #617094;
+    background-color: #617094;
 }
 .project-list-entry.selected a {
     color: #f3eded;
