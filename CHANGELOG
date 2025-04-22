@@ -1,3 +1,7 @@
+## Version 8.1.33
+
+- ALKIS default printer fixed
+
 ## Version 8.1.32
 
 - ensure correct ownership of cache directories
