@@ -1,0 +1,46 @@
+uid "raster_layer"
+
+title "Raster layer"
+
+metadata.keywords [ "raster" ]
+
+metadata.abstract """
+`raster` layers display georeferenced raster images.
+"""
+
+map {
+    crs 3857
+    center {demo_point_duesseldorf_3857}
+    zoom.minScale 10000000
+    zoom.maxScale 70000000
+}
+
+map.layers+ {
+    type "raster"
+    title "Natural Earth"
+    display "tile"
+    provider {
+        type "file"
+        paths [ "/gws-extern/natural_earth/NE1_HR_LC_SR_W_DR.tif" ]
+    }
+    metadata.attribution.title "© 2009 - 2025. Natural Earth"
+}
+
+map.layers+ {
+    type "raster"
+    title "Natural Earth (+processing)"
+    display "tile"
+    clientOptions.hidden true
+    provider {
+        type "file"
+        paths [ "/gws-extern/natural_earth/NE1_HR_LC_SR_W_DR.tif" ]
+    }
+    @# https://mapserver.org/input/raster.html#special-processing-directives
+    processing [
+        "BANDS=3"
+        "GAMMA=0.7"
+    ]
+    metadata.attribution.title "© 2009 - 2025. Natural Earth"
+}
+
+{demo_osm_background}

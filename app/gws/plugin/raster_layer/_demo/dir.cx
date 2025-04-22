@@ -10,20 +10,12 @@ metadata.abstract """
 
 map {
     crs 25832
-    center {demo_point_duesseldorf_25832}
     zoom.initScale 150000
+    extent {demo_make_extent(344371, 5677471, 4000)}
 }
 
-@# https://open.nrw/dataset/karte-der-erdbebenzonen-und-geologischen-untergrundklassen-der-bundesrepublik-deutschland-nordr
 
-map.layers+ {
-    type "raster"
-    title "Erdbebenzonenkarte"
-    display "box"
-    clientOptions.hidden true
-    provider { type "file" pathPattern "/gws-extern/erdbebenzonenkarte/*.jpg" }
-    metadata.attribution.title "© Geobasis NRW"
-}
+@# https://www.opengeodata.nrw.de/produkte/geobasis/lusat/akt/dop/dop_jp2_f10/
 
 map.layers+ {
     type "raster"
