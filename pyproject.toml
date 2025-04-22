@@ -1,0 +1,11 @@
+[tool.ruff]
+ignore = ["F541"]
+line-length = 150
+
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "single"
+
+[tool.isort]
+sections = "FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
+known_first_party = ["gws"]
