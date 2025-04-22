@@ -146,7 +146,7 @@ class Object(gws.OwsProvider):
             return self.store.path
         if self.store.type == project.StoreType.postgres:
             prov = self.root.app.databaseMgr.find_provider(ext_type='postgres', uid=self.store.dbUid)
-            return gws.lib.net.add_params(prov.url, schema=self.store.schema, project=self.store.projectName)
+            return gws.lib.net.add_params(prov.url(), schema=self.store.schema, project=self.store.projectName)
 
     def server_params(self, params: dict) -> dict:
         defaults = dict(
