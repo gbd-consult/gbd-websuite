@@ -22,6 +22,12 @@ class Data:
     def __setitem__(self, key, value):
         vars(self)[key] = value
 
+    def __getattr__(self, attr):
+        if attr.startswith('_'):
+            # do not use None fallback for special props
+            raise AttributeError(attr)
+        return None
+    
     def get(self, key, default=None):
         """Get an attribute value.
 
@@ -67,16 +73,16 @@ class Data:
         vars(self).update(d)
 
 
-# getattr needs to be defined out of class, otherwise IDEA accepts all attributes
+# # getattr needs to be defined out of class, otherwise IDEA accepts all attributes
 
-def _data_getattr(self, attr):
-    if attr.startswith('_'):
-        # do not use None fallback for special props
-        raise AttributeError(attr)
-    return None
+# def _data_getattr(self, attr):
+#     if attr.startswith('_'):
+#         # do not use None fallback for special props
+#         raise AttributeError(attr)
+#     return None
 
 
-setattr(Data, '__getattr__', _data_getattr)
+# setattr(Data, '__getattr__', _data_getattr)
 
 
 def is_data_object(x):

@@ -17,7 +17,7 @@ import gws.gis.source
 import gws.lib.extent
 import gws.lib.net
 
-from . import caps, project
+from . import caps as caps_module, project
 
 
 class Config(gws.Config):
@@ -47,14 +47,14 @@ class Config(gws.Config):
 
 class Object(gws.OwsProvider):
     store: project.Store
-    printTemplates: list[caps.PrintTemplate]
+    printTemplates: list[caps_module.PrintTemplate]
 
     directRender: set[str]
     directSearch: set[str]
 
     defaultLegendOptions: dict
 
-    caps: caps.Caps
+    caps: caps_module.Caps
 
     def configure(self):
         self.configure_store()

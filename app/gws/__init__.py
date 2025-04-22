@@ -75,6 +75,12 @@ class Data:
     def __setitem__(self, key, value):
         vars(self)[key] = value
 
+    def __getattr__(self, attr):
+        if attr.startswith('_'):
+            # do not use None fallback for special props
+            raise AttributeError(attr)
+        return None
+    
     def get(self, key, default=None):
         """Get an attribute value.
 
@@ -120,16 +126,16 @@ class Data:
         vars(self).update(d)
 
 
-# getattr needs to be defined out of class, otherwise IDEA accepts all attributes
+# # getattr needs to be defined out of class, otherwise IDEA accepts all attributes
 
-def _data_getattr(self, attr):
-    if attr.startswith('_'):
-        # do not use None fallback for special props
-        raise AttributeError(attr)
-    return None
+# def _data_getattr(self, attr):
+#     if attr.startswith('_'):
+#         # do not use None fallback for special props
+#         raise AttributeError(attr)
+#     return None
 
 
-setattr(Data, '__getattr__', _data_getattr)
+# setattr(Data, '__getattr__', _data_getattr)
 
 
 def is_data_object(x):
@@ -1551,44 +1557,41 @@ class XmlElement(Iterable):
 
     def __len__(self) -> int: ...
 
-    def __iter__(self) -> Iterator['XmlElement']: ...
+    def __iter__(self) -> Iterator["XmlElement"]: ...
 
-    def __getitem__(self, item: int) -> 'XmlElement': ...
+    def __getitem__(self, item: int) -> "XmlElement": ...
 
-    def append(self, subelement: 'XmlElement'):
+    def append(self, subelement: "XmlElement"):
         """Adds the element subelement to the end of this element’s internal list of subelements."""
-
-    def attr(self, key: str, default=None):
-        """Gets the element attribute named key."""
 
     def clear(self):
         """Resets an element."""
 
-    def extend(self, subelements: Iterable['XmlElement']):
+    def extend(self, subelements: Iterable["XmlElement"]):
         """Appends subelements from a sequence object with zero or more elements."""
 
-    def find(self, path: str) -> Optional['XmlElement']:
+    def find(self, path: str) -> Optional["XmlElement"]:
         """Finds first matching element by tag name or path."""
 
-    def findall(self, path: str) -> list['XmlElement']:
+    def findall(self, path: str) -> list["XmlElement"]:
         """Finds all matching subelements by name or path."""
 
     def findtext(self, path: str, default: Optional[str] = None) -> str:
         """Finds text for first matching element by name or path."""
 
-    def get(self, key: str, default=None):
+    def get(self, key: str, default="") -> str:
         """Gets the element attribute named key."""
 
-    def insert(self, index: int, subelement: 'XmlElement'):
+    def insert(self, index: int, subelement: "XmlElement"):
         """Inserts subelement at the given position in this element."""
 
     def items(self) -> Iterable[tuple[str, Any]]:
         """Returns the element attributes as a sequence of (name, value) pairs."""
 
-    def iter(self, tag: Optional[str] = None) -> Iterable['XmlElement']:
+    def iter(self, tag: Optional[str] = None) -> Iterable["XmlElement"]:
         """Creates a tree iterator."""
 
-    def iterfind(self, path: Optional[str] = None) -> Iterable['XmlElement']:
+    def iterfind(self, path: Optional[str] = None) -> Iterable["XmlElement"]:
         """Returns an iterable of all matching subelements by name or path."""
 
     def itertext(self) -> Iterable[str]:
@@ -1597,7 +1600,7 @@ class XmlElement(Iterable):
     def keys(self) -> Iterable[str]:
         """Returns the elements attribute names as a list."""
 
-    def remove(self, other: 'XmlElement'):
+    def remove(self, other: "XmlElement"):
         """Removes the other element from the element."""
 
     def set(self, key: str, value: Any):
@@ -1605,7 +1608,13 @@ class XmlElement(Iterable):
 
     # extensions
 
-    def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'XmlElement':
+    def attr(self, key: str, default="") -> str:
+        """Alias for 'get'."""
+
+    def hasattr(self, key: str) -> bool:
+        """Check if an attribute exists."""
+
+    def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> "XmlElement":
         """Creates a new element and adds it as a child.
 
         Args:
@@ -1613,10 +1622,10 @@ class XmlElement(Iterable):
             attrib: XML attributes ``{key, value}``.
         """
 
-    def children(self) -> list['XmlElement']:
+    def children(self) -> list["XmlElement"]:
         """Returns the children of the current element."""
 
-    def findfirst(self, *paths) -> Optional['XmlElement']:
+    def findfirst(self, *paths) -> Optional["XmlElement"]:
         """Given a list of paths, returns the first matching element."""
 
     def textof(self, *paths) -> str:
@@ -1645,14 +1654,14 @@ class XmlElement(Iterable):
         """
 
     def to_string(
-            self,
-            extra_namespaces: Optional[list[XmlNamespace]] = None,
-            xmlns_replacements: dict[str, str] = None,
-            compact_whitespace: bool = False,
-            remove_namespaces: bool = False,
-            with_namespace_declarations: bool = False,
-            with_schema_locations: bool = False,
-            with_xml_declaration: bool = False,
+        self,
+        extra_namespaces: Optional[list[XmlNamespace]] = None,
+        xmlns_replacements: dict[str, str] = None,
+        compact_whitespace: bool = False,
+        remove_namespaces: bool = False,
+        with_namespace_declarations: bool = False,
+        with_schema_locations: bool = False,
+        with_xml_declaration: bool = False,
     ) -> str:
         """Converts the Element object to a string.
 
@@ -1673,9 +1682,9 @@ class XmlElement(Iterable):
         """Creates a dictionary from an XmlElement object."""
 
     def to_list(
-            self,
-            fold_tags: bool = True,
-            remove_namespaces: bool = False,
+        self,
+        fold_tags: bool = True,
+        remove_namespaces: bool = False,
     ) -> list:
         """Parse an XML element into a list of arguments (reverse of `gws.lib.xmlx.tag`).
 
@@ -2086,7 +2095,7 @@ class SourceLayer(Data):
     title: str
 
     legendUrl: Url
-    opacity: int
+    opacity: float
     scaleRange: list[float]
 
     styles: list[SourceStyle]

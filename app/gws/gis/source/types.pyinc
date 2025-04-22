@@ -54,7 +54,7 @@ class SourceLayer(Data):
     title: str
 
     legendUrl: Url
-    opacity: int
+    opacity: float
     scaleRange: list[float]
 
     styles: list[SourceStyle]

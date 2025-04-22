@@ -78,14 +78,14 @@ def _parse_app_config(cfg, path, pp: '_Parser'):
 
     # find projects from 'paths' and 'dirs'
 
-    pp.result.config.projectPaths = pp.result.config.projectPaths or []
-    pp.result.config.projectDirs = pp.result.config.projectDirs or []
+    app_cfg.projectPaths = pp.result.config.projectPaths or [] # type: ignore
+    app_cfg.projectDirs = pp.result.config.projectDirs or [] # type: ignore
+    app_cfg.projects = [] # type: ignore
 
-    project_paths = list(pp.result.config.projectPaths)
-    for dirname in pp.result.config.projectDirs:
+    project_paths = list(app_cfg.projectPaths)
+    for dirname in app_cfg.projectDirs:
         project_paths.extend(gws.lib.osx.find_files(dirname, CONFIG_PATH_PATTERN, deep=True))
 
-    app_cfg.projects = []
 
     for cfg in inline_projects:
         app_cfg.projects.extend(_parse_projects(cfg, path, pp))
@@ -273,7 +273,7 @@ def _to_plain_type(val):
     if isinstance(val, gws.Data):
         val = vars(val)
     if isinstance(val, dict):
-        return {k: _to_plain_type(v) for k, v in val.items()}
+        return {k: v if k.startswith('_') else _to_plain_type(v) for k, v in val.items()}
     return val
 
 
