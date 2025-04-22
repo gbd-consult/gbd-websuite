@@ -715,7 +715,7 @@ class Node(Object):
     def activate(self):
         """Activation hook."""
 
-    def create_child(self, classref: ClassRef, config: Config = None, **kwargs):
+    def create_child(self, classref: ClassRef, config: Config = None, **kwargs) -> Optional['Node']:
         """Create a child object.
 
         Args:
@@ -728,7 +728,7 @@ class Node(Object):
         """
         return tree_impl.node_create_child(self, classref, config, **kwargs)
 
-    def create_child_if_configured(self, classref: ClassRef, config=None, **kwargs):
+    def create_child_if_configured(self, classref: ClassRef, config=None, **kwargs) -> Optional['Node']:
         """Create a child object if the configuration is not None.
 
         Args:
@@ -741,7 +741,7 @@ class Node(Object):
         """
         return tree_impl.node_create_child_if_configured(self, classref, config, **kwargs)
 
-    def create_children(self, classref: ClassRef, configs: list[Config], **kwargs):
+    def create_children(self, classref: ClassRef, configs: list[Config], **kwargs) -> list['Node']:
         """Create a list of child objects from a list of configurations.
 
         Args:
@@ -766,7 +766,7 @@ class Node(Object):
         """
         return tree_impl.node_cfg(self, key, default)
 
-    def is_a(self, classref: ClassRef):
+    def is_a(self, classref: ClassRef) -> bool:
         """Check if a the node matches the class reference.
 
         Args:
@@ -777,7 +777,7 @@ class Node(Object):
         """
         return tree_impl.is_a(self.root, self, classref)
 
-    def find_all(self, classref: Optional[ClassRef] = None):
+    def find_all(self, classref: Optional[ClassRef] = None) -> list['Node']:
         """Find all children that match a specific class.
 
         Args:
@@ -788,7 +788,7 @@ class Node(Object):
         """
         return tree_impl.node_find_all(self, classref)
 
-    def find_first(self, classref: Optional[ClassRef] = None):
+    def find_first(self, classref: Optional[ClassRef] = None) -> Optional['Node']:
         """Find the first child that matches a specific class.
 
         Args:
@@ -799,7 +799,7 @@ class Node(Object):
         """
         return tree_impl.node_find_first(self, classref)
 
-    def find_closest(self, classref: Optional[ClassRef] = None):
+    def find_closest(self, classref: Optional[ClassRef] = None) -> Optional['Node']:
         """Find the closest node ancestor that matches a specific class.
 
         Args:
@@ -811,7 +811,7 @@ class Node(Object):
 
         return tree_impl.node_find_closest(self, classref)
 
-    def find_ancestors(self, classref: Optional[ClassRef] = None):
+    def find_ancestors(self, classref: Optional[ClassRef] = None) -> list['Node']:
         """Find node ancestors that match a specific class.
 
         Args:
@@ -822,7 +822,7 @@ class Node(Object):
         """
         return tree_impl.node_find_ancestors(self, classref)
 
-    def find_descendants(self, classref: Optional[ClassRef] = None):
+    def find_descendants(self, classref: Optional[ClassRef] = None) -> list['Node']:
         """Find node descendants that match a specific class.
 
         Args:
@@ -884,7 +884,7 @@ class Root:
     def activate(self):
         return tree_impl.root_activate(self)
 
-    def find_all(self, classref: Optional[ClassRef] = None):
+    def find_all(self, classref: Optional[ClassRef] = None) -> list['Node']:
         """Find all objects that match a specific class.
 
         Args:
@@ -895,7 +895,7 @@ class Root:
         """
         return tree_impl.root_find_all(self, classref)
 
-    def find_first(self, classref: Optional[ClassRef] = None):
+    def find_first(self, classref: Optional[ClassRef] = None) -> Optional['Node']:
         """Find the first object that match a specific class.
 
         Args:
@@ -906,7 +906,7 @@ class Root:
         """
         return tree_impl.root_find_first(self, classref)
 
-    def get(self, uid: str = None, classref: Optional[ClassRef] = None):
+    def get(self, uid: str = None, classref: Optional[ClassRef] = None) -> Optional['Node']:
         """Get an object by its unique ID.
 
         Args:
@@ -922,7 +922,13 @@ class Root:
         """Return the number of objects in the tree."""
         return tree_impl.root_object_count(self)
 
-    def create(self, classref: ClassRef, parent: Optional['Node'] = None, config: Config = None, **kwargs):
+    def create(
+        self,
+        classref: ClassRef,
+        parent: Optional['Node'] = None,
+        config: Config = None,
+        **kwargs,
+    ) -> Optional['Node']:
         """Create an object.
 
         Args:
@@ -936,7 +942,7 @@ class Root:
         """
         return tree_impl.root_create(self, classref, parent, config, **kwargs)
 
-    def create_shared(self, classref: ClassRef, config: Config = None, **kwargs):
+    def create_shared(self, classref: ClassRef, config: Config = None, **kwargs) -> Optional['Node']:
         """Create a shared object, attached directly to the root.
 
         Args:
@@ -949,7 +955,7 @@ class Root:
         """
         return tree_impl.root_create_shared(self, classref, config, **kwargs)
 
-    def create_temporary(self, classref: ClassRef, config: Config = None, **kwargs):
+    def create_temporary(self, classref: ClassRef, config: Config = None, **kwargs) -> Optional['Node']:
         """Create a temporary object, not attached to the tree.
 
         Args:
@@ -3471,7 +3477,7 @@ class DatabaseProvider(Node):
     def engine_options(self, **kwargs):
         """Add defaults to the SA engine options."""
 
-    def url(self):
+    def url(self) -> str:
         """Return the connection URL."""
 
     def engine(self, **kwargs) -> 'sqlalchemy.Engine':

@@ -170,7 +170,7 @@ class DatabaseProvider(Node):
     def engine_options(self, **kwargs):
         """Add defaults to the SA engine options."""
 
-    def url(self):
+    def url(self) -> str:
         """Return the connection URL."""
 
     def engine(self, **kwargs) -> 'sqlalchemy.Engine':
