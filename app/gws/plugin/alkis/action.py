@@ -389,7 +389,7 @@ class Object(gws.base.action.Object):
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
 
         self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
-        self.printers.append(self.root.create_shared(gws.ext.object.printer, _DEFAULT_PRINTER))
+        self.printers.append(self.create_child(gws.ext.object.printer, _DEFAULT_PRINTER))
 
         d = gws.TextSearchOptions(type='begin', caseSensitive=False)
         self.strasseSearchOptions = self.cfg('strasseSearchOptions', default=d)
