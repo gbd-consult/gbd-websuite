@@ -1,6 +1,6 @@
 
-import {gws} from 'gws';
 import * as types from '../types';
+import {gws} from '../gws';
 
 import {StoreWrapper} from '../core/reduxa';
 import {Server} from '../core/server';

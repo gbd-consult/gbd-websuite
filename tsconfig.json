@@ -1,0 +1,38 @@
+{
+    "include": [
+        "./app/**/*"
+    ],
+    "exclude": [
+        "./app/**/___*"
+    ],
+    "compilerOptions": {
+        "incremental": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "jsx": "react",
+        "lib": [
+            "es2019",
+            "dom"
+        ],
+        "module": "CommonJS",
+        "noEmitOnError": true,
+        "noImplicitAny": false,
+        "preserveWatchOutput": true,
+        "target": "es2019",
+        "baseUrl": "./app",
+        "rootDir": "/",
+        "outDir": "./app/__build/js",
+        "paths": {
+            "gws/*": [
+                "gws/*"
+            ],
+            "@build/*": [
+                "__build/*"
+            ],
+            "*": [
+                "js/node_modules/*",
+                "js/src/*"
+            ]
+        }
+    }
+}

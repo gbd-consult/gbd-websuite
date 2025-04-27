@@ -262,6 +262,20 @@ function initBuild(bb) {
             })
         }
     }
+
+    bb.chunks.push({
+        name: '@build',
+        sourceDir: SPEC_DIR,
+        bundleDir: bb.chunks[0].bundleDir,
+    })
+
+    bb.sources.push({
+        chunkName: '@build',
+        kind: 'ts',
+        path: path.join(SPEC_DIR, 'specs.ts'),
+        buildRoot: path.join(BUILD_ROOT, SPEC_DIR),
+    })
+
 }
 
 // dev server
@@ -878,23 +892,40 @@ function runTypescript(bb) {
 
     logInfo('running TypeScript...');
 
-    let tsConfig = JSON.parse(readFile(bb.tsConfigPath));
-    let tsConfigBuildPath = path.join(JS_DIR, '__build.tsconfig.json');
+    // @TODO: commit tsconfig.json statically
+    
+    let tsConfig = {}
+    let tsConfigBuildPath = path.join(APP_DIR, '../tsconfig.json');
 
-    tsConfig.files = [];
-
-    for (let src of bb.sources) {
-        if (src.kind === 'ts')
-            tsConfig.files.push(src.path)
+    tsConfig.include = [
+        './app/**/*',
+    ]
+    tsConfig.exclude = [
+        './app/**/___*',
+    ]
+    tsConfig.compilerOptions = {
+        "incremental": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "jsx": "react",
+        "lib": [
+            "es2019",
+            "dom"
+        ],
+        "module": "CommonJS",
+        "noEmitOnError": true,
+        "noImplicitAny": false,
+        "preserveWatchOutput": true,
+        "target": "es2019"
     }
-
-    tsConfig.compilerOptions.baseUrl = path.join(JS_DIR, tsConfig.compilerOptions.baseUrl)
-    tsConfig.compilerOptions.outDir = BUILD_ROOT;
-
-    for (let ps of Object.values(tsConfig.compilerOptions.paths)) {
-        for (let [n, p] of ps.entries()) {
-            ps[n] = path.join(JS_DIR, p)
-        }
+    
+    tsConfig.compilerOptions.baseUrl = './app'
+    tsConfig.compilerOptions.rootDir = '/'
+    tsConfig.compilerOptions.outDir = "./app/__build/js"
+    tsConfig.compilerOptions.paths = {
+        "gws/*": ["gws/*"],
+        "@build/*": [ "__build/*" ],
+        "*": ["js/node_modules/*", "js/src/*"],
     }
 
     writeFileIfChanged(tsConfigBuildPath, JSON.stringify(tsConfig, null, 4))
@@ -902,7 +933,7 @@ function runTypescript(bb) {
     let args = [
         path.join(JS_DIR, 'node_modules/.bin/tsc'),
         '--project',
-        tsConfigBuildPath,
+        bb.specs.meta?.manifest?.tsConfig || tsConfigBuildPath,
     ];
 
     let res = child_process.spawnSync('node', args, {
@@ -966,7 +997,7 @@ function logException(exc) {
 function enumDir(dir) {
     let paths = []
 
-    for (let e of fs.readdirSync(dir, {withFileTypes: true})) {
+    for (let e of fs.readdirSync(dir, { withFileTypes: true })) {
         let p = path.join(dir, e.name)
         if (e.isDirectory())
             paths = paths.concat(enumDir(p))

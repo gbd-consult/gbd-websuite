@@ -38,14 +38,18 @@ def _version(val, js, path):
 
 def _plugins(val, js, path):
     plugins = []
-    basedir = os.path.dirname(path)
 
     for p in val:
-        path = p['path'] if os.path.isabs(p['path']) else os.path.abspath(os.path.join(basedir, p['path']))
+        path = _relpath(p['path'], js, path)
         name = p.get('name') or os.path.basename(path)
         plugins.append({'name': name, 'path': path})
 
     return plugins
+
+
+def _relpath(val, js, path):
+    basedir = os.path.dirname(path)
+    return val if os.path.isabs(val) else os.path.abspath(os.path.join(basedir, val))
 
 
 def _strlist(val, js, path):
@@ -65,6 +69,7 @@ _KEYS = [
     ('release', _version, None),
     ('locales', _strlist, []),
     ('plugins', _plugins, []),
+    ('tsConfig', _relpath, ''),
     ('excludePlugins', _strlist, []),
     ('withFallbackConfig', _bool, False),
     ('withStrictConfig', _bool, False),

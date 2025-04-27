@@ -1,7 +1,9 @@
 import * as ReactDOM from 'react-dom';
 
-import * as gc from 'gc';
-import {GWS_VERSION} from 'gws';
+import {gws, GWS_VERSION} from '../gws';
+import * as types from '../types';
+import * as registry from '../core/registry';
+import * as application from '../core/application';
 
 
 const ID_OPTIONS = 'gwsOptions';
@@ -13,7 +15,7 @@ export async function main(win, strings) {
 
 async function _main2(win, strings) {
 
-    let tags = gc.getRegisteredTags()
+    let tags = registry.getRegisteredTags()
 
     let domNode = document.querySelector('.' + CLASS_CONTAINER);
 
@@ -65,7 +67,7 @@ async function _main2(win, strings) {
         Object.assign(options, JSON.parse(optsScript.textContent));
     }
 
-    let app = await gc.Application.create(options);
+    let app = await application.Application.create(options);
     if (app) {
         window['DEBUG_APP'] = app;
         ReactDOM.render(app.rootController.defaultView, domNode);

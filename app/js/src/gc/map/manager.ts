@@ -1,7 +1,7 @@
 import * as ol from 'openlayers';
 import * as proj4 from 'proj4';
 
-import {gws} from 'gws';
+import {gws} from '../gws';
 import * as types from '../types';
 import * as lib from '../lib';
 
@@ -22,7 +22,6 @@ let layerTypes = {
 import {Feature} from './feature';
 
 import * as interactions from './interactions';
-import {IModelRegistry} from "../types";
 
 const POINTER_UPDATE_INTERVAL = 10;
 const VIEW_UPDATE_INTERVAL = 1000;

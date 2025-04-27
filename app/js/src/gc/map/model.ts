@@ -1,7 +1,7 @@
 import * as ol from "openlayers";
 
 
-import {gws} from 'gws';
+import {gws} from '../gws';
 import * as types from '../types';
 import * as feature from './feature';
 import * as lib from '../lib';

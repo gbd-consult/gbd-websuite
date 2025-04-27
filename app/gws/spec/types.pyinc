@@ -17,6 +17,8 @@ class ApplicationManifest(Data):
     """Custom plugins."""
     locales: list[str]
     """Locale names supported by this application."""
+    tsConfig: list[str]
+    """Path to tsconfig.json."""
     withFallbackConfig: bool = False
     """Use a minimal fallback configuration."""
     withStrictConfig: bool = False

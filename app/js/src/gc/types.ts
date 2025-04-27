@@ -1,8 +1,9 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import {gws, Api, BaseServer} from '../gws'
+import {gws, Api} from './gws'
 import {ModelRegistry} from 'gc/map/model';
+
 
 export interface Dict {
     [key: string]: any;
