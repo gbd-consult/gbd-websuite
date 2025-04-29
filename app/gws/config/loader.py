@@ -95,7 +95,7 @@ class Object:
 
         self._print_report(True)
 
-        self.root.app.config.configPaths = list(self.allConfigPaths)
+        setattr(self.root.app.config, 'configPaths', list(self.allConfigPaths))
         return self.root
 
     def parse(self):
@@ -138,7 +138,7 @@ class Object:
             return
 
         gws.log.info(f'using config {self.configPath!r}...')
-        pr = parser.parse_app_config_path(self.configPath, self.specs)
+        pr = parser.parse_app_config_path(self.configPath, gws.u.require(self.specs))
         for err in pr.errors:
             self._error(err)
         self.allConfigPaths.update(pr.paths)
@@ -146,7 +146,7 @@ class Object:
         return pr.config
 
     def _create_root(self):
-        root = initialize(self.specs, self.config)
+        root = initialize(gws.u.require(self.specs), gws.u.require(self.config))
         if root:
             for err in root.configErrors:
                 self._error(err)
@@ -195,6 +195,8 @@ class Object:
 
         if path.endswith('.py'):
             fn = gws.lib.importer.load_file(path).get('main')
+            if not fn:
+                raise gws.ConfigurationError(f'invalid {name} hook: {path!r}')
             fn(self)
             return
 
@@ -240,10 +242,10 @@ class Object:
 
 
 def configure(
-    manifest_path=None,
-    config_path=None,
-    config=None,
-    fallback_config=None,
+    manifest_path='',
+    config_path='',
+    config='',
+    fallback_config='',
     with_spec_cache=True,
     is_starting=False,
 ) -> Optional[gws.Root]:
@@ -260,14 +262,14 @@ def configure(
     return cc.configure()
 
 
-def parse(manifest_path=None, config_path=None) -> Optional[gws.Config]:
+def parse(manifest_path='', config_path='') -> Optional[gws.Config]:
     """Parse input configuration and return a config object. """
 
     cc = Object(manifest_path, config_path)
     return cc.parse()
 
 
-def initialize(specs: gws.spec.runtime.Object, config: gws.Config) -> gws.Root:
+def initialize(specs: gws.SpecRuntime, config: gws.Config) -> gws.Root:
     root = gws.create_root(specs)
     root.create_application(config)
     root.post_initialize()
