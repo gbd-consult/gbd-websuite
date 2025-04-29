@@ -17,7 +17,7 @@ import gws.base.shape
 import gws.base.web.wsgi_app
 import gws.config
 import gws.lib.crs
-import gws.lib.cli as cli
+import gws.lib.cli
 import gws.lib.jsonx
 import gws.lib.net
 import gws.lib.sa as sa
@@ -47,11 +47,28 @@ def option(name, default=None):
     return OPTIONS.get(name, default)
 
 
+def load_options(base_dir):
+    global OPTIONS
+
+    OPTIONS = gws.lib.jsonx.from_path(f'{base_dir}/config/OPTIONS.json')
+    OPTIONS['BASE_DIR'] = base_dir
+
+    ensure_dir(OPTIONS['BASE_DIR'] + '/tmp', clear=True)
+
+    if not gws.env.GWS_IN_CONTAINER:
+        # if we are not in a container, use 'localhost:exposed_port' for all services
+        for k, v in OPTIONS.items():
+            if k.endswith('.host'):
+                OPTIONS[k] = 'localhost'
+            if k.endswith('.port'):
+                OPTIONS[k] = OPTIONS[k.replace('.port', '.expose_port')]
+
+
 ##
 
 
 def _config_defaults():
-    return f'''
+    return f"""
         database.providers+ {{ 
             uid "GWS_TEST_POSTGRES_PROVIDER" 
             type "postgres" 
@@ -62,7 +79,7 @@ def _config_defaults():
             database {OPTIONS['service.postgres.database']!r}
             schemaCacheLifeTime 0 
         }}
-    '''
+    """
 
 
 def _to_data(x):
@@ -90,11 +107,7 @@ def gws_specs() -> gws.SpecRuntime:
 
     if _GWS_SPEC_DICT is None:
         base = option('BASE_DIR')
-        _GWS_SPEC_DICT = gws.spec.runtime.get_spec(
-            f'{base}/config/MANIFEST.json',
-            read_cache=False,
-            write_cache=False
-        )
+        _GWS_SPEC_DICT = gws.spec.runtime.get_spec(f'{base}/config/MANIFEST.json', read_cache=False, write_cache=False)
 
     return gws.spec.runtime.Object(_GWS_SPEC_DICT)
 
@@ -106,7 +119,7 @@ def gws_root(config: str = '', specs: gws.SpecRuntime = None, activate=True, def
     config = f'server.log.level {gws.log.get_level()}\n' + config
     parsed_config = _to_data(gws.lib.vendor.slon.parse(config, as_object=True))
     specs = mock.register(specs or gws_specs())
-    root = gws.config.initialize(specs, parsed_config)
+    root = gws.config.initialize(specs, gws.Config(parsed_config))
     if root.configErrors:
         for err in root.configErrors:
             gws.log.error(f'CONFIGURATION ERROR: {err}')
@@ -121,13 +134,14 @@ def gws_system_user():
     return gws.base.auth.user.SystemUser(None, roles=[])
 
 
-def get_db(root):
+def get_db(root) -> gws.DatabaseProvider:
     return root.get('GWS_TEST_POSTGRES_PROVIDER')
 
 
 ##
 
 # ref: https://werkzeug.palletsprojects.com/en/3.0.x/test/
+
 
 class TestResponse(werkzeug.test.TestResponse):
     cookies: dict[str, werkzeug.test.Cookie]
@@ -173,9 +187,9 @@ class http:
 
 ##
 
+
 class pg:
     saEngine: Optional[sa.Engine] = None
-    saConn: Optional[sa.Connection] = None
 
     @classmethod
     def connect(cls):
@@ -191,48 +205,46 @@ class pg:
                 port=OPTIONS['service.postgres.port'],
                 path=OPTIONS['service.postgres.database'],
             )
-            cls.saEngine = sa.create_engine(url)
+            cls.saEngine = sa.create_engine(url, poolclass=sa.NullPool)
 
-        if not cls.saConn:
-            cls.saConn = cls.saEngine.connect()
-
-        return cls.saConn
+        return cls.saEngine.connect()
 
     @classmethod
-    def close(cls):
-        if cls.saConn:
-            cls.saConn.close()
-            cls.saConn = None
+    def create_schema(cls, name: str):
+        with cls.connect() as conn:
+            conn.execute(sa.text(f'DROP SCHEMA IF EXISTS {name} CASCADE'))
+            conn.execute(sa.text(f'CREATE SCHEMA {name}'))
+            conn.commit()
 
     @classmethod
     def create(cls, table_name: str, col_defs: dict):
-        conn = cls.connect()
-        conn.execute(sa.text(f'DROP TABLE IF EXISTS {table_name} CASCADE'))
-        ddl = _comma(f'{k} {v}' for k, v in col_defs.items())
-        conn.execute(sa.text(f'CREATE TABLE {table_name} ( {ddl} )'))
-        conn.commit()
+        with cls.connect() as conn:
+            conn.execute(sa.text(f'DROP TABLE IF EXISTS {table_name} CASCADE'))
+            ddl = _comma(f'{k} {v}' for k, v in col_defs.items())
+            conn.execute(sa.text(f'CREATE TABLE {table_name} ( {ddl} )'))
+            conn.commit()
 
     @classmethod
     def clear(cls, table_name: str):
-        conn = cls.connect()
-        conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
-        conn.commit()
+        with cls.connect() as conn:
+            conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
+            conn.commit()
 
     @classmethod
     def insert(cls, table_name: str, row_dicts: list[dict]):
-        conn = cls.connect()
-        conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
-        if row_dicts:
-            names = _comma(k for k in row_dicts[0])
-            values = _comma(':' + k for k in row_dicts[0])
-            ins = sa.text(f'INSERT INTO {table_name} ( {names} ) VALUES( {values} )')
-            conn.execute(ins, row_dicts)
-        conn.commit()
+        with cls.connect() as conn:
+            conn.execute(sa.text(f'TRUNCATE TABLE {table_name}'))
+            if row_dicts:
+                names = _comma(k for k in row_dicts[0])
+                values = _comma(':' + k for k in row_dicts[0])
+                ins = sa.text(f'INSERT INTO {table_name} ( {names} ) VALUES( {values} )')
+                conn.execute(ins, row_dicts)
+            conn.commit()
 
     @classmethod
     def rows(cls, sql: str) -> list[tuple]:
-        conn = cls.connect()
-        return [tuple(r) for r in conn.execute(sa.text(sql))]
+        with cls.connect() as conn:
+            return [tuple(r) for r in conn.execute(sa.text(sql))]
 
     @classmethod
     def content(cls, sql_or_table_name: str) -> list[tuple]:
@@ -242,14 +254,39 @@ class pg:
 
     @classmethod
     def exec(cls, sql: str, **kwargs):
-        conn = cls.connect()
-        for s in sql.split(';'):
-            if s.strip():
-                conn.execute(sa.text(s.strip()), kwargs)
-        conn.commit()
+        with cls.connect() as conn:
+            for s in sql.split(';'):
+                if s.strip():
+                    conn.execute(sa.text(s.strip()), kwargs)
+            conn.commit()
+
+    @classmethod
+    def connections(cls):
+        with cls.connect() as conn:
+            mark = gws.u.random_string(16)
+            sql = f"""
+            SELECT 
+                *,
+                '{mark}' AS _mark
+            FROM 
+                pg_stat_activity
+            WHERE 
+                backend_type = 'client backend'
+            """
+
+            rs = []
+            for r in conn.execute(sa.text(sql)):
+                r = r._asdict()
+                r.pop('_mark', None)
+                q = r.get('query', '')
+                if mark in q:
+                    continue
+                rs.append(r)
+            return rs
 
 
 ##
+
 
 class log:
     _buf = []
@@ -325,18 +362,14 @@ class mockserver:
 
 ##
 
+
 def fxml(s):
     s = re.sub(r'\s+', ' ', s.strip())
-    return (
-        s
-        .replace(' <', '<')
-        .replace('< ', '<')
-        .replace(' >', '>')
-        .replace('> ', '>')
-    )
+    return s.replace(' <', '<').replace('< ', '<').replace(' >', '>').replace('> ', '>')
 
 
 ##
+
 
 def unlink(path):
     if os.path.isfile(path):

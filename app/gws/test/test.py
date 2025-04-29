@@ -81,6 +81,8 @@ def main(args):
     OPTIONS['LOCAL_APP_DIR'] = LOCAL_APP_DIR
 
     p = OPTIONS.get('runner.base_dir') or gws.env.GWS_TEST_DIR
+    if not p:
+        raise ValueError('GWS_TEST_DIR not set')
     if not os.path.isabs(p):
         p = os.path.realpath(os.path.join(LOCAL_APP_DIR, p))
     OPTIONS['BASE_DIR'] = p
@@ -262,7 +264,7 @@ def make_env():
         'PYTHONDONTWRITEBYTECODE': '1',
         'GWS_UID': OPTIONS.get('runner.uid'),
         'GWS_GID': OPTIONS.get('runner.gid'),
-        'GWS_TIMEZONE': OPTIONS.get('service.gws.time_zone', 'UTC'),
+        'GWS_TIMEZONE': OPTIONS.get('service.gws.time_zone', 'Etc/UTC'),
         'POSTGRES_DB': OPTIONS.get('service.postgres.database'),
         'POSTGRES_PASSWORD': OPTIONS.get('service.postgres.password'),
         'POSTGRES_USER': OPTIONS.get('service.postgres.user'),
@@ -315,24 +317,6 @@ def service_qgis():
     )
 
 
-_POSTGRESQL_CONF = """
-listen_addresses = '*'
-max_wal_size = 1GB
-min_wal_size = 80MB
-log_timezone = 'Etc/UTC'
-datestyle = 'iso, mdy'
-timezone = 'Etc/UTC'
-default_text_search_config = 'pg_catalog.english'
-
-logging_collector = 0
-log_line_prefix = '%t %c %a %r '
-log_statement = 'all'
-log_connections = 1
-log_disconnections = 1
-log_duration = 1
-log_hostname = 0
-"""
-
 _POSTGRESQL_ENTRYPOINT = """
 #!/usr/bin/env bash
 
@@ -356,9 +340,29 @@ def service_postgres():
     # - we need a custom config file
 
     base = OPTIONS['BASE_DIR']
+    tz = OPTIONS.get('service.gws.time_zone', 'Etc/UTC')
+
+    conf = f"""
+        listen_addresses = '*'
+        max_wal_size = 1GB
+        min_wal_size = 80MB
+        log_timezone = '{tz}'
+        timezone = '{tz}'
+        datestyle = 'iso, mdy'
+        default_text_search_config = 'pg_catalog.english'
+
+        logging_collector = 0
+        log_line_prefix = '%t %c %a %r '
+        log_statement = 'all'
+        log_connections = 1
+        log_disconnections = 1
+        log_duration = 1
+        log_hostname = 0
+    """
+
 
     ep = write_exec(f'{base}/config/postgres_entrypoint', _POSTGRESQL_ENTRYPOINT)
-    cf = write_file(f'{base}/config/postgresql.conf', _POSTGRESQL_CONF)
+    cf = write_file(f'{base}/config/postgresql.conf', dedent(conf))
 
     ensure_dir(f'{base}/postgres')
 
@@ -467,6 +471,15 @@ def ensure_dir(path, clear=False):
     os.makedirs(path, exist_ok=True)
     if clear:
         _clear(path)
+
+def dedent(text):
+    lines = text.split('\n')
+    ind = 100_000
+    for ln in lines:
+        n = len(ln.lstrip())
+        if n > 0:
+            ind = min(ind, len(ln) - n)
+    return '\n'.join(ln[ind:] for ln in lines)
 
 
 ##

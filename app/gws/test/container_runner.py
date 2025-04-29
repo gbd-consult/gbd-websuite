@@ -15,9 +15,7 @@ import pytest
 
 import gws
 import gws.lib.cli as cli
-import gws.lib.jsonx
 import gws.lib.osx
-import gws.spec.runtime
 import gws.test.util as u
 
 USAGE = """
@@ -47,19 +45,8 @@ def main(args):
     gws.u.ensure_system_dirs()
 
     base = args.get('base') or args.get('b') or gws.env.GWS_TEST_DIR
-    u.OPTIONS = gws.lib.jsonx.from_path(f'{base}/config/OPTIONS.json')
-    u.OPTIONS['BASE_DIR'] = base
-
-    u.ensure_dir(u.OPTIONS['BASE_DIR'] + '/tmp', clear=True)
-
-    if not gws.env.GWS_IN_CONTAINER:
-        # if we are not in a container, use 'localhost:exposed_port' for all services
-        for k, v in u.OPTIONS.items():
-            if k.endswith('.host'):
-                u.OPTIONS[k] = 'localhost'
-            if k.endswith('.port'):
-                u.OPTIONS[k] = u.OPTIONS[k.replace('.port', '.expose_port')]
-
+    u.load_options(base)
+    
     pytest_args = [
         f'--config-file={base}/config/pytest.ini',
         f'--rootdir=/gws-app',
@@ -143,7 +130,6 @@ def health_check():
 def health_check_service_postgres():
     try:
         r = u.pg.rows('select 1')
-        u.pg.close()
     except Exception as exc:
         return repr(exc)
 
