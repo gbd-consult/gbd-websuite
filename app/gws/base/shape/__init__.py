@@ -279,10 +279,8 @@ class Shape(gws.Shape):
     def to_wkt(self, trim=False, rounding_precision=-1, output_dimension=3):
         s = shapely.wkt.dumps(self.geom, trim=trim, rounding_precision=rounding_precision, output_dimension=output_dimension)
         # remove excess spacing
+        s = re.sub(r'\s*([,()])\s*', r'\1', s)
         s = re.sub(r'\s+', ' ', s.strip())
-        s = re.sub(r'\s*,\s*', ',', s)
-        s = re.sub(r'\s*\(\s*', '(', s)
-        s = re.sub(r'\s*\)\s*', ')', s)
         return s
 
         s = s.replace(' (', '(')

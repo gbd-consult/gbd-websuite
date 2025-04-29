@@ -61,38 +61,39 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             raise gws.ForbiddenError()
 
         mc.search = search
-        mc.dbSelect = gws.ModelDbSelect(
+        mc.dbSelect = gws.ModelSelectBuild(
             columns=[],
             geometryWhere=[],
             keywordWhere=[],
             order=[],
-            where=[]
+            where=[],
         )
 
         with self.db.connect() as conn:
             for fld in self.fields:
                 fld.before_select(mc)
 
-            sql = self._make_select(mc)
+            sql = self._compile_select(mc)
             if sql is None:
                 gws.log.debug('empty select')
                 return []
 
             features = []
 
-            for row in conn.execute(sql):
-                features.append(gws.base.feature.new(
-                    model=self,
-                    record=gws.FeatureRecord(attributes=gws.u.to_dict(row))
-                ))
+            for row in conn.fetch_all(sql):
+                features.append(
+                    gws.base.feature.new(
+                        model=self,
+                        record=gws.FeatureRecord(attributes=row),
+                    )
+                )
 
             for fld in self.fields:
                 fld.after_select(features, mc)
 
         return features
 
-    def _make_select(self, mc: gws.ModelContext) -> Optional[sa.Select]:
-
+    def _compile_select(self, mc: gws.ModelContext) -> Optional[sa.Select]:
         # @TODO this should happen on the field level
         sorts = mc.search.sort or self.defaultSort or []
         for s in sorts:
@@ -175,7 +176,13 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
             sql = sa.insert(self.table())
             rs = conn.execute(sql, feature.record.attributes)
-            feature.insertedPrimaryKey = rs.inserted_primary_key[0]
+            pk = rs.inserted_primary_key
+            if not pk:
+                feature.insertedPrimaryKey = None
+            elif len(pk) == 1:
+                feature.insertedPrimaryKey = pk[0]
+            else:
+                raise gws.Error(f'composite primary keys not supported for {self.tableName!r}')
 
             for fld in self.fields:
                 fld.after_create(feature, mc)
@@ -201,11 +208,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             if not feature.record.attributes:
                 return feature.uid()
 
-            sql = self.table().update().where(
-                self.uid_column().__eq__(feature.uid())
-            ).values(
-                feature.record.attributes
-            )
+            sql = self.table().update().where(self.uid_column().__eq__(feature.uid())).values(feature.record.attributes)
             conn.execute(sql)
 
             for fld in self.fields:
@@ -223,9 +226,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             for fld in self.fields:
                 fld.before_delete(feature, mc)
 
-            sql = sa.delete(self.table()).where(
-                self.uid_column().__eq__(feature.uid())
-            )
+            sql = sa.delete(self.table()).where(self.uid_column().__eq__(feature.uid()))
 
             conn.execute(sql)
 

@@ -1,113 +1,44 @@
-import gws.base.database
+import gws
 import gws.lib.sa as sa
 import gws.test.util as u
+import gws.base.database.provider
 
 
 @u.fixture(scope='module')
-def root():
-    yield u.gws_root()
+def db():
+    u.pg.create_schema('s1')
+    u.pg.create_schema('s2')
+    u.pg.create('s1.tab1', {'id': 'int primary key', 'a': 'text'})
+    u.pg.create('s2.tab2', {'id': 'int primary key', 'a': 'text'})
+
+    root = u.gws_root()
+    yield u.get_db(root)
 
 
 ##
 
-def test_error(root: gws.Root):
-    db = u.get_db(root)
 
-    err = ''
+def test_table(db):
+    tab = db.table('s1.tab1')
+    assert tab is not None
+    with u.raises(sa.Error):
+        tab = db.table('s1.ZZZ')
+
+
+def test_count(db: gws.DatabaseProvider):
+    tab = db.table('s1.tab1')
+
     with db.connect() as conn:
-        try:
-            conn.execute('not an object')
-        except sa.Error as e:
-            err = str(e)
-    assert 'Not an executable object' in err
+        conn.exec_commit('truncate s1.tab1')
+        conn.exec_commit(
+            tab.insert().values(
+            [
+                {'id': 1, 'a': 'X'},
+                {'id': 2, 'a': 'Y'},
+                {'id': 3, 'a': 'Z'},
+            ]),
+        )
+        conn.commit()
+        assert db.count(tab) == 3
 
-    err = ''
-    with db.connect() as conn:
-        try:
-            conn.execute(sa.text('select * from not_a_table'))
-        except sa.Error as e:
-            err = str(e)
-    assert 'UndefinedTable' in err
-
-
-def test_error_rollback(root: gws.Root):
-    db = u.get_db(root)
-
-    err = ''
-    with db.connect() as conn:
-        try:
-            conn.execute(sa.text('select * from not_a_table'))
-        except sa.Error as e:
-            err = str(e)
-            conn.rollback()
-        try:
-            conn.execute(sa.text('select 1'))
-        except sa.Error as e:
-            err = 'FAILED'
-    assert 'UndefinedTable' in err
-
-
-def test_error_no_rollback(root: gws.Root):
-    db = u.get_db(root)
-
-    err = ''
-    with db.connect() as conn:
-        try:
-            conn.execute(sa.text('select * from not_a_table'))
-        except sa.Error as e:
-            err = str(e)
-            # no rollback
-        try:
-            conn.execute(sa.text('select 1'))
-        except sa.Error as e:
-            # ERROR:  current transaction is aborted...
-            err = 'FAILED'
-    assert 'FAILED' in err
-
-
-def test_nested_connections(root: gws.Root):
-    db = u.get_db(root)
-    db_name = u.option('service.postgres.database')
-
-    def _num_conn(c):
-        return (
-            c.execute(
-                sa.text(f"SELECT numbackends FROM pg_stat_database WHERE datname='{db_name}' "))
-        ).scalar_one()
-
-    with db.connect() as c1:
-        n1 = _num_conn(c1)
-        with db.connect() as c2:
-            n2 = _num_conn(c2)
-            with db.connect() as c3:
-                n3 = _num_conn(c3)
-
-    assert n1 == n2 == n3
-
-
-def test_nested_connection_opens_once(root: gws.Root):
-    db = u.get_db(root)
-
-    log = []
-
-    class MockConn:
-        def __init__(self):
-            log.append('OPEN')
-
-        def execute(self, s):
-            log.append(f'EXEC {s}')
-
-        def close(self):
-            log.append('CLOSE')
-
-    with u.monkey_patch() as mp:
-        mp.setattr(sa.Engine, 'connect', lambda *args: MockConn())
-
-        with db.connect() as conn:
-            conn.execute('1')
-            with db.connect() as conn:
-                conn.execute('2')
-                with db.connect() as conn:
-                    conn.execute('3')
-
-    assert log == ['OPEN', 'EXEC 1', 'EXEC 2', 'EXEC 3', 'CLOSE']
+# @TODO other provider methods

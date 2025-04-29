@@ -145,7 +145,7 @@ class Error(gws.Error):
     pass
 
 
-def get(crs_name: gws.CrsName) -> Optional[gws.Crs]:
+def get(crs_name: Optional[gws.CrsName]) -> Optional[gws.Crs]:
     """Returns the CRS for a given CRS-code or SRID."""
     if not crs_name:
         return None

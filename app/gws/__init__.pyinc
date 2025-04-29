@@ -30,7 +30,6 @@ import enum
 if TYPE_CHECKING:
     import datetime
     import sqlalchemy
-    import sqlalchemy.orm
     import numpy.typing
 
 # mypy: disable-error-code="empty-body"

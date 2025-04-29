@@ -1,16 +1,18 @@
-from typing import Optional, cast
+from typing import Optional, cast, Generator
 import contextlib
+import threading
 
-from . import connection
 
 import gws
 import gws.lib.sa as sa
+
+from . import connection
 
 
 class Config(gws.Config):
     """Database provider"""
 
-    schemaCacheLifeTime: gws.Duration = 3600
+    schemaCacheLifeTime: gws.Duration = '3600'
     """life time for schema caches"""
     withPool: Optional[bool] = False
     """Use connection pooling"""
@@ -18,38 +20,52 @@ class Config(gws.Config):
     """Options for connection pooling."""
 
 
+_thread_local = threading.local()
+
+
 class Object(gws.DatabaseProvider):
     saEngine: sa.Engine
     saMetaMap: dict[str, sa.MetaData]
-    saConnection: Optional[sa.Connection]
-    saConnectionCount: int
 
     def __getstate__(self):
-        return gws.u.omit(vars(self), 'saMetaMap', 'saEngine', 'saConnection')
+        return gws.u.omit(vars(self), 'saMetaMap', 'saEngine')
 
     def configure(self):
         # init a dummy engine just to check things
-        self.saEngine = self.engine(poolclass=sa.NullPool)
+        self.saEngine = self.create_engine(poolclass=sa.NullPool)
         self.saMetaMap = {}
-        self.saConnection = None
-        self.saConnectionCount = 0
 
     def activate(self):
-        self.saEngine = self.engine()
+        self.saEngine = self.create_engine()
         self.saMetaMap = {}
-        self.saConnection = None
-        self.saConnectionCount = 0
 
-    def engine(self, **kwargs):
+    def engine(self):
+        eng = getattr(self, 'saEngine', None)
+        if eng is not None:
+            return eng
+        self.saEngine = self.create_engine()
+        return self.saEngine
+
+    def create_engine(self, **kwargs):
         eng = sa.create_engine(self.url(), **self.engine_options(**kwargs))
-        setattr(eng, '_connection_cls', connection.Object)
+        # setattr(eng, '_connection_cls', connection.Object)
         return eng
 
     def engine_options(self, **kwargs):
+        if self.root.app.developer_option('db.engine_echo'):
+            kwargs.setdefault('echo', True)
+            kwargs.setdefault('echo_pool', True)
+
+        if self.cfg('withPool') is False:
+            kwargs.setdefault('poolclass', sa.NullPool)
+            return kwargs
+
         pool = self.cfg('pool') or {}
         p = pool.get('disabled')
         if p is True:
             kwargs.setdefault('poolclass', sa.NullPool)
+            return kwargs
+
         p = pool.get('pre_ping')
         if p is True:
             kwargs.setdefault('pool_pre_ping', True)
@@ -62,10 +78,6 @@ class Object(gws.DatabaseProvider):
         p = pool.get('timeout')
         if isinstance(p, int):
             kwargs.setdefault('pool_timeout', p)
-
-        if self.root.app.developer_option('db.engine_echo'):
-            kwargs.setdefault('echo', True)
-            kwargs.setdefault('echo_pool', True)
 
         return kwargs
 
@@ -82,9 +94,8 @@ class Object(gws.DatabaseProvider):
 
             gws.debug.time_start(f'AUTOLOAD {self.uid=} {schema=}')
             with self.connect() as conn:
-                md.reflect(conn, schema, resolve_fks=False, views=True)
+                md.reflect(conn.saConn, schema, resolve_fks=False, views=True)
             gws.debug.time_end()
-
             return md
 
         life_time = self.cfg('schemaCacheLifeTime', 0)
@@ -93,74 +104,87 @@ class Object(gws.DatabaseProvider):
         else:
             self.saMetaMap[schema] = gws.u.get_cached_object(f'database_metadata_schema_{schema}', life_time, _load)
 
-    @contextlib.contextmanager
     def connect(self):
-        if self.saConnection is None:
-            self.saConnection = self.saEngine.connect()
-            # gws.log.debug(f'db connection opened: {self.saConnection}')
-            self.saConnectionCount = 1
+        conn = self._open_connection()
+        return connection.Object(self, conn)
+
+    def _sa_connection(self) -> sa.Connection | None:
+        return getattr(_thread_local, '_connection', None)
+
+    def _open_connection(self) -> sa.Connection:
+        conn = getattr(_thread_local, '_connection', None)
+        cc = getattr(_thread_local, '_connectionCount', 0)
+
+        if conn is None:
+            assert cc == 0
+            conn = self.engine().connect()
+            setattr(_thread_local, '_connection', conn)
         else:
-            self.saConnectionCount += 1
+            assert cc > 0
+        
+        setattr(_thread_local, '_connectionCount', cc + 1)
+        gws.log.debug(f'db.connect: open: {cc + 1}')
+        return conn
 
-        try:
-            yield self.saConnection
-        finally:
-            self.saConnectionCount -= 1
-            if self.saConnectionCount == 0:
-                self.saConnection.close()
-                # gws.log.debug(f'db connection closed: {self.saConnection}')
-                self.saConnection = None
+    def _close_connection(self):
+        conn = getattr(_thread_local, '_connection', None)
+        cc = getattr(_thread_local, '_connectionCount', 0)
+        assert conn is not None
+        assert cc > 0
+        gws.log.debug(f'db.connect: close: {cc}')
+        if cc == 1:
+            if conn:
+                conn.close()
+            setattr(_thread_local, '_connection', None)
+            setattr(_thread_local, '_connectionCount', 0)
+        else:
+            setattr(_thread_local, '_connectionCount', cc - 1)
 
-    def table(self, table_name, **kwargs):
-        sa_table = self._sa_table(table_name)
-        if sa_table is None:
-            raise sa.Error(f'table {table_name!r} not found')
-        return sa_table
+    def table(self, table, **kwargs):
+        tab = self._sa_table(table)
+        if tab is None:
+            raise sa.Error(f'table {str(table)} not found')
+        return tab
 
     def count(self, table):
-        sa_table = self._sa_table(table)
-        if sa_table is None:
+        tab = self._sa_table(table)
+        if tab is None:
             return 0
-        sql = sa.select(sa.func.count()).select_from(sa_table)
+        sql = sa.select(sa.func.count()).select_from(tab)
         with self.connect() as conn:
-            try:
-                r = list(conn.execute(sql))
-                return r[0][0]
-            except sa.Error:
-                conn.rollback()
-                return 0
+            return conn.fetch_int(sql)
 
     def has_table(self, table_name: str):
-        sa_table = self._sa_table(table_name)
-        return sa_table is not None
+        tab = self._sa_table(table_name)
+        return tab is not None
 
-    def _sa_table(self, tab_or_name) -> sa.Table:
+    def _sa_table(self, tab_or_name) -> sa.Table | None:
         if isinstance(tab_or_name, sa.Table):
             return tab_or_name
         schema, name = self.split_table_name(tab_or_name)
         self.reflect_schema(schema)
         # see _get_table_key in sqlalchemy/sql/schema.py
         table_key = schema + '.' + name
-        return self.saMetaMap[schema].tables.get(table_key)
+        sm = self.saMetaMap[schema]
+        if sm is None:
+            raise sa.Error(f'schema {schema!r} not found')
+        return sm.tables.get(table_key)
 
     def column(self, table, column_name):
-        sa_table = self._sa_table(table)
+        tab = self.table(table)
         try:
-            return sa_table.columns[column_name]
+            return tab.columns[column_name]
         except KeyError:
             raise sa.Error(f'column {str(table)}.{column_name!r} not found')
 
     def has_column(self, table, column_name):
-        sa_table = self._sa_table(table)
-        return sa_table is not None and column_name in sa_table.columns
+        tab = self._sa_table(table)
+        return tab is not None and column_name in tab.columns
 
     def select_text(self, sql, **kwargs):
         with self.connect() as conn:
             try:
-                return [
-                    gws.u.to_dict(r)
-                    for r in conn.execute(sa.text(sql), kwargs)
-                ]
+                return [gws.u.to_dict(r) for r in conn.execute(sa.text(sql), kwargs)]
             except sa.Error:
                 conn.rollback()
                 raise
@@ -177,7 +201,6 @@ class Object(gws.DatabaseProvider):
 
     SA_TO_ATTR = {
         # common: sqlalchemy.sql.sqltypes
-
         'BIGINT': gws.AttributeType.int,
         'BOOLEAN': gws.AttributeType.bool,
         'CHAR': gws.AttributeType.str,
@@ -190,9 +213,7 @@ class Object(gws.DatabaseProvider):
         'TEXT': gws.AttributeType.str,
         # 'UUID': ...,
         'VARCHAR': gws.AttributeType.str,
-
         # postgres specific: sqlalchemy.dialects.postgresql.types
-
         # 'JSON': ...,
         # 'JSONB': ...,
         # 'BIT': ...,
@@ -238,25 +259,25 @@ class Object(gws.DatabaseProvider):
     UNKNOWN_ARRAY_TYPE = gws.AttributeType.strlist
 
     def describe(self, table):
-        sa_table = self._sa_table(table)
-        if sa_table is None:
+        tab = self._sa_table(table)
+        if tab is None:
             raise sa.Error(f'table {table!r} not found')
 
-        schema = sa_table.schema
-        name = sa_table.name
+        schema = tab.schema
+        name = tab.name
 
         desc = gws.DataSetDescription(
             columns=[],
             columnMap={},
-            fullName=self.join_table_name(schema, name),
+            fullName=self.join_table_name(schema or '', name),
             geometryName='',
             geometrySrid=0,
             geometryType='',
             name=name,
-            schema=schema
+            schema=schema,
         )
 
-        for n, sa_col in enumerate(cast(list[sa.Column], sa_table.columns)):
+        for n, sa_col in enumerate(cast(list[sa.Column], tab.columns)):
             col = self.describe_column(table, sa_col.name)
             col.columnIndex = n
             desc.columns.append(col)
@@ -294,3 +315,6 @@ class Object(gws.DatabaseProvider):
         col.type = self.SA_TO_ATTR.get(col.nativeType, self.UNKNOWN_TYPE)
 
         return col
+
+
+##

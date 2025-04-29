@@ -30,7 +30,6 @@ import enum
 if TYPE_CHECKING:
     import datetime
     import sqlalchemy
-    import sqlalchemy.orm
     import numpy.typing
 
 # mypy: disable-error-code="empty-body"
@@ -2215,7 +2214,7 @@ class Feature:
     record: 'FeatureRecord'
     views: dict
     createWithFeatures: list['Feature']
-    insertedPrimaryKey: str
+    insertedPrimaryKey: Optional[int | str]
 
     def get(self, name: str, default=None) -> Any: ...
 
@@ -2288,17 +2287,17 @@ class Shape(Object):
     def to_ewkb_hex(self) -> str:
         """Returns an EWKB representation of this shape as a hex string."""
 
-    def to_wkt(self) -> str:
+    def to_wkt(self, trim=False, rounding_precision=-1, output_dimension=3) -> str:
         """Returns a WKT representation of this shape."""
 
-    def to_ewkt(self) -> str:
+    def to_ewkt(self, trim=False, rounding_precision=-1, output_dimension=3) -> str:
         """Returns an EWKT representation of this shape."""
 
     def to_geojson(self, keep_crs=False) -> dict:
         """Returns a GeoJSON representation of this shape.
 
         Args:
-            keep_crs: Keep the CRS in the GeoJSON output.
+            keep_crs: Do not transform to WGS.
         """
 
     def to_props(self) -> ShapeProps:
@@ -3120,7 +3119,7 @@ class ModelReadTarget(Enum):
     """The feature is to be displayed in an edit form ."""
 
 
-class ModelDbSelect(Data):
+class ModelSelectBuild(Data):
     """Database select statement."""
 
     columns: list['sqlalchemy.Column']
@@ -3140,8 +3139,7 @@ class ModelContext(Data):
     relDepth: int = 0
     maxDepth: int = 0
     search: 'SearchQuery'
-    dbSelect: ModelDbSelect
-    dbConnection: 'sqlalchemy.Connection'
+    dbSelect: ModelSelectBuild
 
 
 EmptyValue = object()
@@ -3426,23 +3424,37 @@ class DatabaseConnection:
     Extends ``sqlalchemy.Connection`` and provides some convenience methods.
     """
 
-    def exec(self, statement: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
-        ...
+    saConn: 'sqlalchemy.Connection'
 
-    def exec_commit(self, statement: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
-        ...
+    def __enter__(self) -> 'DatabaseConnection': ...
+    
+    def __exit__(self, exc_type, exc_value, traceback): ...
 
-    def get_all(self, statement: 'DatabaseStmt', **params) -> list[dict]:
-        ...
+    def execute(self, stmt: 'sqlalchemy.Executable', params=None) -> 'sqlalchemy.CursorResult': ...
 
-    def get_first(self, statement: 'DatabaseStmt', **params) -> dict | None:
-        ...
+    def commit(self): ...
+    
+    def rollback(self): ...
+    
+    def close(self): ...
 
-    def get_scalars(self, statement: 'DatabaseStmt', **params) -> list:
-        ...
+    def exec_commit(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult': ...
 
-    def get_scalar(self, statement: 'DatabaseStmt', **params) -> Any:
-        ...
+    def fetch_all(self, stmt: 'DatabaseStmt', **params) -> list[dict]: ...
+
+    def fetch_first(self, stmt: 'DatabaseStmt', **params) -> dict | None: ...
+
+    def fetch_scalars(self, stmt: 'DatabaseStmt', **params) -> list: ...
+
+    def fetch_strings(self, stmt: 'DatabaseStmt', **params) -> list[str]: ...
+
+    def fetch_ints(self, stmt: 'DatabaseStmt', **params) -> list[int]: ...
+
+    def fetch_scalar(self, stmt: 'DatabaseStmt', **params) -> Any: ...
+
+    def fetch_string(self, stmt: 'DatabaseStmt', **params) -> str | None: ...
+
+    def fetch_int(self, stmt: 'DatabaseStmt', **params) -> str | None: ...
 
 
 class DatabaseProvider(Node):
@@ -3452,29 +3464,20 @@ class DatabaseProvider(Node):
     and provides common db functionality.
     """
 
-    def column(self, table: DatabaseTableAlike, column_name: str) -> 'sqlalchemy.Column':
-        """SQLAlchemy ``Column`` object for a specific column."""
-
-    def connect(self) -> Generator['DatabaseConnection', None, None]:
-        """Context manager for a SA ``Connection``.
+    def connect(self) -> 'DatabaseConnection':
+        """Context manager for SQLAlchemy ``Connection``.
 
         Context calls to this method can be nested. An inner call is a no-op, as no new connection is created.
         Only the outermost connection is closed upon exit::
 
             with db.connect():
                 ...
-                with db.connect(): # no-op
+                with db.connect():  # no-op
                     ...
                 # connection remains open
                 ...
             # connection closed
         """
-
-    def describe(self, table: DatabaseTableAlike) -> 'DataSetDescription':
-        """Describe a table."""
-
-    def count(self, table: DatabaseTableAlike) -> int:
-        """Return table record count or 0 if the table does not exist."""
 
     def engine_options(self, **kwargs):
         """Add defaults to the SA engine options."""
@@ -3482,14 +3485,29 @@ class DatabaseProvider(Node):
     def url(self) -> str:
         """Return the connection URL."""
 
-    def engine(self, **kwargs) -> 'sqlalchemy.Engine':
-        """SA ``Engine`` object for this provider."""
+    def engine(self) -> 'sqlalchemy.Engine':
+        """Get SQLAlchemy ``Engine`` object for this provider."""
 
-    def has_column(self, table: DatabaseTableAlike, column_name: str) -> bool:
-        """Check if a specific column exists."""
+    def create_engine(self, **kwargs) -> 'sqlalchemy.Engine':
+        """CreateSQLAlchemy ``Engine`` object for this provider."""
+
+    def describe(self, table: DatabaseTableAlike) -> 'DataSetDescription':
+        """Describe a table."""
+
+    def table(self, table: 'DatabaseTableAlike', **kwargs) -> 'sqlalchemy.Table':
+        """SQLAlchemy ``Table`` object for a specific table."""
+
+    def column(self, table: DatabaseTableAlike, column_name: str) -> 'sqlalchemy.Column':
+        """SQLAlchemy ``Column`` object for a specific column."""
+
+    def count(self, table: DatabaseTableAlike) -> int:
+        """Return table record count or 0 if the table does not exist."""
 
     def has_table(self, table_name: str) -> bool:
         """Check if a specific table exists."""
+
+    def has_column(self, table: DatabaseTableAlike, column_name: str) -> bool:
+        """Check if a specific column exists."""
 
     def join_table_name(self, schema: str, name: str) -> str:
         """Create a full table name from the schema and table names."""
@@ -3497,17 +3515,14 @@ class DatabaseProvider(Node):
     def split_table_name(self, table_name: str) -> tuple[str, str]:
         """Split a full table name into the schema and table names."""
 
-    def table(self, table_name: str, **kwargs) -> 'sqlalchemy.Table':
-        """SA ``Table`` object for a specific table."""
-
     def table_bounds(self, table: DatabaseTableAlike) -> Optional[Bounds]:
         """Compute a bounding box for the table primary geometry."""
 
     def select_text(self, sql: str, **kwargs) -> list[dict]:
-        """Execute a textual SELECT statement and return a list of record dicts."""
+        """Execute a textual SELECT stmt and return a list of record dicts."""
 
     def execute_text(self, sql: str, **kwargs) -> 'sqlalchemy.CursorResult':
-        """Execute a textual DML statement and return a result."""
+        """Execute a textual DML stmt and return a result."""
 ################################################################################
 
 
