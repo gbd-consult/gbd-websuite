@@ -45,17 +45,17 @@ class Shape(Object):
     def to_ewkb_hex(self) -> str:
         """Returns an EWKB representation of this shape as a hex string."""
 
-    def to_wkt(self) -> str:
+    def to_wkt(self, trim=False, rounding_precision=-1, output_dimension=3) -> str:
         """Returns a WKT representation of this shape."""
 
-    def to_ewkt(self) -> str:
+    def to_ewkt(self, trim=False, rounding_precision=-1, output_dimension=3) -> str:
         """Returns an EWKT representation of this shape."""
 
     def to_geojson(self, keep_crs=False) -> dict:
         """Returns a GeoJSON representation of this shape.
 
         Args:
-            keep_crs: Keep the CRS in the GeoJSON output.
+            keep_crs: Do not transform to WGS.
         """
 
     def to_props(self) -> ShapeProps:

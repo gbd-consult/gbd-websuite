@@ -7,6 +7,7 @@ Internally, it holds a pointer to a Shapely geometry object and a Crs object.
 # @TODO support for SQL/MM extensions
 
 import struct
+import re
 import shapely.geometry
 import shapely.ops
 import shapely.wkb
@@ -38,9 +39,9 @@ def from_wkt(wkt: str, default_crs: gws.Crs = None) -> gws.Shape:
     if wkt.startswith('SRID='):
         # EWKT
         c = wkt.index(';')
-        srid = wkt[len('SRID='):c]
+        srid = wkt[len('SRID=') : c]
         crs = gws.lib.crs.get(int(srid))
-        wkt = wkt[c + 1:]
+        wkt = wkt[c + 1 :]
     elif default_crs:
         crs = default_crs
     else:
@@ -84,7 +85,7 @@ def _from_wkb(wkb: bytes, default_crs):
     header = struct.unpack('<cLL' if byte_order == 1 else '>cLL', wkb[:9])
 
     if header[1] & 0x20000000:
-        crs = gws.lib.crs.get(header[2])
+        crs = gws.lib.crs.require(header[2])
     elif default_crs:
         crs = default_crs
     else:
@@ -205,7 +206,7 @@ def from_xy(x: float, y: float, crs: gws.Crs) -> gws.Shape:
 
 
 def _swap_xy(geom):
-    def f(x, y):
+    def f(x: float, y: float, z: float = None) -> tuple[float, float]:
         return y, x
 
     return shapely.ops.transform(f, geom)
@@ -221,7 +222,8 @@ def _shapely_shape(d):
             d.get('radius'),
             resolution=_CIRCLE_RESOLUTION,
             cap_style=shapely.geometry.CAP_STYLE.round,
-            join_style=shapely.geometry.JOIN_STYLE.round)
+            join_style=shapely.geometry.JOIN_STYLE.round,
+        )
 
     return shapely.geometry.shape(d)
 
@@ -231,6 +233,7 @@ def _shapely_shape(d):
 
 class Props(gws.Props):
     """Shape properties object."""
+
     crs: str
     geometry: dict
 
@@ -273,11 +276,20 @@ class Shape(gws.Shape):
     def to_ewkb_hex(self):
         return shapely.wkb.dumps(self.geom, srid=self.crs.srid, hex=True)
 
-    def to_wkt(self):
-        return shapely.wkt.dumps(self.geom)
+    def to_wkt(self, trim=False, rounding_precision=-1, output_dimension=3):
+        s = shapely.wkt.dumps(self.geom, trim=trim, rounding_precision=rounding_precision, output_dimension=output_dimension)
+        # remove excess spacing
+        s = re.sub(r'\s+', ' ', s.strip())
+        s = re.sub(r'\s*,\s*', ',', s)
+        s = re.sub(r'\s*\(\s*', '(', s)
+        s = re.sub(r'\s*\)\s*', ')', s)
+        return s
 
-    def to_ewkt(self):
-        return f'SRID={self.crs.srid};' + self.to_wkt()
+        s = s.replace(' (', '(')
+        s = s.replace(') ', ')')
+
+    def to_ewkt(self, trim=False, rounding_precision=-1, output_dimension=3):
+        return f'SRID={self.crs.srid};' + self.to_wkt(trim=trim, rounding_precision=rounding_precision, output_dimension=output_dimension)
 
     def to_geojson(self, keep_crs=False):
         # see https://datatracker.ietf.org/doc/html/rfc7946#section-4
@@ -292,9 +304,7 @@ class Shape(gws.Shape):
         return shapely.geometry.mapping(new_geom)
 
     def to_props(self):
-        return gws.ShapeProps(
-            crs=self.crs.epsg,
-            geometry=shapely.geometry.mapping(self.geom))
+        return gws.ShapeProps(crs=self.crs.epsg, geometry=shapely.geometry.mapping(self.geom))
 
     def is_empty(self):
         return self.geom.is_empty
