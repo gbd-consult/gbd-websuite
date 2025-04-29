@@ -1,0 +1,97 @@
+version: '3'
+
+services:
+  db:
+    image: postgis/postgis:13-3.1
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=qfieldcloud
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+
+  web:
+    build:
+      context: ./
+      dockerfile: docker/django/Dockerfile
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
+               python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./:/code/
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+      - minio
+    environment:
+      - DATABASE_URL=postgis://docker:docker@db:5432/qfieldcloud
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_STORAGE_ENDPOINT=minio:9000
+      - MINIO_STORAGE_ACCESS_KEY=minioadmin
+      - MINIO_STORAGE_SECRET_KEY=minioadmin
+      - MINIO_STORAGE_USE_HTTPS=False
+      - DJANGO_SETTINGS_MODULE=qfieldcloud.settings
+      - DEBUG=True
+
+  worker:
+    build:
+      context: ./
+      dockerfile: docker/django/Dockerfile
+    command: celery -A qfieldcloud worker -l info
+    volumes:
+      - ./:/code/
+    depends_on:
+      - db
+      - redis
+      - minio
+    environment:
+      - DATABASE_URL=postgis://docker:docker@db:5432/qfieldcloud
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_STORAGE_ENDPOINT=minio:9000
+      - MINIO_STORAGE_ACCESS_KEY=minioadmin
+      - MINIO_STORAGE_SECRET_KEY=minioadmin
+      - MINIO_STORAGE_USE_HTTPS=False
+      - DJANGO_SETTINGS_MODULE=qfieldcloud.settings
+      - DEBUG=True
+
+  beat:
+    build:
+      context: ./
+      dockerfile: docker/django/Dockerfile
+    command: celery -A qfieldcloud beat -l info
+    volumes:
+      - ./:/code/
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DATABASE_URL=postgis://docker:docker@db:5432/qfieldcloud
+      - REDIS_URL=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=qfieldcloud.settings
+      - DEBUG=True
+
+volumes:
+  postgres_data:
+  minio_data:
