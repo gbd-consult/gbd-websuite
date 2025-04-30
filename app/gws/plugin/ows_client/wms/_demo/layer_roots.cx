@@ -5,7 +5,9 @@ title "Angepasster WMS Layerbaum"
 metadata.keywords [ "wms" "ows" ]
 
 metadata.abstract """
-In diesem Beispiel wird gezeigt, wie man den Layerbaum eines in die GBD WebSuite eingebundenen WMS Dienstes mit der Option `rootLayers` anpassen kann. Es ist möglich eine Auswahl von Layern eines WMS Dienstes zu bestimmen und die Reihenfolge zur Darstellung der WMS Layer im Layerbaum zu definieren und somit zu verändern. 
+In diesem Beispiel wird gezeigt, wie man den Layerbaum eines in die GBD WebSuite eingebundenen WMS Dienstes mit der Option `rootLayers` anpassen kann. 
+
+Es ist möglich, eine Auswahl von Layern eines WMS Dienstes zu bestimmen und die Reihenfolge zur Darstellung der WMS Layer im Layerbaum zu definieren und somit individuell anzupassen. 
 
 Verwendet wird dafür ein ALKIS WMS Dienst des Bundeslandes NRW, dessen Layer ab einem Maßstab <= 1:4.000 dargestellt werden können.   
 """
