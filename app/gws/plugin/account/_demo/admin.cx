@@ -18,4 +18,10 @@ actions+ {
 client.addElements+ { tag "Sidebar.AccountAdmin" }
 client.addElements+ { tag "Sidebar.User" }
 
+map {
+    crs 3857
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+}
+
 {demo_osm_background}
