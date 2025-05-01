@@ -244,8 +244,8 @@ class Object:
 def configure(
     manifest_path='',
     config_path='',
-    config='',
-    fallback_config='',
+    config=None,
+    fallback_config=None,
     with_spec_cache=True,
     is_starting=False,
 ) -> Optional[gws.Root]:
