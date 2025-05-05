@@ -1,0 +1,7 @@
+class ConfigContext(Data):
+    """Configuration context for parsing and validation."""
+    
+    specs: SpecRuntime
+    readOptions: set[SpecReadOption]
+    errors: list
+    paths: set[str]

@@ -107,6 +107,7 @@ def root_init(self, specs):
     self.permissions = {}
     self.configErrors = []
     self.configStack = []
+    self.configPaths = []
     self.nodes = []
     self.uidMap = {}
     self.uidCount = 1

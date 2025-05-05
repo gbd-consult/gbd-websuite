@@ -1,6 +1,10 @@
-"""Parse and validate the main cfg and project configs"""
+"""Configuration parser.
 
-from typing import Optional, Any
+Convert configuration files (in different formats) or row config dicts
+into ``gws.Config`` objects by validating them against the specs.
+"""
+
+from typing import Optional, cast
 
 import os
 import yaml
@@ -17,130 +21,177 @@ import gws.spec.runtime
 CONFIG_PATH_PATTERN = r'\.(py|json|yaml|cx)$'
 
 
-class ParseResult(gws.Data):
-    """Result of a config parsing"""
+def parse_from_path(path: str, as_type: str, ctx: gws.ConfigContext) -> Optional[gws.Config]:
+    """Parse a configuration from a path.
 
-    config: gws.Config
-    errors: list[gws.Error]
-    paths: set[str]
+    Args:
+        path: Path to the configuration file.
+        as_type: Type of the configuration (e.g., 'gws.base.application.core.Config').
+        ctx: Configuration context.
+    """
 
-
-def parse_path(path: str, as_type: str, specs: gws.SpecRuntime, read_options=None) -> ParseResult:
-    """Parse configuration from a path."""
-
-    pp = _Parser(specs, read_options)
-    pp.parse_path(path, as_type)
-    return pp.result
-
-
-def parse_config(cfg: Any, as_type: str, specs: gws.SpecRuntime, path='', read_options=None) -> ParseResult:
-    """Parse configuration given as python dict or list."""
-
-    pp = _Parser(specs, read_options)
-    pp.parse_payload(_to_plain_type(cfg), path, as_type)
-    return pp.result
+    pp = _Parser(ctx)
+    val = pp.read_from_path(path)
+    d = pp.ensure_dict(val, path)
+    return pp.parse_dict(d, path, as_type) if d else None
 
 
-def parse_app_config_path(path, specs: gws.SpecRuntime) -> ParseResult:
-    pp = _Parser(specs, None)
-    payload = pp.read(path)
-    if payload:
-        _parse_app_config(payload, path, pp)
-    return pp.result
+def parse_dict(dct: dict | gws.Data, path: str, as_type: str, ctx: gws.ConfigContext) -> Optional[gws.Config]:
+    """Parse a configuration given as python dict.
+
+    Args:
+        dct: Dictionary containing the configuration.
+        path: Path to the configuration file (for error reporting).
+        as_type: Type of the configuration.
+        ctx: Configuration context.
+    """
+
+    pp = _Parser(ctx)
+    d = pp.ensure_dict(dct, path)
+    return pp.parse_dict(d, path, as_type) if d else None
 
 
-def parse_app_config(cfg, specs, path) -> ParseResult:
-    pp = _Parser(specs, None)
-    _parse_app_config(_to_plain_type(cfg), path, pp)
-    return pp.result
+def parse_app_from_path(path: str, ctx: gws.ConfigContext) -> Optional[gws.Config]:
+    """Parse application configuration from a path.
+
+    Args:
+        path: Path to the application configuration file.
+        ctx: Configuration context.
+    """
+
+    pp = _Parser(ctx)
+    val = pp.read_from_path(path)
+    d = pp.ensure_dict(val, path)
+    return _parse_app_dict(d, path, pp) if d else None
 
 
-def _parse_app_config(cfg, path, pp: '_Parser'):
-    if not isinstance(cfg, dict):
-        pp.result.errors.append(_error(f'app config must be a dict: {path!r}'))
+def parse_app_dict(dct: dict | gws.Data, path: str, ctx: gws.ConfigContext) -> Optional[gws.Config]:
+    """Parse application configuration given as python dict.
+
+    Args:
+        dct: Dictionary containing the application configuration.
+        path: Path to the configuration file (for error reporting).
+        ctx: Configuration context.
+    """
+
+    pp = _Parser(ctx)
+    d = pp.ensure_dict(dct, path)
+    return _parse_app_dict(d, path, pp) if d else None
+
+
+def read_from_path(path: str, ctx: gws.ConfigContext) -> Optional[dict]:
+    """Read a configuration file from a path, parse config formats.
+
+    Args:
+        path: Path to the configuration file.
+        ctx: Configuration context.
+    """
+    pp = _Parser(ctx)
+    val = pp.read_from_path(path)
+    d = pp.ensure_dict(val, path)
+    return d
+
+
+##
+
+
+def _parse_app_dict(dct: dict, path, pp: '_Parser'):
+    dct = gws.u.to_dict(dct)
+    if not isinstance(dct, dict):
+        _register_error(pp.ctx, f'app config must be a dict: {path!r}')
         return
 
     # the timezone must be set before everything else
-    tz = cfg.get('server', {}).get('timeZone', '')
+    tz = dct.get('server', {}).get('timeZone', '')
     if tz:
         gws.lib.datetimex.set_local_time_zone(tz)
-    gws.log.info(f'local time zone is "{gws.lib.datetimex.time_zone()}"')
+    gws.log.info(f'local time zone="{gws.lib.datetimex.time_zone()}"')
 
     # remove 'projects' from the config, parse them later on
-    inline_projects = cfg.pop('projects', [])
+    inline_projects = dct.pop('projects', [])
 
     gws.log.info('parsing main configuration...')
-    pp.parse_payload(cfg, path, as_type='gws.base.application.core.Config')
-    if not pp.result.config:
+    app_cfg = pp.parse_dict(dct, path, as_type='gws.base.application.core.Config')
+    if not app_cfg:
         return
 
-    app_cfg = pp.result.config
+    projects = []
+    for dcts in inline_projects:
+        projects.extend(_parse_projects(dcts, path, pp))
 
-    # find projects from 'paths' and 'dirs'
+    project_paths = list(app_cfg.get('projectPaths') or [])
+    project_dirs = list(app_cfg.get('projectDirs') or [])
 
-    app_cfg.projectPaths = pp.result.config.projectPaths or [] # type: ignore
-    app_cfg.projectDirs = pp.result.config.projectDirs or [] # type: ignore
-    app_cfg.projects = [] # type: ignore
+    all_project_paths = list(project_paths)
+    for dirname in project_dirs:
+        all_project_paths.extend(gws.lib.osx.find_files(dirname, CONFIG_PATH_PATTERN, deep=True))
 
-    project_paths = list(app_cfg.projectPaths)
-    for dirname in app_cfg.projectDirs:
-        project_paths.extend(gws.lib.osx.find_files(dirname, CONFIG_PATH_PATTERN, deep=True))
+    for pth in sorted(set(all_project_paths)):
+        projects.extend(_parse_projects_from_path(pth, pp))
 
+    app_cfg.set('projectPaths', project_paths)
+    app_cfg.set('projectDirs', project_dirs)
+    app_cfg.set('projects', projects)
 
-    for cfg in inline_projects:
-        app_cfg.projects.extend(_parse_projects(cfg, path, pp))
-
-    for pth in sorted(set(project_paths)):
-        app_cfg.projects.extend(_parse_projects(None, pth, pp))
-
-    save_debug(app_cfg, path, '.parsed.json')
+    _save_debug(app_cfg, path, '.parsed.json')
+    return app_cfg
 
 
-def _parse_projects(cfg, path, pp: '_Parser'):
-    if not cfg:
-        pp2 = _Parser(pp.specs)
-        cfg = pp2.read(path)
-        pp.add_errors_and_paths(pp2)
-
-    if not cfg:
+def _parse_projects_from_path(path, pp: '_Parser'):
+    cfg_list = pp.read_from_path(path)
+    if not cfg_list:
         return []
+    return _parse_projects(cfg_list, path, pp)
 
+
+def _parse_projects(cfg_list, path, pp: '_Parser'):
     ps = []
 
-    for c in _as_flat_list(cfg):
-        pp2 = _Parser(pp.specs)
-        pp2.parse_payload(c, path, 'gws.ext.config.project')
-        pp.add_errors_and_paths(pp2)
-        if pp2.result.config:
-            ps.append(pp2.result.config)
+    for c in _as_flat_list(cfg_list):
+        d = pp.ensure_dict(c, path)
+        if not d:
+            continue
+        prj_cfg = pp.parse_dict(d, path, 'gws.ext.config.project')
+        if prj_cfg:
+            ps.append(prj_cfg)
 
     return ps
 
 
 ##
 
+
 class _Parser:
-    def __init__(self, specs: gws.SpecRuntime, read_options=None):
-        self.result = ParseResult(config=None, errors=[], paths=set())
-        self.specs = specs
-        self.read_options = read_options
+    def __init__(self, ctx: gws.ConfigContext):
+        self.ctx = ctx
+        self.ctx.errors = ctx.errors or []
+        self.ctx.paths = ctx.paths or set()
+        self.ctx.readOptions = ctx.readOptions or set()
+        self.ctx.readOptions.add(gws.SpecReadOption.verboseErrors)
 
-    def add_errors_and_paths(self, other: '_Parser'):
-        self.result.errors.extend(other.result.errors)
-        self.result.paths.update(other.result.paths)
+    def ensure_dict(self, val, path):
+        if val is None:
+            return
+        d = _to_plain(val)
+        if not isinstance(d, dict):
+            _register_error(self.ctx, f'unsupported configuration type: {type(val)!r}', path)
+            return
+        return d
 
-    def parse_path(self, path, as_type):
-        payload = self.read(path)
-        if payload:
-            self.parse_payload(payload, path, as_type)
-
-    def parse_payload(self, payload, path, as_type):
+    def parse_dict(self, dct: dict, path: str, as_type: str) -> Optional[gws.Config]:
+        if not isinstance(dct, dict):
+            _register_error(self.ctx, 'unsupported configuration', path)
+            return
         if path:
-            self.result.paths.add(path)
+            _register_path(self.ctx, path)
         try:
-            read_options = self.read_options or set()
-            read_options.add(gws.SpecReadOption.verboseErrors)
-            self.result.config = self.specs.read(payload, as_type, path=path, options=read_options)
+            cfg = self.ctx.specs.read(
+                dct,
+                as_type,
+                path=path,
+                options=self.ctx.readOptions,
+            )
+            return cast(gws.Config, cfg)
         except gws.spec.runtime.ReadError as exc:
             message, _, details = exc.args
             lines = []
@@ -153,20 +204,20 @@ class _Parser:
             pp = details.get('formatted_stack')
             if pp:
                 lines.extend(pp)
-            self.result.errors.append(_error(f'parse error: {message}', *lines, cause=exc))
+            _register_error(self.ctx, f'parse error: {message}', *lines, cause=exc)
 
-    def read(self, path: str):
+    def read_from_path(self, path: str):
         if not os.path.isfile(path):
-            self.result.errors.append(_error(f'file not found: {path!r}'))
+            _register_error(self.ctx, f'file not found: {path!r}')
             return
 
-        self.result.paths.add(path)
-        payload = self.read2(path)
+        _register_path(self.ctx, path)
+        r = self.read2(path)
 
-        if payload:
-            payload = _to_plain_type(payload)
-            save_debug(payload, path, '.src.json')
-            return payload
+        if r:
+            r = _to_plain(r)
+            _save_debug(r, path, '.src.json')
+            return r
 
     def read2(self, path: str):
         if path.endswith('.py'):
@@ -178,70 +229,83 @@ class _Parser:
         if path.endswith('.cx'):
             return self.read_cx(path)
 
-        self.result.errors.append(_error('unsupported config format', path))
+        _register_error(self.ctx, 'unsupported configuration', path)
 
     def read_py(self, path: str):
         try:
-            fn = gws.lib.importer.load_file(path).get('main')
-            return fn()
+            fn = gws.u.require(gws.lib.importer.load_file(path).get('main'))
+            return fn(self.ctx)
         except Exception as exc:
-            self.result.errors.append(_error('python error', cause=exc))
+            gws.log.exception()
+            _register_error(self.ctx, f'python error: {exc}', cause=exc)
 
     def read_json(self, path: str):
         try:
             return gws.lib.jsonx.from_path(path)
         except Exception as exc:
-            self.result.errors.append(_error('json error', cause=exc))
+            _register_error(self.ctx, 'json error', cause=exc)
 
     def read_yaml(self, path: str):
         try:
             with open(path, encoding='utf8') as fp:
                 return yaml.safe_load(fp)
         except Exception as exc:
-            self.result.errors.append(_error('yaml error', cause=exc))
+            _register_error(self.ctx, 'yaml error', cause=exc)
 
     def read_cx(self, path: str):
-        runtime_errors = []
+        err_cnt = [0]
 
         def _error_handler(exc, path, line, env):
-            runtime_errors.append(_syntax_error(path, gws.u.read_file(path), repr(exc), line))
+            _register_syntax_error(self.ctx, path, gws.u.read_file(path), repr(exc), line)
+            err_cnt[0] += 1
             return True
 
         def _loader(cur_path, load_path):
             if not os.path.isabs(load_path):
                 load_path = os.path.abspath(os.path.dirname(cur_path) + '/' + load_path)
-            self.result.paths.add(load_path)
+            _register_path(self.ctx, load_path)
             return gws.u.read_file(load_path), load_path
 
         try:
             tpl = gws.lib.vendor.jump.compile_path(path, loader=_loader)
         except gws.lib.vendor.jump.CompileError as exc:
-            self.result.errors.append(
-                _syntax_error(path, gws.u.read_file(exc.path), exc.message, exc.line, cause=exc))
+            _register_syntax_error(self.ctx, path, gws.u.read_file(exc.path), exc.message, exc.line, cause=exc)
             return
 
-        src = gws.lib.vendor.jump.call(tpl, args={'true': True, 'false': False}, error=_error_handler)
-        if runtime_errors:
-            self.result.errors.extend(runtime_errors)
+        args = args = {
+            'true': True,
+            'false': False,
+            'ctx': self.ctx,
+            'gws': gws,
+        }
+
+        slon = gws.lib.vendor.jump.call(tpl, args, error=_error_handler)
+        if err_cnt[0] > 0:
             return
 
-        save_debug(src, path, '.src.slon')
+        _save_debug(slon, path, '.src.slon')
 
         try:
-            return gws.lib.vendor.slon.loads(src, as_object=True)
+            return gws.lib.vendor.slon.loads(slon, as_object=True)
         except gws.lib.vendor.slon.SlonError as exc:
-            self.result.errors.append(_syntax_error(path, src, exc.args[0], exc.args[2], cause=exc))
+            _register_syntax_error(self.ctx, path, slon, exc.args[0], exc.args[2], cause=exc)
 
 
 ##
 
-def save_debug(src, src_path, ext):
-    if ext.endswith('.json') and not isinstance(src, str):
-        src = gws.lib.jsonx.to_pretty_string(src)
-    gws.u.write_file(f"{gws.c.CONFIG_DIR}/{gws.u.to_uid(src_path)}{ext}", src)
+
+def _register_path(ctx, path):
+    ctx.paths.add(path)
 
 
-def _syntax_error(path, src, message, line, context=10, cause=None):
+def _register_error(ctx, message, *args, cause=None):
+    err = gws.ConfigurationError(message, *args)
+    if cause:
+        err.__cause__ = cause
+    ctx.errors.append(err)
+
+
+def _register_syntax_error(ctx, path, src, message, line, context=10, cause=None):
     lines = [f'PATH: {path!r}']
 
     for n, ln in enumerate(src.splitlines(), 1):
@@ -254,7 +318,13 @@ def _syntax_error(path, src, message, line, context=10, cause=None):
             ln = f'>>> {ln}'
         lines.append(ln)
 
-    return _error(f'syntax error: {message}', *lines, cause=cause)
+    _register_error(ctx, f'syntax error: {message}', *lines, cause=cause)
+
+
+def _save_debug(src, src_path, ext):
+    if ext.endswith('.json') and not isinstance(src, str):
+        src = gws.lib.jsonx.to_pretty_string(src)
+    gws.u.write_file(f'{gws.c.CONFIG_DIR}/{gws.u.to_uid(src_path)}{ext}', src)
 
 
 def _as_flat_list(ls):
@@ -265,20 +335,11 @@ def _as_flat_list(ls):
             yield from _as_flat_list(x)
 
 
-def _to_plain_type(val):
-    if isinstance(val, list):
-        return [_to_plain_type(x) for x in val]
-    if isinstance(val, tuple):
-        return tuple(_to_plain_type(x) for x in val)
+def _to_plain(val):
+    if isinstance(val, (list, tuple)):
+        return [_to_plain(x) for x in val]
     if isinstance(val, gws.Data):
         val = vars(val)
     if isinstance(val, dict):
-        return {k: v if k.startswith('_') else _to_plain_type(v) for k, v in val.items()}
+        return {k: v if k.startswith('_') else _to_plain(v) for k, v in val.items()}
     return val
-
-
-def _error(message, *args, cause=None):
-    err = gws.ConfigurationError(message, *args)
-    if cause:
-        err.__cause__ = cause
-    return err

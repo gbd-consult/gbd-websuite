@@ -216,6 +216,7 @@ class Root:
     uidMap: dict[str, 'Node']
     uidCount: int
     configStack: list['Node']
+    configPaths: list[str]
 
     def __init__(self, specs: 'SpecRuntime'):
         tree_impl.root_init(self, specs)

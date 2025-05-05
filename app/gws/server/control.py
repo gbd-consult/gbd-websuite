@@ -46,6 +46,7 @@ import gws.config
 import gws.lib.datetimex
 import gws.lib.osx
 import gws.lib.watcher
+import gws.lib.lock
 
 # see bin/gws
 _SERVER_START_SCRIPT = f'{gws.c.VAR_DIR}/server.sh'
@@ -58,7 +59,7 @@ _PID_PATHS = {
 }
 
 
-def start(manifest_path=None, config_path=None):
+def start(manifest_path='', config_path=''):
     if app_is_running('web'):
         gws.log.error(f'server already running')
         gws.u.exit(1)
@@ -66,7 +67,7 @@ def start(manifest_path=None, config_path=None):
     root.app.serverMgr.create_server_configs(gws.c.SERVER_DIR, _SERVER_START_SCRIPT, _PID_PATHS)
 
 
-def reconfigure(manifest_path=None, config_path=None):
+def reconfigure(manifest_path='', config_path=''):
     if not app_is_running('web'):
         gws.log.error(f'server not running')
         gws.u.exit(1)
@@ -75,18 +76,28 @@ def reconfigure(manifest_path=None, config_path=None):
     reload_all()
 
 
-def configure_and_store(manifest_path=None, config_path=None, is_starting=False):
+def configure_and_store(manifest_path='', config_path='', is_starting=False):
     root = configure(manifest_path, config_path, is_starting)
     gws.config.store(root)
     return root
 
 
-def configure(manifest_path=None, config_path=None, is_starting=False):
+def configure(manifest_path='', config_path='', is_starting=False):
+    def _pre_init(ld: gws.config.loader.Object):
+        autorun = gws.u.get(ld.config, 'server.autoRun')
+        if autorun:
+            gws.log.info(f'AUTORUN: {autorun!r}')
+            gws.lib.osx.run(autorun, echo=True)
+
+    hooks = []
+    if is_starting:
+        hooks.append(['preInitialize', _pre_init])
+
     root = gws.config.configure(
         manifest_path=manifest_path,
         config_path=config_path,
         fallback_config=_FALLBACK_CONFIG,
-        is_starting=is_starting,
+        hooks=hooks,
     )
     if not root:
         raise gws.ConfigurationError('configuration failed')
@@ -94,9 +105,9 @@ def configure(manifest_path=None, config_path=None, is_starting=False):
 
 
 def config_test(
-        manifest_path=None,
-        config_path=None,
-        dirs_to_watch=None,
+        manifest_path='',
+        config_path='',
+        dirs_to_watch='',
         with_parse_only=False,
         with_watch=False
 ):
