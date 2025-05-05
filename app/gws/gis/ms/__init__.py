@@ -14,16 +14,17 @@ def version() -> str:
 
 
 class RasterLayerOptions(gws.Data):
-    """Represents options for configuring a raster layer."""
+    """Options for configuring a raster layer."""
     path: str
     tileIndex: str
     bounds: gws.Bounds
     crs: gws.Crs
     processing: list[str]
+    config: str
 
 
 class VectorLayerOptions(gws.Data):
-    """Represents options for configuring a vector layer."""
+    """Options for configuring a vector layer."""
     geometryType: gws.GeometryType
     connectionType: str
     connectionString: str
@@ -43,12 +44,11 @@ def new_map() -> 'Map':
 
 
 class Map:
-    """Represents a MapServer map object."""
+    """MapServer map object."""
 
     mapObj: mapscript.mapObj
 
     def __init__(self):
-        """Initializes a new Map object with default settings."""
         self.mapObj = mapscript.mapObj()
         # Use PNG by default
         self.mapObj.setOutputFormat(mapscript.outputFormatObj('AGG/PNG'))
@@ -89,7 +89,9 @@ class Map:
             for p in opts.processing:
                 lo.addProcessing(p)
 
-        lo.setProjection(f'init=epsg:{opts.crs.srid}')
+        if not opts.crs:
+            raise gws.Error('missing crs')
+        lo.setProjection(opts.crs.epsg)
 
         self.mapObj.insertLayer(lo)
 
@@ -127,11 +129,12 @@ class Map:
         if opts.dataString:
             lo.data = opts.dataString
 
-        if opts.crs:
-            lo.setProjection(f'init=epsg:{opts.crs.srid}')
-
         if opts.config:
             lo.updateFromString(opts.config)
+
+        if not opts.crs:
+            raise gws.Error('missing crs')
+        lo.setProjection(opts.crs.epsg)
 
         self.mapObj.insertLayer(lo)
         return lo
@@ -144,7 +147,7 @@ class Map:
             size: The output image size.
 
         Returns:
-            gws.lib.image.Image: The rendered map image.
+            The rendered map image.
         """
         gws.debug.time_start(f'mapserver.draw {bounds=} {size=}')
         self.mapObj.setExtent(*bounds.extent)
@@ -159,7 +162,7 @@ class Map:
         """Converts the map object to a string representation.
 
         Returns:
-            str: The string representation of the map object.
+            The string representation of the map object.
         """
         return self.mapObj.convertToString()
 
