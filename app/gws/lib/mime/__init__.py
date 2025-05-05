@@ -60,8 +60,8 @@ _common_extensions = {
     'css': CSS,
     'csv': CSV,
     'gif': GIF,
+    'gml2': GML2,
     'gml': GML,
-    'gml3': GML3,
     'html': HTML,
     'jpeg': JPEG,
     'jpg': JPEG,
@@ -82,11 +82,11 @@ _common_extensions = {
 
 _aliases = {
 
-    'application/vnd.ogc.gml': GML,
-    'application/vnd.ogc.gml/3.1.1': GML3,
-    'application/gml:3': GML3,
+    'application/vnd.ogc.gml': GML2,
+    'application/vnd.ogc.gml/3.1.1': GML,
+    'application/gml:3': GML,
     'application/xml;subtype=gml/2': GML2,
-    'application/xml;subtype=gml/3': GML3,
+    'application/xml;subtype=gml/3': GML,
 
     'application/html': HTML,
     'application/x-gzip': GZIP,

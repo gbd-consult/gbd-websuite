@@ -55,6 +55,15 @@ def get(uid: str) -> Optional[gws.XmlNamespace]:
     return _INDEX.uid.get(uid)
 
 
+def require(uid: str) -> gws.XmlNamespace:
+    """Locate the Namespace by a uid."""
+
+    ns = get(uid)
+    if not ns:
+        raise error.NamespaceError(f'unknown namespace {uid!r}')
+    return ns
+
+
 def find_by_xmlns(xmlns: str) -> Optional[gws.XmlNamespace]:
     """Locate the Namespace by a prefix."""
 
@@ -275,7 +284,7 @@ xsi              |       |   |         | www.w3.org/2001/XMLSchema-instance     
 csw              |       |   | 2.0.1   | www.opengis.net/cat/csw                       | schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd                                                       
 fes              |       |   | 2.0     | www.opengis.net/fes/2.0                       | schemas.opengis.net/filter/2.0/filterAll.xsd                                                          
 gml              |       |   | 3.2     | www.opengis.net/gml/3.2                       | schemas.opengis.net/gml/3.2.1/gml.xsd                                                                 
-gml21            | gml   | N | 2.1     | www.opengis.net/gml                           | schemas.opengis.net/gml/2.1.2/gml.xsd                                                                 
+gml2             | gml   | N | 2.1     | www.opengis.net/gml                           | schemas.opengis.net/gml/2.1.2/gml.xsd                                                                 
 gmlcov           |       |   | 1.0     | www.opengis.net/gmlcov                        | schemas.opengis.net/gmlcov/1.0/gmlcovAll.xsd                                                          
 ogc              |       |   |         | www.opengis.net/ogc                           | schemas.opengis.net/filter/1.1.0/filter.xsd                                                           
 ows              |       |   | 2.0     | www.opengis.net/ows/2.0                       | schemas.opengis.net/ows/2.0/owsAll.xsd                                                                

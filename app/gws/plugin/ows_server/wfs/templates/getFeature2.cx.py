@@ -11,5 +11,5 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         common.feature_collection(ta),
-        extra_namespaces=[xmlx.namespace.get('gml2')]
+        extra_namespaces=[xmlx.namespace.require('gml2')]
     )
