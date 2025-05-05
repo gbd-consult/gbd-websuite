@@ -106,7 +106,7 @@ class SpecRuntime:
     appBundlePaths: list[str]
     """List of client bundle paths."""
 
-    def read(self, value, type_name: str, path: str = '', options=Optional[set[SpecReadOption]]):
+    def read(self, value, type_name: str, path: str = '', options: set[SpecReadOption] = None):
         """Read a raw value according to a spec.
 
          Args:
