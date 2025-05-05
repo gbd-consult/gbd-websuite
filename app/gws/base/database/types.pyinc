@@ -17,6 +17,12 @@ class DatabaseModel(Model):
     def uid_column(self) -> 'sqlalchemy.Column':
         """Return the SQLAlchemy Column object representing the unique identifier column."""
 
+    def fetch_features(self, select: 'sqlalchemy.Select') -> list['Feature']:
+        """Fetch features from the database based on the provided SQLAlchemy Select statement."""
+
+    def build_select(self, mc: 'ModelContext') -> Optional['sqlalchemy.Select']:
+        """Build a SQLAlchemy Select statement based on the provided ModelContext."""
+
 
 class ColumnDescription(Data):
     """Description of a dataset column."""

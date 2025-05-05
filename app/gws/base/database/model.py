@@ -69,32 +69,38 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             where=[],
         )
 
-        with self.db.connect() as conn:
+        with self.db.connect():
             for fld in self.fields:
                 fld.before_select(mc)
 
-            sql = self._compile_select(mc)
+            sql = self.build_select(mc)
             if sql is None:
                 gws.log.debug('empty select')
                 return []
 
-            features = []
-
-            for row in conn.fetch_all(sql):
-                features.append(
-                    gws.base.feature.new(
-                        model=self,
-                        record=gws.FeatureRecord(attributes=row),
-                    )
-                )
+            features = self.fetch_features(sql)
 
             for fld in self.fields:
                 fld.after_select(features, mc)
 
         return features
 
-    def _compile_select(self, mc: gws.ModelContext) -> Optional[sa.Select]:
-        # @TODO this should happen on the field level
+    def fetch_features(self, select):
+        features = []
+
+        with self.db.connect() as conn:
+            for row in conn.fetch_all(select):
+                features.append(
+                    gws.base.feature.new(
+                        model=self,
+                        record=gws.FeatureRecord(attributes=row),
+                    )
+                )
+        
+        return features
+
+    def build_select(self, mc):
+        # @TODO sorting should be handled on the field level
         sorts = mc.search.sort or self.defaultSort or []
         for s in sorts:
             fn = sa.desc if s.reverse else sa.asc

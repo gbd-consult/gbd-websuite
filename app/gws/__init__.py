@@ -588,7 +588,7 @@ class SpecRuntime:
     appBundlePaths: list[str]
     """List of client bundle paths."""
 
-    def read(self, value, type_name: str, path: str = '', options=Optional[set[SpecReadOption]]):
+    def read(self, value, type_name: str, path: str = '', options: set[SpecReadOption] = None):
         """Read a raw value according to a spec.
 
          Args:
@@ -871,6 +871,7 @@ class Root:
     uidMap: dict[str, 'Node']
     uidCount: int
     configStack: list['Node']
+    configPaths: list[str]
 
     def __init__(self, specs: 'SpecRuntime'):
         tree_impl.root_init(self, specs)
@@ -2120,6 +2121,20 @@ class SourceLayer(Data):
 
 
 ################################################################################
+# /config/types.pyinc
+
+
+class ConfigContext(Data):
+    """Configuration context for parsing and validation."""
+    
+    specs: SpecRuntime
+    readOptions: set[SpecReadOption]
+    errors: list
+    paths: set[str]
+################################################################################
+
+
+################################################################################
 # /server/types.pyinc
 
 
@@ -3324,6 +3339,12 @@ class DatabaseModel(Model):
     def uid_column(self) -> 'sqlalchemy.Column':
         """Return the SQLAlchemy Column object representing the unique identifier column."""
 
+    def fetch_features(self, select: 'sqlalchemy.Select') -> list['Feature']:
+        """Fetch features from the database based on the provided SQLAlchemy Select statement."""
+
+    def build_select(self, mc: 'ModelContext') -> Optional['sqlalchemy.Select']:
+        """Build a SQLAlchemy Select statement based on the provided ModelContext."""
+
 
 class ColumnDescription(Data):
     """Description of a dataset column."""
@@ -3597,7 +3618,7 @@ class JobManager(Node):
 
     def remove_job(self, job: Job): ...
 
-    def schedule_job(self, job: Job): ...
+    def schedule_job(self, job: Job) -> Job: ...
 
     def require_job(self, req: 'WebRequester', p: JobRequest) -> Job: ...
 
