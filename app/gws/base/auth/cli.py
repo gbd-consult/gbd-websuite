@@ -28,6 +28,8 @@ class Object(gws.Node):
         root = gws.config.load()
         sm = root.app.authMgr.sessionMgr
 
+        sm.cleanup()
+
         rows = []
 
         for s in sm.get_all():
