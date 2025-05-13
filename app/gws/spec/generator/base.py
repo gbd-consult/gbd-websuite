@@ -1,98 +1,19 @@
-import os
+from typing import Optional
 import sys
 
+from .. import core
 from . import util
 
-from gws.spec.core import *
-
-ATOMS = ['any', 'bool', 'bytes', 'float', 'int', 'str']
-
-BUILTINS = ATOMS + ['type', 'object', 'Exception', 'dict', 'list', 'set', 'tuple']
-
-BUILTIN_TYPES = [
-    'Any',
-    'Callable',
-    'ContextManager',
-    'Dict',
-    'Enum',
-    'Iterable',
-    'Iterator',
-    'List',
-    'Literal',
-    'Optional',
-    'Protocol',
-    'Set',
-    'Tuple',
-    'TypeAlias',
-    'Union',
-
-    # imported in TYPE_CHECKING
-    'datetime.datetime',
-    'osgeo',
-    'sqlalchemy',
-
-    # vendor libs
-    'gws.lib.vendor',
-    'gws.lib.sa',
-]
-
-# those star-imported in gws/__init__.py
-GLOBAL_MODULES = [
-    APP_NAME + '.core.const',
-    # APP_NAME + '.core.data',
-    # APP_NAME + '.core.tree',
-    # APP_NAME + '.core.types',
-    APP_NAME + '.core.util',
-    # APP_NAME + '.core.error',
-    # APP_NAME + '.core'
-]
-
-DEFAULT_EXT_SUPERS = {
-    'config': APP_NAME + '.core.types.ConfigWithAccess',
-    'props': APP_NAME + '.core.types.Props',
-}
-
-# prefix for gws.plugin class names
-PLUGIN_PREFIX = APP_NAME + '.plugin'
-
-# comment prefix for Variant aliases
-VARIANT_COMMENT_PREFIX = 'variant:'
-
-# inline comment symbol
-INLINE_COMMENT_SYMBOL = '#:'
-
-# where we are
-SELF_DIR = os.path.dirname(__file__)
-
-# path to `/repository-root/app`
-APP_DIR = os.path.abspath(SELF_DIR + '/../../..')
-
-EXCLUDE_PATHS = ['___', '/vendor/', 'test', 'core/ext', '__pycache__']
-
-FILE_KINDS = [
-    ['.py', 'python'],
-    ['/index.ts', 'ts'],
-    ['/index.tsx', 'ts'],
-    ['/index.css.js', 'css'],
-    ['.theme.css.js', 'theme'],
-    ['/strings.ini', 'strings'],
-]
-
-PLUGIN_DIR = '/gws/plugin'
-
-SYSTEM_CHUNKS = [
-    [CLIENT_NAME, f'/js/src/{CLIENT_NAME}'],
-    [f'{APP_NAME}', '/js/src/gws'],
-    [f'{APP_NAME}.core', '/gws/core'],
-    [f'{APP_NAME}.base', '/gws/base'],
-    [f'{APP_NAME}.gis', '/gws/gis'],
-    [f'{APP_NAME}.lib', '/gws/lib'],
-    [f'{APP_NAME}.server', '/gws/server'],
-    [f'{APP_NAME}.helper', '/gws/helper'],
-]
+c = core.c
+v = core.v
+Error = core.Error
+GeneratorError = core.GeneratorError
+LoadError = core.LoadError
+ReadError = core.ReadError
+Type = core.Type
 
 
-class Data:  # type: ignore
+class Data:
     def __init__(self, **kwargs):
         vars(self).update(kwargs)
 
@@ -119,83 +40,87 @@ class _Logger:
             sys.stdout.write(msg + '\n')
             sys.stdout.flush()
 
-    def error(self, *args): self.log('ERROR', *args)
+    def error(self, *args):
+        self.log('ERROR', *args)
 
-    def warning(self, *args): self.log('WARNING', *args)
+    def warning(self, *args):
+        self.log('WARNING', *args)
 
-    def info(self, *args): self.log('INFO', *args)
+    def info(self, *args):
+        self.log('INFO', *args)
 
-    def debug(self, *args): self.log('DEBUG', *args)
+    def debug(self, *args):
+        self.log('DEBUG', *args)
 
 
 log = _Logger()
 
 
-class Generator(Data):
-    meta: dict
-    types: dict[str, Type]
-    specs = {}
-    typescript = ''
-    strings = {}
-
-    configRef = {}
-
-    rootDir = ''
-    selfDir = ''
-    outDir = ''
-    manifestPath = ''
-
-    debug = False
-
-    chunks: list[dict]
-
+class Generator:
     def __init__(self):
-        super().__init__()
-        self.aliases = {}
-        self.types = {}
+        self.aliases: dict[str, str] = {}
+        self.chunks: list[core.Chunk] = []
+        self.meta: dict = {}
+        self.typeDict: dict[str, Type] = {}
+        self.serverTypes: list[Type] = []
+        self.specData: core.SpecData
+        self.configRef = {}
+        self.strings = {}
+        self.manifestPath = ''
+        self.outDir = ''
+        self.rootDir = ''
+        self.selfDir = ''
+        self.typescript = ''
+        self.debug = False
 
-    def new_type(self, c, **kwargs):
+    def add_type(self, **kwargs):
         if kwargs.get('name'):
-            t = Type(**kwargs)
-            t.c = c
-            t.uid = t.name
-            return t
+            kwargs['uid'] = kwargs['name']
+        if not kwargs.get('uid'):
+            kwargs['uid'] = kwargs['c'] + ':' + _auto_uid(kwargs)
+        typ = core.make_type(kwargs)
+        self.typeDict[typ.uid] = typ
+        return typ
 
-        uid = c + ',' + _auto_uid(c, kwargs)
-        if uid in self.types:
-            return self.types[uid]
+    def get_type(self, uid) -> Optional[Type]:
+        return self.typeDict.get(uid)
 
-        t = Type(**kwargs)
-        t.c = c
-        t.uid = uid
-        return t
+    def require_type(self, uid) -> Type:
+        typ = self.typeDict.get(uid)
+        if not typ:
+            raise GeneratorError(f'unknown type {uid!r}')
+        return typ
 
     def dump(self, tag):
         if self.debug:
-            util.write_json(self.outDir + '/' + tag + '.debug.json', self)
+            util.write_json(self.outDir + '/' + tag + '.debug.json', vars(self))
 
 
-def _auto_uid(c, d):
-    comma = ','
-    if c == C.DICT:
-        return d['tKey'] + comma + d['tValue']
-    if c == C.LIST:
-        return d['tItem']
-    if c == C.SET:
-        return d['tItem']
-    if c == C.LITERAL:
-        return comma.join(repr(v) for v in d['literalValues'])
-    if c == C.OPTIONAL:
-        return d['tTarget']
-    if c == C.TUPLE:
-        return comma.join(d['tItems'])
-    if c == C.UNION:
-        return comma.join(sorted(d['tItems']))
-    if c == C.EXT:
-        return d['extName']
-    if c == C.VARIANT:
-        if 'tMembers' in d:
-            return comma.join(sorted(d['tMembers'].values()))
-        return comma.join(sorted(d['tItems']))
+def _auto_uid(args):
+    tc = args['c']
+    if tc == c.DICT:
+        return args['tKey'] + ',' + args['tValue']
+    if tc == c.LIST:
+        return args['tItem']
+    if tc == c.SET:
+        return args['tItem']
+    if tc == c.LITERAL:
+        return _comma(repr(v) for v in args['literalValues'])
+    if tc == c.OPTIONAL:
+        return args['tTarget']
+    if tc == c.TUPLE:
+        return _comma(args['tItems'])
+    if tc == c.UNION:
+        return _comma(sorted(args['tItems']))
+    if tc == c.CALLABLE:
+        return _comma(sorted(args['tItems']))
+    if tc == c.EXT:
+        return args['extName']
+    if tc == c.VARIANT:
+        if 'tMembers' in args:
+            return _comma(sorted(args['tMembers'].values()))
+        return _comma(sorted(args['tItems']))
+    raise GeneratorError(f'auto uid for {tc!r} not implemented: {args}')
 
-    return ''
+
+_comma = ','.join

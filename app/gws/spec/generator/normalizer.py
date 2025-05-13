@@ -7,8 +7,7 @@ def normalize(gen: base.Generator):
     _add_global_aliases(gen)
     _expand_aliases(gen)
     _resolve_aliases(gen)
-    _check_variants(gen)
-    _evaluate_defaults(gen)
+    _eval_expressions(gen)
     # _synthesize_ext_configs_and_props(gen)
     _synthesize_ext_variant_types(gen)
     _synthesize_ext_type_properties(gen)
@@ -19,46 +18,55 @@ def normalize(gen: base.Generator):
 ##
 
 
-def _add_global_aliases(gen):
+def _add_global_aliases(gen: base.Generator):
     """Add globals aliases.
 
-     If we have `mod.GlobalName` and `mod.some.module.GlobalName`, and `mod.some.module`
-     is in `GLOBAL_MODULES`, the former should an alias for the latter.
-     """
+    If we have `mod.GlobalName` and `mod.some.module.GlobalName`, and `mod.some.module`
+    is in `GLOBAL_MODULES`, the former should an alias for the latter.
+    """
 
-    for typ in gen.types.values():
+    for typ in gen.typeDict.values():
         if typ.name in gen.aliases:
             continue
         m = re.match(r'^gws\.([A-Z].*)$', typ.name)
         if not m:
             continue
-        for mod in base.GLOBAL_MODULES:
+        for mod in base.v.GLOBAL_MODULES:
             name = mod + DOT + m.group(1)
-            if name in gen.types:
+            if name in gen.typeDict:
                 base.log.debug(f'global alias {typ.name!r} => {name!r}')
                 gen.aliases[typ.name] = name
                 break
 
 
-def _expand_aliases(gen):
+def _expand_aliases(gen: base.Generator):
+    """Expand aliases.
+
+    Given t1 -> alias of t2, t2 -> alias of t3, establish t1 -> t3.
+    """
+
     def _exp(target, stack):
-        if target in gen.types:
+        if target in gen.typeDict:
             return target
         if target in stack:
-            raise base.Error(f'circular alias {stack!r} => {target!r}')
+            raise base.GeneratorError(f'circular alias {stack!r} => {target!r}')
         if target in gen.aliases:
             return _exp(gen.aliases[target], stack + [target])
-        if target.startswith(base.APP_NAME):
+        if target.startswith(base.v.APP_NAME):
             base.log.warning(f'unbound alias {target!r}')
         return target
 
     new_aliases = {}
     for src, target in gen.aliases.items():
-        new_aliases[src] = _exp(target, [])
+        new_target = _exp(target, [])
+        if new_target != target:
+            base.log.debug(f'alias expanded: {src!r} => {target!r} => {new_target!r}')
+        new_aliases[src] = new_target
     gen.aliases = new_aliases
 
 
 _type_scalars = [
+    'tArg',
     'tItem',
     'tKey',
     'tValue',
@@ -74,20 +82,22 @@ _type_lists = [
 ]
 
 
-def _resolve_aliases(gen):
-    new_types = {}
+def _resolve_aliases(gen: base.Generator):
+    """Replace references to aliases with their target type uids."""
+
+    new_type_dict = {}
 
     def _rename_uid(uid):
         if uid in gen.aliases:
             new = gen.aliases[uid]
         else:
-            new = COMMA.join(gen.aliases.get(s, s) for s in uid.split(COMMA))
+            new = COMMA.join(gen.aliases.get(s) or s for s in uid.split(COMMA))
         if new != uid:
             base.log.debug(f'resolved alias {uid!r} => {new!r}')
         return new
 
-    for typ in gen.types.values():
-        if typ.uid in new_types:
+    for typ in gen.typeDict.values():
+        if typ.uid in new_type_dict:
             continue
 
         if typ.uid in gen.aliases:
@@ -105,22 +115,22 @@ def _resolve_aliases(gen):
         if not typ.name:
             typ.uid = _rename_uid(typ.uid)
 
-        new_types[typ.uid] = typ
+        new_type_dict[typ.uid] = typ
 
-    gen.types = new_types
+    gen.typeDict = new_type_dict
 
 
-def _evaluate_defaults(gen):
+def _eval_expressions(gen: base.Generator):
     """Replace enum and constant values with literal values"""
 
     def _get_type(name):
         if name in gen.aliases:
             name = gen.aliases[name]
-        return gen.types.get(name)
+        return gen.typeDict.get(name)
 
     def _eval(base_type, val):
         c, value = val
-        if c == base.C.LITERAL:
+        if c == base.c.LITERAL:
             return value
         if isinstance(value, list):
             return [_eval(base_type, v) for v in value]
@@ -130,123 +140,56 @@ def _evaluate_defaults(gen):
 
         # constant?
         typ = _get_type(value)
-        if typ and typ.c == base.C.CONSTANT:
-            return typ.value
+        if typ and typ.c == base.c.CONSTANT:
+            return typ.constValue
 
         # enum?
         obj_name, _, item = value.rpartition('.')
         typ = _get_type(obj_name)
-        if typ and typ.c == base.C.ENUM and item in typ.enumValues:
+        if typ and typ.c == base.c.ENUM and item in typ.enumValues:
             return typ.enumValues[item]
 
         base.log.warning(f'invalid expression {value!r} in {base_type.name!r}')
         return None
 
-    for typ in gen.types.values():
-        val = getattr(typ, 'EVAL_DEFAULT', None)
-        if val:
-            typ.defaultValue = _eval(typ, val)
+    for typ in gen.typeDict.values():
+        if typ.defaultExpression:
+            typ.defaultValue = _eval(typ, typ.defaultExpression)
             typ.hasDefault = True
-            base.log.debug(f'evaluated {val!r} => {typ.defaultValue!r}')
+            base.log.debug(f'evaluated {typ.defaultExpression!r} => {typ.defaultValue!r}')
 
 
-def _check_variants(gen):
-    """Create Variant objects from VariantStubs
-
-    Example:
-
-    Given
-
-        Foo: VariantStub { items ['Type1', 'Type2'] }
-        Type1 { type Literal['first'] }
-        Type2 { type Literal['second'] }
-
-    we create a mapping { "type value" => "type name" }, e.g;
-
-        Foo: Variant {
-            tMembers {
-                first:  Type1
-                second: Type2
-            }
-        }
-    """
-
-    for typ in gen.types.values():
-        if typ.c == base.C.VARIANT and not typ.tMembers:
-            members = {}
-            for tItem in typ.tItems:
-                try:
-                    item_type = gen.types.get(tItem)
-                    tag_property_type = gen.types.get(item_type.name + '.' + base.VARIANT_TAG)
-                    tag_value_type = gen.types.get(tag_property_type.tValue)
-                    if tag_value_type.c == base.C.LITERAL and len(tag_value_type.literalValues) == 1:
-                        members[tag_value_type.literalValues[0]] = item_type.name
-                    else:
-                        raise ValueError()
-                except Exception:
-                    raise base.Error(f'invalid Variant: {typ.pos!r}')
-            delattr(typ, 'tItems')
-            typ.tMembers = members
-
-
-def _synthesize_ext_configs_and_props(gen):
+def _synthesize_ext_configs_and_props(gen: base.Generator):
     """Synthesize gws.ext.config... and gws.ext.props for ext objects that don't define them explicitly"""
 
-    upd = {}
+    # don't need this for now
 
-    existing_names = set(t.extName for t in gen.types.values() if t.extName)
+    existing_names = set(t.extName for t in gen.typeDict.values() if t.extName)
 
-    for t in gen.types.values():
-        if t.extName.startswith(base.EXT_OBJECT_PREFIX):
-            for kind in ['config', 'props']:
-                parts = t.extName.split('.')
-                parts[2] = kind
-                ext_name = DOT.join(parts)
-                if ext_name not in existing_names:
-                    new_type = gen.new_type(
-                        base.C.CLASS,
-                        doc=t.doc,
-                        ident='_' + parts[-1],
-                        # e.g. gws.ext.object.modelField.integer becomes gws.ext.props.modelField._integer
-                        name=DOT.join(parts[:-1]) + '._' + parts[-1],
-                        pos=t.pos,
-                        tSupers=[base.DEFAULT_EXT_SUPERS[kind]],
-                        extName=ext_name,
-                        _SYNTHESIZED=True,
-                    )
-                    upd[new_type.uid] = new_type
-
-    gen.types.update(upd)
-
-
-def _synthesize_ext_type_properties(gen):
-    """Synthesize type properties for ext.config and ext.props objects"""
-
-    upd = {}
-
-    for t in gen.types.values():
-        if t.extName.startswith((base.EXT_CONFIG_PREFIX, base.EXT_PROPS_PREFIX)):
-            name = t.extName.rpartition(DOT)[-1]
-            literal = gen.new_type(base.C.LITERAL, literalValues=[name], pos=t.pos)
-            upd[literal.uid] = literal
-
-            nt = gen.new_type(
-                base.C.PROPERTY,
-                doc='object type',
-                ident=base.VARIANT_TAG,
-                name=t.name + DOT + base.VARIANT_TAG,
-                pos=t.pos,
-                defaultValue='default',
-                hasDefault=True,
-                tValue=literal.uid,
-                tOwner=t.uid,
+    for typ in list(gen.typeDict.values()):
+        if not typ.extName or not typ.extName.startswith(base.v.EXT_OBJECT_PREFIX):
+            continue
+        for kind in ['config', 'props']:
+            parts = typ.extName.split('.')
+            parts[2] = kind
+            ext_name = DOT.join(parts)
+            if ext_name in existing_names:
+                continue
+            new_typ = gen.add_type(
+                c=base.c.CLASS,
+                doc=typ.doc,
+                ident='_' + parts[-1],
+                # e.g. gws.ext.object.modelField.integer becomes gws.ext.props.modelField._integer
+                name=DOT.join(parts[:-1]) + '._' + parts[-1],
+                pos=typ.pos,
+                tSupers=[base.v.DEFAULT_EXT_SUPERS[kind]],
+                extName=ext_name,
+                _SYNTHESIZED=True,
             )
-            upd[nt.uid] = nt
-
-    gen.types.update(upd)
+            base.log.debug(f'synthesized {new_typ.uid!r} from {typ.uid!r}')
 
 
-def _synthesize_ext_variant_types(gen):
+def _synthesize_ext_variant_types(gen: base.Generator):
     """Synthesize by-category variant types for ext objects
 
     Example:
@@ -262,34 +205,57 @@ def _synthesize_ext_variant_types(gen):
 
     variants = {}
 
-    for typ in gen.types.values():
-        if typ.c == base.C.EXT:
-            target = gen.types.get(typ.tTarget)
-            if not target:
+    for typ in gen.typeDict.values():
+        if typ.c == base.c.EXT:
+            target_typ = gen.get_type(typ.tTarget)
+            if not target_typ:
                 base.log.debug(f'not found {typ.tTarget!r} for {typ.extName!r}')
                 continue
-            target.extName = typ.extName
+            target_typ.extName = typ.extName
             category, _, name = typ.extName.rpartition(DOT)
-            variants.setdefault(category, {})[name] = target.name
-
-    upd = {}
+            variants.setdefault(category, {})[name] = target_typ.uid
 
     for name, members in variants.items():
-        variant_typ = gen.new_type(base.C.VARIANT, tMembers=members)
-        upd[variant_typ.uid] = variant_typ
-        alias_typ = gen.new_type(base.C.TYPE, name=name, extName=name, tTarget=variant_typ.uid)
-        upd[alias_typ.uid] = alias_typ
+        variant_typ = gen.add_type(
+            c=base.c.VARIANT,
+            tMembers=members,
+            name=name,
+            extName=name,
+        )
         base.log.debug(f'created variant {variant_typ.uid!r} for {list(members.values())}')
 
-    gen.types.update(upd)
+
+def _synthesize_ext_type_properties(gen: base.Generator):
+    """Synthesize ``type`` properties for ext.config and ext.props objects"""
+
+    for typ in list(gen.typeDict.values()):
+        if not typ.extName or not typ.extName.startswith((base.v.EXT_CONFIG_PREFIX, base.v.EXT_PROPS_PREFIX)):
+            continue
+        name = typ.extName.rpartition(DOT)[-1]
+        literal_typ = gen.add_type(
+            c=base.c.LITERAL,
+            literalValues=[name],
+            pos=typ.pos,
+        )
+        gen.add_type(
+            c=base.c.PROPERTY,
+            doc='object type',
+            ident=base.v.VARIANT_TAG,
+            name=typ.name + DOT + base.v.VARIANT_TAG,
+            pos=typ.pos,
+            defaultValue='default',
+            hasDefault=True,
+            tValue=literal_typ.uid,
+            tOwner=typ.uid,
+        )
 
 
-def _make_props(gen):
+def _make_props(gen: base.Generator):
     done = {}
     own_props_by_name = {}
 
-    for typ in gen.types.values():
-        if typ.c == base.C.PROPERTY:
+    for typ in gen.typeDict.values():
+        if typ.c == base.c.PROPERTY:
             obj_name, _, prop_name = typ.name.rpartition('.')
             own_props_by_name.setdefault(obj_name, {})[prop_name] = typ
 
@@ -307,15 +273,15 @@ def _make_props(gen):
         if typ.name in done:
             return done[typ.name]
         if typ.name in stack:
-            raise base.Error(f'circular inheritance {stack!r}->{typ.name!r}')
+            raise base.GeneratorError(f'circular inheritance {stack!r}->{typ.name!r}')
 
         props = {}
 
         for sup in typ.tSupers:
-            super_typ = gen.types.get(sup)
+            super_typ = gen.typeDict.get(sup)
             if super_typ:
                 props.update(_make(super_typ, stack + [typ.name]))
-            elif sup.startswith(base.APP_NAME) and 'vendor' not in sup:
+            elif sup.startswith(base.v.APP_NAME) and 'vendor' not in sup:
                 base.log.warning(f'unknown supertype {sup!r}')
 
         if typ.name in own_props_by_name:
@@ -326,16 +292,16 @@ def _make_props(gen):
         done[typ.name] = props
         return props
 
-    for typ in gen.types.values():
-        if typ.c == base.C.CLASS:
+    for typ in gen.typeDict.values():
+        if typ.c == base.c.CLASS:
             _make(typ, [])
 
 
-def _check_undefined(gen):
-    for typ in gen.types.values():
-        if typ.c != base.C.UNDEFINED:
+def _check_undefined(gen: base.Generator):
+    for typ in gen.typeDict.values():
+        if typ.c != base.c.UNDEFINED:
             continue
-        if not typ.name.startswith(base.APP_NAME):
+        if not typ.name.startswith(base.v.APP_NAME):
             # foreign module
             continue
         if '.vendor.' in typ.name:

@@ -8,32 +8,29 @@ STRINGS = {}
 
 STRINGS['en'] = {
     'head_property': 'property',
+    'head_variant': 'one of the following objects',
     'head_type': 'type',
     'head_default': 'default',
     'head_value': 'value',
-
-    'tag_variant': 'variant',
-    'tag_struct': 'struct',
-    'tag_enum': 'enumeration',
-    'tag_type': 'type',
-
+    'category_variant': 'variant',
+    'category_struct': 'struct',
+    'category_enum': 'enumeration',
+    'category_type': 'type',
     'label_added': 'added',
     'label_deprecated': 'deprecated',
     'label_changed': 'changed',
-
 }
 
 STRINGS['de'] = {
     'head_property': 'Eigenschaft',
-    'head_type': 'Typ',
+    'head_variant': 'Eines der folgenden Objekte',
+        'head_type': 'Typ',
     'head_default': 'Default',
     'head_value': 'Wert',
-
-    'tag_variant': 'variant',
-    'tag_struct': 'struct',
-    'tag_enum': 'enumeration',
-    'tag_type': 'type',
-
+    'category_variant': 'variant',
+    'category_struct': 'struct',
+    'category_enum': 'enumeration',
+    'category_type': 'type',
     'label_added': 'neu',
     'label_deprecated': 'veraltet',
     'label_changed': 'geändert',
@@ -49,6 +46,7 @@ def create(gen: base.Generator, lang: str):
 
 
 ##
+
 
 class _Creator:
     def __init__(self, gen: base.Generator, lang: str):
@@ -78,41 +76,42 @@ class _Creator:
         return res
 
     def process(self, tid):
-        typ = self.gen.types[tid]
+        typ = self.gen.require_type(tid)
 
-        if typ.c == base.C.CLASS:
+        if typ.c == base.c.CLASS:
             self.html[tid.lower()] = nl(self.process_class(tid))
 
-        if typ.c == base.C.ENUM:
+        if typ.c == base.c.ENUM:
             self.html[tid.lower()] = nl(self.process_enum(tid))
 
-        if typ.c == base.C.TYPE:
-            target = self.gen.types[typ.tTarget]
-            if target.c == base.C.VARIANT:
-                self.html[tid.lower()] = nl(self.process_variant(tid))
-            else:
-                self.html[tid.lower()] = nl(self.process_type(tid))
+        if typ.c == base.c.TYPE:
+            self.html[tid.lower()] = nl(self.process_type(tid))
+            
+        if typ.c == base.c.VARIANT:
+            self.html[tid.lower()] = nl(self.process_variant(tid))
 
-        if typ.c == base.C.LIST:
+        if typ.c == base.c.LIST:
             self.process(typ.tItem)
 
     def process_class(self, tid):
-        typ = self.gen.types[tid]
+        typ = self.gen.require_type(tid)
 
         yield header(tid)
-        yield subhead(self.strings['tag_struct'], self.docstring(tid))
+        yield subhead(self.strings['category_struct'], self.docstring(tid))
 
         rows = {False: [], True: []}
 
         for prop_name, prop_tid in sorted(typ.tProperties.items()):
-            prop_typ = self.gen.types[prop_tid]
+            prop_typ = self.gen.require_type(prop_tid)
             self.queue.append(prop_typ.tValue)
-            rows[prop_typ.hasDefault].append([
-                as_propname(prop_name) if prop_typ.hasDefault else as_required(prop_name),
-                self.type_string(prop_typ.tValue),
-                self.default_string(prop_tid),
-                self.docstring(prop_tid),
-            ])
+            rows[prop_typ.hasDefault].append(
+                [
+                    as_propname(prop_name) if prop_typ.hasDefault else as_required(prop_name),
+                    self.type_string(prop_typ.tValue),
+                    self.default_string(prop_tid),
+                    self.docstring(prop_tid),
+                ]
+            )
 
         yield table(
             [self.strings['head_property'], self.strings['head_type'], self.strings['head_default'], ''],
@@ -120,64 +119,54 @@ class _Creator:
         )
 
     def process_enum(self, tid):
-        typ = self.gen.types[tid]
+        typ = self.gen.require_type(tid)
 
         yield header(tid)
-        yield subhead(self.strings['tag_enum'], self.docstring(tid))
-        yield table(
-            ['', ''],
-            [
-                [as_literal(key), self.docstring(tid, key)]
-                for key in typ.enumValues
-            ]
-        )
+        yield subhead(self.strings['category_enum'], self.docstring(tid))
+        yield table(['', ''], [[as_literal(key), self.docstring(tid, key)] for key in typ.enumValues])
 
     def process_variant(self, tid):
-        typ = self.gen.types[tid]
-        target = self.gen.types[typ.tTarget]
-
+        typ = self.gen.require_type(tid)
+        
         yield header(tid)
-        yield subhead(self.strings['tag_variant'], '')
+        yield subhead(self.strings['category_variant'], self.strings['head_variant'])
 
         rows = []
-        for member_name, member_tid in sorted(target.tMembers.items()):
+        for member_name, member_tid in sorted(typ.tMembers.items()):
             self.queue.append(member_tid)
             rows.append([as_literal(member_name), self.type_string(member_tid)])
 
-        yield table(
-            [self.strings['head_type'], ''],
-            rows
-        )
+        yield table([self.strings['head_type'], ''], rows)
 
     def process_type(self, tid):
         yield header(tid)
-        yield subhead(self.strings['tag_type'], self.docstring(tid))
+        yield subhead(self.strings['category_type'], self.docstring(tid))
 
     def type_string(self, tid):
-        typ = self.gen.types[tid]
+        typ = self.gen.require_type(tid)
 
-        if typ.c in {base.C.CLASS, base.C.TYPE, base.C.ENUM}:
+        if typ.c in {base.c.CLASS, base.c.TYPE, base.c.ENUM, base.c.VARIANT}:
             return link(tid, as_typename(tid))
 
-        if typ.c == base.C.DICT:
+        if typ.c == base.c.DICT:
             return as_code('dict')
 
-        if typ.c == base.C.LIST:
+        if typ.c == base.c.LIST:
             return LIST_FORMAT.format(self.type_string(typ.tItem))
 
-        if typ.c == base.C.ATOM:
+        if typ.c == base.c.ATOM:
             return as_typename(tid)
 
-        if typ.c == base.C.LITERAL:
-            return r' \| '.join(as_literal(s) for s in typ.literalValues)
+        if typ.c == base.c.LITERAL:
+            return r'  | '.join(as_literal(s) for s in typ.literalValues)
 
-        return ''
+        return typ.c
 
     def default_string(self, tid):
-        typ = self.gen.types[tid]
+        typ = self.gen.require_type(tid)
         val = typ.tValue
 
-        if val in self.gen.types and self.gen.types[val].c == base.C.LITERAL:
+        if val in self.gen.typeDict and self.gen.typeDict[val].c == base.c.LITERAL:
             return ''
         if not typ.hasDefault:
             return ''
@@ -190,7 +179,7 @@ class _Creator:
         missing_translation = ''
 
         # get the original (spec) docstring
-        typ = self.gen.types[tid]
+        typ = self.gen.require_type(tid)
         spec_text = first_line(typ.enumDocs.get(enum_value) if enum_value else typ.doc)
 
         # try the translated (from strings) docstring
@@ -216,7 +205,7 @@ class _Creator:
         return text + label + missing_translation
 
     def extract_label(self, text):
-        m = re.match(fr'(.+?)\(({LABELS}) in (\d[\d.]+)\)$', text)
+        m = re.match(rf'(.+?)\(({LABELS}) in (\d[\d.]+)\)$', text)
         if not m:
             return text, ''
         kind = m.group(2).strip()
@@ -270,13 +259,7 @@ def table(heads, rows):
     widths = [len(h) for h in heads]
 
     for r in rows:
-        widths = [
-            max(a, b)
-            for a, b in zip(
-                widths,
-                [len(str(s)) for s in r]
-            )
-        ]
+        widths = [max(a, b) for a, b in zip(widths, [len(str(s)) for s in r])]
 
     def field(n, v):
         return str(v).ljust(widths[n])
@@ -290,11 +273,11 @@ def table(heads, rows):
 
 
 def escape(s, quote=True):
-    s = s.replace("&", "&amp;")
-    s = s.replace("<", "&lt;")
-    s = s.replace(">", "&gt;")
+    s = s.replace('&', '&amp;')
+    s = s.replace('<', '&lt;')
+    s = s.replace('>', '&gt;')
     if quote:
-        s = s.replace('"', "&quot;")
+        s = s.replace('"', '&quot;')
     return s
 
 

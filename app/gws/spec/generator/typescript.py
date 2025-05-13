@@ -12,6 +12,7 @@ def create(gen: base.Generator):
 
 ##
 
+
 class _Creator:
     def __init__(self, gen: base.Generator):
         self.gen = gen
@@ -22,7 +23,6 @@ class _Creator:
         self.stack = []
         self.tmp_names = {}
         self.object_names = {}
-
 
     def run(self):
         self.make_client_classes()
@@ -40,24 +40,23 @@ class _Creator:
     }
 
     def make_client_classes(self):
-        que = ['gws.Request', 'gws.Response', 'gws.Props']
-        while que:
-            uid = que.pop(0)
+        queue = ['gws.Request', 'gws.Response', 'gws.Props']
+        while queue:
+            uid = queue.pop(0)
             self.make(uid)
-            for typ in self.gen.types.values():
-                if typ.c == base.C.CLASS and uid in typ.tSupers:
-                    que.append(typ.uid)
+            for typ in self.gen.typeDict.values():
+                if typ.c == base.c.CLASS and uid in typ.tSupers:
+                    queue.append(typ.uid)
 
     def make_client_commands(self):
-        for typ in self.gen.types.values():
-            if typ.extName.startswith(base.EXT_COMMAND_API_PREFIX):
+        for typ in self.gen.typeDict.values():
+            if typ.extName.startswith(base.v.EXT_COMMAND_API_PREFIX):
                 self.commands[typ.extName] = base.Data(
-                    cmdName=typ.extName.replace(base.EXT_COMMAND_API_PREFIX, ''),
+                    cmdName=typ.extName.replace(base.v.EXT_COMMAND_API_PREFIX, ''),
                     doc=typ.doc,
-                    arg=self.make(typ.tArgs[-1]),
-                    ret=self.make(typ.tReturn)
+                    arg=self.make(typ.tArg),
+                    ret=self.make(typ.tReturn),
                 )
-
 
     def make(self, uid):
         if uid in self._builtins_map:
@@ -65,7 +64,7 @@ class _Creator:
         if uid in self.done:
             return self.done[uid]
 
-        typ = self.gen.types[uid]
+        typ = self.gen.require_type(uid)
 
         tmp_name = f'[TMP:%d]' % (len(self.tmp_names) + 1)
         self.done[uid] = self.tmp_names[tmp_name] = tmp_name
@@ -78,49 +77,57 @@ class _Creator:
         return type_name
 
     def make2(self, typ):
-        if typ.c == base.C.LITERAL:
+        if typ.c == base.c.LITERAL:
             return _pipe(_val(v) for v in typ.literalValues)
 
-        if typ.c in {base.C.LIST, base.C.SET}:
+        if typ.c in {base.c.LIST, base.c.SET}:
             return 'Array<%s>' % self.make(typ.tItem)
 
-        if typ.c == base.C.OPTIONAL:
+        if typ.c == base.c.OPTIONAL:
             return _pipe([self.make(typ.tTarget), 'null'])
 
-        if typ.c == base.C.TUPLE:
+        if typ.c == base.c.TUPLE:
             return '[%s]' % _comma(self.make(t) for t in typ.tItems)
 
-        if typ.c == base.C.UNION:
+        if typ.c == base.c.UNION:
             return _pipe(self.make(it) for it in typ.tItems)
 
-        if typ.c == base.C.VARIANT:
-            return _pipe(self.make(it) for it in typ.tMembers.values())
-
-        if typ.c == base.C.DICT:
+        if typ.c == base.c.DICT:
             k = self.make(typ.tKey)
             v = self.make(typ.tValue)
             if k == 'string' and v == 'any':
                 return '_dict'
             return '{[key: %s]: %s}' % (k, v)
 
-        if typ.c == base.C.CLASS:
+        if typ.c == base.c.CLASS:
             return self.namespace_entry(
                 typ,
-                template="/// $doc \n  export interface $name$extends { \n $props \n }",
+                template='/// $doc \n  export interface $name$extends { \n $props \n }',
                 props=self.make_props(typ),
-                extends=' extends ' + self.make(typ.tSupers[0]) if typ.tSupers else '')
+                extends=' extends ' + self.make(typ.tSupers[0]) if typ.tSupers else '',
+            )
 
-        if typ.c == base.C.ENUM:
+        if typ.c == base.c.ENUM:
             return self.namespace_entry(
                 typ,
-                template="/// $doc \n export enum $name { \n $items \n }",
-                items=_nl('%s = %s,' % (k, _val(v)) for k, v in sorted(typ.enumValues.items())))
+                template='/// $doc \n export enum $name { \n $items \n }',
+                items=_nl('%s = %s,' % (k, _val(v)) for k, v in sorted(typ.enumValues.items())),
+            )
 
-        if typ.c == base.C.TYPE:
+        if typ.c == base.c.VARIANT:
+            target = _pipe(self.make(it) for it in typ.tMembers.values())
             return self.namespace_entry(
                 typ,
-                template="/// $doc \n export type $name = $target;",
-                target=self.make(typ.tTarget))
+                template='/// $doc \n export type $name = $target;',
+                target=target,
+            )
+
+        if typ.c in base.c.TYPE:
+            return self.namespace_entry(
+                typ,
+                template='/// $doc \n export type $name = $target;',
+                target=self.make(typ.tTarget),
+            )
 
         raise base.Error(f'unhandled type {typ.name!r}, stack: {self.stack!r}')
 
@@ -128,7 +135,6 @@ class _Creator:
 
     def namespace_entry(self, typ, template, **kwargs):
         ps = typ.name.split(DOT)
-        # ps.pop(0)  # remove 'gws.'
         if len(ps) == 1:
             ns, name, qname = self.CORE_NAME, ps[-1], self.CORE_NAME + DOT + ps[0]
         else:
@@ -139,18 +145,15 @@ class _Creator:
         return qname
 
     def make_props(self, typ):
-        tpl = "/// $doc \n $name$opt: $type"
+        tpl = '/// $doc \n $name$opt: $type'
         props = []
 
         for name, uid in typ.tProperties.items():
-            property_typ = self.gen.types[uid]
+            property_typ = self.gen.require_type(uid)
             if property_typ.tOwner == typ.name:
-                props.append(self.format(
-                    tpl,
-                    name=name,
-                    doc=property_typ.doc,
-                    opt='?' if property_typ.hasDefault else '',
-                    type=self.make(property_typ.tValue)))
+                props.append(
+                    self.format(tpl, name=name, doc=property_typ.doc, opt='?' if property_typ.hasDefault else '', type=self.make(property_typ.tValue))
+                )
 
         return _nl(props)
 
@@ -163,19 +166,12 @@ class _Creator:
         return text
 
     def write_api(self):
-
-        namespace_tpl = "export namespace $ns { \n $declarations \n }"
+        namespace_tpl = 'export namespace $ns { \n $declarations \n }'
         globs = self.format(namespace_tpl, ns='gws', declarations=_nl2(self.namespaces.pop('gws')))
-        namespaces = _nl2([
-            self.format(namespace_tpl, ns=ns, declarations=_nl2(d))
-            for ns, d in sorted(self.namespaces.items())
-        ])
+        namespaces = _nl2([self.format(namespace_tpl, ns=ns, declarations=_nl2(d)) for ns, d in sorted(self.namespaces.items())])
 
-        command_tpl = "/// $doc \n $name (p: $arg, options?: any): Promise<$ret>;"
-        commands = _nl2([
-            self.format(command_tpl, name=cc.cmdName, doc=cc.doc, arg=cc.arg, ret=cc.ret)
-            for _, cc in sorted(self.commands.items())
-        ])
+        command_tpl = '/// $doc \n $name (p: $arg, options?: any): Promise<$ret>;'
+        commands = _nl2([self.format(command_tpl, name=cc.cmdName, doc=cc.doc, arg=cc.arg, ret=cc.ret) for _, cc in sorted(self.commands.items())])
 
         api_tpl = """
             /**
@@ -205,10 +201,7 @@ class _Creator:
 
     def write_stub(self):
         command_tpl = """$name(r: $arg, options?: any): Promise<$ret> { \n return this.invoke("$name", r, options); \n }"""
-        commands = [
-            self.format(command_tpl, name=cc.cmdName, doc=cc.doc, arg=cc.arg, ret=cc.ret)
-            for _, cc in sorted(self.commands.items())
-        ]
+        commands = [self.format(command_tpl, name=cc.cmdName, doc=cc.doc, arg=cc.arg, ret=cc.ret) for _, cc in sorted(self.commands.items())]
 
         stub_tpl = """
             export abstract class BaseServer implements Api {
@@ -222,11 +215,7 @@ class _Creator:
         kwargs['VERSION'] = self.gen.meta['version']
         if 'doc' in kwargs:
             kwargs['doc'] = kwargs['doc'].split('\n')[0]
-        return re.sub(
-            r'\$(\w+)',
-            lambda m: kwargs[m.group(1)],
-            template
-        ).strip()
+        return re.sub(r'\$(\w+)', lambda m: kwargs[m.group(1)], template).strip()
 
 
 def _indent(txt):

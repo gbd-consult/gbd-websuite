@@ -12,7 +12,7 @@ from . import core
 
 
 class Reader:
-    atom = core.Type(c=core.C.ATOM)
+    atom = core.make_type({'c': core.c.ATOM})
 
     def __init__(self, runtime, path, options):
         self.runtime = runtime
@@ -275,7 +275,7 @@ def _read_variant(r: Reader, val, typ: core.Type):
     if r.case_insensitive:
         val = {k.lower(): v for k, v in val.items()}
 
-    type_name = val.get(core.VARIANT_TAG, core.DEFAULT_VARIANT_TAG)
+    type_name = val.get(core.v.VARIANT_TAG, core.v.DEFAULT_VARIANT_TAG)
     target_type_uid = typ.tMembers.get(type_name)
     if not target_type_uid:
         raise core.ReadError(f"illegal type: {type_name!r}, expected: {_comma(typ.tMembers)}", val)
@@ -482,20 +482,18 @@ _READERS = {
     'list': _read_raw_list,
     'dict': _read_raw_dict,
 
-    core.C.CLASS: _read_object,
-    core.C.DICT: _read_dict,
-    core.C.ENUM: _read_enum,
-    core.C.LIST: _read_list,
-    core.C.LITERAL: _read_literal,
-    core.C.OPTIONAL: _read_optional,
-    core.C.PROPERTY: _read_property,
-    core.C.SET: _read_set,
-    core.C.TUPLE: _read_tuple,
-    core.C.TYPE: _read_type,
-    core.C.UNION: _read_union,
-    core.C.VARIANT: _read_variant,
-    core.C.CONFIG: _read_object,
-    core.C.PROPS: _read_object,
+    core.c.CLASS: _read_object,
+    core.c.DICT: _read_dict,
+    core.c.ENUM: _read_enum,
+    core.c.LIST: _read_list,
+    core.c.LITERAL: _read_literal,
+    core.c.OPTIONAL: _read_optional,
+    core.c.PROPERTY: _read_property,
+    core.c.SET: _read_set,
+    core.c.TUPLE: _read_tuple,
+    core.c.TYPE: _read_type,
+    core.c.UNION: _read_union,
+    core.c.VARIANT: _read_variant,
 
     'gws.AclStr': _read_acl_str,
     'gws.Color': _read_color,

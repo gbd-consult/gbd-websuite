@@ -24,6 +24,10 @@ def write_json(path, obj):
     write_file(path, json.dumps(obj, default=_json, indent=4, sort_keys=True))
 
 
+def read_json(path):
+    return json.loads(read_file(path))
+
+
 def parse_ini(text):
     dct = {}
     section = ''
