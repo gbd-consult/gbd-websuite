@@ -31,11 +31,32 @@ fi
 
 THIS_DIR=$(dirname $(realpath $BASH_SOURCE))
 BASE_DIR=/opt/gbd/qfieldcloud
-REPO_URL="https://github.com/opengisch/qfieldcloud.git"
+QFieldCloud=$BASE_DIR/src/QFieldCloud
+REPO_URL="https://github.com/opengisch/QFieldCloud.git"
+HOST_IP=$(hostname -I | awk '{print $1}')
+KEY=$(openssl rand -hex 32)
+ENV_FILE="$QFieldCloud/.env"
+SUPER_USERNAME="super_user"
+SUPER_EMAIL="super@user.com"
 
 mkdir -p $BASE_DIR
 
 set -e
+
+update_env_var() {
+  VAR_NAME=$1
+  VAR_VALUE=$2
+
+  if grep -q "^${VAR_NAME}=" $ENV_FILE; then
+    sed -i "s|^${VAR_NAME}=.*|${VAR_NAME}=${VAR_VALUE}|" $ENV_FILE
+  else
+    # Stelle sicher, dass die Datei mit einem Zeilenumbruch endet
+    if [ -s $ENV_FILE ] && [ -n "$(tail -c1 $ENV_FILE)" ]; then
+      echo >> $ENV_FILE
+    fi
+    echo "${VAR_NAME}=${VAR_VALUE}" >> $ENV_FILE
+  fi
+}
 
 ##
 
@@ -43,34 +64,67 @@ case $CMD in
 
 clone)
     echo "Cloning QFieldCloud repository (version: $VERSION)..."
-    if [ -d "$BASE_DIR/src" ]; then
+    if [ -d "$QFieldCloud" ]; then
         echo "Directory $BASE_DIR/src already exists. Updating..."
-        cd $BASE_DIR/src
-        git fetch --all
+        cd $QFieldCloud
+        git pull --recurse-submodules  && git submodule update --recursive
         git checkout $VERSION
         git pull
     else
-        git clone $REPO_URL $BASE_DIR/src
+        mkdir $BASE_DIR/src
         cd $BASE_DIR/src
+        git clone --recurse-submodules $REPO_URL
+        cd $QFieldCloud
+        git pull --recurse-submodules  && git submodule update --recursive
         git checkout $VERSION
     fi
     echo "QFieldCloud repository cloned/updated successfully."
     ;;
 
 build)
-    if [ ! -d "$BASE_DIR/src" ]; then
+    if [ ! -d "$QFieldCloud" ]; then
         echo "QFieldCloud repository not found. Please run 'make.sh clone' first."
         exit 1
     fi
 
     echo "Building QFieldCloud Docker images..."
-    cd $BASE_DIR/src
 
-    # Copy our docker compose file to the source directory
-    cp $THIS_DIR/docker-compose.yml $BASE_DIR/src/
+    # create .env
+    cp $QFieldCloud/.env.example $QFieldCloud/.env
+
+    update_env_var "SUPER_USERNAME" "$SUPER_USERNAME"
+    update_env_var "SUPER_EMAIL" "$SUPER_EMAIL"
+    update_env_var QFIELDCLOUD_HOST $HOST_IP
+    update_env_var DJANGO_ALLOWED_HOSTS "\"localhost 127.0.0.1 0.0.0.0 app nginx $HOST_IP\""
+
+    update_env_var SECRET_KEY $KEY
+
+    cd $QFieldCloud
+
+
 
     # Build the images
-    docker compose build
+    docker compose up -d --build
+
+    # Run the django database migrations:
+
+    docker compose exec app python manage.py migrate
+
+    # Collect the static files:
+
+    docker compose exec app python manage.py collectstatic
+
+    # adding superuser:
+
+    docker compose run app python manage.py createsuperuser --username "$SUPER_USERNAME" --email "$SUPER_EMAIL"
+
+    # Add root certificate:
+
+    sudo cp ./conf/nginx/certs/rootCA.pem /usr/local/share/ca-certificates/rootCA.crt
+
+    # Trust the newly added certificate:
+
+    sudo update-ca-certificates
 
     echo "QFieldCloud Docker images built successfully."
     ;;
@@ -82,7 +136,7 @@ up)
     fi
 
     echo "Starting QFieldCloud services..."
-    cd $BASE_DIR/src
+    cd $QFieldCloud
     docker compose up -d
 
     echo "QFieldCloud services started successfully."
@@ -96,7 +150,7 @@ down)
     fi
 
     echo "Stopping QFieldCloud services..."
-    cd $BASE_DIR/src
+    cd $QFieldCloud
     docker compose down
 
     echo "QFieldCloud services stopped successfully."
@@ -109,7 +163,7 @@ bash)
     fi
 
     echo "Starting bash in the QFieldCloud container..."
-    cd $BASE_DIR/src
+    cd $QFieldCloud
     docker compose exec web bash
     ;;
 
@@ -117,13 +171,14 @@ clean)
     echo "Cleaning QFieldCloud build artifacts..."
 
     if [ -d "$BASE_DIR/src" ]; then
-        cd $BASE_DIR/src
+        cd $QFieldCloud
         docker compose down -v
     fi
 
     read -p "Do you want to remove the QFieldCloud source code? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
+        cd $BASE_DIR
         rm -rf $BASE_DIR/src
         echo "QFieldCloud source code removed."
     fi

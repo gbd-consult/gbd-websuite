@@ -40,6 +40,10 @@ Dieses Verzeichnis enth채lt Skripte zur einfachen lokalen Installation und Ausf�
    ./make.sh clean
    ```
 
-Nach dem Start ist die Web-Oberfl채che unter http://localhost:8000 erreichbar.
+Super user wird automatisch mit dem Benutzernamen:super_user und Email: super@user.com erstellt (beides kann in make.sh ge채ndertwerden).
 
-Die MinIO-Konsole ist unter http://localhost:9001 verf체gbar (Zugangsdaten: minioadmin/minioadmin).
+Nach dem Start ist die Web-Oberfl채che unter http://private_IP_Adresse erreichbar.
+
+Die MinIO-Konsole ist unter http://172.17.0.1:8009 verf체gbar (Zugangsdaten sind einsehbar in der .env Datei).
+
+Wie man sich mit der QfieldCloud verbindet findet man hier: https://docs.qfield.org/get-started/
