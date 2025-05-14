@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../../../app'))
 
 import gws.lib.cli as cli
 
-import gws.spec.generator.generator as generator
+import gws.spec.generator.main as generator_main
 
 USAGE = """
 GWS Spec Compiler
@@ -40,13 +40,13 @@ def main(args):
     os.makedirs(out_dir, exist_ok=True)
 
     try:
-        generator.generate_and_write(
+        generator_main.generate_and_write(
             out_dir=out_dir,
             root_dir=args.get('root'),
             manifest_path=args.get('manifest'),
             debug=args.get('v'))
 
-    except generator.Error as e:
+    except generator_main.Error as e:
         cli.error('-' * 40)
         cli.error(f'SPEC GENERATOR ERROR: {e.args[0]}')
         cli.error('-' * 40)

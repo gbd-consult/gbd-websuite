@@ -38,7 +38,7 @@ class Feature:
     record: 'FeatureRecord'
     views: dict
     createWithFeatures: list['Feature']
-    insertedPrimaryKey: str
+    insertedPrimaryKey: Optional[int | str]
 
     def get(self, name: str, default=None) -> Any: ...
 

@@ -33,4 +33,4 @@ In dieser Referenz werden folgende Schriftarten und Bezeichnungeng verwendet.
 | `variant`{.configref_category}         | ein Objekt aus einer vordefinierter Liste, mit dem Eigenschaft `type`{.configref_propname} |
 
 
-%include ../../../app/__build/configref.de.html
+%include ../../../app/__build/configref.de.md

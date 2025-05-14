@@ -15,6 +15,14 @@ import gws.lib.uom
 
 # @TODO PostGis options 2 and 4 (https://postgis.net/docs/ST_AsGML.html)
 
+class _Options(gws.Data):
+    version: int
+    precision: float
+    swapxy: bool
+    xmlns: str
+    crsName: dict
+
+
 def shape_to_element(
         shape: gws.Shape,
         version: int = 3,
@@ -41,26 +49,22 @@ def shape_to_element(
         A GML element.
     """
 
-    opts = gws.Data()
+    opts = _Options()
     opts.version = int(version)
     if opts.version not in {2, 3}:
         raise gws.Error(f'unsupported GML version {version!r}')
 
     crs_format = crs_format or (gws.CrsFormat.url if opts.version == 2 else gws.CrsFormat.urn)
-    crs = shape.crs.to_string(crs_format)
+    opts.crsName= {'srsName': shape.crs.to_string(crs_format)}
 
     opts.swapxy = (shape.crs.axis_for_format(crs_format) == gws.Axis.yx) and not always_xy
+    opts.precision = coordinate_precision if coordinate_precision is not None else gws.lib.uom.DEFAULT_PRECISION[shape.crs.uom]
 
-    opts.precision = coordinate_precision
-    if opts.precision is None:
-        opts.precision = gws.lib.uom.DEFAULT_PRECISION[shape.crs.uom]
-
-    opts.ns = ''
+    opts.xmlns = ''
     ns = None
-
     if with_xmlns:
-        ns = namespace or xmlx.namespace.get('gml2' if opts.version == 2 else 'gml3')
-        opts.ns = ns.xmlns + ':'
+        ns = namespace or xmlx.namespace.require('gml2' if opts.version == 2 else 'gml')
+        opts.xmlns = ns.xmlns + ':'
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
     fn = _tag2 if opts.version == 2 else _tag3
@@ -69,51 +73,51 @@ def shape_to_element(
     # If no srsName attribute is given, the CRS shall be specified as part of the larger context this geometry element is part of...
     # NOTE It is expected that the attribute will be specified at the direct position level only in rare cases.
 
-    el = xmlx.tag(*fn(geom, opts, {'srsName': crs}))
+    el = xmlx.tag(*fn(geom, opts))
     if ns and with_inline_xmlns:
         _att_attr(el, 'xmlns:' + ns.xmlns, ns.uri)
 
     return el
 
 
-def _point2(geom, opts, crs):
-    return f'{opts.ns}Point', crs, _coordinates(geom, opts)
+def _point2(geom, opts):
+    return f'{opts.xmlns}Point', opts.crsName, _coordinates(geom, opts)
 
 
-def _point3(geom, opts, crs):
-    return f'{opts.ns}Point', crs, _pos(geom, opts)
+def _point3(geom, opts):
+    return f'{opts.xmlns}Point', opts.crsName, _pos(geom, opts)
 
 
-def _linestring2(geom, opts, crs):
-    return f'{opts.ns}LineString', crs, _coordinates(geom, opts)
+def _linestring2(geom, opts):
+    return f'{opts.xmlns}LineString', opts.crsName, _coordinates(geom, opts)
 
 
-def _linestring3(geom, opts, crs):
+def _linestring3(geom, opts):
     return [
-        f'{opts.ns}Curve', crs,
+        f'{opts.xmlns}Curve', opts.crsName,
         [
-            f'{opts.ns}segments',
+            f'{opts.xmlns}segments',
             [
-                f'{opts.ns}LineStringSegment', _pos_list(geom, opts)
+                f'{opts.xmlns}LineStringSegment', _pos_list(geom, opts)
             ]
         ]
     ]
 
 
-def _polygon2(geom, opts, crs):
+def _polygon2(geom, opts):
     return [
-        f'{opts.ns}Polygon', crs,
+        f'{opts.xmlns}Polygon', opts.crsName,
         [
-            f'{opts.ns}outerBoundaryIs',
+            f'{opts.xmlns}outerBoundaryIs',
             [
-                f'{opts.ns}LinearRing', _coordinates(geom.exterior, opts)
+                f'{opts.xmlns}LinearRing', _coordinates(geom.exterior, opts)
             ]
         ],
         [
             [
-                f'{opts.ns}innerBoundaryIs',
+                f'{opts.xmlns}innerBoundaryIs',
                 [
-                    f'{opts.ns}LinearRing', _coordinates(interior, opts)
+                    f'{opts.xmlns}LinearRing', _coordinates(interior, opts)
                 ]
             ]
             for interior in geom.interiors
@@ -121,20 +125,20 @@ def _polygon2(geom, opts, crs):
     ]
 
 
-def _polygon3(geom, opts, crs):
+def _polygon3(geom, opts):
     return [
-        f'{opts.ns}Polygon', crs,
+        f'{opts.xmlns}Polygon', opts.crsName,
         [
-            f'{opts.ns}exterior',
+            f'{opts.xmlns}exterior',
             [
-                f'{opts.ns}LinearRing', _pos_list(geom.exterior, opts)
+                f'{opts.xmlns}LinearRing', _pos_list(geom.exterior, opts)
             ]
         ],
         [
             [
-                f'{opts.ns}interior',
+                f'{opts.xmlns}interior',
                 [
-                    f'{opts.ns}LinearRing', _pos_list(interior, opts)
+                    f'{opts.xmlns}LinearRing', _pos_list(interior, opts)
                 ]
             ]
             for interior in geom.interiors
@@ -142,44 +146,44 @@ def _polygon3(geom, opts, crs):
     ]
 
 
-def _multipoint2(geom, opts, crs):
-    return f'{opts.ns}MultiPoint', crs, [[f'{opts.ns}pointMember', _tag2(p, opts)] for p in geom.geoms]
+def _multipoint2(geom, opts):
+    return f'{opts.xmlns}MultiPoint', opts.crsName, [[f'{opts.xmlns}pointMember', _tag2(p, opts)] for p in geom.geoms]
 
 
-def _multipoint3(geom, opts, crs):
-    return f'{opts.ns}MultiPoint', crs, [[f'{opts.ns}pointMember', _tag3(p, opts)] for p in geom.geoms]
+def _multipoint3(geom, opts):
+    return f'{opts.xmlns}MultiPoint', opts.crsName, [[f'{opts.xmlns}pointMember', _tag3(p, opts)] for p in geom.geoms]
 
 
-def _multilinestring2(geom, opts, crs):
-    return f'{opts.ns}MultiLineString', crs, [[f'{opts.ns}lineStringMember', _tag2(p, opts)] for p in geom.geoms]
+def _multilinestring2(geom, opts):
+    return f'{opts.xmlns}MultiLineString', opts.crsName, [[f'{opts.xmlns}lineStringMember', _tag2(p, opts)] for p in geom.geoms]
 
 
-def _multilinestring3(geom, opts, crs):
-    return f'{opts.ns}MultiCurve', crs, [[f'{opts.ns}curveMember', _tag3(p, opts)] for p in geom.geoms]
+def _multilinestring3(geom, opts):
+    return f'{opts.xmlns}MultiCurve', opts.crsName, [[f'{opts.xmlns}curveMember', _tag3(p, opts)] for p in geom.geoms]
 
 
-def _multipolygon2(geom, opts, crs):
-    return f'{opts.ns}MultiPolygon', crs, [[f'{opts.ns}polygonMember', _tag2(p, opts)] for p in geom.geoms]
+def _multipolygon2(geom, opts):
+    return f'{opts.xmlns}MultiPolygon', opts.crsName, [[f'{opts.xmlns}polygonMember', _tag2(p, opts)] for p in geom.geoms]
 
 
-def _multipolygon3(geom, opts, crs):
-    return f'{opts.ns}MultiSurface', crs, [[f'{opts.ns}surfaceMember', _tag3(p, opts)] for p in geom.geoms]
+def _multipolygon3(geom, opts):
+    return f'{opts.xmlns}MultiSurface', opts.crsName, [[f'{opts.xmlns}surfaceMember', _tag3(p, opts)] for p in geom.geoms]
 
 
-def _geometrycollection2(geom, opts, crs):
-    return f'{opts.ns}MultiGeometry', crs, [[f'{opts.ns}geometryMember', _tag2(p, opts)] for p in geom.geoms]
+def _geometrycollection2(geom, opts):
+    return f'{opts.xmlns}MultiGeometry', opts.crsName, [[f'{opts.xmlns}geometryMember', _tag2(p, opts)] for p in geom.geoms]
 
 
-def _geometrycollection3(geom, opts, crs):
-    return f'{opts.ns}MultiGeometry', crs, [[f'{opts.ns}geometryMember', _tag3(p, opts)] for p in geom.geoms]
+def _geometrycollection3(geom, opts):
+    return f'{opts.xmlns}MultiGeometry', opts.crsName, [[f'{opts.xmlns}geometryMember', _tag3(p, opts)] for p in geom.geoms]
 
 
 def _pos(geom, opts):
-    return f'{opts.ns}pos', {'srsDimension': 2}, _pos_list_content(geom, opts)
+    return f'{opts.xmlns}pos', {'srsDimension': 2}, _pos_list_content(geom, opts)
 
 
 def _pos_list(geom, opts):
-    return f'{opts.ns}posList', {'srsDimension': 2}, _pos_list_content(geom, opts)
+    return f'{opts.xmlns}posList', {'srsDimension': 2}, _pos_list_content(geom, opts)
 
 
 def _pos_list_content(geom, opts):
@@ -206,7 +210,7 @@ def _coordinates(geom, opts):
             x, y = y, x
         cs.append(str(x) + ',' + str(y))
 
-    return f'{opts.ns}coordinates', {'decimal': '.', 'cs': ',', 'ts': ' '}, ' '.join(cs)
+    return f'{opts.xmlns}coordinates', {'decimal': '.', 'cs': ',', 'ts': ' '}, ' '.join(cs)
 
 
 _FNS_2 = {
@@ -230,19 +234,19 @@ _FNS_3 = {
 }
 
 
-def _tag2(geom, opts, crs=None):
+def _tag2(geom, opts):
     typ = geom.geom_type
     fn = _FNS_2.get(typ)
     if fn:
-        return fn(geom, opts, crs)
+        return fn(geom, opts)
     raise gws.Error(f'cannot convert geometry type {typ!r} to GML')
 
 
-def _tag3(geom, opts, crs=None):
+def _tag3(geom, opts):
     typ = geom.geom_type
     fn = _FNS_3.get(typ)
     if fn:
-        return fn(geom, opts, crs)
+        return fn(geom, opts)
     raise gws.Error(f'cannot convert geometry type {typ!r} to GML')
 
 

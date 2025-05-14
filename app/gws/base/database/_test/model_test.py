@@ -15,8 +15,9 @@ _weird_names = [
 
 @u.fixture(scope='module')
 def root():
-    u.pg.create('plain', {'id': 'int primary key', 'a': 'text', 'b': 'text', 'c': 'text'})
-    u.pg.create('serial_id', {'id': 'serial primary key', 'a': 'text'})
+    u.pg.create('plain', {'id': 'int primary key', 'a': 'text'})
+    u.pg.create('auto_pk', {'id': 'serial primary key', 'a': 'text'})
+    u.pg.create('no_pk', {'id': 'int', 'a': 'text'})
 
     ws, wt, wc = _weird_names
     ddl = f'''
@@ -38,7 +39,10 @@ def root():
             uid "PLAIN" type "postgres" tableName "plain" 
         }}
         models+ {{
-            uid "SERIAL_ID" type "postgres" tableName "serial_id"
+            uid "AUTO_PK" type "postgres" tableName "auto_pk"
+        }}
+        models+ {{
+            uid "NO_PK" type "postgres" tableName "no_pk"
         }}
         models+ {{
             uid "WEIRD" type "postgres" tableName ' "{ws}"."{wt}" '
@@ -93,18 +97,36 @@ def test_create_with_auto_pk(root: gws.Root):
     mc = gws.ModelContext(
         user=u.gws_system_user(),
     )
-    mo = u.cast(gws.Model, root.get('SERIAL_ID'))
+    mo = u.cast(gws.Model, root.get('AUTO_PK'))
 
-    u.pg.clear('serial_id')
+    u.pg.clear('auto_pk')
 
     mo.create_feature(u.feature(mo, a='aa'), mc)
     mo.create_feature(u.feature(mo, a='bb'), mc)
     mo.create_feature(u.feature(mo, a='cc'), mc)
 
-    assert u.pg.content('serial_id') == [
+    assert u.pg.content('auto_pk') == [
         (1, 'aa'),
         (2, 'bb'),
         (3, 'cc'),
+    ]
+
+def test_create_no_pk(root: gws.Root):
+    mc = gws.ModelContext(
+        user=u.gws_system_user(),
+    )
+    mo = u.cast(gws.Model, root.get('NO_PK'))
+
+    u.pg.clear('no_pk')
+
+    mo.create_feature(u.feature(mo, id=11, a='aa'), mc)
+    mo.create_feature(u.feature(mo, id=22, a='bb'), mc)
+    mo.create_feature(u.feature(mo, id=33, a='cc'), mc)
+
+    assert u.pg.content('no_pk') == [
+        (11, 'aa'),
+        (22, 'bb'),
+        (33, 'cc'),
     ]
 
 def test_weird_names(root: gws.Root):

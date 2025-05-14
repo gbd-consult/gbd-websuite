@@ -8,25 +8,24 @@ This module is available as ``gws.u`` everywhere.
 import hashlib
 import json
 import os
-import shutil
 import pickle
 import random
 import re
+import shutil
 import sys
 import threading
 import time
 import urllib.parse
-
-from typing import cast, Union
+from typing import Optional, TypeVar, Union, cast
 
 from . import const, log
 
 
 def is_data_object(x) -> bool:
-    pass
+    return False
 
 
-def to_data_object(x) -> bool:
+def to_data_object(x):
     pass
 
 
@@ -40,9 +39,20 @@ def exit(code: int = 255):
     sys.exit(code)
 
 
+T = TypeVar('T')
+
+
+def require(value: Optional[T]) -> T:
+    """Return the value if not None, otherwise raise an Exception."""
+    if value is None:
+        raise ValueError('unexpected None value')
+    return value
+
+
 ##
 
 # @TODO use ABC
+
 
 def is_list(x):
     return isinstance(x, (list, tuple))
@@ -79,6 +89,7 @@ def is_empty(x) -> bool:
 
 
 ##
+
 
 def get(x, key, default=None):
     """Get a nested value/attribute from a structure.
@@ -244,10 +255,7 @@ def deep_merge(x, y, concat_lists=True):
     if (is_dict(x) or is_data_object(x)) and (is_dict(y) or is_data_object(y)):
         xd = to_dict(x)
         yd = to_dict(y)
-        d = {
-            k: deep_merge(xd.get(k), yd.get(k), concat_lists)
-            for k in xd.keys() | yd.keys()
-        }
+        d = {k: deep_merge(xd.get(k), yd.get(k), concat_lists) for k in xd.keys() | yd.keys()}
         return d if is_dict(x) else type(x)(d)
 
     if is_list(x) and is_list(y):
@@ -315,6 +323,7 @@ def uniq(x):
 
 
 ##
+
 
 def to_int(x) -> int:
     """Convert a value to an int or 0 if this fails."""
@@ -480,6 +489,7 @@ def to_lines(txt: str, comment: str = None) -> list[str]:
 
 ##
 
+
 def parse_acl(acl):
     """Parse an ACL config into an ACL.
 
@@ -561,6 +571,7 @@ def split_uid(joined_uid: str) -> tuple[str, str]:
 
 
 ##
+
 
 def is_file(path):
     return os.path.isfile(path)
@@ -709,7 +720,7 @@ def ephemeral_cleanup():
 
 
 def random_string(size: int) -> str:
-    """Generate a random string of length `size`. """
+    """Generate a random string of length `size`."""
 
     a = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     r = random.SystemRandom()
@@ -804,6 +815,7 @@ def delete_app_global(name):
 
 ##
 
+
 def serialize_to_path(obj, path):
     tmp = path + random_string(64)
     with open(tmp, 'wb') as fp:
@@ -880,7 +892,6 @@ def get_server_global(name: str, init_fn):
         return _server_globals[uid]
 
     with server_lock(uid):
-
         if _get():
             return _server_globals[uid]
 
@@ -944,6 +955,7 @@ def server_lock(uid):
 
 ##
 
+
 def action_url_path(name: str, **kwargs) -> str:
     ls = []
 
@@ -959,6 +971,7 @@ def action_url_path(name: str, **kwargs) -> str:
 
 
 ##
+
 
 def utime() -> float:
     """Unix time as a float number."""

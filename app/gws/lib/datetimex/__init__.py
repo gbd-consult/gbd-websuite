@@ -31,7 +31,9 @@ import re
 import zoneinfo
 
 import pendulum
+import pendulum.helpers
 import pendulum.parsing
+import pendulum.parsing.exceptions
 
 import gws
 import gws.lib.osx
@@ -53,6 +55,7 @@ _ZI_ALL = set(zoneinfo.available_timezones())
 
 
 # Time zones
+
 
 def set_local_time_zone(tz: str):
     new_zi = time_zone(tz)
@@ -129,8 +132,7 @@ def _zone_info_from_tzinfo(tzinfo: dt.tzinfo):
 # init from the env variable right now
 
 if 'TZ' in os.environ:
-    _set_localtime_from_zone_info(
-        _zone_info_from_string(os.environ['TZ']))
+    _set_localtime_from_zone_info(_zone_info_from_string(os.environ['TZ']))
 
 
 # Constructors
@@ -220,6 +222,7 @@ def from_timestamp(n: float, tz: str = '') -> dt.datetime:
 
 # Formatters
 
+
 def to_iso_string(d: Optional[dt.date] = None, with_tz='+', sep='T') -> str:
     fmt = f'%Y-%m-%d{sep}%H:%M:%S'
     if with_tz:
@@ -235,7 +238,7 @@ def to_iso_date_string(d: Optional[dt.date] = None) -> str:
 
 
 def to_basic_string(d: Optional[dt.date] = None) -> str:
-    return _datetime(d).strftime("%Y%m%d%H%M%S")
+    return _datetime(d).strftime('%Y%m%d%H%M%S')
 
 
 def to_iso_time_string(d: Optional[dt.date] = None, with_tz='+') -> str:
@@ -253,6 +256,7 @@ def to_string(fmt: str, d: Optional[dt.date] = None) -> str:
 
 
 # Converters
+
 
 def to_timestamp(d: Optional[dt.date] = None) -> int:
     return int(_datetime(d).timestamp())
@@ -276,6 +280,7 @@ def to_time_zone(tz: str, d: Optional[dt.date] = None) -> dt.datetime:
 
 # Predicates
 
+
 def is_date(x) -> bool:
     return isinstance(x, dt.date)
 
@@ -285,24 +290,19 @@ def is_datetime(x) -> bool:
 
 
 def is_utc(d: dt.datetime) -> bool:
-    return _zone_info_from_tzinfo(_datetime(d).tzinfo) == UTC
+    return _zone_info_from_tzinfo(gws.u.require(_datetime(d).tzinfo)) == UTC
 
 
 def is_local(d: dt.datetime) -> bool:
-    return _zone_info_from_tzinfo(_datetime(d).tzinfo) == time_zone('')
+    return _zone_info_from_tzinfo(gws.u.require(_datetime(d).tzinfo)) == time_zone('')
 
 
 # Arithmetic
 
-def add(
-        d: Optional[dt.date] = None,
-        years=0, months=0, days=0, weeks=0, hours=0, minutes=0, seconds=0, microseconds=0
-) -> dt.datetime:
+
+def add(d: Optional[dt.date] = None, years=0, months=0, days=0, weeks=0, hours=0, minutes=0, seconds=0, microseconds=0) -> dt.datetime:
     return pendulum.helpers.add_duration(
-        _datetime(d),
-        years=years, months=months, days=days,
-        weeks=weeks, hours=hours, minutes=minutes,
-        seconds=seconds, microseconds=microseconds
+        _datetime(d), years=years, months=months, days=days, weeks=weeks, hours=hours, minutes=minutes, seconds=seconds, microseconds=microseconds
     )
 
 
@@ -354,7 +354,7 @@ def total_difference(d1: dt.date, d2: Optional[dt.date] = None) -> Diff:
 
 # Wrappers for useful pendulum utilities
 
-# @formatter:off
+# fmt:off
 
 def start_of_second(d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).start_of('second'))
 def start_of_minute(d: Optional[dt.date] = None) -> dt.datetime: return _unpend(_pend(d).start_of('minute'))
@@ -381,7 +381,7 @@ def week_of_year  (d: Optional[dt.date] = None) -> int: return _pend(d).week_of_
 def days_in_month (d: Optional[dt.date] = None) -> int: return _pend(d).days_in_month
 
 
-# @formatter:on
+# fmt:on
 
 _WD = {
     0: pendulum.WeekDay.MONDAY,
@@ -457,6 +457,7 @@ def parse_duration(s: str) -> int:
 
 # conversions
 
+
 def _datetime(d: dt.date | dt.time | None) -> dt.datetime:
     # ensure a valid datetime object
 
@@ -482,7 +483,7 @@ def _datetime(d: dt.date | dt.time | None) -> dt.datetime:
     raise Error(f'invalid datetime value {d!r}')
 
 
-def _ensure_tzinfo(d: dt.datetime | dt.time, tz: str):
+def _ensure_tzinfo(d, tz: str):
     # attach tzinfo if not set
 
     if not d.tzinfo:
@@ -499,7 +500,8 @@ def _ensure_tzinfo(d: dt.datetime | dt.time, tz: str):
 
 # pendulum.DateTime <-> python datetime
 
-def _pend(d: dt.datetime | None) -> pendulum.DateTime:
+
+def _pend(d: dt.date | None) -> pendulum.DateTime:
     return pendulum.instance(_datetime(d))
 
 
@@ -527,7 +529,7 @@ def _pend_parse_datetime(s, tz, iso_only):
         else:
             # do not normalize
             d = pendulum.parsing._parse(s)
-    except (ValueError, pendulum.parsing.ParserError) as exc:
+    except (ValueError, pendulum.parsing.exceptions.ParserError) as exc:
         raise Error(f'invalid date {s!r}') from exc
 
     if isinstance(d, dt.datetime):
@@ -546,7 +548,7 @@ def _pend_parse_time(s, tz, iso_only):
         else:
             # do not normalize
             d = pendulum.parsing._parse(s)
-    except (ValueError, pendulum.parsing.ParserError) as exc:
+    except (ValueError, pendulum.parsing.exceptions.ParserError) as exc:
         raise Error(f'invalid time {s!r}') from exc
 
     if isinstance(d, dt.time):

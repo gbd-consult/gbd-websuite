@@ -118,7 +118,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
     ]
 
     if ns.extendsGml:
-        gml = xmlx.namespace.get('gml3')
+        gml = xmlx.namespace.require('gml')
         tag[1][f'xmlns:{gml.xmlns}'] = gml.uri
         tag.append(['xsd:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}])
 

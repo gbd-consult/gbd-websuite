@@ -45,7 +45,7 @@ class Object(gws.Node):
         xmlns = cfg.get('xmlns')
         ns = gws.XmlNamespace(
             xmlns=xmlns,
-            uid=cfg.get('uid') or 'gws.base.helper.xml.' + xmlns,
+            uid=cfg.get('uid') or xmlns,
             uri=cfg.get('uri'),
             schemaLocation=cfg.get('schemaLocation'),
             version=cfg.get('version') or '',

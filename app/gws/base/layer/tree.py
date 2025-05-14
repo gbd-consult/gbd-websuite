@@ -65,16 +65,20 @@ def layer_configs_from_args(tca: TreeConfigArgs) -> list[gws.Config]:
 
     # configs need to be reparsed so that defaults can be injected
     layer_configs = []
+    ctx = gws.ConfigContext(
+        specs=tca.root.specs,
+        readOptions={gws.SpecReadOption.acceptExtraProps, gws.SpecReadOption.allowMissing},
+    )
 
     for c in configs:
-        pr = gws.config.parser.parse_config(
-            c,
+        cfg = gws.config.parser.parse_dict(
+            gws.u.to_dict(c),
+            path='',
             as_type='gws.ext.config.layer',
-            specs=tca.root.specs,
-            read_options={gws.SpecReadOption.acceptExtraProps, gws.SpecReadOption.allowMissing}
+            ctx=ctx,
         )
-        if pr.config:
-            layer_configs.append(pr.config)
+        if cfg:
+            layer_configs.append(cfg)
 
     return layer_configs
 

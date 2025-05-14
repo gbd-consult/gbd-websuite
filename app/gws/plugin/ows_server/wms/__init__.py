@@ -198,7 +198,6 @@ class Object(server.service.Object):
             sr,
             sr.requested_format('INFO_FORMAT'),
             featureCollection=fc,
-            mime=gws.lib.mime.GML,
         )
 
     ##

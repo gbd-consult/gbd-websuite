@@ -223,12 +223,9 @@ class Object(gws.Application):
             self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
     def activate(self):
-        # NB `configPaths` are populated in config.loader
-        for p in self.config.get('configPaths', []):
+        for p in self.root.configPaths:
             self.monitor.watch_file(p)
-        for p in self.config.get('projectPaths', []):
-            self.monitor.watch_file(p)
-        for d in self.config.get('projectDirs', []):
+        for d in self.config.get('projectDirs') or []:
             self.monitor.watch_directory(d, gws.config.CONFIG_PATH_PATTERN)
 
     def project(self, uid):
@@ -239,6 +236,8 @@ class Object(gws.Application):
     def helper(self, ext_type):
         if ext_type not in self._helperMap:
             p = self.create_child(gws.ext.object.helper, type=ext_type)
+            if not p:
+                raise gws.Error(f'helper {ext_type!r} not found')
             gws.log.info(f'created helper {ext_type!r}')
             self._helperMap[ext_type] = p
         return self._helperMap.get(ext_type)

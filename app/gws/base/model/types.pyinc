@@ -34,7 +34,7 @@ class ModelReadTarget(Enum):
     """The feature is to be displayed in an edit form ."""
 
 
-class ModelDbSelect(Data):
+class ModelSelectBuild(Data):
     """Database select statement."""
 
     columns: list['sqlalchemy.Column']
@@ -54,8 +54,7 @@ class ModelContext(Data):
     relDepth: int = 0
     maxDepth: int = 0
     search: 'SearchQuery'
-    dbSelect: ModelDbSelect
-    dbConnection: 'sqlalchemy.Connection'
+    dbSelect: ModelSelectBuild
 
 
 EmptyValue = object()

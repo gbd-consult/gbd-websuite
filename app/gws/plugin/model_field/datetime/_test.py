@@ -1,82 +1,63 @@
 import gws
 import gws.test.util as u
-import gws.lib.datetimex
+import gws.lib.datetimex as dtx
 
 
 @u.fixture(scope='module')
-def root():
-    u.pg.create('test_table', {'id': 'int primary key', 'datetime': 'text'})
+def model():
+    u.pg.create('t', {'id': 'int primary key', 'dat': 'timestamptz'})
 
-    cfg = '''
+    cfg = """
         models+ { 
-            uid "TEST_MODEL" type "postgres" tableName "test_table"
+            uid "TEST_MODEL" type "postgres" tableName "t"
             fields+ { name "id" type "integer" }
-            fields+ { name "datetime" type "text" }
+            fields+ { name "dat" type "date" }
         }
-    '''
+    """
 
-    yield u.gws_root(cfg)
+    root = u.gws_root(cfg)
+    yield u.cast(gws.Model, root.get('TEST_MODEL'))
 
 
-def test_create_date(root: gws.Root):
+def test_create(model: gws.Model):
     mc = u.model_context()
 
-    model = u.cast(gws.Model, root.get('TEST_MODEL'))
+    d = dtx.new(2000, 2, 3, 4, 5, 6)
 
-    # print(gws.lib.datetimex.new(2010,6,18)) #2010-06-18 00:00:00+02:00
-
-    d = gws.lib.datetimex.new(2010, 6, 18)
-    f = u.feature(model, id=1, datetime=d)
+    f = u.feature(model, id=1, dat=d)
     model.create_feature(f, mc)
 
-    iso = gws.lib.datetimex.to_iso_date_string(d)
+    fs = model.get_features([1], mc)
+    assert dtx.to_iso_string(fs[0].get('dat')) == dtx.to_iso_string(d)
 
-    rows = u.pg.rows('SELECT id, datetime FROM test_table ORDER BY id')
-    assert rows == [(1, iso)]
 
-def test_read_date(root: gws.Root):
+def test_read(model: gws.Model):
     mc = u.model_context()
 
-    u.pg.insert('test_table',[
-        {'id':1, 'datetime':'2010-06-18 00:00:00+00'},
-        {'id':2, 'datetime':'2020-07-20 00:00:00+00'}
-    ])
+    ds = [
+        dtx.new(2000, 2, 3, 4, 5, 6),
+        dtx.new(2001, 12, 13, 14, 15, 16),
+    ]
+    u.pg.insert('t', [{'id': 1, 'dat': ds[0]}, {'id': 2, 'dat': ds[1]}])
 
-    model = u.cast(gws.Model, root.get('TEST_MODEL'))
-    fs = model.get_features([1,2], mc)
+    fs = model.get_features([1, 2], mc)
 
-    assert [gws.lib.datetimex.is_datetime(f) for f in fs]
-    assert [f.get('datetime') for f in fs] == ['2010-06-18 00:00:00+00', '2020-07-20 00:00:00+00']
+    assert dtx.to_iso_string(fs[0].get('dat')) == dtx.to_iso_string(ds[0])
+    assert dtx.to_iso_string(fs[1].get('dat')) == dtx.to_iso_string(ds[1])
 
-def test_update_date(root: gws.Root):
+
+def test_update(model: gws.Model):
     mc = u.model_context()
 
-    u.pg.insert('test_table',[
-        {'id':1, 'datetime':'2010-06-18 00:00:00+00'},
-        {'id':2, 'datetime':'2020-07-20 00:00:00+00'}
-    ])
+    ds = [
+        dtx.new(2000, 2, 3, 4, 5, 6),
+        dtx.new(2001, 12, 13, 14, 15, 16),
+    ]
+    u.pg.insert('t', [{'id': 1, 'dat': ds[0]}, {'id': 2, 'dat': ds[1]}])
 
-    model = u.cast(gws.Model, root.get('TEST_MODEL'))
+    new = dtx.new(2009, 9, 19, 11, 22, 33)
+    f = u.feature(model, id=1, dat=new)
+    model.update_feature(f, mc)
 
-    f = u.feature(model, id=1, datetime='2010-06-19 00:00:00+00')
-    model.update_feature(f,mc)
-
-    rows = u.pg.rows('SELECT id, datetime FROM test_table ORDER BY datetime')
-    assert rows == [(1,'2010-06-19 00:00:00+00'),(2,'2020-07-20 00:00:00+00')]
-
-
-def test_delete_date(root: gws.Root):
-    mc = u.model_context()
-
-    u.pg.insert('test_table',[
-        {'id':1, 'datetime':'2010-06-18 00:00:00+00'},
-        {'id':2, 'datetime':'2020-07-20 00:00:00+00'}
-    ])
-
-    model = u.cast(gws.Model, root.get('TEST_MODEL'))
-
-    f = u.feature(model, id=1)
-    model.delete_feature(f,mc)
-
-    rows = u.pg.rows('SELECT id, datetime FROM test_table ORDER BY id')
-    assert rows == [(2,'2020-07-20 00:00:00+00')]
+    fs = model.get_features([1, 2], mc)
+    assert dtx.to_iso_string(fs[0].get('dat')) == dtx.to_iso_string(new)

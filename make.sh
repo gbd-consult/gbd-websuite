@@ -73,7 +73,7 @@ fi
 
 codegen() {
     $PYTHON $BASE_DIR/app/_make_init.py $MANIFEST_OPT
-    $PYTHON $BASE_DIR/app/gws/spec/spec.py $BUILD_DIR $MANIFEST_OPT
+    $PYTHON $BASE_DIR/app/gws/spec/spec.py $BUILD_DIR $MANIFEST_OPT $@
 }
 
 case $COMMAND in
@@ -114,7 +114,7 @@ case $COMMAND in
     codegen && $PYTHON $BASE_DIR/install/package.py $@
     ;;
   spec)
-    codegen
+    codegen $@
     ;;
   test)
     codegen && $PYTHON $TEST_RUNNER $@

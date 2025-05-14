@@ -6,10 +6,7 @@ from . import base, util
 def collect(gen: base.Generator):
     strings_dct = {}
 
-    for spec in gen.specs:
-        typ = gen.types[spec['uid']]
-        if not typ.name:
-            continue
+    for typ in gen.serverTypes:
         _add_string(strings_dct, 'en', typ.name, typ.doc)
         if typ.enumDocs:
             for k, v in typ.enumDocs.items():

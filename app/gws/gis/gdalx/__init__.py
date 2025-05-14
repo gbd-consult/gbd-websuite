@@ -1,6 +1,6 @@
 """GDAL/OGR wrapper."""
 
-from typing import Optional, Iterable
+from typing import Optional, Iterable, cast
 
 import contextlib
 
@@ -51,11 +51,11 @@ def drivers() -> list[DriverInfo]:
 
 
 def open_raster(
-        path: str,
-        mode: str = 'r',
-        driver: str = '',
-        default_crs: Optional[gws.Crs] = None,
-        **opts
+    path: str,
+    mode: str = 'r',
+    driver: str = '',
+    default_crs: Optional[gws.Crs] = None,
+    **opts,
 ) -> 'RasterDataSet':
     """Create a raster DataSet from a path.
 
@@ -75,17 +75,17 @@ def open_raster(
         gdalOpts=opts,
     )
 
-    return _open(dso, need_raster=True)
+    return cast(RasterDataSet, _open(dso, need_raster=True))
 
 
 def open_vector(
-        path: str,
-        mode: str = 'r',
-        driver: str = '',
-        encoding: Optional[str] = 'utf8',
-        default_crs: Optional[gws.Crs] = None,
-        geometry_as_text: bool = False,
-        **opts
+    path: str,
+    mode: str = 'r',
+    driver: str = '',
+    encoding: Optional[str] = 'utf8',
+    default_crs: Optional[gws.Crs] = None,
+    geometry_as_text: bool = False,
+    **opts,
 ) -> 'VectorDataSet':
     """Create a vector DataSet from a path.
 
@@ -114,7 +114,7 @@ def open_vector(
         gdalOpts=opts,
     )
 
-    return _open(dso, need_raster=False)
+    return cast(VectorDataSet, _open(dso, need_raster=False))
 
 
 def _open(dso: _DataSetOptions, need_raster):
@@ -126,7 +126,7 @@ def _open(dso: _DataSetOptions, need_raster):
     gdal.UseExceptions()
 
     drv = _driver_from_args(dso.path, dso.driver, need_raster)
-    dso.default_crs = dso.default_crs or gws.lib.crs.WEBMERCATOR
+    dso.defaultCrs = dso.defaultCrs or gws.lib.crs.WEBMERCATOR
 
     if dso.mode == 'w':
         gd = drv.CreateDataSource(dso.path, **dso.gdalOpts)
@@ -196,6 +196,7 @@ def open_from_image(image: gws.Image, bounds: gws.Bounds) -> 'RasterDataSet':
 
 ##
 
+
 class _DataSet:
     gdDataset: gdal.Dataset
     gdDriver: gdal.Driver
@@ -247,11 +248,7 @@ class RasterDataSet(_DataSet):
 
         # gws.log.debug(f'{crs.srid=} {crs.isYX=} {(x0, y0, x1, y1)}')
 
-        return gws.lib.bounds.from_extent(
-            (x0, y0, x1, y1),
-            crs,
-            always_xy=True
-        )
+        return gws.lib.bounds.from_extent((x0, y0, x1, y1), crs, always_xy=True)
 
 
 class VectorDataSet(_DataSet):
@@ -266,13 +263,13 @@ class VectorDataSet(_DataSet):
             raise
 
     def create_layer(
-            self,
-            name: str,
-            columns: dict[str, gws.AttributeType],
-            geometry_type: gws.GeometryType = None,
-            crs: gws.Crs = None,
-            overwrite=False,
-            *options,
+        self,
+        name: str,
+        columns: dict[str, gws.AttributeType],
+        geometry_type: gws.GeometryType = None,
+        crs: gws.Crs = None,
+        overwrite=False,
+        *options,
     ) -> 'VectorLayer':
         opts = list(options)
         if overwrite:
@@ -305,8 +302,19 @@ class VectorDataSet(_DataSet):
         return [VectorLayer(self, self.gdDataset.GetLayerByIndex(n)) for n in range(cnt)]
 
     def layer(self, name_or_index: str | int) -> Optional['VectorLayer']:
-        gd_layer = self.gdDataset.GetLayer(name_or_index)
+        gd_layer = None
+        if isinstance(name_or_index, int):
+            gd_layer = self.gdDataset.GetLayerByIndex(name_or_index)
+        elif isinstance(name_or_index, str):
+            gd_layer = self.gdDataset.GetLayerByName(name_or_index)
         return VectorLayer(self, gd_layer) if gd_layer else None
+
+    def require_layer(self, name_or_index: str | int) -> 'VectorLayer':
+        """Get a layer by name or index, raise an error if not found."""
+        la = self.layer(name_or_index)
+        if la:
+            return la
+        raise Error(f'layer {name_or_index} not found')
 
 
 class VectorLayer:
@@ -337,37 +345,43 @@ class VectorLayer:
 
         fid_col = self.gdLayer.GetFIDColumn()
         if fid_col:
-            cols.append(gws.ColumnDescription(
-                name=fid_col,
-                type=_OGR_TO_ATTR[ogr.OFTInteger],
-                nativeType=ogr.OFTInteger,
-                isPrimaryKey=True,
-                columnIndex=0,
-            ))
+            cols.append(
+                gws.ColumnDescription(
+                    name=fid_col,
+                    type=_OGR_TO_ATTR[ogr.OFTInteger],
+                    nativeType=ogr.OFTInteger,
+                    isPrimaryKey=True,
+                    columnIndex=0,
+                )
+            )
 
         for i in range(self.gdDefn.GetFieldCount()):
-            fdef: ogr.FieldDefn = self.gdDefn.GetFieldDefn(i)
+            fdef = self.gdDefn.GetFieldDefn(i)
             typ = fdef.GetType()
             if typ not in _OGR_TO_ATTR:
                 continue
-            cols.append(gws.ColumnDescription(
-                name=fdef.GetName(),
-                type=_OGR_TO_ATTR[typ],
-                nativeType=typ,
-                columnIndex=i,
-            ))
+            cols.append(
+                gws.ColumnDescription(
+                    name=fdef.GetName(),
+                    type=_OGR_TO_ATTR[typ],
+                    nativeType=typ,
+                    columnIndex=i,
+                )
+            )
 
         for i in range(self.gdDefn.GetGeomFieldCount()):
             fdef: ogr.GeomFieldDefn = self.gdDefn.GetGeomFieldDefn(i)
             typ = fdef.GetType()
-            cols.append(gws.ColumnDescription(
-                name=fdef.GetName() or 'geom',
-                type=gws.AttributeType.geometry,
-                nativeType=typ,
-                columnIndex=i,
-                geometryType=_OGR_TO_GEOM.get(typ) or gws.GeometryType.geometry,
-                geometrySrid=_srid_from_srs(fdef.GetSpatialRef()) or self.dso.defaultCrs.srid,
-            ))
+            cols.append(
+                gws.ColumnDescription(
+                    name=fdef.GetName() or 'geom',
+                    type=gws.AttributeType.geometry,
+                    nativeType=typ,
+                    columnIndex=i,
+                    geometryType=_OGR_TO_GEOM.get(typ) or gws.GeometryType.geometry,
+                    geometrySrid=_srid_from_srs(fdef.GetSpatialRef()) or self.dso.defaultCrs.srid,
+                )
+            )
 
         desc.columns = cols
         desc.columnMap = {c.name: c for c in cols}
@@ -388,11 +402,7 @@ class VectorLayer:
         for rec in records:
             gd_feature = ogr.Feature(self.gdDefn)
             if desc.geometryType and rec.shape:
-                gd_feature.SetGeometry(
-                    ogr.CreateGeometryFromWkt(
-                        rec.shape.to_wkt(),
-                        _srs_from_srid(rec.shape.crs.srid)
-                    ))
+                gd_feature.SetGeometry(ogr.CreateGeometryFromWkt(rec.shape.to_wkt(), _srs_from_srid(rec.shape.crs.srid)))
 
             if rec.uid and isinstance(rec.uid, int):
                 gd_feature.SetFID(rec.uid)
@@ -513,12 +523,7 @@ def _fetch_driver_infos() -> _DriverInfoCache:
 
     for n in range(gdal.GetDriverCount()):
         drv = gdal.GetDriver(n)
-        inf = DriverInfo(
-            index=n,
-            name=str(drv.ShortName),
-            longName=str(drv.LongName),
-            metaData=dict(drv.GetMetadata() or {})
-        )
+        inf = DriverInfo(index=n, name=str(drv.ShortName), longName=str(drv.LongName), metaData=dict(drv.GetMetadata() or {}))
         _di_cache.infos.append(inf)
 
         for e in inf.metaData.get(gdal.DMD_EXTENSIONS, '').split():
@@ -533,10 +538,12 @@ def _fetch_driver_infos() -> _DriverInfoCache:
 
 _name_to_srid = {}
 
+
 def _srs_from_srid(srid):
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(srid)
     return srs
+
 
 def _srid_from_srs(srs):
     if not srs:
@@ -559,7 +566,6 @@ def _srid_from_srs(srs):
 
     _name_to_srid[name] = srid
     return srid
-
 
 
 def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str = 'utf8'):

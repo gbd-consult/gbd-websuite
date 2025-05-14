@@ -216,6 +216,8 @@ export async function uploadFile(file: File, chunkSize: number, step: Function):
         chunkCount = Math.ceil(totalSize / chunkSize),
         uploadUid = '';
 
+    console.log(`uploadFile: totalSize=${totalSize} chunkSize=${chunkSize} chunkCount=${chunkCount}`);
+
     for (let chunkNumber = 0; chunkNumber < chunkCount; chunkNumber++) {
         let req = {
             uploadUid,
@@ -225,6 +227,7 @@ export async function uploadFile(file: File, chunkSize: number, step: Function):
             chunkNumber,
             content: buf.slice(chunkSize * chunkNumber, chunkSize * (chunkNumber + 1)),
         }
+        console.log(`uploadFile: chunkNumber=${chunkNumber}`);
         let res = await step(req);
 
         if (res.error)
