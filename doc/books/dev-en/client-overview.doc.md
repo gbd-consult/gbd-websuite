@@ -45,7 +45,7 @@ myCommand (request: MyRequest): Promise<MyResponse>;
 so that the exchange with your endpoint can be correctly type-checked:
 
 ```
-let response = await this.app.server.myCommand({
+let response = await this.app.server.call('myCommand', {
     someString: "foo",
     someInt: 42
 });

@@ -160,19 +160,12 @@ class _Creator:
     ##
 
     def write(self):
-        text = _indent(self.write_api()) + '\n\n' + _indent(self.write_stub())
+        text = _indent(self.write_api())
         for tmp, name in self.tmp_names.items():
             text = text.replace(tmp, name)
         return text
 
     def write_api(self):
-        namespace_tpl = 'export namespace $ns { \n $declarations \n }'
-        globs = self.format(namespace_tpl, ns='gws', declarations=_nl2(self.namespaces.pop('gws')))
-        namespaces = _nl2([self.format(namespace_tpl, ns=ns, declarations=_nl2(d)) for ns, d in sorted(self.namespaces.items())])
-
-        command_tpl = '/// $doc \n $name (p: $arg, options?: any): Promise<$ret>;'
-        commands = _nl2([self.format(command_tpl, name=cc.cmdName, doc=cc.doc, arg=cc.arg, ret=cc.ret) for _, cc in sorted(self.commands.items())])
-
         api_tpl = """
             /**
              * Gws Server API.
@@ -191,25 +184,60 @@ class _Creator:
 
             $namespaces
 
-            export interface Api {
-                invoke(cmd: string, r: object, options?: any): Promise<any>;
-                $commands
+            interface _ServerArgs {
+                $server_args
+            }
+            
+            interface _ServerReturns {
+                $server_rets
+            }
+            
+            export interface Server {
+                call<T extends keyof _ServerArgs>(cmd: T, r: _ServerArgs[T], options?: object): Promise<_ServerReturns[T]>;
+                callAny(cmd: string, r: any, options?: object): Promise<any>;
+            }
+            
+            export abstract class BaseServer implements Server {
+                abstract execCall(cmd, r, options?): Promise<any>;
+            
+                call<T extends keyof _ServerArgs>(cmd: T, r: _ServerArgs[T], options?: object): Promise<_ServerReturns[T]> {
+                    return this.execCall(cmd, r, options);
+                }
+                callAny(cmd: string, r: any, options?: object): Promise<any> {
+                    return this.execCall(cmd, r, options);
+                }
             }
         """
 
-        return self.format(api_tpl, globs=globs, namespaces=namespaces, commands=commands)
+        namespace_tpl = 'export namespace $ns { \n $declarations \n }'
 
-    def write_stub(self):
-        command_tpl = """$name(r: $arg, options?: any): Promise<$ret> { \n return this.invoke("$name", r, options); \n }"""
-        commands = [self.format(command_tpl, name=cc.cmdName, doc=cc.doc, arg=cc.arg, ret=cc.ret) for _, cc in sorted(self.commands.items())]
+        globs = self.format(
+            namespace_tpl,
+            ns='gws',
+            declarations=_nl2(self.namespaces.pop('gws')),
+        )
 
-        stub_tpl = """
-            export abstract class BaseServer implements Api {
-                abstract invoke(cmd: string, r: object, options?: any): Promise<any>;
-                $commands
-            }
-        """
-        return self.format(stub_tpl, commands=_nl(commands))
+        namespaces = _nl2(
+            [
+                self.format(
+                    namespace_tpl,
+                    ns=ns,
+                    declarations=_nl2(d),
+                )
+                for ns, d in sorted(self.namespaces.items())
+            ]
+        )
+
+        server_args = _nl(f'"{cc.cmdName}": {cc.arg}' for _, cc in sorted(self.commands.items()))
+        server_rets = _nl(f'"{cc.cmdName}": {cc.ret}' for _, cc in sorted(self.commands.items()))
+
+        return self.format(
+            api_tpl,
+            globs=globs,
+            namespaces=namespaces,
+            server_args=server_args,
+            server_rets=server_rets,
+        )
 
     def format(self, template, **kwargs):
         kwargs['VERSION'] = self.gen.meta['version']

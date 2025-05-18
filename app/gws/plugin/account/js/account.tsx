@@ -261,7 +261,7 @@ class Controller extends gc.Controller {
     //
 
     async startOnboarding(tc) {
-        let res = await this.app.server.accountOnboardingStart({tc: tc})
+        let res = await this.app.server.call('accountOnboardingStart', {tc: tc})
 
         if (res.error) {
             return this.showOnboardingError();
@@ -328,7 +328,7 @@ class Controller extends gc.Controller {
             return this.updateState({errorText: err})
         }
 
-        let res = await this.app.server.accountOnboardingSavePassword({
+        let res = await this.app.server.call('accountOnboardingSavePassword', {
             tc: es.tc,
             email: es.onboardingEmail,
             password1: es.newPassword1,
@@ -359,7 +359,7 @@ class Controller extends gc.Controller {
     async whenOnboardingMfaConfirmed() {
         let es = this.accountState;
 
-        let res = await this.app.server.accountOnboardingSaveMfa({
+        let res = await this.app.server.call('accountOnboardingSaveMfa', {
             tc: es.tc,
             mfaIndex: es.mfaIndex,
         })

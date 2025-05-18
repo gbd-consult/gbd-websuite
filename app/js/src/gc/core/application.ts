@@ -132,7 +132,7 @@ export class Application implements types.IApplication {
     }
 
     async init() {
-        let res = await this.server.projectInfo({
+        let res = await this.server.call('projectInfo', {
             projectUid: this.options.projectUid
         });
 

@@ -99,20 +99,20 @@ export class Server extends BaseServer {
         return this.commandCount + this.queue.length;
     }
 
-    async invoke(cmd, request, options) {
+    async execCall(cmd, request, options) {
         request = request || {};
         request.projectUid = request.projectUid || this.app.project?.uid;
         request.localeUid = request.localeUid || this.app.localeUid;
 
         this.commandCount++;
         this.whenChanged();
-        let res = await this._invoke2(cmd, request, options);
+        let res = await this.execCall2(cmd, request, options);
         this.commandCount--;
         this.whenChanged();
         return res;
     }
 
-    async _invoke2(cmd, request, options) {
+    async execCall2(cmd, request, options) {
         let req: any = {
             url: this.url + '/' + cmd,
             method: 'POST',

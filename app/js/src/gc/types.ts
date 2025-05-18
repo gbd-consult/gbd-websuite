@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import {gws, Api} from './gws'
+import {gws, Server} from './gws'
 import {ModelRegistry} from 'gc/map/model';
 
 
@@ -23,7 +23,7 @@ export interface IStoreWrapper {
     wrap(element);
 }
 
-interface IServer extends Api {
+interface IServer extends Server {
     queueLoad(layerUid: string, url: string, responseType: string): Promise<any>;
     dequeueLoad(layerUid: string);
     requestCount: number;

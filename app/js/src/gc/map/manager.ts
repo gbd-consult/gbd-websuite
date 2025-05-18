@@ -260,7 +260,7 @@ export class MapManager implements types.IMapManager {
 
     async selectLayer(layer) {
         if (!layer.description) {
-            let res = await this.app.server.mapDescribeLayer({layerUid: layer.uid})
+            let res = await this.app.server.call('mapDescribeLayer', {layerUid: layer.uid})
             layer.description = res.content;
         }
         this.walk(this.root, la => la.selected = false);
@@ -878,7 +878,7 @@ export class MapManager implements types.IMapManager {
             params.shapes = [this.geom2shape(args.geometry)]
         }
 
-        let res = await this.app.server.searchFind(params);
+        let res = await this.app.server.call('searchFind', params);
 
         if (res.error) {
             console.log('SEARCH_ERROR', res);

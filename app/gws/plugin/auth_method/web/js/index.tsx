@@ -203,7 +203,7 @@ class SidebarUserTab extends gc.Controller implements gc.types.ISidebarItem {
             authLoading: true,
         });
 
-        let res = await this.app.server.authLogin({
+        let res = await this.app.server.call('authLogin', {
             username: this.getValue('authUsername') as string,
             password: this.getValue('authPassword') as string,
         });
@@ -225,7 +225,7 @@ class SidebarUserTab extends gc.Controller implements gc.types.ISidebarItem {
         });
 
         let mfa = this.getValue('authMfa') as MfaProps;
-        let res = await this.app.server.authMfaVerify({
+        let res = await this.app.server.call('authMfaVerify', {
             payload: {code: mfa.code},
         });
 
@@ -251,7 +251,7 @@ class SidebarUserTab extends gc.Controller implements gc.types.ISidebarItem {
         });
 
         let mfa = this.getValue('authMfa') as MfaProps;
-        let res = await this.app.server.authMfaRestart({});
+        let res = await this.app.server.call('authMfaRestart', {});
 
         if (res.error) {
             return this.setError();
@@ -261,7 +261,7 @@ class SidebarUserTab extends gc.Controller implements gc.types.ISidebarItem {
     }
 
     async whenLogoutFormSubmitted() {
-        await this.app.server.authLogout({});
+        await this.app.server.call('authLogout', {});
         this.whenLoggedOut()
     }
 

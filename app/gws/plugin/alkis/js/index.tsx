@@ -932,12 +932,12 @@ class Controller extends gc.Controller {
 
         p = this.app.urlParams['alkisFs'];
         if (p) {
-            res = await this.app.server.alkisFindFlurstueck({combinedFlurstueckCode: p});
+            res = await this.app.server.call('alkisFindFlurstueck', {combinedFlurstueckCode: p});
         }
 
         p = this.app.urlParams['alkisAd'];
         if (p) {
-            res = await this.app.server.alkisFindAdresse({combinedAdresseCode: p});
+            res = await this.app.server.call('alkisFindAdresse', {combinedAdresseCode: p});
         }
 
         if (!res || res.error) {
@@ -960,7 +960,7 @@ class Controller extends gc.Controller {
     }
 
     async loadToponyms(): Promise<Toponyms> {
-        let res = await this.app.server.alkisGetToponyms({});
+        let res = await this.app.server.call('alkisGetToponyms', {});
 
         let t: Toponyms = {
             gemeinden: [],
@@ -1166,7 +1166,7 @@ class Controller extends gc.Controller {
     async pickTouched(coord: ol.Coordinate) {
         let pt = new ol.geom.Point(coord);
 
-        let res = await this.app.server.alkisFindFlurstueck({
+        let res = await this.app.server.call('alkisFindFlurstueck', {
             shapes: [this.map.geom2shape(pt)],
         });
 
@@ -1184,7 +1184,7 @@ class Controller extends gc.Controller {
 
         this.update({alkisFsLoading: true});
 
-        let res = await this.app.server.alkisFindFlurstueck(this.fsSearchRequest());
+        let res = await this.app.server.call('alkisFindFlurstueck', this.fsSearchRequest());
 
         if (res.error) {
             return this.showError(res)
@@ -1252,7 +1252,7 @@ class Controller extends gc.Controller {
     }
 
     async showDetails(f: gc.types.IFeature, highlight = true) {
-        let res = await this.app.server.alkisFindFlurstueck(this.fsDetailsRequest([f]));
+        let res = await this.app.server.call('alkisFindFlurstueck', this.fsDetailsRequest([f]));
         if (res.error) {
             return this.showError(res);
         }
@@ -1299,7 +1299,7 @@ class Controller extends gc.Controller {
         };
 
         this.update({
-            printerJob: await this.app.server.alkisPrintFlurstueck(q),
+            printerJob: await this.app.server.call('alkisPrintFlurstueck', q),
             printerSnapshotMode: false,
         });
     }
@@ -1376,7 +1376,7 @@ class Controller extends gc.Controller {
         if (!data || !data.selection)
             return;
 
-        let res = await this.app.server.alkisFindFlurstueck({
+        let res = await this.app.server.call('alkisFindFlurstueck', {
             uids: data.selection,
         });
 
@@ -1438,7 +1438,7 @@ class Controller extends gc.Controller {
             groupIndexes: this.getValue('alkisFsExportGroupIndexes'),
         };
 
-        let res = await this.app.server.alkisExportFlurstueck(q, {binaryResponse: true});
+        let res = await this.app.server.call('alkisExportFlurstueck', q, {binaryResponse: true});
         if (res.error) {
             return;
         }

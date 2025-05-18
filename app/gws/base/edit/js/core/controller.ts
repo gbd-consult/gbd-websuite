@@ -673,31 +673,31 @@ export class Controller extends gc.Controller {
     }
 
     serverDeleteFeature(p, options?) {
-        return this.app.server[this.actionName() + 'DeleteFeature'](p, options)
+        return this.app.server.callAny(this.actionName() + 'DeleteFeature', p, options)
     }
 
     serverGetFeature(p, options?) {
-        return this.app.server[this.actionName() + 'GetFeature'](p, options)
+        return this.app.server.callAny(this.actionName() + 'GetFeature', p, options)
     }
 
     serverGetFeatures(p, options?) {
-        return this.app.server[this.actionName() + 'GetFeatures'](p, options)
+        return this.app.server.callAny(this.actionName() + 'GetFeatures', p, options)
     }
 
     serverGetModels(p, options?) {
-        return this.app.server[this.actionName() + 'GetModels'](p, options)
+        return this.app.server.callAny(this.actionName() + 'GetModels', p, options)
     }
 
     serverGetRelatableFeatures(p, options?) {
-        return this.app.server[this.actionName() + 'GetRelatableFeatures'](p, options)
+        return this.app.server.callAny(this.actionName() + 'GetRelatableFeatures', p, options)
     }
 
     serverInitFeature(p, options?) {
-        return this.app.server[this.actionName() + 'InitFeature'](p, options)
+        return this.app.server.callAny(this.actionName() + 'InitFeature', p, options)
     }
 
     serverWriteFeature(p, options?) {
-        return this.app.server[this.actionName() + 'WriteFeature'](p, options)
+        return this.app.server.callAny(this.actionName() + 'WriteFeature', p, options)
     }
 
 }

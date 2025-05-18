@@ -547,7 +547,7 @@ class Controller extends gc.Controller {
             maps: [mapParams],
         };
 
-        await this.startJob(this.app.server.printerStart(params, {binaryRequest: false}));
+        await this.startJob(this.app.server.call('printerStart', params, {binaryRequest: false}));
     }
 
     async startScreenshot() {
@@ -571,7 +571,7 @@ class Controller extends gc.Controller {
             ],
         };
 
-        await this.startJob(this.app.server.printerStart(params, {binaryRequest: false}));
+        await this.startJob(this.app.server.call('printerStart', params, {binaryRequest: false}));
 
     }
 
@@ -650,7 +650,7 @@ class Controller extends gc.Controller {
 
         if (job) {
             this.update({
-                printerJob: await this.app.server.printerStatus({jobUid: job.jobUid}),
+                printerJob: await this.app.server.call('printerStatus', {jobUid: job.jobUid}),
             });
         }
     }
@@ -658,7 +658,7 @@ class Controller extends gc.Controller {
     protected async sendCancel(jobUid) {
         if (jobUid) {
             console.log('SEND CANCEL');
-            await this.app.server.printerCancel({jobUid});
+            await this.app.server.call('printerCancel', {jobUid});
         }
     }
 

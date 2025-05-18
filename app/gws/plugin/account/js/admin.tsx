@@ -118,7 +118,7 @@ class Controller extends edit.Controller {
     }
 
     async whenAccountResetButtonTouched(feature: gc.types.IFeature) {
-        let res = await this.app.server.accountadminReset({
+        let res = await this.app.server.call('accountadminReset', {
             featureUid: feature.uid,
         });
         this.featureCache.clear();
