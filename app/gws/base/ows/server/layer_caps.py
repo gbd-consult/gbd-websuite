@@ -93,17 +93,13 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
 
     for lc in lcs:
         if not lc.xmlNamespace:
-            gws.log.debug(f'xml_schema: skip {lc.layer.uid}: no xmlns')
-            continue
+            raise gws.NotFoundError(f'xml_schema: {lc.layer.uid}: no xmlns')
         if not lc.model:
-            gws.log.debug(f'xml_schema: skip {lc.layer.uid}: no model')
-            continue
+            raise gws.NotFoundError(f'xml_schema: {lc.layer.uid}: no model')
         if not ns:
             ns = lc.xmlNamespace
-            continue
-        if lc.xmlNamespace.xmlns != ns.xmlns:
-            gws.log.debug(f'xml_schema: skip {lc.layer.uid}: wrong xmlns')
-            continue
+        elif lc.xmlNamespace.xmlns != ns.xmlns:
+            raise gws.NotFoundError(f'xml_schema: {lc.layer.uid}: wrong xmlns: {ns.xmlns=} {lc.xmlNamespace.xmlns=}')
 
     if not ns:
         raise gws.NotFoundError('xml_schema: no xmlns found')
@@ -111,7 +107,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
     tag = [
         'xsd:schema',
         {
-            f'xmlns': ns.uri,
+            f'xmlns': ns.xmlns,
             'targetNamespace': ns.uri,
             'elementFormDefault': 'qualified',
         }
@@ -124,7 +120,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
 
     for lc in lcs:
         elements = []
-        for f in lc.model.fields:
+        for f in gws.u.require(lc.model).fields:
             if user.can_read(f):
                 if f.attributeType == gws.AttributeType.geometry:
                     typ = _GEOM_TO_XSD.get(gws.u.get(f, 'geometryType'))
@@ -184,14 +180,14 @@ _ATTR_TO_XSD = {
 
 _GEOM_TO_XSD = {
     gws.GeometryType.point: 'gml:PointPropertyType',
-    gws.GeometryType.linestring: 'gml.LineStringPropertyType',
+    gws.GeometryType.linestring: 'gml:LineStringPropertyType',
     gws.GeometryType.polygon: 'gml:PolygonPropertyType',
     gws.GeometryType.multipoint: 'gml:MultiPointPropertyType',
-    gws.GeometryType.multilinestring: 'gml:MultiLineStringPropertyType',
-    gws.GeometryType.multipolygon: 'gml:MultiPolygonPropertyType',
+    gws.GeometryType.multilinestring: 'gml:MultiCurvePropertyType',
+    gws.GeometryType.multipolygon: 'gml:MultiSurfacePropertyType',
     gws.GeometryType.multicurve: 'gml:MultiCurvePropertyType',
     gws.GeometryType.multisurface: 'gml:MultiSurfacePropertyType',
     gws.GeometryType.linearring: 'gml:LinearRingPropertyType',
-    gws.GeometryType.tin: 'gml:TinPropertyType',
+    gws.GeometryType.tin: 'gml:TriangulatedSurfacePropertyType',
     gws.GeometryType.surface: 'gml:SurfacePropertyType',
 }
