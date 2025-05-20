@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mapserver Live Config</title>
+    <style>
+        body {
+            background-color: #151618;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .sidebar {
+            width: 520px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 20px;
+
+        }
+
+        .sidebar textarea {
+            width: 100%;
+            height: 90%;
+            font-family: "JetBrains Mono NL", monospace;
+            font-size: 13px;
+            margin: 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            color: #00D000;
+            background-color: transparent;
+            resize: none;
+        }
+
+        .main {
+            margin-left: 520px;
+            height: 100vh;
+            background-color: #e0ebf7;
+            padding: 20px;
+        }
+
+        .main img {
+            border: 1px solid #ccc;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+        }
+
+        .toolbar button {
+            margin: 10px 10px 0 0;
+            padding: 10px;
+        }
+
+        #wait {
+            flex: 1;
+            text-align: right;
+            font-weight: bold;
+            color: white;
+        }
+    </style>
+
+    <script>
+        let $ = s => document.querySelector(s);
+
+        async function renderTextArea() {
+            let textarea = $(".sidebar textarea");
+            let image = $(".main img");
+            let content = textarea.value;
+
+            localStorage.setItem('mapseContent', content);
+
+            $("#wait").innerText = 'Rendering...';
+
+            let response = await fetch('/ms', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/octet-stream'
+                },
+                body: content
+            });
+
+            let blob = await response.blob();
+            image.src = URL.createObjectURL(blob);
+
+            $("#wait").innerText = '';
+        }
+
+        function formatTextArea() {
+            let textarea = $(".sidebar textarea");
+            let f = format(textarea.value);
+            textarea.value = f;
+        }
+
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        function format(mapText) {
+            let level = 0;
+            let out = [];
+
+            for (let line of mapText.trim().split('\n')) {
+                let s = line.trim();
+                
+                let isEnd = s.match(/^END$/);
+                let isKw = s.match(/^[A-Z]+$/) && !isEnd;
+
+                if (isEnd) {
+                    level--;
+                }
+                let p = s ? ' '.repeat(2 * level) + s : '';
+                if (isKw) {
+                    level++;
+                }
+                out.push(p);
+            }
+            return out.join('\n') + '\n';
+        }
+
+        let DEFAULT_MAP = `{DEFAULT_MAP}`;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            //$(".sidebar textarea").addEventListener("input", debounce(renderTextArea, 2000));
+            
+            $("#btnFormat").addEventListener("click", formatTextArea);
+            $("#btnRender").addEventListener("click", renderTextArea);
+            
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "F2") {
+                    formatTextArea();
+                } else if (e.key === "F3") {
+                    renderTextArea();
+                }
+            });
+
+            let savedContent = localStorage.getItem('mapseContent');
+            $(".sidebar textarea").value = savedContent || format(DEFAULT_MAP);
+
+            renderTextArea();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <textarea wrap="off"></textarea>
+        <div class="toolbar">
+            <button id="btnFormat">F2 - format</button>
+            <button id="btnRender">F3 - render</button>
+            <div id="wait"></div>
+        </div>
+    </div>
+    <div class="main">
+        <img>
+    </div>
+</body>
+
+</html>

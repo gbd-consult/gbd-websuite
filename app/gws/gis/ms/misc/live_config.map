@@ -1,0 +1,67 @@
+# Example map
+
+MAP
+  SIZE 1000 1000
+  EXTENT 738040 6653804 765743 6683686
+  UNITS METERS
+  IMAGECOLOR 255 255 255
+  PROJECTION
+    "init=epsg:3857"
+  END
+  OUTPUTFORMAT
+    NAME "png"
+    DRIVER "AGG/PNG"
+    MIMETYPE "image/png"
+    IMAGEMODE RGBA
+    EXTENSION "png"
+    TRANSPARENT ON
+  END
+
+  # WMS layer
+  LAYER
+    TYPE RASTER
+    STATUS ON
+    CONNECTIONTYPE WMS
+    CONNECTION "https://www.wms.nrw.de/geobasis/wms_nw_dtk?"
+    METADATA
+      "wms_srs"             "EPSG:3857"
+      "wms_name"            "nw_dtk_col"
+      "wms_server_version"  "1.3.0"
+      "wms_format"          "image/png"
+    END
+    PROJECTION
+      "init=epsg:3857"
+    END
+  END
+  
+  # Raster layer (reprojected from another CRS)
+  LAYER
+    TYPE RASTER
+    STATUS ON
+    DATA "/gws-app/gws/gis/ms/misc/dus_airport_25832.jpg"
+    PROJECTION
+      "init=epsg:25832"
+    END
+  END
+  
+  # Simple vector layer
+  LAYER
+    TYPE LINE
+    STATUS ON
+    FEATURE
+      POINTS
+        751539 6669003
+        751539 6672326
+        755559 6672326
+        755559 6669003
+        751539 6669003
+      END
+    END
+    CLASS
+      STYLE
+        COLOR 0 255 0
+        WIDTH 5
+      END
+    END
+  END
+END
