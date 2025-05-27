@@ -79,7 +79,8 @@ def union(bs: list[gws.Bounds]) -> gws.Bounds:
     exts = [gws.lib.extent.transform(b.extent, b.crs, crs) for b in bs]
     return gws.Bounds(
         crs=crs,
-        extent=gws.lib.extent.union(exts))
+        extent=gws.lib.extent.union(exts),
+    )
 
 
 def intersect(b1: gws.Bounds, b2: gws.Bounds) -> bool:
@@ -103,7 +104,8 @@ def transform(b: gws.Bounds, crs_to: gws.Crs) -> gws.Bounds:
         return b
     return gws.Bounds(
         crs=crs_to,
-        extent=b.crs.transform_extent(b.extent, crs_to))
+        extent=b.crs.transform_extent(b.extent, crs_to),
+    )
 
 
 def wgs_extent(b: gws.Bounds) -> Optional[gws.Extent]:
@@ -135,3 +137,14 @@ def width_in_meters(b: gws.Bounds, use_haversine=False) -> float:
     """
 
     return b.crs.extent_width_in_meters(b.extent, use_haversine)
+
+
+def point_with_offset(b: gws.Bounds, offset_meters: gws.Size) -> gws.Point:
+    """Compute a point within a bounding box that is offset from the southwest corner of the bbox.
+
+    Args:
+        b: A Bounds object.
+        offset: X, Y offset in meters.
+
+    """
+    return b.crs.extent_point_with_offset(b.extent, offset_meters)

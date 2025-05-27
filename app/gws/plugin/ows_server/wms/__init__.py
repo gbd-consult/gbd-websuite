@@ -242,11 +242,14 @@ class Object(server.service.Object):
         x = sr.int_param('X,I')
         y = sr.int_param('Y,J')
 
-        x = sr.bounds.extent[0] + (x * sr.resolution)
-        y = sr.bounds.extent[3] - (y * sr.resolution)
+        # x = sr.bounds.extent[0] + (x * sr.resolution)
+        # y = sr.bounds.extent[3] - (y * sr.resolution)
+
+        x, y = gws.lib.bounds.point_with_offset(sr.bounds, (x * sr.resolution, y * sr.resolution))
+        gws.log.debug(f'get_features:point={x} {y}, {sr.resolution=}')
 
         point = gws.base.shape.from_xy(x, y, sr.crs)
-
+    
         search = gws.SearchQuery(
             project=sr.project,
             layers=[lc.layer for lc in lcs],
@@ -261,9 +264,10 @@ class Object(server.service.Object):
 
     def set_size_and_resolution(self, sr: server.request.Object):
 
-        sr.bounds = sr.requested_bounds('BBOX')
-        if not sr.bounds:
+        b = sr.requested_bounds('BBOX')
+        if not b:
             raise server.error.MissingParameterValue('BBOX')
+        sr.bounds = b
 
         sr.pxSize = sr.int_param('WIDTH'), sr.int_param('HEIGHT')
         if sr.pxSize[0] > self.maxPixelSize:

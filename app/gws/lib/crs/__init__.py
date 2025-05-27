@@ -13,6 +13,7 @@ import gws
 
 ##
 
+
 class Object(gws.Crs):
     def __init__(self, **kwargs):
         vars(self).update(kwargs)
@@ -43,28 +44,49 @@ class Object(gws.Crs):
         tr = _pyproj_transformer(self.srid, crs_to.srid)
         return tr.transform
 
-    def extent_width_in_meters(self, ext, use_haversine=False):
+    def extent_width_in_meters(self, extent, use_haversine=False):
+        x0, y0, x1, y1 = extent
+        
         if self.isProjected:
             if self.uom != gws.Uom.m:
                 # @TODO support non-meter crs
                 raise Error(f'unsupported unit: {self.uom}')
-            return ext[2] - ext[0]
+            return x1 - x0
 
         if use_haversine:
             # straight port from QGIS/src/core/qgsscalecalculator.cpp QgsScaleCalculator::calculateGeographicDistance
-            lat = (ext[3] + ext[1]) * 0.5
+            lat = (y0 + y1) * 0.5
             RADS = (4.0 * math.atan(1.0)) / 180.0
             a = math.pow(math.cos(lat * RADS), 2)
             c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
             RA = 6378000
             E = 0.0810820288
             radius = RA * (1.0 - E * E) / math.pow(1.0 - E * E * math.sin(lat * RADS) * math.sin(lat * RADS), 1.5)
-            return (ext[2] - ext[0]) / 180.0 * radius * c
+            return (x1 - x0) / 180.0 * radius * c
 
         # compute pyproj geodetic distance along the middle latitude
         g = pyproj.Geod(ellps='WGS84')
-        lat_avg = (ext[1] + ext[3]) / 2
-        return g.line_length([ext[0], ext[2]], [lat_avg, lat_avg])
+        lat = (y0 + y1) * 0.5
+        return g.line_length([x0, x1], [lat, lat])
+
+    def extent_point_with_offset(self, extent, offset_meters):
+        x, _, _, y = extent
+        ox, oy = offset_meters
+
+        if self.isProjected:
+            if self.uom != gws.Uom.m:
+                # @TODO support non-meter crs
+                raise Error(f'unsupported unit: {self.uom}')
+            return x + ox, y - oy
+
+        geod = pyproj.Geod(ellps='WGS84')
+
+        if ox > 0:
+            x, y, _ = geod.fwd(x, y, az=90, dist=ox)
+        if oy > 0:
+            x, y, _ = geod.fwd(x, y, az=0, dist=oy)
+
+        return x, y
 
     def to_string(self, fmt=None):
         return getattr(self, str(fmt or gws.CrsFormat.epsg).lower())
@@ -75,7 +97,7 @@ class Object(gws.Crs):
             'type': 'name',
             'properties': {
                 'name': self.urn,
-            }
+            },
         }
 
 
@@ -127,7 +149,7 @@ WEBMERCATOR = Object(
         -20048966.104014598,
         20037508.342789244,
         20048966.104014598,
-    )
+    ),
 )
 
 WEBMERCATOR.bounds = gws.Bounds(crs=WEBMERCATOR, extent=WEBMERCATOR.extent)
@@ -206,7 +228,6 @@ def _best_match(crs, supported_crs):
                 return sup
 
     if crs.isGeographic:
-
         # for a geographic crs, try wgs first
         for sup in supported_crs:
             if sup.srid == WGS84.srid:
@@ -224,6 +245,7 @@ def _best_match(crs, supported_crs):
 
 
 ##
+
 
 def _get_crs(crs_name):
     if crs_name in _obj_cache:

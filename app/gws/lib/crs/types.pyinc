@@ -108,6 +108,15 @@ class Crs:
         """
 
 
+    def extent_point_with_offset(self, extent: Extent, offset_meters: Size) -> Point:
+        """Compute a point within a bounding box that is offset from the southwest corner of the bbox.
+
+        Args:
+            extent: Extent.
+            offset_meters: X, Y offset in meters.
+        """
+
+
     def transformer(self, crs_to: 'Crs') -> Callable:
         """Create a transformer function to another CRS.
 

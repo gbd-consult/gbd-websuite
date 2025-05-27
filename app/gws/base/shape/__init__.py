@@ -18,7 +18,7 @@ import gws.lib.crs
 import gws.lib.sa as sa
 
 _TOLERANCE_QUAD_SEGS = 6
-_MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections
+_MIN_TOLERANCE_RADIUS = 0.01
 
 
 class Error(gws.Error):
@@ -278,13 +278,9 @@ class Shape(gws.Shape):
 
     def to_wkt(self, trim=False, rounding_precision=-1, output_dimension=3):
         s = shapely.wkt.dumps(self.geom, trim=trim, rounding_precision=rounding_precision, output_dimension=output_dimension)
-        # remove excess spacing
         s = re.sub(r'\s*([,()])\s*', r'\1', s)
         s = re.sub(r'\s+', ' ', s.strip())
         return s
-
-        s = s.replace(' (', '(')
-        s = s.replace(') ', ')')
 
     def to_ewkt(self, trim=False, rounding_precision=-1, output_dimension=3):
         return f'SRID={self.crs.srid};' + self.to_wkt(trim=trim, rounding_precision=rounding_precision, output_dimension=output_dimension)
@@ -408,8 +404,13 @@ class Shape(gws.Shape):
             return self
 
         # we need a polygon even if tolerance = 0
-        tolerance = tolerance or _MIN_TOLERANCE_POLYGON
+        tolerance = tolerance or _MIN_TOLERANCE_RADIUS
         quad_segs = quad_segs or _TOLERANCE_QUAD_SEGS
+
+        geom = self.geom
+        if self.crs.isGeographic:
+            tr = self.crs.transformer(gws.lib.crs.WEBMERCATOR)
+            geom = shapely.ops.transform(tr, self.geom)
 
         if is_poly:
             cs = shapely.geometry.CAP_STYLE.flat
@@ -418,7 +419,11 @@ class Shape(gws.Shape):
             cs = shapely.geometry.CAP_STYLE.round
             js = shapely.geometry.JOIN_STYLE.round
 
-        geom = self.geom.buffer(tolerance, quad_segs, cap_style=cs, join_style=js)
+        geom = geom.buffer(tolerance, quad_segs, cap_style=cs, join_style=js)
+        if self.crs.isGeographic:
+            tr = gws.lib.crs.WEBMERCATOR.transformer(self.crs)
+            geom = shapely.ops.transform(tr, geom)
+
         return Shape(geom, self.crs)
 
     def transformed_to(self, crs):
