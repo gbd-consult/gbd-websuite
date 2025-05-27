@@ -1,8 +1,8 @@
 """MapServer support.
 
-This module dynamically creates and renders MapServer maps. 
+This module dynamically creates and renders MapServer maps.
 
-To render a map, create a map object with `new_map`, add layers to it using ``add_`` methods 
+To render a map, create a map object with `new_map`, add layers to it using ``add_`` methods
 and invoke ``draw``.
 
 Reference: MapServer documentation (https://mapserver.org/documentation.html)
@@ -11,13 +11,13 @@ Example usage::
 
     import gws.gis.ms as ms
 
-    # creare a new map
+    # create a new map
     map = ms.new_map()
 
     # add a raster layer from an image file
     map.add_raster_layer(
         ms.RasterLayerOptions(
-            path="/path/to/image.tif",
+            path='/path/to/image.tif',
         )
     )
 
@@ -45,7 +45,7 @@ Example usage::
     # draw the map into an Image object
     img = map.draw(
         bounds=gws.Bounds(
-            extent=[738040 ,6653804, 765743, 6683686],
+            extent=[738040, 6653804, 765743, 6683686],
             crs=gws.lib.crs.WEBMERCATOR,
         ),
         size=(800, 600),
@@ -104,13 +104,15 @@ class VectorLayerOptions(gws.Data):
     """Style for the layer."""
 
 
-def new_map() -> 'Map':
+def new_map(config: str = '') -> 'Map':
     """Creates a new Map instance.
-
+    
+    Args:
+        config: Optional raw MapFile configuration string to initialize the map.
     Returns:
         Map: A new instance of the Map class.
     """
-    return Map()
+    return Map(config)
 
 
 class Map:
@@ -118,8 +120,13 @@ class Map:
 
     mapObj: mapscript.mapObj
 
-    def __init__(self):
-        self.mapObj = mapscript.mapObj()
+    def __init__(self, config: str = ''):
+        if config:
+            tmp = gws.c.EPHEMERAL_DIR + '/mapse_' + gws.u.random_string(16) + '.map'
+            gws.u.write_file(tmp, config)
+            self.mapObj = mapscript.mapObj(tmp)
+        else:
+            self.mapObj = mapscript.mapObj()
 
     def copy(self) -> 'Map':
         """Creates a copy of the current map object."""
@@ -138,10 +145,13 @@ class Map:
             The created layer object.
         """
 
-        lo = mapscript.layerObj(self.mapObj)
-        lo.updateFromString(config)
-        self.mapObj.insertLayer(lo)  # type: ignore
-        return lo
+        try:
+            lo = mapscript.layerObj(self.mapObj)
+            lo.updateFromString(config)
+            self.mapObj.insertLayer(lo)  # type: ignore
+            return lo
+        except mapscript.MapServerError as exc:
+            raise Error(f'ms: add error:: {exc}') from exc
 
     def add_raster_layer(self, opts: RasterLayerOptions) -> mapscript.layerObj:
         """Adds a raster layer to the map.
@@ -153,18 +163,22 @@ class Map:
             The created raster layer object.
         """
 
-        lo = self._insert_layer(opts)
-        lo.type = mapscript.MS_LAYER_RASTER
+        try:
+            lo = self._insert_layer(opts)
+            lo.type = mapscript.MS_LAYER_RASTER
 
-        if opts.path:
-            lo.data = opts.path
-        if opts.tileIndex:
-            lo.tileindex = opts.tileIndex
-        if opts.processing:
-            for p in opts.processing:
-                lo.addProcessing(p)
+            if opts.path:
+                lo.data = opts.path
+            if opts.tileIndex:
+                lo.tileindex = opts.tileIndex
+            if opts.processing:
+                for p in opts.processing:
+                    lo.addProcessing(p)
 
-        return lo
+            return lo
+
+        except mapscript.MapServerError as exc:
+            raise Error(f'ms: add error:: {exc}') from exc
 
     def add_vector_layer(self, opts: VectorLayerOptions) -> mapscript.layerObj:
         """Adds a vector layer to the map.
@@ -175,27 +189,32 @@ class Map:
         Returns:
             The created vector layer object.
         """
-        lo = self._insert_layer(opts)
 
-        if opts.geometryType:
-            if opts.geometryType not in _GEOM_TO_MS_LAYER:
-                raise Error(f'unsupported geometryType {opts.geometryType!r}')
-            lo.type = _GEOM_TO_MS_LAYER[opts.geometryType]
+        try:
+            lo = self._insert_layer(opts)
 
-        if opts.connectionType:
-            if opts.connectionType == 'postgres':
-                lo.setConnectionType(mapscript.MS_POSTGIS, '')
-            raise Error(f'unsupported connectionType {opts.connectionType!r}')
+            if opts.geometryType:
+                if opts.geometryType not in _GEOM_TO_MS_LAYER:
+                    raise Error(f'unsupported geometryType {opts.geometryType!r}')
+                lo.type = _GEOM_TO_MS_LAYER[opts.geometryType]
 
-        if opts.connectionString:
-            lo.connection = opts.connectionString
+            if opts.connectionType:
+                if opts.connectionType == 'postgres':
+                    lo.setConnectionType(mapscript.MS_POSTGIS, '')
+                raise Error(f'unsupported connectionType {opts.connectionType!r}')
 
-        if opts.dataString:
-            lo.data = opts.dataString
+            if opts.connectionString:
+                lo.connection = opts.connectionString
 
-        # @TODO: support style values
+            if opts.dataString:
+                lo.data = opts.dataString
 
-        return lo
+            # @TODO: support style values
+
+            return lo
+
+        except mapscript.MapServerError as exc:
+            raise Error(f'ms: add error:: {exc}') from exc
 
     def _insert_layer(self, opts: gws.Data):
         lo = mapscript.layerObj(self.mapObj)
@@ -225,21 +244,25 @@ class Map:
 
         # @TODO: options for image format, transparency, etc.
 
-        gws.debug.time_start(f'mapserver.draw {bounds=} {size=}')
+        try:
+            gws.debug.time_start(f'mapserver.draw {bounds=} {size=}')
 
-        self.mapObj.setOutputFormat(mapscript.outputFormatObj('AGG/PNG'))
-        self.mapObj.outputformat.transparent = mapscript.MS_TRUE
+            self.mapObj.setOutputFormat(mapscript.outputFormatObj('AGG/PNG'))
+            self.mapObj.outputformat.transparent = mapscript.MS_TRUE
 
-        self.mapObj.setExtent(*bounds.extent)
-        self.mapObj.setSize(*size)
-        self.mapObj.setProjection(bounds.crs.epsg)
+            self.mapObj.setExtent(*bounds.extent)
+            self.mapObj.setSize(*size)
+            self.mapObj.setProjection(bounds.crs.epsg)
 
-        res = self.mapObj.draw()
-        img = gws.lib.image.from_bytes(res.getBytes())
+            res = self.mapObj.draw()
+            img = gws.lib.image.from_bytes(res.getBytes())
 
-        gws.debug.time_end()
+            gws.debug.time_end()
 
-        return img
+            return img
+
+        except mapscript.MapServerError as exc:
+            raise Error(f'ms: draw error: {exc}') from exc
 
     def to_string(self) -> str:
         """Converts the map object to a configuration string.
@@ -247,7 +270,11 @@ class Map:
         Returns:
             The string representation of the map object.
         """
-        return self.mapObj.convertToString()
+
+        try:
+            return self.mapObj.convertToString()
+        except mapscript.MapServerError as exc:
+            raise Error(f'ms: convert error: {exc}') from exc
 
 
 _GEOM_TO_MS_LAYER = {

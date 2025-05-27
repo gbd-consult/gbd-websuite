@@ -99,17 +99,17 @@ def _to_data(x):
     return x
 
 
-_GWS_SPEC_DICT = None
+_GWS_SPEC_RUNTIME = None
 
 
 def gws_specs() -> gws.SpecRuntime:
-    global _GWS_SPEC_DICT
+    global _GWS_SPEC_RUNTIME
 
-    if _GWS_SPEC_DICT is None:
+    if _GWS_SPEC_RUNTIME is None:
         base = option('BASE_DIR')
-        _GWS_SPEC_DICT = gws.spec.runtime.get_spec(f'{base}/config/MANIFEST.json', read_cache=False, write_cache=False)
+        _GWS_SPEC_RUNTIME = gws.spec.runtime.create(f'{base}/config/MANIFEST.json', read_cache=False, write_cache=False)
 
-    return gws.spec.runtime.Object(_GWS_SPEC_DICT)
+    return _GWS_SPEC_RUNTIME
 
 
 def gws_root(config: str = '', specs: gws.SpecRuntime = None, activate=True, defaults=True):
