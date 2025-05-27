@@ -197,17 +197,20 @@ class pg:
         # kwargs.setdefault('echo', self.root.app.developer_option('db.engine_echo'))
 
         if not cls.saEngine:
-            url = gws.lib.net.make_url(
-                scheme='postgresql',
-                username=OPTIONS['service.postgres.user'],
-                password=OPTIONS['service.postgres.password'],
-                hostname=OPTIONS['service.postgres.host'],
-                port=OPTIONS['service.postgres.port'],
-                path=OPTIONS['service.postgres.database'],
-            )
-            cls.saEngine = sa.create_engine(url, poolclass=sa.NullPool)
+            cls.saEngine = sa.create_engine(cls.url(), poolclass=sa.NullPool)
 
         return cls.saEngine.connect()
+
+    @classmethod
+    def url(cls):
+        return gws.lib.net.make_url(
+            scheme='postgresql',
+            username=OPTIONS['service.postgres.user'],
+            password=OPTIONS['service.postgres.password'],
+            hostname=OPTIONS['service.postgres.host'],
+            port=OPTIONS['service.postgres.port'],
+            path=OPTIONS['service.postgres.database'],
+        )
 
     @classmethod
     def create_schema(cls, name: str):
