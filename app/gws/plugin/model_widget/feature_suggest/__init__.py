@@ -7,6 +7,8 @@ gws.ext.new.modelWidget('featureSuggest')
 
 
 class Config(gws.base.model.widget.Config):
+    """Feature suggest widget configuration."""
+
     pass
 
 

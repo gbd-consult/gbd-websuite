@@ -201,21 +201,21 @@ class Origin(Enum):
     """Grid origin."""
 
     nw = 'nw'
-    """north-west"""
+    """North-west."""
     sw = 'sw'
-    """south-west"""
+    """South-west."""
     ne = 'ne'
-    """north-east"""
+    """North-east."""
     se = 'se'
-    """south-east"""
+    """South-east."""
     lt = 'nw'
-    """left top"""
+    """Left top."""
     lb = 'sw'
-    """left bottom"""
+    """Left bottom."""
     rt = 'ne'
-    """right top"""
+    """Right top."""
     rb = 'se'
-    """right bottom"""
+    """Right bottom."""
 
 
 FilePath: TypeAlias = str
@@ -326,20 +326,35 @@ class AttributeType(Enum):
     """Feature attribute type."""
 
     bool = 'bool'
+    """Boolean value."""
     bytes = 'bytes'
+    """Binary data."""
     date = 'date'
+    """Date value."""
     datetime = 'datetime'
+    """Date and time value."""
     feature = 'feature'
+    """Feature reference."""
     featurelist = 'featurelist'
+    """List of features."""
     file = 'file'
+    """File reference."""
     float = 'float'
+    """Floating-point number."""
     floatlist = 'floatlist'
+    """List of floating-point numbers."""
     geometry = 'geometry'
+    """Geometry reference."""
     int = 'int'
+    """Integer number."""
     intlist = 'intlist'
+    """List of integer numbers."""
     str = 'str'
+    """String value."""
     strlist = 'strlist'
+    """List of strings."""
     time = 'time'
+    """Time value."""
 
 
 class GeometryType(Enum):
@@ -349,7 +364,8 @@ class GeometryType(Enum):
 
     References:
 
-        OGC 06-103r4 (https://www.ogc.org/standards/sfa), https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.html
+        - OGC 06-103r4 (https://www.ogc.org/standards/sfa), 
+        - https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.html
     """
 
     geometry = 'geometry'
@@ -405,9 +421,13 @@ class Access(Enum):
     """Access mode."""
 
     read = 'read'
+    """Permission to read the object."""
     write = 'write'
+    """Permission to change the object."""
     create = 'create'
+    """Permission to create new objects."""
     delete = 'delete'
+    """Permission to delete objects."""
 
 
 class PermissionsConfig:
@@ -1797,6 +1817,7 @@ class CrsFormat(Enum):
     """CRS name format."""
 
     none = ''
+    """No format."""
     crs = 'crs'
     """Like ``crs84``."""
     srid = 'srid'
@@ -1817,7 +1838,9 @@ class Axis(Enum):
     """Axis orientation."""
 
     xy = 'xy'
+    """XY (longitude/latitude) axis orientation."""
     yx = 'yx'
+    """YX (latitude/longitude) axis orientation."""
 
 
 class Bounds(Data):
@@ -1898,7 +1921,6 @@ class Crs:
             use_haversine: If true, use a simpler haversine calculations like in QGIS.
         """
 
-
     def extent_point_with_offset(self, extent: Extent, offset_meters: Size) -> Point:
         """Compute a point within a bounding box that is offset from the southwest corner of the bbox.
 
@@ -1906,7 +1928,6 @@ class Crs:
             extent: Extent.
             offset_meters: X, Y offset in meters.
         """
-
 
     def transformer(self, crs_to: 'Crs') -> Callable:
         """Create a transformer function to another CRS.
@@ -2962,7 +2983,7 @@ class LayerClientOptions(Data):
     unfolded: bool
     """A layer is not listed, but its children are."""
     exclusive: bool
-    """Only one of this layer's children is visible at a time."""
+    """Only one of this layer children is visible at a time."""
 
 
 class TileGrid(Data):
@@ -3952,6 +3973,7 @@ class SearchFilterOperator(Enum):
 
 class SearchFilterMatchAction(Enum):
     """Search filter match action."""
+
     All = 'All'
     Any = 'Any'
     One = 'One'
@@ -4030,8 +4052,11 @@ class TextSearchOptions(Data):
 
 class SortOptions(Data):
     """Sort options."""
+
     fieldName: str
+    """Field name to sort by."""
     reverse: bool = False
+    """Sort in reverse order."""
 
 
 class SearchManager(Node):
@@ -4144,7 +4169,9 @@ class TemplateQualityLevel(Data):
     """Template quality level."""
 
     name: str
+    """Quality level name."""
     dpi: int
+    """DPI for the quality level."""
 
 
 class Template(Node):

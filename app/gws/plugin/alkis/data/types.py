@@ -13,8 +13,11 @@ class Strasse(gws.Data):
     """Strasse (street) Record"""
 
     name: str
+    """Name of the street."""
     gemarkung: EnumPair
+    """Gemarkung (district) of the street."""
     gemeinde: EnumPair
+    """Gemeinde (municipality) of the street."""
 
 
 class Object:
@@ -462,13 +465,22 @@ PROPS = {
 
 
 class DisplayTheme(gws.Enum):
+    """Display themes for ALKIS data."""
+    
     lage = 'lage'
+    """Lage" theme, showing the location of the property."""
     gebaeude = 'gebaeude'
+    """Gebäude" theme, showing building information."""
     nutzung = 'nutzung'
+    """Nutzung" theme, showing land use information."""
     festlegung = 'festlegung'
+    """Festlegung" theme, showing legal and other determinations."""
     bewertung = 'bewertung'
+    """Bewertung" theme, showing valuation information."""
     buchung = 'buchung'
+    """Buchung" theme, showing booking information."""
     eigentuemer = 'eigentuemer'
+    """Eigentümer" theme, showing owner information."""
 
 
 EigentuemerAccessRequired = ['personName', 'personVorname']

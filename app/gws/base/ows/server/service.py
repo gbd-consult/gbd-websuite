@@ -4,16 +4,12 @@ from typing import Optional, cast
 
 import gws
 import gws.base.legend
-import gws.base.template
 import gws.base.web
 import gws.config.util
-import gws.gis.render
-import gws.gis.source
 import gws.lib.bounds
 import gws.lib.crs
 import gws.lib.datetimex
 import gws.lib.extent
-import gws.lib.gml
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
@@ -22,6 +18,8 @@ from . import core, error, request
 
 
 class Config(gws.ConfigWithAccess):
+    """Configuration for OWS services."""
+
     defaultFeatureCount: int = 1000
     """Default number of features per page."""
     extent: Optional[gws.Extent]
@@ -75,10 +73,12 @@ class Object(gws.OwsService):
         if p:
             self.imageFormats = []
             for cfg in p:
-                self.imageFormats.append(gws.ImageFormat(
-                    mimeTypes=[s.replace(' ', '') for s in cfg.get('mimeTypes', [])],
-                    options=cfg.get('options') or {}
-                ))
+                self.imageFormats.append(
+                    gws.ImageFormat(
+                        mimeTypes=[s.replace(' ', '') for s in cfg.get('mimeTypes', [])],
+                        options=cfg.get('options') or {},
+                    )
+                )
             return
 
         self.imageFormats = [
@@ -258,11 +258,14 @@ class Object(gws.OwsService):
         cache_key = 'gws.base.ows.server.legend.' + gws.u.sha256(uids) + mime
 
         def _get():
-            legend = cast(gws.Legend, self.root.create_temporary(
-                gws.ext.object.legend,
-                type='combined',
-                layerUids=uids,
-            ))
+            legend = cast(
+                gws.Legend,
+                self.root.create_temporary(
+                    gws.ext.object.legend,
+                    type='combined',
+                    layerUids=uids,
+                ),
+            )
             lro = legend.render()
             if not lro:
                 return self.image_response(sr, None, mime)
@@ -282,10 +285,6 @@ class Object(gws.OwsService):
 
         for r in results:
             r.feature.transform_to(sr.targetCrs)
-            fc.members.append(core.FeatureCollectionMember(
-                feature=r.feature,
-                layer=r.layer,
-                layerCaps=lcs_map.get(id(r.layer)) if r.layer else None
-            ))
+            fc.members.append(core.FeatureCollectionMember(feature=r.feature, layer=r.layer, layerCaps=lcs_map.get(id(r.layer)) if r.layer else None))
 
         return fc

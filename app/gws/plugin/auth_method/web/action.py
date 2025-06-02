@@ -1,10 +1,9 @@
 """Check user logins and logouts."""
 
-from typing import Optional, cast
+from typing import cast
 
 import gws
 import gws.base.action
-import gws.base.auth.user
 
 from . import core
 
@@ -12,6 +11,8 @@ gws.ext.new.action('auth')
 
 
 class Config(gws.base.action.Config):
+    """Web-based authorization action configuration."""
+
     pass
 
 
@@ -20,12 +21,13 @@ class Props(gws.base.action.Props):
 
 
 class Object(gws.base.action.Object):
-    method: Optional[core.Object]
+    method: core.Object
 
     def configure(self):
-        self.method = self.configure_method()
-        if not self.method:
+        m = self.configure_method()
+        if not m:
             raise gws.Error('web authorization method required')
+        self.method = m
 
     def configure_method(self):
         for m in self.root.app.authMgr.methods:

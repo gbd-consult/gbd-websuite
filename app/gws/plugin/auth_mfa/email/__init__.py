@@ -16,6 +16,8 @@ gws.ext.new.authMultiFactorAdapter('email')
 
 
 class Config(gws.base.auth.mfa.Config):
+    """Email multi-factor authenticator configuration."""
+
     templates: Optional[list[gws.ext.config.template]]
     """Email templates."""
 

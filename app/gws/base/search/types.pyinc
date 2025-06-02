@@ -38,6 +38,7 @@ class SearchFilterOperator(Enum):
 
 class SearchFilterMatchAction(Enum):
     """Search filter match action."""
+
     All = 'All'
     Any = 'Any'
     One = 'One'
@@ -116,8 +117,11 @@ class TextSearchOptions(Data):
 
 class SortOptions(Data):
     """Sort options."""
+
     fieldName: str
+    """Field name to sort by."""
     reverse: bool = False
+    """Sort in reverse order."""
 
 
 class SearchManager(Node):

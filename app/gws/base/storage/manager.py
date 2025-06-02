@@ -7,7 +7,7 @@ class Config(gws.Config):
     """Storage configuration"""
 
     providers: list[gws.ext.config.storageProvider]
-    """storage providers"""
+    """Storage providers."""
 
 
 class Object(gws.StorageManager):

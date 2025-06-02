@@ -14,6 +14,8 @@ gws.ext.new.model('wms')
 
 
 class Config(gws.base.model.Config):
+    """WMS model configuration."""
+
     provider: Optional[provider.Config]
     """WMS provider"""
     sourceLayers: Optional[gws.gis.source.LayerFilter]

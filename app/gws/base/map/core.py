@@ -14,23 +14,23 @@ class Config(gws.Config):
     """Map configuration"""
 
     center: Optional[gws.Point]
-    """map center"""
+    """Map center."""
     coordinatePrecision: Optional[int]
-    """precision for coordinates"""
+    """Precision for coordinates."""
     crs: Optional[gws.CrsName] = 'EPSG:3857'
-    """crs for this map"""
+    """Crs for this map."""
     extent: Optional[gws.Extent]
-    """map extent"""
+    """Map extent."""
     extentBuffer: Optional[int]
-    """extent buffer"""
+    """Extent buffer."""
     layers: list[gws.ext.config.layer]
-    """collection of layers for this map"""
+    """Collection of layers for this map."""
     title: str = ''
-    """map title"""
+    """Map title."""
     wrapX: bool = False
-    """wrap the world horizontally"""
+    """Wrap the world horizontally."""
     zoom: Optional[gws.gis.zoom.Config]
-    """map scales and resolutions"""
+    """Map scales and resolutions."""
 
 
 class Props(gws.Data):

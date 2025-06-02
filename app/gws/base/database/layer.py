@@ -11,12 +11,12 @@ import gws.config.util
 
 
 class Config(gws.base.layer.Config):
-    """Database layer"""
+    """Database layer."""
 
     dbUid: Optional[str]
-    """Database provider uid"""
+    """Database provider uid."""
     tableName: str
-    """sql table name"""
+    """Database table name."""
 
 
 class Object(gws.base.layer.vector.Object):

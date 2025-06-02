@@ -8,6 +8,7 @@ from . import control
 
 
 class Params(gws.CliParams):
+    """Parameters for server commands."""
     config: Optional[str]
     """Configuration file."""
     manifest: Optional[str]
@@ -15,6 +16,7 @@ class Params(gws.CliParams):
 
 
 class ConfigTestParams(gws.CliParams):
+    """Parameters for the config test command."""
     config: Optional[str]
     """Configuration file."""
     manifest: Optional[str]
@@ -31,6 +33,7 @@ gws.ext.new.cli('server')
 
 
 class Object(gws.Node):
+    """Server command-line interface object."""
 
     @gws.ext.command.cli('serverStart')
     def do_start(self, p: Params):

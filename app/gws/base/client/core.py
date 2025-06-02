@@ -7,24 +7,24 @@ class ElementConfig(gws.ConfigWithAccess):
     """GWS client UI element configuration"""
 
     tag: str
-    """element tag"""
+    """Element tag."""
     before: str = ''
-    """insert before this tag"""
+    """Insert before this tag."""
     after: str = ''
-    """insert after this tag"""
+    """Insert after this tag."""
 
 
 class Config(gws.ConfigWithAccess):
     """GWS client configuration"""
 
     options: Optional[dict]
-    """client options"""
+    """Client options."""
     elements: Optional[list[ElementConfig]]
-    """client UI elements"""
+    """Client UI elements."""
     addElements: Optional[list[ElementConfig]]
-    """add elements to the parent element list"""
+    """Add elements to the parent element list."""
     removeElements: Optional[list[ElementConfig]]
-    """remove elements from the parent element list"""
+    """Remove elements from the parent element list."""
 
 
 class ElementProps(gws.Data):

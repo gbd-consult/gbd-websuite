@@ -7,10 +7,12 @@ gws.ext.new.modelWidget('float')
 
 
 class Config(gws.base.model.widget.Config):
+    """Float input widget configuration."""
+
     step: int = 1
-    """numeric step"""
+    """Numeric step."""
     placeholder: str = ''
-    """input box placeholder"""
+    """Input box placeholder."""
 
 
 class Props(gws.base.model.widget.Props):
@@ -20,4 +22,8 @@ class Props(gws.base.model.widget.Props):
 
 class Object(gws.base.model.widget.Object):
     def props(self, user):
-        return gws.u.merge(super().props(user), placeholder=self.cfg('placeholder'), step=self.cfg('step'))
+        return gws.u.merge(
+            super().props(user),
+            placeholder=self.cfg('placeholder'),
+            step=self.cfg('step'),
+        )

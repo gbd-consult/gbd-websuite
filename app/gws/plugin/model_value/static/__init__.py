@@ -10,7 +10,10 @@ gws.ext.new.modelValue('static')
 
 
 class Config(gws.base.model.value.Config):
+    """Static value configuration."""
+
     value: Any
+    """Static value to return."""
 
 
 class Object(gws.base.model.value.Object):

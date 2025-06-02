@@ -13,7 +13,7 @@ class Config(gws.Config):
     """Database provider"""
 
     schemaCacheLifeTime: gws.Duration = '3600'
-    """life time for schema caches"""
+    """Life time for schema caches."""
     withPool: Optional[bool] = False
     """Use connection pooling"""
     pool: Optional[dict]

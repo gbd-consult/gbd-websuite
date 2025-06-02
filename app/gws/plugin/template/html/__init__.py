@@ -69,10 +69,12 @@ gws.ext.new.template('html')
 
 
 class Config(gws.base.template.Config):
+    """HTML template configuration."""
+
     path: Optional[gws.FilePath]
-    """path to a template file"""
+    """Path to a template file."""
     text: str = ''
-    """template content"""
+    """Template content."""
 
 
 class Props(gws.base.template.Props):

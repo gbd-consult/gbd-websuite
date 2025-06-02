@@ -1,4 +1,4 @@
-"""Dummy decorators to support extension typing."""""
+"""Dummy decorators to support extension typing."""
 
 
 class _classTag:
@@ -26,7 +26,7 @@ def name_for(obj: str | type) -> str | None:
         return obj.extName
 
 
-# @formatter:off
+# fmt: off
 
 ##
 

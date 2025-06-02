@@ -24,7 +24,9 @@ gws.ext.new.modelValue('expression')
 
 class Config(gws.base.model.value.Config):
     """Expression-based value. (added in 8.1)"""
+
     text: str
+    """Python expression to evaluate."""
 
 
 class Object(gws.base.model.value.Object):
@@ -38,13 +40,7 @@ class Object(gws.base.model.value.Object):
             raise gws.ConfigurationError(f'invalid expression: {exc!r}') from exc
 
     def compute(self, field, feature, mc):
-        context = {
-            'app': self.root.app,
-            'user': mc.user,
-            'feature': feature,
-            'mc': mc,
-            'date': gws.lib.datetimex
-        }
+        context = {'app': self.root.app, 'user': mc.user, 'feature': feature, 'mc': mc, 'date': gws.lib.datetimex}
 
         try:
             return eval(self.text, context)

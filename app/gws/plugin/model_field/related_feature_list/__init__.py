@@ -23,12 +23,14 @@ gws.ext.new.modelField('relatedFeatureList')
 
 
 class Config(related_field.Config):
+    """Configuration for related feature list field."""
+
     fromColumn: str = ''
-    """key column in this table, primary key by default"""
+    """Key column in this table, primary key by default."""
     toModel: str
-    """related model"""
+    """Related model."""
     toColumn: str
-    """foreign key column in the related model"""
+    """Foreign key column in the related model."""
 
 
 class Props(related_field.Props):
@@ -36,7 +38,6 @@ class Props(related_field.Props):
 
 
 class Object(related_multi_feature_list.Object):
-
     def configure_relationship(self):
         to_mod = self.get_model(self.cfg('toModel'))
 
@@ -54,6 +55,6 @@ class Object(related_multi_feature_list.Object):
                     key=to_mod.column(self.cfg('toColumn')),
                     uid=to_mod.uid_column(),
                 )
-            ]
+            ],
         )
         self.rel.to = self.rel.tos[0]

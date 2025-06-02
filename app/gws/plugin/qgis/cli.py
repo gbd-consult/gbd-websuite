@@ -13,6 +13,8 @@ from . import project
 
 
 class CapsParams(gws.CliParams):
+    """Parameters for the caps command."""
+
     src: str
     """Source path or postgres address `postgres:<dbUid>/<schema>/<projectName>`"""
     out: str = ''
@@ -20,6 +22,8 @@ class CapsParams(gws.CliParams):
 
 
 class CopyParams(gws.CliParams):
+    """Parameters for the copy command."""
+
     src: str
     """Source path or postgres address `postgres:<dbUid>/<schema>/<projectName>`"""
     dst: str
@@ -27,7 +31,6 @@ class CopyParams(gws.CliParams):
 
 
 class Object(gws.Node):
-
     @gws.ext.command.cli('qgisCopy')
     def do_copy(self, p: CopyParams):
         """Copy a qgis project."""
@@ -56,12 +59,7 @@ class Object(gws.Node):
 def _addr_to_store(addr):
     m = re.match(r'^postgres:(.*?)/(.*?)/(.+?)$', addr)
     if m:
-        return project.Store(
-            type=project.StoreType.postgres,
-            dbUid=m.group(1),
-            schema=m.group(2),
-            projectName=m.group(3)
-        )
+        return project.Store(type=project.StoreType.postgres, dbUid=m.group(1), schema=m.group(2), projectName=m.group(3))
     m = re.match(r'^(/.+)$', addr)
     if m:
         return project.Store(

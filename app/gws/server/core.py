@@ -47,6 +47,8 @@ class MapproxyConfig(gws.Config):
 
 
 class MonitorConfig(gws.Config):
+    """Monitor module configuration."""
+
     enabled: Optional[bool]
     """The module is enabled. (deprecated in 8.2)"""
     frequency: gws.Duration = '30'
@@ -71,7 +73,7 @@ class LogConfig(gws.Config):
 
     path: str = ''
     """Log path."""
-    level: Literal['ERROR', 'INFO', 'DEBUG'] = 'INFO'
+    level: str = 'INFO'
     """Logging level."""
 
 

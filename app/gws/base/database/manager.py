@@ -10,7 +10,7 @@ class Config(gws.Config):
     """Database configuration"""
 
     providers: list[gws.ext.config.databaseProvider]
-    """database providers"""
+    """Database providers."""
 
 
 class Object(gws.DatabaseManager):

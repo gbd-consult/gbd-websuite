@@ -14,6 +14,8 @@ gws.ext.new.finder('wms')
 
 
 class Config(gws.base.search.finder.Config):
+    """WMS Finder configuration."""
+    
     provider: Optional[provider.Config]
     """Provider configuration."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
@@ -31,4 +33,5 @@ class Object(gws.base.ows.client.finder.Object):
         return (
                 super().can_run(search, user)
                 and bool(search.shape)
-                and search.shape.type == gws.GeometryType.point)
+                and search.shape.type == gws.GeometryType.point
+        )

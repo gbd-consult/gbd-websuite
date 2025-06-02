@@ -14,8 +14,12 @@ gws.ext.new.modelField('geometry')
 
 
 class Config(gws.base.model.scalar_field.Config):
+    """Geometry field configuration."""
+
     geometryType: Optional[gws.GeometryType]
+    """Geometry type, e.g. point, line, polygon."""
     crs: Optional[gws.CrsName]
+    """Coordinate Reference System (CRS) name, e.g. 'EPSG:4326'."""
 
 
 class Props(gws.base.model.scalar_field.Props):
@@ -95,9 +99,7 @@ class Object(gws.base.model.scalar_field.Object):
             model = cast(gws.base.database.model.Object, self.model)
             col = model.column(self.name)
 
-            mc.dbSelect.geometryWhere.append(sa.func.st_intersects(
-                col,
-                sa.cast(shape.to_ewkb_hex(), sa.geo.Geometry())))
+            mc.dbSelect.geometryWhere.append(sa.func.st_intersects(col, sa.cast(shape.to_ewkb_hex(), sa.geo.Geometry())))
 
     def raw_to_python(self, feature, value, mc):
         # here, value is a geosa WKBElement
@@ -128,4 +130,3 @@ class Object(gws.base.model.scalar_field.Object):
                 return gws.base.shape.from_dict(value)
             except gws.Error:
                 pass
-

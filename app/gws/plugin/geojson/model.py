@@ -13,9 +13,12 @@ gws.ext.new.model('geojson')
 
 # @TODO generally, vector models should be converted to sqlite/gpkg in order to support search
 
+
 class Config(gws.base.model.Config):
+    """Configuration for GeoJson model."""
+
     provider: Optional[provider.Config]
-    """GeoJson provider"""
+    """GeoJson provider."""
 
 
 class Object(gws.base.model.default_model.Object):
@@ -32,7 +35,9 @@ class Object(gws.base.model.default_model.Object):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
 
     def find_features(self, search, user, **kwargs):
+        # fmt: off
         return [
-            self.feature_from_record(rec, user)
+            self.feature_from_record(rec, user) 
             for rec in self.serviceProvider.get_records()
         ]
+        # fmt: on

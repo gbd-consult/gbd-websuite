@@ -14,21 +14,21 @@ class LayerFilter(gws.Data):
     """Source layer filter"""
 
     level: int = 0
-    """match only layers at this level"""
+    """Match only layers at this level."""
     names: Optional[list[str]]
-    """match these layer names (top-to-bottom order)"""
+    """Match these layer names (top-to-bottom order)."""
     titles: Optional[list[str]]
-    """match these layer titles"""
+    """Match these layer titles."""
     pattern: gws.Regex = ''
-    """match layers whose full path matches a pattern"""
+    """Match layers whose full path matches a pattern."""
     isGroup: Optional[bool]
-    """if true, match only group layers"""
+    """If true, match only group layers."""
     isImage: Optional[bool]
-    """if true, match only images layers"""
+    """If true, match only images layers."""
     isQueryable: Optional[bool]
-    """if true, match only queryable layers"""
+    """If true, match only queryable layers."""
     isVisible: Optional[bool]
-    """if true, match only visible layers"""
+    """If true, match only visible layers."""
 
 
 def layer_matches(sl: gws.SourceLayer, f: LayerFilter) -> bool:

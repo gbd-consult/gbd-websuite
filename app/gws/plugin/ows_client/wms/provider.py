@@ -39,8 +39,10 @@ from . import caps
 
 
 class Config(gws.base.ows.client.provider.Config):
+    """WMS provider configuration."""
+
     bottomFirst: bool = False
-    """true if layers are listed from bottom to top"""
+    """True if layers are listed from bottom to top."""
 
 
 class Object(gws.base.ows.client.provider.Object):

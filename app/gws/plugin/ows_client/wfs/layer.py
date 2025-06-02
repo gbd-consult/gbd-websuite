@@ -10,8 +10,10 @@ gws.ext.new.layer('wfs')
 
 
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
+    """WFS tree layer configuration."""
+
     provider: provider.Config
-    """WFS provider"""
+    """WFS provider."""
 
 
 class Object(gws.base.layer.group.Object):

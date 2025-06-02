@@ -14,8 +14,12 @@ gws.ext.new.helper('account')
 
 
 class MfaConfig:
+    """Multi-factor authentication configuration."""
+
     mfaUid: str
+    """UID of the multi-factor authentication adapter."""
     title: str
+    """Title of the multi-factor authentication method."""
 
 
 class Config(gws.Config):
@@ -36,7 +40,7 @@ class Config(gws.Config):
     passwordVerifySql: Optional[str]
     """SQL expression for verifying password hashes."""
 
-    tcLifeTime: gws.Duration = 3600
+    tcLifeTime: gws.Duration = '3600'
     """Life time for temporary codes."""
 
     mfa: Optional[list[MfaConfig]]
@@ -55,6 +59,7 @@ class Config(gws.Config):
 
 class Error(gws.Error):
     """Account-related error."""
+
     pass
 
 
@@ -68,7 +73,7 @@ class MfaOption(gws.Data):
 
 
 _DEFAULT_PASSWORD_CREATE_SQL = "crypt( {password}, gen_salt('bf') )"
-_DEFAULT_PASSWORD_VERIFY_SQL = "crypt( {password}, {passwordColumn} )"
+_DEFAULT_PASSWORD_VERIFY_SQL = 'crypt( {password}, {passwordColumn} )'
 
 
 class Object(gws.base.edit.helper.Object):
@@ -133,10 +138,10 @@ class Object(gws.base.edit.helper.Object):
     ##
 
     def get_account_by_id(self, uid: str) -> Optional[dict]:
-        sql = f'''
+        sql = f"""
             SELECT * FROM {self.adminModel.tableName}
             WHERE {self.adminModel.uidName}=:uid
-        '''
+        """
         rs = self.adminModel.db.select_text(sql, uid=uid)
         return rs[0] if rs else None
 
@@ -148,7 +153,7 @@ class Object(gws.base.edit.helper.Object):
         username = credentials.get('username')
         password = credentials.get('password')
 
-        sql = f'''
+        sql = f"""
             SELECT
                 {self.adminModel.uidName},
                 ( {core.Columns.password} = {expr} ) AS validpassword,
@@ -157,7 +162,7 @@ class Object(gws.base.edit.helper.Object):
                 {self.adminModel.tableName}
             WHERE
                 {self.usernameColumn} = :username
-        '''
+        """
         rs = self.adminModel.db.select_text(sql, username=username, password=password)
 
         if not rs:
@@ -180,7 +185,7 @@ class Object(gws.base.edit.helper.Object):
         return self.get_account_by_id(self.get_uid(r))
 
     def get_account_by_tc(self, tc: str, category: str, expected_status: Optional[core.Status] = None) -> Optional[dict]:
-        sql = f'''
+        sql = f"""
             SELECT
                 {self.adminModel.uidName},
                 {core.Columns.tcTime},
@@ -190,7 +195,7 @@ class Object(gws.base.edit.helper.Object):
                 {self.adminModel.tableName}
             WHERE
                 {core.Columns.tc} = :tc
-        '''
+        """
         rs = self.adminModel.db.select_text(sql, tc=tc)
 
         if not rs:
@@ -227,13 +232,13 @@ class Object(gws.base.edit.helper.Object):
         expr = expr.replace('{password}', ':password')
         expr = expr.replace('{passwordColumn}', core.Columns.password)
 
-        sql = f'''
+        sql = f"""
             UPDATE {self.adminModel.tableName}
             SET
                 {core.Columns.password} = {expr}
             WHERE
                 {self.adminModel.uidName} = :uid
-        '''
+        """
         self.adminModel.db.execute_text(sql, password=password, uid=self.get_uid(account))
 
     def validate_password(self, password: str) -> bool:
@@ -255,13 +260,13 @@ class Object(gws.base.edit.helper.Object):
         if mfa_uid is None:
             raise Error(f'{mfa_option_index=} not found')
 
-        sql = f'''
+        sql = f"""
             UPDATE {self.adminModel.tableName}
             SET
                 {core.Columns.mfaUid} = :mfa_uid
             WHERE
                 {self.adminModel.uidName} = :uid
-        '''
+        """
         self.adminModel.db.execute_text(sql, mfa_uid=mfa_uid, uid=self.get_uid(account))
 
     def mfa_options(self, account: dict) -> list[MfaOption]:
@@ -271,13 +276,13 @@ class Object(gws.base.edit.helper.Object):
     def generate_mfa_secret(self, account: dict) -> str:
         secret = gws.lib.otp.random_secret()
 
-        sql = f'''
+        sql = f"""
             UPDATE {self.adminModel.tableName}
             SET
                 {core.Columns.mfaSecret} = :secret
             WHERE
                 {self.adminModel.uidName} = :uid
-        '''
+        """
         self.adminModel.db.execute_text(sql, secret=secret, uid=self.get_uid(account))
 
         return secret
@@ -293,17 +298,17 @@ class Object(gws.base.edit.helper.Object):
         ##
 
     def set_status(self, account: dict, status: core.Status):
-        sql = f'''
+        sql = f"""
             UPDATE {self.adminModel.tableName}
             SET
                 {core.Columns.status} = :status
             WHERE
                 {self.adminModel.uidName} = :uid
-        '''
+        """
         self.adminModel.db.execute_text(sql, status=status, uid=self.get_uid(account))
 
     def reset(self, account: dict):
-        sql = f'''
+        sql = f"""
             UPDATE {self.adminModel.tableName}
             SET
                 {core.Columns.status} = :status,
@@ -311,7 +316,7 @@ class Object(gws.base.edit.helper.Object):
                 {core.Columns.mfaSecret} = ''
             WHERE
                 {self.adminModel.uidName} = :uid
-        '''
+        """
         self.adminModel.db.execute_text(sql, status=core.Status.new, uid=self.get_uid(account))
 
         if self.onboardingUrl:
@@ -327,7 +332,7 @@ class Object(gws.base.edit.helper.Object):
     def generate_tc(self, account: dict, category: str) -> str:
         tc = self.make_tc()
 
-        sql = f'''
+        sql = f"""
             UPDATE {self.adminModel.tableName}
             SET
                 {core.Columns.tc} = :tc,
@@ -335,13 +340,13 @@ class Object(gws.base.edit.helper.Object):
                 {core.Columns.tcCategory} = :category
             WHERE
                 {self.adminModel.uidName} = :uid
-        '''
+        """
         self.adminModel.db.execute_text(sql, tc=tc, time=gws.u.stime(), category=category, uid=self.get_uid(account))
 
         return tc
 
     def clear_tc(self, account: dict):
-        sql = f'''
+        sql = f"""
             UPDATE {self.adminModel.tableName}
             SET
                 {core.Columns.tc} = '',
@@ -349,11 +354,11 @@ class Object(gws.base.edit.helper.Object):
                 {core.Columns.tcCategory} = ''
             WHERE
                 {self.adminModel.uidName} = :uid
-        '''
+        """
         self.adminModel.db.execute_text(sql, uid=self.get_uid(account))
 
     def invalidate_tc(self, tc: str):
-        sql = f'''
+        sql = f"""
             UPDATE {self.adminModel.tableName}
             SET
                 {core.Columns.tc} = '',
@@ -361,7 +366,7 @@ class Object(gws.base.edit.helper.Object):
                 {core.Columns.tcCategory} = ''
             WHERE
                 {core.Columns.tc} = :tc
-        '''
+        """
         self.adminModel.db.execute_text(sql, tc=tc)
 
     ##
@@ -387,7 +392,7 @@ class Object(gws.base.edit.helper.Object):
             html=self.render_template(f'{category}.emailBody', args, mime='text/html'),
         )
 
-        email_helper = cast(gws.plugin.email_helper, self.root.app.helper('email'))
+        email_helper = cast(gws.plugin.email_helper.Object, self.root.app.helper('email'))
         email_helper.send_mail(message)
 
     def render_template(self, subject, args, mime=None):

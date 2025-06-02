@@ -15,21 +15,33 @@ class Props(gws.Props):
 
 
 class Config(gws.ConfigWithAccess):
+    """Configuration for the model field."""
+
     name: str
+    """The name of the field."""
     title: Optional[str]
+    """The title of the field."""
 
     isPrimaryKey: Optional[bool]
+    """If True, the field is a primary key."""
     isRequired: Optional[bool]
+    """If True, the field is required."""
     isUnique: Optional[bool]
+    """If True, the field is unique."""
     isAuto: Optional[bool]
+    """If True, the field is auto-updated."""
 
     values: Optional[list[gws.ext.config.modelValue]]
+    """List of possible values for the field."""
     validators: Optional[list[gws.ext.config.modelValidator]]
+    """List of validators for the field."""
 
     widget: Optional[gws.ext.config.modelWidget]
+    """Configuration for the field widget."""
 
 
 ##
+
 
 class Object(gws.ModelField):
     notEmptyValidator: gws.ModelValidator
@@ -138,37 +150,36 @@ class Object(gws.ModelField):
             type=self.extType,
             widget=wp,
             uid=self.uid,
-            relatedModelUids=[
-                m.uid
-                for m in self.related_models()
-                if user.can_read(m)
-            ],
+            relatedModelUids=[m.uid for m in self.related_models() if user.can_read(m)],
         )
 
     ##
 
     def do_validate(self, feature, mc):
-
         # apply the 'notEmpty' validator and exit immediately if it fails
         # (no error message if field is not required)
 
         ok = self.notEmptyValidator.validate(self, feature, mc)
         if not ok:
             if self.isRequired:
-                feature.errors.append(gws.ModelValidationError(
-                    fieldName=self.name,
-                    message=self.notEmptyValidator.message,
-                ))
+                feature.errors.append(
+                    gws.ModelValidationError(
+                        fieldName=self.name,
+                        message=self.notEmptyValidator.message,
+                    )
+                )
             return
 
         # apply the 'format' validator
 
         ok = self.formatValidator.validate(self, feature, mc)
         if not ok:
-            feature.errors.append(gws.ModelValidationError(
-                fieldName=self.name,
-                message=self.formatValidator.message,
-            ))
+            feature.errors.append(
+                gws.ModelValidationError(
+                    fieldName=self.name,
+                    message=self.formatValidator.message,
+                )
+            )
             return
 
         # apply others
@@ -177,10 +188,12 @@ class Object(gws.ModelField):
             if mc.op in vd.ops:
                 ok = vd.validate(self, feature, mc)
                 if not ok:
-                    feature.errors.append(gws.ModelValidationError(
-                        fieldName=self.name,
-                        message=vd.message,
-                    ))
+                    feature.errors.append(
+                        gws.ModelValidationError(
+                            fieldName=self.name,
+                            message=vd.message,
+                        )
+                    )
                     return
 
     def related_models(self):

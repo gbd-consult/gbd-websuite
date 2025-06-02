@@ -43,14 +43,16 @@ gws.ext.new.template('qgis')
 
 
 class Config(gws.base.template.Config):
+    """QGIS Print template configuration."""
+    
     provider: Optional[provider.Config]
-    """qgis provider"""
+    """Qgis provider."""
     index: Optional[int]
-    """template index"""
+    """Template index."""
     mapPosition: Optional[gws.UomSizeStr]
-    """position for the main map"""
+    """Position for the main map."""
     cssPath: Optional[gws.FilePath]
-    """css file"""
+    """Css file."""
 
 
 class _HtmlBlock(gws.Data):

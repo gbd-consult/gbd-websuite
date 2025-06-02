@@ -9,11 +9,13 @@ from . import provider
 gws.ext.new.model('postgres')
 
 
-class Props(gws.base.database.model.Props):
+class Config(gws.base.database.model.Config):
+    """Postgres database model configuration."""
+
     pass
 
 
-class Config(gws.base.database.model.Config):
+class Props(gws.base.database.model.Props):
     pass
 
 

@@ -13,10 +13,11 @@ gws.ext.new.layer('tile')
 
 class Config(gws.base.layer.Config):
     """Tile layer"""
+
     provider: provider.Config
-    """tile service provider"""
+    """Tile service provider."""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
-    """layer display mode"""
+    """Layer display mode."""
 
 
 _GRID_DEFAULTS = gws.TileGrid(

@@ -5,12 +5,13 @@ import gws.base.action
 import gws.base.auth.user
 import gws.lib.intl
 
-from . import core
 
 gws.ext.new.action('project')
 
 
 class Config(gws.base.action.Config):
+    """Project info action configuration."""
+
     pass
 
 
@@ -36,4 +37,5 @@ class Object(gws.base.action.Object):
         return InfoResponse(
             project=gws.props_of(project, req.user),
             locale=gws.lib.intl.locale(p.localeUid, project.localeUids),
-            user=None if req.user.isGuest else gws.props_of(req.user, req.user))
+            user=None if req.user.isGuest else gws.props_of(req.user, req.user),
+        )

@@ -12,7 +12,6 @@ import gws.gis.source
 import gws.gis.zoom
 import gws.lib.metadata
 import gws.lib.mime
-import gws.lib.xmlx
 
 from . import ows
 
@@ -23,45 +22,54 @@ class CacheConfig(gws.Config):
     """Cache configuration"""
 
     maxAge: gws.Duration = '7d'
-    """cache max. age"""
+    """Cache max. age."""
     maxLevel: int = 1
-    """max. zoom level to cache"""
+    """Max. zoom level to cache."""
     requestBuffer: Optional[int]
+    """Pixel buffer for tile requests."""
     requestTiles: Optional[int]
+    """Number of tiles to request at once."""
 
 
 class GridConfig(gws.Config):
     """Grid configuration for caches and tiled data"""
 
     crs: Optional[gws.CrsName]
+    """Target CRS for the grid."""
     extent: Optional[gws.Extent]
+    """Target extent for the grid."""
     origin: Optional[gws.Origin]
+    """Grid origin, defaults to north-west."""
     resolutions: Optional[list[float]]
+    """Grid resolutions, defaults to parent layer resolutions."""
     tileSize: Optional[int]
+    """Tile size in pixels, defaults to 256."""
 
 
 class AutoLayersOptions(gws.ConfigWithAccess):
     """Configuration for automatic layers."""
 
     applyTo: Optional[gws.gis.source.LayerFilter]
+    """Source layers to apply the configuration to."""
     config: dict
+    """Configuration for the matching layers."""
 
 
 class ClientOptions(gws.Data):
-    """Client options for a layer"""
+    """Client options for a layer."""
 
     expanded: bool = False
-    """the layer is expanded in the list view"""
+    """The layer is expanded in the list view."""
     unlisted: bool = False
-    """the layer is hidden in the list view"""
+    """The layer is hidden in the list view."""
     selected: bool = False
-    """the layer is initially selected"""
+    """The layer is initially selected."""
     hidden: bool = False
-    """the layer is initially hidden"""
+    """The layer is initially hidden."""
     unfolded: bool = False
-    """the layer is not listed, but its children are"""
+    """The layer is not listed, but its children are."""
     exclusive: bool = False
-    """only one of this layer's children is visible at a time"""
+    """Only one of this layer children is visible at a time."""
 
 
 class GridProps(gws.Props):
@@ -76,7 +84,7 @@ class Config(gws.ConfigWithAccess):
 
     cache: Optional[CacheConfig]
     """Cache configuration."""
-    clientOptions: ClientOptions = {}
+    clientOptions: ClientOptions
     """Options for the layer display in the client."""
     cssSelector: str = ''
     """Css selector for feature layers."""
@@ -143,6 +151,7 @@ class Props(gws.Props):
 
 
 _DEFAULT_IMAGE_FORMAT = gws.ImageFormatConfig(mimeTypes=['image/png'], options={'mode': 'P'})
+
 
 class Object(gws.Layer):
     parent: gws.Layer
@@ -222,7 +231,8 @@ class Object(gws.Layer):
         if p:
             self.bounds = gws.Bounds(
                 crs=self.mapCrs,
-                extent=gws.lib.extent.from_list(p))
+                extent=gws.lib.extent.from_list(p),
+            )
             return True
 
     def configure_zoom_bounds(self):
@@ -230,7 +240,8 @@ class Object(gws.Layer):
         if p:
             self.zoomBounds = gws.Bounds(
                 crs=self.mapCrs,
-                extent=gws.lib.extent.from_list(p))
+                extent=gws.lib.extent.from_list(p),
+            )
             return True
 
     def configure_cache(self):
@@ -248,7 +259,8 @@ class Object(gws.Layer):
                 origin=p.origin or gws.Origin.nw,
                 tileSize=p.tileSize or DEFAULT_TILE_SIZE,
                 bounds=gws.Bounds(crs=self.bounds.crs, extent=p.extent),
-                resolutions=p.resolutions)
+                resolutions=p.resolutions,
+            )
             return True
 
     def configure_legend(self):
@@ -345,7 +357,6 @@ class Object(gws.Layer):
             ls.extend(la.descendants())
         return ls
 
-
     def url_path(self, kind):
         ext = gws.lib.mime.extension_for(self.imageFormat.mimeTypes[0])
         url_path_suffix = '/gws.' + ext
@@ -401,7 +412,6 @@ class Object(gws.Layer):
         return []
 
     def render_legend(self, args=None) -> Optional[gws.LegendRenderOutput]:
-
         if not self.legend:
             return None
 

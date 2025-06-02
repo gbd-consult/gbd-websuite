@@ -13,12 +13,14 @@ import gws.lib.net
 
 
 class Config(gws.Config):
+    """Tile provider configuration."""
+    
     maxRequests: int = 0
-    """max concurrent requests to this source"""
+    """Max concurrent requests to this source."""
     url: gws.Url
-    """rest url with placeholders {x}, {y} and {z}"""
+    """Rest url with placeholders {x}, {y} and {z}."""
     grid: Optional[gws.base.layer.GridConfig]
-    """source grid"""
+    """Source grid."""
 
 
 class Object(gws.Node):

@@ -15,6 +15,8 @@ gws.ext.new.finder('qgis')
 
 
 class Config(gws.base.search.finder.Config):
+    """QGIS Server-based Finder configuration."""
+
     provider: Optional[provider.Config]
     """Provider configuration."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]

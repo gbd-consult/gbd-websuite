@@ -20,9 +20,9 @@ class Config(gws.base.action.Config):
     """Search action"""
 
     limit: int = 1000
-    """search results limit"""
+    """Search results limit."""
     tolerance: Optional[gws.UomValueStr]
-    """default tolerance"""
+    """Default tolerance."""
 
 
 class Props(gws.base.action.Props):

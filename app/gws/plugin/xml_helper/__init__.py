@@ -29,6 +29,7 @@ class Config(gws.Config):
     """XML helper. (added in 8.1)"""
 
     namespaces: list[NamespaceConfig]
+    """List of custom namespaces for XML generation."""
 
 
 class Object(gws.Node):

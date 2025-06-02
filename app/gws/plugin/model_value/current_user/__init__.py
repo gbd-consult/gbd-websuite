@@ -16,8 +16,10 @@ gws.ext.new.modelValue('currentUser')
 
 
 class Config(gws.base.model.value.Config):
+    """Current user value configuration."""
+
     format: str = ''
-    """format string"""
+    """Format string."""
 
 
 class Object(gws.base.model.value.Object):

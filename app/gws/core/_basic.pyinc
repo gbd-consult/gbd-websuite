@@ -27,21 +27,21 @@ class Origin(Enum):
     """Grid origin."""
 
     nw = 'nw'
-    """north-west"""
+    """North-west."""
     sw = 'sw'
-    """south-west"""
+    """South-west."""
     ne = 'ne'
-    """north-east"""
+    """North-east."""
     se = 'se'
-    """south-east"""
+    """South-east."""
     lt = 'nw'
-    """left top"""
+    """Left top."""
     lb = 'sw'
-    """left bottom"""
+    """Left bottom."""
     rt = 'ne'
-    """right top"""
+    """Right top."""
     rb = 'se'
-    """right bottom"""
+    """Right bottom."""
 
 
 FilePath: TypeAlias = str
@@ -152,20 +152,35 @@ class AttributeType(Enum):
     """Feature attribute type."""
 
     bool = 'bool'
+    """Boolean value."""
     bytes = 'bytes'
+    """Binary data."""
     date = 'date'
+    """Date value."""
     datetime = 'datetime'
+    """Date and time value."""
     feature = 'feature'
+    """Feature reference."""
     featurelist = 'featurelist'
+    """List of features."""
     file = 'file'
+    """File reference."""
     float = 'float'
+    """Floating-point number."""
     floatlist = 'floatlist'
+    """List of floating-point numbers."""
     geometry = 'geometry'
+    """Geometry reference."""
     int = 'int'
+    """Integer number."""
     intlist = 'intlist'
+    """List of integer numbers."""
     str = 'str'
+    """String value."""
     strlist = 'strlist'
+    """List of strings."""
     time = 'time'
+    """Time value."""
 
 
 class GeometryType(Enum):
@@ -175,7 +190,8 @@ class GeometryType(Enum):
 
     References:
 
-        OGC 06-103r4 (https://www.ogc.org/standards/sfa), https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.html
+        - OGC 06-103r4 (https://www.ogc.org/standards/sfa), 
+        - https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.html
     """
 
     geometry = 'geometry'

@@ -7,6 +7,8 @@ gws.ext.new.modelWidget('geometry')
 
 
 class Config(gws.base.model.widget.Config):
+    """Geometry widget configuration."""
+
     isInline: bool = False
     """Display the geometry widget in the form."""
     withText: bool = False

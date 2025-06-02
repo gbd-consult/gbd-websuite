@@ -12,7 +12,6 @@ The value of the field is the parent feature.
 """
 
 import gws
-import gws.base.database.model
 import gws.base.model
 import gws.base.model.related_field as related_field
 import gws.lib.sa as sa
@@ -21,12 +20,14 @@ gws.ext.new.modelField('relatedFeature')
 
 
 class Config(related_field.Config):
+    """Configuration for related feature field."""
+
     fromColumn: str
-    """foreign key column in this table"""
+    """Foreign key column in this table."""
     toModel: str
-    """related model"""
+    """Related model."""
     toColumn: str = ''
-    """key column in the related model, primary key by default"""
+    """Key column in the related model, primary key by default."""
 
 
 class Props(related_field.Props):
@@ -53,7 +54,7 @@ class Object(related_field.Object):
                     key=self.column_or_uid(to_mod, self.cfg('toColumn')),
                     uid=to_mod.uid_column(),
                 )
-            ]
+            ],
         )
         self.rel.to = self.rel.tos[0]
 
@@ -63,7 +64,10 @@ class Object(related_field.Object):
         key = feature.record.attributes.get(self.rel.src.key.name)
         if key:
             to_uids = self.uids_for_key(self.rel.to, key, mc)
-            to_features = self.rel.to.model.get_features(to_uids, gws.base.model.secondary_context(mc))
+            to_features = self.rel.to.model.get_features(
+                to_uids,
+                gws.base.model.secondary_context(mc),
+            )
             if to_features:
                 feature.attributes[self.name] = to_features[0]
 
@@ -73,9 +77,20 @@ class Object(related_field.Object):
 
         for feature in to_feature.createWithFeatures:
             if feature.model == self.model:
-                key = self.key_for_uid(self.rel.to.model, self.rel.to.key, to_feature.insertedPrimaryKey, mc)
+                key = self.key_for_uid(
+                    self.rel.to.model,
+                    self.rel.to.key,
+                    to_feature.insertedPrimaryKey,
+                    mc,
+                )
                 if key:
-                    self.update_key_for_uids(self.model, self.rel.src.key, [feature.uid()], key, mc)
+                    self.update_key_for_uids(
+                        self.model,
+                        self.rel.src.key,
+                        [feature.uid()],
+                        key,
+                        mc,
+                    )
 
     def uids_for_key(self, rel: related_field.RelRef, key, mc):
         sql = sa.select(rel.uid).where(rel.key.__eq__(key))
@@ -88,15 +103,18 @@ class Object(related_field.Object):
 
         uid_to_f = {f.uid(): f for f in features}
 
-        sql = sa.select(
-            self.rel.to.uid,
-            self.rel.src.uid,
-        ).select_from(
-            self.rel.to.table.join(
-                self.rel.src.table, self.rel.src.key.__eq__(self.rel.to.key)
+        sql = (
+            sa.select(
+                self.rel.to.uid,
+                self.rel.src.uid,
             )
-        ).where(
-            self.rel.src.uid.in_(uid_to_f)
+            .select_from(
+                self.rel.to.table.join(
+                    self.rel.src.table,
+                    self.rel.src.key.__eq__(self.rel.to.key),
+                ),
+            )
+            .where(self.rel.src.uid.in_(uid_to_f))
         )
 
         r_to_uids = {}
@@ -104,7 +122,10 @@ class Object(related_field.Object):
             for r, u in conn.execute(sql):
                 r_to_uids.setdefault(str(r), []).append(str(u))
 
-        for to_feature in self.rel.to.model.get_features(r_to_uids, gws.base.model.secondary_context(mc)):
+        for to_feature in self.rel.to.model.get_features(
+            r_to_uids,
+            gws.base.model.secondary_context(mc),
+        ):
             for uid in r_to_uids.get(to_feature.uid(), []):
                 feature = uid_to_f.get(uid)
                 feature.set(self.name, to_feature)
@@ -123,5 +144,10 @@ class Object(related_field.Object):
             key = None
             to_feature = feature.get(self.name)
             if to_feature:
-                key = self.key_for_uid(self.rel.to.model, self.rel.to.key, to_feature.uid(), mc)
+                key = self.key_for_uid(
+                    self.rel.to.model,
+                    self.rel.to.key,
+                    to_feature.uid(),
+                    mc,
+                )
             feature.record.attributes[self.rel.src.key.name] = key

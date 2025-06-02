@@ -14,6 +14,8 @@ gws.ext.new.finder('wfs')
 
 
 class Config(gws.base.search.finder.Config):
+    """WFS Finder configuration."""
+    
     provider: Optional[provider.Config]
     """Provider configuration."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]

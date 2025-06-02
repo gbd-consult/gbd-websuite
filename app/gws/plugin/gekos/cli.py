@@ -12,8 +12,10 @@ gws.ext.new.cli('gekos')
 
 
 class CreateIndexParams(gws.CliParams):
+    """Parameters for creating the GEKOS index."""
+    
     projectUid: Optional[str]
-    """project uid"""
+    """Project uid."""
 
 
 class Object(gws.Node):
@@ -39,4 +41,4 @@ class Object(gws.Node):
             gws.log.error(f'action "gekos" not found')
             return
 
-        act.index.create()
+        act.idx.create()

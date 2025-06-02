@@ -13,9 +13,13 @@ class Access(Enum):
     """Access mode."""
 
     read = 'read'
+    """Permission to read the object."""
     write = 'write'
+    """Permission to change the object."""
     create = 'create'
+    """Permission to create new objects."""
     delete = 'delete'
+    """Permission to delete objects."""
 
 
 class PermissionsConfig:

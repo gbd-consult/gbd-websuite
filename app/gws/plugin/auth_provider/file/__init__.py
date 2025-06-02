@@ -19,10 +19,10 @@ gws.ext.new.authProvider('file')
 
 
 class Config(gws.base.auth.provider.Config):
-    """File-based authorization provider"""
+    """File-based authorization provider."""
 
     path: gws.FilePath
-    """path to the users json file"""
+    """Path to the users json file."""
 
 
 class Object(gws.base.auth.provider.Object):

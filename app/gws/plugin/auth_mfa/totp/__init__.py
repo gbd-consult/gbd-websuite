@@ -15,11 +15,12 @@ gws.ext.new.authMultiFactorAdapter('totp')
 
 
 class Config(gws.base.auth.mfa.Config):
+    """TOTP multi-factor authenticator configuration."""
+
     pass
 
 
 class Object(gws.base.auth.mfa.Object):
-
     def start(self, user):
         if not user.mfaSecret:
             gws.log.warning(f'totp: cannot start, {user.uid=}: no secret')

@@ -13,11 +13,11 @@ class Config(gws.base.action.Config):
     """Dimension action"""
 
     layerUids: Optional[list[str]]
-    """snap layer uids"""
+    """Layer uids to snap to."""
     pixelTolerance: int = 10
-    """pixel tolerance"""
+    """Pixel tolerance."""
     storage: Optional[gws.base.storage.Config]
-    """storage configuration"""
+    """Storage configuration."""
 
 
 class Props(gws.base.action.Props):

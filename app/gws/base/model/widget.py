@@ -10,7 +10,10 @@ class Props(gws.Props):
 
 
 class Config(gws.Config):
+    """Configuration for the widget."""
+
     readOnly: bool = False
+    """If True, the value is read-only."""
 
 
 class Object(gws.ModelWidget):

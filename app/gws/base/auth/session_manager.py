@@ -4,8 +4,10 @@ import gws
 
 
 class Config(gws.Config):
+    """Configuration for the session manager."""
+    
     lifeTime: gws.Duration = '1200'
-    """session life time"""
+    """Session life time."""
 
 
 class Object(gws.AuthSessionManager):

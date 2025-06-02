@@ -5,7 +5,7 @@ class Config(gws.Config):
     """Auth method config."""
 
     secure: bool = True
-    """use only with SSL"""
+    """Use only with SSL."""
 
 
 class Object(gws.AuthMethod):

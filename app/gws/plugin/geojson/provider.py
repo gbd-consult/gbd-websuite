@@ -1,18 +1,19 @@
 """GeoJson provder."""
 
-from typing import Optional, cast
-
 import gws
-import gws.config.util
-import gws.lib.crs
 import gws.base.shape
+import gws.lib.crs
 import gws.lib.jsonx
 
 
-
 class Config(gws.Config):
+    """Configuration for GeoJson provider."""
+
     path: gws.FilePath
     """path to a geojson file"""
+
+    path: gws.FilePath
+    """Path to a geojson file."""
 
 
 class Object(gws.Node):

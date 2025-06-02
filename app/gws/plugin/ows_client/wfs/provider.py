@@ -27,6 +27,8 @@ from . import caps
 
 
 class Config(gws.base.ows.client.provider.Config):
+    """WFS provider configuration."""
+    
     withBboxCrs: Optional[bool]
     """Add CRS to bbox request parameters. (added in 8.1)"""
 

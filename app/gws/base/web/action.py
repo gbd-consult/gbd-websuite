@@ -16,13 +16,10 @@ If the file is not a template and matches the ``allowMime/denyMime`` filter, its
 
 from typing import Optional, cast
 
-import os
-import re
 
 import gws
 import gws.base.action
 import gws.base.client.bundles
-import gws.base.template
 import gws.lib.mime
 import gws.lib.osx
 import gws.lib.intl
@@ -48,6 +45,8 @@ class TemplateArgs(gws.TemplateArgs):
 
 
 class Config(gws.base.action.Config):
+    """Web action configuration."""
+
     pass
 
 
@@ -120,22 +119,16 @@ class Object(gws.base.action.Object):
         # only accept '8.0.0.vendor.js' etc or simply 'vendor.js'
         path = p.path
         if path.startswith(self.root.app.version):
-            path = path[len(self.root.app.version) + 1:]
+            path = path[len(self.root.app.version) + 1 :]
 
         if path == 'vendor.js':
-            return gws.ContentResponse(
-                mime=gws.lib.mime.JS,
-                content=gws.base.client.bundles.javascript(self.root, 'vendor', locale))
+            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'vendor', locale))
 
         if path == 'util.js':
-            return gws.ContentResponse(
-                mime=gws.lib.mime.JS,
-                content=gws.base.client.bundles.javascript(self.root, 'util', locale))
+            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'util', locale))
 
         if path == 'app.js':
-            return gws.ContentResponse(
-                mime=gws.lib.mime.JS,
-                content=gws.base.client.bundles.javascript(self.root, 'app', locale))
+            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'app', locale))
 
         if path.endswith('.css'):
             s = path.split('.')

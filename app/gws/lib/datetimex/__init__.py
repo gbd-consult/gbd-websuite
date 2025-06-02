@@ -255,6 +255,17 @@ def to_string(fmt: str, d: Optional[dt.date] = None) -> str:
     return _datetime(d).strftime(fmt)
 
 
+def time_to_iso_string(d: Optional[dt.date | dt.time] = None, with_tz='+') -> str:
+    """Convert a date or time to an ISO string.
+
+    If the input is a date, it will be converted to a datetime at midnight UTC.
+    If the input is a time, it will be converted to today's date in the local timezone.
+    """
+    if isinstance(d, (dt.datetime, dt.time)):
+        return f'{d.hour:02d}:{d.minute:02d}:{d.second:02d}'
+    return f'00:00:00'
+
+
 # Converters
 
 

@@ -20,9 +20,9 @@ class Config(gws.base.layer.Config):
     """Flat Qgis layer"""
 
     provider: Optional[provider.Config]
-    """qgis provider"""
+    """Qgis provider."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """source layers to use"""
+    """Source layers to use."""
 
 
 class Object(gws.base.layer.image.Object):

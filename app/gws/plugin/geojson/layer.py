@@ -14,10 +14,10 @@ gws.ext.new.layer('geojson')
 
 
 class Config(gws.base.layer.Config):
-    """GeoJson layer"""
+    """GeoJson layer."""
 
     provider: provider.Config
-    """geojson provider"""
+    """Geojson provider."""
 
 
 class Object(gws.base.layer.vector.Object):

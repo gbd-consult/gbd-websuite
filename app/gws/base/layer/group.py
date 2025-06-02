@@ -14,7 +14,7 @@ class Config(core.Config):
     """Group layer"""
 
     layers: list[gws.ext.config.layer]
-    """layers in this group"""
+    """Layers in this group."""
 
 
 class Props(core.Props):

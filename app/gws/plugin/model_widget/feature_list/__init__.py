@@ -7,11 +7,18 @@ gws.ext.new.modelWidget('featureList')
 
 
 class Config(gws.base.model.widget.Config):
+    """Feature list widget configuration."""
+
     withNewButton: bool = True
+    """Display the new button."""
     withLinkButton: bool = True
+    """Display the link button."""
     withEditButton: bool = True
+    """Display the edit button."""
     withUnlinkButton: bool = False
+    """Display the unlink button."""
     withDeleteButton: bool = False
+    """Display the delete button."""
 
 
 class Props(gws.base.model.widget.Props):

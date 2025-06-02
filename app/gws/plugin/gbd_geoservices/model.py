@@ -19,6 +19,7 @@ class Config(gws.base.model.Config):
     """GBD Geoservices model."""
 
     apiKey: str
+    """API key for GBD Geoservices."""
 
 
 class Object(gws.base.model.default_model.Object):

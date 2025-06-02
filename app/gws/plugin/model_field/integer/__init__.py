@@ -8,6 +8,8 @@ gws.ext.new.modelField('integer')
 
 
 class Config(gws.base.model.scalar_field.Config):
+    """Configuration for integer field."""
+
     pass
 
 
@@ -23,10 +25,8 @@ class Object(gws.base.model.scalar_field.Object):
             self.widget = self.root.create_shared(gws.ext.object.modelWidget, type='integer')
             return True
 
-    def convert(self, val, mc):
-        if mc.translation == gws.ModelTranslation.propsToFeature:
-            try:
-                return int(val)
-            except ValueError:
-                return gws.ErrorValue
-        return val
+    def prop_to_python(self, feature, value, mc):
+        try:
+            return int(value)
+        except ValueError:
+            return gws.ErrorValue

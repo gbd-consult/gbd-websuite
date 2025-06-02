@@ -4,13 +4,8 @@ from typing import Optional
 
 import gws
 import gws.base.action
-import gws.base.feature
-import gws.base.layer
 import gws.base.legend
-import gws.base.model
-import gws.base.template
 import gws.lib.bounds
-import gws.gis.cache
 import gws.lib.crs
 import gws.gis.render
 import gws.lib.image
@@ -23,6 +18,8 @@ gws.ext.new.action('map')
 
 
 class Config(gws.base.action.Config):
+    """Configuration for the map action."""
+
     pass
 
 
@@ -126,10 +123,7 @@ class Object(gws.base.action.Object):
         if not tpl:
             return DescribeLayerResponse(content='')
 
-        res = tpl.render(gws.TemplateRenderInput(
-            args={'layer': layer},
-            locale=gws.lib.intl.locale(p.localeUid, project.localeUids),
-            user=req.user))
+        res = tpl.render(gws.TemplateRenderInput(args={'layer': layer}, locale=gws.lib.intl.locale(p.localeUid, project.localeUids), user=req.user))
 
         return DescribeLayerResponse(content=res.content)
 
@@ -145,9 +139,7 @@ class Object(gws.base.action.Object):
         # @TODO the response should be geojson FeatureCollection
 
         propses = self._get_features(req, p)
-        js = gws.lib.jsonx.to_string({
-            'features': propses
-        })
+        js = gws.lib.jsonx.to_string({'features': propses})
 
         return gws.ContentResponse(mime=gws.lib.mime.JSON, content=js)
 
@@ -165,7 +157,7 @@ class Object(gws.base.action.Object):
             bbox=p.bbox,
             size=(p.width, p.height, gws.Uom.px),
             dpi=gws.lib.uom.OGC_SCREEN_PPI,
-            rotation=0
+            rotation=0,
         )
 
         gws.debug.time_start(f'RENDER_BOX layer={p.layerUid} lri={lri!r}')
@@ -237,7 +229,7 @@ class Object(gws.base.action.Object):
             bounds=bounds,
             project=project,
             layers=[layer],
-            limit=_GET_FEATURES_LIMIT
+            limit=_GET_FEATURES_LIMIT,
         )
 
         features = layer.find_features(search, req.user)
@@ -252,7 +244,7 @@ class Object(gws.base.action.Object):
         mc = gws.ModelContext(
             op=gws.ModelOperation.read,
             target=gws.ModelReadTarget.map,
-            user=req.user
+            user=req.user,
         )
 
         return [f.model.feature_to_view_props(f, mc) for f in features]

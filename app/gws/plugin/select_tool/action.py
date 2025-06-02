@@ -12,10 +12,12 @@ gws.ext.new.action('select')
 
 
 class Config(gws.base.action.Config):
+    """Select action configuration."""
+
     storage: Optional[gws.base.storage.Config]
-    """storage configuration"""
+    """Storage configuration."""
     tolerance: Optional[gws.UomValueStr]
-    """click tolerance"""
+    """Click tolerance."""
 
 
 class Props(gws.base.action.Props):

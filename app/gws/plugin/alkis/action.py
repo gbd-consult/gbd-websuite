@@ -7,18 +7,14 @@ import re
 
 import gws
 import gws.base.action
-import gws.base.database
 import gws.base.feature
 import gws.base.model
 import gws.base.printer
 import gws.base.shape
 import gws.base.storage
-import gws.base.template
-import gws.base.web
 import gws.config.util
 import gws.lib.datetimex
 import gws.lib.sa as sa
-import gws.lib.style
 
 from .data import index, exporter
 from .data import types as dt
@@ -30,11 +26,11 @@ class EigentuemerConfig(gws.ConfigWithAccess):
     """Access to the Eigentümer (owner) information"""
 
     controlMode: bool = False
-    """restricted mode enabled"""
+    """Restricted mode enabled."""
     controlRules: Optional[list[str]]
-    """regular expression for the restricted input control"""
+    """Regular expression for the restricted input control."""
     logTable: str = ''
-    """data access protocol table name"""
+    """Data access protocol table name."""
 
 
 class EigentuemerOptions(gws.Node):
@@ -52,6 +48,7 @@ class EigentuemerOptions(gws.Node):
 
 class BuchungConfig(gws.ConfigWithAccess):
     """Access to the Grundbuch (register) information"""
+
     pass
 
 
@@ -60,91 +57,99 @@ class BuchungOptions(gws.Node):
 
 
 class GemarkungListMode(gws.Enum):
+    """Gemarkung (Administrative Unit) list mode."""
+
     none = 'none'
-    """do not show the list"""
+    """Do not show the list."""
     plain = 'plain'
-    """only "gemarkung"""
+    """Show only gemarkung."""
     combined = 'combined'
-    """"gemarkung (gemeinde)"""
+    """Show gemarkung(gemeinde)."""
     tree = 'tree'
-    """a tree with level 1 = gemeinde and level 2 = gemarkung """
+    """A tree with level 1 = gemeinde and level 2 = gemarkung."""
 
 
 class StrasseListMode(gws.Enum):
+    """Strasse (street) list entry format."""
+
     plain = 'plain'
-    """just strasse"""
+    """Just strasse."""
     withGemeinde = 'withGemeinde'
-    """strasse (gemeinde)"""
+    """Strasse (gemeinde)."""
     withGemarkung = 'withGemarkung'
-    """strasse (gemarkung)"""
+    """Strasse (gemarkung)."""
     withGemeindeIfRepeated = 'withGemeindeIfRepeated'
-    """strasse (gemeinde), when needed for disambiguation """
+    """Strasse (gemeinde), when needed for disambiguation."""
     withGemarkungIfRepeated = 'withGemarkungIfRepeated'
-    """strasse (gemarkung), when needed for disambiguation """
+    """Strasse (gemarkung), when needed for disambiguation."""
 
 
 class Ui(gws.Config):
     """Flurstückssuche UI configuration."""
 
     useExport: bool = False
-    """export function enabled"""
+    """Export function enabled."""
     useSelect: bool = False
-    """select mode enabled"""
+    """Select mode enabled."""
     usePick: bool = False
-    """pick mode enabled"""
+    """Pick mode enabled."""
     useHistory: bool = False
-    """history controls enabled"""
+    """History controls enabled."""
     searchSelection: bool = False
-    """search in selection enabled"""
+    """Search in selection enabled."""
     searchSpatial: bool = False
-    """spatial search enabled"""
-    gemarkungListMode: GemarkungListMode = 'combined'
-    """gemarkung list mode"""
-    strasseListMode: StrasseListMode = 'plain'
-    """strasse list entry format"""
+    """Spatial search enabled."""
+    gemarkungListMode: GemarkungListMode = GemarkungListMode.combined
+    """Gemarkung list mode."""
+    strasseListMode: StrasseListMode = StrasseListMode.plain
+    """Strasse list entry format."""
     autoSpatialSearch: bool = False
-    """activate spatial search after submit"""
+    """Activate spatial search after submit."""
 
 
 class Config(gws.ConfigWithAccess):
-    """Flurstückssuche action"""
+    """Flurstückssuche action configuration."""
 
     dbUid: str = ''
-    """database provider ID"""
+    """Database provider ID."""
     crs: gws.CrsName
-    """CRS for the ALKIS data"""
+    """CRS for the ALKIS data."""
     dataSchema: str = 'public'
-    """schema where ALKIS tables are stored"""
+    """Schema where ALKIS tables are stored."""
     indexSchema: str = 'gws8'
-    """schema to store GWS internal indexes"""
+    """Schema to store GWS internal indexes."""
     excludeGemarkung: Optional[list[str]]
-    """Gemarkung (Administrative Unit) IDs to exclude from search"""
+    """Gemarkung (Administrative Unit) IDs to exclude from search."""
 
     eigentuemer: Optional[EigentuemerConfig]
-    """access to the Eigentümer (owner) information"""
+    """Access to the Eigentümer (owner) information."""
     buchung: Optional[BuchungConfig]
-    """access to the Grundbuch (register) information"""
+    """Access to the Grundbuch (register) information."""
     limit: int = 100
-    """search results limit"""
+    """Search results limit."""
     templates: Optional[list[gws.ext.config.template]]
-    """templates for Flurstueck details"""
+    """Templates for Flurstueck details."""
     printers: Optional[list[gws.base.printer.Config]]
-    """print configurations"""
-    ui: Optional[Ui] = {}
-    """ui options"""
+    """Print configurations."""
+    ui: Optional[Ui]
+    """Ui options."""
 
     strasseSearchOptions: Optional[gws.TextSearchOptions]
+    """Search options for street names."""
     nameSearchOptions: Optional[gws.TextSearchOptions]
+    """Search options for person names."""
     buchungsblattSearchOptions: Optional[gws.TextSearchOptions]
+    """Search options for book and page numbers."""
 
     storage: Optional[gws.base.storage.Config]
-    """storage configuration"""
+    """Storage configuration."""
 
     export: Optional[exporter.Config]
-    """csv export configuration"""
+    """Export configuration."""
 
 
 ##
+
 
 class ExportGroupProps(gws.Props):
     index: int
@@ -167,6 +172,7 @@ class Props(gws.base.action.Props):
 
 
 ##
+
 
 class GetToponymsRequest(gws.Request):
     pass
@@ -335,6 +341,7 @@ _DEFAULT_PRINTER = gws.Config(
 
 ##
 
+
 class Model(gws.base.model.default_model.Object):
     def configure(self):
         self.uidName = 'uid'
@@ -381,7 +388,7 @@ class Object(gws.base.action.Object):
             crs=self.cfg('crs'),
             schema=self.indexSchema,
             excludeGemarkung=self.cfg('excludeGemarkung'),
-            uid=f'gws.plugin.alkis.data.index.{self.indexSchema}'
+            uid=f'gws.plugin.alkis.data.index.{self.indexSchema}',
         )
 
         self.limit = self.cfg('limit')
@@ -407,8 +414,7 @@ class Object(gws.base.action.Object):
         if self.eigentuemer.logTableName:
             self.eigentuemer.logTable = self.ix.db.table(self.eigentuemer.logTableName)
 
-        self.storage = self.create_child_if_configured(
-            gws.base.storage.Object, self.cfg('storage'), categoryName='Alkis')
+        self.storage = self.create_child_if_configured(gws.base.storage.Object, self.cfg('storage'), categoryName='Alkis')
 
         p = self.cfg('export')
         if p:
@@ -439,19 +445,9 @@ class Object(gws.base.action.Object):
             printer=gws.u.first(p for p in self.printers if user.can_use(p)),
             ui=self.ui,
             storage=self.storage,
-            withBuchung=(
-                    self.ixStatus.buchung
-                    and user.can_read(self.buchung)
-            ),
-            withEigentuemer=(
-                    self.ixStatus.eigentuemer
-                    and user.can_read(self.eigentuemer)
-            ),
-            withEigentuemerControl=(
-                    self.ixStatus.eigentuemer
-                    and user.can_read(self.eigentuemer)
-                    and self.eigentuemer.controlMode
-            ),
+            withBuchung=(self.ixStatus.buchung and user.can_read(self.buchung)),
+            withEigentuemer=(self.ixStatus.eigentuemer and user.can_read(self.eigentuemer)),
+            withEigentuemerControl=(self.ixStatus.eigentuemer and user.can_read(self.eigentuemer) and self.eigentuemer.controlMode),
         )
 
         ps.strasseSearchOptions = self.strasseSearchOptions
@@ -480,7 +476,7 @@ class Object(gws.base.action.Object):
         return GetToponymsResponse(
             gemeinde=sorted(gemeinde_dct.values()),
             gemarkung=sorted(gemarkung_dct.values()),
-            strasse=sorted(strasse_lst)
+            strasse=sorted(strasse_lst),
         )
 
     @gws.ext.command.api('alkisFindAdresse')
@@ -581,12 +577,7 @@ class Object(gws.base.action.Object):
         if not fs_list:
             raise gws.NotFoundError()
 
-        csv_bytes = self.exporter.run(exporter.Args(
-            format=exporter.Format.csv,
-            fs=fs_list,
-            groups=groups,
-            user=req.user
-        ))
+        csv_bytes = self.exporter.run(exporter.Args(format=exporter.Format.csv, fs=fs_list, groups=groups, user=req.user))
 
         return ExportFlurstueckResponse(content=csv_bytes, mime='text/csv')
 
@@ -661,7 +652,7 @@ class Object(gws.base.action.Object):
                 p.eigentuemerControlInput,
                 is_ok=True,
                 total=len(fs_list),
-                fs_uids=[fs.uid for fs in fs_list]
+                fs_uids=[fs.uid for fs in fs_list],
             )
 
         return fs_list, query
@@ -711,12 +702,8 @@ class Object(gws.base.action.Object):
         'bisHausnummer',
         'hausnummerNotNull',
     ]
-    COMBINED_FLURSTUECK_FIELDS = [
-        'landCode', 'gemarkungCode', 'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge'
-    ]
-    COMBINED_ADRESSE_FIELDS = [
-        'strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnummer'
-    ]
+    COMBINED_FLURSTUECK_FIELDS = ['landCode', 'gemarkungCode', 'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge']
+    COMBINED_ADRESSE_FIELDS = ['strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnummer']
 
     def _prepare_flurstueck_query(self, req: gws.WebRequester, p: FindFlurstueckRequest) -> dt.FlurstueckQuery:
         query = dt.FlurstueckQuery()
@@ -750,18 +737,15 @@ class Object(gws.base.action.Object):
         )
 
         want_eigentuemer = (
-                p.wantEigentuemer
-                or dt.DisplayTheme.eigentuemer in options.displayThemes
-                or any(getattr(query, f) is not None for f in dt.EigentuemerAccessRequired)
+            p.wantEigentuemer
+            or dt.DisplayTheme.eigentuemer in options.displayThemes
+            or any(getattr(query, f) is not None for f in dt.EigentuemerAccessRequired)
         )
         if want_eigentuemer:
             self._check_eigentuemer_access(req, p.eigentuemerControlInput)
             options.withEigentuemer = True
 
-        want_buchung = (
-                dt.DisplayTheme.buchung in options.displayThemes
-                or any(getattr(query, f) is not None for f in dt.BuchungAccessRequired)
-        )
+        want_buchung = dt.DisplayTheme.buchung in options.displayThemes or any(getattr(query, f) is not None for f in dt.BuchungAccessRequired)
         if want_buchung:
             self._check_buchung_access(req, p.eigentuemerControlInput)
             options.withBuchung = True
@@ -792,7 +776,6 @@ class Object(gws.base.action.Object):
         return query
 
     def _query_fsnummer(self, query: dt.FlurstueckQuery, vn: str):
-
         if vn.startswith('DE'):
             # search by gml_id
             query.uids = query.uids or []

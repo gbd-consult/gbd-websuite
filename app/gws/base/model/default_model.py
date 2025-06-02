@@ -9,6 +9,8 @@ gws.ext.new.model('default')
 
 
 class Config(core.Config):
+    """Configuration for the default model."""
+
     pass
 
 

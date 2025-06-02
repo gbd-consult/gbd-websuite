@@ -16,7 +16,7 @@ class Config(gws.base.template.Config):
     """Python template"""
 
     path: Optional[gws.FilePath]
-    """path to a template file"""
+    """Path to a template file."""
 
 
 class Props(gws.base.template.Props):

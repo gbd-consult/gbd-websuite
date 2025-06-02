@@ -13,7 +13,7 @@ class Config(gws.base.legend.Config):
     """Static legend."""
 
     path: gws.FilePath
-    """path to the image file"""
+    """Path to the image file."""
 
 
 class Object(gws.base.legend.Object):

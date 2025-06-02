@@ -16,15 +16,21 @@ from typing import Optional
 
 import gws
 import gws.lib.otp
-import gws.lib.net
 
 
 class OtpConfig:
+    """OTP generation options."""
+
     start: Optional[int]
+    """Start time for TOTP."""
     step: Optional[int]
+    """Step time for TOTP."""
     length: Optional[int]
+    """Length of the OTP code."""
     tolerance: Optional[int]
+    """Tolerance window for TOTP verification."""
     algo: Optional[str]
+    """Hash algorithm for OTP generation."""
 
 
 class Config(gws.Config):
@@ -32,7 +38,7 @@ class Config(gws.Config):
 
     message: str = ''
     """Message to display in the client."""
-    lifeTime: Optional[gws.Duration] = 120
+    lifeTime: Optional[gws.Duration] = '120'
     """How long to wait for the MFA to complete."""
     maxVerifyAttempts: int = 3
     """Max verify attempts."""

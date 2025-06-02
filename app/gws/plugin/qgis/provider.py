@@ -21,28 +21,30 @@ from . import caps as caps_module, project
 
 
 class Config(gws.Config):
+    """QGIS provider configuration."""
+    
     path: Optional[gws.FilePath]
-    """Qgis project file"""
+    """Qgis project file."""
     dbUid: Optional[str]
-    """Qgis project database"""
+    """Qgis project database."""
     schema: Optional[str]
-    """Qgis project schema"""
+    """Qgis project schema."""
     projectName: Optional[str]
-    """Qgis project name"""
+    """Qgis project name."""
     defaultLegendOptions: Optional[dict]
-    """Default options for qgis legends. (added in 8.1)"""
+    """Default options for qgis legends. (added in 8.1)."""
     directRender: Optional[list[str]]
-    """QGIS data providers that should be rendered directly"""
+    """Qgis data providers that should be rendered directly."""
     directSearch: Optional[list[str]]
-    """QGIS data providers that should be searched directly"""
+    """Qgis data providers that should be searched directly."""
     forceCrs: Optional[gws.CrsName]
-    """use this CRS for requests"""
+    """Use this CRS for requests."""
     sqlFilters: Optional[dict]
-    """per-layer sql filters"""
+    """Per-layer sql filters."""
     extentBuffer: Optional[int]
-    """Extent buffer for automatically computed bounds. (added in 8.1)"""
+    """Extent buffer for automatically computed bounds. (added in 8.1)."""
     useCanvasExtent: Optional[bool]
-    """Use canvas extent as project extent. (added in 8.1)"""
+    """Use canvas extent as project extent. (added in 8.1)."""
 
 
 class Object(gws.OwsProvider):

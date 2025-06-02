@@ -1,12 +1,14 @@
 """Date widget."""
 
 import gws
-import gws.base.model.widget as w
+import gws.base.model.widget
 
 gws.ext.new.modelWidget('date')
 
 
 class Config(gws.base.model.widget.Config):
+    """Date widget configuration."""
+
     pass
 
 

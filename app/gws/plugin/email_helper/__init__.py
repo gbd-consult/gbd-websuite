@@ -12,15 +12,19 @@ gws.ext.new.helper('email')
 
 
 class SmtpMode(gws.Enum):
+    """SMTP connection modes."""
     plain = 'plain'
+    """Plain connection without encryption."""
     ssl = 'ssl'
+    """SSL connection."""
     tls = 'tls'
+    """TLS connection (STARTTLS)."""
 
 
 class SmtpConfig(gws.Config):
     """SMTP server configuration. (added in 8.1)"""
 
-    mode: SmtpMode = 'ssl'
+    mode: SmtpMode = SmtpMode.ssl
     """Connection mode."""
     host: str
     """SMTP host name"""
@@ -30,7 +34,7 @@ class SmtpConfig(gws.Config):
     """Login"""
     password: str = ''
     """Password."""
-    timeout: gws.Duration = 30
+    timeout: gws.Duration = '30'
     """Connection timeout."""
 
 

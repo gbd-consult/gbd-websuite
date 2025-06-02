@@ -11,7 +11,7 @@ class Config(gws.Config):
     """Configuration for sqlite storage."""
 
     path: Optional[str]
-    """storage path"""
+    """Storage path."""
 
 
 class Object(gws.StorageProvider):

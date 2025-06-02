@@ -1,17 +1,16 @@
-"""Qquery the Gekos-Online server."""
+"""Query the Gekos-Online server and create the index."""
 
-from typing import Optional
 
 import math
 
 import gws
-import gws.base.database
 import gws.base.shape
 import gws.config.util
 import gws.lib.crs
 import gws.lib.xmlx
 import gws.lib.net
 import gws.lib.sa as sa
+from . import core
 
 
 """
@@ -43,36 +42,10 @@ ObjectID appears to be unique within an instance, so we generate a PK = instance
 """
 
 
-class PositionConfig(gws.Config):
-    offsetX: int  #: x-offset for points
-    offsetY: int  #: y-offset for points
-    distance: int = 0  #: radius for points repelling
-    angle: int = 0  #: angle for points repelling
-
-
-class SourceConfig(gws.Config):
-    url: gws.Url  #: gek-online base url
-    params: dict  #: additional parameters for gek-online calls
-    instance: str  #: instance name for this source
-
-
-class Config(gws.Config):
-    crs: gws.CrsName
-    """CRS for gekos data"""
-    dbUid: Optional[str]
-    """Database provider uid"""
-    sources: list[SourceConfig]
-    """gek-online instance names"""
-    position: Optional[PositionConfig]
-    """position correction for points"""
-    tableName: str
-    """sql table name"""
-
-
 class Object(gws.Node):
     db: gws.DatabaseProvider
     tableName: str
-    position: PositionConfig
+    position: core.PositionConfig
     crs: gws.Crs
 
     def configure(self):
@@ -96,7 +69,7 @@ class Object(gws.Node):
 
         return recs
 
-    def _load(self, source: SourceConfig):
+    def _load(self, source: core.SourceConfig):
         """Load XML from GekOnline and create record dicts."""
 
         res = gws.lib.net.http_request(source.url, params=dict(source.params or {}), verify=False)
@@ -127,7 +100,7 @@ class Object(gws.Node):
             xy = self._free_point(
                 float(rec.pop('X')),
                 float(rec.pop('Y')),
-                points
+                points,
             )
             points.add(xy)
 
@@ -140,10 +113,10 @@ class Object(gws.Node):
             uids.add(uid)
             rec['uid'] = uid
 
-            shape = gws.base.shape.from_geojson({
-                'type': 'Point',
-                'coordinates': xy
-            }, self.crs)
+            shape = gws.base.shape.from_geojson(
+                {'type': 'Point', 'coordinates': xy},
+                self.crs,
+            )
             rec['wkb_geometry'] = shape.to_ewkb_hex()
 
             recs2.append(rec)
@@ -206,8 +179,8 @@ class Object(gws.Node):
         table = sa.Table(name, sa_meta, *columns, schema=schema)
 
         with self.db.connect() as conn:
-            table.drop(conn, checkfirst=True)
-            table.create(conn)
+            table.drop(conn.saConn, checkfirst=True)
+            table.create(conn.saConn)
             conn.commit()
             conn.execute(sa.insert(table).values(recs))
             conn.commit()

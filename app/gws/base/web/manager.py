@@ -13,9 +13,9 @@ class Config(gws.Config):
     """Web server configuration"""
 
     sites: Optional[list[site.Config]]
-    """configured sites"""
+    """Configured sites."""
     ssl: Optional[site.SSLConfig]
-    """ssl configuration"""
+    """SSL configuration."""
 
 
 class Object(gws.WebManager):

@@ -10,6 +10,8 @@ gws.ext.new.layer('wms')
 
 
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
+    """WMS tree layer configuration."""
+
     provider: provider.Config
     """WMS provider"""
 

@@ -1,4 +1,4 @@
-"""Interface with GekoS-Bau software."""
+"""GekoS action."""
 
 from typing import Optional, cast
 
@@ -11,45 +11,18 @@ import gws.base.database
 
 import gws.plugin.alkis.action as alkis_action
 
-from . import index
+from . import core, index
 
 gws.ext.new.action('gekos')
 
-"""
-
-    see https://www.gekos.de/
-    
-    GekoS settings for gws (Verfahrensadministration/GIS Schnittstelle)
-    
-    base address:
-    
-        GIS-URL-Base  = http://my-server
-
-    client-side call, handled in the client by the Marker element
-    
-        GIS-URL-ShowXY  = /project/PROJECT_ID/?x=<x>&y=<y>&z=SCALE_VALUE
-        
-    client-side call, handled in the client by js/index.tsx
-        
-        GIS-URL-GetXYFromMap = /project/PROJECT_ID/?&x=<x>&y=<y>&gekosUrl=<returl>
-    
-    client-side call, handled in the Alkis plugin
-    
-        GIS-URL-ShowFs = /project/PROJECT_ID/?alkisFs=<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>
-        
-    callback urls, handled here
-            
-        GIS-URL-GetXYFromFs   = /_/gekosGetXY/projectUid/PROJECT_ID/fs/<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>
-        GIS-URL-GetXYFromGrd  = /_/gekosGetXY/projectUid/PROJECT_ID/ad/<str>_<hnr><hnralpha>_<plz>_<ort>_<bishnr><bishnralpha>
-
-    NB: the order of placeholders must match COMBINED_FLURSTUECK_FIELDS and COMBINED_ADRESSE_FIELDS in the Alkis Plugin
-
-"""
-
 
 class GetXyRequest(gws.Request):
+    """Request to get XY coordinates from a GekoS feature."""
+
     fs: Optional[str]
+    """Combined flurstueck code."""
     ad: Optional[str]
+    """Combined adresse code."""
 
 
 class GetFsResponse(gws.Response):
@@ -57,34 +30,30 @@ class GetFsResponse(gws.Response):
 
 
 class Config(gws.base.action.Config):
-    """GekoS action"""
+    """GekoS action configuration."""
 
-    index: Optional[index.Config]
-    """GekoS index configuration"""
+    index: Optional[core.IndexConfig]
+    """GekoS index configuration."""
     templates: Optional[list[gws.ext.config.template]]
-    """feature templates"""
+    """Feature templates."""
 
 
 _DEFAULT_TEMPLATES = [
-    gws.Config(
-        subject='feature.title',
-        type='html',
-        text='{vollnummer}'
-    ),
+    gws.Config(subject='feature.title', type='html', text='{vollnummer}'),
     gws.Config(
         subject='feature.teaser',
         type='html',
         text='Flurstück {vollnummer}',
-    )
+    ),
 ]
 
 
 class Object(gws.base.action.Object):
-    index: Optional[index.Object]
+    idx: index.Object
     templates: list[gws.Template]
 
     def configure(self):
-        self.index = self.create_child_if_configured(index.Object, self.cfg('index'))
+        self.idx = self.create_child_if_configured(index.Object, self.cfg('index'))
         p = self.cfg('templates', default=[]) + _DEFAULT_TEMPLATES
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
 
@@ -94,10 +63,7 @@ class Object(gws.base.action.Object):
         if p.projectUid:
             project = req.user.require_project(p.projectUid)
 
-        alkis = cast(
-            alkis_action.Object,
-            self.root.app.actionMgr.find_action(project, 'alkis', req.user)
-        )
+        alkis = cast(alkis_action.Object, self.root.app.actionMgr.find_action(project, 'alkis', req.user))
         if not alkis:
             gws.log.error(f'gekos: alkis action not found, {p.projectUid=}')
             return gws.ContentResponse(mime='text/plain', content='error:')
@@ -112,6 +78,4 @@ class Object(gws.base.action.Object):
             gws.log.error(f'gekos: not found, {p.fs=} {p.ad=}')
             return gws.ContentResponse(mime='text/plain', content='error:')
 
-        return gws.ContentResponse(
-            mime='text/plain',
-            content='{:.3f};{:.3f}'.format(lst[0].x, lst[0].y))
+        return gws.ContentResponse(mime='text/plain', content='{:.3f};{:.3f}'.format(lst[0].x, lst[0].y))

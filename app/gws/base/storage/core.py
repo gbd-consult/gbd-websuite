@@ -7,18 +7,31 @@ import gws.lib.jsonx
 
 
 class Verb(gws.Enum):
+    """Storage action verbs."""
+
     read = 'read'
+    """Read an entry."""
     write = 'write'
+    """Write an entry."""
     list = 'list'
+    """List entries."""
     delete = 'delete'
+    """Delete an entry."""
 
 
 class State(gws.Data):
+    """Storage state."""
+
     names: list[str]
+    """List of entry names."""
     canRead: bool
+    """User can read entries."""
     canWrite: bool
+    """User can write entries."""
     canCreate: bool
+    """User can create entries."""
     canDelete: bool
+    """User can delete entries."""
 
 
 class Request(gws.Request):
@@ -36,10 +49,9 @@ class Config(gws.ConfigWithAccess):
     """Storage configuration"""
 
     providerUid: Optional[str]
-    """storage provider uid"""
-
+    """Storage provider uid."""
     categoryName: Optional[str]
-    """category name"""
+    """Category name."""
 
 
 class Props(gws.Props):

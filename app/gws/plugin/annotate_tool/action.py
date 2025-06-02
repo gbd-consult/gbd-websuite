@@ -11,10 +11,12 @@ gws.ext.new.action('annotate')
 
 
 class Config(gws.base.action.Config):
+    """Annotate action configuration."""
+
     storage: Optional[gws.base.storage.Config]
-    """storage configuration"""
+    """Storage configuration."""
     labels: Optional[dict]
-    """default label templates"""
+    """Default label templates."""
 
 
 class Props(gws.base.action.Props):
@@ -28,7 +30,10 @@ class Object(gws.base.action.Object):
 
     def configure(self):
         self.storage = self.create_child_if_configured(
-            gws.base.storage.Object, self.cfg('storage'), categoryName='Annotate')
+            gws.base.storage.Object,
+            self.cfg('storage'),
+            categoryName='Annotate',
+        )
         self.labels = self.cfg('labels')
 
     def props(self, user):

@@ -13,9 +13,9 @@ class Config(gws.base.search.finder.Config):
     """Database-based search"""
 
     dbUid: Optional[str]
-    """database provider uid"""
+    """Database provider uid."""
     tableName: str
-    """sql table name"""
+    """Database table name."""
 
 
 class Object(gws.base.search.finder.Object):

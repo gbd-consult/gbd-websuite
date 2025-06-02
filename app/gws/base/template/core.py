@@ -10,18 +10,20 @@ import gws.lib.mime
 
 
 class Config(gws.ConfigWithAccess):
+    """Template configuration."""
+
     mapSize: Optional[gws.UomSizeStr]
-    """map size"""
+    """Map size."""
     mimeTypes: Optional[list[str]]
-    """mime types this template can generate"""
+    """Mime types this template can generate."""
     pageSize: Optional[gws.UomSizeStr]
-    """page size"""
+    """Page size."""
     pageMargin: Optional[gws.UomExtentStr]
-    """page margin"""
+    """Page margin."""
     subject: str = ''
-    """template purpose"""
+    """Template purpose."""
     title: str = ''
-    """template title"""
+    """Template title."""
 
 
 class Props(gws.Props):

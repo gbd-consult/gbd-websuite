@@ -13,13 +13,13 @@ class Config(gws.Config):
     """Authentication and authorization options"""
 
     methods: Optional[list[gws.ext.config.authMethod]]
-    """authorization methods"""
+    """Authorization methods."""
     providers: Optional[list[gws.ext.config.authProvider]]
-    """authorization providers"""
+    """Authorization providers."""
     mfa: Optional[list[gws.ext.config.authMultiFactorAdapter]]
-    """authorization providers"""
+    """Authorization providers."""
     session: Optional[gws.ext.config.authSessionManager]
-    """session options"""
+    """Session options."""
 
 
 _DEFAULT_SESSION_TYPE = 'sqlite'

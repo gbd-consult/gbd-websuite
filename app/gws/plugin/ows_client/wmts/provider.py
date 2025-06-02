@@ -13,8 +13,10 @@ from . import caps
 
 
 class Config(gws.base.ows.client.provider.Config):
+    """WMTS provider configuration."""
+
     grid: Optional[gws.base.layer.GridConfig]
-    """source grid"""
+    """Source grid."""
 
 
 class Object(gws.base.ows.client.provider.Object):

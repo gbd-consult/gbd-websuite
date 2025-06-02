@@ -12,7 +12,7 @@ class Config(gws.base.legend.Config):
     """External legend."""
 
     urls: list[gws.Url]
-    """urls of externals legend images"""
+    """Urls of external legend images."""
 
 
 class Object(gws.base.legend.Object):

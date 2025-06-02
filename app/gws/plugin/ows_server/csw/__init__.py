@@ -64,16 +64,19 @@ class IndexEntry(gws.Data):
 
 
 class Profile(gws.Enum):
+    """Metadata profile for CSW service."""
+
     ISO = 'ISO'
+    """ISO 19115 metadata profile."""
     DCMI = 'DCMI'
+    """Dublin Core metadata profile."""
 
 
 class Config(gws.base.ows.server.service.Config):
     """CSW Service configuration"""
 
-    # @TODO no support for DCMI yet
     profile: Profile = Profile.ISO
-    """metadata profile"""
+    """Metadata profile."""
 
 
 class Object(gws.base.ows.server.service.Object):
@@ -222,7 +225,7 @@ class Object(gws.base.ows.server.service.Object):
         return gws.MetadataLink(
             url=gws.u.action_url_path('owsService', serviceUid=self.uid, request='record', id=cid),
             format=gws.lib.mime.XML,
-            type='TC211' if self.profile == 'ISO' else 'DCMI'
+            type='TC211' if self.profile == 'ISO' else 'DCMI',
         )
 
     def _find_mds(self, sr: server.request.Object):
@@ -236,8 +239,4 @@ class Object(gws.base.ows.server.service.Object):
         flt = gws.base.search.filter.from_fes_element(flt_el)
         m = gws.base.search.filter.Matcher()
 
-        return [
-            md
-            for md in self.mdMap.values()
-            if m.matches(flt, md)
-        ]
+        return [md for md in self.mdMap.values() if m.matches(flt, md)]

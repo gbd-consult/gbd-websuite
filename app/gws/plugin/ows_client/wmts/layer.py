@@ -7,7 +7,6 @@ import gws.lib.bounds
 import gws.lib.crs
 import gws.gis.source
 import gws.gis.zoom
-import gws.lib.uom as units
 
 from . import provider
 
@@ -16,14 +15,15 @@ gws.ext.new.layer('wmts')
 
 class Config(gws.base.layer.Config):
     """WMTS layer"""
+
     provider: provider.Config
-    """WMTS provider"""
+    """WMTS provider."""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
-    """layer display mode"""
+    """Layer display mode."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """source layer filter"""
+    """Source layer filter."""
     style: Optional[str]
-    """WMTS style name"""
+    """WMTS style name."""
 
 
 class Object(gws.base.layer.image.Object):
@@ -146,13 +146,17 @@ class Object(gws.base.layer.image.Object):
         else:
             raise gws.Error(f'invalid grid origin {source_grid.origin!r}')
 
-        source_grid_uid = mc.grid(gws.u.compact({
-            'origin': origin,
-            'srs': source_grid.bounds.crs.epsg,
-            'bbox': source_grid.bounds.extent,
-            'res': source_grid.resolutions,
-            'tile_size': [source_grid.tileSize, source_grid.tileSize],
-        }))
+        source_grid_uid = mc.grid(
+            gws.u.compact(
+                {
+                    'origin': origin,
+                    'srs': source_grid.bounds.crs.epsg,
+                    'bbox': source_grid.bounds.extent,
+                    'res': source_grid.resolutions,
+                    'tile_size': [source_grid.tileSize, source_grid.tileSize],
+                }
+            )
+        )
 
         src_uid = gws.base.layer.util.mapproxy_back_cache_config(self, mc, url, source_grid_uid)
         gws.base.layer.util.mapproxy_layer_config(self, mc, src_uid)

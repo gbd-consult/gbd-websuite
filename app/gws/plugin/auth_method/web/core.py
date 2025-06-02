@@ -13,9 +13,9 @@ class Config(gws.base.auth.method.Config):
     """Web-based authorization options"""
 
     cookieName: str = 'auth'
-    """name for the cookie"""
+    """Name for the cookie."""
     cookiePath: str = '/'
-    """cookie path"""
+    """Cookie path."""
 
 
 ##

@@ -12,7 +12,7 @@ class Config(gws.base.legend.Config):
     """HTML-based legend."""
 
     template: gws.ext.config.template
-    """template for an HTML legend"""
+    """Template for the HTML legend."""
 
 
 class Object(gws.base.legend.Object):

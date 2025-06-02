@@ -1,19 +1,19 @@
 """Provides the printing API."""
 
-from typing import Optional, cast
+from typing import Optional
 
 import gws
 import gws.base.action
-import gws.base.web
 import gws.config
 import gws.lib.jsonx
 import gws.lib.mime
-import gws.lib.style
 
 gws.ext.new.action('printer')
 
 
 class Config(gws.base.action.Config):
+    """Configuration for the printer action."""
+
     pass
 
 
@@ -31,7 +31,6 @@ class CliParams(gws.CliParams):
 
 
 class Object(gws.base.action.Object):
-
     @gws.ext.command.api('printerStart')
     def printer_start(self, req: gws.WebRequester, p: gws.PrintRequest) -> gws.JobStatusResponse:
         """Start a background print job"""
@@ -41,9 +40,7 @@ class Object(gws.base.action.Object):
     def printer_status(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.JobStatusResponse:
         res = self.root.app.jobMgr.handle_status_request(req, p)
         if res.state == gws.JobState.complete:
-            res.output = {
-                'url': gws.u.action_url_path('printerOutput', jobUid=res.jobUid) + '/gws.pdf'
-            }
+            res.output = {'url': gws.u.action_url_path('printerOutput', jobUid=res.jobUid) + '/gws.pdf'}
         return res
 
     @gws.ext.command.api('printerCancel')
@@ -74,4 +71,3 @@ class Object(gws.base.action.Object):
         )
 
         root.app.printerMgr.exec_print(request, p.output)
-

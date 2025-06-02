@@ -12,6 +12,8 @@ gws.ext.new.modelValidator('format')
 
 
 class Config(gws.base.model.validator.Config):
+    """Validator for correct values. (added in 8.1)"""
+
     pass
 
 

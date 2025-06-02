@@ -12,8 +12,12 @@ DEFAULT_GEOMETRY_NAME = 'geometry'
 
 
 class TableViewColumn(gws.Data):
+    """Table view column configuration."""
+
     name: str
+    """Column name."""
     width: Optional[int]
+    """Column width in pixels. If not set, the column will be auto-sized."""
 
 
 class ClientOptions(gws.Data):
@@ -27,27 +31,27 @@ class Config(gws.ConfigWithAccess):
     """Model configuration"""
 
     fields: Optional[list[gws.ext.config.modelField]]
-    """model fields"""
+    """Model fields."""
     loadingStrategy: Optional[gws.FeatureLoadingStrategy]
-    """loading strategy for features"""
+    """Loading strategy for features."""
     title: str = ''
-    """model title"""
+    """Model title."""
     isEditable: bool = False
-    """this model is editable"""
+    """This model is editable."""
     withAutoFields: bool = False
-    """autoload non-configured model fields from the source"""
+    """Autoload non-configured model fields from the source."""
     excludeColumns: Optional[list[str]]
-    """exclude columns names from autoload"""
+    """Exclude columns names from autoload."""
     withTableView: bool = True
-    """enable table view for this model"""
+    """Enable table view for this model."""
     tableViewColumns: Optional[list[TableViewColumn]]
-    """fields to include in the table view"""
+    """Fields to include in the table view."""
     templates: Optional[list[gws.ext.config.template]]
-    """feature templates"""
+    """Feature templates."""
     sort: Optional[list[gws.SortOptions]]
-    """default sorting"""
+    """Default sorting."""
     clientOptions: Optional[ClientOptions]
-    """Client options for a model. (added in 8.1)"""
+    """Client options for a model. (added in 8.1)."""
 
 
 class Props(gws.Props):

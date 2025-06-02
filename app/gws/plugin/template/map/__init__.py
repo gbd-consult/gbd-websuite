@@ -12,6 +12,7 @@ gws.ext.new.template('map')
 
 
 class Config(gws.base.template.Config):
+    """Map-only template. (added in 8.1)"""
     pass
 
 

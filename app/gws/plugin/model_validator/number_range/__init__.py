@@ -10,8 +10,11 @@ gws.ext.new.modelValidator('numberRange')
 
 class Config(gws.base.model.validator.Config):
     """Validator for number ranges. (added in 8.1)"""
+
     min: Optional[gws.ext.config.modelValue]
+    """Minimum value for the range."""
     max: Optional[gws.ext.config.modelValue]
+    """Maximum value for the range."""
 
 
 class Object(gws.base.model.validator.Object):

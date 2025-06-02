@@ -8,7 +8,10 @@ gws.ext.new.modelWidget('fileList')
 
 
 class Config(feature_list.Config):
+    """File list widget configuration."""
+
     toFileField: str
+    """Field to link files to."""
 
 
 class Props(gws.base.model.widget.Props):

@@ -239,7 +239,7 @@ def _synthesize_ext_type_properties(gen: base.Generator):
         )
         gen.add_type(
             c=base.c.PROPERTY,
-            doc='object type',
+            doc='Object type.',
             ident=base.v.VARIANT_TAG,
             name=typ.name + DOT + base.v.VARIANT_TAG,
             pos=typ.pos,

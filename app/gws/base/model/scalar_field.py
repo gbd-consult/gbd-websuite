@@ -7,6 +7,8 @@ import gws.base.model.field
 
 
 class Config(gws.base.model.field.Config):
+    """Configuration for the scalar field."""
+
     isVirtual: Optional[bool]
     """The field is not stored in the DB. (added in 8.1)"""
 
@@ -71,7 +73,7 @@ class Object(gws.base.model.field.Object):
             {},
             mc.user.can_read(self),
             self.prop_to_python,
-            mc
+            mc,
         )
         if value is not None:
             feature.set(self.name, value)
@@ -84,7 +86,7 @@ class Object(gws.base.model.field.Object):
             feature.record.attributes,
             mc.user.can_read(self),
             self.raw_to_python,
-            mc
+            mc,
         )
         if value is not None:
             feature.set(self.name, value)
@@ -95,18 +97,18 @@ class Object(gws.base.model.field.Object):
             feature.attributes,
             mc.user.can_write(self),
             self.python_to_raw,
-            mc
+            mc,
         )
         if value is not None:
             feature.record.attributes[self.name] = value
 
     def get_value(
-            self,
-            feature: gws.Feature,
-            source: dict,
-            has_access: bool,
-            convert_fn: Callable,
-            mc: gws.ModelContext
+        self,
+        feature: gws.Feature,
+        source: dict,
+        has_access: bool,
+        convert_fn: Callable,
+        mc: gws.ModelContext,
     ):
         mv = self.model_value(mc)
 

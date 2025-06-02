@@ -15,7 +15,7 @@ class Config(gws.base.auth.method.Config):
     """HTTP-basic authorization options"""
 
     realm: Optional[str]
-    """authentication realm"""
+    """Authentication realm."""
 
 
 class Object(gws.base.auth.method.Object):

@@ -13,6 +13,8 @@ gws.ext.new.modelField('time')
 
 
 class Config(gws.base.model.scalar_field.Config):
+    """Configuration for the time field."""
+
     pass
 
 

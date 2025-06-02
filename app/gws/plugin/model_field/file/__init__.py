@@ -13,9 +13,14 @@ gws.ext.new.modelField('file')
 
 
 class Config(gws.base.model.field.Config):
+    """Configuration for the file field."""
+
     contentColumn: str = ''
+    """Column name for the file content, if stored in the database."""
     pathColumn: str = ''
+    """Column name for the file path, if stored in the filesystem."""
     nameColumn: str = ''
+    """Column name for the file name, if stored in the database or filesystem."""
 
 
 class Props(gws.base.model.field.Props):
@@ -197,11 +202,7 @@ class Object(gws.base.model.field.Object):
     def handle_web_file_request(self, feature_uid: str, preview: bool, mc: gws.ModelContext) -> Optional[gws.ContentResponse]:
         model = cast(gws.DatabaseModel, self.model)
 
-        sql = sa.select(
-            *self.select_columns(True, mc)
-        ).where(
-            model.uid_column().__eq__(feature_uid)
-        )
+        sql = sa.select(*self.select_columns(True, mc)).where(model.uid_column().__eq__(feature_uid))
 
         with self.model.db.connect() as conn:
             rs = list(conn.execute(sql))

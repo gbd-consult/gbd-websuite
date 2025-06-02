@@ -10,7 +10,10 @@ gws.ext.new.modelValue('format')
 
 
 class Config(gws.base.model.value.Config):
+    """Format value configuration."""
+
     format: str
+    """Format string to apply to feature attributes."""
 
 
 class Object(gws.base.model.value.Object):

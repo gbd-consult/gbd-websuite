@@ -12,7 +12,10 @@ gws.ext.new.modelField('text')
 
 
 class Config(gws.base.model.scalar_field.Config):
+    """Configuration for text field."""
+
     textSearch: Optional[gws.TextSearchOptions]
+    """Text search options, if enabled."""
 
 
 class Props(gws.base.model.scalar_field.Props):
@@ -67,8 +70,4 @@ class Object(gws.base.model.scalar_field.Object):
 
 
 def _escape_like(s, escape='\\'):
-    return (
-        s
-        .replace(escape, escape + escape)
-        .replace('%', escape + '%')
-        .replace('_', escape + '_'))
+    return s.replace(escape, escape + escape).replace('%', escape + '%').replace('_', escape + '_')

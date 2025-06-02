@@ -37,24 +37,21 @@ class Config(gws.Config):
     """Zoom levels and resolutions"""
 
     resolutions: Optional[list[float]]
-    """allowed resolutions"""
+    """Allowed resolutions."""
     initResolution: Optional[float]
-    """initial resolution"""
-
+    """Initial resolution."""
     scales: Optional[list[float]]
-    """allowed scales"""
+    """Allowed scales."""
     initScale: Optional[float]
-    """initial scale"""
-
+    """Initial scale."""
     minResolution: Optional[float]
-    """minimal resolution"""
+    """Minimal resolution."""
     maxResolution: Optional[float]
-    """maximal resolution"""
-
+    """Maximal resolution."""
     minScale: Optional[float]
-    """minimal scale"""
+    """Minimal scale."""
     maxScale: Optional[float]
-    """maximal scale"""
+    """Maximal scale."""
 
 
 def resolutions_from_config(cfg, parent_resolutions: list[float] = None) -> list[float]:
@@ -86,8 +83,7 @@ def resolutions_from_config(cfg, parent_resolutions: list[float] = None) -> list
     return sorted(set(res))
 
 
-def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolutions: list[float]) -> list[
-    float]:
+def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolutions: list[float]) -> list[float]:
     """Loads resolution from a source layers.
 
     Args:
@@ -153,7 +149,7 @@ def init_resolution(cfg, resolutions: list) -> float:
     Args:
         cfg: A config.
         resolutions: List of Resolutions.
-        """
+    """
     init = _res_or_scale(cfg, 'initResolution', 'initScale')
     if not init:
         return resolutions[len(resolutions) >> 1]

@@ -8,6 +8,8 @@ gws.ext.new.modelValue('currentTimestamp')
 
 
 class Config(gws.base.model.value.Config):
+    """Current timestamp value configuration."""
+
     pass
 
 

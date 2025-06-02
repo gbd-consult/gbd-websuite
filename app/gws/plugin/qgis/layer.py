@@ -12,8 +12,10 @@ gws.ext.new.layer('qgis')
 
 
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
+    """QGIS Tree layer configuration."""
+    
     provider: Optional[provider.Config]
-    """qgis provider"""
+    """Qgis provider."""
 
 
 class Object(gws.base.layer.group.Object):

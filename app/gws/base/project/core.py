@@ -18,31 +18,31 @@ class Config(gws.ConfigWithAccess):
     type: str = 'default'
 
     actions: Optional[list[gws.ext.config.action]]
-    """project-specific actions"""
+    """Project-specific actions."""
     assets: Optional[gws.base.web.site.WebDocumentRootConfig]
-    """project-specific assets options"""
+    """Project-specific assets options."""
     client: Optional[gws.base.client.Config]
-    """project-specific gws client configuration"""
+    """Project-specific gws client configuration."""
     finders: Optional[list[gws.ext.config.finder]]
-    """search providers"""
+    """Search providers."""
     locales: Optional[list[str]]
-    """project locales"""
+    """Project locales."""
     map: Optional[gws.base.map.Config]
-    """Map configuration"""
+    """Map configuration."""
     metadata: Optional[gws.Metadata]
-    """project metadata"""
+    """Project metadata."""
     models: Optional[list[gws.ext.config.model]]
-    """data models"""
+    """Data models."""
     overviewMap: Optional[gws.base.map.Config]
-    """Overview map configuration"""
+    """Overview map configuration."""
     owsServices: Optional[list[gws.ext.config.owsService]]
-    """OWS services configuration"""
+    """OWS services configuration."""
     printers: Optional[list[gws.base.printer.Config]]
-    """print configurations"""
+    """Print configurations."""
     templates: Optional[list[gws.ext.config.template]]
-    """project info templates"""
+    """Project info templates."""
     title: str = ''
-    """project title"""
+    """Project title."""
 
 
 class Props(gws.Props):

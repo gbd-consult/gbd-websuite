@@ -23,9 +23,9 @@ class Config(gws.Config):
     """Global cache options"""
 
     seedingMaxTime: gws.Duration = '600'
-    """max. time for a seeding job"""
+    """Max. time for a seeding job."""
     seedingConcurrency: int = 1
-    """number of concurrent seeding jobs"""
+    """Number of concurrent seeding jobs."""
 
 
 class Grid(gws.Data):

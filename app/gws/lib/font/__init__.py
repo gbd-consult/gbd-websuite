@@ -8,7 +8,7 @@ class Config(gws.Config):
     """Custom fonts configuration."""
 
     dir: gws.DirPath
-    """directory with custom fonts"""
+    """Directory with custom fonts."""
 
 
 def configure(cfg: Config):

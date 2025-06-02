@@ -14,8 +14,10 @@ gws.ext.new.model('qgis')
 
 
 class Config(gws.base.model.Config):
+    """QGIS data model configuration."""
+
     provider: Optional[provider.Config]
-    """WMS provider"""
+    """WMS provider."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
     """Source layers to search for."""
 

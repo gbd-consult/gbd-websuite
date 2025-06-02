@@ -20,9 +20,9 @@ class Config(gws.base.model.Config):
     """Nominatim model"""
 
     country: Optional[str]
-    """country to limit the search"""
+    """Country to limit the search."""
     language: Optional[str]
-    """language to return the results in"""
+    """Language to return the results in."""
 
 
 class Object(gws.base.model.default_model.Object):

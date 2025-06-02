@@ -1,27 +1,27 @@
 """Database-based models."""
 
-from typing import Optional, cast
+from typing import Optional
 
 import gws
 import gws.base.feature
 import gws.base.model
-import gws.base.model.field
 import gws.config.util
-import gws.lib.crs
 import gws.lib.sa as sa
+
+
+class Config(gws.base.model.Config):
+    """Configuration for the database model."""
+
+    dbUid: Optional[str]
+    """Database provider uid."""
+    tableName: Optional[str]
+    """Table name for the model."""
+    sqlFilter: Optional[str]
+    """Extra SQL filter."""
 
 
 class Props(gws.base.model.Props):
     pass
-
-
-class Config(gws.base.model.Config):
-    dbUid: Optional[str]
-    """db provider uid"""
-    tableName: Optional[str]
-    """table name for the model"""
-    sqlFilter: Optional[str]
-    """extra SQL filter"""
 
 
 class Object(gws.base.model.Object, gws.DatabaseModel):
@@ -96,7 +96,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
                         record=gws.FeatureRecord(attributes=row),
                     )
                 )
-        
+
         return features
 
     def build_select(self, mc):

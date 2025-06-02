@@ -26,9 +26,9 @@ class Config(gws.base.auth.method.Config):
     """HTTP-token authorization options (added in 8.1)"""
 
     header: str
-    """HTTP header name"""
+    """HTTP header name."""
     prefix: str = ''
-    """token prefix"""
+    """Token prefix."""
 
 
 class Object(gws.base.auth.method.Object):

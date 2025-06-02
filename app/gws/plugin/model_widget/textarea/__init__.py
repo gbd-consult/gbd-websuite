@@ -7,10 +7,12 @@ gws.ext.new.modelWidget('textarea')
 
 
 class Config(gws.base.model.widget.Config):
+    """Textarea widget configuration."""
+
     height: int = 0
-    """textarea height placeholder"""
+    """Textarea height."""
     placeholder: str = ''
-    """textarea placeholder"""
+    """Textarea placeholder."""
 
 
 class Props(gws.base.model.widget.Props):
@@ -19,6 +21,9 @@ class Props(gws.base.model.widget.Props):
 
 
 class Object(gws.base.model.widget.Object):
-
     def props(self, user):
-        return gws.u.merge(super().props(user), placeholder=self.cfg('placeholder'), height=self.cfg('height'))
+        return gws.u.merge(
+            super().props(user),
+            placeholder=self.cfg('placeholder'),
+            height=self.cfg('height'),
+        )

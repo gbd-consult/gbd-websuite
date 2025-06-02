@@ -14,6 +14,8 @@ gws.ext.new.model('wfs')
 
 
 class Config(gws.base.model.Config):
+    """WFS model configuration."""
+
     provider: Optional[provider.Config]
     """WFS provider"""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
@@ -25,4 +27,3 @@ class Object(gws.base.ows.client.model.Object):
 
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
-

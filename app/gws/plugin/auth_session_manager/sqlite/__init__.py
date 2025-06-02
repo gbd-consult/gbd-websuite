@@ -14,7 +14,7 @@ class Config(gws.base.auth.session_manager.Config):
     """Configuration for sqlite sessions"""
 
     path: Optional[str]
-    """session storage path"""
+    """Session storage path."""
 
 
 class Object(gws.base.auth.session_manager.Object):

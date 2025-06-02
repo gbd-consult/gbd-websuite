@@ -7,6 +7,8 @@ gws.ext.new.modelWidget('file')
 
 
 class Config(gws.base.model.widget.Config):
+    """File widget configuration."""
+
     pass
 
 

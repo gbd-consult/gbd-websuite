@@ -14,7 +14,7 @@ class Config(gws.base.legend.Config):
     """Combined legend."""
 
     layerUids: list[str]
-    """layers"""
+    """Layers to combine in the legend."""
 
 
 class Object(gws.base.legend.Object):

@@ -23,7 +23,7 @@ class LayerClientOptions(Data):
     unfolded: bool
     """A layer is not listed, but its children are."""
     exclusive: bool
-    """Only one of this layer's children is visible at a time."""
+    """Only one of this layer children is visible at a time."""
 
 
 class TileGrid(Data):

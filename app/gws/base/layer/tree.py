@@ -13,20 +13,22 @@ class FlattenConfig(gws.Config):
     """Layer hierarchy flattening"""
 
     level: int
-    """flatten level"""
+    """Flatten level."""
     useGroups: bool = False
-    """use group names (true) or image layer names (false)"""
+    """Use group names (true) or image layer names (false)."""
 
 
 class Config(gws.Config):
+    """Configuration for the layer tree."""
+
     rootLayers: Optional[gws.gis.source.LayerFilter]
-    """source layers to use as roots"""
+    """Source layers to use as roots."""
     excludeLayers: Optional[gws.gis.source.LayerFilter]
-    """source layers to exclude"""
+    """Source layers to exclude."""
     flattenLayers: Optional[FlattenConfig]
-    """flatten the layer hierarchy"""
+    """Flatten the layer hierarchy."""
     autoLayers: Optional[list[core.AutoLayersOptions]]
-    """custom configurations for automatically created layers"""
+    """Custom configurations for automatically created layers."""
 
 
 class TreeConfigArgs(gws.Data):
@@ -42,15 +44,17 @@ class TreeConfigArgs(gws.Data):
 def layer_configs_from_layer(layer: core.Object, source_layers: list[gws.SourceLayer], leaf_layer_maker: Callable) -> list[gws.Config]:
     """Generate a config tree from a list of source layers and the main layer config."""
 
-    return layer_configs_from_args(TreeConfigArgs(
-        root=layer.root,
-        source_layers=source_layers,
-        roots_slf=layer.cfg('rootLayers'),
-        exclude_slf=layer.cfg('excludeLayers'),
-        flatten_config=layer.cfg('flattenLayers'),
-        auto_layers=layer.cfg('autoLayers', default=[]),
-        leaf_layer_maker=leaf_layer_maker
-    ))
+    return layer_configs_from_args(
+        TreeConfigArgs(
+            root=layer.root,
+            source_layers=source_layers,
+            roots_slf=layer.cfg('rootLayers'),
+            exclude_slf=layer.cfg('excludeLayers'),
+            flatten_config=layer.cfg('flattenLayers'),
+            auto_layers=layer.cfg('autoLayers', default=[]),
+            leaf_layer_maker=leaf_layer_maker,
+        )
+    )
 
 
 def layer_configs_from_args(tca: TreeConfigArgs) -> list[gws.Config]:
@@ -88,14 +92,17 @@ def _config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
     if not cfg:
         return None
 
-    cfg = gws.u.merge(gws.u.to_dict(cfg), {
-        'title': sl.title,
-        'clientOptions': {
-            'hidden': not sl.isVisible,
-            'expanded': sl.isExpanded,
+    cfg = gws.u.merge(
+        gws.u.to_dict(cfg),
+        {
+            'title': sl.title,
+            'clientOptions': {
+                'hidden': not sl.isVisible,
+                'expanded': sl.isExpanded,
+            },
+            'opacity': sl.opacity or 1,
         },
-        'opacity': sl.opacity or 1,
-    })
+    )
 
     for cc in tca.auto_layers:
         if gws.gis.source.layer_matches(sl, cc.applyTo):
@@ -116,7 +123,6 @@ def _base_config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
     # flattened group layer
     # NB use the absolute level to compute flatness, could also use relative (=depth)
     if tca.flatten_config and sl.aLevel >= tca.flatten_config.level:
-
         if tca.flatten_config.useGroups:
             return tca.leaf_layer_maker([sl])
 

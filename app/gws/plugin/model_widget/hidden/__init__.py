@@ -7,6 +7,8 @@ gws.ext.new.modelWidget('hidden')
 
 
 class Config(gws.base.model.widget.Config):
+    """Hidden input widget configuration."""
+
     pass
 
 

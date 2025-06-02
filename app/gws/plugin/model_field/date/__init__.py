@@ -13,6 +13,8 @@ gws.ext.new.modelField('date')
 
 
 class Config(gws.base.model.scalar_field.Config):
+    """Configuration for the date field."""
+    
     pass
 
 
