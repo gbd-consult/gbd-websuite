@@ -395,7 +395,8 @@ nav span {
     display: none;
     background: rgb(20,91,134);
     padding-bottom: 0.5rem;
-    border-bottom: 8px solid rgb(11,53,79);
+    height: 100%;
+    overflow: auto;
 }
 
 #sidebar-search-not-found {
@@ -437,6 +438,11 @@ body.with-search-not-found #sidebar-search-not-found {
 #sidebar-toc {
     padding: 8px 0;
 }
+
+body.with-search-found #sidebar-toc {
+    display: none;
+}
+
 
 #sidebar-toc li {
     font-size: 0.9rem;
@@ -641,7 +647,7 @@ code.configref_required::after {
     font-weight: 600;
 }
 
-code.configref_missing_translation {
+code.configref_dev_missing_translation {
     background: rgb(255,209,209);
     border: none;
     border-radius: 4px;
@@ -650,7 +656,26 @@ code.configref_missing_translation {
     margin: 0 3px;
     vertical-align: text-bottom;
     font-size: 0.7rem;
-    /* display: none; */
+    display: none;
+}
+
+code.configref_dev_uid {
+    background: rgb(238, 233, 133);
+    border: none;
+    border-radius: 4px;
+    display: inline-block;
+    padding: 0 6px;
+    margin: 0 3px;
+    vertical-align: text-bottom;
+    font-size: 0.7rem;
+    display: none;
+}
+
+body.with-dev code.configref_dev_missing_translation {
+    display: inline-block;
+}
+body.with-dev code.configref_dev_uid {
+    display: inline-block;
 }
 
 code.configref_category,

@@ -245,6 +245,9 @@ function searchFindSections(val) {
     }
 }
 
+function isDev() {
+    return location.hostname === 'localhost' || location.hostname === '0.0.0.0';
+}
 
 //
 
@@ -259,6 +262,9 @@ function main() {
     });
     searchInit();
     addRefMarks();
+    if (isDev()) {
+        document.body.classList.add('with-dev')
+    }
 }
 
 window.addEventListener('load', main);

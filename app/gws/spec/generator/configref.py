@@ -24,7 +24,7 @@ STRINGS['en'] = {
 STRINGS['de'] = {
     'head_property': 'Eigenschaft',
     'head_variant': 'Eines der folgenden Objekte',
-        'head_type': 'Typ',
+    'head_type': 'Typ',
     'head_default': 'Default',
     'head_value': 'Wert',
     'category_variant': 'variant',
@@ -86,7 +86,7 @@ class _Creator:
 
         if typ.c == base.c.TYPE:
             self.html[tid.lower()] = nl(self.process_type(tid))
-            
+
         if typ.c == base.c.VARIANT:
             self.html[tid.lower()] = nl(self.process_variant(tid))
 
@@ -114,7 +114,12 @@ class _Creator:
             )
 
         yield table(
-            [self.strings['head_property'], self.strings['head_type'], self.strings['head_default'], ''],
+            [
+                self.strings['head_property'],
+                self.strings['head_type'],
+                self.strings['head_default'],
+                '',
+            ],
             rows[False] + rows[True],
         )
 
@@ -127,7 +132,7 @@ class _Creator:
 
     def process_variant(self, tid):
         typ = self.gen.require_type(tid)
-        
+
         yield header(tid)
         yield subhead(self.strings['category_variant'], self.strings['head_variant'])
 
@@ -176,7 +181,6 @@ class _Creator:
         return as_literal(v)
 
     def docstring(self, tid, enum_value=None):
-        missing_translation = ''
 
         # get the original (spec) docstring
         typ = self.gen.require_type(tid)
@@ -188,11 +192,16 @@ class _Creator:
             key += '.' + enum_value
         local_text = self.gen.strings[self.lang].get(key)
 
-        if not local_text and self.lang != 'en':
+        dev_label = ''
+
+        if spec_text and not local_text and self.lang != 'en':
             # translation missing: use the english docstring and warn
             base.log.debug(f'missing {self.lang} translation for {key!r}')
-            missing_translation = f'`{key}`{{.configref_missing_translation}}'
+            dev_label = f'`{key}`{{.configref_dev_missing_translation}}'
             local_text = self.gen.strings['en'].get(key)
+        else:
+            dev_label = f'`{key}`{{.configref_dev_uid}}'
+
 
         local_text = local_text or spec_text
 
@@ -202,7 +211,7 @@ class _Creator:
         if not label and spec_text != local_text:
             _, label = self.extract_label(spec_text)
 
-        return text + label + missing_translation
+        return text + label + dev_label
 
     def extract_label(self, text):
         m = re.match(rf'(.+?)\(({LABELS}) in (\d[\d.]+)\)$', text)
