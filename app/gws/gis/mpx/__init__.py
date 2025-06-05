@@ -5,6 +5,7 @@ This module provides functions to interact with MapProxy services for WMS and WM
 
 import time
 from typing import Any, Dict, Optional, Union
+import os
 
 import gws
 import gws.config
@@ -88,6 +89,7 @@ def wms_request(layer_uid: str, bounds: gws.Bounds, width: int, height: int,
     Returns:
         The image content as bytes if successful, None if the request fails.
     """
+    mpx_no_transparency = os.getenv('GWS_MPX_NO_TRANSPARENCY', '0') == '1'
     params = {
         'bbox': bounds.extent,
         'width': width,
@@ -97,7 +99,7 @@ def wms_request(layer_uid: str, bounds: gws.Bounds, width: int, height: int,
         'request': 'GetMap',
         'version': '1.3.0',
         'format': 'image/png',
-        'transparent': 'true',
+        'transparent': 'false' if mpx_no_transparency else 'true',
         'styles': '',
         'layers': layer_uid
     }
