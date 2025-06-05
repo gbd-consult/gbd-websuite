@@ -7,9 +7,8 @@ Ein Gegensatz zum Typ `relatedFeature`, beschreibt die "parent" Seite von einer 
 Die andere Seite der Beziehung muss mit `relatedFeature` konfiguriert werden.
 
     %dbgraph 'Eine Strasse hat mehrere Häuser.'
-        street(id int pk, ...)
-        house(id int pk, ..., street_id int fk)
-        street.id -< house.street_id
+        house(id pk, street_id -> street.id)
+        street(id pk)
     %end
 
     models+ {

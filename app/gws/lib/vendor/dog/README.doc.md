@@ -371,50 +371,55 @@ Draws a graph with [GraphViz](https://graphviz.org). The `dot` command must be i
 
 ### dbgraph
 
-Draws a database diagram. 
+Draws a diagram of a database schema. To describe the schema, use the syntax `table (columns)`, where `columns` is a comma-separated list of column definitions. A column definition consist of a name, an optional type, and an optional "pk" indicator (primary key) or an arrow `->` pointing to another table column (foreign key).
 
-A DB diagram consists of tables and arrows. A table is a name, followed by a list of columns in `(...)`. Each column has a name, an optional type and an optional key indicator (`pk` for a primary key, `fk` for a foreign key). An arrow is like `parent.column -< child.column` or `child.column >- parent.column`, where  `<` and `>` indicate the "crow's foot", the "many" side of a 1:m link.
+
 
     %quote xmp    
     %dbgraph 'Our database layout'
-        house (
-            id int pk,
-            name text,
-            street_id fk
-        )
         street (
-            id int pk,
+            id pk,
             name text,
-            city_id fk
+            city_id -> city.id
         )
         city (
-            id int pk, 
-            name text
+            id pk, 
+            name text,
+            population bigint
+        ) 
+        river (
+            id pk, 
+            name text,
+            length int
+        ) 
+        river_to_city (
+            river_id -> river.id,
+            city_id -> city.id
         )
-
-        house.street_id >- street.id
-        city.id -< street.city_id  
     %end
     %end xmp
 
+
     %dbgraph 'Our database layout'
-        house (
-            id int pk,
-            name text,
-            street_id fk
-        )
         street (
-            id int pk,
+            id pk,
             name text,
-            city_id fk
+            city_id -> city.id
         )
         city (
-            id int pk, 
-            name text
+            id pk, 
+            name text,
+            population bigint
+        ) 
+        river (
+            id pk, 
+            name text,
+            length int
+        ) 
+        river_to_city (
+            river_id -> river.id,
+            city_id -> city.id
         )
-
-        house.street_id >- street.id
-        city.id -< street.city_id  
     %end
 
 ## Python API

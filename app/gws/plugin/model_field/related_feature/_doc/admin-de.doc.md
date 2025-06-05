@@ -5,9 +5,8 @@
 Das Feld `relatedFeature` beschreibt die "child" Seite von einer `1:M` oder "parent-child" Beziehung. In der Konfiguration muss das "parent" Modell, sowie der Fremdschlüssel angegeben werden. Als Widgets für dieses Feld sind `featureSelect` oder `featureSuggest` geeignet.
 
     %dbgraph 'Häuser gehören zu einer Strasse.'
-        house(id int pk, ..., street_id int fk)
-        street(id int pk, ...)
-        house.street_id >- street.id
+        house(id pk, street_id -> street.id)
+        street(id pk)
     %end
 
     models+ {

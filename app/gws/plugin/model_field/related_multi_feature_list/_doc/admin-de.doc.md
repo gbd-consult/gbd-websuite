@@ -7,13 +7,10 @@ Der Typ `relatedMultiFeatureList` beschreibt eine `1:M` Beziehung zwischen mehre
 Die andere Seite der Beziehung muss mit `relatedFeature` konfiguriert werden.
 
     %dbgraph 'Eine Strasse hat mehrere Objekte wie Laternen, Bushaltestellen oder Bäume.'
-        street(id int pk, ...)
-        lamp (id int pk, street_id int fk, ...)
-        stop (id int pk, street_id int fk, ...)
-        tree (id int pk, street_id int fk, ...)
-        street.id -< lamp.street_id
-        street.id -< stop.street_id
-        street.id -< tree.street_id
+        street(id pk)
+        lamp (id pk, street_id -> street.id)
+        stop (id pk, street_id -> street.id)
+        tree (id pk, street_id -> street.id)
     %end
 
     models+ {

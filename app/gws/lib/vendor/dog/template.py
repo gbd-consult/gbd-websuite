@@ -97,97 +97,128 @@ class Engine(jump.Engine):
     }
 
     def box_dbgraph(self, text, caption=''):
-        def span(s, color_name):
-            c = self.DBGRAPH_COLORS[color_name]
-            return f'<FONT COLOR="{c}">{s}</FONT>'
-
-        def bold(s, color_name):
-            c = self.DBGRAPH_COLORS[color_name]
-            return f'<FONT COLOR="{c}"><B>{s}</B></FONT>'
-
-        def parse_row(r):
-            row = r.strip().split()
-            k = row.pop() if row[-1].lower() in {'pk', 'fk'} else ''
-            return [row[0], ' '.join(row[1:]) or ' ', k.lower()]
-
-        def format_row(row, w0, w1):
-            s = ''
-            s += span(row[0], 'text') + ' ' * (w0 - len(row[0]))
-            s += bold(row[1], 'text') + ' ' * (w1 - len(row[1]))
-            if row[2] == 'pk':
-                s += bold('&#x26bf;', 'pk')
-            if row[2] == 'fk':
-                s += bold('&#x26bf;', 'fk')
-            return f'<TR><TD ALIGN="left" PORT="{row[0]}">{s}</TD></TR>'
-
-        def make_table(name, body):
-            rows = [parse_row(r) for r in body.strip().strip(',').split(',')]
-            w0 = 2 + max(len(row[0]) for row in rows)
-            w1 = 2 + max(len(row[1]) for row in rows)
-            tbody = ''.join(format_row(row, w0, w1) for row in rows)
-            thead = bold(name, 'head')
-            c = self.DBGRAPH_COLORS['border']
-            return f"""{name} [ label=<
-                <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6" COLOR="{c}">
-                    <TR><TD>{thead}</TD></TR>
-                    {tbody}
-                </TABLE>
-            >]"""
-
-        def make_arrow(src, arr, dst):
-            src = src.replace('.', ':')
-            dst = dst.replace('.', ':')
-            mid = (src + '_' + dst).replace(':', '_')
-
-            c = self.DBGRAPH_COLORS['arrow']
-            d = 0.3
-
-            s = f"""
-                {mid} [shape=point width=0.001]
-            """
-
-            if arr == '>-':
-                return s + f"""
-                    {src} -> {mid} [color="{c}", dir="both", arrowtail="crow", arrowhead="none", arrowsize="1"]
-                    {mid} -> {dst} [color="{c}", dir="both", arrowtail="none", arrowhead="dot",  arrowsize="{d}"]
-                """
-            if arr == '-<':
-                return s + f"""
-                    {src} -> {mid} [color="{c}", dir="both", arrowtail="dot",  arrowhead="none", arrowsize="{d}"]
-                    {mid} -> {dst} [color="{c}", dir="both", arrowtail="none", arrowhead="crow", arrowsize="1"]
-                """
-            if arr == '--':
-                return s + f"""
-                    {src} -> {mid} [color="{c}", dir="both", arrowtail="dot",  arrowhead="none", arrowsize="{d}"]
-                    {mid} -> {dst} [color="{c}", dir="both", arrowtail="none", arrowhead="dot",  arrowsize="{d}"]
-                """
-
         def go():
-            tables = ''.join(
-                make_table(name, body)
-                for name, body in re.findall(r'(?sx) (\w+) \s* \( (.+?) \)', text))
-
-            arrows = ''.join(
-                make_arrow(src, arr, dst)
-                for src, arr, dst in re.findall(r'(?sx) ([\w.]+) \s* (>-|-<|--) \s* ([\w.]+)', text))
-
-            dot = f"""
-                digraph {{
-                    rankdir="LR"
-                    bgcolor="transparent"
-                    splines="spline"
-                    node [fontname="Menlo, monospace", fontsize=9, shape="plaintext"]
-                    {tables}
-                    {arrows}
-                }}
-            """
-
+            try:
+                dot = _dbgraph_to_dot(text, self.DBGRAPH_COLORS)
+            except Exception:
+                return '<xmp>DBGRAPH SYNTAX ERROR</xmp>'
             return self.box_graph(dot, caption)
 
         return self.b.cached(_hash(text + caption), go)
 
 
 ##
+
+
+def _dbgraph_to_dot(text, colors):
+    nl = '\n'.join
+
+    def span(s, color_name):
+        c = colors[color_name]
+        return f'<FONT COLOR="{c}">{s}</FONT>'
+
+    def bold(s, color_name):
+        c = colors[color_name]
+        return f'<FONT COLOR="{c}"><B>{s}</B></FONT>'
+
+    def make_table(rows, tab_name):
+        w_col = 0
+        tbody = []
+
+        for tab, col, typ, pk, ref_tab, ref_col in rows:
+            if tab != tab_name:
+                continue
+            w_col = max(w_col, len(col))
+
+        for tab, col, typ, pk, ref_tab, ref_col in rows:
+            if tab != tab_name:
+                continue
+            s = ''
+            if pk:
+                s += bold('&#x26bf;', 'pk')
+            elif ref_tab:
+                s += bold('&#x26bf;', 'fk')
+            else:
+                s += bold('&#x25c9;', 'arrow')
+            s += ' ' 
+            s += span((col or ' ').ljust(w_col), 'text')
+            s += ' ' * 2
+            s += bold(typ or ' ', 'text')
+
+            tbody.append(f'<TR><TD ALIGN="left" PORT="{col}">{s}</TD></TR>')
+
+        c = colors['border']
+
+        return f"""{tab_name} [ label=<
+            <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6" COLOR="{c}">
+                <TR><TD> {bold(tab_name, 'head')} </TD></TR>
+                {nl(tbody)}
+            </TABLE>
+        >]"""
+
+    def make_arrow(tab, col, ref_tab, ref_col):
+        src = f'{tab}:{col}'
+        dst = f'{ref_tab}:{ref_col}'
+
+        c = colors['arrow']
+        d = 0.5
+
+        return f"""
+            {src} -> {dst} [
+                color="{c}", 
+                dir="both", 
+                arrowtail="none", 
+                arrowhead="vee", 
+                arrowsize="{d}"
+            ]
+        """
+
+    def parse(text):
+        rows = []
+        
+        for m in re.findall(r'(?xs)(\w+) \s* \( (.*?) \)', text):
+            tab, body = m
+            for r in body.split(','):
+                r = r.strip().split()
+                if not r:
+                    continue
+                col = r.pop(0)
+                typ, pk, ref_tab, ref_col = '', False, '', ''
+                while r:
+                    s = r.pop(0)
+                    if s == 'pk':
+                        pk = True
+                    elif s == '->':
+                        ref_tab, ref_col = r.pop(0).split('.')
+                    else:
+                        typ += s + ' '
+                rows.append((tab, col, typ.strip(), pk, ref_tab, ref_col))
+
+        return rows
+
+    rows = parse(text)
+
+    tables = []
+    arrows = []
+
+    for tab_name in set(r[0] for r in rows):
+        tables.append(make_table(rows, tab_name))
+
+    for tab, col, typ, pk, ref_tab, ref_col in rows:
+        if ref_tab:
+            arrows.append(make_arrow(tab, col, ref_tab, ref_col))
+
+    return f"""
+        digraph {{
+            layout="dot"
+            rankdir="LR"
+            bgcolor="transparent"
+            splines="spline"
+            node [fontname="Menlo, monospace", fontsize=9, shape="plaintext"]
+            {nl(tables)}
+            {nl(arrows)}
+        }}
+    """
 
 
 def _error(exc, source_path, source_lineno, env):
