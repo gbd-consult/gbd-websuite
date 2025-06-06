@@ -135,11 +135,11 @@ def _dbgraph_to_dot(text, colors):
                 continue
             s = ''
             if pk:
-                s += bold('&#x26bf;', 'pk')
+                s += bold('&#x2B25;', 'pk')
             elif ref_tab:
-                s += bold('&#x26bf;', 'fk')
+                s += bold('&#x2B25;', 'fk')
             else:
-                s += bold('&#x25c9;', 'arrow')
+                s += bold('&#x2B25;', 'arrow')
             s += ' ' 
             s += span((col or ' ').ljust(w_col), 'text')
             s += ' ' * 2

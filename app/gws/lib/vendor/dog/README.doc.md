@@ -371,12 +371,12 @@ Draws a graph with [GraphViz](https://graphviz.org). The `dot` command must be i
 
 ### dbgraph
 
-Draws a diagram of a database schema. To describe the schema, use the syntax `table (columns)`, where `columns` is a comma-separated list of column definitions. A column definition consist of a name, an optional type, and an optional "pk" indicator (primary key) or an arrow `->` pointing to another table column (foreign key).
+Draws a diagram of a database schema. To describe the schema, use the syntax `table (columns)`, where `columns` is a comma-separated list of column definitions. A column definition consists of a name, an optional type, and an optional "pk" indicator (primary key) or an arrow `->` pointing to another table column (foreign key).
 
 
 
     %quote xmp    
-    %dbgraph 'Our database layout'
+    %dbgraph 'Our database'
         street (
             id pk,
             name text,
@@ -400,7 +400,7 @@ Draws a diagram of a database schema. To describe the schema, use the syntax `ta
     %end xmp
 
 
-    %dbgraph 'Our database layout'
+    %dbgraph 'Our database'
         street (
             id pk,
             name text,
