@@ -84,7 +84,7 @@ class Config(gws.ConfigWithAccess):
 
     cache: Optional[CacheConfig]
     """Cache configuration."""
-    clientOptions: ClientOptions
+    clientOptions: Optional[ClientOptions]
     """Options for the layer display in the client."""
     cssSelector: str = ''
     """Css selector for feature layers."""
