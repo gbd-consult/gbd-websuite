@@ -8,7 +8,7 @@ import gws.config.util
 import gws.lib.crs
 import gws.lib.extent
 import gws.gis.zoom
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.net
 
 

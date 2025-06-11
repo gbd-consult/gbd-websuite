@@ -130,7 +130,7 @@ def _element_metadata(el: gws.XmlElement, md: gws.Metadata):
 
     md.abstract = el.textof('Abstract')
     md.accessConstraints = el.textof('AccessConstraints')
-    md.attribution = gws.MetadataAttribution(title=el.textof('Attribution/Title'))
+    md.attribution = el.textof('Attribution/Title')
     md.fees = el.textof('Fees')
     md.keywords = el.textlist('Keywords', 'KeywordList', deep=True)
     md.name = el.textof('Name', 'Identifier')

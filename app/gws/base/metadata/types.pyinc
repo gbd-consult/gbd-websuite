@@ -1,0 +1,94 @@
+class MetaLink(Data):
+    about: str
+    description: str
+    format: str
+    formatVersion: str
+    function: str
+    mimeType: str
+    scheme: str
+    title: str
+    type: str
+    url: str
+
+
+class Metadata(Data):
+    name: str
+    title: str
+
+    abstract: str
+    accessConstraints: str
+    accessConstraintsType: str
+    attribution: str
+    attributionUrl: str
+    dateCreated: Optional['datetime.datetime']
+    dateUpdated: Optional['datetime.datetime']
+    fees: str
+    image: str
+    keywords: list[str]
+    license: str
+    licenseUrl: str
+
+    contactAddress: str
+    contactAddressType: str
+    contactArea: str
+    contactCity: str
+    contactCountry: str
+    contactEmail: str
+    contactFax: str
+    contactOrganization: str
+    contactPerson: str
+    contactPhone: str
+    contactPosition: str
+    contactProviderName: str
+    contactProviderSite: str
+    contactRole: str
+    contactUrl: str
+    contactZip: str
+
+    authorityIdentifier: str
+    authorityName: str
+    authorityUrl: str
+
+    metaLinks: list[MetaLink]
+
+    catalogCitationUid: str
+    catalogUid: str
+
+    language: str
+    language3: str
+    languageBib: str
+    languageName: str
+
+    parentIdentifier: str
+    wgsExtent: Optional[Extent]
+    crs: Optional['Crs']
+    temporalBegin: Optional['datetime.datetime']
+    temporalEnd: Optional['datetime.datetime']
+
+    inspireMandatoryKeyword: str
+    inspireDegreeOfConformity: str
+    inspireResourceType: str
+    inspireSpatialDataServiceType: str
+    inspireSpatialScope: str
+    inspireSpatialScopeName: str
+    inspireTheme: str
+
+    inspireThemeNameLocal: str
+    inspireThemeNameEn: str
+
+    isoMaintenanceFrequencyCode: str
+    isoQualityConformanceExplanation: str
+    isoQualityConformanceQualityPass: bool
+    isoQualityConformanceSpecificationDate: str
+    isoQualityConformanceSpecificationTitle: str
+    isoQualityLineageSource: str
+    isoQualityLineageSourceScale: int
+    isoQualityLineageStatement: str
+    isoRestrictionCode: str
+    isoServiceFunction: str
+    isoScope: str
+    isoScopeName: str
+    isoSpatialRepresentationType: str
+    isoTopicCategories: list[str]
+    isoSpatialResolution: str
+    isoTopicCategory: str

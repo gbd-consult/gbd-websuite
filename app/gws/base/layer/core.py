@@ -10,7 +10,7 @@ import gws.lib.crs
 import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.mime
 
 from . import ows
@@ -106,7 +106,7 @@ class Config(gws.ConfigWithAccess):
     """Legend configuration."""
     loadingStrategy: gws.FeatureLoadingStrategy = gws.FeatureLoadingStrategy.all
     """Feature loading strategy."""
-    metadata: Optional[gws.Metadata]
+    metadata: Optional[gws.base.metadata.Config]
     """Layer metadata."""
     models: Optional[list[gws.ext.config.model]]
     """Data models."""
@@ -140,7 +140,7 @@ class Props(gws.Props):
     grid: GridProps
     layers: Optional[list['Props']]
     loadingStrategy: gws.FeatureLoadingStrategy
-    metadata: gws.lib.metadata.Props
+    metadata: gws.base.metadata.Props
     model: Optional[gws.base.model.Props]
     opacity: Optional[float]
     resolutions: Optional[list[float]]
@@ -274,7 +274,7 @@ class Object(gws.Layer):
     def configure_metadata(self):
         p = self.cfg('metadata')
         if p:
-            self.metadata = gws.lib.metadata.from_config(p)
+            self.metadata = gws.base.metadata.from_config(p)
             return True
 
     def configure_models(self):
@@ -380,7 +380,7 @@ class Object(gws.Layer):
             zoomExtent=self.zoomBounds.extent,
             layers=self.layers,
             loadingStrategy=self.loadingStrategy,
-            metadata=gws.lib.metadata.props(self.metadata),
+            metadata=gws.base.metadata.props(self.metadata),
             opacity=self.opacity,
             resolutions=sorted(self.resolutions, reverse=True),
             title=self.title,

@@ -10,7 +10,7 @@ import gws.lib.bounds
 import gws.lib.extent
 import gws.lib.crs
 import gws.gis.source
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.net
 import gws.lib.xmlx
 
@@ -159,23 +159,18 @@ def _metadata(el: gws.XmlElement, md: gws.Metadata):
             )
         )
 
-    md.accessConstraints = []
     for e in el.findall("constraints"):
-        md.accessConstraints.append(
-            gws.MetadataAccessConstraint(
-                type=e.get("type"),
-                text=e.text,
-            )
-        )
+        md.accessConstraints = e.text
+        md.accessConstraintsType = e.get("type")
 
     for e in el.findall("license"):
-        md.license = gws.MetadataLicense(name=e.text)
+        md.license = e.text
         break
 
     e = el.find("extent/temporal")
     if e:
-        md.dateBegin = e.textof("period/start")
-        md.dateEnd = e.textof("period/end")
+        md.temporalBegin = e.textof("period/start")
+        md.temporalEnd = e.textof("period/end")
 
 
 # see QGIS/src/core/layout/qgslayoutitemregistry.h
@@ -338,7 +333,7 @@ def _map_layer_metadata(layer_el) -> gws.Metadata:
     md.abstract = md.abstract or d.get("abstract")
 
     if not md.attribution and d.get("attribution"):
-        md.attribution = gws.MetadataAttribution(title=d.get("attribution"))
+        md.attribution = d.get("attribution")
 
     if not md.keywords:
         md.keywords = layer_el.textlist("keywordList/value")

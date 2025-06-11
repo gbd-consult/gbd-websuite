@@ -1,7 +1,7 @@
 """Tests for the inspire module."""
 
 import gws
-import gws.lib.metadata.inspire as inspire
+import gws.base.metadata.inspire as inspire
 import gws.test.util as u
 
 

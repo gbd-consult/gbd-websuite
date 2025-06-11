@@ -1,7 +1,7 @@
 class ImageFormatConfig(Config):
     """Image format configuration. (added in 8.1)"""
 
-    mimeTypes: list[str]
+    mimeTypes: list[MimeType]
     """Mime types for this format."""
     options: Optional[dict]
     """Image options."""

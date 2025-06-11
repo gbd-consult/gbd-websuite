@@ -7,7 +7,7 @@ import gws.base.model
 import gws.base.search
 import gws.base.template
 import gws.config.util
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.crs
 import gws.gis.source
 import gws.gis.zoom

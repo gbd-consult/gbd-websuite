@@ -14,7 +14,7 @@ class Config(gws.ConfigWithAccess):
 
     mapSize: Optional[gws.UomSizeStr]
     """Map size."""
-    mimeTypes: Optional[list[str]]
+    mimeTypes: Optional[list[gws.MimeType]]
     """Mime types this template can generate."""
     pageSize: Optional[gws.UomSizeStr]
     """Page size."""

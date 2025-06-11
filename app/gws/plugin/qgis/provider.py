@@ -7,7 +7,7 @@ import gws.base.database
 import gws.base.ows.client
 import gws.config.util
 import gws.plugin.postgres.provider
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.net
 import gws.lib.mime
 import gws.lib.osx

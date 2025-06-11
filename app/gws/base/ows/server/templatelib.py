@@ -33,7 +33,7 @@ def ows_service_identification(ta: request.TemplateArgs):
         ('ows:ServiceType', ta.service.protocol),
         ('ows:ServiceTypeVersion', ta.version),
         ('ows:Fees', md.fees) if md.fees else None,
-        ('ows:AccessConstraints', md.accessConstraints[0].title) if md.accessConstraints else None,
+        ('ows:AccessConstraints', md.accessConstraints) if md.accessConstraints else None,
     )
 
 

@@ -1014,13 +1014,103 @@ def props_of(obj: Object, user: 'User', *context) -> Optional['Props']:
 
 
 ################################################################################
+# /lib/mime/types.pyinc
+
+
+MimeType: TypeAlias = str
+"""A mime type or an alias."""
+################################################################################
+
+
+################################################################################
+# /lib/uom/types.pyinc
+
+
+class Uom(Enum):
+    """Unit of measure."""
+
+    mi = 'mi'
+    """statute mile (EPSG 9093)"""
+    us_ch = 'us-ch'
+    """us survey chain (EPSG 9033)"""
+    us_ft = 'us-ft'
+    """us survey foot (EPSG 9003)"""
+    us_in = 'us-in'
+    """us survey inch us_in"""
+    us_mi = 'us-mi'
+    """us survey mile (EPSG 9035)"""
+    us_yd = 'us-yd'
+    """us survey yard us_yd"""
+    cm = 'cm'
+    """centimetre (EPSG 1033)"""
+    ch = 'ch'
+    """chain (EPSG 9097)"""
+    dm = 'dm'
+    """decimeter dm"""
+    deg = 'deg'
+    """degree (EPSG 9102)"""
+    fath = 'fath'
+    """fathom (EPSG 9014)"""
+    ft = 'ft'
+    """foot (EPSG 9002)"""
+    grad = 'grad'
+    """grad (EPSG 9105)"""
+    inch = 'in'
+    """inch in"""
+    km = 'km'
+    """kilometre (EPSG 9036)"""
+    link = 'link'
+    """link (EPSG 9098)"""
+    m = 'm'
+    """metre (EPSG 9001)"""
+    mm = 'mm'
+    """millimetre (EPSG 1025)"""
+    kmi = 'kmi'
+    """nautical mile (EPSG 9030)"""
+    rad = 'rad'
+    """radian (EPSG 9101)"""
+    yd = 'yd'
+    """yard (EPSG 9096)"""
+    px = 'px'
+    """pixel"""
+    pt = 'pt'
+    """point"""
+
+
+UomValue: TypeAlias = tuple[float, Uom]
+"""A value with a unit."""
+
+UomValueStr: TypeAlias = str
+"""A value with a unit like ``5mm``."""
+
+UomPoint: TypeAlias = tuple[float, float, Uom]
+"""A Point with a unit."""
+
+UomPointStr: TypeAlias = list[str]
+"""A Point with a unit like ``["1mm", "2mm"]``."""
+
+UomSize: TypeAlias = tuple[float, float, Uom]
+"""A Size with a unit."""
+
+UomSizeStr: TypeAlias = list[str]
+"""A Size with a unit like ``["1mm", "2mm"]``."""
+
+UomExtent: TypeAlias = tuple[float, float, float, float, Uom]
+"""Extent with a unit."""
+
+UomExtentStr: TypeAlias = list[str]
+"""Extent with a unit like ``["1mm", "2mm", "3mm", "4mm"]``."""
+################################################################################
+
+
+################################################################################
 # /lib/image/types.pyinc
 
 
 class ImageFormatConfig(Config):
     """Image format configuration. (added in 8.1)"""
 
-    mimeTypes: list[str]
+    mimeTypes: list[MimeType]
     """Mime types for this format."""
     options: Optional[dict]
     """Image options."""
@@ -1335,128 +1425,6 @@ class NumberFormatter:
 
 
 ################################################################################
-# /lib/metadata/types.pyinc
-
-
-class MetadataLink(Data):
-    """Link metadata."""
-
-    about: Optional[str]
-    description: Optional[str]
-    format: Optional[str]
-    formatVersion: Optional[str]
-    function: Optional[str]
-    mimeType: Optional[str]
-    scheme: Optional[str]
-    title: Optional[str]
-    type: Optional[str]
-    url: Optional[Url]
-
-
-class MetadataAccessConstraint(Data):
-    """Metadata AccessConstraint."""
-
-    title: Optional[str]
-    type: Optional[str]
-
-
-class MetadataLicense(Data):
-    """Metadata License."""
-
-    title: Optional[str]
-    url: Optional[Url]
-
-
-class MetadataAttribution(Data):
-    """Metadata Attribution."""
-
-    title: Optional[str]
-    url: Optional[Url]
-
-
-class Metadata(Data):
-    """Metadata."""
-
-    abstract: Optional[str]
-    accessConstraints: Optional[list[MetadataAccessConstraint]]
-    attribution: Optional[MetadataAttribution]
-    authorityIdentifier: Optional[str]
-    authorityName: Optional[str]
-    authorityUrl: Optional[str]
-    catalogCitationUid: Optional[str]
-    catalogUid: Optional[str]
-    fees: Optional[str]
-    image: Optional[str]
-    keywords: Optional[list[str]]
-    language3: Optional[str]
-    languageBib: Optional[str]
-    language: Optional[str]
-    languageName: Optional[str]
-    license: Optional[MetadataLicense]
-    name: Optional[str]
-    parentIdentifier: Optional[str]
-    title: Optional[str]
-
-    contactAddress: Optional[str]
-    contactAddressType: Optional[str]
-    contactArea: Optional[str]
-    contactCity: Optional[str]
-    contactCountry: Optional[str]
-    contactEmail: Optional[str]
-    contactFax: Optional[str]
-    contactOrganization: Optional[str]
-    contactPerson: Optional[str]
-    contactPhone: Optional[str]
-    contactPosition: Optional[str]
-    contactProviderName: Optional[str]
-    contactProviderSite: Optional[str]
-    contactRole: Optional[str]
-    contactUrl: Optional[str]
-    contactZip: Optional[str]
-
-    dateBegin: Optional[str]
-    dateCreated: Optional[str]
-    dateEnd: Optional[str]
-    dateUpdated: Optional[str]
-
-    inspireKeywords: Optional[list[str]]
-    inspireMandatoryKeyword: Optional[str]
-    inspireDegreeOfConformity: Optional[str]
-    inspireResourceType: Optional[str]
-    inspireSpatialDataServiceType: Optional[str]
-    inspireSpatialScope: Optional[str]
-    inspireSpatialScopeName: Optional[str]
-    inspireTheme: Optional[str]
-    inspireThemeName: Optional[str]
-    inspireThemeNameEn: Optional[str]
-
-    isoMaintenanceFrequencyCode: Optional[str]
-    isoQualityConformanceExplanation: Optional[str]
-    isoQualityConformanceQualityPass: Optional[bool]
-    isoQualityConformanceSpecificationDate: Optional[str]
-    isoQualityConformanceSpecificationTitle: Optional[str]
-    isoQualityLineageSource: Optional[str]
-    isoQualityLineageSourceScale: Optional[int]
-    isoQualityLineageStatement: Optional[str]
-    isoRestrictionCode: Optional[str]
-    isoServiceFunction: Optional[str]
-    isoScope: Optional[str]
-    isoScopeName: Optional[str]
-    isoSpatialRepresentationType: Optional[str]
-    isoTopicCategories: Optional[list[str]]
-    isoSpatialResolution: Optional[str]
-    isoTopicCategory: Optional[str]
-
-    wgsExtent: Optional[Extent]
-    crsName: Optional['CrsName']
-
-    metaLinks: Optional[list[MetadataLink]]
-    serviceMetaLink: Optional[MetadataLink]
-    extraLinks: Optional[list[MetadataLink]]
-################################################################################
-
-
-################################################################################
 # /lib/style/types.pyinc
 
 
@@ -1720,87 +1688,6 @@ class XmlElement(Iterable):
             fold_tags: If true, folds nested tag names into ``parent/child`` names.
             remove_namespaces: If true, removes all namespaces.
         """
-################################################################################
-
-
-################################################################################
-# /lib/uom/types.pyinc
-
-
-class Uom(Enum):
-    """Unit of measure."""
-
-    mi = 'mi'
-    """statute mile (EPSG 9093)"""
-    us_ch = 'us-ch'
-    """us survey chain (EPSG 9033)"""
-    us_ft = 'us-ft'
-    """us survey foot (EPSG 9003)"""
-    us_in = 'us-in'
-    """us survey inch us_in"""
-    us_mi = 'us-mi'
-    """us survey mile (EPSG 9035)"""
-    us_yd = 'us-yd'
-    """us survey yard us_yd"""
-    cm = 'cm'
-    """centimetre (EPSG 1033)"""
-    ch = 'ch'
-    """chain (EPSG 9097)"""
-    dm = 'dm'
-    """decimeter dm"""
-    deg = 'deg'
-    """degree (EPSG 9102)"""
-    fath = 'fath'
-    """fathom (EPSG 9014)"""
-    ft = 'ft'
-    """foot (EPSG 9002)"""
-    grad = 'grad'
-    """grad (EPSG 9105)"""
-    inch = 'in'
-    """inch in"""
-    km = 'km'
-    """kilometre (EPSG 9036)"""
-    link = 'link'
-    """link (EPSG 9098)"""
-    m = 'm'
-    """metre (EPSG 9001)"""
-    mm = 'mm'
-    """millimetre (EPSG 1025)"""
-    kmi = 'kmi'
-    """nautical mile (EPSG 9030)"""
-    rad = 'rad'
-    """radian (EPSG 9101)"""
-    yd = 'yd'
-    """yard (EPSG 9096)"""
-    px = 'px'
-    """pixel"""
-    pt = 'pt'
-    """point"""
-
-
-UomValue: TypeAlias = tuple[float, Uom]
-"""A value with a unit."""
-
-UomValueStr: TypeAlias = str
-"""A value with a unit like ``5mm``."""
-
-UomPoint: TypeAlias = tuple[float, float, Uom]
-"""A Point with a unit."""
-
-UomPointStr: TypeAlias = list[str]
-"""A Point with a unit like ``["1mm", "2mm"]``."""
-
-UomSize: TypeAlias = tuple[float, float, Uom]
-"""A Size with a unit."""
-
-UomSizeStr: TypeAlias = list[str]
-"""A Size with a unit like ``["1mm", "2mm"]``."""
-
-UomExtent: TypeAlias = tuple[float, float, float, float, Uom]
-"""Extent with a unit."""
-
-UomExtentStr: TypeAlias = list[str]
-"""Extent with a unit like ``["1mm", "2mm", "3mm", "4mm"]``."""
 ################################################################################
 
 
@@ -2214,6 +2101,107 @@ class ServerMonitor(Node):
         """Start the monitor."""
 ################################################################################
 
+
+
+################################################################################
+# /base/metadata/types.pyinc
+
+
+class MetaLink(Data):
+    about: str
+    description: str
+    format: str
+    formatVersion: str
+    function: str
+    mimeType: str
+    scheme: str
+    title: str
+    type: str
+    url: str
+
+
+class Metadata(Data):
+    name: str
+    title: str
+
+    abstract: str
+    accessConstraints: str
+    accessConstraintsType: str
+    attribution: str
+    attributionUrl: str
+    dateCreated: Optional['datetime.datetime']
+    dateUpdated: Optional['datetime.datetime']
+    fees: str
+    image: str
+    keywords: list[str]
+    license: str
+    licenseUrl: str
+
+    contactAddress: str
+    contactAddressType: str
+    contactArea: str
+    contactCity: str
+    contactCountry: str
+    contactEmail: str
+    contactFax: str
+    contactOrganization: str
+    contactPerson: str
+    contactPhone: str
+    contactPosition: str
+    contactProviderName: str
+    contactProviderSite: str
+    contactRole: str
+    contactUrl: str
+    contactZip: str
+
+    authorityIdentifier: str
+    authorityName: str
+    authorityUrl: str
+
+    metaLinks: list[MetaLink]
+
+    catalogCitationUid: str
+    catalogUid: str
+
+    language: str
+    language3: str
+    languageBib: str
+    languageName: str
+
+    parentIdentifier: str
+    wgsExtent: Optional[Extent]
+    crs: Optional['Crs']
+    temporalBegin: Optional['datetime.datetime']
+    temporalEnd: Optional['datetime.datetime']
+
+    inspireMandatoryKeyword: str
+    inspireDegreeOfConformity: str
+    inspireResourceType: str
+    inspireSpatialDataServiceType: str
+    inspireSpatialScope: str
+    inspireSpatialScopeName: str
+    inspireTheme: str
+
+    inspireThemeNameLocal: str
+    inspireThemeNameEn: str
+
+    isoMaintenanceFrequencyCode: str
+    isoQualityConformanceExplanation: str
+    isoQualityConformanceQualityPass: bool
+    isoQualityConformanceSpecificationDate: str
+    isoQualityConformanceSpecificationTitle: str
+    isoQualityLineageSource: str
+    isoQualityLineageSourceScale: int
+    isoQualityLineageStatement: str
+    isoRestrictionCode: str
+    isoServiceFunction: str
+    isoScope: str
+    isoScopeName: str
+    isoSpatialRepresentationType: str
+    isoTopicCategories: list[str]
+    isoSpatialResolution: str
+    isoTopicCategory: str
+################################################################################
 
 
 ################################################################################

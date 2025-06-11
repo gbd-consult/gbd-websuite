@@ -60,12 +60,12 @@ u.to_data_object = to_data_object
 
 # @include core/_tree.pyinc
 
+# @include lib/mime/types.pyinc
+# @include lib/uom/types.pyinc
 # @include lib/image/types.pyinc
 # @include lib/intl/types.pyinc
-# @include lib/metadata/types.pyinc
 # @include lib/style/types.pyinc
 # @include lib/xmlx/types.pyinc
-# @include lib/uom/types.pyinc
 
 # @include lib/crs/types.pyinc
 # @include gis/render/types.pyinc
@@ -74,6 +74,7 @@ u.to_data_object = to_data_object
 # @include config/types.pyinc
 # @include server/types.pyinc
 
+# @include base/metadata/types.pyinc
 # @include base/feature/types.pyinc
 # @include base/shape/types.pyinc
 

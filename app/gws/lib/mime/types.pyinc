@@ -1,0 +1,3 @@
+
+MimeType: TypeAlias = str
+"""A mime type or an alias."""

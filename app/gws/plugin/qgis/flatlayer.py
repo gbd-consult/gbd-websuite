@@ -8,7 +8,7 @@ import gws.lib.bounds
 import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.osx
 
 from . import provider

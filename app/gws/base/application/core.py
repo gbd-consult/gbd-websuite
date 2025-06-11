@@ -21,7 +21,7 @@ import gws.gis.cache
 import gws.gis.mpx.config
 import gws.lib.font
 import gws.lib.importer
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.osx
 import gws.server.manager
 import gws.server.monitor
@@ -102,7 +102,7 @@ class Config(gws.ConfigWithAccess):
     """Helpers configurations."""
     locales: Optional[list[str]]
     """Default locales for all projects."""
-    metadata: Optional[gws.Metadata]
+    metadata: Optional[gws.base.metadata.Config]
     """Application metadata."""
     models: Optional[list[gws.ext.config.model]]
     """Global data models."""
@@ -165,7 +165,7 @@ class Object(gws.Application):
         self.monitor = self.create_child(gws.server.monitor.Object, self.serverMgr.cfg('monitor'))
 
         self.localeUids = self.cfg('locales') or _DEFAULT_LOCALE
-        self.metadata = gws.lib.metadata.from_config(self.cfg('metadata'))
+        self.metadata = gws.base.metadata.from_config(self.cfg('metadata'))
 
         self.middlewareMgr = self.create_child(gws.base.application.middleware.Object)
 

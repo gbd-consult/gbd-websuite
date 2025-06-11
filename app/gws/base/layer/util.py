@@ -11,7 +11,7 @@ import gws.gis.mpx
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.image
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.style
 import gws.lib.svg
 

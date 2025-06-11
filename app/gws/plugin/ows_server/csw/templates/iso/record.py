@@ -2,7 +2,7 @@
 
 
 import gws.base.ows.server as server
-import gws.lib.xmlx
+import gws.lib.intl
 
 ML_GMX_CODELISTS = 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml'
 
@@ -141,15 +141,15 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
         #         md.bounding_polygon_element
         #     )
 
-        if md.dateBegin:
+        if md.temporalBegin:
             yield (
                 'gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent gml:TimePeriod',
-                ('gml:beginPosition', md.dateBegin),
-                ('gml:endPosition', md.dateEnd),
+                ('gml:beginPosition', md.temporalBegin),
+                ('gml:endPosition', md.temporalEnd),
             )
 
     def distributionInfo():
-        for link in md.extraLinks:
+        for link in md.metaLinks:
             if link.format:
                 yield (
                     'gmd:distributionFormat/gmd:MD_Format',
@@ -157,7 +157,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
                     ('gmd:version/gco:CharacterString', link.formatVersion)
                 )
 
-        for link in md.extraLinks:
+        for link in md.metaLinks:
             yield (
                 'gmd:transferOptions/gmd:MD_DigitalTransferOptions',
                 (

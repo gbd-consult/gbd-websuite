@@ -11,7 +11,7 @@ import gws.lib.crs
 import gws.lib.datetimex
 import gws.lib.extent
 import gws.lib.image
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.mime
 import gws.lib.xmlx
 from . import core, error, request
@@ -28,7 +28,7 @@ class Config(gws.ConfigWithAccess):
     """Supported image formats. (added in 8.1)"""
     maxFeatureCount: int = 10000
     """Max number of features per page. (added in 8.1)"""
-    metadata: Optional[gws.Metadata]
+    metadata: Optional[gws.base.metadata.Config]
     """Service metadata."""
     rootLayerUid: str = ''
     """Root layer uid."""
@@ -126,11 +126,10 @@ class Object(gws.OwsService):
         return sorted(fs)
 
     def configure_metadata(self):
-        self.metadata = gws.lib.metadata.merge(
-            gws.Metadata(),
+        self.metadata = gws.base.metadata.from_args(
             self.project.metadata if self.project else None,
             self.root.app.metadata,
-            gws.lib.metadata.from_config(self.cfg('metadata')),
+            self.cfg('metadata'),
         )
         return True
 

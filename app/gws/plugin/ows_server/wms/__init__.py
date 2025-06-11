@@ -24,7 +24,7 @@ import gws.lib.extent
 import gws.lib.crs
 import gws.gis.render
 import gws.lib.image
-import gws.lib.metadata
+import gws.base.metadata
 import gws.lib.mime
 import gws.lib.uom
 
@@ -89,7 +89,7 @@ class Object(server.service.Object):
 
     def configure_metadata(self):
         super().configure_metadata()
-        self.metadata = gws.lib.metadata.merge(_DEFAULT_METADATA, self.metadata)
+        self.metadata = gws.base.metadata.from_args(_DEFAULT_METADATA, self.metadata)
 
     def configure_operations(self):
         self.supportedOperations = [

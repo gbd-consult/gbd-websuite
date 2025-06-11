@@ -7,7 +7,7 @@ import gws.base.map
 import gws.base.printer
 import gws.base.template
 import gws.base.web
-import gws.lib.metadata
+import gws.base.metadata
 
 gws.ext.new.project('default')
 
@@ -29,7 +29,7 @@ class Config(gws.ConfigWithAccess):
     """Project locales."""
     map: Optional[gws.base.map.Config]
     """Map configuration."""
-    metadata: Optional[gws.Metadata]
+    metadata: Optional[gws.base.metadata.Config]
     """Project metadata."""
     models: Optional[list[gws.ext.config.model]]
     """Data models."""
@@ -52,7 +52,7 @@ class Props(gws.Props):
     locales: list[str]
     map: gws.ext.props.map
     models: list[gws.ext.props.model]
-    metadata: gws.lib.metadata.Props
+    metadata: gws.base.metadata.Props
     overviewMap: gws.ext.props.map
     printers: list[gws.base.printer.Props]
     title: str
@@ -66,9 +66,10 @@ class Object(gws.Project):
     def configure(self):
         gws.log.info(f'configuring project {self.uid!r}')
 
-        self.metadata = gws.lib.metadata.merge(
+        self.metadata = gws.base.metadata.from_args(
             self.root.app.metadata,
-            gws.lib.metadata.from_config(self.cfg('metadata')))
+            self.cfg('metadata'),
+        )
 
         title = self.cfg('title') or self.metadata.get('title') or self.cfg('uid')
         # title at the top level config preferred to metadata
@@ -105,7 +106,7 @@ class Object(gws.Project):
             client=self.client or self.root.app.client,
             description=desc.content if desc else '',
             map=self.map,
-            metadata=gws.lib.metadata.props(self.metadata),
+            metadata=gws.base.metadata.props(self.metadata),
             models=[],
             overviewMap=self.overviewMap,
             printers=printers,

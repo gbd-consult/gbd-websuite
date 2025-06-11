@@ -62,7 +62,7 @@ def service_meta(ta):
         yield 'Fees', md.fees
 
     if md.accessConstraints:
-        yield 'AccessConstraints', md.accessConstraints[0].title
+        yield 'AccessConstraints', md.accessConstraints
 
     s = cast(gws.plugin.ows_server.wms.Object, ta.service).layerLimit
     if s:
