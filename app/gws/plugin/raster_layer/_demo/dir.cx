@@ -22,7 +22,7 @@ map.layers+ {
     title "DOP"
     display "tile"
     provider { type "file" pathPattern "/gws-extern/dop/*.jp2" }
-    metadata.attribution.title "© Geobasis NRW"
+    metadata.attribution "© Geobasis NRW"
 }
 
 {demo_osm_background}

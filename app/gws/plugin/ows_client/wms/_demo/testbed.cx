@@ -19,7 +19,7 @@ map.layers+ {
     type "wms"
     title "NRW ALKIS"
     provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
-    metadata.attribution.title "© Geobasis NRW"
+    metadata.attribution "© Geobasis NRW"
     clientOptions.hidden true
 }
 
@@ -27,7 +27,7 @@ map.layers+ {
     type "wms"
     title "WMS HE Karten"
     provider.url "https://www.gds-srv.hessen.de/cgi-bin/lika-services/ogc-free-maps.ows"
-    metadata.attribution.title "© Hessische Verwaltung für Bodenmanagement und Geoinformation"
+    metadata.attribution "© Hessische Verwaltung für Bodenmanagement und Geoinformation"
     clientOptions.hidden true
 }
 
@@ -35,7 +35,7 @@ map.layers+ {
     type "wms"
     title "BKG Verwaltungsgebiete"
     provider.url "https://sgx.geodatenzentrum.de/wms_vg5000_0101"
-    metadata.attribution.title "© GeoBasis-DE / BKG (2024)"
+    metadata.attribution "© GeoBasis-DE / BKG (2024)"
     excludeLayers.titles [ "Verwaltungsgemeinschaft"  "Gemeinde" ]
 }
 

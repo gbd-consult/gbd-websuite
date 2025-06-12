@@ -20,7 +20,7 @@ map.layers+ {
     title "Countries (Natural Earth)"
     type "postgres"
     tableName "public.ne_10m_admin_0_countries"
-    metadata.attribution.title "Made with Natural Earth"
+    metadata.attribution "Made with Natural Earth"
     cssSelector ".ne_countries"
 }
 
@@ -30,5 +30,5 @@ map.layers+ {
     provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
     display "tile"
     withCache true
-    metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
 }

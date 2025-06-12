@@ -2107,7 +2107,7 @@ class ServerMonitor(Node):
 # /base/metadata/types.pyinc
 
 
-class MetaLink(Data):
+class MetadataLink(Data):
     about: str
     description: str
     format: str
@@ -2158,7 +2158,7 @@ class Metadata(Data):
     authorityName: str
     authorityUrl: str
 
-    metaLinks: list[MetaLink]
+    metaLinks: list[MetadataLink]
 
     catalogCitationUid: str
     catalogUid: str

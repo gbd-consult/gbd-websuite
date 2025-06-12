@@ -23,7 +23,7 @@ map.layers+ {
         type "file"
         paths [ "/gws-extern/natural_earth/NE1_HR_LC_SR_W_DR.tif" ]
     }
-    metadata.attribution.title "© 2009 - 2025. Natural Earth"
+    metadata.attribution "© 2009 - 2025. Natural Earth"
 }
 
 map.layers+ {
@@ -40,7 +40,7 @@ map.layers+ {
         "BANDS=3"
         "GAMMA=0.7"
     ]
-    metadata.attribution.title "© 2009 - 2025. Natural Earth"
+    metadata.attribution "© 2009 - 2025. Natural Earth"
 }
 
 {demo_osm_background}

@@ -90,10 +90,8 @@ map.layers+ {
     provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
     sourceLayers.names [ "adv_alkis_flurstuecke" ]
     zoom { maxScale 5000 }
-    metadata.attribution {
-        title "© Geobasis NRW"
-        url "http://www.geobasis.nrw.de"
-    }
+    metadata.attribution "© Geobasis NRW"
+    metadata.attributionUrl "http://www.geobasis.nrw.de"
 }
 
 
@@ -113,8 +111,6 @@ map.layers+ {
     provider.url "https://www.wms.nrw.de/geobasis/wms_nw_dop"
     sourceLayers.names [ "nw_dop_rgb" ]
     zoom { maxScale 5000 }
-    metadata.attribution {
-        title "© Geobasis NRW"
-        url "http://www.geobasis.nrw.de"
-    }
+    metadata.attribution "© Geobasis NRW"
+    metadata.attributionUrl "http://www.geobasis.nrw.de"
 }

@@ -10,15 +10,17 @@
         opacity 0.3
 @#        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
         provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
-        metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
     }
 @end
 
 @let demo_metadata
-    attribution { title "(c) Geoinformatikbüro Dassau GmbH" url "https://gbd-websuite.de" }
+    attribution "(c) Geoinformatikbüro Dassau GmbH" 
+    attributionUrl "https://gbd-websuite.de"
     fees "free"
     language "de"
-    license { title "AGPL" url "https://www.gnu.org/licenses/agpl-3.0.html" }
+    license "AGPL" 
+    licenseUrl "https://www.gnu.org/licenses/agpl-3.0.html"
     contactAddress "Rethelstrasse 153"
     contactAddressType "postal"
     contactArea "NRW"
@@ -36,9 +38,9 @@
     contactUrl "https://www.gbd-consult.de"
     contactZip "40237"
 
-    dateBegin "2023-01-02"
+    temporalBegin "2023-01-02"
+    temporalEnd "2023-01-02"
     dateCreated "2023-01-02"
-    dateEnd "2023-01-02"
     dateUpdated "2023-01-02"
 @end
 

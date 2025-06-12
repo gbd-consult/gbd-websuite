@@ -234,6 +234,8 @@ def _new() -> gws.Metadata:
 
 def _update(md: gws.Metadata, *args):
     for d in args:
+        if not d:
+            continue
         if isinstance(d, gws.Data):
             d = gws.u.to_dict(d)
 
