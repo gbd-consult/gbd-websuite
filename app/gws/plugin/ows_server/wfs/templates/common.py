@@ -1,37 +1,31 @@
 import gws.base.ows.server as server
 import gws.lib.xmlx as xmlx
-import gws.lib.datetimex
+import gws.lib.datetimex as dtx
 import gws.lib.gml
 
 
 def feature_collection(ta: server.TemplateArgs):
     return (
-        'wfs:FeatureCollection', feature_collection_attributes(ta), [
+        'wfs:FeatureCollection',
+        feature_collection_attributes(ta),
+        [
             (
                 f'wfs:member/{m.layerCaps.featureNameQ if m.layerCaps else "wfs:feature"}',
-                {'gml:id': m.feature.uid()},
-                feature_collection_member(ta, m)
+                {'gml:id': format_uid(ta, m.feature.uid())},
+                feature_collection_member(ta, m),
             )
             for m in ta.featureCollection.members
-        ]
+        ],
     )
 
 
 def value_collection(ta: server.TemplateArgs):
-    return (
-        'wfs:ValueCollection', feature_collection_attributes(ta), [
-            (
-                'wfs:member',
-                format_value(ta, val)
-            )
-            for val in ta.featureCollection.values
-        ]
-    )
+    return ('wfs:ValueCollection', feature_collection_attributes(ta), [('wfs:member', format_value(ta, val)) for val in ta.featureCollection.values])
 
 
 def feature_collection_attributes(ta):
     return {
-        'timeStamp': ta.featureCollection.timestamp,
+        'timeStamp': dtx.to_short_iso_string(ta.featureCollection.timestamp),
         'numberMatched': ta.featureCollection.numMatched,
         'numberReturned': ta.featureCollection.numReturned,
     }
@@ -44,17 +38,21 @@ def feature_collection_member(ta: server.TemplateArgs, m: server.FeatureCollecti
         yield name, format_value(ta, val)
 
 
+def format_uid(ta: server.TemplateArgs, uid):
+    if not uid:
+        return '_'
+    s = str(uid)
+    if s.isdigit():
+        return '_' + s
+    return s
+
+
 def format_value(ta, val):
     if val is None:
         return ''
-    if gws.lib.datetimex.is_date(val):
-        return gws.lib.datetimex.to_iso_string(val)
+    if dtx.is_date(val):
+        return dtx.to_short_iso_string(val)
     if isinstance(val, gws.Shape):
         # NB Qgis wants inline gml xmlns for adhoc schemas
-        return gws.lib.gml.shape_to_element(
-            val,
-            version=ta.gmlVersion,
-            always_xy=ta.sr.alwaysXY,
-            with_inline_xmlns=True
-        )
+        return gws.lib.gml.shape_to_element(val, version=ta.gmlVersion, always_xy=ta.sr.alwaysXY, with_inline_xmlns=True)
     return str(val)

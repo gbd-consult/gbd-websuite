@@ -1,5 +1,5 @@
 import gws
-import gws.spec
+import gws.spec.runtime
 
 
 def prepare_cli_action(
@@ -15,10 +15,10 @@ def prepare_cli_action(
 
     try:
         request = root.specs.read(params, desc.tArg, options=read_options)
-    except gws.spec.ReadError as exc:
+    except gws.spec.runtime.ReadError as exc:
         raise gws.BadRequestError(f'read error: {exc!r}') from exc
 
-    cls = root.specs.get_class(desc.tOwner)
+    cls = gws.u.require(root.specs.get_class(desc.tOwner))
     action = cls()
 
     fn = getattr(action, desc.methodName)
@@ -46,8 +46,8 @@ class Object(gws.ActionManager):
             raise gws.NotFoundError(f'{command_category}.{command_name} not found')
 
         try:
-            request = self.root.specs.read(params, desc.tArg, options=read_options)
-        except gws.spec.ReadError as exc:
+            request = gws.u.require(self.root.specs.read(params, desc.tArg, options=read_options))
+        except gws.spec.runtime.ReadError as exc:
             raise gws.BadRequestError(f'read error: {exc!r}') from exc
 
         action = None

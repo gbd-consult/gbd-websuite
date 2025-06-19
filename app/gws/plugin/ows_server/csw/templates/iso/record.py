@@ -1,8 +1,9 @@
 """"CSW Record template (gmd:MD_Metadata, ISO)."""
 
 
+import gws
 import gws.base.ows.server as server
-import gws.lib.intl
+import gws.lib.datetimex as dtx
 
 ML_GMX_CODELISTS = 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml'
 
@@ -18,7 +19,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
     def w_date(d, typ):
         return (
             'gmd:date/gmd:CI_Date',
-            ('gmd:date/gco:Date', d),
+            ('gmd:date/gco:Date', dtx.to_iso_date_string(d)),
             w_code('dateType', 'CI_DateTypeCode', typ)
         )
 
@@ -68,8 +69,8 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
         yield (
             'gmd:citation/gmd:CI_Citation',
             ('gmd:title/gco:CharacterString', md.title),
-            w_date('md.dateCreated', 'publication'),
-            w_date('md.dateUpdated', 'revision'),
+            w_date(md.dateCreated, 'publication'),
+            w_date(md.dateUpdated, 'revision'),
             ('gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString', md.catalogCitationUid)
         )
 
@@ -120,10 +121,11 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
 
         yield w_code('spatialRepresentationType', 'MD_SpatialRepresentationTypeCode', md.isoSpatialRepresentationType)
 
-        yield (
-            'gmd:spatialResolution/gmd:MD_Resolution/gmd:equivalentScale/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer',
-            md.isoSpatialResolution
-        )
+        if md.isoSpatialResolution:
+            yield (
+                'gmd:spatialResolution/gmd:MD_Resolution/gmd:equivalentScale/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer',
+                md.isoSpatialResolution
+            )
 
         yield w_lang()
         yield w_code('characterSet', 'MD_CharacterSetCode', 'utf8')
@@ -143,9 +145,9 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
 
         if md.temporalBegin:
             yield (
-                'gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent gml:TimePeriod',
-                ('gml:beginPosition', md.temporalBegin),
-                ('gml:endPosition', md.temporalEnd),
+                'gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod',
+                ('gml:beginPosition', dtx.to_short_iso_string(md.temporalBegin)),
+                ('gml:endPosition', dtx.to_short_iso_string(md.temporalEnd)),
             )
 
     def distributionInfo():
@@ -207,7 +209,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
 
         yield 'gmd:contact', contact()
 
-        yield 'gmd:dateStamp/gco:Date', md.dateUpdated
+        yield 'gmd:dateStamp/gco:Date', dtx.to_iso_date_string(md.dateUpdated)
 
         yield 'gmd:metadataStandardName/gco:CharacterString', 'ISO19115'
         yield 'gmd:metadataStandardVersion/gco:CharacterString', '2003/Cor.1:2006'

@@ -91,4 +91,3 @@ class Metadata(Data):
     isoSpatialRepresentationType: str
     isoTopicCategories: list[str]
     isoSpatialResolution: str
-    isoTopicCategory: str

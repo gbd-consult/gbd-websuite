@@ -2,3 +2,12 @@ actions+ {
     type "ows"
     permissions.read "allow all"
 }
+
+owsServices+ {
+    type "csw"
+    uid "csw_service"
+    access "allow all"
+    metadata {
+        {demo_metadata}
+    }
+}

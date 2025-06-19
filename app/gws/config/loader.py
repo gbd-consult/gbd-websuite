@@ -127,7 +127,7 @@ class Object:
 
     def _create_config(self):
         if self.rawConfig:
-            return parser.parse_raw_app(self.rawConfig, '', self.ctx)
+            return parser.parse_app_dict(self.rawConfig, '', self.ctx)
         if not self.configPath:
             self._error(gws.ConfigurationError('no configuration file found'))
             return

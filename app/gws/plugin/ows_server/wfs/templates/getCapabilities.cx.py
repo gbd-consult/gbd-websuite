@@ -1,13 +1,19 @@
-"""WFS GetCapabilities template.
-"""
+"""WFS GetCapabilities template."""
 
 import gws
+import gws.lib.xmlx
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 
 
 def main(ta: server.TemplateArgs):
-    return tpl.to_xml_response(ta, ('WFS_Capabilities', doc(ta)))
+    return tpl.to_xml_response(
+        ta,
+        ('WFS_Capabilities', doc(ta)),
+        extra_namespaces=[
+            gws.lib.xmlx.namespace.require('ows11'),
+        ],
+    )
 
 
 def doc(ta: server.TemplateArgs):
@@ -35,7 +41,7 @@ def operations(ta: server.TemplateArgs):
             'ows:Operation',
             {'name': op.verb},
             tpl.ows_service_url(ta),
-            operation_params(ta, op)
+            operation_params(ta, op),
         )
 
     yield 'ows:Parameter', {'name': 'version'}, ('ows:AllowedValues', versions)
@@ -43,7 +49,6 @@ def operations(ta: server.TemplateArgs):
     yield (
         constraint('ows:ImplementsBasicWFS', 'TRUE'),
         constraint('ows:KVPEncoding', 'TRUE'),
-
         constraint('ows:ImplementsTransactionalWFS', 'FALSE'),
         constraint('ows:ImplementsLockingWFS', 'FALSE'),
         constraint('ows:XMLEncoding', 'FALSE'),
@@ -56,11 +61,17 @@ def operations(ta: server.TemplateArgs):
         constraint('ows:ImplementsTemporalJoins', 'FALSE'),
         constraint('ows:ImplementsFeatureVersioning', 'FALSE'),
         constraint('ows:ManageStoredQueries', 'FALSE'),
-
         constraint('ows:CountDefault', ta.service.maxFeatureCount),
     )
 
-    yield 'ows:Constraint', {'name': 'QueryExpressions'}, ('ows:AllowedValues', tpl.ows_value('wfs:Query'))
+    yield (
+        'ows:Constraint',
+        {'name': 'QueryExpressions'},
+        (
+            'ows:AllowedValues',
+            tpl.ows_value('wfs:Query'),
+        ),
+    )
 
     if ta.service.withInspireMeta:
         yield 'ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)
@@ -77,7 +88,15 @@ def operation_params(ta, op):
         yield 'ows:Parameter', {'name': 'outputFormat'}, ('ows:AllowedValues', formats)
     if op.verb == gws.OwsVerb.GetFeature:
         yield 'ows:Parameter', {'name': 'outputFormat'}, ('ows:AllowedValues', formats)
-        yield 'ows:Parameter', {'name': 'resultType'}, ('ows:AllowedValues', tpl.ows_value('results'), tpl.ows_value('hits'))
+        yield (
+            'ows:Parameter',
+            {'name': 'resultType'},
+            (
+                'ows:AllowedValues',
+                tpl.ows_value('results'),
+                tpl.ows_value('hits'),
+            ),
+        )
 
 
 def feature_type_list(ta: server.TemplateArgs):
@@ -109,7 +128,6 @@ def filters(ta: server.TemplateArgs):
         constraint('fes:ImplementsResourceId', 'TRUE'),
         constraint('fes:ImplementsMinStandardFilter', 'TRUE'),
         constraint('fes:ImplementsMinTemporalFilter', 'TRUE'),
-
         constraint('fes:ImplementsExtendedOperators', 'FALSE'),
         constraint('fes:ImplementsFunctions', 'FALSE'),
         constraint('fes:ImplementsMinimumXPath', 'FALSE'),

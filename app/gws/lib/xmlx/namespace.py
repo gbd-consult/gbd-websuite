@@ -281,14 +281,14 @@ xs               |       |   |         | www.w3.org/2001/XMLSchema              
 xsd              |       |   |         | www.w3.org/2001/XMLSchema                     |                                                                                                              
 xsi              |       |   |         | www.w3.org/2001/XMLSchema-instance            |                                                                                                              
 
-csw              |       |   | 2.0.1   | www.opengis.net/cat/csw                       | schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd                                                       
+csw              |       |   | 2.0.2   | www.opengis.net/cat/csw/2.0.2          | schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd                                                       
 fes              |       |   | 2.0     | www.opengis.net/fes/2.0                       | schemas.opengis.net/filter/2.0/filterAll.xsd                                                          
 gml              |       |   | 3.2     | www.opengis.net/gml/3.2                       | schemas.opengis.net/gml/3.2.1/gml.xsd                                                                 
 gml2             | gml   | N | 2.1     | www.opengis.net/gml                           | schemas.opengis.net/gml/2.1.2/gml.xsd                                                                 
 gmlcov           |       |   | 1.0     | www.opengis.net/gmlcov                        | schemas.opengis.net/gmlcov/1.0/gmlcovAll.xsd                                                          
 ogc              |       |   |         | www.opengis.net/ogc                           | schemas.opengis.net/filter/1.1.0/filter.xsd                                                           
-ows              |       |   | 2.0     | www.opengis.net/ows/2.0                       | schemas.opengis.net/ows/2.0/owsAll.xsd                                                                
-ows11            | ows   | N | 1.1.0   | www.opengis.net/ows                           | schemas.opengis.net/ows/2.0/owsAll.xsd                                                                
+ows              |       |   | 2.0     | www.opengis.net/ows/2.0                           | schemas.opengis.net/ows/2.0/owsAll.xsd                                                                
+ows11            | ows   | N | 1.1.0   | www.opengis.net/ows/1.1                           | schemas.opengis.net/ows/2.0/owsAll.xsd                                                                
 sld              |       |   |         | www.opengis.net/sld                           | schemas.opengis.net/sld/1.1/sldAll.xsd                                                                
 swe              |       |   | 2.0     | www.opengis.net/swe                           | schemas.opengis.net/sweCommon/2.0/swe.xsd                                                             
 wcs              |       |   | 2.0     | www.opengis.net/wcs                           | schemas.opengis.net/wcs/1.0.0/wcsAll.xsd                                                              
@@ -302,8 +302,8 @@ wms10            | wms   | N | 1.0.0   | www.opengis.net/wms                    
 wms11            | wms   | N | 1.1.0   | www.opengis.net/wms                           | schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.xml                                                  
 wmts             |       |   | 1.0     | www.opengis.net/wmts                          | schemas.opengis.net/wmts/1.0/wmts.xsd                                                                 
 
-gco              |       |   |         | www.isotc211.org/2005/gco                     | schemas.opengis.net/iso/19139/20070417/gco/gco.xsd                                                    
-gmd              |       |   |         | www.isotc211.org/2005/gmd                     | schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd                                          
+gco              |       |   |         | www.isotc211.org/2005/gco                     | schemas.opengis.net/iso/19139/20070417/gco/gco.xsd
+gmd              |       |   |         | www.isotc211.org/2005/gmd                     | schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd
 gmx              |       |   |         | www.isotc211.org/2005/gmx                     | schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd                                                    
 srv              |       |   |         | www.isotc211.org/2005/srv                     | schemas.opengis.net/iso/19139/20070417/srv/1.0/srv.xsd                                                
 
@@ -314,10 +314,10 @@ dct              |       |   |         | purl.org/dc/terms                      
 ms               |       |   |         | mapserver.gis.umn.edu/mapserver               |                                                                                                              
 
 inspire_dls      |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_dls      | inspire.ec.europa.eu/schemas/inspire_dls/1.0/inspire_dls.xsd                                          
-inspire_ds       |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_ds       | inspire.ec.europa.eu/schemas/inspire_ds/1.0/inspire_ds.xsd                                            
-inspire_vs       |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_vs       | inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd                                            
+inspire_ds       |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_ds/1.0       | inspire.ec.europa.eu/schemas/inspire_ds/1.0/inspire_ds.xsd                                            
+inspire_vs       |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_vs/1.0       | inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd                                            
 inspire_vs_ows11 |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_vs_ows11 | inspire.ec.europa.eu/schemas/inspire_vs_ows11/1.0/inspire_vs_ows_11.xsd                               
-inspire_common   |       |   | 1.0     | inspire.ec.europa.eu/schemas/common           | inspire.ec.europa.eu/schemas/common/1.0/common.xsd                                                    
+inspire_common   |       |   | 1.0     | inspire.ec.europa.eu/schemas/common/1.0           | inspire.ec.europa.eu/schemas/common/1.0/common.xsd                                                    
 ac-mf            |       |   | 4.0     | inspire.ec.europa.eu/schemas/ac-mf            | inspire.ec.europa.eu/schemas/ac-mf/4.0/AtmosphericConditionsandMeteorologicalGeographicalFeatures.xsd 
 ac               |       |   | 4.0     | inspire.ec.europa.eu/schemas/ac-mf            | inspire.ec.europa.eu/schemas/ac-mf/4.0/AtmosphericConditionsandMeteorologicalGeographicalFeatures.xsd 
 mf               |       |   | 4.0     | inspire.ec.europa.eu/schemas/ac-mf            | inspire.ec.europa.eu/schemas/ac-mf/4.0/AtmosphericConditionsandMeteorologicalGeographicalFeatures.xsd 
@@ -412,7 +412,7 @@ wfd              |       |   | 0.0     | inspire.ec.europa.eu/schemas/wfd       
 
 _XMLNS = 'xmlns'
 _XSI = 'xsi'
-_XSI_URL = 'www.w3.org/2001/XMLSchema-instance'
+_XSI_URL = 'http://www.w3.org/2001/XMLSchema-instance'
 
 # fake namespace for 'xmlns:'
 _ALL.append(gws.XmlNamespace(uid=_XMLNS, xmlns=_XMLNS, uri='', schemaLocation='', version='', isDefault=True))

@@ -8,6 +8,7 @@ class Serializer:
 
         self.extra_namespaces = kwargs.get('extra_namespaces', [])
         self.xmlns_replacements = kwargs.get('xmlns_replacements', {})
+        self.doctype = kwargs.get('doctype')
 
         self.compact_whitespace = kwargs.get('compact_whitespace', False)
         self.fold_tags = kwargs.get('fold_tags', False)
@@ -41,6 +42,8 @@ class Serializer:
 
         if self.with_xml_declaration:
             self.buf.append(_XML_DECL)
+            if self.doctype:
+                self.buf.append(f'<!DOCTYPE {self.doctype}>')
 
         self._el_to_string(self.el, extra_atts)
 

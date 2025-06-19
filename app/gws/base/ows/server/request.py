@@ -49,7 +49,7 @@ class Object:
     isSoap: bool = False
     layerCapsList: list[core.LayerCaps]
     operation: gws.OwsOperation
-    project: gws.Project
+    project: Optional[gws.Project]
     req: gws.WebRequester
     service: gws.OwsService
     targetCrs: gws.Crs
@@ -57,19 +57,23 @@ class Object:
     xmlElement: Optional[gws.XmlElement]
     xmlnsReplacements: dict
 
-    def __init__(self, service: gws.OwsService, req: gws.WebRequester, params: dict, xml_element: gws.XmlElement = None, is_soap=False) -> None:
+    def __init__(
+        self,
+        service: gws.OwsService,
+        req: gws.WebRequester,
+        params: dict,
+        xml_element: gws.XmlElement = None,
+        is_soap=False,
+    ) -> None:
         self.service = service
         self.req = req
-        self.project = self.requested_project()
+        self.project = None
         self.params = gws.u.to_upper_dict(params)
         self.xmlElement = xml_element
         self.isSoap = is_soap
 
         self.operation = self.requested_operation('REQUEST')
         self.version = self.requested_version('VERSION,ACCEPTVERSIONS')
-
-        cache_key = 'layer_caps_' + gws.u.sha256([self.service.uid, self.project.uid, sorted(self.req.user.roles)])
-        self.layerCapsList = gws.u.get_app_global(cache_key, self.enum_layer_caps)
 
         self.alwaysXY = False
         self.isSoap = False
@@ -85,6 +89,29 @@ class Object:
                 raise error.InvalidUpdateSequence()
 
         self.xmlnsReplacements = self.requested_xmlns_replacements()
+
+    def load_project(self):
+        # services can be configured globally (in which case, service.project == None)
+        # and applied to multiple projects with the projectUid param
+        # or, configured just for a single project (service.project != None)
+
+        p = self.req.param('projectUid')
+        project = None
+
+        if p:
+            project = self.req.user.require_project(p)
+            if self.service.project and project != self.service.project:
+                raise gws.NotFoundError(f'ows {self.service.uid}: wrong project={p!r}')
+        elif self.service.project:
+            # for in-project services, ensure the user can access the project
+            project = self.req.user.require_project(self.service.project.uid)
+
+        if not project:
+            raise gws.NotFoundError(f'ows {self.service.uid}: project not found')
+
+        self.project = project
+        cache_key = 'layer_caps_' + gws.u.sha256([self.service.uid, self.project.uid, sorted(self.req.user.roles)])
+        self.layerCapsList = gws.u.get_app_global(cache_key, self.enum_layer_caps)
 
     def enum_layer_caps(self):
         lcs = []
@@ -125,24 +152,6 @@ class Object:
             stack[-1].children.append(lc)
 
     ##
-
-    def requested_project(self) -> gws.Project:
-        # services can be configured globally (in which case, service.project == None)
-        # and applied to multiple projects with the projectUid param
-        # or, configured just for a single project (service.project != None)
-
-        p = self.req.param('projectUid')
-        if p:
-            project = self.req.user.require_project(p)
-            if self.service.project and project != self.service.project:
-                raise gws.NotFoundError(f'ows {self.service.uid}: wrong project={p!r}')
-            return project
-
-        if self.service.project:
-            # for in-project services, ensure the user can access the project
-            return self.req.user.require_project(self.service.project.uid)
-
-        raise gws.NotFoundError(f'ows {self.service.uid}: project not found')
 
     def requested_version(self, param_names: str) -> str:
         p, val = self._get_param(param_names, '')

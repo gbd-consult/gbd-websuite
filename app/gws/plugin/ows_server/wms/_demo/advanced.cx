@@ -38,6 +38,7 @@ owsServices+ {
         keywords ["test" "wms" "qgis" "demo"]
         name "ADVANCED_WMS"
         title "Advanced WMS"
+        catalogUid "ows_service_wms_advanced"
         {demo_metadata}
     }
 
@@ -82,6 +83,7 @@ map.layers+ {
     sourceLayers.names [ "Points of interest" ]
     zoom { maxScale 50000 }
     finders+ { type "postgres" tableName "edit.poi" }
+    ows.xmlns "demo"
 }
 
 map.layers+ {

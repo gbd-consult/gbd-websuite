@@ -142,12 +142,51 @@ class Config(gws.Config):
 
 ##
 
-_KEYWORD_PREFIXES = {
-    'iso': 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode',
-    'gemet': 'http://www.eionet.europa.eu/gemet/2004/06/gemet-version.rdf',
-    'inspire': 'http://inspire.ec.europa.eu/theme',
-    'gcmd': 'http://gcmd.nasa.gov/Resources/valids/locations.html',
+_KEYWORD_CODE_SPACES = {
+    'iso': ['ISOTC211/19115', 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode'],
+    'gemet': ['GEMET', 'http://www.eionet.europa.eu/gemet/2004/06/gemet-version.rdf'],
+    'inspire_themes': ['GEMET - INSPIRE themes', 'http://inspire.ec.europa.eu/theme'],
+    'gcmd': ['gcmd', 'http://gcmd.nasa.gov/Resources/valids/locations.html'],
 }
+
+
+class KeywordGroup(gws.Data):
+    codeSpace: str
+    """Code space for the keyword group, e.g. 'iso', 'gemet', 'inspire', 'gcmd'."""
+    typeName: str
+    """Type name for the keyword group, e.g. 'isoTopicCategories', 'keywords'."""
+    keywords: list[str]
+    """List of keywords in the group."""
+
+
+def keyword_groups(md: gws.Metadata) -> list[KeywordGroup]:
+    d = {}
+
+    def add(kw):
+        p = kw.split(':')
+        if len(p) == 1:
+            return add2('', '', kw)
+
+    def add2(code_space, type_name, kw):
+        if code_space.lower() in _KEYWORD_CODE_SPACES:
+            code_space = _KEYWORD_CODE_SPACES[code_space.lower()][0]
+        key = (code_space, type_name)
+        if key not in d:
+            d[key] = KeywordGroup(codeSpace=code_space, typeName=type_name, keywords=[])
+        d[key].keywords.append(kw)
+
+    if md.keywords:
+        for kw in md.keywords:
+            add(kw)
+    if md.inspireTheme:
+        add2('inspire_themes', 'theme', md.inspireTheme)
+    if md.isoTopicCategories:
+        for cat in md.isoTopicCategories:
+            add2('iso', 'isoTopicCategory', cat)
+    if md.inspireMandatoryKeyword:
+        add2('iso', 'serviceType', md.inspireMandatoryKeyword)
+
+    return list(d.values())
 
 
 class Props(gws.Props):
@@ -162,6 +201,12 @@ class Props(gws.Props):
     title: str
 
 
+def new() -> gws.Metadata:
+    """Create a new Metadata object with default values."""
+
+    return _new()
+
+
 def from_dict(d: dict) -> gws.Metadata:
     """Create a Metadata object from a dictionary.
 
@@ -172,10 +217,10 @@ def from_dict(d: dict) -> gws.Metadata:
     return _update(_new(), d)
 
 
-def from_args(*args) -> gws.Metadata:
+def from_args(*args, **kwargs) -> gws.Metadata:
     """Create a Metadata object from arguments (dicts or other Metadata objects)."""
 
-    return _update(_new(), *args)
+    return _update(_new(), *args, **kwargs)
 
 
 def from_config(c: gws.Config) -> gws.Metadata:
@@ -232,22 +277,21 @@ def _new() -> gws.Metadata:
     return md
 
 
-def _update(md: gws.Metadata, *args):
-    for d in args:
-        if not d:
+def _update(md: gws.Metadata, *args, **kwargs):
+    for arg in list(args) + [kwargs]:
+        if not arg:
             continue
-        if isinstance(d, gws.Data):
-            d = gws.u.to_dict(d)
-
-        for key, val in d.items():
+        if isinstance(arg, gws.Data):
+            arg = gws.u.to_dict(arg)
+        for key, val in arg.items():
             fn = getattr(_Updaters, key, None)
             if fn:
                 fn(md, key, val)
-            else:
+            elif val is not None:
                 setattr(md, key, val)
 
-        if 'inspireTheme' in d:
-            _update_inspire_theme(md, '', d['inspireTheme'])
+        if 'inspireTheme' in arg:
+            _update_inspire_theme(md, '', arg['inspireTheme'])
 
     return md
 

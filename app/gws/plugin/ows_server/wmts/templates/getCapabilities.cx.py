@@ -21,7 +21,9 @@ def doc(ta):
     yield 'Contents', contents(ta)
 
     # OGC 07-057r7 Annex D
-    yield tpl.meta_url_simple(ta, ta.service.metadata.serviceMetaLink, 'ServiceMetadataURL')
+    for ml in ta.service.metadata.metaLinks:
+        if ml.function == 'ServiceMetadataURL':
+            yield tpl.meta_url_simple(ta, ml, 'ServiceMetadataURL')
 
 
 def contents(ta: server.TemplateArgs):

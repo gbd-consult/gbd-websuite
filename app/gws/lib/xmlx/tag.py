@@ -16,12 +16,7 @@ If keyword arguments are given, they are added to the Element's attributes.
 
 **Example:** ::
 
-    tag(
-        'geometry/gml:Point',
-        {'gml:id': 'xy'},
-        ['gml:coordinates', '12.345,56.789'],
-        srsName=3857
-    )
+    tag('geometry/gml:Point', {'gml:id': 'xy'}, ['gml:coordinates', '12.345,56.789'], srsName=3857)
 
 creates the following element: ::
 
@@ -37,32 +32,32 @@ import re
 
 import gws
 
-from . import element, namespace, error
+from . import element, error
 
 
 def tag(name: str, *args, **kwargs) -> gws.XmlElement:
     """Build an XML element from arguments."""
 
-    first = last = None
+    els = []
 
     for n in _split_name(name):
         el = element.XmlElementImpl(n.strip())
-        if not first:
-            first = last = el
+        if not els:
+            els.append(el)
         else:
-            last.append(el)
-            last = el
+            els[-1].append(el)
+            els.append(el)
 
-    if not first:
+    if not els:
         raise error.BuildError(f'invalid tag name: {name!r}')
 
     for arg in args:
-        _add(last, arg)
+        _add(els[-1], arg)
 
     if kwargs:
-        _add(last, kwargs)
+        _add(els[-1], kwargs)
 
-    return first
+    return els[0]
 
 
 ##

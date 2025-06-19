@@ -18,6 +18,9 @@ from .core import (
     from_dict,
     from_props,
     update,
+    new,
+    keyword_groups,
+    KeywordGroup,
 )
 
-from . import inspire
+from . import inspire, iso

@@ -5,6 +5,7 @@ from typing import Optional
 import re
 
 import gws
+import gws.base.metadata
 import gws.lib.crs
 import gws.lib.extent
 import gws.lib.net
@@ -96,7 +97,7 @@ def service_metadata(caps_el: gws.XmlElement) -> gws.Metadata:
     #           <ows:ProviderName>...
     #           <ows:ServiceContact>...
 
-    md = gws.Metadata()
+    md = gws.base.metadata.new()
 
     _element_metadata(caps_el.findfirst('Service', 'ServiceIdentification'), md)
     _contact_metadata(caps_el.findfirst('Service/ContactInformation', 'ServiceProvider/ServiceContact'), md)
@@ -107,9 +108,10 @@ def service_metadata(caps_el: gws.XmlElement) -> gws.Metadata:
     #   <Capabilities
     #       <ServiceMetadataURL
 
-    link = _parse_link(caps_el.find('ServiceMetadataURL'))
-    if link:
-        md.serviceMetaLink = link
+    service_link = _parse_link(caps_el.find('ServiceMetadataURL'))
+    if service_link:
+        service_link.function = 'ServiceMetadataURL'
+        md.metaLinks.append(service_link)
 
     return gws.u.strip(md)
 

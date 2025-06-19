@@ -16,13 +16,14 @@ import gws.lib.extent
 import gws.lib.image
 import gws.lib.mime
 import gws.gis.render
-import gws.lib.uom as units
+import gws.lib.uom
 
 gws.ext.new.owsService('wmts')
 
 
 class Config(server.service.Config):
     """WMTS Service configuration"""
+
     pass
 
 
@@ -98,21 +99,29 @@ class Object(server.service.Object):
         for z in range(min_zoom, max_zoom + 1):
             size = 1 << z
             res = w / (tile_size * size)
-            ms.append(gws.TileMatrix(
-                uid=f'{z:02d}',
-                scale=gws.lib.uom.res_to_scale(res),
-                x=extent[0],
-                y=extent[1],
-                tileWidth=tile_size,
-                tileHeight=tile_size,
-                width=size,
-                height=size,
-                extent=extent,
-            ))
+            ms.append(
+                gws.TileMatrix(
+                    uid=f'{z:02d}',
+                    scale=gws.lib.uom.res_to_scale(res),
+                    x=extent[0],
+                    y=extent[1],
+                    tileWidth=tile_size,
+                    tileHeight=tile_size,
+                    width=size,
+                    height=size,
+                    extent=extent,
+                )
+            )
 
         return ms
 
     ##
+
+    def init_request(self, req):
+        sr = super().init_request(req)
+        sr.load_project()
+
+        return sr
 
     def layer_is_compatible(self, layer: gws.Layer):
         return not layer.isGroup and layer.canRenderBox
@@ -148,17 +157,14 @@ class Object(server.service.Object):
             bbox=bounds.extent,
             crs=bounds.crs,
             mapSize=(256, 256, gws.Uom.px),
-            planes=[
-                gws.MapRenderInputPlane(type=gws.MapRenderInputPlaneType.imageLayer, layer=lc.layer)
-                for lc in lcs
-            ]
+            planes=[gws.MapRenderInputPlane(type=gws.MapRenderInputPlaneType.imageLayer, layer=lc.layer) for lc in lcs],
         )
 
         mro = gws.gis.render.render_map(mri)
 
         if self.root.app.developer_option('ows.annotate_wmts'):
             e = bounds.extent
-            text = f"{matrix_uid} {row} {col}\n{e[0]}\n{e[1]}\n{e[2]}\n{e[3]}"
+            text = f'{matrix_uid} {row} {col}\n{e[0]}\n{e[1]}\n{e[2]}\n{e[3]}'
             mro.planes[0].image = mro.planes[0].image.add_text(text, x=10, y=10).add_box()
 
         return self.image_response(sr, mro.planes[0].image, mime)

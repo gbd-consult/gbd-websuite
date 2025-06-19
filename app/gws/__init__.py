@@ -1653,6 +1653,7 @@ class XmlElement(Iterable):
         self,
         extra_namespaces: Optional[list[XmlNamespace]] = None,
         xmlns_replacements: dict[str, str] = None,
+        doctype: str = None,
         compact_whitespace: bool = False,
         remove_namespaces: bool = False,
         with_namespace_declarations: bool = False,
@@ -1664,6 +1665,7 @@ class XmlElement(Iterable):
         Args:
             extra_namespaces: Extra namespaces to add to the document.
             xmlns_replacements: A mapping of namespace UIDs to custom namespace prefixes.
+            doctype: Document type declaration body, like ``root-element-name SYSTEM "url"``.
             compact_whitespace: Remove all whitespace outside of tags and elements.
             remove_namespaces: Remove all namespace references.
             with_namespace_declarations: Include the namespace declarations.

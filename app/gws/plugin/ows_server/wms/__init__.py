@@ -99,14 +99,14 @@ class Object(server.service.Object):
                 handlerName='handle_get_capabilities',
             ),
             gws.OwsOperation(
-                verb=gws.OwsVerb.GetFeatureInfo,
-                formats=self.available_formats(gws.OwsVerb.GetFeatureInfo),
-                handlerName='handle_get_feature_info',
-            ),
-            gws.OwsOperation(
                 verb=gws.OwsVerb.GetMap,
                 formats=self.available_formats(gws.OwsVerb.GetMap),
                 handlerName='handle_get_map',
+            ),
+            gws.OwsOperation(
+                verb=gws.OwsVerb.GetFeatureInfo,
+                formats=self.available_formats(gws.OwsVerb.GetFeatureInfo),
+                handlerName='handle_get_feature_info',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetLegendGraphic,
@@ -119,6 +119,7 @@ class Object(server.service.Object):
 
     def init_request(self, req):
         sr = super().init_request(req)
+        sr.load_project()
 
         sr.crs = sr.requested_crs('CRS,SRS') or sr.project.map.bounds.crs
         sr.targetCrs = sr.crs

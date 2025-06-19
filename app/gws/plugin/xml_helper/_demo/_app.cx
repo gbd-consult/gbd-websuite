@@ -3,6 +3,6 @@ helpers+ {
     namespaces+ {
         xmlns "demo"
         uri "https://gws-dev.gbd-consult.de/_/owsXml/namespace/demo"
-        schemaLocation "https://gws-dev.gbd-consult.de/_/owsXml/namespace/demo.xsd"
+        @# schemaLocation "https://gws-dev.gbd-consult.de/_/owsXml/namespace/demo.xsd"
     }
 }

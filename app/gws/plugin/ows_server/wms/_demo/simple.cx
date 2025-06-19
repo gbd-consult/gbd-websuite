@@ -20,6 +20,7 @@ owsServices+ {
         keywords ["test" "wms" "demo"]
         name "SIMPLE_WMS"
         title "Simple WMS"
+        catalogUid "ows_service_wms_simple"
         {demo_metadata}
     }
 }

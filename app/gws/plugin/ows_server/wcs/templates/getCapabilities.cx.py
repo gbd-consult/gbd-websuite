@@ -11,7 +11,7 @@ def main(ARGS):
         if md.abstract:
             yield 'Abstract', md.abstract
 
-        yield tpl.keywords(md)
+        yield tpl.wms_keywords(md)
 
         if md.fees:
             yield 'Fees', md.fees

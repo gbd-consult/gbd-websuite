@@ -1,13 +1,10 @@
 """XML helper."""
 
+from typing import Optional
 import gws
 import gws.lib.xmlx
 
 gws.ext.new.helper('xml')
-
-
-DEFAULT_NS_URI = '/_/owsXml/namespace/{}'
-DEFAULT_NS_SCHEMA_LOCATION = '/_/owsXml/namespace/{}.xsd'
 
 
 class NamespaceConfig(gws.Config):
@@ -17,7 +14,7 @@ class NamespaceConfig(gws.Config):
     """Default prefix for this Namespace."""
     uri: gws.Url
     """Namespace uri."""
-    schemaLocation: gws.Url
+    schemaLocation: Optional[gws.Url]
     """Namespace schema location."""
     version: str = ''
     """Namespace version."""
@@ -48,7 +45,7 @@ class Object(gws.Node):
             xmlns=xmlns,
             uid=cfg.get('uid') or xmlns,
             uri=cfg.get('uri'),
-            schemaLocation=cfg.get('schemaLocation'),
+            schemaLocation=cfg.get('schemaLocation') or '',
             version=cfg.get('version') or '',
             extendsGml=cfg.get('extendsGml') or True,
         )

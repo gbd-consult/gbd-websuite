@@ -40,7 +40,7 @@ def from_wkt(wkt: str, default_crs: gws.Crs = None) -> gws.Shape:
         # EWKT
         c = wkt.index(';')
         srid = wkt[len('SRID=') : c]
-        crs = gws.lib.crs.get(int(srid))
+        crs = gws.lib.crs.require(int(srid))
         wkt = wkt[c + 1 :]
     elif default_crs:
         crs = default_crs

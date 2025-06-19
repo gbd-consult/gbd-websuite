@@ -1,4 +1,4 @@
-"""CSW GetCapabilities template (ISO)."""
+"""CSW 2.0.2 GetCapabilities template (ISO)."""
 
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
@@ -9,7 +9,9 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         ('csw:Capabilities', {'version': ta.version}, caps(ta)),
-        extra_namespaces=[gws.lib.xmlx.namespace.get('gml')]
+        extra_namespaces=[
+            gws.lib.xmlx.namespace.require('gml2'),
+        ],
     )
 
 
@@ -23,12 +25,14 @@ def caps(ta: server.TemplateArgs):
             'ows:Operation',
             {'name': 'GetCapabilities'},
             tpl.ows_service_url(ta),
-            ('ows:Parameter', {'name': 'sections'},
-             ('ows:Value', 'ServiceIdentification'),
-             ('ows:Value', 'ServiceProvider'),
-             ('ows:Value', 'OperationsMetadata'),
-             ('ows:Value', 'Filter_Capabilities'),
-             )
+            (
+                'ows:Parameter',
+                {'name': 'sections'},
+                ('ows:Value', 'ServiceIdentification'),
+                ('ows:Value', 'ServiceProvider'),
+                ('ows:Value', 'OperationsMetadata'),
+                ('ows:Value', 'Filter_Capabilities'),
+            ),
         ),
         (
             'ows:Operation',
@@ -40,23 +44,26 @@ def caps(ta: server.TemplateArgs):
             ('ows:Parameter', {'name': 'resultType'}, ('ows:Value', 'hits'), ('ows:Value', 'results')),
             ('ows:Parameter', {'name': 'ElementSetName'}, ('ows:Value', 'full')),
             ('ows:Parameter', {'name': 'CONSTRAINTLANGUAGE'}, ('ows:Value', 'FILTER')),
-            ('ows:Parameter', {'name': 'version'}, ('ows:Value', ta.version))
+            ('ows:Parameter', {'name': 'version'}, ('ows:Value', ta.version)),
         ),
         (
             'ows:Operation',
             {'name': 'GetRecords'},
             tpl.ows_service_url(ta, post=True),
-            ('ows:Parameter', {'name': 'typeName'}, ('ows:Value', 'csw:Record')),
+            ('ows:Parameter', {'name': 'typeName'}, ('ows:Value', 'gmd:MD_Metadata')),
             ('ows:Parameter', {'name': 'outputFormat'}, ('ows:Value', 'application/xml')),
             ('ows:Parameter', {'name': 'outputSchema'}, ('ows:Value', 'http://www.opengis.net/cat/csw/2.0.2')),
             ('ows:Parameter', {'name': 'resultType'}, ('ows:Value', 'results')),
             ('ows:Parameter', {'name': 'ElementSetName'}, ('ows:Value', 'full')),
             ('ows:Parameter', {'name': 'CONSTRAINTLANGUAGE'}, ('ows:Value', 'FILTER')),
-            ('ows:Parameter', {'name': 'version'}, ('ows:Value', ta.version))
+            ('ows:Parameter', {'name': 'version'}, ('ows:Value', ta.version)),
         ),
-
-        ('ows:Constraint', {'name': 'IsoProfiles'}, ('ows:Value', 'http://www.isotc211.org/2005/gmd')),
-        ('inspire_vs:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta))
+        (
+            'ows:Constraint',
+            {'name': 'IsoProfiles'},
+            ('ows:Value', 'http://www.isotc211.org/2005/gmd'),
+        ),
+        ('ows:ExtendedCapabilities/inspire_ds:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)),
     )
 
     yield (
@@ -64,7 +71,7 @@ def caps(ta: server.TemplateArgs):
         (
             'ogc:Spatial_Capabilities',
             ('ogc:GeometryOperands/ogc:GeometryOperand', 'gml:Envelope'),
-            ('ogc:SpatialOperators/ogc:SpatialOperator', {'name': 'BBOX'})
+            ('ogc:SpatialOperators/ogc:SpatialOperator', {'name': 'BBOX'}),
         ),
         (
             'ogc:Scalar_Capabilities',
@@ -74,7 +81,7 @@ def caps(ta: server.TemplateArgs):
                 ('ogc:ComparisonOperator', 'EqualTo'),
                 ('ogc:ComparisonOperator', 'NotEqualTo'),
                 ('ogc:ComparisonOperator', 'NullCheck'),
-            )
+            ),
         ),
         (
             'ogc:Id_Capabilities',

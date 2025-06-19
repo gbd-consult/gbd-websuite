@@ -7,19 +7,19 @@ References:
     - OpenGIS Catalogue Service Implementation Specification 2.0.2 (http://portal.opengeospatial.org/files/?artifact_id=20555)
 """
 
+from typing import cast
 import gws
-import gws.base.ows.server as server
-import gws.base.shape
-import gws.base.web
-import gws.config.util
-import gws.lib.extent
-import gws.lib.bounds
-import gws.lib.xmlx
-import gws.lib.datetimex
-import gws.lib.crs
 import gws.base.metadata
-import gws.lib.mime
+import gws.base.map
+import gws.base.ows.server as server
 import gws.base.search.filter
+import gws.base.shape
+import gws.config.util
+import gws.lib.crs
+import gws.lib.datetimex
+import gws.lib.extent
+import gws.lib.mime
+import gws.lib.uom
 
 gws.ext.new.owsService('csw')
 
@@ -46,9 +46,10 @@ _DEFAULT_TEMPLATES_ISO = [
     ),
 ]
 
-_DEFAULT_METADATA = gws.Metadata(
+_DEFAULT_METADATA = dict(
     name='CSW',
     inspireMandatoryKeyword='infoMapAccessService',
+    inspireDegreeOfConformity='notEvaluated',
     inspireResourceType='service',
     inspireSpatialDataServiceType='view',
     isoScope='dataset',
@@ -72,14 +73,14 @@ class Profile(gws.Enum):
     """Dublin Core metadata profile."""
 
 
-class Config(gws.base.ows.server.service.Config):
+class Config(server.service.Config):
     """CSW Service configuration"""
 
     profile: Profile = Profile.ISO
     """Metadata profile."""
 
 
-class Object(gws.base.ows.server.service.Object):
+class Object(server.service.Object):
     protocol = gws.OwsProtocol.CSW
     supportedVersions = ['2.0.2']
 
@@ -151,7 +152,7 @@ class Object(gws.base.ows.server.service.Object):
             members=mds,
             numMatched=len(mds),
             numReturned=len(mds),
-            timestamp=gws.lib.datetimex.to_iso_string(with_tz=None),
+            timestamp=gws.lib.datetimex.to_iso_string(with_tz=''),
         )
 
         return self.template_response(
@@ -176,7 +177,7 @@ class Object(gws.base.ows.server.service.Object):
         self.mdMap = {}
 
         for obj in self.root.find_all():
-            md: gws.Metadata = gws.u.get(obj, 'metadata')
+            md: gws.Metadata = cast(gws.Metadata, gws.u.get(obj, 'metadata'))
 
             if not md or not md.get('catalogUid'):
                 continue
@@ -191,18 +192,24 @@ class Object(gws.base.ows.server.service.Object):
                 gws.log.debug(f'CSW: skip {cid}: not public')
                 continue
 
-            md.set('catalogUid', cid)
-            md.set('catalogCitationUid', cid)
-            md.set('metaLinks', [self._make_link(cid)])
+            extra = {}
+
+            extra['catalogUid'] = cid
+            extra['catalogCitationUid'] = cid
+            extra['metaLinks'] = [self._make_link(cid)]
 
             extent = gws.u.get(obj, 'extent') or gws.u.get(obj, 'map.extent')
             crs = gws.u.get(obj, 'crs') or gws.u.get(obj, 'map.crs')
             if extent and crs:
-                md.set('wgsExtent', gws.lib.extent.transform_to_wgs(extent, crs))
-                md.set('crs', crs)
+                extra['wgsExtent'] = gws.lib.extent.transform_to_wgs(extent, crs)
+                extra['crs'] = crs
                 # @TODO get boundingPolygonElement somehow
 
-            self.mdMap[cid] = md
+            map = obj.find_closest(gws.ext.object.map)
+            if map:
+                extra['isoSpatialResolution'] = gws.lib.uom.res_to_scale(cast(gws.base.map.Object, map).initResolution)
+
+            self.mdMap[cid] = gws.base.metadata.from_args(md, extra)
 
     def _create_index(self):
         self.index = []
@@ -226,6 +233,7 @@ class Object(gws.base.ows.server.service.Object):
             url=gws.u.action_url_path('owsService', serviceUid=self.uid, request='record', id=cid),
             format=gws.lib.mime.XML,
             type='TC211' if self.profile == 'ISO' else 'DCMI',
+            function='download',
         )
 
     def _find_mds(self, sr: server.request.Object):

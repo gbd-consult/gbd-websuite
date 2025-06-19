@@ -12,7 +12,9 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         ('csw:GetRecordsResponse', {'version': ta.version}, doc(ta)),
-        extra_namespaces=[gws.lib.xmlx.namespace.get('gml')]
+        extra_namespaces=[
+            gws.lib.xmlx.namespace.require('gml2'),
+        ],
     )
 
 
@@ -21,11 +23,13 @@ def doc(ta: server.TemplateArgs):
 
     yield 'csw:SearchStatus', {'timestamp': mdc.timestamp}
     yield (
-        'csw:SearchResults', {
+        'csw:SearchResults',
+        {
             'elementSet': 'full',
             'nextRecord': mdc.nextRecord,
             'numberOfRecordsMatched': mdc.numMatched,
             'numberOfRecordsReturned': mdc.numReturned,
             'recordSchema': 'http://www.isotc211.org/2005/gmd',
-        }, [rec.record(ta, md) for md in mdc.members]
+        },
+        [rec.record(ta, md) for md in mdc.members],
     )
