@@ -1,6 +1,6 @@
 """Service Request object."""
 
-from typing import Optional, Callable
+from typing import Optional, Callable, cast
 import re
 
 import gws
@@ -49,7 +49,7 @@ class Object:
     isSoap: bool = False
     layerCapsList: list[core.LayerCaps]
     operation: gws.OwsOperation
-    project: Optional[gws.Project]
+    project: gws.Project
     req: gws.WebRequester
     service: gws.OwsService
     targetCrs: gws.Crs
@@ -67,7 +67,7 @@ class Object:
     ) -> None:
         self.service = service
         self.req = req
-        self.project = None
+        self.project = cast(gws.Project, None)
         self.params = gws.u.to_upper_dict(params)
         self.xmlElement = xml_element
         self.isSoap = is_soap
@@ -90,7 +90,10 @@ class Object:
 
         self.xmlnsReplacements = self.requested_xmlns_replacements()
 
-    def load_project(self):
+    def require_project(self):
+        return self.load_project(required=True)
+
+    def load_project(self, required=False):
         # services can be configured globally (in which case, service.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (service.project != None)
@@ -107,7 +110,9 @@ class Object:
             project = self.req.user.require_project(self.service.project.uid)
 
         if not project:
-            raise gws.NotFoundError(f'ows {self.service.uid}: project not found')
+            if required:
+                raise gws.NotFoundError(f'ows {self.service.uid}: project not found')
+            return
 
         self.project = project
         cache_key = 'layer_caps_' + gws.u.sha256([self.service.uid, self.project.uid, sorted(self.req.user.roles)])

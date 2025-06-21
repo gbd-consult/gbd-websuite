@@ -40,7 +40,7 @@ import gws.lib.mime
 
 gws.ext.new.owsService('wfs')
 
-STORED_QUERY_GET_FEATURE_BY_ID = "urn:ogc:def:query:OGC-WFS::GetFeatureById"
+STORED_QUERY_GET_FEATURE_BY_ID = 'urn:ogc:def:query:OGC-WFS::GetFeatureById'
 
 _cdir = gws.u.dirname(__file__)
 
@@ -104,6 +104,7 @@ _DEFAULT_METADATA = gws.Metadata(
 
 class Config(server.service.Config):
     """WFS Service configuration"""
+
     pass
 
 
@@ -158,15 +159,14 @@ class Object(server.service.Object):
 
     def init_request(self, req):
         sr = super().init_request(req)
-        sr.load_project()
-
+        sr.require_project()
         sr.crs = sr.requested_crs('CRSNAME,SRSNAME') or sr.project.map.bounds.crs
         sr.targetCrs = sr.crs
         sr.alwaysXY = False
-        sr.bounds = (
-            sr.requested_bounds('BBOX') if sr.req.has_param('BBOX')
-            else gws.lib.bounds.transform(sr.project.map.bounds, sr.crs)
-        )
+        if sr.req.has_param('BBOX'):
+            sr.bounds = gws.u.require(sr.requested_bounds('BBOX'))
+        else:
+            sr.bounds = gws.lib.bounds.transform(sr.project.map.bounds, sr.crs)
 
         return sr
 
@@ -202,33 +202,23 @@ class Object(server.service.Object):
 
     def handle_describe_feature_type(self, sr: server.request.Object):
         lcs = self.requested_layer_caps(sr)
-        xml = server.layer_caps.xml_schema(lcs, sr.req.user)
-        return gws.ContentResponse(
-            mime=gws.lib.mime.XML,
-            content=xml.to_string(
-                with_xml_declaration=True,
-                with_namespace_declarations=True,
-                with_schema_locations=True,
-            )
-        )
+        el, opts = server.layer_caps.xml_schema(lcs, sr.req.user)
+        
+        opts.withNamespaceDeclarations = True
+        opts.withSchemaLocations = True
+        opts.withXmlDeclaration = True
+        
+        return self.xml_response(el, opts)
 
     def handle_get_feature(self, sr: server.request.Object):
         fc = self.get_features(sr)
-        return self.template_response(
-            sr,
-            sr.requested_format('OUTPUTFORMAT'),
-            featureCollection=fc
-        )
+        return self.template_response(sr, sr.requested_format('OUTPUTFORMAT'), featureCollection=fc)
 
     def handle_get_property_value(self, sr: server.request.Object):
         value_ref = sr.string_param('VALUEREFERENCE')
         fc = self.get_features(sr)
         fc.values = [m.feature.get(value_ref) for m in fc.members]
-        return self.template_response(
-            sr,
-            sr.requested_format('OUTPUTFORMAT'),
-            featureCollection=fc
-        )
+        return self.template_response(sr, sr.requested_format('OUTPUTFORMAT'), featureCollection=fc)
 
     ##
 
@@ -245,7 +235,6 @@ class Object(server.service.Object):
     SEARCH_MAX_TOTAL = 100_000
 
     def get_features(self, sr: server.request.Object, value_ref: str = '') -> server.FeatureCollection:
-
         # @TODO optimize paging for db-based layers
 
         lcs = self.requested_layer_caps(sr)

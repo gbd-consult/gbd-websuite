@@ -60,17 +60,17 @@ class Object(gws.base.action.Object):
 
         lcs = []
 
-        for p in self.root.find_all(gws.ext.object.layer):
-            layer = cast(gws.Layer, p)
+        for la in self.root.find_all(gws.ext.object.layer):
+            layer = cast(gws.Layer, la)
             if req.user.can_read(layer) and layer.ows.xmlNamespace and layer.ows.xmlNamespace.xmlns == ns.xmlns:
                 lcs.append(layer_caps.for_layer(layer, req.user))
 
-        xml = layer_caps.xml_schema(lcs, req.user)
-        if not xml:
+        el, opts = layer_caps.xml_schema(lcs, req.user)
+        if not el:
             raise gws.NotFoundError(f'cannot create schema: {p.namespace=}')
 
-        return xml.to_string(
-            with_xml_declaration=True,
-            with_namespace_declarations=True,
-            with_schema_locations=True
-        )
+        opts.withNamespaceDeclarations = True
+        opts.withSchemaLocations = True
+        opts.withXmlDeclaration = True
+        
+        return el.to_string(opts)

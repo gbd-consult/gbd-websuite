@@ -119,12 +119,10 @@ class Object(server.service.Object):
 
     def init_request(self, req):
         sr = super().init_request(req)
-        sr.load_project()
-
+        sr.require_project()
         sr.crs = sr.requested_crs('CRS,SRS') or sr.project.map.bounds.crs
         sr.targetCrs = sr.crs
         sr.alwaysXY = sr.version < '1.3'
-
         return sr
 
     def layer_is_compatible(self, layer: gws.Layer):

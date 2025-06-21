@@ -119,8 +119,7 @@ class Object(server.service.Object):
 
     def init_request(self, req):
         sr = super().init_request(req)
-        sr.load_project()
-
+        sr.require_project()
         return sr
 
     def layer_is_compatible(self, layer: gws.Layer):

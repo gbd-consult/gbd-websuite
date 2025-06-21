@@ -4,7 +4,7 @@ Each error class corresponds to an OWS error code, as defined in OGC standards.
 """
 
 import gws
-import gws.lib.xmlx
+import gws.lib.xmlx as xmlx
 import gws.lib.image
 import gws.lib.mime
 
@@ -29,16 +29,26 @@ class Error(gws.Error):
 
         if xmlns == 'ows':
             # OWS ExceptionReport, as per OGC 06-121r9, 8.5
-            xml = gws.lib.xmlx.tag(
-                'ExceptionReport', {'xmlns': 'ows'},
-                ('Exception', {'exceptionCode': self.code, 'locator': self.locator}, self.message)
+            ns = xmlx.namespace.require('ows11')
+            xml = xmlx.tag(
+                'ExceptionReport',
+                (
+                    'Exception',
+                    {'exceptionCode': self.code, 'locator': self.locator},
+                    self.message,
+                ),
             )
 
         elif xmlns == 'ogc':
             # OGC ServiceExceptionReport, as per OGC 06-042, H.2
-            xml = gws.lib.xmlx.tag(
-                'ServiceExceptionReport', {'xmlns': 'ogc'},
-                ('ServiceException', {'code': self.code}, self.message)
+            ns = xmlx.namespace.require('ogc')
+            xml = xmlx.tag(
+                'ServiceExceptionReport',
+                (
+                    'ServiceException',
+                    {'code': self.code},
+                    self.message,
+                ),
             )
 
         else:
@@ -48,9 +58,12 @@ class Error(gws.Error):
             status=self.status,
             mime=gws.lib.mime.XML,
             content=xml.to_string(
-                with_namespace_declarations=True,
-                with_schema_locations=False,
-            )
+                gws.XmlOptions(
+                    defaultNamespace=ns,
+                    withXmlDeclaration=True,
+                    withNamespaceDeclarations=True,
+                )
+            ),
         )
 
     def to_image_response(self, mime='image/png') -> gws.ContentResponse:
@@ -96,54 +109,116 @@ def from_exception(exc: Exception) -> Error:
 
 # out extensions
 
+
 class NotFound(Error): ...
+
+
 class Forbidden(Error): ...
+
+
 class BadRequest(Error): ...
+
 
 # OGC 06-121r9
 # Table 27 — Standard exception codes and meanings
 
+
 class InvalidParameterValue(Error): ...
+
+
 class InvalidUpdateSequence(Error): ...
+
+
 class MissingParameterValue(Error): ...
+
+
 class NoApplicableCode(Error): ...
+
+
 class OperationNotSupported(Error): ...
+
+
 class OptionNotSupported(Error): ...
+
+
 class VersionNegotiationFailed(Error): ...
+
 
 # OGC 06-042
 # Table E.1 — Service exception codes
 
+
 class CurrentUpdateSequence(Error): ...
+
+
 class InvalidCRS(Error): ...
+
+
 class InvalidDimensionValue(Error): ...
+
+
 class InvalidFormat(Error): ...
+
+
 class InvalidPoint(Error): ...
+
+
 class LayerNotDefined(Error): ...
+
+
 class LayerNotQueryable(Error): ...
+
+
 class MissingDimensionValue(Error): ...
+
+
 class StyleNotDefined(Error): ...
+
 
 # OGC 07-057r7
 # Table 20 — Exception codes for GetCapabilities operation
 # Table 23 — Exception codes for GetTile operation
 
+
 class PointIJOutOfRange(Error): ...
+
+
 class TileOutOfRange(Error): ...
+
 
 # OGC 09-025r1
 # Table 3 — WFS exception codes
 
+
 class CannotLockAllFeatures(Error): ...
+
+
 class DuplicateStoredQueryIdValue(Error): ...
+
+
 class DuplicateStoredQueryParameterName(Error): ...
+
+
 class FeaturesNotLocked(Error): ...
+
+
 class InvalidLockId(Error): ...
+
+
 class InvalidValue(Error): ...
+
+
 class LockHasExpired(Error): ...
+
+
 class OperationParsingFailed(Error): ...
+
+
 class OperationProcessingFailed(Error): ...
+
+
 class ResponseCacheExpired(Error): ...
+
 
 # OGC 06-121r9  8.6 HTTP STATUS codes for OGC Exceptions
 
@@ -155,9 +230,7 @@ _STATUS = dict(
     InvalidUpdateSequence=400,
     OptionNotSupported=501,
     NoApplicableCode=500,
-
     NotFound=404,
     Forbidden=403,
     BadRequest=400,
-
 )

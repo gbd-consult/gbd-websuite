@@ -4,30 +4,36 @@ import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 import gws.lib.uom
 import gws.lib.extent
+import gws.lib.xmlx as xmlx
 import gws.plugin.ows_server.wms
+
+_DOCTYPE_110 = 'WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.0/capabilities_1_1_0.dtd"'
+_DOCTYPE_111 = 'WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd"'
 
 
 def main(ta: server.TemplateArgs):
     if ta.intVersion == 130:
-        return tpl.to_xml_response(ta, ('WMS_Capabilities', doc(ta)))
+        return tpl.to_xml_response(
+            ta,
+            ('WMS_Capabilities', doc(ta)),
+            default_namespace=xmlx.namespace.require('wms'),
+        )
 
     if ta.intVersion == 110:
         return tpl.to_xml_response_with_doctype(
             ta,
             ('WMT_MS_Capabilities', doc(ta)),
-            doctype='WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.0/capabilities_1_1_0.dtd"',
+            doctype=_DOCTYPE_110,
         )
-    
+
     if ta.intVersion == 111:
         return tpl.to_xml_response_with_doctype(
             ta,
             ('WMT_MS_Capabilities', doc(ta)),
-            doctype='WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd"',
+            doctype=_DOCTYPE_111,
         )
 
     return tpl.to_xml_response(ta, ('WMS_Capabilities', doc(ta)))
-
-
 
 
 def doc(ta):
@@ -35,8 +41,6 @@ def doc(ta):
         'version': ta.version,
         'updateSequence': ta.service.updateSequence,
     }
-    if ta.intVersion == 130:
-        yield {'xmlns': 'wms'}
 
     yield 'Service', service_meta(ta)
     yield 'Capability', caps(ta)
@@ -132,7 +136,6 @@ def layer_content(ta, lc: server.LayerCaps):
     wext = lc.layer.wgsExtent
     crs = 'CRS' if ta.intVersion == 130 else 'SRS'
 
-    
     for b in lc.bounds:
         yield crs, b.crs.epsg
         if ta.intVersion == 110:
@@ -192,11 +195,17 @@ def layer_content(ta, lc: server.LayerCaps):
     yield tpl.meta_links_nested(ta, md)
 
     if lc.hasLegend:
+        if ta.intVersion == 130:
+            u = tpl.legend_url_nested(ta, lc)
+        else:
+            # @TODO compute the size somehow?
+            u = tpl.legend_url_nested(ta, lc, size=[256, 256])
+
         yield (
             'Style',
             ('Name', 'default'),
             ('Title', 'default'),
-            tpl.legend_url(ta, lc, None if ta.intVersion == 130 else [256, 256]),
+            u,
         )
 
     if not lc.children:

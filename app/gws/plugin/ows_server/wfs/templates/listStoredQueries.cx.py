@@ -15,7 +15,7 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         ('wfs:ListStoredQueriesResponse', doc(ta)),
-        extra_namespaces=[lc.xmlNamespace for lc in ta.layerCapsList]
+        namespaces=tpl.namespaces_from_caps(ta),
     )
 
 

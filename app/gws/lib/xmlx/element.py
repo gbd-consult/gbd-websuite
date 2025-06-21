@@ -73,36 +73,12 @@ class XmlElementImpl(xml.etree.ElementTree.Element, gws.XmlElement):
             "children": [c.to_dict() for c in self.children()],
         }
 
-    def to_list(self, fold_tags=True, remove_namespaces=False):
-        ser = serializer.Serializer(
-            self,
-            fold_tags=fold_tags,
-            remove_namespaces=remove_namespaces,
-        )
+    def to_list(self, opts=None):
+        ser = serializer.Serializer(self, opts=opts)
         return ser.to_list()
 
-    def to_string(
-        self,
-        extra_namespaces=None,
-        xmlns_replacements=None,
-        doctype=None,
-        compact_whitespace=False,
-        remove_namespaces=False,
-        with_namespace_declarations=False,
-        with_schema_locations=False,
-        with_xml_declaration=False,
-    ):
-        ser = serializer.Serializer(
-            self,
-            extra_namespaces=extra_namespaces,
-            xmlns_replacements=xmlns_replacements,
-            doctype=doctype,
-            compact_whitespace=compact_whitespace,
-            remove_namespaces=remove_namespaces,
-            with_namespace_declarations=with_namespace_declarations,
-            with_schema_locations=with_schema_locations,
-            with_xml_declaration=with_xml_declaration,
-        )
+    def to_string(self, opts=None):
+        ser = serializer.Serializer(self, opts=opts)
         return ser.to_string()
 
     ##

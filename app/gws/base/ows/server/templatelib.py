@@ -1,15 +1,15 @@
 """Helper functions for OWS service templates."""
 
-from typing import Optional, Callable
+from typing import Optional, cast
 
 import gws
-import gws.lib.gml
+import gws.base.metadata
 import gws.lib.mime
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
-import gws.base.metadata
+import gws.base.ows.server as server
 
-from . import core, request
+from . import core, request, service
 
 
 # OGC 06-121r9 Table 34
@@ -99,13 +99,24 @@ def dcp_service_url(ta: request.TemplateArgs):
     return 'DCPType/HTTP/Get', online_resource(ta.serviceUrl + '?')
 
 
-def legend_url(ta: request.TemplateArgs, lc: core.LayerCaps, size=None):
+def legend_url_nested(ta: request.TemplateArgs, lc: core.LayerCaps, size=None):
     name = xmlx.namespace.unqualify_name(lc.layerNameQ)
     return (
         'LegendURL',
         {'width': size[0], 'height': size[1]} if size else {},
         ('Format', 'image/png'),
         online_resource(f'{ta.serviceUrl}?request=GetLegendGraphic&layer={name}'),
+    )
+
+
+def legend_url(ta: request.TemplateArgs, lc: core.LayerCaps, size=None):
+    name = xmlx.namespace.unqualify_name(lc.layerNameQ)
+    return (
+        'LegendURL',
+        {
+            'format': 'image/png',
+            'xlink:href': f'{ta.serviceUrl}?request=GetLegendGraphic&layer={name}',
+        },
     )
 
 
@@ -177,6 +188,68 @@ def meta_url_simple(ta: request.TemplateArgs, ml: gws.MetadataLink, name: str):
         yield name, {'xlink:href': ta.url_for(ml.url), 'about': ml.about}
 
 
+def wfs_feature_collection(ta: server.TemplateArgs):
+    return (
+        'wfs:FeatureCollection',
+        wfs_feature_collection_attributes(ta),
+        [
+            (
+                f'wfs:member/{m.layerCaps.featureNameQ if m.layerCaps else "wfs:feature"}',
+                {'gml:id': gml_format_uid(ta, m.feature.uid())},
+                wfs_feature_collection_member(ta, m),
+            )
+            for m in ta.featureCollection.members
+        ],
+    )
+
+
+def wfs_value_collection(ta: server.TemplateArgs):
+    return (
+        'wfs:ValueCollection',
+        wfs_feature_collection_attributes(ta),
+        [('wfs:member', gml_format_value(ta, val)) for val in ta.featureCollection.values],
+    )
+
+
+def wfs_feature_collection_attributes(ta):
+    return {
+        'timeStamp': ta.featureCollection.timestamp,
+        'numberMatched': ta.featureCollection.numMatched,
+        'numberReturned': ta.featureCollection.numReturned,
+    }
+
+
+def wfs_feature_collection_member(ta: server.TemplateArgs, m: server.FeatureCollectionMember):
+    for name, val in sorted(m.feature.attributes.items()):
+        if m.layerCaps:
+            name = xmlx.namespace.qualify_name(name, m.layerCaps.xmlNamespace)
+        yield name, gml_format_value(ta, val)
+
+
+def gml_format_uid(ta: server.TemplateArgs, uid):
+    if not uid:
+        return '_'
+    s = str(uid)
+    if s.isdigit():
+        return '_' + s
+    return s
+
+
+def gml_format_value(ta, val):
+    s, ok = xmlx.util.atom_to_string(val)
+    if ok:
+        return s
+    if isinstance(val, gws.Shape):
+        # NB Qgis wants inline gml xmlns for adhoc schemas
+        return gws.lib.gml.shape_to_element(
+            val,
+            version=ta.gmlVersion,
+            always_xy=ta.sr.alwaysXY,
+            with_inline_xmlns=True,
+        )
+    return str(val)
+
+
 # http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd
 # Scenario 2: Mandatory (where appropriate) metadata elements not mapped to standard capabilities,
 # plus mandatory language parameters,
@@ -246,24 +319,33 @@ def coord_m(n):
     return round(n, gws.lib.uom.DEFAULT_PRECISION[gws.Uom.m])
 
 
+def namespaces_from_caps(ta: request.TemplateArgs) -> dict[str, gws.XmlNamespace]:
+    return {lc.xmlNamespace.xmlns: lc.xmlNamespace for lc in ta.layerCapsList if lc.xmlNamespace is not None}
+
+
 def to_xml_response(
     ta: request.TemplateArgs,
     tag,
-    extra_namespaces: Optional[list[gws.XmlNamespace]] = None,
+    namespaces: Optional[dict[str, gws.XmlNamespace]] = None,
+    default_namespace: Optional[gws.XmlNamespace] = None,
 ) -> gws.ContentResponse:
     if ta.sr.isSoap:
         tag = ['soap:Envelope', ('soap:Header', ''), ('soap:Body', tag)]
+        namespaces = namespaces or {}
+        namespaces['soap'] = xmlx.namespace.require('soap')
 
     el = xmlx.tag(*tag)
-    xml = el.to_string(
-        extra_namespaces=extra_namespaces,
-        xmlns_replacements=ta.sr.xmlnsReplacements,
-        with_xml_declaration=True,
-        with_namespace_declarations=True,
-        with_schema_locations=True,
+    opts = gws.XmlOptions(
+        namespaces=namespaces,
+        defaultNamespace=default_namespace,
+        withNamespaceDeclarations=True,
+        withSchemaLocations=True,
+        withXmlDeclaration=True,
+        xmlnsReplacements=ta.sr.xmlnsReplacements,
     )
 
-    return gws.ContentResponse(mime=gws.lib.mime.XML, content=xml)
+    return cast(service.Object, ta.sr.service).xml_response(el, opts)
+
 
 def to_xml_response_with_doctype(
     ta: request.TemplateArgs,
@@ -274,12 +356,10 @@ def to_xml_response_with_doctype(
         tag = ['soap:Envelope', ('soap:Header', ''), ('soap:Body', tag)]
 
     el = xmlx.tag(*tag)
-    xml = el.to_string(
+    opts = gws.XmlOptions(
         doctype=doctype,
-        xmlns_replacements=ta.sr.xmlnsReplacements,
-        with_xml_declaration=True,
-        with_namespace_declarations=False,
-        with_schema_locations=False,
+        withNamespaceDeclarations=False,
+        withSchemaLocations=False,
+        withXmlDeclaration=True,
     )
-
-    return gws.ContentResponse(mime=gws.lib.mime.XML, content=xml)
+    return cast(service.Object, ta.sr.service).xml_response(el, opts)

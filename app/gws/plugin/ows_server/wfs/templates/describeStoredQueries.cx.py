@@ -8,6 +8,7 @@ References:
 import gws
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
+import gws.lib.xmlx as xmlx
 import gws.plugin.ows_server.wfs
 
 
@@ -15,7 +16,10 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         ('wfs:DescribeStoredQueriesResponse', doc(ta)),
-        extra_namespaces=[lc.xmlNamespace for lc in ta.layerCapsList]
+        namespaces={
+            'xsd': xmlx.namespace.require('xsd'),
+            **tpl.namespaces_from_caps(ta),
+        }
     )
 
 
@@ -32,12 +36,12 @@ def doc(ta):
             {
                 'isPrivate': 'true',
                 'language': 'urn:ogc:def:queryLanguage:OGC-WFS::WFS_QueryExpression',
-                'returnFeatureTypes': types
+                'returnFeatureTypes': types,
             },
             (
                 'wfs:Query',
                 {'typeNames': types},
-                ('fes:Filter/fes:ResourceId', {'rid': '${ID}'})
-            )
-        )
+                ('fes:Filter/fes:ResourceId', {'rid': '${ID}'}),
+            ),
+        ),
     )

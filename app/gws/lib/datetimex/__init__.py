@@ -233,10 +233,6 @@ def to_iso_string(d: Optional[dt.date] = None, with_tz='+', sep='T') -> str:
     return s
 
 
-def to_short_iso_string(d: Optional[dt.date] = None, sep='T') -> str:
-    return to_iso_string(d, with_tz='', sep=sep)
-
-
 def to_iso_date_string(d: Optional[dt.date] = None) -> str:
     return _datetime(d).strftime('%Y-%m-%d')
 

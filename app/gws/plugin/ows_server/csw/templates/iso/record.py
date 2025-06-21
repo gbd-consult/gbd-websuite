@@ -146,8 +146,8 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
         if md.temporalBegin:
             yield (
                 'gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod',
-                ('gml:beginPosition', dtx.to_short_iso_string(md.temporalBegin)),
-                ('gml:endPosition', dtx.to_short_iso_string(md.temporalEnd)),
+                ('gml:beginPosition', md.temporalBegin),
+                ('gml:endPosition', md.temporalEnd),
             )
 
     def distributionInfo():

@@ -143,22 +143,22 @@ class Object(gws.OwsService):
         if not uid:
             return
 
-        self.rootLayer = self.root.get(uid, gws.ext.object.layer)
+        self.rootLayer = cast(gws.Layer, self.root.get(uid, gws.ext.object.layer))
         if not self.rootLayer:
-            raise gws.NotFoundError(f'root layer {uid!r} not found')
+            raise gws.ConfigurationError(f'root layer {uid!r} not found')
 
-        prj = self.rootLayer.find_closest(gws.ext.object.project)
-        if not self.project:
+        prj = cast(gws.Project, self.rootLayer.find_closest(gws.ext.object.project))
+        if prj and not self.project:
             self.project = prj
             return
 
         if self.project != prj:
-            raise gws.NotFoundError(f'root layer {uid!r} does not belong to {self.project!r}')
+            raise gws.ConfigurationError(f'root layer {uid!r} does not belong to {self.project!r}')
 
     ##
 
     def url_path(self, sr: request.Object) -> str:
-        if sr.project:
+        if sr.project and sr.project != self.project:
             return gws.u.action_url_path('owsService', serviceUid=self.uid, projectUid=sr.project.uid)
         else:
             return gws.u.action_url_path('owsService', serviceUid=self.uid)
@@ -236,6 +236,10 @@ class Object(gws.OwsService):
         )
 
         return tpl.render(gws.TemplateRenderInput(args=args))
+
+    def xml_response(self, el: gws.XmlElement, opts: gws.XmlOptions = None) -> gws.ContentResponse:
+        xml = el.to_string(opts)
+        return gws.ContentResponse(mime=gws.lib.mime.XML, content=xml)
 
     def image_response(self, sr: request.Object, img: Optional[gws.Image], mime: str) -> gws.ContentResponse:
         ifmt = self.find_image_format(mime)

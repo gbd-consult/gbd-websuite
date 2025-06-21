@@ -52,7 +52,7 @@ def for_layer(layer: gws.Layer, user: gws.User, service: Optional[gws.OwsService
         lc.bounds = [
             gws.Bounds(
                 crs=b.crs,
-                extent=gws.lib.extent.transform_from_wgs(layer.wgsExtent, b.crs)
+                extent=gws.lib.extent.transform_from_wgs(layer.wgsExtent, b.crs),
             )
             for b in service.supportedBounds
         ]
@@ -79,14 +79,13 @@ def feature_name_matches(lc: core.LayerCaps, name: str, xmlns_replacements: dict
         return name == lc.featureName
 
     custom_xmlns, _, name = xmlx.namespace.split_name(name)
-    if name == lc.featureName:
-        if lc.xmlNamespace.uid in xmlns_replacements:
-            return xmlns_replacements[lc.xmlNamespace.uid] == custom_xmlns
+    if name == lc.featureName and lc.xmlNamespace and lc.xmlNamespace.uid in xmlns_replacements:
+        return xmlns_replacements[lc.xmlNamespace.uid] == custom_xmlns
 
     return False
 
 
-def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
+def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElement, gws.XmlOptions]:
     """Create an ad-hoc XML Schema for a list of `LayerCaps`."""
 
     ns = None
@@ -104,57 +103,76 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> gws.XmlElement:
     if not ns:
         raise gws.NotFoundError('xml_schema: no xmlns found')
 
+    opts = gws.XmlOptions()
+    opts.namespaces = {}
+    opts.namespaces[ns.xmlns] = ns
+
     tag = [
         'xsd:schema',
         {
-            f'xmlns': ns.xmlns,
             'targetNamespace': ns.uri,
             'elementFormDefault': 'qualified',
-        }
+        },
     ]
 
     if ns.extendsGml:
         gml = xmlx.namespace.require('gml')
-        tag[1][f'xmlns:{gml.xmlns}'] = gml.uri
+        opts.namespaces[gml.xmlns] = gml
         tag.append(['xsd:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}])
 
     for lc in lcs:
         elements = []
+
         for f in gws.u.require(lc.model).fields:
             if user.can_read(f):
-                if f.attributeType == gws.AttributeType.geometry:
-                    typ = _GEOM_TO_XSD.get(gws.u.get(f, 'geometryType'))
-                else:
-                    typ = _ATTR_TO_XSD.get(f.attributeType)
-
-                if typ:
-                    elements.append(['xsd:element', {
-                        'maxOccurs': '1',
-                        'minOccurs': '0',
-                        'nillable': 'false' if f.isRequired else 'true',
-                        'name': f.name,
-                        'type': typ,
-                    }])
+                elements.append(
+                    [
+                        'xsd:element',
+                        {
+                            'maxOccurs': '1',
+                            'minOccurs': '0',
+                            'nillable': 'false' if f.isRequired else 'true',
+                            'name': f.name,
+                            'type': _xsd_type(f),
+                        },
+                    ]
+                )
 
         type_name = f'{lc.featureName}Type'
 
-        type_def = ['xsd:complexContent']
+        type_def = []
+        type_def.append('xsd:complexContent')
         if ns.extendsGml:
-            type_def.append(['xsd:extension', {'base': 'gml:AbstractFeatureType'}, ['xsd:sequence', elements]])
+            type_def.append(
+                ['xsd:extension', {'base': 'gml:AbstractFeatureType'}, ['xsd:sequence', elements]],
+            )
         else:
             type_def.append(['xsd:sequence', elements])
 
+        tag.append(['xsd:complexType', {'name': type_name}, type_def])
+
         atts = {
             'name': lc.featureName,
-            'type': type_name,
+            'type': ns.xmlns + ':' + type_name,
         }
         if ns.extendsGml:
             atts['substitutionGroup'] = 'gml:AbstractFeature'
 
-        tag.append(['xsd:complexType', {'name': type_name}, type_def])
         tag.append(['xsd:element', atts])
 
-    return xmlx.tag(*tag)
+    return xmlx.tag(*tag), opts
+
+
+def _xsd_type(f: gws.ModelField) -> str:
+    """Get the XSD type for a model field."""
+
+    if f.attributeType != gws.AttributeType.geometry:
+        return _ATTR_TO_XSD.get(f.attributeType, 'xsd:string')
+
+    typ = gws.u.get(f, 'geometryType')
+    if not typ:
+        return 'gml:GeometryPropertyType'
+    return _GEOM_TO_XSD.get(typ, 'gml:GeometryPropertyType')
 
 
 # map attributes types to XSD

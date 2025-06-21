@@ -12,9 +12,6 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         ('csw:GetRecordsResponse', {'version': ta.version}, doc(ta)),
-        extra_namespaces=[
-            gws.lib.xmlx.namespace.require('gml2'),
-        ],
     )
 
 

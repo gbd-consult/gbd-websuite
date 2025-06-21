@@ -44,6 +44,12 @@ _DEFAULT_TEMPLATES_ISO = [
         subject='ows.GetRecords',
         mimeTypes=[gws.lib.mime.XML],
     ),
+    gws.Config(
+        type='py',
+        path=f'{_cdir}/templates/iso/getRecords.cx.py',
+        subject='ows.GetRecordById',
+        mimeTypes=[gws.lib.mime.XML],
+    ),
 ]
 
 _DEFAULT_METADATA = dict(
@@ -139,6 +145,11 @@ class Object(server.service.Object):
 
     ##
 
+    def init_request(self, req):
+        sr = super().init_request(req)
+        sr.load_project()
+        return sr
+
     def handle_get_capabilities(self, sr: server.request.Object):
         return self.template_response(sr)
 
@@ -146,7 +157,25 @@ class Object(server.service.Object):
         return self.template_response(sr)
 
     def handle_get_records(self, sr: server.request.Object):
-        mds = self._find_mds(sr)
+        mds = self._find_metas(sr)
+
+        mdc = server.MetadataCollection(
+            members=mds,
+            numMatched=len(mds),
+            numReturned=len(mds),
+            timestamp=gws.lib.datetimex.to_iso_string(with_tz=''),
+        )
+
+        return self.template_response(
+            sr,
+            '',
+            metadataCollection=mdc,
+            next=0,
+        )
+
+    def handle_get_record_by_id(self, sr: server.request.Object):
+        md = self._find_meta_by_id(sr)
+        mds = [md] if md else []
 
         mdc = server.MetadataCollection(
             members=mds,
@@ -236,7 +265,7 @@ class Object(server.service.Object):
             function='download',
         )
 
-    def _find_mds(self, sr: server.request.Object):
+    def _find_metas(self, sr: server.request.Object):
         flt_el = None
         if sr.xmlElement:
             flt_el = sr.xmlElement.findfirst('Query/Constraint/Filter')
@@ -248,3 +277,8 @@ class Object(server.service.Object):
         m = gws.base.search.filter.Matcher()
 
         return [md for md in self.mdMap.values() if m.matches(flt, md)]
+
+    def _find_meta_by_id(self, sr: server.request.Object):
+        for md in self.mdMap.values():
+            if md.catalogUid == sr.req.param('id'):
+                return md

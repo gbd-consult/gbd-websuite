@@ -9,23 +9,21 @@ import gws.base.ows.server.templatelib as tpl
 def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
-        ('WFS_Capabilities', doc(ta)),
-        extra_namespaces=[
-            gws.lib.xmlx.namespace.require('ows11'),
-        ],
+        (
+            'WFS_Capabilities',
+            {'version': ta.version},
+            doc(ta),
+        ),
+        namespaces={
+            'ows': gws.lib.xmlx.namespace.require('ows11'),
+            'gml': gws.lib.xmlx.namespace.require('gml2'),
+            **tpl.namespaces_from_caps(ta),
+        },
+        default_namespace=gws.lib.xmlx.namespace.require('wfs'),
     )
 
 
 def doc(ta: server.TemplateArgs):
-    d = {
-        'version': ta.version,
-        'xmlns': 'wfs',
-    }
-    for lc in ta.layerCapsList:
-        if lc.xmlNamespace:
-            d[f'xmlns:{lc.xmlNamespace.xmlns}'] = lc.xmlNamespace.uri
-    yield d
-
     yield tpl.ows_service_identification(ta)
     yield tpl.ows_service_provider(ta)
     yield 'ows:OperationsMetadata', operations(ta)

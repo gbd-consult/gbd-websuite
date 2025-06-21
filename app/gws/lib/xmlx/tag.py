@@ -32,7 +32,7 @@ import re
 
 import gws
 
-from . import element, error
+from . import element, error, util
 
 
 def tag(name: str, *args, **kwargs) -> gws.XmlElement:
@@ -71,13 +71,9 @@ def _add(el: gws.XmlElement, arg):
         el.append(arg)
         return
 
-    if isinstance(arg, str):
-        if arg:
-            _add_text(el, arg)
-        return
-
-    if isinstance(arg, (int, float, bool)):
-        _add_text(el, str(arg).lower())
+    s, ok = util.atom_to_string(arg)
+    if ok:
+        _add_text(el, s)
         return
 
     if isinstance(arg, dict):

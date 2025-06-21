@@ -1,13 +1,26 @@
 import gws
+import gws.lib.xmlx as xmlx
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
 
 
 def main(ta: server.TemplateArgs):
-    return tpl.to_xml_response(ta, ('Capabilities', doc(ta)))
+    return tpl.to_xml_response(
+        ta,
+        ('Capabilities', doc(ta)),
+        namespaces={
+            'ows': xmlx.namespace.require('ows11'),
+        },
+        default_namespace=xmlx.namespace.require('wmts'),
+    )
 
 
 def doc(ta):
+    yield {
+        'version': ta.version,
+        'updateSequence': ta.service.updateSequence,
+    }
+
     yield tpl.ows_service_identification(ta)
     yield tpl.ows_service_provider(ta)
 
@@ -15,7 +28,7 @@ def doc(ta):
         'ows:OperationsMetadata',
         ('ows:Operation', {'name': 'GetCapabilities'}, tpl.ows_service_url(ta)),
         ('ows:Operation', {'name': 'GetTile'}, tpl.ows_service_url(ta)),
-        ('ows:Operation', {'name': 'GetLegendGraphic'}, tpl.ows_service_url(ta))
+        ('ows:Operation', {'name': 'GetLegendGraphic'}, tpl.ows_service_url(ta)),
     )
 
     yield 'Contents', contents(ta)
@@ -46,8 +59,8 @@ def layer(ta: server.TemplateArgs, lc: server.LayerCaps):
         yield (
             'Style',
             ('ows:Identifier', 'default'),
-            ('ows:Title', 'default'),
-            tpl.legend_url(ta, lc))
+            tpl.legend_url(ta, lc),
+        )
 
     yield 'Format', 'image/png'
 

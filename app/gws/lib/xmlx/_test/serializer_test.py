@@ -2,26 +2,104 @@
 
 import gws
 import gws.test.util as u
-import gws.lib.xmlx.serializer
 
 import gws.lib.xmlx as xmlx
 
 
 def test_to_list():
-    el = xmlx.tag('geometry/gml:Point',
-                  {'gml:id': 'xy'},
-                  ['gml:coordinates', '12.345,56.789'],
-                  srsName=3857)
-    assert xmlx.serializer.to_list(el) == ['geometry',
-                                           [['gml:Point',
-                                             {'gml:id': 'xy', 'srsName': 3857},
-                                             [['gml:coordinates', '12.345,56.789']]]]]
+    el = xmlx.tag(
+        'a/b/c',
+        {'attr1': 'a'},
+        ['sub', 'subtext'],
+        attr3='3',
+    )
+    assert el.to_list() == ['a', ['b', ['c', {'attr1': 'a', 'attr3': '3'}, ['sub', 'subtext']]]]
 
 
-def test_to_string():
-    el = xmlx.tag('geometry/gml:Point',
-                  {'gml:id': 'xy'},
-                  ['gml:coordinates', '12.345,56.789'],
-                  srsName=3857)
-    assert xmlx.serializer.to_string(el) == ('<geometry><gml:Point gml:id="xy" '
-                                             'srsName="3857"><gml:coordinates>12.345,56.789</gml:coordinates></gml:Point></geometry>')
+def test_to_string_with_namespaces():
+    aaa_ns = xmlx.namespace.from_args(uid='aaa', xmlns='aaa', uri='http://aaa')
+    bbb_ns = xmlx.namespace.from_args(uid='bbb', xmlns='bbb', uri='http://bbb')
+
+    el = xmlx.tag(
+        'aaa:a/bbb:b',
+        {
+            'a1': 'A1',
+            'aaa:a2': 'A2',
+        },
+        ['bbb:sub'],
+    )
+
+    opts = gws.XmlOptions(
+        namespaces={
+            'aaa': aaa_ns,
+            'bbb': bbb_ns,
+        },
+        withNamespaceDeclarations=True,
+    )
+    xml = el.to_string(opts)
+    assert xml == u.fxml("""
+        <aaa:a xmlns:aaa="http://aaa" xmlns:bbb="http://bbb">
+            <bbb:b a1="A1" aaa:a2="A2">
+                <bbb:sub/>
+            </bbb:b>
+        </aaa:a>
+    """)
+
+def test_to_string_with_implicit_namespace():
+    aaa_ns = xmlx.namespace.from_args(uid='aaa', xmlns='aaa', uri='http://aaa')
+    bbb_ns = xmlx.namespace.from_args(uid='bbb', xmlns='bbb', uri='http://bbb')
+
+    el = xmlx.tag(
+        'aaa:a/bbb:b',
+        {
+            'a1': 'A1',
+            'aaa:a2': 'A2',
+        },
+        ['bbb:sub'],
+    )
+
+    opts = gws.XmlOptions(
+        namespaces={
+            'aaa': aaa_ns,
+        },
+        withNamespaceDeclarations=True,
+    )
+    xml = el.to_string(opts)
+    assert xml == u.fxml("""
+        <aaa:a xmlns:aaa="http://aaa" xmlns:bbb="http://bbb">
+            <bbb:b a1="A1" aaa:a2="A2">
+                <bbb:sub/>
+            </bbb:b>
+        </aaa:a>
+    """)
+
+def test_to_string_with_default_namespace():
+    aaa_ns = xmlx.namespace.from_args(uid='aaa', uri='http://aaa')
+    bbb_ns = xmlx.namespace.from_args(uid='bbb', uri='http://bbb')
+
+    el = xmlx.tag(
+        'aaa:a/bbb:b',
+        {
+            'a1': 'A1',
+            'aaa:a2': 'A2',
+        },
+        ['bbb:sub'],
+    )
+
+    opts = gws.XmlOptions(
+        namespaces={
+            'aaa': aaa_ns,
+            'bbb': bbb_ns,
+        },
+        defaultNamespace=aaa_ns,
+        withNamespaceDeclarations=True,
+    )
+    xml = el.to_string(opts)
+    assert xml == u.fxml("""
+        <a xmlns="http://aaa" xmlns:bbb="http://bbb">
+            <bbb:b a1="A1" a2="A2">
+                <bbb:sub/>
+            </bbb:b>
+        </a>
+    """)
+

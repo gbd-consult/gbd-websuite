@@ -9,9 +9,10 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         ('csw:Capabilities', {'version': ta.version}, caps(ta)),
-        extra_namespaces=[
-            gws.lib.xmlx.namespace.require('gml2'),
-        ],
+        namespaces={
+            'ows': gws.lib.xmlx.namespace.require('ows0'),
+            'gml': gws.lib.xmlx.namespace.require('gml2'),
+        },
     )
 
 
