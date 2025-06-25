@@ -5,15 +5,11 @@ from typing import Optional
 import shapely.geometry
 
 import gws
-import gws.lib.crs
-import gws.lib.extent
-import gws.base.feature
-import gws.base.shape
-import gws.lib.xmlx as xmlx
 import gws.lib.uom
-
+import gws.lib.xmlx as xmlx
 
 # @TODO PostGis options 2 and 4 (https://postgis.net/docs/ST_AsGML.html)
+
 
 class _Options(gws.Data):
     version: int
@@ -23,15 +19,18 @@ class _Options(gws.Data):
     crsName: dict
 
 
+DEFAULT_VERSION = 3
+
+
 def shape_to_element(
-        shape: gws.Shape,
-        version: int = 3,
-        coordinate_precision: Optional[int] = None,
-        always_xy: bool = False,
-        with_xmlns: bool = True,
-        with_inline_xmlns: bool = False,
-        namespace: Optional[gws.XmlNamespace] = None,
-        crs_format: Optional[gws.CrsFormat] = None,
+    shape: gws.Shape,
+    version: int = DEFAULT_VERSION,
+    coordinate_precision: Optional[int] = None,
+    always_xy: bool = False,
+    with_xmlns: bool = True,
+    with_inline_xmlns: bool = False,
+    namespace: Optional[gws.XmlNamespace] = None,
+    crs_format: Optional[gws.CrsFormat] = None,
 ) -> gws.XmlElement:
     """Convert a Shape to a GML geometry element.
 
@@ -50,12 +49,12 @@ def shape_to_element(
     """
 
     opts = _Options()
-    opts.version = int(version)
+    opts.version = int(version or DEFAULT_VERSION)
     if opts.version not in {2, 3}:
         raise gws.Error(f'unsupported GML version {version!r}')
 
     crs_format = crs_format or (gws.CrsFormat.url if opts.version == 2 else gws.CrsFormat.urn)
-    opts.crsName= {'srsName': shape.crs.to_string(crs_format)}
+    opts.crsName = {'srsName': shape.crs.to_string(crs_format)}
 
     opts.swapxy = (shape.crs.axis_for_format(crs_format) == gws.Axis.yx) and not always_xy
     opts.precision = coordinate_precision if coordinate_precision is not None else gws.lib.uom.DEFAULT_PRECISION[shape.crs.uom]
@@ -94,55 +93,63 @@ def _linestring2(geom, opts):
 
 def _linestring3(geom, opts):
     return [
-        f'{opts.xmlns}Curve', opts.crsName,
+        f'{opts.xmlns}Curve',
+        opts.crsName,
         [
             f'{opts.xmlns}segments',
             [
-                f'{opts.xmlns}LineStringSegment', _pos_list(geom, opts)
-            ]
-        ]
+                f'{opts.xmlns}LineStringSegment',
+                _pos_list(geom, opts),
+            ],
+        ],
     ]
 
 
 def _polygon2(geom, opts):
     return [
-        f'{opts.xmlns}Polygon', opts.crsName,
+        f'{opts.xmlns}Polygon',
+        opts.crsName,
         [
             f'{opts.xmlns}outerBoundaryIs',
             [
-                f'{opts.xmlns}LinearRing', _coordinates(geom.exterior, opts)
-            ]
+                f'{opts.xmlns}LinearRing',
+                _coordinates(geom.exterior, opts),
+            ],
         ],
         [
             [
                 f'{opts.xmlns}innerBoundaryIs',
                 [
-                    f'{opts.xmlns}LinearRing', _coordinates(interior, opts)
-                ]
+                    f'{opts.xmlns}LinearRing',
+                    _coordinates(interior, opts),
+                ],
             ]
             for interior in geom.interiors
-        ]
+        ],
     ]
 
 
 def _polygon3(geom, opts):
     return [
-        f'{opts.xmlns}Polygon', opts.crsName,
+        f'{opts.xmlns}Polygon',
+        opts.crsName,
         [
             f'{opts.xmlns}exterior',
             [
-                f'{opts.xmlns}LinearRing', _pos_list(geom.exterior, opts)
-            ]
+                f'{opts.xmlns}LinearRing',
+                _pos_list(geom.exterior, opts),
+            ],
         ],
         [
             [
                 f'{opts.xmlns}interior',
                 [
-                    f'{opts.xmlns}LinearRing', _pos_list(interior, opts)
-                ]
+                    f'{opts.xmlns}LinearRing',
+                    _pos_list(interior, opts),
+                ],
             ]
             for interior in geom.interiors
-        ]
+        ],
     ]
 
 

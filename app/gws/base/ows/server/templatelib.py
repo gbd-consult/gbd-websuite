@@ -4,7 +4,7 @@ from typing import Optional, cast
 
 import gws
 import gws.base.metadata
-import gws.lib.mime
+import gws.lib.gml
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
 import gws.base.ows.server as server
