@@ -126,25 +126,3 @@ def buffer(b: gws.Bounds, buf_size: int) -> gws.Bounds:
     if buf_size == 0:
         return b
     return gws.Bounds(crs=b.crs, extent=gws.lib.extent.buffer(b.extent, buf_size))
-
-
-def width_in_meters(b: gws.Bounds, use_haversine=False) -> float:
-    """Calculates the width of a bounding box in meters.
-
-    Args:
-        b: A Bounds object.
-        use_haversine: If true, use simpler haversine calculations like in QGIS.
-    """
-
-    return b.crs.extent_width_in_meters(b.extent, use_haversine)
-
-
-def point_with_offset(b: gws.Bounds, offset_meters: gws.Size) -> gws.Point:
-    """Compute a point within a bounding box that is offset from the southwest corner of the bbox.
-
-    Args:
-        b: A Bounds object.
-        offset: X, Y offset in meters.
-
-    """
-    return b.crs.extent_point_with_offset(b.extent, offset_meters)

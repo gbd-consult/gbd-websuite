@@ -1519,7 +1519,7 @@ class XmlNamespace(Data):
     version: str
     """Namespace version."""
     isDefault: bool
-    """Is this the default namespace for the given prefix."""
+    """Is this the default namespace for the given xmlns prefix."""
     extendsGml: bool
     """Namespace schema extends the GML3 schema."""
 
@@ -1556,6 +1556,7 @@ class XmlOptions(Data):
 
     withXmlDeclaration: bool = False
     """Include the xml declaration."""
+
 
 
 class XmlElement(Iterable):
@@ -1814,20 +1815,19 @@ class Crs:
             A transformed Extent.
         """
 
-    def extent_width_in_meters(self, extent: Extent, use_haversine=False) -> float:
-        """Calculate the width of an extent in meters;
+    def extent_size_in_meters(self, extent: Extent) -> Size:
+        """Calculate the width and height of an extent in meters;
 
         Args:
             extent: Extent.
-            use_haversine: If true, use a simpler haversine calculations like in QGIS.
         """
 
-    def extent_point_with_offset(self, extent: Extent, offset_meters: Size) -> Point:
-        """Compute a point within a bounding box that is offset from the southwest corner of the bbox.
-
+    def point_offset_in_meters(self, xy: Point, dist: float, az: int) -> Point:
+        """Calculate a point with an offset in meters.
         Args:
-            extent: Extent.
-            offset_meters: X, Y offset in meters.
+            xy: Point.
+            dist: Distance in meters.
+            az: Azimuth in degrees (0 = North, 90 = East, etc.).
         """
 
     def transformer(self, crs_to: 'Crs') -> Callable:

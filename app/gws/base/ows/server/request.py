@@ -46,6 +46,8 @@ class Object:
     params: dict
     pxSize: gws.Size
     resolution: float
+    resX: float
+    resY: float
     isSoap: bool = False
     layerCapsList: list[core.LayerCaps]
     operation: gws.OwsOperation
@@ -79,6 +81,8 @@ class Object:
         self.isSoap = False
         self.pxSize = 0, 0
         self.resolution = 0
+        self.resX = 0
+        self.resY = 0
 
         # OGC 06-042, 7.2.3.5
         if self.service.updateSequence:

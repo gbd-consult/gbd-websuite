@@ -45,7 +45,7 @@ _DEFAULT_TEMPLATES = [
         path=f'{_cdir}/../wfs/templates/getFeature2.cx.py',
         subject='ows.GetFeatureInfo',
         mimeTypes=[gws.lib.mime.GML2, gws.lib.mime.GML, gws.lib.mime.XML],
-    )
+    ),
 ]
 
 _DEFAULT_METADATA = gws.Metadata(
@@ -151,14 +151,14 @@ class Object(server.service.Object):
             return self.image_response(sr, None, mime)
 
         s = sr.string_param('TRANSPARENT', values={'true', 'false'}, default='true')
-        transparent = (s == 'true')
+        transparent = s == 'true'
 
         gws.log.debug(f'get_map: layers={[lc.layer for lc in lcs]}')
 
         planes = [
             gws.MapRenderInputPlane(
                 type=gws.MapRenderInputPlaneType.imageLayer,
-                layer=lc.layer
+                layer=lc.layer,
             )
             for lc in lcs
         ]
@@ -231,24 +231,31 @@ class Object(server.service.Object):
         return gws.u.uniq(reversed(lcs) if bottom_first else lcs)
 
     def get_features(self, sr: server.request.Object, lcs: list[server.LayerCaps]):
-
         lcs = self.visible_layer_caps(sr, lcs)
         if not lcs:
             return self.feature_collection(sr, lcs, 0, [])
 
+        # OGC 06-042, 7.4.3.7
+        # - the point I=0, J=0 indicates the pixel at the upper left corner of the map;
+        # - I increases to the right and J increases downward.
+        # similar OGC 01-068r3, 7.3.3.8
+
         # @TODO validate and raise InvalidPoint
 
-        x = sr.int_param('X,I')
-        y = sr.int_param('Y,J')
+        ox = sr.int_param('X,I')
+        oy = sr.int_param('Y,J')
 
-        # x = sr.bounds.extent[0] + (x * sr.resolution)
-        # y = sr.bounds.extent[3] - (y * sr.resolution)
+        dx = ox * sr.resX
+        dy = oy * sr.resY
 
-        x, y = gws.lib.bounds.point_with_offset(sr.bounds, (x * sr.resolution, y * sr.resolution))
-        gws.log.debug(f'get_features:point={x} {y}, {sr.resolution=}')
+        xy = sr.bounds.extent[0], sr.bounds.extent[3]
+        xy = sr.bounds.crs.point_offset_in_meters(xy, dx, az=90)
+        xy = sr.bounds.crs.point_offset_in_meters(xy, dy, az=180)
 
-        point = gws.base.shape.from_xy(x, y, sr.crs)
-    
+        gws.log.debug(f'get_features: {ox=} {oy=} {dx=} {dy=} {xy=}')
+
+        point = gws.base.shape.from_xy(xy[0], xy[1], sr.crs)
+
         search = gws.SearchQuery(
             project=sr.project,
             layers=[lc.layer for lc in lcs],
@@ -262,7 +269,6 @@ class Object(server.service.Object):
         return self.feature_collection(sr, lcs, len(results), results)
 
     def set_size_and_resolution(self, sr: server.request.Object):
-
         b = sr.requested_bounds('BBOX')
         if not b:
             raise server.error.MissingParameterValue('BBOX')
@@ -274,19 +280,23 @@ class Object(server.service.Object):
         if sr.pxSize[1] > self.maxPixelSize:
             raise server.error.InvalidParameterValue('HEIGHT')
 
-        mw = gws.lib.bounds.width_in_meters(sr.bounds)
+        wh = sr.bounds.crs.extent_size_in_meters(sr.bounds.extent)
 
         dpi = sr.int_param('DPI', default=0) or sr.int_param('MAP_RESOLUTION', default=0)
         if dpi:
             # honor the dpi setting - compute the scale with "their" dpi and convert to "our" resolution
-            sr.resolution = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * mw / sr.pxSize[0], dpi))
+            sr.resX = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * wh[0] / sr.pxSize[0], dpi))
+            sr.resY = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * wh[1] / sr.pxSize[1], dpi))
         else:
-            sr.resolution = mw / sr.pxSize[0]
+            sr.resX = wh[0] / sr.pxSize[0]
+            sr.resY = wh[1] / sr.pxSize[1]
 
-        gws.log.debug(f'set_size_and_resolution: {mw=} px={sr.pxSize} {dpi=} res={sr.resolution} 1:{gws.lib.uom.res_to_scale(sr.resolution)}')
+        # @TODO: is this correct?
+        sr.resolution = sr.resX
+
+        gws.log.debug(
+            f'set_size_and_resolution: {wh=} px={sr.pxSize} {dpi=} resX={sr.resX} resY={sr.resY} 1:{gws.lib.uom.res_to_scale(sr.resolution)}'
+        )
 
     def visible_layer_caps(self, sr, lcs: list[server.LayerCaps]) -> list[server.LayerCaps]:
-        return [
-            lc for lc in lcs
-            if min(lc.layer.resolutions) <= sr.resolution <= max(lc.layer.resolutions)
-        ]
+        return [lc for lc in lcs if min(lc.layer.resolutions) <= sr.resolution <= max(lc.layer.resolutions)]
