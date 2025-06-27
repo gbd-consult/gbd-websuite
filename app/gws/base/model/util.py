@@ -72,5 +72,8 @@ def describe_from_record(fd: gws.FeatureRecord) -> gws.DataSetDescription:
     return desc
 
 
+def copy_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
+    return gws.ModelContext(gws.u.merge(mc, kwargs))
+
 def secondary_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
     return gws.ModelContext(gws.u.merge(mc, kwargs, relDepth=mc.relDepth + 1))

@@ -144,5 +144,6 @@ from . import manager, default_model, util, field, related_field
 
 from .util import (
     iter_features,
+    copy_context,
     secondary_context,
 )

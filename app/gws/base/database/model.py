@@ -59,7 +59,8 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
     def find_features(self, search, mc):
         if not mc.user.can_read(self):
             raise gws.ForbiddenError()
-
+        
+        mc = gws.base.model.copy_context(mc)
         mc.search = search
         mc.dbSelect = gws.ModelSelectBuild(
             columns=[],

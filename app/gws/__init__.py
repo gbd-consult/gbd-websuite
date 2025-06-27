@@ -3998,23 +3998,36 @@ class SearchFilter(Data):
 class SearchQuery(Data):
     """Search query."""
 
-    access: Access
-    all: bool
     bounds: Bounds
+    """Search bounds."""
+    extraArgs: dict
+    """Extra arguments for custom searches."""
     extraColumns: list
+    """Extra columns to select."""
     extraParams: dict
+    """Extra parameters to pass to a provider"""
     extraWhere: list
+    """Extra where clauses."""
     keyword: str
+    """Keyword to search for."""
     layers: list['Layer']
+    """Layers to search in."""
     limit: int
+    """Limit the number of results."""
     filter: SearchFilter
+    """Search filter."""
     project: 'Project'
-    relDepth: int
+    """Project to search in."""
     resolution: float
+    """Pixel resolution for geometry search."""
     shape: 'Shape'
+    """Shape to search in."""
     sort: list[SearchSort]
+    """Sort options."""
     tolerance: 'UomValue'
+    """Tolerance for geometry search."""
     uids: list[str]
+    """UIDs to search for."""
 
 
 class SearchResult(Data):

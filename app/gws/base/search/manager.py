@@ -12,30 +12,30 @@ class Object(gws.SearchManager):
         if search.layers:
             for layer in search.layers:
                 for finder in layer.finders:
-                    self._run(search, user, finder, layer, results)
+                    self._run_search(search, user, finder, layer, results)
                     if len(results) > search.limit:
-                        return results[:search.limit]
+                        return results[: search.limit]
 
         if search.project:
             for finder in search.project.finders:
-                self._run(search, user, finder, None, results)
+                self._run_search(search, user, finder, None, results)
                 if len(results) > search.limit:
-                    return results[:search.limit]
+                    return results[: search.limit]
 
         for finder in self.root.app.finders:
-            self._run(search, user, finder, None, results)
+            self._run_search(search, user, finder, None, results)
             if len(results) > search.limit:
-                return results[:search.limit]
+                return results[: search.limit]
 
         return results
 
-    def _run(
-            self,
-            search: gws.SearchQuery,
-            user: gws.User,
-            finder: gws.Finder,
-            layer: Optional[gws.Layer],
-            results,
+    def _run_search(
+        self,
+        search: gws.SearchQuery,
+        user: gws.User,
+        finder: gws.Finder,
+        layer: Optional[gws.Layer],
+        results,
     ):
         gws.log.debug(f'SEARCH_BEGIN: {finder=} {layer=}')
 
@@ -49,7 +49,7 @@ class Object(gws.SearchManager):
 
         try:
             features: list[gws.Feature] = finder.run(search, user, layer) or []
-        except:
+        except Exception:
             gws.log.exception('SEARCH_FAILED')
             return
 
