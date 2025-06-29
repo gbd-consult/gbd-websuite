@@ -220,10 +220,17 @@ def wfs_feature_collection_attributes(ta):
 
 
 def wfs_feature_collection_member(ta: server.TemplateArgs, m: server.FeatureCollectionMember):
+    geom = None
     for name, val in sorted(m.feature.attributes.items()):
         if m.layerCaps:
             name = xmlx.namespace.qualify_name(name, m.layerCaps.xmlNamespace)
-        yield name, gml_format_value(ta, val)
+        if isinstance(val, gws.Shape):
+            geom = name, gml_format_value(ta, val)
+        else:
+            yield name, gml_format_value(ta, val)
+    # QGIS wants geometry as the last element
+    if geom:
+        yield geom
 
 
 def gml_format_uid(ta: server.TemplateArgs, uid):

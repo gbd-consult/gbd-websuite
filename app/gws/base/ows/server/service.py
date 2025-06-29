@@ -210,13 +210,19 @@ class Object(gws.OwsService):
         fn = getattr(self, sr.operation.handlerName)
         return fn(sr)
 
-    def template_response(self, sr: request.Object, mime: str = '', **kwargs) -> gws.ContentResponse:
-        tpl = self.root.app.templateMgr.find_template(
+    def get_template(self, sr: request.Object, mime: str = '') -> Optional[gws.Template]:
+        """Find a template for the given service request."""
+        return self.root.app.templateMgr.find_template(
             f'ows.{sr.operation.verb}',
             where=[self, sr.project],
             user=sr.req.user,
             mime=mime,
         )
+
+    def template_response(self, sr: request.Object, mime: str = '', **kwargs) -> gws.ContentResponse:
+        """Render a template for the given service request."""
+
+        tpl = self.get_template(sr, mime=mime)
         if not tpl:
             # OGC 06-042, 7.2.3.1
             # If the request specifies a format not supported by the server, the server shall respond with the default text/xml format.

@@ -110,8 +110,7 @@ def service_metadata(caps_el: gws.XmlElement) -> gws.Metadata:
 
     service_link = _parse_link(caps_el.find('ServiceMetadataURL'))
     if service_link:
-        service_link.function = 'ServiceMetadataURL'
-        md.metaLinks.append(service_link)
+        md.serviceMetadataURL = service_link.url
 
     return gws.u.strip(md)
 

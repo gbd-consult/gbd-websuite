@@ -1,5 +1,4 @@
-""""CSW Record template (gmd:MD_Metadata, ISO)."""
-
+""" "CSW Record template (gmd:MD_Metadata, ISO)."""
 
 import gws
 import gws.base.ows.server as server
@@ -13,21 +12,25 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
         return (
             f'gmd:{wrap}/gmd:{lst}',
             {'codeList': ML_GMX_CODELISTS + '#' + lst, 'codeListValue': value},
-            text or value
+            text or value,
         )
 
     def w_date(d, typ):
         return (
             'gmd:date/gmd:CI_Date',
-            ('gmd:date/gco:Date', dtx.to_iso_date_string(d)),
-            w_code('dateType', 'CI_DateTypeCode', typ)
+            ('gmd:date/gco:Date', dtx.to_iso_date_string(dtx.parse(d))),
+            w_code(
+                'dateType',
+                'CI_DateTypeCode',
+                typ,
+            ),
         )
 
     def w_lang():
         return (
             'gmd:language/gmd:LanguageCode',
             {'codeList': 'http://www.loc.gov/standards/iso639-2/', 'codeListValue': md.language3},
-            md.languageName
+            md.languageName,
         )
 
     def w_bbox(ext):
@@ -62,7 +65,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
                 ),
                 ('gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL', md.contactUrl),
             ),
-            w_code('role', 'CI_RoleCode', md.contactRole)
+            w_code('role', 'CI_RoleCode', md.contactRole),
         )
 
     def identification():
@@ -71,7 +74,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
             ('gmd:title/gco:CharacterString', md.title),
             w_date(md.dateCreated, 'publication'),
             w_date(md.dateUpdated, 'revision'),
-            ('gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString', md.catalogCitationUid)
+            ('gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString', md.catalogCitationUid),
         )
 
         yield 'gmd:abstract/gco:CharacterString', md.abstract
@@ -82,15 +85,11 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
             lst = 'http://inspire.ec.europa.eu/metadata-codelist/SpatialScope/'
             yield (
                 'gmd:descriptiveKeywords/gmd:MD_Keywords',
-                (
-                    'gmd:keyword gmx:Anchor',
-                    {'xlink:href': lst + md.inspireSpatialScope},
-                    md.inspireSpatialScopeName
-                ),
+                ('gmd:keyword/gmx:Anchor', {'xlink:href': lst + md.inspireSpatialScope}, md.inspireSpatialScopeName),
                 (
                     'gmd:thesaurusName/gmd:CI_Citation',
-                    ('gmd:title gmx:Anchor', {'xlink:href': lst + 'SpatialScope'}, 'Spatial scope'),
-                    w_date('2019-05-22', 'publication')
+                    ('gmd:title/gmx:Anchor', {'xlink:href': lst + 'SpatialScope'}, 'Spatial scope'),
+                    w_date('2019-05-22', 'publication'),
                 ),
             )
 
@@ -102,14 +101,14 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
                 (
                     'gmd:thesaurusName/gmd:CI_Citation',
                     ('gmd:title/gco:CharacterString', 'GEMET - INSPIRE themes, version 1.0'),
-                    w_date('2008-06-01', 'publication')
-                )
+                    w_date('2008-06-01', 'publication'),
+                ),
             )
 
         if md.keywords:
             yield (
                 'gmd:descriptiveKeywords/gmd:MD_Keywords',
-                [('gmd:keyword/gco:CharacterString', kw) for kw in md.keywords]
+                [('gmd:keyword/gco:CharacterString', kw) for kw in md.keywords],
             )
 
         yield (
@@ -119,12 +118,16 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
             ('gmd:otherConstraints/gco:CharacterString', md.license),
         )
 
-        yield w_code('spatialRepresentationType', 'MD_SpatialRepresentationTypeCode', md.isoSpatialRepresentationType)
+        yield w_code(
+            'spatialRepresentationType',
+            'MD_SpatialRepresentationTypeCode',
+            md.isoSpatialRepresentationType,
+        )
 
         if md.isoSpatialResolution:
             yield (
                 'gmd:spatialResolution/gmd:MD_Resolution/gmd:equivalentScale/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer',
-                md.isoSpatialResolution
+                md.isoSpatialResolution,
             )
 
         yield w_lang()
@@ -156,7 +159,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
                 yield (
                     'gmd:distributionFormat/gmd:MD_Format',
                     ('gmd:name/gco:CharacterString', link.format),
-                    ('gmd:version/gco:CharacterString', link.formatVersion)
+                    ('gmd:version/gco:CharacterString', link.formatVersion),
                 )
 
         for link in md.metaLinks:
@@ -165,8 +168,8 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
                 (
                     'gmd:onLine/gmd:CI_OnlineResource',
                     ('gmd:linkage/gmd:URL', ta.url_for(link.url)),
-                    w_code('function', 'CI_OnLineFunctionCode', link.function)
-                )
+                    w_code('function', 'CI_OnLineFunctionCode', link.function),
+                ),
             )
 
     def dataQualityInfo():
@@ -178,10 +181,10 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
                 (
                     'gmd:specification/gmd:CI_Citation',
                     ('gmd:title/gco:CharacterString', md.isoQualityConformanceSpecificationTitle),
-                    w_date(md.isoQualityConformanceSpecificationDate, 'publication')
+                    w_date(md.isoQualityConformanceSpecificationDate, 'publication'),
                 ),
                 ('gmd:explanation/gco:CharacterString', md.isoQualityConformanceExplanation),
-                ('gmd:pass/gco:Boolean', md.isoQualityConformanceQualityPass)
+                ('gmd:pass/gco:Boolean', md.isoQualityConformanceQualityPass),
             )
 
         if md.isoQualityLineageStatement:
@@ -191,11 +194,8 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
                 (
                     'gmd:source/gmd:LI_Source',
                     ('gmd:description/gco:CharacterString', md.isoQualityLineageSource),
-                    (
-                        'gmd:scaleDenominator/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer',
-                        md.isoQualityLineageSourceScale
-                    )
-                )
+                    ('gmd:scaleDenominator/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer', md.isoQualityLineageSourceScale),
+                ),
             )
 
     def content():
@@ -217,7 +217,8 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
         if md.crs:
             yield (
                 'gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString',
-                md.crs.uri)
+                md.crs.uri,
+            )
 
         yield 'gmd:identificationInfo/gmd:MD_DataIdentification', identification()
         yield 'gmd:distributionInfo/gmd:MD_Distribution', distributionInfo()

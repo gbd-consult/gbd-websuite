@@ -42,7 +42,7 @@
 | dct              |       |   |         | purl.org/dc/terms                             | schemas.opengis.net/csw/2.0.2/rec-dcterms.xsd                                                         |
 | ms               |       |   |         | mapserver.gis.umn.edu/mapserver               |                                                                                                       |
 | #                |       |   |         |                                               |                                                                                                       |
-| inspire_dls      |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_dls      | inspire.ec.europa.eu/schemas/inspire_dls/1.0/inspire_dls.xsd                                          |
+| inspire_dls      |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_dls/1.0  | inspire.ec.europa.eu/schemas/inspire_dls/1.0/inspire_dls.xsd                                          |
 | inspire_ds       |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_ds/1.0   | inspire.ec.europa.eu/schemas/inspire_ds/1.0/inspire_ds.xsd                                            |
 | inspire_vs       |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_vs/1.0   | inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd                                            |
 | inspire_vs_ows11 |       |   | 1.0     | inspire.ec.europa.eu/schemas/inspire_vs_ows11 | inspire.ec.europa.eu/schemas/inspire_vs_ows11/1.0/inspire_vs_ows_11.xsd                               |

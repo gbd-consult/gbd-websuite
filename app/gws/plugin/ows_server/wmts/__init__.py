@@ -54,20 +54,22 @@ class Object(server.service.Object):
     isOwsCommon = True
 
     tileMatrixSets: list[gws.TileMatrixSet]
+    tileSize = 256
 
     def configure(self):
         gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
 
         # @TODO different matrix sets per layer
-        self.tileMatrixSets = [
+        self.tileMatrixSets = []
+        for b in self.supportedBounds:
             # see https://docs.opengeospatial.org/is/13-082r2/13-082r2.html#29
-            gws.TileMatrixSet(
-                uid=f'TMS_{b.crs.srid}',
-                crs=b.crs,
-                matrices=self.make_tile_matrices(b.extent, 0, 16),
+            self.tileMatrixSets.append(
+                gws.TileMatrixSet(
+                    uid=f'TMS_{b.crs.srid}',
+                    crs=b.crs,
+                    matrices=self.make_tile_matrices(b.extent, 0, 16, self.tileSize),
+                )
             )
-            for b in self.supportedBounds
-        ]
 
     def configure_operations(self):
         self.supportedOperations = [
@@ -88,7 +90,7 @@ class Object(server.service.Object):
             ),
         ]
 
-    def make_tile_matrices(self, extent, min_zoom, max_zoom, tile_size=256):
+    def make_tile_matrices(self, extent, min_zoom, max_zoom, tile_size):
         ms = []
 
         # north origin
@@ -140,14 +142,15 @@ class Object(server.service.Object):
         if len(lcs) != 1:
             raise server.error.InvalidParameterValue('LAYER')
 
-        matrix_set_uid = sr.string_param('TILEMATRIXSET')
-        matrix_uid = sr.string_param('TILEMATRIX')
+        tms_uid = sr.string_param('TILEMATRIXSET')
+        tm_uid = sr.string_param('TILEMATRIX')
         row = sr.int_param('TILEROW')
         col = sr.int_param('TILECOL')
 
-        bounds = self.bounds_for_tile(matrix_set_uid, matrix_uid, row, col)
+        bounds = self.bounds_for_tile(tms_uid, tm_uid, row, col)
         if not bounds:
             raise server.error.TileOutOfRange()
+        gws.log.debug(f'WMTS: bounds for tile {tms_uid=} {tm_uid=} {row=} {col=}: {bounds}')
 
         mime = sr.requested_format('FORMAT')
 
@@ -155,15 +158,21 @@ class Object(server.service.Object):
             backgroundColor=None,
             bbox=bounds.extent,
             crs=bounds.crs,
-            mapSize=(256, 256, gws.Uom.px),
-            planes=[gws.MapRenderInputPlane(type=gws.MapRenderInputPlaneType.imageLayer, layer=lc.layer) for lc in lcs],
+            mapSize=(self.tileSize, self.tileSize, gws.Uom.px),
+            planes=[
+                gws.MapRenderInputPlane(
+                    type=gws.MapRenderInputPlaneType.imageLayer,
+                    layer=lc.layer,
+                )
+                for lc in lcs
+            ],
         )
 
         mro = gws.gis.render.render_map(mri)
 
         if self.root.app.developer_option('ows.annotate_wmts'):
             e = bounds.extent
-            text = f'{matrix_uid} {row} {col}\n{e[0]}\n{e[1]}\n{e[2]}\n{e[3]}'
+            text = f'{tm_uid} {row} {col}\n{e[0]}\n{e[1]}\n{e[2]}\n{e[3]}'
             mro.planes[0].image = mro.planes[0].image.add_text(text, x=10, y=10).add_box()
 
         return self.image_response(sr, mro.planes[0].image, mime)
@@ -188,21 +197,11 @@ class Object(server.service.Object):
 
         return gws.u.uniq(lcs)
 
-    def bounds_for_tile(self, matrix_set_uid, matrix_uid, row, col):
-        tms = None
-        tm = None
-
-        for m in self.tileMatrixSets:
-            if m.uid == matrix_set_uid:
-                tms = m
-
+    def bounds_for_tile(self, tms_uid, tm_uid, row, col):
+        tms = self.get_matrix_set(tms_uid)
         if not tms:
             return
-
-        for m in tms.matrices:
-            if m.uid == matrix_uid:
-                tm = m
-
+        tm = self.get_matrix(tms, tm_uid)
         if not tm:
             return
 
@@ -214,3 +213,13 @@ class Object(server.service.Object):
 
         bbox = x, y - span, x + span, y
         return gws.Bounds(crs=tms.crs, extent=bbox)
+
+    def get_matrix_set(self, tms_uid):
+        for tms in self.tileMatrixSets:
+            if tms.uid == tms_uid:
+                return tms
+
+    def get_matrix(self, tms: gws.TileMatrixSet, tm_uid):
+        for tm in tms.matrices:
+            if tm.uid == tm_uid:
+                return tm

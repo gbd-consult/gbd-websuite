@@ -17,7 +17,7 @@ class LinkConfig(gws.Config):
     scheme: Optional[str]
     title: Optional[str]
     type: Optional[str]
-    url: Optional[gws.Url]
+    url: Optional[str]
 
 
 class Config(gws.Config):
@@ -79,7 +79,7 @@ class Config(gws.Config):
     """Name of the provider of the contact information."""
     contactProviderSite: Optional[str]
     """Website of the provider of the contact information."""
-    contactRole: Optional[str]
+    contactRole: Optional[iso.CI_RoleCode]
     """Role of the contact person, such as 'pointOfContact' or 'author'."""
     contactUrl: Optional[str]
     """URL for additional contact information."""
@@ -95,6 +95,8 @@ class Config(gws.Config):
 
     metaLinks: Optional[list[LinkConfig]]
     """MetadataURL (WMS, WFS) or metadata links (CSW)."""
+    serviceMetadataURL: Optional[str]
+    """Service metadata URL (WMTS)."""
 
     catalogCitationUid: Optional[str]
     """CI_Citation.Identifier (CSW)."""
@@ -243,10 +245,10 @@ def from_props(p: gws.Props) -> gws.Metadata:
     return _update(_new(), p)
 
 
-def update(md: gws.Metadata, *args) -> gws.Metadata:
+def update(md: gws.Metadata, *args, **kwargs) -> gws.Metadata:
     """Update a Metadata object from arguments (dicts or other Metadata objects)."""
 
-    _update(md, *args)
+    _update(md, *args, **kwargs)
     return md
 
 
@@ -278,20 +280,24 @@ def _new() -> gws.Metadata:
 
 
 def _update(md: gws.Metadata, *args, **kwargs):
-    for arg in list(args) + [kwargs]:
+    d = {}
+    for arg in list(args):
         if not arg:
             continue
         if isinstance(arg, gws.Data):
             arg = gws.u.to_dict(arg)
-        for key, val in arg.items():
-            fn = getattr(_Updaters, key, None)
-            if fn:
-                fn(md, key, val)
-            elif val is not None:
-                setattr(md, key, val)
+        d.update(arg)
+    d.update(kwargs)
+    
+    for key, val in d.items():
+        fn = getattr(_Updaters, key, None)
+        if fn:
+            fn(md, key, val)
+        elif val is not None:
+            setattr(md, key, val)
 
-        if 'inspireTheme' in arg:
-            _update_inspire_theme(md, '', arg['inspireTheme'])
+    if 'inspireTheme' in d:
+        _update_inspire_theme(md, '', d['inspireTheme'])
 
     return md
 

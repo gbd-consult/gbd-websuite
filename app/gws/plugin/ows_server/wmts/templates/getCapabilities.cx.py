@@ -15,7 +15,7 @@ def main(ta: server.TemplateArgs):
     )
 
 
-def doc(ta):
+def doc(ta: server.TemplateArgs):
     yield {
         'version': ta.version,
         'updateSequence': ta.service.updateSequence,
@@ -34,16 +34,15 @@ def doc(ta):
     yield 'Contents', contents(ta)
 
     # OGC 07-057r7 Annex D
-    for ml in ta.service.metadata.metaLinks:
-        if ml.function == 'ServiceMetadataURL':
-            yield tpl.meta_url_simple(ta, ml, 'ServiceMetadataURL')
+    if ta.service.metadata.serviceMetadataURL:
+        yield 'ServiceMetadataURL', {'xlink:href': ta.service.metadata.serviceMetadataURL}
 
 
 def contents(ta: server.TemplateArgs):
     for lc in ta.layerCapsList:
         yield 'Layer', layer(ta, lc)
     for tms in ta.tileMatrixSets:
-        yield 'TileMatrixSet', matrix_set(ta, tms)
+        yield 'TileMatrixSet', tile_matrix_set(ta, tms)
 
 
 def layer(ta: server.TemplateArgs, lc: server.LayerCaps):
@@ -68,7 +67,7 @@ def layer(ta: server.TemplateArgs, lc: server.LayerCaps):
         yield 'TileMatrixSetLink/TileMatrixSet', tms.uid
 
 
-def matrix_set(ta: server.TemplateArgs, tms: gws.TileMatrixSet):
+def tile_matrix_set(ta: server.TemplateArgs, tms: gws.TileMatrixSet):
     yield 'ows:Identifier', tms.uid
     yield 'ows:SupportedCRS', tms.crs.epsg
 

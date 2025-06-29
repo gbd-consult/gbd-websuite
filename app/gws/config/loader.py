@@ -200,7 +200,7 @@ def configure(
 ) -> Optional[gws.Root]:
     """Configure the server, return the Root object."""
 
-    ld = Object(
+    ldr = Object(
         manifest_path,
         config_path,
         raw_config,
@@ -208,17 +208,17 @@ def configure(
         with_spec_cache,
         hooks,
     )
-    return ld.configure()
+    return ldr.configure()
 
 
 def parse(manifest_path='', config_path='') -> Optional[gws.Config]:
     """Parse input configuration and return a config object."""
 
-    ld = Object(
+    ldr = Object(
         manifest_path,
         config_path,
     )
-    return ld.parse()
+    return ldr.parse()
 
 
 def initialize(specs: gws.SpecRuntime, config: gws.Config) -> gws.Root:

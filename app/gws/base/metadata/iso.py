@@ -97,3 +97,49 @@ class MD_TopicCategoryCode(gws.Enum):
     structure = 'structure'
     transportation = 'transportation'
     utilitiesCommunication = 'utilitiesCommunication'
+
+
+class CI_RoleCode(gws.Enum):
+    """Role of the responsible party."""
+
+    resourceProvider = 'resourceProvider'
+    custodian = 'custodian'
+    owner = 'owner'
+    user = 'user'
+    distributor = 'distributor'
+    originator = 'originator'
+    pointOfContact = 'pointOfContact'
+    principalInvestigator = 'principalInvestigator'
+    processor = 'processor'
+    publisher = 'publisher'
+    author = 'author'
+    sponsor = 'sponsor'
+    contributor = 'contributor'
+    rightsHolder = 'rightsHolder'
+    editor = 'editor'
+
+
+class CI_OnLineFunctionCode(gws.Enum):
+    """Function performed by the online resource."""
+
+    download = 'download'
+    information = 'information'
+    offlineAccess = 'offlineAccess'
+    order = 'order'
+    search = 'search'
+
+
+class CI_PresentationFormCode(gws.Enum):
+    """Format in which the resource is presented."""
+
+    documentDigital = 'documentDigital'
+    mapDigital = 'mapDigital'
+    chartDigital = 'chartDigital'
+    atlasDigital = 'atlasDigital'
+    tableDigital = 'tableDigital'
+    datasetDigital = 'datasetDigital'
+    serviceDigital = 'serviceDigital'
+    modelDigital = 'modelDigital'
+    videoDigital = 'videoDigital'
+    soundRecordingDigital = 'soundRecordingDigital'
+    textTableDigital = 'textTableDigital'

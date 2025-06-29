@@ -201,6 +201,12 @@ class Object(server.service.Object):
         )
 
     def handle_describe_feature_type(self, sr: server.request.Object):
+        tpl = self.get_template(sr)
+        if tpl:
+            return self.template_response(sr)
+
+        # if no template is defined, we return the XML schema for the requested layers
+        
         lcs = self.requested_layer_caps(sr)
         el, opts = server.layer_caps.xml_schema(lcs, sr.req.user)
         

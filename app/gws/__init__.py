@@ -2173,6 +2173,7 @@ class Metadata(Data):
     authorityUrl: str
 
     metaLinks: list[MetadataLink]
+    serviceMetadataURL: str
 
     catalogCitationUid: str
     catalogUid: str

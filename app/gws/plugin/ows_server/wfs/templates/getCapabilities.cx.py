@@ -98,7 +98,11 @@ def operation_params(ta, op):
 
 
 def feature_type_list(ta: server.TemplateArgs):
+    seen = set()
     for lc in ta.layerCapsList:
+        if lc.featureNameQ in seen:
+            continue
+        seen.add(lc.featureNameQ)
         yield ['FeatureType', feature_type(ta, lc)]
 
 

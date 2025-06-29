@@ -9,7 +9,8 @@ import PIL.Image
 import PIL.ImageDraw
 import PIL.ImageFont
 import numpy as np
-import qrcode
+import qrcode.main
+import qrcode.constants
 
 import gws
 import gws.lib.mime
@@ -92,7 +93,7 @@ def from_data_url(url: str) -> Optional['Image']:
     m = re.match(_DATA_URL_RE, url)
     if not m:
         raise Error(f'invalid data url')
-    r = base64.standard_b64decode(url[m.end():])
+    r = base64.standard_b64decode(url[m.end() :])
     return from_bytes(r)
 
 
@@ -114,12 +115,12 @@ def from_svg(xmlstr: str, size: gws.Size, mime=None) -> 'Image':
 
 
 def qr_code(
-        data: str,
-        level='M',
-        scale=4,
-        border=True,
-        color='black',
-        background='white',
+    data: str,
+    level='M',
+    scale=4,
+    border=True,
+    color='black',
+    background='white',
 ) -> 'Image':
     """Creates an Image with a QR code for the given data.
 
@@ -155,6 +156,25 @@ def qr_code(
 
     img = qr.make_image(fill_color=color, back_color=background)
     return _new(img)
+
+
+def get_draw(img: 'Image') -> PIL.ImageDraw.ImageDraw:
+    """Returns a PIL ImageDraw object for the given image."""
+
+    return PIL.ImageDraw.Draw(img.img)
+
+
+def get_font(size: int = 12, font: Optional[str] = None) -> PIL.ImageFont.ImageFont | PIL.ImageFont.FreeTypeFont:
+    """Returns a PIL ImageFont object for the given size and font.
+
+    Args:
+        size: Font size.
+        font: Path to a TTF font file or None for default font.
+    """
+
+    if font:
+        return PIL.ImageFont.truetype(font, size)
+    return PIL.ImageFont.load_default()
 
 
 def _new(img: PIL.Image.Image):

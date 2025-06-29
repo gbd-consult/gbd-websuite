@@ -64,12 +64,6 @@ _DEFAULT_METADATA = dict(
 )
 
 
-class IndexEntry(gws.Data):
-    category: str
-    text: str
-    key: str
-
-
 class Profile(gws.Enum):
     """Metadata profile for CSW service."""
 
@@ -91,7 +85,6 @@ class Object(server.service.Object):
     supportedVersions = ['2.0.2']
 
     mdMap: dict[str, gws.Metadata]
-    index: list[IndexEntry]
     profile: Profile
 
     def configure(self):
@@ -131,9 +124,7 @@ class Object(server.service.Object):
         ]
 
     def post_configure(self):
-        self._collect_metadata()
-        self._create_index()
-        gws.log.info(f'CSW: configured with {len(self.mdMap)} records')
+        self.collect_metadata()
 
     ##
 
@@ -193,7 +184,7 @@ class Object(server.service.Object):
 
     ##
 
-    def _collect_metadata(self):
+    def collect_metadata(self):
         # collect objects whose metadata should be published in the catalog
         #
         # - object should have `metadata`
@@ -206,60 +197,51 @@ class Object(server.service.Object):
         self.mdMap = {}
 
         for obj in self.root.find_all():
-            md: gws.Metadata = cast(gws.Metadata, gws.u.get(obj, 'metadata'))
+            self._collect_metadata_from_object(obj)
 
-            if not md or not md.get('catalogUid'):
-                continue
+        gws.log.info(f'CSW: configured with {len(self.mdMap)} records')
 
-            cid = gws.u.to_uid(md.get('catalogUid'))
+    def _collect_metadata_from_object(self, obj: gws.Node):
+        md: gws.Metadata = cast(gws.Metadata, gws.u.get(obj, 'metadata'))
 
-            if md.get('metaLinks'):
-                gws.log.debug(f'CSW: skip {cid}: has metalinks')
-                continue
+        if not md:
+            return
 
-            if not self.root.app.authMgr.is_public_object(obj):
-                gws.log.debug(f'CSW: skip {cid}: not public')
-                continue
+        if not md.get('catalogUid'):
+            # gws.log.debug(f'CSW: skip {obj.uid}: no catalogUid')
+            return
 
-            extra = {}
+        cid = gws.u.to_uid(md.get('catalogUid'))
 
-            extra['catalogUid'] = cid
-            extra['catalogCitationUid'] = cid
-            extra['metaLinks'] = [self._make_link(cid)]
+        if not self.root.app.authMgr.is_public_object(obj):
+            gws.log.debug(f'CSW: skip {obj.uid}: not public')
+            return
 
-            extent = gws.u.get(obj, 'extent') or gws.u.get(obj, 'map.extent')
-            crs = gws.u.get(obj, 'crs') or gws.u.get(obj, 'map.crs')
-            if extent and crs:
-                extra['wgsExtent'] = gws.lib.extent.transform_to_wgs(extent, crs)
-                extra['crs'] = crs
-                # @TODO get boundingPolygonElement somehow
+        extra = {}
 
-            map = obj.find_closest(gws.ext.object.map)
-            if map:
-                extra['isoSpatialResolution'] = gws.lib.uom.res_to_scale(cast(gws.base.map.Object, map).initResolution)
+        extra['catalogUid'] = cid
+        extra['catalogCitationUid'] = md.get('catalogCitationUid') or cid
+        extra['metaLinks'] = list(md.get('metaLinks') or [])
+        extra['metaLinks'].append(self._make_link(cid))
 
-            self.mdMap[cid] = gws.base.metadata.from_args(md, extra)
+        extent = gws.u.get(obj, 'extent') or gws.u.get(obj, 'map.extent')
+        crs = gws.u.get(obj, 'crs') or gws.u.get(obj, 'map.crs')
+        if extent and crs:
+            extra['wgsExtent'] = gws.lib.extent.transform_to_wgs(extent, crs)
+            extra['crs'] = crs
+            # @TODO get boundingPolygonElement somehow
 
-    def _create_index(self):
-        self.index = []
+        map = obj.find_closest(gws.ext.object.map)
+        if map:
+            extra['isoSpatialResolution'] = gws.lib.uom.res_to_scale(cast(gws.base.map.Object, map).initResolution)
 
-        for uid, md in self.mdMap.items():
-            ie = IndexEntry(uid=uid)
+        self.mdMap[cid] = gws.base.metadata.from_args(md, extra)
 
-            if md.title:
-                ie.title = md.title
-            if md.abstract:
-                ie.abstract = md.abstract
-            if md.keywords:
-                ie.subject = md.keywords
-            if md.wgsExtent:
-                ie.shape = gws.base.shape.from_extent(md.wgsExtent, gws.lib.crs.WGS84)
-
-            self.index.append(ie)
+    ##
 
     def _make_link(self, cid):
         return gws.MetadataLink(
-            url=gws.u.action_url_path('owsService', serviceUid=self.uid, request='record', id=cid),
+            url=gws.u.action_url_path('owsService', serviceUid=self.uid, request='GetRecordById', id=cid),
             format=gws.lib.mime.XML,
             type='TC211' if self.profile == 'ISO' else 'DCMI',
             function='download',

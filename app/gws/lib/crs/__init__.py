@@ -226,6 +226,8 @@ def best_match(crs: gws.Crs, supported_crs: list[gws.Crs]) -> gws.Crs:
         return crs
 
     bst = _best_match(crs, supported_crs)
+    if not bst:
+        bst = supported_crs[0] if supported_crs else crs
     gws.log.debug(f'best_crs: using {bst.srid!r} for {crs.srid!r}')
     return bst
 
@@ -255,11 +257,6 @@ def _best_match(crs, supported_crs):
         for sup in supported_crs:
             if sup.isGeographic:
                 return sup
-
-    # should never be here, but...
-
-    for sup in supported_crs:
-        return sup
 
 
 ##
@@ -294,13 +291,13 @@ def _get_crs(crs_name):
     return _obj_cache[srid]
 
 
-def _pyproj_crs_object(srid) -> Optional[pyproj.crs.CRS]:
+def _pyproj_crs_object(srid) -> Optional[pyproj.CRS]:
     if srid in _pyproj_cache:
         return _pyproj_cache[srid]
 
     try:
-        pp = pyproj.crs.CRS.from_epsg(srid)
-    except pyproj.exceptions.CRSError as exc:
+        pp = pyproj.CRS.from_epsg(srid)
+    except pyproj.exceptions.CRSError:
         return None
 
     _pyproj_cache[srid] = pp

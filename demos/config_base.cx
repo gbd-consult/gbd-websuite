@@ -34,7 +34,7 @@
     contactPosition "CTO"
     contactProviderName "GBD"
     contactProviderSite "https://www.gbd-consult.de"
-    contactRole "admin"
+    contactRole "pointOfContact"
     contactUrl "https://www.gbd-consult.de"
     contactZip "40237"
 

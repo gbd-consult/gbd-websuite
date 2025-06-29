@@ -120,7 +120,13 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
         opts.namespaces[gml.xmlns] = gml
         tag.append(['xsd:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}])
 
+    seen = set()
+    
     for lc in lcs:
+        if lc.featureName in seen:
+            continue
+        seen.add(lc.featureName)
+        
         elements = []
 
         for f in gws.u.require(lc.model).fields:

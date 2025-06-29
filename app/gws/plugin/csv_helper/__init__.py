@@ -89,8 +89,9 @@ class _Writer:
         self.stream_to = stream_to
         self.eol = self.format.rowDelimiter.encode(self.format.encoding)
 
-        self.rows = []
-        self.headers = ''
+        self.headers = []
+        self.str_rows = []
+        self.str_headers = ''
 
         f = gws.lib.intl.formatters(locale)
         self.dateFormatter = f[0]
@@ -107,9 +108,10 @@ class _Writer:
             Self for method chaining.
         """
 
-        self.headers = self.format.delimiter.join(self._quote(s) for s in headers)
+        self.headers = headers
+        self.str_headers = self.format.delimiter.join(self._quote(s) for s in headers)
         if self.stream_to:
-            self.stream_to.write(self.headers.encode(self.format.encoding) + self.eol)
+            self.stream_to.write(self.str_headers.encode(self.format.encoding) + self.eol)
         return self
 
     def write_row(self, row: list) -> '_Writer':
@@ -126,8 +128,22 @@ class _Writer:
         if self.stream_to:
             self.stream_to.write(s.encode(self.format.encoding) + self.eol)
         else:
-            self.rows.append(s)
+            self.str_rows.append(s)
         return self
+
+    def write_dict(self, d: dict) -> '_Writer':
+        """Writes a dict of data to the CSV output.
+
+        Args:
+            d: Dictionary where keys are column names and values are the data.
+
+        Returns:
+            Self for method chaining.
+        """
+
+        if not self.headers:
+            self.write_headers(list(d.keys()))
+        return self.write_row([d.get(h, '') for h in self.headers])
 
     def to_str(self) -> str:
         """Converts the headers and rows to a CSV string.
@@ -138,8 +154,8 @@ class _Writer:
 
         rows = []
         if self.headers:
-            rows.append(self.headers)
-        rows.extend(self.rows)
+            rows.append(self.str_headers)
+        rows.extend(self.str_rows)
         return self.format.rowDelimiter.join(rows)
 
     def to_bytes(self, encoding: str = None) -> bytes:

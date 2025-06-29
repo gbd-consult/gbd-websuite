@@ -123,7 +123,7 @@ class Object(gws.DatabaseProvider):
             assert cc > 0
         
         setattr(_thread_local, '_connectionCount', cc + 1)
-        gws.log.debug(f'db.connect: open: {cc + 1}')
+        # gws.log.debug(f'db.connect: open: {cc + 1}')
         return conn
 
     def _close_connection(self):
@@ -131,7 +131,7 @@ class Object(gws.DatabaseProvider):
         cc = getattr(_thread_local, '_connectionCount', 0)
         assert conn is not None
         assert cc > 0
-        gws.log.debug(f'db.connect: close: {cc}')
+        # gws.log.debug(f'db.connect: close: {cc}')
         if cc == 1:
             if conn:
                 conn.close()
