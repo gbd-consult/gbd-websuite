@@ -401,6 +401,7 @@ class Object(gws.base.action.Object):
         self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
         self.printers.append(self.create_child(gws.ext.object.printer, _DEFAULT_PRINTER))
 
+
         d = gws.TextSearchOptions(type='exact')
         self.strasseSearchOptions = self.cfg('strasseSearchOptions', default=d)
         self.nameSearchOptions = self.cfg('nameSearchOptions', default=d)
