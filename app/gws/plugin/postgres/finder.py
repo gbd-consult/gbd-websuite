@@ -16,6 +16,8 @@ class Config(gws.base.search.finder.Config):
     """Database provider uid."""
     tableName: str
     """Database table name."""
+    sqlFilter: Optional[str]
+    """extra SQL filter"""
 
 
 class Object(gws.base.search.finder.Object):
@@ -46,6 +48,7 @@ class Object(gws.base.search.finder.Object):
             gws.ext.object.model,
             cfg,
             type=self.extType,
+            sqlFilter=self.cfg('sqlFilter'),
             _defaultDb=self.db,
             _defaultTableName=self.tableName
         )

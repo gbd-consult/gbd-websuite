@@ -378,18 +378,18 @@ class Object(gws.OwsProvider):
             if not table_name or table_name.startswith('(') or table_name.upper().startswith('SELECT '):
                 return
 
-            # @TODO support extra sql from ds['sql']
-
             db = self.postgres_provider_from_datasource(ds)
 
             model = {
                 'type': 'postgres',
                 'tableName': table_name,
+                'sqlFilter': ds.get('sql'),
                 '_defaultDb': db
             }
             finder = {
                 'type': 'postgres',
                 'tableName': table_name,
+                'sqlFilter': ds.get('sql'),
                 '_defaultDb': db
             }
             return {'models': [model], 'finders': [finder]}
