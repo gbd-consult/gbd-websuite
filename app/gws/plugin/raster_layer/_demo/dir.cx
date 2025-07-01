@@ -1,6 +1,6 @@
 uid "raster_layer_dir"
 
-title "Raster layer"
+title "Raster layer, multiple images"
 
 metadata.keywords [ "raster" ]
 

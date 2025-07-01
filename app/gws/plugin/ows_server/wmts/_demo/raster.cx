@@ -1,0 +1,42 @@
+uid "service_wmts_raster_demo"
+
+title "WMTS service from a raster layer"
+
+metadata.keywords [ "wmts" "ows-service" "raster" ]
+
+metadata.abstract """
+`WMTS` service, based on a raster layer.
+
+[Service URL](/_/owsService/serviceUid/service_wmts_raster?request=GetCapabilities)
+
+[Demo QGIS Project](/ows_services.qgs)
+"""
+
+owsServices+ {
+    type "wmts"
+    uid "service_wmts_raster"
+    supportedCrs [ 3857 25832 25833 ]
+    metadata {
+        abstract "Raster WMTS service"
+        keywords ["test" "wmts" "demo"]
+        name "WMTS_RASTER"
+        title "Raster WMTS"
+        {demo_metadata}
+    }
+}
+
+map.extent [
+    {demo_point_duesseldorf_3857[0] - 30000}
+    {demo_point_duesseldorf_3857[1] - 30000}
+    {demo_point_duesseldorf_3857[0] + 30000}
+    {demo_point_duesseldorf_3857[1] + 30000}
+]
+
+map.layers+ {
+    type "raster"
+    title "Düsseldorf"
+    provider {
+        type "file"
+        paths [ "/gws-extern/duess_osm/img.png" ]
+    }
+}
