@@ -93,9 +93,6 @@ class Object(server.service.Object):
     def make_tile_matrices(self, extent, min_zoom, max_zoom, tile_size):
         ms = []
 
-        # north origin
-        extent = extent[0], extent[3], extent[2], extent[1]
-
         w, h = gws.lib.extent.size(extent)
 
         for z in range(min_zoom, max_zoom + 1):
@@ -106,7 +103,7 @@ class Object(server.service.Object):
                     uid=f'{z:02d}',
                     scale=gws.lib.uom.res_to_scale(res),
                     x=extent[0],
-                    y=extent[1],
+                    y=extent[3], # north origin
                     tileWidth=tile_size,
                     tileHeight=tile_size,
                     width=size,

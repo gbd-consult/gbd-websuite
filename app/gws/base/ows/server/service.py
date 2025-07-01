@@ -24,6 +24,10 @@ class Config(gws.ConfigWithAccess):
     """Default number of features per page."""
     extent: Optional[gws.Extent]
     """Service extent."""
+    extent: Optional[gws.Extent]
+    """Service extent, in extentCrs or the first supported CRS."""
+    extentCrs: Optional[gws.CrsName]
+    """Service extent CRS. (added in 8.2)"""
     imageFormats: Optional[list[gws.ImageFormatConfig]]
     """Supported image formats. (added in 8.1)"""
     maxFeatureCount: int = 10000
@@ -97,7 +101,9 @@ class Object(gws.OwsService):
 
         p = self.cfg('extent')
         if p:
-            bounds = gws.Bounds(crs=crs_list[0], extent=gws.lib.extent.from_list(p))
+            q = self.cfg('extentCrs')
+            crs = gws.lib.crs.require(q) if q else crs_list[0]
+            bounds = gws.Bounds(crs=crs, extent=gws.lib.extent.from_list(p))
         elif self.project:
             bounds = self.project.map.bounds
         else:
