@@ -111,7 +111,7 @@ class Object(gws.JobManager):
     def _write(self, job_uid, rec):
         rec['updated'] = gws.u.stime()
         rec['payload'] = gws.lib.jsonx.to_string(rec.get('payload') or {})
-        gws.log.debug(f'JOB save: {job_uid}: {rec}')
+        gws.log.debug(f'JOB {job_uid}: save {rec=}')
         self._db().update(self.TABLE, rec, job_uid)
 
     def schedule_job(self, job: gws.Job):
