@@ -1,0 +1,57 @@
+uid "alkis_ui"
+
+title "ALKIS erweitert"
+
+metadata.keywords [ "alkis" ]
+
+metadata.abstract """
+ALKIS Plugin mit erweiterten UI Optionen.
+"""
+
+actions+ {
+    type "alkis"
+    dbUid "DB_ALKIS"
+    dataSchema "public"
+    indexSchema "gws82"
+    crs 25832
+
+    limit 200
+
+    ui {
+        useSelect true
+        usePick true
+        useExport true
+        searchSpatial true
+        gemarkungListMode "tree"
+        strasseListMode "withGemarkung"
+    }
+}
+
+client.addElements+ { tag "Sidebar.Alkis" }
+client.options.sidebarWidth 400
+
+map {
+    center {demo_point_kamen_25832}
+    crs 25832
+    zoom.initScale 70000
+    zoom.maxScale  100000
+}
+
+map.layers+ {
+    title "NRW ALKIS"
+    type "wmsflat"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+    sourceLayers.names [ "adv_alkis_flurstuecke" ]
+    metadata.attribution "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+}
+
+@# NB: Layer mit "display: client" werden im ALKIS Modus nicht gedruckt!
+map.layers+ {
+    title "Open Street Map"
+    type "tile"
+    display "tile"
+    opacity 0.3
+    withCache true
+    provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+}

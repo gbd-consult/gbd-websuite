@@ -1,0 +1,284 @@
+@# Basis-Vorlage mit allgemeinen Funktionen und Definitionen
+
+@let HEADERS = {
+
+    'flurstueck': 'Flurstück',
+    'flurstueck.flurnummer': 'Flurnummer',
+    'flurstueck.zaehler': 'Zähler',
+    'flurstueck.nenner': 'Nenner',
+    'flurstueck.gemeinde': 'Gemeinde',
+    'flurstueck.gemarkung': 'Gemarkung',
+    'flurstueck.amtlicheFlaeche': 'Fläche (amtlich)',
+    'flurstueck.geomFlaeche': 'Fläche (geometrisch)',
+    'flurstueck.gebaeudeAmtlicheFlaeche': 'Gesamtfläche (amtlich)',
+    'flurstueck.gebaeudeGeomFlaeche': 'Gesamtfläche (geometrisch)',
+    'flurstueck.nachfolgerFlurstueckskennzeichen': 'Nachfolger-Flurstückskennzeichen',
+    'flurstueck.vorgaengerFlurstueckskennzeichen': 'Vorgänger-Flurstückskennzeichen',
+
+    'lage.title': 'Angaben zur Lage',
+    'lage.adresse': 'Adresse',
+
+    'gebaeude.title': 'Gebäudenachweis',
+    'gebaeude': 'Gebäude',
+    'gebaeude.gebaeudekennzeichen': 'Kennzeichen',
+    'gebaeude.amtlicheFlaeche': 'Grundfläche (amtlich)',
+    'gebaeude.geomFlaeche': 'Grundfläche (geometrisch)',
+
+    'buchung.title': 'Personen und Bestandsdaten',
+    'buchung.buchungsstelle': 'Buchungsstelle',
+
+    'buchungsblatt.title': 'Buchungsblatt',
+    'buchungsblatt.blattart': 'Blattart',
+    'buchungsblatt.buchungsblattbezirk': 'Bezirk',
+
+    'buchungsstelle.title': 'Buchungsstelle',
+    'buchungsstelle.buchungsart': 'Buchungsart',
+    'buchungsstelle.laufendeNummer': 'Buchungsstelle Nr',
+    'buchungsstelle.zu': 'zu',
+    'buchungsstelle.flurstueck': 'Flurstück',
+    'buchungsstelle.buchungstext': 'Buchungstext',
+    'buchungsstelle.beschreibungDesSondereigentums': 'Beschreibung des Sondereigentums',
+    'buchungsstelle.beschreibungDesUmfangsDerBuchung': 'Beschreibung des Umfangs der Buchung',
+
+    'namensnummer.title': 'Eigentümer',
+    'namensnummer.anteil': 'Anteil',
+    'namensnummer.laufendeNummer': 'Nr.',
+    'namensnummer.rechtsgemeinschaft': 'Rechtsgemeinschaft',
+    'namensnummer.eigentuemerart': 'Eigentümerart',
+
+    'person.title': 'Angaben zur Person',
+    'person.name': 'Name',
+    'person.anschrift': 'Anschrift',
+    'person.adresse': 'Adresse',
+    'person.geburtsdatum': 'Geburtsdatum',
+
+    'nutzung.title': 'Tatsächliche Nutzung',
+    'nutzung.name': 'Art',
+    'nutzung.amtlicheFlaeche': 'Fläche ("amtlich")',
+    'nutzung.geomFlaeche': 'Fläche (geometrisch)',
+
+    'zeitraum': 'Zeitraum',
+    'anlass': 'Anlass',
+}
+
+@let PROPS = {
+    'abbaugut': 'Abbaugut',
+    'ackerzahlOderGruenlandzahl': 'Ackerzahl oder Grünlandzahl',
+    'anzahlDerFahrstreifen': 'Anzahl der Fahrstreifen',
+    'anzahlDerOberirdischenGeschosse': 'Anzahl der oberirdischen Geschosse',
+    'anzahlDerStreckengleise': 'Anzahl der Streckengleise',
+    'anzahlDerUnterirdischenGeschosse': 'Anzahl der unterirdischen Geschosse',
+    'art': 'Art',
+    'artDerBebauung': 'Art der Bebauung',
+    'artDerFestlegung': 'Art der Festlegung',
+    'bahnkategorie': 'Bahnkategorie',
+    'bauart': 'Bauart',
+    'baujahr': 'Baujahr',
+    'bauweise': 'Bauweise',
+    'bedeutung': 'Bedeutung',
+    'befestigung': 'Befestigung',
+    'beschaffenheit': 'Beschaffenheit',
+    'besondereFahrstreifen': 'Besondere Fahrstreifen',
+    'besondereFunktion': 'Besondere Funktion',
+    'bodenart': 'Bodenart',
+    'bodenzahlOderGruenlandgrundzahl': 'Bodenzahl oder Grünlandgrundzahl',
+    'breiteDerFahrbahn': 'Breite der Fahrbahn',
+    'breiteDesGewaessers': 'Breite des Gewässers',
+    'breiteDesVerkehrsweges': 'Breite des Verkehrsweges',
+    'dachart': 'Dachart',
+    'dachform': 'Dachform',
+    'dachgeschossausbau': 'Dachgeschossausbau',
+    'datumAbgabe': 'Datum-Abgabe',
+    'datumAnordnung': 'Datum-Anordnung',
+    'datumBesitzeinweisung': 'Datum-Besitzeinweisung',
+    'datumrechtskraeftig': 'Datum-rechtskräftig',
+    'durchfahrtshoehe': 'Durchfahrtshöhe',
+    'elektrifizierung': 'Elektrifizierung',
+    'entstehungsartOderKlimastufeWasserverhaeltnisse': 'Entstehungsart oder Klimastufe/Wasserverhältnisse',
+    'fahrbahntrennung': 'Fahrbahntrennung',
+    'fliessrichtung': 'Fließrichtung',
+    'foerdergut': 'Fördergut',
+    'funktion': 'Funktion',
+    'gebaeudefunktion': 'Gebäudefunktion',
+    'gebaeudekennzeichen': 'Gebäudekennzeichen',
+    'geschossflaeche': 'Geschossfläche',
+    'gewaesserkennzahl': 'Gewässerkennzahl',
+    'gewaesserkennziffer': 'Gewässerkennziffer',
+    'grundflaeche': 'Grundfläche',
+    'hochhaus': 'Hochhaus',
+    'hydrologischesMerkmal': 'Hydrologisches Merkmal',
+    'identnummer': 'Identnummer',
+    'internationaleBedeutung': 'Internationale Bedeutung',
+    'jahreszahl': 'Jahreszahl',
+    'klassifizierung': 'Klassifizierung',
+    'kulturart': 'Kulturart',
+    'lageZurErdoberflaeche': 'Lage zur Erdoberfläche',
+    'lagergut': 'Lagergut',
+    'markierung': 'Markierung',
+    'merkmal': 'Merkmal',
+    'name': 'Name',
+    'nummer': 'Nummer',
+    'nummerDerSchutzzone': 'Nummer der Schutzzone',
+    'nummerDesSchutzgebietes': 'Nummer des Schutzgebietes',
+    'oberflaechenmaterial': 'Oberflächenmaterial',
+    'objekthoehe': 'Objekthöhe',
+    'primaerenergie': 'Primärenergie',
+    'punktkennung': 'Punktkennung',
+    'rechtszustand': 'Rechtszustand',
+    'schifffahrtskategorie': 'Schifffahrtskategorie',
+    'sonstigeAngaben': 'Sonstige Angaben',
+    'sonstigeEigenschaft': 'Sonstige Eigenschaft',
+    'spurweite': 'Spurweite',
+    'tagesabschnittsnummer': 'Tagesabschnittsnummer',
+    'tidemerkmal': 'Tidemerkmal',
+    'umbauterRaum': 'Umbauter Raum',
+    'vegetationsmerkmal': 'Vegetationsmerkmal',
+    'veraenderungOhneRuecksprache': 'Veränderung ohne Rücksprache',
+    'verkehrsbedeutungInneroertlich': 'Verkehrsbedeutung innerörtlich',
+    'verkehrsbedeutungUeberoertlich': 'Verkehrsbedeutung überörtlich',
+    'weitereGebaeudefunktion': 'Weitere Gebäudefunktion',
+    'widmung': 'Widmung',
+    'zone': 'Zone',
+    'zustand': 'Zustand',
+    'zustandsstufeOderBodenstufe': 'Zustandsstufe oder Bodenstufe',
+}
+
+@def h(key) = HEADERS.get(key, key)
+
+@def text arg, default=None
+    @without arg
+        @return default
+    @end
+    @with arg.text
+        @return arg.text + ' (' + arg.code + ')'
+    @end
+    @return str(arg)
+@end
+
+@def area arg
+    @if arg
+        @return '{:.1f}&nbsp;m²'.format(arg)
+    @end
+@end
+
+@def join a, delim
+    @let vs = []
+    @for arg in a
+        @let v = text(arg)
+        @if v != None
+            @do vs.append(v)
+        @end
+    @end
+    @if not vs
+        @return None
+    @end
+    @return delim.join(vs)
+@end
+
+@def nl(*a)    = join(a, '<br>')
+@def space(*a) = join(a, ' ')
+@def dot(*a)   = join(a, '.')
+
+@def h1 s
+    <p class="alkisFsH1">{s}</p>
+@end
+
+@def h2 s
+    <p class="alkisFsH2">{s}</p>
+@end
+
+@def h3 s
+    <p class="alkisFsH3">{s}</p>
+@end
+
+@def h4 s
+    <p class="alkisFsH4">{s}</p>
+@end
+
+@box section content, is_historic=False
+    @if is_historic
+        <div class="alkisFsHistoric">
+    @else
+        <div>
+    @end
+    {content}
+    </div>
+@end
+
+@box table content
+    <table>
+    {content}
+    </table>
+@end
+
+@def row_value title, val
+    @if title != None and val != None
+        <tr><th>{title}</th><td>{val}</th></tr>
+    @end
+@end
+
+@def row_value_historic title, val
+    @if title != None and val != None
+        <tr class="alkisFsHistoric"><th>{title}</th><td>{val}</th></tr>
+    @end
+@end
+
+@def row_times obj
+    @if withHistory
+        <tr>
+            <th>{h('zeitraum')}</th>
+            <td>
+                @if obj.endet == obj.beginnt
+                    ...&nbsp;&mdash;&nbsp;{obj.endet}
+                @elif obj.endet
+                    {obj.beginnt}&nbsp;&mdash;&nbsp;{obj.endet}
+                @else
+                    {obj.beginnt}&nbsp;&mdash;&nbsp;...
+                @end
+            </td>
+        </tr>
+        @with obj.anlass
+            <tr>
+                <th>{h('anlass')}</th>
+                <td>{text(obj.anlass)}</td>
+            </tr>
+        @end
+    @end
+@end
+
+@def row_debug key, val
+    @if withDebug
+        <tr>
+            <th><span class="alkisFsDebug">{key}</span></th>
+            <td><span class="alkisFsDebug">{val}</span></td>
+        </tr>
+    @end
+@end
+
+@def row_props r
+    @with r.props
+        @for key, title in PROPS
+            @if hasattr(r.props, key)
+                @row_value title, text(getattr(r.props, key))
+            @end
+        @end
+    @end
+@end
+
+@def debug val
+    @if withDebug
+        @return '<span class="alkisFsDebug">' + str(val) + '</span>'
+    @end
+@end
+
+@def records(obj) = obj.recs or []
+
+@def records_from(obj_list)
+    @let ls = []
+    @for o in obj_list
+        @for r in o.recs
+            @do ls.append(r)
+        @end
+    @end
+    @return ls
+@end

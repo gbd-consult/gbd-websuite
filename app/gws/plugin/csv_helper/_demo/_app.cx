@@ -1,0 +1,8 @@
+helpers+ {
+    type "csv"
+    format {
+        delimiter ";"
+        encoding "cp1252"
+        quoteAll true
+    }
+}

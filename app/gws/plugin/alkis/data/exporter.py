@@ -53,8 +53,8 @@ class Format(gws.Enum):
 class Args(gws.Data):
     format: Format
     fs: Iterable[dt.Flurstueck]
-    groups: Optional[list[Group]]
-    writePath: Optional[str]
+    groups: list[Group]
+    targetPath: str
     user: gws.User
     progress: Optional[ProgressIndicator]
 
@@ -74,21 +74,21 @@ _DEFAULT_GROUPS = [
             gws.Config(type='float', name='fs_recs_amtlicheFlaeche', title='Fläche'),
             gws.Config(type='float', name='fs_recs_x', title='X'),
             gws.Config(type='float', name='fs_recs_y', title='Y'),
-        ]
+        ],
     ),
     gws.Config(
         title='Lage',
         fields=[
             gws.Config(type='text', name='fs_lageList_recs_strasse', title='FS Strasse'),
             gws.Config(type='text', name='fs_lageList_recs_hausnummer', title='FS Hnr'),
-        ]
+        ],
     ),
     gws.Config(
         title='Gebäude',
         fields=[
             gws.Config(type='float', name='fs_gebaeudeList_recs_geomFlaeche', title='Gebäude Fläche'),
             gws.Config(type='text', name='fs_gebaeudeList_recs_props_gebaeudefunktion_text', title='Gebäude Funktion'),
-        ]
+        ],
     ),
     gws.Config(
         title='Buchungsblatt',
@@ -98,7 +98,7 @@ _DEFAULT_GROUPS = [
             gws.Config(type='text', name='fs_buchungList_buchungsblatt_recs_buchungsblattkennzeichen', title='Blattkennzeichen'),
             gws.Config(type='text', name='fs_buchungList_buchungsblatt_recs_buchungsblattnummerMitBuchstabenerweiterung', title='Blattnummer'),
             gws.Config(type='text', name='fs_buchungList_recs_buchungsstelle_laufendeNummer', title='Laufende Nummer'),
-        ]
+        ],
     ),
     gws.Config(
         title='Eigentümer',
@@ -111,14 +111,14 @@ _DEFAULT_GROUPS = [
             gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_hausnummer', title='Hnr'),
             gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_plz', title='PLZ'),
             gws.Config(type='text', name='fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_ort', title='Ort'),
-        ]
+        ],
     ),
     gws.Config(
         title='Nutzung',
         fields=[
             gws.Config(type='float', name='fs_nutzungList_geomFlaeche', title='Nutzung Fläche'),
             gws.Config(type='text', name='fs_nutzungList_name_text', title='Nutzung Typ'),
-        ]
+        ],
     ),
 ]
 
@@ -138,15 +138,8 @@ class Object(gws.Node):
         flat_keys = get_flat_keys()
         field_configs = {}
 
-        for cfg in (self.cfg('groups') or _DEFAULT_GROUPS):
-            g = Group(
-                index=len(self.groups),
-                title=cfg.title,
-                fieldNames=[],
-                keys=set(),
-                withEigentuemer=False,
-                withBuchung=False
-            )
+        for cfg in self.cfg('groups') or _DEFAULT_GROUPS:
+            g = Group(index=len(self.groups), title=cfg.title, fieldNames=[], keys=set(), withEigentuemer=False, withBuchung=False)
             self.groups.append(g)
 
             for fc in cfg.fields:
@@ -159,7 +152,9 @@ class Object(gws.Node):
 
         self.model = self.create_child(
             Model,
-            fields=list(field_configs.values())
+            # NB need write permissions for `feature.to_record`
+            permissions=gws.Config(read='allow all', write='allow all'),
+            fields=list(field_configs.values()),
         )
 
     def _update_keys_from_field(self, fc, keys, flat_keys):
@@ -170,7 +165,7 @@ class Object(gws.Node):
             keys.add(fc.name)
 
         # a pretty crude way to extract keys from dynamic values like `format` or `expression`
-        for val in (fc.values or []):
+        for val in fc.values or []:
             ref = val.format or val.text
             if ref:
                 for k in flat_keys:
@@ -190,22 +185,10 @@ class Object(gws.Node):
     def _export_csv(self, args: Args):
         csv_helper = cast(gws.plugin.csv_helper.Object, self.root.app.helper('csv'))
 
-        fp = open(args.writePath, 'wb') if args.writePath else None
-        writer = csv_helper.writer(gws.lib.intl.locale('de_DE'), stream_to=fp)
-
-        header = []
-
-        for row in self._iter_rows(args):
-            if not header:
-                header = list(row.keys())
-                writer.write_headers(header)
-            writer.write_row([row.get(k, '') for k in header])
-
-        if args.writePath:
-            fp.close()
-            return
-
-        return writer.to_bytes()
+        with open(args.targetPath, 'wb') as fp:
+            writer = csv_helper.writer(gws.lib.intl.locale('de_DE'), stream_to=fp)
+            for row in self._iter_rows(args):
+                writer.write_dict(row)
 
     def _export_geojson(self, args: Args):
         fp = open(args.writePath, 'wb') if args.writePath else io.BytesIO()
@@ -229,13 +212,7 @@ class Object(gws.Node):
         return b
 
     def _export_dict(self, args: Args):
-        return dict(
-            type='FeatureCollection',
-            features=[
-                self._row_to_dict(row)
-                for row in self._iter_rows(args, with_geometry=True)
-            ]
-        )
+        return dict(type='FeatureCollection', features=[self._row_to_dict(row) for row in self._iter_rows(args, with_geometry=True)])
 
     def _row_to_dict(self, row):
         shape = row.pop('fs_shape', None)
@@ -271,12 +248,7 @@ class Object(gws.Node):
             all_keys.update(g.keys)
             field_names.extend(g.fieldNames)
 
-        fields = [
-            fld
-            for fn in gws.u.uniq(field_names)
-            for fld in self.model.fields
-            if fld.name == fn
-        ]
+        fields = [fld for fn in gws.u.uniq(field_names) for fld in self.model.fields if fld.name == fn]
 
         mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.searchResults, user=args.user)
         row_hashes = set()
@@ -293,10 +265,7 @@ class Object(gws.Node):
                 for fld in fields:
                     fld.to_record(feature, mc)
 
-                row = {
-                    fld.title: feature.record.attributes.get(fld.name, '')
-                    for fld in fields
-                }
+                row = {fld.title: feature.record.attributes.get(fld.name, '') for fld in fields}
 
                 h = gws.u.sha256(row)
                 if h in row_hashes:
@@ -313,7 +282,6 @@ _EXCLUDE_KEYS = {'fsUids', 'childUids', 'parentUids'}
 
 def _flatten(fs, all_keys) -> list[dict[str, Any]]:
     def _flat(val, key, ds):
-
         if not any(k.startswith(key) for k in all_keys):
             return ds
 
@@ -345,10 +313,7 @@ def _flatten(fs, all_keys) -> list[dict[str, Any]]:
 def get_flat_keys():
     """Return a dict key->type for all flat keys in the Flurstueck structure."""
 
-    return {
-        k: typ
-        for k, typ in sorted(set(_get_keys(dt.Flurstueck, 'fs')))
-    }
+    return {k: typ for k, typ in sorted(set(_get_keys(dt.Flurstueck, 'fs')))}
 
 
 def _get_keys(cls, key):

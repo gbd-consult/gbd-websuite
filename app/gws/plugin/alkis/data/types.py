@@ -221,11 +221,11 @@ class Lage(Entity):
 
 
 class GebaeudeRecord(Record):
-    gebaeudekennzeichen: int
-    props: 'GebaeudeProps'
-    geom: str
     amtlicheFlaeche: float
+    gebaeudekennzeichen: int
+    geom: str
     geomFlaeche: float
+    props: 'GebaeudeProps'
 
 
 class Gebaeude(Entity):
@@ -238,25 +238,25 @@ PART_FESTLEGUNG = 3
 
 
 class PartRecord(Record):
-    props: 'PartProps'
     amtlicheFlaeche: float  # corrected
-    geomFlaeche: float
     geom: str
+    geomFlaeche: float
+    props: 'PartProps'
 
 
 class Part(Entity):
     KIND = {
         PART_NUTZUNG: [
             'Tatsächliche Nutzung',
-            'tatsaechliche_nutzung'
+            'tatsaechliche_nutzung',
         ],
         PART_BEWERTUNG: [
             'Bodenschätzung, Bewertung',
-            'gesetzliche_festlegungen_gebietseinheiten_kataloge/bodenschaetzung_bewertung'
+            'gesetzliche_festlegungen_gebietseinheiten_kataloge/bodenschaetzung_bewertung',
         ],
         PART_FESTLEGUNG: [
             'Öffentlich-rechtliche und sonstige Festlegungen',
-            'gesetzliche_festlegungen_gebietseinheiten_kataloge/oeffentlich_rechtliche_und_sonstige_festlegungen'
+            'gesetzliche_festlegungen_gebietseinheiten_kataloge/oeffentlich_rechtliche_und_sonstige_festlegungen',
         ],
     }
 
@@ -291,6 +291,7 @@ class Place(Record):
 
 
 ##
+
 
 class GebaeudeProps(Object):
     anzahlDerOberirdischenGeschosse: int
@@ -380,85 +381,85 @@ class PartProps(Object):
 
 
 PROPS = {
-    "abbaugut": "Abbaugut",
-    "ackerzahlOderGruenlandzahl": "Ackerzahl oder Grünlandzahl",
-    "anzahlDerFahrstreifen": "Anzahl der Fahrstreifen",
-    "anzahlDerOberirdischenGeschosse": "Anzahl der oberirdischen Geschosse",
-    "anzahlDerStreckengleise": "Anzahl der Streckengleise",
-    "anzahlDerUnterirdischenGeschosse": "Anzahl der unterirdischen Geschosse",
-    "art": "Art",
-    "artDerBebauung": "Art der Bebauung",
-    "artDerFestlegung": "Art der Festlegung",
-    "bahnkategorie": "Bahnkategorie",
-    "bauart": "Bauart",
-    "baujahr": "Baujahr",
-    "bauweise": "Bauweise",
-    "bedeutung": "Bedeutung",
-    "befestigung": "Befestigung",
-    "beschaffenheit": "Beschaffenheit",
-    "besondereFahrstreifen": "Besondere Fahrstreifen",
-    "besondereFunktion": "Besondere Funktion",
-    "bodenart": "Bodenart",
-    "bodenzahlOderGruenlandgrundzahl": "Bodenzahl oder Grünlandgrundzahl",
-    "breiteDerFahrbahn": "Breite der Fahrbahn",
-    "breiteDesGewaessers": "Breite des Gewässers",
-    "breiteDesVerkehrsweges": "Breite des Verkehrsweges",
-    "dachart": "Dachart",
-    "dachform": "Dachform",
-    "dachgeschossausbau": "Dachgeschossausbau",
-    "datumAbgabe": "Datum-Abgabe",
-    "datumAnordnung": "Datum-Anordnung",
-    "datumBesitzeinweisung": "Datum-Besitzeinweisung",
-    "datumrechtskraeftig": "Datum-rechtskräftig",
-    "durchfahrtshoehe": "Durchfahrtshöhe",
-    "elektrifizierung": "Elektrifizierung",
-    "entstehungsartOderKlimastufeWasserverhaeltnisse": "Entstehungsart oder Klimastufe/Wasserverhältnisse",
-    "fahrbahntrennung": "Fahrbahntrennung",
-    "fliessrichtung": "Fließrichtung",
-    "foerdergut": "Fördergut",
-    "funktion": "Funktion",
-    "gebaeudefunktion": "Gebäudefunktion",
-    "gebaeudekennzeichen": "Gebäudekennzeichen",
-    "geschossflaeche": "Geschossfläche",
-    "gewaesserkennzahl": "Gewässerkennzahl",
-    "gewaesserkennziffer": "Gewässerkennziffer",
-    "grundflaeche": "Grundfläche",
-    "hochhaus": "Hochhaus",
-    "hydrologischesMerkmal": "Hydrologisches Merkmal",
-    "identnummer": "Identnummer",
-    "internationaleBedeutung": "Internationale Bedeutung",
-    "jahreszahl": "Jahreszahl",
-    "klassifizierung": "Klassifizierung",
-    "kulturart": "Kulturart",
-    "lageZurErdoberflaeche": "Lage zur Erdoberfläche",
-    "lagergut": "Lagergut",
-    "markierung": "Markierung",
-    "merkmal": "Merkmal",
-    "name": "Name",
-    "nummer": "Nummer",
-    "nummerDerSchutzzone": "Nummer der Schutzzone",
-    "nummerDesSchutzgebietes": "Nummer des Schutzgebietes",
-    "oberflaechenmaterial": "Oberflächenmaterial",
-    "objekthoehe": "Objekthöhe",
-    "primaerenergie": "Primärenergie",
-    "punktkennung": "Punktkennung",
-    "rechtszustand": "Rechtszustand",
-    "schifffahrtskategorie": "Schifffahrtskategorie",
-    "sonstigeAngaben": "Sonstige Angaben",
-    "sonstigeEigenschaft": "Sonstige Eigenschaft",
-    "spurweite": "Spurweite",
-    "tagesabschnittsnummer": "Tagesabschnittsnummer",
-    "tidemerkmal": "Tidemerkmal",
-    "umbauterRaum": "Umbauter Raum",
-    "vegetationsmerkmal": "Vegetationsmerkmal",
-    "veraenderungOhneRuecksprache": "Veränderung ohne Rücksprache",
-    "verkehrsbedeutungInneroertlich": "Verkehrsbedeutung innerörtlich",
-    "verkehrsbedeutungUeberoertlich": "Verkehrsbedeutung überörtlich",
-    "weitereGebaeudefunktion": "Weitere Gebäudefunktion",
-    "widmung": "Widmung",
-    "zone": "Zone",
-    "zustand": "Zustand",
-    "zustandsstufeOderBodenstufe": "Zustandsstufe oder Bodenstufe",
+    'abbaugut': 'Abbaugut',
+    'ackerzahlOderGruenlandzahl': 'Ackerzahl oder Grünlandzahl',
+    'anzahlDerFahrstreifen': 'Anzahl der Fahrstreifen',
+    'anzahlDerOberirdischenGeschosse': 'Anzahl der oberirdischen Geschosse',
+    'anzahlDerStreckengleise': 'Anzahl der Streckengleise',
+    'anzahlDerUnterirdischenGeschosse': 'Anzahl der unterirdischen Geschosse',
+    'art': 'Art',
+    'artDerBebauung': 'Art der Bebauung',
+    'artDerFestlegung': 'Art der Festlegung',
+    'bahnkategorie': 'Bahnkategorie',
+    'bauart': 'Bauart',
+    'baujahr': 'Baujahr',
+    'bauweise': 'Bauweise',
+    'bedeutung': 'Bedeutung',
+    'befestigung': 'Befestigung',
+    'beschaffenheit': 'Beschaffenheit',
+    'besondereFahrstreifen': 'Besondere Fahrstreifen',
+    'besondereFunktion': 'Besondere Funktion',
+    'bodenart': 'Bodenart',
+    'bodenzahlOderGruenlandgrundzahl': 'Bodenzahl oder Grünlandgrundzahl',
+    'breiteDerFahrbahn': 'Breite der Fahrbahn',
+    'breiteDesGewaessers': 'Breite des Gewässers',
+    'breiteDesVerkehrsweges': 'Breite des Verkehrsweges',
+    'dachart': 'Dachart',
+    'dachform': 'Dachform',
+    'dachgeschossausbau': 'Dachgeschossausbau',
+    'datumAbgabe': 'Datum-Abgabe',
+    'datumAnordnung': 'Datum-Anordnung',
+    'datumBesitzeinweisung': 'Datum-Besitzeinweisung',
+    'datumrechtskraeftig': 'Datum-rechtskräftig',
+    'durchfahrtshoehe': 'Durchfahrtshöhe',
+    'elektrifizierung': 'Elektrifizierung',
+    'entstehungsartOderKlimastufeWasserverhaeltnisse': 'Entstehungsart oder Klimastufe/Wasserverhältnisse',
+    'fahrbahntrennung': 'Fahrbahntrennung',
+    'fliessrichtung': 'Fließrichtung',
+    'foerdergut': 'Fördergut',
+    'funktion': 'Funktion',
+    'gebaeudefunktion': 'Gebäudefunktion',
+    'gebaeudekennzeichen': 'Gebäudekennzeichen',
+    'geschossflaeche': 'Geschossfläche',
+    'gewaesserkennzahl': 'Gewässerkennzahl',
+    'gewaesserkennziffer': 'Gewässerkennziffer',
+    'grundflaeche': 'Grundfläche',
+    'hochhaus': 'Hochhaus',
+    'hydrologischesMerkmal': 'Hydrologisches Merkmal',
+    'identnummer': 'Identnummer',
+    'internationaleBedeutung': 'Internationale Bedeutung',
+    'jahreszahl': 'Jahreszahl',
+    'klassifizierung': 'Klassifizierung',
+    'kulturart': 'Kulturart',
+    'lageZurErdoberflaeche': 'Lage zur Erdoberfläche',
+    'lagergut': 'Lagergut',
+    'markierung': 'Markierung',
+    'merkmal': 'Merkmal',
+    'name': 'Name',
+    'nummer': 'Nummer',
+    'nummerDerSchutzzone': 'Nummer der Schutzzone',
+    'nummerDesSchutzgebietes': 'Nummer des Schutzgebietes',
+    'oberflaechenmaterial': 'Oberflächenmaterial',
+    'objekthoehe': 'Objekthöhe',
+    'primaerenergie': 'Primärenergie',
+    'punktkennung': 'Punktkennung',
+    'rechtszustand': 'Rechtszustand',
+    'schifffahrtskategorie': 'Schifffahrtskategorie',
+    'sonstigeAngaben': 'Sonstige Angaben',
+    'sonstigeEigenschaft': 'Sonstige Eigenschaft',
+    'spurweite': 'Spurweite',
+    'tagesabschnittsnummer': 'Tagesabschnittsnummer',
+    'tidemerkmal': 'Tidemerkmal',
+    'umbauterRaum': 'Umbauter Raum',
+    'vegetationsmerkmal': 'Vegetationsmerkmal',
+    'veraenderungOhneRuecksprache': 'Veränderung ohne Rücksprache',
+    'verkehrsbedeutungInneroertlich': 'Verkehrsbedeutung innerörtlich',
+    'verkehrsbedeutungUeberoertlich': 'Verkehrsbedeutung überörtlich',
+    'weitereGebaeudefunktion': 'Weitere Gebäudefunktion',
+    'widmung': 'Widmung',
+    'zone': 'Zone',
+    'zustand': 'Zustand',
+    'zustandsstufeOderBodenstufe': 'Zustandsstufe oder Bodenstufe',
 }
 
 ##
@@ -466,7 +467,7 @@ PROPS = {
 
 class DisplayTheme(gws.Enum):
     """Display themes for ALKIS data."""
-    
+
     lage = 'lage'
     """Lage" theme, showing the location of the property."""
     gebaeude = 'gebaeude'
@@ -585,11 +586,13 @@ class IndexStatus(gws.Data):
 
 ##
 
+
 class Reader:
     def read_all(self, cls: type, table_name: Optional[str] = None, uids: Optional[list[str]] = None):
         pass
 
     def count(self, cls: type, table_name: Optional[str] = None) -> int:
         pass
+
 
 ##

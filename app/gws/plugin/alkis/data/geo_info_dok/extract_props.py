@@ -76,5 +76,5 @@ print('\n'.join(py))
 
 print('\n\nPROPS = {')
 for k in sorted(all_titles):
-    print(f'    "{k}": "{all_titles[k]}",')
+    print(f'    {k!r}: {all_titles[k]!r},')
 print('}')

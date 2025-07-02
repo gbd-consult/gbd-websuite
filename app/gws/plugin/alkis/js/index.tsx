@@ -1442,6 +1442,7 @@ class Controller extends gc.Controller {
         if (res.error) {
             return;
         }
+
         gc.lib.downloadContent(res.content, res.mime, EXPORT_PATH)
     }
 

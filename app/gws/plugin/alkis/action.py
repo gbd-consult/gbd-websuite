@@ -368,7 +368,7 @@ class Object(gws.base.action.Object):
     templates: list[gws.Template]
     printers: list[gws.Printer]
 
-    exporter: Optional[exporter.Object]
+    exp: Optional[exporter.Object]
 
     strasseSearchOptions: gws.TextSearchOptions
     nameSearchOptions: gws.TextSearchOptions
@@ -393,14 +393,19 @@ class Object(gws.base.action.Object):
 
         self.limit = self.cfg('limit')
         self.model = self.create_child(Model)
-        self.ui = self.cfg('ui')
+        self.ui = self.cfg(
+            'ui',
+            default=Ui(
+                gemarkungListMode=GemarkungListMode.combined,
+                strasseListMode=StrasseListMode.plain,
+            ),
+        )
 
         p = self.cfg('templates', default=[]) + _DEFAULT_TEMPLATES
         self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
 
         self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
         self.printers.append(self.create_child(gws.ext.object.printer, _DEFAULT_PRINTER))
-
 
         d = gws.TextSearchOptions(type='exact')
         self.strasseSearchOptions = self.cfg('strasseSearchOptions', default=d)
@@ -419,11 +424,11 @@ class Object(gws.base.action.Object):
 
         p = self.cfg('export')
         if p:
-            self.exporter = self.create_child(exporter.Object, p)
+            self.exp = self.create_child(exporter.Object, p)
         elif self.ui.useExport:
-            self.exporter = self.create_child(exporter.Object)
+            self.exp = self.create_child(exporter.Object)
         else:
-            self.exporter = None
+            self.exp = None
 
     def activate(self):
         def _load():
@@ -543,7 +548,6 @@ class Object(gws.base.action.Object):
         args = dict(
             withHistory=query.options.withHistoryDisplay,
             withDebug=bool(self.root.app.developer_option('alkis.debug_templates')),
-            PROPS=dt.PROPS,
         )
 
         ps = []
@@ -564,7 +568,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('alkisExportFlurstueck')
     def export_flurstueck(self, req: gws.WebRequester, p: ExportFlurstueckRequest) -> ExportFlurstueckResponse:
-        if not self.exporter:
+        if not self.exp:
             raise gws.NotFoundError()
 
         groups = [g for g in self._export_groups(req.user) if g.index in p.groupIndexes]
@@ -578,9 +582,22 @@ class Object(gws.base.action.Object):
         if not fs_list:
             raise gws.NotFoundError()
 
-        csv_bytes = self.exporter.run(exporter.Args(format=exporter.Format.csv, fs=fs_list, groups=groups, user=req.user))
+        path = gws.u.ephemeral_path('alkis_export')
 
-        return ExportFlurstueckResponse(content=csv_bytes, mime='text/csv')
+        self.exp.run(
+            exporter.Args(
+                format=exporter.Format.csv,
+                fs=fs_list,
+                groups=groups,
+                targetPath=path,
+                user=req.user,
+            )
+        )
+
+        return ExportFlurstueckResponse(
+            content=gws.u.read_file_b(path),
+            mime='text/csv',
+        )
 
     @gws.ext.command.api('alkisPrintFlurstueck')
     def print_flurstueck(self, req: gws.WebRequester, p: PrintFlurstueckRequest) -> gws.JobStatusResponse:
@@ -804,12 +821,12 @@ class Object(gws.base.action.Object):
     ##
 
     def _export_groups(self, user):
-        if not self.exporter:
+        if not self.exp:
             return []
 
         groups = []
 
-        for g in self.exporter.groups:
+        for g in self.exp.groups:
             if g.withBuchung and not user.can_read(self.buchung):
                 continue
             if g.withEigentuemer and not user.can_read(self.eigentuemer):

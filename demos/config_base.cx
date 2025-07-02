@@ -1,6 +1,7 @@
 @let demo_point_duesseldorf_3857 = [753753, 6661615]
 @let demo_point_duesseldorf_25832 = [344371, 5677471]
 @let demo_point_dresden_3857 = [1529461, 6631043]
+@let demo_point_kamen_25832 = [407336, 5716507]
 
 @let demo_osm_background
     map.layers+ {

@@ -250,7 +250,10 @@ class Object(gws.Node):
 
         with self.db.connect():
             for table_id in table_ids:
-                d[table_id] = self.db.count(self.table(table_id))
+                try:
+                    d[table_id] = self.db.count(self.table(table_id))
+                except sa.exc.SQLAlchemyError:
+                    d[table_id] = 0
 
         return d
 
