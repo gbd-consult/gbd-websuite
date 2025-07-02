@@ -371,6 +371,18 @@ def _make_crs(srid, pp, au):
             return x['datum']['name']
         return ''
 
+    def _bbox(d):
+        b = d.get('bbox')
+        if b:
+            # pyproj 3.6
+            return b
+        if d.get('usages'):
+            # pyproj 3.7
+            for u in d['usages']:
+                b = u.get('bbox')
+                if b:
+                    return b
+
     b = d.get('base_crs')
     if b:
         crs.base = b['id']['code']
@@ -379,19 +391,16 @@ def _make_crs(srid, pp, au):
         crs.base = 0
         crs.datum = _datum(d)
 
-    crs.wgsExtent = crs.extent = None
+    b = _bbox(d)
+    if not b:
+        raise Error(f'no bbox for {crs.srid!r}')
 
-    b = d.get('bbox')
-    if b:
-        crs.wgsExtent = (
-            b['west_longitude'],
-            b['south_latitude'],
-            b['east_longitude'],
-            b['north_latitude'],
-        )
-    else:
-        crs.wgsExtent = WGS84.wgsExtent
-
+    crs.wgsExtent = (
+        b['west_longitude'],
+        b['south_latitude'],
+        b['east_longitude'],
+        b['north_latitude'],
+    )
     crs.extent = _transform_extent(crs.wgsExtent, WGS84.srid, srid)
     crs.bounds = gws.Bounds(extent=crs.extent, crs=crs)
 
