@@ -1,7 +1,5 @@
-from typing import Optional, cast, Generator
-import contextlib
 import threading
-
+from typing import Optional, cast
 
 import gws
 import gws.lib.sa as sa
@@ -121,7 +119,7 @@ class Object(gws.DatabaseProvider):
             setattr(_thread_local, '_connection', conn)
         else:
             assert cc > 0
-        
+
         setattr(_thread_local, '_connectionCount', cc + 1)
         # gws.log.debug(f'db.connect: open: {cc + 1}')
         return conn

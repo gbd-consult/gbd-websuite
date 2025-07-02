@@ -1,7 +1,4 @@
-from typing import Optional
 import gws
-import threading
-
 import gws.lib.sa as sa
 
 
@@ -22,8 +19,8 @@ class Object(gws.DatabaseConnection):
     def close(self):
         getattr(self.db, '_close_connection')()
 
-    def execute(self, stmt, params=None):
-        return self.saConn.execute(stmt, params)
+    def execute(self, stmt, params=None, execution_options=None):
+        return self.saConn.execute(stmt, params, execution_options=execution_options)
 
     def commit(self):
         self.saConn.commit()
@@ -39,16 +36,21 @@ class Object(gws.DatabaseConnection):
     def exec_commit(self, sql, **params):
         if isinstance(sql, str):
             sql = sa.text(sql)
-        res = self.saConn.execute(sql, params)
-        self.saConn.commit()
-        return res
+        try:
+            res = self.saConn.execute(sql, params)
+            self.saConn.commit()
+            return res
+        except Exception:
+            self.saConn.rollback()
+            raise
 
     def exec_rollback(self, sql, **params):
         if isinstance(sql, str):
             sql = sa.text(sql)
-        res = self.saConn.execute(sql, params)
-        self.saConn.rollback()
-        return res
+        try:
+            return self.saConn.execute(sql, params)
+        finally:
+            self.saConn.rollback()
 
     def fetch_all(self, stmt, **params):
         return [r._asdict() for r in self.exec_rollback(stmt, **params)]
