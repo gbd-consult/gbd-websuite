@@ -33,7 +33,7 @@ class Object(gws.base.model.value.Object):
     text: str
 
     def configure(self):
-        self.text = self.cfg('text')
+        self.text = (self.cfg('text') or '').strip()
         try:
             compile(self.text, 'expression', 'eval')
         except Exception as exc:
