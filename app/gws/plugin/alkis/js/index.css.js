@@ -54,7 +54,7 @@ module.exports = v => ({
     '.alkisSelectAuxButton': {...v.SIDEBAR_AUX_BUTTON(__dirname + '/stacker_all')},
     '.alkisUnselectAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/remove_circle_outline')},
     '.alkisFormAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.SEARCH_ICON)},
-    '.alkisListAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/reorder')},
+    '.alkisResultsAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/reorder')},
     '.alkisSelectionAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/bookmark_border')},
     '.alkisClearAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')},
     '.alkisLoadAuxButton': {...v.SIDEBAR_AUX_BUTTON(__dirname + '/open')},

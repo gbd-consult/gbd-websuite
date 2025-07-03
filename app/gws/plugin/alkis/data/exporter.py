@@ -3,20 +3,19 @@
 Export Flurstuecke to CSV or GeoJSON.
 """
 
-from typing import Optional, Iterable, cast, Any
-
-import io
+from typing import Iterable, Optional, cast
 
 import gws
-import gws.base.model
 import gws.base.feature
-import gws.plugin.csv_helper
-import gws.lib.crs
+import gws.base.model
 import gws.lib.intl
+import gws.lib.mime
 import gws.lib.jsonx
+import gws.plugin.csv_helper
 
 from gws.lib.cli import ProgressIndicator
 from . import types as dt
+from . import index
 
 
 class GroupConfig(gws.Config):
@@ -28,35 +27,52 @@ class GroupConfig(gws.Config):
     """Fields to export."""
 
 
+class Format(gws.Enum):
+    """Export format."""
+
+    csv = 'csv'
+    geojson = 'geojson'
+
+
 class Config(gws.ConfigWithAccess):
     """Export configuration"""
 
     groups: Optional[list[GroupConfig]]
-    """Export groups"""
+    """User-selectable export groups. (added in 8.2)"""
+    format: Optional[Format]
+    """Export format. (added in 8.2)"""
 
 
 class Group(gws.Data):
+    """Export group."""
+
     index: int
+    """Ordinal index of the group."""
     title: str
+    """Title to display in the ui."""
     withEigentuemer: bool
+    """Whether to include Eigentuemer data."""
     withBuchung: bool
+    """Whether to include Buchung data."""
     fieldNames: list[str]
+    """List of field names from Model fields."""
     keys: set[str]
-
-
-class Format(gws.Enum):
-    csv = 'csv'
-    geojson = 'geojson'
-    pydict = 'pydict'
+    """Set of keys that are used in this group, e.g. `fs_recs_gemarkung_text`."""
 
 
 class Args(gws.Data):
+    """Arguments for the export operation."""
+
     format: Format
-    fs: Iterable[dt.Flurstueck]
+    """Export format."""
+    fsList: Iterable[dt.Flurstueck]
+    """Iterable of Flurstuecke to export."""
     groups: list[Group]
-    targetPath: str
+    """List of export groups to use."""
     user: gws.User
+    """User who requested the export."""
     progress: Optional[ProgressIndicator]
+    """Progress indicator to update during export."""
 
 
 _DEFAULT_GROUPS = [
@@ -131,15 +147,25 @@ class Model(gws.base.model.Object):
 class Object(gws.Node):
     model: Model
     groups: list[Group]
+    format: str
 
     def configure(self):
+        self.format = self.cfg('format') or Format.csv
+
         self.groups = []
 
-        flat_keys = get_flat_keys()
+        flat_keys = index.all_flat_keys()
         field_configs = {}
 
         for cfg in self.cfg('groups') or _DEFAULT_GROUPS:
-            g = Group(index=len(self.groups), title=cfg.title, fieldNames=[], keys=set(), withEigentuemer=False, withBuchung=False)
+            g = Group(
+                index=len(self.groups),
+                title=cfg.title,
+                fieldNames=[],
+                keys=set(),
+                withEigentuemer=False,
+                withBuchung=False,
+            )
             self.groups.append(g)
 
             for fc in cfg.fields:
@@ -172,55 +198,49 @@ class Object(gws.Node):
                     if k in ref:
                         keys.add(k)
 
-    def run(self, args: Args):
-        """Export a Flurstueck list to CSV or GeoJSON."""
+    def run(self, args: Args) -> tuple[str, str]:
+        """Export a Flurstueck list to a temp file.
+
+        Returns:
+            A tuple (path, mime) where `path` is the path to the exported file and `mime` is the MIME type.
+        """
 
         if args.format == Format.csv:
             return self._export_csv(args)
         if args.format == Format.geojson:
             return self._export_geojson(args)
-        if args.format == Format.pydict:
-            return self._export_dict(args)
+        raise gws.NotFoundError(f'Unsupported export format: {args.format}')
 
     def _export_csv(self, args: Args):
         csv_helper = cast(gws.plugin.csv_helper.Object, self.root.app.helper('csv'))
+        path = gws.u.ephemeral_path('alkis_export')
 
-        with open(args.targetPath, 'wb') as fp:
+        with open(path, 'wb') as fp:
             writer = csv_helper.writer(gws.lib.intl.locale('de_DE'), stream_to=fp)
             for row in self._iter_rows(args):
                 writer.write_dict(row)
 
+        return path, gws.lib.mime.CSV
+
     def _export_geojson(self, args: Args):
-        fp = open(args.writePath, 'wb') if args.writePath else io.BytesIO()
-        fp.write(b'{"type": "FeatureCollection", "features": [')
+        path = gws.u.ephemeral_path('alkis_export')
 
-        comma = b'\n '
+        with open(path, 'wb') as fp:
+            fp.write(b'{"type": "FeatureCollection", "features": [')
+            comma = b'\n '
+            for row in self._iter_rows(args, with_geometry=True):
+                shape = row.pop('fs_shape', None)
+                d = dict(
+                    type='Feature',
+                    properties=row,
+                    geometry=cast(gws.Shape, shape).to_geojson() if shape else None,
+                )
+                fp.write(comma + gws.lib.jsonx.to_string(d).encode('utf8'))
+                comma = b',\n '
 
-        for row in self._iter_rows(args, with_geometry=True):
-            d = self._row_to_dict(row)
-            fp.write(comma + gws.lib.jsonx.to_string(d).encode('utf8'))
-            comma = b',\n '
+            fp.write(b'\n]}\n')
 
-        fp.write(b'\n]}\n')
-
-        if args.writePath:
-            fp.close()
-            return
-
-        b = fp.getvalue()
-        fp.close()
-        return b
-
-    def _export_dict(self, args: Args):
-        return dict(type='FeatureCollection', features=[self._row_to_dict(row) for row in self._iter_rows(args, with_geometry=True)])
-
-    def _row_to_dict(self, row):
-        shape = row.pop('fs_shape', None)
-        return dict(
-            type='Feature',
-            properties=row,
-            geometry=cast(gws.Shape, shape).to_geojson() if shape else None,
-        )
+        return path, gws.lib.mime.JSON
 
     def _iter_rows(self, args: Args, with_geometry=False):
         """Iterate over a Flurstueck list and yield flat rows (dicts).
@@ -242,22 +262,22 @@ class Object(gws.Node):
         """
 
         all_keys = set()
-        field_names = []
+        all_field_names = []
 
         for g in args.groups:
             all_keys.update(g.keys)
-            field_names.extend(g.fieldNames)
+            all_field_names.extend(g.fieldNames)
 
-        fields = [fld for fn in gws.u.uniq(field_names) for fld in self.model.fields if fld.name == fn]
+        fields = [fld for fn in gws.u.uniq(all_field_names) for fld in self.model.fields if fld.name == fn]
 
         mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.searchResults, user=args.user)
         row_hashes = set()
 
-        for fs in args.fs:
+        for fs in args.fsList:
             if args.progress:
                 args.progress.update(1)
 
-            for atts in _flatten(fs, all_keys):
+            for atts in index.flatten_fs(fs, all_keys):
                 # create a 'raw' feature from attributes and convert it to a record
                 # so that dynamic fields can be computed
 
@@ -275,64 +295,3 @@ class Object(gws.Node):
                 if with_geometry:
                     row['fs_shape'] = fs.shape
                 yield row
-
-
-_EXCLUDE_KEYS = {'fsUids', 'childUids', 'parentUids'}
-
-
-def _flatten(fs, all_keys) -> list[dict[str, Any]]:
-    def _flat(val, key, ds):
-        if not any(k.startswith(key) for k in all_keys):
-            return ds
-
-        if isinstance(val, list):
-            if not val:
-                return ds
-
-            ds2 = []
-            for v in val:
-                for d2 in _flat(v, key, [{}]):
-                    for d in ds:
-                        ds2.append(d | d2)
-            return ds2
-
-        if isinstance(val, (dt.Object, dt.EnumPair)):
-            for k, v in vars(val).items():
-                if k not in _EXCLUDE_KEYS:
-                    ds = _flat(v, f'{key}_{k}', ds)
-            return ds
-
-        for d in ds:
-            d[key] = val
-
-        return ds
-
-    return _flat(fs, 'fs', [{}])
-
-
-def get_flat_keys():
-    """Return a dict key->type for all flat keys in the Flurstueck structure."""
-
-    return {k: typ for k, typ in sorted(set(_get_keys(dt.Flurstueck, 'fs')))}
-
-
-def _get_keys(cls, key):
-    if isinstance(cls, str):
-        cls = getattr(dt, cls, None)
-
-    if cls is dt.EnumPair:
-        yield f'{key}_code', int
-        yield f'{key}_text', str
-        return
-
-    if not cls or not hasattr(cls, '__annotations__'):
-        yield key, cls or str
-        return
-
-    for k, typ in cls.__annotations__.items():
-        if k in _EXCLUDE_KEYS:
-            continue
-        if getattr(typ, '__origin__', None) is list:
-            yield from _get_keys(typ.__args__[0], f'{key}_{k}')
-        else:
-            yield from _get_keys(typ, f'{key}_{k}')

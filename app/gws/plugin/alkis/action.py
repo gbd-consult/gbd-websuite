@@ -582,21 +582,17 @@ class Object(gws.base.action.Object):
         if not fs_list:
             raise gws.NotFoundError()
 
-        path = gws.u.ephemeral_path('alkis_export')
-
-        self.exp.run(
-            exporter.Args(
-                format=exporter.Format.csv,
-                fs=fs_list,
-                groups=groups,
-                targetPath=path,
-                user=req.user,
-            )
+        args = exporter.Args(
+            format=self.exp.format,
+            fsList=fs_list,
+            groups=groups,
+            user=req.user,
         )
+        path, mime = self.exp.run(args)
 
         return ExportFlurstueckResponse(
             content=gws.u.read_file_b(path),
-            mime='text/csv',
+            mime=mime,
         )
 
     @gws.ext.command.api('alkisPrintFlurstueck')

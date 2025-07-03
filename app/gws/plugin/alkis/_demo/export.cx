@@ -1,0 +1,91 @@
+uid "alkis_export"
+
+title "ALKIS Export"
+
+metadata.keywords [ "alkis" ]
+
+metadata.abstract """
+ALKIS Plugin mit angepasster Export-Konfiguration.
+
+Aus verschachtelten Flurstück-Strukturen werden beim Exportieren "flache" Schlüssel-Wert-Objekte generiert, 
+wobei die Schlüssel den Pfad zu den ursprünglichen Werten repräsentieren.
+
+Eine Liste von möglichen Schlüsseln kann mit dem Befehl `gws alkis keys` im Terminal angezeigt werden.
+
+In der Export-Konfiguration können mehrere Gruppen definiert werden, die jeweils eine Liste von Feldern enthalten.
+In der Web-Oberfläche kann der Nutzer die Gruppen auswählen, die exportiert werden sollen.
+
+Die Felder sind herkömmliche Modellfelder, die auf die "flachen" Schlüssel verweisen.
+Mit "value" Objekten vom Typ "format" bzw. "expression" können mehrere Schlüssel-Werte einem Feld zusammengefasst werden.
+
+Als Export-Format sind aktuell "geojson" und "csv" verfügbar.
+"""
+
+actions+ {
+    type "alkis"
+    dbUid "DB_ALKIS"
+    dataSchema "public"
+    indexSchema "gws82"
+    crs 25832
+
+    ui {
+        useExport true
+    }
+
+    export {
+        format "geojson"
+        groups+ {
+            title "Basisinformationen"
+            fields [
+                { type "text"  name "fs_flurstueckskennzeichen" title "Flurstückskennzeichen" }
+                { type "text"  name "fs_recs_gemeinde_text" title "Gemeinde" }
+                { type "text"  name "fs_recs_gemarkung_text" title "Gemarkung" }
+            ]
+        }
+        groups+ {
+            title "Adresse"
+            fields [
+                { type "text" name "adresse" title "Adresse" 
+                    values+ {
+                        type "format"
+                        format "{{fs_lageList_recs_strasse}} {{fs_lageList_recs_hausnummer}}"
+                    }
+                }
+                { type "bool" name "wohnen" title "Wohnen" 
+                    values+ {
+                        type "expression"
+                        text "feature.get('fs_nutzungList_name_text').startswith('Wohn')"
+                    }
+                }
+            ]
+        }
+    }
+}
+
+client.addElements+ { tag "Sidebar.Alkis" }
+client.options.sidebarWidth 400
+
+map {
+    center {demo_point_kamen_25832}
+    crs 25832
+    zoom.initScale 70000
+    zoom.maxScale  100000
+}
+
+map.layers+ {
+    title "NRW ALKIS"
+    type "wmsflat"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+    sourceLayers.names [ "adv_alkis_flurstuecke" ]
+    metadata.attribution "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+}
+
+map.layers+ {
+    title "Open Street Map"
+    type "tile"
+    display "tile"
+    opacity 0.3
+    withCache true
+    provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+}

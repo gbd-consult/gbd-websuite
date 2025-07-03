@@ -5,6 +5,7 @@ from typing import Optional, cast
 import gws
 import gws.config
 import gws.lib.jsonx
+import gws.lib.osx
 from gws.lib.cli import ProgressIndicator
 
 from .data import types as dt
@@ -39,6 +40,7 @@ class DumpParams(gws.CliParams):
 
 # @TODO options to filter data and configure groups
 
+
 class ExportParams(gws.CliParams):
     projectUid: Optional[str]
     """Project uid."""
@@ -49,7 +51,7 @@ class ExportParams(gws.CliParams):
 
 
 class Object(gws.Node):
-    action: action.Object
+    act: action.Object
     ixStatus: dt.IndexStatus
 
     def _prepare(self, project_uid):
@@ -62,18 +64,22 @@ class Object(gws.Node):
                 gws.log.error(f'project {project_uid!r} not found')
                 exit(1)
 
-        self.action = cast(
+        self.act = cast(
             action.Object,
-            root.app.actionMgr.find_action(project, 'alkis', root.app.authMgr.systemUser)
+            root.app.actionMgr.find_action(
+                project,
+                'alkis',
+                root.app.authMgr.systemUser,
+            ),
         )
-        if not self.action:
+        if not self.act:
             if project:
                 gws.log.error(f'action "alkis" not found in project {project_uid!r}')
             else:
                 gws.log.error(f'action "alkis" not found')
             exit(1)
 
-        self.ixStatus = self.action.ix.status()
+        self.ixStatus = self.act.ix.status()
 
     @gws.ext.command.cli('alkisIndex')
     def do_index(self, p: CreateIndexParams):
@@ -84,8 +90,8 @@ class Object(gws.Node):
             gws.log.info(f'ALKIS index ok')
             return
 
-        gws.log.info(f'indexing db={self.action.db.uid} dataSchema={self.action.dataSchema} indexSchema={self.action.indexSchema}')
-        indexer.run(self.action.ix, self.action.dataSchema, with_force=p.force, with_cache=p.cache)
+        gws.log.info(f'indexing db={self.act.db.uid} dataSchema={self.act.dataSchema} indexSchema={self.act.indexSchema}')
+        indexer.run(self.act.ix, self.act.dataSchema, with_force=p.force, with_cache=p.cache)
 
     @gws.ext.command.cli('alkisStatus')
     def do_status(self, p: StatusParams):
@@ -101,7 +107,9 @@ class Object(gws.Node):
             gws.log.error(f'ALKIS index not found')
             return
 
-        gws.log.warning(f'ALKIS index incomplete: basic={self.ixStatus.basic} eigentuemer={self.ixStatus.eigentuemer} buchung={self.ixStatus.buchung}')
+        gws.log.warning(
+            f'ALKIS index incomplete: basic={self.ixStatus.basic} eigentuemer={self.ixStatus.eigentuemer} buchung={self.ixStatus.buchung}'
+        )
 
     @gws.ext.command.cli('alkisExport')
     def do_export(self, p: ExportParams):
@@ -109,7 +117,7 @@ class Object(gws.Node):
 
         self._prepare(p.projectUid)
 
-        if not self.action.exporter:
+        if not self.act.exp:
             gws.log.error(f'ALKIS export is not configured')
             exit(3)
 
@@ -138,27 +146,29 @@ class Object(gws.Node):
             limit=1000,
         )
 
-        sys_user = self.action.root.app.authMgr.systemUser
-        total = self.action.ix.count_all(qo)
-        fs = self.action.ix.iter_all(qo)
+        sys_user = self.act.root.app.authMgr.systemUser
+        total = self.act.ix.count_all(qo)
+        fs = self.act.ix.iter_all(qo)
 
         with ProgressIndicator('export', total) as progress:
-            self.action.exporter.run(exporter.Args(
-                fs=fs,
-                format=p.format,
-                groups=self.action.exporter.groups,
-                user=sys_user,
-                writePath=p.path,
-                progress=progress,
-            ))
+            path, _ = self.act.exp.run(
+                exporter.Args(
+                    fs=fs,
+                    format=p.format,
+                    groups=self.act.exp.groups,
+                    user=sys_user,
+                    progress=progress,
+                )
+            )
+        gws.lib.osx.rename(path, p.path)
 
     @gws.ext.command.cli('alkisKeys')
     def do_keys(self, p: gws.CliParams):
         """Print ALKIS export keys."""
 
-        d = gws.plugin.alkis.data.exporter.get_flat_keys()
+        d = index.all_flat_keys()
         for key, typ in d.items():
-            print(f'{key:90s} : {typ.__name__}')
+            print(f'{typ.__name__:7} {key}')
 
     @gws.ext.command.cli('alkisDump')
     def do_dump(self, p: DumpParams):
@@ -186,6 +196,6 @@ class Object(gws.Node):
             ],
         )
 
-        fs = self.action.ix.load_flurstueck(gws.u.to_list(p.fs), qo)
+        fs = self.act.ix.load_flurstueck(gws.u.to_list(p.fs), qo)
         js = [index.serialize(f, encode_enum_pairs=False) for f in fs]
         gws.u.write_file(p.path, gws.lib.jsonx.to_pretty_string(js))

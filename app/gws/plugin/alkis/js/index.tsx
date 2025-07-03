@@ -19,9 +19,9 @@ function _master(obj: any) {
         return obj.props.controller.app.controller(MASTER) as Controller;
 }
 
-const EXPORT_PATH = 'fs_info.csv';
+const EXPORT_PATH = 'fs_info';
 
-type TabName = 'form' | 'list' | 'details' | 'error' | 'selection' | 'export';
+type TabName = 'form' | 'results' | 'details' | 'error' | 'selection' | 'export';
 
 const _PREFIX_GEMARKUNG = '@gemarkung';
 const _PREFIX_GEMEINDE = '@gemeinde';
@@ -221,14 +221,14 @@ class FormAuxButton extends gc.View<ViewProps> {
     }
 }
 
-class ListAuxButton extends gc.View<ViewProps> {
+class ResultsAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
         return <sidebar.AuxButton
-            {...gc.lib.cls('alkisListAuxButton', this.props.alkisTab === 'list' && 'isActive')}
-            whenTouched={() => cc.goTo('list')}
-            tooltip={cc.__('alkisGotoList')}
+            {...gc.lib.cls('alkisResultsAuxButton', this.props.alkisTab === 'results' && 'isActive')}
+            whenTouched={() => cc.goTo('results')}
+            tooltip={cc.__('alkisGotoResults')}
         />
     }
 }
@@ -282,7 +282,7 @@ class Navigation extends gc.View<ViewProps> {
     render() {
         return <React.Fragment>
             <FormAuxButton {...this.props}/>
-            <ListAuxButton {...this.props}/>
+            <ResultsAuxButton {...this.props}/>
             <SelectionAuxButton {...this.props}/>
         </React.Fragment>
     }
@@ -620,7 +620,7 @@ class FeatureList extends gc.View<ViewProps> {
 
 }
 
-class ListTab extends gc.View<ViewProps> {
+class ResultsTab extends gc.View<ViewProps> {
     title() {
         let cc = _master(this);
 
@@ -767,7 +767,7 @@ class ExportTab extends gc.View<ViewProps> {
             <sidebar.TabBody>
                 <div className="alkisFsDetailsTabContent">
                     <Form>
-                        <Row>
+                        {allGroups.length > 1 && <Row>
                             <Cell flex>
                                 <gc.ui.Group vertical>
                                     {allGroups.map(g => <gc.ui.Toggle
@@ -781,12 +781,13 @@ class ExportTab extends gc.View<ViewProps> {
                                     )}
                                 </gc.ui.Group>
                             </Cell>
-                        </Row>
+                        </Row>}
                         <Row>
                             <Cell flex/>
                             <Cell width={120}>
                                 <gc.ui.Button
                                     primary
+                                    disabled={this.props.alkisFsExportGroupIndexes.length === 0}
                                     whenTouched={() => cc.submitExport()}
                                     label={cc.__('alkisExportButton')}
                                 />
@@ -820,8 +821,8 @@ class SidebarView extends gc.View<ViewProps> {
         if (!tab || tab === 'form')
             return <FormTab {...this.props} />;
 
-        if (tab === 'list')
-            return <ListTab {...this.props} />;
+        if (tab === 'results')
+            return <ResultsTab {...this.props} />;
 
         if (tab === 'details')
             return <DetailsTab {...this.props} />;
@@ -914,7 +915,7 @@ class Controller extends gc.Controller {
             alkisFsLoading: false,
 
             alkisFsFormValues: {},
-            alkisFsExportGroupIndexes: [],
+            alkisFsExportGroupIndexes: (this.setup.exportGroups || []).map(g => g.index),
 
             alkisFsGemarkungListItems: this.gemarkungListItems(),
             alkisFsStrasseListItems: this.strasseListItems(this.toponyms.strassen),
@@ -934,11 +935,11 @@ class Controller extends gc.Controller {
         if (p) {
             res = await this.app.server.call('alkisFindFlurstueck', {combinedFlurstueckCode: p});
         }
-
+        
         p = this.app.urlParams['alkisAd'];
         if (p) {
             res = await this.app.server.call('alkisFindAdresse', {combinedAdresseCode: p});
-        }
+        }        
 
         if (!res || res.error) {
             return;
@@ -1205,7 +1206,7 @@ class Controller extends gc.Controller {
         if (features.length === 1) {
             await this.showDetails(features[0], true);
         } else {
-            this.goTo('list');
+            this.goTo('results');
         }
 
         this.update({alkisFsLoading: false});

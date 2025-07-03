@@ -116,84 +116,64 @@ class Object(gws.Node):
             ],
             TABLE_INDEXFLURSTUECK: [
                 sa.Column('n', sa.Integer, primary_key=True),
-
                 sa.Column('fs', sa.Text, index=True),
                 sa.Column('fshistoric', sa.Boolean, index=True),
-
                 sa.Column('land', sa.Text, index=True),
                 sa.Column('land_t', sa.Text, index=True),
                 sa.Column('landcode', sa.Text, index=True),
-
                 sa.Column('regierungsbezirk', sa.Text, index=True),
                 sa.Column('regierungsbezirk_t', sa.Text, index=True),
                 sa.Column('regierungsbezirkcode', sa.Text, index=True),
-
                 sa.Column('kreis', sa.Text, index=True),
                 sa.Column('kreis_t', sa.Text, index=True),
                 sa.Column('kreiscode', sa.Text, index=True),
-
                 sa.Column('gemeinde', sa.Text, index=True),
                 sa.Column('gemeinde_t', sa.Text, index=True),
                 sa.Column('gemeindecode', sa.Text, index=True),
-
                 sa.Column('gemarkung', sa.Text, index=True),
                 sa.Column('gemarkung_t', sa.Text, index=True),
                 sa.Column('gemarkungcode', sa.Text, index=True),
-
                 sa.Column('amtlicheflaeche', sa.Float, index=True),
                 sa.Column('geomflaeche', sa.Float, index=True),
-
                 sa.Column('flurnummer', sa.Text, index=True),
                 sa.Column('zaehler', sa.Text, index=True),
                 sa.Column('nenner', sa.Text, index=True),
                 sa.Column('flurstuecksfolge', sa.Text, index=True),
                 sa.Column('flurstueckskennzeichen', sa.Text, index=True),
-
                 sa.Column('x', sa.Float, index=True),
                 sa.Column('y', sa.Float, index=True),
             ],
             TABLE_INDEXLAGE: [
                 sa.Column('n', sa.Integer, primary_key=True),
-
                 sa.Column('fs', sa.Text, index=True),
                 sa.Column('fshistoric', sa.Boolean, index=True),
-
                 sa.Column('land', sa.Text, index=True),
                 sa.Column('land_t', sa.Text, index=True),
                 sa.Column('landcode', sa.Text, index=True),
-
                 sa.Column('regierungsbezirk', sa.Text, index=True),
                 sa.Column('regierungsbezirk_t', sa.Text, index=True),
                 sa.Column('regierungsbezirkcode', sa.Text, index=True),
-
                 sa.Column('kreis', sa.Text, index=True),
                 sa.Column('kreis_t', sa.Text, index=True),
                 sa.Column('kreiscode', sa.Text, index=True),
-
                 sa.Column('gemeinde', sa.Text, index=True),
                 sa.Column('gemeinde_t', sa.Text, index=True),
                 sa.Column('gemeindecode', sa.Text, index=True),
-
                 sa.Column('gemarkung', sa.Text, index=True),
                 sa.Column('gemarkung_t', sa.Text, index=True),
                 sa.Column('gemarkungcode', sa.Text, index=True),
-
                 sa.Column('lageuid', sa.Text, index=True),
                 sa.Column('lagehistoric', sa.Boolean, index=True),
-
                 sa.Column('strasse', sa.Text, index=True),
                 sa.Column('strasse_t', sa.Text, index=True),
                 sa.Column('hausnummer', sa.Text, index=True),
-
                 sa.Column('x', sa.Float, index=True),
                 sa.Column('y', sa.Float, index=True),
             ],
             TABLE_INDEXBUCHUNGSBLATT: [
                 sa.Column('n', sa.Integer, primary_key=True),
-
                 sa.Column('fs', sa.Text, index=True),
                 sa.Column('fshistoric', sa.Boolean, index=True),
-
                 sa.Column('buchungsblattuid', sa.Text, index=True),
                 sa.Column('buchungsblattbeginnt', sa.DateTime, index=True),
                 sa.Column('buchungsblattendet', sa.DateTime, index=True),
@@ -202,13 +182,10 @@ class Object(gws.Node):
             ],
             TABLE_INDEXPERSON: [
                 sa.Column('n', sa.Integer, primary_key=True),
-
                 sa.Column('fs', sa.Text, index=True),
                 sa.Column('fshistoric', sa.Boolean, index=True),
-
                 sa.Column('personuid', sa.Text, index=True),
                 sa.Column('personhistoric', sa.Boolean, index=True),
-
                 sa.Column('name', sa.Text, index=True),
                 sa.Column('name_t', sa.Text, index=True),
                 sa.Column('vorname', sa.Text, index=True),
@@ -216,14 +193,11 @@ class Object(gws.Node):
             ],
             TABLE_INDEXGEOM: [
                 sa.Column('n', sa.Integer, primary_key=True),
-
                 sa.Column('fs', sa.Text, index=True),
                 sa.Column('fshistoric', sa.Boolean, index=True),
-
                 sa.Column('geomflaeche', sa.Float, index=True),
                 sa.Column('x', sa.Float, index=True),
                 sa.Column('y', sa.Float, index=True),
-
                 sa.Column('geom', sa.geo.Geometry(srid=self.crs.srid)),
             ],
         }
@@ -290,17 +264,17 @@ class Object(gws.Node):
     INSERT_SIZE = 5000
 
     def create_table(
-            self,
-            table_id: str,
-            values: list[dict],
-            progress: Optional[ProgressIndicator] = None
+        self,
+        table_id: str,
+        values: list[dict],
+        progress: Optional[ProgressIndicator] = None,
     ):
         tab = self.table(table_id)
         self.saMeta.create_all(self.db.engine(), tables=[tab])
 
         with self.db.connect() as conn:
             for i in range(0, len(values), self.INSERT_SIZE):
-                vals = values[i:i + self.INSERT_SIZE]
+                vals = values[i : i + self.INSERT_SIZE]
                 conn.execute(sa.insert(tab).values(vals))
                 conn.commit()
                 if progress:
@@ -315,12 +289,7 @@ class Object(gws.Node):
             return self._defaultLand
 
         with self.db.connect() as conn:
-            sel = (
-                sa
-                .select(self.table(TABLE_PLACE))
-                .where(sa.text("data->>'kind' = 'gemarkung'"))
-                .limit(1)
-            )
+            sel = sa.select(self.table(TABLE_PLACE)).where(sa.text("data->>'kind' = 'gemarkung'")).limit(1)
             for r in conn.execute(sel):
                 p = unserialize(r.data)
                 self._defaultLand = p.land
@@ -330,7 +299,6 @@ class Object(gws.Node):
     _strasseList: list[dt.Strasse] = []
 
     def strasse_list(self) -> list[dt.Strasse]:
-
         if self._strasseList:
             return self._strasseList
 
@@ -347,11 +315,13 @@ class Object(gws.Node):
 
         with self.db.connect() as conn:
             for r in conn.execute(sa.select(*cols).group_by(*cols)):
-                self._strasseList.append(dt.Strasse(
-                    gemeinde=dt.EnumPair(r.gemeindecode, r.gemeinde),
-                    gemarkung=dt.EnumPair(r.gemarkungcode, r.gemarkung),
-                    name=r.strasse
-                ))
+                self._strasseList.append(
+                    dt.Strasse(
+                        gemeinde=dt.EnumPair(r.gemeindecode, r.gemeinde),
+                        gemarkung=dt.EnumPair(r.gemarkungcode, r.gemarkung),
+                        name=r.strasse,
+                    )
+                )
 
         return self._strasseList
 
@@ -372,9 +342,9 @@ class Object(gws.Node):
                 raise gws.ResponseTooLargeError(len(lage_uids))
 
             if qo.offset:
-                lage_uids = lage_uids[qo.offset:]
+                lage_uids = lage_uids[qo.offset :]
             if qo.limit:
-                lage_uids = lage_uids[:qo.limit]
+                lage_uids = lage_uids[: qo.limit]
 
             sel = indexlage.select().where(indexlage.c.lageuid.in_(lage_uids))
 
@@ -413,9 +383,9 @@ class Object(gws.Node):
                 raise gws.ResponseTooLargeError(len(fs_uids))
 
             if qo.offset:
-                fs_uids = fs_uids[qo.offset:]
+                fs_uids = fs_uids[qo.offset :]
             if qo.limit:
-                fs_uids = fs_uids[:qo.limit]
+                fs_uids = fs_uids[: qo.limit]
 
             fs_list = self._load_flurstueck(conn, fs_uids, qo)
 
@@ -456,7 +426,6 @@ class Object(gws.Node):
     HAUSNUMMER_NOT_NULL_VALUE = '*'
 
     def _make_flurstueck_select(self, q: dt.FlurstueckQuery, qo: dt.FlurstueckQueryOptions):
-
         indexfs = self.table(TABLE_INDEXFLURSTUECK)
         indexbuchungsblatt = self.table(TABLE_INDEXBUCHUNGSBLATT)
         indexgeom = self.table(TABLE_INDEXGEOM)
@@ -502,7 +471,11 @@ class Object(gws.Node):
             ws = []
 
             for s in q.buchungsblattkennzeichenList:
-                w = text_search_clause(indexbuchungsblatt.c.buchungsblattkennzeichen, s, qo.buchungsblattSearchOptions)
+                w = text_search_clause(
+                    indexbuchungsblatt.c.buchungsblattkennzeichen,
+                    s,
+                    qo.buchungsblattSearchOptions,
+                )
                 if w is not None:
                     ws.append(w)
             if ws:
@@ -510,7 +483,11 @@ class Object(gws.Node):
                 where.append(sa.or_(*ws))
 
         if q.strasse:
-            w = text_search_clause(indexlage.c.strasse_t, strasse_key(q.strasse), qo.strasseSearchOptions)
+            w = text_search_clause(
+                indexlage.c.strasse_t,
+                strasse_key(q.strasse),
+                qo.strasseSearchOptions,
+            )
             if w is not None:
                 has_lage = True
                 where.append(w)
@@ -538,9 +515,15 @@ class Object(gws.Node):
 
         if q.shape:
             has_geom = True
-            where.append(sa.func.st_intersects(
-                indexgeom.c.geom,
-                sa.cast(q.shape.transformed_to(self.crs).to_ewkb_hex(), sa.geo.Geometry())))
+            where.append(
+                sa.func.st_intersects(
+                    indexgeom.c.geom,
+                    sa.cast(
+                        q.shape.transformed_to(self.crs).to_ewkb_hex(),
+                        sa.geo.Geometry(),
+                    ),
+                )
+            )
 
         join = []
 
@@ -588,7 +571,11 @@ class Object(gws.Node):
         has_strasse = False
 
         if q.strasse:
-            w = text_search_clause(indexlage.c.strasse_t, strasse_key(q.strasse), qo.strasseSearchOptions)
+            w = text_search_clause(
+                indexlage.c.strasse_t,
+                strasse_key(q.strasse),
+                qo.strasseSearchOptions,
+            )
             if w is not None:
                 has_strasse = True
                 where.append(w)
@@ -699,11 +686,7 @@ class Object(gws.Node):
             fs.nutzungList = []
 
         if with_buchung:
-            bb_uids = set(
-                bu.buchungsblattUid
-                for fs in fs_map.values()
-                for bu in fs.buchungList
-            )
+            bb_uids = set(bu.buchungsblattUid for fs in fs_map.values() for bu in fs.buchungList)
 
             tab = self.table(TABLE_BUCHUNGSBLATT)
             sel = sa.select(tab).where(tab.c.uid.in_(bb_uids))
@@ -743,9 +726,7 @@ class Object(gws.Node):
 
         return gws.u.compact(fs_map.get(uid) for uid in fs_uids)
 
-    _historicKeys = [
-        'vorgaengerFlurstueckskennzeichen'
-    ]
+    _historicKeys = ['vorgaengerFlurstueckskennzeichen']
 
     def _remove_historic(self, objects, with_history_display: bool):
         if with_history_display:
@@ -774,6 +755,7 @@ class Object(gws.Node):
 
 
 ##
+
 
 def serialize(o: dt.Object, encode_enum_pairs=True) -> dict:
     def encode(r):
@@ -850,11 +832,11 @@ def strasse_key(s):
 
 
 def _text_umlauts(s):
-    s = s.replace(u'ä', 'ae')
-    s = s.replace(u'ë', 'ee')
-    s = s.replace(u'ö', 'oe')
-    s = s.replace(u'ü', 'ue')
-    s = s.replace(u'ß', 'ss')
+    s = s.replace('ä', 'ae')
+    s = s.replace('ë', 'ee')
+    s = s.replace('ö', 'oe')
+    s = s.replace('ü', 'ue')
+    s = s.replace('ß', 'ss')
 
     return s
 
@@ -897,7 +879,7 @@ def make_fsnummer(r: dt.FlurstueckRecord):
 
 # parse a fsnummer in the above format, all parts are optional
 
-_RE_FSNUMMER = r'''(?x)
+_RE_FSNUMMER = r"""(?x)
     ^
     (
         (?P<gemarkungCode> [0-9]+)
@@ -920,7 +902,7 @@ _RE_FSNUMMER = r'''(?x)
         \)
     )?
     $
-'''
+"""
 
 
 def parse_fsnummer(s):
@@ -965,8 +947,72 @@ def text_search_clause(column, val, tso: gws.TextSearchOptions):
 
 
 def _escape_like(s, escape='\\'):
-    return (
-        s
-        .replace(escape, escape + escape)
-        .replace('%', escape + '%')
-        .replace('_', escape + '_'))
+    return s.replace(escape, escape + escape).replace('%', escape + '%').replace('_', escape + '_')
+
+
+##
+
+
+_FLATTEN_EXCLUDE_KEYS = {'fsUids', 'childUids', 'parentUids'}
+
+
+def flatten_fs(fs: dt.Flurstueck, keys_to_extract: set[str]) -> list[dict]:
+    """Flatten a Flurstueck into a list of dicts with keys from keys_to_extract."""
+
+    return _flatten(fs, 'fs', keys_to_extract, [{}])
+
+
+def _flatten(val, key, keys_to_extract, flat_lst):
+    if not any(k.startswith(key) for k in keys_to_extract):
+        return flat_lst
+
+    if isinstance(val, list):
+        if not val:
+            return flat_lst
+
+        # create a cartesian product of all dicts in flat_dct with each item in val
+        new_lst = []
+        for v in val:
+            for d2 in _flatten(v, key, keys_to_extract, [{}]):
+                for d in flat_lst:
+                    new_lst.append(d | d2)
+        return new_lst
+
+    if isinstance(val, (dt.Object, dt.EnumPair)):
+        for k, v in vars(val).items():
+            if k not in _FLATTEN_EXCLUDE_KEYS:
+                flat_lst = _flatten(v, f'{key}_{k}', keys_to_extract, flat_lst)
+        return flat_lst
+
+    for d in flat_lst:
+        d[key] = val
+
+    return flat_lst
+
+
+def all_flat_keys():
+    """Return a dict key->type for all flat keys in the Flurstueck structure."""
+
+    return {k: typ for k, typ in sorted(set(_get_flat_keys(dt.Flurstueck, 'fs')))}
+
+
+def _get_flat_keys(cls, key):
+    if isinstance(cls, str):
+        cls = getattr(dt, cls, None)
+
+    if cls is dt.EnumPair:
+        yield f'{key}_code', int
+        yield f'{key}_text', str
+        return
+
+    if not cls or not hasattr(cls, '__annotations__'):
+        yield key, cls or str
+        return
+
+    for k, typ in cls.__annotations__.items():
+        if k in _FLATTEN_EXCLUDE_KEYS:
+            continue
+        if getattr(typ, '__origin__', None) is list:
+            yield from _get_flat_keys(typ.__args__[0], f'{key}_{k}')
+        else:
+            yield from _get_flat_keys(typ, f'{key}_{k}')
