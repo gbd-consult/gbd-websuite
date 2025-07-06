@@ -282,6 +282,7 @@ class Object(gws.Model):
         feature.props = gws.FeatureProps(
             attributes={},
             cssSelector=feature.cssSelector,
+            category=feature.category or '',
             errors=feature.errors or [],
             isNew=feature.isNew,
             modelUid=self.uid,
@@ -304,9 +305,8 @@ class Object(gws.Model):
         if self.geometryName:
             a[DEFAULT_GEOMETRY_NAME] = props.attributes.get(self.geometryName)
 
+        # only provide "uid" and "geometry" attributes for the view props
         props.attributes = a
-        props.modelUid = ''
-        props.category = feature.category or ''
 
         return props
 

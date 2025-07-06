@@ -1,11 +1,11 @@
 import * as ol from "openlayers";
 
 
-import {gws} from '../gws';
+import { gws } from '../gws';
 import * as types from '../types';
 import * as feature from './feature';
 import * as lib from '../lib';
-import {IFeature, IModel} from "../types";
+import { IFeature, IModel } from "../types";
 
 
 export class ModelRegistry implements types.IModelRegistry {
@@ -15,23 +15,7 @@ export class ModelRegistry implements types.IModelRegistry {
     constructor(app: types.IApplication) {
         this.app = app;
         this.index = {};
-        this.addModel({
-            clientOptions: {},
-            canCreate: false,
-            canDelete: false,
-            canRead: false,
-            canWrite: false,
-            isEditable: false,
-            supportsKeywordSearch: false,
-            supportsGeometrySearch: false,
-            fields: [],
-            geometryName: 'geometry',
-            uidName: 'uid',
-            loadingStrategy: gws.FeatureLoadingStrategy.all,
-            tableViewColumns: [],
-            title: '',
-            uid: '',
-        });
+        this.addModel(this.defaultModelProps(''));
     }
 
 
@@ -46,14 +30,35 @@ export class ModelRegistry implements types.IModelRegistry {
     }
 
     getModel(uid) {
-        let m = this.index[uid || ''];
-        if (!m)
-            throw new Error(`model ${uid} not found`);
-        return m;
+        uid = uid || '';
+        if (!this.index[uid]) {
+            this.addModel(this.defaultModelProps(uid));
+        }
+        return this.index[uid];
     }
 
     defaultModel() {
         return this.index[''];
+    }
+
+    defaultModelProps(uid) {
+        return {
+            uid,
+            clientOptions: {},
+            canCreate: false,
+            canDelete: false,
+            canRead: false,
+            canWrite: false,
+            isEditable: false,
+            supportsKeywordSearch: false,
+            supportsGeometrySearch: false,
+            fields: [],
+            geometryName: 'geometry',
+            uidName: 'uid',
+            loadingStrategy: gws.FeatureLoadingStrategy.all,
+            tableViewColumns: [],
+            title: '',
+        }
     }
 
     getModelForLayer(layer) {
@@ -135,7 +140,7 @@ export class Model implements types.IModel {
         for (let c of (props.tableViewColumns || [])) {
             for (let fld of this.fields)
                 if (fld.name === c.name)
-                    this.tableViewColumns.push({field: fld, width: c.width || 0})
+                    this.tableViewColumns.push({ field: fld, width: c.width || 0 })
         }
 
         this.hasTableView = this.tableViewColumns.length > 0;
@@ -186,7 +191,7 @@ export class Model implements types.IModel {
             }
         }
 
-        return this.newFeature().setProps({...props, attributes});
+        return this.newFeature().setProps({ ...props, attributes });
     }
 
     featureListFromProps(propsList: Array<gws.FeatureProps>): Array<types.IFeature> {
