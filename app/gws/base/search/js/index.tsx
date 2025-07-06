@@ -49,8 +49,15 @@ class SearchResults extends gc.View<SearchViewProps> {
                 <gc.ui.Loader />
             </div>
         }
+        
+        let fs = this.props.searchResults || [];
 
-        if (!this.props.searchResults || this.props.searchResults.length === 0) {
+        if (this.props.searchCategories && this.props.searchCategories.length > 0) {
+            let cats = this.props.searchSelectedCategories || [];
+            fs = fs.filter(f => cats.indexOf(f.category) >= 0);
+        }
+
+        if (fs.length === 0) {
             return <div className="searchResults">
                 <div className="searchResultsEmpty">
                     <gc.ui.Text content={this.__('searchNoResults')} />
@@ -58,18 +65,11 @@ class SearchResults extends gc.View<SearchViewProps> {
             </div>
         }
 
-        let fs = this.props.searchResults;
-        let cats = this.props.searchSelectedCategories;
-        if (cats && cats.length) {
-            fs = this.props.searchResults.filter(f => cats.indexOf(f.category) >= 0);
-        }
-
         fs.sort((a, b) => {
             let ka = a.views.teaser || a.views.title;
             let kb = b.views.teaser || b.views.title;
             return ka.localeCompare(kb)
         });
-
 
         let zoomTo = f => this.props.controller.update({
             marker: {
@@ -272,10 +272,10 @@ class SearchController extends gc.Controller {
 
         this.update({
             searchCategories: this.setup.categories || [],
+            searchSelectedCategories: this.setup.categories || [],
         })
 
         this.app.whenChanged('searchInput', val => this.runDebounced(val));
-        gc.lib.delay(100, () => this.run('fl'))
     }
 
     protected async runDebounced(keyword) {
