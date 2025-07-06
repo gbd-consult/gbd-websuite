@@ -4,10 +4,13 @@ import os
 import sys
 import json
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../app'))
+APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../app')
+
+sys.path.insert(0, APP_DIR)
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../app/gws/lib/vendor'))
 
 import gws.lib.cli as cli
+import gws.spec.generator.main
 
 import options
 import gws.lib.vendor.dog as dog
@@ -47,11 +50,7 @@ Options:
 
 
 def main(args):
-    opts = {
-        k: v
-        for k, v in vars(options).items()
-        if not k.startswith('_')
-    }
+    opts = {k: v for k, v in vars(options).items() if not k.startswith('_')}
 
     s = args.get('opt')
     if s:
@@ -87,7 +86,8 @@ def main(args):
         return 0
 
     if cmd == 'server':
-        dog.start_server(opts)
+        srv = ServerWithSpecs(opts)
+        srv.start()
         return 0
 
     if cmd == 'api':
@@ -95,7 +95,7 @@ def main(args):
         if args.pop('no-cache', None):
             _mkdir(cache_dir)
         verbosity = '' if opts['debug'] else '-Q'
-        cmd = f'''
+        cmd = f"""
             sphinx-build
             -b html 
             -j auto 
@@ -103,7 +103,7 @@ def main(args):
             {verbosity}
             {options.ROOT_DIR}/doc/api 
             {opts['outputDir']}
-        '''
+        """
         dog.util.run(cmd.strip().split())
         return 0
 
@@ -129,6 +129,21 @@ def _add_opts(opts, path):
             opts['extraAssets'].extend(os.path.abspath(os.path.join(dirname, p)) for p in v)
             continue
         opts[k] = v
+
+
+class ServerWithSpecs(dog.server.Server):
+    """A custom server that runs the spec maker before reload."""
+
+    def initialize(self):
+        super().initialize()
+        self.liveServer.watch(APP_DIR + '/**/strings.ini', self.watch_docs, delay=0.1)
+
+    def rebuild(self):
+        gws.spec.generator.main.generate_and_write(
+            root_dir=APP_DIR,
+            out_dir=options.BUILD_DIR,
+        )
+        super().rebuild()
 
 
 if __name__ == '__main__':

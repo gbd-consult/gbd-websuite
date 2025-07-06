@@ -5,10 +5,10 @@ from .options import Options
 
 
 class Server:
+    liveServer: livereload.Server
+    
     def __init__(self, opts: Options | dict):
         self.b = builder.Builder(opts)
-        self.liveServer = None
-        self.liveScript = f'<script src="//{self.b.options.serverHost}:{self.b.options.serverPort}/livereload.js?port={self.b.options.serverPort}"></script>'
 
     def app(self, env, start_response):
 
@@ -23,10 +23,12 @@ class Server:
 
         mime, content = res
         if mime == 'text/html':
-            content += self.liveScript
+            script = f'<script src="//{self.b.options.serverHost}:{self.b.options.serverPort}/livereload.js?port={self.b.options.serverPort}"></script>'
+            content = str(content) + '\n' + script
 
         if isinstance(content, str):
             content = content.encode('utf8')
+        
         headers = [
             ('Content-type', mime),
             ('Cache-Control', 'must-revalidate, max-age=0, no-cache, no-store'),
@@ -49,9 +51,7 @@ class Server:
     def watch_assets(self, args=None):
         util.log.debug(f'watch_assets: {args!r}')
 
-    def start(self):
-        self.rebuild()
-
+    def initialize(self):
         self.liveServer = livereload.Server(self.app)
 
         for root in self.b.options.docRoots:
@@ -79,6 +79,10 @@ class Server:
                 pass
 
         tornado.autoreload._reload_hooks = ListNoAppend()
+
+    def start(self):
+        self.rebuild()
+        self.initialize()
 
         util.log.info(f'http://{self.b.options.serverHost}:{self.b.options.serverPort}{self.b.options.webRoot}/')
 
