@@ -2239,6 +2239,7 @@ class FeatureProps(Props):
     """Feature Proprieties."""
 
     attributes: dict
+    category: Optional[str]
     cssSelector: str
     errors: Optional[list['ModelValidationError']]
     createWithFeatures: Optional[list['FeatureProps']]
@@ -4084,6 +4085,7 @@ class Finder(Node):
     """Finder object."""
 
     title: str
+    category: str
 
     supportsFilterSearch: bool = False
     supportsGeometrySearch: bool = False

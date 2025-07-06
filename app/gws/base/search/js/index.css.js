@@ -10,43 +10,96 @@ module.exports = v => ({
 
     '.searchWaitButton.uiIconButton': {
         ...v.ICON_SIZE('small'),
-        // backgroundImage: v.IMAGE(__dirname + '/../../../ui/ajax.gif'),
+        // backgroundImage: v.IMAGE('ajax.gif'),
     },
 
     '.searchBox': {
         '.uiInput .uiControlBox': {
             borderWidth: 0
         },
+
     },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    '.searchOptions': {
+        display: 'none',
+        // overflow: 'hidden',
+        // ...v.TRANSITION(),
+    },
+    '.searchBox.withOptions .searchOptions': {
+        backgroundColor: v.EVEN_STRIPE_COLOR,
+        display: 'block',
+    },
+
+
+
+
 
     '.searchIcon.uiIconButton': {
-        ...v.ICON_SIZE('normal'),
+        ...v.ICON_SIZE('small'),
         ...v.SVG(v.SEARCH_ICON, v.BORDER_COLOR),
+        ...v.TRANSITION(),
+
+        '.hasOptions&': {
+            ...v.SVG('google:navigation/chevron_right', v.BORDER_COLOR),
+            transform: 'rotate(90deg)',
+        },
+
+        '.withOptions&': {
+            transform: 'rotate(-90deg)',
+        }
+
     },
 
-    '.searchAltbar': {
+    '.searchAltbarDropDown': {
+        maxHeight: 300,
+        overflow: 'auto',
+        overflowX: 'hidden',
         backgroundColor: v.COLOR.white,
-        border: [1, 'solid', v.BORDER_COLOR],
+        borderTop: [1, 'solid', v.BORDER_COLOR],
     },
+
+
 
     '.searchSideButton': {
         minWidth: v.CONTROL_SIZE,
         maxWidth: v.CONTROL_SIZE,
     },
 
-    '.searchAltbarResults .searchResults': {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        borderTopWidth: 0,
-        maxHeight: 300,
-        overflow: 'auto',
-        overflowX: 'hidden',
-        ...v.SHADOW,
+
+    '.searchAltbar': {
+        backgroundColor: v.COLOR.white,
+        border: [1, 'solid', v.BORDER_COLOR],
+    },
+
+
+
+    '.searchResultsEmpty': {
+        textAlign: 'center',
+        color: v.BORDER_COLOR,
+        fontStyle: 'italic',
+        padding: v.UNIT4,
+
     },
 
     '.searchResults .cmpListContent': {
-        padding: v.UNIT4,
+        padding: [v.UNIT4, v.UNIT4, v.UNIT4, 0],
     },
 
     '.searchSidebar': {

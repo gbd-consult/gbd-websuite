@@ -5,7 +5,7 @@ title "Search in view"
 metadata.keywords [ "search" ]
 
 metadata.abstract """
-Full-text search, limited to the current map extent
+Text search, limited to the current map extent
 """
 
 client.addElements+ { tag "Sidebar.Search" }

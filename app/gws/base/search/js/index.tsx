@@ -13,30 +13,63 @@ function _master(obj: any) {
         return obj.props.controller.app.controller(MASTER) as SearchController;
 }
 
-let {Row, Cell} = gc.ui.Layout;
+let { Row, Cell } = gc.ui.Layout;
 
 const SEARCH_DEBOUNCE = 1000;
 
 interface SearchViewProps extends gc.types.ViewProps {
+    searchCategories: Array<string>;
     searchInput: string;
+    searchOptionsOpen: boolean;
     searchResults: Array<gc.types.IFeature>;
+    searchResultsOpen: boolean;
+    searchSelectedCategories: Array<string>;
     searchWaiting: boolean;
-    searchFailed: boolean;
 }
 
 const SearchStoreKeys = [
+    'searchCategories',
     'searchInput',
+    'searchOptionsOpen',
     'searchResults',
+    'searchResultsOpen',
+    'searchSelectedCategories',
     'searchWaiting',
-    'searchFailed',
 ];
 
 class SearchResults extends gc.View<SearchViewProps> {
     render() {
         let cc = _master(this);
-
-        if (!this.props.searchResults || !this.props.searchResults.length)
+        if (!this.props.searchResultsOpen) {
             return null;
+        }
+
+        if (this.props.searchWaiting) {
+            return <div className="searchResults">
+                <gc.ui.Loader />
+            </div>
+        }
+
+        if (!this.props.searchResults || this.props.searchResults.length === 0) {
+            return <div className="searchResults">
+                <div className="searchResultsEmpty">
+                    <gc.ui.Text content={this.__('searchNoResults')} />
+                </div>
+            </div>
+        }
+
+        let fs = this.props.searchResults;
+        let cats = this.props.searchSelectedCategories;
+        if (cats && cats.length) {
+            fs = this.props.searchResults.filter(f => cats.indexOf(f.category) >= 0);
+        }
+
+        fs.sort((a, b) => {
+            let ka = a.views.teaser || a.views.title;
+            let kb = b.views.teaser || b.views.title;
+            return ka.localeCompare(kb)
+        });
+
 
         let zoomTo = f => this.props.controller.update({
             marker: {
@@ -76,7 +109,7 @@ class SearchResults extends gc.View<SearchViewProps> {
         return <div className="searchResults">
             <components.feature.List
                 controller={this.props.controller}
-                features={this.props.searchResults}
+                features={fs}
                 content={content}
                 leftButton={leftButton}
             />
@@ -84,36 +117,96 @@ class SearchResults extends gc.View<SearchViewProps> {
     }
 }
 
-class SearchBox extends gc.View<SearchViewProps> {
+class SearchInputBox extends gc.View<SearchViewProps> {
     sideButton() {
-        if (this.props.searchWaiting)
-            return <gc.ui.Button
-                className="searchWaitButton"
-            />;
+        if (this.props.searchWaiting) {
+            return null;
+        }
 
-        if (this.props.searchInput)
+        if (this.props.searchInput) {
             return <gc.ui.Button
                 className="searchClearButton"
                 tooltip={this.__('searchClearButton')}
                 whenTouched={() => _master(this).whenClearButtonTouched()}
             />
+        }
     }
-
+    
     render() {
-        return <div className="searchBox">
+        let cc = _master(this);
+
+        return <Row>
+            <Cell>
+                <gc.ui.Button className='searchIcon'
+                    whenTouched={() => cc.whenSearchIconTouched()}
+                />
+            </Cell>
+            <Cell flex>
+                <gc.ui.TextInput
+                    value={this.props.searchInput}
+                    placeholder={this.__('searchPlaceholder')}
+                    whenChanged={val => cc.whenSearchChanged(val)}
+                />
+            </Cell>
+            <Cell className='searchSideButton'>{this.sideButton()}</Cell>
+        </Row>
+
+    }
+}
+
+class SearchOptions extends gc.View<SearchViewProps> {
+    render() {
+        let cc = _master(this);
+        let selected = this.props.searchSelectedCategories || [];
+
+        return <div className="searchOptions">
             <Row>
-                <Cell>
-                    <gc.ui.Button className='searchIcon'/>
-                </Cell>
                 <Cell flex>
-                    <gc.ui.TextInput
-                        value={this.props.searchInput}
-                        placeholder={this.__('searchPlaceholder')}
-                        whenChanged={val => _master(this).whenSearchChanged(val)}
+                    <gc.ui.Toggle
+                        inline
+                        type="checkbox"
+                        label={this.__('searchCategoryAll')}
+                        value={cc.allCategoriesSelected()}
+                        whenChanged={v => cc.whenCategoryAllChanged(v)}
                     />
                 </Cell>
-                <Cell className='searchSideButton'>{this.sideButton()}</Cell>
             </Row>
+            {this.props.searchCategories.map((cat, n) =>
+                <Row key={n}>
+                    <gc.ui.Toggle
+                        inline
+                        type="checkbox"
+                        label={cat}
+                        value={selected.indexOf(cat) >= 0}
+                        whenChanged={v => cc.whenCategoryChanged(cat, v)}
+                    />
+                </Row>
+            )}
+        </div>
+
+    }
+}
+
+class SearchBox extends gc.View<SearchViewProps> {
+
+    render() {
+
+        let hasOptions = this.props.searchCategories.length > 1;
+        let cls = 'searchBox';
+
+        if (hasOptions) {
+            cls += ' hasOptions';
+        }
+        if (this.props.searchOptionsOpen) {
+            cls += ' withOptions';
+        }
+        if (this.props.searchResultsOpen) {
+            cls += ' withResults';
+        }
+
+        return <div className={cls}>
+            <SearchInputBox {...this.props} />
+            {hasOptions && <SearchOptions {...this.props} />}
         </div>;
     }
 }
@@ -127,7 +220,7 @@ class SearchSidebarView extends gc.View<SearchViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <SearchResults {...this.props} />
+                {this.props.searchResultsOpen && <SearchResults {...this.props} />}
             </sidebar.TabBody>
         </sidebar.Tab>
     }
@@ -138,9 +231,9 @@ class SearchAltbarView extends gc.View<SearchViewProps> {
         return <React.Fragment>
             <div className="searchAltbar">
                 <SearchBox {...this.props} />
-            </div>
-            <div className="searchAltbarResults">
-                <SearchResults {...this.props} />
+                {this.props.searchResultsOpen && <div className="searchAltbarDropDown">
+                    <SearchResults {...this.props} />
+                </div>}
             </div>
         </React.Fragment>
     }
@@ -168,42 +261,64 @@ class SearchSidebar extends gc.Controller implements gc.types.ISidebarItem {
 
 class SearchController extends gc.Controller {
     uid = MASTER;
-    timer = null;
+    runTimer = null;
+    setup: gc.gws.base.search.action.Props;
+    categories: Array<string> = [];
 
     async init() {
-        this.app.whenChanged('searchInput', val => {
-            clearTimeout(this.timer);
+        this.setup = this.app.actionProps('search');
+        if (!this.setup)
+            return;
 
-            val = val.trim();
-            if (!val) {
-                return;
-            }
+        this.update({
+            searchCategories: this.setup.categories || [],
+        })
 
-            this.update({searchWaiting: true});
-            this.timer = setTimeout(() => this.run(val), SEARCH_DEBOUNCE);
-
-        });
-
+        this.app.whenChanged('searchInput', val => this.runDebounced(val));
+        gc.lib.delay(100, () => this.run('fl'))
     }
+
+    protected async runDebounced(keyword) {
+        clearTimeout(this.runTimer);
+
+        keyword = (keyword || '').trim();
+        if (!keyword) {
+            return;
+        }
+
+        this.runTimer = setTimeout(() => this.run(keyword), SEARCH_DEBOUNCE);
+    }
+
 
     protected async run(keyword) {
         this.update({
             searchWaiting: true,
-            searchFailed: false
+            searchResultsOpen: true,
         });
 
-        let features = await this.map.searchForFeatures({keyword});
+        let args: gc.types.IFeatureSearchArgs = {
+            keyword: keyword
+        }
+
+        let cats = this.getValue('searchCategories');
+        if (cats && cats.length) {
+            args.withCategories = true;
+            args.categories = this.getValue('searchSelectedCategories') || [];
+        }
+
+        let features = await this.map.searchForFeatures(args);
 
         this.update({
             searchWaiting: false,
-            searchFailed: features.length === 0,
-            searchResults: features
+            searchResults: features,
+            searchResultsOpen: true,
+            marker: null,
         });
 
-        if (features.length)
-            this.update({
-                marker: null,
-            });
+        // if (features.length)
+        //     this.update({
+        //         marker: null,
+        //     });
 
     }
 
@@ -217,8 +332,8 @@ class SearchController extends gc.Controller {
         this.update({
             searchInput: '',
             searchWaiting: false,
-            searchFailed: false,
             searchResults: null,
+            searchResultsOpen: false,
             marker: null,
         });
     }
@@ -229,10 +344,46 @@ class SearchController extends gc.Controller {
                 features: [f],
                 mode: 'zoom draw',
             },
-            infoboxContent: <components.feature.InfoList controller={this} features={[f]}/>
+            infoboxContent: <components.feature.InfoList controller={this} features={[f]} />
 
         });
 
+    }
+
+    whenSearchIconTouched() {
+        this.update({
+            searchOptionsOpen: !this.getValue('searchOptionsOpen'),
+        });
+    }
+
+    whenCategoryAllChanged(v) {
+        if (this.allCategoriesSelected()) {
+            this.update({
+                searchSelectedCategories: [],
+            });
+        } else {
+            this.update({
+                searchSelectedCategories: this.getValue('searchCategories') || [],
+            });
+        }
+
+    }
+
+    whenCategoryChanged(cat: string, v: boolean) {
+        let selected = this.getValue('searchSelectedCategories') || [];
+        if (selected.indexOf(cat) >= 0)
+            selected = selected.filter(u => u !== cat);
+        else
+            selected = selected.concat([cat]);
+        this.update({ searchSelectedCategories: selected });
+
+
+    }
+
+    allCategoriesSelected() {
+        let cats = this.getValue('searchCategories') || [];
+        let selected = this.getValue('searchSelectedCategories') || [];
+        return cats.length === selected.length;
     }
 
 }

@@ -5,7 +5,7 @@ title "Search with teaser"
 metadata.keywords [ "search" "client" ]
 
 metadata.abstract """
-Full-text search with `teaser` views.
+Text search with `teaser` views.
 """
 
 client.addElements+ { tag "Sidebar.Search" }

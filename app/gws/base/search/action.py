@@ -23,10 +23,12 @@ class Config(gws.base.action.Config):
     """Search results limit."""
     tolerance: Optional[gws.UomValueStr]
     """Default tolerance."""
+    categories: Optional[list[str]]
+    """Search categories. (added in 8.2)"""
 
 
 class Props(gws.base.action.Props):
-    pass
+    categories: list[str]
 
 
 class Request(gws.Request):
@@ -39,6 +41,8 @@ class Request(gws.Request):
     shapes: Optional[list[gws.base.shape.Props]]
     tolerance: Optional[str]
     views: Optional[list[str]]
+    categories: Optional[list[str]]
+    withCategories: bool
 
 
 class Response(gws.Response):
@@ -48,10 +52,15 @@ class Response(gws.Response):
 class Object(gws.base.action.Object):
     limit = 0
     tolerance: gws.UomValue
+    categories: list[str] = []
 
     def configure(self):
         self.limit = self.cfg('limit')
         self.tolerance = self.cfg('tolerance') or _DEFAULT_TOLERANCE
+        self.categories = self.cfg('categories') or []
+
+    def props(self, user):
+        return gws.u.merge(super().props(user), categories=self.categories)
 
     @gws.ext.command.api('searchFind')
     def find(self, req: gws.WebRequester, p: Request) -> Response:
@@ -60,7 +69,6 @@ class Object(gws.base.action.Object):
         return Response(features=self._get_features(req, p))
 
     def _get_features(self, req: gws.WebRequester, p: Request) -> list[gws.FeatureProps]:
-
         project = req.user.require_project(p.projectUid)
         search = gws.SearchQuery(project=project)
 
@@ -93,12 +101,7 @@ class Object(gws.base.action.Object):
         if not results:
             return []
 
-        mc = gws.ModelContext(
-            op=gws.ModelOperation.read,
-            target=gws.ModelReadTarget.searchResults,
-            project=project,
-            user=req.user
-        )
+        mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.searchResults, project=project, user=req.user)
 
         for res in results:
             templates = gws.u.compact(

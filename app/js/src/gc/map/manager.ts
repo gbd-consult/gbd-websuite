@@ -872,6 +872,8 @@ export class MapManager implements types.IMapManager {
             resolution: this.viewState.resolution,
             limit: args.limit || 999,
             tolerance: args.tolerance || '',
+            withCategories: args.withCategories || false,
+            categories: args.categories || [],
         };
 
         if (args.geometry) {

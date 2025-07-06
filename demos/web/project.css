@@ -14,6 +14,7 @@ body {
     padding: 20px;
     font-family: Helvetica, Arial, sans-serif;
 }
+
 .config h1 {
     font-size: 20px;
     margin: 0;
@@ -219,4 +220,43 @@ h6 {
     fill: rgba(95, 126, 227, 0.44);
     stroke: rgb(26, 82, 141);
     stroke-width: 4px;
+}
+
+
+.search_district,
+.search_poi,
+.search_green {
+    line-height: 1.5;
+}
+
+.search_district::before,
+.search_poi::before,
+.search_green::before {
+    display: inline-block;
+    margin-right: 0.5em;
+    width: 12px;
+    height: 12px;
+    color: white;
+    line-height: 1;
+    border-radius: 50%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 11px;
+    padding: 2px;
+    vertical-align: middle;
+}
+
+.search_district::before {
+    content: 'D';
+    background-color: #7f418a;
+}
+
+.search_poi::before {
+    content: 'P';
+    background-color: #048ba6;
+}
+
+.search_green::before {
+    content: 'G';
+    background-color: #55a90c;
 }

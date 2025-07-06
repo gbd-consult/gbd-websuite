@@ -27,7 +27,9 @@ class Config(gws.ConfigWithAccess):
     templates: Optional[list[gws.ext.config.template]]
     """Feature formatting templates."""
     title: Optional[str]
-    """Provider title."""
+    """Finder title."""
+    category: Optional[str]
+    """Category for the finder. (added in 8.2)"""
     withGeometry: bool = True
     """Enable geometry search."""
     withKeyword: bool = True
@@ -49,6 +51,7 @@ class Object(gws.Finder):
 
         self.spatialContext = self.cfg('spatialContext', default=SpatialContext.map)
         self.title = self.cfg('title', default='')
+        self.category = self.cfg('category', default='')
 
     ##
 

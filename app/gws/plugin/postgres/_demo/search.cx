@@ -5,10 +5,11 @@ title "Postgres search"
 metadata.keywords [ "postgres" "search" "vector-data" ]
 
 metadata.abstract """
-Full-text search with a `postgres` Finder.
+Text search with a `postgres` Finder.
 """
 
 client.addElements+ { tag "Sidebar.Search" }
+client.addElements+ { tag "Altbar.Search" }
 
 
 actions+ { type "search" }

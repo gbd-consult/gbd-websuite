@@ -147,6 +147,7 @@ class Finder(Node):
     """Finder object."""
 
     title: str
+    category: str
 
     supportsFilterSearch: bool = False
     supportsGeometrySearch: bool = False

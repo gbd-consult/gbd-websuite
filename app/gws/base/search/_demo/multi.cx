@@ -1,0 +1,122 @@
+uid "search_multi"
+
+title "Text search with categories"
+
+metadata.keywords [ "postgres" "search" "vector-data" ]
+
+metadata.abstract """
+Text search with multiple finders and categories.
+"""
+
+client.addElements+ { tag "Sidebar.Search" }
+client.addElements+ { tag "Altbar.Search" }
+
+
+actions+ { 
+    type "search" 
+    categories [ "POIs" "Stadtbezirke" "Grünflächen" ]    
+}
+
+finders+ {
+    type "postgres"
+    tableName "edit.poi"
+    category "POIs"
+    models+ {
+        type "postgres"
+        sort+ { fieldName "name" }
+
+        fields+ {
+            name "id"
+            type "integer"
+            isPrimaryKey true
+        }
+        fields+ {
+            name "name"
+            type "text"
+            textSearch { type "any" minLength 1 }
+        }
+        fields+ {
+            name "geom"
+            type "geometry"
+        }
+    }
+
+    templates+ {
+        type "html"
+        subject "feature.teaser"
+        text "<span class='search_poi'>{{name}}</span>"
+    }
+}
+
+finders+ {
+    type "postgres"
+    tableName "edit.district"
+    category "Stadtbezirke"
+    models+ {
+        type "postgres"
+        sort+ { fieldName "name" }
+
+        fields+ {
+            name "sid"
+            type "text"
+            isPrimaryKey true
+        }
+        fields+ {
+            name "name"
+            type "text"
+            textSearch { type "any" minLength 1 }
+        }
+        fields+ {
+            name "geom"
+            type "geometry"
+        }
+    }
+
+    templates+ {
+        type "html"
+        subject "feature.teaser"
+        text "<span class='search_district'>{{name}}</span>"
+    }
+}
+
+finders+ {
+    type "postgres"
+    tableName "edit.park"
+    category "Grünflächen"
+    models+ {
+        type "postgres"
+        sort+ { fieldName "name" }
+
+        fields+ {
+            name "id"
+            type "integer"
+            isPrimaryKey true
+        }
+        fields+ {
+            name "name"
+            type "text"
+            textSearch { type "any" minLength 1 }
+        }
+        fields+ {
+            name "geom"
+            type "geometry"
+        }
+    }
+
+    templates+ {
+        type "html"
+        subject "feature.teaser"
+        text "<span class='search_green'>{{name}}</span>"
+    }
+}
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 30000
+    zoom.maxScale  1000000
+    zoom.maxScale  1000
+}
+
+map.layers+ { type "postgres" title "POIs"  tableName "edit.poi_small" }
+
+{demo_osm_background}

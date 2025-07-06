@@ -54,7 +54,9 @@ class Object(gws.SearchManager):
             return
 
         for feature in features:
-            if finder.title:
+            if finder.category:
+                feature.category = finder.category
+            elif finder.title:
                 feature.category = finder.title
             elif not feature.category and layer and layer.title:
                 feature.category = layer.title

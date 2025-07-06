@@ -306,6 +306,7 @@ class Object(gws.Model):
 
         props.attributes = a
         props.modelUid = ''
+        props.category = feature.category or ''
 
         return props
 
