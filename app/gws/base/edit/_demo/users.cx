@@ -2,7 +2,7 @@ uid "edit_users"
 
 title "Einfache Nutzerverwaltung mit Modellen"
 
-metadata.keywords [ "Editieren" ]
+metadata.keywords [ "edit" "auth" ]
 
 metadata.abstract """
 """

@@ -2,7 +2,7 @@ uid "edit_lazy"
 
 title "Selektives Laden und Editieren von PostgreSQL Daten"
 
-metadata.keywords [ "Editieren" ]
+metadata.keywords [ "edit" "postgres" "vector-data" ]
 
 metadata.abstract """
 Dieses Beispiel zeigt eine Konfiguration, bei der nur Objekte eines Vektor Punktlayers aus einer PostgreSQL Tabelle zum Editieren geladen werden, die mit einem zuvor angegebenen Suchbegriff übereinstimmen.

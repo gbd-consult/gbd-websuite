@@ -1,8 +1,8 @@
 uid "search_view"
 
-title "Search in view"
+title "Search in map view"
 
-metadata.keywords [ "search" ]
+metadata.keywords [ "client" "postgres" "search" "vector-data" ]
 
 metadata.abstract """
 Text search, limited to the current map extent

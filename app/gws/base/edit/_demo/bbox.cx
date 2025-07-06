@@ -2,7 +2,7 @@ uid "edit_bbox"
 
 title "PostgreSQL Daten des aktuellen Kartenausschnitts laden und editieren"
 
-metadata.keywords [ "Editieren" "PostgreSQL" ]
+metadata.keywords [ "edit" "postgres" "vector-data" ]
 
 metadata.abstract """
 Dieses Beispiel zeigt eine Konfiguration zum Editieren von Vektordaten (Punkte) aus einer PostgreSQL Tabelle, bei der nur die Daten geladen werden, die sich im aktuellen Kartenausschnitt befinden.

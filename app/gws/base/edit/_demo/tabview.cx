@@ -2,7 +2,7 @@ uid "edit_tabview"
 
 title "PostgreSQL Daten mit angepasster und automatischer Ansicht einer Attributtabelle editieren"
 
-metadata.keywords [ "Editieren" ]
+metadata.keywords [ "edit" "postgres" "vector-data" ]
 
 metadata.abstract """
 Dieses Beispiel zeigt für den Punktlayer "Kategorisierte Orte" eine automatisch konfigurierte Tabellenansicht zum Editieren und für den Punktlayer "Interessante Orte" eine angepasste Tabellenansicht, bei der Attribute über ein Auswahlmenü oder eine Kalenderfunktion editiert werden können.

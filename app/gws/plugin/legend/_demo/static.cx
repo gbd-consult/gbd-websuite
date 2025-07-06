@@ -26,6 +26,6 @@ map.layers+ {
         type "static"
         path "osm_legend.png"
     }
-    metadata.attribution.title "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
 }
 

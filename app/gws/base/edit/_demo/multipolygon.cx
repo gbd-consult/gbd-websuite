@@ -2,7 +2,7 @@ uid "edit_multipolygon"
 
 title "PostgreSQL Daten mit Multi-Polygon Geometrien"
 
-metadata.keywords [ "Editieren" "PostgreSQL" ]
+metadata.keywords [ "edit" "postgres" "vector-data" ]
 
 metadata.abstract """
 """

@@ -2,7 +2,7 @@ uid "search_teaser"
 
 title "Search with teaser"
 
-metadata.keywords [ "search" "client" ]
+metadata.keywords [ "client" "postgres" "search" "vector-data" ]
 
 metadata.abstract """
 Text search with `teaser` views.

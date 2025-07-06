@@ -2,7 +2,7 @@ uid "edit_types"
 
 title "Editieren und Darstellen unterschiedlicher PostgreSQL Datentypen"
 
-metadata.keywords [ "Editieren" "PostgreSQL" ]
+metadata.keywords [ "edit" "postgres" ]
 
 metadata.abstract """
 Dieses Beispiel zeigt, wie unterschiedliche PostgreSQL Datentypen über den GBD WebSuite Client dargestellt werden.
