@@ -1,6 +1,12 @@
+## Version 8.2.8
+
+- optional composite rendering for QGIS layers
+- text search categories
+
 ## Version 8.2.7
 
 - OWS services futher improved and optimized
+- [breaking] `metadata.attribution.title` renamed to `metadata.attribution`
 
 ## Version 8.2.6
 
