@@ -11,10 +11,10 @@ import * as model from './model';
 let layerTypes = {
     'box': layer.BoxLayer,
     'group': layer.GroupLayer,
-    'leaf': layer.LeafLayer,
+    'compositeLeaf': layer.CompositeLeafLayer,
     'root': layer.RootLayer,
     'tile': layer.TileLayer,
-    'tree': layer.TreeLayer,
+    'compositeTree': layer.CompositeTreeLayer,
     'vector': layer.FeatureLayer,
     'xyz': layer.XYZLayer,
 };

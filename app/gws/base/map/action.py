@@ -34,7 +34,7 @@ class GetBoxRequest(gws.Request):
     layerUid: str
     crs: Optional[gws.CrsName]
     dpi: Optional[int]
-    layers: Optional[list[str]]
+    compositeLayerUids: Optional[list[str]]
 
 
 class GetXyzRequest(gws.Request):
@@ -149,8 +149,8 @@ class Object(gws.base.action.Object):
         layer = req.user.require_layer(p.layerUid)
         lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.box, user=req.user, extraParams={})
 
-        if p.layers:
-            lri.extraParams['layers'] = p.layers
+        if p.compositeLayerUids:
+            lri.extraParams['compositeLayerUids'] = p.compositeLayerUids
 
         lri.view = gws.gis.render.map_view_from_bbox(
             crs=gws.lib.crs.get(p.crs) or layer.mapCrs,

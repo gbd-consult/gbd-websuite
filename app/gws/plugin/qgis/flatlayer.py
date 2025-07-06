@@ -50,7 +50,7 @@ class Object(gws.base.layer.image.Object):
             self,
             self.serviceProvider.sourceLayers,
             is_image=True,
-            is_visible=True
+            is_visible=True,
         )
 
     def configure_models(self):
@@ -62,7 +62,7 @@ class Object(gws.base.layer.image.Object):
             cfg,
             type='qgis',
             _defaultProvider=self.serviceProvider,
-            _defaultSourceLayers=self.searchLayers
+            _defaultSourceLayers=self.searchLayers,
         )
 
     def configure_bounds(self):
@@ -93,7 +93,8 @@ class Object(gws.base.layer.image.Object):
             origin=gws.Origin.nw,
             tileSize=256,
             bounds=self.bounds,
-            resolutions=self.resolutions)
+            resolutions=self.resolutions,
+        )
         return True
 
     def configure_legend(self):
@@ -135,29 +136,18 @@ class Object(gws.base.layer.image.Object):
             cfg,
             type='qgis',
             _defaultProvider=self.serviceProvider,
-            _defaultSourceLayers=self.searchLayers
+            _defaultSourceLayers=self.searchLayers,
         )
 
     ##
 
-    def render(self, lri):
-        if lri.type != gws.LayerRenderInputType.box:
-            return
-
+    def get_render_params(self, lri: gws.LayerRenderInput) -> dict:
         params = dict(lri.extraParams or {})
-        all_names = [sl.name for sl in self.imageLayers]
-        req_names = params.pop('layers', all_names)
-        req_filters = params.pop('filters', self.sqlFilters)
-
-        layers = []
+        layers = [sl.name for sl in self.imageLayers]
         filters = []
 
-        for name in req_names:
-            if name not in all_names:
-                gws.log.warning(f'invalid layer name {name!r}')
-                continue
-            layers.append(name)
-            flt = req_filters.get(name) or req_filters.get('*')
+        for name in layers:
+            flt = self.sqlFilters.get(name) or self.sqlFilters.get('*')
             if flt:
                 filters.append(name + ': ' + flt)
 
@@ -165,6 +155,36 @@ class Object(gws.base.layer.image.Object):
         params['LAYERS'] = list(reversed(layers))
         if filters:
             params['FILTER'] = ';'.join(filters)
+
+        return params
+
+    def render(self, lri):
+        if lri.type != gws.LayerRenderInputType.box:
+            return
+
+        # params = dict(lri.extraParams or {})
+        # all_names = [sl.name for sl in self.imageLayers]
+        # req_names = params.pop('layers', all_names)
+        # req_filters = params.pop('filters', self.sqlFilters)
+
+        # layers = []
+        # filters = []
+
+        # for name in req_names:
+        #     if name not in all_names:
+        #         gws.log.warning(f'invalid layer name {name!r}')
+        #         continue
+        #     layers.append(name)
+        #     flt = req_filters.get(name) or req_filters.get('*')
+        #     if flt:
+        #         filters.append(name + ': ' + flt)
+
+        # # NB reversed: see the note in plugin/ows_client/wms/provider.py
+        # params['LAYERS'] = list(reversed(layers))
+        # if filters:
+        #     params['FILTER'] = ';'.join(filters)
+
+        params = self.get_render_params(lri)
 
         def get_box(bounds, width, height):
             return self.serviceProvider.get_map(self, bounds, width, height, params)

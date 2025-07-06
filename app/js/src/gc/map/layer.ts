@@ -1,6 +1,6 @@
 import * as ol from 'openlayers';
 
-import {gws} from '../gws';
+import { gws } from '../gws';
 import * as types from '../types';
 import * as lib from '../lib';
 
@@ -252,9 +252,7 @@ export class XYZLayer extends OlBackedLayer<ol.layer.Image> {
     }
 }
 
-export class TreeLayer extends OlBackedLayer<ol.layer.Image> {
-    leaves: Array<string> = [];
-
+export class CompositeTreeLayer extends OlBackedLayer<ol.layer.Image> {
     async loadImage(oImage: ol.Image, url: string) {
         let blob = await this.map.app.server.queueLoad(this.uid, url, 'blob');
         if (blob) {
@@ -282,17 +280,20 @@ export class TreeLayer extends OlBackedLayer<ol.layer.Image> {
     }
 
     beforeDraw() {
-        let ls = this.visibleLeavesUids();
+        let src = this._oLayer.getSource() as ol.source.ImageWMS;
+        let currUids = src.getParams().compositeLayerUids || [];
+        let newUids = this.visibleLeavesUids();
 
-        if (ls.join() !== this.leaves.join()) {
-            this.leaves = ls;
-            (this._oLayer.getSource() as ol.source.ImageWMS).updateParams({
-                layers: ls
+        if (newUids.join() !== currUids.join()) {
+            src.updateParams({
+                compositeLayerUids: newUids
             })
         }
     }
 
     createOLayer() {
+        let uids = this.visibleLeavesUids();
+
         return new ol.layer.Image({
             extent: this.extent,
             source: new ol.source.ImageWMS({
@@ -301,7 +302,7 @@ export class TreeLayer extends OlBackedLayer<ol.layer.Image> {
                 imageLoadFunction: (img, url) => this.loadImage(img, url),
                 projection: this.map.projection,
                 params: {
-                    layers: ''
+                    compositeLayerUids: uids
                 },
             })
         });
@@ -309,12 +310,12 @@ export class TreeLayer extends OlBackedLayer<ol.layer.Image> {
 
     protected visibleLeavesUids() {
         return this.map
-            .collect(this, la => la.type === 'leaf' && la.shouldDraw)
+            .collect(this, la => la.type === 'compositeLeaf' && la.shouldDraw)
             .map(la => la.uid);
     }
 }
 
-export class LeafLayer extends Layer {
+export class CompositeLeafLayer extends Layer {
 }
 
 export class RootLayer extends Layer {
