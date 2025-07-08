@@ -15,7 +15,7 @@ USAGE() {
 GWS Maker
 ~~~~~~~~~
 
-    make.sh <command> <options>
+    make.sh <command> [--manifest <path-to-manifest>] <command-options>
 
 Commands:
 
