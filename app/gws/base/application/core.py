@@ -108,8 +108,6 @@ class Config(gws.ConfigWithAccess):
     """Global data models."""
     owsServices: Optional[list[gws.ext.config.owsService]]
     """OWS services configuration."""
-    plugins: Optional[list[dict]]
-    """Configuration for plugins."""
     projectDirs: Optional[list[gws.DirPath]]
     """Directories with additional projects."""
     projectPaths: Optional[list[gws.FilePath]]

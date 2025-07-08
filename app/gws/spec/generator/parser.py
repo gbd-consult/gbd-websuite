@@ -101,7 +101,11 @@ class _PythonParser:
             elif cc == 'ClassDef':
                 self.parse_class(node)
             elif cc in {'Assign', 'AnnAssign'}:
-                self.parse_assign(node, self.outer_doc(node, self.moduleNode.body), annotated=(cc == 'AnnAssign'))
+                self.parse_assign(
+                    node,
+                    self.outer_doc(node, self.moduleNode.body),
+                    annotated=(cc == 'AnnAssign'),
+                )
 
     def prepare_imports(self):
         # map import names to module names
@@ -179,7 +183,13 @@ class _PythonParser:
         if typ and typ.name == 'TypeAlias':
             # type alias
             target_type = self.type_from_node(node.value)
-            self.add(c=base.c.TYPE, doc=doc, ident=name_node.id, name=self.qname(name_node), tTarget=target_type.uid)
+            self.add(
+                c=base.c.TYPE,
+                doc=doc,
+                ident=name_node.id,
+                name=self.qname(name_node),
+                tTarget=target_type.uid,
+            )
 
             return
 
@@ -187,7 +197,13 @@ class _PythonParser:
 
         c, value = self.parse_const_value(node.value)
         if c == base.c.LITERAL:
-            self.add(c=base.c.CONSTANT, doc=doc, ident=name_node.id, name=self.qname(name_node), constValue=value)
+            self.add(
+                c=base.c.CONSTANT,
+                doc=doc,
+                ident=name_node.id,
+                name=self.qname(name_node),
+                constValue=value,
+            )
 
     def parse_class(self, node):
         if not _is_type_name(node.name):
@@ -456,6 +472,7 @@ class _PythonParser:
     def add(self, **kwargs) -> base.Type:
         kwargs['pos'] = self.pos
         kwargs['tModule'] = self.tModule
+        kwargs['doc'] = (kwargs.get('doc') or '').strip()
         typ = self.gen.add_type(**kwargs)
         base.log.debug(f'added {typ.uid=} {vars(typ)=}')
         return typ

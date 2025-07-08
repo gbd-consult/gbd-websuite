@@ -246,7 +246,7 @@ function searchFindSections(val) {
 }
 
 function isDev() {
-    return location.hostname === 'localhost' || location.hostname === '0.0.0.0';
+    return location.search.includes('dev=1');
 }
 
 //

@@ -28,6 +28,7 @@ def _add_string(strings_dct, lang, uid, text):
     If the string starts with a [xx], override the given language.
     """
 
+    text = (text or '').strip()
     m = re.match(r'^\[(\w\w)](.+)$', text)
     if m:
         lang = m.group(1)

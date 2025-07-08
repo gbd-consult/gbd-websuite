@@ -1,6 +1,7 @@
 """Generate configuration references."""
 
 import re
+import json
 
 from . import base
 
@@ -13,8 +14,8 @@ STRINGS['en'] = {
     'head_default': 'default',
     'head_value': 'value',
     'category_variant': 'variant',
-    'category_struct': 'struct',
-    'category_enum': 'enumeration',
+    'category_object': 'obj',
+    'category_enum': 'enum',
     'category_type': 'type',
     'label_added': 'added',
     'label_deprecated': 'deprecated',
@@ -28,15 +29,16 @@ STRINGS['de'] = {
     'head_default': 'Default',
     'head_value': 'Wert',
     'category_variant': 'variant',
-    'category_struct': 'struct',
-    'category_enum': 'enumeration',
+    'category_object': 'obj',
+    'category_enum': 'enum',
     'category_type': 'type',
     'label_added': 'neu',
     'label_deprecated': 'veraltet',
     'label_changed': 'geändert',
 }
 
-LIST_FORMAT = '**[**{}**]**'
+LIST_FORMAT = '<nobr>{}**[ ]**</nobr>'
+DEFAULT_FORMAT = ' _{}:_ {}.'
 
 LABELS = 'added|deprecated|changed'
 
@@ -97,7 +99,7 @@ class _Creator:
         typ = self.gen.require_type(tid)
 
         yield header(tid)
-        yield subhead(self.strings['category_struct'], self.docstring(tid))
+        yield subhead(self.strings['category_object'], self.docstring(tid))
 
         rows = {False: [], True: []}
 
@@ -108,8 +110,7 @@ class _Creator:
                 [
                     as_propname(prop_name) if prop_typ.hasDefault else as_required(prop_name),
                     self.type_string(prop_typ.tValue),
-                    self.default_string(prop_tid),
-                    self.docstring(prop_tid),
+                    single_space(self.docstring(prop_tid)),
                 ]
             )
 
@@ -117,7 +118,6 @@ class _Creator:
             [
                 self.strings['head_property'],
                 self.strings['head_type'],
-                self.strings['head_default'],
                 '',
             ],
             rows[False] + rows[True],
@@ -211,6 +211,10 @@ class _Creator:
         if not label and spec_text != local_text:
             _, label = self.extract_label(spec_text)
 
+        dflt = self.default_string(tid)
+        if dflt:
+            text += DEFAULT_FORMAT.format(self.strings["head_default"], dflt)
+
         return text + label + dev_label
 
     def extract_label(self, text):
@@ -225,7 +229,8 @@ class _Creator:
 
 
 def as_literal(s):
-    return f'`{s!r}`{{.configref_literal}}'
+    v = json.dumps(s, ensure_ascii=False)
+    return f'`{v}`{{.configref_literal}}'
 
 
 def as_typename(s):
@@ -289,5 +294,7 @@ def escape(s, quote=True):
         s = s.replace('"', '&quot;')
     return s
 
+def single_space(s):
+    return re.sub(r'\s+', ' ', s.strip())
 
 nl = '\n'.join
