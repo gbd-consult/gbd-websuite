@@ -160,14 +160,12 @@ class Object(gws.base.action.Object):
             rotation=0,
         )
 
-        gws.debug.time_start(f'RENDER_BOX layer={p.layerUid} lri={lri!r}')
         try:
             lro = layer.render(lri)
             if lro and lro.content:
                 return gws.lib.mime.PNG, lro.content
-        except:
+        except Exception:
             gws.log.exception()
-        gws.debug.time_end()
 
         return self._empty_pixel
 
