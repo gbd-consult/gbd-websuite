@@ -233,7 +233,10 @@ class _Parser:
 
     def read_py(self, path: str):
         try:
-            fn = gws.u.require(gws.lib.importer.load_file(path).get('main'))
+            fn = gws.lib.importer.load_file(path).get('main')
+            if not fn:
+                _register_error(self.ctx, f'no "main" function found in {path!r}')
+                return
             return fn(self.ctx)
         except Exception as exc:
             gws.log.exception()
