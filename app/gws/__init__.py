@@ -3929,6 +3929,8 @@ class Project(Node):
     printers: list['Printer']
     templates: list['Template']
     owsServices: list['OwsService']
+
+    vars: dict
 ################################################################################
 
 
@@ -4557,6 +4559,9 @@ class Application(Node):
 
     monitor: 'ServerMonitor'
     """Server monitor object."""
+
+    vars: dict
+    """Application variables."""
 
     version: str
     """Application version as a string."""
