@@ -23,6 +23,9 @@ class Application(Node):
     monitor: 'ServerMonitor'
     """Server monitor object."""
 
+    vars: dict
+    """Application variables."""
+
     version: str
     """Application version as a string."""
 

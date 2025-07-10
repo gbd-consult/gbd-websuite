@@ -122,6 +122,8 @@ class Config(gws.ConfigWithAccess):
     """Database configuration."""
     templates: Optional[list[gws.ext.config.template]]
     """Default templates."""
+    vars: Optional[dict]
+    """Custom variables."""
     web: Optional[gws.base.web.manager.Config]
     """Web server options."""
 
@@ -137,6 +139,8 @@ class Object(gws.Application):
     mpxConfig = ''
 
     def configure(self):
+        self.vars = self.cfg('vars') or {}
+        
         self.serverMgr = self.create_child(gws.server.manager.Object, self.cfg('server'))
         # NB need defaults from the server
         self.config.server = self.serverMgr.config

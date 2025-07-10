@@ -43,6 +43,8 @@ class Config(gws.ConfigWithAccess):
     """Project info templates."""
     title: str = ''
     """Project title."""
+    vars: Optional[dict]
+    """Custom variables."""
 
 
 class Props(gws.Props):
@@ -65,6 +67,8 @@ class Object(gws.Project):
 
     def configure(self):
         gws.log.info(f'configuring project {self.uid!r}')
+
+        self.vars = self.cfg('vars') or {}
 
         self.metadata = gws.base.metadata.from_args(
             self.root.app.metadata,

@@ -22,3 +22,4 @@ class Project(Node):
     templates: list['Template']
     owsServices: list['OwsService']
 
+    vars: dict
