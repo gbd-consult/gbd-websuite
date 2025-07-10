@@ -5,7 +5,7 @@ title "QGIS composite render"
 metadata.keywords [ "qgis" ]
 
 metadata.abstract """
-`qgistree` layers display complete QGIS Projects as WebSuite layers, keeping the structure. 
+`qgis` layers display complete QGIS Projects as WebSuite layers, keeping the structure. 
 With `compositeRender=true`, all layers are rendered as a single image, which is then displayed in the map.
 """
 
