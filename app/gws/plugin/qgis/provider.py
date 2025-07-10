@@ -39,8 +39,6 @@ class Config(gws.Config):
     """Qgis data providers that should be searched directly."""
     forceCrs: Optional[gws.CrsName]
     """Use this CRS for requests."""
-    sqlFilters: Optional[dict]
-    """Per-layer sql filters."""
     extentBuffer: Optional[int]
     """Extent buffer for automatically computed bounds. (added in 8.1)."""
     useCanvasExtent: Optional[bool]

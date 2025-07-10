@@ -23,6 +23,8 @@ class Config(gws.base.layer.Config):
     """Qgis provider."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
     """Source layers to use."""
+    sqlFilters: Optional[dict]
+    """Per-layer sql filters."""
 
 
 class Object(gws.base.layer.image.Object):
@@ -141,18 +143,19 @@ class Object(gws.base.layer.image.Object):
 
     ##
 
-    def get_render_params(self, lri: gws.LayerRenderInput) -> dict:
+    def get_render_params(self, lri: gws.LayerRenderInput, parent_sql_filters: dict=None) -> dict:
         params = dict(lri.extraParams or {})
+        
         layers = [sl.name for sl in self.imageLayers]
-        filters = []
-
-        for name in layers:
-            flt = self.sqlFilters.get(name) or self.sqlFilters.get('*')
-            if flt:
-                filters.append(name + ': ' + flt)
-
         # NB reversed: see the note in plugin/ows_client/wms/provider.py
         params['LAYERS'] = list(reversed(layers))
+        
+        filters = []
+        sqlf = gws.u.merge({}, self.sqlFilters, parent_sql_filters)
+        for name in layers:
+            flt = sqlf.get(name) or sqlf.get('*')
+            if flt:
+                filters.append(name + ': ' + flt)
         if filters:
             params['FILTER'] = ';'.join(filters)
 
@@ -161,28 +164,6 @@ class Object(gws.base.layer.image.Object):
     def render(self, lri):
         if lri.type != gws.LayerRenderInputType.box:
             return
-
-        # params = dict(lri.extraParams or {})
-        # all_names = [sl.name for sl in self.imageLayers]
-        # req_names = params.pop('layers', all_names)
-        # req_filters = params.pop('filters', self.sqlFilters)
-
-        # layers = []
-        # filters = []
-
-        # for name in req_names:
-        #     if name not in all_names:
-        #         gws.log.warning(f'invalid layer name {name!r}')
-        #         continue
-        #     layers.append(name)
-        #     flt = req_filters.get(name) or req_filters.get('*')
-        #     if flt:
-        #         filters.append(name + ': ' + flt)
-
-        # # NB reversed: see the note in plugin/ows_client/wms/provider.py
-        # params['LAYERS'] = list(reversed(layers))
-        # if filters:
-        #     params['FILTER'] = ';'.join(filters)
 
         params = self.get_render_params(lri)
 

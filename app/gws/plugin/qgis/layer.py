@@ -21,14 +21,18 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
     """Qgis provider."""
     compositeRender: bool = False
     """If true, the layer will be rendered as a single image with all visible sub-layers."""
+    sqlFilters: Optional[dict]
+    """Per-layer sql filters."""
 
 
 class Object(gws.base.layer.group.Object):
     serviceProvider: provider.Object
     compositeRender: bool = False
+    sqlFilters: dict
 
     def configure(self):
-        self.compositeRender = self.cfg('compositeRender', False)
+        self.compositeRender = self.cfg('compositeRender', default=False)
+        self.sqlFilters = self.cfg('sqlFilters', default={})
 
     def configure_group(self):
         gws.config.util.configure_service_provider_for(self, provider.Object)
@@ -99,13 +103,13 @@ class Object(gws.base.layer.group.Object):
             if la.extType != 'qgisflat':
                 gws.log.debug(f'skipping {la.uid=} {la.extType=}')
                 continue
-            p = cast(flatlayer.Object, la).get_render_params(lri)
+            p = cast(flatlayer.Object, la).get_render_params(lri, self.sqlFilters)
             if not p:
                 gws.log.debug(f'skipping {la.uid=} no params')
             layers.extend(reversed(p.get('LAYERS', [])))
             f = p.get('FILTER')
             if f:
-                filters.extend(f)
+                filters.append(f)
 
         if not layers:
             gws.log.debug(f'no layers')
