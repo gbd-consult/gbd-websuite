@@ -300,7 +300,7 @@ def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws
     else:
         layer_name = layer_el.textof('shortname') or layer_el.textof('layername')
 
-    sl.title = sl.metadata.get('title') or ''
+    sl.title = layer_el.textof('layername') or sl.metadata.get('title') or ''
     sl.name = layer_name
     sl.sourceId = uid
 
