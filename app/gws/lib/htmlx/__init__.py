@@ -1,6 +1,14 @@
+import html
+
 import gws
 import gws.lib.osx
 import gws.lib.uom
+
+
+def escape(s: str, quote=True) -> str:
+    """Escapes a string for use in HTML."""
+    return html.escape(s, quote=quote)
+
 
 def render_to_pdf(html: str, out_path: str, page_size: gws.UomSize = None, page_margin: gws.UomExtent = None) -> str:
     """Renders an HTML string to a PDF file.
@@ -23,22 +31,27 @@ def render_to_pdf(html: str, out_path: str, page_size: gws.UomSize = None, page_
 
     gws.u.write_file(out_path + '.html', html)
 
-    def f(x: int) -> str:
-        return str(int(x))
-
     cmd = [
         'wkhtmltopdf',
         '--disable-javascript',
         '--disable-smart-shrinking',
-        '--load-error-handling', 'ignore',
+        '--load-error-handling',
+        'ignore',
         '--enable-local-file-access',
-        '--dpi', f(gws.lib.uom.PDF_DPI),
-        '--margin-top', f(mar[0]),
-        '--margin-right', f(mar[1]),
-        '--margin-bottom', f(mar[2]),
-        '--margin-left', f(mar[3]),
-        '--page-width', f(psz[0]),
-        '--page-height', f(psz[1]),
+        '--dpi',
+        _int_str(gws.lib.uom.PDF_DPI),
+        '--margin-top',
+        _int_str(mar[0]),
+        '--margin-right',
+        _int_str(mar[1]),
+        '--margin-bottom',
+        _int_str(mar[2]),
+        '--margin-left',
+        _int_str(mar[3]),
+        '--page-width',
+        _int_str(psz[0]),
+        '--page-height',
+        _int_str(psz[1]),
         'page',
         out_path + '.html',
         out_path,
@@ -46,6 +59,7 @@ def render_to_pdf(html: str, out_path: str, page_size: gws.UomSize = None, page_
 
     gws.lib.osx.run(cmd)
     return out_path
+
 
 def render_to_png(html: str, out_path: str, page_size: gws.UomSize = None, page_margin: list[int] = None) -> str:
     """Renders an HTML string to a PNG image.
@@ -71,28 +85,38 @@ def render_to_png(html: str, out_path: str, page_size: gws.UomSize = None, page_
 
     cmd = ['wkhtmltoimage']
 
-    def f(x: int) -> str:
-        return str(int(x))
-
     if page_size:
         # Page sizes need to be in pixels.
         psz = gws.lib.uom.size_to_px(page_size, gws.lib.uom.PDF_DPI)
         w, h, _ = psz
-        cmd.extend([
-            '--width', f(w),
-            '--height', f(h),
-            '--crop-w', f(w),
-            '--crop-h', f(h),
-        ])
+        cmd.extend(
+            [
+                '--width',
+                _int_str(w),
+                '--height',
+                _int_str(h),
+                '--crop-w',
+                _int_str(w),
+                '--crop-h',
+                _int_str(h),
+            ]
+        )
 
-    cmd.extend([
-        '--disable-javascript',
-        '--disable-smart-width',
-        '--transparent',
-        '--enable-local-file-access',
-        out_path + '.html',
-        out_path,
-    ])
+    cmd.extend(
+        [
+            '--disable-javascript',
+            '--disable-smart-width',
+            '--transparent',
+            '--enable-local-file-access',
+            out_path + '.html',
+            out_path,
+        ]
+    )
 
     gws.lib.osx.run(cmd)
     return out_path
+
+
+def _int_str(x) -> str:
+    return str(int(x))
+

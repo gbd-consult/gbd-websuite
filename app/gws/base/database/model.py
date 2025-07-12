@@ -76,7 +76,6 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
             sql = self.build_select(mc)
             if sql is None:
-                gws.log.debug('empty select')
                 return []
 
             features = self.fetch_features(sql)
@@ -111,15 +110,18 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
         if mc.search.uids:
             if not self.uidName:
+                gws.log.debug(f'build_select: {self}: no primary key for {self.tableName=}')
                 return
             sel = sel.where(self.uid_column().in_(mc.search.uids))
 
         if mc.search.keyword and not mc.dbSelect.keywordWhere:
+            gws.log.debug(f'build_select: {self}: no keyword where')
             return
         if mc.dbSelect.keywordWhere:
             sel = sel.where(sa.or_(*mc.dbSelect.keywordWhere))
 
         if mc.search.shape and not mc.dbSelect.geometryWhere:
+            gws.log.debug(f'build_select: {self}: no geometry where')
             return
         if mc.dbSelect.geometryWhere:
             sel = sel.where(sa.or_(*mc.dbSelect.geometryWhere))

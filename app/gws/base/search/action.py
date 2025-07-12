@@ -55,7 +55,7 @@ class Object(gws.base.action.Object):
     categories: list[str] = []
 
     def configure(self):
-        self.limit = self.cfg('limit')
+        self.limit = self.cfg('limit') or 0
         self.tolerance = self.cfg('tolerance') or _DEFAULT_TOLERANCE
         self.categories = self.cfg('categories') or []
 
