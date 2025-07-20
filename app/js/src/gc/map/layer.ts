@@ -266,16 +266,16 @@ export class CompositeTreeLayer extends OlBackedLayer<ol.layer.Image> {
     }
 
     get printPlane() {
-        let ls = this.visibleLeavesUids();
+        let uids = this.visibleLeavesUids();
 
-        if (!ls.length)
+        if (!uids.length)
             return null;
 
         return {
             type: gws.PrintPlaneType.raster,
             opacity: this.computedOpacity,
             layerUid: this.uid,
-            subLayers: ls,
+            compositeLayerUids: uids,
         }
     }
 

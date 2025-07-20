@@ -235,8 +235,8 @@ def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
 
     if plane.type == gws.MapRenderInputPlaneType.imageLayer:
         extra_params = {}
-        if plane.subLayers:
-            extra_params = {'layers': plane.subLayers}
+        if plane.compositeLayerUids:
+            extra_params = {'compositeLayerUids': plane.compositeLayerUids}
         lro = plane.layer.render(gws.LayerRenderInput(
             type=gws.LayerRenderInputType.box,
             view=rd.rasterView,

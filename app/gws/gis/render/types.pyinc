@@ -32,7 +32,7 @@ class MapRenderInputPlane(Data):
     soupPoints: list[Point]
     soupTags: list[Any]
     styles: list['Style']
-    subLayers: list[str]
+    compositeLayerUids: list[str]
 
 
 class MapRenderInput(Data):

@@ -168,7 +168,7 @@ class Object(gws.base.job.worker.Object):
                 type=gws.MapRenderInputPlaneType.imageLayer,
                 layer=layer,
                 opacity=opacity,
-                subLayers=plane.get('subLayers'),
+                compositeLayerUids=plane.get('compositeLayerUids'),
             )
 
         if plane.type == gws.PrintPlaneType.vector:

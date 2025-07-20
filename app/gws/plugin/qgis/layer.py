@@ -51,6 +51,10 @@ class Object(gws.base.layer.group.Object):
         self.metadata = self.serviceProvider.metadata
         return True
 
+    def post_configure(self):
+        if self.compositeRender:
+            self.canRenderBox = True
+
     def props(self, user):
         p = super().props(user)
         if not self.compositeRender:

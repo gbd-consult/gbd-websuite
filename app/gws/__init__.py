@@ -1899,7 +1899,7 @@ class MapRenderInputPlane(Data):
     soupPoints: list[Point]
     soupTags: list[Any]
     styles: list['Style']
-    subLayers: list[str]
+    compositeLayerUids: list[str]
 
 
 class MapRenderInput(Data):
@@ -3843,7 +3843,7 @@ class PrintPlane(Data):
     features: Optional[list['FeatureProps']]
 
     layerUid: Optional[str]
-    subLayers: Optional[list[str]]
+    compositeLayerUids: Optional[list[str]]
 
     soupPoints: Optional[list[Point]]
     soupTags: Optional[list[Any]]
