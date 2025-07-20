@@ -31,7 +31,7 @@ class Object(gws.Node):
 
     def get_models_response(self, req: gws.WebRequester, p: gws.Request, models: list[gws.Model]) -> api.GetModelsResponse:
         return api.GetModelsResponse(
-            models=[gws.props_of(m, req.user) for m in models]
+            models=gws.u.compact(gws.props_of(m, req.user) for m in models)
         )
 
     ##
