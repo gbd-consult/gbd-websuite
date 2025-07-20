@@ -145,9 +145,7 @@ class Object(gws.Application):
         # NB need defaults from the server
         self.config.server = self.serverMgr.config
 
-        p = self.cfg('server.log.level')
-        if p:
-            gws.log.set_level(p)
+        gws.log.set_level(self.cfg('server.log.level'))
 
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
@@ -225,7 +223,12 @@ class Object(gws.Application):
             self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
     def activate(self):
+        gws.log.set_level(self.cfg('server.log.level'))
+
         for p in self.root.configPaths:
+            if p.startswith(gws.c.CONFIG_DIR):
+                # do not watch derived config paths
+                continue
             self.monitor.watch_file(p)
         for d in self.config.get('projectDirs') or []:
             self.monitor.watch_directory(d, gws.config.CONFIG_PATH_PATTERN)

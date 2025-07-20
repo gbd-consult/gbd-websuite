@@ -17,9 +17,11 @@ class Level:
     ALL = 0
 
 
-def set_level(level: int | str):
+def set_level(level: int | str | None):
     global _current_level
-    if isinstance(level, int) or level.isdigit():
+    if level is None:
+        _current_level = Level.INFO
+    elif isinstance(level, int) or level.isdigit():
         _current_level = int(level)
     else:
         _current_level = getattr(Level, level.upper())
