@@ -21,7 +21,7 @@ def load_file(path: str) -> dict:
 def load_string(text: str, path='') -> dict:
     """Load a string as python code and return its globals."""
 
-    globs = {}
+    globs = {'__file__': path}
     code = compile(text, path, 'exec')
     exec(code, globs)
     return globs
