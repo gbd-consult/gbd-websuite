@@ -32,7 +32,6 @@ class Reader:
         self.pop = lambda: ...
 
     def read(self, value, type_uid):
-
         if not self.verbose_errors:
             return self.read2(value, type_uid)
 
@@ -63,13 +62,14 @@ class Reader:
         details = {
             'formatted_value': _format_error_value(exc),
             'path': self.path,
-            'formatted_stack': _format_error_stack(self.stack or [])
+            'formatted_stack': _format_error_stack(self.stack or []),
         }
         exc.args = (exc.args[0], exc.args[1], details)
         return exc
 
 
 # atoms
+
 
 def _read_any(r: Reader, val, typ: core.Type):
     return val
@@ -126,6 +126,7 @@ def _read_str(r: Reader, val, typ: core.Type):
 
 # built-ins
 
+
 def _read_raw_dict(r: Reader, val, typ: core.Type):
     return _ensure(val, dict)
 
@@ -160,7 +161,7 @@ def _read_tuple(r: Reader, val, typ: core.Type):
     lst = _read_any_list(r, val)
 
     if len(lst) != len(typ.tItems):
-        raise core.ReadError(f"expected: {_comma(typ.tItems)}", val)
+        raise core.ReadError(f'expected: {_comma(typ.tItems)}', val)
 
     res = []
     for n, v in enumerate(lst):
@@ -180,7 +181,7 @@ def _read_any_list(r, val):
 def _read_literal(r: Reader, val, typ: core.Type):
     s = _read_any(r, val, typ)
     if s not in typ.literalValues:
-        raise core.ReadError(f"invalid value: {s!r}, expected: {_comma(typ.literalValues)}", val)
+        raise core.ReadError(f'invalid value: {s!r}, expected: {_comma(typ.literalValues)}', val)
     return s
 
 
@@ -196,6 +197,7 @@ def _read_union(r: Reader, val, typ: core.Type):
 
 
 # our types
+
 
 def _read_type(r: Reader, val, typ: core.Type):
     return r.read2(val, typ.tTarget)
@@ -217,7 +219,7 @@ def _read_enum(r: Reader, val, typ: core.Type):
     for k, v in typ.enumValues.items():
         if lv == _lower(k) or lv == _lower(v):
             return v
-    raise core.ReadError(f"invalid value: {val!r}, expected: {_comma(typ.enumValues)}", val)
+    raise core.ReadError(f'invalid value: {val!r}, expected: {_comma(typ.enumValues)}', val)
 
 
 def _read_object(r: Reader, val, typ: core.Type):
@@ -248,7 +250,7 @@ def _read_object(r: Reader, val, typ: core.Type):
                 unknown.append(k)
 
     if unknown:
-        raise core.ReadError(f"unknown keys: {_comma(unknown)}, expected: {_comma(typ.tProperties)} for {typ.uid!r}", val)
+        raise core.ReadError(f'unknown keys: {_comma(unknown)}, expected: {_comma(typ.tProperties)} for {typ.uid!r}', val)
 
     return gws.Data(res)
 
@@ -260,7 +262,7 @@ def _read_property(r: Reader, val, typ: core.Type):
     if not typ.hasDefault:
         if r.allow_skip_required:
             return None
-        raise core.ReadError(f"required property missing: {typ.ident!r} for {typ.tOwner!r}", None)
+        raise core.ReadError(f'required property missing: {typ.ident!r} for {typ.tOwner!r}', None)
 
     if typ.defaultValue is None:
         return None
@@ -278,11 +280,12 @@ def _read_variant(r: Reader, val, typ: core.Type):
     type_name = val.get(core.v.VARIANT_TAG, core.v.DEFAULT_VARIANT_TAG)
     target_type_uid = typ.tMembers.get(type_name)
     if not target_type_uid:
-        raise core.ReadError(f"illegal type: {type_name!r}, expected: {_comma(typ.tMembers)}", val)
+        raise core.ReadError(f'illegal type: {type_name!r}, expected: {_comma(typ.tMembers)}', val)
     return r.read2(val, target_type_uid)
 
 
 # custom types
+
 
 def _read_acl_str(r: Reader, val, typ: core.Type):
     try:
@@ -360,26 +363,18 @@ def _read_uom_value(r: Reader, val, typ: core.Type):
         raise core.ReadError(f'invalid value: {val!r}: {e!r}', val)
 
 
-def _read_uom_value_2(r: Reader, val, typ: core.Type):
+def _read_uom_point(r: Reader, val, typ: core.Type):
     try:
-        ls = [gws.lib.uom.parse(s) for s in gws.u.to_list(val)]
-        u = set(p[1] for p in ls)
-        if len(ls) != 2 or len(u) != 1:
-            raise ValueError('invalid length or unit')
-        return tuple(p[0] for p in ls) + tuple(u)
+        return gws.lib.uom.parse_point(val)
     except ValueError as e:
-        raise core.ReadError(f'invalid point: {val!r}: {e!r}', val)
+        raise core.ReadError(f'invalid value: {val!r}: {e!r}', val)
 
 
-def _read_uom_value_4(r: Reader, val, typ: core.Type):
+def _read_uom_extent(r: Reader, val, typ: core.Type):
     try:
-        ls = [gws.lib.uom.parse(s) for s in gws.u.to_list(val)]
-        u = set(p[1] for p in ls)
-        if len(ls) != 4 or len(u) != 1:
-            raise ValueError('invalid length or unit')
-        return tuple(p[0] for p in ls) + tuple(u)
+        return gws.lib.uom.parse_extent(val)
     except ValueError as e:
-        raise core.ReadError(f'invalid extent: {val!r}: {e!r}', val)
+        raise core.ReadError(f'invalid value: {val!r}: {e!r}', val)
 
 
 def _read_regex(r: Reader, val, typ: core.Type):
@@ -407,7 +402,7 @@ def _ensure(val, cls):
         return list(val)
     if cls == dict and gws.u.is_data_object(val):
         return vars(val)
-    raise core.ReadError(f"wrong type: {_classname(type(val))!r}, expected: {_classname(cls)!r}", val)
+    raise core.ReadError(f'wrong type: {_classname(type(val))!r}, expected: {_classname(cls)!r}', val)
 
 
 def _to_string(x):
@@ -478,10 +473,8 @@ _READERS = {
     'float': _read_float,
     'int': _read_int,
     'str': _read_str,
-
     'list': _read_raw_list,
     'dict': _read_raw_dict,
-
     core.c.CLASS: _read_object,
     core.c.DICT: _read_dict,
     core.c.ENUM: _read_enum,
@@ -494,7 +487,6 @@ _READERS = {
     core.c.TYPE: _read_type,
     core.c.UNION: _read_union,
     core.c.VARIANT: _read_variant,
-
     'gws.AclStr': _read_acl_str,
     'gws.Color': _read_color,
     'gws.CrsName': _read_crs,
@@ -504,12 +496,10 @@ _READERS = {
     'gws.Duration': _read_duration,
     'gws.FilePath': _read_filepath,
     'gws.FormatStr': _read_formatstr,
-
     'gws.UomValueStr': _read_uom_value,
-    'gws.UomPointStr': _read_uom_value_2,
-    'gws.UomSizeStr': _read_uom_value_2,
-    'gws.UomExtentStr': _read_uom_value_4,
-
+    'gws.UomPointStr': _read_uom_point,
+    'gws.UomSizeStr': _read_uom_point,
+    'gws.UomExtentStr': _read_uom_extent,
     'gws.Metadata': _read_metadata,
     'gws.Regex': _read_regex,
     'gws.Url': _read_url,

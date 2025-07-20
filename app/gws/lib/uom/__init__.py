@@ -84,6 +84,7 @@ def res_to_scale(x: _number) -> int:
 
 ##
 
+
 def mm_to_px(x: _number, ppi: int) -> float:
     """Converts millimetres to pixel.
 
@@ -230,7 +231,7 @@ def to_str(xu: gws.UomValue) -> str:
 ##
 
 
-_unit_re = re.compile(r'''(?x)
+_unit_re = re.compile(r"""(?x)
     ^
         (?P<number>
             -?
@@ -240,7 +241,7 @@ _unit_re = re.compile(r'''(?x)
         )
         (?P<unit> \s* [a-zA-Z]*)
     $
-''')
+""")
 
 
 def parse(s: str | int | float, default_unit: gws.Uom = None) -> gws.UomValue:
@@ -249,9 +250,6 @@ def parse(s: str | int | float, default_unit: gws.Uom = None) -> gws.UomValue:
     Args:
         s: A measurement to parse.
         default_unit: Default unit.
-
-    Returns:
-        A measurement.
 
     Raises:
          ``ValueError``: if the unit is missing, if the formatting is wrong or if the unit is invalid.
@@ -275,3 +273,55 @@ def parse(s: str | int | float, default_unit: gws.Uom = None) -> gws.UomValue:
         return n, default_unit
 
     return n, u
+
+
+def parse_point(val: str | tuple | list) -> gws.UomPoint:
+    """Parse a point in the string or numeric form.
+
+    Args:
+        val: A point to parse, either a string '1mm 2mm' or a list [1, 2, 'mm'].
+
+    Raises:
+        ``ValueError``: if the point is invalid.
+    """
+
+    v = gws.u.to_list(val)
+
+    if len(v) == 3:
+        v = [f'{v[0]}{v[2]}', f'{v[1]}{v[2]}']
+
+    if len(v) == 2:
+        n1, u1 = parse(v[0])
+        n2, u2 = parse(v[1])
+        if u1 != u2:
+            raise ValueError(f'invalid point units: {u1!r} != {u2!r}')
+        return n1, n2, u1
+
+    raise ValueError(f'invalid point: {val!r}')
+
+
+def parse_extent(val: str | tuple | list) -> gws.UomExtent:
+    """Parse an extent in the string or numeric form.
+
+    Args:
+        val: An extent to parse, either a string '1mm 2mm 3mm 4mm' or a list [1, 2, 3, 4, 'mm'].
+
+    Raises:
+        ``ValueError``: if the extent is invalid.
+    """
+
+    v = gws.u.to_list(val)
+
+    if len(v) == 5:
+        v = [f'{v[0]}{v[4]}', f'{v[1]}{v[2]}', f'{v[2]}{v[4]}', f'{v[3]}{v[4]}']
+
+    if len(v) == 4:
+        n1, u1 = parse(v[0])
+        n2, u2 = parse(v[1])
+        n3, u3 = parse(v[2])
+        n4, u4 = parse(v[3])
+        if u1 != u2 or u1 != u3 or u1 != u4:
+            raise ValueError(f'invalid extent units: {u1!r} != {u2!r} != {u3!r} != {u4!r}')
+        return n1, n2, n3, n4, u1
+
+    raise ValueError(f'invalid extent: {val!r}')
