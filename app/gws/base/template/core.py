@@ -61,8 +61,9 @@ class Object(gws.Template):
         )
 
     def prepare_args(self, tri: gws.TemplateRenderInput):
-        args = tri.args or {}
+        args = gws.u.merge({}, tri.args)
         args.setdefault('app', self.root.app)
+        args.setdefault('subject', self.subject)
 
         locale = args.get('locale') or tri.locale
         if not locale:
