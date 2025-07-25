@@ -54,7 +54,7 @@ actions+ {
                 { type "bool" name "wohnen" title "Wohnen" 
                     values+ {
                         type "expression"
-                        text "feature.get('fs_nutzungList_name_text').startswith('Wohn')"
+                        expression "feature.get('fs_nutzungList_name_text').startswith('Wohn')"
                     }
                 }
             ]

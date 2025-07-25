@@ -88,8 +88,8 @@ models+ {
         widget { type "date" }
         validators+ {
             type "dateRange"
-            min { type "expression" text "date.today()" }
-            max { type "expression" text "date.end_of_month()" }
+            min { type "expression" expression "date.today()" }
+            max { type "expression" expression "date.end_of_month()" }
         }
     }
 
@@ -136,7 +136,7 @@ models+ {
         widget { type "integer" }
         validators+ {
             type "numberRange"
-            min { type "expression" text "feature.get('int3', 0) + 10"}
+            min { type "expression" expression "feature.get('int3', 0) + 10"}
         }
     }
 
