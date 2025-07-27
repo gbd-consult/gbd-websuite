@@ -1,0 +1,34 @@
+uid "mbtiles_layer"
+
+title "MBTiles layer"
+
+metadata.keywords [ "raster" ]
+
+metadata.abstract """
+Rasterlayer aus einer MB-Tiles Datei.
+"""
+
+map {
+    crs 3857
+    zoom.initScale 200000
+    extent {demo_make_extent(1579358, 6615879, 4000)}
+}
+
+
+map.layers+ {
+    type "mbtiles"
+    title "TK-10"
+    display "tile"
+    provider {
+        type "file"
+        path "/gws-extern/demos/mbtiles/TK10_SN.mbtiles"
+    }
+    @# Set white as transparent color
+    transparentColor '#ffffff'
+    @# Use the LUT processing to map 'almost white' colors to white
+    processing [
+        "LUT=250:255,251:255,252:255,253:255,254:255"
+    ]
+}
+
+{demo_osm_background}

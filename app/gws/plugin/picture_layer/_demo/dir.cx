@@ -2,7 +2,7 @@ uid "picture_layer_dir"
 
 title "Picture layer, multiple images"
 
-metadata.keywords [ "picture" ]
+metadata.keywords [ "raster" ]
 
 metadata.abstract """
 `picture` layers display georeferenced raster images.

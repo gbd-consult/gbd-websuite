@@ -15,14 +15,15 @@ Example usage::
     map = ms.new_map()
 
     # add a raster layer from an image file
-    map.add_raster_layer(
-        ms.RasterLayerOptions(
+    map.add_layer(
+        ms.LayerOptions(
+            type=ms.LayerType.raster,
             path='/path/to/image.tif',
         )
     )
 
     # add a layer using a configuration string
-    map.add_layer('''
+    map.add_layer_from_config('''
         LAYER
             TYPE LINE
             STATUS ON
@@ -74,49 +75,56 @@ class Error(gws.Error):
     pass
 
 
-class RasterLayerOptions(gws.Data):
-    """Options for a raster layer."""
+class LayerType(gws.Enum):
+    """MapServer layer type."""
 
+    point = 'point'
+    line = 'line'
+    polygon = 'polygon'
+    raster = 'raster'
+
+
+_LAYER_TYPE_TO_MS = {
+    LayerType.point: mapscript.MS_LAYER_POINT,
+    LayerType.line: mapscript.MS_LAYER_LINE,
+    LayerType.polygon: mapscript.MS_LAYER_POLYGON,
+    LayerType.raster: mapscript.MS_LAYER_RASTER,
+}
+
+
+class LayerOptions(gws.Data):
+    """Options for a mapserver layer."""
+
+    type: LayerType
+    """Layer type."""
     path: str
     """Path to the image file."""
-    tileIndex: Optional[str]
+    tileIndex: str
     """Path to the tile index SHP file"""
     crs: gws.Crs
     """Layer CRS."""
-    processing: list[str]
-    """Processing options"""
-
-
-class VectorLayerOptions(gws.Data):
-    """Options for a vector layer."""
-
-    geometryType: gws.GeometryType
-    """Layer geometry type."""
     connectionType: str
     """Type of connection (e.g., 'postgres')."""
     connectionString: str
     """Connection string for the data source."""
     dataString: str
     """Layer DATA option."""
-    crs: gws.Crs
-    """Layer CRS."""
     style: gws.StyleValues
     """Style for the layer."""
+    processing: list[str]
+    """Processing options for the layer."""
+    transparentColor: str
+    """Color to treat as transparent in the layer (OFFSITE)."""
 
 
 def new_map(config: str = '') -> 'Map':
-    """Creates a new Map instance.
-    
-    Args:
-        config: Optional raw MapFile configuration string to initialize the map.
-    Returns:
-        Map: A new instance of the Map class.
-    """
+    """Creates a new Map instance from a Mapfile string."""
+
     return Map(config)
 
 
 class Map:
-    """MapServer map object."""
+    """MapServer map object wrapper."""
 
     mapObj: mapscript.mapObj
 
@@ -135,15 +143,8 @@ class Map:
         c.mapObj = self.mapObj.clone()
         return c
 
-    def add_layer(self, config: str) -> mapscript.layerObj:
-        """Adds a layer to the map using a configuration string.
-
-        Args:
-            config: Raw MapServer configuration string.
-
-        Returns:
-            The created layer object.
-        """
+    def add_layer_from_config(self, config: str) -> mapscript.layerObj:
+        """Adds a layer to the map using a configuration string."""
 
         try:
             lo = mapscript.layerObj(self.mapObj)
@@ -153,82 +154,48 @@ class Map:
         except mapscript.MapServerError as exc:
             raise Error(f'ms: add error:: {exc}') from exc
 
-    def add_raster_layer(self, opts: RasterLayerOptions) -> mapscript.layerObj:
-        """Adds a raster layer to the map.
-
-        Args:
-            opts: Configuration options for the raster layer.
-
-        Returns:
-            The created raster layer object.
-        """
+    def add_layer(self, opts: LayerOptions) -> mapscript.layerObj:
+        """Adds a layer to the map."""
 
         try:
-            lo = self._insert_layer(opts)
-            lo.type = mapscript.MS_LAYER_RASTER
-
-            if opts.path:
-                lo.data = opts.path
-            if opts.tileIndex:
-                lo.tileindex = opts.tileIndex
-            if opts.processing:
-                for p in opts.processing:
-                    lo.addProcessing(p)
-
+            lo = self._add_layer(opts)
+            self.mapObj.insertLayer(lo)  # type: ignore
             return lo
-
         except mapscript.MapServerError as exc:
             raise Error(f'ms: add error:: {exc}') from exc
 
-    def add_vector_layer(self, opts: VectorLayerOptions) -> mapscript.layerObj:
-        """Adds a vector layer to the map.
-
-        Args:
-            opts: Configuration options for the vector layer.
-
-        Returns:
-            The created vector layer object.
-        """
-
-        try:
-            lo = self._insert_layer(opts)
-
-            if opts.geometryType:
-                if opts.geometryType not in _GEOM_TO_MS_LAYER:
-                    raise Error(f'unsupported geometryType {opts.geometryType!r}')
-                lo.type = _GEOM_TO_MS_LAYER[opts.geometryType]
-
-            if opts.connectionType:
-                if opts.connectionType == 'postgres':
-                    lo.setConnectionType(mapscript.MS_POSTGIS, '')
-                raise Error(f'unsupported connectionType {opts.connectionType!r}')
-
-            if opts.connectionString:
-                lo.connection = opts.connectionString
-
-            if opts.dataString:
-                lo.data = opts.dataString
-
-            # @TODO: support style values
-
-            return lo
-
-        except mapscript.MapServerError as exc:
-            raise Error(f'ms: add error:: {exc}') from exc
-
-    def _insert_layer(self, opts: gws.Data):
+    def _add_layer(self, opts: LayerOptions) -> mapscript.layerObj:
         lo = mapscript.layerObj(self.mapObj)
-
         lc = self.mapObj.numlayers
         lo.name = f'_gws_{lc}'
         lo.status = mapscript.MS_ON
 
         if not opts.crs:
-            raise Error('missing crs')
+            raise Error('missing layer CRS')
         lo.setProjection(opts.crs.epsg)
-
-        self.mapObj.insertLayer(lo)  # type: ignore
-
+        
+        if opts.type:
+            lo.type = _LAYER_TYPE_TO_MS[opts.type]
+        if opts.path:
+            lo.data = opts.path
+        if opts.tileIndex:
+            lo.tileindex = opts.tileIndex
+        if opts.processing:
+            for p in opts.processing:
+                lo.addProcessing(p)
+        if opts.transparentColor:
+            co = mapscript.colorObj()
+            co.setHex(opts.transparentColor)
+            lo.offsite = co
+        if opts.connectionType:
+            if opts.connectionType == 'postgres':
+                lo.setConnectionType(mapscript.MS_POSTGIS, '')
+            raise Error(f'unsupported connectionType {opts.connectionType!r}')
+        if opts.connectionString:
+            lo.connection = opts.connectionString
+        if opts.dataString:
+            lo.data = opts.dataString
+        # @TODO: support style values
         return lo
 
     def draw(self, bounds: gws.Bounds, size: gws.Size) -> gws.Image:
@@ -265,20 +232,9 @@ class Map:
             raise Error(f'ms: draw error: {exc}') from exc
 
     def to_string(self) -> str:
-        """Converts the map object to a configuration string.
-
-        Returns:
-            The string representation of the map object.
-        """
+        """Converts the map object to a configuration string."""
 
         try:
             return self.mapObj.convertToString()
         except mapscript.MapServerError as exc:
             raise Error(f'ms: convert error: {exc}') from exc
-
-
-_GEOM_TO_MS_LAYER = {
-    gws.GeometryType.point: mapscript.MS_LAYER_POINT,
-    gws.GeometryType.linestring: mapscript.MS_LAYER_LINE,
-    gws.GeometryType.polygon: mapscript.MS_LAYER_POLYGON,
-}

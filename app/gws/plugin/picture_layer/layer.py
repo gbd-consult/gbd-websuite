@@ -1,4 +1,4 @@
-"""Raster image layer."""
+"""Picture image layer."""
 
 from typing import Optional
 
@@ -7,22 +7,22 @@ import fnmatch
 import gws
 import gws.base.shape
 import gws.base.layer
-import gws.lib.image
 import gws.lib.osx
 import gws.lib.bounds
 import gws.lib.crs
 import gws.gis.zoom
 import gws.gis.ms
+import gws.gis.ms.util
 import gws.gis.gdalx
 
 gws.ext.new.layer('picture')
 
 
 class ProviderConfig(gws.Config):
-    """Raster data provider."""
+    """Picture data provider."""
 
     type: str
-    """Type"""
+    """Type ('file')."""
     paths: Optional[list[gws.FilePath]]
     """List of image file paths."""
     pathPattern: Optional[str]
@@ -32,12 +32,14 @@ class ProviderConfig(gws.Config):
 
 
 class Config(gws.base.layer.Config):
-    """Raster layer"""
+    """Picture layer"""
 
     provider: ProviderConfig
-    """Raster provider"""
+    """Picture provider"""
     processing: Optional[list[str]]
-    """Processing options (https://mapserver.org/input/raster.html#special-processing-directives)"""
+    """Processing directives."""
+    transparentColor: Optional[str]
+    """Color to treat as transparent in the layer."""
 
 
 class ImageEntry(gws.Data):
@@ -52,13 +54,16 @@ class Provider(gws.Data):
 
 
 class Object(gws.base.layer.image.Object):
-    tileIndexPath: str
     entries: list[ImageEntry]
-    processing: list[str]
+    msOptions: gws.gis.ms.LayerOptions
 
     def configure(self):
+        self.msOptions = gws.gis.ms.LayerOptions(
+            type=gws.gis.ms.LayerType.raster,
+            processing=self.cfg('processing', default=[]),
+            transparentColor=self.cfg('transparentColor', default=None),
+        )
         self.configure_layer()
-        self.processing = self.cfg('processing', default=[])
 
     def configure_provider(self):
         p = self.cfg('provider')
@@ -76,7 +81,8 @@ class Object(gws.base.layer.image.Object):
         if not self.entries:
             raise gws.ConfigurationError('no images found')
 
-        self.tileIndexPath = self._make_tile_index()
+        self.msOptions.crs = self.entries[0].bounds.crs
+        self.msOptions.tileIndex = self._make_tile_index()
 
     def _enum_images(self, paths, default_crs):
         es1 = []
@@ -134,6 +140,7 @@ class Object(gws.base.layer.image.Object):
             return True
         b = gws.lib.bounds.union([e.bounds for e in self.entries])
         self.bounds = gws.lib.bounds.transform(b, self.parentBounds.crs)
+        self.msOptions.crs = self.bounds.crs
         return True
 
     def configure_grid(self):
@@ -150,57 +157,5 @@ class Object(gws.base.layer.image.Object):
         else:
             self.grid.resolutions = gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize)
 
-    ##
-
-    # @TODO check memory usage
-    MAX_BOX_SIZE = 9000
-
     def render(self, lri):
-        ts = gws.u.mstime()
-
-        ms_map = gws.gis.ms.new_map()
-
-        ms_map.add_raster_layer(
-            gws.gis.ms.RasterLayerOptions(
-                tileIndex=self.tileIndexPath,
-                crs=self.entries[0].bounds.crs,
-                processing=self.processing,
-            )
-        )
-
-        if lri.type == gws.LayerRenderInputType.box:
-
-            def get_box(bounds, width, height):
-                img = ms_map.draw(bounds, (width, height))
-                if self.root.app.developer_option('mapserver.save_temp_maps'):
-                    gws.u.write_debug_file(f'ms_{self.uid}_{gws.u.microtime()}.map', ms_map.to_string())
-                return img.to_bytes()
-
-            content = gws.base.layer.util.generic_render_box(self, lri, get_box, box_size=self.MAX_BOX_SIZE)
-            return gws.LayerRenderOutput(content=content)
-
-        if lri.type == gws.LayerRenderInputType.xyz:
-            ext = self.bounds.extent
-            w = (ext[2] - ext[0]) / (1 << lri.z)
-
-            x0 = ext[0] + lri.x * w
-            x1 = x0 + w
-
-            y0 = ext[3] - (lri.y + 1) * w
-            y1 = y0 + w
-
-            img = ms_map.draw(
-                gws.lib.bounds.from_extent((x0, y0, x1, y1), crs=self.bounds.crs),
-                (self.grid.tileSize, self.grid.tileSize),
-            )
-            if self.root.app.developer_option('mapserver.save_temp_maps'):
-                gws.u.write_debug_file(f'ms_{self.uid}_{gws.u.microtime()}.map', ms_map.to_string())
-
-            if self.root.app.developer_option('map.annotate_render'):
-                ts = gws.u.mstime() - ts
-                text = f'{lri.z} : {lri.x} / {lri.y}\nUID={self.uid}\n{ts}ms'
-                img.add_text(text, x=5, y=5).add_box()
-
-            content = img.to_bytes(self.imageFormat.mimeTypes[0], self.imageFormat.options)
-
-            return gws.LayerRenderOutput(content=content)
+        return gws.gis.ms.util.raster_render(self, lri)
