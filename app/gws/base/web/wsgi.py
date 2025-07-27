@@ -111,7 +111,7 @@ class Requester(gws.WebRequester):
         data = self._wz.get_data(as_text=False, parse_form_data=False)
 
         if self.root.app.developer_option('request.log_all'):
-            gws.u.write_file_b(gws.u.ensure_dir(f'{gws.c.VAR_DIR}/debug') + '/request_{gws.u.mstime()}', data)
+            gws.u.write_debug_file('request_{gws.u.mstime()}', data)
 
         if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:

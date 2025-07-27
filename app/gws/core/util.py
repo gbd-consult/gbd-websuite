@@ -621,6 +621,19 @@ def write_file_b(path: str, s: bytes, user: int = None, group: int = None):
         raise
 
 
+def write_debug_file(path: str, s: str | bytes):
+    """Write a debug file with the given content."""
+
+    if isinstance(s, str):
+        s = s.encode('utf8')
+    try:
+        d = ensure_dir(f'{const.VAR_DIR}/debug')
+        with open(f'{d}/path', 'wb') as fp:
+            fp.write(s)
+    except Exception as exc:
+        log.debug(f'error writing debug {path=} {exc=}')
+
+
 def dirname(path):
     return os.path.dirname(path)
 

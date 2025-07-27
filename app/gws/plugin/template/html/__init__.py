@@ -120,10 +120,7 @@ class Object(gws.base.template.Object):
         if not self.compiledFn:
             gws.log.debug(f'compiling {self} {self.path=}')
             if self.root.app.developer_option('template.save_compiled'):
-                gws.u.write_file(
-                    gws.u.ensure_dir(f'{gws.c.VAR_DIR}/debug') + f'/compiled_template_{self.uid}',
-                    engine.translate(self.text, path=self.path)
-                )
+                gws.u.write_debug_file(f'compiled_template_{self.uid}', engine.translate(self.text, path=self.path))
 
             self.compiledFn = engine.compile(self.text, path=self.path)
             self.compiledTime = gws.u.utime()

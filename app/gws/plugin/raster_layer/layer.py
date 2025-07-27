@@ -173,7 +173,7 @@ class Object(gws.base.layer.image.Object):
             def get_box(bounds, width, height):
                 img = ms_map.draw(bounds, (width, height))
                 if self.root.app.developer_option('mapserver.save_temp_maps'):
-                    gws.u.write_file(gws.u.ensure_dir(f'{gws.c.VAR_DIR}/debug') + f'/ms_{self.uid}_{gws.u.microtime()}.map', ms_map.to_string())
+                    gws.u.write_debug_file(f'ms_{self.uid}_{gws.u.microtime()}.map', ms_map.to_string())
                 return img.to_bytes()
 
             content = gws.base.layer.util.generic_render_box(self, lri, get_box, box_size=self.MAX_BOX_SIZE)
@@ -194,7 +194,7 @@ class Object(gws.base.layer.image.Object):
                 (self.grid.tileSize, self.grid.tileSize),
             )
             if self.root.app.developer_option('mapserver.save_temp_maps'):
-                gws.u.write_file(gws.u.ensure_dir(f'{gws.c.VAR_DIR}/debug') + f'/ms_{self.uid}_{gws.u.microtime()}.map', ms_map.to_string())
+                gws.u.write_debug_file(f'ms_{self.uid}_{gws.u.microtime()}.map', ms_map.to_string())
 
             if self.root.app.developer_option('map.annotate_render'):
                 ts = gws.u.mstime() - ts
