@@ -15,7 +15,7 @@ import gws.gis.zoom
 import gws.gis.ms
 import gws.gis.gdalx
 
-gws.ext.new.layer('raster')
+gws.ext.new.layer('picture')
 
 
 class ProviderConfig(gws.Config):

@@ -1,0 +1,28 @@
+uid "picture_layer_dir"
+
+title "Picture layer, multiple images"
+
+metadata.keywords [ "picture" ]
+
+metadata.abstract """
+`picture` layers display georeferenced raster images.
+"""
+
+map {
+    crs 25832
+    zoom.initScale 35000
+    extent {demo_make_extent(341390, 5673090, 4000)}
+}
+
+
+@# https://www.opengeodata.nrw.de/produkte/geobasis/lusat/akt/dop/dop_jp2_f10/
+
+map.layers+ {
+    type "picture"
+    title "DOP"
+    display "tile"
+    provider { type "file" pathPattern "/gws-extern/demos/dop/*.jp2" }
+    metadata.attribution "© Geobasis NRW"
+}
+
+{demo_osm_background}

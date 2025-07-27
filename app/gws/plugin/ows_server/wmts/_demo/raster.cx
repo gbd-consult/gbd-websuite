@@ -37,6 +37,6 @@ map.layers+ {
     title "Düsseldorf"
     provider {
         type "file"
-        paths [ "/gws-extern/duess_osm/img.png" ]
+        paths [ "/gws-extern/demos/duess_osm/img.png" ]
     }
 }
