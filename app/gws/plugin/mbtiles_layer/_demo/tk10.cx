@@ -25,9 +25,9 @@ map.layers+ {
     }
     @# Set white as transparent color
     transparentColor '#ffffff'
-    @# Use the LUT processing to map 'almost white' colors to white
+    @# Use the SCALE processing to map 'almost white' colors to white
     processing [
-        "LUT=250:255,251:255,252:255,253:255,254:255"
+        "SCALE=0,240"
     ]
 }
 
