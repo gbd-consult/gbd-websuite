@@ -628,7 +628,7 @@ def write_debug_file(path: str, s: str | bytes):
         s = s.encode('utf8')
     try:
         d = ensure_dir(f'{const.VAR_DIR}/debug')
-        with open(f'{d}/path', 'wb') as fp:
+        with open(f'{d}/{path}', 'wb') as fp:
             fp.write(s)
     except Exception as exc:
         log.debug(f'error writing debug {path=} {exc=}')
