@@ -228,7 +228,7 @@ def best_match(crs: gws.Crs, supported_crs: list[gws.Crs]) -> gws.Crs:
     bst = _best_match(crs, supported_crs)
     if not bst:
         bst = supported_crs[0] if supported_crs else crs
-    gws.log.debug(f'best_crs: using {bst.srid!r} for {crs.srid!r}')
+    gws.log.debug(f'CRS: best_crs: using {bst.srid!r} for {crs.srid!r}')
     return bst
 
 
@@ -275,20 +275,23 @@ def _get_crs(crs_name):
         _obj_cache[crs_name] = _obj_cache[srid]
         return _obj_cache[srid]
 
+    obj = _get_new_crs(srid)
+    _obj_cache[crs_name] = _obj_cache[srid] = obj
+    return obj
+
+
+def _get_new_crs(srid):
     pp = _pyproj_crs_object(srid)
     if not pp:
-        gws.log.error(f'unknown CRS {srid!r}')
-        _obj_cache[crs_name] = _obj_cache[srid] = None
+        gws.log.error(f'CRS: unknown srid {srid!r}')
         return None
 
     au = _axis_and_unit(pp)
     if not au:
-        gws.log.error(f'unsupported CRS {srid!r}')
-        _obj_cache[crs_name] = _obj_cache[srid] = None
+        gws.log.error(f'CRS: unsupported srid {srid!r}')
         return None
 
-    _obj_cache[crs_name] = _obj_cache[srid] = _make_crs(srid, pp, au)
-    return _obj_cache[srid]
+    return _make_crs(srid, pp, au)
 
 
 def _pyproj_crs_object(srid) -> Optional[pyproj.CRS]:
@@ -342,7 +345,11 @@ def _make_crs(srid, pp, au):
 
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
-        crs.proj4text = pp.to_proj4()
+        try:
+            crs.proj4text = pp.to_proj4()
+        except pyproj.exceptions.CRSError:
+            gws.log.error(f'CRS: cannot convert {srid!r} to proj4')
+            return None
 
     crs.wkt = pp.to_wkt()
 
@@ -393,7 +400,8 @@ def _make_crs(srid, pp, au):
 
     b = _bbox(d)
     if not b:
-        raise Error(f'no bbox for {crs.srid!r}')
+        gws.log.error(f'CRS: no bbox for {crs.srid!r}')
+        return
 
     crs.wgsExtent = (
         b['west_longitude'],

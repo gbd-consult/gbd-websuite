@@ -111,8 +111,8 @@ class Object:
     ##
 
     def _init_specs(self):
-        if not self.manifestPath:
-            self._error(gws.ConfigurationError('no manifest file found'))
+        # if not self.manifestPath:
+        #     self._error(gws.ConfigurationError('no manifest file found'))
         try:
             self.ctx.specs = gws.spec.runtime.create(
                 manifest_path=self.manifestPath,

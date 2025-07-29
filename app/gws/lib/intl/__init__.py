@@ -19,7 +19,7 @@ def default_locale():
     return locale(_DEFAULT_UID, fallback=False)
 
 
-def locale(name: str, allowed: list[str] = None, fallback: bool = True) -> gws.Locale:
+def locale(name: str|None, allowed: list[str] = None, fallback: bool = True) -> gws.Locale:
     """Locates a Locale object by locale name.
 
     If the name is invalid, and ``fallback`` is ``True``, return the first ``allowed`` locale,

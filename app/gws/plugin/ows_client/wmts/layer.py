@@ -45,6 +45,8 @@ class Object(gws.base.layer.image.Object):
             return True
 
         self.configure_source_layers()
+        if not self.sourceLayers:
+            raise gws.Error('no source layers found')
         self.activeLayer = self.sourceLayers[0]
         self.configure_tms()
         self.configure_style()
