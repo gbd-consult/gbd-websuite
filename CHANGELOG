@@ -1,3 +1,9 @@
+## Version 8.2.9
+
+- support for mbtiles layers
+- added global and project-based variable support
+- ability to import python modules in "expression" values
+
 ## Version 8.2.8
 
 - optional composite rendering for QGIS layers
