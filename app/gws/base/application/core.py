@@ -100,7 +100,7 @@ class Config(gws.ConfigWithAccess):
     """Fonts configuration."""
     helpers: Optional[list[gws.ext.config.helper]]
     """Helpers configurations."""
-    locales: Optional[list[str]]
+    locales: Optional[list[gws.LocaleUid]]
     """Default locales for all projects."""
     metadata: Optional[gws.base.metadata.Config]
     """Application metadata."""

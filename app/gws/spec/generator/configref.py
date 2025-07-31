@@ -99,7 +99,7 @@ class _Creator:
         typ = self.gen.require_type(tid)
 
         yield header(tid)
-        yield subhead(self.strings['category_object'], self.docstring(tid))
+        yield subhead(self.strings['category_object'], self.docstring(tid).replace('\n', '\n\n'))
 
         rows = {False: [], True: []}
 
@@ -197,7 +197,7 @@ class _Creator:
         if spec_text and not local_text and self.lang != 'en':
             # translation missing: use the english docstring and warn
             base.log.debug(f'missing {self.lang} translation for {key!r}')
-            dev_label = f'`{key}`{{.configref_dev_missing_translation}}'
+            dev_label = f'`??? {key}`{{.configref_dev_missing_translation}}'
             local_text = self.gen.strings['en'].get(key)
         else:
             dev_label = f'`{key}`{{.configref_dev_uid}}'

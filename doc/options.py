@@ -37,7 +37,7 @@ extraAssets = [
 
 brandLogo = "gws_logo.svg"
 brandURL = "https://gbd-consult.de"
-brandText = "&copy; Geoinformatikbüro Dassau GmbH 2006–2024"
+brandText = "&copy; Geoinformatikbüro Dassau GmbH 2006-2025"
 
 includeTemplate = f'{DOC_DIR}/extra_commands.cx.html'
 

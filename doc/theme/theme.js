@@ -78,7 +78,7 @@ function makeNavNode(toc, sid) {
 
 function setActiveNavNode(toc, sid) {
     let node = toc[sid];
-    let parent =  toc[node.p];
+    let parent = toc[node.p];
 
     let arrows = [
         $('#nav-arrow-up'),
@@ -216,33 +216,68 @@ function searchExec(val) {
 const SEARCH_MAX_RESULTS = 50;
 
 function searchFindSections(val) {
-    if (!SEARCH_INDEX)
+    if (!SEARCH_INDEX) {
         return;
-
-    let words = val.toLowerCase().match(/[a-zA-ZÄÖÜßäöü_-]+/g);
-    if (!words)
-        return;
-
+    }
     SEARCH_INDEX._words = SEARCH_INDEX._words || SEARCH_INDEX.words.split('.');
-    let indexes = words
-        .map(w => SEARCH_INDEX._words.indexOf(w))
-        .filter(n => n > 0)
-        .map(n => '.' + n.toString(36) + '.');
-    if (indexes.length === 0)
+
+    let searchWords = val.toLowerCase().match(/[a-zA-ZÄÖÜßäöü_-]+/g);
+    if (!searchWords) {
         return;
-
-    let exactPhrase = indexes.join('');
-    let secs;
-
-    secs = SEARCH_INDEX.sections.filter(sec => sec.w.includes(exactPhrase));
-    if (secs.length > 0) {
-        return secs.slice(0, SEARCH_MAX_RESULTS);
     }
 
-    secs = SEARCH_INDEX.sections.filter(sec => indexes.every(ix => sec.w.includes(ix)));
-    if (secs.length > 0) {
-        return secs.slice(0, SEARCH_MAX_RESULTS);
+    let wordIndexes = [];
+    let hasAllWords = true;
+
+    for (let w of searchWords) {
+        let n = SEARCH_INDEX._words.indexOf(w);
+        if (n > 0) {
+            wordIndexes.push('.' + n.toString(36) + '.');
+        } else {
+            hasAllWords = false;
+        }
     }
+
+    if (wordIndexes.length > 0 && hasAllWords) {
+        let exactPhrase = wordIndexes.join('');
+        let secs = SEARCH_INDEX.sections.filter(sec => sec.w.includes(exactPhrase));
+        if (secs.length > 0) {
+            return secs.slice(0, SEARCH_MAX_RESULTS);
+        }
+    }
+
+    if (wordIndexes.length > 0) {
+        let secs = SEARCH_INDEX.sections.filter(sec => wordIndexes.every(ix => sec.w.includes(ix)));
+        if (secs.length > 0) {
+            return secs.slice(0, SEARCH_MAX_RESULTS);
+        }
+    }
+
+    if (wordIndexes.length > 0) {
+        let secs = SEARCH_INDEX.sections.filter(sec => wordIndexes.some(ix => sec.w.includes(ix)));
+        if (secs.length > 0) {
+            return secs.slice(0, SEARCH_MAX_RESULTS);
+        }
+    }
+
+    let partialWordIndexes = [];
+
+    for (let w of searchWords) {
+        for (let [n, sw] of SEARCH_INDEX._words.entries()) {
+            if (sw.indexOf(w) >= 0) {
+                partialWordIndexes.push('.' + n.toString(36) + '.');
+            }
+        }
+    }
+
+    if (partialWordIndexes.length > 0) {
+        let secs = SEARCH_INDEX.sections.filter(sec => partialWordIndexes.some(ix => sec.w.includes(ix)));
+        if (secs.length > 0) {
+            return secs.slice(0, SEARCH_MAX_RESULTS);
+        }
+    }
+
+    return [];
 }
 
 function isDev() {

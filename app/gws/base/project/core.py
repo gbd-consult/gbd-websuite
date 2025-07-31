@@ -25,7 +25,7 @@ class Config(gws.ConfigWithAccess):
     """Project-specific gws client configuration."""
     finders: Optional[list[gws.ext.config.finder]]
     """Search providers."""
-    locales: Optional[list[str]]
+    locales: Optional[list[gws.LocaleUid]]
     """Project locales."""
     map: Optional[gws.base.map.Config]
     """Map configuration."""

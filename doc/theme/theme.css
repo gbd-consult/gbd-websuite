@@ -362,7 +362,6 @@ nav span {
 }
 
 #sidebar-search {
-    padding: 1rem;
     background: rgb(20,91,134);
 }
 
@@ -373,6 +372,8 @@ nav span {
     background-size: 1.2rem 1.2rem;
     border-radius: 18px;
     display: flex;
+    margin: 1rem;
+
 }
 
 #sidebar-search input {
@@ -408,12 +409,15 @@ nav span {
 
 #sidebar-search-results ul {
     font-size: 0.9rem;
-    padding: 0 1rem;
 }
 
 #sidebar-search-results li {
     font-size: 0.9rem;
-    padding: 0.5rem 0;
+    padding: 0.5rem 1rem;
+}
+
+#sidebar-search-results li:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 #sidebar-search-results a {
