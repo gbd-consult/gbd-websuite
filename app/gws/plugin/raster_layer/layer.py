@@ -1,4 +1,4 @@
-"""Picture image layer."""
+"""Raster image layer."""
 
 from typing import Optional
 
@@ -15,11 +15,11 @@ import gws.gis.ms
 import gws.gis.ms.util
 import gws.gis.gdalx
 
-gws.ext.new.layer('picture')
+gws.ext.new.layer('raster')
 
 
 class ProviderConfig(gws.Config):
-    """Picture data provider."""
+    """Raster data provider."""
 
     type: str
     """Type ('file')."""
@@ -32,10 +32,10 @@ class ProviderConfig(gws.Config):
 
 
 class Config(gws.base.layer.Config):
-    """Picture layer"""
+    """Raster layer"""
 
     provider: ProviderConfig
-    """Picture provider"""
+    """Raster provider"""
     processing: Optional[list[str]]
     """Processing directives."""
     transparentColor: Optional[str]

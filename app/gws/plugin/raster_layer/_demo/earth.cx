@@ -1,11 +1,11 @@
-uid "picture_layer"
+uid "raster_layer"
 
-title "Picture layer"
+title "Raster layer"
 
-metadata.keywords [ "picture" ]
+metadata.keywords [ "raster" ]
 
 metadata.abstract """
-`picture` layers display georeferenced raster images.
+`raster` layers display georeferenced raster images.
 """
 
 map {
@@ -16,7 +16,7 @@ map {
 }
 
 map.layers+ {
-    type "picture"
+    type "raster"
     title "Natural Earth"
     display "tile"
     provider {
@@ -27,7 +27,7 @@ map.layers+ {
 }
 
 map.layers+ {
-    type "picture"
+    type "raster"
     title "Natural Earth (+processing)"
     display "tile"
     clientOptions.hidden true
