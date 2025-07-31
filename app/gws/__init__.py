@@ -1283,6 +1283,10 @@ class Image:
 # /lib/intl/types.pyinc
 
 
+LocaleUid: TypeAlias = str
+"""Locale uid like `de_DE`."""
+
+
 class Locale(Data):
     """Locale data."""
 
