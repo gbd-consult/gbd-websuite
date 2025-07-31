@@ -21,7 +21,7 @@ map.layers+ {
     type "raster"
     title "DOP"
     display "tile"
-    provider { type "file" pathPattern "/gws-extern/demos/dop/*.jp2" }
+    provider.pathPattern "/gws-extern/demos/dop/*.jp2"
     metadata.attribution "© Geobasis NRW"
 }
 

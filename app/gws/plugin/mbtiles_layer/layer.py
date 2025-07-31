@@ -1,38 +1,26 @@
-"""mbtiles based layer."""
+"""MBTiles based layer."""
 
 from typing import Optional
 
-import fnmatch
-
 import gws
-import gws.base.shape
 import gws.base.layer
-import gws.lib.image
-import gws.lib.osx
-import gws.lib.bounds
-import gws.lib.crs
-import gws.gis.zoom
+import gws.config.util
+import gws.gis.gdalx
 import gws.gis.ms
 import gws.gis.ms.util
-import gws.gis.gdalx
+import gws.gis.zoom
+import gws.lib.bounds
+
+from . import provider
 
 gws.ext.new.layer('mbtiles')
 
 
-class ProviderConfig(gws.Config):
-    """Data provider."""
-
-    type: str
-    """Type ('file')"""
-    path: gws.FilePath
-    """List of image file paths."""
-
-
 class Config(gws.base.layer.Config):
-    """mbtiles layer"""
+    """MBTiles layer"""
 
-    provider: ProviderConfig
-    """Picture provider"""
+    provider: provider.Config
+    """Provider configuration."""
     processing: Optional[list[str]]
     """Processing directives."""
     transparentColor: Optional[str]
@@ -41,6 +29,7 @@ class Config(gws.base.layer.Config):
 
 class Object(gws.base.layer.image.Object):
     msOptions: gws.gis.ms.LayerOptions
+    serviceProvider: provider.Object
 
     def configure(self):
         self.msOptions = gws.gis.ms.LayerOptions(
@@ -51,8 +40,8 @@ class Object(gws.base.layer.image.Object):
         self.configure_layer()
 
     def configure_provider(self):
-        p = self.cfg('provider')
-        self.msOptions.path = p.path
+        gws.config.util.configure_service_provider_for(self, provider.Object)
+        self.msOptions.path = self.serviceProvider.path
 
     def configure_bounds(self):
         if super().configure_bounds():

@@ -19,10 +19,7 @@ map.layers+ {
     type "mbtiles"
     title "TK-10"
     display "tile"
-    provider {
-        type "file"
-        path "/gws-extern/demos/mbtiles/TK10_SN.mbtiles"
-    }
+    provider.path "/gws-extern/demos/mbtiles/TK10_SN.mbtiles"
     @# Set white as transparent color
     transparentColor '#ffffff'
     @# Use the SCALE processing to map 'almost white' colors to white

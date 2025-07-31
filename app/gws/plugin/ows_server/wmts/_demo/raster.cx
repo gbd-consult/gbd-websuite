@@ -35,8 +35,5 @@ map.extent [
 map.layers+ {
     type "raster"
     title "Düsseldorf"
-    provider {
-        type "file"
-        paths [ "/gws-extern/demos/duess_osm/img.png" ]
-    }
+    provider.paths [ "/gws-extern/demos/duess_osm/img.png" ]
 }

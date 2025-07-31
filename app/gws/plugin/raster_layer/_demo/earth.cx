@@ -19,10 +19,7 @@ map.layers+ {
     type "raster"
     title "Natural Earth"
     display "tile"
-    provider {
-        type "file"
-        paths [ "/gws-extern/demos/natural_earth/NE1_HR_LC_SR_W_DR.tif" ]
-    }
+    provider.paths [ "/gws-extern/demos/natural_earth/NE1_HR_LC_SR_W_DR.tif" ]
     metadata.attribution "© 2009 - 2025. Natural Earth"
 }
 
@@ -31,10 +28,7 @@ map.layers+ {
     title "Natural Earth (+processing)"
     display "tile"
     clientOptions.hidden true
-    provider {
-        type "file"
-        paths [ "/gws-extern/demos/natural_earth/NE1_HR_LC_SR_W_DR.tif" ]
-    }
+    provider.paths [ "/gws-extern/demos/natural_earth/NE1_HR_LC_SR_W_DR.tif" ]
     @# https://mapserver.org/input/raster.html#special-processing-directives
     processing [
         "BANDS=3"
