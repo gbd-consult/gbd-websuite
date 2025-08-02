@@ -8,13 +8,13 @@ Das oberste Ebene der Konfiguration ist das [Hauptobjekt](/admin-de/reference/gw
 
 Die unterschiedlichen Elemente sind mit diesen Tags gekennzeichnet:
 
-- `obj`{.configref_category} - ein Objekt, gefolgt von seinem Typ-Namen und Eigenschaften. Die Objekte werden in der JSON-Notation mit geschweiften Klammern `{}` dargestellt.
+- <span class="configref_category_object"></span> - ein Objekt, gefolgt von seinem Typ-Namen und Eigenschaften. Die Objekte werden in der JSON-Notation mit geschweiften Klammern `{}` dargestellt.
 
-- `type`{.configref_category} - ein atomarer Wertetyp. Diese Werte werden in JSON als Strings bzw. Zahlen dargestellt, haben jedoch eine spezielle Bedeutung in der Konfiguration. Zum Beispiel `CrsName` für Koordinatenreferenzsysteme oder `Duration`{.configref_type} für Zeitdauern.
+- <span class="configref_category_type"></span> - ein atomarer Wertetyp. Diese Werte werden in JSON als Strings bzw. Zahlen dargestellt, haben jedoch eine spezielle Bedeutung in der Konfiguration. Zum Beispiel `CrsName` für Koordinatenreferenzsysteme oder `Duration`{.configref_type} für Zeitdauern.
 
-- `enum`{.configref_category} - eine vordefinierte Liste von Werten. An der entsprechenden Stelle in der Konfiguration kann dann ein Wert aus dieser Liste verwendet werden. Diese Werte werden in JSON als Strings dargestellt.
+- <span class="configref_category_enum"></span> - eine vordefinierte Liste von Werten. An der entsprechenden Stelle in der Konfiguration kann dann ein Wert aus dieser Liste verwendet werden. Diese Werte werden in JSON als Strings dargestellt.
 
-- `variant`{.configref_category} - ein Objekt, das eine Eigenschaft `type`{.configref_propname} enthält, die angibt, welcher Typ von Objekt hier verwendet wird. Diese Objekte können verschiedene Eigenschaften haben, abhängig von ihrem Typ.
+- <span class="configref_category_variant"></span> - ein Objekt, das eine Eigenschaft `type`{.configref_propname} enthält, die angibt, welcher Typ von Objekt hier verwendet wird. Diese Objekte können verschiedene Eigenschaften haben, abhängig von ihrem Typ.
 
 Jedes Objekt kann nur Eigenschaften enthalten, die auf dieser Seite beschrieben sind. Die meisten Eigenschaften sind optional. Erforderliche Eigenschaften sind mit einem Sternchen (*) gekennzeichnet (z.B. `tag`{.configref_required}) und stehen immer oben in der Liste.
 

@@ -24,6 +24,15 @@ class Error(gws.Error):
     pass
 
 
+class FormatConfig(gws.Config):
+    """Image format configuration. (added in 8.1)"""
+
+    mimeTypes: list[gws.MimeType]
+    """Mime types for this format."""
+    options: Optional[dict]
+    """Image options."""
+
+
 def from_size(size: gws.Size, color=None) -> 'Image':
     """Creates a monochrome image object.
 

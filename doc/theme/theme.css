@@ -204,7 +204,7 @@ main h1:first-child {
 
 main h2 {
     font-size: 2rem;
-    margin: 1.5rem 0;
+    margin: 1.5rem 0 0.5rem 0;
 }
 
 main h3 {
@@ -251,7 +251,7 @@ table.markdown-table th, table.markdown-table td {
 }
 
 table.markdown-table tr:nth-child(even) {
-    background: rgba(0, 0, 0, 0.04);
+    background: rgba(0, 0, 0, 0.03);
 }
 
 table.markdown-table th {
@@ -680,6 +680,37 @@ body.with-dev code.configref_dev_missing_translation {
 }
 body.with-dev code.configref_dev_uid {
     display: inline-block;
+}
+
+.configref_category_object::before,
+.configref_category_enum::before,
+.configref_category_variant::before,
+.configref_category_type::before {
+    background: rgb(0,134,201);
+    border-radius: 4px;
+    color: white;
+    display: inline-block;
+    font-size: 0.7rem;
+    margin: 0 6px 0 0;
+    padding: 0 6px;
+    vertical-align: middle;
+}
+
+.configref_category_object::before {
+    content: "obj";
+    background: rgb(0,134,201);
+}
+.configref_category_enum::before {
+    content: "enum";
+    background: rgb(0,134,201);
+}
+.configref_category_variant::before {
+    content: "variant";
+    background: rgb(0,134,201);
+}
+.configref_category_type::before {
+    content: "type";
+    background: rgb(0,134,201);
 }
 
 code.configref_category,

@@ -19,7 +19,7 @@ class Config(gws.ConfigWithAccess):
 
     actions: Optional[list[gws.ext.config.action]]
     """Project-specific actions."""
-    assets: Optional[gws.base.web.site.WebDocumentRootConfig]
+    assets: Optional[gws.base.web.site.WebDirConfig]
     """Project-specific assets options."""
     client: Optional[gws.base.client.Config]
     """Project-specific gws client configuration."""

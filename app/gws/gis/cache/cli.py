@@ -34,17 +34,7 @@ class Object(gws.Node):
 
     @gws.ext.command.cli('cacheStatus')
     def do_status(self, p: StatusParams):
-        """Display the cache status.
-
-        Lists information about cache entries including layer details and
-        cache statistics for each zoom level.
-
-        Args:
-            p: Parameters containing optional list of layer IDs to filter by.
-
-        Returns:
-            None. Output is printed to the console.
-        """
+        """Display the cache status."""
 
         root = gws.config.loader.load()
         status = core.status(root, gws.u.to_list(p.layer))
@@ -85,50 +75,21 @@ class Object(gws.Node):
 
     @gws.ext.command.cli('cacheCleanup')
     def do_cleanup(self, p: gws.CliParams):
-        """Remove stale cache directories.
-
-        Identifies and removes cache directories that are no longer
-        associated with any active layers.
-
-        Args:
-            p: CLI parameters (unused in this function).
-
-        Returns:
-            None. Stale cache directories are removed from the filesystem.
-        """
+        """Remove stale cache directories."""
 
         root = gws.config.loader.load()
         core.cleanup(root)
 
     @gws.ext.command.cli('cacheDrop')
     def do_drop(self, p: DropParams):
-        """Remove active cache directories.
-
-        Removes cache directories for specified layers or all layers if none
-        are specified.
-
-        Args:
-            p: Parameters containing optional list of layer IDs to drop caches for.
-
-        Returns:
-            None. Cache directories are removed from the filesystem.
-        """
+        """Remove active cache directories."""
 
         root = gws.config.loader.load()
         core.drop(root, gws.u.to_list(p.layer))
 
     @gws.ext.command.cli('cacheSeed')
     def do_seed(self, p: SeedParams):
-        """Seed cache for layers.
-
-        Generates tiles and populates the cache for specified layers and zoom levels.
-
-        Args:
-            p: Parameters containing list of layer IDs and zoom levels to generate cache for.
-
-        Returns:
-            None. Cache is populated with generated tiles.
-        """
+        """Seed cache for layers."""
 
         root = gws.config.loader.load()
         status = core.status(root, gws.u.to_list(p.layer))
@@ -141,12 +102,4 @@ class Object(gws.Node):
 
 
 def _comma(items: list) -> str:
-    """Join list items with commas.
-
-    Args:
-        items: List of items to join.
-
-    Returns:
-        String containing comma-separated items.
-    """
     return ','.join(items)

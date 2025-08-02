@@ -1107,15 +1107,6 @@ UomExtentStr: TypeAlias = list[str]
 # /lib/image/types.pyinc
 
 
-class ImageFormatConfig(Config):
-    """Image format configuration. (added in 8.1)"""
-
-    mimeTypes: list[MimeType]
-    """Mime types for this format."""
-    options: Optional[dict]
-    """Image options."""
-
-
 class ImageFormat(Data):
     """Image format"""
 
@@ -1800,6 +1791,9 @@ class Crs:
     """CRS own Extent."""
     bounds: Bounds
     """CRS own Bounds."""
+
+    coordinatePrecision: int
+    """Preferred precision for coordinates in this CRS."""
 
     def axis_for_format(self, fmt: 'CrsFormat') -> Axis:
         """Get the axis depending on the string format.

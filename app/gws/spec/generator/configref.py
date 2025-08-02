@@ -9,10 +9,11 @@ STRINGS = {}
 
 STRINGS['en'] = {
     'head_property': 'property',
-    'head_variant': 'one of the following objects',
+    'head_variant': 'one of the following objects:',
     'head_type': 'type',
     'head_default': 'default',
     'head_value': 'value',
+    'head_member': 'class',
     'category_variant': 'variant',
     'category_object': 'obj',
     'category_enum': 'enum',
@@ -24,10 +25,11 @@ STRINGS['en'] = {
 
 STRINGS['de'] = {
     'head_property': 'Eigenschaft',
-    'head_variant': 'Eines der folgenden Objekte',
+    'head_variant': 'Eines der folgenden Objekte:',
     'head_type': 'Typ',
     'head_default': 'Default',
     'head_value': 'Wert',
+    'head_member': 'Objekt',
     'category_variant': 'variant',
     'category_object': 'obj',
     'category_enum': 'enum',
@@ -51,19 +53,19 @@ def create(gen: base.Generator, lang: str):
 
 
 class _Creator:
+    start_tid = 'gws.base.application.core.Config'
+    exclude_props = ['uid', 'access', 'type']
+
     def __init__(self, gen: base.Generator, lang: str):
         self.gen = gen
         self.lang = lang
         self.strings = STRINGS[lang]
         self.queue = []
-        self.html = {}
+        self.blocks = []
 
     def run(self):
-        start_tid = 'gws.base.application.core.Config'
-
-        self.queue = [start_tid]
-        self.html = {}
-
+        self.queue = [self.start_tid]
+        self.blocks = []
         done = set()
 
         while self.queue:
@@ -73,44 +75,45 @@ class _Creator:
             done.add(tid)
             self.process(tid)
 
-        res = self.html.pop(start_tid.lower())
-        res += nl(v for _, v in sorted(self.html.items()))
-        return res
+        return nl(b[-1] for b in sorted(self.blocks))
 
     def process(self, tid):
         typ = self.gen.require_type(tid)
 
         if typ.c == base.c.CLASS:
-            self.html[tid.lower()] = nl(self.process_class(tid))
-
-        if typ.c == base.c.ENUM:
-            self.html[tid.lower()] = nl(self.process_enum(tid))
+            key = 0 if tid == self.start_tid else 1
+            self.blocks.append([key, tid.lower(), nl(self.process_class(tid))])
 
         if typ.c == base.c.TYPE:
-            self.html[tid.lower()] = nl(self.process_type(tid))
+            self.blocks.append([2, tid.lower(), nl(self.process_type(tid))])
+
+        if typ.c == base.c.ENUM:
+            self.blocks.append([3, tid.lower(), nl(self.process_enum(tid))])
 
         if typ.c == base.c.VARIANT:
-            self.html[tid.lower()] = nl(self.process_variant(tid))
+            self.blocks.append([4, tid.lower(), nl(self.process_variant(tid))])
 
         if typ.c == base.c.LIST:
-            self.process(typ.tItem)
+            self.queue.append(typ.tItem)
 
     def process_class(self, tid):
         typ = self.gen.require_type(tid)
 
-        yield header(tid)
-        yield subhead(self.strings['category_object'], self.docstring(tid).replace('\n', '\n\n'))
+        yield header('object', tid)
+        yield subhead(self.strings['category_object'], self.docstring_as_header(tid))
 
         rows = {False: [], True: []}
 
         for prop_name, prop_tid in sorted(typ.tProperties.items()):
+            if prop_name in self.exclude_props:
+                continue
             prop_typ = self.gen.require_type(prop_tid)
             self.queue.append(prop_typ.tValue)
             rows[prop_typ.hasDefault].append(
                 [
                     as_propname(prop_name) if prop_typ.hasDefault else as_required(prop_name),
                     self.type_string(prop_typ.tValue),
-                    single_space(self.docstring(prop_tid)),
+                    self.docstring_as_cell(prop_tid),
                 ]
             )
 
@@ -126,14 +129,20 @@ class _Creator:
     def process_enum(self, tid):
         typ = self.gen.require_type(tid)
 
-        yield header(tid)
-        yield subhead(self.strings['category_enum'], self.docstring(tid))
-        yield table(['', ''], [[as_literal(key), self.docstring(tid, key)] for key in typ.enumValues])
+        yield header('enum', tid)
+        yield subhead(self.strings['category_enum'], self.docstring_as_header(tid))
+        yield table(
+            [
+                self.strings['head_value'],
+                '',
+            ],
+            [[as_literal(key), self.docstring_as_cell(tid, key)] for key in typ.enumValues],
+        )
 
     def process_variant(self, tid):
         typ = self.gen.require_type(tid)
 
-        yield header(tid)
+        yield header('variant', tid)
         yield subhead(self.strings['category_variant'], self.strings['head_variant'])
 
         rows = []
@@ -141,11 +150,17 @@ class _Creator:
             self.queue.append(member_tid)
             rows.append([as_literal(member_name), self.type_string(member_tid)])
 
-        yield table([self.strings['head_type'], ''], rows)
+        yield table(
+            [
+                self.strings['head_type'],
+                '',
+            ],
+            rows,
+        )
 
     def process_type(self, tid):
-        yield header(tid)
-        yield subhead(self.strings['category_type'], self.docstring(tid))
+        yield header('type', tid)
+        yield subhead(self.strings['category_type'], self.docstring_as_header(tid))
 
     def type_string(self, tid):
         typ = self.gen.require_type(tid)
@@ -180,11 +195,20 @@ class _Creator:
             return ''
         return as_literal(v)
 
-    def docstring(self, tid, enum_value=None):
+    def docstring_as_header(self, tid, enum_value=None):
+        text, label, dev_label = self.docstring_elements(tid, enum_value)
+        lines = text.split('\n')
+        lines[0] += label + dev_label
+        return '\n\n'.join(lines)
 
+    def docstring_as_cell(self, tid, enum_value=None):
+        text, label, dev_label = self.docstring_elements(tid, enum_value)
+        return re.sub(r'\s+', ' ', text) + label + dev_label
+
+    def docstring_elements(self, tid, enum_value=None):
         # get the original (spec) docstring
         typ = self.gen.require_type(tid)
-        spec_text = first_line(typ.enumDocs.get(enum_value) if enum_value else typ.doc)
+        en_text = typ.enumDocs.get(enum_value) if enum_value else typ.doc
 
         # try the translated (from strings) docstring
         key = tid
@@ -194,7 +218,7 @@ class _Creator:
 
         dev_label = ''
 
-        if spec_text and not local_text and self.lang != 'en':
+        if en_text and not local_text and self.lang != 'en':
             # translation missing: use the english docstring and warn
             base.log.debug(f'missing {self.lang} translation for {key!r}')
             dev_label = f'`??? {key}`{{.configref_dev_missing_translation}}'
@@ -202,20 +226,19 @@ class _Creator:
         else:
             dev_label = f'`{key}`{{.configref_dev_uid}}'
 
-
-        local_text = local_text or spec_text
+        local_text = local_text or en_text
 
         # process a label, like "foobar (added in 8.1)"
         # it might be missing in a translation, but present in the original (spec) docstring
         text, label = self.extract_label(local_text)
-        if not label and spec_text != local_text:
-            _, label = self.extract_label(spec_text)
+        if not label and en_text != local_text:
+            _, label = self.extract_label(en_text)
 
         dflt = self.default_string(tid)
         if dflt:
-            text += DEFAULT_FORMAT.format(self.strings["head_default"], dflt)
+            text += DEFAULT_FORMAT.format(self.strings['head_default'], dflt)
 
-        return text + label + dev_label
+        return [text, label, dev_label]
 
     def extract_label(self, text):
         m = re.match(rf'(.+?)\(({LABELS}) in (\d[\d.]+)\)$', text)
@@ -253,12 +276,13 @@ def as_code(s):
     return f'`{s}`'
 
 
-def header(tid):
-    return f'\n## {tid} :{tid}\n'
+def header(cat, tid):
+    return f'\n## <span class="configref_category_{cat}"></span>{tid} :{tid}\n'
 
 
 def subhead(category, text):
-    return as_category(category) + ' ' + text + '\n'
+    # return as_category(category) + ' ' + text + '\n'
+    return text + '\n'
 
 
 def link(target, text):
@@ -294,7 +318,5 @@ def escape(s, quote=True):
         s = s.replace('"', '&quot;')
     return s
 
-def single_space(s):
-    return re.sub(r'\s+', ' ', s.strip())
 
 nl = '\n'.join

@@ -84,6 +84,9 @@ class Crs:
     bounds: Bounds
     """CRS own Bounds."""
 
+    coordinatePrecision: int
+    """Preferred precision for coordinates in this CRS."""
+
     def axis_for_format(self, fmt: 'CrsFormat') -> Axis:
         """Get the axis depending on the string format.
 

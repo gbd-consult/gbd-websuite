@@ -15,6 +15,8 @@ class AccountResetParams(gws.CliParams):
 class Object(gws.Node):
     @gws.ext.command.cli('accountReset')
     def account_reset(self, p: AccountResetParams):
+        """Reset an account or multiple accounts."""
+
         root = gws.config.load()
         h = cast(helper.Object, root.app.helper('account'))
 

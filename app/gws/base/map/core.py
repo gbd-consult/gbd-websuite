@@ -81,10 +81,7 @@ class Object(gws.Map):
             self.initResolution = self.resolutions[len(self.resolutions) >> 1]
 
         p = self.cfg('coordinatePrecision')
-        if p:
-            self.coordinatePrecision = p
-        else:
-            self.coordinatePrecision = (2 if self.bounds.crs.uom == gws.Uom.m else 7)
+        self.coordinatePrecision = p or self.bounds.crs.coordinatePrecision
 
         self.rootLayer = self.create_child(
             gws.ext.object.layer,

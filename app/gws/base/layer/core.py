@@ -12,6 +12,7 @@ import gws.gis.source
 import gws.gis.zoom
 import gws.base.metadata
 import gws.lib.mime
+import gws.lib.image
 
 from . import ows
 
@@ -100,7 +101,7 @@ class Config(gws.ConfigWithAccess):
     """Search providers."""
     grid: Optional[GridConfig]
     """Client grid."""
-    imageFormat: Optional[gws.ImageFormatConfig]
+    imageFormat: Optional[gws.lib.image.FormatConfig]
     """Image format."""
     legend: Optional[gws.ext.config.legend]
     """Legend configuration."""
@@ -150,7 +151,7 @@ class Props(gws.Props):
     url: str = ''
 
 
-_DEFAULT_IMAGE_FORMAT = gws.ImageFormatConfig(mimeTypes=['image/png'], options={'mode': 'P'})
+_DEFAULT_IMAGE_FORMAT = gws.lib.image.FormatConfig(mimeTypes=['image/png'], options={'mode': 'P'})
 
 
 class Object(gws.Layer):

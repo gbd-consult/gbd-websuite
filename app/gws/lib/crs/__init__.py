@@ -121,6 +121,10 @@ def qgis_extent_width(extent: gws.Extent) -> float:
 
 #
 
+# enough precision to represent 1cm
+COORDINATE_PRECISION_DEG = 7
+COORDINATE_PRECISION_M = 2
+
 WGS84 = Object(
     srid=4326,
     proj4text='+proj=longlat +datum=WGS84 +no_defs +type=crs',
@@ -140,6 +144,7 @@ WGS84 = Object(
     datum='World Geodetic System 1984 ensemble',
     wgsExtent=(-180, -90, 180, 90),
     extent=(-180, -90, 180, 90),
+    coordinatePrecision=COORDINATE_PRECISION_DEG,
 )
 
 WGS84.bounds = gws.Bounds(crs=WGS84, extent=WGS84.extent)
@@ -168,6 +173,7 @@ WEBMERCATOR = Object(
         20037508.342789244,
         20048966.104014598,
     ),
+    coordinatePrecision=COORDINATE_PRECISION_M,
 )
 
 WEBMERCATOR.bounds = gws.Bounds(crs=WEBMERCATOR, extent=WEBMERCATOR.extent)
@@ -290,8 +296,13 @@ def _get_new_crs(srid):
     if not au:
         gws.log.error(f'CRS: unsupported srid {srid!r}')
         return None
+    
+    axis, uom = au
+    if uom not in (gws.Uom.m, gws.Uom.deg):
+        gws.log.error(f'CRS: unsupported unit {uom!r} for {srid!r}')
+        return None
 
-    return _make_crs(srid, pp, au)
+    return _make_crs(srid, pp, axis, uom)
 
 
 def _pyproj_crs_object(srid) -> Optional[pyproj.CRS]:
@@ -338,7 +349,7 @@ def _transform_extent(ext, srid_from, srid_to):
     )
 
 
-def _make_crs(srid, pp, au):
+def _make_crs(srid, pp, axis, uom):
     crs = Object()
 
     crs.srid = srid
@@ -353,8 +364,9 @@ def _make_crs(srid, pp, au):
 
     crs.wkt = pp.to_wkt()
 
-    crs.axis = au[0]
-    crs.uom = au[1]
+    crs.axis = axis
+    crs.uom = uom
+    crs.coordinatePrecision = COORDINATE_PRECISION_M if uom == gws.Uom.m else COORDINATE_PRECISION_DEG
 
     crs.isGeographic = pp.is_geographic
     crs.isProjected = pp.is_projected

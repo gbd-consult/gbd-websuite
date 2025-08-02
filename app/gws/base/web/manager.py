@@ -6,7 +6,7 @@ from . import site
 
 _FALLBACK_SITE = gws.Config(
     host='*',
-    root=site.WebDocumentRootConfig(dir='/data/web'))
+    root=site.WebDirConfig(dir='/data/web'))
 
 
 class Config(gws.Config):

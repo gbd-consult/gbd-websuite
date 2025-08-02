@@ -45,7 +45,7 @@ class SSLConfig(gws.Config):
     """HSTS max age. (added in 8.1)"""
 
 
-class WebDocumentRootConfig(gws.Config):
+class WebDirConfig(gws.Config):
     """Web-accessible directory."""
 
     dir: gws.DirPath
@@ -59,7 +59,7 @@ class WebDocumentRootConfig(gws.Config):
 class Config(gws.Config):
     """Site (virtual host) configuration"""
 
-    assets: Optional[WebDocumentRootConfig]
+    assets: Optional[WebDirConfig]
     """Root directory for assets."""
     cors: Optional[CorsConfig]
     """Cors configuration."""
@@ -75,7 +75,7 @@ class Config(gws.Config):
     """Rewrite rules."""
     canonicalHost: str = ''
     """Hostname for reversed URL rewriting."""
-    root: WebDocumentRootConfig
+    root: WebDirConfig
     """Root directory for static documents."""
 
 
