@@ -139,7 +139,7 @@ class C:
 def $name$(_ENGINE, _ARGS, _ERRORHANDLER=None):
     _PATHS = $paths$
     _ENV = _ENGINE.environment(_PATHS, _ARGS, _ERRORHANDLER)
-    ARGS = _ENV.ARGS
+    _ = ARGS = _ENV.ARGS
     print =_ENV.print
     try:
         _ENV.pushbuf()
@@ -2284,7 +2284,7 @@ class Compiler:
 
 
 def _dedent(lines):
-    ind = 100_000
+    ind = 1e20
     for ln in lines:
         n = len(ln.lstrip())
         if n > 0:

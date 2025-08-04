@@ -21,6 +21,14 @@ class RuntimeError(ValueError):
         self.message = message
 
 
+class Args:
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+    def __setitem__(self, key, value):
+        self.__dict__[key] = value
+
+
 class Environment:
     def __init__(self, engine, paths, args, errorhandler):
         self.engine = engine
@@ -38,7 +46,8 @@ class Environment:
                     self.engine_functions[name] = getattr(self.engine, a)
 
         if errorhandler:
-            def err(exc, pos):
+
+            def err_with_handler(exc, pos):
                 try:
                     ok = errorhandler(exc, self.paths[pos[0]], pos[1], self)
                 except:
@@ -47,13 +56,17 @@ class Environment:
                 if not ok:
                     self.haserr = True
                     raise
+
+            self.error = err_with_handler
         else:
+
             def err(exc, pos):
                 self.haserr = True
                 if isinstance(exc, RuntimeError):
                     raise exc
                 raise RuntimeError(str(exc), self.paths[pos[0]], pos[1]) from exc
-        self.error = err
+
+            self.error = err
 
     def pushbuf(self):
         self.buf.append([])
@@ -69,8 +82,8 @@ class Environment:
         self.buf[-1].append(' '.join(str(s) for s in args if s is not None) + end)
 
     def get(self, name):
-        if name in self.ARGS:
-            return self.ARGS[name]
+        if name in self.ARGS.__dict__:
+            return self.ARGS.__dict__[name]
         if name in self.engine_functions:
             return self.engine_functions[name]
         if name in builtins_dct:
@@ -124,14 +137,21 @@ class Environment:
         return not bool(x)
 
     def prepare(self, args):
+        a = Args()
         if isinstance(args, dict):
-            return args
+            a.__dict__ = args
+            return a
         if not args:
-            return {}
+            return a
         try:
-            return vars(args)
+            a.__dict__ = vars(args)
+            return a
         except TypeError:
-            return {}
+            pass
+        if hasattr(args, '__slots__'):
+            a.__dict__ = {k: getattr(args, k) for k in args.__slots__ if hasattr(args, k)}
+            return a
+        raise RuntimeError('template arguments must be a dict or an object', self.paths[0], 1)
 
 
 class BaseEngine:
@@ -232,7 +252,7 @@ class Engine(BaseEngine):
         return _str(val).title()
 
     # based on: https://daringfireball.net/2010/07/improved_regex_for_matching_urls
-    linkify_re = r'''(?xi)
+    linkify_re = r"""(?xi)
         \b
         (
             https?://
@@ -249,7 +269,7 @@ class Engine(BaseEngine):
             |
             [^\s`!()\[\]{};:'".,<>?«»“”‘’]
         )
-    '''
+    """
 
     def def_linkify(self, val, target=None, rel=None, cut=None, ellipsis=None):
         def _repl(m):
@@ -284,10 +304,9 @@ class Engine(BaseEngine):
         val = _str(val)
         if len(val) <= n:
             return val
-        return val[:(n + 1) >> 1] + (ellip or '') + val[-(n >> 1):]
+        return val[: (n + 1) >> 1] + (ellip or '') + val[-(n >> 1) :]
 
     def def_json(self, val, pretty=False):
-
         def dflt(obj):
             try:
                 return vars(obj)
@@ -353,5 +372,5 @@ def _xml(x, quote=False):
     x = x.replace('>', '&gt;')
     if quote:
         x = x.replace('"', '&#x22;')
-        x = x.replace('\'', '&#x27;')
+        x = x.replace("'", '&#x27;')
     return x
