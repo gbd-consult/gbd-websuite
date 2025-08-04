@@ -1,0 +1,11 @@
+services:
+  gws:
+    image: gbdconsult/gws-amd64:8.2
+    container_name: gws
+    command: "python3 /gws-app/gws/gis/ms/live_config/server.py"
+    ports:
+      - "0.0.0.0:3333:80"
+    volumes:
+      - ../../../../../app:/gws-app
+      # add mounts for your imagery here
+      

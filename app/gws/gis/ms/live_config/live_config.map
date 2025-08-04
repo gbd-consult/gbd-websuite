@@ -38,7 +38,7 @@ MAP
   LAYER
     TYPE RASTER
     STATUS ON
-    DATA "/gws-app/gws/gis/ms/misc/dus_airport_25832.jpg"
+    DATA "/gws-app/gws/gis/ms/live_config/dus_airport_25832.jpg"
     PROJECTION
       "init=epsg:25832"
     END

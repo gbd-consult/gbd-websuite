@@ -112,7 +112,7 @@
             for (let line of mapText.trim().split('\n')) {
                 let s = line.trim();
                 
-                let isEnd = s.match(/^END$/);
+                let isEnd = s.match(/^END\b/);
                 let isKw = s.match(/^[A-Z]+$/) && !isEnd;
 
                 if (isEnd) {

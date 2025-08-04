@@ -1,19 +1,3 @@
-"""Live MapServer configuration editor.
-
-To run the editor, start the GWS container with the following command::
-
-    docker run \
-        --publish 3333:80 \
-        gbdconsult/gws-arm64:8.2 \
-        python3 /gws-app/gws/gis/ms/misc/live_config.py
-
-Go to http://localhost:3333 and paste your MapServer configuration into the text area, 
-then click "render" to view the map.
-
-By default, it shows the MapServer configuration file "live_config.map".
-
-"""
-
 import http.server
 import io
 import sys
