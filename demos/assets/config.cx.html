@@ -3,14 +3,14 @@
 
 @code
 
-uid = _ARGS.params.get('prj')
+uid = ARGS.params.get('prj')
 cx_paths = list(gws.lib.osx.find_files(gws.c.APP_DIR, r'_demo/.+?\.cx$'))
 
 for path in cx_paths:
     src = gws.u.read_file(path)
     if f'uid "{uid}"' in src:
-        _ARGS.src = src
-        _ARGS.path = path.replace(gws.c.APP_DIR, '')
+        ARGS.src = src
+        ARGS.path = path.replace(gws.c.APP_DIR, '')
         break
 else:
     return gws.ContentResponse(mime='text/plain', content='not found')

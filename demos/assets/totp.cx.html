@@ -7,8 +7,8 @@
 @import gws.lib.image
 
 @code
-    if _ARGS.req.param('generate'):
-        secret = _ARGS.req.param('secret')
+    if ARGS.req.param('generate'):
+        secret = ARGS.req.param('secret')
         try:
             totp = gws.lib.otp.new_totp(secret, gws.u.stime())
         except Exception as exc:
@@ -25,8 +25,8 @@
 <head>
     <title>TOTP generator</title>
     <meta charset="UTF-8"/>
-    <link rel="stylesheet" href="/totp.css?r={time.time()}"/>
-    <script src="/totp.js?r={time.time()}"></script>
+    <link rel="stylesheet" href="/demos/totp.css?r={time.time()}"/>
+    <script src="/demos/totp.js?r={time.time()}"></script>
 </head>
 
 <body>

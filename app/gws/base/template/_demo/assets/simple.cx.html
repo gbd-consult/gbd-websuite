@@ -1,219 +1,43 @@
 <h3>Standard template variables</h3>
 
 <table border="1" cellpadding="10" cellspacing="0">
-        <tr>
-            <td>
-                <code>app</code>
-            </td>
-            <td>
-                Application object
-            </td>
-        </tr>    
-        <tr>
-            <td>
-                <code>locale</code>
-            </td>
-            <td>
-                Current locale
-            </td>
-        </tr>    
-        <tr>
-            <td>
-                <code>date</code>
-            </td>
-            <td>
-                Date formatter
-            </td>
-        </tr>    
-        <tr>
-            <td>
-                <code>time</code>
-            </td>
-            <td>
-                Time formatter
-            </td>
-        </tr>    
-        <tr>
-            <td>
-                <code>number</code>
-            </td>
-            <td>
-                Number formatter
-            </td>
-        </tr>    
-        <tr>
-            <td>
-                <code>project</code>
-            </td>
-            <td>
-                Current project
-            </td>
-        </tr>    
-        <tr>
-            <td>
-                <code>projects</code>
-            </td>
-            <td>
-                List of available projects
-            </td>
-        </tr>    
-        <tr>
-            <td>
-                <code>user</code>
-            </td>
-            <td>
-                Current user
-            </td>
-        </tr>    
+<tr><td><code>app</code></td><td>Application object</td></tr>
+<tr><td><code>locale</code></td><td>Current locale</td></tr>
+<tr><td><code>date</code></td><td>Date formatter</td></tr>
+<tr><td><code>time</code></td><td>Time formatter</td></tr>
+<tr><td><code>number</code></td><td>Number formatter</td></tr>
+<tr><td><code>params</code></td><td>Request params</td></tr>
+<tr><td><code>project</code></td><td>Current project</td></tr>
+<tr><td><code>projects</code></td><td>List of available projects</td></tr>
+<tr><td><code>user</code></td><td>Current user</td></tr>
 </table>
 
 <h3>Usage examples</h3>
 
 <table border="1" cellpadding="10" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Expression</th>
-            <th>Result</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-                <code>{@quote}{app.version}{@end}</code>
-            </td>
-            <td>
-                {app.version}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{locale.language}{@end}</code>
-            </td>
-            <td>
-                {locale.language}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{locale.languageName}{@end}</code>
-            </td>
-            <td>
-                {locale.languageName}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{date.short}{@end}</code>
-            </td>
-            <td>
-                {date.short}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{date.long}{@end}</code>
-            </td>
-            <td>
-                {date.long}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{time.short}{@end}</code>
-            </td>
-            <td>
-                {time.short}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{time.long}{@end}</code>
-            </td>
-            <td>
-                {time.long}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{"2024-03-02" | date.long}{@end}</code>
-            </td>
-            <td>
-                {"2024-03-02" | date.long}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{"12:34" | time.long}{@end}</code>
-            </td>
-            <td>
-                {"12:34" | time.long}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{0.75 | number.decimal}{@end}</code>
-            </td>
-            <td>
-                {0.75 | number.decimal}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{0.75 | number.percent}{@end}</code>
-            </td>
-            <td>
-                {0.75 | number.percent}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{123456789.456 | number.grouped}{@end}</code>
-            </td>
-            <td>
-                {123456789.456 | number.grouped}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{12.34 | number.currency("EUR")}{@end}</code>
-            </td>
-            <td>
-                {12.34 | number.currency("EUR")}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{user.isGuest}{@end}</code>
-            </td>
-            <td>
-                {user.isGuest}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{user.displayName}{@end}</code>
-            </td>
-            <td>
-                {user.displayName}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{project.title}{@end}</code>
-            </td>
-            <td>
-                {project.title}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>{@quote}{project.metadata.keywords}{@end}</code>
-            </td>
-            <td>
-                {project.metadata.keywords}
-            </td>
-        </tr>
-    </tbody>
+<thead>
+<tr><th>Expression</th><th>Result</th></tr>
+</thead>
+<tbody>
+<tr><td><code>{@quote}{app.version}{@end}</code></td><td>{app.version}</td></tr>
+<tr><td><code>{@quote}{locale.language}{@end}</code></td><td>{locale.language}</td></tr>
+<tr><td><code>{@quote}{locale.languageName}{@end}</code></td><td>{locale.languageName}</td></tr>
+<tr><td><code>{@quote}{date.short}{@end}</code></td><td>{date.short}</td></tr>
+<tr><td><code>{@quote}{date.long}{@end}</code></td><td>{date.long}</td></tr>
+<tr><td><code>{@quote}{time.short}{@end}</code></td><td>{time.short}</td></tr>
+<tr><td><code>{@quote}{time.long}{@end}</code></td><td>{time.long}</td></tr>
+<tr><td><code>{@quote}{"2024-03-02" | date.long}{@end}</code></td><td>{"2024-03-02" | date.long}</td></tr>
+<tr><td><code>{@quote}{"12:34" | time.long}{@end}</code></td><td>{"12:34" | time.long}</td></tr>
+<tr><td><code>{@quote}{0.75 | number.decimal}{@end}</code></td><td>{0.75 | number.decimal}</td></tr>
+<tr><td><code>{@quote}{0.75 | number.percent}{@end}</code></td><td>{0.75 | number.percent}</td></tr>
+<tr><td><code>{@quote}{123456789.456 | number.grouped}{@end}</code></td><td>{123456789.456 | number.grouped}</td></tr>
+<tr><td><code>{@quote}{12.34 | number.currency("EUR")}{@end}</code></td><td>{12.34 | number.currency("EUR")}</td></tr>
+<tr><td><code>{@quote}{user.isGuest}{@end}</code></td><td>{user.isGuest}</td></tr>
+<tr><td><code>{@quote}{user.displayName}{@end}</code></td><td>{user.displayName}</td></tr>
+<tr><td><code>{@quote}{project.title}{@end}</code></td><td>{project.title}</td></tr>
+<tr><td><code>{@quote}{project.metadata.keywords}{@end}</code></td><td>{project.metadata.keywords}</td></tr>
+<tr><td><code>{@quote}{params['path']}{@end}</code></td><td>{params['path']}</td></tr>
+</tbody>
 </table>
 
 <h3>All projects</h3>
@@ -221,8 +45,7 @@
 <p>This list is generated from the <code>projects</code> variable.</p>
 
 @for prj in projects
-    <a href="/project/{prj.uid}">{prj.title}</a> 
-    |
+    <a href="/project/{prj.uid}">{prj.title}</a>
 @end
 
 <style>
@@ -233,5 +56,3 @@ code {
     font-size: 0.9em;
 }
 </style>
-
-

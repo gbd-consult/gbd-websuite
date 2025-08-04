@@ -79,9 +79,6 @@ class Object(gws.base.template.Object):
     def error_handler(self, exc, path, line, env):
         if self.root.app.developer_option('template.raise_errors'):
             gws.log.error(f'TEMPLATE_ERROR: {self}: {exc} IN {path}:{line}')
-            for k, v in sorted(getattr(env, 'ARGS', {}).items()):
-                gws.log.error(f'TEMPLATE_ERROR: {self}: ARGS {k}={v!r}')
-            gws.log.error(f'TEMPLATE_ERROR: {self}: stop')
             return False
 
         gws.log.warning(f'TEMPLATE_ERROR: {self}: {exc} IN {path}:{line}')
