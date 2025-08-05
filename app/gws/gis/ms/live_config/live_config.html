@@ -7,27 +7,31 @@
     <style>
         body {
             background-color: #151618;
+            padding: 0;
+            margin: 0;
+            font-family: "JetBrains Mono NL", monospace;
+            font-size: 13px;
         }
 
         * {
             box-sizing: border-box;
         }
 
+        .main {
+            display: flex;
+            height: 100vh;
+        }
+
         .sidebar {
             width: 520px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            padding: 20px;
-
+            height: 100%;
+            padding: 10px 20px 10px 10px;
+            position: relative;
         }
 
         .sidebar textarea {
             width: 100%;
             height: 90%;
-            font-family: "JetBrains Mono NL", monospace;
-            font-size: 13px;
             margin: 0;
             padding: 10px;
             border: 1px solid #ccc;
@@ -36,14 +40,14 @@
             resize: none;
         }
 
-        .main {
-            margin-left: 520px;
-            height: 100vh;
-            background-color: #e0ebf7;
+        .map {
+            flex: 1;
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAAAAACMxyj6AAAAKklEQVQI12MMZmBgYPggwMDAwMDEgADEsFk+MDAwMDB8YGBgYGARIN8cAGjQBF3P+RUfAAAAAElFTkSuQmCC);
+            background-color: #4b4d4f;
             padding: 20px;
         }
 
-        .main img {
+        .map img {
             border: 1px solid #ccc;
         }
 
@@ -63,17 +67,25 @@
             font-weight: bold;
             color: white;
         }
+
+        #resizer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 10px;
+            bottom: 0;
+            cursor: ew-resize;
+            background-color: rgb(97, 29, 206);
+        }
     </style>
 
     <script>
         let $ = s => document.querySelector(s);
 
-        async function renderTextArea() {
+        async function renderMap() {
             let textarea = $(".sidebar textarea");
-            let image = $(".main img");
+            let image = $(".map img");
             let content = textarea.value;
-
-            localStorage.setItem('mapseContent', content);
 
             $("#wait").innerText = 'Rendering...';
 
@@ -106,62 +118,109 @@
         }
 
         function format(mapText) {
-            let level = 0;
+            let stack = [];
             let out = [];
 
             for (let line of mapText.trim().split('\n')) {
-                let s = line.trim();
-                
-                let isEnd = s.match(/^END\b/);
-                let isKw = s.match(/^[A-Z]+$/) && !isEnd;
-
-                if (isEnd) {
-                    level--;
-                }
-                let p = s ? ' '.repeat(2 * level) + s : '';
-                if (isKw) {
-                    level++;
-                }
-                out.push(p);
+                out.push(formatLine(line, stack));
             }
             return out.join('\n') + '\n';
         }
 
+        function formatLine(line, stack) {
+            let s = line.trim();
+
+            if (s.match(/^END\b/i)) {
+                let kw = stack.pop() || '';
+                return ' '.repeat(2 * stack.length) + 'END #' + kw;
+            }
+
+            if (s.match(/^[A-Za-z]+$/)) {
+                stack.push(s.toUpperCase());
+                return ' '.repeat(2 * (stack.length - 1)) + s.toUpperCase();
+            }
+
+            if (!s) {
+                return '';
+            }
+
+            let m = s.match(/^([A-Za-z]+)(\s|=)(.*)$/);
+            if (m) {
+                return ' '.repeat(2 * stack.length) + m[1].toUpperCase() + m[2] + m[3].trim();
+            }
+
+            return ' '.repeat(2 * stack.length) + s;
+        }
+
         let DEFAULT_MAP = `{DEFAULT_MAP}`;
 
-        document.addEventListener("DOMContentLoaded", () => {
-            //$(".sidebar textarea").addEventListener("input", debounce(renderTextArea, 2000));
-            
+        function initEvents() {
             $("#btnFormat").addEventListener("click", formatTextArea);
-            $("#btnRender").addEventListener("click", renderTextArea);
-            
+            $("#btnRender").addEventListener("click", renderMap);
+
             document.addEventListener("keydown", (e) => {
                 if (e.key === "F2") {
                     formatTextArea();
                 } else if (e.key === "F3") {
-                    renderTextArea();
+                    renderMap();
                 }
             });
 
+            $(".sidebar textarea").addEventListener('input', (e) => {
+                localStorage.setItem('mapseContent', $(".sidebar textarea").value);
+            });
+
+            let resizer = $("#resizer");
+            resizer.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                document.addEventListener('mousemove', resizeSidebar);
+                document.addEventListener('mouseup', stopResize);
+            });
+
+            const minWidth = 200;
+
+            function resizeSidebar(e) {
+                let sidebar = $(".sidebar");
+
+                let w = e.clientX - sidebar.getBoundingClientRect().left;
+                if (minWidth < w && w < window.innerWidth - minWidth) {
+                    sidebar.style.width = w + 'px';
+                }
+            }
+
+            function stopResize() {
+                document.removeEventListener('mousemove', resizeSidebar);
+                document.removeEventListener('mouseup', stopResize);
+            }
+        }
+
+
+        document.addEventListener("DOMContentLoaded", () => {
             let savedContent = localStorage.getItem('mapseContent');
+            console.log("Saved content:", typeof(savedContent), savedContent);
             $(".sidebar textarea").value = savedContent || format(DEFAULT_MAP);
 
-            renderTextArea();
+            initEvents();
+            renderMap();
         });
+
     </script>
 </head>
 
 <body>
-    <div class="sidebar">
-        <textarea wrap="off"></textarea>
-        <div class="toolbar">
-            <button id="btnFormat">F2 - format</button>
-            <button id="btnRender">F3 - render</button>
-            <div id="wait"></div>
-        </div>
-    </div>
     <div class="main">
-        <img>
+        <div class="sidebar">
+            <textarea wrap="off"></textarea>
+            <div class="toolbar">
+                <button id="btnFormat">F2 - format</button>
+                <button id="btnRender">F3 - render</button>
+                <div id="wait"></div>
+            </div>
+            <div id="resizer"></div>
+        </div>
+        <div class="map">
+            <img>
+        </div>
     </div>
 </body>
 

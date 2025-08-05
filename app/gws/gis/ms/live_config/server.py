@@ -1,3 +1,4 @@
+import base64
 import http.server
 import io
 import sys
@@ -11,8 +12,8 @@ from PIL import Image, ImageDraw
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
-TMP_MAP = '/tmp/___mapse.map'
-TMP_IMG = '/tmp/___mapse.png'
+TMP_MAP = '/tmp/mapse.map'
+TMP_IMG = '/tmp/mapse.png'
 
 
 def do_render(request_body):
@@ -29,9 +30,10 @@ def do_render(request_body):
         t2 = int(time.time() * 1000)
         _writeln(f'MapServer draw end, {t2 - t1} ms')
 
-        with io.BytesIO() as fp:
-            img.write(fp)
-            return fp.getvalue()
+        ff = img.format
+        _writeln(f'{ff.bands=} {ff.driver=} {ff.extension=} {ff.imagemode=} {ff.inmapfile=} {ff.mimetype=} {ff.name=} {ff.transparent=}')
+
+        return img.getBytes()
 
     except Exception as exc:
         _writeln(f'MapServer error: {exc}')
@@ -56,10 +58,10 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         content_length = int(self.headers['Content-Length'])
         request_body = self.rfile.read(content_length)
 
-        img = do_render(request_body)
+        content = do_render(request_body)
         with open(TMP_IMG, 'wb') as fp:
-            fp.write(img)
-        self.end(img)
+            fp.write(content)
+        self.end(content)
 
     def end(self, content, status=200, **headers):
         if isinstance(content, str):
