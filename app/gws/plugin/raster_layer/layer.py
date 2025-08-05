@@ -28,6 +28,10 @@ class Config(gws.base.layer.Config):
     """Processing directives."""
     transparentColor: Optional[str]
     """Color to treat as transparent in the layer."""
+    sldPath: Optional[gws.FilePath]
+    """Path to SLD file for styling the layer."""
+    sldName: Optional[str]
+    """Name of an SLD NamedLayer to apply."""
 
 
 class Object(gws.base.layer.image.Object):
@@ -39,7 +43,9 @@ class Object(gws.base.layer.image.Object):
         self.msOptions = gws.gis.ms.LayerOptions(
             type=gws.gis.ms.LayerType.raster,
             processing=self.cfg('processing', default=[]),
-            transparentColor=self.cfg('transparentColor', default=None),
+            transparentColor=self.cfg('transparentColor'),
+            sldPath=self.cfg('sldPath'),
+            sldName=self.cfg('sldName'),
         )
         self.configure_layer()
 

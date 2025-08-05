@@ -115,6 +115,10 @@ class LayerOptions(gws.Data):
     """Processing options for the layer."""
     transparentColor: str
     """Color to treat as transparent in the layer (OFFSITE)."""
+    sldPath: str
+    """Path to SLD file for styling the layer."""
+    sldName: str
+    """Name of an SLD NamedLayer to apply."""
 
 
 def new_map(config: str = '') -> 'Map':
@@ -136,6 +140,9 @@ class Map:
         else:
             self.mapObj = mapscript.mapObj()
 
+        # self.mapObj.setConfigOption('MS_ERRORFILE', 'stderr')
+        # self.mapObj.debug = mapscript.MS_DEBUGLEVEL_DEVDEBUG
+
     def copy(self) -> 'Map':
         """Creates a copy of the current map object."""
 
@@ -147,7 +154,7 @@ class Map:
         """Adds a layer to the map using a configuration string."""
 
         try:
-            lo = mapscript.layerObj(self.mapObj)
+            lo = mapscript.layerObj()
             lo.updateFromString(config)
             self.mapObj.insertLayer(lo)  # type: ignore
             return lo
@@ -158,14 +165,14 @@ class Map:
         """Adds a layer to the map."""
 
         try:
-            lo = self._add_layer(opts)
+            lo = self._make_layer(opts)
             self.mapObj.insertLayer(lo)  # type: ignore
             return lo
         except mapscript.MapServerError as exc:
             raise Error(f'ms: add error:: {exc}') from exc
 
-    def _add_layer(self, opts: LayerOptions) -> mapscript.layerObj:
-        lo = mapscript.layerObj(self.mapObj)
+    def _make_layer(self, opts: LayerOptions) -> mapscript.layerObj:
+        lo = mapscript.layerObj()
         lc = self.mapObj.numlayers
         lo.name = f'_gws_{lc}'
         lo.status = mapscript.MS_ON
@@ -173,7 +180,7 @@ class Map:
         if not opts.crs:
             raise Error('missing layer CRS')
         lo.setProjection(opts.crs.epsg)
-        
+
         if opts.type:
             lo.type = _LAYER_TYPE_TO_MS[opts.type]
         if opts.path:
@@ -195,6 +202,9 @@ class Map:
             lo.connection = opts.connectionString
         if opts.dataString:
             lo.data = opts.dataString
+        if opts.sldPath:
+            lo.applySLD(gws.u.read_file(opts.sldPath), opts.sldName)
+
         # @TODO: support style values
         return lo
 

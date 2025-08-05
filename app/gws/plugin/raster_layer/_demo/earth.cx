@@ -5,7 +5,10 @@ title "Raster layer"
 metadata.keywords [ "raster" ]
 
 metadata.abstract """
-`raster` layers display georeferenced raster images.
+`raster` Layer zeigen Rasterdaten an, die im Dateisystem gespeichert sind.
+Die Daten können in verschiedenen Formaten vorliegen, wie GeoTIFF, JPEG, PNG usw.
+Die Layer können mit Processing-Optionen (https://mapserver.org/input/raster.html#special-processing-directives)
+oder SLD-Dateien für die Darstellung angepasst werden.
 """
 
 map {
@@ -29,11 +32,21 @@ map.layers+ {
     display "tile"
     clientOptions.hidden true
     provider.paths [ "/gws-extern/demos/natural_earth/NE1_HR_LC_SR_W_DR.tif" ]
-    @# https://mapserver.org/input/raster.html#special-processing-directives
     processing [
         "BANDS=3"
         "GAMMA=0.7"
     ]
+    metadata.attribution "© 2009 - 2025. Natural Earth"
+}
+
+map.layers+ {
+    type "raster"
+    title "Natural Earth (+SLD)"
+    display "tile"
+    clientOptions.hidden true
+    provider.paths [ "/gws-extern/demos/natural_earth/NE1_HR_LC_SR_W_DR.tif" ]
+    sldPath "/gws-app/gws/plugin/raster_layer/_demo/NE.sld"
+    sldName "green_blue"
     metadata.attribution "© 2009 - 2025. Natural Earth"
 }
 
