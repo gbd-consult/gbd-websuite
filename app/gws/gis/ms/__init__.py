@@ -140,8 +140,8 @@ class Map:
         else:
             self.mapObj = mapscript.mapObj()
 
-        # self.mapObj.setConfigOption('MS_ERRORFILE', 'stderr')
-        # self.mapObj.debug = mapscript.MS_DEBUGLEVEL_DEVDEBUG
+        self.mapObj.setConfigOption('MS_ERRORFILE', 'stderr')
+        self.mapObj.debug = mapscript.MS_DEBUGLEVEL_DEVDEBUG
 
     def copy(self) -> 'Map':
         """Creates a copy of the current map object."""
@@ -154,9 +154,8 @@ class Map:
         """Adds a layer to the map using a configuration string."""
 
         try:
-            lo = mapscript.layerObj()
+            lo = mapscript.layerObj(self.mapObj)
             lo.updateFromString(config)
-            self.mapObj.insertLayer(lo)  # type: ignore
             return lo
         except mapscript.MapServerError as exc:
             raise Error(f'ms: add error:: {exc}') from exc
@@ -166,13 +165,12 @@ class Map:
 
         try:
             lo = self._make_layer(opts)
-            self.mapObj.insertLayer(lo)  # type: ignore
             return lo
         except mapscript.MapServerError as exc:
             raise Error(f'ms: add error:: {exc}') from exc
 
     def _make_layer(self, opts: LayerOptions) -> mapscript.layerObj:
-        lo = mapscript.layerObj()
+        lo = mapscript.layerObj(self.mapObj)
         lc = self.mapObj.numlayers
         lo.name = f'_gws_{lc}'
         lo.status = mapscript.MS_ON

@@ -26,7 +26,7 @@
         </sld:Rule>
       </sld:FeatureTypeStyle>
     </sld:UserStyle>
-  </NamedLayer>  
+  </NamedLayer>
   <NamedLayer>
     <Name>red_orange</Name>
     <sld:LayerFeatureConstraints>
