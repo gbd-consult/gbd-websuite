@@ -35,12 +35,12 @@ def from_list(ls: list) -> Optional[gws.Extent]:
 def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
     """Create an extent from two points.
 
-        Args:
-            a:``(x-min,y-min)``
-            b:``(x-max,y-max)``
+    Args:
+        a:``(x-min,y-min)``
+        b:``(x-max,y-max)``
 
-        Returns:
-            An extent."""
+    Returns:
+        An extent."""
 
     return (
         min(a[0], b[0]),
@@ -53,12 +53,12 @@ def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
 def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
     """Create an extent with certain size from a center-point.
 
-        Args:
-            xy: Center-point ``(x,y)``
-            size: Extent's size.
+    Args:
+        xy: Center-point ``(x,y)``
+        size: Extent's size.
 
-        Returns:
-            An Extent."""
+    Returns:
+        An Extent."""
 
     return (
         xy[0] - size[0] / 2,
@@ -88,6 +88,7 @@ def from_box(box: str) -> Optional[gws.Extent]:
 
 
 #
+
 
 def intersection(exts: list[gws.Extent]) -> Optional[gws.Extent]:
     """Creates an extent that is the intersection of all given extents.
@@ -180,12 +181,7 @@ def union(exts: list[gws.Extent]) -> gws.Extent:
 
     ext = exts[0]
     for e in exts:
-        ext = (
-            min(ext[0], e[0]),
-            min(ext[1], e[1]),
-            max(ext[2], e[2]),
-            max(ext[3], e[3])
-        )
+        ext = (min(ext[0], e[0]), min(ext[1], e[1]), max(ext[2], e[2]), max(ext[3], e[3]))
     return ext
 
 
@@ -253,11 +249,19 @@ def is_valid(e: gws.Extent) -> bool:
     return True
 
 
-def is_valid_wgs(e: gws.Extent) -> bool:
+def is_valid_wgs(e: gws.Extent, min_size: float = None) -> bool:
     if not is_valid(e):
         return False
     w = gws.lib.crs.WGS84.extent
-    return e[0] >= w[0] and e[1] >= w[1] and e[2] <= w[2] and e[3] <= w[3]
+    if e[0] < w[0] or e[1] < w[1] or e[2] > w[2] or e[3] > w[3]:
+        return False
+    # work around QGIS putting absurdly high or low values into extents
+    if min_size is not None:
+        dx = abs(e[2] - e[0])
+        dy = abs(e[3] - e[1])
+        if dx < min_size or dy < min_size:
+            return False
+    return True
 
 
 def _from_string_list(ls: list) -> Optional[gws.Extent]:

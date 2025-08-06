@@ -361,6 +361,7 @@ def _map_layer_datasource(layer_el: gws.XmlElement) -> dict:
 
 def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     uid = layer_el.textof('id')
+    min_size = 0.000001 
 
     # extent explicitly defined in metadata (Layer Props -> Metadata -> Extent)
     el = layer_el.find('resourceMetadata/extent/spatial')
@@ -369,7 +370,7 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
         crs = gws.lib.crs.get(el.get('crs'))
         if ext and crs:
             ext = gws.lib.extent.transform(ext, crs, gws.lib.crs.WGS84)
-            if gws.lib.extent.is_valid_wgs(ext):
+            if gws.lib.extent.is_valid_wgs(ext, min_size):
                 gws.log.debug(f'_map_layer_wgs_extent: {uid}: spatial: {ext}')
                 return ext
 
@@ -377,7 +378,7 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     el = layer_el.find('wgs84extent')
     if el:
         ext = _extent_from_tag(el)
-        if gws.lib.extent.is_valid_wgs(ext):
+        if ext and gws.lib.extent.is_valid_wgs(ext, min_size):
             gws.log.debug(f'_map_layer_wgs_extent: {uid}: wgs84extent: {ext}')
             return ext
 
@@ -387,7 +388,7 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
         ext = _extent_from_tag(el)
         if ext:
             ext = gws.lib.extent.transform(ext, project_crs, gws.lib.crs.WGS84)
-            if gws.lib.extent.is_valid_wgs(ext):
+            if ext and gws.lib.extent.is_valid_wgs(ext, min_size):
                 gws.log.debug(f'_map_layer_wgs_extent: {uid}: extent: {ext}')
                 return ext
 
