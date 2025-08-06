@@ -28,6 +28,9 @@ class Args:
     def __setitem__(self, key, value):
         self.__dict__[key] = value
 
+    def get(self, key, default=None):
+        return self.__dict__.get(key, default)
+
 
 class Environment:
     def __init__(self, engine, paths, args, errorhandler):
