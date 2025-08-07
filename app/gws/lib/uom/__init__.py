@@ -244,32 +244,37 @@ _unit_re = re.compile(r"""(?x)
 """)
 
 
-def parse(s: str | int | float, default_unit: gws.Uom = None) -> gws.UomValue:
+def parse(val: str | int | float | tuple | list, default_unit: gws.Uom = None) -> gws.UomValue:
     """Parse a measurement in the string or numeric form.
 
     Args:
-        s: A measurement to parse.
+        val: A measurement to parse (e.g. '5mm', 5, [5, 'mm']).
         default_unit: Default unit.
 
     Raises:
          ``ValueError``: if the unit is missing, if the formatting is wrong or if the unit is invalid.
     """
-    if isinstance(s, (int, float)):
-        if not default_unit:
-            raise ValueError(f'missing unit: {s!r}')
-        return s, default_unit
+    if isinstance(val, (list, tuple)):
+        if len(val) == 2:
+            return parse(f'{val[0]}{val[1]}')
+        raise ValueError(f'invalid format: {val!r}')
 
-    s = gws.u.to_str(s).strip()
-    m = _unit_re.match(s)
+    if isinstance(val, (int, float)):
+        if not default_unit:
+            raise ValueError(f'missing unit: {val!r}')
+        return val, default_unit
+
+    val = gws.u.to_str(val).strip()
+    m = _unit_re.match(val)
     if not m:
-        raise ValueError(f'invalid format: {s!r}')
+        raise ValueError(f'invalid format: {val!r}')
 
     n = float(m.group('number'))
     u = getattr(gws.Uom, m.group('unit').strip().lower(), None)
 
     if not u:
         if not default_unit:
-            raise ValueError(f'invalid unit: {s!r}')
+            raise ValueError(f'invalid unit: {val!r}')
         return n, default_unit
 
     return n, u
