@@ -59,6 +59,7 @@ class Object(gws.Node):
     crs: gws.Crs
     schema: str
     excludeGemarkung: set[str]
+    gemarkungFilter: set[str]
 
     saMeta: sa.MetaData
     tables: dict[str, sa.Table]
@@ -73,6 +74,7 @@ class Object(gws.Node):
         self.crs = gws.lib.crs.get(self.cfg('crs'))
         self.schema = self.cfg('schema', default='public')
         self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
+        self.gemarkungFilter = set(self.cfg('gemarkungFilter', default=[]))
         self.saMeta = sa.MetaData(schema=self.schema)
         self.tables = {}
 
@@ -302,6 +304,8 @@ class Object(gws.Node):
         if self._strasseList:
             return self._strasseList
 
+        self._strasseList = []
+        
         indexlage = self.table(TABLE_INDEXLAGE)
         cols = (
             indexlage.c.gemeinde,
@@ -311,10 +315,12 @@ class Object(gws.Node):
             indexlage.c.strasse,
         )
 
-        self._strasseList = []
+        sel = sa.select(*cols).group_by(*cols)
+        if self.gemarkungFilter:
+            sel = sel.where(indexlage.c.gemarkungcode.in_(self.gemarkungFilter))
 
         with self.db.connect() as conn:
-            for r in conn.execute(sa.select(*cols).group_by(*cols)):
+            for r in conn.execute(sel):
                 self._strasseList.append(
                     dt.Strasse(
                         gemeinde=dt.EnumPair(r.gemeindecode, r.gemeinde),
@@ -328,7 +334,7 @@ class Object(gws.Node):
     def find_adresse(self, q: dt.AdresseQuery) -> list[dt.Adresse]:
         indexlage = self.table(TABLE_INDEXLAGE)
 
-        qo = q.options or gws.Data()
+        qo = q.options or dt.AdresseQueryOptions()
         sel = self._make_adresse_select(q, qo)
 
         lage_uids = []
@@ -628,6 +634,9 @@ class Object(gws.Node):
                     val = land_code + val
 
                 where.append(getattr(table.c, f.lower() + 'code') == val)
+
+        if self.gemarkungFilter:
+            where.append(table.c.gemarkungcode.in_(self.gemarkungFilter))
 
         return where
 

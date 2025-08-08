@@ -119,7 +119,9 @@ class Config(gws.ConfigWithAccess):
     indexSchema: str = 'gws8'
     """Schema to store GWS internal indexes."""
     excludeGemarkung: Optional[list[str]]
-    """Gemarkung (Administrative Unit) IDs to exclude from search."""
+    """Gemarkung (Administrative Unit) IDs to exclude from indexing."""
+    gemarkungFilter: Optional[list[str]]
+    """Restrict search to Gemarkung (Administrative Unit) IDs."""
 
     eigentuemer: Optional[EigentuemerConfig]
     """Access to the Eigentümer (owner) information."""
@@ -388,6 +390,7 @@ class Object(gws.base.action.Object):
             crs=self.cfg('crs'),
             schema=self.indexSchema,
             excludeGemarkung=self.cfg('excludeGemarkung'),
+            gemarkungFilter=self.cfg('gemarkungFilter'),
             uid=f'gws.plugin.alkis.data.index.{self.indexSchema}',
         )
 

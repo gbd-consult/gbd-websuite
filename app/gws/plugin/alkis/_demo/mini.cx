@@ -6,6 +6,12 @@ metadata.keywords [ "alkis" ]
 
 metadata.abstract """
 ALKIS Plugin mit minimaler Konfiguration.
+
+URL-basierte Suchanfragen:
+
+- [Hausnummer-Suche](/project/alkis_mini?alkisAd=Unnaer%20Straße_50)
+- [Flurstückssuche](/project/alkis_mini?alkisFs=05_051409_0_183_115)
+
 """
 
 actions+ {
