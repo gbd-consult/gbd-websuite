@@ -56,7 +56,7 @@ def main2(args):
     root = gws.create_root(specs)
 
     try:
-        fn, request = gws.base.action.prepare_cli_action(
+        fn, request = gws.base.action.parse_cli_request(
             root,
             command_category=gws.CommandCategory.cli,
             command_name=camelize(cmd1 + '-' + cmd2),

@@ -4,6 +4,7 @@ from typing import Optional, cast
 
 import gws
 import gws.config
+import gws.base.action
 import gws.lib.jsonx
 import gws.lib.osx
 from gws.lib.cli import ProgressIndicator
@@ -56,27 +57,8 @@ class Object(gws.Node):
 
     def _prepare(self, project_uid):
         root = gws.config.load()
-        project = None
-
-        if project_uid:
-            project = root.app.project(project_uid)
-            if not project:
-                gws.log.error(f'project {project_uid!r} not found')
-                exit(1)
-
-        self.act = cast(
-            action.Object,
-            root.app.actionMgr.find_action(
-                project,
-                'alkis',
-                root.app.authMgr.systemUser,
-            ),
-        )
+        self.act = cast(action.Object, gws.base.action.get_action_for_cli(root, 'alkis', project_uid))
         if not self.act:
-            if project:
-                gws.log.error(f'action "alkis" not found in project {project_uid!r}')
-            else:
-                gws.log.error(f'action "alkis" not found')
             exit(1)
 
         self.ixStatus = self.act.ix.status()

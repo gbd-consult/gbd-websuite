@@ -1,14 +1,46 @@
+from typing import Optional
 import gws
 import gws.spec.runtime
 
 
-def prepare_cli_action(
-        root: gws.Root,
-        command_category: gws.CommandCategory,
-        command_name: str,
-        params: dict,
-        read_options=None,
+def get_action_for_cli(root: gws.Root, action_name: str, project_uid: Optional[str] = None) -> Optional[gws.Action]:
+    """Get an action object by its name and optional project UID.
+
+    If no project UID is provided, it searches for the action in the global scope and then in all projects.
+    """
+
+    if project_uid:
+        project = root.app.project(project_uid)
+        if not project:
+            gws.log.error(f'project {project_uid!r} not found')
+            return None
+        act = root.app.actionMgr.find_action(project, action_name, root.app.authMgr.systemUser)
+        if act:
+            return act
+        gws.log.error(f'action {action_name!r} not found in {project_uid!r}')
+
+    act = root.app.actionMgr.find_action(None, action_name, root.app.authMgr.systemUser)
+    if act:
+        return act
+
+    for project in root.app.projects:
+        act = root.app.actionMgr.find_action(project, action_name, root.app.authMgr.systemUser)
+        if act:
+            gws.log.info(f'using action {action_name!r} from {project.uid!r}')
+            return act
+
+    gws.log.error(f'action {action_name!r} not found')
+
+
+def parse_cli_request(
+    root: gws.Root,
+    command_category: gws.CommandCategory,
+    command_name: str,
+    params: dict,
+    read_options=None,
 ):
+    """Parse a CLI request and return the action handler and request object."""
+
     desc = root.specs.command_descriptor(command_category, command_name)
     if not desc:
         raise gws.NotFoundError(f'{command_category}.{command_name} not found')
@@ -26,7 +58,6 @@ def prepare_cli_action(
 
 
 class Object(gws.ActionManager):
-
     def actions_for_project(self, project, user):
         d = {}
 
