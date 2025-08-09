@@ -208,7 +208,7 @@ class Controller extends gc.Controller {
     }
 
     async doRequest(params: Params, args: object): Promise<gc.gws.base.storage.Response> {
-        let res: gc.gws.base.storage.Response = await this.app.server[params.actionName](args);
+        let res: gc.gws.base.storage.Response = await this.app.server.callAny(params.actionName, args);
 
         if (res.error) {
             this.update({
