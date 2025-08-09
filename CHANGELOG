@@ -1,3 +1,9 @@
+## Version 8.2.10
+
+- SLD support for raster layers
+- added ALKIS option "gemarkungFilter"
+- default spatial search tolerance set to 10px
+
 ## Version 8.2.9
 
 - support for mbtiles layers
