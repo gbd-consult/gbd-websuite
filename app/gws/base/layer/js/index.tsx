@@ -116,6 +116,7 @@ class LayersTreeNode extends gc.View<ViewProps> {
                 (layer.hidden || !layer.inResolution) && 'isHidden',
                 layer.selected && 'isSelected',
                 !layer.inResolution && 'isInactive',
+                layer.treeClassName,
             );
 
         return <div className="modLayersTreeNode">

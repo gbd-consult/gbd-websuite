@@ -142,6 +142,7 @@ export interface ILayer {
     exclusive: boolean;
 
     checked: boolean;
+    treeClassName: string;
 
     editAccess?: Array<string>;
 

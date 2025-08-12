@@ -25,6 +25,7 @@ export class Layer implements types.ILayer {
     exclusive = false;
 
     checked = false;
+    treeClassName = '';
 
     editAccess = null;
 
@@ -113,7 +114,7 @@ export class Layer implements types.ILayer {
         this.exclusive = opts['exclusive'];
 
         this.checked = !this.hidden;
-
+        this.treeClassName = opts['treeClassName'];
     }
 
     hide() {

@@ -71,6 +71,8 @@ class ClientOptions(gws.Data):
     """The layer is not listed, but its children are."""
     exclusive: bool = False
     """Only one of this layer children is visible at a time."""
+    treeClassName = ''
+    """CSS class name for the layer tree item."""
 
 
 class GridProps(gws.Props):

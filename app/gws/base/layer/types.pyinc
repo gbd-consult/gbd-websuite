@@ -24,6 +24,8 @@ class LayerClientOptions(Data):
     """A layer is not listed, but its children are."""
     exclusive: bool
     """Only one of this layer children is visible at a time."""
+    treeClassName: str
+    """CSS class name for the layer tree item."""
 
 
 class TileGrid(Data):
