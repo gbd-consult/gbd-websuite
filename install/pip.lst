@@ -44,3 +44,7 @@ mistune==2.*
 # NB see https://github.com/lepture/python-livereload/issues/270
 tornado==6.*
 livereload==2.*
+
+pyodbc==5.*
+Authlib==1.*
+matplotlib==3.*
