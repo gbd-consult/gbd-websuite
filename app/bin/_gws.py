@@ -31,7 +31,7 @@ def main2(args):
         args['manifest'] = manifest_path
 
     # specs are fast enough, don't bother with caching for now
-    specs = gws.spec.runtime.create(manifest_path, read_cache=False, write_cache=False)
+    specs = gws.spec.runtime.create(manifest_path or '', read_cache=False, write_cache=False)
 
     # all cli command lines are "gws command subcommand -opt1 val1 -opt2 val2 ...."
     # command + sub are translated to a camelized method name:  'gws auth password' => 'authPassword'

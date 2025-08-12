@@ -7,6 +7,8 @@ Error = base.Error
 
 
 def generate_and_write(root_dir='', out_dir='', manifest_path='', debug=False):
+    base.log.set_level('DEBUG' if debug else 'INFO')
+
     gen = _run_generator(root_dir, out_dir, manifest_path, debug)
 
     to_path(gen.specData, out_dir + '/specs.json')
@@ -46,8 +48,6 @@ def from_path(path: str) -> core.SpecData:
 
 
 def _run_generator(root_dir='', out_dir='', manifest_path='', debug=False):
-    base.log.set_level('DEBUG' if debug else 'INFO')
-
     gen = base.Generator()
     gen.rootDir = root_dir or base.v.APP_DIR
     gen.outDir = out_dir

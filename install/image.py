@@ -384,6 +384,8 @@ class Scanner(Base):
 
 def main(args):
     cmd = args.get(1)
+    if not cmd:
+        cli.fatal(f'command required')
     if cmd in {'prepare', 'build'}:
         return Builder(cmd, args).main()
     if cmd in {'scan', 'sbom'}:
