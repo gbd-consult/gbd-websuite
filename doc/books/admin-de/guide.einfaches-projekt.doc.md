@@ -104,7 +104,7 @@ oder alternativ ein Login-Formular.
 Zeigen zwei Domains (z.B. example.com und mywebgis.de) auf den Server auf 
 dem die GBD WebSuite läuft, können die Domains unterschiedlich behandelt werden.
 
-%hint
+%info
 
 Das Verhalten des `host` Felds entspricht dem der `server_name` Variable des [nginx Webservers](https://nginx.org/en/docs/http/request_processing.html).
 
@@ -165,7 +165,7 @@ Erstellen Sie diese Datei und hinterlegen den folgenden Inhalt:
 
 Rufen Sie die URL für die Startseite im Browser auf(`http://localhost:3333/`). Die Überschrift sollte angezeigt werden. Die Logik zur Darstellung einer Liste von Projekten ist in der Datei bereits mit hinterlegt. Noch existiert aber kein Projekt und die Liste ist leer.
 
-%hint
+%info
 
 Wird noch die Seite aus aus dem Schnellstart Guide angezeigt, drücken Sie Umschalt+F5 um Ihren Browser zu zwingen die Seite wirklich neuzuladen.
 
