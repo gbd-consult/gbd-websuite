@@ -33,10 +33,10 @@ Verzeichnisse `data` sowie `gws-var` erstellt.
 In diesem Guide ist das `data`-Verzeichnis relevant. Für die GBD WebSuite ist 
 dieses Verzeichnis unter `/data` erreichbar, daher wird in diesem Guide auch 
 stets dieser Name für das Verzeichnis verwendet. Auch wenn es auf Ihrem Computer
-an einem anderen Pfad liegt, referenzieren Sie Dateien stets aus Sicht der WebSuite, 
+an einem anderen Pfad liegt, referenzieren Sie Pfade zu Dateien innerhalb der Konfiguration stets aus Sicht der WebSuite, 
 unter Verwendung eines absoluten Pfades, beginnend mit `/data`.
 
-Beginnend mit einem leeren `/data` Verzeichnis erstellen Sie dort folgende 
+In dem noch leeren `/data` Verzeichnis erstellen Sie folgende 
 Unterverzeichnisse:
 
 - `/data/web` für statische Assets, wie z.B. ein Logo oder ein Stylesheet
@@ -86,7 +86,7 @@ Erstellen Sie die drei referenzierten Dateien. Lassen Sie diese zunächst leer.
 Existieren inkludierte Dateien nicht schlägt der Startvorgang der GBD WebSuite fehl.
 
 
-## WebServer & WebSites & Rewrites
+## WebServer, WebSites & Rewrites
 
 In der Datei `/data/config/web.cx` werden alle Einstellungen hinterlegt die es 
 der GBD WebSuite ermöglichen Dateien auszuliefern.
@@ -100,12 +100,18 @@ Datei in `assets`, basierend auf der Information ob ein zugreifender Nutzer
 eingeloggt ist, eine Liste von für den Benutzer erlaubten Projekten ausliefern 
 oder alternativ ein Login-Formular.
 
-`host` enhält einen [Ausdruck](TODO LINK) der gegen die aufrufende Domain geprüft 
-wird. Zeigen zwei Domains (z.B. example.com und mywebgis.de) auf den Server auf 
+`host` wird gegen die aufrufende Domain geprüft um die Anfrage einer "site" zuzuweisen. 
+Zeigen zwei Domains (z.B. example.com und mywebgis.de) auf den Server auf 
 dem die GBD WebSuite läuft, können die Domains unterschiedlich behandelt werden.
 
+%hint
+
+Das Verhalten des `host` Felds entspricht dem der `server_name` Variable des [nginx Webservers](https://nginx.org/en/docs/http/request_processing.html).
+
+%end
+
 Die `rewrite` Regeln erlauben unterschiedliche Struktur für den auf die Domain 
-folgenden Teil der URL. 
+folgenden Teil der URL. Sie folgenden Regeln für [Python RegEx](https://docs.python.org/3/library/re.html#regular-expression-syntax)
 
 Übernehmen Sie zunächst die folgenden Regeln:
 
@@ -157,45 +163,55 @@ Erstellen Sie diese Datei und hinterlegen den folgenden Inhalt:
 </ul>
 ```
 
-Rufen Sie die URL für die Startseite im Browser auf. Die die Überschrift sollte 
-angezeigt werden. Die Logik zur Darstellung einer Liste von Projekten ist in der 
-Datei bereits mit hinterlegt. Noch existiert aber kein Projekt und die Liste ist 
-leer.
+Rufen Sie die URL für die Startseite im Browser auf(`http://localhost:3333/`). Die Überschrift sollte angezeigt werden. Die Logik zur Darstellung einer Liste von Projekten ist in der Datei bereits mit hinterlegt. Noch existiert aber kein Projekt und die Liste ist leer.
+
+%hint
+
+Wird noch die Seite aus aus dem Schnellstart Guide angezeigt, drücken Sie Umschalt+F5 um Ihren Browser zu zwingen die Seite wirklich neuzuladen.
+
+%end
 
 Vor der Erstellung des ersten Projektes muss noch ein weiteres Asset erstellt 
 werden: `/data/assets/project.cx.html` bindet die 
-[clientseitige Kartenapplikation](TODO LINK: client und server diagram?) 
-ein. 
+clientseitige Applikation ein, die einen interaktiven Umgang mit der Karte ermöglicht.
 
 ```html title="/data/assets/project.cx.html"
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>{project.title}</title>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-        <link rel="stylesheet" href="/_/webSystemAsset/path/light.css" type="text/css" />
-        <style>
-            .gws {
-                position: fixed;
-                left: 0;
-                top: 0;
-                right: 0;
-                bottom: 0;
-            }
-        </style>
-        <div class="gws"></div>
-        <script>
-            GWS_PROJECT_UID = "{project.uid}";
-            GWS_LOCALE = "de_DE";
-        </script>
-        <script src="/_/webSystemAsset/path/vendor.js"></script>
-        <script src="/_/webSystemAsset/path/app.js"></script>
-    </head>
+<head>
+    <title>{project.title}</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <link rel="stylesheet" href="/_/webSystemAsset/path/light.css" type="text/css"/>
+    <link rel="stylesheet" href="/stylesheet.css">
+</head>
+<body>
+    <script id="gwsOptions" type="application/json">
+        {
+            "projectUid": "{project.uid}"
+        }
+    </script>
+
+    <script src="/_/webSystemAsset/path/vendor.js"></script>
+    <script src="/_/webSystemAsset/path/app.js"></script>
+</body>
 </html>
 ```
 
 Übernehmen Sie den Inhalt dieser Datei exakt, er bedarf keiner Anpassungen.
+
+Ergänzen Sie ebenfalls die Datei `/data/web/stylesheet.css`
+
+```css title="/data/web/stylesheet.css"
+.gws {
+	position: fixed;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+}
+```
+
 
 
 ## Projekte
@@ -214,10 +230,12 @@ Ergänzen Sie den folgenden Inhalt in der Projektkonfiguration:
     title "Mein Projekt"
     metadata.abstract "Dies ist mein erstes GBD WebSuite Projekt"
 
+    map.crs 3857
+    map.center [757072,6663486]
     map.layers+ {
         type tile
         title "OSM"
-        provider.url "https://osmtiles.gbd-consult.de/ows/{{{{z}}}}/{{{{x}}}}/{{{{y}}}}.png"
+        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
     }
 }
 ```
@@ -231,8 +249,8 @@ Großbuchstaben, Ziffern sowie Unter- und Bindestriche.
 
 Der `map.layers+` Block fügt eine Layer zur Karte hinzu. Lesen Sie dazu [Maps und Layers](TODO LINK ZU THEMA)
 
-Starten Sie die GBD WebSuite neu. Auf der Startseite wird nun das Projekt gelistet.
-Klicken Sie auf das Projekt um zur Karte zu gelangen.
+Laden Sie die Seite im Browser neu. Auf der Startseite wird nun das Projekt gelistet.
+Klicken Sie auf den Link des Projektes um zur Karte zu gelangen.
 
 
 ## Client
@@ -262,10 +280,3 @@ client.elements [
 
 Diese Liste fügt die Steuerelemente der Infobar am unteren Kartenrand in der 
 angegebenen Reihenfolge hinzu.
-
-
-## Weiterführende Lektüre
-
-- [Dokumentation zu spezifischen Themen](TODO LINK)
-- [Konfigurationsreferenz]()
-- [whatever]()

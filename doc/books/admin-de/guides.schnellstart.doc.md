@@ -28,11 +28,9 @@ Erstellen Sie eine Datei mit dem Namen `docker-compose.yml` und dem folgenden
 Inhalt in einem beliebigen Verzeichnis:
 
 ```yaml title="docker-compose.yml"
-version: '3'
-
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.1
+        image: gbdconsult/gws-amd64:8.2
         container_name: gws
         ports:
             - 3333:80
@@ -40,10 +38,21 @@ services:
 
 
 ## Download & Starten
-Weisen Sie Docker an das benötigte Image herunterzuladen (ca. 500MB) und den 
-Container zu starten: 
+Weisen Sie Docker an das benötigte Image herunterzuladen  
+
+    docker compose -f docker-compose.yml pull
+
+und den Container zu starten: 
 
     docker compose -f docker-compose.yml up
+
+%info
+
+Sollten Sie eine Fehlermeldung mit dem Inhalt `The container name "/gws" is already in use` erhalten, haben Sie die WebSuite vermutlich schon einmal gestartet. In dem Fall können Sie den veralteten Container mittels dem folgenden Befehl löschen:
+
+    docker rm gws
+
+%end
 
 Abhängig von Ihrem Betriebssystem und User müssen Sie dies möglicherweise als 
 Administrator (auf Ubuntu z.B. mit `sudo`) tun, oder Ihrem Benutzer die benötigten
@@ -62,18 +71,21 @@ aktuell die Logausgabe sehen STRG+C, oder schließen dieses.
 ## Wo mache ich weiter?
 
 Um basierend auf diesem Schnellstart anzufangen mit der Konfiguration der GBD 
-WebSuite zu experimentieren, erweitern Sie die `docker-compose.yml` wie folgt:
+WebSuite zu experimentieren, fahren Sie wie folgt fort:
+
+1. *(falls noch nicht geschehen)* Erstellen Sie ein Verzeichnis in dem alle Konfigurationsdateien für die GBD WebSuite abgelegt werden.
+2. Verschieben Sie die `docker-compose.yml` in dieses Verzeichnis.
+3. Erstellen Sie ebenfalls in diesem Verzeichnis die Unterordner `data` und `gws-var`.
+4. Ersetzen Sie den Inhalt der `docker-compose.yml` durch:
 
 ```yaml title="MYGWSDIRECTORY/docker-compose.yml"
-version: '3'
-
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.1
+        image: gbdconsult/gws-amd64:8.2
         container_name: gws
         volumes:
-            - MYGWSDIRECTORY/data:/data
-            - MYGWSDIRECTORY/gws-var:/gws-var
+            - ./data:/data
+            - ./gws-var:/gws-var
         ports:
             - 3333:80
         tmpfs:
@@ -82,27 +94,16 @@ services:
         image: gbdconsult/gbd-qgis-server-amd64:3.34
         container_name: qgis
         volumes:
-            - MYGWSDIRECTORY/data:/data
-            - MYGWSDIRECTORY/gws-var:/gws-var
+            - ./data:/data
+            - ./gws-var:/gws-var
         tmpfs:
             - /tmp
 ```
-
-Passen Sie die Verzeichnis-Pfade unter `volumes:` für beide Container ihrem 
-System entsprechend an. Ersetzen Sie dafür alle Vorkommen von `MYGWSDIRECTORY` 
-durch einen für Ihr System gültigen Pfad.
-
-Unter Windows könnte das z.B. `C:/Users/<myusername>/Desktop/gwstest` sein, und 
-unter Linux `/home/<myusername>/gwstest`.
-
-Stellen Sie sicher, dass die Verzeichnisse `data` und `gws-var` innerhalb des 
-gwstest Verzeichnisses existieren.
-
-Sollte Sie das erste Konfigurationsbeispiel gestartet & beendet haben müssen Sie 
-noch mit `docker rm gws` den dadurch erstellen Docker Container entfernen.
+5. Entfernen Sie den im ersten Anlauf gestarteten Container mittels `docker rm gws`
+6. Wechseln Sie im Terminal/Eingabeaufforderung in das erstellte Konfigurationsverzeichnis.
 
 Die GBD WebSuite wird dann zunächst nicht mehr funktionieren, da Sie das 
-Konfigurationsverzeichnis auf das so eben erstellte `gwstest/data` Verzeichnis 
+Konfigurationsverzeichnis auf das so eben erstellte `data` Verzeichnis 
 umgeleitet haben und dieses aktuell noch leer ist. Wie Sie dieses Verzeichnis 
 mit einer initiellen Konfiguration füllen können wird hier beschrieben: 
 
