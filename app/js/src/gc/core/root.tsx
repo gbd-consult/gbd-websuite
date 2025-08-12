@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import {ViewProps} from '../types';
-import {View} from './view';
-import {Controller} from './controller';
+import { ViewProps } from '../types';
+import { View } from './view';
+import { Controller } from './controller';
 
 interface RootViewProps extends ViewProps {
     controller: RootController;
@@ -27,30 +27,42 @@ class AppView extends View<AppViewProps> {
         this.props.whenMounted();
     }
 
+    getViews(kind: string): Array<React.ReactNode> {
+        let vs = [];
+
+        for (let cc of this.props.controller.children) {
+            let view = cc[kind];
+            if (view) {
+                vs.push(<React.Fragment key={cc.uid + '.' + kind}>{view}</React.Fragment>);
+            }
+        }
+        return vs;
+    }
+
     render() {
 
-        let views = (name) => this.props.controller.children.map(cc =>
-            <React.Fragment key={cc.uid + name}>{cc[name]}</React.Fragment>
-        );
+        let extraViews = this.getViews('extraView');
 
-        let cls = '';
+        let extraCls = '';
         if (this.props.appExtraViewState === 'max') {
-            cls = 'withExtraMax'
+            extraCls = 'withExtraMax'
         }
-        if (this.props.appExtraViewState === 'min') {
-            cls = 'withExtraMin'
+        else if (this.props.appExtraViewState === 'min') {
+            extraCls = 'withExtraMin'
+        } else if (extraViews.length > 0) {
+            extraCls = 'withExtra';
         }
 
         return <div>
-            <div className={'gwsMapArea ' + cls}>
-                <div className="gwsMap"/>
-                <div className="gwsMapOverlay">{views('mapOverlayView')}</div>
-                {views('defaultView')}
+            <div className={'gwsMapArea ' + extraCls}>
+                <div className="gwsMap" />
+                <div className="gwsMapOverlay">{this.getViews('mapOverlayView')}</div>
+                {this.getViews('defaultView')}
             </div>
-            <div className={'gwsExtraArea ' + cls}>
-                {views('extraView')}
-            </div>
-            <div className="gwsAppOverlay">{views('appOverlayView')}</div>
+            {extraViews.length > 0 && <div className={'gwsExtraArea ' + extraCls}>
+                {extraViews}
+            </div>}
+            <div className="gwsAppOverlay">{this.getViews('appOverlayView')}</div>
         </div>
     }
 }
@@ -67,7 +79,7 @@ export class RootController extends Controller {
     }
 
     get defaultView() {
-        return this.createElement(RootView, {children: this.children});
+        return this.createElement(RootView, { children: this.children });
     }
 
     async init() {
@@ -81,12 +93,7 @@ export class RootController extends Controller {
         this.app.whenChanged('appExtraViewState', v => {
             let node = this.app.domNode.querySelector('.gwsMap');
             this.app.map['setTargetDomNode'](node);
-
-
-            }
-
-
-        );
+        });
     }
 
     protected setClass(yes, cls) {

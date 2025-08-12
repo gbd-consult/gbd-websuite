@@ -18,40 +18,43 @@ module.exports = v => ({
         right: 0,
         bottom: 0,
     },
-    '.gwsExtraArea': {
-        display: 'none',
-    },
 
     // two-pane layout mode
 
-    /*
-    '.gwsMapArea': {
+    '.gwsMapArea.withExtra': {
         position: 'absolute',
         left: 0,
         top: 0,
         right: 0,
         bottom: '50%',
-        '&.withExtraMax': {
-            display: 'none',
-        },
-        '&.withExtraMin': {
-            bottom: v.UNIT * 10,
-        },
     },
-    '.gwsExtraArea': {
+    '.gwsMapArea.withExtraMax': {
+        display: 'none',
+    },
+    '.gwsMapArea.withExtraMin': {
+        bottom: v.UNIT * 10,
+    },
+    '.gwsExtraArea.withExtra': {
         position: 'absolute',
         left: 0,
         top: '50%',
         right: 0,
         bottom: 0,
-        '&.withExtraMax': {
-            top: 0,
-        },
-        '&.withExtraMin': {
-            top: `calc(100% - ${v.UNIT * 10}px)`,
-        },
     },
-     */
+    '.gwsExtraArea.withExtraMax': {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+    '.gwsExtraArea.withExtraMin': {
+        position: 'absolute',
+        top: `calc(100% - ${v.UNIT * 10}px)`,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
 
     '*': {
         boxSizing: 'border-box',
