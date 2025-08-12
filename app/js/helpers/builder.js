@@ -161,10 +161,10 @@ module.exports.Builder = class {
         // @TODO support plugin vendors
         this.vendors = this.options.vendors;
 
+        this.tsConfigPath = this.specs.meta?.manifest?.tsConfig || path.join(APP_DIR, '../tsconfig.json');
+
         this.sources = [];
         this.chunks = [];
-
-        this.tsConfigPath = path.join(JS_DIR, 'tsconfig.json');
 
         switch (args[0]) {
             case 'dev-server':
@@ -227,12 +227,12 @@ module.exports.Builder = class {
 // init and loading
 
 function clearBuild(bb) {
-    fs.rmSync(BUILD_ROOT, {recursive: true, force: true});
+    fs.rmSync(BUILD_ROOT, { recursive: true, force: true });
 }
 
 function initBuild(bb) {
 
-    fs.mkdirSync(BUILD_ROOT, {recursive: true});
+    fs.mkdirSync(BUILD_ROOT, { recursive: true });
 
     bb.chunks = [];
     bb.sources = [];
@@ -306,7 +306,7 @@ function startBrowserSync(bb) {
             return '';
         }
 
-        tplVars.ENV = JSON.stringify({projectUid: m[1]});
+        tplVars.ENV = JSON.stringify({ projectUid: m[1] });
 
         tplVars.VENDORS = ''
         for (let vendor of bb.vendors)
@@ -348,7 +348,7 @@ function startBrowserSync(bb) {
 
         for (let mod of js.modules) {
             combinedSourceMap.sections.push({
-                offset: {line, column},
+                offset: { line, column },
                 map: mod.sourceMap
             });
             line += mod.text.split('\n').length - 1;
@@ -422,7 +422,7 @@ function startBrowserSync(bb) {
     }
 
     function dirsToWatch() {
-        return bb.chunks.map(c => c.sourceDir);
+        return bb.chunks.map(c => c.sourceDir).filter(d => d && !d.includes(BUILD_DIRNAME));
     }
 
     function watch(event, file) {
@@ -588,7 +588,7 @@ async function jsModules(bb) {
         if (missing.length > 0)
             throw new Error(`missing modules: ${missing.join()}`)
 
-        return {modules};
+        return { modules };
     }
 
     try {
@@ -614,7 +614,7 @@ function vendorStubs(bb) {
         })
     }
 
-    return {modules};
+    return { modules };
 }
 
 function writeVendors(bb) {
@@ -712,7 +712,7 @@ function stringsModules(bb) {
             }
         }
 
-        return {langs, modules};
+        return { langs, modules };
     }
 
     try {
@@ -774,8 +774,8 @@ function cssModules(bb) {
 
             for (let theme of themes) {
                 let [pre, post, opts] = theme.mod;
-                opts = {...CSS_DEFAULTS, ...opts};
-                let src = {[opts.rootSelector]: [pre, rules, post]};
+                opts = { ...CSS_DEFAULTS, ...opts };
+                let src = { [opts.rootSelector]: [pre, rules, post] };
                 let css = jadzia.css(src, opts).trim();
                 if (css) {
                     modules.push({
@@ -890,50 +890,12 @@ function runTypescript(bb) {
 
     let time = new Date;
 
-    logInfo('running TypeScript...');
-
-    // @TODO: commit tsconfig.json statically
-    
-    let tsConfig = {}
-    let tsConfigBuildPath = path.join(APP_DIR, '../tsconfig.json');
-
-    tsConfig.include = [
-        './app/**/*',
-    ]
-    tsConfig.exclude = [
-        './app/**/___*',
-    ]
-    tsConfig.compilerOptions = {
-        "incremental": true,
-        "inlineSourceMap": true,
-        "inlineSources": true,
-        "jsx": "react",
-        "lib": [
-            "es2019",
-            "dom"
-        ],
-        "module": "CommonJS",
-        "noEmitOnError": true,
-        "noImplicitAny": false,
-        "preserveWatchOutput": true,
-        "target": "es2019"
-    }
-    
-    tsConfig.compilerOptions.baseUrl = './app'
-    tsConfig.compilerOptions.rootDir = '/'
-    tsConfig.compilerOptions.outDir = "./app/__build/js"
-    tsConfig.compilerOptions.paths = {
-        "gws/*": ["gws/*"],
-        "@build/*": [ "__build/*" ],
-        "*": ["js/node_modules/*", "js/src/*"],
-    }
-
-    writeFileIfChanged(tsConfigBuildPath, JSON.stringify(tsConfig, null, 4))
+    logInfo(`running TypeScript (${bb.tsConfigPath})...`);
 
     let args = [
         path.join(JS_DIR, 'node_modules/.bin/tsc'),
         '--project',
-        bb.specs.meta?.manifest?.tsConfig || tsConfigBuildPath,
+        bb.tsConfigPath,
     ];
 
     let res = child_process.spawnSync('node', args, {
@@ -1044,11 +1006,11 @@ function uniq(a) {
 }
 
 function readFile(p) {
-    return fs.readFileSync(p, {encoding: 'utf8'})
+    return fs.readFileSync(p, { encoding: 'utf8' })
 }
 
 function writeFile(p, s) {
-    return fs.writeFileSync(p, s, {encoding: 'utf8'})
+    return fs.writeFileSync(p, s, { encoding: 'utf8' })
 }
 
 function writeFileIfChanged(p, s) {
@@ -1056,7 +1018,7 @@ function writeFileIfChanged(p, s) {
 
     try {
         r = readFile(p)
-    } catch (e) {}
+    } catch (e) { }
 
     if (r !== s)
         writeFile(p, s)
