@@ -36,11 +36,12 @@ class Object(core.Object):
     def feature_to_props(self, feature: gws.Feature, mc):
         props = super().feature_to_props(feature, mc)
         props.attributes = dict(feature.attributes)
-        if feature.shape():
-            props.attributes[self.geometryName] = feature.shape().to_props()
+        s = feature.shape()
+        if s is not None:
+            props.attributes[self.geometryName] = s.to_props()
         return props
 
-    def feature_from_record(self, record: gws.FeatureRecord, mc: gws.ModelContext) -> Optional[gws.Feature]:
+    def feature_from_record(self, record: gws.FeatureRecord, mc: gws.ModelContext) -> gws.Feature:
         record = cast(gws.FeatureRecord, gws.u.to_data_object(record))
         feature = gws.base.feature.new(model=self, record=record)
         feature.attributes = record.attributes
