@@ -302,7 +302,7 @@ class Image(gws.Image):
                 error += (a_g - b_g) ** 2
                 error += (a_b - b_b) ** 2
                 error += (a_a - b_a) ** 2
-        return error / (3 * x * y)
+        return error / (4 * x * y * 255 * 255)
 
 
 _MIME_TO_FORMAT = {
