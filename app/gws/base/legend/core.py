@@ -30,11 +30,27 @@ class Object(gws.Legend):
 
 
 def output_to_bytes(lro: gws.LegendRenderOutput) -> Optional[bytes]:
+    """Convert a LegendRenderOutput to raw image bytes.
+
+        Args:
+            lro: The legend render output object.
+
+        Returns:
+            The image encoded as bytes if available, otherwise None.
+        """
     img = output_to_image(lro)
     return img.to_bytes() if img else None
 
 
 def output_to_image(lro: gws.LegendRenderOutput) -> Optional[gws.Image]:
+    """Extract an image object from a LegendRenderOutput.
+
+        Args:
+            lro: The legend render output object.
+
+        Returns:
+            The image object if available, otherwise None (e.g. when only HTML is set).
+        """
     if lro.image:
         return lro.image
     if lro.image_path:
@@ -44,6 +60,14 @@ def output_to_image(lro: gws.LegendRenderOutput) -> Optional[gws.Image]:
 
 
 def output_to_image_path(lro: gws.LegendRenderOutput) -> Optional[str]:
+    """Resolve the file path to the image of a LegendRenderOutput.
+
+       Args:
+           lro: The legend render output object.
+
+       Returns:
+           Path to the image file if available, otherwise None.
+       """
     if lro.image:
         img_path = gws.u.ephemeral_path('legend.png')
         return lro.image.to_path(img_path, gws.lib.mime.PNG)
@@ -54,6 +78,16 @@ def output_to_image_path(lro: gws.LegendRenderOutput) -> Optional[str]:
 
 
 def combine_outputs(lros: list[gws.LegendRenderOutput], options: dict = None) -> Optional[gws.LegendRenderOutput]:
+    """Combine multiple LegendRenderOutputs into a single output.
+
+        Args:
+            lros: A list of legend render outputs to combine.
+            options: Optional combination settings (currently unused).
+
+        Returns:
+            A new LegendRenderOutput containing the combined image,
+            or None if no images were provided.
+        """
     imgs = gws.u.compact(output_to_image(lro) for lro in lros)
     img = _combine_images(imgs, options)
     if not img:
