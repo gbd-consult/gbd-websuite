@@ -1,3 +1,8 @@
+## Version 8.2.11
+
+- support for styling of the layers panel in the client
+- automatic redirect from http to https
+
 ## Version 8.2.10
 
 - SLD support for raster layers
