@@ -76,7 +76,7 @@ class Object(gws.ServerMonitor):
 
         do_reconfigure = self._check_unlink(_RECONFIGURE_FILE)
         do_reload = self._check_unlink(_RELOAD_FILE)
-        do_tasks = gws.u.stime() - self.taskTime >= self.frequency
+        do_tasks = (gws.u.stime() - self.taskTime >= self.frequency) and self.tasks
 
         if not do_reconfigure and not do_reload and not do_tasks:
             return
@@ -127,8 +127,6 @@ class Object(gws.ServerMonitor):
             return False
 
     def _run_periodic_tasks(self):
-        gws.log.info(f'MONITOR: periodic task')
-
         for obj in self.tasks:
             try:
                 obj.periodic_task()

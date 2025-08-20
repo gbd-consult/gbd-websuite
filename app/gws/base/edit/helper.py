@@ -169,14 +169,18 @@ class Object(gws.Node):
 
     def require_model(self, model_uid, user: gws.User, access: gws.Access) -> gws.Model:
         model = cast(gws.Model, user.acquire(model_uid, gws.ext.object.model, access))
-        if not model or not model.isEditable:
-            raise gws.ForbiddenError()
+        if not model:
+            raise gws.ForbiddenError(f'model {model_uid!r} not found or not accessible')
+        if not model.isEditable:
+            raise gws.ForbiddenError(f'model {model_uid!r} is not editable')
         return model
 
     def require_field(self, model: gws.Model, field_name: str, user: gws.User, access: gws.Access) -> gws.ModelField:
         field = model.field(field_name)
-        if not field or not user.can(access, field):
-            raise gws.ForbiddenError()
+        if not field:
+            raise gws.ForbiddenError(f'field {field_name!r} not found in model {model.uid!r}')
+        if not user.can(access, field):
+            raise gws.ForbiddenError(f'field {field_name!r} not accessible for user {user.uid!r}')
         return field
 
     def feature_from_props(self, props: gws.FeatureProps, access: gws.Access, mc: gws.ModelContext) -> gws.Feature:

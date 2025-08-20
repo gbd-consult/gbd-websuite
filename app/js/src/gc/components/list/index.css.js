@@ -16,7 +16,7 @@ module.exports = v => ({
     },
 
     '.cmpListDefaultListButton': {
-        ...v.LIST_BUTTON('google:image/crop_din'),
+        ...v.LIST_BUTTON('google:image/crop_7_5'),
     },
 
     '.cmpList .uiRow': {

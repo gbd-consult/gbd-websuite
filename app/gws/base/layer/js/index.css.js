@@ -14,6 +14,7 @@ module.exports = v => ({
             opacity: 1,
             lineHeight: 1.3,
             overflow: 'hidden',
+            wordBreak: 'break-all',
             '.uiRawButton': {
                 textAlign: 'left',
             }

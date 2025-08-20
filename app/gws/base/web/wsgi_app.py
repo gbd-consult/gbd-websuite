@@ -1,12 +1,8 @@
 """web application root"""
 
-from typing import cast
-
 import gws
-import gws.base.action
 import gws.base.web
 import gws.config
-import gws.spec.runtime
 
 _STATE = {
     'inited': False,

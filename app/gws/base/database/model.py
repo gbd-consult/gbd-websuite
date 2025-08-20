@@ -58,7 +58,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
     def find_features(self, search, mc):
         if not mc.user.can_read(self):
-            raise gws.ForbiddenError()
+            raise gws.ForbiddenError(f'model {self.uid!r} can_read=False')
         
         mc = gws.base.model.copy_context(mc)
         mc.search = search
@@ -155,7 +155,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
     def init_feature(self, feature, mc):
         if not mc.user.can_create(self):
-            raise gws.ForbiddenError()
+            raise gws.ForbiddenError(f'model {self.uid!r} can_create=False')
 
         for fld in self.fields:
             fld.do_init(feature, mc)
@@ -166,7 +166,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
     def create_feature(self, feature, mc):
         if not mc.user.can_create(self):
-            raise gws.ForbiddenError()
+            raise gws.ForbiddenError(f'model {self.uid!r} can_create=False')
 
         feature.record = gws.FeatureRecord(attributes={}, meta={})
 
@@ -206,7 +206,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
     def update_feature(self, feature, mc):
         if not mc.user.can_write(self):
-            raise gws.ForbiddenError()
+            raise gws.ForbiddenError(f'model {self.uid!r} can_write=False')
 
         feature.record = gws.FeatureRecord(attributes={}, meta={})
 
@@ -229,7 +229,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
     def delete_feature(self, feature, mc):
         if not mc.user.can_delete(self):
-            raise gws.ForbiddenError()
+            raise gws.ForbiddenError(f'model {self.uid!r} can_delete=False')
 
         with self.db.connect() as conn:
             for fld in self.fields:

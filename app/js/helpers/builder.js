@@ -679,8 +679,14 @@ function stringsModules(bb) {
         let langs = [];
 
         for (let src of bb.sources) {
-            if (src.kind !== 'strings')
+            if (src.kind !== 'strings') {
                 continue;
+            }
+            
+            // exclude documentation strings
+            if (src.path.includes('_doc')) {
+                continue;
+            }
 
             let parsed = ini.parse(readFile(src.path));
 
