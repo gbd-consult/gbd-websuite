@@ -232,19 +232,19 @@ class Object(gws.Layer):
     def configure_bounds(self):
         p = self.cfg('extent')
         if p:
-            self.bounds = gws.Bounds(
-                crs=self.mapCrs,
-                extent=gws.lib.extent.from_list(p),
-            )
+            ext = gws.lib.extent.from_list(p)
+            if not ext or not gws.lib.extent.is_valid(ext):
+                raise gws.ConfigurationError(f'invalid extent {p!r}')
+            self.bounds = gws.Bounds(crs=self.mapCrs, extent=ext)
             return True
 
     def configure_zoom_bounds(self):
         p = self.cfg('zoomExtent')
         if p:
-            self.zoomBounds = gws.Bounds(
-                crs=self.mapCrs,
-                extent=gws.lib.extent.from_list(p),
-            )
+            ext = gws.lib.extent.from_list(p)
+            if not ext or not gws.lib.extent.is_valid(ext):
+                raise gws.ConfigurationError(f'invalid extent {p!r}')
+            self.zoomBounds = gws.Bounds(crs=self.mapCrs, extent=ext)
             return True
 
     def configure_cache(self):

@@ -181,7 +181,12 @@ def union(exts: list[gws.Extent]) -> gws.Extent:
 
     ext = exts[0]
     for e in exts:
-        ext = (min(ext[0], e[0]), min(ext[1], e[1]), max(ext[2], e[2]), max(ext[3], e[3]))
+        ext = (
+            min(ext[0], e[0]),
+            min(ext[1], e[1]),
+            max(ext[2], e[2]),
+            max(ext[3], e[3]),
+        )
     return ext
 
 

@@ -61,10 +61,11 @@ class Object(gws.Map):
 
         p = self.cfg('extent')
         if p:
-            self.bounds = gws.Bounds(
-                crs=crs,
-                extent=gws.lib.extent.buffer(gws.lib.extent.from_list(p), self.cfg('extentBuffer') or 0)
-            )
+            ext = gws.lib.extent.from_list(p)
+            if not ext or not gws.lib.extent.is_valid(ext):
+                raise gws.ConfigurationError(f'invalid extent {p!r}')
+            buf = self.cfg('extentBuffer') or 0
+            self.bounds = gws.Bounds(crs=crs, extent=gws.lib.extent.buffer(ext, buf))
         else:
             self.bounds = gws.Bounds(crs=crs, extent=crs.extent)
 
