@@ -1,4 +1,4 @@
-from typing import Any
+"""Basic WSGI request/response handling."""
 
 import gzip
 import io
@@ -164,7 +164,7 @@ class Requester(gws.WebRequester):
                 attach_name = os.path.basename(response.contentPath)
             elif response.mime:
                 ext = gws.lib.mime.extension_for(response.mime)
-                attach_name = 'download.' + ext
+                attach_name = 'download.' + (ext or 'bin')
             else:
                 attach_name = 'download'
 
@@ -266,7 +266,7 @@ class Requester(gws.WebRequester):
 
     def _encode_struct(self, data, typ):
         if typ == 'json':
-            return gws.lib.jsonx.to_string(data, pretty=True)
+            return gws.lib.jsonx.to_string(data)
         if typ == 'msgpack':
             return umsgpack.dumps(data, default=gws.u.to_dict)
         raise ValueError('invalid struct type')
@@ -274,7 +274,8 @@ class Requester(gws.WebRequester):
     def _decode_struct(self, typ):
         if typ == 'json':
             try:
-                s = self.data().decode(encoding='utf-8', errors='strict')
+                data = gws.u.require(self.data())
+                s = data.decode(encoding='utf-8', errors='strict')
                 return gws.lib.jsonx.from_string(s)
             except (UnicodeDecodeError, gws.lib.jsonx.Error):
                 gws.log.error('malformed json request')
@@ -282,7 +283,8 @@ class Requester(gws.WebRequester):
 
         if typ == 'msgpack':
             try:
-                return umsgpack.loads(self.data())
+                data = gws.u.require(self.data())
+                return umsgpack.loads(data)
             except (TypeError, umsgpack.UnpackException):
                 gws.log.error('malformed msgpack request')
                 raise error.BadRequest()

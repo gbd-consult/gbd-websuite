@@ -212,7 +212,7 @@ class Controller extends gc.Controller {
 
         if (res.error) {
             this.update({
-                storageError: res.httpStatus === 403
+                storageError: res.status === 403
                     ? this.__('modStorageErrorAccess')
                     : this.__('modStorageErrorGeneric')
             });

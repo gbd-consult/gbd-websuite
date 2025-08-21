@@ -137,7 +137,7 @@ export class Application implements types.IApplication {
         });
 
         if (res.error) {
-            this.fatalError(res.httpStatus || 500);
+            this.fatalError(res.status || 500);
             return null;
         }
 
