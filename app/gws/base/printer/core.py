@@ -10,7 +10,7 @@ import gws.lib.style
 gws.ext.new.printer('default')
 
 
-class Config(gws.Config):
+class Config(gws.ConfigWithAccess):
     """Printer configuration"""
 
     template: gws.ext.config.template
