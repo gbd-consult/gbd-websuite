@@ -5,12 +5,23 @@ import gws.lib.datetimex
 import gws.gis.gml
 
 
+def _as_id(uid):
+    if not uid:
+        return "_"
+    if isinstance(uid, int):
+        return f"_{uid}"
+    uid = str(uid).replace(" ", "_")
+    if uid[0].isdigit():
+        return f"_{uid}"
+    return uid
+
+
 def feature_collection(ta: server.TemplateArgs):
     return (
         'wfs:FeatureCollection', feature_collection_attributes(ta), [
             (
                 f'wfs:member/{m.layerCaps.featureNameQ if m.layerCaps else "wfs:feature"}',
-                {'gml:id': m.feature.uid()},
+                {'gml:id': _as_id(m.feature.uid())},
                 feature_collection_member(ta, m)
             )
             for m in ta.featureCollection.members
@@ -32,14 +43,14 @@ def value_collection(ta: server.TemplateArgs):
 
 def feature_collection_attributes(ta):
     return {
-        'timeStamp': ta.featureCollection.timestamp,
+        'timeStamp': gws.lib.datetimex.to_iso_string(ta.featureCollection.timestamp, with_tz=':'),
         'numberMatched': ta.featureCollection.numMatched,
         'numberReturned': ta.featureCollection.numReturned,
     }
 
 
 def feature_collection_member(ta: server.TemplateArgs, m: server.FeatureCollectionMember):
-    for name, val in sorted(m.feature.attributes.items()):
+    for name, val in m.feature.attributes.items():
         if m.layerCaps:
             name = xmlx.namespace.qualify_name(name, m.layerCaps.xmlNamespace)
         yield name, format_value(ta, val)

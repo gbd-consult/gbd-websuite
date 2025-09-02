@@ -176,14 +176,14 @@ _ATTR_TO_XSD = {
 
 _GEOM_TO_XSD = {
     gws.GeometryType.point: 'gml:PointPropertyType',
-    gws.GeometryType.linestring: 'gml.LineStringPropertyType',
-    gws.GeometryType.polygon: 'gml:PolygonPropertyType',
+    gws.GeometryType.linestring: 'gml:CurvePropertyType',
+    gws.GeometryType.polygon: 'gml:SurfacePropertyType',
     gws.GeometryType.multipoint: 'gml:MultiPointPropertyType',
-    gws.GeometryType.multilinestring: 'gml:MultiLineStringPropertyType',
-    gws.GeometryType.multipolygon: 'gml:MultiPolygonPropertyType',
+    gws.GeometryType.multilinestring: 'gml:MultiCurvePropertyType',
+    gws.GeometryType.multipolygon: 'gml:MultiSurfacePropertyType',
     gws.GeometryType.multicurve: 'gml:MultiCurvePropertyType',
     gws.GeometryType.multisurface: 'gml:MultiSurfacePropertyType',
     gws.GeometryType.linearring: 'gml:LinearRingPropertyType',
-    gws.GeometryType.tin: 'gml:TinPropertyType',
+    gws.GeometryType.tin: 'gml:TriangulatedSurfacePropertyType',
     gws.GeometryType.surface: 'gml:SurfacePropertyType',
 }

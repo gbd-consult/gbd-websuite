@@ -224,8 +224,8 @@ def declarations(
 
     for ns in uri_map.values():
         uri = ns.uri
-        if ns.version:
-            uri += '/' + ns.version
+        # if ns.version:
+        #     uri += '/' + ns.version
 
         if default_ns and ns.uri == default_ns.uri:
             a = _XMLNS
@@ -272,7 +272,7 @@ xml              |                  |       | www.w3.org/XML/1998/namespace     
 html             |                  |       | www.w3.org/1999/xhtml                         |
 wsdl             |                  |       | schemas.xmlsoap.org/wsdl                      |
 xs               |                  |       | www.w3.org/2001/XMLSchema                     |
-xsd              |                  |       | www.w3.org/2001/XMLSchema                     |
+xsd              |                  |       | www.w3.org/2001/XMLSchema                     | https://www.w3.org/2009/XMLSchema/XMLSchema.xsd
 xsi              |                  |       | www.w3.org/2001/XMLSchema-instance            |
 xlink            |                  |       | www.w3.org/1999/xlink                         | https://www.w3.org/XML/2008/06/xlink.xsd
 rdf              |                  |       | www.w3.org/1999/02/22-rdf-syntax-ns           |
@@ -295,7 +295,7 @@ wcscrs           |                  | 1.0   | www.opengis.net/wcs/crs           
 wcsint           |                  | 1.0   | www.opengis.net/wcs/interpolation             |
 wcsscal          |                  | 1.0   | www.opengis.net/wcs/scaling                   |
 
-wfs              |                  | 2.0   | www.opengis.net/wfs                           | schemas.opengis.net/wfs/2.0/wfs.xsd
+wfs              |                  | 2.0   | www.opengis.net/wfs/2.0                        | schemas.opengis.net/wfs/2.0/wfs.xsd
 
 wms10            | wms              | 1.0.0  | www.opengis.net/wms                           | schemas.opengis.net/wms/1.0.0/capabilities_1_0_0.xml
 wms11            | wms              | 1.1.0  | www.opengis.net/wms                           | schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.xml
@@ -429,6 +429,14 @@ _INDEX = _Index()
 _INDEX.uid[_XMLNS] = _INDEX.xmlns[_XMLNS] = gws.XmlNamespace(uid=_XMLNS, xmlns=_XMLNS, uri='', schemaLocation='', version='')
 
 
+def _add_proto(url: str) -> str:
+    if not url:
+        return ''
+    if url.startswith('http://') or url.startswith('https://'):
+        return url
+    return 'http://' + url
+
+
 def _load_known():
     for ln in _KNOWN_NAMESPACES.strip().split('\n'):
         ln = ln.strip()
@@ -436,10 +444,7 @@ def _load_known():
             continue
         uid, xmlns, version, uri, schema = [s.strip() for s in ln.split('|')]
         xmlns = xmlns or uid
-        uri = 'http://' + uri
-        if schema:
-            schema = 'http://' + schema
-        register(gws.XmlNamespace(uid=uid, xmlns=xmlns, uri=uri, schemaLocation=schema, version=version))
+        register(gws.XmlNamespace(uid=uid, xmlns=xmlns, uri=_add_proto(uri), schemaLocation=_add_proto(schema), version=version,))
 
 
 _load_known()
