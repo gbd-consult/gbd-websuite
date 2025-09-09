@@ -384,7 +384,7 @@ class Object(gws.base.action.Object):
         self.dataSchema = self.cfg('dataSchema')
         self.indexSchema = self.cfg('indexSchema')
 
-        self.ix = self.root.create_shared(
+        self.ix = self.root.create(
             index.Object,
             _defaultDb=self.db,
             crs=self.cfg('crs'),
@@ -437,7 +437,7 @@ class Object(gws.base.action.Object):
         def _load():
             return self.ix.status()
 
-        self.ixStatus = gws.u.get_server_global('gws.plugin.alkis.action.ixStatus', _load)
+        self.ixStatus = gws.u.get_server_global(f'gws.plugin.alkis.action.ixStatus.{self.indexSchema}', _load)
 
     def props(self, user):
         if not self.ixStatus.basic:
