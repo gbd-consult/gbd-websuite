@@ -292,7 +292,7 @@ class AboutDialog extends gc.View<AboutViewProps> {
 
             <div className="p1">GBD WebSuite</div>
             <div className="p3">Version {this.app.options.version}</div>
-            <div className="p4">&copy; Geoinformatikbüro Dassau GmbH 2006–2024</div>
+            <div className="p4">&copy; Geoinformatikbüro Dassau GmbH 2006–2025</div>
             <div className="p2">
                 <a href="https://gbd-websuite.de/" target="_blank">gbd-websuite.de</a>
             </div>
