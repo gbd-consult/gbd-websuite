@@ -88,6 +88,18 @@ class Requester(gws.WebRequester):
         self._parsed_struct = {}
         self._parsed_command = ''
         self._parsed = False
+        self._uid = gws.u.mstime()
+
+        if self.root.app.developer_option('request.log_all'):
+            u = {
+                'method': self.method,
+                'path': self._wz.path,
+                'query': self._wz.query_string,
+                'cookies': self._wz.cookies,
+                'headers': self._wz.headers,
+                'environ': self._wz.environ,
+            }
+            gws.u.write_debug_file(f'request_{self._uid}', ''.join(f'{k}={v!r}\n' for k, v in u.items()))
 
     def __repr__(self):
         return f'<Requester {self._wz}>'
@@ -111,7 +123,7 @@ class Requester(gws.WebRequester):
         data = self._wz.get_data(as_text=False, parse_form_data=False)
 
         if self.root.app.developer_option('request.log_all'):
-            gws.u.write_debug_file(f'request_{gws.u.mstime()}', data)
+            gws.u.write_debug_file(f'request_{self._uid}.data', data)
 
         if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
