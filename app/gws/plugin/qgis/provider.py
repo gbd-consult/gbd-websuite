@@ -406,7 +406,7 @@ class Object(gws.OwsProvider):
         mgr = self.root.app.databaseMgr
 
         for p in mgr.providers:
-            if p.extType == 'postgres' and p.url == url:
+            if p.extType == 'postgres' and p.url() == url:
                 return cast(gws.plugin.postgres.provider.Object, p)
 
         gws.log.debug(f'creating an ad-hoc postgres provider for qgis {url=}')
