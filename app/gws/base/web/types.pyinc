@@ -297,3 +297,12 @@ class WebSite(Node):
         Returns:
             A rewritten URL.
         """
+
+    def match_host(self, environ: dict) -> bool:
+        """Check if the site matches the request host.
+
+        Args:
+            environ: WSGI environment.
+        Returns:
+            True if the site matches the request host.
+    """

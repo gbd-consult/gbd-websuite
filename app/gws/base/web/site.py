@@ -41,7 +41,7 @@ class SSLConfig(gws.Config):
     """Crt bundle location."""
     key: gws.FilePath
     """Key file location."""
-    hsts: gws.Duration = "365d"
+    hsts: gws.Duration = '365d'
     """HSTS max age. (added in 8.1)"""
 
 
@@ -65,16 +65,18 @@ class Config(gws.Config):
     """Cors configuration."""
     contentSecurityPolicy: str = "default-src 'self'; img-src * data: blob:"
     """Content Security Policy for this site. (added in 8.1)"""
-    permissionsPolicy: str = "geolocation=(self), camera=(), microphone=()"
+    permissionsPolicy: str = 'geolocation=(self), camera=(), microphone=()'
     """Permissions Policy for this site. (added in 8.1)"""
     errorPage: Optional[gws.ext.config.template]
     """Error page template."""
     host: str = '*'
-    """Host name."""
+    """Host name this site responds to (asterisk for any)."""
     rewrite: Optional[list[RewriteRuleConfig]]
     """Rewrite rules."""
     canonicalHost: str = ''
     """Hostname for reversed URL rewriting."""
+    useForwardedHost: bool = False
+    """Use  X-Forwarded-Host for host matching. (added in 8.2)"""
     root: WebDirConfig
     """Root directory for static documents."""
 
@@ -84,11 +86,12 @@ class Object(gws.WebSite):
     ssl: bool
     contentSecurityPolicy: str
     permissionsPolicy: str
+    useForwardedHost: bool
 
     def configure(self):
-
         self.host = self.cfg('host', default='*')
         self.canonicalHost = self.cfg('canonicalHost')
+        self.useForwardedHost = self.cfg('useForwardedHost')
 
         self.staticRoot = gws.WebDocumentRoot(self.cfg('root'))
 
@@ -112,9 +115,17 @@ class Object(gws.WebSite):
     def url_for(self, req, path, **params):
         if gws.lib.net.is_abs_url(path):
             return gws.lib.net.add_params(path, params)
+        
+        if self.canonicalHost:
+            host = self.canonicalHost
+        elif self.host != '*':
+            host = self.host
+        else:
+            host = req.env('HTTP_HOST', '')
+            if self.useForwardedHost:
+                host = req.env('HTTP_X_FORWARDED_HOST', '') or host
 
         proto = 'https' if self.ssl else 'http'
-        host = self.canonicalHost or (req.env('HTTP_HOST') if self.host == '*' else self.host)
         base = proto + '://' + host
 
         for rule in self.rewriteRules:
@@ -129,3 +140,11 @@ class Object(gws.WebSite):
 
         url = base + '/' + path.lstrip('/')
         return gws.lib.net.add_params(url, params)
+
+    def match_host(self, environ):
+        if self.host == '*':
+            return True
+        host = environ.get('HTTP_HOST', '')
+        if self.useForwardedHost:
+            host = environ.get('HTTP_X_FORWARDED_HOST', '') or host
+        host = host.lower().split(':')[0].strip()

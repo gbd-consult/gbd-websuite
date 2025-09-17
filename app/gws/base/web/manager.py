@@ -65,14 +65,8 @@ class Object(gws.WebManager):
     ##
 
     def site_from_environ(self, environ):
-        host = environ.get('HTTP_HOST', '').lower().split(':')[0].strip()
-
         for s in self.sites:
-            if s.host.lower() == host:
+            if s.match_host(environ):
                 return s
-        for s in self.sites:
-            if s.host == '*':
-                return s
-
         # there must be a '*' site
-        raise gws.Error('unknown host', host)
+        raise gws.Error('unknown host')
