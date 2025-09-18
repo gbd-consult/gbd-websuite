@@ -34,14 +34,15 @@
 
 #sidebar-top {
     padding: 1em 1em;
+    background-color: #efedeb;
+
 }
 
 
 #sidebar-search-box {
     display: flex;
     flex-direction: row;
-    background-color: white;
-    border-radius: 9px;
+    border-radius: 0;
 
 }
 

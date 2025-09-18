@@ -129,14 +129,13 @@ function getStrings(obj) {
 }
 
 class JsonViewerExt extends JsonViewer {
-    preparePrimitive(val, t) {
-        let [isHTML, s] = super.preparePrimitive(val, t)
-        if (t === this.T.string && val.startsWith('$.')) {
+    formatValue(val) {
+        if (typeof val === 'string' && val.startsWith('$.')) {
             let ref = val.split(' @')[0]
-            s = s.replace(/(uid=)([\w.]+)/, '$1<b>$2</b>')
-            return [true, `<a href="#${ref}">${s}</a>`]
+            val = val.replace(/(uid=)([\w.]+)/, '$1<b>$2</b>')
+            return [true, `<a href="#${ref}">${val}</a>`]
         }
-        return [isHTML, s]
+        return super.formatValue(val)
     }
 }
 

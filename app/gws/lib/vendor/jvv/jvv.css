@@ -11,16 +11,79 @@
 }
 
 .jvv-nav {
-    padding: 0.5em;
     position: absolute;
     top: 5px;
     right: 20px;
     z-index: 1;
     border-radius: 12px;
     line-height: 1;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+    width: 20em;
+}
+
+.jvv-nav-row {
+    padding: 0.5em;
     display: flex;
     align-items: center;
 }
+
+.jvv-search-box {
+    margin-left: 0.4em;
+    padding-right: 0.4em;
+    border-radius: 9px;
+    background: white;
+    display: flex;
+    flex: 1;
+    align-items: center;
+}
+
+.jvv-search-input {
+    width: 100%;
+    font-size: 0.8em;
+    border: none;
+    background: none;
+    padding: 0.4em 0.8em;
+    outline: none;
+    color: #d50741;
+    flex: 1;
+}
+
+.jvv-has-search-results .jvv-search-input {
+    color: #000;
+}
+
+.jvv-has-search-results .jvv-search-results {
+    display: block;
+}
+
+.jvv-search-results {
+    overflow-y: auto;
+    flex: 1;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    display: none;
+}
+
+.jvv-search-result {
+    display: block;
+    padding: 0.5em 1em;
+    font-size: 0.8em;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color 0.7s ease;
+}
+
+.jvv-search-total {
+    display: block;
+    text-align: center;
+    margin: 0.7em;
+    font-size: 0.7em;
+}
+
+/* ---------------------------------------------------------------------------------- */
 
 .jvv-content {
     overflow: auto;
@@ -29,55 +92,9 @@
     padding-left: 2em;
 }
 
-.jvv-flex {
-    flex: 1;
-}
-
 /* ---------------------------------------------------------------------------------- */
 
-.jvv-search-box {
-    margin-right: 0.4em;
-    padding-right: 0.4em;
-    border-radius: 9px;
-    background: white;
-    display: flex;
-    align-items: center;
-}
-
-.jvv-search-input {
-    width: 15em;
-    font-size: 0.8em;
-    border: none;
-    background: none;
-    padding: 0.4em 0.8em;
-    outline: none;
-    color: #d50741;
-}
-
-.jvv-has-search-results .jvv-search-input {
-    color: #000;
-}
-
-.jvv-search-info {
-    font-size: 0.7em;
-    padding: 0 2em 0 0.4em;
-}
-
-.jvv-button.jvv-search-prev-button,
-.jvv-button.jvv-search-next-button,
-.jvv-search-info {
-    display: none;
-}
-
-.jvv-has-search-results .jvv-button.jvv-search-prev-button,
-.jvv-has-search-results .jvv-button.jvv-search-next-button,
-.jvv-has-search-results .jvv-search-info {
-    display: inline-block;
-}
-
-/* ---------------------------------------------------------------------------------- */
-
-.jvv-button {
+.jvv-nav-button {
     display: inline-block;
     background-color: transparent;
     background-position: center;
@@ -101,13 +118,13 @@
 .jvv-row {
     display: block;
     padding: 0.3em;
-    transition: background-color 1s ease;
+    transition: background-color 0.7s ease;
 }
 
 .jvv-punct-row {
     display: block;
     padding: 0.3em;
-    transition: background-color 1s ease;
+    transition: background-color 0.7s ease;
 }
 
 .jvv-row.jvv-object {
@@ -164,12 +181,12 @@
     padding-left: 2em;
 }
 
-.jvv-object-body > .jvv-object-body-inner {
+.jvv-object-body>.jvv-object-body-inner {
     display: none;
 }
 
 .jvv-object-body:before {
-    content: "...";
+    content: "…";
     padding: 0 0.3em 0.3em 0.3em;
     display: inline-block;
     border-radius: 10px;
@@ -184,11 +201,11 @@
     font-weight: 800;
 }
 
-.jvv-row.jvv-expanded + .jvv-object-body:before {
+.jvv-row.jvv-expanded+.jvv-object-body:before {
     display: none;
 }
 
-.jvv-row.jvv-expanded + .jvv-object-body > .jvv-object-body-inner {
+.jvv-row.jvv-expanded+.jvv-object-body>.jvv-object-body-inner {
     display: block;
 }
 
@@ -201,18 +218,8 @@
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>');
 }
 
-.jvv-search-prev-button {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>');
-    transform: rotate(-90deg);
-}
-
-.jvv-search-next-button {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>');
-    transform: rotate(90deg);
-}
-
 .jvv-search-reset-button {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path fill="rgb(132,132,132)" d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>');
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path fill="rgb(152,152,152)" d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>');
 }
 
 .jvv-collapse-all-button {
@@ -228,6 +235,8 @@
 }
 
 
+
+
 /* ---------------------------------------------------------------------------------- */
 
 
@@ -239,8 +248,17 @@
     background-color: #ebe5e5;
 }
 
-.jvv-row:hover, .jvv-punct-row:hover {
-    background-color: #eae7e3;
+.jvv-search-result {
+    background-color: #efedeb;
+}
+
+.jvv-search-result:hover {
+    background-color: #ebe5e5;
+}
+
+.jvv-row:hover,
+.jvv-punct-row:hover {
+    background-color: #f2e8d9;
 }
 
 .jvv-row.jvv-object:before {
@@ -274,15 +292,37 @@
     font-weight: bold;
 }
 
-.jvv-punct {
+.jvv-punct {}
+
+
+.jvv-search-highlight {
+    background-color: yellow;
 }
 
+.jvv-value.jvv-type-array {
+    color: #000000;
+}
 
-/* @formatter:off */
-.jvv-value.jvv-type-array  { color: #000000;}
-.jvv-value.jvv-type-object  { color: #000000;}
-.jvv-value.jvv-type-bigint  { color: #08852f;}
-.jvv-value.jvv-type-number  { color: #08852f;}
-.jvv-value.jvv-type-boolean  { color: #64481a;}
-.jvv-value.jvv-type-string  { color: #182d91;}
-.jvv-value.jvv-type-special  { color: #878787;}
+.jvv-value.jvv-type-object {
+    color: #000000;
+}
+
+.jvv-value.jvv-type-bigint {
+    color: #08852f;
+}
+
+.jvv-value.jvv-type-number {
+    color: #08852f;
+}
+
+.jvv-value.jvv-type-boolean {
+    color: #64481a;
+}
+
+.jvv-value.jvv-type-string {
+    color: #182d91;
+}
+
+.jvv-value.jvv-type-special {
+    color: #878787;
+}

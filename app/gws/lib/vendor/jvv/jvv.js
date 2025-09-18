@@ -10,7 +10,9 @@ class JsonViewer {
         depth: 2,
         arrayLimit: 20_000,
         depthLimit: 1000,
-        searchDelay: 100,
+        searchDelay: 500,
+        searchLimit: 50,
+        searchContextLimit: 100,
     }
 
     constructor(data, containerEl, options) {
@@ -26,12 +28,12 @@ class JsonViewer {
         this.tickUpdateStep = 5000
 
         this.searchInputEl = null
-        this.searchInfoEl = null
+        this.searchResultsEl = null
         this.searchRe = null
         this.searchTimer = null
         this.searchResults = null
         this.searchResultIndex = null
-        this.searchPending = []
+        this.searchInputs = []
 
         this.nowait(this.renderAll(this.options.depth))
     }
@@ -72,87 +74,66 @@ class JsonViewer {
 
     onSearchInput(e) {
         clearTimeout(this.searchTimer)
-        this.searchPending.push(this.searchInputEl.value)
-        this.searchTimer = setTimeout(() => this.runSearch(), this.options.searchDelay)
+        this.searchTimer = setTimeout(() => this.searchStart(), this.options.searchDelay)
     }
 
     onSearchReset(e) {
         clearTimeout(this.searchTimer)
+        this.removeClass(this.mainEl, 'jvv-has-search-results')
+        this.clear(this.searchResultsEl)
         this.searchInputEl.value = ''
-        this.nowait(this.runSearch())
     }
 
-    onSearchShowPrev(e) {
-        if (!this.searchResults) {
+    onSearchResultClick(e, rowEl) {
+        if (this.isLocked()) {
             return
         }
-        this.searchResultIndex -= 1
-        if (this.searchResultIndex < 0) {
-            this.searchResultIndex = this.searchResults.length - 1
-        }
-        this.nowait(this.showSearchResult(this.searchResultIndex))
-    }
-
-    onSearchShowNext(e) {
-        if (!this.searchResults) {
-            return
-        }
-        this.searchResultIndex += 1
-        if (this.searchResultIndex >= this.searchResults.length) {
-            this.searchResultIndex = 0
-        }
-        this.nowait(this.showSearchResult(this.searchResultIndex))
+        this.nowait(this.searchGotoResult(rowEl))
     }
 
     //
 
-    async runSearch() {
-        if (this.isLocked()) {
-            return
-        }
+    async searchStart() {
+        this.removeClass(this.mainEl, 'jvv-has-search-results')
+        this.clear(this.searchResultsEl)
 
         this.lock()
 
-        let text = this.searchPending.shift() || ''
-
-        let searchRe = ''
-        let searchResults = []
-
+        let text = this.searchInputEl.value || ''
         text = text.trim()
 
-        if (text.length > 0) {
-            searchRe = new RegExp(this.escapeRe(text), 'i')
-            await this.searchCollect([], this.data, searchRe, searchResults)
+        if (text.length === 0 || text === ':') {
+            this.unlock()
+            return
         }
 
+        let keySearch = false
+
+        if (text[0] === ':') {
+            keySearch = true
+            text = text.slice(1).trim()
+        }
+
+        let search = {
+            re: new RegExp(this.escapeRe(text), 'i'),
+            results: [],
+            keySearch: keySearch,
+            hasMore: false,
+        }
+
+        await this.searchCollect([], this.data, search)
         this.unlock()
 
-        if (this.searchPending.length > 0) {
-            return this.runSearch()
-        }
-
-        if (searchResults.length === 0) {
-            this.searchRe = null
-            this.searchResults = null
-            this.searchResultIndex = 0
-
-            this.searchInfoEl.textContent = ''
-
-            this.mainEl.classList.remove('jvv-has-search-results')
-            return this.renderContent(this.options.depth)
-        }
-
-        this.mainEl.classList.add('jvv-has-search-results')
-
-        this.searchRe = searchRe
-        this.searchResults = searchResults
-        this.searchResultIndex = 0
-
-        await this.showSearchResult(0)
+        this.searchRenderResults(search)
     }
 
-    async searchCollect(keys, val, searchRe, searchResults) {
-        if (this.searchPending.length > 0) {
+    async searchCollect(keys, val, search) {
+        if (this.searchInputs.length > 0) {
+            return
+        }
+
+        if (search.results.length >= this.options.searchLimit) {
+            search.hasMore = true
             return
         }
 
@@ -164,24 +145,79 @@ class JsonViewer {
             case this.T.bigint:
             case this.T.number:
             case this.T.string:
-                if (searchRe.test(String(val))) {
-                    searchResults.push(keys)
+                let res = this.searchCheckValue(keys, val, search)
+                if (res) {
+                    search.results.push(res)
                 }
                 return
             case this.T.array:
             case this.T.object:
                 let [isArray, iter, len] = this.getObjectProps(val)
                 for (let [k, v] of iter) {
-                    await this.searchCollect(keys.concat([k]), v, searchRe, searchResults)
+                    await this.searchCollect(keys.concat([k]), v, search)
                 }
         }
     }
 
-    async showSearchResult(index) {
-        let foundKeys = this.searchResults?.[index]
-        if (!foundKeys) {
+    searchCheckValue(keys, val, search) {
+        let hk = this.keysToPath(keys)
+        let hv = String(val)
+
+        if (search.keySearch) {
+            hk = hk.replace(search.re, '\x01$&\x02')
+            if (!hk.includes('\x01')) {
+                return
+            }
+            hv = this.shorten(hv, this.options.searchContextLimit, false)
+        } else {
+            hv = hv.replace(search.re, '\x01$&\x02')
+            if (!hv.includes('\x01')) {
+                return
+            }
+            hv = hv.replace(/(.+?)\x01(.+?)\x02(.+)/, (_, m1, m2, m3) => {
+                m1 = this.shorten(m1, this.options.searchContextLimit, true)
+                m3 = this.shorten(m3, this.options.searchContextLimit, false)
+                return m1 + '\x01' + m2 + '\x02' + m3
+            })
+        }
+
+        return {
+            htmlKeys: this.escapeHTMLWithMarks(hk),
+            htmlVal: this.escapeHTMLWithMarks(hv),
+            keys: keys,
+        }
+
+
+    }
+
+    searchRenderResults(search) {
+        this.removeClass(this.mainEl, 'jvv-has-search-results')
+        this.clear(this.searchResultsEl)
+
+        if (search.results.length === 0) {
             return
         }
+
+        this.addClass(this.mainEl, 'jvv-has-search-results')
+
+        for (let res of search.results) {
+            let rowEl = this.add(this.searchResultsEl, this.span('jvv-search-result'))
+            rowEl.dataset.keys = JSON.stringify(res.keys)
+            this.add(rowEl, this.htmlSpan('jvv-key', res.htmlKeys + ': '))
+            this.add(rowEl, this.htmlSpan('jvv-value', res.htmlVal))
+            rowEl.addEventListener('click', e => this.onSearchResultClick(e, rowEl))
+        }
+
+        let total = String(search.results.length)
+        if (search.hasMore) {
+            total += '+'
+        }
+        this.add(this.searchResultsEl, this.span('jvv-search-total', total))
+    }
+
+
+
+    async searchGotoResult(rowEl) {
 
         await this.renderContent(1)
 
@@ -190,13 +226,13 @@ class JsonViewer {
             return
         }
 
-        let rowEl = await this.expandChain(bodyEl, foundKeys)
+        let keys = JSON.parse(rowEl.dataset.keys)
+        rowEl = await this.expandChain(bodyEl, keys)
         if (rowEl) {
-            rowEl.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'nearest'})
+            rowEl.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' })
+            this.addClass(rowEl, 'jvv-search-highlight')
+            setTimeout(() => this.removeClass(rowEl, 'jvv-search-highlight'), 1000)
         }
-
-        this.searchInfoEl.textContent = (index + 1) + '/' + this.searchResults.length
-
     }
 
     //
@@ -223,7 +259,7 @@ class JsonViewer {
     async toggleObject(rowEl, depth) {
         if (rowEl.classList.contains('jvv-expanded')) {
             await this.unrenderObjectBody(rowEl)
-            rowEl.classList.remove('jvv-expanded')
+            this.removeClass(rowEl, 'jvv-expanded')
             return
         }
 
@@ -247,12 +283,12 @@ class JsonViewer {
     }
 
     lock() {
-        this.mainEl.classList.add('jvv-locked')
+        this.addClass(this.mainEl, 'jvv-locked')
         this.tickCount = 0
     }
 
     unlock() {
-        this.mainEl.classList.remove('jvv-locked')
+        this.removeClass(this.mainEl, 'jvv-locked')
     }
 
     //
@@ -277,7 +313,13 @@ class JsonViewer {
     renderNav() {
         let nav = this.add(this.mainEl, this.div('jvv-nav'))
 
-        let searchBox = this.add(nav, this.span('jvv-search-box'))
+        let navRow = this.add(nav, this.div('jvv-nav-row'))
+
+        this.renderNavButton(navRow, 'Expand All', 'jvv-expand-all-button', e => this.onExpandAll(e))
+        this.renderNavButton(navRow, 'Collapse All', 'jvv-collapse-all-button', e => this.onCollapseAll(e))
+        this.renderNavButton(navRow, 'Select All', 'jvv-select-all-button', e => this.onSelectAll())
+
+        let searchBox = this.add(navRow, this.span('jvv-search-box'))
 
         this.searchInputEl = this.add(searchBox, this.elem('input', 'jvv-search-input'))
         this.searchInputEl.addEventListener('input', e => this.onSearchInput(e))
@@ -285,19 +327,12 @@ class JsonViewer {
 
         this.renderNavButton(searchBox, 'Reset', 'jvv-search-reset-button', e => this.onSearchReset(e))
 
-        this.renderNavButton(nav, 'Previous', 'jvv-search-prev-button', e => this.onSearchShowPrev(e))
-        this.renderNavButton(nav, 'Next', 'jvv-search-next-button', e => this.onSearchShowNext(e))
 
-        this.searchInfoEl = this.add(nav, this.span('jvv-search-info'))
-        this.searchInfoEl.textContent = ''
-
-        this.renderNavButton(nav, 'Expand All', 'jvv-expand-all-button', e => this.onExpandAll(e))
-        this.renderNavButton(nav, 'Collapse All', 'jvv-collapse-all-button', e => this.onCollapseAll(e))
-        this.renderNavButton(nav, 'Select All', 'jvv-select-all-button', e => this.onSelectAll())
+        this.searchResultsEl = this.add(nav, this.elem('div', 'jvv-search-results'))
     }
 
     renderNavButton(parEl, title, cls, handler) {
-        let b = this.add(parEl, this.span('jvv-button ' + cls))
+        let b = this.add(parEl, this.span('jvv-nav-button ' + cls))
         b.title = title
         b.addEventListener('click', handler)
     }
@@ -327,8 +362,7 @@ class JsonViewer {
     }
 
     renderSpecial(parEl, keys, val, isLast) {
-        let t = this.getType(val)
-        let cls = 'jvv-value  jvv-type-special'
+        let cls = 'jvv-value jvv-type-special'
         let valueEl = this.span(cls, val)
         this.drawSimpleRow(parEl, keys, valueEl, isLast)
     }
@@ -336,51 +370,14 @@ class JsonViewer {
     renderPrimitive(parEl, keys, val, isLast) {
         let t = this.getType(val)
         let cls = 'jvv-value  jvv-type-' + this.nameT[t]
-        let valueEl = this.span(cls)
-
-        let [isHTML, s] = this.preparePrimitive(val, t)
-
-        if (isHTML) {
-            valueEl.innerHTML = s
-        } else {
-            valueEl.textContent = s
-        }
-
+        let [isHTML, f] = this.formatValue(val)
+        let valueEl = isHTML ? this.htmlSpan(cls, f) : this.span(cls, f)
+        console.log({ val, f, valueEl })
         this.drawSimpleRow(parEl, keys, valueEl, isLast)
     }
 
-    preparePrimitive(val, t) {
-        let s = this.tryStringify(val)
-
-        if (!this.searchRe) {
-            return [false, s]
-        }
-
-        let p = (t === this.T.string) ? s.slice(1, -1) : s
-
-        p = p.replace(this.searchRe, '\x01$&\x02')
-
-        if (!p.includes('\x01')) {
-            return [false, s]
-        }
-
-        if (t === this.T.string) {
-            p = '"' + p + '"'
-        }
-
-        p = this.escapeHTML(p)
-        p = p.replace(/\x01/g, '<mark>')
-        p = p.replace(/\x02/g, '</mark>')
-
-        return [true, p]
-    }
-
-    tryStringify(val) {
-        try {
-            return JSON.stringify(val)
-        } catch (e) {
-            return String(val)
-        }
+    formatValue(val) {
+        return [false, JSON.stringify(val)]
     }
 
     async renderObject(parEl, keys, val, isLast, depth) {
@@ -389,10 +386,10 @@ class JsonViewer {
 
         let [isArray, iter, len] = this.getObjectProps(val)
 
-        rowEl.classList.add('jvv-object')
+        this.addClass(rowEl, 'jvv-object')
 
         if (isArray) {
-            rowEl.classList.add('jvv-array')
+            this.addClass(rowEl, 'jvv-array')
             if (this.options.arrayHints) {
                 rowEl.firstChild.dataset.after = '(' + len + ') '
             }
@@ -412,7 +409,7 @@ class JsonViewer {
     }
 
     async renderObjectBody(rowEl, depth) {
-        rowEl.classList.add('jvv-expanded')
+        this.addClass(rowEl, 'jvv-expanded')
 
         let bodyEl = this.objectBodyElement(rowEl)
         if (!bodyEl) {
@@ -495,20 +492,35 @@ class JsonViewer {
     }
 
     drawMore(count) {
-        return this.span('jvv-more', '...(' + count + ')')
+        return this.span('jvv-more', null, '…(' + count + ')')
     }
 
     //
+
+    shorten(s, limit, fromEnd) {
+        if (s.length <= limit) {
+            return s
+        }
+        if (fromEnd) {
+            return '…' + s.slice(-limit).trimLeft()
+        } else {
+            return s.slice(0, limit).trimRight() + '…'
+        }
+    }
 
     span(cls, text) {
         return this.elem('span', cls, text)
     }
 
-    div(cls) {
-        return this.elem('div', cls, '')
+    htmlSpan(cls, html) {
+        return this.elem('span', cls, null, html)
     }
 
-    elem(tag, cls, text) {
+    div(cls) {
+        return this.elem('div', cls)
+    }
+
+    elem(tag, cls, text, html) {
         let el = document.createElement(tag)
 
         if (cls) {
@@ -519,20 +531,33 @@ class JsonViewer {
             el.textContent = text
         }
 
+        if (html) {
+            el.innerHTML = html
+        }
+
         return el
     }
 
     add(parEl, el) {
-        if (parEl && el) {
-            parEl.appendChild(el)
-            return el
-        }
+        parEl.appendChild(el)
+        return el
+    }
+
+    addClass(el, cls) {
+        el.classList.add(cls)
+        return el
+    }
+
+    removeClass(el, cls) {
+        el.classList.remove(cls)
+        return el
     }
 
     clear(el) {
         if (el) {
             el.innerHTML = ''
         }
+        return el
     }
 
     //
@@ -623,6 +648,20 @@ class JsonViewer {
         return [isArray, iter, len]
     }
 
+    keysToPath(keys) {
+        let a = []
+        for (let k of keys) {
+            if (typeof k === 'number') {
+                a.push('[' + k + ']')
+            } else {
+                if (a.length > 0) {
+                    a.push('.')
+                }
+                a.push(k)
+            }
+        }
+        return a.join('')
+    }
 
     compareArrays(arr, sub) {
         if (sub.length > arr.length) {
@@ -642,6 +681,13 @@ class JsonViewer {
 
     escapeHTML(str) {
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    }
+
+    escapeHTMLWithMarks(str) {
+        str = this.escapeHTML(str)
+        str = str.replace(/\x01/g, '<mark>')
+        str = str.replace(/\x02/g, '</mark>')
+        return str
     }
 
     async addTick() {
