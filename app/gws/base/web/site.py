@@ -115,17 +115,15 @@ class Object(gws.WebSite):
     def url_for(self, req, path, **params):
         if gws.lib.net.is_abs_url(path):
             return gws.lib.net.add_params(path, params)
-        
+
+        proto = 'https' if self.ssl else 'http'
         if self.canonicalHost:
             host = self.canonicalHost
         elif self.host != '*':
             host = self.host
         else:
-            host = req.env('HTTP_HOST', '')
-            if self.useForwardedHost:
-                host = req.env('HTTP_X_FORWARDED_HOST', '') or host
+            host, proto = self._host_proto_from_env(req.environ)
 
-        proto = 'https' if self.ssl else 'http'
         base = proto + '://' + host
 
         for rule in self.rewriteRules:
@@ -144,7 +142,15 @@ class Object(gws.WebSite):
     def match_host(self, environ):
         if self.host == '*':
             return True
+        host, _ = self._host_proto_from_env(environ)
+        lh = host.lower().split(':')[0].strip()
+        return lh == self.host.lower()
+
+    def _host_proto_from_env(self, environ):
         host = environ.get('HTTP_HOST', '')
-        if self.useForwardedHost:
-            host = environ.get('HTTP_X_FORWARDED_HOST', '') or host
-        host = host.lower().split(':')[0].strip()
+        proto = 'https' if self.ssl else 'http'
+        if not self.useForwardedHost:
+            return host, proto
+        fh = environ.get('HTTP_X_FORWARDED_HOST', '').split(',')[0].strip()
+        fp = environ.get('HTTP_X_FORWARDED_PROTO', '').split(',')[0].strip().lower()
+        return fh or host, fp or proto
