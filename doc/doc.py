@@ -41,7 +41,7 @@ Options:
     -manifest <path>
         path to MANIFEST.json
         
-    -D<option-name>=<option-value>
+    -D<option-name> <option-value>
         override an option
         
     -v
@@ -85,6 +85,10 @@ def main(args):
             dog.build_pdf(opts)
         return 0
 
+    if cmd == 'markdown':
+        dog.build_markdown(opts)
+        return 0
+
     if cmd == 'server':
         srv = ServerWithSpecs(opts)
         srv.start()
@@ -111,8 +115,8 @@ def main(args):
 
 
 def _mkdir(d):
-    dog.util.run(['rm', '-fr', d])
     dog.util.run(['mkdir', '-p', d])
+    dog.util.run(['rm', '-fr', d + '/*'])
 
 
 def _add_opts(opts, path):

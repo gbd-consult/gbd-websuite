@@ -21,7 +21,7 @@ class Element(util.Data):
     info: str
     is_head: bool
     level: int
-    link: str
+    target: str
     ordered: bool
     sid: str
     src: str
@@ -38,10 +38,7 @@ class Element(util.Data):
 
 
 def parser() -> Markdown:
-    md = mistune.create_markdown(
-        renderer=AstRenderer(),
-        plugins=['table', 'url', inline_decoration_plugin, link_attributes_plugin]
-    )
+    md = mistune.create_markdown(renderer=AstRenderer(), plugins=['table', 'url', inline_decoration_plugin, link_attributes_plugin])
     return md
 
 
@@ -83,10 +80,11 @@ def link_attributes_plugin(md):
 
 ##
 
+
 def process(text):
     md = parser()
     els = md(text)
-    rd = Renderer()
+    rd = HTMLRenderer()
     return ''.join(rd.render_element(el) for el in els)
 
 
@@ -110,17 +108,18 @@ def text_from_element(el: Element) -> str:
 
 # based on mistune/renderers.AstRenderer
 
+
 class AstRenderer:
     NAME = 'ast'
 
     def __init__(self):
-        self.renderer = Renderer()
+        self.parser = Parser()
 
     def register(self, name, method):
         pass
 
     def _get_method(self, name):
-        return getattr(self.renderer, f'{name}_parse')
+        return getattr(self.parser, f'p_{name}')
 
     def finalize(self, elements: List[Element]):
         # merge 'link attributes' with the previous element
@@ -138,18 +137,212 @@ class AstRenderer:
 
 ##
 
-class Renderer:
 
+class Parser:
+    def p_block_code(self, text, info=None):
+        return Element(type='block_code', text=text, info=info)
+
+    def p_block_error(self, children=None):
+        return Element(type='block_error', children=children)
+
+    def p_block_html(self, html):
+        return Element(type='block_html', html=html)
+
+    def p_block_quote(self, children=None):
+        return Element(type='block_quote', children=children)
+
+    def p_block_text(self, children=None):
+        return Element(type='block_text', children=children)
+
+    def p_codespan(self, text):
+        return Element(type='codespan', text=text)
+
+    def p_emphasis(self, children):
+        return Element(type='emphasis', children=children)
+
+    def p_heading(self, children, level):
+        return Element(type='heading', children=children, level=level)
+
+    def p_image(self, src, alt='', title=None):
+        return Element(type='image', src=src, alt=alt, title=title)
+
+    def p_inline_decoration(self, classname, text):
+        return Element(type='inline_decoration', classname=classname, text=text)
+
+    def p_inline_html(self, html):
+        return Element(type='inline_html', html=html)
+
+    def p_linebreak(self):
+        return Element(type='linebreak')
+
+    def p_link(self, target, children=None, title=None):
+        if isinstance(children, str):
+            children = [Element(type='text', text=children)]
+        return Element(type='link', target=target, children=children, title=title)
+
+    def p_link_attributes(self, text, attributes):
+        return Element(type='link_attributes', text=text, attributes=attributes)
+
+    def p_list_item(self, children, level):
+        return Element(type='list_item', children=children, level=level)
+
+    def p_list(self, children, ordered, level, start=None):
+        return Element(type='list', children=children, ordered=ordered, level=level, start=start)
+
+    def p_newline(self):
+        return Element(type='newline')
+
+    def p_paragraph(self, children=None):
+        return Element(type='paragraph', children=children)
+
+    def p_strong(self, children=None):
+        return Element(type='strong', children=children)
+
+    def p_table_body(self, children=None):
+        return Element(type='table_body', children=children)
+
+    def p_table_cell(self, children, align=None, is_head=False):
+        return Element(type='table_cell', children=children, align=align, is_head=is_head)
+
+    def p_table_head(self, children=None):
+        return Element(type='table_head', children=children)
+
+    def p_table(self, children=None):
+        return Element(type='table', children=children)
+
+    def p_table_row(self, children=None):
+        return Element(type='table_row', children=children)
+
+    def p_text(self, text):
+        return Element(type='text', text=text)
+
+    def p_thematic_break(self):
+        return Element(type='thematic_break')
+
+
+class _Renderer:
     def render_children(self, el: Element):
         if el.children:
             return ''.join(self.render_element(c) for c in el.children)
         return ''
 
     def render_element(self, el: Element):
-        fn = getattr(self, f'{el.type}_render')
+        fn = getattr(self, f'r_{el.type}')
         return fn(el)
 
-    def render_a(self, href, title, content, el):
+
+class MarkdownRenderer(_Renderer):
+    def render_link(self, href, title, content, el):
+        title = f' "{title}"' if title else ''
+        return f'[{content}]({el.target}{title})'        
+
+    def r_block_code(self, el: Element):
+        lang = ''
+        if el.info:
+            lang = el.info.split(None, 1)[0]
+        return f'```{lang}\n{el.text}\n```\n'
+
+    def r_block_error(self, el: Element):
+        c = self.render_children(el)
+        return f'> **ERROR:** {c}\n\n'
+
+    def r_block_html(self, el: Element):
+        return el.html + '\n\n'
+
+    def r_block_quote(self, el: Element):
+        c = self.render_children(el)
+        lines = c.split('\n')
+        return ''.join(f'> {line}\n' for line in lines) + '\n'
+
+    def r_block_text(self, el: Element):
+        return self.render_children(el)
+
+    def r_codespan(self, el: Element):
+        return f'`{el.text}`'
+
+    def r_emphasis(self, el: Element):
+        return f'*{self.render_children(el)}*'
+
+    def r_heading(self, el: Element):
+        c = self.render_children(el)
+        return f'{"#" * el.level} {c}\n\n'
+
+    def r_image(self, el: Element):
+        title = f' "{el.title}"' if el.title else ''
+        return f'![{el.alt or ""}]({el.src}{title})'
+
+    def r_inline_decoration(self, el: Element):
+        return f'{{{el.classname} {el.text}}}'
+
+    def r_inline_html(self, el: Element):
+        return el.html
+
+    def r_linebreak(self, el: Element):
+        return '\n'
+
+    def r_link(self, el: Element):
+        c = self.render_children(el)
+        return self.render_link(el.target, el.title, c or el.target, el)
+
+    def r_list_item(self, el: Element):
+        c = self.render_children(el)
+        indent = '  ' * (el.level - 1)
+        marker = '1. ' if getattr(el, 'ordered', False) else '- '
+        return f'{indent}{marker}{c}\n'
+
+    def r_list(self, el: Element):
+        c = self.render_children(el)
+        return c + '\n'
+
+    def r_newline(self, el: Element):
+        return '\n'
+
+    def r_paragraph(self, el: Element):
+        c = self.render_children(el)
+        return f'{c}\n\n'
+
+    def r_strong(self, el: Element):
+        return f'**{self.render_children(el)}**'
+
+    def r_table(self, el: Element):
+        return self.render_children(el) + '\n'
+
+    def r_table_head(self, el: Element):
+        cells = [child for child in el.children if child.type == 'table_cell']
+        header = '| ' + ' | '.join(self.render_children(cell) for cell in cells) + ' |\n'
+
+        # Create the separator row based on alignment
+        separators = []
+        for cell in cells:
+            if cell.align == 'center':
+                separators.append(':---:')
+            elif cell.align == 'right':
+                separators.append('---:')
+            else:  # left or None
+                separators.append('---')
+
+        separator = '| ' + ' | '.join(separators) + ' |\n'
+        return header + separator
+
+    def r_table_body(self, el: Element):
+        return self.render_children(el)
+
+    def r_table_row(self, el: Element):
+        cells = [child for child in el.children if child.type == 'table_cell']
+        return '| ' + ' | '.join(self.render_children(cell) for cell in cells) + ' |\n'
+
+    def r_table_cell(self, el: Element):
+        return self.render_children(el)
+
+    def r_text(self, el: Element):
+        return el.text
+
+    def r_thematic_break(self, el: Element):
+        return '---\n\n'
+
+
+class HTMLRenderer(_Renderer):
+    def render_link(self, href, title, content, el):
         a = {'href': href}
         if title:
             a['title'] = escape(title)
@@ -159,11 +352,7 @@ class Renderer:
 
     ##
 
-    def block_code_parse(self, text, info=None):
-        return Element(type='block_code', text=text, info=info)
-
-    def block_code_render(self, el: Element):
-
+    def r_block_code(self, el: Element):
         lang = ''
         atts = {}
 
@@ -204,50 +393,29 @@ class Renderer:
 
         return html
 
-    def block_error_parse(self, children=None):
-        return Element(type='block_error', children=children)
-
-    def block_error_render(self, el: Element):
+    def r_block_error(self, el: Element):
         c = self.render_children(el)
         return f'<div class="error">{c}</div>\n'
 
-    def block_html_parse(self, html):
-        return Element(type='block_html', html=html)
-
-    def block_html_render(self, el: Element):
+    def r_block_html(self, el: Element):
         return el.html
 
-    def block_quote_parse(self, children=None):
-        return Element(type='block_quote', children=children)
-
-    def block_quote_render(self, el: Element):
+    def r_block_quote(self, el: Element):
         c = self.render_children(el)
         return f'<blockquote>\n{c}</blockquote>\n'
 
-    def block_text_parse(self, children=None):
-        return Element(type='block_text', children=children)
-
-    def block_text_render(self, el: Element):
+    def r_block_text(self, el: Element):
         return self.render_children(el)
 
-    def codespan_parse(self, text):
-        return Element(type='codespan', text=text)
-
-    def codespan_render(self, el: Element):
+    def r_codespan(self, el: Element):
         c = escape(el.text)
         return f'<code{attributes(el.attributes)}>{c}</code>'
 
-    def emphasis_parse(self, children):
-        return Element(type='emphasis', children=children)
-
-    def emphasis_render(self, el: Element):
+    def r_emphasis(self, el: Element):
         c = self.render_children(el)
         return f'<em>{c}</em>'
 
-    def heading_parse(self, children, level):
-        return Element(type='heading', children=children, level=level)
-
-    def heading_render(self, el: Element):
+    def r_heading(self, el: Element):
         c = self.render_children(el)
         tag = 'h' + str(el.level)
         s = ''
@@ -255,10 +423,7 @@ class Renderer:
             s += f' id="{el.id}"'
         return f'<{tag}{s}>{c}</{tag}>\n'
 
-    def image_parse(self, src, alt="", title=None):
-        return Element(type='image', src=src, alt=alt, title=title)
-
-    def image_render(self, el: Element):
+    def r_image(self, el: Element):
         a = {}
         if el.src:
             a['src'] = el.src
@@ -272,57 +437,34 @@ class Renderer:
             if n:
                 if n.isdigit():
                     n += 'px'
-                a['style'] = f"width:{n};" + a.get('style', '')
+                a['style'] = f'width:{n};' + a.get('style', '')
             n = a.pop('height', '')
             if n:
                 if n.isdigit():
                     n += 'px'
-                a['style'] = f"height:{n};" + a.get('style', '')
+                a['style'] = f'height:{n};' + a.get('style', '')
 
         return f'<img{attributes(a)}/>'
 
-    def inline_decoration_parse(self, classname, text):
-        return Element(type='inline_decoration', classname=classname, text=text)
-
-    def inline_decoration_render(self, el: Element):
+    def r_inline_decoration(self, el: Element):
         c = escape(el.text)
         return f'<span class="decoration_{el.classname}">{c}</span>'
 
-    def inline_html_parse(self, html):
-        return Element(type='inline_html', html=html)
-
-    def inline_html_render(self, el: Element):
+    def r_inline_html(self, el: Element):
         return el.html
 
-    def linebreak_parse(self):
-        return Element(type='linebreak')
-
-    def linebreak_render(self, el: Element):
+    def r_linebreak(self, el: Element):
         return '<br/>\n'
 
-    def link_parse(self, link, children=None, title=None):
-        if isinstance(children, str):
-            children = [Element(type='text', text=children)]
-        return Element(type='link', link=link, children=children, title=title)
-
-    def link_render(self, el: Element):
+    def r_link(self, el: Element):
         c = self.render_children(el)
-        return self.render_a(el.link, el.title, c, el)
+        return self.render_link(el.target, el.title, c, el)
 
-    def link_attributes_parse(self, text, attributes):
-        return Element(type='link_attributes', text=text, attributes=attributes)
-
-    def list_item_parse(self, children, level):
-        return Element(type='list_item', children=children, level=level)
-
-    def list_item_render(self, el: Element):
+    def r_list_item(self, el: Element):
         c = self.render_children(el)
         return f'<li>{c}</li>\n'
 
-    def list_parse(self, children, ordered, level, start=None):
-        return Element(type='list', children=children, ordered=ordered, level=level, start=start)
-
-    def list_render(self, el: Element):
+    def r_list(self, el: Element):
         c = self.render_children(el)
         tag = 'ol' if el.ordered else 'ul'
         a = {}
@@ -330,37 +472,22 @@ class Renderer:
             a['start'] = el.start
         return f'<{tag}{attributes(a)}>\n{c}\n</{tag}>\n'
 
-    def newline_parse(self):
-        return Element(type='newline')
-
-    def newline_render(self, el: Element):
+    def r_newline(self, el: Element):
         return ''
 
-    def paragraph_parse(self, children=None):
-        return Element(type='paragraph', children=children)
-
-    def paragraph_render(self, el: Element):
+    def r_paragraph(self, el: Element):
         c = self.render_children(el)
         return f'<p>{c}</p>\n'
 
-    def strong_parse(self, children=None):
-        return Element(type='strong', children=children)
-
-    def strong_render(self, el: Element):
+    def r_strong(self, el: Element):
         c = self.render_children(el)
         return f'<strong>{c}</strong>'
 
-    def table_body_parse(self, children=None):
-        return Element(type='table_body', children=children)
-
-    def table_body_render(self, el: Element):
+    def r_table_body(self, el: Element):
         c = self.render_children(el)
         return f'<tbody>\n{c}</tbody>\n'
 
-    def table_cell_parse(self, children, align=None, is_head=False):
-        return Element(type='table_cell', children=children, align=align, is_head=is_head)
-
-    def table_cell_render(self, el: Element):
+    def r_table_cell(self, el: Element):
         c = self.render_children(el)
         tag = 'th' if el.is_head else 'td'
         a = {}
@@ -368,46 +495,31 @@ class Renderer:
             a['style'] = f'text-align:{el.align}'
         return f'<{tag}{attributes(a)}>{c}</{tag}>'
 
-    def table_head_parse(self, children=None):
-        return Element(type='table_head', children=children)
-
-    def table_head_render(self, el: Element):
+    def r_table_head(self, el: Element):
         c = self.render_children(el)
         return f'<thead>\n<tr>{c}</tr>\n</thead>\n'
 
-    def table_parse(self, children=None):
-        return Element(type='table', children=children)
-
-    def table_render(self, el: Element):
+    def r_table(self, el: Element):
         c = self.render_children(el)
         return f'<table class="markdown-table">{c}</table>\n'
 
-    def table_row_parse(self, children=None):
-        return Element(type='table_row', children=children)
-
-    def table_row_render(self, el: Element):
+    def r_table_row(self, el: Element):
         c = self.render_children(el)
         return f'<tr>{c}</tr>\n'
 
-    def text_parse(self, text):
-        return Element(type='text', text=text)
-
-    def text_render(self, el: Element):
+    def r_text(self, el: Element):
         return escape(el.text)
 
-    def thematic_break_parse(self):
-        return Element(type='thematic_break')
-
-    def thematic_break_render(self, el: Element):
+    def r_thematic_break(self, el: Element):
         return '<hr/>\n'
 
 
 def escape(s, quote=True):
-    s = s.replace("&", "&amp;")
-    s = s.replace("<", "&lt;")
-    s = s.replace(">", "&gt;")
+    s = s.replace('&', '&amp;')
+    s = s.replace('<', '&lt;')
+    s = s.replace('>', '&gt;')
     if quote:
-        s = s.replace('"', "&quot;")
+        s = s.replace('"', '&quot;')
     return s
 
 
@@ -422,7 +534,7 @@ def attributes(attrs):
 ##
 
 
-_ATTRIBUTE_RE = r'''(?x)
+_ATTRIBUTE_RE = r"""(?x)
     (
         (\# (?P<id> [\w-]+) )
         |
@@ -439,7 +551,7 @@ _ATTRIBUTE_RE = r'''(?x)
         )
     )
     \x20
-'''
+"""
 
 
 def parse_attributes(text):
@@ -451,7 +563,7 @@ def parse_attributes(text):
         if not m:
             return {}
 
-        text = text[m.end():].lstrip()
+        text = text[m.end() :].lstrip()
 
         g = m.groupdict()
         if g['id']:

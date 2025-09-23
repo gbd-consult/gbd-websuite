@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import re
 import os
@@ -24,13 +24,13 @@ class SectionNode(ParseNode):
 
 
 class EmbedNode(ParseNode):
-    items: List[str]
+    items: list[str]
     sid: str
 
 
 class TocNode(ParseNode):
-    items: List[str]
-    sids: List[str]
+    items: list[str]
+    sids: list[str]
     depth: int
 
 
@@ -42,7 +42,7 @@ class Section(util.Data):
     sid: str
     level: int
     status: str
-    subSids: List[str]
+    subSids: list[str]
     parentSid: str
 
     sourcePath: str
@@ -53,18 +53,25 @@ class Section(util.Data):
     headNode: MarkdownNode
     headLevel: int
 
-    nodes: List[ParseNode]
+    nodes: list[ParseNode]
 
-    htmlPath: str
+    filePath: str
     htmlUrl: str
     htmlBaseUrl: str
     htmlId: str
+
+
+class FileBuffer(util.Data):
+    sids: list[str]
+    chunks: list[str]
+    content: str
 
 
 class Builder:
     options: Options
     markdownParser: markdown.Markdown
     htmlGenerator: 'HTMLGenerator'
+    mardownGenerator: 'MarkdownGenerator'
     docPaths: set[str]
     assetPaths: set[str]
     sectionMap: dict[str, Section]
@@ -107,6 +114,15 @@ class Builder:
         if write:
             util.log.info(f'HTML created in {self.options.outputDir!r}')
 
+    def build_markdown(self, write=False):
+        self.collect_and_parse()
+        if not self.sectionMap:
+            util.log.error('no sections, skip build_html')
+            return
+        self.generate_markdown(write=write)
+        if write:
+            util.log.info(f'Markdown created in {self.options.outputDir!r}')
+
     def build_pdf(self):
         pdf_temp_dir = '/tmp/dog_pdf'
         shutil.rmtree(pdf_temp_dir, ignore_errors=True)
@@ -145,8 +161,7 @@ class Builder:
             return d
 
         self.collect_and_parse()
-        return json.dumps(
-            self.sectionMap, indent=4, sort_keys=True, ensure_ascii=False, default=_default)
+        return json.dumps(self.sectionMap, indent=4, sort_keys=True, ensure_ascii=False, default=_default)
 
     ##
 
@@ -191,7 +206,7 @@ class Builder:
             if sec.headNode.el == el:
                 return sec
 
-    def sections_from_wildcard_sid(self, sid, parent_sec) -> List[Section]:
+    def sections_from_wildcard_sid(self, sid, parent_sec) -> list[Section]:
         abs_sid = self.make_sid(sid, parent_sec.sid, '', '')
 
         if not abs_sid:
@@ -205,18 +220,13 @@ class Builder:
             return []
 
         rx = abs_sid.replace('*', '[^/]+') + '$'
-        subs = [
-            sec
-            for sec in self.sectionMap.values()
-            if re.match(rx, sec.sid)
-        ]
+        subs = [sec for sec in self.sectionMap.values() if re.match(rx, sec.sid)]
         return sorted(subs, key=lambda sec: sec.headText)
 
     ##
 
     def generate_html(self, write):
         self.assetMap = {}
-
         for path in self.options.extraAssets:
             self.add_asset(path)
 
@@ -228,14 +238,27 @@ class Builder:
         if write:
             self.htmlGenerator.write()
             self.write_assets()
-
             util.write_file(
                 str(os.path.join(self.options.outputDir, self.options.staticDir, self.GLOBAL_TOC_SCRIPT)),
-                self.generate_global_toc())
-
+                self.generate_global_toc(),
+            )
             util.write_file(
                 str(os.path.join(self.options.outputDir, self.options.staticDir, self.SEARCH_INDEX_SCRIPT)),
-                self.generate_search_index())
+                self.generate_search_index(),
+            )
+
+    def generate_markdown(self, write):
+        self.assetMap = {}
+        for path in self.options.extraAssets:
+            self.add_asset(path)
+
+        self.mardownGenerator = MarkdownGenerator(self)
+        self.mardownGenerator.render_sections()
+        self.mardownGenerator.flush()
+
+        if write:
+            self.mardownGenerator.write()
+            self.write_assets()
 
     def generate_pdf(self, source: str, target: str):
         cmd = [
@@ -263,15 +286,7 @@ class Builder:
     SEARCH_INDEX_SCRIPT = '_search_index.js'
 
     def generate_global_toc(self):
-        js = {
-            sec.sid: {
-                'h': sec.headText,
-                'u': sec.htmlUrl,
-                'p': '',
-                's': sec.subSids
-            }
-            for sec in self.sectionMap.values()
-        }
+        js = {sec.sid: {'h': sec.headText, 'u': sec.htmlUrl, 'p': '', 's': sec.subSids} for sec in self.sectionMap.values()}
         for sec in self.sectionMap.values():
             for sub in sec.subSids:
                 node = js.get(sub)
@@ -305,11 +320,7 @@ class Builder:
             if sec.parentSid:
                 parent = self.sectionMap[sec.parentSid]
                 head += ' (' + parent.headHtml + ')'
-            sections.append({
-                'h': head,
-                'u': sec.htmlUrl,
-                'w': '.' + '.'.join(util.base36(word_index[w]) for w in words) + '.'
-            })
+            sections.append({'h': head, 'u': sec.htmlUrl, 'w': '.' + '.'.join(util.base36(word_index[w]) for w in words) + '.'})
 
         js = {
             'words': '.' + '.'.join(all_words),
@@ -333,7 +344,7 @@ class Builder:
         if url.endswith('.html'):
             sec = self.section_from_url(url)
             if sec:
-                return 'text/html', self.htmlGenerator.content[sec.htmlPath]
+                return 'text/html', self.htmlGenerator.buffers[sec.filePath].content
             return
 
         m = re.search(self.options.staticDir + '/(.+)$', url)
@@ -434,7 +445,6 @@ class Builder:
         new_map[sec.sid] = sec
 
         for node in sec.nodes:
-
             if isinstance(node, SectionNode):
                 sub = self.get_section(node.sid)
                 if sub:
@@ -479,10 +489,10 @@ class Builder:
             path = dirname + '/index.html'
 
         sec.htmlId = '-'.join(parts[split_level:])
-        sec.htmlPath = self.options.outputDir + '/' + path
+        sec.filePath = self.options.outputDir + '/' + path
         sec.htmlBaseUrl = self.options.webRoot + '/' + path
 
-        util.log.debug(f'path {sec.sid} -> {sec.htmlPath} ({split_level})')
+        util.log.debug(f'path {sec.sid} -> {sec.filePath} ({split_level})')
 
         sec.htmlUrl = sec.htmlBaseUrl
         if sec.htmlId:
@@ -495,7 +505,6 @@ class Builder:
             self.add_url_and_path(sub, split_level)
 
     def make_sid(self, explicit_sid, parent_sid, prev_sid=None, text=None):
-
         explicit_sid = explicit_sid or ''
         text_sid = util.to_uid(text) if text else ''
 
@@ -533,21 +542,16 @@ class FileParser:
         self.b = b
         self.path = path
 
-    def sections(self) -> List[Section]:
+    def sections(self) -> list[Section]:
         util.log.debug(f'parse {self.path!r}')
 
         sections = []
 
-        dummy_root = Section(
-            sid='',
-            nodes=[],
-            level=-1,
-            headNode=MarkdownNode(el=markdown.Element(level=-1)))
+        dummy_root = Section(sid='', nodes=[], level=-1, headNode=MarkdownNode(el=markdown.Element(level=-1)))
         stack = [dummy_root]
 
         el: markdown.Element
         for el in self.parse():
-
             if el.type == 'heading':
                 prev_sec = None
                 while stack[-1].headNode.el.level > el.level:
@@ -563,7 +567,7 @@ class FileParser:
                 continue
 
             if el.type == 'block_code' and el.text.startswith(template.GENERATED_NODE):
-                args = json.loads(el.text[len(template.GENERATED_NODE):])
+                args = json.loads(el.text[len(template.GENERATED_NODE) :])
                 cls = globals()[args.pop('class')]
                 stack[-1].nodes.append(cls(**args))
                 continue
@@ -574,10 +578,15 @@ class FileParser:
 
     def parse(self) -> list[markdown.Element]:
         text = self.b.includeTemplate + util.read_file(self.path)
-        text = template.render(self.b, text, self.path, {
-            'options': self.b.options,
-            'builder': self.b,
-        })
+        text = template.render(
+            self.b,
+            text,
+            self.path,
+            {
+                'options': self.b.options,
+                'builder': self.b,
+            },
+        )
         if not text:
             return []
         return self.b.markdownParser(text)
@@ -586,12 +595,7 @@ class FileParser:
         explicit_sid = self.extract_explicit_sid(el)
         text = markdown.text_from_element(el)
 
-        sid = self.b.make_sid(
-            explicit_sid,
-            parent_sec.sid,
-            prev_sec.sid if prev_sec else None,
-            text
-        )
+        sid = self.b.make_sid(explicit_sid, parent_sec.sid, prev_sec.sid if prev_sec else None, text)
 
         if not sid and (el.level == 1 and text and not explicit_sid):
             util.log.debug(f'creating implicit root section {text!r} in {self.path!r}')
@@ -638,12 +642,11 @@ class FileParser:
 class HTMLGenerator:
     def __init__(self, b: Builder):
         self.b = b
-        self.buffers = {}
-        self.content = {}
+        self.buffers: dict[str, FileBuffer] = {}
 
     def render_section_heads(self):
         for sec in self.b.sectionMap.values():
-            mr = MarkdownRenderer(self.b, sec)
+            mr = HTMLRenderer(self.b, sec)
             sec.headHtml = mr.render_children(sec.headNode.el)
             sec.headHtmlLink = f'<a href="{sec.htmlUrl}">{sec.headHtml}</a>'
 
@@ -659,7 +662,7 @@ class HTMLGenerator:
 
         util.log.debug(f'render {sid!r}')
 
-        mr = MarkdownRenderer(self.b, sec)
+        mr = HTMLRenderer(self.b, sec)
 
         self.add(sec, f'<section id="{sec.htmlId}" data-sid="{sec.sid}">\n')
 
@@ -685,7 +688,7 @@ class HTMLGenerator:
     def render_toc_entry(self, sid, depth: int):
         sec = self.b.get_section(sid)
         if not sec:
-            return
+            return ''
 
         s = ''
         if depth > 1:
@@ -699,21 +702,16 @@ class HTMLGenerator:
         root = self.b.get_section('/')
         if not root:
             return
-        return '\n'.join(
-            self.render_toc_entry(sid, 999)
-            for sid in root.subSids
-        )
+        return '\n'.join(self.render_toc_entry(sid, 999) for sid in root.subSids)
 
-    def add(self, sec: Section, html):
-        if sec.htmlPath not in self.buffers:
-            self.buffers[sec.htmlPath] = util.Data(sids=[], html=[])
-        self.buffers[sec.htmlPath].sids.append(sec.sid)
-        self.buffers[sec.htmlPath].html.append(html)
+    def add(self, sec: Section, chunk: str):
+        if sec.filePath not in self.buffers:
+            self.buffers[sec.filePath] = FileBuffer(sids=[], chunks=[], content='')
+        self.buffers[sec.filePath].sids.append(sec.sid)
+        self.buffers[sec.filePath].chunks.append(chunk)
 
     def flush(self):
         tpl = template.compile(self.b, self.b.options.pageTemplate)
-
-        self.content = {}
 
         home_url = ''
         sec = self.b.get_section('/')
@@ -721,21 +719,25 @@ class HTMLGenerator:
             home_url = sec.htmlUrl
 
         for path, buf in self.buffers.items():
-            self.content[path] = template.call(self.b, tpl, {
-                'path': path,
-                'title': self.b.options.title,
-                'subTitle': self.b.options.subTitle,
-                'main': ''.join(buf.html),
-                'breadcrumbs': self.get_breadcrumbs(buf.sids[0]),
-                'home': home_url,
-                'builder': self.b,
-                'options': self.b.options,
-            })
+            buf.content = template.call(
+                self.b,
+                tpl,
+                {
+                    'path': path,
+                    'title': self.b.options.title,
+                    'subTitle': self.b.options.subTitle,
+                    'main': ''.join(buf.chunks),
+                    'breadcrumbs': self.get_breadcrumbs(buf.sids[0]),
+                    'home': home_url,
+                    'builder': self.b,
+                    'options': self.b.options,
+                },
+            )
 
     def write(self):
-        for path, html in self.content.items():
+        for path, buf in self.buffers.items():
             util.log.debug(f'write {path!r}')
-            util.write_file(path, html)
+            util.write_file(path, buf.content)
 
     def get_breadcrumbs(self, sid):
         sec = self.b.get_section(sid)
@@ -753,45 +755,38 @@ class HTMLGenerator:
         return bs
 
 
-class MarkdownRenderer(markdown.Renderer):
-
+class HTMLRenderer(markdown.HTMLRenderer):
     def __init__(self, b: Builder, sec: Section):
         self.b = b
         self.sec = sec
 
-    def link_render(self, el: markdown.Element):
+    def r_link(self, el: markdown.Element):
         c = self.render_children(el)
-        link = el.link
-        if link.startswith(('http:', 'https:')):
-            return self.render_a(link, el.title, c, el)
-        if link.startswith('//'):
-            return self.render_a(link[1:], el.title, c, el)
+        if el.target.startswith(('http:', 'https:')):
+            return self.render_link(el.target, el.title, c, el)
+        if el.target.startswith('//'):
+            return self.render_link(el.target[1:], el.title, c, el)
 
-        sid = self.b.make_sid(link, self.sec.sid)
-        target = self.b.get_section(sid)
-        if not target:
-            return self.render_a(link, el.title, c, el)
-        return self.render_a(
-            target.htmlUrl,
-            el.title or target.headText,
-            c or target.headHtml,
-            el
-        )
+        sid = self.b.make_sid(el.target, self.sec.sid)
+        sec = self.b.get_section(sid)
+        if not sec:
+            return self.render_link(el.target, el.title, c, el)
+        return self.render_link(sec.htmlUrl, el.title or sec.headText, c or sec.headHtml, el)
 
-    def image_render(self, el: markdown.Element):
+    def r_image(self, el: markdown.Element):
         if not el.src:
             return ''
         if el.src.startswith(('http:', 'https:')):
-            return super().image_render(el)
+            return super().r_image(el)
         paths = [path for path in self.b.assetPaths if path.endswith(el.src)]
         if not paths:
             util.log.error(f'asset not found: {el.src!r} ')
             el.src = ''
-            return super().image_render(el)
+            return super().r_image(el)
         el.src = self.b.add_asset(paths[0])
-        return super().image_render(el)
+        return super().r_image(el)
 
-    def heading_render(self, el: markdown.Element):
+    def r_heading(self, el: markdown.Element):
         sec = self.b.section_from_element(el)
         if not sec:
             return
@@ -801,3 +796,90 @@ class MarkdownRenderer(markdown.Renderer):
         if self.b.options.debug:
             a['title'] = markdown.escape(sec.sourcePath)
         return f'<{tag}{markdown.attributes(a)}>{c}</{tag}>\n'
+
+
+class MarkdownGenerator:
+    def __init__(self, b: Builder):
+        self.b = b
+        self.buffers: dict[str, FileBuffer] = {}
+
+    def render_sections(self):
+        for sec in self.b.sectionMap.values():
+            if not sec.parentSid:
+                self.render_section(sec.sid)
+
+    def render_section(self, sid):
+        sec = self.b.get_section(sid)
+        if not sec:
+            return
+
+        util.log.debug(f'render {sid!r}')
+
+        mr = MarkdownRenderer(self.b, sec)
+
+        for node in sec.nodes:
+            if isinstance(node, MarkdownNode):
+                text = mr.render_element(node.el)
+                self.add(sec, text)
+                continue
+            if isinstance(node, SectionNode):
+                self.render_section(node.sid)
+                continue
+            if isinstance(node, RawHtmlNode):
+                self.add(sec, node.html)
+                continue
+
+    def add(self, sec: Section, chunk: str):
+        if sec.filePath not in self.buffers:
+            self.buffers[sec.filePath] = FileBuffer(sids=[], chunks=[], content='')
+        self.buffers[sec.filePath].sids.append(sec.sid)
+        self.buffers[sec.filePath].chunks.append(chunk)
+
+    def flush(self):
+        for path, buf in self.buffers.items():
+            buf.content = ''.join(buf.chunks)
+
+    def write(self):
+        for path, buf in self.buffers.items():
+            path = path.replace('.html', '.md')
+            util.log.debug(f'write {path!r}')
+            util.write_file(path, buf.content)
+
+
+class MarkdownRenderer(markdown.MarkdownRenderer):
+    def __init__(self, b: Builder, sec: Section):
+        self.b = b
+        self.sec = sec
+    
+    def r_link(self, el: markdown.Element):
+        c = self.render_children(el)
+        if el.target.startswith(('http:', 'https:')):
+            return self.render_link(el.target, el.title, c, el)
+        if el.target.startswith('//'):
+            return self.render_link(el.target[1:], el.title, c, el)
+
+        sid = self.b.make_sid(el.target, self.sec.sid)
+        sec = self.b.get_section(sid)
+        if not sec:
+            return self.render_link(el.target, el.title, c, el)
+        return self.render_link(sec.htmlUrl, el.title or sec.headText, c or sec.headHtml, el)
+
+    def r_image(self, el: markdown.Element):
+        if not el.src:
+            return ''
+        if el.src.startswith(('http:', 'https:')):
+            return super().r_image(el)
+        paths = [path for path in self.b.assetPaths if path.endswith(el.src)]
+        if not paths:
+            util.log.error(f'asset not found: {el.src!r} ')
+            el.src = ''
+            return super().r_image(el)
+        el.src = self.b.add_asset(paths[0])
+        return super().r_image(el)
+
+    def r_heading(self, el: markdown.Element):
+        sec = self.b.section_from_element(el)
+        if not sec:
+            return
+        c = self.render_children(el)
+        return ('#' * sec.headLevel) + ' ' + c + '\n\n'

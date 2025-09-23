@@ -100,6 +100,9 @@ case $COMMAND in
   doc)
     codegen && $PYTHON $DOC_BUILDER build $@
     ;;
+  doc-markdown)
+    codegen && $PYTHON $DOC_BUILDER markdown $@
+    ;;
   doc-api)
     codegen && $PYTHON $DOC_BUILDER api $@
     ;;

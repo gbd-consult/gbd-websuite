@@ -1,12 +1,15 @@
-"""DOG - the documentation generator.
-"""
+"""DOG - the documentation generator."""
 
 from .options import Options
-from . import builder, server, markdown, util
+from . import builder, server
 
 
 def build_html(opts: Options | dict):
     builder.Builder(opts).build_html(write=True)
+
+
+def build_markdown(opts: Options | dict):
+    builder.Builder(opts).build_markdown(write=True)
 
 
 def build_pdf(opts: Options | dict):
