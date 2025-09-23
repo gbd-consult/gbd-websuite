@@ -24,12 +24,12 @@ img {
 body {
     font-size: 1rem;
     font-family: "Helvetica Neue", Arial, sans-serif;
-    background-color: rgb(252,252,252);
+    background-color: #cccccc;
     color: rgb(38,50,56);
     line-height: 1.5;
 }
 
-body aside {
+aside {
     background-color: rgb(38,50,56);
     position: fixed;
     left: -100%;
@@ -40,11 +40,12 @@ body aside {
     overflow-x: hidden;
 }
 
-body main {
+main {
     background-color: rgb(252,252,252);
     padding: 1rem;
     margin-left: 0;
     overflow-x: hidden;
+    min-height: 100vh
 }
 
 body.mobile-sidebar aside {
@@ -72,15 +73,15 @@ body.mobile-sidebar #sidebar-toggle {
 }
 
 @media screen and (min-width: 768px) {
-    body aside {
+    aside {
         left: 0;
         width: 22rem;
     }
 
-    body main {
+    main {
         margin-left: 22rem;
         padding: 2rem;
-
+        max-width: 100rem;
     }
 
     #sidebar-toggle {
@@ -97,9 +98,6 @@ pre {
     line-height: 125%;
     padding: 0;
     margin: 0;
-}
-
-main code, main pre {
 }
 
 main code {
@@ -802,10 +800,7 @@ code.configref_label_changed {
 
     main {
         padding: 10mm;
-    }
-
-    h1, h2, h3 {
-        page-break-before: always;
+        background: white;
     }
 
     #sidebar-toggle {
