@@ -35,9 +35,9 @@ class Config(gws.Config):
     accessConstraintsType: Optional[str]
     """Access constraint type for the object."""
     attribution: Optional[str]
-    """Attribution information for the object."""
+    """Attribution information for the object. (changed in 8.2)"""
     attributionUrl: Optional[str]
-    """Attribution URL for the object."""
+    """Attribution URL for the object. (added in 8.2)"""
     dateCreated: Optional[gws.DateStr]
     """Object creation date."""
     dateUpdated: Optional[gws.DateStr]
