@@ -24,7 +24,7 @@ class Config(gws.base.layer.Config):
     sourceLayers: Optional[gws.gis.source.LayerFilter]
     """Source layers to use."""
     sqlFilters: Optional[dict]
-    """Per-layer sql filters."""
+    """Per-layer sql filters. (added in 8.2)"""
 
 
 class Object(gws.base.layer.image.Object):
