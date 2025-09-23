@@ -4,13 +4,21 @@
 
 The [configuration reference](/admin-de/reference) is generated automatically from the source code.
 
-To make the reference use localized strings, edit the file `app/gws/spec/strings.de.ini` in the `gbd-websuite` directory. The structure is just a list of `key=value` pairs, where a key is a full name of a config option and value is your translation. The full name is normally a page title + the value in the "Property" column.  
-
-Run the spec generator in the verbose mode to see which translations are missing:
+English descriptions of configuration options are taken directly from sources, for other languages we use a simple key-value translation system. Each object and each property has a unique key, which is a combination of the object path and the property name (add `?dev=1` to the URL to see the keys). To change the translated text, locate `strings.ini` in a `_doc` subdirectory of the corresponding module. For example, to change this key
 
 ```
-make.sh spec -v
+gws.plugin.auth_method.basic.Config.realm
 ```
+
+you need to edit this file:
+
+```
+gbd-websuite/app/gws/plugin/auth_method/_doc/strings.ini
+```
+
+In practice, it's often easier to find the key using global search in the project directory.
+
+Once the text is changed, you need to rebuild the docs with `make.sh doc`. Doc development server will regenerate the docs automatically when you save the file.
 
 ## Building custom documentation
 
