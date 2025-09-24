@@ -1,7 +1,9 @@
 # Themen :/admin-de/themen
 
-## Abfrage
+## :/admin-de/plugin/abfrage
+
 <!--
+ In File: /gbd-websuite/app/gws/plugin/identify_tool/_doc/admin_de.doc.md
 - info
 - spatial info
 -->
