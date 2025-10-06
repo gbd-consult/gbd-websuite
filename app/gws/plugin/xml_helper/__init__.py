@@ -8,7 +8,7 @@ gws.ext.new.helper('xml')
 
 
 class NamespaceConfig(gws.Config):
-    """XML Namespace configuration. (added in 8.1)"""
+    """XML Namespace configuration."""
 
     xmlns: str
     """Default prefix for this Namespace."""
@@ -23,7 +23,7 @@ class NamespaceConfig(gws.Config):
 
 
 class Config(gws.Config):
-    """XML helper. (added in 8.1)"""
+    """XML helper."""
 
     namespaces: list[NamespaceConfig]
     """List of custom namespaces for XML generation."""

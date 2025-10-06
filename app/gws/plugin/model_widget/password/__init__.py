@@ -7,7 +7,7 @@ gws.ext.new.modelWidget('password')
 
 
 class Config(gws.base.model.widget.Config):
-    """Password widget. (added in 8.1)"""
+    """Password widget."""
 
     placeholder: str = ''
     """Password input placeholder."""

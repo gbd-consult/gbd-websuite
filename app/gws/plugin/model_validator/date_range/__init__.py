@@ -10,7 +10,7 @@ gws.ext.new.modelValidator('dateRange')
 
 
 class Config(gws.base.model.validator.Config):
-    """Validator for date ranges. (added in 8.1)"""
+    """Validator for date ranges."""
 
     min: Optional[gws.ext.config.modelValue]
     """Minimum date for the range."""

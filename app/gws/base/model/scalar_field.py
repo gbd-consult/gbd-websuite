@@ -10,7 +10,7 @@ class Config(gws.base.model.field.Config):
     """Configuration for the scalar field."""
 
     isVirtual: Optional[bool]
-    """The field is not stored in the DB. (added in 8.1)"""
+    """The field is not stored in the DB."""
 
 
 class Props(gws.base.model.field.Props):

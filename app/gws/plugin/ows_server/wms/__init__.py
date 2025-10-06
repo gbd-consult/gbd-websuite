@@ -66,9 +66,9 @@ class Config(server.service.Config):
     """WMS Service configuration"""
 
     layerLimit: int = 0
-    """WMS LayerLimit. (added in 8.1)"""
+    """WMS LayerLimit."""
     maxPixelSize: int = 0
-    """WMS MaxWidth/MaxHeight value. (added in 8.1)"""
+    """WMS MaxWidth/MaxHeight value."""
 
 
 class Object(server.service.Object):

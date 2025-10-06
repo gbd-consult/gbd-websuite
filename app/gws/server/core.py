@@ -15,7 +15,7 @@ class SpoolConfig(gws.Config):
     jobFrequency: gws.Duration = '3'
     """Background jobs checking frequency."""
     timeout: gws.Duration = '300'
-    """Job timeout. (added in 8.1)"""
+    """Job timeout."""
 
 
 class WebConfig(gws.Config):
@@ -28,7 +28,7 @@ class WebConfig(gws.Config):
     maxRequestLength: int = 10
     """Max request length in megabytes."""
     timeout: gws.Duration = '60'
-    """Web server timeout. (added in 8.1)"""
+    """Web server timeout."""
 
 
 class MapproxyConfig(gws.Config):
@@ -111,7 +111,5 @@ class Config(gws.Config):
     """Shell or python script to run before configuring the server. (added in 8.2)"""
     postConfigure: str = ''
     """Shell or python script to run run after the service has been configured. (added in 8.2)"""
-    timeout: gws.Duration = '60'
-    """Server timeout. (deprecated in 8.1)"""
     timeZone: str = 'Europe/Berlin'
     """Timezone for this server."""

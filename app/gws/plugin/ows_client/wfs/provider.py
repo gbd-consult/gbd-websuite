@@ -30,7 +30,7 @@ class Config(gws.base.ows.client.provider.Config):
     """WFS provider configuration."""
     
     withBboxCrs: Optional[bool]
-    """Add CRS to bbox request parameters. (added in 8.1)"""
+    """Add CRS to bbox request parameters."""
 
 
 class Object(gws.base.ows.client.provider.Object):

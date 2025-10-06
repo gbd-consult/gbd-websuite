@@ -13,7 +13,7 @@ gws.ext.new.action('account')
 
 
 class Config(gws.base.action.Config):
-    """User Account action. (added in 8.1)"""
+    """User Account action."""
     pass
 
 

@@ -23,7 +23,7 @@ class MfaConfig:
 
 
 class Config(gws.Config):
-    """Account helper. (added in 8.1)"""
+    """Account helper."""
 
     adminModel: gws.ext.config.model
     """Edit model for account administration."""

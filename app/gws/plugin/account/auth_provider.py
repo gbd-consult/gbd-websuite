@@ -11,7 +11,7 @@ gws.ext.new.authProvider('account')
 
 
 class Config(gws.base.auth.provider.Config):
-    """Account-based authorization provider. (added in 8.1)"""
+    """Account-based authorization provider."""
     pass
 
 

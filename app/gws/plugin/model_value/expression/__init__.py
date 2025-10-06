@@ -29,7 +29,7 @@ gws.ext.new.modelValue('expression')
 
 
 class Config(gws.base.model.value.Config):
-    """Expression-based value. (added in 8.1)"""
+    """Expression-based value."""
 
     expression: str
     """Python expression to evaluate."""

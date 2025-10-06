@@ -20,7 +20,7 @@ gws.ext.new.template('text')
 
 
 class Config(gws.base.template.Config):
-    """Text-only template. (added in 8.1)"""
+    """Text-only template."""
 
     path: Optional[gws.FilePath]
     """Path to a template file."""

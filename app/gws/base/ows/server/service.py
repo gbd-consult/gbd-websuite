@@ -29,15 +29,13 @@ class Config(gws.ConfigWithAccess):
     extentCrs: Optional[gws.CrsName]
     """Service extent CRS. (added in 8.2)"""
     imageFormats: Optional[list[gws.lib.image.FormatConfig]]
-    """Supported image formats. (added in 8.1)"""
+    """Supported image formats."""
     maxFeatureCount: int = 10000
-    """Max number of features per page. (added in 8.1)"""
+    """Max number of features per page."""
     metadata: Optional[gws.base.metadata.Config]
     """Service metadata."""
     rootLayerUid: str = ''
     """Root layer uid."""
-    searchLimit: int = 10000
-    """Search limit. (deprecated in 8.1)"""
     searchTolerance: gws.UomValueStr = '10px'
     """Search pixel tolerance."""
     supportedCrs: Optional[list[gws.CrsName]]

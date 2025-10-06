@@ -13,7 +13,7 @@ gws.ext.new.modelValidator('regex')
 
 
 class Config(gws.base.model.validator.Config):
-    """Regular expression validator. (added in 8.1)"""
+    """Regular expression validator."""
 
     regex: gws.Regex
     """Regular expression to match against the field value."""

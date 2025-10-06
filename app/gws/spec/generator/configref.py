@@ -228,7 +228,7 @@ class _Creator:
 
         local_text = local_text or en_text
 
-        # process a label, like "foobar (added in 8.1)"
+        # process a label, like "foobar"
         # it might be missing in a translation, but present in the original (spec) docstring
         text, label = self.extract_label(local_text)
         if not label and en_text != local_text:

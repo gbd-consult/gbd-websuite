@@ -32,7 +32,7 @@ class Config(gws.Config):
     projectName: Optional[str]
     """Qgis project name."""
     defaultLegendOptions: Optional[dict]
-    """Default options for qgis legends. (added in 8.1)."""
+    """Default options for qgis legends.."""
     directRender: Optional[list[str]]
     """Qgis data providers that should be rendered directly."""
     directSearch: Optional[list[str]]
@@ -40,9 +40,9 @@ class Config(gws.Config):
     forceCrs: Optional[gws.CrsName]
     """Use this CRS for requests."""
     extentBuffer: Optional[int]
-    """Extent buffer for automatically computed bounds. (added in 8.1)."""
+    """Extent buffer for automatically computed bounds.."""
     useCanvasExtent: Optional[bool]
-    """Use canvas extent as project extent. (added in 8.1)."""
+    """Use canvas extent as project extent.."""
 
 
 class Object(gws.OwsProvider):

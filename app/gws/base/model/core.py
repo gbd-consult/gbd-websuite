@@ -51,7 +51,7 @@ class Config(gws.ConfigWithAccess):
     sort: Optional[list[gws.SortOptions]]
     """Default sorting."""
     clientOptions: Optional[ClientOptions]
-    """Client options for a model. (added in 8.1)."""
+    """Client options for a model.."""
 
 
 class Props(gws.Props):

@@ -25,7 +25,7 @@ class Error(gws.Error):
 
 
 class FormatConfig(gws.Config):
-    """Image format configuration. (added in 8.1)"""
+    """Image format configuration."""
 
     mimeTypes: list[gws.MimeType]
     """Mime types for this format."""

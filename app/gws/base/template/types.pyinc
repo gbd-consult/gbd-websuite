@@ -3,10 +3,6 @@ class TemplateArgs(Data):
 
     app: 'Application'
     """Application object."""
-    gwsVersion: str
-    """GWS version. (deprecated in 8.1)"""
-    gwsBaseUrl: str
-    """GWS server base url. (deprecated in 8.1)"""
     locale: 'Locale'
     """Current locale."""
     date: 'DateFormatter'

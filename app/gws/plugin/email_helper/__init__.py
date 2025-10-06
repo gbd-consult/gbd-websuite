@@ -22,7 +22,7 @@ class SmtpMode(gws.Enum):
 
 
 class SmtpConfig(gws.Config):
-    """SMTP server configuration. (added in 8.1)"""
+    """SMTP server configuration."""
 
     mode: SmtpMode = SmtpMode.ssl
     """Connection mode."""
