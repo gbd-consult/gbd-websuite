@@ -154,7 +154,7 @@ class Object(server.service.Object):
             members=mds,
             numMatched=len(mds),
             numReturned=len(mds),
-            timestamp=gws.lib.datetimex.to_iso_string(with_tz=''),
+            timestamp=gws.lib.datetimex.to_iso_string(with_tz=':'),
         )
 
         return self.template_response(
@@ -172,7 +172,7 @@ class Object(server.service.Object):
             members=mds,
             numMatched=len(mds),
             numReturned=len(mds),
-            timestamp=gws.lib.datetimex.to_iso_string(with_tz=''),
+            timestamp=gws.lib.datetimex.to_iso_string(with_tz=':'),
         )
 
         return self.template_response(

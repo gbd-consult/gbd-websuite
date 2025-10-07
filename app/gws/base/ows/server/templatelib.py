@@ -23,7 +23,7 @@ def ows_wgs84_bounding_box(lc: core.LayerCaps):
 
 
 # OGC 06-121r3 sec 7.4.4
-def ows_service_identification(ta: request.TemplateArgs):
+def ows_service_identification(ta: server.TemplateArgs):
     md = ta.service.metadata
 
     return (
@@ -39,7 +39,7 @@ def ows_service_identification(ta: request.TemplateArgs):
 
 
 # OGC 06-121r3 sec 7.4.5
-def ows_service_provider(ta: request.TemplateArgs):
+def ows_service_provider(ta: server.TemplateArgs):
     md = ta.service.metadata
 
     return (
@@ -74,7 +74,7 @@ def ows_service_provider(ta: request.TemplateArgs):
 # A URL prefix is defined as a string including... mandatory question mark
 
 
-def ows_service_url(ta: request.TemplateArgs, get=True, post=False):
+def ows_service_url(ta: server.TemplateArgs, get=True, post=False):
     if get:
         yield 'ows:DCP/ows:HTTP/ows:Get', {'xlink:type': 'simple', 'xlink:href': ta.serviceUrl + '?'}
     if post:
@@ -95,11 +95,11 @@ def online_resource(url):
 # A URL prefix is defined... as a string including... mandatory question mark
 
 
-def dcp_service_url(ta: request.TemplateArgs):
+def dcp_service_url(ta: server.TemplateArgs):
     return 'DCPType/HTTP/Get', online_resource(ta.serviceUrl + '?')
 
 
-def legend_url_nested(ta: request.TemplateArgs, lc: core.LayerCaps, size=None):
+def legend_url_nested(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
     name = xmlx.namespace.unqualify_name(lc.layerNameQ)
     return (
         'LegendURL',
@@ -109,7 +109,7 @@ def legend_url_nested(ta: request.TemplateArgs, lc: core.LayerCaps, size=None):
     )
 
 
-def legend_url(ta: request.TemplateArgs, lc: core.LayerCaps, size=None):
+def legend_url(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
     name = xmlx.namespace.unqualify_name(lc.layerNameQ)
     return (
         'LegendURL',
@@ -158,13 +158,13 @@ def lon_lat_envelope(lc: core.LayerCaps):
 # The "type" attribute indicates the standard... The enclosed <Format> element... etc
 
 
-def meta_links_nested(ta: request.TemplateArgs, md: gws.Metadata):
+def meta_links_nested(ta: server.TemplateArgs, md: gws.Metadata):
     if md.metaLinks:
         for ml in md.metaLinks:
             yield meta_url_nested(ta, ml, 'MetadataURL')
 
 
-def meta_url_nested(ta: request.TemplateArgs, ml: gws.MetadataLink, name: str):
+def meta_url_nested(ta: server.TemplateArgs, ml: gws.MetadataLink, name: str):
     if ml:
         yield name, {'type': ml.type}, ('Format', ml.format), online_resource(ta.url_for(ml.url))
 
@@ -177,13 +177,13 @@ def meta_url_nested(ta: request.TemplateArgs, ml: gws.MetadataLink, name: str):
 # (whatever that means)
 
 
-def meta_links_simple(ta: request.TemplateArgs, md: gws.Metadata):
+def meta_links_simple(ta: server.TemplateArgs, md: gws.Metadata):
     if md.metaLinks:
         for ml in md.metaLinks:
             yield meta_url_simple(ta, ml, 'MetadataURL')
 
 
-def meta_url_simple(ta: request.TemplateArgs, ml: gws.MetadataLink, name: str):
+def meta_url_simple(ta: server.TemplateArgs, ml: gws.MetadataLink, name: str):
     if ml:
         yield name, {'xlink:href': ta.url_for(ml.url), 'about': ml.about}
 
@@ -221,7 +221,7 @@ def wfs_feature_collection_attributes(ta):
 
 def wfs_feature_collection_member(ta: server.TemplateArgs, m: server.FeatureCollectionMember):
     geom = None
-    for name, val in sorted(m.feature.attributes.items()):
+    for name, val in m.feature.attributes.items():
         if m.layerCaps:
             name = xmlx.namespace.qualify_name(name, m.layerCaps.xmlNamespace)
         if isinstance(val, gws.Shape):
@@ -237,7 +237,7 @@ def gml_format_uid(ta: server.TemplateArgs, uid):
     if not uid:
         return '_'
     s = str(uid)
-    if s.isdigit():
+    if s[0].isdigit():
         return '_' + s
     return s
 
@@ -263,7 +263,7 @@ def gml_format_value(ta, val):
 # plus OPTIONAL MetadataUrl pointing to an INSPIRE Compliant ISO metadata document
 
 
-def inspire_extended_capabilities(ta: request.TemplateArgs):
+def inspire_extended_capabilities(ta: server.TemplateArgs):
     md = ta.service.metadata
     return [
         (
@@ -326,12 +326,12 @@ def coord_m(n):
     return round(n, gws.lib.uom.DEFAULT_PRECISION[gws.Uom.m])
 
 
-def namespaces_from_caps(ta: request.TemplateArgs) -> dict[str, gws.XmlNamespace]:
+def namespaces_from_caps(ta: server.TemplateArgs) -> dict[str, gws.XmlNamespace]:
     return {lc.xmlNamespace.xmlns: lc.xmlNamespace for lc in ta.layerCapsList if lc.xmlNamespace is not None}
 
 
 def to_xml_response(
-    ta: request.TemplateArgs,
+    ta: server.TemplateArgs,
     tag,
     namespaces: Optional[dict[str, gws.XmlNamespace]] = None,
     default_namespace: Optional[gws.XmlNamespace] = None,
@@ -355,7 +355,7 @@ def to_xml_response(
 
 
 def to_xml_response_with_doctype(
-    ta: request.TemplateArgs,
+    ta: server.TemplateArgs,
     tag,
     doctype: str,
 ) -> gws.ContentResponse:

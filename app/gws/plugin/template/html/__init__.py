@@ -203,7 +203,7 @@ class Object(gws.base.template.Object):
 
     ##
 
-    def finalize(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
+    def finalize(self, tri: gws.TemplateRenderInput, html: str, args: gws.TemplateArgs, main_engine: 'Engine'):
         self.notify(tri, 'finalize_print')
 
         mime = tri.mimeOut
@@ -225,7 +225,7 @@ class Object(gws.base.template.Object):
 
         raise gws.Error(f'invalid output mime: {tri.mimeOut!r}')
 
-    def finalize_pdf(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
+    def finalize_pdf(self, tri: gws.TemplateRenderInput, html: str, args: gws.TemplateArgs, main_engine: 'Engine'):
         content_pdf_path = gws.u.ephemeral_path('content.pdf')
 
         page_size = main_engine.pageSize or self.pageSize
@@ -262,7 +262,7 @@ class Object(gws.base.template.Object):
 
         return combined_pdf_path
 
-    def finalize_png(self, tri: gws.TemplateRenderInput, html: str, args: dict, main_engine: 'Engine'):
+    def finalize_png(self, tri: gws.TemplateRenderInput, html: str, args: gws.TemplateArgs, main_engine: 'Engine'):
         out_png_path = gws.u.ephemeral_path('out.png')
 
         page_size = main_engine.pageSize or self.pageSize

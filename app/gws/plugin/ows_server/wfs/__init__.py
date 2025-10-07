@@ -206,14 +206,14 @@ class Object(server.service.Object):
             return self.template_response(sr)
 
         # if no template is defined, we return the XML schema for the requested layers
-        
+
         lcs = self.requested_layer_caps(sr)
         el, opts = server.layer_caps.xml_schema(lcs, sr.req.user)
-        
+
         opts.withNamespaceDeclarations = True
         opts.withSchemaLocations = True
         opts.withXmlDeclaration = True
-        
+
         return self.xml_response(el, opts)
 
     def handle_get_feature(self, sr: server.request.Object):
@@ -229,8 +229,11 @@ class Object(server.service.Object):
     ##
 
     def requested_layer_caps(self, sr: server.request.Object):
+        tns = sr.list_param('TYPENAME,TYPENAMES')
+        if not tns:
+            return sr.layerCapsList
         lcs = []
-        for name in sr.list_param('TYPENAME,TYPENAMES'):
+        for name in tns:
             for lc in sr.layerCapsList:
                 if server.layer_caps.feature_name_matches(lc, name, sr.xmlnsReplacements):
                     lcs.append(lc)

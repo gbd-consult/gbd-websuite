@@ -7,8 +7,8 @@
 | wsdl             |       |   |         | schemas.xmlsoap.org/wsdl                      |                                                                                                       |
 | xlink            |       |   |         | www.w3.org/1999/xlink                         | www.w3.org/XML/2008/06/xlink.xsd                                                                      |
 | xml              |       |   |         | www.w3.org/XML/1998/namespace                 |                                                                                                       |
-| xs               |       |   |         | www.w3.org/2001/XMLSchema                     |                                                                                                       |
-| xsd              |       |   |         | www.w3.org/2001/XMLSchema                     |                                                                                                       |
+| xs               |       |   |         | www.w3.org/2001/XMLSchema                     | www.w3.org/2009/XMLSchema/XMLSchema.xsd                                                               |
+| xsd              |       |   |         | www.w3.org/2001/XMLSchema                     | www.w3.org/2009/XMLSchema/XMLSchema.xsd                                                               |
 | xsi              |       |   |         | www.w3.org/2001/XMLSchema-instance            |                                                                                                       |
 | #                |       |   |         |                                               |                                                                                                       |
 | csw              |       |   | 2.0.2   | www.opengis.net/cat/csw/2.0.2                 | schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd                                                       |

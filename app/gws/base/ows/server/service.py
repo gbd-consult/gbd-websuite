@@ -289,15 +289,21 @@ class Object(gws.OwsService):
     def feature_collection(self, sr: request.Object, lcs: list[core.LayerCaps], hits: int, results: list[gws.SearchResult]) -> core.FeatureCollection:
         fc = core.FeatureCollection(
             members=[],
-            timestamp=gws.lib.datetimex.now(),
             numMatched=hits,
             numReturned=len(results),
+            timestamp=gws.lib.datetimex.to_iso_string(with_tz=':'),
         )
 
         lcs_map = {id(lc.layer): lc for lc in lcs}
 
         for r in results:
             r.feature.transform_to(sr.targetCrs)
-            fc.members.append(core.FeatureCollectionMember(feature=r.feature, layer=r.layer, layerCaps=lcs_map.get(id(r.layer)) if r.layer else None))
+            fc.members.append(
+                core.FeatureCollectionMember(
+                    feature=r.feature,
+                    layer=r.layer,
+                    layerCaps=lcs_map.get(id(r.layer)) if r.layer else None,
+                )
+            )
 
         return fc

@@ -60,7 +60,7 @@ class Object(gws.Template):
             uid=self.uid,
         )
 
-    def prepare_args(self, tri: gws.TemplateRenderInput):
+    def prepare_args(self, tri: gws.TemplateRenderInput) -> gws.TemplateArgs:
         args = gws.u.merge({}, tri.args)
         args.setdefault('app', self.root.app)
         args.setdefault('subject', self.subject)
@@ -84,7 +84,7 @@ class Object(gws.Template):
         args.setdefault('gwsVersion', self.root.app.version)
         args.setdefault('gwsBaseUrl', gws.c.SERVER_ENDPOINT)
 
-        return args
+        return gws.TemplateArgs(args)
 
     def notify(self, tri: gws.TemplateRenderInput, message: str):
         if tri.notify:

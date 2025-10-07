@@ -224,13 +224,24 @@ def from_timestamp(n: float, tz: str = '') -> dt.datetime:
 
 
 def to_iso_string(d: Optional[dt.date] = None, with_tz='+', sep='T') -> str:
-    fmt = f'%Y-%m-%d{sep}%H:%M:%S'
-    if with_tz:
-        fmt += '%z'
-    s = _datetime(d).strftime(fmt)
-    if with_tz == 'Z' and s.endswith('+0000'):
-        s = s[:-5] + 'Z'
-    return s
+    """Convert a date or time to an ISO string.
+
+    Args:
+        d: Date or time to convert. If None, the current date and time is used.
+        with_tz: If set, append the time zone information. Can be "Z" (for UTC), ":" (for ISO 8601 format) or "+" (for +hhmm format).
+        sep: Separator between date and time. Default is "T".
+    """
+
+    d = _datetime(d)
+    s = d.strftime(f'%Y-%m-%d{sep}%H:%M:%S')
+    if not with_tz:
+        return s
+    tz = d.strftime('%z')
+    if with_tz == 'Z' and tz == '+0000':
+        return s + 'Z'
+    if with_tz == ':' and len(tz) == 5:
+        return s + tz[:3] + ':' + tz[3:]
+    return s + tz
 
 
 def to_iso_date_string(d: Optional[dt.date] = None) -> str:
