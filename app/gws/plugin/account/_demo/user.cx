@@ -1,12 +1,11 @@
 uid "user_account"
 
-title "Accont Interface"
+title "Nutzerkonto"
 
 metadata.keywords [ "auth" "user" ]
 
 metadata.abstract """
-Simple project to show the Accont UI
-"""
+Diese Demo zeigt das einfache User Interface nach der Anmeldung am Nutzerkonto. Nach der Anmeldung mit dem Benutzer `demo1` und dem Passwort `demo1` wird im Reiter `User` der Seitenleiste der Names des Benutzers angezeigt."""
 
 access "allow all"
 
