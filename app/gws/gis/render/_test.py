@@ -79,13 +79,15 @@ def test_render_map_mm_bbox():
         # notify = print('callable'),
         planes=[p1, p2, p3],
         rotation=0,
-        scale=100)
+        scale=100,
+    )
 
     assert render.render_map(mri).__str__() == (
         "{'planes': [], 'view': {'dpi': 96, 'rotation': 0, 'mmSize': (200, 200), "
         "'pxSize': (755.9055118110236, 755.9055118110236), 'bounds': {'crs': "
         "<crs:4326>, 'extent': (100, 100, 300, 300)}, 'center': (200.0, 200.0), "
-        "'scale': 944}}")
+        "'scale': 944}}"
+    )
 
 
 def test_render_map_px_center():
@@ -105,13 +107,15 @@ def test_render_map_px_center():
         # notify = print('callable'),
         planes=[p1, p2, p3],
         rotation=0,
-        scale=100)
+        scale=100,
+    )
 
     assert render.render_map(mri).__str__() == (
         "{'planes': [], 'view': {'dpi': 96, 'rotation': 0, 'pxSize': (200, 200), "
         "'mmSize': (52.916666666666664, 52.916666666666664), 'center': (150, 150), "
         "'scale': 100, 'bounds': {'crs': <crs:4326>, 'extent': (147.35416666666666, "
-        '147.35416666666666, 152.64583333333334, 152.64583333333334)}}}')
+        '147.35416666666666, 152.64583333333334, 152.64583333333334)}}}'
+    )
 
 
 def test_output_to_html_element():
@@ -121,10 +125,12 @@ def test_output_to_html_element():
 
     mv = gws.MapView(mmSize=(200, 200))
     mro = gws.MapRenderOutput(view=mv, planes=[p1, p2, p3])
-
-    assert render.output_to_html_element(mro).to_string() == u.fxml('<div '
-                                                                    'style="position:relative;overflow:hidden;left:0;top:0;width:200mm;height:200mm">'
-                                                                    '<img/></div>')
+    h = render.output_to_html_element(mro).to_string()
+    assert u.fxml(h) == u.fxml("""
+        <div style="position:relative;overflow:hidden;left:0;top:0;width:200mm;height:200mm">
+        <img/>
+        </div>
+    """)
 
 
 def test_output_to_html_string():
@@ -134,7 +140,9 @@ def test_output_to_html_string():
 
     mv = gws.MapView(mmSize=(200, 200))
     mro = gws.MapRenderOutput(view=mv, planes=[p1, p2, p3])
-
-    assert render.output_to_html_string(mro) == u.fxml('<div '
-                                                       'style="position:relative;overflow:hidden;left:0;top:0;width:200mm;height:200mm">'
-                                                       '<img/></div>')
+    h = render.output_to_html_string(mro)
+    assert  u.fxml(h)== u.fxml("""
+        <div style="position:relative;overflow:hidden;left:0;top:0;width:200mm;height:200mm">
+        <img/>
+        </div>
+    """)

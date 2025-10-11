@@ -45,14 +45,14 @@ def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: b
     if not crs:
         raise Error('no CRS declared for envelope')
 
-    coords = None
 
     try:
+        coords = [None, None]
+        
         if el.lcName == 'box':
             coords = _coords(el)
 
         elif el.lcName == 'envelope':
-            coords = [None, None]
             for coord_el in el:
                 if coord_el.lcName == 'lowercorner':
                     coords[0] = _coords_pos(coord_el)[0]
@@ -189,6 +189,7 @@ def _coords(any_el):
             return _coords_pos(el)
         if el.lcName == 'poslist':
             return _coords_poslist(el)
+    raise Error(f'expected coordinates list')
 
 
 def _coords_coordinates(el):

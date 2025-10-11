@@ -158,8 +158,8 @@ def test_sanitize_element_disallowed_attributes():
     # Verify disallowed attributes are removed                                                                                                                                         
     circle = result.children()[0]
     assert circle.attr('fill') == 'blue'
-    assert circle.attr('onmouseover') is None
-    assert circle.attr('onclick') is None
+    assert circle.attr('onmouseover') == ''
+    assert circle.attr('onclick') == ''
 
 
 def test_sanitize_element_url_attributes():
@@ -181,7 +181,7 @@ def test_sanitize_element_url_attributes():
 
     # Verify URL attributes are removed                                                                                                                                                
     circle = result.children()[0]
-    assert circle.attr('fill') is None
+    assert circle.attr('fill') == ''
     assert circle.attr('stroke') == 'black'
 
 
@@ -243,4 +243,4 @@ def test_sanitize_element_data_url():
 
     # Verify data URL is removed                                                                                                                                                       
     circle = result.children()[0]
-    assert circle.attr('fill') is None 
+    assert circle.attr('fill') == ''

@@ -12,7 +12,7 @@ def test_write_headers():
     obj.initialize(cfg)
     wrt = obj.writer(intl.locale('en_US'))
     wrt.write_headers(['foo', 'bar', 'foo'])
-    assert wrt.headers == r'"foo","bar","foo"'
+    assert wrt.to_str() == r'"foo","bar","foo"'
 
 
 def test_write_row():
@@ -21,7 +21,7 @@ def test_write_row():
     obj.initialize(cfg)
     wrt = obj.writer(intl.locale('en_US'))
     wrt.write_row(['foo', 'bar', 'foo'])
-    assert wrt.rows == ['"foo","bar","foo"']
+    assert wrt.to_str() == '"foo","bar","foo"'
 
 
 def test_to_str():

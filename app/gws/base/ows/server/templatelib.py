@@ -9,7 +9,7 @@ import gws.lib.uom
 import gws.lib.xmlx as xmlx
 import gws.base.ows.server as server
 
-from . import core, request, service
+from . import core, service
 
 
 # OGC 06-121r9 Table 34

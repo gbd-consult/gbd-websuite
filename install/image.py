@@ -227,6 +227,9 @@ class Builder(Base):
         # see https://github.com/sdispater/pendulum/issues?q=time-machine
         __(f'RUN pip3 uninstall -y time_machine')
 
+        # there are problems with the binary module in pendulum 3.1
+        __(f'RUN find $VIRTUAL_ENV -name "_pendulum*.so" -delete')
+
         __(f'COPY {self.wkhtmltopdf_package} /{self.wkhtmltopdf_package}')
         __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /{self.wkhtmltopdf_package}')
 

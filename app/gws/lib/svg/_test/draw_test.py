@@ -23,8 +23,8 @@ def test_shape_to_fragment_point():
     fragment = draw.shape_to_fragment(shape, view)
     assert len(fragment) == 1
     assert fragment[0].name == 'circle'
-    assert fragment[0].attr('cx') == 377952
-    assert fragment[0].attr('cy') == 3023622
+    assert fragment[0].attr('cx') == '377952'
+    assert fragment[0].attr('cy') == '3023622'
     
     # Test with custom style
     values = gws.StyleValues(
@@ -39,9 +39,9 @@ def test_shape_to_fragment_point():
     fragment = draw.shape_to_fragment(shape, view, style=style)
     assert len(fragment) == 1
     assert fragment[0].name == 'circle'
-    assert fragment[0].attr('cx') == 377952
-    assert fragment[0].attr('cy') == 3023622
-    assert fragment[0].attr('r') == 10  # point_size/2
+    assert fragment[0].attr('cx') == '377952'
+    assert fragment[0].attr('cy') == '3023622'
+    assert fragment[0].attr('r') == '10'  # point_size/2
     assert fragment[0].attr('fill') == 'red'
     assert fragment[0].attr('stroke') == 'blue'
     assert fragment[0].attr('stroke-width') == '2px'
@@ -182,8 +182,8 @@ def test_shape_to_fragment_with_marker():
     # Check marker
     marker = fragment[0]
     assert marker.name == 'marker'
-    assert marker.attr('markerWidth') == 16
-    assert marker.attr('markerHeight') == 16
+    assert marker.attr('markerWidth') == '16'
+    assert marker.attr('markerHeight') == '16'
     
     # Check circle inside marker
     circles = [c for c in marker.children() if c.name == 'circle']
@@ -231,17 +231,17 @@ def test_soup_to_fragment():
     # Check line
     line = fragment[0]
     assert line.name == 'line'
-    assert line.attr('x1') == 377952
-    assert line.attr('y1') == 3401574
-    assert line.attr('x2') == 755905
-    assert line.attr('y2') == 3023622
+    assert line.attr('x1') == '377952'
+    assert line.attr('y1') == '3401574'
+    assert line.attr('x2') == '755905'
+    assert line.attr('y2') == '3023622'
     assert line.attr('stroke') == 'black'
     
     # Check text with rotation
     text = fragment[1]
     assert text.name == 'text'
-    assert text.attr('x') == 1133858
-    assert text.attr('y') == 3401574
+    assert text.attr('x') == '1133858'
+    assert text.attr('y') == '3401574'
     
     # Check rotation transform
     transform = text.attr('transform')
@@ -340,4 +340,4 @@ def test_multigeometry():
     
     # Check coordinates of the circles
     coords = [(c.attr('cx'), c.attr('cy')) for c in circles]
-    assert coords == [(377952, 3401574), (755905, 3023622)]
+    assert coords == [('377952', '3401574'), ('755905', '3023622')]

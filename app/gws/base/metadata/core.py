@@ -271,34 +271,30 @@ def props(md: gws.Metadata) -> gws.Props:
 
 def _new() -> gws.Metadata:
     md = gws.Metadata()
-    for key in vars(_Updaters):
-        if key.startswith('_'):
-            continue
-        fn = getattr(_Updaters, key)
+    for key, fn in _UPDATE_FNS.items():
         fn(md, key, None)
     return md
 
 
 def _update(md: gws.Metadata, *args, **kwargs):
-    d = {}
-    for arg in list(args):
-        if not arg:
-            continue
-        if isinstance(arg, gws.Data):
-            arg = gws.u.to_dict(arg)
-        d.update(arg)
-    d.update(kwargs)
+    def add(a):
+        for key, val in a.items():
+            fn = _UPDATE_FNS.get(key)
+            if fn:
+                fn(md, key, val)
+            elif val is not None:
+                setattr(md, key, val)
     
-    for key, val in d.items():
-        fn = getattr(_Updaters, key, None)
-        if fn:
-            fn(md, key, val)
-        elif val is not None:
-            setattr(md, key, val)
-
-    if 'inspireTheme' in d:
-        _update_inspire_theme(md, '', d['inspireTheme'])
-
+    for a in args:
+        if not a:
+            continue
+        if isinstance(a, gws.Data):
+            a = gws.u.to_dict(a)
+        add(a)
+    
+    add(kwargs)
+    _fix_language(md)
+    
     return md
 
 
@@ -312,30 +308,19 @@ def _update_list(md: gws.Metadata, key, val):
     setattr(md, key, val or [])
 
 
-def _update_language(md: gws.Metadata, key, val):
-    if val:
-        md.language = val
-        md.language3 = gws.lib.intl.locale(val).language3
-        md.languageBib = gws.lib.intl.locale(val).languageBib
-    else:
-        md.language = 'en'
-        md.language3 = 'eng'
-        md.languageBib = 'eng'
+def _fix_language(md: gws.Metadata):
+    lang = md.language or 'en'
+    
+    md.language3 = gws.lib.intl.locale(lang).language3
+    md.languageBib = gws.lib.intl.locale(lang).languageBib
+    
+    if md.inspireTheme:
+        md.inspireThemeNameLocal = inspire.theme_name(md.inspireTheme, md.language) or ''
+        md.inspireThemeNameEn = inspire.theme_name(md.inspireTheme, 'en') or ''
 
 
-def _update_inspire_theme(md: gws.Metadata, key, val):
-    if val:
-        md.inspireTheme = val
-        md.inspireThemeNameLocal = inspire.theme_name(val, md.language) or ''
-        md.inspireThemeNameEn = inspire.theme_name(val, 'en') or ''
-    else:
-        md.inspireTheme = ''
-        md.inspireThemeNameLocal = ''
-        md.inspireThemeNameEn = ''
-
-
-class _Updaters:
-    keywords = _update_set
-    isoTopicCategories = _update_set
-    language = _update_language
-    metaLinks = _update_list
+_UPDATE_FNS = dict(
+    keywords = _update_set,
+    isoTopicCategories = _update_set,
+    metaLinks = _update_list,
+)

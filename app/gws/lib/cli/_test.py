@@ -9,6 +9,8 @@ import gws.test.util as u
 
 
 def test_cprint(capsys):
+    cli.SCRIPT_NAME = ''
+
     # Test with color
     with mock.patch('sys.stdout.isatty', return_value=True):
         cli.cprint('red', 'test message')

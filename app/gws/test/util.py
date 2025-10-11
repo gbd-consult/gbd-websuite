@@ -367,8 +367,11 @@ class mockserver:
 
 
 def fxml(s):
+    """Format XML for easier comparison in tests."""
     s = re.sub(r'\s+', ' ', s.strip())
-    return s.replace(' <', '<').replace('< ', '<').replace(' >', '>').replace('> ', '>')
+    s = re.sub(r'\s*(<|>)\s*', r'\1', s)
+    s = s.replace('<', '\n<').replace('>', '>\n').replace('\n\n', '\n')
+    return s.strip()
 
 
 ##

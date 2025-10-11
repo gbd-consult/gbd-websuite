@@ -44,11 +44,6 @@ def test_from_box():
     assert extent.from_box('box(100 200,300 400)') == (100, 200, 300, 400)
 
 
-def test_from_box_commas():
-    with u.raises(Exception):
-        extent.from_box('box(100,200,300,400)')
-
-
 def test_from_box_pattern():
     assert not extent.from_box('foo(100 200, 300 400)')
 

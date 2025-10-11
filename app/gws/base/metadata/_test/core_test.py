@@ -7,7 +7,6 @@ def test_from_dict():
     data = {'title': 'Test Title', 'abstract': 'Test Abstract', 'keywords': ['bbb', 'aaa'], 'language': 'en'}
 
     md = mdc.from_dict(data)
-    print('@@@@@@@@@@', md)
 
     assert isinstance(md, gws.Metadata)
     assert md.title == 'Test Title'
