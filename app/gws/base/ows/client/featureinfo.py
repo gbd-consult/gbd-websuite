@@ -18,7 +18,7 @@ def _parse(text, default_crs, always_xy):
 
     if text.startswith('<'):
         try:
-            xml_el = xmlx.from_string(text, case_insensitive=True, normalize_namespaces=True)
+            xml_el = xmlx.from_string(text, gws.XmlOptions(caseInsensitive=True))
         except xmlx.Error as exc:
             gws.log.error(f'XML parse error: {exc}')
 
@@ -243,7 +243,8 @@ def _fdata_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureRecord:
 
 
 def _is_gml(el):
-    return 'gml}' in el.tag
+    _, uri, _ = xmlx.namespace.split_name(el.tag)
+    return uri and '/gml' in uri
 
 
 ##

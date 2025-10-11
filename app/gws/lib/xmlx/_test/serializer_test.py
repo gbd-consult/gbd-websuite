@@ -26,7 +26,7 @@ def test_to_string_with_namespaces():
             'a1': 'A1',
             'aaa:a2': 'A2',
         },
-        ['bbb:sub'],
+        ['{http://bbb}sub'],
     )
 
     opts = gws.XmlOptions(
@@ -37,7 +37,7 @@ def test_to_string_with_namespaces():
         withNamespaceDeclarations=True,
     )
     xml = el.to_string(opts)
-    assert xml == u.fxml("""
+    assert u.fxml(xml) == u.fxml("""
         <aaa:a xmlns:aaa="http://aaa" xmlns:bbb="http://bbb">
             <bbb:b a1="A1" aaa:a2="A2">
                 <bbb:sub/>
@@ -45,33 +45,14 @@ def test_to_string_with_namespaces():
         </aaa:a>
     """)
 
-def test_to_string_with_implicit_namespace():
-    aaa_ns = xmlx.namespace.from_args(uid='aaa', xmlns='aaa', uri='http://aaa')
-    bbb_ns = xmlx.namespace.from_args(uid='bbb', xmlns='bbb', uri='http://bbb')
-
+def test_to_string_with_unknown_namespace():
     el = xmlx.tag(
         'aaa:a/bbb:b',
-        {
-            'a1': 'A1',
-            'aaa:a2': 'A2',
-        },
-        ['bbb:sub'],
     )
 
-    opts = gws.XmlOptions(
-        namespaces={
-            'aaa': aaa_ns,
-        },
-        withNamespaceDeclarations=True,
-    )
-    xml = el.to_string(opts)
-    assert xml == u.fxml("""
-        <aaa:a xmlns:aaa="http://aaa" xmlns:bbb="http://bbb">
-            <bbb:b a1="A1" aaa:a2="A2">
-                <bbb:sub/>
-            </bbb:b>
-        </aaa:a>
-    """)
+    with u.raises(Exception):
+        el.to_string()
+
 
 def test_to_string_with_default_namespace():
     aaa_ns = xmlx.namespace.from_args(uid='aaa', uri='http://aaa')
@@ -95,7 +76,7 @@ def test_to_string_with_default_namespace():
         withNamespaceDeclarations=True,
     )
     xml = el.to_string(opts)
-    assert xml == u.fxml("""
+    assert u.fxml(xml) == u.fxml("""
         <a xmlns="http://aaa" xmlns:bbb="http://bbb">
             <bbb:b a1="A1" a2="A2">
                 <bbb:sub/>

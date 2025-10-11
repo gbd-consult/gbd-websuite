@@ -1,4 +1,4 @@
-import datetime
+import gws.lib.datetimex as dtx
 
 
 def atom_to_string(s) -> tuple[str, bool]:
@@ -17,11 +17,11 @@ def atom_to_string(s) -> tuple[str, bool]:
     if isinstance(s, (int, float, bool)):
         return str(s).lower(), True
 
-    if isinstance(s, datetime.datetime):
-        return s.strftime('%Y-%m-%dT%H:%M:%S'), True
+    if isinstance(s, dtx.dt.datetime):
+        return dtx.to_iso_string(s, with_tz=':'), True
 
-    if isinstance(s, datetime.date):
-        return s.strftime('%Y-%m-%d'), True
+    if isinstance(s, dtx.dt.date):
+        return dtx.to_iso_date_string(s), True
 
     return '', False
 

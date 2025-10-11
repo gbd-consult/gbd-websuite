@@ -17,7 +17,6 @@ def from_args(**kwargs) -> gws.XmlNamespace:
     """Create a Namespace from keyword arguments."""
 
     ns = gws.XmlNamespace(**kwargs)
-    register(ns)
     return ns
 
 
@@ -119,9 +118,9 @@ def qualify_name(name: str, ns: Optional[gws.XmlNamespace] = None, replace: bool
         A qualified name.
     """
 
-    ns2, pname = extract(name)
-    if ns2 and not replace:
-        return ns2.xmlns + ':' + pname
+    exist_ns, uri, pname = split_name(name)
+    if (exist_ns or uri) and not replace:
+        return name
     if ns:
         return ns.xmlns + ':' + pname
     return pname
@@ -130,44 +129,7 @@ def qualify_name(name: str, ns: Optional[gws.XmlNamespace] = None, replace: bool
 def unqualify_name(name: str) -> str:
     """Returns an unqualified XML name."""
 
-    _, _, name = split_name(name)
-    return name
-
-
-def unqualify_default(name: str, default_namespace: gws.XmlNamespace) -> str:
-    """Removes the default namespace prefix.
-
-    If the name contains the default namespace, remove it, otherwise return the name as is.
-
-    Args:
-        name: An XML name.
-        default_namespace: A namespace.
-
-    Returns:
-        The name.
-    """
-
-    ns, pname = extract(name)
-    if ns and ns.uid == default_namespace.uid:
-        return pname
-    if ns:
-        return ns.xmlns + ':' + pname
-    return name
-
-
-def clarkify_name(name: str) -> str:
-    """Returns an XML name in the Clark notation.
-
-    Args:
-        name: A qualified XML name.
-
-    Returns:
-        The XML name in Clark notation.
-    """
-
-    ns, pname = extract(name)
-    if ns:
-        return '{' + ns.uri + '}' + pname
+    _, _, pname = split_name(name)
     return pname
 
 

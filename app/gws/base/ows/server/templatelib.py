@@ -348,7 +348,7 @@ def to_xml_response(
         withNamespaceDeclarations=True,
         withSchemaLocations=True,
         withXmlDeclaration=True,
-        xmlnsReplacements=ta.sr.xmlnsReplacements,
+        customXmlns=ta.sr.customXmlns,
     )
 
     return cast(service.Object, ta.sr.service).xml_response(el, opts)

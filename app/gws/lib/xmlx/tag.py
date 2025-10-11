@@ -38,26 +38,24 @@ from . import element, error, util
 def tag(name: str, *args, **kwargs) -> gws.XmlElement:
     """Build an XML element from arguments."""
 
-    els = []
+    stack = []
 
     for n in _split_name(name):
-        el = element.XmlElementImpl(n.strip())
-        if not els:
-            els.append(el)
-        else:
-            els[-1].append(el)
-            els.append(el)
+        el = element.XmlElement(n)
+        if stack:
+            stack[-1].append(el)
+        stack.append(el)
 
-    if not els:
+    if not stack:
         raise error.BuildError(f'invalid tag name: {name!r}')
 
     for arg in args:
-        _add(els[-1], arg)
+        _add(stack[-1], arg)
 
     if kwargs:
-        _add(els[-1], kwargs)
+        _add(stack[-1], kwargs)
 
-    return els[0]
+    return stack[0]
 
 
 ##
@@ -67,7 +65,8 @@ def _add(el: gws.XmlElement, arg):
     if arg is None:
         return
 
-    if isinstance(arg, element.XmlElementImpl):
+    if hasattr(arg, 'tag'):
+        # mimic ElementTree.iselement
         el.append(arg)
         return
 
@@ -122,7 +121,7 @@ def _split_name(name):
 
     for n, s in re.findall(r'({.+?})|([^/{}]+)', name):
         if n:
-            ns = n
+            ns = n.strip()
         else:
             s = s.strip()
             if s:

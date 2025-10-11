@@ -140,7 +140,7 @@ def test_icon():
     icon = style.icon.parse(url, opt)
     url2 = style.icon.to_data_url(icon)
     icon2 = style.icon.parse(url2, opt)
-    assert icon2.__dict__['svg'].__dict__ == icon.__dict__['svg'].__dict__
+    assert icon2.svg.to_dict() == icon.svg.to_dict()
 
 
 def test_parse_untrusted():

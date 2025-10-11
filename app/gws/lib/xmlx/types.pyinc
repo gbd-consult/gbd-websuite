@@ -18,18 +18,18 @@ class XmlNamespace(Data):
 
 
 class XmlOptions(Data):
-    """XML options for serialization."""
+    """XML options for parsing and serialization."""
 
     namespaces: Optional[dict[str, XmlNamespace]] = None
     """Mapping of prefixes to namespaces."""
 
-    xmlnsReplacements: Optional[dict[str, str]] = None
+    customXmlns: Optional[dict[str, str]] = None
     """A mapping of namespace prefixes to custom prefixes."""
 
     defaultNamespace: Optional['XmlNamespace'] = None
     """Default namespace to use for serialization."""
 
-    docype: Optional[str] = None
+    doctype: Optional[str] = None
     """Document type definition (DTD) to use."""
 
     compactWhitespace: bool = False
@@ -37,6 +37,12 @@ class XmlOptions(Data):
 
     removeNamespaces: bool = False
     """Remove all namespace references."""
+
+    caseInsensitive: bool = False
+    """Case insensitive tag and attribute names."""
+        
+    stripNamespaceVersions: bool = False
+    """Remove version suffixes from namespace URIs."""
 
     foldTags: bool = False
     """If true, folds nested tag names into ``parent/child`` names."""
@@ -61,10 +67,10 @@ class XmlElement(Iterable):
     tag: str
     """Tag name, with an optional namespace in the Clark notation."""
 
-    text: Optional[str]
+    text: str
     """Text before first subelement."""
 
-    tail: Optional[str]
+    tail: str
     """Text after this element's end tag."""
 
     attrib: dict

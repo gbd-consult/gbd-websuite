@@ -14,6 +14,8 @@
 | csw              |       |   | 2.0.2   | www.opengis.net/cat/csw/2.0.2                 | schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd                                                       |
 | fes              |       |   | 2.0     | www.opengis.net/fes/2.0                       | schemas.opengis.net/filter/2.0/filterAll.xsd                                                          |
 | gml              |       |   | 3.2     | www.opengis.net/gml/3.2                       | schemas.opengis.net/gml/3.2.1/gml.xsd                                                                 |
+| gml30            | gml   | N | 3.0     | www.opengis.net/gml/3.0                       | schemas.opengis.net/gml/3.0.0/gml.xsd                                                                 |
+| gml31            | gml   | N | 3.1     | www.opengis.net/gml/3.1                       | schemas.opengis.net/gml/3.1.1/gml.xsd                                                                 |
 | gml2             | gml   | N | 2.1     | www.opengis.net/gml                           | schemas.opengis.net/gml/2.1.2/gml.xsd                                                                 |
 | gmlcov           |       |   | 1.0     | www.opengis.net/gmlcov                        | schemas.opengis.net/gmlcov/1.0/gmlcovAll.xsd                                                          |
 | ogc              |       |   |         | www.opengis.net/ogc                           | schemas.opengis.net/filter/1.1.0/filter.xsd                                                           |

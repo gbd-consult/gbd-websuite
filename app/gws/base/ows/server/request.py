@@ -57,7 +57,7 @@ class Object:
     targetCrs: gws.Crs
     version: str
     xmlElement: Optional[gws.XmlElement]
-    xmlnsReplacements: dict
+    customXmlns: dict
 
     def __init__(
         self,
@@ -92,7 +92,7 @@ class Object:
             if s and s > self.service.updateSequence:
                 raise error.InvalidUpdateSequence()
 
-        self.xmlnsReplacements = self.requested_xmlns_replacements()
+        self.customXmlns = self.requested_xmlns_replacements()
 
     def require_project(self):
         return self.load_project(required=True)

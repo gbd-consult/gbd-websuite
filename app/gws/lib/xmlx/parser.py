@@ -1,5 +1,7 @@
 """XML parser."""
 
+from typing import Optional, cast
+
 import re
 import xml.etree.ElementTree
 
@@ -8,122 +10,79 @@ import gws
 from . import error, element, namespace
 
 
-def from_path(
-        path: str,
-        case_insensitive: bool = False,
-        compact_whitespace: bool = False,
-        normalize_namespaces: bool = False,
-        remove_namespaces: bool = False,
-) -> gws.XmlElement:
+def from_path(path: str, opts: Optional[gws.XmlOptions] = None) -> gws.XmlElement:
     """Creates an ``XmlElement`` object from a .xml file.
 
     Args:
         path: Path to the .xml file.
-        case_insensitive: If true tags will be written in lowercase into the XmlElement.
-        compact_whitespace: If true all whitespaces and newlines are omitted.
-        normalize_namespaces:
-        remove_namespaces: Removes all occurrences of namespaces.
+        opts: XML options.
     """
 
     with open(path, 'rb') as fp:
         inp = fp.read()
-    return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
+    return _parse(inp, opts)
 
 
-def from_string(
-        inp: str | bytes,
-        case_insensitive: bool = False,
-        compact_whitespace: bool = False,
-        remove_namespaces: bool = False,
-        normalize_namespaces: bool = False,
-) -> gws.XmlElement:
+def from_string(inp: str | bytes, opts: Optional[gws.XmlOptions] = None) -> gws.XmlElement:
     """Creates an ``XmlElement`` from a string or bytes.
 
     Args:
         inp: .xml file as a string or bytes.
-        case_insensitive: If true tags will be written in lowercase into the XmlElement.
-        compact_whitespace: If true all whitespaces and newlines are omitted.
-        normalize_namespaces:
-        remove_namespaces: Removes all occurrences of namespaces.
+        opts: XML options.
     """
 
-    return _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces)
+    return _parse(inp, opts)
 
 
 ##
 
 
-def _parse(inp, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces):
+def _parse(inp, opts: Optional[gws.XmlOptions] = None) -> gws.XmlElement:
     inp2 = _decode_input(inp)
-    parser = xml.etree.ElementTree.XMLParser(
-        target=_ParserTarget(case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces))
+    parser = xml.etree.ElementTree.XMLParser(target=_ParserTarget(opts or gws.XmlOptions()))
     try:
         parser.feed(inp2)
-        return parser.close()
+        return cast(gws.XmlElement, parser.close())
     except xml.etree.ElementTree.ParseError as exc:
         raise error.ParseError(exc.args[0]) from exc
 
 
 class _ParserTarget:
-    def __init__(self, case_insensitive, compact_whitespace, normalize_namespaces, remove_namespaces):
+    def __init__(self, opts: gws.XmlOptions):
         self.stack = []
         self.root = None
         self.buf = []
-        self.case_insensitive = case_insensitive
-        self.compact_whitespace = compact_whitespace
-        self.remove_namespaces = remove_namespaces
-        self.normalize_namespaces = normalize_namespaces
+        self.opts = opts
 
     def convert_name(self, s: str) -> str:
-        """"Converts a given XML-namespace or URI to a proper name.
-
-        Args:
-            s: XML-namespace or URI.
-
-        Returns:
-            ``{URI}properName``
-            if ``normalize_namespaces`` flag is True, ``{non-versionalized-URL}properName`` is returned,
-            if ``remove_namespaces`` flag is True ``properName`` is returned.
-        """
         xmlns, uri, pname = namespace.split_name(s)
-        pname = pname.lower() if self.case_insensitive else pname
+        pname = pname.lower() if self.opts.caseInsensitive else pname
+        if self.opts.removeNamespaces:
+            return pname
         if not xmlns and not uri:
             return pname
-        if self.remove_namespaces:
-            return pname
-        if self.normalize_namespaces:
-            ns = namespace.find_by_uri(uri)
-            if ns:
-                uri = ns.uri
-        return '{' + uri + '}' + pname
+        if uri:
+            return '{' + uri + '}' + pname
+        return pname
 
     def make(self, tag: str, attrib: dict) -> gws.XmlElement:
-        """Creates an Element.
-
-        Args:
-            tag: The tag.
-            attrib: ``{key:value}``
-        """
         attrib2 = {}
 
         if attrib:
             for name, val in attrib.items():
                 attrib2[self.convert_name(name)] = val
 
-        el = element.XmlElementImpl(self.convert_name(tag), attrib2)
-        el.caseInsensitive = self.case_insensitive
-
+        el = element.XmlElement(self.convert_name(tag), attrib2)
         return el
 
     def flush(self):
-        """Loads the buffer into the stack and clears the stack."""
         if not self.buf:
             return
 
         text = ''.join(self.buf)
         self.buf = []
 
-        if self.compact_whitespace:
+        if self.opts.compactWhitespace:
             text = ' '.join(text.strip().split())
 
         if text:
@@ -133,15 +92,7 @@ class _ParserTarget:
             else:
                 top.text = text
 
-    ##
-
     def start(self, tag: str, attrib: dict):
-        """Flushes the buffer and appends an element to the stack.
-
-        Args:
-            tag: Tag of the XML-element.
-            attrib: Attribute of the XML-element.
-        """
         self.flush()
         el = self.make(tag, attrib)
         if self.stack:
@@ -151,19 +102,13 @@ class _ParserTarget:
         self.stack.append(el)
 
     def end(self, tag):
-        """Flushes the buffer and pops the stack."""
         self.flush()
         self.stack.pop()
 
     def data(self, data):
-        """Adds data to the buffer.
-
-        Args:
-            data: data to add."""
         self.buf.append(data)
 
     def close(self):
-        """Returns root."""
         return self.root
 
 
@@ -174,47 +119,53 @@ def _decode_input(inp) -> str:
     # and remove the xml decl with the (possibly incorrect) encoding
 
     if isinstance(inp, bytes):
-        inp = inp.strip()
-
-        encodings = []
-
-        if inp.startswith(b'<?xml'):
-            try:
-                end = inp.index(b'?>')
-            except ValueError:
-                raise error.ParseError('invalid XML declaration')
-
-            head = inp[:end].decode('ascii').lower()
-            m = re.search(r'encoding\s*=\s*(\S+)', head)
-            if m:
-                encodings.append(m.group(1).strip('\'\"'))
-            inp = inp[end + 2:]
-
-        # try the declared encoding, if any, then utf8, then latin
-
-        if 'utf8' not in encodings:
-            encodings.append('utf8')
-        if 'iso-8859-1' not in encodings:
-            encodings.append('iso-8859-1')
-
-        for enc in encodings:
-            try:
-                return inp.decode(encoding=enc, errors='strict')
-            except (LookupError, UnicodeDecodeError):
-                pass
-
-        raise error.ParseError(f'invalid document encoding, tried {",".join(encodings)}')
-
+        return _decode_bytes_input(inp)
     if isinstance(inp, str):
-        inp = inp.strip()
+        return _decode_str_input(inp)
+    raise error.ParseError(f'invalid input type {type(inp)}')
 
-        if inp.startswith('<?xml'):
-            try:
-                end = inp.index('?>')
-            except ValueError:
-                raise error.ParseError('invalid XML declaration')
-            return inp[end + 2:]
 
-        return inp
+def _decode_bytes_input(inp: bytes) -> str:
+    inp = inp.strip()
 
-    raise error.ParseError(f'invalid input')
+    encodings = []
+
+    if inp.startswith(b'<?xml'):
+        try:
+            end = inp.index(b'?>')
+        except ValueError:
+            raise error.ParseError('invalid XML declaration')
+
+        head = inp[:end].decode('ascii').lower()
+        m = re.search(r'encoding\s*=\s*(\S+)', head)
+        if m:
+            encodings.append(m.group(1).strip('\'"'))
+        inp = inp[end + 2 :]
+
+    # try the declared encoding, if any, then utf8, then latin
+
+    if 'utf-8' not in encodings:
+        encodings.append('utf-8')
+    if 'iso-8859-1' not in encodings:
+        encodings.append('iso-8859-1')
+
+    for enc in encodings:
+        try:
+            return inp.decode(encoding=enc, errors='strict')
+        except (LookupError, UnicodeDecodeError):
+            pass
+
+    raise error.ParseError(f'invalid document encoding, tried {",".join(encodings)}')
+
+
+def _decode_str_input(inp: str) -> str:
+    inp = inp.strip()
+
+    if inp.startswith('<?xml'):
+        try:
+            end = inp.index('?>')
+        except ValueError:
+            raise error.ParseError('invalid XML declaration')
+        return inp[end + 2 :]
+
+    return inp

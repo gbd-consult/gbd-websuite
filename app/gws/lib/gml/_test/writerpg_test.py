@@ -6,7 +6,7 @@ import gws
 import gws.base.shape
 import gws.lib.crs
 import gws.lib.sa as sa
-import gws.lib.xmlx
+import gws.lib.gml
 import gws.test.util as u
 
 DATA = '''
@@ -63,10 +63,17 @@ def test_with_postgis(root: gws.Root):
                 )
                 our_xml = el.to_string()
 
-                # NB this bit is missing in postgis
-                our_xml = our_xml.replace(
-                    'coordinates decimal="." cs="," ts=" ">',
-                    'coordinates>'
-                )
-
+                # NB postgis does not write these attributes
+                our_xml = _remove_attr(our_xml, 'decimal')
+                our_xml = _remove_attr(our_xml, 'cs')
+                our_xml = _remove_attr(our_xml, 'ts')
+                
+                # NB postgis does not write srsName on inner geometries, we do
+                our_xml = _remove_attr(our_xml, 'srsName')
+                postgis_xml = _remove_attr(postgis_xml, 'srsName')
+                
                 assert u.fxml(our_xml) == u.fxml(postgis_xml)
+
+
+def _remove_attr(xml, name):
+    return re.sub(r'\s+' + re.escape(name) + r'="[^"]*"', '', xml)

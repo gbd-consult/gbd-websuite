@@ -1,355 +1,451 @@
 """Tests for the element module"""
 
+import pytest
 import gws
 
-import gws.lib.xmlx as xmlx
+import gws.lib.xmlx.element
+
+
+def _make(*args, **kwargs):
+    return gws.lib.xmlx.element.XmlElement(*args, **kwargs)
+
+
+def test_init():
+    # Test basic initialization
+    e = _make('test')
+    assert e.tag == 'test'
+    assert e.name == 'test'
+    assert e.lcName == 'test'
+    assert e.text == ''
+    assert e.tail == ''
+    assert e.attrib == {}
+    assert len(e) == 0
+
+    # Test with attributes
+    e = _make('test', {'attr1': 'value1'}, attr2='value2')
+    assert e.attrib == {'attr1': 'value1', 'attr2': 'value2'}
+
+
+def test_repr():
+    e = _make('test')
+    repr_str = repr(e)
+    assert 'XmlElement' in repr_str
+    assert "'test'" in repr_str
+
+
+def test_makeelement():
+    e = _make('parent')
+    child = e.makeelement('child', {'attr': 'value'})
+    assert isinstance(child, e.__class__)
+    assert child.tag == 'child'
+    assert child.attrib == {'attr': 'value'}
+
+
+def test_copy():
+    e = _make('test', {'attr': 'value'})
+    e.text = 'hello'
+    e.tail = 'world'
+    child = _make('child')
+    e.append(child)
+
+    copied = e.__copy__()
+    assert copied.tag == e.tag
+    assert copied.attrib == e.attrib
+    assert copied.text == e.text
+    assert copied.tail == e.tail
+    assert len(copied) == len(e)
+    assert copied[0].tag == 'child'
+
+
+def test_len():
+    e = _make('parent')
+    assert len(e) == 0
+
+    e.append(_make('child1'))
+    assert len(e) == 1
+
+    e.append(_make('child2'))
+    assert len(e) == 2
+
+
+def test_getitem_setitem_delitem():
+    parent = _make('parent')
+    child1 = _make('child1')
+    child2 = _make('child2')
+    child3 = _make('child3')
+
+    parent.append(child1)
+    parent.append(child2)
+
+    # Test getitem
+    assert parent[0] is child1
+    assert parent[1] is child2
+
+    # Test setitem
+    parent[1] = child3
+    assert parent[1] is child3
+
+    # Test delitem
+    del parent[0]
+    assert len(parent) == 1
+    assert parent[0] is child3
+
+
+def test_append():
+    parent = _make('parent')
+    child = _make('child')
+
+    parent.append(child)
+    assert len(parent) == 1
+    assert parent[0] is child
+
+
+def test_extend():
+    parent = _make('parent')
+    child1 = _make('child1')
+    child2 = _make('child2')
+
+    parent.extend([child1, child2])
+    assert len(parent) == 2
+    assert parent[0] is child1
+    assert parent[1] is child2
+
+
+def test_insert():
+    parent = _make('parent')
+    child1 = _make('child1')
+    child2 = _make('child2')
+    child3 = _make('child3')
+
+    parent.append(child1)
+    parent.append(child2)
+    parent.insert(1, child3)
+
+    assert len(parent) == 3
+    assert parent[0] is child1
+    assert parent[1] is child3
+    assert parent[2] is child2
+
+
+def test_remove():
+    parent = _make('parent')
+    child1 = _make('child1')
+    child2 = _make('child2')
+
+    parent.append(child1)
+    parent.append(child2)
+    parent.remove(child1)
+
+    assert len(parent) == 1
+    assert parent[0] is child2
+
+
+def test_find():
+    parent = _make('parent')
+    child1 = _make('child')
+    child2 = _make('other')
+
+    parent.append(child1)
+    parent.append(child2)
+
+    found = parent.find('child')
+    assert found is child1
+
+    not_found = parent.find('nonexistent')
+    assert not_found is None
+
+
+def test_findtext():
+    parent = _make('parent')
+    child = _make('child')
+    child.text = 'test text'
+    parent.append(child)
+
+    text = parent.findtext('child')
+    assert text == 'test text'
+
+    default_text = parent.findtext('nonexistent', 'default')
+    assert default_text == 'default'
+
+
+def test_findall():
+    parent = _make('parent')
+    child1 = _make('child')
+    child2 = _make('child')
+    other = _make('other')
+
+    parent.append(child1)
+    parent.append(child2)
+    parent.append(other)
+
+    children = parent.findall('child')
+    assert len(children) == 2
+    assert child1 in children
+    assert child2 in children
+
+
+def test_iterfind():
+    parent = _make('parent')
+    child1 = _make('child')
+    child2 = _make('child')
+
+    parent.append(child1)
+    parent.append(child2)
+
+    found_children = list(parent.iterfind('child'))
+    assert len(found_children) == 2
+    assert child1 in found_children
+    assert child2 in found_children
+
+
+def test_clear():
+    e = _make('test', {'attr': 'value'})
+    e.text = 'hello'
+    e.tail = 'world'
+    e.append(_make('child'))
+
+    e.clear()
+    assert e.attrib == {}
+    assert e.text == ''
+    assert e.tail == ''
+    assert len(e) == 0
+
+
+def test_get_set():
+    e = _make('test')
+
+    # Test get with default
+    assert e.get('nonexistent') is None
+    assert e.get('nonexistent', 'default') == 'default'
+
+    # Test set and get
+    e.set('attr', 'value')
+    assert e.get('attr') == 'value'
+
+
+def test_keys():
+    e = _make('test', {'attr1': 'value1', 'attr2': 'value2'})
+    keys = list(e.keys())
+    assert 'attr1' in keys
+    assert 'attr2' in keys
+    assert len(keys) == 2
+
+
+def test_items():
+    e = _make('test', {'attr1': 'value1', 'attr2': 'value2'})
+    items = list(e.items())
+    assert ('attr1', 'value1') in items
+    assert ('attr2', 'value2') in items
+    assert len(items) == 2
 
 
 def test_iter():
-    xml = '''
-        <root>
-            <a/>
-            <b/>
-            <c/>
-        </root>
-    '''
-    root = xmlx.from_string(xml)
-    tags = [e.tag for e in root]
-    assert tags == ['a', 'b', 'c']
+    parent = _make('parent')
+    child1 = _make('child')
+    child2 = _make('other')
+    grandchild = _make('child')
+    child1.append(grandchild)
+
+    parent.append(child1)
+    parent.append(child2)
+
+    # Test iter all
+    all_elements = list(parent.iter())
+    assert len(all_elements) == 4  # parent, child1, grandchild, child2
+    assert parent in all_elements
+    assert child1 in all_elements
+    assert grandchild in all_elements
+    assert child2 in all_elements
+
+    # Test iter with tag
+    child_elements = list(parent.iter('child'))
+    assert len(child_elements) == 2
+    assert child1 in child_elements
+    assert grandchild in child_elements
+
+    # Test iter with '*'
+    all_with_star = list(parent.iter('*'))
+    assert len(all_with_star) == 4
 
 
-def test_find_with_namespaces():
-    xml = '''
-        <root 
-                xmlns:gml="http://www.opengis.net/gml"
-                xmlns:other="foobar"
-        >
-            <gml:a test="gml1"/>
-            <a test="just"/>
-            <other:a test="another"/>
-            <gml:a test="gml2"/>
-        </root>
-    '''
-    root = xmlx.from_string(xml)
+def test_itertext():
+    parent = _make('parent')
+    parent.text = 'parent text'
 
-    atts = [a.get('test') for a in root.findall('gml:a', {'gml': 'http://www.opengis.net/gml'})]
-    assert atts == ['gml1', 'gml2']
+    child = _make('child')
+    child.text = 'child text'
+    child.tail = 'child tail'
+
+    parent.append(child)
+
+    texts = list(parent.itertext())
+    assert 'parent text' in texts
+    assert 'child text' in texts
+    assert 'child tail' in texts
 
 
-def test_to_dict():
-    xml = '''
-        <root>
-            <a>
-                <b/>
-            </a>
-        </root>
-        '''
-
-    d = {'attrib': {},
-         'children': ([{
-
-             'attrib': {},
-             'children': ([{
-
-                 'attrib': {},
-                 'children': [],
-                 'tag': 'b',
-                 'tail': '\n            ',
-                 'text': ''}]),
-
-             'tag': 'a',
-             'tail': '\n        ',
-             'text': '\n                '}]),
-
-         'tag': 'root',
-         'tail': '',
-         'text': '\n            '
-         }
-    root = xmlx.from_string(xml)
-    assert root.to_dict() == d
+def test_bool():
+    e = _make('test')
+    assert bool(e) is True
 
 
-def test_to_string():
-    xml = '''<?xml version="1.0" encoding="UTF-8"?>
-            <root 
-                xmlns:gml="http://www.opengis.net/gml"
-                xmlns:gml3="http://www.opengis.net/gml/3.2"
-            >
-            <gml:a test="gml1"/>
-            <a test="just"/>
-            <gml3:a test="gml2"/>
-                <a>
-                    <b/>
-                </a>
-            </root>'''
-    xml_str = '''<root>
-            <gml:a test="gml1"/>
-            <a test="just"/>
-            <gml:a test="gml2"/>
-                <a>
-                    <b/>
-                </a>
-            </root>'''
-    root = xmlx.from_string(xml)
-    assert root.to_string() == xml_str
+def test_iter_children():
+    parent = _make('parent')
+    child1 = _make('child1')
+    child2 = _make('child2')
 
+    parent.append(child1)
+    parent.append(child2)
 
-def test_to_string_compact_whitespace():
-    xml = '''   <root>
-                    <a>
-                        <b test="just"/>
-                    </a>
-                </root>'''
-    root = xmlx.from_string(xml)
-    assert root.to_string(compact_whitespace=True) == '<root><a><b test="just"/></a></root>'
-
-
-def test_to_string_remove_namespaces():
-    xml = '''<root 
-                xmlns:gml="http://www.opengis.net/gml"
-                xmlns:gml3="http://www.opengis.net/gml/3.2"
-            >
-            <gml:a test="gml1"/>
-            <a test="just"/>
-            <gml3:a test="gml2"/>
-                <a>
-                    <b/>
-                </a>
-            </root>'''
-
-    xml_no_nspace = '''<root>
-            <a test="gml1"/>
-            <a test="just"/>
-            <a test="gml2"/>
-                <a>
-                    <b/>
-                </a>
-            </root>'''
-    root = xmlx.from_string(xml)
-    assert root.to_string(remove_namespaces=True) == xml_no_nspace
-
-
-def test_to_string_with_namespace_declarations():
-    xml = '''<root 
-                xmlns:gml="http://www.opengis.net/gml"
-                xmlns:gml3="http://www.opengis.net/gml/3.2"
-            >
-            <gml:a test="gml1"/>
-            <a test="just"/>
-            <gml3:a test="gml2"/>
-                <a>
-                    <b/>
-                </a>
-            </root>'''
-
-    xml_with_namespace_declarations = '''<root xmlns:gml="http://www.opengis.net/gml/3.2">
-            <gml:a test="gml1"/>
-            <a test="just"/>
-            <gml:a test="gml2"/>
-                <a>
-                    <b/>
-                </a>
-            </root>'''
-
-    root = xmlx.from_string(xml)
-    assert root.to_string(with_namespace_declarations=True) == xml_with_namespace_declarations
-
-
-def test_to_string_with_schema_locations():
-    xml = '''<root
-            xmlns:gml="http://www.opengis.net/gml"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	        xsi:schemaLocation="test"
-	        >
-            <gml:a test="gml1"/>
-            <a test="just"/>
-            <a test="gml2"/>
-                <a>
-                    <b/>
-                </a>
-            </root>'''
-
-    xml_with_schema_locations = '''<root xsi:schemaLocation="test">
-            <gml:a test="gml1"/>
-            <a test="just"/>
-            <a test="gml2"/>
-                <a>
-                    <b/>
-                </a>
-            </root>'''
-    root = xmlx.from_string(xml)
-    assert root.to_string(with_schema_locations=True) == xml_with_schema_locations
-
-
-def test_to_string_with_xml_declaration():
-    xml = '''<?xml version="1.0" encoding="UTF-8"?>
-               <root>
-                    <a>
-                        <b/>
-                    </a>
-                </root>'''
-
-    xml_with_xml_declaration = '''<?xml version="1.0" encoding="UTF-8"?><root>
-                    <a>
-                        <b/>
-                    </a>
-                </root>'''
-
-    root = xmlx.from_string(xml)
-    assert root.to_string(with_xml_declaration=True) == xml_with_xml_declaration
-
-
-def test_add():
-    xml = '''
-            <Root>
-            </Root>
-            '''
-    test = xmlx.parser.from_string(xml)
-    test.add('a', {'foo': 'bar'})
-    assert test.to_string(compact_whitespace=True) == '<Root><a foo="bar"/></Root>'
-    assert test.children()[0].to_string(compact_whitespace=True) == '<a foo="bar"/>'
-
-
-def test_attr():
-    xml = '''
-                <Root attr= "val">
-                    <a bar="foo"/>
-                    <b test ="attr"/>
-                    <c><deep>test2="attr2"</deep></c>
-                </Root>
-                '''
-    test = xmlx.parser.from_string(xml)
-    assert test.attr('attr') == 'val'
-    assert test.attr('attr2') == None
+    children = list(parent)
+    assert len(children) == 2
+    assert child1 in children
+    assert child2 in children
 
 
 def test_children():
-    xml = '''
-        <root>
-            <a>
-                <b/>
-            </a>
-            <c/>
-        </root>
-    '''
-    test = xmlx.parser.from_string(xml)
-    assert test.children()[0].to_string(compact_whitespace=True) == '<a><b/></a>'
-    assert test.children()[1].to_string(compact_whitespace=True) == '<c/>'
-    assert test.children()[0].children()[0].to_string(compact_whitespace=True) == '<b/>'
+    parent = _make('parent')
+    child1 = _make('child1')
+    child2 = _make('child2')
+
+    parent.append(child1)
+    parent.append(child2)
+
+    children = parent.children()
+    assert len(children) == 2
+    assert child1 in children
+    assert child2 in children
+
+
+def test_has():
+    e = _make('test', {'attr1': 'value1'})
+    assert e.has('attr1') is True
+    assert e.has('nonexistent') is False
+
+
+def test_add():
+    parent = _make('parent')
+    child = parent.add('child', {'attr': 'value'}, extra='extra_value')
+
+    assert len(parent) == 1
+    assert parent[0] is child
+    assert child.tag == 'child'
+    assert child.attrib == {'attr': 'value', 'extra': 'extra_value'}
+
+
+def test_attr():
+    e = _make('test', {'attr1': 'value1'})
+    assert e.attr('attr1') == 'value1'
+    assert e.attr('nonexistent') == ''
+    assert e.attr('nonexistent', 'default') == 'default'
 
 
 def test_findfirst():
-    xml = '''
-        <root a1="A1" a2="A2">
-        text
-            <nested>
-                <deep>text2</deep>
-                text3
-                <single b="B1"/>
-            </nested>
-        </root>
-    '''
-    test = xmlx.parser.from_string(xml)
-    assert test.findfirst().__dict__ == {'caseInsensitive': False, 'lcName': 'nested', 'name': 'nested'}
+    parent = _make('parent')
+    child1 = _make('child1')
+    child2 = _make('child2')
+    child3 = _make('child3')
+
+    parent.append(child1)
+    parent.append(child2)
+    parent.append(child3)
+
+    # Test with no arguments - returns first child
+    first = parent.findfirst()
+    assert first is child1
+
+    # Test with paths
+    found = parent.findfirst('child2', 'child3')
+    assert found is child2
+
+    # Test when nothing found
+    not_found = parent.findfirst('nonexistent')
+    assert not_found is None
+
+    # Test empty parent
+    empty_parent = _make('empty')
+    assert empty_parent.findfirst() is None
 
 
 def test_textof():
-    xml = '''
-                    <container>
-                        text
-                        <tag1><deep>xxx</deep></tag1>
-                        <tag2>yyy</tag2>
-                        <tag3>zzz</tag3>
-                        <tag4></tag4>
-                    </container>'''
-    test = xmlx.parser.from_string(xml)
-    assert not test.textof()
-    assert test.textof('tag1/deep') == 'xxx'
-    assert test.textof('tag2') == 'yyy'
-    assert not test.textof('tag4')
+    parent = _make('parent')
+    child1 = _make('child1')
+    child1.text = 'text1'
+    child2 = _make('child2')
+    child2.text = 'text2'
+
+    parent.append(child1)
+    parent.append(child2)
+
+    text = parent.textof('child1', 'child3')
+    assert text == 'text1'
+
+    no_text = parent.textof('nonexistent')
+    assert no_text is None
 
 
 def test_textlist():
-    xml = '''
-                <container>
-                    <tag1> xxx </tag1>
-                    <tag2> yyy </tag2>
-                    <tag3> zzz </tag3>
-                </container>'''
-    test = xmlx.parser.from_string(xml)
-    assert test.textlist() == ["xxx", "yyy", "zzz"]
+    parent = _make('parent')
+    child1 = _make('item')
+    child1.text = 'text1'
+    child2 = _make('item')
+    child2.text = 'text2'
+    child3 = _make('other')
+    child3.text = 'text3'
 
+    parent.append(child1)
+    parent.append(child2)
+    parent.append(child3)
 
-def test_textlist_nested():
-    xml = '''
-            <root a1="A1" a2="A2">
-            text
-                <nested><deep>text3</deep></nested>
-            </root>
-        '''
-    test = xmlx.parser.from_string(xml)
-    assert test.textlist('nested/deep') == ['text3']
+    # Test without paths - gets all children text
+    all_texts = parent.textlist()
+    assert 'text1' in all_texts
+    assert 'text2' in all_texts
+    assert 'text3' in all_texts
 
+    # Test with specific path
+    item_texts = parent.textlist('item')
+    assert item_texts == ['text1', 'text2']
 
-def test_textlist_empty():
-    xml = '''
-            <root>
-            </root>
-        '''
-    test = xmlx.parser.from_string(xml)
-    assert test.textlist() == []
+    # Test deep option
+    grandchild = _make('grandchild')
+    grandchild.text = 'deep text'
+    child1.append(grandchild)
 
+    shallow_texts = parent.textlist('item', deep=False)
+    assert 'deep text' not in shallow_texts
 
-def test_textlist_deep():
-    xml = '''
-                    <root a1="A1" a2="A2">
-                    text
-                        <nested>text1<deep>text2</deep></nested>
-                        <nested2>text3<deep2>text4</deep2></nested2>
-                    </root>
-                '''
-    test = xmlx.parser.from_string(xml)
-    assert test.textlist(deep=True) == ['text1', 'text2', 'text3', 'text4']
-
-
-def test_textdict_deep():
-    xml = '''
-                    <root a1="A1" a2="A2">
-                    text
-                        <nested>text1<deep>text2</deep></nested>
-                        <nested2>text3<deep2>text4</deep2></nested2>
-                    </root>
-                '''
-    test = xmlx.parser.from_string(xml)
-    assert test.textdict(deep=True) == {'nested': 'text1', 'deep': 'text2', 'nested2': 'text3', 'deep2': 'text4'}
+    deep_texts = parent.textlist('item', deep=True)
+    assert 'deep text' in deep_texts
 
 
 def test_textdict():
-    xml = '''
-                <container>
-                    <tag1> xxx </tag1>
-                    <tag2> yyy </tag2>
-                    <tag3> zzz </tag3>
-                </container>'''
-    test = xmlx.parser.from_string(xml)
-    assert test.textdict() == {'tag1': 'xxx', 'tag2': 'yyy', 'tag3': 'zzz'}
+    parent = _make('parent')
+    child1 = _make('name')
+    child1.text = 'John'
+    child2 = _make('age')
+    child2.text = '30'
 
+    parent.append(child1)
+    parent.append(child2)
 
-def test_textdict_nested():
-    xml = '''
-            <root a1="A1" a2="A2">
-            text
-                <nested><deep>text3</deep></nested>
-            </root>
-        '''
-    test = xmlx.parser.from_string(xml)
-    assert test.textdict('nested/deep') == {'deep': 'text3'}
+    text_dict = parent.textdict()
+    assert text_dict == {'name': 'John', 'age': '30'}
 
+    # Test with specific paths
+    name_dict = parent.textdict('name')
+    assert name_dict == {'name': 'John'}
 
-def test_textdict_empty():
-    xml = '''
-            <root>
-            </root>
-        '''
-    test = xmlx.parser.from_string(xml)
-    assert test.textdict() == {}
+    # Test deep option
+    container = _make('container')
+    nested = _make('nested')
+    nested.text = 'nested value'
+    container.append(nested)
+    parent.append(container)
+
+    shallow_dict = parent.textdict('container', deep=False)
+    assert 'nested' not in shallow_dict
+
+    deep_dict = parent.textdict('container', deep=True)
+    assert 'nested' in deep_dict
+    assert deep_dict['nested'] == 'nested value'
