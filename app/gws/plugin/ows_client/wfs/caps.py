@@ -9,7 +9,7 @@ import gws.lib.xmlx as xmlx
 # @TODO check support caps (we need at least BBOX)
 
 def parse(xml) -> gws.OwsCapabilities:
-    caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
+    caps_el = xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True, removeNamespaces=True))
     source_layers = gws.gis.source.check_layers(
         _feature_type(el) for el in caps_el.findall('FeatureTypeList/FeatureType'))
     return gws.OwsCapabilities(

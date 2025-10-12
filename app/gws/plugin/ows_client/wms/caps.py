@@ -22,7 +22,7 @@ def parse(xml: str, bottom_first: bool=False) -> gws.OwsCapabilities:
         The Capabilities object.
     """
 
-    caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
+    caps_el = xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True, removeNamespaces=True))
     source_layers = gws.gis.source.check_layers(
         [_layer(el) for el in caps_el.findall('Capability/Layer')],
         revert=bottom_first

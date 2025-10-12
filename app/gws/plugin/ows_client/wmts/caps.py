@@ -11,7 +11,7 @@ import gws.base.ows.client.parseutil as u
 
 
 def parse(xml: str) -> gws.OwsCapabilities:
-    caps_el = xmlx.from_string(xml, compact_whitespace=True, remove_namespaces=True)
+    caps_el = xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True, removeNamespaces=True))
     tms_lst = [_tile_matrix_set(el) for el in caps_el.findall('Contents/TileMatrixSet')]
     tms_dct = {tms.uid: tms for tms in tms_lst}
     sls = gws.gis.source.check_layers(
