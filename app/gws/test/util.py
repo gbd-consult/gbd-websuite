@@ -388,10 +388,17 @@ def unlink(path):
 
 
 def ensure_dir(path, clear=False):
+    def _clear(d):
+        for de in os.scandir(d):
+            if de.is_dir():
+                _clear(de.path)
+                os.rmdir(de.path)
+            else:
+                os.unlink(de.path)
+
     os.makedirs(path, exist_ok=True)
     if clear:
-        for de in os.scandir(path):
-            unlink(de.path)
+        _clear(path)
 
 
 def path_in_base_dir(path):

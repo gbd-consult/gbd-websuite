@@ -196,13 +196,14 @@ def make_docker_compose_yml():
             f'{base}:{base}',
             f'{base}/data:/data',
             f'{base}/gws-var:/gws-var',
+            f'{base}/tmp:/tmp',
         ]
         if OPTIONS['arg_local']:
             std_vols.append(f'{LOCAL_APP_DIR}:/gws-app')
 
         srv.setdefault('volumes', []).extend(std_vols)
 
-        srv.setdefault('tmpfs', []).append('/tmp')
+        # srv.setdefault('tmpfs', []).append('/tmp')
         srv.setdefault('stop_grace_period', '1s')
 
         srv['environment'] = make_env()

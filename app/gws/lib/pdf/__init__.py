@@ -1,4 +1,9 @@
+"""PDF utilities."""
+
 import pypdf
+import gws.lib.mime
+import gws.lib.osx
+import gws.lib.image
 
 
 def overlay(a_path: str, b_path: str, out_path: str) -> str:
@@ -42,9 +47,8 @@ def overlay(a_path: str, b_path: str, out_path: str) -> str:
     return out_path
 
 
-def concat(paths: [str], out_path: str) -> str:
-    """Concatenates multiple pdfs into one.
-    The order of the pages are the same as the order of the paths in the list.
+def concat(paths: list[str], out_path: str) -> str:
+    """Concatenate multiple pdfs into one.
 
     Args:
         paths: Paths to the pdfs.
@@ -82,38 +86,59 @@ def page_count(path: str) -> int:
 
     Args:
         path: Path to the pdf.
-
-    Returns:
-        Amount of pages in the pdf.
     """
+
     with open(path, 'rb') as fp:
         r = pypdf.PdfReader(fp)
         return len(r.pages)
 
-# def to_image(in_path, out_path, size, mime):
-#     if mime == gws.lib.mime.PNG:
-#         device = 'png16m'
-#     elif mime == gws.lib.mime.JPEG:
-#         device = 'jpeg'
-#     else:
-#         raise ValueError(f'uknown format {format!r}')
-#
-#     cmd = [
-#         'gs',
-#         '-q',
-#         f'-dNOPAUSE',
-#         f'-dBATCH',
-#         f'-dDEVICEWIDTHPOINTS={size[0]}',
-#         f'-dDEVICEHEIGHTPOINTS={size[1]}',
-#         f'-dPDFFitPage=true',
-#         f'-sDEVICE={device}',
-#         f'-dTextAlphaBits=4',
-#         f'-dGraphicsAlphaBits=4',
-#         f'-sOutputFile={out_path}',
-#         in_path,
-#     ]
-#
-#     gws.log.debug(repr(cmd))
-#     gws.lib.osx.run(cmd)
-#
-#     return out_path
+
+def to_image_path(
+    in_path: str,
+    out_path: str,
+    size: gws.Size,
+    mime: str = gws.lib.mime.PNG,
+    page: int = 1,
+) -> str:
+    """Convert a pdf to an image.
+
+    Args:
+        in_path: Path to the input pdf.
+        out_path: Path to the output image.
+        size: Size of the output image.
+        mime: Mime type of the output image. Must be either PNG or JPEG.
+        page: Page number to convert (1-indexed). Defaults to 1.
+
+    Returns:
+        Path to the output image.
+    """
+
+    if mime == gws.lib.mime.PNG:
+        device = 'png16m'
+    elif mime == gws.lib.mime.JPEG:
+        device = 'jpeg'
+    else:
+        raise ValueError(f'invalid mime type {mime!r}')
+
+    w, h = size
+    cmd = [
+        'gs',
+        '-q',
+        f'-dNOPAUSE',
+        f'-dBATCH',
+        f'-dFirstPage={page}',
+        f'-dLastPage={page}',
+        f'-dDEVICEWIDTHPOINTS={w}',
+        f'-dDEVICEHEIGHTPOINTS={h}',
+        f'-dPDFFitPage=true',
+        f'-sDEVICE={device}',
+        f'-dTextAlphaBits=4',
+        f'-dGraphicsAlphaBits=4',
+        f'-sOutputFile={out_path}',
+        f'{in_path}',
+    ]
+
+    gws.log.debug(' '.join(cmd))
+    gws.lib.osx.run(cmd)
+
+    return out_path

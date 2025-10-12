@@ -57,3 +57,7 @@ libpq5
 libprotobuf-c1
 libxml2
 libfcgi-bin
+
+#
+
+ghostscript
