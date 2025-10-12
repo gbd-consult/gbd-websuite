@@ -13,13 +13,14 @@ _DEFAULT_UID = 'en_CA'  # English with metric units
 
 # NB in the following code, `name` is a locale or language name (`de` or `de_DE`), `uid` is strictly a uid (`de_DE`)
 
+
 def default_locale():
     """Returns the default locale object (``en_CA``)."""
 
     return locale(_DEFAULT_UID, fallback=False)
 
 
-def locale(name: str|None, allowed: list[str] = None, fallback: bool = True) -> gws.Locale:
+def locale(name: str | None, allowed: list[str] = None, fallback: bool = True) -> gws.Locale:
     """Locates a Locale object by locale name.
 
     If the name is invalid, and ``fallback`` is ``True``, return the first ``allowed`` locale,
@@ -75,7 +76,8 @@ def _locale_by_uid(uid):
         lo = gws.Locale()
 
         # @TODO script etc
-        lo.uid = p.language + '_' + p.territory
+        terr = p.territory or 'ZZ'
+        lo.uid = p.language + '_' + terr
 
         lo.language = p.language
         lo.languageName = p.language_name
@@ -87,16 +89,17 @@ def _locale_by_uid(uid):
         lo.languageBib = getattr(lg, 'bibliographic', lo.language3)
         lo.languageNameEn = getattr(lg, 'name', lo.languageName)
 
-        lo.territory = p.territory
+        lo.territory = terr
         lo.territoryName = p.territory_name
 
         lo.dateFormatLong = str(p.date_formats['long'])
         lo.dateFormatMedium = str(p.date_formats['medium'])
         lo.dateFormatShort = str(p.date_formats['short'])
         lo.dateUnits = (
-                p.unit_display_names['duration-year']['narrow'] +
-                p.unit_display_names['duration-month']['narrow'] +
-                p.unit_display_names['duration-day']['narrow'])
+            p.unit_display_names['duration-year']['narrow']
+            + p.unit_display_names['duration-month']['narrow']
+            + p.unit_display_names['duration-day']['narrow']
+        )
 
         lo.dayNamesLong = list(p.days['format']['wide'].values())
         lo.dayNamesNarrow = list(p.days['format']['narrow'].values())
@@ -139,6 +142,7 @@ class _FnStr:
 
 # @TODO support RFC 2822
 
+
 class DateFormatter(gws.DateFormatter):
     def __init__(self, loc: gws.Locale):
         self.locale = loc
@@ -176,6 +180,7 @@ class TimeFormatter(gws.TimeFormatter):
 
 
 # @TODO scientific, compact...
+
 
 class NumberFormatter(gws.NumberFormatter):
     def __init__(self, loc: gws.Locale):
