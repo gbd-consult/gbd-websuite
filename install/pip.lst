@@ -20,8 +20,7 @@ SQLAlchemy==2.*
 watchdog==6.*
 Werkzeug==3.*
 
-# NB something is broken in 2.0.25
-uWSGI==2.0.23
+uWSGI==2.*
 
 # use the OS version
 GDAL==3.8.4
